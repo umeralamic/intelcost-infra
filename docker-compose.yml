@@ -1,0 +1,145 @@
+# The IntelCost bench.
+#
+# A local clone of the whole system with ephemeral data and fakes for every external
+# service. Testing is conducted here, not written.
+#
+#   docker compose up -d --build      bring it up
+#   docker compose logs -f api        watch the api
+#   docker compose down -v            reset to clean
+#
+# Data is deliberately NOT persisted. A named volume for Postgres would hide the
+# migration bugs a customer meets on a fresh install.
+
+name: intelcost-bench
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: intelcost
+      POSTGRES_PASSWORD: intelcost
+      POSTGRES_DB: intelcost
+    ports:
+      - "5433:5432"   # 5433 so it never fights a local Postgres on 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U intelcost -d intelcost"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # console, browse what the app wrote
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # web inbox
+    logging:
+      driver: none    # MailHog logs every connection at debug volume
+
+  api:
+    build:
+      context: ../intelcost-api
+    environment:
+      ENVIRONMENT: local
+      DEBUG: "true"
+      DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: bench-only-secret-not-for-anything-real
+      S3_ENDPOINT_URL: http://minio:9000
+      # The browser cannot resolve "minio", so presigned links are signed against the
+      # host it actually calls. See app/config.py.
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_BUCKET: intelcost-local
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_FORCE_PATH_STYLE: "true"
+      CORS_ORIGINS: '["http://localhost:5173","http://localhost:3000"]'
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      APP_URL: http://localhost:5173
+    # Migrations run on start, so a fresh bench is a working bench.
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ../intelcost-api/app:/srv/app
+      - ../intelcost-api/alembic:/srv/alembic
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../intelcost-api
+    environment:
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: bench-only-secret-not-for-anything-real
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
+      S3_BUCKET: intelcost-local
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_FORCE_PATH_STYLE: "true"
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      APP_URL: http://localhost:5173
+    command: celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=2
+    volumes:
+      - ../intelcost-api/app:/srv/app
+    depends_on:
+      api:
+        condition: service_started
+
+  app:
+    build:
+      context: ../intelcost-app
+      target: dev
+    environment:
+      # Compiled into what the BROWSER runs, so these are addresses the browser
+      # resolves from the host. The service name "api" means nothing to it.
+      # Same reason S3_PUBLIC_ENDPOINT_URL exists above.
+      VITE_API_URL: http://localhost:8000
+      VITE_MARKETING_URL: http://localhost:3000
+    volumes:
+      # Source only. node_modules stays the image's, so a host install built for
+      # another platform cannot leak in and break the dev server.
+      - ../intelcost-app/src:/app/src
+      - ../intelcost-app/public:/app/public
+      - ../intelcost-app/index.html:/app/index.html
+    ports:
+      - "5173:5173"
+    depends_on:
+      api:
+        condition: service_started
