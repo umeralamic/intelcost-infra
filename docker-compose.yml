@@ -82,6 +82,13 @@ services:
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
+      # Geo. Empty by default, which is what makes the bench inert and every signup
+      # Tier 1. Point them at the fake to drive the MaxMind branches (F2-S5, F2-S8):
+      #   FAKE_VPN=1 docker compose --profile fakes up -d maxmind-fake
+      #   MAXMIND_BASE_URL=http://maxmind-fake:8080 MAXMIND_ACCOUNT_ID=x MAXMIND_LICENSE_KEY=y docker compose up -d api
+      MAXMIND_BASE_URL: "${MAXMIND_BASE_URL:-https://geoip.maxmind.com}"
+      MAXMIND_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:-}"
+      MAXMIND_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:-}"
     # Migrations run on start, so a fresh bench is a working bench.
     command: >
       sh -c "alembic upgrade head &&
@@ -89,6 +96,9 @@ services:
     volumes:
       - ../intelcost-app-fastapi/app:/srv/app
       - ../intelcost-app-fastapi/alembic:/srv/alembic
+      # Scripts are run from in here, because a host without Python cannot run them
+      # from outside: docker compose exec api python scripts/<name>.py
+      - ../intelcost-app-fastapi/scripts:/srv/scripts
     ports:
       - "8000:8000"
     depends_on:
@@ -133,6 +143,11 @@ services:
       # Same reason S3_PUBLIC_ENDPOINT_URL exists above.
       VITE_API_URL: http://localhost:8000
       VITE_MARKETING_URL: http://localhost:3000
+      # Node side, not the browser: it turns on polling in the Vite watcher.
+      # A bind mount from a Windows or macOS host delivers no filesystem events
+      # into the container, and without an event Vite serves an edited module
+      # from its transform cache forever, hard refresh or not.
+      DEV_WATCH_POLL: "1"
     volumes:
       # Source only. node_modules stays the image's, so a host install built for
       # another platform cannot leak in and break the dev server.
@@ -144,3 +159,47 @@ services:
     depends_on:
       api:
         condition: service_started
+
+  # A stand-in for MaxMind Insights, so the signup gate's geo branches can be driven
+  # without a paid key (F2-S5). Off by default, on the "fakes" profile.
+  #
+  #   docker compose --profile fakes up -d maxmind-fake
+  #   # then point the api at it and restart it:
+  #   MAXMIND_BASE_URL=http://maxmind-fake:8080 MAXMIND_ACCOUNT_ID=x MAXMIND_LICENSE_KEY=y
+  #
+  # What it claims is set by environment. See fakes/maxmind/server.py.
+  maxmind-fake:
+    profiles: ["fakes"]
+    image: python:3.14-slim
+    environment:
+      FAKE_COUNTRY: "${FAKE_COUNTRY:-US}"
+      FAKE_VPN: "${FAKE_VPN:-0}"
+      FAKE_STATUS: "${FAKE_STATUS:-200}"
+      FAKE_BODY: "${FAKE_BODY:-insights}"
+    volumes:
+      - ./fakes/maxmind:/fake:ro
+    command: python /fake/server.py
+    ports:
+      - "8090:8080"
+
+  # The bench's browser (D-16). Off by default: it sits on the "browser" profile, so
+  # `docker compose up -d` is exactly what it was. A pass runs it and it exits.
+  #
+  #   docker compose --profile browser build browser
+  #   docker compose --profile browser run --rm browser node scripts/f2-s3.mjs
+  #
+  # It drives the HOST's published ports rather than the compose network, because the
+  # app bundle is compiled against localhost:8000 — see browser/README.md.
+  browser:
+    profiles: ["browser"]
+    build:
+      context: ./browser
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Scripts only, mounted where the image already put them, so a fixture is
+      # edited without a rebuild. node_modules stays the image's, one level up at
+      # /drive, for the same reason the app image keeps its own.
+      - ./browser:/drive/scripts
+    working_dir: /drive
+    init: true
