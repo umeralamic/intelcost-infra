@@ -19,7 +19,7 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| _Nothing in progress_ | | | | |
+| F3 | The product behind the front door barely exists: of the 34 behaviours in PARITY sections 2 and 3, three are marked ported (and two of those are wrong), one is partial and the rest are missing. Legacy runs on nine roles and twenty-four capabilities with per-workspace overrides; the new api has four roles and every gate reads `role === 'owner'`, which legacy's own rules forbid in writing. → Build the capability model and the surfaces that administer it as F3-S1…S23, correct three stale statuses in section 2, and tick what F3 ships. | Be Fe | Umer | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
 
 ---
 

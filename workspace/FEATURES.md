@@ -31,7 +31,7 @@ _Updated: 2026-09-24_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| _Nothing in build. F3 is next._ | | | | |
+| F3 (P-02) | Workspace, roles and permissions | both | Capability model (nine roles, twenty-four capabilities, workspace overrides) · roles matrix · ownership transfer · general settings and logo · members · audit feed → [PARITY.md §2](docs/PARITY.md#2-workspace-settings), [§3](docs/PARITY.md#3-permissions) | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
 
 ---
 
@@ -41,7 +41,6 @@ _Updated: 2026-09-24_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
-| P-02 | Workspace, roles and permissions | both | Before any screen, every screen checks permissions |
 | P-03 | Projects dashboard, project creation, Project Home, files and folders | both | |
 | P-07 | Realtime multi-estimator collaboration | both | D-10. Transport per D-13 |
 | P-04 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration and scale | both | Rendering per D-14 |
