@@ -107,7 +107,7 @@ await run("f2-s14", [
       const workspace = await firstWorkspace(ownerToken);
       const email = `s14-invited-${Date.now()}@bench.intelcost.io`;
       await clearMail();
-      await invite(ownerToken, workspace.uuid, email, "member");
+      await invite(ownerToken, workspace.uuid, email, "estimator");
       const token = await inviteTokenFromMail(email);
 
       await page.goto(`${APP}/signup?invite=${encodeURIComponent(token)}`);

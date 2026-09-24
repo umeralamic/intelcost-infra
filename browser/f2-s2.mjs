@@ -33,7 +33,7 @@ await apiRegister(INVITEE.email, INVITEE.password, "S2 Existing User");
 const seededToken = await apiLogin();
 const workspace = await firstWorkspace(seededToken);
 await clearMail();
-await invite(seededToken, workspace.uuid, INVITEE.email, "member");
+await invite(seededToken, workspace.uuid, INVITEE.email, "estimator");
 const token = await inviteTokenFromMail(INVITEE.email);
 
 const preview = await invitationPreview(token);

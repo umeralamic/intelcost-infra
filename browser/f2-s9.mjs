@@ -31,7 +31,7 @@ const PASSWORD = "bench-password-1";
 
 const ownerToken = await apiLogin();
 const workspace = await firstWorkspace(ownerToken);
-const preview = { role: "member" };
+const preview = { role: "estimator" };
 
 /** A fresh invitation to an address with no account, from a named workspace. */
 async function freshInvitee(tag, { token = ownerToken, into = workspace } = {}) {

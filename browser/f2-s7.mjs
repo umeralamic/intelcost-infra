@@ -51,7 +51,7 @@ const workspace = await firstWorkspace(ownerToken);
 async function freshInvitee(tag) {
   const email = `s7-${tag}-${Date.now()}@bench.intelcost.io`;
   await clearMail();
-  const invitation = await invite(ownerToken, workspace.uuid, email, "member");
+  const invitation = await invite(ownerToken, workspace.uuid, email, "estimator");
   return { email, uuid: invitation.uuid, token: await inviteTokenFromMail(email) };
 }
 

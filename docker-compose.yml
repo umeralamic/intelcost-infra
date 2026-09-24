@@ -99,6 +99,9 @@ services:
       # Scripts are run from in here, because a host without Python cannot run them
       # from outside: docker compose exec api python scripts/<name>.py
       - ../intelcost-app-fastapi/scripts:/srv/scripts
+      # Bench drives that are not browser drives: a rule the api enforces with no
+      # route to reach it yet. Bench-owned, so they live here and not in the api repo.
+      - ./drives:/srv/drives:ro
     ports:
       - "8000:8000"
     depends_on:
@@ -201,5 +204,10 @@ services:
       # edited without a rebuild. node_modules stays the image's, one level up at
       # /drive, for the same reason the app image keeps its own.
       - ./browser:/drive/scripts
+      # Both source trees, read-only. A fixture that has to assert the ABSENCE of a
+      # pattern — no gate anywhere tests a role (F3-S3) — cannot do it by clicking,
+      # and a grep run on the host is a grep nobody re-runs.
+      - ../intelcost-app-react/src:/src/app:ro
+      - ../intelcost-app-fastapi/app:/src/api:ro
     working_dir: /drive
     init: true

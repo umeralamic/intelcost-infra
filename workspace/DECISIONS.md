@@ -867,3 +867,212 @@ queue immediately after `session.commit()`.
 - **A dispatch is not a return value.** Anything the response needs must be computed in
   the handler, not in the dispatched effect. This is already true, and the ordering
   makes it obvious rather than incidental.
+
+---
+
+## D-21 — The capability model is ported whole, resolution before editing
+
+**Date:** 2026-09-24
+**Status:** Accepted
+**Area:** Backend, Frontend, Auth, Data model
+
+**Context:** Legacy runs on nine roles and twenty-five capabilities.
+`src/lib/permissions/capabilities.ts` is one map read by both the runtime check
+(`usePermissions`) and the Roles & Permissions matrix, so the two cannot drift — the
+file says so twice, and forbids restating a permission in the matrix. On top sit a
+workspace-defined **custom role** (its own label and capability map, carrying a
+built-in base role so server-side rules keep working), a per-workspace **override** of
+a built-in working role, and a **disabled** role. Two masks then cap everyone: the paid
+plan, and the trial once expired.
+
+The new api has four roles (`owner | admin | member | collaborator`) and no
+capabilities. Every gate is `role == "owner" or role == "admin"` — nine sites in
+`app/features/workspace/routes.py`, plus `can_write`, plus three in the app. That is
+exactly what legacy's own rules forbid in writing, and four roles cannot express
+"QA reviews but cannot edit", which is the distinction the takeoff review flow is
+built around.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Port the model whole, all at once | Parity in one pass; nothing to revisit | Five tables, a five-stage chain and a 24x9 matrix land together, so the first thing anyone can drive is the last thing built |
+| B — Capabilities and nine roles now, custom roles and overrides later | Smallest step that gets the runtime answer right | Ships a matrix that cannot be edited, which is a visible gap against what customers use today, and defers the two tables indefinitely |
+| C — Keep four roles, derive capabilities from them | Nothing in the api changes shape | Cannot express the QA roles; every member gets re-tiered later |
+| D — Port the model whole, sequenced: resolution first, editing second | Full parity, and the resolution every later feature depends on is correct and driven before any editing surface exists. Each half is drivable on its own. | Two passes over the same feature, and the matrix is read-only between them |
+
+**Decision:** Option D. F3 ships the nine roles, the twenty-five capabilities and one
+shared map read by both the runtime check and the matrix, then custom roles and
+per-workspace overrides — in that order, all inside F3.
+
+**Consequences:**
+- **The map is written once per repo and checked equal.** The api enforces; the app
+  repeats it for UX only, the arrangement `features/workspace/roles.ts` already uses for
+  role names. A bench step compares the two, because "kept in sync by hand" (D-05) is a
+  promise that needs a check.
+- **Resolution lands first, and lands whole.** The chain is role default, then workspace
+  override, then custom role, then the plan mask, then the trial mask, built with all
+  five stages from the start. The two stages whose tables come later resolve to "no
+  row", so adding the tables fills a hole rather than reshaping the chain.
+- **Every existing `owner`/`admin` gate is replaced by a capability check** in the same
+  pass, api and app. A role test surviving in a component is a bug after this, not a
+  style preference, and the bench pass greps for it.
+- **`WorkspaceRole` grows from four values to nine.** `member` maps to `estimator`,
+  which is the role that measures and prices; `owner`, `admin` and `collaborator` keep
+  their meaning. Existing rows migrate; `viewer`, `takeoff`, `pricing`, `qa_takeoff` and
+  `qa_pricing` are new and held by nobody until someone is assigned one.
+- **An absent key in a saved map is not a denial.** It is a map written before that
+  capability existed, so it falls back to the role default. An explicit `false` still
+  wins. This is legacy's `capabilitiesFromMap`, and it is why a capability shipped next
+  month is not silently revoked for every workspace that ever saved an override.
+- **Forbidden capabilities are forbidden in the database too.** `canTransferOwnership`,
+  `canManageBilling` and `canGrantOwnerRole` are stripped from any custom or overridden
+  map by the service and by a constraint, as legacy does with a trigger. A rule enforced
+  only in the service is a rule one hand-written request gets past.
+- **The plan mask reads `pro` until F16 exists.** The stage is in the chain and its
+  input is a constant, so F16 supplies a value rather than adding a stage.
+- **The count was wrong, and the number is twenty-five.** `PARITY.md` §3 said
+  twenty-four; `NO_CAPABILITIES` in the legacy source has 25 keys. The heading was
+  counted instead of the file. Corrected in PARITY, in the F3 spec and above.
+- **Legacy administers only 22 of its own 25.** Its `CAPABILITY_GROUPS` omits
+  `canManageWorkspace`, `canGrantOwnerRole` and `canEditEstimates`, so three
+  capabilities are enforced and unadministrable there. Ours lists all twenty-five, and
+  F3-S5 asserts it: a capability the runtime honours and the matrix cannot reach is a
+  permission nobody can change.
+- **Accepted risk: the matrix is read-only between the two halves.** Nobody is using it
+  yet, and the alternative is building the editing surface against a resolution that has
+  never been driven.
+
+---
+
+## D-22 — Every capability map derives a base role, including a read-only one
+
+**Date:** 2026-09-24
+**Status:** Accepted
+**Area:** Backend, Data model
+
+**Context:** Legacy's `deriveBaseRole(caps)` picks the built-in role a custom role most
+closely matches, and that value is written to `user_roles.role`, where every
+server-side rule reads it. It returns `admin` when the map administers, then
+`estimator`, `takeoff`, `pricing` — and then falls off the end of the function. A
+custom role granting neither takeoff nor pricing nor administration (a reviewer, a
+commenter, a read-only auditor: three of legacy's own nine roles have exactly that
+shape) returns `undefined`, and `undefined` is written as the member's role. The
+function's docstring says it "must never over-grant"; it says nothing about granting
+nothing, which is what it does.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Port it as written | Bit-for-bit parity, including with whatever legacy data F17 migrates | Ports a defect into a column every authorization rule reads. A null role is not "no permissions", it is "no answer", and the chain's behaviour on it is undefined |
+| B — Return `viewer` for a map that grants neither | Total: every map yields a valid role. `viewer` is the conservative floor (read-only, no comments, no uploads), so a mis-derived role under-grants rather than over-grants | Diverges from legacy, so a migrated custom role may land on `viewer` where legacy left it null |
+| C — Refuse to save a map with no derivable base role | The bad state never exists | Refuses three of legacy's own nine role shapes, so it is not a fix, it is a narrower product |
+
+**Decision:** Option B. `derive_base_role` is total and returns `viewer` when the map
+grants neither administration, takeoff nor pricing.
+
+**Consequences:**
+- **The return type is the role, not an optional role**, so the type system carries the
+  guarantee rather than a comment. `mypy` refuses the fall-through that produced the bug.
+- **The floor is `viewer`, deliberately.** A capability map granting only review or only
+  comments still resolves its capabilities from its own map; the base role is the
+  server-side fallback, and the fallback under-granting is the safe direction.
+- **F17 inherits a mapping rule**, not a defect: a legacy member whose `user_roles.role`
+  is null migrates to `viewer`, and that note belongs in F17's spec.
+- The fix is recorded in the F3 spec against the subtask that ports the function, so
+  nobody reading legacy side by side thinks ours drifted by accident.
+
+---
+
+## D-23 — Platform admin is resolved in the permission layer, as a capability gate
+
+**Date:** 2026-09-24
+**Status:** Accepted
+**Area:** Auth, Backend, Frontend
+
+**Context:** `User.is_platform_admin` has existed as a column since the first migration
+and nothing reads it except `require_platform_admin`, which nothing depends on. Legacy
+resolves it through an `is_platform_admin` RPC inside `usePermissions`, keeps it
+strictly separate from `isWorkspaceAdmin`, and forbids the name `isAdmin` in code
+precisely because the two get conflated. A platform admin also **bypasses the plan and
+trial masks**, so a customer's billing state cannot lock our own staff out of a
+workspace they are supporting.
+
+The question F3 forces is whether the concept exists in the new product at all, since
+the screens that would use it (F16's admin panel, the Starter Pack and Library admin
+powers in F10) are not built.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Defer it to F16 with the admin screens | Nothing built before it is needed | The permission layer gets built twice: once now without it, once when F16 adds a stage to the mask chain and a second kind of "admin" to every screen that already has one |
+| B — Resolve it now in the permission layer; screens come later | The distinction exists from the first line of the capability layer, which is the one place it can be enforced. F16 and F10 hang screens off an answer that is already correct and already driven | Ships a resolved value with one consumer (the route guard) until F16 |
+
+**Decision:** Option B. Platform admin is our internal team, it exists, and it is
+resolved in the same permission layer as everything else — as a capability gate, never
+as a role.
+
+**Consequences:**
+- **`is_platform_admin` is never a `WorkspaceRole` value and never widens one.** It is
+  resolved alongside the role and returned beside the capability map. Nothing maps it to
+  `admin`, and no screen gates a customer feature on it.
+- **A platform admin bypasses the plan and trial masks**, as legacy does, and nothing
+  else. The role map still applies: staff supporting a workspace see it as the role they
+  hold there.
+- **`isWorkspaceAdmin` and `isPlatformAdmin` are two values with no third.** The name
+  `isAdmin` appears in neither repo.
+- **Internal routes render the ordinary 404**, never a redirect and never a "you do not
+  have access" page, so internal tooling is indistinguishable from a wrong URL. The
+  guard ships in F3; the screens behind it are F16.
+- **F10's Starter Pack and Library admin powers and F16's admin panel use this check.**
+  Neither invents its own.
+- Accepted: one consumer until F16. That is the cost of not building the mask chain
+  twice.
+
+---
+
+## D-24 — An invite link is shown once at creation; a new link is a deliberate act that kills the old one
+
+**Date:** 2026-09-24
+**Status:** Accepted
+**Area:** Auth, Backend, Frontend
+
+**Context:** PARITY §2 lists "copy the invite link" as ported. It is not, and it cannot
+be as the api stands: `create_invitation` stores `token_hash` and returns the raw token
+exactly once, to the caller that created it. There is nothing to copy afterwards because
+there is nothing stored to copy. Three ways out: show it at creation only, store the raw
+token so it can be re-read, or re-mint on demand. Storing it defeats hashing — one
+database read would hand over every live invitation.
+
+The failure worth naming is the silent one: a "copy link" button that quietly re-mints
+hands the admin a working link while the link they mailed the invitee an hour ago stops
+working, and neither of them is told.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Copy at creation only | Honest and free. The token is already in hand at that moment | An admin who closes the dialog has no way back to the link, and resend is the only path left |
+| B — Store the raw token | "Copy link" works at any time, exactly as the parity line reads | Every live invitation becomes readable from one table. A hashed token that is also stored in the clear is not hashed |
+| C — Re-mint on demand, silently | The button always works | The previously mailed link dies without a word to anyone. Two people then hold links and one of them is dead |
+| D — Copy at creation, plus an explicit "Get new link" that warns first | Both moments are covered, and the one that invalidates says so before it acts | Two controls to build and to explain |
+
+**Decision:** Option D. The link is shown once, at creation, with a Copy control. A
+separate **"Get new link"** action states that the previous link stops working, and
+re-mints only after that is confirmed.
+
+**Consequences:**
+- **The raw token is never stored.** `token_hash` stays the only persisted form, and
+  option B is closed rather than deferred.
+- **Re-minting invalidates.** "Get new link" replaces `token_hash`, and the old link
+  gets the same refusal an unknown token does. It does not send mail; mailing is what
+  **Resend** is for, and the two stay separate actions with separate effects.
+- **The parity line changes from ported to partial**, and ticks when F3 ships both
+  controls. Invite, resend and revoke were already driven in F2-S2.
+- **The warning is a confirmation before the act, not a toast after it**, because
+  afterwards there is nothing to undo.
+- Accepted: an admin who dismisses the creation dialog and does not want to invalidate
+  has only Resend. That is the right answer — Resend mails a fresh link to the invited
+  address, which is where it was supposed to go.

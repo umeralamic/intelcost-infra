@@ -137,7 +137,7 @@ export async function firstWorkspace(token) {
   return list[0];
 }
 
-export async function invite(token, workspaceUuid, email, role = "member") {
+export async function invite(token, workspaceUuid, email, role = "estimator") {
   const response = await fetch(await fromNode(`${API}/api/workspace/${workspaceUuid}/invitation`), {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
@@ -296,4 +296,66 @@ export async function resetTokenFromMail(address, { timeout = 15000 } = {}) {
     if (Date.now() > deadline) throw new Error(`no reset mail for ${address} after ${timeout}ms`);
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
+}
+
+/** The caller's resolved standing in a workspace: role, capabilities, assignable roles.
+ *
+ *  This is the api's answer, and the whole point of F3-S1 is that it is the only one.
+ *  A fixture that recomputed the map here would be checking a fixture, not a product. */
+export async function capabilities(token, workspaceUuid) {
+  const response = await fetch(
+    await fromNode(`${API}/api/workspace/${workspaceUuid}/capability`),
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  if (!response.ok) throw new Error(`capability: ${response.status} ${await response.text()}`);
+  return response.json();
+}
+
+/** Move a member to a role, straight at the api. Returns status and body, because a
+ *  refusal is as interesting as a success once roles can be refused. */
+export async function setRole(token, workspaceUuid, userUuid, role) {
+  const response = await fetch(
+    await fromNode(`${API}/api/workspace/${workspaceUuid}/member/${userUuid}`),
+    {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ role }),
+    },
+  );
+  return { status: response.status, body: await response.json().catch(() => null) };
+}
+
+/** A fresh account seated in a workspace at a given role, ready to sign in.
+ *
+ *  Built through the real invitation path rather than by writing a row: a member
+ *  created by a shortcut is a member the api might never produce. */
+export async function seatedMember(ownerToken, workspaceUuid, role, tag = "seat") {
+  const email = `${tag}-${role}-${Date.now()}@bench.intelcost.io`;
+  const password = "bench-password-1";
+  await clearMail();
+  await invite(ownerToken, workspaceUuid, email, role);
+  const inviteToken = await inviteTokenFromMail(email);
+  await apiRegister(email, password, `Bench ${role}`);
+  const token = await apiLogin(email, password);
+  const accepted = await apiAccept(token, inviteToken);
+  if (accepted.status !== 200) {
+    throw new Error(`seating ${email} as ${role}: ${accepted.status}`);
+  }
+  return { email, password, token };
+}
+
+/** A hand-written request, as someone bypassing the screen would send it.
+ *
+ *  Every "the control is not shown" assertion is worth nothing on its own: hiding is
+ *  not a gate. This is how a fixture proves the api refuses it too. */
+export async function apiCall(token, method, path, body) {
+  const response = await fetch(await fromNode(`${API}${path}`), {
+    method,
+    headers: {
+      authorization: `Bearer ${token}`,
+      ...(body ? { "content-type": "application/json" } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  return { status: response.status, body: await response.json().catch(() => null) };
 }

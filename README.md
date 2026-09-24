@@ -10,6 +10,13 @@ them.
 Two files. `docker-compose.yml` is the whole system. `docker-compose.dev.yml` is the
 same thing without the api, for when you run the api from your IDE.
 
+`drives/` holds the few passes that are not browser passes: a rule enforced in the api
+with no route to reach it yet — a resolution stage whose table arrives in a later
+subtask — is driven against the real module in the api container rather than left
+unproven or faked through a screen that does not exist.
+
+    docker compose exec -T api sh -lc "cd /srv && python drives/f3-s2-resolution.py"
+
 `workspace/` is not part of the bench. It is the **versioned mirror** of the four
 workspace files and `docs/`, which sit at the workspace root outside every repo and so
 have no git history of their own. The root copies are the ones anybody edits; this is

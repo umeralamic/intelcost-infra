@@ -135,7 +135,7 @@ The takeoff page carries six workspace tabs: **Takeoff**, **Earthwork**,
 ## 3. Permissions
 
 Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
-`qa_pricing`, `collaborator`, `viewer`. Twenty-four capabilities.
+`qa_pricing`, `collaborator`, `viewer`. Twenty-five capabilities.
 `src/lib/permissions/capabilities.ts`, `src/hooks/usePermissions.ts`.
 
 - [ ] Every screen asks `can('<capability>')` rather than testing a role, so a custom role behaves like a built-in one everywhere. `src/hooks/usePermissions.ts` · **partial** (`src/features/workspace/roles.ts` exists; there is no capability layer)

@@ -19,7 +19,7 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F3 | The product behind the front door barely exists: of the 34 behaviours in PARITY sections 2 and 3, three are marked ported (and two of those are wrong), one is partial and the rest are missing. Legacy runs on nine roles and twenty-four capabilities with per-workspace overrides; the new api has four roles and every gate reads `role === 'owner'`, which legacy's own rules forbid in writing. → Build the capability model and the surfaces that administer it as F3-S1…S23, correct three stale statuses in section 2, and tick what F3 ships. | Be Fe | Umer | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
+| F3 | The product behind the front door barely exists: of the 34 behaviours in PARITY sections 2 and 3, three are marked ported (and two of those are wrong), one is partial and the rest are missing. Legacy runs on nine roles and twenty-five capabilities with per-workspace overrides; the new api has four roles and every gate reads `role === 'owner'`, which legacy's own rules forbid in writing. → Port the model whole, sequenced (D-21): S1–S4 resolution, S5–S8 the surfaces that edit it, S9–S13 the rest of workspace administration; S14–S23 are specced and handed to F4, F6, F14 and F15. Corrects three stale statuses in section 2. | Be Fe | Umer | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
 
 ---
 
@@ -35,7 +35,6 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F3 | Workspace, roles and permissions | Be Fe | Umer | _not yet specced_ |
 | F4 | Projects dashboard, creation, Project Home, files and folders | Be Fe | Umer | _not yet specced_ |
 | F8 | Realtime foundation: socket, auth, Redis fan-out, presence and soft-locks | Be Fe | Umer | _not yet specced_ |
 | F5 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration. Rendering per D-14 (pdf.js, split-source, thumbnails server-side). Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |

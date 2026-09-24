@@ -229,7 +229,7 @@ await run("f2-s8", [
       const workspace = await firstWorkspace(ownerToken);
       const email = `s8-invited-${Date.now()}@bench.intelcost.io`;
       await clearMail();
-      await invite(ownerToken, workspace.uuid, email, "member");
+      await invite(ownerToken, workspace.uuid, email, "estimator");
       const token = await inviteTokenFromMail(email);
 
       const calls = countTrialCalls(page);

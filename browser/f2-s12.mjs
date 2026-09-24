@@ -58,7 +58,7 @@ await run("f2-s12", [
       const workspace = await firstWorkspace(ownerToken);
       const email = `s12-${Date.now()}@bench.intelcost.io`;
       await clearMail();
-      await invite(ownerToken, workspace.uuid, email, "member");
+      await invite(ownerToken, workspace.uuid, email, "estimator");
       const token = await inviteTokenFromMail(email);
 
       // The preview is a round trip, so the screen is titled before it lands and

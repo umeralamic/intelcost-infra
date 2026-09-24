@@ -31,7 +31,7 @@ _Updated: 2026-09-24_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| F3 (P-02) | Workspace, roles and permissions | both | Capability model (nine roles, twenty-four capabilities, workspace overrides) · roles matrix · ownership transfer · general settings and logo · members · audit feed → [PARITY.md §2](docs/PARITY.md#2-workspace-settings), [§3](docs/PARITY.md#3-permissions) | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
+| F3 (P-02) | Workspace, roles and permissions | both | Capability model (nine roles, twenty-five capabilities, workspace overrides) · roles matrix · ownership transfer · general settings and logo · members · audit feed → [PARITY.md §2](docs/PARITY.md#2-workspace-settings), [§3](docs/PARITY.md#3-permissions) | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
 
 ---
 
