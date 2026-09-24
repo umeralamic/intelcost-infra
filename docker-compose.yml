@@ -38,7 +38,8 @@ services:
       retries: 20
 
   minio:
-    image: minio/minio:latest
+    # Docker Hub no longer serves minio/minio; quay.io is the official home.
+    image: quay.io/minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -62,7 +63,7 @@ services:
 
   api:
     build:
-      context: ../intelcost-api
+      context: ../intelcost-app-fastapi
     environment:
       ENVIRONMENT: local
       DEBUG: "true"
@@ -86,8 +87,8 @@ services:
       sh -c "alembic upgrade head &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
-      - ../intelcost-api/app:/srv/app
-      - ../intelcost-api/alembic:/srv/alembic
+      - ../intelcost-app-fastapi/app:/srv/app
+      - ../intelcost-app-fastapi/alembic:/srv/alembic
     ports:
       - "8000:8000"
     depends_on:
@@ -100,7 +101,7 @@ services:
 
   worker:
     build:
-      context: ../intelcost-api
+      context: ../intelcost-app-fastapi
     environment:
       ENVIRONMENT: local
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
@@ -117,14 +118,14 @@ services:
       APP_URL: http://localhost:5173
     command: celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=2
     volumes:
-      - ../intelcost-api/app:/srv/app
+      - ../intelcost-app-fastapi/app:/srv/app
     depends_on:
       api:
         condition: service_started
 
   app:
     build:
-      context: ../intelcost-app
+      context: ../intelcost-app-react
       target: dev
     environment:
       # Compiled into what the BROWSER runs, so these are addresses the browser
@@ -135,9 +136,9 @@ services:
     volumes:
       # Source only. node_modules stays the image's, so a host install built for
       # another platform cannot leak in and break the dev server.
-      - ../intelcost-app/src:/app/src
-      - ../intelcost-app/public:/app/public
-      - ../intelcost-app/index.html:/app/index.html
+      - ../intelcost-app-react/src:/app/src
+      - ../intelcost-app-react/public:/app/public
+      - ../intelcost-app-react/index.html:/app/index.html
     ports:
       - "5173:5173"
     depends_on:
