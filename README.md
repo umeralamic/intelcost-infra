@@ -10,6 +10,13 @@ them.
 Two files. `docker-compose.yml` is the whole system. `docker-compose.dev.yml` is the
 same thing without the api, for when you run the api from your IDE.
 
+`workspace/` is not part of the bench. It is the **versioned mirror** of the four
+workspace files and `docs/`, which sit at the workspace root outside every repo and so
+have no git history of their own. The root copies are the ones anybody edits; this is
+the copy that survives a lost laptop. CLAUDE.md carries the rule that keeps the two
+equal: a session that changes a workspace file refreshes this mirror and commits it
+before it ends.
+
 ## Boot
 
 ```bash
