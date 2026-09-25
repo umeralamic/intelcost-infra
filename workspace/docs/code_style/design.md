@@ -98,6 +98,15 @@ drives them. A green build does not.
 
 A screen that renders only the happy path is not finished.
 
+## Dialogs fit the window
+
+A dialog is never taller than the window. Its title stays at the top and its buttons at
+the bottom, and only the body between them scrolls. So a dialog's buttons go in the
+footer (`footer`, or `DialogFooter` from the body), never at the end of the body, where a
+short screen scrolls them away. Check a new dialog at 1280x650 and at a phone
+(`intelcost-infra/browser/f4-dialogs.mjs` does it for the ones that exist). New project
+once cut off its own name field on a laptop, because it grew with its content.
+
 ## The canvas is measured, not decorated
 
 The takeoff canvas is a working instrument. Contrast against the white page beats

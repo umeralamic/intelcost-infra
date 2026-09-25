@@ -40,7 +40,13 @@ collaborator-plan line is unreachable end to end until F16 supplies a plan value
 §2 line, "Members — list with role, shift and last activity", stays **partial** on
 purpose: last activity ships, the shift column waits for F15.
 
-No section beyond 1 and 3 has been verified, so an unticked **ported** line elsewhere
+**Section 4 is complete** (F4, 2026-09-25): 19 lines, **18 ported and driven**, **1
+retired** (New from folder, **D-31**). **Section 5 is 7 of 10**: the other three name
+their owner on the line, the map and the geocoder **P-17** (**D-28**) and sheets from
+project files **F5**. **Section 2 is 13 of 25** after F4 added the two Statuses and the
+two Trash lines.
+
+No section beyond 1 to 5 has been verified, so an unticked **ported** line elsewhere
 still means only "the code is there".
 
 **Scope.** Derived from `src/App.tsx` routes, every component under
@@ -130,16 +136,16 @@ The takeoff page carries six workspace tabs: **Takeoff**, **Earthwork**,
 - [x] **Roles & Permissions.** Create a workspace-defined custom role from a base role, label it, edit its capabilities, and delete it when no member holds it. `src/components/share/RolesMatrixTab.tsx`, table `workspace_custom_roles` · **ported** (F3-S7; a custom role IS its map, a deliberate divergence from legacy's fallback — see the spec)
 - [x] **Roles & Permissions.** Edit a built-in role's capabilities for this workspace only. The cell is flagged "Edited for this workspace". `src/hooks/useWorkspaceRoleOverrides.ts`, table `workspace_role_overrides` · **ported** (F3-S6; the stored map is sparse so a capability added later still falls back to the role default)
 - [x] **Ownership.** Transfer ownership to a chosen member, queue a transfer to an invitee who has not joined yet, and cancel a queued transfer. `src/components/workspace-settings/OwnershipTab.tsx`, rpc `transfer_workspace_ownership`, table `workspace_pending_ownership_transfers` · **ported** (F3-S9)
-- [ ] **Statuses.** Create, rename, reorder, hide and delete project statuses. Deleting one asks which status its projects move to. `src/components/workspace-settings/StatusesTab.tsx`, table `workspace_project_statuses` · **missing** → **F4**
-- [ ] **Statuses.** Configure the dashboard tab strip: add a tab, rename, move up or down, remove. `src/components/workspace-settings/StatusesTab.tsx`, tables `workspace_status_tabs`, `user_status_tab_prefs` · **missing** → **F4**
+- [x] **Statuses.** Create, rename, reorder, hide and delete project statuses. Deleting one asks which status its projects move to. `src/components/workspace-settings/StatusesTab.tsx`, table `workspace_project_statuses` · **ported** (F4-S3, `f4-s3`)
+- [x] **Statuses.** Configure the dashboard tab strip: add a tab, rename, move up or down, remove. `src/components/workspace-settings/StatusesTab.tsx`, tables `workspace_status_tabs`, `user_status_tab_prefs` · **ported** (F4-S4, `f4-s4`)
 - [ ] **Shifts.** Create a named shift with working days and hours, edit it, delete it, and set a per-role default shift. `src/components/workspace-settings/ShiftsTab.tsx`, `ShiftDialog.tsx`, tables `workspace_shifts`, `workspace_role_default_shifts` · **missing** → **F15**
 - [ ] **Time Tracking.** Choose automatic app-use tracking or a manual clock in and out, set the idle threshold, and choose whether time reports are visible to admins only or to everyone. `src/components/workspace-settings/TimeTrackingTab.tsx`, table `workspace_report_settings` · **missing** → **F15**
 - [ ] **Time Tracking.** Turn on comparison against the member's shift schedule. `src/components/workspace-settings/TimeTrackingTab.tsx` · **missing** → **F15**
 - [ ] **AI Credits.** Show the workspace wallet balance, buy a top-up pack through Stripe, and land back with the pack credited. `src/components/workspace-settings/AiCreditsTab.tsx`, `supabase/functions/create-topup-checkout/`, tables `workspace_wallet`, `ai_credit_packs`, `credit_ledger` · **missing** → **F14** (the wallet) and **F16** (the checkout)
 - [ ] **AI Credits.** Set a workspace-wide credit limit and a per-member limit, and return a member to the workspace default. `src/components/workspace-settings/AiCreditsTab.tsx`, table `workspace_user_credit_limits` · **missing** → **F14**
 - [ ] **Subcontractors.** Maintain the workspace subcontractor list and assign classification scopes to each. `src/components/workspace-settings/SubcontractorsTab.tsx`, tables `workspace_subcontractors`, `workspace_subcontractor_scopes` · **missing** → **F6**
-- [ ] **Trash.** List soft-deleted projects, restore one, permanently delete one, and show "Permanently deleted at the next daily purge". `src/components/workspace-settings/TrashTab.tsx`, rpcs `restore_project` and `purge_project_now` · **partial** (the api has soft delete and restore; no trash screen, no purge) → **F4**. **Built in F4 Block F (S26), 2026-09-25**, awaiting the founder's checks: Settings > Trash with restore and delete permanently, gated on `canRestoreDeletedItems`; the storage goes right after the commit rather than at night. Ticked when F4 closes.
-- [ ] **Trash.** A nightly job hard-deletes projects soft-deleted 30+ days ago, retrying storage deletions that failed on an earlier run. `supabase/functions/purge-trashed-projects/`, table `trash_purge_log` · **missing** → **F4**. **Built in F4 Block F (S27), 2026-09-25**, awaiting the founder's checks: two passes (retry, then purge), a dry run, a log row per project, and a bench `beat` service. Production scheduling is Abdullah's (D-11). Ticked when F4 closes.
+- [x] **Trash.** List soft-deleted projects, restore one, permanently delete one, and show "Permanently deleted in N days", or "at the next daily purge" once a project is past its 30 days. `src/components/workspace-settings/TrashTab.tsx`, rpcs `restore_project` and `purge_project_now` · **ported** (F4-S26, `f4-s26` and `f4-s27.sh`; gated on `canRestoreDeletedItems` per **D-26**. A permanent delete removes the rows at once, as legacy's did, and its storage right after the commit rather than at night. Corrected at close-out: the purge sentence belongs to a project past its window)
+- [x] **Trash.** A nightly job hard-deletes projects soft-deleted 30+ days ago, retrying storage deletions that failed on an earlier run. `supabase/functions/purge-trashed-projects/`, table `trash_purge_log` · **ported** (F4-S27, `f4-s27.sh`: two passes, retry then purge, a dry run, a log row per project, unfinished uploads aborted, and a storage outage retried on the next run. Driven on the bench's `beat`; production scheduling is Abdullah's, **D-11**)
 - [x] **Activity.** An audit feed of who did what in the workspace. `src/components/workspace-settings/ActivityTab.tsx`, rpc `log_audit_event`, table `audit_log` · **ported** (F3-S12; the row rides the act's own transaction, the one place **D-20** deliberately does not apply)
 
 ## 3. Permissions
@@ -162,40 +168,41 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 
 `/app`. `src/pages/Dashboard.tsx` (779 lines).
 
-- [ ] List the workspace's projects as cards. `src/pages/Dashboard.tsx` · **ported**
-- [ ] Create a blank project, choosing which seed folders it gets (Plans, Specs, Reports, Site Photos, Unsorted) and optionally uploading files in the same step. `src/components/projects/BlankProjectDialog.tsx`, rpc `create_blank_project` · **partial** (create exists; no folder seeding, no upload in the dialog)
+- [x] List the workspace's projects ~~as cards~~ as rows: name, project type, updated date, primary assignee +N, follow-up, status changer, takeoff and trash, fifty at a time. `src/pages/Dashboard.tsx` · **ported** (F4-S5, `f4-s5`; corrected at close-out: legacy lists rows, not cards)
+- [x] Create a blank project, ~~choosing which seed folders it gets~~ always seeded with Plans, Specs, Reports and Site Photos, optionally uploading files in the same step; the drop zone ("Unsorted" in legacy) uploads to the project root. `src/components/projects/BlankProjectDialog.tsx`, rpc `create_blank_project` · **ported** (F4-S7, `f4-s7`; corrected at close-out: legacy never let you choose, and "Unsorted" is the root, not a folder. Every project gets the four, **D-31**)
 - [x] ~~Create a project from a folder on the computer, preserving the folder tree on upload.~~ `src/components/projects/NewProjectFromFolderDialog.tsx` · **retired** (**D-31**: New project is the one way to start a project. A folder goes into a project, tree preserved, through the file browser's Upload folder, F4-S17. `f4-s8` proves the button is gone)
-- [ ] A failed upload inside project creation offers Retry without losing the project. `src/components/projects/NewProjectFromFolderDialog.tsx` · **missing** (after **D-31** this is New project's Retry, F4-S7 AC5)
-- [ ] Filter projects by status tab, construction type, project type, estimator, labor pricing basis, wage determination and trade scope. `src/components/projects/ProjectFiltersBar.tsx` · **missing**
-- [ ] Change a project's status inline from its card, with a link to manage the status list. `src/components/projects/ProjectStatusChanger.tsx`, `ProjectStatusBadge.tsx` · **missing**
-- [ ] Assign a project to a member, seeing each candidate's role beside their name, and remove an assignee. `src/components/projects/AssignedToPicker.tsx`, table `project_assignees` · **missing**
-- [ ] Open a project's takeoff directly from its card ("Perform takeoff"), beside the project name. `src/pages/Dashboard.tsx` · **partial** (reachable from Project Home, not from the card)
-- [ ] Move a project to Trash from the dashboard, with "Project moved to Trash". `src/pages/Dashboard.tsx`, rpc `soft_delete_project` · **partial** (the api route exists, no screen calls it)
-- [ ] Edit project details (name, client, address, attributes, plans-dated) without leaving the dashboard. `src/components/projects/EditProjectDetailsDialog.tsx` · **missing**
-- [ ] A follow-up badge marks projects needing attention. `src/components/projects/FollowUpBadge.tsx` · **missing**
-- [ ] `/files` and `/takeoff` redirect to `/app`, so old bookmarks land somewhere useful. `src/App.tsx` · **missing**
-- [ ] Browse, create, rename, move and delete project folders and files, upload a whole folder, and download a file. `src/components/files/UnifiedFolderBrowser.tsx` (1,396 lines), buckets `project-files`, `project-takeoff` · **partial** (the api has folder read, rename and delete plus file upload and delete; the browser UI is not built)
-- [ ] A folder cannot move into its own descendant, and a file cannot move between projects. `src/components/files/UnifiedFolderBrowser.tsx` · **missing**
-- [ ] Each folder shows a count of what it holds. `src/components/files/FolderCountBadge.tsx` · **missing**
-- [ ] Files drop onto a zone at the top of the browser, with a steady upload progress bar rather than one that jumps. `.lovable/plan/add-files-drop-zone-on-top-steadier-upload-bar-2026-09-23.md` · **missing**
-- [ ] ~~The dashboard panels are arranged in a fixed order~~, with the tab strip centred and no Customize tabs button. `.lovable/plan/reorganize-dashboard-panels-2026-08-29.md`, `.lovable/plan/remove-customize-tabs-button-center-the-dashboard-tab-strip-2026-08-29.md` · **missing** (the panel order is **retired** by **D-31**: the dashboard shows projects only, with members and invitations in Settings > Members and branding in Settings > General. The centred strip with no Customize tabs button still ports, F4-S6)
-- [ ] The workspace ruler button behaves like Perform Takeoff. `.lovable/plan/make-the-workspace-ruler-button-behave-like-perform-takeoff-2026-08-29.md` · **missing**
-- [ ] The assignee dropdown shows each candidate's role next to their name. `.lovable/plan/show-role-next-to-assignee-name-in-the-assigned-to-dropdown-2026-08-29.md` · **missing**
+- [x] A failed upload inside project creation offers Retry without losing the project. `src/components/projects/NewProjectFromFolderDialog.tsx` · **ported** (F4-S7 AC5, `f4-s7`: after **D-31** this is New project's Retry, which resumes a half-sent file from the parts S3 already holds)
+- [x] Filter projects by status tab, construction type, project type, estimator, labor pricing basis, wage determination and trade scope, and by GC, created from/to and bid due from/to. `src/components/projects/ProjectFiltersBar.tsx` · **ported** (F4-S11, `f4-s11`; corrected at close-out to name the GC and date filters legacy has; "estimator" matches the creator)
+- [x] Change a project's status inline from its card, with a link to manage the status list. `src/components/projects/ProjectStatusChanger.tsx`, `ProjectStatusBadge.tsx` · **ported** (F4-S9, `f4-s9`, with the Lost reason dialog)
+- [x] Assign a project to a member, seeing each candidate's role beside their name, and remove an assignee. `src/components/projects/AssignedToPicker.tsx`, table `project_assignees` · **ported** (F4-S10, `f4-s10`; each candidate's email shows under the name, and a chip adds it when two chosen members share a name, which legacy could not tell apart)
+- [x] Open a project's takeoff directly from its card ("Perform takeoff"), beside the project name. `src/pages/Dashboard.tsx` · **ported** (F4-S13, `f4-s13`)
+- [x] Move a project to Trash from the dashboard, with "Project moved to Trash". `src/pages/Dashboard.tsx`, rpc `soft_delete_project` · **ported** (F4-S15, `f4-s15`; owner and admin only, per **D-26**)
+- [x] Edit project details (name, client, address, attributes, plans-dated) ~~without leaving the dashboard~~ from Project Home. `src/components/projects/EditProjectDetailsDialog.tsx` · **ported** (F4-S14, `f4-s14`; corrected at close-out: legacy's Edit details is on Project Home only)
+- [x] A follow-up badge marks projects needing attention. `src/components/projects/FollowUpBadge.tsx` · **ported** (F4-S12, `f4-s12`; computed by the api so every client agrees)
+- [x] `/files` and `/takeoff` redirect to `/app`, so old bookmarks land somewhere useful. `src/App.tsx` · **ported** (F4-S16, `f4-s16`)
+- [x] Browse, create, rename, move and delete project folders and files, upload a whole folder, and download a file. `src/components/files/UnifiedFolderBrowser.tsx` (1,396 lines), buckets `project-files`, `project-takeoff` · **ported** (F4-S17, `f4-s17`; one file model, multipart uploads, **D-27**. Like legacy's, the browser has no drag and drop)
+- [x] A folder cannot move into its own descendant, and a file cannot move between projects. `src/components/files/UnifiedFolderBrowser.tsx` · **ported** (F4-S18, `f4-s18`; refused in the dialog and in words by the api)
+- [x] Each folder shows a count of what it holds. `src/components/files/FolderCountBadge.tsx` · **ported** (F4-S19, `f4-s19`)
+- [x] Files drop onto a zone at the top of ~~the browser~~ the New project dialog, with a steady upload progress bar rather than one that jumps. `.lovable/plan/add-files-drop-zone-on-top-steadier-upload-bar-2026-09-23.md` · **ported** (F4-S7, `f4-s7`; corrected at close-out: legacy's zone is in the dialog)
+- [x] ~~The dashboard panels are arranged in a fixed order~~, with the tab strip centred and no Customize tabs button. `.lovable/plan/reorganize-dashboard-panels-2026-08-29.md`, `.lovable/plan/remove-customize-tabs-button-center-the-dashboard-tab-strip-2026-08-29.md` · **ported** (F4-S6, `f4-s6`: the centred strip with no Customize tabs button. The panel order is **retired** by **D-31**: the dashboard shows projects only, with members and invitations in Settings > Members and branding in Settings > General)
+- [x] The workspace ruler button behaves like Perform Takeoff. `.lovable/plan/make-the-workspace-ruler-button-behave-like-perform-takeoff-2026-08-29.md` · **ported** (F4-S13, `f4-s13`)
+- [x] The assignee dropdown shows each candidate's role next to their name. `.lovable/plan/show-role-next-to-assignee-name-in-the-assigned-to-dropdown-2026-08-29.md` · **ported** (F4-S10, `f4-s10`)
 
 ## 5. Project Home
 
 `/projects/:id`. `src/pages/ProjectHome.tsx` (349 lines), mounted by
 `src/pages/ProjectDetail.tsx`.
 
-- [ ] Show the project header with name and status, and the Perform Takeoff and Estimating entry points beside the name. `src/pages/ProjectHome.tsx` · **partial** (header and takeoff link only)
-- [ ] Edit the project location inline, with address fields and a map popover. `src/components/projects/ProjectAddressFields.tsx`, `ShowMapPopover.tsx` · **missing** (address fields inline → **F4**; the map popover → **P-17**, deferred by **D-28**)
+- [x] Show the project header with name and status, and the Perform Takeoff and Estimating entry points beside the name. `src/pages/ProjectHome.tsx` · **ported** (F4-S20, `f4-s20`; Estimating is shown disabled with its reason on the page until F9 builds the tab)
+- [x] Edit the project location inline, with address fields. `src/components/projects/ProjectAddressFields.tsx` · **ported** (F4-S21, `f4-s21`; split at close-out, as the spec planned: the inline editor never had a map)
+- [ ] Show a map of the project address. `ShowMapPopover.tsx` · **missing** → **P-17**, deferred by **D-28** (split from the line above at F4 close-out; legacy's "Show Map" is in the create and edit dialogs and never showed a map, because its geocoder returned no coordinates)
 - [ ] Resolve a US street address to city, state, zip and county through the geocoder. `supabase/functions/geocode-address/` · **missing** → **P-17**, deferred by **D-28** (legacy's geocoder never returned coordinates)
-- [ ] Set "Plans Dated" from the same date picker the dashboard filters use. `src/components/projects/PlansDatedField.tsx` · **missing**
-- [ ] Write project notes and a scope of work in a rich-text panel (bold, italic, lists, quote, link), saved inline. `src/components/projects/ProjectTextPanel.tsx`, `src/lib/richtext/` · **missing**
-- [ ] Set project attributes: construction type, project type, labor pricing basis, wage determination. `src/components/projects/ProjectAttributeFields.tsx` · **missing**
-- [ ] Assign the project to a member from the header. `src/components/projects/AssignedToPicker.tsx` · **missing**
-- [ ] Upload drawings and watch them become sheets. `src/pages/ProjectHome.tsx` · **ported** (the Sheets block with Upload drawings stays only as the bench's temporary path into takeoff. **F5 replaces it** with the legacy "Load project files into takeoff" flow; see §7's Add sheets line)
-- [ ] A project id that does not resolve shows "Project not found" rather than an empty shell. `src/pages/ProjectHome.tsx` · **ported**
+- [x] Set "Plans Dated" from the same date picker the dashboard filters use. `src/components/projects/PlansDatedField.tsx` · **ported** (F4-S23, `f4-s23`)
+- [x] Write project notes and a scope of work in a rich-text panel (bold, italic, lists, quote, link), saved inline. `src/components/projects/ProjectTextPanel.tsx`, `src/lib/richtext/` · **ported** (F4-S24, `f4-s24`; cleaned in the browser and again by the api, capped at 50,000 characters)
+- [x] Set project attributes: construction type, project type, labor pricing basis, wage determination. `src/components/projects/ProjectAttributeFields.tsx` · **ported** (F4-S14, `f4-s14`, in Edit details)
+- [x] Assign the project to a member from the header. `src/components/projects/AssignedToPicker.tsx` · **ported** (F4-S10, `f4-s10`)
+- [ ] ~~Upload drawings and watch them become sheets.~~ Files uploaded to the project become takeoff sheets from takeoff. `src/pages/ProjectHome.tsx` · **missing** → **F5** (re-worded at F4 close-out: legacy Project Home does not make sheets. The Sheets block with Upload drawings stays only as the bench's temporary path into takeoff, driven by `f4-s25`. **F5 replaces it** with the legacy "Load project files into takeoff" flow; see §7's Add sheets line)
+- [x] A project id that does not resolve shows "Project not found" rather than an empty shell. `src/pages/ProjectHome.tsx` · **ported** (F4-S20, `f4-s20`; a page with a way back, where legacy toasted and redirected)
 
 ## 6. Sharing
 
@@ -993,10 +1000,10 @@ A retired line counts as driven, because there is nothing left to drive.
 | # | Surface | Behaviours | ported | partial | missing | driven | lines, prev build |
 |---|---|---:|---:|---:|---:|---:|---:|
 | 1 | Auth | 21 | 19 | 0 | 0 | **21** (19 + 2 retired) | 21 |
-| 2 | Workspace settings | 25 | 9 | 2 | 14 | **9** | 25 |
+| 2 | Workspace settings | 25 | 13 | 1 | 11 | **13** | 25 |
 | 3 | Permissions | 9 | 9 | 0 | 0 | **9** | 9 |
-| 4 | Projects dashboard | 19 | 1 | 4 | 14 | 0 | 15 |
-| 5 | Project Home | 9 | 2 | 1 | 6 | 0 | 9 |
+| 4 | Projects dashboard | 19 | 18 | 0 | 0 | **19** (18 + 1 retired) | 15 |
+| 5 | Project Home | 10 | 7 | 0 | 3 | **7** | 9 |
 | 6 | Sharing | 12 | 0 | 1 | 11 | 0 | 12 |
 | 7 | Takeoff sheets panel | 47 | 1 | 5 | 41 | 0 | 27 |
 | 8 | Takeoff items | 56 | 6 | 5 | 45 | 0 | 36 |
@@ -1016,13 +1023,14 @@ A retired line counts as driven, because there is nothing left to drive.
 | 22 | Platform admin | 20 | 0 | 0 | 20 | 0 | 8 |
 | 23 | Keyboard and mouse | 36 | 1 | 2 | 33 | 0 | new |
 | 24 | App-wide | 45 | 0 | 3 | 42 | 0 | new |
-| | **Total** | **595** | **55** | **30** | **508** | **39** | **347** |
+| | **Total** | **596** | **81** | **24** | **488** | **69** | **347** |
 
-**55 of 595 behaviours are ported, 9%. 39 are driven, 7%** — and driven is the number
-that counts. The gap between the two is the honest part: 16 lines say the code is there
-and nothing has yet proved it on a screen.
+**81 of 596 behaviours are ported, 14%. 69 are driven, 12%** — and driven is the number
+that counts. The gap between the two is the honest part: 15 lines say the code is there
+and nothing has yet proved it on a screen. (596, not 595: F4's close-out split §5's
+location line in two, the inline address it ported and the map P-17 owns.)
 
-Two lines inside the 39 carry a named remainder rather than a clean close, and the line
+Two lines inside the 69 carry a named remainder rather than a clean close, and the line
 itself says which: §3's platform-admin line owes **F5** its on-screen half, and §3's
 collaborator-plan line is built and driven at module level but unreachable end to end
 until **F16** supplies a plan value. Both are ticked because the behaviour is ported and

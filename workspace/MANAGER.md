@@ -19,7 +19,7 @@ _Updated: 2026-09-25_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F4 | The dashboard is a grid of name cards and Project Home uploads PDFs straight to sheets; legacy's statuses, two-step create with seeded folders, assignees, filters, folder browser, rich-text notes and 30-day trash are all missing, and every project write gates on `canEditTakeoff`. → Port all 32 §4, §5 and inherited §2 lines in 27 subtasks, with a `ProjectFile` model in folders, uploads per D-20, and gates by named capability. Answers in, D-26/27/28 logged 2026-09-25. **Block A (S1 record and gates, S2 UI primitives) checked and pushed. Block B (S3 statuses, S4 tab strip) checked and pushed. Block C (S5–S16, the dashboard, New project with multipart upload, New from folder) checked and pushed. Block D (S17–S19, the file browser, move rules, folder counts) checked and pushed. Block E (S20–S25, Project Home) checked and pushed. The dashboard shows projects only and New project is the one way in (D-31). Block F (S26–S27, Trash tab, restore, delete permanently, nightly purge with a bench `beat`) built and driven 2026-09-25, awaiting founder checks; F4 closes after them.** The bench worker restarts on a code change (D-30). Pricing creates projects (D-29). Map and geocoder deferred to P-17 (D-28). | Be Fe | Umer | [projects_tasks.md](docs/tasks/projects_tasks.md) |
+| _Nothing in progress. F4 shipped 2026-09-25 ([archived spec](docs/archive/projects_tasks.md)); F5 is next, once specced._ | | | | |
 
 ---
 
