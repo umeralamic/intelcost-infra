@@ -1,0 +1,2 @@
+# regress.sh keeps each fixture's full output here.
+.regress/

@@ -51,9 +51,58 @@ export async function openBrowser() {
   return browser;
 }
 
+/**
+ * Whether the api and the worker run the code on disk (D-30), waited on for a restart
+ * already under way. Every run asks before its first step, so no fixture reports on code
+ * that is not the code in front of us. `bench-code.mjs` is the same question on its own.
+ */
+export async function codeIsCurrent(graceMs = 45000) {
+  const deadline = Date.now() + graceMs;
+  for (;;) {
+    let seen = null;
+    try {
+      const response = await fetch(await fromNode(`${API}/health/code`));
+      seen = response.ok ? await response.json() : { status: response.status };
+    } catch (error) {
+      seen = { unreachable: describeError(error) };
+    }
+    if (seen.current) return { ok: true, seen };
+    if (Date.now() > deadline) return { ok: false, seen };
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+  }
+}
+
+/** An error as a reader needs it: every line of the message, then its causes. A single
+ *  first line hid what failed f4-s3 once, and a cause (a refused connection, a reset)
+ *  is often the only part that says why. */
+export function describeError(error) {
+  const parts = [];
+  for (let e = error, depth = 0; e && depth < 4; e = e.cause, depth += 1) {
+    const text = e instanceof Error ? `${e.name === "Error" ? "" : `${e.name}: `}${e.message}` : String(e);
+    parts.push(depth === 0 ? text : `caused by ${text}${e.code ? ` (${e.code})` : ""}`);
+  }
+  // Playwright appends a call log; enough of it to place the failure, not a page of it.
+  return parts.join(" | ").replace(/\s*\n\s*/g, " / ").slice(0, 900);
+}
+
 /** A run: a named list of steps, each reported pass or fail with its shot. */
 export async function run(name, steps) {
   await mkdir(SHOTS, { recursive: true });
+  const code = await codeIsCurrent();
+  if (!code.ok) {
+    const s = code.seen;
+    const short = (f) => (f ? f.slice(0, 12) : "no answer");
+    console.log(`\n=== ${name} ===`);
+    console.log("FAIL  0. The api and the worker run the code on disk (D-30)");
+    console.log(
+      s.unreachable || s.status
+        ? `      /health/code: ${s.unreachable ?? s.status}`
+        : `      disk ${short(s.on_disk)} · api ${short(s.api)} · worker ${short(s.worker)}`,
+    );
+    console.log(`\n0/${steps.length} passed (not run: the bench is running old code)`);
+    process.exitCode = 1;
+    return;
+  }
   const browser = await openBrowser();
   const results = [];
 
@@ -68,11 +117,12 @@ export async function run(name, steps) {
     const shot = path.join(SHOTS, `${name}-step${n}.png`);
     let ok = false;
     let detail = "";
+    const started = Date.now();
     try {
       detail = (await step.run({ page, context, shot })) ?? "";
       ok = true;
     } catch (error) {
-      detail = error instanceof Error ? error.message.split("\n")[0] : String(error);
+      detail = `${describeError(error)} [after ${((Date.now() - started) / 1000).toFixed(1)}s]`;
     }
     try {
       await page.screenshot({ path: shot, fullPage: false });

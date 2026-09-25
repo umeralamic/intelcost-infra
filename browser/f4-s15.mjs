@@ -28,8 +28,9 @@ await run("f4-s15", [
       expect(!names.includes("Doomed job") && names.includes("Survivor job"), `rows: ${names}`);
       expect(all(await tabStrip(page)) === before - 1, "All count did not drop");
       await page.goto(`${APP}/project/${doomed.uuid}`);
-      await page.getByText("No such project.").waitFor({ timeout: 15000 });
-      return `All ${before} → ${before - 1} · its page says "No such project."`;
+      await page.getByRole("heading", { name: "Project not found" }).waitFor({ timeout: 15000 });
+      // Block E's words (F4-S20), where Block C's page showed the api's "No such project."
+      return `All ${before} → ${before - 1} · its page says "Project not found"`;
     },
   },
   {

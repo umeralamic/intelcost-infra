@@ -8,6 +8,10 @@
 //
 // A restart takes a few seconds, so an edit made just before the run is given 45 to
 // land. Past that the worker is behind, and the run fails with all three fingerprints.
+//
+// Every fixture now asks the same question before its first step (`run` in
+// lib/bench.mjs), and regress.sh runs this first and stops if it fails. This file is
+// the question on its own, for a bench you are about to drive by hand.
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
 

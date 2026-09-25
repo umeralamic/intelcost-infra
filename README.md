@@ -167,15 +167,24 @@ as `--reload` does for the api. `docker compose logs worker` shows `1 change det
 and then `ready`. A stack started before this needs one `docker compose up -d worker` to
 pick up the new command.
 
-To check it rather than trust it, run this first in any regression:
+**It is checked automatically.** `GET /health/code` (served only when `ENVIRONMENT` is
+`local`) compares the fingerprint of the code on disk with what the api and the worker
+started with. Every fixture asks it before its first step, through `run` in
+`browser/lib/bench.mjs`, and runs nothing if either is behind, waiting up to 45 s for
+a restart already under way. `browser/bench-code.mjs` asks the same question on its own.
+
+**Run a regression with `regress.sh`.** It runs `bench-code` first and stops if it
+fails, then every F4 fixture and the F3 ones F4 leans on, or just the ones you name:
 
 ```bash
-docker compose --profile browser run --rm browser node scripts/bench-code.mjs
+./regress.sh                 # everything but f4-s12, which has three phases
+./regress.sh f4-s17 f4-s18   # just these
 ```
 
-It compares the fingerprint of the code on disk with what the api and the worker started
-with (`GET /health/code`, served only when `ENVIRONMENT` is `local`), and fails with all
-three when one is behind.
+Each fixture's **full** output is kept in `.regress/<name>.log` (git-ignored), and a
+failed step prints the whole error with its cause and how long the step ran. This is
+deliberate. Once, an f4-s3 failure was reported only through a filtered summary, its
+message was lost, and it could not be traced afterwards.
 
 Running it on the host instead still works and is faster to iterate on:
 

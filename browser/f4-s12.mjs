@@ -34,7 +34,13 @@ if (PHASE === "setup") {
   await makeProject(token, base, { name: "Never submitted" });
   console.log(`setup: ${workspace.uuid}`);
 } else if (PHASE === "check") {
-  const workspace = (await (await apiCall(token, "GET", "/api/workspace")).body).filter((w) => w.name === NAME).at(-1);
+  // The newest by creation, as the drive picks it (by id). The list is ordered by name
+  // alone, so among several runs' workspaces of this one name its order is arbitrary, and
+  // taking the last read an older run's projects, already moved to Won.
+  const workspace = (await apiCall(token, "GET", "/api/workspace")).body
+    .filter((w) => w.name === NAME)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .at(-1);
   expect(workspace, "run setup first");
   const base = `/api/workspace/${workspace.uuid}/project`;
   const byName = async (name) =>
