@@ -48,7 +48,7 @@ _Updated: 2026-09-24_
 | F14 | AI tools and AI credits | Be Fe | Umer | _not yet specced_ |
 | F15 | Sharing, guest view, Reports, time tracking, Community | Be Fe | Umer | _not yet specced_ |
 | F16 | Billing, trials, admin panel | Be Fe | Umer | _not yet specced_ |
-| F17 | Legacy data migration and cutover. Legacy passwords are Supabase bcrypt. Verify bcrypt on login and rehash to Argon2, or every migrated user must reset. Password length rule applies on set/change only, never on login. | Infra | Abdullah | _not yet specced_ |
+| F17 | Legacy data migration and cutover. Legacy passwords are Supabase bcrypt. Verify bcrypt on login and rehash to Argon2, or every migrated user must reset. Password length rule applies on set/change only, never on login. Legacy custom roles resolve absent capabilities through their base role. Migration must write each legacy custom role's full effective map, or migrated roles silently lose access. | Infra | Abdullah | _not yet specced_ |
 
 ---
 
