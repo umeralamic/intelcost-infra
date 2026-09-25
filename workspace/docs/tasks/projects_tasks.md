@@ -12,7 +12,8 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-26, D-27, D-28 and D-29 logged. Block A (S1, S2) built, checked by the
 founder and pushed. Block B (S3, S4) checked and pushed. Block C (S5 to S16) checked and
-pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) in progress.**_
+pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) built and driven
+2026-09-25, awaiting the founder's checks before Block F.**_
 
 ## Progress
 
@@ -22,7 +23,7 @@ pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) in progres
 | **B: S3, S4** | Built and driven, 2026-09-25 | `browser/f4-s3.mjs` 11/11 and `f4-s4.mjs` 9/9. Regression: `f4-s1` 9/9, `f4-s2` 6/6, `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. Migration `80c841e4b096` driven up, down and up. The dashboard half of S3 and S4 is carried into S5 and S9. |
 | **C: S5 to S16** | Built and driven, 2026-09-25 | `browser/f4-s5` 7/7, `s6` 3/3, `s7` 7/7, `s8` 4/4, `s9` 5/5, `s10` 4/4, `s11` 5/5, `s12` 3/3 (three phases, with `drives/f4-s12-age.py`), `s13` 3/3, `s14` 4/4, `s15` 3/3 (with Block A check 5), `s16` 1/1. Migration `99ca0a2606b6` driven up, down and up. The S3/S4 dashboard half is driven in `s5` and `s9`. |
 | **D: S17 to S19** | Built and driven, 2026-09-25 | `browser/f4-s17` 12/12 (with S7 AC9's reload and resume, and a second-project step), `f4-s18` 4/4, `f4-s19` 3/3, `bench-code` 1/1 (D-30). Migration `b7d41e2c9a53` driven up, down and up, twice. Regression: `f4-s1` to `f4-s16` all pass (`s12` 3/3 across its phases), `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. `f4-s1` AC4 renamed its folder to a free name, because names are now unique among siblings. |
-| E: S20 to S25 | In progress | |
+| **E: S20 to S25** | Built and driven, 2026-09-25 | `browser/f4-s20` 3/3, `f4-s21` 5/5, `f4-s23` 4/4, `f4-s24` 6/6, `f4-s25` 2/2 (S22 is P-17's and has no fixture). Full regression through `regress.sh`, `bench-code` first: `f4-s1` to `f4-s25` all pass (26 fixtures, 0 failed), `f4-s12` 3/3 across its phases, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. New dependencies: TipTap and DOMPurify (app), `nh3` (api). `f4-s3` run 10 more times with full output kept: 10/10. |
 | F | Not started | |
 
 **Found while building Block A:**
@@ -69,6 +70,72 @@ pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) in progres
 - **S7 AC7 and AC9 changed** (see S7): the ceiling is proved by the api's part plan plus a
   real multi-part upload, and resume after a reload moved to S17 with the "Unfinished
   uploads" list.
+
+**Built in Block E beyond the letter of the subtasks, and why:**
+- **"Project not found" is a page, not a toast and a redirect.** Legacy toasted and sent
+  you back to the dashboard. The spec asks for the words and a way back, so an unknown
+  or trashed project reads "Project not found. It may have been moved to Trash, or the
+  link is wrong." with Back to Projects, and the tab says so. A 404 is not retried.
+- **Estimating's reason is on the page.** A disabled button's tooltip never shows,
+  because disabled buttons take no pointer events. So "Estimating arrives with the
+  estimating tab." sits under the button.
+- **One address block, `AddressFields`.** It is used by New project, New from folder,
+  Edit details and the Location card. Legacy's Location popover was a second, simpler
+  copy with a free-text State; ours offers the US state list, as the dialogs do.
+- **The rich-text editor is lazy-loaded.** TipTap is a 394 kB chunk fetched on the
+  first Edit; read mode needs only DOMPurify. The main bundle is 644 kB (579 kB after
+  Block C): Block D and E's own code, plus DOMPurify. That is P-18's problem, and it is
+  on the record there.
+- **A link in the editor uses the app's prompt dialog**, not `window.prompt` as legacy's
+  does.
+- **Over 50,000 characters, the api refuses in words.** Legacy's panel quietly cut the
+  text at 50,000 in the browser. Ours counts in red past 45,000, and a Save over the
+  limit is refused with "Scope of Work is N characters, over the 50,000 limit. Shorten
+  it and save again." Nothing is truncated.
+- **The Sheets block's upload button moved** from the page header to the Sheets heading,
+  since the header now holds Estimating and Perform Takeoff, as legacy's does. The block
+  itself is unchanged (S25).
+
+**Found while building Block E:**
+- **The f4-s3 failure from the Block D regression (the duplicate-status step).** I ran it
+  10 times with full output kept: 10/10 passed, on top of 7 earlier clean runs. Its
+  cause is **not established**, and this note is not calling it flaky. What is known:
+  - The failure's own error text was lost to the summary filter that regression used.
+    That is why `regress.sh` now keeps every fixture's full output and why `run` prints
+    the whole error with its cause.
+  - The audit log of that run's workspace shows the whole run at half speed. The step
+    took about 10 s longer than half speed accounts for. No duplicate "won" status was
+    ever saved.
+  - It was not a Playwright timeout, because the filter kept those lines and none was
+    printed.
+  - Ruled out by probe:
+    - a slow browser (CPU throttled 6×, 6 tries)
+    - slow api answers (up to 2.25 s on every call, 6 tries)
+    - the header's workspace switch
+    - `npm run build` reloading open pages (it does not)
+    - a frozen api (a call waits for it and does not fail)
+
+  If it happens again, `.regress/f4-s3.log` will hold the answer.
+- Saving an api file that imports a package the running image lacks takes the api down
+  until the image is rebuilt (`nh3` here). Rebuild first, then import.
+- **An older assignee save undid a newer tick** (app, fixed). Ticking Alice then Bob
+  quickly: Alice's save finishing cleared the on-screen list back to the api's answer
+  while Bob's save was still in flight, so Bob showed unticked until his own came back.
+  Only the latest save now clears it. f4-s10 caught it once the picker moved into the
+  cards.
+- **A right-click menu closed as it opened** (app, fixed). A scroll event arrives a frame
+  after the scroll. So a scroll already under way when the menu opened (momentum, a
+  smooth scroll, Playwright bringing a row at the viewport's edge into view) closed the
+  menu with the page not having moved since. A probe showed it: contextmenu at scrollY 5,
+  menu open, scroll event reporting scrollY 5, menu closed. The menu now closes on a page
+  scroll only if the page has actually moved since it opened. f4-s17 AC7 met it after the
+  cards pushed the file browser down the page.
+- **f4-s12's check phase could read an older run's workspace** (fixture, fixed). The
+  workspace list is ordered by name alone, and every run's workspace is named "F4-S12
+  follow-up", so taking the last one was arbitrary. The drive picks the newest by id;
+  the check now picks the newest by `created_at`.
+- f4-s15 looked for the api's "No such project." on a trashed project's page. It now
+  looks for S20's "Project not found".
 
 **Built in Block D beyond the letter of the subtasks, and why:**
 - **The root is the project, not a folder row** (as in Block C). So "the root cannot be

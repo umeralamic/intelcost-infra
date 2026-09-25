@@ -56,7 +56,7 @@ _Updated: 2026-09-25_
 | P-15 | Billing, trials, admin panel | both | |
 | P-16 | Legacy data migration and cutover | infra | Abdullah (D-11) |
 | P-17 | Project map and geocoder: Show Map on the project location, and resolve a US address to city, state, zip and county | both | Deferred out of F4 by D-28. Needs a provider decision (geocoding and map tiles) and a bench fake. Legacy's never returned coordinates |
-| P-18 | App bundle size: route-level code splitting | app | The production bundle is one 513 kB chunk (2026-09-25, F4 Block A) and Vite warns over 500 kB. Likely needed when F5 adds pdf.js: lazy-load the takeoff route and pdf.js so the dashboard does not pay for the canvas. The stale-chunk guard (F2-S13) already covers a split bundle |
+| P-18 | App bundle size: route-level code splitting | app | The production bundle is one 513 kB chunk (2026-09-25, F4 Block A) and Vite warns over 500 kB. After F4 Block E it is 644 kB, plus a 394 kB TipTap chunk that is already lazy (loaded on the first rich-text Edit). Likely needed when F5 adds pdf.js: lazy-load the takeoff route and pdf.js so the dashboard does not pay for the canvas. The stale-chunk guard (F2-S13) already covers a split bundle |
 
 ---
 
