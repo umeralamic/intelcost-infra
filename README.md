@@ -148,6 +148,17 @@ needs a rebuild:
 docker compose up -d --build app
 ```
 
+**So does changing any config file outside `src/`**: `tailwind.config.ts`,
+`vite.config.ts`, `eslint.config.js`, the `tsconfig*.json` files. They are copied into
+the image, not mounted, so an edit to them reaches neither the dev server nor
+`npm run build` in the container until the image is rebuilt. It fails silently. A new
+Tailwind colour produces no CSS and the class simply does nothing, which is how F4-S3's
+status colours first rendered as plain text (2026-09-25). After a config change, rebuild
+before driving anything.
+
+Renaming or deleting a file under `src/` can leave the running Vite server resolving
+the old path, and the app white-screens. `docker compose restart app` clears it.
+
 Running it on the host instead still works and is faster to iterate on:
 
 ```bash

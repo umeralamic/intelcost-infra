@@ -151,6 +151,12 @@ await run("f4-s1", [
       await signInAs(page, pricing.email);
       const button = page.getByRole("button", { name: "New project" });
       await button.waitFor({ timeout: 20000 });
+      // Disabled while the permission answer is in flight (loading reads false), so this
+      // waits for it to open rather than reading it the instant it is drawn.
+      await page
+        .locator("button:not([disabled])", { hasText: "New project" })
+        .waitFor({ timeout: 15000 })
+        .catch(() => {});
       expect(!(await button.isDisabled()), "New project is disabled for pricing");
       const name = `F4-S1 by pricing ${Date.now()}`;
       await button.click();
