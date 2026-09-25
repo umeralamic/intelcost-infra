@@ -178,7 +178,8 @@ await run("f4-s1", [
       const rename = await apiCall(collaborator.token, "PATCH", `${folders}/${made.body.uuid}`, { name: "x" });
       expect(rename.status === 403, `collaborator rename: ${rename.status}`);
       expect(rename.body?.detail === "Your role cannot create projects.", `refusal: ${rename.body?.detail}`);
-      const byOwner = await apiCall(ownerToken, "PATCH", `${folders}/${made.body.uuid}`, { name: "Specs" });
+      // Not "Specs": the seeded Specs is a sibling, and names are unique among siblings (S17).
+      const byOwner = await apiCall(ownerToken, "PATCH", `${folders}/${made.body.uuid}`, { name: "Site walk" });
       expect(byOwner.status === 200, `owner rename: ${byOwner.status}`);
       return "create 201 · rename refused 403 · owner renames 200";
     },

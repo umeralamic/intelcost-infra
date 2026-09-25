@@ -159,13 +159,23 @@ before driving anything.
 Renaming or deleting a file under `src/` can leave the running Vite server resolving
 the old path, and the app white-screens. `docker compose restart app` clears it.
 
-**The worker does not reload.** The api container runs uvicorn with `--reload`, so an
-edit under `intelcost-app-fastapi/app` reaches it at once. The worker bind-mounts the same
-code, but Celery keeps whatever it imported at start. After any change to models or
-tasks, `docker compose restart worker`, or the worker keeps running the old code against
-the new schema. It fails quietly in the worker log, not in the browser. This is how the
-drawing render stopped working after F3 renamed `workspace.logo_url` to `logo_key`: the
-worker had started before the rename (found 2026-09-25, F4-S13).
+**The worker restarts itself on a code change (D-30).** Celery keeps whatever it
+imported at start, so for weeks the bench worker ran pre-F3 code and every drawing render
+failed quietly in its log (found 2026-09-25, F4-S13). It now runs under `watchfiles`,
+which restarts it a few seconds after any `.py` change under `intelcost-app-fastapi/app`,
+as `--reload` does for the api. `docker compose logs worker` shows `1 change detected`
+and then `ready`. A stack started before this needs one `docker compose up -d worker` to
+pick up the new command.
+
+To check it rather than trust it, run this first in any regression:
+
+```bash
+docker compose --profile browser run --rm browser node scripts/bench-code.mjs
+```
+
+It compares the fingerprint of the code on disk with what the api and the worker started
+with (`GET /health/code`, served only when `ENVIRONMENT` is `local`), and fails with all
+three when one is behind.
 
 Running it on the host instead still works and is faster to iterate on:
 

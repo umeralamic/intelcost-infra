@@ -12,8 +12,7 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-26, D-27, D-28 and D-29 logged. Block A (S1, S2) built, checked by the
 founder and pushed. Block B (S3, S4) checked and pushed. Block C (S5 to S16) checked and
-pushed. Block D (S17 to S19) built and driven 2026-09-25, awaiting the founder's checks
-before Block E.**_
+pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) in progress.**_
 
 ## Progress
 
@@ -23,7 +22,8 @@ before Block E.**_
 | **B: S3, S4** | Built and driven, 2026-09-25 | `browser/f4-s3.mjs` 11/11 and `f4-s4.mjs` 9/9. Regression: `f4-s1` 9/9, `f4-s2` 6/6, `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. Migration `80c841e4b096` driven up, down and up. The dashboard half of S3 and S4 is carried into S5 and S9. |
 | **C: S5 to S16** | Built and driven, 2026-09-25 | `browser/f4-s5` 7/7, `s6` 3/3, `s7` 7/7, `s8` 4/4, `s9` 5/5, `s10` 4/4, `s11` 5/5, `s12` 3/3 (three phases, with `drives/f4-s12-age.py`), `s13` 3/3, `s14` 4/4, `s15` 3/3 (with Block A check 5), `s16` 1/1. Migration `99ca0a2606b6` driven up, down and up. The S3/S4 dashboard half is driven in `s5` and `s9`. |
 | **D: S17 to S19** | Built and driven, 2026-09-25 | `browser/f4-s17` 12/12 (with S7 AC9's reload and resume, and a second-project step), `f4-s18` 4/4, `f4-s19` 3/3, `bench-code` 1/1 (D-30). Migration `b7d41e2c9a53` driven up, down and up, twice. Regression: `f4-s1` to `f4-s16` all pass (`s12` 3/3 across its phases), `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. `f4-s1` AC4 renamed its folder to a free name, because names are now unique among siblings. |
-| E, F | Not started | |
+| E: S20 to S25 | In progress | |
+| F | Not started | |
 
 **Found while building Block A:**
 - `_read` in the project routes composed the response by reading every schema field off

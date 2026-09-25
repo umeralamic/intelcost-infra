@@ -133,7 +133,17 @@ services:
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
-    command: celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=2
+      # Polling, for the reason DEV_WATCH_POLL exists on the app: a bind mount from a
+      # Windows or macOS host may deliver no filesystem events into the container.
+      WATCHFILES_FORCE_POLLING: "true"
+    # Restarted on every .py change under app/, as the api is by --reload (D-30). Left
+    # alone, Celery keeps the code it started with, and on this bench it once ran pre-F3
+    # code for weeks. browser/bench-code.mjs fails if it falls behind again. watchfiles
+    # comes with uvicorn[standard], so this adds nothing to the image.
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=2"
+      /srv/app
     volumes:
       - ../intelcost-app-fastapi/app:/srv/app
     depends_on:

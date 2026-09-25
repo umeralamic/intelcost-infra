@@ -80,7 +80,12 @@ services:
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
-    command: celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=2
+      WATCHFILES_FORCE_POLLING: "true"
+    # Restarted on every .py change under app/, as in docker-compose.yml (D-30).
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=2"
+      /srv/app
     volumes:
       - ../intelcost-app-fastapi/app:/srv/app
     # The full bench waits on the api, which also runs the migrations. Here nothing

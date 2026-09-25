@@ -70,6 +70,62 @@ export async function settle(page) {
   });
 }
 
+/**
+ * Put a file into a project through the multipart path (D-27): the api from Node, the
+ * part PUTs from inside `page`, because the page and not Node can reach the storage host.
+ * `parts` limits how many parts are sent, to leave an upload unfinished on purpose.
+ */
+export async function seedFile(page, token, base, projectUuid, folderUuid, name, buffer, { parts } = {}) {
+  const files = `${base}/${projectUuid}/file`;
+  const started = await apiCall(token, "POST", files, {
+    file_name: name,
+    content_type: name.endsWith(".jpg") ? "image/jpeg" : "application/octet-stream",
+    byte_size: buffer.length,
+    folder_uuid: folderUuid,
+  });
+  expect(started.status === 201, `start ${name}: ${started.status} ${JSON.stringify(started.body)}`);
+  const file = started.body;
+  const count = Math.min(parts ?? file.part_count, file.part_count);
+  const numbers = Array.from({ length: count }, (_, i) => i + 1);
+  const signed = await apiCall(token, "POST", `${files}/${file.uuid}/part`, { part_numbers: numbers });
+  for (const n of numbers) {
+    const slice = buffer.subarray((n - 1) * file.part_size, n * file.part_size);
+    const status = await page.evaluate(
+      async ([url, b64]) => {
+        const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        return (await fetch(url, { method: "PUT", body: bin })).status;
+      },
+      [signed.body.urls[String(n)], slice.toString("base64")],
+    );
+    expect(status === 200, `PUT part ${n} of ${name}: ${status}`);
+  }
+  if (count < file.part_count) return file;
+  const done = await apiCall(token, "POST", `${files}/${file.uuid}/complete`);
+  expect(done.status === 200, `complete ${name}: ${done.status} ${JSON.stringify(done.body)}`);
+  return done.body;
+}
+
+/** A project's folders by path ("Plans/Addenda"), from the api. */
+export async function folderPaths(token, base, projectUuid) {
+  const folders = (await apiCall(token, "GET", `${base}/${projectUuid}/folder`)).body;
+  const byUuid = new Map(folders.map((f) => [f.uuid, f]));
+  const pathOf = (f) => {
+    const parts = [];
+    for (let at = f; at; at = byUuid.get(at.parent_uuid)) parts.unshift(at.name);
+    return parts.join("/");
+  };
+  return new Map(folders.map((f) => [pathOf(f), f]));
+}
+
+/** Signed in, on a project's Home, the file browser drawn. */
+export async function openFiles(page, workspaceUuid, projectUuid, email = SEEDED.email) {
+  await signInAs(page, email, SEEDED.password);
+  await page.selectOption("header select", workspaceUuid).catch(() => {});
+  await page.goto(`${APP}/project/${projectUuid}`);
+  await page.locator("[data-file-browser] [data-tree-root]").waitFor({ timeout: 20000 });
+  await page.locator("[data-file-browser]").getByText("Loading…").first().waitFor({ state: "detached", timeout: 20000 }).catch(() => {});
+}
+
 /** The project names listed, in order, once the list has settled after a change. */
 export async function rowNames(page) {
   await page
