@@ -10,15 +10,17 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 **Inherited from:** [workspace_roles_tasks.md](../archive/workspace_roles_tasks.md) S19, S20
 
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
-2026-09-25, D-26, D-27 and D-28 logged. Block A (S1, S2) built and driven 2026-09-25,
-awaiting the founder's checks before Block B.**_
+2026-09-25, D-26, D-27, D-28 and D-29 logged. Block A (S1, S2) built, checked by the
+founder and pushed. Block B (S3, S4) built and driven 2026-09-25, awaiting the founder's
+checks before Block C.**_
 
 ## Progress
 
 | Block | State | Proof |
 |---|---|---|
 | **A: S1, S2** | Built and driven, 2026-09-25 | `browser/f4-s1.mjs` 8/8 and `f4-s2.mjs` 6/6, `drives/f4-s2-bundle.sh` 4/4. Regression: `f3-s3` 3/3 and `f3-s12` 8/8. Gates: ruff, mypy, lint, typecheck and build. Migration `95c121b3680c` driven up, down and up. |
-| B to F | Not started | |
+| **B: S3, S4** | Built and driven, 2026-09-25 | `browser/f4-s3.mjs` 11/11 and `f4-s4.mjs` 9/9. Regression: `f4-s1` 9/9, `f4-s2` 6/6, `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. Migration `80c841e4b096` driven up, down and up. The dashboard half of S3 and S4 is carried into S5 and S9. |
+| C to F | Not started | |
 
 **Found while building Block A:**
 - `_read` in the project routes composed the response by reading every schema field off
@@ -30,6 +32,18 @@ awaiting the founder's checks before Block B.**_
 - Renaming `toast.tsx` left the Vite dev server resolving the old path, and the app
   white-screened until the dev server was restarted. This was a dev-server cache, not a
   code fault. The production build was unaffected.
+
+**Found while building Block B:**
+- The new status colours rendered as plain text. The bench's app image copies
+  `tailwind.config.ts` in rather than mounting it, so the dev server and the container
+  build were still on the old config. The image was rebuilt, and the trap is now in
+  `intelcost-infra/README.md`.
+- A second tab did not refetch in `f4-s3` because the fixture dispatched `visibilitychange`
+  on `document` only. TanStack Query v5 listens on `window`. The fixture now signals focus
+  the way `f3-s8` does. This was a fixture fault, not an app one.
+- The api said "A active status…". The article is now chosen by bucket.
+- `f4-s1`'s new pricing step read New project the instant it was drawn, while permissions
+  were still loading (loading reads false by design). It now waits for the answer.
 
 ---
 
@@ -324,26 +338,43 @@ Reorder is up and down within a bucket. Copy is verbatim from `StatusesTab.tsx:2
 - **One deliberate fix:** legacy's "Reports as" list omits Revision Required. Ours offers
   all ten.
 
-**Acceptance criteria.**
+**Also built (2026-09-25):**
+- A project takes any status by key: `PATCH /project/{uuid}` with `status_key`. This is
+  what the S9 picker sends. It sets `status` to what the key reports as, and
+  `custom_status_key` for a workspace's own status.
+- Assigning a hidden status is refused; a project already on it keeps it.
+- Hiding the last visible status in a bucket is refused, because the picker would then
+  have nothing to offer.
+- Changing a custom status's meaning moves the projects on it with it.
+- The routes are: list (with a project count per status), create, `PATCH /{key}`,
+  `PUT /order`, and `DELETE /{key}?move_to=`.
+
+**Acceptance criteria.** Criteria that read the dashboard's tabs, row badges and status
+changer are **proved in S5 and S9**, where those controls are built; they are carried
+there. Here they are proved through the api and the settings screen.
 1. Settings → Statuses shows Active and Closed with the ten built-ins in shipped order and
    colours.
-2. Rename Bidding to "Out to bid": the dashboard tab, the row badge and the status changer
-   all say "Out to bid" after a focus refetch in a second tab.
-3. Add a closed status "Lost — price" reporting as Lost. Mark a project with it: that
-   project counts under the Lost tab.
+2. Rename Bidding to "Out to bid": the list shows it, and a second tab shows it after a
+   focus refetch. (The dashboard tab, row badge and changer: S5, S9.)
+3. Add a closed status "Lost, price" reporting as Lost, and put a project on it by
+   `status_key`: the project reports as `lost` with the custom key, and the status's count
+   reads 1. (Counting under the Lost tab: S5.)
 4. Move a status up and down: the order holds across a reload, and it never crosses into
    the other bucket.
-5. Hide Change Order: it leaves the status changer, and a project already on Change Order
-   still shows its badge.
+5. Hide Change Order: it is marked hidden, assigning it to another project is refused, and
+   a project already on it keeps it. (Leaving the changer: S9.)
 6. A built-in has no Delete control, and a hand-written DELETE on a built-in key is
    refused.
 7. Delete a custom status that 2 projects carry. The dialog says "2 projects are currently
    on this status. Pick where they should move.", and defaults to a status in the same
-   bucket. After confirming, both projects show the target, and the status is gone.
+   bucket. After confirming, both projects are on the target, and the status is gone.
 8. Adding a status with an existing name is refused with "A status with that name already
    exists".
-9. As `estimator`, the page is read-only, and a hand-written upsert gets 403.
-10. Each edit writes one audit row, visible in Settings → Activity.
+9. As `estimator`, the page is read-only, and a hand-written create gets 403.
+10. Each edit writes one audit row, visible in Settings → Activity as a sentence.
+11. Hiding the last visible status in a bucket is refused in words.
+12. A custom status's meaning cannot cross its bucket: an Active status reporting as Won
+    is refused.
 
 **Realtime:** `workspace.statuses.changed`.
 
@@ -375,14 +406,30 @@ tabs popover was removed (plan 2026-08-29) nothing writes it.
   per-user tabs return, that is a decision.
 - `app`: the tab card on the Statuses page.
 
-**Acceptance criteria.**
-1. Add a tab "Hot" holding Bidding and Revision Required, then Save: the dashboard shows
-   "Hot" with the right count.
-2. Rename, move up and move down: the dashboard strip follows.
-3. Uncheck a tab's visibility: it leaves the dashboard strip and stays in settings.
-4. Remove a tab: it is gone from both.
-5. **All** cannot be removed, hidden or moved off the end.
+**Also built (2026-09-25):**
+- The strip is saved whole, All included. A strip saved down to All alone stays that way,
+  and does not fall back to the defaults.
+- A tab with no statuses, or two tabs with one name, are refused in words.
+- Deleting a custom status takes it out of every tab that held it.
+- **Tab membership rule, for S5:** a project is in a tab when the tab lists its own status
+  key or the built-in it reports as.
+
+**Acceptance criteria.** As with S3, the dashboard half of each criterion is **proved in
+S5**, where the strip is drawn.
+1. Add a tab "Hot" holding Bidding and Revision Required, then Save: "Dashboard tabs saved",
+   and it is there after a reload. (The dashboard showing "Hot" with its count: S5.)
+2. Rename, move up and move down: the order and names hold after a reload. (The dashboard
+   strip following: S5.)
+3. Uncheck a tab's visibility: it is saved as hidden and stays in settings. (Leaving the
+   dashboard strip: S5.)
+4. Remove a tab: it is gone after the save.
+5. **All** cannot be removed, hidden or moved off the end. It has no controls, and a
+   hand-written save that sends All leaves it last and shown.
 6. As `estimator`, the card is read-only, and a hand-written save gets 403.
+7. Remove every tab but All and save: All alone survives a reload. The defaults do not
+   come back.
+8. A tab with no statuses, and two tabs with one name, are refused in words.
+9. Deleting a custom status removes it from a tab that held it.
 
 **Realtime:** `workspace.statuses.changed`.
 
@@ -432,6 +479,13 @@ tabs popover was removed (plan 2026-08-29) nothing writes it.
 6. With 60 projects, the All count reads 60 while the page holds 50.
 7. Sort by Bid due: the soonest due is first, and projects with no bid due come last. The
    choice survives a reload.
+8. **Carried from S3 and S4 (Block B).**
+   - Rename Bidding to "Out to bid" in Settings: the dashboard tab and the row badges say
+     "Out to bid".
+   - A project on a custom "Lost, price" status counts under the Lost tab.
+   - A saved "Hot" tab shows on the strip with its count, in its saved order and name.
+   - A tab saved as hidden is not on the strip.
+   - A strip saved down to All shows All alone.
 
 ### F4-S6 — Dashboard panel order
 
@@ -636,7 +690,9 @@ only part in that is the "Perform Takeoff" entry decision (S13) and D-27's
    and the tab counts move.
 2. Choose Lost: the reason dialog appears. Cancel leaves the status unchanged. Save with
    "Too high" stores the reason.
-3. A hidden status is not offered.
+3. A hidden status is not offered. **(Carried from S3.)** Hide Change Order in Settings:
+   it leaves the changer, and a project already on Change Order still shows its badge. A
+   renamed Bidding shows as "Out to bid" in the changer.
 4. As owner, "Manage statuses" opens Settings → Statuses. As `estimator` it is absent.
 5. As `viewer`, the badge is read-only.
 
