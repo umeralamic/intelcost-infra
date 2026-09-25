@@ -1,73 +1,66 @@
-// F4-S6: the dashboard's panels in legacy's order. Projects, the branding nudge for a
-// workspace with no logo, then Team members, Pending invitations and Invite teammates.
+// F4-S6, as D-31 left it: the dashboard shows projects only. No Team members, Pending
+// invitations or Invite teammates panels, no "Brand your bid proposals" nudge, and the
+// subtitle reads "Your projects." Those live in Settings > Members and Settings > General.
 // The tab strip is centred, and there is no Customize tabs button.
 //
 //   docker compose --profile browser run --rm browser node scripts/f4-s6.mjs
 
-import { apiCall, expect, logoTicket, run, seatedMember } from "./lib/bench.mjs";
+import { APP, expect, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, openDashboard } from "./lib/f4.mjs";
 
-const { token, workspace } = await freshWorkspace("F4-S6 panels");
+const { token, workspace } = await freshWorkspace("F4-S6 projects only");
 const estimator = await seatedMember(token, workspace.uuid, "estimator", "f4s6");
 
-const PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==",
-  "base64",
-);
+const GONE = ["Team members", "Pending invitations", "Invite teammates", "Brand your bid proposals"];
 
-/** The top-level blocks of the page, top to bottom, by what they are. */
-const order = (page) =>
-  page.evaluate(() =>
-    [...document.querySelectorAll("#projects-heading, [data-branding-nudge], [data-team-panels] section")]
-      .map((el) => el.getAttribute("aria-label") ?? (el.id === "projects-heading" ? "Projects" : "Branding")),
-  );
+/** The dashboard's sections and headings, by their words. */
+const headings = (page) =>
+  page.locator("h1, h2").evaluateAll((els) => els.map((el) => el.textContent.trim()));
+
+/** Every removed panel is absent, by its words and by its old markers. */
+async function onlyProjects(page) {
+  for (const words of GONE) {
+    expect((await page.getByText(words, { exact: true }).count()) === 0, `"${words}" is still drawn`);
+  }
+  expect((await page.locator("[data-team-panels], [data-branding-nudge]").count()) === 0, "an old panel marker remains");
+  await page.getByText("Your projects.", { exact: true }).waitFor();
+  expect((await page.getByText("Your projects and your team.").count()) === 0, "the old subtitle remains");
+}
 
 await run("f4-s6", [
   {
-    title: "AC1/AC3 — owner with no logo: Projects, branding, then the three team panels; strip centred, no Customize",
+    title: "AC1/AC3 — owner with no logo: projects only, subtitle \"Your projects.\", strip centred, no Customize",
     run: async ({ page }) => {
       await openDashboard(page, workspace.uuid);
-      await page.locator("[data-team-panels]").waitFor();
-      const blocks = await order(page);
-      expect(
-        blocks.join("|") === "Projects|Branding|Team members|Pending invitations|Invite teammates",
-        `order: ${blocks.join(", ")}`,
-      );
+      await onlyProjects(page);
+      const read = await headings(page);
+      expect(read.length === 2 && read[1] === "Projects", `headings: ${read.join(" | ")}`);
       const centred = await page.getByRole("tablist").evaluate((el) => getComputedStyle(el.parentElement).justifyContent);
       expect(centred === "center", `strip justify ${centred}`);
       expect((await page.getByText(/Customize tabs/i).count()) === 0, "a Customize tabs control exists");
       expect((await page.getByText("Reports", { exact: true }).count()) === 0, "a Reports card is drawn (F15's)");
-      return blocks.join(" → ");
+      return `headings: ${read.join(" | ")} · strip centred`;
     },
   },
   {
-    title: "AC2 — set a logo in Settings: the nudge is gone on return",
+    title: "AC2 — members and invitations are in Settings > Members, the logo in Settings > General",
     run: async ({ page }) => {
-      const { body: ticket } = await logoTicket(token, workspace.uuid, "image/png", PNG.length);
       await openDashboard(page, workspace.uuid);
-      const put = await page.evaluate(
-        async ([url, bytes]) =>
-          (await fetch(url, { method: "PUT", headers: { "Content-Type": "image/png" }, body: new Uint8Array(bytes) })).status,
-        [ticket.upload_url, [...PNG]],
-      );
-      expect(put === 200, `logo PUT ${put}`);
-      const adopted = await apiCall(token, "PUT", `/api/workspace/${workspace.uuid}/logo`, { storage_key: ticket.storage_key });
-      expect(adopted.status === 200, `adopt logo ${adopted.status}`);
-      await page.reload();
-      await page.locator("[data-team-panels]").waitFor();
-      expect((await page.locator("[data-branding-nudge]").count()) === 0, "the nudge survived a logo");
-      return "nudge gone";
+      await page.goto(`${APP}/settings/members`);
+      await page.getByRole("heading", { name: "In this workspace" }).waitFor({ timeout: 15000 });
+      await page.getByRole("heading", { name: "Invited, not joined" }).waitFor();
+      await page.goto(`${APP}/settings/general`);
+      await page.getByRole("heading", { name: "Details" }).waitFor({ timeout: 15000 });
+      await page.getByRole("heading", { name: "Logo", exact: true }).waitFor();
+      return "Members lists both · General holds the logo";
     },
   },
   {
-    title: "AC4 — an estimator: no nudge, no invitations panel, and the invite panel says why",
+    title: "AC4 — an estimator sees the same projects-only page",
     run: async ({ page }) => {
-      await openDashboard(page, estimator.email ? workspace.uuid : workspace.uuid, estimator.email);
-      await page.locator("[data-team-panels]").waitFor();
-      await page.getByText("Your role cannot invite members.").waitFor({ timeout: 15000 });
-      const blocks = await order(page);
-      expect(blocks.join("|") === "Projects|Team members|Invite teammates", `order: ${blocks.join(", ")}`);
-      return blocks.join(" → ");
+      await openDashboard(page, workspace.uuid, estimator.email);
+      await onlyProjects(page);
+      return "no team panels, no nudge";
     },
   },
 ]);

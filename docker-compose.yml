@@ -150,6 +150,32 @@ services:
       api:
         condition: service_started
 
+  # The scheduler. It only enqueues: at 03:00 UTC it puts `purge_trashed_projects` on
+  # the queue and the worker runs it (F4-S27). Production scheduling is Abdullah's
+  # (D-11). Restarted on a code change like the worker, since the schedule is code.
+  # The schedule file goes to /tmp: it is state for this one container, not the repo's.
+  beat:
+    build:
+      context: ../intelcost-app-fastapi
+    environment:
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: bench-only-secret-not-for-anything-real
+      S3_BUCKET: intelcost-local
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      WATCHFILES_FORCE_POLLING: "true"
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "celery -A app.worker.celery_app.celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule"
+      /srv/app
+    volumes:
+      - ../intelcost-app-fastapi/app:/srv/app
+    depends_on:
+      worker:
+        condition: service_started
+
   app:
     build:
       context: ../intelcost-app-react

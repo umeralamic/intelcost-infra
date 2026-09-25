@@ -1,5 +1,6 @@
-// F4-S8: New project from a folder on the computer, tree preserved; Retry never makes a
-// second project or a second copy of any folder.
+// F4-S8, as D-31 left it: "New from folder" is gone. New project is the one way to start
+// a project, every project gets its four seed folders, and a folder on the computer goes
+// into a project through the file browser's Upload folder, tree preserved.
 //
 //   docker compose --profile browser run --rm browser node scripts/f4-s8.mjs
 //
@@ -9,9 +10,9 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
-import { freshWorkspace, openDashboard } from "./lib/f4.mjs";
+import { folderPaths, freshWorkspace, openDashboard, openFiles } from "./lib/f4.mjs";
 
-const { token, workspace, base } = await freshWorkspace("F4-S8 folder");
+const { token, workspace, base } = await freshWorkspace("F4-S8 one way in");
 const ROOT = "/tmp/f4-s8";
 const MAPLE = `${ROOT}/Maple`;
 await rm(ROOT, { recursive: true, force: true });
@@ -19,87 +20,49 @@ await mkdir(`${MAPLE}/A`, { recursive: true });
 await writeFile(`${MAPLE}/A/a.pdf`, Buffer.alloc(200 * 1024, 1));
 await writeFile(`${MAPLE}/b.pdf`, Buffer.alloc(100 * 1024, 2));
 
-const projects = async () => (await apiCall(token, "GET", `${base}?limit=200`)).body.items;
-
-/** Where each file landed, as "folder/path/name". */
-async function layout(projectUuid) {
-  const folders = (await apiCall(token, "GET", `${base}/${projectUuid}/folder`)).body;
-  const byUuid = new Map(folders.map((f) => [f.uuid, f]));
-  const pathOf = (uuid) => {
-    const parts = [];
-    for (let f = byUuid.get(uuid); f; f = byUuid.get(f.parent_uuid)) parts.unshift(f.name);
-    return parts.join("/");
-  };
-  const files = (await apiCall(token, "GET", `${base}/${projectUuid}/file`)).body;
-  return {
-    folders: folders.map((f) => pathOf(f.uuid)).sort(),
-    files: files.map((f) => `${f.folder_uuid ? `${pathOf(f.folder_uuid)}/` : ""}${f.file_name}`).sort(),
-    done: files.every((f) => f.uploaded_at),
-  };
-}
-
-async function pickFolder(page) {
-  await openDashboard(page, workspace.uuid);
-  await page.getByLabel("Choose a folder").setInputFiles(MAPLE);
-  await page.getByRole("dialog", { name: "Create project from folder" }).waitFor();
-}
+const SEEDS = ["Plans", "Reports", "Site Photos", "Specs"];
 
 await run("f4-s8", [
   {
-    title: "AC4 — Cancel before Create makes nothing",
+    title: "AC1 — the dashboard has New project and no New from folder, and no folder picker",
     run: async ({ page }) => {
-      const before = (await projects()).length;
-      await pickFolder(page);
-      await page.getByText("2 files will be uploaded with their original folder structure preserved.").waitFor();
-      await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
-      expect((await projects()).length === before, "Cancel created a project");
-      return "no project made";
+      await openDashboard(page, workspace.uuid);
+      await page.getByRole("button", { name: "New project" }).waitFor();
+      expect((await page.getByRole("button", { name: /New from folder/ }).count()) === 0, "New from folder is drawn");
+      expect((await page.locator("input[webkitdirectory]").count()) === 0, "a folder picker is on the dashboard");
+      return "New project only";
     },
   },
   {
-    title: "AC1 — the folder's name is suggested; the tree lands under the root, no seed folders",
-    run: async ({ page }) => {
-      await pickFolder(page);
-      expect((await page.inputValue("#from-folder-name")) === "Maple", "name not suggested");
-      await page.getByRole("dialog").getByRole("button", { name: "Create project" }).click();
-      await page.getByText('Project "Maple" created').waitFor({ timeout: 60000 });
-      const maple = (await projects()).find((p) => p.name === "Maple");
-      const shape = await layout(maple.uuid);
-      expect(shape.folders.join() === "A", `folders: ${shape.folders}`);
-      expect(shape.files.join() === "A/a.pdf,b.pdf" && shape.done, `files: ${shape.files}`);
-      return `folders [${shape.folders}] · files [${shape.files}] · no Plans/Specs/Reports/Site Photos`;
+    title: "AC2 — the create's seedless switch is gone: seed_folders false still makes the four seeds",
+    run: async () => {
+      const made = await apiCall(token, "POST", base, { name: "Asked for none", seed_folders: false });
+      expect(made.status === 201, `create ${made.status}`);
+      const names = [...(await folderPaths(token, base, made.body.uuid)).keys()].sort();
+      expect(names.join() === SEEDS.join(), `folders: ${names.join(", ")}`);
+      return names.join(", ");
     },
   },
   {
-    title: "AC2 — the same folder again previews \"Maple (2)\" and creates it under that name",
+    title: "AC3 — Maple/ through Upload folder into the root: Maple/A/a.pdf and Maple/b.pdf, beside the seeds",
     run: async ({ page }) => {
-      await pickFolder(page);
-      await page.getByText("A project with that name already exists. This one will be created as").waitFor({ timeout: 15000 });
-      expect(/Maple \(2\)/.test(await page.locator("[data-name-preview]").innerText()), "no (2) in the preview");
-      await page.getByRole("dialog").getByRole("button", { name: "Create project" }).click();
-      await page.getByText('Project "Maple (2)" created').waitFor({ timeout: 60000 });
-      return "previewed and created as Maple (2)";
-    },
-  },
-  {
-    title: "AC3 — storage failing mid-tree, then Retry: one project, no duplicate folders",
-    run: async ({ page }) => {
-      await pickFolder(page);
-      await page.fill("#from-folder-name", "Maple retry");
-      let parts = 0;
-      // Let the first file through, then refuse storage: the tree is half-made.
-      await page.route(/localhost:9000/, (route) => (parts++ < 1 ? route.continue() : route.abort()));
-      await page.getByRole("dialog").getByRole("button", { name: "Create project" }).click();
-      await page.getByText(/The project was created, but the upload stopped/).waitFor({ timeout: 60000 });
-      await page.unroute(/localhost:9000/);
-      await page.getByRole("dialog").getByRole("button", { name: "Retry", exact: true }).click();
-      await page.getByText('Project "Maple retry" created').waitFor({ timeout: 60000 });
-      const made = (await projects()).filter((p) => p.name === "Maple retry");
-      expect(made.length === 1, `${made.length} projects`);
-      const shape = await layout(made[0].uuid);
-      expect(shape.folders.join() === "A", `folders after retry: ${shape.folders}`);
-      expect(shape.files.join() === "A/a.pdf,b.pdf" && shape.done, `files after retry: ${shape.files}`);
-      return "one project · one A · both files done";
+      const job = (await apiCall(token, "POST", base, { name: "Maple job" })).body;
+      await openFiles(page, workspace.uuid, job.uuid);
+      await page.locator("[data-upload-folder]").setInputFiles(MAPLE);
+      const picker = page.getByRole("dialog", { name: "Where should this folder go?" });
+      await picker.waitFor();
+      await picker.getByRole("button", { name: "Confirm upload" }).click();
+      await page.getByText("Folder uploaded").first().waitFor({ timeout: 30000 });
+      const files = (await apiCall(token, "GET", `${base}/${job.uuid}/file`)).body;
+      expect(files.length === 2 && files.every((f) => f.uploaded_at), `${files.length} files, done: ${files.map((f) => Boolean(f.uploaded_at))}`);
+      const paths = await folderPaths(token, base, job.uuid);
+      const byUuid = new Map([...paths].map(([path, f]) => [f.uuid, path]));
+      const where = files.map((f) => `${byUuid.get(f.folder_uuid)}/${f.file_name}`).sort();
+      const folders = [...paths.keys()].sort();
+      // Upload folder keeps the picked folder's own name, as a folder of the project.
+      expect(folders.join() === ["Maple", "Maple/A", ...SEEDS].sort().join(), `folders: ${folders.join(", ")}`);
+      expect(where.join() === "Maple/A/a.pdf,Maple/b.pdf", `files: ${where.join(", ")}`);
+      return `folders [${folders.join(", ")}] · files [${where.join(", ")}]`;
     },
   },
 ]);

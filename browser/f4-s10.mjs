@@ -12,7 +12,10 @@ const alice = await seatedMember(token, workspace.uuid, "estimator", "f4s10-alic
 const bob = await seatedMember(token, workspace.uuid, "takeoff", "f4s10-bob");
 const admin = await seatedMember(token, workspace.uuid, "admin", "f4s10");
 const viewer = await seatedMember(token, workspace.uuid, "viewer", "f4s10");
+// A second "Bench admin", the founder's four-of-a-name case in miniature.
+const twin = await seatedMember(token, workspace.uuid, "admin", "f4s10-twin");
 const job = await makeProject(token, base, { name: "Assigned job" });
+const twins = await makeProject(token, base, { name: "Twins job" });
 
 // A custom role for Bob, so "Name · Role" is proved with a workspace's own label.
 const qa = await apiCall(token, "POST", `${wsPath}/custom-role`, {
@@ -106,6 +109,36 @@ await run("f4-s10", [
       });
       expect(outsider.status === 422, `non-member assign: ${outsider.status}`);
       return "admin 200 · viewer read-only, api 403 · a non-member refused 422";
+    },
+  },
+  {
+    title: "Two members named \"Bench admin\": each option shows its email; both chips add the email",
+    run: async ({ page }) => {
+      await openDashboard(page, workspace.uuid);
+      await page.goto(`${APP}/project/${twins.uuid}`);
+      await page.getByRole("heading", { name: "Twins job" }).waitFor({ timeout: 20000 });
+      await page.locator("#project-assignees").click();
+      for (const email of [admin.email, twin.email]) {
+        const option = page.locator(`[data-assignee-option="${email}"]`);
+        expect((await option.locator("[data-assignee-email]").innerText()) === email, `no email under ${email}`);
+      }
+      const named = await page.getByRole("option", { name: /Bench admin/ }).count();
+      expect(named === 2, `${named} Bench admin options`);
+      const chips = page.getByRole("list", { name: "Assigned" });
+      await page.locator(`[data-assignee-option="${admin.email}"] input`).check();
+      // One of the name: no email yet, nothing to tell apart.
+      await chips.locator(`[data-assignee-chip="${admin.email}"]`).waitFor({ timeout: 10000 });
+      const alone = await chips.locator(`[data-assignee-chip="${admin.email}"]`).innerText();
+      expect(alone.trim() === "Bench admin", `a lone chip reads ${alone}`);
+      await page.locator(`[data-assignee-option="${twin.email}"] input`).check();
+      await chips.locator(`[data-assignee-chip="${twin.email}"]`).waitFor({ timeout: 10000 });
+      const read = await chips.locator("[data-assignee-chip]").allInnerTexts();
+      expect(
+        read.map((t) => t.trim()).join(" | ") === `Bench admin (${admin.email}) | Bench admin (${twin.email})`,
+        `chips: ${read.join(" | ")}`,
+      );
+      await page.getByRole("button", { name: `Remove Bench admin (${twin.email})` }).waitFor();
+      return `options show both emails · chips: ${read.map((t) => t.trim()).join(" | ")}`;
     },
   },
 ]);

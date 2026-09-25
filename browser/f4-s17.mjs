@@ -21,8 +21,8 @@ const bytes = (size, seed) => {
 const sha = (buf) => createHash("sha256").update(buf).digest("hex");
 
 const { token, workspace, base } = await freshWorkspace("F4-S17 files");
-const job = await makeProject(token, base, { name: "Harbor school", seed_folders: true });
-const other = await makeProject(token, base, { name: "Other job", seed_folders: true });
+const job = await makeProject(token, base, { name: "Harbor school" });
+const other = await makeProject(token, base, { name: "Other job" });
 const collaborator = await seatedMember(token, workspace.uuid, "collaborator", "f4s17");
 const viewer = await seatedMember(token, workspace.uuid, "viewer", "f4s17");
 const folderUrl = `${base}/${job.uuid}/folder`;

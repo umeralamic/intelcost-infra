@@ -8,8 +8,8 @@ import { apiCall, expect, run } from "./lib/bench.mjs";
 import { folderPaths, freshWorkspace, makeProject, openFiles, seedFile } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S18 move");
-const job = await makeProject(token, base, { name: "Pier rebuild", seed_folders: true });
-const other = await makeProject(token, base, { name: "Elsewhere", seed_folders: true });
+const job = await makeProject(token, base, { name: "Pier rebuild" });
+const other = await makeProject(token, base, { name: "Elsewhere" });
 const folderUrl = `${base}/${job.uuid}/folder`;
 const fileUrl = `${base}/${job.uuid}/file`;
 

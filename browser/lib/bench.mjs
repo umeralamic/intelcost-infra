@@ -113,6 +113,12 @@ export async function run(name, steps) {
     const consoleErrors = [];
     page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
     page.on("pageerror", (e) => consoleErrors.push(String(e)));
+    // A console "Failed to load resource" line names no URL; this one does. ERR_ABORTED
+    // is a request the page cancelled by navigating away, which every step does.
+    page.on("requestfailed", (r) => {
+      const reason = r.failure()?.errorText ?? "";
+      if (reason !== "net::ERR_ABORTED") consoleErrors.push(`request failed: ${r.url().slice(0, 120)} ${reason}`);
+    });
 
     const shot = path.join(SHOTS, `${name}-step${n}.png`);
     let ok = false;

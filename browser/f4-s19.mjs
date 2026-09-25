@@ -7,7 +7,7 @@ import { apiCall, expect, run } from "./lib/bench.mjs";
 import { folderPaths, freshWorkspace, makeProject, openFiles, seedFile } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S19 counts");
-const job = await makeProject(token, base, { name: "Count house", seed_folders: true });
+const job = await makeProject(token, base, { name: "Count house" });
 const folderUrl = `${base}/${job.uuid}/folder`;
 
 let paths = await folderPaths(token, base, job.uuid);

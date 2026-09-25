@@ -13,7 +13,8 @@ export async function freshWorkspace(tag) {
 
 /** Make a project, optionally put it on a status by key. Returns the api's read. */
 export async function makeProject(token, base, body, statusKey) {
-  const made = await apiCall(token, "POST", base, { seed_folders: false, ...body });
+  // Every project comes with Plans, Specs, Reports and Site Photos (D-31).
+  const made = await apiCall(token, "POST", base, body);
   expect(made.status === 201, `create ${body.name}: ${made.status} ${JSON.stringify(made.body)}`);
   if (!statusKey) return made.body;
   const moved = await apiCall(token, "PATCH", `${base}/${made.body.uuid}`, { status_key: statusKey });

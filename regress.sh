@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run browser fixtures as a regression, bench-code first (D-30).
 #
-#   ./regress.sh                     every f4 fixture, then f3-s1, f3-s3, f3-s12
+#   ./regress.sh                     every f4 fixture, f4-dialogs, then f3-s1, f3-s3, f3-s12
 #   ./regress.sh f4-s17 f4-s18       just these
 #
 # bench-code goes first and a failure stops the run: a fixture driven against a worker or
@@ -11,7 +11,9 @@
 # read from what it printed rather than from a summary line.
 #
 # f4-s12 is left out of the default list: it has three phases with a database drive in
-# the middle, run as its header describes.
+# the middle, run as its header describes. f4-s27 has phases too, and a runner that does
+# them in order (browser/f4-s27.sh), so it is in the list and runs through that. It stops
+# MinIO for about three minutes on purpose: run nothing else against the bench meanwhile.
 
 set -u
 cd "$(dirname "$0")"
@@ -42,12 +44,22 @@ else
     [ "$name" = "f4-s12" ] && continue
     list+=("$name")
   done
-  list+=(f3-s1 f3-s3 f3-s12)
+  # f4-dialogs: every dialog at a short window and a phone (not a subtask, so not f4-sN).
+  list+=(f4-dialogs f3-s1 f3-s3 f3-s12)
 fi
 
 failed=0
 for name in "${list[@]}"; do
-  fixture "$name" || failed=$((failed + 1))
+  if [ -x "browser/$name.sh" ]; then
+    # A phased fixture: its runner puts the database and storage steps between phases.
+    "browser/$name.sh" >"$LOG/$name.log" 2>&1
+    status=$?
+    printf '%-12s %s\n' "$name" "$(grep -E 'passed$' "$LOG/$name.log" | tail -1)"
+    grep -A1 '^FAIL' "$LOG/$name.log" | sed 's/^/             /'
+    [ $status -eq 0 ] || failed=$((failed + 1))
+  else
+    fixture "$name" || failed=$((failed + 1))
+  fi
 done
 
 echo

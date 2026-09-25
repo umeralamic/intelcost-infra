@@ -8,7 +8,7 @@ import { apiCall, expect, run } from "./lib/bench.mjs";
 import { folderPaths, freshWorkspace, makeProject, openFiles } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S25 sheets");
-const job = await makeProject(token, base, { name: "Sheets job", seed_folders: true });
+const job = await makeProject(token, base, { name: "Sheets job" });
 
 // One page, enough for the worker to render. PyMuPDF rebuilds the missing xref.
 const PDF = Buffer.from(

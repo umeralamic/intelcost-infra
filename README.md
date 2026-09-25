@@ -205,7 +205,20 @@ container first: `docker compose stop app`.
 | `mailhog` | 1025, 8025 | The mail provider | http://localhost:8025 |
 | `api` | 8000 | Itself | http://localhost:8000/docs |
 | `worker` | | Itself | `docker compose logs -f worker` |
+| `beat` | | The production scheduler | `docker compose logs -f beat` |
 | `app` | 5173 | Itself | http://localhost:5173 |
+
+`beat` only enqueues. At 03:00 UTC it queues `purge_trashed_projects` (F4-S27) and the
+worker runs it. To run the purge now, without waiting for the night:
+
+```bash
+docker compose exec worker celery -A app.worker.celery_app.celery_app call \
+  app.worker.tasks.maintenance.purge_trashed_projects                       # for real
+docker compose exec worker celery -A app.worker.celery_app.celery_app call \
+  app.worker.tasks.maintenance.purge_trashed_projects --kwargs '{"dry_run": true}'
+```
+
+Every project it deletes, or would delete, gets a row in `trash_purge_log`.
 
 Postgres is on 5433 and Redis on 6380 so the bench never fights a local install.
 
@@ -240,9 +253,6 @@ A stub that returns success is a bug, not proof.
 ## Known gaps
 
 - **Stripe has no local fake.** Billing is not built anyway.
-- **Celery beat is configured but not run**, so `purge_trashed_projects` never fires
-  here. Add a beat service when that job matters. Known and deliberate: it was never
-  part of the bench's task list, and nothing depends on it yet.
 - **The marketing site is not here.** `intelcost-market-next` has no session, no
   database and no money, so it shares no seam with anything the bench tests. It has a
   production Dockerfile of its own and is added the day a test needs it.
