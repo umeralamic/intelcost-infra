@@ -1140,7 +1140,7 @@ per-workspace override.
 ## D-26 — Project writes gate on the capability named for them, not `canEditTakeoff`
 
 **Date:** 2026-09-25
-**Status:** Accepted
+**Status:** Accepted · amended by D-29 (pricing can create projects)
 **Area:** Backend, Frontend, Auth
 
 **Context:** Every project, folder and drawing write in the api rides `WriteWorkspace`,
@@ -1301,3 +1301,49 @@ geocoder and no Show Map.
   and the two §5 lines name it. The provider choice is a decision for that item.
 - Nothing in F4 stores coordinates. The item that ships the map adds them.
 - Legacy's `geocode_cache` and the `geocode-address` function are not ported.
+
+---
+
+## D-29 — The pricing role can create projects
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Auth, Backend, Frontend
+**Amends:** D-26's consequence "`pricing` can no longer create projects", and D-21's role
+map for `pricing`
+
+**Context:** D-26 gated project creation on `canCreateProjects`. That capability is
+granted by the takeoff bundle, which owner, admin, estimator and takeoff hold. `pricing`
+holds only the pricing bundle, as in legacy, so D-26 took project creation away from it.
+
+The founder call, after driving Block A, is that a pricing seat starts projects. In a
+subcontractor's office the person who opens the bid package is often the one who prices
+it, and waiting on a takeoff seat to create the project is a queue that is not doing
+anything.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Leave pricing without it; a workspace grants it by override (F3-S6) | Stays on legacy's map | Every workspace that wants the obvious thing has to find the matrix and do it |
+| B — Add `canCreateProjects` to the pricing bundle | One line, in the one map per repo; every role that prices can start the job it prices | Diverges from legacy's pricing map, so F17 must not "restore" it |
+| C — Gate creation on `canCreateProjects` OR `canEditPricing` | No role map changes | Two capabilities answering one question, which is exactly what D-21 exists to prevent |
+
+**Decision:** Option B. `canCreateProjects` joins the pricing bundle, in both copies of the
+map (`capabilities.py` and `capabilities.ts`), so `pricing` can create projects.
+
+**Consequences:**
+- **Only `pricing` changes.** Owner, admin and estimator already hold `canCreateProjects`
+  through the takeoff bundle. `qa_pricing` does not take the pricing bundle and is
+  unchanged.
+- **`canCreateProjects` also gates editing a project's details, its status and its
+  assignees (D-26).** So `pricing` now does those too. That is intended: they are the same
+  seat's job.
+- **Existing workspace overrides still win.** They are sparse, so a workspace that
+  explicitly set `canCreateProjects: false` for pricing keeps that. A workspace that never
+  touched it now reads true.
+- **The roles without project creation are now:** `qa_takeoff`, `qa_pricing`,
+  `collaborator` and `viewer`. F4 fixtures that need a seat refused creation use
+  `qa_pricing`.
+- **F17:** legacy pricing members gain the capability on migration. That is the intended
+  outcome, not drift.

@@ -6,7 +6,8 @@
 // Submitted and first Won dates are stamped by the api in the same transaction as the
 // change, where a trigger used to do it. The gates: every project write rode
 // `canEditTakeoff` before this, so a pricing seat could not add a folder for a spec and
-// a takeoff seat could empty the trash. Each act now names its own capability.
+// a takeoff seat could empty the trash. Each act now names its own capability. Since
+// D-29 a pricing seat also creates projects; qa_pricing is the seat that may not.
 //
 // Hiding is not a gate. Every step that finds a control disabled also sends the request
 // by hand and expects the api to refuse it, with the same words the screen uses.
@@ -42,6 +43,8 @@ const workspace = await firstWorkspace(ownerToken);
 const base = `/api/workspace/${workspace.uuid}/project`;
 
 const pricing = await seatedMember(ownerToken, workspace.uuid, "pricing", "f4s1");
+const qaPricing = await seatedMember(ownerToken, workspace.uuid, "qa_pricing", "f4s1");
+const collaborator = await seatedMember(ownerToken, workspace.uuid, "collaborator", "f4s1");
 const viewer = await seatedMember(ownerToken, workspace.uuid, "viewer", "f4s1");
 const estimator = await seatedMember(ownerToken, workspace.uuid, "estimator", "f4s1");
 const admin = await seatedMember(ownerToken, workspace.uuid, "admin", "f4s1");
@@ -126,29 +129,46 @@ await run("f4-s1", [
     },
   },
   {
-    title: "AC3 — a pricing seat sees New project disabled with the reason, and the api says the same",
+    title: "AC3 — a qa_pricing seat sees New project disabled with the reason, and the api says the same",
     run: async ({ page }) => {
-      await signInAs(page, pricing.email);
+      await signInAs(page, qaPricing.email);
       const button = page.getByRole("button", { name: "New project" });
       await button.waitFor({ timeout: 20000 });
-      expect(await button.isDisabled(), "New project is enabled for pricing");
+      expect(await button.isDisabled(), "New project is enabled for qa_pricing");
       await page.getByText("Your role cannot create projects.").waitFor({ timeout: 10000 });
 
-      const post = await apiCall(pricing.token, "POST", base, { name: "sneak" });
-      expect(post.status === 403, `pricing POST: ${post.status}`);
+      const post = await apiCall(qaPricing.token, "POST", base, { name: "sneak" });
+      expect(post.status === 403, `qa_pricing POST: ${post.status}`);
       expect(post.body?.detail === "Your role cannot create projects.", `refusal: ${post.body?.detail}`);
       return "button disabled, reason shown · api 403 with the same sentence";
     },
   },
   {
-    title: "AC4 — pricing may add a folder (upload documents) but not rename one (D-26)",
+    title: "AC3b (D-29) — a pricing seat creates a project from the dialog",
+    run: async ({ page }) => {
+      const map = (await apiCall(pricing.token, "GET", `/api/workspace/${workspace.uuid}/capability`)).body;
+      expect(map.capabilities.canCreateProjects === true, "pricing does not hold canCreateProjects");
+      await signInAs(page, pricing.email);
+      const button = page.getByRole("button", { name: "New project" });
+      await button.waitFor({ timeout: 20000 });
+      expect(!(await button.isDisabled()), "New project is disabled for pricing");
+      const name = `F4-S1 by pricing ${Date.now()}`;
+      await button.click();
+      await page.fill("#new-project-name", name);
+      await page.getByRole("button", { name: "Create project" }).click();
+      await page.getByRole("heading", { name }).waitFor({ timeout: 15000 });
+      return "canCreateProjects true · created through the dialog · landed on it";
+    },
+  },
+  {
+    title: "AC4 — a collaborator may add a folder (upload documents) but not rename one (D-26)",
     run: async () => {
       const project = await freshProject("folders");
       const folders = `${base}/${project.uuid}/folder`;
-      const made = await apiCall(pricing.token, "POST", folders, { name: "Specs from pricing" });
-      expect(made.status === 201, `pricing folder create: ${made.status} ${JSON.stringify(made.body)}`);
-      const rename = await apiCall(pricing.token, "PATCH", `${folders}/${made.body.uuid}`, { name: "x" });
-      expect(rename.status === 403, `pricing rename: ${rename.status}`);
+      const made = await apiCall(collaborator.token, "POST", folders, { name: "Photos from site" });
+      expect(made.status === 201, `collaborator folder create: ${made.status} ${JSON.stringify(made.body)}`);
+      const rename = await apiCall(collaborator.token, "PATCH", `${folders}/${made.body.uuid}`, { name: "x" });
+      expect(rename.status === 403, `collaborator rename: ${rename.status}`);
       expect(rename.body?.detail === "Your role cannot create projects.", `refusal: ${rename.body?.detail}`);
       const byOwner = await apiCall(ownerToken, "PATCH", `${folders}/${made.body.uuid}`, { name: "Specs" });
       expect(byOwner.status === 200, `owner rename: ${byOwner.status}`);

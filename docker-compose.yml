@@ -64,6 +64,10 @@ services:
   api:
     build:
       context: ../intelcost-app-fastapi
+      # The dev stage carries ruff and mypy, so the api gates run in here:
+      #   docker compose exec api sh -lc "ruff check app alembic scripts && mypy app"
+      # Production images build the last stage, `production`, which has neither.
+      target: dev
     environment:
       ENVIRONMENT: local
       DEBUG: "true"

@@ -123,20 +123,21 @@ sees everything and changes nothing.
 
 | Action | Capability | Who holds it | Legacy gate, for comparison |
 |---|---|---|---|
-| Create a project (either dialog) | `canCreateProjects` | owner, admin, estimator, takeoff | any member (RPC) |
+| Create a project (either dialog) | `canCreateProjects` | owner, admin, estimator, takeoff, pricing (D-29) | any member (RPC) |
 | Edit details, location, Plans Dated, scope, notes, attributes | `canCreateProjects` | same | any member (RLS) |
 | Change status inline, and mark Lost with a reason | `canCreateProjects` | same | any member (`isOwner \|\| true`) |
 | Assign or unassign members | `canCreateProjects` | same | owner or estimator (RLS; **admin excluded, a legacy bug**) |
 | Upload files, upload a folder, create a folder | `canUploadDocuments` | owner, admin, estimator, takeoff, pricing, collaborator | any member |
-| Rename, move or delete a file or folder | `canCreateProjects` | owner, admin, estimator, takeoff | any member |
+| Rename, move or delete a file or folder | `canCreateProjects` | owner, admin, estimator, takeoff, pricing | any member |
 | Download a file | membership | everyone | any member |
 | Move a project to Trash | `canManageWorkspace` | owner, admin | dashboard: `isOwner` (a role test). Browser: owner or admin. The RPC also allowed estimator, which no screen could reach. |
 | See the Trash tab, restore, delete permanently | `canRestoreDeletedItems` | owner, admin | owner or admin |
 | Manage statuses and the dashboard tab strip, and the "Manage statuses" link | `canManageWorkspace` | owner, admin | `is_workspace_admin` |
 
-The table is D-26's content. `pricing` loses project creation, because its role map never
-granted `canCreateProjects`, and keeps uploads. `collaborator` keeps uploads, which is
-what the collaborator plan mask protects.
+The table is D-26's content, amended by D-29: `pricing` holds `canCreateProjects`, so it
+creates and edits projects as well as uploading. The roles without project creation are
+`qa_takeoff`, `qa_pricing`, `collaborator` and `viewer`. `collaborator` keeps uploads,
+which is what the collaborator plan mask protects.
 
 ---
 
@@ -174,7 +175,8 @@ subtask. The [coverage table](#coverage) is the proof.
 **What each acceptance criterion assumes:**
 - The bench is up.
 - You are signed in as the seeded owner, with a second browser signed in as an
-  `estimator`, a `pricing` and a `viewer` where a criterion names them.
+  `estimator`, a `qa_pricing`, a `collaborator` and a `viewer` where a criterion names
+  them.
 - "Refused" means **both**: the control is absent or disabled with a reason, **and** a
   hand-written request from that role gets a 403 naming the capability.
 
@@ -240,9 +242,9 @@ Trigger `tg_projects_status_stamp` stamps `status_updated_at` on every status ch
    and none reads Draft.
 2. Change a project to Submitted, then read it back from the api: `submitted_at` is set.
    Change it to Bidding and back to Submitted: `submitted_at` has **not** moved.
-3. As `pricing`, New project is disabled, with "Your role cannot create projects" beside
+3. As `qa_pricing`, New project is disabled, with "Your role cannot create projects" beside
    it. A hand-written POST gets 403 with the same phrase.
-4. As `pricing`, a hand-written folder create succeeds (`canUploadDocuments`), and a
+4. As `collaborator`, a hand-written folder create succeeds (`canUploadDocuments`), and a
    hand-written folder rename is refused (`canCreateProjects`), per D-26.
 5. As `estimator`, a hand-written trash gets 403. As `admin`, it succeeds. Only
    `canRestoreDeletedItems` can restore.
@@ -570,7 +572,8 @@ only part in that is the "Perform Takeoff" entry decision (S13) and D-27's
 5. Kill MinIO mid-upload: the error sentence appears and the button reads Retry. Bring
    MinIO back and click Retry: the remaining files upload into **the same** project. The
    dashboard shows one project, not two.
-6. As `pricing`, New project is disabled with the capability phrase.
+6. As `qa_pricing`, New project is disabled with the capability phrase. As `pricing`, it
+   works (D-29).
 7. A 6 GB file (a sparse file made on the bench) uploads with the bar moving. A single
    presigned PUT would refuse it outright.
 8. Drop the network mid-upload (DevTools → Offline): the upload pauses and says so. Back
@@ -788,7 +791,7 @@ from files in F5.
 2. Clear City and Save: the city is NULL, and the location card no longer shows it.
 3. Blank the name: Save is disabled.
 4. Change Construction Type: the dashboard filter finds it under the new value.
-5. As `pricing`, the pencil is disabled with the capability phrase.
+5. As `qa_pricing`, the pencil is disabled with the capability phrase.
 
 **Realtime:** `project.updated`.
 
@@ -817,7 +820,9 @@ from files in F5.
 2. Its Project Home URL now shows "Project not found" (S20).
 3. As `estimator`, there is no trash icon, and a hand-written DELETE gets 403 naming
    `canManageWorkspace`'s phrase.
-4. The act appears in Settings → Activity.
+4. **(Block A check 5, deferred here.)** As owner, trash a project from its row, then open
+   Settings → Activity: the top line reads "moved the project {name} to Trash". The api
+   half, which has no control until now, was driven in `f4-s1` AC7.
 
 **Realtime:** `project.trashed`.
 
@@ -1009,7 +1014,7 @@ with the estimating tab"** rather than routing to a screen that does not exist.
 3. Clear every field and Save: the card reads "No address on file".
 4. Choose United States: State becomes a select of US states. Choose another country:
    State becomes free text.
-5. As `pricing`, the card is read-only.
+5. As `qa_pricing`, the card is read-only.
 
 **Realtime:** `project.updated`.
 
@@ -1031,7 +1036,7 @@ provider is chosen. This subtask exists so the line keeps an owner. It ticks not
 1. On Project Home, set Plans Dated to a date: it saves on change, and a reload keeps it.
 2. The same S2 date input is used by the dashboard's Created filter.
 3. Clear it: NULL is saved.
-4. As `pricing`, it is read-only.
+4. As `qa_pricing`, it is read-only.
 
 **Realtime:** `project.updated`.
 
@@ -1062,7 +1067,7 @@ provider is chosen. This subtask exists so the line keeps an owner. It ticks not
 3. Paste `<img src=x onerror=alert(1)>`: nothing executes, now or after reload.
 4. A hand-written PATCH with a `<script>` stores it stripped.
 5. Over 50,000 characters is refused with a sentence.
-6. As `pricing`, the panels are read-only.
+6. As `qa_pricing`, the panels are read-only.
 
 **Realtime:** `project.updated`.
 
@@ -1131,6 +1136,9 @@ provider is chosen. This subtask exists so the line keeps an owner. It ticks not
    sentence.
 6. As `estimator`, there is no Trash tab, and a hand-written list gets 403.
 7. The empty state shows on an empty trash.
+8. **(Block A check 5, deferred here.)** Restore a project from Settings → Trash, then
+   open Settings → Activity: the top line reads "restored the project {name} from Trash".
+   A permanent delete adds its own line naming the project.
 
 **Realtime:** `project.restored`, `project.purged`.
 
