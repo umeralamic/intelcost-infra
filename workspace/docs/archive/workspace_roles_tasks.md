@@ -9,6 +9,52 @@ lines)._
 
 ---
 
+## Closed 2026-09-25
+
+**S1 through S13 built and driven on the bench**, each against its acceptance criteria in
+a real browser including the failure states. Fixtures `intelcost-infra/browser/f3-s1.mjs`
+through `f3-s13.mjs`, plus `intelcost-infra/drives/` for the three checks a browser
+cannot make (the resolution order at module level, a flag's DB state, and the production
+bundle's contents). S14–S23 were specced here and handed on; the receiving feature is
+named in its `MANAGER.md` row and on the PARITY line.
+
+**PARITY:** §3 all 9 lines ticked. §2 9 of 25 ticked, 1 partial, 15 deferred.
+
+**Five decisions, all logged before the code:** D-21 (port the model whole, resolution
+first), D-22 (`derive_base_role` is total, `viewer` is the floor), D-23 (platform admin
+resolved in the permission layer as a capability gate), D-24 (invite link shown once,
+re-minted only by an explicit act), D-25 (three capabilities shown and locked).
+
+**Two criteria carried forward rather than ticked quietly.** S4 AC6 — a platform admin's
+unmasked capabilities visible on a screen — closes in **F5**, when the first control calls
+`can()`. And §3's collaborator-plan line: the plan and trial masks are built and driven at
+module level, but `Plan` is a constant `pro`, so no workspace can reach that state end to
+end until **F16**. Both are on their inheriting `MANAGER.md` row.
+
+**One divergence from legacy, deliberate:** a custom role **is** its map. Legacy resolves
+a custom role's absent capabilities through its base role, which closes a loop, because
+the base role is derived *from* the map — so every custom role collapses to its own base
+role. Ours grants only what its map grants, with the three locked capabilities following
+the base role. This is why `MANAGER.md` F17 carries a migration note: legacy custom roles
+must be migrated as their full effective map, or migrated roles silently lose access.
+
+**On the three §2 corrections in the table below.** Corrections 1 and 3 stand as written.
+Correction 2 (Members — invite, copy link, resend, revoke) was true when this spec was
+written and was superseded inside F3 itself: S11 built the link per D-24, so the line is
+now **ported** rather than the **partial** the table proposed. The correction is recorded
+here rather than edited away, because what the line said at spec time is the reason S11
+existed.
+
+**One incident worth keeping.** A `perl -0pi -e` edit on
+`intelcost-app-react/src/features/workspace/api.ts` failed to rename its work file and
+destroyed both the original and the temp copy. The file was rebuilt from `git show` plus
+the day's additions, and the reconstruction was later proved by diffing it against the
+last pre-F3 commit: purely additive, one widened import line, every pre-existing export
+byte-identical, every added method with exactly one caller and a matching api route.
+`CLAUDE.md` hard rule 7 now forbids in-place `perl -i` and `sed -i` on source files.
+
+---
+
 ## The problem
 
 Section 1 is closed: people can get into the product. Sections 2 and 3 are what they

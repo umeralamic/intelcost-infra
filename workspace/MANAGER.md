@@ -19,7 +19,7 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F3 | The product behind the front door barely exists: of the 34 behaviours in PARITY sections 2 and 3, three are marked ported (and two of those are wrong), one is partial and the rest are missing. Legacy runs on nine roles and twenty-five capabilities with per-workspace overrides; the new api has four roles and every gate reads `role === 'owner'`, which legacy's own rules forbid in writing. → Port the model whole, sequenced (D-21): S1–S4 resolution, S5–S8 the surfaces that edit it, S9–S13 the rest of workspace administration; S14–S23 are specced and handed to F4, F6, F14 and F15. Corrects three stale statuses in section 2. | Be Fe | Umer | [workspace_roles_tasks.md](docs/tasks/workspace_roles_tasks.md) |
+| _Nothing in progress_ | | | | |
 
 ---
 
@@ -35,19 +35,19 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F4 | Projects dashboard, creation, Project Home, files and folders | Be Fe | Umer | _not yet specced_ |
+| F4 | Projects dashboard, creation, Project Home, files and folders. **Inherits from F3:** the Statuses tab (project statuses, and the dashboard tab strip) and the Trash tab (the screen, and the nightly purge) — specced as F3 S19–S20, built here. | Be Fe | Umer | _not yet specced_ |
 | F8 | Realtime foundation: socket, auth, Redis fan-out, presence and soft-locks | Be Fe | Umer | _not yet specced_ |
-| F5 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration. Rendering per D-14 (pdf.js, split-source, thumbnails server-side). Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
-| F6 | Item model: tools, dimensions, sub-items, variables, folders, layers, classifications. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
+| F5 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration. Rendering per D-14 (pdf.js, split-source, thumbnails server-side). Emits realtime events (D-13). **Inherits from F3:** S4 AC6, the on-screen half of platform admin — a platform admin's capabilities are unmasked in the permission layer and nothing yet shows it, because no control calls `can()` until here. The first control that does closes it. | Be Fe | Umer | _not yet specced_ |
+| F6 | Item model: tools, dimensions, sub-items, variables, folders, layers, classifications. Emits realtime events (D-13). **Inherits from F3:** the whole classification block — which systems a workspace uses, the division/scope tree with its in-use delete refusal, archive and show-archived, the duplicate-code refusal, the CSI seed — plus the Subcontractors tab. Specced as F3 S14–S18 and sequenced here deliberately, because F6 is what files items against a classification, and a tree nothing files against can only be driven as "it saved". | Be Fe | Umer | _not yet specced_ |
 | F7 | Canvas interactions. Emits realtime events (D-13). | Fe | Umer | _not yet specced_ |
 | F9 | Estimating tab and export. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_ |
 | F13 | Auto Count | Be Fe | Umer | _not yet specced_ |
-| F14 | AI tools and AI credits | Be Fe | Umer | _not yet specced_ |
-| F15 | Sharing, guest view, Reports, time tracking, Community | Be Fe | Umer | _not yet specced_ |
-| F16 | Billing, trials, admin panel | Be Fe | Umer | _not yet specced_ |
+| F14 | AI tools and AI credits. **Inherits from F3:** the AI Credits tab — the workspace wallet, per-workspace and per-member credit limits, and returning a member to the workspace default (F3 S23). The Stripe top-up checkout inside that tab belongs to F16. | Be Fe | Umer | _not yet specced_ |
+| F15 | Sharing, guest view, Reports, time tracking, Community. **Inherits from F3:** the Shifts tab and the Time Tracking tab (F3 S21–S22), and with shifts, the one thing that makes PARITY §2's "Members — list with role, shift and last activity" tick. That line is **partial** until a member has a shift to show; role and last activity already ship. | Be Fe | Umer | _not yet specced_ |
+| F16 | Billing, trials, admin panel. **Inherits from F3:** the plan value itself. F3 built and drove the plan and trial capability masks, but `Plan` is a constant `pro` everywhere, so PARITY §3's "a collaborator-plan workspace loses the measure tools" cannot be reached end to end — **re-drive that line here**, once a workspace can actually be on the collaborator plan. Also the Stripe top-up checkout in the AI Credits tab, and the platform-admin screens behind the F3 S4 gate (D-23). | Be Fe | Umer | _not yet specced_ |
 | F17 | Legacy data migration and cutover. Legacy passwords are Supabase bcrypt. Verify bcrypt on login and rehash to Argon2, or every migrated user must reset. Password length rule applies on set/change only, never on login. Legacy custom roles resolve absent capabilities through their base role. Migration must write each legacy custom role's full effective map, or migrated roles silently lose access. | Infra | Abdullah | _not yet specced_ |
 
 ---

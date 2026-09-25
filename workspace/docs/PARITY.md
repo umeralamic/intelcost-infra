@@ -30,8 +30,18 @@ and it is not ported.
 **Section 1 is complete** (F2, 2026-09-24): 21 lines, **19 ported and driven**, **2
 retired** (D-15 OAuth consent, D-17 clear cached session). Every one was driven in a
 real browser on the bench, including its failure states; the fixtures are in
-`intelcost-infra/browser/`. No other section has been verified yet, so its unticked
-**ported** lines still mean only "the code is there".
+`intelcost-infra/browser/`.
+
+**Section 3 is complete** (F3, 2026-09-25): all 9 lines ported and driven. **Section 2
+is 9 of 25**, and the 16 it does not ship each name the feature that owns it, in the
+line itself. Two ticked lines carry a named remainder rather than a clean close, and
+both say so on the line: the platform-admin line owes F5 its on-screen half, and the
+collaborator-plan line is unreachable end to end until F16 supplies a plan value. One
+§2 line, "Members — list with role, shift and last activity", stays **partial** on
+purpose: last activity ships, the shift column waits for F15.
+
+No section beyond 1 and 3 has been verified, so an unticked **ported** line elsewhere
+still means only "the code is there".
 
 **Scope.** Derived from `src/App.tsx` routes, every component under
 `src/components/` and page under `src/pages/`, the 292 shipped plan files in
@@ -106,31 +116,31 @@ The takeoff page carries six workspace tabs: **Takeoff**, **Earthwork**,
 
 `/settings/workspace`, eleven tabs. `src/pages/WorkspaceSettings.tsx` (639 lines).
 
-- [ ] **General.** Rename the workspace and set the licence number and default address. `src/pages/WorkspaceSettings.tsx` · **missing**
-- [ ] **General.** Upload a workspace logo (PNG, JPG, SVG, WebP, max 2 MB), replace it, or remove it, with a separate message per rejection reason. `src/pages/WorkspaceSettings.tsx`, bucket `workspace-logos` · **missing**
-- [ ] **Project Setup.** Choose which classification systems the workspace uses (CSI MasterFormat, UniFormat, NRM 1, NRM 2, CESMM). At least one must stay on. `src/components/workspace-settings/ClassificationSystemsCard.tsx` · **missing**
-- [ ] **Classification.** Browse a system's divisions, add a division, add a scope and a sub-scope under it, rename and delete. "This one is in use" refuses a delete that would orphan items. `src/components/workspace-settings/ClassificationTab.tsx` (524 lines), table `workspace_classifications` · **missing**
-- [ ] **Classification.** Archive a code instead of deleting it, and toggle "Show archived" to see archived rows. `src/components/workspace-settings/ClassificationTab.tsx` · **missing**
-- [ ] **Classification.** A duplicate code is refused with "That code already exists in this system." `src/components/workspace-settings/ClassificationTab.tsx` · **missing**
-- [ ] **Classification.** Seed a workspace from the CSI default template on first use. `supabase/functions/load-csi-template/`, `src/lib/takeoff/classification/seed.ts`, table `csi_divisions` · **missing**
-- [ ] **Members.** List members with role, shift and last activity. `src/components/share/WorkspaceUsersTab.tsx` · **ported**
-- [ ] **Members.** Invite by email with a role, copy the invite link, resend with a fresh link, or revoke. `src/components/share/WorkspaceUsersTab.tsx`, table `workspace_invitations` · **ported**
-- [ ] **Members.** Change a member's role, or remove them from the workspace. `src/components/share/WorkspaceUsersTab.tsx` · **ported**
-- [ ] **Roles & Permissions.** A matrix of every role against every capability. Click a cell to grant or remove. `src/components/share/RolesMatrixTab.tsx`, `src/lib/permissions/capabilities.ts` · **missing**
-- [ ] **Roles & Permissions.** Create a workspace-defined custom role from a base role, label it, edit its capabilities, and delete it when no member holds it. `src/components/share/RolesMatrixTab.tsx`, table `workspace_custom_roles` · **missing**
-- [ ] **Roles & Permissions.** Edit a built-in role's capabilities for this workspace only. The cell is flagged "Edited for this workspace". `src/hooks/useWorkspaceRoleOverrides.ts`, table `workspace_role_overrides` · **missing**
-- [ ] **Ownership.** Transfer ownership to a chosen member, queue a transfer to an invitee who has not joined yet, and cancel a queued transfer. `src/components/workspace-settings/OwnershipTab.tsx`, rpc `transfer_workspace_ownership`, table `workspace_pending_ownership_transfers` · **missing**
-- [ ] **Statuses.** Create, rename, reorder, hide and delete project statuses. Deleting one asks which status its projects move to. `src/components/workspace-settings/StatusesTab.tsx`, table `workspace_project_statuses` · **missing**
-- [ ] **Statuses.** Configure the dashboard tab strip: add a tab, rename, move up or down, remove. `src/components/workspace-settings/StatusesTab.tsx`, tables `workspace_status_tabs`, `user_status_tab_prefs` · **missing**
-- [ ] **Shifts.** Create a named shift with working days and hours, edit it, delete it, and set a per-role default shift. `src/components/workspace-settings/ShiftsTab.tsx`, `ShiftDialog.tsx`, tables `workspace_shifts`, `workspace_role_default_shifts` · **missing**
-- [ ] **Time Tracking.** Choose automatic app-use tracking or a manual clock in and out, set the idle threshold, and choose whether time reports are visible to admins only or to everyone. `src/components/workspace-settings/TimeTrackingTab.tsx`, table `workspace_report_settings` · **missing**
-- [ ] **Time Tracking.** Turn on comparison against the member's shift schedule. `src/components/workspace-settings/TimeTrackingTab.tsx` · **missing**
-- [ ] **AI Credits.** Show the workspace wallet balance, buy a top-up pack through Stripe, and land back with the pack credited. `src/components/workspace-settings/AiCreditsTab.tsx`, `supabase/functions/create-topup-checkout/`, tables `workspace_wallet`, `ai_credit_packs`, `credit_ledger` · **missing**
-- [ ] **AI Credits.** Set a workspace-wide credit limit and a per-member limit, and return a member to the workspace default. `src/components/workspace-settings/AiCreditsTab.tsx`, table `workspace_user_credit_limits` · **missing**
-- [ ] **Subcontractors.** Maintain the workspace subcontractor list and assign classification scopes to each. `src/components/workspace-settings/SubcontractorsTab.tsx`, tables `workspace_subcontractors`, `workspace_subcontractor_scopes` · **missing**
-- [ ] **Trash.** List soft-deleted projects, restore one, permanently delete one, and show "Permanently deleted at the next daily purge". `src/components/workspace-settings/TrashTab.tsx`, rpcs `restore_project` and `purge_project_now` · **partial** (the api has soft delete and restore; no trash screen, no purge)
-- [ ] **Trash.** A nightly job hard-deletes projects soft-deleted 30+ days ago, retrying storage deletions that failed on an earlier run. `supabase/functions/purge-trashed-projects/`, table `trash_purge_log` · **missing**
-- [ ] **Activity.** An audit feed of who did what in the workspace. `src/components/workspace-settings/ActivityTab.tsx`, rpc `log_audit_event`, table `audit_log` · **missing**
+- [x] **General.** Rename the workspace and set the licence number and default address. `src/pages/WorkspaceSettings.tsx` · **ported** (F3-S10)
+- [x] **General.** Upload a workspace logo (PNG, JPG, SVG, WebP, max 2 MB), replace it, or remove it, with a separate message per rejection reason. `src/pages/WorkspaceSettings.tsx`, bucket `workspace-logos` · **ported** (F3-S10; the column is `logo_key` and holds an S3 key, presigned per response)
+- [ ] **Project Setup.** Choose which classification systems the workspace uses (CSI MasterFormat, UniFormat, NRM 1, NRM 2, CESMM). At least one must stay on. `src/components/workspace-settings/ClassificationSystemsCard.tsx` · **missing** → **F6**
+- [ ] **Classification.** Browse a system's divisions, add a division, add a scope and a sub-scope under it, rename and delete. "This one is in use" refuses a delete that would orphan items. `src/components/workspace-settings/ClassificationTab.tsx` (524 lines), table `workspace_classifications` · **missing** → **F6**
+- [ ] **Classification.** Archive a code instead of deleting it, and toggle "Show archived" to see archived rows. `src/components/workspace-settings/ClassificationTab.tsx` · **missing** → **F6**
+- [ ] **Classification.** A duplicate code is refused with "That code already exists in this system." `src/components/workspace-settings/ClassificationTab.tsx` · **missing** → **F6**
+- [ ] **Classification.** Seed a workspace from the CSI default template on first use. `supabase/functions/load-csi-template/`, `src/lib/takeoff/classification/seed.ts`, table `csi_divisions` · **missing** → **F6**
+- [ ] **Members.** List members with role, shift and last activity. `src/components/share/WorkspaceUsersTab.tsx` · **partial** (F3-S11 ships role and last activity; there is no shift column because there is no shifts feature → **F15**)
+- [x] **Members.** Invite by email with a role, copy the invite link, resend with a fresh link, or revoke. `src/components/share/WorkspaceUsersTab.tsx`, table `workspace_invitations` · **ported** (invite, resend, revoke F2-S2; the link per **D-24**, shown once at creation and re-minted only by an explicit act, F3-S11)
+- [x] **Members.** Change a member's role, or remove them from the workspace. `src/components/share/WorkspaceUsersTab.tsx` · **ported** (F2-S2 for the last-owner invariant, F3-S11 for the rest)
+- [x] **Roles & Permissions.** A matrix of every role against every capability. Click a cell to grant or remove. `src/components/share/RolesMatrixTab.tsx`, `src/lib/permissions/capabilities.ts` · **ported** (F3-S5; three capabilities are shown and locked against editing per **D-25**)
+- [x] **Roles & Permissions.** Create a workspace-defined custom role from a base role, label it, edit its capabilities, and delete it when no member holds it. `src/components/share/RolesMatrixTab.tsx`, table `workspace_custom_roles` · **ported** (F3-S7; a custom role IS its map, a deliberate divergence from legacy's fallback — see the spec)
+- [x] **Roles & Permissions.** Edit a built-in role's capabilities for this workspace only. The cell is flagged "Edited for this workspace". `src/hooks/useWorkspaceRoleOverrides.ts`, table `workspace_role_overrides` · **ported** (F3-S6; the stored map is sparse so a capability added later still falls back to the role default)
+- [x] **Ownership.** Transfer ownership to a chosen member, queue a transfer to an invitee who has not joined yet, and cancel a queued transfer. `src/components/workspace-settings/OwnershipTab.tsx`, rpc `transfer_workspace_ownership`, table `workspace_pending_ownership_transfers` · **ported** (F3-S9)
+- [ ] **Statuses.** Create, rename, reorder, hide and delete project statuses. Deleting one asks which status its projects move to. `src/components/workspace-settings/StatusesTab.tsx`, table `workspace_project_statuses` · **missing** → **F4**
+- [ ] **Statuses.** Configure the dashboard tab strip: add a tab, rename, move up or down, remove. `src/components/workspace-settings/StatusesTab.tsx`, tables `workspace_status_tabs`, `user_status_tab_prefs` · **missing** → **F4**
+- [ ] **Shifts.** Create a named shift with working days and hours, edit it, delete it, and set a per-role default shift. `src/components/workspace-settings/ShiftsTab.tsx`, `ShiftDialog.tsx`, tables `workspace_shifts`, `workspace_role_default_shifts` · **missing** → **F15**
+- [ ] **Time Tracking.** Choose automatic app-use tracking or a manual clock in and out, set the idle threshold, and choose whether time reports are visible to admins only or to everyone. `src/components/workspace-settings/TimeTrackingTab.tsx`, table `workspace_report_settings` · **missing** → **F15**
+- [ ] **Time Tracking.** Turn on comparison against the member's shift schedule. `src/components/workspace-settings/TimeTrackingTab.tsx` · **missing** → **F15**
+- [ ] **AI Credits.** Show the workspace wallet balance, buy a top-up pack through Stripe, and land back with the pack credited. `src/components/workspace-settings/AiCreditsTab.tsx`, `supabase/functions/create-topup-checkout/`, tables `workspace_wallet`, `ai_credit_packs`, `credit_ledger` · **missing** → **F14** (the wallet) and **F16** (the checkout)
+- [ ] **AI Credits.** Set a workspace-wide credit limit and a per-member limit, and return a member to the workspace default. `src/components/workspace-settings/AiCreditsTab.tsx`, table `workspace_user_credit_limits` · **missing** → **F14**
+- [ ] **Subcontractors.** Maintain the workspace subcontractor list and assign classification scopes to each. `src/components/workspace-settings/SubcontractorsTab.tsx`, tables `workspace_subcontractors`, `workspace_subcontractor_scopes` · **missing** → **F6**
+- [ ] **Trash.** List soft-deleted projects, restore one, permanently delete one, and show "Permanently deleted at the next daily purge". `src/components/workspace-settings/TrashTab.tsx`, rpcs `restore_project` and `purge_project_now` · **partial** (the api has soft delete and restore; no trash screen, no purge) → **F4**
+- [ ] **Trash.** A nightly job hard-deletes projects soft-deleted 30+ days ago, retrying storage deletions that failed on an earlier run. `supabase/functions/purge-trashed-projects/`, table `trash_purge_log` · **missing** → **F4**
+- [x] **Activity.** An audit feed of who did what in the workspace. `src/components/workspace-settings/ActivityTab.tsx`, rpc `log_audit_event`, table `audit_log` · **ported** (F3-S12; the row rides the act's own transaction, the one place **D-20** deliberately does not apply)
 
 ## 3. Permissions
 
@@ -138,15 +148,15 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 `qa_pricing`, `collaborator`, `viewer`. Twenty-five capabilities.
 `src/lib/permissions/capabilities.ts`, `src/hooks/usePermissions.ts`.
 
-- [ ] Every screen asks `can('<capability>')` rather than testing a role, so a custom role behaves like a built-in one everywhere. `src/hooks/usePermissions.ts` · **partial** (`src/features/workspace/roles.ts` exists; there is no capability layer)
-- [ ] Capability resolves as role default, then workspace override, then custom role, then masked by the plan, then masked by the trial. `src/hooks/usePermissions.ts`, `src/lib/billing/planCapabilities.ts`, `src/lib/billing/trialLimits.ts` · **missing**
-- [ ] A capability added after a workspace saved its override falls back to the role default rather than reading as denied. `src/hooks/usePermissions.ts` · **missing**
-- [ ] Workspace admin (`owner` or `admin`) and platform admin (Intelcost staff) are separate answers that never mix. `src/hooks/usePermissions.ts`, rpc `is_platform_admin` · **missing**
-- [ ] Only the owner can grant the owner role, and only through a transfer. `src/lib/permissions/capabilities.ts` · **missing**
-- [ ] A role or permission change reaches an open tab live, with no reload. `src/hooks/usePermissions.ts` · **missing**
-- [ ] "Can the user do this" and "is the feature shipped" stay separate gates, the second being a feature flag. `src/hooks/useFeatureFlag.ts`, table `feature_flags` · **missing**
-- [ ] A `collaborator`-plan workspace loses the measure tools and keeps the markup tools. `src/lib/billing/planCapabilities.ts`, `src/components/takeoff/Toolbar.tsx` · **missing**
-- [ ] Platform-internal routes render the 404 page for a non-platform user, so internal tooling is invisible to customers. `src/components/route-guards/PlatformRoute.tsx` · **missing**
+- [x] Every screen asks `can('<capability>')` rather than testing a role, so a custom role behaves like a built-in one everywhere. `src/hooks/usePermissions.ts` · **ported** (F3-S1, F3-S3; `require(*roles)` and `can_write` were deleted, so a role test is no longer available to write)
+- [x] Capability resolves as role default, then workspace override, then custom role, then masked by the plan, then masked by the trial. `src/hooks/usePermissions.ts`, `src/lib/billing/planCapabilities.ts`, `src/lib/billing/trialLimits.ts` · **ported** (F3-S2; one `resolve()` in `app/features/workspace/capabilities.py`)
+- [x] A capability added after a workspace saved its override falls back to the role default rather than reading as denied. `src/hooks/usePermissions.ts` · **ported** (F3-S2; the stored override map is sparse and an absent key means undecided, never denied)
+- [x] Workspace admin (`owner` or `admin`) and platform admin (Intelcost staff) are separate answers that never mix. `src/hooks/usePermissions.ts`, rpc `is_platform_admin` · **ported** (F3-S4, **D-23**; platform admin is a capability gate in the same layer, not a role. **One criterion carried to F5:** a platform admin's unmasked capabilities are not yet visible on a screen, because no control calls `can()` until F5)
+- [x] Only the owner can grant the owner role, and only through a transfer. `src/lib/permissions/capabilities.ts` · **ported** (F3-S9; `canGrantOwnerRole` is locked in the matrix per **D-25**, so no override and no custom role can hand it out)
+- [x] A role or permission change reaches an open tab live, with no reload. `src/hooks/usePermissions.ts` · **ported** (F3-S8)
+- [x] "Can the user do this" and "is the feature shipped" stay separate gates, the second being a feature flag. `src/hooks/useFeatureFlag.ts`, table `feature_flags` · **ported** (F3-S13; two calls, two answers, ANDed only where a control is drawn, and the two refusals read differently)
+- [x] A `collaborator`-plan workspace loses the measure tools and keeps the markup tools. `src/lib/billing/planCapabilities.ts`, `src/components/takeoff/Toolbar.tsx` · **ported** (F3-S2 — **the mask is built and driven at module level, and no workspace can reach it end to end**: the plan reads a constant `pro` until **F16** supplies a real value, and there are no measure tools to lose until F5. Re-drive this line in F16)
+- [x] Platform-internal routes render the 404 page for a non-platform user, so internal tooling is invisible to customers. `src/components/route-guards/PlatformRoute.tsx` · **ported** (F3-S4; `RequirePlatformAdmin` renders `<NotFound/>`, anonymous callers included)
 
 ## 4. Projects dashboard
 
@@ -976,39 +986,49 @@ Two supporting details that have to survive the transport swap:
 
 ## Counts per surface
 
-| # | Surface | Behaviours | ported | partial | missing |
-|---|---|---:|---:|---:|---:|
-| # | Surface | Behaviours | ported | partial | missing | was |
-|---|---|---:|---:|---:|---:|---:|
-| 1 | Auth | 21 | 8 | 3 | 10 | 21 |
-| 2 | Workspace settings | 25 | 3 | 1 | 21 | 25 |
-| 3 | Permissions | 9 | 0 | 1 | 8 | 9 |
-| 4 | Projects dashboard | 19 | 1 | 4 | 14 | 15 |
-| 5 | Project Home | 9 | 2 | 1 | 6 | 9 |
-| 6 | Sharing | 12 | 0 | 1 | 11 | 12 |
-| 7 | Takeoff sheets panel | 47 | 1 | 5 | 41 | 27 |
-| 8 | Takeoff items | 56 | 6 | 5 | 45 | 36 |
-| 9 | Canvas tools | 28 | 6 | 2 | 20 | 28 |
-| 10 | Canvas interactions | 48 | 1 | 3 | 44 | 37 |
-| 11 | Estimating | 26 | 0 | 1 | 25 | 20 |
-| 12 | Assemblies | 14 | 0 | 0 | 14 | 11 |
-| 13 | Library | 7 | 0 | 0 | 7 | 7 |
-| 14 | Markup | 12 | 0 | 0 | 12 | 12 |
-| 15 | Evidence and snippets | 9 | 0 | 0 | 9 | 9 |
-| 16 | Earthwork | 53 | 0 | 0 | 53 | 14 |
-| 17 | Auto Count | 40 | 0 | 0 | 40 | 8 |
-| 18 | AI tools | 30 | 0 | 0 | 30 | 10 |
-| 19 | Reports | 9 | 0 | 0 | 9 | 9 |
-| 20 | Community | 10 | 0 | 0 | 10 | 10 |
-| 21 | Billing | 10 | 0 | 1 | 9 | 10 |
-| 22 | Platform admin | 20 | 0 | 0 | 20 | 8 |
-| 23 | Keyboard and mouse | 36 | 1 | 2 | 33 | new |
-| 24 | App-wide | 45 | 0 | 3 | 42 | new |
-| | **Total** | **595** | **29** | **33** | **533** | **347** |
+**ported / partial / missing** is the current state of each line. **driven** is how many
+of them have been proved on the bench, and it is the only column that means finished.
+A retired line counts as driven, because there is nothing left to drive.
 
-**29 of 595 behaviours are ported, 5%.** The percentage fell because the denominator
-grew, not because anything regressed: one line moved to ported (space-drag panning)
-and five to partial, while 248 new lines were added.
+| # | Surface | Behaviours | ported | partial | missing | driven | lines, prev build |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 1 | Auth | 21 | 19 | 0 | 0 | **21** (19 + 2 retired) | 21 |
+| 2 | Workspace settings | 25 | 9 | 2 | 14 | **9** | 25 |
+| 3 | Permissions | 9 | 9 | 0 | 0 | **9** | 9 |
+| 4 | Projects dashboard | 19 | 1 | 4 | 14 | 0 | 15 |
+| 5 | Project Home | 9 | 2 | 1 | 6 | 0 | 9 |
+| 6 | Sharing | 12 | 0 | 1 | 11 | 0 | 12 |
+| 7 | Takeoff sheets panel | 47 | 1 | 5 | 41 | 0 | 27 |
+| 8 | Takeoff items | 56 | 6 | 5 | 45 | 0 | 36 |
+| 9 | Canvas tools | 28 | 6 | 2 | 20 | 0 | 28 |
+| 10 | Canvas interactions | 48 | 1 | 3 | 44 | 0 | 37 |
+| 11 | Estimating | 26 | 0 | 1 | 25 | 0 | 20 |
+| 12 | Assemblies | 14 | 0 | 0 | 14 | 0 | 11 |
+| 13 | Library | 7 | 0 | 0 | 7 | 0 | 7 |
+| 14 | Markup | 12 | 0 | 0 | 12 | 0 | 12 |
+| 15 | Evidence and snippets | 9 | 0 | 0 | 9 | 0 | 9 |
+| 16 | Earthwork | 53 | 0 | 0 | 53 | 0 | 14 |
+| 17 | Auto Count | 40 | 0 | 0 | 40 | 0 | 8 |
+| 18 | AI tools | 30 | 0 | 0 | 30 | 0 | 10 |
+| 19 | Reports | 9 | 0 | 0 | 9 | 0 | 9 |
+| 20 | Community | 10 | 0 | 0 | 10 | 0 | 10 |
+| 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
+| 22 | Platform admin | 20 | 0 | 0 | 20 | 0 | 8 |
+| 23 | Keyboard and mouse | 36 | 1 | 2 | 33 | 0 | new |
+| 24 | App-wide | 45 | 0 | 3 | 42 | 0 | new |
+| | **Total** | **595** | **55** | **30** | **508** | **39** | **347** |
+
+**55 of 595 behaviours are ported, 9%. 39 are driven, 7%** — and driven is the number
+that counts. The gap between the two is the honest part: 16 lines say the code is there
+and nothing has yet proved it on a screen.
+
+Two lines inside the 39 carry a named remainder rather than a clean close, and the line
+itself says which: §3's platform-admin line owes **F5** its on-screen half, and §3's
+collaborator-plan line is built and driven at module level but unreachable end to end
+until **F16** supplies a plan value. Both are ticked because the behaviour is ported and
+proved as far as the app can currently reach it; neither is finished business.
+
+The 2 remaining retired lines (D-15, D-17) are counted as driven and not as ported.
 
 Three patterns worth naming.
 
@@ -1030,8 +1050,10 @@ now 214 behaviours between them, nothing started.
 
 Two things this count is not. It is not an estimate: a line is one behaviour, not one
 unit of work, and "split every mixed-sign triangle at Δz=0" is not the same size as
-"the colour picker stays open while tuning colours". And it is not a verification:
-every box is unticked, including the 29 ported ones, until each is driven on the bench.
+"the colour picker stays open while tuning colours". And the **ported** column is not a
+verification: a box stays unticked until the behaviour is driven on the bench, which is
+why 55 lines read ported and only 39 are ticked. The 16-line gap is not a backlog of
+work, it is a backlog of proof.
 
 ---
 

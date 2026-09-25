@@ -70,6 +70,12 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    `intelcost-app-fastapi` and nowhere else.
 6. **The api owns writes.** After D-03 there is no direct database access from a
    browser. A frontend that needs data calls the api.
+7. **No in-place `perl -i` or `sed -i` on a source file.** Edit source with the editor
+   tool. In-place rewriting works by writing a temp file and renaming it over the
+   original; on Windows that rename can fail while the file is held open, and it has
+   already destroyed one file here — both the original and the temp copy were lost, and
+   the file had to be rebuilt from the last commit by hand. A whole-file rewrite through
+   a heredoc is acceptable. A batch edit across many files is worth the extra calls.
 
 ## Git
 
