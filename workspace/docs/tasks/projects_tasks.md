@@ -10,7 +10,26 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 **Inherited from:** [workspace_roles_tasks.md](../archive/workspace_roles_tasks.md) S19, S20
 
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
-2026-09-25, D-26, D-27 and D-28 logged, Block A in build.**_
+2026-09-25, D-26, D-27 and D-28 logged. Block A (S1, S2) built and driven 2026-09-25,
+awaiting the founder's checks before Block B.**_
+
+## Progress
+
+| Block | State | Proof |
+|---|---|---|
+| **A: S1, S2** | Built and driven, 2026-09-25 | `browser/f4-s1.mjs` 8/8 and `f4-s2.mjs` 6/6, `drives/f4-s2-bundle.sh` 4/4. Regression: `f3-s3` 3/3 and `f3-s12` 8/8. Gates: ruff, mypy, lint, typecheck and build. Migration `95c121b3680c` driven up, down and up. |
+| B to F | Not started | |
+
+**Found while building Block A:**
+- `_read` in the project routes composed the response by reading every schema field off
+  the row. That broke on `workspace_uuid`, which is context and not a column. Every
+  project call returned 500 until it was fixed. The fixture caught it on its first run.
+- The dialog's "give focus back" captured its opener in an effect, after an `autoFocus`
+  field had already taken focus, so focus fell to the page body on close. The opener is
+  now read during the first render.
+- Renaming `toast.tsx` left the Vite dev server resolving the old path, and the app
+  white-screened until the dev server was restarted. This was a dev-server cache, not a
+  code fault. The production build was unaffected.
 
 ---
 
@@ -256,8 +275,9 @@ or toast, and every §4 and §5 surface needs them.
    as the 1st, not the 31st. This is the off-by-one legacy guards against.
 3. A dialog with work in flight ignores `Esc` and backdrop clicks. Otherwise it closes on
    `Esc`, on the backdrop and on Cancel, and reopens empty.
-4. New project on the dashboard opens the dialog. Creating toasts "Project created", and
-   the project appears in the list.
+4. New project on the dashboard opens the dialog. Creating toasts "Project created" and
+   lands on the new project's Home, as legacy does, and the project is in the list on the
+   way back.
 5. `/dev/ui` does not exist in the production build: its route and its strings are absent
    from `dist/`.
 
