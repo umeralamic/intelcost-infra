@@ -1347,3 +1347,45 @@ map (`capabilities.py` and `capabilities.ts`), so `pricing` can create projects.
   `qa_pricing`.
 - **F17:** legacy pricing members gain the capability on migration. That is the intended
   outcome, not drift.
+
+---
+
+## D-30 — The bench worker restarts on code change, and a fixture proves it is current
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Infra, Backend
+
+**Context:** The api reloads on every code change (`uvicorn --reload`). The Celery worker
+did not. It imports the code once at start and keeps it until someone restarts it. On
+the bench it ran pre-F3 code for most of F3 and F4: drawing renders failed on
+`logo_url`, and nothing said so until a Block C fixture needed a rendered sheet. A README
+line saying "restart the worker" is a rule that depends on memory.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Keep the README note | Nothing to build | It already failed once, silently, for weeks |
+| B — `watchmedo auto-restart` (watchdog) | The usual tool | A new dependency, and a lock refresh, for the bench alone |
+| C — The `watchfiles` CLI, which the image already has through `uvicorn[standard]` | No new dependency. The same watcher the api's `--reload` uses | Also present in production, though nothing there runs it |
+
+**Decision:** Option C, in the bench's compose file only. The worker runs under
+`watchfiles`, which restarts it when a `.py` file under `app/` changes. Polling is forced,
+because a bind mount from a Windows host may deliver no filesystem events (the same trap
+`DEV_WATCH_POLL` answers for Vite).
+
+To prove it, each process computes a fingerprint when it starts: a sha256 over the path
+and content of every `.py` file under `app/`. `GET /health/code` returns the fingerprint
+of the files on disk now, the api's and the worker's (the worker's comes from a Celery
+task). The route is registered only when `ENVIRONMENT` is `local`. The bench fixture
+`browser/bench-code.mjs` fails when the three do not match.
+
+**Consequences:**
+- **Production is unchanged.** Its image and its worker command are untouched, and
+  `/health/code` does not exist there. Deployments replace the worker, so this problem
+  does not arise.
+- **A restart can drop an in-flight task.** Tasks are `acks_late` with
+  `reject_on_worker_lost` and idempotent, so it is redelivered.
+- **The README's "restart the worker" line is replaced by this.** A model change still
+  needs a migration, and the api runs those on start.

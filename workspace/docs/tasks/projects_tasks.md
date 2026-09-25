@@ -12,7 +12,8 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-26, D-27, D-28 and D-29 logged. Block A (S1, S2) built, checked by the
 founder and pushed. Block B (S3, S4) checked and pushed. Block C (S5 to S16) checked and
-pushed. Block D (S17 to S19) in progress.**_
+pushed. Block D (S17 to S19) built and driven 2026-09-25, awaiting the founder's checks
+before Block E.**_
 
 ## Progress
 
@@ -21,7 +22,7 @@ pushed. Block D (S17 to S19) in progress.**_
 | **A: S1, S2** | Built and driven, 2026-09-25 | `browser/f4-s1.mjs` 8/8 and `f4-s2.mjs` 6/6, `drives/f4-s2-bundle.sh` 4/4. Regression: `f3-s3` 3/3 and `f3-s12` 8/8. Gates: ruff, mypy, lint, typecheck and build. Migration `95c121b3680c` driven up, down and up. |
 | **B: S3, S4** | Built and driven, 2026-09-25 | `browser/f4-s3.mjs` 11/11 and `f4-s4.mjs` 9/9. Regression: `f4-s1` 9/9, `f4-s2` 6/6, `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. Migration `80c841e4b096` driven up, down and up. The dashboard half of S3 and S4 is carried into S5 and S9. |
 | **C: S5 to S16** | Built and driven, 2026-09-25 | `browser/f4-s5` 7/7, `s6` 3/3, `s7` 7/7, `s8` 4/4, `s9` 5/5, `s10` 4/4, `s11` 5/5, `s12` 3/3 (three phases, with `drives/f4-s12-age.py`), `s13` 3/3, `s14` 4/4, `s15` 3/3 (with Block A check 5), `s16` 1/1. Migration `99ca0a2606b6` driven up, down and up. The S3/S4 dashboard half is driven in `s5` and `s9`. |
-| D: S17 to S19 | In progress | |
+| **D: S17 to S19** | Built and driven, 2026-09-25 | `browser/f4-s17` 12/12 (with S7 AC9's reload and resume, and a second-project step), `f4-s18` 4/4, `f4-s19` 3/3, `bench-code` 1/1 (D-30). Migration `b7d41e2c9a53` driven up, down and up, twice. Regression: `f4-s1` to `f4-s16` all pass (`s12` 3/3 across its phases), `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. `f4-s1` AC4 renamed its folder to a free name, because names are now unique among siblings. |
 | E, F | Not started | |
 
 **Found while building Block A:**
@@ -68,6 +69,48 @@ pushed. Block D (S17 to S19) in progress.**_
 - **S7 AC7 and AC9 changed** (see S7): the ceiling is proved by the api's part plan plus a
   real multi-part upload, and resume after a reload moved to S17 with the "Unfinished
   uploads" list.
+
+**Built in Block D beyond the letter of the subtasks, and why:**
+- **The root is the project, not a folder row** (as in Block C). So "the root cannot be
+  renamed, moved or deleted" holds by construction. Its menu offers only New folder, and
+  a hand-written PATCH or DELETE naming the project as a folder answers 404, "No such
+  folder in this project." (S17 AC8).
+- **Folders get the cross-project sentence too.** Legacy only had one for files ("Files
+  can only move within their own project."). A folder moved into another project's
+  folder now reads "Folders can only move within their own project." Both are 422s. A
+  folder of another project is looked up across the workspace only, never outside it.
+- **Delete retries on the worker. The retry log is S27's.** A file or folder delete
+  queues `delete_objects` after the commit. It retries 5 times, 30 s apart; S27's
+  `trash_purge_log` does not exist until Block F, so a failure past the last retry is
+  logged for now. S27 picks it up.
+- **One list call for a project's files.** `GET …/file` returns every file, unfinished
+  ones included, and the browser groups them by folder. Nothing needed a per-folder
+  endpoint.
+- **Upload folder into any folder.** `/folder/ensure` takes an optional `parent_uuid`, so
+  a tree dropped onto Plans lands as Plans/{its name}/…, as in legacy. It used to start
+  only from the root.
+- **Download saves under the file's own name.** The object key holds a sanitised name,
+  so the presigned GET carries `Content-Disposition: inline; filename*=…` from the row.
+- **Counts are finished files only.** An unfinished upload is not a file yet.
+- **"Unfinished uploads" (S7 AC9)** lists every open upload in the project under the
+  contents pane. Resume asks for the same file (name and size must match; otherwise
+  "That is not the same file. Pick {name}, {size}.") and sends only the parts S3 lacks.
+  Discard aborts the upload.
+- **The bench worker restarts on a code change (D-30),** with `browser/bench-code.mjs`
+  failing when the api or the worker runs code older than the disk's.
+
+**Found while building Block D:**
+- **Seed folders were sorting among other folders.** Every folder took `sort_order` 0,
+  so "Survey" listed between Plans and Specs. Folders that are not seeds now take 100
+  and list alphabetically after the four seeds. Migration `b7d41e2c9a53` moves the
+  existing ones.
+- **A duplicate folder name was allowed.** Only New from folder checked for one. Now a
+  case-insensitive unique index covers siblings (the root folded to 0, since Postgres
+  treats nulls as distinct), and the service refuses first in words. The migration
+  renames any clashes that already existed to "Name (2)".
+- `f4-s17`'s reload step first held part 2 open with a route that never answered.
+  Unrouting released it and the upload finished before the reload, so there was nothing
+  to resume. It now fails the later parts instead. This was a fixture fault.
 
 **Found while building Block C:**
 - `dict()` over a SQLAlchemy result subscripts it, because the result has a `keys()`
