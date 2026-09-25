@@ -1076,3 +1076,61 @@ re-mints only after that is confirmed.
 - Accepted: an admin who dismisses the creation dialog and does not want to invalidate
   has only Resend. That is the right answer — Resend mails a fresh link to the invited
   address, which is where it was supposed to go.
+
+---
+
+## D-25 — Three capabilities are shown in the matrix and locked against editing
+
+**Date:** 2026-09-24
+**Status:** Accepted
+**Area:** Auth, Frontend, Backend
+
+**Context:** D-21 settled that the matrix shows every capability, because legacy's own
+matrix reaches only 22 of its 25 — `canManageWorkspace`, `canGrantOwnerRole` and
+`canEditEstimates` appear in no group there, so three permissions are enforced and
+administrable from nowhere. Showing all twenty-five fixes that. It also creates a
+question legacy never had to answer: three of them must not become editable just
+because they became visible.
+
+`canGrantOwnerRole` is the sharp one. Ownership is transferred, never handed out
+(F3-S9), and a workspace that could grant "may grant owner" to a role of its own
+invention would have routed around that rule without touching it. `canManageBilling`
+and `canTransferOwnership` are already in `FORBIDDEN_CAPS` for the same reason;
+`canGrantOwnerRole` is the third and was already there. `canManageWorkspace` is what
+makes a role administrative at all, and `canEditEstimates` is the legacy umbrella whose
+meaning is held by the call sites that read it rather than by anything a workspace
+knows — retuning either per workspace changes what words mean, not what a role may do.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Hide the three, as legacy does | No new behaviour; the matrix is what customers know | Three permissions the runtime honours and no screen can reach, which is the defect D-21 set out to fix. An admin looking for "why can they change settings" finds nothing |
+| B — Show all twenty-five, all editable | One rule, no exceptions to explain | A custom role could grant itself `canGrantOwnerRole` and hand out ownership. The ownership rule would still be written down and no longer true |
+| C — Show all twenty-five; three render locked with a reason | The matrix is complete, so every enforced permission is accounted for on screen, and the three that cannot move say why rather than being silently inert | Two kinds of cell, and the difference has to be explained in the UI rather than assumed |
+
+**Decision:** Option C. All twenty-five capabilities appear in the matrix.
+`canManageWorkspace`, `canGrantOwnerRole` and `canEditEstimates` render **read-only**,
+with a short reason, and cannot be granted or removed by a custom role or a
+per-workspace override.
+
+**Consequences:**
+- **`LOCKED_CAPS` is `canManageWorkspace`, `canGrantOwnerRole` and `canEditEstimates`**,
+  and it is enforced in the same place `FORBIDDEN_CAPS` already is: stripped from any
+  stored map by the service, and refused at the database. A locked cell that is only
+  locked in the browser is a decoration.
+- **`FORBIDDEN_CAPS` and `LOCKED_CAPS` overlap and are not the same thing.**
+  `canTransferOwnership`, `canManageBilling` and `canGrantOwnerRole` are *forbidden*:
+  forced to false in any stored map, so a role that claims them holds nothing.
+  `canManageWorkspace` and `canEditEstimates` are *locked*: they keep whatever the
+  built-in role grants and a stored map cannot move them either way. Forbidden is
+  "never true here"; locked is "not yours to change".
+- **A custom role can never grant ownership**, by three independent means: the
+  capability is owner-only in `ROLE_TO_CAPS`, it is stripped from every stored map, and
+  the cell does not accept a click. A browser step proves the third and a hand-written
+  request proves the first two, because hiding is not a gate.
+- **The reason is on the cell, not in a footnote.** "Only the owner grants ownership,
+  through a transfer" and "this is what makes a role administrative" are short enough
+  to sit where the question is asked.
+- **The locked set is a list, not a rule**, so it is reviewed when a capability is
+  added rather than derived from something that might stop being true.

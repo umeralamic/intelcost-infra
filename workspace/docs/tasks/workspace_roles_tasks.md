@@ -54,6 +54,7 @@ All four were open questions in the first draft of this spec and are now settled
 | **D-21** | The capability model is ported **whole**, sequenced: resolution first, editing second. Nine roles, twenty-five capabilities, one shared map per repo, then custom roles and per-workspace overrides — all inside F3. | S1–S4 then S5–S7. Every existing `owner`/`admin` gate is replaced by a capability check in the same pass (S3). |
 | **D-22** | `derive_base_role` is **total**: a map granting neither administration, takeoff nor pricing returns `viewer`, never nothing. Port the fix, not legacy's missing return. | S7 |
 | **D-23** | **Platform admin exists** — our internal team — and is resolved in the same permission layer now, as a capability gate and never as a role. Screens come in F16; F10's Starter Pack and Library admin powers use this check. | S4 |
+| **D-25** | All twenty-five capabilities appear in the matrix, but `canManageWorkspace`, `canGrantOwnerRole` and `canEditEstimates` render **locked** with a reason and cannot be moved by a custom role or an override. Legacy hid them; hiding them is what made them unadministrable. | S5, S6, S7 |
 | **D-24** | The invite link is shown **once at creation** with a Copy control. A separate **"Get new link"** warns that the old link stops working, then re-mints. Never silently. | S11 |
 
 ---
@@ -286,7 +287,12 @@ not have access" message, so internal tooling is indistinguishable from a wrong 
 5. No screen gates a customer feature on `isPlatformAdmin`, and none gates an internal
    one on `isWorkspaceAdmin`.
 6. A platform admin inside a customer workspace whose trial has expired still resolves
-   unmasked capabilities (S2 AC7), visible on a screen and not only in a map.
+   unmasked capabilities (S2 AC7). **The api half is driven in F3; the on-screen half
+   is not, and this line stays unticked until F5.** No control reads a masked
+   capability yet — the first `can()` in a takeoff screen is F5's — so what F3 proves
+   is that the mask reaches a real write path (the expired owner is refused a project,
+   the unmasked staff member is not, same workspace, same instant) and that the browser
+   receives the masked map. A screen that visibly withholds a control closes it.
 
 **Realtime events:** none.
 
@@ -319,11 +325,15 @@ the two tables it writes to — which is the read-only gap D-21 accepts.
    ported: a permission the runtime honours and the matrix cannot reach is a permission
    nobody can change.
 2. Fixed roles render read-only with a reason on hover, not a dead cell.
-3. Owner's column is fully granted and cannot be edited.
-4. A caller without `canAssignRoles` sees the matrix read-only rather than not at all.
-5. **The matrix and the runtime check disagree nowhere**: a bench step compares every
+3. **The three locked capabilities render locked in every column** (D-25), each with a
+   short reason where the question is asked rather than in a footnote. Locked is
+   visibly different from "this role does not have it": the cell shows the built-in
+   answer and says it cannot move.
+4. Owner's column is fully granted and cannot be edited.
+5. A caller without `canAssignRoles` sees the matrix read-only rather than not at all.
+6. **The matrix and the runtime check disagree nowhere**: a bench step compares every
    cell against the api's resolved map for that role.
-6. The matrix restates no permission of its own: it holds labels, and a capability
+7. The matrix restates no permission of its own: it holds labels, and a capability
    removed from the map disappears from the screen without the screen being edited.
 
 **Realtime events:** consumes `workspace.permissions.changed`.
@@ -358,7 +368,10 @@ is_disabled), the stage S2 left open, and the forbidden-capability guard in the 
    driven here through the screen rather than through the resolver.
 5. The three forbidden capabilities cannot be granted by the screen or by a hand-written
    request; the database refuses the row even if the service is bypassed.
-6. A disabled role disappears from the matrix and from every role picker, and members
+6. **The three locked capabilities cannot be moved either way by an override** (D-25):
+   a stored map naming them changes nothing, granted or denied, and the built-in
+   answer stands.
+7. A disabled role disappears from the matrix and from every role picker, and members
    already holding it keep working until they are moved.
 
 **Realtime events:** `workspace.permissions.changed` →
@@ -394,12 +407,24 @@ stage S2 left open.
    returns `viewer` — never null — for a map granting neither takeoff nor pricing nor
    administration (D-22). Driven with a review-only map, which is the case legacy breaks
    on.
-4. A custom role's map wins over the built-in default of its base role.
+4. A custom role's map wins over the built-in default of its base role. **A custom
+   role IS its map**: a capability it does not grant, it does not have, because there
+   is no built-in role behind it to fall back through. This is a **deliberate
+   divergence from legacy**, which falls back to the base role and so closes a loop —
+   the base role is derived from the map, so a role granting `canEditPricing` derives
+   `pricing` and inherits everything pricing grants. The locked three are the
+   exception and follow the base role, which is what locked means (D-25); without
+   that, `canEditEstimates` would be false for every custom role and a workspace's own
+   "Pricer" could price nothing.
 5. The three forbidden capabilities cannot be granted to a custom role, by the screen or
-   by a hand-written request.
-6. Deleting a custom role that a member holds is refused, naming the count.
-7. Deleting one nobody holds succeeds, and the matrix loses its column.
-8. A custom role is visible only inside its own workspace.
+   by a hand-written request. **A custom role can never grant ownership**, and that is
+   driven three ways: the capability is owner-only in the map, it is stripped from the
+   stored map, and the cell does not accept a click (D-25).
+6. The three locked capabilities are unmovable by a custom role too, and the screen
+   says why rather than ignoring the click.
+7. Deleting a custom role that a member holds is refused, naming the count.
+8. Deleting one nobody holds succeeds, and the matrix loses its column.
+9. A custom role is visible only inside its own workspace.
 
 **Realtime events:** `workspace.permissions.changed` →
 `{workspace_uuid, kind: "custom_role", role}`. Channels 8 and 9 of the legacy table
@@ -794,6 +819,10 @@ earlier; it moves as a block.
 - **S1 through S13** are driven on the bench against their acceptance criteria, in a
   real browser, including the failure states. S14–S23 are not built here and their lines
   stay unticked.
+- **One exception, named rather than glossed:** S4 AC6 (a platform admin's unmasked
+  capabilities, visible on a screen) closes in **F5**, when the first control calls
+  `can()`. Its §3 line ticks on the strength of S4's other five criteria; AC6 itself
+  stays open and is listed in F5's spec as inherited.
 - The four decisions this spec rests on — **D-21, D-22, D-23, D-24** — are logged in
   `DECISIONS.md`. They were, before any code was written.
 - The three §2 Members corrections are applied to `docs/PARITY.md`.

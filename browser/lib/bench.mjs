@@ -359,3 +359,59 @@ export async function apiCall(token, method, path, body) {
   });
   return { status: response.status, body: await response.json().catch(() => null) };
 }
+
+/** The roles matrix, as the api resolved it. */
+export async function matrix(token, workspaceUuid) {
+  const response = await fetch(await fromNode(`${API}/api/workspace/${workspaceUuid}/matrix`), {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error(`matrix: ${response.status} ${await response.text()}`);
+  return response.json();
+}
+
+/** Sign in through the UI and land on the app. Most F3 fixtures start here. */
+export async function signInAs(page, email, password = "bench-password-1") {
+  await page.goto(`${APP}/login`);
+  await page.fill("#email", email);
+  await page.fill("#password", password);
+  await page.click('button[type="submit"]');
+  await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });
+}
+
+/** A built-in role, retuned for one workspace. Sparse on purpose (F3-S6). */
+export async function setOverride(token, workspaceUuid, role, capabilities, isDisabled = false) {
+  return apiCall(token, "PUT", `/api/workspace/${workspaceUuid}/override/${role}`, {
+    capabilities,
+    is_disabled: isDisabled,
+  });
+}
+
+export async function clearOverride(token, workspaceUuid, role) {
+  return apiCall(token, "DELETE", `/api/workspace/${workspaceUuid}/override/${role}`);
+}
+
+/** Workspace-defined roles (F3-S7). */
+export async function createCustomRole(token, workspaceUuid, label, capabilities) {
+  return apiCall(token, "POST", `/api/workspace/${workspaceUuid}/custom-role`, {
+    label,
+    capabilities,
+  });
+}
+
+export async function listCustomRoles(token, workspaceUuid) {
+  const { body } = await apiCall(token, "GET", `/api/workspace/${workspaceUuid}/custom-role`);
+  return body;
+}
+
+export async function deleteCustomRole(token, workspaceUuid, roleUuid) {
+  return apiCall(token, "DELETE", `/api/workspace/${workspaceUuid}/custom-role/${roleUuid}`);
+}
+
+export async function assignCustomRole(token, workspaceUuid, userUuid, roleUuid) {
+  return apiCall(
+    token,
+    "PUT",
+    `/api/workspace/${workspaceUuid}/member/${userUuid}/custom-role`,
+    { custom_role_uuid: roleUuid },
+  );
+}
