@@ -161,6 +161,8 @@ await run("f4-s1", [
       const name = `F4-S1 by pricing ${Date.now()}`;
       await button.click();
       await page.fill("#new-project-name", name);
+      // Two steps since Block C (F4-S7): info, then files.
+      await page.getByRole("button", { name: "Next" }).click();
       await page.getByRole("button", { name: "Create project" }).click();
       await page.getByRole("heading", { name }).waitFor({ timeout: 15000 });
       return "canCreateProjects true · created through the dialog · landed on it";

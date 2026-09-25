@@ -152,28 +152,30 @@ await run("f4-s2", [
     },
   },
   {
-    title: "AC4 — New project opens the dialog, refuses a blank name, creates, toasts and lands on it",
+    // Block C made this dialog two steps (F4-S7): a blank name now holds Next back
+    // rather than being refused on submit, and the list shows rows, not card headings.
+    title: "AC4 — New project opens the dialog, holds a blank name back, creates, toasts and lands on it",
     run: async ({ page }) => {
       await signInAs(page, SEEDED.email, SEEDED.password);
       await page.getByRole("button", { name: "New project" }).click();
       await page.getByRole("dialog", { name: "New project" }).waitFor();
-      await page.getByRole("button", { name: "Create project" }).click();
-      await page.getByText("A project needs a name.").waitFor();
+      expect(await page.getByRole("button", { name: "Next" }).isDisabled(), "Next enabled with no name");
 
       const name = `F4-S2 dialog ${Date.now()}`;
       await page.fill("#new-project-name", name);
+      await page.getByRole("button", { name: "Next" }).click();
       await page.getByRole("button", { name: "Create project" }).click();
       await page.getByText("Project created").waitFor({ timeout: 10000 });
       await page.waitForURL(/\/project\/[0-9a-f-]{36}$/, { timeout: 10000 });
       await page.getByRole("heading", { name }).waitFor();
 
-      await page.goto(APP);
-      await page.getByRole("heading", { name }).waitFor({ timeout: 10000 });
+      await page.goto(`${APP}/?tab=all`);
+      await page.getByRole("link", { name }).waitFor({ timeout: 10000 });
       await page.getByRole("button", { name: "New project" }).click();
       expect((await page.inputValue("#new-project-name")) === "", "the dialog reopened holding the old name");
       await page.keyboard.press("Escape");
       expect((await page.getByRole("dialog").count()) === 0, "Escape did not close New project");
-      return "blank refused in words · created · toast · landed on its Home · listed · reopens empty";
+      return "blank held back · created · toast · landed on its Home · listed · reopens empty";
     },
   },
 ]);

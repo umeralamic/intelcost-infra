@@ -159,6 +159,14 @@ before driving anything.
 Renaming or deleting a file under `src/` can leave the running Vite server resolving
 the old path, and the app white-screens. `docker compose restart app` clears it.
 
+**The worker does not reload.** The api container runs uvicorn with `--reload`, so an
+edit under `intelcost-app-fastapi/app` reaches it at once. The worker bind-mounts the same
+code, but Celery keeps whatever it imported at start. After any change to models or
+tasks, `docker compose restart worker`, or the worker keeps running the old code against
+the new schema. It fails quietly in the worker log, not in the browser. This is how the
+drawing render stopped working after F3 renamed `workspace.logo_url` to `logo_key`: the
+worker had started before the rename (found 2026-09-25, F4-S13).
+
 Running it on the host instead still works and is faster to iterate on:
 
 ```bash
