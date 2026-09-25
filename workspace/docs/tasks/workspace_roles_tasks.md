@@ -494,7 +494,9 @@ leave. There is no transfer.
 6. The confirmation demands the workspace name typed, as legacy does.
 7. Revoking the invitation behind a queued transfer cancels the transfer too, rather
    than leaving it waiting for someone who can never accept.
-8. Both paths write an audit event (S12).
+8. Both paths write an audit event. **Driven in S12**, not here: the audit log does not
+   exist until then, so S9 ships with this criterion named and S12 closes it — which it
+   does, for the direct path, the queued path and a cancellation.
 9. `canGrantOwnerRole` is granted to owner alone and is unreachable through a custom
    role or an override (S6, S7).
 
@@ -607,8 +609,18 @@ production would turn every flag from a gate into a suggestion.
    denied shows nothing. Neither substitutes for the other.
 4. The dev override forces on only, only in a dev build, and warns loudly in the
    console.
-5. A production build ignores the override entirely, proven on the bench against the
-   **built bundle**, not the dev server.
+5. A production build ignores the override entirely, proven against the **built bundle**
+   and not the dev server. The whole override, warning included, sits inside the
+   `import.meta.env.DEV` guard, so it folds away and is **absent from the file** rather
+   than merely unreachable — a sharper thing to prove. `drives/f3-s13-bundle.sh` checks
+   it as a contrast: the same patterns must be present in the source and absent from
+   `dist/`, because finding nothing proves nothing on its own.
+6. The flag ships **off globally**, on for the bench workspace, which is what makes any
+   of this drivable: a freshly created workspace has the editing surface switched off
+   while Bench Construction has it on. A flag that were on everywhere could only be
+   tested by turning it off, and that would break every fixture that edits the matrix.
+   `drives/f3-s13-flag.py` is how the bench says "shipped here"; F16 owns the real
+   admin surface for it.
 
 **Realtime events:** none.
 

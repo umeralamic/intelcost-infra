@@ -415,3 +415,84 @@ export async function assignCustomRole(token, workspaceUuid, userUuid, roleUuid)
     { custom_role_uuid: roleUuid },
   );
 }
+
+/** Ownership transfer (F3-S9). */
+export async function transferOwnership(token, workspaceUuid, target, confirmName) {
+  return apiCall(token, "POST", `/api/workspace/${workspaceUuid}/ownership`, {
+    user_uuid: target.userUuid ?? null,
+    email: target.email ?? null,
+    confirm_name: confirmName,
+  });
+}
+
+export async function pendingTransfer(token, workspaceUuid) {
+  const { body } = await apiCall(token, "GET", `/api/workspace/${workspaceUuid}/ownership`);
+  return body;
+}
+
+export async function cancelTransfer(token, workspaceUuid) {
+  return apiCall(token, "DELETE", `/api/workspace/${workspaceUuid}/ownership`);
+}
+
+/** The workspace's own details, and its logo (F3-S10). */
+export async function updateWorkspace(token, workspaceUuid, fields) {
+  return apiCall(token, "PATCH", `/api/workspace/${workspaceUuid}`, fields);
+}
+
+export async function readWorkspace(token, workspaceUuid) {
+  const { body } = await apiCall(token, "GET", `/api/workspace/${workspaceUuid}`);
+  return body;
+}
+
+export async function logoTicket(token, workspaceUuid, contentType, size) {
+  return apiCall(
+    token,
+    "POST",
+    `/api/workspace/${workspaceUuid}/logo?content_type=${encodeURIComponent(contentType)}&size=${size}`,
+  );
+}
+
+/** A new link for an invitation already sent. Kills the old one (D-24). */
+export async function relinkInvitation(token, workspaceUuid, invitationUuid) {
+  return apiCall(
+    token,
+    "POST",
+    `/api/workspace/${workspaceUuid}/invitation/${invitationUuid}/relink`,
+  );
+}
+
+/** The raw token out of an acceptance URL, for driving an accept from a copied link. */
+export function tokenFromLink(link) {
+  return new URL(link).searchParams.get("token");
+}
+
+/** How many messages MailHog is holding.
+ *
+ *  Used to prove that an action sends none: "Get new link" mints a link and mails
+ *  nothing, where Resend mails one (D-24). A count is the only way to tell the two
+ *  apart from outside, because both produce a working link. */
+export async function mailCount() {
+  const response = await fetch(await fromNode(`${MAILHOG}/api/v2/messages?limit=500`));
+  const body = await response.json();
+  return body.total ?? (body.items?.length || 0);
+}
+
+/** The workspace audit feed (F3-S12). */
+export async function activity(token, workspaceUuid, { limit = 100, offset = 0 } = {}) {
+  const { status, body } = await apiCall(
+    token,
+    "GET",
+    `/api/workspace/${workspaceUuid}/activity?limit=${limit}&offset=${offset}`,
+  );
+  return { status, body };
+}
+
+/** Which features are shipped in a workspace (F3-S13). */
+export async function flags(token, workspaceUuid) {
+  const { status, body } = await apiCall(
+    token,
+    "GET",
+    `/api/workspace/${workspaceUuid}/flag`,
+  );
+  return { status, body };
+}

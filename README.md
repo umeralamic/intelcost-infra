@@ -10,10 +10,17 @@ them.
 Two files. `docker-compose.yml` is the whole system. `docker-compose.dev.yml` is the
 same thing without the api, for when you run the api from your IDE.
 
-`drives/` holds the few passes that are not browser passes: a rule enforced in the api
-with no route to reach it yet — a resolution stage whose table arrives in a later
-subtask — is driven against the real module in the api container rather than left
-unproven or faked through a screen that does not exist.
+`drives/` holds the few passes that are not browser passes, plus the bench setup they
+need. `f3-s13-flag.py` rolls the matrix-editing flag out to one workspace by name,
+because rolling a feature out is an operator act and F16 owns the admin surface for it;
+the flag stays off globally so a fresh workspace has the surface switched off, which is
+what makes the capability-versus-flag separation drivable at all. `f3-s13-bundle.sh`
+greps the production bundle, from the host, because `dist/` lives in the app image.
+
+The rest are drives for rules the api enforces with no route to reach them — a resolution
+stage whose table arrives in a later subtask, say. They run against the real module in
+the api container rather than being left unproven or faked through a screen that does not
+exist.
 
     docker compose exec -T api sh -lc "cd /srv && python drives/f3-s2-resolution.py"
 
