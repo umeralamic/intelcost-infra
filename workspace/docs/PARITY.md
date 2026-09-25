@@ -188,8 +188,8 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 `src/pages/ProjectDetail.tsx`.
 
 - [ ] Show the project header with name and status, and the Perform Takeoff and Estimating entry points beside the name. `src/pages/ProjectHome.tsx` · **partial** (header and takeoff link only)
-- [ ] Edit the project location inline, with address fields and a map popover. `src/components/projects/ProjectAddressFields.tsx`, `ShowMapPopover.tsx` · **missing**
-- [ ] Resolve a US street address to city, state, zip and county through the geocoder. `supabase/functions/geocode-address/` · **missing**
+- [ ] Edit the project location inline, with address fields and a map popover. `src/components/projects/ProjectAddressFields.tsx`, `ShowMapPopover.tsx` · **missing** (address fields inline → **F4**; the map popover → **P-17**, deferred by **D-28**)
+- [ ] Resolve a US street address to city, state, zip and county through the geocoder. `supabase/functions/geocode-address/` · **missing** → **P-17**, deferred by **D-28** (legacy's geocoder never returned coordinates)
 - [ ] Set "Plans Dated" from the same date picker the dashboard filters use. `src/components/projects/PlansDatedField.tsx` · **missing**
 - [ ] Write project notes and a scope of work in a rich-text panel (bold, italic, lists, quote, link), saved inline. `src/components/projects/ProjectTextPanel.tsx`, `src/lib/richtext/` · **missing**
 - [ ] Set project attributes: construction type, project type, labor pricing basis, wage determination. `src/components/projects/ProjectAttributeFields.tsx` · **missing**

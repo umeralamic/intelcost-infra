@@ -1,7 +1,7 @@
 # IntelCost — Manager
 _**The project board.** Three sections — In Progress, Blocked, Planned — so a glance
 says which feature is under development right now._
-_Updated: 2026-09-24_
+_Updated: 2026-09-25_
 
 **Backlog:** [FEATURES.md](FEATURES.md) · **Rules of engagement:** [DECISIONS.md](DECISIONS.md) · **Parity checklist:** [docs/PARITY.md](docs/PARITY.md)
 
@@ -19,7 +19,7 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| _Nothing in progress_ | | | | |
+| F4 | The dashboard is a grid of name cards and Project Home uploads PDFs straight to sheets; legacy's statuses, two-step create with seeded folders, assignees, filters, folder browser, rich-text notes and 30-day trash are all missing, and every project write gates on `canEditTakeoff`. → Port all 32 §4, §5 and inherited §2 lines in 27 subtasks, with a `ProjectFile` model in folders, uploads per D-20, and gates by named capability. Answers in, D-26/27/28 logged 2026-09-25. **Block A (S1 record and gates, S2 UI primitives) in build.** Map and geocoder deferred to P-17 (D-28). | Be Fe | Umer | [projects_tasks.md](docs/tasks/projects_tasks.md) |
 
 ---
 
@@ -35,7 +35,6 @@ _Updated: 2026-09-24_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F4 | Projects dashboard, creation, Project Home, files and folders. **Inherits from F3:** the Statuses tab (project statuses, and the dashboard tab strip) and the Trash tab (the screen, and the nightly purge) — specced as F3 S19–S20, built here. | Be Fe | Umer | _not yet specced_ |
 | F8 | Realtime foundation: socket, auth, Redis fan-out, presence and soft-locks | Be Fe | Umer | _not yet specced_ |
 | F5 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration. Rendering per D-14 (pdf.js, split-source, thumbnails server-side). Emits realtime events (D-13). **Inherits from F3:** S4 AC6, the on-screen half of platform admin — a platform admin's capabilities are unmasked in the permission layer and nothing yet shows it, because no control calls `can()` until here. The first control that does closes it. | Be Fe | Umer | _not yet specced_ |
 | F6 | Item model: tools, dimensions, sub-items, variables, folders, layers, classifications. Emits realtime events (D-13). **Inherits from F3:** the whole classification block — which systems a workspace uses, the division/scope tree with its in-use delete refusal, archive and show-archived, the duplicate-code refusal, the CSI seed — plus the Subcontractors tab. Specced as F3 S14–S18 and sequenced here deliberately, because F6 is what files items against a classification, and a tree nothing files against can only be driven as "it saved". | Be Fe | Umer | _not yet specced_ |

@@ -1134,3 +1134,170 @@ per-workspace override.
   to sit where the question is asked.
 - **The locked set is a list, not a rule**, so it is reviewed when a capability is
   added rather than derived from something that might stop being true.
+
+---
+
+## D-26 — Project writes gate on the capability named for them, not `canEditTakeoff`
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Backend, Frontend, Auth
+
+**Context:** Every project, folder and drawing write in the api rides `WriteWorkspace`,
+which is `require_capability(canEditTakeoff)`. That was the right mechanical replacement
+for the old `role is not collaborator` test in F3-S3, and it is the wrong capability for
+most of what it now guards:
+
+- A `pricing` member cannot upload a spec PDF.
+- A `takeoff` member can move a project to Trash.
+- Three capabilities the matrix administers are read by nothing: `canCreateProjects`,
+  `canUploadDocuments` and `canRestoreDeletedItems`. An admin who grants or removes them
+  changes nothing.
+
+Legacy's own gates are no better model:
+
+- The dashboard's Trash button is `isOwner`, which is a role test.
+- The folder browser checks owner or admin.
+- The `soft_delete_project` RPC allows estimator.
+- `project_assignees` RLS allows owner and estimator, but not admin.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Keep `canEditTakeoff` on everything | No change | Three administered capabilities stay inert, and the gate says "measure" where the act is "upload a document" |
+| B — Port legacy's gates as written | Parity to the letter | Ports a role test, and an RLS bug that locks admins out of assigning |
+| C — One named capability per act | Every capability the matrix shows does what its label says, and the refusal names the right thing | Some roles gain or lose an act against legacy, which has to be written down |
+| D — Add a 26th capability, `canDeleteProjects` | Trash gets its own switch | Grows the D-21 model for one control, when an existing capability already means "administers the workspace" |
+
+**Decision:** Option C. Each project act is gated on the capability that names it:
+
+| Act | Capability |
+|---|---|
+| Create a project; edit its details, location, Plans Dated, scope, notes and attributes; change its status; assign members | `canCreateProjects` |
+| Upload files, upload a folder, create a folder | `canUploadDocuments` |
+| Rename, move or delete a file or folder | `canCreateProjects` |
+| Move a project to Trash | `canManageWorkspace` |
+| See Trash, restore, delete permanently | `canRestoreDeletedItems` |
+| Manage project statuses and the dashboard tab strip | `canManageWorkspace` |
+| Takeoff writes (drawings, sheets, calibration, items) | `canEditTakeoff`, unchanged |
+| Read anything in a project | membership |
+
+**Consequences:**
+- **Role changes against legacy:**
+  - `pricing` can no longer create projects, because its role map never granted
+    `canCreateProjects`. It can now upload documents.
+  - `collaborator` keeps uploads, which is what the collaborator plan mask exists to
+    protect.
+  - An `estimator` can no longer move a project to Trash. The legacy RPC allowed it, and
+    no legacy screen offered it.
+  - An `admin` can now assign members, which legacy's RLS refused.
+- `WriteWorkspace` survives for takeoff writes only. The Sheets block on Project Home is a
+  takeoff write until F5 replaces it (D-27), so it stays on `canEditTakeoff`.
+- The app gates the same controls with `can()`, disabled with the capability phrase, and
+  the api refuses a hand-written request. Hiding is never the only gate.
+
+---
+
+## D-27 — One project file model; drawings derive from files; uploads are multipart
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Data model, Backend, Frontend, Takeoff
+
+**Context:** Legacy and the new api keep documents in different shapes, and F4 has to pick
+one:
+
+- **Legacy.** Every project document is a `project_files` row inside a `project_folders`
+  tree. A takeoff drawing is a separate `drawing_files` row pointing back at the file
+  (`project_file_id`), and it is created when takeoff registers it.
+- **The new api.** It has a `ProjectFolder` tree that nothing references. It also has a
+  `DrawingFile` that is uploaded straight from Project Home and rendered to PNG. That is
+  D-12's path, which D-14 retired.
+
+F4 needs somewhere for a spec, a geotech report or a site photo to live.
+
+Separately, the founder call for F4 is any file type and no per-file size limit, with
+progress and resume after a dropped connection. A single presigned PUT tops out at 5 GB and
+cannot resume.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Put every document in `DrawingFile` | One table | A photo is not a drawing, and every one of them would reach the render path |
+| B — `ProjectFile` in folders; `DrawingFile` points at a `ProjectFile` (legacy's shape) | Documents and drawings are different things with a link between them, which is exactly what F5's Add Sheets and the folder-in-use delete guard need | Two tables, and today's direct drawing upload has to be retired by F5 |
+| C — Single presigned PUT per file | Already built for drawings and logos | 5 GB ceiling, no resume, and a dropped connection restarts a 2 GB plan set from zero |
+| D — S3 multipart, parts presigned by the api, completed by the api | No practical ceiling (10,000 parts), per-part retry, and resume across a reload by re-picking the file | More moving parts: part sizing, listing parts, aborting abandoned uploads |
+
+**Decision:** Options B and D.
+
+- A document uploaded to a project is a `ProjectFile` in a `ProjectFolder`, stored under
+  the S3 area `project-file`.
+- Every file, at every size, is uploaded by S3 multipart upload. One code path.
+- Making a file a takeoff drawing is a separate act in F5, per D-14, and the drawing points
+  back at the file.
+
+**Consequences:**
+- **One upload path, every size.**
+  1. Initiate creates the `ProjectFile` row and the S3 multipart upload, and returns the
+     part size.
+  2. The browser asks the api for presigned part URLs in batches, PUTs the parts, and
+     reports progress by bytes.
+  3. The api completes the upload itself from `ListParts`. So the browser never needs the
+     `ETag` header exposed by CORS, and never supplies a part list it could get wrong.
+- **Part size is computed, not fixed.** It is at least 8 MiB, and large enough that the
+  file fits in 10,000 parts. That puts the ceiling at S3's own object limit, 5 TiB.
+- **Resume.**
+  - A failed part is retried with backoff.
+  - Uploads pause while the browser is offline and continue on `online`.
+  - After a reload, the browser cannot reopen a file it was not handed again. So the
+    dialog lists the project's unfinished uploads and the person re-picks the file. A file
+    matching by name and size resumes from the parts S3 already holds.
+- **Abandoned uploads are aborted.** A `ProjectFile` still unfinished after 24 hours is
+  aborted in S3 and removed by the nightly job. As the backstop, Abdullah adds an
+  `AbortIncompleteMultipartUpload` lifecycle rule on the bucket (D-11).
+- **No per-file size limit and no type filter.** Total storage per tier (tier 3: 500 MB)
+  is F16's, enforced at initiate time once F16 supplies the numbers.
+- **F4 never dispatches a render from a file upload.** Today's Sheets block keeps its
+  direct `DrawingFile` upload and PNG render unchanged until F5 replaces it. F5 adds Add
+  Sheets over `ProjectFile`s and `DrawingFile.project_file_id`. The folder-in-use delete
+  guard needs that link, so it is F5's.
+- **F17 inherits a mapping:**
+  - legacy `project_files` rows become `ProjectFile`s, keeping their folder
+  - legacy `project_construction_type` becomes `construction_type`
+
+---
+
+## D-28 — The project map and the geocoder are deferred
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Frontend, Backend
+
+**Context:** PARITY §5 lists a map popover on the project location, and a geocoder that
+resolves a US address to city, state, zip and county.
+
+Legacy's geocoder is a Firecrawl web search with an LLM fallback, and it always returns
+`lat: null`. So its only caller, "Show Map", can only ever say "Could not locate address."
+Porting it faithfully ports a map that has never worked. Doing it properly means choosing a
+geocoding provider and a tile provider, which is a vendor decision with its own keys and
+costs.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Port legacy as it is | Parity to the letter | Ships a control that never works, plus a scraper and three AI keys |
+| B — Build it in F4 on a real provider (US Census geocoder, Google Maps tiles) | The parity line becomes true for the first time | A vendor choice and a bench fake inside a feature that already has 27 subtasks |
+| C — Defer: keep the address fields, ship no geocoder and no map in F4 | F4 stays about projects and files, and the provider choice is made on its own | Two §5 lines stay open past F4 |
+
+**Decision:** Option C. F4 ships the address fields in the create dialog, Edit details and
+the inline location editor: two lines, city, state, postal code and country. There is no
+geocoder and no Show Map.
+
+**Consequences:**
+- The map and geocoder become their own backlog item, P-17 in `FEATURES.md` 🗓 Planned,
+  and the two §5 lines name it. The provider choice is a decision for that item.
+- Nothing in F4 stores coordinates. The item that ships the map adds them.
+- Legacy's `geocode_cache` and the `geocode-address` function are not ported.

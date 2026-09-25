@@ -1,7 +1,7 @@
 # IntelCost — Features
 _**The backlog.** Every feature that is live, that we are working on, or that we intend
 to build, in one list. Three sections: ✅ Live · 🔨 Working · 🗓 Planned._
-_Updated: 2026-09-24_
+_Updated: 2026-09-25_
 
 **Board:** [MANAGER.md](MANAGER.md) · **Rules of engagement:** [DECISIONS.md](DECISIONS.md) · **Parity checklist:** [docs/PARITY.md](docs/PARITY.md)
 
@@ -32,7 +32,7 @@ _Updated: 2026-09-24_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| _Nothing in flight_ | | | | |
+| F4 (P-03) | Projects dashboard, project creation, Project Home, files and folders | both | Statuses and tab strip → dashboard rows, tabs, counts, filters, follow-up · New project (two steps, seeded Plans/Specs/Reports/Site Photos, upload per D-20) and New from folder · Project Home: location and map, Plans Dated, rich-text scope and notes, assignees, folder browser · Trash tab and nightly purge. Takeoff hand-off is F5 (D-14) | [projects_tasks.md](docs/tasks/projects_tasks.md) |
 
 ---
 
@@ -42,7 +42,6 @@ _Updated: 2026-09-24_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
-| P-03 | Projects dashboard, project creation, Project Home, files and folders | both | |
 | P-07 | Realtime multi-estimator collaboration | both | D-10. Transport per D-13 |
 | P-04 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration and scale | both | Rendering per D-14 |
 | P-05 | Item model: measure tools, dimensions, sub-items, variables, folders, layers, classifications | both | |
@@ -56,6 +55,7 @@ _Updated: 2026-09-24_
 | P-14 | Sharing and guest view, Reports, time tracking and shifts, Community | both | |
 | P-15 | Billing, trials, admin panel | both | |
 | P-16 | Legacy data migration and cutover | infra | Abdullah (D-11) |
+| P-17 | Project map and geocoder: Show Map on the project location, and resolve a US address to city, state, zip and county | both | Deferred out of F4 by D-28. Needs a provider decision (geocoding and map tiles) and a bench fake. Legacy's never returned coordinates |
 
 ---
 
