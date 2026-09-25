@@ -11,8 +11,8 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-26, D-27, D-28 and D-29 logged. Block A (S1, S2) built, checked by the
-founder and pushed. Block B (S3, S4) built and driven 2026-09-25, awaiting the founder's
-checks before Block C.**_
+founder and pushed. Block B (S3, S4) checked and pushed. Block C (S5 to S16) built and
+driven 2026-09-25, awaiting the founder's checks before Block D.**_
 
 ## Progress
 
@@ -20,7 +20,8 @@ checks before Block C.**_
 |---|---|---|
 | **A: S1, S2** | Built and driven, 2026-09-25 | `browser/f4-s1.mjs` 8/8 and `f4-s2.mjs` 6/6, `drives/f4-s2-bundle.sh` 4/4. Regression: `f3-s3` 3/3 and `f3-s12` 8/8. Gates: ruff, mypy, lint, typecheck and build. Migration `95c121b3680c` driven up, down and up. |
 | **B: S3, S4** | Built and driven, 2026-09-25 | `browser/f4-s3.mjs` 11/11 and `f4-s4.mjs` 9/9. Regression: `f4-s1` 9/9, `f4-s2` 6/6, `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. Migration `80c841e4b096` driven up, down and up. The dashboard half of S3 and S4 is carried into S5 and S9. |
-| C to F | Not started | |
+| **C: S5 to S16** | Built and driven, 2026-09-25 | `browser/f4-s5` 7/7, `s6` 3/3, `s7` 7/7, `s8` 4/4, `s9` 5/5, `s10` 4/4, `s11` 5/5, `s12` 3/3 (three phases, with `drives/f4-s12-age.py`), `s13` 3/3, `s14` 4/4, `s15` 3/3 (with Block A check 5), `s16` 1/1. Migration `99ca0a2606b6` driven up, down and up. The S3/S4 dashboard half is driven in `s5` and `s9`. |
+| D to F | Not started | |
 
 **Found while building Block A:**
 - `_read` in the project routes composed the response by reading every schema field off
@@ -44,6 +45,41 @@ checks before Block C.**_
 - The api said "A active status…". The article is now chosen by bucket.
 - `f4-s1`'s new pricing step read New project the instant it was drawn, while permissions
   were still loading (loading reads false by design). It now waits for the answer.
+
+**Built in Block C beyond the letter of the subtasks, and why:**
+- **The api half of S17 came forward**, as the sequencing says, because S7 uploads into
+  it: `ProjectFile` (D-27), multipart start, part URLs, parts held, complete, cancel, and
+  `GET …/file`. Folder lookups are now scoped to their project as well as their workspace.
+  The file browser UI, and the rest of S17's fixes, stay in Block D.
+- **A file at the project root has a null `folder_id`.** Legacy kept a root folder row
+  named after the project, and a trigger to keep the two names in step. The spec said
+  `folder_id` NOT NULL. The project already is the root, so null says it without the
+  extra row.
+- **`lost_note` is its own column.** Legacy wrote the Lost dialog's note over the
+  project's description, and `f4-s9` proves ours does not.
+- **An upload waits out a dropped connection** on its api calls as well as its part PUTs.
+  Going offline between parts had failed the whole file.
+- **Assigning on Project Home shows the change at once.** Each save sends the whole
+  list, so two quick ticks cannot race, and a refusal rolls back with a toast.
+- **S6's pending invitations are listed, not actioned.** Resend, new link and revoke stay
+  in Settings, Members, where D-24's warning before a new link lives. The panel links
+  there.
+- **S7 AC7 and AC9 changed** (see S7): the ceiling is proved by the api's part plan plus a
+  real multi-part upload, and resume after a reload moved to S17 with the "Unfinished
+  uploads" list.
+
+**Found while building Block C:**
+- `dict()` over a SQLAlchemy result subscripts it, because the result has a `keys()`
+  method, so assigning members answered 500. It is now a comprehension, with a comment.
+- The bench's worker was still running pre-F3 code (`workspace.logo_url`), because Celery
+  does not reload. The drawing render had been failing quietly since F3. Restarting the
+  worker fixed it, and `intelcost-infra/README.md` now says so.
+- `waitForLoadState("networkidle")` fires once per page load and then answers instantly,
+  so the fixtures' waits after the first load were waiting for nothing. They now poll
+  until the list, the counts and the badges stop changing (`settle` in
+  `browser/lib/f4.mjs`).
+- AC1 of S5 said "Active 1". Legacy's Active tab holds every open status, Submitted
+  included, so it is 2. The criterion is corrected.
 
 ---
 
@@ -469,8 +505,9 @@ S5**, where the strip is drawn.
   error states.
 
 **Acceptance criteria.**
-1. With 3 projects across Bidding, Submitted and Won, the tabs read Active 1, Submitted 1,
-   Won 1, All 3, and each tab lists its own.
+1. With 3 projects across Bidding, Submitted and Won, the tabs read Active 2, Submitted 1,
+   Won 1, All 3, and each tab lists its own. Active is 2 because legacy's Active tab holds
+   every open status, Submitted included; the first draft of this criterion said 1.
 2. Reload on `?tab=won`: the Won tab is selected.
 3. A new workspace shows the "No projects yet…" sentence, and a filter that matches
    nothing shows "No projects match the current filters."
@@ -628,12 +665,15 @@ only part in that is the "Perform Takeoff" entry decision (S13) and D-27's
    dashboard shows one project, not two.
 6. As `qa_pricing`, New project is disabled with the capability phrase. As `pricing`, it
    works (D-29).
-7. A 6 GB file (a sparse file made on the bench) uploads with the bar moving. A single
-   presigned PUT would refuse it outright.
+7. There is no ceiling. The api plans a 6 GB file as 768 parts of 8 MiB and refuses
+   nothing, where a single presigned PUT stops at 5 GB. A 20 MB file goes up through the
+   dialog in three parts. (A 6 GB file through a browser fixture is 6 GB of memory; the
+   plan is the proof, and the multipart path is the same for every size.)
 8. Drop the network mid-upload (DevTools → Offline): the upload pauses and says so. Back
    online, it continues from the parts already sent, and does not restart at 0%.
-9. Reload mid-upload: Project Home lists the file under "Unfinished uploads". Re-picking
-   it finishes from where it stopped.
+9. **Moved to S17 (Block D):** reload mid-upload, then find the file under "Unfinished
+   uploads" and re-pick it to finish. That list is part of the file browser. The api half,
+   which parts S3 already holds, ships here and is what Retry uses.
 
 **Realtime:** `project.created`, and `project.file.changed` per file.
 
