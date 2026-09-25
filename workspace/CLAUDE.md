@@ -126,3 +126,6 @@ cd intelcost-app-react && npm run lint && npm run typecheck && npm run build
 Then bring the stack up and drive the changed screen in a real browser, exercising
 its loading, empty, error and unauthorized states. Delete every screenshot and
 scratch artifact afterwards. Leave nothing stray.
+
+After each subtask, run only the fixtures it touches. Run the full regression once, at
+the end of each block, and again at feature close-out.

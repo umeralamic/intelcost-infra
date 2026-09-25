@@ -19,7 +19,7 @@ _Updated: 2026-09-25_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| _Nothing in progress. F4 shipped 2026-09-25 ([archived spec](docs/archive/projects_tasks.md)); F5 is next, once specced._ | | | | |
+| _Nothing in progress. F4 shipped 2026-09-25 ([archived spec](docs/archive/projects_tasks.md)). **F8 (realtime foundation) is next, before F5**, per D-13: every takeoff write path waits on the realtime transport, and each later feature emits its events on it. F8 needs its spec first._ | | | | |
 
 ---
 
