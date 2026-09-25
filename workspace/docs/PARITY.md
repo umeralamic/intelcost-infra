@@ -138,8 +138,8 @@ The takeoff page carries six workspace tabs: **Takeoff**, **Earthwork**,
 - [ ] **AI Credits.** Show the workspace wallet balance, buy a top-up pack through Stripe, and land back with the pack credited. `src/components/workspace-settings/AiCreditsTab.tsx`, `supabase/functions/create-topup-checkout/`, tables `workspace_wallet`, `ai_credit_packs`, `credit_ledger` · **missing** → **F14** (the wallet) and **F16** (the checkout)
 - [ ] **AI Credits.** Set a workspace-wide credit limit and a per-member limit, and return a member to the workspace default. `src/components/workspace-settings/AiCreditsTab.tsx`, table `workspace_user_credit_limits` · **missing** → **F14**
 - [ ] **Subcontractors.** Maintain the workspace subcontractor list and assign classification scopes to each. `src/components/workspace-settings/SubcontractorsTab.tsx`, tables `workspace_subcontractors`, `workspace_subcontractor_scopes` · **missing** → **F6**
-- [ ] **Trash.** List soft-deleted projects, restore one, permanently delete one, and show "Permanently deleted at the next daily purge". `src/components/workspace-settings/TrashTab.tsx`, rpcs `restore_project` and `purge_project_now` · **partial** (the api has soft delete and restore; no trash screen, no purge) → **F4**
-- [ ] **Trash.** A nightly job hard-deletes projects soft-deleted 30+ days ago, retrying storage deletions that failed on an earlier run. `supabase/functions/purge-trashed-projects/`, table `trash_purge_log` · **missing** → **F4**
+- [ ] **Trash.** List soft-deleted projects, restore one, permanently delete one, and show "Permanently deleted at the next daily purge". `src/components/workspace-settings/TrashTab.tsx`, rpcs `restore_project` and `purge_project_now` · **partial** (the api has soft delete and restore; no trash screen, no purge) → **F4**. **Built in F4 Block F (S26), 2026-09-25**, awaiting the founder's checks: Settings > Trash with restore and delete permanently, gated on `canRestoreDeletedItems`; the storage goes right after the commit rather than at night. Ticked when F4 closes.
+- [ ] **Trash.** A nightly job hard-deletes projects soft-deleted 30+ days ago, retrying storage deletions that failed on an earlier run. `supabase/functions/purge-trashed-projects/`, table `trash_purge_log` · **missing** → **F4**. **Built in F4 Block F (S27), 2026-09-25**, awaiting the founder's checks: two passes (retry, then purge), a dry run, a log row per project, and a bench `beat` service. Production scheduling is Abdullah's (D-11). Ticked when F4 closes.
 - [x] **Activity.** An audit feed of who did what in the workspace. `src/components/workspace-settings/ActivityTab.tsx`, rpc `log_audit_event`, table `audit_log` · **ported** (F3-S12; the row rides the act's own transaction, the one place **D-20** deliberately does not apply)
 
 ## 3. Permissions
@@ -164,8 +164,8 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 
 - [ ] List the workspace's projects as cards. `src/pages/Dashboard.tsx` · **ported**
 - [ ] Create a blank project, choosing which seed folders it gets (Plans, Specs, Reports, Site Photos, Unsorted) and optionally uploading files in the same step. `src/components/projects/BlankProjectDialog.tsx`, rpc `create_blank_project` · **partial** (create exists; no folder seeding, no upload in the dialog)
-- [ ] Create a project from a folder on the computer, preserving the folder tree on upload. `src/components/projects/NewProjectFromFolderDialog.tsx` · **missing**
-- [ ] A failed upload inside project creation offers Retry without losing the project. `src/components/projects/NewProjectFromFolderDialog.tsx` · **missing**
+- [x] ~~Create a project from a folder on the computer, preserving the folder tree on upload.~~ `src/components/projects/NewProjectFromFolderDialog.tsx` · **retired** (**D-31**: New project is the one way to start a project. A folder goes into a project, tree preserved, through the file browser's Upload folder, F4-S17. `f4-s8` proves the button is gone)
+- [ ] A failed upload inside project creation offers Retry without losing the project. `src/components/projects/NewProjectFromFolderDialog.tsx` · **missing** (after **D-31** this is New project's Retry, F4-S7 AC5)
 - [ ] Filter projects by status tab, construction type, project type, estimator, labor pricing basis, wage determination and trade scope. `src/components/projects/ProjectFiltersBar.tsx` · **missing**
 - [ ] Change a project's status inline from its card, with a link to manage the status list. `src/components/projects/ProjectStatusChanger.tsx`, `ProjectStatusBadge.tsx` · **missing**
 - [ ] Assign a project to a member, seeing each candidate's role beside their name, and remove an assignee. `src/components/projects/AssignedToPicker.tsx`, table `project_assignees` · **missing**
@@ -178,7 +178,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [ ] A folder cannot move into its own descendant, and a file cannot move between projects. `src/components/files/UnifiedFolderBrowser.tsx` · **missing**
 - [ ] Each folder shows a count of what it holds. `src/components/files/FolderCountBadge.tsx` · **missing**
 - [ ] Files drop onto a zone at the top of the browser, with a steady upload progress bar rather than one that jumps. `.lovable/plan/add-files-drop-zone-on-top-steadier-upload-bar-2026-09-23.md` · **missing**
-- [ ] The dashboard panels are arranged in a fixed order, with the tab strip centred and no Customize tabs button. `.lovable/plan/reorganize-dashboard-panels-2026-08-29.md`, `.lovable/plan/remove-customize-tabs-button-center-the-dashboard-tab-strip-2026-08-29.md` · **missing**
+- [ ] ~~The dashboard panels are arranged in a fixed order~~, with the tab strip centred and no Customize tabs button. `.lovable/plan/reorganize-dashboard-panels-2026-08-29.md`, `.lovable/plan/remove-customize-tabs-button-center-the-dashboard-tab-strip-2026-08-29.md` · **missing** (the panel order is **retired** by **D-31**: the dashboard shows projects only, with members and invitations in Settings > Members and branding in Settings > General. The centred strip with no Customize tabs button still ports, F4-S6)
 - [ ] The workspace ruler button behaves like Perform Takeoff. `.lovable/plan/make-the-workspace-ruler-button-behave-like-perform-takeoff-2026-08-29.md` · **missing**
 - [ ] The assignee dropdown shows each candidate's role next to their name. `.lovable/plan/show-role-next-to-assignee-name-in-the-assigned-to-dropdown-2026-08-29.md` · **missing**
 
@@ -194,7 +194,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [ ] Write project notes and a scope of work in a rich-text panel (bold, italic, lists, quote, link), saved inline. `src/components/projects/ProjectTextPanel.tsx`, `src/lib/richtext/` · **missing**
 - [ ] Set project attributes: construction type, project type, labor pricing basis, wage determination. `src/components/projects/ProjectAttributeFields.tsx` · **missing**
 - [ ] Assign the project to a member from the header. `src/components/projects/AssignedToPicker.tsx` · **missing**
-- [ ] Upload drawings and watch them become sheets. `src/pages/ProjectHome.tsx` · **ported**
+- [ ] Upload drawings and watch them become sheets. `src/pages/ProjectHome.tsx` · **ported** (the Sheets block with Upload drawings stays only as the bench's temporary path into takeoff. **F5 replaces it** with the legacy "Load project files into takeoff" flow; see §7's Add sheets line)
 - [ ] A project id that does not resolve shows "Project not found" rather than an empty shell. `src/pages/ProjectHome.tsx` · **ported**
 
 ## 6. Sharing
@@ -229,7 +229,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [ ] Bookmark a page and remove the bookmark, with bookmarks listed in their own panel. `src/components/takeoff/SheetTree.tsx`, `src/components/takeoff/EvidencePanel.tsx` · **missing**
 - [ ] Each sheet row carries status chips for scale, takeoff and markup. `src/components/takeoff/SheetTree.tsx` · **partial** (`SheetStatusBadge.tsx` shows render status only)
 - [ ] Show or hide the takeoff items marked on a sheet, from the row menu. `src/components/takeoff/SheetTree.tsx` · **missing**
-- [ ] Add sheets by loading project files into takeoff, choosing which pages to load before the load starts. `src/components/takeoff/AddSheetsDialog.tsx` (719 lines) · **partial** (upload creates a sheet per page; no page chooser)
+- [ ] Add sheets by loading project files into takeoff, choosing which pages to load before the load starts. `src/components/takeoff/AddSheetsDialog.tsx` (719 lines) · **partial** (upload creates a sheet per page; no page chooser). **F5 ports the legacy flow and replaces Project Home's Sheets upload block with it:** Perform Takeoff opens "Load project files into takeoff" with two tabs, From Project Files and Upload drawing. The user ticks folders and files from the project's existing files, then "Choose pages" shows every page as a thumbnail, all ticked, untick to skip, and "Load N pages" opens takeoff. It is asked only once per project; later additions go through Add Sheets. Drawings are made from project files (D-27). F5 also brings route-level code splitting (P-18), so pdf.js and the canvas load only on the takeoff route.
 - [ ] Sheets can be PDF, PNG, JPG or TIFF. `src/components/takeoff/AddSheetsDialog.tsx`, `src/lib/takeoff/pdf/imageToPdf.ts` · **partial** (PDF only)
 - [ ] Project files load into takeoff automatically on first open. `src/pages/ProjectTakeoff.tsx` · **missing**
 - [ ] Create a new blank page at a chosen width and height, or a new page from the clipboard image. `src/components/takeoff/NewPageDialog.tsx` · **missing**

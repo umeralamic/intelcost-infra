@@ -32,7 +32,7 @@ _Updated: 2026-09-25_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| F4 (P-03) | Projects dashboard, project creation, Project Home, files and folders | both | Statuses and tab strip → dashboard rows, tabs, counts, filters, follow-up · New project (two steps, seeded Plans/Specs/Reports/Site Photos, upload per D-20) and New from folder · Project Home: location and map, Plans Dated, rich-text scope and notes, assignees, folder browser · Trash tab and nightly purge. Takeoff hand-off is F5 (D-14) | [projects_tasks.md](docs/tasks/projects_tasks.md) |
+| F4 (P-03) | Projects dashboard, project creation, Project Home, files and folders | both | Statuses and tab strip → dashboard rows, tabs, counts, filters, follow-up · New project (two steps, seeded Plans/Specs/Reports/Site Photos, upload per D-20), the one way to start a project (D-31: the dashboard shows projects only, no New from folder) · Project Home: location and map, Plans Dated, rich-text scope and notes, assignees, folder browser · Trash tab and nightly purge. Takeoff hand-off is F5 (D-14) | [projects_tasks.md](docs/tasks/projects_tasks.md) |
 
 ---
 

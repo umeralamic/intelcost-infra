@@ -12,8 +12,9 @@ lines), plus the four [§2](../PARITY.md#2-workspace-settings) lines F3 handed o
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-26, D-27, D-28 and D-29 logged. Block A (S1, S2) built, checked by the
 founder and pushed. Block B (S3, S4) checked and pushed. Block C (S5 to S16) checked and
-pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) built and driven
-2026-09-25, awaiting the founder's checks before Block F.**_
+pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) checked and pushed.
+D-31 (projects-only dashboard, no New from folder) applied. Block F (S26, S27) built and
+driven 2026-09-25, awaiting the founder's checks.**_
 
 ## Progress
 
@@ -24,7 +25,8 @@ pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) built and 
 | **C: S5 to S16** | Built and driven, 2026-09-25 | `browser/f4-s5` 7/7, `s6` 3/3, `s7` 7/7, `s8` 4/4, `s9` 5/5, `s10` 4/4, `s11` 5/5, `s12` 3/3 (three phases, with `drives/f4-s12-age.py`), `s13` 3/3, `s14` 4/4, `s15` 3/3 (with Block A check 5), `s16` 1/1. Migration `99ca0a2606b6` driven up, down and up. The S3/S4 dashboard half is driven in `s5` and `s9`. |
 | **D: S17 to S19** | Built and driven, 2026-09-25 | `browser/f4-s17` 12/12 (with S7 AC9's reload and resume, and a second-project step), `f4-s18` 4/4, `f4-s19` 3/3, `bench-code` 1/1 (D-30). Migration `b7d41e2c9a53` driven up, down and up, twice. Regression: `f4-s1` to `f4-s16` all pass (`s12` 3/3 across its phases), `f3-s1` 5/5, `f3-s3` 3/3, `f3-s12` 8/8, `f4-s2-bundle.sh` 4/4. `f4-s1` AC4 renamed its folder to a free name, because names are now unique among siblings. |
 | **E: S20 to S25** | Built and driven, 2026-09-25 | `browser/f4-s20` 3/3, `f4-s21` 5/5, `f4-s23` 4/4, `f4-s24` 6/6, `f4-s25` 2/2 (S22 is P-17's and has no fixture). Full regression through `regress.sh`, `bench-code` first: `f4-s1` to `f4-s25` all pass (26 fixtures, 0 failed), `f4-s12` 3/3 across its phases, `f4-s2-bundle.sh` 4/4. Gates: ruff, mypy, lint, typecheck, build. New dependencies: TipTap and DOMPurify (app), `nh3` (api). `f4-s3` run 10 more times with full output kept: 10/10. |
-| F | Not started | |
+| **D-31** (between E and F) | Built and driven, 2026-09-25 | `browser/f4-s6` 3/3 and `f4-s8` 3/3 rewritten for the projects-only dashboard; `f4-s7` 7/7, `f4-s17` 12/12, `f4-s18` 4/4, `f4-s19` 3/3, `f4-s25` 2/2 after the seed switch went. Gates: ruff, mypy, lint, typecheck, build (main bundle 644 → 637 kB). Its full regression is the one below. |
+| **F: S26, S27** | Built and driven, 2026-09-25 | `browser/f4-s26` 8/8, `browser/f4-s27.sh` 9/9 (setup, age, S26 AC2, dry run, a MinIO outage, the retry, the browser after, beat). Migration `c4e8a1f6b209` driven up, down and up. Full regression through `regress.sh`, `bench-code` first, nothing edited during it: 28 fixtures, 0 failed (`f4-s1` to `f4-s27`, `f3-s1`, `f3-s3`, `f3-s12`); `f4-s12` 3/3 across its phases; `f4-s2-bundle.sh` 4/4. Gates: ruff, ruff format on the files touched, mypy, lint, typecheck, build. |
 
 **Found while building Block A:**
 - `_read` in the project routes composed the response by reading every schema field off
@@ -136,6 +138,62 @@ pushed. Block D (S17 to S19) checked and pushed. Block E (S20 to S25) built and 
   the check now picks the newest by `created_at`.
 - f4-s15 looked for the api's "No such project." on a trashed project's page. It now
   looks for S20's "Project not found".
+
+**Changed between Block E and Block F, by the founder (D-31):**
+- The dashboard shows projects only: no team panels, no branding nudge, subtitle "Your
+  projects." New from folder is removed, and with it the create's `seed_folders` switch,
+  so every project gets its four seed folders. The folder find-or-create stays for Upload
+  folder. `f4-s6` and `f4-s8` are rewritten to prove the new shape (see S6 and S8).
+  Fixtures that made projects through the api no longer ask for seedless ones.
+- The Sheets block stays only as the bench's path into takeoff until F5 replaces it
+  (S25). The F5 row in MANAGER.md and PARITY §7 carry the legacy flow that replaces it.
+
+**Built in Block F beyond the letter of the subtasks, and why:**
+- **A project already purged says so.** Restore or delete permanently on a project
+  that the nightly job, or another tab, already took answers 404 "This project was
+  permanently deleted.", read from the purge log. The row drops out of the list. A
+  restore of a live project is refused "This project is not in Trash.", as a purge of one
+  is refused "Move the project to Trash before deleting it permanently."
+- **An unfinished upload is aborted on purge.** It has parts and no object, so no prefix
+  listing finds it. Its key and upload id are written on the log row, and a retry tries
+  any abort that failed. `prefixes_failed` counts both what is left to clear and what
+  is left to abort.
+- **Every project-scoped storage area is cleared**, not only the three the spec named:
+  `project-file`, `takeoff`, `intake`, and `scope-doc`, `trade-scope-doc` and `subquote`,
+  which nothing writes yet. They are listed in one place (`trash.PROJECT_AREAS`).
+- **The retention window is a setting**, `TRASH_RETENTION_DAYS` (default 30), read by
+  the job and the Trash tab alike. The tab shows whole days left, rounded up, from the
+  api.
+- **The Trash tab is drawn only for `canRestoreDeletedItems`**, as legacy drew it. The
+  other settings tabs are drawn for everyone and say what a role cannot do; a hand-typed
+  `/settings/trash` does the same, in the api's own words.
+- **The nightly purge writes an activity line**, by "IntelCost": "permanently deleted the
+  project X, 30 days after it went to Trash". A person's permanent delete writes its own.
+- **S27 AC2's storage failure is a MinIO outage, not a bucket policy.** The bench uses
+  MinIO's root credentials, and MinIO does not apply bucket policies to root, so a
+  deny-delete policy would deny nothing. `f4-s27.sh` stops MinIO for the run instead:
+  the rows go, the failure is logged and the objects stay; with MinIO back, pass 1 clears
+  them. That run takes about three minutes, because each storage call retries before
+  giving up.
+- **`f4-s27` is a runner, `browser/f4-s27.sh`,** because its steps alternate between the
+  browser, the database, the worker and MinIO. `regress.sh` runs it in the full list.
+
+**Found while building Block F:**
+- **A regression run while code is being edited is not a result.** The D-31 regression
+  overlapped the first Block F api edits: `f4-s3` and `f4-s4` failed on the Statuses
+  settings page while the api restarted dozens of times, once per save (its log shows the
+  reloads in that window). Re-run
+  on settled code: `f4-s3` 11/11, `f4-s4` 9/9. That run was stopped and the full
+  regression was run once, at the end of Block F, with nothing being edited.
+- **The settings tab row does not wrap.** With eight tabs it is wider than a phone
+  screen, as it already was with seven. Not fixed here: making it scroll clips the
+  active tab's underline, which overlaps the row's border by a pixel. It needs its own
+  small change.
+- **`alembic check` reports two drifts from before F4**: the audit log's `ix_audit_log_feed`
+  index and `feature_flag`'s unique key, both declared differently in their models than in
+  their migrations. Neither is from this block, and neither was touched.
+- **`ruff format --check` was already failing on 10 files** before Block F. The files
+  this block wrote or changed are formatted.
 
 **Built in Block D beyond the letter of the subtasks, and why:**
 - **The root is the project, not a folder row** (as in Block C). So "the root cannot be
@@ -641,6 +699,17 @@ S5**, where the strip is drawn.
 > Customize tabs button." · **missing** · plans `reorganize-dashboard-panels-2026-08-29`,
 > `remove-customize-tabs-button-…-2026-08-29`
 
+> **Superseded by D-31 (2026-09-25), after Block C shipped it.** The dashboard shows
+> projects only. The branding nudge and the three team panels are removed; members and
+> invitations live in Settings > Members, branding in Settings > General. The subtitle
+> reads "Your projects." The centred strip and no Customize tabs button stand.
+> **Acceptance now:** (1) as owner with no logo, the page holds the workspace heading and
+> the Projects card, and none of Team members, Pending invitations, Invite teammates or
+> "Brand your bid proposals"; the strip is centred, with no Customize tabs. (2) Settings >
+> Members lists members and invitations, Settings > General holds the logo. (3) An
+> estimator sees the same projects-only page. `f4-s6` proves these. The text below is
+> kept as the record of what Block C built.
+
 **Legacy.** The panels, top to bottom:
 
 1. The Projects card.
@@ -794,6 +863,18 @@ only part in that is the "Perform Takeoff" entry decision (S13) and D-27's
 > upload." · **missing** · `NewProjectFromFolderDialog.tsx`
 > §4: "A failed upload inside project creation offers Retry without losing the project." ·
 > **missing**
+
+> **Superseded by D-31 (2026-09-25), after Block C shipped it.** "New from folder" and
+> its dialog are removed: New project is the one way to start a project, and a folder
+> goes into a project through the file browser's Upload folder (S17). The folder
+> find-or-create by path stays, because Upload folder uses it. The create's
+> `seed_folders` switch existed only for this dialog and is removed, so every project
+> gets its four seed folders. Retry on a failed create upload is New project's (S7 AC5).
+> **Acceptance now:** (1) the dashboard has New project and no New from folder, and no
+> folder picker. (2) A create sent with `seed_folders: false` still gets Plans, Specs,
+> Reports and Site Photos. (3) `Maple/` through Upload folder into a project's root lands
+> as `Maple/A/a.pdf` and `Maple/b.pdf` beside the seeds. `f4-s8` proves these. The text
+> below is kept as the record of what Block C built.
 
 **Legacy.**
 - The dashboard's "New from folder" opens a `webkitdirectory` picker. It suggests the
@@ -1292,6 +1373,13 @@ provider is chosen. This subtask exists so the line keeps an owner. It ticks not
   takeoff sheets from takeoff." It is **reassigned to F5**, which replaces this block
   with Add Sheets over `ProjectFile`s (D-14, D-27).
 - F4 ticks nothing here. It only proves the block still works beside the browser.
+- **The founder, 2026-09-25:** the block, Upload drawings included, stays only as the
+  bench's temporary path into takeoff until F5. F5 replaces it with legacy's flow:
+  Perform Takeoff opens "Load project files into takeoff" (From Project Files, Upload
+  drawing), the user ticks folders and files, "Choose pages" shows every page as a
+  thumbnail, all ticked, and "Load N pages" opens takeoff. Asked once per project; later
+  additions go through Add Sheets. F5 also brings route-level code splitting (P-18). The
+  F5 row in MANAGER.md and PARITY §7 carry it.
 
 **Acceptance criteria.**
 1. Upload a PDF via the Sheets block: it renders to Ready sheets exactly as before F4.
@@ -1460,8 +1548,8 @@ Every §4 and §5 line, and the four inherited §2 lines, with the subtask that 
 |---|---|---|---|
 | 4 | List projects (as cards) | ported → partial | S5 |
 | 4 | Create blank project, seed folders, upload | partial | S7 |
-| 4 | Create from a folder, tree preserved | missing | S8 |
-| 4 | Failed upload offers Retry | missing | S8 |
+| 4 | Create from a folder, tree preserved | missing → **retired by D-31** | S8 (now Upload folder, S17) |
+| 4 | Failed upload offers Retry | missing | S7 (after D-31) |
 | 4 | Filters | missing | S11 |
 | 4 | Change status inline, manage link | missing | S9 |
 | 4 | Assign, with role, remove | missing | S10 |
@@ -1474,7 +1562,7 @@ Every §4 and §5 line, and the four inherited §2 lines, with the subtask that 
 | 4 | No move into a descendant, no cross-project move | missing | S18 |
 | 4 | Folder counts | missing | S19 |
 | 4 | Drop zone on top, steady progress bar | missing | S7 |
-| 4 | Panel order, centred strip, no Customize | missing | S6 |
+| 4 | Panel order, centred strip, no Customize | missing; panel order **retired by D-31** | S6 |
 | 4 | Ruler button behaves like Perform Takeoff | missing | S13 |
 | 4 | Assignee dropdown shows role | missing | S10 |
 | 5 | Header, status, Perform Takeoff, Estimating | partial | S20 |

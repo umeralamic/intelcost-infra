@@ -1389,3 +1389,39 @@ task). The route is registered only when `ENVIRONMENT` is `local`. The bench fix
   `reject_on_worker_lost` and idempotent, so it is redelivered.
 - **The README's "restart the worker" line is replaced by this.** A model change still
   needs a migration, and the api runs those on start.
+
+---
+
+## D-31 — The dashboard shows projects only; New project is the one way to start one
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Frontend, Backend
+**Supersedes:** legacy's dashboard panel order (F4-S6) and "New from folder" (F4-S8)
+
+**Context:** Legacy's dashboard stacked the projects under a branding nudge and three
+team columns (Team members, Pending invitations, Invite teammates), and offered a second
+way to start a project, "New from folder". F4 Block C ported all of it. Each of those
+panels repeats a screen Settings already has: members and invitations live in
+Settings > Members, branding in Settings > General. Two create paths that seed
+differently (New project seeds Plans, Specs, Reports and Site Photos; New from folder
+seeded nothing) is two answers to one question. A folder can already be uploaded into a
+project with Upload folder, which keeps its tree (F4-S17).
+
+**Decision (the founder's):**
+- The dashboard shows projects only. The Team members, Pending invitations and Invite
+  teammates panels and the "Brand your bid proposals" nudge are removed. The subtitle
+  reads "Your projects."
+- New project is the one way to start a project. "New from folder" and its dialog are
+  removed. A folder goes into a project through the file browser's Upload folder.
+- **The api behind New from folder goes where nothing else uses it.** The folder
+  find-or-create by path (`POST …/folder/ensure`) stays, because Upload folder uses it.
+  The create's `seed_folders` switch existed only so New from folder could skip the
+  seeds; it is removed, and every project is created with its four seed folders.
+
+**Consequences:**
+- PARITY §4's panel-order line and its two New from folder lines close as superseded by
+  this decision rather than ported. Their fixtures (`f4-s6`, `f4-s8`) are rewritten to
+  prove the absence, and the create's Retry is still proved by `f4-s7`.
+- Fixtures that made seedless projects through the api now get the seed folders, and
+  count them.
