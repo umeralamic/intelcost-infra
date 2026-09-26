@@ -96,6 +96,17 @@ async def main() -> None:
     await store(workspace["uuid"], project["uuid"], "Big set.pdf", "/tmp/f5-big.pdf", big)
     small = make_pdf("/tmp/f5-small.pdf", 2)
     await store(workspace["uuid"], project["uuid"], "Small set.pdf", "/tmp/f5-small.pdf", small)
+    # A letter-portrait page stored with /Rotate 90: it shows landscape, as a scanner's
+    # sideways plan sheet does.
+    rotated = pymupdf.open()
+    for n in (1, 2):
+        page = rotated.new_page(width=612, height=792)
+        page.insert_text((72, 144), f"Rotated {n}", fontsize=48)
+        page.set_rotation(90)
+    rotated.save("/tmp/f5-rotated.pdf")
+    rotated.close()
+    turned = os.path.getsize("/tmp/f5-rotated.pdf")
+    await store(workspace["uuid"], project["uuid"], "Rotated set.pdf", "/tmp/f5-rotated.pdf", turned)
     print(f"made  Big set.pdf {big} bytes ({big / 1024 / 1024:.0f} MB), Small set.pdf {small} bytes ({small / 1024 / 1024:.1f} MB)")
     print(f"world {email} {workspace['uuid']} {project['uuid']}")
 

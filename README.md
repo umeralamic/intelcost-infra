@@ -166,10 +166,12 @@ seeded account's switcher once held 860 fixture workspaces).
   `f5-s3` and `f5-s9` use it; the F2 and F3 fixtures make their own workspace with
   `ownWorkspace`. No fixture in the regression signs in as the seeded account.
 - **`f5-big`** (`browser/f5-big.sh`) opens a 519 MB and a 7 MB PDF through Choose pages.
-  `drives/f5-big.py` makes both in a throwaway account's project. The browser stands in
-  for a download manager: any `.pdf` URL or request to storage's host is recorded and
-  aborted, and the fixture proves none was made. With the reads blocked, the toast must
-  name a download manager or extension, and clicking it must fetch nothing.
+  `drives/f5-big.py` makes both, plus a portrait page stored with `/Rotate 90`, in a
+  throwaway account's project. Every read must carry a `Range` and come back 206
+  `application/pdf` with no Content-Disposition, and no request may be for a whole file
+  (D-40). Tiles must take the pages' shape. With the reads blocked, the toast must name
+  a download manager or extension, and clicking it must fetch nothing. IDM itself can't
+  run on the bench.
 - **The only exceptions, not in the regression:** `f5-demo.mjs` and `walkthrough-setup.mjs`
   make things for the founder on purpose; `proof-backlog.mjs` reads the seeded Riverside's
   own measurements; `bench-tidy.mjs` is the clean-up of the seeded workspace itself.

@@ -265,6 +265,57 @@ from [project/service.py `download_url`](../../intelcost-app-fastapi/app/feature
    - Clicking it does nothing: no download and no IDM.
    - Then run `docker compose start api`.
 
+## Your second check: IDM still took it (D-40)
+
+**What you found:** with IDM on, the api's reads failed too, while legacy opens the same
+set.
+
+**What legacy does:**
+- `AddSheetsDialog` `prepareOne` → `acquireDoc` → `loadPdfFromUrl`, which calls pdf.js
+  `getDocument({ url })` on a Supabase `createSignedUrl` link.
+- One GET, with no `Range`, answered 200 `application/pdf` with no Content-Disposition.
+- The whole file is read: Supabase hides `Accept-Ranges`, and a range loader was
+  measured slower and removed.
+- Thumbnails come from that one open document.
+- Split per-sheet files are only for local uploads.
+
+**What we did differently:**
+- our first link carried a filename header;
+- the api's reads were `application/octet-stream`.
+
+**Now (your choice, B):**
+- A presigned S3 link answered `application/pdf` with no Content-Disposition (`…/read`),
+  read by 206 ranges with only a `Range` header, straight from storage.
+- The api's `…/bytes` stays as a manual fallback only.
+- If IDM takes these reads, the switch is to one whole-file GET, as legacy.
+
+**Tiles** follow legacy: each file's tiles take the shape of its first drawn page, which
+includes `/Rotate`, and every thumbnail is fitted inside its tile.
+
+**Proof:**
+- **JHS set:** pages in 3.7 s. 56 reads, all with a `Range`, every one answered 206
+  `application/pdf` with no Content-Disposition, and 5.2 MB read. No request goes through
+  the api. Tiles are 1.33 wide per tall, like its pages.
+- **`f5-big` 4/4:**
+  - 519 MB set in 5.2 s (12.8 s through the api), from 9.4 MB;
+  - 7 MB set's thumbnails in 4.1 s;
+  - landscape tiles 1.54 wide per tall, and a portrait page with `/Rotate 90` drawn as
+    1.29;
+  - with the reads blocked, the message names the cause, and clicking it fetches nothing.
+- `f5-s5` 6/6, `f5-s6` 6/6, `f5-s8` 4/4.
+
+**Re-check, click only, with IDM on:**
+1. Sign in at http://localhost:5173 as estimator@bench.intelcost.io, switch to "F5 Block A
+   demo 15:16" and open "Umer plans test".
+2. Perform Takeoff (or Add sheets), tick "JHS Permit C 50CD_VOL 3_2026-07-17.pdf", then
+   Choose pages.
+   - Pages show within a few seconds, as landscape tiles, and thumbnails draw.
+   - IDM does not pop up.
+   - Nothing downloads.
+3. Untick all but one page, then Load 1 page: "Added 1 page", and the sheet opens.
+4. If IDM does pop up or it fails, tell me. The next build is legacy's exact read: one
+   plain GET of the whole file.
+
 ## Next
 
 Block C: pdf.js on the canvas (S10 to S12). It draws sharp from 50% to 4000% (D-35),

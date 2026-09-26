@@ -1757,3 +1757,46 @@ and answered them.
 **Consequences:**
 - F7 is on the board after F6; P-20 is in `FEATURES.md` Planned after F7.
 - F7 draws colleagues' drafts by D-38's defaults.
+
+---
+
+## D-40 — The browser reads drawings straight from S3, shaped as legacy's reads
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's choice, pending their test with IDM on)
+**Area:** Takeoff, Backend, Frontend, Infra
+
+**Context:** The founder's 429 MB set would not open in Choose pages with IDM on. Two
+read paths failed:
+- a presigned link answered with `Content-Disposition: inline; filename=…pdf`, which
+  pdf.js first asked for whole;
+- the api's `…/file/{uuid}/bytes`, 206 `application/octet-stream`.
+
+Legacy, with IDM on, opens the same set. Its request is pdf.js on a Supabase signed URL,
+one GET with no `Range`, answered 200 `application/pdf` with no Content-Disposition, the
+whole file read (`PdfPageRenderer.ts` `loadPdfFromUrl`). Supabase hides `Accept-Ranges`,
+so pdf.js never ranges there.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Exact legacy: one plain GET, whole file | The one shape proven safe with IDM | Downloads the whole set on Choose pages (the 429 MB set once) |
+| B — Legacy's headers, ranged: a presigned S3 link answered `application/pdf` with no Content-Disposition, read by 206 ranges | Reads only what pages need; off the api | Not proven with IDM; needs S3 CORS to expose the range headers |
+| C — B, falling back to A when the first read fails | Always opens | IDM may pop up on the first read before the fallback |
+
+**Decision:** Option B, built first; if the founder's test shows IDM takes it, switch to A.
+No fallback between them. The api's `…/bytes` stays as a manual fallback, for a
+deployment whose bucket cannot answer ranged reads to the browser; the app does not use
+it.
+
+**Consequences:**
+- `GET …/file/{uuid}/read` gives a presigned GET with `ResponseContentType` set
+  (`application/pdf` for a PDF) and no `ResponseContentDisposition`. `…/download`, for
+  saving a copy, keeps its filename.
+- The app reads with only a `Range` header: no token, no header of ours, no credentials.
+- **S3 CORS for production (for Abdullah):** on the drawings bucket, allow the app's
+  origin, methods `GET` and `HEAD`, request header `Range`, and expose `Content-Range`,
+  `Accept-Ranges`, `Content-Length` and `ETag`. The bench's MinIO already does.
+- If A is chosen after the test, the read becomes pdf.js on that same link with ranges
+  off (`disableRange`); the bucket then needs no exposed headers.
