@@ -11,7 +11,7 @@ progress checklist while the night runs, and the morning report when it ends._
 | 1 | F8 Block D: live drawing channel, Collaboration preferences | ✅ Done | 00:15 | 00:32 | api, app, infra: "F8 Block D" |
 | 2 | F8 Block E: F3 and F4 events wired precisely | ✅ Done | 00:33 | 00:53 | api, app, infra: "F8 Block E" |
 | 3 | F8 Block F: Caddy note, STATUS, PARITY, full regression, close F8, backup | ✅ Done. Regression 46/46. F8 closed and archived; backup `E:\Intelcost-backup\2026-09-26_0148-f8-closed` | 00:54 | 01:50 | api, app, infra: "F8 close-out" |
-| 4 | F5 spec (`takeoff_shell_tasks.md`) | ☐ | | | |
+| 4 | F5 spec (`takeoff_shell_tasks.md`) | ✅ Done. 19 subtasks in 6 blocks, 9 questions; F5 on the board as Blocked on the answers | 00:58 | 01:52 | infra: "F5 specced" (mirror) |
 | 5 | Proof backlog fixtures | ☐ | | | |
 | 6 | P-19: phone width | ☐ | | | |
 | 7 | P-18: route-level code splitting | ☐ | | | |

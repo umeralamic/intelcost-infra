@@ -34,7 +34,7 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| _Nothing in progress_ | | | | |
+| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale | both | Specced overnight 2026-09-26; **blocked on the founder's answers** (Q1 to Q9) | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
 
 ---
 
@@ -44,7 +44,6 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
-| P-04 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration and scale | both | Rendering per D-14 |
 | P-05 | Item model: measure tools, dimensions, sub-items, variables, folders, layers, classifications | both | |
 | P-06 | Canvas interactions: selection, copy and move, deducts, snap, ortho, undo, menus, hover | app | |
 | P-08 | Estimating tab and export | both | |
