@@ -51,6 +51,8 @@ else
   done
   # f4-dialogs: every dialog at a short window and a phone (not a subtask, so not f4-sN).
   list+=(f4-dialogs f3-s1 f3-s3 f3-s12)
+  # p19: the top bar and the settings tab row at 375 and 1440 (P-19).
+  list+=(p19)
   # F8 in subtask order. The ones with runners (the api or Redis stopped, restarted, put
   # on 2-minute tokens; the worker's purge) take the .sh path below, and the *-outage and
   # *-restart phases are run by their runners, never on their own.
