@@ -1,9 +1,10 @@
-// F8-S14: the five Collaboration display preferences (D-33), kept on the account, and
+// F8-S14: the six Collaboration display preferences (D-33, D-38), kept on the account, and
 // what they change on today's canvas (D-34).
 //
 //   docker compose --profile browser run --rm browser node scripts/f8-s14.mjs
 //
-// Driven as window B's person (Sara W.), who is put back on every default at the end, so
+// Driven as window B's person (Sara W.), whose stored choices are cleared at the start and
+// the end (null puts a preference back on its default), so
 // a founder signing in as her afterwards sees the canvas as a new user would.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
@@ -26,19 +27,26 @@ const workspace = await firstWorkspace(token);
 const r = await riverside(token, workspace.uuid);
 await setMode(token, workspace.uuid, "work_together");
 
-const DEFAULTS = { show_drawing: true, show_names: "always", show_cursors: true, others_work: "all", colour_by: "person" };
-const CHANGED = { show_drawing: false, show_names: "hover", show_cursors: false, others_work: "fade", colour_by: "item" };
+// D-38: solid lines and item colour are the defaults now.
+const DEFAULTS = { show_drawing: true, show_names: "always", show_cursors: true, others_work: "all", colour_by: "item", live_line: "solid" };
+const CHANGED = { show_drawing: false, show_names: "hover", show_cursors: false, others_work: "fade", colour_by: "person", live_line: "dashed" };
 const LABELS = {
   show_drawing: { false: "Off", true: "On" },
   show_names: { hover: "On hover", always: "Always", off: "Off" },
   show_cursors: { false: "Off", true: "On" },
   others_work: { fade: "Fade others", all: "All", only_mine: "Only mine" },
-  colour_by: { item: "Item colour", person: "Person" },
+  colour_by: { item: "Item colour", person: "Each colleague's own colour" },
+  live_line: { solid: "Solid", dashed: "Dashed" },
 };
 
-const reset = () => call(saraToken, "PATCH", "/api/auth/me", { collaboration_prefs: DEFAULTS });
+// Every stored choice cleared: sparse again, reading as a new person's defaults.
+const reset = () =>
+  call(saraToken, "PATCH", "/api/auth/me", {
+    collaboration_prefs: Object.fromEntries(Object.keys(DEFAULTS).map((key) => [key, null])),
+  });
+await reset();
 
-/** What each of the five radio groups on Settings > Account shows as chosen. */
+/** What each of the six radio groups on Settings > Account shows as chosen. */
 async function shown(page) {
   const out = {};
   for (const key of Object.keys(DEFAULTS)) {
@@ -77,7 +85,7 @@ await run("f8-s14", [
       await page.locator("[data-collaboration-prefs]").waitFor();
       const after = await shown(page);
       expect(JSON.stringify(after) === JSON.stringify(CHANGED), `after reload: ${JSON.stringify(after)}`);
-      return `defaults read first; all five changed, one PATCH each, and kept across a reload`;
+      return `defaults read first; all six changed, one PATCH each, and kept across a reload`;
     },
   },
   {
@@ -88,7 +96,7 @@ await run("f8-s14", [
       await page.locator("[data-collaboration-prefs]").waitFor();
       const there = await shown(page);
       expect(JSON.stringify(there) === JSON.stringify(CHANGED), `window B reads ${JSON.stringify(there)}`);
-      return "window B (another origin, another api process) reads the five as set in window A";
+      return "window B (another origin, another api process) reads the six as set in window A";
     },
   },
   {
@@ -138,7 +146,28 @@ await run("f8-s14", [
 
         await setPrefs({});
         await waitFor(async () => (await count("[data-draft-tag]")) === 1, "defaults: a tag", 4000);
-        seen.defaults = "path and tag";
+        // D-38: by default the run is solid, in the item's colour (a new run's is the
+        // default measurement colour), never the colleague's.
+        const stroke = () => b.page.locator("[data-draft]").evaluate((p) => ({
+          dash: p.getAttribute("stroke-dasharray"),
+          colour: p.getAttribute("stroke"),
+        }));
+        const plain = await stroke();
+        expect(plain.dash === null, `the default line is dashed (${plain.dash})`);
+        expect(!plain.colour.includes("--collab"), `the default colour is the colleague's: ${plain.colour}`);
+        seen.defaults = `path and tag, solid, ${plain.colour}`;
+
+        await setPrefs({ live_line: "dashed" });
+        await waitFor(async () => (await count("[data-draft]")) === 1, "dashed: the path", 4000);
+        const dashed = await stroke();
+        expect(dashed.dash === "6 3", `dashed drew "${dashed.dash}"`);
+        seen.dashed = `dasharray ${dashed.dash}`;
+
+        await setPrefs({ colour_by: "person" });
+        await waitFor(async () => (await count("[data-draft]")) === 1, "colour by person: the path", 4000);
+        const person = await stroke();
+        expect(person.colour.includes("--collab"), `each colleague's own colour drew ${person.colour}`);
+        seen.person = person.colour;
 
         await setPrefs({ show_drawing: false });
         seen.off = `${await count("[data-draft-layer]")} layers`;

@@ -64,6 +64,19 @@ archived.**_
   on hover, off), others' work (all, only mine, fade) and colour by. F5 lifts it.
   Cursors are sent, stamped and received, and **drawn by F7** (D-33), so the cursors
   preference changes nothing visible yet.
+
+**Changed after close (2026-09-26, the founder's):**
+- **D-38 amends S14.** A sixth preference, **"Live drawing line": Solid (default) or
+  Dashed**; the draft layer drew every draft dashed before. **"Colour others by" now
+  defaults to Item colour**, the other choice renamed "Each colleague's own colour". An
+  explicit `null` in the patch puts a preference back on its default, so storage stays
+  sparse; `f8-s14` clears Sara W.'s choices at its start and end with it. `f8-s14` 4/4,
+  now also checking solid, dashed and the colleague's colour on the canvas.
+- **S13's throttle is 8 a second, not 10.** f8-s13 once saw 11 frames in a second: a
+  timer that fired early, and a send stamped before a long run was serialised. The client
+  now sends at most 8 a second, spaced on the wire; the api's limit stays 10. f8-s13 has
+  a step under a six-times CPU slowdown with a busy main thread: peak 7 to 8, never closer
+  than 125 ms, none dropped.
 - **A finished draft lingers 1 s on other screens** (`done` carries `saved: true`) so it
   hands over to its saved shape rather than blinking out; a cancelled one goes at once.
 - **Counts and calibration send no draft.** A count saves on every click, so its saved

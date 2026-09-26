@@ -877,7 +877,7 @@ the api's analytic quantities and union-clip (Q3); the shared table; the `batch`
    windows end on 20 EA.
 2. A and B drag the same vertex at the same moment: one wins; the other sees "{name} just
    changed this shape, showing their version", and the shape shows the winner's.
-3. B sees A's cursor and A's in-progress run, named; each of B's five Collaboration
+3. B sees A's cursor and A's in-progress run, named; each of B's six Collaboration
    preferences changes what B sees.
 4. A deducts from a section; B's figure drops within a second.
 5. A pastes six sections onto A-102; B, on A-102, sees all six appear at once.
