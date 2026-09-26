@@ -10,7 +10,7 @@ progress checklist while the night runs, and the morning report when it ends._
 | 0 | Setup: permissions in `.claude/settings.json`, rule 7 hook kept, reading | ✅ Done | 00:04 | 00:15 | (workspace file, mirrored with task 1) |
 | 1 | F8 Block D: live drawing channel, Collaboration preferences | ✅ Done | 00:15 | 00:32 | api, app, infra: "F8 Block D" |
 | 2 | F8 Block E: F3 and F4 events wired precisely | ✅ Done | 00:33 | 00:53 | api, app, infra: "F8 Block E" |
-| 3 | F8 Block F: Caddy note, STATUS, PARITY, full regression, close F8, backup | ☐ | | | |
+| 3 | F8 Block F: Caddy note, STATUS, PARITY, full regression, close F8, backup | ✅ Done. Regression 46/46. F8 closed and archived; backup `E:\Intelcost-backup\2026-09-26_0148-f8-closed` | 00:54 | 01:50 | api, app, infra: "F8 close-out" |
 | 4 | F5 spec (`takeoff_shell_tasks.md`) | ☐ | | | |
 | 5 | Proof backlog fixtures | ☐ | | | |
 | 6 | P-19: phone width | ☐ | | | |
@@ -27,7 +27,9 @@ progress checklist while the night runs, and the morning report when it ends._
 
 ## Failures and findings
 
-_None yet._
+| # | Found in | Finding | State |
+|---|---|---|---|
+| 1 | Task 9 (flows.md) | **D-27's 24-hour sweep of abandoned uploads is not built.** D-27 says "a `ProjectFile` still unfinished after 24 hours is aborted in S3 and removed by the nightly job"; `worker/tasks/maintenance.py` has only the Trash purge, which aborts a purged project's open uploads. Abandoned parts in live projects stay until the bucket's lifecycle rule (Abdullah's) removes them | Recorded, not fixed (no behaviour change overnight). Wants a small task: a nightly `abort_stale_uploads` beside the purge |
 
 ## Click-only checks for the founder
 

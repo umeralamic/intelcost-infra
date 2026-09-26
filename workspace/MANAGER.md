@@ -1,7 +1,7 @@
 # IntelCost — Manager
 _**The project board.** Three sections — In Progress, Blocked, Planned — so a glance
 says which feature is under development right now._
-_Updated: 2026-09-25_
+_Updated: 2026-09-26_
 
 **Backlog:** [FEATURES.md](FEATURES.md) · **Rules of engagement:** [DECISIONS.md](DECISIONS.md) · **Parity checklist:** [docs/PARITY.md](docs/PARITY.md)
 
@@ -19,7 +19,7 @@ _Updated: 2026-09-25_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F8 | D-03 removed the only realtime channel, and F3 and F4 shipped their events named but not emitted, so a second estimator's window is stale until it is refocused, and two estimators on one item can lose each other's work. → A WebSocket on the api with Redis fan-out across api processes and from workers (D-13): JWT on connect and re-auth on refresh, membership checked on join, events published after commit (D-20) with write-token echo suppression, and refetch on reconnect. Adds the workspace collaboration mode (D-32: Work together by default, Warn me, One at a time), with the row-per-shape write paths made safe, and live in-progress drawing (D-33). Wires the F3 and F4 events live and maps all 13 legacy channels. **Questions answered, D-32 and D-33 logged. Block A (S1 to S4) checked and pushed; Blocks B and C (S5 to S12) built and driven, awaiting the founder's check.** | Be Fe Infra | Umer | [realtime_tasks.md](docs/tasks/realtime_tasks.md) |
+| _Nothing in progress_ | | | | |
 
 ---
 

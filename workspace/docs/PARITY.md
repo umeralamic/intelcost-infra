@@ -46,8 +46,16 @@ their owner on the line, the map and the geocoder **P-17** (**D-28**) and sheets
 project files **F5**. **Section 2 is 13 of 25** after F4 added the two Statuses and the
 two Trash lines.
 
-No section beyond 1 to 5 has been verified, so an unticked **ported** line elsewhere
-still means only "the code is there".
+**F8 (realtime, 2026-09-26)** ticks **nine §10 lines** (the legacy soft-lock as One at a
+time, write tokens, and seven of the eight collaboration lines beyond legacy; the eighth,
+others' cursors, is **partial** until F7 draws them) and **one §24 line** (the
+Collaboration preferences). §10's "see each other's items, geometries, calibrations and
+folders" stays **partial**: items and geometries are live, calibrations are F5's and
+folders F6's. §3's live-permissions line is now live rather than on focus. The realtime
+table below gains its "New event" column.
+
+No section beyond 1 to 5 has been verified, except the F8 lines just named, so an
+unticked **ported** line elsewhere still means only "the code is there".
 
 **Scope.** Derived from `src/App.tsx` routes, every component under
 `src/components/` and page under `src/pages/`, the 292 shipped plan files in
@@ -159,7 +167,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [x] A capability added after a workspace saved its override falls back to the role default rather than reading as denied. `src/hooks/usePermissions.ts` · **ported** (F3-S2; the stored override map is sparse and an absent key means undecided, never denied)
 - [x] Workspace admin (`owner` or `admin`) and platform admin (Intelcost staff) are separate answers that never mix. `src/hooks/usePermissions.ts`, rpc `is_platform_admin` · **ported** (F3-S4, **D-23**; platform admin is a capability gate in the same layer, not a role. **One criterion carried to F5:** a platform admin's unmasked capabilities are not yet visible on a screen, because no control calls `can()` until F5)
 - [x] Only the owner can grant the owner role, and only through a transfer. `src/lib/permissions/capabilities.ts` · **ported** (F3-S9; `canGrantOwnerRole` is locked in the matrix per **D-25**, so no override and no custom role can hand it out)
-- [x] A role or permission change reaches an open tab live, with no reload. `src/hooks/usePermissions.ts` · **ported** (F3-S8)
+- [x] A role or permission change reaches an open tab live, with no reload. `src/hooks/usePermissions.ts` · **ported** (F3-S8 on focus; **live since F8-S15**: a role change, an override and a custom role each reach an unfocused tab within a second, `f8-s15`)
 - [x] "Can the user do this" and "is the feature shipped" stay separate gates, the second being a feature flag. `src/hooks/useFeatureFlag.ts`, table `feature_flags` · **ported** (F3-S13; two calls, two answers, ANDed only where a control is drawn, and the two refusals read differently)
 - [x] A `collaborator`-plan workspace loses the measure tools and keeps the markup tools. `src/lib/billing/planCapabilities.ts`, `src/components/takeoff/Toolbar.tsx` · **ported** (F3-S2 — **the mask is built and driven at module level, and no workspace can reach it end to end**: the plan reads a constant `pro` until **F16** supplies a real value, and there are no measure tools to lose until F5. Re-drive this line in F16)
 - [x] Platform-internal routes render the 404 page for a non-platform user, so internal tooling is invisible to customers. `src/components/route-guards/PlatformRoute.tsx` · **ported** (F3-S4; `RequirePlatformAdmin` renders `<NotFound/>`, anonymous callers included)
@@ -410,21 +418,21 @@ sibling panel reads as a bug to an estimator.
 - [ ] The move handle scales with zoom, stays anchored during zoom, hides while panning, hides while a dialog is open, and stays out from under dialogs and panels. `src/pages/ProjectTakeoff.tsx` · **missing**
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [ ] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
-- [ ] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **missing** (**D-32:** this is now the **One at a time** collaboration mode, not the default. F8-S11 and S12 build and drive it on today's takeoff page; F7 re-drives it on Resume and Extend)
+- [x] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **ported** (**D-32:** this is the **One at a time** collaboration mode, not the default. Built and driven on today's takeoff page, F8-S11 and S12, `f8-s11`, `f8-s12`: delete, add, edit vertices, rename and override are view-only for others and refused 409 by the api. **F7 re-drives it on Resume and Extend**, which do not exist yet)
 - [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **partial** (D-10, D-13: **items and geometries are live** on today's takeoff page since F8-S18, each within a second of the write, and F5 to F7 keep them; calibrations are F5's and folders F6's)
-- [ ] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **missing** (F8-S7)
+- [x] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **ported** (F8-S7, `core/realtime/tab.ts`: per tab, 512 kept, consumed on the echo; `f8-s7`, and `f8-s16` AC8 for A's own folder)
 
 **Collaboration, beyond legacy (D-32, D-33).** New behaviours the founder added on
 2026-09-25. There is no legacy file to cite; the decision is the reference.
 
-- [ ] **Collaboration mode.** An owner or admin sets the workspace's mode in Settings > Collaboration: Work together (the default), Warn me, or One at a time. One rule for everyone in the workspace; no "Ask to join". D-32 · **missing** (F8-S10)
-- [ ] **Work together.** Several estimators add shapes to one item at once and every shape survives, because each shape is its own row, and the item's quantity is the sum of all of them. D-32 · **missing** (F8-S9)
-- [ ] **Same shape, same moment.** A concurrent edit of the same shape is refused with "{name} just changed this shape, showing their version", and the shape refreshes to the winner's. Never a silent loss. D-32 · **missing** (F8-S9)
-- [ ] **Warn me.** As Work together, plus a banner, "{name} is also working on this item". D-32 · **missing** (F8-S12)
-- [ ] **One at a time.** An atomic claim with a heartbeat; anyone else gets "{name} is editing this item right now" and the item is view-only for them until the claim clears, seconds after the holder's last heartbeat. The api refuses their writes with 409, not only the screen. D-32 · **missing** (F8-S11, S12)
-- [ ] **Live in-progress drawing.** While a colleague draws, others see the line, area or count growing in the colleague's colour with a small name tag, not saved until it finishes. D-33 · **missing** (channel F8-S13; rendered by F5, F6 and F7)
-- [ ] **Others' cursors** show on the sheet, named. D-33 · **missing** (channel F8-S13; rendered by F7)
-- [ ] **Names read "Sara W."** (first name and last initial, or first name alone) everywhere a collaborator is named on the canvas and in lock or conflict messages. D-33 · **missing** (F8-S1, S9, S12; canvas F5, F6, F7)
+- [x] **Collaboration mode.** An owner or admin sets the workspace's mode in Settings > Collaboration: Work together (the default), Warn me, or One at a time. One rule for everyone in the workspace; no "Ask to join". D-32 · **ported** (F8-S10, `f8-s10`; the change reaches open takeoff pages live, `f8-s15` AC9)
+- [x] **Work together.** Several estimators add shapes to one item at once and every shape survives, because each shape is its own row, and the item's quantity is the sum of all of them. D-32 · **ported** (F8-S9, `f8-s9`: two windows, and fifty simultaneous adds)
+- [x] **Same shape, same moment.** A concurrent edit of the same shape is refused with "{name} just changed this shape, showing their version", and the shape refreshes to the winner's. Never a silent loss. D-32 · **ported** (F8-S9, `f8-s9`)
+- [x] **Warn me.** As Work together, plus a banner, "{name} is also working on this item". D-32 · **ported** (F8-S12, `f8-s12`)
+- [x] **One at a time.** An atomic claim with a heartbeat; anyone else gets "{name} is editing this item right now" and the item is view-only for them until the claim clears, seconds after the holder's last heartbeat. The api refuses their writes with 409, not only the screen. D-32 · **ported** (F8-S11, S12, `f8-s11`, `f8-s12`)
+- [x] **Live in-progress drawing.** While a colleague draws, others see the line, area or count growing in the colleague's colour with a small name tag, not saved until it finishes. D-33 · **ported** on today's canvas (F8-S13 channel, drawn by `DraftLayer` per **D-34**, pending review; `f8-s13`: a run grows on B's sheet tagged "Bench E.", hands over to the saved shape, and ends at once when A's tab closes. A count grows by its saved marks, one per click. **F5 carries the layer onto the pdf.js canvas**)
+- [ ] **Others' cursors** show on the sheet, named. D-33 · **partial** (channel built and driven, F8-S13: frames stamped and fanned out; **drawn by F7**)
+- [x] **Names read "Sara W."** (first name and last initial, or first name alone) everywhere a collaborator is named on the canvas and in lock or conflict messages. D-33 · **ported** (`core/names.py`, F8-S1; the item row, the Warn me banner, the lock and conflict messages, F8-S9 and S12; the draft tag, F8-S13. F5 to F7 keep it)
 - [ ] Canvas rendering can be switched to high resolution, with a perf HUD available. `src/components/takeoff/CanvasPerfHud.tsx`, `src/lib/takeoff/diagnostics/` · **missing**
 - [ ] A reference sheet opens in a second canvas pane beside the working sheet. `src/components/takeoff/ReferenceCanvasPane.tsx` · **missing**
 
@@ -522,7 +530,7 @@ The Collaborator tab, the $9.99 tier. `src/components/takeoff/ReviewMarkupLayer.
 - [ ] "Reset to defaults" restores a markup's style. `src/components/takeoff/props/PropertiesPanel.tsx` · **missing**
 - [ ] The action bar for a selected markup sits next to the tools, not at the far right, and turns light yellow while a markup is in progress. `src/components/takeoff/DrawActionStrip.tsx` · **missing**
 - [ ] Box-select several markups and act on all of them from one action bar. `.lovable/plan/box-select-markups-selection-action-bar-and-a-selection-righ-2026-09-01.md` · **missing**
-- [ ] Highlights, notes and docks each arrive live for other viewers. `src/hooks/useHighlights.ts`, `useNotes.ts`, `useDocks.ts` · **missing** (D-10)
+- [ ] Highlights, notes and docks each arrive live for other viewers. `src/hooks/useHighlights.ts`, `useNotes.ts`, `useDocks.ts` · **missing** (D-10; the transport is built, F8. The events `takeoff.dock.changed`, `takeoff.highlight.changed` and `takeoff.note.changed` are named and F11 emits them)
 - [ ] A collaborator-plan user gets the markup tools and not the measure tools. `src/components/takeoff/Toolbar.tsx` · **missing**
 
 ## 15. Evidence and snippets
@@ -872,7 +880,7 @@ arrive through storage. `src/components/takeoff/settings/SettingsDialog.tsx`
 - [ ] **Rendering.** High-resolution re-raster of the visible area once the view settles, the delay after zoom or pan stops, and a fade-in duration. · **missing**
 - [ ] **Hover.** Which fields appear in the hover panel per markup type (area, linear, segment, count), its text style, its background colour, and the blue outline painted over the area run under the cursor with its colour and thickness. · **missing**
 - [ ] A section can be reset on its own, or every default restored at once. `src/components/takeoff/settings/SettingsDialog.tsx` · **missing**
-- [ ] **Collaboration (beyond legacy, D-33).** A section in the user's own settings: show others' drawing in progress (on, off), show names (always, on hover, off), show others' cursors (on, off), show others' work (all, only mine, fade others), colour others by (person, item colour). Kept on the user, so it follows them to another machine. · **missing** (F8-S14 stores and edits it; F5, F6 and F7 honour it)
+- [x] **Collaboration (beyond legacy, D-33).** A section in the user's own settings: show others' drawing in progress (on, off), show names (always, on hover, off), show others' cursors (on, off), show others' work (all, only mine, fade others), colour others by (person, item colour). Kept on the user, so it follows them to another machine. · **ported** (F8-S14, `f8-s14`: kept across a reload and on another origin; a bad value refused naming the field. Honoured today by the draft layer for drawing, names, others' work and colour by; **cursors honoured by F7**, and F5 to F7 keep the rest)
 
 **Shell and chrome**
 
@@ -978,29 +986,42 @@ TTL held by a heartbeat. The F8 spec maps each row below onto an event on that
 transport, so this table is that spec's input. Presence is the hardest row: it is an
 ephemeral soft-lock, not a data feed.
 
-| # | Channel | Watches | What it buys the user | File |
-|---|---|---|---|---|
-| 1 | `takeoff-sync-${projectId}` | `takeoff_items`, `takeoff_geometries`, `sheet_calibrations`, `takeoff_folders` (all events) | Two estimators on one project see each other's measurements, folders and calibrations appear live. **New:** `takeoff.item.changed` and `takeoff.geometry.changed` since F8-S18; calibration F5, folders F6 | `src/hooks/useTakeoffRealtime.ts` |
-| 2 | `takeoff:${projectId}` (**presence**, not postgres_changes) | presence payloads keyed by (itemId, sheetId) | Ephemeral soft-lock: blocks Resume and delete for other viewers while someone is actively marking, so a read-modify-write on `vertices_json` cannot silently drop a writer | `src/hooks/useTakeoffPresence.ts` |
-| 3 | `takeoff_docks:${projectId}` | `takeoff_docks` | Docked snapshots appear for other viewers | `src/hooks/useDocks.ts` |
-| 4 | `takeoff_highlights:${projectId}` | `takeoff_highlights` | Highlights appear for other viewers | `src/hooks/useHighlights.ts` |
-| 5 | `takeoff_notes:${projectId}` | `takeoff_notes` | Notes appear for other viewers | `src/hooks/useNotes.ts` |
-| 6 | `user-roles-${userId}-${workspaceId}-${instanceId}` | `user_roles`, `workspace_custom_roles`, `workspace_role_overrides`, `workspace_billing` | A role, permission or plan change takes effect in an open tab with no reload | `src/hooks/usePermissions.ts` |
-| 7 | `trial-state-${workspaceId}-${channelId}` | `workspace_trial_state`, `workspace_limit_overrides` | A trial expiring, or an admin lifting a limit, reaches the open tab | `src/hooks/useTrialState.ts` |
-| 8 | `workspace-custom-roles-${workspaceId}` | `workspace_custom_roles` | The roles matrix updates while another admin edits it | `src/hooks/useWorkspaceCustomRoles.ts` |
-| 9 | `workspace-role-overrides-${workspaceId}` | `workspace_role_overrides` | The same, for built-in role overrides | `src/hooks/useWorkspaceRoleOverrides.ts` |
-| 10 | `workspace-shifts-${workspaceId}` | `workspace_shifts`, `workspace_role_default_shifts` | Shift changes reach open member screens | `src/hooks/useWorkspaceShifts.ts` |
-| 11 | `estimating-evlinks-${projectId}` | `takeoff_item_evidence_links`, `takeoff_folders` (UPDATE), `takeoff_items` (UPDATE), `estimating_line_costs` | The estimate table stays live against takeoff edits and another estimator's rates | `src/components/estimate/ProjectEstimatingView.tsx` |
-| 12 | `subitem-costs-${projectId}-${parentId}` | `estimating_line_costs` | Sub-item costs stay in sync while the dialog is open | `src/components/takeoff/SubItemDialog.tsx` |
-| 13 | `file-source-${projectId}` | `project_files` (UPDATE), `project_intake_files` (UPDATE) | A file finishing its server-side render swaps the canvas source without a reload | `src/pages/ProjectTakeoff.tsx` |
+**F8 closed 2026-09-26.** The "New event" column is what each channel became on the
+new transport, the topic it rides (`ws` is the workspace topic, `project` the project
+topic) and its state.
+
+| # | Channel | Watches | What it buys the user | File | New event (F8) |
+|---|---|---|---|---|---|
+| 1 | `takeoff-sync-${projectId}` | `takeoff_items`, `takeoff_geometries`, `sheet_calibrations`, `takeoff_folders` (all events) | Two estimators on one project see each other's measurements, folders and calibrations appear live | `src/hooks/useTakeoffRealtime.ts` | project: `takeoff.item.changed`, `takeoff.geometry.changed` **live** (F8-S18); `sheet.calibration.changed` **F5**; `takeoff.folder.changed` **F6** |
+| 2 | `takeoff:${projectId}` (**presence**, not postgres_changes) | presence payloads keyed by (itemId, sheetId) | Ephemeral soft-lock: blocks Resume and delete for other viewers while someone is actively marking, so a read-modify-write on `vertices_json` cannot silently drop a writer | `src/hooks/useTakeoffPresence.ts` | project: `item.focus`, `item.blur`, `presence`, `presence.changed`, `focus.granted`, `focus.refused` **live**, per the collaboration mode (D-32). Plus `draft` and `cursor`, beyond legacy (D-33) |
+| 3 | `takeoff_docks:${projectId}` | `takeoff_docks` | Docked snapshots appear for other viewers | `src/hooks/useDocks.ts` | project: `takeoff.dock.changed`, named, **F11** |
+| 4 | `takeoff_highlights:${projectId}` | `takeoff_highlights` | Highlights appear for other viewers | `src/hooks/useHighlights.ts` | project: `takeoff.highlight.changed`, named, **F11** |
+| 5 | `takeoff_notes:${projectId}` | `takeoff_notes` | Notes appear for other viewers | `src/hooks/useNotes.ts` | project: `takeoff.note.changed`, named, **F11** |
+| 6 | `user-roles-${userId}-${workspaceId}-${instanceId}` | `user_roles`, `workspace_custom_roles`, `workspace_role_overrides`, `workspace_billing` | A role, permission or plan change takes effect in an open tab with no reload | `src/hooks/usePermissions.ts` | ws: `workspace.member.changed`, `workspace.permissions.changed` **live** (F8-S15); `workspace.plan.changed` **F16** |
+| 7 | `trial-state-${workspaceId}-${channelId}` | `workspace_trial_state`, `workspace_limit_overrides` | A trial expiring, or an admin lifting a limit, reaches the open tab | `src/hooks/useTrialState.ts` | ws: `workspace.trial.changed`, named, **F16** |
+| 8 | `workspace-custom-roles-${workspaceId}` | `workspace_custom_roles` | The roles matrix updates while another admin edits it | `src/hooks/useWorkspaceCustomRoles.ts` | ws: `workspace.permissions.changed` kind `custom_role` **live** (F8-S15) |
+| 9 | `workspace-role-overrides-${workspaceId}` | `workspace_role_overrides` | The same, for built-in role overrides | `src/hooks/useWorkspaceRoleOverrides.ts` | ws: `workspace.permissions.changed` kind `override` **live** (F8-S15) |
+| 10 | `workspace-shifts-${workspaceId}` | `workspace_shifts`, `workspace_role_default_shifts` | Shift changes reach open member screens | `src/hooks/useWorkspaceShifts.ts` | ws: `workspace.shifts.changed`, named, **F15** |
+| 11 | `estimating-evlinks-${projectId}` | `takeoff_item_evidence_links`, `takeoff_folders` (UPDATE), `takeoff_items` (UPDATE), `estimating_line_costs` | The estimate table stays live against takeoff edits and another estimator's rates | `src/components/estimate/ProjectEstimatingView.tsx` | project: `estimate.changed`, named, **F9**, plus channel 1's item and folder events |
+| 12 | `subitem-costs-${projectId}-${parentId}` | `estimating_line_costs` | Sub-item costs stay in sync while the dialog is open | `src/components/takeoff/SubItemDialog.tsx` | project: `estimate.line_cost.changed`, named, **F9** |
+| 13 | `file-source-${projectId}` | `project_files` (UPDATE), `project_intake_files` (UPDATE) | A file finishing its server-side render swaps the canvas source without a reload | `src/pages/ProjectTakeoff.tsx` | project: `drawing.source.changed`, from the render worker, named, **F5** (the worker publish path is built, F8-S6) |
+
+**Beyond the thirteen, live since F8:** the F3 set on the workspace topic
+(`workspace.owner.changed`, `workspace.settings.updated`, the new
+`workspace.invitation.changed`) and the F4 set (`project.created`, `project.updated`,
+`project.trashed`, `project.restored`, `project.purged` by hand and by the nightly
+worker, `project.folder.changed`, `project.file.changed`, `workspace.statuses.changed`),
+each driven between two windows on two api processes (`f8-s15`, `f8-s16`, `f8-s6`).
 
 Two supporting details that have to survive the transport swap:
 
 - **Echo suppression.** A writer must not re-apply its own event. Legacy does this
-  with write tokens. `src/lib/takeoff/realtime/writeTokens.ts`
+  with write tokens. `src/lib/takeoff/realtime/writeTokens.ts` **Kept (F8-S7).**
 - **Auth priming.** Legacy re-authorises channel bindings on token refresh, because
   events on RLS-guarded tables are otherwise dropped silently. Under D-03 there is no
   RLS, but the token-refresh case still exists. `src/hooks/useTakeoffRealtime.ts`
+  **Kept (F8-S3):** a refresh re-authorises the open socket and re-checks every topic;
+  it never rebuilds the socket.
 
 ---
 
