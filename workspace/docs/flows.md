@@ -160,6 +160,7 @@ sequenceDiagram
 4. Every api process subscribed to that topic forwards the event to its sockets. Other
    tabs refetch what it names; the writing tab recognises its own token and skips it.
 5. While someone draws, `draft` and `cursor` frames go the same way, never stored.
+   Other tabs draw the growing shape with a "Sara W." tag (D-33, D-34).
 6. In One at a time, the first tab to take an item holds a 15 s Redis claim, renewed by
    its 5 s ping; everyone else's writes to that item are refused 409.
 7. A reconnect refetches everything on screen. There is no replay.
