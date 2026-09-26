@@ -54,7 +54,7 @@ else
   # F8 in subtask order. The ones with runners (the api or Redis stopped, restarted, put
   # on 2-minute tokens; the worker's purge) take the .sh path below, and the *-outage and
   # *-restart phases are run by their runners, never on their own.
-  list+=(f8-s1 f8-s2 f8-s3 f8-s4 f8-s5 f8-s6 f8-s7 f8-s8 f8-s9 f8-s10 f8-s11 f8-s12 f8-s18)
+  list+=(f8-s1 f8-s2 f8-s3 f8-s4 f8-s5 f8-s6 f8-s7 f8-s8 f8-s9 f8-s10 f8-s11 f8-s12 f8-s13 f8-s14 f8-s18)
 fi
 
 failed=0

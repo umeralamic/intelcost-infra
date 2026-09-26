@@ -1541,3 +1541,34 @@ others by (person, item colour).
   processes see each other, but they are never persisted and never replayed.
 - A person's colour is derived from their user uuid, the same on every screen.
 - These are new behaviours beyond legacy. PARITY lists them as such.
+
+---
+
+## D-34 — Today's canvas renders colleagues' drafts now, as a lift-out layer F5 keeps
+
+**Date:** 2026-09-26
+**Status:** Under Review — **decided overnight, pending founder review**
+**Area:** Takeoff, Frontend
+
+**Context:** D-33 says F8 builds the live drawing channel and F5, F6 and F7 render it.
+The founder's Block B/C check listed "live drawing" as a finding: on today's page there
+was nothing to see. Built as the spec reads, Block D would again be checkable only in
+DevTools' frame list, and the first on-screen look would wait for F5.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Channel only, as the F8 spec reads | Nothing drawn that F5 might redraw | The founder cannot check Block D by clicking; the preferences change nothing visible |
+| B — A small `DraftLayer` on today's canvas, built to be lifted into F5's canvas | Block D checkable in two windows; the name tag, colour and three of the five preferences visible now; F5 moves one component rather than writing it | Today's canvas is retired by F5, so the mounting (not the layer) is thrown away |
+
+**Decision:** Option B. `features/takeoff/components/DraftLayer.tsx` draws each
+colleague's in-progress shape in their colour (or the item's, per "colour others by"),
+with a "Sara W." tag at the pen, honouring "drawing in progress", "names" and "others'
+work". Cursors are sent and received but **rendered by F7**, as D-33 says, so the
+"cursors" preference has no visible effect until then.
+
+**Consequences:**
+- F5's spec takes `DraftLayer` over rather than writing its own.
+- The layer reads points in normalised sheet space, the same space every stored vertex
+  uses, so it needs no change when pdf.js replaces the PNG.

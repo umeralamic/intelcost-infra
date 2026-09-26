@@ -17,7 +17,8 @@ update each other._
 
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-32 and D-33 logged. Block A (S1 to S4) built, checked and pushed. Blocks
-B and C (S5 to S12) built and driven; awaiting the founder's check.**_
+B and C (S5 to S12, S18) checked. Block D (S13, S14) built and driven overnight
+2026-09-26, with D-34 pending the founder's review.**_
 
 ## Progress
 
@@ -26,7 +27,28 @@ B and C (S5 to S12) built and driven; awaiting the founder's check.**_
 | **A: S1 to S4** | Built and driven, 2026-09-25. **Checked by the founder** (sign out, api outage and reconnect) and pushed. The email-prefix name fallback agreed |
 | **B: S5 to S8** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f8-s5.sh` 3/3 (fan-out across `api` and `api-b`, the rollback drive, a 10 s Redis outage), `f8-s6.sh` 1/1 (the worker's purge reaching an open Trash; a dry run publishing nothing), `f8-s7` 3/3, `f8-s8.sh` 1/1 (api-b restarted while changes land elsewhere). `f8-s5` run 5 more times: 5/5 |
 | **B and C re-check** | **Checked by the founder**, 2026-09-26, with four findings: asymmetric delivery, saved shapes not live, the item list squeezed to no rows, and live drawing (Block D, unchanged). The first three are **S18** | `browser/f8-s18` 3/3, run 4 times: A to B and B to A each under 300 ms (typically under 130), windows hidden and blurred; edit under 110 ms, delete under 50 ms; the tree at 171 px with the selected row in view. `f8-s9` AC2-on-screen and AC4 re-staged: a live window is no longer stale, so the conflict is made mid-drag and the stale Delete last shape is the request itself; 5/5. **Full regression** after S18: 42 fixtures, 41 passed; the one failure (f8-s12 AC1, intermittent) was a real join gap, fixed in `hub.join` (see S18), and the join-sensitive fixtures reran clean. Gates: ruff, ruff format, mypy, lint, typecheck, build. The rule 7 hook added and proved (it blocked a live `sed -i`) |
+| **D: S13, S14** | Built and driven, 2026-09-26 (overnight). **Awaiting the founder's check.** Drafts also **drawn** on today's canvas (D-34, decided overnight) | `f8-s13` 3/3 (B heard 40 frames stamped "Bench E.", peak 10/s sent, done+saved; A heard none of its own; B on sheet 2 drew none; a closed tab's draft ended for B in 46 ms; shapes unchanged mid-shape, +1 on finish). `f8-s14` 4/4 (five preferences kept across a reload and on window B's app; 422 naming `show_names` and `glow`; on the canvas: off, names off, names on hover, fade at 0.4, only mine). Migration `f3a8d2c61b57` up, down, up; `alembic check` clean. Neighbours rerun: `f8-s9` 5/5, `f8-s11` 4/4, `f8-s12` pass, `f8-s18` 3/3. Gates: ruff, ruff format, mypy (81 files), lint, typecheck, build |
 | **C: S9 to S12** | Built and driven, 2026-09-26. Checked by the founder (see the re-check row) | `f8-s9` 5/5, run 3 more times: 3/3. `f8-s10` 3/3, `f8-s11` 4/4, `f8-s12.sh` 6/6 (five modes-and-tabs steps, then an `api` restart while holding). Migration `e7b2c5a90d14` driven up, down and up; `alembic check` clean. Gates: ruff, ruff format, mypy (81 files), lint, typecheck, build. **Full regression** through `regress.sh`, `bench-code` first: 41 fixtures, 39 passed; the two failures were fixture faults (below), fixed, and both reran clean (`f8-s4` 4/4, `f8-s12.sh` 6/6) |
+
+**Found while building Block D:**
+- **Drafts are drawn on today's canvas (D-34, decided overnight, pending review).** The
+  founder's B/C check found nothing to see; `DraftLayer.tsx` draws a colleague's run in
+  their colour with the "Sara W." tag, and honours drawing in progress, names (always,
+  on hover, off), others' work (all, only mine, fade) and colour by. F5 lifts it.
+  Cursors are sent, stamped and received, and **drawn by F7** (D-33), so the cursors
+  preference changes nothing visible yet.
+- **A finished draft lingers 1 s on other screens** (`done` carries `saved: true`) so it
+  hands over to its saved shape rather than blinking out; a cancelled one goes at once.
+- **Counts and calibration send no draft.** A count saves on every click, so its saved
+  event already shows it growing; calibration is not a measurement.
+- **Preferences store only what changed.** `user.collaboration_prefs` is `{}` for
+  everyone who never touched them; the api fills the defaults on read, so a default
+  changed later reaches them. An unknown key is refused (422 naming it), not dropped.
+- **"Names on hover" reads the viewer's own pointer**, within 0.02 of the run, because
+  the layer never takes the pointer: a click on a colleague's draft belongs to the sheet.
+  The page holds the pointer in state only while that mode has a draft to name.
+- **Rate limit is per kind**, 10 draft and 10 cursor frames a second per socket; the end
+  of a draft and a cursor's `gone` are never dropped.
 
 **Two fixture faults the full regression found:**
 - `f8-s4` AC4 imported the socket module by its bare path to reach the app's instance.
