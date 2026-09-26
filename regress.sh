@@ -2,7 +2,8 @@
 # Run browser fixtures as a regression, bench-code first (D-30).
 #
 #   ./regress.sh                     every f4 fixture, f4-dialogs, f3-s1, f3-s3, f3-s12, then f8
-#                                    (f8-s2 stops the api and f8-s3 retokens it: ~10 minutes)
+#                                    (F8 stops and restarts the api, api-b and Redis, and
+#                                    retokens the api: the F8 part alone is ~25 minutes)
 #   ./regress.sh f4-s17 f4-s18       just these
 #
 # bench-code goes first and a failure stops the run: a fixture driven against a worker or
@@ -30,6 +31,9 @@ fixture() {
   return $status
 }
 
+# F8 from S5 on needs window B's app and api (the realtime profile). Idempotent.
+docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1
+
 if ! fixture bench-code; then
   echo "bench-code failed: the api or the worker runs old code. Nothing else was run."
   exit 1
@@ -47,10 +51,10 @@ else
   done
   # f4-dialogs: every dialog at a short window and a phone (not a subtask, so not f4-sN).
   list+=(f4-dialogs f3-s1 f3-s3 f3-s12)
-  # F8 in subtask order. f8-s2 and f8-s3 have runners (the api stopped, restarted, and
-  # put on 2-minute tokens), so they take the .sh path below; f8-s2-outage is run by
-  # f8-s2.sh, never on its own.
-  list+=(f8-s1 f8-s2 f8-s3 f8-s4)
+  # F8 in subtask order. The ones with runners (the api or Redis stopped, restarted, put
+  # on 2-minute tokens; the worker's purge) take the .sh path below, and the *-outage and
+  # *-restart phases are run by their runners, never on their own.
+  list+=(f8-s1 f8-s2 f8-s3 f8-s4 f8-s5 f8-s6 f8-s7 f8-s8 f8-s9 f8-s10 f8-s11 f8-s12 f8-s18)
 fi
 
 failed=0

@@ -85,7 +85,8 @@ services:
       S3_ACCESS_KEY_ID: minioadmin
       S3_SECRET_ACCESS_KEY: minioadmin
       S3_FORCE_PATH_STYLE: "true"
-      CORS_ORIGINS: '["http://localhost:5173","http://localhost:3000"]'
+      # :5174 is app-b, the second window of the realtime profile (F8-S5).
+      CORS_ORIGINS: '["http://localhost:5173","http://localhost:5174","http://localhost:3000"]'
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
@@ -209,6 +210,32 @@ services:
       - "5173:5173"
     depends_on:
       api:
+        condition: service_started
+
+  # A second api process and a second app pointed at it (F8-S5, the "realtime" profile).
+  #
+  #   docker compose --profile realtime up -d
+  #
+  # Window A on http://localhost:5173 talks to `api`; window B on http://localhost:5174
+  # talks to `api-b`. Same database, same Redis, different processes: every live update
+  # between the two windows has crossed Redis pub/sub, which is the fan-out D-13 bought.
+  # api-b runs no migrations; `api` owns the schema.
+  api-b:
+    extends: api
+    profiles: ["realtime"]
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports: !override
+      - "8010:8000"
+
+  app-b:
+    extends: app
+    profiles: ["realtime"]
+    environment:
+      VITE_API_URL: http://localhost:8010
+    ports: !override
+      - "5174:5173"
+    depends_on: !override
+      api-b:
         condition: service_started
 
   # A stand-in for MaxMind Insights, so the signup gate's geo branches can be driven

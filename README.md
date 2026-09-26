@@ -215,6 +215,18 @@ container first: `docker compose stop app`.
 | `worker` | | Itself | `docker compose logs -f worker` |
 | `beat` | | The production scheduler | `docker compose logs -f beat` |
 | `app` | 5173 | Itself | http://localhost:5173 |
+| `api-b` | 8010 | A second api process (F8, `realtime` profile) | http://localhost:8010/docs |
+| `app-b` | 5174 | A second window, talking to `api-b` (`realtime` profile) | http://localhost:5174 |
+
+**Two windows, two api processes.** `docker compose --profile realtime up -d` adds
+`api-b` and `app-b`. Open http://localhost:5173 in one browser window and
+http://localhost:5174 in another: different origins, so each keeps its own sign-in, and
+every live update between them has crossed Redis from one api process to the other. The
+second estimator for this is `window-b@bench.intelcost.io` ("Sara Williams", password
+`bench-password-1`), an estimator in Bench Construction. It is not in the seed: the F8
+fixtures seat it through the real invitation path the first time they need it, so on a
+fresh bench run one of them (say `./regress.sh f8-s7`) before signing in as it by hand.
+`regress.sh` starts the profile itself.
 
 `beat` only enqueues. At 03:00 UTC it queues `purge_trashed_projects` (F4-S27) and the
 worker runs it. To run the purge now, without waiting for the night:

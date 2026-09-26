@@ -12,7 +12,109 @@
 import { request } from "node:http";
 import { lookup } from "node:dns/promises";
 
+import {
+  apiAccept,
+  apiLogin,
+  apiRegister,
+  clearMail,
+  firstWorkspace,
+  invite,
+  inviteTokenFromMail,
+} from "./bench.mjs";
+
 export const WS_URL = "ws://localhost:8000/api/realtime";
+
+/** Window B of the realtime profile: its own app, on its own api process (F8-S5). */
+export const APP_B = "http://localhost:5174";
+export const WS_URL_B = "ws://localhost:8010/api/realtime";
+
+/** The seated second estimator for two-window checks, "Sara W." on the socket. */
+export const WINDOW_B = { email: "window-b@bench.intelcost.io", password: "bench-password-1" };
+
+/**
+ * Window B's account, seated in the owner's workspace if this bench has never had it.
+ *
+ * Not in the seed, so a fresh bench makes it here, the first time a fixture needs it,
+ * through the real invitation path, as `seatedMember` does. Returns its access token.
+ */
+export async function ensureWindowB() {
+  try {
+    return await apiLogin(WINDOW_B.email, WINDOW_B.password);
+  } catch {
+    // Not there yet.
+  }
+  const owner = await apiLogin();
+  const workspace = await firstWorkspace(owner);
+  await clearMail();
+  await invite(owner, workspace.uuid, WINDOW_B.email, "estimator");
+  const inviteToken = await inviteTokenFromMail(WINDOW_B.email);
+  await apiRegister(WINDOW_B.email, WINDOW_B.password, "Sara Williams");
+  const token = await apiLogin(WINDOW_B.email, WINDOW_B.password);
+  const accepted = await apiAccept(token, inviteToken);
+  if (accepted.status !== 200) throw new Error(`seating window B: ${accepted.status}`);
+  return token;
+}
+
+/** Sign in through the UI of either app. */
+export async function signInAt(page, app, email, password = "bench-password-1") {
+  await page.goto(`${app}/login`);
+  await page.fill("#email", email);
+  await page.fill("#password", password);
+  await page.click('button[type="submit"]');
+  await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });
+}
+
+/** A second browser window beside the step's own, recording its sockets. The caller
+ *  closes it. */
+export async function secondWindow(context) {
+  const other = await context.browser().newContext({ viewport: { width: 1440, height: 900 } });
+  await recordSockets(other);
+  return { context: other, page: await other.newPage() };
+}
+
+/** Wait until the app's current socket on this page has `joined` a topic. */
+export async function joinedTopic(page, topic, timeout = 20000) {
+  try {
+    return await waitFor(
+      async () => {
+        const last = (await appSockets(page)).at(-1);
+        return last?.received.find((f) => f.type === "joined" && f.topic === topic);
+      },
+      `joined ${topic}`,
+      timeout,
+    );
+  } catch (error) {
+    const seen = (await appSockets(page)).map((s) => ({
+      url: s.url,
+      close: s.close,
+      sent: s.sent.filter((f) => f.type !== "ping").map((f) => `${f.type} ${f.topic ?? ""}`),
+      got: s.received.filter((f) => f.type !== "pong").map((f) => `${f.type} ${f.topic ?? f.reason ?? ""}`),
+    }));
+    throw new Error(`${error.message} on ${page.url()}; sockets: ${JSON.stringify(seen)}`);
+  }
+}
+
+/** Every event frame the app's sockets on this page received, optionally by name. */
+export async function eventsOn(page, name) {
+  return (await appSockets(page))
+    .flatMap((s) => s.received)
+    .filter((f) => f.type === "event" && (!name || f.name === name));
+}
+
+/** A hand-written request with the headers a tab sends, from Node. */
+export async function call(token, method, path, body, headers = {}, port = 8000) {
+  const host = (await lookup("host.docker.internal")).address;
+  const response = await fetch(`http://${host}:${port}${path}`, {
+    method,
+    headers: {
+      authorization: `Bearer ${token}`,
+      ...(body ? { "content-type": "application/json" } : {}),
+      ...headers,
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  return { status: response.status, body: await response.json().catch(() => null) };
+}
 
 /** Record every socket this context's pages open. Call before the first navigation. */
 export async function recordSockets(context) {
@@ -77,7 +179,7 @@ export async function readySocket(page, timeout = 20000) {
  * (each waiting `gapMs` for the answer), and resolves with everything it heard and how
  * it closed, or with `open: true` if it was still open after `waitMs`.
  */
-export async function rawSocket(page, frames, waitMs = 3000, gapMs = 400, pingMs = 0) {
+export async function rawSocket(page, frames, waitMs = 3000, gapMs = 400, pingMs = 0, url = WS_URL) {
   return page.evaluate(
     ({ url, frames, waitMs, gapMs, pingMs }) =>
       new Promise((resolve) => {
@@ -115,7 +217,7 @@ export async function rawSocket(page, frames, waitMs = 3000, gapMs = 400, pingMs
           ws.close();
         }, waitMs);
       }),
-    { url: WS_URL, frames, waitMs, gapMs, pingMs },
+    { url, frames, waitMs, gapMs, pingMs },
   );
 }
 

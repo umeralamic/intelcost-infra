@@ -80,9 +80,16 @@ await run("f8-s4", [
       await signInAs(page, SEEDED.email, SEEDED.password);
       await readySocket(page);
       const topic = `ws:${first.uuid}:project:${project.uuid}`;
-      // The socket module the app itself loaded: the dev server serves one instance.
+      // The socket module the app itself loaded, by the exact URL it loaded: once Vite has
+      // hot-updated a module it serves it as `socket.ts?t=…`, and importing the bare path
+      // would make a second, unconnected copy.
       await page.evaluate(async (topic) => {
-        const { realtime } = await import("/src/core/realtime/socket.ts");
+        const url =
+          performance
+            .getEntriesByType("resource")
+            .map((entry) => entry.name)
+            .find((name) => name.includes("/src/core/realtime/socket.ts")) ?? "/src/core/realtime/socket.ts";
+        const { realtime } = await import(url);
         window.__f8a = realtime.subscribe(topic, () => {});
         window.__f8b = realtime.subscribe(topic, () => {});
       }, topic);
