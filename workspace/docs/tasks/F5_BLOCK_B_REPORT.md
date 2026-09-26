@@ -196,6 +196,75 @@ In the demo workspace (switch to it, or use the link above):
 - pdf.js ships as a lazy 468 kB chunk plus a 1.3 MB worker, loaded only on takeoff.
 - The seed runs in the api container with `--storage-host host.docker.internal:9000`.
 
+## After your check: Choose pages on the 429 MB set
+
+**Your finding:** "Couldn't open some drawings" on "JHS Permit C 50CD_VOL 3_2026-07-17.pdf",
+with IDM popping up.
+
+**Cause.** [pdfjs.ts](../../intelcost-app-react/src/features/takeoff/pdf/pdfjs.ts) handed
+pdf.js a presigned link to MinIO ([storage.py `presigned_get`](../../intelcost-app-fastapi/app/core/storage.py),
+from [project/service.py `download_url`](../../intelcost-app-fastapi/app/features/project/service.py)).
+- pdf.js's first request for a URL is a plain GET for the whole file, which it aborts once
+  it sees ranges work.
+- For this set that GET was a `.pdf` URL answered 200 `application/pdf`, 450 MB, with a
+  filename: exactly what IDM and similar take over. Taking it over kills the browser's
+  request, and the open fails.
+- [LoadSheetsDialog.tsx](../../intelcost-app-react/src/features/takeoff/components/load/LoadSheetsDialog.tsx)
+  then showed only the file name, with the reason in the console.
+- The bench's Chromium, which has no IDM, opened the set in 4 s. Every range read was a
+  206, and MinIO's CORS was right. Your requests reached the api.
+- The toast has no link and no click action. The IDM pop-up came from IDM taking pdf.js's
+  GET, at the same moment the toast appeared.
+
+**Fix.**
+- **The browser reads drawings only through the api now, in parts.** The new
+  `GET …/file/{uuid}/bytes` needs a `Range` header and always answers 206, as
+  `application/octet-stream`, with no filename and no Content-Disposition.
+- **pdf.js is never given a URL.** It asks our reader for the ranges it needs through a
+  `PDFDataRangeTransport`, so no request is ever for the whole file. Nothing looks like a
+  download, and no browser navigation or download is ever started.
+- **A failure is named per file, with its likely cause:**
+  - "Your browser couldn't fetch it. A download manager or browser extension (IDM or
+    similar) may be taking it over, or the connection dropped…";
+  - the server's refusal, with its status;
+  - "It isn't a readable PDF."
+- **The toast stays plain text:** clicking it fetches nothing.
+- **Chunks are back to pdf.js's default of 64 KB, from 256 KB.** Opening checks the last
+  page by walking every page object once. On a 150-page set whose page objects sit between
+  large images, 256 KB chunks read 39 MB just to open, and 64 KB reads 9.4 MB.
+
+**Proof.**
+- **Your JHS set:** pages offered in 4.1 s. 49 reads, 4.6 MB with the first thumbnails,
+  all 206, and no request to MinIO.
+- **`f5-big`** (new, 3/3):
+  - a 519 MB, 150-page set's pages offered from 9.4 MB in 151 reads (12.8 s; it walks
+    those page objects one by one), all 157 reads 206;
+  - a 7 MB set's thumbnails drawn in 3.5 s;
+  - with the reads blocked, the toast names a download manager or extension, and
+    clicking it makes no request, no download and no window.
+- Throughout, the browser stood in for IDM, aborting any `.pdf` URL or storage request;
+  none was made.
+- **IDM itself can't run on the bench**, so the check with IDM on is yours, below.
+- `f5-s5` 6/6, `f5-s6` 6/6 (Broken.pdf now reads "It isn't a readable PDF."), `f5-s8` 4/4.
+  The full regression was not run, as asked.
+
+**Re-check, click only.** IDM running and its browser extension on.
+1. Sign in at http://localhost:5173 as estimator@bench.intelcost.io, switch to "F5 Block A
+   demo 15:16" and open "Umer plans test".
+2. Perform Takeoff (or Add sheets), tick "JHS Permit C 50CD_VOL 3_2026-07-17.pdf", then
+   press Choose pages.
+   - Within a few seconds, its pages show and thumbnails start drawing.
+   - IDM does not pop up.
+   - Nothing downloads.
+3. Untick all but one page and press Load 1 page: "Added 1 page", and the sheet opens.
+4. Optional, for the message:
+   - With the dialog open and the file ticked, stop the api with
+     `docker compose stop api` (from `intelcost-infra/`), then press Choose pages.
+   - A toast reads "Couldn't open JHS Permit…", naming a download manager, extension or
+     the connection.
+   - Clicking it does nothing: no download and no IDM.
+   - Then run `docker compose start api`.
+
 ## Next
 
 Block C: pdf.js on the canvas (S10 to S12). It draws sharp from 50% to 4000% (D-35),

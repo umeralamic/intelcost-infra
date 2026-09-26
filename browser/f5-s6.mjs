@@ -125,11 +125,12 @@ await run("f5-s6", [
     },
   },
   {
-    title: "AC5: a file pdf.js cannot open is named in \"Couldn't open some drawings\", and the others still load",
+    title: "AC5: a file pdf.js cannot open is named with why (\"Couldn't open Broken.pdf\", not a readable PDF), and the others still load",
     run: async ({ page }) => {
       await choose(page, mixed, ["Good.pdf", "Broken.pdf"]);
-      await page.getByText("Couldn't open some drawings").waitFor({ timeout: 20000 });
-      await page.getByText("Broken.pdf").first().waitFor();
+      // Since the Block B check: one toast per file, with the reason.
+      await page.getByText("Couldn't open Broken.pdf").waitFor({ timeout: 20000 });
+      await page.getByText("It isn't a readable PDF.").waitFor();
       await section(page, "Good.pdf").waitFor({ timeout: 15000 });
       expect((await section(page, "Broken.pdf").count()) === 0, "Broken.pdf reached the page step");
       await dialog(page).locator("[data-load-pages]").click();
@@ -137,7 +138,7 @@ await run("f5-s6", [
       const sheets = await sheetsOf(token, base, mixed.uuid);
       expect(sheets.length === 2, `${sheets.length} sheets`);
       const listed = await apiCall(token, "GET", `${base}/${mixed.uuid}/drawing/file`);
-      return `Broken.pdf named in the toast; Good.pdf's 2 pages loaded (${listed.body.length} drawing)`;
+      return `"Couldn't open Broken.pdf" · "It isn't a readable PDF."; Good.pdf's 2 pages loaded (${listed.body.length} drawing)`;
     },
   },
 ]);

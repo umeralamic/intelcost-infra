@@ -69,7 +69,7 @@ else
   # D-27's sweep of abandoned uploads (a drive, no browser).
   list+=(d27-uploads)
   # F5 in subtask order. f5-s2 stops and starts the worker through its runner.
-  list+=(f5-count f5-s1 f5-s2 f5-s3 f5-s4 f5-s5 f5-s6 f5-s7 f5-s8 f5-s9)
+  list+=(f5-count f5-s1 f5-s2 f5-s3 f5-s4 f5-s5 f5-s6 f5-s7 f5-s8 f5-s9 f5-big)
   # D-37: a link opens in its own workspace.
   list+=(d37-links)
 fi
