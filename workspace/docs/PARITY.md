@@ -54,8 +54,19 @@ folders" stays **partial**: items and geometries are live, calibrations are F5's
 folders F6's. §3's live-permissions line is now live rather than on focus. The realtime
 table below gains its "New event" column.
 
-No section beyond 1 to 5 has been verified, except the F8 lines just named, so an
-unticked **ported** line elsewhere still means only "the code is there".
+**The proof backlog (overnight 2026-09-26).** Every line then marked **ported** and not
+ticked (15 of them) was driven by `intelcost-infra/browser/proof-backlog.mjs`, with no
+change to the app. **Nine passed and are ticked**: lock, analytic quantities, override,
+the shape_meta invariant, pan, select, calibrate, tools disabled until a scale, and
+space-drag. **Six did not, and their status is corrected** on the line with what was
+found: the sheets panel's current row (partial), creating an item with a classification
+(partial), layers' show and hide and the last-layer rule (partial), Count placing marks
+into one item (partial; three clicks made three items all named alike), zoom to 3000%
+(partial; the ceiling is 800%), and deduct pairing (missing: there are no deducts). No
+line is now marked **ported** without being ticked.
+
+No section beyond 1 to 5 has been verified, except the F8 and proof-backlog lines just
+named, so an unticked line elsewhere means what its status says and nothing more.
 
 **Scope.** Derived from `src/App.tsx` routes, every component under
 `src/components/` and page under `src/pages/`, the 292 shipped plan files in
@@ -233,7 +244,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 
 - [ ] List every sheet in the project as a tree of drawing folders, with an "Unfoldered" group. `src/components/takeoff/SheetTree.tsx`, tables `drawing_folders`, `drawing_sheets` · **partial** (a flat sheet list exists; no folders, no tree)
 - [ ] Search sheets by name and number, clear the search, and have the search follow the configured naming format. `src/components/takeoff/SheetTree.tsx` · **missing**
-- [ ] Click a sheet to open it on the canvas. The current row is highlighted in blue. `src/components/takeoff/SheetTree.tsx` · **ported**
+- [ ] Click a sheet to open it on the canvas. The current row is highlighted in blue. `src/components/takeoff/SheetTree.tsx` · **partial** (a sheet opens from Project Home's sheet list; takeoff has no sheets panel, so no current row, F5-S13; found by proof-backlog, overnight 2026-09-26)
 - [ ] Multi-select sheets with ctrl-click and shift-click range selection, and act on the whole selection. `src/components/takeoff/SheetTree.tsx` · **missing**
 - [ ] Right-click, or the three-dot row menu, opens the page actions: open, open in new tab, preview window, rename, bookmark, duplicate, rotate, print, move to folder, delete. `src/components/takeoff/SheetTree.tsx` · **missing**
 - [ ] Rename a sheet by double-clicking its row. `src/components/takeoff/SheetTree.tsx` · **partial** (a sheet PATCH exists in the api; no inline rename)
@@ -291,18 +302,18 @@ sibling panel reads as a bug to an estimator.
 `src/components/takeoff/QuantityTable.tsx` (1,803 lines),
 `ItemRowShared.tsx` (1,326 lines), `src/hooks/useTakeoff.ts` (2,405 lines).
 
-- [ ] Create a takeoff item of type Area (SF), Linear (LF) or Point Count (EA), naming it, colouring it, and filing it under a classification and a custom folder. `src/components/takeoff/NewItemDialog.tsx` (717 lines) · **ported**
+- [ ] Create a takeoff item of type Area (SF), Linear (LF) or Point Count (EA), naming it, colouring it, and filing it under a classification and a custom folder. `src/components/takeoff/NewItemDialog.tsx` (717 lines) · **partial** (an item is made by drawing, named "Area N", recoloured and filed in a custom folder; no classification exists to file under, F6-S14; found by proof-backlog, overnight 2026-09-26)
 - [ ] Items list in a tree by folder, with a search box and "Unfiled (no folder)" for the unclassified. `src/components/takeoff/QuantityTable.tsx` · **partial** (folders and items exist; no search)
 - [ ] Group the tree by classification first or by layer first, and collapse or expand every level. `src/components/takeoff/QuantityTable.tsx` · **missing**
 - [ ] Manual expand and collapse always beats the automatic header ladder. `.lovable/plan/manual-expand-collapse-always-wins-over-the-header-ladder-2026-08-23.md` · **missing**
 - [ ] Rename an item by double-clicking the row, and open Properties by double-clicking elsewhere on it. `src/components/takeoff/ItemRowShared.tsx` · **partial** (rename exists; no double-click affordance)
 - [ ] The row menu offers: change colour, move to layer, create sub-item, manage sub-items, show or hide markup, show or hide sections, show or hide sub-items, delete on this sheet, delete everywhere. `src/components/takeoff/ItemRowShared.tsx` · **partial** (colour, rename, delete and lock exist)
 - [ ] Delete a single run or a single section of an item, rather than the whole item. `src/components/takeoff/ItemRowShared.tsx` · **partial** (a geometry DELETE route exists; no per-run or per-section UI)
-- [ ] Lock an item so it refuses edits, and unlock it again. `src/components/takeoff/SelectionContextMenu.tsx` · **ported** (D-06 governs the unlock payload)
+- [x] Lock an item so it refuses edits, and unlock it again. `src/components/takeoff/SelectionContextMenu.tsx` · **ported** (driven: a locked item offers no edit and the api refuses one, 403; Unlock restores them; D-06 governs the unlock payload; proof-backlog, overnight 2026-09-26)
 - [ ] Multi-select items in the panel and act on all of them. `.lovable/plan/takeoff-panel-multi-select-matching-the-sheets-panel-2026-08-03.md` · **missing**
 - [ ] Convert an item to a rough measurement, and insert reference quantities into it. `src/components/takeoff/QuantityTable.tsx`, `.lovable/plan/rename-to-rough-measurements-insert-reference-quantities-in-2026-09-11.md` · **missing**
-- [ ] Quantities are analytic, never sampled, and are recomputed as geometry changes. `src/lib/takeoff/engine/engine.ts` (4,607 lines), `src/lib/takeoff/services/quantityService.ts` · **ported**
-- [ ] Override an item's quantity with a typed figure and a reason, and clear the override. `src/components/takeoff/OverrideDialog.tsx`, table `takeoff_items` · **ported**
+- [x] Quantities are analytic, never sampled, and are recomputed as geometry changes. `src/lib/takeoff/engine/engine.ts` (4,607 lines), `src/lib/takeoff/services/quantityService.ts` · **ported** (driven: a 0.2 x 0.2 square reads 1,600.00 SF, 2,400.00 after a vertex move, a triangle 800.00 exactly; proof-backlog, overnight 2026-09-26)
+- [x] Override an item's quantity with a typed figure and a reason, and clear the override. `src/components/takeoff/OverrideDialog.tsx`, table `takeoff_items` · **ported** (driven: no save without a reason; the figure and reason shown; Clear returns the measured figure; proof-backlog, overnight 2026-09-26)
 - [ ] Named dimensions are present the instant Properties opens, and the name box fills the dialog width. `src/components/takeoff/DimensionField.tsx`, `src/lib/takeoff/dimensions/` · **missing**
 - [ ] Add a dimension to an item (depth, height, thickness, pitch), with presets and free entry. `src/lib/takeoff/dimensions/dimensionPresets.ts`, table `takeoff_item_dimensions` · **missing**
 - [ ] Enter a pitch as degrees, as a grade percentage, or as rise over run, each validated to its own range. `src/components/takeoff/PitchInput.tsx` · **missing**
@@ -315,14 +326,14 @@ sibling panel reads as a bug to an estimator.
 - [ ] Sub-items nest and collapse level by level. `.lovable/plan/level-by-level-collapse-expand-nested-sub-items-2026-08-23.md` · **missing**
 - [ ] Create, edit and delete takeoff variables with a name, default value, unit, tags and enum options, and set a per-project value. `src/components/takeoff/VariableEditorForm.tsx`, `src/hooks/useTakeoffVariables.ts`, tables `takeoff_variables`, `takeoff_variable_values`, `takeoff_variable_prefs` · **missing**
 - [ ] Editing a variable updates every sub-item quantity that reads it. `src/lib/takeoff/subItems/variables.ts` · **missing**
-- [ ] Create layers and sub-layers, rename them, delete them (never the last one), and show or hide a layer on the sheet. `src/components/takeoff/LayerSelect.tsx`, table `takeoff_layers` · **ported**
+- [ ] Create layers and sub-layers, rename them, delete them (never the last one), and show or hide a layer on the sheet. `src/components/takeoff/LayerSelect.tsx`, table `takeoff_layers` · **partial** (create, sub-layer, rename and delete work; no show or hide control, and the api refuses deleting only the default layer, not the last one, F6-S8; found by proof-backlog, overnight 2026-09-26)
 - [ ] New measurements are filed under the active layer, and the active layer always shows. `src/components/takeoff/LayerSelect.tsx` · **partial** (layers exist; no active-layer filing rule)
 - [ ] Set a multiplier on a folder or a layer, edited from a popover, and hide the multiplier column until one is set. `src/components/takeoff/FolderPropertiesDialog.tsx`, `src/lib/takeoff/multipliers.ts` · **missing**
 - [ ] Pick a classification from a searchable picker across five systems, with sub-scopes, archived codes hidden by default, and inline creation of a code. `src/components/takeoff/ClassificationPicker.tsx` (646 lines) · **missing**
 - [ ] Change an item's classification, moving it to the matching folder in the same step. `src/components/takeoff/ChangeClassificationDialog.tsx` · **missing**
 - [ ] Duplicate an item, prompting for a new name, choosing which sections are copied, and optionally carrying sub-items. `src/components/takeoff/DuplicateItemDialog.tsx`, `src/lib/takeoff/services/duplicateService.ts` · **missing**
 - [ ] Enter costs for an item that has no sub-items, and see a costs view inside Manage Sub-items. `src/components/takeoff/ItemCostsDialog.tsx`, `ItemCostsGrid.tsx`, table `estimating_line_costs` · **missing**
-- [ ] One sentinel species per count item, with `vertices_json` and `shape_meta` staying parallel. `src/lib/takeoff/countSymbol.ts`, `src/lib/takeoff/engine/engine.ts` · **ported**
+- [x] One sentinel species per count item, with `vertices_json` and `shape_meta` staying parallel. `src/lib/takeoff/countSymbol.ts`, `src/lib/takeoff/engine/engine.ts` · **ported** (driven: vertices sent without their shape_meta are refused 409; a count item carries one symbol; proof-backlog, overnight 2026-09-26)
 - [ ] Choose a count symbol and its size, with sizes either fixed or scaled to the sheet's real-world scale. `src/components/takeoff/CountSymbolIcon.tsx`, `src/hooks/useCountSymbolRow.ts` · **missing**
 - [ ] Reorder the count symbol row and choose which symbols appear in it. `.lovable/plan/count-symbol-row-reorder-and-let-the-estimator-choose-which-2026-09-03.md` · **missing**
 - [ ] Every change to an item is recorded and readable as a history: created, edited, duplicated, deleted, override set and cleared, quantity recalculated, calibration changed, assembly linked and unlinked. `src/components/takeoff/HistoryDrawer.tsx`, `src/components/estimate/ItemHistoryDialog.tsx`, table `takeoff_item_history` · **missing**
@@ -355,12 +366,12 @@ sibling panel reads as a bug to an estimator.
 
 `src/components/takeoff/Toolbar.tsx` (792 lines), `PdfCanvas.tsx` (3,915 lines).
 
-- [ ] **Pan (H).** Drag to move the sheet. `src/components/takeoff/Toolbar.tsx` · **ported**
-- [ ] **Select (V).** Click a markup to select and edit it. `src/components/takeoff/Toolbar.tsx` · **ported**
+- [x] **Pan (H).** Drag to move the sheet. `src/components/takeoff/Toolbar.tsx` · **ported** (driven: a drag with Select pans; the H key is §23's and absent; proof-backlog, overnight 2026-09-26)
+- [x] **Select (V).** Click a markup to select and edit it. `src/components/takeoff/Toolbar.tsx` · **ported** (driven: clicking a markup selects its item and opens its properties; the V key is §23's and absent; proof-backlog, overnight 2026-09-26)
 - [ ] **Linear (L).** Measure a run, in Point to Point, Rectangle, Ellipse/Circle or Arc mode. `src/components/takeoff/drawModes.tsx` · **partial** (point to point only)
 - [ ] **Area (A).** Measure an area, in Point to Point, Rectangle or Ellipse/Circle mode. `src/components/takeoff/drawModes.tsx` · **partial** (point to point only)
 - [ ] **Segment.** Two clicks per segment, auto-committing and then placing the next. `src/components/takeoff/Toolbar.tsx` · **missing**
-- [ ] **Count (N).** Place count marks one by one. `src/components/takeoff/Toolbar.tsx` · **ported**
+- [ ] **Count (N).** Place count marks one by one. `src/components/takeoff/Toolbar.tsx` · **partial** (each click with Count makes a new item with one mark, and three quick clicks made three items all named "Count 11"; legacy places marks into one item. Marks join one item only through Add a shape, F7; found by proof-backlog, overnight 2026-09-26)
 - [ ] **Dimension (D).** Click two points to measure and verify the scale. `src/components/takeoff/Toolbar.tsx`, `VerifiedDimensionLayer.tsx` · **missing**
 - [ ] **Snapshot (S).** Drag a box to capture an area as a snippet. `src/components/takeoff/Toolbar.tsx` · **missing**
 - [ ] **Dock.** Drag a rectangle to display a snapshot or sheet thumbnail on the sheet, optionally hyperlinked. `src/components/takeoff/DockLayer.tsx`, `DockSetupDialog.tsx`, table `takeoff_docks` · **missing**
@@ -373,14 +384,14 @@ sibling panel reads as a bug to an estimator.
 - [ ] **Print.** Print the current page with its markups, with a page chooser and options. `src/components/takeoff/PrintPagesDialog.tsx`, `src/lib/takeoff/print/renderSheetForPrint.ts` · **missing**
 - [ ] **Find Text (Ctrl+F).** Search words printed on the drawings. `src/components/takeoff/FindTextDialog.tsx` (663 lines) · **missing**
 - [ ] **Undo (Ctrl+Z) and Redo (Ctrl+Shift+Z)** on the current sheet. `src/components/takeoff/Toolbar.tsx`, `src/lib/takeoff/history/sessionHistory.ts` · **missing**
-- [ ] **Zoom in, zoom out (to 3000%), and Fit.** `src/components/takeoff/CanvasZoomCluster.tsx`, `src/lib/takeoff/zoomLimits.ts` · **ported**
+- [ ] **Zoom in, zoom out (to 3000%), and Fit.** `src/components/takeoff/CanvasZoomCluster.tsx`, `src/lib/takeoff/zoomLimits.ts` · **partial** (zoom in, out and Fit work; the ceiling is 800% (MAX_ZOOM = 8), not 3000%, and the step is x1.25 throughout, F5-S11; found by proof-backlog, overnight 2026-09-26)
 - [ ] **Markups toggle and Legend toggle**, the legend floating with descriptions and quantities. `src/components/takeoff/LegendOverlay.tsx` · **missing**
-- [ ] Calibrate the sheet scale from two points at a declared distance. `src/components/takeoff/CalibrationDialog.tsx`, table `sheet_calibrations` · **ported**
+- [x] Calibrate the sheet scale from two points at a declared distance. `src/components/takeoff/CalibrationDialog.tsx`, table `sheet_calibrations` · **ported** (driven: two clicks and a distance set feet_per_norm, and the tools enable; proof-backlog, overnight 2026-09-26)
 - [ ] Pick a scale from the Architectural, Engineering or Metric presets, or "No scale". `src/components/takeoff/ScaleMenu.tsx`, `src/lib/takeoff/scales.ts` · **missing**
 - [ ] Enter a custom scale. `src/components/takeoff/CustomScaleDialog.tsx` · **missing**
 - [ ] Read the scale from a dragged region, apply it to one sheet or to every sheet, and be warned when the drawn dimensions disagree with the printed scale. `src/components/takeoff/ScaleFromRegionDialog.tsx` · **missing**
 - [ ] Scale evidence stays on the sheet, with the amber scale box persisting after an AI scale is applied. `src/components/takeoff/ScaleEvidenceMenu.tsx`, `src/lib/takeoff/scaleEvidence.ts` · **missing**
-- [ ] Measure tools are disabled until the sheet has a scale, and the panel's empty state says why. `src/components/takeoff/CalibrationRequiredDialog.tsx`, `EmptyTakeoffState.tsx` · **ported**
+- [x] Measure tools are disabled until the sheet has a scale, and the panel's empty state says why. `src/components/takeoff/CalibrationRequiredDialog.tsx`, `EmptyTakeoffState.tsx` · **ported** (driven: Linear, Area and Count disabled and the panel says "Set the sheet scale first. Without it a shape has no quantity."; proof-backlog, overnight 2026-09-26)
 - [ ] Changing a scale after items exist warns before it recomputes them. `src/components/takeoff/ScaleChangeGuardDialog.tsx` · **missing**
 - [ ] Tools overflow into a menu when the toolbar is narrower than the tool row. `src/components/takeoff/ToolbarOverflow.tsx` · **missing**
 
@@ -403,7 +414,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] Cut a deduct (hole) out of an area, select the positive first then click inside a deduct, and merge overlapping holes. `src/lib/takeoff/engine/deductPairing.ts`, `edgeCut.ts` (640 lines) · **missing**
 - [ ] Deducts follow their area on delete, and the deduct tool stays armed. `.lovable/plan/deducts-follow-their-area-on-delete-deduct-tool-stays-armed-2026-08-23.md` · **missing**
 - [ ] Circles and ellipses still look like curves after a deduct. `.lovable/plan/keep-circles-and-ellipses-looking-like-curves-after-a-deduct-2026-08-23.md` · **missing**
-- [ ] Pairing is not quantity: a deduct pairing never changes the measured figure by itself. `src/lib/takeoff/engine/deductPairing.ts` · **ported**
+- [ ] Pairing is not quantity: a deduct pairing never changes the measured figure by itself. `src/lib/takeoff/engine/deductPairing.ts` · **missing** (there are no deducts or pairings in the new app to drive; the status was wrong, F7; found by proof-backlog, overnight 2026-09-26)
 - [ ] Selected areas and linears show hollow white vertex points; dragging a handle reshapes a curve as a whole. `src/lib/takeoff/engine/shapes.ts` · **partial** (vertex edit exists; no curve reshaping)
 - [ ] Ellipses and circles show four handles, and arcs three per arc, rather than the whole bead chain. `.lovable/plan/ellipse-circle-show-4-handles-not-the-whole-bead-chain-2026-08-22.md` · **missing**
 - [ ] Selecting a markup on the sheet highlights its row in the panel in blue, and vice versa. `.lovable/plan/selecting-a-markup-on-the-sheet-highlights-its-row-in-blue-2026-08-22.md` · **missing**
@@ -850,7 +861,7 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 - [ ] Middle-button (scroll wheel) drag pans, toggleable in Settings. `src/lib/takeoff/settings/index.ts` (`mouse.panMiddleClick`) · **missing**
 - [ ] Right-button drag pans, toggleable in Settings, and works everywhere on the canvas rather than only over empty areas. `src/lib/takeoff/settings/index.ts` (`mouse.panRightClick`) · **missing**
 - [ ] Scroll wheel zooms, with a speed multiplier from 0.25 to 2.5 and an invert option. `src/lib/takeoff/settings/index.ts` (`mouse.zoomSpeed`, `invertScrollZoom`) · **missing**
-- [ ] Space-drag pans regardless of the armed tool. `src/features/takeoff/components/SheetCanvas.tsx` · **ported**
+- [x] Space-drag pans regardless of the armed tool. `src/features/takeoff/components/SheetCanvas.tsx` · **ported** (driven: with Linear armed, space-drag pans and places no point; proof-backlog, overnight 2026-09-26)
 - [ ] Edge auto-scroll pans while a drawing tool is armed, with a configurable edge band width, delay before the glide starts, and glide speed. `src/lib/takeoff/settings/index.ts` (`mouse.autoScroll*`) · **missing**
 - [ ] Hovering a markup shows the hover panel after a configurable rest delay, and it hides the moment the cursor moves again. `src/lib/takeoff/settings/index.ts` (`general.hoverHintDelayMs`) · **missing**
 - [ ] Ctrl-click adds to a panel selection and shift-click selects a range, in both the Sheets panel and the Takeoff panel. `src/components/takeoff/SheetTree.tsx`, `QuantityTable.tsx` · **missing**
