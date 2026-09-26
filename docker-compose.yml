@@ -74,6 +74,9 @@ services:
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real
+      # Short-lived tokens on demand, so re-auth on refresh can be driven in minutes rather
+      # than half an hour (F8-S3). browser/f8-s3.sh sets it and puts it back.
+      ACCESS_TOKEN_MINUTES: "${ACCESS_TOKEN_MINUTES:-30}"
       S3_ENDPOINT_URL: http://minio:9000
       # The browser cannot resolve "minio", so presigned links are signed against the
       # host it actually calls. See app/config.py.
@@ -94,9 +97,14 @@ services:
       MAXMIND_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:-}"
       MAXMIND_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:-}"
     # Migrations run on start, so a fresh bench is a working bench.
+    #
+    # `exec`, so uvicorn replaces the shell as PID 1 and receives the stop signal. Without
+    # it `sh` swallows SIGTERM, Docker kills uvicorn ten seconds later, and every open
+    # realtime socket dies without a close frame (1006) instead of being told the server
+    # is restarting (1012), which is what the app reconnects on at once (F8-S1 AC5).
     command: >
       sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+             exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - ../intelcost-app-fastapi/app:/srv/app
       - ../intelcost-app-fastapi/alembic:/srv/alembic

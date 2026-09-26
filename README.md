@@ -186,6 +186,14 @@ failed step prints the whole error with its cause and how long the step ran. Thi
 deliberate. Once, an f4-s3 failure was reported only through a filtered summary, its
 message was lost, and it could not be traced afterwards.
 
+**Two F8 runners change the bench while they run.** `browser/f8-s2.sh` stops the api
+for 30 s and then restarts it, with a tab open, to drive the realtime socket's backoff
+and its 1012 close. `browser/f8-s3.sh` recreates the api with `ACCESS_TOKEN_MINUTES=2`
+to drive re-auth on refresh in minutes rather than an hour, and puts it back on 30 when
+it ends, pass or fail. Run nothing else against the bench while either is going. The
+realtime fixtures read the socket the way DevTools > Network > WS shows it, through
+`browser/lib/realtime.mjs`.
+
 Running it on the host instead still works and is faster to iterate on:
 
 ```bash

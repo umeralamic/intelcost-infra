@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Run browser fixtures as a regression, bench-code first (D-30).
 #
-#   ./regress.sh                     every f4 fixture, f4-dialogs, then f3-s1, f3-s3, f3-s12
+#   ./regress.sh                     every f4 fixture, f4-dialogs, f3-s1, f3-s3, f3-s12, then f8
+#                                    (f8-s2 stops the api and f8-s3 retokens it: ~10 minutes)
 #   ./regress.sh f4-s17 f4-s18       just these
 #
 # bench-code goes first and a failure stops the run: a fixture driven against a worker or
@@ -46,6 +47,10 @@ else
   done
   # f4-dialogs: every dialog at a short window and a phone (not a subtask, so not f4-sN).
   list+=(f4-dialogs f3-s1 f3-s3 f3-s12)
+  # F8 in subtask order. f8-s2 and f8-s3 have runners (the api stopped, restarted, and
+  # put on 2-minute tokens), so they take the .sh path below; f8-s2-outage is run by
+  # f8-s2.sh, never on its own.
+  list+=(f8-s1 f8-s2 f8-s3 f8-s4)
 fi
 
 failed=0
