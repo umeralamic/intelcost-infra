@@ -38,6 +38,7 @@ _Updated: 2026-09-26_
 |---|---------|------|------|------|
 | F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Block A built and driven, awaiting the founder's check** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
 | F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **waits for F5** | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
+| F7 (P-06) | Canvas tools and interactions: the measure tools, selection and editing, deducts, auto-merge, undo, menus, hover, keys; colleagues' cursors and drafts | both | Specced 2026-09-26, answers D-39; **waits for F5 and F6** | [canvas_tools_tasks.md](docs/tasks/canvas_tools_tasks.md) |
 
 ---
 
@@ -47,7 +48,7 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
-| P-06 | Canvas interactions: selection, copy and move, deducts, snap, ortho, undo, menus, hover | app | F7. Count adds to the selected item; deducts (overnight findings 2 and 4, 2026-09-26) |
+| P-20 | Sheet page acts: New Blank Page, New Page From Clipboard, Duplicate page, Rotate pages in bulk, the sheet stepper, open another project from takeoff, the panel layout per user | both | After F7. Split from F7 by D-39 Q4 (F5 had handed them on, D-36 Q7); Crop as New Page stays in F7 |
 | P-08 | Estimating tab and export | both | |
 | P-09 | Assemblies, Starter Pack, Library | both | |
 | P-10 | Collaborator markup, print, find text, snippets and bookmarks | both | The $9.99 tier |

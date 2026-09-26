@@ -1654,3 +1654,106 @@ both features waited on the answers.
 - The overnight findings are owned: Count adding to the selected item (F7), the zoom
   range (D-35, F5), deducts (F7), layers' show and hide, last-layer protection and
   legacy's three seeded layers (F6), the sheets panel (F5) and classification (F6).
+
+---
+
+## D-37 — A link opens in its own workspace: the app switches, when the person is a member
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's)
+**Area:** Frontend, Backend, Architecture
+
+**Context:** The app keeps one active workspace per browser, chosen in the switcher, and
+every workspace-scoped page reads through it. A link to a project, a sheet or anything
+inside one carries only the project's uuid. Opened while another workspace is active, it
+said "Project not found" to a member who has every right to see it; the founder met this
+with the F5 Block A demo.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — The workspace in every URL (`/w/{ws}/project/{p}`) | The link says everything | Every route and link changes; links already shared stop working; the uuid of a workspace in every address |
+| B — The api says which workspace a thing is in; the app switches | Links unchanged, old ones keep working; one small endpoint | One extra request, only when the active workspace is the wrong one |
+| C — Search every workspace the person is in, from the browser | No api change | One request per workspace; slow with many, and a guess |
+
+**Decision (the founder's):** Option B. `GET /api/resolve/{kind}/{uuid}` answers the
+workspace (and project) a `project`, `sheet` or takeoff `item` belongs to, **only to a
+member of that workspace**; to anyone else it is the same 404 as a uuid that does not
+exist, so it reveals nothing. A workspace-scoped page whose thing is not in the active
+workspace asks it, switches the active workspace, and shows the page. "Project not found"
+only when the answer is 404: the person truly has no access, or it does not exist.
+
+**Consequences:**
+- Every later link-able kind joins the resolver as it is built: estimates (F9), markups
+  (F11), assemblies (F10). A new route that takes a uuid names its kind there.
+- A switch made this way is the same as the switcher's: the realtime join moves, the
+  dashboard and settings follow.
+- A trashed project resolves for a member, as today's routes say it is in Trash.
+
+---
+
+## D-38 — Colleagues' drafts draw solid, in the item's colour, by default
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's)
+**Area:** Takeoff, Frontend
+**Amends:** D-33 (the Collaboration preferences)
+
+**Context:** D-33 drew a colleague's in-progress line dashed, coloured by the colleague,
+and D-34 put it on today's canvas that way. The founder's click check found the dashed
+line reads as tentative, and the person's colour tells less than the item being measured.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — As D-33: dashed, the colleague's colour | Nothing to change | A dashed line reads as a guide, not as work; the colour says who but not what |
+| B — Solid and the item's colour by default, both choosable | The line looks like the shape it will become; the colour says what is being measured | Two colleagues on one item look alike until the name tag |
+
+**Decision (the founder's):** Option B.
+- **A new preference, "Live drawing line": Solid (default) or Dashed.**
+- **"Colour others by" defaults to Item colour** (the colour of the item they are
+  measuring); the other choice is **Each colleague's own colour**.
+
+**Consequences:**
+- The preferences are stored sparse (F8-S14), so a person who never chose keeps the new
+  defaults, and one who chose "person" keeps that.
+- F5's canvas and F7's tools draw every colleague's draft by these two preferences.
+- PARITY's Collaboration line names six preferences, not five.
+
+---
+
+## D-39 — The founder's answers to the F7 questions
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's)
+**Area:** Takeoff, Backend, Frontend
+
+**Context:** F7's spec was drafted beside F5 with nine questions; the founder adopted it
+and answered them.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Every draft recommendation | Written | Q4, Q7, Q8 and Q9 left open ends |
+| B — The recommendations, with the founder's changes to Q4, Q7, Q8 and Q9 | Settles the edges | P-20 is a new feature row |
+
+**Decision:** Option B.
+
+| # | Answer |
+|---|---|
+| Q1 | One shape row per count mark |
+| Q2 | Deducts as columns (`role`, `owner_geometry_id`) with `ON DELETE CASCADE` on the owner |
+| Q3 | Add `shapely` to the api |
+| Q4 | Page acts split into **P-20 "Sheet page acts"**, after F7; F7 keeps Crop as New Page |
+| Q5 | Inline arcs analytic |
+| Q6 | Undo records move, vertex edits, copy, rotate, flip and nudge |
+| Q7 | Canvas settings on the user, stored sparse. **Rule for later: rendering and performance settings stay per device** |
+| Q8 | Auto-merge merges the merging person's own shapes of that item, from any time, never a colleague's |
+| Q9 | Legend, Print and Dimension to F11; unbuilt region-menu rows hidden, not disabled. Dimension is frequently used, so F11 should not slip far |
+
+**Consequences:**
+- F7 is on the board after F6; P-20 is in `FEATURES.md` Planned after F7.
+- F7 draws colleagues' drafts by D-38's defaults.

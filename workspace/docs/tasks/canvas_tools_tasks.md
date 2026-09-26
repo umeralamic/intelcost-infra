@@ -1,10 +1,4 @@
-# F7: Canvas tools and interactions (DRAFT)
-
-> **DRAFT, not adopted.** Written 2026-09-26 by a side session while the main session
-> worked on F5. It is not on the board: `MANAGER.md`, `FEATURES.md` and `DECISIONS.md`
-> are unchanged. The main session adopts it by moving it to
-> `docs/tasks/canvas_tools_tasks.md`, logging the answers to the questions at the end as
-> the next `D-NN`, and moving the F7 row to In Progress when F5 and F6 allow.
+# F7: Canvas tools and interactions
 
 _Spec for the `MANAGER.md` F7 row (backlog P-06). Ports every measure tool and every
 canvas interaction: the draw modes, finishing and cancelling, inline arcs, snap and
@@ -14,18 +8,21 @@ menus and the action bar. Makes Count add to the selected item (overnight findin
 adds the missing deducts (finding 4), draws colleagues' cursors (**D-33**), and carries
 the collaboration mode onto every new write (**D-32**)._
 
-**Board:** [../../../MANAGER.md](../../../MANAGER.md) · **Rules of engagement:**
-[../../../DECISIONS.md](../../../DECISIONS.md) (D-06, D-13, D-20, D-21, D-26, D-32, D-33,
-D-34, D-35, D-36) · **Parity:** [../../PARITY.md](../../PARITY.md) §9 (the measure tools,
+**Board:** [../../MANAGER.md](../../MANAGER.md) · **Rules of engagement:**
+[../../DECISIONS.md](../../DECISIONS.md) (D-06, D-13, D-20, D-21, D-26, D-32, D-33,
+D-34, D-35, D-36, D-38, D-39) · **Parity:** [../PARITY.md](../PARITY.md) §9 (the measure tools,
 undo, markups toggle, toolbar overflow), §10 (all but the collaboration lines F8 ticked),
 §23 (every binding), §24 (the Mouse, Cursor, Snapping, Takeoffs and Hover settings) ·
-**Sits on:** [takeoff_shell_tasks.md](../takeoff_shell_tasks.md) (F5: the pdf.js canvas,
-the sheets panel, calibration), [item_model_tasks.md](../item_model_tasks.md) (F6: the
+**Sits on:** [takeoff_shell_tasks.md](takeoff_shell_tasks.md) (F5: the pdf.js canvas,
+the sheets panel, calibration), [item_model_tasks.md](item_model_tasks.md) (F6: the
 New Measurement dialog, the item tree, layers) · **Inherited from:**
-[realtime_tasks.md](../../archive/realtime_tasks.md) (cursors, drafts, the modes)
+[realtime_tasks.md](../archive/realtime_tasks.md) (cursors, drafts, the modes)
 
 _Written from legacy `intelcost/` at `12dd119b`, and from the new repos as they stand on
-2026-09-26. **Status: draft; nine questions for the founder at the end.**_
+2026-09-26. **Status: adopted 2026-09-26, the founder's answers logged as D-39 (table at
+the end). Specced, no code: F7 follows F6 on the board.** Colleagues' drafts on the new
+canvas follow D-38: solid by default, dashed by choice, coloured by the item they
+measure unless the viewer picks each colleague's own colour._
 
 ---
 
@@ -443,7 +440,10 @@ F7 brings §24's Mouse, Cursor, Snapping, Hover and part of Takeoffs and General
   colour and thickness.
 
 Legacy keeps these in the browser (`takeoff.settings.v1`, `localStorage`) with a Save, a
-per-section Reset and Restore all defaults. Where they live here is Q7.
+per-section Reset and Restore all defaults. **Here they live on the user, stored sparse,
+beside Collaboration (D-39 Q7)**, so they follow an estimator to another machine; Save,
+Reset and Restore all defaults are kept. Rendering and performance settings stay per
+device.
 
 ### Capabilities per action (D-21, D-26)
 
@@ -748,7 +748,8 @@ the api's analytic quantities and union-clip (Q3); the shared table; the `batch`
 3. Holes in the absorbed section survive, re-clipped.
 4. With Auto Merge off, they stay two sections and the overlap counts twice.
 5. One Ctrl+Z undoes the whole merge.
-6. The Q8 rule on colleagues' shapes holds.
+6. Auto-merge takes only the merging person's own shapes of the item, from any time; a
+   colleague's overlapping section is never merged and the overlap counts twice (D-39 Q8).
 
 ### F7-S21: Resume, Start, Extend and Add more points
 
@@ -797,8 +798,9 @@ the api's analytic quantities and union-clip (Q3); the shared table; the `batch`
 
 **Acceptance criteria.**
 1. Right-click empty sheet: the tool strip, Paste, Show All and Hide All by kind, Rotate
-   Page, Show Legend (per Q9), Zoom to Fit, Calibrate Scale, Print This Page (disabled
-   until F11), Bookmark This Page.
+   Page, Zoom to Fit, Calibrate Scale, Bookmark This Page. Show Legend and Print This Page
+   are **absent, not disabled**, until F11 builds them (D-39 Q9); the tool strip's
+   Dimension likewise.
 2. Rotate Page turns the view only; every figure, and B's view, are unchanged.
 3. Hide All, Area Markups hides areas on this sheet in this browser; Show All brings
    them back.
@@ -859,8 +861,11 @@ the api's analytic quantities and union-clip (Q3); the shared table; the `batch`
 
 **Acceptance criteria.**
 1. A draws a rectangle, an ellipse, an arc and a segment slowly; B watches each grow,
-   tagged, and become the saved shape.
-2. A draws a deduct; B sees it dashed and hatched, then the section's figure drop.
+   tagged, and become the saved shape. Each draws **solid in the colour of the item A is
+   measuring** by default (D-38); B's "Live drawing line: Dashed" and "Colour others by:
+   Each colleague's own colour" change it.
+2. A draws a deduct; B sees it hatched, in B's chosen line style, then the section's
+   figure drop.
 3. In One at a time, A's move drag, vertex drag, deduct session and paste each claim the
    item; B's controls on it disable with the reason, and B's hand-written write is refused
    409.
@@ -879,26 +884,22 @@ the api's analytic quantities and union-clip (Q3); the shared table; the `batch`
 6. A undoes; B sees the undo.
 7. A box-deletes across three items; B sees all three change.
 
-# Block H: What F5 handed to F7 (D-36 Q7)
+# Block H: Crop as New Page
 
-F5's "Not in F5" table, accepted by the founder, gives F7 these. They are sheet-panel
-acts rather than canvas interactions; see Q4.
+F5's "Not in F5" table gave F7 the page acts. By D-39 (Q4) they are split into their own
+small feature after F7, **P-20 "Sheet page acts"**: New Blank Page, New Page From
+Clipboard, Duplicate page, Rotate pages in bulk, the sheet stepper, opening another
+project from takeoff, and the panel layout per user. F7 keeps only the act the canvas's
+region menu reaches.
 
-### F7-S31: New pages
+### F7-S31: Crop as New Page
 
-New Blank Page at a chosen width and height; New Page From Clipboard; Duplicate page,
-named "(copy)", optionally with its markups; Crop a dragged region into a new page (the
-region menu's "Crop as New Page").
-
-### F7-S32: Rotate pages
-
-Rotate pages in bulk from the panel menu, by a relative turn or an absolute rotation,
-including "All pages + Landscape". Stored rotation, unlike the sheet menu's view turn.
-
-### F7-S33: Getting around
-
-The sheet stepper; open another project from inside takeoff; the panel layout per user,
-the centred edge tabs and resizing by drag.
+**Acceptance criteria.**
+1. Drag a region, then "Crop as New Page" from the region menu: a new sheet appears in the
+   panel after the source sheet, holding just that region at the source's scale.
+2. The new sheet is calibrated from the source (the same feet per point), so a line drawn
+   across it measures what it measured on the source.
+3. B's sheets panel shows the new sheet within a second (`drawing.sheet.changed`).
 
 ---
 
@@ -907,14 +908,14 @@ the centred edge tabs and resizing by drag.
 | Legacy behaviour | Owner |
 |---|---|
 | Snapshot (S), Highlight, Note, Cloud, Callout, Arrow, Dock, Overlay, Print | F11 (markup and evidence; `canUseAnnotations`) |
-| Dimension (D) and scale verification | F11 with the annotations (Q9) |
+| Dimension (D) and scale verification | F11 with the annotations (D-39 Q9). Frequently used: F11 should not slip far |
 | Find Text (Ctrl+F) and its key rules | F11 |
 | Region menu: Page Name, Sheet #, Scale, and their "All" variants | F12 |
 | Region menu: Auto Count | F13 |
 | Region menu: Ask AI, Extract Schedule | F14 |
 | Region menu: Copy as Text, Copy as Image, Search as Text | F11 |
 | Verify mode (review numbered points before commit) | F11 with Dimension |
-| The Legend (Markups toggle, Legend toggle) | Q9 |
+| The Legend (Markups toggle, Legend toggle), and Print | F11 (D-39 Q9) |
 | Earthwork tools and their vertex rules | F12 |
 | High-resolution toggle, perf HUD, reference pane | F11 |
 | Estimating tab's undo scope | F9 |
@@ -932,7 +933,7 @@ the centred edge tabs and resizing by drag.
 | **E: Undo** | S22 | The history over every act before it |
 | **F: Chrome** | S23 to S27 | Action group, menus, hover, mouse, keys, settings |
 | **G: Collaboration** | S28 to S30 | Cursors, drafts, modes, the two-window check |
-| **H: From F5** | S31 to S33 | Page acts (Q4) |
+| **H: Crop as New Page** | S31 | The one page act the region menu reaches; the rest are P-20 (D-39 Q4) |
 
 F7 starts when F5's canvas (S10) and panel (S13) exist, and F6's New Measurement dialog
 (S1) and tree (S9), since Count and paste-as-new-item open it. Block B's S7 waits for F6-S1.
@@ -941,7 +942,7 @@ Block E is last among the editing blocks because it inverts every act before it.
 
 ## Bench
 
-- Fixtures `browser/f7-s{1..33}.mjs`. `lib/takeoff.mjs` gains the helpers it lacks today:
+- Fixtures `browser/f7-s{1..31}.mjs`. `lib/takeoff.mjs` gains the helpers it lacks today:
   draw a polyline, press and drag, double-click, a key chord, right-click at a point, and
   read a figure from the panel.
 - The shared quantity table runs in both suites.
@@ -950,7 +951,7 @@ Block E is last among the editing blocks because it inverts every act before it.
 
 ## Definition of done
 
-- S1 to S33 driven, two windows where named, with loading, empty, error and unauthorised
+- S1 to S31 driven, two windows where named, with loading, empty, error and unauthorised
   states.
 - PARITY §9's measure-tool and undo lines, §10's lines not owned elsewhere, §23's lines,
   and §24's Mouse, Cursor, Snapping, Hover and F7's Takeoffs lines ticked; §10's cursor
@@ -960,16 +961,19 @@ Block E is last among the editing blocks because it inverts every act before it.
 
 ---
 
-## Questions for the founder
+## Questions for the founder, answered
 
-| # | Question | Recommendation |
+Answered on 2026-09-26 and logged as **D-39**. Q4, Q7, Q8 and Q9 differ from or add to
+the draft's recommendation; the rest are as recommended.
+
+| # | Question | Answer |
 |---|---|---|
-| Q1 | **A count mark: its own shape row, or one row per counting session?** Legacy appends marks to one run. D-32 forbids reading and rewriting a shape's points to append. | **One row per mark.** Two estimators counting one item at once can never lose a mark, and `f8-s9` already proved fifty simultaneous adds. A 400-mark item is 400 small rows; the item's figure is their count, decided on the api. A session undoes as one step through the transaction |
-| Q2 | **A deduct: a row with `role` and `owner_geometry_id` columns, or `shape_meta` keys as legacy?** | **Columns**, with `ON DELETE CASCADE` on the owner, so "deducts follow their area" is the database's rule and not a client's. Same item only, checked by the api. F17 splits legacy runs into rows and maps `owner_id` |
-| Q3 | **The api's union-clip needs polygon clipping in Python.** | **Add `shapely`** to the api (a wheel exists for Python 3.14 on x86, the D-08 target). Kept equal to the browser's `polygon-clipping` by the shared table, as F6-S4 keeps formulas equal |
-| Q4 | **Block H: page acts F5 handed to F7 (D-36 Q7).** They are sheet-panel work, not canvas interactions, and they make F7 the largest spec yet. | **Split them into their own small feature after F7**, P-20 "Sheet page acts". F7 keeps only "Crop as New Page", since the region menu reaches it. Needs a `FEATURES.md` row; this draft does not add one |
-| Q5 | **Inline arcs are measured from 120 samples in legacy**, not analytically, unlike the standalone Arc mode. The invariant says quantities are analytic. | **Make them analytic**: store each span's centre, radius and sweep in `shape_meta` and sum the arc lengths and circular-segment areas exactly. The difference from legacy is below a hundredth of a percent at 120 samples, and it keeps the invariant true. F17 recomputes legacy rows on import |
-| Q6 | **Undo in legacy skips move, vertex edits, copy, rotate, flip and nudge.** | **Record them all**, beyond legacy. Each is one shape transaction with a known inverse, and "Ctrl+Z did nothing after I moved it" is the first thing an estimator will report |
-| Q7 | **Where the canvas settings live.** Legacy: per browser, `localStorage`. The Collaboration preferences live on the user (D-33). | **On the user, stored sparse, beside Collaboration**, so the reticle and mouse settings follow an estimator to another machine. Legacy's Save, per-section Reset and Restore all defaults are kept |
-| Q8 | **Auto-merge in Work together** can absorb a colleague's overlapping section of the same item. | **Merge only shapes the merging person drew in this session**, and leave a colleague's overlapping section alone. The overlap then counts twice until one of them merges it by hand (Resume on the section), which is visible in the hover figure; silently rewriting a colleague's shape under them is the worse failure. Legacy's default, on, is kept |
-| Q9 | **Four pieces with no clear owner:** the Legend (Show or Hide Legend, the Markups toggle), Dimension, the region menu's rows whose features are unbuilt, and Print in the sheet menu. | **Legend to F11 with Print**, and Show Legend in the sheet menu appears when it lands. **Dimension to F11** with the annotations it is gated with (`canUseAnnotations`). **Unbuilt region rows hidden**, not disabled, until their feature lands, so the menu never offers a dead end; Print likewise |
+| Q1 | A count mark: its own shape row, or one row per counting session? | **One row per mark.** The item's figure is their count, decided on the api; a counting session undoes as one step |
+| Q2 | A deduct: columns, or `shape_meta` keys as legacy? | **Columns** (`role`, `owner_geometry_id`) with `ON DELETE CASCADE` on the owner: deducts follow their area by the database's rule. Same item only, checked by the api |
+| Q3 | Polygon clipping on the api | **Add `shapely`**, kept equal to the browser's clipping by the shared table |
+| Q4 | Block H's page acts | **Split into P-20 "Sheet page acts"** after F7 (a `FEATURES.md` row). **F7 keeps Crop as New Page** (S31) |
+| Q5 | Inline arcs | **Analytic**: each span's centre, radius and sweep in `shape_meta`, lengths and areas summed exactly |
+| Q6 | What undo records | **Move, vertex edits, copy, rotate, flip and nudge**, beyond legacy, each one transaction with its inverse |
+| Q7 | Where the canvas settings live | **On the user, stored sparse**, beside Collaboration. **Rule for later:** rendering and performance settings (high resolution, the HUD, memory budgets) stay **per device** |
+| Q8 | Auto-merge in Work together | **Merges the merging person's own shapes of that item, from any time, never a colleague's.** A colleague's overlapping section is left alone and counts twice until merged by hand |
+| Q9 | Legend, Dimension, unbuilt region rows, Print | **Legend, Print and Dimension to F11.** Unbuilt region-menu rows are **hidden, not disabled**, until their feature lands. Dimension is frequently used, so F11 should not slip far (noted on the board) |
