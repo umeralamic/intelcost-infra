@@ -19,7 +19,7 @@ _Updated: 2026-09-26_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F5 | Takeoff needs its legacy way in and pdf.js rendering (D-14); today a drawing is a side-door PNG upload. → Perform Takeoff opens "Load project files into takeoff" once per project (Choose pages, Load N pages), then Add sheets; a worker splits, thumbnails and wraps images into PDFs; pdf.js renders in the browser to PARITY §24 baselines, sharp from 50% to 4000% (D-35); the sheets panel, calibration and scale presets; the takeoff route in its own chunks; `sheet.calibration.changed`, `drawing.source.changed`, `drawing.sheet.changed`, F8's drafts on the new canvas. **Answers in 2026-09-26 (D-36); Block A first.** | Be Fe | Umer | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
+| F5 | Takeoff needs its legacy way in and pdf.js rendering (D-14); today a drawing is a side-door PNG upload. → Perform Takeoff opens "Load project files into takeoff" once per project (Choose pages, Load N pages), then Add sheets; a worker splits, thumbnails and wraps images into PDFs; pdf.js renders in the browser to PARITY §24 baselines, sharp from 50% to 4000% (D-35); the sheets panel, calibration and scale presets; the takeoff route in its own chunks; `sheet.calibration.changed`, `drawing.source.changed`, `drawing.sheet.changed`, F8's drafts on the new canvas. **Answers in 2026-09-26 (D-36). Block A (the model, the worker, the chunks) built and driven 2026-09-26, awaiting the founder's check; Block B next.** | Be Fe | Umer | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
 
 ---
 

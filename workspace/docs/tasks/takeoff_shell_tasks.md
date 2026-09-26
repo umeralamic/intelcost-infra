@@ -21,6 +21,37 @@ progress from Block A.**_
 
 ---
 
+## Progress
+
+| Block | State | Proof |
+|---|---|---|
+| **A: S1 to S3** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-s1` 7/7 (load 1,3 then 2,3 adds only 2; the mirrored folders; a skipped page never made, after preparation; Plans refused with "5 takeoff sheets", in the api and as "Can't delete — folder in use" on screen; a .docx, page 4 of 3 and an unfinished upload refused by name; a mixed Load writes nothing; a viewer 403). `f5-s2` 4/4 (the Load answers in 146 ms with every page pending; split PDF, 512 px thumbnail and fit WebP checked in MinIO for two PDF pages and a wrapped PNG, its original kept; a tab showing "This sheet has no image" draws the page once the worker is back, no reload, one `drawing.source.changed`; a lost job re-dispatched by the sweep; beat carries the sweep). `f5-s3` 2/2 and `drives/f5-s3-bundle.sh` (canvas and drafts only in the takeoff chunk; the dashboard fetches none of it; a missing takeoff chunk reloads once). Migration `a91c4e7d2b30` up, down, up; `alembic check` clean. Gates: ruff, ruff format, mypy (83 files), lint, typecheck, build. Full regression: see the report |
+
+**Found while building Block A:**
+- **pdf.js is not in the bundle yet.** Nothing in Block A draws with it: its first use
+  is Block B's Choose pages thumbnails, then the canvas in Block C. S3's guard is armed
+  (`drives/f5-s3-bundle.sh` checks pdf.js is in no entry chunk the moment it is a
+  dependency); today it notes the absence rather than passing on it.
+- **"Prepared" is `render_status = ready`.** No new column: a loaded page is `pending`
+  until the worker has split, thumbnailed and fit-rendered it. Sizes come from
+  preparation, not from the Load.
+- **The api reads a file once, on its first Load, to count its pages.** For a very large
+  set that is a whole download into the api process; Block C's range reads could count
+  from the trailer instead. Later Loads of the same file read nothing.
+- **The fit tier is 144 DPI at most**, so a letter page's fit image is 1224 px wide, not
+  2048; 2048 is reached by sheets wider than about 14 inches, as legacy's cap has it.
+- **A lost job waits for the sweep, up to ten minutes and one beat tick.** With Redis
+  as the broker a killed worker's job otherwise comes back only after the visibility
+  timeout (an hour). `f5-s2` AC3 stands a dropped queue in for the kill.
+- **A Project Files rename renames its sheets-panel mirror** (legacy's trigger, in the
+  api's rename).
+- **Pillow is a new dependency** (WebP; PyMuPDF writes none), so the api image was
+  rebuilt. `poetry.lock` relocked in a container.
+- **The old path stays until S9:** Project Home's Sheets block, its direct upload and
+  the 150 DPI PNG render.
+
+---
+
 ## The problem
 
 Today a drawing reaches takeoff by a side door. Project Home's "Sheets" block uploads a

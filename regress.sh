@@ -61,6 +61,8 @@ else
   list+=(f8-s1 f8-s2 f8-s3 f8-s4 f8-s5 f8-s6 f8-s7 f8-s8 f8-s9 f8-s10 f8-s11 f8-s12 f8-s13 f8-s14 f8-s15 f8-s16 f8-s18)
   # D-27's sweep of abandoned uploads (a drive, no browser).
   list+=(d27-uploads)
+  # F5 in subtask order. f5-s2 stops and starts the worker through its runner.
+  list+=(f5-s1 f5-s2 f5-s3)
 fi
 
 failed=0

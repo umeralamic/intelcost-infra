@@ -36,7 +36,7 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Block A in progress** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
+| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Block A built and driven, awaiting the founder's check** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
 | F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **waits for F5** | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
 
 ---
