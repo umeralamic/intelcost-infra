@@ -73,7 +73,8 @@ await run("f2-s6", [
       await page.fill("#password", SEEDED.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
-      await page.waitForSelector('p:has-text("Bench Construction")', { timeout: 20000 });
+      // Since F4 (D-31) the dashboard names the workspace in its h1.
+      await page.waitForSelector('h1:has-text("Bench Construction")', { timeout: 20000 });
       return `signed in from the prefilled form, landed on ${new URL(page.url()).pathname}`;
     },
   },

@@ -95,7 +95,9 @@ await run("f2-s1b", [
       await page.click('button[type="submit"]');
       // The h1, not text=Projects: the onboarding subtitle says "your projects, your
       // drawings and your team", so a loose text match passes before anything happens.
-      await page.waitForSelector('h1:has-text("Projects")', { timeout: 20000 });
+      // The dashboard since F4 (D-31): the workspace is the page's h1, and "Projects" is
+      // the card's heading.
+      await page.getByRole("heading", { name: "Projects", exact: true }).waitFor({ timeout: 20000 });
       const gone = await page.$("#workspace-name");
       expect(!gone, "still on the onboarding form");
       const body = await page.textContent("body");

@@ -174,7 +174,8 @@ await run("f2-s5", [
       // `p:has-text(...)` and not `text=...`: the workspace name is also an <option>
       // in the closed switcher, that option comes first in the DOM, and an option in a
       // closed select is never "visible", so a bare text match waits on it forever.
-      await page.waitForSelector('p:has-text("Bench Construction")', { timeout: 20000 });
+      // Since F4 (D-31) the dashboard names the workspace in its h1.
+      await page.waitForSelector('h1:has-text("Bench Construction")', { timeout: 20000 });
       // The project list is a third query behind the session and the workspace, so it
       // is waited for too rather than read off the body the moment the name appears.
       await page.waitForSelector('text=Riverside Medical Center', { timeout: 20000 });

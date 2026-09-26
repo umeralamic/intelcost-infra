@@ -78,6 +78,18 @@ await run("f3-s8", [
     title: "AC2 — a capability removed mid-action is refused by the api, and said out loud",
     run: async ({ page }) => {
       const seat = await seatedMember(ownerToken, workspace.uuid, "admin", "s8-mid");
+      // Since F8 a role change reaches an open tab at once (F8-S15), so "the tab does not
+      // find out" needs a tab whose realtime socket is down: the case this criterion is
+      // really about, a screen drawn from an answer that has since stopped being true.
+      await page.addInitScript(() => {
+        window.WebSocket = class {
+          constructor() {
+            setTimeout(() => this.onclose?.({ code: 1006, reason: "" }), 10);
+          }
+          send() {}
+          close() {}
+        };
+      });
       await signInAs(page, seat.email);
       await page.goto(`${APP}/settings/members`);
       await page.waitForSelector("#invite-email", { timeout: 20000 });
@@ -122,7 +134,10 @@ await run("f3-s8", [
       await page.goto(`${APP}/settings/members`);
       await page.waitForSelector("#invite-email", { timeout: 20000 });
 
-      // Their own row, demoted by them.
+      // Their own row, demoted by them. Since P-18 the invite form draws before the
+      // member list arrives, so wait for the row itself: an index of -1 selects some
+      // other member's row and demotes the wrong person.
+      await page.locator("ul li", { hasText: seat.email }).first().waitFor({ timeout: 20000 });
       await page.selectOption(`ul li label select >> nth=${await rowIndex(page, seat.email)}`, "viewer");
       await page.waitForFunction(() => !document.querySelector("#invite-email"), undefined, {
         timeout: 20000,

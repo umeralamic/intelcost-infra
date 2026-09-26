@@ -265,6 +265,14 @@ export async function invitationPreview(token) {
  *  a step that reads the page the moment the URL changes reads "Checking your
  *  invitation" and reports a missing workspace name that is merely not there yet. */
 export async function invitationSettled(page) {
+  // Since P-18 the invitation screen is its own chunk: the page before it can still be
+  // on screen for a moment after the URL changes. Wait for the invitation screen's own
+  // reading state to show (it may already have passed), then for it to clear.
+  await page
+    .getByText("Reading the invitation")
+    .first()
+    .waitFor({ timeout: 5000 })
+    .catch(() => {});
   await page.waitForFunction(
     () => !document.body.textContent.includes("Reading the invitation"),
     undefined,
