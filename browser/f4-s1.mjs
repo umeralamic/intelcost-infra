@@ -229,10 +229,12 @@ await run("f4-s1", [
       await page.getByText("Your role cannot create projects.").waitFor();
 
       await page.goto(`${APP}/project/${project.uuid}`);
-      const upload = page.getByRole("button", { name: "Upload drawings" }).first();
+      // Since F5-S9 the files are the only way to put a drawing in a project.
+      const upload = page.getByRole("button", { name: "Upload files" }).first();
       await upload.waitFor({ timeout: 20000 });
-      expect(await upload.isDisabled(), "Upload drawings enabled for viewer");
-      await page.getByText("Your role cannot create & edit measurements.").waitFor();
+      expect(await upload.isDisabled(), "Upload files enabled for viewer");
+      const reason = await upload.getAttribute("title");
+      expect(reason === "Your role cannot upload drawings & documents.", `reason: ${reason}`);
       await page.getByRole("heading", { name: project.name }).waitFor();
 
       const patch = await apiCall(viewer.token, "PATCH", `${base}/${project.uuid}`, { name: "x" });

@@ -24,11 +24,13 @@ import {
   waitFor,
 } from "./lib/realtime.mjs";
 import { openSheet, removeItem, riverside, setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
-const r = await riverside(token, workspace.uuid);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
+const r = world.r;
 await setMode(token, workspace.uuid, "work_together");
 
 const sheets = await call(token, "GET", `/api/workspace/${workspace.uuid}/project/${r.project}/drawing/sheet`);
@@ -79,7 +81,7 @@ async function clickAt(page, [x, y]) {
 async function twoWindows(page, context, bUrl) {
   await recordSockets(context);
   const b = await secondWindow(context);
-  await signInAt(page, APP, SEEDED.email, SEEDED.password);
+  await signInAt(page, APP, world.owner.email, world.owner.password);
   await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
   await openSheet(page, r);
   if (bUrl) {

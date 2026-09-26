@@ -6,7 +6,7 @@
 //   PHASE stop-api      the runner stops the api for 30 s, then starts it
 //   PHASE restart-api   the runner restarts the api
 
-import { SEEDED, expect, run, signInAs } from "./lib/bench.mjs";
+import { SEEDED, expect, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import { appSockets, readySocket, recordSockets } from "./lib/realtime.mjs";
 
 const EXPECTED_DELAYS = [1, 2, 4, 8, 8];
@@ -33,12 +33,15 @@ async function watch(page, until, timeout, seen) {
   throw new Error(`timed out after ${timeout / 1000}s`);
 }
 
+// Its own account and workspace, never the seeded one.
+const { owner } = await ownWorkspace(`F8-S2 outage ${Date.now()}`);
+
 await run("f8-s2-outage", [
   {
     title: "S2 AC3: the api stops for 30 s: backoff 1, 2, 4, 8, 8 s, the indicator after the third failure, no toast; S1 AC5: a restart closes 1012 and the tab comes back",
     run: async ({ page, context, shot }) => {
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       const first = await readySocket(page);
       const seen = { toasts: 0, shot };
 

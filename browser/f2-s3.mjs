@@ -11,7 +11,7 @@
 // The copy exists for the blocked-request case (AC4): an ad blocker eating the auth
 // request is indistinguishable from a wrong password unless the screen says so.
 
-import { APP, SEEDED, expect, run } from "./lib/bench.mjs";
+import { APP, SEEDED, expect, run, ownWorkspace } from "./lib/bench.mjs";
 
 const API_DOWN = process.env.API_DOWN === "1";
 
@@ -19,7 +19,7 @@ const API_DOWN = process.env.API_DOWN === "1";
 // D-17 dropped the control that fixed it, so the advice would point nowhere.
 const CAUSES = ["ad blocker", "privacy extension"];
 
-const attempt = async (page, { email = SEEDED.email, password = "definitely-wrong" } = {}) => {
+const attempt = async (page, { email = owner.email, password = "definitely-wrong" } = {}) => {
   await page.fill("#email", email);
   await page.fill("#password", password);
   await page.click('button[type="submit"]');
@@ -68,7 +68,7 @@ const steps = API_DOWN
         title: "AC2 — the api is stopped → the network banner, on /login",
         run: async ({ page }) => {
           await page.goto(`${APP}/login`);
-          return expectNetworkBanner(await attempt(page, { password: SEEDED.password }), "sign-in");
+          return expectNetworkBanner(await attempt(page, { password: owner.password }), "sign-in");
         },
       },
       {
@@ -109,7 +109,7 @@ const steps = API_DOWN
         run: async ({ page, context }) => {
           await page.goto(`${APP}/login`);
           await context.setOffline(true);
-          const text = expectNetworkBanner(await attempt(page, { password: SEEDED.password }), "sign-in");
+          const text = expectNetworkBanner(await attempt(page, { password: owner.password }), "sign-in");
           await context.setOffline(false);
           return text.replace(/\s+/g, " ");
         },
@@ -119,7 +119,7 @@ const steps = API_DOWN
         run: async ({ page }) => {
           await page.goto(`${APP}/login`);
           await blockApi(page);
-          const text = expectNetworkBanner(await attempt(page, { password: SEEDED.password }), "sign-in");
+          const text = expectNetworkBanner(await attempt(page, { password: owner.password }), "sign-in");
           return text.replace(/\s+/g, " ");
         },
       },
@@ -165,5 +165,8 @@ const steps = API_DOWN
         },
       },
     ];
+
+// Its own account and workspace, never the seeded one.
+const { owner } = await ownWorkspace(`F2-S3 ${Date.now()}`);
 
 await run(API_DOWN ? "f2-s3-apidown" : "f2-s3", steps);

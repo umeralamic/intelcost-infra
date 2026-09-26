@@ -7,10 +7,13 @@
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, ownWorkspace, run } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, call, ensureWindowB, joinedTopic, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
-const tokenB = await ensureWindowB();
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
+const tokenB = world.sara.token;
 const checked = (page) => page.$eval('[role="radio"][aria-checked="true"]', (el) => el.getAttribute("data-mode"));
 
 await run("f8-s10", [
@@ -29,17 +32,18 @@ await run("f8-s10", [
       await setMode(token, workspace.uuid, "work_together");
       await recordSockets(context);
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);
-      await signInAt(page, APP, SEEDED.email, SEEDED.password);
+      await signInAt(page, APP, world.owner.email, world.owner.password);
       const b = await secondWindow(context);
       try {
         await b.page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await b.page.goto(`${APP_B}/settings/collaboration`);
         await joinedTopic(b.page, `ws:${workspace.uuid}`);
+        await b.page.locator('[role="radio"][aria-checked="true"]').waitFor({ timeout: 10000 });
         expect((await checked(b.page)) === "work_together", "B does not start on Work together");
 
         await page.goto(`${APP}/settings/collaboration`);
-        await page.locator('[data-mode="one_at_a_time"]').click();
+        await page.locator('[data-mode="one_at_a_time"]').click({ timeout: 10000 });
         await waitFor(async () => (await checked(page)) === "one_at_a_time", "A's choice to save", 5000);
         await waitFor(async () => (await checked(b.page)) === "one_at_a_time", "B to see the change", 5000);
 

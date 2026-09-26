@@ -17,10 +17,12 @@ import {
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
 const original = workspace.name;
 const topic = `ws:${workspace.uuid}`;
 const headerName = (page) => page.$eval("header select", (s) => s.selectedOptions[0]?.text ?? "");
@@ -51,7 +53,7 @@ await run("f8-s7", [
       await recordSockets(context);
       const debug = [];
       page.on("console", (m) => m.type() === "debug" && debug.push(m.text()));
-      await openAs(page, APP, SEEDED);
+      await openAs(page, APP, world.owner);
       const b = await secondWindow(context);
       try {
         await openAs(b.page, APP_B, WINDOW_B);
@@ -93,7 +95,7 @@ await run("f8-s7", [
     title: "AC2: the same person in two tabs: tab 1 renames, tab 2 updates live",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await openAs(page, APP, SEEDED);
+      await openAs(page, APP, world.owner);
       const tab2 = await context.newPage();
       try {
         await tab2.goto(`${APP}/`);
@@ -113,7 +115,7 @@ await run("f8-s7", [
     title: "AC3: an event with a stranger's token reaches every window, the writer's included",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await openAs(page, APP, SEEDED);
+      await openAs(page, APP, world.owner);
       const renamed = `${original} (F8-S7 stranger ${Date.now() % 100000})`;
       try {
         await call(token, "PATCH", `/api/workspace/${workspace.uuid}`, { name: renamed }, {

@@ -5,7 +5,7 @@
 // trivial and the whole subtask is about what the screen does next — which was
 // nothing, before this: the person was told and left standing on the signup form.
 
-import { APP, SEEDED, expect, run } from "./lib/bench.mjs";
+import { APP, SEEDED, expect, run, ownWorkspace } from "./lib/bench.mjs";
 
 const REGISTERED_COPY = "That address already has an account";
 
@@ -17,30 +17,33 @@ const signUpWith = async (page, email, query = "") => {
   await page.click('button[type="submit"]');
 };
 
+// Its own account and workspace, never the seeded one.
+const { owner, workspace } = await ownWorkspace(`F2-S6 ${Date.now()}`);
+
 await run("f2-s6", [
   {
-    title: "AC1 — signing up with the seeded address lands on /login?email=<address>",
+    title: "AC1 — signing up with an existing address lands on /login?email=<address>",
     run: async ({ page }) => {
-      await signUpWith(page, SEEDED.email);
+      await signUpWith(page, owner.email);
       await page.waitForURL(/\/login/, { timeout: 20000 });
       const url = new URL(page.url());
       expect(url.pathname === "/login", `landed on ${url.pathname}`);
       expect(
-        url.searchParams.get("email") === SEEDED.email,
+        url.searchParams.get("email") === owner.email,
         `the address did not survive: ${url.search}`,
       );
       // Encoded, as the criterion spells it out.
-      expect(url.search.includes("email=estimator%40bench.intelcost.io"), `search was ${url.search}`);
+      expect(url.search.includes(`email=${encodeURIComponent(owner.email)}`), `search was ${url.search}`);
       return `${url.pathname}${url.search}`;
     },
   },
   {
     title: "AC2 — the email is prefilled, the password is empty and focused",
     run: async ({ page }) => {
-      await signUpWith(page, SEEDED.email);
+      await signUpWith(page, owner.email);
       await page.waitForURL(/\/login/, { timeout: 20000 });
       expect(
-        (await page.inputValue("#email")) === SEEDED.email,
+        (await page.inputValue("#email")) === owner.email,
         "the email field was not prefilled",
       );
       expect((await page.inputValue("#password")) === "", "the password field is not empty");
@@ -52,7 +55,7 @@ await run("f2-s6", [
   {
     title: "AC3 — the page says the address is registered and offers both ways forward",
     run: async ({ page }) => {
-      await signUpWith(page, SEEDED.email);
+      await signUpWith(page, owner.email);
       await page.waitForURL(/\/login/, { timeout: 20000 });
       const body = await page.textContent("body");
       expect(body.includes(REGISTERED_COPY), "the page does not say the address is registered");
@@ -68,27 +71,27 @@ await run("f2-s6", [
   {
     title: "AC4 — typing the password there signs in and reaches the dashboard",
     run: async ({ page }) => {
-      await signUpWith(page, SEEDED.email);
+      await signUpWith(page, owner.email);
       await page.waitForURL(/\/login/, { timeout: 20000 });
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
       // Since F4 (D-31) the dashboard names the workspace in its h1.
-      await page.waitForSelector('h1:has-text("Bench Construction")', { timeout: 20000 });
+      await page.locator("h1", { hasText: workspace.name }).waitFor({ timeout: 20000 });
       return `signed in from the prefilled form, landed on ${new URL(page.url()).pathname}`;
     },
   },
   {
     title: "AC5 — ?next= is carried across the hop and still honoured after signing in",
     run: async ({ page }) => {
-      await signUpWith(page, SEEDED.email, "?next=%2Fsettings%2Faccount");
+      await signUpWith(page, owner.email, "?next=%2Fsettings%2Faccount");
       await page.waitForURL(/\/login/, { timeout: 20000 });
       const url = new URL(page.url());
       expect(
         url.searchParams.get("next") === "/settings/account",
         `next did not survive: ${url.search}`,
       );
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL(/\/settings\/account/, { timeout: 20000 });
       return `${url.search} → landed on /settings/account (F2-S1 still holds)`;

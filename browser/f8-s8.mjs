@@ -7,11 +7,11 @@
 // so their events are lost to it by design. When it reconnects it refetches what is on
 // screen and shows both, and it never receives an event from the gap.
 
-import { SEEDED, apiLogin, discardProject, expect, firstWorkspace, run } from "./lib/bench.mjs";
+import { SEEDED, apiLogin, discardProject, expect, firstWorkspace, run, ownWorkspace } from "./lib/bench.mjs";
 import { APP_B, appSockets, call, joinedTopic, recordSockets, signInAt, waitFor } from "./lib/realtime.mjs";
 
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
+// Its own account and workspace, never the seeded one.
+const { owner, token, workspace } = await ownWorkspace(`F8-S8 ${Date.now()}`);
 const original = workspace.name;
 const topic = `ws:${workspace.uuid}`;
 const headerName = (page) => page.$eval("header select", (s) => s.selectedOptions[0]?.text ?? "");
@@ -22,7 +22,7 @@ await run("f8-s8", [
     run: async ({ page, context }) => {
       await recordSockets(context);
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);
-      await signInAt(page, APP_B, SEEDED.email, SEEDED.password);
+      await signInAt(page, APP_B, owner.email, owner.password);
       await joinedTopic(page, topic);
       const first = (await appSockets(page)).at(-1);
 

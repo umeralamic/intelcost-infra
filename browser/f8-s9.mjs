@@ -22,11 +22,14 @@ import {
   row,
   setMode,
 } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-const tokenA = await apiLogin();
-const tokenB = await ensureWindowB();
-const workspace = await firstWorkspace(tokenA);
-const r = await riverside(tokenA, workspace.uuid);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const tokenB = world.sara.token;
+const tokenA = world.token;
+const workspace = world.workspace;
+const r = world.r;
 await setMode(tokenA, workspace.uuid, "work_together");
 const stamp = () => Date.now() % 1000000;
 
@@ -82,7 +85,7 @@ await run("f8-s9", [
         const same = await Promise.all([move(tokenA, g1, 0.31, 8000), move(tokenB, g1, 0.32, 8010)]);
         const won = same.filter((s) => s.status === 200);
         const lost = same.filter((s) => s.status === 409);
-        const winner = same[0].status === 200 ? "Bench E." : "Sara W.";
+        const winner = same[0].status === 200 ? "Fixture O." : "Sara W.";
         expect(won.length === 1 && lost.length === 1, `statuses ${same.map((s) => s.status).join(", ")}`);
         expect(
           lost[0].body.detail === `${winner} just changed this shape, showing their version.`,
@@ -134,9 +137,9 @@ await run("f8-s9", [
         await alert.waitFor({ timeout: 8000 });
         const said = (await alert.textContent()) ?? "";
         const after = (await itemDetail(tokenA, r, item.uuid)).body.geometries[0].vertices_json[0];
-        expect(said.includes("Bench E. just changed this shape, showing their version."), `B was told "${said}"`);
+        expect(said.includes("Fixture O. just changed this shape, showing their version."), `B was told "${said}"`);
         expect(after[0] === 0.45 && after[1] === 0.45, `the stored shape is ${JSON.stringify(after)}`);
-        return `B saw "Bench E. just changed this shape, showing their version."; the shape stayed where A put it`;
+        return `B saw "Fixture O. just changed this shape, showing their version."; the shape stayed where A put it`;
       } finally {
         await removeItem(tokenA, r, item.uuid);
       }
@@ -181,7 +184,7 @@ await run("f8-s9", [
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);

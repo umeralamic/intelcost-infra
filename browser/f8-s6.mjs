@@ -6,11 +6,11 @@
 //   PHASE dry          the runner runs the purge as a dry run
 //   PHASE purge        the runner runs the purge for real
 
-import { SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
+import { SEEDED, apiLogin, expect, firstWorkspace, run, ownWorkspace } from "./lib/bench.mjs";
 import { APP_B, call, eventsOn, joinedTopic, recordSockets, signInAt, waitFor } from "./lib/realtime.mjs";
 
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
+// Its own account and workspace, never the seeded one.
+const { owner, token, workspace } = await ownWorkspace(`F8-S6 ${Date.now()}`);
 const base = `/api/workspace/${workspace.uuid}/project`;
 
 /** Wait for the runner to finish a phase: it writes a marker file the fixture can see. */
@@ -38,7 +38,7 @@ await run("f8-s6", [
       // Window B: the second app, on the second api process.
       await recordSockets(context);
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);
-      await signInAt(page, APP_B, SEEDED.email, SEEDED.password);
+      await signInAt(page, APP_B, owner.email, owner.password);
       await page.goto(`${APP_B}/settings/trash`);
       await page.getByText(name).waitFor({ timeout: 15000 });
       await joinedTopic(page, `ws:${workspace.uuid}`);

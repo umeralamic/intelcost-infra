@@ -5,6 +5,7 @@
 // so they cannot be invited to it.
 
 import {
+  ownWorkspace,
   APP,
   SEEDED,
   apiLogin,
@@ -30,8 +31,8 @@ const INVITEE = {
 
 // --- fixture ---------------------------------------------------------------------
 await apiRegister(INVITEE.email, INVITEE.password, "S2 Existing User");
-const seededToken = await apiLogin();
-const workspace = await firstWorkspace(seededToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: seededToken, workspace } = await ownWorkspace(`F2-S2 ${Date.now()}`);
 await clearMail();
 await invite(seededToken, workspace.uuid, INVITEE.email, "estimator");
 const token = await inviteTokenFromMail(INVITEE.email);
@@ -99,7 +100,7 @@ await run("f2-s2", [
     title: "AC5 — a junk token lands on the invitation screen's own refusal",
     run: async ({ page }) => {
       await page.goto(`${APP}/login?invite=not-a-real-token`);
-      await signIn(page, SEEDED);
+      await signIn(page, owner);
       await page.waitForURL(/\/accept-invite/, { timeout: 15000 });
       await invitationSettled(page);
       const body = await page.textContent("body");

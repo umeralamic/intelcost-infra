@@ -10,7 +10,7 @@
 // five states apiece. That is what step 2 checks: the title has to follow a state
 // change, not just a route change.
 
-import { APP, apiLogin, clearMail, expect, firstWorkspace, invitationSettled, invite, inviteTokenFromMail, run } from "./lib/bench.mjs";
+import { APP, clearMail, expect, invitationSettled, invite, inviteTokenFromMail, ownWorkspace, run } from "./lib/bench.mjs";
 
 const SUFFIX = " — IntelCost";
 
@@ -54,8 +54,8 @@ await run("f2-s12", [
   {
     title: "AC2 — an invited signup is titled twice: the generic one, then the workspace",
     run: async ({ page }) => {
-      const ownerToken = await apiLogin();
-      const workspace = await firstWorkspace(ownerToken);
+      // Its own account and workspace, never the seeded one.
+      const { token: ownerToken, workspace } = await ownWorkspace(`F2-S12 ${Date.now()}`);
       const email = `s12-${Date.now()}@bench.intelcost.io`;
       await clearMail();
       await invite(ownerToken, workspace.uuid, email, "estimator");

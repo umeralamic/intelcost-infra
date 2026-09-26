@@ -26,6 +26,7 @@
 //     ... then `docker compose up -d api` and stop the fake
 
 import {
+  ownWorkspace,
   API,
   APP,
   apiLogin,
@@ -100,6 +101,9 @@ if (process.env.API_DOWN === "1") {
 const inert = await trialLength();
 const ng = await trialLength({ "cf-ipcountry": "NG" });
 const de = await trialLength({ "cf-ipcountry": "DE" });
+
+// Its own account and workspace, never the seeded one.
+const { owner } = await ownWorkspace(`F2-S8 ${Date.now()}`);
 
 await run("f2-s8", [
   {
@@ -225,8 +229,8 @@ await run("f2-s8", [
   {
     title: "AC7 — an invited signup names the workspace, claims no length, and asks for none",
     run: async ({ page }) => {
-      const ownerToken = await apiLogin();
-      const workspace = await firstWorkspace(ownerToken);
+      // Its own account and workspace, never the seeded one.
+      const { owner, token: ownerToken, workspace } = await ownWorkspace(`F2-S8 ${Date.now()}`);
       const email = `s8-invited-${Date.now()}@bench.intelcost.io`;
       await clearMail();
       await invite(ownerToken, workspace.uuid, email, "estimator");

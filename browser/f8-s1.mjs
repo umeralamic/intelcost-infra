@@ -5,7 +5,7 @@
 // AC5 (a restart closes 1012 and the app comes back) needs the api restarted between
 // browser steps, so it lives in browser/f8-s2.sh with the S2 outage.
 
-import { APP, SEEDED, apiCall, apiLogin, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, expect, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import {
   appSockets,
   loginPair,
@@ -16,7 +16,8 @@ import {
   upgradeStatus,
 } from "./lib/realtime.mjs";
 
-const token = await apiLogin();
+// Its own account and workspace, never the seeded one.
+const { owner, token, workspace } = await ownWorkspace(`F8-S1 ${Date.now()}`);
 const me = (await apiCall(token, "GET", "/api/auth/me")).body;
 const expectedName = shortName(me.full_name, me.email);
 
@@ -25,7 +26,7 @@ await run("f8-s1", [
     title: "AC1: one socket, auth first, ready with the short name, a ping and pong every 5 s, no token in the URL",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       const socket = await readySocket(page);
       await page.waitForTimeout(12000);
 
@@ -50,7 +51,7 @@ await run("f8-s1", [
     title: "AC2: three tabs, three sockets, three client ids",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       await readySocket(page);
       const tabs = [page, await context.newPage(), await context.newPage()];
       for (const tab of tabs.slice(1)) {
@@ -76,7 +77,7 @@ await run("f8-s1", [
       expect(silent.reason === "Sign in to continue.", `silent reason "${silent.reason}"`);
       expect(silent.afterMs > 4500 && silent.afterMs < 6500, `closed after ${silent.afterMs} ms`);
 
-      const pair = await loginPair(SEEDED.email, SEEDED.password);
+      const pair = await loginPair(owner.email, owner.password);
       const refresh = await rawSocket(
         page,
         [{ type: "auth", token: pair.refresh_token, client_id: crypto.randomUUID() }],

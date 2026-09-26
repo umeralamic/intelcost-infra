@@ -16,7 +16,7 @@
 // compares heading, tab title, the way back, and the rendered height. "It looked like a
 // 404" is not the claim. The claim is that they are the same page.
 
-import { APP, apiCall, apiLogin, apiRegister, expect, run } from "./lib/bench.mjs";
+import { APP, apiCall, apiLogin, apiRegister, expect, run, ownWorkspace } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
 
@@ -34,7 +34,8 @@ if (!staffEmail) {
 }
 
 const staffToken = await apiLogin(staffEmail, PASSWORD);
-const ownerToken = await apiLogin();
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken } = await ownWorkspace(`F3-S4 ${Date.now()}`);
 
 /** Everything that makes the not-found page what it is, as one visitor sees it. */
 async function pageShape(page, url) {
@@ -65,7 +66,7 @@ await run("f3-s4", [
     run: async ({ page }) => {
       // The owner, not a bystander: owning a workspace is the strongest standing a
       // customer has, and it is still not staff.
-      await signIn(page, "estimator@bench.intelcost.io");
+      await signIn(page, owner.email);
       const wrong = await pageShape(page, "/nope");
       const internal = await pageShape(page, "/platform");
 

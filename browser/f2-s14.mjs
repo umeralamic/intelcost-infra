@@ -12,7 +12,7 @@
 // string and no answer look identical on screen and behave differently everywhere
 // that asks "did they tell us".
 
-import { APP, apiLogin, clearMail, expect, firstWorkspace, invitationSettled, invite, inviteTokenFromMail, run } from "./lib/bench.mjs";
+import { APP, apiLogin, clearMail, expect, firstWorkspace, invitationSettled, invite, inviteTokenFromMail, run, ownWorkspace } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
 
@@ -36,6 +36,9 @@ const signUp = async (page, { email, name, title }) => {
     timeout: 20000,
   });
 };
+
+// Its own account and workspace, never the seeded one.
+const { owner } = await ownWorkspace(`F2-S14 ${Date.now()}`);
 
 await run("f2-s14", [
   {
@@ -105,8 +108,8 @@ await run("f2-s14", [
   {
     title: "AC4 — the invited variant has the same field",
     run: async ({ page }) => {
-      const ownerToken = await apiLogin();
-      const workspace = await firstWorkspace(ownerToken);
+      // Its own account and workspace, never the seeded one.
+      const { owner, token: ownerToken, workspace } = await ownWorkspace(`F2-S14 ${Date.now()}`);
       const email = `s14-invited-${Date.now()}@bench.intelcost.io`;
       await clearMail();
       await invite(ownerToken, workspace.uuid, email, "estimator");

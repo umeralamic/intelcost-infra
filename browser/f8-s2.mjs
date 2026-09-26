@@ -5,8 +5,11 @@
 // AC3, the outage, needs the api stopped and started between browser steps; it is in
 // f8-s2-outage.mjs, driven by f8-s2.sh.
 
-import { APP, SEEDED, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, expect, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import { appSockets, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
+
+// Its own account and workspace, never the seeded one.
+const { owner } = await ownWorkspace(`F8-S2 ${Date.now()}`);
 
 await run("f8-s2", [
   {
@@ -25,7 +28,7 @@ await run("f8-s2", [
     title: "AC2: sign out closes the socket 1000, and nothing reconnects",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       await readySocket(page);
       await page.getByRole("button", { name: "Sign out" }).click();
       await page.waitForURL((url) => url.pathname === "/login", { timeout: 10000 });
@@ -44,7 +47,7 @@ await run("f8-s2", [
     title: "AC4: a failed refresh signs the tab out, and the socket closes with it",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       await readySocket(page);
 
       // The session is spent: the api refuses the next request and the refresh.

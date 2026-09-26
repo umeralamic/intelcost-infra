@@ -12,11 +12,13 @@
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { clickSheet, countItem, menuItem, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
-const r = await riverside(token, workspace.uuid);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
+const r = world.r;
 await setMode(token, workspace.uuid, "work_together");
 
 /** Tell the page it is hidden and blurred, as a window behind another is: nothing may
@@ -56,7 +58,7 @@ await run("f8-s18", [
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);
@@ -82,7 +84,7 @@ await run("f8-s18", [
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);
@@ -132,7 +134,7 @@ await run("f8-s18", [
       try {
         await recordSockets(context);
         await page.setViewportSize({ width: 1280, height: 720 });
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await openSheet(page, r);
         await row(page, name).click();
         await page.locator("[data-properties-pane]").waitFor();

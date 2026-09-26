@@ -102,7 +102,11 @@ export function makePng(width, height) {
  * root. Returns the uploaded files by name.
  */
 export async function uploadAll(page, token, base, projectUuid, files, workspaceUuid) {
-  await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
+  // Signed in once per page: a second call finds the session and goes straight on.
+  const signedIn =
+    page.url().startsWith(APP) &&
+    (await page.evaluate(() => localStorage.getItem("intelcost.session")).catch(() => null));
+  if (!signedIn) await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
   await page.selectOption("header select", workspaceUuid).catch(() => {});
   await page.goto(`${APP}/project/${projectUuid}`);
   const out = {};

@@ -20,10 +20,12 @@ import {
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
 const original = workspace.name;
 const headerName = (page) => page.$eval("header select", (s) => s.selectedOptions[0]?.text ?? "");
 
@@ -33,7 +35,7 @@ await run("f8-s5", [
     run: async ({ page, context }) => {
       await recordSockets(context);
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);
-      await signInAt(page, APP, SEEDED.email, SEEDED.password);
+      await signInAt(page, APP, world.owner.email, world.owner.password);
       const b = await secondWindow(context);
       try {
         await b.page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);

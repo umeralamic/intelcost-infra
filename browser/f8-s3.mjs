@@ -5,10 +5,11 @@
 // Run against 30-minute tokens this would take an hour, so the runner sets
 // ACCESS_TOKEN_MINUTES=2 and the first step refuses to go on if it did not take.
 
-import { APP, SEEDED, apiCall, apiLogin, expect, firstWorkspace, members, run, seatedMember, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, expect, firstWorkspace, members, run, seatedMember, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import { appSockets, loginPair, rawSocket, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
 
-const workspace = await firstWorkspace(await apiLogin());
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownToken, workspace } = await ownWorkspace(`F8-S3 ${Date.now()}`);
 const topic = `ws:${workspace.uuid}`;
 
 await run("f8-s3", [
@@ -18,7 +19,7 @@ await run("f8-s3", [
       await recordSockets(context);
       const refreshes = [];
       page.on("request", (r) => r.url().endsWith("/api/auth/refresh") && refreshes.push(Date.now()));
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       const first = await readySocket(page);
       const life = first.received.find((f) => f.type === "ready").expires_in_ms;
       expect(life <= 125000, `the api is not on 2-minute tokens (${Math.round(life / 1000)} s): run browser/f8-s3.sh`);
@@ -41,7 +42,8 @@ await run("f8-s3", [
     run: async ({ page, context }) => {
       await recordSockets(context);
       // A fresh login: on 2-minute tokens the one taken at the top has expired by now.
-      const ownerToken = await apiLogin();
+      // Signed in here, not at the top: this runner puts the api on 2-minute tokens.
+      const ownerToken = await apiLogin(owner.email, owner.password);
       const seat = await seatedMember(ownerToken, workspace.uuid, "estimator", "f8s3");
       await signInAs(page, seat.email, seat.password);
       // The seat's own workspace may be the active one; point the tab at the owner's.
@@ -74,7 +76,7 @@ await run("f8-s3", [
       // (a) A hand-written socket that pings but never re-auths.
       const probe = await context.newPage();
       await probe.goto(`${APP}/login`);
-      const pair = await loginPair(SEEDED.email, SEEDED.password);
+      const pair = await loginPair(owner.email, owner.password);
       const expiring = rawSocket(
         probe,
         [{ type: "auth", token: pair.access_token, client_id: crypto.randomUUID() }],
@@ -85,7 +87,7 @@ await run("f8-s3", [
 
       // (b) The app, with /api/auth/refresh blocked as DevTools request blocking does.
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, owner.password);
       await readySocket(page);
       await page.route("**/api/auth/refresh", (route) => route.abort("blockedbyclient"));
       await page.waitForURL((url) => url.pathname === "/login", { timeout: 90000 });

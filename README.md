@@ -109,8 +109,14 @@ A bench with no data in it is ten minutes of clicking before you reach the thing
 came to test. One command instead:
 
 ```bash
-cd ../intelcost-api && python scripts/seed.py
+docker compose exec -T api sh -lc "cd /srv && python scripts/seed.py --storage-host host.docker.internal:9000"
 ```
+
+Since F5-S9 the seed goes the way a person does: the PDF is uploaded into the project's
+Plans folder through the multipart path, loaded into takeoff through `/drawing/load`, and
+prepared by the worker. `--storage-host` is for running it inside the api container, where
+the presigned `localhost:9000` is not MinIO; the part is sent there with the signed Host
+kept. `--reset` seeds a fresh timestamped account instead of the seeded one.
 
 Then sign in at http://localhost:5173 with:
 
@@ -152,12 +158,16 @@ seeded account's switcher once held 860 fixture workspaces).
   **by name only** (`<prefix> <13-digit stamp>`, `<tag>-<role>-<stamp>@bench.intelcost.io`),
   never the owner, Riverside, or anything made by hand, and puts Sara W. back to Estimator.
   Run a single fixture through `./regress.sh <name>` and the same happens.
-- **Still signing in as the seeded account, until F5-S9:** the fixtures that draw on
-  Riverside in Bench Construction (the F8 two-window ones, `p19`, `proof-backlog`,
-  `f5-s3`). They make no workspace. F5-S9 moves the seed to `/drawing/load`, and they move
-  to a per-run copy of Riverside in a workspace of their own then.
-- **Made for the founder on purpose,** as the seeded account: `f5-demo.mjs` and
-  `walkthrough-setup.mjs`. Neither is in the regression.
+- **The takeoff fixtures measure on a Riverside of their own** (`browser/lib/world.mjs`,
+  F5-S9): `riversideWorld()` makes, per run, a workspace of the run's own account with
+  "Riverside Medical Center", a two-page PDF uploaded into Plans and loaded through
+  `/drawing/load`, both pages prepared, page 1 calibrated as the seed does (200 ft per
+  unit), and Sara W. seated as an Estimator. It takes about 25 s. Every F8 fixture, `p19`,
+  `f5-s3` and `f5-s9` use it; the F2 and F3 fixtures make their own workspace with
+  `ownWorkspace`. No fixture in the regression signs in as the seeded account.
+- **The only exceptions, not in the regression:** `f5-demo.mjs` and `walkthrough-setup.mjs`
+  make things for the founder on purpose; `proof-backlog.mjs` reads the seeded Riverside's
+  own measurements; `bench-tidy.mjs` is the clean-up of the seeded workspace itself.
 - `docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py report"`
   lists the seeded account's workspaces by kind.
 

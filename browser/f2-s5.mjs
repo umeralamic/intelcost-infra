@@ -13,7 +13,7 @@
 // all: they depend on what MaxMind answers, and the browser never talks to MaxMind.
 // Those are driven against fakes/maxmind and are reported separately.
 
-import { API, APP, SEEDED, expect, run } from "./lib/bench.mjs";
+import { API, APP, apiCall, expect, run, ownWorkspace } from "./lib/bench.mjs";
 
 /** Adds a country header to the API requests only.
  *
@@ -49,6 +49,11 @@ const emailFieldError = async (page) => {
 // the assignment behind it is checked separately and reported as a database check.
 const RUN = process.env.RUN_ID ?? `${Date.now()}`;
 console.log(`RUN_ID=${RUN}`);
+
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F2-S5 ${Date.now()}`);
+// A project of its own, so AC8 has one to see on the dashboard.
+await apiCall(ownerToken, "POST", `/api/workspace/${workspace.uuid}/project`, { name: "Existing project" });
 
 await run("f2-s5", [
   {
@@ -161,11 +166,11 @@ await run("f2-s5", [
     },
   },
   {
-    title: "AC8 — the seeded bench user still signs in, unaffected",
+    title: "AC8 — an existing account still signs in, unaffected",
     run: async ({ page }) => {
       await page.goto(`${APP}/login`);
-      await page.fill("#email", SEEDED.email);
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#email", owner.email);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
       // Waited for, not read once: the workspace arrives on its own query, so reading
@@ -175,11 +180,11 @@ await run("f2-s5", [
       // in the closed switcher, that option comes first in the DOM, and an option in a
       // closed select is never "visible", so a bare text match waits on it forever.
       // Since F4 (D-31) the dashboard names the workspace in its h1.
-      await page.waitForSelector('h1:has-text("Bench Construction")', { timeout: 20000 });
+      await page.locator("h1", { hasText: workspace.name }).waitFor({ timeout: 20000 });
       // The project list is a third query behind the session and the workspace, so it
       // is waited for too rather than read off the body the moment the name appears.
-      await page.waitForSelector('text=Riverside Medical Center', { timeout: 20000 });
-      return "signed in, Bench Construction and the seeded project loaded";
+      await page.locator("li[data-project=\"Existing project\"]").waitFor({ timeout: 20000 });
+      return `signed in, ${workspace.name} and its project loaded`;
     },
   },
 ]);

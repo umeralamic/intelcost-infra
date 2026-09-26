@@ -7,11 +7,13 @@
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, appSockets, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { clickSheet, countItem, itemDetail, menuItem, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
-const r = await riverside(token, workspace.uuid);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
+const r = world.r;
 const tags = async (page, name) => (await row(page, name).locator("[data-people] span").allTextContents()).sort();
 
 await run("f8-s12-restart", [
@@ -24,13 +26,13 @@ await run("f8-s12-restart", [
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);
 
         await (await menuItem(page, name, "Add a shape")).click();
-        await waitFor(async () => (await tags(b.page, name)).includes("Bench E."), "B to see A's hold", 5000);
+        await waitFor(async () => (await tags(b.page, name)).includes("Fixture O."), "B to see A's hold", 5000);
         // Not selected first: with the properties panel open the tree above it can shrink
         // to no visible rows (pre-F8 layout, F6's), and the row menu below needs the row.
         await b.page.screenshot({ path: shot.replace(".png", "-held.png") });

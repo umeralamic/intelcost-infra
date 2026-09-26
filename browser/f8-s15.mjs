@@ -33,10 +33,12 @@ import {
   waitFor,
 } from "./lib/realtime.mjs";
 import { countItem, menuItem, openSheet, removeItem, riverside, setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const workspace = world.workspace;
 const ws = workspace.uuid;
 const topic = `ws:${ws}`;
 const original = workspace.name;
@@ -86,7 +88,8 @@ await run("f8-s15", [
         await recordSockets(context);
         await openAs(page, APP_B, member);
         await newProject(page).waitFor();
-        expect(await mayCreate(page), "an estimator could not create a project to begin with");
+        // Disabled until the member's capabilities arrive: wait for them, then it must allow.
+        await waitFor(() => mayCreate(page), "an estimator to be able to create a project to begin with", 5000);
         await unfocus(page);
 
         const times = [];
@@ -134,7 +137,7 @@ await run("f8-s15", [
     run: async ({ page, context }) => {
       const email = `f8s15-invitee-${Date.now()}@bench.intelcost.io`;
       await recordSockets(context);
-      await openAs(page, APP_B, SEEDED, ws, "/settings/members");
+      await openAs(page, APP_B, world.owner, ws, "/settings/members");
       // The pending list has loaded: either its empty line, or a row with its actions.
       await page.getByText(/No invitations outstanding|Resend/).first().waitFor();
       await unfocus(page);
@@ -174,7 +177,7 @@ await run("f8-s15", [
           "B's header to show the new name",
         );
 
-        await openAs(page, APP, SEEDED, ws, "/settings/general");
+        await openAs(page, APP, world.owner, ws, "/settings/general");
         await page.waitForSelector("[data-logo-choose]", { timeout: 20000 });
         await page.setInputFiles("#logo-file", { name: "logo.png", mimeType: "image/png", buffer: PNG });
         await page.waitForSelector("[data-logo-preview] img", { timeout: 20000 });
@@ -226,7 +229,7 @@ await run("f8-s15", [
       // A second workspace of B's own, to move to.
       const home = await createWorkspace(member.token, `F8-S15 Home ${Date.now() % 100000}`);
       await recordSockets(context);
-      await openAs(page, APP_B, member, ws, `/project/${(await riverside(token, ws)).project}`);
+      await openAs(page, APP_B, member, ws, `/project/${world.r.project}`);
       await unfocus(page);
       const removed = await apiCall(token, "DELETE", `/api/workspace/${ws}/member/${me.uuid}`);
       expect(removed.status === 200, `remove: ${removed.status}`);
@@ -255,14 +258,14 @@ await run("f8-s15", [
   {
     title: "AC9: A changes the collaboration mode; B's open takeoff page applies it on its next focus",
     run: async ({ page, context }) => {
-      const r = await riverside(token, ws);
+      const r = world.r;
       const name = `F8-S15 mode ${Date.now() % 100000}`;
       const item = await countItem(token, r, name);
       await setMode(token, ws, "work_together");
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);

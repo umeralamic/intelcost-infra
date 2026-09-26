@@ -8,11 +8,14 @@
 import { APP, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { WS_URL, WS_URL_B, call, ensureWindowB } from "./lib/realtime.mjs";
 import { countItem, removeItem, riverside, setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-const token = await apiLogin();
-const tokenB = await ensureWindowB();
-const workspace = await firstWorkspace(token);
-const r = await riverside(token, workspace.uuid);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const token = world.token;
+const tokenB = world.sara.token;
+const workspace = world.workspace;
+const r = world.r;
 const topic = `ws:${workspace.uuid}:project:${r.project}`;
 
 /**
@@ -163,7 +166,7 @@ await run("f8-s11", [
         const otherTab = await call(token, "PATCH", path, { name: "renamed by another tab" }, { "X-Client-Id": crypto.randomUUID() });
         const own = await call(token, "PATCH", path, { name: "renamed by the holder" }, { "X-Client-Id": holder });
         await page.evaluate(() => window.__holder.ws.close());
-        expect(other.status === 409 && other.body.detail === "Bench E. is editing this item right now.", `B's delete: ${other.status} ${JSON.stringify(other.body)}`);
+        expect(other.status === 409 && other.body.detail === "Fixture O. is editing this item right now.", `B's delete: ${other.status} ${JSON.stringify(other.body)}`);
         expect(otherTab.status === 409, `A's other tab: ${otherTab.status}`);
         expect(own.status === 200, `the holder: ${own.status} ${JSON.stringify(own.body)}`);
         return `B: 409 "${other.body.detail}" · A's other tab: 409 · the holder: 200`;
@@ -196,7 +199,7 @@ await run("f8-s11", [
         { token, tokenB, url: WS_URL, urlB: WS_URL_B, topic, sheet: r.sheet },
       );
       expect(seen.granted === 2, `${seen.granted} granted`);
-      expect(seen.aSeesB === "Sara W." && seen.bSeesA === "Bench E.", JSON.stringify(seen));
+      expect(seen.aSeesB === "Sara W." && seen.bSeesA === "Fixture O.", JSON.stringify(seen));
       expect(seen.exclusive === false, "a Work together hold is exclusive");
       return `both granted; A sees "${seen.aSeesB}", B sees "${seen.bSeesA}", neither exclusive`;
     },

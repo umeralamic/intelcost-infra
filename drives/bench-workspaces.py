@@ -10,8 +10,11 @@
                             (`fx.<fixture>.<stamp>@bench.intelcost.io`) or by a seat a
                             fixture made (`<tag>-<role>-<stamp>@…`); regress.sh ends
                             with this. Bench Construction is never one of them
-    snapshot <file>         write the seeded account's workspace uuids to <file>
-    check <file>            FAIL if the seeded account is in a workspace not in <file>
+    snapshot                print the seeded account's workspace uuids, comma-joined,
+                            on a line starting `uuids `
+    check <uuids>           FAIL if the seeded account is in a workspace not in <uuids>
+    purge-owner <email>     delete the workspaces one account owns (a `seed.py --reset`
+                            made for a check); never the seeded account's
 
 A workspace goes by deleting its row: every table that names a workspace cascades from
 it. Its objects in storage go first, by prefix, area by area. Nothing here touches Bench
@@ -122,16 +125,32 @@ async def purge_fx() -> None:
     print(f"purged {gone} workspaces owned by fixture accounts")
 
 
-async def snapshot(path: str) -> None:
+async def purge_owner(email: str) -> None:
+    """Delete every workspace one named account owns: a `seed.py --reset` run made for a
+    check. Never the seeded account."""
+    if email == SEEDED:
+        fail("the seeded account's workspaces are never purged")
+    async with SessionFactory() as session:
+        uuids = list(
+            await session.scalars(
+                select(Workspace.uuid)
+                .join(User, User.id == Workspace.owner_id)
+                .where(User.email == email, Workspace.slug != KEEP_SLUG)
+            )
+        )
+    print(f"purged {await delete_workspaces(uuids)} workspaces owned by {email}")
+
+
+async def snapshot() -> None:
+    # Printed, not written in the container: the F8 outage fixtures restart `api`, and a
+    # file in its /tmp would not survive to the check.
     uuids = [str(w.uuid) for w in await seeded_workspaces()]
-    with open(path, "w", encoding="utf-8") as out:
-        out.write("\n".join(uuids))
     print(f"snapshot {len(uuids)} workspaces for {SEEDED}")
+    print(f"uuids {','.join(uuids)}")
 
 
-async def check(path: str) -> None:
-    with open(path, encoding="utf-8") as before:
-        known = {line.strip() for line in before if line.strip()}
+async def check(before: str) -> None:
+    known = {uuid for uuid in before.split(",") if uuid}
     gained = [w for w in await seeded_workspaces() if str(w.uuid) not in known]
     if gained:
         fail(f"{SEEDED} gained {len(gained)} workspace(s) during the run: {', '.join(w.name for w in gained)}")
@@ -147,9 +166,11 @@ if __name__ == "__main__":
     }
     if step in steps:
         asyncio.run(steps[step]())
+    elif step == "purge-owner":
+        asyncio.run(purge_owner(args[0]))
     elif step == "snapshot":
-        asyncio.run(snapshot(args[0]))
+        asyncio.run(snapshot())
     elif step == "check":
-        asyncio.run(check(args[0]))
+        asyncio.run(check(args[0] if args else ""))
     else:
         fail(f"no step {step}")

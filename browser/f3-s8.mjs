@@ -15,6 +15,7 @@
 // focus, because TanStack listens for those rather than for the window manager.
 
 import {
+  ownWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -30,8 +31,8 @@ import {
 } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F3-S8 ${Date.now()}`);
 
 /** What a real browser fires when a tab is looked at again. */
 async function refocus(page) {
@@ -169,7 +170,7 @@ await run("f3-s8", [
       // so the two share one request.
       const requests = [];
       page.on("request", (r) => r.url().includes("/capability") && requests.push(r.url()));
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, owner.email);
       await page.waitForLoadState("networkidle");
       requests.length = 0;
       await page.goto(`${APP}/settings/roles`);

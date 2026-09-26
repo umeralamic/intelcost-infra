@@ -20,11 +20,14 @@ import {
   waitFor,
 } from "./lib/realtime.mjs";
 import { openSheet, riverside, setMode } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-const saraToken = await ensureWindowB();
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
-const r = await riverside(token, workspace.uuid);
+// This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
+const world = await riversideWorld();
+const saraToken = world.sara.token;
+const token = world.token;
+const workspace = world.workspace;
+const r = world.r;
 await setMode(token, workspace.uuid, "work_together");
 
 // D-38: solid lines and item colour are the defaults now.
@@ -119,7 +122,7 @@ await run("f8-s14", [
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await signInAt(page, APP, SEEDED.email, SEEDED.password);
+        await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);

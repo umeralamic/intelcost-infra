@@ -10,11 +10,11 @@
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { signInAt } from "./lib/realtime.mjs";
-import { riverside } from "./lib/takeoff.mjs";
+import { riversideWorld } from "./lib/world.mjs";
 
-const token = await apiLogin();
-const workspace = await firstWorkspace(token);
-const r = await riverside(token, workspace.uuid);
+// This run's own Riverside, under its own account (lib/world.mjs).
+const world = await riversideWorld();
+const r = world.r;
 
 const SETTINGS = ["account", "general", "members", "roles", "ownership", "statuses", "collaboration", "activity", "trash"];
 
@@ -59,7 +59,7 @@ for (const [w, h] of [[375, 667], [1440, 900]]) {
     title: `${w}x${h}: dashboard, every settings tab and Project Home fit the window`,
     run: async ({ page, shot }) => {
       await page.setViewportSize({ width: w, height: h });
-      await signInAt(page, APP, SEEDED.email, SEEDED.password);
+      await signInAt(page, APP, world.owner.email, world.owner.password);
       const problems = [];
       const seen = {};
       const visit = async (label, path) => {

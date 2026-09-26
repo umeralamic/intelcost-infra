@@ -18,6 +18,7 @@
 //   docker compose --profile browser run --rm -e EXPIRED_TOKEN=$T browser node scripts/f2-close.mjs
 
 import {
+  ownWorkspace,
   APP,
   SEEDED,
   apiAccept,
@@ -38,8 +39,8 @@ import {
 
 const PASSWORD = "bench-password-1";
 
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F2 close ${Date.now()}`);
 
 async function freshInvitee(tag) {
   const email = `close-${tag}-${Date.now()}@bench.intelcost.io`;
@@ -83,8 +84,8 @@ await run("f2-close", [
     title: "Sign in with email and password lands on the app, not back on the form",
     run: async ({ page }) => {
       await page.goto(`${APP}/login`);
-      await page.fill("#email", SEEDED.email);
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#email", owner.email);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });
       await page.waitForFunction(
@@ -108,7 +109,7 @@ await run("f2-close", [
         return `${heading} · ${subtitle}`;
       };
 
-      const registered = await answerFor(SEEDED.email);
+      const registered = await answerFor(owner.email);
       const stranger = await answerFor(`nobody-${Date.now()}@bench.intelcost.io`);
       // The whole property: an attacker holding a list of addresses learns nothing
       // about which of them have accounts.

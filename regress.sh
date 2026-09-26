@@ -12,6 +12,8 @@
 # $REGRESS_LOG (default ./.regress, git-ignored), one file per fixture, so a failure is
 # read from what it printed rather than from a summary line.
 #
+# f4-s13 moved to f5-s4 (Perform Takeoff's three branches) and f4-s25 was retired with
+# Project Home's Sheets block, both by F5-S9.
 # f4-s12 is left out of the default list: it has three phases with a database drive in
 # the middle, run as its header describes. f4-s27 has phases too, and a runner that does
 # them in order (browser/f4-s27.sh), so it is in the list and runs through that. It stops
@@ -34,9 +36,10 @@ fixture() {
 # F8 from S5 on needs window B's app and api (the realtime profile). Idempotent.
 docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1
 
-drive_ws() { docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py $*" 2>&1 | grep -E '^(snapshot|check|purged|FAIL)|Traceback'; }
-# What the seeded account is in before the run: a fixture must never add to it.
-drive_ws snapshot /tmp/seeded-before >/dev/null
+drive_ws() { docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py $*" 2>&1 | grep -E '^(snapshot|uuids|check|purged|FAIL)|Traceback'; }
+# What the seeded account is in before the run: a fixture must never add to it. Kept
+# here, on the host, because the outage fixtures restart the api container.
+seeded_before=$(drive_ws snapshot | sed -n 's/^uuids //p')
 
 if ! fixture bench-code; then
   echo "bench-code failed: the api or the worker runs old code. Nothing else was run."
@@ -66,7 +69,7 @@ else
   # D-27's sweep of abandoned uploads (a drive, no browser).
   list+=(d27-uploads)
   # F5 in subtask order. f5-s2 stops and starts the worker through its runner.
-  list+=(f5-count f5-s1 f5-s2 f5-s3)
+  list+=(f5-count f5-s1 f5-s2 f5-s3 f5-s4 f5-s5 f5-s6 f5-s7 f5-s8 f5-s9)
   # D-37: a link opens in its own workspace.
   list+=(d37-links)
 fi
@@ -93,7 +96,7 @@ docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs >"
 # Every workspace a fixture's own account made goes, and the seeded account must not have
 # gained one (the founder's switcher once held 860). A gain fails the run.
 printf '%-12s %s\n' "fx-cleanup" "$(drive_ws purge-fx)"
-seeded_check=$(drive_ws check /tmp/seeded-before)
+seeded_check=$(drive_ws check "$seeded_before")
 printf '%-12s %s\n' "seeded-ws" "$seeded_check"
 grep -q '^FAIL' <<<"$seeded_check" && failed=$((failed + 1))
 

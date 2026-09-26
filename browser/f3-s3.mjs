@@ -20,6 +20,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
+  ownWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -33,8 +34,8 @@ import {
 } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F3-S3 ${Date.now()}`);
 
 async function sources(dir, match, found = []) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -182,8 +183,8 @@ await run("f3-s3", [
       );
       // The roster is readable: knowing who is in the workspace is not administering it.
       await page.waitForFunction(
-        () => document.body.textContent.includes("estimator@bench.intelcost.io"),
-        undefined,
+        (email) => document.body.textContent.includes(email),
+        owner.email,
         { timeout: 20000 },
       );
       expect((await page.$("#invite-email")) === null, "a reviewer is offered the invite form");

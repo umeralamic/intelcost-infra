@@ -25,6 +25,7 @@
 // the real invitation path rather than writing rows.
 
 import {
+  ownWorkspace,
   APP,
   apiLogin,
   capabilities,
@@ -48,8 +49,8 @@ const ROLES = [
   "viewer",
 ];
 
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F3-S1 ${Date.now()}`);
 
 /** The app's own capability module, loaded the way the app loads it. */
 async function appMirror(page) {
@@ -199,7 +200,7 @@ await run("f3-s1", [
       // and a select whose value is not among its options renders blank — which reads
       // as "no role" rather than "a role you cannot hand out".
       await page.goto(`${APP}/login`);
-      await page.fill("#email", "estimator@bench.intelcost.io");
+      await page.fill("#email", owner.email);
       await page.fill("#password", "bench-password-1");
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });

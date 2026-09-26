@@ -4,7 +4,7 @@
 // The surviving half of F2-S4, which D-17 dropped as a whole. The control was a
 // Supabase workaround; this is not. Was P-17 in FEATURES.md, pulled into F2.
 
-import { APP, SEEDED, expect, run } from "./lib/bench.mjs";
+import { APP, SEEDED, expect, run, ownWorkspace } from "./lib/bench.mjs";
 
 const KEY = "intelcost.session";
 
@@ -27,6 +27,9 @@ const withStored = async (page, raw, path = "/login") => {
 };
 
 const stored = (page) => page.evaluate((k) => localStorage.getItem(k), KEY);
+
+// Its own account and workspace, never the seeded one.
+const { owner } = await ownWorkspace(`F2-S4b ${Date.now()}`);
 
 await run("f2-s4b", [
   {
@@ -63,8 +66,8 @@ await run("f2-s4b", [
     title: "a real session survives untouched",
     run: async ({ page }) => {
       await page.goto(`${APP}/login`);
-      await page.fill("#email", SEEDED.email);
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#email", owner.email);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
       const raw = await stored(page);
@@ -81,8 +84,8 @@ await run("f2-s4b", [
     run: async ({ page }) => {
       const seen = watchAuthHeaders(page);
       await page.goto(`${APP}/login`);
-      await page.fill("#email", SEEDED.email);
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#email", owner.email);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
       // Shape-valid, server-invalid: exactly the case validation cannot catch and the
@@ -108,8 +111,8 @@ await run("f2-s4b", [
     title: "signing out removes the key",
     run: async ({ page }) => {
       await page.goto(`${APP}/login`);
-      await page.fill("#email", SEEDED.email);
-      await page.fill("#password", SEEDED.password);
+      await page.fill("#email", owner.email);
+      await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
       await page.click('button:has-text("Sign out"), a:has-text("Sign out")');

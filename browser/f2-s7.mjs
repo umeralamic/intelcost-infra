@@ -24,6 +24,7 @@
 // user row is already behind. Nothing is left if the rollback is real.
 
 import {
+  ownWorkspace,
   APP,
   apiAccept,
   apiLogin,
@@ -41,8 +42,8 @@ import {
 
 const PASSWORD = "bench-password-1";
 
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F2-S7 ${Date.now()}`);
 
 /** A fresh invitation to an address that has no account yet.
  *

@@ -25,7 +25,37 @@ progress from Block A.**_
 
 | Block | State | Proof |
 |---|---|---|
-| **A: S1 to S3** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-s1` 7/7 (load 1,3 then 2,3 adds only 2; the mirrored folders; a skipped page never made, after preparation; Plans refused with "5 takeoff sheets", in the api and as "Can't delete — folder in use" on screen; a .docx, page 4 of 3 and an unfinished upload refused by name; a mixed Load writes nothing; a viewer 403). `f5-s2` 4/4 (the Load answers in 146 ms with every page pending; split PDF, 512 px thumbnail and fit WebP checked in MinIO for two PDF pages and a wrapped PNG, its original kept; a tab showing "This sheet has no image" draws the page once the worker is back, no reload, one `drawing.source.changed`; a lost job re-dispatched by the sweep; beat carries the sweep). `f5-s3` 2/2 and `drives/f5-s3-bundle.sh` (canvas and drafts only in the takeoff chunk; the dashboard fetches none of it; a missing takeoff chunk reloads once). Migration `a91c4e7d2b30` up, down, up; `alembic check` clean. Gates: ruff, ruff format, mypy (83 files), lint, typecheck, build. Full regression: see the report |
+| **A: S1 to S3** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-s1` 7/7 (load 1,3 then 2,3 adds only 2; the mirrored folders; a skipped page never made, after preparation; Plans refused with "5 takeoff sheets", in the api and as "Can't delete — folder in use" on screen; a .docx, page 4 of 3 and an unfinished upload refused by name; a mixed Load writes nothing; a viewer 403). `f5-s2` 4/4 (the Load answers in 146 ms with every page pending; split PDF, 512 px thumbnail and fit WebP checked in MinIO for two PDF pages and a wrapped PNG, its original kept; a tab showing "This sheet has no image" draws the page once the worker is back, no reload, one `drawing.source.changed`; a lost job re-dispatched by the sweep; beat carries the sweep). `f5-s3` 2/2 and `drives/f5-s3-bundle.sh` (canvas and drafts only in the takeoff chunk; the dashboard fetches none of it; a missing takeoff chunk reloads once). Migration `a91c4e7d2b30` up, down, up; `alembic check` clean. Gates: ruff, ruff format, mypy (83 files), lint, typecheck, build. Full regression: see the report. **Checked by the founder** |
+| **B: S20, S4 to S9** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-count` (S20): a 519 MB, 150-page set counted by ranged reads, 230 KB in 4 requests, the Load answering in 0.35 to 0.44 s; a broken cross-reference still counts. `f5-s4` 6/6, `f5-s5` 6/6, `f5-s6` 6/6 (first thumbnail of 150 pages 251 ms after the step showed; never more than 3 drawing), `f5-s7` 3/3, `f5-s8` 4/4, `f5-s9` 2/2. `drives/f5-s3-bundle.sh` now finds pdf.js in 2 lazy chunks and none in the entry. Gates: ruff, ruff format, mypy (84 files), lint, typecheck, build. Full regression: see [F5_BLOCK_B_REPORT.md](F5_BLOCK_B_REPORT.md) |
+
+**Found while building Block B:**
+- **The page count is read by range (S20, the founder's first subtask).** Block A's first
+  Load downloaded the whole file to count its pages; now `count_stored_pages` reads the
+  trailer, the cross-reference and `/Pages /Count` through ranged GETs (pypdf, strict
+  first). pypdf's lenient mode seeks to every object to check the cross-reference, which
+  read 38 MB of the 519 MB set in 152 requests; strict reads 230 KB in 4. Lenient and
+  then PyMuPDF on the whole file are the fallbacks for a damaged file.
+- **pdf.js's legacy build.** The modern build calls `Uint8Array.prototype.toHex`, which
+  the bench's Chromium does not have ("toHex is not a function" on every open); legacy's
+  renderer uses the legacy build for the same reason. The dev server also pre-bundles it
+  (`optimizeDeps`), or its first import reloads the page and throws the dialog away.
+- **Images and TIFFs load every page, with no page step.** The browser does not know a
+  TIFF's frame count, so the Load takes "no pages" to mean every page, counted by the api.
+- **A sheet still preparing shows "Preparing the sheet"** on today's canvas, and draws the
+  moment the worker says so; one that failed says "This sheet could not be prepared".
+- **The takeoff route without a sheet** (`/project/:uuid/takeoff`, `TakeoffStart`) is the
+  empty state and the first-run dialog; with sheets it goes on to the first.
+- **Add sheets is on the canvas bar and the empty state** until the sheets panel's "+"
+  (Block D).
+- **S9 retired more than the block:** the direct `POST …/drawing/file` upload, its
+  `complete`, the 150 DPI PNG render task (`render.py`), `SheetStatusBadge` and
+  `uploadToStorage`. Sheets made by the old path keep their PNG and still open. The seed
+  uploads into Plans and loads through `/drawing/load`; `--storage-host` lets it run in
+  the api container. `f4-s13` became `f5-s4`; `f4-s25` was retired.
+- **The F8 fixtures measure on a Riverside of their own** (`lib/world.mjs`): a
+  workspace of the run's own account, Riverside loaded through `/drawing/load`, page 1
+  calibrated as the seed does, Sara W. seated. That is S9 AC3's "F8 on the new seed",
+  and it keeps them off the seeded account (the founder's rule of 2026-09-26).
 
 **Found while building Block A:**
 - **pdf.js is not in the bundle yet.** Nothing in Block A draws with it: its first use
@@ -353,6 +383,17 @@ from the worker.
 
 # Block B: Into takeoff
 
+### F5-S20: Counting pages without the file (first in Block B, the founder's)
+
+**Work.** A Load's first look at a file counts its pages by ranged reads, never a
+download: `storage.RangedObject` and `load.count_stored_pages`.
+
+**Acceptance criteria.**
+1. A 400 MB+ PDF (the bench's: 519 MB, 150 pages) is counted reading under 5 MB; the Load
+   answers in about half a second (`f5-count`: 230 KB in 4 requests, 0.35 to 0.44 s).
+2. A PDF whose cross-reference is wrong still counts correctly.
+3. PNG and JPG count as one page without a read; a TIFF counts its frames by range.
+
 ### F5-S4: Perform Takeoff, one decision
 
 **Work.** `takeoff-entry.ts` becomes legacy's three branches: any drawing, then open
@@ -565,7 +606,7 @@ Named so nothing is lost. The owners are proposals (Q7).
 | Block | Subtasks | What it is |
 |---|---|---|
 | **A: Foundations** | S1 to S3 | The model, the worker, the chunks. **Reporting boundary** |
-| **B: Into takeoff** | S4 to S9 | Perform Takeoff, the dialog, Add sheets, the old block retired |
+| **B: Into takeoff** | S20, S4 to S9 | Perform Takeoff, the dialog, Add sheets, the old block retired |
 | **C: Rendering** | S10 to S12 | pdf.js, the baselines, split-source |
 | **D: Sheets panel** | S13, S14 | The tree and its acts |
 | **E: Calibration** | S15, S16 | Legacy's words, presets, guards |

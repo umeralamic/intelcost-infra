@@ -13,6 +13,7 @@
 // matrix entirely, which is how they came to be enforced and administrable from nowhere.
 
 import {
+  ownWorkspace,
   APP,
   apiLogin,
   capabilities,
@@ -27,8 +28,8 @@ import {
 const LOCKED = ["canManageWorkspace", "canGrantOwnerRole", "canEditEstimates"];
 const FIXED_ROLES = ["owner", "admin", "collaborator", "viewer"];
 
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own account and workspace, never the seeded one.
+const { owner, token: ownerToken, workspace } = await ownWorkspace(`F3-S5 ${Date.now()}`);
 
 /** Every cell the screen actually rendered, keyed role/capability. */
 async function renderedCells(page) {
@@ -50,7 +51,7 @@ await run("f3-s5", [
   {
     title: "AC1 — every capability appears exactly once, all 25, under a group heading",
     run: async ({ page }) => {
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, owner.email);
       const cells = await renderedCells(page);
       const rendered = [...new Set(cells.map((cell) => cell.capability))];
       expect(rendered.length === 25, `the matrix renders ${rendered.length} capabilities`);
@@ -81,7 +82,7 @@ await run("f3-s5", [
   {
     title: "AC6 — every rendered cell agrees with the api's resolved map for that role",
     run: async ({ page }) => {
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, owner.email);
       const cells = await renderedCells(page);
       const answer = await matrix(ownerToken, workspace.uuid);
 
@@ -100,10 +101,10 @@ await run("f3-s5", [
 
       // And the api's matrix is the same answer `GET /capability` gives a real member,
       // so the screen is not reading a second, parallel computation of the same thing.
-      const owner = (await capabilities(ownerToken, workspace.uuid)).capabilities;
+      const resolved = (await capabilities(ownerToken, workspace.uuid)).capabilities;
       const ownerColumn = answer.columns.find((c) => c.role === "owner").capabilities;
       expect(
-        JSON.stringify(owner) === JSON.stringify(ownerColumn),
+        JSON.stringify(resolved) === JSON.stringify(ownerColumn),
         "the matrix column and the caller's resolved map differ for owner",
       );
       return `${cells.length} rendered cells compared, 0 disagreements`;
@@ -112,7 +113,7 @@ await run("f3-s5", [
   {
     title: "AC3 — the three locked capabilities say locked, and say why, on every column",
     run: async ({ page }) => {
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, owner.email);
       const cells = await renderedCells(page);
 
       const wronglyLocked = cells.filter(
@@ -136,18 +137,18 @@ await run("f3-s5", [
         reasons.every((row) => row.reason.length > 10),
         `a locked row carries no reason: ${JSON.stringify(reasons)}`,
       );
-      const owner = reasons.find((row) => row.capability === "canGrantOwnerRole");
+      const ownership = reasons.find((row) => row.capability === "canGrantOwnerRole");
       expect(
-        /transfer/i.test(owner.reason),
-        `the ownership reason reads "${owner.reason}"`,
+        /transfer/i.test(ownership.reason),
+        `the ownership reason reads "${ownership.reason}"`,
       );
-      return `3 locked rows × 9 columns · "${owner.reason}"`;
+      return `3 locked rows × 9 columns · "${ownership.reason}"`;
     },
   },
   {
     title: "AC2/AC4 — four roles are fixed everywhere, and owner's column is fully granted",
     run: async ({ page }) => {
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, owner.email);
       await page.goto(`${APP}/settings/roles`);
       await page.waitForSelector("[data-role-header]", { timeout: 20000 });
       const headers = await page.$$eval("[data-role-header]", (nodes) =>

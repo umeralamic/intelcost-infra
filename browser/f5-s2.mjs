@@ -78,7 +78,7 @@ await run("f5-s2", [
       await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
       await page.selectOption("header select", workspace.uuid).catch(() => {});
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
-      await page.getByText("This sheet has no image").waitFor({ timeout: 20000 });
+      await page.getByText("Preparing the sheet").waitFor({ timeout: 20000 });
       await page.evaluate(() => {
         window.__sameDocument = true;
       });
@@ -91,7 +91,7 @@ await run("f5-s2", [
       const frames = (await appSockets(page)).flatMap((s) => s.received);
       const heard = frames.filter((f) => f.type === "event" && f.name === "drawing.source.changed" && f.payload?.sheet_uuid === sheet.uuid);
       expect(heard.length === 1, `heard ${heard.length} drawing.source.changed for the sheet`);
-      return `"This sheet has no image" until the worker came back; the prepared page shown ${(shownAfter / 1000).toFixed(1)} s after, no reload, 1 event`;
+      return `"Preparing the sheet" until the worker came back; the prepared page shown ${(shownAfter / 1000).toFixed(1)} s after, no reload, 1 event`;
     },
   },
   {
