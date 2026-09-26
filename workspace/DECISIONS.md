@@ -1425,3 +1425,113 @@ project with Upload folder, which keeps its tree (F4-S17).
   prove the absence, and the create's Retry is still proved by `f4-s7`.
 - Fixtures that made seedless projects through the api now get the seed folders, and
   count them.
+
+---
+
+## D-32 — Collaboration mode is a workspace setting; Work together is the default
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Architecture, Takeoff, Backend, Frontend
+**Amends:** D-13's soft-lock consequence (the lock now applies only in One at a time)
+
+**Context:** Legacy guards one thing: a read, modify, write on a geometry's
+`vertices_json` when Resume or Extend appends to an existing run. Two writers on one
+(item, sheet) and the second silently drops the first's markers, so legacy blocks the
+second estimator from Resume and delete with a presence soft-lock. D-13 carried that lock
+over as a Redis key. The F8 spec asked whether it should also be enforced by the api.
+
+The new stack does not have legacy's hazard in the same place: every shape is its own
+`takeoff_geometry` row, so two estimators adding shapes to one item insert two rows and
+neither can overwrite the other. What can still conflict is two people editing the
+**same shape**, and that is already what `geometry_version` exists to refuse. A lock that
+stops a whole team working one item protects against a loss the data model no longer
+has, and costs every team the concurrency the model now allows.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Legacy's advisory lock, as D-13 had it | Parity | Blocks concurrent work the row-per-shape model makes safe. Advisory, so a hand-written request ignores it |
+| B — The same lock, enforced by the api | Closes legacy's race | Still one estimator per item, for every team, always |
+| C — A workspace setting with three modes, default Work together | Each team picks. Safe by construction in the default, strict where a team wants it | Three behaviours to build and drive rather than one |
+
+**Decision (the founder's):** Option C. An owner or admin sets the workspace's
+collaboration mode in Settings > Collaboration. It is one rule for everyone in the
+workspace. Three modes:
+
+- **Work together (default).** Several estimators edit the same item at once. Every
+  shape is its own row, so concurrent adds never overwrite. Only a concurrent edit of
+  the **same shape** conflicts: `geometry_version` refuses the second write with
+  "{name} just changed this shape, showing their version", and that shape refreshes.
+  Never a silent loss.
+- **Warn me.** Work together, plus a banner, "{name} is also working on this item",
+  while someone else has the item in hand.
+- **One at a time.** An atomic Redis claim (`SET NX`, a TTL, a heartbeat). Anyone else's
+  write to the item gets 409 "{name} is editing this item right now", and the item is
+  view-only for them until the claim clears, seconds after the holder's last heartbeat.
+
+There is no "Ask to join" mode.
+
+**Consequences:**
+- **The row-per-shape model is now load-bearing.** No write path may read, modify and
+  write a whole item's vertices. Anything derived from all of an item's shapes (its
+  stored quantity, whether a shape is its last) must be decided on the api under a lock
+  on the item row, never from a snapshot or from a client's copy. F8 audits and fixes the
+  paths that exist today (F8-S9).
+- **The same-shape guard must be atomic.** A version compared in Python and then written
+  lets two simultaneous writes both pass. The check is part of the write.
+- **A conflict names the person.** The geometry records who last changed it.
+- **F7 ports Resume and Extend as new rows**, not as appends to an existing shape's
+  vertices, or it reintroduces the hazard this decision retires.
+- The `X-Client-Id` header lets the api tell the claim holder's own writes from everyone
+  else's, including the same user in another tab.
+- PARITY §10's legacy lock line becomes the One at a time mode's line.
+
+---
+
+## D-33 — Live in-progress drawing rides the socket, and is never stored
+
+**Date:** 2026-09-25
+**Status:** Accepted
+**Area:** Architecture, Takeoff, Frontend
+**Amends:** D-13's "no data write travels over the socket" (still true: this is not a write)
+
+**Context:** Legacy shows a colleague's work when it is saved. Between the first click
+and the finish, the other estimators see nothing, which is exactly the window in which
+two people start measuring the same wall. With Work together as the default (D-32),
+seeing each other's work as it happens is what makes concurrency comfortable rather than
+merely safe.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Saved shapes only, as legacy | Nothing new | Colleagues collide in the gap between click and finish |
+| B — Stream the in-progress shape over the socket, ephemeral | Immediate, no database cost, nothing to clean up | A new frame family on the socket; throttling to design |
+| C — Autosave partial shapes as rows | Survives a crash | Every mouse move is a database write, and half-shapes appear in quantities |
+
+**Decision (the founder's):** Option B. While a colleague draws, the others see the
+line, area or count growing, in the colleague's colour, with a small name tag beside it.
+The stream is ephemeral: over the socket, throttled, never saved and never through the
+database. On finish it becomes a normal saved shape through REST. **F8 builds the
+channel; F5, F6 and F7 render it on the canvas.**
+
+**Name format, everywhere a collaborator is named on the canvas and in lock or conflict
+messages:** first name plus the first letter of the last name and a dot ("Sara W."), or
+the first name alone when there is no last name. One function on the api makes it; the
+app never re-derives it.
+
+**Per-user display preferences**, in the user's own settings, a "Collaboration" section:
+show others' drawing in progress (on, off) · show names (always, on hover, off) · show
+others' cursors (on, off) · show others' work (all, only mine, fade others) · colour
+others by (person, item colour).
+
+**Consequences:**
+- The socket carries three kinds of traffic: events (server to client, after commit),
+  presence and claims, and ephemeral drawing and cursors. Only the first is a statement
+  about the database.
+- Draft and cursor frames fan out through Redis like events, so two windows on two api
+  processes see each other, but they are never persisted and never replayed.
+- A person's colour is derived from their user uuid, the same on every screen.
+- These are new behaviours beyond legacy. PARITY lists them as such.

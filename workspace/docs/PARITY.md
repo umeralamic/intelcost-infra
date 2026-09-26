@@ -410,9 +410,21 @@ sibling panel reads as a bug to an estimator.
 - [ ] The move handle scales with zoom, stays anchored during zoom, hides while panning, hides while a dialog is open, and stays out from under dialogs and panels. `src/pages/ProjectTakeoff.tsx` · **missing**
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [ ] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
-- [ ] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **missing** (D-10; transport decided in D-13, WebSocket on the api with Redis fan-out)
-- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **missing** (D-10; transport decided in D-13, WebSocket on the api with Redis fan-out)
-- [ ] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **missing**
+- [ ] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **missing** (**D-32:** this is now the **One at a time** collaboration mode, not the default. F8-S11 and S12 build and drive it on today's takeoff page; F7 re-drives it on Resume and Extend)
+- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **missing** (D-10; transport built by F8 per D-13; the saved-change events are F5's (calibration), F6's (items, folders) and F7's (geometry))
+- [ ] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **missing** (F8-S7)
+
+**Collaboration, beyond legacy (D-32, D-33).** New behaviours the founder added on
+2026-09-25. There is no legacy file to cite; the decision is the reference.
+
+- [ ] **Collaboration mode.** An owner or admin sets the workspace's mode in Settings > Collaboration: Work together (the default), Warn me, or One at a time. One rule for everyone in the workspace; no "Ask to join". D-32 · **missing** (F8-S10)
+- [ ] **Work together.** Several estimators add shapes to one item at once and every shape survives, because each shape is its own row, and the item's quantity is the sum of all of them. D-32 · **missing** (F8-S9)
+- [ ] **Same shape, same moment.** A concurrent edit of the same shape is refused with "{name} just changed this shape, showing their version", and the shape refreshes to the winner's. Never a silent loss. D-32 · **missing** (F8-S9)
+- [ ] **Warn me.** As Work together, plus a banner, "{name} is also working on this item". D-32 · **missing** (F8-S12)
+- [ ] **One at a time.** An atomic claim with a heartbeat; anyone else gets "{name} is editing this item right now" and the item is view-only for them until the claim clears, seconds after the holder's last heartbeat. The api refuses their writes with 409, not only the screen. D-32 · **missing** (F8-S11, S12)
+- [ ] **Live in-progress drawing.** While a colleague draws, others see the line, area or count growing in the colleague's colour with a small name tag, not saved until it finishes. D-33 · **missing** (channel F8-S13; rendered by F5, F6 and F7)
+- [ ] **Others' cursors** show on the sheet, named. D-33 · **missing** (channel F8-S13; rendered by F7)
+- [ ] **Names read "Sara W."** (first name and last initial, or first name alone) everywhere a collaborator is named on the canvas and in lock or conflict messages. D-33 · **missing** (F8-S1, S9, S12; canvas F5, F6, F7)
 - [ ] Canvas rendering can be switched to high resolution, with a perf HUD available. `src/components/takeoff/CanvasPerfHud.tsx`, `src/lib/takeoff/diagnostics/` · **missing**
 - [ ] A reference sheet opens in a second canvas pane beside the working sheet. `src/components/takeoff/ReferenceCanvasPane.tsx` · **missing**
 
@@ -860,6 +872,7 @@ arrive through storage. `src/components/takeoff/settings/SettingsDialog.tsx`
 - [ ] **Rendering.** High-resolution re-raster of the visible area once the view settles, the delay after zoom or pan stops, and a fade-in duration. · **missing**
 - [ ] **Hover.** Which fields appear in the hover panel per markup type (area, linear, segment, count), its text style, its background colour, and the blue outline painted over the area run under the cursor with its colour and thickness. · **missing**
 - [ ] A section can be reset on its own, or every default restored at once. `src/components/takeoff/settings/SettingsDialog.tsx` · **missing**
+- [ ] **Collaboration (beyond legacy, D-33).** A section in the user's own settings: show others' drawing in progress (on, off), show names (always, on hover, off), show others' cursors (on, off), show others' work (all, only mine, fade others), colour others by (person, item colour). Kept on the user, so it follows them to another machine. · **missing** (F8-S14 stores and edits it; F5, F6 and F7 honour it)
 
 **Shell and chrome**
 

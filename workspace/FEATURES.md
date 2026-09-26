@@ -33,7 +33,7 @@ _Updated: 2026-09-25_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| _Nothing in progress_ | | | | |
+| F8 (P-07) | Realtime foundation: socket, auth, Redis fan-out, presence and soft-locks | both | One socket per tab to `/api/realtime`, JWT in the first frame and re-sent on refresh · workspace and project topics, membership checked on join and on re-auth · events published after commit (D-20) through Redis to every api process, and from Celery workers · write tokens suppress a tab's own echo · reconnect refetches, no replay · the workspace collaboration mode, Work together by default, Warn me, One at a time with a 15 s Redis claim held by heartbeat (D-32) · concurrent adds to one item made safe, and same-shape conflicts named · live in-progress drawing and cursors over the socket, never stored, and per-user display preferences (D-33) · F3 and F4 events live between two windows · the 13 legacy channels mapped (D-10, D-13). **Block A checked and pushed; Blocks B and C in build** | [realtime_tasks.md](docs/tasks/realtime_tasks.md) |
 
 ---
 
@@ -43,7 +43,6 @@ _Updated: 2026-09-25_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
-| P-07 | Realtime multi-estimator collaboration | both | D-10. Transport per D-13 |
 | P-04 | Takeoff shell: sheets panel, Add Sheets, rendering, calibration and scale | both | Rendering per D-14 |
 | P-05 | Item model: measure tools, dimensions, sub-items, variables, folders, layers, classifications | both | |
 | P-06 | Canvas interactions: selection, copy and move, deducts, snap, ortho, undo, menus, hover | app | |
