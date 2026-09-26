@@ -28,7 +28,31 @@ B and C (S5 to S12, S18) checked. Block D (S13, S14) built and driven overnight
 | **B: S5 to S8** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f8-s5.sh` 3/3 (fan-out across `api` and `api-b`, the rollback drive, a 10 s Redis outage), `f8-s6.sh` 1/1 (the worker's purge reaching an open Trash; a dry run publishing nothing), `f8-s7` 3/3, `f8-s8.sh` 1/1 (api-b restarted while changes land elsewhere). `f8-s5` run 5 more times: 5/5 |
 | **B and C re-check** | **Checked by the founder**, 2026-09-26, with four findings: asymmetric delivery, saved shapes not live, the item list squeezed to no rows, and live drawing (Block D, unchanged). The first three are **S18** | `browser/f8-s18` 3/3, run 4 times: A to B and B to A each under 300 ms (typically under 130), windows hidden and blurred; edit under 110 ms, delete under 50 ms; the tree at 171 px with the selected row in view. `f8-s9` AC2-on-screen and AC4 re-staged: a live window is no longer stale, so the conflict is made mid-drag and the stale Delete last shape is the request itself; 5/5. **Full regression** after S18: 42 fixtures, 41 passed; the one failure (f8-s12 AC1, intermittent) was a real join gap, fixed in `hub.join` (see S18), and the join-sensitive fixtures reran clean. Gates: ruff, ruff format, mypy, lint, typecheck, build. The rule 7 hook added and proved (it blocked a live `sed -i`) |
 | **D: S13, S14** | Built and driven, 2026-09-26 (overnight). **Awaiting the founder's check.** Drafts also **drawn** on today's canvas (D-34, decided overnight) | `f8-s13` 3/3 (B heard 40 frames stamped "Bench E.", peak 10/s sent, done+saved; A heard none of its own; B on sheet 2 drew none; a closed tab's draft ended for B in 46 ms; shapes unchanged mid-shape, +1 on finish). `f8-s14` 4/4 (five preferences kept across a reload and on window B's app; 422 naming `show_names` and `glow`; on the canvas: off, names off, names on hover, fade at 0.4, only mine). Migration `f3a8d2c61b57` up, down, up; `alembic check` clean. Neighbours rerun: `f8-s9` 5/5, `f8-s11` 4/4, `f8-s12` pass, `f8-s18` 3/3. Gates: ruff, ruff format, mypy (81 files), lint, typecheck, build |
+| **E: S15, S16** | Built and driven, 2026-09-26 (overnight). **Awaiting the founder's check** | `f8-s15` 6/6: role, override and custom role each reach B's unfocused dashboard in 433 to 801 ms; invitation in B's pending list in 732 ms and the activity row in 201 ms; name in 790 ms, logo 6 ms after A's confirm, removal 379 ms; ownership transfer, both windows' roles in under 250 ms; removal told in 54 ms, moved to the next workspace, revoked, 0 events after; mode change re-read and applied on the next hold. `f8-s16` 4/4: create, status (row leaves the tab), details, trash and restore each about 250 ms; Project Home rename 278 ms, "Project not found" 189 ms; folder create, rename, upload and delete about 250 ms each; A's own folder shows once, its event carrying A's token; status add, rename, delete about 230 ms. Reran what leaned on the old broad refetch: `f8-s4` 4/4, `f8-s6` 1/1, `f8-s7` 3/3, `f8-s8` 1/1, `f8-s10` 3/3. Gates: ruff, ruff format, mypy (81 files), lint, typecheck, build |
 | **C: S9 to S12** | Built and driven, 2026-09-26. Checked by the founder (see the re-check row) | `f8-s9` 5/5, run 3 more times: 3/3. `f8-s10` 3/3, `f8-s11` 4/4, `f8-s12.sh` 6/6 (five modes-and-tabs steps, then an `api` restart while holding). Migration `e7b2c5a90d14` driven up, down and up; `alembic check` clean. Gates: ruff, ruff format, mypy (81 files), lint, typecheck, build. **Full regression** through `regress.sh`, `bench-code` first: 41 fixtures, 39 passed; the two failures were fixture faults (below), fixed, and both reran clean (`f8-s4` 4/4, `f8-s12.sh` 6/6) |
+
+**Found while building Block E:**
+- **The broad refetch is gone.** `core/realtime/provider.tsx` now only opens the socket,
+  holds the workspace join and refetches everything on a reconnect. Each event is
+  mapped to its own keys in `features/workspace/realtime.ts` and
+  `features/project/realtime.ts`, mounted once by `components/realtime-events.tsx`, and
+  settled 150 ms by `core/realtime/use-settled-refetch.ts`.
+- **Removal revokes through Redis at once, on every api process.** `realtime.revoke`
+  publishes a `_revoke` instruction on the hub channel after the
+  `workspace.member.changed` it follows (Redis keeps one publisher's order), and each
+  process takes that person's sockets off every topic of the workspace, sending
+  `revoked`. Leaving a workspace does the same. Before, it waited for the next re-auth.
+- **A queued ownership transfer** publishes `workspace.invitation.changed` and
+  `workspace.owner.changed`, since the ownership screen shows it pending; the accept that
+  completes it publishes `workspace.owner.changed` again.
+- **An event about me refetches my standing; about someone else, only the list.**
+  `workspace.member.changed` naming this tab's user refetches capabilities, the
+  workspace list and the projects (their gates); otherwise only the member list.
+- **Every workspace event refetches the activity feed**, as the design said.
+- **A folder or file event also refetches that project's Home** (`["project", ws, p]`),
+  whose counts move with its files.
+- **A seated member removed at a fixture step's end** makes that window's next
+  refetches 403 until it moves on; seen in `f8-s15`'s console lines, expected.
 
 **Found while building Block D:**
 - **Drafts are drawn on today's canvas (D-34, decided overnight, pending review).** The

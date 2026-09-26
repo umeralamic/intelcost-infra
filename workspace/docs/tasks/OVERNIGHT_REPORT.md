@@ -9,7 +9,7 @@ progress checklist while the night runs, and the morning report when it ends._
 |---|---|---|---|---|---|
 | 0 | Setup: permissions in `.claude/settings.json`, rule 7 hook kept, reading | ✅ Done | 00:04 | 00:15 | (workspace file, mirrored with task 1) |
 | 1 | F8 Block D: live drawing channel, Collaboration preferences | ✅ Done | 00:15 | 00:32 | api, app, infra: "F8 Block D" |
-| 2 | F8 Block E: F3 and F4 events wired precisely | ☐ | | | |
+| 2 | F8 Block E: F3 and F4 events wired precisely | ✅ Done | 00:33 | 00:53 | api, app, infra: "F8 Block E" |
 | 3 | F8 Block F: Caddy note, STATUS, PARITY, full regression, close F8, backup | ☐ | | | |
 | 4 | F5 spec (`takeoff_shell_tasks.md`) | ☐ | | | |
 | 5 | Proof backlog fixtures | ☐ | | | |
