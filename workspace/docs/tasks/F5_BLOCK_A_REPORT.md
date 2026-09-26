@@ -81,9 +81,9 @@ peaking at 10. Logs: `intelcost-infra/.regress/f5-block-a/`.
 | api | `10d9ebe` | D-27 `abort_stale_uploads` |
 | app | `2d69a3f` | Capability staleTime; dashboard rows at 375 |
 | infra | `89a45c0` | Bench hygiene, `bench-tidy`, D-27 drive, f3-s2/s4 runners; the answers mirrored |
-| api | _Block A_ | Drawings from project files, `prepare_drawing_file`, the sweep, the in-use guard |
-| app | _Block A_ | Drawing events, `drawingApi.load`, the file browser's in-use refusal |
-| infra | _Block A_ | `f5-s1`, `f5-s2` (+ runner, drive), `f5-s3`, the bundle drive; this report; the mirror |
+| api | `e2ff2e6` | Drawings from project files, `prepare_drawing_file`, the sweep, the in-use guard |
+| app | `7270994` | Drawing events, `drawingApi.load`, the file browser's in-use refusal |
+| infra | `0f35769` | `f5-s1`, `f5-s2` (+ runner, drive), `f5-s3`, the bundle drive; this report; the mirror |
 
 ## Click-only checks for you
 
