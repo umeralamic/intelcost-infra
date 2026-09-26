@@ -17,6 +17,8 @@ import {
   activity,
   apiCall,
   apiLogin,
+  createWorkspace,
+  discardProject,
   expect,
   firstWorkspace,
   run,
@@ -39,7 +41,11 @@ const STATUSES = new Set([
 ]);
 
 const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// The seeded workspace is only read (AC1: every project there has a valid status). What
+// this fixture makes, it makes in a workspace of its own and discards at the end, so
+// Bench Construction never collects its projects or its seats.
+const seededWorkspace = await firstWorkspace(ownerToken);
+const workspace = await createWorkspace(ownerToken, `F4-S1 gates ${Date.now()}`);
 const base = `/api/workspace/${workspace.uuid}/project`;
 
 const pricing = await seatedMember(ownerToken, workspace.uuid, "pricing", "f4s1");
@@ -60,7 +66,7 @@ await run("f4-s1", [
   {
     title: "AC1 — every existing project reads one of the ten statuses, and none reads draft",
     run: async () => {
-      const page = await apiCall(ownerToken, "GET", `${base}?limit=200`);
+      const page = await apiCall(ownerToken, "GET", `/api/workspace/${seededWorkspace.uuid}/project?limit=200`);
       expect(page.status === 200, `list: ${page.status}`);
       const bad = page.body.items.filter((p) => !STATUSES.has(p.status));
       expect(bad.length === 0, `invalid statuses: ${bad.map((p) => p.status).join(", ")}`);
@@ -250,6 +256,7 @@ await run("f4-s1", [
       );
 
       await signInAs(page, SEEDED.email, SEEDED.password);
+      await page.selectOption("header select", workspace.uuid);
       await page.goto(`${APP}/settings/activity`);
       await page.getByText(`moved the project ${project.name} to Trash`).waitFor({ timeout: 20000 });
       await page.getByText(`restored the project ${project.name} from Trash`).waitFor();
@@ -257,3 +264,9 @@ await run("f4-s1", [
     },
   },
 ]);
+
+// Everything this run made, the dialog's project among them, goes: to Trash and then
+// deleted permanently, as a person would clear it.
+const made = await apiCall(ownerToken, "GET", `${base}?limit=200`);
+for (const project of made.body.items) await discardProject(ownerToken, workspace.uuid, project.uuid);
+console.log(`cleanup: ${made.body.items.length} projects discarded from ${workspace.name}`);

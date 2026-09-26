@@ -100,9 +100,10 @@ Project Home renders PDFs to PNGs today and F5 retires it.
    upload itself, so the browser never needs the `ETag` header. It publishes
    `project.file.changed`.
 4. 🔧 **Abandoned uploads.** D-27 says the nightly job aborts any upload still unfinished
-   after 24 hours. **That sweep is not built yet** (found 2026-09-26: the nightly job
-   aborts only a purged project's open uploads). Until it is, the bucket's
-   `AbortIncompleteMultipartUpload` lifecycle rule is the only thing that frees them.
+   after 24 hours. `abort_stale_uploads` does it at 03:30 UTC, beside the purge: it
+   aborts each live project's upload left unfinished for 24 hours and drops its row
+   (built 2026-09-26; a trashed project's uploads stay the purge's). The bucket's
+   `AbortIncompleteMultipartUpload` lifecycle rule stays the backstop.
 5. **F5.** Perform Takeoff, the first time for a project, opens "Load project files into
    takeoff". The person ticks files, then chooses pages from their thumbnails, and "Load N
    pages" creates a `DrawingFile` per file (pointing back at its `ProjectFile`) and a

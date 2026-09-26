@@ -2,7 +2,7 @@
 //
 //   docker compose --profile browser run --rm browser node scripts/f8-s4.mjs
 
-import { APP, SEEDED, apiCall, apiLogin, createWorkspace, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, createWorkspace, discardProject, expect, run, signInAs } from "./lib/bench.mjs";
 import { appSockets, rawSocket, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
 
 const SECOND = "F8-S4 second workspace";
@@ -110,3 +110,6 @@ await run("f8-s4", [
     },
   },
 ]);
+
+// The topic's project was made for this run; it does not stay in the seeded workspace.
+await discardProject(token, first.uuid, project.uuid);

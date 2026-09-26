@@ -424,6 +424,21 @@ export async function apiCall(token, method, path, body) {
   return { status: response.status, body: await response.json().catch(() => null) };
 }
 
+/** Remove a project a fixture made, the way a person would: to Trash, then delete
+ *  permanently, which also clears its storage. A project already trashed or already
+ *  gone is fine; anything else throws, so a cleanup that did not happen is said. */
+export async function discardProject(token, workspaceUuid, projectUuid) {
+  const base = `/api/workspace/${workspaceUuid}/project/${projectUuid}`;
+  const trashed = await apiCall(token, "DELETE", base);
+  if (![200, 404, 409].includes(trashed.status)) {
+    throw new Error(`trash ${projectUuid}: ${trashed.status} ${JSON.stringify(trashed.body)}`);
+  }
+  const purged = await apiCall(token, "DELETE", `${base}/purge`);
+  if (![200, 404].includes(purged.status)) {
+    throw new Error(`purge ${projectUuid}: ${purged.status} ${JSON.stringify(purged.body)}`);
+  }
+}
+
 /** The roles matrix, as the api resolved it. */
 export async function matrix(token, workspaceUuid) {
   const response = await fetch(await fromNode(`${API}/api/workspace/${workspaceUuid}/matrix`), {

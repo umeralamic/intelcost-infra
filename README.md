@@ -134,6 +134,15 @@ which makes a wrong quantity obvious instead of arguable.
 Re-running is safe: it signs in rather than failing on the duplicate user, and skips
 the upload rather than piling up sheets. `--reset` seeds a fresh timestamped user.
 
+**Keep Bench Construction clean.** A fixture that makes projects makes them in a
+workspace of its own, or discards them when it is done (`discardProject` in
+`browser/lib/bench.mjs`: to Trash, then deleted permanently). Fixtures that seat members
+still seat them in the seeded workspace, and `regress.sh` ends with
+`browser/bench-tidy.mjs`, which removes fixture projects and seats **by name only**
+(`<prefix> <13-digit stamp>`, `<tag>-<role>-<stamp>@bench.intelcost.io`), never the owner,
+Riverside, or anything made by hand, and puts Sara W. back to Estimator. Run it alone with
+`docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs [--dry]`.
+
 ## The frontend
 
 It comes up with everything else. `docker compose up -d` includes it, and

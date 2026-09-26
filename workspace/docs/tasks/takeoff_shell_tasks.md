@@ -8,15 +8,16 @@ and the scale presets. Adds the collaboration duties F8 handed on (**D-32, D-33,
 and brings the takeoff route's own code splitting (**P-18**)._
 
 **Board:** [../../MANAGER.md](../../MANAGER.md) · **Rules of engagement:**
-[../../DECISIONS.md](../../DECISIONS.md) (D-13, D-14, D-20, D-27, D-32, D-33, D-34) ·
+[../../DECISIONS.md](../../DECISIONS.md) (D-13, D-14, D-20, D-27, D-32, D-33, D-34, D-35, D-36) ·
 **Parity:** [../PARITY.md](../PARITY.md) §7, §9 (calibration and scale), §24
 (performance baselines), §5 (the Project Home line), §10 (calibrations live) ·
 **Inherited from:** [projects_tasks.md](../archive/projects_tasks.md) (F4-S13, S25),
 [workspace_roles_tasks.md](../archive/workspace_roles_tasks.md) (F3-S4 AC6),
 [realtime_tasks.md](../archive/realtime_tasks.md) (channels 1 and 13, drafts)
 
-_Written 2026-09-26 (overnight) from legacy `intelcost/` at `12dd119b`. **Status: specced,
-no code. Questions at the end wait for the founder.**_
+_Written 2026-09-26 (overnight) from legacy `intelcost/` at `12dd119b`. **Status: the
+founder answered the questions on 2026-09-26 (D-36) and set the zoom range (D-35); in
+progress from Block A.**_
 
 ---
 
@@ -227,8 +228,11 @@ network calls** (hard rule 2). The network edge, presigned URLs, lives in
 
 - The renderer, the refcounted doc cache and the memory budget.
 - The fit tier and the full tier at idle.
-- Zoom limits from one module, and the step rule.
-- The two-stage re-raster and windowing above 2.5×.
+- Zoom limits from one module, and the step rule. **The range is the founder's, not
+  legacy's: 50% to 4000% (D-35).**
+- The two-stage re-raster and windowing above 2.5×. At every settled zoom up to 4000%
+  the page on screen is a fresh pdf.js raster of the visible window, so it is sharp;
+  a CSS-scaled bitmap is only the interim frame while the next raster is drawn.
 - The prerender queue, and the signed-URL cache (the api mints URLs in bulk for a
   project's sheets: one call, not one per sheet).
 
@@ -397,7 +401,11 @@ rendered page. The overlay, the normalised coordinates, the vertex editing and t
 `DraftLayer` are unchanged.
 
 **Acceptance criteria.**
-1. A sheet renders sharp at 100%, 400% and 2000% on a dpr-2 display: no upscaled blur.
+1. A sheet renders sharp at 100%, 400%, 2000% and **4000%** on a dpr-2 display (D-35):
+   once the zoom settles, the pixels on screen come from a pdf.js raster at that zoom,
+   never a CSS-scaled bitmap. The fixture compares the settled canvas's backing size
+   with its CSS size times dpr, and checks a thin vector line stays one to two device
+   pixels wide at 4000%.
 2. Every existing measurement lands exactly where it did on the PNG (the seed's 1,600.00
    SF square reads 1,600.00 SF and sits on its drawn box).
 3. Switching sheets opens a file once: the doc cache shows one document per file.
@@ -405,10 +413,16 @@ rendered page. The overlay, the normalised coordinates, the vertex editing and t
 
 ### F5-S11: The fit tier, zoom rule and two-stage re-raster
 
+**What the overnight proof found (finding 3, 2026-09-26).** Today's canvas stops at
+800% and steps ×1.25 throughout. The founder set the range to **50% to 4000%** (D-35),
+beyond legacy's 25% to 3000%.
+
 **Acceptance criteria.**
 1. PARITY §24: fit tier 2048; a cold open paints the fit image first when the document is
    not open, and fetches no image when it is.
-2. Zoom 25% to 3000% from one module; the buttons step +0.25 below 2× and ×1.25 above.
+2. **Zoom 50% to 4000%** (D-35) from one module that every clamp reads: the wheel, Fit,
+   the buttons, and later Find Text. The buttons step +0.25 below 2× and ×1.25 above;
+   the wheel and the buttons both stop exactly at 50% and 4000%.
 3. After a zoom, a half-resolution pass then a full pass; above 2.5× only the visible
    window is rasterised.
 4. Cold open medians over three runs, recorded against the legacy numbers: light sheet
@@ -428,6 +442,9 @@ rendered page. The overlay, the normalised coordinates, the vertex editing and t
 # Block D: The sheets panel
 
 ### F5-S13: The tree, search and rows
+
+The overnight proof found no sheets panel in takeoff today (finding 6, 2026-09-26): a
+sheet is reached only from Project Home. This subtask is where it arrives.
 
 **Acceptance criteria.**
 1. Sheets nest under the mirrored folders, with "At root" for the rest, and the current
@@ -544,19 +561,19 @@ Block C can start beside Block B once S1 lands. S9 waits for S4 to S8.
 
 ---
 
-## Questions for the founder
+## Questions for the founder, answered
 
-Each has a recommendation, the option most faithful to legacy and to the logged
-decisions. Nothing is built until answered.
+Answered by the founder on 2026-09-26 and logged as **D-36**: every recommendation,
+as written. The founder also set the zoom range (**D-35**), which S10 and S11 carry.
 
-| # | Question | Recommendation |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | **Thumbnails: server or browser?** The founder's brief says server thumbnails; legacy renders every thumbnail in the browser with pdf.js, and the Choose pages step has to, since no sheet exists yet to prepare. | **Both, split by moment:** Choose pages renders in the browser (legacy's, and the only option before Load); the sheets panel uses server thumbnails made at preparation (D-14's "may stay server-rendered"), so a 150-sheet panel costs no pdf.js work. |
-| Q2 | **Skip on first run with nothing loaded:** legacy's "asked once" is the drawing count, so a Skip with nothing loaded means the dialog opens again next time. | **Keep legacy's rule.** The empty takeoff offers Add sheets anyway. |
-| Q3 | **Images (PNG, JPG, TIFF):** legacy wraps each into a one-page PDF in the browser, and that PDF becomes the file. | **Wrap on the worker instead**, keeping the original as the `ProjectFile` and storing the wrapper as the drawing's source: one code path, and the person's file is never replaced. |
-| Q4 | **The selected sheet in the URL.** Legacy opens the first sheet and keeps it out of the URL; the new app puts it in the URL, and per-sheet tab titles depend on it. | **Keep the URL.** It is beyond legacy, and F2-S12 relies on it. |
-| Q5 | **Units in calibration:** legacy shows metric units only behind a flag. | **Port the flag, off.** Feet and inches only, as legacy ships. |
-| Q6 | **`drawing.sheet.changed`:** legacy's channel 1 did not watch sheets, so a colleague's loaded pages appeared on reload. | **Add the event.** It is small, and Work together (D-32) makes two estimators loading pages at once the normal case. |
-| Q7 | **The "Not in F5" owners.** | As the table proposes. |
-| Q8 | **Existing bench drawings** made by the retired upload have no project file. | **Migrate the seed; leave old bench rows unlinked** (the bench is ephemeral). F17 maps legacy's `drawing_files.project_file_id` directly. |
-| Q9 | **Legacy's bug**, skipped pages coming back. | **Do not port it.** A skipped page stays skipped. |
+| Q1 | **Thumbnails: server or browser?** | **Both, split by moment:** Choose pages renders in the browser with pdf.js (legacy's, and the only option before Load); the sheets panel uses server thumbnails made at preparation, so a 150-sheet panel costs no pdf.js work |
+| Q2 | **Skip on first run with nothing loaded** | **Legacy's rule:** "asked once" is the drawing count, so the dialog opens again next time. The empty takeoff offers Add sheets anyway |
+| Q3 | **Images (PNG, JPG, TIFF)** | **Wrapped into a one-page PDF on the worker.** The original stays the `ProjectFile`; the wrapper is the drawing's source. One code path, and the person's file is never replaced |
+| Q4 | **The selected sheet in the URL** | **Kept**, beyond legacy; F2-S12's per-sheet tab titles rely on it |
+| Q5 | **Metric units in calibration** | **Legacy's flag, ported, off.** Feet and inches only, as legacy ships |
+| Q6 | **`drawing.sheet.changed`** | **Added**, beyond legacy: two estimators loading pages see each other's |
+| Q7 | **The "Not in F5" owners** | As the table proposes |
+| Q8 | **Existing bench drawings** with no project file | **The seed moves to `/drawing/load`; old bench rows stay unlinked.** F17 maps legacy's `drawing_files.project_file_id` directly |
+| Q9 | **Legacy's bug**, skipped pages coming back | **Not ported.** A skipped page stays skipped |

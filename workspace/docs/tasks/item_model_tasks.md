@@ -15,8 +15,9 @@ Project Setup, Subcontractors) · **Inherited from:**
 [realtime_tasks.md](../archive/realtime_tasks.md) (channel 1, F8-S9, S18)
 
 _Written 2026-09-26 (overnight) from legacy `intelcost/` at `12dd119b`. **Status: specced,
-no code. Questions at the end wait for the founder.** F5 comes first: F6's dialogs sit on
-F5's canvas and panel._
+no code. The founder answered the questions on 2026-09-26 (D-36): every recommendation,
+except that duplicates count up.** F5 comes first: F6's dialogs sit on F5's canvas and
+panel._
 
 ---
 
@@ -318,13 +319,23 @@ Two windows as in F8: A the owner on `:5173`, B Sara W. on `:5174`.
 
 ### F6-S8: Layers
 
+**What the overnight proof found (finding 5, 2026-09-26).** Today's layers fall short of
+legacy in three ways, and this subtask closes all three:
+- There is no show or hide.
+- The api protects only the *default* layer from deletion, so a project's last layer can
+  be deleted.
+- A new project starts with no layers; legacy seeds three.
+
 **Acceptance criteria.**
-1. A new project has Base Bid, Alternate and Deferred Submittals.
+1. A new project has legacy's three default layers, Base Bid, Alternate and Deferred
+   Submittals, seeded by the api in the project's create transaction.
 2. New measurements file under the active layer; the active layer always shows.
 3. Deleting a layer offers "Move contents and delete layer", or "Delete layer and all its
    measurements" after typing DELETE; the last layer refuses with "A project must keep at
-   least one layer".
-4. Hiding a layer hides its sub-layers' markups on the sheet, in this browser only.
+   least one layer". The refusal is the api's (a 409), whichever layer is last, default
+   or not.
+4. Each layer has a show and hide control. Hiding a layer hides its sub-layers' markups
+   on the sheet, in this browser only (Q7).
 
 ### F6-S9: The item tree
 
@@ -333,8 +344,9 @@ Two windows as in F8: A the owner on `:5173`, B Sara W. on `:5174`.
 2. The item menu offers what legacy's does that F6 owns (Properties, Override quantity,
    Duplicate, Move to layer, Create sub-item, Delete on this sheet and everywhere);
    the rest are named for their features.
-3. Duplicate pre-fills "{name} (2)", can carry sub-items, and keeps or reassigns the
-   classification.
+3. Duplicate pre-fills the next free "{name} (n)": "(2)" for the first copy, "(3)" for
+   the next (D-36, beyond legacy's fixed "(2)"). It can carry sub-items, and keeps or
+   reassigns the classification.
 4. Shift and ctrl select several; the bulk menu moves them to a folder or layer and
    deletes them.
 5. Drag re-files an item; a drop across the Rough boundary is refused.
@@ -362,6 +374,9 @@ F3-S17's criteria. CSI's 1,833 nodes are seeded once, on first use, never over a
 tree.
 
 ### F6-S14: Filing by classification
+
+The overnight proof found no way to file an item under a classification today
+(finding 6, 2026-09-26). This subtask is where it arrives.
 
 **Acceptance criteria.**
 1. The picker searches the project's one system, hides archived codes, and can create a
@@ -421,16 +436,19 @@ Custom Folder first and Preset joins at S14.
 
 ---
 
-## Questions for the founder
+## Questions for the founder, answered
 
-| # | Question | Recommendation |
-|---|---|---|
-| Q1 | **Where formulas are evaluated.** Legacy evaluates in the browser and writes the answer. Here the api owns writes and D-32 says derived values are decided on the api under the item lock. | **Both:** the browser evaluates for the live preview; the api re-evaluates and stores. Two engines kept equal by one shared table of formulas and answers. |
-| Q2 | **Classification references.** Legacy stores `classification_ref_id` as a loose string; the new columns are strings too. | **Make them foreign keys** to `workspace_classification`, so an in-use check is a query rather than a scan, and archive keeps them valid. F17 maps legacy's refs. |
-| Q3 | **Variables' scope.** Legacy's are workspace-wide with a per-project value. | **Keep legacy's.** |
-| Q4 | **Duplicate's suffix** is always "(2)" in legacy, even for a third copy. | **Keep legacy's "(2)"**, faithful to the reference. The alternative, counting up ("(2)", "(3)"), is a one-line change if you prefer it: two copies both named "(2)" can read as a bug. |
-| Q5 | **Item history** (§8's history line). | **F11**, with the other evidence and audit views. F6 records nothing new beyond the workspace audit that exists. |
-| Q6 | **Layers and variables live.** Legacy did not sync either. | **Add `takeoff.layer.changed` and `workspace.variable.changed`.** Work together makes two estimators editing layers and variables at once normal. |
-| Q7 | **Layer visibility per browser** (legacy's localStorage). | **Keep per browser.** It is a view, not data. |
-| Q8 | **Seeding the other four systems.** Legacy ships templates for all five. | **Seed CSI on first use, as F3-S17 says; the other four seed when a workspace first turns them on.** |
-| Q9 | **Rough measurements** are in F6 (they feed sub-item formulas); Earthwork markups are F12's. | **As stated.** |
+Answered by the founder on 2026-09-26 and logged as **D-36**. Every recommendation was
+taken except Q4.
+
+| # | Question | Recommendation | Answer |
+|---|---|---|---|
+| Q1 | **Where formulas are evaluated.** Legacy evaluates in the browser and writes the answer. Here the api owns writes and D-32 says derived values are decided on the api under the item lock. | **Both:** the browser evaluates for the live preview; the api re-evaluates and stores. Two engines kept equal by one shared table of formulas and answers. | As recommended |
+| Q2 | **Classification references.** Legacy stores `classification_ref_id` as a loose string; the new columns are strings too. | **Make them foreign keys** to `workspace_classification`, so an in-use check is a query rather than a scan, and archive keeps them valid. F17 maps legacy's refs. | As recommended |
+| Q3 | **Variables' scope.** Legacy's are workspace-wide with a per-project value. | **Keep legacy's.** | As recommended |
+| Q4 | **Duplicate's suffix** is always "(2)" in legacy, even for a third copy. | Keep legacy's "(2)". | **Count up: "(2)", "(3)".** S9 AC3 reads so |
+| Q5 | **Item history** (§8's history line). | **F11**, with the other evidence and audit views. F6 records nothing new beyond the workspace audit that exists. | As recommended |
+| Q6 | **Layers and variables live.** Legacy did not sync either. | **Add `takeoff.layer.changed` and `workspace.variable.changed`.** Work together makes two estimators editing layers and variables at once normal. | As recommended |
+| Q7 | **Layer visibility per browser** (legacy's localStorage). | **Keep per browser.** It is a view, not data. | As recommended |
+| Q8 | **Seeding the other four systems.** Legacy ships templates for all five. | **Seed CSI on first use, as F3-S17 says; the other four seed when a workspace first turns them on.** | As recommended |
+| Q9 | **Rough measurements** are in F6 (they feed sub-item formulas); Earthwork markups are F12's. | **As stated.** | As recommended |

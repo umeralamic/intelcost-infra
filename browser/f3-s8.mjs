@@ -163,9 +163,15 @@ await run("f3-s8", [
       // and the second `.on()` crashed. Ours share a query key, which is the opposite
       // problem to have — but "they share it correctly" is still worth driving, and a
       // second caller now exists for a real reason (the standing badge in the shell).
+      // Counted for one page load, the Roles page's: signing in loads the dashboard,
+      // which asks once for itself. Since P-18 the Roles page is a lazy chunk whose
+      // caller mounts after the shell's, and the answer is fresh until F8 says it moved,
+      // so the two share one request.
       const requests = [];
       page.on("request", (r) => r.url().includes("/capability") && requests.push(r.url()));
       await signInAs(page, "estimator@bench.intelcost.io");
+      await page.waitForLoadState("networkidle");
+      requests.length = 0;
       await page.goto(`${APP}/settings/roles`);
       await page.waitForSelector("[data-capability]", { timeout: 20000 });
       await page.waitForFunction(

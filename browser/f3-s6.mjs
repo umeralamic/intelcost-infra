@@ -24,6 +24,7 @@ import {
   capabilities,
   clearOverride,
   createWorkspace,
+  discardProject,
   expect,
   firstWorkspace,
   matrix,
@@ -114,6 +115,8 @@ await run("f3-s6", [
         name: `S6 probe ${Date.now()}`,
       });
       expect(project.status === 201, `a takeoff seat got ${project.status} creating a project`);
+      // The probe has done its job; it does not stay in the seeded workspace.
+      await discardProject(ownerToken, workspace.uuid, project.body.uuid);
       return "member: canRunAi removed, the other 24 unchanged, write path still open";
     },
   },

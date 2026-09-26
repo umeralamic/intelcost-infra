@@ -11,7 +11,22 @@
 // Every assertion reads a value back (`output[data-readout]`), not a pixel, and every
 // primitive is driven by keyboard, because a control only a mouse can reach is not done.
 
-import { APP, SEEDED, expect, run, signInAs } from "./lib/bench.mjs";
+import {
+  APP,
+  SEEDED,
+  apiCall,
+  apiLogin,
+  createWorkspace,
+  discardProject,
+  expect,
+  run,
+  signInAs,
+} from "./lib/bench.mjs";
+
+// AC4 creates a project. It does so in a workspace of its own, discarded at the end,
+// so the seeded Bench Construction never collects it.
+const ownerToken = await apiLogin();
+const workspace = await createWorkspace(ownerToken, `F4-S2 dialog ${Date.now()}`);
 
 const GALLERY = `${APP}/dev/ui`;
 
@@ -157,6 +172,8 @@ await run("f4-s2", [
     title: "AC4 — New project opens the dialog, holds a blank name back, creates, toasts and lands on it",
     run: async ({ page }) => {
       await signInAs(page, SEEDED.email, SEEDED.password);
+      await page.selectOption("header select", workspace.uuid);
+      await page.goto(`${APP}/`);
       await page.getByRole("button", { name: "New project" }).click();
       await page.getByRole("dialog", { name: "New project" }).waitFor();
       expect(await page.getByRole("button", { name: "Next" }).isDisabled(), "Next enabled with no name");
@@ -179,3 +196,8 @@ await run("f4-s2", [
     },
   },
 ]);
+
+const base = `/api/workspace/${workspace.uuid}/project`;
+const made = await apiCall(ownerToken, "GET", `${base}?limit=200`);
+for (const project of made.body.items) await discardProject(ownerToken, workspace.uuid, project.uuid);
+console.log(`cleanup: ${made.body.items.length} projects discarded from ${workspace.name}`);

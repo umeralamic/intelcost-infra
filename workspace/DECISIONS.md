@@ -1547,7 +1547,8 @@ others by (person, item colour).
 ## D-34 — Today's canvas renders colleagues' drafts now, as a lift-out layer F5 keeps
 
 **Date:** 2026-09-26
-**Status:** Under Review — **decided overnight, pending founder review**
+**Status:** Accepted (decided overnight 2026-09-26; accepted by the founder the same day
+after the click check)
 **Area:** Takeoff, Frontend
 
 **Context:** D-33 says F8 builds the live drawing channel and F5, F6 and F7 render it.
@@ -1572,3 +1573,84 @@ work". Cursors are sent and received but **rendered by F7**, as D-33 says, so th
 - F5's spec takes `DraftLayer` over rather than writing its own.
 - The layer reads points in normalised sheet space, the same space every stored vertex
   uses, so it needs no change when pdf.js replaces the PNG.
+
+---
+
+## D-35 — Zoom runs 50% to 4000%, and the sheet is sharp at every level
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's)
+**Area:** Takeoff, Frontend
+**Builds on:** D-14 (pdf.js in the browser)
+
+**Context:** Legacy's `zoomLimits.ts` clamps zoom to 25% to 3000%. Today's canvas stops
+at 800% and scales a 150 DPI PNG, so it blurs well before that. F5 moves rendering to
+pdf.js (D-14), which makes deep zoom a matter of re-rasterising the page, not of
+stretching a bitmap.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Legacy's 25% to 3000% | Faithful | 25% is too small to be useful on a sheet; 3000% falls short on dense civil sheets |
+| B — 50% to 4000%, sharp throughout | Deeper inspection of small details; no unreadable far-out level | Beyond legacy; the windowed re-raster must hold up at 4000% |
+
+**Decision (the founder's):** Option B. Zoom runs **50% to 4000%**, from one module
+every clamp reads (wheel, Fit, the buttons, Find Text jumps). **The sheet renders sharp
+at every level up to 4000%:** pdf.js re-rasterises the visible window at the new scale
+once the zoom settles; a CSS-scaled bitmap is only ever the interim frame between two
+rasters, never the settled picture. Legacy's step rule is kept: +0.25 below 2×, ×1.25
+above.
+
+**Consequences:**
+- PARITY §24's zoom lines read 50% to 4000%, beyond legacy.
+- Above legacy's 2.5× windowing threshold only the visible window is rasterised, so a
+  4000% view never allocates a full-page bitmap.
+- F5-S10 and S11 prove sharpness at 100%, 400%, 2000% and 4000% on a dpr-2 profile.
+
+---
+
+## D-36 — The founder's answers to the F5 and F6 questions
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's)
+**Area:** Takeoff, Backend, Frontend
+
+**Context:** The F5 and F6 specs were written overnight with nine questions each, and
+both features waited on the answers.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Every recommendation as written | The most faithful to legacy and the logged decisions | Keeps legacy's fixed "(2)" suffix, where a third copy reads as a bug |
+| B — The recommendations, with duplicates counting up | Each copy has a distinct name | One small step beyond legacy |
+
+**Decision:** Option B: every recommendation accepted, with one change (F6 Q4).
+
+| Spec | # | Answer |
+|---|---|---|
+| F5 | Q1 | Thumbnails both ways: Choose pages renders in the browser; the sheets panel uses server thumbnails made at preparation |
+| F5 | Q2 | Legacy's rule: "asked once" is the drawing count, so Skip with nothing loaded asks again next time |
+| F5 | Q3 | Images are wrapped into a one-page PDF **on the worker**; the original stays the `ProjectFile` |
+| F5 | Q4 | The sheet stays in the URL |
+| F5 | Q5 | Metric calibration units ported behind a flag, off |
+| F5 | Q6 | `drawing.sheet.changed` is added, beyond legacy |
+| F5 | Q7 | The "Not in F5" owners as the spec's table proposes |
+| F5 | Q8 | The seed is migrated to `/drawing/load`; old bench rows stay unlinked |
+| F5 | Q9 | Legacy's skipped-pages-come-back bug is not ported |
+| F6 | Q1 | Formulas evaluated in both the browser (preview) and the api (stored), kept equal by one shared table |
+| F6 | Q2 | Classification references are foreign keys to `workspace_classification` |
+| F6 | Q3 | Variables workspace-wide with a per-project value, as legacy |
+| F6 | Q4 | **Duplicates count up: "(2)", "(3)"**, not legacy's fixed "(2)" |
+| F6 | Q5 | Item history is F11's |
+| F6 | Q6 | `takeoff.layer.changed` and `workspace.variable.changed` are added |
+| F6 | Q7 | Layer visibility stays per browser |
+| F6 | Q8 | CSI seeds on first use; the other four systems when a workspace first turns them on |
+| F6 | Q9 | Rough measurements in F6; Earthwork markups in F12 |
+
+**Consequences:**
+- F5 is unblocked. F6 follows F5, whose canvas and sheets panel it sits on.
+- The overnight findings are owned: Count adding to the selected item (F7), the zoom
+  range (D-35, F5), deducts (F7), layers' show and hide, last-layer protection and
+  legacy's three seeded layers (F6), the sheets panel (F5) and classification (F6).

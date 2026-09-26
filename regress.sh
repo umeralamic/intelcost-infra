@@ -51,12 +51,16 @@ else
   done
   # f4-dialogs: every dialog at a short window and a phone (not a subtask, so not f4-sN).
   list+=(f4-dialogs f3-s1 f3-s3 f3-s12)
+  # f3-s2 and f3-s4 set the database between two passes; their runners do it.
+  list+=(f3-s2 f3-s4)
   # p19: the top bar and the settings tab row at 375 and 1440 (P-19).
   list+=(p19)
   # F8 in subtask order. The ones with runners (the api or Redis stopped, restarted, put
   # on 2-minute tokens; the worker's purge) take the .sh path below, and the *-outage and
   # *-restart phases are run by their runners, never on their own.
   list+=(f8-s1 f8-s2 f8-s3 f8-s4 f8-s5 f8-s6 f8-s7 f8-s8 f8-s9 f8-s10 f8-s11 f8-s12 f8-s13 f8-s14 f8-s15 f8-s16 f8-s18)
+  # D-27's sweep of abandoned uploads (a drive, no browser).
+  list+=(d27-uploads)
 fi
 
 failed=0
@@ -72,6 +76,11 @@ for name in "${list[@]}"; do
     fixture "$name" || failed=$((failed + 1))
   fi
 done
+
+# Fixtures that still seat members in the seeded workspace leave them; this removes
+# them, and any fixture project, by name only (browser/bench-tidy.mjs says what it takes).
+docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs >"$LOG/bench-tidy.log" 2>&1 \
+  && printf '%-12s %s\n' "bench-tidy" "$(grep -E '^removed' "$LOG/bench-tidy.log")"
 
 echo
 echo "$failed of ${#list[@]} fixtures failed. Full output: $LOG/"

@@ -371,7 +371,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] **Linear (L).** Measure a run, in Point to Point, Rectangle, Ellipse/Circle or Arc mode. `src/components/takeoff/drawModes.tsx` · **partial** (point to point only)
 - [ ] **Area (A).** Measure an area, in Point to Point, Rectangle or Ellipse/Circle mode. `src/components/takeoff/drawModes.tsx` · **partial** (point to point only)
 - [ ] **Segment.** Two clicks per segment, auto-committing and then placing the next. `src/components/takeoff/Toolbar.tsx` · **missing**
-- [ ] **Count (N).** Place count marks one by one. `src/components/takeoff/Toolbar.tsx` · **partial** (each click with Count makes a new item with one mark, and three quick clicks made three items all named "Count 11"; legacy places marks into one item. Marks join one item only through Add a shape, F7; found by proof-backlog, overnight 2026-09-26)
+- [ ] **Count (N).** Place count marks one by one. `src/components/takeoff/Toolbar.tsx` · **partial** (each click with Count makes a new item with one mark, and three quick clicks made three items all named "Count 11"; legacy places marks into one item. Marks join one item only through Add a shape; found by proof-backlog, overnight 2026-09-26. F7 makes Count add to the selected item)
 - [ ] **Dimension (D).** Click two points to measure and verify the scale. `src/components/takeoff/Toolbar.tsx`, `VerifiedDimensionLayer.tsx` · **missing**
 - [ ] **Snapshot (S).** Drag a box to capture an area as a snippet. `src/components/takeoff/Toolbar.tsx` · **missing**
 - [ ] **Dock.** Drag a rectangle to display a snapshot or sheet thumbnail on the sheet, optionally hyperlinked. `src/components/takeoff/DockLayer.tsx`, `DockSetupDialog.tsx`, table `takeoff_docks` · **missing**
@@ -384,7 +384,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] **Print.** Print the current page with its markups, with a page chooser and options. `src/components/takeoff/PrintPagesDialog.tsx`, `src/lib/takeoff/print/renderSheetForPrint.ts` · **missing**
 - [ ] **Find Text (Ctrl+F).** Search words printed on the drawings. `src/components/takeoff/FindTextDialog.tsx` (663 lines) · **missing**
 - [ ] **Undo (Ctrl+Z) and Redo (Ctrl+Shift+Z)** on the current sheet. `src/components/takeoff/Toolbar.tsx`, `src/lib/takeoff/history/sessionHistory.ts` · **missing**
-- [ ] **Zoom in, zoom out (to 3000%), and Fit.** `src/components/takeoff/CanvasZoomCluster.tsx`, `src/lib/takeoff/zoomLimits.ts` · **partial** (zoom in, out and Fit work; the ceiling is 800% (MAX_ZOOM = 8), not 3000%, and the step is x1.25 throughout, F5-S11; found by proof-backlog, overnight 2026-09-26)
+- [ ] **Zoom in, zoom out (to 3000%), and Fit.** `src/components/takeoff/CanvasZoomCluster.tsx`, `src/lib/takeoff/zoomLimits.ts` · **partial** (zoom in, out and Fit work; the ceiling is 800% (MAX_ZOOM = 8), and the step is x1.25 throughout, F5-S11; found by proof-backlog, overnight 2026-09-26. The target is the founder's 50% to 4000%, sharp throughout, D-35)
 - [ ] **Markups toggle and Legend toggle**, the legend floating with descriptions and quantities. `src/components/takeoff/LegendOverlay.tsx` · **missing**
 - [x] Calibrate the sheet scale from two points at a declared distance. `src/components/takeoff/CalibrationDialog.tsx`, table `sheet_calibrations` · **ported** (driven: two clicks and a distance set feet_per_norm, and the tools enable; proof-backlog, overnight 2026-09-26)
 - [ ] Pick a scale from the Architectural, Engineering or Metric presets, or "No scale". `src/components/takeoff/ScaleMenu.tsx`, `src/lib/takeoff/scales.ts` · **missing**
@@ -931,8 +931,9 @@ region and vector snap.
 - [ ] The full tier is decoded at idle immediately after the fit paint when viewport CSS width times dpr exceeds 2048, not on zoom. `src/lib/takeoff/pdf/sheetImageSource.ts` (`needsFullTier`) · **missing**
 - [ ] **Cold open targets, medians over three runs:** a light sheet opens in roughly 200 ms to first paint and 750 to 880 ms fully settled; a heavy sheet in roughly 165 ms to first paint, and the image path cuts its settled time from 2400 ms to 1199 ms. `RESULTS-PRERENDER-PHASE2.md` · **missing**
 - [ ] The pre-rendered image is a fallback for a cold document, not the default: when the PDF document is already open no image is fetched at all. `RESULTS-PRERENDER-PHASE2.md` §2 · **missing**
-- [ ] **Zoom range is 25% to 3000%**, from one source of truth that every clamp reads (wheel zoom, Fit, the zoom buttons, and Find Text jumps). `src/lib/takeoff/zoomLimits.ts` · **partial** (zoom exists; limits are not centralised)
-- [ ] The zoom button step is additive 0.25 below 2x for fine control near fit, and geometric 1.25x above it so 3000% is a handful of clicks rather than seventy. `src/lib/takeoff/zoomLimits.ts` · **missing**
+- [ ] **Zoom range is 25% to 3000%** in legacy, from one source of truth that every clamp reads (wheel zoom, Fit, the zoom buttons, and Find Text jumps). `src/lib/takeoff/zoomLimits.ts` · **Beyond legacy (D-35): the new app's range is 50% to 4000%**, from one module every clamp reads. **partial** (today's canvas stops at 800% and has no central limit; F5-S11)
+- [ ] The zoom button step is additive 0.25 below 2x for fine control near fit, and geometric 1.25x above it so the top of the range is a handful of clicks rather than seventy. `src/lib/takeoff/zoomLimits.ts` · **partial** (today steps ×1.25 throughout; F5-S11)
+- [ ] **Sharp at every zoom up to 4000% (beyond legacy, D-35).** Once a zoom settles, the page on screen is a pdf.js raster at that zoom, never a CSS-scaled bitmap; a scaled frame is only the interim while the next raster draws (D-14). · **missing** (today scales a 150 DPI PNG; F5-S10, S11)
 - [ ] Above the windowing threshold the sheet renders through the pdf.js window path, so rasterised pixels track the viewport rather than the page and deep zoom never allocates a full-page intermediate. `src/lib/takeoff/pdf/PdfPageRenderer.ts`, `zoomLimits.ts` · **missing**
 - [ ] A PDF document is opened once and shared through a refcounted cache; no second copy of a file is ever held. `src/lib/takeoff/pdf/pdfDocCache.ts` · **missing**
 - [ ] A memory budget governs how much raster the tab may hold at once. `src/lib/takeoff/pdf/memoryBudget.ts` · **missing**
@@ -1067,13 +1068,14 @@ A retired line counts as driven, because there is nothing left to drive.
 | 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
 | 22 | Platform admin | 20 | 0 | 0 | 20 | 0 | 8 |
 | 23 | Keyboard and mouse | 36 | 1 | 2 | 33 | 0 | new |
-| 24 | App-wide | 45 | 0 | 3 | 42 | 0 | new |
-| | **Total** | **596** | **81** | **24** | **488** | **69** | **347** |
+| 24 | App-wide | 46 | 0 | 4 | 42 | 0 | new |
+| | **Total** | **597** | **81** | **25** | **488** | **69** | **347** |
 
-**81 of 596 behaviours are ported, 14%. 69 are driven, 12%** — and driven is the number
+**81 of 597 behaviours are ported, 14%. 69 are driven, 12%** — and driven is the number
 that counts. The gap between the two is the honest part: 15 lines say the code is there
-and nothing has yet proved it on a screen. (596, not 595: F4's close-out split §5's
-location line in two, the inline address it ported and the map P-17 owns.)
+and nothing has yet proved it on a screen. (597, not 595: F4's close-out split §5's
+location line in two, the inline address it ported and the map P-17 owns; and D-35 added
+§24's "sharp at every zoom up to 4000%", beyond legacy.)
 
 Two lines inside the 69 carry a named remainder rather than a clean close, and the line
 itself says which: §3's platform-admin line owes **F5** its on-screen half, and §3's
