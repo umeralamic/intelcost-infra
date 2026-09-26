@@ -492,6 +492,12 @@ every api process over Redis pub/sub.
 - **Every later feature that writes carries its own events.** A feature that writes
   emits its events and lists them in its spec. The F8 spec maps each of the 13 legacy
   channels in `docs/PARITY.md` to an event on this transport.
+- **Mapping note, 2026-09-26 (the founder's, at the F8 Block B/C check):** channel 1's
+  `takeoff.item.changed` and `takeoff.geometry.changed` are emitted by F8 itself, from
+  today's takeoff write paths (F8-S18), rather than waiting for F6 and F7. A window
+  hearing one refetches that one item. F5 to F7 keep and extend them; calibration and
+  folder events stay F5's and F6's. The rule above is unchanged: a feature that writes
+  carries its events.
 
 ---
 

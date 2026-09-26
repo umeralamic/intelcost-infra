@@ -76,6 +76,9 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    already destroyed one file here — both the original and the temp copy were lost, and
    the file had to be rebuilt from the last commit by hand. A whole-file rewrite through
    a heredoc is acceptable. A batch edit across many files is worth the extra calls.
+   **Enforced:** a PreToolUse hook (`.claude/settings.json`,
+   `.claude/hooks/no-inplace-edit.sh`) blocks any Bash or PowerShell command with an
+   in-place `sed` or `perl` flag, and says why.
 
 ## Git
 
@@ -90,8 +93,8 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
 - **Promoting `umer-dev` to `main` is a release.** It is a deliberate, separate act,
   never part of finishing a task.
 - **The workspace files are versioned in `intelcost-infra/workspace/`.** The four files
-  at the workspace root and `docs/` live outside every repo, so git protects none of
-  them. `intelcost-infra/workspace/` is an exact mirror and is the versioned copy; the
+  at the workspace root, `docs/` and `.claude/` (the rule 7 hook) live outside every
+  repo, so git protects none of them. `intelcost-infra/workspace/` is an exact mirror and is the versioned copy; the
   root stays the working copy. **Every close-out and every commit that changes a
   workspace file also refreshes `intelcost-infra/workspace/` in the same session and
   commits it.** A mirror refreshed later is a mirror nobody can trust.

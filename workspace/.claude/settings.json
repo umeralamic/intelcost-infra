@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-inplace-edit.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking hard rule 7 (no in-place sed/perl)"
+          }
+        ]
+      }
+    ]
+  }
+}

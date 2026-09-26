@@ -17,13 +17,57 @@ update each other._
 
 _Written 2026-09-25 from legacy `intelcost/` at `12dd119b`. Status: **questions answered
 2026-09-25, D-32 and D-33 logged. Block A (S1 to S4) built, checked and pushed. Blocks
-B and C in build.**_
+B and C (S5 to S12) built and driven; awaiting the founder's check.**_
 
 ## Progress
 
 | Block | State | Proof |
 |---|---|---|
-| **A: S1 to S4** | Built and driven, 2026-09-25. **Checked by the founder** (sign out, api outage and reconnect) and pushed. The email-prefix name fallback agreed | `browser/f8-s1` 4/4, `f8-s2.sh` 4/4 (`f8-s2` 3/3 and `f8-s2-outage` 1/1, which carries S1 AC5), `f8-s3.sh` 3/3 on 2-minute tokens, `f8-s4` 4/4. Gates: ruff, ruff format, mypy (78 files), lint, typecheck, build. Full regression: see the report. |
+| **A: S1 to S4** | Built and driven, 2026-09-25. **Checked by the founder** (sign out, api outage and reconnect) and pushed. The email-prefix name fallback agreed |
+| **B: S5 to S8** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f8-s5.sh` 3/3 (fan-out across `api` and `api-b`, the rollback drive, a 10 s Redis outage), `f8-s6.sh` 1/1 (the worker's purge reaching an open Trash; a dry run publishing nothing), `f8-s7` 3/3, `f8-s8.sh` 1/1 (api-b restarted while changes land elsewhere). `f8-s5` run 5 more times: 5/5 |
+| **B and C re-check** | **Checked by the founder**, 2026-09-26, with four findings: asymmetric delivery, saved shapes not live, the item list squeezed to no rows, and live drawing (Block D, unchanged). The first three are **S18** | `browser/f8-s18` 3/3, run 4 times: A to B and B to A each under 300 ms (typically under 130), windows hidden and blurred; edit under 110 ms, delete under 50 ms; the tree at 171 px with the selected row in view. `f8-s9` AC2-on-screen and AC4 re-staged: a live window is no longer stale, so the conflict is made mid-drag and the stale Delete last shape is the request itself; 5/5. **Full regression** after S18: 42 fixtures, 41 passed; the one failure (f8-s12 AC1, intermittent) was a real join gap, fixed in `hub.join` (see S18), and the join-sensitive fixtures reran clean. Gates: ruff, ruff format, mypy, lint, typecheck, build. The rule 7 hook added and proved (it blocked a live `sed -i`) |
+| **C: S9 to S12** | Built and driven, 2026-09-26. Checked by the founder (see the re-check row) | `f8-s9` 5/5, run 3 more times: 3/3. `f8-s10` 3/3, `f8-s11` 4/4, `f8-s12.sh` 6/6 (five modes-and-tabs steps, then an `api` restart while holding). Migration `e7b2c5a90d14` driven up, down and up; `alembic check` clean. Gates: ruff, ruff format, mypy (81 files), lint, typecheck, build. **Full regression** through `regress.sh`, `bench-code` first: 41 fixtures, 39 passed; the two failures were fixture faults (below), fixed, and both reran clean (`f8-s4` 4/4, `f8-s12.sh` 6/6) |
+
+**Two fixture faults the full regression found:**
+- `f8-s4` AC4 imported the socket module by its bare path to reach the app's instance.
+  Once Vite has hot-updated a module it serves it as `socket.ts?t=…`, so the bare path
+  loaded a second, unconnected copy. The fixture now imports the URL the page loaded.
+- `f8-s12-restart` selected window B's row before using its menu. With the properties
+  panel open, the tree above it can shrink to no visible rows (pre-F8 layout, F6's), so
+  the row could not be right-clicked. It no longer selects first.
+
+**Found while building Blocks B and C:**
+- **Until S15 and S16 map each event to its own query keys, any event on a workspace
+  topic refetches every query on screen that names the workspace, plus the workspace
+  list.** Core cannot import a feature's keys, so it matches on the workspace uuid. It is
+  coarse and it is correct: only active queries refetch. S15 and S16 narrow it.
+- **Two events are published ahead of Block E, because Blocks B and C needed them to be
+  checkable:** `project.purged` (S6: the worker and the manual purge) and
+  `workspace.settings.updated` (S10: any workspace settings change, the collaboration
+  mode among them). The rest of the F3 and F4 events stay with S15 and S16.
+- **The same-shape guard is a lock, not a conditional `UPDATE`.** The item row is locked,
+  then the shape is re-read under that lock and its version compared. The guarantee is
+  the one the spec asked for (two edits in one instant cannot both pass), and it reuses
+  the lock the quantity fix needs anyway.
+- **A conflict shows in the takeoff page's own error bar**, not a toast: that bar is
+  where every refused write on this page already says why, and it stays until dismissed.
+- **The same person in a second tab reads legacy's own-tab copy**, "You're editing this
+  item in another tab. Finish or close that tab first.", rather than their own name as
+  if they were a colleague.
+- **Settings > General reads the workspace list twice after a save** (its mutation
+  invalidates it and the form then calls `refreshWorkspaces`; F3 code). S7 AC1 proves
+  the echo adds no third read, rather than asserting a single read.
+- **Presence keys live under the project topic**, `rt:ws:{w}:project:{p}:claim:…`, so
+  every key is workspace-first; the design section's shorter form is the same keys.
+- **With an item selected, the takeoff panel's tree is short** (properties take 55% of
+  the height, pre-F8), so a selected row's name tag can sit just below the fold. The
+  properties panel names the holder too, so nothing is lost; F6 owns the panel layout.
+- **The settings tab row wraps** "Roles & permissions" onto two lines at 1440 px now
+  that Collaboration is in it. Tracked with P-19's tab-row work.
+- **S12 AC4's network cut is proved at the socket, not in the browser** (S11 AC2: a
+  holder that stops its heartbeat loses the claim 15.5 s later). A browser cannot drop
+  its own socket without a close frame; closing the tab (S12 AC4) and restarting the
+  api under it (S12 AC5) are the browser-side cases. `browser/f8-s1` 4/4, `f8-s2.sh` 4/4 (`f8-s2` 3/3 and `f8-s2-outage` 1/1, which carries S1 AC5), `f8-s3.sh` 3/3 on 2-minute tokens, `f8-s4` 4/4. Gates: ruff, ruff format, mypy (78 files), lint, typecheck, build. Full regression: see the report. |
 
 **Found while building Block A:**
 - **The bench api could not close a socket cleanly.** Its container ran `sh -c "alembic … &&
@@ -268,7 +312,7 @@ conflict message.
 
 | # | Legacy channel | New topic | Event(s) or frames | Payload | Emitted by | In F8 |
 |---|---|---|---|---|---|---|
-| 1 | `takeoff-sync-${projectId}` | project | `takeoff.item.changed`, `takeoff.geometry.changed`, `sheet.calibration.changed`, `takeoff.folder.changed` | `{project_uuid, <x>_uuid, sheet_uuid?, kind}` | F5 (calibration), F6 (items, folders), F7 (geometry) | Named. **Plus D-33's `draft` and `cursor` frames, built in S13.** |
+| 1 | `takeoff-sync-${projectId}` | project | `takeoff.item.changed`, `takeoff.geometry.changed`, `sheet.calibration.changed`, `takeoff.folder.changed` | `{project_uuid, item_uuid, sheet_uuid, kind}`, plus `geometry_uuid` on a geometry event; kind `created\|updated\|deleted` | **F8 (item and geometry, founder 2026-09-26, S18)**; F5 (calibration), F6 (folders) | **Item and geometry events built and driven (S18)**: every item and shape write on today's takeoff page publishes, and the other window refetches that one item. F5 to F7 keep and extend them. Calibration and folder events stay F5's and F6's. **Plus D-33's `draft` and `cursor` frames, built in S13.** |
 | 2 | `takeoff:${projectId}` (presence) | project | `item.focus`, `item.blur`, `presence`, `presence.changed`, `focus.granted`, `focus.refused` | see The wire | **F8** | **Built and driven, per mode (D-32)** (S11, S12) |
 | 3 | `takeoff_docks:${projectId}` | project | `takeoff.dock.changed` | `{project_uuid, sheet_uuid, dock_uuid, kind}` | F11 | Named |
 | 4 | `takeoff_highlights:${projectId}` | project | `takeoff.highlight.changed` | `{project_uuid, sheet_uuid, highlight_uuid, kind}` | F11 | Named |
@@ -460,8 +504,9 @@ published yet. **A reporting boundary.**_
   per tab, so the same user's other tab still hears the change.
 
 **Acceptance criteria.**
-1. A renames a project: B's dashboard shows it; A's console logs `echo suppressed
-   project.updated`, and A refetched the list once.
+1. A renames the workspace in Settings > General: B's header shows it; A's console logs
+   `echo suppressed workspace.settings.updated`, and A makes no read beyond the two its
+   form makes by itself. (Re-worded from a project rename: `project.updated` is S16's.)
 2. Same user, two tabs: tab 1 renames, tab 2 updates live.
 3. An event with a stranger's token reaches every window, the writer's included.
 
@@ -474,9 +519,11 @@ published yet. **A reporting boundary.**_
 - No replay, no event ids to resume from (D-13). Per-hook `refetchOnWindowFocus` stays.
 
 **Acceptance criteria.**
-1. B goes offline. A creates a project, trashes another and renames a folder. B comes
-   back: within about two seconds of `ready`, B shows all three.
-2. The same with `docker compose restart api-b`.
+1. B's api process (`api-b`) restarts. Meanwhile A creates a project and renames the
+   workspace through `api`. B comes back: within about two seconds of `ready`, B shows
+   both. (DevTools' Offline does not reliably drop an open WebSocket, so the restart is
+   the outage for both criteria.)
+2. The same, for any change on B's screen.
 3. B never receives an event dated from the outage.
 
 ---
@@ -496,16 +543,17 @@ Fixes the three stale-view paths in the audit, and names the person in a conflic
   item row**, so `recompute_item` sums a view that includes every committed shape, and
   writers on one item queue for milliseconds instead of overwriting each other's totals
   (path 1).
-- `api`: the version guard becomes part of the write: `UPDATE … WHERE geometry_version =
-  :expected`, zero rows meaning refused (path 2).
+- `api`: the version guard becomes atomic: the shape is re-read under the item lock and
+  only then compared, so two edits in one instant cannot both pass (path 2). (Built as
+  a lock rather than a conditional `UPDATE`; see "Found while building Blocks B and C".)
 - `api`: `takeoff_geometry.updated_by_id` (migration), set on add and update. A stale
   write is refused 409 with "{name} just changed this shape, showing their version",
   where {name} is `short_name` of that user.
 - `api`: `DELETE …/geometry/{uuid}?drop_empty_item=true` deletes the item too **only if
   this was its last shape, decided under the item lock**. The app's Delete last shape
   calls it and stops deciding from its copy (path 3).
-- `app`: on that 409 the shape refetches and the message shows as a toast. Nothing the
-  user dragged stays painted.
+- `app`: on that 409 the shape refetches and the message shows in the page's error bar.
+  Nothing the user dragged stays painted.
 
 **Acceptance criteria.**
 1. Window A and window B both on sheet A-101 with item "Area 1". Both add a shape to it
@@ -581,6 +629,59 @@ Fixes the three stale-view paths in the audit, and names the person in a conflic
 5. One at a time, A offline while holding; B claims after it lapses; A comes back: A's
    focus is refused, its tool disarms, and nothing A draws lands on the item.
 6. Same user, two tabs, One at a time: tab 2 is refused like anyone else.
+
+### F8-S18: Saved shapes live, and the item list that stays visible (added 2026-09-26)
+
+Added after the founder's Block B/C check, which found three things.
+
+**1. Asymmetric delivery.** A shape added in window A (on `api`) showed in window B (on
+`api-b`) at once; one added in B reached A late or only on refresh. **Diagnosed, read
+only, before any fix,** with both windows' frames and requests recorded:
+- **No takeoff write published anything.** `app/features/takeoff/routes.py` had no
+  `realtime.publish` on any item or geometry route, by design at the time (channel 1's
+  saved-change events were left to F5 to F7, Q3). So nothing left `api-b`, nothing
+  reached Redis or `api`, and nothing reached A's socket, in either direction.
+- **What looked live in B was an unrelated refetch.** `src/core/realtime/provider.tsx`
+  (the rule "any workspace event refetches every query on screen naming the workspace",
+  added in Block B) refetched B's sheet whenever the owner, in A, changed the
+  collaboration mode. A skipped the same event as its own echo in
+  `src/core/realtime/socket.ts` (`consumeWriteToken`), so A never refetched. Proved by
+  a probe: after A's mode change, B issued `GET …/takeoff/item?sheet_uuid=…` and A
+  issued nothing.
+
+**2. The fix: saved shapes, live (founder's instruction).**
+- `api`: every item and geometry route on today's takeoff page publishes after commit:
+  `takeoff.item.changed` (create, rename and other patches, lock, override, delete) and
+  `takeoff.geometry.changed` (add, move, delete; a shape delete that took its item with
+  it publishes the item's delete). Payload `{project_uuid, item_uuid, sheet_uuid, kind}`
+  and `geometry_uuid` on a geometry event, on the project topic.
+- `app`: `features/takeoff/hooks/useLiveItems.ts` hears them for the sheet on screen,
+  refetches **that one item** and puts it in the sheet's list, or drops it on a delete.
+  The newest fetch per item wins, so a slow answer never overwrites a fresher one. The
+  event carries no shape (D-13). F5 to F7 keep and extend this.
+
+**Found by the full regression after S18: a join that could miss one change.** f8-s12
+AC1 failed once in 42 fixtures (then 6/6 on repeat): B's row named A 5 s late. A tab's
+join subscribed the topic's Redis channel and then read the presence snapshot, but
+`subscribe` returns when the command is sent, not when Redis has acted on it, and the
+snapshot is read over another connection. A hold, or an event, landing in that sliver
+reached neither, until the holder's next heartbeat. `hub.join`
+(`app/features/realtime/hub.py`) now waits for Redis's subscribe confirmation (up to 2 s,
+logged if absent) before the join is answered. f8-s4, s5, s11, s12 and s18 rerun clean,
+and f8-s12 3 more times.
+
+**3. The item list that stays visible.** Selecting an item, or starting Add a shape,
+opened the properties at up to 55% of the screen height and left the item tree only what
+remained, which under the verify banner was no rows. The tree and the properties now
+share the column evenly and scroll apart, and the tree keeps a floor of 8 rem.
+
+**Acceptance criteria.**
+1. A shape added in either window shows in the other within one second, with neither
+   window focused.
+2. A shape edited, and an item deleted, in one window each show in the other within one
+   second.
+3. With an item selected and Add a shape armed, at 1280 by 720 under the verify banner,
+   the selected row is visible in the tree and the properties scroll in their own area.
 
 ---
 
@@ -764,7 +865,7 @@ S5. Blocks D and E each need Block B.
 |---|---|---|---|
 | §10 | While one user is marking an item, others are blocked from Resume and delete | missing | **Reworded by D-32** as the One at a time mode: S11, S12; Resume by F7 |
 | §10 | Write tokens suppress the echo | missing | S7 |
-| §10 | Two estimators see each other's items, geometries, calibrations and folders live | missing | Transport S1 to S8; events F5, F6, F7 |
+| §10 | Two estimators see each other's items, geometries, calibrations and folders live | missing | **Items and geometries: S18** (on today's takeoff page; F5 to F7 keep them). Calibrations F5, folders F6 |
 | §10 new | Collaboration mode, three modes, Work together default | beyond legacy (D-32) | S10 to S12 |
 | §10 new | Concurrent adds to one item never overwrite; same-shape conflict named | beyond legacy (D-32) | S9 |
 | §10 new | Live in-progress drawing with a name tag | beyond legacy (D-33) | Channel S13; rendering F5, F6, F7 |

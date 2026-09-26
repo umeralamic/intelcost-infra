@@ -411,7 +411,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [ ] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
 - [ ] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **missing** (**D-32:** this is now the **One at a time** collaboration mode, not the default. F8-S11 and S12 build and drive it on today's takeoff page; F7 re-drives it on Resume and Extend)
-- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **missing** (D-10; transport built by F8 per D-13; the saved-change events are F5's (calibration), F6's (items, folders) and F7's (geometry))
+- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **partial** (D-10, D-13: **items and geometries are live** on today's takeoff page since F8-S18, each within a second of the write, and F5 to F7 keep them; calibrations are F5's and folders F6's)
 - [ ] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **missing** (F8-S7)
 
 **Collaboration, beyond legacy (D-32, D-33).** New behaviours the founder added on
@@ -980,7 +980,7 @@ ephemeral soft-lock, not a data feed.
 
 | # | Channel | Watches | What it buys the user | File |
 |---|---|---|---|---|
-| 1 | `takeoff-sync-${projectId}` | `takeoff_items`, `takeoff_geometries`, `sheet_calibrations`, `takeoff_folders` (all events) | Two estimators on one project see each other's measurements, folders and calibrations appear live | `src/hooks/useTakeoffRealtime.ts` |
+| 1 | `takeoff-sync-${projectId}` | `takeoff_items`, `takeoff_geometries`, `sheet_calibrations`, `takeoff_folders` (all events) | Two estimators on one project see each other's measurements, folders and calibrations appear live. **New:** `takeoff.item.changed` and `takeoff.geometry.changed` since F8-S18; calibration F5, folders F6 | `src/hooks/useTakeoffRealtime.ts` |
 | 2 | `takeoff:${projectId}` (**presence**, not postgres_changes) | presence payloads keyed by (itemId, sheetId) | Ephemeral soft-lock: blocks Resume and delete for other viewers while someone is actively marking, so a read-modify-write on `vertices_json` cannot silently drop a writer | `src/hooks/useTakeoffPresence.ts` |
 | 3 | `takeoff_docks:${projectId}` | `takeoff_docks` | Docked snapshots appear for other viewers | `src/hooks/useDocks.ts` |
 | 4 | `takeoff_highlights:${projectId}` | `takeoff_highlights` | Highlights appear for other viewers | `src/hooks/useHighlights.ts` |
