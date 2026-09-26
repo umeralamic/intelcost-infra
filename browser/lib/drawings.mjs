@@ -6,7 +6,7 @@
 
 import { deflateSync } from "node:zlib";
 
-import { APP, SEEDED, apiCall, expect, signInAs } from "./bench.mjs";
+import { APP, SEEDED, apiCall, expect, fixtureOwner, signInAs } from "./bench.mjs";
 import { folderPaths, seedFile } from "./f4.mjs";
 
 /** A PDF with one page per entry: `{ width, height, label }` in points. */
@@ -102,7 +102,7 @@ export function makePng(width, height) {
  * root. Returns the uploaded files by name.
  */
 export async function uploadAll(page, token, base, projectUuid, files, workspaceUuid) {
-  await signInAs(page, SEEDED.email, SEEDED.password);
+  await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
   await page.selectOption("header select", workspaceUuid).catch(() => {});
   await page.goto(`${APP}/project/${projectUuid}`);
   const out = {};

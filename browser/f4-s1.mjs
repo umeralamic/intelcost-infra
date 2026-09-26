@@ -13,6 +13,8 @@
 // by hand and expects the api to refuse it, with the same words the screen uses.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   activity,
   apiCall,
@@ -40,11 +42,11 @@ const STATUSES = new Set([
   "archived",
 ]);
 
-const ownerToken = await apiLogin();
-// The seeded workspace is only read (AC1: every project there has a valid status). What
-// this fixture makes, it makes in a workspace of its own and discards at the end, so
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
+const OWNER = (await fixtureOwner()).email;
+// Everything happens in a workspace of this run's own account, discarded at the end, so
 // Bench Construction never collects its projects or its seats.
-const seededWorkspace = await firstWorkspace(ownerToken);
 const workspace = await createWorkspace(ownerToken, `F4-S1 gates ${Date.now()}`);
 const base = `/api/workspace/${workspace.uuid}/project`;
 
@@ -66,7 +68,7 @@ await run("f4-s1", [
   {
     title: "AC1 — every existing project reads one of the ten statuses, and none reads draft",
     run: async () => {
-      const page = await apiCall(ownerToken, "GET", `/api/workspace/${seededWorkspace.uuid}/project?limit=200`);
+      const page = await apiCall(ownerToken, "GET", `${base}?limit=200`);
       expect(page.status === 200, `list: ${page.status}`);
       const bad = page.body.items.filter((p) => !STATUSES.has(p.status));
       expect(bad.length === 0, `invalid statuses: ${bad.map((p) => p.status).join(", ")}`);
@@ -255,7 +257,7 @@ await run("f4-s1", [
         `feed for ${project.name}: ${actions.join(", ")}`,
       );
 
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, OWNER, SEEDED.password);
       await page.selectOption("header select", workspace.uuid);
       await page.goto(`${APP}/settings/activity`);
       await page.getByText(`moved the project ${project.name} to Trash`).waitFor({ timeout: 20000 });

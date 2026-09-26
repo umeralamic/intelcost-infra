@@ -15,6 +15,8 @@
 // This also closes F3-S9 AC8, which could not be driven when S9 was built.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   activity,
   apiCall,
@@ -31,8 +33,9 @@ import {
   updateWorkspace,
 } from "./lib/bench.mjs";
 
-const SEED = "estimator@bench.intelcost.io";
-const ownerToken = await apiLogin();
+const SEED = (await fixtureOwner()).email;
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
 
 const actions = (feed) => feed.body.items.map((row) => row.action);
 const uuidOf = async (ws, email) =>
@@ -145,7 +148,7 @@ await run("f3-s12", [
       // last-owner invariant — and that refusal comes from inside the service, AFTER
       // the route has already called `audit.record`. If the row survived the rollback,
       // the feed would claim a demotion that never happened.
-      const ownerUuid = await uuidOf(ws.uuid, "estimator@bench.intelcost.io");
+      const ownerUuid = await uuidOf(ws.uuid, SEED);
       const refused = await setRole(ownerToken, ws.uuid, ownerUuid, "viewer");
       expect(refused.status === 409, `demoting the last owner gave ${refused.status}`);
 
@@ -227,7 +230,7 @@ await run("f3-s12", [
       expect(transferred !== undefined, `the direct path recorded ${actions(a).join(", ")}`);
       expect(transferred.target === heir.email, `it names ${transferred.target}`);
       expect(
-        transferred.before?.owner === "estimator@bench.intelcost.io",
+        transferred.before?.owner === SEED,
         `before reads ${JSON.stringify(transferred.before)}`,
       );
 

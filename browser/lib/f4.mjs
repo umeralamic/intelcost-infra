@@ -2,13 +2,13 @@
 // a person's clicks would end up, so a fixture spends its browser time on the screen
 // under test rather than on setting the scene.
 
-import { APP, SEEDED, apiCall, apiLogin, createWorkspace, expect, signInAs } from "./bench.mjs";
+import { APP, SEEDED, apiCall, expect, fixtureOwner, ownWorkspace, signInAs } from "./bench.mjs";
 
-/** A throwaway workspace owned by the seeded user, so state never leaks between runs. */
+/** A throwaway workspace owned by this run's own account (`fixtureOwner`), never the seeded
+ *  user, so state never leaks between runs and the founder's switcher stays clean. */
 export async function freshWorkspace(tag) {
-  const token = await apiLogin();
-  const workspace = await createWorkspace(token, `${tag} ${Date.now()}`);
-  return { token, workspace, base: `/api/workspace/${workspace.uuid}/project` };
+  const { token, workspace, base } = await ownWorkspace(`${tag} ${Date.now()}`);
+  return { token, workspace, base };
 }
 
 /** Make a project, optionally put it on a status by key. Returns the api's read. */
@@ -22,9 +22,9 @@ export async function makeProject(token, base, body, statusKey) {
   return moved.body;
 }
 
-/** Signed in, on this workspace's dashboard, the list drawn. */
-export async function openDashboard(page, workspaceUuid, email = SEEDED.email, path = "/") {
-  await signInAs(page, email, SEEDED.password);
+/** Signed in (as this run's owner unless told otherwise), on this workspace's dashboard, drawn. */
+export async function openDashboard(page, workspaceUuid, email, path = "/") {
+  await signInAs(page, email ?? (await fixtureOwner()).email, SEEDED.password);
   await page.selectOption("header select", workspaceUuid).catch(() => {});
   await page.goto(`${APP}${path}`);
   await page.getByRole("heading", { name: "Projects", exact: true }).waitFor({ timeout: 20000 });
@@ -119,8 +119,8 @@ export async function folderPaths(token, base, projectUuid) {
 }
 
 /** Signed in, on a project's Home, the file browser drawn. */
-export async function openFiles(page, workspaceUuid, projectUuid, email = SEEDED.email) {
-  await signInAs(page, email, SEEDED.password);
+export async function openFiles(page, workspaceUuid, projectUuid, email) {
+  await signInAs(page, email ?? (await fixtureOwner()).email, SEEDED.password);
   await page.selectOption("header select", workspaceUuid).catch(() => {});
   await page.goto(`${APP}/project/${projectUuid}`);
   await page.locator("[data-file-browser] [data-tree-root]").waitFor({ timeout: 20000 });

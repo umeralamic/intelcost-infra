@@ -13,6 +13,8 @@
 // not exist until then. It is named here so it is not lost.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -35,7 +37,9 @@ import {
 } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
-const ownerToken = await apiLogin();
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
+const SEED = (await fixtureOwner()).email;
 
 /** A workspace this fixture owns outright, so a transfer breaks nothing else. */
 async function freshWorkspace(tag) {
@@ -62,7 +66,7 @@ await run("f3-s9", [
       // transaction rather than as a promote and a demote.
       expect(owners.length === 1, `${owners.length} owners after the transfer`);
       expect(owners[0].email === heir.email, `the owner is ${owners[0].email}`);
-      const giver = roster.find((m) => m.email === "estimator@bench.intelcost.io");
+      const giver = roster.find((m) => m.email === SEED);
       expect(giver.role === "admin", `the outgoing owner is now ${giver.role}`);
 
       // And the capability map followed: the giver can no longer hand it on.
@@ -109,7 +113,7 @@ await run("f3-s9", [
       const owners = (await members(ownerToken, ws.uuid)).filter((m) => m.role === "owner");
       expect(owners.length === 1, `${owners.length} owners after two refusals`);
       expect(
-        owners[0].email === "estimator@bench.intelcost.io",
+        owners[0].email === SEED,
         `the owner is now ${owners[0].email}`,
       );
       return "admin 403 · wrong name 409 · still 1 owner, unchanged";
@@ -133,7 +137,7 @@ await run("f3-s9", [
       const before = (await members(ownerToken, ws.uuid)).filter((m) => m.role === "owner");
       expect(before.length === 1, `${before.length} owners while the transfer waits`);
       expect(
-        before[0].email === "estimator@bench.intelcost.io",
+        before[0].email === SEED,
         "the workspace changed hands before the accept",
       );
       const waiting = await pendingTransfer(ownerToken, ws.uuid);
@@ -159,7 +163,7 @@ await run("f3-s9", [
       const after = await members(ownerToken, ws.uuid);
       const owners = after.filter((m) => m.role === "owner");
       expect(owners.length === 1 && owners[0].email === heirEmail, `owners: ${owners.length}`);
-      const giver = after.find((m) => m.email === "estimator@bench.intelcost.io");
+      const giver = after.find((m) => m.email === SEED);
       expect(giver.role === "admin", `the outgoing owner is ${giver.role}`);
       expect(
         (await pendingTransfer(heirToken, ws.uuid)) === null,
@@ -247,7 +251,7 @@ await run("f3-s9", [
     run: async ({ page }) => {
       const ws = await freshWorkspace("Screen");
       const heir = await seatedMember(ownerToken, ws.uuid, "admin", "s9-screen");
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, SEED);
 
       // Switch to the fresh workspace, so the pass never transfers Bench Construction.
       await page.selectOption("header select", ws.uuid);
@@ -296,7 +300,7 @@ await run("f3-s9", [
     run: async ({ page }) => {
       const ws = await freshWorkspace("ScreenQueue");
       const heirEmail = `s9-screenq-${Date.now()}@bench.intelcost.io`;
-      await signInAs(page, "estimator@bench.intelcost.io");
+      await signInAs(page, SEED);
       await page.selectOption("header select", ws.uuid);
       await page.goto(`${APP}/settings/ownership`);
       await page.waitForSelector("#transfer-target", { timeout: 20000 });

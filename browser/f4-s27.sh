@@ -20,7 +20,9 @@
 set -u
 cd "$(dirname "$0")/.."
 
-node_phase() { docker compose --profile browser run --rm browser node scripts/f4-s27.mjs "$1" 2>&1; }
+# One owner for every pass: the fixture's own account, never the seeded one.
+FX_OWNER="fx.f4-s27.$(date +%s%3N)@bench.intelcost.io"
+node_phase() { docker compose --profile browser run --rm -e FX_OWNER="$FX_OWNER" browser node scripts/f4-s27.mjs "$1" 2>&1; }
 # The bench echoes SQL; keep the drive's own lines, and anything that went wrong. The exit
 # status is the drive's, not grep's.
 drive() {

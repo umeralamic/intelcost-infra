@@ -3,19 +3,21 @@
 //
 // Three phases, because only the database can make a submission eight days old:
 //
-//   docker compose --profile browser run --rm browser node scripts/f4-s12.mjs setup
+//   docker compose --profile browser run --rm browser node scripts/f4-s12.mjs setup   # prints OWNER=…
 //   docker compose exec -T api sh -lc "cd /srv && python drives/f4-s12-age.py"
-//   docker compose --profile browser run --rm browser node scripts/f4-s12.mjs check
+//   docker compose --profile browser run --rm -e FX_OWNER=<OWNER> browser node scripts/f4-s12.mjs check
 //
-// Setup makes a throwaway workspace named "F4-S12 follow-up" with its projects; the drive
+// Setup makes a throwaway workspace named "F4-S12 follow-up", owned by this run's own account
+// (never the seeded one), with its projects; the drive
 // ages those projects' `submitted_at` by name; check reads the dashboard.
 
-import { apiCall, apiLogin, createWorkspace, expect, run } from "./lib/bench.mjs";
+import { apiCall, createWorkspace, expect, fixtureOwner, run } from "./lib/bench.mjs";
 import { makeProject, openDashboard, rowNames } from "./lib/f4.mjs";
 
 const PHASE = process.argv[2];
 const NAME = "F4-S12 follow-up";
-const token = await apiLogin();
+const owner = await fixtureOwner();
+const token = owner.token;
 
 if (PHASE === "setup") {
   const workspace = await createWorkspace(token, NAME);
@@ -33,6 +35,7 @@ if (PHASE === "setup") {
   await makeProject(token, base, { name: "Custom aged 8" }, custom.body.key);
   await makeProject(token, base, { name: "Never submitted" });
   console.log(`setup: ${workspace.uuid}`);
+  console.log(`OWNER=${owner.email}`);
 } else if (PHASE === "check") {
   // The newest by creation, as the drive picks it (by id). The list is ordered by name
   // alone, so among several runs' workspaces of this one name its order is arbitrary, and

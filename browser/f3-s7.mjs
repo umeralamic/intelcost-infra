@@ -19,6 +19,9 @@
 // around the ownership rule without touching it.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
+  shippedWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -38,9 +41,10 @@ import {
   signInAs,
 } from "./lib/bench.mjs";
 
-const SEED = "estimator@bench.intelcost.io";
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+const SEED = (await fixtureOwner()).email;
+// Its own owner and workspace: nothing of this run lands in Bench Construction.
+// Roles-matrix editing is shipped here by the runner (browser/f3-s7.sh).
+const { token: ownerToken, workspace } = await shippedWorkspace("S7 Main");
 
 // A clean slate: an earlier run may have left roles behind, and "delete is refused
 // when held" is one of the things being driven, so leftovers change the answer.

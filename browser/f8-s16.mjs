@@ -2,12 +2,12 @@
 //
 //   docker compose --profile browser run --rm browser node scripts/f8-s16.mjs
 //
-// A throwaway workspace owned by the seeded user (A, :5173), with a fresh estimator
+// A throwaway workspace owned by this run's own account (A, :5173), with a fresh estimator
 // seated in it (B, :5174 through `api-b`), so nothing here moves the bench's own
 // projects. A's acts go through the api unless a line needs A's own window (AC8); B's
 // window is hidden and blurred first, so nothing arrives by a refetch on focus.
 
-import { APP, SEEDED, apiCall, expect, run, seatedMember } from "./lib/bench.mjs";
+import { APP, apiCall, expect, fixtureOwner, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, seedFile, tabStrip } from "./lib/f4.mjs";
 import { APP_B, appSockets, joinedTopic, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 
@@ -140,7 +140,7 @@ await run("f8-s16", [
         t.deleted = await timed(async () => (await tree.getByText("F8 Live 2", { exact: true }).count()) === 0, "B's tree to drop the folder");
 
         // AC8: A's own act in A's own window.
-        await openAs(page, APP, SEEDED, `/project/${project.uuid}`);
+        await openAs(page, APP, await fixtureOwner(), `/project/${project.uuid}`);
         const aTree = page.locator('nav[aria-label="Project folders"]');
         await aTree.getByText("Plans").first().waitFor({ timeout: 15000 });
         const sent = [];

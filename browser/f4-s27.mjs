@@ -8,12 +8,13 @@
 //   after   after the purge: Old trash is off the Trash tab, Recent trash is on it, and
 //           Activity says the nightly job did it.
 
-import { APP, apiCall, createWorkspace, expect, apiLogin, run } from "./lib/bench.mjs";
+import { APP, apiCall, createWorkspace, expect, fixtureOwner, run } from "./lib/bench.mjs";
 import { folderPaths, makeProject, openDashboard, seedFile } from "./lib/f4.mjs";
 
 const PHASE = process.argv[2];
 const NAME = "F4-S27 purge";
-const token = await apiLogin();
+// The runner names this run's own account (FX_OWNER) for all three passes.
+const token = (await fixtureOwner()).token;
 
 /** The newest workspace this fixture made, as the drive picks it. */
 async function newest() {

@@ -13,6 +13,8 @@
 // the new link works, AND the old one is dead.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -33,8 +35,9 @@ import {
 } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
-const SEED = "estimator@bench.intelcost.io";
-const ownerToken = await apiLogin();
+const SEED = (await fixtureOwner()).email;
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
 
 const invitationsIn = async (workspaceUuid) =>
   (await apiCall(ownerToken, "GET", `/api/workspace/${workspaceUuid}/invitation`)).body;

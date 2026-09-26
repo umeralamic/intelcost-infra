@@ -1,17 +1,18 @@
 // F3-S13 — feature flags are not permissions.
 //
-//   docker compose exec -T api sh -lc "cd /srv && python drives/f3-s13-flag.py 'Bench Construction'"
-//   docker compose --profile browser run --rm browser node scripts/f3-s13.mjs
+//   ./browser/f3-s13.sh      (a setup pass makes the shipped workspace, the flag drive rolls
+//                            the flag out to it, then this pass runs)
 //
 // Two gates that look alike and answer different questions:
 //
 //   can("canAssignRoles")               → is this person ALLOWED?
 //   flag("roles_matrix_editing")        → is this feature SHIPPED for them?
 //
-// The flag is off GLOBALLY and on for the bench workspace, which is what makes the
-// separation drivable at all: a freshly created workspace has the editing surface
-// switched off, and Bench Construction has it on. A flag that were on everywhere could
-// only be tested by turning it off, and that would break every fixture that edits.
+// The flag is off GLOBALLY and on for this run's "S13 Shipped" workspace, which is what
+// makes the separation drivable at all: a freshly created workspace has the editing
+// surface switched off, and the shipped one has it on (Bench Construction keeps it on, for
+// the founder). A flag that were on everywhere could only be tested by turning it off,
+// and that would break every fixture that edits.
 //
 // AC5 is the one that needs the built bundle rather than the dev server. `import.meta.env.DEV`
 // is replaced at build time, so the dev override does not merely become unreachable in
@@ -22,21 +23,25 @@ import { readFile, readdir } from "node:fs/promises";
 
 import {
   APP,
+  apiCall,
   apiLogin,
   capabilities,
   createWorkspace,
   expect,
-  firstWorkspace,
+  fixtureOwner,
   flags,
   run,
   seatedMember,
   signInAs,
+  shippedWorkspace,
 } from "./lib/bench.mjs";
 
-const SEED = "estimator@bench.intelcost.io";
+// This run's own account (the runner names it, FX_OWNER), never the seeded one.
+const SEED = (await fixtureOwner()).email;
 const KEY = "roles_matrix_editing";
-const ownerToken = await apiLogin();
-const shipped = await firstWorkspace(ownerToken);
+const ownerToken = (await fixtureOwner()).token;
+// The workspace the flag is rolled out to (browser/f3-s13.sh ships it).
+const { workspace: shipped } = await shippedWorkspace("S13 Shipped");
 
 await run("f3-s13", [
   {

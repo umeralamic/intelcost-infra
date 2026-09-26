@@ -19,18 +19,18 @@ import {
   clearMail,
   createWorkspace,
   expect,
-  firstWorkspace,
   invitationSettled,
   invite,
   inviteTokenFromMail,
   members,
+  ownWorkspace,
   run,
 } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
 
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// A workspace of its own, so its seats never land in Bench Construction.
+const { token: ownerToken, workspace } = await ownWorkspace(`F2-S9 Preview ${Date.now()}`);
 const preview = { role: "estimator" };
 
 /** A fresh invitation to an address with no account, from a named workspace. */

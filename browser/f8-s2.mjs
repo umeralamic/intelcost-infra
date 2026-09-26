@@ -56,8 +56,14 @@ await run("f8-s2", [
           ? route.fulfill({ status: 401, contentType: "application/json", body: '{"detail":"Sign in to continue."}' })
           : route.continue(),
       );
-      await page.click(`a[href="/settings/account"]`);
-      await page.click(`a[href="/settings/members"]`);
+      // The header's own link, once the shell has stopped redrawing. Two links go to
+      // Account (the header's and the email banner's), and the shell redraws as its late
+      // queries land: the workspace list above all, which for the seeded account once held
+      // 860 fixture workspaces. A click aimed at a link mid-redraw found it detached, over
+      // and over, for 30 s (the 2026-09-26 regression).
+      await page.waitForLoadState("networkidle");
+      await page.locator('header a[href="/settings/account"]').click();
+      await page.locator('nav[aria-label="Settings"] a[href="/settings/members"]').click();
 
       await page.waitForURL((url) => url.pathname === "/login", { timeout: 15000 });
       const closed = await waitFor(

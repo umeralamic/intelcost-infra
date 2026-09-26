@@ -8,7 +8,7 @@
 // unfinished. Then `POST …/drawing/load` is driven directly: the dialog that sends it is
 // Block B's (S5, S6).
 
-import { SEEDED, apiCall, expect, run, seatedMember, signInAs } from "./lib/bench.mjs";
+import { apiCall, expect, run, seatedMember } from "./lib/bench.mjs";
 import { discardProject } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, openFiles } from "./lib/f4.mjs";
 import { letterPages, loadPages, makePdf, preparedSheets, sheetsOf, uploadAll } from "./lib/drawings.mjs";

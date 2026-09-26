@@ -5,7 +5,8 @@
 //   docker compose --profile browser run --rm browser node scripts/f8-s13.mjs
 //
 // What is asserted is what DevTools > Network > WS shows on each side, plus B's canvas:
-// A's frames are throttled to 10 a second, B's arrive stamped with A's name and colour,
+// A's frames are throttled to 8 a second, under the api's 10 even when the tab is busy,
+// B's arrive stamped with A's name and colour,
 // A hears none of its own, B on another sheet draws none, a tab closed mid-shape is
 // ended for B by the api, and nothing reaches Postgres until A finishes.
 
@@ -133,7 +134,8 @@ await run("f8-s13", [
         const ownEcho = await drafts(page, "received");
 
         expect(live.length >= 5, `B heard only ${live.length} draft frames`);
-        expect(peakPerSecond(sent.filter((f) => !f.done)) <= 10, `A sent ${peakPerSecond(sent)} a second`);
+        const peak = peakPerSecond(sent.filter((f) => !f.done));
+        expect(peak <= 8, `A sent ${peak} a second, over the client's 8`);
         expect(live.every((f) => f.name === aName && f.colour === aColour), "a frame was not stamped with A's name and colour");
         expect(live.at(-1).points.length >= 3, "the last frame did not carry the run so far");
         expect(end.saved === true, "the end did not say the run was saved");
@@ -141,6 +143,46 @@ await run("f8-s13", [
         await waitFor(async () => (await tag.count()) === 0, "B's tag to hand over to the saved shape", 3000);
         return `B heard ${live.length} frames as "${aName}" (colour ${aColour}), peak ${peakPerSecond(sent.filter((f) => !f.done))}/s sent, then done+saved; A heard 0 of its own; shapes ${before.shapes} → ${before.shapes} mid-shape → ${after.shapes}`;
       } finally {
+        await b.context.close();
+      }
+    },
+  },
+  {
+    title: "Under load: CPU slowed six times and the main thread kept busy, A still sends at most 8 a second, never closer than 125 ms",
+    run: async ({ page, context }) => {
+      const { b } = await twoWindows(page, context);
+      const cdp = await context.newCDPSession(page);
+      try {
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 6 });
+        // Long tasks every 70 ms: timers bunch up behind them, as a busy tab's do.
+        await page.evaluate(() => {
+          window.__busy = setInterval(() => {
+            const until = performance.now() + 50;
+            while (performance.now() < until);
+          }, 70);
+        });
+        await tool(page, "Linear").click();
+        await clickAt(page, [0.2, 0.3]);
+        await sweep(page, [0.2, 0.3], [0.6, 0.35], 3000);
+        await sweep(page, [0.6, 0.35], [0.3, 0.5], 3000);
+        await page.evaluate(() => clearInterval(window.__busy));
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+        await page.keyboard.press("Escape");
+        await tool(page, "Select").click();
+        await page.waitForTimeout(1000);
+        // Read once the pen is up: a frame still waiting on the throttle goes out after
+        // the last move, and B hears it too.
+        const sent = (await drafts(page, "sent")).filter((f) => !f.done);
+        const gaps = sent.slice(1).map((f, i) => f.at - sent[i].at);
+        const closest = Math.min(...gaps);
+        const heard = (await drafts(b.page, "received")).filter((f) => !f.done);
+        expect(sent.length >= 10, `A sent only ${sent.length} frames`);
+        expect(peakPerSecond(sent) <= 8, `A sent ${peakPerSecond(sent)} a second`);
+        expect(closest >= 124, `two frames went ${closest} ms apart`);
+        expect(heard.length === sent.length, `B heard ${heard.length} of ${sent.length}: the api dropped some`);
+        return `${sent.length} frames under load: peak ${peakPerSecond(sent)}/s, closest ${closest} ms apart; B heard all ${heard.length}, none dropped by the api`;
+      } finally {
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 }).catch(() => {});
         await b.context.close();
       }
     },

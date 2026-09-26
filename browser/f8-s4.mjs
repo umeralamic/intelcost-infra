@@ -2,14 +2,13 @@
 //
 //   docker compose --profile browser run --rm browser node scripts/f8-s4.mjs
 
-import { APP, SEEDED, apiCall, apiLogin, createWorkspace, discardProject, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, createWorkspace, discardProject, expect, ownWorkspace, run, signInAs } from "./lib/bench.mjs";
 import { appSockets, rawSocket, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
 
-const SECOND = "F8-S4 second workspace";
-const token = await apiLogin();
-const listed = (await apiCall(token, "GET", "/api/workspace")).body;
-const second = listed.find((w) => w.name === SECOND) ?? (await createWorkspace(token, SECOND));
-const first = listed.find((w) => w.uuid !== second.uuid);
+// Two workspaces of this run's own account, never the seeded one: the tab starts in the
+// first and the switcher moves it to the second.
+const { owner, token, workspace: first } = await ownWorkspace(`F8-S4 first ${Date.now()}`);
+const second = await createWorkspace(token, `F8-S4 second ${Date.now()}`);
 
 const project = (
   await apiCall(token, "POST", `/api/workspace/${first.uuid}/project`, { name: `F8-S4 topic ${Date.now()}` })
@@ -25,7 +24,7 @@ await run("f8-s4", [
     run: async ({ page, context }) => {
       await recordSockets(context);
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), first.uuid);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, SEEDED.password);
       await readySocket(page);
       const from = `ws:${first.uuid}`;
       const to = `ws:${second.uuid}`;
@@ -77,7 +76,7 @@ await run("f8-s4", [
     title: "AC4: two subscribers to one topic send one join; the first to leave sends nothing, the last sends leave",
     run: async ({ page, context }) => {
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, owner.email, SEEDED.password);
       await readySocket(page);
       const topic = `ws:${first.uuid}:project:${project.uuid}`;
       // The socket module the app itself loaded, by the exact URL it loaded: once Vite has

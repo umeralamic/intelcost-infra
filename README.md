@@ -134,14 +134,32 @@ which makes a wrong quantity obvious instead of arguable.
 Re-running is safe: it signs in rather than failing on the duplicate user, and skips
 the upload rather than piling up sheets. `--reset` seeds a fresh timestamped user.
 
-**Keep Bench Construction clean.** A fixture that makes projects makes them in a
-workspace of its own, or discards them when it is done (`discardProject` in
-`browser/lib/bench.mjs`: to Trash, then deleted permanently). Fixtures that seat members
-still seat them in the seeded workspace, and `regress.sh` ends with
-`browser/bench-tidy.mjs`, which removes fixture projects and seats **by name only**
-(`<prefix> <13-digit stamp>`, `<tag>-<role>-<stamp>@bench.intelcost.io`), never the owner,
-Riverside, or anything made by hand, and puts Sara W. back to Estimator. Run it alone with
-`docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs [--dry]`.
+**Keep the seeded account and Bench Construction clean** (the founder, 2026-09-26; the
+seeded account's switcher once held 860 fixture workspaces).
+
+- **A fixture never makes a workspace as estimator@bench.intelcost.io.** It makes them as
+  its own throwaway account, `fixtureOwner()` in `browser/lib/bench.mjs`
+  (`fx.<fixture>.<stamp>@bench.intelcost.io`, one per run), through `ownWorkspace`,
+  `freshWorkspace` (`lib/f4.mjs`) or `shippedWorkspace`. A phased fixture's runner names
+  the account once (`FX_OWNER`) for every pass. A fixture that edits the roles matrix on
+  screen runs through `browser/lib/shipped.sh`, which ships the editing flag to its
+  workspace first (`f3-s6`, `f3-s7`, `f3-s13`).
+- **`regress.sh` checks and cleans up.** It snapshots the seeded account's workspaces
+  first and fails the run if it gained one (`seeded-ws`). At the end it deletes every
+  workspace a fixture account or a fixture's seat owns (`fx-cleanup`,
+  `drives/bench-workspaces.py purge-fx`: rows by cascade, storage by prefix), then
+  `browser/bench-tidy.mjs` removes fixture projects and seats left in Bench Construction
+  **by name only** (`<prefix> <13-digit stamp>`, `<tag>-<role>-<stamp>@bench.intelcost.io`),
+  never the owner, Riverside, or anything made by hand, and puts Sara W. back to Estimator.
+  Run a single fixture through `./regress.sh <name>` and the same happens.
+- **Still signing in as the seeded account, until F5-S9:** the fixtures that draw on
+  Riverside in Bench Construction (the F8 two-window ones, `p19`, `proof-backlog`,
+  `f5-s3`). They make no workspace. F5-S9 moves the seed to `/drawing/load`, and they move
+  to a per-run copy of Riverside in a workspace of their own then.
+- **Made for the founder on purpose,** as the seeded account: `f5-demo.mjs` and
+  `walkthrough-setup.mjs`. Neither is in the regression.
+- `docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py report"`
+  lists the seeded account's workspaces by kind.
 
 ## The frontend
 

@@ -184,6 +184,62 @@ export async function apiRegister(email, password, fullName) {
   return response.status;
 }
 
+/**
+ * This fixture run's own throwaway account, made on first use and reused for the rest of
+ * the run: `fx.<fixture>.<stamp>@bench.intelcost.io`.
+ *
+ * **A fixture never makes a workspace as the seeded account.** Every workspace it makes
+ * belongs to this account instead, so estimator@bench.intelcost.io's switcher holds only
+ * Bench Construction and what the founder made by hand (it once held 860 fixture
+ * workspaces). `regress.sh` ends by deleting every workspace a `fx.` account owns
+ * (`drives/bench-workspaces.py`), and checks the seeded account gained none.
+ */
+let ownerPromise;
+export function fixtureOwner() {
+  ownerPromise ??= (async () => {
+    // A phased fixture's later passes are the same run: the setup pass prints OWNER=…,
+    // and its runner hands it back here.
+    if (process.env.FX_OWNER) {
+      const email = process.env.FX_OWNER;
+      await apiRegister(email, SEEDED.password, "Fixture Owner"); // 409 on every pass after the first
+      return { email, password: SEEDED.password, token: await apiLogin(email, SEEDED.password) };
+    }
+    const fixture = path.basename(process.argv[1] ?? "fixture", ".mjs").replace(/[^a-z0-9-]/gi, "");
+    const email = `fx.${fixture}.${Date.now()}@bench.intelcost.io`;
+    const password = SEEDED.password;
+    await apiRegister(email, password, "Fixture Owner");
+    return { email, password, token: await apiLogin(email, password) };
+  })();
+  return ownerPromise;
+}
+
+/** A workspace of this run's own, owned by `fixtureOwner()`. */
+export async function ownWorkspace(name) {
+  const owner = await fixtureOwner();
+  const workspace = await createWorkspace(owner.token, name);
+  return { owner, token: owner.token, workspace, base: `/api/workspace/${workspace.uuid}/project` };
+}
+
+/**
+ * A workspace of this run's own account with roles-matrix editing shipped (F3-S13's flag),
+ * for the fixtures that edit the matrix on screen. Rolling a flag out is an operator's act
+ * with no api route, so it takes two passes and a drive, which `browser/lib/shipped.sh`
+ * runs: the setup pass (SETUP=1) makes the workspace, prints SHIPPED=<name> and exits; the
+ * drive ships the flag to it; the main pass finds it here by name.
+ */
+export async function shippedWorkspace(tag) {
+  const owner = await fixtureOwner();
+  if (process.env.SETUP === "1") {
+    const made = await createWorkspace(owner.token, `${tag} ${Date.now()}`);
+    console.log(`SHIPPED=${made.name}`);
+    process.exit(0);
+  }
+  const listed = (await apiCall(owner.token, "GET", "/api/workspace")).body;
+  const workspace = listed.find((w) => w.name === process.env.SHIPPED);
+  if (!workspace) throw new Error("run this fixture through its .sh runner, which ships the flag first");
+  return { owner, token: owner.token, workspace };
+}
+
 export async function firstWorkspace(token) {
   const response = await fetch(await fromNode(`${API}/api/workspace`), {
     headers: { authorization: `Bearer ${token}` },

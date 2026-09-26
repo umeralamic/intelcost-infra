@@ -4,7 +4,7 @@
 //
 // Needs the realtime profile (window B on :5174).
 
-import { APP, SEEDED, apiLogin, createWorkspace, expect, firstWorkspace, run } from "./lib/bench.mjs";
+import { APP, SEEDED, apiLogin, expect, firstWorkspace, ownWorkspace, run } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, call, ensureWindowB, joinedTopic, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { setMode } from "./lib/takeoff.mjs";
 
@@ -17,7 +17,8 @@ await run("f8-s10", [
   {
     title: "AC1: a new workspace reads Work together",
     run: async () => {
-      const made = await createWorkspace(token, `F8-S10 fresh ${Date.now()}`);
+      // Made by this run's own account, so the seeded account never gains a workspace.
+      const { workspace: made } = await ownWorkspace(`F8-S10 fresh ${Date.now()}`);
       expect(made.collaboration_mode === "work_together", `a new workspace reads ${made.collaboration_mode}`);
       return "work_together";
     },

@@ -13,6 +13,8 @@
 // A throwaway workspace per run, so the strip starts at the defaults every time.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   SEEDED,
   apiCall,
@@ -24,7 +26,9 @@ import {
   signInAs,
 } from "./lib/bench.mjs";
 
-const ownerToken = await apiLogin();
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
+const OWNER = (await fixtureOwner()).email;
 const workspace = await createWorkspace(ownerToken, `F4-S4 tabs ${Date.now()}`);
 const tabPath = `/api/workspace/${workspace.uuid}/project-status/tab`;
 const statusPath = `/api/workspace/${workspace.uuid}/project-status`;
@@ -38,7 +42,7 @@ async function tabs(token = ownerToken) {
   return response.body;
 }
 
-async function openTabs(page, email = SEEDED.email) {
+async function openTabs(page, email = OWNER) {
   await signInAs(page, email, SEEDED.password);
   await page.selectOption("header select", workspace.uuid).catch(() => {});
   await page.goto(`${APP}/settings/statuses`);

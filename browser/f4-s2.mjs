@@ -12,6 +12,8 @@
 // primitive is driven by keyboard, because a control only a mouse can reach is not done.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   SEEDED,
   apiCall,
@@ -25,7 +27,9 @@ import {
 
 // AC4 creates a project. It does so in a workspace of its own, discarded at the end,
 // so the seeded Bench Construction never collects it.
-const ownerToken = await apiLogin();
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
+const OWNER = (await fixtureOwner()).email;
 const workspace = await createWorkspace(ownerToken, `F4-S2 dialog ${Date.now()}`);
 
 const GALLERY = `${APP}/dev/ui`;
@@ -171,7 +175,7 @@ await run("f4-s2", [
     // rather than being refused on submit, and the list shows rows, not card headings.
     title: "AC4 — New project opens the dialog, holds a blank name back, creates, toasts and lands on it",
     run: async ({ page }) => {
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, OWNER, SEEDED.password);
       await page.selectOption("header select", workspace.uuid);
       await page.goto(`${APP}/`);
       await page.getByRole("button", { name: "New project" }).click();

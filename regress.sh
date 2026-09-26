@@ -34,6 +34,10 @@ fixture() {
 # F8 from S5 on needs window B's app and api (the realtime profile). Idempotent.
 docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1
 
+drive_ws() { docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py $*" 2>&1 | grep -E '^(snapshot|check|purged|FAIL)|Traceback'; }
+# What the seeded account is in before the run: a fixture must never add to it.
+drive_ws snapshot /tmp/seeded-before >/dev/null
+
 if ! fixture bench-code; then
   echo "bench-code failed: the api or the worker runs old code. Nothing else was run."
   exit 1
@@ -83,6 +87,13 @@ done
 # them, and any fixture project, by name only (browser/bench-tidy.mjs says what it takes).
 docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs >"$LOG/bench-tidy.log" 2>&1 \
   && printf '%-12s %s\n' "bench-tidy" "$(grep -E '^removed' "$LOG/bench-tidy.log")"
+
+# Every workspace a fixture's own account made goes, and the seeded account must not have
+# gained one (the founder's switcher once held 860). A gain fails the run.
+printf '%-12s %s\n' "fx-cleanup" "$(drive_ws purge-fx)"
+seeded_check=$(drive_ws check /tmp/seeded-before)
+printf '%-12s %s\n' "seeded-ws" "$seeded_check"
+grep -q '^FAIL' <<<"$seeded_check" && failed=$((failed + 1))
 
 echo
 echo "$failed of ${#list[@]} fixtures failed. Full output: $LOG/"

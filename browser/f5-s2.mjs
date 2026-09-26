@@ -13,7 +13,7 @@
 
 import { access } from "node:fs/promises";
 
-import { APP, SEEDED, apiCall, discardProject, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, discardProject, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { letterPages, loadPages, makePdf, makePng, preparedSheets, sheetsOf, uploadAll } from "./lib/drawings.mjs";
 import { appSockets, recordSockets, waitFor } from "./lib/realtime.mjs";
@@ -75,7 +75,7 @@ await run("f5-s2", [
       const sheet = loaded.body.sheets[0];
 
       await recordSockets(context);
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
       await page.selectOption("header select", workspace.uuid).catch(() => {});
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
       await page.getByText("This sheet has no image").waitFor({ timeout: 20000 });

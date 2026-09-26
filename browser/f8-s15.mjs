@@ -13,6 +13,7 @@ import {
   apiCall,
   apiLogin,
   createWorkspace,
+  ownWorkspace,
   expect,
   firstWorkspace,
   run,
@@ -191,19 +192,20 @@ await run("f8-s15", [
   {
     title: "AC6: A transfers ownership to B; both windows change role with no reload",
     run: async ({ page, context }) => {
-      const own = await createWorkspace(token, `F8-S15 Handover ${Date.now() % 100000}`);
-      const member = await seatedMember(token, own.uuid, "estimator", "f8s15own");
+      // A workspace of this run's own account to hand over, never the seeded one's.
+      const { owner, token: ownerToken, workspace: own } = await ownWorkspace(`F8-S15 Handover ${Date.now() % 100000}`);
+      const member = await seatedMember(ownerToken, own.uuid, "estimator", "f8s15own");
       const me = (await call(member.token, "GET", "/api/auth/me")).body;
       await recordSockets(context);
       const b = await secondWindow(context);
       try {
-        await openAs(page, APP, SEEDED, own.uuid);
+        await openAs(page, APP, owner, own.uuid);
         await openAs(b.page, APP_B, member, own.uuid);
         const standing = (p) => p.locator("[data-standing]").textContent();
         expect((await standing(page)) === "Owner" && (await standing(b.page)) === "Estimator", "the roles did not start as owner and estimator");
         await unfocus(page);
         await unfocus(b.page);
-        const done = await apiCall(token, "POST", `/api/workspace/${own.uuid}/ownership`, {
+        const done = await apiCall(ownerToken, "POST", `/api/workspace/${own.uuid}/ownership`, {
           user_uuid: me.uuid,
           confirm_name: own.name,
         });

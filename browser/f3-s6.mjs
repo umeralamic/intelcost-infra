@@ -18,6 +18,9 @@
 // workspace can support.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
+  shippedWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -37,10 +40,11 @@ import {
 } from "./lib/bench.mjs";
 
 const LOCKED = ["canManageWorkspace", "canGrantOwnerRole", "canEditEstimates"];
-const SEED = "estimator@bench.intelcost.io";
+const SEED = (await fixtureOwner()).email;
 
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+// Its own owner and workspace: nothing of this run lands in Bench Construction.
+// Roles-matrix editing is shipped here by the runner (browser/f3-s6.sh).
+const { token: ownerToken, workspace } = await shippedWorkspace("S6 Main");
 const other = await createWorkspace(ownerToken, `S6 Other ${Date.now()}`);
 
 const column = (answer, role) => answer.columns.find((c) => c.role === role);

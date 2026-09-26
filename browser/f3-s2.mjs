@@ -28,30 +28,37 @@ import {
   capabilities,
   createWorkspace,
   expect,
-  firstWorkspace,
+  fixtureOwner,
   run,
   seatedMember,
 } from "./lib/bench.mjs";
 
 const PASSWORD = "bench-password-1";
-const ownerToken = await apiLogin();
+// The setup pass makes this run's owner and hands it to the main pass (OWNER), with an
+// expired-trial workspace (WORKSPACE) and one with no trial window at all (UNTRIALLED),
+// both the owner's. The seeded account is never used.
+const owner = process.env.SETUP === "1" ? await fixtureOwner() : null;
+const ownerToken = owner ? owner.token : await apiLogin(process.env.OWNER, PASSWORD);
 
 if (process.env.SETUP === "1") {
   const workspace = await createWorkspace(ownerToken, `S2 Trial ${Date.now()}`);
+  const untrialled = await createWorkspace(ownerToken, `S2 No window ${Date.now()}`);
   const staff = await seatedMember(ownerToken, workspace.uuid, "takeoff", "s2-staff");
   console.log(`WORKSPACE=${workspace.uuid}`);
+  console.log(`UNTRIALLED=${untrialled.uuid}`);
+  console.log(`OWNER=${owner.email}`);
   console.log(`STAFF=${staff.email}`);
   process.exit(0);
 }
 
 const expiredUuid = process.env.WORKSPACE;
 const staffEmail = process.env.STAFF;
-if (!expiredUuid || !staffEmail) {
+const untrialledUuid = process.env.UNTRIALLED;
+if (!expiredUuid || !staffEmail || !untrialledUuid || !process.env.OWNER) {
   console.error("Run the SETUP pass first; see the header.");
   process.exit(2);
 }
 const staffToken = await apiLogin(staffEmail, PASSWORD);
-const live = await firstWorkspace(ownerToken);
 
 await run("f3-s2", [
   {
@@ -101,10 +108,10 @@ await run("f3-s2", [
       // D-18 stamps a null window when the resolved tier had no rule. Reading "we
       // never granted a trial" as "the trial ran out" would lock out every workspace
       // created during a geo outage, which is the fail-open rule inverted.
-      const map = (await capabilities(ownerToken, live.uuid)).capabilities;
+      const map = (await capabilities(ownerToken, untrialledUuid)).capabilities;
       const held = Object.values(map).filter(Boolean).length;
       expect(held === 25, `the owner of an untrialled workspace holds ${held} of 25`);
-      return `${live.name}: no window, 25 of 25`;
+      return "a workspace with no trial window: 25 of 25";
     },
   },
   {
@@ -114,7 +121,7 @@ await run("f3-s2", [
       // expired workspace keeps canInviteMembers, so the invite form is still there;
       // it loses canEditTakeoff, which no screen reads until F3-S3.
       await page.goto(`${APP}/login`);
-      await page.fill("#email", "estimator@bench.intelcost.io");
+      await page.fill("#email", process.env.OWNER);
       await page.fill("#password", PASSWORD);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });

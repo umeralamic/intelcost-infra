@@ -12,6 +12,8 @@
 // same rules are proved through the settings screen and the api.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   SEEDED,
   activity,
@@ -24,7 +26,9 @@ import {
   signInAs,
 } from "./lib/bench.mjs";
 
-const ownerToken = await apiLogin();
+// This run's own owner: nothing of it lands in the seeded account.
+const ownerToken = (await fixtureOwner()).token;
+const OWNER = (await fixtureOwner()).email;
 const workspace = await createWorkspace(ownerToken, `F4-S3 statuses ${Date.now()}`);
 const statusPath = `/api/workspace/${workspace.uuid}/project-status`;
 const projectPath = `/api/workspace/${workspace.uuid}/project`;
@@ -51,7 +55,7 @@ async function project(tag, statusKey) {
 }
 
 /** The owner, on this fixture's workspace, on the Statuses page. */
-async function openStatuses(page, email = SEEDED.email) {
+async function openStatuses(page, email = OWNER) {
   await signInAs(page, email, SEEDED.password);
   await page.selectOption("header select", workspace.uuid).catch(() => {});
   await page.goto(`${APP}/settings/statuses`);
@@ -287,7 +291,7 @@ await run("f4-s3", [
       for (const action of ["status.updated", "status.created", "status.reordered", "status.hidden", "status.deleted"]) {
         expect(actions.has(action), `no ${action} in the feed`);
       }
-      await signInAs(page, SEEDED.email, SEEDED.password);
+      await signInAs(page, OWNER, SEEDED.password);
       await page.selectOption("header select", workspace.uuid).catch(() => {});
       await page.goto(`${APP}/settings/activity`);
       await page.getByText("changed the project status Out to bid").waitFor({ timeout: 20000 });

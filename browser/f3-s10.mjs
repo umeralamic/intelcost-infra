@@ -17,6 +17,8 @@
 // carries them.
 
 import {
+  fixtureOwner,
+  ownWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -31,9 +33,9 @@ import {
   updateWorkspace,
 } from "./lib/bench.mjs";
 
-const SEED = "estimator@bench.intelcost.io";
-const ownerToken = await apiLogin();
-const workspace = await firstWorkspace(ownerToken);
+const SEED = (await fixtureOwner()).email;
+// Its own owner and workspace: nothing of this run lands in Bench Construction.
+const { token: ownerToken, workspace } = await ownWorkspace(`S10 Main ${Date.now()}`);
 
 /** A one-pixel PNG, as bytes, so the logo path is driven with a real image. */
 const PNG = Buffer.from(
