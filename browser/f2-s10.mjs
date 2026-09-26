@@ -35,9 +35,11 @@ async function freshLink(tag) {
 
 const open = async (page, token) => {
   await page.goto(`${APP}/reset-password?token=${encodeURIComponent(token)}`);
-  // The check is a round trip, so the first paint is "Checking your link".
+  // The check is a round trip, so the page first reads "Checking your link". Since P-18
+  // the page is its own chunk, and before that the route's "Loading" shows: wait for the
+  // page's heading as well, or the wait ends before the page has drawn at all.
   await page.waitForFunction(
-    () => !document.body.textContent.includes("Checking your link"),
+    () => document.querySelector("h1") !== null && !document.body.textContent.includes("Checking your link"),
     undefined,
     { timeout: 20000 },
   );

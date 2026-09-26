@@ -110,12 +110,16 @@ await run("f2-s12", [
 
       await page.click('a:has-text("Create one")');
       await page.waitForURL(/\/signup/, { timeout: 15000 });
+      // Since P-18 the page is its own chunk: its title lands when it mounts, a moment
+      // after the URL changes, so wait for the title to move rather than read it at once.
+      await page.waitForFunction((t) => document.title !== t, first, { timeout: 15000 });
       const second = await titleOf(page);
 
       await page.goBack();
       await page.waitForURL(/\/login/, { timeout: 15000 });
       await page.click('a:has-text("Forgot your password?")');
       await page.waitForURL(/\/forgot-password/, { timeout: 15000 });
+      await page.waitForFunction((t) => document.title !== t, first, { timeout: 15000 });
       const third = await titleOf(page);
 
       expect(new Set([first, second, third]).size === 3, `titles: ${first} | ${second} | ${third}`);

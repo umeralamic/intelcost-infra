@@ -81,8 +81,10 @@ await run("f2-s14", [
       await signUp(page, { email, name: "S14 Blank" });
 
       await page.goto(`${APP}/settings/account`);
+      // The name is in the top bar too; wait for it in the page's own section, which
+      // since P-18 draws a moment after the bar (the page is its own chunk).
       await page.waitForFunction(
-        () => document.body.textContent.includes("S14 Blank"),
+        () => document.querySelector("section")?.textContent?.includes("S14 Blank") ?? false,
         undefined,
         { timeout: 20000 },
       );

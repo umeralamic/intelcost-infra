@@ -13,8 +13,8 @@ progress checklist while the night runs, and the morning report when it ends._
 | 3 | F8 Block F: Caddy note, STATUS, PARITY, full regression, close F8, backup | ✅ Done. Regression 46/46. F8 closed and archived; backup `E:\Intelcost-backup\2026-09-26_0148-f8-closed` | 00:54 | 01:50 | api, app, infra: "F8 close-out" |
 | 4 | F5 spec (`takeoff_shell_tasks.md`) | ✅ Done. 19 subtasks in 6 blocks, 9 questions; F5 on the board as Blocked on the answers | 00:58 | 01:52 | infra: "F5 specced" (mirror) |
 | 5 | Proof backlog fixtures | ✅ Done. 15 lines driven by `browser/proof-backlog.mjs`: 9 pass and are ticked, 6 are real gaps recorded as findings and their PARITY status corrected. Three fixture faults fixed on the way (a selector, a click below the window, a collapsed list); no app change | 01:53 | 02:02 | infra: "Proof backlog" |
-| 6 | P-19: phone width | ✅ Done. `p19` 2/2 at 375×667 and 1440×900 (was: top bar 222 px over, pages 474 px sideways, tab row 57 px over at desktop). Touched fixtures 8/8 | 02:03 | 02:40 | app, infra: "P-19" |
-| 7 | P-18: route-level code splitting | ☐ | | | |
+| 6 | P-19: phone width | ✅ Done. `p19` 2/2 at 375×667 and 1440×900 (was: top bar 222 px over, pages 474 px sideways, tab row 57 px over at desktop). Touched fixtures 8/8 | 02:03 | 02:23 | app, infra: "P-19" |
+| 7 | P-18: route-level code splitting | ✅ Done. **Main chunk 664.74 → 231.87 kB; the dashboard's first load 664.74 → 454.72 kB (gzip 196 → ~141 kB)**. No behaviour change beyond a brief "Loading" while a page's chunk arrives. Three F2 fixtures read the page a moment too early once pages loaded lazily; their waits fixed (f2-s10, s12, s14), all pass; stale-chunk f2-s13 4/4; bundle drives pass | 02:24 | 02:40 | app, infra: "P-18" |
 | 8 | F6 spec | ☐ | | | |
 | 9 | `docs/flows.md` | ☐ | | | |
 | 10 | Final regression, morning report | ☐ | | | |
