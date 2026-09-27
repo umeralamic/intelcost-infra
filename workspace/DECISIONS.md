@@ -2050,3 +2050,35 @@ no one else.
   worker is resumed as before.
 - Production (Abdullah, D-11): nothing new to run. The lock uses the Redis the worker
   already has.
+
+---
+
+## D-46 — Draft and cursor frames are limited by rate over time, not per strict second
+
+**Date:** 2026-09-27
+**Status:** Accepted (a fault with a cause, found by D-44's parallel runs; amends D-33)
+**Area:** Backend
+
+**Context:** f8-s13's under-load step failed only with other fixtures running: B heard
+213 of 232 of A's draft frames. The page sent at most 8 a second, never closer than 125 ms
+apart. The api counted frames in a sliding one-second window, measured when it processed
+each frame. With the api's event loop busy serving other fixtures, a backlog of well-spaced
+frames was read in one go, counted as a burst, and every frame over 10 in that window was
+dropped. The frames were fine; the clock was the api's, not the sender's.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Raise the limit | One number | A tab could send faster for good; the fault stays, just rarer |
+| B — A token bucket: 10 a second sustained, up to 10 at once (`DRAFT_BURST`) | A backlog read at once passes; a tab sending over 10 a second is still cut to 10 | A flood's first 10 frames get through at once |
+
+**Decision:** Option B.
+- The same rule for cursor frames.
+- The end of a shape is still never dropped.
+- The api logs how many frames a shape lost to the rate when it ends.
+
+**Consequences:**
+- Drafts are previews, so a short burst after a stall costs nothing.
+- A new f8-s13 step floods 40 frames in a second from a hand-written socket. B must hear at
+  most the burst plus one second's rate.

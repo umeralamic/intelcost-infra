@@ -10,20 +10,21 @@
 // A hears none of its own, B on another sheet draws none, a tab closed mid-shape is
 // ended for B by the api, and nothing reaches Postgres until A finishes.
 
-import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
+import { APP, SEEDED, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
 import {
   APP_B,
   WINDOW_B,
   appSockets,
   call,
   ensureWindowB,
+  rawSocket,
   readySocket,
   recordSockets,
   secondWindow,
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
-import { clickSheet, onProjectTopic, openSheet, removeItem, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
+import { clickSheet, onProjectTopic, openSheet, projectTopicOf, removeItem, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -180,6 +181,45 @@ await run("f8-s13", [
         return `${sent.length} frames under load: peak ${peakPerSecond(sent)}/s, closest ${closest} ms apart; B heard all ${heard.length}, none dropped by the api`;
       } finally {
         await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 }).catch(() => {});
+        await b.context.close();
+      }
+    },
+  },
+  {
+    title: "A flood is still cut (D-46): 40 draft frames in one second from a hand-written socket; B hears the burst and one second's rate, no more",
+    run: async ({ page, context }) => {
+      const { b } = await twoWindows(page, context);
+      try {
+        const topic = projectTopicOf(r);
+        const since = await b.page.evaluate(() => Date.now());
+        const frame = (i) => ({
+          type: "draft",
+          topic,
+          sheet_uuid: r.sheet,
+          tool: "lf",
+          points: [[0.1, 0.1], [0.1 + i / 100, 0.2]],
+        });
+        const flood = await rawSocket(
+          page,
+          [{ type: "auth", token, client_id: crypto.randomUUID() }, { type: "join", topic }, ...Array.from({ length: 40 }, (_, i) => frame(i))],
+          3000,
+          25,
+        );
+        expect(flood.heard.some((f) => f.type === "joined"), `the flood socket never joined: ${JSON.stringify(flood.heard.slice(0, 3))}`);
+        const heard = await waitFor(async () => {
+          const got = (await drafts(b.page, "received")).filter((f) => f.at >= since && !f.done);
+          return got.length >= 10 ? got : null;
+        }, "B to hear the flood's first burst", 5000);
+        await quietFor(1500); // anything the api let through has arrived
+        const all = (await drafts(b.page, "received")).filter((f) => f.at >= since && !f.done);
+        // The api's rule, over the time the flood actually took to arrive (a busy page
+        // stretches its 25 ms steps): 10 at once, then 10 a second, plus one for rounding.
+        const span = (all.at(-1).at - all[0].at) / 1000;
+        const allowed = Math.floor(10 + 10 * span) + 1;
+        expect(all.length < 40, `B heard all 40: nothing was cut`);
+        expect(all.length <= allowed, `B heard ${all.length} of 40 over ${span.toFixed(2)} s; the rule allows ${allowed}`);
+        return `40 sent; B heard ${all.length} over ${span.toFixed(2)} s (the rule allows ${allowed}; first ${heard.length} as a burst), the rest dropped`;
+      } finally {
         await b.context.close();
       }
     },
