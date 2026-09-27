@@ -14,7 +14,7 @@
 // The files are stored by the drive, not uploaded, so they are "uploaded before D-41":
 // Choose pages starts their preparation on first open, and counts their pages at once.
 
-import { APP, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, apiCall, apiLogin, expect, run, signInAs } from "./lib/bench.mjs";
 
 const [email, workspaceUuid, projectUuid] = (process.env.F5_BIG ?? "").split(" ");
 const BIG = Number(process.env.F5_BIG_BYTES);
@@ -85,6 +85,29 @@ const aspects = (section) =>
 
 await run("f5-big", [
   {
+    title: "D-43: a Load while the set's thumbnails are still being made is not held behind them: the page is drawn in about 10 s",
+    run: async ({ page, context }) => {
+      const seen = watch(page, context);
+      const { dialog, section } = await openChooser(page, "Big set.pdf");
+      await section.locator('[data-page="150"]').waitFor({ timeout: 20000 });
+      await section.getByRole("button", { name: "Clear" }).click();
+      await section.locator('[data-page="1"]').getByRole("checkbox").check();
+      await dialog.locator("[data-load-pages]").click();
+      await page.getByText("Added 1 page").waitFor({ timeout: 30000 });
+      const t0 = Date.now();
+      await page.locator('img[data-sheet-image="pdf"]').waitFor({ timeout: 60000 });
+      const took = Date.now() - t0;
+      const token = await apiLogin(email, "bench-password-1");
+      const files = await apiCall(token, "GET", `/api/workspace/${workspaceUuid}/project/${projectUuid}/file`);
+      const big = files.body.find((f) => f.file_name === "Big set.pdf");
+      const pages = await apiCall(token, "GET", `/api/workspace/${workspaceUuid}/project/${projectUuid}/file/${big.uuid}/pages`);
+      expect(pages.body.status === "preparing" && pages.body.prepared < 150, `the thumbnails were done first (${pages.body.status}, ${pages.body.prepared} of 150): nothing was proved`);
+      expect(took <= 20000, `the page took ${took} ms to draw with thumbnails being made`);
+      nothingIdmTakes(seen);
+      return `page 1 drawn ${took} ms after "Added 1 page", while thumbnails stood at ${pages.body.prepared} of 150`;
+    },
+  },
+  {
     title: "Choose pages on a 400 MB+ PDF never read by the browser: every tile at once, \"Preparing pages N of M\", thumbnails as plain WebP GETs",
     run: async ({ page, context }) => {
       expect(BIG >= 400 * 1024 * 1024, `the big file is ${BIG} bytes`);
@@ -92,8 +115,11 @@ await run("f5-big", [
       const { section, t0 } = await openChooser(page, "Big set.pdf");
       await section.locator("[data-page]").nth(149).waitFor({ timeout: 20000 });
       const laidOut = Date.now() - t0;
-      const progress = (await section.locator("[data-pages-progress]").textContent({ timeout: 5000 }).catch(() => "")).trim();
-      expect(/^Preparing pages( \d+ of 150)?$/.test(progress), `the progress line reads "${progress}"`);
+      // Step 1's Load gave the worker a head start: the set may be finished already, and
+      // then there is no progress line.
+      const progress = (await section.locator("[data-pages-progress]").textContent({ timeout: 3000 }).catch(() => "")).trim();
+      const status = await section.getAttribute("data-pages-status");
+      expect(/^Preparing pages( \d+ of 150)?$/.test(progress) || (status === "ready" && progress === ""), `the progress line reads "${progress}" (${status})`);
       await section.locator('[data-thumbnail="shown"] img').first().waitFor({ timeout: 60000 });
       const first = Date.now() - t0;
       // Every thumbnail made: each tile has its image. Tiles load lazily, so only those
@@ -144,15 +170,19 @@ await run("f5-big", [
       const { dialog, section } = await openChooser(page, "Big set.pdf");
       await section.locator("[data-page]").nth(149).waitFor({ timeout: 20000 });
       await section.getByRole("button", { name: "Clear" }).click();
-      await section.locator('[data-page="1"]').getByRole("checkbox").check();
+      // Page 1 went in with the first step.
+      await section.locator('[data-page="2"]').getByRole("checkbox").check();
       await dialog.locator("[data-load-pages]").click();
       await page.getByText("Added 1 page").waitFor({ timeout: 30000 });
       const t0 = Date.now();
       await page.locator('img[data-sheet-image="pdf"]').waitFor({ timeout: 120000 });
       const took = Date.now() - t0;
       nothingIdmTakes(seen);
-      expect(seen.sheetPdfs.length === 1, `${seen.sheetPdfs.length} reads of the sheet's PDF`);
-      const [pdf] = seen.sheetPdfs;
+      // The takeoff page opened on page 1 (loaded in the first step) before this Load
+      // landed on page 2: page 2's file is read once.
+      const reads = seen.sheetPdfs.filter((r) => /\/2(\.pdf)?$/.test(r.path));
+      expect(reads.length === 1, `${reads.length} reads of page 2's PDF`);
+      const [pdf] = reads;
       expect(
         pdf.status === 200 && pdf.type === "application/vnd.intelcost.sheet" && !pdf.range && !pdf.disposition && !/\.pdf$/i.test(pdf.path),
         `the sheet's PDF: ${JSON.stringify(pdf)}`,
@@ -160,7 +190,7 @@ await run("f5-big", [
       // pdf.js was handed bytes: nothing of pdf.js's own reached the network.
       const pdfAnything = [...seen.other, ...seen.thumbnails].filter((r) => /pdf/i.test(r.type ?? ""));
       expect(pdfAnything.length === 0, `something answered as a PDF: ${JSON.stringify(pdfAnything[0])}`);
-      return `drawn by pdf.js ${took} ms after "Added 1 page" · its bytes: one GET of …/pages/{file}/1, 200 application/vnd.intelcost.sheet, ${(pdf.length / 1024).toFixed(0)} KB, no Range, no Content-Disposition; the set: 0 requests`;
+      return `drawn by pdf.js ${took} ms after "Added 1 page" · its bytes: one GET of …/pages/{file}/2, 200 application/vnd.intelcost.sheet, ${(pdf.length / 1024).toFixed(0)} KB, no Range, no Content-Disposition; the set: 0 requests`;
     },
   },
   {

@@ -159,6 +159,20 @@ services:
       api:
         condition: service_started
 
+  # Choose pages' thumbnails, on their own queue (D-43). A 268-page set takes minutes to
+  # thumbnail; on the worker above it held up the Load right after it, and a person who
+  # uploads a set and loads pages at once waited over a minute. This one serves only
+  # `previews`, one set at a time, at the lowest CPU priority (`nice -n 19`), so a Load
+  # on the worker above always comes first. Production runs the same split (a second
+  # worker with `-Q previews --concurrency=1`, niced).
+  worker-previews:
+    extends:
+      service: worker
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n previews@%h"
+      /srv/app
+
   # The scheduler. It only enqueues: at 03:00 UTC it puts `purge_trashed_projects` on
   # the queue and the worker runs it (F4-S27). Production scheduling is Abdullah's
   # (D-11). Restarted on a code change like the worker, since the schedule is code.

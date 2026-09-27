@@ -5,6 +5,14 @@ with one report and click-only checks. Spec: [takeoff_shell_tasks.md](takeoff_sh
 
 ## In one paragraph
 
+**Closed 2026-09-27.** After your check, four rounds with IDM on (D-40 to D-43) ended
+with your IDM test passing:
+- the browser never reads a plan set; the worker makes each page's thumbnail;
+- a sheet reaches pdf.js as bytes that aren't served as a PDF;
+- thumbnails run on their own worker, so a Load is never held behind them.
+
+The sections below each round say what changed and why. Block C has not been started.
+
 **All five parts are done, driven and pushed to `umer-dev`; `main` untouched.**
 
 - **Part 1:** the live-drawing throttle holds under load. f8-s2 AC4's fault has a cause and
@@ -431,8 +439,53 @@ never waits behind them; that's a follow-up, not built.
    - Refresh: it draws from its PDF.
    - IDM does not pop up either time.
 
+## Your fifth check passed; thumbnails on their own worker (D-43)
+
+**What you found:** with IDM on, D-42 passed: three new sheets and the re-keyed old one
+opened with no pop-up. D-42 stays.
+
+**Built:**
+- **Thumbnails get their own queue and worker.** `prepare_file_pages` runs on a
+  `previews` queue, served by the bench's new `worker-previews`, one set at a time at
+  the lowest CPU priority. Everything else stays on the first worker, so a Load never
+  queues behind thumbnails.
+- **Two fixes found while measuring:**
+  - the thumbnail job read the set through a temporary file, and on the bench's disk
+    that write (7 to 10 s) slowed a Load running beside it; it now reads into memory,
+    as the Load's job does;
+  - WebP images now encode three times faster (method 2), for files 2% larger.
+- **Stalled thumbnail jobs resume.** The 5-minute sweep now also restarts a thumbnail
+  job lost with its worker. Your "JHS Permit C 50CD_VOL 4" upload had stalled at 00:48,
+  when the worker restarted before the queues were split. The sweep resumed it at 01:10.
+
+**Proof: your 268-page JHS set, loaded as soon as Choose pages started its
+thumbnails.** Three runs on fresh copies, with the thumbnail worker busy throughout:
+
+| | Run 1 | Run 2 | Run 3 | Before, on one worker |
+|---|---|---|---|---|
+| First sheet on screen | 3.6 s | 3.1 s | 3.5 s | — |
+| All three sheets prepared | 6.9 s | 6.5 s | 6.6 s | 52 s and more than 90 s |
+| Drawn by pdf.js | 13.0 s | 11.5 s | 12.2 s | — |
+
+With nothing else running, the same Load prepared in 6.9 s.
+
+**Fixtures:**
+- **`f5-big` 6/6.** Its new first step loads a page while that set's own thumbnails are
+  still being made, and requires the page drawn within 20 s with the thumbnails still
+  unfinished. It drew in 7.9 s and 12.0 s over two runs, with thumbnails at 59 and 63 of
+  150. Two later steps were updated for the head start that step gives.
+- **Also:** `f5-s2` 4/4, `f5-s6` 6/6, `f5-s7` 3/3.
+
+**For Abdullah:** production needs a second worker process, `celery … worker -Q previews
+--concurrency=1`, niced (D-43).
+
 ## Next
 
 Block C: pdf.js on the canvas (S10 to S12). It draws sharp from 50% to 4000% (D-35),
-uses the fit tier and the two-stage re-raster, and adds split-source and one-call signed
-URLs. Not started, as asked.
+with the fit tier and the two-stage re-raster.
+- The split source and its read path exist now: each sheet's own PDF, fetched as bytes
+  (D-42).
+- Today the canvas draws that PDF once, 3072 px across, over the fit image; Block C adds
+  the zoom tiers.
+
+Not started, as asked.

@@ -35,6 +35,8 @@ fixture() {
 
 # F8 from S5 on needs window B's app and api (the realtime profile). Idempotent.
 docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1
+# Choose pages' thumbnails run on their own worker (D-43). Idempotent.
+docker compose up -d worker-previews >/dev/null 2>&1
 
 drive_ws() { docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py $*" 2>&1 | grep -E '^(snapshot|uuids|check|purged|FAIL)|Traceback'; }
 # What the seeded account is in before the run: a fixture must never add to it. Kept

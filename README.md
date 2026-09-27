@@ -165,8 +165,12 @@ seeded account's switcher once held 860 fixture workspaces).
   unit), and Sara W. seated as an Estimator. It takes about 25 s. Every F8 fixture, `p19`,
   `f5-s3` and `f5-s9` use it; the F2 and F3 fixtures make their own workspace with
   `ownWorkspace`. No fixture in the regression signs in as the seeded account.
+- **`worker-previews`** (D-43) serves only the `previews` queue: Choose pages'
+  thumbnails, one set at a time, `nice -n 19`. `regress.sh` starts it. The `worker`
+  above serves everything else, so a Load never waits behind thumbnails.
 - **`f5-big`** (`browser/f5-big.sh`) opens a 519 MB and a 7 MB PDF through Choose pages
-  (D-41). `drives/f5-big.py` makes both, plus a portrait page stored with `/Rotate 90`,
+  (D-41). It first loads a page while that set's thumbnails are still being made, which
+  must be drawn within 20 s (D-43). `drives/f5-big.py` makes both, plus a portrait page stored with `/Rotate 90`,
   in a throwaway account's project.
   - The browser may never request the set.
   - Thumbnails must be plain 200 `image/webp` GETs, and tiles must take their pages'

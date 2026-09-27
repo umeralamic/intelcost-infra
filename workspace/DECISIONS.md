@@ -1903,3 +1903,44 @@ legacy alone on the founder's machine.
   shape (for example the host, or IDM's own site rules), and the next step is to test
   legacy's exact request against the bench's storage.
 - Files' deliberate Download keeps its filename; that is a download.
+
+---
+
+## D-43 — Choose pages' thumbnails run on their own queue and worker
+
+**Date:** 2026-09-27
+**Status:** Accepted (the founder's)
+**Area:** Backend, Infra
+
+**Context:** A person uploads a set and loads pages at once. On one worker, the Load's
+sheets waited behind that set's 268 thumbnails: 52 s and more than 90 s to prepare,
+against about 7 s on a quiet bench. The founder: thumbnail generation must never delay a
+Load.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — More concurrency on the one worker | One service | Thumbnail jobs can still fill every slot |
+| B — Thumbnails (`prepare_file_pages`) on their own `previews` queue and worker, one set at a time, at the lowest CPU priority | A Load never queues behind a thumbnail job | A second worker service to run |
+
+**Decision:** Option B.
+- Celery routes `prepare_file_pages` to `previews`; everything else stays on the default
+  queue.
+- The bench's `worker-previews` runs `nice -n 19 celery … -Q previews --concurrency=1`.
+- Two changes found while measuring:
+  - the thumbnail job reads the set into memory, as the Load's job does, not through a
+    temporary file: on the bench's disk that write took 7 to 10 s and slowed a Load
+    running beside it;
+  - every worker WebP is encoded with method 2, not 4: 0.25 s against 0.75 s for a
+    2048 px fit image, 2% larger.
+- The 5-minute sweep also resumes a thumbnail job lost with its worker.
+
+**Consequences:**
+- **Measured on the founder's 268-page set** (three pages loaded as soon as Choose pages
+  started the thumbnails, with the thumbnail worker busy): the first sheet on screen in
+  3.1 to 3.6 s; all three prepared in 6.5 to 6.9 s; drawn by pdf.js in 11.5 to 13 s.
+  Before, on one worker: 52 s and more than 90 s.
+- **Production needs a second worker process:** `-Q previews --concurrency=1`, niced
+  (for Abdullah, D-11).
+- The thumbnail worker holds a set in memory while it works, one set at a time.
