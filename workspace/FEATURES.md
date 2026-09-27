@@ -37,7 +37,7 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Blocks A and B closed (B 2026-09-27, D-40 to D-43); Block C checked 2026-09-27 (pdf.js sharp 50% to 4000%, D-47 accepted); Block D built 2026-09-27, awaiting the founder's click check (the sheets panel and prerender, D-48; a production build on the bench, D-49); Block E next** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
+| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Blocks A and B closed (B 2026-09-27, D-40 to D-43); Blocks C and D checked 2026-09-27 (pdf.js sharp 50% to 4000%, D-47; the sheets panel and prerender, D-48 amended by D-50; a production build on the bench, D-49); Block E built 2026-09-27, awaiting the founder's click check (calibration and scale presets; a scale is feet per point, D-51); Block F next** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
 | F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **waits for F5** | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
 | F7 (P-06) | Canvas tools and interactions: the measure tools, selection and editing, deducts, auto-merge, undo, menus, hover, keys; colleagues' cursors and drafts | both | Specced 2026-09-26, answers D-39; **waits for F5 and F6** | [canvas_tools_tasks.md](docs/tasks/canvas_tools_tasks.md) |
 
@@ -49,7 +49,8 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
-| P-20 | Sheet page acts: New Blank Page, New Page From Clipboard, Duplicate page, Rotate pages in bulk, the sheet stepper, open another project from takeoff, the panel layout per user | both | After F7. Split from F7 by D-39 Q4 (F5 had handed them on, D-36 Q7); Crop as New Page stays in F7 |
+| P-20a | Rotate pages: legacy's "Rotate Pages…", a relative or absolute turn of the selected pages or all, stored on the sheet (`view_rotation`) and followed by the canvas, thumbnails, measurements and colleagues | both | **Right after F5 closes, before F6** (the founder, 2026-09-27). Brought forward from P-20 |
+| P-20 | Sheet page acts: New Blank Page, New Page From Clipboard, Duplicate page, the sheet stepper, open another project from takeoff, the panel layout per user | both | After F7. Split from F7 by D-39 Q4 (F5 had handed them on, D-36 Q7); Crop as New Page stays in F7; Rotate pages is P-20a. Auto-Name stays with the AI tools (P-13) |
 | P-08 | Estimating tab and export | both | |
 | P-09 | Assemblies, Starter Pack, Library | both | |
 | P-10 | Collaborator markup, print, find text, snippets and bookmarks | both | The $9.99 tier |

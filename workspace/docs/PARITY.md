@@ -386,13 +386,13 @@ sibling panel reads as a bug to an estimator.
 - [ ] **Undo (Ctrl+Z) and Redo (Ctrl+Shift+Z)** on the current sheet. `src/components/takeoff/Toolbar.tsx`, `src/lib/takeoff/history/sessionHistory.ts` · **missing**
 - [x] **Zoom in, zoom out (to 3000%), and Fit.** `src/components/takeoff/CanvasZoomCluster.tsx`, `src/lib/takeoff/zoomLimits.ts` · **ported, beyond legacy** (F5 Block C, 2026-09-27: 50% to 4000% per D-35 from `lib/takeoff/pdf/zoom.ts`, legacy's step rule, the wheel and buttons stopping exactly at both ends, `f5-s11`)
 - [ ] **Markups toggle and Legend toggle**, the legend floating with descriptions and quantities. `src/components/takeoff/LegendOverlay.tsx` · **missing**
-- [x] Calibrate the sheet scale from two points at a declared distance. `src/components/takeoff/CalibrationDialog.tsx`, table `sheet_calibrations` · **ported** (driven: two clicks and a distance set feet_per_norm, and the tools enable; proof-backlog, overnight 2026-09-26)
-- [ ] Pick a scale from the Architectural, Engineering or Metric presets, or "No scale". `src/components/takeoff/ScaleMenu.tsx`, `src/lib/takeoff/scales.ts` · **missing**
-- [ ] Enter a custom scale. `src/components/takeoff/CustomScaleDialog.tsx` · **missing**
+- [x] Calibrate the sheet scale from two points at a declared distance. `src/components/takeoff/CalibrationDialog.tsx`, table `sheet_calibrations` · **ported** (F5 Block E, `f5-s15`: in legacy's words: the "Calibrate" toast, "Set sheet scale", `parseFeet`'s "Interpreted as 25.50 ft (7.77 m)" or "Unrecognized format", "Save calibration", then "Scale set — verify with a known dimension". **The scale is feet per PDF point, as legacy's (D-51)**: a run across and a run down of one paper length read the same, which a scale in normalised units got wrong off-axis. Legacy's Verify action arms Dimension, which is F11's, so the toast has no button yet)
+- [x] Pick a scale from the Architectural, Engineering or Metric presets, or "No scale". `src/components/takeoff/ScaleMenu.tsx`, `src/lib/takeoff/scales.ts` · **ported** (F5 Block E, `f5-s16`: legacy's 15, 25 and 23 presets and labels (`1/8" = 1'`), the current one ticked, stored as feet per point with legacy's 1-point reference; an unscaled chip reads "Calibrate scale to compute LF / SF", legacy's "No scale" state)
+- [x] Enter a custom scale. `src/components/takeoff/CustomScaleDialog.tsx` · **ported** (F5 Block E, `f5-s16`: "Custom Scale", N in = M ft, "Preview: 1" = 45'"; legacy's metric variant is behind its flag, off, Q5)
 - [ ] Read the scale from a dragged region, apply it to one sheet or to every sheet, and be warned when the drawn dimensions disagree with the printed scale. `src/components/takeoff/ScaleFromRegionDialog.tsx` · **missing**
 - [ ] Scale evidence stays on the sheet, with the amber scale box persisting after an AI scale is applied. `src/components/takeoff/ScaleEvidenceMenu.tsx`, `src/lib/takeoff/scaleEvidence.ts` · **missing**
-- [x] Measure tools are disabled until the sheet has a scale, and the panel's empty state says why. `src/components/takeoff/CalibrationRequiredDialog.tsx`, `EmptyTakeoffState.tsx` · **ported** (driven: Linear, Area and Count disabled and the panel says "Set the sheet scale first. Without it a shape has no quantity."; proof-backlog, overnight 2026-09-26)
-- [ ] Changing a scale after items exist warns before it recomputes them. `src/components/takeoff/ScaleChangeGuardDialog.tsx` · **missing**
+- [x] Measure tools are disabled until the sheet has a scale, and the panel's empty state says why. `src/components/takeoff/CalibrationRequiredDialog.tsx`, `EmptyTakeoffState.tsx` · **ported, as legacy does it** (F5 Block E, `f5-s16` AC3: Linear or Area on an unscaled sheet opens "Set a scale for this sheet" with "Calibrate now" or "Set scale directly" then "Pick a standard scale", and the tool arms once a scale is set; Count needs none. Before, the tools were greyed out, which legacy never did)
+- [x] Changing a scale after items exist warns before it recomputes them. `src/components/takeoff/ScaleChangeGuardDialog.tsx` · **ported** (F5 Block E, `f5-s16` AC4: "Change scale on this sheet?", "This sheet has 1 measurement traced on it…", Cancel keeps the scale, "Change scale" applies it and every item recomputes; a first scale never asks. Legacy's earthwork clause is dropped until earthwork exists, F12)
 - [ ] Tools overflow into a menu when the toolbar is narrower than the tool row. `src/components/takeoff/ToolbarOverflow.tsx` · **missing**
 
 ## 10. Canvas interactions
@@ -430,7 +430,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [ ] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
 - [x] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **ported** (**D-32:** this is the **One at a time** collaboration mode, not the default. Built and driven on today's takeoff page, F8-S11 and S12, `f8-s11`, `f8-s12`: delete, add, edit vertices, rename and override are view-only for others and refused 409 by the api. **F7 re-drives it on Resume and Extend**, which do not exist yet)
-- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **partial** (D-10, D-13: **items and geometries are live** on today's takeoff page since F8-S18, each within a second of the write, and F5 to F7 keep them; calibrations are F5's and folders F6's)
+- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **partial** (D-10, D-13: **items and geometries are live** on today's takeoff page since F8-S18, each within a second of the write, and F5 to F7 keep them. **Calibrations are live since F5 Block E**: `sheet.calibration.changed`, and a second window on the sheet shows the new scale chip in 195 ms and the recomputed quantities in 328 ms, `f5-s15` AC3. Folders are F6's)
 - [x] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **ported** (F8-S7, `core/realtime/tab.ts`: per tab, 512 kept, consumed on the echo; `f8-s7`, and `f8-s16` AC8 for A's own folder)
 
 **Collaboration, beyond legacy (D-32, D-33).** New behaviours the founder added on
@@ -483,7 +483,7 @@ The Estimating tab. `src/components/estimate/ProjectEstimatingView.tsx` (5,138 l
 - [ ] A format theme saves as "My formatting" or as the workspace format, and survives a refresh. `src/hooks/useEstimatingFormat.ts` · **missing**
 - [ ] Export to a live formula workbook, choosing visible or all columns and rows, grouping on or off, formulas on or off, grid lines on or off, and all layers in one tab or one tab per main layer. `src/components/estimate/ExportOptionsDialog.tsx` · **missing**
 - [ ] Live Excel formulas are written for derived sub-items, so the workbook recalculates. `.lovable/plan/live-excel-formulas-for-derived-sub-items-2026-09-03.md` · **missing**
-- [ ] A deleted takeoff item orphans its priced line rather than deleting it, and the line renders flagged. D-09, `src/components/estimate/ProjectEstimatingView.tsx` · **partial** (the api sets the FK to null per D-09; no screen shows the flag)
+- [x] A deleted takeoff item orphans its priced line rather than deleting it, and the line renders flagged. D-09, `src/components/estimate/ProjectEstimatingView.tsx` · **retired by D-50 (the founder, 2026-09-27)**: a deleted item's estimate line is deleted with it, so the estimate never shows a quantity that nothing measures. The delete's confirm names the item first. Driven by `f5-s14` AC3: after a sheet delete, the deleted items' lines are gone
 - [ ] Changes by another estimator reach an open estimate live. `src/components/estimate/ProjectEstimatingView.tsx` · **missing** (D-10)
 
 **Table presentation**
@@ -1053,9 +1053,9 @@ A retired line counts as driven, because there is nothing left to drive.
 | 6 | Sharing | 12 | 0 | 1 | 11 | 0 | 12 |
 | 7 | Takeoff sheets panel | 47 | 8 | 6 | 33 | **8** | 27 |
 | 8 | Takeoff items | 56 | 6 | 5 | 45 | 0 | 36 |
-| 9 | Canvas tools | 28 | 6 | 2 | 20 | 0 | 28 |
+| 9 | Canvas tools | 28 | 8 | 3 | 17 | **8** | 28 |
 | 10 | Canvas interactions | 48 | 1 | 3 | 44 | 0 | 37 |
-| 11 | Estimating | 26 | 0 | 1 | 25 | 0 | 20 |
+| 11 | Estimating | 26 | 1 | 0 | 25 | **1** (retired by D-50) | 20 |
 | 12 | Assemblies | 14 | 0 | 0 | 14 | 0 | 11 |
 | 13 | Library | 7 | 0 | 0 | 7 | 0 | 7 |
 | 14 | Markup | 12 | 0 | 0 | 12 | 0 | 12 |

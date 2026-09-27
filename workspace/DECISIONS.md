@@ -336,7 +336,8 @@ and its quantity is typed.
 - Correcting a measurement updates the estimate with no action from the estimator.
   That is the "synced live" behaviour, and it falls out of read-through rather than
   needing a sync job.
-- **A deleted takeoff item orphans its line, it does not delete it.** The foreign key
+- **Superseded by D-50 (2026-09-27): a deleted item's line is deleted with it.** As
+  first decided: **a deleted takeoff item orphans its line, it does not delete it.** The foreign key
   is `ondelete="SET NULL"` and the line renders flagged, keeping its rate and its last
   known quantity. Silently losing a priced line because someone deleted a shape is a
   worse failure than showing a stale one, and it is invisible until the bid total is
@@ -2124,7 +2125,7 @@ plan set: only the worker does.
 ## D-48 — Deleting sheets keeps legacy's last-shape rule
 
 **Date:** 2026-09-27
-**Status:** Decided in F5 Block D, following legacy; pending founder review
+**Status:** Accepted by the founder 2026-09-27, **amended by D-50**: an item deleted here takes its estimate line with it; no last quantity is handed to the estimate
 **Area:** Takeoff, Backend
 **Serves:** F5-S14 AC3
 
@@ -2192,3 +2193,105 @@ production would serve it, with the timing fixtures run against it.
 - nginx's type list does not name `.mjs`. pdf.js's worker is served as JavaScript
   explicitly, or the browser refuses to start it.
 - The host, TLS and CDN stay F11's; this is the bundle and its headers only.
+
+---
+
+## D-50 — A deleted item takes its estimate line with it: no quantity without a measurement
+
+**Date:** 2026-09-27
+**Status:** Accepted (the founder's instruction of 2026-09-27)
+**Area:** Estimating, Takeoff, Backend
+**Amends:** D-09 (its "a deleted takeoff item orphans its line" consequence), D-48
+
+**Context:** D-09 kept a deleted item's estimate line. The api wrote the item's last
+`effective_quantity` into the line's `manual_quantity` just before the delete, and the
+foreign key went null. The line then showed a flagged "orphaned" quantity with no
+measurement behind it. D-48's sheet delete did the same for every item it took. The
+founder, reviewing D-48, ruled that out: the estimate never shows a quantity that
+nothing measured.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Keep D-09: an orphaned line with the last quantity | A priced line never vanishes | A phantom quantity: it can be wrong, and nothing on the drawings backs it |
+| B — The line goes with its item (`ON DELETE CASCADE`); the delete's confirm names the item first | The estimate is exactly what is measured, plus lines typed by hand | A priced line disappears with its measurement; the confirm is the only warning |
+
+**Decision:** Option B.
+- `estimate_line_item.takeoff_item_id` is `ON DELETE CASCADE`.
+  - Deleting an item deletes its line, by any path: the item delete, the last shape,
+    a sheet delete (D-48).
+  - Deleting the project deletes both, as before.
+- The copy of the last quantity is removed (`preserve_last_known_quantity` and its
+  callers).
+- An orphaned line can no longer exist, so the `is_orphaned` flag is gone.
+  - A line with no item was typed by hand, and its `manual_quantity` is its own.
+  - `origin_takeoff_item_uuid` stays as provenance only.
+- The migration deletes any orphaned line already stored: its quantity was exactly the
+  phantom this rules out. There were none on the bench.
+- D-48's rule is otherwise unchanged. An item with shapes on another sheet stays, moved
+  there. An item left with no shapes goes, named in the delete dialog first.
+
+**Consequences:**
+- Every confirm that deletes an item (the item, its last shape, a sheet) is the only
+  warning that a priced line goes too. When the estimate screen exists (P-08), these
+  confirms should also say that the item's estimate line goes with it.
+- Option C of D-09 (freezing a submitted bid) is unaffected. A frozen snapshot is not
+  a live line.
+
+---
+
+## D-51 — A scale is feet per PDF point, and quantities are measured in points
+
+**Date:** 2026-09-27
+**Status:** Decided in F5 Block E, following legacy; pending founder review
+**Area:** Takeoff, Backend, Frontend (hard rule 3: quantities)
+**Serves:** F5-S15, S16
+
+**Context:** Vertices are stored normalised to the page box: x across its width, y across
+its height. The api's calibration divided the real distance by the distance between the
+two points in those normalised units. Every quantity then multiplied a normalised length
+by that one number. A normalised unit is a different length across a sheet than down it
+unless the sheet is square.
+
+So on a 36 × 24 sheet calibrated along its width, a run down its height read 1.5 times
+its true length, and an area was off by the aspect ratio. Only runs parallel to the
+calibration line were right. `f5-s10`'s "a 0.2 × 0.2 square reads 1,600 SF" was a
+rectangle on the page.
+
+Legacy measured in PDF points, which are the same length in every direction. Its
+`feet_per_norm` column holds feet per point despite its name, and its presets
+(`scales.ts`) are defined that way. Block E's presets cannot be applied at all without
+the same unit.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Keep feet per normalised unit; presets convert per sheet | No change to stored quantities | Wrong off-axis on every non-square sheet: nearly every drawing |
+| B — Legacy's unit: the scale is feet per point; a length or area is measured after scaling x by the page's width in points and y by its height | Right in every direction; presets are exact; F17 imports legacy's column as it is | Every calibration and stored quantity is converted once |
+
+**Decision:** Option B, legacy's.
+- **`sheet_calibration.feet_per_norm` holds feet per PDF point**, as legacy's column
+  does. The name is kept for F17.
+- A two-point calibration stores the real distance over the points' distance in page
+  points. That uses the sheet's `width_pt` and `height_pt`, or a unit square when they
+  are unknown, as legacy does.
+- **A preset or custom scale** (`PUT …/sheet/{uuid}/scale`) writes its feet per point
+  directly, with legacy's synthetic reference: 1 point long, horizontal, from the
+  origin.
+- **Every quantity**, in the api (`takeoff/quantity.py`) and the browser
+  (`lib/takeoff/quantity.ts`), scales the vertices to points before measuring. Each
+  shape is measured on its own sheet's page size and scale.
+- **The migration** converts stored calibrations to feet per point. The bench's items are
+  then recomputed by `drives/d51-recompute.py`. Production holds no takeoff data yet;
+  legacy's rows are already in points.
+- **A scale write publishes `sheet.calibration.changed`**, and open canvases refetch the
+  sheet's scale and items (S15 AC3).
+
+**Consequences:**
+- Runs parallel to the calibration line read as before. Every other run and area now
+  reads its true length or area.
+- Fixtures that asserted a quantity from a normalised calibration are re-derived in
+  points (`f5-s10`, `proof-backlog`).
+- `measured_feet_per_pt` is left for the dimension cross-check (F12), as in legacy.

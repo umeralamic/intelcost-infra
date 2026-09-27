@@ -28,7 +28,32 @@ progress from Block A.**_
 | **A: S1 to S3** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-s1` 7/7 (load 1,3 then 2,3 adds only 2; the mirrored folders; a skipped page never made, after preparation; Plans refused with "5 takeoff sheets", in the api and as "Can't delete — folder in use" on screen; a .docx, page 4 of 3 and an unfinished upload refused by name; a mixed Load writes nothing; a viewer 403). `f5-s2` 4/4 (the Load answers in 146 ms with every page pending; split PDF, 512 px thumbnail and fit WebP checked in MinIO for two PDF pages and a wrapped PNG, its original kept; a tab showing "This sheet has no image" draws the page once the worker is back, no reload, one `drawing.source.changed`; a lost job re-dispatched by the sweep; beat carries the sweep). `f5-s3` 2/2 and `drives/f5-s3-bundle.sh` (canvas and drafts only in the takeoff chunk; the dashboard fetches none of it; a missing takeoff chunk reloads once). Migration `a91c4e7d2b30` up, down, up; `alembic check` clean. Gates: ruff, ruff format, mypy (83 files), lint, typecheck, build. Full regression: see the report. **Checked by the founder** |
 | **B: S20, S4 to S9** | Built and driven, 2026-09-26. Four IDM rounds after the founder's check (D-40 to D-43). **Closed 2026-09-27, the founder's IDM test passing** | `f5-count` (S20): a 519 MB, 150-page set counted by ranged reads, 230 KB in 4 requests. `f5-s4` 6/6, `f5-s5` 6/6, `f5-s6` 6/6 (the worker's thumbnails, D-41), `f5-s7` 3/3, `f5-s8` 4/4, `f5-s9` 2/2, and **`f5-big`**: the browser never reads a set, sheets reach pdf.js as bytes served as `application/vnd.intelcost.sheet`, and a Load is not held behind thumbnails. The Block B full regression passed, then only touched fixtures after each IDM round. See [F5_BLOCK_B_REPORT.md](F5_BLOCK_B_REPORT.md) |
 | **C: S10 to S12** | Built and driven, 2026-09-27 (overnight plan). S12 AC2 amended by **D-47**, accepted. **Checked by the founder, 2026-09-27** | `f5-s10` 5/5 (dpr 2: a pdf.js raster at 100%, 400%, 2000% and 4000%, backing = CSS × 2; a hairline 1 device px at 4000%; the raster exactly under the overlay; one open per file; a 64 MB budget at 4 GB). `f5-s11` 6/6 (fit image first, none fetched for an open document; 50% to 4000% with legacy's steps; a half then a full pass, windowed above 2.5×; cold first pdf.js paint median 1.86 s; **Load to sharp paint median 3.9 to 5.0 s, from ~12 s**). `f5-s12` 4/4 (page 90 of 150 from its own split; D-47's preparing state; one call signs every sheet). See [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md) |
-| **D: S13, S14** | Built and driven, 2026-09-27. **Awaiting the founder's click check.** Sheet deletes follow **D-48**; timings on the production build, **D-49** | `f5-s13` 7/7, on the dev server and on the production build: the tree under the mirrored folders, "At root", the highlight following a click, search by number, name and item names, "No sheets match", rows with label, scale chip, item count and star, thumbnails fetched only in view, and legacy's prerender (neighbours after the first paint, hover after 150 ms; the next sheet opens with no fit image and no second fetch, first sharp paint 9 ms on the production build). `f5-s14` 6/6 in two windows: double-click rename, where B followed in 837 ms with no reload; a drag within a folder, persisted, with Thumbnails refusing to reorder; Ctrl and Shift selection whose menu bookmarks and moves all; "Delete 2 sheets?" naming both items, "Deleted 2 sheets", and B following; a viewer refused on screen and at the api. Re-homing checked by hand (D-48). `f5-s11` on the production build: **cold open median 480 to 544 ms** (1.9 s on the dev server), **Load to sharp paint median 1.2 to 2.1 s** (legacy ~4 s) |
+| **D: S13, S14** | Built and driven, 2026-09-27. **Checked by the founder, 2026-09-27.** Sheet deletes follow **D-48**, amended by **D-50**; timings on the production build, **D-49** | `f5-s13` 7/7, on the dev server and on the production build: the tree under the mirrored folders, "At root", the highlight following a click, search by number, name and item names, "No sheets match", rows with label, scale chip, item count and star, thumbnails fetched only in view, and legacy's prerender (neighbours after the first paint, hover after 150 ms; the next sheet opens with no fit image and no second fetch, first sharp paint 9 ms on the production build). `f5-s14` 6/6 in two windows: double-click rename, where B followed in 837 ms with no reload; a drag within a folder, persisted, with Thumbnails refusing to reorder; Ctrl and Shift selection whose menu bookmarks and moves all; "Delete 2 sheets?" naming both items, "Deleted 2 sheets", and B following; a viewer refused on screen and at the api. Re-homing checked by hand (D-48). `f5-s11` on the production build: **cold open median 480 to 544 ms** (1.9 s on the dev server), **Load to sharp paint median 1.2 to 2.1 s** (legacy ~4 s) |
+| **E: S15, S16** | Built and driven, 2026-09-27. **Awaiting the founder's click check.** **D-51**: a scale is feet per PDF point and quantities are measured in points, as legacy's | `f5-s15` 4/4: the "Calibrate" toast; "Set sheet scale" with "Interpreted as 25.50 ft (7.77 m)" or "Unrecognized format" and "Save calibration"; "Scale set — verify with a known dimension"; the scale stored as feet per point, with a run across and a run down of the same paper length reading the same 65.44 LF; B's chip changed in 195 ms and its quantities in 328 ms, no reload. `f5-s16` 6/6: the amber chip "Calibrate scale to compute LF / SF", then legacy's Scale menu (Calibrate Scale, Add Custom Scale, 15 Architectural, 25 Engineering, 23 Metric); `1/8" = 1'` set and read green; Custom Scale `1" = 45'`; Linear on an unscaled sheet opens "Set a scale for this sheet", Set scale directly, Pick a standard scale, and arms Linear, while Count needs none; "Change scale on this sheet?" with Cancel and Change scale; a viewer refused. Legacy's labels are `1/8" = 1'`, not the criterion's `1/8" = 1'-0"` |
+
+**Found while building Block E:**
+- **Quantities were wrong off-axis on every non-square sheet (D-51).** The api's scale was
+  feet per normalised page unit. A normalised unit is longer across a landscape sheet
+  than down it, so only runs parallel to the calibration line were right.
+  - On a 1224 × 792 sheet calibrated across it, a run down it read 1224/792 of its true
+    length, 55% too long.
+  - `f5-s10`'s "0.2 × 0.2 square, 1,600 SF" was really a rectangle on the page, whose true
+    area is 1,035.29 SF.
+
+  Legacy measured in PDF points, and its `feet_per_norm` column holds feet per point.
+  Ours now does the same, in the api and the browser. A migration converted stored
+  scales, and the bench's items were recomputed.
+- **Scale writes are live.** `sheet.calibration.changed` was in this spec's realtime
+  table but never published. It now is, on a calibration and on a preset or custom scale.
+- **Measure tools were greyed out on an unscaled sheet.** Legacy never did that: Linear or
+  Area asks for a scale ("Set a scale for this sheet"), then arms once it's set, and
+  Count needs none.
+- **Not ported, and why:**
+  - Legacy's "Verify" action on the toast arms Dimension, which is F11's.
+  - Metric units, in calibration and in Custom Scale, sit behind legacy's flag, which
+    ships off (Q5).
+  - Reading a scale from the title block, and legacy's dimension cross-check, are F12's.
+
 **Found while building Block D:**
 - **Legacy's prerender queue is here** (moved from Block C). The open sheet's neighbours
   in panel order, then a hovered row after 150 ms, are drawn into the caches while
@@ -626,8 +651,9 @@ Named so nothing is lost. The owners are proposals (Q7).
 
 | Legacy behaviour | Proposed owner |
 |---|---|
-| Auto-Name (OCR title block), Name from page region | F12 (both read the text layer that F5 makes available) |
-| New Blank Page, New Page From Clipboard, Duplicate page, Rotate Pages, Crop region to page | F7 |
+| Auto-Name (OCR title block), Name from page region | The AI tools (F14), the founder's call of 2026-09-27; both read the text layer F5 makes available |
+| New Blank Page, New Page From Clipboard, Duplicate page, Crop region to page | F7 (and P-20) |
+| Rotate Pages (stored rotation) | **P-20a, right after F5 closes, before F6** (the founder, 2026-09-27) |
 | Preview window, open sheet in a new tab, the read-only sheet viewer, overlays | F11 |
 | Print pages | F11 |
 | Read the scale from a region, apply to every sheet; scale evidence | F12 |

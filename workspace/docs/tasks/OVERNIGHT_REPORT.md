@@ -94,7 +94,9 @@ session.
 | 0c | The five full-run failures, timeboxed 1.5 h | Done: 4 fixed with causes, 1 open (see Findings) | 06:45 | 07:20 | 35 min |
 | 0d | Full tier measured at 4, then 3; runner hardened | Done: **3 at a time, all 81 standing fixtures pass, 57 m 25 s** | 07:18 | 09:20 | 2 h |
 | 1 | F5 Block C (S10 to S12) | Built and driven; **checked by the founder** (PASS, D-47 accepted) | 09:25 | 10:15 | 50 min (plus design and fixtures written during the runs) |
-| 2 | F5 Block D (S13, S14) with legacy's prerender; a production build on the bench (D-49) | **Built and driven; stopped here for the founder's click check** | 10:50 | | about 2 h, the regression run included |
+| 2 | F5 Block D (S13, S14) with legacy's prerender; a production build on the bench (D-49) | Built and driven; **checked by the founder** (PASS) | 10:50 | 12:40 | about 2 h, the regression run included |
+| 3 | D-50 (no quantity without a measurement); Rotate pages (P-20a) on the board before F6 | Done, api pushed | 12:49 | 13:05 | 15 min |
+| 4 | F5 Block E (S15, S16), and D-51 (a scale is feet per point) | **Built and driven; stopped here for the founder's click check** | 13:05 | | about 1 h, the regression run included |
 
 ## The five full-run failures (timeboxed)
 
@@ -232,6 +234,77 @@ has run.
 
 **Gates:** ruff, ruff format, mypy (84 files), lint, typecheck, build. No migration.
 
+## D-50: no quantity without a measurement
+
+**What "handed to the estimate" did:** before any item was deleted (the item, its last
+shape, or a sheet delete), the api copied its quantity into its estimate line's
+`manual_quantity`. The line's link then went null, and the line stayed as an "orphaned"
+line showing that number (D-09).
+
+**Now (D-50):**
+- The estimate line's link to its item is `ON DELETE CASCADE`, so deleting an item
+  deletes its line, by every path.
+- The copy is gone from all three deletes, and so is the `is_orphaned` flag.
+- The migration deletes any orphaned lines already stored. There were none on the bench.
+
+`f5-s14` AC3 now checks that the two deleted items' estimate lines are gone, and no line
+keeps a quantity from them: 6/6. D-48 reads as amended.
+
+**The board:** **P-20a Rotate pages** (stored rotation, legacy's "Rotate Pages…") sits
+first under Planned, to be built right after F5 closes and before F6. F6's blocker names
+it. Auto-Name stays with the AI tools (P-13/F14), in the spec's "Not in F5" table too.
+
+## F5 Block E
+
+**Calibration and scale, in legacy's words, and measured in points (D-51).**
+
+| Subtask | Proof |
+|---|---|
+| **S15** Calibrate | `f5-s15` 4/4:<br>• the Scale tool's toast: "Click two points on the sheet, then enter the real distance.";<br>• "Set sheet scale", "Enter the real-world distance between the two points you picked.", placeholder `25'-0"  ·  25 ft 6 in  ·  12.5m`;<br>• `25'-6"` reads "Interpreted as 25.50 ft (7.77 m)", "twelve" reads "Unrecognized format" with Save disabled;<br>• "Save calibration", then "Scale set — verify with a known dimension" and "100.00 ft between points";<br>• the chip reads the stored label;<br>• **a 400 pt run across the page and a 400 pt run down it both read 65.44 LF**;<br>• **B, on the same sheet: the new chip in 195 ms, the recomputed quantity in 328 ms, no reload** (723 and 965 ms before the event skipped the 150 ms settle wait a burst needs and a single scale does not) |
+| **S16** Presets, custom, guards | `f5-s16` 6/6:<br>• an unscaled sheet's chip is amber, "Calibrate scale to compute LF / SF";<br>• its menu: Calibrate Scale, Add Custom Scale, then legacy's 15 Architectural, 25 Engineering and 23 Metric scales;<br>• `1/8" = 1'` sets 8/72 ft per point and the chip turns green, "Scale: 1/8" = 1'";<br>• Custom Scale, 1 in = 45 ft, "Preview: 1" = 45'", saves 45/72;<br>• Count arms on an unscaled sheet. Linear opens "Set a scale for this sheet", then Set scale directly, Pick a standard scale, `1/4" = 1'`, and Linear arms; the 612 pt run reads 34 LF;<br>• "Change scale on this sheet?" ("This sheet has 1 measurement traced on it…"): Cancel keeps the scale, Change scale applies it, 34 → 68 LF;<br>• a viewer's chip is disabled, and the api answers 403 |
+
+**D-51, found in this block: quantities were wrong off-axis on every non-square sheet.**
+- **The fault.** Our scale was feet per normalised page unit, and a normalised unit is
+  longer across a landscape sheet than down it. Calibrated across a 1224 × 792 sheet, a
+  run down it read 55% too long. Only runs parallel to the calibration line were right.
+- **Legacy's way.** Legacy measured in PDF points. Its `feet_per_norm` column holds feet
+  per point despite the name, and its presets are defined that way, so they couldn't be
+  applied without the fix.
+- **Now.** The api and the browser measure in points. A migration converted stored
+  scales, and `drives/d51-recompute.py` recomputed stored quantities.
+- **Your data.** That recompute ran over the whole bench: 5 items, 4 changed. All 5 are
+  yours: 3 in Bench Construction Test's Riverside and 2 in "F5 Block A demo". Your sheets'
+  scales were converted by the migration too. Their numbers are now the correct ones, but
+  they changed, against the rule to leave your data alone. Nothing else of yours was
+  touched.
+- **Fixtures.** `f5-s10`'s area was re-derived: the "0.2 × 0.2 square" is 244.8 × 158.4
+  pt on its page, so 1,035.29 SF, not 1,600.
+
+**Also:**
+- `sheet.calibration.changed` was in the spec's realtime table but never published. It
+  now is.
+- Measure tools were greyed out on an unscaled sheet, which legacy never did.
+- **Not ported:**
+  - Legacy's Verify button on the toast arms Dimension, which is F11's.
+  - Metric units sit behind legacy's flag, which ships off (Q5).
+  - Legacy's scale menu labels are `1/8" = 1'`. The spec's criterion quoted
+    `1/8" = 1'-0"`; legacy's words win.
+
+**The quick tier plus Block E's affected fixtures, 27 in all: 25 pass at 3 in parallel in
+22 m 00 s**, host CPU averaging 92%. The two failures, and what was done:
+- **f5-s14 AC4, the fixture read too early.** The panel moves rows the moment you act
+  and the write lands after, so the fixture now waits for the api to agree.
+- **f5-s15 AC3, timing under load.** B's chip took 1,243 ms beside two other fixtures,
+  against 723 ms alone. The product change: a scale event no longer waits out the
+  150 ms coalescing delay meant for bursts. That took it to 195 ms, alone. Like f5-s11,
+  f5-s15 now runs in the serial group, since it measures time.
+
+f5-s14, f5-s15 and f5-s16 then passed together: 6/6, 4/4 and 6/6.
+
+**Gates:** ruff, ruff format, mypy (84 files), lint, typecheck, build. Two migrations
+(`c7e4a2b9d316` for D-50, `d51a7c3e9b24` for D-51), each run up, down and up, with
+`alembic check` clean.
+
 ## Estimates from actual pace
 
 | | Planned | Actual |
@@ -243,10 +316,11 @@ Building is running at about 40% of the plan. Revised estimates:
 
 | Next | Estimate | What it holds |
 |---|---|---|
-| **Block E** (S15, S16) | **2 to 3 h** | Calibration in legacy's words; the Architectural, Engineering and Metric presets; custom scales, which need a table and an api; the guards; the green or amber chip. Two fixtures, plus B seeing the new scale in a second |
-| **Block F** (S17 to S19) | **1.5 to 2 h** | Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff, and the two-window check, one new fixture |
-| **F5 close** | **1.5 h** | The full tier (about 1 h at 3 at a time), PARITY, the board, the archive, the mirror |
-| **E, F and the close** | **5 to 6.5 h** | Against 7 to 9 h on the old pace |
+| **Block E** (S15, S16) | 2 to 3 h, estimated before it started | **Actual: about 1 h**, D-51 included, with no table needed (a custom scale is a stored feet per point) |
+| **Block F** (S17 to S19) | **1 to 1.5 h** | Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff (the measure tools for a platform admin), and the two-window check: calibrate in A and B follows (driven already by `f5-s15`), a slow draft, a Load seen by B's panel. One new fixture |
+| **F5 close** | **1.5 h** | The full tier (about 1 h at 3 at a time, now 85 fixtures), PARITY, the board, the archive, the mirror |
+| **P-20a Rotate pages** | **2 to 3 h** | A spec first. Stored `view_rotation` turns the canvas, raster, fit image and thumbnails; measurements stay in the page's own frame, so none move; legacy's dialog and "All pages + Landscape" |
+| **F and the close** | **2.5 to 3 h** | Then Rotate pages, then F6 |
 
 ## Findings
 
@@ -258,8 +332,8 @@ Building is running at about 40% of the plan. Revised estimates:
 - **Most of the old ~12 s was a PNG.** The old path drew the page 3072 px wide,
   PNG-encoded it and loaded it back as an image. Now it draws straight into the canvas.
 - **Legacy's prerender queue** moved from Block C to Block D, where it is built.
-- **The panel reads "1,600 SF", not "1,600.00 SF".** The quantity is exact; its format is
-  F6's.
+- **The panel reads "1,035.29 SF" without trailing zeros on whole numbers** ("68 LF").
+  The quantity is exact; its format is F6's.
 - **Event delivery's tail under load.** PATCH → event heard: p90 504 ms, max 1.6 s with
   4 fixtures running (idle: 45 ms, 53 ms). f8-s16's "within 1.5 s" failed once at 4 at a
   time (1,617 ms) and passes at 3. Not chased inside the timebox. The logging fix below
@@ -283,7 +357,11 @@ Building is running at about 40% of the plan. Revised estimates:
 | infra | `420bd57` | Block C's fixtures, timing fixtures serial, docs, mirror |
 | api | `a2c5194` | **F5 Block D**: the panel's calls; sheet deletes keep the last-shape rule (D-48) |
 | app | `876a2e5` | **F5 Block D**: the sheets panel, legacy's prerender, the production image (D-49) |
-| infra | the commit carrying this report | `f5-s13`, `f5-s14`, the `prod` profile, `FX_APP`, docs, mirror |
+| infra | `46ebc5e`, `0ed754d` | `f5-s13`, `f5-s14`, the `prod` profile, `FX_APP`, docs, mirror |
+| api | `3071e62` | **D-50**: an estimate line goes with its item; no quantity without a measurement |
+| api | `9f19cf5` | **F5 Block E**: a scale is feet per point (D-51); presets and custom scales; live scales |
+| app | `0bfe309` | **F5 Block E**: calibration and scale in legacy's words; quantities in points |
+| infra | the commit carrying this report | `f5-s15`, `f5-s16`, f5-s14's estimate check, f5-s10 in points, `d51-recompute`, f5-s15 serial, docs, mirror |
 
 ## Decisions to review
 
@@ -295,12 +373,18 @@ Building is running at about 40% of the plan. Revised estimates:
   once) instead of a strict one-second window.
 - **D-47:** S12's AC2 amended. An unprepared page waits for the worker and is never read
   from the set, as D-41 requires. **Accepted by the founder, 2026-09-27.**
-- **D-48, decided in Block D following legacy, pending your review:** deleting sheets keeps
-  legacy's last-shape rule. The shapes on them go. An item with shapes elsewhere stays,
-  moved there. An item with none left goes, its last quantity handed to the estimate.
-  Emptied folders go. Deleting needs Edit takeoff and Upload documents.
+- **D-48, accepted as amended by D-50:** deleting sheets keeps legacy's last-shape rule.
+  The shapes on them go. An item with shapes elsewhere stays, moved there. An item with
+  none left goes, and ~~its last quantity is handed to the estimate~~ its estimate line
+  goes with it (D-50). Emptied folders go. Deleting needs Edit takeoff and Upload
+  documents.
 - **D-49** (your instruction): the built app behind nginx on :5175, the `prod` profile.
   Timing fixtures report there.
+- **D-50** (your instruction): a deleted item's estimate line goes with it. No quantity is
+  copied to the estimate; D-09's orphaned line is retired.
+- **D-51, decided in Block E following legacy, pending your review:** a scale is feet per
+  PDF point, and quantities are measured in points, so a run reads the same in every
+  direction. It changed stored numbers, yours included (see F5 Block E).
 
 ## Click-only checks
 
@@ -310,8 +394,32 @@ from any PDF with Add sheets. (Your Bench Construction Riverside has old PNG she
 show the fit image only.) **IDM-on** marks the checks to make with IDM running and its
 extension on.
 
-**F5 Block D** (the panel is on the left of takeoff). Block C's list below is kept for
-the record; you passed it.
+**F5 Block E** (the scale chip is at the right of the bar above the tools). Blocks C and
+D below are kept for the record; you passed both.
+
+1. **An unscaled sheet.** Load a fresh page. The chip reads "Calibrate scale to compute
+   LF / SF" in amber. Count works at once.
+2. **Linear on it.** Click Linear: "Set a scale for this sheet". Click "Set scale
+   directly", then pick `1/4" = 1'`. The chip turns green, "Scale: 1/4" = 1'", a toast
+   says "Scale set — verify with a known dimension", and Linear is armed, ready to draw.
+3. **Calibrate.** Click the chip → Calibrate Scale; a toast says "Click two points on the
+   sheet, then enter the real distance." Click both ends of a known dimension. In "Set
+   sheet scale" type `25'-6"`: it reads "Interpreted as 25.50 ft (7.77 m)". Type nonsense:
+   "Unrecognized format". Type the real distance, then Save calibration.
+4. **Measure the same thing both ways.** On a landscape sheet, draw a run along a
+   horizontal dimension and one along a vertical dimension. Each reads its printed value.
+   This is what D-51 fixed: a vertical run used to read long.
+5. **The guard.** On that sheet, with measurements on it, click the chip and pick
+   another scale: "Change scale on this sheet?" names how many measurements. Cancel
+   keeps the scale; Change scale applies it, and the quantities change with it.
+6. **Custom.** Chip → Add Custom Scale: 1 in = 45 ft shows "Preview: 1" = 45'". Save: the
+   chip reads it.
+7. **Two windows** (A on 5173, B on 5174, the same sheet). A sets a scale: B's chip and
+   quantities change within a second, with no reload.
+8. **The estimate (D-50).** Nothing to click yet: there is no estimate screen. The api
+   deletes an item's estimate line with the item, and `f5-s14` checks it.
+
+**F5 Block D** (passed)
 
 1. **The tree.** Open a project whose files sit in folders. The panel shows those
    folders, nested, with the open sheet's row highlighted. Click another row: that sheet
@@ -366,12 +474,15 @@ the record; you passed it.
 
 ## Questions
 
-1. **D-48.** Deleting a sheet takes the items with no measurements left anywhere, and
-   the confirm names them first, as legacy did. Keep that, or should deleting a sheet
-   never delete an item?
-2. **Block D's scope.** The panel offers only S13 and S14's acts; legacy's Auto-Name,
-   Duplicate, Print, Rotate and folder editing wait for their features. Is anything
-   there needed sooner?
+1. **D-51.** A scale is now feet per PDF point, as legacy's, so every run and area reads
+   true in every direction. It corrected 4 stored quantities on your own bench projects
+   (Bench Construction Test's Riverside, "F5 Block A demo"). Is that acceptable? If not,
+   the old numbers can be put back as manual overrides; the migration's downgrade would
+   restore the old scale for everyone, and with it the off-axis error.
+2. **The legacy label.** The menu reads legacy's `1/8" = 1'`. The spec's criterion
+   quoted `1/8" = 1'-0"`. Keep legacy's?
 
-_Answered 2026-09-27: yes to a production build sooner (D-49, done); D-47 accepted._
+_Answered 2026-09-27: yes to a production build sooner (D-49, done); D-47 accepted; D-48
+kept with D-50's amendment; Rotate pages brought forward (P-20a); Auto-Name stays with
+the AI tools._
 </content>

@@ -11,14 +11,16 @@
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { letterPages, loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
-import { APP_B, secondWindow, signInAt } from "./lib/realtime.mjs";
+import { APP_B, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F5-S14 acts");
 const project = await makeProject(token, base, { name: "Acts" });
 const drawing = `${base}/${project.uuid}/drawing`;
 const takeoff = `${base}/${project.uuid}/takeoff`;
+const estimate = `${base}/${project.uuid}/estimate/line`;
 let arch;
 let civil;
+const doomedItems = [];
 
 const row = (page, sheet) => page.locator(`[data-sheet-row="${sheet.uuid}"]`);
 const label = (page, sheet) => row(page, sheet).locator("button").first();
@@ -75,8 +77,13 @@ await run("f5-s14", [
           geometry: { geom_type: "count", vertices_json: [at], shape_meta: null, client_uuid: crypto.randomUUID() },
         });
         expect(made.status === 201, `item ${name}: ${made.status}`);
+        doomedItems.push(made.body.uuid);
       }
-      return "8 sheets; Door D1 and Window W2 on Arch page 1";
+      // Reading the estimate gives each measured item its line (D-09).
+      const lines = (await apiCall(token, "GET", estimate)).body;
+      const priced = lines.filter((l) => doomedItems.includes(l.takeoff_item_uuid)).length;
+      expect(priced === 2, `${priced} estimate lines for the two items`);
+      return "8 sheets; Door D1 and Window W2 on Arch page 1, each with its estimate line";
     },
   },
   {
@@ -172,8 +179,12 @@ await run("f5-s14", [
       await selectionMenu(page, arch[4]);
       await page.getByRole("menuitem", { name: "Root" }).click();
       await page.getByText("At root", { exact: true }).waitFor({ timeout: 10000 });
-      const atRoot = (await apiSheets()).filter((s) => s.folder_uuid === null).map((s) => s.page_number).sort();
-      expect(atRoot.join() === "3,4,6", `at root in the api: pages ${atRoot.join()}`);
+      // The panel moves the rows at once and the write lands after, so the api is asked
+      // until it agrees, not the moment the rows move.
+      const rootPages = async () => (await apiSheets()).filter((s) => s.folder_uuid === null).map((s) => s.page_number).sort().join();
+      await waitFor(async () => (await rootPages()) === "3,4,6", "pages 3, 4 and 6 at root in the api", 10000);
+      const atRoot = await rootPages();
+      expect(atRoot === "3,4,6", `at root in the api: pages ${atRoot}`);
       const cleared = await page.locator('[data-sheet-row][data-checked="1"]').count();
       expect(cleared === 0, `${cleared} still selected after the move`);
       return "Ctrl 2, Shift range 2, Ctrl +1 = 3 · \"3 sheets selected\": Bookmark selected (3 stars, api), Move selected to Root (\"At root\", api)";
@@ -207,8 +218,14 @@ await run("f5-s14", [
         expect(!left.some((s) => s.uuid === arch[1].uuid || s.uuid === arch[2].uuid), "a deleted sheet is still listed");
         const items = (await apiCall(token, "GET", `${takeoff}/item`)).body;
         expect(!items.some((i) => i.name === "Door D1" || i.name === "Window W2"), "an item with no shape left survived");
+        // D-50: their estimate lines went with them. No line keeps a quantity that
+        // nothing measures, not even one naming where it came from.
+        const lines = (await apiCall(token, "GET", estimate)).body;
+        const outlived = lines.filter((l) => doomedItems.includes(l.origin_takeoff_item_uuid) || doomedItems.includes(l.takeoff_item_uuid));
+        expect(outlived.length === 0, `${outlived.length} estimate lines outlived their items: ${JSON.stringify(outlived.map((l) => [l.description, l.quantity]))}`);
+        expect(lines.every((l) => l.takeoff_item_uuid || l.is_manual), "a line with no item that is not a typed line");
         await b.page.waitForFunction((ids) => ids.every((u) => !document.querySelector(`[data-sheet-row="${u}"]`)), [arch[1].uuid, arch[2].uuid], { timeout: 10000 });
-        return `"${title}" · ${body} · toast "Deleted 2 sheets" · A moved on to the next sheet · items gone in the api · B's panel dropped both rows`;
+        return `"${title}" · ${body} · toast "Deleted 2 sheets" · A moved on to the next sheet · items and their estimate lines gone in the api (D-50) · B's panel dropped both rows`;
       } finally {
         await b.context.close();
       }

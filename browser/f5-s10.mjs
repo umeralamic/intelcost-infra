@@ -3,7 +3,8 @@
 //   docker compose --profile browser run --rm browser node scripts/f5-s10.mjs
 //
 // A run's own two-sheet PDF: page 1 landscape with a zero-width hairline down its middle,
-// calibrated at 200 ft per unit, with a 0.2 x 0.2 area item that reads 1,600.00 SF.
+// calibrated at 100 ft over 612 pt, with a 0.2 x 0.2 area item that reads 1,035.29 SF
+// (measured in points, D-51).
 //
 // The canvas's contract: the worker's fit image is `img[alt="Drawing sheet"]`, and pdf.js
 // draws into `canvas[data-sheet-raster]` over it, carrying the frame's zoom, resolution
@@ -168,7 +169,7 @@ await run("f5-s10", [
         geometry: { geom_type: "sf", vertices_json: square, shape_meta: null, client_uuid: crypto.randomUUID() },
       });
       expect(made.status === 201, `item: ${made.status} ${JSON.stringify(made.body)}`);
-      return "S10.pdf pages 1 and 2 prepared; 200 ft per unit; S10 square";
+      return "S10.pdf pages 1 and 2 prepared; 100 ft over 612 pt; S10 square";
     },
   },
   {
@@ -203,12 +204,15 @@ await run("f5-s10", [
     },
   },
   {
-    title: "AC2: measurements land where they did: the square reads 1,600.00 SF, the raster sits exactly under the overlay, and the page's border falls where the PDF put it",
+    title: "AC2: measurements land where they did: the square reads 1,035.29 SF (in points, D-51), the raster sits exactly under the overlay, and the page's border falls where the PDF put it",
     run: async ({ page }) => {
       await open(page, sheets[0]);
       const row = await page.locator("[data-quantity-panel] li button", { hasText: "S10 square" }).first().textContent();
-      // The quantity is the check; the panel's number format (today "1,600 SF") is F6's.
-      expect(/1,600(\.00)? SF/.test(row), `the row reads "${row}"`);
+      // The quantity is the check; the panel's number format is F6's. Measured in points
+      // (D-51): 0.2 × 0.2 of a 1224 × 792 pt page is 244.8 × 158.4 pt, at 100 ft per
+      // 612 pt, so 1,035.29 SF. The old 1,600 treated a normalised unit as the same
+      // length across and down the page.
+      expect(/1,035\.29 SF/.test(row), `the row reads "${row}"`);
       const checks = [];
       for (const z of [1, 4]) {
         if (z !== 1) {
