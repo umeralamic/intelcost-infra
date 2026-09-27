@@ -93,7 +93,7 @@ session.
 | 0b | f8-s13 dropped frames (D-46) | Done, pushed | 05:10 | 06:25 | 1 h 15 |
 | 0c | The five full-run failures, timeboxed 1.5 h | Done: 4 fixed with causes, 1 open (see Findings) | 06:45 | 07:20 | 35 min |
 | 0d | Full tier measured at 4, then 3; runner hardened | Done: **3 at a time, all 81 standing fixtures pass, 57 m 25 s** | 07:18 | 09:20 | 2 h |
-| 1 | F5 Block C | Not started | | | |
+| 1 | F5 Block C (S10 to S12) | **Built and driven; stopped here for the founder's click check** | 09:25 | 10:15 | 50 min (plus design and fixtures written during the runs) |
 
 ## The five full-run failures (timeboxed)
 
@@ -148,8 +148,44 @@ finding with these numbers.
 The 3-at-a-time run also carried the three Block C fixtures, then written but not yet
 deployed, so its time is slightly high.
 
+## F5 Block C
+
+**pdf.js now draws every sheet, sharp from 50% to 4000%, over the worker's fit image.**
+A page loaded through Add sheets is drawn sharp in **a median of 3.9 to 5.0 s across runs,
+from ~12 s**, legacy's being ~4 s. The fetch is unchanged from D-42: one GET of the page's
+own file, bytes into `getDocument({ data })`, so IDM has nothing new to react to.
+
+| Subtask | Proof |
+|---|---|
+| **S10** pdf.js on the canvas | `f5-s10` 5/5, on a dpr-2 window:<br>• at 100%, 400%, 2000% and 4000% the settled picture is a pdf.js raster, its backing twice its CSS size, windowed above 2.5× (3808 × 2524 device px at 4000%);<br>• **a hairline is 1 device pixel wide at 4000%**;<br>• the raster sits exactly under the measurement overlay at 100% and 400%, and a 0.2 × 0.2 square reads 1,600 SF;<br>• two sheets, back and forth twice: 2 opens;<br>• 64 MB of bitmaps on a 4 GB machine |
+| **S11** Fit tier, zoom rule, re-raster | `f5-s11` 6/6, run alone:<br>• the fit image paints first, then pdf.js over it; back to an open sheet, no image is fetched;<br>• the buttons step +0.25 below 2× and ×1.25 above, 100% to 4000% in 19 presses; buttons and wheel stop exactly at 50% and 4000%;<br>• after a zoom, a half pass (8 to 9 ms) then a full one (39 to 43 ms), windowed above 2.5×;<br>• cold open: first pdf.js paint median 1.9 to 2.4 s (see Findings);<br>• Load to sharp: 3.9 to 5.0 s |
+| **S12** Split source, signing | `f5-s12` 4/4:<br>• page 90 of a 150-page set opens from its own split, one GET, the set never requested;<br>• **D-47**: an unprepared page reads "Preparing the sheet", asks nothing of the set, then draws;<br>• one call signs every sheet, and switching sheets signs nothing more |
+
+**Carried on the new canvas, unchanged:** f5-big 6/6 (the IDM stand-in: no request for
+the set, nothing answered as a PDF, and with the sheet's PDF blocked the fit image stays),
+f8-s13 5/5 and f8-s14 4/4 (colleagues' drafts), f8-s9, f8-s12, d37-links. **Quick tier
+plus Block C's fixtures: 27 of 28 at 3 in parallel.** The one failure was f5-s11's timing
+step, 4.0 s under load against 1.9 s alone, so timing fixtures now run in the serial
+group, and f5-s11 passes there.
+
+**Gates:** ruff, mypy, lint, typecheck, build (pdf.js stays in its own chunk; the takeoff
+route is 65 kB).
+
 ## Findings
 
+- **Cold open is pdf.js starting up.** Of the first pdf.js paint's 1.9 to 2.4 s on a cold
+  page, all but ~60 ms is fetching and opening the PDF. That is mostly pdf.js and its
+  1.3 MB worker loading from the bench's Vite dev server; it now starts loading with the
+  page (2.6 s before that). Legacy's ~200 ms is a warm production build, and the bench has
+  no production app image, so production's number is not measured. The fit image covers
+  the wait.
+- **Most of the old ~12 s was a PNG.** The old path drew the page 3072 px wide,
+  PNG-encoded it and loaded it back as an image. Now it draws straight into the canvas.
+- **Legacy's prerender queue** (neighbour sheets drawn at idle) is in the spec's
+  "Rendering" list but in no S10 to S12 criterion. It needs the panel's sheet order and
+  hover, so it moves to Block D.
+- **The panel reads "1,600 SF", not "1,600.00 SF".** The quantity is exact; its format is
+  F6's.
 - **Event delivery's tail under load.** PATCH → event heard: p90 504 ms, max 1.6 s with
   4 fixtures running (idle: 45 ms, 53 ms). f8-s16's "within 1.5 s" failed once at 4 at a
   time (1,617 ms) and passes at 3. Not chased inside the timebox. The logging fix below
@@ -157,11 +193,67 @@ deployed, so its time is slightly high.
 - **`waitFor` let a probe's error escape.** A fetch refused while the api restarted ended
   the wait at once. It now counts as "not yet", and the last error is named on timeout.
 
-## Commits
+## Commits (all on `umer-dev`, pushed; `main` untouched)
+
+| Repo | Commit | What |
+|---|---|---|
+| infra | `fd74c4a` | Fixtures run in parallel, in two tiers (D-44); D-45 logged; mirror |
+| api | `6a4a07a` | D-45: one preparation job per file, in slices; `/health/code` serialised |
+| api | `526ba6a` | D-46: draft and cursor frames limited by rate over time |
+| infra | `79abbcf` | f8-s13's flood step; mirror |
+| app | `61ae2a7` | The invited signup holds for its seat; the default workspace is kept |
+| api | `5d6025e` | The bench api logs our code at debug, not the libraries |
+| infra | `3076742` | 3 at a time, measured; the runner hardened; fixture causes; mirror |
+| app | `429686e` | **F5 Block C** |
+| api | `c4dd888` | One call signs every sheet |
+| infra | the commit carrying this report | Block C's fixtures, timing fixtures serial, docs, mirror |
 
 ## Decisions to review
 
+- **D-44** (the founder's instruction): parallel runs and two tiers. Default 3 at a time,
+  as measured.
+- **D-45:** one preparation job per drawing file, in slices of 5 minutes. A page the soft
+  time limit stops is marked failed. Found on your JHS VOL 4 set; see "Missing" above.
+- **D-46:** draft and cursor frames limited by a token bucket (10 a second, up to 10 at
+  once) instead of a strict one-second window.
+- **D-47, decided overnight, pending your review:** S12's AC2 amended. An unprepared page
+  waits for the worker and is never read from the set, as D-41 requires.
+
 ## Click-only checks
 
+Sign in at http://localhost:5173 as estimator@bench.intelcost.io and switch to "F5 Block A
+demo 15:16". Use any project with loaded sheets that aren't your JHS sets, or load a page
+from any PDF with Add sheets. (Your Bench Construction Riverside has old PNG sheets, which
+show the fit image only.) **IDM-on** marks the checks to make with IDM running and its
+extension on.
+
+**F5 Block C**
+
+1. **IDM-on. Open a loaded sheet.** It shows at once, then turns crisp within a second or
+   two as pdf.js draws over it. IDM does not pop up, and nothing downloads.
+2. **Zoom with Ctrl and the wheel, all the way in.**
+   - Every time you stop, lines and text turn crisp within a moment.
+   - It stops at 4000%. At 4000% a thin line is still one crisp pixel wide, not a blur.
+3. **The buttons.** "+" goes 125%, 150%, 175%, 200%, then 250%, 313%… up to 4000%. "−"
+   comes back down and stops at 50%.
+4. **Pan at 4000%** (drag with Select). When you let go, the newly shown part turns crisp a
+   moment later.
+5. **Switch to another sheet and back** (address bar or Add sheets). Coming back is
+   instant and crisp, with no blurry stage.
+6. **IDM-on. Add sheets → load one new page.** "Preparing the sheet" for a few seconds,
+   then the page, crisp in about 4 to 5 seconds from the Load. IDM does not pop up.
+7. **Measure on a calibrated sheet at 400%.** Draw a line along a drawn edge: it sits on
+   the edge, and the quantity matches what it read at 100%.
+8. **Two windows** (A on 5173, B on 5174, the same sheet). A draws slowly: B sees the
+   draft over the crisp page, in the item's colour.
+
 ## Questions
+
+1. **Cold open on a production build.** On the bench, a cold page's first pdf.js paint is
+   about 2 s, almost all of it pdf.js starting from the dev server (the fit image shows
+   meanwhile). Measuring legacy's ~200 ms needs a production build of the app, which the
+   bench doesn't have (F11 packages it). Is the fit-image-then-sharp behaviour enough for
+   now, or should a production-build image come sooner?
+2. **D-47.** Is waiting for the worker (a few seconds of "Preparing the sheet" on a fresh
+   Load) the right trade for never reading the set?
 </content>

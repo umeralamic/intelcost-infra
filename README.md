@@ -238,9 +238,11 @@ REGRESS_JOBS=4 ./regress.sh      # fixtures at a time (default 3, as measured be
 REGRESS_CPU=1 ./regress.sh       # also sample the host's CPU every 5 s, and report it
 ```
 
-- **The serial group** is f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27. Each one
-  stops, restarts or recreates the api, api-b, Redis, the worker or MinIO, or drops the
-  worker's queue. They run last, with nothing else running.
+- **The serial group** is f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27, and
+  f5-s11. Each of the first seven stops, restarts or recreates the api, api-b, Redis, the
+  worker or MinIO, or drops the worker's queue. f5-s11 measures pdf.js's times, which beside
+  other browsers measured the contention (a 1.9 s cold paint became 4.0 s). They run last,
+  with nothing else running.
 - **The parallel group is everything else.** Every fixture builds its own world through
   `browser/lib/`:
   - its own owner (`fixtureOwner`), seats (`seatedMember`, tagged with the fixture's

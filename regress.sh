@@ -59,12 +59,15 @@ echo $$ >"$LOCK/pid"
 cpu_pid=
 trap 'rm -rf "$LOCK"; [ -n "$cpu_pid" ] && kill "$cpu_pid" 2>/dev/null' EXIT
 
-# Stop, restart or recreate a shared service, or drop the worker's queue.
+# Stop, restart or recreate a shared service, or drop the worker's queue; or measure time.
 #   f8-s2   stops the api for 30 s and restarts it     f8-s3   recreates the api on 2-minute tokens
 #   f8-s5   stops Redis for 10 s                       f8-s8   restarts api-b
 #   f8-s12  restarts the api                           f5-s2   stops the worker, drops its queue
 #   f4-s27  stops MinIO for about three minutes
-SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27)
+#   f5-s11  measures time (cold open, Load to sharp paint): pdf.js's work is CPU-bound,
+#           and beside other browsers it measured the contention (1.9 s alone, 4.0 s in
+#           parallel), so it runs alone and its numbers are the product's
+SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27 f5-s11)
 
 # The core smoke set: one or two fixtures per surface, fast, run at the end of each block.
 QUICK=(f2-s3 f2-s9 f3-s1 f3-s8 f4-s5 f4-s7 f4-s17 f4-dialogs f5-s4 f5-s6 f5-s8 f8-s7 f8-s13 f8-s18 d37-links p19)

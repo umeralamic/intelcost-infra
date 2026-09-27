@@ -37,7 +37,7 @@ _Updated: 2026-09-26_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Blocks A and B closed (B 2026-09-27, D-40 to D-43); Block C next** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
+| F5 (P-04) | Takeoff shell: loading files into takeoff, the sheets panel, rendering (D-14), calibration and scale; zoom 50% to 4000%, sharp throughout (D-35) | both | Questions answered 2026-09-26 (D-36); **Blocks A and B closed (B 2026-09-27, D-40 to D-43); Block C built 2026-09-27, awaiting the founder's click check (pdf.js sharp 50% to 4000%, D-47); Block D next** | [takeoff_shell_tasks.md](docs/tasks/takeoff_shell_tasks.md) |
 | F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **waits for F5** | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
 | F7 (P-06) | Canvas tools and interactions: the measure tools, selection and editing, deducts, auto-merge, undo, menus, hover, keys; colleagues' cursors and drafts | both | Specced 2026-09-26, answers D-39; **waits for F5 and F6** | [canvas_tools_tasks.md](docs/tasks/canvas_tools_tasks.md) |
 

@@ -27,6 +27,17 @@ progress from Block A.**_
 |---|---|---|
 | **A: S1 to S3** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-s1` 7/7 (load 1,3 then 2,3 adds only 2; the mirrored folders; a skipped page never made, after preparation; Plans refused with "5 takeoff sheets", in the api and as "Can't delete — folder in use" on screen; a .docx, page 4 of 3 and an unfinished upload refused by name; a mixed Load writes nothing; a viewer 403). `f5-s2` 4/4 (the Load answers in 146 ms with every page pending; split PDF, 512 px thumbnail and fit WebP checked in MinIO for two PDF pages and a wrapped PNG, its original kept; a tab showing "This sheet has no image" draws the page once the worker is back, no reload, one `drawing.source.changed`; a lost job re-dispatched by the sweep; beat carries the sweep). `f5-s3` 2/2 and `drives/f5-s3-bundle.sh` (canvas and drafts only in the takeoff chunk; the dashboard fetches none of it; a missing takeoff chunk reloads once). Migration `a91c4e7d2b30` up, down, up; `alembic check` clean. Gates: ruff, ruff format, mypy (83 files), lint, typecheck, build. Full regression: see the report. **Checked by the founder** |
 | **B: S20, S4 to S9** | Built and driven, 2026-09-26. Four IDM rounds after the founder's check (D-40 to D-43). **Closed 2026-09-27, the founder's IDM test passing** | `f5-count` (S20): a 519 MB, 150-page set counted by ranged reads, 230 KB in 4 requests. `f5-s4` 6/6, `f5-s5` 6/6, `f5-s6` 6/6 (the worker's thumbnails, D-41), `f5-s7` 3/3, `f5-s8` 4/4, `f5-s9` 2/2, and **`f5-big`**: the browser never reads a set, sheets reach pdf.js as bytes served as `application/vnd.intelcost.sheet`, and a Load is not held behind thumbnails. The Block B full regression passed, then only touched fixtures after each IDM round. See [F5_BLOCK_B_REPORT.md](F5_BLOCK_B_REPORT.md) |
+| **C: S10 to S12** | Built and driven, 2026-09-27 (overnight plan, stopped here for the founder's click check). S12 AC2 amended by **D-47** | `f5-s10` 5/5 (dpr 2: a pdf.js raster at 100%, 400%, 2000% and 4000%, backing = CSS × 2; a hairline 1 device px at 4000%; the raster exactly under the overlay; one open per file; a 64 MB budget at 4 GB). `f5-s11` 6/6 (fit image first, none fetched for an open document; 50% to 4000% with legacy's steps; a half then a full pass, windowed above 2.5×; cold first pdf.js paint median 1.86 s; **Load to sharp paint median 3.9 to 5.0 s, from ~12 s**). `f5-s12` 4/4 (page 90 of 150 from its own split; D-47's preparing state; one call signs every sheet). See [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md) |
+
+**Found while building Block C:**
+- **Most of the old ~12 s was the page drawn 3072 px wide, PNG-encoded and decoded as an
+  image.** pdf.js now draws straight into the canvas, as legacy does.
+- **Cold open is pdf.js starting up.** On a cold page, 1.8 s of the 1.86 s first paint is
+  pdf.js and its 1.3 MB worker loading from the bench's dev server. It now starts loading
+  with the page. Legacy's ~200 ms is a warm production build; the bench has none.
+- **Not ported in Block C:** legacy's prerender queue (neighbour sheets drawn at idle). The
+  spec's "Rendering" section lists it, but no S10 to S12 criterion does, and it depends on
+  the sheets panel (Block D's hover and next-sheet order). It moves to Block D.
 
 **Found while building Block B:**
 - **The page count is read by range (S20, the founder's first subtask).** Block A's first

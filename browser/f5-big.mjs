@@ -95,7 +95,7 @@ await run("f5-big", [
       await dialog.locator("[data-load-pages]").click();
       await page.getByText("Added 1 page").waitFor({ timeout: 30000 });
       const t0 = Date.now();
-      await page.locator('img[data-sheet-image="pdf"]').waitFor({ timeout: 60000 });
+      await page.locator('canvas[data-sheet-raster][data-raster-res="1"]').waitFor({ timeout: 60000 });
       const took = Date.now() - t0;
       const token = await apiLogin(email, "bench-password-1");
       const files = await apiCall(token, "GET", `/api/workspace/${workspaceUuid}/project/${projectUuid}/file`);
@@ -175,7 +175,7 @@ await run("f5-big", [
       await dialog.locator("[data-load-pages]").click();
       await page.getByText("Added 1 page").waitFor({ timeout: 30000 });
       const t0 = Date.now();
-      await page.locator('img[data-sheet-image="pdf"]').waitFor({ timeout: 120000 });
+      await page.locator('canvas[data-sheet-raster][data-raster-res="1"]').waitFor({ timeout: 120000 });
       const took = Date.now() - t0;
       nothingIdmTakes(seen);
       // The takeoff page opened on page 1 (loaded in the first step) before this Load
@@ -207,7 +207,9 @@ await run("f5-big", [
       expect(source === "fit", `the sheet shows "${source}"`);
       const loaded = await image.evaluate((img) => img.complete && img.naturalWidth > 0);
       expect(loaded, "the fit image did not draw");
-      return "the fit image stays (data-sheet-image=fit), drawn; the canvas is usable";
+      const rasters = await page.locator("canvas[data-sheet-raster]").count();
+      expect(rasters === 0, "a pdf.js raster was drawn with its PDF blocked");
+      return "the fit image stays (data-sheet-image=fit), drawn, no raster over it; the canvas is usable";
     },
   },
 ]);
