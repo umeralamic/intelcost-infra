@@ -1944,3 +1944,109 @@ Load.
 - **Production needs a second worker process:** `-Q previews --concurrency=1`, niced
   (for Abdullah, D-11).
 - The thumbnail worker holds a set in memory while it works, one set at a time.
+
+---
+
+## D-44 — The regression runs in parallel, in two tiers
+
+**Date:** 2026-09-27
+**Status:** Accepted (the founder's instruction)
+**Area:** Infrastructure
+
+**Context:** Since Block B every takeoff fixture builds its own Riverside (about 25 s),
+and `regress.sh` ran all of them one after another, F8's part alone about 25 minutes.
+The standing rule ran that full list at the end of every block. Block B's failures were
+the fixtures' own, not the product's:
+- clicks aimed at a sheet that ran past the window;
+- a display name hard-coded for an account no longer used;
+- reads made before the page had drawn;
+- a fixed grace period after Redis came back;
+- one shared window-B account and one shared mailbox that every fixture cleared.
+
+Those are also exactly what breaks when fixtures run side by side.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Keep one at a time, run the full list less often | Nothing to change | Slow, and fragile fixtures stay fragile |
+| B — Fixtures own everything they touch and wait on page state; independent ones run in parallel, the ones that stop a service run alone at the end; a quick tier per block and the full list at close-out | Minutes, not an hour and more; fragility shows up and is fixed at its cause | Parallel load makes timing assertions stricter; a shared helper change affects every fixture |
+
+**Decision:** Option B.
+- **Every fixture builds its own world** through the shared helpers (`browser/lib/`):
+  - its own owner, seats, and window-B person (`fx.<fixture>-b.<stamp>@`, "Sara
+    Williams");
+  - its own workspaces;
+  - only the mail sent to its own addresses (read, counted and cleared per address).
+- **Fixtures wait on real state, never on time:**
+  - the switcher showing the workspace and the role in it (`enterWorkspace`);
+  - the socket joined to the project topic (`onProjectTopic`);
+  - the layout settled (`pageSettled`);
+  - sheet points checked to be on screen (`sheetPoint`);
+  - display names from the helpers' own names (`A_NAME`, `B_NAME`).
+  - The only timed waits are `quietFor`, a window in which something must not happen,
+    and gesture pacing.
+- **`regress.sh`** runs the parallel group longest first, `REGRESS_JOBS` at a time. Then
+  the serial group, one at a time: f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27,
+  each of which stops, restarts or recreates a service, or drops the worker's queue.
+- **Two tiers.**
+  - `./regress.sh quick [names]`: a core smoke set of 16, plus the fixtures a block
+    touched. Run at the end of each block.
+  - `./regress.sh` (full): every standing fixture, F2 and F3 included. Run at feature
+    close-out and overnight.
+
+**Consequences:**
+- The measured numbers are in `intelcost-infra/README.md`, "Run a regression".
+- A fixture that assumes a shared account, a window size or a mailbox is a bug in the
+  fixture.
+- The serial group's services are down while it runs, so nothing else may use the bench
+  then. That was already the rule for those runners.
+
+---
+
+## D-45 — One preparation job per drawing file, in slices
+
+**Date:** 2026-09-27
+**Status:** Accepted (a fault with a cause, found by D-44's first run)
+**Area:** Backend
+
+**Context:** The first run after the IDM rounds could not start: the worker did not answer
+`/health/code`. Both of its slots were preparing the same file, the founder's "JHS Permit
+C 50CD_VOL 4" (280 MB, 242 pages loaded in batches, 52 left). Four faults stacked up:
+- **Duplicate jobs.** Every Load dispatches a job for its whole file, and two jobs on one
+  file prepare the same pages side by side.
+- **One file holds a slot for as long as it takes.** The late pages of this set take 9 to
+  14 s each to render under load, so 52 of them outlast the 25-minute soft time limit, and
+  nothing else gets that slot meanwhile.
+- **A time limit counts as a broken page.** The soft limit is raised inside MuPDF, caught
+  as that page's failure, and the job runs on to the hard kill at 30 minutes.
+- **Resumed forever.** The sweep then dispatches the file again, from the same page.
+
+A person loading a big set would see a Load that never finishes and a worker that answers
+no one else.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — More worker slots, a longer time limit | Nothing to write | Duplicates still double the work, and one big set still fills the slots |
+| B — One job per file (a Redis lock), in slices of at most 5 minutes that queue their own continuation; a page the soft limit stops is failed, the job resumes after it | A Load's other files and other people's Loads get a slot between slices; no page is prepared twice; nothing loops | A second dispatch for a file waits for the running slice rather than helping it |
+
+**Decision:** Option B.
+- `prepare_drawing_file` takes `prepare:drawing:{file}` in Redis (SET NX, 5-minute TTL,
+  renewed after every page) or returns at once: a job already holds that file.
+- Between pages it reads the pending list again, so pages a Load adds mid-run are
+  included.
+- It starts no new page after 5 minutes (`prepare_slice_seconds`). It releases the lock
+  and queues its own continuation at the back of the queue.
+- If the soft limit stops a page, only that page is marked failed (it alone took most of
+  the limit), and a continuation carries on from the next one.
+- After releasing the lock it checks once more for pending pages, so a Load that landed in
+  that moment is not left to the sweep.
+
+**Consequences:**
+- A big set prepares in slices, with other Loads' pages prepared between them.
+- The sweep's 10-minute window is longer than the lock's 5 minutes, so a job lost with its
+  worker is resumed as before.
+- Production (Abdullah, D-11): nothing new to run. The lock uses the Redis the worker
+  already has.

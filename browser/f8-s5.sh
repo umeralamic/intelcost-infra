@@ -21,11 +21,10 @@ status=0
 docker compose --profile browser run --rm browser node scripts/f8-s5.mjs 2>&1 | grep -v '^ Container'
 [ "${PIPESTATUS[0]}" -eq 0 ] || status=1
 
-workspace=$(docker compose exec -T postgres psql -U intelcost -d intelcost -Atc \
-  "select w.uuid from workspace w join \"user\" u on u.id = w.owner_id where u.email = 'estimator@bench.intelcost.io' order by w.id limit 1")
 echo
 echo "=== f8-s5 AC2 (drive) ==="
-out=$(docker compose exec -T api sh -lc "cd /srv && python drives/f8-bench.py rollback $workspace" 2>&1)
+# On a fresh uuid's topic: the drive borrows no one's workspace.
+out=$(docker compose exec -T api sh -lc "cd /srv && python drives/f8-bench.py rollback" 2>&1)
 if grep -q '^silent' <<<"$out"; then
   echo "PASS  AC2: a publish registered on a transaction that fails never arrives; a committed one does"
   echo "1/1 passed"

@@ -11,7 +11,7 @@
 // The property under test is not "it reloads". It is "it reloads AT MOST ONCE",
 // because a reload that fails the same way is a tab that reloads forever.
 
-import { APP, expect, run } from "./lib/bench.mjs";
+import { APP, expect, quietFor, run } from "./lib/bench.mjs";
 
 const STALE = "Failed to fetch dynamically imported module: /assets/index-abc123.js";
 const GUARD_KEY = "intelcost.stale-chunk-reloaded-at";
@@ -47,7 +47,7 @@ const settled = async (page, loads, expected, what) => {
   } catch {
     /* only a yield */
   }
-  await page.waitForTimeout(2500);
+  await quietFor(2500); // no further load may follow
   expect(loads.length === expected, `${what}: ${loads.length} loads, expected ${expected}`);
 };
 

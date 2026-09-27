@@ -14,6 +14,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   SEEDED,
   activity,
@@ -57,7 +58,7 @@ async function project(tag, statusKey) {
 /** The owner, on this fixture's workspace, on the Statuses page. */
 async function openStatuses(page, email = OWNER) {
   await signInAs(page, email, SEEDED.password);
-  await page.selectOption("header select", workspace.uuid).catch(() => {});
+  await enterWorkspace(page, workspace.uuid);
   await page.goto(`${APP}/settings/statuses`);
   await page.getByRole("heading", { name: "Project statuses" }).waitFor({ timeout: 20000 });
   await page.locator("li[data-status]").first().waitFor();
@@ -292,7 +293,7 @@ await run("f4-s3", [
         expect(actions.has(action), `no ${action} in the feed`);
       }
       await signInAs(page, OWNER, SEEDED.password);
-      await page.selectOption("header select", workspace.uuid).catch(() => {});
+      await enterWorkspace(page, workspace.uuid);
       await page.goto(`${APP}/settings/activity`);
       await page.getByText("changed the project status Out to bid").waitFor({ timeout: 20000 });
       await page.getByText("added the project status Lost, price").waitFor();

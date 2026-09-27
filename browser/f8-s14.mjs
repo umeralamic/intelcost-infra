@@ -3,9 +3,9 @@
 //
 //   docker compose --profile browser run --rm browser node scripts/f8-s14.mjs
 //
-// Driven as window B's person (Sara W.), whose stored choices are cleared at the start and
-// the end (null puts a preference back on its default), so
-// a founder signing in as her afterwards sees the canvas as a new user would.
+// Driven as window B's person (Sara W., this run's own account, lib/realtime.mjs), whose
+// stored choices are cleared at the start and the end (null puts a preference back on its
+// default).
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import {
@@ -19,7 +19,7 @@ import {
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
-import { openSheet, riverside, setMode } from "./lib/takeoff.mjs";
+import { clickSheet, onProjectTopic, openSheet, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -59,15 +59,7 @@ async function shown(page) {
   return out;
 }
 
-async function sweep(page, from, to, ms) {
-  const box = await page.locator('svg[role="presentation"]').boundingBox();
-  const steps = Math.max(2, Math.round(ms / 16));
-  for (let i = 1; i <= steps; i += 1) {
-    const t = i / steps;
-    await page.mouse.move(box.x + box.width * (from[0] + (to[0] - from[0]) * t), box.y + box.height * (from[1] + (to[1] - from[1]) * t));
-    await page.waitForTimeout(16);
-  }
-}
+const sweep = sweepSheet;
 
 await run("f8-s14", [
   {
@@ -126,12 +118,10 @@ await run("f8-s14", [
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
         await openSheet(b.page, r, APP_B);
-        await readySocket(page);
-        await readySocket(b.page);
-        await page.waitForTimeout(1000);
+        await onProjectTopic(page, r);
+        await onProjectTopic(b.page, r);
         await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { name: "Linear", exact: true }).click();
-        const box = await page.locator('svg[role="presentation"]').boundingBox();
-        await page.mouse.click(box.x + box.width * 0.3, box.y + box.height * 0.85);
+        await clickSheet(page, 0.3, 0.85);
         await sweep(page, [0.3, 0.85], [0.45, 0.88], 500);
 
         const seen = {};
@@ -139,8 +129,7 @@ await run("f8-s14", [
           await call(saraToken, "PATCH", "/api/auth/me", { collaboration_prefs: { ...DEFAULTS, ...prefs } });
           await b.page.reload();
           await b.page.locator('img[alt="Drawing sheet"]').waitFor();
-          await readySocket(b.page);
-          await page.waitForTimeout(800);
+          await onProjectTopic(b.page, r);
           // Keep the pen moving so B hears frames after its reload.
           await sweep(page, [0.45, 0.88], [0.5, 0.86], 400);
           await sweep(page, [0.5, 0.86], [0.45, 0.88], 400);
@@ -184,9 +173,9 @@ await run("f8-s14", [
         await setPrefs({ show_names: "hover" });
         await waitFor(async () => (await count("[data-draft]")) === 1, "names on hover: the path", 4000);
         const hiddenAway = (await count("[data-draft-tag]")) === 0;
-        const bBox = await b.page.locator('svg[role="presentation"]').boundingBox();
         const pen = await b.page.locator("[data-draft]").evaluate((p) => p.getAttribute("d").trim().split(/\s+/).slice(1, 3).map(Number));
-        await b.page.mouse.move(bBox.x + bBox.width * pen[0], bBox.y + bBox.height * pen[1]);
+        const onRun = await sheetPoint(b.page, pen[0], pen[1]);
+        await b.page.mouse.move(onRun.x, onRun.y);
         await waitFor(async () => (await count("[data-draft-tag]")) === 1, "names on hover: the tag when B's pointer is on the run", 4000);
         expect(hiddenAway, "names on hover showed the tag with B's pointer away");
         seen.hover = "tag only with B's pointer on the run";

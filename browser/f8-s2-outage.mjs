@@ -66,8 +66,8 @@ await run("f8-s2-outage", [
       const failed = outage.slice(1).filter((s) => !s.received.some((f) => f.type === "ready"));
       const thirdFailure = failed[2]?.close?.at;
 
-      // Let the indicator clear on the new `ready`.
-      await page.waitForTimeout(500);
+      // The indicator clears on the new `ready`; waited for, and read after.
+      await page.locator("[data-realtime-reconnecting]").waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
       const stillShowing = await page.$("[data-realtime-reconnecting]");
 
       console.log("PHASE restart-api");

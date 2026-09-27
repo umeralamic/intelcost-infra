@@ -9,7 +9,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 
-import { apiCall, expect, run, seatedMember } from "./lib/bench.mjs";
+import { apiCall, expect, onDisk, run, seatedMember } from "./lib/bench.mjs";
 import { folderPaths, freshWorkspace, makeProject, openFiles, seedFile } from "./lib/f4.mjs";
 
 const MB = 1024 * 1024;
@@ -312,7 +312,7 @@ await run("f4-s17", [
       let sent = 0;
       page.on("request", (r) => r.method() === "PUT" && /localhost:9000/.test(r.url()) && (sent += 1));
       await section.getByRole("button", { name: "Resume" }).click();
-      await section.locator("input[type=file]").setInputFiles({ name: "Plan set.pdf", mimeType: "application/pdf", buffer: big });
+      await section.locator("input[type=file]").setInputFiles(await onDisk("Plan set.pdf", big));
       await page.getByText("Uploaded 1 file").waitFor({ timeout: 60000 });
       await section.waitFor({ state: "detached", timeout: 15000 });
       const done = (await apiCall(token, "GET", fileUrl)).body.find((f) => f.uuid === row.uuid);

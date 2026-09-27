@@ -19,6 +19,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -51,7 +52,7 @@ await run("f3-s10", [
       const slugBefore = (await readWorkspace(ownerToken, ws.uuid)).slug;
 
       await signInAs(page, SEED);
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/general`);
       await page.waitForSelector("#workspace-name-general", { timeout: 20000 });
 
@@ -170,7 +171,7 @@ await run("f3-s10", [
     run: async ({ page }) => {
       const ws = await createWorkspace(ownerToken, `S10 Logo ${Date.now()}`);
       await signInAs(page, SEED);
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/general`);
       await page.waitForSelector("[data-logo-choose]", { timeout: 20000 });
 

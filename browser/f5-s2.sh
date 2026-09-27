@@ -29,7 +29,7 @@ answer() {  # answer n "PHASE name [detail]"
     stop-worker) docker compose stop worker >/dev/null 2>&1 && echo "worker stopped" ;;
     start-worker) docker compose start worker >/dev/null 2>&1 && echo "worker started" ;;
     lose-queue) docker compose exec -T redis redis-cli del celery >/dev/null && echo "queued jobs dropped" ;;
-    sweep) drive age "$detail" && drive sweep || ok=0 ;;
+    sweep) drive age "$detail" && drive sweep "$detail" || ok=0 ;;
   esac
   # A failed drive still answers, so the fixture does not hang; its FAIL line is the report.
   [ "$ok" -eq 1 ] || { echo "FAIL  the $phase drive"; drives_failed=1; }

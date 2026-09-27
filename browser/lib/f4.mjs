@@ -2,12 +2,12 @@
 // a person's clicks would end up, so a fixture spends its browser time on the screen
 // under test rather than on setting the scene.
 
-import { APP, SEEDED, apiCall, expect, fixtureOwner, ownWorkspace, signInAs } from "./bench.mjs";
+import { APP, SEEDED, apiCall, enterWorkspace, expect, fixtureOwner, ownWorkspace, signInAs, stamp } from "./bench.mjs";
 
 /** A throwaway workspace owned by this run's own account (`fixtureOwner`), never the seeded
  *  user, so state never leaks between runs and the founder's switcher stays clean. */
 export async function freshWorkspace(tag) {
-  const { token, workspace, base } = await ownWorkspace(`${tag} ${Date.now()}`);
+  const { token, workspace, base } = await ownWorkspace(`${tag} ${stamp()}`);
   return { token, workspace, base };
 }
 
@@ -25,7 +25,7 @@ export async function makeProject(token, base, body, statusKey) {
 /** Signed in (as this run's owner unless told otherwise), on this workspace's dashboard, drawn. */
 export async function openDashboard(page, workspaceUuid, email, path = "/") {
   await signInAs(page, email ?? (await fixtureOwner()).email, SEEDED.password);
-  await page.selectOption("header select", workspaceUuid).catch(() => {});
+  await enterWorkspace(page, workspaceUuid);
   await page.goto(`${APP}${path}`);
   await page.getByRole("heading", { name: "Projects", exact: true }).waitFor({ timeout: 20000 });
   await page.getByRole("tablist", { name: "Project status" }).waitFor({ timeout: 20000 });
@@ -121,7 +121,7 @@ export async function folderPaths(token, base, projectUuid) {
 /** Signed in, on a project's Home, the file browser drawn. */
 export async function openFiles(page, workspaceUuid, projectUuid, email) {
   await signInAs(page, email ?? (await fixtureOwner()).email, SEEDED.password);
-  await page.selectOption("header select", workspaceUuid).catch(() => {});
+  await enterWorkspace(page, workspaceUuid);
   await page.goto(`${APP}/project/${projectUuid}`);
   await page.locator("[data-file-browser] [data-tree-root]").waitFor({ timeout: 20000 });
   await page.locator("[data-file-browser]").getByText("Loading…").first().waitFor({ state: "detached", timeout: 20000 }).catch(() => {});

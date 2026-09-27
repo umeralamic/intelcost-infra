@@ -6,7 +6,7 @@
 // answer, not a screen. The screen is S12.
 
 import { APP, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
-import { WS_URL, WS_URL_B, call, ensureWindowB } from "./lib/realtime.mjs";
+import { A_NAME, B_NAME, WS_URL, WS_URL_B, call, ensureWindowB } from "./lib/realtime.mjs";
 import { countItem, removeItem, riverside, setMode } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
@@ -139,8 +139,8 @@ await run("f8-s11", [
       );
       expect(result.grantedAfter !== null, "B never got the claim");
       expect(result.grantedAfter > 13000 && result.grantedAfter < 17500, `B got it after ${result.grantedAfter} ms`);
-      expect(result.told === "Sara W. is editing this item right now.", `A was told "${result.told}"`);
-      expect(result.third === "focus.refused" && result.thirdReason?.startsWith("Sara W."), `a third tab got ${JSON.stringify(result)}`);
+      expect(result.told === `${B_NAME} is editing this item right now.`, `A was told "${result.told}"`);
+      expect(result.third === "focus.refused" && result.thirdReason?.startsWith(B_NAME), `a third tab got ${JSON.stringify(result)}`);
       return `claim lapsed ${(result.grantedAfter / 1000).toFixed(1)} s after the last heartbeat; A told "${result.told}"; B's claim survived A's late release`;
     },
   },
@@ -166,7 +166,7 @@ await run("f8-s11", [
         const otherTab = await call(token, "PATCH", path, { name: "renamed by another tab" }, { "X-Client-Id": crypto.randomUUID() });
         const own = await call(token, "PATCH", path, { name: "renamed by the holder" }, { "X-Client-Id": holder });
         await page.evaluate(() => window.__holder.ws.close());
-        expect(other.status === 409 && other.body.detail === "Fixture O. is editing this item right now.", `B's delete: ${other.status} ${JSON.stringify(other.body)}`);
+        expect(other.status === 409 && other.body.detail === `${A_NAME} is editing this item right now.`, `B's delete: ${other.status} ${JSON.stringify(other.body)}`);
         expect(otherTab.status === 409, `A's other tab: ${otherTab.status}`);
         expect(own.status === 200, `the holder: ${own.status} ${JSON.stringify(own.body)}`);
         return `B: 409 "${other.body.detail}" · A's other tab: 409 · the holder: 200`;
@@ -199,7 +199,7 @@ await run("f8-s11", [
         { token, tokenB, url: WS_URL, urlB: WS_URL_B, topic, sheet: r.sheet },
       );
       expect(seen.granted === 2, `${seen.granted} granted`);
-      expect(seen.aSeesB === "Sara W." && seen.bSeesA === "Fixture O.", JSON.stringify(seen));
+      expect(seen.aSeesB === B_NAME && seen.bSeesA === A_NAME, JSON.stringify(seen));
       expect(seen.exclusive === false, "a Work together hold is exclusive");
       return `both granted; A sees "${seen.aSeesB}", B sees "${seen.bSeesA}", neither exclusive`;
     },

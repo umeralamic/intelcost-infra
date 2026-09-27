@@ -15,6 +15,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -254,7 +255,7 @@ await run("f3-s9", [
       await signInAs(page, SEED);
 
       // Switch to the fresh workspace, so the pass never transfers Bench Construction.
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/ownership`);
       await page.waitForSelector("#transfer-target", { timeout: 20000 });
 
@@ -301,7 +302,7 @@ await run("f3-s9", [
       const ws = await freshWorkspace("ScreenQueue");
       const heirEmail = `s9-screenq-${Date.now()}@bench.intelcost.io`;
       await signInAs(page, SEED);
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/ownership`);
       await page.waitForSelector("#transfer-target", { timeout: 20000 });
 

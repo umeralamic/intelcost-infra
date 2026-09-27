@@ -23,7 +23,7 @@ import {
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
-import { openSheet, removeItem, riverside, setMode } from "./lib/takeoff.mjs";
+import { clickSheet, onProjectTopic, openSheet, removeItem, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -56,27 +56,13 @@ function peakPerSecond(frames) {
 }
 
 /** A moves the pen across the sheet in small steps, the way a hand does. */
-async function sweep(page, from, to, ms) {
-  const box = await page.locator('svg[role="presentation"]').boundingBox();
-  const steps = Math.max(2, Math.round(ms / 16));
-  for (let i = 1; i <= steps; i += 1) {
-    const t = i / steps;
-    await page.mouse.move(
-      box.x + box.width * (from[0] + (to[0] - from[0]) * t),
-      box.y + box.height * (from[1] + (to[1] - from[1]) * t),
-    );
-    await page.waitForTimeout(16);
-  }
-}
+const sweep = sweepSheet;
 
 /** A tool in the toolbar, by its label alone (the tree's rows carry names like
  *  "Linear run 2"). */
 const tool = (page, label) => page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { name: label, exact: true });
 
-async function clickAt(page, [x, y]) {
-  const box = await page.locator('svg[role="presentation"]').boundingBox();
-  await page.mouse.click(box.x + box.width * x, box.y + box.height * y);
-}
+const clickAt = (page, [x, y]) => clickSheet(page, x, y);
 
 async function twoWindows(page, context, bUrl) {
   await recordSockets(context);
@@ -92,7 +78,8 @@ async function twoWindows(page, context, bUrl) {
   const a = ready.received.find((f) => f.type === "ready");
   await readySocket(b.page);
   // Both on the project topic before a pen goes down.
-  await page.waitForTimeout(1000);
+  await onProjectTopic(page, r);
+  await onProjectTopic(b.page, r);
   return { b, aName: a.name, aColour: a.colour };
 }
 
@@ -118,8 +105,8 @@ await run("f8-s13", [
         const during = await shapesOnSheet();
         expect(during.shapes === before.shapes, `Postgres moved mid-shape: ${before.shapes} to ${during.shapes}`);
 
-        const box = await page.locator('svg[role="presentation"]').boundingBox();
-        await page.mouse.dblclick(box.x + box.width * 0.5, box.y + box.height * 0.8);
+        const last = await sheetPoint(page, 0.5, 0.8);
+        await page.mouse.dblclick(last.x, last.y);
         const after = await waitFor(async () => {
           const now = await shapesOnSheet();
           return now.shapes > before.shapes ? now : null;
@@ -171,9 +158,17 @@ await run("f8-s13", [
         await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
         await page.keyboard.press("Escape");
         await tool(page, "Select").click();
-        await page.waitForTimeout(1000);
-        // Read once the pen is up: a frame still waiting on the throttle goes out after
-        // the last move, and B hears it too.
+        // Read once the pen is up and the wire is quiet: a frame still waiting on the
+        // throttle goes out after the last move, and B hears it too. Settled when what A
+        // sent and what B heard agree on two reads in a row (or the expect below says not).
+        let last = "";
+        await waitFor(async () => {
+          const now = `${(await drafts(page, "sent")).length}/${(await drafts(b.page, "received")).length}`;
+          const [s, h] = now.split("/");
+          const settled = now === last && s === h;
+          last = now;
+          return settled;
+        }, "A's frames and B's to agree", 8000, 300).catch(() => {});
         const sent = (await drafts(page, "sent")).filter((f) => !f.done);
         const gaps = sent.slice(1).map((f, i) => f.at - sent[i].at);
         const closest = Math.min(...gaps);

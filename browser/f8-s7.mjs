@@ -4,7 +4,7 @@
 //
 // Needs the realtime profile (window B on :5174).
 
-import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
+import { APP, SEEDED, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
 import {
   APP_B,
   WINDOW_B,
@@ -72,7 +72,7 @@ await run("f8-s7", [
         await page.getByRole("button", { name: /save/i }).first().click();
 
         await waitFor(async () => (await headerName(b.page)) === renamed, "window B to show the rename", 6000);
-        await page.waitForTimeout(1500);
+        await quietFor(1500); // A's own echo, if it came, would be here by now
         const mine = await eventsOn(page, "workspace.settings.updated");
         const theirs = await eventsOn(b.page, "workspace.settings.updated");
 

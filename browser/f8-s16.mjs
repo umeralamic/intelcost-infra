@@ -7,9 +7,9 @@
 // projects. A's acts go through the api unless a line needs A's own window (AC8); B's
 // window is hidden and blurred first, so nothing arrives by a refetch on focus.
 
-import { APP, apiCall, expect, fixtureOwner, run, seatedMember } from "./lib/bench.mjs";
+import { APP, apiCall, expect, fixtureOwner, quietFor, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, seedFile, tabStrip } from "./lib/f4.mjs";
-import { APP_B, appSockets, joinedTopic, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
+import { APP_B, appSockets, eventsOn, joinedTopic, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F8-S16");
 const ws = workspace.uuid;
@@ -153,7 +153,7 @@ await run("f8-s16", [
           const events = (await appSockets(page)).flatMap((s) => s.received).filter((f) => f.type === "event" && f.name === "project.folder.changed");
           return events.find((f) => sent.includes(f.write_token));
         }, "A's socket to carry its own folder event", 3000);
-        await page.waitForTimeout(600);
+        await quietFor(600); // the echo, applied, would draw the folder twice
         const shown = await aTree.getByText("A made this", { exact: true }).count();
         const inB = await timed(async () => (await tree.getByText("A made this", { exact: true }).count()) === 1, "B to show A's folder");
         expect(shown === 1, `A's tree shows its folder ${shown} times`);
@@ -179,8 +179,10 @@ await run("f8-s16", [
       t.added = await timed(async () => (await page.getByText("F8 Pending").count()) > 0, "B's Statuses to list it");
       await apiCall(token, "PATCH", `${statuses}/${key}`, { label: "F8 Waiting" });
       t.renamed = await timed(async () => (await page.getByText("F8 Waiting").count()) > 0, "B's Statuses to show the rename");
+      const heard = (await eventsOn(page)).length;
       await apiCall(token, "PATCH", `${statuses}/${key}`, { is_hidden: true });
-      await page.waitForTimeout(500);
+      // B has heard the hide before the delete goes, so the two arrive as two events.
+      await waitFor(async () => (await eventsOn(page)).length > heard, "B to hear the hide", 5000);
       await apiCall(token, "DELETE", `${statuses}/${key}`);
       t.deleted = await timed(async () => (await page.getByText("F8 Waiting").count()) === 0, "B's Statuses to drop it");
       return Object.entries(t).map(([k, v]) => `${k} ${v} ms`).join(" · ");

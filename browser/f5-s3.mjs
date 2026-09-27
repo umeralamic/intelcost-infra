@@ -7,7 +7,7 @@
 // bundle is checked by `drives/f5-s3-bundle.sh`. It measures on this run's own Riverside
 // (lib/world.mjs).
 
-import { APP, SEEDED, apiLogin, expect, firstWorkspace, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiLogin, expect, firstWorkspace, quietFor, run, signInAs } from "./lib/bench.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account (lib/world.mjs).
@@ -57,7 +57,7 @@ await run("f5-s3", [
         window.dispatchEvent(new PopStateEvent("popstate"));
       }, new URL(r.url(APP)).pathname);
       await page.locator('img[alt="Drawing sheet"]').waitFor({ timeout: 30000 });
-      await page.waitForTimeout(1500);
+      await quietFor(1500); // no second reload may follow
       expect(refused === 1, `the chunk was refused ${refused} times`);
       expect(loads.length === 1, `${loads.length} page loads, expected exactly 1 reload`);
       const text = (await page.textContent("body")).trim();

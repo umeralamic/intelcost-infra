@@ -14,7 +14,7 @@
 // The files are stored by the drive, not uploaded, so they are "uploaded before D-41":
 // Choose pages starts their preparation on first open, and counts their pages at once.
 
-import { APP, apiCall, apiLogin, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, apiCall, apiLogin, expect, quietFor, run, signInAs } from "./lib/bench.mjs";
 
 const [email, workspaceUuid, projectUuid] = (process.env.F5_BIG ?? "").split(" ");
 const BIG = Number(process.env.F5_BIG_BYTES);
@@ -128,7 +128,7 @@ await run("f5-big", [
       const all = Date.now() - t0;
       await section.locator('[data-page="150"]').scrollIntoViewIfNeeded();
       await section.locator('[data-page="150"] img').waitFor({ timeout: 20000 });
-      await page.waitForTimeout(1000);
+      await quietFor(1000); // any late request for the set would be seen
       nothingIdmTakes(seen);
       const webp = seen.thumbnails.filter((r) => r.status === 200 && r.type === "image/webp");
       expect(webp.length > 0 && webp.length === seen.thumbnails.length, `thumbnail answers: ${JSON.stringify(seen.thumbnails.find((r) => r.status !== 200 || r.type !== "image/webp"))}`);
@@ -202,7 +202,7 @@ await run("f5-big", [
       await page.goto(`${APP}/project/${projectUuid}/takeoff`);
       const image = page.locator('img[alt="Drawing sheet"]');
       await image.waitFor({ timeout: 30000 });
-      await page.waitForTimeout(5000);
+      await quietFor(5000); // with its PDF blocked, the fit image must not be replaced
       const source = await image.getAttribute("data-sheet-image");
       expect(source === "fit", `the sheet shows "${source}"`);
       const loaded = await image.evaluate((img) => img.complete && img.naturalWidth > 0);

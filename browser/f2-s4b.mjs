@@ -4,7 +4,7 @@
 // The surviving half of F2-S4, which D-17 dropped as a whole. The control was a
 // Supabase workaround; this is not. Was P-17 in FEATURES.md, pulled into F2.
 
-import { APP, SEEDED, expect, run, ownWorkspace } from "./lib/bench.mjs";
+import { APP, SEEDED, expect, quietFor, run, ownWorkspace } from "./lib/bench.mjs";
 
 const KEY = "intelcost.session";
 
@@ -96,7 +96,10 @@ await run("f2-s4b", [
         localStorage.setItem(k, JSON.stringify(session));
       }, KEY);
       await page.reload({ waitUntil: "networkidle" });
-      await page.waitForTimeout(3000);
+      // Landed: the sign-in form, or the shell drawn after a refresh. Then held still, so
+      // a refresh loop would show up as more /me calls.
+      await page.waitForFunction(() => document.querySelector("#email") || document.querySelector("header select"), undefined, { timeout: 20000 });
+      await quietFor(1500);
       const settled = Boolean(await page.$("#email")) || page.url().includes("/login")
         ? "landed on /login"
         : "refreshed and stayed in";

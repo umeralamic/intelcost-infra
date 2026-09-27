@@ -6,7 +6,7 @@
 //   PHASE dry          the runner runs the purge as a dry run
 //   PHASE purge        the runner runs the purge for real
 
-import { SEEDED, apiLogin, expect, firstWorkspace, run, ownWorkspace } from "./lib/bench.mjs";
+import { SEEDED, apiLogin, expect, firstWorkspace, quietFor, run, ownWorkspace } from "./lib/bench.mjs";
 import { APP_B, call, eventsOn, joinedTopic, recordSockets, signInAt, waitFor } from "./lib/realtime.mjs";
 
 // Its own account and workspace, never the seeded one.
@@ -45,7 +45,7 @@ await run("f8-s6", [
 
       await cue("age", created.body.uuid);
       await cue("dry");
-      await page.waitForTimeout(3000);
+      await quietFor(3000); // a dry run must publish nothing
       const afterDry = await eventsOn(page, "project.purged");
       const stillThere = await page.getByText(name).count();
 

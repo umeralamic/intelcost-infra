@@ -15,6 +15,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   apiCall,
   apiLogin,
@@ -26,6 +27,7 @@ import {
   invite,
   inviteTokenFromMail,
   mailCount,
+  quietFor,
   members,
   relinkInvitation,
   run,
@@ -82,7 +84,6 @@ await run("f3-s11", [
     run: async () => {
       const ws = await createWorkspace(ownerToken, `S11 Relink ${Date.now()}`);
       const email = `s11-relink-${Date.now()}@bench.intelcost.io`;
-      await clearMail();
 
       const created = await apiCall(ownerToken, "POST", `/api/workspace/${ws.uuid}/invitation`, {
         email,
@@ -91,7 +92,7 @@ await run("f3-s11", [
       const firstLink = created.body.link;
       // Wait for the mail from creation, so the mailbox count below is a known number.
       await inviteTokenFromMail(email);
-      const mailBefore = await mailCount();
+      const mailBefore = await mailCount(email);
 
       const again = await relinkInvitation(ownerToken, ws.uuid, created.body.uuid);
       expect(again.status === 200, `relinking gave ${again.status}`);
@@ -99,11 +100,11 @@ await run("f3-s11", [
       expect(again.body.link !== firstLink, "the new link is the old link");
 
       // AC6 — relink sends NO mail. Resend is the action that mails; keeping the two
-      // apart is the whole decision.
-      expect(
-        (await mailCount()) === mailBefore,
-        `relinking sent mail: ${mailBefore} → ${await mailCount()}`,
-      );
+      // apart is the whole decision. Mail goes out after the commit, through the worker,
+      // so "none" is only true after the time a mail would have taken to arrive.
+      await quietFor(4000);
+      const mailAfter = await mailCount(email);
+      expect(mailAfter === mailBefore, `relinking sent mail: ${mailBefore} → ${mailAfter}`);
 
       // Both halves. The new link works…
       await apiRegister(email, PASSWORD, "S11 Relinked");
@@ -132,7 +133,7 @@ await run("f3-s11", [
       expect(theirs.last_sign_in_at !== null, "a member who just signed in reads as never");
 
       await signInAs(page, SEED);
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/members`);
       await page.waitForFunction(
         (email) => document.body.textContent.includes(email),
@@ -168,7 +169,7 @@ await run("f3-s11", [
       const ws = await createWorkspace(ownerToken, `S11 Screen ${Date.now()}`);
       const email = `s11-screen-${Date.now()}@bench.intelcost.io`;
       await signInAs(page, SEED);
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/members`);
       await page.waitForSelector("#invite-email", { timeout: 20000 });
 

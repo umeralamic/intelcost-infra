@@ -3,7 +3,7 @@
 //
 //   docker compose --profile browser run --rm browser node scripts/f4-s24.mjs
 
-import { apiCall, expect, run, seatedMember } from "./lib/bench.mjs";
+import { apiCall, expect, quietFor, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, openFiles } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S24 text");
@@ -94,7 +94,7 @@ await run("f4-s24", [
       const stored = (await read()).project_notes;
       await page.reload();
       await panel(page, "project_notes").locator("[data-rich-read]").waitFor();
-      await page.waitForTimeout(500);
+      await quietFor(500); // an injected handler would have run by now
       const flag = await page.evaluate(() => window.__xss ?? null);
       expect(flag === null && dialogs === 0, `ran: flag ${flag}, ${dialogs} dialogs`);
       expect(!/<img|onerror|<script/i.test(stored), `stored: ${stored}`);

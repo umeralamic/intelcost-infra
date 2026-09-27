@@ -5,7 +5,7 @@
 //   world.owner   { email, password, token }   this run's own account (fixtureOwner)
 //   world.token   the owner's token
 //   world.workspace, world.r                    as `firstWorkspace` and `riverside` gave
-//   world.sara    Sara W. (window-b@), seated as Estimator in this workspace
+//   world.sara    Sara W. (this run's own window-B account), seated as Estimator here
 //
 // What it builds (F5-S9, the seed moved to /drawing/load): a workspace, the project
 // "Riverside Medical Center", a two-page PDF uploaded into Plans through the multipart
@@ -13,7 +13,7 @@
 // calibrated as the old seed was, a 0.5-unit bar declared 100 ft (200 ft per unit). The
 // workspace is the run's own account's, so regress.sh's fx clean-up removes it.
 
-import { APP, SEEDED, apiAccept, apiLogin, apiRegister, clearMail, expect, fixtureOwner, invite, inviteTokenFromMail, openBrowser, ownWorkspace } from "./bench.mjs";
+import { APP, SEEDED, apiAccept, apiLogin, apiRegister, expect, fixtureOwner, invite, inviteTokenFromMail, openBrowser, ownWorkspace } from "./bench.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./drawings.mjs";
 import { makeProject } from "./f4.mjs";
 import { WINDOW_B, call } from "./realtime.mjs";
@@ -26,10 +26,9 @@ let worldPromise;
 
 /** Sara W. seated in `workspaceUuid` as an estimator, through the invitation path. */
 async function seatSara(ownerToken, workspaceUuid) {
-  await clearMail();
   await invite(ownerToken, workspaceUuid, WINDOW_B.email, "estimator");
   const inviteToken = await inviteTokenFromMail(WINDOW_B.email);
-  await apiRegister(WINDOW_B.email, WINDOW_B.password, "Sara Williams"); // 409 once she exists
+  await apiRegister(WINDOW_B.email, WINDOW_B.password, WINDOW_B.fullName); // 409 once she exists
   const token = await apiLogin(WINDOW_B.email, WINDOW_B.password);
   const accepted = await apiAccept(token, inviteToken);
   expect(accepted.status === 200, `seating Sara W.: ${accepted.status}`);
@@ -65,6 +64,7 @@ export function riversideWorld() {
     const sara = await seatSara(token, workspace.uuid);
     const takeoff = `${base}/${project.uuid}/takeoff`;
     const r = {
+      workspace: workspace.uuid,
       project: project.uuid,
       sheet: sheets[0].uuid,
       second: sheets[1].uuid,

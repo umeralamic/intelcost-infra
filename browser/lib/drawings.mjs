@@ -6,7 +6,7 @@
 
 import { deflateSync } from "node:zlib";
 
-import { APP, SEEDED, apiCall, expect, fixtureOwner, signInAs } from "./bench.mjs";
+import { APP, SEEDED, apiCall, enterWorkspace, expect, fixtureOwner, signInAs } from "./bench.mjs";
 import { folderPaths, seedFile } from "./f4.mjs";
 
 /** A PDF with one page per entry: `{ width, height, label }` in points. */
@@ -107,7 +107,7 @@ export async function uploadAll(page, token, base, projectUuid, files, workspace
     page.url().startsWith(APP) &&
     (await page.evaluate(() => localStorage.getItem("intelcost.session")).catch(() => null));
   if (!signedIn) await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
-  await page.selectOption("header select", workspaceUuid).catch(() => {});
+  await enterWorkspace(page, workspaceUuid);
   await page.goto(`${APP}/project/${projectUuid}`);
   const out = {};
   for (const { name, buffer, folder, parts } of files) {

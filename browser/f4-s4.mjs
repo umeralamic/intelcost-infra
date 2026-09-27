@@ -15,6 +15,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   SEEDED,
   apiCall,
@@ -44,7 +45,7 @@ async function tabs(token = ownerToken) {
 
 async function openTabs(page, email = OWNER) {
   await signInAs(page, email, SEEDED.password);
-  await page.selectOption("header select", workspace.uuid).catch(() => {});
+  await enterWorkspace(page, workspace.uuid);
   await page.goto(`${APP}/settings/statuses`);
   await page.getByRole("heading", { name: "Dashboard tabs" }).waitFor({ timeout: 20000 });
   await page.locator("li[data-tab]").first().waitFor();

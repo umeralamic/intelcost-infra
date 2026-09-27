@@ -9,7 +9,8 @@
 // These are fixtures, not a test suite. CLAUDE.md: testing is conducted, not written.
 
 import { lookup } from "node:dns/promises";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { chromium } from "playwright";
@@ -22,6 +23,96 @@ export const API = "http://localhost:8000";
 export const MAILHOG = "http://localhost:8025";
 
 export const SEEDED = { email: "estimator@bench.intelcost.io", password: "bench-password-1" };
+
+// --- running beside other fixtures ------------------------------------------------
+//
+// regress.sh runs fixtures in parallel. A fixture therefore owns everything it touches:
+// its accounts (fixtureOwner, seatedMember, and window B's person in lib/realtime.mjs),
+// its workspaces, and the mail sent to its own addresses. It never assumes a window size
+// or a page size, and it waits on what the page shows, never on a clock: the only timed
+// waits are `quietFor`, a window in which something must NOT happen, and gesture pacing.
+
+/** This fixture's name, as a tag for the addresses it mints: "f4-s3" → "f4s3". */
+export const FIXTURE = path.basename(process.argv[1] ?? "fixture", ".mjs").replace(/[^a-z0-9-]/gi, "");
+export const FIXTURE_TAG = FIXTURE.replace(/[^a-z0-9]/gi, "").toLowerCase() || "fixture";
+
+let lastStamp = 0;
+/** A 13-digit millisecond stamp, never the same twice in this process. */
+export function stamp() {
+  lastStamp = Math.max(Date.now(), lastStamp + 1);
+  return lastStamp;
+}
+
+/**
+ * Hold still and let time pass, for the one kind of check that needs it: proving that
+ * something does NOT happen (no second socket, no reload, no event after a revoke).
+ * Every other wait is on page state. Named so a reader, or a grep, can tell the two apart.
+ */
+export function quietFor(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Make `workspaceUuid` the active workspace in the header's switcher, and wait until the
+ * shell has drawn it: the switcher shows it and the person's standing in it has arrived.
+ * Clicking on while the shell was still redrawing is what made f8-s2 AC4 and f8-s15 miss.
+ */
+export async function enterWorkspace(page, workspaceUuid) {
+  const select = page.locator("header select");
+  await select.locator(`option[value="${workspaceUuid}"]`).waitFor({ state: "attached", timeout: 20000 });
+  if ((await select.inputValue()) !== workspaceUuid) await select.selectOption(workspaceUuid);
+  await shellSettled(page, workspaceUuid);
+}
+
+/**
+ * A file on this container's disk, for `setInputFiles(path)`. A buffer handed to
+ * setInputFiles crosses the browser protocol as base64; 40 MB of it took over 30 s with
+ * other fixtures running (f4-s7 AC8, 2026-09-27). A path is read by Chromium itself.
+ */
+export async function onDisk(name, buffer) {
+  const dir = path.join(tmpdir(), `bench-${FIXTURE_TAG}-${stamp()}`);
+  await mkdir(dir, { recursive: true });
+  const file = path.join(dir, name);
+  await writeFile(file, buffer);
+  return file;
+}
+
+/**
+ * The page has stopped changing: nothing marked busy or pulsing, and its size and text read
+ * the same across several polls. For measuring a layout or taking a picture of it, where
+ * "network idle plus a moment" measured a page still drawing.
+ */
+export async function pageSettled(page, { timeout = 20000 } = {}) {
+  await page.waitForFunction(
+    () => {
+      const busy = document.querySelector('[aria-busy="true"], .animate-pulse') !== null;
+      const doc = document.documentElement;
+      const signature = [doc.scrollWidth, doc.scrollHeight, document.body.innerText.length].join("|");
+      const state = (window.__pageSettled ??= { last: null, same: 0 });
+      state.same = signature === state.last && !busy ? state.same + 1 : 0;
+      state.last = signature;
+      return state.same >= 3;
+    },
+    undefined,
+    { polling: 150, timeout },
+  );
+  await page.evaluate(() => {
+    window.__pageSettled = undefined;
+  });
+}
+
+/** The shell has drawn: the switcher names the active workspace (this one, if given) and
+ *  the person's role in it is shown, so capabilities have arrived. */
+export async function shellSettled(page, workspaceUuid) {
+  await page.waitForFunction(
+    (uuid) => {
+      const value = document.querySelector("header select")?.value;
+      return Boolean(value) && (!uuid || value === uuid) && Boolean(document.querySelector("header [data-standing]"));
+    },
+    workspaceUuid ?? null,
+    { timeout: 20000 },
+  );
+}
 
 const SHOTS = "/drive/scripts/shots";
 
@@ -56,7 +147,7 @@ export async function openBrowser() {
  * already under way. Every run asks before its first step, so no fixture reports on code
  * that is not the code in front of us. `bench-code.mjs` is the same question on its own.
  */
-export async function codeIsCurrent(graceMs = 45000) {
+export async function codeIsCurrent(graceMs = process.env.REGRESS ? 240000 : 45000) {
   const deadline = Date.now() + graceMs;
   for (;;) {
     let seen = null;
@@ -195,20 +286,17 @@ export async function apiRegister(email, password, fullName) {
  * (`drives/bench-workspaces.py`), and checks the seeded account gained none.
  */
 let ownerPromise;
+/** The run's owner's full name. Fixtures assert its short form through `A_NAME` in
+ *  lib/realtime.mjs, never a literal: "Bench E." outlived the account it named once. */
+export const OWNER_FULL_NAME = "Fixture Owner";
 export function fixtureOwner() {
   ownerPromise ??= (async () => {
     // A phased fixture's later passes are the same run: the setup pass prints OWNER=…,
     // and its runner hands it back here.
-    if (process.env.FX_OWNER) {
-      const email = process.env.FX_OWNER;
-      await apiRegister(email, SEEDED.password, "Fixture Owner"); // 409 on every pass after the first
-      return { email, password: SEEDED.password, token: await apiLogin(email, SEEDED.password) };
-    }
-    const fixture = path.basename(process.argv[1] ?? "fixture", ".mjs").replace(/[^a-z0-9-]/gi, "");
-    const email = `fx.${fixture}.${Date.now()}@bench.intelcost.io`;
+    const email = process.env.FX_OWNER ?? `fx.${FIXTURE}.${stamp()}@bench.intelcost.io`;
     const password = SEEDED.password;
-    await apiRegister(email, password, "Fixture Owner");
-    return { email, password, token: await apiLogin(email, password) };
+    await apiRegister(email, password, OWNER_FULL_NAME); // 409 on a phased run's later passes
+    return { email, password, fullName: OWNER_FULL_NAME, token: await apiLogin(email, password) };
   })();
   return ownerPromise;
 }
@@ -272,26 +360,47 @@ export async function invite(token, workspaceUuid, email, role = "estimator") {
  *  dispatch to after the commit and it started losing one in every run. Waiting for
  *  the mail is what a person does, and it is what the fixture should always have done. */
 export async function inviteTokenFromMail(address, { timeout = 15000 } = {}) {
+  return tokenFromMail(address, /accept-invite\?token=3D([A-Za-z0-9._~-]+)/, "invitation", timeout);
+}
+
+/**
+ * MailHog is shared by every fixture running at once (regress.sh runs them in parallel),
+ * so a fixture only ever reads, counts or deletes mail sent to its own addresses. Reading
+ * "the newest 30 messages" missed a fixture's mail once others had sent more, and
+ * deleting every message threw away a mail another fixture was about to read.
+ */
+async function mailTo(address) {
+  const url = `${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=250`;
+  const { items, total } = await (await fetch(await fromNode(url))).json();
+  // MailHog matches the query anywhere in the header: keep exact recipients only.
+  const mine = (items ?? []).filter((item) =>
+    (item.Content.Headers.To ?? []).some((to) => to.toLowerCase().includes(address.toLowerCase())),
+  );
+  return { items: mine, total: total ?? mine.length };
+}
+
+async function tokenFromMail(address, pattern, kind, timeout) {
+  if (!address) throw new Error(`reading ${kind} mail needs the address it was sent to`);
   const deadline = Date.now() + timeout;
   for (;;) {
-    const response = await fetch(await fromNode(`${MAILHOG}/api/v2/messages?limit=30`));
-    const { items } = await response.json();
-    for (const item of items) {
-      const to = item.Content.Headers.To?.join(",") ?? "";
-      if (address && !to.includes(address)) continue;
+    // Newest first, so a re-sent mail wins over the one it replaced.
+    for (const item of (await mailTo(address)).items) {
       const body = item.Content.Body.replace(/=\r\n/g, "");
-      const match = body.match(/accept-invite\?token=3D([A-Za-z0-9._~-]+)/);
+      const match = body.match(pattern);
       if (match) return match[1];
     }
-    if (Date.now() > deadline) {
-      throw new Error(`no invitation mail for ${address ?? "any address"} after ${timeout}ms`);
-    }
+    if (Date.now() > deadline) throw new Error(`no ${kind} mail for ${address} after ${timeout}ms`);
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
 }
 
-export async function clearMail() {
-  await fetch(await fromNode(`${MAILHOG}/api/v1/messages`), { method: "DELETE" });
+/** Delete the mail sent to `address`, so the next mail read for it is a new one. Without an
+ *  address it deletes nothing: other fixtures' mail is theirs. */
+export async function clearMail(address) {
+  if (!address) return;
+  for (const item of (await mailTo(address)).items) {
+    await fetch(await fromNode(`${MAILHOG}/api/v1/messages/${item.ID}`), { method: "DELETE" });
+  }
 }
 
 /** A signed-in page, without clicking through the form every time. */
@@ -402,20 +511,7 @@ export async function requestReset(email) {
 
 /** The newest reset token in MailHog for an address. Polled, like the invitation. */
 export async function resetTokenFromMail(address, { timeout = 15000 } = {}) {
-  const deadline = Date.now() + timeout;
-  for (;;) {
-    const response = await fetch(await fromNode(`${MAILHOG}/api/v2/messages?limit=30`));
-    const { items } = await response.json();
-    for (const item of items) {
-      const to = item.Content.Headers.To?.join(",") ?? "";
-      if (address && !to.includes(address)) continue;
-      const body = item.Content.Body.replace(/=\r\n/g, "");
-      const match = body.match(/reset-password\?token=3D([A-Za-z0-9._~-]+)/);
-      if (match) return match[1];
-    }
-    if (Date.now() > deadline) throw new Error(`no reset mail for ${address} after ${timeout}ms`);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
+  return tokenFromMail(address, /reset-password\?token=3D([A-Za-z0-9._~-]+)/, "reset", timeout);
 }
 
 /** The caller's resolved standing in a workspace: role, capabilities, assignable roles.
@@ -449,10 +545,11 @@ export async function setRole(token, workspaceUuid, userUuid, role) {
  *
  *  Built through the real invitation path rather than by writing a row: a member
  *  created by a shortcut is a member the api might never produce. */
-export async function seatedMember(ownerToken, workspaceUuid, role, tag = "seat") {
-  const email = `${tag}-${role}-${Date.now()}@bench.intelcost.io`;
+export async function seatedMember(ownerToken, workspaceUuid, role, tag = FIXTURE_TAG) {
+  // The default tag is the fixture's own name: a shared "seat" tag let two fixtures running
+  // at once mint the same address in the same millisecond.
+  const email = `${tag}-${role}-${stamp()}@bench.intelcost.io`;
   const password = "bench-password-1";
-  await clearMail();
   await invite(ownerToken, workspaceUuid, email, role);
   const inviteToken = await inviteTokenFromMail(email);
   await apiRegister(email, password, `Bench ${role}`);
@@ -606,10 +703,10 @@ export function tokenFromLink(link) {
  *  Used to prove that an action sends none: "Get new link" mints a link and mails
  *  nothing, where Resend mails one (D-24). A count is the only way to tell the two
  *  apart from outside, because both produce a working link. */
-export async function mailCount() {
-  const response = await fetch(await fromNode(`${MAILHOG}/api/v2/messages?limit=500`));
-  const body = await response.json();
-  return body.total ?? (body.items?.length || 0);
+export async function mailCount(address) {
+  // Counted per address: other fixtures send mail while this one runs.
+  if (!address) throw new Error("mailCount needs the address: other fixtures' mail is not this one's");
+  return (await mailTo(address)).items.length;
 }
 
 /** The workspace audit feed (F3-S12). */

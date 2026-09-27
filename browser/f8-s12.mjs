@@ -6,7 +6,7 @@
 // (api-b). Every step makes its own count item on Riverside's first sheet and removes it.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
-import { APP_B, WINDOW_B, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
+import { A_NAME, APP_B, B_NAME, WINDOW_B, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { countItem, menuItem, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
@@ -66,14 +66,14 @@ await run("f8-s12", [
       const { name, item, b } = await twoWindows(page, context, "work_together", "together");
       try {
         await arm(page, name);
-        await waitFor(async () => (await tags(b.page, name)).includes("Fixture O."), "B's row to name A", 5000);
+        await waitFor(async () => (await tags(b.page, name)).includes(A_NAME), "B's row to name A", 5000);
         await arm(b.page, name);
-        await waitFor(async () => (await tags(page, name)).includes("Sara W."), "A's row to name B", 5000);
+        await waitFor(async () => (await tags(page, name)).includes(B_NAME), "A's row to name B", 5000);
         const banners = (await page.locator("[data-also-working]").count()) + (await b.page.locator("[data-also-working]").count());
         const refusals = await b.page.getByRole("alert").count();
         expect(banners === 0, "a Warn me banner showed in Work together");
         expect(refusals === 0, "B was refused");
-        return "B's row: Fixture O.; A's row: Sara W.; no banner, no refusal";
+        return `B's row: ${A_NAME}; A's row: ${B_NAME}; no banner, no refusal`;
       } finally {
         await b.context.close();
         await removeItem(token, r, item.uuid);
@@ -92,8 +92,8 @@ await run("f8-s12", [
         await bannerB.waitFor({ timeout: 5000 });
         await bannerA.waitFor({ timeout: 5000 });
         const [ta, tb] = [(await bannerA.textContent()).trim(), (await bannerB.textContent()).trim()];
-        expect(tb.replace(/\s+/g, " ") === "Fixture O. is also working on this item.", `B's banner: "${tb}"`);
-        expect(ta.replace(/\s+/g, " ") === "Sara W. is also working on this item.", `A's banner: "${ta}"`);
+        expect(tb.replace(/\s+/g, " ") === `${A_NAME} is also working on this item.`, `B's banner: "${tb}"`);
+        expect(ta.replace(/\s+/g, " ") === `${B_NAME} is also working on this item.`, `A's banner: "${ta}"`);
         return `B: "${tb.replace(/\s+/g, " ")}" · A: "${ta.replace(/\s+/g, " ")}"`;
       } finally {
         await setMode(token, workspace.uuid, "work_together");
@@ -108,9 +108,9 @@ await run("f8-s12", [
       const { name, item, b } = await twoWindows(page, context, "one_at_a_time", "one");
       try {
         await arm(page, name);
-        await waitFor(async () => (await tags(b.page, name)).includes("Fixture O."), "B to see A's hold", 5000);
+        await waitFor(async () => (await tags(b.page, name)).includes(A_NAME), "B to see A's hold", 5000);
         const held = await menuState(b.page, name, HELD_ACTIONS);
-        const notDisabled = Object.entries(held).filter(([, s]) => !s.disabled || !s.text.includes("Fixture O. is editing this item right now."));
+        const notDisabled = Object.entries(held).filter(([, s]) => !s.disabled || !s.text.includes(`${A_NAME} is editing this item right now.`));
         await row(b.page, name).click();
         const panel = await b.page.locator("[data-held-by]").textContent();
 
@@ -127,9 +127,9 @@ await run("f8-s12", [
         );
         const took = Date.now() - freedAt;
         expect(notDisabled.length === 0, `not held on B: ${JSON.stringify(notDisabled)}`);
-        expect(panel.includes("Fixture O. is editing this item right now."), `panel: "${panel}"`);
+        expect(panel.includes(`${A_NAME} is editing this item right now.`), `panel: "${panel}"`);
         expect(took < 2000, `B was freed after ${took} ms`);
-        return `all six actions disabled with "Fixture O. is editing this item right now."; properties view-only; freed ${took} ms after Done`;
+        return `all six actions disabled with "${A_NAME} is editing this item right now."; properties view-only; freed ${took} ms after Done`;
       } finally {
         await setMode(token, workspace.uuid, "work_together");
         await b.context.close();
@@ -143,7 +143,7 @@ await run("f8-s12", [
       const { name, item, b } = await twoWindows(page, context, "one_at_a_time", "close");
       try {
         await arm(page, name);
-        await waitFor(async () => (await tags(b.page, name)).includes("Fixture O."), "B to see A's hold", 5000);
+        await waitFor(async () => (await tags(b.page, name)).includes(A_NAME), "B to see A's hold", 5000);
         const closedAt = Date.now();
         await page.close();
         await waitFor(async () => (await tags(b.page, name)).length === 0, "B to be freed", 5000, 100);
@@ -171,7 +171,7 @@ await run("f8-s12", [
         const tab2 = await context.newPage();
         await openSheet(tab2, r);
         await arm(page, name);
-        await waitFor(async () => (await tags(tab2, name)).includes("Fixture O."), "tab 2 to see tab 1's hold", 5000);
+        await waitFor(async () => (await tags(tab2, name)).includes(A_NAME), "tab 2 to see tab 1's hold", 5000);
         const s = await menuState(tab2, name, ["Add a shape"]);
         const reason = "You're editing this item in another tab. Finish or close that tab first.";
         expect(s["Add a shape"].disabled && s["Add a shape"].text.includes(reason), JSON.stringify(s));

@@ -5,7 +5,7 @@
 // AC3, the outage, needs the api stopped and started between browser steps; it is in
 // f8-s2-outage.mjs, driven by f8-s2.sh.
 
-import { APP, SEEDED, expect, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
+import { APP, SEEDED, expect, quietFor, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import { appSockets, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
 
 // Its own account and workspace, never the seeded one.
@@ -18,7 +18,7 @@ await run("f8-s2", [
       await recordSockets(context);
       await page.goto(`${APP}/login`);
       await page.waitForSelector("#email");
-      await page.waitForTimeout(3000);
+      await quietFor(3000); // no socket may open
       const all = await appSockets(page);
       expect(all.length === 0, `the login page opened ${all.length} socket(s)`);
       return "no socket on /login";
@@ -36,7 +36,7 @@ await run("f8-s2", [
         async () => (await appSockets(page)).find((s) => s.close),
         "the socket to close",
       );
-      await page.waitForTimeout(5000);
+      await quietFor(5000); // no reconnect may follow
       const all = await appSockets(page);
       expect(closed.close.code === 1000, `closed ${closed.close.code} "${closed.close.reason}"`);
       expect(all.length === 1, `${all.length - 1} socket(s) opened after sign out`);
@@ -73,7 +73,7 @@ await run("f8-s2", [
         async () => (await appSockets(page)).find((s) => s.close),
         "the socket to close",
       );
-      await page.waitForTimeout(4000);
+      await quietFor(4000); // no reconnect may follow
       const all = await appSockets(page);
       expect(closed.close.code === 1000, `closed ${closed.close.code}`);
       expect(all.length === 1, `${all.length - 1} socket(s) opened after the session ended`);

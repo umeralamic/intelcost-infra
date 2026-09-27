@@ -300,3 +300,8 @@ services:
       - ../intelcost-app-fastapi/app:/src/api:ro
     working_dir: /drive
     init: true
+    environment:
+      # Set by regress.sh (D-44): bench-code has already checked the code, and with
+      # fixtures running in parallel the worker can be busy for longer than a lone
+      # fixture's 45 s grace, so each fixture's own check waits longer.
+      REGRESS: ${REGRESS:-}

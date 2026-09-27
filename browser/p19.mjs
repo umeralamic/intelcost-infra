@@ -8,7 +8,7 @@
 // label sits on one line, the active tab is fully in view with its underline, and at
 // 1440 every tab is visible without scrolling the row.
 
-import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
+import { APP, SEEDED, apiLogin, expect, firstWorkspace, pageSettled, run, shellSettled } from "./lib/bench.mjs";
 import { signInAt } from "./lib/realtime.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
@@ -64,8 +64,8 @@ for (const [w, h] of [[375, 667], [1440, 900]]) {
       const seen = {};
       const visit = async (label, path) => {
         await page.goto(`${APP}${path}`);
-        await page.waitForLoadState("networkidle").catch(() => {});
-        await page.waitForTimeout(600);
+        await shellSettled(page);
+        await pageSettled(page);
         const m = await measure(page);
         seen[label] = m;
         if (m.sideways > 0) problems.push(`${label}: page scrolls sideways by ${m.sideways}px`);
@@ -82,12 +82,12 @@ for (const [w, h] of [[375, 667], [1440, 900]]) {
       await visit("dashboard", "/");
       for (const tab of SETTINGS) await visit(tab, `/settings/${tab}`);
       await page.goto(`${APP}/settings/collaboration`);
-      await page.waitForTimeout(500);
+      await pageSettled(page);
       await page.screenshot({ path: shot.replace(".png", "-settings.png") });
       await visit("project home", `/project/${r.project}`);
       await page.screenshot({ path: shot.replace(".png", "-home.png"), fullPage: false });
       await page.goto(`${APP}/`);
-      await page.waitForTimeout(500);
+      await pageSettled(page);
       await page.screenshot({ path: shot.replace(".png", "-dashboard.png") });
       expect(problems.length === 0, problems.join(" · "));
       const s = seen.collaboration;

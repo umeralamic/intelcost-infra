@@ -6,7 +6,7 @@
 // Counts come from the api over every project, never from the page on screen, which is
 // why step 6 makes 60 projects and looks at a page of 50.
 
-import { APP, apiCall, expect, run } from "./lib/bench.mjs";
+import { APP, apiCall, enterWorkspace, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, openDashboard, rowNames, settle, tabStrip } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S5 list");
@@ -73,7 +73,7 @@ await run("f4-s5", [
       await openDashboard(page, empty.workspace.uuid);
       await page.getByText("Click New project to start your first estimate.").waitFor({ timeout: 15000 });
       await page.goto(`${APP}/?tab=all&client=Nobody%20Inc`);
-      await page.selectOption("header select", workspace.uuid).catch(() => {});
+      await enterWorkspace(page, workspace.uuid);
       await page.goto(`${APP}/?tab=all&client=Nobody%20Inc`);
       await page.getByText("No projects match the current filters.").waitFor({ timeout: 15000 });
       return "empty workspace and empty filter each explain themselves";

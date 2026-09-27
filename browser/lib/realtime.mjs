@@ -12,15 +12,7 @@
 import { request } from "node:http";
 import { lookup } from "node:dns/promises";
 
-import {
-  apiAccept,
-  apiLogin,
-  apiRegister,
-  clearMail,
-  firstWorkspace,
-  invite,
-  inviteTokenFromMail,
-} from "./bench.mjs";
+import { FIXTURE, OWNER_FULL_NAME, apiLogin, apiRegister, stamp } from "./bench.mjs";
 
 export const WS_URL = "ws://localhost:8000/api/realtime";
 
@@ -28,31 +20,26 @@ export const WS_URL = "ws://localhost:8000/api/realtime";
 export const APP_B = "http://localhost:5174";
 export const WS_URL_B = "ws://localhost:8010/api/realtime";
 
-/** The seated second estimator for two-window checks, "Sara W." on the socket. */
-export const WINDOW_B = { email: "window-b@bench.intelcost.io", password: "bench-password-1" };
-
 /**
- * Window B's account, seated in the owner's workspace if this bench has never had it.
+ * Window B's person, "Sara W." on the socket: this run's own second account, full name
+ * "Sara Williams", seated as an Estimator in the run's Riverside by lib/world.mjs.
  *
- * Not in the seed, so a fresh bench makes it here, the first time a fixture needs it,
- * through the real invitation path, as `seatedMember` does. Returns its access token.
+ * Once one shared account (window-b@bench.intelcost.io) served every run. With fixtures
+ * running in parallel, one fixture's reset of her preferences (f8-s14), or her sockets and
+ * presence in another run's workspace, reached the next. Each run has its own now, named
+ * like the run's owner so regress.sh's clean-up knows it: `fx.<fixture>-b.<stamp>@`.
  */
+export const WINDOW_B = {
+  email: process.env.FX_WINDOW_B ?? `fx.${FIXTURE}-b.${stamp()}@bench.intelcost.io`,
+  password: "bench-password-1",
+  fullName: "Sara Williams",
+};
+
+/** Window B's account, registered if this run has not made it yet. Returns its access
+ *  token. Seating is lib/world.mjs's job, in the run's own workspace. */
 export async function ensureWindowB() {
-  try {
-    return await apiLogin(WINDOW_B.email, WINDOW_B.password);
-  } catch {
-    // Not there yet.
-  }
-  const owner = await apiLogin();
-  const workspace = await firstWorkspace(owner);
-  await clearMail();
-  await invite(owner, workspace.uuid, WINDOW_B.email, "estimator");
-  const inviteToken = await inviteTokenFromMail(WINDOW_B.email);
-  await apiRegister(WINDOW_B.email, WINDOW_B.password, "Sara Williams");
-  const token = await apiLogin(WINDOW_B.email, WINDOW_B.password);
-  const accepted = await apiAccept(token, inviteToken);
-  if (accepted.status !== 200) throw new Error(`seating window B: ${accepted.status}`);
-  return token;
+  await apiRegister(WINDOW_B.email, WINDOW_B.password, WINDOW_B.fullName); // 409 once made
+  return apiLogin(WINDOW_B.email, WINDOW_B.password);
 }
 
 /** Sign in through the UI of either app. */
@@ -270,3 +257,8 @@ export function shortName(fullName, email) {
   if (parts.length === 1) return parts[0];
   return email.split("@")[0];
 }
+
+/** What the app calls window A's person (the run's owner) and window B's (Sara W.), from
+ *  the full names the helpers register them with. */
+export const A_NAME = shortName(OWNER_FULL_NAME);
+export const B_NAME = shortName(WINDOW_B.fullName);

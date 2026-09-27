@@ -2,7 +2,7 @@
 //
 //   docker compose --profile browser run --rm browser node scripts/f8-s4.mjs
 
-import { APP, SEEDED, apiCall, createWorkspace, discardProject, expect, ownWorkspace, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, createWorkspace, discardProject, enterWorkspace, expect, ownWorkspace, quietFor, run, signInAs } from "./lib/bench.mjs";
 import { appSockets, rawSocket, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
 
 // Two workspaces of this run's own account, never the seeded one: the tab starts in the
@@ -30,7 +30,7 @@ await run("f8-s4", [
       const to = `ws:${second.uuid}`;
       await waitFor(async () => (await framesOf(page, "joined", from)).length, `joined ${from}`);
 
-      await page.selectOption("header select", second.uuid);
+      await enterWorkspace(page,second.uuid);
       await waitFor(async () => (await framesOf(page, "joined", to)).length, `joined ${to}`);
       const [leave] = await framesOf(page, "leave", from);
       const [join] = await framesOf(page, "join", to);
@@ -96,7 +96,7 @@ await run("f8-s4", [
       const joins = (await framesOf(page, "join", topic)).length;
 
       await page.evaluate(() => window.__f8a());
-      await page.waitForTimeout(1000);
+      await quietFor(1000); // one of two subscribers gone: no leave may be sent
       const leavesAfterOne = (await framesOf(page, "leave", topic)).length;
       await page.evaluate(() => window.__f8b());
       await waitFor(async () => (await framesOf(page, "leave", topic)).length, `leave ${topic}`, 5000);

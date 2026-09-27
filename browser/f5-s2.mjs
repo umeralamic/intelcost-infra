@@ -13,7 +13,7 @@
 
 import { access } from "node:fs/promises";
 
-import { APP, SEEDED, apiCall, discardProject, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, discardProject, enterWorkspace, expect, fixtureOwner, quietFor, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { letterPages, loadPages, makePdf, makePng, preparedSheets, sheetsOf, uploadAll } from "./lib/drawings.mjs";
 import { appSockets, recordSockets, waitFor } from "./lib/realtime.mjs";
@@ -76,7 +76,7 @@ await run("f5-s2", [
 
       await recordSockets(context);
       await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
-      await page.selectOption("header select", workspace.uuid).catch(() => {});
+      await enterWorkspace(page, workspace.uuid);
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
       await page.getByText("Preparing the sheet").waitFor({ timeout: 20000 });
       await page.evaluate(() => {
@@ -103,7 +103,7 @@ await run("f5-s2", [
       const file = loaded.body.files[0].file_uuid;
       await cue("lose-queue");
       await cue("start-worker");
-      await new Promise((r) => setTimeout(r, 4000));
+      await quietFor(4000); // the lost job must not run on the restarted worker
       const still = (await sheetsOf(token, base, project.uuid)).filter((s) => s.file_uuid === file);
       expect(still.every((s) => s.render_status === "pending"), `the lost job ran anyway: ${still.map((s) => s.render_status)}`);
       await cue("sweep", file);

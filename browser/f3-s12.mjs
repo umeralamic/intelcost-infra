@@ -17,6 +17,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   activity,
   apiCall,
@@ -293,7 +294,7 @@ await run("f3-s12", [
       await relinkInvitation(ownerToken, ws.uuid, created.body.uuid);
 
       await signInAs(page, SEED);
-      await page.selectOption("header select", ws.uuid);
+      await enterWorkspace(page,ws.uuid);
       await page.goto(`${APP}/settings/activity`);
       await page.waitForSelector("[data-activity-line]", { timeout: 20000 });
 

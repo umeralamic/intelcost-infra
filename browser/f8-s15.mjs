@@ -16,6 +16,7 @@ import {
   ownWorkspace,
   expect,
   firstWorkspace,
+  quietFor,
   run,
   seatedMember,
   setRole,
@@ -246,7 +247,7 @@ await run("f8-s15", [
 
       // Anything A does now in the old workspace reaches B no more.
       await call(token, "PATCH", `/api/workspace/${ws}`, { name: `${original} (after)` });
-      await page.waitForTimeout(1500);
+      await quietFor(1500); // B must hear nothing more from the old workspace
       await call(token, "PATCH", `/api/workspace/${ws}`, { name: original });
       const late = (await appSockets(page))
         .flatMap((s) => s.received)

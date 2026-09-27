@@ -6,7 +6,7 @@
 // A workspace of this run's own with three projects: "Has sheets" (a page loaded), "Has
 // files" (a PDF in Plans, nothing loaded) and "Empty" (no files at all).
 
-import { APP, apiCall, expect, run } from "./lib/bench.mjs";
+import { APP, apiCall, expect, quietFor, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, openDashboard } from "./lib/f4.mjs";
 import { letterPages, loadPages, makePdf, uploadAll } from "./lib/drawings.mjs";
 
@@ -56,7 +56,7 @@ await run("f5-s4", [
       await page.getByRole("heading", { name: "No sheets yet" }).waitFor();
       await page.reload();
       await page.getByRole("heading", { name: "No sheets yet" }).waitFor({ timeout: 15000 });
-      await page.waitForTimeout(1000);
+      await quietFor(1000); // the dialog must not come back
       expect((await firstRun(page).count()) === 0, "a refresh asked again");
       await page.goto(`${APP}/project/${withFiles.uuid}`);
       await page.getByRole("button", { name: "Perform Takeoff" }).click();
@@ -70,7 +70,7 @@ await run("f5-s4", [
       await openDashboard(page, workspace.uuid, undefined, "/?tab=all");
       await page.getByRole("button", { name: "Perform takeoff for Has sheets" }).click();
       await page.waitForURL(new RegExp(`/project/${withSheets.uuid}/takeoff/${sheet.uuid}$`), { timeout: 15000 });
-      await page.waitForTimeout(1000);
+      await quietFor(1000); // the dialog must not open
       expect((await firstRun(page).count()) === 0, "asked on a project with sheets");
       return `opened on Page 1 (${sheet.uuid.slice(0, 8)}…), no dialog`;
     },

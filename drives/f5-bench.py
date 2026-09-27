@@ -7,7 +7,8 @@
                        most 2048 px wide and 144 DPI) in MinIO; an image's drawing reads
                        from a wrapper PDF, and the person's own file is untouched
     age <file>         the drawing file was last touched eleven minutes ago
-    sweep              run the sweep through Redis to the worker, as beat does
+    sweep [file]       run the sweep through Redis to the worker, as beat does; if beat's
+                       own sweep got to the aged file first, that passes too
 
 Prints one line per step and exits 1 with the reason when that is not what F5 says.
 """
@@ -27,6 +28,7 @@ from app.database import SessionFactory
 from app.features.drawing.models import DrawingFile, DrawingSheet
 from app.features.project.models import Project, ProjectFile
 from app.worker.celery_app import celery_app
+from app.worker.tasks.prepare import UNPREPARED
 
 SWEEP = "app.worker.tasks.prepare.sweep_unprepared_drawings"
 
@@ -93,11 +95,33 @@ async def age(file_uuid: str) -> None:
     print(f"aged  drawing {file_uuid} last touched 11 minutes ago")
 
 
-def sweep() -> None:
+async def picked_up(file_uuid: str) -> bool:
+    """Whether the aged file has been taken up since: touched again, or nothing of it is
+    left unprepared."""
+    async with SessionFactory() as session:
+        drawing = await session.scalar(select(DrawingFile).where(DrawingFile.uuid == file_uuid))
+        if drawing is None:
+            return False
+        waiting = await session.scalar(
+            select(DrawingSheet.id).where(
+                DrawingSheet.file_id == drawing.id, DrawingSheet.render_status.in_(UNPREPARED)
+            )
+        )
+        return waiting is None or drawing.updated_at > datetime.now(UTC) - timedelta(minutes=10)
+
+
+def sweep(file_uuid: str | None) -> None:
     result = celery_app.send_task(SWEEP).get(timeout=60)
-    if not result.get("dispatched"):
-        fail(f"the sweep dispatched nothing: {result}")
-    print(f"swept {result}")
+    if result.get("dispatched"):
+        print(f"swept {result}")
+        return
+    # Beat runs the same sweep every five minutes, and once took the aged file 5 s before
+    # this drive did (2026-09-27). The file was still resumed, which is what is being
+    # proved, so a sweep that found nothing passes if the file has been taken up since.
+    if file_uuid and asyncio.run(picked_up(file_uuid)):
+        print(f"swept by beat's own sweep first; this one found nothing left: {result}")
+        return
+    fail(f"the sweep dispatched nothing: {result}")
 
 
 if __name__ == "__main__":
@@ -107,6 +131,6 @@ if __name__ == "__main__":
     elif step == "age":
         asyncio.run(age(args[0]))
     elif step == "sweep":
-        sweep()
+        sweep(args[0] if args else None)
     else:
         fail(f"no step {step}")

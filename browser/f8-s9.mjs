@@ -10,7 +10,7 @@
 // processes, so the item lock is proved across processes, not inside one.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
-import { APP_B, WINDOW_B, call, ensureWindowB, recordSockets, secondWindow, signInAt } from "./lib/realtime.mjs";
+import { A_NAME, APP_B, B_NAME, WINDOW_B, call, ensureWindowB, eventsOn, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import {
   clickSheet,
   countItem,
@@ -85,7 +85,7 @@ await run("f8-s9", [
         const same = await Promise.all([move(tokenA, g1, 0.31, 8000), move(tokenB, g1, 0.32, 8010)]);
         const won = same.filter((s) => s.status === 200);
         const lost = same.filter((s) => s.status === 409);
-        const winner = same[0].status === 200 ? "Fixture O." : "Sara W.";
+        const winner = same[0].status === 200 ? A_NAME : B_NAME;
         expect(won.length === 1 && lost.length === 1, `statuses ${same.map((s) => s.status).join(", ")}`);
         expect(
           lost[0].body.detail === `${winner} just changed this shape, showing their version.`,
@@ -123,13 +123,15 @@ await run("f8-s9", [
         await page.mouse.down();
         await page.mouse.move(box.x + 30, box.y + 20, { steps: 3 });
         const [g] = (await itemDetail(tokenA, r, item.uuid)).body.geometries;
+        const movedAt = await page.evaluate(() => Date.now());
         const moved = await call(tokenA, "PATCH", `${r.takeoff}/geometry/${g.uuid}`, {
           vertices_json: [[0.45, 0.45]],
           shape_meta: null,
           geometry_version: g.geometry_version,
         });
         expect(moved.status === 200, `A's move: ${moved.status}`);
-        await page.waitForTimeout(500);
+        // B still holding the handle when A's change reaches its socket.
+        await waitFor(async () => (await eventsOn(page)).some((f) => f.at >= movedAt), "B to hear A's move", 8000);
         await page.mouse.move(box.x + 60, box.y + 40, { steps: 3 });
         await page.mouse.up();
 
@@ -137,9 +139,9 @@ await run("f8-s9", [
         await alert.waitFor({ timeout: 8000 });
         const said = (await alert.textContent()) ?? "";
         const after = (await itemDetail(tokenA, r, item.uuid)).body.geometries[0].vertices_json[0];
-        expect(said.includes("Fixture O. just changed this shape, showing their version."), `B was told "${said}"`);
+        expect(said.includes(`${A_NAME} just changed this shape, showing their version.`), `B was told "${said}"`);
         expect(after[0] === 0.45 && after[1] === 0.45, `the stored shape is ${JSON.stringify(after)}`);
-        return `B saw "Fixture O. just changed this shape, showing their version."; the shape stayed where A put it`;
+        return `B saw "${A_NAME} just changed this shape, showing their version."; the shape stayed where A put it`;
       } finally {
         await removeItem(tokenA, r, item.uuid);
       }
@@ -191,7 +193,8 @@ await run("f8-s9", [
         await (await menuItem(page, name, "Add a shape")).click();
         await (await menuItem(b.page, name, "Add a shape")).click();
         await Promise.all([clickSheet(page, 0.62, 0.62), clickSheet(b.page, 0.66, 0.66)]);
-        await page.waitForTimeout(1500);
+        // Both saves landed (or the count stays short and the expect below names it).
+        await waitFor(async () => (await itemDetail(tokenA, r, item.uuid)).body.geometries.length >= 3, "both shapes to be saved", 10000).catch(() => {});
 
         await page.reload();
         await b.page.reload();

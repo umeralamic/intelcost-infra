@@ -6,8 +6,9 @@
                            takes it (F8-S6). Prints "aged".
     purge [dry]            Queue the purge through Redis to the worker, as beat does, and
                            wait for it. Prints "ran" and the counts.
-    rollback <workspace>   Register a publish on a session whose transaction fails, and
-                           listen on the workspace's channel for 3 s. Prints "silent" if
+    rollback [workspace]   Register a publish on a session whose transaction fails, and
+                           listen on the workspace's channel (a fresh uuid's if none is
+                           given) for 3 s. Prints "silent" if
                            nothing arrived (F8-S5 AC2), "FAIL" if something did.
 """
 
@@ -87,8 +88,10 @@ def main() -> None:
         asyncio.run(age(args[0]))
     elif step == "purge":
         purge(dry=args[:1] == ["dry"])
-    elif step == "rollback" and args:
-        asyncio.run(rollback(args[0]))
+    elif step == "rollback":
+        # Any workspace's topic will do: the drive only publishes and listens. A fresh uuid
+        # by default, so it borrows no one's workspace, the seeded account's least of all.
+        asyncio.run(rollback(args[0] if args else str(uuid.uuid4())))
     else:
         fail(__doc__ or "usage")
 

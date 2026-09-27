@@ -9,7 +9,7 @@
 // - Storage failing mid-upload leaves one project and a Retry that finishes into it.
 // - Going offline pauses the upload, and it continues from the parts already sent.
 
-import { apiCall, expect, run, seatedMember } from "./lib/bench.mjs";
+import { apiCall, expect, onDisk, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, openDashboard } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S7 create");
@@ -92,11 +92,7 @@ await run("f4-s7", [
         return dt;
       });
       await page.dispatchEvent("[data-drop-zone]", "drop", { dataTransfer: drop });
-      await page.getByLabel("Choose files for Specs").setInputFiles({
-        name: "spec.docx",
-        mimeType: "application/octet-stream",
-        buffer: bytes(20 * MB, 7),
-      });
+      await page.getByLabel("Choose files for Specs").setInputFiles(await onDisk("spec.docx", bytes(20 * MB, 7)));
       await page.locator('li[data-file="spec.docx"]').getByText("Specs").waitFor();
       await watchBar(page);
       await page.getByRole("button", { name: "Create & upload 3 files" }).click();
@@ -152,11 +148,7 @@ await run("f4-s7", [
       const name = `F4-S7 offline ${Date.now()}`;
       await openNewProject(page, name);
       await page.getByRole("button", { name: "Next" }).click();
-      await page.getByLabel("Choose files for Plans").setInputFiles({
-        name: "big-set.pdf",
-        mimeType: "application/pdf",
-        buffer: bytes(40 * MB, 3),
-      });
+      await page.getByLabel("Choose files for Plans").setInputFiles(await onDisk("big-set.pdf", bytes(40 * MB, 3)));
       await watchBar(page);
       await page.getByRole("button", { name: "Create & upload 1 file" }).click();
       await page.waitForFunction(() => (window.__pcts ?? []).some((p) => p >= 20), null, { timeout: 60000 });

@@ -130,5 +130,14 @@ Then bring the stack up and drive the changed screen in a real browser, exercisi
 its loading, empty, error and unauthorized states. Delete every screenshot and
 scratch artifact afterwards. Leave nothing stray.
 
-After each subtask, run only the fixtures it touches. Run the full regression once, at
-the end of each block, and again at feature close-out.
+After each subtask, run only the fixtures it touches. Two tiers after that (D-44), both
+through `intelcost-infra/regress.sh`, which runs independent fixtures in parallel and the
+ones that stop a service alone at the end:
+
+- **End of each block:** `./regress.sh quick <the fixtures the block touched>`, the core
+  smoke set of 16 plus those.
+- **Feature close-out, and overnight:** `./regress.sh`, the full list.
+
+A fixture builds its own world through `browser/lib/`: its own accounts, workspaces and
+mail. It never assumes a page size, a window size or an account name, and it waits on
+what the page shows, never on a clock (`quietFor` only to prove something doesn't happen).

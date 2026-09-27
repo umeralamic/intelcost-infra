@@ -4,8 +4,8 @@
 // Not run on its own: browser/f8-s12.sh restarts `api` on "PHASE restart-api". Window A
 // is on :5173 (api), window B on :5174 (api-b), so only A loses its socket.
 
-import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
-import { APP_B, WINDOW_B, appSockets, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
+import { APP, SEEDED, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
+import { A_NAME, APP_B, B_NAME, WINDOW_B, appSockets, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { clickSheet, countItem, itemDetail, menuItem, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
@@ -32,7 +32,7 @@ await run("f8-s12-restart", [
         await openSheet(b.page, r, APP_B);
 
         await (await menuItem(page, name, "Add a shape")).click();
-        await waitFor(async () => (await tags(b.page, name)).includes("Fixture O."), "B to see A's hold", 5000);
+        await waitFor(async () => (await tags(b.page, name)).includes(A_NAME), "B to see A's hold", 5000);
         // Not selected first: with the properties panel open the tree above it can shrink
         // to no visible rows (pre-F8 layout, F6's), and the row menu below needs the row.
         await b.page.screenshot({ path: shot.replace(".png", "-held.png") });
@@ -50,16 +50,16 @@ await run("f8-s12-restart", [
           60000,
           250,
         );
-        const alert = page.getByRole("alert").filter({ hasText: "Sara W. is editing this item right now." });
+        const alert = page.getByRole("alert").filter({ hasText: `${B_NAME} is editing this item right now.` });
         await alert.waitFor({ timeout: 10000 });
         const armed = await page.getByText("Draw the extra shape.").count();
         await clickSheet(page, 0.7, 0.2);
-        await page.waitForTimeout(1500);
+        await quietFor(1500); // a shape, if the click made one, would be saved by now
         const shapes = (await itemDetail(token, r, item.uuid)).body.geometries.length;
 
         expect(armed === 0, "A's Add a shape is still armed");
         expect(shapes === 1, `the item has ${shapes} shapes; A's click landed on it`);
-        return 'A reconnected and was told "Sara W. is editing this item right now."; its tool disarmed; its next click added nothing to the item';
+        return `A reconnected and was told "${B_NAME} is editing this item right now."; its tool disarmed; its next click added nothing to the item`;
       } finally {
         await setMode(token, workspace.uuid, "work_together");
         await b.context.close();

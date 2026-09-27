@@ -14,6 +14,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   SEEDED,
   apiCall,
@@ -176,7 +177,7 @@ await run("f4-s2", [
     title: "AC4 — New project opens the dialog, holds a blank name back, creates, toasts and lands on it",
     run: async ({ page }) => {
       await signInAs(page, OWNER, SEEDED.password);
-      await page.selectOption("header select", workspace.uuid);
+      await enterWorkspace(page,workspace.uuid);
       await page.goto(`${APP}/`);
       await page.getByRole("button", { name: "New project" }).click();
       await page.getByRole("dialog", { name: "New project" }).waitFor();

@@ -31,6 +31,7 @@ import {
   expect,
   firstWorkspace,
   matrix,
+  quietFor,
   run,
   seatedMember,
   setOverride,
@@ -240,7 +241,7 @@ await run("f3-s6", [
       await page.click('[data-role="takeoff"][data-capability="canGrantOwnerRole"]', {
         force: true,
       });
-      await page.waitForTimeout(1000);
+      await quietFor(1000); // a write, if the click made one, would have landed
       const after = column(await matrix(ownerToken, workspace.uuid), "takeoff");
       expect(
         after.capabilities.canGrantOwnerRole === beforeMap,

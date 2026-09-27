@@ -27,6 +27,7 @@ import {
   apiLogin,
   capabilities,
   createWorkspace,
+  enterWorkspace,
   expect,
   fixtureOwner,
   flags,
@@ -86,7 +87,7 @@ await run("f3-s13", [
       await signInAs(page, SEED);
 
       // The owner: every capability, and the feature not rolled out.
-      await page.selectOption("header select", unshipped.uuid);
+      await enterWorkspace(page,unshipped.uuid);
       await page.goto(`${APP}/settings/roles`);
       await page.waitForSelector("[data-capability]", { timeout: 20000 });
       await page.waitForSelector('[data-gate="flag"]', { timeout: 20000 });
@@ -105,7 +106,7 @@ await run("f3-s13", [
       expect(buttons === 0, `${buttons} cells are clickable with the flag off`);
 
       // And the same workspace, same person, with the feature shipped: it is editable.
-      await page.selectOption("header select", shipped.uuid);
+      await enterWorkspace(page,shipped.uuid);
       await page.goto(`${APP}/settings/roles`);
       await page.waitForFunction(
         () =>
@@ -162,7 +163,7 @@ await run("f3-s13", [
       });
 
       await signInAs(page, SEED);
-      await page.selectOption("header select", shipped.uuid);
+      await enterWorkspace(page,shipped.uuid);
       await page.goto(`${APP}/settings/roles`);
       // The matrix itself arrives (its own request is not held), so the screen is up
       // and only the rollout answer is missing.
@@ -197,7 +198,7 @@ await run("f3-s13", [
       page.on("console", (m) => m.type() === "warning" && warnings.push(m.text()));
 
       await signInAs(page, SEED);
-      await page.selectOption("header select", unshipped.uuid);
+      await enterWorkspace(page,unshipped.uuid);
       // Set the override, then reload so the hook reads it on mount.
       await page.evaluate((key) => localStorage.setItem(`ff.${key}`, "on"), KEY);
       await page.goto(`${APP}/settings/roles`);
@@ -221,7 +222,7 @@ await run("f3-s13", [
 
       // Force ON only: with the real flag on, "off" in localStorage changes nothing.
       await page.evaluate((key) => localStorage.setItem(`ff.${key}`, "off"), KEY);
-      await page.selectOption("header select", shipped.uuid);
+      await enterWorkspace(page,shipped.uuid);
       await page.goto(`${APP}/settings/roles`);
       await page.waitForFunction(
         () =>

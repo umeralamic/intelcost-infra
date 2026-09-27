@@ -5,7 +5,7 @@
 // AC5 (a restart closes 1012 and the app comes back) needs the api restarted between
 // browser steps, so it lives in browser/f8-s2.sh with the S2 outage.
 
-import { APP, SEEDED, apiCall, apiLogin, expect, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, expect, quietFor, run, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import {
   appSockets,
   loginPair,
@@ -28,7 +28,7 @@ await run("f8-s1", [
       await recordSockets(context);
       await signInAs(page, owner.email, owner.password);
       const socket = await readySocket(page);
-      await page.waitForTimeout(12000);
+      await quietFor(12000); // two ping rounds, and no second socket
 
       const all = await appSockets(page);
       expect(all.length === 1, `expected one socket, saw ${all.length}`);

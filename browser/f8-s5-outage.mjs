@@ -49,12 +49,24 @@ await run("f8-s5-outage", [
         });
 
         await waitFor(redisUp, "Redis to come back", 40000, 500);
-        // The listener retries once a second; give it a moment to resubscribe.
-        await page.waitForTimeout(3000);
-        const renamed = `${original} (F8-S5 ${Date.now() % 100000})`;
-        await call(token, "PATCH", `/api/workspace/${workspace.uuid}`, { name: renamed });
-        await waitFor(async () => (await headerName(page)) === renamed, "window A to hear the next event", 8000);
-        await waitFor(async () => (await headerName(b.page)) === renamed, "window B to hear the next event", 8000);
+        // Each api process's listener retries once a second and resubscribes when Redis
+        // answers, which is not the moment /health first says ok. So rather than a grace
+        // period, a rename is sent and awaited, and sent again until both windows hear
+        // one: events flow again, and how many tries it took is reported.
+        let renamed = "";
+        let tries = 0;
+        const back = Date.now();
+        await waitFor(async () => {
+          tries += 1;
+          renamed = `${original} (F8-S5 ${tries}.${Date.now() % 100000})`;
+          await call(token, "PATCH", `/api/workspace/${workspace.uuid}`, { name: renamed });
+          return waitFor(
+            async () => (await headerName(page)) === renamed && (await headerName(b.page)) === renamed,
+            "both windows to show the rename",
+            2000,
+          ).then(() => true, () => false);
+        }, "both windows to hear an event after Redis returned", 20000, 0);
+        const flowing = ((Date.now() - back) / 1000).toFixed(1);
 
         const after = [await appSockets(page), await appSockets(b.page)];
         expect(during.status === 200, `a write during the outage got ${during.status}`);
@@ -62,7 +74,7 @@ await run("f8-s5-outage", [
           after[0].length === before[0] && after[1].length === before[1] && after.every((s) => s.at(-1).close === null),
           "a socket closed or was replaced during the outage",
         );
-        return `write during the outage: 200; both sockets stayed open; after Redis returned both headers read "${renamed}"`;
+        return `write during the outage: 200; both sockets stayed open; after Redis returned both headers read "${renamed}" (events flowing ${flowing} s after /health said ok, try ${tries})`;
       } finally {
         await call(token, "PATCH", `/api/workspace/${workspace.uuid}`, { name: original });
         await b.context.close();

@@ -5,7 +5,7 @@
 // Run against 30-minute tokens this would take an hour, so the runner sets
 // ACCESS_TOKEN_MINUTES=2 and the first step refuses to go on if it did not take.
 
-import { APP, SEEDED, apiCall, apiLogin, expect, firstWorkspace, members, run, seatedMember, signInAs, ownWorkspace } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, expect, firstWorkspace, members, quietFor, run, seatedMember, signInAs, ownWorkspace } from "./lib/bench.mjs";
 import { appSockets, loginPair, rawSocket, readySocket, recordSockets, waitFor } from "./lib/realtime.mjs";
 
 // Its own account and workspace, never the seeded one.
@@ -24,7 +24,7 @@ await run("f8-s3", [
       const life = first.received.find((f) => f.type === "ready").expires_in_ms;
       expect(life <= 125000, `the api is not on 2-minute tokens (${Math.round(life / 1000)} s): run browser/f8-s3.sh`);
 
-      await page.waitForTimeout(150000);
+      await quietFor(150000); // past one 2-minute token's life
       const all = await appSockets(page);
       const s = all[0];
       const auths = s.sent.filter((f) => f.type === "auth");

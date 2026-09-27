@@ -162,7 +162,8 @@ seeded account's switcher once held 860 fixture workspaces).
   F5-S9): `riversideWorld()` makes, per run, a workspace of the run's own account with
   "Riverside Medical Center", a two-page PDF uploaded into Plans and loaded through
   `/drawing/load`, both pages prepared, page 1 calibrated as the seed does (200 ft per
-  unit), and Sara W. seated as an Estimator. It takes about 25 s. Every F8 fixture, `p19`,
+  unit), and the run's own Sara W. (`fx.<fixture>-b.<stamp>@`, "Sara Williams") seated as
+  an Estimator. It takes about 25 s. Every F8 fixture, `p19`,
   `f5-s3` and `f5-s9` use it; the F2 and F3 fixtures make their own workspace with
   `ownWorkspace`. No fixture in the regression signs in as the seeded account.
 - **`worker-previews`** (D-43) serves only the `previews` queue: Choose pages'
@@ -225,26 +226,59 @@ started with. Every fixture asks it before its first step, through `run` in
 `browser/lib/bench.mjs`, and runs nothing if either is behind, waiting up to 45 s for
 a restart already under way. `browser/bench-code.mjs` asks the same question on its own.
 
-**Run a regression with `regress.sh`.** It runs `bench-code` first and stops if it
-fails, then every F4 fixture and the F3 ones F4 leans on, or just the ones you name:
+**Run a regression with `regress.sh`** (D-44). It runs `bench-code` first and stops if
+it fails. Then it runs the independent fixtures in parallel, longest first, and after them,
+one at a time, the ones that stop or restart a service.
 
 ```bash
-./regress.sh                 # everything but f4-s12, which has three phases
-./regress.sh f4-s17 f4-s18   # just these
+./regress.sh                     # full: every standing fixture (close-out, overnight)
+./regress.sh quick f5-s5 f5-s7   # the core smoke set of 16, plus the ones a block touched
+./regress.sh f4-s17 f4-s18       # just these
+REGRESS_JOBS=6 ./regress.sh      # fixtures at a time (default 4)
+REGRESS_CPU=1 ./regress.sh       # also sample the host's CPU every 5 s, and report it
 ```
+
+- **The serial group** is f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27. Each one
+  stops, restarts or recreates the api, api-b, Redis, the worker or MinIO, or drops the
+  worker's queue. They run last, with nothing else running.
+- **The parallel group is everything else.** Every fixture builds its own world through
+  `browser/lib/`:
+  - its own owner (`fixtureOwner`), seats (`seatedMember`, tagged with the fixture's
+    name) and window-B person;
+  - its own workspaces;
+  - the mail sent to its own addresses, read, counted and cleared per address (`clearMail`
+    without an address deletes nothing).
+- **Fixtures wait on page state, never on a clock:** `enterWorkspace`, `shellSettled`,
+  `pageSettled`, `onProjectTopic` and `sheetPoint` (a point on the sheet checked to be in
+  the window). The only timed waits are `quietFor`, a window in which something must NOT
+  happen, and gesture pacing.
+- **The order comes from the last run.** Each run writes `.regress/times.tsv`, and the
+  next one starts the longest fixtures first.
+- It ends with the clean-up below and a line giving the wall clock.
 
 Each fixture's **full** output is kept in `.regress/<name>.log` (git-ignored), and a
 failed step prints the whole error with its cause and how long the step ran. This is
 deliberate. Once, an f4-s3 failure was reported only through a filtered summary, its
-message was lost, and it could not be traced afterwards.
+message was lost, and it could not be traced afterwards. A fixture's summary block is
+printed when it finishes, so blocks come in finishing order.
 
-**Two F8 runners change the bench while they run.** `browser/f8-s2.sh` stops the api
-for 30 s and then restarts it, with a tab open, to drive the realtime socket's backoff
-and its 1012 close. `browser/f8-s3.sh` recreates the api with `ACCESS_TOKEN_MINUTES=2`
-to drive re-auth on refresh in minutes rather than an hour, and puts it back on 30 when
-it ends, pass or fail. Run nothing else against the bench while either is going. The
-realtime fixtures read the socket the way DevTools > Network > WS shows it, through
-`browser/lib/realtime.mjs`.
+**Measured** on this machine (i7-8850H, 6 cores / 12 threads, 32 GB, Docker given 12 CPUs
+and about 15 GB):
+
+_(filled in by the measurement runs of 2026-09-27; see the table below once it lands)_
+
+**The serial group changes the bench while it runs**, which is why `regress.sh` runs it
+alone:
+- `browser/f8-s2.sh` stops the api for 30 s and then restarts it, with a tab open, to
+  drive the realtime socket's backoff and its 1012 close.
+- `browser/f8-s3.sh` recreates the api with `ACCESS_TOKEN_MINUTES=2`, to drive re-auth on
+  refresh in minutes rather than an hour, and puts it back on 30 when it ends, pass or
+  fail.
+- f8-s5 stops Redis, f8-s8 restarts api-b, f8-s12 restarts the api, f5-s2 stops the
+  worker and drops its queue, and f4-s27 stops MinIO.
+
+Run nothing else against the bench while any of them is going. The realtime fixtures read
+the socket the way DevTools > Network > WS shows it, through `browser/lib/realtime.mjs`.
 
 Running it on the host instead still works and is faster to iterate on:
 
@@ -274,10 +308,10 @@ container first: `docker compose stop app`.
 `api-b` and `app-b`. Open http://localhost:5173 in one browser window and
 http://localhost:5174 in another: different origins, so each keeps its own sign-in, and
 every live update between them has crossed Redis from one api process to the other. The
-second estimator for this is `window-b@bench.intelcost.io` ("Sara Williams", password
-`bench-password-1`), an estimator in Bench Construction. It is not in the seed: the F8
-fixtures seat it through the real invitation path the first time they need it, so on a
-fresh bench run one of them (say `./regress.sh f8-s7`) before signing in as it by hand.
+second estimator for this, by hand, is `window-b@bench.intelcost.io` ("Sara Williams",
+password `bench-password-1`), an estimator in Bench Construction. It is not in the seed,
+and since D-44 no fixture uses it: each fixture run has its own window-B person. On a fresh
+bench, invite it from Bench Construction's Settings > Members before signing in as it.
 `regress.sh` starts the profile itself.
 
 `beat` only enqueues. At 03:00 UTC it queues `purge_trashed_projects` (F4-S27) and the

@@ -5,7 +5,7 @@
 // the sheet a person opens for the two-window checks is not buried in fixture debris.
 
 import { APP } from "./bench.mjs";
-import { call } from "./realtime.mjs";
+import { call, joinedTopic } from "./realtime.mjs";
 
 export const PROJECT_NAME = "Riverside Medical Center";
 
@@ -66,10 +66,68 @@ export async function menuItem(page, name, label) {
   return item;
 }
 
+/**
+ * The window point for normalised sheet coordinates, checked to be on screen.
+ *
+ * A sheet can run past the bottom of the window (Riverside was a portrait page once, and a
+ * click at 85% of its height landed below the fold, on nothing). The point is scrolled into
+ * the window if it can be, and otherwise this throws naming it, rather than letting a click
+ * silently miss.
+ */
+export async function sheetPoint(page, x, y) {
+  const svg = page.locator('svg[role="presentation"]');
+  await svg.waitFor();
+  const at = async () => {
+    const box = await svg.boundingBox();
+    return { x: box.x + box.width * x, y: box.y + box.height * y };
+  };
+  const view = page.viewportSize();
+  const inView = (p) => p.x >= 0 && p.y >= 0 && p.x < view.width && p.y < view.height;
+  let point = await at();
+  if (!inView(point)) {
+    await svg.evaluate((el, [fx, fy]) => {
+      const box = el.getBoundingClientRect();
+      const px = box.left + box.width * fx;
+      const py = box.top + box.height * fy;
+      for (let node = el.parentElement; node; node = node.parentElement) {
+        if (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth) {
+          node.scrollBy(px - window.innerWidth / 2, py - window.innerHeight / 2);
+        }
+      }
+    }, [x, y]);
+    point = await at();
+  }
+  if (!inView(point)) {
+    throw new Error(`sheet point (${x}, ${y}) is at ${Math.round(point.x)},${Math.round(point.y)}, outside the ${view.width}x${view.height} window`);
+  }
+  return point;
+}
+
 /** Click on the sheet at normalised coordinates. */
 export async function clickSheet(page, x, y) {
-  const box = await page.locator('svg[role="presentation"]').boundingBox();
-  await page.mouse.click(box.x + box.width * x, box.y + box.height * y);
+  const point = await sheetPoint(page, x, y);
+  await page.mouse.click(point.x, point.y);
+}
+
+/** Move the pen across the sheet in small steps, the way a hand does, over `ms`. The
+ *  16 ms pause is the gesture's own pace (a frame), not a wait for anything. */
+export async function sweepSheet(page, from, to, ms) {
+  const [a, b] = [await sheetPoint(page, ...from), await sheetPoint(page, ...to)];
+  const steps = Math.max(2, Math.round(ms / 16));
+  for (let i = 1; i <= steps; i += 1) {
+    const t = i / steps;
+    await page.mouse.move(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+    await page.waitForTimeout(16);
+  }
+}
+
+/** The run's project topic, as the app names it (`core/realtime/topics.ts`). */
+export const projectTopicOf = (r) => `ws:${r.workspace ?? r.takeoff.split("/")[3]}:project:${r.project}`;
+
+/** Wait until this page's socket has joined the sheet's project topic: from then on it
+ *  hears a colleague's drafts and changes. What "wait a second first" stood in for. */
+export async function onProjectTopic(page, r) {
+  await joinedTopic(page, projectTopicOf(r));
 }
 
 /** Set the workspace's collaboration mode through the api, as the owner. */

@@ -15,6 +15,7 @@
 import {
   fixtureOwner,
   ownWorkspace,
+  enterWorkspace,
   APP,
   activity,
   apiCall,
@@ -23,6 +24,7 @@ import {
   discardProject,
   expect,
   firstWorkspace,
+  quietFor,
   run,
   SEEDED,
   seatedMember,
@@ -90,7 +92,7 @@ await run("f4-s1", [
       const first = submitted.body.submitted_at;
       expect(first, "submitted_at not set on Submitted");
 
-      await new Promise((resolve) => setTimeout(resolve, 1100));
+      await quietFor(1100); // a second later, so a moved submitted_at would show
       const back = await apiCall(ownerToken, "PATCH", path, { status: "bidding" });
       const again = await apiCall(ownerToken, "PATCH", path, { status: "submitted" });
       expect(back.status === 200 && again.status === 200, "bounce failed");
@@ -260,7 +262,7 @@ await run("f4-s1", [
       );
 
       await signInAs(page, OWNER, SEEDED.password);
-      await page.selectOption("header select", workspace.uuid);
+      await enterWorkspace(page,workspace.uuid);
       await page.goto(`${APP}/settings/activity`);
       await page.getByText(`moved the project ${project.name} to Trash`).waitFor({ timeout: 20000 });
       await page.getByText(`restored the project ${project.name} from Trash`).waitFor();

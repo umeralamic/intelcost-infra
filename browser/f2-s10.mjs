@@ -123,7 +123,7 @@ await run("f2-s10", [
     title: "AC5 — asking twice kills the first link, and the second one still works",
     run: async ({ page }) => {
       const first = await freshLink("superseded");
-      await clearMail();
+      await clearMail(first.email);
       await requestReset(first.email);
       const secondToken = await resetTokenFromMail(first.email);
       expect(secondToken !== first.token, "the second request reissued the same token");

@@ -5,7 +5,7 @@
 // AC2 ("at the next daily purge", 31 days on) needs the database to age a row, so it is
 // driven by f4-s27.sh, which already ages projects for the nightly job.
 
-import { APP, apiCall, expect, members, run, seatedMember } from "./lib/bench.mjs";
+import { APP, apiCall, expect, members, quietFor, run, seatedMember } from "./lib/bench.mjs";
 import { folderPaths, freshWorkspace, makeProject, openDashboard, rowNames, seedFile } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S26 trash");
@@ -52,7 +52,7 @@ await run("f4-s26", [
       const file = await seedFile(page, token, base, doomed.uuid, specs.uuid, "S-1.pdf", Buffer.alloc(4096, 8));
       doomedUrl = (await apiCall(token, "GET", `${base}/${doomed.uuid}/file/${file.uuid}/download`)).body.url;
       expect((await apiCall(token, "DELETE", `${base}/${kept.uuid}`)).status === 200, "trash kept");
-      await page.waitForTimeout(50);
+      await quietFor(50); // two trash times apart, so the order is known
       expect((await apiCall(token, "DELETE", `${base}/${doomed.uuid}`)).status === 200, "trash doomed");
 
       await openTrash(page, workspace.uuid, { signedIn: true });
