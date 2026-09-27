@@ -72,7 +72,9 @@ trap 'rm -rf "$LOCK"; [ -n "$cpu_pid" ] && kill "$cpu_pid" 2>/dev/null' EXIT
 SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27 f5-s11 f5-s15)
 
 # The core smoke set: one or two fixtures per surface, fast, run at the end of each block.
-QUICK=(f2-s3 f2-s9 f3-s1 f3-s8 f4-s5 f4-s7 f4-s17 f4-dialogs f5-s4 f5-s6 f5-s8 f8-s7 f8-s13 f8-s18 d37-links p19)
+# f5-d51 is the founder's standing check (2026-09-27): equal runs across and down a
+# landscape and a portrait sheet read the same (D-51).
+QUICK=(f2-s3 f2-s9 f3-s1 f3-s8 f4-s5 f4-s7 f4-s17 f4-dialogs f5-s4 f5-s6 f5-s8 f5-d51 f8-s7 f8-s13 f8-s18 d37-links p19)
 
 # Every standing fixture, by feature.
 full_list() {

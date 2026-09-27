@@ -2244,7 +2244,7 @@ nothing measured.
 ## D-51 — A scale is feet per PDF point, and quantities are measured in points
 
 **Date:** 2026-09-27
-**Status:** Decided in F5 Block E, following legacy; pending founder review
+**Status:** Accepted by the founder 2026-09-27, with the correction it made to the founder's four bench quantities. A permanent fixture keeps it: `f5-d51` (quick tier) measures equal runs across and down a landscape and a portrait sheet
 **Area:** Takeoff, Backend, Frontend (hard rule 3: quantities)
 **Serves:** F5-S15, S16
 
@@ -2295,3 +2295,26 @@ the same unit.
 - Fixtures that asserted a quantity from a normalised calibration are re-derived in
   points (`f5-s10`, `proof-backlog`).
 - `measured_feet_per_pt` is left for the dimension cross-check (F12), as in legacy.
+
+---
+
+## D-52 — Architectural scales read `1/8" = 1'-0"`
+
+**Date:** 2026-09-27
+**Status:** Accepted (the founder's ruling of 2026-09-27, on Block E's question)
+**Area:** Takeoff, Frontend
+**Serves:** F5-S16 AC1
+
+**Context:** Legacy labels its architectural scales `1/8" = 1'`. F5's spec wrote
+`1/8" = 1'-0"`, the form printed in drawing title blocks. Block E shipped legacy's and asked.
+
+**Decision:** The spec's form for the architectural list: `{fraction}" = 1'-0"`, in the
+Scale menu, on the chip and in the sheets panel. Engineering (`1" = 20'`) and metric
+(`1 : 100`) keep legacy's form, which is how those scales are printed.
+
+**Consequences:**
+- `lib/takeoff/scales.ts` builds the architectural labels; `matchScale` and the stored
+  feet per point are unchanged.
+- A label already stored keeps its words: the chip shows the label a person saved. Only
+  bench data holds the older form.
+- `f5-s16` picks `1/4" = 1'-0"` by its exact name.

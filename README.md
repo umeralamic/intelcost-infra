@@ -232,7 +232,7 @@ one at a time, the ones that stop or restart a service.
 
 ```bash
 ./regress.sh                     # full: every standing fixture (close-out, overnight)
-./regress.sh quick f5-s5 f5-s7   # the core smoke set of 16, plus the ones a block touched
+./regress.sh quick f5-s5 f5-s7   # the core smoke set of 17, plus the ones a block touched
 ./regress.sh f4-s17 f4-s18       # just these
 REGRESS_JOBS=4 ./regress.sh      # fixtures at a time (default 3, as measured below)
 REGRESS_CPU=1 ./regress.sh       # also sample the host's CPU every 5 s, and report it

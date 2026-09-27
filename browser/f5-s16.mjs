@@ -4,7 +4,7 @@
 //
 // Two 1224 × 792 pt sheets. Page 1 starts unscaled and empty; page 2 starts unscaled with
 // a 612 pt run across it, then takes a preset, which the guard must then protect.
-// Legacy's labels are its own: `1/8" = 1'`, not the spec's `1/8" = 1'-0"`.
+// Architectural labels read `1/8" = 1'-0"`, the spec's form, not legacy's `1/8" = 1'` (D-52).
 
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -55,7 +55,7 @@ await run("f5-s16", [
     },
   },
   {
-    title: "AC5 and AC1: an unscaled sheet's chip is amber \"Calibrate scale to compute LF / SF\"; the Scale menu lists Architectural, Engineering and Metric; 1/8\" = 1' sets the scale and the chip reads it",
+    title: "AC5 and AC1: an unscaled sheet's chip is amber \"Calibrate scale to compute LF / SF\"; the Scale menu lists Architectural, Engineering and Metric; 1/8\" = 1'-0\" sets the scale and the chip reads it",
     run: async ({ page }) => {
       await open(page, one);
       const before = await chip(page).textContent();
@@ -69,14 +69,14 @@ await run("f5-s16", [
       for (const g of ["Architectural", "Engineering", "Metric"]) counts[g] = await m.getByRole("group", { name: g }).getByRole("menuitem").count();
       expect(firsts.join() === "Calibrate Scale,Add Custom Scale", `menu opens with ${firsts.join(", ")}`);
       expect(counts.Architectural === 15 && counts.Engineering === 25 && counts.Metric === 23, `lists ${JSON.stringify(counts)}`);
-      await preset(m, `1/8" = 1'`).click();
+      await preset(m, `1/8" = 1'-0"`).click();
       await page.getByText("Scale set — verify with a known dimension").waitFor({ timeout: 10000 });
-      await page.getByText(`Scale: 1/8" = 1'`).waitFor({ timeout: 10000 });
+      await page.getByText(`Scale: 1/8" = 1'-0"`).waitFor({ timeout: 10000 });
       const green = await chip(page).evaluate((el) => getComputedStyle(el).backgroundColor);
       const cal = await scaleOf(one);
-      expect(Math.abs(Number(cal.feet_per_norm) - 8 / 72) < 1e-9 && cal.label === `1/8" = 1'`, `stored ${cal.feet_per_norm} "${cal.label}"`);
+      expect(Math.abs(Number(cal.feet_per_norm) - 8 / 72) < 1e-9 && cal.label === `1/8" = 1'-0"`, `stored ${cal.feet_per_norm} "${cal.label}"`);
       expect(green !== amber, `the chip stayed ${amber}`);
-      return `"${before}" (${amber}) → menu: Calibrate Scale, Add Custom Scale; 15 / 25 / 23 scales → "Scale: 1/8" = 1'" (${green}); stored 8/72 feet per pt`;
+      return `"${before}" (${amber}) → menu: Calibrate Scale, Add Custom Scale; 15 / 25 / 23 scales → "Scale: 1/8" = 1'-0"" (${green}); stored 8/72 feet per pt`;
     },
   },
   {
@@ -110,34 +110,34 @@ await run("f5-s16", [
       expect((await tool(page, "Linear").getAttribute("aria-pressed")) === "false", "Linear armed with no scale");
       await dialog.getByRole("button", { name: "Set scale directly" }).click();
       await page.getByRole("dialog").getByRole("heading", { name: "Pick a standard scale" }).waitFor();
-      await preset(page.getByRole("dialog"), `1/4" = 1'`).click();
-      await page.getByText(`Scale: 1/4" = 1'`).waitFor({ timeout: 10000 });
+      await preset(page.getByRole("dialog"), `1/4" = 1'-0"`).click();
+      await page.getByText(`Scale: 1/4" = 1'-0"`).waitFor({ timeout: 10000 });
       await page.waitForFunction(() => document.querySelector('[role="group"][aria-label="Takeoff tools"] button[aria-pressed="true"]')?.textContent?.includes("Linear"), null, { timeout: 5000 });
       // D-51: 612 pt across at 4 ft per inch is 612 × 4 / 72 = 34 ft.
       const wall = (await apiCall(token, "GET", `${takeoff}/item?sheet_uuid=${two.uuid}`)).body.find((i) => i.name === "Wall run");
       expect(Math.abs(Number(wall.effective_quantity) - 34) < 1e-6, `Wall run ${wall.effective_quantity} LF, expected 34`);
       expect(countArmed === "true", "Count did not arm on an unscaled sheet");
-      return `Count armed unscaled · Linear → "Set a scale for this sheet" → Set scale directly → Pick a standard scale → 1/4" = 1' → Linear armed; Wall run 34.00 LF`;
+      return `Count armed unscaled · Linear → "Set a scale for this sheet" → Set scale directly → Pick a standard scale → 1/4" = 1'-0" → Linear armed; Wall run 34.00 LF`;
     },
   },
   {
     title: "AC4: changing a scale on a sheet with measurements asks \"Change scale on this sheet?\" first; Cancel keeps it, Change scale applies it",
     run: async ({ page }) => {
       await open(page, two);
-      await pickPreset(page, `1/8" = 1'`);
+      await pickPreset(page, `1/8" = 1'-0"`);
       const dialog = page.getByRole("dialog");
       await dialog.getByRole("heading", { name: "Change scale on this sheet?" }).waitFor();
       const body = await dialog.locator("#confirm-consequence").textContent();
-      expect(body.startsWith(`This sheet has 1 measurement traced on it. Changing the scale to 1/8" = 1' will rescale their values`), `body: ${body}`);
+      expect(body.startsWith(`This sheet has 1 measurement traced on it. Changing the scale to 1/8" = 1'-0" will rescale their values`), `body: ${body}`);
       await dialog.getByRole("button", { name: "Cancel" }).click();
       const kept = await scaleOf(two);
-      expect(kept.label === `1/4" = 1'`, `Cancel changed the scale to ${kept.label}`);
-      await pickPreset(page, `1/8" = 1'`);
+      expect(kept.label === `1/4" = 1'-0"`, `Cancel changed the scale to ${kept.label}`);
+      await pickPreset(page, `1/8" = 1'-0"`);
       await page.getByRole("dialog").getByRole("button", { name: "Change scale" }).click();
-      await page.getByText(`Scale: 1/8" = 1'`).waitFor({ timeout: 10000 });
+      await page.getByText(`Scale: 1/8" = 1'-0"`).waitFor({ timeout: 10000 });
       const wall = (await apiCall(token, "GET", `${takeoff}/item?sheet_uuid=${two.uuid}`)).body.find((i) => i.name === "Wall run");
       expect(Math.abs(Number(wall.effective_quantity) - 68) < 1e-6, `Wall run ${wall.effective_quantity} LF after, expected 68`);
-      return `"${body}" · Cancel kept 1/4" = 1' · Change scale → 1/8" = 1', Wall run 34 → 68 LF`;
+      return `"${body}" · Cancel kept 1/4" = 1'-0" · Change scale → 1/8" = 1'-0", Wall run 34 → 68 LF`;
     },
   },
   {

@@ -135,7 +135,8 @@ through `intelcost-infra/regress.sh`, which runs independent fixtures in paralle
 ones that stop a service alone at the end:
 
 - **End of each block:** `./regress.sh quick <the fixtures the block touched>`, the core
-  smoke set of 16 plus those.
+  smoke set of 17 plus those (it includes `f5-d51`, the founder's standing check that equal
+  runs across and down a non-square sheet read the same).
 - **Feature close-out, and overnight:** `./regress.sh`, the full list.
 
 A fixture builds its own world through `browser/lib/`: its own accounts, workspaces and

@@ -96,7 +96,8 @@ session.
 | 1 | F5 Block C (S10 to S12) | Built and driven; **checked by the founder** (PASS, D-47 accepted) | 09:25 | 10:15 | 50 min (plus design and fixtures written during the runs) |
 | 2 | F5 Block D (S13, S14) with legacy's prerender; a production build on the bench (D-49) | Built and driven; **checked by the founder** (PASS) | 10:50 | 12:40 | about 2 h, the regression run included |
 | 3 | D-50 (no quantity without a measurement); Rotate pages (P-20a) on the board before F6 | Done, api pushed | 12:49 | 13:05 | 15 min |
-| 4 | F5 Block E (S15, S16), and D-51 (a scale is feet per point) | **Built and driven; stopped here for the founder's click check** | 13:05 | | about 1 h, the regression run included |
+| 4 | F5 Block E (S15, S16), and D-51 (a scale is feet per point) | Built and driven; **checked by the founder** (PASS; D-51 and its data correction accepted; D-52 label) | 13:05 | 14:05 | about 1 h, the regression run included |
+| 5 | F5 Block F (S17 to S19); `f5-d51` kept in the quick tier | Built and driven | 14:10 | 15:05 | about 55 min |
 
 ## The five full-run failures (timeboxed)
 
@@ -305,6 +306,40 @@ f5-s14, f5-s15 and f5-s16 then passed together: 6/6, 4/4 and 6/6.
 (`c7e4a2b9d316` for D-50, `d51a7c3e9b24` for D-51), each run up, down and up, with
 `alembic check` clean.
 
+## F5 Block F
+
+**Collaboration on the new canvas, a platform admin's controls, and the two-window check.**
+
+| Subtask | Proof |
+|---|---|
+| **S17** Live on the new canvas | The F8 fixtures, re-driven on the pdf.js canvas, all pass:<br>• `f8-s18` 3/3: B's shapes reach A within a second;<br>• `f8-s13` 5/5: A draws slowly, B watches it grow tagged "Fixture O.", then saved, frames at 8 a second or fewer;<br>• `f8-s14` 4/4: B's Collaboration preferences change what B sees;<br>• `f8-s9` 5/5, `f8-s11` 4/4, `f8-s12` 1/1: the collaboration modes |
+| **S18** A platform admin's controls | `f5-s18` 4/4, two passes with a database step, as `f3-s2`:<br>• the owner of a live workspace: Scale, Linear, Area and Count enabled;<br>• a viewer: all four disabled, "View only: you can look at this takeoff but not measure on it", Select still works, the empty panel reads "Measurements appear here as your team draws them.", and a hand-written item is refused 403;<br>• the owner of a workspace whose trial has expired: masked, the four disabled, 403;<br>• **a platform admin in that same workspace sees the four enabled, draws a run and it saves.** F3-S4 AC6 is closed |
+| **S19** The two-window check | `f5-s19` 4/4, A on app and api, B on app-b and api-b:<br>• A calibrates with the Scale tool: B's chip changes 642 ms after Save and its quantity 816 ms, no reload;<br>• A draws slowly: B sees "Fixture O." on the growing line and nothing is saved mid-shape; when A finishes, A's save answers in 175 ms, **B's tag goes in 107 ms and the saved row appears in 282 ms**;<br>• A loads pages 3 and 4 through Add sheets: B's panel goes from 2 rows to 4, 764 ms after A's click, no reload |
+| **D-51, kept** | `f5-d51` 5/5, now in the quick tier: a landscape (1224 × 792) and a portrait (792 × 1224) sheet at `1/8" = 1'-0"`:<br>• through the api: 360 pt across and down read 40.00 LF each, a 360 pt square reads 1,600.00 SF;<br>• drawn on screen: across and down read 39.90 and 39.90 LF on the landscape, 39.99 and 39.99 on the portrait, 0.00% apart |
+
+**Found in this block, all fixed:**
+- **The measure tools never asked `can()`.** A viewer could arm Linear and draw, and the
+  api refused the shape at the end. They now ask `canEditTakeoff`. The rest of the
+  canvas's capability work (the menus, reasons on every row) stays with F7-S3.
+- **A finished draft kept its name tag for a second** over a shape already saved. The tag
+  now goes the moment A finishes; the line alone lingers to hand over, as F8 designed.
+- **A viewer's empty panel said "Pick a tool and draw on the sheet."**
+- **The collaborator plan can't be reached** until F16 gives workspaces a plan. `f5-s18`
+  masks with an expired trial instead, which the same function applies, and which a
+  platform admin skips the same way.
+
+**D-52 (your ruling):** architectural scales read `1/8" = 1'-0"`. Engineering (`1" = 20'`)
+and metric (`1 : 100`) keep their printed forms. A label already saved keeps its words.
+
+**Every fixture Block F touched, 11 in all, passes:** `f8-s9`, `f8-s11`, `f8-s12`,
+`f8-s13`, `f8-s14`, `f8-s18`, `f5-s15`, `f5-s16` (re-run for D-52's labels), `f5-s18`,
+`f5-s19`, `f5-d51`. One mistake of mine on the way: I edited `regress.sh` while it was
+running, and bash, which reads a script as it goes, stopped with a syntax error before
+the serial pair. The fixtures already started finished and passed; the serial pair
+(`f8-s12`, `f5-s15`) was run again on its own and passed. No data was lost.
+
+**Gates:** lint, typecheck, build. The api is unchanged in this block.
+
 ## Estimates from actual pace
 
 | | Planned | Actual |
@@ -317,7 +352,7 @@ Building is running at about 40% of the plan. Revised estimates:
 | Next | Estimate | What it holds |
 |---|---|---|
 | **Block E** (S15, S16) | 2 to 3 h, estimated before it started | **Actual: about 1 h**, D-51 included, with no table needed (a custom scale is a stored feet per point) |
-| **Block F** (S17 to S19) | **1 to 1.5 h** | Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff (the measure tools for a platform admin), and the two-window check: calibrate in A and B follows (driven already by `f5-s15`), a slow draft, a Load seen by B's panel. One new fixture |
+| **Block F** (S17 to S19) | 1 to 1.5 h | **Actual: about 55 min**, with `f5-d51` and D-52. Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff (the measure tools for a platform admin), and the two-window check: calibrate in A and B follows (driven already by `f5-s15`), a slow draft, a Load seen by B's panel. One new fixture |
 | **F5 close** | **1.5 h** | The full tier (about 1 h at 3 at a time, now 85 fixtures), PARITY, the board, the archive, the mirror |
 | **P-20a Rotate pages** | **2 to 3 h** | A spec first. Stored `view_rotation` turns the canvas, raster, fit image and thumbnails; measurements stay in the page's own frame, so none move; legacy's dialog and "All pages + Landscape" |
 | **F and the close** | **2.5 to 3 h** | Then Rotate pages, then F6 |
@@ -382,9 +417,10 @@ Building is running at about 40% of the plan. Revised estimates:
   Timing fixtures report there.
 - **D-50** (your instruction): a deleted item's estimate line goes with it. No quantity is
   copied to the estimate; D-09's orphaned line is retired.
-- **D-51, decided in Block E following legacy, pending your review:** a scale is feet per
+- **D-51, accepted by you, with its correction to your bench data:** a scale is feet per
   PDF point, and quantities are measured in points, so a run reads the same in every
-  direction. It changed stored numbers, yours included (see F5 Block E).
+  direction. Kept by `f5-d51` in the quick tier.
+- **D-52** (your ruling): architectural labels read `1/8" = 1'-0"`.
 
 ## Click-only checks
 
@@ -394,8 +430,35 @@ from any PDF with Add sheets. (Your Bench Construction Riverside has old PNG she
 show the fit image only.) **IDM-on** marks the checks to make with IDM running and its
 extension on.
 
-**F5 Block E** (the scale chip is at the right of the bar above the tools). Blocks C and
-D below are kept for the record; you passed both.
+**F5 Block F.** Two windows side by side: A at http://localhost:5173 and B at
+http://localhost:5174, both signed in as you, both open on the same sheet of the same
+project. Blocks C, D and E below are kept for the record; you passed all three.
+
+1. **Calibrate in A.** Unscaled sheet, with a measurement on it (draw a Count if Linear
+   asks for a scale). In A: Scale tool, two clicks, a distance, Save calibration. B's chip
+   turns green with the same label, and B's quantities change within a second, with no
+   reload.
+2. **Draw slowly in A.** Linear, click, move the mouse around for a few seconds, click
+   again. B shows the line growing, with your short name on a tag at its tip. Double-click
+   to finish in A: in B the tag goes at once, and the run is a saved row in B's panel.
+   Nothing appears in B's panel while A is still drawing.
+3. **Load two pages in A.** Sheets panel "+" (Add sheets), pick a file with unloaded
+   pages, Choose pages, Load 2 pages. B's sheets panel gains both rows within a second,
+   with no reload.
+4. **The label (D-52).** Chip → the Architectural list reads `1/8" = 1'-0"`, `1/4" = 1'-0"`
+   and so on; Engineering still reads `1" = 20'`. Pick one: the chip and the panel row read
+   the new form. A scale saved before today keeps the words it was saved with.
+5. **A viewer (optional, about 3 minutes).** Settings → Members → invite a new address
+   (any `…@bench.intelcost.io`) as Viewer. Open MailHog at http://localhost:8025, follow
+   the invitation, and sign up in a private window. Open a sheet as them: Select works;
+   Scale, Linear, Area and Count are greyed, and hovering one says "View only: you can
+   look at this takeoff but not measure on it". An empty sheet's panel reads
+   "Measurements appear here as your team draws them."
+6. **A platform admin** can't be checked by clicking: nothing in the product makes someone
+   staff, and your account isn't. `f5-s18` drives it (a staff member measures in a
+   workspace whose trial has expired, where its owner can't).
+
+**F5 Block E** (passed)
 
 1. **An unscaled sheet.** Load a fresh page. The chip reads "Calibrate scale to compute
    LF / SF" in amber. Count works at once.
@@ -474,15 +537,10 @@ D below are kept for the record; you passed both.
 
 ## Questions
 
-1. **D-51.** A scale is now feet per PDF point, as legacy's, so every run and area reads
-   true in every direction. It corrected 4 stored quantities on your own bench projects
-   (Bench Construction Test's Riverside, "F5 Block A demo"). Is that acceptable? If not,
-   the old numbers can be put back as manual overrides; the migration's downgrade would
-   restore the old scale for everyone, and with it the off-axis error.
-2. **The legacy label.** The menu reads legacy's `1/8" = 1'`. The spec's criterion
-   quoted `1/8" = 1'-0"`. Keep legacy's?
+None open.
 
 _Answered 2026-09-27: yes to a production build sooner (D-49, done); D-47 accepted; D-48
 kept with D-50's amendment; Rotate pages brought forward (P-20a); Auto-Name stays with
-the AI tools._
+the AI tools. Then: D-51 and its correction to your bench data accepted, kept by a
+permanent fixture (`f5-d51`); the label is `1/8" = 1'-0"` (D-52)._
 </content>
