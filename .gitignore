@@ -2,3 +2,6 @@
 .regress/
 # regress.sh holds this while it runs (one run at a time).
 .regress.lock/
+
+# Claude Code runtime state, not a workspace file.
+workspace/.claude/scheduled_tasks.lock
