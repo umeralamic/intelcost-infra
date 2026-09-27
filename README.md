@@ -324,6 +324,23 @@ container first: `docker compose stop app`.
 | `app` | 5173 | Itself | http://localhost:5173 |
 | `api-b` | 8010 | A second api process (F8, `realtime` profile) | http://localhost:8010/docs |
 | `app-b` | 5174 | A second window, talking to `api-b` (`realtime` profile) | http://localhost:5174 |
+| `app-prod` | 5175 | The built app behind nginx, as production serves it (`prod` profile, D-49) | http://localhost:5175 |
+
+**The production build.** `app` is Vite's dev server, which serves every module on
+demand. No customer ever gets that, and it made a cold sheet open about four times slower
+than it is. The `prod` profile serves `npm run build` behind nginx. Hashed assets are
+cached for good and `index.html` never; gzip is on; pdf.js's `.mjs` worker is served as
+JavaScript. Timings are reported there:
+
+```bash
+docker compose --profile prod build app-prod
+docker compose --profile prod up -d --no-deps app-prod    # --no-deps: leave the api be
+FX_APP=http://localhost:5175 docker compose --profile browser run --rm browser node scripts/f5-s11.mjs
+```
+
+It is a snapshot of the source at build time, so rebuild it after an app change.
+`up --build` without `--no-deps` also rebuilds and recreates the api, dropping every
+socket a running fixture holds.
 
 **Two windows, two api processes.** `docker compose --profile realtime up -d` adds
 `api-b` and `app-b`. Open http://localhost:5173 in one browser window and

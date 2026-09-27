@@ -206,7 +206,7 @@ await run("f5-s10", [
     title: "AC2: measurements land where they did: the square reads 1,600.00 SF, the raster sits exactly under the overlay, and the page's border falls where the PDF put it",
     run: async ({ page }) => {
       await open(page, sheets[0]);
-      const row = await page.locator("aside li button", { hasText: "S10 square" }).first().textContent();
+      const row = await page.locator("[data-quantity-panel] li button", { hasText: "S10 square" }).first().textContent();
       // The quantity is the check; the panel's number format (today "1,600 SF") is F6's.
       expect(/1,600(\.00)? SF/.test(row), `the row reads "${row}"`);
       const checks = [];

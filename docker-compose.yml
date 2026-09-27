@@ -85,8 +85,9 @@ services:
       S3_ACCESS_KEY_ID: minioadmin
       S3_SECRET_ACCESS_KEY: minioadmin
       S3_FORCE_PATH_STYLE: "true"
-      # :5174 is app-b, the second window of the realtime profile (F8-S5).
-      CORS_ORIGINS: '["http://localhost:5173","http://localhost:5174","http://localhost:3000"]'
+      # :5174 is app-b, the second window of the realtime profile (F8-S5); :5175 is
+      # app-prod, the built app of the prod profile (D-49).
+      CORS_ORIGINS: '["http://localhost:5173","http://localhost:5174","http://localhost:5175","http://localhost:3000"]'
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
@@ -252,6 +253,32 @@ services:
       api-b:
         condition: service_started
 
+  # The built app, served as production serves it (D-49, the "prod" profile): the
+  # Dockerfile's `prod` stage, `npm run build` behind nginx, with long-lived caching
+  # on the hashed assets and gzip. Timing fixtures run against it, so a cold open is
+  # measured on what a customer's browser loads, not on the dev server's module graph.
+  # It is a snapshot: rebuild it after an app change. Build it on its own and start it
+  # with --no-deps: `up --build` also rebuilds and recreates the api it depends on,
+  # which drops every socket and request a running fixture holds.
+  #
+  #   docker compose --profile prod build app-prod
+  #   docker compose --profile prod up -d --no-deps app-prod
+  #   FX_APP=http://localhost:5175 docker compose --profile browser run --rm browser \
+  #     node scripts/f5-s11.mjs
+  app-prod:
+    profiles: ["prod"]
+    build:
+      context: ../intelcost-app-react
+      target: prod
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_MARKETING_URL: http://localhost:3000
+    ports:
+      - "5175:80"
+    depends_on:
+      api:
+        condition: service_started
+
   # A stand-in for MaxMind Insights, so the signup gate's geo branches can be driven
   # without a paid key (F2-S5). Off by default, on the "fakes" profile.
   #
@@ -305,3 +332,6 @@ services:
       # fixtures running in parallel the worker can be busy for longer than a lone
       # fixture's 45 s grace, so each fixture's own check waits longer.
       REGRESS: ${REGRESS:-}
+      # The app a fixture opens: empty is the dev server on :5173; the prod profile's
+      # built app is http://localhost:5175 (D-49).
+      FX_APP: ${FX_APP:-}

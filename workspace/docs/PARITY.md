@@ -242,18 +242,18 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 
 `src/components/takeoff/SheetTree.tsx` (2,644 lines).
 
-- [ ] List every sheet in the project as a tree of drawing folders, with an "Unfoldered" group. `src/components/takeoff/SheetTree.tsx`, tables `drawing_folders`, `drawing_sheets` · **partial** (a flat sheet list exists; no folders, no tree)
-- [ ] Search sheets by name and number, clear the search, and have the search follow the configured naming format. `src/components/takeoff/SheetTree.tsx` · **missing**
-- [ ] Click a sheet to open it on the canvas. The current row is highlighted in blue. `src/components/takeoff/SheetTree.tsx` · **partial** (a sheet opens from Project Home's sheet list; takeoff has no sheets panel, so no current row, F5-S13; found by proof-backlog, overnight 2026-09-26)
-- [ ] Multi-select sheets with ctrl-click and shift-click range selection, and act on the whole selection. `src/components/takeoff/SheetTree.tsx` · **missing**
-- [ ] Right-click, or the three-dot row menu, opens the page actions: open, open in new tab, preview window, rename, bookmark, duplicate, rotate, print, move to folder, delete. `src/components/takeoff/SheetTree.tsx` · **missing**
-- [ ] Rename a sheet by double-clicking its row. `src/components/takeoff/SheetTree.tsx` · **partial** (a sheet PATCH exists in the api; no inline rename)
+- [x] List every sheet in the project as a tree of drawing folders, with an "Unfoldered" group. `src/components/takeoff/SheetTree.tsx`, tables `drawing_folders`, `drawing_sheets` · **ported** (F5 Block D, `f5-s13` AC1: nested under the folders mirrored from the project's files; a sheet in no folder sits "At root", legacy's own replacement for its retired "Unfoldered" group)
+- [ ] Search sheets by name and number, clear the search, and have the search follow the configured naming format. `src/components/takeoff/SheetTree.tsx` · **partial** (F5 Block D, `f5-s13` AC2: number, name and the names of the items on a sheet, "Clear search", No sheets match; the naming-format setting is not ported, so the label is legacy's default)
+- [x] Click a sheet to open it on the canvas. The current row is highlighted in blue. `src/components/takeoff/SheetTree.tsx` · **ported** (F5 Block D, `f5-s13` AC1: the highlight follows the click)
+- [x] Multi-select sheets with ctrl-click and shift-click range selection, and act on the whole selection. `src/components/takeoff/SheetTree.tsx` · **ported** (F5 Block D, `f5-s14` AC4: the selection's menu bookmarks, moves and deletes all of them; its print, duplicate and auto-name wait for their features)
+- [ ] Right-click, or the three-dot row menu, opens the page actions: open, open in new tab, preview window, rename, bookmark, duplicate, rotate, print, move to folder, delete. `src/components/takeoff/SheetTree.tsx` · **partial** (F5 Block D: both menus open with Properties (rename) and the bookmark; move and delete on a selection; the rest belong to F7, F11 and F12, as "Not in F5" names)
+- [x] Rename a sheet by double-clicking its row. `src/components/takeoff/SheetTree.tsx` · **ported** (F5 Block D, `f5-s14` AC1: "A-101" and "Sheet name", Save; a second window follows within a second)
 - [ ] Auto-name a sheet by reading its title block with OCR. `supabase/functions/ocr-sheet-titleblock/` · **missing**
 - [ ] Name a sheet from a page region the user drags, including applying it across a range of pages. `src/components/takeoff/NameFromRegionDialog.tsx`, `src/lib/takeoff/naming/` · **missing**
 - [ ] Create, rename and delete drawing folders and subfolders, and move a folder. A non-empty folder refuses deletion with "Move or remove its contents first". `src/components/takeoff/SheetTree.tsx` · **missing**
-- [ ] Reorder pages by dragging in List view, with a hint when the current view cannot reorder. `src/components/takeoff/SheetTree.tsx`, `src/lib/takeoff/sheetOrder.ts` · **missing**
-- [ ] Bookmark a page and remove the bookmark, with bookmarks listed in their own panel. `src/components/takeoff/SheetTree.tsx`, `src/components/takeoff/EvidencePanel.tsx` · **missing**
-- [ ] Each sheet row carries status chips for scale, takeoff and markup. `src/components/takeoff/SheetTree.tsx` · **partial** (`SheetStatusBadge.tsx` shows render status only)
+- [x] Reorder pages by dragging in List view, with a hint when the current view cannot reorder. `src/components/takeoff/SheetTree.tsx`, `src/lib/takeoff/sheetOrder.ts` · **ported** (F5 Block D, `f5-s14` AC2: within a folder, persisted in one write; Thumbnails says "Switch to List view to reorder pages")
+- [ ] Bookmark a page and remove the bookmark, with bookmarks listed in their own panel. `src/components/takeoff/SheetTree.tsx`, `src/components/takeoff/EvidencePanel.tsx` · **partial** (F5 Block D: bookmark and remove, one sheet or a selection, the star on the row; the bookmarks panel is F11's)
+- [ ] Each sheet row carries status chips for scale, takeoff and markup. `src/components/takeoff/SheetTree.tsx` · **partial** (F5 Block D, `f5-s13` AC3: the scale chip and the item count; markup has no chip until markups exist)
 - [ ] Show or hide the takeoff items marked on a sheet, from the row menu. `src/components/takeoff/SheetTree.tsx` · **missing**
 - [x] Add sheets by loading project files into takeoff, choosing which pages to load before the load starts. `src/components/takeoff/AddSheetsDialog.tsx` (719 lines) · **ported** (F5 Block B, 2026-09-26: the dialog, From Project Files with its folder tree, Choose pages with the worker's thumbnails (D-41: the browser never reads the set, since IDM takes those reads; legacy drew them with pdf.js from the whole file), Load N pages, and Add sheets with loaded pages locked, driven by `f5-s5`, `f5-s6` and `f5-s8`; page counts by ranged reads, `f5-count`. Before: upload created a sheet per page; no page chooser. **F5 Block A, 2026-09-26:** the api half is built and driven by `f5-s1`: `POST …/drawing/load` makes a drawing per project file, mirrors its folders, makes only the chosen pages and never a skipped one, and refuses a non-drawing by name; the worker splits, thumbnails and fit-renders each page, `f5-s2`. The dialog is Block B). **F5 ports the legacy flow and replaces Project Home's Sheets upload block with it:** Perform Takeoff opens "Load project files into takeoff" with two tabs, From Project Files and Upload drawing. The user ticks folders and files from the project's existing files, then "Choose pages" shows every page as a thumbnail, all ticked, untick to skip, and "Load N pages" opens takeoff. It is asked only once per project; later additions go through Add Sheets. Drawings are made from project files (D-27). F5 also brings route-level code splitting (P-18), so pdf.js and the canvas load only on the takeoff route.
 - [ ] Sheets can be PDF, PNG, JPG or TIFF. `src/components/takeoff/AddSheetsDialog.tsx`, `src/lib/takeoff/pdf/imageToPdf.ts` · **partial** (F5 Block B: PDF and PNG driven by `f5-s7`, a PNG one sheet at its own aspect; JPG and TIFF are accepted and counted by the same path but not yet driven)
@@ -264,13 +264,13 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [ ] Crop a dragged region into a new page. `src/components/takeoff/RegionSelectMenu.tsx` · **missing**
 - [ ] Open a sheet in a floating preview window, and in a second browser tab. `src/components/takeoff/SheetPreviewWindow.tsx` · **missing**
 - [ ] Overlay another sheet on the current one (Standard or Comparative), tint it, set its opacity, re-align it, hide it and delete it. `src/components/takeoff/OverlayDialog.tsx`, `src/hooks/useSheetOverlays.ts`, table `sheet_overlays` · **missing**
-- [ ] The panel's three-dot menu controls thumbnails, row style, view mode and which panels are shown. `src/components/takeoff/SheetTree.tsx` · **missing**
+- [ ] The panel's three-dot menu controls thumbnails, row style, view mode and which panels are shown. `src/components/takeoff/SheetTree.tsx` · **partial** (F5 Block D: List or Thumbnails, kept per browser and workspace; thumbnails fetched only in view, `f5-s13` AC4)
 - [ ] Collapse and expand the sheets panel from a centred edge tab, and resize it by dragging. `src/components/takeoff/PanelEdgeTab.tsx`, `src/hooks/usePanelLayout.ts`, table `user_panel_layouts` · **missing**
 - [ ] Sheet thumbnails render the sheet with its markups on it. `src/components/takeoff/SheetThumbImage.tsx`, `src/lib/takeoff/thumbnails/thumbMarkup.ts` · **missing**
 - [ ] Step between sheets with a previous and next stepper. `src/components/takeoff/SheetStepper.tsx` · **missing**
 - [ ] The read-only sheet viewer opens one sheet, fits, zooms, shows or hides markups, refetches them, and splits into two panes. `src/pages/SheetViewer.tsx` (641 lines) · **missing**
 - [ ] Open a different project from inside the takeoff workspace. `src/components/takeoff/OpenProjectDialog.tsx` · **missing**
-- [ ] Deleting a folder in bulk takes its emptied subfolders with its sheets. `.lovable/plan/bulk-delete-emptied-folders-go-with-their-sheets-2026-08-03.md` · **missing**
+- [x] Deleting a folder in bulk takes its emptied subfolders with its sheets. `.lovable/plan/bulk-delete-emptied-folders-go-with-their-sheets-2026-08-03.md` · **ported** (F5 Block D, D-48: a sheet delete takes the folders it empties, deepest first, and the confirm names them)
 - [ ] Folders sort in a defined order and carry file counters. `.lovable/plan/folder-order-file-counters-2026-08-29.md` · **missing**
 
 **Panel and row presentation**
@@ -864,7 +864,7 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 - [x] Space-drag pans regardless of the armed tool. `src/features/takeoff/components/SheetCanvas.tsx` · **ported** (driven: with Linear armed, space-drag pans and places no point; proof-backlog, overnight 2026-09-26)
 - [ ] Edge auto-scroll pans while a drawing tool is armed, with a configurable edge band width, delay before the glide starts, and glide speed. `src/lib/takeoff/settings/index.ts` (`mouse.autoScroll*`) · **missing**
 - [ ] Hovering a markup shows the hover panel after a configurable rest delay, and it hides the moment the cursor moves again. `src/lib/takeoff/settings/index.ts` (`general.hoverHintDelayMs`) · **missing**
-- [ ] Ctrl-click adds to a panel selection and shift-click selects a range, in both the Sheets panel and the Takeoff panel. `src/components/takeoff/SheetTree.tsx`, `QuantityTable.tsx` · **missing**
+- [ ] Ctrl-click adds to a panel selection and shift-click selects a range, in both the Sheets panel and the Takeoff panel. `src/components/takeoff/SheetTree.tsx`, `QuantityTable.tsx` · **partial** (the Sheets panel, F5 Block D, `f5-s14` AC4; the Takeoff panel is F6's)
 - [ ] Double-click a panel row to rename it, and double-click elsewhere on the row to open Properties. `src/components/takeoff/ItemRowShared.tsx` · **partial** (rename exists, without the double-click affordance)
 
 ## 24. App-wide
@@ -929,15 +929,15 @@ region and vector snap.
 
 - [ ] **Fit tier is 2048 px.** Measured at dpr 1.25: 2048 decodes and draws in 21.4 ms at 10.7 MB resident against 99.2 ms and 68.3 MB for the full tier on the same sheet. 1600 is only 4 to 18 ms faster and upscales 2.5x on a 2560-wide dpr-2 display; 2560 costs 35 to 38% more bytes and RAM for no measurable time. `RESULTS-PRERENDER-PHASE1.md`, `src/lib/takeoff/pdf/sheetImageSource.ts` · **ported** (the worker's 2048 px fit image paints first, then pdf.js over it, F5 Block C, `f5-s11` AC1)
 - [x] The full tier is decoded at idle immediately after the fit paint when viewport CSS width times dpr exceeds 2048, not on zoom. `src/lib/takeoff/pdf/sheetImageSource.ts` (`needsFullTier`) · **ported, as pdf.js** (F5 Block C: there is no second image tier; pdf.js draws the page at the window's width times dpr as soon as the document opens, whatever the width)
-- [ ] **Cold open targets, medians over three runs:** a light sheet opens in roughly 200 ms to first paint and 750 to 880 ms fully settled; a heavy sheet in roughly 165 ms to first paint, and the image path cuts its settled time from 2400 ms to 1199 ms. `RESULTS-PRERENDER-PHASE2.md` · **partial, measured** (F5 Block C, `f5-s11` AC4 on the bench: the fit image paints at once; the first pdf.js paint is a median 1.86 s after opening a cold page, of which 1.8 s is pdf.js and its worker starting from the bench's dev server. Legacy's 200 ms is a warm production build; the bench has no production app to measure. A page loaded through Add sheets is drawn sharp in a median 3.9 to 5.0 s, legacy ~4 s)
+- [ ] **Cold open targets, medians over three runs:** a light sheet opens in roughly 200 ms to first paint and 750 to 880 ms fully settled; a heavy sheet in roughly 165 ms to first paint, and the image path cuts its settled time from 2400 ms to 1199 ms. `RESULTS-PRERENDER-PHASE2.md` · **partial, measured** (F5 Block D, `f5-s11` AC4 on the bench's production build (D-49): the fit image paints at once, and the first pdf.js paint on a cold page is a median of 480 ms and 544 ms in two runs of three, 300 to 490 ms of it fetching and opening the page's PDF, against legacy's ~200 ms; the dev server's 1.9 s was the dev server. A page loaded through Add sheets is drawn sharp in a median of 1.2 to 2.1 s, preparation included, against legacy's ~4 s. A sheet drawn ahead by the prerender opens in 9 ms, `f5-s13`)
 - [x] The pre-rendered image is a fallback for a cold document, not the default: when the PDF document is already open no image is fetched at all. `RESULTS-PRERENDER-PHASE2.md` §2 · **ported** (F5 Block C, `f5-s11` AC1: back to a sheet whose document is open and whose sharp frame is cached, no fit image is fetched)
 - [x] **Zoom range is 25% to 3000%** in legacy, from one source of truth that every clamp reads (wheel zoom, Fit, the zoom buttons, and Find Text jumps). `src/lib/takeoff/zoomLimits.ts` · **Beyond legacy (D-35): the new app's range is 50% to 4000%**, from one module every clamp reads. **ported** (F5 Block C, `lib/takeoff/pdf/zoom.ts`, `f5-s11` AC2)
 - [x] The zoom button step is additive 0.25 below 2x for fine control near fit, and geometric 1.25x above it so the top of the range is a handful of clicks rather than seventy. `src/lib/takeoff/zoomLimits.ts` · **ported** (F5 Block C: 100% to 4000% in 19 presses, `f5-s11` AC2)
 - [x] **Sharp at every zoom up to 4000% (beyond legacy, D-35).** Once a zoom settles, the page on screen is a pdf.js raster at that zoom, never a CSS-scaled bitmap; a scaled frame is only the interim while the next raster draws (D-14). · **ported** (F5 Block C, `f5-s10` AC1 on a dpr-2 profile: at 100%, 400%, 2000% and 4000% the settled canvas's backing is its CSS size times 2, and a hairline is 1 device pixel wide at 4000%; a half-resolution pass then a full one after each zoom, `f5-s11` AC3)
 - [x] Above the windowing threshold the sheet renders through the pdf.js window path, so rasterised pixels track the viewport rather than the page and deep zoom never allocates a full-page intermediate. `src/lib/takeoff/pdf/PdfPageRenderer.ts`, `zoomLimits.ts` · **ported** (F5 Block C: above 2.5× the window plus 35% margins, 3808 × 2524 device px at 4000% on a 1440 × 900 dpr-2 window, `f5-s10`)
-- [ ] A PDF document is opened once and shared through a refcounted cache; no second copy of a file is ever held. `src/lib/takeoff/pdf/pdfDocCache.ts` · **missing**
-- [ ] A memory budget governs how much raster the tab may hold at once. `src/lib/takeoff/pdf/memoryBudget.ts` · **missing**
-- [ ] Sheets ahead of the current one are pre-rendered on a queue so stepping through a set does not pay a cold render each time. `src/lib/takeoff/pdf/prerenderQueue.ts` · **missing**
+- [x] A PDF document is opened once and shared through a refcounted cache; no second copy of a file is ever held. `src/lib/takeoff/pdf/pdfDocCache.ts` · **ported** (F5 Block C, `lib/takeoff/pdf/doc-cache.ts`: one open per file, `f5-s10`; ticked late, in Block D)
+- [x] A memory budget governs how much raster the tab may hold at once. `src/lib/takeoff/pdf/memoryBudget.ts` · **ported** (F5 Block C, `lib/takeoff/pdf/memory-budget.ts`: a byte-bounded bitmap cache sized from `deviceMemory`, 64 MB at 4 GB, `f5-s10`; ticked late, in Block D)
+- [x] Sheets ahead of the current one are pre-rendered on a queue so stepping through a set does not pay a cold render each time. `src/lib/takeoff/pdf/prerenderQueue.ts` · **ported** (F5 Block D, `lib/takeoff/pdf/prerender-queue.ts`, legacy's rules: one job, two waiting, the open sheet first, hover after 150 ms. The next sheet opens with no fit image and no second fetch, `f5-s13`)
 - [ ] A canvas performance HUD and zoom profiler are available for diagnosing a slow sheet. `src/components/takeoff/CanvasPerfHud.tsx`, `src/lib/takeoff/diagnostics/ZoomProfiler.tsx` · **missing**
 
 ---
@@ -1051,7 +1051,7 @@ A retired line counts as driven, because there is nothing left to drive.
 | 4 | Projects dashboard | 19 | 18 | 0 | 0 | **19** (18 + 1 retired) | 15 |
 | 5 | Project Home | 10 | 7 | 0 | 3 | **7** | 9 |
 | 6 | Sharing | 12 | 0 | 1 | 11 | 0 | 12 |
-| 7 | Takeoff sheets panel | 47 | 1 | 5 | 41 | 0 | 27 |
+| 7 | Takeoff sheets panel | 47 | 8 | 6 | 33 | **8** | 27 |
 | 8 | Takeoff items | 56 | 6 | 5 | 45 | 0 | 36 |
 | 9 | Canvas tools | 28 | 6 | 2 | 20 | 0 | 28 |
 | 10 | Canvas interactions | 48 | 1 | 3 | 44 | 0 | 37 |
@@ -1067,8 +1067,8 @@ A retired line counts as driven, because there is nothing left to drive.
 | 20 | Community | 10 | 0 | 0 | 10 | 0 | 10 |
 | 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
 | 22 | Platform admin | 20 | 0 | 0 | 20 | 0 | 8 |
-| 23 | Keyboard and mouse | 36 | 1 | 2 | 33 | 0 | new |
-| 24 | App-wide | 46 | 0 | 4 | 42 | 0 | new |
+| 23 | Keyboard and mouse | 36 | 1 | 3 | 32 | 0 | new |
+| 24 | App-wide | 47 | 10 | 2 | 35 | **9** | new |
 | | **Total** | **597** | **81** | **25** | **488** | **69** | **347** |
 
 **81 of 597 behaviours are ported, 14%. 69 are driven, 12%** — and driven is the number

@@ -50,12 +50,13 @@ export async function removeItem(token, r, uuid) {
 export async function openSheet(page, r, app = APP) {
   await page.goto(r.url(app));
   await page.locator('img[alt="Drawing sheet"]').waitFor({ timeout: 20000 });
-  await page.locator("aside").waitFor();
+  // The quantity panel, by name: since F5 Block D the sheets panel is an aside too.
+  await page.locator("[data-quantity-panel]").waitFor();
 }
 
 /** The item's row in the takeoff panel. */
 export function row(page, name) {
-  return page.locator("aside li button", { hasText: name }).first();
+  return page.locator("[data-quantity-panel] li button", { hasText: name }).first();
 }
 
 /** Right-click the row and return the open menu's item by label. */

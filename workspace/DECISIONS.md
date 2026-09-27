@@ -2093,7 +2093,7 @@ dropped. The frames were fine; the clock was the api's, not the sender's.
 ## D-47 — An unprepared page waits for the worker; it is never read from the set
 
 **Date:** 2026-09-27
-**Status:** Decided overnight, pending founder review
+**Status:** Accepted (decided overnight; the founder accepted it on 2026-09-27)
 **Area:** Takeoff, Frontend
 **Amends:** F5-S12 AC2
 
@@ -2118,3 +2118,77 @@ plan set: only the worker does.
 **Consequences:**
 - The ~4 s target for a loaded sheet's first sharp paint includes the worker's
   preparation of that page (D-43 and D-45 keep it short).
+
+---
+
+## D-48 — Deleting sheets keeps legacy's last-shape rule
+
+**Date:** 2026-09-27
+**Status:** Decided in F5 Block D, following legacy; pending founder review
+**Area:** Takeoff, Backend
+**Serves:** F5-S14 AC3
+
+**Context:** Legacy's panel deleted sheets through its database. A shape on a deleted
+sheet went with it, and an item went only when it had no shape left anywhere; its
+confirm said so ("N items lose their measurements on these pages. M of them have
+measurements nowhere else and will be deleted entirely"). A folder the delete emptied
+went too. In our api, `takeoff_item.sheet_id` is the item's home sheet with `ON DELETE
+CASCADE`. A plain delete of a sheet would therefore take every item homed on it,
+together with its shapes on other sheets, which the confirm would not have named.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Delete the sheet rows and let the cascade decide | One line | Takes shapes on other sheets without saying so; the confirm lies |
+| B — The api does legacy's rule in one transaction: shapes on the sheets go; an item with shapes elsewhere stays, re-homed to one of those sheets and recomputed; an item with none left goes, its last quantity handed to the estimate (D-09); emptied folders go, deepest first | The confirm is true; the estimate keeps its numbers | More code in the api |
+
+**Decision:** Option B.
+- `POST …/drawing/sheet/delete` with the sheets' uuids.
+  - It needs Edit takeoff and Upload documents, the people who put sheets in.
+  - It answers with the counts of sheets, items and folders deleted.
+- Locks are not asked. Deleting a sheet is a sheet's act, as in legacy, and the confirm
+  names every item it takes.
+- One `drawing.sheet.changed` goes to every open panel. Each surviving item gets a
+  `takeoff.item.changed` on its new home sheet.
+- `PUT …/drawing/sheet/order` places a folder's sheets in one write: a drag, or "Move
+  selected to". It replaces legacy's one update per sheet.
+
+**Consequences:**
+- The app cannot yet put one item's shapes on two sheets; F7's copy to another sheet
+  will. Until then the re-homing branch runs only on data brought over from legacy.
+- A deleted sheet's derivatives stay in storage: its split PDF, thumbnail and fit image.
+  A sweep for orphaned keys is future work, the same as for a deleted drawing file today.
+
+---
+
+## D-49 — A production build on the bench, for timings
+
+**Date:** 2026-09-27
+**Status:** Accepted (the founder's instruction of 2026-09-27)
+**Area:** Infrastructure, Frontend
+
+**Context:** Block C's cold open was about 1.9 s to the first pdf.js paint against
+legacy's ~200 ms. Nearly all of it was pdf.js and its worker loading through the bench's
+dev server. The dev server serves every module untransformed and on demand, which no
+customer ever gets. The founder asked for the built app to be served on the bench as
+production would serve it, with the timing fixtures run against it.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — `vite preview` in the dev image | One command | Not what production runs: no cache headers, no real web server |
+| B — The app's Dockerfile gains `build` (`npm run build`) and `prod` (nginx serving `dist`) stages; a `prod` compose profile runs it on :5175 | The bytes and headers a customer gets: hashed assets immutable, `index.html` no-cache, gzip, SPA fallback | A snapshot: it is rebuilt after an app change |
+
+**Decision:** Option B.
+- `app-prod` runs on the `prod` profile, on :5175.
+- The api allows that origin.
+- `FX_APP=http://localhost:5175` points any fixture at it.
+- The timing fixtures (`f5-s11`, `f5-s13`'s prerender) report their numbers there.
+- The dev server stays the default: it is what the code under change runs on.
+
+**Consequences:**
+- nginx's type list does not name `.mjs`. pdf.js's worker is served as JavaScript
+  explicitly, or the browser refuses to start it.
+- The host, TLS and CDN stay F11's; this is the bundle and its headers only.

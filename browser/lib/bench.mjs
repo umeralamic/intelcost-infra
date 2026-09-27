@@ -18,7 +18,8 @@ import { chromium } from "playwright";
 // Browser-facing. These are the addresses a page is opened at and the ones the
 // bundle was compiled against, so they say localhost and the resolver rule below
 // makes localhost mean the host.
-export const APP = "http://localhost:5173";
+// FX_APP points a run at the prod profile's built app (D-49), http://localhost:5175.
+export const APP = process.env.FX_APP || "http://localhost:5173";
 export const API = "http://localhost:8000";
 export const MAILHOG = "http://localhost:8025";
 

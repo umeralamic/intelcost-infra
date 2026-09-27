@@ -93,7 +93,8 @@ session.
 | 0b | f8-s13 dropped frames (D-46) | Done, pushed | 05:10 | 06:25 | 1 h 15 |
 | 0c | The five full-run failures, timeboxed 1.5 h | Done: 4 fixed with causes, 1 open (see Findings) | 06:45 | 07:20 | 35 min |
 | 0d | Full tier measured at 4, then 3; runner hardened | Done: **3 at a time, all 81 standing fixtures pass, 57 m 25 s** | 07:18 | 09:20 | 2 h |
-| 1 | F5 Block C (S10 to S12) | **Built and driven; stopped here for the founder's click check** | 09:25 | 10:15 | 50 min (plus design and fixtures written during the runs) |
+| 1 | F5 Block C (S10 to S12) | Built and driven; **checked by the founder** (PASS, D-47 accepted) | 09:25 | 10:15 | 50 min (plus design and fixtures written during the runs) |
+| 2 | F5 Block D (S13, S14) with legacy's prerender; a production build on the bench (D-49) | **Built and driven; stopped here for the founder's click check** | 10:50 | | about 2 h, the regression run included |
 
 ## The five full-run failures (timeboxed)
 
@@ -171,19 +172,92 @@ group, and f5-s11 passes there.
 **Gates:** ruff, mypy, lint, typecheck, build (pdf.js stays in its own chunk; the takeoff
 route is 65 kB).
 
+## F5 Block D
+
+**The sheets panel is in takeoff, left of the canvas.** Its "+" is Add sheets, which left
+the canvas bar. Legacy's prerender queue came with it from Block C. The production build
+you asked for now runs on the bench (D-49), and the timings are measured there.
+
+| Subtask | Proof |
+|---|---|
+| **S13** The tree, search and rows | `f5-s13` 7/7, on the dev server and again on the production build:<br>• sheets nest under the folders mirrored from the project's files (Plans / Architectural / Arch);<br>• a sheet moved out of every folder sits "At root", and the panel followed that move without a reload;<br>• the open sheet's row is highlighted and follows a click;<br>• "Search sheets…" matches number ("a-101"), name ("foundation") and an item's name ("window w2"); "zzz" reads No sheets match "zzz no such";<br>• rows read "A-101  –  Foundation Plan" or "Page 3", with the scale chip `1/8"=1'-0"` or none, the item count (2) and the star;<br>• Thumbnails: 3 of 10 fetched on open, the 7 below the fold only when scrolled to |
+| **Prerender** (from Block C) | `f5-s13`:<br>• the open sheet's neighbours are drawn once it has painted, never before, so they don't race its download;<br>• a row held 150 ms is drawn too; a row never hovered is never fetched;<br>• opening a sheet drawn ahead shows no fit image and doesn't fetch its PDF again. **First sharp paint: 9 ms** on the production build (about 0.5 s cold) |
+| **S14** Rename, move, reorder, bookmark, delete | `f5-s14` 6/6, two windows (B on app-b and api-b):<br>• double-click, "A-101" and "Sheet name", Save: persisted, and **B's panel followed in 837 ms with no reload**;<br>• a drag within a folder, persisted in one write, the other folder untouched;<br>• Thumbnails reads "Switch to List view to reorder pages" and doesn't drag;<br>• Ctrl adds and Shift selects a range. "3 sheets selected": Bookmark selected, then Move selected to Root, all three, in the api too;<br>• "Delete 2 sheets?": "…2 items lose their measurements on these pages. 2 of them have measurements nowhere else and will be deleted entirely: Door D1, Window W2. This cannot be undone.". Then "Deleted 2 sheets", A moves on to the next sheet, and B's rows go;<br>• a viewer sees the panel and opens sheets, but cannot rename, drag or delete; the api answers 403 to all three |
+| **D-48** re-homing | By hand, as the app can't yet put one item on two sheets: an item with a shape on a second sheet survived the delete of its home, moved to that sheet with its one shape; the api reported 0 items deleted |
+
+**Timings on the production build** (`f5-s11`, run alone, `FX_APP=http://localhost:5175`):
+
+| | Dev server | **Production build** | Legacy |
+|---|---|---|---|
+| Cold open, first pdf.js paint (median of 3) | 1.9 s | **480 ms and 544 ms** (two runs) | ~200 ms |
+| A page loaded through Add sheets, drawn sharp (median of 3, preparation included) | 4.6 to 5.1 s | **1.2 to 2.1 s** | ~4 s |
+| A sheet the prerender drew ahead | 21 ms | **9 ms** | |
+
+**The production build found two races the dev server hid, both fixed:**
+- **A zoom's own scroll was taken for a pan.** Zooming holds the point under the cursor
+  by scrolling. Above 2.5× that scroll started a pan's re-draw of the same window, a
+  second half-resolution pass included. `f5-s11` AC3 caught it on the production build.
+  The canvas now tells its own scroll from a person's.
+- **The panel flashed every sheet "At root"** in the moment between the sheets arriving
+  and the folders arriving. It now waits for both.
+
+**Found on the way:**
+- **Block C's "skip the fit image" check never fired.** It ran before the canvas was
+  measured, so it looked for the wrong width. `f5-s11` passed only because the browser
+  had cached the image. It now asks at the width the last canvas drew at.
+- **Our cascade would have broken legacy's delete rule.** An item's home sheet is
+  `ON DELETE CASCADE`, so deleting a sheet would have taken the item's shapes on other
+  sheets. D-48 keeps legacy's rule in the api.
+- **The sheet list made one query per sheet** to find its file. It now makes one query in
+  all.
+- **Four fixtures found the quantity panel as "the aside".** It is now
+  `data-quantity-panel`.
+
+**Not ported in Block D.** The panel offers only what S13 and S14 name. Everything below
+waits for the feature that owns it ("Not in F5"):
+- Auto-Name, Name from region, Duplicate, Print, Preview, Rotate, New Blank Page.
+- Folder create, rename and move.
+- The collapse ladder and Default Expand Level.
+- Item lists under a row, and the sheet naming format setting.
+
+**The quick tier plus every F5 fixture and the F8 fixtures on the takeoff page, 35 in
+all: 34 pass at 3 in parallel, in 28 m 34 s.** Host CPU averaged 90%, the most this bench
+has run.
+- **f8-s13 failed** on the "aside" locator above. Fixed, it passes 5/5.
+- **f8-s18 AC2** then once saw an edit reach B in 1,318 ms against its 1 s bound, beside
+  two other fixtures. Alone it took 172 ms. That is the event-delivery tail under load
+  already in Findings. To keep Block D from adding to it, the panel's item counts now
+  refetch once a burst of events settles, not once per event. f8-s18, f8-s14 and f5-s13
+  then pass together.
+
+**Gates:** ruff, ruff format, mypy (84 files), lint, typecheck, build. No migration.
+
+## Estimates from actual pace
+
+| | Planned | Actual |
+|---|---|---|
+| Block C | 7 to 9 h | about 3 to 4 h |
+| Block D | about 4 to 5 h (its share of D to F's 10 to 13 h) | about 2 h |
+
+Building is running at about 40% of the plan. Revised estimates:
+
+| Next | Estimate | What it holds |
+|---|---|---|
+| **Block E** (S15, S16) | **2 to 3 h** | Calibration in legacy's words; the Architectural, Engineering and Metric presets; custom scales, which need a table and an api; the guards; the green or amber chip. Two fixtures, plus B seeing the new scale in a second |
+| **Block F** (S17 to S19) | **1.5 to 2 h** | Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff, and the two-window check, one new fixture |
+| **F5 close** | **1.5 h** | The full tier (about 1 h at 3 at a time), PARITY, the board, the archive, the mirror |
+| **E, F and the close** | **5 to 6.5 h** | Against 7 to 9 h on the old pace |
+
 ## Findings
 
-- **Cold open is pdf.js starting up.** Of the first pdf.js paint's 1.9 to 2.4 s on a cold
-  page, all but ~60 ms is fetching and opening the PDF. That is mostly pdf.js and its
-  1.3 MB worker loading from the bench's Vite dev server; it now starts loading with the
-  page (2.6 s before that). Legacy's ~200 ms is a warm production build, and the bench has
-  no production app image, so production's number is not measured. The fit image covers
-  the wait.
+- **Cold open was the dev server (resolved by D-49).** On the production build the first
+  pdf.js paint on a cold page is a median of about 0.5 s, of which 0.3 to 0.5 s is
+  fetching and opening the page's PDF. Legacy's ~200 ms is still about twice as fast.
+  The rest is the page's own GET and pdf.js starting its worker. The fit image covers the
+  wait, and the prerender takes it to 9 ms for the next sheets.
 - **Most of the old ~12 s was a PNG.** The old path drew the page 3072 px wide,
   PNG-encoded it and loaded it back as an image. Now it draws straight into the canvas.
-- **Legacy's prerender queue** (neighbour sheets drawn at idle) is in the spec's
-  "Rendering" list but in no S10 to S12 criterion. It needs the panel's sheet order and
-  hover, so it moves to Block D.
+- **Legacy's prerender queue** moved from Block C to Block D, where it is built.
 - **The panel reads "1,600 SF", not "1,600.00 SF".** The quantity is exact; its format is
   F6's.
 - **Event delivery's tail under load.** PATCH → event heard: p90 504 ms, max 1.6 s with
@@ -206,7 +280,10 @@ route is 65 kB).
 | infra | `3076742` | 3 at a time, measured; the runner hardened; fixture causes; mirror |
 | app | `429686e` | **F5 Block C** |
 | api | `c4dd888` | One call signs every sheet |
-| infra | the commit carrying this report | Block C's fixtures, timing fixtures serial, docs, mirror |
+| infra | `420bd57` | Block C's fixtures, timing fixtures serial, docs, mirror |
+| api | `a2c5194` | **F5 Block D**: the panel's calls; sheet deletes keep the last-shape rule (D-48) |
+| app | `876a2e5` | **F5 Block D**: the sheets panel, legacy's prerender, the production image (D-49) |
+| infra | the commit carrying this report | `f5-s13`, `f5-s14`, the `prod` profile, `FX_APP`, docs, mirror |
 
 ## Decisions to review
 
@@ -216,8 +293,14 @@ route is 65 kB).
   time limit stops is marked failed. Found on your JHS VOL 4 set; see "Missing" above.
 - **D-46:** draft and cursor frames limited by a token bucket (10 a second, up to 10 at
   once) instead of a strict one-second window.
-- **D-47, decided overnight, pending your review:** S12's AC2 amended. An unprepared page
-  waits for the worker and is never read from the set, as D-41 requires.
+- **D-47:** S12's AC2 amended. An unprepared page waits for the worker and is never read
+  from the set, as D-41 requires. **Accepted by the founder, 2026-09-27.**
+- **D-48, decided in Block D following legacy, pending your review:** deleting sheets keeps
+  legacy's last-shape rule. The shapes on them go. An item with shapes elsewhere stays,
+  moved there. An item with none left goes, its last quantity handed to the estimate.
+  Emptied folders go. Deleting needs Edit takeoff and Upload documents.
+- **D-49** (your instruction): the built app behind nginx on :5175, the `prod` profile.
+  Timing fixtures report there.
 
 ## Click-only checks
 
@@ -227,7 +310,41 @@ from any PDF with Add sheets. (Your Bench Construction Riverside has old PNG she
 show the fit image only.) **IDM-on** marks the checks to make with IDM running and its
 extension on.
 
-**F5 Block C**
+**F5 Block D** (the panel is on the left of takeoff). Block C's list below is kept for
+the record; you passed it.
+
+1. **The tree.** Open a project whose files sit in folders. The panel shows those
+   folders, nested, with the open sheet's row highlighted. Click another row: that sheet
+   opens and the highlight moves.
+2. **Search.** Type part of a sheet number, then part of a name, then the name of
+   something you measured: each time only the matching sheets remain. Type nonsense: it
+   reads No sheets match "…". The × clears it.
+3. **Rows.** A calibrated sheet shows its scale chip, a sheet with measurements a green
+   count, and a bookmarked one a star.
+4. **Thumbnails.** ⋮ → Thumbnails. The pictures fill in as you scroll, not all at once.
+   Hovering a tile says "Switch to List view to reorder pages". ⋮ → List to go back.
+5. **IDM-on. Next sheet instantly.** Open a sheet and wait a couple of seconds. Click the
+   row below it: it appears crisp at once, with no blurry stage. Hover a row further down
+   for a moment, then click it: the same. IDM doesn't pop up.
+6. **Rename.** Double-click a row: two fields, "A-101" and "Sheet name". Type, then Save.
+   The row reads the new name, and it survives a reload.
+7. **Two windows** (A on 5173, B on 5174, the same project). Rename in A: B's panel
+   changes within a second, with no reload.
+8. **Drag.** In List view, drag a sheet above another in the same folder. The order
+   holds after a reload.
+9. **Select several.** Ctrl-click two rows, then Shift-click a third: a range is
+   selected. Right-click one of them: "N sheets selected", with Bookmark selected, Remove
+   bookmark from selected, Move selected to (Root and every folder), Clear selection and
+   Delete selected pages. Esc clears the selection.
+10. **Delete.** On a throwaway project, select two sheets with measurements → Delete
+    selected pages. The dialog names how many items lose measurements, and those that
+    will be deleted entirely, and ends "This cannot be undone.". Confirm: "Deleted 2
+    sheets". If one was open, takeoff moves to the next sheet.
+11. **The production build.** http://localhost:5175 is the built app, as production will
+    serve it. A cold sheet turns crisp in about half a second there. Sign in again there,
+    since each port keeps its own session.
+
+**F5 Block C** (passed)
 
 1. **IDM-on. Open a loaded sheet.** It shows at once, then turns crisp within a second or
    two as pdf.js draws over it. IDM does not pop up, and nothing downloads.
@@ -249,11 +366,12 @@ extension on.
 
 ## Questions
 
-1. **Cold open on a production build.** On the bench, a cold page's first pdf.js paint is
-   about 2 s, almost all of it pdf.js starting from the dev server (the fit image shows
-   meanwhile). Measuring legacy's ~200 ms needs a production build of the app, which the
-   bench doesn't have (F11 packages it). Is the fit-image-then-sharp behaviour enough for
-   now, or should a production-build image come sooner?
-2. **D-47.** Is waiting for the worker (a few seconds of "Preparing the sheet" on a fresh
-   Load) the right trade for never reading the set?
+1. **D-48.** Deleting a sheet takes the items with no measurements left anywhere, and
+   the confirm names them first, as legacy did. Keep that, or should deleting a sheet
+   never delete an item?
+2. **Block D's scope.** The panel offers only S13 and S14's acts; legacy's Auto-Name,
+   Duplicate, Print, Rotate and folder editing wait for their features. Is anything
+   there needed sooner?
+
+_Answered 2026-09-27: yes to a production build sooner (D-49, done); D-47 accepted._
 </content>

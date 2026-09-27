@@ -141,7 +141,7 @@ await run("f8-s18", [
         await (await menuItem(page, name, "Add a shape")).click();
 
         await page.screenshot({ path: shot.replace(".png", "-panel.png") });
-        const tree = await page.locator("aside > div.overflow-y-auto").first().boundingBox();
+        const tree = await page.locator("[data-quantity-panel] > div.overflow-y-auto").first().boundingBox();
         const pane = page.locator("[data-properties-pane]");
         const scrolls = await pane.evaluate((el) => el.scrollHeight > el.clientHeight && getComputedStyle(el).overflowY === "auto");
         const rowBox = await row(page, name).boundingBox();

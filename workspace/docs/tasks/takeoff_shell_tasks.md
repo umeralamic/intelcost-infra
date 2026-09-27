@@ -27,7 +27,31 @@ progress from Block A.**_
 |---|---|---|
 | **A: S1 to S3** | Built and driven, 2026-09-26. **Awaiting the founder's check** | `f5-s1` 7/7 (load 1,3 then 2,3 adds only 2; the mirrored folders; a skipped page never made, after preparation; Plans refused with "5 takeoff sheets", in the api and as "Can't delete — folder in use" on screen; a .docx, page 4 of 3 and an unfinished upload refused by name; a mixed Load writes nothing; a viewer 403). `f5-s2` 4/4 (the Load answers in 146 ms with every page pending; split PDF, 512 px thumbnail and fit WebP checked in MinIO for two PDF pages and a wrapped PNG, its original kept; a tab showing "This sheet has no image" draws the page once the worker is back, no reload, one `drawing.source.changed`; a lost job re-dispatched by the sweep; beat carries the sweep). `f5-s3` 2/2 and `drives/f5-s3-bundle.sh` (canvas and drafts only in the takeoff chunk; the dashboard fetches none of it; a missing takeoff chunk reloads once). Migration `a91c4e7d2b30` up, down, up; `alembic check` clean. Gates: ruff, ruff format, mypy (83 files), lint, typecheck, build. Full regression: see the report. **Checked by the founder** |
 | **B: S20, S4 to S9** | Built and driven, 2026-09-26. Four IDM rounds after the founder's check (D-40 to D-43). **Closed 2026-09-27, the founder's IDM test passing** | `f5-count` (S20): a 519 MB, 150-page set counted by ranged reads, 230 KB in 4 requests. `f5-s4` 6/6, `f5-s5` 6/6, `f5-s6` 6/6 (the worker's thumbnails, D-41), `f5-s7` 3/3, `f5-s8` 4/4, `f5-s9` 2/2, and **`f5-big`**: the browser never reads a set, sheets reach pdf.js as bytes served as `application/vnd.intelcost.sheet`, and a Load is not held behind thumbnails. The Block B full regression passed, then only touched fixtures after each IDM round. See [F5_BLOCK_B_REPORT.md](F5_BLOCK_B_REPORT.md) |
-| **C: S10 to S12** | Built and driven, 2026-09-27 (overnight plan, stopped here for the founder's click check). S12 AC2 amended by **D-47** | `f5-s10` 5/5 (dpr 2: a pdf.js raster at 100%, 400%, 2000% and 4000%, backing = CSS × 2; a hairline 1 device px at 4000%; the raster exactly under the overlay; one open per file; a 64 MB budget at 4 GB). `f5-s11` 6/6 (fit image first, none fetched for an open document; 50% to 4000% with legacy's steps; a half then a full pass, windowed above 2.5×; cold first pdf.js paint median 1.86 s; **Load to sharp paint median 3.9 to 5.0 s, from ~12 s**). `f5-s12` 4/4 (page 90 of 150 from its own split; D-47's preparing state; one call signs every sheet). See [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md) |
+| **C: S10 to S12** | Built and driven, 2026-09-27 (overnight plan). S12 AC2 amended by **D-47**, accepted. **Checked by the founder, 2026-09-27** | `f5-s10` 5/5 (dpr 2: a pdf.js raster at 100%, 400%, 2000% and 4000%, backing = CSS × 2; a hairline 1 device px at 4000%; the raster exactly under the overlay; one open per file; a 64 MB budget at 4 GB). `f5-s11` 6/6 (fit image first, none fetched for an open document; 50% to 4000% with legacy's steps; a half then a full pass, windowed above 2.5×; cold first pdf.js paint median 1.86 s; **Load to sharp paint median 3.9 to 5.0 s, from ~12 s**). `f5-s12` 4/4 (page 90 of 150 from its own split; D-47's preparing state; one call signs every sheet). See [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md) |
+| **D: S13, S14** | Built and driven, 2026-09-27. **Awaiting the founder's click check.** Sheet deletes follow **D-48**; timings on the production build, **D-49** | `f5-s13` 7/7, on the dev server and on the production build: the tree under the mirrored folders, "At root", the highlight following a click, search by number, name and item names, "No sheets match", rows with label, scale chip, item count and star, thumbnails fetched only in view, and legacy's prerender (neighbours after the first paint, hover after 150 ms; the next sheet opens with no fit image and no second fetch, first sharp paint 9 ms on the production build). `f5-s14` 6/6 in two windows: double-click rename, where B followed in 837 ms with no reload; a drag within a folder, persisted, with Thumbnails refusing to reorder; Ctrl and Shift selection whose menu bookmarks and moves all; "Delete 2 sheets?" naming both items, "Deleted 2 sheets", and B following; a viewer refused on screen and at the api. Re-homing checked by hand (D-48). `f5-s11` on the production build: **cold open median 480 to 544 ms** (1.9 s on the dev server), **Load to sharp paint median 1.2 to 2.1 s** (legacy ~4 s) |
+**Found while building Block D:**
+- **Legacy's prerender queue is here** (moved from Block C). The open sheet's neighbours
+  in panel order, then a hovered row after 150 ms, are drawn into the caches while
+  nothing else is. They wait until the open sheet has painted, so they never race its
+  download. A sheet drawn ahead opens with no fit image, and its PDF is not fetched
+  again. Its first sharp paint took 9 ms on the production build and 21 ms on the dev
+  server (`f5-s13`).
+- **Block C's "skip the fit image" check never fired.** It ran before the canvas was
+  measured, so it looked for the wrong width. `f5-s11` passed because the browser had
+  cached the image. It now asks at the width the last canvas drew at.
+- **The production build (D-49) found two races the dev server hid.** Both are fixed.
+  - A zoom's own scroll correction was taken for a pan, so the window was drawn twice.
+  - Sheets arrived before folders and flashed "At root". The panel now waits for both.
+- **Deleting sheets keeps legacy's last-shape rule (D-48).** An item with shapes on
+  another sheet stays, moved there; an item with none left goes. Our cascade from an
+  item's home sheet would otherwise have taken shapes the confirm did not name.
+- **Not ported in Block D**, with their owners in "Not in F5":
+  - Auto-Name, Name from region, Duplicate, Print, Preview, Rotate, New Blank Page.
+  - Folder create, rename and move.
+  - The collapse ladder and Default Expand Level.
+  - Per-sheet item lists under a row.
+
+  The panel offers what S13 and S14 name and nothing that would do nothing.
 
 **Found while building Block C:**
 - **Most of the old ~12 s was the page drawn 3072 px wide, PNG-encoded and decoded as an
