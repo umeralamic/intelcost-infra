@@ -83,6 +83,7 @@ await run("f5-s19", [
         const before = (await chip(b.page).textContent()).trim();
         expect(before === "Calibrate scale to compute LF / SF", `B's chip before: "${before}"`);
         await tool(page, "Scale").click();
+        await page.getByRole("menu", { name: "Scale" }).getByRole("menuitem", { name: "Calibrate Scale" }).click();
         await clickSheet(page, 0.1, 0.3);
         await clickSheet(page, 0.6, 0.3);
         const dialog = page.getByRole("dialog");

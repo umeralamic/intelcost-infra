@@ -2318,3 +2318,78 @@ Scale menu, on the chip and in the sheets panel. Engineering (`1" = 20'`) and me
 - A label already stored keeps its words: the chip shows the label a person saved. Only
   bench data holds the older form.
 - `f5-s16` picks `1/4" = 1'-0"` by its exact name.
+
+---
+
+## D-53 — The sheets panel lists each sheet's items with that sheet's share, and the toolbar has legacy's Scale button
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend, Backend
+**Serves:** the founder's findings (a) and (b) of 2026-09-27, an F5 follow-up
+
+**Context:** The founder found two F5 surfaces short of legacy. (a) Legacy's sheets panel
+lists the measurements under each sheet row (`SheetItemList` in `SheetTree`); ours showed
+only a count. (b) Legacy's toolbar has a **Scale** button opening the scale dropdown
+(`ScaleMenu` in `Toolbar.tsx`'s Scale cluster); ours had a "Scale" tool that started a
+calibration at once, and the dropdown only on the canvas chip. Three choices had to be
+made to port them.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|---|---|---|
+| A — Each sheet's row shows the item's whole quantity | No new maths | Wrong for an item measured on several sheets: every sheet claims the total |
+| B — Each row shows that sheet's share: its shapes there on that sheet's scale, with the item's height, pitch and multipliers (legacy's `computeSheetQuantitySync`); counted on the api in `GET …/drawing/sheet/items` | Legacy's number; one call serves the panel | The call measures shapes, not only names |
+
+**Decision:** Option B, and with it:
+- **Legacy's default, Page:** sheets are closed until their chevron ("Show items on this
+  sheet") is clicked. The ⋮ menu's Default Expand Level (None, Page (Default), Page >
+  Takeoff), Hide Takeoffs and Hide Search Box are legacy's, kept per browser and
+  workspace (`sheetsPanel.prefs.{workspace}`, legacy's key). Selecting an item opens the
+  sheets carrying it; a search on an item's name opens its sheets.
+- **A count on an unscaled sheet counts its marks** (legacy's Count needs no scale); a run
+  or area there reads "—".
+- **The item row is a viewer, as legacy's:** swatch, name, this sheet's quantity; a click
+  selects the item and opens that sheet. Its kebab menu, inline rename, visibility eye
+  and multi-select come with F6-S9's shared item row, which both panels will use.
+- **The toolbar's Scale button** sits after Select and before Linear, legacy's ruler over
+  the word, title "Scale — {label}", and opens the same menu as the chip (Calibrate
+  Scale, Add Custom Scale, the three lists). The "Scale" tool that calibrated on a click
+  is gone; Calibrate Scale in the menu does that, and the button reads pressed while it
+  runs.
+
+**Consequences:**
+- `SheetItemName` carries `color`, `type`, `unit` and `quantity`; `takeoff.service.sheet_scales`
+  is public for it. A scale change refreshes the panel's rows live.
+- Fixtures `f5-sheet-items` and `f5-scale-button`; `f5-s15`, `f5-s19` and
+  `proof-backlog` calibrate through the menu; `f5-s13` and `f5-s14` find a row's label by
+  `[data-sheet-label]`.
+
+---
+
+## D-54 — The Takeoff panel lists every item in the project; legacy has no current-sheet filter to port
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend
+**Serves:** the founder's finding (c) of 2026-09-27; built in F6-S9
+
+**Context:** The founder asked that the Takeoff panel show items from all sheets, as
+legacy does, "with whatever filter legacy offers for the current sheet". Read at
+`12dd119b`, legacy's `QuantityTable` is handed every item (`takeoff.items`) and offers no
+sheet filter. For the current sheet it has the Resume tooltip's "Also measured on: …", the
+bulk "Delete on this sheet only", and the Sheets panel's per-sheet list.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|---|---|---|
+| A — Add a "This sheet only" filter | What the words of the finding suggest | Not legacy's; the Sheets panel already lists one sheet's items (D-53) |
+| B — Legacy's: every item, "Also measured on: …", "Delete on this sheet only", the layer filter and search | Exactly legacy's | A person wanting one sheet's items reads them in the Sheets panel |
+
+**Decision:** Option B. If the founder wants a sheet filter beyond legacy, it is a small
+addition to F6-S9 and a later D-NN.
+
+**Consequences:** F6-S9 gains AC0 (every item, "Also measured on", a row click opens a
+sheet carrying the item when the open one carries none).

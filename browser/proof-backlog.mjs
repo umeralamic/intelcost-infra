@@ -242,6 +242,7 @@ await run("proof-backlog", [
       const disabled = await Promise.all(["Linear", "Area", "Count"].map((l) => tool(page, l).isDisabled()));
       const why = await page.getByText("Set the sheet scale first. Without it a shape has no quantity.").count();
       await tool(page, "Scale").click();
+      await page.getByRole("menu", { name: "Scale" }).getByRole("menuitem", { name: "Calibrate Scale" }).click();
       const box = await page.locator('svg[role="presentation"]').boundingBox();
       // A portrait page runs below the window; y 0.2 is on screen.
       await page.mouse.click(box.x + box.width * 0.2, box.y + box.height * 0.2);

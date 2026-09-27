@@ -13,7 +13,7 @@ the collaboration mode onto every new write (**D-32**)._
 D-34, D-35, D-36, D-38, D-39) · **Parity:** [../PARITY.md](../PARITY.md) §9 (the measure tools,
 undo, markups toggle, toolbar overflow), §10 (all but the collaboration lines F8 ticked),
 §23 (every binding), §24 (the Mouse, Cursor, Snapping, Takeoffs and Hover settings) ·
-**Sits on:** [takeoff_shell_tasks.md](takeoff_shell_tasks.md) (F5: the pdf.js canvas,
+**Sits on:** [takeoff_shell_tasks.md](../archive/takeoff_shell_tasks.md) (F5: the pdf.js canvas,
 the sheets panel, calibration), [item_model_tasks.md](item_model_tasks.md) (F6: the
 New Measurement dialog, the item tree, layers) · **Inherited from:**
 [realtime_tasks.md](../archive/realtime_tasks.md) (cursors, drafts, the modes)

@@ -157,7 +157,7 @@ await run("f5-s13", [
       const a101 = row(page, arch[1]);
       // The text, not its rendering: HTML collapses legacy's two spaces on screen, as
       // legacy's own panel did.
-      const label = (r) => r.locator("button").first().textContent();
+      const label = (r) => r.locator("[data-sheet-label]").textContent();
       expect((await label(a101)) === "A-101  –  Foundation Plan", `A-101 reads "${await label(a101)}"`);
       expect((await label(row(page, arch[3]))) === "Page 3", `page 3 reads "${await label(row(page, arch[3]))}"`);
       const chip = await a101.locator("[data-scale-chip]").innerText();

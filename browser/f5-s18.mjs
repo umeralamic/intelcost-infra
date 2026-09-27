@@ -92,6 +92,10 @@ async function openAs(page, email, at) {
   return caps;
 }
 
+/** An enabled tool gives no view-only reason. Scale, legacy's dropdown button, carries its
+ *  own title ("Scale — No scale"), which is not a reason. */
+const noReason = (state) => !state.reason?.startsWith("View only");
+
 /** Each measure tool: enabled, and whether it says why not. The reason is the title of
  *  what the pointer lands on over the button: a disabled button takes no pointer events,
  *  so a title on the button itself would never show. */
@@ -126,7 +130,7 @@ await run("f5-s18", [
       const caps = await openAs(page, owner.email, OPEN);
       expect(caps.capabilities.canEditTakeoff === true, "the owner's map says no canEditTakeoff");
       const states = await toolStates(page);
-      expect(TOOLS.every((t) => states[t].enabled && !states[t].reason), `tools ${JSON.stringify(states)}`);
+      expect(TOOLS.every((t) => states[t].enabled && noReason(states[t])), `tools ${JSON.stringify(states)}`);
       return `canEditTakeoff true · ${TOOLS.join(", ")} enabled`;
     },
   },
@@ -172,7 +176,7 @@ await run("f5-s18", [
       expect(caps.is_platform_admin === true && caps.is_workspace_admin === false, `staff ${caps.is_platform_admin}, workspace admin ${caps.is_workspace_admin}`);
       expect(caps.capabilities.canEditTakeoff === true, "the platform admin's map was masked");
       const states = await toolStates(page);
-      expect(TOOLS.every((t) => states[t].enabled && !states[t].reason), `tools ${JSON.stringify(states)}`);
+      expect(TOOLS.every((t) => states[t].enabled && noReason(states[t])), `tools ${JSON.stringify(states)}`);
       const staff = await apiLogin(process.env.STAFF, PASSWORD);
       const before = await itemCount(staff, LOCKED);
       await drawRun(page);

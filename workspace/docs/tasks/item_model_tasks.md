@@ -339,7 +339,27 @@ legacy in three ways, and this subtask closes all three:
 
 ### F6-S9: The item tree
 
+**The founder's finding (2026-09-27, item c): the Takeoff panel shows items from all
+sheets, as legacy does.** Today's panel lists only the open sheet's items (the page asks
+`…/item?sheet_uuid=`). Legacy's `QuantityTable` is handed `takeoff.items`, every item in
+the project, and read at `12dd119b` it offers **no** current-sheet filter. What it has
+for the current sheet instead:
+- the Resume glyph's tooltip, "Resume this takeoff — continues measuring {noun} on this
+  sheet" plus "Also measured on: A-101, A-102" (`ItemRowShared.tsx:201`,
+  `otherSheetsByItem`, which leaves the open sheet out);
+- the bulk menu's "Delete on this sheet only", disabled with "None of the selected items
+  are marked on this sheet" when none is (`QuantityTable.tsx:1445`);
+- the per-sheet list under each row of the Sheets panel (F5 follow-up (a), built
+  2026-09-27), which is where one sheet's items are read.
+
+The filter the founder asked for is therefore legacy's layer filter (AC1) and search, not
+a sheet filter; logged as **D-54**, decided overnight, pending the founder's review.
+
 **Acceptance criteria.**
+0. The panel lists every item in the project, whatever sheet is open; an item measured
+   on other sheets says so ("Also measured on: …"); clicking a row selects it, and when the open sheet carries none of its shapes, opens a
+   sheet that does (legacy: the Takeoff panel "stays put if the current sheet already
+   carries the item", `ProjectTakeoff.tsx:10859`).
 1. Items group by folder, sub-items nested, filtered to the active layer's subtree.
 2. The item menu offers what legacy's does that F6 owns (Properties, Override quantity,
    Duplicate, Move to layer, Create sub-item, Delete on this sheet and everywhere);

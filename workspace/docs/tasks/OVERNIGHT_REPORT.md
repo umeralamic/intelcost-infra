@@ -1,604 +1,107 @@
-# Overnight report, 2026-09-27
+# Overnight report, 2026-09-27 to 2026-09-28
 
 _Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
-[docs/archive/OVERNIGHT_REPORT_2026-09-26.md](../archive/OVERNIGHT_REPORT_2026-09-26.md)._
+[docs/archive/OVERNIGHT_REPORT_2026-09-27.md](../archive/OVERNIGHT_REPORT_2026-09-27.md).
+Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 
-## Review of the plan
+## Progress checklist
 
-Written before starting, as the plan asks. Since then the founder has cut the run to
-**F5 Block C and a stop**, so tasks 2 to 8 are reviewed for the record but are not run.
+- [x] 0. Archive F5 (spec and block reports to docs/archive, Live row, board)
+- [x] 0a. F5 follow-up (founder's addition): (a) items under each sheet row in the panel;
+      (b) legacy's scale button and dropdown. (c) is written into F6's spec, built in S9
+- [ ] 1. Rotate pages (P-20a): specced ([rotate_pages_tasks.md](rotate_pages_tasks.md))
+- [ ] 2. F6, all blocks, with the two-window live check
+- [ ] 3. Close F6 (built, awaiting founder click check)
+- [ ] 4. F9 estimating draft spec
+- [ ] 5. F7 Block A
+- [ ] 6. F7 Block B onwards
+- [ ] 7. Proof backlog (PARITY ported, not driven)
+- [ ] 8. F10 and F11 draft specs
 
-### 1. Time per task, at the new bench speed
-
-The bench now runs fixtures 4 at a time (D-44):
-- the quick tier (16 fixtures) takes about **5 to 6 minutes**, where it once took about
-  25 minutes one at a time;
-- the full tier takes **_measured below, "Bench"_**, where the last full run took
-  **about 1.5 hours** one at a time.
-
-Building, not testing, is now most of each block.
-
-| Task | Estimate | Basis |
-|---|---|---|
-| 1. F5 Block C (S10 to S12) | **7 to 9 h** | Port legacy's `PdfPageRenderer` (464 lines), doc cache (151), memory budget (44), bitmap cache and prerender queue (370) into `lib/takeoff/pdf`. One zoom module and the 50% to 4000% range (D-35). The two-stage re-raster and windowing above 2.5×. One call signing every sheet. The first-paint target, measured three runs each. Four new fixtures, then the quick tier |
-| 2. F5 Blocks D, E, F (S13 to S19) | 10 to 13 h | The panel's tree and its acts (two subtasks, the largest UI in F5), calibration's words and presets, then the live duties and the two-window check |
-| 3. Close F5 | 1.5 h | The full tier, PARITY, board, report, mirror, backup |
-| 4. F6 Block A | 5 to 7 h | Per item_model_tasks.md |
-| 5. F9 draft, proof backlog | 2 to 4 h | |
-| 7, 8. Second batch | 4 h | |
-
-### 2. The F5 block list, and whether it fits
-
-Six blocks: A (S1 to S3) and B (S20, S4 to S9) are closed. **C: rendering, S10 to S12.
-D: the sheets panel, S13 and S14. E: calibration and scale, S15 and S16. F: collaboration,
-S17 to S19.**
-
-**It does not fit.** C to F plus the close is about 19 to 24 hours against 14. The
-founder's instruction to stop after Block C settles it: Block C alone fills a working
-session.
-
-### 3. Risks, dependencies, ordering
-
-- **S12's AC2 contradicts D-41.** It asks for an unprepared page to open from the whole
-  file by range requests, which is exactly what IDM took (D-40, D-41).
-  - Replaced by D-41's behaviour: "Preparing the sheet", then it draws when ready.
-  - Logged as the next D-NN, decided overnight.
-- **S12's AC3 needs a new api call.** Today the app signs one sheet at a time.
-- **The zoom module goes first.** Every clamp (wheel, buttons, Fit) reads it, and the
-  re-raster keys its bitmaps on it.
-- **The target: first sharp paint close to legacy's ~4 s (~12 s today).** Today's path:
-  - fetch the page's PDF;
-  - draw it 3072 px wide;
-  - PNG-encode it (`toBlob`);
-  - load that as an image.
-
-  The encode and the decode of a 3072 px PNG are likely several of those seconds. The
-  port draws straight into the canvas, as legacy does. What's left is the worker's
-  preparation, which D-43 and D-45 already shortened. Measured; if the api side still
-  dominates, that goes in the findings, not a patch.
-- **Hard rule 2.** The renderer, caches and zoom module go in `lib/takeoff/pdf` with no
-  React and no network. The fetch stays in `features/takeoff/pdf`.
-- **F8's drafts and cursors draw over the new canvas** (DraftLayer). Its overlay
-  coordinates must stay normalised through every zoom tier; f8-s13, f8-s14 and f8-s18 are
-  in the quick tier for Block C.
-- **The bench's Chromium runs at dpr 1.** S10's "sharp on a dpr-2 display" is driven with
-  a `deviceScaleFactor: 2` context.
-
-### 4. What only the founder can check, and how it's handled
-
-- **IDM.** Block C changes how a sheet's bytes are drawn, not how they're fetched: one GET
-  of `…/pages/{file}/{page}`, `application/vnd.intelcost.sheet`, no `.pdf`, no
-  Content-Disposition, no Range, bytes into `getDocument({ data })`.
-  - f5-big's step already asserts that shape. It stays in the quick tier for Block C.
-  - The founder's IDM-on click check is listed and marked.
-- **"Sharp" by eye at 4000%** on a real dpr-2 screen. The fixture checks backing size and
-  line width; the eye check is listed.
-- **Feel of the zoom** (wheel steps, the interim frame). Listed as a click check.
-
-### 5. Missing from the plan
-
-- **The founder's data rule vs D-45.** Before the rule arrived, I dispatched two
-  preparation jobs on the founder's JHS VOL 4 set while diagnosing D-45. They only
-  prepared pages the founder had loaded, and changed nothing else. Nothing of theirs is
-  touched from here on.
-- **Legacy's Block C numbers (PARITY §24)** are cold-open medians on legacy's own sheets,
-  which the bench doesn't have. They're measured on Riverside and a copy of the JHS set
-  and recorded beside legacy's, as the spec says.
-
-## Progress
+## Tasks
 
 | # | Task | Status | Start | End | Duration |
 |---|---|---|---|---|---|
-| 0a | Bench: parallel fixtures, tiers (D-44), D-45, /health/code | Done, pushed | 2026-09-26 20:30 | 2026-09-27 05:10 | |
-| 0b | f8-s13 dropped frames (D-46) | Done, pushed | 05:10 | 06:25 | 1 h 15 |
-| 0c | The five full-run failures, timeboxed 1.5 h | Done: 4 fixed with causes, 1 open (see Findings) | 06:45 | 07:20 | 35 min |
-| 0d | Full tier measured at 4, then 3; runner hardened | Done: **3 at a time, all 81 standing fixtures pass, 57 m 25 s** | 07:18 | 09:20 | 2 h |
-| 1 | F5 Block C (S10 to S12) | Built and driven; **checked by the founder** (PASS, D-47 accepted) | 09:25 | 10:15 | 50 min (plus design and fixtures written during the runs) |
-| 2 | F5 Block D (S13, S14) with legacy's prerender; a production build on the bench (D-49) | Built and driven; **checked by the founder** (PASS) | 10:50 | 12:40 | about 2 h, the regression run included |
-| 3 | D-50 (no quantity without a measurement); Rotate pages (P-20a) on the board before F6 | Done, api pushed | 12:49 | 13:05 | 15 min |
-| 4 | F5 Block E (S15, S16), and D-51 (a scale is feet per point) | Built and driven; **checked by the founder** (PASS; D-51 and its data correction accepted; D-52 label) | 13:05 | 14:05 | about 1 h, the regression run included |
-| 5 | F5 Block F (S17 to S19); `f5-d51` kept in the quick tier | Built and driven; **awaiting the founder's click check** | 14:10 | 15:05 | about 55 min |
-| 6 | Close F5: the full tier, PARITY, board, report, mirror, backup | **Done: all 91 pass** (89 first time, 2 fixed); built, awaiting the check of Block F | 15:05 | 16:20 | about 1 h 15, most of it the full tier |
-
-## The five full-run failures (timeboxed)
-
-| Failure | Kind | Cause | Fix |
-|---|---|---|---|
-| f2-close: an invitee who signs up is seated | **(b) product** | The session turns authenticated while `signUp` resolves, and a render then sent the invitee to the dashboard before `setAccountCreated` ran. The seat landed 1.03 s later, with the page gone, so a failed accept would have had nowhere to be reported | `Signup.tsx`: `creating` is set before the request, so the guard holds from the first render. 7/7 |
-| f3-s1: the roster rendered no rows | (a) fixture | Read the roster, its own query, as soon as the invite picker drew | Waits for the roster rows. 5/5 |
-| f3-s10: a renamed workspace read back as another | (a) fixture and **(b) product** | `enterWorkspace` skipped choosing a workspace already shown, so nothing was stored. **Product:** a workspace shown only as "first by name" was never kept, so renaming it so it sorted after another moved the person into that other workspace on reload | The helper always chooses. `session.tsx` stores the workspace it falls back to. 4/4 |
-| f8-s9: B never heard A's move | (a) fixture | The socket recorder's `at` (when the page heard a frame) was overwritten by the event's own `at`, the api's ISO time. So any "after this moment" test on events compared a string with a number. **f8-s15's "hears nothing after the revoke" was passing vacuously for the same reason** | `lib/realtime.mjs` keeps the page's time as `at`, the api's as `server_at`. f8-s9 5/5; f8-s15 6/6 with its check now able to fail |
-| f8-s13 AC4: window A's socket not ready in 20 s | **Open** | Not reproduced. Under 4 parallel fixtures every socket readied in under 0.4 s (below) | `readySocket` now reports every socket's frames and close code when it fails, so a recurrence carries its own evidence |
-
-**Measured under 4 parallel fixtures (b): api, socket and event times.** 30 samples each,
-a probe running beside 8 heavy fixtures.
-
-| | Idle | 4 in parallel, before | 4 in parallel, after |
-|---|---|---|---|
-| `GET /api/auth/me` | median 13 ms, p90 19, max 21 | median 47, **p90 743, max 1,303** | median 42, **p90 206, max 329** |
-| Socket open → ready | median 23 ms, p90 35, max 39 | median 66, p90 453, max 1,297 | median 75, p90 114, max 372 |
-| PATCH → event heard | median 33 ms, p90 45, max 53 | median 84, p90 334, max 705 | median 90, p90 504, max 1,645 |
-| The 8 fixtures | | 6 m 22 s | **4 m 58 s**, all pass |
-
-**The fix: the bench api was logging for the libraries, not for us.** `DEBUG=true` put the
-root logger at DEBUG and turned on SQLAlchemy's echo. So every SQL statement was written
-to stdout twice, and every S3 call logged in full, from inside the event loop. SQL echo is
-now its own switch (`sql_echo`, off), and botocore, SQLAlchemy and the like stay at
-WARNING even in debug. Production runs with `debug` off, so its users never paid this, but
-the bench measured an api slower than production.
-
-**Open: event delivery's tail** (p90 504 ms, max 1.6 s under load) includes the PATCH's
-own write, publish and fan-out. It didn't improve with the logging fix and is left as a
-finding with these numbers.
-
-## Bench
-
-| Full list (81 standing fixtures) | Wall clock | Host CPU | Result |
-|---|---|---|---|
-| One at a time, before D-44 | about 1 h 30 (the last known run) | | |
-| **3 at a time, now the default** | **57 m 25 s** (parallel 38 m, serial 19 m) | mean 81%, 90th percentile 96%, above 90% in 44% of samples | **all 81 pass** |
-| 4 at a time | parallel group about 33 m | mean 91%, above 90% in 81% of samples | f4-s10 (fixture, fixed) and f8-s16 (a 1.6 s live update, the open finding) |
-
-**The runner itself had three faults, found during these runs and fixed:**
-1. **It hung with CPU sampling on.** A bare `wait` also waited for the sampler, which
-   never ends. Two runs hung after their parallel group.
-2. **Two runs could overlap.** Releasing those hung runs let two serial groups (api
-   restarts, Redis and worker stops) and two clean-ups run at once. That produced a false
-   batch of serial failures (f4-s27, f5-s2, f8-s12, f8-s2, f8-s3). Now one run at a time,
-   by a lock.
-3. **A serial fixture could start against a half-started api.** `docker compose restart`
-   returns before the api inside has finished its start (migrations). Now each serial
-   fixture waits for both apis' `/health` and current code.
-
-The 3-at-a-time run also carried the three Block C fixtures, then written but not yet
-deployed, so its time is slightly high.
-
-## F5 Block C
-
-**pdf.js now draws every sheet, sharp from 50% to 4000%, over the worker's fit image.**
-A page loaded through Add sheets is drawn sharp in **a median of 3.9 to 5.0 s across runs,
-from ~12 s**, legacy's being ~4 s. The fetch is unchanged from D-42: one GET of the page's
-own file, bytes into `getDocument({ data })`, so IDM has nothing new to react to.
-
-| Subtask | Proof |
-|---|---|
-| **S10** pdf.js on the canvas | `f5-s10` 5/5, on a dpr-2 window:<br>• at 100%, 400%, 2000% and 4000% the settled picture is a pdf.js raster, its backing twice its CSS size, windowed above 2.5× (3808 × 2524 device px at 4000%);<br>• **a hairline is 1 device pixel wide at 4000%**;<br>• the raster sits exactly under the measurement overlay at 100% and 400%, and a 0.2 × 0.2 square reads 1,600 SF;<br>• two sheets, back and forth twice: 2 opens;<br>• 64 MB of bitmaps on a 4 GB machine |
-| **S11** Fit tier, zoom rule, re-raster | `f5-s11` 6/6, run alone:<br>• the fit image paints first, then pdf.js over it; back to an open sheet, no image is fetched;<br>• the buttons step +0.25 below 2× and ×1.25 above, 100% to 4000% in 19 presses; buttons and wheel stop exactly at 50% and 4000%;<br>• after a zoom, a half pass (8 to 9 ms) then a full one (39 to 43 ms), windowed above 2.5×;<br>• cold open: first pdf.js paint median 1.9 to 2.4 s (see Findings);<br>• Load to sharp: 3.9 to 5.0 s |
-| **S12** Split source, signing | `f5-s12` 4/4:<br>• page 90 of a 150-page set opens from its own split, one GET, the set never requested;<br>• **D-47**: an unprepared page reads "Preparing the sheet", asks nothing of the set, then draws;<br>• one call signs every sheet, and switching sheets signs nothing more |
-
-**Carried on the new canvas, unchanged:** f5-big 6/6 (the IDM stand-in: no request for
-the set, nothing answered as a PDF, and with the sheet's PDF blocked the fit image stays),
-f8-s13 5/5 and f8-s14 4/4 (colleagues' drafts), f8-s9, f8-s12, d37-links. **Quick tier
-plus Block C's fixtures: 27 of 28 at 3 in parallel.** The one failure was f5-s11's timing
-step, 4.0 s under load against 1.9 s alone, so timing fixtures now run in the serial
-group, and f5-s11 passes there.
-
-**Gates:** ruff, mypy, lint, typecheck, build (pdf.js stays in its own chunk; the takeoff
-route is 65 kB).
-
-## F5 Block D
-
-**The sheets panel is in takeoff, left of the canvas.** Its "+" is Add sheets, which left
-the canvas bar. Legacy's prerender queue came with it from Block C. The production build
-you asked for now runs on the bench (D-49), and the timings are measured there.
-
-| Subtask | Proof |
-|---|---|
-| **S13** The tree, search and rows | `f5-s13` 7/7, on the dev server and again on the production build:<br>• sheets nest under the folders mirrored from the project's files (Plans / Architectural / Arch);<br>• a sheet moved out of every folder sits "At root", and the panel followed that move without a reload;<br>• the open sheet's row is highlighted and follows a click;<br>• "Search sheets…" matches number ("a-101"), name ("foundation") and an item's name ("window w2"); "zzz" reads No sheets match "zzz no such";<br>• rows read "A-101  –  Foundation Plan" or "Page 3", with the scale chip `1/8"=1'-0"` or none, the item count (2) and the star;<br>• Thumbnails: 3 of 10 fetched on open, the 7 below the fold only when scrolled to |
-| **Prerender** (from Block C) | `f5-s13`:<br>• the open sheet's neighbours are drawn once it has painted, never before, so they don't race its download;<br>• a row held 150 ms is drawn too; a row never hovered is never fetched;<br>• opening a sheet drawn ahead shows no fit image and doesn't fetch its PDF again. **First sharp paint: 9 ms** on the production build (about 0.5 s cold) |
-| **S14** Rename, move, reorder, bookmark, delete | `f5-s14` 6/6, two windows (B on app-b and api-b):<br>• double-click, "A-101" and "Sheet name", Save: persisted, and **B's panel followed in 837 ms with no reload**;<br>• a drag within a folder, persisted in one write, the other folder untouched;<br>• Thumbnails reads "Switch to List view to reorder pages" and doesn't drag;<br>• Ctrl adds and Shift selects a range. "3 sheets selected": Bookmark selected, then Move selected to Root, all three, in the api too;<br>• "Delete 2 sheets?": "…2 items lose their measurements on these pages. 2 of them have measurements nowhere else and will be deleted entirely: Door D1, Window W2. This cannot be undone.". Then "Deleted 2 sheets", A moves on to the next sheet, and B's rows go;<br>• a viewer sees the panel and opens sheets, but cannot rename, drag or delete; the api answers 403 to all three |
-| **D-48** re-homing | By hand, as the app can't yet put one item on two sheets: an item with a shape on a second sheet survived the delete of its home, moved to that sheet with its one shape; the api reported 0 items deleted |
-
-**Timings on the production build** (`f5-s11`, run alone, `FX_APP=http://localhost:5175`):
-
-| | Dev server | **Production build** | Legacy |
-|---|---|---|---|
-| Cold open, first pdf.js paint (median of 3) | 1.9 s | **480 ms and 544 ms** (two runs) | ~200 ms |
-| A page loaded through Add sheets, drawn sharp (median of 3, preparation included) | 4.6 to 5.1 s | **1.2 to 2.1 s** | ~4 s |
-| A sheet the prerender drew ahead | 21 ms | **9 ms** | |
-
-**The production build found two races the dev server hid, both fixed:**
-- **A zoom's own scroll was taken for a pan.** Zooming holds the point under the cursor
-  by scrolling. Above 2.5× that scroll started a pan's re-draw of the same window, a
-  second half-resolution pass included. `f5-s11` AC3 caught it on the production build.
-  The canvas now tells its own scroll from a person's.
-- **The panel flashed every sheet "At root"** in the moment between the sheets arriving
-  and the folders arriving. It now waits for both.
-
-**Found on the way:**
-- **Block C's "skip the fit image" check never fired.** It ran before the canvas was
-  measured, so it looked for the wrong width. `f5-s11` passed only because the browser
-  had cached the image. It now asks at the width the last canvas drew at.
-- **Our cascade would have broken legacy's delete rule.** An item's home sheet is
-  `ON DELETE CASCADE`, so deleting a sheet would have taken the item's shapes on other
-  sheets. D-48 keeps legacy's rule in the api.
-- **The sheet list made one query per sheet** to find its file. It now makes one query in
-  all.
-- **Four fixtures found the quantity panel as "the aside".** It is now
-  `data-quantity-panel`.
-
-**Not ported in Block D.** The panel offers only what S13 and S14 name. Everything below
-waits for the feature that owns it ("Not in F5"):
-- Auto-Name, Name from region, Duplicate, Print, Preview, Rotate, New Blank Page.
-- Folder create, rename and move.
-- The collapse ladder and Default Expand Level.
-- Item lists under a row, and the sheet naming format setting.
-
-**The quick tier plus every F5 fixture and the F8 fixtures on the takeoff page, 35 in
-all: 34 pass at 3 in parallel, in 28 m 34 s.** Host CPU averaged 90%, the most this bench
-has run.
-- **f8-s13 failed** on the "aside" locator above. Fixed, it passes 5/5.
-- **f8-s18 AC2** then once saw an edit reach B in 1,318 ms against its 1 s bound, beside
-  two other fixtures. Alone it took 172 ms. That is the event-delivery tail under load
-  already in Findings. To keep Block D from adding to it, the panel's item counts now
-  refetch once a burst of events settles, not once per event. f8-s18, f8-s14 and f5-s13
-  then pass together.
-
-**Gates:** ruff, ruff format, mypy (84 files), lint, typecheck, build. No migration.
-
-## D-50: no quantity without a measurement
-
-**What "handed to the estimate" did:** before any item was deleted (the item, its last
-shape, or a sheet delete), the api copied its quantity into its estimate line's
-`manual_quantity`. The line's link then went null, and the line stayed as an "orphaned"
-line showing that number (D-09).
-
-**Now (D-50):**
-- The estimate line's link to its item is `ON DELETE CASCADE`, so deleting an item
-  deletes its line, by every path.
-- The copy is gone from all three deletes, and so is the `is_orphaned` flag.
-- The migration deletes any orphaned lines already stored. There were none on the bench.
-
-`f5-s14` AC3 now checks that the two deleted items' estimate lines are gone, and no line
-keeps a quantity from them: 6/6. D-48 reads as amended.
-
-**The board:** **P-20a Rotate pages** (stored rotation, legacy's "Rotate Pages…") sits
-first under Planned, to be built right after F5 closes and before F6. F6's blocker names
-it. Auto-Name stays with the AI tools (P-13/F14), in the spec's "Not in F5" table too.
-
-## F5 Block E
-
-**Calibration and scale, in legacy's words, and measured in points (D-51).**
-
-| Subtask | Proof |
-|---|---|
-| **S15** Calibrate | `f5-s15` 4/4:<br>• the Scale tool's toast: "Click two points on the sheet, then enter the real distance.";<br>• "Set sheet scale", "Enter the real-world distance between the two points you picked.", placeholder `25'-0"  ·  25 ft 6 in  ·  12.5m`;<br>• `25'-6"` reads "Interpreted as 25.50 ft (7.77 m)", "twelve" reads "Unrecognized format" with Save disabled;<br>• "Save calibration", then "Scale set — verify with a known dimension" and "100.00 ft between points";<br>• the chip reads the stored label;<br>• **a 400 pt run across the page and a 400 pt run down it both read 65.44 LF**;<br>• **B, on the same sheet: the new chip in 195 ms, the recomputed quantity in 328 ms, no reload** (723 and 965 ms before the event skipped the 150 ms settle wait a burst needs and a single scale does not) |
-| **S16** Presets, custom, guards | `f5-s16` 6/6:<br>• an unscaled sheet's chip is amber, "Calibrate scale to compute LF / SF";<br>• its menu: Calibrate Scale, Add Custom Scale, then legacy's 15 Architectural, 25 Engineering and 23 Metric scales;<br>• `1/8" = 1'` sets 8/72 ft per point and the chip turns green, "Scale: 1/8" = 1'";<br>• Custom Scale, 1 in = 45 ft, "Preview: 1" = 45'", saves 45/72;<br>• Count arms on an unscaled sheet. Linear opens "Set a scale for this sheet", then Set scale directly, Pick a standard scale, `1/4" = 1'`, and Linear arms; the 612 pt run reads 34 LF;<br>• "Change scale on this sheet?" ("This sheet has 1 measurement traced on it…"): Cancel keeps the scale, Change scale applies it, 34 → 68 LF;<br>• a viewer's chip is disabled, and the api answers 403 |
-
-**D-51, found in this block: quantities were wrong off-axis on every non-square sheet.**
-- **The fault.** Our scale was feet per normalised page unit, and a normalised unit is
-  longer across a landscape sheet than down it. Calibrated across a 1224 × 792 sheet, a
-  run down it read 55% too long. Only runs parallel to the calibration line were right.
-- **Legacy's way.** Legacy measured in PDF points. Its `feet_per_norm` column holds feet
-  per point despite the name, and its presets are defined that way, so they couldn't be
-  applied without the fix.
-- **Now.** The api and the browser measure in points. A migration converted stored
-  scales, and `drives/d51-recompute.py` recomputed stored quantities.
-- **Your data.** That recompute ran over the whole bench: 5 items, 4 changed. All 5 are
-  yours: 3 in Bench Construction Test's Riverside and 2 in "F5 Block A demo". Your sheets'
-  scales were converted by the migration too. Their numbers are now the correct ones, but
-  they changed, against the rule to leave your data alone. Nothing else of yours was
-  touched.
-- **Fixtures.** `f5-s10`'s area was re-derived: the "0.2 × 0.2 square" is 244.8 × 158.4
-  pt on its page, so 1,035.29 SF, not 1,600.
-
-**Also:**
-- `sheet.calibration.changed` was in the spec's realtime table but never published. It
-  now is.
-- Measure tools were greyed out on an unscaled sheet, which legacy never did.
-- **Not ported:**
-  - Legacy's Verify button on the toast arms Dimension, which is F11's.
-  - Metric units sit behind legacy's flag, which ships off (Q5).
-  - Legacy's scale menu labels are `1/8" = 1'`. The spec's criterion quoted
-    `1/8" = 1'-0"`; legacy's words win.
-
-**The quick tier plus Block E's affected fixtures, 27 in all: 25 pass at 3 in parallel in
-22 m 00 s**, host CPU averaging 92%. The two failures, and what was done:
-- **f5-s14 AC4, the fixture read too early.** The panel moves rows the moment you act
-  and the write lands after, so the fixture now waits for the api to agree.
-- **f5-s15 AC3, timing under load.** B's chip took 1,243 ms beside two other fixtures,
-  against 723 ms alone. The product change: a scale event no longer waits out the
-  150 ms coalescing delay meant for bursts. That took it to 195 ms, alone. Like f5-s11,
-  f5-s15 now runs in the serial group, since it measures time.
-
-f5-s14, f5-s15 and f5-s16 then passed together: 6/6, 4/4 and 6/6.
-
-**Gates:** ruff, ruff format, mypy (84 files), lint, typecheck, build. Two migrations
-(`c7e4a2b9d316` for D-50, `d51a7c3e9b24` for D-51), each run up, down and up, with
-`alembic check` clean.
-
-## F5 Block F
-
-**Collaboration on the new canvas, a platform admin's controls, and the two-window check.**
-
-| Subtask | Proof |
-|---|---|
-| **S17** Live on the new canvas | The F8 fixtures, re-driven on the pdf.js canvas, all pass:<br>• `f8-s18` 3/3: B's shapes reach A within a second;<br>• `f8-s13` 5/5: A draws slowly, B watches it grow tagged "Fixture O.", then saved, frames at 8 a second or fewer;<br>• `f8-s14` 4/4: B's Collaboration preferences change what B sees;<br>• `f8-s9` 5/5, `f8-s11` 4/4, `f8-s12` 1/1: the collaboration modes |
-| **S18** A platform admin's controls | `f5-s18` 4/4, two passes with a database step, as `f3-s2`:<br>• the owner of a live workspace: Scale, Linear, Area and Count enabled;<br>• a viewer: all four disabled, "View only: you can look at this takeoff but not measure on it", Select still works, the empty panel reads "Measurements appear here as your team draws them.", and a hand-written item is refused 403;<br>• the owner of a workspace whose trial has expired: masked, the four disabled, 403;<br>• **a platform admin in that same workspace sees the four enabled, draws a run and it saves.** F3-S4 AC6 is closed |
-| **S19** The two-window check | `f5-s19` 4/4, A on app and api, B on app-b and api-b:<br>• A calibrates with the Scale tool: B's chip changes 642 ms after Save and its quantity 816 ms, no reload;<br>• A draws slowly: B sees "Fixture O." on the growing line and nothing is saved mid-shape; when A finishes, A's save answers in 175 ms, **B's tag goes in 107 ms and the saved row appears in 282 ms**;<br>• A loads pages 3 and 4 through Add sheets: B's panel goes from 2 rows to 4, 764 ms after A's click, no reload |
-| **D-51, kept** | `f5-d51` 5/5, now in the quick tier: a landscape (1224 × 792) and a portrait (792 × 1224) sheet at `1/8" = 1'-0"`:<br>• through the api: 360 pt across and down read 40.00 LF each, a 360 pt square reads 1,600.00 SF;<br>• drawn on screen: across and down read 39.90 and 39.90 LF on the landscape, 39.99 and 39.99 on the portrait, 0.00% apart |
-
-**Found in this block, all fixed:**
-- **The measure tools never asked `can()`.** A viewer could arm Linear and draw, and the
-  api refused the shape at the end. They now ask `canEditTakeoff`. The rest of the
-  canvas's capability work (the menus, reasons on every row) stays with F7-S3.
-- **A finished draft kept its name tag for a second** over a shape already saved. The tag
-  now goes the moment A finishes; the line alone lingers to hand over, as F8 designed.
-- **A viewer's empty panel said "Pick a tool and draw on the sheet."**
-- **The collaborator plan can't be reached** until F16 gives workspaces a plan. `f5-s18`
-  masks with an expired trial instead, which the same function applies, and which a
-  platform admin skips the same way.
-
-**D-52 (your ruling):** architectural scales read `1/8" = 1'-0"`. Engineering (`1" = 20'`)
-and metric (`1 : 100`) keep their printed forms. A label already saved keeps its words.
-
-**Every fixture Block F touched, 11 in all, passes:** `f8-s9`, `f8-s11`, `f8-s12`,
-`f8-s13`, `f8-s14`, `f8-s18`, `f5-s15`, `f5-s16` (re-run for D-52's labels), `f5-s18`,
-`f5-s19`, `f5-d51`. One mistake of mine on the way: I edited `regress.sh` while it was
-running, and bash, which reads a script as it goes, stopped with a syntax error before
-the serial pair. The fixtures already started finished and passed; the serial pair
-(`f8-s12`, `f5-s15`) was run again on its own and passed. No data was lost.
-
-**Gates:** lint, typecheck, build. The api is unchanged in this block.
-
-## F5 close
-
-**F5 is built: marked "built, awaiting the founder's click check of Block F".** The spec
-stays in `docs/tasks/` and the board row stays until that check passes.
-
-**What F5 is, in one paragraph.** Takeoff now has legacy's way in and legacy's canvas.
-Perform Takeoff opens "Load project files into takeoff": pick files from the project,
-choose pages from the worker's thumbnails, Load N pages; later, Add sheets. A worker
-splits each page into its own PDF, thumbnails it and makes a fit image, and never lets
-the browser read a whole set (so IDM stays quiet). pdf.js draws each sheet sharp from 50%
-to 4000%, the fit image first, a cold sheet in about 0.5 s on the production build, and
-the next sheets drawn ahead so they open in 9 ms. The sheets panel has legacy's tree,
-search, rows, thumbnails, rename, reorder, bookmark, move and delete. Calibration and
-scale are in legacy's words, with its presets, a custom scale and the guards, measured in
-PDF points so a run reads true in every direction. Everything a colleague does (a scale,
-a Load, a rename, a shape being drawn) reaches the other window within a second.
-
-| Block | What | State |
-|---|---|---|
-| A | The model, the worker, the chunks | Checked |
-| B | Perform Takeoff, the Load dialog, Add sheets, the old block retired; IDM (D-40 to D-43) | Closed |
-| C | pdf.js, 50% to 4000%, split sources (D-47) | Checked |
-| D | The sheets panel, prerender, the production build (D-48, D-49, D-50) | Checked |
-| E | Calibration and scale (D-51, D-52) | Checked |
-| F | Live on the new canvas, a platform admin's tools, the two-window check | **Awaiting your check** |
-
-**Decisions F5 made:** D-40 to D-43 (IDM and the worker), D-47 (an unprepared page
-waits), D-48 and D-50 (deletes and the estimate), D-49 (a production build on the bench),
-D-51 (points), D-52 (labels). All accepted.
-
-**PARITY at the close:** 27 ticked lines name F5, and 10 stay open with their remainder
-named on the line. §3's platform-admin line has its on-screen half. The counts table was
-recounted from the lines: **109 of 606 behaviours ported, 111 driven** (the four retired
-lines count as driven).
-
-**Not in F5, and where it went:** Rotate pages → P-20a, next; Auto-Name → the AI tools;
-page acts, the stepper and panel layout → F7 and P-20; preview, print and the viewer →
-F11; reading a scale from the drawing → F12. The "Not in F5" table in the spec is the
-full list.
-
-**The full tier: 89 of 91 passed at 3 in parallel, in 65 m 51 s** (parallel group 42 m,
-host CPU mean 85%). Both failures had causes, both fixed and re-run green, so **all 91
-pass**:
-- **`f5-s9`'s seed check was stale since D-51.** It looked for `feet_per_norm = 200.0000`,
-  the old unit. The seed now prints feet per point, 0.0772 (1" = 5.56'), and the check
-  reads that. My miss: f5-s9 wasn't among the fixtures I re-ran for D-51.
-- **`f5-s19`'s calibration step took 2.2 s under full load** (642 ms alone). It measures
-  time, so it joins f5-s11 and f5-s15 in the serial group. Alone: 486 ms to B's chip.
-
-Logs are in `intelcost-infra/.regress/full-f5-close/`, one per fixture. Screenshots are
-deleted. **Backup:** `E:\Intelcost-backup\2026-09-27_1620-f5-built`, the workspace files
-at F5's close. The mirror is exact as of the close commit.
-
-## Estimates from actual pace
-
-| | Planned | Actual |
-|---|---|---|
-| Block C | 7 to 9 h | about 3 to 4 h |
-| Block D | about 4 to 5 h (its share of D to F's 10 to 13 h) | about 2 h |
-
-Building is running at about 40% of the plan. Revised estimates:
-
-| Next | Estimate | What it holds |
-|---|---|---|
-| **Block E** (S15, S16) | 2 to 3 h, estimated before it started | **Actual: about 1 h**, D-51 included, with no table needed (a custom scale is a stored feet per point) |
-| **Block F** (S17 to S19) | 1 to 1.5 h | **Actual: about 55 min**, with `f5-d51` and D-52. Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff (the measure tools for a platform admin), and the two-window check: calibrate in A and B follows (driven already by `f5-s15`), a slow draft, a Load seen by B's panel. One new fixture |
-| **F5 close** | 1.5 h | **Actual: about 1 h 15.** The full tier (about 1 h at 3 at a time, now 85 fixtures), PARITY, the board, the archive, the mirror |
-| **P-20a Rotate pages** | **2 to 3 h** | A spec first. Stored `view_rotation` turns the canvas, raster, fit image and thumbnails; measurements stay in the page's own frame, so none move; legacy's dialog and "All pages + Landscape" |
-| **F and the close** | **2.5 to 3 h** | Then Rotate pages, then F6 |
-
-## Findings
-
-- **Cold open was the dev server (resolved by D-49).** On the production build the first
-  pdf.js paint on a cold page is a median of about 0.5 s, of which 0.3 to 0.5 s is
-  fetching and opening the page's PDF. Legacy's ~200 ms is still about twice as fast.
-  The rest is the page's own GET and pdf.js starting its worker. The fit image covers the
-  wait, and the prerender takes it to 9 ms for the next sheets.
-- **Most of the old ~12 s was a PNG.** The old path drew the page 3072 px wide,
-  PNG-encoded it and loaded it back as an image. Now it draws straight into the canvas.
-- **Legacy's prerender queue** moved from Block C to Block D, where it is built.
-- **The panel reads "1,035.29 SF" without trailing zeros on whole numbers** ("68 LF").
-  The quantity is exact; its format is F6's.
-- **Event delivery's tail under load.** PATCH → event heard: p90 504 ms, max 1.6 s with
-  4 fixtures running (idle: 45 ms, 53 ms). f8-s16's "within 1.5 s" failed once at 4 at a
-  time (1,617 ms) and passes at 3. Not chased inside the timebox. The logging fix below
-  did not move it.
-- **`waitFor` let a probe's error escape.** A fetch refused while the api restarted ended
-  the wait at once. It now counts as "not yet", and the last error is named on timeout.
-
-## Commits (all on `umer-dev`, pushed; `main` untouched)
-
-| Repo | Commit | What |
-|---|---|---|
-| infra | `fd74c4a` | Fixtures run in parallel, in two tiers (D-44); D-45 logged; mirror |
-| api | `6a4a07a` | D-45: one preparation job per file, in slices; `/health/code` serialised |
-| api | `526ba6a` | D-46: draft and cursor frames limited by rate over time |
-| infra | `79abbcf` | f8-s13's flood step; mirror |
-| app | `61ae2a7` | The invited signup holds for its seat; the default workspace is kept |
-| api | `5d6025e` | The bench api logs our code at debug, not the libraries |
-| infra | `3076742` | 3 at a time, measured; the runner hardened; fixture causes; mirror |
-| app | `429686e` | **F5 Block C** |
-| api | `c4dd888` | One call signs every sheet |
-| infra | `420bd57` | Block C's fixtures, timing fixtures serial, docs, mirror |
-| api | `a2c5194` | **F5 Block D**: the panel's calls; sheet deletes keep the last-shape rule (D-48) |
-| app | `876a2e5` | **F5 Block D**: the sheets panel, legacy's prerender, the production image (D-49) |
-| infra | `46ebc5e`, `0ed754d` | `f5-s13`, `f5-s14`, the `prod` profile, `FX_APP`, docs, mirror |
-| api | `3071e62` | **D-50**: an estimate line goes with its item; no quantity without a measurement |
-| api | `9f19cf5` | **F5 Block E**: a scale is feet per point (D-51); presets and custom scales; live scales |
-| app | `0bfe309` | **F5 Block E**: calibration and scale in legacy's words; quantities in points |
-| infra | `527ae63` | `f5-s15`, `f5-s16`, f5-s14's estimate check, f5-s10 in points, `d51-recompute`, f5-s15 serial, docs, mirror |
-| app | `39718f9` | **F5 Block F**: the measure tools ask `can()`; the draft tag; D-52's labels |
-| infra | `b052f6e` | `f5-s18`, `f5-s19`, `f5-d51` in the quick tier, D-52, report, mirror |
-| api | `575d0ce` | F5 close: the seed prints feet per point (D-51) |
-| infra | the commit carrying this report | **F5 close**: the full tier, f5-s9's check, f5-s19 serial, PARITY, board, report, mirror |
-
-## Decisions to review
-
-- **D-44** (the founder's instruction): parallel runs and two tiers. Default 3 at a time,
-  as measured.
-- **D-45:** one preparation job per drawing file, in slices of 5 minutes. A page the soft
-  time limit stops is marked failed. Found on your JHS VOL 4 set; see "Missing" above.
-- **D-46:** draft and cursor frames limited by a token bucket (10 a second, up to 10 at
-  once) instead of a strict one-second window.
-- **D-47:** S12's AC2 amended. An unprepared page waits for the worker and is never read
-  from the set, as D-41 requires. **Accepted by the founder, 2026-09-27.**
-- **D-48, accepted as amended by D-50:** deleting sheets keeps legacy's last-shape rule.
-  The shapes on them go. An item with shapes elsewhere stays, moved there. An item with
-  none left goes, and ~~its last quantity is handed to the estimate~~ its estimate line
-  goes with it (D-50). Emptied folders go. Deleting needs Edit takeoff and Upload
-  documents.
-- **D-49** (your instruction): the built app behind nginx on :5175, the `prod` profile.
-  Timing fixtures report there.
-- **D-50** (your instruction): a deleted item's estimate line goes with it. No quantity is
-  copied to the estimate; D-09's orphaned line is retired.
-- **D-51, accepted by you, with its correction to your bench data:** a scale is feet per
-  PDF point, and quantities are measured in points, so a run reads the same in every
-  direction. Kept by `f5-d51` in the quick tier.
-- **D-52** (your ruling): architectural labels read `1/8" = 1'-0"`.
-
-## Click-only checks
-
-Sign in at http://localhost:5173 as estimator@bench.intelcost.io and switch to "F5 Block A
-demo 15:16". Use any project with loaded sheets that aren't your JHS sets, or load a page
-from any PDF with Add sheets. (Your Bench Construction Riverside has old PNG sheets, which
-show the fit image only.) **IDM-on** marks the checks to make with IDM running and its
-extension on.
-
-**F5 Block F.** Two windows side by side: A at http://localhost:5173 and B at
-http://localhost:5174, both signed in as you, both open on the same sheet of the same
-project. Blocks C, D and E below are kept for the record; you passed all three.
-
-1. **Calibrate in A.** Unscaled sheet, with a measurement on it (draw a Count if Linear
-   asks for a scale). In A: Scale tool, two clicks, a distance, Save calibration. B's chip
-   turns green with the same label, and B's quantities change within a second, with no
-   reload.
-2. **Draw slowly in A.** Linear, click, move the mouse around for a few seconds, click
-   again. B shows the line growing, with your short name on a tag at its tip. Double-click
-   to finish in A: in B the tag goes at once, and the run is a saved row in B's panel.
-   Nothing appears in B's panel while A is still drawing.
-3. **Load two pages in A.** Sheets panel "+" (Add sheets), pick a file with unloaded
-   pages, Choose pages, Load 2 pages. B's sheets panel gains both rows within a second,
-   with no reload.
-4. **The label (D-52).** Chip → the Architectural list reads `1/8" = 1'-0"`, `1/4" = 1'-0"`
-   and so on; Engineering still reads `1" = 20'`. Pick one: the chip and the panel row read
-   the new form. A scale saved before today keeps the words it was saved with.
-5. **A viewer (optional, about 3 minutes).** Settings → Members → invite a new address
-   (any `…@bench.intelcost.io`) as Viewer. Open MailHog at http://localhost:8025, follow
-   the invitation, and sign up in a private window. Open a sheet as them: Select works;
-   Scale, Linear, Area and Count are greyed, and hovering one says "View only: you can
-   look at this takeoff but not measure on it". An empty sheet's panel reads
-   "Measurements appear here as your team draws them."
-6. **A platform admin** can't be checked by clicking: nothing in the product makes someone
-   staff, and your account isn't. `f5-s18` drives it (a staff member measures in a
-   workspace whose trial has expired, where its owner can't).
-
-**F5 Block E** (passed)
-
-1. **An unscaled sheet.** Load a fresh page. The chip reads "Calibrate scale to compute
-   LF / SF" in amber. Count works at once.
-2. **Linear on it.** Click Linear: "Set a scale for this sheet". Click "Set scale
-   directly", then pick `1/4" = 1'`. The chip turns green, "Scale: 1/4" = 1'", a toast
-   says "Scale set — verify with a known dimension", and Linear is armed, ready to draw.
-3. **Calibrate.** Click the chip → Calibrate Scale; a toast says "Click two points on the
-   sheet, then enter the real distance." Click both ends of a known dimension. In "Set
-   sheet scale" type `25'-6"`: it reads "Interpreted as 25.50 ft (7.77 m)". Type nonsense:
-   "Unrecognized format". Type the real distance, then Save calibration.
-4. **Measure the same thing both ways.** On a landscape sheet, draw a run along a
-   horizontal dimension and one along a vertical dimension. Each reads its printed value.
-   This is what D-51 fixed: a vertical run used to read long.
-5. **The guard.** On that sheet, with measurements on it, click the chip and pick
-   another scale: "Change scale on this sheet?" names how many measurements. Cancel
-   keeps the scale; Change scale applies it, and the quantities change with it.
-6. **Custom.** Chip → Add Custom Scale: 1 in = 45 ft shows "Preview: 1" = 45'". Save: the
-   chip reads it.
-7. **Two windows** (A on 5173, B on 5174, the same sheet). A sets a scale: B's chip and
-   quantities change within a second, with no reload.
-8. **The estimate (D-50).** Nothing to click yet: there is no estimate screen. The api
-   deletes an item's estimate line with the item, and `f5-s14` checks it.
-
-**F5 Block D** (passed)
-
-1. **The tree.** Open a project whose files sit in folders. The panel shows those
-   folders, nested, with the open sheet's row highlighted. Click another row: that sheet
-   opens and the highlight moves.
-2. **Search.** Type part of a sheet number, then part of a name, then the name of
-   something you measured: each time only the matching sheets remain. Type nonsense: it
-   reads No sheets match "…". The × clears it.
-3. **Rows.** A calibrated sheet shows its scale chip, a sheet with measurements a green
-   count, and a bookmarked one a star.
-4. **Thumbnails.** ⋮ → Thumbnails. The pictures fill in as you scroll, not all at once.
-   Hovering a tile says "Switch to List view to reorder pages". ⋮ → List to go back.
-5. **IDM-on. Next sheet instantly.** Open a sheet and wait a couple of seconds. Click the
-   row below it: it appears crisp at once, with no blurry stage. Hover a row further down
-   for a moment, then click it: the same. IDM doesn't pop up.
-6. **Rename.** Double-click a row: two fields, "A-101" and "Sheet name". Type, then Save.
-   The row reads the new name, and it survives a reload.
-7. **Two windows** (A on 5173, B on 5174, the same project). Rename in A: B's panel
-   changes within a second, with no reload.
-8. **Drag.** In List view, drag a sheet above another in the same folder. The order
-   holds after a reload.
-9. **Select several.** Ctrl-click two rows, then Shift-click a third: a range is
-   selected. Right-click one of them: "N sheets selected", with Bookmark selected, Remove
-   bookmark from selected, Move selected to (Root and every folder), Clear selection and
-   Delete selected pages. Esc clears the selection.
-10. **Delete.** On a throwaway project, select two sheets with measurements → Delete
-    selected pages. The dialog names how many items lose measurements, and those that
-    will be deleted entirely, and ends "This cannot be undone.". Confirm: "Deleted 2
-    sheets". If one was open, takeoff moves to the next sheet.
-11. **The production build.** http://localhost:5175 is the built app, as production will
-    serve it. A cold sheet turns crisp in about half a second there. Sign in again there,
-    since each port keeps its own session.
-
-**F5 Block C** (passed)
-
-1. **IDM-on. Open a loaded sheet.** It shows at once, then turns crisp within a second or
-   two as pdf.js draws over it. IDM does not pop up, and nothing downloads.
-2. **Zoom with Ctrl and the wheel, all the way in.**
-   - Every time you stop, lines and text turn crisp within a moment.
-   - It stops at 4000%. At 4000% a thin line is still one crisp pixel wide, not a blur.
-3. **The buttons.** "+" goes 125%, 150%, 175%, 200%, then 250%, 313%… up to 4000%. "−"
-   comes back down and stops at 50%.
-4. **Pan at 4000%** (drag with Select). When you let go, the newly shown part turns crisp a
-   moment later.
-5. **Switch to another sheet and back** (address bar or Add sheets). Coming back is
-   instant and crisp, with no blurry stage.
-6. **IDM-on. Add sheets → load one new page.** "Preparing the sheet" for a few seconds,
-   then the page, crisp in about 4 to 5 seconds from the Load. IDM does not pop up.
-7. **Measure on a calibrated sheet at 400%.** Draw a line along a drawn edge: it sits on
-   the edge, and the quantity matches what it read at 100%.
-8. **Two windows** (A on 5173, B on 5174, the same sheet). A draws slowly: B sees the
-   draft over the crisp page, in the item's colour.
+| 0 | Archive F5 | Done: the spec and both block reports in `docs/archive/`, F5 ✅ Live with its flow and files, the board's F5 row dropped, PARITY's F5 note says shipped | 16:33 | 16:55 | 22 m |
+| 1 (spec) | P-20a spec | Written, [rotate_pages_tasks.md](rotate_pages_tasks.md); on the board In Progress | 16:55 | 17:10 | 15 m |
+| 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
+
+## The founder's addition (a), (b), (c)
+
+Placed first: P-20a had only its spec when the addition arrived.
+
+**(a) Items under each sheet row** (legacy's `SheetItemList` in `SheetTree`):
+- A sheet row with measurements has legacy's chevron, "Show items on this sheet" and "Hide
+  items on this sheet". Open, it lists that sheet's items: colour, name and **this sheet's
+  quantity** (its shapes there, on its scale, with height, pitch and multipliers). A count
+  counts its marks even on an unscaled sheet; a run there reads "—".
+- A click on an item selects it and opens that sheet. Selecting an item anywhere opens the
+  sheets carrying it; searching an item's name opens its sheets.
+- The ⋮ menu gains legacy's **Default Expand Level** (None, Page (Default), Page >
+  Takeoff), **Hide Search Box** and **Hide Takeoffs**, kept per browser and workspace.
+- The api's `GET …/drawing/sheet/items` now answers each item's colour, type, unit and
+  per-sheet quantity. A scale change refreshes the rows live.
+- Not yet (they arrive with F6-S9's shared item row): the row's kebab menu, inline rename,
+  the eye, multi-select.
+
+**(b) Legacy's Scale button:** in the toolbar after Select and before Linear, a ruler over
+the word "Scale", title "Scale — {label}". It opens the same menu as the canvas chip
+(Calibrate Scale, Add Custom Scale, the three lists, the current one ticked), and reads
+pressed while a calibration runs. The old "Scale" tool, which started a calibration on a
+click, is gone.
+
+**(c) The Takeoff panel, all sheets:** legacy's `QuantityTable` lists every item in the
+project and has **no current-sheet filter**. It has "Also measured on: …" in the Resume
+tooltip and "Delete on this sheet only". Written into F6-S9 as AC0, D-54, and built there.
+
+**Fixtures:** `f5-sheet-items` (5 steps) and `f5-scale-button` (4) are new. `f5-s15`,
+`f5-s19` and `proof-backlog` now calibrate through the menu. `f5-s13` and `f5-s14` find a
+row's label by `[data-sheet-label]`, because the chevron is now the row's first button.
+`f5-s18` accepts the Scale button's own title as "no reason".
+
+## Commits
+
+## Overnight decisions to review
+
+- **D-53** (the F5 follow-up): each sheet's items show that sheet's share; legacy's default
+  Page, so sheets start closed; a count counts on an unscaled sheet; the item row is a
+  viewer until F6-S9; the toolbar's Scale is a dropdown and the old calibrate-on-click
+  tool is gone.
+- **D-54**: the Takeoff panel will list every item, with legacy's cues and no sheet
+  filter, because legacy has none. If you want a "This sheet only" filter beyond legacy,
+  say so and it is a small addition to F6-S9.
+
+## Failures and findings
+
+- **Two panel fixtures broke on the chevron** (`f5-s13` AC3, `f5-s14` AC3). Both took a
+  row's first button to be its label. The fixtures were wrong, not the panel; they now
+  use `[data-sheet-label]`.
+
+## Click-only checks for the founder
+
+### F5 follow-up (a): items under each sheet (IDM irrelevant)
+
+1. Open a project's takeoff on a sheet with measurements. In the Sheets panel, a small ▸
+   sits left of that sheet's name. Hover it: "Show items on this sheet".
+2. Click ▸. The sheet's items appear under it, each with its colour dot, name and quantity
+   on this sheet, like "60 LF". Click ▾ to fold them.
+3. Open ▸ on a **different** sheet and click one of its items. The canvas moves to that
+   sheet and the item is highlighted.
+4. ⋮ (Panel options) → Page > Takeoff: every sheet with items opens. Reload: still open.
+   ⋮ → None: the folders fold. ⋮ → Page (Default): back to normal.
+5. ⋮ → Hide Takeoffs: the ▸ marks go. ⋮ → Hide Search Box: the search box goes. Undo both.
+6. Type an item's name in "Search sheets…": its sheet shows, already open at that item.
+
+### F5 follow-up (b): the Scale button
+
+1. In the toolbar, between Select and Linear, there is a **Scale** button (a ruler over
+   the word). Click it: the scale menu opens, the same as the green or amber chip's.
+2. Pick `1/4" = 1'-0"`. The chip turns green and reads it; hover the button: "Scale —
+   1/4" = 1'-0"". Open it again: that scale is ticked.
+3. Scale → Calibrate Scale: the "Calibrate" toast appears and the Scale button stays
+   highlighted until you finish.
 
 ## Questions
 
-None open.
-
-_Answered 2026-09-27: yes to a production build sooner (D-49, done); D-47 accepted; D-48
-kept with D-50's amendment; Rotate pages brought forward (P-20a); Auto-Name stays with
-the AI tools. Then: D-51 and its correction to your bench data accepted, kept by a
-permanent fixture (`f5-d51`); the label is `1/8" = 1'-0"` (D-52)._
-</content>
+1. D-54: legacy has no "this sheet only" filter in the Takeoff panel. Keep legacy's (no
+   filter, "Also measured on", and the Sheets panel's per-sheet list), or add one?

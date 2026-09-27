@@ -62,7 +62,9 @@ await run("f5-s15", [
     title: "AC1: the Scale tool's toast, then \"Set sheet scale\" with \"Interpreted as …\" or \"Unrecognized format\", and \"Save calibration\"",
     run: async ({ page }) => {
       await open(page);
+      // Legacy's toolbar Scale button opens the scale menu; Calibrate Scale starts it.
       await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { name: "Scale", exact: true }).click();
+      await page.getByRole("menu", { name: "Scale" }).getByRole("menuitem", { name: "Calibrate Scale" }).click();
       await page.getByText("Click two points on the sheet, then enter the real distance.").waitFor({ timeout: 5000 });
       // 0.1 to 0.6 across: 612 pt on the paper.
       await clickSheet(page, 0.1, 0.3);

@@ -23,7 +23,7 @@ let civil;
 const doomedItems = [];
 
 const row = (page, sheet) => page.locator(`[data-sheet-row="${sheet.uuid}"]`);
-const label = (page, sheet) => row(page, sheet).locator("button").first();
+const label = (page, sheet) => row(page, sheet).locator("[data-sheet-label]");
 const url = (app, sheet) => `${app}/project/${project.uuid}/takeoff/${sheet.uuid}`;
 const panelOrder = (page) => page.locator("[data-sheet-row]").evaluateAll((rows) => rows.map((r) => r.dataset.sheetRow));
 const apiSheets = async () => (await apiCall(token, "GET", `${drawing}/sheet`)).body;
