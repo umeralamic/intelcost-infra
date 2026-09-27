@@ -19,8 +19,9 @@ echo
 echo "=== f5-s9 seed ==="
 out=$(docker compose exec -T api sh -lc "cd /srv && python scripts/seed.py --reset --storage-host host.docker.internal:9000" 2>&1)
 email=$(grep -oE 'estimator\+[0-9]+@bench\.intelcost\.io' <<<"$out" | head -1)
-if grep -q "2 sheet(s) ready" <<<"$out" && grep -q "feet_per_norm = 200.0000" <<<"$out"; then
-  echo "PASS  2. AC2: seed.py --reset loads Riverside through /drawing/load: 2 sheets prepared, page 1 at 200 ft per unit"
+# Feet per PDF point since D-51: the bar is half of a 2592 pt sheet, declared 100 ft.
+if grep -q "2 sheet(s) ready" <<<"$out" && grep -q "0.0772 ft per point" <<<"$out"; then
+  echo "PASS  2. AC2: seed.py --reset loads Riverside through /drawing/load: 2 sheets prepared, page 1 at 0.0772 ft per point (1\" = 5.56')"
 else
   echo "FAIL  2. AC2: the seed"
   tail -8 <<<"$out" | sed 's/^/      /'

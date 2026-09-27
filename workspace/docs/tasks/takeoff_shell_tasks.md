@@ -15,9 +15,10 @@ and brings the takeoff route's own code splitting (**P-18**)._
 [workspace_roles_tasks.md](../archive/workspace_roles_tasks.md) (F3-S4 AC6),
 [realtime_tasks.md](../archive/realtime_tasks.md) (channels 1 and 13, drafts)
 
-_Written 2026-09-26 (overnight) from legacy `intelcost/` at `12dd119b`. **Status: the
-founder answered the questions on 2026-09-26 (D-36) and set the zoom range (D-35); in
-progress from Block A.**_
+_Written 2026-09-26 (overnight) from legacy `intelcost/` at `12dd119b`. **Status: built,
+2026-09-27, awaiting the founder's click check of Block F.** Blocks A to E are checked.
+The founder answered the questions on 2026-09-26 (D-36) and set the zoom range (D-35).
+The spec is archived once Block F passes._
 
 ---
 
@@ -707,6 +708,14 @@ Block C can start beside Block B once S1 lands. S9 waits for S4 to S8.
 - Project Home's Sheets block gone; the PNG display path gone.
 - The spec archived, the MANAGER row dropped, F5 in FEATURES ✅ Live, the mirror
   refreshed.
+
+**At the close, 2026-09-27:** S1 to S19 driven, in two windows where the criterion has
+two. PARITY: §7's lines in scope ticked, six partial with their owners named; §9's
+calibration and scale lines ticked; §24's baselines measured, two left open as the lines
+say; §5's line ticked; §10's calibrations live (folders are F6's). The Sheets block and
+the PNG display path are gone. The full tier was run (see the report). The mirror is
+refreshed. **Held for the founder:** the spec's archive, the MANAGER row and the ✅ Live
+row wait for the click check of Block F, as instructed.
 
 ---
 

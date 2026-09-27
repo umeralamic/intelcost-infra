@@ -35,8 +35,8 @@ real browser on the bench, including its failure states; the fixtures are in
 **Section 3 is complete** (F3, 2026-09-25): all 9 lines ported and driven. **Section 2
 is 9 of 25**, and the 16 it does not ship each name the feature that owns it, in the
 line itself. Two ticked lines carry a named remainder rather than a clean close, and
-both say so on the line: the platform-admin line owes F5 its on-screen half, and the
-collaborator-plan line is unreachable end to end until F16 supplies a plan value. One
+both say so on the line: the platform-admin line owed F5 its on-screen half (**paid by
+F5-S18, 2026-09-27**), and the collaborator-plan line is unreachable end to end until F16 supplies a plan value. One
 §2 line, "Members — list with role, shift and last activity", stays **partial** on
 purpose: last activity ships, the shift column waits for F15.
 
@@ -53,6 +53,15 @@ Collaboration preferences). §10's "see each other's items, geometries, calibrat
 folders" stays **partial**: items and geometries are live, calibrations are F5's and
 folders F6's. §3's live-permissions line is now live rather than on focus. The realtime
 table below gains its "New event" column.
+
+**F5 (the takeoff shell, built 2026-09-27, awaiting the founder's click check of Block
+F).** 27 ticked lines now name F5: §5 1, §7 8, §9 6, §10 2 and §24 10. 10 lines stay open
+with their remainder named on the line: six in §7 (the naming format, the page actions,
+the bookmarks panel, a markup chip, JPG and TIFF, the panel's menu), §10's "see each
+other's … folders" (folders are F6's; calibrations are live), §23's Takeoff panel
+selection, and two §24 baselines (the fit tier's size and the cold-open targets).
+Calibration and scale are measured in PDF points as legacy's (D-51). §3's platform-admin
+line has its on-screen half (F5-S18).
 
 **The proof backlog (overnight 2026-09-26).** Every line then marked **ported** and not
 ticked (15 of them) was driven by `intelcost-infra/browser/proof-backlog.mjs`, with no
@@ -176,7 +185,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [x] Every screen asks `can('<capability>')` rather than testing a role, so a custom role behaves like a built-in one everywhere. `src/hooks/usePermissions.ts` · **ported** (F3-S1, F3-S3; `require(*roles)` and `can_write` were deleted, so a role test is no longer available to write)
 - [x] Capability resolves as role default, then workspace override, then custom role, then masked by the plan, then masked by the trial. `src/hooks/usePermissions.ts`, `src/lib/billing/planCapabilities.ts`, `src/lib/billing/trialLimits.ts` · **ported** (F3-S2; one `resolve()` in `app/features/workspace/capabilities.py`)
 - [x] A capability added after a workspace saved its override falls back to the role default rather than reading as denied. `src/hooks/usePermissions.ts` · **ported** (F3-S2; the stored override map is sparse and an absent key means undecided, never denied)
-- [x] Workspace admin (`owner` or `admin`) and platform admin (Intelcost staff) are separate answers that never mix. `src/hooks/usePermissions.ts`, rpc `is_platform_admin` · **ported** (F3-S4, **D-23**; platform admin is a capability gate in the same layer, not a role. **One criterion carried to F5:** a platform admin's unmasked capabilities are not yet visible on a screen, because no control calls `can()` until F5)
+- [x] Workspace admin (`owner` or `admin`) and platform admin (Intelcost staff) are separate answers that never mix. `src/hooks/usePermissions.ts`, rpc `is_platform_admin` · **ported** (F3-S4, **D-23**; platform admin is a capability gate in the same layer, not a role. ~~**One criterion carried to F5:** a platform admin's unmasked capabilities are not yet visible on a screen, because no control calls `can()` until F5~~ **Closed by F5-S18, 2026-09-27:** takeoff's measure tools ask `can("canEditTakeoff")`, and `f5-s18` drives a platform admin measuring in a workspace whose trial has expired, where its owner and a viewer see the tools off and the api refuses them)
 - [x] Only the owner can grant the owner role, and only through a transfer. `src/lib/permissions/capabilities.ts` · **ported** (F3-S9; `canGrantOwnerRole` is locked in the matrix per **D-25**, so no override and no custom role can hand it out)
 - [x] A role or permission change reaches an open tab live, with no reload. `src/hooks/usePermissions.ts` · **ported** (F3-S8 on focus; **live since F8-S15**: a role change, an override and a custom role each reach an unfocused tab within a second, `f8-s15`)
 - [x] "Can the user do this" and "is the feature shipped" stay separate gates, the second being a feature flag. `src/hooks/useFeatureFlag.ts`, table `feature_flags` · **ported** (F3-S13; two calls, two answers, ANDed only where a control is drawn, and the two refusals read differently)
@@ -387,7 +396,7 @@ sibling panel reads as a bug to an estimator.
 - [x] **Zoom in, zoom out (to 3000%), and Fit.** `src/components/takeoff/CanvasZoomCluster.tsx`, `src/lib/takeoff/zoomLimits.ts` · **ported, beyond legacy** (F5 Block C, 2026-09-27: 50% to 4000% per D-35 from `lib/takeoff/pdf/zoom.ts`, legacy's step rule, the wheel and buttons stopping exactly at both ends, `f5-s11`)
 - [ ] **Markups toggle and Legend toggle**, the legend floating with descriptions and quantities. `src/components/takeoff/LegendOverlay.tsx` · **missing**
 - [x] Calibrate the sheet scale from two points at a declared distance. `src/components/takeoff/CalibrationDialog.tsx`, table `sheet_calibrations` · **ported** (F5 Block E, `f5-s15`: in legacy's words: the "Calibrate" toast, "Set sheet scale", `parseFeet`'s "Interpreted as 25.50 ft (7.77 m)" or "Unrecognized format", "Save calibration", then "Scale set — verify with a known dimension". **The scale is feet per PDF point, as legacy's (D-51)**: a run across and a run down of one paper length read the same, which a scale in normalised units got wrong off-axis. Legacy's Verify action arms Dimension, which is F11's, so the toast has no button yet)
-- [x] Pick a scale from the Architectural, Engineering or Metric presets, or "No scale". `src/components/takeoff/ScaleMenu.tsx`, `src/lib/takeoff/scales.ts` · **ported** (F5 Block E, `f5-s16`: legacy's 15, 25 and 23 presets and labels (`1/8" = 1'`), the current one ticked, stored as feet per point with legacy's 1-point reference; an unscaled chip reads "Calibrate scale to compute LF / SF", legacy's "No scale" state)
+- [x] Pick a scale from the Architectural, Engineering or Metric presets, or "No scale". `src/components/takeoff/ScaleMenu.tsx`, `src/lib/takeoff/scales.ts` · **ported** (F5 Block E, `f5-s16`: legacy's 15, 25 and 23 presets, the architectural ones labelled `1/8" = 1'-0"` by the founder's ruling (D-52; legacy's read `1/8" = 1'`), the current one ticked, stored as feet per point with legacy's 1-point reference; an unscaled chip reads "Calibrate scale to compute LF / SF", legacy's "No scale" state)
 - [x] Enter a custom scale. `src/components/takeoff/CustomScaleDialog.tsx` · **ported** (F5 Block E, `f5-s16`: "Custom Scale", N in = M ft, "Preview: 1" = 45'"; legacy's metric variant is behind its flag, off, Q5)
 - [ ] Read the scale from a dragged region, apply it to one sheet or to every sheet, and be warned when the drawn dimensions disagree with the printed scale. `src/components/takeoff/ScaleFromRegionDialog.tsx` · **missing**
 - [ ] Scale evidence stays on the sheet, with the amber scale box persisting after an AI scale is applied. `src/components/takeoff/ScaleEvidenceMenu.tsx`, `src/lib/takeoff/scaleEvidence.ts` · **missing**
@@ -430,7 +439,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [ ] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
 - [x] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **ported** (**D-32:** this is the **One at a time** collaboration mode, not the default. Built and driven on today's takeoff page, F8-S11 and S12, `f8-s11`, `f8-s12`: delete, add, edit vertices, rename and override are view-only for others and refused 409 by the api. **F7 re-drives it on Resume and Extend**, which do not exist yet)
-- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **partial** (D-10, D-13: **items and geometries are live** on today's takeoff page since F8-S18, each within a second of the write, and F5 to F7 keep them. **Calibrations are live since F5 Block E**: `sheet.calibration.changed`, and a second window on the sheet shows the new scale chip in 195 ms and the recomputed quantities in 328 ms, `f5-s15` AC3. Folders are F6's)
+- [ ] Two estimators editing the same project see each other's items, geometries, calibrations and folders appear live. `src/hooks/useTakeoffRealtime.ts` · **partial** (D-10, D-13: **items and geometries are live** on today's takeoff page since F8-S18, each within a second of the write, and F5 to F7 keep them. **Calibrations are live since F5 Block E**: `sheet.calibration.changed`, and a second window on the sheet shows the new scale chip in 195 ms and the recomputed quantities in 328 ms, `f5-s15` AC3; and in F5-S19's two-window check, across api processes, after a calibration made with the Scale tool, 642 and 816 ms from Save, `f5-s19`. A Load in one window adds its rows to the other's sheets panel, 764 ms, `drawing.sheet.changed`. Folders are F6's)
 - [x] Write tokens suppress the echo of a user's own realtime events. `src/lib/takeoff/realtime/writeTokens.ts` · **ported** (F8-S7, `core/realtime/tab.ts`: per tab, 512 kept, consumed on the echo; `f8-s7`, and `f8-s16` AC8 for A's own folder)
 
 **Collaboration, beyond legacy (D-32, D-33).** New behaviours the founder added on
@@ -441,9 +450,9 @@ sibling panel reads as a bug to an estimator.
 - [x] **Same shape, same moment.** A concurrent edit of the same shape is refused with "{name} just changed this shape, showing their version", and the shape refreshes to the winner's. Never a silent loss. D-32 · **ported** (F8-S9, `f8-s9`)
 - [x] **Warn me.** As Work together, plus a banner, "{name} is also working on this item". D-32 · **ported** (F8-S12, `f8-s12`)
 - [x] **One at a time.** An atomic claim with a heartbeat; anyone else gets "{name} is editing this item right now" and the item is view-only for them until the claim clears, seconds after the holder's last heartbeat. The api refuses their writes with 409, not only the screen. D-32 · **ported** (F8-S11, S12, `f8-s11`, `f8-s12`)
-- [x] **Live in-progress drawing.** While a colleague draws, others see the line, area or count growing in the colleague's colour with a small name tag, not saved until it finishes. D-33 · **ported** on today's canvas (F8-S13 channel, drawn by `DraftLayer` per **D-34**, pending review; `f8-s13`: a run grows on B's sheet tagged "Bench E.", hands over to the saved shape, and ends at once when A's tab closes. A count grows by its saved marks, one per click. **On the pdf.js canvas since F5 Block C (2026-09-27): `f8-s13` 5/5 and `f8-s14` 4/4 pass over the new raster**)
+- [x] **Live in-progress drawing.** While a colleague draws, others see the line, area or count growing in the colleague's colour with a small name tag, not saved until it finishes. D-33 · **ported**, **kept on the pdf.js canvas by F5-S17 and S19** (`f8-s13` 5/5 re-driven; `f5-s19` across api processes: the tag goes 107 ms after the colleague finishes and the saved row arrives in 282 ms; before, the tag lingered a second over the saved shape) (F8-S13 channel, drawn by `DraftLayer` per **D-34**, pending review; `f8-s13`: a run grows on B's sheet tagged "Bench E.", hands over to the saved shape, and ends at once when A's tab closes. A count grows by its saved marks, one per click. **On the pdf.js canvas since F5 Block C (2026-09-27): `f8-s13` 5/5 and `f8-s14` 4/4 pass over the new raster**)
 - [ ] **Others' cursors** show on the sheet, named. D-33 · **partial** (channel built and driven, F8-S13: frames stamped and fanned out; **drawn by F7**)
-- [x] **Names read "Sara W."** (first name and last initial, or first name alone) everywhere a collaborator is named on the canvas and in lock or conflict messages. D-33 · **ported** (`core/names.py`, F8-S1; the item row, the Warn me banner, the lock and conflict messages, F8-S9 and S12; the draft tag, F8-S13. F5 to F7 keep it)
+- [x] **Names read "Sara W."** (first name and last initial, or first name alone) everywhere a collaborator is named on the canvas and in lock or conflict messages. D-33 · **ported** (`core/names.py`, F8-S1; the item row, the Warn me banner, the lock and conflict messages, F8-S9 and S12; the draft tag, F8-S13. Kept on the pdf.js canvas, F5-S17 and S19; F6 and F7 keep it)
 - [ ] Canvas rendering can be switched to high resolution, with a perf HUD available. `src/components/takeoff/CanvasPerfHud.tsx`, `src/lib/takeoff/diagnostics/` · **missing**
 - [ ] A reference sheet opens in a second canvas pane beside the working sheet. `src/components/takeoff/ReferenceCanvasPane.tsx` · **missing**
 
@@ -1004,7 +1013,7 @@ topic) and its state.
 
 | # | Channel | Watches | What it buys the user | File | New event (F8) |
 |---|---|---|---|---|---|
-| 1 | `takeoff-sync-${projectId}` | `takeoff_items`, `takeoff_geometries`, `sheet_calibrations`, `takeoff_folders` (all events) | Two estimators on one project see each other's measurements, folders and calibrations appear live | `src/hooks/useTakeoffRealtime.ts` | project: `takeoff.item.changed`, `takeoff.geometry.changed` **live** (F8-S18); `sheet.calibration.changed` **F5**; `takeoff.folder.changed` **F6** |
+| 1 | `takeoff-sync-${projectId}` | `takeoff_items`, `takeoff_geometries`, `sheet_calibrations`, `takeoff_folders` (all events) | Two estimators on one project see each other's measurements, folders and calibrations appear live | `src/hooks/useTakeoffRealtime.ts` | project: `takeoff.item.changed`, `takeoff.geometry.changed` **live** (F8-S18); `sheet.calibration.changed` **live** (F5 Block E, `f5-s15`, `f5-s19`); `takeoff.folder.changed` **F6** |
 | 2 | `takeoff:${projectId}` (**presence**, not postgres_changes) | presence payloads keyed by (itemId, sheetId) | Ephemeral soft-lock: blocks Resume and delete for other viewers while someone is actively marking, so a read-modify-write on `vertices_json` cannot silently drop a writer | `src/hooks/useTakeoffPresence.ts` | project: `item.focus`, `item.blur`, `presence`, `presence.changed`, `focus.granted`, `focus.refused` **live**, per the collaboration mode (D-32). Plus `draft` and `cursor`, beyond legacy (D-33) |
 | 3 | `takeoff_docks:${projectId}` | `takeoff_docks` | Docked snapshots appear for other viewers | `src/hooks/useDocks.ts` | project: `takeoff.dock.changed`, named, **F11** |
 | 4 | `takeoff_highlights:${projectId}` | `takeoff_highlights` | Highlights appear for other viewers | `src/hooks/useHighlights.ts` | project: `takeoff.highlight.changed`, named, **F11** |
@@ -1049,12 +1058,12 @@ A retired line counts as driven, because there is nothing left to drive.
 | 2 | Workspace settings | 25 | 13 | 1 | 11 | **13** | 25 |
 | 3 | Permissions | 9 | 9 | 0 | 0 | **9** | 9 |
 | 4 | Projects dashboard | 19 | 18 | 0 | 0 | **19** (18 + 1 retired) | 15 |
-| 5 | Project Home | 10 | 7 | 0 | 3 | **7** | 9 |
+| 5 | Project Home | 10 | 8 | 0 | 2 | **8** | 9 |
 | 6 | Sharing | 12 | 0 | 1 | 11 | 0 | 12 |
 | 7 | Takeoff sheets panel | 47 | 8 | 6 | 33 | **8** | 27 |
-| 8 | Takeoff items | 56 | 6 | 5 | 45 | 0 | 36 |
+| 8 | Takeoff items | 56 | 4 | 7 | 45 | **4** | 36 |
 | 9 | Canvas tools | 28 | 8 | 3 | 17 | **8** | 28 |
-| 10 | Canvas interactions | 48 | 1 | 3 | 44 | 0 | 37 |
+| 10 | Canvas interactions | 56 | 9 | 5 | 42 | **9** | 37 |
 | 11 | Estimating | 26 | 1 | 0 | 25 | **1** (retired by D-50) | 20 |
 | 12 | Assemblies | 14 | 0 | 0 | 14 | 0 | 11 |
 | 13 | Library | 7 | 0 | 0 | 7 | 0 | 7 |
@@ -1067,21 +1076,21 @@ A retired line counts as driven, because there is nothing left to drive.
 | 20 | Community | 10 | 0 | 0 | 10 | 0 | 10 |
 | 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
 | 22 | Platform admin | 20 | 0 | 0 | 20 | 0 | 8 |
-| 23 | Keyboard and mouse | 36 | 1 | 3 | 32 | 0 | new |
-| 24 | App-wide | 47 | 10 | 2 | 35 | **9** | new |
-| | **Total** | **597** | **81** | **25** | **488** | **69** | **347** |
+| 23 | Keyboard and mouse | 36 | 1 | 3 | 32 | **1** | new |
+| 24 | App-wide | 47 | 11 | 2 | 34 | **10** | new |
+| | **Total** | **606** | **109** | **29** | **465** | **111** | **347** |
 
-**81 of 597 behaviours are ported, 14%. 69 are driven, 12%** — and driven is the number
-that counts. The gap between the two is the honest part: 15 lines say the code is there
-and nothing has yet proved it on a screen. (597, not 595: F4's close-out split §5's
-location line in two, the inline address it ported and the map P-17 owns; and D-35 added
-§24's "sharp at every zoom up to 4000%", beyond legacy.)
+**109 of 606 behaviours are ported, 18%. 111 are driven, 18%** (driven counts the four
+retired lines) — and driven is the number that counts. One ported line is not yet driven:
+§24's fit-tier size. (Recounted from the lines at F5's close, 2026-09-27: §10 carries
+F8's eight collaboration lines beyond legacy, and rows 5, 8, 10, 23 and 24 had fallen
+behind their ticks. 606, not 595: F4 split §5's location line in two, D-35 added §24's
+"sharp at every zoom up to 4000%", and F8 added the collaboration lines.)
 
-Two lines inside the 69 carry a named remainder rather than a clean close, and the line
-itself says which: §3's platform-admin line owes **F5** its on-screen half, and §3's
-collaborator-plan line is built and driven at module level but unreachable end to end
-until **F16** supplies a plan value. Both are ticked because the behaviour is ported and
-proved as far as the app can currently reach it; neither is finished business.
+One line inside the 111 carries a named remainder rather than a clean close, and the line
+itself says which: §3's collaborator-plan line is built and driven at module level but
+unreachable end to end until **F16** supplies a plan value. §3's platform-admin line owed
+**F5** its on-screen half, and F5-S18 paid it (`f5-s18`).
 
 The 2 remaining retired lines (D-15, D-17) are counted as driven and not as ported.
 

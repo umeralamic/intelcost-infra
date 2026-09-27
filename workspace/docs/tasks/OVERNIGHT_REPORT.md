@@ -97,7 +97,8 @@ session.
 | 2 | F5 Block D (S13, S14) with legacy's prerender; a production build on the bench (D-49) | Built and driven; **checked by the founder** (PASS) | 10:50 | 12:40 | about 2 h, the regression run included |
 | 3 | D-50 (no quantity without a measurement); Rotate pages (P-20a) on the board before F6 | Done, api pushed | 12:49 | 13:05 | 15 min |
 | 4 | F5 Block E (S15, S16), and D-51 (a scale is feet per point) | Built and driven; **checked by the founder** (PASS; D-51 and its data correction accepted; D-52 label) | 13:05 | 14:05 | about 1 h, the regression run included |
-| 5 | F5 Block F (S17 to S19); `f5-d51` kept in the quick tier | Built and driven | 14:10 | 15:05 | about 55 min |
+| 5 | F5 Block F (S17 to S19); `f5-d51` kept in the quick tier | Built and driven; **awaiting the founder's click check** | 14:10 | 15:05 | about 55 min |
+| 6 | Close F5: the full tier, PARITY, board, report, mirror, backup | **Done: all 91 pass** (89 first time, 2 fixed); built, awaiting the check of Block F | 15:05 | 16:20 | about 1 h 15, most of it the full tier |
 
 ## The five full-run failures (timeboxed)
 
@@ -340,6 +341,59 @@ the serial pair. The fixtures already started finished and passed; the serial pa
 
 **Gates:** lint, typecheck, build. The api is unchanged in this block.
 
+## F5 close
+
+**F5 is built: marked "built, awaiting the founder's click check of Block F".** The spec
+stays in `docs/tasks/` and the board row stays until that check passes.
+
+**What F5 is, in one paragraph.** Takeoff now has legacy's way in and legacy's canvas.
+Perform Takeoff opens "Load project files into takeoff": pick files from the project,
+choose pages from the worker's thumbnails, Load N pages; later, Add sheets. A worker
+splits each page into its own PDF, thumbnails it and makes a fit image, and never lets
+the browser read a whole set (so IDM stays quiet). pdf.js draws each sheet sharp from 50%
+to 4000%, the fit image first, a cold sheet in about 0.5 s on the production build, and
+the next sheets drawn ahead so they open in 9 ms. The sheets panel has legacy's tree,
+search, rows, thumbnails, rename, reorder, bookmark, move and delete. Calibration and
+scale are in legacy's words, with its presets, a custom scale and the guards, measured in
+PDF points so a run reads true in every direction. Everything a colleague does (a scale,
+a Load, a rename, a shape being drawn) reaches the other window within a second.
+
+| Block | What | State |
+|---|---|---|
+| A | The model, the worker, the chunks | Checked |
+| B | Perform Takeoff, the Load dialog, Add sheets, the old block retired; IDM (D-40 to D-43) | Closed |
+| C | pdf.js, 50% to 4000%, split sources (D-47) | Checked |
+| D | The sheets panel, prerender, the production build (D-48, D-49, D-50) | Checked |
+| E | Calibration and scale (D-51, D-52) | Checked |
+| F | Live on the new canvas, a platform admin's tools, the two-window check | **Awaiting your check** |
+
+**Decisions F5 made:** D-40 to D-43 (IDM and the worker), D-47 (an unprepared page
+waits), D-48 and D-50 (deletes and the estimate), D-49 (a production build on the bench),
+D-51 (points), D-52 (labels). All accepted.
+
+**PARITY at the close:** 27 ticked lines name F5, and 10 stay open with their remainder
+named on the line. §3's platform-admin line has its on-screen half. The counts table was
+recounted from the lines: **109 of 606 behaviours ported, 111 driven** (the four retired
+lines count as driven).
+
+**Not in F5, and where it went:** Rotate pages → P-20a, next; Auto-Name → the AI tools;
+page acts, the stepper and panel layout → F7 and P-20; preview, print and the viewer →
+F11; reading a scale from the drawing → F12. The "Not in F5" table in the spec is the
+full list.
+
+**The full tier: 89 of 91 passed at 3 in parallel, in 65 m 51 s** (parallel group 42 m,
+host CPU mean 85%). Both failures had causes, both fixed and re-run green, so **all 91
+pass**:
+- **`f5-s9`'s seed check was stale since D-51.** It looked for `feet_per_norm = 200.0000`,
+  the old unit. The seed now prints feet per point, 0.0772 (1" = 5.56'), and the check
+  reads that. My miss: f5-s9 wasn't among the fixtures I re-ran for D-51.
+- **`f5-s19`'s calibration step took 2.2 s under full load** (642 ms alone). It measures
+  time, so it joins f5-s11 and f5-s15 in the serial group. Alone: 486 ms to B's chip.
+
+Logs are in `intelcost-infra/.regress/full-f5-close/`, one per fixture. Screenshots are
+deleted. **Backup:** `E:\Intelcost-backup\2026-09-27_1620-f5-built`, the workspace files
+at F5's close. The mirror is exact as of the close commit.
+
 ## Estimates from actual pace
 
 | | Planned | Actual |
@@ -353,7 +407,7 @@ Building is running at about 40% of the plan. Revised estimates:
 |---|---|---|
 | **Block E** (S15, S16) | 2 to 3 h, estimated before it started | **Actual: about 1 h**, D-51 included, with no table needed (a custom scale is a stored feet per point) |
 | **Block F** (S17 to S19) | 1 to 1.5 h | **Actual: about 55 min**, with `f5-d51` and D-52. Mostly driving what exists on the new canvas: the F8 fixtures and `useLiveItems`. F3's `can()` promise in takeoff (the measure tools for a platform admin), and the two-window check: calibrate in A and B follows (driven already by `f5-s15`), a slow draft, a Load seen by B's panel. One new fixture |
-| **F5 close** | **1.5 h** | The full tier (about 1 h at 3 at a time, now 85 fixtures), PARITY, the board, the archive, the mirror |
+| **F5 close** | 1.5 h | **Actual: about 1 h 15.** The full tier (about 1 h at 3 at a time, now 85 fixtures), PARITY, the board, the archive, the mirror |
 | **P-20a Rotate pages** | **2 to 3 h** | A spec first. Stored `view_rotation` turns the canvas, raster, fit image and thumbnails; measurements stay in the page's own frame, so none move; legacy's dialog and "All pages + Landscape" |
 | **F and the close** | **2.5 to 3 h** | Then Rotate pages, then F6 |
 
@@ -396,7 +450,11 @@ Building is running at about 40% of the plan. Revised estimates:
 | api | `3071e62` | **D-50**: an estimate line goes with its item; no quantity without a measurement |
 | api | `9f19cf5` | **F5 Block E**: a scale is feet per point (D-51); presets and custom scales; live scales |
 | app | `0bfe309` | **F5 Block E**: calibration and scale in legacy's words; quantities in points |
-| infra | the commit carrying this report | `f5-s15`, `f5-s16`, f5-s14's estimate check, f5-s10 in points, `d51-recompute`, f5-s15 serial, docs, mirror |
+| infra | `527ae63` | `f5-s15`, `f5-s16`, f5-s14's estimate check, f5-s10 in points, `d51-recompute`, f5-s15 serial, docs, mirror |
+| app | `39718f9` | **F5 Block F**: the measure tools ask `can()`; the draft tag; D-52's labels |
+| infra | `b052f6e` | `f5-s18`, `f5-s19`, `f5-d51` in the quick tier, D-52, report, mirror |
+| api | `575d0ce` | F5 close: the seed prints feet per point (D-51) |
+| infra | the commit carrying this report | **F5 close**: the full tier, f5-s9's check, f5-s19 serial, PARITY, board, report, mirror |
 
 ## Decisions to review
 

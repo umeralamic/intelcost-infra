@@ -69,7 +69,9 @@ trap 'rm -rf "$LOCK"; [ -n "$cpu_pid" ] && kill "$cpu_pid" 2>/dev/null' EXIT
 #           parallel), so it runs alone and its numbers are the product's
 #   f5-s15  measures time: a scale set in A reaches B's chip and quantities within a
 #           second (723 ms alone, 1,243 ms beside two other fixtures at 92% CPU)
-SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27 f5-s11 f5-s15)
+#   f5-s19  measures time: A's calibration reaches B within 2 s of Save (642 ms alone,
+#           2,176 ms in the F5 close's full tier at 85% mean CPU)
+SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27 f5-s11 f5-s15 f5-s19)
 
 # The core smoke set: one or two fixtures per surface, fast, run at the end of each block.
 # f5-d51 is the founder's standing check (2026-09-27): equal runs across and down a
