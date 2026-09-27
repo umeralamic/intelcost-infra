@@ -171,8 +171,9 @@ seeded account's switcher once held 860 fixture workspaces).
   - The browser may never request the set.
   - Thumbnails must be plain 200 `image/webp` GETs, and tiles must take their pages'
     shape.
-  - A loaded page must open from its own PDF in one plain GET: 200 `application/pdf`,
-    no Range, no filename header.
+  - A loaded page must open from its own PDF's bytes (D-42): one GET of a URL with no
+    `.pdf`, 200 `application/vnd.intelcost.sheet`, no Range, no filename header, and
+    nothing answered as a PDF. `f5-s2`'s drive checks each split is stored that way.
   - With that GET blocked, the fit image must stay.
   - IDM itself can't run on the bench.
 - **The only exceptions, not in the regression:** `f5-demo.mjs` and `walkthrough-setup.mjs`

@@ -58,6 +58,10 @@ async def objects(project_uuid: str) -> None:
         with pymupdf.open(stream=storage.get_bytes(sheet.source_key), filetype="pdf") as split:
             if split.page_count != 1:
                 fail(f"{label}: the split source has {split.page_count} pages")
+        # D-42: stored as nothing a download manager knows, under a key with no extension.
+        stored = storage._client().head_object(Bucket=storage.settings.s3_bucket, Key=sheet.source_key)
+        if sheet.source_key.endswith(".pdf") or stored["ContentType"] != "application/vnd.intelcost.sheet":
+            fail(f"{label}: split stored at {sheet.source_key} as {stored['ContentType']}")
         fit = Image.open(io.BytesIO(storage.get_bytes(sheet.image_storage_key)))
         want = min(2048, round(float(sheet.width_pt) * 144 / 72))
         if fit.format != "WEBP" or abs(fit.width - want) > 1:

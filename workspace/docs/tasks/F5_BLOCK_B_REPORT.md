@@ -371,6 +371,66 @@ range reads whatever the headers.
 4. For a fresh file: upload any other PDF to the project in Files, then open Choose pages
    on it at once. It reads "Preparing pages N of M" while thumbnails fill in.
 
+## Your fourth check: IDM took the sheet's own PDF (D-42)
+
+**What you found:** thumbnails and tiles passed, but opening a loaded page made IDM pop
+up for its one-page PDF.
+
+**What legacy does:**
+- The tiler writes `pages/{project_file_id}/{page}.pdf` as `application/pdf`.
+- The canvas gets a Supabase signed URL for it (`resolveSplitPageUrl`,
+  `createSignedUrl`, not `storage.download()`).
+- pdf.js gets that **URL**, `getDocument({ url, withCredentials: false })`, and makes one
+  GET, answered `application/pdf` with no Content-Disposition.
+
+That is the shape we used, so the code shows no difference that explains IDM leaving
+legacy alone.
+
+**Now, both of your steps at once** (IDM can't run here, so this saves you a round):
+- the app fetches the page's bytes in one GET and gives pdf.js `getDocument({ data })`,
+  never a URL;
+- the file is stored and served as `application/vnd.intelcost.sheet` at
+  `…/pages/{file}/{page}`, with no `.pdf`, no Content-Disposition and no Range.
+
+Sheets split before this are moved to the new key and type by a copy inside storage the
+first time they're opened. That first time shows the fit image, and the next open draws
+from the PDF.
+
+**Proof, on the JHS set (a throwaway copy):**
+- Pages 1, 2 and 3 loaded and each drawn by pdf.js.
+  - Each from one GET of `…/pages/{file}/{n}`: 200 `application/vnd.intelcost.sheet`,
+    1.7 MB, 209 KB and 1.6 MB, no Range, no Content-Disposition.
+  - No request to the set, and nothing answered as a PDF.
+- **Re-key:** page 2 turned back into an old-style `.pdf` split.
+  - The first open showed the fit image and made no `.pdf` request; the re-key ran in
+    0.11 s.
+  - The next open drew page 2 from its new key.
+- **`f5-big` 5/5:** a loaded page drawn from one GET of its extensionless,
+  `application/vnd.intelcost.sheet` file, with nothing answered as a PDF.
+- **`f5-s2` 4/4:** now also checks every split's stored key and type.
+- **`f5-s6` 6/6:** fixed a flicker it caught; the count read "0 of 5 pages" for a moment
+  before all pages were ticked.
+
+**Found:** on a fresh copy, pages loaded while the worker was still making that set's
+268 thumbnails took 52 s and over 90 s to prepare, against about 10 s otherwise. The
+bench worker runs two processes. Your own JHS set's thumbnails are all made, so your
+test won't hit this. The remedy is a separate worker queue for thumbnails, so a Load
+never waits behind them; that's a follow-up, not built.
+
+**Re-check, click only, with IDM on:**
+1. Sign in at http://localhost:5173 as estimator@bench.intelcost.io, switch to "F5 Block A
+   demo 15:16" and open "Umer plans test".
+2. Add sheets, tick "JHS Permit C 50CD_VOL 3_2026-07-17.pdf", Choose pages.
+   - Untick all, tick three pages you haven't loaded, and press Load 3 pages.
+3. Each new sheet shows "Preparing the sheet", then the page. Step between the three
+   sheets.
+   - IDM does not pop up.
+   - Nothing downloads.
+4. Open the page you loaded in your last test.
+   - The first time it shows the image version while it is moved.
+   - Refresh: it draws from its PDF.
+   - IDM does not pop up either time.
+
 ## Next
 
 Block C: pdf.js on the canvas (S10 to S12). It draws sharp from 50% to 4000% (D-35),

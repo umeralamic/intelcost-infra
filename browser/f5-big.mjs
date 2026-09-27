@@ -39,7 +39,7 @@ function watch(page, context) {
     };
     if (url.pathname.includes("/project-file/")) seen.original.push(entry);
     else if (url.pathname.includes("/previews/")) seen.thumbnails.push(entry);
-    else if (/\/pages\/[^/]+\/\d+\.pdf$/.test(url.pathname)) seen.sheetPdfs.push(entry);
+    else if (/\/pages\/[^/]+\/\d+(\.pdf)?$/.test(url.pathname)) seen.sheetPdfs.push({ ...entry, path: url.pathname });
     else seen.other.push(entry);
   });
   return seen;
@@ -138,7 +138,7 @@ await run("f5-big", [
     },
   },
   {
-    title: "A loaded page opens on the canvas from its own one-page PDF: one plain GET, 200 application/pdf, no Range, no filename header",
+    title: "A loaded page opens on the canvas from its own one-page PDF's bytes (D-42): one plain GET, not a .pdf URL, not served as a PDF, no Range, no filename header",
     run: async ({ page, context }) => {
       const seen = watch(page, context);
       const { dialog, section } = await openChooser(page, "Big set.pdf");
@@ -153,14 +153,20 @@ await run("f5-big", [
       nothingIdmTakes(seen);
       expect(seen.sheetPdfs.length === 1, `${seen.sheetPdfs.length} reads of the sheet's PDF`);
       const [pdf] = seen.sheetPdfs;
-      expect(pdf.status === 200 && pdf.type === "application/pdf" && !pdf.range && !pdf.disposition, `the sheet's PDF: ${JSON.stringify(pdf)}`);
-      return `drawn by pdf.js ${took} ms after "Added 1 page" · its PDF: one GET, 200 application/pdf, ${(pdf.length / 1024).toFixed(0)} KB, no Range, no Content-Disposition; the set: 0 requests`;
+      expect(
+        pdf.status === 200 && pdf.type === "application/vnd.intelcost.sheet" && !pdf.range && !pdf.disposition && !/\.pdf$/i.test(pdf.path),
+        `the sheet's PDF: ${JSON.stringify(pdf)}`,
+      );
+      // pdf.js was handed bytes: nothing of pdf.js's own reached the network.
+      const pdfAnything = [...seen.other, ...seen.thumbnails].filter((r) => /pdf/i.test(r.type ?? ""));
+      expect(pdfAnything.length === 0, `something answered as a PDF: ${JSON.stringify(pdfAnything[0])}`);
+      return `drawn by pdf.js ${took} ms after "Added 1 page" · its bytes: one GET of …/pages/{file}/1, 200 application/vnd.intelcost.sheet, ${(pdf.length / 1024).toFixed(0)} KB, no Range, no Content-Disposition; the set: 0 requests`;
     },
   },
   {
     title: "The sheet's PDF blocked (an extension cancelling it): the worker's fit image stays and the sheet still works",
     run: async ({ page, context }) => {
-      await context.route(/\/pages\/[^/]+\/\d+\.pdf/, (route) => route.abort("blockedbyclient"));
+      await context.route(/\/pages\/[^/]+\/\d+(\.pdf)?\?/, (route) => route.abort("blockedbyclient"));
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspaceUuid);
       await signInAs(page, email);
       await page.goto(`${APP}/project/${projectUuid}/takeoff`);

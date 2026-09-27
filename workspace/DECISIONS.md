@@ -1806,7 +1806,7 @@ it.
 ## D-41 — The browser never reads a plan set: the worker makes its derivatives
 
 **Date:** 2026-09-26
-**Status:** Accepted (the founder's)
+**Status:** Accepted (the founder's); point 4 amended by D-42 (how the canvas reads a sheet's PDF)
 **Area:** Takeoff, Backend, Frontend, Infra
 **Supersedes:** D-40
 **Amends:** D-14 (what pdf.js reads), D-36 F5 Q1 (Choose pages' thumbnails)
@@ -1854,3 +1854,52 @@ works with IDM, but costs 429 MB per open.
   needs CORS allowing the app's origin to GET.
 - Block C's zoom tiers draw from the sheet's own PDF, read this way.
 - A file's thumbnails go when it is deleted; a project's go with its prefix on purge.
+
+---
+
+## D-42 — A sheet's own PDF reaches pdf.js as bytes, served as nothing a download manager knows
+
+**Date:** 2026-09-27
+**Status:** Accepted (the founder's)
+**Area:** Takeoff, Backend, Frontend
+**Amends:** D-41 point 4
+
+**Context:** With IDM on, D-41's thumbnails and tiles passed. But a loaded sheet's own
+one-page PDF, read by pdf.js in one plain GET (`application/pdf`, a `.pdf` key, no
+Content-Disposition, no Range), made IDM pop up to download it.
+
+Legacy loads the same kind of file:
+- the tiler writes `pages/{project_file_id}/{page}.pdf` as `application/pdf`
+  (`sheet-tiler/split.ts`);
+- the canvas gets a Supabase signed URL for it (`resolveSplitPageUrl`,
+  `createSignedUrl`, not `storage.download()`);
+- pdf.js gets that URL, `getDocument({ url, withCredentials: false })`
+  (`PdfPageRenderer.loadPdfFromUrl`), and makes one GET.
+
+That is the shape D-41 used. The code shows no difference that explains IDM leaving
+legacy alone on the founder's machine.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Fetch the bytes, give pdf.js `getDocument({ data })`, same response | The founder's first step | The response still reads as a PDF under a `.pdf` URL, which may be what IDM keys on |
+| B — A, and serve the file as `application/vnd.intelcost.sheet` under a key with no extension | Nothing about the request or the answer says PDF; one round of testing instead of two | Sheets split before this need re-keying |
+
+**Decision:** Option B.
+- The worker stores each split page at `takeoff/{ws}/{project}/pages/{file}/{page}`
+  (no extension) as `application/vnd.intelcost.sheet`.
+- The link is presigned with that type and no Content-Disposition.
+- The app fetches it in one GET (no Range, no credentials) into bytes, and pdf.js gets
+  `getDocument({ data })`, never a URL.
+- A sheet split before D-42 (a `.pdf` key) is moved by a copy inside S3
+  (`rekey_sheet_source`) the first time its assets are asked for. Until then the canvas
+  shows the fit image.
+
+**Consequences:**
+- Nothing the browser fetches while measuring is answered as a PDF. Thumbnails and fit
+  images are `image/webp`; a sheet is `application/vnd.intelcost.sheet`.
+- If IDM still reacts, the remaining difference from legacy is outside the request's
+  shape (for example the host, or IDM's own site rules), and the next step is to test
+  legacy's exact request against the bench's storage.
+- Files' deliberate Download keeps its filename; that is a download.
