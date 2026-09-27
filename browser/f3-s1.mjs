@@ -219,6 +219,8 @@ await run("f3-s1", [
       expect(!offered.includes("owner"), "the invite picker offers owner");
       expect(offered.includes("qa_takeoff"), `the picker offers ${offered.join(", ")}`);
 
+      // The roster is its own query, drawn after the picker: waited for, not assumed.
+      await page.locator("ul li label select").first().waitFor({ timeout: 20000 });
       const rows = await page.$$eval("ul li label select", (nodes) =>
         nodes.map((node) => ({ value: node.value, text: node.selectedOptions[0]?.text ?? "" })),
       );

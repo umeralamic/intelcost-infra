@@ -1996,7 +1996,12 @@ Those are also exactly what breaks when fixtures run side by side.
     close-out and overnight.
 
 **Consequences:**
-- The measured numbers are in `intelcost-infra/README.md`, "Run a regression".
+- **Measured (2026-09-27):** the full list, 81 fixtures, went from about 1 h 30 one at a
+  time to 57 m 25 s at 3 at a time, all passing. At 4 the host's CPU sat above 90% for 81%
+  of the run and two fixtures failed, so 3 is the default. The details are in
+  `intelcost-infra/README.md`, "Run a regression".
+- One `regress.sh` at a time (a lock), and a healthy bench before each serial fixture:
+  two overlapping runs once took each other's data and services.
 - A fixture that assumes a shared account, a window size or a mailbox is a bug in the
   fixture.
 - The serial group's services are down while it runs, so nothing else may use the bench
@@ -2082,3 +2087,34 @@ dropped. The frames were fine; the clock was the api's, not the sender's.
 - Drafts are previews, so a short burst after a stall costs nothing.
 - A new f8-s13 step floods 40 frames in a second from a hand-written socket. B must hear at
   most the burst plus one second's rate.
+
+---
+
+## D-47 — An unprepared page waits for the worker; it is never read from the set
+
+**Date:** 2026-09-27
+**Status:** Decided overnight, pending founder review
+**Area:** Takeoff, Frontend
+**Amends:** F5-S12 AC2
+
+**Context:** F5-S12's AC2, written before the IDM rounds, says a page not yet prepared
+"opens from the whole file by range requests". D-40 tried exactly that, and IDM took the
+browser's range reads of the set. D-41 then made the rule that the browser never reads a
+plan set: only the worker does.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — As S12 was written: range reads of the set until the page is prepared | The page draws a few seconds sooner on a cold Load | IDM takes it (D-40); breaks D-41 |
+| B — D-41's behaviour: "Preparing the sheet" until the worker's split exists, then it draws itself | IDM never sees a plan set; one read path | The first few seconds of a fresh Load show the preparing state |
+
+**Decision:** Option B.
+- S12's AC2 reads: before preparation, the page shows "Preparing the sheet" and requests
+  nothing of the set.
+- When the worker's `drawing.source.changed` arrives, the page draws, fit image first,
+  then pdf.js.
+
+**Consequences:**
+- The ~4 s target for a loaded sheet's first sharp paint includes the worker's
+  preparation of that page (D-43 and D-45 keep it short).

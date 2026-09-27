@@ -8,7 +8,8 @@
 #                                    (end of each block)
 #   ./regress.sh name [name...]      just these
 #
-#   REGRESS_JOBS=N   fixtures at a time in the parallel group (default 4; see "Measured")
+#   REGRESS_JOBS=N   fixtures at a time in the parallel group (default 3: at 4 the host's
+#                    CPU sat above 90% for most of the run; see "Measured")
 #   REGRESS_CPU=1    sample the host's CPU every 5 s into $REGRESS_LOG/cpu.csv, and report it
 #
 # **Parallel.** Every fixture builds its own world: its own throwaway accounts (the owner,
@@ -37,8 +38,26 @@ set -u
 cd "$(dirname "$0")"
 
 LOG="${REGRESS_LOG:-./.regress}"
-JOBS="${REGRESS_JOBS:-4}"
+JOBS="${REGRESS_JOBS:-3}"
 mkdir -p "$LOG"
+
+# One run at a time. Each run ends by deleting every fixture account's workspaces
+# (fx-cleanup), and its serial group stops the api, Redis and the worker: a second run
+# beside it has its fixtures' data and services taken away mid-step (2026-09-27, when
+# two runs' serial groups overlapped). The lock is a directory, which mkdir makes or
+# refuses atomically; a lock left by a run that died is named, with its pid.
+LOCK=./.regress.lock
+if ! mkdir "$LOCK" 2>/dev/null; then
+  holder=$(cat "$LOCK/pid" 2>/dev/null)
+  if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null; then
+    echo "Another regress.sh is running (pid $holder). One at a time: wait for it to end."
+    exit 2
+  fi
+  echo "Taking over a lock left by pid ${holder:-unknown}, which is not running."
+fi
+echo $$ >"$LOCK/pid"
+cpu_pid=
+trap 'rm -rf "$LOCK"; [ -n "$cpu_pid" ] && kill "$cpu_pid" 2>/dev/null' EXIT
 
 # Stop, restart or recreate a shared service, or drop the worker's queue.
 #   f8-s2   stops the api for 30 s and restarts it     f8-s3   recreates the api on 2-minute tokens
@@ -146,7 +165,6 @@ fi
 # busy worker (the browser service passes REGRESS through, lib/bench.mjs codeIsCurrent).
 export REGRESS=1
 
-cpu_pid=
 if [ "${REGRESS_CPU:-0}" = "1" ] && command -v typeperf >/dev/null 2>&1; then
   typeperf "\\Processor(_Total)\\% Processor Time" -si 5 >"$LOG/cpu.csv" 2>/dev/null &
   cpu_pid=$!
@@ -156,24 +174,42 @@ run_started=$(date +%s)
 echo "${#list[@]} fixtures ($mode): ${#parallel[@]} in parallel, $JOBS at a time; then ${#serial[@]} one at a time"
 echo
 
-running=0
+# The fixtures' own pids, never a bare `wait`: that also waits for the CPU sampler,
+# which never ends, and hung two runs after their parallel group (2026-09-27).
+pids=()
 for name in "${parallel[@]}"; do
-  while [ "$running" -ge "$JOBS" ]; do
-    wait -n
-    running=$((running - 1))
+  while [ "$(jobs -rp | grep -cvx "${cpu_pid:-none}")" -ge "$JOBS" ]; do
+    wait -n "${pids[@]}" 2>/dev/null
   done
   one "$name" &
-  running=$((running + 1))
+  pids+=($!)
 done
-wait
+[ ${#pids[@]} -gt 0 ] && wait "${pids[@]}"
 parallel_took=$(($(date +%s) - run_started))
+
+# The bench is whole again: both apis answer and run the code on disk. A runner's
+# `docker compose restart` returns before the api inside has finished starting (it runs
+# its migrations first), and the next fixture once began against a half-started api.
+bench_ready() {
+  for _ in $(seq 1 120); do
+    if curl -sf localhost:8000/health >/dev/null && curl -sf localhost:8010/health >/dev/null \
+      && curl -sf localhost:8000/health/code | grep -q '"current":true'; then
+      return 0
+    fi
+    sleep 1
+  done
+  echo "the bench did not come back healthy within 120 s"
+  return 1
+}
 
 if [ ${#serial[@]} -gt 0 ]; then
   echo
   echo "--- one at a time: they stop or restart a service ---"
   for name in "${serial[@]}"; do
+    bench_ready || { echo "$name" >>"$LOG/.failed"; continue; }
     one "$name"
   done
+  bench_ready
 fi
 run_took=$(($(date +%s) - run_started))
 
@@ -181,7 +217,7 @@ if [ -n "$cpu_pid" ]; then
   kill "$cpu_pid" 2>/dev/null
   # typeperf writes quoted CSV, "time","value", after a header. Mean, 90th percentile, peak.
   cpu=$(awk -F'","' 'NF == 2 && $2 ~ /^[0-9.]+"?$/ { gsub(/"/, "", $2); print $2 + 0 }' "$LOG/cpu.csv" | sort -n \
-    | awk '{ v[NR] = $1; s += $1 } END { if (NR) printf "host CPU over %d samples (5 s): mean %.0f%%, 90th percentile %.0f%%, peak %.0f%%", NR, s / NR, v[int(NR * 0.9) > 0 ? int(NR * 0.9) : 1], v[NR] }')
+    | awk '{ v[NR] = $1; s += $1; if ($1 > 90) hot++ } END { if (NR) { p = int(NR * 0.9); if (p < 1) p = 1; printf "host CPU over %d samples (5 s): mean %.0f%%, 90th percentile %.0f%%, peak %.0f%%, above 90%% in %d%% of samples", NR, s / NR, v[p], v[NR], 100 * hot / NR } }')
 fi
 
 # Fixtures that still seat members in the seeded workspace leave them; this removes

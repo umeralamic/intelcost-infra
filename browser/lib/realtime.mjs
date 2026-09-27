@@ -131,7 +131,15 @@ export async function recordSockets(context) {
 /** Every recorded socket on this page, frames parsed. */
 export async function sockets(page) {
   const raw = await page.evaluate(() => window.__icSockets ?? []);
-  const parse = (list) => list.map((f) => ({ at: f.at, ...JSON.parse(f.data) }));
+  // `at` is when the page sent or heard the frame, by the page's clock. An event carries
+  // its own `at` (the api's ISO time), which once overwrote this one, so every "after
+  // this moment" test on events compared a string with a number (f8-s9, f8-s15). The
+  // api's is kept as `server_at`.
+  const parse = (list) =>
+    list.map((f) => {
+      const frame = JSON.parse(f.data);
+      return { ...frame, at: f.at, ...(frame.at !== undefined ? { server_at: frame.at } : {}) };
+    });
   return raw.map((s) => ({ ...s, sent: parse(s.sent), received: parse(s.received) }));
 }
 
@@ -144,21 +152,44 @@ export async function appSockets(page) {
 export async function waitFor(probe, what, timeout = 15000, every = 250) {
   const deadline = Date.now() + timeout;
   let last;
+  let failure = null;
   while (Date.now() < deadline) {
-    last = await probe();
+    // A probe that throws (the api mid-restart: "other side closed") is "not yet", not
+    // the answer: f8-s12's restart phase once failed on one refused fetch.
+    try {
+      last = await probe();
+      failure = null;
+    } catch (error) {
+      last = null;
+      failure = error;
+    }
     if (last) return last;
     await new Promise((r) => setTimeout(r, every));
   }
-  throw new Error(`timed out after ${timeout / 1000}s waiting for ${what}`);
+  const why = failure ? `; the last try failed: ${failure.message ?? failure}` : "";
+  throw new Error(`timed out after ${timeout / 1000}s waiting for ${what}${why}`);
 }
 
 /** The newest app socket that has said `ready`. */
 export async function readySocket(page, timeout = 20000) {
-  return waitFor(
-    async () => (await appSockets(page)).reverse().find((s) => s.received.some((f) => f.type === "ready")),
-    "the app's socket to be ready",
-    timeout,
-  );
+  try {
+    return await waitFor(
+      async () => (await appSockets(page)).reverse().find((s) => s.received.some((f) => f.type === "ready")),
+      "the app's socket to be ready",
+      timeout,
+    );
+  } catch (error) {
+    // What each socket did, so a socket that never readied says why (f8-s13 AC4 once
+    // waited 20 s under load; it has not come back to be read).
+    const seen = (await appSockets(page)).map((s) => ({
+      url: s.url,
+      opened: s.opened,
+      close: s.close,
+      sent: s.sent.filter((f) => f.type !== "ping").map((f) => f.type),
+      got: s.received.filter((f) => f.type !== "pong").map((f) => `${f.type} ${f.reason ?? ""}`.trim()),
+    }));
+    throw new Error(`${error.message} on ${page.url()}; sockets: ${JSON.stringify(seen)}`);
+  }
 }
 
 /**

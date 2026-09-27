@@ -17,11 +17,14 @@ export function makePdf(pages) {
   const tree = add(null);
   const font = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
   const kids = [];
-  for (const { width, height, label } of pages) {
+  for (const { width, height, label, hairline } of pages) {
+    // `hairline`: a zero-width vertical line down the middle, which a renderer draws one
+    // device pixel wide at any zoom (F5-S10's sharpness check at 4000%).
     const content =
       `BT /F1 48 Tf 72 ${height - 120} Td (${label}) Tj ET\n` +
       `2 w 72 72 m ${width - 72} 72 l ${width - 72} ${height - 160} l 72 ${height - 160} l h S\n` +
-      `0.5 w 72 72 m ${width - 72} ${height - 160} l S\n`;
+      `0.5 w 72 72 m ${width - 72} ${height - 160} l S\n` +
+      (hairline ? `0 w ${width / 2} 72 m ${width / 2} ${height - 160} l S\n` : "");
     const stream = add(`<< /Length ${Buffer.byteLength(content, "latin1")} >>\nstream\n${content}endstream`);
     kids.push(
       add(

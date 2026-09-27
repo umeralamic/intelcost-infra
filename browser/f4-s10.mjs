@@ -43,6 +43,8 @@ await run("f4-s10", [
     run: async ({ page }) => {
       await openJob(page);
       await page.locator("#project-assignees").click();
+      // The list fills from the members query: waited for, not read on opening.
+      await page.getByRole("option", { name: /Bench takeoff/ }).waitFor({ timeout: 20000 });
       const options = await page.getByRole("option").allInnerTexts();
       const aliceRow = options.find((o) => o.includes("Bench estimator"));
       expect(aliceRow && /Estimator/.test(aliceRow), `Alice row: ${aliceRow}`);

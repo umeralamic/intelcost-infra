@@ -10,7 +10,7 @@
 // processes, so the item lock is proved across processes, not inside one.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
-import { A_NAME, APP_B, B_NAME, WINDOW_B, call, ensureWindowB, eventsOn, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
+import { A_NAME, APP_B, B_NAME, WINDOW_B, appSockets, call, ensureWindowB, eventsOn, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import {
   clickSheet,
   countItem,
@@ -131,7 +131,7 @@ await run("f8-s9", [
         });
         expect(moved.status === 200, `A's move: ${moved.status}`);
         // B still holding the handle when A's change reaches its socket.
-        await waitFor(async () => (await eventsOn(page)).some((f) => f.at >= movedAt), "B to hear A's move", 8000);
+        await waitFor(async () => (await eventsOn(page, "takeoff.geometry.changed")).some((f) => f.at >= movedAt), "B to hear A's move", 8000);
         await page.mouse.move(box.x + 60, box.y + 40, { steps: 3 });
         await page.mouse.up();
 

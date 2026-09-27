@@ -234,7 +234,7 @@ one at a time, the ones that stop or restart a service.
 ./regress.sh                     # full: every standing fixture (close-out, overnight)
 ./regress.sh quick f5-s5 f5-s7   # the core smoke set of 16, plus the ones a block touched
 ./regress.sh f4-s17 f4-s18       # just these
-REGRESS_JOBS=6 ./regress.sh      # fixtures at a time (default 4)
+REGRESS_JOBS=4 ./regress.sh      # fixtures at a time (default 3, as measured below)
 REGRESS_CPU=1 ./regress.sh       # also sample the host's CPU every 5 s, and report it
 ```
 
@@ -265,7 +265,26 @@ printed when it finishes, so blocks come in finishing order.
 **Measured** on this machine (i7-8850H, 6 cores / 12 threads, 32 GB, Docker given 12 CPUs
 and about 15 GB):
 
-_(filled in by the measurement runs of 2026-09-27; see the table below once it lands)_
+| Full list, 81 standing fixtures | Wall clock | Host CPU (5 s samples) | Result |
+|---|---|---|---|
+| One at a time, before D-44 | about 1 h 30 | | |
+| **3 at a time (the default)** | **57 m 25 s**: parallel group 38 m, serial group 19 m | mean 81%, 90th percentile 96%, above 90% in 44% of samples | **all 81 pass** |
+| 4 at a time | parallel group about 33 m | mean 91%, 90th percentile 99%, above 90% in 81% of samples | 2 failed: a fixture read too early (fixed), and a live update 1.6 s under load (a finding) |
+
+- **3 is the default** (`REGRESS_JOBS`). At 4 the host sat above 90% for most of the run,
+  and the api's tail latency grew with it. The 3-at-a-time run also carried the three
+  Block C fixtures then being written (f5-s10 to s12).
+- **The quick tier** (16 fixtures) takes about 5 to 6 minutes at 3 or 4.
+- **`browser/load-probe.mjs`** measures the api as a tab meets it (a request, a socket's
+  ready, an event's delivery), 30 samples. Run it beside a regression to see the load's
+  cost. Idle: 19, 35 and 45 ms at the 90th percentile.
+
+**One run at a time.** `regress.sh` holds `.regress.lock/`. Every run ends by deleting
+every fixture account's workspaces, and its serial group stops services, so a second run
+beside it loses its data mid-step. That happened once (2026-09-27), and it is how the
+lock came to be. **Before each serial fixture** it waits until both apis answer `/health`
+and run the code on disk, because `docker compose restart` returns before the api inside
+has finished starting.
 
 **The serial group changes the bench while it runs**, which is why `regress.sh` runs it
 alone:

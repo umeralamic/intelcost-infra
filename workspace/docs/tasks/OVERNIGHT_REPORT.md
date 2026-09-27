@@ -1,208 +1,167 @@
-# Overnight report, 2026-09-26
+# Overnight report, 2026-09-27
 
-_Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Ran 00:04 to 04:15 CDT._
+_Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
+[docs/archive/OVERNIGHT_REPORT_2026-09-26.md](../archive/OVERNIGHT_REPORT_2026-09-26.md)._
 
-## In one paragraph
+## Review of the plan
 
-**All ten tasks are done and pushed to `umer-dev` in every repo; `main` was not touched.**
-F8 is closed and archived. Blocks D and E were built overnight and wait for your click
-check. The final standing regression is 47 of 47. The wider F2 and F3 sweep turned up
-fixture timing faults, which are fixed; its two remaining failures predate tonight (see
-Task 10). F5 and F6 are specced, with
-nine questions each, and both sit in Blocked on your answers. P-18 and P-19 are live:
+Written before starting, as the plan asks. Since then the founder has cut the run to
+**F5 Block C and a stop**, so tasks 2 to 8 are reviewed for the record but are not run.
 
-- The dashboard's first load dropped from 665 kB to 455 kB.
-- The app fits a phone.
+### 1. Time per task, at the new bench speed
 
-One call needs your review: **D-34**, drawing colleagues' drafts on today's canvas. There
-are nine findings; none was fixed overnight, since the rule was no behaviour change
-outside the tasks.
+The bench now runs fixtures 4 at a time (D-44):
+- the quick tier (16 fixtures) takes about **5 to 6 minutes**, where it once took about
+  25 minutes one at a time;
+- the full tier takes **_measured below, "Bench"_**, where the last full run took
+  **about 1.5 hours** one at a time.
+
+Building, not testing, is now most of each block.
+
+| Task | Estimate | Basis |
+|---|---|---|
+| 1. F5 Block C (S10 to S12) | **7 to 9 h** | Port legacy's `PdfPageRenderer` (464 lines), doc cache (151), memory budget (44), bitmap cache and prerender queue (370) into `lib/takeoff/pdf`. One zoom module and the 50% to 4000% range (D-35). The two-stage re-raster and windowing above 2.5×. One call signing every sheet. The first-paint target, measured three runs each. Four new fixtures, then the quick tier |
+| 2. F5 Blocks D, E, F (S13 to S19) | 10 to 13 h | The panel's tree and its acts (two subtasks, the largest UI in F5), calibration's words and presets, then the live duties and the two-window check |
+| 3. Close F5 | 1.5 h | The full tier, PARITY, board, report, mirror, backup |
+| 4. F6 Block A | 5 to 7 h | Per item_model_tasks.md |
+| 5. F9 draft, proof backlog | 2 to 4 h | |
+| 7, 8. Second batch | 4 h | |
+
+### 2. The F5 block list, and whether it fits
+
+Six blocks: A (S1 to S3) and B (S20, S4 to S9) are closed. **C: rendering, S10 to S12.
+D: the sheets panel, S13 and S14. E: calibration and scale, S15 and S16. F: collaboration,
+S17 to S19.**
+
+**It does not fit.** C to F plus the close is about 19 to 24 hours against 14. The
+founder's instruction to stop after Block C settles it: Block C alone fills a working
+session.
+
+### 3. Risks, dependencies, ordering
+
+- **S12's AC2 contradicts D-41.** It asks for an unprepared page to open from the whole
+  file by range requests, which is exactly what IDM took (D-40, D-41).
+  - Replaced by D-41's behaviour: "Preparing the sheet", then it draws when ready.
+  - Logged as the next D-NN, decided overnight.
+- **S12's AC3 needs a new api call.** Today the app signs one sheet at a time.
+- **The zoom module goes first.** Every clamp (wheel, buttons, Fit) reads it, and the
+  re-raster keys its bitmaps on it.
+- **The target: first sharp paint close to legacy's ~4 s (~12 s today).** Today's path:
+  - fetch the page's PDF;
+  - draw it 3072 px wide;
+  - PNG-encode it (`toBlob`);
+  - load that as an image.
+
+  The encode and the decode of a 3072 px PNG are likely several of those seconds. The
+  port draws straight into the canvas, as legacy does. What's left is the worker's
+  preparation, which D-43 and D-45 already shortened. Measured; if the api side still
+  dominates, that goes in the findings, not a patch.
+- **Hard rule 2.** The renderer, caches and zoom module go in `lib/takeoff/pdf` with no
+  React and no network. The fetch stays in `features/takeoff/pdf`.
+- **F8's drafts and cursors draw over the new canvas** (DraftLayer). Its overlay
+  coordinates must stay normalised through every zoom tier; f8-s13, f8-s14 and f8-s18 are
+  in the quick tier for Block C.
+- **The bench's Chromium runs at dpr 1.** S10's "sharp on a dpr-2 display" is driven with
+  a `deviceScaleFactor: 2` context.
+
+### 4. What only the founder can check, and how it's handled
+
+- **IDM.** Block C changes how a sheet's bytes are drawn, not how they're fetched: one GET
+  of `…/pages/{file}/{page}`, `application/vnd.intelcost.sheet`, no `.pdf`, no
+  Content-Disposition, no Range, bytes into `getDocument({ data })`.
+  - f5-big's step already asserts that shape. It stays in the quick tier for Block C.
+  - The founder's IDM-on click check is listed and marked.
+- **"Sharp" by eye at 4000%** on a real dpr-2 screen. The fixture checks backing size and
+  line width; the eye check is listed.
+- **Feel of the zoom** (wheel steps, the interim frame). Listed as a click check.
+
+### 5. Missing from the plan
+
+- **The founder's data rule vs D-45.** Before the rule arrived, I dispatched two
+  preparation jobs on the founder's JHS VOL 4 set while diagnosing D-45. They only
+  prepared pages the founder had loaded, and changed nothing else. Nothing of theirs is
+  touched from here on.
+- **Legacy's Block C numbers (PARITY §24)** are cold-open medians on legacy's own sheets,
+  which the bench doesn't have. They're measured on Riverside and a copy of the JHS set
+  and recorded beside legacy's, as the spec says.
 
 ## Progress
 
-| # | Task | Status | Started | Finished | Time |
+| # | Task | Status | Start | End | Duration |
 |---|---|---|---|---|---|
-| 0 | Setup: permissions in `.claude/settings.json`, rule 7 hook kept, reading | ✅ | 00:04 | 00:15 | 11 min |
-| 1 | F8 Block D: live drawing channel, Collaboration preferences | ✅ `f8-s13` 3/3, `f8-s14` 4/4 | 00:15 | 00:32 | 17 min |
-| 2 | F8 Block E: F3 and F4 events wired precisely | ✅ `f8-s15` 6/6, `f8-s16` 4/4 | 00:33 | 00:53 | 20 min |
-| 3 | F8 Block F: Caddy note, STATUS, PARITY, full regression, close F8, backup | ✅ Regression **46/46**; F8 archived; backup `E:\Intelcost-backup\2026-09-26_0148-f8-closed` | 00:54 | 01:50 | 56 min (most of it the regression) |
-| 4 | F5 spec | ✅ 19 subtasks, 6 blocks, 9 questions; Blocked on your answers | 00:58 | 01:52 | ~30 min of work, beside the regression |
-| 5 | Proof backlog | ✅ 15 lines driven: **9 ticked, 6 real gaps** recorded and their PARITY status corrected; no app change | 01:53 | 02:02 | 9 min (plus reruns) |
-| 6 | P-19: phone width | ✅ `p19` 2/2 at 375×667 and 1440×900 | 02:03 | 02:23 | 20 min |
-| 7 | P-18: code splitting | ✅ **main chunk 664.74 → 231.87 kB; dashboard first load 664.74 → 454.72 kB** (gzip 196 → ~141 kB) | 02:24 | 02:39 | 15 min |
-| 8 | F6 spec | ✅ 16 subtasks, 5 blocks, 9 questions; Blocked on your answers and on F5 | 01:02 | 02:40 | ~30 min of work, beside the regression |
-| 9 | `docs/flows.md` | ✅ Seven journeys, a diagram each, infra steps marked 🔧 for Abdullah | 00:59 | 02:40 | ~25 min of work, beside the regression |
-| 10 | Final regression, this report | ✅ Standing list **47/47**; F2 and F3 checked against pre-tonight code, tonight's fixture faults fixed (see below) | 02:40 | 04:12 | 1 h 32 min |
+| 0a | Bench: parallel fixtures, tiers (D-44), D-45, /health/code | Done, pushed | 2026-09-26 20:30 | 2026-09-27 05:10 | |
+| 0b | f8-s13 dropped frames (D-46) | Done, pushed | 05:10 | 06:25 | 1 h 15 |
+| 0c | The five full-run failures, timeboxed 1.5 h | Done: 4 fixed with causes, 1 open (see Findings) | 06:45 | 07:20 | 35 min |
+| 0d | Full tier measured at 4, then 3; runner hardened | Done: **3 at a time, all 81 standing fixtures pass, 57 m 25 s** | 07:18 | 09:20 | 2 h |
+| 1 | F5 Block C | Not started | | | |
 
-**Task 10, the final regression (02:40 to 04:10):**
+## The five full-run failures (timeboxed)
 
-- **The standing list, `regress.sh`, 47 fixtures: 0 failed.** That is every F4 fixture,
-  f4-dialogs, f3-s1, s3 and s12, `p19`, and every F8 fixture, f8-s13 to s16 among them.
-- **Then every F2 and F3 fixture besides**, 24 of them, since P-18 touched every route.
-  The first pass had 8 failing. Each was checked against the code as it stood before
-  tonight, by checking out the pre-tonight api and app files, running, and restoring.
-  - **Caused by tonight, all fixture timing, now passing:**
-    - f2-s2, and the shared `invitationSettled` helper: the page read before its lazy
-      chunk drew.
-    - f3-s8 AC3: the member list draws after the invite form now, and the fixture
-      demoted the wrong row.
-    - f3-s8 AC2: its premise, "the tab does not find out", now needs the tab's socket
-      down, since F8 tells the tab at once.
-  - **f2-s7:** a one-off api connect timeout; 4/4 on rerun.
-  - **Failing before tonight too:**
-    - f2-s1b, f2-s5 and f2-s6 used selectors from before F4's dashboard (D-31). Fixed;
-      f2-s1b and f2-s6 pass.
-    - f2-s5 AC8 now fails on bench state: see finding 8.
-    - f3-s8 AC4 counts capability requests: 2 before tonight, 3 now, 1 wanted. See
-      finding 9.
-  - **f3-s2 and f3-s4** are phased (they need their SETUP pass) and were not run.
-- **Full logs:** `intelcost-infra/.regress/final/`, and per fixture for the reruns.
-
-## Commits (all on `umer-dev`, all pushed)
-
-| Repo | Commit | What |
-|---|---|---|
-| api | `8d86862` | F8 Block D: draft and cursor frames, collaboration preferences (migration `f3a8d2c61b57`) |
-| api | `fdd468a` | F8 Block E: the F3 and F4 events, published after commit; removal revokes on every api process |
-| api | `fde6d83` | F8 close-out: STATUS |
-| app | `1d29464` | F8 Block D: `useDrafts`, `DraftLayer`, Settings > Account > Collaboration |
-| app | `4f42467` | F8 Block E: each event mapped to its own queries |
-| app | `21c43ba` | F8 close-out: STATUS |
-| app | `ccd9f6e` | P-19 |
-| app | `e2da400` | P-18 |
-| infra | `4cadcb1` | F8 Block D bench (`f8-s13`, `f8-s14`), D-34 and this plan mirrored |
-| infra | `b44d9fb` | F8 Block E bench (`f8-s15`, `f8-s16`) |
-| infra | `6c7a048` | F8 close-out: the Caddy note, mirror with F8 archived |
-| infra | `2b96c81` | F5 specced |
-| infra | `06b4b3f` | Proof backlog fixture |
-| infra | `f5f8cfa` | P-19 bench |
-| infra | `6d26523` | P-18 bench (three F2 fixtures' waits) |
-| infra | `5f34fc6` | F6 specced |
-| infra | `d8cc795` | `docs/flows.md` |
-| infra | _last_ | Final-regression fixture fixes (f2-s1b, s2, s5, s6, f3-s8, `invitationSettled`), this report, the final mirror |
-
-## Overnight decisions to review
-
-| D-NN | Call | Why | If you disagree |
+| Failure | Kind | Cause | Fix |
 |---|---|---|---|
-| **D-34** | Today's canvas **draws** colleagues' in-progress shapes (`features/takeoff/components/DraftLayer.tsx`) with the "Sara W." tag, honouring drawing in progress, names, others' work and colour by. The F8 spec had F5 draw them | Your B/C check found live drawing had nothing to see; this makes Block D checkable by clicking, and F5 lifts the layer as it is. Cursors are carried but drawn by F7, per D-33 | Remove the `overlay` prop from `ProjectTakeoff.tsx`; the channel and preferences stand on their own |
+| f2-close: an invitee who signs up is seated | **(b) product** | The session turns authenticated while `signUp` resolves, and a render then sent the invitee to the dashboard before `setAccountCreated` ran. The seat landed 1.03 s later, with the page gone, so a failed accept would have had nowhere to be reported | `Signup.tsx`: `creating` is set before the request, so the guard holds from the first render. 7/7 |
+| f3-s1: the roster rendered no rows | (a) fixture | Read the roster, its own query, as soon as the invite picker drew | Waits for the roster rows. 5/5 |
+| f3-s10: a renamed workspace read back as another | (a) fixture and **(b) product** | `enterWorkspace` skipped choosing a workspace already shown, so nothing was stored. **Product:** a workspace shown only as "first by name" was never kept, so renaming it so it sorted after another moved the person into that other workspace on reload | The helper always chooses. `session.tsx` stores the workspace it falls back to. 4/4 |
+| f8-s9: B never heard A's move | (a) fixture | The socket recorder's `at` (when the page heard a frame) was overwritten by the event's own `at`, the api's ISO time. So any "after this moment" test on events compared a string with a number. **f8-s15's "hears nothing after the revoke" was passing vacuously for the same reason** | `lib/realtime.mjs` keeps the page's time as `at`, the api's as `server_at`. f8-s9 5/5; f8-s15 6/6 with its check now able to fail |
+| f8-s13 AC4: window A's socket not ready in 20 s | **Open** | Not reproduced. Under 4 parallel fixtures every socket readied in under 0.4 s (below) | `readySocket` now reports every socket's frames and close code when it fails, so a recurrence carries its own evidence |
 
-Smaller calls made inside the work, all written into the archived F8 spec's "Found while
-building" notes:
-- A finished draft stays on other screens for 1 s so it hands over to its saved shape.
-- Counts and calibration send no draft.
-- Preferences are stored sparse.
-- A removal revokes at once through a Redis instruction.
-- A queued ownership transfer publishes both the invitation and the owner events.
+**Measured under 4 parallel fixtures (b): api, socket and event times.** 30 samples each,
+a probe running beside 8 heavy fixtures.
 
-For P-18 and P-19:
-- The tab row's rule is an inset shadow.
-- The tab gap is 16 px with no side padding.
-- Login, Dashboard and NotFound stay in the main chunk.
-
-## Failures and findings
-
-Nothing failed three times; no item was abandoned. What went wrong on the way was fixture
-faults, each named in its commit:
-- Block D: a strict selector.
-- Block E: a row that had correctly moved tab.
-- Proof backlog: three faults.
-- P-18: three F2 waits that read a lazy page too early, and four more found by the final
-  sweep.
-
-**Findings, none fixed overnight:**
-
-| # | Finding | Where it is recorded | Suggested owner |
+| | Idle | 4 in parallel, before | 4 in parallel, after |
 |---|---|---|---|
-| 1 | **D-27's 24-hour sweep of abandoned uploads was never built.** The nightly job only aborts a *purged* project's open uploads; abandoned parts in live projects wait for the bucket's lifecycle rule | `docs/flows.md` flow 2 | A small task: `abort_stale_uploads` beside the purge |
-| 2 | **The Count tool makes a new item per click, and the names collide:** three quick clicks made three items all named "Count 11". Legacy places marks into one item | PARITY §9 Count → partial | F7, or a small fix sooner |
-| 3 | **Zoom stops at 800%**, not 3000%, and steps ×1.25 throughout | PARITY §9 zoom → partial | F5-S11 |
-| 4 | **There are no deducts at all**, yet §10's pairing line said ported | PARITY §10 → missing | F7 |
-| 5 | **Layers:** no show or hide; the api protects only the *default* layer, so a project's last layer can go; a new project has no layers (legacy seeds three) | PARITY §8 → partial | F6-S8 |
-| 6 | **No sheets panel in takeoff; no classification** to file an item under | PARITY §7, §8 → partial | F5-S13, F6-S14 |
-| 7 | **Dashboard project rows are cramped at 375 px** (the name truncates to a few letters) | Here | A small follow-up to P-19 |
-| 8 | **The bench workspace is full of fixture projects**, so "Riverside Medical Center" is no longer on the dashboard's first page, and f2-s5 AC8 cannot find it. Fixtures that make projects in the seeded workspace do not clean up | Here | A bench chore: fixtures make their projects in fresh workspaces, as the F4 ones do; or a `seed.py --reset` |
-| 9 | **The capability map is fetched more than once per page** (f3-s8 AC4): 2 requests before tonight, 3 now, because a lazily loaded page mounts its `usePermissions()` after the shell's and finds the answer stale. Harmless, and the criterion was already failing | PARITY §3 unchanged (its line is about liveness, which passes) | A `staleTime` on the capability query is safe now that F8 keeps it fresh live; a small decision for you |
+| `GET /api/auth/me` | median 13 ms, p90 19, max 21 | median 47, **p90 743, max 1,303** | median 42, **p90 206, max 329** |
+| Socket open → ready | median 23 ms, p90 35, max 39 | median 66, p90 453, max 1,297 | median 75, p90 114, max 372 |
+| PATCH → event heard | median 33 ms, p90 45, max 53 | median 84, p90 334, max 705 | median 90, p90 504, max 1,645 |
+| The 8 fixtures | | 6 m 22 s | **4 m 58 s**, all pass |
 
-## Click-only checks for you
+**The fix: the bench api was logging for the libraries, not for us.** `DEBUG=true` put the
+root logger at DEBUG and turned on SQLAlchemy's echo. So every SQL statement was written
+to stdout twice, and every S3 call logged in full, from inside the event loop. SQL echo is
+now its own switch (`sql_echo`, off), and botocore, SQLAlchemy and the like stay at
+WARNING even in debug. Production runs with `debug` off, so its users never paid this, but
+the bench measured an api slower than production.
 
-Two windows, as for the B/C check: A at http://localhost:5173 (the seeded owner), B at
-http://localhost:5174 (`window-b@bench.intelcost.io`, Sara W.). Riverside Medical Center,
-Page 1.
+**Open: event delivery's tail** (p90 504 ms, max 1.6 s under load) includes the PATCH's
+own write, publish and fan-out. It didn't improve with the logging fix and is left as a
+finding with these numbers.
 
-**Block D, live drawing (D-34)**
-1. In A, choose Linear and click two points slowly, moving the mouse between them. In B,
-   a dashed line in A's colour grows as A moves, tagged "Bench E.".
-2. Double-click to finish in A. In B, the dashed line becomes the saved run within about
-   a second.
-3. Start another run in A and close A's tab mid-shape. In B, the dashed line disappears
-   at once.
-4. In B, open Settings > Account and scroll to **Collaboration**. Set Names to "On hover"
-   and go back to the sheet. A's next run shows no tag until B's pointer is over it.
-   Then try Off, Fade others and Only mine for Others' work, and Item colour for Colour
-   by.
-5. Reload B's Settings > Account: every choice is kept. Sign in as Sara in A's browser:
-   the same choices.
+## Bench
 
-**Block E, events live**
-6. A on the dashboard, B on the dashboard (don't click into B). A creates a project; it
-   appears in B. A sets it to Won; it leaves B's open tab and B's Won count goes up.
-7. B on that project's Project Home. A renames it; B's heading follows. A adds a folder;
-   B's folder tree shows it.
-8. As A, change Sara's role to Viewer in Settings > Members. B's New project button
-   disables within a second, with "Your role cannot create projects." Change her back.
-9. As A, rename the workspace in Settings > General. B's top bar follows.
+| Full list (81 standing fixtures) | Wall clock | Host CPU | Result |
+|---|---|---|---|
+| One at a time, before D-44 | about 1 h 30 (the last known run) | | |
+| **3 at a time, now the default** | **57 m 25 s** (parallel 38 m, serial 19 m) | mean 81%, 90th percentile 96%, above 90% in 44% of samples | **all 81 pass** |
+| 4 at a time | parallel group about 33 m | mean 91%, above 90% in 81% of samples | f4-s10 (fixture, fixed) and f8-s16 (a 1.6 s live update, the open finding) |
 
-**P-19 and P-18**
-10. In DevTools' device bar at 375 wide: the top bar fits, and nothing scrolls sideways.
-    Settings' tab row scrolls with the current tab in view. At full width, all nine tabs
-    sit on one line.
-11. Network panel, dashboard load: no `ProjectTakeoff-*.js` and no `ProjectHome-*.js`
-    until you open a project.
+**The runner itself had three faults, found during these runs and fixed:**
+1. **It hung with CPU sampling on.** A bare `wait` also waited for the sampler, which
+   never ends. Two runs hung after their parallel group.
+2. **Two runs could overlap.** Releasing those hung runs let two serial groups (api
+   restarts, Redis and worker stops) and two clean-ups run at once. That produced a false
+   batch of serial failures (f4-s27, f5-s2, f8-s12, f8-s2, f8-s3). Now one run at a time,
+   by a lock.
+3. **A serial fixture could start against a half-started api.** `docker compose restart`
+   returns before the api inside has finished its start (migrations). Now each serial
+   fixture waits for both apis' `/health` and current code.
 
-**Things only you or Abdullah can do**
-12. **Send Abdullah** `intelcost-infra/notes/2026-09-26_realtime_caddy_for_abdullah.md`,
-    and ask him how many uvicorn processes production will run (F8-S17 AC1).
-13. **Ask Abdullah to review** the 🔧 steps in `docs/flows.md` (the table at its end).
-14. **Answer the F5 and F6 questions** below; both features are Blocked on them.
+The 3-at-a-time run also carried the three Block C fixtures, then written but not yet
+deployed, so its time is slightly high.
 
-## F5 questions (`docs/tasks/takeoff_shell_tasks.md`)
+## Findings
 
-| # | Question | Recommendation |
-|---|---|---|
-| Q1 | Thumbnails: server or browser? | Both: Choose pages renders in the browser (legacy's, and the only option before a sheet exists); the sheets panel uses server thumbnails made at preparation |
-| Q2 | Skip on first run with nothing loaded | Keep legacy's rule: the dialog opens again next time |
-| Q3 | Images (PNG, JPG, TIFF) | Wrap into a PDF on the worker, keeping the original as the project file |
-| Q4 | The selected sheet in the URL | Keep it (beyond legacy; per-sheet tab titles rely on it) |
-| Q5 | Metric units in calibration | Port legacy's flag, off |
-| Q6 | A new `drawing.sheet.changed` event so colleagues see loaded pages live | Add it |
-| Q7 | Owners for what F5 leaves out (Name from region, print, overlays, rotate…) | As the spec's table proposes |
-| Q8 | Old bench drawings with no project file | Migrate the seed; leave old bench rows unlinked |
-| Q9 | Legacy's bug: skipped pages come back | Do not port it |
+- **Event delivery's tail under load.** PATCH → event heard: p90 504 ms, max 1.6 s with
+  4 fixtures running (idle: 45 ms, 53 ms). f8-s16's "within 1.5 s" failed once at 4 at a
+  time (1,617 ms) and passes at 3. Not chased inside the timebox. The logging fix below
+  did not move it.
+- **`waitFor` let a probe's error escape.** A fetch refused while the api restarted ended
+  the wait at once. It now counts as "not yet", and the last error is named on timeout.
 
-## F6 questions (`docs/tasks/item_model_tasks.md`)
+## Commits
 
-| # | Question | Recommendation |
-|---|---|---|
-| Q1 | Where sub-item formulas are evaluated | Both: the browser for the live preview, the api to store, kept equal by one shared table |
-| Q2 | Classification references as loose strings or foreign keys | Foreign keys to a new `workspace_classification` |
-| Q3 | Variables' scope | Keep legacy's: workspace-wide, with a per-project value |
-| Q4 | Duplicate's suffix, always "(2)" in legacy | Keep legacy's; counting up is a one-line change if you prefer it |
-| Q5 | Item history | F11, with the other audit views |
-| Q6 | Layers and variables live (legacy did not sync them) | Add `takeoff.layer.changed` and `workspace.variable.changed` |
-| Q7 | Layer visibility per browser | Keep per browser |
-| Q8 | Seeding the other four classification systems | CSI on first use; the others when first turned on |
-| Q9 | Rough measurements in F6, Earthwork markups in F12 | As stated |
+## Decisions to review
 
-## Where things are
+## Click-only checks
 
-- **Specs:** `docs/tasks/takeoff_shell_tasks.md`, `docs/tasks/item_model_tasks.md`; F8's
-  is archived at `docs/archive/realtime_tasks.md`.
-- **Logs:** every fixture's full output is in `intelcost-infra/.regress/` (git-ignored):
-  - `full-f8-close/` for Task 3
-  - `final/` for Task 10
-  - one file per fixture from each individual run
-- **Screenshots:** all deleted.
-- **Mirror:** `intelcost-infra/workspace/` is exact as of the last commit.
-- **Backup:** `E:\Intelcost-backup\2026-09-26_0148-f8-closed`, the workspace files at
-  F8's close.
+## Questions
+</content>

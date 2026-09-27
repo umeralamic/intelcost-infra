@@ -60,7 +60,9 @@ export function quietFor(ms) {
 export async function enterWorkspace(page, workspaceUuid) {
   const select = page.locator("header select");
   await select.locator(`option[value="${workspaceUuid}"]`).waitFor({ state: "attached", timeout: 20000 });
-  if ((await select.inputValue()) !== workspaceUuid) await select.selectOption(workspaceUuid);
+  // Always chosen, even when it already shows: choosing is what the app stores, and a
+  // workspace shown only as the first of the list moves when a rename re-sorts it.
+  await select.selectOption(workspaceUuid);
   await shellSettled(page, workspaceUuid);
 }
 

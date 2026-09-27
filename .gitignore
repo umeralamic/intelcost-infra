@@ -1,2 +1,4 @@
 # regress.sh keeps each fixture's full output here.
 .regress/
+# regress.sh holds this while it runs (one run at a time).
+.regress.lock/
