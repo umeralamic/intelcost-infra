@@ -640,7 +640,7 @@ as written. The founder also set the zoom range (**D-35**), which S10 and S11 ca
 
 | # | Question | Answer |
 |---|---|---|
-| Q1 | **Thumbnails: server or browser?** | **Both, split by moment:** Choose pages renders in the browser with pdf.js (legacy's, and the only option before Load); the sheets panel uses server thumbnails made at preparation, so a 150-sheet panel costs no pdf.js work |
+| Q1 | **Thumbnails: server or browser?** | **Both, split by moment:** Choose pages renders in the browser with pdf.js (legacy's, and the only option before Load); the sheets panel uses server thumbnails made at preparation, so a 150-sheet panel costs no pdf.js work. **Amended by D-41 (2026-09-26):** Choose pages shows server thumbnails the worker makes on upload, since IDM takes any browser read of a plan set |
 | Q2 | **Skip on first run with nothing loaded** | **Legacy's rule:** "asked once" is the drawing count, so the dialog opens again next time. The empty takeoff offers Add sheets anyway |
 | Q3 | **Images (PNG, JPG, TIFF)** | **Wrapped into a one-page PDF on the worker.** The original stays the `ProjectFile`; the wrapper is the drawing's source. One code path, and the person's file is never replaced |
 | Q4 | **The selected sheet in the URL** | **Kept**, beyond legacy; F2-S12's per-sheet tab titles rely on it |

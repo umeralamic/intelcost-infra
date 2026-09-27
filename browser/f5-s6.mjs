@@ -1,5 +1,5 @@
-// F5-S6: Choose pages, then Load N pages. Thumbnails drawn in the browser with pdf.js
-// (D-36 Q1), three at a time.
+// F5-S6: Choose pages, then Load N pages. Thumbnails made by the worker and shown as plain
+// images (D-41, which replaced D-36 Q1's pdf.js in the browser).
 //
 //   docker compose --profile browser run --rm browser node scripts/f5-s6.mjs
 //
@@ -55,14 +55,14 @@ await run("f5-s6", [
         expect(await pageBox(page, "Five.pdf", n).isChecked(), `page ${n} not ticked`);
         await section(page, "Five.pdf").locator(`[data-page="${n}"]`).getByText(`Page ${n}`).waitFor();
       }
-      await section(page, "Five.pdf").locator('[data-thumbnail="drawn"]').nth(4).waitFor({ timeout: 20000 });
+      await section(page, "Five.pdf").locator('[data-thumbnail="shown"] img').nth(4).waitFor({ timeout: 60000 });
       await pageBox(page, "Five.pdf", 2).uncheck();
       expect((await count()) === "4 of 5 pages", `after one untick: ${await count()}`);
       await section(page, "Five.pdf").getByRole("button", { name: "Clear" }).click();
       expect((await count()) === "0 of 5 pages", `after Clear: ${await count()}`);
       await section(page, "Five.pdf").getByRole("button", { name: "Select all" }).click();
       expect((await count()) === "5 of 5 pages", `after Select all: ${await count()}`);
-      return "5 thumbnails drawn, all ticked · 5 → 4 → 0 → 5 of 5 pages";
+      return "5 thumbnails shown, all ticked · 5 → 4 → 0 → 5 of 5 pages";
     },
   },
   {
@@ -102,43 +102,42 @@ await run("f5-s6", [
     },
   },
   {
-    title: "AC4: a 150-page set shows its first thumbnails within a second and never draws more than three at a time",
+    title: "AC4: a 150-page set lays out every tile at once and shows its thumbnails, made on upload by the worker, as plain images",
     run: async ({ page }) => {
       await choose(page, big, ["Big.pdf"]);
       const chooser = dialog(page).locator("[data-page-chooser]");
       await chooser.waitFor({ timeout: 20000 });
       const shownAt = Date.now();
-      await chooser.locator('[data-thumbnail="drawn"]').first().waitFor({ timeout: 5000 });
+      await section(page, "Big.pdf").locator("[data-page]").nth(149).waitFor({ timeout: 5000 });
+      const laidOut = Date.now() - shownAt;
+      await section(page, "Big.pdf").locator('[data-thumbnail="shown"] img').first().waitFor({ timeout: 5000 });
       const firstAfter = Date.now() - shownAt;
-      // Sample the concurrency while the first dozen draw.
-      let peak = 0;
-      for (let i = 0; i < 20; i += 1) {
-        peak = Math.max(peak, Number(await chooser.getAttribute("data-thumb-peak")));
-        await page.waitForTimeout(100);
-      }
-      const drawn = Number(await chooser.getAttribute("data-thumb-drawn"));
+      // Uploaded in setup, so the worker has had its head start; the rest arrive as made.
+      // Made, not necessarily fetched: tiles load lazily, as they are scrolled to.
+      await section(page, "Big.pdf").locator('[data-thumbnail="shown"] img').nth(149).waitFor({ state: "attached", timeout: 120000 });
+      const all = Date.now() - shownAt;
       const count = (await section(page, "Big.pdf").locator("[data-page-count]").textContent()).trim();
-      expect(firstAfter <= 1000, `the first thumbnail took ${firstAfter} ms`);
-      expect(peak >= 1 && peak <= 3, `the peak was ${peak} at once`);
       expect(count === "150 of 150 pages", `count: ${count}`);
-      return `first thumbnail ${firstAfter} ms after the step showed; peak ${peak} at once; ${drawn} drawn in 2 s; ${count}`;
+      const srcs = await section(page, "Big.pdf").locator("[data-thumbnail] img").evaluateAll((imgs) => imgs.map((i) => new URL(i.src).pathname));
+      expect(srcs.every((p) => p.endsWith(".webp")), `a thumbnail that is not the worker's WebP: ${srcs.find((p) => !p.endsWith(".webp"))}`);
+      return `150 tiles ${laidOut} ms after the step showed; first thumbnail ${firstAfter} ms; all 150 by ${all} ms; ${count}`;
     },
   },
   {
-    title: "AC5: a file pdf.js cannot open is named with why (\"Couldn't open Broken.pdf\", not a readable PDF), and the others still load",
+    title: "AC5: a file the worker cannot open says so in its section (\"Couldn't prepare the pages of Broken.pdf\"), and the others still load",
     run: async ({ page }) => {
       await choose(page, mixed, ["Good.pdf", "Broken.pdf"]);
-      // Since the Block B check: one toast per file, with the reason.
-      await page.getByText("Couldn't open Broken.pdf").waitFor({ timeout: 20000 });
-      await page.getByText("It isn't a readable PDF.").waitFor();
-      await section(page, "Good.pdf").waitFor({ timeout: 15000 });
-      expect((await section(page, "Broken.pdf").count()) === 0, "Broken.pdf reached the page step");
+      await section(page, "Broken.pdf").getByText("Couldn't prepare the pages of Broken.pdf. The file may be damaged.").waitFor({ timeout: 30000 });
+      await section(page, "Good.pdf").locator('[data-thumbnail="shown"] img').nth(1).waitFor({ timeout: 30000 });
+      expect((await section(page, "Broken.pdf").locator("[data-page]").count()) === 0, "Broken.pdf offered pages");
+      const button = (await dialog(page).locator("[data-load-pages]").textContent()).trim();
+      expect(button === "Load 2 pages", `button reads ${button}`);
       await dialog(page).locator("[data-load-pages]").click();
       await page.getByText("Added 2 pages").waitFor({ timeout: 15000 });
       const sheets = await sheetsOf(token, base, mixed.uuid);
       expect(sheets.length === 2, `${sheets.length} sheets`);
       const listed = await apiCall(token, "GET", `${base}/${mixed.uuid}/drawing/file`);
-      return `"Couldn't open Broken.pdf" · "It isn't a readable PDF."; Good.pdf's 2 pages loaded (${listed.body.length} drawing)`;
+      return `"Couldn't prepare the pages of Broken.pdf. The file may be damaged."; Good.pdf's 2 pages loaded (${listed.body.length} drawing)`;
     },
   },
 ]);

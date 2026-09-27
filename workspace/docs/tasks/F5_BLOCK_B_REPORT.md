@@ -316,6 +316,61 @@ includes `/Rotate`, and every thumbnail is fitted inside its tile.
 4. If IDM does pop up or it fails, tell me. The next build is legacy's exact read: one
    plain GET of the whole file.
 
+## Your third check: IDM takes range reads too (D-41)
+
+**What you found:** with IDM on, D-40's ranged reads failed as well. IDM takes a browser's
+range reads whatever the headers.
+
+**Now:** the browser never reads a plan set.
+- **Pages made on the worker.** When a PDF upload completes, the worker reads the set
+  once, server-side. For every page it records the size, `/Rotate` and crop box, then a
+  512 px WebP thumbnail drawn as the page shows.
+- **Older files.** A file uploaded before this, or one whose job stalled, starts when
+  Choose pages first asks. Its page count comes at once from a ranged read on the server.
+- **Choose pages** shows those thumbnails as plain image GETs, each tile in its page's
+  real shape, with "Preparing pages N of M" while they're being made.
+- **The canvas** opens a loaded sheet's own one-page PDF, which the worker split out, in
+  one plain GET in legacy's shape: `application/pdf`, no Content-Disposition, no Range,
+  pdf.js ranges and streaming off. It draws over the fit image. If that GET is blocked,
+  the fit image stays.
+- **Removed:** the range readers, `…/bytes` and `…/read`.
+
+**Proof:**
+- **Your JHS set (268 pages), in a throwaway copy:**
+  - tiles laid out 1.1 s after Choose pages, first thumbnail at 5 s, landscape (1.33);
+  - no request to the set;
+  - 15 thumbnails fetched as plain 200 `image/webp`;
+  - page 1 loaded and drawn by pdf.js 13 s after "Added 1 page", from one 1.8 MB GET:
+    200 `application/pdf`, no Range, no Content-Disposition.
+  - The first full preparation of all 268 pages took 160 s on the bench (two worker
+    processes).
+  - Your own copy in "Umer plans test" already has all 268 thumbnails made.
+- **`f5-big` 5/5:**
+  - the 519 MB set's 150 tiles in 0.7 s, all thumbnails made by 29 s, 0 requests to the
+    set;
+  - a small set's thumbnails in 1.5 s;
+  - `/Rotate 90` shown landscape (1.29);
+  - a loaded page drawn from one 3.5 MB plain GET;
+  - with that GET blocked, the fit image stays.
+- **`f5-s6` 6/6:** 150 thumbnails made on upload, all shown within 1.5 s of the step; a
+  broken file says "Couldn't prepare the pages of Broken.pdf".
+- **Also:** `f5-s2` 4/4, `f5-s4` 6/6, `f5-s5` 6/6, `f5-s7` 3/3, `f5-s8` 4/4.
+- **f5-s2's sweep drive** failed once: the beat's own 5-minute sweep ran 5 s before the
+  drive's and took the job. It passed on the rerun.
+
+**Re-check, click only, with IDM on:**
+1. Sign in at http://localhost:5173 as estimator@bench.intelcost.io, switch to "F5 Block A
+   demo 15:16" and open "Umer plans test".
+2. Perform Takeoff (or Add sheets), tick "JHS Permit C 50CD_VOL 3_2026-07-17.pdf", then
+   Choose pages.
+   - All 268 pages show at once as landscape tiles, with thumbnails (already made).
+   - IDM does not pop up.
+3. Untick all but one page, then Load 1 page: "Added 1 page".
+   - The sheet shows "Preparing the sheet" for a few seconds, then the page.
+   - IDM does not pop up, and nothing downloads.
+4. For a fresh file: upload any other PDF to the project in Files, then open Choose pages
+   on it at once. It reads "Preparing pages N of M" while thumbnails fill in.
+
 ## Next
 
 Block C: pdf.js on the canvas (S10 to S12). It draws sharp from 50% to 4000% (D-35),

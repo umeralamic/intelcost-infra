@@ -1,67 +1,64 @@
-// F5, the Block B check: Choose pages on a 400 MB+ PDF, and a small one, read by ranges
-// straight from storage the way legacy's reads were shaped (D-40), and tiles shaped like
-// the pages.
+// F5, the Block B check (D-41): Choose pages on a 400 MB+ PDF and a small one, and a
+// loaded sheet opening, with the browser never reading the plan set.
 //
 //   ./browser/f5-big.sh     (makes the files with drives/f5-big.py, then runs this)
 //
-// The founder's 429 MB set failed "Couldn't open some drawings" with IDM on. IDM took a
-// presigned link answered with a filename header, then the api's octet-stream reads, and
-// leaves legacy's alone: a Supabase signed URL answered `application/pdf` with no
-// Content-Disposition. Now pdf.js reads through a presigned link shaped like legacy's,
-// one 206 at a time. IDM cannot run on the bench; the founder's test with IDM on decides
-// whether ranged reads of that shape are safe (if not: one whole-file GET, D-40).
+// The founder's IDM took every browser read of the 429 MB set, ranged or not, whatever
+// the headers (D-40 failed). Now the worker reads the set and makes each page's size,
+// rotation and a WebP thumbnail; Choose pages shows those as plain image GETs. A loaded
+// page is split into its own PDF on the worker, and the canvas opens that in one plain
+// GET, legacy's proven shape. IDM cannot run on the bench; what is proved here is that
+// no request of the browser's is one IDM takes: none reads the set, none carries a
+// Range, none is answered with a filename header.
 //
-// What is proved here: every read of the file carries a Range and is answered 206
-// `application/pdf` with no Content-Disposition; no request for a file is ever the whole
-// file; no download or window opens; with the reads blocked, the message names a download
-// manager, extension or the connection, and clicking it fetches nothing; and each file's
-// tiles take its pages' shape, a /Rotate included.
+// The files are stored by the drive, not uploaded, so they are "uploaded before D-41":
+// Choose pages starts their preparation on first open, and counts their pages at once.
 
 import { APP, expect, run, signInAs } from "./lib/bench.mjs";
 
 const [email, workspaceUuid, projectUuid] = (process.env.F5_BIG ?? "").split(" ");
 const BIG = Number(process.env.F5_BIG_BYTES);
-const SMALL = Number(process.env.F5_SMALL_BYTES);
 if (!email || !projectUuid) throw new Error("F5_BIG is not set: run ./browser/f5-big.sh");
 
-const isStorage = (url) => new URL(url).port === "9000";
-
-/** Every request for a file's bytes, and anything that would be a download. */
+/** Every request the browser makes to storage, sorted by what it is. */
 function watch(page, context) {
-  const seen = { whole: [], reads: [], downloads: 0, popups: 0 };
+  const seen = { original: [], thumbnails: [], sheetPdfs: [], other: [], downloads: 0, popups: 0 };
   page.on("download", () => (seen.downloads += 1));
   context.on("page", () => (seen.popups += 1));
-  page.on("request", (request) => {
-    const url = request.url();
-    if ((isStorage(url) || url.includes("/bytes") || url.includes("/download")) && !request.headers().range) {
-      seen.whole.push(url.slice(0, 120));
-    }
-  });
-  page.on("response", async (response) => {
-    if (!isStorage(response.url())) return;
+  page.on("response", (response) => {
+    const url = new URL(response.url());
+    if (url.port !== "9000") return;
     const headers = response.headers();
-    seen.reads.push({
+    const entry = {
+      path: url.pathname.split("/").slice(-3).join("/"),
       status: response.status(),
       type: headers["content-type"],
       disposition: headers["content-disposition"] ?? null,
       range: response.request().headers().range ?? null,
       length: Number(headers["content-length"] ?? 0),
-      // When the read was asked for, on the same clock as the page's Date.now().
-      at: response.request().timing().startTime,
-    });
+    };
+    if (url.pathname.includes("/project-file/")) seen.original.push(entry);
+    else if (url.pathname.includes("/previews/")) seen.thumbnails.push(entry);
+    else if (/\/pages\/[^/]+\/\d+\.pdf$/.test(url.pathname)) seen.sheetPdfs.push(entry);
+    else seen.other.push(entry);
   });
   return seen;
+}
+
+/** What IDM takes, none of which the browser may do. */
+function nothingIdmTakes(seen) {
+  expect(seen.original.length === 0, `the browser read the plan set: ${JSON.stringify(seen.original[0])}`);
+  const all = [...seen.thumbnails, ...seen.sheetPdfs, ...seen.other];
+  const ranged = all.filter((r) => r.range || r.status === 206);
+  expect(ranged.length === 0, `ranged reads: ${JSON.stringify(ranged[0])}`);
+  const named = all.filter((r) => r.disposition);
+  expect(named.length === 0, `answers with a filename header: ${JSON.stringify(named[0])}`);
+  expect(seen.downloads === 0 && seen.popups === 0, `${seen.downloads} downloads, ${seen.popups} windows`);
 }
 
 async function openChooser(page, name, { signedIn = false } = {}) {
   if (!signedIn) {
     await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspaceUuid);
-    // The moment the page step shows, stamped in the page rather than when a poll sees it.
-    await page.addInitScript(() => {
-      new MutationObserver(() => {
-        if (!window.__pagesShownAt && document.querySelector("[data-page-file]")) window.__pagesShownAt = Date.now();
-      }).observe(document, { childList: true, subtree: true });
-    });
     await signInAs(page, email);
   }
   await page.goto(`${APP}/project/${projectUuid}/takeoff`);
@@ -70,114 +67,111 @@ async function openChooser(page, name, { signedIn = false } = {}) {
   await dialog.locator(`[data-load-file="${name}"]`).getByRole("checkbox").check({ timeout: 20000 });
   const t0 = Date.now();
   await dialog.getByRole("button", { name: /^Choose pages/ }).click();
-  return { dialog, t0 };
+  return { dialog, section: dialog.locator(`[data-page-file="${name}"]`), t0 };
 }
 
-/** The checks every open must pass, and a line saying what it cost. */
-function judge(seen, size) {
-  expect(seen.whole.length === 0, `requests for a whole file: ${seen.whole.join(", ")}`);
-  expect(seen.downloads === 0 && seen.popups === 0, `${seen.downloads} downloads, ${seen.popups} windows`);
-  expect(seen.reads.length > 0, "no ranged read was made");
-  const bad = seen.reads.filter(
-    (r) => r.status !== 206 || !r.range || r.type !== "application/pdf" || r.disposition !== null,
-  );
-  expect(bad.length === 0, `reads not shaped like legacy's: ${JSON.stringify(bad.slice(0, 2))}`);
-  const read = seen.reads.reduce((sum, r) => sum + r.length, 0);
-  return {
-    read,
-    line: `${seen.reads.length} reads from storage, all 206 application/pdf with a Range and no Content-Disposition, ${(read / 1024 / 1024).toFixed(1)} MB of ${(size / 1024 / 1024).toFixed(0)} MB`,
-  };
-}
-
-/** The drawn tiles' width over height, for a file's section. */
-const tileAspects = (section) =>
-  section.locator('[data-thumbnail="drawn"]').evaluateAll((tiles) =>
+/** Each drawn tile's width over height, and its image's. */
+const aspects = (section) =>
+  section.locator('[data-thumbnail="shown"]').evaluateAll((tiles) =>
     tiles.map((tile) => {
       const box = tile.getBoundingClientRect();
-      const canvas = tile.querySelector("canvas").getBoundingClientRect();
-      return { tile: box.width / box.height, page: canvas.width / canvas.height };
+      const img = tile.querySelector("img");
+      // An image not yet fetched (lazy, off screen) has no size: 0.
+      const drawn = img.complete && img.naturalWidth > 0;
+      const rect = img.getBoundingClientRect();
+      return { tile: box.width / box.height, image: drawn ? rect.width / rect.height : 0 };
     }),
   );
 
 await run("f5-big", [
   {
-    title: "Choose pages on a 400 MB+ PDF: ranged reads only, shaped like legacy's (application/pdf, no filename header), no whole-file request",
+    title: "Choose pages on a 400 MB+ PDF never read by the browser: every tile at once, \"Preparing pages N of M\", thumbnails as plain WebP GETs",
     run: async ({ page, context }) => {
       expect(BIG >= 400 * 1024 * 1024, `the big file is ${BIG} bytes`);
       const seen = watch(page, context);
-      const { dialog, t0 } = await openChooser(page, "Big set.pdf");
-      const section = dialog.locator('[data-page-file="Big set.pdf"]');
-      await section.waitFor({ timeout: 30000 });
-      const shownAt = await page.evaluate(() => window.__pagesShownAt);
-      const opened = shownAt - t0;
-      // pdf.js walks every page object once on open (one 64 KiB chunk each, here each
-      // beside a 3.6 MB image): about 10 MB for this set, never the set.
-      const early = seen.reads.filter((r) => r.at <= shownAt);
-      const atOpen = early.reduce((sum, r) => sum + r.length, 0);
-      expect(atOpen < 0.03 * BIG, `opening read ${atOpen} bytes in ${early.length} reads, over 3% of the file`);
-      await section.locator('[data-thumbnail="drawn"]').first().waitFor({ timeout: 30000 });
-      const firstThumb = Date.now() - t0;
-      const pages = await section.locator("[data-page]").count();
-      expect(pages === 150, `${pages} pages offered`);
-      const { read, line } = judge(seen, BIG);
-      // Thumbnails read their own pages (here each page is 3.6 MB of noise); never the set.
-      expect(read < 0.25 * BIG, `read ${read} bytes, a quarter of the file`);
-      return `150 pages offered ${opened} ms after Choose pages, from ${(atOpen / 1024 / 1024).toFixed(1)} MB in ${early.length} reads; first thumbnail at ${firstThumb} ms · ${line}`;
+      const { section, t0 } = await openChooser(page, "Big set.pdf");
+      await section.locator("[data-page]").nth(149).waitFor({ timeout: 20000 });
+      const laidOut = Date.now() - t0;
+      const progress = (await section.locator("[data-pages-progress]").textContent({ timeout: 5000 }).catch(() => "")).trim();
+      expect(/^Preparing pages( \d+ of 150)?$/.test(progress), `the progress line reads "${progress}"`);
+      await section.locator('[data-thumbnail="shown"] img').first().waitFor({ timeout: 60000 });
+      const first = Date.now() - t0;
+      // Every thumbnail made: each tile has its image. Tiles load lazily, so only those
+      // scrolled to are fetched; the last is scrolled to and must draw.
+      await section.locator('[data-thumbnail="shown"] img').nth(149).waitFor({ state: "attached", timeout: 240000 });
+      const all = Date.now() - t0;
+      await section.locator('[data-page="150"]').scrollIntoViewIfNeeded();
+      await section.locator('[data-page="150"] img').waitFor({ timeout: 20000 });
+      await page.waitForTimeout(1000);
+      nothingIdmTakes(seen);
+      const webp = seen.thumbnails.filter((r) => r.status === 200 && r.type === "image/webp");
+      expect(webp.length > 0 && webp.length === seen.thumbnails.length, `thumbnail answers: ${JSON.stringify(seen.thumbnails.find((r) => r.status !== 200 || r.type !== "image/webp"))}`);
+      const shapes = await aspects(section);
+      expect(shapes.every((a) => Math.abs(a.tile - 1224 / 792) < 0.03), `a tile not landscape: ${JSON.stringify(shapes.find((a) => Math.abs(a.tile - 1224 / 792) >= 0.03))}`);
+      const drawn = shapes.filter((a) => a.image > 0);
+      expect(drawn.length > 0 && drawn.every((a) => Math.abs(a.image - 1224 / 792) < 0.03), `a thumbnail not landscape: ${JSON.stringify(drawn.find((a) => Math.abs(a.image - 1224 / 792) >= 0.03))}`);
+      const kb = webp.reduce((n, r) => n + r.length, 0) / 1024;
+      return `150 tiles ${laidOut} ms after Choose pages ("${progress}"); first thumbnail ${first} ms, all 150 made by ${all} ms; ${webp.length} WebP GETs for the tiles scrolled to, ${kb.toFixed(0)} KB; the 519 MB set: 0 requests`;
     },
   },
   {
-    title: "Choose pages on a small PDF (a few MB): the same, ranged reads only",
+    title: "Choose pages on a small PDF (a few MB): the same",
     run: async ({ page, context }) => {
       const seen = watch(page, context);
-      const { dialog, t0 } = await openChooser(page, "Small set.pdf");
-      const section = dialog.locator('[data-page-file="Small set.pdf"]');
-      await section.locator('[data-thumbnail="drawn"]').nth(1).waitFor({ timeout: 30000 });
+      const { section, t0 } = await openChooser(page, "Small set.pdf");
+      await section.locator('[data-thumbnail="shown"] img').nth(1).waitFor({ timeout: 60000 });
       const took = Date.now() - t0;
-      const { line } = judge(seen, SMALL);
-      return `2 thumbnails drawn ${took} ms after Choose pages · ${line}`;
+      nothingIdmTakes(seen);
+      return `2 thumbnails ${took} ms after Choose pages; ${seen.thumbnails.length} WebP GETs; the set: 0 requests`;
     },
   },
   {
-    title: "Tiles take the pages' shape as legacy's do: a landscape set's tiles are landscape, and a portrait page stored with /Rotate 90 shows landscape",
+    title: "Tiles follow each page's real orientation: a portrait page stored with /Rotate 90 is a landscape tile, before and after its thumbnail",
     run: async ({ page }) => {
-      const { dialog } = await openChooser(page, "Small set.pdf");
-      const small = dialog.locator('[data-page-file="Small set.pdf"]');
-      await small.locator('[data-thumbnail="drawn"]').nth(1).waitFor({ timeout: 30000 });
-      const landscape = await tileAspects(small);
-      expect(landscape.every((a) => Math.abs(a.tile - 1224 / 792) < 0.03), `Small set's tiles: ${JSON.stringify(landscape)}`);
-      expect(landscape.every((a) => Math.abs(a.page - 1224 / 792) < 0.03), `Small set's pages drawn: ${JSON.stringify(landscape)}`);
-
-      const { dialog: again } = await openChooser(page, "Rotated set.pdf", { signedIn: true });
-      const rotated = again.locator('[data-page-file="Rotated set.pdf"]');
-      await rotated.locator('[data-thumbnail="drawn"]').nth(1).waitFor({ timeout: 30000 });
-      const turned = await tileAspects(rotated);
-      expect(turned.every((a) => Math.abs(a.tile - 792 / 612) < 0.03), `Rotated set's tiles: ${JSON.stringify(turned)}`);
-      expect(turned.every((a) => Math.abs(a.page - 792 / 612) < 0.03), `Rotated set's pages drawn: ${JSON.stringify(turned)}`);
-      return `Small set (1224 x 792): tiles ${landscape[0].tile.toFixed(2)} wide per tall · Rotated set (612 x 792, /Rotate 90): tiles ${turned[0].tile.toFixed(2)}, drawn landscape`;
+      const { section } = await openChooser(page, "Rotated set.pdf");
+      // Laid out from the page's size and /Rotate, before any thumbnail exists.
+      await section.locator("[data-page]").nth(1).waitFor({ timeout: 20000 });
+      await section.locator('[data-thumbnail="shown"] img').nth(1).waitFor({ timeout: 60000 });
+      const shapes = await aspects(section);
+      expect(shapes.length === 2 && shapes.every((a) => Math.abs(a.tile - 792 / 612) < 0.03 && Math.abs(a.image - 792 / 612) < 0.03), `Rotated set: ${JSON.stringify(shapes)}`);
+      return `612 x 792 with /Rotate 90: tiles ${shapes[0].tile.toFixed(2)}, thumbnails ${shapes[0].image.toFixed(2)} (landscape)`;
     },
   },
   {
-    title: "Reads blocked (an extension cancelling them): the message names a download manager or extension, and clicking it fetches and downloads nothing",
+    title: "A loaded page opens on the canvas from its own one-page PDF: one plain GET, 200 application/pdf, no Range, no filename header",
     run: async ({ page, context }) => {
       const seen = watch(page, context);
-      await context.route((url) => url.port === "9000", (route) => route.abort("blockedbyclient"));
-      await openChooser(page, "Big set.pdf");
-      const toast = page.locator("[data-sonner-toast]").filter({ hasText: "Couldn't open Big set.pdf" });
-      await toast.waitFor({ timeout: 30000 });
-      const text = (await toast.textContent()).replace(/\s+/g, " ");
-      expect(/download manager or browser extension/.test(text), `the toast reads "${text}"`);
-      expect(/connection/.test(text), `the toast does not mention the connection: "${text}"`);
-
-      const url = page.url();
-      let requests = 0;
-      page.on("request", () => (requests += 1));
-      await toast.click();
-      await page.waitForTimeout(2000);
-      expect(page.url() === url, `clicking the toast navigated to ${page.url()}`);
-      expect(seen.whole.length === 0, `a whole-file request: ${seen.whole.join(", ")}`);
-      expect(seen.downloads === 0 && seen.popups === 0, `clicking the toast: ${seen.downloads} downloads, ${seen.popups} windows`);
-      expect(requests === 0, `clicking the toast made ${requests} requests`);
-      return `"${text.slice(0, 160)}…" · click: no request, no download, no window, still on the page`;
+      const { dialog, section } = await openChooser(page, "Big set.pdf");
+      await section.locator("[data-page]").nth(149).waitFor({ timeout: 20000 });
+      await section.getByRole("button", { name: "Clear" }).click();
+      await section.locator('[data-page="1"]').getByRole("checkbox").check();
+      await dialog.locator("[data-load-pages]").click();
+      await page.getByText("Added 1 page").waitFor({ timeout: 30000 });
+      const t0 = Date.now();
+      await page.locator('img[data-sheet-image="pdf"]').waitFor({ timeout: 120000 });
+      const took = Date.now() - t0;
+      nothingIdmTakes(seen);
+      expect(seen.sheetPdfs.length === 1, `${seen.sheetPdfs.length} reads of the sheet's PDF`);
+      const [pdf] = seen.sheetPdfs;
+      expect(pdf.status === 200 && pdf.type === "application/pdf" && !pdf.range && !pdf.disposition, `the sheet's PDF: ${JSON.stringify(pdf)}`);
+      return `drawn by pdf.js ${took} ms after "Added 1 page" · its PDF: one GET, 200 application/pdf, ${(pdf.length / 1024).toFixed(0)} KB, no Range, no Content-Disposition; the set: 0 requests`;
+    },
+  },
+  {
+    title: "The sheet's PDF blocked (an extension cancelling it): the worker's fit image stays and the sheet still works",
+    run: async ({ page, context }) => {
+      await context.route(/\/pages\/[^/]+\/\d+\.pdf/, (route) => route.abort("blockedbyclient"));
+      await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspaceUuid);
+      await signInAs(page, email);
+      await page.goto(`${APP}/project/${projectUuid}/takeoff`);
+      const image = page.locator('img[alt="Drawing sheet"]');
+      await image.waitFor({ timeout: 30000 });
+      await page.waitForTimeout(5000);
+      const source = await image.getAttribute("data-sheet-image");
+      expect(source === "fit", `the sheet shows "${source}"`);
+      const loaded = await image.evaluate((img) => img.complete && img.naturalWidth > 0);
+      expect(loaded, "the fit image did not draw");
+      return "the fit image stays (data-sheet-image=fit), drawn; the canvas is usable";
     },
   },
 ]);

@@ -504,7 +504,7 @@ every api process over Redis pub/sub.
 ## D-14 — Sheet rendering matches the legacy app: pdf.js in the browser
 
 **Date:** 2026-09-24
-**Status:** Accepted
+**Status:** Accepted; amended by D-41 (pdf.js reads only a sheet's own one-page PDF, never the set)
 **Area:** Takeoff, Frontend, Backend
 **Supersedes:** D-12
 
@@ -1630,7 +1630,7 @@ both features waited on the answers.
 
 | Spec | # | Answer |
 |---|---|---|
-| F5 | Q1 | Thumbnails both ways: Choose pages renders in the browser; the sheets panel uses server thumbnails made at preparation |
+| F5 | Q1 | Thumbnails both ways: Choose pages renders in the browser; the sheets panel uses server thumbnails made at preparation. **Amended by D-41:** Choose pages shows server thumbnails too |
 | F5 | Q2 | Legacy's rule: "asked once" is the drawing count, so Skip with nothing loaded asks again next time |
 | F5 | Q3 | Images are wrapped into a one-page PDF **on the worker**; the original stays the `ProjectFile` |
 | F5 | Q4 | The sheet stays in the URL |
@@ -1763,7 +1763,7 @@ and answered them.
 ## D-40 — The browser reads drawings straight from S3, shaped as legacy's reads
 
 **Date:** 2026-09-26
-**Status:** Accepted (the founder's choice, pending their test with IDM on)
+**Status:** Superseded by D-41 (the founder's test: IDM took the ranged reads too)
 **Area:** Takeoff, Backend, Frontend, Infra
 
 **Context:** The founder's 429 MB set would not open in Choose pages with IDM on. Two
@@ -1800,3 +1800,57 @@ it.
   `Accept-Ranges`, `Content-Length` and `ETag`. The bench's MinIO already does.
 - If A is chosen after the test, the read becomes pdf.js on that same link with ranges
   off (`disableRange`); the bucket then needs no exposed headers.
+
+---
+
+## D-41 — The browser never reads a plan set: the worker makes its derivatives
+
+**Date:** 2026-09-26
+**Status:** Accepted (the founder's)
+**Area:** Takeoff, Backend, Frontend, Infra
+**Supersedes:** D-40
+**Amends:** D-14 (what pdf.js reads), D-36 F5 Q1 (Choose pages' thumbnails)
+
+**Context:** With IDM on, the founder's 429 MB set would not open in Choose pages, by any
+browser read. IDM took each of them:
+- a presigned link with a filename header;
+- the api's octet-stream ranges;
+- D-40's `application/pdf` ranges with no filename header.
+
+IDM takes range reads whatever the headers. Legacy's one plain GET of the whole file
+works with IDM, but costs 429 MB per open.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Legacy's whole-file GET | Proven with IDM | 429 MB per open |
+| B — The worker reads the set and makes per-page derivatives; the browser reads only those | The browser never reads a set, so there is nothing for IDM to take; pages show without the set | Choose pages waits on the worker, page by page, for a file never prepared |
+
+**Decision:** Option B.
+
+1. **On upload.** When a PDF's upload completes, the worker makes, per page, its size
+   (the crop box), `/Rotate`, the crop box and a WebP thumbnail 512 px across, drawn as
+   the page shows (`prepare_file_pages`, `project_file_page`). It reads the set
+   server-side, once, into a temporary file.
+2. **On Choose pages.** A file with none of this yet, uploaded before D-41, or whose job
+   has stalled, is dispatched when Choose pages asks (`GET …/file/{uuid}/pages`). The
+   page count comes at once from a ranged read on the server. Results are kept, as rows
+   and objects.
+3. **What Choose pages shows:** those thumbnails as plain image GETs, each tile in its
+   page's shape, rotation applied, with "Preparing pages N of M" while the worker runs.
+   pdf.js never opens the set.
+4. **The canvas** opens a sheet's own one-page PDF, which the worker splits out on Load
+   (Block A). It is one plain GET in legacy's shape: a presigned link answered
+   `application/pdf`, with no Content-Disposition, no `Range`, and pdf.js's
+   `disableRange` and `disableStream` on.
+5. **Removed:** the range reader, `…/file/{uuid}/bytes`, `…/file/{uuid}/read`, and the
+   exposed range headers.
+
+**Consequences:**
+- A file never prepared shows its thumbnails as the worker makes them. The founder's
+  268-page set took 160 s in all on the bench, the first pages within seconds.
+- No S3 CORS header needs exposing for reads (D-40's note is void). The bucket still
+  needs CORS allowing the app's origin to GET.
+- Block C's zoom tiers draw from the sheet's own PDF, read this way.
+- A file's thumbnails go when it is deleted; a project's go with its prefix on purge.

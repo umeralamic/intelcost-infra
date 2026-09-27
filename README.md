@@ -165,13 +165,16 @@ seeded account's switcher once held 860 fixture workspaces).
   unit), and Sara W. seated as an Estimator. It takes about 25 s. Every F8 fixture, `p19`,
   `f5-s3` and `f5-s9` use it; the F2 and F3 fixtures make their own workspace with
   `ownWorkspace`. No fixture in the regression signs in as the seeded account.
-- **`f5-big`** (`browser/f5-big.sh`) opens a 519 MB and a 7 MB PDF through Choose pages.
-  `drives/f5-big.py` makes both, plus a portrait page stored with `/Rotate 90`, in a
-  throwaway account's project. Every read must carry a `Range` and come back 206
-  `application/pdf` with no Content-Disposition, and no request may be for a whole file
-  (D-40). Tiles must take the pages' shape. With the reads blocked, the toast must name
-  a download manager or extension, and clicking it must fetch nothing. IDM itself can't
-  run on the bench.
+- **`f5-big`** (`browser/f5-big.sh`) opens a 519 MB and a 7 MB PDF through Choose pages
+  (D-41). `drives/f5-big.py` makes both, plus a portrait page stored with `/Rotate 90`,
+  in a throwaway account's project.
+  - The browser may never request the set.
+  - Thumbnails must be plain 200 `image/webp` GETs, and tiles must take their pages'
+    shape.
+  - A loaded page must open from its own PDF in one plain GET: 200 `application/pdf`,
+    no Range, no filename header.
+  - With that GET blocked, the fit image must stay.
+  - IDM itself can't run on the bench.
 - **The only exceptions, not in the regression:** `f5-demo.mjs` and `walkthrough-setup.mjs`
   make things for the founder on purpose; `proof-backlog.mjs` reads the seeded Riverside's
   own measurements; `bench-tidy.mjs` is the clean-up of the seeded workspace itself.
