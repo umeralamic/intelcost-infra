@@ -119,7 +119,11 @@ await run("f5-s14", [
       // Page 5 dropped on the top half of page 2: it lands before it.
       const target = row(page, arch[2]);
       const box = await target.boundingBox();
+      // The panel moves at once (optimistic); the api's order is read only after the
+      // write has answered, or a busy bench reads the old order first.
+      const written = page.waitForResponse((r) => r.url().includes("/drawing/sheet/order") && r.request().method() === "PUT", { timeout: 15000 });
       await row(page, arch[5]).dragTo(target, { targetPosition: { x: box.width / 2, y: 2 } });
+      expect((await written).status() === 200, "the order write failed");
       const want = [1, 5, 2, 3, 4, 6];
       // The panel's order of Arch's rows, as the page shows it.
       await page.waitForFunction(

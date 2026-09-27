@@ -38,7 +38,7 @@ _Updated: 2026-09-27_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
-| P-20a | Rotate pages: legacy's "Rotate Pages…", a relative or absolute turn of the selected pages or all, stored on the sheet (`view_rotation`) and followed by the canvas, thumbnails, measurements and colleagues | both | Specced 2026-09-27; **being built** (overnight) | [rotate_pages_tasks.md](docs/tasks/rotate_pages_tasks.md) |
+| P-20a | Rotate pages: legacy's "Rotate Pages…", a relative or absolute turn of the selected pages or all, stored on the sheet (`view_rotation`) and followed by the canvas, thumbnails, measurements and colleagues | both | Specced and built 2026-09-27 (overnight), `p20a` 8/8; **awaiting the founder's click check**, then ✅ Live | [rotate_pages_tasks.md](docs/tasks/rotate_pages_tasks.md) |
 | F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **waits for P-20a** (F5 shipped 2026-09-27) | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
 | F7 (P-06) | Canvas tools and interactions: the measure tools, selection and editing, deducts, auto-merge, undo, menus, hover, keys; colleagues' cursors and drafts | both | Specced 2026-09-26, answers D-39; **waits for F6** | [canvas_tools_tasks.md](docs/tasks/canvas_tools_tasks.md) |
 

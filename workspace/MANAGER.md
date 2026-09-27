@@ -19,7 +19,7 @@ _Updated: 2026-09-27_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| P-20a | A scanned or landscape sheet that arrives turned has no fix today. → Legacy's "Rotate Pages…" from the panel's ⋮ menu: the current, selected or all pages, filtered by layout and rotation ("All pages + Landscape" in one click), turned by a relative turn or set to an absolute one, stored in `view_rotation` (the PDF's own `/Rotate` stays in `rotation`). The page box turns by CSS as legacy's, so coordinates, quantities and calibration are untouched; the pointer maps back through the turn; thumbnails turn too; one `drawing.sheet.changed` turns a colleague's view live, beyond legacy. **Specced 2026-09-27 (overnight), F5 having shipped.** | Be Fe | Umer | [rotate_pages_tasks.md](docs/tasks/rotate_pages_tasks.md) |
+| P-20a | A scanned or landscape sheet that arrives turned has no fix today. → Legacy's "Rotate Pages…" from the panel's ⋮ menu: the current, selected or all pages, filtered by layout and rotation ("All pages + Landscape" in one click), turned by a relative turn or set to an absolute one, stored in `view_rotation` (the PDF's own `/Rotate` stays in `rotation`). The page box turns by CSS as legacy's, so coordinates, quantities and calibration are untouched; the pointer maps back through the turn; thumbnails turn too; one `drawing.sheet.changed` turns a colleague's view live, beyond legacy. **Specced and built 2026-09-27 (overnight), `p20a` 8/8; awaiting the founder's click check.** | Be Fe | Umer | [rotate_pages_tasks.md](docs/tasks/rotate_pages_tasks.md) |
 
 ---
 

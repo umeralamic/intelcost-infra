@@ -24,6 +24,7 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 |---|---|---|---|---|---|
 | 0 | Archive F5 | Done: the spec and both block reports in `docs/archive/`, F5 ✅ Live with its flow and files, the board's F5 row dropped, PARITY's F5 note says shipped | 16:33 | 16:55 | 22 m |
 | 1 (spec) | P-20a spec | Written, [rotate_pages_tasks.md](rotate_pages_tasks.md); on the board In Progress | 16:55 | 17:10 | 15 m |
+| 1 | P-20a Rotate pages | **Built**, awaiting your click check: `p20a` 8/8; the quick tier plus the canvas fixtures, 26 fixtures, 24 passed first time, the 2 failures found and rerun green (below) | 17:10 | 18:05 | 55 m (with the spec) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
 
 ## The founder's addition (a), (b), (c)
@@ -73,6 +74,17 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 
 ## Failures and findings
 
+- **`f5-s14` AC2 read the api's sheet order before the write had answered** (P-20a's tier).
+  The panel moves a dragged sheet at once and writes after; the fixture checked the api
+  as soon as the panel showed the new order, and on a busy bench it read the old one.
+  The fixture now waits for the `PUT …/sheet/order` answer first. Not a product fault.
+- **`f5-sheet-items`' setup: a connect timeout from the fixture to the api** (P-20a's
+  tier, once). The api's log shows no stall in that run (no gap over 10 s in the
+  parallel group), so the connection from the browser container to the host gateway
+  timed out, not the api. **Not reproduced**: rerun beside the three heaviest fixtures,
+  all 5 passed. **Cause not found.** `apiCall` now names the request and how long it
+  waited when a fetch fails, so a repeat says which call it was.
+
 - **Two panel fixtures broke on the chevron** (`f5-s13` AC3, `f5-s14` AC3). Both took a
   row's first button to be its label. The fixtures were wrong, not the panel; they now
   use `[data-sheet-label]`.
@@ -100,6 +112,24 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
    1/4" = 1'-0"". Open it again: that scale is ticked.
 3. Scale → Calibrate Scale: the "Calibrate" toast appears and the Scale button stays
    highlighted until you finish.
+
+### P-20a: Rotate pages (IDM on is fine: nothing new is downloaded)
+
+1. Open a project with several sheets. In the Sheets panel, ⋮ (Panel options) →
+   **Rotate Pages…** (under "Page layout").
+2. It opens on "All pages (N)". Set Layout to Landscape: only landscape pages stay
+   ticked, and the line reads "2 of 3 pages match · 2 ticked" (your numbers).
+3. Set to → 90°: the footer reads "Rotate 2 pages to 90°." Pick Turn by → 180° instead:
+   "Turn 2 pages by 180°." Press Apply: "Rotated 2 pages".
+4. Open a turned sheet. It stands turned, filling the width, and your existing
+   measurements sit on the same drawing features as before; their quantities are
+   unchanged.
+5. Draw a Linear run on the turned sheet across a known dimension. It reads the right
+   length.
+6. Zoom in far (400% and more). The drawing stays sharp where you are looking.
+7. ⋮ → Thumbnails: the turned sheet's thumbnail is turned too.
+8. With a second window open on the same sheet, turn it in the first: the second turns
+   within a second, no reload.
 
 ## Questions
 

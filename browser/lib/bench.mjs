@@ -569,14 +569,23 @@ export async function seatedMember(ownerToken, workspaceUuid, role, tag = FIXTUR
  *  Every "the control is not shown" assertion is worth nothing on its own: hiding is
  *  not a gate. This is how a fixture proves the api refuses it too. */
 export async function apiCall(token, method, path, body) {
-  const response = await fetch(await fromNode(`${API}${path}`), {
-    method,
-    headers: {
-      authorization: `Bearer ${token}`,
-      ...(body ? { "content-type": "application/json" } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
+  const started = Date.now();
+  let response;
+  try {
+    response = await fetch(await fromNode(`${API}${path}`), {
+      method,
+      headers: {
+        authorization: `Bearer ${token}`,
+        ...(body ? { "content-type": "application/json" } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch (error) {
+    // A network failure carries no address of its own; name the request, so a failure
+    // under load says which call and how long it waited (2026-09-27: a connect timeout
+    // in f5-sheet-items' setup could not be traced without it).
+    throw new Error(`${method} ${path} failed after ${Date.now() - started} ms: ${error.message}`, { cause: error.cause ?? error });
+  }
   return { status: response.status, body: await response.json().catch(() => null) };
 }
 

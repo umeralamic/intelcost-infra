@@ -89,6 +89,7 @@ full_list() {
     echo "$name"
   done
   echo p19
+  echo p20a
   echo d37-links
   echo d27-uploads   # D-27's sweep of abandoned uploads (a drive, no browser)
 }

@@ -10,7 +10,24 @@ absolute rotation, stored on the sheet and followed by everything that draws it.
 [takeoff_shell_tasks.md](../archive/takeoff_shell_tasks.md) (F5)
 
 _Written 2026-09-27 (overnight) from legacy `intelcost/` at `12dd119b`. The founder put it
-right after F5 and before F6 (2026-09-27)._
+right after F5 and before F6 (2026-09-27). **Status: built 2026-09-27 (overnight),
+awaiting the founder's click check.** `p20a` 8/8._
+
+## Progress
+
+| Subtask | State | Proof |
+|---|---|---|
+| S1 the api | Built | `p20a` step 2: `PUT …/sheet/rotation`, 45 refused 422 by it and by the PATCH, `rotation` ignored, a viewer 403, 90 and 270 stored in one write |
+| S2 the dialog | Built | `p20a` step 3: under Page layout; opens on All; Landscape ticks 2 of 3; "Rotate 2 pages to 90°.", "Turn 2 pages by 180°."; "Rotated 2 pages", only the changed pages written |
+| S3 the canvas and thumbnail follow | Built | `p20a` steps 4 to 8: the turned box fits the canvas (801 × 1238 in 864 px); Run R's vertices and 60 LF unchanged; a run drawn turned stored unturned, 59.99 LF; at 488% the pdf.js window covers the view; the thumbnail turned; a second window on api-b turned in 356 ms, no reload |
+
+**Found while building:**
+- A turned sheet's prerender and its cached frame are keyed on the unturned page's width,
+  which differs from the canvas column's. A neighbour that is turned is drawn ahead at the
+  column's width and so misses the cache: it opens on its fit image first, as a cold sheet
+  does. Small, and noted rather than fixed.
+- A colleague's draft name tag on a turned sheet turns with the page (it sits inside the
+  page box, as legacy's did). The live quantity readout was moved out, so it reads upright.
 
 ---
 
