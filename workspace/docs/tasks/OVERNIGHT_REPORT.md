@@ -2,7 +2,9 @@
 
 _Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
 [docs/archive/OVERNIGHT_REPORT_2026-09-27.md](../archive/OVERNIGHT_REPORT_2026-09-27.md).
-Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
+Run started 2026-09-27 16:33 CDT; closed 2026-09-28 08:00 CDT on the founder's word.
+Every repo clean on `umer-dev`, pushed and mirrored; the bench left up; no screenshots
+left._
 
 **In short.** F5's follow-ups, P-20a and all of F6 are built and wait for your click
 checks. F7 is built from Block A through S19: every measure tool and mode, snap and
@@ -60,6 +62,7 @@ for each block.
 | 6f | F7 closing full tier | **109 fixtures, 106 first time** (76 m 46 s); the three traced (a product fault fixed, a fixture wait, `f8-s18` made serial as a timing fixture), below; all F7 fixtures and the touched ones, 18, green after | 04:50 | 06:27 | 1 h 37 |
 | 6g | F7 S11 auto-scroll (built beside the tier, installed after it) | **Built**: `f7-j` 3/3; quick tier plus 6 touched, 23: all pass (16 m 16 s) | 06:10 | 06:45 | 35 min |
 | 6h | F7 S11 AC1: measuring past the edge of the paper | **Built**: `f7-k` 2/2 (second run; the first found a level line counts as hidden to Playwright, not a product fault); quick tier plus every drawing fixture, 34: all pass (21 m 20 s) | 06:50 | 07:16 | 26 min |
+| 6i | F7 S15 AC2: the move handle hides while a dialog is open | **Built**: `f7-e` 7/7 (after a fixture fault, found with a probe, below); quick tier plus the F7 fixtures and two timing fixtures, 29: all pass (19 m 48 s) | 07:20 | 07:58 | 38 min |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -99,7 +102,7 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 
 ## Commits
 
-All on `umer-dev`, pushed; `main` untouched in every repo; no force-push. 40 commits (and
+All on `umer-dev`, pushed; `main` untouched in every repo; no force-push. 44 commits (and
 the closing mirror commit after this list). `intelcost-market-next` had none. Twice
 tonight I typed an in-place `sed` (rule 7); both times the hook blocked it and nothing
 was touched.
@@ -116,7 +119,7 @@ was touched.
 - `d3875bd` 03:39 F7 S9, S15, S18: arcs in the figure, deduct refusals, overlapping holes once
 - `faf002e` 04:41 Takeoff: a shape lands on the sheet it was drawn on; a sheet lists its shapes wherever the item began
 
-**intelcost-app-react** (13)
+**intelcost-app-react** (14)
 
 - `c031702` 17:25 F5 follow-up: items under each sheet row; legacy's toolbar Scale button (D-53)
 - `f74db61` 18:03 P-20a: Rotate Pages, and the canvas, raster and thumbnails follow the turn
@@ -131,8 +134,9 @@ was touched.
 - `824446c` 04:50 F7 S16: legacy's copy and paste, real-world size kept across sheets (D-67)
 - `7d66915` 06:45 F7 S11: legacy's Auto Scroll; a vertex edit's answer goes straight into the cache
 - `0097cc6` 07:16 F7 S11: measure past the edge of the paper
+- `c431ddd` 07:58 F7 S15 AC2: the move handle hides while a dialog is open
 
-**intelcost-infra** (18)
+**intelcost-infra** (21)
 
 - `8ef4eb5` 17:25 F5 follow-up fixtures (f5-sheet-items, f5-scale-button); F5 archived; P-20a spec; D-53, D-54; mirror
 - `5f80d01` 18:03 P-20a fixture (p20a, in the full list); f5-s14 waits for the order write; apiCall names a failed request; mirror
@@ -152,6 +156,9 @@ was touched.
 - `62b0f7f` 06:45 workspace: F7 closing tier, S11, report
 - `0f80b0f` 06:46 workspace: overnight report with its commits and summary
 - `e60d55f` 07:16 F7: fixture f7-k (past the edge)
+- `9e34476` 07:17 workspace: S11 past the edge; report brought to 07:17
+- `c358829` 07:27 workspace: report closes the run (S15 AC2 tried and reverted)
+- `6edd86a` 07:58 F7: f7-e drives the move handle hiding under a dialog
 
 ## Overnight decisions to review
 
@@ -215,13 +222,13 @@ was touched.
 
 ## Failures and findings
 
-- **S15 AC2 (the move handle hides while a dialog is open): tried at 07:20, reverted.** The
-  canvas watched the document for an open modal and hid the handle. The new fixture step
-  failed twice before its dialog opened: after selecting Mover's section, the handle and
-  the vertex handles were gone, and the item was selected whole. The cause was not found in
-  the time left, so the change and its step came out; `f7-e` 6/6 on what is committed.
-  AC2 stays open with this lead: something clears the section selection on a fresh load
-  after step 5's move.
+- **S15 AC2 (the move handle hides while a dialog is open): my fixture, not the product.**
+  The first try failed twice and I reverted it. A throwaway probe then sampled the handles
+  every 200 ms, with the change and without: steady both times. The fault was in the step.
+  It opened its dialog from the item's right-click menu, and a right-click selects the
+  whole item, so there was no section for the handle to come back to. The step now opens
+  the Takeoff panel's "New folder" dialog, which leaves the selection alone: `f7-e` 7/7.
+  The probe was deleted.
 
 - **F7's closing full tier: 109 fixtures, 106 first time (76 m 46 s).** Each failure
   happened only under parallel load, so each was traced to a cause, not rerun away:
