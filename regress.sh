@@ -71,7 +71,10 @@ trap 'rm -rf "$LOCK"; [ -n "$cpu_pid" ] && kill "$cpu_pid" 2>/dev/null' EXIT
 #           second (723 ms alone, 1,243 ms beside two other fixtures at 92% CPU)
 #   f5-s19  measures time: A's calibration reaches B within 2 s of Save (642 ms alone,
 #           2,176 ms in the F5 close's full tier at 85% mean CPU)
-SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27 f5-s11 f5-s15 f5-s19)
+#   f8-s18  measures time: a shape reaches the other window within a second (under a
+#           second in every quick tier; 1,371 ms in F7's closing full tier, beside the
+#           pdf.js-bound f5-s10 and f5-s16)
+SERIAL=(f8-s2 f8-s3 f8-s5 f8-s8 f8-s12 f5-s2 f4-s27 f5-s11 f5-s15 f5-s19 f8-s18)
 
 # The core smoke set: one or two fixtures per surface, fast, run at the end of each block.
 # f5-d51 is the founder's standing check (2026-09-27): equal runs across and down a

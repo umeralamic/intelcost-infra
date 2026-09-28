@@ -27,7 +27,10 @@ async function open(page, { items = true } = {}) {
   await enterWorkspace(page, workspace.uuid);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
   await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
-  if (items) await page.locator("[data-quantity-panel] li[data-item-row]").first().waitFor({ timeout: 15000 });
+  if (items) {
+    await page.locator("[data-quantity-panel] li[data-item-row]").first().waitFor({ timeout: 15000 });
+    await drawn(page, 4);
+  }
 }
 async function drag(page, [ax, ay], [bx, by]) {
   const a = await sheetPoint(page, ax, ay);
@@ -40,6 +43,10 @@ async function drag(page, [ax, ay], [bx, by]) {
 }
 /** Encloses North and South wherever the turn and flip below leave them, and half of Kerb. */
 const BOX = [[0.05, 0.05], [0.5, 0.8]];
+/** Ctrl+A takes what the canvas has drawn: wait for the sheet's own shapes, which can
+ *  arrive after the panel's project-wide list under load. */
+const drawn = (page, n) =>
+  waitFor(async () => (await page.locator("path[data-geometry], circle[data-geometry]").evaluateAll((els) => new Set(els.map((e) => e.getAttribute("data-geometry"))).size)) >= n, `${n} shapes drawn`, 15000);
 const boxedCount = (page, n) => waitFor(async () => { const b = await boxed(page); return b.length === n ? b : null; }, `${n} shapes boxed`, 5000);
 
 await run("f7-h", [
@@ -103,6 +110,7 @@ await run("f7-h", [
     title: "AC3, AC4: Ctrl+A selects all four; right-click: \"4 selected\", Copy, Paste, Move, Rotate Left 90°, Rotate Right 90°, Flip Horizontal, Flip Vertical, Lock, Delete; the action group shows Delete alone",
     run: async ({ page }) => {
       await open(page);
+      await drawn(page, 4);
       await page.keyboard.press("Control+a");
       await boxedCount(page, 4);
       const inside = await sheetPoint(page, 0.15, 0.2);
@@ -154,6 +162,7 @@ await run("f7-h", [
     title: "AC6: → nudges the selection 0.001 of the page, Shift+→ 0.01, one write a press",
     run: async ({ page }) => {
       await open(page);
+      await drawn(page, 4);
       await page.keyboard.press("Control+a");
       await boxedCount(page, 4);
       const x0 = (await detail(ids.kerb)).geometries[0].vertices_json[0][0];
