@@ -34,7 +34,9 @@ async function at(page, x, y) {
 async function selectSection(page, x, y, uuid) {
   const p = await at(page, x, y);
   await page.mouse.click(p.x, p.y);
-  await page.locator(`[data-handle="${(await detail(uuid)).geometries[0].uuid}"]`).first().waitFor({ timeout: 5000 });
+  // The section, not a deduct: the api promises no order among an item's shapes.
+  const section = (await detail(uuid)).geometries.find((g) => g.role !== "subtract");
+  await page.locator(`[data-handle="${section.uuid}"]`).first().waitFor({ timeout: 5000 });
 }
 
 await run("f7-e", [

@@ -49,19 +49,17 @@ await run("proof-backlog", [
   {
     title: "§7 Click a sheet to open it on the canvas; the current row is highlighted in blue",
     run: async ({ page }) => {
-      await signInAt(page, APP, SEEDED.email, SEEDED.password);
-      await page.goto(`${APP}/project/${r.project}`);
-      const open = page.getByRole("button", { name: "Open", exact: true }).first();
-      await open.waitFor({ timeout: 15000 });
-      await open.click();
-      await page.waitForURL(/\/takeoff\//, { timeout: 15000 });
-      const opened = page.url().includes(r.sheet) || page.url().includes("/takeoff/");
-      await page.locator('img[alt="Drawing sheet"]').waitFor({ timeout: 20000 });
-      // Today's takeoff page has no sheets panel, so there is no current row to be blue.
-      const panel = await page.getByRole("heading", { name: "Sheets" }).count();
-      expect(opened, "clicking the sheet did not open the canvas");
-      expect(panel > 0, "opens the canvas from Project Home's sheet list, but takeoff has no sheets panel and no highlighted current row (F5-S13)");
-      return "opened";
+      // Since F5 the sheets are the takeoff page's own panel (F5-S13): click another row.
+      await signedInOnSheet(page);
+      const sheets = (await call(token, "GET", `${r.takeoff.replace(/\/takeoff$/, "")}/drawing/sheet`)).body.sort((a, b) => a.page_number - b.page_number);
+      const other = sheets.find((s) => s.uuid !== r.sheet);
+      expect(other, "Riverside has one sheet");
+      await page.locator(`[data-sheet-row="${other.uuid}"] button`).first().click();
+      await page.waitForURL((url) => url.pathname.endsWith(other.uuid), { timeout: 15000 });
+      await page.locator(`[data-sheet-row="${other.uuid}"][data-active="1"]`).waitFor({ timeout: 10000 });
+      const before = await page.locator(`[data-sheet-row="${r.sheet}"]`).getAttribute("data-active");
+      expect(before === "0", "the first row is still marked current");
+      return "a click on the second row opened it; its row is the current one and the first is not";
     },
   },
   {
@@ -108,9 +106,13 @@ await run("proof-backlog", [
       const third = Number((await detail(tri.uuid)).effective_quantity);
       await signedInOnSheet(page);
       const shown = await row(page, name).textContent();
-      expect(first === 1600 && second === 2400 && third === 800, `read ${first}, ${second}, ${third}`);
-      expect(/2,400/.test(shown ?? ""), `the row reads "${shown}"`);
-      return `1,600.00 → 2,400.00 SF on a vertex move; a triangle 800.00 SF exactly; the row reads it`;
+      // The seeded sheet is not square (D-51: feet per point, across and down alike), so
+      // the proof is in the ratios: half as wide again reads 1.5 times; the triangle half.
+      const close = (a, b) => Math.abs(a - b) <= 1e-6 * Math.max(1, b);
+      expect(first > 0 && close(second, first * 1.5) && close(third, first * 0.5), `read ${first}, ${second}, ${third}`);
+      const want = second.toLocaleString("en-US", { maximumFractionDigits: 2 });
+      expect((shown ?? "").includes(want), `the row reads "${shown}", not ${want}`);
+      return `${first} → ${second} SF on a vertex move (×1.5 exactly); a triangle ${third} SF (×0.5 exactly); the row reads ${want}`;
     },
   },
   {
@@ -118,6 +120,7 @@ await run("proof-backlog", [
     run: async ({ page }) => {
       const name = `Proof override ${Date.now() % 100000}`;
       const item = await areaItem(name, square(0.1, 0.4, 0.2, 0.2));
+      const measured = Number((await detail(item.uuid)).effective_quantity);
       await signedInOnSheet(page);
       await row(page, name).click();
       const pane = page.locator("[data-properties-pane]");
@@ -133,8 +136,8 @@ await run("proof-backlog", [
       await pane.getByRole("button", { name: "Override quantity" }).waitFor();
       const cleared = Number((await detail(item.uuid)).effective_quantity);
       expect(blockedWithoutReason, "an override could be saved without a reason");
-      expect(overridden === 1234.5 && cleared === 1600, `override ${overridden}, cleared ${cleared}`);
-      return "no reason, no save; 1,234.5 with its reason shown; Clear returns 1,600";
+      expect(overridden === 1234.5 && cleared === measured, `override ${overridden}, cleared ${cleared}, measured ${measured}`);
+      return `no reason, no save; 1,234.5 with its reason shown; Clear returns the measured ${measured}`;
     },
   },
   {
@@ -163,6 +166,9 @@ await run("proof-backlog", [
       await page.getByRole("button", { name: "Zoom in" }).click();
       await page.waitForTimeout(300);
       const el = scroller(page);
+      // Legacy's Pan tool, armed by H (D-66); Select's drag draws a box instead.
+      await page.keyboard.press("h");
+      const keyArms = await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { pressed: true }).textContent();
       const before = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
       const box = await el.boundingBox();
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -170,10 +176,9 @@ await run("proof-backlog", [
       await page.mouse.move(box.x + box.width / 2 - 150, box.y + box.height / 2 - 100, { steps: 8 });
       await page.mouse.up();
       const after = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
-      await page.keyboard.press("h");
-      const keyArms = await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { pressed: true }).textContent();
+      expect(keyArms?.trim() === "Pan", `H armed ${keyArms?.trim()}`);
       expect(after[0] > before[0] && after[1] > before[1], `scroll ${before} → ${after}`);
-      return `drag panned (${before} → ${after}); the H key does nothing (armed: ${keyArms?.trim()}), a §23 line`;
+      return `H armed ${keyArms?.trim()}; its drag panned (${before} → ${after})`;
     },
   },
   {
