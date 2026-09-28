@@ -43,6 +43,7 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 6b | F7 S9 inline arcs, S10 snap and Ortho, S12 select a section and the hole cycle, S17 Delete | **Built**: `f7-c` 5/5, `f7-d` 4/4 first run; the shared table caught a gap of mine in both engines (an area closed by an arc from two points), fixed; quick tier plus touched, 41: 38 pass; `f8-s18` and `f8-s9` caught a regression of mine (below) and `f7-a` the overlapping-holes row written ahead of its code, all three fixed in 6c. D-63 | 02:10 | 02:53 | 43 min |
 | 6c | F7 S13 vertices (insert, delete, legacy's refusal), S15 Move (a section carries its deducts, a deduct moved off is refused), S18 deducts drawn on the canvas (legacy's refusals, overlapping holes merged) | **Built**: `f7-e` 6/6, `f7-f` 3/3; `f7-d` caught the move handle swallowing the hole cycle's click (fixed: a click on the handle is a click on the sheet); quick tier plus 15 touched, 32: all pass. D-64, D-65 | 02:53 | 03:39 | 46 min |
 | 6d | F7 S14 box select, Ctrl+A and the selection menu, legacy's Pan tool back (H, V); S15 AC5 Move from the menu; S19 AC4; a product fault found on the way (shapes on the wrong sheet) | **Built**: `f7-h` 8/8, `f7-g` 4/4 (after fixture fixes: a section found by role, not order; a press off the new handle; a sheet switch the F6 panel makes); `proof-backlog`'s §7 and §8 steps brought up to date; quick tier plus 22 touched, 39: all pass. D-66 | 03:39 | 04:41 | 1 h 2 min |
+| 6e | F7 S16 copy and paste | **Built**: `f7-i` 5/5 (second run; the first held a pasted run to 1e-6 of where a pixel-rounded click fell), `f7-e` 6/6 and `f7-h` 8/8 beside it; covered by the closing full tier. D-67 | 04:41 | 04:55 | 14 min |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -536,6 +537,23 @@ use what the canvas has.
    (space-drag and the middle button pan with any tool).
 8. On a second sheet, choose an item from the first sheet in the Takeoff panel (it opens
    the first sheet), go back to the second, and Count: the marks stay on the second sheet.
+
+### F7 S16: copy and paste (IDM irrelevant)
+
+1. Right-click one run of an item with several, "Copy…": "This section only", "All
+   sections on this sheet (n)", "Choose sections…", "Cancel". An item with one section
+   skips straight to the next menu.
+2. "Paste on this sheet": a dashed copy follows the cursor (a run as a line, an area
+   shaded) and a banner says "click where you want to place it". Click: "Paste copy",
+   `Paste into "{name}" or create a new item?`, with Back, Cancel, New item, Same item.
+3. "Paste on another sheet…" lists the other sheets; pick one at a different scale: the
+   dialog says the geometry will be rescaled, and the pasted quantity equals the original.
+4. New item makes "{name} copy" in the same folder and colour; the Properties pane can
+   rename it.
+5. "Choose sections…": click runs to add or drop them, the banner counts them, Enter
+   goes on. Escape at any point lets the copy go.
+6. On a sheet with no scale: "Target sheet is not calibrated", and the copy stays in hand
+   until you calibrate or press Escape.
 
 ## Questions
 
