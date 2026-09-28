@@ -2324,7 +2324,7 @@ Scale menu, on the chip and in the sheets panel. Engineering (`1" = 20'`) and me
 ## D-53 — The sheets panel lists each sheet's items with that sheet's share, and the toolbar has legacy's Scale button
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Frontend, Backend
 **Serves:** the founder's findings (a) and (b) of 2026-09-27, an F5 follow-up
 
@@ -2371,7 +2371,7 @@ made to port them.
 ## D-54 — The Takeoff panel lists every item in the project; legacy has no current-sheet filter to port
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28). Q1: legacy kept, no sheet filter.
 **Area:** Takeoff, Frontend
 **Serves:** the founder's finding (c) of 2026-09-27; built in F6-S9
 
@@ -2399,7 +2399,7 @@ sheet carrying the item when the open one carries none).
 ## D-55 — New Measurement asks before drawing, and one tool run is one item
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Frontend, Backend
 **Serves:** F6-S1 to S3
 
@@ -2447,7 +2447,7 @@ per shape, which is how three count clicks made three items (finding, 2026-09-26
 ## D-56 — Sub-items and variables: one level, read in order, recomputed on the api
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Backend, Frontend
 **Serves:** F6-S4 to S6 (D-36 F6 Q1, Q3, Q6)
 
@@ -2480,7 +2480,7 @@ refetches a changed parent's sub-items with it, since most writes name only the 
 ## D-57 — Folder and layer multipliers extend a quantity; takeoff shows what was measured
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Estimating, Backend (hard rule 3: quantities)
 **Serves:** F6-S7, S8
 
@@ -2511,7 +2511,7 @@ place on the api (`service.item_multiplier`), which F9 reads.
 ## D-58 — Classifications: legacy's five templates, seeded per system on first use
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Classification, Backend, Workspace settings
 **Serves:** F6-S10 to S13, S15
 
@@ -2557,7 +2557,7 @@ project-level subcontractor overrides are Estimating's (F9).
 ## D-59 — Filing by classification happens on the api, with a searchable picker
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Classification
 **Serves:** F6-S14
 
@@ -2585,7 +2585,7 @@ at once find one folder, not two.
 ## D-60 — Settings: legacy's "Project Setup" tab holds Classification, Subcontractors and Statuses
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Frontend, Workspace settings
 **Serves:** F6-S10 to S15, P-19
 
@@ -2606,7 +2606,7 @@ desktop column.
 ## D-61 — F7 Block A: legacy's hit rules, analytic shapes on the api, deducts clipped once
 
 **Date:** 2026-09-27
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Backend, Frontend (hard rules 2 and 3)
 **Serves:** F7-S1, S2
 
@@ -2647,7 +2647,7 @@ a crossing curved deduct is exact to within the 256-point outline (under 0.02 %)
 ## D-62 — F7 Block B: legacy's modes and draw menu, Count joins the selected count item
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Frontend
 **Serves:** F7-S4 to S8
 
@@ -2675,7 +2675,7 @@ mode setting") and S7 AC5 (a sheet switch ends a count session) need the canvas 
 ## D-63 — F7-S10: the canvas bar shows Ortho and Snap; the other three come with their features
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Frontend
 **Serves:** F7-S10 (and S11, S20)
 
@@ -2695,7 +2695,7 @@ canvas settings (S27) carry their defaults.
 ## D-64 — F7-S18: a deduct stays its own shape, even across an edge or over another hole
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Backend
 **Serves:** F7-S18, S19
 
@@ -2719,7 +2719,7 @@ holes is reworked (S18 AC6's "no bead chain" holds: no shape is resampled).
 ## D-65 — F7-S15: a section moves with the deducts it owns, in one change
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Frontend, Backend
 **Serves:** F7-S15, S18
 
@@ -2744,7 +2744,7 @@ the section and its deducts, so a colleague's edit to either refuses the whole m
 ## D-66 — F7-S14: Select draws legacy's box; panning goes back to legacy's Pan tool
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28). Q2: legacy kept (Select draws the box; Pan is H).
 **Area:** Takeoff, Frontend
 **Serves:** F7-S14 (and §9's Pan line)
 
@@ -2777,7 +2777,7 @@ arrives with the features its rows open.
 ## D-67 — F7-S16: legacy's copy and paste, keeping real-world size across and down
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided overnight, pending founder review)
+**Status:** Accepted (founder review 2026-09-28). **Amended by D-73:** "New item" on a paste opens the New Measurement dialog prefilled, as legacy's.
 **Area:** Takeoff, Frontend
 **Serves:** F7-S16, S19 AC2
 
@@ -2854,7 +2854,7 @@ full run, which is why the list in item 6 exists. Two-window checks need `api-b`
 ## D-69 — F7-S20: auto-merge computed in the browser, legacy's union, a shape keeps who drew it
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided in the day, pending founder review)
+**Status:** Accepted (founder review 2026-09-28).
 **Area:** Takeoff, Frontend, Backend
 **Serves:** F7-S20 (and S22's undo of a merge)
 
@@ -2923,41 +2923,10 @@ tag before any deploy to testers or promotion to `main`, and commit and push per
 blocks. A quantity regression is caught by the smoke test's eye or by the full run before
 a deploy. A session needs the Playwright MCP connected to finish a block.
 
-## D-70 — F7-S21: Resume, Start, New section and Add more points reached from the menus until the action group
-
-**Date:** 2026-09-28
-**Status:** Under Review (decided in the day, pending founder review)
-**Area:** Takeoff, Frontend
-**Serves:** F7-S21 (and S23, P-21)
-
-**Context:** Legacy reaches these acts in three places. A row's type glyph is Resume: a
-Linear or Area item's next run joins it, a count goes on marking (`handleResumeItem`).
-The action group's Start does the same, and its Resume, on a selected run, is "Add more
-points": click the run's last point to go on from the end, or an edge to insert a point
-and go on from there. An area's right-click menu carries "Add more points" and "New
-section"; a Linear run's menu carries neither. The action group is F7-S23, and the row's
-glyph belongs to the panel's presentation port (P-21); a nested glyph button cannot sit in
-today's row, which is itself a button.
-
-**Decision:** Build the acts now and reach them from the right-click menus in legacy's
-words and hints: an area's section "Add more points" and "New section" (its own menu); a
-Linear run's "Start" and "Resume" ("Start another section of this item", "Continue this
-run from one of its ends", the action group's titles); a count's "Resume" ("Keep placing
-markers on this item"); a row's "Resume" ("Resume this takeoff — continues measuring
-{area|length} on this sheet"). Each Resume entry carries legacy's per-type glyph (menus
-gain an icon slot; the accent is a new token, `--glyph-accent`, legacy's #e2564a). "Add
-more points" is offered on a run of points, not on a rectangle, ellipse or arc, whose own
-handles come with S13; its new points go into the run in one version-guarded write, and a
-point inserted on an edge is written only with them, where legacy wrote it at once. S23
-and P-21 move the entries to their legacy homes and keep the acts.
-
-**Consequences:** Every act of S21 is reachable today. The menus carry four entries
-legacy's do not (Start, Resume, and the row's and count's Resume) until S23 and P-21.
-
 ## D-71 — F7-S22: the session history, as before-and-after rows undone in one transaction
 
 **Date:** 2026-09-28
-**Status:** Under Review (decided in the day, pending founder review)
+**Status:** Accepted (founder review 2026-09-28). **Amended by D-73:** Delete on an item with sub-items asks first; an undo brings the item back with its sub-items; a box selection's delete is one undo step.
 **Area:** Takeoff, Frontend, Backend
 **Serves:** F7-S22, S20 AC5
 
@@ -2996,3 +2965,78 @@ colleague's work is never undone unasked. Undoing a delete that took an item wit
 sub-items brings the item back without them; the Delete key still takes such an item with
 no confirm (F7-S17), which is worth a founder look. The box selection's delete is not yet
 recorded (its acts span items; each item's part would be its own step).
+
+## D-72 — F7-S21: Resume, Start, New section and Add more points reached from the menus until the action group
+
+**Date:** 2026-09-28
+**Status:** Accepted (founder review 2026-09-28). Renumbered from D-70, which a founder decision had taken.
+**Area:** Takeoff, Frontend
+**Serves:** F7-S21 (and S23, P-21)
+
+**Context:** Legacy reaches these acts in three places. A row's type glyph is Resume: a
+Linear or Area item's next run joins it, a count goes on marking (`handleResumeItem`).
+The action group's Start does the same, and its Resume, on a selected run, is "Add more
+points": click the run's last point to go on from the end, or an edge to insert a point
+and go on from there. An area's right-click menu carries "Add more points" and "New
+section"; a Linear run's menu carries neither. The action group is F7-S23, and the row's
+glyph belongs to the panel's presentation port (P-21); a nested glyph button cannot sit in
+today's row, which is itself a button.
+
+**Decision:** Build the acts now and reach them from the right-click menus in legacy's
+words and hints: an area's section "Add more points" and "New section" (its own menu); a
+Linear run's "Start" and "Resume" ("Start another section of this item", "Continue this
+run from one of its ends", the action group's titles); a count's "Resume" ("Keep placing
+markers on this item"); a row's "Resume" ("Resume this takeoff — continues measuring
+{area|length} on this sheet"). Each Resume entry carries legacy's per-type glyph (menus
+gain an icon slot; the accent is a new token, `--glyph-accent`, legacy's #e2564a). "Add
+more points" is offered on a run of points, not on a rectangle, ellipse or arc, whose own
+handles come with S13; its new points go into the run in one version-guarded write, and a
+point inserted on an edge is written only with them, where legacy wrote it at once. S23
+and P-21 move the entries to their legacy homes and keep the acts.
+
+**Consequences:** Every act of S21 is reachable today. The menus carry four entries
+legacy's do not (Start, Resume, and the row's and count's Resume) until S23 and P-21.
+
+## D-73 — The founder's review of F7-S20 to S22: no silent loss on delete, an undoable box delete, legacy's paste dialog and Hide
+
+**Date:** 2026-09-28
+**Status:** Accepted (founder decision, 2026-09-28 review; the mechanism decided in the day)
+**Area:** Takeoff, Frontend, Backend
+**Amends:** D-67 (paste "New item"), D-71 (undo of an item that went)
+
+**Context:** The founder's answers to the review: the Delete key on an item with sub-items
+asks first, and undo must bring the item back **with** its sub-items; a box selection's
+delete must be undoable, before S23; the report's questions: Q1 and Q2 keep legacy's, Q3
+"New item" on a paste opens the New Measurement dialog prefilled, as legacy's, Q4 build
+legacy's view-only Hide in F7. An item's delete cascades to its sub-items, dimensions,
+shapes and estimate lines, and formulas read items by uuid, so an item made again under a
+new uuid (D-71) would lose all of that.
+
+**Decision:**
+1. **A snapshot and a restore on the api.** `GET …/takeoff/item/{uuid}/snapshot` returns
+   an opaque token: every row the item's delete would take (the item and its sub-items,
+   their dimensions and shapes, and their estimate lines), as the database holds them,
+   signed with the api's secret. `POST …/takeoff/item/restore` puts those rows back
+   **under their own ids and uuids**, so formulas that read the item and the sub-items'
+   parent links hold; a folder or layer deleted since is left empty, a missing sheet or
+   an item already back refuses in words, and the quantities are recomputed. A token is
+   bound to its workspace and project and is refused anywhere else.
+2. The history (D-71) takes a snapshot just before any act that may take an item (a
+   delete, an undo of the act that made it) and restores it for the reverse. Items keep
+   their uuids through undo and redo; D-71's "made again under a new uuid" goes.
+3. **Delete on an item with sub-items asks first**: "Delete {name}?", naming how many
+   sub-items go with it and that Ctrl+Z brings them back. Without sub-items it does not
+   ask, as legacy's.
+4. **A box selection's delete is one undo step** across the items it touched: each item's
+   part is its own transaction, in sequence (the spec's cross-item rule), undone together.
+5. **Paste as "New item"** opens the New Measurement dialog prefilled with legacy's
+   values ("{name} copy", the source's colour, folder and layer); Create makes the item
+   and the paste lands in it; Cancel keeps the copy in hand.
+6. **Hide, legacy's view-only**: an eye on each item row, the selection's "Hide"
+   ("Hidden — quantities are unchanged"), and the canvas's Show All and Hide All by kind,
+   all on one per-item hidden set kept in the browser (legacy's `takeoff-hidden-items-v1`).
+   Nothing hidden changes a quantity. Built with the context menus (S24).
+
+**Consequences:** No act on the takeoff page loses a sub-item, a dimension or an estimate
+line without asking, and every one comes back with Ctrl+Z. A snapshot token carries the
+rows' content to the browser and back; it cannot be edited, since the signature would fail.
