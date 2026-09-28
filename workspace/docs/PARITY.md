@@ -410,10 +410,10 @@ sibling panel reads as a bug to an estimator.
 
 ## 10. Canvas interactions
 
-- [ ] Draw modifiers Snap (S), Snap PDF (D) and Ortho (O) toggle mid-draw, with defaults in Settings. `src/lib/takeoff/engine/shortcuts.ts`, `src/components/takeoff/DrawModifiersOverlay.tsx` · **missing**
+- [ ] Draw modifiers Snap (S), Snap PDF (D) and Ortho (O) toggle mid-draw, with defaults in Settings. `src/lib/takeoff/engine/shortcuts.ts`, `src/components/takeoff/DrawModifiersOverlay.tsx` · **partial** (F7-S10, D-63, `f7-c` steps 2 and 4: Snap and Ortho on the canvas bar and S and O mid-draw; Snap PDF waits for the linework reader; the defaults in Settings are S27's)
 - [ ] Snap PDF snaps new points to the drawing's own linework, read from the PDF vector data. `src/lib/takeoff/pdf/pdfSnapGeometry.ts`, `pdfPolylines.ts` (795 lines) · **missing**
-- [ ] Escape cancels in two stages while measuring, Enter finishes, Backspace removes the last point, Delete removes the selection. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S8, `f7-b` step 7: two-stage Escape, Enter, Backspace; Delete of a selection is Block C's, F7-S17)
-- [ ] "A" mid-draw arms an inline arc segment, beating the Area tool binding. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
+- [x] Escape cancels in two stages while measuring, Enter finishes, Backspace removes the last point, Delete removes the selection. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7: two-stage Escape, Enter, Backspace; Delete removes the selected section, F7-S17, `f7-d` step 4)
+- [ ] "A" mid-draw arms an inline arc segment, beating the Area tool binding. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S9, `f7-c` step 5: A arms the arc mid-run, Backspace unwinds it, the figure analytic (D-39 Q5); with no point placed A does nothing yet, the Area binding is §23's)
 - [ ] The contextual action group offers Stop, Discard, New Section, Properties, Undo, Copy, Duplicate, Deduct, Delete and Resume, changing with the drawing, selection and cutout states. `src/components/takeoff/ContextActionGroup.tsx` (318 lines) · **missing**
 - [ ] Right-click on an in-progress measurement opens a small action menu. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
 - [ ] Right-click on empty sheet area opens the canvas menu: quick tools, bookmark this page, show or hide legend, and per-type markup visibility. `src/components/takeoff/SheetContextMenu.tsx` · **missing**
@@ -424,11 +424,11 @@ sibling panel reads as a bug to an estimator.
 - [ ] Copy a markup to another spot or another sheet, with two direct options and no reference-point click, for every item type. `src/lib/takeoff/engine/transformRuns.ts` · **missing**
 - [ ] Choose which sections get copied. `.lovable/plan/copy-choose-which-sections-get-copied-2026-08-17.md` · **missing**
 - [ ] The move and copy ghost draws linear runs as lines, not shaded areas. `.lovable/plan/move-copy-ghost-draw-linear-runs-as-lines-not-shaded-areas-2026-08-03.md` · **missing**
-- [ ] Cut a deduct (hole) out of an area, select the positive first then click inside a deduct, and merge overlapping holes. `src/lib/takeoff/engine/deductPairing.ts`, `edgeCut.ts` (640 lines) · **missing**
-- [ ] Deducts follow their area on delete, and the deduct tool stays armed. `.lovable/plan/deducts-follow-their-area-on-delete-deduct-tool-stays-armed-2026-08-23.md` · **partial** (F7-S2: a deduct's section is its `owner_geometry_id`, and deleting the section deletes its deducts by the database's rule, `f7-a` step 4. The deduct tool is F7-S18's)
+- [ ] Cut a deduct (hole) out of an area, select the positive first then click inside a deduct, and merge overlapping holes. `src/lib/takeoff/engine/deductPairing.ts`, `edgeCut.ts` (640 lines) · **partial** (F7-S18, D-64: right-click an area, "Subtract from section", any Area mode; legacy's "Subtracted", "Applied to "{name}".", "Subtract has no overlap", "Deduction covers the whole area"; a bite over the edge counts only what it covers; overlapping holes counted once in the arithmetic rather than rewritten into one shape, `f7-f`. Clicking inside a deduct to pair it is not built)
+- [ ] Deducts follow their area on delete, and the deduct tool stays armed. `.lovable/plan/deducts-follow-their-area-on-delete-deduct-tool-stays-armed-2026-08-23.md` · **partial** (F7-S2: a deduct's section is its `owner_geometry_id`, and deleting the section deletes its deducts by the database's rule, `f7-a` step 4. The deduct tool stays armed for the next box, `f7-f` step 2; and a section moved carries its deducts, D-65, `f7-e` step 5)
 - [ ] Circles and ellipses still look like curves after a deduct. `.lovable/plan/keep-circles-and-ellipses-looking-like-curves-after-a-deduct-2026-08-23.md` · **missing**
 - [ ] Pairing is not quantity: a deduct pairing never changes the measured figure by itself. `src/lib/takeoff/engine/deductPairing.ts` · **missing** (F7-S2, D-61: on the api, each deduct is clipped against the union of its item's sections on the sheet and subtracted once, whichever owns it; the shared table's three crossing rows, `f7-a` step 2. Drawing a deduct, and the ownership that pairing drives in the browser, arrive with F7-S18)
-- [ ] Selected areas and linears show hollow white vertex points; dragging a handle reshapes a curve as a whole. `src/lib/takeoff/engine/shapes.ts` · **partial** (vertex edit exists; no curve reshaping)
+- [ ] Selected areas and linears show hollow white vertex points; dragging a handle reshapes a curve as a whole. `src/lib/takeoff/engine/shapes.ts` · **partial** (F7-S13: a selected section's corners drag, a double-click or "Insert point here" adds one, "Delete this point" removes one and is refused below the minimum in legacy's words, `f7-e`; no curve reshaping)
 - [ ] Ellipses and circles show four handles, and arcs three per arc, rather than the whole bead chain. `.lovable/plan/ellipse-circle-show-4-handles-not-the-whole-bead-chain-2026-08-22.md` · **missing**
 - [ ] Selecting a markup on the sheet highlights its row in the panel in blue, and vice versa. `.lovable/plan/selecting-a-markup-on-the-sheet-highlights-its-row-in-blue-2026-08-22.md` · **missing**
 - [ ] Clicking anywhere on a count symbol selects it, and dragging works from the full visible symbol. `.lovable/plan/count-symbols-clicking-anywhere-on-the-symbol-should-select-2026-09-11.md` · **partial** (F7-S1, D-61, `f7-a` step 7: a mark is picked within at least 14 px of its centre at every zoom, legacy's ellipse test, 10 px picks and 25 px does not, at zoom 1 and 2. Dragging a mark arrives with move, F7-S15)
@@ -439,7 +439,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] Measuring continues past the edge of the sheet, and markups outside the sheet still show. `.lovable/plan/keep-measuring-past-the-edge-of-the-sheet-2026-08-23.md` · **missing**
 - [ ] Pan with the middle button and with the right button, everywhere on the canvas. `.lovable/plan/make-middle-button-and-right-button-panning-work-everywhere-2026-09-01.md` · **partial** (space and drag panning only)
 - [ ] The cursor reticle is configurable: crosshair lines, ring, centre dot, short ticks, clearance, shape, colours and thickness. `src/components/takeoff/settings/SettingsDialog.tsx` · **missing**
-- [ ] The move handle scales with zoom, stays anchored during zoom, hides while panning, hides while a dialog is open, and stays out from under dialogs and panels. `src/pages/ProjectTakeoff.tsx` · **missing**
+- [ ] The move handle scales with zoom, stays anchored during zoom, hides while panning, hides while a dialog is open, and stays out from under dialogs and panels. `src/pages/ProjectTakeoff.tsx` · **partial** (F7-S15, D-65: at the selected section's middle, 18 to 28 px with zoom, hidden while panning, the name and quantity on rest; a drag under 4 px moves nothing; a deduct moved off is refused, "Move rejected", `f7-e`. Hiding while a dialog is open is not built)
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [ ] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
 - [x] While one user is actively marking an item on a sheet, other viewers are blocked from Resume and delete on that (item, sheet) pair. `src/hooks/useTakeoffPresence.ts`, `src/lib/takeoff/presence/gate.ts` · **ported** (**D-32:** this is the **One at a time** collaboration mode, not the default. Built and driven on today's takeoff page, F8-S11 and S12, `f8-s11`, `f8-s12`: delete, add, edit vertices, rename and override are view-only for others and refused 409 by the api. **F7 re-drives it on Resume and Extend**, which do not exist yet)
@@ -467,7 +467,7 @@ sibling panel reads as a bug to an estimator.
 - [ ] Every in-draw hint stays inside the canvas rather than being clipped at its edge. `.lovable/plan/keep-every-in-draw-hint-inside-the-canvas-2026-08-23.md` · **missing**
 - [ ] An in-progress markup action bar has a light yellow background so it reads as unfinished. `.lovable/plan/plan-light-yellow-background-for-in-progress-markup-action-b-2026-08-22.md` · **missing**
 - [ ] The selection chip appears only on hover over the drag button. `.lovable/plan/selection-chip-only-on-hover-over-the-drag-button-2026-08-23.md` · **missing**
-- [ ] Unselected sections and positives are not dimmed. `.lovable/plan/stop-dimming-unselected-sections-and-positives-2026-08-23.md` · **missing**
+- [x] Unselected sections and positives are not dimmed. `.lovable/plan/stop-dimming-unselected-sections-and-positives-2026-08-23.md` · **ported** (F7-S12: a selected section is marked alone and the others keep their look, `f7-d` step 2)
 - [x] Press and drag places a circle or an ellipse in one gesture, alongside the two-click mode. `.lovable/plan/press-and-drag-for-circle-ellipse-shape-modes-2026-08-23.md` · **ported** (F7-S4 AC5, `f7-b` step 4)
 - [ ] A mode dropdown on the Linear and Area tools names the current mode, with one consistent label set shared by the toolbar and the contextual group. `src/components/takeoff/drawModes.tsx` · **missing**
 - [ ] Icons in the contextual action group are sized consistently, and toolbar button spacing is even. `.lovable/plan/fix-icon-sizing-in-the-contextual-action-group-2026-08-23.md`, `.lovable/plan/even-out-the-spacing-around-the-tool-buttons-2026-08-14.md` · **missing**
@@ -842,18 +842,18 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 
 **While drawing**
 
-- [ ] `S` toggles Snap, `D` toggles Snap PDF, `O` toggles Ortho, and these modifier bindings are live only while a Linear or Area tool is armed so they cannot collide with the tool keys elsewhere. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
-- [ ] `A` mid-draw arms an inline arc segment, claimed before the Area tool binding, and falls back to the tool switch when there is no draft point to arc from. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
+- [ ] `S` toggles Snap, `D` toggles Snap PDF, `O` toggles Ortho, and these modifier bindings are live only while a Linear or Area tool is armed so they cannot collide with the tool keys elsewhere. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S10: S and O mid-draw, `f7-c` step 4; D with Snap PDF)
+- [ ] `A` mid-draw arms an inline arc segment, claimed before the Area tool binding, and falls back to the tool switch when there is no draft point to arc from. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S9, `f7-c` step 5; the fallback to the Area tool is §23's)
 - [x] `Enter` finishes the measurement. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7)
 - [x] `Backspace` removes the last placed point. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7)
 - [x] `Escape` cancels in two stages: the first press drops the in-progress run, the second disarms the tool. `.lovable/plan/two-stage-escape-while-measuring-2026-08-23.md` · **ported** (F7-S8, `f7-b` step 7: the first Escape keeps a run with enough points and drops one without, legacy's rule; the second puts the tool down)
-- [ ] `Alt` is reserved for ortho fine-tuning during a draw and fires no other binding. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
+- [ ] `Alt` is reserved for ortho fine-tuning during a draw and fires no other binding. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S10: Alt tunes Ortho to 22.5° while drawing and S and O ignore it; not yet driven by a fixture)
 - [ ] Double-click finishes a point-to-point run, the same as Enter. `src/components/takeoff/drawModes.tsx` · **missing**
 - [ ] Double-clicking a perimeter or linear segment inserts a vertex there. `.lovable/plan/fix-double-click-on-a-perimeter-or-linear-segment-doesn-t-in-2026-08-22.md` · **missing**
 
 **Selection and editing**
 
-- [ ] `Delete` removes the current selection. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
+- [x] `Delete` removes the current selection. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S17, `f7-d` step 4: the selected section, or a count's marks on this sheet; no confirm)
 - [ ] `Backspace` also deletes a selected markup when not drawing. `src/components/takeoff/ReviewMarkupLayer.tsx`, `NoteLayer.tsx`, `HighlighterLayer.tsx`, `DockLayer.tsx` · **missing**
 - [ ] `Ctrl+A` selects every markup on the sheet. `.lovable/plan/ctrl-a-select-all-markups-on-the-sheet-2026-09-01.md` · **missing**
 - [ ] `Ctrl+Z` undoes and `Ctrl+Shift+Z` redoes, scoped to the current sheet. `src/components/takeoff/Toolbar.tsx`, `src/lib/takeoff/history/sessionHistory.ts` · **missing**

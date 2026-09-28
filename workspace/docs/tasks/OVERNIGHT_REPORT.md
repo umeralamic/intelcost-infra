@@ -16,7 +16,8 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
       fixed or explained and green on rerun; backup `E:\Intelcost-backup\2026-09-28_0010-f6-built`
 - [x] 4. F9 estimating draft spec ([drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md))
 - [x] 5. F7 Block A (`f7-a` 8/8)
-- [ ] 6. F7 Block B onwards: Block B's S4 to S8 built (`f7-b` 7/7); S9 to S11 next
+- [ ] 6. F7 Block B onwards: S4 to S10, S12 and S17 built (`f7-b`, `f7-c`, `f7-d`); S11,
+      S13 to S16 and Blocks D to H not started
 - [x] 7. Proof backlog (PARITY ported, not driven): every line marked **ported** tonight
       names the fixture that drives it; 14 of them had been left unticked and are ticked.
       The one unticked **ported** line left is §24's fit-tier baseline (a measurement)
@@ -39,6 +40,8 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 3 | Close F6 | **Built, awaiting your click check** (spec not archived, as asked). Full tier: 100 fixtures, 95 first time (72 m); `f5-s15` and `f5-s19` were a real regression from Block C (below, fixed), `f4-s10` a fixture assumption (fixed), `f8-s15` and `f8-s12` a connect timeout (not explained); all five green on rerun. Board, backlog, PARITY, mirror, dated backup | 22:55 | 00:10 | 1 h 15 |
 | 5 | F7 Block A (S1 to S3): hit rules, analytic quantities, deducts, the shapes transaction, capabilities | **Built**: `f7-a` 8/8 (fourth run: my fixture's world twice, and a formula name I had wrong); quick tier plus 25 touched, 42: 40 first time; `p20a` (a live turn late) and `f8-s9` (a connect timeout, found and fixed, below) green on rerun. D-61 | 00:15 | 01:10 | 55 m |
 | 6 | F7 Block B (S4 to S8): Linear and Area modes, Segment, Count joins the selected item, finishing and the draw menu | **Built** (S9 inline arcs, S10 snap, S11 past the edge not started): `f7-b` 7/7 (third run; a product fault found on the way, below); quick tier plus 26 touched, the four service-restart fixtures among them, 43: 42 pass, `p20a`'s live turn open (below). D-62 | 01:10 | 02:10 | 1 h |
+| 6b | F7 S9 inline arcs, S10 snap and Ortho, S12 select a section and the hole cycle, S17 Delete | **Built**: `f7-c` 5/5, `f7-d` 4/4 first run; the shared table caught a gap of mine in both engines (an area closed by an arc from two points), fixed; quick tier plus touched, 41: 38 pass; `f8-s18` and `f8-s9` caught a regression of mine (below) and `f7-a` the overlapping-holes row written ahead of its code, all three fixed in 6c. D-63 | 02:10 | 02:53 | 43 min |
+| 6c | F7 S13 vertices (insert, delete, legacy's refusal), S15 Move (a section carries its deducts, a deduct moved off is refused), S18 deducts drawn on the canvas (legacy's refusals, overlapping holes merged) | **Built**: `f7-e` 6/6, `f7-f` 3/3; `f7-d` caught the move handle swallowing the hole cycle's click (fixed: a click on the handle is a click on the sheet); quick tier plus 15 touched, 32: all pass. D-64, D-65 | 02:53 | 03:39 | 46 min |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -124,6 +127,14 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   say so and it is a small addition to F6-S9.
 
 ## Failures and findings
+
+- **A regression of mine, caught by the tier (6b):** to keep a handle off a count mark
+  when it is merely selected (S12), I kept count handles out entirely, and "Edit
+  vertices" on a count item then showed none: `f8-s18` step 2 and `f8-s9` step 3 timed out
+  waiting for the handle to drag. Not a flake. Count handles now show under "Edit
+  vertices" again and stay off a mark that is only selected.
+- **The shared quantity table's overlapping-holes row failed (6b)** because I added it
+  before the code that merges holes in both engines; that code came in 6c.
 
 - **`f5-s14` AC2 read the api's sheet order before the write had answered** (P-20a's tier).
   The panel moves a dragged sheet at once and writes after; the fixture checked the api
@@ -445,6 +456,46 @@ use what the canvas has.
    tool down.
 8. Mid-run, **right-click**: New Section, Stop, Discard (and Close on an area, grey until
    three points). Escape closes only the menu; the run is still there.
+
+### F7 S9, S10, S12, S17: arcs, snap, selecting a section, Delete (IDM irrelevant)
+
+1. Bottom-left of the sheet: "Ortho: Off" and "Snap: On". Hover each for its note; click
+   to flip.
+2. With Snap on, start a Linear run and move near a corner of an existing run: a small
+   square shows where the point will land; click, and it lands exactly on the corner.
+   Near the middle of an edge it lands on the midpoint; near where two of your lines cross,
+   on the crossing.
+3. Mid-run, press **O**: the bar reads "Ortho: On" and the line locks to 45° steps (hold
+   Alt for 22.5°). **S** flips Snap the same way.
+4. Mid-run with Linear, press **A**, click a point the curve should pass through, then its
+   end: the edge bends and the run carries on. Backspace before the end click takes the
+   through point back. The figure counts the true curve.
+5. With Select, click one section of an item that has several: only that section is
+   highlighted, with its corner handles; the item's row is selected in the Takeoff panel,
+   and scrolled to if needed.
+6. An area with a hole: click inside the hole three times: the area, then the hole, then
+   the area again.
+7. Select a section and press **Delete** (or Backspace): that section alone goes, with no
+   question. Select a count item's mark and press Delete: its marks on this sheet go.
+
+### F7 S13, S15, S18: vertices, Move, deducts (IDM irrelevant)
+
+1. Select an area section. Double-click one of its edges: a new corner appears there.
+   Right-click an edge, "Insert point here": the same.
+2. Right-click a corner, "Delete this point": it goes. On a triangle it is refused: "Can't
+   delete point", "A SF run needs at least 3 points. Delete the whole run instead."
+3. A round handle sits in the middle of the selected section. Rest on it: the item's name
+   and quantity. Drag it: the section follows the cursor and drops where you let go, with
+   any holes it has, and the quantity stays the same. A tiny nudge moves nothing.
+4. Select a hole on its own (click inside it until the hole is highlighted) and drag its
+   handle off the area: "Move rejected", "The moved subtraction no longer overlaps any
+   positive region. Original position restored.", and it goes back.
+5. Right-click an area, "Subtract from section", "Rectangle": draw a box inside it:
+   "Subtracted", "Applied to "{name}".", and the figure drops by the box. Draw another
+   without re-arming: it cuts again. A box outside: "Subtract has no overlap". A box
+   over the whole area: "Deduction covers the whole area". Two holes that overlap count
+   their overlap once.
+6. "Edit vertices" on a count item still shows a handle on each mark to drag.
 
 ## Questions
 

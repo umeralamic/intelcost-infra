@@ -2691,3 +2691,85 @@ unbuilt region-menu rows: hidden, not disabled). Ortho and Snap are per session 
 canvas settings (S27) carry their defaults.
 
 **Consequences:** S10 AC3 (Snap PDF) and AC5's D key wait for the linework reader.
+
+## D-64 — F7-S18: a deduct stays its own shape, even across an edge or over another hole
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Backend
+**Serves:** F7-S18, S19
+
+**Context:** Legacy's `edgeCut.ts` rewrites a section whose outline a deduct overhangs:
+the section becomes a plain polygon with the bite taken out (an analytic circle becomes
+120 samples), and the deduct row goes. Its `mergeOverlappingDeducts` rewrites two
+overlapping holes into one. Both change stored geometry to make the figure right.
+
+**Decision:** Keep every deduct as the shape that was drawn, owned by its section
+(D-39 Q2), and make the figure right in the arithmetic instead: the api clips the union
+of an item's deducts against the union of its sections on the sheet and subtracts that
+once (D-61), so a bite over an edge counts only what it covers and two overlapping holes
+count their overlap once. The refusals stay legacy's: "Subtract has no overlap" and
+"Deduction covers the whole area", from the api.
+
+**Consequences:** A section keeps its analytic shape and its handles after a cut;
+deleting a deduct restores the whole section; figures equal legacy's. The canvas draws a
+deduct as a dashed outline over its section rather than a cut-away until the drawing of
+holes is reworked (S18 AC6's "no bead chain" holds: no shape is resampled).
+
+## D-65 — F7-S15: a section moves with the deducts it owns, in one change
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend, Backend
+**Serves:** F7-S15, S18
+
+**Context:** Legacy's move (`translateRunGroup`) shifts one run. Its deducts are already
+cut into the run's outline (`edgeCut.ts`), so they go with it for free. Under D-64 a
+deduct is its own shape, owned by its section, and a section moved alone would leave its
+holes behind and change the figure.
+
+**Decision:** Dragging a section's move handle writes one shapes change (`POST
+/item/{uuid}/shapes`). That change moves the section and every deduct it owns by the same
+offset: vertices and every point in `shape_meta` together (invariant 2), and analytic
+shapes stay analytic. A deduct moved on its own is judged after the whole change. If it
+overlaps no section, the api refuses the change in legacy's words: "The moved subtraction
+no longer overlaps any positive region. Original position restored." The page shows that
+under legacy's "Move rejected" toast, and the canvas puts the preview back. A drag under
+4 px moves nothing, as in legacy, and counts as a click on the sheet under the handle, so
+legacy's hole cycle (S12 AC3) still steps into a deduct that sits at its section's middle.
+
+**Consequences:** Moving a section never changes its figure. One version check covers
+the section and its deducts, so a colleague's edit to either refuses the whole move.
+
+## D-66 — F7-S14: Select draws legacy's box; panning goes back to legacy's Pan tool
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S14 (and §9's Pan line)
+
+**Context:** Legacy's toolbar has Pan ("Pan (H) — drag to move the sheet") beside Select
+("Select (V) — click annotations to select and edit"), and it opens on Select. With
+Select, a left press that misses every markup becomes a rubber band after 25 px
+(`PdfCanvas.tsx`), and the box selects each run whose bounding box it wholly encloses.
+Today's page has no Pan tool, so a Select drag pans instead, and there is no room for
+the box.
+
+**Decision:** Follow legacy. A Select drag over the sheet draws the box: legacy's 25 px
+threshold, bounding box wholly inside, hidden items left out, locked ones included, and
+counts and deducts treated like any other shape. An empty box selects nothing and closes
+quietly, because legacy's region menu (Ask AI, Extract Schedule, Copy as Text and the
+rest) has no built row yet (D-39 Q9: hidden, not disabled). Pan comes back as legacy's
+tool, with legacy's title and the H key; space-drag and the middle button pan with any
+tool, as today. The selection holds sections (geometry rows). A section turned, nudged,
+copied or deleted carries the deducts it owns (D-65).
+
+Rotation turns about the middle of the selection's bounds in page points, so nothing
+stretches on a non-square page and every figure stays the same. Ellipses and rectangles
+stay analytic. An arc keeps its analytic form under a flip, and under a quarter turn on
+a square page. Under a quarter turn on a non-square page an arc no longer has one radius
+in page fractions, so it becomes legacy's 120-point run, as legacy does for every
+rotated arc.
+
+**Consequences:** `proof-backlog`'s §9 step pans with the Pan tool. The region menu
+arrives with the features its rows open.
