@@ -902,7 +902,7 @@ arrive through storage. `src/components/takeoff/settings/SettingsDialog.tsx`
 - [ ] **Cursor.** Ring: show, auto-invert, colour, size, border width, opacity, shape (circle or square) and the clearance kept between the ring ends and any line crossing it. · **missing**
 - [ ] **Cursor.** Centre dot: show, colour and size. · **missing**
 - [ ] **Snapping.** Defaults for Snap, Snap PDF (off by default) and Ortho. · **missing**
-- [ ] **Takeoffs.** Default Linear mode, default Area mode, legend visible when a project opens, numbered duplicate suffix ("Name (2)", on by default), auto-merge overlapping runs of the same item on commit, and the New Measurement dialog's remembered WBS mode and open or closed state for its WBS and Sub-items bars. · **missing**
+- [ ] **Takeoffs.** Default Linear mode, default Area mode, legend visible when a project opens, numbered duplicate suffix ("Name (2)", on by default), auto-merge overlapping runs of the same item on commit, and the New Measurement dialog's remembered WBS mode and open or closed state for its WBS and Sub-items bars. · **partial** (F7-S20, D-69: auto-merge on commit, legacy's "Auto Merge: On" toggle in the canvas bar with its title, per session; an area's and a closed Linear box's own overlapping sections, a colleague's never; *smoke-checked (D-68)*. The rest of the line, and the setting's stored default, are F7-S27's)
 - [ ] **Trace.** The two Auto Trace profiles, EG and FG, with every knob per profile. See §16. · **missing**
 - [ ] **Toolbar.** Hide individual tools by id, and icon size (small 14px, medium 18px, large 24px, with button sizes 36, 40 and 48px). · **missing**
 - [ ] **Panels.** Which of Sheets, Bookmarks and Snippets, and Measurements are shown. · **missing**

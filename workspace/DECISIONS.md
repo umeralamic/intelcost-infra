@@ -2850,3 +2850,44 @@ short daytime reports, legacy parity first.
 next full run, not by a fixture. Behaviour touched since the tag is unguarded until that
 full run, which is why the list in item 6 exists. Two-window checks need `api-b` and
 `app-b` started for the smoke check that needs them.
+
+## D-69 — F7-S20: auto-merge computed in the browser, legacy's union, a shape keeps who drew it
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided in the day, pending founder review)
+**Area:** Takeoff, Frontend, Backend
+**Serves:** F7-S20 (and S22's undo of a merge)
+
+**Context:** Legacy's `mergeOverlappingPositives` (`edgeCut.ts`) unions a new closed run
+of an item with every run of the item it overlaps, to a fixpoint; the largest keeps its
+identity; the absorbed runs' deducts are handed over, each clipped against the other
+contributors. It runs with `polygon-clipping`, in one flat per-sheet array. D-39 Q8 limits
+it to the merging person's own shapes, from any time; the api keeps no record of who drew
+a shape, only who last changed it. Two smaller facts: legacy reads any three points of a
+Linear run as a polygon, so an open run could be swallowed into an outline; and S22's
+undo needs each act's forward and inverse transactions.
+
+**Decision:**
+- The browser computes the merge (`lib/takeoff/engine/merge.ts`, legacy's rules ported,
+  with `polygon-clipping` 0.15.7, legacy's dependency) and sends one `…/shapes`
+  transaction: the survivor updated (or the new shape created when it is the largest),
+  the absorbed deleted, their deducts handed over (`owner_uuid` on an update, new) and
+  re-clipped where a contributor now covers them. The api validates and computes the
+  figure, as for every other shape. Knowing the whole transaction in the browser is what
+  lets S22 record its inverse.
+- A shape records who drew it (`takeoff_geometry.created_by_id`; existing shapes take
+  their last editor), and the api tells each caller which shapes are theirs (`mine`).
+- Only a closed Linear run (its first point again at its end, or a rectangle or ellipse)
+  is merged; an open one never is (a real-bug fix over legacy).
+- The merged outline is a plain polygon (`kind: "polygon"`), a Linear one stored closed;
+  curve samples are marked `smoothIdx` so they take no handle, as legacy's; a vertex edit
+  keeps a closed run closed and forgets `smoothIdx` once a point is added or removed.
+- Legacy's "Auto Merge: On" toggle joins the canvas bar (D-63's rule), per session until
+  S27's settings.
+- **Found on the way and fixed:** Duplicate copied an item's deducts as sections, so a
+  duplicated slab gained its holes' area instead of losing it. It now copies each shape's
+  role and re-pairs each deduct to its section's copy.
+
+**Consequences:** A merge is exact to legacy's 120-point outline where a curve takes part,
+and exact otherwise. A second overlapping section drawn before the first one's save has
+come back is added, not merged, since the browser does not yet know the first.
