@@ -43,6 +43,37 @@ measure unless the viewer picks each colleague's own colour._
 
 ---
 
+## Legacy comparison, 2026-09-28 (docs/legacy_comparison.md)
+
+The whole takeoff screen, driven in live legacy (project "Bench comparison", the bench
+seed's Riverside PDF at 1" = 20') and in the new app (a throwaway seeded account), at
+1440 × 900 and 1920 × 1000. Each difference, and where it is built:
+
+| # | Where | Legacy | New app today | Goes to |
+|---|---|---|---|---|
+| 1 | Layout | The screen fits the window; nothing scrolls | The page is taller than a 1440 × 900 window: it scrolls, and the canvas bar sits below the fold | **S23** (a real bug) |
+| 2 | Canvas bar | A row across the top of the canvas: Ortho, Snap, Snap PDF, Auto Merge, Auto Scroll; the scale at its right end, green "Scale: 1" = 20'", or orange "Calibrate scale to compute LF / SF" [Set or calibrate scale] when unscaled | Bottom-left of the canvas, over the sheet; the scale is a chip in the header row | **S23** |
+| 3 | Ortho default | **On** (`orthoEnabled: true`; live shows "Ortho: On") | Off: D-63 recorded legacy's default wrongly | **S23** (fix, D-74) |
+| 4 | Selection action group | An amber group in the toolbar: Properties, Start [Start another section of this item], Resume [Continue this run from one of its ends], Deduct [Subtract an opening from this area] (area), Copy [Copy this markup to another spot or sheet], Delete [Delete this markup — Delete]; a count: Properties, Resume [Keep placing markers on this item], Copy, Delete. At 1440 it folds into "More" [1 more tool] | None: the acts are on the right-click menu (D-72) | **S23** |
+| 5 | Status line | A line along the bottom of the window for the selection: "SF 1 · SF · Calculated: 10,427.99 SF · Perimeter: 408.47 LF"; "LF 2 · LF · Calculated: 143.96 LF"; "COUNT 3 · COUNT · Calculated: 1 EA" | None | **S23** |
+| 6 | Toolbar order | Pan, Select │ Print ▾, Find Text │ Undo, Redo │ Scale │ Linear ▾, Segment, Area ▾, Count, Dimension, Snapshot, Dock, Overlay, Highlight ▾, Note ▾ │ Fullscreen, Split; large icon-over-label buttons in bordered groups | Pan, Select, Scale, Linear ▾, Segment, Area ▾, Count, a hint, Undo, Redo, zoom; small inline buttons | **S23**: Undo and Redo move before Scale, the groups and the icon-over-label buttons; the other tools are other features' (F11, F12) |
+| 7 | Count's title | "Count (N)" | none | **S23** |
+| 8 | Zoom and sheet steps | On the canvas: ↑ ↓ previous and next sheet (bottom-left), + − fit and zoom window (bottom-right); panel handles ‹ › on the canvas edges; "Hide panels" | Zoom out, percent, zoom in in the toolbar | **S26** (mouse and view) |
+| 9 | Region menu (empty sheet, or an unselected shape) | A tool strip (Dimension, Area, Linear, Segment, Count, Highlight, Note), Paste, Show All ▸, Hide All ▸, Rotate Page ▸, Show Legend, Zoom to Fit, Calibrate Scale, Print This Page, Bookmark This Page | None on an empty sheet; an unselected shape opens the item menu | **S24** |
+| 10 | Shape menus | A selected count mark: "COUNT 3 · Point Count: 1 EA", Delete this point, Delete all points on this sheet (red), Copy…, Cancel. Area (source): "{name} · Area Total: {qty}", Move, Add more points, New section, Subtract from section ▸, Copy ▸, Hide, Lock, Order ▸, Delete this section, Delete all on sheet. Linear (source): Move, Insert point here, Break line here, Select all similar segments on this sheet, Copy…, Delete this segment, Delete all similar segments on this sheet, Cancel | One combined item menu for every shape (Properties … Delete item) | **S24** |
+| 11 | Item rows | No right-click menu. One line: type glyph (Resume on click), name, quantity, unit, colour dot; on hover Resume, More actions (⋯), Hide markup (eye), Change color | Two-line rows, a colour square, a right-click menu | **P-21** (rows); the eye with **S24** (Hide, D-73) |
+| 12 | Takeoff panel header | "Takeoff │ Assemblies"; collapse and expand one level; New folder; Base Bid; **Search items…** | "TAKEOFF"; New folder; Base Bid; no search | **P-21** |
+| 13 | Sheets panel | Collapse and expand one level, + [Add pages or folder], ⋮ (Expand All, Collapse All, Sheet naming, Page layout); folder rows' New subfolder, Move folder to…, Rename folder, Delete folder; items listed under their page; Bookmarks and Snippets below | +, ⋮; items under a page by a toggle; no Bookmarks or Snippets pane | F5 follow-up (sheets panel), F13 (bookmarks, snippets) |
+| 14 | Sheet row menu | Properties (rename), Preview window, Bookmark this page, Print selected page, Auto-Name Sheet, Name from page region…, Duplicate page, Open in new tab | Properties (rename), Bookmark this page | F5 follow-up and P-20 (page acts) |
+| 15 | New Measurement dialog | Heading "Name this {LF} measurement"; under Named dimensions: "Values carried by this item for use in sub-item formulas. They do not change this item's own quantity."; Earthwork markup; a Sub-items bar | The same fields, without that line, the Earthwork box (F12) or the Sub-items bar | F6 follow-up |
+| 16 | Scale presets | "1/8" = 1'" under ARCHITECTURAL, ENGINEERING and METRIC headings | "1/8" = 1'-0"" | F5 follow-up |
+| 17 | Rest label | "SF 1 — 10428 SF" over the move handle | Name and quantity on rest (S15) | none |
+
+Two legacy behaviours not copied, both apparent legacy bugs seen live: Count right after
+the New Measurement dialog made a separate "COUNT 3" item for each click (D-62 keeps
+Count joining its item), and the Takeoff panel read those counts as 0 EA while the Sheets
+panel read 1 EA.
+
 ## The problem
 
 Today's canvas can do five things: select, pan, calibrate, and draw a point-to-point

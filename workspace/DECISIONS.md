@@ -3040,3 +3040,29 @@ new uuid (D-71) would lose all of that.
 **Consequences:** No act on the takeoff page loses a sub-item, a dimension or an estimate
 line without asking, and every one comes back with Ctrl+Z. A snapshot token carries the
 rows' content to the browser and back; it cannot be edited, since the signature would fail.
+
+## D-74 — The legacy comparison procedure, and what the first one corrects
+
+**Date:** 2026-09-28
+**Status:** Accepted (founder instruction, 2026-09-28; the corrections decided in the day)
+**Area:** Process, Takeoff, Frontend
+**Amends:** D-63 (Ortho's default)
+
+**Context:** The founder asked for a standing comparison with live legacy before any new
+screen is built, driven from the bench's Playwright container with the credentials in
+`intelcost-infra/.env.legacy`. The first comparison, of the whole takeoff screen, is in
+the F7 spec ("Legacy comparison, 2026-09-28"). It found that D-63 recorded legacy's Ortho
+default as Off, where legacy's settings say `orthoEnabled: true` and live legacy opens
+with "Ortho: On"; and that the new page overflows a 1440 × 900 window.
+
+**Decision:**
+1. [docs/legacy_comparison.md](docs/legacy_comparison.md) is the procedure; CLAUDE.md's
+   session start points at it. Comparison scripts are throwaway and assert nothing: a way
+   of looking, not a test (hard rule 8). In legacy, work happens in the project "Bench
+   comparison".
+2. Ortho defaults to **On**, as legacy's. The canvas bar moves to legacy's place, a row
+   across the top of the canvas carrying the scale at its right end, and the page fits
+   the window. Built with F7-S23.
+3. Every difference the comparison lists goes to the block or feature named beside it.
+
+**Consequences:** A new screen starts from what legacy shows, not only from the spec.
