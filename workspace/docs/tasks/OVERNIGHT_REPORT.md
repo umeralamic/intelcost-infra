@@ -26,6 +26,7 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 1 (spec) | P-20a spec | Written, [rotate_pages_tasks.md](rotate_pages_tasks.md); on the board In Progress | 16:55 | 17:10 | 15 m |
 | 1 | P-20a Rotate pages | **Built**, awaiting your click check: `p20a` 8/8; the quick tier plus the canvas fixtures, 26 fixtures, 24 passed first time, the 2 failures found and rerun green (below) | 17:10 | 18:05 | 55 m (with the spec) |
 | 2A | F6 Block A (S1 to S3): New Measurement and Properties, height and pitch, named dimensions | **Built**: `f6-a` 9/9; quick tier plus 10 touched fixtures, 27: 25 first time, 2 failed from an api restart I caused mid-run, rerun green. D-55 | 18:05 | 19:00 | 55 m |
+| 2B | F6 Block B (S4 to S6): the formula engine twice and equal, sub-items, variables | **Built**: `f6-s4` 3/3 (965 rows equal), `f6-b` 9/9; quick tier plus 7, all 24 pass. D-56 | 19:00 | 20:05 | 1 h 05 |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
 
 ## The founder's addition (a), (b), (c)
@@ -69,6 +70,15 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   Page, so sheets start closed; a count counts on an unscaled sheet; the item row is a
   viewer until F6-S9; the toolbar's Scale is a dropdown and the old calibrate-on-click
   tool is gone.
+- **D-55** (F6 Block A): New Measurement asks when the tool is picked, in legacy's words
+  ("Name this LF measurement", "LF 3"), and one tool run is one item (so three count
+  clicks are one item, 3 EA); the suffix reads "40.0 LF" (legacy's formatter); the api
+  computes the slope factor; a count needs no scale; the WBS choice is on the person.
+- **D-56** (F6 Block B): sub-items one level only (the spec), read in order like legacy;
+  the two engines proved equal on the bench; a variable change recomputed on the api and
+  pushed live; variables managed from the sub-items editor's Insert menu.
+- **D-57** (F6 Block C): folder and layer multipliers extend a quantity, as legacy's
+  ("Takeoff always shows the measured quantity"); the api used to fold them in.
 - **D-54**: the Takeoff panel will list every item, with legacy's cues and no sheet
   filter, because legacy has none. If you want a "This sheet only" filter beyond legacy,
   say so and it is a small addition to F6-S9.
@@ -160,6 +170,24 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
    Degrees 95: "Angle must be between 0 and 90 degrees", and Save greys out.
 7. Properties → "+ Depth" twice: "Depth" and "Depth (2)". Remove the first and add "+
    Width": it is named Width, and the item's own quantity never moves.
+
+### F6 Block B: sub-items and variables (IDM irrelevant)
+
+1. Right-click an area item → **Create sub-item**. Description "Mesh", Formula
+   `PARENT * 1.05`: the Qty column shows 5% more than the area straight away. **Add
+   sub-item**, "Perimeter form", `PERIMETER`, unit LF. Save: both appear under the item
+   in the Takeoff panel.
+2. Manage sub-items again: add a row with a formula but no name, and the footer says "Name
+   this sub-item to continue"; name it and type `PARENT *`: "Fix the formula to continue".
+3. Stretch the parent's shape (Edit vertices): the sub-items' numbers follow, and a second
+   window shows them within a second.
+4. In Manage sub-items, **Insert → Manage variables… → Add Variables**: "Wall Height",
+   Single quantity, default 10, Save, Done. Add a row "Wall" with `{Wall Height} * 2`: 20.
+   Back in Manage variables, set "This project" to 12: Wall reads 24. Another project
+   using it still reads the default.
+5. Archive the variable: it leaves the Insert menu, and "Wall" still reads 24.
+6. Properties on the parent: a dimension a sub-item reads says "used by 1", and removing
+   it refuses: "Can't delete … It's used by: …".
 
 ## Questions
 

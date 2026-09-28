@@ -2441,3 +2441,69 @@ per shape, which is how three count clicks made three items (finding, 2026-09-26
 - A context menu opened on a row that a panel had just scrolled into view closed at once
   (the scroll's event lands a frame later). The menu now ignores a panel's scroll
   delivered before its second frame, as it already did for the page's.
+
+---
+
+## D-56 — Sub-items and variables: one level, read in order, recomputed on the api
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Backend, Frontend
+**Serves:** F6-S4 to S6 (D-36 F6 Q1, Q3, Q6)
+
+**Context:** Block B had five choices the spec left open.
+
+**Options considered:**
+
+| Question | Chosen | Not chosen, and why |
+|---|---|---|
+| How deep sub-items go | **One level** (the spec, S5 AC3): the api refuses a sub-item under a sub-item, 409 | Legacy's nesting ("Sub-items nest and collapse level by level", PARITY §8): the spec, accepted in D-36, ruled it out; noted on the PARITY line |
+| How siblings read each other | **In order, each seeing the ones above it freshly computed**, as legacy's `reconcileSubItemsForParent` loop does | All from stored values: a chain `[A] → [B]` would lag a save behind |
+| How the two engines are proved equal | **On the bench**: `f6-s4.sh` runs the table through the api's engine in the api container, then the fixture imports the browser's engine from the dev server and compares every row, number to the bit, error word for word | A unit-test runner in each repo: neither has one, and testing here is conducted, not written |
+| How a variable change reaches sub-items | **The api recomputes every parent whose sub-items read `{var:<uuid>}`**, workspace-wide for a default, one project for its own value, and publishes `workspace.variable.changed` | Legacy's reconcile-on-read in the browser: D-32 puts derived values on the api |
+| Where variables are managed | **From the sub-items editor's Insert menu, "Manage variables…"** (legacy's "Add Variables" lives there too) with the project's own value, the default and Archive | A settings page: not legacy's, and nothing reads variables outside formulas |
+
+**Decision:** As chosen above. Also:
+- A sub-item takes the parent's type, colour, sheet, folder, classification and layer,
+  as legacy's `createSubItem`; its unit is its own.
+- A formula that does not read stores no quantity and its error ("—" and an err chip),
+  never a last-known-good number (legacy's RUNG P2b).
+- A rough measurement's change recomputes the sub-items that read it (`{ref:<uuid>}`),
+  with a guard against two rough measurements reading each other.
+
+**Consequences:** `PUT …/item/{uuid}/sub-items` (the whole list), `…/variable` (list,
+create, update) and `…/variable/{uuid}/value`; migration `96bd11c238fa`. A live window
+refetches a changed parent's sub-items with it, since most writes name only the parent.
+
+---
+
+## D-57 — Folder and layer multipliers extend a quantity; takeoff shows what was measured
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Estimating, Backend (hard rule 3: quantities)
+**Serves:** F6-S7, S8
+
+**Context:** The api folded an item's folder and layer multipliers into its stored
+quantity (`apply_modifiers`), from the first item model. Legacy does not: its layer
+dialog says "Estimating multiplies this layer's quantities by it — sub-layers compound
+with their parent. Takeoff always shows the measured quantity", its folder multipliers
+compound along the folder chain (`multipliers.ts`, `folderChainMultiplier`), and its
+Takeoff panel shows a Multiplier and a Total Qty column, hidden until a multiplier is
+set. The api also compounded nothing: it read only the item's own folder and layer.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|---|---|---|
+| A — Keep folding the multiplier into the item's quantity | No change | Not legacy's; a folder at ×2 doubles its sub-items' PARENT too, so a sub-item's figure double-counts in Estimating |
+| B — Legacy's: the item's quantity is what was measured (with height and pitch); its **multiplier** is the folder chain × the layer chain, and the Takeoff panel shows it and the extended total | Legacy's words and numbers; one extension, in one place | A stored quantity on an item filed under a multiplier changes once |
+
+**Decision:** Option B.
+- `effective_quantity` no longer includes folder or layer multipliers.
+- An item read carries `multiplier`, the product of its folder chain's and its layer
+  chain's multipliers, and the panel shows "×N" and the extended total when it is not 1.
+- Estimating (F9) extends each line by it.
+
+**Consequences:** Only bench data held items under a multiplier. The rule is kept in one
+place on the api (`service.item_multiplier`), which F9 reads.
