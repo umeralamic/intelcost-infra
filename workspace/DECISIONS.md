@@ -3154,3 +3154,62 @@ comparison" project) say what each one does there.
 
 **Consequences:** The canvas's zoom, pans and deducts read and act as legacy's. S26's
 right-drag pan is done here; its spec row says so.
+
+## D-77 — Founder click check, group B: legacy's item rows, panels and Properties (P-21 brought forward)
+
+**Date:** 2026-09-28
+**Status:** Accepted (the founder's click check, matched to legacy)
+**Area:** Takeoff, Frontend
+**Serves:** P-21, F6 (Properties), F5 (Sheets panel), the founder's findings B10 to B17
+
+**Context:** The founder's click check found the Takeoff and Sheets panels short of legacy's:
+no type glyph on a row, no More actions, no search box, no left collapse tab, no resizing,
+no Bookmarks panel, and Properties without its Sub-items bar or the count symbol tiles.
+Legacy's `ItemRowShared` is one row renderer for both panels; its source, plan files and a
+live drive say what each control is and does.
+
+**Decision:**
+- **One row for both panels** (`ItemRow.tsx`, legacy's `ItemRowShared`): a 20 px line with
+  the chevron (sub-items), the **type glyph** tinted the item's colour (a click **resumes**
+  the takeoff, legacy's "Resume this takeoff — continues measuring {area|length|count} on
+  this sheet"), the name, the lock mark (an amber disc with the holder's initial), the
+  quantity, the unit, and on the right the colour dot (a popover of legacy's 16 presets and
+  Custom), the eye ("Hide markup", "Show markup", shown on hover or while hidden) and
+  **More actions** (⋮). A selected row is `--row-selected`. Sub-item rows: "↳", the name,
+  the "err" chip, the quantity, the unit, a pencil ("Edit sub-item (manage all sub-items)")
+  and a trash ("Delete sub-item") on hover. Folder rows: legacy's amber Folder glyph, the
+  name, the count badge, the "×N" badge, "Add sub-folder" and ⋮ on hover.
+- **Clicks (B10), legacy's:** a single click selects; a **double-click on the row opens
+  Properties** (two clicks within 450 ms count); a double-click on the **name** renames in
+  the Takeoff panel and opens Properties in the Sheets panel. The inline properties pane is
+  gone: legacy has none, Properties is the dialog. Lock and Override quantity move to the
+  ⋮ menu; Notes has no place in legacy's Properties and is not shown.
+- **More actions (⋮)**, and the row's right-click, in legacy's order with what exists:
+  Properties, Override quantity, Duplicate, Move to layer ▸, Create sub-item (or Edit
+  sub-items), Lock (ours: no inline pane holds it now), Delete ("Delete on this sheet" in
+  the Sheets panel). Link Screenshot and History (F11), Link assembly and Save as
+  assembly… (P-09), Add cost component and Costs… (estimating) are absent until their
+  features ship.
+- **Properties (B12, B13):** a collapsible **Sub-items** bar, closed by default, with
+  "Create sub-item" (or "Edit sub-items" and a read-only list of name and quantity) opening
+  the sub-items editor over the dialog; for a count, legacy's **Symbol** tile row (the
+  four dimension-carrying shapes pinned, then the chosen ones, eight slots) with the
+  pencil's "Choose symbols" popover, kept per browser (legacy keeps it on the profile;
+  an account-wide store waits for F7-S27's settings).
+- **Search (B14):** "Search items…" over item names; folders shown only with a match and
+  held open; `No items match "{search}"`; "Clear search".
+- **Panels (B15, B16, B17):** legacy's edge tabs on the canvas, "Hide panels" on the left
+  (the Sheets column with Bookmarks and Snippets) and "Hide Takeoff panel" on the right,
+  16 × 3 units each; the left column resizable by its separator ("Resize sheets panel",
+  180 to 520 px, default 280, arrow keys 16 px, kept as `takeoff-left-column-width-v1`);
+  the Takeoff panel resizable against the canvas (22 to 55 % of the row, default 28 %,
+  kept per browser); Sheets over **Bookmarks | Snippets** in a 60/40 split. Bookmarks
+  lists the bookmarked sheets ("A-101 – Name", the star, Open sheet and Remove bookmark;
+  its Duplicate, Print, Open in new tab, Sheet properties and Preview window wait for
+  their owners); Snippets is the Snapshot tool's, **F11**, and its tab says so.
+- The Takeoff panel header follows legacy's: the title, Collapse one level and Expand
+  one level, New folder. "Assemblies" stays with P-09.
+
+**Consequences:** P-21 is built here rather than after F7; FEATURES.md and MANAGER.md say so.
+The Takeoff panel is the tree, as legacy's; every field of an item is reached through
+Properties or the ⋮ menu.
