@@ -6,6 +6,9 @@ Applies to `intelcost-api`. Reads on top of
 **Installed toolchain, 2026-09-08:** Python 3.14.4, PostgreSQL 18.6.
 Write for 3.14. Do not reach for pre-3.10 patterns.
 
+**No `from __future__ import annotations`.** Not in any file. Annotations are evaluated
+natively; the import is noise.
+
 ---
 
 ## Layout
