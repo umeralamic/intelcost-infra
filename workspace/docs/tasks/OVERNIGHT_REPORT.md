@@ -16,8 +16,10 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
       fixed or explained and green on rerun; backup `E:\Intelcost-backup\2026-09-28_0010-f6-built`
 - [x] 4. F9 estimating draft spec ([drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md))
 - [x] 5. F7 Block A (`f7-a` 8/8)
-- [ ] 6. F7 Block B onwards: S4 to S10, S12 and S17 built (`f7-b`, `f7-c`, `f7-d`); S11,
-      S13 to S16 and Blocks D to H not started
+- [ ] 6. F7 Block B onwards: S4 to S19 built (`f7-b` to `f7-j`, D-62 to D-67), except
+      S11's drawing past the edge of the paper; closing full tier 106/109, all three
+      traced and green after. S20 onwards (auto-merge, Resume and Extend, undo, menus,
+      hover, keys, settings, cursors) not started
 - [x] 7. Proof backlog (PARITY ported, not driven): every line marked **ported** tonight
       names the fixture that drives it; 14 of them had been left unticked and are ticked.
       The one unticked **ported** line left is §24's fit-tier baseline (a measurement)
@@ -44,6 +46,8 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 6c | F7 S13 vertices (insert, delete, legacy's refusal), S15 Move (a section carries its deducts, a deduct moved off is refused), S18 deducts drawn on the canvas (legacy's refusals, overlapping holes merged) | **Built**: `f7-e` 6/6, `f7-f` 3/3; `f7-d` caught the move handle swallowing the hole cycle's click (fixed: a click on the handle is a click on the sheet); quick tier plus 15 touched, 32: all pass. D-64, D-65 | 02:53 | 03:39 | 46 min |
 | 6d | F7 S14 box select, Ctrl+A and the selection menu, legacy's Pan tool back (H, V); S15 AC5 Move from the menu; S19 AC4; a product fault found on the way (shapes on the wrong sheet) | **Built**: `f7-h` 8/8, `f7-g` 4/4 (after fixture fixes: a section found by role, not order; a press off the new handle; a sheet switch the F6 panel makes); `proof-backlog`'s §7 and §8 steps brought up to date; quick tier plus 22 touched, 39: all pass. D-66 | 03:39 | 04:41 | 1 h 2 min |
 | 6e | F7 S16 copy and paste | **Built**: `f7-i` 5/5 (second run; the first held a pasted run to 1e-6 of where a pixel-rounded click fell), `f7-e` 6/6 and `f7-h` 8/8 beside it; covered by the closing full tier. D-67 | 04:41 | 04:55 | 14 min |
+| 6f | F7 closing full tier | **109 fixtures, 106 first time** (76 m 46 s); the three traced (a product fault fixed, a fixture wait, `f8-s18` made serial as a timing fixture), below; all F7 fixtures and the touched ones, 18, green after | 04:50 | 06:27 | 1 h 37 |
+| 6g | F7 S11 auto-scroll (built beside the tier, installed after it) | **Built**: `f7-j` 3/3; quick tier plus 6 touched, 23: all pass (16 m 16 s) | 06:10 | 06:45 | 35 min |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -124,11 +128,44 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   setting (S27) and a sheet switch ending a count session (S22).
 - **D-63** (F7-S10): the canvas bar shows Ortho and Snap only; Snap PDF, Auto Merge and
   Auto Scroll join it when their features exist, rather than as toggles that do nothing.
+- **D-64** (F7-S18): a deduct stays its own shape, even across an edge or over another
+  hole; the figure is made right in the arithmetic, where legacy rewrites the section
+  (and turns a circle into 120 points). Legacy's refusals in its words.
+- **D-65** (F7-S15): a section moves with the deducts it owns, in one change; a deduct
+  moved off every section is refused ("Move rejected", legacy's text); a click on the
+  move handle is a click on the sheet, so the hole cycle still works through it.
+- **D-66** (F7-S14): Select's drag draws legacy's box; panning goes back to legacy's Pan
+  tool ("Pan (H) — drag to move the sheet"), with H and V. **The most visible change of
+  the night:** a plain drag with Select no longer pans (space-drag and the middle button
+  still do, with any tool). The region menu an empty box opens in legacy is not built, so
+  an empty box does nothing. Rotation keeps shapes' real proportions on a non-square sheet.
+- **D-67** (F7-S16): copy and paste as legacy's, except that the paste keeps real-world
+  size across and down (legacy scales by feet per point alone, which comes out wrong on a
+  page of another size), and "New item" makes "{name} copy" directly rather than opening
+  the New Measurement dialog midway.
 - **D-54**: the Takeoff panel will list every item, with legacy's cues and no sheet
   filter, because legacy has none. If you want a "This sheet only" filter beyond legacy,
   say so and it is a small addition to F6-S9.
 
 ## Failures and findings
+
+- **F7's closing full tier: 109 fixtures, 106 first time (76 m 46 s).** Each failure
+  happened only under parallel load, so each was traced to a cause, not rerun away:
+  - `f7-e` step 3, **a product fault, fixed:** two quick edits to one shape (insert a
+    point, then another) and the second was refused 409 by the user's own first. The
+    canvas built it from its copy of the shape, which the refetch after the first edit
+    had not yet replaced, so it carried the old version (and the old points). Under load
+    the refetch was slow enough to show it; a quick hand would too. Now a vertex edit's
+    answer goes straight into the cached item lists, so the next edit builds on it.
+  - `f7-h` step 6, **the fixture:** it pressed Ctrl+A when the Takeoff panel's
+    project-wide list had loaded but the sheet's own shapes had not, so there was nothing
+    to select and the browser selected the page's text. It now waits for the shapes
+    drawn.
+  - `f8-s18` step 1, **timing under contention:** a shape reached the other window in
+    1,371 ms against the 1 s bar, while it ran beside `f5-s10` and `f5-s16`, which are
+    pdf.js-bound. This is the contention that already made `f5-s15` and `f5-s19` serial.
+    `f8-s18` measures time too, so the runner now runs it alone (the plan's rule). The
+    query changed tonight is indexed (19 rows), so it is not the cause.
 
 - **Product fault, found while building S14 and fixed (6d): a shape added on one sheet to
   an item begun on another went to the item's first sheet.** Since F6 the Takeoff panel
@@ -555,7 +592,26 @@ use what the canvas has.
 6. On a sheet with no scale: "Target sheet is not calibrated", and the copy stays in hand
    until you calibrate or press Escape.
 
+### F7 S11: auto-scroll (IDM irrelevant)
+
+1. Zoom in, arm Linear, and rest the cursor near an edge of the canvas: after half a
+   second the sheet glides that way, faster the nearer the edge. Mid-run it keeps the
+   run going.
+2. Move onto the Takeoff panel or the toolbar: it stops at once.
+3. "Auto Scroll: On" in the canvas bar turns it off; with Select or Pan it never glides.
+
 ## Questions
 
 1. D-54: legacy has no "this sheet only" filter in the Takeoff panel. Keep legacy's (no
    filter, "Also measured on", and the Sheets panel's per-sheet list), or add one?
+2. D-66: Select no longer pans on a plain drag (legacy's box takes it; Pan is its own
+   tool again, H). Keep legacy's, or let Select pan when the drag starts off the paper?
+3. D-67: should "New item" on a paste open the New Measurement dialog prefilled, as
+   legacy's does, instead of making "{name} copy" directly?
+4. The selection menu's **Hide** is left out because the takeoff page cannot hide an item
+   yet. Legacy hides whole items, view only. Build item hiding in F7, or with layers' eyes
+   (F6) already covering it, drop the entry?
+5. `proof-backlog` (the 2026-09-26 sweep, outside the tiers) has drifted behind F5 and F6's
+   screens; its §7 and §8 steps are brought up to date, the layers and create-item steps
+   are not. Bring it into the full tier, or retire it now that each feature's fixtures
+   drive their PARITY lines?
