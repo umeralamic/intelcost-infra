@@ -215,6 +215,14 @@ was touched.
 
 ## Failures and findings
 
+- **S15 AC2 (the move handle hides while a dialog is open): tried at 07:20, reverted.** The
+  canvas watched the document for an open modal and hid the handle. The new fixture step
+  failed twice before its dialog opened: after selecting Mover's section, the handle and
+  the vertex handles were gone, and the item was selected whole. The cause was not found in
+  the time left, so the change and its step came out; `f7-e` 6/6 on what is committed.
+  AC2 stays open with this lead: something clears the section selection on a fresh load
+  after step 5's move.
+
 - **F7's closing full tier: 109 fixtures, 106 first time (76 m 46 s).** Each failure
   happened only under parallel load, so each was traced to a cause, not rerun away:
   - `f7-e` step 3, **a product fault, fixed:** two quick edits to one shape (insert a
