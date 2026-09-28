@@ -2891,3 +2891,34 @@ undo needs each act's forward and inverse transactions.
 **Consequences:** A merge is exact to legacy's 120-point outline where a curve takes part,
 and exact otherwise. A second overlapping section drawn before the first one's save has
 come back is added, not merged, since the browser does not yet know the first.
+
+## D-70 — No test suites or scripted tests; one smoke test through the Playwright MCP
+
+**Date:** 2026-09-28
+**Status:** Accepted (founder decision)
+**Area:** Process, Bench
+**Supersedes:** D-68 item 4's `./quantity-table.sh` step and its throwaway Playwright script
+
+**Context:** D-68 cut the fixture suite but kept two scripted checks per block: the shared
+quantity table and a throwaway Playwright script. The founder wants those gone too, and
+the session's work checked by hand in a real browser.
+
+**Decision:**
+1. No test suite or scripted test is run or written: not `pytest`, not
+   `./quantity-table.sh`, not a Playwright script, not the archived fixture suite. This is
+   CLAUDE.md hard rule 8.
+2. After each block: the gates (lint, typecheck, build; ruff, mypy), which are not tests,
+   then one smoke test through the Playwright MCP of the feature developed in the session.
+   It signs in with a throwaway account (never the seeded account), opens the changed
+   screen and drives the new behaviour. The report says in one line what it drove and
+   whether it passed. A failure is fixed before moving on.
+3. `./quantity-table.sh`, `browser/lib/` and the `browser` service stay in the tree,
+   unused, until a later decision removes them.
+
+Unchanged from D-68: the fixture archive tag, the running list in
+[docs/tasks/SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md), the full run restored from the
+tag before any deploy to testers or promotion to `main`, and commit and push per block.
+
+**Consequences:** Bid quantities are no longer checked against hand-worked answers between
+blocks. A quantity regression is caught by the smoke test's eye or by the full run before
+a deploy. A session needs the Playwright MCP connected to finish a block.
