@@ -2922,3 +2922,34 @@ tag before any deploy to testers or promotion to `main`, and commit and push per
 **Consequences:** Bid quantities are no longer checked against hand-worked answers between
 blocks. A quantity regression is caught by the smoke test's eye or by the full run before
 a deploy. A session needs the Playwright MCP connected to finish a block.
+
+## D-70 — F7-S21: Resume, Start, New section and Add more points reached from the menus until the action group
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided in the day, pending founder review)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S21 (and S23, P-21)
+
+**Context:** Legacy reaches these acts in three places. A row's type glyph is Resume: a
+Linear or Area item's next run joins it, a count goes on marking (`handleResumeItem`).
+The action group's Start does the same, and its Resume, on a selected run, is "Add more
+points": click the run's last point to go on from the end, or an edge to insert a point
+and go on from there. An area's right-click menu carries "Add more points" and "New
+section"; a Linear run's menu carries neither. The action group is F7-S23, and the row's
+glyph belongs to the panel's presentation port (P-21); a nested glyph button cannot sit in
+today's row, which is itself a button.
+
+**Decision:** Build the acts now and reach them from the right-click menus in legacy's
+words and hints: an area's section "Add more points" and "New section" (its own menu); a
+Linear run's "Start" and "Resume" ("Start another section of this item", "Continue this
+run from one of its ends", the action group's titles); a count's "Resume" ("Keep placing
+markers on this item"); a row's "Resume" ("Resume this takeoff — continues measuring
+{area|length} on this sheet"). Each Resume entry carries legacy's per-type glyph (menus
+gain an icon slot; the accent is a new token, `--glyph-accent`, legacy's #e2564a). "Add
+more points" is offered on a run of points, not on a rectangle, ellipse or arc, whose own
+handles come with S13; its new points go into the run in one version-guarded write, and a
+point inserted on an edge is written only with them, where legacy wrote it at once. S23
+and P-21 move the entries to their legacy homes and keep the acts.
+
+**Consequences:** Every act of S21 is reachable today. The menus carry four entries
+legacy's do not (Start, Resume, and the row's and count's Resume) until S23 and P-21.
