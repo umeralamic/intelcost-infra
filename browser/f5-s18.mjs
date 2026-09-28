@@ -22,7 +22,7 @@ import { APP, apiCall, apiLogin, enterWorkspace, expect, fixtureOwner, openBrows
 import { makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
 import { waitFor } from "./lib/realtime.mjs";
-import { sheetPoint } from "./lib/takeoff.mjs";
+import { armMeasure, sheetPoint } from "./lib/takeoff.mjs";
 
 const PASSWORD = "bench-password-1";
 const TOOLS = ["Scale", "Linear", "Area", "Count"];
@@ -114,7 +114,7 @@ const itemCount = async (token, at) => (await apiCall(token, "GET", `${at.base}/
 
 /** Draw a two-point Linear run through the screen, as a person would. */
 async function drawRun(page) {
-  await tool(page, "Linear").click();
+  await armMeasure(page, "Linear");
   const a = await sheetPoint(page, 0.2, 0.4);
   const b = await sheetPoint(page, 0.5, 0.4);
   await page.mouse.click(a.x, a.y);

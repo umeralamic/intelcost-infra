@@ -25,6 +25,7 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 0 | Archive F5 | Done: the spec and both block reports in `docs/archive/`, F5 ✅ Live with its flow and files, the board's F5 row dropped, PARITY's F5 note says shipped | 16:33 | 16:55 | 22 m |
 | 1 (spec) | P-20a spec | Written, [rotate_pages_tasks.md](rotate_pages_tasks.md); on the board In Progress | 16:55 | 17:10 | 15 m |
 | 1 | P-20a Rotate pages | **Built**, awaiting your click check: `p20a` 8/8; the quick tier plus the canvas fixtures, 26 fixtures, 24 passed first time, the 2 failures found and rerun green (below) | 17:10 | 18:05 | 55 m (with the spec) |
+| 2A | F6 Block A (S1 to S3): New Measurement and Properties, height and pitch, named dimensions | **Built**: `f6-a` 9/9; quick tier plus 10 touched fixtures, 27: 25 first time, 2 failed from an api restart I caused mid-run, rerun green. D-55 | 18:05 | 19:00 | 55 m |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
 
 ## The founder's addition (a), (b), (c)
@@ -78,6 +79,14 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   The panel moves a dragged sheet at once and writes after; the fixture checked the api
   as soon as the panel showed the new order, and on a busy bench it read the old one.
   The fixture now waits for the `PUT …/sheet/order` answer first. Not a product fault.
+- **`f8-s13` and `f8-s14` failed in F6 Block A's tier, both at the same second, waiting for
+  the sheet.** I had saved a new api module mid-run, which restarts the api and the worker.
+  Rerun alone with nothing changing: both pass. My fault, not the product's; from then on
+  api code waited in the scratchpad while a tier ran.
+- **Found in F6 Block A (product faults, fixed):** a Count on an unscaled sheet was stored
+  as 0 and stale (legacy counts marks without a scale); an item update that moved a folder
+  or layer never recomputed; Enter in the New Measurement dialog reopened it; a context
+  menu opened on a row a panel had just scrolled into view closed at once.
 - **`f5-sheet-items`' setup: a connect timeout from the fixture to the api** (P-20a's
   tier, once). The api's log shows no stall in that run (no gap over 10 s in the
   parallel group), so the connection from the browser container to the host gateway
@@ -130,6 +139,27 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 7. ⋮ → Thumbnails: the turned sheet's thumbnail is turned too.
 8. With a second window open on the same sheet, turn it in the first: the second turns
    within a second, no reload.
+
+### F6 Block A: New Measurement, height and pitch, dimensions (IDM irrelevant)
+
+1. On a scaled sheet, click **Linear**. A dialog asks "Name this LF measurement", with a
+   name like "LF 3" already filled. Press Enter. Draw two runs: both land in one item
+   (legacy's way; before, each shape was its own item).
+2. Click **Count**, name it "Doors", pick a colour from the swatch (or Randomize), set
+   Opacity to 50, Symbol "Square", "Fixed size", Create, then click three doors: one item,
+   3 EA.
+3. Click **Area**, open "Work Breakdown Structure (WBS)", choose "Preset Classification":
+   Create greys out (no classifications yet). Tick "Rough measurement": Create works, and
+   the area lands in a "Rough Measurements" folder. Reload and click a tool again: the WBS
+   is still open on Preset (it remembers you). Switch back to Custom Folder.
+4. Right-click an item in the Takeoff panel → **Properties**: it says "Current folder:
+   Unfiled" (or its folder) and saves with Save.
+5. Make a Linear with "Convert to area using a height" of `7'-6"` and draw a 40 ft run: it
+   reads about 300 SF, named "… (40.0 LF, 7'-6\"H)".
+6. On an area, Properties → "Apply a slope factor" 6/12: 100 SF reads 111.80 SF. Try
+   Degrees 95: "Angle must be between 0 and 90 degrees", and Save greys out.
+7. Properties → "+ Depth" twice: "Depth" and "Depth (2)". Remove the first and add "+
+   Width": it is named Width, and the item's own quantity never moves.
 
 ## Questions
 

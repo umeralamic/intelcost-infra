@@ -2393,3 +2393,51 @@ addition to F6-S9 and a later D-NN.
 
 **Consequences:** F6-S9 gains AC0 (every item, "Also measured on", a row click opens a
 sheet carrying the item when the open one carries none).
+
+---
+
+## D-55 — New Measurement asks before drawing, and one tool run is one item
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend, Backend
+**Serves:** F6-S1 to S3
+
+**Context:** F6-S1's AC1 reads "Drawing a run opens 'Name this Linear measurement' with
+'Linear 3'". Legacy's source (`ProjectTakeoff.tsx` `setPrep`, `NewItemDialog.tsx`) differs
+in three ways: the dialog opens when Linear, Area or Count is **picked**, before anything is
+drawn; its title and default name use the type's code, "Name this LF measurement" and
+"LF 3"; and after the first shape the tool stays armed, every further shape joining that
+item (legacy's extend), so a run of count clicks is one item. Today's app made one item
+per shape, which is how three count clicks made three items (finding, 2026-09-26).
+
+**Options considered:**
+
+| Option | Pro | Con |
+|---|---|---|
+| A — As the spec's words: draw, then name | Matches the spec text | Not legacy's; the dialog's height, pitch and dimensions would apply to a shape already drawn |
+| B — Legacy's: pick, name, draw; one tool run is one item | Exactly legacy's order and words; fixes count-per-click | Every fixture that picks a tool confirms the dialog |
+
+**Decision:** Option B, and with it, all from legacy's code:
+- **Title and default** "Name this {LF|SF|COUNT} measurement", "{TYPE} {n}"; Enter creates.
+- **The name suffix** reads " (40.0 LF, 7'-6\"H)": legacy's formatter always writes one
+  decimal (the spec wrote "40 LF").
+- **The api computes the slope factor** from the mode and entry (legacy's `computeFactor`,
+  ported to `takeoff/pitch.py`), refuses a bad one 409 with legacy's hint, and refuses
+  height and pitch together. The unit and name are rebuilt on every recompute (a run with
+  a height reads SF).
+- **A count needs no scale:** its marks are counted on an unscaled sheet. It was stored as
+  0 and stale until now.
+- **The WBS mode and whether its section is open are on the user** (`takeoff_prefs`,
+  sparse, legacy's defaults Custom Folder and closed), where D-39 Q7 puts F7's canvas
+  settings too.
+- **The Preset Classification picker arrives with S14**; until then Preset shows that no
+  system is on, and Create needs Rough measurement, Custom Folder or edit mode, as
+  legacy's gate does.
+
+**Consequences:**
+- `lib/takeoff.mjs` gains `armMeasure` and `confirmMeasure`; ten fixtures pick tools
+  through them.
+- A context menu opened on a row that a panel had just scrolled into view closed at once
+  (the scroll's event lands a frame later). The menu now ignores a panel's scroll
+  delivered before its second frame, as it already did for the page's.

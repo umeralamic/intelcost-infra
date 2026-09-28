@@ -18,7 +18,7 @@ import { APP, apiAccept, apiCall, apiLogin, apiRegister, enterWorkspace, expect,
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, sheetsOf, uploadAll } from "./lib/drawings.mjs";
 import { A_NAME, APP_B, WINDOW_B, joinedTopic, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
-import { clickSheet, row, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
+import { armMeasure, clickSheet, row, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F5-S19 two windows");
 const project = await makeProject(token, base, { name: "Two windows" });
@@ -119,7 +119,7 @@ await run("f5-s19", [
       try {
         const before = (await items()).length;
         const rowsBefore = await b.page.locator("[data-quantity-panel] li button").count();
-        await tool(page, "Linear").click();
+        await armMeasure(page, "Linear");
         await clickSheet(page, 0.2, 0.7);
         await sweepSheet(page, [0.2, 0.7], [0.35, 0.72], 900);
         await clickSheet(page, 0.35, 0.72);

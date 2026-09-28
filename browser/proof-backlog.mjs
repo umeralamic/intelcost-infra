@@ -14,7 +14,7 @@ import { freshWorkspace, makeProject, openFiles } from "./lib/f4.mjs";
 import { SEEDED, apiLogin, firstWorkspace } from "./lib/bench.mjs";
 import { call, signInAt } from "./lib/realtime.mjs";
 import { APP } from "./lib/bench.mjs";
-import { countItem, menuItem, openSheet, removeItem, riverside, row } from "./lib/takeoff.mjs";
+import { armMeasure, countItem, menuItem, openSheet, removeItem, riverside, row } from "./lib/takeoff.mjs";
 
 const token = await apiLogin();
 const workspace = await firstWorkspace(token);
@@ -196,7 +196,7 @@ await run("proof-backlog", [
     run: async ({ page }) => {
       await signedInOnSheet(page);
       const before = (await call(token, "GET", `${r.takeoff}/item?sheet_uuid=${r.sheet}`)).body.map((i) => i.uuid);
-      await tool(page, "Count").click();
+      await armMeasure(page, "Count");
       const box = await page.locator('svg[role="presentation"]').boundingBox();
       for (const [x, y] of [[0.8, 0.6], [0.82, 0.62], [0.84, 0.64]]) {
         const saved = page.waitForResponse((res) => res.request().method() === "POST" && /\/item$|\/geometry$/.test(res.url()));
@@ -289,7 +289,7 @@ await run("proof-backlog", [
     title: "§8 Create a takeoff item (SF, LF or EA), naming, colouring, filing under a classification and a custom folder",
     run: async ({ page }) => {
       await signedInOnSheet(page);
-      await tool(page, "Area").click();
+      await armMeasure(page, "Area");
       const box = await page.locator('svg[role="presentation"]').boundingBox();
       const at = (x, y) => [box.x + box.width * x, box.y + box.height * y];
       for (const [x, y] of [[0.62, 0.72], [0.72, 0.72], [0.72, 0.8]]) await page.mouse.click(...at(x, y));
@@ -313,7 +313,7 @@ await run("proof-backlog", [
       await signedInOnSheet(page);
       await page.getByRole("button", { name: "Zoom in" }).click();
       await page.getByRole("button", { name: "Zoom in" }).click();
-      await tool(page, "Linear").click();
+      await armMeasure(page, "Linear");
       const el = scroller(page);
       const before = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
       const box = await el.boundingBox();

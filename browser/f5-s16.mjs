@@ -9,6 +9,7 @@
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
+import { armMeasure, confirmMeasure } from "./lib/takeoff.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F5-S16 presets");
 const project = await makeProject(token, base, { name: "Presets" });
@@ -101,7 +102,8 @@ await run("f5-s16", [
     title: "AC3: Linear on an unscaled sheet opens \"Set a scale for this sheet\"; \"Set scale directly\" then \"Pick a standard scale\" sets it and arms Linear; Count needs no scale",
     run: async ({ page }) => {
       await open(page, two);
-      await tool(page, "Count").click();
+      // Count asks for its name (F6-S1), then arms with no scale.
+      await armMeasure(page, "Count");
       const countArmed = await tool(page, "Count").getAttribute("aria-pressed");
       await tool(page, "Linear").click();
       const dialog = page.getByRole("dialog");
@@ -112,6 +114,8 @@ await run("f5-s16", [
       await page.getByRole("dialog").getByRole("heading", { name: "Pick a standard scale" }).waitFor();
       await preset(page.getByRole("dialog"), `1/4" = 1'-0"`).click();
       await page.getByText(`Scale: 1/4" = 1'-0"`).waitFor({ timeout: 10000 });
+      // Then Linear's own "Name this LF measurement" (F6-S1), and it arms.
+      await confirmMeasure(page);
       await page.waitForFunction(() => document.querySelector('[role="group"][aria-label="Takeoff tools"] button[aria-pressed="true"]')?.textContent?.includes("Linear"), null, { timeout: 5000 });
       // D-51: 612 pt across at 4 ft per inch is 612 × 4 / 72 = 34 ft.
       const wall = (await apiCall(token, "GET", `${takeoff}/item?sheet_uuid=${two.uuid}`)).body.find((i) => i.name === "Wall run");

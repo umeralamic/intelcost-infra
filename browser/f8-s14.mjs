@@ -19,7 +19,7 @@ import {
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
-import { clickSheet, onProjectTopic, openSheet, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
+import { armMeasure, clickSheet, onProjectTopic, openSheet, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -120,7 +120,7 @@ await run("f8-s14", [
         await openSheet(b.page, r, APP_B);
         await onProjectTopic(page, r);
         await onProjectTopic(b.page, r);
-        await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { name: "Linear", exact: true }).click();
+        await armMeasure(page, "Linear");
         await clickSheet(page, 0.3, 0.85);
         await sweep(page, [0.3, 0.85], [0.45, 0.88], 500);
 

@@ -24,7 +24,7 @@ import {
   signInAt,
   waitFor,
 } from "./lib/realtime.mjs";
-import { clickSheet, onProjectTopic, openSheet, projectTopicOf, removeItem, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
+import { armMeasure, clickSheet, onProjectTopic, openSheet, projectTopicOf, removeItem, riverside, setMode, sheetPoint, sweepSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -93,7 +93,7 @@ await run("f8-s13", [
       const { b, aName, aColour } = await twoWindows(page, context);
       try {
         const before = await shapesOnSheet();
-        await tool(page, "Linear").click();
+        await armMeasure(page, "Linear");
         await clickAt(page, [0.2, 0.7]);
         await sweep(page, [0.2, 0.7], [0.35, 0.72], 900);
         await clickAt(page, [0.35, 0.72]);
@@ -151,7 +151,7 @@ await run("f8-s13", [
             while (performance.now() < until);
           }, 70);
         });
-        await tool(page, "Linear").click();
+        await armMeasure(page, "Linear");
         await clickAt(page, [0.2, 0.3]);
         await sweep(page, [0.2, 0.3], [0.6, 0.35], 3000);
         await sweep(page, [0.6, 0.35], [0.3, 0.5], 3000);
@@ -229,7 +229,7 @@ await run("f8-s13", [
     run: async ({ page, context }) => {
       const { b, aName } = await twoWindows(page, context, secondUrl(APP_B));
       try {
-        await tool(page, "Linear").click();
+        await armMeasure(page, "Linear");
         await clickAt(page, [0.25, 0.25]);
         await sweep(page, [0.25, 0.25], [0.45, 0.3], 900);
         const heard = await waitFor(async () => {
@@ -253,7 +253,7 @@ await run("f8-s13", [
     run: async ({ page, context }) => {
       const { b, aName } = await twoWindows(page, context);
       try {
-        await tool(page, "Linear").click();
+        await armMeasure(page, "Linear");
         await clickAt(page, [0.6, 0.2]);
         await sweep(page, [0.6, 0.2], [0.75, 0.3], 700);
         const tag = b.page.locator("[data-draft-tag]", { hasText: aName });

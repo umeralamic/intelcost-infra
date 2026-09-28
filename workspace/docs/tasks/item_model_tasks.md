@@ -21,6 +21,26 @@ panel._
 
 ---
 
+## Progress
+
+| Block | State | Proof |
+|---|---|---|
+| **A: S1 to S3** | Built 2026-09-27 (overnight). D-55: the dialog opens when the tool is picked, in legacy's words, and one tool run is one item | `f6-a` 9/9: "Name this LF measurement", "LF 1", Enter, two runs one item; colour, Randomize, opacity, Square and Fixed size stored; Preset with nothing picked disables Create, Rough measurement enables it and files under Rough Measurements; the WBS mode and open state survive a reload; Properties, "Current folder: Unfiled", Save; 40 LF at 7'-6" is 300 SF, "Wall paint (40.0 LF, 7'-6\"H)"; 6/12, 26.565° and 50% all 111.80 SF; 95° refused on the field and 409; B has the figure in under 150 ms; Depth, Depth (2), d1, d2, then d3; a marker offers none. **S3 AC4** (the refusal) is driven in Block B, which brings sub-items |
+
+**Found while building Block A:**
+- **A count on an unscaled sheet was stored as 0 and stale.** Legacy's Count needs no
+  scale; the recompute now counts marks on any sheet.
+- **An item update that moved a folder or a layer never recomputed** (the uuids were
+  popped from the payload before the check). A folder or layer multiplier now reaches the
+  item's quantity when it moves.
+- **Enter in the dialog reopened it**: the close handed focus back to the tool button, and
+  the same keystroke's keypress clicked it. Enter's default is stopped.
+- **A context menu opened on a row a panel had just scrolled into view closed at once.**
+  The scroll's event is delivered a frame later; the menu now ignores a panel's scroll
+  delivered before its second frame, as it already did for the page's.
+
+---
+
 ## The problem
 
 Today's takeoff page can draw an item, rename it, recolour it, file it in a folder,

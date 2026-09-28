@@ -19,7 +19,7 @@ import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } fro
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
 import { waitFor } from "./lib/realtime.mjs";
-import { sheetPoint } from "./lib/takeoff.mjs";
+import { armMeasure, sheetPoint } from "./lib/takeoff.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F5 D-51 orientation");
 const project = await makeProject(token, base, { name: "Orientation" });
@@ -48,7 +48,7 @@ const itemsOn = async (sheet) => (await apiCall(token, "GET", `${takeoff}/item?s
 /** Draw a two-point Linear run on screen and return its saved quantity. */
 async function drawRun(page, sheet, from, to) {
   const before = new Set((await itemsOn(sheet)).map((i) => i.uuid));
-  await tool(page, "Linear").click();
+  await armMeasure(page, "Linear");
   const a = await sheetPoint(page, ...from);
   await page.mouse.click(a.x, a.y);
   const b = await sheetPoint(page, ...to);

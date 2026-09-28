@@ -12,6 +12,7 @@ import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, seatedMember, 
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
 import { APP_B, joinedTopic, recordSockets, signInAt, waitFor } from "./lib/realtime.mjs";
+import { armMeasure } from "./lib/takeoff.mjs";
 
 const W = 1224;
 const H = 792;
@@ -145,7 +146,7 @@ await run("p20a", [
       await open(page, 1);
       await page.waitForFunction(() => document.querySelector("[data-page-turn]")?.getAttribute("data-page-turn") === "90");
       const before = (await apiCall(token, "GET", `${takeoff}/item?sheet_uuid=${pages[1].uuid}`)).body.length;
-      await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { name: "Linear", exact: true }).click();
+      await armMeasure(page, "Linear");
       // Across the unturned page at y 0.3: down the screen once turned.
       const a = await turned90(page, 0.2, 0.3);
       const b = await turned90(page, 0.2 + 360 / W, 0.3);

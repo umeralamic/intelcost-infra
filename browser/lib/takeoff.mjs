@@ -136,3 +136,29 @@ export async function setMode(token, workspaceUuid, mode) {
   const done = await call(token, "PATCH", `/api/workspace/${workspaceUuid}`, { collaboration_mode: mode });
   if (done.status !== 200) throw new Error(`mode ${mode}: ${done.status} ${JSON.stringify(done.body)}`);
 }
+
+/**
+ * Pick Linear, Area or Count and answer its "Name this … measurement" dialog (F6-S1:
+ * legacy asks before anything is drawn). Create arms the tool; the first shape drawn
+ * creates the item, and later shapes join it until the tool changes. `name` types a
+ * name; otherwise the default ("LF 3") stands. Returns once the tool is armed.
+ */
+export async function armMeasure(page, label, { name } = {}) {
+  const tools = page.getByRole("group", { name: "Takeoff tools" });
+  await tools.getByRole("button", { name: label, exact: true }).click();
+  await confirmMeasure(page, { name });
+  await page.waitForFunction(
+    (want) => document.querySelector('[role="group"][aria-label="Takeoff tools"] button[aria-pressed="true"]')?.textContent?.includes(want),
+    label,
+    { timeout: 5000 },
+  );
+}
+
+/** Answer an open New Measurement dialog with Create (after a scale was set, say). */
+export async function confirmMeasure(page, { name } = {}) {
+  const form = page.locator('[data-measurement-dialog="create"]');
+  await form.waitFor({ timeout: 10000 });
+  if (name) await form.getByLabel("Name", { exact: true }).fill(name);
+  await form.getByRole("button", { name: "Create" }).click();
+  await form.waitFor({ state: "detached", timeout: 10000 });
+}
