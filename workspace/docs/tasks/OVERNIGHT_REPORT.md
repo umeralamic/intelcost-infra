@@ -4,6 +4,18 @@ _Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
 [docs/archive/OVERNIGHT_REPORT_2026-09-27.md](../archive/OVERNIGHT_REPORT_2026-09-27.md).
 Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 
+**In short.** F5's follow-ups, P-20a and all of F6 are built and wait for your click
+checks. F7 is built from Block A through S19: every measure tool and mode, snap and
+Ortho, selecting sections, vertices, Move, box select, copy and paste, deducts drawn on
+the canvas, Delete, and auto-scroll. Not yet built: drawing past the paper's edge, and
+S20 onwards. Tonight's decisions for your review are D-53 to D-67; D-66 is the most
+visible (Select's drag now draws legacy's box, and Pan is its own tool again).
+
+F7's closing full tier passed 106 of 109, and all three failures are traced. Two product
+faults surfaced on the way and are fixed: shapes going to the wrong sheet, and a quick
+second edit refused as stale. There are five questions at the end, and click-only checks
+for each block.
+
 ## Progress checklist
 
 - [x] 0. Archive F5 (spec and block reports to docs/archive, Live row, board)
@@ -86,6 +98,55 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 `f5-s18` accepts the Scale button's own title as "no reason".
 
 ## Commits
+
+All on `umer-dev`, pushed; `main` untouched in every repo; no force-push. 37 commits (and
+the closing mirror commit after this list). `intelcost-market-next` had none.
+
+**intelcost-app-fastapi** (9)
+
+- `39dcfd0` 17:25 F5 follow-up (a): each sheet's items with that sheet's quantity (D-53)
+- `9f42b07` 18:03 P-20a: Rotate Pages stores each sheet's own turn in one write
+- `cc21c5e` 19:05 F6 Block A: measurements' modifiers, names and dimensions on the api (D-55)
+- `6797a82` 19:49 F6 Block B: the formula engine's twin, sub-items and variables on the api (D-56)
+- `020372b` 20:59 F6 Block C: folders with multipliers, layers, the item tree
+- `a9fe479` 22:43 F6 Blocks D and E: classifications, subcontractors, filing by classification
+- `87ec60d` 02:08 F7 Blocks A and B: analytic shapes, deducts clipped once, the shapes transaction
+- `d3875bd` 03:39 F7 S9, S15, S18: arcs in the figure, deduct refusals, overlapping holes once
+- `faf002e` 04:41 Takeoff: a shape lands on the sheet it was drawn on; a sheet lists its shapes wherever the item began
+
+**intelcost-app-react** (12)
+
+- `c031702` 17:25 F5 follow-up: items under each sheet row; legacy's toolbar Scale button (D-53)
+- `f74db61` 18:03 P-20a: Rotate Pages, and the canvas, raster and thumbnails follow the turn
+- `8c3c471` 19:05 F6 Block A: New Measurement and Properties, height and pitch, named dimensions (D-55)
+- `23646b5` 19:49 F6 Block B: Create and Manage sub-items, variables, the live preview (D-56)
+- `f1fe1dd` 20:59 F6 Block C: the item tree lists every project item, folders, layers, multi-select
+- `ef73bba` 22:43 F6 Blocks D and E: classification settings, subcontractors, the picker, two windows
+- `6c6656a` 00:08 A colleague's scale change refreshes the Takeoff panel's project-wide list
+- `326754a` 02:08 F7 Blocks A and B: legacy's hit rules, the draw modes, Segment, Count joins, the draw menu
+- `48cfb24` 03:39 F7 S9, S10, S12, S13, S15, S17, S18: arcs, snap and Ortho, sections, vertices, Move, Delete, deducts
+- `14493c9` 04:41 F7 S14, S15 AC5: box select, Ctrl+A, the selection menu; legacy's Pan tool; Move from the menu
+- `824446c` 04:50 F7 S16: legacy's copy and paste, real-world size kept across sheets (D-67)
+- `7d66915` 06:45 F7 S11: legacy's Auto Scroll; a vertex edit's answer goes straight into the cache
+
+**intelcost-infra** (16)
+
+- `8ef4eb5` 17:25 F5 follow-up fixtures (f5-sheet-items, f5-scale-button); F5 archived; P-20a spec; D-53, D-54; mirror
+- `5f80d01` 18:03 P-20a fixture (p20a, in the full list); f5-s14 waits for the order write; apiCall names a failed request; mirror
+- `91e99b7` 19:05 F6 Block A fixture (f6-a); armMeasure for the New Measurement dialog; D-55; report; mirror
+- `13e518d` 19:49 F6 Block B fixtures: f6-s4 (the shared table through both engines), f6-b; D-56, D-57; report; mirror
+- `3054d4e` 21:00 F6 Block C: f6-c fixture, f6 fixtures in the full tier, workspace mirror
+- `2e7f554` 22:43 F6 Blocks D and E: f6-d and f6-e, p19 measures the new settings screens, mirror
+- `6aecd3d` 00:08 F6 close: f4-s10 waits for the stored assignees; workspace mirror (drafts F9, F10, F11)
+- `dd92294` 02:09 F7 Blocks A and B: f7-a (shared quantity table), f7-b; harness calls over the compose network
+- `471930e` 03:40 F7: fixtures f7-c to f7-f; arc and overlapping-hole rows in the shared table
+- `48a2f79` 03:40 workspace: F7 S13, S15, S18 progress; D-65, D-66; overnight report
+- `e33ae7d` 04:41 F7: fixtures f7-g, f7-h; f7-e finds a section by role; proof-backlog §7, §8, §9 brought up to date
+- `2686081` 04:41 workspace: F7 S14 (D-66), copy and paste decided (D-67); report
+- `a6361bc` 04:50 F7: fixture f7-i (copy and paste)
+- `9160f9f` 04:50 workspace: F7 S16 progress, PARITY, report
+- `8198073` 06:45 F7: fixture f7-j (auto-scroll); f7-h waits for the sheet's shapes; f8-s18 runs alone as a timing fixture
+- `62b0f7f` 06:45 workspace: F7 closing tier, S11, report
 
 ## Overnight decisions to review
 
