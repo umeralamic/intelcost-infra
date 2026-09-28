@@ -3066,3 +3066,40 @@ with "Ortho: On"; and that the new page overflows a 1440 × 900 window.
 3. Every difference the comparison lists goes to the block or feature named beside it.
 
 **Consequences:** A new screen starts from what legacy shows, not only from the spec.
+
+## D-75 — F7-S24: legacy's canvas menus, the region menu, and Hide in the browser
+
+**Date:** 2026-09-28
+**Status:** Accepted (decided in the day, within D-73 and D-74)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S24, D-73 item 6
+
+**Context:** Legacy's canvas right-click opens a menu by what is under it: the region menu
+off every markup; the area, Linear or count-mark menu on a shape, each with its own rows,
+separators, flyouts and a plain header ("{name} · Area Total: …", "{name} · Point Count:
+n EA"). The new page opened one item menu for every shape (Properties … Delete item), and
+nothing on an empty sheet. Legacy's Rotate Page writes the sheet's shared view rotation,
+the act P-20a's Rotate Pages already built; S24 AC2 says "B's view is unchanged".
+
+**Decision:**
+- The canvas opens legacy's menus: the region menu (tool strip, Paste, Show All ▸, Hide
+  All ▸, Rotate Page ▸, Zoom to Fit, Calibrate Scale, Bookmark This Page), and the area,
+  Linear and count-mark menus with legacy's rows. The menu component gains flyouts, a tool
+  strip, a plain header and bare dividers. The Takeoff panel's rows keep the item menu
+  until P-21 ports them to legacy's row buttons.
+- Rotate Page turns the sheet as legacy's does, through P-20a's rotation: a colleague sees
+  the turn; no figure changes.
+- **Hide** (D-73): one per-item set in this browser (legacy's `takeoff-hidden-items-v1`),
+  from the row's eye ("Hide markup", "Show markup"), the area menu, the selection menu and
+  Show All and Hide All by kind. A hidden item is neither drawn nor picked; its quantity
+  stays.
+- **Order** (Bring to front, Send to back) writes the shape's `z_index`; the canvas draws
+  an item's shapes in that order.
+- **Break line here** makes two runs of the item meeting at the point, in one change (a new
+  row, never a sentinel; D-32).
+- Absent until their features ship (D-39 Q9): Show Legend, Print This Page, Mirror Page,
+  and the strip's Dimension, Highlight and Note. AC5 (no menu after a right-drag pan)
+  waits for the right-drag pan itself, F7-S26.
+
+**Consequences:** A right-click on the sheet looks and acts as legacy's. Properties,
+Rename, Duplicate and the rest stay reachable from the item rows and the action group.
