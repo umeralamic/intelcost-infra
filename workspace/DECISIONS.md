@@ -2507,3 +2507,77 @@ set. The api also compounded nothing: it read only the item's own folder and lay
 
 **Consequences:** Only bench data held items under a multiplier. The rule is kept in one
 place on the api (`service.item_multiplier`), which F9 reads.
+
+## D-58 — Classifications: legacy's five templates, seeded per system on first use
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Classification, Backend, Workspace settings
+**Serves:** F6-S10 to S13, S15
+
+**Context:** Legacy seeds all five systems (CSI 1,833 nodes, UniFormat 635, NRM 1 401,
+NRM 2 361, CESMM 254) from `supabase/seed/templates/*-default-v1.txt` by a trigger when a
+workspace is created, with the template's 54 default subcontractors and their scope
+assignments, guarded by `workspace_template_versions` so an edited tree is never
+re-seeded. Every system starts enabled. D-36 Q8 said CSI seeds on first use and the
+others when a workspace first turns them on. Legacy's two duplicate-code checks disagree
+(Settings: "That code already exists in this system.", case-insensitive; the picker:
+"Code X already exists", case-sensitive), and a child's code is the sibling count + 1,
+which collides after a delete and fails silently.
+
+**Options considered:**
+
+| Option | Pro | Con |
+|---|---|---|
+| A — Seed every system at workspace creation, as legacy | Legacy's timing | 3,484 rows per new workspace nobody may read; D-36 Q8 said otherwise |
+| B — Seed a system the first time anyone reads its tree or it is turned on (D-36 Q8), guarded by a per-system seed record | Every workspace finds its tree already there; nothing written that is never read; the guard is legacy's | The first read of a system writes |
+
+**Decision:** Option B, with legacy's data copied verbatim into the api
+(`app/features/classification/templates/`).
+- Every system starts enabled, as legacy (`enabled_classifications` empty reads as all
+  five; the column's default becomes all five). The last one cannot be turned off:
+  409 "Pick at least one classification system". An unknown key is 422.
+- A system seeds once, recorded in `workspace_classification_seed`; a recorded system is
+  never seeded again, whatever was edited or deleted.
+- Seeding CSI also seeds legacy's default subcontractor roster and the template's scope
+  assignments; the other systems seed their assignments against that roster.
+- One duplicate rule everywhere: "That code already exists in this system.", ignoring
+  case, 409, shown on the field. A child's code is the next free `{parent}.{NN}`.
+- Gated on `canManageTrades` (F3-S14), for systems, the tree and subcontractors.
+- `takeoff_item.classification_ref_id` and `takeoff_folder.classification_ref_id` become
+  foreign keys to `workspace_classification.uuid`, ON DELETE SET NULL (D-36 Q2). Deleting
+  a code something is filed under (itself or below) is refused 409 "This one is in use",
+  naming the count; "Archive instead" is offered.
+- Beyond legacy, `workspace.classification.changed` (tree writes, archive, seed) and
+  `workspace.settings.updated` (systems, subcontractors) make other tabs follow live.
+
+**Consequences:** F17 maps legacy's refs onto the seeded rows by (system, code). The
+project-level subcontractor overrides are Estimating's (F9).
+
+## D-59 — Filing by classification happens on the api, with a searchable picker
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Classification
+**Serves:** F6-S14
+
+**Context:** Legacy's picker (`ClassificationPicker.tsx`) has two columns, Division and
+Scope, no search, "Show archived", inline create, and a "System:" choice that locks the
+project after the first classified save ("Locked for this project"). Filing runs in the
+browser (`ensureFolderPath`): a root folder per division named "DIV 03 — Concrete" (CSI)
+or "{code} {name}", a nested folder per scope level named with the scope's name, each
+carrying the node's id, found again by that id. S14 AC1 asks for a search.
+
+**Decision:**
+- The api files: an item created or changed with a `classification_uuid` gets its folder
+  path found or made by the node chain, is filed in the leaf, carries the node as its
+  classification, and stamps the project's system if it has none. A node from another
+  system than the project's is refused 409 "This project is locked to {system}".
+- Renaming a node renames the folders made from it, as legacy.
+- The picker keeps legacy's two columns and words and adds a search box over code and
+  name (the matching of legacy's subcontractor scope tree), per S14 AC1.
+- Legacy's "Change classification system" dialog (unlock when at most one item is
+  classified) is not built in F6; the lock shows "Locked for this project".
+
+**Consequences:** One place builds folder paths, so two estimators filing under one scope
+at once find one folder, not two.

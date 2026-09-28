@@ -9,8 +9,10 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 - [x] 0. Archive F5 (spec and block reports to docs/archive, Live row, board)
 - [x] 0a. F5 follow-up (founder's addition): (a) items under each sheet row in the panel;
       (b) legacy's scale button and dropdown. (c) is written into F6's spec, built in S9
-- [ ] 1. Rotate pages (P-20a): specced ([rotate_pages_tasks.md](rotate_pages_tasks.md))
-- [ ] 2. F6, all blocks, with the two-window live check
+- [x] 1. Rotate pages (P-20a): specced ([rotate_pages_tasks.md](rotate_pages_tasks.md)),
+      built, awaiting your click check
+- [ ] 2. F6, all blocks, with the two-window live check: A, B, C built; D (classifications,
+      subcontractors) and E (two-window check) to go
 - [ ] 3. Close F6 (built, awaiting founder click check)
 - [ ] 4. F9 estimating draft spec
 - [ ] 5. F7 Block A
@@ -27,6 +29,7 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 1 | P-20a Rotate pages | **Built**, awaiting your click check: `p20a` 8/8; the quick tier plus the canvas fixtures, 26 fixtures, 24 passed first time, the 2 failures found and rerun green (below) | 17:10 | 18:05 | 55 m (with the spec) |
 | 2A | F6 Block A (S1 to S3): New Measurement and Properties, height and pitch, named dimensions | **Built**: `f6-a` 9/9; quick tier plus 10 touched fixtures, 27: 25 first time, 2 failed from an api restart I caused mid-run, rerun green. D-55 | 18:05 | 19:00 | 55 m |
 | 2B | F6 Block B (S4 to S6): the formula engine twice and equal, sub-items, variables | **Built**: `f6-s4` 3/3 (965 rows equal), `f6-b` 9/9; quick tier plus 7, all 24 pass. D-56 | 19:00 | 20:05 | 1 h 05 |
+| 2C | F6 Block C (S7 to S9): folders and multipliers, layers, the item tree (with the founder's (c)) | **Built**: `f6-c` 10/10 (third run; two product faults and two fixture faults found on the way, below); quick tier plus 21 touched fixtures, all 38 pass first time (25 m 26 s). D-57 | 20:05 | 21:00 | 55 m |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
 
 ## The founder's addition (a), (b), (c)
@@ -79,6 +82,17 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   pushed live; variables managed from the sub-items editor's Insert menu.
 - **D-57** (F6 Block C): folder and layer multipliers extend a quantity, as legacy's
   ("Takeoff always shows the measured quantity"); the api used to fold them in.
+- **D-58** (F6 Block D): legacy's five classification templates copied verbatim (CSI
+  1,833 nodes, UniFormat 635, NRM 1 401, NRM 2 361, CESMM 254, and the 54 default
+  subcontractors with their packages); each system seeds the first time it is read or
+  turned on (D-36 Q8), never twice; all five start on, as legacy; one duplicate rule,
+  "That code already exists in this system.", ignoring case (legacy had two wordings);
+  a new scope's code is the next free `.NN` (legacy's could collide after a delete);
+  gated on Manage classification; live to other tabs, beyond legacy.
+- **D-59** (F6 Block D): filing under a classification happens on the api (legacy did it
+  in the browser), so two estimators filing at once share one folder; the picker adds a
+  search box (the spec asks for one; legacy's picker had none); legacy's "Change
+  classification system" unlock dialog is not built in F6.
 - **D-54**: the Takeoff panel will list every item, with legacy's cues and no sheet
   filter, because legacy has none. If you want a "This sheet only" filter beyond legacy,
   say so and it is a small addition to F6-S9.
@@ -103,6 +117,17 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   timed out, not the api. **Not reproduced**: rerun beside the three heaviest fixtures,
   all 5 passed. **Cause not found.** `apiCall` now names the request and how long it
   waited when a fetch fails, so a repeat says which call it was.
+
+- **Found in F6 Block C (product faults, fixed):** a click then a Ctrl-click in the Takeoff
+  panel selected one item, not two (the clicked row now joins the selection, as in
+  legacy's tree); the delete-layer dialog read "This layer hold 1 item" (now "holds").
+  **Fixture faults, fixed:** `f6-c` read Unfiled's absence the instant window B had
+  updated, before window A's own refetch (it now waits for Unfiled to go); and a drag
+  made with Playwright's `dragTo` onto a header scrolled out of the short tree never
+  dropped (the fixture now drags in steps and scrolls the target in mid-drag, as the
+  tree does under a hand).
+- **The F6 fixtures were not in the full tier.** `regress.sh`'s full list globbed f2 to
+  f5 and f8; it now includes `f6-*` (edited between runs, with no run in progress).
 
 - **Two panel fixtures broke on the chevron** (`f5-s13` AC3, `f5-s14` AC3). Both took a
   row's first button to be its label. The fixtures were wrong, not the panel; they now
@@ -188,6 +213,38 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 5. Archive the variable: it leaves the Insert menu, and "Wall" still reads 24.
 6. Properties on the parent: a dimension a sub-item reads says "used by 1", and removing
    it refuses: "Can't delete … It's used by: …".
+
+### F6 Block C: folders, layers, the item tree (IDM irrelevant)
+
+1. Open a project with items on two sheets. The Takeoff panel lists **all** of them,
+   whichever sheet is open; one measured on another sheet says "Also measured on: …".
+   Click it: that sheet opens.
+2. Right-click a folder header → **Folder Properties**. Type 0 in Multiplier: "Enter a
+   number greater than 0." and Save greys out. Type 2, Save: the folder shows "×2" and
+   each row in it "30 LF × 2 = 60 LF" (the measured figure stays; Estimating uses the
+   total).
+3. Right-click a folder with a sub-folder and items → **Delete folder**: "Delete folder?
+   … Deleting it will remove all subfolders and move line items to Unfiled." Confirm: the
+   items are under Unfiled. An empty folder asks "This folder is empty. Are you sure you
+   want to delete it?"
+4. Right-click **Unfiled** → Rename → "Sitework": it becomes a real folder holding what
+   was unfiled. A second window shows it without a reload.
+5. Make a **new project**: the layer box at the top of the panel lists Base Bid,
+   Alternate and Deferred Submittals. Pick **Alternate**; draw a count: it files under
+   Alternate, and only Alternate's items list. Base Bid's shapes leave the sheet; open the
+   box and click Base Bid's eye: they return. Reload: both choices are kept.
+6. In the box, the bin beside **Alternate**: "Move contents and delete layer" to Base Bid,
+   or "Delete layer and all its measurements", which stays grey until you type DELETE.
+   Delete layers until one is left: the last one refuses, "A project must keep at least
+   one layer".
+7. Right-click an item with a sub-item → **Duplicate**: it suggests "Wall (2)", with
+   "Include sub-items (1)". Duplicate: the copy has a new colour and the sub-item. Do it
+   again: it suggests "Wall (3)".
+8. Click one row, Ctrl-click another: "2 selected — right-click for actions". Right-click
+   → a folder: both move. Drag a single row onto a folder header: it moves. Drag a normal
+   item onto **Rough Measurements**: refused, "Only rough measurements go in Rough
+   Measurements. Tick or untick Rough measurement in Properties to move an item across."
+9. Double-click a row: its name edits in place; Enter saves.
 
 ## Questions
 
