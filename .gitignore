@@ -5,3 +5,6 @@
 
 # Claude Code runtime state, not a workspace file.
 workspace/.claude/scheduled_tasks.lock
+
+# Real credentials for the legacy site. Never commit.
+.env.legacy
