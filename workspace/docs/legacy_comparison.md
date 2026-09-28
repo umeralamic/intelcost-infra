@@ -11,6 +11,12 @@ at the end of the block that builds it.
 
 ## How
 
+0. **Read legacy first: its source and its plan files.** Legacy's features were improved
+   over time and `intelcost/.lovable/plan/*.md` records each change (the founder,
+   2026-09-28). For every topic, read the legacy source that implements it and every plan
+   file that touches it (search the plan directory by keyword: `grep -il <keyword>
+   intelcost/.lovable/plan/*.md`); the latest plan file on a topic wins over an older one
+   and over the spec. Then drive it live (step 1).
 1. **Drive the same screen in live legacy and in the new app**, from the bench's
    Playwright container (`intelcost-infra`, the `browser` service), in the same window
    size (1440 × 900). The new app runs on the bench (`http://localhost:5173`), signed in

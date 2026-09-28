@@ -3103,3 +3103,54 @@ the act P-20a's Rotate Pages already built; S24 AC2 says "B's view is unchanged"
 
 **Consequences:** A right-click on the sheet looks and acts as legacy's. Properties,
 Rename, Duplicate and the rest stay reachable from the item rows and the action group.
+
+## D-76 — Founder click check, group A: the canvas as legacy's (wheel, fit, pans, deducts)
+
+**Date:** 2026-09-28
+**Status:** Accepted (the founder's click check, matched to legacy)
+**Area:** Takeoff, Frontend
+**Serves:** F7 (S23, S24, S26 brought forward), the founder's findings A1 to A9
+
+**Context:** The founder's click check listed nine broken behaviours on the takeoff
+screen. Legacy's source, its plan files and a live drive of its takeoff (the "Bench
+comparison" project) say what each one does there.
+
+**Decision:**
+- **Wheel (A1):** a bare wheel zooms at the cursor, as legacy's `PdfCanvas` (`× e^(−0.0015 ·
+  Δ)`, the ticks of one frame summed; Ctrl, a pinch, at 0.0025); Shift+wheel does nothing.
+  The Ctrl-only wheel is gone.
+- **Zoom to Fit (A2):** legacy's `fitToViewport`: the page's footprint fitted both ways
+  inside the gutter, then centred. It lives where legacy shows it: the bottom-right zoom
+  cluster (`+`, `−`, Zoom to fit with `Maximize2`, Zoom window with `Search`) and the
+  region menu's "Zoom to Fit" with its icon. Legacy's toolbar Fit button is hidden by its
+  default toolbar setting, so the toolbar shows no zoom group and no percentage.
+- **Zoom window:** the cluster's fourth button; a drag draws a dashed box and the view
+  zooms to it, centred on the box.
+- **Open fitted (A3):** a sheet opens fitted (the canvas is mounted per sheet). Legacy
+  opens at its zoom 1 (fit to width, centred) and keeps the zoom across sheets; the
+  founder asked for a fit, and on a landscape sheet the two are the same picture.
+- **The Scale menu (A4)** is a fixed-position popover, so the canvas bar's overflow
+  clipping no longer hides it.
+- **Pans (A5, legacy's `make-middle-button-and-right-button-panning-work-everywhere`):**
+  the middle button pans at once; the right button pans once it has travelled 4 px, in
+  every tool with a run in hand untouched, and its release opens no menu; a right-click
+  that did not travel opens the menu for what is under it, and with a draw tool armed
+  that is the draw menu (New Section, Stop, Discard) whether or not a run is in hand.
+  Left drags pan only with Pan (H). Space+drag is gone: legacy has none. Live legacy also
+  opened its draw menu after a right-drag pan; that contradicts its own plan file and is
+  not copied. S24 AC5 is met by this.
+- **After a commit (A6):** the tool stays armed, as it already did (legacy's; Stop,
+  Discard and the second Escape put it down).
+- **Ortho (A7):** legacy has no angle tolerance: `applyOrtho` always rounds to the nearest
+  45° (22.5° with Alt), and snap is applied after it so a near point still wins. Ours is
+  the same formula, confirmed live (a 10° band drawn horizontal). Nothing changed.
+- **Deducts (A8):** drawn as legacy's engine draws them: the hole is cut out of its
+  section's fill (one even-odd path), with a 5/4 dashed outline in the item's colour while
+  the item is selected and a neutral hairline otherwise. A new interior deduct that
+  overlaps the section's deducts is unioned with them into one hole
+  (`mergeDeducts`, legacy's `mergeOverlappingDeducts`), in one undo step.
+- **Switching workspace (A9):** the header's switcher goes to the dashboard, as legacy's
+  (`/app?workspace=`). Before, the project route's guard switched straight back.
+
+**Consequences:** The canvas's zoom, pans and deducts read and act as legacy's. S26's
+right-drag pan is done here; its spec row says so.
