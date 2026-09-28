@@ -2803,3 +2803,50 @@ in legacy.
 
 **Consequences:** Copying between sheets of different sizes keeps quantities, where
 legacy's does not. The New Measurement dialog is not part of a paste.
+
+## D-68 — Development speed mode: the fixture suite archived, a smoke check per block
+
+**Date:** 2026-09-28
+**Status:** Accepted (founder decision)
+**Area:** Process, Bench
+**Supersedes:** D-44's two tiers, and CLAUDE.md's "after each subtask, run the fixtures it touches"
+
+**Context:** The fixture suite had grown to about 190 files and 81 standing fixtures. A
+full run took over half an hour at 90% host CPU, and writing and keeping fixtures now costs
+more of each block than building it. The founder wants speed until the next deploy to
+testers.
+
+**Decision:**
+1. The suite is archived at tag `fixtures-archive-2026-09-28`, pushed in
+   `intelcost-infra`, `intelcost-app-fastapi` and `intelcost-app-react` (the code it last
+   ran against). Restore it in infra with
+   `git checkout fixtures-archive-2026-09-28 -- browser drives regress.sh`.
+2. Deleted from `intelcost-infra`: every fixture (`browser/f*.mjs`, `*.sh`, `p19`, `p20a`,
+   `d37-links`, `d27-uploads`, `proof-backlog`), their drives, `browser/lib/shipped.sh`,
+   `browser/lib/formula-cases.mjs`, and `regress.sh` with its quick and full lists.
+3. Kept: the Playwright `browser` service, the helpers in `browser/lib/` (sign-in, worlds,
+   drawings, api calls, realtime), `bench-code`, `bench-tidy`, `walkthrough-setup`,
+   `load-probe`, `drives/bench-workspaces.py`; and **the shared quantity table**
+   (`browser/lib/quantity-cases.mjs`), now run on its own by `./quantity-table.sh`: the
+   browser's and the api's engines against the same shapes and hand-worked answers, plus
+   hard rule 2's purity check on `lib/takeoff`. It runs in seconds and guards bid quantities.
+4. After each block: the gates (lint, typecheck, build; ruff, mypy), `./quantity-table.sh`,
+   then one throwaway Playwright smoke check on the bench that signs in, opens the changed
+   screen and drives the new behaviour. The script is not saved; the report says in one
+   line what it drove and whether it passed. A failed smoke check is fixed before moving on.
+   No fixture is written, run or maintained.
+5. PARITY lines keep their ticks, noted "driven by fixture, archived at tag
+   fixtures-archive-2026-09-28".
+6. Every report keeps a running list of features changed since the tag
+   ([docs/tasks/SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md)). **A full run restored from
+   the tag is required before any deploy to testers or any promotion to `main`.**
+7. `api-b`, `app-b` and `app-prod` are stopped, not deleted. Bring them back with
+   `docker compose --profile realtime up -d api-b app-b` (and `app-prod`'s own profile).
+
+Unchanged: commit and push per block on `umer-dev`, decisions logged, PARITY updated,
+short daytime reports, legacy parity first.
+
+**Consequences:** A regression between blocks is caught by the next click check or the
+next full run, not by a fixture. Behaviour touched since the tag is unguarded until that
+full run, which is why the list in item 6 exists. Two-window checks need `api-b` and
+`app-b` started for the smoke check that needs them.

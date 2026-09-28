@@ -512,8 +512,8 @@ sheet space so it survives zoom and pan:
 
 ## Subtasks
 
-Every criterion is checked by clicking, in two windows where it names B, and driven by a
-fixture. Window A is the owner on `:5173`; window B is Sara W. on `:5174` (the `realtime`
+Every criterion is checked by clicking, in two windows where it names B. Through S19 each
+was driven by a fixture; from S20 on, by the block's smoke check (D-68). Window A is the owner on `:5173`; window B is Sara W. on `:5174` (the `realtime`
 profile). Riverside Medical Center, sheet A-101, calibrated so that 0.2 of the page is 40
 ft (the seed's 1,600.00 SF square).
 
@@ -955,12 +955,12 @@ Block E is last among the editing blocks because it inverts every act before it.
 
 ## Bench
 
-- Fixtures `browser/f7-s{1..31}.mjs`. `lib/takeoff.mjs` gains the helpers it lacks today:
-  draw a polyline, press and drag, double-click, a key chord, right-click at a point, and
-  read a figure from the panel.
-- The shared quantity table runs in both suites.
-- Gates: `ruff`, `mypy`, `lint`, `typecheck`, `build`. The full regression at each block's
-  end: F7 rewires the canvas every takeoff fixture drives.
+- **From S20 on, D-68:** no fixtures. Each block ends with the gates (`ruff`, `mypy`,
+  `lint`, `typecheck`, `build`), `intelcost-infra/quantity-table.sh`, and one throwaway
+  smoke check driving the block's behaviour. Blocks A to C were driven by fixtures
+  (`f7-a` to `f7-k`), archived at tag `fixtures-archive-2026-09-28`.
+- F7 rewires the canvas every takeoff fixture drove, so the full run restored from the tag
+  before a deploy will need those fixtures brought up to date first.
 
 ## Definition of done
 

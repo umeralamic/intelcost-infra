@@ -10,19 +10,11 @@ them.
 Two files. `docker-compose.yml` is the whole system. `docker-compose.dev.yml` is the
 same thing without the api, for when you run the api from your IDE.
 
-`drives/` holds the few passes that are not browser passes, plus the bench setup they
-need. `f3-s13-flag.py` rolls the matrix-editing flag out to one workspace by name,
-because rolling a feature out is an operator act and F16 owns the admin surface for it;
-the flag stays off globally so a fresh workspace has the surface switched off, which is
-what makes the capability-versus-flag separation drivable at all. `f3-s13-bundle.sh`
-greps the production bundle, from the host, because `dist/` lives in the app image.
-
-The rest are drives for rules the api enforces with no route to reach them — a resolution
-stage whose table arrives in a later subtask, say. They run against the real module in
-the api container rather than being left unproven or faked through a screen that does not
-exist.
-
-    docker compose exec -T api sh -lc "cd /srv && python drives/f3-s2-resolution.py"
+`drives/` holds what runs inside the api container rather than a browser:
+`quantity-table.py` (the api's half of the shared quantity table) and
+`bench-workspaces.py` (the seeded account's workspaces, and the clean-up of throwaway
+accounts'). The fixture suite and its drives were archived by D-68; see
+[The fixture suite, archived](#the-fixture-suite-archived).
 
 `workspace/` is not part of the bench. It is the **versioned mirror** of the four
 workspace files and `docs/`, which sit at the workspace root outside every repo and so
@@ -143,47 +135,28 @@ the upload rather than piling up sheets. `--reset` seeds a fresh timestamped use
 **Keep the seeded account and Bench Construction clean** (the founder, 2026-09-26; the
 seeded account's switcher once held 860 fixture workspaces).
 
-- **A fixture never makes a workspace as estimator@bench.intelcost.io.** It makes them as
-  its own throwaway account, `fixtureOwner()` in `browser/lib/bench.mjs`
-  (`fx.<fixture>.<stamp>@bench.intelcost.io`, one per run), through `ownWorkspace`,
-  `freshWorkspace` (`lib/f4.mjs`) or `shippedWorkspace`. A phased fixture's runner names
-  the account once (`FX_OWNER`) for every pass. A fixture that edits the roles matrix on
-  screen runs through `browser/lib/shipped.sh`, which ships the editing flag to its
-  workspace first (`f3-s6`, `f3-s7`, `f3-s13`).
-- **`regress.sh` checks and cleans up.** It snapshots the seeded account's workspaces
-  first and fails the run if it gained one (`seeded-ws`). At the end it deletes every
-  workspace a fixture account or a fixture's seat owns (`fx-cleanup`,
-  `drives/bench-workspaces.py purge-fx`: rows by cascade, storage by prefix), then
-  `browser/bench-tidy.mjs` removes fixture projects and seats left in Bench Construction
-  **by name only** (`<prefix> <13-digit stamp>`, `<tag>-<role>-<stamp>@bench.intelcost.io`),
-  never the owner, Riverside, or anything made by hand, and puts Sara W. back to Estimator.
-  Run a single fixture through `./regress.sh <name>` and the same happens.
-- **The takeoff fixtures measure on a Riverside of their own** (`browser/lib/world.mjs`,
-  F5-S9): `riversideWorld()` makes, per run, a workspace of the run's own account with
-  "Riverside Medical Center", a two-page PDF uploaded into Plans and loaded through
-  `/drawing/load`, both pages prepared, page 1 calibrated as the seed does (200 ft per
-  unit), and the run's own Sara W. (`fx.<fixture>-b.<stamp>@`, "Sara Williams") seated as
-  an Estimator. It takes about 25 s. Every F8 fixture, `p19`,
-  `f5-s3` and `f5-s9` use it; the F2 and F3 fixtures make their own workspace with
-  `ownWorkspace`. No fixture in the regression signs in as the seeded account.
+- **A smoke check never makes a workspace as estimator@bench.intelcost.io.** It makes
+  them as its own throwaway account, `fixtureOwner()` in `browser/lib/bench.mjs`
+  (`fx.<script>.<stamp>@bench.intelcost.io`, one per run), through `ownWorkspace` or
+  `freshWorkspace` (`lib/f4.mjs`).
+- **A smoke check on the canvas measures on a Riverside of its own**
+  (`browser/lib/world.mjs`): `riversideWorld()` makes a workspace of the run's own account
+  with "Riverside Medical Center", a two-page PDF uploaded into Plans and loaded, both
+  pages prepared, page 1 calibrated as the seed does, and the run's own Sara W.
+  (`fx.<script>-b.<stamp>@`) seated as an Estimator. It takes about 25 s.
+  `lib/drawings.mjs` makes PDFs on the spot; `lib/takeoff.mjs` finds sheet points.
+- **Clean up after a session of smoke checks:**
+  ```bash
+  docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py purge-fx"
+  docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs
+  ```
+  The first deletes every workspace a throwaway account or its seat owns (rows by cascade,
+  storage by prefix). The second removes stamped projects and seats left in Bench
+  Construction **by name only**, never the owner, Riverside, or anything made by hand.
 - **`worker-previews`** (D-43) serves only the `previews` queue: Choose pages'
-  thumbnails, one set at a time, `nice -n 19`. `regress.sh` starts it. The `worker`
-  above serves everything else, so a Load never waits behind thumbnails.
-- **`f5-big`** (`browser/f5-big.sh`) opens a 519 MB and a 7 MB PDF through Choose pages
-  (D-41). It first loads a page while that set's thumbnails are still being made, which
-  must be drawn within 20 s (D-43). `drives/f5-big.py` makes both, plus a portrait page stored with `/Rotate 90`,
-  in a throwaway account's project.
-  - The browser may never request the set.
-  - Thumbnails must be plain 200 `image/webp` GETs, and tiles must take their pages'
-    shape.
-  - A loaded page must open from its own PDF's bytes (D-42): one GET of a URL with no
-    `.pdf`, 200 `application/vnd.intelcost.sheet`, no Range, no filename header, and
-    nothing answered as a PDF. `f5-s2`'s drive checks each split is stored that way.
-  - With that GET blocked, the fit image must stay.
-  - IDM itself can't run on the bench.
-- **The only exceptions, not in the regression:** `f5-demo.mjs` and `walkthrough-setup.mjs`
-  make things for the founder on purpose; `proof-backlog.mjs` reads the seeded Riverside's
-  own measurements; `bench-tidy.mjs` is the clean-up of the seeded workspace itself.
+  thumbnails, one set at a time, `nice -n 19`. The `worker` serves everything else, so a
+  Load never waits behind thumbnails. `docker compose up -d worker-previews` starts it.
+- `walkthrough-setup.mjs` makes things for the founder's click checks on purpose.
 - `docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py report"`
   lists the seeded account's workspaces by kind.
 
@@ -222,84 +195,45 @@ pick up the new command.
 
 **It is checked automatically.** `GET /health/code` (served only when `ENVIRONMENT` is
 `local`) compares the fingerprint of the code on disk with what the api and the worker
-started with. Every fixture asks it before its first step, through `run` in
-`browser/lib/bench.mjs`, and runs nothing if either is behind, waiting up to 45 s for
-a restart already under way. `browser/bench-code.mjs` asks the same question on its own.
+started with. `run` in `browser/lib/bench.mjs` asks it before a script's first step and
+runs nothing if either is behind, waiting up to 45 s for a restart already under way.
+`browser/bench-code.mjs` asks the same question on its own.
 
-**Run a regression with `regress.sh`** (D-44). It runs `bench-code` first and stops if
-it fails. Then it runs the independent fixtures in parallel, longest first, and after them,
-one at a time, the ones that stop or restart a service.
+## After each block (D-68)
+
+1. **The gates.** `npm run lint && npm run typecheck && npm run build` in the app;
+   `poetry run ruff check . && poetry run mypy app` in the api.
+2. **The shared quantity table**, `./quantity-table.sh`: hard rule 2's purity check on
+   `lib/takeoff`, then every row of `browser/lib/quantity-cases.mjs` through the api's engine
+   and the browser's, equal to 1e-9 and to the answers worked by hand. About 30 s.
+3. **One throwaway smoke check.** A Playwright script written for the block in `browser/`
+   (so the `browser` service can see it), built on `browser/lib/`: sign in, open the
+   changed screen, drive the new behaviour, confirm it works. Run it with
+   `docker compose --profile browser run --rm browser node scripts/<name>.mjs`, then delete
+   it and its screenshots. It is never committed. If it fails, fix the cause first.
+
+Waits are on page state, never a clock: `enterWorkspace`, `shellSettled`, `pageSettled`
+and `sheetPoint` (a point on the sheet checked to be in the window). `quietFor` only to
+prove something does not happen.
+
+## The fixture suite, archived
+
+The fixture suite (81 standing fixtures, `regress.sh` with its quick and full tiers, and
+their drives) was archived by D-68 at tag `fixtures-archive-2026-09-28`, in this repo and
+in `intelcost-app-fastapi` and `intelcost-app-react`. **A full run restored from the tag is
+required before any deploy to testers or promotion to `main`.** Restore it here:
 
 ```bash
-./regress.sh                     # full: every standing fixture (close-out, overnight)
-./regress.sh quick f5-s5 f5-s7   # the core smoke set of 17, plus the ones a block touched
-./regress.sh f4-s17 f4-s18       # just these
-REGRESS_JOBS=4 ./regress.sh      # fixtures at a time (default 3, as measured below)
-REGRESS_CPU=1 ./regress.sh       # also sample the host's CPU every 5 s, and report it
+git checkout fixtures-archive-2026-09-28 -- browser drives regress.sh
+docker compose --profile realtime up -d api-b app-b    # F8's window B
+./regress.sh                                           # the full list, about an hour
 ```
 
-- **The serial group** is f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27, and
-  f5-s11. Each of the first seven stops, restarts or recreates the api, api-b, Redis, the
-  worker or MinIO, or drops the worker's queue. f5-s11 measures pdf.js's times, which beside
-  other browsers measured the contention (a 1.9 s cold paint became 4.0 s). They run last,
-  with nothing else running.
-- **The parallel group is everything else.** Every fixture builds its own world through
-  `browser/lib/`:
-  - its own owner (`fixtureOwner`), seats (`seatedMember`, tagged with the fixture's
-    name) and window-B person;
-  - its own workspaces;
-  - the mail sent to its own addresses, read, counted and cleared per address (`clearMail`
-    without an address deletes nothing).
-- **Fixtures wait on page state, never on a clock:** `enterWorkspace`, `shellSettled`,
-  `pageSettled`, `onProjectTopic` and `sheetPoint` (a point on the sheet checked to be in
-  the window). The only timed waits are `quietFor`, a window in which something must NOT
-  happen, and gesture pacing.
-- **The order comes from the last run.** Each run writes `.regress/times.tsv`, and the
-  next one starts the longest fixtures first.
-- It ends with the clean-up below and a line giving the wall clock.
+The features changed since the tag, which that run must cover and whose fixtures may need
+updating first, are listed in the workspace's `docs/tasks/SINCE_ARCHIVE.md`.
 
-Each fixture's **full** output is kept in `.regress/<name>.log` (git-ignored), and a
-failed step prints the whole error with its cause and how long the step ran. This is
-deliberate. Once, an f4-s3 failure was reported only through a filtered summary, its
-message was lost, and it could not be traced afterwards. A fixture's summary block is
-printed when it finishes, so blocks come in finishing order.
-
-**Measured** on this machine (i7-8850H, 6 cores / 12 threads, 32 GB, Docker given 12 CPUs
-and about 15 GB):
-
-| Full list, 81 standing fixtures | Wall clock | Host CPU (5 s samples) | Result |
-|---|---|---|---|
-| One at a time, before D-44 | about 1 h 30 | | |
-| **3 at a time (the default)** | **57 m 25 s**: parallel group 38 m, serial group 19 m | mean 81%, 90th percentile 96%, above 90% in 44% of samples | **all 81 pass** |
-| 4 at a time | parallel group about 33 m | mean 91%, 90th percentile 99%, above 90% in 81% of samples | 2 failed: a fixture read too early (fixed), and a live update 1.6 s under load (a finding) |
-
-- **3 is the default** (`REGRESS_JOBS`). At 4 the host sat above 90% for most of the run,
-  and the api's tail latency grew with it. The 3-at-a-time run also carried the three
-  Block C fixtures then being written (f5-s10 to s12).
-- **The quick tier** (16 fixtures) takes about 5 to 6 minutes at 3 or 4.
-- **`browser/load-probe.mjs`** measures the api as a tab meets it (a request, a socket's
-  ready, an event's delivery), 30 samples. Run it beside a regression to see the load's
-  cost. Idle: 19, 35 and 45 ms at the 90th percentile.
-
-**One run at a time.** `regress.sh` holds `.regress.lock/`. Every run ends by deleting
-every fixture account's workspaces, and its serial group stops services, so a second run
-beside it loses its data mid-step. That happened once (2026-09-27), and it is how the
-lock came to be. **Before each serial fixture** it waits until both apis answer `/health`
-and run the code on disk, because `docker compose restart` returns before the api inside
-has finished starting.
-
-**The serial group changes the bench while it runs**, which is why `regress.sh` runs it
-alone:
-- `browser/f8-s2.sh` stops the api for 30 s and then restarts it, with a tab open, to
-  drive the realtime socket's backoff and its 1012 close.
-- `browser/f8-s3.sh` recreates the api with `ACCESS_TOKEN_MINUTES=2`, to drive re-auth on
-  refresh in minutes rather than an hour, and puts it back on 30 when it ends, pass or
-  fail.
-- f8-s5 stops Redis, f8-s8 restarts api-b, f8-s12 restarts the api, f5-s2 stops the
-  worker and drops its queue, and f4-s27 stops MinIO.
-
-Run nothing else against the bench while any of them is going. The realtime fixtures read
-the socket the way DevTools > Network > WS shows it, through `browser/lib/realtime.mjs`.
+`browser/load-probe.mjs` measures the api as a tab meets it (a request, a socket's ready,
+an event's delivery), 30 samples. Idle: 19, 35 and 45 ms at the 90th percentile.
 
 Running it on the host instead still works and is faster to iterate on:
 
@@ -335,22 +269,21 @@ JavaScript. Timings are reported there:
 ```bash
 docker compose --profile prod build app-prod
 docker compose --profile prod up -d --no-deps app-prod    # --no-deps: leave the api be
-FX_APP=http://localhost:5175 docker compose --profile browser run --rm browser node scripts/f5-s11.mjs
+FX_APP=http://localhost:5175 docker compose --profile browser run --rm browser node scripts/<smoke>.mjs
 ```
 
 It is a snapshot of the source at build time, so rebuild it after an app change.
 `up --build` without `--no-deps` also rebuilds and recreates the api, dropping every
-socket a running fixture holds.
+socket an open tab holds. Stopped since D-68; start it when a timing is wanted.
 
 **Two windows, two api processes.** `docker compose --profile realtime up -d` adds
 `api-b` and `app-b`. Open http://localhost:5173 in one browser window and
 http://localhost:5174 in another: different origins, so each keeps its own sign-in, and
 every live update between them has crossed Redis from one api process to the other. The
 second estimator for this, by hand, is `window-b@bench.intelcost.io` ("Sara Williams",
-password `bench-password-1`), an estimator in Bench Construction. It is not in the seed,
-and since D-44 no fixture uses it: each fixture run has its own window-B person. On a fresh
-bench, invite it from Bench Construction's Settings > Members before signing in as it.
-`regress.sh` starts the profile itself.
+password `bench-password-1`), an estimator in Bench Construction. It is not in the seed.
+On a fresh bench, invite it from Bench Construction's Settings > Members before signing in
+as it. The profile is stopped since D-68; start it for a two-window check.
 
 `beat` only enqueues. At 03:00 UTC it queues `purge_trashed_projects` (F4-S27) and the
 worker runs it. To run the purge now, without waiting for the night:

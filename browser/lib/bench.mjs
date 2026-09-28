@@ -332,7 +332,8 @@ export async function ownWorkspace(name) {
  * for the fixtures that edit the matrix on screen. Rolling a flag out is an operator's act
  * with no api route, so it takes two passes and a drive, which `browser/lib/shipped.sh`
  * runs: the setup pass (SETUP=1) makes the workspace, prints SHIPPED=<name> and exits; the
- * drive ships the flag to it; the main pass finds it here by name.
+ * drive ships the flag to it; the main pass finds it here by name. `shipped.sh` and the
+ * drive (`drives/f3-s13-flag.py`) are archived at tag fixtures-archive-2026-09-28 (D-68).
  */
 export async function shippedWorkspace(tag) {
   const owner = await fixtureOwner();

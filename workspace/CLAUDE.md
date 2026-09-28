@@ -130,15 +130,25 @@ Then bring the stack up and drive the changed screen in a real browser, exercisi
 its loading, empty, error and unauthorized states. Delete every screenshot and
 scratch artifact afterwards. Leave nothing stray.
 
-After each subtask, run only the fixtures it touches. Two tiers after that (D-44), both
-through `intelcost-infra/regress.sh`, which runs independent fixtures in parallel and the
-ones that stop a service alone at the end:
+**Development speed mode (D-68).** The fixture suite is archived at tag
+`fixtures-archive-2026-09-28` and deleted from the tree. Do not write, run or maintain
+fixtures. After each block, in this order:
 
-- **End of each block:** `./regress.sh quick <the fixtures the block touched>`, the core
-  smoke set of 17 plus those (it includes `f5-d51`, the founder's standing check that equal
-  runs across and down a non-square sheet read the same).
-- **Feature close-out, and overnight:** `./regress.sh`, the full list.
+1. **The gates:** lint, typecheck and build in the app; ruff and mypy in the api (above).
+2. **The shared quantity table:** `intelcost-infra/quantity-table.sh`. The browser's and
+   the api's engines on the same shapes and hand-worked answers, landscape and portrait
+   sheets among them, plus hard rule 2's purity check. Seconds, and it guards bid quantities.
+3. **One throwaway smoke check:** a Playwright script in `intelcost-infra/browser/`, built
+   on `browser/lib/` (its own throwaway account and world, never the seeded account),
+   that signs in, opens the changed screen and drives the new behaviour. Run it once,
+   delete it, and report it in one line: what it drove, and whether it passed. A failure is
+   fixed before moving on. It waits on what the page shows, never on a clock.
 
-A fixture builds its own world through `browser/lib/`: its own accounts, workspaces and
-mail. It never assumes a page size, a window size or an account name, and it waits on
-what the page shows, never on a clock (`quietFor` only to prove something doesn't happen).
+Then commit and push the block on `umer-dev`, log its decisions, and tick its PARITY lines.
+Each report carries the running list of features changed since the tag
+([docs/tasks/SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md)). **A full run restored from
+the tag is required before any deploy to testers and before any promotion to `main`**
+(restore steps in `intelcost-infra/README.md`, "The fixture suite, archived").
+
+`api-b`, `app-b` and `app-prod` are stopped, not deleted; start them for a check that needs
+them.

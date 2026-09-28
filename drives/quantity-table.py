@@ -1,9 +1,10 @@
-"""F7-S2's shared table through the api's quantity engine (D-61).
+"""The shared quantity table through the api's quantity engine (D-61, kept by D-68).
 
-Reads the cases on stdin (written by `browser/f7-s2.mjs` with GEN=1), prints each row's
-figure as the api stores it. Pure: no database, no network.
+Reads the cases on stdin (written by `browser/quantity-table.mjs` with GEN=1), prints each
+row's figure as the api stores it. Pure: no database, no network. `./quantity-table.sh`
+runs both halves.
 
-    docker compose exec -T api sh -lc "cd /srv && python drives/f7-quantity.py" <cases.json
+    docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py" <cases.json
 """
 
 import json
