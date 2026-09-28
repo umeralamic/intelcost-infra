@@ -79,6 +79,12 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    **Enforced:** a PreToolUse hook (`.claude/settings.json`,
    `.claude/hooks/no-inplace-edit.sh`) blocks any Bash or PowerShell command with an
    in-place `sed` or `perl` flag, and says why.
+8. **No test suites, no scripted tests.** Do not run `pytest`, `quantity-table.sh`, a
+   Playwright script, the archived fixture suite or any other test runner, and do not
+   write new ones. The one check is a **smoke test through the Playwright MCP** of the
+   feature developed in the session: drive it in a real browser by hand, report in one
+   line what was driven and whether it passed, and fix a failure before moving on. The
+   gates (lint, typecheck, build; ruff, mypy) are not tests and still run.
 
 ## Git
 
@@ -121,7 +127,7 @@ A green build is not proof a screen renders. Before calling anything finished:
 ```bash
 # api
 docker compose -f intelcost-infra/docker-compose.yml up -d
-cd intelcost-app-fastapi && poetry run ruff check . && poetry run mypy app && poetry run pytest -q   # if tests exist
+cd intelcost-app-fastapi && poetry run ruff check . && poetry run mypy app
 # app
 cd intelcost-app-react && npm run lint && npm run typecheck && npm run build
 ```
@@ -130,19 +136,15 @@ Then bring the stack up and drive the changed screen in a real browser, exercisi
 its loading, empty, error and unauthorized states. Delete every screenshot and
 scratch artifact afterwards. Leave nothing stray.
 
-**Development speed mode (D-68).** The fixture suite is archived at tag
+**Development speed mode (D-68, hard rule 8).** The fixture suite is archived at tag
 `fixtures-archive-2026-09-28` and deleted from the tree. Do not write, run or maintain
-fixtures. After each block, in this order:
+fixtures, test suites or test scripts. After each block, in this order:
 
 1. **The gates:** lint, typecheck and build in the app; ruff and mypy in the api (above).
-2. **The shared quantity table:** `intelcost-infra/quantity-table.sh`. The browser's and
-   the api's engines on the same shapes and hand-worked answers, landscape and portrait
-   sheets among them, plus hard rule 2's purity check. Seconds, and it guards bid quantities.
-3. **One throwaway smoke check:** a Playwright script in `intelcost-infra/browser/`, built
-   on `browser/lib/` (its own throwaway account and world, never the seeded account),
-   that signs in, opens the changed screen and drives the new behaviour. Run it once,
-   delete it, and report it in one line: what it drove, and whether it passed. A failure is
-   fixed before moving on. It waits on what the page shows, never on a clock.
+2. **One smoke test through the Playwright MCP:** sign in with a throwaway account (never
+   the seeded account), open the screen changed in the session and drive the new
+   behaviour. Report it in one line: what it drove, and whether it passed. A failure is
+   fixed before moving on. Wait on what the page shows, never on a clock.
 
 Then commit and push the block on `umer-dev`, log its decisions, and tick its PARITY lines.
 Each report carries the running list of features changed since the tag
