@@ -2773,3 +2773,33 @@ rotated arc.
 
 **Consequences:** `proof-backlog`'s §9 step pans with the Pan tool. The region menu
 arrives with the features its rows open.
+
+## D-67 — F7-S16: legacy's copy and paste, keeping real-world size across and down
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S16, S19 AC2
+
+**Context:** Legacy's copy starts from a section's right-click, "Copy…", with its three
+scopes ("This section only", "All sections on this sheet (n)", "Choose sections…"), then
+"Paste on this sheet" or "Paste on another sheet…". A ghost follows the cursor from the
+right-click point, and a click asks "Paste into "{name}" or create a new item?". Two
+details do not carry over cleanly. Legacy rescales a paste by the ratio of feet per point
+alone, so a paste onto a page of another size or shape comes out the wrong real size.
+And "New item" opens legacy's new-item dialog, prefilled with "{name} copy" and the
+source's colour.
+
+**Decision:** Follow legacy's flow, words and toasts, with two differences. The paste is
+scaled across and down separately, by the ratio of each sheet's feet across (and down)
+the page (D-51). That keeps a copy's real-world size on any sheet, which is what legacy's
+own dialog promises ("geometry will be rescaled to preserve real-world quantities").
+"New item" makes the item directly with legacy's prefilled values ("{name} copy", the
+source's colour, folder and layer), which the Properties pane can then change, rather
+than opening F6's New Measurement dialog midway through a paste. A section's deducts
+always come with it (D-65), re-paired to the copy. An arc that the rescale leaves without
+one radius becomes legacy's 120-point run (as D-66). Paste mode ends after one paste, as
+in legacy.
+
+**Consequences:** Copying between sheets of different sizes keeps quantities, where
+legacy's does not. The New Measurement dialog is not part of a paste.

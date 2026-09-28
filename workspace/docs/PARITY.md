@@ -378,7 +378,7 @@ sibling panel reads as a bug to an estimator.
 
 `src/components/takeoff/Toolbar.tsx` (792 lines), `PdfCanvas.tsx` (3,915 lines).
 
-- [x] **Pan (H).** Drag to move the sheet. `src/components/takeoff/Toolbar.tsx` · **ported** (driven: a drag with Select pans; the H key is §23's and absent; proof-backlog, overnight 2026-09-26)
+- [x] **Pan (H).** Drag to move the sheet. `src/components/takeoff/Toolbar.tsx` · **ported** (D-66, 2026-09-28: legacy's own Pan tool, "Pan (H) — drag to move the sheet", armed by H; Select's drag now draws legacy's box; `f7-h` step 8 and proof-backlog §9)
 - [x] **Select (V).** Click a markup to select and edit it. `src/components/takeoff/Toolbar.tsx` · **ported** (driven: clicking a markup selects its item and opens its properties; the V key is §23's and absent; proof-backlog, overnight 2026-09-26. Since F7-S1, D-61, the pick follows legacy's rules, not the drawn stroke: within 0.008 of the page of a run, inside or near an area's edge, the topmost first, and a right-click picks the same way, `f7-a` steps 6 and 7)
 - [x] **Linear (L).** Measure a run, in Point to Point, Rectangle, Ellipse/Circle or Arc mode. `src/components/takeoff/drawModes.tsx` · **ported** (F7-S4, D-62, `f7-b` steps 2 and 3: the caret lists the four with legacy's hints, the current one marked, the button titled "Linear — Rectangle (change mode with ▾)"; a rectangle 60 LF, a circle 20 ft across 62.83 LF and an arc of radius 10 ft 31.42 LF, analytic (D-61); three collinear clicks a two-segment run. The L key is §23's)
 - [x] **Area (A).** Measure an area, in Point to Point, Rectangle or Ellipse/Circle mode. `src/components/takeoff/drawModes.tsx` · **ported** (F7-S5, `f7-b` step 4: a 20 × 30 ft rectangle 600 SF, a circle of radius 10 ft 314.16 SF; in Point to Point a press and drag of more than 5 px places a rectangle, as legacy's. The A key is §23's)
@@ -418,9 +418,9 @@ sibling panel reads as a bug to an estimator.
 - [ ] Right-click on an in-progress measurement opens a small action menu. `src/components/takeoff/ContextActionGroup.tsx` · **missing**
 - [ ] Right-click on empty sheet area opens the canvas menu: quick tools, bookmark this page, show or hide legend, and per-type markup visibility. `src/components/takeoff/SheetContextMenu.tsx` · **missing**
 - [ ] Left-drag a region opens the region menu: New Snapshot, Auto Count, Extract Schedule, Ask AI, Scale, Page Name, Search as Text, Copy as Image, Copy as Text, Crop as New Page. `src/components/takeoff/RegionSelectMenu.tsx` · **missing**
-- [ ] Box-select markups, with a selection action bar and a selection right-click menu. `src/lib/takeoff/engine/boxSelect.ts` · **missing**
-- [ ] Ctrl+A selects every markup on the sheet. `.lovable/plan/ctrl-a-select-all-markups-on-the-sheet-2026-09-01.md` · **missing**
-- [ ] A left-click off any markup disarms the box selection. `.lovable/plan/left-click-off-any-markup-disarms-the-box-selection-2026-09-01.md` · **missing**
+- [ ] Box-select markups, with a selection action bar and a selection right-click menu. `src/lib/takeoff/engine/boxSelect.ts` · **partial** (F7-S14, D-66, `f7-h`: a Select drag past 25 px selects what it wholly encloses; "{n} selected" with Copy, Paste (off, as legacy until a copy waits), Move, Rotate Left 90°, Rotate Right 90°, Flip Horizontal, Flip Vertical, Lock, Delete and legacy's toasts; the bar's Delete alone, "Delete everything in the selection"; turns in page points, figures unchanged on a 2:1 page; arrows nudge 0.001, Shift 0.01. **Hide** waits for item hiding, which today's page does not have)
+- [x] Ctrl+A selects every markup on the sheet. `.lovable/plan/ctrl-a-select-all-markups-on-the-sheet-2026-09-01.md` · **ported** (F7-S14, `f7-h` step 4; not mid-draw nor while cutting)
+- [x] A left-click off any markup disarms the box selection. `.lovable/plan/left-click-off-any-markup-disarms-the-box-selection-2026-09-01.md` · **ported** (F7-S14, `f7-h` step 3, and Escape)
 - [ ] Copy a markup to another spot or another sheet, with two direct options and no reference-point click, for every item type. `src/lib/takeoff/engine/transformRuns.ts` · **missing**
 - [ ] Choose which sections get copied. `.lovable/plan/copy-choose-which-sections-get-copied-2026-08-17.md` · **missing**
 - [ ] The move and copy ghost draws linear runs as lines, not shaded areas. `.lovable/plan/move-copy-ghost-draw-linear-runs-as-lines-not-shaded-areas-2026-08-03.md` · **missing**
@@ -855,7 +855,7 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 
 - [x] `Delete` removes the current selection. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S17, `f7-d` step 4: the selected section, or a count's marks on this sheet; no confirm)
 - [ ] `Backspace` also deletes a selected markup when not drawing. `src/components/takeoff/ReviewMarkupLayer.tsx`, `NoteLayer.tsx`, `HighlighterLayer.tsx`, `DockLayer.tsx` · **missing**
-- [ ] `Ctrl+A` selects every markup on the sheet. `.lovable/plan/ctrl-a-select-all-markups-on-the-sheet-2026-09-01.md` · **missing**
+- [x] `Ctrl+A` selects every markup on the sheet. `.lovable/plan/ctrl-a-select-all-markups-on-the-sheet-2026-09-01.md` · **ported** (F7-S14, `f7-h` step 4)
 - [ ] `Ctrl+Z` undoes and `Ctrl+Shift+Z` redoes, scoped to the current sheet. `src/components/takeoff/Toolbar.tsx`, `src/lib/takeoff/history/sessionHistory.ts` · **missing**
 - [ ] `Escape` closes the open dialog, popover or context menu. `src/components/takeoff/*Dialog.tsx` · **partial** (dialogs close on Escape; there is no canvas-wide handler)
 
@@ -869,8 +869,8 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 **Mouse**
 
 - [ ] Left-drag on empty sheet area opens the region menu. `src/components/takeoff/RegionSelectMenu.tsx` · **missing**
-- [ ] Left-click off any markup disarms the box selection. `.lovable/plan/left-click-off-any-markup-disarms-the-box-selection-2026-09-01.md` · **missing**
-- [ ] Right-click opens the context menu appropriate to what is under it: a selection, a markup mid-draw, a sheet row, or empty canvas. A multi-selection right-click owns every canvas right-click while it is live. `src/components/takeoff/SelectionContextMenu.tsx`, `SheetContextMenu.tsx` · **missing**
+- [x] Left-click off any markup disarms the box selection. `.lovable/plan/left-click-off-any-markup-disarms-the-box-selection-2026-09-01.md` · **ported** (F7-S14, `f7-h` step 3)
+- [ ] Right-click opens the context menu appropriate to what is under it: a selection, a markup mid-draw, a sheet row, or empty canvas. A multi-selection right-click owns every canvas right-click while it is live. `src/components/takeoff/SelectionContextMenu.tsx`, `SheetContextMenu.tsx` · **partial** (a selection's menu owns every canvas right-click while it is live, `f7-h` step 4; mid-draw, the draw menu, F7-S8; empty canvas's menu is not built)
 - [ ] Middle-button (scroll wheel) drag pans, toggleable in Settings. `src/lib/takeoff/settings/index.ts` (`mouse.panMiddleClick`) · **missing**
 - [ ] Right-button drag pans, toggleable in Settings, and works everywhere on the canvas rather than only over empty areas. `src/lib/takeoff/settings/index.ts` (`mouse.panRightClick`) · **missing**
 - [ ] Scroll wheel zooms, with a speed multiplier from 0.25 to 2.5 and an invert option. `src/lib/takeoff/settings/index.ts` (`mouse.zoomSpeed`, `invertScrollZoom`) · **missing**

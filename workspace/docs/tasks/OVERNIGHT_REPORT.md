@@ -42,6 +42,7 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 6 | F7 Block B (S4 to S8): Linear and Area modes, Segment, Count joins the selected item, finishing and the draw menu | **Built** (S9 inline arcs, S10 snap, S11 past the edge not started): `f7-b` 7/7 (third run; a product fault found on the way, below); quick tier plus 26 touched, the four service-restart fixtures among them, 43: 42 pass, `p20a`'s live turn open (below). D-62 | 01:10 | 02:10 | 1 h |
 | 6b | F7 S9 inline arcs, S10 snap and Ortho, S12 select a section and the hole cycle, S17 Delete | **Built**: `f7-c` 5/5, `f7-d` 4/4 first run; the shared table caught a gap of mine in both engines (an area closed by an arc from two points), fixed; quick tier plus touched, 41: 38 pass; `f8-s18` and `f8-s9` caught a regression of mine (below) and `f7-a` the overlapping-holes row written ahead of its code, all three fixed in 6c. D-63 | 02:10 | 02:53 | 43 min |
 | 6c | F7 S13 vertices (insert, delete, legacy's refusal), S15 Move (a section carries its deducts, a deduct moved off is refused), S18 deducts drawn on the canvas (legacy's refusals, overlapping holes merged) | **Built**: `f7-e` 6/6, `f7-f` 3/3; `f7-d` caught the move handle swallowing the hole cycle's click (fixed: a click on the handle is a click on the sheet); quick tier plus 15 touched, 32: all pass. D-64, D-65 | 02:53 | 03:39 | 46 min |
+| 6d | F7 S14 box select, Ctrl+A and the selection menu, legacy's Pan tool back (H, V); S15 AC5 Move from the menu; S19 AC4; a product fault found on the way (shapes on the wrong sheet) | **Built**: `f7-h` 8/8, `f7-g` 4/4 (after fixture fixes: a section found by role, not order; a press off the new handle; a sheet switch the F6 panel makes); `proof-backlog`'s §7 and §8 steps brought up to date; quick tier plus 22 touched, 39: all pass. D-66 | 03:39 | 04:41 | 1 h 2 min |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -127,6 +128,21 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   say so and it is a small addition to F6-S9.
 
 ## Failures and findings
+
+- **Product fault, found while building S14 and fixed (6d): a shape added on one sheet to
+  an item begun on another went to the item's first sheet.** Since F6 the Takeoff panel
+  lists every sheet's items and Count joins the chosen one. But the api stored every new
+  shape on the item's own sheet, listed a sheet's items by where they began, and returned
+  all of an item's shapes to every sheet's canvas. So a mark placed on sheet B could be
+  saved to A, drawn on A, and never shown on B. Now a new shape carries the sheet it is
+  drawn on (a deduct takes its section's). A sheet lists every item with a shape on it,
+  with only that sheet's shapes, and each shape names its own sheet. `f7-g` step 4 proves
+  it: a mark placed on M2 for an item begun on M1 is stored and drawn on M2.
+- **`proof-backlog` has gone stale (not in any tier).** Run tonight for its §9 Pan step,
+  7 of its 13 steps failed on screens F5 and F6 have since changed (the Sheets panel's
+  "Open", the layers panel, the upload input, the zoom ceiling of 4000% against the line's
+  3000%, figures read before D-51). None of the failures touches F7. It is on the list to
+  bring up to date.
 
 - **A regression of mine, caught by the tier (6b):** to keep a handle off a count mark
   when it is merely selected (S12), I kept count handles out entirely, and "Edit
@@ -496,6 +512,30 @@ use what the canvas has.
    over the whole area: "Deduction covers the whole area". Two holes that overlap count
    their overlap once.
 6. "Edit vertices" on a count item still shows a handle on each mark to drag.
+7. Right-click an area on the sheet, "Move" (its line reads "Press and drag the markup to
+   its new position"): a toast says the same; press anywhere on the area and drag; it
+   moves once, and the next press does not.
+
+### F7 S14: box select, the selection menu, Pan (IDM irrelevant)
+
+1. The toolbar starts with **Pan** ("Pan (H) — drag to move the sheet") and **Select**.
+   With Select, drag across empty sheet: a dashed box follows; what it wholly encloses is
+   highlighted when you let go, what it only crosses is not.
+2. A box over nothing selects nothing and opens nothing. A click off every markup, or
+   Escape, lets the selection go.
+3. **Ctrl+A** selects everything on the sheet. Right-click anywhere on the sheet: "{n}
+   selected", Copy, Paste (greyed), Move, Rotate Left 90°, Rotate Right 90°, Flip
+   Horizontal, Flip Vertical, Lock, Delete. Bottom-left, a **Delete** button, "Delete
+   everything in the selection".
+4. Rotate and flip: the shapes turn about their middle, nothing stretches (try a wide
+   sheet), and every quantity stays the same: "Rotated — quantities unchanged".
+5. Arrow keys nudge the selection a hair; Shift nudges ten times further.
+6. Copy: "Copied 2 markups", the copies just below and right of the originals, in the
+   same items.
+7. **H** arms Pan and **V** Select; Pan's drag moves the sheet, Select's no longer does
+   (space-drag and the middle button pan with any tool).
+8. On a second sheet, choose an item from the first sheet in the Takeoff panel (it opens
+   the first sheet), go back to the second, and Count: the marks stay on the second sheet.
 
 ## Questions
 
