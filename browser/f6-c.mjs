@@ -154,7 +154,10 @@ await run("f6-c", [
       expect(emptyWords.includes("This folder is empty. Are you sure you want to delete it?"), `empty: ${emptyWords}`);
       expect(words.includes("Delete folder?") && words.includes("1 sub-folder") && words.includes("1 line item") && words.includes("Deleting it will remove all subfolders and move line items to Unfiled."), `framing: ${words}`);
       await page.getByRole("dialog").getByRole("button", { name: /Delete/ }).last().click();
-      const wall = await waitFor(async () => { const w = await byName("Wall"); return w.folder_uuid === null ? w : null; }, "Wall unfiled", 10000);
+      // Both at once: a read that straddles the delete's commit can show Wall unfiled
+      // with Framing's ×2 still on it (read committed across the list's statements;
+      // recorded as a finding). The settled state is what the step checks.
+      const wall = await waitFor(async () => { const w = await byName("Wall"); return w.folder_uuid === null && w.multiplier === 1 ? w : null; }, "Wall unfiled, ×1", 10000);
       const left = (await folders()).map((f) => f.name);
       expect(!left.includes("Framing") && !left.includes("Studs") && wall.multiplier === 1, `folders ${left.join()}, Wall ×${wall.multiplier}`);
       await apiCall(token, "DELETE", `${takeoff}/folder/${empty.uuid}`);
@@ -197,6 +200,9 @@ await run("f6-c", [
     run: async ({ page }) => {
       await open(page, p1);
       const paths = () => page.locator('svg[role="presentation"] path, svg[role="presentation"] circle').count();
+      // The panel lists items before the canvas has drawn them; on a busy bench the count
+      // read 0. Wait for Base Bid's shapes on this sheet (Wall and Floor) first.
+      await page.waitForFunction(() => document.querySelectorAll('svg[role="presentation"] path, svg[role="presentation"] circle').length >= 2, null, { timeout: 15000 });
       const before = await paths();
       await panel(page).locator("[data-active-layer]").click();
       await page.getByRole("menu", { name: "Layers" }).getByRole("menuitem", { name: /^Alternate/ }).click();
@@ -265,6 +271,8 @@ await run("f6-c", [
       const includes = await dup.getByText("Include sub-items (1)").count();
       await dup.getByRole("button", { name: "Duplicate" }).click();
       const copy = await waitFor(() => byName("Wall (2)"), "Wall (2)", 10000);
+      // The next suggestion reads the names the panel lists: wait until it lists the copy.
+      await row(page, "Wall (2)").waitFor({ timeout: 10000 });
       await row(page, "Wall").first().click({ button: "right" });
       await page.getByRole("menuitem", { name: "Duplicate" }).click();
       const second = await page.locator("[data-duplicate]").getByLabel("Duplicate name").inputValue();

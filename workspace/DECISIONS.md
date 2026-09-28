@@ -2581,3 +2581,65 @@ carrying the node's id, found again by that id. S14 AC1 asks for a search.
 
 **Consequences:** One place builds folder paths, so two estimators filing under one scope
 at once find one folder, not two.
+
+## D-60 — Settings: legacy's "Project Setup" tab holds Classification, Subcontractors and Statuses
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Frontend, Workspace settings
+**Serves:** F6-S10 to S15, P-19
+
+**Context:** Two new settings screens, Classification and Subcontractors, as tabs of
+their own overflowed the desktop tab row by 201 px, which P-19 forbids at 1440 px.
+Legacy's Workspace Settings has an outer "Project Setup" tab whose inner sections are
+Classification, Subcontractors and Statuses.
+
+**Decision:** Legacy's grouping. The top row's "Statuses" tab becomes "Project Setup"
+(it opens Classification); under the row, on those three screens, an inner row links
+Classification, Subcontractors and Statuses. Every route stays as it was, so a link to
+`/settings/statuses` still lands there, with Project Setup marked.
+
+**Consequences:** p19 measures the two new screens too. "Project Setup" is five letters
+longer than "Statuses", so the row's gap goes from 16 px to 14 px to keep it inside the
+desktop column.
+
+## D-61 — F7 Block A: legacy's hit rules, analytic shapes on the api, deducts clipped once
+
+**Date:** 2026-09-27
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Backend, Frontend (hard rules 2 and 3)
+**Serves:** F7-S1, S2
+
+**Context:** Legacy's engine (`engine.ts`, `quantityService.ts`) picks with a body
+tolerance of 0.008 in normalised page units (so it grows with zoom and differs across
+the axes), counts with an ellipse test of at least 14 screen px, positives before
+deducts, a hole cycle on repeated clicks, topmost first. Its analytic quantities are an
+ellipse's πab and Ramanujan II perimeter, an arc's r·|sweep|; rectangles and inline
+arcs are measured on their points or samples. Deducts are clipped against the union of
+the item's positives on the sheet, subtracted once (`polygon-clipping`). Its traps: a
+curved deduct is clipped as a 64-gon (a 10 ft circle removes 313.65 SF, not 314.16); the
+`circle` flag is set in normalised space, wrong on a non-square page; hover figures are
+sampled. F7-S1's work lists nine engine modules; its criteria test hit-testing only.
+
+**Decision:**
+- **S1 ports hit-testing** (`lib/takeoff/engine/hit.ts`) with legacy's rules and
+  constants, and the canvas picks through it (click and right-click), replacing
+  per-element clicks. The other modules land with the block whose criteria drive them
+  (the tool reducer with Block B, snap S10, deducts S18, transforms S15, S16, history
+  S22, keys S27, hover S25), each still data in, data out.
+- **Analytic on both sides** (`quantity.py`, `lib/takeoff/quantity.ts`): an ellipse is
+  πab and Ramanujan II always (the `circle` shortcut dropped: Ramanujan II is exact when
+  a = b, and the flag lies on non-square pages); an arc is r·|sweep| with legacy's
+  radius in points (√(w·h) on a non-square page); a rectangle's corners are exact.
+- **Deducts** (`role = subtract`, `owner_geometry_id`, D-39 Q2): each is clipped against
+  the union of the item's positives on its sheet and subtracted once. A deduct lying
+  wholly inside that union subtracts its own analytic area (so a 10 ft circular hole
+  removes 314.16 SF); only a deduct crossing an edge is clipped, on 256-point outlines of
+  curved shapes (`shapely` on the api, D-39 Q3). The browser's twin clips with
+  `polygon-clipping` when Block D brings deduct drawing; until then it shares the
+  inside-the-union rule, which the shared table proves.
+- `POST …/item/{uuid}/shapes` as the spec designs it, one `takeoff.geometry.changed`
+  of kind `batch` per transaction.
+
+**Consequences:** Every figure in the shared table is exact to the cent on both sides;
+a crossing curved deduct is exact to within the 256-point outline (under 0.02 %).

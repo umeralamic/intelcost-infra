@@ -11,10 +11,10 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
       (b) legacy's scale button and dropdown. (c) is written into F6's spec, built in S9
 - [x] 1. Rotate pages (P-20a): specced ([rotate_pages_tasks.md](rotate_pages_tasks.md)),
       built, awaiting your click check
-- [ ] 2. F6, all blocks, with the two-window live check: A, B, C built; D (classifications,
-      subcontractors) and E (two-window check) to go
+- [ ] 2. F6, all blocks, with the two-window live check: A to E built; Block D and E's
+      tier running
 - [ ] 3. Close F6 (built, awaiting founder click check)
-- [ ] 4. F9 estimating draft spec
+- [x] 4. F9 estimating draft spec ([drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md))
 - [ ] 5. F7 Block A
 - [ ] 6. F7 Block B onwards
 - [ ] 7. Proof backlog (PARITY ported, not driven)
@@ -30,6 +30,9 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 2A | F6 Block A (S1 to S3): New Measurement and Properties, height and pitch, named dimensions | **Built**: `f6-a` 9/9; quick tier plus 10 touched fixtures, 27: 25 first time, 2 failed from an api restart I caused mid-run, rerun green. D-55 | 18:05 | 19:00 | 55 m |
 | 2B | F6 Block B (S4 to S6): the formula engine twice and equal, sub-items, variables | **Built**: `f6-s4` 3/3 (965 rows equal), `f6-b` 9/9; quick tier plus 7, all 24 pass. D-56 | 19:00 | 20:05 | 1 h 05 |
 | 2C | F6 Block C (S7 to S9): folders and multipliers, layers, the item tree (with the founder's (c)) | **Built**: `f6-c` 10/10 (third run; two product faults and two fixture faults found on the way, below); quick tier plus 21 touched fixtures, all 38 pass first time (25 m 26 s). D-57 | 20:05 | 21:00 | 55 m |
+| 2D | F6 Block D (S10 to S15): classification systems, trees, archive, the seed, filing by classification, subcontractors | **Built**: `f6-d` 9/9 (fourth run; the first three failed on fixture faults, below); quick tier plus 9 touched, 24 of 26 first time: `f6-c` (a race in the fixture, fixed) and `p19` (the tab row overflow, fixed by D-60), both green on rerun. D-58, D-59, D-60 | 21:00 | 21:55 | 55 m |
+| 2E | F6 Block E (S16): the two-window check across F6 | **Built**: `f6-e` 3/3 (third run; two product faults found and fixed, below); quick tier plus 14 touched, 31: 29 first time; `f6-c` (a fixture race, fixed) and `f6-a` (a page load timeout, below) green on rerun | 21:55 | 22:45 | 50 m |
+| 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
 
 ## The founder's addition (a), (b), (c)
@@ -93,6 +96,9 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   in the browser), so two estimators filing at once share one folder; the picker adds a
   search box (the spec asks for one; legacy's picker had none); legacy's "Change
   classification system" unlock dialog is not built in F6.
+- **D-60** (F6 Block D): Settings follows legacy's grouping: one "Project Setup" tab with
+  Classification, Subcontractors and Statuses inside it, so the tab row still fits the
+  desktop column (P-19); the row's gap is 14 px instead of 16.
 - **D-54**: the Takeoff panel will list every item, with legacy's cues and no sheet
   filter, because legacy has none. If you want a "This sheet only" filter beyond legacy,
   say so and it is a small addition to F6-S9.
@@ -126,6 +132,45 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   made with Playwright's `dragTo` onto a header scrolled out of the short tree never
   dropped (the fixture now drags in steps and scrolls the target in mid-drag, as the
   tree does under a hand).
+- **Found in F6 Block E (product faults, fixed):** the Takeoff panel of the window that
+  made a change did not show it: the panel lists every project item (D-54) from a
+  project-wide query, but the page and the item-mutation hook refreshed only the open
+  sheet's query after their own writes, and a tab ignores its own realtime echo. Only
+  the other window updated. Both now refresh the project's items. And in One at a time
+  the tree's double-click rename and drag ignored a colleague's hold (the menu already
+  honoured it; the api refused the write); both now honour it.
+- **Found in F6 Block D's tier: a list read can straddle a commit.** `f6-c` saw Wall
+  unfiled but still "×2" right after its folder was deleted: `GET …/item` reads items,
+  then folders, then each folder's uuid in separate statements under read committed, so
+  a delete committing between them mixes the two states. The next read is right (every
+  change is followed by an event and a refetch), so a screen shows it for one refetch at
+  most. **Not fixed overnight** (a change to how every read transaction begins);
+  proposed: read-only requests at REPEATABLE READ, one snapshot per request. The fixture
+  now waits for the settled state. Only in parallel runs; the cause is the one above.
+- **`f6-a` step 9: `/login` did not finish loading in 30 s** (Block D and E's tier, three
+  fixtures in parallel). No app or api file was saved during that run. Rerun alone and
+  beside `f6-c`: 9/9. **Cause not found**; like the connect timeout in P-20a's tier it
+  looks like the bench's dev server under load, but that is a guess, not a finding. If
+  it repeats, the next step is the app container's request log for that minute.
+- **`f6-c` step 9, a fixture race, fixed:** the second Duplicate opened before the panel
+  listed the first copy, so it suggested "(2)" again. The suggestion reads the names the
+  panel shows, which is legacy's behaviour; the fixture now waits for the row.
+- **Settings tab row overflow (P-19), fixed by D-60:** the two new settings screens as
+  their own tabs overflowed the desktop row by 201 px; the Subcontractors screen scrolled
+  sideways by 149 px on a phone (the "inherited from" note widened its column). Now
+  legacy's "Project Setup" tab and a truncating note; `p19` measures both screens.
+- **My error, recorded:** I saved two page files while Block D's tier was running
+  (hot reload can disturb a running fixture). The fixtures that ran after it passed; I
+  have not done it again.
+- **F6 Block D, fixture faults only, fixed:** `f6-d` first used the estimator seat as the
+  one without Manage classification, but the estimator holds the library capabilities
+  (F3's map), so the takeoff seat is the one; it closed an area with Enter where the
+  canvas closes on a double click; and it counted "Locks after first save" before the
+  workspace's systems had loaded (it now waits for the words). No product fault found.
+- **Legacy faults not carried over (D-58):** legacy's picker and Settings disagreed on
+  the duplicate-code words and on case; a scope added after a delete could collide with
+  a sibling's code and fail silently; a new division's sort key sorted it before the
+  seeded ones. One rule, the next free code, and the code as sort key here.
 - **The F6 fixtures were not in the full tier.** `regress.sh`'s full list globbed f2 to
   f5 and f8; it now includes `f6-*` (edited between runs, with no run in progress).
 
@@ -245,6 +290,54 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
    item onto **Rough Measurements**: refused, "Only rough measurements go in Rough
    Measurements. Tick or untick Rough measurement in Properties to move an item across."
 9. Double-click a row: its name edits in place; Enter saves.
+
+### F6 Block D: classifications and subcontractors (IDM irrelevant)
+
+1. **Settings → Classification.** The card lists CSI MasterFormat, UniFormat, NRM 1
+   (Elemental), NRM 2 (Work Sections) and CESMM, all ticked. Untick all five: "At least
+   one system must remain enabled." and Save greys out. Untick one only, Save: "Classification
+   systems saved", and it stays unticked after a reload. Tick it back.
+2. Below it, System: CSI MasterFormat. The Division column lists "DIV 01 — General
+   Requirements" onward (legacy's 1,833-row CSI list, already there). Click "DIV 03 —
+   Concrete": its scopes show on the right; expand one with its chevron.
+3. **+ Add division**, Code 03, Name anything, Add: "That code already exists in this
+   system." Change the code to 99, Add: it appears and is selected. **+ Add scope**
+   "Framing", Enter. Its ⋮ → Add sub-scope "Studs". ⋮ → Rename "Framing" to "Wood
+   Framing".
+4. Open a project's takeoff, click **Area**, open WBS, choose **Preset Classification**:
+   Create is grey. Type "Wood Framing" in the search, click it: "Selected: DIV 99 — … ›
+   Wood Framing". Create, draw an area: the Takeoff panel shows it under folders "DIV 99
+   — …" / "Wood Framing". Click Area again: the picker now says "Locked for this project".
+5. Right-click that item → Properties → Current folder → **Change**, click DIV 03 and a
+   scope, Save: the item moves to "DIV 03 — Concrete" / that scope.
+6. Back in Settings → Classification, DIV 99 → Wood Framing's ⋮ → **Delete**: "This one
+   is in use" with the count; **Archive instead**: it leaves the list and the picker.
+   "Show archived" shows it faded; ⋮ → Restore. Delete "Studs": `Delete "Studs"?` …
+   "Delete permanently".
+7. **Settings → Subcontractors.** Legacy's 54 defaults are listed (GC first). Add "My
+   Glazier". Search "Fixture" or your division 99 on the right, set it to My Glazier; its
+   scopes below read "Inherit (My Glazier)". Delete My Glazier from the list: it asks
+   first ("Scopes packaged to it become Unassigned …"), and after, the scope is
+   Unassigned.
+8. With a second window on Settings → Classification, add a division in the first: the
+   second shows it without a reload.
+9. Settings: the tab row now reads "… Ownership · Project Setup · Collaboration …";
+   Project Setup opens Classification, with Classification · Subcontractors · Statuses
+   under it (legacy's grouping, D-60).
+
+### F6 Block E: two windows (IDM irrelevant; needs a second account in the workspace)
+
+1. **Work together.** Two windows on the same sheet, one per person. In A, Count a new
+   item and click once: B's Takeoff panel lists it. Double-click it in A and rename it:
+   B shows the new name. Drag it onto a folder in A: B shows it there. No reload in B.
+   A's own panel shows each change too (it did not, before tonight's fix).
+2. **One at a time** (Settings → Collaboration). In A, right-click an item → Add a shape
+   (don't draw). In B, right-click the same item: Properties, Rename, Create sub-item and
+   Duplicate are grey with "{A's name} is editing this item right now."; double-clicking
+   its row does not open a rename. Press Escape in A: B's entries come back.
+3. **Work together** again. Give an item a Depth and a sub-item reading it. In A open
+   Manage sub-items and change the formula; at the same moment in B open Properties and
+   change the Depth; save both: both windows end on the same sub-item figure.
 
 ## Questions
 

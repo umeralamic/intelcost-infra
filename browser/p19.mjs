@@ -16,7 +16,7 @@ import { riversideWorld } from "./lib/world.mjs";
 const world = await riversideWorld();
 const r = world.r;
 
-const SETTINGS = ["account", "general", "members", "roles", "ownership", "statuses", "collaboration", "activity", "trash"];
+const SETTINGS = ["account", "general", "members", "roles", "ownership", "classification", "subcontractors", "statuses", "collaboration", "activity", "trash"];
 
 /** What a person would see go wrong, measured. */
 async function measure(page) {
