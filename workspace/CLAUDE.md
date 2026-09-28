@@ -79,7 +79,7 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    **Enforced:** a PreToolUse hook (`.claude/settings.json`,
    `.claude/hooks/no-inplace-edit.sh`) blocks any Bash or PowerShell command with an
    in-place `sed` or `perl` flag, and says why.
-8. **No test suites, no scripted tests.** Do not run `pytest`, `quantity-table.sh`, a
+8. **No test suites, no scripted tests (D-70).** Do not run `pytest`, `quantity-table.sh`, a
    Playwright script, the archived fixture suite or any other test runner, and do not
    write new ones. The one check is a **smoke test through the Playwright MCP** of the
    feature developed in the session: drive it in a real browser by hand, report in one
@@ -136,7 +136,7 @@ Then bring the stack up and drive the changed screen in a real browser, exercisi
 its loading, empty, error and unauthorized states. Delete every screenshot and
 scratch artifact afterwards. Leave nothing stray.
 
-**Development speed mode (D-68, hard rule 8).** The fixture suite is archived at tag
+**Development speed mode (D-68, D-70, hard rule 8).** The fixture suite is archived at tag
 `fixtures-archive-2026-09-28` and deleted from the tree. Do not write, run or maintain
 fixtures, test suites or test scripts. After each block, in this order:
 
