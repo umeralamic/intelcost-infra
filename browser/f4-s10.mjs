@@ -5,6 +5,7 @@
 
 import { APP, apiCall, expect, members, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, openDashboard } from "./lib/f4.mjs";
+import { waitFor } from "./lib/realtime.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S10 assign");
 const wsPath = `/api/workspace/${workspace.uuid}`;
@@ -51,13 +52,19 @@ await run("f4-s10", [
       const bobRow = options.find((o) => o.includes("Bench takeoff"));
       const bobRole = qa.status === 201 ? "Senior QA" : "Takeoff";
       expect(bobRow && bobRow.includes(bobRole), `Bob row: ${bobRow} (want ${bobRole})`);
-      // Each tick saves at once; the chip appearing is the saved answer coming back.
+      // Each tick saves at once. The chip shows the tick straight away (F4 Block E), before
+      // its save answers, so the stored list is waited for, not read on the chip.
       const chips = page.getByRole("list", { name: "Assigned" });
       await page.getByRole("option", { name: /Bench estimator/ }).locator("input").check();
       await chips.getByText("Bench estimator").waitFor({ timeout: 10000 });
       await page.getByRole("option", { name: /Bench takeoff/ }).locator("input").check();
       await chips.getByText("Bench takeoff").waitFor({ timeout: 10000 });
-      const read = (await apiCall(token, "GET", `${base}/${job.uuid}`)).body.assignee_uuids;
+      const want = [uuidOf(alice.email), uuidOf(bob.email)].join();
+      let read = [];
+      await waitFor(async () => {
+        read = (await apiCall(token, "GET", `${base}/${job.uuid}`)).body.assignee_uuids;
+        return read.join() === want;
+      }, "both assignees stored", 10000).catch(() => {});
       expect(read.join() === [uuidOf(alice.email), uuidOf(bob.email)].join(), `assignees ${read}`);
 
       await page.goto(`${APP}/?tab=all`);

@@ -39,7 +39,7 @@ _Updated: 2026-09-27_
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
 | P-20a | Rotate pages: legacy's "Rotate Pages…", a relative or absolute turn of the selected pages or all, stored on the sheet (`view_rotation`) and followed by the canvas, thumbnails, measurements and colleagues | both | Specced and built 2026-09-27 (overnight), `p20a` 8/8; **awaiting the founder's click check**, then ✅ Live | [rotate_pages_tasks.md](docs/tasks/rotate_pages_tasks.md) |
-| F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **being built** (overnight 2026-09-27): Blocks A, B, C built (D-55 to D-57); Block D in progress (D-58, D-59) | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
+| F6 (P-05) | Item model: measurements, dimensions, sub-items, variables, folders, layers, classifications | both | Questions answered 2026-09-26 (D-36; duplicates count up); **Built** overnight 2026-09-27, Blocks A to E (D-54 to D-60), `f6-a` to `f6-e` and `f6-s4`, full tier 100 fixtures green; **awaiting the founder's click check**, then ✅ Live | [item_model_tasks.md](docs/tasks/item_model_tasks.md) |
 | F7 (P-06) | Canvas tools and interactions: the measure tools, selection and editing, deducts, auto-merge, undo, menus, hover, keys; colleagues' cursors and drafts | both | Specced 2026-09-26, answers D-39; **waits for F6** | [canvas_tools_tasks.md](docs/tasks/canvas_tools_tasks.md) |
 
 ---

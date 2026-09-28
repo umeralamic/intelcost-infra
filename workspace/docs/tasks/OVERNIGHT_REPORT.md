@@ -11,14 +11,16 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
       (b) legacy's scale button and dropdown. (c) is written into F6's spec, built in S9
 - [x] 1. Rotate pages (P-20a): specced ([rotate_pages_tasks.md](rotate_pages_tasks.md)),
       built, awaiting your click check
-- [ ] 2. F6, all blocks, with the two-window live check: A to E built; Block D and E's
-      tier running
-- [ ] 3. Close F6 (built, awaiting founder click check)
+- [x] 2. F6, all blocks, with the two-window live check: A to E built
+- [x] 3. Close F6 (built, awaiting your click check): full tier 95/100 first time, the 5
+      fixed or explained and green on rerun; backup `E:\Intelcost-backup\2026-09-28_0010-f6-built`
 - [x] 4. F9 estimating draft spec ([drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md))
 - [ ] 5. F7 Block A
 - [ ] 6. F7 Block B onwards
 - [ ] 7. Proof backlog (PARITY ported, not driven)
-- [ ] 8. F10 and F11 draft specs
+- [x] 8. F10 and F11 draft specs ([drafts/assemblies_tasks.DRAFT.md](drafts/assemblies_tasks.DRAFT.md),
+      [drafts/markup_print_tasks.DRAFT.md](drafts/markup_print_tasks.DRAFT.md)), written
+      beside the tiers
 
 ## Tasks
 
@@ -32,7 +34,9 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 2C | F6 Block C (S7 to S9): folders and multipliers, layers, the item tree (with the founder's (c)) | **Built**: `f6-c` 10/10 (third run; two product faults and two fixture faults found on the way, below); quick tier plus 21 touched fixtures, all 38 pass first time (25 m 26 s). D-57 | 20:05 | 21:00 | 55 m |
 | 2D | F6 Block D (S10 to S15): classification systems, trees, archive, the seed, filing by classification, subcontractors | **Built**: `f6-d` 9/9 (fourth run; the first three failed on fixture faults, below); quick tier plus 9 touched, 24 of 26 first time: `f6-c` (a race in the fixture, fixed) and `p19` (the tab row overflow, fixed by D-60), both green on rerun. D-58, D-59, D-60 | 21:00 | 21:55 | 55 m |
 | 2E | F6 Block E (S16): the two-window check across F6 | **Built**: `f6-e` 3/3 (third run; two product faults found and fixed, below); quick tier plus 14 touched, 31: 29 first time; `f6-c` (a fixture race, fixed) and `f6-a` (a page load timeout, below) green on rerun | 21:55 | 22:45 | 50 m |
+| 3 | Close F6 | **Built, awaiting your click check** (spec not archived, as asked). Full tier: 100 fixtures, 95 first time (72 m); `f5-s15` and `f5-s19` were a real regression from Block C (below, fixed), `f4-s10` a fixture assumption (fixed), `f8-s15` and `f8-s12` a connect timeout (not explained); all five green on rerun. Board, backlog, PARITY, mirror, dated backup | 22:55 | 00:10 | 1 h 15 |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
+| 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
 
 ## The founder's addition (a), (b), (c)
@@ -132,6 +136,21 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   made with Playwright's `dragTo` onto a header scrolled out of the short tree never
   dropped (the fixture now drags in steps and scrolls the target in mid-drag, as the
   tree does under a hand).
+- **Found by the F6 close's full tier (a regression of mine, fixed):** since Block C the
+  Takeoff panel reads the project's items (D-54), but a colleague's scale change
+  (`sheet.calibration.changed`) refreshed only the open sheet's items, so window B's
+  panel kept the old quantities until something else refreshed it. `f5-s15` and `f5-s19`
+  caught it; the quick tier does not run them. The event now refreshes the project's
+  list too; both pass.
+- **`f4-s10` step 1, a fixture assumption (fixed):** it read the api the moment both
+  assignee chips showed, but since F4 Block E a chip shows the tick before its save
+  answers. Step 2 found both saved, so nothing was lost; the fixture now waits for the
+  stored list.
+- **`f8-s15` and `f8-s12`: a connect timeout from the fixture to the api** (a plain
+  `GET …/folder`, 10 s), the same failure as `f5-sheet-items` in P-20a's tier. Rerun: both
+  pass. **Cause not found**, and the api's log for those minutes is gone (the serial
+  fixtures recreate the api container). Proposed: keep the api's log on a volume across
+  recreations, so the next one can be read.
 - **Found in F6 Block E (product faults, fixed):** the Takeoff panel of the window that
   made a change did not show it: the panel lists every project item (D-54) from a
   project-wide query, but the page and the item-mutation hook refreshed only the open
