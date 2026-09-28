@@ -11,7 +11,7 @@
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
-import { APP_B, joinedTopic, recordSockets, signInAt, waitFor } from "./lib/realtime.mjs";
+import { APP_B, appSockets, joinedTopic, recordSockets, signInAt, waitFor } from "./lib/realtime.mjs";
 import { armMeasure } from "./lib/takeoff.mjs";
 
 const W = 1224;
@@ -230,7 +230,12 @@ await run("p20a", [
         const at = Date.now();
         const sent = await turn([{ sheet_uuid: pages[3].uuid, view_rotation: 180 }]);
         expect(sent.status === 200, `turn: ${sent.status}`);
-        await bp.waitForFunction(() => document.querySelector("[data-page-turn]")?.getAttribute("data-page-turn") === "180", null, { timeout: 5000 });
+        await bp.waitForFunction(() => document.querySelector("[data-page-turn]")?.getAttribute("data-page-turn") === "180", null, { timeout: 5000 }).catch(async (error) => {
+          // Failed twice in parallel tiers on 2026-09-28, B making no request after the
+          // turn and neither api logging a lost publish: say what B's socket heard.
+          const heard = (await appSockets(bp)).flatMap((s) => s.received.filter((f) => f.type === "event").map((f) => `${f.name}@${f.topic ?? ""}`));
+          throw new Error(`${error.message}; B's sockets heard: ${heard.join(", ") || "no events"}`);
+        });
         const ms = Date.now() - at;
         const reloaded = await bp.evaluate(() => performance.getEntriesByType("navigation").length > 1);
         expect(!reloaded, "B reloaded");

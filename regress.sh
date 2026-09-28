@@ -81,7 +81,7 @@ QUICK=(f2-s3 f2-s9 f3-s1 f3-s8 f4-s5 f4-s7 f4-s17 f4-dialogs f5-s4 f5-s6 f5-s8 f
 # Every standing fixture, by feature.
 full_list() {
   local f name
-  for f in browser/f2-*.mjs browser/f3-*.mjs browser/f4-*.mjs browser/f5-*.mjs browser/f6-*.mjs browser/f8-*.mjs; do
+  for f in browser/f2-*.mjs browser/f3-*.mjs browser/f4-*.mjs browser/f5-*.mjs browser/f6-*.mjs browser/f7-*.mjs browser/f8-*.mjs; do
     name=$(basename "$f" .mjs)
     case "$name" in
       f4-s12 | f5-demo | *-outage | *-restart) continue ;;

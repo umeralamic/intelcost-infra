@@ -24,6 +24,13 @@ the end). Specced, no code: F7 follows F6 on the board.** Colleagues' drafts on 
 canvas follow D-38: solid by default, dashed by choice, coloured by the item they
 measure unless the viewer picks each colleague's own colour._
 
+## Progress
+
+| Block | State | Proof |
+|---|---|---|
+| **A: S1 to S3** | Built 2026-09-28 (overnight). D-61: legacy's hit rules in `lib/takeoff/engine/hit.ts` and the canvas picks through them; the other engine modules land with the blocks whose criteria drive them; analytic ellipses, arcs and rectangles on both sides; deducts clipped once against the sections' union (`shapely`), a deduct wholly inside subtracting its own analytic area; `POST …/item/{uuid}/shapes` with one `batch` event | `f7-a` 8/8: `lib/takeoff` carries no React or network call; 319 shapes through both engines equal to 1e-9, 14 worked answers right; 314.16 SF before and after a reload, 60 LF, 31.42 LF; 80 × 40 ft less a 10 ft hole 2,885.84 SF in the item, the Sheets panel and a sub-item's `AREA_SF`, shown live; deleting a section takes its deduct; a stale version refuses the lot, "Fixture O. just changed this shape, showing their version."; 2 px beside a hairline picks it, 30 px does not; inside a square and 3 px outside its edge pick it; a count mark 10 px off picks at zoom 1 and 2, 25 px does not; a viewer's tools and Rename disabled with "Your role cannot create & edit measurements.", selection still works, the shapes transaction 403 |
+| **B: S4 to S8** | Built 2026-09-28 (overnight). D-62: legacy's modes, words and draw menu; Count joins the selected count item; deferred: the default-mode setting (S27) and a sheet switch ending a count session (S22). **S9 to S11 not started** | `f7-b` 7/7: the Linear caret's four modes with legacy's hints, the current marked, the button's title naming it; rectangle 60 LF, circle 62.83 LF, arc 31.42 LF, three collinear clicks two segments; press and drag places a rectangle (Linear, and Area's Point to Point); Area rectangle 600 SF, circle 314.16 SF; Segment's title, two segments one item; Count adds to the selected Receptacles, 5 EA, no dialog, Delete this point; Backspace, Enter, two-stage Escape, the draw menu New Section · Close · Stop · Discard with Close off at two points, Escape closing only the menu |
+
 ---
 
 ## The problem

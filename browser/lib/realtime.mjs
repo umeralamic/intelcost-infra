@@ -12,7 +12,7 @@
 import { request } from "node:http";
 import { lookup } from "node:dns/promises";
 
-import { FIXTURE, OWNER_FULL_NAME, apiLogin, apiRegister, stamp } from "./bench.mjs";
+import { FIXTURE, OWNER_FULL_NAME, apiLogin, apiRegister, serviceUrl, stamp } from "./bench.mjs";
 
 export const WS_URL = "ws://localhost:8000/api/realtime";
 
@@ -90,8 +90,11 @@ export async function eventsOn(page, name) {
 
 /** A hand-written request with the headers a tab sends, from Node. */
 export async function call(token, method, path, body, headers = {}, port = 8000) {
-  const host = (await lookup("host.docker.internal")).address;
-  const response = await fetch(`http://${host}:${port}${path}`, {
+  // Over the compose network, as `bench.mjs`'s `fromNode` explains; any other port
+  // still goes through the host.
+  const known = serviceUrl(`http://localhost:${port}${path}`);
+  const host = known ? null : (await lookup("host.docker.internal")).address;
+  const response = await fetch(known ?? `http://${host}:${port}${path}`, {
     method,
     headers: {
       authorization: `Bearer ${token}`,

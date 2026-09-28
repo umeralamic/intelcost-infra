@@ -134,7 +134,23 @@ function hostGateway() {
  * below goes through here; the page keeps using the localhost URLs above.
  */
 async function fromNode(url) {
+  // The harness's own calls go over the compose network, by service name, not through
+  // the host gateway and the published ports: under three fixtures at once that path
+  // timed out connecting (UND_ERR_CONNECT_TIMEOUT) while both apis were serving
+  // steadily, their logs showing no gap (overnight 2026-09-28). The page still reaches
+  // the published ports, as a person's browser does.
+  const byService = serviceUrl(url);
+  if (byService) return byService;
   return url.replace("localhost", await hostGateway());
+}
+
+/** A bench url on localhost as the compose network names it, or null. */
+export function serviceUrl(url) {
+  const services = { "localhost:8000": "api:8000", "localhost:8010": "api-b:8000", "localhost:8025": "mailhog:8025" };
+  for (const [published, service] of Object.entries(services)) {
+    if (url.includes(`//${published}`)) return url.replace(`//${published}`, `//${service}`);
+  }
+  return null;
 }
 
 export async function openBrowser() {

@@ -15,9 +15,11 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 - [x] 3. Close F6 (built, awaiting your click check): full tier 95/100 first time, the 5
       fixed or explained and green on rerun; backup `E:\Intelcost-backup\2026-09-28_0010-f6-built`
 - [x] 4. F9 estimating draft spec ([drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md))
-- [ ] 5. F7 Block A
-- [ ] 6. F7 Block B onwards
-- [ ] 7. Proof backlog (PARITY ported, not driven)
+- [x] 5. F7 Block A (`f7-a` 8/8)
+- [ ] 6. F7 Block B onwards: Block B's S4 to S8 built (`f7-b` 7/7); S9 to S11 next
+- [x] 7. Proof backlog (PARITY ported, not driven): every line marked **ported** tonight
+      names the fixture that drives it; 14 of them had been left unticked and are ticked.
+      The one unticked **ported** line left is §24's fit-tier baseline (a measurement)
 - [x] 8. F10 and F11 draft specs ([drafts/assemblies_tasks.DRAFT.md](drafts/assemblies_tasks.DRAFT.md),
       [drafts/markup_print_tasks.DRAFT.md](drafts/markup_print_tasks.DRAFT.md)), written
       beside the tiers
@@ -35,6 +37,8 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 | 2D | F6 Block D (S10 to S15): classification systems, trees, archive, the seed, filing by classification, subcontractors | **Built**: `f6-d` 9/9 (fourth run; the first three failed on fixture faults, below); quick tier plus 9 touched, 24 of 26 first time: `f6-c` (a race in the fixture, fixed) and `p19` (the tab row overflow, fixed by D-60), both green on rerun. D-58, D-59, D-60 | 21:00 | 21:55 | 55 m |
 | 2E | F6 Block E (S16): the two-window check across F6 | **Built**: `f6-e` 3/3 (third run; two product faults found and fixed, below); quick tier plus 14 touched, 31: 29 first time; `f6-c` (a fixture race, fixed) and `f6-a` (a page load timeout, below) green on rerun | 21:55 | 22:45 | 50 m |
 | 3 | Close F6 | **Built, awaiting your click check** (spec not archived, as asked). Full tier: 100 fixtures, 95 first time (72 m); `f5-s15` and `f5-s19` were a real regression from Block C (below, fixed), `f4-s10` a fixture assumption (fixed), `f8-s15` and `f8-s12` a connect timeout (not explained); all five green on rerun. Board, backlog, PARITY, mirror, dated backup | 22:55 | 00:10 | 1 h 15 |
+| 5 | F7 Block A (S1 to S3): hit rules, analytic quantities, deducts, the shapes transaction, capabilities | **Built**: `f7-a` 8/8 (fourth run: my fixture's world twice, and a formula name I had wrong); quick tier plus 25 touched, 42: 40 first time; `p20a` (a live turn late) and `f8-s9` (a connect timeout, found and fixed, below) green on rerun. D-61 | 00:15 | 01:10 | 55 m |
+| 6 | F7 Block B (S4 to S8): Linear and Area modes, Segment, Count joins the selected item, finishing and the draw menu | **Built** (S9 inline arcs, S10 snap, S11 past the edge not started): `f7-b` 7/7 (third run; a product fault found on the way, below); quick tier plus 26 touched, the four service-restart fixtures among them, 43: 42 pass, `p20a`'s live turn open (below). D-62 | 01:10 | 02:10 | 1 h |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -103,6 +107,18 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 - **D-60** (F6 Block D): Settings follows legacy's grouping: one "Project Setup" tab with
   Classification, Subcontractors and Statuses inside it, so the tab row still fits the
   desktop column (P-19); the row's gap is 14 px instead of 16.
+- **D-61** (F7 Block A): legacy's hit rules (0.008 of the page for runs, 14 px floor
+  for count marks, positives before deducts, topmost first); ellipses, arcs and
+  rectangles measured from their parameters on both sides, dropping legacy's `circle`
+  shortcut (it is wrong on a non-square page); a deduct wholly inside its sections
+  subtracts its own exact area (legacy clipped a circle as a 64-gon, 313.65 SF instead of
+  314.16); only a deduct crossing an edge is clipped (`shapely`); the other engine
+  modules land with the blocks that use them.
+- **D-62** (F7 Block B): legacy's modes, hints and draw menu (with Close on an area);
+  Count with a count item selected adds to it with no dialog; deferred: the default-mode
+  setting (S27) and a sheet switch ending a count session (S22).
+- **D-63** (F7-S10): the canvas bar shows Ortho and Snap only; Snap PDF, Auto Merge and
+  Auto Scroll join it when their features exist, rather than as toggles that do nothing.
 - **D-54**: the Takeoff panel will list every item, with legacy's cues and no sheet
   filter, because legacy has none. If you want a "This sheet only" filter beyond legacy,
   say so and it is a small addition to F6-S9.
@@ -136,6 +152,37 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
   made with Playwright's `dragTo` onto a header scrolled out of the short tree never
   dropped (the fixture now drags in steps and scrolls the target in mid-drag, as the
   tree does under a hand).
+- **The connect timeouts, cause found and fixed (bench, not product):** a fixture's own
+  request to the api (`GET …/folder`, a login) timed out connecting four times tonight,
+  always with three fixtures running. In F7 A's tier the api logs were intact: both apis
+  served steadily through the minute (60 to 90 log lines every 10 s, no gap), and the
+  failed request never arrived. The path it took was the host gateway and the published
+  port (Docker Desktop's port proxy). The harness's own calls now go over the compose
+  network by service name (`api:8000`, `api-b:8000`, `mailhog:8025`); the page still uses
+  the published ports, as a person's browser does. `lib/bench.mjs` `fromNode`,
+  `lib/realtime.mjs` `call`. The service-restart fixtures ran in Block B's tier to prove
+  it (below).
+- **Open: `p20a` step 8, a turn not reaching the second window, twice in parallel tiers
+  (F7 A's and B's), passing alone.** The api logged the rotation `PUT` (06:42:11 UTC) and
+  no failed publish; api-b logged no missing subscribe confirmation; and window B made
+  **no request at all** afterwards, so the event never reached it or was not acted on.
+  Not found. The fixture now reports which events B's socket heard when it fails, which
+  is the evidence missing. It passed in both F6 tiers and the F6 full tier; what changed
+  since is F7's canvas and the api's geometry code, neither of which touches rotation or
+  realtime, so I have not tied it to them.
+- **Found in F7 Block B (a product fault, fixed):** the Escape that closes the draw menu
+  also reached the canvas and dropped the run, so the next Stop had nothing to keep. The
+  canvas now leaves a key a menu has handled.
+- **Found in F7 Block A (product faults, fixed):** the Sheets panel's per-sheet figure
+  still multiplied by the folder and layer multipliers, against D-57 (Block C changed the
+  item's figure and missed this one); it now shows the measured quantity, as the item and
+  legacy do. The sub-item environment measured an ellipse or arc from its (empty)
+  vertices, so `AREA_SF` and `PERIMETER` read 0 on a curved parent; it now reads the
+  analytic figures and deducts like the item.
+- **`poetry.lock` is behind `pyproject.toml`**: `shapely` was added to the dependencies
+  and the image rebuilt with it (pip reads `pyproject.toml`), but Poetry is not in the
+  container, so the lock was not regenerated. Run `poetry lock` once on a machine that
+  has it.
 - **Found by the F6 close's full tier (a regression of mine, fixed):** since Block C the
   Takeoff panel reads the project's items (D-54), but a colleague's scale change
   (`sheet.calibration.changed`) refreshed only the open sheet's items, so window B's
@@ -354,9 +401,50 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
    (don't draw). In B, right-click the same item: Properties, Rename, Create sub-item and
    Duplicate are grey with "{A's name} is editing this item right now."; double-clicking
    its row does not open a rename. Press Escape in A: B's entries come back.
-3. **Work together** again. Give an item a Depth and a sub-item reading it. In A open
+3. **Work together** again. Give an item a Depth and a sub-item reading it.
+   In A open
    Manage sub-items and change the formula; at the same moment in B open Properties and
    change the Depth; save both: both windows end on the same sub-item figure.
+
+### F7 Block A: picking shapes, curved shapes, deducts (IDM irrelevant)
+
+There is no circle, arc or deduct tool on the canvas until Blocks B and D; these checks
+use what the canvas has.
+
+1. Draw a thin Linear run. With Select, click a couple of pixels beside the line (not on
+   it): the run is selected. Click a finger's width away on bare paper: nothing changes.
+2. Click inside an area: it is selected. Click just outside its edge: still selected.
+3. Put a count mark down. Click near it, not on the dot: it is selected. Zoom in once and
+   try again: same.
+4. Right-click near a run (not on it): its menu opens, for that run.
+5. As a Viewer seat: Linear, Area and Count are grey with "View only…"; right-click an
+   item: Rename and the other edit entries are grey with "Your role cannot create & edit
+   measurements."; clicking a shape still selects it.
+6. The Sheets panel's figure for an item in a folder with a multiplier now matches the
+   Takeoff panel's measured figure, not the multiplied one.
+
+### F7 Block B: the measure tools (IDM irrelevant)
+
+1. The small ▾ beside **Linear**: Point to Point, Rectangle, Ellipse / Circle and Arc,
+   each with a line saying how it works, the current one with a dot. Hover Linear: "Linear
+   — Point to Point (change mode with ▾)".
+2. Pick **Rectangle**, name it, click two corners: a closed box, its perimeter in LF.
+   **Ellipse / Circle**: two clicks, a circle or ellipse, its perimeter. **Arc**: click
+   start, a point on the curve, end: a curve, its length. Three clicks in a straight line
+   give a two-piece line.
+3. In Rectangle or Ellipse, press and drag instead of clicking: the shape in one move.
+4. The same under **Area**'s ▾ (Point to Point, Rectangle, Ellipse / Circle): areas in SF.
+   In Area's Point to Point, press and drag also places a rectangle.
+5. **Segment**: every two clicks make one piece, and the next click starts the next piece;
+   all pieces are one item.
+6. Select a count item in the Takeoff panel, then click **Count**: no dialog; each click
+   adds a mark to that item. Right-click a mark (with Select): "Delete this point" and
+   "Delete all points on this sheet".
+7. Mid-run with Linear: **Backspace** takes the last point back; **Enter** finishes.
+   **Escape** once keeps the run (if it has two points) and the tool; Escape again puts the
+   tool down.
+8. Mid-run, **right-click**: New Section, Stop, Discard (and Close on an area, grey until
+   three points). Escape closes only the menu; the run is still there.
 
 ## Questions
 

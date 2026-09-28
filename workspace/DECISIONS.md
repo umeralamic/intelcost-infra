@@ -2643,3 +2643,51 @@ sampled. F7-S1's work lists nine engine modules; its criteria test hit-testing o
 
 **Consequences:** Every figure in the shared table is exact to the cent on both sides;
 a crossing curved deduct is exact to within the 256-point outline (under 0.02 %).
+
+## D-62 — F7 Block B: legacy's modes and draw menu, Count joins the selected count item
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S4 to S8
+
+**Context:** Legacy's Linear and Area are split buttons ("Linear — Rectangle (change mode
+with ▾)", caret "Change Linear mode") whose menus list the modes with their hints and
+mark the current one; Segment is a tool of its own; a mid-run right-click offers New
+Section, Stop and Discard; Escape is two-stage. The spec's S4 AC6 ("the default Linear
+mode setting") and S7 AC5 (a sheet switch ends a count session) need the canvas settings
+(S27) and a session model that Block B does not bring.
+
+**Decision:**
+- Legacy's modes, words and hints (`lib/takeoff/engine/draw.ts`); a rectangle, ellipse or
+  arc is stored with its parameters (D-61) and its outline samples, as legacy stores them.
+- Count with a count item selected adds marks to it with no dialog; otherwise Count asks
+  first (F6-S1). "Delete this point" and "Delete all points on this sheet" on a mark's
+  right-click.
+- The draw menu also carries **Close** on an area (S8 AC6 names it), off below three
+  points.
+- **Deferred:** the default mode setting to the canvas settings (S27), so a session
+  starts in Point to Point until then; a sheet switch ending a count session to the
+  session history (S22).
+
+**Consequences:** Block B's criteria but those two are driven by `f7-b`.
+
+## D-63 — F7-S10: the canvas bar shows Ortho and Snap; the other three come with their features
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided overnight, pending founder review)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S10 (and S11, S20)
+
+**Context:** Legacy's canvas status bar (`DrawModifiersOverlay`) reads "Ortho: Off",
+"Snap: On", "Snap PDF: Off", "Auto Merge: On", "Auto Scroll: On", each a toggle with a
+title. Snap PDF needs the sheet's printed linework read out of the PDF; Auto Merge is
+F7-S20; Auto Scroll is F7-S11. None of those three is built yet.
+
+**Decision:** The bar shows Ortho and Snap with legacy's words, titles and defaults, and
+S and O toggle them mid-draw. Snap PDF, Auto Merge and Auto Scroll join the bar when
+their features land, rather than as toggles that change nothing (D-39 Q9's rule for
+unbuilt region-menu rows: hidden, not disabled). Ortho and Snap are per session until the
+canvas settings (S27) carry their defaults.
+
+**Consequences:** S10 AC3 (Snap PDF) and AC5's D key wait for the linework reader.
