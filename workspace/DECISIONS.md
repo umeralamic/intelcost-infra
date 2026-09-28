@@ -2953,3 +2953,46 @@ and P-21 move the entries to their legacy homes and keep the acts.
 
 **Consequences:** Every act of S21 is reachable today. The menus carry four entries
 legacy's do not (Start, Resume, and the row's and count's Resume) until S23 and P-21.
+
+## D-71 — F7-S22: the session history, as before-and-after rows undone in one transaction
+
+**Date:** 2026-09-28
+**Status:** Under Review (decided in the day, pending founder review)
+**Area:** Takeoff, Frontend, Backend
+**Serves:** F7-S22, S20 AC5
+
+**Context:** Legacy's `sessionHistory.ts` keeps one history for the session, owned by
+the sheet of the latest commit (a commit elsewhere discards it; a visit keeps it; another
+sheet's Ctrl+Z does nothing), 50 entries, and records creates, Resume and Extend runs, a
+count session as one step, cuts, merges and deletes (a snapshot, the item re-created if
+it went), not moves or vertex edits. Its entries are snapshots of a flat per-sheet array,
+which D-32's row per shape has replaced; and its "undo a new item" deleted with no
+version check, so a colleague's edit since could go unasked.
+
+**Decision:**
+- The rules live in `lib/takeoff/engine/history.ts`, data in and out. Each entry is one
+  act's rows before and after it, with versions, and the item's own fields when the act
+  made or took it (`features/takeoff/hooks/useSessionHistory.ts`).
+- Undo writes the inverse as **one** `…/shapes` transaction: rows the act made deleted,
+  rows it changed put back, rows it deleted re-created under their own uuids (so a
+  deduct's section keeps its identity). Redo writes the act again with the versions the
+  undo left. A merge, a deduct and a delete are each one step (S20 AC5).
+- The item an act made goes with its last shape on undo, **in the same transaction**
+  (`drop_empty_item` on `…/shapes`, new, decided under the item's lock), so every row is
+  version-checked first. A version moved on means a colleague changed the row: the api's
+  refusal names them and the page asks, "Undo will affect this item", "{name} also edited
+  this since then — undoing will remove their work too.", in the spec's words.
+- An item an act took is made again from its own fields (name, type, unit, colour,
+  folder, layer, count and height settings, dimensions). **Its sub-items are not**: they
+  went with it, and nothing here keeps them.
+- Legacy's Ctrl+Z order: the canvas takes a run's last point; a count session its last
+  mark; then the history. Ctrl+Shift+Z and Ctrl+Y redo. In a text field the keys are the
+  field's. The toolbar carries legacy's Undo and Redo with their titles.
+- "Delete all points on this sheet" no longer confirms, as legacy's single-sheet deletes
+  stopped confirming once they could be undone.
+
+**Consequences:** Every act the spec records is one undo step, version-checked. A
+colleague's work is never undone unasked. Undoing a delete that took an item with
+sub-items brings the item back without them; the Delete key still takes such an item with
+no confirm (F7-S17), which is worth a founder look. The box selection's delete is not yet
+recorded (its acts span items; each item's part would be its own step).
