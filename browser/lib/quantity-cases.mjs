@@ -40,7 +40,15 @@ export const CASES = [
   // Crossing an edge: clipped against the union, once (api only).
   { id: "cross-rect", type: "sf", page: SQUARE, fpp: 0.1, crossing: true, shapes: [rect(0, 0, 0.4, 0.4), hole(rect(0.3, 0.3, 0.5, 0.5))], expect: 1600 - 100 },
   { id: "cross-two-sections", type: "sf", page: SQUARE, fpp: 0.1, crossing: true, shapes: [rect(0, 0, 0.4, 0.4), rect(0.4, 0, 0.8, 0.4), hole(rect(0.3, 0.1, 0.5, 0.2))], expect: 3200 - 200 },
+  // Two holes overlapping merge, and the overlap comes off once (legacy's merge).
+  { id: "overlapping-holes", type: "sf", page: SQUARE, fpp: 0.1, crossing: true, shapes: [rect(0.1, 0.1, 0.9, 0.9), hole(rect(0.2, 0.2, 0.4, 0.4)), hole(rect(0.3, 0.2, 0.5, 0.4))], expect: 6400 - 600 },
   { id: "outside-entirely", type: "sf", page: SQUARE, fpp: 0.1, crossing: true, shapes: [rect(0, 0, 0.4, 0.4), hole(rect(0.6, 0.6, 0.8, 0.8))], expect: 1600 },
+  // Inline arcs (F7-S9, D-39 Q5): the edge from vertex i bends along its circle.
+  { id: "arc-run-half-circle", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.3, 0.5], [0.5, 0.5]], { arcs: [{ i: 0, cx: 0.4, cy: 0.5, r: 0.1, a0: Math.PI, sweep: Math.PI }] })], expect: Math.PI * 10 },
+  { id: "arc-run-and-straight", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.3, 0.5], [0.5, 0.5], [0.6, 0.5]], { arcs: [{ i: 0, cx: 0.4, cy: 0.5, r: 0.1, a0: Math.PI, sweep: Math.PI }] })], expect: Math.PI * 10 + 10 },
+  { id: "arc-area-half-disc", type: "sf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.3, 0.5], [0.5, 0.5]], { closed: true, arcs: [{ i: 1, cx: 0.4, cy: 0.5, r: 0.1, a0: 0, sweep: Math.PI }] })], expect: (Math.PI * 100) / 2 },
+  { id: "arc-area-landscape", type: "sf", page: LANDSCAPE, fpp: 0.25, shapes: [poly([[0.3, 0.5], [0.5, 0.5], [0.5, 0.7]], { closed: true, arcs: [{ i: 2, cx: 0.4, cy: 0.6, r: Math.hypot(0.1, 0.1), a0: Math.atan2(0.1, 0.1), sweep: Math.PI }] })] },
+  { id: "arc-run-landscape", type: "lf", page: LANDSCAPE, fpp: 1 / 6, shapes: [poly([[0.2, 0.2], [0.4, 0.2], [0.5, 0.3]], { arcs: [{ i: 1, cx: 0.4, cy: 0.3, r: 0.1, a0: -Math.PI / 2, sweep: Math.PI / 2 }] })] },
   { id: "count-marks", type: "count", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.1], [0.2, 0.2], [0.3, 0.3]])], expect: 3 },
 ];
 

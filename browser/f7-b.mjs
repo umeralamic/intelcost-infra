@@ -31,6 +31,10 @@ async function open(page) {
   await enterWorkspace(page, workspace.uuid);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
   await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
+  // These steps draw exact shapes beside earlier ones: Snap (on by default, F7-S10) would
+  // pull a click onto a neighbour's edge. `f7-c` proves Snap itself.
+  const snap = page.locator("[data-canvas-bar]").getByRole("button", { name: /^Snap:/ });
+  if ((await snap.innerText()).trim() === "Snap: On") await snap.click();
 }
 async function click(page, x, y) {
   const p = await sheetPoint(page, x, y);
