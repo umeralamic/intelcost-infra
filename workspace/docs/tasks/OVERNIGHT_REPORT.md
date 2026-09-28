@@ -7,8 +7,8 @@ Run started 2026-09-27 16:33 CDT; ends about 2026-09-28 08:30 CDT._
 **In short.** F5's follow-ups, P-20a and all of F6 are built and wait for your click
 checks. F7 is built from Block A through S19: every measure tool and mode, snap and
 Ortho, selecting sections, vertices, Move, box select, copy and paste, deducts drawn on
-the canvas, Delete, and auto-scroll. Not yet built: drawing past the paper's edge, and
-S20 onwards. Tonight's decisions for your review are D-53 to D-67; D-66 is the most
+the canvas, Delete, auto-scroll, and measuring past the paper's edge. Not yet built: S20
+onwards. Tonight's decisions for your review are D-53 to D-67; D-66 is the most
 visible (Select's drag now draws legacy's box, and Pan is its own tool again).
 
 F7's closing full tier passed 106 of 109, and all three failures are traced. Two product
@@ -28,10 +28,9 @@ for each block.
       fixed or explained and green on rerun; backup `E:\Intelcost-backup\2026-09-28_0010-f6-built`
 - [x] 4. F9 estimating draft spec ([drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md))
 - [x] 5. F7 Block A (`f7-a` 8/8)
-- [ ] 6. F7 Block B onwards: S4 to S19 built (`f7-b` to `f7-j`, D-62 to D-67), except
-      S11's drawing past the edge of the paper; closing full tier 106/109, all three
-      traced and green after. S20 onwards (auto-merge, Resume and Extend, undo, menus,
-      hover, keys, settings, cursors) not started
+- [ ] 6. F7 Block B onwards: S4 to S19 built (`f7-b` to `f7-k`, D-62 to D-67); closing
+      full tier 106/109, all three traced and green after. S20 onwards (auto-merge,
+      Resume and Extend, undo, menus, hover, keys, settings, cursors) not started
 - [x] 7. Proof backlog (PARITY ported, not driven): every line marked **ported** tonight
       names the fixture that drives it; 14 of them had been left unticked and are ticked.
       The one unticked **ported** line left is §24's fit-tier baseline (a measurement)
@@ -60,6 +59,7 @@ for each block.
 | 6e | F7 S16 copy and paste | **Built**: `f7-i` 5/5 (second run; the first held a pasted run to 1e-6 of where a pixel-rounded click fell), `f7-e` 6/6 and `f7-h` 8/8 beside it; covered by the closing full tier. D-67 | 04:41 | 04:55 | 14 min |
 | 6f | F7 closing full tier | **109 fixtures, 106 first time** (76 m 46 s); the three traced (a product fault fixed, a fixture wait, `f8-s18` made serial as a timing fixture), below; all F7 fixtures and the touched ones, 18, green after | 04:50 | 06:27 | 1 h 37 |
 | 6g | F7 S11 auto-scroll (built beside the tier, installed after it) | **Built**: `f7-j` 3/3; quick tier plus 6 touched, 23: all pass (16 m 16 s) | 06:10 | 06:45 | 35 min |
+| 6h | F7 S11 AC1: measuring past the edge of the paper | **Built**: `f7-k` 2/2 (second run; the first found a level line counts as hidden to Playwright, not a product fault); quick tier plus every drawing fixture, 34: all pass (21 m 20 s) | 06:50 | 07:16 | 26 min |
 | 4 | F9 estimating draft spec | **Done**: [drafts/estimating_tasks.DRAFT.md](drafts/estimating_tasks.DRAFT.md), from legacy's `ProjectEstimatingView.tsx` and `lib/estimate/`, ten questions at the end | 21:45 | 22:10 | 25 m (beside the tier) |
 | 8 | F10 and F11 draft specs | **Done** (brought forward to fill tier time): [assemblies](drafts/assemblies_tasks.DRAFT.md), nine questions; [markups, Dimension, Legend, Print, Find Text, snapshots, history](drafts/markup_print_tasks.DRAFT.md), eight questions | 22:20 | 22:50 | 30 m (beside the tiers) |
 | 0a | F5 follow-up (a) and (b), the founder's addition; (c) written into F6-S9 | **Done:** built, `f5-sheet-items` 5/5, `f5-scale-button` 4/4, the quick tier plus 8 touched fixtures all 25 pass (16 m 47 s). D-53, D-54 | 17:10 | 17:35 | 25 m |
@@ -99,8 +99,10 @@ row's label by `[data-sheet-label]`, because the chevron is now the row's first 
 
 ## Commits
 
-All on `umer-dev`, pushed; `main` untouched in every repo; no force-push. 37 commits (and
-the closing mirror commit after this list). `intelcost-market-next` had none.
+All on `umer-dev`, pushed; `main` untouched in every repo; no force-push. 40 commits (and
+the closing mirror commit after this list). `intelcost-market-next` had none. Twice
+tonight I typed an in-place `sed` (rule 7); both times the hook blocked it and nothing
+was touched.
 
 **intelcost-app-fastapi** (9)
 
@@ -114,7 +116,7 @@ the closing mirror commit after this list). `intelcost-market-next` had none.
 - `d3875bd` 03:39 F7 S9, S15, S18: arcs in the figure, deduct refusals, overlapping holes once
 - `faf002e` 04:41 Takeoff: a shape lands on the sheet it was drawn on; a sheet lists its shapes wherever the item began
 
-**intelcost-app-react** (12)
+**intelcost-app-react** (13)
 
 - `c031702` 17:25 F5 follow-up: items under each sheet row; legacy's toolbar Scale button (D-53)
 - `f74db61` 18:03 P-20a: Rotate Pages, and the canvas, raster and thumbnails follow the turn
@@ -128,8 +130,9 @@ the closing mirror commit after this list). `intelcost-market-next` had none.
 - `14493c9` 04:41 F7 S14, S15 AC5: box select, Ctrl+A, the selection menu; legacy's Pan tool; Move from the menu
 - `824446c` 04:50 F7 S16: legacy's copy and paste, real-world size kept across sheets (D-67)
 - `7d66915` 06:45 F7 S11: legacy's Auto Scroll; a vertex edit's answer goes straight into the cache
+- `0097cc6` 07:16 F7 S11: measure past the edge of the paper
 
-**intelcost-infra** (16)
+**intelcost-infra** (18)
 
 - `8ef4eb5` 17:25 F5 follow-up fixtures (f5-sheet-items, f5-scale-button); F5 archived; P-20a spec; D-53, D-54; mirror
 - `5f80d01` 18:03 P-20a fixture (p20a, in the full list); f5-s14 waits for the order write; apiCall names a failed request; mirror
@@ -147,6 +150,8 @@ the closing mirror commit after this list). `intelcost-market-next` had none.
 - `9160f9f` 04:50 workspace: F7 S16 progress, PARITY, report
 - `8198073` 06:45 F7: fixture f7-j (auto-scroll); f7-h waits for the sheet's shapes; f8-s18 runs alone as a timing fixture
 - `62b0f7f` 06:45 workspace: F7 closing tier, S11, report
+- `0f80b0f` 06:46 workspace: overnight report with its commits and summary
+- `e60d55f` 07:16 F7: fixture f7-k (past the edge)
 
 ## Overnight decisions to review
 
@@ -660,6 +665,8 @@ use what the canvas has.
    run going.
 2. Move onto the Takeoff panel or the toolbar: it stops at once.
 3. "Auto Scroll: On" in the canvas bar turns it off; with Select or Pan it never glides.
+4. With Linear, start a run on the paper and click on the grey margin beside it: the run
+   goes off the paper, measures its full length, and still shows there after a reload.
 
 ## Questions
 
