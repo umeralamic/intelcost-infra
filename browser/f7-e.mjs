@@ -150,6 +150,25 @@ await run("f7-e", [
     },
   },
   {
+    title: "S15 AC2: the move handle hides while a dialog is open, and comes back when it closes",
+    run: async ({ page }) => {
+      await open(page);
+      await selectSection(page, 0.2, 0.85, ids.mover);
+      const section = (await detail(ids.mover)).geometries.find((g) => g.role !== "subtract").uuid;
+      const handle = page.locator(`[data-move-handle="${section}"]`);
+      await handle.waitFor({ timeout: 5000 });
+      // A dialog that leaves the selection alone (a right-click would select the item).
+      await page.locator("[data-quantity-panel]").getByRole("button", { name: "New folder" }).click();
+      const dialog = page.getByRole("dialog").first();
+      await dialog.waitFor({ timeout: 5000 });
+      await handle.waitFor({ state: "detached", timeout: 5000 });
+      await dialog.getByRole("button", { name: "Cancel" }).click();
+      await dialog.waitFor({ state: "detached", timeout: 5000 });
+      await handle.waitFor({ timeout: 5000 });
+      return "the handle went while the New folder dialog was open and came back when it closed";
+    },
+  },
+  {
     title: "S15 AC6: a deduct moved off its section is refused in legacy's words and stays put",
     run: async () => {
       const before = await detail(ids.mover);
