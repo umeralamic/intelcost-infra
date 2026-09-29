@@ -46,6 +46,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `88090c7`: Costs… in Manage sub-items; dialog title ids unique
 - react `3a6f2da`: the grid at legacy's Default density (side by side with live legacy); `5c05895`: component, shared and unallocated rows in the workbook
 - react `407bcd4`: Estimating undo; takeoff keys kept to their tab
+- react `11f27d5`: a group row's summary follows its header's text colour; `2e92bcb`: legacy's spacer rows, TOTAL in the column headers' colours
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -143,8 +144,9 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 10. Shared equipment → a machine over a division: usage per item ("8", "2d" or a formula), the total spread to the cent; what is not spread shows as "Unallocated — {machine}" and in TOTAL.
 11. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
 12. Double-click a sub-item's Unit in Estimating, change it: the warning, then "Unit rates cleared" and the rate cells blink until retyped.
-13. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
-14. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
+13. Format → My formatting → a Column headers fill: the TOTAL row takes it too; the grid shows a thin blank above each parent block and above a header that follows rows.
+14. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
+15. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
