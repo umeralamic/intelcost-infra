@@ -35,6 +35,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - infra `30be921`: task 4 docs, workspace mirror
 - react `0026d5f`, `2e78dca`: F9 Block A, the Estimating tab's grid (D-88)
 - fastapi `a2ed9f5` and react `f5bf339`: F9 Block B pricing (D-89)
+- react `0105b1e`: F9-S6 multiplier popover; `975fdee`: S4 Costs…; fastapi `4278ad3` and react `f49a1d2`: S7 row menu and comments
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -110,6 +111,11 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**F9 Blocks B and C (more)**
+1. Click a ×2 in the Multiplier column: "How this multiplier is built" lists the layer and folders; change a folder's figure and the row follows.
+2. In the Takeoff panel, ⋮ on an item → "Costs…": legacy's five fields and Notes; the figures show in Estimating.
+3. Right-click an Estimating row: Insert row above/below (a manual line, also in the Takeoff panel), Add Sub-item, Add comment…, Go To Page.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
