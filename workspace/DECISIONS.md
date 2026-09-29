@@ -3213,3 +3213,63 @@ live drive say what each control is and does.
 **Consequences:** P-21 is built here rather than after F7; FEATURES.md and MANAGER.md say so.
 The Takeoff panel is the tree, as legacy's; every field of an item is reached through
 Properties or the ⋮ menu.
+
+## D-78 — The shared quantity table runs after every group (amends D-70)
+
+**Date:** 2026-09-28
+**Status:** Accepted (the founder, click check round 2)
+**Area:** Process
+**Serves:** CLAUDE.md hard rule 8, D-68, D-70
+
+**Context:** D-70 barred every scripted check, and hard rule 8 named `quantity-table.sh`
+among them. The founder wants the table kept: it compares the api's and the browser's
+engines against each other and against hand-worked answers in seconds, and is how a
+quantity regression shows at once.
+
+**Decision:** The shared quantity table (`intelcost-infra/quantity-table.sh`) is not covered
+by the no-scripted-tests rule. It runs after every group or block, after the gates and
+before the Playwright MCP smoke test, and its line is reported. Everything else in D-70
+stands.
+
+**Consequences:** CLAUDE.md hard rule 8 and "Development speed mode" say so.
+
+## D-79 — Round 2, group A: no scrollbars, box-drag, deselect, Ortho tolerance, the takeoff settings store
+
+**Date:** 2026-09-28
+**Status:** Accepted (the founder's round-2 findings, matched to legacy); the Ortho tolerance
+is the founder's own addition
+**Area:** Takeoff, Frontend
+**Serves:** F7 (S26, S27), the founder's round-2 findings A1 to A6
+
+**Context:** Legacy's source, plan files and a live drive of "Bench comparison" answered
+each finding: its canvas is `overflow: hidden` with a pan offset and shows no scrollbars;
+the wheel holds the point under the cursor; a left press-drag past 5 px with Linear,
+Segment or Area armed (any mode but Arc, on the first point only) places a rectangle
+(Linear: a closed box run), with a green dashed rubber band; a right-drag pans; a
+right-click opens the draw menu New Section, Stop, Discard; a click on empty sheet with
+Select lets the item go, Escape does not; Enter commits and keeps the tool, Escape commits
+a run with enough points (drops one without) and keeps the tool, a second Escape puts it
+down; auto-merge unions only the same item's sections and never touches another item.
+
+**Decision:**
+- The canvas draws **no scrollbars** (`scrollbar-none`); the scroll container stays, so
+  the pan is still bounded by the page and its gutter where legacy's is not (left, below).
+- **Box-drag** in Point to Point, Rectangle and Ellipse modes and for Segment, never Arc,
+  with legacy's rubber band (`--glyph-start`, dashed 6/4, filled for an area only).
+- The draw menu is legacy's three: **New Section, Stop, Discard** ("Close" removed).
+- A click on empty sheet with Select **clears the item selection** as well as the section
+  and box; Escape clears a box selection only, as legacy's.
+- Enter, Escape and the merge already matched legacy; unchanged.
+- **Takeoff settings** are this person's on this device, in legacy's shape and key
+  (`takeoff.settings.v1`, `features/takeoff/settings/settings.ts`), separate from the
+  workspace's settings on the api. Group D builds legacy's dialog on it.
+- **Ortho tolerance** (the founder's): `snapping.orthoToleranceDeg`, default 15, 1 to 45:
+  Ortho pulls the pen onto its 45° (or 22.5° with Alt) step only within that many
+  degrees; further off the point is free. Snap still wins after it.
+
+**Left different:** legacy's pan is unbounded (the page can be dragged fully away); ours
+stops at the page's gutter because the canvas is a scroll container, and moving it to a
+transform is a rewrite of the raster windowing (D-42) for no measuring gain. Legacy's zoom
+buttons do not hold the view's middle (the page jumps between regimes); ours hold it.
+
+**Consequences:** S26's box-drag and S27's settings store land here.

@@ -81,12 +81,13 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    **Enforced:** a PreToolUse hook (`.claude/settings.json`,
    `.claude/hooks/no-inplace-edit.sh`) blocks any Bash or PowerShell command with an
    in-place `sed` or `perl` flag, and says why.
-8. **No test suites, no scripted tests (D-70).** Do not run `pytest`, `quantity-table.sh`, a
-   Playwright script, the archived fixture suite or any other test runner, and do not
-   write new ones. The one check is a **smoke test through the Playwright MCP** of the
-   feature developed in the session: drive it in a real browser by hand, report in one
-   line what was driven and whether it passed, and fix a failure before moving on. The
-   gates (lint, typecheck, build; ruff, mypy) are not tests and still run.
+8. **No test suites, no scripted tests (D-70, D-78).** Do not run `pytest`, a Playwright
+   script, the archived fixture suite or any other test runner, and do not write new
+   ones. The one check of the feature is a **smoke test through the Playwright MCP**: drive
+   it in a real browser by hand, report in one line what was driven and whether it
+   passed, and fix a failure before moving on. **Not covered by this rule:** the gates
+   (lint, typecheck, build; ruff, mypy) and the **shared quantity table**
+   (`intelcost-infra/quantity-table.sh`), which both run after every group or block.
 
 ## Git
 
@@ -143,7 +144,10 @@ scratch artifact afterwards. Leave nothing stray.
 fixtures, test suites or test scripts. After each block, in this order:
 
 1. **The gates:** lint, typecheck and build in the app; ruff and mypy in the api (above).
-2. **One smoke test through the Playwright MCP:** sign in with a throwaway account (never
+2. **The shared quantity table:** `./quantity-table.sh` from `intelcost-infra/` (D-78). It
+   is not a test suite: it checks the two engines against each other and against the
+   hand-worked answers, in seconds. Report its line; a mismatch is fixed before moving on.
+3. **One smoke test through the Playwright MCP:** sign in with a throwaway account (never
    the seeded account), open the screen changed in the session and drive the new
    behaviour. Report it in one line: what it drove, and whether it passed. A failure is
    fixed before moving on. Wait on what the page shows, never on a clock.

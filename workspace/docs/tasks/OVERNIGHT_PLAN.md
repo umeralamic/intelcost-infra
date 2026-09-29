@@ -1,102 +1,119 @@
-# Overnight plan, 2026-09-27 to 2026-09-28
+# Overnight plan, 2026-09-28 to 2026-09-29
 
-_The founder's plan, saved verbatim. Started 2026-09-27 16:33 CDT. After any compaction,
-re-read `CLAUDE.md`, this file and [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md), then
-continue from the report's checklist._
+_The founder's instructions, saved verbatim below (received 2026-09-28 about 19:10 CDT; away
+15 hours; **the founder moved the end to 2026-09-29 05:30 CDT**, 3:30 PM Pakistan time). Previous plans are in
+[docs/archive/](../archive/). Progress: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md)._
 
----
+**After any compaction:** re-read CLAUDE.md, this file, OVERNIGHT_REPORT.md and
+docs/legacy_comparison.md, then continue from the report's checklist.
 
-I will be away 16 hours. Work autonomously the whole time. Start now.
+## Round 2 first (the founder's click-check findings, round 2)
 
-HARD RULES FOR THIS RUN (the last overnight run wasted the whole night by
-stopping early; do not repeat it):
-- Never stop to report, never ask me anything, never wait for me. There
-  is no "STOP" anywhere in this plan. Where you would normally ask, choose
-  the option most faithful to the legacy app and my logged decisions, log
-  it as the next D-NN marked "decided overnight, pending founder review",
-  and continue.
-- Only end your turn when (a) about 16 hours have passed, or (b) every
-  task below, including the whole KEEP GOING list, is done, or (c)
-  something blocks ALL remaining tasks. A single failure never blocks
-  everything: after 3 failed attempts on an item, write down what you
-  tried and the evidence, and move to the next task.
-- Before starting, save this prompt verbatim to
-  docs/tasks/OVERNIGHT_PLAN.md (replace the old one) and start a new
-  docs/tasks/OVERNIGHT_REPORT.md (archive the old one to docs/archive/
-  with its date). Keep a progress checklist at the top of the report,
-  updated after every task. After any compaction, re-read CLAUDE.md,
-  OVERNIGHT_PLAN.md and OVERNIGHT_REPORT.md, then continue from the
-  checklist.
+Same method as before for every item: read legacy's source and the relevant
+intelcost/.lovable/plan/*.md files (latest wins), drive live legacy, then fix. Match
+legacy; put better options under "Ideas".
 
-READ FIRST: CLAUDE.md, MANAGER.md, FEATURES.md, DECISIONS.md (all D-NN,
-latest most relevant), docs/PARITY.md, docs/tasks/takeoff_shell_tasks.md
-(F5: built, Block F founder-checked PASS), docs/tasks/item_model_tasks.md
-(F6), docs/tasks/canvas_tools_tasks.md (F7). The bench runs per the infra
-README (regress.sh, 3 at a time, quick and full tiers, timing fixtures
-serial, prod profile on 5175; fixtures use their own throwaway accounts).
+FIRST: correct CLAUDE.md so the shared quantity table (./quantity-table.sh) is explicitly
+NOT covered by the no-scripted-tests rule; it runs after every group with the gates. Run it
+now and report.
 
-TASKS, in order:
-0. Block F checked by the founder: PASS, no issues. Archive F5 per
-   CLAUDE.md.
-1. Rotate pages (P-20a, stored rotation) per its board row.
-2. F6, all blocks in the spec's order, per D-36 (answers) and the
-   findings written into it (layers show/hide, never delete the last
-   layer, seed legacy's three default layers, classification, duplicates
-   count up). Include the F6 two-window live check.
-3. Close F6 per CLAUDE.md: full tier, report, PARITY, board, mirror,
-   dated backup. Mark it "built, awaiting founder click check"; do not
-   archive the spec.
-4. Draft docs/tasks/drafts/estimating_tasks.DRAFT.md (F9, spec only,
-   from legacy's estimating tab, questions at the end).
-5. F7 Block A per docs/tasks/canvas_tools_tasks.md and D-39.
+A. CANVAS BEHAVIOUR
+1. Zoom: re-check legacy. Zoom should be centred on the cursor, and when zoomed in legacy
+   shows NO scrollbars at right or bottom. Match both.
+2. With Area or Linear armed: a LEFT-button press and drag draws a rectangle in one gesture
+   (legacy's box-drag, about 5 px threshold, not in Arc mode); a RIGHT-button drag pans; a
+   right-click without dragging opens the draw menu. Drive legacy to confirm each of the
+   three and match exactly.
+3. Selection: clicking empty canvas and pressing Escape: does each deselect in legacy?
+   Match.
+4. A measurement in progress (continuing a run): what do Enter and Escape do in legacy?
+   Match.
+5. Area merge: when a new area overlaps one area of the SAME item and one of a DIFFERENT
+   item, check what legacy merges and what it leaves. Match.
+6. Ortho: add a tolerance setting in takeoff Settings (Snapping), default 15 degrees; within
+   it Ortho snaps, outside it the point is free.
 
-KEEP GOING (in order, until 16 hours or done):
-6. F7 Block B onwards, one block at a time.
-7. The proof backlog: drive PARITY lines marked ported but not driven;
-   tick passes; record failures as findings, no behaviour change.
-8. Draft specs only, in docs/tasks/drafts/: F10 (assemblies, Starter
-   Pack, library), then F11 (markup, print, Find Text, Dimension). Spec
-   only, questions at the end.
+B. TOOLBAR AND ACTION GROUP
+7. Linear, Segment, Area and Count icons in the toolbar do not match legacy's. Match them
+   exactly (icon, size, label, dropdown arrow).
+8. The action group's "Start" shows a plain green circle; use legacy's icon. Check every
+   action group icon and label against legacy.
+9. Action group behaviour: how it changes when an item is selected, when a new tool is
+   armed, mid-draw, and after commit. Match legacy in each state.
+10. The bottom-left canvas buttons are still missing. Build legacy's.
+11. The Dashboard button in takeoff: is it built? If not, build it where legacy shows it.
 
-RULES
-- After each block: gates, the quick tier plus the block's fixtures,
-  then commit and push to umer-dev with the mirror. Full tier at each
-  feature close.
-- A failure that only happens in parallel is never a flake: find the
-  cause. Timing fixtures run serial.
-- Never touch main. Never force-push. Never run docker compose down -v or
-  delete bench volumes. Never touch estimator@bench.intelcost.io's data
-  beyond what fixtures already do, nor my projects "Umer plans test" and
-  the JHS sets.
-- Never edit the test runner while a run is in progress.
-- Keep every fixture's full log. Delete screenshots when done.
+C. PANELS
+12. The ⋮ More options menu on item rows does not match legacy, and it sits at the far
+    right; match legacy's position and contents.
+13. Remove "Edit vertices" and the Resume entries from the row ⋮ menu.
+14. Remove the Takeoff panel totals footer (legacy has none).
+15. Bookmarks: store when bookmarked, sort newest first, as legacy.
 
-MORNING REPORT (docs/tasks/OVERNIGHT_REPORT.md): a table of tasks with
-status, start, end and duration; commits; every overnight decision to
-review; failures and findings; click-only checks for me grouped by
-feature and block, IDM-on checks marked, simple steps; and any
-questions.
+D. SETTINGS
+16. Takeoff settings must be separate from workspace settings, as in legacy (the takeoff
+    Settings dialog with General, Hover, Mouse, Cursor, Snapping, Takeoffs, Toolbar,
+    Panels, Rendering). Build or match it.
 
----
+E. WHOLE-PAGE COMPARISON
+17. With the takeoff screen open, compare the ENTIRE page with legacy: the top bars and
+    menus (takeoff tabs and every bar above the canvas), the toolbar, both panels, canvas
+    corners, footers. Screenshot both at 1440x900 and list every difference, then fix them.
 
-## Addition from the founder, received 2026-09-27 ~17:10 CDT (verbatim)
+After each group: gates, quantity table, a throwaway smoke check, commit and push. (The
+"stop after group E" of round 2 is superseded below.)
 
-Addition to tonight's plan. Do not stop; fit these in and continue.
+## The overnight instructions
 
-Founder findings (match legacy exactly; read legacy's source for each):
-a) Sheets panel: it must list the measurements (items) under each sheet
-   row, as legacy does. Fix it as an F5 follow-up before Rotate pages if
-   not already past it, otherwise right after the current block.
-b) Scale control: it must be legacy's scale button with its dropdown of
-   scales, as legacy shows it, not only the chip menu. Same timing as a).
-c) Takeoff panel: it must show items from ALL sheets, as legacy does,
-   with whatever filter legacy offers for the current sheet. Note it in
-   the F6 spec now and build it in F6's item tree.
+**End time changed (the founder, 2026-09-28 about 19:20 CDT):** stop by 2026-09-29 05:30 CDT
+(3:30 PM Pakistan time), not 10:10 CDT. Same task order; when the time is up, finish the
+current block cleanly (commit, push, mirror), complete the morning report and end.
 
-For each: add or update PARITY lines, add a fixture that proves it,
-commit and push with the mirror, and list it in the morning report with
-click-only checks. Log any design choice as the next D-NN marked
-"decided overnight, pending founder review". Then continue the plan.
+Change of plan: I will be away 15 hours, counted from this message. Do NOT stop after group
+E. Finish round 2 (groups A to E) as instructed, then continue in the same turn with the
+tasks below.
 
-_Placed: P-20a had only its spec written when this arrived, so (a) and (b) are built
-first, as an F5 follow-up, then P-20a, then F6 with (c) in its item tree (S9)._
+HARD RULES
+- Never stop to report, never ask me anything, never wait for me. Where you would normally
+  ask, choose legacy's behaviour, log a D-NN marked "decided overnight, pending founder
+  review", and continue.
+- After 3 failed attempts on one item, record the evidence and move on.
+- Only end your turn when about 15 hours have passed since this message, or every task
+  below including KEEP GOING is done, or something blocks ALL remaining tasks.
+- Save these instructions to docs/tasks/OVERNIGHT_PLAN.md (replace the old one), start a
+  new docs/tasks/OVERNIGHT_REPORT.md (archive the old one to docs/archive/ with its date)
+  with a progress checklist at the top, updated after every task. After any compaction,
+  re-read CLAUDE.md, OVERNIGHT_PLAN.md, OVERNIGHT_REPORT.md and docs/legacy_comparison.md,
+  then continue from the checklist.
+
+METHOD for every change: read legacy's source and the relevant
+intelcost/.lovable/plan/*.md files (latest wins), drive live legacy with the bench's
+Playwright container (credentials in intelcost-infra/.env.legacy; never print or commit
+them), then match legacy. Better options go under "Ideas" in the report; build legacy's.
+
+TESTING (speed mode): after each group or block run the gates, the shared quantity table
+(./quantity-table.sh, always), and a throwaway Playwright smoke check. Fix failures before
+moving on. No fixture files. Delete throwaway scripts and screenshots. Update
+SINCE_ARCHIVE.md. Commit and push to umer-dev with the mirror after each group or block.
+
+TASKS after round 2:
+2. The rest of F7 in the spec's order (hover, mouse and reticle, keys and the settings F7
+   owns, colleagues' cursors, drafts for every tool, the two-window check, Crop as New
+   Page), each compared with legacy first.
+3. Close F7 in speed mode: report, PARITY, board, mirror, dated backup; mark "built,
+   awaiting founder click check"; do not archive the spec.
+4. Legacy comparison of these built screens only: every Settings tab, and sign-in and
+   sign-up, at 1440x900. List every difference and fix behaviour, layout, wording and
+   icons. Do not compare the dashboard, New project, or Project Home and its files.
+5. F9 estimating Block A (foundations), from docs/tasks/drafts/estimating_tasks.DRAFT.md:
+   adopt the draft as docs/tasks/estimating_tasks.md, answer each of its open questions in
+   legacy's favour as a D-NN decided overnight, compare legacy's Estimating tab first, then
+   build.
+
+KEEP GOING (until 15 hours or done):
+6. F9 Block B onwards, one block at a time, same method.
+
+MORNING REPORT (docs/tasks/OVERNIGHT_REPORT.md): tasks with status, start, end and
+duration; commits; every overnight decision to review (list the F9 answers separately,
+since I will want to check them); legacy differences fixed and left (with reasons); failures
+and findings; Ideas; and short click-only checks grouped by task, most important first.
