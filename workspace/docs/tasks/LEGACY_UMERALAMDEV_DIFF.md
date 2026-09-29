@@ -18,6 +18,7 @@ to schedule._
 ## Most important first
 
 ### 1. Deleting an item loses its cost components, and undo does not bring them back — **differs (data loss)**
+- **Fixed 2026-09-29** (D-96, fastapi `8d645a0`, react `3007599`): undo keeps them; every delete names them.
 - **Legacy:** every item delete path names what goes with it: bulk delete, delete
   everywhere, delete entire item and the sub-item prompt all add "It also removes N cost
   components ($X)." A single-sheet delete, normally silent and undoable, always asks first
@@ -35,6 +36,7 @@ to schedule._
 - **Maps to:** F9 × F7 (undo, D-73). **Importance:** high.
 
 ### 2. Cost component formulas see only QTY and PARENT — **differs (money)**
+- **Fixed 2026-09-29** (D-96, react `3007599`): legacy's environment in `lib/estimate/componentEnv.ts`.
 - **Legacy:** `costEnvFor` builds the component environment with `buildFormulaEnv`:
   - workspace variables and rough measurements (refs);
   - the host's primitives (LINEAR, AREA, PERIMETER, count), its dimensions and its

@@ -3531,7 +3531,7 @@ Subcontractors, Statuses) · AI Credits · Trash, each section a titled card.
 
 **Date:** 2026-09-28
 **Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95), **Q6 amended
-by D-95** (pricing on `canEditEstimates` alone)
+by D-95** (pricing on `canEditEstimates` alone), **Q8 by D-96** (groups by node)
 **Area:** Estimating (Frontend, Backend)
 **Serves:** F9, all blocks
 
@@ -3760,10 +3760,42 @@ D-94 in legacy's favour, pending the founder's review.
   "Costs…". **Export stays open to every member.** Built: fastapi `08fa647`, react
   `e0e9016`.
 - **Q8, same-name groups:** the founder's message left the choice open ("merge as legacy /
-  by node"). Kept as built, **merge as legacy**, until the founder says otherwise.
+  by node"). Kept as built, **merge as legacy**, until the founder says otherwise. **Since changed to by node (D-96).**
 - **D-79 to D-94 accepted** as recorded, except as amended here.
 - **Next estimating block after F9:** markups, overhead, profit, bond and tax (on the
   board, Planned).
 - **Live legacy is `UmeralamDEV`** (`origin/UmeralamDEV`): written into CLAUDE.md and
   `docs/legacy_comparison.md`; the local `intelcost/` checkout tracks it, read-only. What
   changed there since `12dd119b`: `docs/tasks/LEGACY_UMERALAMDEV_DIFF.md`.
+
+## D-96 — Fixing the UmeralamDEV diff for F2 to F9; Q8 by node
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's instructions; the calls below made while building)
+**Area:** Estimating, Takeoff (Frontend, Backend)
+**Serves:** F9, F6, F7; `docs/tasks/LEGACY_UMERALAMDEV_DIFF.md`; amends D-88 Q8 and D-95
+
+**Decision:**
+- **Q8, same-name groups: by node** (the founder, 2026-09-29), not legacy's merge. A
+  classification folder groups by its classification node, a plain folder by itself, a
+  layer by its uuid; the Scope, Sub-scope, Level 4 and Subcontractor pivots stay by
+  label, since a label is what they group by.
+- **The diff's F2 to F9 items are fixed to match legacy**, money and data first, each with
+  the gates, the quantity table (a cost row per money fix) and a smoke check.
+- **Delete and undo (diff #1):** the undo snapshot also carries the item's cost
+  components, shared-equipment usage and custom column text, so Ctrl+Z brings them back.
+  This is beyond legacy, where components are not undoable. Legacy's confirm is kept: a
+  host always asks, and every item delete says "It also removes N cost components ($X)."
+  A machine or column deleted since takes its rows on restore.
+- **Component environment (diff #2):** legacy's `costEnvFor` in `lib/estimate/componentEnv.ts`.
+  It covers:
+  - variables and rough measurements;
+  - the item's primitives on every scaled sheet (the sheet list now carries
+    `feet_per_norm`);
+  - the owner's dimensions and the siblings;
+  - PARENT as the item's own quantity, or the parent's on a sub-item host;
+  - QTY as the host's whole net quantity.
+
+  The browser's `parentPrimitives` now mirrors the api's (analytic shapes, deducts per
+  sheet, perimeter round the positives); it had treated deducts as area. The Takeoff
+  page's sub-item preview reads every scaled sheet through the same builder.

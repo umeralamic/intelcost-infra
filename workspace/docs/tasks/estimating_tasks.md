@@ -283,7 +283,7 @@ the item's hold covers its line's rates.
 
 **The founder's review (D-95):** 1, 2, 3, 4, 5, 7, 9 and 10 accepted; **6 changed**: price
 edits take `canEditEstimates`, not takeoff editing, and export stays open to every member;
-8 kept as legacy's merge (the choice was left open). Markups, overhead, profit, bond and
+8 changed to by node (D-96). Markups, overhead, profit, bond and
 tax are the next estimating block after F9.
 
 Every answer is legacy's behaviour, as the overnight instructions ask; the draft's
@@ -305,7 +305,7 @@ recommendation is noted where it differed.
 7. **Presentation state:** in the browser, per project, as legacy: column choices and
    widths, group-by, layer mode, the cost filter, export options, the theme choice and
    the "V<n>" export counter. *(Draft: the counter on the project.)*
-8. **Same-name groups:** legacy's: sibling groups with the same name merge.
+8. **Same-name groups:** ~~legacy's: sibling groups with the same name merge~~. **Changed by the founder (D-96): by node**: a classification folder groups by its node, a plain folder by itself; the label pivots stay by label.
    *(Draft: by node.)*
 9. **The Sheet pivot:** legacy's: lump equipment and subcontract prorated by the sheet's
    share, parents' roll-up whole on every sheet, sub-items on the parent's first sheet.
