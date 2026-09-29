@@ -3829,12 +3829,12 @@ D-94 in legacy's favour, pending the founder's review.
   `docs/tasks/drafts/earthwork_tasks.DRAFT.md`; assemblies carrying costs (#22) and the
   assembly and pending-quantity flags (#19) are F10's.
 
-## D-97 — The founder's round 3: the money bug, the canvas and the panels
+## D-97 — The founder's round 3: the money bug, the canvas, Dimension and the panels
 
 **Date:** 2026-09-29
 **Status:** Accepted (the founder's round 3 findings; the calls below made while building)
 **Area:** Estimating, Takeoff (Frontend, Backend)
-**Serves:** F9, F7; amends D-96 (diff #10, #14, #16) and D-79 ("Left different": the bounded pan)
+**Serves:** F9, F7, F11 (Dimension), P-20 (the two page acts); amends D-96 (diff #10, #14, #16) and D-79 ("Left different": the bounded pan)
 
 **Decision:**
 - **A1, a component that stops pricing keeps its last good total.** Check 5 failed on a
@@ -3877,3 +3877,71 @@ D-94 in legacy's favour, pending the founder's review.
   items still on those untouched defaults.
 - **B10, "Add cost component" leaves the canvas menu;** the Takeoff panel, the Sheets
   panel, the sub-item $ and the Estimating tab keep it.
+- **B11, legacy's Dimension tool, brought forward from F11.** It is legacy's check, not a
+  record:
+  - Armed from the toolbar (after Count) and first in the canvas strip, for a seat with
+    `canUseAnnotations`.
+  - Two clicks place one, with Ortho and snap; the tool stays armed; one Escape puts it
+    away.
+  - The length reads in feet and inches to 1/16" (metres on a metric scale), or
+    "calibrate scale".
+  - Legacy's red line, ticks and arrows and white label box, in screen pixels.
+  - The action bar has Properties (legacy's panel, one style per browser in legacy's key
+    `intelcost.toolStyles.v1`), Undo and Stop.
+  - Never saved: dimensions go with the sheet, as legacy's. The scale-set toast's Verify
+    arms it.
+
+  Legacy's tooltip says "(D)", but no key arms it (D is Snap to drawing), so ours leaves
+  the "(D)" out.
+- **Auto Scroll glides for legacy's draw tools only** (Linear, Segment, Area, Count).
+  Scale and Dimension no longer glide; with the pan unbounded they would carry the sheet
+  away while the pointer rests in the edge band.
+- **C12, narrower panels:** the Sheets column goes to 140 px (the width at which its header
+  and four buttons still show; legacy stops at 180), and the Takeoff panel to 160 px (legacy
+  stops at 22 percent). Collapse is unchanged. The Sheets header's buttons are legacy's
+  20 px.
+- **C13, the row ⋮:** on the bench every host row already offered "Move to layer" (when
+  there is more than one layer) and "Add cost component" (not on an item with sub-items),
+  as legacy. "Add cost component" now comes before "Costs…", legacy's order.
+- **C14, the Sheets panel's "+" is legacy's menu:** Add Pages, New Blank Page, New Page
+  From Clipboard, New Folder.
+  - The two page acts (P-20's) are legacy's dialog and page sizes. The api writes the
+    one-page PDF (`POST …/drawing/sheet/new`), as Crop as New Page does, into the open
+    sheet's folder.
+  - A pasted image is flattened on white first. PyMuPDF stores an opaque alpha channel as a
+    JBIG2 soft mask, and our pdf.js has no JBIG2 decoder, so the page drew white.
+  - New Folder is legacy's inline name box, backed by `POST …/drawing/folder`.
+- **Found, not fixed:** pdf.js here loads no JBIG2 decoder (`wasmUrl` unset). Any drawing
+  set with JBIG2 images, common in scanned plans, would draw those images blank on the
+  pdf.js canvas; the worker's fit image is unaffected.
+
+## D-98 — Collaboration settings split: the workspace's rule, each person's warning and view
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's round 3 D15)
+**Area:** Workspace settings, Takeoff (Frontend, Backend)
+**Serves:** F8, F7; amends D-32 (the modes) and D-38 (where the display choices live)
+
+**Context:** D-32 made collaboration one workspace setting with three modes: Work
+together, Warn me, One at a time. "Warn me" is really one person's wish to be told, not a
+rule for everyone. D-33 and D-38 put the six display choices in Settings › Account.
+
+**Decision:**
+- **Workspace Settings › Collaboration (owners and admins, `canManageWorkspace`) holds
+  the rule, the same for everyone:** Work together (the default) or One at a time (item
+  locking). Everyone else can read it. "Warn me" is no longer a workspace mode: the api
+  refuses it. Migration `e9c3a7d5f2b1` moves workspaces on it to Work together, and their
+  members' own warning is on by default, so nobody loses the banner.
+- **Takeoff Settings gains a "Collaboration" section, per person, on the account:**
+  - "Warn me when someone else is working on my item": on or off, default on
+    (`collaboration_prefs.warn_on_shared_item`). The former Warn me mode, now each
+    person's choice.
+  - The six display preferences move here from Settings › Account, unchanged: others'
+    drafts, names, cursors, others' work, colour by, and the live line style.
+
+  They are saved to the account the moment they are picked, as before. The dialog's other
+  sections stay on this device and wait for Save. "Reset this section" puts these back to
+  their defaults too.
+- **The banner shows under Work together, for a person whose warning is on,** when
+  someone else has the item they hold. Under One at a time the item is already view-only
+  for everyone else, so there is nothing to warn about.
