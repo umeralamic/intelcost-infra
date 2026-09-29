@@ -56,6 +56,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - fastapi `d48d44d`: in One at a time an item's hold covers its line's rates and cost components (F9-S12)
 - react `2383eb8`: the workbook carries the Format's heights and number format; Tab header, Freeze main header and "What Export carries" in the panel; Escape closes it
 - react `043deb3`: column widths in the Format panel
+- react `a597bd3`: a Comments cell opens Add comment (legacy's)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -174,6 +175,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 21. Shared equipment → a machine with nothing spread: its "Unallocated — {machine}" row sits in its home classification's group (and its subcontractor's), with the group's chip and TOTAL including it; in the Sheet pivot it has its own group at the end.
 22. Settings → Collaboration → One at a time; one person resumes a measurement while another types a rate on that item in Estimating: refused with "{name} is editing this item right now.", and it goes through once they finish.
 23. Format → What Export carries: read the list, export, and check the file's row heights and quantity decimals follow the panel. Escape closes the panel.
+24. Click a Comments cell in Estimating: legacy's Add comment opens; the comment shows in the cell, one line per comment.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
