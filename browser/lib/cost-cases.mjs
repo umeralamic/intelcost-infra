@@ -162,6 +162,18 @@ export const COST_CASES = [
     components: [component("material", { qty_formula: "QTY*(", unit_price: 2, total: 123 })],
     expect: { totalMaterialCost: 123, itemCost: 123 },
   },
+  // A saved labour component whose production rate is cleared (round 3 A1): the $368
+  // saved before rides as a lump on the row, its group and TOTAL, never $0.
+  {
+    id: "labor-no-rate-last-good-total",
+    kind: "line",
+    quantity: 61.33,
+    unit: "LF",
+    unitWastage: [["LF", 10]],
+    input: rates({}),
+    components: [component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 30 }], production_rate: null, total: 368 })],
+    expect: { laborCost: 368, itemCost: 368 },
+  },
   // A host of 0 SF: the $50 unit-mode material (5 × $10) is carried as a lump, and the
   // unit rate is 0 ("—" on screen, "No quantity").
   {
