@@ -4145,3 +4145,34 @@ own `fit`.
 *Pending founder review:* where it opens. The bottom-right zoom cluster gains the
 percentage as its top button, always shown; the canvas's top-right percentage, shown for two
 seconds after a zoom (diff #16), becomes clickable and opens the same menu.
+
+---
+
+## D-104 — Below Fit the sheet is drawn supersampled and halved down, so it reads light
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's round 5, item 4)
+**Area:** Takeoff, Frontend
+**Builds on:** D-14, D-35, D-102
+
+**Cause (measured).** pdf.js draws a line thinner than one device pixel one device pixel
+wide at full darkness. A correctly shrunk sheet keeps the same mean brightness at every
+zoom (the ink covers the same share of the page); ours grew darker the further out it went.
+The bench's dense electrical sheet at 2048 × 1050, DPR 1.25: mean luminance 242 at 25%, 233
+at 10%, dark pixels 2.4% → 4.7%; at 1440 × 900, 227 at 10% with 6.0% dark.
+
+**Decision.** Below the sheet's Fit (zoom < 0.999 × fit), pdf.js draws the page at 4 × the
+screen's resolution (2 × when 4 × would pass 12 million px), and the bitmap is halved down to
+the screen's size one clean 2 × 2 average at a time (`raster.ts`, `supersampleFor`,
+`halveDown`); the large canvas is freed at once and only the screen-sized one is cached. At
+and above Fit, pdf.js draws as before. The server's fit image was the other option offered;
+at 2048 px it is barely denser than the screen at Fit on a 2048-wide window, and it is lossy.
+
+**Result.** At 10%: mean luminance 233 → 244 (2048 window) and 227 → 242 (1440), the 25%
+level; dark pixels 4.7% → 0.7% and 6.0% → 0.9%; E101 0.36% → 0.17% and 1.33% → 0.33%. Fit
+and 25% unchanged. The 4 × draw at 10% costs what a 25% draw does (650 to 760 ms on the
+dense sheet in the bench's software renderer).
+
+**Left, for the founder:** a Fit that is itself far out (13.6% on the dense sheet at
+1440 × 900) draws as before, dark (mean 233); supersampling at and just above a low Fit is an
+idea, not built.
