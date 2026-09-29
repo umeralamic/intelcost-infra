@@ -3945,3 +3945,66 @@ rule for everyone. D-33 and D-38 put the six display choices in Settings › Acc
 - **The banner shows under Work together, for a person whose warning is on,** when
   someone else has the item they hold. Under One at a time the item is already view-only
   for everyone else, so there is nothing to warn about.
+
+## D-99 — The founder's round 4: scanned sets, undo for edits, zoom, Dimension, and brought-forward work
+
+Round 4 of the founder's findings (2026-09-29). Method as D-97: legacy on `UmeralamDEV`,
+its plan files, live legacy, then match. Items marked **decided, pending founder review**
+are calls made in the founder's absence, in legacy's favour.
+
+- **A1 Scanned sets draw.** pdf.js 5 decodes JBIG2 *and* CCITT G4 (the codecs of nearly every
+  scanned drawing), JPEG 2000 and ICC colour in wasm it fetches from `wasmUrl`; we never set
+  it, so such a page drew white. `vite.config.ts` now serves `node_modules/pdfjs-dist/{wasm,
+  cmaps,standard_fonts,iccs}` at `/pdfjs/` (dev middleware; a build copies them into
+  `dist/pdfjs/`) and `openSheetPdf` passes `wasmUrl`, `iccUrl`, `cMapUrl` and
+  `standardFontDataUrl`. The bench mounts `vite.config.ts` into the app container.
+  **Legacy has the same gap:** its pdf.js 6.1 also needs `wasmUrl` and its
+  `PdfPageRenderer` sets none (read from code on `UmeralamDEV`; not driven live). Beyond
+  legacy on purpose. Thumbnails were never affected: the worker renders them with MuPDF.
+  Measured: the same CCITT-masked page drew 0 dark pixels before, 20,892 after.
+- **A2 Undo for every shape edit (D-39 Q6).** A vertex drag, an inserted or deleted point,
+  points added on, Break line, Move, rotate, flip, nudge, Copy and Paste each record one
+  undo step (before and after rows, the D-71 history). Paste as a new item is a step that
+  made the item (`made`), so its undo takes the item back.
+- **A3 Zoom as legacy's wheel gesture.** Each wheel frame used to set the page's zoom, which
+  re-rendered the whole takeoff page every frame. Now, as legacy's `PdfCanvas`: ticks
+  accumulate, one frame applies `zoom × e^(−Δ)` as a GPU scale on the stage about the
+  cursor, and the zoom is committed once, 120 ms after the last tick (legacy's
+  WHEEL_IDLE_MS), holding the cursor's point; a press mid-gesture commits first. The
+  percentage shows during the gesture. Measured on the bench, 40 ticks: zoom in 35.9 → 18.7
+  ms a frame (p90 59 → 30), zoom out 33.7 → 16.3 (p90 56 → 17). The raster's own settle
+  (136 ms) is unchanged; the steps (buttons, keys) are unchanged, already legacy's.
+- **A4 D arms Dimension** when no point is placed, from any tool; mid-draw D stays inert
+  (legacy's D is Snap PDF, whose snapping is not built; a key that toggles a setting that
+  does nothing would mislead). The title shows "(D)" again. Dimensions stay unsaved.
+- **A5 Dimension sits in the Scale group, beside Scale.** *Decided, pending founder
+  review:* legacy's `Toolbar.tsx` on `UmeralamDEV` has it in the drawing cluster after
+  Count; the founder's instruction was followed.
+- **A6 The Estimating table fits the window as legacy's.** Widths already matched legacy
+  (block shrinks to the table and centres, `table-layout: fixed` at the exact sum of the
+  columns, the wrapper scrolls sideways). Missing was legacy's `freezeMaxH`: with the
+  header frozen (the default) the wrapper is capped to the room left below it, at least
+  320 px, measured at rest; so the header stays pinned and the sideways scrollbar is on
+  screen, not at the bottom of a long page.
+- **B7 Share, as legacy's.** A Share button before the theme toggle opens legacy's dialog
+  with its three tabs in its order and words. Project Users is the project's assignees
+  (`project_assignees`, the same list as Project Home's Assigned To; labelling, not
+  access), with "Invite someone new to the workspace" opening the Workspace tab. Workspace
+  and Roles & Permissions are the settings screens themselves, rendered without their frame
+  (`SettingsEmbedded`), so every gate is the one those screens already apply. Who can
+  share: anyone may open it, as legacy's; each tab's edits need their own capability
+  (assigning needs Create projects, as on Project Home). **Legacy's public share link**
+  (`ShareLinkBlock`, a link with presence) is not built: the api has no share links. Hidden
+  (D-39 Q9).
+- **B8 Fullscreen, as legacy's,** in the toolbar right after the drawing tools: the whole
+  takeoff screen (header included) fills the display, the sheet is fitted again once it
+  has its new size, Esc leaves; the button reads "Exit" while on. **Split view is not
+  built** (round 4 stopped at the time box): legacy's is a reference-only second sheet in a
+  pane beside the canvas (`docs/canvashost-lift-plan.md`, each pane its own `is_reference`
+  population).
+- **B9 the Collaborator tab and its markup tools: not started** (time box). The starting
+  spec stays `docs/tasks/drafts/markup_print_tasks.DRAFT.md`.
+- **C10 F9b** is a draft spec with questions: `docs/tasks/drafts/f9b_bid_total_tasks.DRAFT.md`.
+  Legacy's live Estimating has no markups or bid total; its retired estimate compounded
+  contingency, GC overhead, GC profit, a permit lump sum, bond and insurance on the direct
+  cost, with per-project defaults 5 / 8 / 5 / 1 and sales tax from a state table. Not built.
