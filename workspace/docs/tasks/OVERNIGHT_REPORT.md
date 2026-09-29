@@ -2,7 +2,7 @@
 
 _Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
 [docs/archive/OVERNIGHT_REPORT_2026-09-28.md](../archive/OVERNIGHT_REPORT_2026-09-28.md).
-Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the founder from 10:10)._
+Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the founder from 10:10). **Ended 03:00 CDT: every task done.**_
 
 ## Progress checklist
 
@@ -18,7 +18,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | 3 | Close F7 in speed mode | **Built, awaiting your click check** (spec not archived, as asked). S1 to S31 built, every block smoke-tested through the MCP with the quantity table green (D-70, D-78); PARITY §10 35 ticked, 21 open (Snap PDF, deduct pairing by click, vertex handles, zoom glitches, reference pane and the other lines each waiting for their owner); board, backlog, mirror, backup `E:\Intelcost-backup\2026-09-28_2125-f7-built`. Not driven: the vertex conflict, six-section paste, three-item box delete, S31 AC3 in two windows | 21:17 | 21:27 | 10 min |
 | 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Done (D-87). Legacy's mark, auth frame and words; Settings' own bar, heading, Editing workspace card, pill tabs with inner rows; legacy's cards for General, Members, Roles, Ownership and the Project Setup screens | 21:27 | 21:50 | 23 min |
 | 5 | F9 Block A | Done. Spec adopted as `estimating_tasks.md` with the ten answers (D-88); live legacy compared (its newer cost components, shared equipment and cost filter written into the spec); the Estimating tab's grid built and smoke-tested | 21:50 | 22:20 | 30 min |
-| 6 | F9 Block B onwards | In progress | 22:20 | | |
+| 6 | F9 Block B onwards | **Built, awaiting your click check** (spec not archived, as F7). Blocks B to F built (D-89 to D-94): pricing, wastage, multipliers, cost components, shared equipment, row menu, comments, custom columns, packages, format themes with legacy's Grid & borders and row heights, the Excel workbook with live formulas (sub-item expressions too), undo, Go to markup, spacer rows, Unallocated rows in their home group; S12 driven in two windows and in One at a time. Compared with live legacy on the grid, the Format panel and the export. PARITY §11: 25 ticked, 1 open (item history, F11). Board and backlog updated | 22:20 | 02:55 | 275 min |
 
 ## Commits
 
@@ -148,45 +148,51 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 ## Ideas
 
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
+- The workbook library (`xlsx-js-style`) cannot freeze panes or colour a sheet tab, which legacy's panel promises and never delivers. A small step after writing (or ExcelJS) would give both, with the frozen header and the Tab color.
+- In One at a time, Estimating learns of a hold only when a save is refused. Showing the holder on the row, as the takeoff panel does, would save the retype.
 
 ## Click-only checks (most important first)
 
-**F9 Blocks B and C (more)**
-1. Click a ×2 in the Multiplier column: "How this multiplier is built" lists the layer and folders; change a folder's figure and the row follows.
-2. In the Takeoff panel, ⋮ on an item → "Costs…": legacy's five fields and Notes; the figures show in Estimating.
-3. Right-click an Estimating row: Insert row above/below (a manual line, also in the Takeoff panel), Add Sub-item, Add comment…, Go To Page.
-4. Columns → Add custom column…: a free-text column; type into it, rename it with the pencil, remove it with the bin (legacy's warning).
-5. Group by Subcontractor → "Manage subcontractors…": This project repackages a scope for this project only; the ↺ puts back the workspace default.
-6. Export → "Export to Excel": open the file in Excel; change a rate cell and the row, its parent and TOTAL recalculate.
-7. Right-click a row → Add cost component → Labor: a crew, a production rate, the total as you type; the row's labour becomes read-only; "Expand components" lists it under the row.
-8. Two browsers, two people: one types a rate while the other changes the quantity; both rows end on the same Item Cost.
-9. Format → Customise as My formatting → change the font, a header colour, zebra: the grid follows at once and after a reload; Export carries the same look.
-10. Shared equipment → a machine over a division: usage per item ("8", "2d" or a formula), the total spread to the cent; what is not spread shows as "Unallocated — {machine}" and in TOTAL.
-11. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
-12. Double-click a sub-item's Unit in Estimating, change it: the warning, then "Unit rates cleared" and the rate cells blink until retyped.
-13. Format → My formatting → a Column headers fill: the TOTAL row takes it too; the grid shows a thin blank above each parent block and above a header that follows rows.
-14. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
-15. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
-16. Right-click an Estimating row → Go To Page: the Takeoff tab opens on that sheet with the item selected and Select armed.
-17. Export with formulas, open in Excel: a sub-item's Qty cell is a formula (a derived volume reads like 165.95*2*4/27); change a number in it and the row, its parent and TOTAL follow.
-18. With the header frozen, scroll a long estimate quickly: the header's column lines stay steady, no white flashes.
-19. Format → My formatting → Grid & borders: Line weight Medium, a Line color, the three switches; the grid follows at once, and an export carries the weight and colour. Colours → Layer tab colours the open tab.
-20. Format → Row heights: change Classification header or Sub-item rows alone; only those rows move. "Group headers" reads "mixed" until you set them all.
-21. Shared equipment → a machine with nothing spread: its "Unallocated — {machine}" row sits in its home classification's group (and its subcontractor's), with the group's chip and TOTAL including it; in the Sheet pivot it has its own group at the end.
-22. Settings → Collaboration → One at a time; one person resumes a measurement while another types a rate on that item in Estimating: refused with "{name} is editing this item right now.", and it goes through once they finish.
-23. Format → What Export carries: read the list, export, and check the file's row heights and quantity decimals follow the panel. Escape closes the panel.
-24. Click a Comments cell in Estimating: legacy's Add comment opens; the comment shows in the cell, one line per comment.
-
-**F9 Block B (pricing)**
+**F9, the money (Blocks B, C)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
 2. Click a Wastage cell: legacy's dialog; LF 10 % to All line items lifts every LF line.
 3. Type Unit Equipment, then the Total Equipment lump: the other clears.
+4. Right-click a row → Add cost component → Labor: a crew, a production rate, the total as you type; the row's labour becomes read-only; "Expand components" lists it under the row.
+5. Shared equipment → a machine over a division: usage per item ("8", "2d" or a formula), the total spread to the cent; what is not spread shows as "Unallocated — {machine}" and in TOTAL.
+6. Shared equipment → a machine with nothing spread: its "Unallocated — {machine}" row sits in its home classification's group (and its subcontractor's), with the group's chip and TOTAL including it; in the Sheet pivot it has its own group at the end.
+7. Click a ×2 in the Multiplier column: "How this multiplier is built" lists the layer and folders; change a folder's figure and the row follows.
+8. Double-click a sub-item's Unit in Estimating, change it: the warning, then "Unit rates cleared" and the rate cells blink until retyped.
+9. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
+10. In the Takeoff panel, ⋮ on an item → "Costs…": legacy's five fields and Notes; the figures show in Estimating.
+11. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
 
-**F9 Block A (Estimating tab)**
+**F9, the Excel workbook (Block E)**
+1. Export → "Export to Excel": open the file in Excel; change a rate cell and the row, its parent and TOTAL recalculate.
+2. Export with formulas, open in Excel: a sub-item's Qty cell is a formula (a derived volume reads like 165.95*2*4/27); change a number in it and the row, its parent and TOTAL follow.
+3. Format → What Export carries: read the list, export, and check the file's row heights and quantity decimals follow the panel. Escape closes the panel.
+
+**F9, the grid and its lines (Blocks A, C, D)**
 1. In a takeoff, click the "Estimating" tab: "Estimating / Synced live from Takeoff.", the slate header, a "Base Bid" tab, one row per item with Item No. 1..N, the TOTAL row. Compare with legacy's tab side by side.
 2. Group by each choice; "All layers in one tab" adds the Layer column and the layer as the outer group.
 3. File one sub-item under a classification: its parent follows it there in bold.
 4. Click "Labor": the FILTERED banner, the other cost columns hide.
+5. Right-click an Estimating row: Insert row above/below (a manual line, also in the Takeoff panel), Add Sub-item, Add comment…, Go To Page.
+6. Right-click an Estimating row → Go To Page: the Takeoff tab opens on that sheet with the item selected and Select armed.
+7. Click a Comments cell in Estimating: legacy's Add comment opens; the comment shows in the cell, one line per comment.
+8. Columns → Add custom column…: a free-text column; type into it, rename it with the pencil, remove it with the bin (legacy's warning).
+9. Group by Subcontractor → "Manage subcontractors…": This project repackages a scope for this project only; the ↺ puts back the workspace default.
+
+**F9, two people (Block F)**
+1. Two browsers, two people: one types a rate while the other changes the quantity; both rows end on the same Item Cost.
+2. Settings → Collaboration → One at a time; one person resumes a measurement while another types a rate on that item in Estimating: refused with "{name} is editing this item right now.", and it goes through once they finish.
+
+**F9, format (Block E)**
+1. Format → Customise as My formatting → change the font, a header colour, zebra: the grid follows at once and after a reload; Export carries the same look.
+2. Format → My formatting → a Column headers fill: the TOTAL row takes it too; the grid shows a thin blank above each parent block and above a header that follows rows.
+3. Format → My formatting → Grid & borders: Line weight Medium, a Line color, the three switches; the grid follows at once, and an export carries the weight and colour. Colours → Layer tab colours the open tab.
+4. Format → Row heights: change Classification header or Sub-item rows alone; only those rows move. "Group headers" reads "mixed" until you set them all.
+5. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
+6. With the header frozen, scroll a long estimate quickly: the header's column lines stay steady, no white flashes.
 
 **Task 4 (sign-in, sign-up, Settings)**
 1. Sign out and open the sign-in page: the orange IC tile and "Intelcost" top left, "Welcome back" in the card, "Forgot password?" beside Password. Sign up reads "Start your free trial" with Job title second.
