@@ -3629,3 +3629,33 @@ had considered the api building it with a Python twin (D-89 left that open).
   a workbook cannot read CSS tokens. Format themes (S10) will feed them.
 - **Not yet:** sub-item quantities as Excel expressions of their formulas, cost
   components and shared-equipment rows, the themes' fonts and fills (S10).
+
+## D-91 — F9 Block B: cost components, legacy's, with QTY in F6's formula engine
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend, Backend), takeoff-core formula engine
+**Serves:** F9 Block B ("Live legacy since the draft"); D-88, D-89
+
+**Context:** Live legacy (`UmeralamDEV`, 2026-09-26) prices a host item with cost
+components: labour (a crew, a production rate, units per hour or per crew-day), material
+(unit price), equipment (a rate per hour, day, week, month or each, a duration formula,
+mob/demob) and subcontract (a quote or a unit rate), each with a quantity formula over
+`QTY` (the host's net quantity) and carried as a unit rate or a lump. A type with
+components replaces that type's typed rate. The draft spec predates them.
+
+**Decision (legacy's):**
+- `takeoff_cost_component` holds legacy's fields; a host is an item with no sub-items
+  (refused 409 otherwise, legacy's trigger); writes on the pricing gate (D-88 Q6);
+  `estimate.line.changed` on every write. `total` is the last good total, sent by the
+  browser as it saves.
+- `src/lib/estimate/components.ts` is legacy's evaluator ported whole, over F6's formula
+  engine, which gains `QTY` exactly as legacy's did: an env field set only in a component
+  env, so a sub-item formula reading `QTY` is still an unknown identifier. The quantity
+  table is unchanged (325 rows, passed).
+- The grid: "Add cost component ▸ Labor, Material, Equipment, Subcontract" in the row
+  menu; legacy's dialog per kind with its live total; a type priced by components shows
+  read-only ("From components"); "Expand components" shows each component as a row under
+  its host, opening its dialog.
+- **Not yet:** shared equipment (legacy's pooled equipment allocated across hosts), the
+  components in the workbook, the formula field's autocomplete.
