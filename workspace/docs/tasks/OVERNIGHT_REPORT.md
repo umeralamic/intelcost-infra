@@ -43,6 +43,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - fastapi `4fe7e8a` and react `0893afb`: F9-S10 format themes (D-92)
 - react `e12b0af`: column widths and Freeze Header; fastapi `94c6277` and react `b09707a`: shared equipment (D-93)
 - fastapi `ec82bde` and react `a931329`: Edit sub-item and rate review
+- react `88090c7`: Costs… in Manage sub-items; dialog title ids unique
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -108,6 +109,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
 
 - **Our `intelcost/` checkout is not live legacy (21:55).** Live legacy runs the `UmeralamDEV` branch, 161 commits past the local `umer-dev`/`main` at `12dd119b` (2026-09-24): the Estimating tab there has cost components, shared equipment and a cost-type filter the local source lacks. Read tonight with `git show origin/UmeralamDEV:<path>` after a fetch, no branch moved. Worth deciding which branch is the "source of truth" in CLAUDE.md.
+- **Stacked dialogs shared one title id (00:50):** every `Dialog` labelled itself `#dialog-title`, so a second dialog opened over a first (Costs over Manage sub-items) was announced with the first one's title. Fixed with `useId` (`88090c7`).
 - **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
 - **S31 AC3 not driven in two windows:** the crop publishes `drawing.sheet.changed` like every Load; B's panel was not watched tonight.
 
@@ -136,6 +138,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 10. Shared equipment → a machine over a division: usage per item ("8", "2d" or a formula), the total spread to the cent; what is not spread shows as "Unallocated — {machine}" and in TOTAL.
 11. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
 12. Double-click a sub-item's Unit in Estimating, change it: the warning, then "Unit rates cleared" and the rate cells blink until retyped.
+13. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
