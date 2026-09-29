@@ -3396,3 +3396,35 @@ canvas bar (Snap PDF not built); "Takeoff | Assemblies" (P-09); the header's Sha
 Upgrade and work timer; the Sheets panel's folder actions (New subfolder, Move folder to…,
 Rename folder, Delete folder) and dotted tree guides (F5's Sheets panel follow-ups, as the
 first comparison listed); the sheet row's menu entries owned by later features.
+
+## D-84 — F7-S25 to S27: legacy's hover panel and highlight, reticle, keys
+
+**Date:** 2026-09-28
+**Status:** Accepted (matched to legacy); decided overnight, pending founder review where
+marked
+**Area:** Takeoff, Frontend, API
+**Serves:** F7-S25, S26, S27
+
+**Decision:**
+- **Hover (S25), legacy's `PdfCanvas`:** with Select or Pan and nothing in hand, the markup
+  under a pointer resting within **5 px** for the Hover delay (1 s) is described in a panel
+  (`HoverPanel.tsx`): the item's name, "This section" (an area net of its deducts, "This
+  deduct" for a hole), the height row on a run with a height, "This sheet (n)" when the
+  sheet holds more than one run, then the fields ticked in Settings › Hover in legacy's
+  order and words, "Item total (n sheets)", Type, Unit, Folder, Sheet and "Marked by"
+  (the api now returns each item's maker's short name, `created_by_name`). Unscaled:
+  "Sheet not scaled — measurements on it count as 0." It sits 12 px right of the pointer,
+  above it clear of the reticle, below it near the top; moving 5 px hides it at once. An
+  area run under the pointer is outlined at once in the highlight colour over a white
+  casing, never on the selected item, never mid-draw.
+- **Decided overnight:** the panel is hidden the moment another tool is picked or a pan
+  begins (legacy leaves a stale panel up there); the "Section #n of m" count is legacy's
+  (n counts the sheet's runs with deducts, m the sections), kept as is.
+- **Reticle (S26 AC4):** legacy's `paintCursor` on its own Canvas 2D layer over the canvas
+  (`Reticle.tsx`), every tool but Pan, the pointer hidden under it; every Cursor setting
+  drives it. S26 AC1 to AC3 landed with D-79 and D-82.
+- **Keys (S27):** legacy's `shortcuts.ts`: V, H, L, A, N in either case, never while typing
+  or with Ctrl, Cmd or Alt; with Linear, Area or Segment armed, S and O toggle Snap and
+  Ortho and A arms an arc (Area when no point is placed yet). S (Snapshot) and D (Snap
+  PDF) wait for their features; legacy's toolbar title "Dimension (D)" is its own bug (D
+  is not bound there).

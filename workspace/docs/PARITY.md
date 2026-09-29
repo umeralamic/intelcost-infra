@@ -439,13 +439,13 @@ sibling panel reads as a bug to an estimator.
 - [ ] Ellipses and circles show four handles, and arcs three per arc, rather than the whole bead chain. `.lovable/plan/ellipse-circle-show-4-handles-not-the-whole-bead-chain-2026-08-22.md` · **missing**
 - [ ] Selecting a markup on the sheet highlights its row in the panel in blue, and vice versa. `.lovable/plan/selecting-a-markup-on-the-sheet-highlights-its-row-in-blue-2026-08-22.md` · **missing**
 - [ ] Clicking anywhere on a count symbol selects it, and dragging works from the full visible symbol. `.lovable/plan/count-symbols-clicking-anywhere-on-the-symbol-should-select-2026-09-11.md` · **partial** (F7-S1, D-61, `f7-a` step 7: a mark is picked within at least 14 px of its centre at every zoom, legacy's ellipse test, 10 px picks and 25 px does not, at zoom 1 and 2. Dragging a mark arrives with move, F7-S15)
-- [ ] Hovering a markup shows a details panel with this section, this sheet and item total figures, configurable per markup type, delayed until the cursor rests. `src/lib/takeoff/hoverStats.ts` · **missing**
-- [ ] The hover panel lifts clear of the crosshair and hides the moment the cursor moves. `.lovable/plan/lift-the-hover-panel-clear-of-the-crosshair-2026-08-22.md` · **missing**
-- [ ] Hovering an area markup outlines the run under the cursor. `.lovable/plan/hover-highlight-on-area-markups-2026-08-22.md` · **missing**
+- [x] Hovering a markup shows a details panel with this section, this sheet and item total figures, configurable per markup type, delayed until the cursor rests. `src/lib/takeoff/hoverStats.ts` · **ported** (F7-S25, D-84, 2026-09-28: legacy's panel, lines, 5 px rest, placement and area highlight; *smoke-tested (D-70)*)
+- [x] The hover panel lifts clear of the crosshair and hides the moment the cursor moves. `.lovable/plan/lift-the-hover-panel-clear-of-the-crosshair-2026-08-22.md` · **ported** (F7-S25, D-84, 2026-09-28: legacy's panel, lines, 5 px rest, placement and area highlight; *smoke-tested (D-70)*)
+- [x] Hovering an area markup outlines the run under the cursor. `.lovable/plan/hover-highlight-on-area-markups-2026-08-22.md` · **ported** (F7-S25, D-84, 2026-09-28: legacy's panel, lines, 5 px rest, placement and area highlight; *smoke-tested (D-70)*)
 - [ ] Auto-scroll pans the sheet when the cursor nears the edge, stops at the canvas boundary, and stops the moment the cursor leaves the canvas. `src/pages/ProjectTakeoff.tsx` · **partial** (F7-S11, `f7-j`: with a measure tool armed, legacy's 48 px band, half a second, faster at the edge; off the canvas it stops at once; "Auto Scroll: On" in the canvas bar with legacy's title, Off and Select leave the sheet still. The delay, speed and band settings wait for the canvas settings, S27)
 - [x] Measuring continues past the edge of the sheet, and markups outside the sheet still show. `.lovable/plan/keep-measuring-past-the-edge-of-the-sheet-2026-08-23.md` · **ported** (F7-S11 AC1, `f7-k`: with a measure tool armed the grey margin takes the pen; a run ended there is stored past 1.0 and drawn past the paper, after a reload too) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [x] Pan with the middle button and with the right button, everywhere on the canvas. `.lovable/plan/make-middle-button-and-right-button-panning-work-everywhere-2026-09-01.md` · **ported** (D-76, 2026-09-28: the middle button pans at once, the right button past 4 px, in every tool with a run in hand untouched, and a right-click that did not travel opens its menu; *smoke-tested (D-70)*)
-- [ ] The cursor reticle is configurable: crosshair lines, ring, centre dot, short ticks, clearance, shape, colours and thickness. `src/components/takeoff/settings/SettingsDialog.tsx` · **missing**
+- [x] The cursor reticle is configurable: crosshair lines, ring, centre dot, short ticks, clearance, shape, colours and thickness. `src/components/takeoff/settings/SettingsDialog.tsx` · **ported** (F7-S26, D-84: legacy's `paintCursor` from every Cursor setting; *smoke-tested (D-70)*)
 - [ ] The move handle scales with zoom, stays anchored during zoom, hides while panning, hides while a dialog is open, and stays out from under dialogs and panels. `src/pages/ProjectTakeoff.tsx` · **partial** (F7-S15, D-65: at the selected section's middle, 18 to 28 px with zoom, hidden while panning, the name and quantity on rest; a drag under 4 px moves nothing; a deduct moved off is refused, "Move rejected", `f7-e`; hidden while a dialog is open, `f7-e` step 6. Staying out from under panels is not driven)
 - [ ] Markups stay stable at maximum zoom, with no glitching. `.lovable/plan/maximum-zoom-markup-stability-2026-09-17.md`, `.lovable/plan/fix-zoom-glitching-for-measurement-markups-on-g101-2026-09-17.md` · **missing**
 - [x] Resume a count or extend a run, picking up where the last session stopped, with per-type resume glyphs. `src/components/takeoff/ContextActionGroup.tsx` · **ported** (F7-S21, D-72: Resume on a row joins the next run to the item as a new shape (D-32), or goes on marking a count; an area's "New section" and a run's "Start" do the same; "Add more points" and a run's "Resume" continue the run itself from its last point, or from a point inserted on an edge, in one version-guarded write. Reached from the menus in legacy's words until the action group, line above, lands with S23) · *smoke-checked (D-68)*
@@ -479,7 +479,7 @@ sibling panel reads as a bug to an estimator.
 - [x] A mode dropdown on the Linear and Area tools names the current mode, with one consistent label set shared by the toolbar and the contextual group. `src/components/takeoff/drawModes.tsx` · **ported** (F7-S23: the toolbar's carets and the action group's mode dropdown share legacy's mode labels) · *smoke-tested (D-70)*
 - [ ] Icons in the contextual action group are sized consistently, and toolbar button spacing is even. `.lovable/plan/fix-icon-sizing-in-the-contextual-action-group-2026-08-23.md`, `.lovable/plan/even-out-the-spacing-around-the-tool-buttons-2026-08-14.md` · **missing**
 - [ ] The dock placement tip sits close to the cursor rather than far from it. `.lovable/plan/shrink-the-gap-between-cursor-and-the-dock-placement-tip-2026-08-25.md` · **missing**
-- [ ] The hover figure matches the shape being pointed at, not a neighbouring run. `.lovable/plan/why-the-hover-figure-doesn-t-match-the-shape-you-re-pointing-2026-08-21.md` · **missing**
+- [x] The hover figure matches the shape being pointed at, not a neighbouring run. `.lovable/plan/why-the-hover-figure-doesn-t-match-the-shape-you-re-pointing-2026-08-21.md` · **ported** (F7-S25, D-84, 2026-09-28: legacy's panel, lines, 5 px rest, placement and area highlight; *smoke-tested (D-70)*)
 
 ## 11. Estimating
 
@@ -838,19 +838,19 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 
 **Tool keys**
 
-- [ ] `V` selects the Select tool. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
-- [ ] `H` selects Pan (Hand). `src/lib/takeoff/engine/shortcuts.ts` · **missing**
-- [ ] `L` selects Linear. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
-- [ ] `A` selects Area. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
-- [ ] `N` selects Count. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
-- [ ] `S` selects Snapshot. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
+- [x] `V` selects the Select tool. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
+- [x] `H` selects Pan (Hand). `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
+- [x] `L` selects Linear. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
+- [x] `A` selects Area. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
+- [x] `N` selects Count. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
+- [ ] `S` selects Snapshot. `src/lib/takeoff/engine/shortcuts.ts` · **missing** (Snapshot is F11's)
 - [ ] `D` selects Dimension. `src/components/takeoff/Toolbar.tsx` · **missing**
-- [ ] Every tool key is case-insensitive. `src/lib/takeoff/engine/shortcuts.ts` · **missing**
+- [x] Every tool key is case-insensitive. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
 
 **While drawing**
 
 - [ ] `S` toggles Snap, `D` toggles Snap PDF, `O` toggles Ortho, and these modifier bindings are live only while a Linear or Area tool is armed so they cannot collide with the tool keys elsewhere. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S10: S and O mid-draw, `f7-c` step 4; D with Snap PDF)
-- [ ] `A` mid-draw arms an inline arc segment, claimed before the Area tool binding, and falls back to the tool switch when there is no draft point to arc from. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S9, `f7-c` step 5; the fallback to the Area tool is §23's)
+- [x] `A` mid-draw arms an inline arc segment, claimed before the Area tool binding, and falls back to the tool switch when there is no draft point to arc from. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
 - [x] `Enter` finishes the measurement. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [x] `Backspace` removes the last placed point. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [x] `Escape` cancels in two stages: the first press drops the in-progress run, the second disarms the tool. `.lovable/plan/two-stage-escape-while-measuring-2026-08-23.md` · **ported** (F7-S8, `f7-b` step 7: the first Escape keeps a run with enough points and drops one without, legacy's rule; the second puts the tool down) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*

@@ -13,7 +13,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | R2-B | Round 2 group B: toolbar icons, action group, bottom-left buttons, Dashboard | Done | 19:28 | 19:42 | 14 min |
 | R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | Done | 19:42 | 19:51 | 9 min |
 | R2-D | Round 2 group D: the takeoff Settings dialog | Done | 19:51 | 20:04 | 13 min |
-| R2-E | Round 2 group E: whole-page comparison | Done | 20:04 | 20:13 | |
+| R2-E | Round 2 group E: whole-page comparison | Done | 20:04 | 20:13 | 9 min |
 | 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | In progress | 20:13 | | |
 | 3 | Close F7 in speed mode | Not started | | | |
 | 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Not started | | | |
@@ -27,6 +27,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react (group C) and fastapi `bookmarked_at` (D-81)
 - react group D, the Settings dialog (D-82)
 - react group E, the whole-page match (D-83)
+- react `c52efcf` and fastapi `a95ed9b`: F7-S25 to S27 (D-84)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -35,6 +36,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-80** round 2 group B. **Pending review:** the item's session ends on Enter or a committing Escape (legacy's), and the next run asks for a new item after the draw; the takeoff screen now has legacy's own header instead of the app's (the email banner is not shown there).
 - **D-82** round 2 group D: legacy's Settings dialog; which settings are in force now and which wait for their features.
 - **D-83** round 2 group E: the whole page against legacy's, what was fixed and what is left.
+- **D-84** F7-S25 to S27. **Pending review:** the hover panel is hidden when another tool is picked or a pan begins (legacy leaves it up).
 
 ## F9 answers to review
 
@@ -56,6 +58,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
 
 ## Failures and findings
+
+- **Throwaway scripts in two infra commits (found 20:13).** The mirror helper staged all of `intelcost-infra` with `git add -A`, so `browser/legacy-r2a.mjs` and `legacy-r2b.mjs` rode along in `ac87ad5` and `ff506c9` and were deleted in `e329299`. They hold no credentials (they read `process.env.LEGACY_*`). The helper now stages `workspace/` only.
 
 - **Quantity table, first run under D-78 (19:00):** 325 rows, both engines equal to 1e-9 on
   the 321 comparable rows; the other 4 are self-crossing shapes both engines refuse; 18
