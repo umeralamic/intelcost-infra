@@ -3273,3 +3273,49 @@ transform is a rewrite of the raster windowing (D-42) for no measuring gain. Leg
 buttons do not hold the view's middle (the page jumps between regimes); ours hold it.
 
 **Consequences:** S26's box-drag and S27's settings store land here.
+
+## D-80 — Round 2, group B: legacy's toolbar, action group states, sheet stepper, takeoff header
+
+**Date:** 2026-09-28
+**Status:** Accepted (round 2, matched to legacy); decided overnight, pending founder review
+where marked
+**Area:** Takeoff, Frontend
+**Serves:** F7 (S23, S26), the founder's round-2 findings B7 to B11
+
+**Context:** Legacy's source and a live drive (at 1440 and 2000 px) settled each finding.
+Its toolbar row sizes every tool icon from Settings › Toolbar (24 px, 48 px buttons, 11 px
+labels at the default "lg"); Linear and Area keep their own glyph and name, with a 16 px
+caret beside them. The action group's "Start" is a plain green disc in legacy too, drawn at
+24 px like every other icon; ours was 22 px beside 16 px icons, so it read as a
+placeholder. At 1440 px legacy folds the group under "More ▾"; ours has fewer tools and
+shows it.
+
+**Decision:**
+- **Toolbar:** legacy's glyphs (Pan, Select, Undo, Redo, Scale, Linear, Segment, Area,
+  Count), `TB_BASE` buttons, `--tool-active`/`--tool-hover`, clusters on the background,
+  and the row's size rule from the settings store (D-79); the mode carets with legacy's
+  menu (a glyph per mode, its hint, the current marked). Tools hidden in Settings ›
+  Toolbar are not shown.
+- **Action group:** every icon at the toolbar's size; Delete in the text colour (its
+  glyph's lid is the red); no "Close" (legacy never passes it); the mode as legacy's split:
+  the current mode's glyph and name, then the caret.
+- **Action group states, legacy's order:** multi, subtract, **draw** from the moment the
+  naming dialog is confirmed (not the first point) and while an item is in hand, then
+  **select** for a selected item whatever the tool, then **armed**, else none.
+- **The item's session (decided overnight, pending founder review):** Enter, or an Escape
+  that ends a run, ends the item's session with the tool still armed (legacy's), except
+  after a new item's first run, whose session legacy re-arms once the item exists; the
+  next run opens the naming dialog after the draw ("post" mode) and becomes a new item. An
+  Escape with nothing in hand ends a session first, then puts the tool down. A Resume keeps
+  the tool armed on the item (it used to put the tool down after one run).
+- **Sheet stepper** (`SheetStepper.tsx`), bottom-left: previous and next in the Sheets
+  panel's order, legacy's titles.
+- **Takeoff header** (`TakeoffHeader.tsx`): the takeoff screen shows legacy's own bar, not
+  the app's: Open (legacy's "Open takeoff" list), "{project} · Takeoff", the reconnecting
+  note, the workspace switcher when there are several, the theme toggle (legacy's
+  `intelcost-theme`, the `dark` class, `core/theme.ts`), and **Dashboard** ("Go to
+  Dashboard"). The email-verification banner is not shown there. Settings joins with
+  group D. Share, Upgrade and the work timer wait for their features.
+
+**Consequences:** the takeoff page no longer shows the app header or the breadcrumb; the
+Dashboard button and the workspace switcher are in its own bar.

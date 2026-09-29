@@ -10,8 +10,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 |---|---|---|---|---|---|
 | 0 | CLAUDE.md: quantity table outside the no-scripts rule (D-78); run it | Done | 18:55 | 19:00 | 5 min |
 | R2-A | Round 2 group A: canvas (zoom, box-drag, selection, Enter/Esc, merge, Ortho tolerance) | Done | 19:00 | 19:40 | 40 min |
-| R2-B | Round 2 group B: toolbar icons, action group, bottom-left buttons, Dashboard | In progress | 19:40 | | |
-| R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | Not started | | | |
+| R2-B | Round 2 group B: toolbar icons, action group, bottom-left buttons, Dashboard | Done | 19:40 | 20:45 | 65 min |
+| R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | In progress | 20:45 | | |
 | R2-D | Round 2 group D: the takeoff Settings dialog | Not started | | | |
 | R2-E | Round 2 group E: whole-page comparison | Not started | | | |
 | 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | Not started | | | |
@@ -23,23 +23,27 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 ## Commits
 
 - react `7bc517f` round 2 group A (D-79); infra: CLAUDE.md D-78, workspace mirror
+- react `7eb6f31` round 2 group B (D-80)
 
 ## Decisions to review (decided overnight, pending founder review)
 
 - **D-78** (the founder's, logged): the quantity table runs after every group.
 - **D-79** round 2 group A: matched legacy; the Ortho tolerance is the founder's (default 15°); the pan left bounded (below).
+- **D-80** round 2 group B. **Pending review:** the item's session ends on Enter or a committing Escape (legacy's), and the next run asks for a new item after the draw; the takeoff screen now has legacy's own header instead of the app's (the email banner is not shown there).
 
 ## F9 answers to review
 
 ## Legacy differences fixed
 
 - Round 2 A: no scrollbars on the canvas; box-drag for Linear and Segment (Area had it), with legacy's green dashed band; draw menu without "Close"; an empty-sheet click deselects the item.
+- Round 2 B: toolbar glyphs and sizes (24/48/11 px, 16 px carets) and mode menus; action group icon sizes, no Close, Delete in text colour, mode split; group states; sheet stepper; takeoff header with Open, theme toggle and Dashboard.
 
 ## Legacy differences left, with reasons
 
 - **Pan is bounded** by the page and its gutter; legacy's is unbounded. Ours is a scroll container (the raster windowing, D-42, reads it); a transform pan is a rewrite for no measuring gain.
 - **Zoom buttons hold the view's middle**; legacy's hold the page's top-left or centre and jump between the two.
-- **Enter after a Resume**: legacy ends the resumed item's session, so the next run asks for a new item (a race in its code decides when). Ours keeps joining the item until the tool is put down.
+- **Header:** legacy's Share (project sharing), Upgrade and work timer are not built (no feature owns them yet); the Open dialog's "Set up takeoff on existing project" tab is Project Home's load flow here; its list shows every project (the list carries no sheet count).
+- **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
 
 ## Failures and findings
 
@@ -52,6 +56,11 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**Round 2 B**
+1. Arm Area, name it: the amber group shows Stop, Discard, New Section, Arc, Undo and "Point to Point ▾" at once. Draw and finish with Enter; draw again and press Enter: the group turns to Properties, Start, Resume, Deduct, Copy, Delete. Draw a third: it asks for a new name.
+2. The toolbar's Linear, Segment, Area and Count glyphs and the Start disc are legacy's, all the same size.
+3. Bottom-left arrows go to the previous and next sheet; the header's Dashboard button goes home; the moon switches to dark.
 
 **Round 2 A**
 1. Arm Area, press and drag on the sheet: a green dashed box follows, and a rectangle is measured on release. Same with Linear (a closed box run).
