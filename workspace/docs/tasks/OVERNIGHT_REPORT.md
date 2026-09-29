@@ -14,8 +14,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | Done | 19:42 | 19:51 | 9 min |
 | R2-D | Round 2 group D: the takeoff Settings dialog | Done | 19:51 | 20:04 | 13 min |
 | R2-E | Round 2 group E: whole-page comparison | Done | 20:04 | 20:13 | 9 min |
-| 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | In progress | 20:13 | | |
-| 3 | Close F7 in speed mode | Not started | | | |
+| 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | Done | 20:13 | 21:17 | 64 min |
+| 3 | Close F7 in speed mode | **Built, awaiting your click check** (spec not archived, as asked). S1 to S31 built, every block smoke-tested through the MCP with the quantity table green (D-70, D-78); PARITY §10 35 ticked, 21 open (Snap PDF, deduct pairing by click, vertex handles, zoom glitches, reference pane and the other lines each waiting for their owner); board, backlog, mirror, backup `E:\Intelcost-backup\2026-09-28_2125-f7-built`. Not driven: the vertex conflict, six-section paste, three-item box delete, S31 AC3 in two windows | 21:17 | 21:27 | 10 min |
 | 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Not started | | | |
 | 5 | F9 Block A | Not started | | | |
 | 6 | F9 Block B onwards | Not started | | | |
@@ -29,6 +29,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react group E, the whole-page match (D-83)
 - react `c52efcf` and fastapi `a95ed9b`: F7-S25 to S27 (D-84)
 - react `5b3298d` and fastapi `ec3408b`: F7-S28 to S30 (D-85)
+- react `ae16713` and fastapi `298a8a6`: F7-S31 Crop as New Page (D-86)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -39,6 +40,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-83** round 2 group E: the whole page against legacy's, what was fixed and what is left.
 - **D-84** F7-S25 to S27. **Pending review:** the hover panel is hidden when another tool is picked or a pan begins (legacy leaves it up).
 - **D-85** F7-S28 to S30 (beyond legacy, the founder's F8). **Pending review:** the two-window check drove cursors, drafts, a deduct, an undo and a shared count; the vertex conflict, six-section paste and three-item box delete were not driven tonight.
+- **D-86** F7-S31 Crop as New Page. **Pending review:** legacy's placement (after the last sheet of the source's folder) and legacy's uncalibrated crop replace the spec's AC1 and AC2 (after the source, at the source's scale); only Crop is built of legacy's region box entries.
 
 ## F9 answers to review
 
@@ -49,6 +51,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Round 2 C: row cluster order (⋮ last), legacy's row menu, no totals footer, Bookmarks newest first.
 - Round 2 D: the takeoff Settings dialog, separate from the workspace's, from the header's gear.
 - Round 2 E: tab strip, Sheets header and ladder, muted panel bands, the open sheet's items shown, Takeoff panel width, status bar always, 9 px quantities.
+- F7-S31: a Select box over empty sheet opens the region box menu (legacy's 25 px); Crop as New Page with legacy's name, placement, toasts and switch to the new sheet.
 
 ## Legacy differences left, with reasons
 
@@ -57,6 +60,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **Header:** legacy's Share (project sharing), Upgrade and work timer are not built (no feature owns them yet); the Open dialog's "Set up takeoff on existing project" tab is Project Home's load flow here; its list shows every project (the list carries no sheet count).
 - **Settings waiting for their features:** Trace (F12), Snap PDF, the legend, Ctrl+F browser find, main tab text size, two-line sheet names, folder/sheet/bookmark row text, Rendering; Hover and Cursor are taken up tonight with S25 and S26.
 - **Whole page (E):** the toolbar's Print, Find Text, Dimension, Snapshot, Dock, Overlay, Highlight, Note, Fullscreen, Split; the Earthwork, Collaborator, Estimating and Community tabs; Snap PDF; "Takeoff | Assemblies"; Share; the Sheets panel's folder actions and tree guides: each waits for the feature that owns it (D-83).
+- **Region box menu (S31):** legacy's tool strip (name an item from the box), Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image, Search as Text and New Snapshot are not built; their owners are F11 to F14 (spec, "Not in F7"). A box that encloses markups selects them (S14) instead of opening the menu.
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
 
 ## Failures and findings
@@ -64,6 +68,9 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **Colleagues' pointers were sent but never drawn (found 20:40).** F8 wired the sending; nothing rendered them on the new canvas. Built as S28.
 - **app-b was stale (20:45):** its image predated `polygon-clipping` and showed a Vite error; rebuilt.
 - **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
+
+- **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
+- **S31 AC3 not driven in two windows:** the crop publishes `drawing.sheet.changed` like every Load; B's panel was not watched tonight.
 
 - **Throwaway scripts in two infra commits (found 20:13).** The mirror helper staged all of `intelcost-infra` with `git add -A`, so `browser/legacy-r2a.mjs` and `legacy-r2b.mjs` rode along in `ac87ad5` and `ff506c9` and were deleted in `e329299`. They hold no credentials (they read `process.env.LEGACY_*`). The helper now stages `workspace/` only.
 
@@ -76,6 +83,9 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**F7-S31**
+1. With Select, drag a box over empty paper: a menu with "Crop as New Page". Choose it: "Cropped page added", the new sheet "{name} (Crop)" opens at the end of the folder, uncalibrated, with the drawing crisp.
 
 **F7-S25 to S30**
 1. Rest the pointer on an area for a second: a cream panel with "This section", the sheet total and "Marked by"; move and it goes. The area turns blue at once.

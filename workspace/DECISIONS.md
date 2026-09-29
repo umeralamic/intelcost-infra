@@ -3455,3 +3455,32 @@ Pointers were being sent but never drawn.
   undo reaching B; a count marked by both at once ended on the same total in both windows.
   The vertex conflict, the six-section paste and the three-item box delete were not driven
   tonight (F8's fixtures drove the conflict before the archive).
+
+## D-86 — F7-S31: Crop as New Page, legacy's placement and name, cropped on the api
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Takeoff, Frontend, API (drawing)
+**Serves:** F7-S31
+
+**Context:** Legacy crops in the browser with pdf-lib (`createCroppedPageFile`): a
+Select-tool drag of 25 px or more over empty sheet opens its region menu, and "Crop as New
+Page" uploads the region as a new project file, makes it a sheet at the end of the source's
+folder named "{source name} (Crop)", with no sheet number and **no calibration**, and opens
+it. The spec's AC1 and AC2 asked for the crop to carry the source's scale and sit right
+after the source. After D-03 the browser never writes a file or a row itself.
+
+**Decision (decided overnight, legacy's behaviour):**
+- `POST …/drawing/sheet/{uuid}/crop` with `{box}` in page fractions, capability Upload
+  documents. PyMuPDF copies the page alone and sets its crop box to the region, so text and
+  linework are kept (Find Text and Snap PDF still work), as legacy's clip kept them.
+- The crop is a project file in the project's root, loaded like any other; its sheet moves
+  to after the last sheet of the source's folder, named `"{sheet_name or base} (Crop)"`,
+  sheet number empty, uncalibrated. AC1 and AC2 are superseded by legacy's placement.
+- On the canvas, a Select box that closes on no markup opens the region box menu at the
+  pen; a box that encloses markups still selects them (S14). Of legacy's region entries
+  (Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image,
+  Search as Text, New Snapshot), only Crop is built; the rest belong to later features.
+- Legacy's toasts, word for word: "Cropped page added" with "Text and vectors are kept, so
+  Find Text and Snap PDF still work. Calibrate it before measuring.", or "Could not crop
+  the page" with the reason. The new sheet opens.
