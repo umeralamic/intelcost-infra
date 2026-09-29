@@ -82,3 +82,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-09-29 | Round 4 B7: Share (D-99) | `features/takeoff/share/`, `components/settings-embedded.ts`, `settings-layout.tsx`, `TakeoffHeader.tsx` | MCP: Share before the theme toggle; Project Users, Workspace and Roles tabs; Invite opens Workspace; Esc closes | none |
 | 2026-09-29 | Round 4 B8: Fullscreen (D-99) | `Toolbar.tsx`, `ProjectTakeoff.tsx` | MCP: the takeoff screen went fullscreen with its header, the button read Exit, then Fullscreen again | none |
 | 2026-09-29 | Round 4 C10: F9b draft spec (D-99) | `docs/tasks/drafts/f9b_bid_total_tasks.DRAFT.md` | docs only | none |
+| 2026-09-29 | Round 4 B9: the Legend (D-99) | `features/takeoff/legend/LegendOverlay.tsx`, `Toolbar.tsx`, `ProjectTakeoff.tsx` (region menu, default) | MCP: Show Legend listed 15 rows, Unfiled first; dragged, resized (text 8.9 → 11.4 px), same box after a reload; Close removed it | none |

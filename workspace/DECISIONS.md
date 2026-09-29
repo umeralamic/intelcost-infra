@@ -4002,8 +4002,18 @@ are calls made in the founder's absence, in legacy's favour.
   built** (round 4 stopped at the time box): legacy's is a reference-only second sheet in a
   pane beside the canvas (`docs/canvashost-lift-plan.md`, each pane its own `is_reference`
   population).
-- **B9 the Collaborator tab and its markup tools: not started** (time box). The starting
-  spec stays `docs/tasks/drafts/markup_print_tasks.DRAFT.md`.
+- **B9 the Legend is built; the Collaborator tab and its markup tools are not started** (time
+  box). The Legend is legacy's `LegendOverlay`: a card in the sheet's space (page fractions,
+  so it pans and zooms with the drawing) listing this sheet's measurements by folder in
+  the tree's order, Unfiled first, with the api's per-sheet quantities (`sheet-items`),
+  count symbols as swatches; dragged by its title, resized from every edge and corner, its
+  box kept per sheet in this browser (`intelcost.legend.v1:{sheet}`), a third of the sheet
+  at bottom left at first, text a twenty-fourth of its width or a sixteenth of its height
+  (container units). Reached as legacy's: the toolbar's Legend (hidden by default in
+  Settings › Toolbar, legacy's default), Show/Hide Legend in the region menu before Zoom to
+  Fit, and Settings › Takeoffs "Legend on by default". Highlight, Note, Snapshot, Dock,
+  cloud, callout, arrow and the Collaborator tab wait; the starting spec stays
+  `docs/tasks/drafts/markup_print_tasks.DRAFT.md`.
 - **C10 F9b** is a draft spec with questions: `docs/tasks/drafts/f9b_bid_total_tasks.DRAFT.md`.
   Legacy's live Estimating has no markups or bid total; its retired estimate compounded
   contingency, GC overhead, GC profit, a permit lump sum, bond and insurance on the direct
