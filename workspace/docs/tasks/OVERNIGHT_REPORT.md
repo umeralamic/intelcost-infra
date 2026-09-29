@@ -48,6 +48,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `407bcd4`: Estimating undo; takeoff keys kept to their tab
 - react `11f27d5`: a group row's summary follows its header's text colour; `2e92bcb`: legacy's spacer rows, TOTAL in the column headers' colours
 - react `5f628ac`: Go To Page selects the item on the sheet it opens (legacy's "Go to markup")
+- react `20aaa38`: a sub-item's Qty exports as a live Excel expression (legacy's `toExcelExpression`)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -103,6 +104,8 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **Whole page (E):** the toolbar's Print, Find Text, Dimension, Snapshot, Dock, Overlay, Highlight, Note, Fullscreen, Split; the Earthwork, Collaborator, Estimating and Community tabs; Snap PDF; "Takeoff | Assemblies"; Share; the Sheets panel's folder actions and tree guides: each waits for the feature that owns it (D-83).
 - **Estimating (F9 Block A):** Format, Export, Shared equipment, Expand components, the row and header menus, column widths by drag, and every cost figure wait for Blocks B to E; the group row's "MH · cost" reads "—" until Block B; legacy's per-theme fonts and fills are Block E's Format.
 - **Estimating toolbar:** legacy's runs in one row that goes off the screen at 1440 px (Expand components cut, Format, Columns and Export beyond it); ours wraps to a second row, so every control is on screen (kept).
+- **Workbook sub-item expressions:** the Estimating tab holds no sheet scales, so a formula's measured length, area or count is taken from the owning item's quantity; `PERIMETER` and an area parent's `LINEAR` keep the plain number where legacy writes them out. Each expression is also checked against our evaluator, so none can be wrong; legacy checks only plain arithmetic.
+- **Keep this rate (the tick):** not built; live legacy's unit change always clears the rate, so its tick cannot show there either (its own comment: "A cleared rate has nothing to keep").
 - **Settings (task 4):** Shifts and Time Tracking (F15), AI Credits (F14), Brand accent color (the proposal PDF, F10), the members' Shift column (F15) are not built; the transfer keeps F3's type-the-name confirmation instead of legacy's click-to-choose list; our members rows keep email and last activity (F3-S11); Collaboration, Activity and Account are ours, beyond legacy; the sign-in refusal is inline (F2's `AuthFormError` tells a network block from a wrong password) rather than a toast; ten-character passwords (F2); no "Clear cached session" (D-17). The app bar on the dashboard and project pages (out of scope tonight) still differs from legacy's (Library, Settings, email).
 - **Region box menu (S31):** legacy's tool strip (name an item from the box), Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image, Search as Text and New Snapshot are not built; their owners are F11 to F14 (spec, "Not in F7"). A box that encloses markups selects them (S14) instead of opening the menu.
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
@@ -149,6 +152,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 14. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
 15. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
 16. Right-click an Estimating row → Go To Page: the Takeoff tab opens on that sheet with the item selected and Select armed.
+17. Export with formulas, open in Excel: a sub-item's Qty cell is a formula (a derived volume reads like 165.95*2*4/27); change a number in it and the row, its parent and TOTAL follow.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
