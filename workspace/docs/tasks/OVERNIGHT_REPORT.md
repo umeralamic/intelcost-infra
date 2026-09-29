@@ -53,6 +53,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `878e6e6`: Format's Grid & borders, empty and total row heights, tab colour
 - react `ea65f6f`: Format row heights per header species and for sub-items
 - react `d69f120`: Unallocated rows in their machine's home group (D-94)
+- fastapi `d48d44d`: in One at a time an item's hold covers its line's rates and cost components (F9-S12)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -129,6 +130,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **The workbook library warns in dev (01:05):** `xlsx-js-style` references Node's `stream` and `fs`, which Vite stubs in the browser ("Module … has been externalized"). Harmless: the download works and legacy ships the same library.
 - **Stacked dialogs shared one title id (00:50):** every `Dialog` labelled itself `#dialog-title`, so a second dialog opened over a first (Costs over Manage sub-items) was announced with the first one's title. Fixed with `useId` (`88090c7`).
 - **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
+- **Estimating rates ignored One at a time (02:25):** the rates and cost component writes never asked for the item's hold, so S12's second half could not pass. They now call F8's guard (`d48d44d`).
 - **S31 AC3 not driven in two windows:** the crop publishes `drawing.sheet.changed` like every Load; B's panel was not watched tonight.
 
 - **Throwaway scripts in two infra commits (found 20:13).** The mirror helper staged all of `intelcost-infra` with `git add -A`, so `browser/legacy-r2a.mjs` and `legacy-r2b.mjs` rode along in `ac87ad5` and `ff506c9` and were deleted in `e329299`. They hold no credentials (they read `process.env.LEGACY_*`). The helper now stages `workspace/` only.
@@ -165,6 +167,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 19. Format → My formatting → Grid & borders: Line weight Medium, a Line color, the three switches; the grid follows at once, and an export carries the weight and colour. Colours → Layer tab colours the open tab.
 20. Format → Row heights: change Classification header or Sub-item rows alone; only those rows move. "Group headers" reads "mixed" until you set them all.
 21. Shared equipment → a machine with nothing spread: its "Unallocated — {machine}" row sits in its home classification's group (and its subcontractor's), with the group's chip and TOTAL including it; in the Sheet pivot it has its own group at the end.
+22. Settings → Collaboration → One at a time; one person resumes a measurement while another types a rate on that item in Estimating: refused with "{name} is editing this item right now.", and it goes through once they finish.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
