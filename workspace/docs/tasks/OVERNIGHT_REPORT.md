@@ -34,6 +34,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `9e8917b`: sign-in, sign-up and Settings matched to legacy (D-87)
 - infra `30be921`: task 4 docs, workspace mirror
 - react `0026d5f`, `2e78dca`: F9 Block A, the Estimating tab's grid (D-88)
+- fastapi `a2ed9f5` and react `f5bf339`: F9 Block B pricing (D-89)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -46,6 +47,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-85** F7-S28 to S30 (beyond legacy, the founder's F8). **Pending review:** the two-window check drove cursors, drafts, a deduct, an undo and a shared count; the vertex conflict, six-section paste and three-item box delete were not driven tonight.
 - **D-86** F7-S31 Crop as New Page. **Pending review:** legacy's placement (after the last sheet of the source's folder) and legacy's uncalibrated crop replace the spec's AC1 and AC2 (after the source, at the source's scale); only Crop is built of legacy's region box entries.
 - **D-87** sign-in, sign-up and Settings at 1440×900. **Pending review:** the settings pages lose the app's top bar and the email banner (legacy's settings page has neither); Account sits as a fifth tab (legacy has no personal page); the sign-in refusal stays inline in the card, not legacy's toast; ten-character passwords stay.
+- **D-89** F9 pricing. **Pending review:** the arithmetic in the browser only, no Python twin yet (nothing on the api computes a cost until export, and D-70 forbids a new proof script); `unit_rate` and `waste_factor` kept, unread, until F9 closes.
 
 ## F9 answers to review
 
@@ -108,6 +110,11 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**F9 Block B (pricing)**
+1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
+2. Click a Wastage cell: legacy's dialog; LF 10 % to All line items lifts every LF line.
+3. Type Unit Equipment, then the Total Equipment lump: the other clears.
 
 **F9 Block A (Estimating tab)**
 1. In a takeoff, click the "Estimating" tab: "Estimating / Synced live from Takeoff.", the slate header, a "Base Bid" tab, one row per item with Item No. 1..N, the TOTAL row. Compare with legacy's tab side by side.

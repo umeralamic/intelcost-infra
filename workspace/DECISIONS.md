@@ -3565,3 +3565,40 @@ cost-type filter.
 - **Block A reads through the api's existing item, folder, layer, sheet, classification and
   subcontractor routes**; the row derivation and grouping are pure (`src/lib/estimate/`),
   hard rule 2.
+
+## D-89 — F9 Block B: legacy's rates on the line, computed in the browser
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend, Backend)
+**Serves:** F9-S3, S4, S5; D-09, D-50, D-88
+
+**Context:** Legacy prices a line with unit man-hours and a wage, a unit material cost,
+equipment as a unit rate or a lump (never both), a lump subcontract, and a wastage
+percentage (the line's own, else the project's per unit), all computed in the browser by
+`costing.ts`. D-09's line had one `unit_rate` and a `waste_factor` fraction. The spec's S3
+asked for a Python twin proved equal by a shared table, and D-70 forbids new scripted
+tests.
+
+**Decision:**
+- `estimate_line_item` gains legacy's inputs (`unit_man_hours`, `hourly_wage`,
+  `unit_material_cost`, `unit_equipment_cost`, `equipment_cost`, `subcontract_cost`,
+  `wastage_pct_override`, `notes`, `rate_review`), nullable, "not typed" reading as zero;
+  `estimate_unit_wastage (project, unit, pct)` holds the per-unit defaults. `unit_rate`
+  and `waste_factor` stay in the table, unread, until F9 closes, then go.
+- A measured item's line is made the first time it is priced; nothing is written by
+  reading the costs. `GET …/estimate/costs` for any member; `PATCH …/costs/{item}` and
+  `PUT …/wastage` for a seat that can edit takeoff or estimates (D-88 Q6), refused 403.
+  Unit and lump equipment exclude each other on the api as in the grid.
+- **The arithmetic is legacy's `costing.ts`, ported whole** to `src/lib/estimate/`
+  (components and shared equipment included, unused until they exist). **No Python twin
+  yet:** nothing on the api computes a cost until the export (Block E), and legacy builds
+  its workbook in the browser too; the twin, and its proof, wait for a need. No new
+  scripted test (D-70).
+- Events `estimate.line.changed` and `estimate.settings.changed` on the project topic;
+  every open tab refetches the costs (beyond legacy, whose wastage was not live).
+- The grid: legacy's editable cells (Unit Man Hours, Per Hour Wage, Unit Equipment, Total
+  Equipment as the lump, Unit Material Cost, Subcontract), commit on blur or Enter, "$",
+  "," and "%" stripped, Escape keeps the old value; the Wastage cell opens legacy's dialog
+  ("All line items", "This line item only — {name}", "Classification — {d}", "Scope —
+  {s}"); a parent rolls up its sub-items and stays out of group and grand totals.
