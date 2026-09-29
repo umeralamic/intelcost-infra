@@ -10,6 +10,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 import { APP, openBrowser } from "./lib/bench.mjs";
+import { COST_CASES } from "./lib/cost-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -22,6 +23,7 @@ if (process.env.GEN === "1") {
 const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
+let costs;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -38,6 +40,30 @@ try {
       return c.shapes.reduce((sum, s) => sum + q.quantityFor(c.type, pts(s.vertices), c.fpp, s.meta, page), 0);
     });
   }, CASES);
+  // The cost rows: F9's money through the app's own lib/estimate.
+  costs = await page.evaluate(async (cases) => {
+    const costing = await import("/src/lib/estimate/costing.ts");
+    const comps = await import("/src/lib/estimate/components.ts");
+    const alloc = await import("/src/lib/estimate/equipmentAllocation.ts");
+    return cases.map((c) => {
+      if (c.kind === "alloc") {
+        const r = alloc.allocateResource(c.res, c.hosts);
+        return { total: r.total, unallocated: r.unallocated, allocations: Object.fromEntries(r.allocations) };
+      }
+      const env = { parent: 0, qty: c.quantity };
+      return costing.computeLineCost({
+        quantity: c.quantity,
+        unit: c.unit,
+        input: c.input,
+        unitWastage: new Map(c.unitWastage ?? []),
+        share: c.share,
+        multiplier: c.multiplier,
+        components: (c.components ?? []).map((row) => comps.evaluateComponent(row, env)),
+        netQty: c.quantity,
+        equipmentAllocation: c.equipmentAllocation ?? null,
+      });
+    });
+  }, COST_CASES);
 } finally {
   await browser.close();
 }
@@ -53,6 +79,16 @@ for (const [i, c] of CASES.entries()) {
   if (c.expect !== undefined && (api === undefined || !close(api, c.expect))) wrong.push(`${c.id}: ${api}, expected ${c.expect}`);
 }
 if (python.size !== CASES.length) disagree.push(`${python.size} api answers for ${CASES.length} rows`);
+// Cost rows: every named figure to the cent against the hand-worked answer.
+const cent = (a, b) => typeof a === "number" && Math.abs(a - b) < 0.005;
+for (const [i, c] of COST_CASES.entries()) {
+  for (const [field, want] of Object.entries(c.expect)) {
+    const got = costs[i][field];
+    if (want !== null && typeof want === "object") {
+      for (const [k, v] of Object.entries(want)) if (!cent(got?.[k], v)) wrong.push(`${c.id}.${field}.${k}: ${got?.[k]}, expected ${v}`);
+    } else if (!cent(got, want)) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
+  }
+}
 
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
@@ -60,4 +96,6 @@ if (disagree.length || wrong.length) {
   console.log(`quantity table: ${disagree.length} disagree, ${wrong.length} wrong, of ${CASES.length} rows`);
   process.exit(1);
 }
-console.log(`quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; passed`);
+console.log(
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; passed`,
+);

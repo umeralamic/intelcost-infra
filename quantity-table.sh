@@ -2,7 +2,9 @@
 # The shared quantity table (D-68): run after the gates at the end of every block.
 # Hard rule 2's purity check on lib/takeoff, then the same shapes through the api's engine
 # (in the api container) and the browser's (in the bench's Chromium), compared row by row
-# and against the answers worked by hand. Takes seconds; needs the bench's app and api up.
+# and against the answers worked by hand. Then F9's cost rows (browser/lib/cost-cases.mjs):
+# rate × quantity, wastage, cost components and the shared-equipment spread, each against
+# a hand-worked answer to the cent. Takes seconds; needs the bench's app and api up.
 #
 #   ./quantity-table.sh      (from intelcost-infra/)
 
