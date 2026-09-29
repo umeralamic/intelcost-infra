@@ -3659,3 +3659,33 @@ components replaces that type's typed rate. The draft spec predates them.
   its host, opening its dialog.
 - **Not yet:** shared equipment (legacy's pooled equipment allocated across hosts), the
   components in the workbook, the formula field's autocomplete.
+
+## D-92 — F9-S10: format themes, the Default on the app's tokens
+
+**Date:** 2026-09-29
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend, Backend), design tokens (hard rule 4)
+**Serves:** F9-S10; D-88 Q7, D-90
+
+**Context:** Legacy's Format panel tunes the Estimating grid and the workbook: themes
+(Default read-only, Workspace for owners and admins, My formatting, teammates' published
+ones), fonts, sizes, row heights, colours per header species, zebra, bold parents, grid
+lines, decimals, thousands. Legacy's Default carries fixed hex colours; its own rule is
+that `null` means "follow the design token".
+
+**Decision:**
+- `estimate_format_theme`: one workspace theme (no owner) and one per person, who may
+  publish it; `GET` and `PUT …/estimate-format(/mine|/workspace)`, the workspace one on
+  `canManageWorkspace`; `estimate.format.changed` on the workspace topic.
+- **The Default theme is the app's own look:** every colour `null`, so the grid follows
+  the tokens in light and dark; only a colour a person picks is stored, as theme data.
+  No colour literal in a component (the picker is uncontrolled). The workbook uses the
+  theme's colours where set and legacy's default workbook palette elsewhere (D-90).
+- `src/lib/estimate/format.ts` (pure) holds the model, defaults and `mergeFormat`; the
+  panel is legacy's sections in a reduced set: font, header and data sizes, item, group
+  and column-header heights, fill and text per header species and parent rows, bold
+  parents, zebra, thousands, grid lines (All, Horizontal, Vertical, Outside only, None),
+  decimals. Edits save 400 ms after the last; the chosen theme is per project in the
+  browser.
+- **Not yet:** legacy's border weight and colour, spacer and grand-total heights, column
+  widths in the theme, per-size intents.
