@@ -151,6 +151,21 @@ export const COST_CASES = [
     expect: { totalMaterialCost: 250, itemCost: 250 },
   },
 
+  // --- The workbook keeps a formula only when it gives the app's figure (legacy's) ------
+  // Row 2, typed rates: 40 LF + 10 % = 44 × $3 = $132; Total Material's formula (44 × 3)
+  // and Item Cost's (0 + 0 + 132 + 0) both hold. Row 3, a $50 lump material component:
+  // Total Material is $50 but 44 × $0 = 0, so its formula is dropped for the value; Item
+  // Cost's sum (0 + 0 + 50 + 0 = 50) still holds.
+  {
+    id: "workbook-verified-formulas",
+    kind: "workbook",
+    rows: [
+      { qty: 40, wastage: 0.1, qty_wastage: 44, multiplier: 1, total_qty: 44, unit_material: 3, total_material: 132, item_cost: 132 },
+      { qty: 40, wastage: 0.1, qty_wastage: 44, multiplier: 1, total_qty: 44, unit_material: null, total_material: 50, item_cost: 50 },
+    ],
+    expect: { typedMaterialFormula: true, typedItemCostFormula: true, lumpMaterialFormula: false, lumpItemCostFormula: true, lumpMaterialValue: 50 },
+  },
+
   // --- Shared equipment, spread to the cent ----------------------------------------------
   // $100/day, 1 h each on three hosts: 3 h → 1 day → $100.00 = 10,000 cents; a third is
   // 3,333.33 each; floors 9,999, the last cent to the first of the tie: 33.34, 33.33, 33.33.

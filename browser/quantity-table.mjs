@@ -46,10 +46,19 @@ try {
     const comps = await import("/src/lib/estimate/components.ts");
     const alloc = await import("/src/lib/estimate/equipmentAllocation.ts");
     const envs = await import("/src/lib/estimate/componentEnv.ts");
+    const workbook = await import("/src/lib/estimate/workbook.ts");
     return cases.map((c) => {
       if (c.kind === "alloc") {
         const r = alloc.allocateResource(c.res, c.hosts);
         return { total: r.total, unallocated: r.unallocated, allocations: Object.fromEntries(r.allocations) };
+      }
+      if (c.kind === "workbook") {
+        const keys = ["qty", "wastage", "qty_wastage", "multiplier", "total_qty", "unit_mh", "total_mh", "wage", "labor_cost", "unit_equipment", "equipment", "unit_material", "total_material", "subcontract", "item_cost"];
+        const cols = keys.map((key) => ({ key, label: key, width: 60, kind: key === "wastage" ? "pct" : "money" }));
+        const rows = c.rows.map((values, i) => ({ kind: "item", depth: 0, itemKey: String(i), parentKey: null, parent: false, context: false, unitEquipment: false, values, color: null }));
+        const ws = Object.values(workbook.buildWorkbook([{ name: "T", banner: null, rows }], cols, { formulas: true, grids: false, grouping: false }).Sheets)[0];
+        const at = (key, row) => ws[String.fromCharCode(65 + keys.indexOf(key)) + row];
+        return { typedMaterialFormula: Boolean(at("total_material", 2)?.f), typedItemCostFormula: Boolean(at("item_cost", 2)?.f), lumpMaterialFormula: Boolean(at("total_material", 3)?.f), lumpItemCostFormula: Boolean(at("item_cost", 3)?.f), lumpMaterialValue: at("total_material", 3)?.v };
       }
       if (c.kind === "env") {
         const ctx = { items: envItems, scales: envs.sheetScales([envSheet]), vars: new Map(c.vars) };
@@ -93,6 +102,8 @@ for (const [i, c] of COST_CASES.entries()) {
     const got = costs[i][field];
     if (want !== null && typeof want === "object") {
       for (const [k, v] of Object.entries(want)) if (!cent(got?.[k], v)) wrong.push(`${c.id}.${field}.${k}: ${got?.[k]}, expected ${v}`);
+    } else if (typeof want === "boolean") {
+      if (got !== want) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
     } else if (!cent(got, want)) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
   }
 }
