@@ -51,6 +51,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `20aaa38`: a sub-item's Qty exports as a live Excel expression (legacy's `toExcelExpression`)
 - react `53899e9`: the frozen header draws its own dividers (legacy's flicker fix)
 - react `878e6e6`: Format's Grid & borders, empty and total row heights, tab colour
+- react `ea65f6f`: Format row heights per header species and for sub-items
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -114,6 +115,9 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 
 ## Failures and findings
 
+- **A Format edit was lost once (02:05):** Classification header 32 then Sub-item rows 28, back to back in the smoke; the first held, the second showed 20. Tried again (Scope 26 then Sub-item 30, and Sub-item 34 alone) it held every time; the panel keeps a draft at once and saves 400 ms after the last edit, so no cause was found. Watch for it in the click check.
+- **"Group headers" could not be retyped (02:10):** once the species differed it still showed the old shared height, so typing that same number changed nothing. It now reads "mixed" when they differ (`ea65f6f`).
+
 - **Colleagues' pointers were sent but never drawn (found 20:40).** F8 wired the sending; nothing rendered them on the new canvas. Built as S28.
 - **app-b was stale (20:45):** its image predated `polygon-clipping` and showed a Vite error; rebuilt.
 - **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
@@ -157,6 +161,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 17. Export with formulas, open in Excel: a sub-item's Qty cell is a formula (a derived volume reads like 165.95*2*4/27); change a number in it and the row, its parent and TOTAL follow.
 18. With the header frozen, scroll a long estimate quickly: the header's column lines stay steady, no white flashes.
 19. Format → My formatting → Grid & borders: Line weight Medium, a Line color, the three switches; the grid follows at once, and an export carries the weight and colour. Colours → Layer tab colours the open tab.
+20. Format → Row heights: change Classification header or Sub-item rows alone; only those rows move. "Group headers" reads "mixed" until you set them all.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
