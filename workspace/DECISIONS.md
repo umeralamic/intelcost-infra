@@ -3689,3 +3689,32 @@ that `null` means "follow the design token".
   browser.
 - **Not yet:** legacy's border weight and colour, spacer and grand-total heights, column
   widths in the theme, per-size intents.
+
+## D-93 — F9 Block B: shared equipment, legacy's
+
+**Date:** 2026-09-29
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend, Backend)
+**Serves:** F9 Block B ("Live legacy since the draft"); D-91
+
+**Context:** Live legacy (`UmeralamDEV`) prices a machine shared by several items once:
+rate × rental (the override, else usage rounded up to the basis) + mob/demob, spread over
+the items in its home division and extras (optionally one subcontractor's) by usage
+hours, quantity (one unit only) or manual percentages, rounded to the cent by largest
+remainder; what is not spread is an Unallocated row. A host's share is additive lump
+equipment.
+
+**Decision (legacy's):**
+- `project_equipment_resource` (names unique in the project ignoring case and spaces)
+  and `project_equipment_usage` (per host: a usage formula or hours, a manual %, excluded,
+  the last acknowledged share); writes on the pricing gate, `estimate.settings.changed`.
+- `equipmentAllocation.ts` and `sharedEquipment.ts` ported whole; membership and the
+  allocation are computed in the browser, never stored. Usage reads legacy's order: the
+  typed hours, else the host's labour crew-hours, else the formula over `QTY`.
+- The grid: "Shared equipment" in the toolbar opens legacy's dialog; each host's share is
+  added to its equipment; "Expand components" shows "Shared — {machine}" under a host;
+  "Unallocated — {machine}" rows sit in a "Shared equipment — unallocated" group at the
+  foot of the grid and count in its TOTAL. **Differs:** legacy places an Unallocated row
+  in its home division's group; here they are gathered at the foot (pending review).
+- **Not yet:** the Sheet pivot's pseudo-sheet, the workbook's shared and unallocated rows,
+  assemblies' pending equipment links.

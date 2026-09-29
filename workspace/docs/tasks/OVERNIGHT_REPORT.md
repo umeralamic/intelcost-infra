@@ -41,6 +41,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `335d48a`: F9-S11 Export to Excel (D-90)
 - fastapi `19bbdb5` and react `a56d259`: F9 cost components (D-91)
 - fastapi `4fe7e8a` and react `0893afb`: F9-S10 format themes (D-92)
+- react `e12b0af`: column widths and Freeze Header; fastapi `94c6277` and react `b09707a`: shared equipment (D-93)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -57,6 +58,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-90** F9 export. **Pending review:** built in the browser with legacy's `xlsx-js-style` (a new dependency, loaded only on export); the workbook's colours are legacy's constants in `workbook.ts`, not tokens (a file cannot read CSS).
 - **D-91** F9 cost components (legacy's since the draft). **Pending review:** `QTY` added to F6's formula engine for component envs only; shared equipment not built.
 - **D-92** F9 format themes. **Pending review:** the Default theme is the app's token look (legacy's Default is fixed hex); only colours a person picks are stored; a reduced panel (no border weight or colour yet).
+- **D-93** F9 shared equipment (legacy's since the draft). **Pending review:** Unallocated rows gathered at the foot of the grid rather than in their home division's group.
 
 ## F9 answers to review
 
@@ -130,6 +132,8 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 7. Right-click a row → Add cost component → Labor: a crew, a production rate, the total as you type; the row's labour becomes read-only; "Expand components" lists it under the row.
 8. Two browsers, two people: one types a rate while the other changes the quantity; both rows end on the same Item Cost.
 9. Format → Customise as My formatting → change the font, a header colour, zebra: the grid follows at once and after a reload; Export carries the same look.
+10. Shared equipment → a machine over a division: usage per item ("8", "2d" or a formula), the total spread to the cent; what is not spread shows as "Unallocated — {machine}" and in TOTAL.
+11. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
