@@ -17,8 +17,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | Done | 20:13 | 21:17 | 64 min |
 | 3 | Close F7 in speed mode | **Built, awaiting your click check** (spec not archived, as asked). S1 to S31 built, every block smoke-tested through the MCP with the quantity table green (D-70, D-78); PARITY §10 35 ticked, 21 open (Snap PDF, deduct pairing by click, vertex handles, zoom glitches, reference pane and the other lines each waiting for their owner); board, backlog, mirror, backup `E:\Intelcost-backup\2026-09-28_2125-f7-built`. Not driven: the vertex conflict, six-section paste, three-item box delete, S31 AC3 in two windows | 21:17 | 21:27 | 10 min |
 | 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Done (D-87). Legacy's mark, auth frame and words; Settings' own bar, heading, Editing workspace card, pill tabs with inner rows; legacy's cards for General, Members, Roles, Ownership and the Project Setup screens | 21:27 | 21:50 | 23 min |
-| 5 | F9 Block A | Not started | | | |
-| 6 | F9 Block B onwards | Not started | | | |
+| 5 | F9 Block A | Done. Spec adopted as `estimating_tasks.md` with the ten answers (D-88); live legacy compared (its newer cost components, shared equipment and cost filter written into the spec); the Estimating tab's grid built and smoke-tested | 21:50 | 22:20 | 30 min |
+| 6 | F9 Block B onwards | In progress | 22:20 | | |
 
 ## Commits
 
@@ -32,6 +32,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `ae16713` and fastapi `298a8a6`: F7-S31 Crop as New Page (D-86)
 - infra `c5062a6`: F7 closed (board, backlog, PARITY), workspace mirror
 - react `9e8917b`: sign-in, sign-up and Settings matched to legacy (D-87)
+- infra `30be921`: task 4 docs, workspace mirror
+- react `0026d5f`, `2e78dca`: F9 Block A, the Estimating tab's grid (D-88)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -46,6 +48,21 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-87** sign-in, sign-up and Settings at 1440×900. **Pending review:** the settings pages lose the app's top bar and the email banner (legacy's settings page has neither); Account sits as a fifth tab (legacy has no personal page); the sign-in refusal stays inline in the card, not legacy's toast; ten-character passwords stay.
 
 ## F9 answers to review
+
+All ten in legacy's favour, D-88, decided overnight and pending your review. Where the draft recommended otherwise it is said:
+
+1. **Markups and a bid total:** none in F9 (legacy's tab stops at the summed Item Cost). Same as the draft.
+2. **Proposal, PDF, CSV:** Excel only. Same as the draft.
+3. **Money in the browser:** plain numbers as legacy, unrounded until display; the Python twin in floats, same order. *Draft: a decimal type.*
+4. **`unit_rate`:** retired for legacy's four cost columns. Same as the draft.
+5. **Manual lines:** legacy's, a takeoff item with no shape and an override "Manual line", also in the Takeoff panel. *Draft: D-09's first-class manual line.*
+6. **Who may price:** every seat that can edit takeoff or estimates, as legacy lets them; export for every member. *Draft: `canEditEstimates` only, export on `canExportProposals`.*
+7. **View state:** in the browser per project, the V<n> export counter included. *Draft: the counter on the project.*
+8. **Same-name groups:** merge, as legacy. *Draft: by node.*
+9. **Sheet pivot:** legacy's prorating as it is. *Draft: prorate every column, sub-items on each sheet.*
+10. **Currency:** USD, en-US. Same as the draft.
+
+Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intelcost/` checkout; its cost components, shared equipment and cost-type filter are in the spec now (Block B).
 
 ## Legacy differences fixed
 
@@ -65,6 +82,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **Header:** legacy's Share (project sharing), Upgrade and work timer are not built (no feature owns them yet); the Open dialog's "Set up takeoff on existing project" tab is Project Home's load flow here; its list shows every project (the list carries no sheet count).
 - **Settings waiting for their features:** Trace (F12), Snap PDF, the legend, Ctrl+F browser find, main tab text size, two-line sheet names, folder/sheet/bookmark row text, Rendering; Hover and Cursor are taken up tonight with S25 and S26.
 - **Whole page (E):** the toolbar's Print, Find Text, Dimension, Snapshot, Dock, Overlay, Highlight, Note, Fullscreen, Split; the Earthwork, Collaborator, Estimating and Community tabs; Snap PDF; "Takeoff | Assemblies"; Share; the Sheets panel's folder actions and tree guides: each waits for the feature that owns it (D-83).
+- **Estimating (F9 Block A):** Format, Export, Shared equipment, Expand components, the row and header menus, column widths by drag, and every cost figure wait for Blocks B to E; the group row's "MH · cost" reads "—" until Block B; legacy's per-theme fonts and fills are Block E's Format.
 - **Settings (task 4):** Shifts and Time Tracking (F15), AI Credits (F14), Brand accent color (the proposal PDF, F10), the members' Shift column (F15) are not built; the transfer keeps F3's type-the-name confirmation instead of legacy's click-to-choose list; our members rows keep email and last activity (F3-S11); Collaboration, Activity and Account are ours, beyond legacy; the sign-in refusal is inline (F2's `AuthFormError` tells a network block from a wrong password) rather than a toast; ten-character passwords (F2); no "Clear cached session" (D-17). The app bar on the dashboard and project pages (out of scope tonight) still differs from legacy's (Library, Settings, email).
 - **Region box menu (S31):** legacy's tool strip (name an item from the box), Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image, Search as Text and New Snapshot are not built; their owners are F11 to F14 (spec, "Not in F7"). A box that encloses markups selects them (S14) instead of opening the menu.
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
@@ -75,6 +93,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **app-b was stale (20:45):** its image predated `polygon-clipping` and showed a Vite error; rebuilt.
 - **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
 
+- **Our `intelcost/` checkout is not live legacy (21:55).** Live legacy runs the `UmeralamDEV` branch, 161 commits past the local `umer-dev`/`main` at `12dd119b` (2026-09-24): the Estimating tab there has cost components, shared equipment and a cost-type filter the local source lacks. Read tonight with `git show origin/UmeralamDEV:<path>` after a fetch, no branch moved. Worth deciding which branch is the "source of truth" in CLAUDE.md.
 - **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
 - **S31 AC3 not driven in two windows:** the crop publishes `drawing.sheet.changed` like every Load; B's panel was not watched tonight.
 
@@ -89,6 +108,12 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**F9 Block A (Estimating tab)**
+1. In a takeoff, click the "Estimating" tab: "Estimating / Synced live from Takeoff.", the slate header, a "Base Bid" tab, one row per item with Item No. 1..N, the TOTAL row. Compare with legacy's tab side by side.
+2. Group by each choice; "All layers in one tab" adds the Layer column and the layer as the outer group.
+3. File one sub-item under a classification: its parent follows it there in bold.
+4. Click "Labor": the FILTERED banner, the other cost columns hide.
 
 **Task 4 (sign-in, sign-up, Settings)**
 1. Sign out and open the sign-in page: the orange IC tile and "Intelcost" top left, "Welcome back" in the card, "Forgot password?" beside Password. Sign up reads "Start your free trial" with Job title second.

@@ -3528,3 +3528,40 @@ Subcontractors, Statuses) · AI Credits · Trash, each section a titled card.
   Shift column (F15); legacy's click-to-choose transfer list (ours keeps F3's type-the-
   name confirmation); the row shapes inside our members list (email and last activity,
   F3-S11).
+
+## D-88 — F9 adopted: the ten questions answered in legacy's favour
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend, Backend)
+**Serves:** F9, all blocks
+
+**Context:** The overnight instructions: adopt `estimating_tasks.DRAFT.md` as
+`docs/tasks/estimating_tasks.md`, answer its open questions in legacy's favour, compare
+legacy's Estimating tab first, then build. Live legacy (`UmeralamDEV`, 161 commits past
+the local checkout) has moved on since the draft: cost components, shared equipment and a
+cost-type filter.
+
+**Decision (each legacy's behaviour; the draft's differing recommendation in brackets):**
+1. No markups or bid total in F9.
+2. Excel only.
+3. Plain numbers (IEEE doubles) in `costing.ts`, floats in the Python twin, the same
+   order of operations; rounding for display only. [a decimal type]
+4. `unit_rate` retires for legacy's material, equipment, labour and subcontract columns.
+5. Manual lines are legacy's: a takeoff item with no shape and a quantity override
+   "Manual line", in the anchor's folder. [D-09's first-class manual line]
+6. Pricing for every seat that can edit takeoff or estimates (`canEditTakeoff` or
+   `canEditEstimates`), refused 403 otherwise; export for every member.
+   [`canEditEstimates`; export on `canExportProposals`]
+7. Presentation state in the browser per project, the "V<n>" export counter included.
+   [the counter on the project]
+8. Sibling groups with the same name merge. [group by node]
+9. The Sheet pivot as legacy's: lumps prorated by the sheet's share, parents' roll-up
+   whole on each sheet, sub-items on the parent's first sheet.
+10. USD, en-US.
+- **Scope grows with live legacy:** cost components, shared equipment and the cost-type
+  filter join the spec ("Live legacy since the draft"); the filter's row and column
+  behaviour lands with Block A's toolbar, its money with Block B.
+- **Block A reads through the api's existing item, folder, layer, sheet, classification and
+  subcontractor routes**; the row derivation and grouping are pure (`src/lib/estimate/`),
+  hard rule 2.

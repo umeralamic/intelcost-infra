@@ -485,11 +485,11 @@ sibling panel reads as a bug to an estimator.
 
 The Estimating tab. `src/components/estimate/ProjectEstimatingView.tsx` (5,138 lines).
 
-- [ ] The estimate table lists every takeoff item, synced live from Takeoff, with parent items bold and sub-items in takeoff order. `src/components/estimate/ProjectEstimatingView.tsx` · **missing** (the api has `estimate_line_item` CRUD per D-09; no screen)
+- [x] The estimate table lists every takeoff item, synced live from Takeoff, with parent items bold and sub-items in takeoff order. `src/components/estimate/ProjectEstimatingView.tsx` · **ported** (F9 Block A, D-88, 2026-09-28: `lib/estimate/lines.ts` derives the rows from the takeoff screen's own queries, legacy's exclusions and order, Item No. 1..N; a classification set from outside the tab regrouped it without a reload) · *smoke-tested (D-70)*
 - [ ] Enter Rate, Unit Material Cost, Unit Man Hours, Unit Equipment and Per Hour Wage per line, and see Item Cost, Total Material Cost, Total Labor Cost, Total Man Hours, Total Equipment and TOTAL computed. `src/components/estimate/ProjectEstimatingView.tsx`, table `estimating_line_costs` · **missing**
 - [ ] Entering a rate does not reload the table. `.lovable/plan/stop-the-estimating-table-reloading-on-every-rate-entry-2026-08-11.md` · **missing**
 - [ ] Set a wastage percentage on one line or on every line, and see Qty with Wastage and Total Qty. `src/components/estimate/WastageDialog.tsx`, table `estimating_unit_wastage` · **missing**
-- [ ] Group by classification, layer, folder, subcontractor, or nothing, from one Group by control. `src/components/estimate/ProjectEstimatingView.tsx` · **missing**
+- [x] Group by classification, layer, folder, subcontractor, or nothing, from one Group by control. `src/components/estimate/ProjectEstimatingView.tsx` · **ported** (F9 Block A, D-88: live legacy's one select, "Group rows by" Classification, Custom Folder, Scope, Sub-scope, Level 4, Subcontractor, Sheet, and "Layer tabs" Main layer per tab or All layers in one tab; sibling groups of one name merge, D-88 Q8) · *smoke-tested (D-70)*
 - [ ] Group headers carry summary text that follows the header's text colour, with a spacer row before each and blank spacer rows around parent blocks. `src/components/estimate/ProjectEstimatingView.tsx` · **missing**
 - [ ] Add, rename and remove custom columns. `table estimate_custom_columns`, `estimate_custom_values` · **missing**
 - [ ] Add a Subcontract column and assign subcontractors per line, grouped by division. `src/components/estimate/SubcontractorsDialog.tsx` · **missing**
@@ -498,21 +498,21 @@ The Estimating tab. `src/components/estimate/ProjectEstimatingView.tsx` (5,138 l
 - [ ] Edit layer and folder multipliers from the estimating tab. `src/components/estimate/ProjectEstimatingView.tsx` · **missing**
 - [ ] Leave a comment on a line and read it back. rpc `set_estimating_line_comment` · **missing**
 - [ ] Show a line's change history, with who modified it and when. `src/components/estimate/ItemHistoryDialog.tsx` · **missing**
-- [ ] "Go to markup" and "Go To Page" jump from an estimate row to the measurement on the sheet. `src/components/estimate/ProjectEstimatingView.tsx` · **missing**
+- [ ] "Go to markup" and "Go To Page" jump from an estimate row to the measurement on the sheet. `src/components/estimate/ProjectEstimatingView.tsx` · **partial** (F9 Block A: the Takeoff Ref. opens the item's first page; the row menu's "Go To Page" and "Go to markup" come with Block C)
 - [ ] The format panel sets fonts, text and fill colours per header type, row heights in px per row type, decimals, thousands separator, zebra striping, grid lines, borders, frozen main header and tab colour. `src/components/estimate/FormatPanel.tsx`, table `estimating_format_themes` · **missing**
 - [ ] A format theme saves as "My formatting" or as the workspace format, and survives a refresh. `src/hooks/useEstimatingFormat.ts` · **missing**
 - [ ] Export to a live formula workbook, choosing visible or all columns and rows, grouping on or off, formulas on or off, grid lines on or off, and all layers in one tab or one tab per main layer. `src/components/estimate/ExportOptionsDialog.tsx` · **missing**
 - [ ] Live Excel formulas are written for derived sub-items, so the workbook recalculates. `.lovable/plan/live-excel-formulas-for-derived-sub-items-2026-09-03.md` · **missing**
 - [x] A deleted takeoff item orphans its priced line rather than deleting it, and the line renders flagged. D-09, `src/components/estimate/ProjectEstimatingView.tsx` · **retired by D-50 (the founder, 2026-09-27)**: a deleted item's estimate line is deleted with it, so the estimate never shows a quantity that nothing measures. The delete's confirm names the item first. Driven by `f5-s14` AC3: after a sheet delete, the deleted items' lines are gone
-- [ ] Changes by another estimator reach an open estimate live. `src/components/estimate/ProjectEstimatingView.tsx` · **missing** (D-10)
+- [ ] Changes by another estimator reach an open estimate live. `src/components/estimate/ProjectEstimatingView.tsx` · **partial** (D-10; F9 Block A: takeoff's item events reach the tab, a classification set from outside regrouped it live; the estimate's own events come with Block B)
 
 **Table presentation**
 
-- [ ] Parent rows are bold, sub-items sit in takeoff order beneath them, and a parent row always follows its own sub-items when the sort changes. `.lovable/plan/parent-items-bold-sub-items-in-takeoff-order-estimating-tab-2026-08-08.md`, `.lovable/plan/parent-rows-follow-their-sub-items-in-the-estimating-tab-2026-08-08.md` · **missing**
+- [x] Parent rows are bold, sub-items sit in takeoff order beneath them, and a parent row always follows its own sub-items when the sort changes. `.lovable/plan/parent-items-bold-sub-items-in-takeoff-order-estimating-tab-2026-08-08.md`, `.lovable/plan/parent-rows-follow-their-sub-items-in-the-estimating-tab-2026-08-08.md` · **ported** (F9-S1: a parent leaves a group none of its sub-items reached, and a bold copy stands above them where they are; Rebar filed under DIV 03 took a bold Slab with it) · *smoke-tested (D-70)*
 - [ ] Blank spacer rows sit around parent blocks, and a spacer precedes each group header, with the total row matching. `.lovable/plan/blank-spacer-rows-around-parent-blocks-estimating-tab-2026-08-08.md`, `.lovable/plan/estimating-tab-spacer-before-group-headers-total-row-matches-2026-08-24.md` · **missing**
 - [ ] Format colours are set separately for classification, scope and custom folder headers, one colour per real header type. `.lovable/plan/format-colors-separate-classification-scope-and-custom-folde-2026-08-17.md`, `.lovable/plan/format-panel-one-color-per-real-header-type-2026-08-17.md` · **missing**
 - [ ] The frozen header's column divider lines do not flicker white while scrolling. `.lovable/plan/fix-frozen-header-s-column-divider-lines-flicker-white-while-2026-08-24.md` · **missing**
-- [ ] Unselected layer tabs stay visible in the Estimating tab. `.lovable/plan/plan-make-unselected-layer-tabs-visible-in-estimating-2026-08-24.md` · **missing**
+- [x] Unselected layer tabs stay visible in the Estimating tab. `.lovable/plan/plan-make-unselected-layer-tabs-visible-in-estimating-2026-08-24.md` · **ported** (F9-S2: the open tab in the header slate, the others muted and readable) · *smoke-tested (D-70)*
 - [ ] Keeping an existing rate when the unit changes is offered rather than assumed. `src/components/estimate/ProjectEstimatingView.tsx` ("Keep this rate for the new unit") · **missing**
 
 ## 12. Assemblies
@@ -644,7 +644,7 @@ The Earthwork tab. `src/lib/takeoff/earthwork/`.
 - [ ] Recompute upserts on the key (project, sheet, region, role), so quantities update in place and no duplicates appear; a removed region's items are deleted and their estimate lines follow. `src/lib/takeoff/earthwork/computeToItems.ts` · **missing**
 - [ ] Materialised items land in the same folder as the inputs on that sheet. `src/lib/takeoff/earthwork/defaultFolder.ts` · **missing**
 - [ ] Earthwork rows sort in one canonical order shared by the Takeoff panel, the per-sheet list and the Estimating tab: source inputs, then Topsoil Stripping, then Topsoil Export, then labelled region Cut and Fill. `src/lib/takeoff/earthwork/sortRank.ts` · **missing**
-- [ ] Source inputs (boundary, contours, spots) are excluded from the estimate mirror so they never surface in the Estimating tab, which is why the Scope column is empty for them. `src/lib/takeoff/earthwork/sortRank.ts`, `.lovable/plan/why-the-scope-column-is-empty-for-the-earthwork-rows-2026-08-08.md` · **missing**
+- [ ] Source inputs (boundary, contours, spots) are excluded from the estimate mirror so they never surface in the Estimating tab, which is why the Scope column is empty for them. `src/lib/takeoff/earthwork/sortRank.ts`, `.lovable/plan/why-the-scope-column-is-empty-for-the-earthwork-rows-2026-08-08.md` · **partial** (F9-S1: boundary, contour and spot elevation items and the Earthwork Markups folder never reach the Estimating rows; not driven, no earthwork on the bench yet)
 - [ ] The Calculate snapshot persists per (project, sheet) across refresh, tab switch and sheet switch, and a stale result is flagged by comparing the persisted version key against the live one. `src/lib/takeoff/earthwork/resultsStore.ts` · **missing**
 
 ## 17. Auto Count
