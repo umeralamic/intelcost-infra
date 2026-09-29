@@ -3369,3 +3369,30 @@ and "Close without saving?". Workspace settings are a separate page on the serve
   text size, two-line sheet names, panel text for folder, sheet and bookmark rows, and
   Rendering.
 - Legacy's Ortho hint says "horizontal / vertical"; it steps by 45°, and ours says so.
+
+## D-83 — Round 2, group E: the whole takeoff page against legacy's
+
+**Date:** 2026-09-28
+**Status:** Accepted (round 2, matched to legacy); decided overnight, pending founder review
+**Area:** Takeoff, Frontend
+**Serves:** the founder's round-2 finding E17
+
+**Context:** Both pages screenshotted at 1440×900 in the same project state, and their
+headers, tabs, toolbar, panels, canvas corners and footers listed side by side.
+
+**Decision (fixed):** legacy's workspace tab strip under the header (`TakeoffTabs.tsx`,
+"Takeoff" until the next tab's screen exists, sized by Settings › General); the Sheets
+header ("Sheets", Collapse one level, Expand one level, "Add pages or folder", Panel
+options) on legacy's muted band, and the Takeoff header on the same band; the open
+sheet's items shown in the Sheets panel; the Takeoff panel's width taken from the room
+right of the Sheets column (28%, legacy's 324 px at 1440); the status bar always there;
+row quantities and units at legacy's 9 px, names never narrower than 50 px.
+
+**Left different, with reasons:** the toolbar's Print, Find Text, Dimension, Snapshot, Dock,
+Overlay, Highlight, Note, Fullscreen and Split (their features: F11 markup and evidence,
+Find Text, print and view features, none built); the tabs Earthwork (F12), Collaborator
+(F11), Estimating (F9, added when its screen exists) and Community; "Snap PDF: Off" in the
+canvas bar (Snap PDF not built); "Takeoff | Assemblies" (P-09); the header's Share,
+Upgrade and work timer; the Sheets panel's folder actions (New subfolder, Move folder to…,
+Rename folder, Delete folder) and dotted tree guides (F5's Sheets panel follow-ups, as the
+first comparison listed); the sheet row's menu entries owned by later features.
