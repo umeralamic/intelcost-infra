@@ -4090,3 +4090,58 @@ neighbour, 133 to 169 ms for a far sheet hovered 300 ms before the click, 460 to
 far sheet reached without a hover (the old sheet on screen meanwhile; the decode is 70 to
 200 ms on the bench's software renderer, legacy measured 21 to 44 ms on real machines). Most
 of what is left is the click's own React render, 80 to 120 ms on the bench.
+
+---
+
+## D-102 — 100% is 170 CSS px per inch of sheet; zoom runs 10% to 4000% (amends D-35)
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's round 5, item 2); the choices marked below are decided,
+pending founder review
+**Area:** Takeoff, Frontend
+**Amends:** D-35 (its 50% to 4000% of the fitted width)
+
+**Context:** 100% was "the page's width fits the canvas", so it moved with the window and
+the panels, and Fit read 81% on the founder's second monitor (2560 × 1440 at 125%) where
+zzTakeoff reads 22%. The founder: set our 100% so the same sheet fits at about 20% there,
+today's 100% × about 4.05, a fixed px-per-inch baseline in CSS px, independent of the
+device pixel ratio; display only; 10% to 4000%.
+
+**Decision:**
+- **100% = 170 CSS px per inch of sheet** (`PX_PER_INCH`, 170 / 72 px per PDF point). On
+  that monitor (a maximised window, about 2048 × 1050 CSS px) a 36 × 24 in sheet fits at
+  34 px per inch across our default panels (1223 CSS px of page), and at 34.2 in the
+  founder's layout, where the height binds and Fit read 81%: 20% either way (4.05 × 42 px per
+  inch is 171). Independent of the device pixel ratio: the bitmap under it still follows the
+  screen's ratio.
+- **Display only.** Every stored coordinate stays normalised to the page and every quantity
+  reads PDF points; nothing measured reads the zoom. Markup sizes keep today's look: they
+  taper with the page's width over the canvas's width (the old zoom), not with the new
+  percentage, so a mark or stroke is the size it was at every view.
+- **Range 10% to 4000%,** from `lib/takeoff/pdf/zoom`. *Pending founder review:* the floor is
+  lowered to a sheet's fit when its fit is below 10% (a 48 × 36 in sheet in a 1440 × 900
+  window fits at about 9.6%), so Fit is always inside the range, as the founder asked.
+- **Steps.** *Pending founder review:* one press of zoom in or out is × 1.25 at every zoom
+  (legacy's step above 2×); legacy's + 0.25 below 2× would jump from 20% to 45%.
+- **The 0 key zooms to fit** (*pending founder review*): legacy's 0 reset to its 100%, the
+  fitted width, which is Fit's picture, not the new 100%.
+- **Windowing** stays where it was on screen: only the visible window is drawn once the
+  page is more than 2.5 times the canvas's width.
+
+---
+
+## D-103 — The zoom menu, from either zoom percentage
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's round 5, item 3); placement decided, pending founder
+review
+**Area:** Takeoff, Frontend
+
+zzTakeoff opens a zoom menu from its percentage. Ours: **Zoom to Fit, 100%, 50%, 25%, 10%**
+(on D-102's baseline), the level in force marked. A level zooms around the view's centre
+(the page point there stays there) and draws sharp as every zoom does; Fit is the canvas's
+own `fit`.
+
+*Pending founder review:* where it opens. The bottom-right zoom cluster gains the
+percentage as its top button, always shown; the canvas's top-right percentage, shown for two
+seconds after a zoom (diff #16), becomes clickable and opens the same menu.
