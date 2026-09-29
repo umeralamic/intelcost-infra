@@ -104,6 +104,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** high.
 
 ### 7. Earthwork: Strip Areas replace the per-sheet strip thickness — **not built (F12 must start here)**
+- **Written into F12's starting point** (2026-09-29): [drafts/earthwork_tasks.DRAFT.md](drafts/earthwork_tasks.DRAFT.md); not built.
 - **Legacy:**
   - A sheet holds several Strip Areas, each with its own depth. The source is one of four:
     chosen Site Features, the whole boundary, "Remaining Site within Boundary", or a drawn
@@ -124,6 +125,7 @@ to schedule._
 - **Maps to:** F12. **Importance:** high for F12's spec.
 
 ### 8. Earthwork: Site Features are the only source of depth, with undercut and prep — **not built**
+- **Written into F12's starting point** (2026-09-29); not built.
 - **Legacy:**
   - A "Site Features" button before EG/FG asks for a name, a colour, "Proposed Grade to
     Subgrade Depth", and then, optionally, undercut (depth, extend beyond edge,
@@ -142,6 +144,7 @@ to schedule._
 - **Maps to:** F12. **Importance:** high for F12.
 
 ### 9. Earthwork: new estimate lines, CSI codes and a shrink-aware net balance — **not built**
+- **Written into F12's starting point** (2026-09-29); not built.
 - **Legacy** (`computeToItems.ts` 9de4583f):
   - **Strip lines:** each Strip Area gives "Strip Topsoil (d) — name" in BCY, plus a
     destination line: Haul Off / Stockpile in LCY (× swell), Re-use as Topsoil Fill in
@@ -168,6 +171,7 @@ to schedule._
 ## Then
 
 ### 11. Item "Costs…" lets you type rates that components override — **differs**
+- **Fixed 2026-09-29** (D-96, react `cc4bc26`).
 - **Legacy:** `ItemCostsGrid.tsx` (80681d4b) and `SubItemDialog.tsx` (c6a4d4bc, ce554963)
   show component-derived fields read-only and italic, titled "From components" ("—" with
   no quantity).
@@ -176,6 +180,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** medium.
 
 ### 12. Deleting a sub-item always asks, naming the components it takes — **differs**
+- **Fixed 2026-09-29** (D-96, react `cc4bc26`).
 - **Legacy:** one prompt, "Delete sub-item? / Delete N sub-items? <names> [and N cost
   components ($X)] will be removed. This cannot be undone.", on the row's delete, the
   Estimating row's delete, and on saving Manage sub-items with rows marked for deletion.
@@ -185,6 +190,7 @@ to schedule._
 - **Maps to:** F6 × F9. **Importance:** medium.
 
 ### 13. The component formula field has an Insert menu and a live preview — **differs**
+- **Fixed 2026-09-29** (D-96, react `17fb263`).
 - **Legacy:** `CostFormulaField.tsx` (721686fa) has an Insert ▾ menu (QTY, PARENT for
   sub-item hosts, variables with the list-value picker, siblings), converts variables
   between display and stored form, and previews the result as you type.
@@ -193,6 +199,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** medium.
 
 ### 14. Cost component rows in the Takeoff panel and on the canvas item menu — **not built**
+- **Fixed 2026-09-29** (D-96, react `ecad99d`).
 - **Legacy** (`ItemRowShared.tsx` f6e820a4):
   - one row per component under an item or sub-item (kind icon, name, $ total, unit or
     "LS"), clicked to edit;
@@ -204,6 +211,7 @@ to schedule._
 - **Maps to:** F9 / P-21. **Importance:** medium.
 
 ### 15. "Couldn't load bid layers": retries, a specific message and Retry — **differs**
+- **Fixed 2026-09-29** (D-96, react `198474d`).
 - **Legacy:**
   - The layers read retries up to three times (350 ms, then 700 ms) on status 0, 408, 429
     or 5xx, and ignores loads that finish out of order.
@@ -219,6 +227,7 @@ to schedule._
 - **Maps to:** F6. **Importance:** medium.
 
 ### 16. A zoom percentage flashes in the canvas corner — **not built**
+- **Fixed 2026-09-29** (D-96, react `78304e4`).
 - **Legacy:** a small "NN%" at the canvas's top right while zooming (wheel, trackpad,
   buttons, Fit, zoom window), hidden 2 s after it settles. (`PdfCanvas.tsx` 91d1f2aa,
   0a80565d; plan `temporary-canvas-zoom-percentage-2026-09-26.md`.)
@@ -226,6 +235,7 @@ to schedule._
 - **Maps to:** F7. **Importance:** medium.
 
 ### 17. Component and shared rows are prorated in the Sheet pivot — **differs (display)**
+- **Fixed 2026-09-29** (D-96, react `39f54a3`).
 - **Legacy:** `costFilter.componentDisplayRows` shows qty and total × the row's sheet
   share.
 - **New app:** component rows are evaluated at the sheet row's quantity, and lumps
@@ -234,6 +244,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** medium.
 
 ### 18. Expanding components works per host, and the export follows the screen — **differs**
+- **Fixed 2026-09-29** (D-96, react `21cd9a9`).
 - **Legacy:** a chevron on each host row plus Expand all / Collapse all. A cost filter
   expands automatically and disables the button. The export writes component rows only
   where they are expanded.
@@ -242,6 +253,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** low-medium.
 
 ### 19. Warning triangles on host rows — **not built**
+- **First part fixed 2026-09-29** (D-96, react `36f6800`): usage outside a machine's divisions. The other two wait for F10.
 - **Legacy** (`templateCosts.uncoveredUsage`, `pendingFlagText`; `reconcile.isQuantityPending`
   37e7eeaa): an AlertTriangle for:
   - a usage row on an item outside the machine's divisions;
@@ -252,6 +264,7 @@ to schedule._
 - **Maps to:** F9 / F10. **Importance:** low-medium.
 
 ### 20. Earthwork: storage, canvas, tree, undo and realtime for Strip Areas — **not built**
+- **Written into F12's starting point** (2026-09-29); not built.
 - **Legacy:**
   - **Storage:** an `earthwork_strip_areas` table. A drawn outline lives on the row, not as
     a takeoff item.
@@ -270,6 +283,7 @@ to schedule._
 - **Maps to:** F12. **Importance:** medium for F12.
 
 ### 21. Legacy defect to avoid when porting: earthwork disposition values
+- **Carried into F12's starting point** as a decision to make (2026-09-29).
 - **The mismatch:** the code writes `reuse_fill` and `general_fill`, but migration
   20260927195839's CHECK allows `reuse`, `general` and `reuse_general`.
 - **Effect:** as committed, a "Re-use" strip or undercut would be refused by the database,
@@ -295,6 +309,7 @@ to schedule._
 - **Maps to:** F10. **Importance:** for F10's spec.
 
 ### 23. Component order on a host — **differs (minor)**
+- **Fixed 2026-09-29** (D-96, fastapi `4a23eec`).
 - **Legacy:** components are ordered by position across all kinds, in insertion order.
 - **New app:** `components.py` counts position per kind and lists by kind first.
 - **Maps to:** F9. **Importance:** low.

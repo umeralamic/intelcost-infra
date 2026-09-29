@@ -515,6 +515,25 @@ The Estimating tab. `src/components/estimate/ProjectEstimatingView.tsx` (5,138 l
 - [x] Unselected layer tabs stay visible in the Estimating tab. `.lovable/plan/plan-make-unselected-layer-tabs-visible-in-estimating-2026-08-24.md` · **ported** (F9-S2: the open tab in the header slate, the others muted and readable) · *smoke-tested (D-70)*
 - [x] Keeping an existing rate when the unit changes is offered rather than assumed. `src/components/estimate/ProjectEstimatingView.tsx` ("Keep this rate for the new unit") · **ported as live legacy behaves** (F9-S7: a unit change clears the unit rates entered per the old unit, flags them blinking with legacy's warning and toast, and retyping settles the flag; *smoke-tested (D-70)*. Legacy's "Keep" tick shows only on a flagged rate that still holds a value, and live legacy's unit change always clears, so the tick is unreachable there too: its own comment reads "A cleared rate has nothing to keep". Not built; nothing is assumed either way)
 
+**Live legacy since 12dd119b (`UmeralamDEV`, D-96; `tasks/LEGACY_UMERALAMDEV_DIFF.md`)**
+
+- [x] Deleting an item names the cost components it takes, and undo brings them back with their equipment usage and custom column text. **ported** (diff #1; beyond legacy, where components are not undoable) · *smoke-tested (D-70)*
+- [x] A cost component's formulas read the full environment: variables, rough measurements, the item's primitives on every scaled sheet, dimensions, siblings, PARENT. **ported** (diff #2) · *smoke-tested (D-70)*
+- [x] The workbook keeps a derived formula only when it gives the app's figure. **ported** (diff #3) · *smoke-tested (D-70)*
+- [x] Removing a kind's last component asks: Keep as typed rates, Restore earlier rates, Clear rates. **ported** (diff #4) · *smoke-tested (D-70)*
+- [x] An item with cost components takes no sub-items. **ported** (diff #5) · *smoke-tested (D-70)*
+- [x] "No quantity" and "Formula error" chips on Item Cost; a formula error keeps the last good total. **ported** (diff #6, #10) · *smoke-tested (D-70)*
+- [x] Costs… shows component-priced fields read-only, "From components". **ported** (diff #11) · *smoke-tested (D-70)*
+- [x] Deleting sub-items asks, naming them and their components; Cancel in Manage sub-items keeps them and saves the rest. **ported** (diff #12) · *smoke-tested (D-70)*
+- [x] A component formula has an Insert menu (values, variables with a list-value picker, siblings) and a live preview. **ported** (diff #13) · *smoke-tested (D-70)*
+- [x] Cost components listed under their hosts in the Takeoff panel; Add cost component in the item menu, the canvas menu and a sub-item row's $. **ported** (diff #14) · *smoke-tested (D-70)*
+- [x] In the Sheet pivot, component and shared rows show the sheet's share. **ported** (diff #17) · *smoke-tested (D-70)*
+- [x] Components open per host with a chevron; a cost filter opens them all; the workbook writes only the open ones. **ported** (diff #18) · *smoke-tested (D-70)*
+- [x] A machine's usage on an item outside its divisions is flagged on the row. **ported** (diff #19, the F9 part) · *smoke-tested (D-70)*
+- [x] A host's components list in the order they were added. **ported** (diff #23) · *smoke-tested (D-70)*
+- [x] A failed bid-layer read retries (0, 408, 429, 5xx), says why and offers Retry. **ported** (diff #15, F6) · *smoke-tested (D-70)*
+- [x] The canvas shows the zoom percentage while zooming and two seconds after. **ported** (diff #16, F7) · *smoke-tested (D-70)*
+
 ## 12. Assemblies
 
 `src/components/takeoff/AssembliesPanel.tsx` (1,343 lines).

@@ -3811,3 +3811,20 @@ D-94 in legacy's favour, pending the founder's review.
 - **Formula errors and no quantity (diff #10, #6):** a save keeps the last good total;
   Item Cost shows "Formula error" or "No quantity" in legacy's red chip; derived unit
   cells read "—" without a quantity.
+- **The rest of the F2 to F9 items (diff #11 to #19, #23):**
+  - Costs… shows component-priced fields read-only.
+  - Sub-item deletes ask with names and components; Cancel in Manage sub-items keeps the
+    marked rows and saves the rest.
+  - A component formula has legacy's Insert menu and live preview.
+  - Component editing is one hook, `useComponentEditor`, shared by Estimating and the
+    Takeoff panel. The panel lists each host's components (with their last good total),
+    and "Add cost component" appears in the item and canvas menus and on a sub-item row.
+  - The bid-layer read uses legacy's retries and words.
+  - The canvas shows its zoom percentage while zooming.
+  - The Sheet pivot scales component rows by the sheet's share.
+  - Components open per host, and the export follows what is open.
+  - A machine's usage outside its divisions is flagged.
+  - Components list in the order they were added.
+- **Not built, by owner:** earthwork (diff #7 to #9, #20, #21) is F12's starting point,
+  `docs/tasks/drafts/earthwork_tasks.DRAFT.md`; assemblies carrying costs (#22) and the
+  assembly and pending-quantity flags (#19) are F10's.

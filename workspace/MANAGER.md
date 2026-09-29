@@ -40,7 +40,7 @@ _Updated: 2026-09-27_
 | F9b | A priced estimate stops at the summed Item Cost: no markups, overhead, profit, bond or tax, so no bid total. → **The next estimating block after F9** (the founder, D-95): those five over F9's lines, and the bid total they make (P-22). | Be Fe | Umer | _not yet specced_ |
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): Dimension, the Legend and Print.** Dimension is frequently used, so F11 should not slip far behind F7. | Be Fe | Umer | _not yet specced_ |
-| F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_ |
+| F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_; starting point drafted from live legacy (D-96): [earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md) |
 | F13 | Auto Count | Be Fe | Umer | _not yet specced_ |
 | F14 | AI tools and AI credits. **Inherits from F3:** the AI Credits tab — the workspace wallet, per-workspace and per-member credit limits, and returning a member to the workspace default (F3 S23). The Stripe top-up checkout inside that tab belongs to F16. | Be Fe | Umer | _not yet specced_ |
 | F15 | Sharing, guest view, Reports, time tracking, Community. **Inherits from F3:** the Shifts tab and the Time Tracking tab (F3 S21–S22), and with shifts, the one thing that makes PARITY §2's "Members — list with role, shift and last activity" tick. That line is **partial** until a member has a shift to show; role and last activity already ship. | Be Fe | Umer | _not yet specced_ |
