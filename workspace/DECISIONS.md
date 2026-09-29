@@ -3267,7 +3267,7 @@ down; auto-merge unions only the same item's sections and never touches another 
   Ortho pulls the pen onto its 45° (or 22.5° with Alt) step only within that many
   degrees; further off the point is free. Snap still wins after it.
 
-**Left different:** legacy's pan is unbounded (the page can be dragged fully away); ours
+**Left different:** _(the pan: superseded by D-97, now unbounded as legacy's)_ legacy's pan is unbounded (the page can be dragged fully away); ours
 stops at the page's gutter because the canvas is a scroll container, and moving it to a
 transform is a rewrite of the raster windowing (D-42) for no measuring gain. Legacy's zoom
 buttons do not hold the view's middle (the page jumps between regimes); ours hold it.
@@ -3828,3 +3828,52 @@ D-94 in legacy's favour, pending the founder's review.
 - **Not built, by owner:** earthwork (diff #7 to #9, #20, #21) is F12's starting point,
   `docs/tasks/drafts/earthwork_tasks.DRAFT.md`; assemblies carrying costs (#22) and the
   assembly and pending-quantity flags (#19) are F10's.
+
+## D-97 — The founder's round 3: the money bug, the canvas and the panels
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's round 3 findings; the calls below made while building)
+**Area:** Estimating, Takeoff (Frontend, Backend)
+**Serves:** F9, F7; amends D-96 (diff #10, #14, #16) and D-79 ("Left different": the bounded pan)
+
+**Decision:**
+- **A1, a component that stops pricing keeps its last good total.** Check 5 failed on a
+  labour component whose production rate was cleared: `evaluateComponent` returned $0 with
+  the error, so Item Cost showed "Formula error —" and TOTAL dropped the item. Any
+  component error now carries the saved total as a lump, on the row, its group and TOTAL.
+  Legacy drops this case to $0; the founder's rule (diff #10) wins. Quantity-table cost
+  row `labor-no-rate-last-good-total`.
+- **A2, the zoom percentage** shows on a zoom the person makes, never for the fit a sheet
+  opens with.
+- **B3, zoom and pan are legacy's.** The wheel zooms at the cursor, and the pan is a free
+  offset (legacy's `panRef`) written to the stage's transform, unbounded at every zoom,
+  fitted and zoomed out included. It supersedes the bounded, scroll-based pan D-79 left
+  different. The raster window still follows, from the page's place on screen.
+- **B4, an off-sheet click** on the grey margin with Select lets the selection go, as an
+  empty click on the sheet does (legacy's `onEmptySelectClick`).
+- **B5, the selected look is legacy's.** A run keeps its colour, 1.75 px at rest and 3.5
+  px selected. An area rests on a neutral hairline and takes its colour on the perimeter
+  (1.5 px) while selected. Every weight is tapered by the zoom (clamped 0.45 to 1.35,
+  `lib/takeoff/engine/markupSize.ts`). A picked section is drawn selected and its siblings
+  at rest. A box selection frames each markup in a dashed rectangle instead of
+  recolouring it.
+- **B6, vertex points are legacy's:** hollow white with a ring in the item's colour,
+  2.5 px tapered. They show on the selected run, on every run of a whole-item select, and
+  on a selected area's deducts. A press within 0.012 of the page picks the point by
+  distance and drags it, selected beforehand or not. The browser's hit test is no longer
+  used: in the sheet's 0-to-1 units it caught a press anywhere near a run for its last
+  point, so pressing one end dragged the other.
+- **B7, the move handle sits inside an area,** at its pole of inaccessibility (the
+  widest part, out of its deducts), `lib/takeoff/engine/interiorPoint.ts`. Legacy uses the
+  mean of the vertices, which leaves an L-shape's handle off the shape; the founder's rule
+  wins. A run keeps legacy's mean. The handle is legacy's 18 to 28 px, by how much of the
+  canvas the page fills.
+- **B8, no move handle on count marks** (legacy shows it on Linear and Area only).
+- **B9, count marks are legacy's symbols and sizes:** the item's symbol, and one of three
+  sizes. Size Pixels is tapered. Scaled is `size × 2.5` px at fit, then with the sheet.
+  True size is the plan extent of the item's dimensions through the sheet's scale, and
+  falls back to Size Pixels without one. New items default to Size Pixels, 10 px (legacy's
+  column defaults). The api had defaulted to Scaled, 12 px; migration `d4f7b2c9e1a3` moves
+  items still on those untouched defaults.
+- **B10, "Add cost component" leaves the canvas menu;** the Takeoff panel, the Sheets
+  panel, the sub-item $ and the Estimating tab keep it.
