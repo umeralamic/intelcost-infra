@@ -52,6 +52,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `53899e9`: the frozen header draws its own dividers (legacy's flicker fix)
 - react `878e6e6`: Format's Grid & borders, empty and total row heights, tab colour
 - react `ea65f6f`: Format row heights per header species and for sub-items
+- react `d69f120`: Unallocated rows in their machine's home group (D-94)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -68,7 +69,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-90** F9 export. **Pending review:** built in the browser with legacy's `xlsx-js-style` (a new dependency, loaded only on export); the workbook's colours are legacy's constants in `workbook.ts`, not tokens (a file cannot read CSS).
 - **D-91** F9 cost components (legacy's since the draft). **Pending review:** `QTY` added to F6's formula engine for component envs only; shared equipment not built.
 - **D-92** F9 format themes. **Pending review:** the Default theme is the app's token look (legacy's Default is fixed hex); only colours a person picks are stored; a reduced panel (no border weight or colour yet).
-- **D-93** F9 shared equipment (legacy's since the draft). **Pending review:** Unallocated rows gathered at the foot of the grid rather than in their home division's group.
+- **D-93** F9 shared equipment (legacy's since the draft). Its one departure, Unallocated rows gathered at the foot, was undone by D-94.
+- **D-94** Unallocated rows sit in their machine's home group in every pivot, as legacy's; the Sheet pivot keeps their own group at the end.
 
 ## F9 answers to review
 
@@ -115,8 +117,8 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 
 ## Failures and findings
 
-- **A Format edit was lost once (02:05):** Classification header 32 then Sub-item rows 28, back to back in the smoke; the first held, the second showed 20. Tried again (Scope 26 then Sub-item 30, and Sub-item 34 alone) it held every time; the panel keeps a draft at once and saves 400 ms after the last edit, so no cause was found. Watch for it in the click check.
-- **"Group headers" could not be retyped (02:10):** once the species differed it still showed the old shared height, so typing that same number changed nothing. It now reads "mixed" when they differ (`ea65f6f`).
+- **A Format edit was lost once (01:58):** Classification header 32 then Sub-item rows 28, back to back in the smoke; the first held, the second showed 20. Tried again (Scope 26 then Sub-item 30, and Sub-item 34 alone) it held every time; the panel keeps a draft at once and saves 400 ms after the last edit, so no cause was found. Watch for it in the click check.
+- **"Group headers" could not be retyped (02:00):** once the species differed it still showed the old shared height, so typing that same number changed nothing. It now reads "mixed" when they differ (`ea65f6f`).
 
 - **Colleagues' pointers were sent but never drawn (found 20:40).** F8 wired the sending; nothing rendered them on the new canvas. Built as S28.
 - **app-b was stale (20:45):** its image predated `polygon-clipping` and showed a Vite error; rebuilt.
@@ -162,6 +164,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 18. With the header frozen, scroll a long estimate quickly: the header's column lines stay steady, no white flashes.
 19. Format → My formatting → Grid & borders: Line weight Medium, a Line color, the three switches; the grid follows at once, and an export carries the weight and colour. Colours → Layer tab colours the open tab.
 20. Format → Row heights: change Classification header or Sub-item rows alone; only those rows move. "Group headers" reads "mixed" until you set them all.
+21. Shared equipment → a machine with nothing spread: its "Unallocated — {machine}" row sits in its home classification's group (and its subcontractor's), with the group's chip and TOTAL including it; in the Sheet pivot it has its own group at the end.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.

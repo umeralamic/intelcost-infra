@@ -3716,5 +3716,28 @@ equipment.
   "Unallocated — {machine}" rows sit in a "Shared equipment — unallocated" group at the
   foot of the grid and count in its TOTAL. **Differs:** legacy places an Unallocated row
   in its home division's group; here they are gathered at the foot (pending review).
+  **Superseded by D-94:** they now sit in their home group, as legacy's.
 - **Not yet:** the Sheet pivot's pseudo-sheet, the workbook's shared and unallocated rows,
-  assemblies' pending equipment links.
+  assemblies' pending equipment links. (The first two since built: D-94, `5c05895`.)
+
+## D-94 — F9: Unallocated rows in their machine's home group, legacy's
+
+**Date:** 2026-09-29
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend)
+**Serves:** F9 Block B; supersedes D-93's placement of Unallocated rows
+
+**Context:** D-93 gathered every "Unallocated — {machine}" row in one group at the foot of
+the grid, where live legacy files each under its machine's home division
+(`unallocLines`, `unallocDivision`, `unallocChain`) and keeps a group of its own only in
+the Sheet pivot.
+
+**Decision (legacy's):**
+- Each machine's unspread cost is a line (`unallocatedLine` in `lib/estimate/lines.ts`)
+  filed under its home classification: the folder that carries it or its nearest
+  ancestor's, else the division by name. Every pivot then groups, filters, totals and
+  exports it like a row: under its classification, its subcontractor, "No custom folder".
+- The Sheet pivot keeps legacy's pseudo-sheet: a "Shared equipment — unallocated" group
+  at the end.
+- Money only (Total Equipment and Item Cost); its name opens Shared equipment; no row
+  menu; on the first layer tab and the workbook's first sheet.
