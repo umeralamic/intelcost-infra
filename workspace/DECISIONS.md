@@ -3428,3 +3428,30 @@ marked
   Ortho and A arms an arc (Area when no point is placed yet). S (Snapshot) and D (Snap
   PDF) wait for their features; legacy's toolbar title "Dimension (D)" is its own bug (D
   is not bound there).
+
+## D-85 — F7-S28 to S30: colleagues' cursors drawn, drafts as their shapes, the two-window check
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review where marked
+**Area:** Takeoff, Frontend, API (realtime)
+**Serves:** F7-S28, S29, S30; D-33, D-38
+
+**Context:** Legacy draws no colleague's pointer and no live draft (its realtime is
+committed rows only); these are the founder's F8 (D-33, D-38) carried to the new canvas.
+Pointers were being sent but never drawn.
+
+**Decision:**
+- **Cursors (S28):** `CursorLayer.tsx` draws each colleague's pointer in their colour with
+  their "Sara W." tag, in sheet space; the five Collaboration preferences apply (show
+  cursors, names always / on hover / off, others' work all / fade / only mine, which keeps
+  one's own other tabs).
+- **Drafts (S29):** a colleague sees the shape it will become: a box being dragged, and a
+  rectangle, an ellipse or an arc in its own mode, as their outline; a run as its points.
+  A deduct being cut carries `deduct` on the draft frame (api `DraftFrame`, new, default
+  false) and draws hatched in its colour.
+- **Two windows (S30), decided overnight:** driven with A on the api and B (a second
+  member) on api-b, so every update crossed Redis: A's pointer and tag, A's box outline and
+  tag, the saved shape, a deduct's hatched draft and its figure dropping on B, and A's
+  undo reaching B; a count marked by both at once ended on the same total in both windows.
+  The vertex conflict, the six-section paste and the three-item box delete were not driven
+  tonight (F8's fixtures drove the conflict before the archive).

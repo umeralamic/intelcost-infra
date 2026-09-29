@@ -28,6 +28,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react group D, the Settings dialog (D-82)
 - react group E, the whole-page match (D-83)
 - react `c52efcf` and fastapi `a95ed9b`: F7-S25 to S27 (D-84)
+- react `5b3298d` and fastapi `ec3408b`: F7-S28 to S30 (D-85)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -37,6 +38,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-82** round 2 group D: legacy's Settings dialog; which settings are in force now and which wait for their features.
 - **D-83** round 2 group E: the whole page against legacy's, what was fixed and what is left.
 - **D-84** F7-S25 to S27. **Pending review:** the hover panel is hidden when another tool is picked or a pan begins (legacy leaves it up).
+- **D-85** F7-S28 to S30 (beyond legacy, the founder's F8). **Pending review:** the two-window check drove cursors, drafts, a deduct, an undo and a shared count; the vertex conflict, six-section paste and three-item box delete were not driven tonight.
 
 ## F9 answers to review
 
@@ -59,6 +61,10 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 
 ## Failures and findings
 
+- **Colleagues' pointers were sent but never drawn (found 20:40).** F8 wired the sending; nothing rendered them on the new canvas. Built as S28.
+- **app-b was stale (20:45):** its image predated `polygon-clipping` and showed a Vite error; rebuilt.
+- **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
+
 - **Throwaway scripts in two infra commits (found 20:13).** The mirror helper staged all of `intelcost-infra` with `git add -A`, so `browser/legacy-r2a.mjs` and `legacy-r2b.mjs` rode along in `ac87ad5` and `ff506c9` and were deleted in `e329299`. They hold no credentials (they read `process.env.LEGACY_*`). The helper now stages `workspace/` only.
 
 - **Quantity table, first run under D-78 (19:00):** 325 rows, both engines equal to 1e-9 on
@@ -70,6 +76,12 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**F7-S25 to S30**
+1. Rest the pointer on an area for a second: a cream panel with "This section", the sheet total and "Marked by"; move and it goes. The area turns blue at once.
+2. Over the canvas the pointer is legacy's reticle (square ring, ticks, crosshair); with Pan it is the hand.
+3. Press L, A, N: each opens its naming dialog. With Linear armed, S and O flip Snap and Ortho in the bar.
+4. Two browsers, two people on one sheet: each sees the other's pointer with their name, and a box grow as a box while it is dragged.
 
 **Round 2 E**
 1. Open a takeoff at 1440×900 next to legacy's: header, tab strip, toolbar, Sheets and Takeoff panels, corners and the status bar line up; the differences left are the tools and tabs of unbuilt features.
