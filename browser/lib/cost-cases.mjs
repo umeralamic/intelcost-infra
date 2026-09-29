@@ -151,6 +151,29 @@ export const COST_CASES = [
     expect: { totalMaterialCost: 250, itemCost: 250 },
   },
 
+  // --- A formula error carries the last good total; no quantity carries lumps ----------
+  // The formula no longer reads, so the $123 saved before it rides as a lump, never $0.
+  {
+    id: "component-last-good-total",
+    kind: "line",
+    quantity: 100,
+    unit: "SF",
+    input: rates({}),
+    components: [component("material", { qty_formula: "QTY*(", unit_price: 2, total: 123 })],
+    expect: { totalMaterialCost: 123, itemCost: 123 },
+  },
+  // A host of 0 SF: the $50 unit-mode material (5 × $10) is carried as a lump, and the
+  // unit rate is 0 ("—" on screen, "No quantity").
+  {
+    id: "component-no-quantity",
+    kind: "line",
+    quantity: 0,
+    unit: "SF",
+    input: rates({}),
+    components: [component("material", { qty_formula: "5", unit_price: 10 })],
+    expect: { unitMaterialCost: 0, totalMaterialCost: 50, itemCost: 50 },
+  },
+
   // --- "Keep as typed rates" when a kind's last component goes (legacy's resolveRemoval) -
   // Material QTY × 1.1 at $2 over 100 SF: $220 → $2.20/SF kept as the typed rate.
   { id: "keep-material-rate", kind: "keep", quantity: 100, keepKind: "material", components: [component("material", { qty_formula: "QTY*1.1", unit_price: 2 })], expect: { unit_material_cost: 2.2 } },
