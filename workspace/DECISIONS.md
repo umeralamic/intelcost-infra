@@ -3339,3 +3339,33 @@ Dashboard button and the workspace switcher are in its own bar.
 - The Takeoff panel's totals footer is gone (legacy has none).
 - The sheets list returns `bookmarked_at` (the api already stamped it); Bookmarks lists
   newest first.
+
+## D-82 — Round 2, group D: legacy's takeoff Settings dialog, separate from the workspace's
+
+**Date:** 2026-09-28
+**Status:** Accepted (round 2, matched to legacy)
+**Area:** Takeoff, Frontend
+**Serves:** F7-S27, the founder's round-2 finding D16
+
+**Context:** Legacy keeps takeoff preferences per person and per device
+(`takeoff.settings.v1`), in a "Settings" dialog from the takeoff header's gear: a rail of
+ten sections, a draft that only Save writes, "Reset this section", "Restore all defaults"
+and "Close without saving?". Workspace settings are a separate page on the server.
+
+**Decision:**
+- `TakeoffSettingsDialog.tsx` rebuilds it section for section in legacy's words, controls,
+  defaults and ranges (General, Hover, Mouse, Cursor, Snapping, Takeoffs, Trace, Toolbar,
+  Panels, Rendering), on the D-79 store, opened by the header's gear. The workspace's
+  settings pages are unchanged and separate.
+- **In force now:** Mouse (zoom speed, invert, middle- and right-button pans, auto scroll's
+  delay, speed and edge band); Snapping (Snap and Ortho starting states, the Ortho
+  tolerance); Takeoffs (default Linear and Area modes, Auto Merge, the duplicate's "(2)" or
+  "(copy)"); Toolbar (icon size, hidden tools); Panels (the three panels; the edge tabs
+  write them back, as legacy's); General (quantity decimals and panel text on item and
+  sub-item rows, the Sheet Naming Format). The canvas bar's Auto Merge and Auto Scroll
+  are these settings, as legacy's.
+- **Kept for their features, shown as legacy's:** Hover (S25, tonight), Cursor (S26,
+  tonight), Trace (F12, marked so), Snap PDF, the legend, Ctrl+F browser find, main tab
+  text size, two-line sheet names, panel text for folder, sheet and bookmark rows, and
+  Rendering.
+- Legacy's Ortho hint says "horizontal / vertical"; it steps by 45°, and ours says so.

@@ -11,9 +11,9 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | 0 | CLAUDE.md: quantity table outside the no-scripts rule (D-78); run it | Done | 18:55 | 19:00 | 5 min |
 | R2-A | Round 2 group A: canvas (zoom, box-drag, selection, Enter/Esc, merge, Ortho tolerance) | Done | 19:00 | 19:28 | 28 min |
 | R2-B | Round 2 group B: toolbar icons, action group, bottom-left buttons, Dashboard | Done | 19:28 | 19:42 | 14 min |
-| R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | Done | 19:42 | 19:51 | |
-| R2-D | Round 2 group D: the takeoff Settings dialog | In progress | 19:51 | | |
-| R2-E | Round 2 group E: whole-page comparison | Not started | | | |
+| R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | Done | 19:42 | 19:51 | 9 min |
+| R2-D | Round 2 group D: the takeoff Settings dialog | Done | 19:51 | 20:04 | |
+| R2-E | Round 2 group E: whole-page comparison | In progress | 20:04 | | |
 | 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | Not started | | | |
 | 3 | Close F7 in speed mode | Not started | | | |
 | 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Not started | | | |
@@ -25,12 +25,14 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `7bc517f` round 2 group A (D-79); infra: CLAUDE.md D-78, workspace mirror
 - react `7eb6f31` round 2 group B (D-80)
 - react (group C) and fastapi `bookmarked_at` (D-81)
+- react group D, the Settings dialog (D-82)
 
 ## Decisions to review (decided overnight, pending founder review)
 
 - **D-78** (the founder's, logged): the quantity table runs after every group.
 - **D-79** round 2 group A: matched legacy; the Ortho tolerance is the founder's (default 15°); the pan left bounded (below).
 - **D-80** round 2 group B. **Pending review:** the item's session ends on Enter or a committing Escape (legacy's), and the next run asks for a new item after the draw; the takeoff screen now has legacy's own header instead of the app's (the email banner is not shown there).
+- **D-82** round 2 group D: legacy's Settings dialog; which settings are in force now and which wait for their features.
 
 ## F9 answers to review
 
@@ -39,12 +41,14 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Round 2 A: no scrollbars on the canvas; box-drag for Linear and Segment (Area had it), with legacy's green dashed band; draw menu without "Close"; an empty-sheet click deselects the item.
 - Round 2 B: toolbar glyphs and sizes (24/48/11 px, 16 px carets) and mode menus; action group icon sizes, no Close, Delete in text colour, mode split; group states; sheet stepper; takeoff header with Open, theme toggle and Dashboard.
 - Round 2 C: row cluster order (⋮ last), legacy's row menu, no totals footer, Bookmarks newest first.
+- Round 2 D: the takeoff Settings dialog, separate from the workspace's, from the header's gear.
 
 ## Legacy differences left, with reasons
 
 - **Pan is bounded** by the page and its gutter; legacy's is unbounded. Ours is a scroll container (the raster windowing, D-42, reads it); a transform pan is a rewrite for no measuring gain.
 - **Zoom buttons hold the view's middle**; legacy's hold the page's top-left or centre and jump between the two.
 - **Header:** legacy's Share (project sharing), Upgrade and work timer are not built (no feature owns them yet); the Open dialog's "Set up takeoff on existing project" tab is Project Home's load flow here; its list shows every project (the list carries no sheet count).
+- **Settings waiting for their features:** Trace (F12), Snap PDF, the legend, Ctrl+F browser find, main tab text size, two-line sheet names, folder/sheet/bookmark row text, Rendering; Hover and Cursor are taken up tonight with S25 and S26.
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
 
 ## Failures and findings
@@ -58,6 +62,11 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**Round 2 D**
+1. The gear in the takeoff header opens Settings: ten sections on the left; change something and press Cancel: it asks "Close without saving?".
+2. Settings › Panels › Takeoff off, Save: the Takeoff panel goes; the right edge tab brings it back.
+3. Settings › Snapping › Ortho tolerance: 15° by default.
 
 **Round 2 C**
 1. Hover a Takeoff panel row: the dot, the eye, then ⋮ at the far right; ⋮ offers Properties, Override quantity, Duplicate, Move to layer ▸, Create sub-item, Delete.
