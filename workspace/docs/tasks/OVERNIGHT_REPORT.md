@@ -38,6 +38,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `0105b1e`: F9-S6 multiplier popover; `975fdee`: S4 Costs…; fastapi `4278ad3` and react `f49a1d2`: S7 row menu and comments
 - fastapi `07b7d11` and react `2d5e9a0`: F9-S8 custom columns
 - fastapi `5c1c127` and react `574b32e`: F9-S9 packages per project
+- react `335d48a`: F9-S11 Export to Excel (D-90)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -51,6 +52,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-86** F7-S31 Crop as New Page. **Pending review:** legacy's placement (after the last sheet of the source's folder) and legacy's uncalibrated crop replace the spec's AC1 and AC2 (after the source, at the source's scale); only Crop is built of legacy's region box entries.
 - **D-87** sign-in, sign-up and Settings at 1440×900. **Pending review:** the settings pages lose the app's top bar and the email banner (legacy's settings page has neither); Account sits as a fifth tab (legacy has no personal page); the sign-in refusal stays inline in the card, not legacy's toast; ten-character passwords stay.
 - **D-89** F9 pricing. **Pending review:** the arithmetic in the browser only, no Python twin yet (nothing on the api computes a cost until export, and D-70 forbids a new proof script); `unit_rate` and `waste_factor` kept, unread, until F9 closes.
+- **D-90** F9 export. **Pending review:** built in the browser with legacy's `xlsx-js-style` (a new dependency, loaded only on export); the workbook's colours are legacy's constants in `workbook.ts`, not tokens (a file cannot read CSS).
 
 ## F9 answers to review
 
@@ -120,6 +122,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 3. Right-click an Estimating row: Insert row above/below (a manual line, also in the Takeoff panel), Add Sub-item, Add comment…, Go To Page.
 4. Columns → Add custom column…: a free-text column; type into it, rename it with the pencil, remove it with the bin (legacy's warning).
 5. Group by Subcontractor → "Manage subcontractors…": This project repackages a scope for this project only; the ↺ puts back the workspace default.
+6. Export → "Export to Excel": open the file in Excel; change a rate cell and the row, its parent and TOTAL recalculate.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.

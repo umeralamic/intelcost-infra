@@ -3602,3 +3602,30 @@ tests.
   "," and "%" stripped, Escape keeps the old value; the Wastage cell opens legacy's dialog
   ("All line items", "This line item only — {name}", "Classification — {d}", "Scope —
   {s}"); a parent rolls up its sub-items and stays out of group and grand totals.
+
+## D-90 — F9-S11: the workbook in the browser, with legacy's library and palette
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Estimating (Frontend), dependencies
+**Serves:** F9-S11; D-88 Q2, Q3, Q7
+
+**Context:** Legacy builds its Excel workbook in the browser with `xlsx-js-style`, from the
+same figures the grid shows, with live formulas and legacy's default colours. The spec
+had considered the api building it with a Python twin (D-89 left that open).
+
+**Decision:**
+- **Built in the browser, as legacy's:** `src/lib/estimate/workbook.ts` (pure: rows in, a
+  workbook out) and `xlsx-js-style` (legacy's library, a new dependency of the app),
+  both loaded only when Export runs, so the takeoff screen's bundle does not grow.
+- **Legacy's workbook:** the six choices (columns, rows, layers, formulas, grids,
+  grouping) remembered per project; one sheet per main layer or one for all; group rows;
+  every derived cell a live formula over its row (a formula whose inputs were not
+  exported falls back to its value); a parent's totals `SUM` its sub-items; the TOTAL row
+  sums the lines only; outline levels with summary rows above; the file
+  "<Project> - Estimate V<n> - YYYY-MM-DD.xlsx", the counter per project in the browser.
+- **Colours in the workbook are the file's, not the app's:** legacy's default palette and
+  number formats are named constants in `workbook.ts`. Hard rule 4 governs the screens;
+  a workbook cannot read CSS tokens. Format themes (S10) will feed them.
+- **Not yet:** sub-item quantities as Excel expressions of their formulas, cost
+  components and shared-equipment rows, the themes' fonts and fills (S10).
