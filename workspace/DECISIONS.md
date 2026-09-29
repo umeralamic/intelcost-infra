@@ -3799,3 +3799,15 @@ D-94 in legacy's favour, pending the founder's review.
   The browser's `parentPrimitives` now mirrors the api's (analytic shapes, deducts per
   sheet, perimeter round the positives); it had treated deducts as area. The Takeoff
   page's sub-item preview reads every scaled sheet through the same builder.
+- **Workbook formulas (diff #3):** legacy's `verifiedFormula`; a derived cell keeps its
+  formula only when the row's written cells give the app's figure within a cent.
+- **Last component of a kind (diff #4):** legacy's `manual_rates_snapshot` on
+  `estimate_line_item` (migration `c8e4a2f6d1b9`), taken when a kind's first component
+  lands. Removing the last one goes through `POST …/components/{uuid}/remove` with keep,
+  restore or clear. A plain DELETE of a last-of-kind is refused 409. Every component
+  delete confirms.
+- **Component hosts take no sub-items (diff #5):** refused 409 with legacy's words, and
+  Create sub-item shows legacy's toast.
+- **Formula errors and no quantity (diff #10, #6):** a save keeps the last good total;
+  Item Cost shows "Formula error" or "No quantity" in legacy's red chip; derived unit
+  cells read "—" without a quantity.

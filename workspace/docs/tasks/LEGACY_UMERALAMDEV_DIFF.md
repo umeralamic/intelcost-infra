@@ -52,6 +52,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** high.
 
 ### 3. The workbook's formulas can drop lumps when Excel recalculates — **differs (money in the file)**
+- **Fixed 2026-09-29** (D-96, react `7848be5`).
 - **Legacy:** `exportFormulas.verifiedFormula` (08286392, b1c232c1), through `setChecked`,
   keeps a derived cell's formula only when it reproduces the app's value from that row's
   cells; otherwise it writes the plain value.
@@ -67,6 +68,7 @@ to schedule._
 - **Maps to:** F9 (Block E, D-90). **Importance:** high.
 
 ### 4. Removing the last component of a cost type: legacy asks what the rate becomes — **not built**
+- **Fixed 2026-09-29** (D-96, fastapi `31f91dc`, react `253f7c2`).
 - **Legacy:** the first component of a type snapshots the typed rates
   (`estimating_line_costs.manual_rates_snapshot`, trigger
   `snapshot_manual_rates_on_first_component`). Removing the last component of that type
@@ -80,6 +82,7 @@ to schedule._
 - **Maps to:** F9. **Importance:** high.
 
 ### 5. An item with cost components cannot take sub-items — **differs**
+- **Fixed 2026-09-29** (D-96, fastapi `b1b8048`, react `b50c677`).
 - **Legacy:** database triggers `ti_block_subitem_on_component_host` and
   `enforce_cost_component_host` block both directions. Opening Create sub-item on a
   component host closes with the toast "Cannot add sub-items — This item has cost
@@ -92,6 +95,7 @@ to schedule._
 - **Maps to:** F6 × F9. **Importance:** high.
 
 ### 6. "No quantity" and "Formula error" are not shown — **differs**
+- **Fixed 2026-09-29** (D-96, react `842ec2c`).
 - **Legacy:** when a host's net quantity is 0 or less, or a component formula errors,
   Item Cost shows a red chip ("No quantity" / "Formula error", the error as its title).
   Derived unit cells show "—" when there is no quantity.
@@ -154,6 +158,7 @@ to schedule._
 - **Maps to:** F12 (lines into F9's Estimating). **Importance:** high for F12.
 
 ### 10. A cost component's last good total is thrown away on a formula error — **differs**
+- **Fixed 2026-09-29** (D-96, react `842ec2c`).
 - **Legacy:** saving a component whose formula errors keeps the prior saved `total`, which
   the engine then carries as a lump ("last good total").
 - **New app:** `features/estimate/ComponentDialog.tsx` sends `total: null`, overwriting it,
