@@ -47,6 +47,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `3a6f2da`: the grid at legacy's Default density (side by side with live legacy); `5c05895`: component, shared and unallocated rows in the workbook
 - react `407bcd4`: Estimating undo; takeoff keys kept to their tab
 - react `11f27d5`: a group row's summary follows its header's text colour; `2e92bcb`: legacy's spacer rows, TOTAL in the column headers' colours
+- react `5f628ac`: Go To Page selects the item on the sheet it opens (legacy's "Go to markup")
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -147,6 +148,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 13. Format → My formatting → a Column headers fill: the TOTAL row takes it too; the grid shows a thin blank above each parent block and above a header that follows rows.
 14. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
 15. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
+16. Right-click an Estimating row → Go To Page: the Takeoff tab opens on that sheet with the item selected and Select armed.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
