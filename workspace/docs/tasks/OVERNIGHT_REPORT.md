@@ -45,6 +45,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - fastapi `ec82bde` and react `a931329`: Edit sub-item and rate review
 - react `88090c7`: Costs… in Manage sub-items; dialog title ids unique
 - react `3a6f2da`: the grid at legacy's Default density (side by side with live legacy); `5c05895`: component, shared and unallocated rows in the workbook
+- react `407bcd4`: Estimating undo; takeoff keys kept to their tab
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -111,6 +112,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
 
 - **Our `intelcost/` checkout is not live legacy (21:55).** Live legacy runs the `UmeralamDEV` branch, 161 commits past the local `umer-dev`/`main` at `12dd119b` (2026-09-24): the Estimating tab there has cost components, shared equipment and a cost-type filter the local source lacks. Read tonight with `git show origin/UmeralamDEV:<path>` after a fetch, no branch moved. Worth deciding which branch is the "source of truth" in CLAUDE.md.
+- **Takeoff keys acted under the Estimating tab (01:05):** the page's Delete, tool letters, Ctrl+A and undo, and the canvas's arrows, Escape and Enter, listened on the window while the canvas was hidden under Estimating: L opened a naming dialog, arrows could nudge a hidden selection. Guarded by the tab and the canvas's visibility (`407bcd4`).
 - **The workbook library warns in dev (01:05):** `xlsx-js-style` references Node's `stream` and `fs`, which Vite stubs in the browser ("Module … has been externalized"). Harmless: the download works and legacy ships the same library.
 - **Stacked dialogs shared one title id (00:50):** every `Dialog` labelled itself `#dialog-title`, so a second dialog opened over a first (Costs over Manage sub-items) was announced with the first one's title. Fixed with `useId` (`88090c7`).
 - **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
@@ -142,6 +144,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 11. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
 12. Double-click a sub-item's Unit in Estimating, change it: the warning, then "Unit rates cleared" and the rate cells blink until retyped.
 13. Takeoff → ⋮ on a parent → Create sub-item: each saved sub-item has a $ button opening its Costs.
+14. In Estimating, change a rate, then Ctrl+Z and Ctrl+Y; pressing L or Delete there does nothing to the takeoff.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
