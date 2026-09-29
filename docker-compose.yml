@@ -221,6 +221,9 @@ services:
       - ../intelcost-app-react/src:/app/src
       - ../intelcost-app-react/public:/app/public
       - ../intelcost-app-react/index.html:/app/index.html
+      # The config too: it serves pdf.js's decoders (D-99), and a stale copy baked
+      # into the image served none.
+      - ../intelcost-app-react/vite.config.ts:/app/vite.config.ts
     ports:
       - "5173:5173"
     depends_on:
