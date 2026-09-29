@@ -3319,3 +3319,23 @@ shows it.
 
 **Consequences:** the takeoff page no longer shows the app header or the breadcrumb; the
 Dashboard button and the workspace switcher are in its own bar.
+
+## D-81 — Round 2, group C: legacy's row menu, no totals footer, bookmarks by date
+
+**Date:** 2026-09-28
+**Status:** Accepted (round 2, matched to legacy)
+**Area:** Takeoff, Frontend, API
+**Serves:** P-21, the founder's round-2 findings C12 to C15
+
+**Decision:**
+- The row's right cluster reads, left to right, the colour dot, the eye, **⋮** (legacy's
+  visual order; ⋮ is the last).
+- The row menu (⋮ and right-click alike) is legacy's: Properties, Override quantity,
+  Duplicate, Move to layer ▸ (a flyout, ✓ on the item's layer), Create sub-item, Delete
+  ("Delete on this sheet" in the Sheets panel), each with legacy's lucide glyph. Edit
+  vertices, Resume, Lock and "Delete last shape" are the canvas's, not the row's. Link
+  Screenshot and History (F11), Link assembly and Save as assembly… (P-09) and Costs…
+  (F9) wait for their features.
+- The Takeoff panel's totals footer is gone (legacy has none).
+- The sheets list returns `bookmarked_at` (the api already stamped it); Bookmarks lists
+  newest first.

@@ -9,10 +9,10 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | # | Task | Status | Start | End | Duration |
 |---|---|---|---|---|---|
 | 0 | CLAUDE.md: quantity table outside the no-scripts rule (D-78); run it | Done | 18:55 | 19:00 | 5 min |
-| R2-A | Round 2 group A: canvas (zoom, box-drag, selection, Enter/Esc, merge, Ortho tolerance) | Done | 19:00 | 19:40 | 40 min |
-| R2-B | Round 2 group B: toolbar icons, action group, bottom-left buttons, Dashboard | Done | 19:40 | 20:45 | 65 min |
-| R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | In progress | 20:45 | | |
-| R2-D | Round 2 group D: the takeoff Settings dialog | Not started | | | |
+| R2-A | Round 2 group A: canvas (zoom, box-drag, selection, Enter/Esc, merge, Ortho tolerance) | Done | 19:00 | 19:28 | 28 min |
+| R2-B | Round 2 group B: toolbar icons, action group, bottom-left buttons, Dashboard | Done | 19:28 | 19:42 | 14 min |
+| R2-C | Round 2 group C: row ⋮ menu, totals footer, bookmarks by date | Done | 19:42 | 19:51 | |
+| R2-D | Round 2 group D: the takeoff Settings dialog | In progress | 19:51 | | |
 | R2-E | Round 2 group E: whole-page comparison | Not started | | | |
 | 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | Not started | | | |
 | 3 | Close F7 in speed mode | Not started | | | |
@@ -24,6 +24,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 
 - react `7bc517f` round 2 group A (D-79); infra: CLAUDE.md D-78, workspace mirror
 - react `7eb6f31` round 2 group B (D-80)
+- react (group C) and fastapi `bookmarked_at` (D-81)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -37,6 +38,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 
 - Round 2 A: no scrollbars on the canvas; box-drag for Linear and Segment (Area had it), with legacy's green dashed band; draw menu without "Close"; an empty-sheet click deselects the item.
 - Round 2 B: toolbar glyphs and sizes (24/48/11 px, 16 px carets) and mode menus; action group icon sizes, no Close, Delete in text colour, mode split; group states; sheet stepper; takeoff header with Open, theme toggle and Dashboard.
+- Round 2 C: row cluster order (⋮ last), legacy's row menu, no totals footer, Bookmarks newest first.
 
 ## Legacy differences left, with reasons
 
@@ -56,6 +58,10 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**Round 2 C**
+1. Hover a Takeoff panel row: the dot, the eye, then ⋮ at the far right; ⋮ offers Properties, Override quantity, Duplicate, Move to layer ▸, Create sub-item, Delete.
+2. Bookmark two pages: the last one bookmarked is on top.
 
 **Round 2 B**
 1. Arm Area, name it: the amber group shows Stop, Discard, New Section, Arc, Undo and "Point to Point ▾" at once. Draw and finish with Enter; draw again and press Enter: the group turns to Properties, Start, Resume, Deduct, Copy, Delete. Draw a third: it asks for a new name.
