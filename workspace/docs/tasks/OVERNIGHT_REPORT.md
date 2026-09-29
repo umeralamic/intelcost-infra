@@ -54,6 +54,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `ea65f6f`: Format row heights per header species and for sub-items
 - react `d69f120`: Unallocated rows in their machine's home group (D-94)
 - fastapi `d48d44d`: in One at a time an item's hold covers its line's rates and cost components (F9-S12)
+- react `2383eb8`: the workbook carries the Format's heights and number format; Tab header, Freeze main header and "What Export carries" in the panel; Escape closes it
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -111,6 +112,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **Estimating (F9 Block A):** Format, Export, Shared equipment, Expand components, the row and header menus, column widths by drag, and every cost figure wait for Blocks B to E; the group row's "MH · cost" reads "—" until Block B; legacy's per-theme fonts and fills are Block E's Format.
 - **Estimating toolbar:** legacy's runs in one row that goes off the screen at 1440 px (Expand components cut, Format, Columns and Export beyond it); ours wraps to a second row, so every control is on screen (kept).
 - **Workbook sub-item expressions:** the Estimating tab holds no sheet scales, so a formula's measured length, area or count is taken from the owning item's quantity; `PERIMETER` and an area parent's `LINEAR` keep the plain number where legacy writes them out. Each expression is also checked against our evaluator, so none can be wrong; legacy checks only plain arithmetic.
+- **Format panel against live legacy (02:28):** legacy's text sizes are ±0.5 px nudges over each text's own size, ours set the header and data sizes directly (the same effect, since every text in our grid shares them); legacy lists per-column widths with "Reset column widths" in the panel, ours are dragged at the header and kept per viewer; legacy splits Sub-scope and Custom folder top/nested colours, our groupings have one of each; legacy's Freeze main header belongs to the theme, ours to each viewer.
 - **Keep this rate (the tick):** not built; live legacy's unit change always clears the rate, so its tick cannot show there either (its own comment: "A cleared rate has nothing to keep").
 - **Settings (task 4):** Shifts and Time Tracking (F15), AI Credits (F14), Brand accent color (the proposal PDF, F10), the members' Shift column (F15) are not built; the transfer keeps F3's type-the-name confirmation instead of legacy's click-to-choose list; our members rows keep email and last activity (F3-S11); Collaboration, Activity and Account are ours, beyond legacy; the sign-in refusal is inline (F2's `AuthFormError` tells a network block from a wrong password) rather than a toast; ten-character passwords (F2); no "Clear cached session" (D-17). The app bar on the dashboard and project pages (out of scope tonight) still differs from legacy's (Library, Settings, email).
 - **Region box menu (S31):** legacy's tool strip (name an item from the box), Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image, Search as Text and New Snapshot are not built; their owners are F11 to F14 (spec, "Not in F7"). A box that encloses markups selects them (S14) instead of opening the menu.
@@ -130,7 +132,9 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **The workbook library warns in dev (01:05):** `xlsx-js-style` references Node's `stream` and `fs`, which Vite stubs in the browser ("Module … has been externalized"). Harmless: the download works and legacy ships the same library.
 - **Stacked dialogs shared one title id (00:50):** every `Dialog` labelled itself `#dialog-title`, so a second dialog opened over a first (Costs over Manage sub-items) was announced with the first one's title. Fixed with `useId` (`88090c7`).
 - **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
-- **Estimating rates ignored One at a time (02:25):** the rates and cost component writes never asked for the item's hold, so S12's second half could not pass. They now call F8's guard (`d48d44d`).
+- **Estimating rates ignored One at a time (02:18):** the rates and cost component writes never asked for the item's hold, so S12's second half could not pass. They now call F8's guard (`d48d44d`).
+- **Legacy's "What Export carries" promises a worksheet tab colour and a frozen top row (02:28):** its code sets `!tabColor` and `!views`, but the workbook library (`xlsx-js-style`) writes neither, so legacy's files have neither. Ours says so in the panel instead of promising them.
+- **Escape did not close the Format popover (02:33):** fixed; it now closes wherever focus is (`2383eb8`).
 - **S31 AC3 not driven in two windows:** the crop publishes `drawing.sheet.changed` like every Load; B's panel was not watched tonight.
 
 - **Throwaway scripts in two infra commits (found 20:13).** The mirror helper staged all of `intelcost-infra` with `git add -A`, so `browser/legacy-r2a.mjs` and `legacy-r2b.mjs` rode along in `ac87ad5` and `ff506c9` and were deleted in `e329299`. They hold no credentials (they read `process.env.LEGACY_*`). The helper now stages `workspace/` only.
@@ -168,6 +172,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 20. Format → Row heights: change Classification header or Sub-item rows alone; only those rows move. "Group headers" reads "mixed" until you set them all.
 21. Shared equipment → a machine with nothing spread: its "Unallocated — {machine}" row sits in its home classification's group (and its subcontractor's), with the group's chip and TOTAL including it; in the Sheet pivot it has its own group at the end.
 22. Settings → Collaboration → One at a time; one person resumes a measurement while another types a rate on that item in Estimating: refused with "{name} is editing this item right now.", and it goes through once they finish.
+23. Format → What Export carries: read the list, export, and check the file's row heights and quantity decimals follow the panel. Escape closes the panel.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
