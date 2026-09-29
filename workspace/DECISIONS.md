@@ -4052,3 +4052,41 @@ Result (before → after, DPR 1 / 1.25): changes after the gesture 3 → 1; jump
 marks in the gesture up to 2.1× their size → 1.00×; uncovered view 4.7% → 0; frames with no
 picture 0 → 0; gesture frame time unchanged (18–23 ms mean in the bench's software
 renderer).
+
+---
+
+## D-101 — A sheet switch is never blank: the last sheet holds until the next has a picture
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder's round 5, item 1)
+**Area:** Takeoff, Frontend
+**Builds on:** D-14, D-42, F5-S11
+
+Measured on the bench's production build (D-49), a 113-sheet electrical set, windows
+2048 × 1050 at DPR 1.25 and 1440 × 900 at DPR 1. Before, every switch swapped the canvas
+for "Loading the sheet" while the sheet's measurements loaded, then mounted a new canvas
+whose fit image was downloaded only then: 290 to 330 ms of blank canvas (10 to 12 frames),
+first picture 355 to 400 ms.
+
+- **The canvas stays.** Only the first open waits on "Loading the sheet"; a switch mounts
+  the next sheet's canvas at once, and its measurements join when they arrive.
+- **The last sheet holds** (`components/sheetCurtain.ts`): the leaving canvas copies what it
+  shows (page, fit image, raster, as placed) into one canvas in a host the page keeps, and
+  the arriving one lifts it the frame it has a picture of its own. Markups are not copied.
+  A hold nothing lifts goes after 8 s.
+- **The fit image is decoded, not an `<img>`** (`pdf/fit-images.ts`): drawn from an
+  `ImageBitmap` into a canvas the frame it is ready; the `<img>` stays the fallback when a
+  fetch or decode fails. pdf.js's first draw waits for it (`holdFirstPaint`), since a draw on
+  the main thread held the decoded image back from the screen.
+- **Fetched ahead, within a budget.** Once the open sheet is sharp, every sheet's fit image
+  is fetched in the background, nearest in the panel first, one at a time, as encoded bytes
+  (96 MB full, 48 MB at ≤ 8 GB, 24 MB at ≤ 4 GB, `memoryScale`); the two neighbours are
+  decoded (at most 6 decoded, 3 at ≤ 8 GB; an evicted bitmap is closed). A hovered row's
+  image is decoded at once, as legacy's hover prerender. The neighbours' measurements are
+  prefetched too.
+
+Result (after, same bench): no blank frame on any switch; first picture 106 to 126 ms for a
+neighbour, 133 to 169 ms for a far sheet hovered 300 ms before the click, 460 to 660 ms for a
+far sheet reached without a hover (the old sheet on screen meanwhile; the decode is 70 to
+200 ms on the bench's software renderer, legacy measured 21 to 44 ms on real machines). Most
+of what is left is the click's own React render, 80 to 120 ms on the bench.
