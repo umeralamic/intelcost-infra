@@ -16,7 +16,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | R2-E | Round 2 group E: whole-page comparison | Done | 20:04 | 20:13 | 9 min |
 | 2 | Rest of F7 (hover, mouse and reticle, keys and settings, cursors, drafts, two windows, Crop as New Page) | Done | 20:13 | 21:17 | 64 min |
 | 3 | Close F7 in speed mode | **Built, awaiting your click check** (spec not archived, as asked). S1 to S31 built, every block smoke-tested through the MCP with the quantity table green (D-70, D-78); PARITY §10 35 ticked, 21 open (Snap PDF, deduct pairing by click, vertex handles, zoom glitches, reference pane and the other lines each waiting for their owner); board, backlog, mirror, backup `E:\Intelcost-backup\2026-09-28_2125-f7-built`. Not driven: the vertex conflict, six-section paste, three-item box delete, S31 AC3 in two windows | 21:17 | 21:27 | 10 min |
-| 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Not started | | | |
+| 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Done (D-87). Legacy's mark, auth frame and words; Settings' own bar, heading, Editing workspace card, pill tabs with inner rows; legacy's cards for General, Members, Roles, Ownership and the Project Setup screens | 21:27 | 21:50 | 23 min |
 | 5 | F9 Block A | Not started | | | |
 | 6 | F9 Block B onwards | Not started | | | |
 
@@ -30,6 +30,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `c52efcf` and fastapi `a95ed9b`: F7-S25 to S27 (D-84)
 - react `5b3298d` and fastapi `ec3408b`: F7-S28 to S30 (D-85)
 - react `ae16713` and fastapi `298a8a6`: F7-S31 Crop as New Page (D-86)
+- infra `c5062a6`: F7 closed (board, backlog, PARITY), workspace mirror
+- react `9e8917b`: sign-in, sign-up and Settings matched to legacy (D-87)
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -41,6 +43,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **D-84** F7-S25 to S27. **Pending review:** the hover panel is hidden when another tool is picked or a pan begins (legacy leaves it up).
 - **D-85** F7-S28 to S30 (beyond legacy, the founder's F8). **Pending review:** the two-window check drove cursors, drafts, a deduct, an undo and a shared count; the vertex conflict, six-section paste and three-item box delete were not driven tonight.
 - **D-86** F7-S31 Crop as New Page. **Pending review:** legacy's placement (after the last sheet of the source's folder) and legacy's uncalibrated crop replace the spec's AC1 and AC2 (after the source, at the source's scale); only Crop is built of legacy's region box entries.
+- **D-87** sign-in, sign-up and Settings at 1440×900. **Pending review:** the settings pages lose the app's top bar and the email banner (legacy's settings page has neither); Account sits as a fifth tab (legacy has no personal page); the sign-in refusal stays inline in the card, not legacy's toast; ten-character passwords stay.
 
 ## F9 answers to review
 
@@ -51,6 +54,8 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Round 2 C: row cluster order (⋮ last), legacy's row menu, no totals footer, Bookmarks newest first.
 - Round 2 D: the takeoff Settings dialog, separate from the workspace's, from the header's gear.
 - Round 2 E: tab strip, Sheets header and ladder, muted panel bands, the open sheet's items shown, Takeoff panel width, status bar always, 9 px quantities.
+- Task 4, sign-in and sign-up: legacy's mark and "Intelcost" top left over the warm wash, the heading inside the card, "Welcome back" / "Sign in to your workspace.", "Forgot password?" beside the label, "New to Intelcost? Create an account"; "Start your free trial" and legacy's field order with a muted "(optional)".
+- Task 4, Settings: its own bar with "← Dashboard"; "Workspace settings" and legacy's subtitle; "Editing workspace" card; pill tabs General · People & Access · Project Setup · Trash with inner rows; General as Logo, Workspace name, Company info and "Save settings" (toast "Settings saved"); Members as "Members & Roles" with "Invite someone" (Takeoff by default) after the list; Roles in legacy's card and column, fixed roles first with a lock, orange ticks; Ownership opens with the current owner; every card legacy's padding, shadow and heading.
 - F7-S31: a Select box over empty sheet opens the region box menu (legacy's 25 px); Crop as New Page with legacy's name, placement, toasts and switch to the new sheet.
 
 ## Legacy differences left, with reasons
@@ -60,6 +65,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - **Header:** legacy's Share (project sharing), Upgrade and work timer are not built (no feature owns them yet); the Open dialog's "Set up takeoff on existing project" tab is Project Home's load flow here; its list shows every project (the list carries no sheet count).
 - **Settings waiting for their features:** Trace (F12), Snap PDF, the legend, Ctrl+F browser find, main tab text size, two-line sheet names, folder/sheet/bookmark row text, Rendering; Hover and Cursor are taken up tonight with S25 and S26.
 - **Whole page (E):** the toolbar's Print, Find Text, Dimension, Snapshot, Dock, Overlay, Highlight, Note, Fullscreen, Split; the Earthwork, Collaborator, Estimating and Community tabs; Snap PDF; "Takeoff | Assemblies"; Share; the Sheets panel's folder actions and tree guides: each waits for the feature that owns it (D-83).
+- **Settings (task 4):** Shifts and Time Tracking (F15), AI Credits (F14), Brand accent color (the proposal PDF, F10), the members' Shift column (F15) are not built; the transfer keeps F3's type-the-name confirmation instead of legacy's click-to-choose list; our members rows keep email and last activity (F3-S11); Collaboration, Activity and Account are ours, beyond legacy; the sign-in refusal is inline (F2's `AuthFormError` tells a network block from a wrong password) rather than a toast; ten-character passwords (F2); no "Clear cached session" (D-17). The app bar on the dashboard and project pages (out of scope tonight) still differs from legacy's (Library, Settings, email).
 - **Region box menu (S31):** legacy's tool strip (name an item from the box), Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image, Search as Text and New Snapshot are not built; their owners are F11 to F14 (spec, "Not in F7"). A box that encloses markups selects them (S14) instead of opening the menu.
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
 
@@ -83,6 +89,12 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - Legacy's Snapping hint says Ortho is "horizontal / vertical"; it steps by 45°. Ours says so.
 
 ## Click-only checks (most important first)
+
+**Task 4 (sign-in, sign-up, Settings)**
+1. Sign out and open the sign-in page: the orange IC tile and "Intelcost" top left, "Welcome back" in the card, "Forgot password?" beside Password. Sign up reads "Start your free trial" with Job title second.
+2. Open Settings: "← Dashboard" top right, "Workspace settings", the "Editing workspace" buttons, and pill tabs; People & Access shows Members, Roles & Permissions, Ownership, Collaboration, Activity in a second row.
+3. General: Logo, Workspace name, Company info, "Save settings" bottom right; saving says "Settings saved".
+4. Members: "Members & Roles", the members, then "Invite someone" with Takeoff chosen.
 
 **F7-S31**
 1. With Select, drag a box over empty paper: a menu with "Crop as New Page". Choose it: "Cropped page added", the new sheet "{name} (Crop)" opens at the end of the folder, uncalibrated, with the drawing crisp.

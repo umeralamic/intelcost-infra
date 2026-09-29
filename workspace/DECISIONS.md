@@ -3484,3 +3484,47 @@ after the source. After D-03 the browser never writes a file or a row itself.
 - Legacy's toasts, word for word: "Cropped page added" with "Text and vectors are kept, so
   Find Text and Snap PDF still work. Calibrate it before measuring.", or "Could not crop
   the page" with the reason. The new sheet opens.
+
+## D-87 — Sign-in, sign-up and Settings matched to legacy at 1440 × 900
+
+**Date:** 2026-09-28
+**Status:** Accepted; decided overnight, pending founder review
+**Area:** Frontend (auth, workspace settings)
+**Serves:** overnight task 4; D-60, F2, F3, F6 Block D
+
+**Context:** The founder asked for the Settings tabs, sign-in and sign-up to be compared
+with live legacy at 1440 × 900 and the differences fixed. Legacy's auth pages put the
+mark and "Intelcost" at the top left over a warm wash, the heading inside one card
+("Welcome back" / "Sign in to your workspace."; "Start your free trial"); its Workspace
+settings is one page with its own bar ("← Dashboard"), "Workspace settings", an "Editing
+workspace" card when there are several, and pill tabs General · People & Access (Members,
+Roles & Permissions, Shifts, Time Tracking, Ownership) · Project Setup (Classification,
+Subcontractors, Statuses) · AI Credits · Trash, each section a titled card.
+
+**Decision (decided overnight, legacy's look and words):**
+- **Brand:** legacy's mark (the orange "IC" tile, from the marketing repo's asset,
+  128 px) replaces the wordmark everywhere `BrandMark` is used; `BrandLockup` is the mark
+  and "Intelcost", legacy's spelling on those pages.
+- **Sign-in:** legacy's frame and words, "Forgot password?" beside the Password label,
+  "New to Intelcost? Create an account". **Kept:** the refusal stays inline in the card
+  (F2's `AuthFormError`, which tells a network block from a wrong password) rather than
+  legacy's toast; its title is legacy's "Sign in failed". "Clear cached session" stays
+  dropped (D-17).
+- **Sign-up:** "Start your free trial"; legacy's field order (Full name, Job title
+  (optional), Work email, Password). **Kept:** ten characters, not eight (F2 close-out).
+- **Settings frame:** legacy's bar, heading, subtitle, "Editing workspace" card and pill
+  tabs. Outer: General, People & Access, Project Setup, Trash, then **Account** (ours,
+  beyond legacy, which has no personal page). People & Access holds Members, Roles &
+  Permissions, Ownership and ours, Collaboration and Activity. Shifts and Time Tracking
+  wait for F15, AI Credits for F14. Every route stays; the settings pages drop the app's
+  top bar and email banner, as legacy's settings page has neither.
+- **Tabs:** General as legacy's cards (Logo, Workspace name, Company info: Phone,
+  Address, License #, one "Save settings", toast "Settings saved"); Members as legacy's
+  "Members & Roles" card with "Invite someone" (Takeoff by default, "Invite", the role's
+  line under it) after the members; Roles & Permissions in legacy's card and column, fixed
+  roles first with a lock, orange ticks; Ownership opens with legacy's "Ownership" card
+  and the current owner; every settings card is legacy's (padding, shadow, heading size).
+- **Left, with reasons:** Brand accent color (the proposal PDF, F10); the members'
+  Shift column (F15); legacy's click-to-choose transfer list (ours keeps F3's type-the-
+  name confirmation); the row shapes inside our members list (email and last activity,
+  F3-S11).
