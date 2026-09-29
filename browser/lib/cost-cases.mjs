@@ -151,6 +151,21 @@ export const COST_CASES = [
     expect: { totalMaterialCost: 250, itemCost: 250 },
   },
 
+  // --- "Keep as typed rates" when a kind's last component goes (legacy's resolveRemoval) -
+  // Material QTY × 1.1 at $2 over 100 SF: $220 → $2.20/SF kept as the typed rate.
+  { id: "keep-material-rate", kind: "keep", quantity: 100, keepKind: "material", components: [component("material", { qty_formula: "QTY*1.1", unit_price: 2 })], expect: { unit_material_cost: 2.2 } },
+  // The crew above: 15 MH over 100 SF = 0.15 MH/SF at the blended $35/h.
+  {
+    id: "keep-labor-rates",
+    kind: "keep",
+    quantity: 100,
+    keepKind: "labor",
+    components: [component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 30 }, { role: "Foreman", count: 1, hourly_wage: 45 }], production_rate: 20, production_basis: "units_per_hr" })],
+    expect: { unit_man_hours: 0.15, hourly_wage: 35 },
+  },
+  // A lump machine ($1,350) is kept as the lump, never as a unit rate.
+  { id: "keep-equipment-lump", kind: "keep", quantity: 100, keepKind: "equipment", components: [component("equipment", { pricing_mode: "lump", equip_rate: 400, equip_basis: "day", duration_formula: "3", mob_demob: 150 })], expect: { equipment_cost: 1350, unit_equipment_cost: null } },
+
   // --- The workbook keeps a formula only when it gives the app's figure (legacy's) ------
   // Row 2, typed rates: 40 LF + 10 % = 44 × $3 = $132; Total Material's formula (44 × 3)
   // and Item Cost's (0 + 0 + 132 + 0) both hold. Row 3, a $50 lump material component:

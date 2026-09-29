@@ -47,10 +47,16 @@ try {
     const alloc = await import("/src/lib/estimate/equipmentAllocation.ts");
     const envs = await import("/src/lib/estimate/componentEnv.ts");
     const workbook = await import("/src/lib/estimate/workbook.ts");
+    const removal = await import("/src/lib/estimate/componentRemoval.ts");
     return cases.map((c) => {
       if (c.kind === "alloc") {
         const r = alloc.allocateResource(c.res, c.hosts);
         return { total: r.total, unallocated: r.unallocated, allocations: Object.fromEntries(r.allocations) };
+      }
+      if (c.kind === "keep") {
+        const env = { parent: 0, qty: c.quantity };
+        const whole = costing.computeLineCost({ quantity: c.quantity, unit: "SF", input: costing.EMPTY_COST_INPUT, unitWastage: new Map(), components: c.components.map((row) => comps.evaluateComponent(row, env)) });
+        return removal.keepRates(c.keepKind, whole);
       }
       if (c.kind === "workbook") {
         const keys = ["qty", "wastage", "qty_wastage", "multiplier", "total_qty", "unit_mh", "total_mh", "wage", "labor_cost", "unit_equipment", "equipment", "unit_material", "total_material", "subcontract", "item_cost"];
@@ -102,6 +108,8 @@ for (const [i, c] of COST_CASES.entries()) {
     const got = costs[i][field];
     if (want !== null && typeof want === "object") {
       for (const [k, v] of Object.entries(want)) if (!cent(got?.[k], v)) wrong.push(`${c.id}.${field}.${k}: ${got?.[k]}, expected ${v}`);
+    } else if (want === null) {
+      if (got !== null) wrong.push(`${c.id}.${field}: ${got}, expected null`);
     } else if (typeof want === "boolean") {
       if (got !== want) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
     } else if (!cent(got, want)) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
