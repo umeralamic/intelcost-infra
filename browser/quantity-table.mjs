@@ -10,7 +10,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 import { APP, openBrowser } from "./lib/bench.mjs";
-import { COST_CASES } from "./lib/cost-cases.mjs";
+import { COST_CASES, ENV_ITEMS, ENV_SHEET } from "./lib/cost-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -41,14 +41,21 @@ try {
     });
   }, CASES);
   // The cost rows: F9's money through the app's own lib/estimate.
-  costs = await page.evaluate(async (cases) => {
+  costs = await page.evaluate(async ([cases, envItems, envSheet]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
     const comps = await import("/src/lib/estimate/components.ts");
     const alloc = await import("/src/lib/estimate/equipmentAllocation.ts");
+    const envs = await import("/src/lib/estimate/componentEnv.ts");
     return cases.map((c) => {
       if (c.kind === "alloc") {
         const r = alloc.allocateResource(c.res, c.hosts);
         return { total: r.total, unallocated: r.unallocated, allocations: Object.fromEntries(r.allocations) };
+      }
+      if (c.kind === "env") {
+        const ctx = { items: envItems, scales: envs.sheetScales([envSheet]), vars: new Map(c.vars) };
+        const host = envItems.find((i) => i.uuid === c.host);
+        const env = envs.componentEnv(c.host, host.effective_quantity, ctx);
+        return costing.computeLineCost({ quantity: host.effective_quantity, unit: "SF", input: undefined, unitWastage: new Map(), components: c.components.map((row) => comps.evaluateComponent(row, env)), netQty: host.effective_quantity });
       }
       const env = { parent: 0, qty: c.quantity };
       return costing.computeLineCost({
@@ -63,7 +70,7 @@ try {
         equipmentAllocation: c.equipmentAllocation ?? null,
       });
     });
-  }, COST_CASES);
+  }, [COST_CASES, ENV_ITEMS, ENV_SHEET]);
 } finally {
   await browser.close();
 }

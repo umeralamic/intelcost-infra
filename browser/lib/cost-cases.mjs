@@ -40,6 +40,25 @@ const component = (kind, fields) => ({
   unit_rate: null,
   ...fields,
 });
+/** The items `env` rows read: a Slab with one drawn rectangle and its two sub-items. */
+export const ENV_SHEET = { uuid: "sheet-1", feet_per_norm: 0.1, width_pt: 1000, height_pt: 1000 };
+const dim = { local_key: "d1", name: "Thickness", kind: "vertical", semantic_role: null, value: 6, unit: "IN", raw: "6", position: 0 };
+export const ENV_ITEMS = [
+  {
+    uuid: "slab",
+    name: "Slab",
+    type: "sf",
+    effective_quantity: 200,
+    parent_uuid: null,
+    formula_qty: null,
+    is_reference: false,
+    geometries: [{ sheet_uuid: "sheet-1", geom_type: "sf", vertices_json: [[0.1, 0.1], [0.3, 0.1], [0.3, 0.2], [0.1, 0.2]], shape_meta: null, role: "add" }],
+    dimensions: [dim],
+  },
+  { uuid: "rebar", name: "Rebar", type: "sf", effective_quantity: 100, parent_uuid: "slab", formula_qty: 100, is_reference: false, geometries: [], dimensions: [] },
+  { uuid: "mesh", name: "Mesh", type: "sf", effective_quantity: 50, parent_uuid: "slab", formula_qty: 50, is_reference: false, geometries: [], dimensions: [] },
+];
+
 // Wall: 40 LF at 0.5 MH/LF, $40/h, $3/LF material, $100 subcontract.
 const WALL = rates({ unit_man_hours: 0.5, hourly_wage: 40, unit_material_cost: 3, subcontract_cost: 100 });
 
@@ -107,6 +126,29 @@ export const COST_CASES = [
     input: rates({ unit_material_cost: 3 }),
     components: [component("subcontract", { pricing_mode: "lump", sub_calc: "quote", quote_amount: 5000 })],
     expect: { totalMaterialCost: 300, subcontractCost: 5000, itemCost: 5300 },
+  },
+
+  // --- A component's formula environment (legacy's costEnvFor) --------------------------
+  // Slab: a 20 × 10 ft rectangle (0.1 ft/pt on a 1000 pt page): 200 SF, perimeter 60 LF;
+  // d1 = 6 in = 0.5 ft; the variable is 1.5. PERIMETER × d1 + var + PARENT / 100 =
+  // 30 + 1.5 + 2 = 33.5 LF at $2, unit mode over 200 SF: $67.
+  {
+    id: "component-env-full",
+    kind: "env",
+    host: "slab",
+    vars: [["11111111-1111-1111-1111-111111111111", 1.5]],
+    components: [component("material", { qty_formula: "PERIMETER*{dim:d1}+{var:11111111-1111-1111-1111-111111111111}+PARENT/100", unit_price: 2 })],
+    expect: { totalMaterialCost: 67, itemCost: 67 },
+  },
+  // A component on a sub-item reads its parent's environment: PARENT is Slab's 200 SF and
+  // [mesh] its sibling's 50: 250 at $1 = $250.
+  {
+    id: "component-env-sub-item",
+    kind: "env",
+    host: "rebar",
+    vars: [],
+    components: [component("material", { qty_formula: "PARENT+[mesh]", unit_price: 1 })],
+    expect: { totalMaterialCost: 250, itemCost: 250 },
   },
 
   // --- Shared equipment, spread to the cent ----------------------------------------------
