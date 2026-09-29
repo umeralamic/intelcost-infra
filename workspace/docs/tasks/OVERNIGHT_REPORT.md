@@ -44,6 +44,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `e12b0af`: column widths and Freeze Header; fastapi `94c6277` and react `b09707a`: shared equipment (D-93)
 - fastapi `ec82bde` and react `a931329`: Edit sub-item and rate review
 - react `88090c7`: Costs… in Manage sub-items; dialog title ids unique
+- react `3a6f2da`: the grid at legacy's Default density (side by side with live legacy); `5c05895`: component, shared and unallocated rows in the workbook
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -98,6 +99,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **Settings waiting for their features:** Trace (F12), Snap PDF, the legend, Ctrl+F browser find, main tab text size, two-line sheet names, folder/sheet/bookmark row text, Rendering; Hover and Cursor are taken up tonight with S25 and S26.
 - **Whole page (E):** the toolbar's Print, Find Text, Dimension, Snapshot, Dock, Overlay, Highlight, Note, Fullscreen, Split; the Earthwork, Collaborator, Estimating and Community tabs; Snap PDF; "Takeoff | Assemblies"; Share; the Sheets panel's folder actions and tree guides: each waits for the feature that owns it (D-83).
 - **Estimating (F9 Block A):** Format, Export, Shared equipment, Expand components, the row and header menus, column widths by drag, and every cost figure wait for Blocks B to E; the group row's "MH · cost" reads "—" until Block B; legacy's per-theme fonts and fills are Block E's Format.
+- **Estimating toolbar:** legacy's runs in one row that goes off the screen at 1440 px (Expand components cut, Format, Columns and Export beyond it); ours wraps to a second row, so every control is on screen (kept).
 - **Settings (task 4):** Shifts and Time Tracking (F15), AI Credits (F14), Brand accent color (the proposal PDF, F10), the members' Shift column (F15) are not built; the transfer keeps F3's type-the-name confirmation instead of legacy's click-to-choose list; our members rows keep email and last activity (F3-S11); Collaboration, Activity and Account are ours, beyond legacy; the sign-in refusal is inline (F2's `AuthFormError` tells a network block from a wrong password) rather than a toast; ten-character passwords (F2); no "Clear cached session" (D-17). The app bar on the dashboard and project pages (out of scope tonight) still differs from legacy's (Library, Settings, email).
 - **Region box menu (S31):** legacy's tool strip (name an item from the box), Page Name, Sheet #, Scale, Ask AI, Extract Schedule, Auto Count, Copy as Text / Image, Search as Text and New Snapshot are not built; their owners are F11 to F14 (spec, "Not in F7"). A box that encloses markups selects them (S14) instead of opening the menu.
 - **Action group at 1440 px:** legacy folds it under "More ▾" (its toolbar has ten more tools); ours has room and shows it.
@@ -109,6 +111,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 - **A shared count settled late on B (20:57):** with both marking one count item, A read 11 EA at once and B read 1 EA until its own count session's refetch 3.5 to 8.5 s later; both ended on 11 EA.
 
 - **Our `intelcost/` checkout is not live legacy (21:55).** Live legacy runs the `UmeralamDEV` branch, 161 commits past the local `umer-dev`/`main` at `12dd119b` (2026-09-24): the Estimating tab there has cost components, shared equipment and a cost-type filter the local source lacks. Read tonight with `git show origin/UmeralamDEV:<path>` after a fetch, no branch moved. Worth deciding which branch is the "source of truth" in CLAUDE.md.
+- **The workbook library warns in dev (01:05):** `xlsx-js-style` references Node's `stream` and `fs`, which Vite stubs in the browser ("Module … has been externalized"). Harmless: the download works and legacy ships the same library.
 - **Stacked dialogs shared one title id (00:50):** every `Dialog` labelled itself `#dialog-title`, so a second dialog opened over a first (Costs over Manage sub-items) was announced with the first one's title. Fixed with `useId` (`88090c7`).
 - **The browser tab's title ignores the sheet name (21:14):** it reads the sheet number, else "Page {n}", so a crop's tab says "Page 1". Predates tonight; left as it is.
 - **S31 AC3 not driven in two windows:** the crop publishes `drawing.sheet.changed` like every Load; B's panel was not watched tonight.
