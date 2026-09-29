@@ -50,6 +50,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - react `5f628ac`: Go To Page selects the item on the sheet it opens (legacy's "Go to markup")
 - react `20aaa38`: a sub-item's Qty exports as a live Excel expression (legacy's `toExcelExpression`)
 - react `53899e9`: the frozen header draws its own dividers (legacy's flicker fix)
+- react `878e6e6`: Format's Grid & borders, empty and total row heights, tab colour
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -155,6 +156,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 16. Right-click an Estimating row → Go To Page: the Takeoff tab opens on that sheet with the item selected and Select armed.
 17. Export with formulas, open in Excel: a sub-item's Qty cell is a formula (a derived volume reads like 165.95*2*4/27); change a number in it and the row, its parent and TOTAL follow.
 18. With the header frozen, scroll a long estimate quickly: the header's column lines stay steady, no white flashes.
+19. Format → My formatting → Grid & borders: Line weight Medium, a Line color, the three switches; the grid follows at once, and an export carries the weight and colour. Colours → Layer tab colours the open tab.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
