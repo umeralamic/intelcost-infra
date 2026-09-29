@@ -4018,3 +4018,37 @@ are calls made in the founder's absence, in legacy's favour.
   Legacy's live Estimating has no markups or bid total; its retired estimate compounded
   contingency, GC overhead, GC profit, a permit lump sum, bond and insurance on the direct
   cost, with per-project defaults 5 / 8 / 5 / 1 and sales tax from a state table. Not built.
+
+## D-100 — The wheel zoom's handover: one swap, nothing moving
+
+The founder: after a wheel zoom the sheet visibly moved and glitched when the sharp
+redraw replaced the stretched frame (2026-09-29). Measured on the bench, DOM on every
+animation frame plus a CDP screencast of every painted frame, three gestures (fit →
+2.4×, → 5.2× windowed, → 3.3× out), at device pixel ratios 1 and 1.25; status and
+numbers in `docs/tasks/ZOOM_GLITCH_STATUS.md`. Legacy (live) was measured the same way and
+is not invisible either: its markups stay a blurred, thickened bitmap until a later
+redraw. Beyond legacy on purpose.
+
+- **One swap.** When the wheel stops (legacy's 120 ms idle) the gesture stays on screen
+  while the sharp frame for the landing zoom is drawn, from the page's box as it sits on
+  screen (`usePageRaster().prepare`). The zoom is then committed and that frame shown in
+  the same React commit. A new tick cancels the draw and the gesture goes on; a press
+  lands at once with the stretched frame.
+- **No half-resolution pass** once a frame is on screen. The last frame stays, stretched,
+  until the sharp one is fully drawn: it was a visible blur and a second swap.
+- **Exact placement.** A frame's page size is exact (never rounded up) and carries its
+  `pixelRatio`; the bitmap is placed at its own size, so each bitmap px lands where it
+  was drawn. The commit places the view from the laid-out page, measured with the stage's
+  transform off before paint, not from a model of the gutter and centring.
+- **Markups hold their on-screen size through the gesture.** A `gestureScale` is rendered
+  with `flushSync` in the same frame as the stage's scale; sizes read the zoom on screen,
+  and the markup SVG and the Dimension layer are scaled back by exactly 1 / scale. The
+  geometry stays on the one stage transform.
+- **Windowed edges:** the window's margin is half a view per side (legacy's 0.35), and the
+  fit image always lies under a windowed raster.
+
+Result (before → after, DPR 1 / 1.25): changes after the gesture 3 → 1; jump at the swap
+0.64 / 0.54 px → ≤ 0.019 px; raster against markups 0.49 / 0.41 px → ≤ 0.012 px; count
+marks in the gesture up to 2.1× their size → 1.00×; uncovered view 4.7% → 0; frames with no
+picture 0 → 0; gesture frame time unchanged (18–23 ms mean in the bench's software
+renderer).
