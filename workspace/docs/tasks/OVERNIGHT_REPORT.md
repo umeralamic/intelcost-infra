@@ -2,7 +2,7 @@
 
 _Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
 [docs/archive/OVERNIGHT_REPORT_2026-09-28.md](../archive/OVERNIGHT_REPORT_2026-09-28.md).
-Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the founder from 10:10). **Ended 03:00 CDT: every task done.**_
+Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the founder from 10:10). **Ended 02:50 CDT: every task done.**_
 
 ## Progress checklist
 
@@ -18,7 +18,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 | 3 | Close F7 in speed mode | **Built, awaiting your click check** (spec not archived, as asked). S1 to S31 built, every block smoke-tested through the MCP with the quantity table green (D-70, D-78); PARITY §10 35 ticked, 21 open (Snap PDF, deduct pairing by click, vertex handles, zoom glitches, reference pane and the other lines each waiting for their owner); board, backlog, mirror, backup `E:\Intelcost-backup\2026-09-28_2125-f7-built`. Not driven: the vertex conflict, six-section paste, three-item box delete, S31 AC3 in two windows | 21:17 | 21:27 | 10 min |
 | 4 | Legacy comparison: Settings tabs, sign-in, sign-up | Done (D-87). Legacy's mark, auth frame and words; Settings' own bar, heading, Editing workspace card, pill tabs with inner rows; legacy's cards for General, Members, Roles, Ownership and the Project Setup screens | 21:27 | 21:50 | 23 min |
 | 5 | F9 Block A | Done. Spec adopted as `estimating_tasks.md` with the ten answers (D-88); live legacy compared (its newer cost components, shared equipment and cost filter written into the spec); the Estimating tab's grid built and smoke-tested | 21:50 | 22:20 | 30 min |
-| 6 | F9 Block B onwards | **Built, awaiting your click check** (spec not archived, as F7). Blocks B to F built (D-89 to D-94): pricing, wastage, multipliers, cost components, shared equipment, row menu, comments, custom columns, packages, format themes with legacy's Grid & borders and row heights, the Excel workbook with live formulas (sub-item expressions too), undo, Go to markup, spacer rows, Unallocated rows in their home group; S12 driven in two windows and in One at a time. Compared with live legacy on the grid, the Format panel and the export. PARITY §11: 25 ticked, 1 open (item history, F11). Board and backlog updated | 22:20 | 02:55 | 275 min |
+| 6 | F9 Block B onwards | **Built, awaiting your click check** (spec not archived, as F7). Blocks B to F built (D-89 to D-94): pricing, wastage, multipliers, cost components, shared equipment, row menu, comments, custom columns, packages, format themes with legacy's Grid & borders and row heights, the Excel workbook with live formulas (sub-item expressions too), undo, Go to markup, spacer rows, Unallocated rows in their home group; S12 driven in two windows and in One at a time. Compared with live legacy on the grid, the Format panel and the export. PARITY §11: 25 ticked, 1 open (item history, F11). Board and backlog updated | 22:20 | 02:50 | 270 min |
 
 ## Commits
 
