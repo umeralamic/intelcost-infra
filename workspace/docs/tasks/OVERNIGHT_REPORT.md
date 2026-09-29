@@ -37,6 +37,7 @@ Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the fou
 - fastapi `a2ed9f5` and react `f5bf339`: F9 Block B pricing (D-89)
 - react `0105b1e`: F9-S6 multiplier popover; `975fdee`: S4 Costs…; fastapi `4278ad3` and react `f49a1d2`: S7 row menu and comments
 - fastapi `07b7d11` and react `2d5e9a0`: F9-S8 custom columns
+- fastapi `5c1c127` and react `574b32e`: F9-S9 packages per project
 
 ## Decisions to review (decided overnight, pending founder review)
 
@@ -118,6 +119,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 2. In the Takeoff panel, ⋮ on an item → "Costs…": legacy's five fields and Notes; the figures show in Estimating.
 3. Right-click an Estimating row: Insert row above/below (a manual line, also in the Takeoff panel), Add Sub-item, Add comment…, Go To Page.
 4. Columns → Add custom column…: a free-text column; type into it, rename it with the pencil, remove it with the bin (legacy's warning).
+5. Group by Subcontractor → "Manage subcontractors…": This project repackages a scope for this project only; the ↺ puts back the workspace default.
 
 **F9 Block B (pricing)**
 1. Click a Unit Man Hours, Per Hour Wage, Unit Material Cost or Subcontract cell, type a figure, press Enter: the row, its group chip and TOTAL follow at once; a second window follows too.
