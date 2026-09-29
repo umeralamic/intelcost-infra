@@ -37,6 +37,7 @@ _Updated: 2026-09-27_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
+| F9b | A priced estimate stops at the summed Item Cost: no markups, overhead, profit, bond or tax, so no bid total. → **The next estimating block after F9** (the founder, D-95): those five over F9's lines, and the bid total they make (P-22). | Be Fe | Umer | _not yet specced_ |
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): Dimension, the Legend and Print.** Dimension is frequently used, so F11 should not slip far behind F7. | Be Fe | Umer | _not yet specced_ |
 | F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_ |

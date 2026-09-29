@@ -174,8 +174,9 @@ every one of them is live, inserts and deletes included.
 
 | Act | Capability |
 |---|---|
-| Open the tab, group, filter, search, format for oneself, export | membership (`canExportProposals` for export, Q6) |
-| Rates, wastage, subcontract, manual lines, custom columns | `canEditEstimates` (the pricing and estimator seats), refused 403 by the api |
+| Open the tab, group, filter, search, format for oneself, export | membership; export open to every member (D-95) |
+| Rates, wastage, subcontract, cost components, shared equipment, packages, custom column values | `canEditEstimates` (the pricing and estimator seats), refused 403 by the api (D-95) |
+| Manual lines (Insert row) | `canEditTakeoff`: they are takeoff items (Q5) |
 | Comments | any seat that can comment (`canComment`) |
 | Multipliers from the popover | `canEditTakeoff` (it writes F6's folders and layers) |
 | Workspace format theme, workspace subcontractor defaults | `canManageWorkspace` / `canManageTrades` |
@@ -278,7 +279,12 @@ the item's hold covers its line's rates.
 10. **Currency and locale.** Legacy is USD, en-US. Recommendation: USD in F9, the currency
     a workspace setting later.
 
-## Answers (D-88, decided overnight, pending founder review)
+## Answers (D-88, decided overnight; reviewed by the founder 2026-09-29, D-95)
+
+**The founder's review (D-95):** 1, 2, 3, 4, 5, 7, 9 and 10 accepted; **6 changed**: price
+edits take `canEditEstimates`, not takeoff editing, and export stays open to every member;
+8 kept as legacy's merge (the choice was left open). Markups, overhead, profit, bond and
+tax are the next estimating block after F9.
 
 Every answer is legacy's behaviour, as the overnight instructions ask; the draft's
 recommendation is noted where it differed.
@@ -293,9 +299,9 @@ recommendation is noted where it differed.
 5. **Manual lines:** legacy's: "Insert row above/below" makes a takeoff item with no
    shape and a quantity override "Manual line", in the anchor's folder, so it also shows
    in the Takeoff panel. *(Draft: D-09's first-class manual line.)*
-6. **Who may price:** legacy's reach: every seat that can edit takeoff or estimates
-   (`canEditTakeoff` or `canEditEstimates`), refused 403 otherwise; export for every
-   member. *(Draft: `canEditEstimates` only; export on `canExportProposals`.)*
+6. **Who may price:** ~~legacy's reach: every seat that can edit takeoff or estimates~~.
+   **Changed by the founder (D-95): `canEditEstimates` only**, refused 403 otherwise;
+   export for every member.
 7. **Presentation state:** in the browser, per project, as legacy: column choices and
    widths, group-by, layer mode, the cost filter, export options, the theme choice and
    the "V<n>" export counter. *(Draft: the counter on the project.)*

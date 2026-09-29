@@ -9,6 +9,15 @@ how it behaves, down to the words. Build to the list this produces, not only to 
 Before the first line of a new screen, a new panel, a new menu or a new dialog, and again
 at the end of the block that builds it.
 
+## Which legacy
+
+**Live legacy is the `UmeralamDEV` branch of `intelcost/`** (the founder, 2026-09-29). The
+local checkout tracks `origin/UmeralamDEV` on a local `UmeralamDEV` branch; refresh it
+with `git -C intelcost fetch origin && git -C intelcost pull` before reading. It is
+read-only: its push URL is disabled, and nothing is ever pushed to legacy. `main` and
+`umer-dev` in that repo are stale (`umer-dev` stopped at `12dd119b`, 2026-09-24); what
+changed since is in [tasks/LEGACY_UMERALAMDEV_DIFF.md](tasks/LEGACY_UMERALAMDEV_DIFF.md).
+
 ## How
 
 0. **Read legacy first: its source and its plan files.** Legacy's features were improved

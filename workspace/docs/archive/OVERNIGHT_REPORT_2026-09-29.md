@@ -1,8 +1,10 @@
 # Overnight report, 2026-09-28 to 2026-09-29
 
-_Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Last night's report:
+_Plan: [OVERNIGHT_PLAN_2026-09-29.md](OVERNIGHT_PLAN_2026-09-29.md). Last night's report:
 [docs/archive/OVERNIGHT_REPORT_2026-09-28.md](../archive/OVERNIGHT_REPORT_2026-09-28.md).
-Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the founder from 10:10). **Ended 02:50 CDT: every task done.**_
+Run started 2026-09-28 19:10 CDT; ends by 2026-09-29 05:30 CDT (moved by the founder from 10:10). **Ended 02:50 CDT: every task done.**
+Reviewed by the founder 2026-09-29 (D-95): the F9 answers accepted except Q6 (pricing on
+`canEditEstimates`), D-79 to D-94 accepted; archived._
 
 ## Progress checklist
 

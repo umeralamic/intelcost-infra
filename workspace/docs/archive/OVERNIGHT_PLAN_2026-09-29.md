@@ -2,7 +2,7 @@
 
 _The founder's instructions, saved verbatim below (received 2026-09-28 about 19:10 CDT; away
 15 hours; **the founder moved the end to 2026-09-29 05:30 CDT**, 3:30 PM Pakistan time). Previous plans are in
-[docs/archive/](../archive/). Progress: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md)._
+[docs/archive/](../archive/). Progress: [OVERNIGHT_REPORT_2026-09-29.md](OVERNIGHT_REPORT_2026-09-29.md)._
 
 **After any compaction:** re-read CLAUDE.md, this file, OVERNIGHT_REPORT.md and
 docs/legacy_comparison.md, then continue from the report's checklist.

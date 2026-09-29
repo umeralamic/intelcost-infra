@@ -3277,8 +3277,7 @@ buttons do not hold the view's middle (the page jumps between regimes); ours hol
 ## D-80 — Round 2, group B: legacy's toolbar, action group states, sheet stepper, takeoff header
 
 **Date:** 2026-09-28
-**Status:** Accepted (round 2, matched to legacy); decided overnight, pending founder review
-where marked
+**Status:** Accepted (round 2, matched to legacy); decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Takeoff, Frontend
 **Serves:** F7 (S23, S26), the founder's round-2 findings B7 to B11
 
@@ -3373,7 +3372,7 @@ and "Close without saving?". Workspace settings are a separate page on the serve
 ## D-83 — Round 2, group E: the whole takeoff page against legacy's
 
 **Date:** 2026-09-28
-**Status:** Accepted (round 2, matched to legacy); decided overnight, pending founder review
+**Status:** Accepted (round 2, matched to legacy); decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Takeoff, Frontend
 **Serves:** the founder's round-2 finding E17
 
@@ -3400,8 +3399,7 @@ first comparison listed); the sheet row's menu entries owned by later features.
 ## D-84 — F7-S25 to S27: legacy's hover panel and highlight, reticle, keys
 
 **Date:** 2026-09-28
-**Status:** Accepted (matched to legacy); decided overnight, pending founder review where
-marked
+**Status:** Accepted (matched to legacy); decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Takeoff, Frontend, API
 **Serves:** F7-S25, S26, S27
 
@@ -3432,7 +3430,7 @@ marked
 ## D-85 — F7-S28 to S30: colleagues' cursors drawn, drafts as their shapes, the two-window check
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review where marked
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95) where marked
 **Area:** Takeoff, Frontend, API (realtime)
 **Serves:** F7-S28, S29, S30; D-33, D-38
 
@@ -3459,7 +3457,7 @@ Pointers were being sent but never drawn.
 ## D-86 — F7-S31: Crop as New Page, legacy's placement and name, cropped on the api
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Takeoff, Frontend, API (drawing)
 **Serves:** F7-S31
 
@@ -3488,7 +3486,7 @@ after the source. After D-03 the browser never writes a file or a row itself.
 ## D-87 — Sign-in, sign-up and Settings matched to legacy at 1440 × 900
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Frontend (auth, workspace settings)
 **Serves:** overnight task 4; D-60, F2, F3, F6 Block D
 
@@ -3532,7 +3530,8 @@ Subcontractors, Statuses) · AI Credits · Trash, each section a titled card.
 ## D-88 — F9 adopted: the ten questions answered in legacy's favour
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95), **Q6 amended
+by D-95** (pricing on `canEditEstimates` alone)
 **Area:** Estimating (Frontend, Backend)
 **Serves:** F9, all blocks
 
@@ -3569,7 +3568,7 @@ cost-type filter.
 ## D-89 — F9 Block B: legacy's rates on the line, computed in the browser
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Estimating (Frontend, Backend)
 **Serves:** F9-S3, S4, S5; D-09, D-50, D-88
 
@@ -3606,7 +3605,7 @@ tests.
 ## D-90 — F9-S11: the workbook in the browser, with legacy's library and palette
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Estimating (Frontend), dependencies
 **Serves:** F9-S11; D-88 Q2, Q3, Q7
 
@@ -3633,7 +3632,7 @@ had considered the api building it with a Python twin (D-89 left that open).
 ## D-91 — F9 Block B: cost components, legacy's, with QTY in F6's formula engine
 
 **Date:** 2026-09-28
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Estimating (Frontend, Backend), takeoff-core formula engine
 **Serves:** F9 Block B ("Live legacy since the draft"); D-88, D-89
 
@@ -3663,7 +3662,7 @@ components replaces that type's typed rate. The draft spec predates them.
 ## D-92 — F9-S10: format themes, the Default on the app's tokens
 
 **Date:** 2026-09-29
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Estimating (Frontend, Backend), design tokens (hard rule 4)
 **Serves:** F9-S10; D-88 Q7, D-90
 
@@ -3693,7 +3692,7 @@ that `null` means "follow the design token".
 ## D-93 — F9 Block B: shared equipment, legacy's
 
 **Date:** 2026-09-29
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Estimating (Frontend, Backend)
 **Serves:** F9 Block B ("Live legacy since the draft"); D-91
 
@@ -3723,7 +3722,7 @@ equipment.
 ## D-94 — F9: Unallocated rows in their machine's home group, legacy's
 
 **Date:** 2026-09-29
-**Status:** Accepted; decided overnight, pending founder review
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
 **Area:** Estimating (Frontend)
 **Serves:** F9 Block B; supersedes D-93's placement of Unallocated rows
 
@@ -3741,3 +3740,30 @@ the Sheet pivot.
   at the end.
 - Money only (Total Equipment and Item Cost); its name opens Shared equipment; no row
   menu; on the first layer tab and the workbook's first sheet.
+
+## D-95 — The founder's review of the overnight run: F9 answers, pricing gate, D-79 to D-94
+
+**Date:** 2026-09-29
+**Status:** Accepted (the founder)
+**Area:** Estimating (Frontend, Backend), workspace process
+**Serves:** F9; D-78 to D-94
+
+**Context:** The overnight run of 2026-09-28 decided F9's ten questions (D-88) and D-79 to
+D-94 in legacy's favour, pending the founder's review.
+
+**Decision:**
+- **F9 answers 1, 2, 3, 4, 5, 7, 9 and 10 accepted as D-88 records them.**
+- **Q6 changed: price edits take the pricing capability, `canEditEstimates`**, not takeoff
+  editing. Rates, wastage, cost components, shared equipment, packages and custom values
+  are refused (403, "Your role cannot price the estimate.") to a seat that can only edit
+  takeoff (the Takeoff role); the grid shows it read-only and the Takeoff panel offers no
+  "Costs…". **Export stays open to every member.** Built: fastapi `08fa647`, react
+  `e0e9016`.
+- **Q8, same-name groups:** the founder's message left the choice open ("merge as legacy /
+  by node"). Kept as built, **merge as legacy**, until the founder says otherwise.
+- **D-79 to D-94 accepted** as recorded, except as amended here.
+- **Next estimating block after F9:** markups, overhead, profit, bond and tax (on the
+  board, Planned).
+- **Live legacy is `UmeralamDEV`** (`origin/UmeralamDEV`): written into CLAUDE.md and
+  `docs/legacy_comparison.md`; the local `intelcost/` checkout tracks it, read-only. What
+  changed there since `12dd119b`: `docs/tasks/LEGACY_UMERALAMDEV_DIFF.md`.

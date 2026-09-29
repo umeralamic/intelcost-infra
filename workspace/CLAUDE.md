@@ -13,7 +13,7 @@ and compute earthwork cut and fill from a surface TIN.
 
 | Repo | What it is | Stack | State |
 |---|---|---|---|
-| `intelcost/` | The legacy all-in-one Vite SPA plus 252 Supabase migrations and 18 edge functions. **Source of truth for behaviour** until each surface is ported. | React 18, Vite 5, Supabase | Live, being retired surface by surface |
+| `intelcost/` | The legacy all-in-one Vite SPA plus its Supabase migrations and edge functions. **Source of truth for behaviour** until each surface is ported. **Live legacy is the `UmeralamDEV` branch** (`origin/UmeralamDEV`), not `main` or `umer-dev`: the local checkout tracks it and is read-only (fetch and `git pull` only, never push). | React 18, Vite 5, Supabase | Live, being retired surface by surface |
 | `intelcost-market-next/` | The marketing site. `intelcost.io`. No session, no database, no money. | Next 16, React 19, Tailwind 4 | Built, never deployed |
 | `intelcost-app-react/` | The application frontend. `app.intelcost.io`. Everything behind a session. | React 18, Vite 8, Tailwind 3 | Being built |
 | `intelcost-app-fastapi/` | The backend. `api.intelcost.io`. Owns the database, the files, the money, the jobs. | FastAPI, Python 3.14, Postgres 18, Celery, S3 | Being built |
@@ -91,7 +91,8 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
 
 ## Git
 
-**`umer-dev` is the only branch we push or pull.** In every repo in the workspace.
+**`umer-dev` is the only branch we push or pull.** In every repo in the workspace, with one
+exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed.
 `main` is not ours to move.
 
 - **Pull:** `git pull origin umer-dev`. Never pull onto `main`, and never merge
