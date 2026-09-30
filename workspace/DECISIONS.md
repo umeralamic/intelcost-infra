@@ -4709,3 +4709,8 @@ steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
 - Apply sets the sheet's scale through the Scale menu's own guard.
 - **Left:** legacy's check of the printed scale against drawn dimensions (its
   Verification chip), "Show" on the drawing, the AI fallback and Scale · All pages.
+*D-116 round 15 (09:10).* The item row's menu was checked against live legacy's (the "More
+actions" ⋮) and matches entry for entry. The Assemblies header gains legacy's "Collapse one
+level" and "Expand one level", which step through three levels: folders shut; folders
+open; sub-items too. Level 2 is the default, as legacy's. A row toggled by hand keeps its
+state until the level changes.
