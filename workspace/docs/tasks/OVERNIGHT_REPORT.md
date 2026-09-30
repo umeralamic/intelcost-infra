@@ -2,43 +2,51 @@
 
 Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec" in
 "F5 Block A demo 15:16", as estimator@bench.intelcost.io (the founder's instruction for
-this run).
+this run). Everything below was checked on the bench.
+
+**Read first:** [D-117](../../DECISIONS.md). Abdullah merged a "staging" branch into the
+api's `umer-dev` at 07:17 UTC. I did not pull it. That merge by itself would break the
+api on the bench, so one api commit is held locally (details under Decisions).
 
 ## Progress
 
-- [x] 1a Snap the stage to whole device pixels — DPR 1 solved, DPR 1.25 not solved on the bench (D-105)
+- [x] 1a Snap the stage to whole device pixels: solved at DPR 1, not solved on the bench at DPR 1.25 (D-105)
 - [x] 1b Clip the raster to the page box (D-105)
-- [x] 1c Supersample by drawing density, guard passed (D-106)
+- [x] 1c Supersample by drawing density; the guard passed (D-106)
 - [x] 2 Split view (D-107)
 - [x] 3 Public share links (D-108)
 - [x] 4 Markup tools and the Collaborator tab (D-109, D-110, D-111)
-- [x] 5 F10 assemblies, Starter Pack, Library (D-112; template properties/costs editing and Starter authoring left)
-- [x] 6 The rest of F11: Find Text (D-113), Print (D-114), item History and Modified by (D-115), region Copy/Search as Text, Open at snapshot zoom, Dock this snapshot
-- [x] 5b F10-S3 follow-up: template Properties, Change classification, sub-items, Costs; live library
-- [ ] Fallback: side by side with live legacy (started 05:47)
+- [x] 5 F10 assemblies, Starter Pack and Library, template editing included (D-112)
+- [x] 6 The rest of F11: Find Text (D-113), Print (D-114), item History (D-115), region text actions
+- [x] Fallback: side by side with live legacy, 18 rounds (D-116)
+- [x] Close-out: gates, quantity table, report, mirror, memory
 
 ## Tasks
 
 | Task | Status | Start | End | Duration |
 |---|---|---|---|---|
-| 1a, 1b | Done at DPR 1; DPR 1.25 not solved on the bench (3+ attempts, evidence in D-105) | 00:36 | 01:45 | 1 h 09 |
-| 1c | Done, guard passed | 01:45 | 02:00 | 0 h 15 |
+| 1a, 1b | Done at DPR 1; not solved at DPR 1.25 on the bench after 3+ attempts (evidence in D-105) | 00:36 | 01:45 | 1 h 09 |
+| 1c | Done; the guard passed | 01:45 | 02:00 | 0 h 15 |
 | 2 Split view | Done | 02:00 | 02:11 | 0 h 11 |
-| 3 Public share links | Done (guest presence left empty) | 02:11 | 02:32 | 0 h 21 |
-| 4a Markups and Collaborator tab | Done | 02:32 | 02:59 | 0 h 27 |
-| 4b Carets, visibility, Split markups, Snapshot, Snippets, Dock | Done | 02:59 | 03:44 | 0 h 45 |
-| 5 F10 assemblies | Done (library, Save as, Link, Use on sheet, Starter Pack read side; S3 template editing and Starter authoring left) | 03:44 | 04:09 | 0 h 25 |
+| 3 Public share links | Done; guest presence shows nothing (see below) | 02:11 | 02:32 | 0 h 21 |
+| 4a Markups and the Collaborator tab | Done | 02:32 | 02:59 | 0 h 27 |
+| 4b Carets, visibility, markups in Split, Snapshot, Snippets, Dock | Done | 02:59 | 03:44 | 0 h 45 |
+| 5 F10 assemblies: library, Save as, Link, Use on sheet, Starter Pack read side | Done | 03:44 | 04:09 | 0 h 25 |
 | 6a Find Text | Done | 04:09 | 04:28 | 0 h 19 |
 | 6b Print | Done | 04:28 | 04:44 | 0 h 16 |
 | 6c Item history | Done | 04:44 | 04:58 | 0 h 14 |
-| 6d Open at snapshot zoom, Dock this snapshot, live Assemblies | Done | 04:58 | 05:07 | 0 h 09 |
-| 5b F10-S3 template Properties, sub-items, Costs | Done | 05:07 | 05:24 | 0 h 17 |
-| 6e Region Copy/Search as Text, Modified by, Change classification | Done | 05:24 | 05:45 | 0 h 21 |
-| Fallback rounds 1–4 (D-116) | Done | 05:47 | 06:38 | 0 h 51 |
+| 6d Open at snapshot zooms to its box, Dock this snapshot, the library updates live | Done | 04:58 | 05:07 | 0 h 09 |
+| 5b F10-S3: template Properties, sub-items and Costs | Done | 05:07 | 05:24 | 0 h 17 |
+| 6e Region Copy/Search as Text, Estimating's Modified by, Change classification | Done | 05:24 | 05:45 | 0 h 21 |
+| Fallback rounds 1–7 (layout, menus, glyphs, dialogs) | Done | 05:47 | 07:13 | 1 h 26 |
+| Fallback round 8: Duplicate page (api half held, D-117) | Done | 07:13 | 07:28 | 0 h 15 |
+| Fallback rounds 9–18 (Legend, Assemblies, Dock properties, markup undo, naming and scale from a box, snapshot, bookmark and multi-select menus) | Done | 07:32 | 09:25 | 1 h 53 |
+| Regression smoke, report, close-out | Done | 09:25 | 11:15 | 1 h 50 |
 
 ## Task 1 numbers
 
-**1a: text sharpness on screen against the raster's own pixels** (1.00 = shown 1:1; test project, 2 sheets, 2048 × 1050):
+**1a: text sharpness on screen, measured against the raster's own pixels.** 1.00 means
+shown 1:1. Test project, 2 sheets, window 2048 × 1050.
 
 | Zoom | DPR 1 before | DPR 1 after | DPR 1.25 before | DPR 1.25 after |
 |---|---|---|---|---|
@@ -48,46 +56,217 @@ this run).
 | 50% | 0.99 | 1.01 | 0.85 | 0.91 |
 | 100% | 0.97 | 1.00 | 1.00 | 0.98 |
 
-A 1 px checkerboard painted into the raster: 0% exact on screen before at both ratios; after, 100% exact at DPR 1, still 0% at 1.25. Three causes found and removed (stage translation off the device grid; canvas CSS size not exact in layout units; settled frame scale a hair off 1); at 1.25 the bench's software compositor still resamples, cause not found (D-105).
+- **The checkerboard test:** a 1 px checkerboard painted into the raster was 0% exact on
+  screen before, at both ratios. After the fix it is 100% exact at DPR 1 and still 0% at
+  DPR 1.25.
+- **The three causes found and removed:**
+  - the stage's translation was off the device grid;
+  - the canvas's CSS size was not exact in layout units;
+  - the settled frame's scale was a hair off 1.
+- **Still open:** at DPR 1.25 the bench's software compositor still resamples the canvas,
+  and I did not find why (D-105).
 
-**1b:** the raster's rounded-up bitmap stood 0 to 1 CSS px past the paper's right and bottom edges (up to 3 px with 1a's rounding); now clipped to the page box exactly.
+**1b:** the raster's rounded-up bitmap stood 0 to 1 CSS px past the paper's right and
+bottom edges, and up to 3 px with 1a's rounding. It is now clipped to the page box
+exactly.
 
-**1c** (D-106): Fit at 1440 × 900, mean luminance 241.9 → 247.4 and 238.0 → 243.9, dark pixels 3.5% → 0.9% and 3.9% → 1.2%. 29% acutance (edge strength per unit of ink): 0.726 → 0.875, 0.862 → 1.022 (DPR 1); 0.885 → 0.957, 0.737 → 0.955 (DPR 1.25). Landing at 25–29%: + 0 to 540 ms.
+**1c** (D-106), at Fit in a 1440 × 900 window:
+
+| Measure | Before | After |
+|---|---|---|
+| Mean luminance, sheet 1 | 241.9 | 247.4 |
+| Mean luminance, sheet 2 | 238.0 | 243.9 |
+| Dark pixels, sheet 1 | 3.5% | 0.9% |
+| Dark pixels, sheet 2 | 3.9% | 1.2% |
+
+- **Acutance at 29%** (edge strength per unit of ink) rose at every point: 0.726 → 0.875
+  and 0.862 → 1.022 at DPR 1; 0.885 → 0.957 and 0.737 → 0.955 at DPR 1.25.
+- **Cost:** landing at 25–29% takes 0 to 540 ms longer.
 
 ## Commits
 
-- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106); `1fd112a` Split view (D-107); `9f67dcc` share links (D-108); `63ce6d1` markups (D-109); `260ce0a` carets and visibility; `0dd98a5` Snapshot (D-110); `f79fdcf` Dock (D-111); `17af197` assemblies (D-112); `f2e954c` Find Text (D-113); `264786b` Print (D-114); `5522454` item History (D-115)
-- api `f33c191` share links (D-108); `3d7854c` markups (D-109); `fcd014a` snippets (D-110); `0d967aa` dock (D-111); `2633473` assemblies (D-112); `e4dddc2` item history (D-115)
+All app commits are on `origin/umer-dev`. All api commits are too, except the last.
+
+- **app** (`intelcost-app-react`), 35 commits:
+  - `e43d484` 1a, 1b · `ec78384` 1c · `1fd112a` Split view · `9f67dcc` share links
+  - `63ce6d1` markups · `260ce0a` carets and visibility · `0dd98a5` Snapshot · `f79fdcf` Dock
+  - `17af197` assemblies · `f2e954c` Find Text · `264786b` Print · `5522454` History
+  - `5829d9e` snapshot zoom, Dock this snapshot, live library · `500d582` template editing
+  - `9b45f70` region text · `ed4116a` Modified by · `3c45b04` Change classification
+  - side-by-side rounds: `e37da1f`, `57c7ba0`, `58fea03`, `68113cc`, `5498d9e`, `2799251`,
+    `dc1c8c2`, `d502762`, `85ac5d4`, `56f3a9b`, `fc7b3f5`, `2b4661a`, `ea7ba15`, `8b97281`,
+    `bde3a14`, `3697324`, `a5c7095`, `c723099`
+- **api** (`intelcost-app-fastapi`), 9 commits:
+  - pushed: `f33c191` share links · `3d7854c` markups · `fcd014a` snippets · `0d967aa` dock
+    kind · `2633473` assemblies · `e4dddc2` item history · `6046f88` template editing ·
+    `30bc846` Modified by
+  - **held locally:** `7ad2c10` Duplicate page (D-117)
+- **mirror** (`intelcost-infra`): a workspace-file commit after every change (last one
+  "Close-out").
+- **Migrations on the bench:** `a7d3e9c15b20` share links, `b4e8f2a61c37` markups,
+  `c1f7a9d24e58` snippets, `d2b8e4f73a91` assemblies, `e4c9a1b7d352` item history.
 
 ## Decisions to review
 
-- **D-117 (URGENT)**: at 07:17 UTC Abdullah merged "staging" into `intelcost-app-fastapi` `umer-dev`. That head is inconsistent on its own (`config.py` drops the S3 settings that `storage.py` still reads, and it requires `AWS_*` variables the bench does not set), so it would break the api on the bench. I did not pull it. One api commit (7ad2c10, Duplicate page) is held on the local `umer-dev`, one ahead and two behind. The pushed app's Duplicate page needs it.
-- **D-116** (pending): side-by-side rounds 1–8 with live legacy. The list of what was fixed and what was left is in the decision.
-- **D-115** (pending): item History as legacy's, written by the api in the same transaction as each item write (created, edited, deleted, duplicated, override set/cleared, shapes, assembly linked). Legacy's "calibration changed" and "quantity recalculated" rows are not written, and Estimating's "Modified by" link is not wired.
-- **D-114** (pending): Print as legacy's: in the browser at 2000 px, handed to `window.print()`, not a server PDF. The takeoff prints only when shown; markups always. Docks print as a border without their picture, as legacy's do.
-- **D-113** (pending): Find Text as legacy's (its search module ported unchanged). Create › Measurement opens New Measurement named from the first hit without placing marks, as legacy does. Choose Pages is a flat list, not legacy's folder tree.
-- **D-112** (pending): assemblies as legacy's, the draft's nine questions answered in legacy's favour. Writes need `canEditTakeoff` (legacy checks nothing). Use on sheet from the Starter Pack applies its sub-items (legacy probably does not). Template properties and costs editing (F10-S3), Starter authoring and live panel refresh are not built.
-- **D-105** (pending): the stage is placed on whole device pixels; a wheel zoom now holds the cursor's point to 0.5 device px instead of 0.02. The raster is clipped to the paper.
-- **D-111** (pending): Dock as legacy's; its "Dock this snapshot" shortcut and properties popover not built.
-- **D-110** (pending): Snapshot, Snippets and Link Screenshot as legacy's; custom tags are a free label; Open at snapshot does not zoom to the box yet.
-- **D-109** (pending): markups in one live table; the draft spec's eight questions answered in legacy's favour; the Collaborator tab as legacy's.
-- **D-108** (pending): public share links as legacy's; guest presence is stored but shows nothing (our presence has no page beacons); the link uses the app's own origin.
-- **D-107** (pending): Split view's zoom uses the canvas's steps and range, not legacy's + 0.25 to 1200%; zoom keys act on the main canvas only.
-- **D-106** (pending): supersampling below about 34% at 125% (42% at 100%), not only below Fit; lines read thinner and lighter; landing up to 0.5 s slower at 25%.
+All are marked "decided overnight, pending founder review".
+
+- **D-117 (urgent): the api's `umer-dev` moved during the run and I did not merge it.**
+  - At 07:17 UTC Abdullah pushed "staging init" and a merge of `staging` into `umer-dev`
+    (8ff495a, 8c2bf9a). A dry-run merge is textually clean.
+  - The merged head is inconsistent on its own. `app/config.py` drops `s3_access_key_id`,
+    `s3_secret_access_key`, `s3_force_path_style`, `s3_signing_endpoint`,
+    `sync_database_url` and `is_local`. `app/core/storage.py` still reads them.
+  - It also requires `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, which the bench's
+    compose file does not set.
+  - Pulling it would have stopped the api on the bench, so `7ad2c10` (Duplicate page) is
+    held on the local `umer-dev` (1 ahead, 2 behind). The app's Duplicate page, already
+    pushed, needs it.
+  - **Your call:** fix staging's settings and storage, and the compose variables. Then run
+    `git pull origin umer-dev` and push.
+- **D-116: side by side with live legacy, 18 rounds.** The full list is in the decision
+  and summarised below.
+- **D-115: item History as legacy's.**
+  - The api writes the history in the same transaction as each item write.
+  - Estimating's Modified by opens it.
+  - Legacy's "calibration changed" and "quantity recalculated" rows are not written.
+- **D-114: Print as legacy's.** The browser rasters each page and hands it to
+  `window.print()`; there is no server PDF. The takeoff prints only when shown; markups
+  always print. A dock prints as its border, as legacy's does.
+- **D-113: Find Text as legacy's**, its search module ported unchanged.
+  - Create › Measurement opens New Measurement without placing marks, as legacy does.
+  - Choose Pages is a flat list, not legacy's folder tree.
+- **D-112: Assemblies as legacy's**, the draft's nine questions answered in legacy's
+  favour.
+  - Writes need `canEditTakeoff`; legacy checks nothing.
+  - Use on sheet from the Starter Pack applies its sub-items; legacy probably does not.
+  - Starter Pack authoring and the Properties dialog's WBS, height and pitch fields are
+    not built.
+- **D-111: Dock** as legacy's, now with Dock this snapshot and Dock properties.
+- **D-110: Snapshot, Snippets and Link Screenshot.** A custom tag is a free label. The
+  floating preview window is a dialog.
+- **D-109: markups** in one live table, with legacy's Collaborator tab. Markup undo is
+  now built.
+- **D-108: public share links.** Guest presence is stored but shows nothing: our presence
+  has no page beacons.
+- **D-107: Split view.** Its zoom uses the canvas's steps. The zoom keys act on the main
+  canvas only.
+- **D-106: supersampling by drawing density.** Lines read lighter; landing is up to 0.5 s
+  slower at 25%.
+- **D-105: whole-device-pixel placement.** A wheel zoom now holds the cursor's point to
+  0.5 device px, where it held 0.02 before.
 
 ## Legacy differences fixed and left
 
-- **Fixed:** Split view (legacy's `ReferenceCanvasPane`), ported from source.
-- **Fixed:** Highlight, Note, Cloud, Callout, Arrow and the Collaborator tab; the Highlight and Note carets; the Markups toggle and Annotations visibility; Snapshot, Snippets, Link Screenshot; Dock.
-- **Left:** a Properties panel per markup kind, and undo of markup edits (legacy's undo covers markup placement).
-- **Fixed:** public share links (legacy's `ShareLinkBlock`, `guest-project`, `GuestProject`).
-- **Left:** guest presence (cursors and pages of the team) — legacy's page beacons have no counterpart yet.
-- **Left:** Split view was built from legacy's source, not driven live side by side (time); the pane's zoom buttons stop at 10% where a sheet's fit in the narrow pane is below it (Fit still reaches it).
+Everything below was driven side by side with live legacy's "Bench comparison" project, at
+2048 × 1050 and 1440 × 900.
+
+### Fixed
+
+- **Takeoff panel header.** "Takeoff | Assemblies" is now two words with a bar, as
+  legacy's. The Assemblies panel has:
+  - the "My Assemblies ▾" library dropdown;
+  - collapse and expand one level;
+  - classification groups ("Unclassified" when none).
+- **Toolbar.**
+  - One cluster from Linear to Note.
+  - Legacy's own glyphs, with their red accents.
+  - Print ▾ and Find Text beside Select.
+- **Menus.**
+  - Sheet row: Preview window, Print selected page, Duplicate page, Open in new tab.
+  - Canvas: Print This Page.
+  - Bookmark: legacy's seven entries.
+  - Snapshot: legacy's seven entries, including Link to measurement and Copy image.
+  - Multi-select: Print selected pages, Duplicate selected pages.
+  - Region box: Page Name, Sheet #, their "All pages…" preview, Scale, Copy as Text, Copy as
+    Image, Search as Text, New Snapshot.
+- **Dialogs.**
+  - A close × on every dialog.
+  - Settings' compact header.
+  - The scale prompt fits one row.
+  - Share › Project Users is legacy's list with "Add person".
+  - The measurement dialog's Named dimensions row and note.
+  - Native checkboxes, radios and sliders are orange.
+- **Canvas.**
+  - A fitted page stays fitted when the window or a panel resizes (legacy's zoom is
+    relative).
+  - Split's reference pane stands beside the whole canvas column.
+  - The Legend shows "· perim N LF".
+  - Markup undo and redo work.
+  - Dock properties.
+- **Estimating.** The TOTAL row is bold with legacy's rule and borders. Group by was
+  checked and is identical.
+
+### Left, with reasons
+
+- **No Earthwork or Community tab, and no Overlay tool.** Earthwork is F12, Community is
+  not ported, and sheet overlay has no spec.
+- **No "Snap PDF" chip.** Vector snapping is not built.
+- **AI entries:** Ask AI, Extract Schedule, Auto-Name, the OCR fallback in naming, and
+  Scale's AI fallback. These are F14.
+- **Auto Count** from a box is not built.
+- **Scale from a box does not verify** the printed scale against drawn dimensions, and has
+  no "All pages" sweep.
+- **The Sub-items section inside the create dialog** is not built; sub-items are added
+  from the item's menu.
+- **Estimating's control row** wraps at 1440, where legacy's runs off the screen. Its
+  Group by is a native select.
+- **Guest presence**, and **Starter Pack authoring** by platform admins.
+- **Reference pane zoom** reads absolute, "6%" where legacy's reads "100%" at Fit (D-102).
+- **Our unchecked checkboxes** are the browser's; legacy's have orange borders.
 
 ## Failures and findings
 
-- **1a at DPR 1.25 not solved on the bench** after more than three attempts: evidence in D-105. Each of the three causes was proven in a bare page (a fractional layer translation; a canvas size not exact in layout units; a scale a hair off 1) and removed, and a bare-page canvas at 125% shows 1:1; in the app at 125% the display is still resampled, and no quarter-pixel offset of the stage cancels it (a scale-like resample). The founder's GPU compositor decides it: the 29% check on the real monitor.
+- **1a at DPR 1.25 was not solved on the bench** after more than three attempts; the
+  evidence is in D-105.
+  - Each of the three causes was proven in a bare page and removed, and a bare-page canvas
+    at 125% shows 1:1.
+  - In the app at 125% the display is still resampled, and no quarter-pixel offset
+    cancels it.
+  - Your GPU compositor decides it: the first click check below.
+- **The api moved under the run (D-117).** It was not merged, and one api commit is held.
+- **Vite missed one file change.** `LegendOverlay.tsx`'s new version was on disk and in
+  the container, but Vite served the old module until `docker compose restart app`. After
+  the restart everything served fresh. If a change seems not to land, restart `app`.
+- **Deleting a cropped or duplicated sheet leaves its generated file in Files.** This is
+  already true of Crop as New Page. The files the checks made were deleted by hand; there
+  are 0 left in the test project.
+- **Every check left the test project as it was:** 29 sheets, 6 items, no markups, no
+  snippets, no throwaway assemblies, and its sheet names and bookmarks restored.
 
 ## Ideas
 
+- **A "relative zoom" option.** Legacy's zoom follows the canvas width. Ours follows
+  D-102 and only keeps a fitted page fitted.
+- **A server-side PDF print** (Q4's alternative): paper sizes, and no browser dialog.
+- **A shared Checkbox component** with legacy's orange border, in place of native boxes.
+- **Remove a sheet's generated file with the sheet**, when nothing else uses it.
+- **Scale verification against drawn dimensions** (legacy's "a printed scale is a
+  claim"). The parser is ready in `lib/takeoff/scaleText.ts`.
+- **The item history is ready for more kinds**, such as calibration changes on items.
+
 ## Click-only checks
+
+Most important first.
+
+1. **29% crispness on your real monitor (DPR 1.25).**
+   - Open Hidden Valley Spec › Page 1. Zoom menu › 29%.
+   - Is the small text as crisp as at 50%? If not, D-105 is still open for your GPU.
+2. **D-117.** Look at the api's `umer-dev` (Abdullah's staging merge) and decide the merge.
+3. **Resize the browser window at Fit.** The page should stay fitted, as legacy's does.
+4. **Takeoff | Assemblies.**
+   - Right-click an item › Save as assembly….
+   - Switch to Assemblies. Click the new row's swatch, then click on the sheet.
+   - A new item appears with the assembly's sub-items.
+5. **Ctrl+F › "PLAN" › All Pages.** Click a hit: its sheet opens framed on it.
+6. **Print ▾ › Print Current Page.** The browser's dialog shows the page with its takeoff.
+7. **Highlight.** Drag one, press Ctrl+Z (it goes), then Ctrl+Y (it returns).
+8. **Snapshot.** Press S and drag a box; Save. In Snippets, right-click › Link to
+   measurement.
+9. **Name from page region.**
+   - Drag a Select box over a title block's sheet number.
+   - Choose Sheet # · All pages…. The preview reads every page; press Cancel.
+10. **Share › Allow "Anyone with Link".** Open the link in a private window.
+11. **Split.** The reference pane opens beside the canvas; pick another sheet in it.
+12. **Duplicate page** from a sheet's menu. This works on the bench only until D-117 is
+    settled.
+13. **Estimating › Columns › Modified by.** Click a name to open its Change history.
