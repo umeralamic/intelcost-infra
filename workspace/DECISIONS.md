@@ -4891,3 +4891,27 @@ side-by-side is `docs/tasks/d119-notes-29.png`.
 - Greys darker than 40 turn black, and greys lighter than 235 turn white. A very light
   screened tint on a drawing disappears above Fit, and colours read more saturated.
 - The Split reference pane and Print are unchanged: this filter is on the main canvas only.
+
+---
+
+## D-120 — Estimating's table fills its frame; one column takes the slack
+
+**Date:** 2026-09-30
+**Status:** decided (checked in the browser on the bench)
+**Area:** Estimating, Frontend
+**Beyond legacy:** legacy leaves the gap
+
+**Evidence.** The table was set to the exact sum of its visible column widths, but its bordered
+frame stretches to the toolbar's width above it. With the default columns (about 1,795 px) the
+table is the wider of the two and nothing shows. With columns switched off it is narrower, and
+the frame shows an empty band at the right. Live legacy has the same band.
+
+**Decision.** The table is `width: 100%` of its frame with `min-width` at its columns' sum, so it
+still scrolls sideways when the columns do not fit. One column's `<col>` is left auto and takes
+the slack: Assembly when shown, otherwise the last visible column. Every other column keeps the
+width the person set. Dragging the filling column's edge starts from the width it shows, and it
+cannot be dragged narrower than the room it fills. The stored widths, Print and Export are
+unchanged.
+
+**Where:** `intelcost-app-react/src/features/estimate/EstimatingView.tsx` (`fillKey`, the
+`<table>` and `<colgroup>`, the header's resize handle).
