@@ -4678,3 +4678,9 @@ Files, as Crop as New Page already does.
 - **Assemblies:** unfiled assemblies group under their classification, division then
   scope, with "Unclassified" for none, as legacy's panel. The nodes come from the
   project's system; an assembly classified in another system shows under "Unclassified".
+*D-116 round 11 (08:30).* **Markup undo**, left open in D-109, is built as legacy's. Placing,
+moving, resizing, restyling, retexting and deleting a markup each undo with Ctrl+Z (and the
+toolbar's Undo) and redo with Ctrl+Y. The steps are kept beside the shapes' session history
+and interleaved by depth: a markup step is taken first only when no shape step was
+recorded after it. A markup deleted and put back returns with a new uuid, which later
+steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
