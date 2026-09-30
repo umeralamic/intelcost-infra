@@ -5294,3 +5294,46 @@ reads the same as the panel beside it.
 **Where:** `features/takeoff/find/FindTextPanel.tsx` (`folders`, `selection`, the tree),
 `features/takeoff/sheets/SheetsPanel.tsx` (`onSelection`), `pages/ProjectTakeoff.tsx`
 (`sheetSelection`).
+
+---
+
+## D-134 — A cropped or duplicated sheet's file goes with its last sheet
+
+**Date:** 2026-09-30
+**Status:** decided, **pending founder review** (the brief's item 4, beyond legacy)
+**Area:** Api, Drawing, Storage
+
+**Decision.** Crop as New Page and Duplicate page each make a project file (the crop, or
+the whole page run through the crop, D-116 round 8). Deleting the sheet made from it now
+removes that file too, once no sheet uses it:
+- **Which files:** a new `project_file.origin` column says how a file came to be: null
+  for an upload, "crop" or "duplicate" for one the app made. Crop and Duplicate set it;
+  the migration (`c3d8e2f4a6b1`) marks the files they made before, by the key
+  `crop_sheet` gives them (`…/crop-{sheet}.pdf`; a name ending "(copy).pdf" is a
+  duplicate). An uploaded file is never removed by a sheet delete, whatever happens to
+  its sheets.
+- **When:** in the same sheet delete, after the sheets go, a generated file with no sheet
+  left anywhere (the folder-in-use count, `sheets_from_files`) is deleted through the
+  Files tab's own delete (`project.service.delete_file`: the drawing, the file, its page
+  thumbnails). A generated file loaded again as a second sheet stays while that sheet does.
+- **Storage:** after the commit, the file's object goes (as a Files delete), and the
+  worker clears the drawing's split pages and each deleted sheet's images, every version
+  (`delete_prefixes`, a new task over the guarded `storage.delete_prefix`).
+- **Told:** `SheetDeleteResult.files`; `project.file.changed` for each file, so an open
+  Files tab refetches; the deleting tab refetches its own file lists.
+
+**Why not legacy's.** Legacy deletes the sheet row only (`onBulkDelete`), so its crop
+files pile up in the project's files with nothing using them; the brief asks for them to
+go. Legacy's Duplicate makes no file at all (a second row on the same drawing); ours
+copies through the crop (D-116 round 8), which is what made the file.
+
+**Left:** files made by New Blank Page and Paste from Clipboard (`newpage.py`) are not
+marked and stay, as before (a question in the report). An ordinary sheet delete still
+leaves that sheet's own split page and images in storage (its file stays, so they are
+not orphaned in the same way).
+
+**Where:** api `alembic/versions/c3d8e2f4a6b1_project_file_origin.py`,
+`features/project/models.py` (`origin`), `features/drawing/crop.py`,
+`features/drawing/service.py` (`_generated_sources`, `_drop_unused_generated`),
+`features/drawing/routes.py`, `features/drawing/schemas.py`, `worker/tasks/storage.py`
+(`delete_prefixes`); app `core/api/types.ts`, `pages/ProjectTakeoff.tsx`.
