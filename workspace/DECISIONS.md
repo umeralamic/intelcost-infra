@@ -4376,6 +4376,7 @@ From legacy's Snapshot tool, `useEvidence`, `EvidencePanel` and `LinkEvidenceToI
 *Pending founder review:* legacy's custom tag list per workspace (`evidence_tag_types`) is a
 free label on "other" here; Open at snapshot opens the sheet but does not yet zoom to the box;
 Copy image and the floating preview window are a dialog; OCR and AI summaries are F14's.
+*Update (05:07):* Open at snapshot now zooms to the box, as legacy's `openSnippetAtSnapshot`.
 
 ---
 
@@ -4397,6 +4398,7 @@ A dock draws its picture inside its border, moves and resizes as any box, and it
 *Pending founder review:* legacy's "Dock this snapshot" shortcut in the Snippets menu and
 its properties popover on a placed dock are not built; a dock's border is restyled by
 deleting and placing again.
+*Update (05:07):* "Dock this snapshot" is built (Snippets menu, setup opens with it picked).
 
 ---
 
@@ -4441,7 +4443,8 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
   does not (unconfirmed).
 - Assembly properties, Manage sub-items and Costs on a template (F10-S3) are not built.
 - Starter Pack authoring by platform admins is not built.
-- The panel does not yet follow `workspace.assembly.changed` live.
+- ~~The panel does not yet follow `workspace.assembly.changed` live.~~ Done 05:07: every
+  open panel follows it.
 
 ---
 
