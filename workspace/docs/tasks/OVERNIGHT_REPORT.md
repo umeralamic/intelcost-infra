@@ -18,7 +18,7 @@ api on the bench, so one api commit is held locally (details under Decisions).
 - [x] 4 Markup tools and the Collaborator tab (D-109, D-110, D-111)
 - [x] 5 F10 assemblies, Starter Pack and Library, template editing included (D-112)
 - [x] 6 The rest of F11: Find Text (D-113), Print (D-114), item History (D-115), region text actions
-- [x] Fallback: side by side with live legacy, 18 rounds (D-116)
+- [x] Fallback: side by side with live legacy, 21 rounds (D-116)
 - [x] Close-out: gates, quantity table, report, mirror, memory
 
 ## Tasks
@@ -41,7 +41,9 @@ api on the bench, so one api commit is held locally (details under Decisions).
 | Fallback rounds 1–7 (layout, menus, glyphs, dialogs) | Done | 05:47 | 07:13 | 1 h 26 |
 | Fallback round 8: Duplicate page (api half held, D-117) | Done | 07:13 | 07:28 | 0 h 15 |
 | Fallback rounds 9–18 (Legend, Assemblies, Dock properties, markup undo, naming and scale from a box, snapshot, bookmark and multi-select menus) | Done | 07:32 | 09:25 | 1 h 53 |
-| Regression smoke, report, close-out | Done | 09:25 | 11:15 | 1 h 50 |
+| Regression smoke, first draft of this report | Done | 09:25 | 09:40 | 0 h 15 |
+| Fallback rounds 19–21 (Scale · All pages, Show on a found scale, Estimating's Group by) | Done | 09:40 | 09:56 | 0 h 16 |
+| Close-out: report, cleanup, memory, mirror | Done | 09:56 | 11:15 | 1 h 19 |
 
 ## Task 1 numbers
 
@@ -87,7 +89,7 @@ exactly.
 
 All app commits are on `origin/umer-dev`. All api commits are too, except the last.
 
-- **app** (`intelcost-app-react`), 35 commits:
+- **app** (`intelcost-app-react`), 38 commits:
   - `e43d484` 1a, 1b · `ec78384` 1c · `1fd112a` Split view · `9f67dcc` share links
   - `63ce6d1` markups · `260ce0a` carets and visibility · `0dd98a5` Snapshot · `f79fdcf` Dock
   - `17af197` assemblies · `f2e954c` Find Text · `264786b` Print · `5522454` History
@@ -95,7 +97,7 @@ All app commits are on `origin/umer-dev`. All api commits are too, except the la
   - `9b45f70` region text · `ed4116a` Modified by · `3c45b04` Change classification
   - side-by-side rounds: `e37da1f`, `57c7ba0`, `58fea03`, `68113cc`, `5498d9e`, `2799251`,
     `dc1c8c2`, `d502762`, `85ac5d4`, `56f3a9b`, `fc7b3f5`, `2b4661a`, `ea7ba15`, `8b97281`,
-    `bde3a14`, `3697324`, `a5c7095`, `c723099`
+    `bde3a14`, `3697324`, `a5c7095`, `c723099`, `c240147`, `d7a8034`, `42a9945`
 - **api** (`intelcost-app-fastapi`), 9 commits:
   - pushed: `f33c191` share links · `3d7854c` markups · `fcd014a` snippets · `0d967aa` dock
     kind · `2633473` assemblies · `e4dddc2` item history · `6046f88` template editing ·
@@ -177,8 +179,8 @@ Everything below was driven side by side with live legacy's "Bench comparison" p
   - Bookmark: legacy's seven entries.
   - Snapshot: legacy's seven entries, including Link to measurement and Copy image.
   - Multi-select: Print selected pages, Duplicate selected pages.
-  - Region box: Page Name, Sheet #, their "All pages…" preview, Scale, Copy as Text, Copy as
-    Image, Search as Text, New Snapshot.
+  - Region box: Page Name, Sheet #, their "All pages…" preview, Scale (with Show) and
+    Scale · All pages, Copy as Text, Copy as Image, Search as Text, New Snapshot.
 - **Dialogs.**
   - A close × on every dialog.
   - Settings' compact header.
@@ -193,8 +195,10 @@ Everything below was driven side by side with live legacy's "Bench comparison" p
   - The Legend shows "· perim N LF".
   - Markup undo and redo work.
   - Dock properties.
-- **Estimating.** The TOTAL row is bold with legacy's rule and borders. Group by was
-  checked and is identical.
+- **Estimating.**
+  - The TOTAL row is bold with legacy's rule and borders.
+  - Group by is legacy's grouped dropdown ("Group rows by", then "Layer tabs"), with the
+    same options.
 
 ### Left, with reasons
 
@@ -204,15 +208,17 @@ Everything below was driven side by side with live legacy's "Bench comparison" p
 - **AI entries:** Ask AI, Extract Schedule, Auto-Name, the OCR fallback in naming, and
   Scale's AI fallback. These are F14.
 - **Auto Count** from a box is not built.
-- **Scale from a box does not verify** the printed scale against drawn dimensions, and has
-  no "All pages" sweep.
+- **Scale from a box does not verify** the printed scale against drawn dimensions. In the
+  sweep, a sheet that already has a scale therefore starts unticked, rather than being
+  judged by verification as legacy does.
 - **The Sub-items section inside the create dialog** is not built; sub-items are added
   from the item's menu.
-- **Estimating's control row** wraps at 1440, where legacy's runs off the screen. Its
-  Group by is a native select.
+- **Estimating's control row** wraps at 1440, where legacy's runs off the screen.
 - **Guest presence**, and **Starter Pack authoring** by platform admins.
 - **Reference pane zoom** reads absolute, "6%" where legacy's reads "100%" at Fit (D-102).
-- **Our unchecked checkboxes** are the browser's; legacy's have orange borders.
+- **Our unchecked checkboxes** are the browser's. Legacy's orange-bordered ones are its
+  shadcn `Checkbox` (`border-primary`), which it uses only in some places. Its other boxes
+  are native, like ours, so a global change would go beyond legacy.
 
 ## Failures and findings
 
