@@ -26,7 +26,7 @@ this run).
 | 3 Public share links | Done (guest presence left empty) | 02:11 | 02:32 | 0 h 21 |
 | 4a Markups and Collaborator tab | Done | 02:32 | 02:59 | 0 h 27 |
 | 4b Carets, visibility, Split markups, Snapshot, Snippets, Dock | Done | 02:59 | 03:44 | 0 h 45 |
-| 5 F10 assemblies | Done (library, Save as, Link, Use on sheet, Starter Pack read side; S3 template editing and Starter authoring left) | 03:44 | 04:25 | 0 h 41 |
+| 5 F10 assemblies | Done (library, Save as, Link, Use on sheet, Starter Pack read side; S3 template editing and Starter authoring left) | 03:44 | 04:09 | 0 h 25 |
 
 ## Task 1 numbers
 

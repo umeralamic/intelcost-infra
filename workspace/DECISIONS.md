@@ -4442,3 +4442,37 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
 - Assembly properties, Manage sub-items and Costs on a template (F10-S3) are not built.
 - Starter Pack authoring by platform admins is not built.
 - The panel does not yet follow `workspace.assembly.changed` live.
+
+---
+
+## D-113 — Find Text, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 6)
+**Area:** Takeoff, Frontend
+
+From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
+`lib/takeoff/search/`) and `FindHighlightLayer`:
+
+- **Opening it:** "Find Text (Ctrl+F) — search words printed on the drawings" sits beside
+  Pan and Select. Ctrl+F opens it on the Takeoff tab unless Settings › "Ctrl+F uses the
+  browser's find" is on. It does not open on Collaborator or Estimating (Q7, legacy's).
+- **The panel** is a floating, draggable panel with Current Page / All Pages / Choose
+  Pages, a search box, Match (Keywords (All), Keywords (Any), Phrase, RegEx), Comparison
+  (Contains, Starts With, Whole Words) and Case Sensitive. Hits are grouped by sheet, with
+  checkboxes, All / None, and "{n} matches on {m} pages". Enter or the arrows walk the hits
+  across sheets; a jump opens the hit's sheet and frames the hit with legacy's padding.
+  The open sheet's hits are painted in legacy's yellow, the active one flashed.
+- **Text source:** pdf.js text of each sheet's own PDF, read once per page visit, with no
+  OCR ("No searchable text (scanned sheet)").
+- **Create ({n}):**
+  - **Highlight** makes a highlight markup per hit box, in the Highlight tool's style,
+    on the hit's own sheet.
+  - **Measurement** opens New Measurement as Count, named from the first hit. The hits'
+    boxes are not placed as marks: this is legacy's behaviour, and Q5's "a count mark per
+    hit" is left for the founder.
+
+*Pending founder review:*
+- Choose Pages is a flat, searchable page list, not legacy's folder tree with checkboxes.
+- Region select's "Search as Text" seed is not wired: the region menu has no such entry
+  yet.
