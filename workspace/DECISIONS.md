@@ -4303,3 +4303,42 @@ Ported from legacy's `ShareLinkBlock`, `useProjectShareLink`, `guest-project` an
 guests poll page beacons its members write; our presence carries item claims and broadcast
 cursors, not stored beacons, so `/presence` returns an empty list until beacons exist. The
 link is built on the app's own origin (legacy used `APP_URL` for non-localhost hosts).
+
+---
+
+## D-109 — Markups (F11 Block A) and the Collaborator tab, from the draft spec
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 4)
+**Area:** Takeoff, Backend, Frontend
+**Adopts:** `docs/tasks/drafts/markup_print_tasks.DRAFT.md`, its questions answered in
+legacy's favour
+
+**The draft's questions, in legacy's favour:**
+1. *Word:* legacy's toolbar says "Markups"; the permission stays "Use annotation tools".
+2. *Storage:* one `sheet_markup` table (kind, normalised geometry, style JSON, text, order)
+   for highlights, notes, clouds, callouts and arrows; legacy's three tables differed only in
+   columns. Every kind is live (`sheet.markup.changed`); legacy's clouds, callouts and arrows
+   were not, which is its gap, not a behaviour.
+3. *Dimensions:* not stored, as legacy's (built in D-97).
+4. *Print:* legacy's browser print (F11 Block C, later).
+5. *Find Text → Measurement:* legacy's (later, F11 Block D).
+6. *History:* legacy's three kinds (later, F11 Block E).
+7. *The Collaborator tab:* legacy's: a tab between Takeoff and Estimating with the same
+   canvas; its tool row hides the measure tools and shows Cloud, Callout and Arrow between
+   Highlight and Note; arming Highlight, Note or Dimension there goes back to Takeoff.
+8. *Style defaults:* per browser, legacy's key `intelcost.toolStyles.v1` and its defaults.
+
+**Built** (legacy's `HighlighterLayer`, `NoteLayer`, `ReviewMarkupLayer`, `review/geometry.ts`):
+draw a box (highlight, note, cloud), tail to head (arrow), point to text (callout); a note or
+callout opens its text at once and an empty one removes itself; Select moves, resizes (eight
+handles), drags an arrow's ends or a callout's tip, double-click edits text; the chip changes
+the colour or deletes; a highlight or note asks "Delete highlight?" / "Delete note?", a cloud,
+callout or arrow goes at once; Escape cancels a drag, lets the selection go, then puts the
+tool down. Sizes are legacy's: line width and head size in page points × 0.75, a cloud's
+scallop its bubble size in points, a note keeping its size on screen. Writes need
+`canUseAnnotations`.
+
+*Left for later, pending founder review:* the toolbar carets that set the next markup's
+colour (legacy's split buttons), the Properties panel per kind, the "Markups" visibility
+toggle, undo of markup edits, Snapshot and Dock, and markups in the Split and guest views.
