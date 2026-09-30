@@ -4940,3 +4940,18 @@ tabs text size" and "Bold", which still size them.
 
 **Where:** `intelcost-app-react/src/features/takeoff/components/TakeoffTabs.tsx`,
 `TakeoffHeader.tsx` (`center`), `src/pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-122 — The zoom percentage sits between Zoom in and Zoom out
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Takeoff, Frontend
+**Beyond legacy:** the percentage (zzTakeoff's, round 5 item 3) sat above the cluster's buttons
+
+**Decision.** The floating zoom cluster reads, top to bottom: Zoom in (+), the zoom percentage
+(which still opens the zoom menu: Zoom to Fit, 100%, 50%, 25%, 10%), Zoom out (−), Zoom to fit,
+Zoom window. The figure sits between the two buttons that change it. Nothing else changes.
+
+**Where:** `intelcost-app-react/src/features/takeoff/components/ZoomCluster.tsx`.
