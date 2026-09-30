@@ -4397,3 +4397,48 @@ A dock draws its picture inside its border, moves and resizes as any box, and it
 *Pending founder review:* legacy's "Dock this snapshot" shortcut in the Snippets menu and
 its properties popover on a placed dock are not built; a dock's border is restyled by
 deleting and placing again.
+
+---
+
+## D-112 — Assemblies (F10), as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 5)
+**Area:** Takeoff, Api, Frontend
+
+The draft `docs/tasks/drafts/assemblies_tasks.DRAFT.md` is adopted, and its open questions
+are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssemblyDialog` and
+`ItemRowShared`:
+
+- **The panel.** A "Takeoff | Assemblies" switch heads the Takeoff panel. Assemblies shows
+  "My Assemblies" or "Starter Pack" (the choice is kept per browser), "Search assemblies…"
+  (by name or any sub-item's name; tags are stored but not searched, as legacy), and New
+  folder. Folders come first, nested, then unfiled rows: a swatch (a click arms it), the
+  name, "0.00 {unit}", and "$" when the assembly is priced. The row menu is Use on sheet,
+  Copy to my assemblies (Starter only), Rename, Move to folder… and Delete assembly; the
+  folder menu is New sub-folder, Rename and Delete folder. The confirms use legacy's words.
+- **Save as assembly…** on a parent item's menu, after Duplicate: name, folder, tags and
+  notes. It copies the item, its sub-items with their formulas verbatim, its classification
+  and its rates at zero quantity in one api transaction.
+- **Link assembly** on an item's menu, after Override quantity: the workspace's assemblies
+  of the item's type only (legacy's picker, Q2). The pick's sub-items are appended and its
+  rates copied onto the item, overwriting the item's own (legacy, Q7). Rates are copied
+  only for a seat with `canEditEstimates`.
+- **Use on sheet** arms the tool with the assembly's name ("(2)" when the name is taken),
+  colour, opacity, symbol and classification. The first shape makes the item, and the api
+  then applies the sub-items and rates to it.
+- **Storage:** `assembly_template` (a null workspace means the Starter Pack),
+  `assembly_template_child` and `assembly_folder`, with costs as JSONB on each.
+  Deleting a folder unfiles its templates. Changes publish `workspace.assembly.changed`.
+- **The rest, in legacy's favour:** formulas are copied verbatim and not checked (Q3);
+  there is no provenance link on a copy (Q5); renaming a child does not rewrite its
+  siblings' references (Q6); there is no type filter (Q8); there is no blank "New
+  assembly" (Q9). The Starter Pack ships empty (Q4).
+
+*Pending founder review:*
+- Writes need `canEditTakeoff`, where legacy checks nothing (Q1).
+- Use on sheet from the Starter Pack applies its sub-items and rates, where legacy probably
+  does not (unconfirmed).
+- Assembly properties, Manage sub-items and Costs on a template (F10-S3) are not built.
+- Starter Pack authoring by platform admins is not built.
+- The panel does not yet follow `workspace.assembly.changed` live.
