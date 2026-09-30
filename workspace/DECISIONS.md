@@ -4736,6 +4736,9 @@ reached from a box on the sheet (round 13).
 - "Apply to N sheets" writes the ticked rows.
 - **Deviation:** a sheet that already has a scale starts unticked, so nothing is replaced
   unasked. Legacy ticks by its verification instead, which is not built here.
-*D-116 round 20 (09:52).* Scale from a box has legacy's **Show** on each found scale: the
+*D-116 round 20 (09:50).* Scale from a box has legacy's **Show** on each found scale: the
 printed string is painted with Find Text's highlight layer and framed on the canvas. Cancel
 or Apply clears it.
+*D-116 round 21 (09:58).* Estimating's Group by is legacy's grouped dropdown, where it
+was a native select: "Group rows by" (Classification … Sheet), then "Layer tabs" (Main
+layer per tab, All layers in one tab), each current entry marked.
