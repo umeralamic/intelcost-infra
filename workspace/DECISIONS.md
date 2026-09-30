@@ -4783,7 +4783,7 @@ layer per tab, All layers in one tab), each current entry marked.
 ## D-118 — Supersample only at or below Fit; full device resolution above it
 
 **Date:** 2026-09-30
-**Status:** decided (the founder's decision after his monitor check)
+**Status:** decided (the founder's decision after his monitor check); amended by D-119 (reading zooms drawn solid above Fit)
 **Area:** Takeoff, Frontend
 **Amends:** D-106
 
@@ -4825,3 +4825,69 @@ rise from 2.4% to 3.1% and from 2.6% to 3.0%, level with what 35% to 50% already
 of the edge gain is the heavier ink itself. Fit, 35% and 50% are unchanged. The bench's
 *Sharp* stays under 1 even at × 1. That is the bench's software compositor, since the
 founder's GPU shows the bitmap and the device box equal (D-105).
+
+---
+
+## D-119 — Reading zooms drawn solid: a levels curve on the settled raster above Fit
+
+**Date:** 2026-09-30
+**Status:** decided (the founder's goal, the option chosen by measurement; pending his
+monitor check)
+**Area:** Takeoff, Frontend
+**Amends:** D-118
+
+**Evidence.** The founder cropped the same notes block ("GENERAL STRUCTURAL NOTES", sheet
+c95b4606 of Hidden Valley Spec) at about 29% on his monitor, in zzTakeoff and in ours after
+D-118. The gap is contrast and stroke weight, not blur.
+
+| His crop | Mean lum | Dark % (<100) | Ink's mean lum | Grey fringe % (192–223) | Edge |
+|---|---|---|---|---|---|
+| zzTakeoff | 227.9 | 4.19 | 133.6 | 5.7 | 22.9 |
+| Ours (D-118) | 226.0 | 1.93 | 146.2 | 10.5 | 19.7 |
+
+The bench draws the same block much darker (8.6% dark at × 1). Chrome on Windows rasterises
+canvas text more thinly, so the curve was chosen on his own crop. A curve on the settled
+raster acts on the pixels his screen showed, so applying it to his crop is exact.
+
+**Decision.** Above Fit, the settled raster is shown through a linear levels curve: black
+point 40, white point 235, that is `(v − 40) × 255 / 195`, clamped. It is a GPU colour filter
+on the canvas: `brightness(0.9273) contrast(1.4102)`, the token `--raster-ink`. The bitmap
+is untouched and the draw time is unchanged. At or below Fit, nothing changes (D-106, D-118).
+
+**Options tried** (time box 90 minutes, 12:35 to 13:00). The notes block was drawn through the
+app's own pdf.js at a real forced 1.25, at 25, 29, 35 and 50%. Each option was measured on its
+bitmap and timed on a settle-sized draw, 1913 × 1275 to 2560 × 1600 device px. The software
+bench's times vary by ± 100 ms. The crops were compared with zzTakeoff's.
+- **Gamma 1.6 or 2.2, and unsharp 0.6 or 1.0:** they darken the whole block, not only the
+  strokes. On his crop, gamma 1.4 already put the mean at 218 against zzTakeoff's 228. Unsharp
+  costs 400 to 800 ms.
+- **Supersampling × 2 (high-quality) or × 3 (area average), then a curve:** + 270 to 1000 ms
+  per settle, over the budget. It is no closer to zzTakeoff's than the curve alone.
+- **pdf.js glyphs as paths (`disableFontFace`):** identical to × 1 on the bench. There is no
+  lever to measure here, and the font path on Windows is unknown.
+- **Emboldening** (fills also stroked, strokes at least 1.6 device px): far too heavy, 17 to
+  19% dark at 25 to 29%.
+- **Contrast curves on his crop:** levels 40 to 235 matched best. With it he gets 227.3 mean,
+  4.52% dark, 133.6 ink, 7.1% fringe and 22.2 edge, against zzTakeoff's 227.9, 4.19%, 133.6,
+  5.7% and 22.9.
+- **The same curve done in JavaScript** (read, map, write every pixel): + 60 to 240 ms. As a
+  CSS filter it adds nothing to the draw, so the filter was chosen.
+
+**Result in the app** (bench, real 1.25). The same block on screen, the filter off and on,
+on one frame:
+
+| Zoom | Dark % | Ink's mean lum | Fringe % | Edge | Mean lum |
+|---|---|---|---|---|---|
+| Fit (20%) | 1.38 (flag off, unchanged) | 155.0 | 14.2 | 22.4 | 222.4 |
+| 25% | 1.29 → 3.15 | 151.8 → 141.3 | 12.5 → 7.9 | 20.8 → 23.7 | 223.6 → 225.2 |
+| 29% | 2.00 → 5.49 | 143.5 → 130.5 | 11.5 → 7.8 | 21.0 → 24.1 | 223.8 → 224.6 |
+| 35% | 4.54 → 8.03 | 134.1 → 117.1 | 9.7 → 6.7 | 21.2 → 24.5 | 223.7 → 223.6 |
+| 50% | 8.37 → 10.34 | 112.9 → 91.6 | 6.0 → 4.3 | 19.3 → 22.4 | 223.8 → 222.1 |
+
+zzTakeoff at 29% on his monitor reads 4.19% dark, 133.6 ink, 5.7% fringe and 22.9 edge. The
+side-by-side is `docs/tasks/d119-notes-29.png`.
+
+**Trade-offs.**
+- Greys darker than 40 turn black, and greys lighter than 235 turn white. A very light
+  screened tint on a drawing disappears above Fit, and colours read more saturated.
+- The Split reference pane and Print are unchanged: this filter is on the main canvas only.
