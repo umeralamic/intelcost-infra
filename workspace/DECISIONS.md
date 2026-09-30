@@ -4612,7 +4612,7 @@ compared.
 - **Left:** legacy's Sub-items section inside the create dialog (sub-items are added from
   the item's menu here). Earthwork markup (F12). Legacy's orange-bordered unchecked
   checkboxes (ours are native).
-*D-116 round 6 (07:10).* The Share dialog and Split view were compared.
+*D-116 round 6 (07:07).* The Share dialog and Split view were compared.
 - **Share › Project Users** is legacy's list:
   - "No one is assigned to this project yet." when there is no one;
   - otherwise one row per assignee, with Primary on the first, their role, and a remove ×;
@@ -4622,7 +4622,8 @@ compared.
 - **Split:** the reference pane stands beside the whole main canvas column, its bar
   included, as legacy's does. The scale chip no longer wraps when the column is narrow.
 - **Left:**
-  - Legacy's Share dialog is wider and has a close ×; ours closes on Esc or the backdrop,
-    app-wide.
+  - Legacy's Share dialog is wider (the close × was added app-wide in round 7).
   - The reference pane's zoom reads absolute (D-102): "6%" where legacy's reads "100%" at
     Fit.
+*D-116 round 7 (07:12).* Every dialog now carries legacy's close × at its top right
+("Close dialog"), off while the dialog is working, as legacy's shadcn dialogs do.
