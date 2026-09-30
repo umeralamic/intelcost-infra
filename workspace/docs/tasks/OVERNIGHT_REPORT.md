@@ -13,8 +13,9 @@ this run).
 - [x] 3 Public share links (D-108)
 - [x] 4 Markup tools and the Collaborator tab (D-109, D-110, D-111)
 - [x] 5 F10 assemblies, Starter Pack, Library (D-112; template properties/costs editing and Starter authoring left)
-- [ ] 6 The rest of F11
-- [ ] Fallback: side by side with live legacy
+- [x] 6 The rest of F11: Find Text (D-113), Print (D-114), item History and Modified by (D-115), region Copy/Search as Text, Open at snapshot zoom, Dock this snapshot
+- [x] 5b F10-S3 follow-up: template Properties, Change classification, sub-items, Costs; live library
+- [ ] Fallback: side by side with live legacy (started 05:47)
 
 ## Tasks
 

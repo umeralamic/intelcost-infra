@@ -4445,7 +4445,7 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
   Built 05:24, legacy's menu order: Properties… (name, unit, colour, opacity, symbol, tags,
   notes), Add / Manage sub-items… (the item dialog, at zero quantity), Costs… (on the
   assembly or a sub-item, with `canEditEstimates`), and a sub-item's Rename, Edit…,
-  Costs…, Delete; Change classification… (05:47, the classification picker). The Properties
+  Costs…, Delete; Change classification… (05:45, the classification picker). The Properties
   dialog's WBS, height and pitch fields are not built.
 - Starter Pack authoring by platform admins is not built.
 - ~~The panel does not yet follow `workspace.assembly.changed` live.~~ Done 05:07: every
@@ -4546,3 +4546,35 @@ From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
   quantities are computed on read, and a scale change is not an item write.
 - ~~Estimating's "Modified by" cell that opens the same history is not wired.~~ Wired 05:40: the
   column shows each item's last changer and a click opens its history.
+
+---
+
+## D-116 — Side by side with live legacy, round 1 (overnight fallback)
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review
+**Area:** Takeoff, Frontend
+
+The takeoff and estimating screens were driven beside legacy's "Bench comparison" project
+at 2048 × 1050 and 1440 × 900. These differences were fixed to match legacy:
+
+- **Takeoff panel switch:** "Takeoff | Assemblies" is now two words, the current one
+  bold, with a bar between them. It was a bordered segmented control.
+- **Assemblies library picker:** a full-width "My Assemblies ▾" / "Starter Pack" dropdown
+  with legacy's library glyph, as in legacy's `AssembliesPanel`. It was two tabs.
+- **Toolbar grouping:** legacy's one cluster from Linear to Note (the measure tools, then
+  Snapshot, Dock, Highlight, Note). Dimension stays beside Scale (D-99).
+- **Snippets empty state:** legacy's words, "Pick the **Snapshot** tool (shortcut S),
+  then drag a box on the drawing. You'll be asked for a name, tag and note, and the
+  snippet lands here."
+- **Resize:** a page at its fit stays fitted when the window or a panel changes the
+  canvas's size. Legacy's zoom is relative to the canvas; ours is absolute (D-102), so
+  only a fitted view follows.
+
+Left, with reasons:
+- **No Earthwork and no Community tab.** Earthwork is F12 and Community is not ported.
+- **No Overlay tool.** Sheet overlay is not built; it has no spec yet.
+- **No "Snap PDF" chip.** Snap PDF (vector snapping) is not built.
+- **The workspace switcher in our header.** Kept by an earlier decision; legacy has none.
+- **Estimating's controls wrap to a second row at 1440.** Legacy's row runs off the
+  screen instead. Its bold TOTAL label and its custom Group-by dropdown were not changed.
