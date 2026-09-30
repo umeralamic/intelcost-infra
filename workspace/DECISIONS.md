@@ -4627,3 +4627,35 @@ compared.
     Fit.
 *D-116 round 7 (07:12).* Every dialog now carries legacy's close × at its top right
 ("Close dialog"), off while the dialog is working, as legacy's shadcn dialogs do.
+
+---
+
+## D-117 — The api's umer-dev moved under the overnight run: not merged
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (URGENT: read first)
+**Area:** Api, Git
+
+At 07:17 UTC Abdullah pushed "staging init" and "Merge branch 'staging' into umer-dev" to
+`intelcost-app-fastapi` `umer-dev` (8ff495a, 8c2bf9a). My next push (7ad2c10, Duplicate
+page) was refused as non-fast-forward.
+
+A dry-run merge in a throwaway worktree is textually clean. The merged head is
+nevertheless inconsistent on its own:
+- `app/config.py` drops `s3_access_key_id`, `s3_secret_access_key`,
+  `s3_force_path_style`, `s3_signing_endpoint`, `sync_database_url` and `is_local`, and
+  adds a required `aws_access_key_id` and `aws_secret_access_key`.
+- `app/core/storage.py` still reads the dropped settings.
+- The bench's compose file sets `S3_ACCESS_KEY_ID` and `S3_FORCE_PATH_STYLE`, not
+  `AWS_*`.
+
+The api would fail at start-up on the bench, or at its first storage call.
+
+**Decided:** not pulled or merged overnight, and never force-pushed. The api commit
+7ad2c10 (Duplicate page, D-116 round 8) is held on the local `umer-dev`, one ahead and two
+behind `origin/umer-dev`. The app's Duplicate page (d502762, pushed) needs it; every other
+overnight api commit is on the remote.
+
+**For the founder:** once staging's settings and storage agree and the bench's compose
+file carries the new variable names, `git pull origin umer-dev` in `intelcost-app-fastapi`,
+then push. No api work after 07:28 needs anything else.
