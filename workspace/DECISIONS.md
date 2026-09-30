@@ -4589,7 +4589,7 @@ Left, with reasons:
 *D-116 round 3 (06:22).* The canvas right-click menu gained legacy's Print This Page
 (after Calibrate Scale, as `SheetContextMenu`). Estimating's TOTAL row is legacy's: "TOTAL",
 bold, a 1.85 px top rule, and the grid's cell borders.
-*D-116 round 4 (06:40).* The Collaborator tab, the Highlight caret and Settings were
+*D-116 round 4 (06:38).* The Collaborator tab, the Highlight caret and Settings were
 compared.
 - **Toolbar glyphs:** the markup tools and Print, Fullscreen, Split, Markups and Legend now
   use legacy's own glyphs (`TakeoffIcons.tsx`), each with its one red accent from the
@@ -4599,3 +4599,16 @@ compared.
 - **Left:** on the Collaborator row Dimension stays beside Scale (D-99); legacy has it
   among the markups. Our Settings has a Collaboration section that legacy lacks
   (collaboration preferences, D-32).
+*D-116 round 5 (06:55).* Find Text and the new measurement dialog were compared.
+- **Find Text** matches legacy: the same layout and words, and the hits painted.
+- **Measurement dialog:**
+  - Named dimensions now has legacy's heading, with the presets on its right, and its
+    line "Values carried by this item for use in sub-item formulas. They do not change
+    this item's own quantity."
+  - Every native checkbox, radio and slider is the brand orange (one base CSS rule), not
+    the browser's blue.
+- **"Set a scale for this sheet"** is legacy's width (md), so its three buttons sit on one
+  row.
+- **Left:** legacy's Sub-items section inside the create dialog (sub-items are added from
+  the item's menu here). Earthwork markup (F12). Legacy's orange-bordered unchecked
+  checkboxes (ours are native).

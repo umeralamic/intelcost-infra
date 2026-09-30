@@ -33,6 +33,8 @@ this run).
 | 6c Item history | Done | 04:44 | 04:58 | 0 h 14 |
 | 6d Open at snapshot zoom, Dock this snapshot, live Assemblies | Done | 04:58 | 05:07 | 0 h 09 |
 | 5b F10-S3 template Properties, sub-items, Costs | Done | 05:07 | 05:24 | 0 h 17 |
+| 6e Region Copy/Search as Text, Modified by, Change classification | Done | 05:24 | 05:45 | 0 h 21 |
+| Fallback rounds 1–4 (D-116) | Done | 05:47 | 06:38 | 0 h 51 |
 
 ## Task 1 numbers
 
