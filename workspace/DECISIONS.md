@@ -4709,8 +4709,15 @@ steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
 - Apply sets the sheet's scale through the Scale menu's own guard.
 - **Left:** legacy's check of the printed scale against drawn dimensions (its
   Verification chip), "Show" on the drawing, the AI fallback and Scale · All pages.
-*D-116 round 15 (09:10).* The item row's menu was checked against live legacy's (the "More
+*D-116 round 15 (09:04).* The item row's menu was checked against live legacy's (the "More
 actions" ⋮) and matches entry for entry. The Assemblies header gains legacy's "Collapse one
 level" and "Expand one level", which step through three levels: folders shut; folders
 open; sub-items too. Level 2 is the default, as legacy's. A row toggled by hand keeps its
 state until the level changes.
+*D-116 round 16 (09:18).* The Snippets row menu is legacy's (`EvidencePanel`), in its order
+and words: Preview window, Rename / retag │ Link to measurement, Dock snapshot │ Open sheet
+at snapshot, Copy image │ Delete.
+- **Link to measurement** lists the project's items, the linked ones ticked. These are the
+  same links as an item's Link Screenshot.
+- **Copy image** puts the snapshot's PNG on the clipboard. This answers D-110's "Copy
+  image" left open.
