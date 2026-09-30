@@ -4659,3 +4659,12 @@ overnight api commit is on the remote.
 **For the founder:** once staging's settings and storage agree and the bench's compose
 file carries the new variable names, `git pull origin umer-dev` in `intelcost-app-fastapi`,
 then push. No api work after 07:28 needs anything else.
+
+*D-116 round 8 (07:28).* Estimating's Group by options match legacy exactly. Legacy's
+sheet-row **Duplicate page** is built: its dialog ("Creates a second page pointing at the
+same drawing. Scale calibration is copied."), with the sheet number and name given
+"(copy)", "Copy measurements (n on this page)" off (its warning that totals double) and
+"Copy annotations" on. The copy is the whole page run through Crop as New Page, placed right
+after its source, its calibration and turn copied, and the app opens it. The api half is
+held locally (D-117). Deleting a copied or cropped sheet leaves its generated file in
+Files, as Crop as New Page already does.
