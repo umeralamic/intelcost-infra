@@ -5226,3 +5226,40 @@ opened no panel), so the panel was compared by source; its words are legacy's ve
 ScaleFromRegionDialog.tsx`, `ScaleEvidenceLayer.tsx` (new), `features/drawing/api.ts`,
 `core/api/types.ts`, `pages/ProjectTakeoff.tsx`, `index.css` (`--scale-witness`); api
 `features/drawing/{schemas,service,routes}.py`.
+
+---
+
+## D-132 — The New Measurement dialog's Sub-items section, as legacy's draft sub-items
+
+**Date:** 2026-09-30
+**Status:** decided, **pending founder review** (the brief's items 1 to 4)
+**Area:** Takeoff, Frontend
+
+**Decision.** The create dialog ("Name this LF measurement", opened when a tool is picked)
+carries legacy's Sub-items bar, closed or open as the person left it (`sub_items_open`,
+shared with the Properties bar of D-77):
+- "Create sub-item", or "Edit sub-items" once rows are held, opens the sub-item editor
+  over the dialog. The item does not exist yet, so the editor works on a draft: "Under
+  This measurement", PARENT reads 0, a `{qty:…}` token says "Not until the measurement
+  is drawn" (legacy's `quantitiesPending`), and the dimensions being typed in the dialog
+  and the rough-measurement items are offered, as legacy's `draftDimensions` and
+  `referenceItems`.
+- Save in the editor writes nothing; the bar lists the rows (name and unit) and says
+  "Sub-items are saved with this measurement when you press Create." Cancel on the dialog
+  drops them.
+- The rows ride on the draft and are written (`PUT …/sub-items`) once, right after the
+  first shape makes the item, as the armed assembly's are; a failure says "The sub-items
+  were not saved". This is legacy's `persistDraftSubItems`, placed where our item is
+  created (with its first shape, D-55) rather than when Create is pressed.
+- As legacy's, the dialog after a drawn run, a paste and Auto Count's have no Sub-items
+  bar.
+
+**Left** (the sub-item editor's own gaps, older than this item, in PARITY §6): legacy's
+editor has a Costs tab for draft rows, a classification per row, "Seed from…", and a
+"PARENT = 0 EA" line. Resolves D-116 round 5's "Left: legacy's Sub-items section inside
+the create dialog".
+
+**Where:** `features/takeoff/items/MeasurementDialog.tsx` (`draftSubItems`,
+`onEditDraftSubItems`, `sub_items` on the draft), `items/SubItemsDialog.tsx`
+(`draftRows`), `pages/ProjectTakeoff.tsx` (`draftSubs`, `draftSubsOver`, `subsWritten`,
+the write in `createItem`).
