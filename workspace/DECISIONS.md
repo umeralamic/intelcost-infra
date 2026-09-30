@@ -4690,9 +4690,9 @@ steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
 - Finding one writes that field and keeps the other.
 - Finding both asks "Set sheet number and page name?", with both fields editable and
   "Apply both".
-- **Left:** Scale from a box, Ask AI, Extract Schedule and Auto Count.
+- **Left:** Ask AI, Extract Schedule and Auto Count.
 
-*D-116 round 13 (08:55).* "Page Name · All pages…" and "Sheet # · All pages…" open legacy's
+*D-116 round 13 (08:47).* "Page Name · All pages…" and "Sheet # · All pages…" open legacy's
 **Name from page region**:
 - The boxes are kept for the visit; a number box alone fills both fields where it carries
   both.
@@ -4701,3 +4701,11 @@ steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
   OK, Empty or Duplicate.
 - "Apply to N sheets". A field the region did not give is left as it was.
 - Text layer only: legacy's OCR recovery and "use Auto-Name Sheets for these" are F14's.
+*D-116 round 14 (08:57).* The region box menu gains legacy's **Scale**:
+- It lists every scale printed on the sheet, read from the whole page by legacy's
+  `parseScaleText` and `findAllScales` (ported unchanged into `lib/takeoff/scaleText.ts`),
+  the most used first.
+- The title is "Apply this scale?" or "N scales found on this sheet".
+- Apply sets the sheet's scale through the Scale menu's own guard.
+- **Left:** legacy's check of the printed scale against drawn dimensions (its
+  Verification chip), "Show" on the drawing, the AI fallback and Scale · All pages.
