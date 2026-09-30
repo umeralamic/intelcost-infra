@@ -5003,3 +5003,20 @@ Takeoff and Collaborator tabs, as the bar was.
 **Where:** `intelcost-app-react/src/pages/ProjectTakeoff.tsx` (`data-status-line`,
 `data-draw-modifiers`), `src/features/takeoff/components/ScaleControls.tsx` (the chip, the
 menu's upward placement).
+
+---
+
+## D-125 — Estimating's Group by drops Sub-scope and Level 4
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Estimating, Frontend
+**Beyond legacy:** legacy's Group by lists Sub-scope and Level 4
+
+**Decision.** Estimating's Group by menu lists Classification, Custom Folder, Scope,
+Subcontractor and Sheet, then the Layer tabs choices. Sub-scope and Level 4 are dropped from the
+menu only: the grouping code in `lib/estimate/lines.ts` stays, and the Sub-scope and Level 4
+columns stay in Columns. A view saved on either grouping opens on Classification, the default.
+
+**Where:** `intelcost-app-react/src/lib/estimate/lines.ts` (`GROUP_BY_ORDER`),
+`src/features/estimate/EstimatingView.tsx` (`readView`).
