@@ -4708,7 +4708,7 @@ steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
 - The title is "Apply this scale?" or "N scales found on this sheet".
 - Apply sets the sheet's scale through the Scale menu's own guard.
 - **Left:** legacy's check of the printed scale against drawn dimensions (its
-  Verification chip), "Show" on the drawing, and the AI fallback.
+  Verification chip) and the AI fallback. ("Show" is built, round 20.)
 *D-116 round 15 (09:04).* The item row's menu was checked against live legacy's (the "More
 actions" ⋮) and matches entry for entry. The Assemblies header gains legacy's "Collapse one
 level" and "Expand one level", which step through three levels: folders shut; folders
@@ -4729,10 +4729,13 @@ selected pages** and **Duplicate selected pages**. The duplicates are scale-only
 named "(copy)", each placed after its original, as legacy's bulk duplicate. Its "Auto-Name
 Sheets (selected)" (AI) and "Name selected from page region…" are left: the second is
 reached from a box on the sheet (round 13).
-*D-116 round 19 (09:55).* **Scale · All pages…** from a box is legacy's sweep:
+*D-116 round 19 (09:44).* **Scale · All pages…** from a box is legacy's sweep:
 - Each page is re-read for its own printed scales; nothing is copied across the set.
 - Rows show Page, Sheet, Scale found (a pick where several), and a status of OK, Multi,
   Skipped or Scaled.
 - "Apply to N sheets" writes the ticked rows.
 - **Deviation:** a sheet that already has a scale starts unticked, so nothing is replaced
   unasked. Legacy ticks by its verification instead, which is not built here.
+*D-116 round 20 (09:52).* Scale from a box has legacy's **Show** on each found scale: the
+printed string is painted with Find Text's highlight layer and framed on the canvas. Cancel
+or Apply clears it.
