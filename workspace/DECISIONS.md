@@ -4897,7 +4897,7 @@ side-by-side is `docs/tasks/d119-notes-29.png`.
 ## D-120 — Estimating's table fills its frame; one column takes the slack
 
 **Date:** 2026-09-30
-**Status:** decided (checked in the browser on the bench)
+**Status:** superseded by D-130 (columns keep their widths, the frame hugs the table)
 **Area:** Estimating, Frontend
 **Beyond legacy:** legacy leaves the gap
 
@@ -5147,3 +5147,26 @@ the new lock.
 (SQLAlchemy 2.1.1): migrations at head, `/health` ok, both workers ready, beat started.
 Pushed as a fast-forward, `8c2bf9a..eb0f104` (834482c the merge as git made it, eb0f104
 the reconciliation). D-117 is resolved and F9b is unblocked.
+
+---
+
+## D-130 — Estimating's columns keep their widths, as Excel; the frame hugs the table
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Estimating, Frontend
+**Supersedes:** D-120
+
+**Decision.** With most columns hidden, the table no longer stretches a column to fill the
+room. Every column stays at its default width, or the width the person dragged or
+double-clicked it to; the table is exactly the sum of its columns (plus the select column,
+D-127), and its bordered frame is as wide as the table (`w-fit max-w-full`), so no empty band
+sits inside the border. The space to the right is the page, as the empty area beside Excel's
+used columns. Widening a column widens the table; past the room it has, the frame scrolls
+sideways. The resize handle works from the column's own width on every column again.
+
+**Why.** Stretching changed the widths the person set and made one column behave unlike
+the others when dragged; a spreadsheet's columns keep the width they are given.
+
+**Where:** `intelcost-app-react/src/features/estimate/EstimatingView.tsx` (the table's
+wrapper, `<table>` width, `<colgroup>`, the header's resize handle).
