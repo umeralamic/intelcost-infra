@@ -4445,8 +4445,8 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
   Built 05:24, legacy's menu order: Properties… (name, unit, colour, opacity, symbol, tags,
   notes), Add / Manage sub-items… (the item dialog, at zero quantity), Costs… (on the
   assembly or a sub-item, with `canEditEstimates`), and a sub-item's Rename, Edit…,
-  Costs…, Delete. Legacy's "Change classification…" and the Properties dialog's WBS,
-  height and pitch fields are not built.
+  Costs…, Delete; Change classification… (05:47, the classification picker). The Properties
+  dialog's WBS, height and pitch fields are not built.
 - Starter Pack authoring by platform admins is not built.
 - ~~The panel does not yet follow `workspace.assembly.changed` live.~~ Done 05:07: every
   open panel follows it.
@@ -4544,5 +4544,5 @@ From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
 *Pending founder review:*
 - Legacy's "calibration changed" and "quantity recalculated" rows are not written: our
   quantities are computed on read, and a scale change is not an item write.
-- ~~Estimating's "Modified by" cell that opens the same history is not wired.~~ Wired 05:45: the
+- ~~Estimating's "Modified by" cell that opens the same history is not wired.~~ Wired 05:40: the
   column shows each item's last changer and a click opens its history.
