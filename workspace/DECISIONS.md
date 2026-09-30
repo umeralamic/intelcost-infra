@@ -4724,3 +4724,8 @@ at snapshot, Copy image │ Delete.
 *D-116 round 17 (09:20).* A bookmark's menu is legacy's `BookmarkRow`: Open sheet, Remove
 bookmark │ Duplicate sheet, Print sheet, Open in new tab │ Sheet properties (number and
 name, "Save"), Preview window. It was Open sheet and Remove bookmark only.
+*D-116 round 18 (09:28).* The Sheets panel's multi-select menu opens with legacy's **Print
+selected pages** and **Duplicate selected pages**. The duplicates are scale-only copies
+named "(copy)", each placed after its original, as legacy's bulk duplicate. Its "Auto-Name
+Sheets (selected)" (AI) and "Name selected from page region…" are left: the second is
+reached from a box on the sheet (round 13).
