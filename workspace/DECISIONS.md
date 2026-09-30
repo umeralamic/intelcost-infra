@@ -4579,10 +4579,13 @@ Left, with reasons:
 - **Estimating's controls wrap to a second row at 1440.** Legacy's row runs off the
   screen instead. Its bold TOTAL label and its custom Group-by dropdown were not changed.
 
-*D-116 round 2 (06:20).* The menus compared as text:
+*D-116 round 2 (06:13).* The menus compared as text:
 - **Built:** legacy's sheet-row menu entries Preview window (the page's fit image, with
   Open), Print selected page and Open in new tab, in legacy's order.
 - **Matching already:** the Print menu, and the item-row menu (checked against legacy's
   `ItemRowShared` order).
 - **Left:** legacy's Auto-Name Sheet (AI, F14), Name from page region… (region naming is
   not built) and Duplicate page (needs an api copy of a sheet).
+*D-116 round 3 (06:25).* The canvas right-click menu gained legacy's Print This Page
+(after Calibrate Scale, as `SheetContextMenu`). Estimating's TOTAL row is legacy's: "TOTAL",
+bold, a 1.85 px top rule, and the grid's cell borders.
