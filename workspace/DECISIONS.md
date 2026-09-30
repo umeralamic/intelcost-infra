@@ -4176,3 +4176,73 @@ dense sheet in the bench's software renderer).
 **Left, for the founder:** a Fit that is itself far out (13.6% on the dense sheet at
 1440 × 900) draws as before, dark (mean 233); supersampling at and just above a low Fit is an
 idea, not built.
+
+---
+
+## D-105 — The settled sheet on whole device pixels; the raster clipped to the paper
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight tasks 1a, 1b)
+**Area:** Takeoff, Frontend
+**Builds on:** D-100, D-102
+
+**Cause (measured on the bench).** A 1 px checkerboard painted into the settled raster came
+back from the screen 100% grey at every zoom and both pixel ratios: the browser resampled
+the whole bitmap. Three things each cause it, proven one by one in a bare page:
+1. The stage is a composited layer (`translate3d`); a layer translated by a fraction of a
+   device px is resampled whole. The browser snaps the canvas area's own edge to a whole
+   CSS px first.
+2. A canvas whose CSS size is not a whole number of layout units (1/64 CSS px) is drawn
+   scaled by a hair: at 125%, 1807 px / 1.25 = 1445.6 CSS px is stored as 1445.59375.
+3. A settled frame's scale (page width over the frame's) came out a hair off 1.
+
+**Decision.**
+- `placeView` writes the stage's translation so that the canvas area's edge (snapped to a
+  whole CSS px) plus the translation lands on a whole device px. Sheet and markups move
+  together, by under one device px; a wheel zoom now holds the cursor's point to within
+  0.5 device px instead of 0.02.
+- A raster's bitmap is rounded up to a size whose CSS length is exact (`layoutStep`: 1 px at
+  a ratio of 1 or 2, 5 px at 1.25, 3 px at 1.5), and a window's origin to such a step.
+- A frame drawn for the zoom on screen is shown at exactly its own size.
+- **The raster is clipped to the paper** (`data-raster-clip`, task 1b): the rounding and the
+  old whole-px rounding stood up to a few px past its right and bottom edge. Markups still
+  draw past the paper, as before.
+
+**Result.** DPR 1: the checkerboard shows 100% exact at 25%, 50% and 100%; text sharpness on
+screen against the bitmap's own went from 0.69 / 0.77 / 0.87 / 0.99 / 0.97 to 1.01 / 1.00 /
+1.01 / 1.01 / 1.00 at 25 / 29 / 35 / 50 / 100%. **DPR 1.25: not solved on the bench**
+(0.65 / 0.61 / 0.72 / 0.85 / 1.00 before, 0.71 / 0.57 / 0.76 / 0.91 / 0.98 after): with all
+three causes removed, the bench's software compositor still resamples by a fraction that no
+quarter-pixel offset cancels. The founder's GPU compositor may differ; the 29% check on the
+real monitor decides it.
+
+---
+
+## D-106 — Supersampled by drawing density: under a device px per PDF point
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 1c)
+**Area:** Takeoff, Frontend
+**Amends:** D-104 (below Fit only)
+
+A Fit that is itself far out drew dark: at 1440 × 900 the test project's sheets fit at 13.6%
+and 12.8%, mean luminance 241.9 and 238.0 against 245.5 and 242.6 at their own 25%, dark
+pixels 3.5% and 3.9%.
+
+**Decision.** pdf.js draws supersampled wherever a PDF point lands on less than one device
+px (zoom × 170/72 × pixel ratio < 1: below about 34% at 125%, 42% at 100%), as well as below
+Fit. The transient canvas may reach 20 million px (was 12), so a 36 in sheet at 29% and 125%
+still gets × 2.
+
+**Guard (the founder's): 29% must not read softer.** Measured as acutance, the edge strength
+per unit of ink (so lighter lines do not count as blur), on the busiest blocks of two test
+sheets: 0.726 → 0.875 and 0.862 → 1.022 at 100% scaling, 0.885 → 0.957 and 0.737 → 0.955 at
+125%. Crisper at every point measured, so the rule applies at 29% too. Lines and text read
+lighter (thinner), as zzTakeoff's.
+
+**Trade-off.** The wheel's landing waits for the larger draw: 25% and 29% landed in 426 to
+1006 ms before and 520 to 1096 ms after on the bench (worst case + 540 ms, a 36 in dense
+sheet at 25% and 125%).
+
+**Result.** Fit at 1440 × 900: mean luminance 241.9 → 247.4 and 238.0 → 243.9, dark pixels
+3.5% → 0.9% and 3.9% → 1.2%.
