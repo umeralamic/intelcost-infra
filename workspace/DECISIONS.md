@@ -5232,7 +5232,7 @@ ScaleFromRegionDialog.tsx`, `ScaleEvidenceLayer.tsx` (new), `features/drawing/ap
 ## D-132 — The New Measurement dialog's Sub-items section, as legacy's draft sub-items
 
 **Date:** 2026-09-30
-**Status:** decided, **pending founder review** (the brief's items 1 to 4)
+**Status:** accepted 2026-09-30 (founder review)
 **Area:** Takeoff, Frontend
 
 **Decision.** The create dialog ("Name this LF measurement", opened when a tool is picked)
@@ -5269,7 +5269,7 @@ the write in `createItem`).
 ## D-133 — Find Text's Choose Pages is legacy's folder tree
 
 **Date:** 2026-09-30
-**Status:** decided, **pending founder review** (the brief's items 1 to 4)
+**Status:** accepted 2026-09-30 (founder review)
 **Area:** Takeoff, Frontend
 
 **Decision.** Choose Pages lists the pages as legacy's `FindTextDialog` does, as the
@@ -5300,7 +5300,7 @@ reads the same as the panel beside it.
 ## D-134 — A cropped or duplicated sheet's file goes with its last sheet
 
 **Date:** 2026-09-30
-**Status:** decided, **pending founder review** (the brief's item 4, beyond legacy)
+**Status:** accepted 2026-09-30 (founder review)
 **Area:** Api, Drawing, Storage
 
 **Decision.** Crop as New Page and Duplicate page each make a project file (the crop, or
@@ -5337,3 +5337,56 @@ not orphaned in the same way).
 `features/drawing/service.py` (`_generated_sources`, `_drop_unused_generated`),
 `features/drawing/routes.py`, `features/drawing/schemas.py`, `worker/tasks/storage.py`
 (`delete_prefixes`); app `core/api/types.ts`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-135 — Files made by New Blank Page and Paste from Clipboard go with their last sheet too
+
+**Date:** 2026-09-30
+**Status:** decided (the founder's review of D-131 to D-134, which are accepted)
+**Area:** Api, Drawing, Storage
+**Extends:** D-134
+
+**Decision.** `project_file.origin` gains "new_page" (New Blank Page) and "clipboard"
+(New Page From Clipboard), set by `newpage.py`; such a file goes with the last sheet made
+from it, exactly as a crop or a duplicate (D-134). The migration marks the files already
+made (their key ends `/new-page.pdf`; a clipboard page's name is told by the route that made
+it, so the backfill marks both as "new_page"). An uploaded file still never goes.
+
+**Where:** api `alembic/versions/d4e9f3a5b7c2_project_file_origin_pages.py`,
+`features/drawing/newpage.py`, the `ck_project_file_origin` check.
+
+---
+
+## D-136 — F12: the founder's answers to the spec's questions
+
+**Date:** 2026-09-30
+**Status:** decided (the founder, in session)
+**Area:** Earthwork (F12)
+
+**Accepted as recommended:** Q1 to Q5, Q8 to Q11, Q13, Q15 to Q30, Q32 and Q33 (the
+recommendations in `docs/tasks/drafts/earthwork_tasks.DRAFT.md`).
+
+**Decided otherwise:**
+- **Q6 Overlaps: the Site Feature drawn last wins**, for grading, undercut and prep alike.
+  "Drawn last" is the feature created last (its item's `created_at`), ties by uuid.
+- **Q7 "Finish-to-Subgrade Depth" is removed, on condition that every Site Feature carries
+  its own section depth,** entered in the Site Feature dialog: "Proposed Grade to Subgrade
+  Depth" is required there (a number, 0 allowed for a feature with no section), never left
+  blank.
+- **Q12 CSI:** 31.03.04 and 31.03.05 are not used. Every earthwork line (cut, fill,
+  engineered fill, strip, undercut, replacement, prep, import, export) maps to a node of the
+  CSI list the app seeds, Division 31. The mapping table goes to the founder for approval
+  **before Block F is built**. (The seeded list numbers Division 31 as 31.01 to 31.11; the
+  MasterFormat numbers 31 23 16 and 31 23 23 are not in it: said in the report.)
+- **Q14:** Calculate stays per sheet; multi-sheet sites are an Idea for later.
+- **Q31 Native cut re-used as fill gets the shrink factor** (a change from legacy): bank
+  cut compacted into fill shrinks. With cut C and fill F (bank and compacted space), re-used
+  strip or undercut soil R (bank), shrink s (bank → compacted) and swell w (bank → loose):
+  - native soil suitable: `net = (C + R) × s − F` in compacted measure; a surplus exports
+    `net / s × w` (loose), a shortfall imports `−net / s × w` (loose);
+  - not suitable: `need = F − R × s`; import `need / s × w` when need > 0; export
+    `(C + max(0, −need) / s) × w`.
+  With s = 1 this is legacy's balance exactly. Shared quantity-table rows prove it by hand.
+
+**Built so far:** see the Progress list of the spec, block by block.
