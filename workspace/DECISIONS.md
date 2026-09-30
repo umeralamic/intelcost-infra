@@ -4482,7 +4482,7 @@ From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
 
 *Pending founder review:*
 - Choose Pages is a flat, searchable page list, not legacy's folder tree with checkboxes.
-- ~~Region select's "Search as Text" seed is not wired.~~ Built 05:40: the region box menu
+- ~~Region select's "Search as Text" seed is not wired.~~ Built 05:34: the region box menu
   has legacy's Copy as Text, Copy as Image, Search as Text, New Snapshot, Crop as New Page.
 
 ---
@@ -4544,4 +4544,5 @@ From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
 *Pending founder review:*
 - Legacy's "calibration changed" and "quantity recalculated" rows are not written: our
   quantities are computed on read, and a scale change is not an item write.
-- Estimating's "Modified by" cell that opens the same history is not wired.
+- ~~Estimating's "Modified by" cell that opens the same history is not wired.~~ Wired 05:45: the
+  column shows each item's last changer and a click opens its history.
