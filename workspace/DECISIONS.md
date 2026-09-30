@@ -5433,3 +5433,32 @@ recommendations in `docs/tasks/drafts/earthwork_tasks.DRAFT.md`).
 `pages/ProjectTakeoff.tsx`, `items/MeasurementDialog.tsx`, `components/QuantityPanel.tsx`,
 `index.css` (boundary token amber); api `takeoff/{schemas,service}.py`
 (`is_earthwork_markup`, `ensure_earthwork_folder`, the closed folder).
+
+---
+
+## D-138 — F12 Block B as built: the TIN
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Earthwork (F12), Frontend
+
+- **Legacy's TIN, ported** as pure modules (`lib/takeoff/earthwork/tin/`): collect, preflight
+  (unchanged but for the run's shape uuid carried beside its index), Delaunator with
+  Constrainautor (legacy's libraries, Q4), and the orchestrator with legacy's order,
+  messages and warnings. Delaunator, Constrainautor and earcut join the app's dependencies.
+- **EG TIN / FG TIN** in the earthwork row with legacy's titles and status dots: a shown
+  surface is triangulated from the sheet's runs as they stand (Calculate, Block C, turns them
+  on as legacy's does); an error toasts "{S} TIN — cannot triangulate" with the message; an
+  empty surface says so. The TIN layer is the surface's hue, 50 % to 5 % lightness over its
+  range, clipped by centroid to the boundary; its warnings show under the row.
+- **Crossing contours in blue** (A7): every run of a surface that crosses another of its
+  surface (or itself) is drawn in `--earthwork-error`, and legacy's toast "{S} contour
+  overlap … Calculate will fail until fixed." fires when the set changes.
+- **Quantity table:** 13 earthwork rows from legacy's `tin.test.ts` (min points, absent,
+  collinear, flat, merge in and out of tolerance, a conflict, crossing and self-crossing with
+  their messages, constraints kept, the boundary warnings), all right.
+
+**Where:** app `lib/takeoff/earthwork/tin/{types,collect,preflight,compute,index}.ts`,
+`features/takeoff/earthwork/{TinLayer,TinToggles,useEarthwork}.tsx`,
+`pages/ProjectTakeoff.tsx`, `index.css` (hue tokens), `package.json`; infra
+`browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`, `quantity-table.sh`.

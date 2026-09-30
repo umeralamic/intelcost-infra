@@ -634,18 +634,18 @@ The Earthwork tab. `src/lib/takeoff/earthwork/`.
 - [ ] Adopting a traced contour simplifies it with Ramer-Douglas-Peucker, in sheet points rather than normalised units so a non-square page is not over-simplified on one axis, and before length is computed so the stored length always matches the stored geometry. `src/lib/takeoff/earthwork/trace/simplify.ts` · **missing**
 - [ ] Extractor output is cached in IndexedDB per document and schema version, so reopening a project or returning to a sheet does not pay the "reading this sheet's lines" hang again. Stitching is deliberately not cached, because it depends on tuning the user can change. `src/lib/takeoff/earthwork/trace/traceStore.ts` · **missing**
 - [ ] Arming Trace does not freeze the canvas. `.lovable/plan/auto-trace-stop-the-freeze-when-arming-trace-2026-08-28.md` · **missing**
-- [ ] Intersecting contours show in blue on the canvas. `.lovable/plan/show-intersecting-contours-in-blue-on-the-canvas-2026-08-28.md` · **missing**
+- [x] Intersecting contours show in blue on the canvas. `.lovable/plan/show-intersecting-contours-in-blue-on-the-canvas-2026-08-28.md` · **ported** (D-138: every crossing run blue, legacy's toast; *smoke-tested (D-70)*)
 
 **TIN build**
 
-- [ ] Inputs are collected per surface from contour and spot layers, splitting each layer's flat vertex array on the run sentinel, and emitting parallel point and constraint-edge arrays. `src/lib/takeoff/earthwork/tin/collect.ts` · **missing**
-- [ ] Boundary layers are returned separately for render-time clipping, not added to the triangulation input. `src/lib/takeoff/earthwork/tin/collect.ts` · **missing**
-- [ ] Preflight runs before triangulation in a fixed order: minimum points, colinearity, duplicate merge, crossing constraints on the merged input, then the flat-surface warning. The compute side never sees an input that would crash the triangulator. `src/lib/takeoff/earthwork/tin/preflight.ts` · **missing**
-- [ ] A duplicate point whose elevations conflict is an error, not a silent merge. `src/lib/takeoff/earthwork/tin/preflight.ts` · **missing**
-- [ ] Flat surface and points-outside-boundary are warnings that still render, not errors that stop the build. `src/lib/takeoff/earthwork/tin/index.ts` · **missing**
-- [ ] A triangulator failure after preflight surfaces as a named engine failure rather than being swallowed. `src/lib/takeoff/earthwork/tin/compute.ts` · **missing**
+- [x] Inputs are collected per surface from contour and spot layers, splitting each layer's flat vertex array on the run sentinel, and emitting parallel point and constraint-edge arrays. `src/lib/takeoff/earthwork/tin/collect.ts` · **ported** (D-138: from the sheet's runs, one shape per run)
+- [x] Boundary layers are returned separately for render-time clipping, not added to the triangulation input. `src/lib/takeoff/earthwork/tin/collect.ts` · **ported** (D-138)
+- [x] Preflight runs before triangulation in a fixed order: minimum points, colinearity, duplicate merge, crossing constraints on the merged input, then the flat-surface warning. The compute side never sees an input that would crash the triangulator. `src/lib/takeoff/earthwork/tin/preflight.ts` · **ported** (D-138: legacy's order and messages; quantity-table rows)
+- [x] A duplicate point whose elevations conflict is an error, not a silent merge. `src/lib/takeoff/earthwork/tin/preflight.ts` · **ported** (D-138; quantity-table row)
+- [x] Flat surface and points-outside-boundary are warnings that still render, not errors that stop the build. `src/lib/takeoff/earthwork/tin/index.ts` · **ported** (D-138; quantity-table rows)
+- [x] A triangulator failure after preflight surfaces as a named engine failure rather than being swallowed. `src/lib/takeoff/earthwork/tin/compute.ts` · **ported** (D-138)
 - [ ] The TIN is cached per sheet and invalidated by a sheet-scoped version key that folds geometry versions, the strip version and the per-item role-depth tuples, so a same-turn depth swap between two items cannot leave the key unchanged. `src/hooks/useTinCache.ts`, `src/lib/takeoff/earthwork/versionKey.ts` · **missing**
-- [ ] A TIN render can be toggled on the canvas. `src/components/takeoff/EarthworkToolbarGroup.tsx` · **missing**
+- [x] A TIN render can be toggled on the canvas. `src/components/takeoff/EarthworkToolbarGroup.tsx` · **ported** (D-138: EG TIN / FG TIN with status dots; *smoke-tested (D-70)*)
 
 **Cut and fill**
 

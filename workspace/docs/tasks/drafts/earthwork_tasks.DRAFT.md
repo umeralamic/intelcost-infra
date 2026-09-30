@@ -610,7 +610,7 @@ Each with legacy's behaviour today and my recommendation. None is decided.
 - [x] Specced 2026-09-30 (this file); PARITY §16 to be rewritten on adoption.
 - [x] The founder's answers (D-136).
 - [x] Block A, the surfaces (D-137): tab, row, contours, spots, boundary, containers, the popover, Earthwork Markups, the New Measurement checkbox; crossings in blue move to Block B, the panel's per-run rows wait.
-- [ ] Block B, the TIN.
+- [x] Block B, the TIN (D-138): legacy's preflight and triangulation, the toggles and layer, crossings in blue; 13 quantity-table rows.
 - [ ] Block C, cut and fill, the assumptions, the panel.
 - [ ] Block D, Site Features.
 - [ ] Block E, Strip Areas.

@@ -11,6 +11,7 @@ import { readFile, writeFile } from "node:fs/promises";
 
 import { APP, openBrowser } from "./lib/bench.mjs";
 import { COST_CASES, ENV_ITEMS, ENV_SHEET } from "./lib/cost-cases.mjs";
+import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -24,6 +25,7 @@ const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf
 const browser = await openBrowser();
 let web;
 let costs;
+let earth;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -98,6 +100,38 @@ try {
       });
     });
   }, [COST_CASES, ENV_ITEMS, ENV_SHEET]);
+  // F12's rows: lib/takeoff/earthwork on legacy's hand-worked fixtures (D-136).
+  earth = await page.evaluate(async (cases) => {
+    const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
+    const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
+    const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
+    return cases.map((c) => {
+      if (c.kind === "tin") {
+        const runs = runsOf(c.runs);
+        const labels = labelsOf(c.runs);
+        const r = tin.runTinForSurface(runs, c.surface, labels);
+        const out = { ok: r.ok, crossingRuns: tin.crossingRuns(runs, labels).runIds.size };
+        if (r.ok === false) return { ...out, code: r.error.code, message: r.error.message };
+        if (r.ok !== true) return out;
+        const edges = new Set();
+        const key = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+        for (let t = 0; t < r.mesh.triangles.length; t += 3) {
+          const [a, b2, d] = [r.mesh.triangles[t], r.mesh.triangles[t + 1], r.mesh.triangles[t + 2]];
+          edges.add(key(a, b2)).add(key(b2, d)).add(key(d, a));
+        }
+        return {
+          ...out,
+          points: r.mesh.points.length / 2,
+          triangles: r.mesh.triangles.length / 3,
+          constraints: r.mesh.constraints.length,
+          constraintsKept: r.mesh.constraints.every((e) => edges.has(key(e.a, e.b))),
+          warnings: r.warnings.map((w) => w.code),
+          outside: r.warnings.find((w) => w.code === "points_outside_boundary")?.count ?? 0,
+        };
+      }
+      return { error: `unknown kind ${c.kind}` };
+    });
+  }, EARTHWORK_CASES);
 } finally {
   await browser.close();
 }
@@ -128,6 +162,15 @@ for (const [i, c] of COST_CASES.entries()) {
   }
 }
 
+// Earthwork rows: each named field against the hand-worked answer (numbers to 1e-9).
+const same = (got, want) =>
+  typeof want === "number" ? typeof got === "number" && close(got, want) : JSON.stringify(got) === JSON.stringify(want);
+for (const [i, c] of EARTHWORK_CASES.entries()) {
+  for (const [field, want] of Object.entries(c.expect)) {
+    if (!same(earth[i]?.[field], want)) wrong.push(`${c.id}.${field}: ${JSON.stringify(earth[i]?.[field])}, expected ${JSON.stringify(want)}`);
+  }
+}
+
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
   for (const line of [...disagree, ...wrong]) console.log(`FAIL  ${line}`);
@@ -135,5 +178,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; passed`,
 );
