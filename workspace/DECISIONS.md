@@ -5079,3 +5079,24 @@ took the width the table needs. The cost filter chose a report, not a subset of 
 
 **Why no bulk endpoint.** The api's umer-dev is held (D-117); per-line saves are fine for
 tens of rows, and a bulk route can replace the loop later without changing the screen.
+
+---
+
+## D-128 — The bid summary compounds, taxes material only, and starts from workspace defaults
+
+**Date:** 2026-09-30
+**Status:** decided (answers in session); the tax line's place, first, is proposed and open
+**Area:** Estimating, Api, Frontend
+**Beyond legacy:** legacy's tab stops at the summed Item Cost (D-88 Q1)
+**Spec:** [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) (F9b, P-22)
+
+**Decision.**
+- **Compounding:** each markup is taken on the running subtotal above it: Direct cost, then
+  sales tax, overhead, any extra markups in order, profit, then bond, to the Bid total.
+- **Sales tax on material only:** tax % × the full estimate's Total Material Cost. Proposed
+  first in the order, as a cost the contractor pays, so overhead and profit are taken on it.
+- **Workspace defaults:** a workspace keeps default rates; a project reads them until its
+  first save writes its own row, and a later change to the defaults leaves such a project
+  alone.
+- **Blocked on D-117:** F9b is specced and moved to Blocked; the build starts once the api's
+  `umer-dev` is fixed and pulled. No api work is held locally for it.
