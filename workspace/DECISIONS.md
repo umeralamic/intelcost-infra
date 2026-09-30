@@ -5263,3 +5263,34 @@ the create dialog".
 `onEditDraftSubItems`, `sub_items` on the draft), `items/SubItemsDialog.tsx`
 (`draftRows`), `pages/ProjectTakeoff.tsx` (`draftSubs`, `draftSubsOver`, `subsWritten`,
 the write in `createItem`).
+
+---
+
+## D-133 — Find Text's Choose Pages is legacy's folder tree
+
+**Date:** 2026-09-30
+**Status:** decided, **pending founder review** (the brief's items 1 to 4)
+**Area:** Takeoff, Frontend
+
+**Decision.** Choose Pages lists the pages as legacy's `FindTextDialog` does, as the
+Sheets panel's folder tree, not a flat list:
+- each folder with a caret (collapse and expand), a tick, the folder glyph and its name;
+  sub-folders, then its sheets, indented a level;
+- a folder's tick ticks or clears every sheet under it, nested folders included, and
+  shows a dash when only some are ticked;
+- each sheet with a tick, the page glyph and its label, the open sheet bold in the
+  accent colour;
+- "Search pages…" narrows the tree (a folder with nothing matching is left out, and the
+  carets open while a search is typed); All and None act on what is shown; "{n} pages
+  selected" below;
+- the ticks start from the Sheets panel's selection when the panel opens, else the open
+  sheet (legacy's `selectionIds` seed). The Sheets panel now reports its selection to the
+  page (`onSelection`).
+
+**One difference, kept:** within a folder, the sheets run in the Sheets panel's order
+(`sort_order`, then page), where legacy's Find tree sorts by page number alone; the tree
+reads the same as the panel beside it.
+
+**Where:** `features/takeoff/find/FindTextPanel.tsx` (`folders`, `selection`, the tree),
+`features/takeoff/sheets/SheetsPanel.tsx` (`onSelection`), `pages/ProjectTakeoff.tsx`
+(`sheetSelection`).
