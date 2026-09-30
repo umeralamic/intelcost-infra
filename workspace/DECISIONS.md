@@ -4684,11 +4684,20 @@ toolbar's Undo) and redo with Ctrl+Y. The steps are kept beside the shapes' sess
 and interleaved by depth: a markup step is taken first only when no shape step was
 recorded after it. A markup deleted and put back returns with a new uuid, which later
 steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
-*D-116 round 12 (08:45).* The region box menu gains legacy's **Page Name** and **Sheet #**:
+*D-116 round 12 (08:35).* The region box menu gains legacy's **Page Name** and **Sheet #**:
 - The box's text is split into a number and a name by legacy's classifier (`regionText`,
   `classifyRegionLines`, ported unchanged into `lib/takeoff/naming/`).
 - Finding one writes that field and keeps the other.
 - Finding both asks "Set sheet number and page name?", with both fields editable and
   "Apply both".
-- **Left:** their "All" variants (the naming preview over every sheet, with an OCR
-  fallback), Scale from a box, Ask AI, Extract Schedule and Auto Count.
+- **Left:** Scale from a box, Ask AI, Extract Schedule and Auto Count.
+
+*D-116 round 13 (08:55).* "Page Name · All pages…" and "Sheet # · All pages…" open legacy's
+**Name from page region**:
+- The boxes are kept for the visit; a number box alone fills both fields where it carries
+  both.
+- Range: All pages or From–to.
+- A progressive preview table with editable Sheet number and Sheet name and a status of
+  OK, Empty or Duplicate.
+- "Apply to N sheets". A field the region did not give is left as it was.
+- Text layer only: legacy's OCR recovery and "use Auto-Name Sheets for these" are F14's.
