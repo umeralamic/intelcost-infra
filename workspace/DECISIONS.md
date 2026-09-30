@@ -4955,3 +4955,22 @@ tabs text size" and "Bold", which still size them.
 Zoom window. The figure sits between the two buttons that change it. Nothing else changes.
 
 **Where:** `intelcost-app-react/src/features/takeoff/components/ZoomCluster.tsx`.
+
+---
+
+## D-123 — An unscaled sheet's chip names the sheet and offers Calibrate
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Takeoff, Frontend
+**Beyond legacy:** legacy's chip is a solid amber "Calibrate scale to compute LF / SF"
+
+**Decision.** On a sheet with no scale, the canvas bar's chip is a notice, not a solid amber
+button: an amber-tinted pill (`status-amber` at 10% fill, 40% border) with a warning glyph,
+"{sheet} has no scale" in `foreground` (the sheet's number, else its name, else "Page N"), and
+a **Calibrate** button in `primary` with the ruler glyph. Calibrate opens the same Scale menu
+the chip always opened (Calibrate Scale, Add Custom Scale, the standard scales). The green
+"Scale: {label}" chip is unchanged.
+
+**Where:** `intelcost-app-react/src/features/takeoff/components/ScaleControls.tsx`
+(`sheetName`), `src/pages/ProjectTakeoff.tsx`.
