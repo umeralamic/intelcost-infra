@@ -253,4 +253,36 @@ export const COST_CASES = [
   },
   // A host's share is additive lump equipment: $100 typed + $33.34 shared, never × 2.
   { id: "shared-share-on-host", kind: "line", quantity: 40, unit: "LF", multiplier: 2, input: rates({ equipment_cost: 100 }), equipmentAllocation: 33.34, expect: { equipmentCost: 133.34, itemCost: 133.34 } },
+
+  // --- The bid summary (F9b, D-128): compounding, tax on material first -------------------
+  // Direct $100,000, material $40,000; tax 8 %: 40,000 × 0.08 = $3,200 → $103,200; overhead
+  // 10 % = $10,320 → $113,520; profit 10 % = $11,352 → $124,872; bond 1 % = $1,248.72;
+  // Bid total $126,120.72.
+  {
+    id: "bid-compounding",
+    kind: "bid",
+    totals: { directCost: 100000, materialCost: 40000 },
+    rates: { taxPct: 8, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] },
+    expect: { tax: 3200, overhead: 10320, profit: 11352, bond: 1248.72, total: 126120.72 },
+  },
+  // Every line to the cent as it is made. Direct $12,345.67, material $5,432.10: tax 8.25 %
+  // = 448.14825 → $448.15, $12,793.82; overhead 12 % = 1,535.2584 → $1,535.26, $14,329.08;
+  // contingency 2.5 % = 358.227 → $358.23, $14,687.31; profit 10 % = 1,468.731 → $1,468.73,
+  // $16,156.04; bond 1.5 % = 242.3406 → $242.34; Bid total $16,398.38.
+  {
+    id: "bid-cents-and-extra",
+    kind: "bid",
+    totals: { directCost: 12345.67, materialCost: 5432.1 },
+    rates: { taxPct: 8.25, overheadPct: 12, profitPct: 10, bondPct: 1.5, extra: [{ name: "Contingency", pct: 2.5 }] },
+    expect: { tax: 448.15, overhead: 1535.26, "extra:0": 358.23, profit: 1468.73, bond: 242.34, total: 16398.38 },
+  },
+  // The export's Bid Summary sheet: tax is ROUND(material × rate) in C4, overhead is taken
+  // on the running subtotal (D4), and the Bid total carries the first case's $126,120.72.
+  {
+    id: "bid-workbook-sheet",
+    kind: "bidsheet",
+    totals: { directCost: 100000, materialCost: 40000 },
+    rates: { taxPct: 8, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] },
+    expect: { taxOnMaterial: true, overheadOnSubtotal: true, total: 126120.72 },
+  },
 ];

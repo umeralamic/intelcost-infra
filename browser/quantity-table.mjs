@@ -48,7 +48,19 @@ try {
     const envs = await import("/src/lib/estimate/componentEnv.ts");
     const workbook = await import("/src/lib/estimate/workbook.ts");
     const removal = await import("/src/lib/estimate/componentRemoval.ts");
+    const bid = await import("/src/lib/estimate/bidSummary.ts");
     return cases.map((c) => {
+      if (c.kind === "bidsheet") {
+        const wb = workbook.buildWorkbook([{ name: "T", banner: null, rows: [] }], [{ key: "item_cost", label: "Item Cost", width: 60, kind: "money" }], { formulas: true, grids: false, grouping: false });
+        workbook.appendBidSheet(wb, c.totals, c.rates);
+        const ws = wb.Sheets["Bid Summary"];
+        const last = Object.keys(ws).filter((k) => /^D\d+$/.test(k)).map((k) => Number(k.slice(1))).sort((a, b) => b - a)[0];
+        return { taxOnMaterial: ws.C4?.f === "ROUND(C3*B4,2)", overheadOnSubtotal: ws.C5?.f === "ROUND(D4*B5,2)", total: ws[`D${last}`]?.v };
+      }
+      if (c.kind === "bid") {
+        const summary = bid.computeBid(c.totals, c.rates);
+        return { ...Object.fromEntries(summary.lines.map((l) => [l.key, l.amount])), total: summary.total };
+      }
       if (c.kind === "alloc") {
         const r = alloc.allocateResource(c.res, c.hosts);
         return { total: r.total, unallocated: r.unallocated, allocations: Object.fromEntries(r.allocations) };

@@ -5085,7 +5085,7 @@ tens of rows, and a bulk route can replace the loop later without changing the s
 ## D-128 — The bid summary compounds, taxes material only, and starts from workspace defaults
 
 **Date:** 2026-09-30
-**Status:** decided (answers in session); the tax line's place, first, is proposed and open
+**Status:** decided (answers in session); tax first confirmed 2026-09-30
 **Area:** Estimating, Api, Frontend
 **Beyond legacy:** legacy's tab stops at the summed Item Cost (D-88 Q1)
 **Spec:** [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) (F9b, P-22)
@@ -5093,8 +5093,9 @@ tens of rows, and a bulk route can replace the loop later without changing the s
 **Decision.**
 - **Compounding:** each markup is taken on the running subtotal above it: Direct cost, then
   sales tax, overhead, any extra markups in order, profit, then bond, to the Bid total.
-- **Sales tax on material only:** tax % × the full estimate's Total Material Cost. Proposed
-  first in the order, as a cost the contractor pays, so overhead and profit are taken on it.
+- **Sales tax on material only:** tax % × the full estimate's Total Material Cost, **first**
+  in the order (confirmed), as a cost the contractor pays, so overhead and profit are taken
+  on it.
 - **Workspace defaults:** a workspace keeps default rates; a project reads them until its
   first save writes its own row, and a later change to the defaults leaves such a project
   alone.
