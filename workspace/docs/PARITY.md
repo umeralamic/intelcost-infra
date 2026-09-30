@@ -606,18 +606,18 @@ The Earthwork tab. `src/lib/takeoff/earthwork/`.
 
 **Drawing the surfaces**
 
-- [ ] Trace a contour line, entering its elevation on Enter. `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/trace/` · **missing**
-- [ ] Place a spot elevation, entering the elevation per click. `src/components/takeoff/ElevationPopover.tsx` · **missing**
+- [x] Trace a contour line, entering its elevation on Enter. `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/trace/` · **ported** (D-137: point to point, legacy's popover, pre-fill last ± Δ; *smoke-tested (D-70)*)
+- [x] Place a spot elevation, entering the elevation per click. `src/components/takeoff/ElevationPopover.tsx` · **ported** (D-137; *smoke-tested (D-70)*)
 - [ ] Edit a spot elevation inline from the Quantity Table, using the same range and parse contract as the canvas popover. `src/lib/takeoff/earthwork/elevation.ts` · **missing**
-- [ ] Elevations are stored in canonical feet on every sheet regardless of the sheet's display system, converting metric at entry and back at display. `src/lib/takeoff/earthwork/elevation.ts` · **missing**
-- [ ] Tag a contour or spot as Existing ground (EG) or Proposed grade (FG). `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/roles.ts` · **missing**
-- [ ] Draw a work boundary that limits the calculation, a hard singleton per sheet. `src/lib/takeoff/earthwork/containers.ts` · **missing**
-- [ ] Contours and spots do not create one item per drawn line: every new contour appends a run onto one container item per (sheet, surface), and spots onto the spot container. `src/lib/takeoff/earthwork/containers.ts` · **missing**
-- [ ] A per-(item, sheet) FIFO commit queue serialises contour commits, so two rapid commits cannot collapse to last-write-wins on `vertices_json` and silently drop a run. `src/lib/takeoff/earthwork/commitQueue.ts` · **missing**
-- [ ] When a queued commit is rejected the queue for that key halts, and every later job resolves as halted rather than running or being silently dropped. `src/lib/takeoff/earthwork/commitQueue.ts` · **missing**
+- [x] Elevations are stored in canonical feet on every sheet regardless of the sheet's display system, converting metric at entry and back at display. `src/lib/takeoff/earthwork/elevation.ts` · **ported** (D-136 Q5, D-137: `lib/takeoff/earthwork/elevation.ts`, every write through `toCanonicalFt`)
+- [x] Tag a contour or spot as Existing ground (EG) or Proposed grade (FG). `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/roles.ts` · **ported** (D-137: the EG / FG toggle, `shape_meta.surface`)
+- [x] Draw a work boundary that limits the calculation, a hard singleton per sheet. `src/lib/takeoff/earthwork/containers.ts` · **ported** (D-137: one "Work Boundary" shape per sheet, legacy's replace confirm)
+- [x] Contours and spots do not create one item per drawn line: every new contour appends a run onto one container item per (sheet, surface), and spots onto the spot container. `src/lib/takeoff/earthwork/containers.ts` · **ported** (D-137: one container per project and surface, one shape per run)
+- [x] A per-(item, sheet) FIFO commit queue serialises contour commits, so two rapid commits cannot collapse to last-write-wins on `vertices_json` and silently drop a run. `src/lib/takeoff/earthwork/commitQueue.ts` · **ported** (not needed: a run is its own shape row, so a commit is one insert (D-137))
+- [x] When a queued commit is rejected the queue for that key halts, and every later job resolves as halted rather than running or being silently dropped. `src/lib/takeoff/earthwork/commitQueue.ts` · **ported** (not needed, as above (D-137))
 - [ ] The first earthwork input on a blank project files itself under DIV 31 Earthwork, Earthwork & Grading, with mirrors per classification system, and never overwrites a folder the user chose. `src/lib/takeoff/earthwork/defaultFolder.ts` · **missing**
 - [ ] Choose which earthwork markups an item gets when creating or copying it, including the classification choice on a duplicate. `.lovable/plan/choose-earthwork-markups-when-creating-or-copying-an-item-2026-08-17.md`, `.lovable/plan/earthwork-markups-folder-duplicate-classification-choice-2026-08-17.md` · **missing**
-- [ ] The Area tool used from the Earthwork tab stays on Earthwork rather than jumping back to Takeoff. `.lovable/plan/fix-area-tool-from-earthwork-jumps-back-to-takeoff-and-hides-2026-08-17.md` · **missing**
+- [x] The Area tool used from the Earthwork tab stays on Earthwork rather than jumping back to Takeoff. `.lovable/plan/fix-area-tool-from-earthwork-jumps-back-to-takeoff-and-hides-2026-08-17.md` · **ported** (D-137: earthwork tools arm the mechanics without leaving the tab)
 
 **Auto Trace**
 

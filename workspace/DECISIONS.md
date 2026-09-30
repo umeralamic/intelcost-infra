@@ -5390,3 +5390,46 @@ recommendations in `docs/tasks/drafts/earthwork_tasks.DRAFT.md`).
   With s = 1 this is legacy's balance exactly. Shared quantity-table rows prove it by hand.
 
 **Built so far:** see the Progress list of the spec, block by block.
+
+---
+
+## D-137 — F12 Block A as built: the surfaces
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Earthwork (F12), Frontend, Api
+
+- **The Earthwork tab** (`?tab=earthwork`, between Takeoff and Collaborator) keeps the
+  takeoff row and adds legacy's earthwork row: EG / FG, Contour, Spot, Boundary, Δ with
+  Ascending / Descending, in legacy's words. Trace (Block G), Site Features (D), the TIN
+  toggles (B), Isochore and Calculate (C) and Strip Area (E) join it with their blocks.
+  Open to everyone who can measure (Q28).
+- **The tools borrow the canvas's mechanics** (Contour = Linear point to point, Spot =
+  Count, Boundary = Area polygon), so drawing, snapping, ortho and the draft are the
+  measurement tools' own; the page routes the finished shape to the earthwork writes, never
+  to a new measurement. No scale is needed to draw them.
+- **Containers, one shape per run:** "Existing Ground" / "Proposed Grade" (contour), "EG
+  Spots" / "FG Spots" (spot_elevation), one per project and surface, each contour or spot a
+  shape (on any sheet) with `shape_meta` `{kind, surface, elevation}`; "Work Boundary", one
+  shape per sheet, replaced after legacy's confirm. Because a run is its own row, legacy's
+  per-lane commit queue (its sentinel-packed vertex array) is not needed.
+- **Elevations in feet** (Q5): entered in ft or m by the sheet's scale, stored in feet.
+  The popover is legacy's (Enter commits; the first Esc keeps a contour dormant, Enter
+  reopens it, a second Esc drops it: "Contour discarded"). Pre-fill: the last value ± Δ.
+- **Earthwork Markups:** created by the api on first use (`is_earthwork_markup` on item
+  create, like Rough Measurements), closed both ways with legacy's words; New
+  Measurement's "Earthwork markup" checkbox (create only, exclusive with Rough measurement,
+  "Earthwork Markups · classification bypassed").
+- **On the canvas:** an earthwork layer draws the runs (surface tokens, labels, the dashed
+  amber boundary) and is kept out of the measurement canvas; in Select, a right-click on a
+  run gives "Edit elevation…" and "Delete run" (or "Delete boundary"). Every write is one
+  undo step (Q17); deleting a container's last run keeps the empty container.
+- **Left for later blocks:** crossing contours in blue (B, with the preflight's crossing
+  check); the Takeoff panel's per-run rows and inline elevation edit (legacy's "Contour · EL
+  x (EG)") — the canvas edit covers it for now.
+
+**Where:** app `lib/takeoff/earthwork/{elevation,surfaces}.ts`,
+`features/takeoff/earthwork/{EarthworkToolbar,ElevationPopover,EarthworkLayer,useEarthwork,earthButton}`,
+`pages/ProjectTakeoff.tsx`, `items/MeasurementDialog.tsx`, `components/QuantityPanel.tsx`,
+`index.css` (boundary token amber); api `takeoff/{schemas,service}.py`
+(`is_earthwork_markup`, `ensure_earthwork_folder`, the closed folder).

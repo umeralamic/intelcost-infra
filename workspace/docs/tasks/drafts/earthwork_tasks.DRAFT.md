@@ -1,6 +1,6 @@
 # F12: Earthwork and Auto Trace (spec, questions open)
 
-> **Specced 2026-09-30 from legacy's source on `UmeralamDEV` (e99cddcb; no earthwork change
+> **Answered 2026-09-30 (D-136); being built block by block.** Specced 2026-09-30 from legacy's source on `UmeralamDEV` (e99cddcb; no earthwork change
 > since 2026-09-27) and live legacy's Earthwork tab. Nothing is built. The founder's
 > answers to the questions at the end come before any code.** Supersedes the draft of
 > 2026-09-29 (D-96), which covered Strip Areas and Site Features only. PARITY §16 is
@@ -608,5 +608,11 @@ Each with legacy's behaviour today and my recommendation. None is decided.
 ## Progress
 
 - [x] Specced 2026-09-30 (this file); PARITY §16 to be rewritten on adoption.
-- [ ] The founder's answers.
-- [ ] Blocks A to G.
+- [x] The founder's answers (D-136).
+- [x] Block A, the surfaces (D-137): tab, row, contours, spots, boundary, containers, the popover, Earthwork Markups, the New Measurement checkbox; crossings in blue move to Block B, the panel's per-run rows wait.
+- [ ] Block B, the TIN.
+- [ ] Block C, cut and fill, the assumptions, the panel.
+- [ ] Block D, Site Features.
+- [ ] Block E, Strip Areas.
+- [ ] Block F (the CSI mapping table goes to the founder first, Q12).
+- [ ] Block G, Auto Trace.
