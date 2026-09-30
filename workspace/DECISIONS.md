@@ -5020,3 +5020,31 @@ columns stay in Columns. A view saved on either grouping opens on Classification
 
 **Where:** `intelcost-app-react/src/lib/estimate/lines.ts` (`GROUP_BY_ORDER`),
 `src/features/estimate/EstimatingView.tsx` (`readView`).
+
+---
+
+## D-126 — Estimating's controls move to a left sidebar; the cost filter becomes Reports
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Estimating, Frontend
+**Beyond legacy:** legacy's controls sit in one row over the table, with the cost filter as
+All, Labor, Material, Equipment, Subcontract buttons and a "FILTERED" line in the grid
+**Spec:** [estimating_reports_tasks.md](docs/tasks/estimating_reports_tasks.md), block A
+
+**Decision.**
+- The top of the Estimating tab keeps the title (with the active report's name and, off the
+  full estimate, a "Partial estimate" or "No prices" tag), the subtitle, Search and Export.
+- Everything else moves to a left sidebar, in sections: Reports; View (Group by with its
+  Layer tabs, Expand components); Filter (Subcontractor, User); Table (Columns, Format);
+  Setup (Shared equipment, Manage subcontractors, now always listed); and Direct cost at its
+  foot, where F9b's bid summary will go. It folds to a 40 px strip, remembered per browser.
+- The cost filter becomes **Reports**: Full estimate (was All), Labor, Material, Equipment,
+  Subcontract, each with its project total (all layers, no search or filters), unchanged in
+  arithmetic, columns and export; `view.filter` keeps its stored values. A new **Quantities
+  only** report shows every line with no money, for sending to subcontractors to price.
+- The grid's "FILTERED — … ONLY" line goes (the title's tag says it); the workbook keeps its
+  banner. The TOTAL row sticks to the foot of the table while the header is frozen.
+
+**Why.** The row mixed what is used every visit (Search, Export) with what is set once, and
+took the width the table needs. The cost filter chose a report, not a subset of rows.
