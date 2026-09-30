@@ -4441,7 +4441,12 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
 - Writes need `canEditTakeoff`, where legacy checks nothing (Q1).
 - Use on sheet from the Starter Pack applies its sub-items and rates, where legacy probably
   does not (unconfirmed).
-- Assembly properties, Manage sub-items and Costs on a template (F10-S3) are not built.
+- ~~Assembly properties, Manage sub-items and Costs on a template (F10-S3) are not built.~~
+  Built 05:24, legacy's menu order: Properties… (name, unit, colour, opacity, symbol, tags,
+  notes), Add / Manage sub-items… (the item dialog, at zero quantity), Costs… (on the
+  assembly or a sub-item, with `canEditEstimates`), and a sub-item's Rename, Edit…,
+  Costs…, Delete. Legacy's "Change classification…" and the Properties dialog's WBS,
+  height and pitch fields are not built.
 - Starter Pack authoring by platform admins is not built.
 - ~~The panel does not yet follow `workspace.assembly.changed` live.~~ Done 05:07: every
   open panel follows it.
