@@ -111,6 +111,10 @@ working per group afterwards.
   gates and quantity table green; the Playwright MCP did not connect, awaiting the browser
   check on the bench. Files: `estimate/EstimateSidebar.tsx`, `estimate/reports.ts`,
   `estimate/EstimatingView.tsx`.
-- [ ] Block B1: Needs attention (D-127)
-- [ ] Block B2: Collapse to a level (D-127)
-- [ ] Block B3: Change many rows at once (D-127)
+- [~] Block B1: Needs attention (D-127)
+- [~] Block B2: Collapse to a level (D-127)
+- [~] Block B3: Change many rows at once (D-127)
+  B1 to B3 built 2026-09-30, gates and quantity table green; the Playwright MCP did not
+  connect, awaiting the browser check. Files: `estimate/EstimatingView.tsx` (attention,
+  levels, selection, `applyValues`), `estimate/SetValuesDialog.tsx`. A picked row hidden by
+  a search or filter drops out of the selection, so Set values only reaches rows on screen.

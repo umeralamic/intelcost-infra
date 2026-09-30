@@ -5048,3 +5048,34 @@ All, Labor, Material, Equipment, Subcontract buttons and a "FILTERED" line in th
 
 **Why.** The row mixed what is used every visit (Search, Export) with what is set once, and
 took the width the table needs. The cost filter chose a report, not a subset of rows.
+
+---
+
+## D-127 — Estimating's working tools: Needs attention, collapse to a level, set values on many rows
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Estimating, Frontend
+**Beyond legacy:** legacy has none of the three
+**Spec:** [estimating_reports_tasks.md](docs/tasks/estimating_reports_tasks.md), block B
+
+**Decision.**
+- **Needs attention.** A sidebar toggle with a count narrows the table to priced leaves that
+  need work, alongside the report and filters: no rate (full-estimate Item Cost 0), no
+  quantity, subcontract cost with no subcontractor resolved, or a sheet with no scale. A
+  parent stays when one of its sub-items is flagged. Each flagged row shows an amber marker
+  in Item No. listing the reasons. The toggle lasts the visit.
+- **Collapse to a level.** Buttons 1, 2, 3 (as deep as the grouping goes) and All in the
+  sidebar's View: level N folds every group at depth N and below, All opens them all. The
+  per-group chevrons keep working.
+- **Set values on many rows.** A checkbox column at the far left for seats that may price
+  (display only: not a data column, never exported, not in Columns). Click, Shift-click for a
+  range, the header box for every priced leaf shown. A bar over the table: "N selected", Set
+  values…, Clear. Set values… takes Unit Man Hours, Per Hour Wage, Unit Material Cost, Unit
+  Equipment, Subcontract and Wastage %, each blank to keep, and writes only those to priced
+  leaves through the existing per-line save, one batch, one undo step. A type priced by
+  components is left alone on that row. The row menu's "Use this row's rates…" opens it
+  prefilled from that row. Selection clears on a change of report, grouping, layer mode or tab.
+
+**Why no bulk endpoint.** The api's umer-dev is held (D-117); per-line saves are fine for
+tens of rows, and a bulk route can replace the loop later without changing the screen.
