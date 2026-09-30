@@ -8,7 +8,7 @@ this run). Everything below was checked on the bench.
 api's `umer-dev` at 07:17 UTC. I did not pull it. That merge by itself would break the
 api on the bench, so one api commit is held locally (details under Decisions).
 
-## Follow-up after your review (11:09 to 11:27)
+## Follow-up after your review (11:09 to 11:26)
 
 - **Decisions:** D-106 to D-116 are accepted. D-105 is amended: the whole-pixel snap stays at
   every ratio. D-117 waits for Abdullah, and `7ad2c10` stays held.

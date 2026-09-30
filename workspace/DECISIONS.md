@@ -4223,7 +4223,7 @@ time-boxed to 45 minutes. It sizes the backing store from ResizeObserver's
 `devicePixelContentBoxSize` and maps the CSS size exactly onto those device pixels. Its
 result follows.
 
-**The 45-minute attempt (2026-09-30, 11:12 to 11:40): it does not help, and nothing was
+**The 45-minute attempt (2026-09-30, 11:12 to 11:25): it does not help, and nothing was
 changed.** The measure is the one from 1a (screen gradient against the bitmap's own; 1.00 is
 1:1), on the same two sheets at 2048 × 1050.
 - **The bench's emulated 1.25 is not a real device scale.** Under Playwright's
