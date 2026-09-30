@@ -30,6 +30,8 @@ this run).
 | 6a Find Text | Done | 04:09 | 04:28 | 0 h 19 |
 | 6b Print | Done | 04:28 | 04:44 | 0 h 16 |
 | 6c Item history | Done | 04:44 | 04:58 | 0 h 14 |
+| 6d Open at snapshot zoom, Dock this snapshot, live Assemblies | Done | 04:58 | 05:07 | 0 h 09 |
+| 5b F10-S3 template Properties, sub-items, Costs | Done | 05:07 | 05:24 | 0 h 17 |
 
 ## Task 1 numbers
 

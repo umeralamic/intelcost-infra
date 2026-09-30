@@ -4482,8 +4482,8 @@ From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
 
 *Pending founder review:*
 - Choose Pages is a flat, searchable page list, not legacy's folder tree with checkboxes.
-- Region select's "Search as Text" seed is not wired: the region menu has no such entry
-  yet.
+- ~~Region select's "Search as Text" seed is not wired.~~ Built 05:40: the region box menu
+  has legacy's Copy as Text, Copy as Image, Search as Text, New Snapshot, Crop as New Page.
 
 ---
 
