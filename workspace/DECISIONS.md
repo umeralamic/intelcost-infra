@@ -4256,7 +4256,7 @@ changed.** The measure is the one from 1a (screen gradient against the bitmap's 
 ## D-106 — Supersampled by drawing density: under a device px per PDF point
 
 **Date:** 2026-09-30
-**Status:** accepted 2026-09-30 (founder review) (overnight task 1c)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 1c); amended by D-118 (supersample only at or below Fit)
 **Area:** Takeoff, Frontend
 **Amends:** D-104 (below Fit only)
 
@@ -4777,3 +4777,51 @@ or Apply clears it.
 *D-116 round 21 (09:56).* Estimating's Group by is legacy's grouped dropdown, where it
 was a native select: "Group rows by" (Classification … Sheet), then "Layer tabs" (Main
 layer per tab, All layers in one tab), each current entry marked.
+
+---
+
+## D-118 — Supersample only at or below Fit; full device resolution above it
+
+**Date:** 2026-09-30
+**Status:** decided (the founder's decision after his monitor check)
+**Area:** Takeoff, Frontend
+**Amends:** D-106
+
+**Evidence.** The founder checked his real monitor (2560 × 1440 at 125%, a real GPU), on Hidden
+Valley Spec page 1 at 29%. It read "zoom 0.29046 ss 2 bitmap 1830 1485 device box 1830 1485
+dpr 1.25". The bitmap and the device box match, so the sizing and the placement are exact
+(D-105). The softness comes from the × 2 supersample being halved (D-106).
+
+**Decision.** pdf.js draws supersampled only in two places:
+- at or below Zoom to Fit (zoom ≤ fit);
+- where the drawing density is so low that text is unreadable anyway: a PDF point on less
+  than half a device px (zoom × 170/72 × pixel ratio < 0.5). That is below about 17% at
+  125% and 21% at 100%.
+
+Above Fit, pdf.js draws directly at full device resolution, with no supersampling, so small
+text at 25% to 50% is as crisp as at 50%. The whole-pixel snap stays (D-105). The trade-off
+is D-106's in reverse: above Fit, lines and text read darker (heavier) than they did.
+
+**Result** (at a real forced 1.25, `--force-device-scale-factor`, window 2048 × 1050, the test
+project's two sheets averaged). The columns:
+- *Sharp* is 1a's measure: on screen against the bitmap's own pixels, where 1.00 is 1:1. It
+  cannot see a softness that is inside the bitmap, because a halved frame shown 1:1 scores
+  1.0. So two more columns are given.
+- *Screen* and *Bitmap* are the mean edge strength, in luminance steps per px, on the three
+  busiest blocks, as the screen shows them and in the bitmap itself.
+- *Lum* and *Dark* are 1c's lightness measure: the mean luminance, and the share of pixels
+  under 100.
+
+| Zoom | ss before → after | Sharp | Screen | Bitmap | Lum | Dark % |
+|---|---|---|---|---|---|---|
+| Fit (20–21%) | 2 → 2 | 0.717 → 0.717 | 20.8 → 20.8 | 29.1 → 29.1 | 246.0 → 246.0 | 1.98 → 1.98 |
+| 25% | 2 → 1 | 0.776 → 0.754 | 21.4 → 24.1 | 28.7 → 32.0 | 246.3 → 244.7 | 2.41 → 3.07 |
+| 29% | 2 → 1 | 0.752 → 0.759 | 17.6 → 20.4 | 23.4 → 26.9 | 246.4 → 245.4 | 2.62 → 3.03 |
+| 35% | 1 → 1 | 0.821 → 0.821 | 16.4 → 16.4 | 20.6 → 20.6 | 246.0 → 246.0 | 2.87 → 2.87 |
+| 50% | 1 → 1 | 0.928 → 0.928 | 14.0 → 14.0 | 15.9 → 15.9 | 246.0 → 246.0 | 3.09 → 3.09 |
+
+At 25% and 29%, the edges on screen are 13% and 16% stronger. The page is darker: dark pixels
+rise from 2.4% to 3.1% and from 2.6% to 3.0%, level with what 35% to 50% already show. Part
+of the edge gain is the heavier ink itself. Fit, 35% and 50% are unchanged. The bench's
+*Sharp* stays under 1 even at × 1. That is the bench's software compositor, since the
+founder's GPU shows the bitmap and the device box equal (D-105).
