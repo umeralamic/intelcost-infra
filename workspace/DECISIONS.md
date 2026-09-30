@@ -5561,3 +5561,56 @@ migration `2a40e224cbfd`, `takeoff/service.py` (the folder lock), `main.py`,
 `takeoff/api.ts`, `items/MeasurementDialog.tsx`, `core/api/types.ts`, `lib/estimate/lines.ts`,
 `pages/ProjectTakeoff.tsx`; infra `browser/lib/earthwork-cases.mjs`,
 `browser/quantity-table.mjs`.
+
+---
+
+## D-141 — F12 Block E as built: Strip Areas
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Earthwork (F12), Frontend, Api
+
+- **Strip Area** (last in the earthwork row) opens legacy's window in its words; defaults
+  are legacy's (6 in or 15 cm, Within boundary when the sheet has one, else Selected Site
+  Features, Haul off). Create stores the strip; **Draw** arms the Area tool's mechanics
+  (as the boundary does, D-137) with legacy's toast, and the outline is kept on the strip's
+  own row (`earthwork_strip_area.vertices_json`), never as a takeoff item.
+- **Storage:** `earthwork_strip_area` (name, depth > 0, source, `feature_uuids`, the drawn
+  outline, colour, disposition, re-use kind, `is_hidden`, version bumped on each update),
+  `earthwork.strip.changed` in realtime. Dispositions are Q1's (`haul_off | stockpile |
+  reuse`, `general | topsoil`), checked by the database. Legacy's trigger is ported: however
+  a Site Feature is deleted, it leaves every strip naming it and a features-only strip left
+  empty is deleted.
+- **What is drawn is what Calculate strips (Q20):** `lib/takeoff/earthwork/strips.ts` builds
+  the engine's inputs (newest first, ties by uuid) and the same pieces the engine takes:
+  each strip's outline less its exclusions, clipped to the boundary, less what newer strips
+  took; a newest strip over the whole boundary takes all of it. Hatched 45° / 8 px, dashed
+  6 / 3 in the strip's colour, its name as the tooltip, hidden with the markups.
+- **Rows and menu:** the open sheet's strips are rows under Earthwork Markups ("Strip 6""),
+  with legacy's menu ("{name} · Strip Area": Properties…, Hide / Show, Delete…) on the row
+  and on the outline in Select; a double-click opens "Strip Area properties" (a drawn strip
+  keeps its source). **Hide is saved (Q19).**
+- **Undo (Q17):** create, edit and delete are each one step through the session history's
+  `custom` change; an undone delete comes back under its own uuid and time, so it keeps its
+  place among newer and older strips. The delete confirm says so ("Ctrl+Z brings it back")
+  in place of legacy's "This can't be undone."
+- **The recalculate prompt (Q18):** legacy's "Earthwork quantities have changed" /
+  "Recalculate grading? …" with Later / Recalculate (the assumptions dialog), after this
+  person's own delete of a strip or of a Site Feature only.
+- **Deleting a Site Feature (Q22):** the confirm names the Strip Areas that lose it ("Strip
+  Area X loses it; one left with no Site Feature is deleted."), from the tree, the bulk
+  menu and the last-shape delete.
+- **Calculate** reads the strips fresh, feeds them to the engine (a sheet with no Strip Area
+  strips nothing), keeps each strip's name and disposition for the lines, and folds them into
+  the version key.
+- **Quantity table:** 4 rows: newest wins between two drawn strips (with the fill they
+  cause), a newest Within boundary taking all, Selected Site Features clipped to the
+  boundary, Remaining Site through the rows.
+
+**Where:** api `earthwork/{models,schemas,routes}.py` (strips), migration `79667422e2b1`
+(table, checks, the Site Feature trigger), `models_registry.py`; app
+`lib/takeoff/earthwork/strips.ts` (new),
+`takeoff/earthwork/{StripAreaDialog,StripLayer,StripAreaButton,useStripAreas}.tsx` (new),
+`takeoff/earthwork/{useVolumes,api}`, `takeoff/components/QuantityPanel.tsx`
+(`extraFolderRows`), `drawing/realtime.ts`, `pages/ProjectTakeoff.tsx`; infra
+`browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.

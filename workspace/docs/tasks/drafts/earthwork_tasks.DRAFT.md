@@ -499,7 +499,7 @@ values in CY.
 
 - Auto Count (F13); AI reading of elevations from labels (legacy's Stage 2, not built);
   Trace's style filter ("Match lines like…", a type only in legacy); a Web Worker for Trace.
-- A project-wide Calculate across sheets (Q14).
+- **Idea (Q14, D-136):** multi-sheet sites. A site drawn across several sheets is calculated sheet by sheet today; a project-wide Calculate (one balance for the site) is a later improvement.
 - Migrating legacy projects' `strip_thickness_ft` and plain-area depths (F17, Q2).
 
 ## Questions for the founder
@@ -613,6 +613,6 @@ Each with legacy's behaviour today and my recommendation. None is decided.
 - [x] Block B, the TIN (D-138): legacy's preflight and triangulation, the toggles and layer, crossings in blue; 13 quantity-table rows.
 - [x] Block C, cut and fill, the assumptions, the panel (D-139): legacy's volume engine, Q30 and Q31, the per-sheet result and its content key, the panel and the isochore; 31 more quantity-table rows.
 - [x] Block D, Site Features (D-140): the dialog (depth required, Q7), Draw, Make Site Feature in one call, properties with undo, the undercut and prep (drawn last wins, Q6), the lines builder and the panel showing them (Q9); 10 quantity-table rows.
-- [ ] Block E, Strip Areas.
+- [x] Block E, Strip Areas (D-141): the window, Create and Draw, the table and api with the Site Feature trigger, the pieces drawn as Calculate strips them (Q20), rows and menu, Hide saved (Q19), undo with delete (Q17), the prompt on own deletes (Q18), Site Feature deletes naming strips (Q22); 4 quantity-table rows.
 - [ ] Block F (the CSI mapping table goes to the founder first, Q12).
 - [ ] Block G, Auto Trace.

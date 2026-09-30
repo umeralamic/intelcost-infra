@@ -354,6 +354,69 @@ export const EARTHWORK_CASES = [
   },
   // Remaining Site: the unit square at 100 ft less [0, 0.25] x [0, 1] = 7500 SF.
   { id: "sf-remaining-site", kind: "remaining", boundary: [[0, 0], [1, 0], [1, 1], [0, 1]], excluded: [[[0, 0], [0.25, 0], [0.25, 1], [0, 1]]], scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 }, expect: { areaSF: 7500 } },
+  // --- Strip Areas (F12 Block E): the rows as the engine takes them, and the pieces the
+  // sheet draws (Q20: exactly what Calculate strips). The unit square at 100 ft. ----------
+  // Two drawn strips, A older [0, 0.6]², B newer [0.4, 1]²: the newest wins, so B keeps
+  // 60 x 60 = 3600 SF and A 3600 - 20 x 20 = 3200 SF. On a flat pad (EG = FG = 100) each
+  // stripped foot is refilled: B 3600 x 0.5 = 1800 CF, A 3200 x 1 = 3200 CF, fill 5000/27.
+  {
+    id: "strips-drawn-newest-wins",
+    kind: "strips",
+    side: 100,
+    boundary: UNIT,
+    rows: [
+      { uuid: "A", name: "A", depth_ft: 1, source: "drawn", vertices_json: [[0, 0], [0.6, 0], [0.6, 0.6], [0, 0.6]], created_at: "2026-09-30T10:00:00Z" },
+      { uuid: "B", name: "B", depth_ft: 0.5, source: "drawn", vertices_json: [[0.4, 0.4], [1, 0.4], [1, 1], [0.4, 1]], created_at: "2026-09-30T11:00:00Z" },
+    ],
+    runs: pad(100, 100),
+    expect: { order: "B,A", "piece:B": 3600, "piece:A": 3200, "strip:B:areaSF": 3600, "strip:A:areaSF": 3200, "strip:B:volumeCY": 1800 / 27, "strip:A:volumeCY": 3200 / 27, fillCY: 5000 / 27 },
+  },
+  // Within boundary, newest: it takes the whole boundary (the engine's uniform path) and
+  // the older strip owns nothing: 10000 SF x 0.5 ft = 5000/27, as legacy's e4 F1.
+  {
+    id: "strips-boundary-newest-takes-all",
+    kind: "strips",
+    side: 100,
+    boundary: UNIT,
+    rows: [
+      { uuid: "A", name: "A", depth_ft: 1, source: "drawn", vertices_json: [[0, 0], [0.6, 0], [0.6, 0.6], [0, 0.6]], created_at: "2026-09-30T10:00:00Z" },
+      { uuid: "W", name: "Whole", depth_ft: 0.5, source: "boundary", created_at: "2026-09-30T11:00:00Z" },
+    ],
+    runs: pad(100, 100),
+    expect: { order: "W,A", pieces: "W", "piece:W": 10000, "strip:W:volumeCY": 5000 / 27, fillCY: 5000 / 27 },
+  },
+  // Selected Site Features: f1 [0, 0.25] x [0, 1] only, 2500 SF; a feature past the
+  // boundary is clipped: f2 [0.9, 1.2] x [0, 1] gives 10 x 100 = 1000 SF.
+  {
+    id: "strips-features-clipped",
+    kind: "strips",
+    side: 100,
+    boundary: UNIT,
+    features: [
+      { id: "f1", polygons: [[[0, 0], [0.25, 0], [0.25, 1], [0, 1]]] },
+      { id: "f2", polygons: [[[0.9, 0], [1.2, 0], [1.2, 1], [0.9, 1]]] },
+    ],
+    rows: [
+      { uuid: "S1", name: "S1", depth_ft: 0.5, source: "features", feature_uuids: ["f1"], created_at: "2026-09-30T10:00:00Z" },
+      { uuid: "S2", name: "S2", depth_ft: 0.5, source: "features", feature_uuids: ["f2"], created_at: "2026-09-30T09:00:00Z" },
+    ],
+    expect: { order: "S1,S2", "piece:S1": 2500, "piece:S2": 1000 },
+  },
+  // Remaining Site within Boundary, f1 unticked (cut out), f2 ticked (kept in): the
+  // boundary less f1 = 7500 SF (legacy's Remaining Site row, through the rows this time).
+  {
+    id: "strips-remaining-site",
+    kind: "strips",
+    side: 100,
+    boundary: UNIT,
+    features: [
+      { id: "f1", polygons: [[[0, 0], [0.25, 0], [0.25, 1], [0, 1]]] },
+      { id: "f2", polygons: [[[0.5, 0], [0.75, 0], [0.75, 1], [0.5, 1]]] },
+    ],
+    rows: [{ uuid: "R", name: "Remaining", depth_ft: 0.5, source: "remaining", feature_uuids: ["f2"], created_at: "2026-09-30T10:00:00Z" }],
+    runs: pad(100, 100),
+    expect: { "piece:R": 7500, "strip:R:areaSF": 7500, "strip:R:volumeCY": 3750 / 27, fillCY: 3750 / 27 },
+  },
   // --- The lines (legacy's buildDesired; Q9 the panel shows them, Q31 shrink, Q32 order) ---
   // Legacy's strip re-use rows (siteFeatures.test.ts), shrink 1: cut 100, fill 300, strip
   // 50 re-used: import (300 - 150) x 1.25 = 187.5; the re-use line 50 x 1 CCY.

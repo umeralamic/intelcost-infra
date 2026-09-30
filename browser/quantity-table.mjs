@@ -107,6 +107,7 @@ try {
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
+    const st = await import("/src/lib/takeoff/earthwork/strips.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
@@ -149,6 +150,31 @@ try {
             if (x.undercut) Object.assign(out, { [`${x.itemId}:undercutSF`]: x.undercut.areaSF, [`${x.itemId}:undercutCF`]: x.undercut.volumeCF });
             if (x.prep) out[`${x.itemId}:prepSF`] = x.prep.areaSF;
           }
+        }
+        return out;
+      }
+      if (c.kind === "strips") {
+        const feature = (f) => ({ itemId: f.id, label: f.id, depthFt: 0, polygons: f.polygons.map(xy), undercutDepthFt: null, undercutOffsetFt: 0, undercutMaterial: null, undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null });
+        const row = (r) => ({ sheet_uuid: "s", feature_uuids: [], vertices_json: null, color: "#000000", disposition: "haul_off", reuse_kind: null, is_hidden: false, ...r });
+        const boundary = xy(c.boundary);
+        const feats = (c.features ?? []).map(feature);
+        const inputs = st.stripInputs(c.rows.map(row), "s", boundary, feats);
+        const pieces = st.stripPieces(inputs, boundary);
+        const ringArea = (r) => Math.abs(r.reduce((t, p, i) => t + p.x * r[(i + 1) % r.length].y - r[(i + 1) % r.length].x * p.y, 0)) / 2;
+        const out = { order: inputs.map((i) => i.id).join(","), pieces: [...pieces.keys()].join(",") };
+        for (const [id, rings] of pieces) out[`piece:${id}`] = rings.reduce((t, r) => t + ringArea(r), 0) * c.side * c.side;
+        if (c.runs) {
+          const runs = runsOf(c.runs);
+          const labels = labelsOf(c.runs);
+          const r = vol.computeVolumes(
+            { eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: { feetPerNorm: c.side, widthPt: 1, heightPt: 1 }, units: "CY", stripAreas: inputs },
+            runs,
+            labels,
+          );
+          if (r.ok === true) {
+            out.fillCY = r.fillCY;
+            for (const a of r.stripAreas ?? []) Object.assign(out, { [`strip:${a.id}:areaSF`]: a.areaSF, [`strip:${a.id}:volumeCY`]: a.volumeCY });
+          } else out.ok = r.ok;
         }
         return out;
       }
