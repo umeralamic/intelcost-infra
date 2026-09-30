@@ -61,6 +61,8 @@ A 1 px checkerboard painted into the raster: 0% exact on screen before at both r
 
 ## Decisions to review
 
+- **D-117 (URGENT)**: at 07:17 UTC Abdullah merged "staging" into `intelcost-app-fastapi` `umer-dev`. That head is inconsistent on its own (`config.py` drops the S3 settings that `storage.py` still reads, and it requires `AWS_*` variables the bench does not set), so it would break the api on the bench. I did not pull it. One api commit (7ad2c10, Duplicate page) is held on the local `umer-dev`, one ahead and two behind. The pushed app's Duplicate page needs it.
+- **D-116** (pending): side-by-side rounds 1–8 with live legacy. The list of what was fixed and what was left is in the decision.
 - **D-115** (pending): item History as legacy's, written by the api in the same transaction as each item write (created, edited, deleted, duplicated, override set/cleared, shapes, assembly linked). Legacy's "calibration changed" and "quantity recalculated" rows are not written, and Estimating's "Modified by" link is not wired.
 - **D-114** (pending): Print as legacy's: in the browser at 2000 px, handed to `window.print()`, not a server PDF. The takeoff prints only when shown; markups always. Docks print as a border without their picture, as legacy's do.
 - **D-113** (pending): Find Text as legacy's (its search module ported unchanged). Create › Measurement opens New Measurement named from the first hit without placing marks, as legacy does. Choose Pages is a flat list, not legacy's folder tree.

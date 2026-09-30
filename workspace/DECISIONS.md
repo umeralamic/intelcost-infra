@@ -4668,3 +4668,10 @@ same drawing. Scale calibration is copied."), with the sheet number and name giv
 after its source, its calibration and turn copied, and the app opens it. The api half is
 held locally (D-117). Deleting a copied or cropped sheet leaves its generated file in
 Files, as Crop as New Page already does.
+*D-116 round 9 (07:58).* The Legend and the Assemblies panel were compared.
+- **Legend:** an area row carries legacy's "· perim N LF", the perimeter of its sections on
+  this sheet. The figure column is wide enough that "16,883.38 SF" no longer runs into
+  its unit.
+- **Assemblies:** unfiled assemblies group under their classification, division then
+  scope, with "Unclassified" for none, as legacy's panel. The nodes come from the
+  project's system; an assembly classified in another system shows under "Unclassified".
