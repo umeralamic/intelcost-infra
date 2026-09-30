@@ -11,7 +11,7 @@ this run).
 - [x] 1c Supersample by drawing density, guard passed (D-106)
 - [x] 2 Split view (D-107)
 - [x] 3 Public share links (D-108)
-- [ ] 4 Markup tools and the Collaborator tab
+- [x] 4 Markup tools and the Collaborator tab (D-109, D-110, D-111)
 - [ ] 5 F10 assemblies, Starter Pack, Library
 - [ ] 6 The rest of F11
 - [ ] Fallback: side by side with live legacy
@@ -24,7 +24,8 @@ this run).
 | 1c | Done, guard passed | 01:45 | 02:00 | 0 h 15 |
 | 2 Split view | Done | 02:00 | 02:11 | 0 h 11 |
 | 3 Public share links | Done (guest presence left empty) | 02:11 | 02:32 | 0 h 21 |
-| 4a Markups and Collaborator tab | Done (Block A core) | 02:32 | 02:59 | 0 h 27 |
+| 4a Markups and Collaborator tab | Done | 02:32 | 02:59 | 0 h 27 |
+| 4b Carets, visibility, Split markups, Snapshot, Snippets, Dock | Done | 02:59 | 03:44 | 0 h 45 |
 
 ## Task 1 numbers
 
@@ -46,12 +47,14 @@ A 1 px checkerboard painted into the raster: 0% exact on screen before at both r
 
 ## Commits
 
-- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106); `1fd112a` Split view (D-107); `9f67dcc` share links (D-108); `63ce6d1` markups (D-109)
-- api `f33c191` share links (D-108); `3d7854c` markups (D-109)
+- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106); `1fd112a` Split view (D-107); `9f67dcc` share links (D-108); `63ce6d1` markups (D-109); `260ce0a` carets and visibility; `0dd98a5` Snapshot (D-110); `f79fdcf` Dock (D-111)
+- api `f33c191` share links (D-108); `3d7854c` markups (D-109); `fcd014a` snippets (D-110); `0d967aa` dock (D-111)
 
 ## Decisions to review
 
 - **D-105** (pending): the stage is placed on whole device pixels; a wheel zoom now holds the cursor's point to 0.5 device px instead of 0.02. The raster is clipped to the paper.
+- **D-111** (pending): Dock as legacy's; its "Dock this snapshot" shortcut and properties popover not built.
+- **D-110** (pending): Snapshot, Snippets and Link Screenshot as legacy's; custom tags are a free label; Open at snapshot does not zoom to the box yet.
 - **D-109** (pending): markups in one live table; the draft spec's eight questions answered in legacy's favour; the Collaborator tab as legacy's.
 - **D-108** (pending): public share links as legacy's; guest presence is stored but shows nothing (our presence has no page beacons); the link uses the app's own origin.
 - **D-107** (pending): Split view's zoom uses the canvas's steps and range, not legacy's + 0.25 to 1200%; zoom keys act on the main canvas only.
@@ -60,7 +63,8 @@ A 1 px checkerboard painted into the raster: 0% exact on screen before at both r
 ## Legacy differences fixed and left
 
 - **Fixed:** Split view (legacy's `ReferenceCanvasPane`), ported from source.
-- **Fixed:** Highlight, Note, Cloud, Callout, Arrow and the Collaborator tab.
+- **Fixed:** Highlight, Note, Cloud, Callout, Arrow and the Collaborator tab; the Highlight and Note carets; the Markups toggle and Annotations visibility; Snapshot, Snippets, Link Screenshot; Dock.
+- **Left:** a Properties panel per markup kind, and undo of markup edits (legacy's undo covers markup placement).
 - **Fixed:** public share links (legacy's `ShareLinkBlock`, `guest-project`, `GuestProject`).
 - **Left:** guest presence (cursors and pages of the team) — legacy's page beacons have no counterpart yet.
 - **Left:** Split view was built from legacy's source, not driven live side by side (time); the pane's zoom buttons stop at 10% where a sheet's fit in the narrow pane is below it (Fit still reaches it).

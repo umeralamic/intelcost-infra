@@ -4339,6 +4339,61 @@ tool down. Sizes are legacy's: line width and head size in page points × 0.75, 
 scallop its bubble size in points, a note keeping its size on screen. Writes need
 `canUseAnnotations`.
 
-*Left for later, pending founder review:* the toolbar carets that set the next markup's
-colour (legacy's split buttons), the Properties panel per kind, the "Markups" visibility
-toggle, undo of markup edits, Snapshot and Dock, and markups in the Split and guest views.
+Also built: legacy's Highlight and Note carets (the next one's colour; a note's opacity and
+text colour), the toolbar "Markups" toggle (everything drawn, hidden from the toolbar by
+default as legacy's), "Annotations" in the sheet menu's Show All / Hide All, and markups
+read-only in Split view. The guest view shows none, as legacy's.
+
+*Left for later, pending founder review:* the Properties panel per kind and undo of markup
+edits.
+
+---
+
+## D-110 — Snapshot, Snippets and Link Screenshot, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 4)
+**Area:** Takeoff, Backend, Frontend
+
+From legacy's Snapshot tool, `useEvidence`, `EvidencePanel` and `LinkEvidenceToItemDialog`
+(read on `UmeralamDEV`).
+
+- **Snapshot (S)**, "drag a box to capture an area", on the takeoff row (not the
+  Collaborator tab's), for a seat with `canUseAnnotations`; S arms it when nothing is being
+  drawn (mid-draw S stays Snap). pdf.js draws the box's region 800 px wide from the sheet's
+  own PDF (legacy's `renderRegion(page, bbox, 800)`).
+- **The details dialog:** the picture, Title ("Snapshot N"), Tag (legacy's sixteen, "other"
+  with an optional custom label), Notes; the same dialog renames and retags later.
+- **Snippets** in the Bookmarks | Snippets panel, the project's, newest first, name-only
+  rows (legacy's density); a click previews (picture, sheet, tag, notes, "Open at
+  snapshot"); the ⋮ or a right-click offers Open at snapshot, Preview, Rename / retag… and
+  Delete (which asks).
+- **Link Screenshot (n)** after Properties on an item's menu: the project's snippets, the
+  linked ones ticked, many to many (`snippet_link`); Estimating's Details Ref. is F9's.
+- **Storage:** `snippet` (sheet, box in page fractions, PNG key, title, tag, notes) and
+  `snippet_link`; the PNG under `takeoff/{ws}/{project}/snippets/`, removed with the row.
+
+*Pending founder review:* legacy's custom tag list per workspace (`evidence_tag_types`) is a
+free label on "other" here; Open at snapshot opens the sheet but does not yet zoom to the box;
+Copy image and the floating preview window are a dialog; OCR and AI summaries are F14's.
+
+---
+
+## D-111 — Dock, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 4)
+**Area:** Takeoff, Frontend
+
+From legacy's `DockLayer` and `DockSetupDialog`: "Dock — drag a rectangle to display a
+snapshot or sheet thumbnail (optional hyperlink)", on the takeoff row after Snapshot. The
+tool opens "Dock — setup" first: Source (Snapshot or Sheet thumbnail, with a search), Border
+color (legacy's palette, #F44336 first), Border width, Corner radius, and an optional
+Hyperlink to a sheet; Place arms the box, and the tool returns to Select once it is placed.
+A dock draws its picture inside its border, moves and resizes as any box, and its hyperlink
+("↗ A-101") opens the target sheet in Split view (legacy's `onFollowHyperlink`). Stored as a
+`dock` markup (D-109), its source and border in its style.
+
+*Pending founder review:* legacy's "Dock this snapshot" shortcut in the Snippets menu and
+its properties popover on a placed dock are not built; a dock's border is restyled by
+deleting and placing again.
