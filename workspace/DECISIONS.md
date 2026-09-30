@@ -4505,3 +4505,35 @@ answered in legacy's favour: printing happens in the browser, not as a server PD
 
 *Pending founder review:* a dock prints as its border on white, without its picture, as
 legacy's does.
+
+---
+
+## D-115 — Item history, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 6)
+**Area:** Takeoff, Api, Frontend
+
+From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
+`ItemHistoryDialog`:
+
+- **"History"** on an item's menu, after Costs… and before the deletes, opens "Item
+  history". It lists the item's last hundred changes, newest first, as When, Who and Change
+  in legacy's table. Each change shows its fields as "before → after", in legacy's labels
+  (Created, Edited, Deleted, Duplicated, Override set, Override cleared, Assembly linked).
+  With none recorded it says "No history yet."
+- **Storage:** `takeoff_item_event` holds workspace, project, the item's uuid (so a
+  deletion is kept), the actor by id and by name, the action, and before and after as
+  JSON.
+- **Writes, as legacy's write paths:**
+  - on create, rename or edit, delete, and duplicate;
+  - on override set and override cleared;
+  - on shape changes (added, changed, removed);
+  - on Link assembly.
+  Every row is written by the api in the same transaction as its change, not
+  fire-and-forget as in legacy, so a row cannot be lost apart from its change.
+
+*Pending founder review:*
+- Legacy's "calibration changed" and "quantity recalculated" rows are not written: our
+  quantities are computed on read, and a scale change is not an item write.
+- Estimating's "Modified by" cell that opens the same history is not wired.
