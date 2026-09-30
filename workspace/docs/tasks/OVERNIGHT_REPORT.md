@@ -8,6 +8,17 @@ this run). Everything below was checked on the bench.
 api's `umer-dev` at 07:17 UTC. I did not pull it. That merge by itself would break the
 api on the bench, so one api commit is held locally (details under Decisions).
 
+## Follow-up after your review (11:09 to 11:27)
+
+- **Decisions:** D-106 to D-116 are accepted. D-105 is amended: the whole-pixel snap stays at
+  every ratio. D-117 waits for Abdullah, and `7ad2c10` stays held.
+- **The `devicePixelContentBoxSize` attempt did not help; nothing in the app changed.**
+  - The bench's emulated 1.25 was not a real device scale.
+  - At a real 1.25 (`--force-device-scale-factor`) the backing store already equals the
+    device box.
+  - Numbers and the lead for next time are in D-105.
+  - At a real 1.25, 29% / 50% read 0.752 / 0.930; at DPR 1, 1.003 / 1.018.
+
 ## Progress
 
 - [x] 1a Snap the stage to whole device pixels: solved at DPR 1, not solved on the bench at DPR 1.25 (D-105)

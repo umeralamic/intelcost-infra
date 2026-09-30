@@ -4182,7 +4182,7 @@ idea, not built.
 ## D-105 — The settled sheet on whole device pixels; the raster clipped to the paper
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight tasks 1a, 1b)
+**Status:** accepted and amended 2026-09-30 (founder review; overnight tasks 1a, 1b). See the amendment below
 **Area:** Takeoff, Frontend
 **Builds on:** D-100, D-102
 
@@ -4216,12 +4216,47 @@ three causes removed, the bench's software compositor still resamples by a fract
 quarter-pixel offset cancels. The founder's GPU compositor may differ; the 29% check on the
 real monitor decides it.
 
+**Amended 2026-09-30 (founder review).** On the founder's monitor at 125% (a real GPU), 29% is
+a little better than before, but not yet as crisp as 50%. So the whole-device-pixel snap stays
+at every pixel ratio, 1.25 included, and is not reverted there. One more attempt at 1.25 is
+time-boxed to 45 minutes. It sizes the backing store from ResizeObserver's
+`devicePixelContentBoxSize` and maps the CSS size exactly onto those device pixels. Its
+result follows.
+
+**The 45-minute attempt (2026-09-30, 11:12 to 11:40): it does not help, and nothing was
+changed.** The measure is the one from 1a (screen gradient against the bitmap's own; 1.00 is
+1:1), on the same two sheets at 2048 × 1050.
+- **The bench's emulated 1.25 is not a real device scale.** Under Playwright's
+  `deviceScaleFactor`, `devicePixelContentBoxSize` reports the CSS size: 1680 × 1088 for a
+  2100 × 1360 bitmap. So the overnight DPR 1.25 figures came through an emulation. From now
+  on the bench measures a real 1.25 by launching Chromium with
+  `--force-device-scale-factor=1.25` and no emulated viewport. The wheel delta is then not
+  multiplied by the ratio.
+- **At a real 1.25 the backing store already equals the device box**, at 29% (2100 × 1360)
+  and 50% (3615 × 2340). Sizing it from `devicePixelContentBoxSize` would change nothing,
+  because there is no size mismatch to correct.
+- **The stage's edge taken unrounded** put the canvas's top on a whole device px in layout
+  (it sat 0.375 px off), but it did not help, so it was reverted:
+
+  | 29% / 50% | Emulated 1.25 | Real 1.25 |
+  |---|---|---|
+  | As shipped | 0.584 / 0.866 | 0.752 / 0.930 |
+  | Edge unrounded | 0.587 / 0.862 | 0.710 / 0.916 |
+
+  The as-shipped placement stays: D-105's reading that the compositor snaps the edge to a
+  whole CSS px holds.
+- **Lead for a later attempt:** at a real 1.25, 29% is supersampled (`data-raster-ss` 2) and
+  50% is not (1). The softness follows the halved frame rather than the placement. Check
+  what shows through or under a halved canvas, such as the fit image below it, and how
+  Chrome composites a canvas drawn from `halveDown`.
+- DPR 1 is unchanged (1.003 / 1.018 at 29% / 50%).
+
 ---
 
 ## D-106 — Supersampled by drawing density: under a device px per PDF point
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 1c)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 1c)
 **Area:** Takeoff, Frontend
 **Amends:** D-104 (below Fit only)
 
@@ -4252,7 +4287,7 @@ sheet at 25% and 125%).
 ## D-107 — Split view: legacy's read-only reference pane
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 2)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 2)
 **Area:** Takeoff, Frontend
 
 Ported from legacy's `ReferenceCanvasPane` (read on `UmeralamDEV`): the toolbar's **Split**
@@ -4274,7 +4309,7 @@ target sheet; they arrive with the Dock markup (task 4).
 ## D-108 — Public share links, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 3)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 3)
 **Area:** Share, Backend, Frontend
 
 Ported from legacy's `ShareLinkBlock`, `useProjectShareLink`, `guest-project` and
@@ -4309,7 +4344,7 @@ link is built on the app's own origin (legacy used `APP_URL` for non-localhost h
 ## D-109 — Markups (F11 Block A) and the Collaborator tab, from the draft spec
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 4)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 4)
 **Area:** Takeoff, Backend, Frontend
 **Adopts:** `docs/tasks/drafts/markup_print_tasks.DRAFT.md`, its questions answered in
 legacy's favour
@@ -4352,7 +4387,7 @@ edits.
 ## D-110 — Snapshot, Snippets and Link Screenshot, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 4)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 4)
 **Area:** Takeoff, Backend, Frontend
 
 From legacy's Snapshot tool, `useEvidence`, `EvidencePanel` and `LinkEvidenceToItemDialog`
@@ -4383,7 +4418,7 @@ Copy image and the floating preview window are a dialog; OCR and AI summaries ar
 ## D-111 — Dock, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 4)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 4)
 **Area:** Takeoff, Frontend
 
 From legacy's `DockLayer` and `DockSetupDialog`: "Dock — drag a rectangle to display a
@@ -4408,7 +4443,7 @@ border. Legacy's is a popover bar with the same fields.
 ## D-112 — Assemblies (F10), as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 5)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 5)
 **Area:** Takeoff, Api, Frontend
 
 The draft `docs/tasks/drafts/assemblies_tasks.DRAFT.md` is adopted, and its open questions
@@ -4459,7 +4494,7 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
 ## D-113 — Find Text, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 6)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 6)
 **Area:** Takeoff, Frontend
 
 From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
@@ -4493,7 +4528,7 @@ From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
 ## D-114 — Print, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 6)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 6)
 **Area:** Takeoff, Frontend
 
 From legacy's `Toolbar` print button, `PrintPagesDialog` and `renderSheetForPrint`. Q4 is
@@ -4522,7 +4557,7 @@ legacy's does.
 ## D-115 — Item history, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (overnight task 6)
+**Status:** accepted 2026-09-30 (founder review) (overnight task 6)
 **Area:** Takeoff, Api, Frontend
 
 From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
@@ -4555,7 +4590,7 @@ From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
 ## D-116 — Side by side with live legacy, round 1 (overnight fallback)
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review
+**Status:** accepted 2026-09-30 (founder review)
 **Area:** Takeoff, Frontend
 
 The takeoff and estimating screens were driven beside legacy's "Bench comparison" project
@@ -4636,7 +4671,7 @@ compared.
 ## D-117 — The api's umer-dev moved under the overnight run: not merged
 
 **Date:** 2026-09-30
-**Status:** decided overnight, pending founder review (URGENT: read first)
+**Status:** reviewed 2026-09-30: waiting for Abdullah; 7ad2c10 stays held
 **Area:** Api, Git
 
 At 07:17 UTC Abdullah pushed "staging init" and "Merge branch 'staging' into umer-dev" to
