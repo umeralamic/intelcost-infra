@@ -4578,3 +4578,11 @@ Left, with reasons:
 - **The workspace switcher in our header.** Kept by an earlier decision; legacy has none.
 - **Estimating's controls wrap to a second row at 1440.** Legacy's row runs off the
   screen instead. Its bold TOTAL label and its custom Group-by dropdown were not changed.
+
+*D-116 round 2 (06:20).* The menus compared as text:
+- **Built:** legacy's sheet-row menu entries Preview window (the page's fit image, with
+  Open), Print selected page and Open in new tab, in legacy's order.
+- **Matching already:** the Print menu, and the item-row menu (checked against legacy's
+  `ItemRowShared` order).
+- **Left:** legacy's Auto-Name Sheet (AI, F14), Name from page region… (region naming is
+  not built) and Duplicate page (needs an api copy of a sheet).
