@@ -4599,7 +4599,7 @@ compared.
 - **Left:** on the Collaborator row Dimension stays beside Scale (D-99); legacy has it
   among the markups. Our Settings has a Collaboration section that legacy lacks
   (collaboration preferences, D-32).
-*D-116 round 5 (06:55).* Find Text and the new measurement dialog were compared.
+*D-116 round 5 (06:51).* Find Text and the new measurement dialog were compared.
 - **Find Text** matches legacy: the same layout and words, and the hits painted.
 - **Measurement dialog:**
   - Named dimensions now has legacy's heading, with the presets on its right, and its
@@ -4612,3 +4612,17 @@ compared.
 - **Left:** legacy's Sub-items section inside the create dialog (sub-items are added from
   the item's menu here). Earthwork markup (F12). Legacy's orange-bordered unchecked
   checkboxes (ours are native).
+*D-116 round 6 (07:10).* The Share dialog and Split view were compared.
+- **Share › Project Users** is legacy's list:
+  - "No one is assigned to this project yet." when there is no one;
+  - otherwise one row per assignee, with Primary on the first, their role, and a remove ×;
+  - then "+ Add person" (the members not yet assigned, or "Everyone is already assigned.")
+    and "Invite someone new to the workspace".
+  It was the Assigned To picker. Project Home keeps its picker.
+- **Split:** the reference pane stands beside the whole main canvas column, its bar
+  included, as legacy's does. The scale chip no longer wraps when the column is narrow.
+- **Left:**
+  - Legacy's Share dialog is wider and has a close ×; ours closes on Esc or the backdrop,
+    app-wide.
+  - The reference pane's zoom reads absolute (D-102): "6%" where legacy's reads "100%" at
+    Fit.
