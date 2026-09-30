@@ -9,8 +9,8 @@ this run).
 - [x] 1a Snap the stage to whole device pixels — DPR 1 solved, DPR 1.25 not solved on the bench (D-105)
 - [x] 1b Clip the raster to the page box (D-105)
 - [x] 1c Supersample by drawing density, guard passed (D-106)
-- [ ] 2 Split view
-- [ ] 3 Public share links
+- [x] 2 Split view (D-107)
+- [x] 3 Public share links (D-108)
 - [ ] 4 Markup tools and the Collaborator tab
 - [ ] 5 F10 assemblies, Starter Pack, Library
 - [ ] 6 The rest of F11
@@ -22,6 +22,8 @@ this run).
 |---|---|---|---|---|
 | 1a, 1b | Done at DPR 1; DPR 1.25 not solved on the bench (3+ attempts, evidence in D-105) | 00:36 | 01:45 | 1 h 09 |
 | 1c | Done, guard passed | 01:45 | 02:00 | 0 h 15 |
+| 2 Split view | Done | 02:00 | 02:11 | 0 h 11 |
+| 3 Public share links | Done (guest presence left empty) | 02:11 | 02:32 | 0 h 21 |
 
 ## Task 1 numbers
 
@@ -43,14 +45,22 @@ A 1 px checkerboard painted into the raster: 0% exact on screen before at both r
 
 ## Commits
 
-- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106)
+- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106); `1fd112a` Split view (D-107); `9f67dcc` share links (D-108)
+- api `f33c191` share links (D-108)
 
 ## Decisions to review
 
 - **D-105** (pending): the stage is placed on whole device pixels; a wheel zoom now holds the cursor's point to 0.5 device px instead of 0.02. The raster is clipped to the paper.
+- **D-108** (pending): public share links as legacy's; guest presence is stored but shows nothing (our presence has no page beacons); the link uses the app's own origin.
+- **D-107** (pending): Split view's zoom uses the canvas's steps and range, not legacy's + 0.25 to 1200%; zoom keys act on the main canvas only.
 - **D-106** (pending): supersampling below about 34% at 125% (42% at 100%), not only below Fit; lines read thinner and lighter; landing up to 0.5 s slower at 25%.
 
 ## Legacy differences fixed and left
+
+- **Fixed:** Split view (legacy's `ReferenceCanvasPane`), ported from source.
+- **Fixed:** public share links (legacy's `ShareLinkBlock`, `guest-project`, `GuestProject`).
+- **Left:** guest presence (cursors and pages of the team) — legacy's page beacons have no counterpart yet.
+- **Left:** Split view was built from legacy's source, not driven live side by side (time); the pane's zoom buttons stop at 10% where a sheet's fit in the narrow pane is below it (Fit still reaches it).
 
 ## Failures and findings
 

@@ -4246,3 +4246,60 @@ sheet at 25% and 125%).
 
 **Result.** Fit at 1440 × 900: mean luminance 241.9 → 247.4 and 238.0 → 243.9, dark pixels
 3.5% → 0.9% and 3.9% → 1.2%.
+
+---
+
+## D-107 — Split view: legacy's read-only reference pane
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 2)
+**Area:** Takeoff, Frontend
+
+Ported from legacy's `ReferenceCanvasPane` (read on `UmeralamDEV`): the toolbar's **Split**
+(after Fullscreen, "Split on" while open) opens a second canvas to the right of the one being
+measured, divided by a bar that drags between 15% and 85% (arrow keys too), half by default.
+Its header: "Reference", a sheet picker listing the takeoff's sheets in the panel's order,
+"View-only", zoom out, the percentage, zoom in, Fit, a markups eye (on every time it opens)
+and close. The pane opens on the sheet being measured; its sheet and width are kept for the
+next open, and it unmounts when closed, freeing its raster. It draws the same measurements
+the page reads for that sheet, and nothing in it edits.
+
+*Pending founder review, where it differs from legacy:* its zoom steps and range are the
+canvas's (× 1.25 a step, 10% to 4000%, D-102) rather than legacy's + 0.25 steps to 1200%; the
+zoom keys (+, −, 0) act on the main canvas only. Legacy's dock hyperlinks open Split on their
+target sheet; they arrive with the Dock markup (task 4).
+
+---
+
+## D-108 — Public share links, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 3)
+**Area:** Share, Backend, Frontend
+
+Ported from legacy's `ShareLinkBlock`, `useProjectShareLink`, `guest-project` and
+`GuestProject` (read on `UmeralamDEV`).
+
+- **One link per project** (`project_share_link`): a random 32-character token, on or off,
+  an optional password (argon2, never returned), an optional expiry, the layers a guest is
+  sent (none listed: every layer), "allow presence", and when it was last opened.
+- **Share › Project Users** leads with legacy's block: "Allow 'Anyone with Link' to view",
+  the layer picker ("Items on unchecked layers are not sent to the viewer at all"), presence,
+  password with Set / Clear, expiry date, the URL with Copy Link, Regenerate (a new URL, the
+  old one dead) and Revoke. Owners and admins manage it (`canManageWorkspace`, legacy's RLS
+  was owner and admin); every member sees Copy Link. Unchecking revokes, as legacy's.
+- **The guest routes** (`/api/share/{token}/meta`, `/bundle`, `/presence`) are the only
+  routes with no session. In legacy's order: the link exists, is on, has not expired (410
+  `link_expired`), and its password matches (401 `password_required` / `password_incorrect`,
+  sent in `X-Share-Password`); anything else is 404 `link_unavailable`. The bundle is the
+  project's sheets (signed), its items and shapes on the allowed layers, and each line's rates
+  for the Estimating tab. Nothing is written but the last-opened time.
+- **The guest view** `/s/{token}`: the project's name and "Read-only shared view", no
+  navigation; the sheets; the canvas with the Pan tool only; Takeoff (item, quantity, sheets)
+  and Estimating (Qty, +Waste, Item Cost, legacy's guest arithmetic) tables. A password is
+  asked for once per tab.
+
+*Pending founder review:* **presence for guests is stored but shows nothing**: legacy's
+guests poll page beacons its members write; our presence carries item claims and broadcast
+cursors, not stored beacons, so `/presence` returns an empty list until beacons exist. The
+link is built on the app's own origin (legacy used `APP_URL` for non-localhost hosts).
