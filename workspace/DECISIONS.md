@@ -4399,6 +4399,9 @@ A dock draws its picture inside its border, moves and resizes as any box, and it
 its properties popover on a placed dock are not built; a dock's border is restyled by
 deleting and placing again.
 *Update (05:07):* "Dock this snapshot" is built (Snippets menu, setup opens with it picked).
+*Update (08:15):* a selected dock's chip has Dock properties (source, border colour, width,
+radius, hyperlink), the setup dialog prefilled and saved onto it; its colour swatch sets the
+border. Legacy's is a popover bar with the same fields.
 
 ---
 
@@ -4668,7 +4671,7 @@ same drawing. Scale calibration is copied."), with the sheet number and name giv
 after its source, its calibration and turn copied, and the app opens it. The api half is
 held locally (D-117). Deleting a copied or cropped sheet leaves its generated file in
 Files, as Crop as New Page already does.
-*D-116 round 9 (07:58).* The Legend and the Assemblies panel were compared.
+*D-116 round 9 (08:04).* The Legend and the Assemblies panel were compared.
 - **Legend:** an area row carries legacy's "· perim N LF", the perimeter of its sections on
   this sheet. The figure column is wide enough that "16,883.38 SF" no longer runs into
   its unit.
