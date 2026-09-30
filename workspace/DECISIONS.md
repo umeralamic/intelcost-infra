@@ -4476,3 +4476,32 @@ From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
 - Choose Pages is a flat, searchable page list, not legacy's folder tree with checkboxes.
 - Region select's "Search as Text" seed is not wired: the region menu has no such entry
   yet.
+
+---
+
+## D-114 — Print, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided overnight, pending founder review (overnight task 6)
+**Area:** Takeoff, Frontend
+
+From legacy's `Toolbar` print button, `PrintPagesDialog` and `renderSheetForPrint`. Q4 is
+answered in legacy's favour: printing happens in the browser, not as a server PDF.
+
+- **The Print button** sits beside Select, with a caret menu: Print Current Page, Print
+  Current View, Print Multiple Pages…, then Print All Pages with Takeoffs, with
+  Annotations, and with Takeoffs or Annotations. Each of the last three is greyed when no
+  sheet qualifies.
+- **Print Multiple Pages** lists the sheets in panel order with Takeoffs / Annotations
+  badges, a search, All, None and Other ▾ (Pages in Current PDF, with Takeoffs, with
+  Annotations, with either). It shows "{n} selected" and a Next button, and opens with the
+  current sheet ticked.
+- **Rendering:** each sheet is drawn offscreen at 2000 px from its own PDF. The takeoff
+  is flattened on top as the canvas draws it at rest, and only when shown: the Markups
+  toggle, hidden items and hidden layers apply. Markups always print. Current View crops
+  to the part of the page on screen. The pages are then handed to `window.print()`, and
+  the browser picks paper or PDF. No legend, dimensions or title block, as legacy does.
+- **Orientation:** pages print unturned, as legacy's do.
+
+*Pending founder review:* a dock prints as its border on white, without its picture, as
+legacy's does.
