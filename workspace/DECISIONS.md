@@ -4974,3 +4974,32 @@ the chip always opened (Calibrate Scale, Add Custom Scale, the standard scales).
 
 **Where:** `intelcost-app-react/src/features/takeoff/components/ScaleControls.tsx`
 (`sheetName`), `src/pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-124 — The canvas bar goes: its toggles and the scale move to the status line
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Takeoff, Frontend
+**Beyond legacy:** legacy keeps a bar across the top of the canvas (`DrawModifiersOverlay`)
+with the toggles on its left and the scale chip on its right
+
+**Decision.** The bar across the top of the canvas is removed, and the sheet gains its row. What
+it held moves to the status line at the foot of the takeoff screen, which becomes a
+three-column grid:
+- **Left:** the selection's figures, as before (name, type, Calculated, Perimeter), truncating.
+- **Middle, centred:** Ortho, Snap, Auto Merge and Auto Scroll, unchanged in behaviour and
+  shortcuts.
+- **Right:** the live "Drawing:" figure while drawing, and the scale chip (green "Scale:
+  {label}", or D-123's amber notice with Calibrate). The Scale menu from the chip now opens
+  upward. The toolbar's Scale button is unchanged.
+
+Everything in the status line is 20 px (`h-5`) at 11 px medium text in its 28 px row: the
+toggles have a 1 px border (was the Button's 2 px), the green chip is medium weight (was
+semibold with a shadow), and D-123's notice has a 16 px Calibrate. The status line is on the
+Takeoff and Collaborator tabs, as the bar was.
+
+**Where:** `intelcost-app-react/src/pages/ProjectTakeoff.tsx` (`data-status-line`,
+`data-draw-modifiers`), `src/features/takeoff/components/ScaleControls.tsx` (the chip, the
+menu's upward placement).
