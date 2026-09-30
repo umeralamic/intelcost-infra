@@ -5462,3 +5462,51 @@ recommendations in `docs/tasks/drafts/earthwork_tasks.DRAFT.md`).
 `features/takeoff/earthwork/{TinLayer,TinToggles,useEarthwork}.tsx`,
 `pages/ProjectTakeoff.tsx`, `index.css` (hue tokens), `package.json`; infra
 `browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`, `quantity-table.sh`.
+
+---
+
+## D-139 — F12 Block C as built: cut and fill, the assumptions, the panel
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Earthwork (F12), Frontend, Api
+
+- **Legacy's volume engine, ported** as pure modules (`lib/takeoff/earthwork/volume/`): the
+  guards, the union of EG and FG with every constraint kept, EG × FG crossings inserted, Δz
+  sampled at every union vertex, mixed-sign triangles split at Δz = 0, prisms in square feet
+  times mean Δz through the sheet's scale, clipped to the boundary and summed per region and
+  the remainder. One change (Q30): a spot lying on the other surface's contour splits that
+  contour. The DEV trace block is dropped. Calculate needs the sheet's scale and says so.
+- **The soil balance** (`balance.ts`) is Q31's: native cut reused as fill is shrunk.
+- **Calculate** opens legacy's "Earthwork assumptions" every time (native suitable, fill type,
+  swell, shrink), saved on the project (`earthwork_assumptions`) and pre-filled; the shrink
+  help reads "Applied to cut and to strip or undercut soil placed as fill." It then reads the
+  project's items fresh from the api (a spot just placed may not be in the tab's cache yet),
+  triangulates, turns the TIN toggles on, computes, and opens "Earthwork Volumes". The engine
+  runs in the browser (Q3).
+- **The result is kept per sheet** by the api (`earthwork_result`: the result without its
+  prisms, the version key, who and when), and `earthwork.result.changed` /
+  `earthwork.assumptions.changed` refresh colleagues. A failed Calculate saves nothing (Q10).
+  The isochore needs the prisms, so it is this session's only.
+- **The version key is a hash of the inputs themselves** (each run's kind, surface, elevation
+  and points, the assumptions, and later the Site Features and Strip Areas), not of shape
+  versions: an undo brings a stale result back to current. An edit shows stale in under a
+  second.
+- **Writes queue per surface and kind again.** D-137 dropped legacy's commit queue because a
+  run is its own row; but the container is found in the tab's items, so spots placed faster
+  than the refetch each made a container. The queue, plus remembering a container just made,
+  keeps them on one. The api takes a transaction lock on the project in
+  `ensure_earthwork_folder`, so the first EG and FG writes cannot make two Earthwork Markups
+  folders.
+- **The panel** is floating, draggable and resizable, remembered per sheet: Cut, Fill, Net,
+  the assumptions line, Soil Export or Import with its formula, the regions, the warnings,
+  and error chips that jump to the offending run. The Quantity Table jump waits for the
+  computed lines (Block F).
+- **Quantity table:** 23 volume rows and 8 balance rows (Q31's shrink with hand-worked
+  answers), with Block B's 13: 44 earthwork rows, all right.
+
+**Where:** app `lib/takeoff/earthwork/{volume/*,balance,versionKey}.ts`,
+`features/takeoff/earthwork/{api,CalculateDialog,VolumePanel,IsochoreLayer,CalculateButtons,useVolumes,useEarthwork}`,
+`drawing/realtime.ts`, `pages/ProjectTakeoff.tsx`; api `features/earthwork/*` (new),
+migration `2a40e224cbfd`, `takeoff/service.py` (the folder lock), `main.py`,
+`models_registry.py`; infra `browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.

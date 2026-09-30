@@ -1,7 +1,7 @@
 # IntelCost — Features
 _**The backlog.** Every feature that is live, that we are working on, or that we intend
 to build, in one list. Three sections: ✅ Live · 🔨 Working · 🗓 Planned._
-_Updated: 2026-09-27_
+_Updated: 2026-09-30_
 
 **Board:** [MANAGER.md](MANAGER.md) · **Rules of engagement:** [DECISIONS.md](DECISIONS.md) · **Parity checklist:** [docs/PARITY.md](docs/PARITY.md)
 
@@ -44,6 +44,7 @@ _Updated: 2026-09-27_
 | F9 (P-08) | Estimating tab and export: rows from takeoff, legacy's columns and groupings, pricing, wastage, multipliers, cost components, manual lines, custom columns, subcontractor packages, format themes, the Excel workbook | both | Spec adopted overnight 2026-09-28, answers D-88 (pending founder review); **built, awaiting founder click check**: Blocks A to F (D-88 to D-94) overnight 2026-09-28 to 29, every block smoke-tested through the Playwright MCP and the quantity table green; not built: legacy's text-size nudges and its Sub-scope and Custom folder top/nested colours (our groupings have one of each), Item history (F11), assemblies (F10) | [estimating_tasks.md](docs/tasks/estimating_tasks.md) |
 | F9c | Estimating sidebar, Reports and working tools, beyond legacy: a left sidebar for the view, filters, table settings and setup; Reports (Full estimate, Labor, Material, Equipment, Subcontract, Quantities only) in place of the cost filter, each with its total; Needs attention; collapse to a level; change many rows at once | app | Picked up 2026-09-30, blocks A (D-126) and B (D-127) | [estimating_reports_tasks.md](docs/tasks/estimating_reports_tasks.md) |
 | F9b (P-22) | Bid summary: sales tax on material first, overhead, extra markups, profit and bond, compounding from Direct cost to the Bid total; per project from workspace defaults; the export's Bid Summary sheet | both | Built 2026-09-30 (D-128), awaiting the browser check. api `estimate/bid.py`, `bid_routes.py`, `/estimate/bid`; app `lib/estimate/bidSummary.ts`, `features/estimate/BidSummary.tsx`, `useBid.ts`, `pages/SettingsEstimating.tsx`, `workbook.ts` `appendBidSheet` | [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) |
+| F12 (P-11) | Earthwork: EG and FG surfaces from contours and spots, the work boundary, the TIN, Calculate into cut and fill with swell and shrink, Site Features, Strip Areas, the estimate lines with CSI codes, Auto Trace | both | Specced 2026-09-30, the founder's answers D-136; **building block by block**: A the surfaces (D-137), B the TIN (D-138), C cut and fill and the panel (D-139), each smoke-tested through the Playwright MCP with the quantity table green | [earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md) |
 
 ---
 
@@ -58,7 +59,6 @@ _Updated: 2026-09-27_
 | P-22 | Bid summary after the estimate: markups, overhead, profit, bond and tax over F9's summed Item Cost | both | **The next estimating block after F9** (the founder, D-95). Legacy's tab stops at the summed Item Cost (D-88 Q1), so this is beyond legacy. **Specced 2026-09-30 as F9b (D-128); unblocked the same day (D-129):** [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) |
 | P-09 | Assemblies, Starter Pack, Library | both | |
 | P-10 | Collaborator markup, print, find text, snippets and bookmarks | both | The $9.99 tier |
-| P-11 | Earthwork and Auto Trace | both | Rendering per D-14 (pdf.js provides the vector data). **F12 specced 2026-09-30** ([earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md)), blocked on the founder's answers to Q1 to Q33 |
 | P-12 | Auto Count | both | Rendering per D-14 (pdf.js provides the vector data) |
 | P-13 | AI tools and AI credits | both | |
 | P-14 | Sharing and guest view, Reports, time tracking and shifts, Community | both | |

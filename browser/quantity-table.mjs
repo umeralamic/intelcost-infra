@@ -103,6 +103,8 @@ try {
   // F12's rows: lib/takeoff/earthwork on legacy's hand-worked fixtures (D-136).
   earth = await page.evaluate(async (cases) => {
     const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
+    const vol = await import("/src/lib/takeoff/earthwork/volume/index.ts");
+    const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
     return cases.map((c) => {
@@ -128,6 +130,46 @@ try {
           warnings: r.warnings.map((w) => w.code),
           outside: r.warnings.find((w) => w.code === "points_outside_boundary")?.count ?? 0,
         };
+      }
+      if (c.kind === "balance") return bal.soilBalance(c.input);
+      if (c.kind === "volume") {
+        const runs = runsOf(c.runs);
+        const labels = labelsOf(c.runs);
+        const pts = (poly) => poly.map(([x, y]) => ({ x, y }));
+        const r = vol.computeVolumes(
+          {
+            eg: tin.runTinForSurface(runs, "EG", labels),
+            fg: tin.runTinForSurface(runs, "FG", labels),
+            boundary: c.boundary ? pts(c.boundary) : null,
+            calibration: { feetPerNorm: c.side, widthPt: 1, heightPt: 1 },
+            units: c.units ?? "CY",
+            stripFt: c.stripFt,
+            roleAreas: c.roleAreas?.map((a) => ({ ...a, polygon: pts(a.polygon) })),
+            stripAreas: c.stripAreas?.map((a) => ({ ...a, polygons: a.polygons.map(pts), excludedPolygons: a.excludedPolygons?.map(pts) })),
+          },
+          runs,
+          labels,
+        );
+        if (r.ok === false) return { ok: false, code: r.error.code, message: r.error.message };
+        if (r.ok !== true) return { ok: r.ok };
+        const out = { ok: true, units: r.units, cutCY: r.cutCY, fillCY: r.fillCY, netCY: r.netCY, stripCY: r.strip ? r.strip.volumeCY : null, regions: r.regions.length };
+        for (const g of r.regions) {
+          out[`region:${g.id ?? "remainder"}:cutCY`] = g.cutCY;
+          out[`region:${g.id ?? "remainder"}:fillCY`] = g.fillCY;
+        }
+        (r.stripAreas ?? []).forEach((a, i) => {
+          out[`strip:${i}:areaSF`] = a.areaSF;
+          out[`strip:${i}:volumeCY`] = a.volumeCY;
+        });
+        const sum = (k) => r.regions.reduce((t, g) => t + g[k], 0);
+        out.regionsSumToTotals = Math.abs(sum("cutCY") - r.cutCY) < 1e-9 && Math.abs(sum("fillCY") - r.fillCY) < 1e-9;
+        const cov = r.warnings.find((w) => w.code === "partial_coverage");
+        if (cov) Object.assign(out, { coverage: cov.ratio, coverageSurfaces: cov.surfaces, coverageMessage: cov.message });
+        const ov = r.warnings.find((w) => w.code === "role_overlap");
+        if (ov) out.overlap = ov.overlappingLabels;
+        if (c.vertices) out.vertices = c.vertices.map(([x, y]) => r.prisms.some((pr) => [pr.a, pr.b, pr.c].some((q) => Math.abs(q.x - x) < 1e-4 && Math.abs(q.y - y) < 1e-4)));
+        if (c.fillWithin) out.fillWithin = r.fillCY > c.fillWithin[0] && r.fillCY < c.fillWithin[1];
+        return out;
       }
       return { error: `unknown kind ${c.kind}` };
     });
