@@ -4915,3 +4915,28 @@ unchanged.
 
 **Where:** `intelcost-app-react/src/features/estimate/EstimatingView.tsx` (`fillKey`, the
 `<table>` and `<colgroup>`, the header's resize handle).
+
+---
+
+## D-121 — The workspace tabs move into the takeoff header, the project name to its middle
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Takeoff, Frontend
+**Beyond legacy:** legacy keeps its tabs in a strip of their own under the header, and
+shows "{project} · Takeoff" on the left
+
+**Decision.** Takeoff, Collaborator and Estimating leave their own row under the takeoff header
+and sit at the left of the header as a segmented control drawn in the app's tokens: a `muted`
+track with a `border` rule, text only, the open tab raised on `card` with `shadow-card`. Open
+joins the same group, first, as text without its folder icon, set off from the tabs by a thin
+rule (an action, so outside the tablist). The project's name moves to the middle of the header, alone ("· Takeoff"
+dropped), with its full text as a tooltip. The header is a three-column grid, so the name stays
+centred whatever the two sides hold; on a narrow window the name truncates first. The screen
+gains the row the strip took.
+
+Unchanged: the tabs, their order and ids, `?tab=` in the URL, and Settings › General's "Main
+tabs text size" and "Bold", which still size them.
+
+**Where:** `intelcost-app-react/src/features/takeoff/components/TakeoffTabs.tsx`,
+`TakeoffHeader.tsx` (`center`), `src/pages/ProjectTakeoff.tsx`.
