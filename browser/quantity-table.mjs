@@ -105,6 +105,9 @@ try {
     const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
     const vol = await import("/src/lib/takeoff/earthwork/volume/index.ts");
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
+    const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
+    const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
+    const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
     return cases.map((c) => {
@@ -132,6 +135,29 @@ try {
         };
       }
       if (c.kind === "balance") return bal.soilBalance(c.input);
+      if (c.kind === "offset") return { areaSF: sf.mpAreaSqFt(sf.offsetNormRingFt(xy(c.ring), c.offsetFt, c.scale), c.scale) };
+      if (c.kind === "remaining") {
+        const rings = sf.remainingSiteRings(xy(c.boundary), c.excluded.map(xy));
+        return { areaSF: sf.mpAreaSqFt([rings.map((r) => r.map((p) => [p.x, p.y]))], c.scale) };
+      }
+      if (c.kind === "features") {
+        const items = c.items.map((it) => ({ ...it, type: it.type ?? "sf", geometries: it.polygons.map((p) => ({ sheet_uuid: "s", vertices_json: p, role: "add" })) }));
+        const feats = sf.sheetFeatures(items, "s");
+        const out = { order: feats.map((x) => x.itemId).join(","), roleAreas: sf.roleAreasOf(feats).map((a) => a.itemId).join(",") };
+        if (c.scale) {
+          for (const x of sf.computeFeatureExtras(feats, c.boundary ? xy(c.boundary) : null, c.scale)) {
+            if (x.undercut) Object.assign(out, { [`${x.itemId}:undercutSF`]: x.undercut.areaSF, [`${x.itemId}:undercutCF`]: x.undercut.volumeCF });
+            if (x.prep) out[`${x.itemId}:prepSF`] = x.prep.areaSF;
+          }
+        }
+        return out;
+      }
+      if (c.kind === "lines") {
+        const lines = ln.earthworkLines(c.input);
+        const out = { roles: lines.map((l) => `${l.role}:${l.regionId}`).join(" ") };
+        for (const l of lines) Object.assign(out, { [`${l.role}:${l.regionId}`]: l.quantity, [`${l.role}:${l.regionId}:unit`]: l.unit, [`${l.role}:${l.regionId}:name`]: l.name });
+        return out;
+      }
       if (c.kind === "volume") {
         const runs = runsOf(c.runs);
         const labels = labelsOf(c.runs);

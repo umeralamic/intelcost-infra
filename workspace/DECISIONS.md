@@ -5510,3 +5510,54 @@ recommendations in `docs/tasks/drafts/earthwork_tasks.DRAFT.md`).
 `drawing/realtime.ts`, `pages/ProjectTakeoff.tsx`; api `features/earthwork/*` (new),
 migration `2a40e224cbfd`, `takeoff/service.py` (the folder lock), `main.py`,
 `models_registry.py`; infra `browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.
+
+---
+
+## D-140 — F12 Block D as built: Site Features
+
+**Date:** 2026-09-30
+**Status:** decided
+**Area:** Earthwork (F12), Frontend, Api
+
+- **Site Features** in the earthwork row (before the TIN toggles) opens legacy's dialog in its
+  words; **Draw** arms the Area tool with what was typed, on the Earthwork tab, after a scale
+  as Area asks (Q23). The feature is an area item with `is_site_feature`, filed by the api in
+  Earthwork Markups, classification bypassed. An area's menu, in the tree and on the canvas,
+  offers "Make Site Feature" first; a feature's offers "Site Feature properties…".
+- **Q7 as decided:** "Proposed Grade to Subgrade Depth" is required in the dialog (blank is
+  refused, "Enter the Proposed Grade to Subgrade Depth (0 for none)."), and the api refuses
+  a Site Feature without one (a check constraint too). A plain area never carries a depth:
+  its create drops the feature columns. Legacy's "Finish-to-Subgrade Depth" is not ported.
+- **Q6 as decided:** the sheet's features run newest first (`created_at`, ties by uuid), so
+  the one drawn last wins an overlap for grading, the undercut and prep alike.
+- **The undercut and prep** are legacy's pure geometry (`siteFeatures.ts`): the outline
+  pushed out in real feet with mitred corners, clipped to the boundary, less what a newer
+  feature took; volume is area × depth. Calculate computes them with the volumes and keeps
+  them in the sheet's result.
+- **The lines, Q9:** legacy's `buildDesired` is ported as `lib/takeoff/earthwork/lines.ts`
+  (names, units, Q32's order, Q31's balance through `balance.ts`, re-used undercut and strip
+  soil in the supply); the panel now lists exactly these lines past cut and fill. Block F
+  adds the CSI codes and writes them.
+- **Make Site Feature (Q21):** one api call (`POST …/item/{uuid}/site-feature`) copies the
+  area's shapes into a new feature in Earthwork Markups under the name and the source's
+  colour; the source is never written. **Materials (Q24):** the five built in, then the
+  project's own (`project_fill_material`, unique by trimmed lower-case name), "+ Add
+  material…".
+- **Undo (Q17):** a drawn feature and a made copy are shape steps as any item; a properties
+  edit is one step through a new `custom` change in the session history (its own undo and
+  redo), which Block E's Strip Areas use too.
+- **Estimating (Q33):** a Site Feature is kept out by its flag as well as by its folder.
+- **Dispositions (Q1):** undercut spoil is `haul_off | stockpile | reuse`, checked by the
+  database.
+- **Quantity table:** 10 rows: legacy's offset (336 SF) and top-wins cases under Q6, prep
+  clipped, depth only from features, Remaining Site (7500 SF), and five line rows (legacy's
+  strip re-use and haul-off, an undercut re-used under shrink 0.9, a metric haul-off).
+
+**Where:** api `takeoff/{models,schemas,service,routes}.py` (columns, `SiteFeatureMake`,
+`make_site_feature`), `earthwork/{models,schemas,routes}.py` (materials), migration
+`1c7d156cdea7`, `models_registry.py`; app `lib/takeoff/earthwork/{siteFeatures,lines}.ts`
+(new), `takeoff/earthwork/{SiteFeatureDialog,SiteFeaturesButton,useSiteFeatures}.tsx`
+(new), `takeoff/earthwork/{useVolumes,VolumePanel,api}`, `takeoff/hooks/useSessionHistory.ts`,
+`takeoff/api.ts`, `items/MeasurementDialog.tsx`, `core/api/types.ts`, `lib/estimate/lines.ts`,
+`pages/ProjectTakeoff.tsx`; infra `browser/lib/earthwork-cases.mjs`,
+`browser/quantity-table.mjs`.

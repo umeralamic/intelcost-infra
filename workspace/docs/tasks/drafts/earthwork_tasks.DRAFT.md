@@ -612,7 +612,7 @@ Each with legacy's behaviour today and my recommendation. None is decided.
 - [x] Block A, the surfaces (D-137): tab, row, contours, spots, boundary, containers, the popover, Earthwork Markups, the New Measurement checkbox; crossings in blue move to Block B, the panel's per-run rows wait.
 - [x] Block B, the TIN (D-138): legacy's preflight and triangulation, the toggles and layer, crossings in blue; 13 quantity-table rows.
 - [x] Block C, cut and fill, the assumptions, the panel (D-139): legacy's volume engine, Q30 and Q31, the per-sheet result and its content key, the panel and the isochore; 31 more quantity-table rows.
-- [ ] Block D, Site Features.
+- [x] Block D, Site Features (D-140): the dialog (depth required, Q7), Draw, Make Site Feature in one call, properties with undo, the undercut and prep (drawn last wins, Q6), the lines builder and the panel showing them (Q9); 10 quantity-table rows.
 - [ ] Block E, Strip Areas.
 - [ ] Block F (the CSI mapping table goes to the founder first, Q12).
 - [ ] Block G, Auto Trace.

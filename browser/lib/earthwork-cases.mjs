@@ -310,4 +310,125 @@ export const EARTHWORK_CASES = [
   { id: "bal-shrink-unsuitable-surplus", kind: "balance", input: { cut: 300, fill: 20, reuseBank: 50, suitable: false, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: (300 + 25 / 0.9) * 1.25, importLoose: null } },
   // suitable, C 100 F 90: 100 x 0.9 = 90 fills 90 exactly: neither line (legacy, unshrunk, would export 12.5).
   { id: "bal-shrink-exact-balance", kind: "balance", input: { cut: 100, fill: 90, reuseBank: 0, suitable: true, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: null, importLoose: null } },
+  // --- Site Features (F12 Block D; legacy's siteFeatures.test.ts, and D-136 Q6, Q7) --------
+  // A 10 x 20 ft rectangle on a 200 x 100 pt page at 1 ft/pt, pushed out 2 ft with square
+  // corners: 14 x 24 = 336 SF (the x and y scales apart).
+  { id: "sf-undercut-offset-miter", kind: "offset", ring: [[0.1, 0.2], [0.15, 0.2], [0.15, 0.4], [0.1, 0.4]], offsetFt: 2, scale: { feetPerNorm: 1, widthPt: 200, heightPt: 100 }, expect: { areaSF: 336 } },
+  // Two 10 x 10 ft squares 5 ft apart, undercut 1 ft. Q6: the one drawn last (B) keeps the
+  // overlap: B 100 SF, A 100 - 5 x 10 = 50 SF; volumes area x 1 ft.
+  {
+    id: "sf-undercut-drawn-last-wins",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "B,A", roleAreas: "", "B:undercutSF": 100, "A:undercutSF": 50, "B:undercutCF": 100, "A:undercutCF": 50 },
+  },
+  // Prep on the same two, the boundary x in [0, 0.12]: B clipped to 0.05..0.12 = 7 x 10 =
+  // 70 SF; A is 0..0.1 less B's 0.05..0.1 = 50 SF.
+  {
+    id: "sf-prep-clipped-drawn-last-wins",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    boundary: [[0, 0], [0.12, 0], [0.12, 1], [0, 1]],
+    items: [
+      { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "B,A", roleAreas: "B,A", "B:prepSF": 70, "A:prepSF": 50 },
+  },
+  // Q7: depth comes only from Site Features; a plain area with a depth, a feature at depth
+  // 0 (no section) and a line give grading nothing. Same times: ties by uuid, last first.
+  {
+    id: "sf-depth-only-from-features",
+    kind: "features",
+    items: [
+      { uuid: "plain", name: "P", created_at: "2026-09-30T10:00:00Z", is_site_feature: false, role_depth_ft: 1, polygons: [[[0, 0], [1, 0], [1, 1]]] },
+      { uuid: "copy", name: "P (Site Feature)", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 1, polygons: [[[0, 0], [1, 0], [1, 1]]] },
+      { uuid: "flat", name: "Lawn", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, polygons: [[[0, 0], [1, 0], [1, 1]]] },
+      { uuid: "line", name: "L", type: "lf", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 1, polygons: [[[0, 0], [1, 0], [1, 1]]] },
+    ],
+    expect: { order: "flat,copy", roleAreas: "copy" },
+  },
+  // Remaining Site: the unit square at 100 ft less [0, 0.25] x [0, 1] = 7500 SF.
+  { id: "sf-remaining-site", kind: "remaining", boundary: [[0, 0], [1, 0], [1, 1], [0, 1]], excluded: [[[0, 0], [0.25, 0], [0.25, 1], [0, 1]]], scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 }, expect: { areaSF: 7500 } },
+  // --- The lines (legacy's buildDesired; Q9 the panel shows them, Q31 shrink, Q32 order) ---
+  // Legacy's strip re-use rows (siteFeatures.test.ts), shrink 1: cut 100, fill 300, strip
+  // 50 re-used: import (300 - 150) x 1.25 = 187.5; the re-use line 50 x 1 CCY.
+  {
+    id: "lines-strip-reuse-import",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 100, fillCY: 300 }], stripAreas: [{ id: "s1", label: "S", depthFt: 0.5, areaSF: 1, volumeCY: 50 }], stripMeta: [{ id: "s1", name: "S", disposition: "reuse", reuseKind: "general" }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 } },
+    expect: {
+      roles: "strip:s1 strip_reuse_fill:s1 cut:remainder fill:remainder soil_import:__soil_import__",
+      "strip:s1:name": 'Strip Topsoil (6") — S (bank)',
+      "strip_reuse_fill:s1": 50,
+      "soil_import:__soil_import__": 187.5,
+      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill",
+    },
+  },
+  // Cut 300, fill 100, strip 50 re-used: export (350 - 100) x 1.25 = 312.5.
+  {
+    id: "lines-strip-reuse-export",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 300, fillCY: 100 }], stripAreas: [{ id: "s1", label: "S", depthFt: 0.5, areaSF: 1, volumeCY: 50 }], stripMeta: [{ id: "s1", name: "S", disposition: "reuse", reuseKind: "general" }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 } },
+    expect: { "soil_export:__soil_export__": 312.5 },
+  },
+  // Hauled off: loose 50 x 1.25 = 62.5, and the balance untouched: export 200 x 1.25 = 250.
+  {
+    id: "lines-strip-haul-off",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 300, fillCY: 100 }], stripAreas: [{ id: "s1", label: "S", depthFt: 0.5, areaSF: 1, volumeCY: 50 }], stripMeta: [{ id: "s1", name: "S", disposition: "haul_off", reuseKind: null }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 } },
+    expect: { "strip_haul:s1": 62.5, "strip_haul:s1:unit": "LCY", "soil_export:__soil_export__": 250 },
+  },
+  // A pad: undercut 270 CF = 10 BCY re-used, 2 ft; prep 135 SF, 12 in, 2 lifts; shrink 0.9,
+  // swell 1.25, cut 100, fill 300, suitable. Re-use line 10 x 0.9 = 9 CCY; replacement
+  // 10 CCY; net = (100 + 10) x 0.9 - 300 = -201; import 201 / 0.9 x 1.25 = 279.1666...
+  {
+    id: "lines-undercut-reuse-shrink",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 100, fillCY: 300 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 135, volumeCF: 270, material: "Select Fill", disposition: "reuse" }, prep: { depthFt: 1, lifts: 2, areaSF: 135 } }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 0.9 },
+    },
+    expect: {
+      roles: "undercut:pad undercut_reuse_fill:pad undercut_replace:pad prep:pad cut:remainder fill:remainder soil_import:__soil_import__",
+      "undercut:pad": 10,
+      "undercut:pad:name": 'Undercut Excavation (24") — Pad (bank)',
+      "undercut_reuse_fill:pad": 9,
+      "undercut_reuse_fill:pad:unit": "CCY",
+      "undercut_replace:pad": 10,
+      "undercut_replace:pad:name": "Undercut Replacement Fill: Select Fill — Pad (compacted in place)",
+      "prep:pad": 135,
+      "prep:pad:name": 'Prepare Subgrade (12", 2 lifts) — Pad',
+      "soil_import:__soil_import__": (201 / 0.9) * 1.25,
+    },
+  },
+  // Metric, hauled off, assumptions never asked: 353.146667 CF = 10 BCM, 12.5 LCM hauled;
+  // prep 100 SF = 9.290304 M²; 0.5 ft = 15.24 cm, labelled 15.2cm; no export or import.
+  {
+    id: "lines-undercut-metric-haul",
+    kind: "lines",
+    input: {
+      units: "m3",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 0.5, offsetFt: 0, areaSF: 706.293334, volumeCF: 353.146667, material: "Engineered Fill", disposition: "haul_off" }, prep: { depthFt: 0.5, lifts: 1, areaSF: 100 } }],
+      assumptions: null,
+    },
+    expect: {
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut:remainder fill:remainder",
+      "undercut:pad": 10,
+      "undercut:pad:unit": "BCM",
+      "undercut_haul:pad": 12.5,
+      "undercut_haul:pad:unit": "LCM",
+      "undercut:pad:name": "Undercut Excavation (15.2cm) — Pad (bank)",
+      "prep:pad": 9.290304,
+      "prep:pad:unit": "M²",
+      "prep:pad:name": "Prepare Subgrade (15.2cm, 1 lift) — Pad",
+    },
+  },
 ];
