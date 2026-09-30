@@ -58,7 +58,7 @@ _Updated: 2026-09-27_
 | P-22 | Bid summary after the estimate: markups, overhead, profit, bond and tax over F9's summed Item Cost | both | **The next estimating block after F9** (the founder, D-95). Legacy's tab stops at the summed Item Cost (D-88 Q1), so this is beyond legacy. **Specced 2026-09-30 as F9b (D-128); unblocked the same day (D-129):** [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) |
 | P-09 | Assemblies, Starter Pack, Library | both | |
 | P-10 | Collaborator markup, print, find text, snippets and bookmarks | both | The $9.99 tier |
-| P-11 | Earthwork and Auto Trace | both | Rendering per D-14 (pdf.js provides the vector data) |
+| P-11 | Earthwork and Auto Trace | both | Rendering per D-14 (pdf.js provides the vector data). **F12 specced 2026-09-30** ([earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md)), blocked on the founder's answers to Q1 to Q33 |
 | P-12 | Auto Count | both | Rendering per D-14 (pdf.js provides the vector data) |
 | P-13 | AI tools and AI credits | both | |
 | P-14 | Sharing and guest view, Reports, time tracking and shifts, Community | both | |

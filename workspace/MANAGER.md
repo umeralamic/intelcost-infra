@@ -1,7 +1,7 @@
 # IntelCost — Manager
 _**The project board.** Three sections — In Progress, Blocked, Planned — so a glance
 says which feature is under development right now._
-_Updated: 2026-09-29_
+_Updated: 2026-09-30_
 
 **Backlog:** [FEATURES.md](FEATURES.md) · **Rules of engagement:** [DECISIONS.md](DECISIONS.md) · **Parity checklist:** [docs/PARITY.md](docs/PARITY.md)
 
@@ -32,6 +32,7 @@ _Updated: 2026-09-29_
 
 | # | Story (problem → solution) | Scope | Blocked on | Spec |
 |---|----------------------------|-------|-----------|------|
+| F12 | A site contractor bids cut, fill, strip and undercut, and the new app has no earthwork. → Legacy's Earthwork tab: EG and FG surfaces from contours and spots (hand or Auto Trace), a work boundary, Site Features (subgrade depth, undercut, prepare subgrade), Strip Areas, Calculate into cut and fill, and the estimate lines with swell, shrink and CSI codes. **Specced 2026-09-30, seven blocks (A to G); nothing built.** | Be Fe | The founder's answers to the spec's 33 questions (Q1 to Q33), each with legacy's behaviour and a recommendation | [earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md) |
 
 ---
 
@@ -41,7 +42,6 @@ _Updated: 2026-09-29_
 |---|----------------------------|-------|-------|------|
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): the Legend and Print.** Dimension was brought forward and built in round 3 (D-97); the AI-verified witness layer came with the scale check (D-131). | Be Fe | Umer | _not yet specced_ |
-| F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_; starting point drafted from live legacy (D-96): [earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md) |
 | F13 | Auto Count | Be Fe | Umer | _not yet specced_ |
 | F14 | AI tools and AI credits. **Inherits from F3:** the AI Credits tab — the workspace wallet, per-workspace and per-member credit limits, and returning a member to the workspace default (F3 S23). The Stripe top-up checkout inside that tab belongs to F16. | Be Fe | Umer | _not yet specced_ |
 | F15 | Sharing, guest view, Reports, time tracking, Community. **Inherits from F3:** the Shifts tab and the Time Tracking tab (F3 S21–S22), and with shifts, the one thing that makes PARITY §2's "Members — list with role, shift and last activity" tick. That line is **partial** until a member has a shift to show; role and last activity already ship. | Be Fe | Umer | _not yet specced_ |

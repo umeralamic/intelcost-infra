@@ -602,6 +602,8 @@ The Collaborator tab, the $9.99 tier. `src/components/takeoff/ReviewMarkupLayer.
 
 The Earthwork tab. `src/lib/takeoff/earthwork/`.
 
+> **Specced 2026-09-30** in [tasks/drafts/earthwork_tasks.DRAFT.md](tasks/drafts/earthwork_tasks.DRAFT.md) (Strip Areas, Site Features, the new lines, CSI, shrink, Auto Trace), awaiting the founder's answers; this section is rewritten to it on adoption.
+
 **Drawing the surfaces**
 
 - [ ] Trace a contour line, entering its elevation on Enter. `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/trace/` · **missing**
