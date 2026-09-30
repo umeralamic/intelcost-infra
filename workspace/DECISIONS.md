@@ -4678,9 +4678,17 @@ Files, as Crop as New Page already does.
 - **Assemblies:** unfiled assemblies group under their classification, division then
   scope, with "Unclassified" for none, as legacy's panel. The nodes come from the
   project's system; an assembly classified in another system shows under "Unclassified".
-*D-116 round 11 (08:30).* **Markup undo**, left open in D-109, is built as legacy's. Placing,
+*D-116 round 11 (08:21).* **Markup undo**, left open in D-109, is built as legacy's. Placing,
 moving, resizing, restyling, retexting and deleting a markup each undo with Ctrl+Z (and the
 toolbar's Undo) and redo with Ctrl+Y. The steps are kept beside the shapes' session history
 and interleaved by depth: a markup step is taken first only when no shape step was
 recorded after it. A markup deleted and put back returns with a new uuid, which later
 steps follow. Find Text's highlights and Dock this snapshot are not undo steps.
+*D-116 round 12 (08:45).* The region box menu gains legacy's **Page Name** and **Sheet #**:
+- The box's text is split into a number and a name by legacy's classifier (`regionText`,
+  `classifyRegionLines`, ported unchanged into `lib/takeoff/naming/`).
+- Finding one writes that field and keeps the other.
+- Finding both asks "Set sheet number and page name?", with both fields editable and
+  "Apply both".
+- **Left:** their "All" variants (the naming preview over every sheet, with an OCR
+  fallback), Scale from a box, Ask AI, Extract Schedule and Auto Count.
