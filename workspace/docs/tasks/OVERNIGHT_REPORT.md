@@ -28,6 +28,7 @@ this run).
 | 4b Carets, visibility, Split markups, Snapshot, Snippets, Dock | Done | 02:59 | 03:44 | 0 h 45 |
 | 5 F10 assemblies | Done (library, Save as, Link, Use on sheet, Starter Pack read side; S3 template editing and Starter authoring left) | 03:44 | 04:09 | 0 h 25 |
 | 6a Find Text | Done | 04:09 | 04:28 | 0 h 19 |
+| 6b Print | Done | 04:28 | 04:44 | 0 h 16 |
 
 ## Task 1 numbers
 
@@ -49,11 +50,12 @@ A 1 px checkerboard painted into the raster: 0% exact on screen before at both r
 
 ## Commits
 
-- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106); `1fd112a` Split view (D-107); `9f67dcc` share links (D-108); `63ce6d1` markups (D-109); `260ce0a` carets and visibility; `0dd98a5` Snapshot (D-110); `f79fdcf` Dock (D-111); `17af197` assemblies (D-112); `f2e954c` Find Text (D-113)
+- app `e43d484` 1a, 1b (D-105); `ec78384` 1c (D-106); `1fd112a` Split view (D-107); `9f67dcc` share links (D-108); `63ce6d1` markups (D-109); `260ce0a` carets and visibility; `0dd98a5` Snapshot (D-110); `f79fdcf` Dock (D-111); `17af197` assemblies (D-112); `f2e954c` Find Text (D-113); `264786b` Print (D-114)
 - api `f33c191` share links (D-108); `3d7854c` markups (D-109); `fcd014a` snippets (D-110); `0d967aa` dock (D-111); `2633473` assemblies (D-112)
 
 ## Decisions to review
 
+- **D-114** (pending): Print as legacy's: in the browser at 2000 px, handed to `window.print()`, not a server PDF. The takeoff prints only when shown; markups always. Docks print as a border without their picture, as legacy's do.
 - **D-113** (pending): Find Text as legacy's (its search module ported unchanged). Create › Measurement opens New Measurement named from the first hit without placing marks, as legacy does. Choose Pages is a flat list, not legacy's folder tree.
 - **D-112** (pending): assemblies as legacy's, the draft's nine questions answered in legacy's favour. Writes need `canEditTakeoff` (legacy checks nothing). Use on sheet from the Starter Pack applies its sub-items (legacy probably does not). Template properties and costs editing (F10-S3), Starter authoring and live panel refresh are not built.
 - **D-105** (pending): the stage is placed on whole device pixels; a wheel zoom now holds the cursor's point to 0.5 device px instead of 0.02. The raster is clipped to the paper.
