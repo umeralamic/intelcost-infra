@@ -40,7 +40,7 @@ _Updated: 2026-09-29_
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
-| F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): the Legend and Print.** Dimension was brought forward and built in round 3 (D-97); the AI-verified witness layer stays here. | Be Fe | Umer | _not yet specced_ |
+| F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): the Legend and Print.** Dimension was brought forward and built in round 3 (D-97); the AI-verified witness layer came with the scale check (D-131). | Be Fe | Umer | _not yet specced_ |
 | F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_; starting point drafted from live legacy (D-96): [earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md) |
 | F13 | Auto Count | Be Fe | Umer | _not yet specced_ |
 | F14 | AI tools and AI credits. **Inherits from F3:** the AI Credits tab — the workspace wallet, per-workspace and per-member credit limits, and returning a member to the workspace default (F3 S23). The Stripe top-up checkout inside that tab belongs to F16. | Be Fe | Umer | _not yet specced_ |

@@ -5170,3 +5170,59 @@ the others when dragged; a spreadsheet's columns keep the width they are given.
 
 **Where:** `intelcost-app-react/src/features/estimate/EstimatingView.tsx` (the table's
 wrapper, `<table>` width, `<colgroup>`, the header's resize handle).
+
+---
+
+## D-131 — A printed scale is a claim: checked against the sheet's drawn dimensions, as legacy's
+
+**Date:** 2026-09-30
+**Status:** decided, **pending founder review** (the brief's items 1 to 4: legacy's behaviour chosen where I would have asked)
+**Area:** Takeoff, Frontend, Api
+
+**Decision.** Scale from a box and Scale · All pages check each printed scale against the
+dimensions drawn on its own sheet before anything is written, legacy's `vectorDims.ts`,
+`scaleEvidence.ts` and `ScaleFromRegionDialog.tsx` ported unchanged:
+- **The check.** Feet-inches dimension strings outside the title block (`scaleText.ts`
+  `findDimensionStrings`, `TITLE_BLOCK_REGIONS`); the page's stroked straight segments,
+  read by a pdf.js operator walk on a copy of the page of its own (`find/sheetStrokes.ts`:
+  the canvas's copy has its paths replaced by `Path2D` once painted); then vector first (a
+  line under the label ticked at both ends, measured crossing to crossing, two agreeing
+  within 2%), the band second (three or more collinear strings, the adjacent-average
+  constant). The measuring is pure (`lib/takeoff/scaleVerify.ts`).
+- **Three answers.** Verified (green), No dimensions (grey, unproven), Conflict (red, with
+  the scale the drawing measures). A verified scale is written without asking and the
+  panel says "Applied automatically — the drawing proves it."; No dimensions is offered
+  with Apply; a conflict only by "Apply printed scale anyway".
+- **The panel** is legacy's floating, non-modal one (no overlay), so the flashed scale
+  string and the purple witness stay visible while the canvas pans and zooms. Esc, ×,
+  Cancel or Apply close it.
+- **The sweep judges by the check, not by whether a sheet already has a scale:** verified
+  and unproven rows start ticked, conflicts unticked, a hand tick kept when a late check
+  arrives; a Verification column, a pick and a Show per row, legacy's footer counts. This
+  removes D-116 round 19's deviation (a scaled sheet started unticked). "Scaled" is gone
+  from the Status column, as legacy's.
+- **Stored with the scale** (`PUT …/scale`): `verify_status` (verified, suggested,
+  conflict; "manual" for a hand calibration or a Scale menu pick), `verify_method`,
+  `measured_feet_per_pt`, and `verify_evidence`, the witness line and the printed string's
+  boxes. The columns were in the baseline, unused.
+- **The saved proof stays on the sheet** (legacy's plan "scale evidence stays on the
+  sheet"): drawn with Show › Annotations, never printed, never selectable; right-click a
+  marking for Hide this marking, Hide scale evidence on this sheet, or on all sheets
+  (`PUT …/calibration/evidence`, `POST …/calibration/evidence-hidden`); Show › Annotations
+  brings this sheet's back. Colleagues' canvases refetch through
+  `sheet.calibration.changed`.
+
+**One deviation, kept for review.** Legacy writes a verified scale even on a sheet that
+already has another scale and shapes on it. Here, on such a sheet the verified scale is
+not written unasked: the panel shows Verified, and Apply goes through the Scale menu's
+guard (D-116 round 14), since the write would move every quantity on the sheet.
+
+**Left:** legacy's AI reader for a scale with no text layer (F14). Live legacy's
+comparison project prints no scale string (its region Scale fell to the AI reader and
+opened no panel), so the panel was compared by source; its words are legacy's verbatim.
+
+**Where:** app `lib/takeoff/scaleText.ts`, `lib/takeoff/scaleVerify.ts` (new),
+`features/takeoff/find/sheetStrokes.ts` (new), `features/takeoff/components/
+ScaleFromRegionDialog.tsx`, `ScaleEvidenceLayer.tsx` (new), `features/drawing/api.ts`,
+`core/api/types.ts`, `pages/ProjectTakeoff.tsx`, `index.css` (`--scale-witness`); api
+`features/drawing/{schemas,service,routes}.py`.
