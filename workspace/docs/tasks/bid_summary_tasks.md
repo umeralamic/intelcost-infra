@@ -1,7 +1,7 @@
 # F9b: Bid summary (markups, overhead, profit, bond, tax, bid total)
 
-> **Specced 2026-09-30, blocked on D-117** (the api's `umer-dev` cannot be pulled or pushed
-> until staging's settings and storage agree). Answers in session: compounding markups, sales
+> **Specced 2026-09-30.** Was blocked on D-117; unblocked the same day when D-129 merged and
+> reconciled the api's staging branch (eb0f104). Answers in session: compounding markups, sales
 > tax on material only, workspace defaults (D-128). P-22 in FEATURES.md; block C of F9c's plan
 > ([estimating_reports_tasks.md](estimating_reports_tasks.md)). Beyond legacy: legacy's tab
 > stops at the summed Item Cost (D-88 Q1).
@@ -89,5 +89,5 @@ search or filters, the figures the sidebar's Reports already show, D-126) and th
 
 ## Progress
 
-- [ ] Blocked on D-117. Start: `git pull origin umer-dev` in `intelcost-app-fastapi` once the
-  staging settings, storage and the bench compose file agree.
+- [ ] Not started. The api's `umer-dev` is current (D-129); build from the spec as written,
+  after the tax line's place (first, D-128) is confirmed.

@@ -31,7 +31,6 @@ _Updated: 2026-09-29_
 
 | # | Story (problem → solution) | Scope | Blocked on | Spec |
 |---|----------------------------|-------|-----------|------|
-| F9b | A priced estimate stops at the summed Item Cost: no markups, overhead, profit, bond or tax, so no bid total. → **The next estimating block after F9** (the founder, D-95): a bid summary at the foot of the Estimating sidebar, sales tax on material, overhead, extra markups, profit and bond compounding to the Bid total, per project from workspace defaults, in the export too (P-22, D-128). | Be Fe | **D-117:** the api's `origin/umer-dev` carries the staging merge whose settings and storage disagree; F9b's tables and routes cannot be pushed until it is fixed and pulled | [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) |
 
 ---
 
@@ -39,6 +38,7 @@ _Updated: 2026-09-29_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
+| F9b | A priced estimate stops at the summed Item Cost: no markups, overhead, profit, bond or tax, so no bid total. → **The next estimating block after F9** (the founder, D-95): a bid summary at the foot of the Estimating sidebar, sales tax on material, overhead, extra markups, profit and bond compounding to the Bid total, per project from workspace defaults, in the export too (P-22, D-128). Specced; unblocked 2026-09-30 when D-129 resolved D-117. | Be Fe | Umer | [bid_summary_tasks.md](docs/tasks/bid_summary_tasks.md) |
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
 | F11 | Collaborator markup, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): the Legend and Print.** Dimension was brought forward and built in round 3 (D-97); the AI-verified witness layer stays here. | Be Fe | Umer | _not yet specced_ |
 | F12 | Earthwork and Auto Trace | Be Fe | Umer | _not yet specced_; starting point drafted from live legacy (D-96): [earthwork_tasks.DRAFT.md](docs/tasks/drafts/earthwork_tasks.DRAFT.md) |

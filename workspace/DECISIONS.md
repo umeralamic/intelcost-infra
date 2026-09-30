@@ -4671,7 +4671,7 @@ compared.
 ## D-117 — The api's umer-dev moved under the overnight run: not merged
 
 **Date:** 2026-09-30
-**Status:** reviewed 2026-09-30: waiting for Abdullah; 7ad2c10 stays held
+**Status:** resolved 2026-09-30 by D-129: merged, reconciled and pushed (eb0f104); 7ad2c10 is on the remote
 **Area:** Api, Git
 
 At 07:17 UTC Abdullah pushed "staging init" and "Merge branch 'staging' into umer-dev" to
@@ -5100,3 +5100,49 @@ tens of rows, and a bulk route can replace the loop later without changing the s
   alone.
 - **Blocked on D-117:** F9b is specced and moved to Blocked; the build starts once the api's
   `umer-dev` is fixed and pulled. No api work is held locally for it.
+
+---
+
+## D-129 — The staging merge in the api, reconciled: staging's names kept, the full app restored
+
+**Date:** 2026-09-30
+**Status:** decided (the founder's go-ahead in session); resolves D-117
+**Area:** Api, Git, Bench
+
+**What the staging merge did** (Abdullah's 8ff495a "staging init" and 8c2bf9a, cut from an
+older api). Read file by file, comparing syntax trees:
+- Migrations, models and most services: **formatting only** (lines rewrapped). The schema
+  is untouched.
+- `app/main.py` moved to a top-level `main.py` **cut down to an older app**: no assembly,
+  classification, format-theme, markup, snippet, platform, project-status, realtime, resolve,
+  share or item-history routers, no realtime hub, no request-context middleware. The bench
+  and the Dockerfile run `app.main:app`, which the merge deleted.
+- `app/config.py`: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in place of `S3_*`,
+  `S3_FORCE_PATH_STYLE`, `s3_signing_endpoint`, `is_local` and `sync_database_url` removed
+  while `storage.py`, `app/main.py`, `database.py` and Alembic still read them;
+  `database_url` and `redis_url` declared twice; a `production` flag.
+- `database.py` and `alembic/env.py`: the sync engine given the async URL.
+- `scripts/seed.py`: a second upload block reading an undefined `ticket`.
+- `poetry.lock` regenerated: SQLAlchemy 2.0.52 → 2.1.1, Starlette 0.52 → 0.54 and others.
+
+**Decided.** Merge it and keep staging's intent, with the full app underneath:
+- `app/main.py` is ours again; the top-level `main.py` re-exports it (`from app.main import
+  app`), so staging's `uvicorn main:app` and the bench's `app.main:app` serve the same app.
+- `config.py` keeps staging's `AWS_*` names and `production`, and also reads `S3_*`
+  (`AliasChoices`), so the bench's Compose file works unchanged. Path style follows
+  `S3_FORCE_PATH_STYLE` when set, else whether `S3_ENDPOINT_URL` is set (as staging's
+  `.env.example` says). `s3_signing_endpoint`, `is_local` and `sync_database_url` are back;
+  a `postgresql+psycopg` URL passes through `sync_database_url` unchanged.
+- `database.py`, `alembic/env.py` and `scripts/seed.py` are ours; the lock upgrade is kept.
+
+**Checked** on a separate container from the merged tree on the bench network, the bench's
+own environment: ruff and mypy clean (the 52 E501 in old migrations predate it); `/health`
+ok on database, Redis and storage; 148 routes, as the bench's; `alembic current` at head
+through the sync URL; register, sign in, workspace, project, file, trash and purge on
+SQLAlchemy 2.1; a presigned PUT from the host to MinIO. Then the bench's images rebuilt on
+the new lock.
+
+**Done.** The bench's api, worker, worker-previews and beat rebuilt on the new lock
+(SQLAlchemy 2.1.1): migrations at head, `/health` ok, both workers ready, beat started.
+Pushed as a fast-forward, `8c2bf9a..eb0f104` (834482c the merge as git made it, eb0f104
+the reconciliation). D-117 is resolved and F9b is unblocked.
