@@ -14,6 +14,7 @@ import { COST_CASES, ENV_ITEMS, ENV_SHEET } from "./lib/cost-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
+import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
@@ -30,6 +31,7 @@ let web;
 let costs;
 let earth;
 let reg;
+let ac;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -104,6 +106,57 @@ try {
       });
     });
   }, [COST_CASES, ENV_ITEMS, ENV_SHEET]);
+  // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
+  ac = await page.evaluate(async ([cases, pipe]) => {
+    const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
+    const rp = await import("/src/lib/takeoff/autoCount/resultPipeline.ts");
+    const vc = await import("/src/lib/takeoff/autoCount/valleyCut.ts");
+    const st = await import("/src/lib/takeoff/autoCount/settings.ts");
+    const vector = cases.map((c) => {
+      const polylines = c.page.map((s) => ({ closed: s.closed, pts: s.pts.map(([x, y]) => ({ x, y })) }));
+      const template = vm.buildVectorTemplate(polylines, c.box, []);
+      if (!template) return { error: "no template" };
+      const raw = vm.matchVectorSymbols(polylines, template, 0.15, undefined, [], { ...c.opts, dropUniqueAnchors: true, aspect: c.aspect });
+      const { candidates } = rp.finalizeAutoCountCandidates(raw, { floor: 0.15, iouThreshold: 0.6 });
+      const out = {};
+      let instancesAboveBar = 0;
+      const aboveNames = [];
+      let decoyAboveBar = false;
+      for (const pr of c.probes) {
+        const hit = candidates.find((k) => pr.x >= k.bbox.x && pr.x <= k.bbox.x + k.bbox.w && pr.y >= k.bbox.y && pr.y <= k.bbox.y + k.bbox.h);
+        if (!hit) continue;
+        const above = rp.isAutoCountChecked(hit.score, 78);
+        if (pr.name.startsWith("decoy")) { if (above) decoyAboveBar = true; continue; }
+        if (above) {
+          instancesAboveBar++;
+          aboveNames.push(pr.name);
+          out[pr.name] = `${hit.mirrored ? "m" : ""}${hit.turn ?? 0}`;
+        }
+        if (pr.name === "asDrawn") out.selfScore = Math.round(hit.score * 1e6) / 1e6;
+      }
+      return { ...out, instancesAboveBar, decoyAboveBar, above: aboveNames.join(",") };
+    });
+    const pipeline = pipe.map((c) => {
+      if (c.kind === "nms") return { survivors: rp.finalizeAutoCountCandidates(c.candidates, { floor: 0 }).candidates.map((k) => k.id).join(",") };
+      if (c.kind === "check") return { at78: rp.isAutoCountChecked(0.78, 78), under78: rp.isAutoCountChecked(0.7799, 78), nearOneAt100: rp.isAutoCountChecked(0.9995, 100) };
+      if (c.kind === "saturation") {
+        return {
+          flat: rp.detectSaturation(Array(60).fill(0.9)).saturated,
+          separated: rp.detectSaturation([...Array(60).fill(0.95), ...Array(10).fill(0.3)]).saturated,
+        };
+      }
+      if (c.kind === "valley") {
+        const r = vc.computeValleyCut(c.scores.map(([score, checked]) => ({ score, checked })), 78);
+        return { mode: r.mode, visible: r.visibleUnchecked.map((k) => k.score).join(","), drawer: r.drawer.map((k) => k.score).join(",") };
+      }
+      if (c.kind === "settings") {
+        const n = st.normalizeAutoCountSettings(c.raw);
+        return { overlapAllowed: n.overlapAllowed, rotations: n.rotations, vectorRotations: n.vectorRotations, includeMirror: n.includeMirror, sensitivity: n.sensitivity, angles: st.anglesForRotations(n.rotations).length };
+      }
+      return { error: c.kind };
+    });
+    return { vector, pipeline };
+  }, [AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES]);
   // F18's registration rows: lib/takeoff/earthwork/register.ts (D-188).
   reg = await page.evaluate(async (cases) => {
     const r = await import("/src/lib/takeoff/earthwork/register.ts");
@@ -410,6 +463,17 @@ for (const [i, c] of REGISTER_CASES.entries()) {
   }
 }
 
+// Auto Count rows: each named field against the hand-worked answer.
+for (const [list, results] of [[AUTOCOUNT_CASES, ac.vector], [AUTOCOUNT_PIPELINE_CASES, ac.pipeline]]) {
+  for (const [i, c] of list.entries()) {
+    for (const [field, want] of Object.entries(c.expect)) {
+      const got = results[i]?.[field];
+      const ok = typeof want === "number" ? typeof got === "number" && close(got, want) : got === want;
+      if (!ok) wrong.push(`${c.id}.${field}: ${JSON.stringify(got)}, expected ${JSON.stringify(want)}`);
+    }
+  }
+}
+
 // Earthwork rows: each named field against the hand-worked answer (numbers to 1e-9).
 const same = (got, want) =>
   typeof want === "number" ? typeof got === "number" && close(got, want) : JSON.stringify(got) === JSON.stringify(want);
@@ -426,5 +490,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; passed`,
 );
