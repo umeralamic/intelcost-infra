@@ -5619,7 +5619,7 @@ migration `2a40e224cbfd`, `takeoff/service.py` (the folder lock), `main.py`,
 
 **Date:** 2026-10-01
 **Status:** CSI mapping decided by the founder (2026-09-30, Q12). The other points were
-decided overnight and are pending founder review.
+decided overnight; accepted by the founder 2026-10-01, the units amended by D-177.
 **Area:** Earthwork (F12), Api, Frontend, Estimating
 
 - **CSI, founder's decision.** The CSI template gains two nodes under 31.04 Excavation &
@@ -5668,7 +5668,7 @@ decided overnight and are pending founder review.
 ## D-143 — F12 Block G: Auto Trace, rebuilt to beat legacy's (research, choices, C-200 numbers)
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review. The founder's addition of 2026-09-30
+**Status:** decided overnight, accepted by the founder 2026-10-01. The founder's addition of 2026-09-30
 asked for this: research first, then a version that beats legacy on overlaps and gaps
 without losing contours.
 **Area:** Earthwork (F12), Frontend
@@ -5797,7 +5797,7 @@ frame, and a spot that is not a contour label.
 ## D-144 — Suggested elevations for unlabelled contours; C-200's existing grade is not on C-200
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review
+**Status:** decided overnight, accepted by the founder 2026-10-01; the cross-sheet EG Idea is now a spec draft, `docs/tasks/drafts/eg_from_survey_tasks.DRAFT.md`
 **Area:** Earthwork (F12), Frontend
 
 - **The finding.** C-200 prints no existing-grade elevations.
@@ -5832,7 +5832,7 @@ frame, and a spot that is not a contour label.
 ## D-145 — Snap PDF, as legacy
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour throughout)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour throughout)
 **Area:** Takeoff canvas (F7 follow-on), Frontend
 
 - **What it is.** Points snap to lines printed on the sheet: corners, line ends, crossings,
@@ -5867,7 +5867,7 @@ frame, and a spot that is not a contour label.
 ## D-146 — F15 first slice: Reports, Time Tracking, Shifts and the members' Shift column, as legacy
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour, with the
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour, with the
 deviations named)
 **Area:** Workspace settings, Reports, Takeoff header; Api, Frontend
 
@@ -5924,7 +5924,7 @@ deviations named)
 ## D-147 — The earthwork row drawn as legacy's
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Takeoff › Earthwork tab; Frontend
 
 - The fallback's side-by-side check at 2048 × 1050 and 1440 × 900 found our earthwork row
@@ -5942,7 +5942,7 @@ deviations named)
 ## D-148 — Estimating's rows at legacy's density
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Estimating; Frontend
 
 - **What the side-by-side check found:** at 2048 × 1050, legacy's item rows are about 18 px
@@ -5962,7 +5962,7 @@ deviations named)
 ## D-149 — A Takeoff row's right-click opens legacy's short item menu; Convert to rough measurement
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Takeoff panel; Frontend, Api
 
 - **What the side-by-side check found:** in legacy, right-clicking one Takeoff row opens a
@@ -5996,7 +5996,7 @@ deviations named)
 ## D-150 — A dialog's autofocused field keeps its focus, its text selected
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Every dialog; Frontend
 
 - **What the side-by-side check found:** legacy's Strip Area dialog opens with Name focused
@@ -6019,7 +6019,7 @@ deviations named)
 ## D-151 — The Sheets row menu with legacy's glyphs, rules and "Name from page region…"
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Sheets panel; Frontend
 
 - **What the side-by-side check found:** legacy's sheet row menu (`SheetTree` `actionSpecs`,
@@ -6038,7 +6038,7 @@ deviations named)
 ## D-152 — The canvas menu's tool strip and glyphs as legacy's; Reset Orientation
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Takeoff canvas right-click; Frontend
 
 - **What the side-by-side check found:** legacy's canvas menu (`SheetContextMenu`) shows
@@ -6058,7 +6058,7 @@ deviations named)
 ## D-153 — Menus at legacy's 12 px
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Every right-click and dropdown menu built on `ContextMenu`; Frontend
 
 - **What the side-by-side check found:** legacy's takeoff menus set their rows at 12 px:
@@ -6071,7 +6071,7 @@ deviations named)
 ## D-154 — A menu opened inside the toolbar keeps its own sizes
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Takeoff toolbar's Scale menu; Frontend
 
 - **What the side-by-side check found:** legacy's Scale menu lists its scales in 24 px rows
@@ -6087,7 +6087,7 @@ deviations named)
 ## D-155 — The Sheets panel ⋮ and the item ⋮ as legacy's
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Sheets panel, Takeoff panel; Frontend
 
 - **What the side-by-side check found:**
@@ -6113,7 +6113,7 @@ deviations named)
 ## D-156 — Draw-mode hints at legacy's 9 px, wrapping
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** The toolbar's draw-mode menus (Linear, Area, Highlight, Note); Frontend
 
 - **What the side-by-side check found:** legacy's mode menus (`drawModes.tsx`) set each
@@ -6125,7 +6125,7 @@ deviations named)
 ## D-157 — Estimating's Format panel in legacy's layout
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's layout; the overnight fallback; amends D-92's panel)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's layout; the overnight fallback; amends D-92's panel)
 **Area:** Estimating › Format; Frontend
 
 - **What the side-by-side check found:** legacy's Format panel (`FormatPanel.tsx`) opens
@@ -6155,7 +6155,7 @@ deviations named)
 ## D-158 — Dock setup in legacy's layout and defaults
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback; amends D-111's dialog)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback; amends D-111's dialog)
 **Area:** Takeoff › Dock; Frontend
 
 - **What the side-by-side check found:** legacy's "Dock — setup" (`DockSetupDialog`):
@@ -6175,7 +6175,7 @@ deviations named)
 ## D-159 — The Highlight and Note style carets open again; legacy's Custom colour
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (a bug fix and legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (a bug fix and legacy's behaviour; the overnight fallback)
 **Area:** Takeoff toolbar › Highlight ▾, Note ▾; Frontend
 
 - **What the side-by-side check found:** the carets beside Highlight and Note (D-109) did
@@ -6193,7 +6193,7 @@ deviations named)
 ## D-160 — The volume panel, shape menus and TIN tips nearer legacy's
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01; the panel stays in screen space, D-178 (legacy's look; the overnight fallback)
 **Area:** Takeoff › Earthwork panel, the canvas shape menus, the TIN toggles; Frontend
 
 - **Found by** a code-level comparison of legacy's `EarthworkVolumePanel`,
@@ -6235,7 +6235,7 @@ deviations named)
 ## D-161 — The canvas shape menus headed by the clicked section's figure
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Takeoff canvas right-click on a Linear or Area shape; Frontend
 
 - **What the side-by-side check found:**
@@ -6252,7 +6252,7 @@ deviations named)
 ## D-162 — Export to Excel in legacy's layout; legacy's small dialog titles on Export and Dock
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Estimating › Export, Takeoff › Dock; Frontend
 
 - **What the side-by-side check found:** legacy's "Export to Excel"
@@ -6268,7 +6268,7 @@ deviations named)
 ## D-163 — Legacy's dotted tree guides in the Sheets and Takeoff panels
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Sheets panel, Takeoff panel; Frontend
 
 - **What the side-by-side check found:** legacy draws PlanSwift-style dotted guides in
@@ -6292,7 +6292,7 @@ deviations named)
 ## D-164 — The earthwork row drawn at legacy's rendered sizes
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback; refines D-147)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback; refines D-147)
 **Area:** Takeoff › Earthwork tab; Frontend
 
 - **What the 2048 × 1050 side-by-side found after D-147:** legacy's row asks for 12 px
@@ -6308,7 +6308,7 @@ deviations named)
 ## D-165 — Shared equipment's "Add…" kept to its column
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (a layout fix toward legacy's; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (a layout fix toward legacy's; the overnight fallback)
 **Area:** Estimating › Shared equipment; Frontend
 
 - **What the side-by-side check found:** the "Extra divisions / scopes" picker in our
@@ -6320,7 +6320,7 @@ deviations named)
 ## D-166 — Toolbar tools come back out of More when the draw group closes
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (a bug fix; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (a bug fix; the overnight fallback)
 **Area:** Takeoff toolbar; Frontend
 
 - **What the side-by-side check found:** at 1440 px, drawing a contour opens the draw
@@ -6339,7 +6339,7 @@ deviations named)
 ## D-167 — The takeoff Open dialog with legacy's two tabs
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Takeoff header › Open; Frontend, Api
 
 - **What the side-by-side check found:** legacy's "Open" (`OpenProjectDialog`) has two
@@ -6362,7 +6362,7 @@ deviations named)
 ## D-168 — The Sheets panel's selection menu as legacy's
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Sheets panel, right-click on a selection of sheets; Frontend
 
 - **What the side-by-side check found:** legacy's menu for several selected sheets has:
@@ -6381,7 +6381,7 @@ deviations named)
 ## D-169 — The Takeoff panel's bulk menu as legacy's: Duplicate, flyouts, two deletes
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Takeoff panel, right-click on a selection of items; Frontend
 
 - **What the side-by-side check found:** legacy's menu for several selected items
@@ -6402,7 +6402,7 @@ deviations named)
 ## D-170 — Estimating's header menu as legacy's "Main header"
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Estimating, right-click on a column header; Frontend
 
 - **Legacy's menu:** a "Main header" label, Freeze Header and Unfreeze Header with the
@@ -6413,7 +6413,7 @@ deviations named)
 ## D-171 — The Takeoff panel names a new folder in place, as legacy
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's behaviour; the overnight fallback)
 **Area:** Takeoff panel, New folder and Add sub-folder; Frontend
 
 - **What the side-by-side check found:** legacy's New folder (`NewFolderInline`) puts a
@@ -6426,7 +6426,7 @@ deviations named)
 ## D-172 — Settings switches at legacy's size
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Takeoff Settings dialog; Frontend
 
 - **What the side-by-side check found:** legacy's Settings switches are shadcn's, 44 × 24
@@ -6436,7 +6436,7 @@ deviations named)
 ## D-173 — The move handle as legacy's, with its chip
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Takeoff canvas, a selected Linear or Area section; Frontend
 
 - **What the side-by-side check found:** legacy's move handle is filled in the primary
@@ -6456,7 +6456,7 @@ deviations named)
 ## D-174 — Checkboxes and radios as legacy's
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Every native checkbox and radio in the app; Frontend
 
 - **What the side-by-side check found:** legacy's checkboxes and radios (shadcn's) are
@@ -6477,7 +6477,7 @@ deviations named)
 ## D-175 — Settings sliders as legacy's
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Takeoff Settings dialog; Frontend
 
 - **What the side-by-side check found:** legacy's Settings sliders are Radix's:
@@ -6494,10 +6494,120 @@ deviations named)
 ## D-176 — Small dialogs keep a tight footer
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** The dialogs with legacy's small header (`dense`): Settings, Export to Excel, Dock, Save as assembly, Edit sub-item, Duplicate item, Name from page region; Frontend
 
 - **What the side-by-side check found:** legacy's Settings footer (Reset this section, Restore
   all defaults, Cancel, Save) is about 50 px tall; ours was about 80.
 - **Now:** a dense dialog's footer is padded 16 × 10 px (49 px in Settings); every other
   dialog is unchanged.
+
+
+---
+
+## D-177 — Shrink and swell typed as printed on plans; every earthwork line in its true unit
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; amends D-136 Q31's input form and D-142's units)
+**Area:** Earthwork (F12), Frontend, Api, Estimating
+
+- **The method stays ours: bank, then × swell for the truck.** On C-200 the 5,363 LCY export
+  is right. The engineer's "net 6,803 CY export" subtracts a bank fill figure (8,727 × 1.10)
+  from a loose cut figure (14,263 × 1.15), so it overstates the haul.
+- **The inputs take the factors as plans print them.**
+  - **"Shrink factor (fill needs × more cut)"**, e.g. 1.10: each compacted CY of fill needs
+    1.10 bank CY of cut. Stored as typed in `earthwork_assumptions.shrink_factor`. The engine
+    uses s = 1 / k for the bank → compacted step.
+  - **"Swell factor (loose / bank)"**, e.g. 1.15. Its meaning is unchanged, only the label.
+  - Below 1 is allowed (rock that bulks when placed). The field says what such a value means.
+- **The old form is converted.** Legacy's `projects.earthwork_shrink_factor` and our stored
+  rows before this decision are bank → compacted (s, default 1.00).
+  - Migration `7d4e1b9c2a60` turns every stored row into k = 1 / s. The bench held one row,
+    at 1.00, which converts to itself.
+  - F17's cutover converts legacy's column the same way. Legacy's swell carries over as is.
+- **The balance, in bank measure** (the same numbers as D-136 Q31 with s = 1 / k; the
+  half-unit threshold is now in bank):
+  - **Native soil suitable:** surplus = C + R − F × k.
+    - A surplus exports surplus × w LCY.
+    - A shortfall imports −surplus × w LCY.
+  - **Not suitable:** need = F × k − R.
+    - Import need × w LCY.
+    - Export (C + max(0, −need)) × w LCY.
+- **Every line carries its true unit:**
+
+  | Line | Unit |
+  |---|---|
+  | Cut, strip, undercut, topsoil re-use | BCY |
+  | Haul off and stockpile | LCY |
+  | Fill and re-use as general fill (bank ÷ k) | CCY. The fill lines were mislabelled BCY until now |
+  | Undercut replacement | CCY |
+  | Prepare subgrade | SF |
+  | Soil Export and Soil Import | LCY |
+
+  Metric uses BCM, LCM, CCM and M².
+- **Soil Export and Soil Import.** Qty is LCY, what the trucks carry and what gets priced. The
+  name carries the bank figure in brackets, rounded to the whole unit:
+  - "Soil Export (4,663 BCY)";
+  - "Soil Import — Engineered Fill (230 BCY)".
+- **The volume panel:**
+  - Cut in BCY; Fill in CCY.
+  - Net is legacy's fill − cut as measured, labelled "CY, as measured" (negative: more cut).
+  - Export and import in both LCY (the Qty) and BCY (the name).
+  - The assumptions line and the footnote are written in the new form.
+- **C-200, by hand (quantity-table rows `bal-c200-printed`, `lines-c200-export`):**
+  - Excavation 14,263 BCY; embankment 8,727 CCY.
+  - 8,727 × 1.10 = 9,599.7 BCY needed.
+  - Surplus 14,263 − 9,599.7 = 4,663.3 BCY.
+  - Export 4,663.3 × 1.15 = 5,362.795 LCY, shown as 5,363.
+  - The name reads "Soil Export (4,663 BCY)". The founder's 4,664 comes from taking 9,599
+    (9,599.7 cut short) before subtracting; rounded, the needed figure is 9,600 and the
+    surplus is 4,663.
+
+**Where:**
+- app: `lib/takeoff/earthwork/{balance,lines}.ts`,
+  `features/takeoff/earthwork/{CalculateDialog,VolumePanel}.tsx`;
+- api: `features/earthwork/{schemas,models}.py`, migration `7d4e1b9c2a60`;
+- infra: `browser/lib/earthwork-cases.mjs`.
+
+---
+
+## D-178 — The volume panel floats on the screen: differs from legacy on purpose
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; settles D-160's open point)
+**Area:** Earthwork (F12) volume panel, Frontend
+
+- **Legacy draws "Earthwork Volumes" in sheet space.** It pans and zooms with the drawing,
+  and its text scales with its box.
+- **Ours stays a floating panel in screen space:**
+  - draggable and resizable;
+  - its box remembered per sheet;
+  - brought back on screen when saved in a wider window (D-160).
+- **A deliberate difference.** Do not port legacy's sheet-space panel.
+
+---
+
+## D-179 — The rule 7 hook reads the decoded command, every line of it
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session)
+**Area:** Workspace tooling (`.claude/hooks/no-inplace-edit.sh`)
+
+- **The gap (found overnight, 2026-10-01).** The hook grepped the tool call's raw JSON. In a
+  multi-line command the newline arrives as the two characters `\n`, so the guard before
+  `sed` or `perl` saw an `n` and never matched. An in-place edit on any line after the first
+  passed.
+- **Now the command is checked twice, and either match blocks:**
+  - decoded from the JSON with node when it is installed, then matched line by line;
+  - in the raw input, with its `\n`, `\r` and `\t` escapes turned back into real ones.
+- **The pattern** also takes arguments between the command and its flag (an `-e` script
+  before the in-place flag). It stops at `;`, `|` and `&`, so a later `grep -i` is not
+  caught.
+- **It is strict on purpose.** A Bash command whose text merely quotes such a call, a heredoc
+  of documentation for example, is blocked too. Write such text with the editor tool.
+- **Proved:**
+  - 13 crafted calls gave 8 blocked and 5 allowed, as intended. These include `\n`, `\r\n`
+    and `\t` before the command, a Perl in-place edit in a loop body, and `--in-place`.
+  - The no-node fallback was run alone.
+  - A live multi-line Bash call with an in-place `sed` on its second line was refused by the
+    hook, and its scratch file was left unchanged.

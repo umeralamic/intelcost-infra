@@ -6,6 +6,14 @@
 > 2026-09-29 (D-96), which covered Strip Areas and Site Features only. PARITY §16 is
 > rewritten to this spec when it is adopted.
 
+> **Amended 2026-10-01 by D-177 (the founder).** Where this spec says "Shrink factor (bank →
+> compacted)", read the factor as plans print it: **"Shrink factor (fill needs × more cut)"**,
+> e.g. 1.10, bank per compacted, with legacy's old form s stored as 1 / s. Swell reads
+> "loose / bank". The fill lines are **CCY**, not bank. Soil Export and Import stay LCY and
+> carry their BCY figure in the name. The balance is struck in bank measure. The legacy
+> sections below still describe legacy as it is. **D-178:** the volume panel stays in screen
+> space. **EG from another sheet:** [eg_from_survey_tasks.DRAFT.md](eg_from_survey_tasks.DRAFT.md).
+
 ## The problem
 
 Takeoff measures lengths, areas and counts, but a site contractor bids earthwork: how much
