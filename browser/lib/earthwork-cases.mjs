@@ -695,4 +695,32 @@ export const EARTHWORK_CASES = [
   },
   // Legacy's TraceIndex: the nearest line within 6 pt is picked, nothing 100 pt away.
   { id: "trace-pick", kind: "trace", pieces: [{ pts: [[100, 100], [400, 130]] }, { pts: [[100, 300], [400, 330]] }], pick: [[250, 118, 6], [250, 215, 6]], expect: { pick: "hit miss" } },
+  // --- Editing a drawn run (D-181, legacy's contour edits; the guard is the founder's) ---
+  // "Add point here" on edge 0 at its middle; on the edge's own end it adds nothing.
+  { id: "ewedit-insert-mid", kind: "ewedit", op: "insert", points: [[0, 0], [1, 0], [2, 0]], i: 0, at: [0.5, 0], expect: { points: "0,0 0.5,0 1,0 2,0" } },
+  { id: "ewedit-insert-on-vertex", kind: "ewedit", op: "insert", points: [[0, 0], [1, 0], [2, 0]], i: 0, at: [1, 0], expect: { points: "0,0 1,0 2,0" } },
+  // "Delete this point": a contour keeps two points, a spot one, the boundary three; with
+  // fewer the run itself goes (legacy's "That section had too few points left").
+  { id: "ewedit-remove-keeps", kind: "ewedit", op: "remove", runKind: "contour", points: [[0, 0], [1, 0], [2, 0]], index: 1, expect: { points: "0,0 2,0" } },
+  { id: "ewedit-remove-drops-contour", kind: "ewedit", op: "remove", runKind: "contour", points: [[0, 0], [1, 0]], index: 0, expect: { drop: true } },
+  { id: "ewedit-remove-boundary-min", kind: "ewedit", op: "remove", runKind: "boundary", points: [[0, 0], [1, 0], [1, 1]], index: 2, expect: { drop: true } },
+  { id: "ewedit-remove-spot", kind: "ewedit", op: "remove", runKind: "spot_elevation", points: [[0.5, 0.5]], index: 0, expect: { drop: true } },
+  // "Break contour at this point": both halves share the vertex, which is not repeated
+  // (legacy's at-vertex break repeats it: a defect not copied).
+  { id: "ewedit-split-vertex", kind: "ewedit", op: "split", points: [[0, 0], [1, 0], [2, 0], [3, 0]], vertex: 1, expect: { a: "0,0 1,0", b: "1,0 2,0 3,0" } },
+  // "Break contour here" mid-edge: the point joins both halves.
+  { id: "ewedit-split-edge", kind: "ewedit", op: "split", points: [[0, 0], [1, 0], [2, 0], [3, 0]], edge: 1, at: [1.5, 0], expect: { a: "0,0 1,0 1.5,0", b: "1.5,0 2,0 3,0" } },
+  // A break "here" that lands on a vertex is the break at that vertex.
+  { id: "ewedit-split-edge-on-vertex", kind: "ewedit", op: "split", points: [[0, 0], [1, 0], [2, 0], [3, 0]], edge: 0, at: [1, 0], expect: { a: "0,0 1,0", b: "1,0 2,0 3,0" } },
+  // At an end, one half would have a single point: refused ("Can't break here").
+  { id: "ewedit-split-end-refused", kind: "ewedit", op: "split", points: [[0, 0], [1, 0], [2, 0]], vertex: 0, expect: { refused: true } },
+  // The guard: the last point dragged to (0.5, −1) makes segment 2 cross segment 0
+  // (at x = 0.75): the line would cross itself.
+  { id: "ewedit-guard-self", kind: "ewedit", op: "guard", points: [[0, 0], [1, 0], [1, 1], [2, 1]], after: [[0, 0], [1, 0], [1, 1], [0.5, -1]], expect: { refusal: "self" } },
+  // A point raised to y = 2 makes the line cross the contour along y = 1 twice.
+  { id: "ewedit-guard-other", kind: "ewedit", op: "guard", points: [[0, 0], [2, 0]], after: [[0, 0], [1, 2], [2, 0]], others: [[[0, 1], [2, 1]]], expect: { refusal: "other:0" } },
+  // Already crossing once, still once after the edit: editable, so it can be fixed.
+  { id: "ewedit-guard-already-crossing", kind: "ewedit", op: "guard", points: [[0, 0], [1, 2]], after: [[0, 0], [1.1, 2]], others: [[[0, 1], [2, 1]]], expect: { refusal: "none" } },
+  // A closed boundary moved whole stays clean.
+  { id: "ewedit-guard-boundary-move", kind: "ewedit", op: "guard", closed: true, points: [[0, 0], [1, 0], [1, 1], [0, 1]], after: [[0.2, 0.2], [1.2, 0.2], [1.2, 1.2], [0.2, 1.2]], expect: { refusal: "none" } },
 ];

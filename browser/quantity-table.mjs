@@ -111,7 +111,9 @@ try {
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
     const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
+    const ed = await import("/src/lib/takeoff/earthwork/edit.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
+    const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
     return cases.map((c) => {
@@ -180,6 +182,24 @@ try {
           } else out.ok = r.ok;
         }
         return out;
+      }
+      if (c.kind === "ewedit") {
+        // Editing a drawn run (D-181): points in, points (or a refusal) out.
+        const pts = xy(c.points);
+        if (c.op === "insert") return { points: ptsText(ed.insertPoint(pts, c.i, { x: c.at[0], y: c.at[1] })) };
+        if (c.op === "remove") {
+          const r = ed.removePoint(pts, c.index, c.runKind);
+          return "drop" in r ? { drop: true } : { points: ptsText(r.points) };
+        }
+        if (c.op === "split") {
+          const r = ed.splitRun(pts, c.vertex !== undefined ? { vertex: c.vertex } : { edge: c.edge, point: { x: c.at[0], y: c.at[1] } });
+          return r ? { a: ptsText(r.a), b: ptsText(r.b) } : { refused: true };
+        }
+        if (c.op === "guard") {
+          const r = ed.editRefusal(pts, xy(c.after), Boolean(c.closed), (c.others ?? []).map(xy));
+          return { refusal: r === null ? "none" : r.why === "self" ? "self" : `other:${r.with}` };
+        }
+        return { error: `unknown op ${c.op}` };
       }
       if (c.kind === "pdfsnap") {
         const idx = ps.buildPdfSnapIndex(c.segments.map(([ax, ay, bx, by]) => ({ ax, ay, bx, by })), 1000, 1000);
