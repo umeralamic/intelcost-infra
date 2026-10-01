@@ -11,8 +11,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 1 | Auto Count answers (docs) | done (D-189): spec adopted, PARITY §17 rewritten (42 lines, 1 retired), F13 In Progress | 20:40 | 21:00 | 20 min |
 | 2 | EG from another sheet (F18 Blocks A, B, acceptance on C-200) | built (D-190 to D-192), smoke-tested; **acceptance not met** (cut −35.6 %, fill −11.7 %; the link is exact, C-200's FG inputs are short); a volume-engine defect found and fixed (D-191) | 21:00 | 21:38 | 38 min |
 | 3 | SPEC: site stitching | done: [site_stitching_tasks.DRAFT.md](drafts/site_stitching_tasks.DRAFT.md), the founder's design decided, 16 questions; F19 Planned | 21:38 | 21:39 | (written alongside task 2) |
-| 4 | Build Auto Count (F13) A, B, C, D, F, E | A, B, C, D, F built (D-193), smoke-tested; E (Image) in progress | 21:40 | | |
-| 5 | Overlay | to do | | | |
+| 4 | Build Auto Count (F13) A, B, C, D, F, E | all six blocks built (D-193, D-194), smoke-tested; Image mode slow (126 s to first results, 454 s a page) | 21:40 | 23:52 | 2 h 12 min |
+| 5 | Overlay | in progress | 23:52 | | |
 | 6 | Auto Trace cache in IndexedDB | to do | | | |
 | 7 | Default dialog width 448 px | to do | | | |
 | F | Fallback: side-by-side differences | to do | | | |
@@ -143,3 +143,10 @@ On the board as F19, Planned.
   - the settings were saved per person, then reset.
 
   Passed; nothing left behind.
+
+**Block E, Image mode (D-194):** legacy's matcher, all 8 angles, a fixed browser-independent
+budget, coarse to fine over a worker pool, progressive passes.
+- **Time per page on E102** (as pixels, 4 angles × 3 scales): **126 s to the first results,
+  454 s for the page.**
+- The speed target is not met. The bench has no scanned set to measure on, which is the
+  first need (Ideas).

@@ -305,4 +305,4 @@ Each is gated, quantity-tabled and smoke-tested.
 - [x] Block C (D-193)
 - [x] Block D (D-193)
 - [x] Block F (D-193)
-- [ ] Block E
+- [x] Block E (D-194): Image mode; measured 126 s to the first pass and 454 s a page on E102 (4 angles × 3 scales); the speed target is not met yet

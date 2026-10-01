@@ -7262,3 +7262,58 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   the dialog, which made 5; Add to the selected item, which made 10; Ctrl+Z gave 5, and Ctrl+Z
   again removed the item; the sensitivity and Overlap allowed were saved per person; Esc
   closed the panel. The settings were put back to the defaults, and no item was left.
+
+---
+
+## D-194 — Auto Count (F13) Block E: Image mode, all 8 angles, measured
+
+**Date:** 2026-10-01
+**Status:** built overnight; choices beyond D-189 are this session's, pending founder review
+**Area:** F13 Auto Count, Image mode; Frontend
+
+- **The matcher is legacy's,** `lib/takeoff/autoCount/imageMatch.ts` and its worker, ported
+  unchanged. The one edit: its error class's constructor parameters are spelled out, which
+  our compiler settings require. It keeps legacy's coverage × precision score with its gates,
+  scale consensus and stroke-resolved raster plan.
+- **The driver is ours** (`features/takeoff/autoCount/imageScan.ts`), leaner than legacy's
+  1,581-line scan:
+  1. **The plan, as legacy's:** the box at 300 DPI, its median stroke measured, the working
+     scale set so the stroke is 3 px, converged on a page-aligned probe of the box. It is
+     carried as pixels per point, so every sheet is read at the same scale.
+  2. **Variants:** every angle searched (Q6: "8" is all eight, not legacy's first four) ×
+     0.95, 1.00, 1.05 (Q7), or 1.00 alone.
+  3. **Each sheet is rendered in bands straight into 1-byte ink.** No full-page canvas is
+     held.
+  4. **A fixed, browser-independent budget (Q4):** a page wider than 16,384 px or larger
+     than 250 M pixels is refused with its size ("…was not searched; pick a symbol with
+     heavier linework"), never scanned smaller. It replaces legacy's per-browser canvas probe
+     and its "provisional" 6.5 GB model. The figures are set to what the bench's Chromium
+     handles; they are a constant, not a measurement per machine.
+  5. **Coarse to fine, per angle (legacy's):** a recall-only shortlist (recall ≥ 0.35,
+     stride 6) on a coarse page where the template is about 48 px, each hit dilated by
+     legacy's tight padding, then the fine pass only there (stride 5 refined to 2). Both run
+     over row bands in a worker pool (legacy's halo rule).
+     - **Beyond legacy:** when the template is already under 48 px, legacy skips the
+       shortlist and scans the whole page at stride 2 (why it was "still scanning at 74 s"
+       live). Ours runs the shortlist on the working page, banded over the pool.
+  6. **Progressive:** each angle's pass publishes when it finishes, 0° first. A later pass
+     only adds (legacy's merge), with "Pass k of N — results below are live" and "Extra
+     orientations still running — they can only add matches." Stop keeps what has
+     published: "Stopped early — n passes completed…".
+- **Measured (Q2's speed target), Hidden Valley E102:** a 2592 × 1728 pt vector sheet read as
+  pixels, 6,480 × 4,320 px working raster, a 45 px template, 4 angles × 3 scales.
+  - First results (the 0° pass) after **126 s**, 6 matches above the bar.
+  - The whole page took **454 s**.
+  - Fine-only, before the shortlist ran on the pool, it took 425 s.
+  - The bench has no scanned sheet, so this is the measurement there is. A real scan's
+    density will differ.
+  - Rotation search 1 or Scale variants 1 cut the time about four or three times.
+  - **The target is not met.** A real speed target needs a scanned set on the bench and a
+    faster fine pass (Ideas).
+- **Not ported:** legacy's canvas governor and memory model (Q4 replaced them with the fixed
+  budget), and its non-opaque-render exclusion (bands are drawn on white).
+- **Proved:**
+  - gates;
+  - the quantity table unchanged (its 8 Auto Count rows are Vector's);
+  - a smoke on E102: Image mode chosen in the panel, the 0° pass published live, Stop kept
+    the results with legacy's wording.
