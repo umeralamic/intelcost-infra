@@ -110,6 +110,7 @@ try {
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
+    const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
@@ -179,6 +180,10 @@ try {
           } else out.ok = r.ok;
         }
         return out;
+      }
+      if (c.kind === "pdfsnap") {
+        const idx = ps.buildPdfSnapIndex(c.segments.map(([ax, ay, bx, by]) => ({ ax, ay, bx, by })), 1000, 1000);
+        return { count: idx.count, isEmpty: idx.isEmpty, aroundSegments: c.around.map(([[x, y], r]) => idx.around({ x, y }, r).segments.length).join(" ") };
       }
       if (c.kind === "trace") {
         // Auto Trace (D-143): pieces, labels and label boxes in, lines out.

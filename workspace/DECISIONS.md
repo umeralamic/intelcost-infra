@@ -5828,3 +5828,38 @@ frame, and a spot that is not a contour label.
 **Where:** app `lib/takeoff/earthwork/trace/infer.ts` (new),
 `features/takeoff/earthwork/trace/useAutoTrace.tsx`, `pages/ProjectTakeoff.tsx`; infra
 `browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.
+
+## D-145 — Snap PDF, as legacy
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour throughout)
+**Area:** Takeoff canvas (F7 follow-on), Frontend
+
+- **What it is.** Points snap to lines printed on the sheet: corners, line ends, crossings,
+  and along a line. It is independent of Snap, which snaps to your own measurements.
+- **Status line.** "Snap PDF: On/Off" sits between Snap and Auto Merge, with legacy's
+  tooltip. A spinner shows while the sheet's lines are read, once per sheet, from the
+  sheet's own copy of its PDF.
+- **Keys.** **D** with a draw tool armed toggles it, in both legacy's places: mid-draw on
+  the canvas and with the tool armed on the page. With no draw tool armed, D stays
+  Dimension (D-99).
+- **Default.** Settings › Snapping sets the default, off. The toggle is remembered in this
+  browser under legacy's key `takeoff.pdfSnap`.
+- **Linework**, as legacy's `pdfSnapGeometry`:
+  - stroked subpaths, plus filled ones of 16 points or fewer; clip paths never;
+  - curves as 4 chords;
+  - segments under 2 pt dropped;
+  - duplicates dropped by ends quantised to 0.25 pt, either way round;
+  - at most 24 segments per 12 pt cell, and 150,000 on the page.
+  A 12 pt grid answers the pen with only what lies around it.
+- **Priority.** Snap's order is unchanged (vertex, midpoint, crossing within one source,
+  edge). Your own measurements come first at every rank, so your own corner beats a
+  printed one.
+- **Toasts** are legacy's:
+  - a scanned sheet: "No lines to snap to on this sheet";
+  - a dense sheet: "Very dense sheet";
+  - a read failure: "Couldn't read this sheet's lines".
+- **Quantity table:** one row for the filters and the index.
+
+**Where:** app `lib/takeoff/engine/pdfSnap.ts` (new), `features/takeoff/snap/pdfSnapLines.ts`
+(new), `takeoff/components/SheetCanvas.tsx`, `pages/ProjectTakeoff.tsx`; infra quantity table.

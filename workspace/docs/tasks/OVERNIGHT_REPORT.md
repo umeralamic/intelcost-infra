@@ -11,8 +11,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 1b | F12 Block G, Auto Trace (improved, per the addition) | done (D-143) | 00:00 | 00:45 | 45 min |
 | 2 | Auto Trace and cut/fill on C-200 | done, cut/fill not computable from C-200 (D-144) | 00:45 | 01:05 | 20 min |
 | 3 | Close F12 in speed mode | **built, awaiting your click check**; spec not archived; PARITY §16 46 ticked; board, backlog, mirror, backup `E:\Intelcost-backup\2026-10-01_0105-f12-built` | 01:05 | 01:08 | 3 min |
-| 4 | Snap PDF | in progress | 01:08 | | |
-| 5 | SPEC: F13 Auto Count draft | | | | |
+| 4 | Snap PDF | done (D-145), smoke-tested | 01:08 | 01:19 | 11 min |
+| 5 | SPEC: F13 Auto Count draft | in progress | 01:19 | | |
 | 6 | F15 Reports, Time Tracking, Shifts | | | | |
 | 7 | SPEC: F14 AI tools and Community drafts | | | | |
 | F | Fallback: side-by-side differences | | | | |

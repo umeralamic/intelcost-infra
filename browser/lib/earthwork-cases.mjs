@@ -625,6 +625,22 @@ export const EARTHWORK_CASES = [
     labels: [{ str: "700", at: [202.5, 440], angle: -1.5295 }],
     expect: { suggested: "700:tie-in" },
   },
+  // --- Snap PDF (legacy's pdfSnapGeometry filters, D-145), page 1000 x 1000 pt ----------
+  // A 1 pt tick is dropped (under 2 pt); a segment drawn twice, once each way, is one; 30
+  // short parallel hatch strokes in one 12 pt cell keep 24; an isolated line stays: 1 + 24 + 1.
+  {
+    id: "pdfsnap-filters",
+    kind: "pdfsnap",
+    segments: [
+      [100, 100, 101, 100],
+      [200, 200, 300, 200],
+      [300, 200, 200, 200],
+      ...Array.from({ length: 30 }, (_, i) => [492 + i * 0.3, 500, 492 + i * 0.3, 503]),
+      [700, 700, 800, 760],
+    ],
+    around: [[[0.25, 0.2], 12], [[0.9, 0.9], 12]],
+    expect: { count: 26, aroundSegments: "1 0", isEmpty: false },
+  },
   // Legacy's TraceIndex: the nearest line within 6 pt is picked, nothing 100 pt away.
   { id: "trace-pick", kind: "trace", pieces: [{ pts: [[100, 100], [400, 130]] }, { pts: [[100, 300], [400, 330]] }], pick: [[250, 118, 6], [250, 215, 6]], expect: { pick: "hit miss" } },
 ];
