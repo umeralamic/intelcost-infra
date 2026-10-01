@@ -13,19 +13,23 @@ import { APP, openBrowser } from "./lib/bench.mjs";
 import { COST_CASES, ENV_ITEMS, ENV_SHEET } from "./lib/cost-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
+import { REGISTER_CASES } from "./lib/register-cases.mjs";
 
 const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-cases.json`, JSON.stringify(CASES));
-  console.log(`GEN ${CASES.length} cases`);
+  await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
+  console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
 
 const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
 let costs;
 let earth;
+let reg;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -100,6 +104,23 @@ try {
       });
     });
   }, [COST_CASES, ENV_ITEMS, ENV_SHEET]);
+  // F18's registration rows: lib/takeoff/earthwork/register.ts (D-188).
+  reg = await page.evaluate(async (cases) => {
+    const r = await import("/src/lib/takeoff/earthwork/register.ts");
+    const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
+    return cases.map((c) => {
+      const pairs = c.pairs.map(([[sx, sy], [tx, ty]]) => ({ source: { x: sx, y: sy }, target: { x: tx, y: ty } }));
+      const f = r.fitRigid(pairs, sc(c.src), sc(c.tgt), { fitScale: Boolean(c.fitScale) });
+      if (!f.ok) return { ok: false, reason: f.reason };
+      const out = { ok: true, rotationDeg: r.rotationDegrees(f.fit.rotation), scale: f.fit.scale, maxResidualFt: Math.max(...f.fit.residualsFt) };
+      if (f.fit.distance) Object.assign(out, { diffPct: f.fit.distance.diffPct, level: f.fit.distance.level });
+      if (c.probe) {
+        const m = r.mapPoint({ x: c.probe[0], y: c.probe[1] }, f.fit, sc(c.src), sc(c.tgt));
+        out.probe = `${+m.x.toFixed(9)},${+m.y.toFixed(9)}`;
+      }
+      return out;
+    });
+  }, REGISTER_CASES);
   // F12's rows: lib/takeoff/earthwork on legacy's hand-worked fixtures (D-136).
   earth = await page.evaluate(async (cases) => {
     const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
@@ -112,6 +133,7 @@ try {
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
     const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
     const ed = await import("/src/lib/takeoff/earthwork/edit.ts");
+    const rg = await import("/src/lib/takeoff/earthwork/register.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -139,6 +161,61 @@ try {
           warnings: r.warnings.map((w) => w.code),
           outside: r.warnings.find((w) => w.code === "points_outside_boundary")?.count ?? 0,
         };
+      }
+      if (c.kind === "regvolume") {
+        // F18: each source's EG mapped onto the target through its pairs, merged, then the
+        // target's Calculate (D-188, D-190).
+        const unit = (side) => ({ feetPerPt: side, widthPt: 1, heightPt: 1 });
+        const labels = labelsOf(c.runs);
+        const mapped = c.sources.map((src, i) => {
+          const pairs = src.pairs.map(([[sx, sy], [tx, ty]]) => ({ source: { x: sx, y: sy }, target: { x: tx, y: ty } }));
+          const f = rg.fitRigid(pairs, unit(src.side), unit(c.side));
+          if (!f.ok) return [];
+          for (const run of src.runs) labels.set(`${run.item}@src${i}`, `src${i} · ${run.label}`);
+          return rg.mapRuns(runsOf(src.runs), f.fit, unit(src.side), unit(c.side), src.offsetFt ?? 0, `src${i}`);
+        });
+        const volumeOf = (runs) => {
+          const boundary = runs.find((r) => r.kind === "boundary");
+          return vol.computeVolumes(
+            { eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary: boundary ? boundary.points : null, calibration: { feetPerNorm: c.side, widthPt: 1, heightPt: 1 }, units: "CY" },
+            runs,
+            labels,
+          );
+        };
+        const r = volumeOf(rg.mergeEg(runsOf(c.runs), mapped));
+        if (r.ok !== true) return { ok: r.ok, message: r.error?.message };
+        const out = { ok: true, cutCY: r.cutCY, fillCY: r.fillCY };
+        if (c.oneSheet) {
+          for (const run of c.oneSheet) labels.set(run.item, run.label);
+          const one = volumeOf(runsOf([...c.runs, ...c.oneSheet]));
+          out.equalsOneSheet = one.ok === true && Math.abs(one.cutCY - r.cutCY) < 0.005 && Math.abs(one.fillCY - r.fillCY) < 0.005;
+        }
+        return out;
+      }
+      if (c.kind === "regaccept") {
+        // Real sheets: page 3's EG through the link onto C-200, with C-200's FG and boundary.
+        const d = c.data;
+        const src = { feetPerPt: 60 / 72, widthPt: 2448, heightPt: 1584 };
+        const tgt = { feetPerPt: 30 / 72, widthPt: 2448, heightPt: 1584 };
+        const pairs = d.pairs.map((pr) => ({ source: { x: pr.source[0], y: pr.source[1] }, target: { x: pr.target[0], y: pr.target[1] } }));
+        const f = rg.fitRigid(pairs, src, tgt);
+        if (!f.ok) return { ok: false, reason: f.reason };
+        const eg = d.eg.map((r, i) => ({ item: "eg", geometry: "eg" + i, version: 1, kind: "contour", surface: "EG", elevation: r.z, points: r.p.map(([x, y]) => ({ x, y })) }));
+        const fg = d.fg.map((r, i) => ({ item: r.kind === "contour" ? "fg" : "fgspots", geometry: "fg" + i, version: 1, kind: r.kind === "contour" ? "contour" : "spot_elevation", surface: "FG", elevation: r.z, points: r.p.map(([x, y]) => ({ x, y })) }));
+        const boundary = d.boundary.map(([x, y]) => ({ x, y }));
+        const runs = [...fg, { item: "b", geometry: "b", version: 1, kind: "boundary", surface: null, elevation: null, points: boundary }, ...rg.mapRuns(eg, f.fit, src, tgt, 0, "p3")];
+        const labels = new Map([["eg@p3", "Page 3 · Existing Ground"], ["fg", "Proposed Grade"], ["fgspots", "FG Spots"], ["b", "Work Boundary"]]);
+        const r = vol.computeVolumes({ eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: { feetPerNorm: tgt.feetPerPt, widthPt: tgt.widthPt, heightPt: tgt.heightPt }, units: "CY" }, runs, labels);
+        if (r.ok !== true) return { ok: r.ok, message: r.error?.message };
+        return { ok: true, cutCY: Math.round(r.cutCY), fillCY: Math.round(r.fillCY), cutVsEngineerPct: Math.round(((r.cutCY - 14263) / 14263) * 1000) / 10, fillVsEngineerPct: Math.round(((r.fillCY - 8727) / 8727) * 1000) / 10 };
+      }
+      if (c.kind === "tiein") {
+        const p = rg.tieInOffset(runsOf(c.eg), runsOf(c.fg), { widthPt: 1000, heightPt: 1000 });
+        return p ?? { none: true };
+      }
+      if (c.kind === "regmatch") {
+        const idx = ps.buildPdfSnapIndex(c.segments.map(([ax, ay, bx, by]) => ({ ax, ay, bx, by })), 1000, 1000);
+        return { score: rg.matchScore(runsOf(c.runs), idx, { widthPt: 1000, heightPt: 1000 }) };
       }
       if (c.kind === "balance") return bal.soilBalance(c.input);
       if (c.kind === "offset") return { areaSF: sf.mpAreaSqFt(sf.offsetNormRingFt(xy(c.ring), c.offsetFt, c.scale), c.scale) };
@@ -315,6 +392,24 @@ for (const [i, c] of COST_CASES.entries()) {
   }
 }
 
+// Registration rows: the browser's fit against the api's, field by field, and both against
+// the hand-worked answer (numbers to 1e-9).
+for (const [i, c] of REGISTER_CASES.entries()) {
+  const api = pythonReg.get(c.id);
+  const web = reg[i];
+  if (!api) disagree.push(`${c.id}: no api answer`);
+  else
+    for (const key of new Set([...Object.keys(api), ...Object.keys(web)])) {
+      const [a, w] = [api[key], web[key]];
+      const equal = typeof a === "number" && typeof w === "number" ? close(a, w) : a === w;
+      if (!equal) disagree.push(`${c.id}.${key}: api ${JSON.stringify(a)}, browser ${JSON.stringify(w)}`);
+    }
+  for (const [field, want] of Object.entries(c.expect)) {
+    const got = web[field];
+    if (typeof want === "number" ? !(typeof got === "number" && close(got, want)) : got !== want) wrong.push(`${c.id}.${field}: ${JSON.stringify(got)}, expected ${JSON.stringify(want)}`);
+  }
+}
+
 // Earthwork rows: each named field against the hand-worked answer (numbers to 1e-9).
 const same = (got, want) =>
   typeof want === "number" ? typeof got === "number" && close(got, want) : JSON.stringify(got) === JSON.stringify(want);
@@ -331,5 +426,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; passed`,
 );

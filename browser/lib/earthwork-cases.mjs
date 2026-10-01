@@ -7,6 +7,11 @@
 // A run is { item, label, kind: "contour" | "spot_elevation" | "boundary", surface, elevation,
 // points: [[x, y], …] } in fractions of the page, elevation in feet.
 
+import { readFileSync } from "node:fs";
+
+/** F18 acceptance inputs, snapshotted from Hidden Valley (page 3 and C-200). */
+const C200 = JSON.parse(readFileSync(new URL("./c200-acceptance.json", import.meta.url), "utf8"));
+
 const c = (item, label, surface, elevation, points) => ({ item, label, kind: "contour", surface, elevation, points });
 const s = (item, label, surface, elevation, x, y) => ({ item, label, kind: "spot_elevation", surface, elevation, points: [[x, y]] });
 const b = (points) => ({ item: "boundary", label: "Work Boundary", kind: "boundary", surface: null, elevation: null, points });
@@ -723,4 +728,107 @@ export const EARTHWORK_CASES = [
   { id: "ewedit-guard-already-crossing", kind: "ewedit", op: "guard", points: [[0, 0], [1, 2]], after: [[0, 0], [1.1, 2]], others: [[[0, 1], [2, 1]]], expect: { refusal: "none" } },
   // A closed boundary moved whole stays clean.
   { id: "ewedit-guard-boundary-move", kind: "ewedit", op: "guard", closed: true, points: [[0, 0], [1, 0], [1, 1], [0, 1]], after: [[0.2, 0.2], [1.2, 0.2], [1.2, 1.2], [0.2, 1.2]], expect: { refusal: "none" } },
+  // --- F18: existing grade read through a registration (D-188, D-190) ------------------
+  // The target sheet is the unit square at 100 ft a side (feet per point 100 on a 1 × 1 pt
+  // page), FG flat 103 inside the unit boundary. EG is the plane z = 100 + 2x + 2y (x, y in
+  // fractions of the target), so cut = ∫ over x + y > 1.5 of (2x + 2y − 3) = 1/24 of a
+  // 100 ft square in ft, and fill − cut = 1: cut 10,000 / 24 / 27, fill 250,000 / 24 / 27 CY.
+  // `oneSheet` draws the same EG on the target itself, and the rows say the two agree.
+  {
+    // One source at 200 ft a side, turned 90°: its feet (20,150) (20,50) (120,50) (120,150)
+    // are the target's corners SW, SE, NE, NW.
+    id: "regvol-turned-plane-equals-one-sheet",
+    kind: "regvolume",
+    side: 100,
+    runs: [...corners("FG", [103, 103, 103, 103]), b(UNIT)],
+    sources: [
+      {
+        side: 200,
+        pairs: [[[0.1, 0.75], [0, 0]], [[0.1, 0.25], [1, 0]], [[0.6, 0.25], [1, 1]], [[0.6, 0.75], [0, 1]]],
+        runs: [s("e1", "EG", "EG", 100, 0.1, 0.75), s("e2", "EG", "EG", 102, 0.1, 0.25), s("e3", "EG", "EG", 104, 0.6, 0.25), s("e4", "EG", "EG", 102, 0.6, 0.75)],
+      },
+    ],
+    oneSheet: corners("EG", [100, 102, 104, 102]),
+    expect: { ok: true, cutCY: 10000 / 24 / 27, fillCY: 250000 / 24 / 27, equalsOneSheet: true },
+  },
+  {
+    // Two sources, each half of the survey: the west half on a sheet at 100 ft a side moved
+    // 0.2 across, the east half on a sheet at 200 ft a side turned 180°. Merged, they are the
+    // one-sheet plane to the cent.
+    id: "regvol-two-sources-merge",
+    kind: "regvolume",
+    side: 100,
+    runs: [...corners("FG", [103, 103, 103, 103]), b(UNIT)],
+    sources: [
+      {
+        side: 100,
+        pairs: [[[0.2, 0], [0, 0]], [[0.7, 0], [0.5, 0]], [[0.7, 1], [0.5, 1]]],
+        runs: [s("w1", "EG", "EG", 100, 0.2, 0), s("w2", "EG", "EG", 101, 0.7, 0), s("w3", "EG", "EG", 103, 0.7, 1), s("w4", "EG", "EG", 102, 0.2, 1)],
+      },
+      {
+        side: 200,
+        pairs: [[[0.35, 0.55], [0.5, 0]], [[0.1, 0.55], [1, 0]], [[0.1, 0.05], [1, 1]]],
+        runs: [s("x1", "EG", "EG", 101, 0.35, 0.55), s("x2", "EG", "EG", 102, 0.1, 0.55), s("x3", "EG", "EG", 104, 0.1, 0.05), s("x4", "EG", "EG", 103, 0.35, 0.05)],
+      },
+    ],
+    oneSheet: corners("EG", [100, 102, 104, 102]),
+    expect: { ok: true, cutCY: 10000 / 24 / 27, fillCY: 250000 / 24 / 27, equalsOneSheet: true },
+  },
+  {
+    // A survey on an assumed datum 2.00 ft under the grading plan's: EG flat 100 + 2 against
+    // FG flat 105 gives 3 ft of fill over the 100 ft square, not 5.
+    id: "regvol-datum-offset-plus-2",
+    kind: "regvolume",
+    side: 100,
+    runs: [...corners("FG", [105, 105, 105, 105]), b(UNIT)],
+    sources: [
+      {
+        side: 100,
+        offsetFt: 2,
+        pairs: [[[0.1, 0], [0, 0]], [[0.6, 0], [0.5, 0]], [[0.6, 1], [0.5, 1]]],
+        runs: [s("d1", "EG", "EG", 100, 0.1, 0), s("d2", "EG", "EG", 100, 1.1, 0), s("d3", "EG", "EG", 100, 1.1, 1), s("d4", "EG", "EG", 100, 0.1, 1)],
+      },
+    ],
+    expect: { ok: true, cutCY: 0, fillCY: 30000 / 27 },
+  },
+  {
+    // Six FG contours, 702 to 707, each ending on the mapped EG contour 2.00 ft lower (EG
+    // verticals at x = 100 … 600 pt): the tie-ins propose +2.00 ft, all six agreeing.
+    id: "regtie-six-propose-plus-2",
+    kind: "tiein",
+    eg: [0, 1, 2, 3, 4, 5].map((i) => c(`eg${i}`, "EG", "EG", 700 + i, [[0.1 * (i + 1), 0.1], [0.1 * (i + 1), 0.9]])),
+    fg: [0, 1, 2, 3, 4, 5].map((i) => c(`fg${i}`, "FG", "FG", 702 + i, [[0.1 * (i + 1), 0.5], [0.1 * (i + 1) + 0.05, 0.5]])),
+    expect: { offsetFt: 2, agree: 6, found: 6 },
+  },
+  {
+    // The match score: one 200 pt contour lying on a printed line, one 10 pt off it: half.
+    id: "regmatch-half-on-the-lines",
+    kind: "regmatch",
+    segments: [[100, 100, 300, 100]],
+    runs: [c("on", "EG", "EG", 700, [[0.1, 0.1], [0.3, 0.1]]), c("off", "EG", "EG", 701, [[0.1, 0.11], [0.3, 0.11]])],
+    expect: { score: 0.5 },
+  },
+  // D-191: a difference triangle with one corner at Δz = 0 and the other two on opposite
+  // sides splits at the zero line. The plane z = 100 + 2x + 2y with spots at the edges'
+  // midpoints too (the (0.5, 1) spot is on FG 103, Δz 0) against FG flat 103: legacy's split
+  // lost that triangle's cut and fill (cut 0, fill 370.37); the answer is the plane's.
+  {
+    id: "vol-zero-corner-split",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [
+      ...corners("FG", [103, 103, 103, 103]),
+      ...[[0, 0], [0.5, 0], [1, 0], [1, 1], [0.5, 1], [0, 1]].map(([x, y], i) => s(`zc${i}`, `zc${i}`, "EG", 100 + 2 * x + 2 * y, x, y)),
+    ],
+    expect: { ok: true, cutCY: 10000 / 24 / 27, fillCY: 250000 / 24 / 27 },
+  },
+  // F18's acceptance on the real sheets (D-188 Q12): Hidden Valley's page 3 (1" = 60', 47
+  // adopted EG contours) linked to C-200 (1" = 30') by four control points, C-200's FG as
+  // adopted (15 contours, 58 spot grades) and its boundary, snapshotted 2026-10-01
+  // (`c200-acceptance.json`). The engineer's table: 14,263 cut and 8,727 fill. This row pins
+  // what our engine computes from those inputs; the gap (cut −35.6 %, fill −11.7 %) is the
+  // inputs', explained in the overnight report: 22 of C-200's 37 FG labels were not adopted
+  // (the pond, parts of the outer ring), and no pavement or pad subgrade is modelled.
+  { id: "regaccept-c200-from-page-3", kind: "regaccept", data: C200, expect: { ok: true, cutCY: 9185, fillCY: 7706, cutVsEngineerPct: -35.6, fillVsEngineerPct: -11.7 } },
 ];
