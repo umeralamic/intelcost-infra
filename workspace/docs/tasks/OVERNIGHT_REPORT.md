@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (16 fixed so far, D-147 to D-161) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (22 fixed so far, D-147 to D-166) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -100,6 +100,12 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 14 | **Bug:** the Highlight ▾ and Note ▾ style carets opened nothing (clipped by the toolbar) | Fixed popover under the caret; legacy's Custom colour | D-159 |
 | 15 | The volume panel's look (from a code comparison: legacy's Calculate would write on live legacy); shape-menu explanations as lines; TIN tips | Legacy's header, stale banner, cells, region block, row colours; tooltips; tips until the first Calculate; a saved box back on screen | D-160 |
 | 16 | Shape menus' header: the item's total (area), none (Linear) | The clicked section's figure, legacy's rounding | D-161 |
+| 17 | Export to Excel: inline pairs, no description, large title | Legacy's line, stacked pairs, small title (Dock's title too) | D-162 |
+| 18 | No dotted tree guides in the Sheets or Takeoff panels (the CSS was there, unused) | Legacy's rails and stubs in both trees | D-163 |
+| 19 | Earthwork row and panel headers: icons 12 px where legacy's shadcn Button draws 16 px | 16 px icons, legacy's spacing, the +/− segment | D-164 |
+| 20 | Small dialog titles: Save as assembly, Edit sub-item, Duplicate item, Name from page region | Legacy's 14 px titles | (D-162) |
+| 21 | Shared equipment's "Add…" ran under the next column | 64 px, as legacy's | D-165 |
+| 22 | **Bug:** Segment, Area and Count stayed in More after a contour was drawn or discarded | Unfold when room frees, not only when the window grows | D-166 |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).

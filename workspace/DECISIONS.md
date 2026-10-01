@@ -6223,7 +6223,8 @@ deviations named)
     is a larger change for the founder.
   - **Our line order and names** (D-136 Q9) and our footnote formula (Q31).
   - **The "(top wins: …)" suffix** on overlap warnings.
-  - **The Calculate dialog's width and native controls.**
+  - **The Calculate dialog's native controls.** Its width was later matched: 512 px, as
+    legacy's, with primary-coloured radios.
 
 ## D-161 — The canvas shape menus headed by the clicked section's figure
 
@@ -6255,6 +6256,8 @@ deviations named)
   by side. Legacy's "Dock — setup" title is also 14 px.
 - **Now as legacy:** Export carries the line, stacks each pair, and uses the Dialog's
   `dense` header (legacy's 14 px title); Dock setup uses it too.
+- **Also:** every other dialog whose legacy title is `text-sm` takes the dense header:
+  Save as assembly, Edit sub-item, Duplicate item, Name from page region.
 
 ## D-163 — Legacy's dotted tree guides in the Sheets and Takeoff panels
 
@@ -6279,3 +6282,48 @@ deviations named)
     - a sheet's items hang on a rail under the sheet's chevron, which replaces the solid
       line.
 - **Left:** nested folders inside the Takeoff panel do not draw their own rails yet.
+
+## D-164 — The earthwork row drawn at legacy's rendered sizes
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback; refines D-147)
+**Area:** Takeoff › Earthwork tab; Frontend
+
+- **What the 2048 × 1050 side-by-side found after D-147:** legacy's row asks for 12 px
+  icons (`h-3 w-3`). But its shadcn `Button` draws every icon at 16 px with an 8 px gap,
+  plus the label's own 4 px, so its buttons are wider than ours were. Its contour
+  direction is one bordered segment of two 14 px buttons, not two separate buttons.
+- **Now:** the row's buttons draw 16 px icons with legacy's 12 px icon-to-label spacing
+  (Contour 76 px wide), and + and − are one bordered segment, the chosen direction filled.
+  At 2048 our row ends where legacy's does.
+- **The same, in the panel headers:** the Sheets, Takeoff and Assemblies headers' buttons
+  (collapse, expand, add, ⋮, folder) draw 16 px icons, as legacy's do; ours were 12 px.
+
+## D-165 — Shared equipment's "Add…" kept to its column
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (a layout fix toward legacy's; the overnight fallback)
+**Area:** Estimating › Shared equipment; Frontend
+
+- **What the side-by-side check found:** the "Extra divisions / scopes" picker in our
+  Shared equipment dialog ran under the Subcontractor field beside it. A native select is
+  as wide as its longest option, and a CSI scope's label is long. Legacy's shows a small
+  "Add…".
+- **Now:** the picker is 64 px wide, as legacy's; its list still shows each option in full.
+
+## D-166 — Toolbar tools come back out of More when the draw group closes
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (a bug fix; the overnight fallback)
+**Area:** Takeoff toolbar; Frontend
+
+- **What the side-by-side check found:** at 1440 px, drawing a contour opens the draw
+  action group, which crowds the toolbar, so Count, Area and Segment fold into More.
+  After the contour was finished or discarded they stayed folded, with room to spare,
+  until the window was resized. The bar only unfolded a tool when the bar grew wider, and
+  the group closing frees room without changing the bar's width.
+- **Now:** each tool's width is kept when it folds. The bar unfolds it once that much
+  room is free after its last control, as well as when it grows. After a discarded contour
+  at 1440, every tool is back.
+- **Left:** legacy shows no draw group while an earthwork contour is drawn; ours shows
+  Properties, Stop and the mode.
