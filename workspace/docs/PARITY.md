@@ -574,7 +574,7 @@ The Collaborator tab, the $9.99 tier. `src/components/takeoff/ReviewMarkupLayer.
 - [ ] Place a cloud, callout, arrow, note or highlight, and select it afterwards. `src/components/takeoff/ReviewMarkupLayer.tsx`, `src/hooks/useReviewMarkups.ts` · **missing**
 - [ ] Move a markup, move a callout leader, move an arrow end, and resize a cloud, by dragging handles. `src/components/takeoff/ReviewMarkupLayer.tsx` · **missing**
 - [ ] Edit callout and note text inline. `src/components/takeoff/ReviewMarkupLayer.tsx`, `NoteLayer.tsx` · **missing**
-- [ ] Delete a markup with Delete or Backspace, and undo it with Ctrl+Z. `src/components/takeoff/ReviewMarkupLayer.tsx` · **missing**
+- [ ] Delete a markup with Delete or Backspace, and undo it with Ctrl+Z. `src/components/takeoff/ReviewMarkupLayer.tsx` · **partial, by decision** (D-183, the founder: Delete deletes the selected markup, and Backspace is undo, never a delete; *smoke-tested (D-70)*)
 - [ ] Change a markup's colour, background colour, opacity and text colour from its own palette. `src/components/takeoff/props/PropertiesPanel.tsx` · **missing**
 - [ ] The always-on properties panel edits the selected markup: colour, fill, opacity, border, line width, line end, head size, font, font size, bold, italic, underline, text colour, text scale, label position, bubble size, and auto-fit or fixed size. `src/components/takeoff/props/PropertiesPanel.tsx` · **missing**
 - [ ] "Scale with zoom" or fixed size, per markup. `src/components/takeoff/props/PropertiesPanel.tsx` · **missing**
@@ -874,7 +874,7 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 - [x] `S` toggles Snap, `D` toggles Snap PDF, `O` toggles Ortho, and these modifier bindings are live only while a Linear or Area tool is armed so they cannot collide with the tool keys elsewhere. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S10: S and O; D-145: D; with no draw tool armed D is Dimension, D-99)
 - [x] `A` mid-draw arms an inline arc segment, claimed before the Area tool binding, and falls back to the tool switch when there is no draft point to arc from. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S27, D-84, 2026-09-28; *smoke-tested (D-70)*)
 - [x] `Enter` finishes the measurement. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
-- [x] `Backspace` removes the last placed point. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
+- [x] `Backspace` removes the last placed point. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S8, `f7-b` step 7) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*. With nothing being drawn it is undo, as legacy's (D-183); *smoke-tested (D-70)*
 - [x] `Escape` cancels in two stages: the first press drops the in-progress run, the second disarms the tool. `.lovable/plan/two-stage-escape-while-measuring-2026-08-23.md` · **ported** (F7-S8, `f7-b` step 7: the first Escape keeps a run with enough points and drops one without, legacy's rule; the second puts the tool down) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [ ] `Alt` is reserved for ortho fine-tuning during a draw and fires no other binding. `src/lib/takeoff/engine/shortcuts.ts` · **partial** (F7-S10: Alt tunes Ortho to 22.5° while drawing and S and O ignore it; not yet driven by a fixture)
 - [ ] Double-click finishes a point-to-point run, the same as Enter. `src/components/takeoff/drawModes.tsx` · **missing**
@@ -883,7 +883,7 @@ typing a name never fires a tool. `src/lib/takeoff/engine/shortcuts.ts`.
 **Selection and editing**
 
 - [x] `Delete` removes the current selection. `src/lib/takeoff/engine/shortcuts.ts` · **ported** (F7-S17, `f7-d` step 4: the selected section, or a count's marks on this sheet; no confirm) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
-- [ ] `Backspace` also deletes a selected markup when not drawing. `src/components/takeoff/ReviewMarkupLayer.tsx`, `NoteLayer.tsx`, `HighlighterLayer.tsx`, `DockLayer.tsx` · **missing**
+- [ ] `Backspace` also deletes a selected markup when not drawing. `src/components/takeoff/ReviewMarkupLayer.tsx`, `NoteLayer.tsx`, `HighlighterLayer.tsx`, `DockLayer.tsx` · **not ported, by decision** (D-183, the founder: with nothing being drawn Backspace is undo, as legacy's canvas `undoPoint`; Delete is the only delete key)
 - [x] `Ctrl+A` selects every markup on the sheet. `.lovable/plan/ctrl-a-select-all-markups-on-the-sheet-2026-09-01.md` · **ported** (F7-S14, `f7-h` step 4) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [x] `Ctrl+Z` undoes and `Ctrl+Shift+Z` redoes, scoped to the current sheet. `src/components/takeoff/Toolbar.tsx`, `src/lib/takeoff/history/sessionHistory.ts` · **ported** (F7-S22, D-71: Ctrl+Y redoes too; mid-run Ctrl+Z takes the last point, mid count session the last mark, as legacy's order; in a text field the keys are the field's; a sheet that does not own the history does nothing) · *smoke-checked (D-68)*
 - [ ] `Escape` closes the open dialog, popover or context menu. `src/components/takeoff/*Dialog.tsx` · **partial** (dialogs close on Escape; there is no canvas-wide handler)

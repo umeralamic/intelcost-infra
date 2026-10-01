@@ -6777,3 +6777,49 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 - **Where:** app `features/takeoff/components/SheetCanvas.tsx` (`snapNear`, `dragSnap`,
   passed to the markup layer as `snap`); `features/takeoff/earthwork/EarthworkLayer.tsx`;
   `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-183 — Backspace is undo when nothing is being drawn; Delete is the only delete key
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; closes D-181's second "Left" point)
+**Area:** Takeoff and Earthwork tabs (F7, F12), every markup layer; Frontend
+
+- **Mid-draw, Backspace is unchanged.** It removes the last point placed, or unwinds an arc
+  being placed. This covers Linear, Area, Segment, Contour, Boundary, a Strip Area outline
+  and a Site Feature.
+- **With nothing being drawn, Backspace is undo,** the same step as Ctrl+Z: a count
+  session's last mark first, then the sheet's history (legacy's `undoPoint`, then
+  `buttonUndo`). It never deletes a selection.
+- **Delete is the only delete key.** It deletes the selected section, a count item's marks
+  on the sheet, an earthwork run, or the selected markup.
+- **Where Backspace was handled, and what changed:**
+  - `pages/ProjectTakeoff.tsx`, the delete-key handler: it took Backspace as Delete; now
+    Delete only. The undo handler now takes Backspace.
+  - `features/takeoff/markup/MarkupLayer.tsx`: it deleted the selected note, highlight,
+    cloud, callout, arrow or dock (legacy's markup layers still do). Now Delete only, by this
+    decision.
+  - `features/takeoff/components/SheetCanvas.tsx`: the mid-draw point and the arc;
+    unchanged.
+- **In a text field Backspace is the field's,** as before.
+- **Not on the Estimating tab.** Ours does not handle Backspace there. Legacy's Backspace
+  there only reaches the sheet history, which Estimating does not own, so it does nothing.
+- **Found while proving this, and fixed: two undos of one shape asked a false question.**
+  - Edit a shape twice, then undo twice. The second undo was refused by the api (409), and
+    the page asked "Undo will affect this item / <you> also edited this since then". That
+    happened for any shape, Linear, Area or earthwork.
+  - Cause: the history never told its older steps the version the newer undo wrote, so
+    the older step still sent the shape's old version.
+  - Now every undo and redo carries the versions it wrote to every other step on the same
+    shape (`useSessionHistory.ts`, `restamp`). A colleague's real edit is still asked
+    about, as before (D-32).
+- **Proved:**
+  - Contour, edited twice: two Backspaces undid both with no question, Ctrl+Shift+Z twice
+    redid both, and Ctrl+Z twice undid them again.
+  - Delete removed the selected contour, and its item with it; Backspace brought both back.
+  - A Linear run, selected: Backspace undid its drag and kept the run.
+  - A highlight, moved and still selected: Backspace undid the move and kept it. Delete
+    asked "Delete highlight?".
+- **Where:** app `pages/ProjectTakeoff.tsx`, `features/takeoff/markup/MarkupLayer.tsx`,
+  `features/takeoff/hooks/useSessionHistory.ts`.
