@@ -310,6 +310,15 @@ export const EARTHWORK_CASES = [
   { id: "bal-shrink-unsuitable-surplus", kind: "balance", input: { cut: 300, fill: 20, reuseBank: 50, suitable: false, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: (300 + 25 / 0.9) * 1.25, importLoose: null } },
   // suitable, C 100 F 90: 100 x 0.9 = 90 fills 90 exactly: neither line (legacy, unshrunk, would export 12.5).
   { id: "bal-shrink-exact-balance", kind: "balance", input: { cut: 100, fill: 90, reuseBank: 0, suitable: true, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: null, importLoose: null } },
+  // The C-200 engineer's table (Hidden Valley, founder's benchmark, D-142): excavation 14,263,
+  // embankment 8,727, "shrink 1.10" (1.10 bank per compacted), swell 1.15. In our measure a
+  // bank CY compacts to s = 1 / 1.10, so the embankment needs 8,727 x 1.10 = 9,599.7 bank and
+  // the surplus is 14,263 - 9,599.7 = 4,663.3 bank, 4,663.3 x 1.15 = 5,362.795 loose. (The
+  // table's 6,803 subtracts that bank figure from the excavation's loose 16,402.45.)
+  { id: "bal-c200-engineer", kind: "balance", input: { cut: 14263, fill: 8727, reuseBank: 0, suitable: true, swell: 1.15, shrink: 1 / 1.1 }, expect: { exportLoose: (14263 - 8727 * 1.1) * 1.15, importLoose: null } },
+  // The same table typed as printed (shrink 1.10 into our bank-to-compacted field): the
+  // cut is taken to grow, net = 14,263 x 1.1 - 8,727 = 6,962.3 compacted, / 1.1 x 1.15.
+  { id: "bal-c200-as-printed", kind: "balance", input: { cut: 14263, fill: 8727, reuseBank: 0, suitable: true, swell: 1.15, shrink: 1.1 }, expect: { exportLoose: ((14263 * 1.1 - 8727) / 1.1) * 1.15, importLoose: null } },
   // --- Site Features (F12 Block D; legacy's siteFeatures.test.ts, and D-136 Q6, Q7) --------
   // A 10 x 20 ft rectangle on a 200 x 100 pt page at 1 ft/pt, pushed out 2 ft with square
   // corners: 14 x 24 = 336 SF (the x and y scales apart).
@@ -492,6 +501,48 @@ export const EARTHWORK_CASES = [
       "prep:pad": 9.290304,
       "prep:pad:unit": "M²",
       "prep:pad:name": "Prepare Subgrade (15.2cm, 1 lift) — Pad",
+    },
+  },
+  // --- Block F (D-142): what the api writes, in Q32's order -------------------------------
+  // Two strips (stockpiled, re-used as topsoil), a crushed-stone undercut stockpiled, two
+  // regions, not suitable: every cut exported, every fill imported. Strip 100 CY x 1.25 =
+  // 125 LCY stockpiled; topsoil 40 BCY as is; undercut 270 CF = 10 BCY, 12.5 LCY stockpiled,
+  // 10 CCY of "Crushed Stone" (31.05.04 on the api); export (60 + 40) x 1.25 = 125; import
+  // (30 + 50) x 1.25 = 100.
+  {
+    id: "lines-block-f-order",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [
+        { id: "park", label: "Parking", cutCY: 60, fillCY: 30 },
+        { id: null, label: "Remainder", cutCY: 40, fillCY: 50 },
+      ],
+      stripAreas: [
+        { id: "s1", label: "S1", depthFt: 0.5, areaSF: 5400, volumeCY: 100 },
+        { id: "s2", label: "S2", depthFt: 4 / 12, areaSF: 3240, volumeCY: 40 },
+      ],
+      stripMeta: [
+        { id: "s1", name: "North", disposition: "stockpile", reuseKind: null },
+        { id: "s2", name: "Lawn", disposition: "reuse", reuseKind: "topsoil" },
+      ],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 135, volumeCF: 270, material: "Crushed Stone #57", disposition: "stockpile" }, prep: null }],
+      assumptions: { suitable: false, fillType: "Select Borrow", swell: 1.25, shrink: 1 },
+    },
+    expect: {
+      roles: "strip:s1 strip_stockpile:s1 strip:s2 strip_reuse_topsoil:s2 undercut:pad undercut_stockpile:pad undercut_replace:pad cut:park fill:park cut:remainder fill:remainder soil_export:__soil_export__ soil_import:__soil_import__",
+      "strip_stockpile:s1": 125,
+      "strip_stockpile:s1:name": "Strip Topsoil — North → Stockpile on Site (loose)",
+      "strip_reuse_topsoil:s2": 40,
+      "strip_reuse_topsoil:s2:unit": "BCY",
+      "strip:s2:name": 'Strip Topsoil (4") — Lawn (bank)',
+      "undercut_stockpile:pad": 12.5,
+      "undercut_replace:pad:name": "Undercut Replacement Fill: Crushed Stone #57 — Pad (compacted in place)",
+      "cut:park:name": "Parking Cut",
+      "fill:remainder:name": "Remaining Site Fill",
+      "soil_export:__soil_export__": 125,
+      "soil_import:__soil_import__": 100,
+      "soil_import:__soil_import__:name": "Soil Import — Select Borrow",
     },
   },
 ];

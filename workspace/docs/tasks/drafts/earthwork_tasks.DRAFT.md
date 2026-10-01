@@ -614,5 +614,5 @@ Each with legacy's behaviour today and my recommendation. None is decided.
 - [x] Block C, cut and fill, the assumptions, the panel (D-139): legacy's volume engine, Q30 and Q31, the per-sheet result and its content key, the panel and the isochore; 31 more quantity-table rows.
 - [x] Block D, Site Features (D-140): the dialog (depth required, Q7), Draw, Make Site Feature in one call, properties with undo, the undercut and prep (drawn last wins, Q6), the lines builder and the panel showing them (Q9); 10 quantity-table rows.
 - [x] Block E, Strip Areas (D-141): the window, Create and Draw, the table and api with the Site Feature trigger, the pieces drawn as Calculate strips them (Q20), rows and menu, Hide saved (Q19), undo with delete (Q17), the prompt on own deletes (Q18), Site Feature deletes naming strips (Q22); 4 quantity-table rows.
-- [ ] Block F (the CSI mapping table goes to the founder first, Q12).
+- [x] Block F, the estimate lines (D-142): the founder's CSI mapping with 31.04.07 Import Borrow and 31.04.08 Export / Disposal, the lines written with the result in one call, stale marks, the four units, Q32's order; 3 quantity-table rows (the C-200 engineer's table two ways).
 - [ ] Block G, Auto Trace.

@@ -5614,3 +5614,53 @@ migration `2a40e224cbfd`, `takeoff/service.py` (the folder lock), `main.py`,
 `takeoff/earthwork/{useVolumes,api}`, `takeoff/components/QuantityPanel.tsx`
 (`extraFolderRows`), `drawing/realtime.ts`, `pages/ProjectTakeoff.tsx`; infra
 `browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.
+
+## D-142 — F12 Block F: the estimate lines and the CSI mapping
+
+**Date:** 2026-10-01
+**Status:** CSI mapping decided by the founder (2026-09-30, Q12). The other points were
+decided overnight and are pending founder review.
+**Area:** Earthwork (F12), Api, Frontend, Estimating
+
+- **CSI, founder's decision.** The CSI template gains two nodes under 31.04 Excavation &
+  Backfill: **31.04.07 Import Borrow** and **31.04.08 Export / Disposal**. A migration adds them
+  to every workspace whose CSI tree is already seeded, unless it already uses the code. 31.03.04
+  and 31.03.05 are not used. Each role maps as follows:
+
+  | Role | Node |
+  |---|---|
+  | cut | 31.04.01 Mass Excavation |
+  | fill | 31.04.04 Backfill & Compaction |
+  | soil_import | 31.04.07 Import Borrow (new) |
+  | soil_export | 31.04.08 Export / Disposal (new) |
+  | strip, strip_stockpile, strip_reuse_topsoil | 31.01.04 Topsoil Strip & Stockpile |
+  | strip_haul, undercut_haul | 31.04.08 Export / Disposal (every haul-off line) |
+  | strip_reuse_fill, undercut_reuse_fill | 31.04.04 Backfill & Compaction |
+  | undercut, undercut_stockpile | 31.05.03 Undercut & Replace |
+  | undercut_replace | 31.05.03, or 31.05.04 Aggregate Base when the material names "aggregate" or "crushed stone" (legacy's) |
+  | prep | 31.05.02 Subgrade Proof Roll & Compaction |
+
+  If a node is missing or archived, or the project uses another system, the line falls back to
+  the earthwork scope, as legacy does: 31.03 Grading under DIV 31, G1030, 8.1, 5.02 or E.04.
+- **One write, decided overnight.** `PUT …/earthwork/result/{sheet}` takes the sheet's lines with
+  its result and applies both in one transaction (F12-F2). Each line is written as an
+  `earthwork_computed` item keyed on `(sheet, earthwork_region_id, earthwork_role)`, with a
+  unique partial index on that key.
+  - **Update:** an update keeps the row's id and layer (Q16). It patches name, unit, quantity,
+    folder, classification and position, and sets `is_stale` false.
+  - **Insert:** an insert takes the active layer (Q16) and colour `#8B5E3C`.
+  - **Retire:** a row whose key is not in this Calculate's set is deleted. Only a successful
+    Calculate writes, so a failed one retires nothing.
+  - **Folder:** legacy's, one folder for all the lines: the division root › the scope folder,
+    found or made through `file_under` on the scope node.
+  - **Order:** the item's position is its place in Q32's list, so Estimating orders them as
+    the panel does (F12-F4).
+- **Stale, decided overnight (Q10).** When the open sheet's content key moves away from the
+  key it was computed at, the app marks that sheet's lines stale: `POST …/result/{sheet}/stale`
+  sets the flag, and it is idempotent. The existing stale triangle shows on the Takeoff rows
+  and in Estimating. A failed Calculate leaves the flag set.
+- **The api never re-measures a computed line, decided overnight.** Such a line has no shape,
+  so `recompute_item` would zero it. It is skipped, and its name and unit are the engine's.
+  Shape writes on a computed line are refused.
+- **Units (Q11).** `BCY`, `LCY`, `CCY`, `BCM`, `LCM` and `CCM` are added to the unit registry
+  (F12-F3).
