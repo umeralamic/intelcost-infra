@@ -5863,3 +5863,60 @@ frame, and a spot that is not a contour label.
 
 **Where:** app `lib/takeoff/engine/pdfSnap.ts` (new), `features/takeoff/snap/pdfSnapLines.ts`
 (new), `takeoff/components/SheetCanvas.tsx`, `pages/ProjectTakeoff.tsx`; infra quantity table.
+
+## D-146 — F15 first slice: Reports, Time Tracking, Shifts and the members' Shift column, as legacy
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour, with the
+deviations named)
+**Area:** Workspace settings, Reports, Takeoff header; Api, Frontend
+
+- **Shifts (Settings › Shifts).** Legacy's templates:
+  - Each has a name, an IANA timezone, start and end wall times (a shift crossing midnight
+    belongs to the day it starts), break minutes and working days.
+  - The table shows the hours in the shift's zone and in yours, paid hours, days, break and
+    member count.
+  - "New shift" and edit open legacy's dialog with its preview.
+  - Deleting a shift that members hold asks where they go ("Unscheduled" or another
+    shift).
+  - Role defaults: a member who joins with that role starts on that shift.
+  - Owners and admins edit; everyone else reads.
+  - Shifts never gate access or enforce clock-in. `workspace.shifts.changed` in realtime.
+- **The members' Shift column (Settings › Members).** It shows when a shift exists or the
+  viewer can manage shifts. Admins pick from "Unscheduled" and the shifts; others read
+  "{name} · {hours}". This closes PARITY §2's members line.
+- **Time Tracking (Settings › Time Tracking)**, legacy's five cards and words:
+  - what is tracked (app use, comparison with the shift schedule, manual clock in and out);
+  - the idle threshold (1–120 minutes);
+  - who sees the time reports (admins only, members see their own, anyone in the
+    workspace);
+  - who sees AI usage;
+  - retention (1–60 months).
+  "Save time settings" is for owners and admins only.
+- **Tracking**, legacy's `useWorkTracking`:
+  - one session per person, project and open tab, written by a heartbeat each minute;
+  - a minute is active when input landed within the idle threshold and the tab was visible;
+  - closed after 15 minutes hidden, or when the page goes;
+  - the role frozen at start.
+  - The manual "Clock in" chip in the takeoff header shows when manual tracking is on. While
+    it runs it replaces the automatic session, so a minute is never counted twice.
+  - Sessions are written only by their owner, through the api.
+- **Reports (`/reports`)**, legacy's layout:
+  - "Time & Activities" has sub-tabs Per Estimator, Per Project, Takeoff Progress and
+    Activity. "AI Usage" is the second tab.
+  - Range presets: Today, Yesterday, Last week, This month, Last month, Custom range.
+  - The time table shows Role, Shift time, Start, End, Tracked, Active, and Idle with
+    legacy's tooltip "No input — may include drawing review". Rows expand to their
+    children. There is a Total row and an Excel export.
+  - Takeoff Progress shows sheets, calibrated with %, items, measured with %, last activity,
+    and an export.
+  - **Visibility is enforced by the api**, not just hidden: under "Admins only" or "Members
+    see their own", a non-admin's time report holds only their own rows. A member under
+    "Admins only" sees no Per Estimator or Per Project tab (legacy's).
+- **Deviations, decided overnight:**
+  - **AI Usage has no data yet** (F14 is not built). The tab shows its visibility rule and
+    "No AI usage yet".
+  - **The daily rollup is not built.** Raw sessions are kept and reports read them; the
+    retention setting is stored, and compaction comes with a scheduled job when volume
+    asks for it.
+  - **The Activity sub-tab** reuses Settings › Activity's feed.
