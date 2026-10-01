@@ -6489,6 +6489,7 @@ deviations named)
 - **Now:** the Settings slider is a native range drawn so (class `.ic-range` in `index.css`,
   its fill from a `--fill` percentage), from tokens. Other ranges in the app are
   unchanged.
+- **Also:** legacy's rule under the hover-highlight group in Settings › Hover.
 
 ## D-176 — Small dialogs keep a tight footer
 

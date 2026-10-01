@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (36 fixed so far, D-147 to D-176) | 02:10 | | |
+| F | Fallback: side-by-side differences | done: 36 differences fixed (D-147 to D-176), the rest listed with reasons | 02:10 | 10:12 | 8 h (interleaved with 7 until 02:26) |
 
 ## Notes as they happen
 
@@ -186,18 +186,18 @@ system (CSI: DIV 31 › 31.03 Grading) and coded:
 
 ## Commits (all on `umer-dev`, pushed)
 
-- **intelcost-app-react, 34:**
+- **intelcost-app-react, 45:**
   - `ae71fb1` Block F;
   - `1df05ae` and `1ee84c4` Block G;
   - `9b5b124` Snap PDF;
   - `e2e9adc` F15;
-  - `c907b2d` through `f96d913`, the fallback (D-147 to D-170), one commit per fix.
+  - `c907b2d` through `ba310bf`, the fallback (D-147 to D-176), one commit per fix.
 - **intelcost-app-fastapi, 4:**
   - `e7390c2` Block F;
   - `d10207c` F15;
   - `5c7ecd5` the earthwork guard on Convert to rough;
   - `1c6900a` `has_sheets`.
-- **intelcost-infra, 16:** the quantity-table rows (`70ac88d`, `1b5529a`, `920da0a`,
+- **intelcost-infra, 23:** the quantity-table rows (`70ac88d`, `1b5529a`, `920da0a`,
   `a63684c`) and the workspace mirror after every block.
 
 `git log --since=2026-09-30T23:30Z` in each repo lists them.
