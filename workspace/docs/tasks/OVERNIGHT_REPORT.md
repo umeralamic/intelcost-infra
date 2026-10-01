@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (26 fixed so far, D-147 to D-169) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (29 fixed so far, D-147 to D-171) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -110,6 +110,9 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 24 | Calculate dialog 384 px; legacy 512 | 512 px | (D-160) |
 | 25 | Sheets selection menu: headings, folders inline, no glyphs, no naming entry | Legacy's header, glyphs, Move selected to ▸, Name selected from page region… | D-168 |
 | 26 | Takeoff bulk menu: folders and layers inline, one Delete, no Duplicate | Duplicate n items, Move ▸ flyouts, Delete on this sheet only, Delete everywhere… | D-169 |
+| 27 | Estimating's header menu: no label, a dot | "Main header", snowflakes, ✓ | D-170 |
+| 28 | Takeoff panel's New folder opened a dialog; legacy names it in place | The inline "Folder name" row, root and sub-folder | D-171 |
+| 29 | The Sheets "+" menu opened rightward over the canvas | End-aligned at the button | (D-155) |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).
@@ -217,6 +220,7 @@ system (CSI: DIV 31 › 31.03 Grading) and coded:
 | D-167 | The Open dialog's two tabs (api: `has_sheets`) |
 | D-169 | The Takeoff bulk menu |
 | D-170 | Estimating's header menu |
+| D-171 | New folder named in place in the Takeoff panel |
 
 ## Questions for you
 
@@ -275,9 +279,14 @@ layers and provenance; debug strip; the unbuilt backlog.
   "never asked" after each check.
 - **Still waiting on you from the previous night:** the SF 3 restore script awaits
   "restore".
-- **An empty Takeoff-panel folder made through the api did not show in the panel** during a
-  check. It was removed straight after, and the cause was not investigated: it may be
-  legacy's "hide empty folders" or a refresh.
+- **An empty Takeoff-panel folder made by a raw api call did not show** during a check.
+  Not a bug:
+  - empty folders render;
+  - the api announces `takeoff.folder.changed`, which other tabs read;
+  - the tab that acts refreshes from its own UI action, and a raw call made outside the UI
+    gives it none.
+
+  The folder was removed straight after.
 
 ## Ideas
 

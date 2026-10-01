@@ -6099,7 +6099,7 @@ deviations named)
     - Collapse All, which sets it to None;
     - Sheet naming › Name from page region… (all pages);
     - Page layout › Rotate Pages… with its glyph;
-    - opened end-aligned (`MenuAnchor.alignEnd`).
+    - opened end-aligned (`MenuAnchor.alignEnd`), as the "+" menu now is too.
   - **The item ⋮:** no Site Feature row. It stays on the right-click menu (D-149), the
     canvas, and the Sheets panel's item menu.
 - **Auto-Name Sheets** waits for F14.
@@ -6403,3 +6403,16 @@ deviations named)
   snowflake glyph, and a ✓ on the one in force, which is greyed.
 - **Ours:** the two rows with an orange dot on the current one.
 - **Now as legacy.**
+
+## D-171 — The Takeoff panel names a new folder in place, as legacy
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Takeoff panel, New folder and Add sub-folder; Frontend
+
+- **What the side-by-side check found:** legacy's New folder (`NewFolderInline`) puts a
+  "Folder name" field in the tree: at the top for New folder, under the folder for Add
+  sub-folder. Enter or leaving the field makes it; an empty name or Escape drops it. Ours
+  opened a "New folder" dialog.
+- **Now as legacy:** the inline row, with its folder glyph. Add sub-folder opens its
+  parent first.
