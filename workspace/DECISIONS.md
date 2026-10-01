@@ -6061,3 +6061,57 @@ deviations named)
 - **Now:** menu rows are 12 px, and a disabled row's reason is 11 px. Padding, width, glyphs
   and headings are unchanged. Our canvas menu now matches legacy's row for row at
   1440 × 900.
+
+## D-154 — A menu opened inside the toolbar keeps its own sizes
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Takeoff toolbar's Scale menu; Frontend
+
+- **What the side-by-side check found:** legacy's Scale menu lists its scales in 24 px rows
+  with 14 px glyphs. Ours were 48 px rows with 24 px glyphs, so the list showed six scales
+  where legacy's shows twelve.
+- **The cause:** the toolbar's sizing rules (`.ic-toolbar-icons button`, from Settings ›
+  Toolbar) reach every button and icon inside the row, including the Scale menu, which
+  opens inside it. Legacy's menus open in a portal, outside the row.
+- **Now:** both copies of the rule in `index.css` skip buttons inside a `[role="menu"]`.
+  The Scale menu's rows measure 24 px at 12 px; the toolbar's own buttons are unchanged
+  (48 px, 24 px icons at the default size).
+
+## D-155 — The Sheets panel ⋮ and the item ⋮ as legacy's
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Sheets panel, Takeoff panel; Frontend
+
+- **What the side-by-side check found:**
+  - **The Sheets panel's ⋮.** Legacy's (`SheetTree` panel options) puts Default Expand
+    Level in a flyout, marks what is on with a tick or a dot before the label, and has
+    Expand All, Collapse All and a "Sheet naming" group ("Name from page region…").
+    It opens leftward from the ⋮. Ours listed the levels inline under headings, marked
+    them with a trailing "✓", lacked those entries, and opened rightward over the canvas.
+  - **An item's ⋮** (`ItemRowShared` More actions). Legacy's carries no "Make Site
+    Feature"; that lives on its right-click and the canvas. Ours led with it.
+- **Now as legacy:**
+  - **Panel options:**
+    - the flyout, the ticks and dots;
+    - Expand All, which sets the level to Page > Takeoff, or Page with Takeoffs hidden;
+    - Collapse All, which sets it to None;
+    - Sheet naming › Name from page region… (all pages);
+    - Page layout › Rotate Pages… with its glyph;
+    - opened end-aligned (`MenuAnchor.alignEnd`).
+  - **The item ⋮:** no Site Feature row. It stays on the right-click menu (D-149), the
+    canvas, and the Sheets panel's item menu.
+- **Auto-Name Sheets** waits for F14.
+
+## D-156 — Draw-mode hints at legacy's 9 px, wrapping
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** The toolbar's draw-mode menus (Linear, Area, Highlight, Note); Frontend
+
+- **What the side-by-side check found:** legacy's mode menus (`drawModes.tsx`) set each
+  mode's hint at 9 px and wrap it, so the menu is about 190 px wide. Ours set the hint at
+  11 px on one line, about 350 px wide, reaching over the canvas.
+- **Now:** hints are 9 px and wrap at 9.5 rem; the Linear menu measures about 230 px.
+  Labels, glyphs and the current mode's dot are unchanged.
