@@ -6352,3 +6352,43 @@ deviations named)
     its files load (F5).
 - **Not taken:** legacy's new-project form and upload inside the dialog. The dashboard and
   the empty takeoff already do both.
+
+## D-168 — The Sheets panel's selection menu as legacy's
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Sheets panel, right-click on a selection of sheets; Frontend
+
+- **What the side-by-side check found:** legacy's menu for several selected sheets has:
+  - a plain "2 sheets selected" header;
+  - Print, Duplicate, "Move selected to ▸" as a flyout of folders, Auto-Name Sheets
+    (selected), "Name selected from page region…", Bookmark selected, Remove bookmark from
+    selected;
+  - under a rule, Clear selection and Delete selected pages;
+  - a glyph on every row.
+
+  Ours grouped them under small-caps headings, listed every folder inline, had no glyphs
+  and had no naming entry.
+- **Now as legacy:** all of the above. "Name selected from page region…" opens the naming
+  dialog on "Current selection (N)" (D-151). Auto-Name waits for F14.
+
+## D-169 — The Takeoff panel's bulk menu as legacy's: Duplicate, flyouts, two deletes
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Takeoff panel, right-click on a selection of items; Frontend
+
+- **What the side-by-side check found:** legacy's menu for several selected items
+  (`QuantityTable`) has, under "n items selected":
+  - Duplicate n items;
+  - Move to folder ▸ and Move to layer ▸ (the latter with more than one layer);
+  - under a rule, "Delete on this sheet only" (greyed with "None of the selected items are
+    marked on this sheet" when so) and "Delete everywhere…".
+
+  Ours listed every folder and layer inline under headings and had one Delete.
+- **Now as legacy:**
+  - **Duplicate** copies each item as "{name} (copy)", with its sub-items when it has any,
+    keeping its classification, in a new colour. "Duplicated n items" follows.
+  - **Delete on this sheet only** removes the selection's shapes on the open sheet through
+    the canvas's own delete, with its undo.
+  - **Delete everywhere…** keeps our confirm, which names what goes.

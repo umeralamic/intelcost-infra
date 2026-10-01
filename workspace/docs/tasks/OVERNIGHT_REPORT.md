@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (22 fixed so far, D-147 to D-166) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (26 fixed so far, D-147 to D-169) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -105,7 +105,11 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 19 | Earthwork row and panel headers: icons 12 px where legacy's shadcn Button draws 16 px | 16 px icons, legacy's spacing, the +/− segment | D-164 |
 | 20 | Small dialog titles: Save as assembly, Edit sub-item, Duplicate item, Name from page region | Legacy's 14 px titles | (D-162) |
 | 21 | Shared equipment's "Add…" ran under the next column | 64 px, as legacy's | D-165 |
-| 22 | **Bug:** Segment, Area and Count stayed in More after a contour was drawn or discarded | Unfold when room frees, not only when the window grows | D-166 |
+| 22 | **Bug:** Segment, Area and Count stayed in More after a contour was drawn or discarded; a draw group showed for earthwork tools (legacy's has none) | Unfold when room frees; no draw group for Contour, Spot, Boundary | D-166 |
+| 23 | Open dialog: one unsorted list (its drawings filter read a field the list lacks); legacy has two tabs, by name, Close | Legacy's tabs over the api's new `has_sheets`; PARITY line partial | D-167 |
+| 24 | Calculate dialog 384 px; legacy 512 | 512 px | (D-160) |
+| 25 | Sheets selection menu: headings, folders inline, no glyphs, no naming entry | Legacy's header, glyphs, Move selected to ▸, Name selected from page region… | D-168 |
+| 26 | Takeoff bulk menu: folders and layers inline, one Delete, no Duplicate | Duplicate n items, Move ▸ flyouts, Delete on this sheet only, Delete everywhere… | D-169 |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).
