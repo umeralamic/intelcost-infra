@@ -6929,3 +6929,30 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - With Earthwork's Snap off (Takeoff's on), a contour vertex dragged 3 px from a Linear
     point stayed free. With Earthwork's Snap on, it landed on the point exactly.
   - After a reload, Earthwork was all off and Takeoff's Snap PDF was still on.
+
+---
+
+## D-187 — On the Earthwork tab, Ortho applies to Contour and Boundary when it is on
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; amends D-186 and D-181)
+**Area:** Earthwork (F12) tab, Contour and Boundary drawing; Frontend
+
+- **Ortho, once switched on in Earthwork, bends Contour and Boundary points as it does
+  Linear's:**
+  - 45° steps from the last placed point, 22.5° with Alt held;
+  - only within the tolerance set in Settings › Snapping (D-79);
+  - with Snap on, a snap point near the cursor still wins over Ortho. Ortho bends the point
+    first, then the snap takes it.
+- **Not legacy's.** Legacy's earthwork tools bypass Ortho; D-181 had copied that, and this
+  decision ends it.
+- **Ortho still starts off on the Earthwork tab (D-186),** so contours are free by default.
+- **Where:** app `pages/ProjectTakeoff.tsx`: the canvas gets the Earthwork tab's Ortho as
+  it is, no longer switched off while an earthwork tool is armed.
+- **Proved:** on C-200's Earthwork tab, which loaded with all three toggles off:
+  - with Ortho off, a contour kept its 12 px slant;
+  - with Ortho on, a contour went level and kept its length;
+  - with Alt held, the second point sat at exactly 22.5°;
+  - with Snap on as well, a point near the contour's own first point took that point
+    exactly, not Ortho's line;
+  - a Boundary drawn with Ortho on came out with square corners.
