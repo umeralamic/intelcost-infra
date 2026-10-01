@@ -6102,8 +6102,8 @@ deviations named)
     - Sheet naming › Name from page region… (all pages);
     - Page layout › Rotate Pages… with its glyph;
     - opened end-aligned (`MenuAnchor.alignEnd`), as the "+" menu now is too.
-  - **The item ⋮:** no Site Feature row. It stays on the right-click menu (D-149), the
-    canvas, and the Sheets panel's item menu.
+  - **The item ⋮, in either panel:** no Site Feature row. It stays on the right-click
+    menu (D-149) and the canvas.
 - **Auto-Name Sheets** waits for F14.
 
 ## D-156 — Draw-mode hints at legacy's 9 px, wrapping
@@ -6428,3 +6428,23 @@ deviations named)
 - **What the side-by-side check found:** legacy's Settings switches are shadcn's, 44 × 24
   with a 20 px thumb; ours were 36 × 20. Every section's layout and words otherwise match.
 - **Now:** 44 × 24, thumb 20 px.
+
+## D-173 — The move handle as legacy's, with its chip
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Takeoff canvas, a selected Linear or Area section; Frontend
+
+- **What the side-by-side check found:** legacy's move handle is filled in the primary
+  colour, ringed in white, with a white glyph. While the pointer rests on it, a chip above
+  names what will move:
+  - "{item} — {this section's figure}", or "Deduct — …" in amber on a deduct;
+  - the figure whole at 100 and over, else one place.
+
+  Ours was a white disc ringed in the selection blue, with the item's whole quantity in a
+  slow browser tooltip.
+- **Now as legacy:**
+  - the primary disc, ringed in the page colour (a token);
+  - the chip on hover, with the section's figure, as the shape menus' header (D-161).
+- Its size and placement stay ours (the founder's round 3 B7: inside an area's widest part,
+  out of its deducts; 18 to 28 px as the page fills the canvas).
