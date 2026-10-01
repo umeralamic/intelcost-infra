@@ -6895,3 +6895,37 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
     on, the handle (the run's middle) landed on the other run's first point.
   - A selected contour dragged whole: with Snap on, its grabbed point landed exactly on
     the Linear run's end point; with Snap off, it moved by exactly the cursor's travel.
+
+---
+
+## D-186 — The Earthwork tab keeps its own Snap, Snap PDF and Ortho, all off to start
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session)
+**Area:** Earthwork (F12) tab, the canvas status line; Frontend
+
+- **On the Earthwork tab, Snap, Snap PDF and Ortho all start off.** Any of them can be
+  turned on there, by the status line or by the S, D and O keys, and then works as usual.
+- **Each tab keeps its own three toggles.** Takeoff (and Collaborator, the same canvas)
+  keeps one set and Earthwork keeps another. Switching back to a tab shows its toggles
+  exactly as they were left there.
+- **Kept as Takeoff's are kept today:**
+  - Snap and Ortho last for the session. Takeoff's start from Settings › Snapping and
+    Earthwork's start off, at every page load.
+  - Snap PDF is remembered in this browser: Takeoff's under legacy's `takeoff.pdfSnap`,
+    Earthwork's under its own `takeoff.pdfSnap.earthwork`. Earthwork's is off until it
+    is first turned on there.
+- **Legacy keeps one set for every tab;** this split is the founder's.
+- **Unchanged:** Contour and Boundary still bypass Ortho, as legacy's do (D-181). Earthwork's
+  Ortho applies to the Strip Area outline and to Site Features, which draw with the Area
+  tool.
+- **Where:** app `pages/ProjectTakeoff.tsx` (`takeoffOrtho` / `earthOrtho`, `takeoffSnap` /
+  `earthSnap`, `pdfSnaps`).
+- **Proved:**
+  - Takeoff loaded as Ortho on, Snap on, Snap PDF off. Set there to Ortho off and Snap PDF
+    on, then Earthwork opened with all three off.
+  - Snap turned on in Earthwork. Back on Takeoff: Ortho off, Snap on, Snap PDF on, as left.
+    Back on Earthwork: only Snap on, as left.
+  - With Earthwork's Snap off (Takeoff's on), a contour vertex dragged 3 px from a Linear
+    point stayed free. With Earthwork's Snap on, it landed on the point exactly.
+  - After a reload, Earthwork was all off and Takeoff's Snap PDF was still on.
