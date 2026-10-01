@@ -5938,3 +5938,55 @@ deviations named)
   - Calculate is always the filled primary button;
   - the Δ input is 24 px high.
 - Colours stay tokens (hard rule 4); nothing else on the row moved.
+
+## D-148 — Estimating's rows at legacy's density
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Estimating; Frontend
+
+- **What the side-by-side check found:** at 2048 × 1050, legacy's item rows are about 18 px
+  and ours were 21.5 px. Its group rows are about 21 px and ours were 26 px.
+- **The cause:** our cells hold buttons (rates, quantities, the takeoff reference). These
+  sat on the text baseline and left a descender's gap under them. Our padding was also
+  2 px against legacy's 1.8 px (`cellClass`); group rows had 4 px against its 3.1 px.
+- **Now:**
+  - item, component and context cells use `py-[1.8px]`;
+  - group header cells use `py-[3.1px]`;
+  - each cell's direct children are top-aligned.
+
+  Item rows measure 19.0 px (legacy's 18.2 plus its line); group rows are 23 px, at
+  Format's group height plus the separator.
+- Format's row heights and font sizes are unchanged.
+
+## D-149 — A Takeoff row's right-click opens legacy's short item menu; Convert to rough measurement
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Takeoff panel; Frontend, Api
+
+- **What the side-by-side check found:** in legacy, right-clicking one Takeoff row opens a
+  short menu (`itemActionMenu` in `ProjectTakeoff.tsx`); its ⋮ opens the full "More
+  actions" menu; right-clicking a selection of several opens the bulk menu. Ours opened the
+  full menu for both the ⋮ and the right-click (amends D-75's note that the panel keeps
+  the item menu).
+- **Now as legacy.** A row's right-click shows, in order:
+  - "Make Site Feature" on a plain area, or "Site Feature properties…" on a Site Feature;
+  - "Convert to rough measurement", or "Classify this item…" on a rough measurement;
+  - "Costs…", then legacy's "Add cost component" heading with the four kind icons under it
+    (for a seat that prices, on an item not priced through sub-items).
+  The ⋮ keeps the full menu, and a sub-item's right-click also keeps it (legacy gives a
+  sub-item no menu of its own).
+- **Convert to rough measurement** writes `is_reference`. The api files the item under
+  Rough Measurements (made on first use), and legacy's toast follows: "Moved to Rough
+  Measurements" / "This item is excluded from the estimate." This closes the first half
+  of PARITY §5's "Convert an item to a rough measurement" line. Inserting reference
+  quantities is still to do.
+- **Classify this item…** opens Properties with Rough measurement unticked and the WBS
+  section open. Save needs a classification, or a Custom Folder pick, as legacy's forced
+  picker does.
+- **An earthwork item cannot be converted.** That is an item in Earthwork Markups or a
+  Calculate line. The row is greyed with its reason, and the api refuses it with
+  Earthwork Markups' closed-folder message. Legacy did not guard this.
+- **The menu component** gains a strip under the rows with its own heading (legacy's cost
+  icons). Menu labels no longer wrap when the menu opens by the right edge.
