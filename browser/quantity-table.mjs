@@ -108,6 +108,7 @@ try {
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
+    const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
@@ -175,6 +176,35 @@ try {
             out.fillCY = r.fillCY;
             for (const a of r.stripAreas ?? []) Object.assign(out, { [`strip:${a.id}:areaSF`]: a.areaSF, [`strip:${a.id}:volumeCY`]: a.volumeCY });
           } else out.ok = r.ok;
+        }
+        return out;
+      }
+      if (c.kind === "trace") {
+        // Auto Trace (D-143): pieces, labels and label boxes in, lines out.
+        const r = tr.traceSheet({
+          widthPt: 1000,
+          heightPt: 1000,
+          pieces: c.pieces.map((p) => ({ pts: xy(p.pts), closed: Boolean(p.closed), width: p.width ?? 1, color: p.color ?? "#000000", dash: p.dash ?? [] })),
+          labels: (c.labels ?? []).map((l) => ({ str: l.str, c: { x: l.at[0], y: l.at[1] }, angle: l.angle ?? 0, w: l.w ?? 18, h: l.h ?? 10 })),
+          masks: (c.masks ?? []).map(([x0, y0, x1, y1]) => ({ x0, y0, x1, y1 })),
+        });
+        const count = (f) => r.lines.filter(f).length;
+        const out = {
+          lines: r.lines.length,
+          EG: count((l) => l.surface === "EG"),
+          FG: count((l) => l.surface === "FG"),
+          closed: count((l) => l.closed),
+          bridges: r.lines.reduce((s, l) => s + l.bridges, 0),
+          elevations: r.lines.map((l) => l.elevation).filter((e) => e !== null).sort((a, b) => a - b).join(" "),
+          flags: r.lines.flatMap((l) => l.flags).sort().join(" "),
+          repeated: r.stats.repeatedPoints,
+          backtracks: r.stats.backtracks,
+          selfCrossings: r.stats.selfCrossings,
+          spots: r.spots.map((s) => s.elevation).join(" "),
+        };
+        if (c.pick) {
+          const idx = new tr.TraceHitIndex(r.lines);
+          out.pick = c.pick.map(([x, y, rad]) => (idx.pick({ x, y }, rad) ? "hit" : "miss")).join(" ");
         }
         return out;
       }

@@ -5664,3 +5664,132 @@ decided overnight and are pending founder review.
   Shape writes on a computed line are refused.
 - **Units (Q11).** `BCY`, `LCY`, `CCY`, `BCM`, `LCM` and `CCM` are added to the unit registry
   (F12-F3).
+
+## D-143 — F12 Block G: Auto Trace, rebuilt to beat legacy's (research, choices, C-200 numbers)
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review. The founder's addition of 2026-09-30
+asked for this: research first, then a version that beats legacy on overlaps and gaps
+without losing contours.
+**Area:** Earthwork (F12), Frontend
+
+**Research (sources).**
+- **Reading vector PDFs:**
+  - pdf.js `evaluator.js`, `util.js` and `canvas.js`: the folded `constructPath` and its
+    DrawOPS codes.
+  - A painted path's numbers are replaced by a `Path2D`, so the trace reads its own copy.
+  - OpenTakeoff PR #433, the pdf.js ≥ 4.6 decode.
+- **Dash patterns:**
+  - ISO 32000 §8.4.3.6 (the `d` operator).
+  - papermodels PR #141 (normalising dash arrays).
+  - Autodesk threads on AutoCAD and Civil 3D linetypes: dashes are exploded into separate
+    pieces with no dash array. C-200 is exactly that: 14,705 pieces, no `setDash` at all.
+  - Lai and Kasturi, dashed-line detection.
+  - Liu et al., CVPR 2022 (Gestalt continuity).
+- **Stitching:**
+  - PostGIS `ST_LineMerge`, Shapely `line_merge` and GRASS `v.build.polylines`: join only
+    where exactly two ends meet.
+  - Global contour reconstruction (global matching, not greedy).
+  - arXiv 2412.15515 (end direction fitted over a longer tail).
+  - Good-continuation link costs.
+- **Cleaning:**
+  - GRASS `v.clean`: snap, then remove duplicates, then small angles, repeated until stable.
+  - JTS `TopologyPreservingSimplifier`: plain Douglas–Peucker can make a line cross itself.
+  - simplify-js; mapshaper's Visvalingam.
+- **Self-intersections:** Bentley–Ottmann, `sweepline-intersections`, and grid tests.
+- **Labels:**
+  - pdf.js text transforms.
+  - Roubal and Poiker, "Automated contour labelling and the contour tree" (Auto-Carto 7):
+    assign only when unambiguous, otherwise leave it to the operator.
+  - Civil 3D label masks: a white box over the line.
+  - ArcGIS contour labelling.
+
+**Choices.** The engine is pure, in `lib/takeoff/earthwork/trace/` (hard rule 2), and is fed
+by `features/takeoff/earthwork/trace/readSheet.ts`.
+1. **Read.** One pdf.js walk:
+   - every stroked piece with its pen (colour, width, PDF dash array);
+   - the white filled boxes (label masks);
+   - the printed numbers, with oriented boxes.
+   Curves are flattened as the cubics pdf.js hands over (Q26).
+2. **Exact joins** happen only at nodes where exactly two ends meet, and are refused where the
+   line would turn back (over 135°) or where it meets a long straight rule (over 100 pt) at
+   a corner of more than 75°. A label's own frame (a small closed outline over its box) is
+   dropped.
+3. **Dash gaps** (up to the EG profile's spacing, 10 pt): tangents fitted over a tail, both
+   within the angle, the bridge crossing no line, **mutual best only**, round after round.
+   The gaps bridged are kept: a regular run of them (3 or more, at least one per 40 pt,
+   coefficient of variation under 0.6) makes the line **dashed, so EG**; anything else is
+   **solid, so FG**. On C-200 the EG gaps measure 8.6 to 9.4 pt.
+4. **Label gaps** (up to 60 pt) join only lines of the same kind and colour. Past the dash
+   spacing they need **a label or its white box in the gap**; legacy bridged any 60 pt gap
+   blind.
+5. **Clean.**
+   - Lines are split at any reversal (over 170°).
+   - Self-loops up to half the label gap are cut; a larger one is flagged.
+   - A line 90 % on a longer one of its surface (drawn twice) is kept once.
+   - There are no repeated or collinear points.
+   - A closed contour stays closed.
+6. **Elevations.**
+   - A boxed label goes to the one line through its box, or to the one bridged there when
+     two run through.
+   - A free label goes to the line through it along its reading direction, with no
+     competitor near.
+   - Two-decimal numbers are spots, never a contour's label.
+   - Lines that are mostly long straight segments (rules) take no label unless bridged.
+   - Labels on one line must agree, or it is flagged.
+   - The rest is **"no label": typed by hand, never guessed.**
+7. **Crossings.** Labelled lines of one surface that cross are flagged ("crosses-same-
+   surface"). EG crossing FG is expected.
+8. **The tool** follows legacy's flow and words:
+   - Trace sits beside Contour. Hover lights the line (3 px over a 7 px white halo, end dots).
+   - Click adopts it in the Contour popover, pre-filled from its label, or from last ± Δ
+     when it has none.
+   - Shift+click gathers pieces. Alt+click probes. Esc or Done puts it down.
+   - The toasts are legacy's, as is the 1.2 s warm-up.
+   - A line already adopted is refused (Q26).
+   - Settings › Trace's two profiles feed the engine.
+   - **Beyond legacy:** the trace runs in a **Web Worker** (no freeze); the hint shows
+     whether the hovered line is dashed or solid, its label, and its flags.
+   - **"Adopt N labelled"** takes every unflagged labelled line of the active surface at
+     its label's elevation, each as one run (one undo step per run).
+   - Flagged lines are left for the person.
+9. **Not built:** the IndexedDB cache (G4). A sheet's read is 0.9 s and the trace runs in the
+   worker, so it was not needed; it can be added if a sheet proves slow.
+
+**C-200, ours against legacy's own code on the same page** (legacy's `contourTrace` run in
+the bench browser with its EG and FG profiles). One yardstick for both: lines through
+the sheet's 38 label boxes, with label frames excluded.
+
+| | Legacy EG profile | Legacy FG profile | Ours, EG | Ours, FG |
+|---|---|---|---|---|
+| Lines offered | 1,361 | 1,079 | 195 | 585 |
+| Vertices | 19,657 | 15,599 | 3,918 | 4,373 |
+| Repeated points | 618 | 474 | 0 | 0 |
+| Back-tracking points | 18 | 17 | 0 | 0 |
+| Self-crossings (lines) | 79 (14) | 22 (10) | 0 | 0 |
+| Drawn twice | 69 | 90 | 0 | 3 |
+| Line ends left at a label box (gaps) | 38 | 29 | 5 | 4 |
+| Crossings among lines through label boxes | 387 | 236 | 0 | 12 (5 among labelled contours, all flagged) |
+| Contours with an elevation | 0 (always typed) | 0 | 3 | 20 |
+| Time | 7.1 s, main thread | 13.0 s, main thread | 0.9 s read + 1.8 s in a worker, both surfaces at once | |
+
+- Of the 38 boxes, 30 have one of our lines running through them and 26 give their line an
+  elevation.
+- The 8 boxes left are places where the contour ends at its label, or meets a line of the
+  other kind there. Those lines are still offered for hand adoption.
+- The 5 crossings left among labelled FG contours are tight convergences at curbs, where 701,
+  702 and 703 meet within 10 pt. They are real drafting, flagged, and not adopted by
+  "Adopt labelled".
+- C-200's EG contours carry no labels (every boxed label sits on a solid line), so EG is
+  traced by hand with the elevation typed. That is legacy's way, and the founder's rule.
+
+**Quantity table:** 16 trace rows. They cover legacy's `stitch.test.ts` and the hit test,
+with our deliberate differences: a 47 pt bend gap is bridged only with its label, and
+exploded dashes read as EG. They also cover ours: a retrace, a line drawn twice, the label
+frame, and a spot that is not a contour label.
+
+**Where:** app `lib/takeoff/earthwork/trace/{geometry,stitch,labels,hit,index}.ts` (new),
+`features/takeoff/earthwork/trace/{readSheet,trace.worker,useAutoTrace}.ts(x)` (new),
+`takeoff/earthwork/{EarthworkToolbar,useEarthwork}.tsx` (`adopt`, `adoptMany`),
+`pages/ProjectTakeoff.tsx`; infra `browser/lib/earthwork-cases.mjs`,
+`browser/quantity-table.mjs`.

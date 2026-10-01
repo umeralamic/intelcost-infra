@@ -11,6 +11,9 @@ const c = (item, label, surface, elevation, points) => ({ item, label, kind: "co
 const s = (item, label, surface, elevation, x, y) => ({ item, label, kind: "spot_elevation", surface, elevation, points: [[x, y]] });
 const b = (points) => ({ item: "boundary", label: "Work Boundary", kind: "boundary", surface: null, elevation: null, points });
 const UNIT = [[0, 0], [1, 0], [1, 1], [0, 1]];
+/** Points along a circular arc in sheet points (legacy's stitch.test.ts stand-in for a
+ *  curving contour). */
+const arc = (cx, cy, r, a0, a1, n = 20) => Array.from({ length: n + 1 }, (_, i) => [cx + r * Math.cos(a0 + ((a1 - a0) * i) / n), cy + r * Math.sin(a0 + ((a1 - a0) * i) / n)]);
 const PAVEMENT = [[0.25, 0.25], [0.75, 0.25], [0.75, 0.75], [0.25, 0.75]];
 /** Spots at the unit square's corners SW, SE, NE, NW (legacy's order). */
 const corners = (surface, z) =>
@@ -545,4 +548,49 @@ export const EARTHWORK_CASES = [
       "soil_import:__soil_import__:name": "Soil Import — Select Borrow",
     },
   },
+  // --- Block G, Auto Trace (D-143): legacy's stitch.test.ts cases, page 1000 x 1000 pt, ---
+  // and ours. Straight pieces are drawn with a slight slope: a two-point exactly level or
+  // plumb line over 30 pt is a rule (border, title block) and is never offered (legacy's).
+  // Legacy's "bridges a label gap in a curving contour": ~47 pt of arc removed at a bend.
+  // Ours bridges it where its label sits in the gap, and reads the label.
+  { id: "trace-curve-label-gap", kind: "trace", pieces: [{ pts: arc(500, 500, 300, Math.PI, Math.PI * 1.35) }, { pts: arc(500, 500, 300, Math.PI * 1.4, Math.PI * 1.8) }], labels: [{ str: "705", at: [385.2, 222.8], angle: -0.3927 }], masks: [[375, 213, 395, 233]], expect: { lines: 1, bridges: 1, elevations: "705", FG: 1 } },
+  // The same gap with nothing in it: legacy zipped it blind; ours leaves it (D-143).
+  { id: "trace-curve-bare-gap", kind: "trace", pieces: [{ pts: arc(500, 500, 300, Math.PI, Math.PI * 1.35) }, { pts: arc(500, 500, 300, Math.PI * 1.4, Math.PI * 1.8) }], expect: { lines: 2, bridges: 0 } },
+  // "Refuses a gap wider than the tolerance": 75 pt > 60 pt, even with a label in it.
+  { id: "trace-gap-too-wide", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]] }, { pts: [[275, 117.5], [375, 127.5]] }], labels: [{ str: "700", at: [237.5, 113.75], angle: 0.0997 }], expect: { lines: 2 } },
+  // A 59 pt label gap with its label: one line at the label's elevation.
+  { id: "trace-label-gap-59", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]] }, { pts: [[258.7, 115.87], [358.7, 125.87]] }], labels: [{ str: "700", at: [229.35, 112.94], angle: 0.0997 }], masks: [[219, 106, 240, 120]], expect: { lines: 1, bridges: 1, elevations: "700" } },
+  // "Does NOT zip two parallel neighbouring contours together."
+  { id: "trace-parallel", kind: "trace", pieces: [{ pts: [[100, 100], [300, 110]] }, { pts: [[100, 140], [300, 150]] }], labels: [{ str: "700", at: [100, 120], angle: 1.5708 }], expect: { lines: 2, bridges: 0 } },
+  // "Refuses a join when the tangents disagree": a hard 90° turn.
+  { id: "trace-hard-turn", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]] }, { pts: [[210, 111], [221, 311]] }], labels: [{ str: "700", at: [205, 110.5] }], expect: { lines: 2 } },
+  // "Does not join across different dash families": solid FG, natively dashed EG.
+  { id: "trace-solid-vs-dashed", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]] }, { pts: [[220, 112], [320, 122]], dash: [4, 4] }], labels: [{ str: "700", at: [210, 111], angle: 0.0997 }], expect: { lines: 2, EG: 1, FG: 1 } },
+  // "Joins across a width change (index contour)": ours across its label.
+  { id: "trace-width-change", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]], width: 1 }, { pts: [[240, 114], [340, 124]], width: 3 }], labels: [{ str: "705", at: [220, 112], angle: 0.0997 }], masks: [[208, 105, 232, 119]], expect: { lines: 1, elevations: "705" } },
+  // "Zips a long dashed run into one polyline": 30 dashes with a PDF dash array.
+  { id: "trace-native-dashes", kind: "trace", pieces: Array.from({ length: 30 }, (_, i) => ({ pts: [[i * 10, 500], [i * 10 + 6, 500]], dash: [4, 4] })), expect: { lines: 1, EG: 1 } },
+  // Ours: the same run exploded (no dash array, as C-200 is): one line, read as EG by its
+  // regular 4 pt gaps.
+  { id: "trace-exploded-dashes", kind: "trace", pieces: Array.from({ length: 30 }, (_, i) => ({ pts: [[i * 10, 500 + i * 0.5], [i * 10 + 6, 500 + i * 0.5 + 0.3]] })), expect: { lines: 1, EG: 1, FG: 0 } },
+  // "Leaves a closed ring untouched."
+  { id: "trace-closed-ring", kind: "trace", pieces: [{ pts: [[100, 100], [200, 100], [200, 200], [100, 200]], closed: true }], expect: { lines: 1, closed: 1 } },
+  // Ours: a line drawn out and back over itself is kept once, with no back-tracking point.
+  { id: "trace-retrace", kind: "trace", pieces: [{ pts: [[100, 100], [300, 120], [200, 110]] }], expect: { lines: 1, backtracks: 0, repeated: 0 } },
+  // Ours: one contour drawn twice (two pens) is offered once.
+  { id: "trace-drawn-twice", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110], [300, 130]] }, { pts: [[100, 100], [200, 110], [300, 130]] }], expect: { lines: 1 } },
+  // Ours (C-200's case): the label's frame is dropped, the bridge runs through the box, and
+  // the line takes the label.
+  {
+    id: "trace-label-frame",
+    kind: "trace",
+    pieces: [{ pts: [[100, 100], [190, 109]] }, { pts: [[230, 113], [320, 122]] }, { pts: [[195, 104], [225, 104.3]] }, { pts: [[225, 104.3], [225, 118]] }, { pts: [[225, 118], [195, 117.7]] }, { pts: [[195, 117.7], [195, 104]] }],
+    labels: [{ str: "702", at: [210, 111], angle: 0.0997 }],
+    masks: [[196, 105, 224, 117]],
+    expect: { lines: 1, bridges: 1, elevations: "702" },
+  },
+  // Ours: a two-decimal number is a spot, never a contour's label.
+  { id: "trace-spot-not-label", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]] }, { pts: [[230, 113], [330, 123]] }], labels: [{ str: "703.95", at: [215, 111.5], angle: 0.0997 }], expect: { elevations: "", spots: "703.95" } },
+  // Legacy's TraceIndex: the nearest line within 6 pt is picked, nothing 100 pt away.
+  { id: "trace-pick", kind: "trace", pieces: [{ pts: [[100, 100], [400, 130]] }, { pts: [[100, 300], [400, 330]] }], pick: [[250, 118, 6], [250, 215, 6]], expect: { pick: "hit miss" } },
 ];
