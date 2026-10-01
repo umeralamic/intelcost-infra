@@ -164,6 +164,20 @@ those lines, so this is cheap.
 - **Under 30 %, it warns:** "Only 18 % of page 3's contours lie on C-200's lines. Check the
   points." Confirm is still allowed.
 
+## The link's behaviour (D-190, the founder)
+
+- **The whole source grade.** A link carries every EG contour and spot on its source sheet,
+  including EG added, edited or deleted after the link was made. Nothing is picked run by
+  run.
+- **Stale** on the grading sheet after: a change to a source's EG; a change to a link's
+  points or offset; a recalibration of either sheet; a source added or removed.
+- **Recalculation stays manual.**
+- **The grading sheet's own EG is merged in** (Q6).
+- **Shown where it lives:** the Takeoff panel shows an EG item only on its own sheet. The
+  grading sheet's earthwork section shows **"Existing grade: linked from {sheet}"**, one line
+  per source.
+- **No copied items** (Q1).
+
 ## Carrying the existing grade: read through the link (Q1)
 
 - **C-200 holds the links only.** It never holds copies of the sources' runs.

@@ -6990,3 +6990,85 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 - **On the board as F18, Planned and ready to build:** Blocks A (engine and table) and B (the
   dialog, Calculate through the links) next, Block C (label transfer) later.
 - **Nothing is built.**
+
+---
+
+## D-189 — Auto Count (F13): the founder's answers; spec adopted
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in the overnight plan of 2026-10-01; answers the Auto Count draft's 27 questions). Spec details marked "overnight" below are this session's, pending founder review.
+**Area:** F13 Auto Count; Frontend, Backend
+
+- **Accepted as recommended:** Q1, Q3 to Q5, Q7 to Q10, Q14 to Q16, Q19 to Q26.
+  - Q1: the matchers are pure `lib/takeoff/autoCount/`, run in a browser Web Worker; a
+    Celery twin only if whole sets must scan in the background.
+  - Q3: legacy's OpenCV coarse arm is dropped.
+  - Q4: Image mode keeps reject-never-clamp; the budget is measured on the bench and
+    exclusions do not depend on the browser.
+  - Q5: the source sheet is pinned for the panel's life; card navigation never rescans.
+  - Q7: Image scale variants 0.95, 1.00, 1.05. Q8: sensitivity 78, remembered per person.
+    Q9: fixed floors. Q10: legacy's valley cut and drawer.
+  - Q14: one shape row per mark (D-32). Q15: one item across sheets. Q16: the mark at the
+    match's centre.
+  - Q19: the review overlay in the item's colour. Q20: scan on open; settings rescan on
+    closing the gear. Q21: Esc stops a scan, a second Esc closes the panel. Q22: the region
+    menu now; a count item's "Auto Count this symbol" later.
+  - Q23: settings per person on the api, with the Takeoff Settings (D-82). Q24: Threads
+    behind Auto. Q25: Layers Auto, hidden without layers. Q26: the debug strip a developer
+    flag only.
+- **With the founder's notes:**
+  - **Q6 changed: Vector mode searches rotations in v1.** 0°, 90°, 180° and 270° at least,
+    plus the mirror: a symbol turns with the wall it sits on, so a receptacle on a vertical
+    wall is the plan's symbol turned 90°. **Image mode's "8" searches all 8 angles** (legacy
+    sliced them to 4, a defect).
+  - **Q2:** Vector first (Blocks A to D and F), Image as Block E right after, with a speed
+    target measured on real scans.
+  - **Q11:** the saturation block stays, with a message telling the person to select the
+    symbol more tightly.
+  - **Q12:** the control reads **"Overlap allowed"** (higher keeps more), and the Layers
+    re-filter uses the setting (legacy's fixed 0.6 is a defect). Legacy's stored value is
+    already the NMS IoU threshold, so the default stays 60 %; only the name and the hint
+    change.
+  - **Q13:** Create honours every field of the New Measurement dialog.
+  - **Q17:** one undo removes exactly the batch's marks. A new item goes with them; marks
+    added by hand since stay.
+  - **Q18:** "Add to the selected count item" when one is selected, beyond legacy.
+  - **Q27:** the unbuilt backlog is out of F13. The reference editor and several references
+    go under Ideas.
+- **Spec details (overnight, pending founder review):**
+  - **Vector orientations.** A vector symbol turned by a quarter turn or mirrored is the
+    same strokes under an exact transform, so the template is transformed, never
+    resampled. The panel's Rotation search shows in both modes: Vector offers 4 (90° steps,
+    the default) or 1; Image offers 8, 4 (the default), 2 or 1.
+  - **Include Mirror** stays a setting, **on by default in Vector** (legacy's off), by
+    Q6's "plus mirror". It adds the mirrored template at each searched angle.
+  - Each card's tooltip names its orientation ("Rotated 90°", "Mirrored, 270°").
+- **The spec is adopted** as [auto_count_tasks.md](docs/tasks/auto_count_tasks.md) with these
+  answers written in, and the draft is removed. PARITY §17 is rewritten against legacy's
+  code, as the draft listed.
+- **On the board as F13, In Progress.** Build order: A, B, C, D, F, then E.
+
+---
+
+## D-190 — The EG link's behaviour: the whole source grade, stale across sheets, shown where it lives
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in the overnight plan of 2026-10-01; adds to D-188)
+**Area:** F18 (F12 addition): EG from other sheets; Frontend, Backend
+
+- **The link covers the source sheet's whole existing grade.** Every EG contour and spot on
+  the source, including EG added, edited or deleted after the link was made, is read
+  through it automatically. Nothing is picked run by run.
+- **Stale.** The grading sheet is marked stale by any of:
+  - a change to a linked source's EG (added, edited, deleted);
+  - a change to the link's control points or its datum offset;
+  - a recalibration of either sheet;
+  - a source added or removed.
+- **Recalculation stays manual,** as today: stale is shown, Calculate is pressed by a person.
+- **The grading sheet's own EG is merged in** (D-188 Q6).
+- **Where it shows:**
+  - the Takeoff panel shows each EG item only on its own sheet; the source's EG never appears
+    as the grading sheet's item;
+  - the grading sheet's earthwork section shows **"Existing grade: linked from {sheet}"**,
+    one line per source.
+- **No copied items.** The grading sheet holds the links only (D-188 Q1).

@@ -672,62 +672,73 @@ The Earthwork tab. `src/lib/takeoff/earthwork/`.
 ## 17. Auto Count
 
 `src/components/takeoff/AutoCountPanel.tsx` (900 lines),
-`src/lib/takeoff/autoCount/` (image, vector and OpenCV matchers).
+`src/lib/takeoff/autoCount/` (vector and image matchers, the shared result pipeline).
+**Rewritten 2026-10-01 against legacy's code at `e99cddcb` (D-189);** where a line says
+"ours", the founder's answer changes legacy's behaviour. Spec:
+[tasks/auto_count_tasks.md](tasks/auto_count_tasks.md).
 
 **Entry and scope**
 
-- [ ] Drag a region over one printed symbol and search for every other instance of it. Auto Count is reached from the region menu. `src/components/takeoff/RegionSelectMenu.tsx`, `src/lib/takeoff/autoCount/scan.ts` (1,581 lines) · **missing**
-- [ ] The panel previews the boxed symbol, and clicking the preview jumps back to the source sheet. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
-- [ ] **Pages scope:** Current page (default), All pages, or Choose, with a sheet filter box for the Choose case. `src/components/takeoff/AutoCountPanel.tsx` (`PageScope`) · **missing**
-- [ ] The scan loops sheets through a refcounted PDF document cache, so a sheet is never opened twice, and yields between chunks so a 60-sheet image scan never freezes the canvas. `src/lib/takeoff/autoCount/scan.ts` · **missing**
-- [ ] A running scan is cancellable from the panel through its scan handle. `src/lib/takeoff/autoCount/scan.ts` · **missing**
-- [ ] Neither matcher spends AI credits: both are local math. `src/lib/takeoff/autoCount/vectorMatch.ts`, `imageMatch.ts` · **missing**
+- [ ] Drag a region over one printed symbol and search for every other instance of it. Auto Count is reached only from the region menu (a Select drag past 25 px on empty sheet), between Scale and Copy as Text. `src/components/takeoff/RegionSelectMenu.tsx`, `src/lib/takeoff/autoCount/scan.ts` · **missing**
+- [ ] The panel is a 300 px floating panel on the right, draggable by its header, and **scans on open**; there is no Scan button. `src/components/takeoff/AutoCountPanel.tsx`, `panelDrag.ts` · **missing**
+- [ ] The panel previews the boxed symbol: "Your selection — click to navigate to source". Ours pins the source sheet for the panel's life (legacy follows the active sheet and rescans the same box on the wrong sheet, D-189 Q5). `src/components/takeoff/AutoCountPanel.tsx` · **missing**
+- [ ] **Pages scope:** Current page (default), All pages, or Choose… with "Filter sheets…", a checkbox per sheet and "No sheets match.". `src/components/takeoff/AutoCountPanel.tsx` (`PageScope`) · **missing**
+- [ ] The scan loops sheets through a refcounted PDF document cache and yields between chunks, so the canvas never freezes. Ours runs the matcher in a Web Worker (D-189 Q1). `src/lib/takeoff/autoCount/scan.ts` · **missing**
+- [ ] A running scan is stopped by Stop. Ours: Esc stops a running scan, and a second Esc closes the panel (D-189 Q21). `src/lib/takeoff/autoCount/scan.ts` · **missing**
+- [ ] A change of mode, pages, angles or committed settings rescans and clears the results. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
+- [ ] Neither matcher spends AI credits: both are local math. `vectorMatch.ts`, `imageMatch.ts` · **missing**
 
-**Modes**
+**Vector mode (default)**
 
-- [ ] **Vector mode (default).** Strokes intersecting the selection are rasterised into a fixed grid binary mask as the template signature; the page's strokes are union-find clustered into components and each is scored against it. `src/lib/takeoff/autoCount/vectorMatch.ts` (1,266 lines) · **missing**
-- [ ] **Image mode.** For scanned sheets and raster symbols with no vector linework, scored with dilated-ink F1 rather than raw-pixel NCC (subpixel fragility) or recall-weighted coverage (saturation on walls and hatching). `src/lib/takeoff/autoCount/imageMatch.ts` (2,116 lines) · **missing**
-- [ ] Image mode runs an OpenCV coarse pass over a grayscale page channel, with opencv.js dynamically imported so its ~13 MB never lands in the main bundle. `src/lib/takeoff/autoCount/opencvCoarse.worker.ts`, `grayPage.ts`, `opencvLoader.ts` · **missing**
-- [ ] The grayscale channel is additive: the binary ink page the fine scorer consumes is unchanged, because thresholding destroys the sub-pixel hatching that separates two similar fixtures. `src/lib/takeoff/autoCount/grayPage.ts` · **missing**
-- [ ] **Vector-only control:** PDF Layers, with an Auto mode that re-derives from retained tagged matcher output when the layer choice changes, without rescanning. `src/components/takeoff/AutoCountPanel.tsx` (`LayersMode`) · **missing**
-- [ ] A sheet with no layers says "No layers found on this sheet." rather than offering an empty control. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
+- [ ] **Template:** the box's strokes rasterised to 48 × 48, density-weighted; the anchor is the box's dominant closed element; sub-templates for the glyph, the adjunct, the interior (96 × 96) and the interior text. `src/lib/takeoff/autoCount/vectorMatch.ts` · **missing**
+- [ ] **Windows** are placed where the page has similar closed elements (0.5–2× the anchor's size), plus generic stroke anchors. Not union-find clustered components, as legacy's header comment says. `vectorMatch.ts` · **missing**
+- [ ] **Score:** a tolerant density-weighted F1 with ±6 % nudges, multiplied by modifiers for the adjunct, matching or differing interior text, and an empty interior. `vectorMatch.ts` · **missing**
+- [ ] **Orientations.** Legacy: the mirror only (Include Mirror, off), no rotation in Vector. Ours: the template turned 0°, 90°, 180° and 270°, each also mirrored, exactly (Rotation search 4 or 1; Include Mirror on by default; D-189 Q6). `vectorMatch.ts`, `settings.ts` · **missing**
+- [ ] **Drop Unique Features (on):** anchors on strokes whose normalised geometry occurs once on the page are skipped. **Include Text (on):** the text-glyph evidence channel. `settings.ts` · **missing**
+- [ ] A box with no vector strokes says "No vector linework found inside your selection — this sheet is likely a scan. Switch to **Image mode** to match the printed pixels instead." Image mode never shows it (legacy can, defect 8). `AutoCountPanel.tsx` · **missing**
+- [ ] **Layers** (only on a sheet with PDF layers; hidden otherwise): Auto, All layers or Specific ("Layer {ref} ({n} strokes)"). Layer provenance tags hits; a change re-filters the kept hits without rescanning. Legacy re-filters at a fixed 0.6; ours at the "Overlap allowed" setting (D-189 Q12). `AutoCountPanel.tsx` (`LayersMode`) · **missing**
 
-**Scoring options**
+**Image mode**
 
-- [ ] **Sensitivity slider (default 78).** Re-partitions checked and unchecked candidates with no rescan, and a card the user touched by hand keeps its choice. `src/components/takeoff/AutoCountPanel.tsx`, `resultPipeline.ts` · **missing**
-- [ ] **Min spacing (NMS IoU, default 0.6, clamped 0.05 to 0.95).** How much two boxes may overlap before the weaker is suppressed. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] **Include Mirror (default off).** Score the template flipped horizontally, vertically and both, keeping the best orientation. Vector only. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] **Drop Unique Features (default on).** Suppress anchors on strokes whose normalised geometry occurs exactly once on the page, since those cannot be a repeated symbol. Vector only. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] **Include Text (default on).** Use the text-glyph evidence channel for letters inside the symbol. Vector only. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] **Search angles: 8 (45° steps), 4 (90°, default), 2 (0/180) or 1.** Image mode runs one pass per angle. `src/lib/takeoff/autoCount/settings.ts` (`anglesForRotations`) · **missing**
-- [ ] **Scale variants: 3 (0.95x / 1.00x / 1.05x consensus, default) or 1 (exact size, faster).** Image only. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] **Threads: 0 = auto (hardware concurrency minus one, capped at 6), up to 16.** `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] Settings apply to the next scan only and never mutate a finished result set. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] Settings persist in `localStorage`, and a corrupt or hand-edited value falls back to its default rather than to false or zero, so a bad store cannot silently disable an evidence channel. `src/lib/takeoff/autoCount/settings.ts` (`normalizeAutoCountSettings`) · **missing**
-- [ ] Every default equals the value the pre-settings pipeline used, so a fresh install behaves identically to the build before the settings existed. `src/lib/takeoff/autoCount/settings.ts` · **missing**
-- [ ] Every matcher ends at candidate and score emission; NMS, threshold partition, saturation detection and funnel summaries live in one shared pipeline, so a mode-specific fix cannot strand the other mode. `src/lib/takeoff/autoCount/resultPipeline.ts` · **missing**
+- [ ] For scans: the template rendered at 300 DPI; a working raster sized so the symbol's stroke is 3 px, frozen from the source sheet. `src/lib/takeoff/autoCount/imageMatch.ts` · **missing**
+- [ ] A coarse JS recall shortlist (recall ≥ 0.35 at stride 6), then a fine pass at stride 5 refined at stride 2, in Web Workers on row bands. `imageMatch.ts`, `imageMatch.worker.ts` · **missing**
+- [ ] **Score** = coverage × precision, zeroed by the density, core, spread and hole gates; not "dilated-ink F1". `imageMatch.ts` · **missing**
+- [ ] **Scale consensus:** 2 of 3 scales (0.95, 1.00, 1.05) must agree (Scale variants 3, default; 1 is exact size). `imageMatch.ts`, `settings.ts` · **missing**
+- [ ] **Rotation search** in the panel body: 8, 4 (default), 2 or 1. Legacy's "8 — 45° steps" searches 4 angles (`.slice(0, 4)`); ours searches all 8 (D-189 Q6). `settings.ts` (`anglesForRotations`) · **missing**
+- [ ] Extra orientations run after the first pass and can only add matches: "Extra orientations still running — they can only add matches." A later pass never moves a candidate or overrides a person's toggle. `AutoCountPanel.tsx` (`mergeAutoCountPass`) · **missing**
+- [ ] **Memory contract:** a modelled peak against a budget, rejected, never clamped; a sheet over it is reported "not searched". Legacy's 6.5 GB budget is "provisional" and its canvas limits differ per browser; ours is measured on the bench and browser-independent (D-189 Q4). `rasterBudget.ts`, `canvasProbe.ts` · **missing**
+- [x] ~~OpenCV coarse pass over a grayscale channel~~ **retired** (D-189 Q3): dev-only and off in legacy's production. `opencvCoarse.ts`, `grayPage.ts`
 
-**Review flow**
+**Settings (the gear)**
 
-- [ ] Candidates render as cards with a checkbox and a match percentage; clicking a card navigates to that sheet and position. `src/components/takeoff/AutoCountCandidateCard.tsx` · **missing**
-- [ ] **Adaptive valley cut.** Unchecked candidates are sorted by score, the largest gap below the auto-check bar is found, and everything below it drops into a low-confidence drawer. Presentation only: nothing is rescored, re-admitted or suppressed, and every candidate stays reachable through the drawer. `src/lib/takeoff/autoCount/valleyCut.ts` · **missing**
-- [ ] A near-bar guardrail (0.08) keeps any unchecked candidate close to the auto-check bar visible regardless of the cut. `src/lib/takeoff/autoCount/valleyCut.ts` · **missing**
-- [ ] **Overlay paint has three states.** At rest checked boxes paint in the item colour and unchecked boxes are fully invisible; hover reveals an unchecked candidate in light blue with a darker border; a clicked card paints as hovered until the next click elsewhere. `src/lib/takeoff/autoCount/overlayPaint.ts`, `AutoCountOverlay.tsx` · **missing**
-- [ ] **Progressive merge.** A later pass may only add candidates. An existing candidate is never moved, and a background pass can never override the user's own toggles. `src/components/takeoff/AutoCountPanel.tsx` (`mergeAutoCountPass`) · **missing**
-- [ ] Pass progress is shown as completed of total, with a note that extra orientations still running can only add matches. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
-- [ ] **Create (N)** hands the accepted set to the standard count New Item dialog, and on confirm the points are stamped as one batch. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
-- [ ] The panel is draggable by its header, with a sheet filter and a Debug view showing raw matcher output ("junk included by design"). `src/components/takeoff/AutoCountPanel.tsx`, `panelDrag.ts` · **missing**
+- [ ] "Auto Count Settings": SHARED Min Match Spacing (5–95 %, default 60 %, the NMS IoU threshold). Ours names it **"Overlap allowed"**, higher keeps more; legacy's hint says the opposite (D-189 Q12). `settings.ts`, `AutoCountSettingsPopover.tsx` · **missing**
+- [ ] VECTOR: Include Mirror (with an amber warning when on), Drop Unique Features, Include Text. IMAGE: Scale variants; Threads (legacy: Auto, 1–6 or 8, with a RAM hint; ours Auto only, D-189 Q24). `AutoCountSettingsPopover.tsx` · **missing**
+- [ ] Closing the gear with a change rescans at once (not "the next scan", as its subtitle says). `AutoCountPanel.tsx` · **missing**
+- [ ] Reset to Defaults. Legacy's Save as Default stores per browser (`intelcost.autoCount.settings.v1`); ours stores per person on the api with the Takeoff Settings (D-189 Q23). A corrupt value falls back to its default. `settings.ts` (`normalizeAutoCountSettings`) · **missing**
 
-**Warnings and limits**
+**Results and review**
 
-- [ ] A page that produced nothing says "Auto Count could not scan this page." and gives mode-specific advice: vector suggests Image mode or a tighter selection, image suggests lower sensitivity or fewer angles. `src/components/takeoff/AutoCountPanel.tsx` (`AutoCountZeroState`) · **missing**
-- [ ] A scan stopped before its first pass completed says so and never renders sensitivity advice, because there is no result to advise on. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
-- [ ] Saturation on a pass is detected and reported rather than flooding the grid. `src/lib/takeoff/autoCount/resultPipeline.ts` · **missing**
-- [ ] A sheet skipped by the canvas governor is reported ("1 sheet was not searched"). `src/components/takeoff/AutoCountPanel.tsx` · **missing**
-- [ ] **Canvas governor.** The real per-engine canvas ceiling is probed once when the panel opens, cached for the tab's lifetime, and never re-probed mid-run, so a scan's admission decisions cannot shift underneath it. `src/lib/takeoff/autoCount/canvasProbe.ts` · **missing**
-- [ ] **Raster memory contract.** Page rasters are read back in bands and budgeted per pixel, so image mode cannot trip "Out of memory at ImageData creation" on a large sheet. `src/lib/takeoff/autoCount/rasterBudget.ts` (670 lines) · **missing**
-- [ ] A restart whose scan inputs are value-equal to the running scan is refused rather than duplicating work. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
-- [ ] A failed scan shows "Scan failed" with Retry and Run again. `src/components/takeoff/AutoCountPanel.tsx` · **missing**
+- [ ] **One shared pipeline** after both matchers: NMS (centre distance 0.5 or 1/3 of the box side, or IoU above the setting), no display cap. `resultPipeline.ts` · **missing**
+- [ ] **Sensitivity** 10–100, default 78: "Matches at or above {n}% are checked. Your manual checks are kept when this moves." No rescan; a score ≥ 0.999 is always checked. Ours remembers the last value per person (D-189 Q8). `AutoCountPanel.tsx`, `resultPipeline.ts` · **missing**
+- [ ] **Saturation:** over 50 tied at the top with no clear gap latches "Scores look saturated — results unreliable." and disables Create; the grid still shows every candidate. Ours adds: select the symbol more tightly (D-189 Q11). `resultPipeline.ts` · **missing**
+- [ ] **Valley cut** (display only): unchecked cards below the largest gap under the bar go to a "Show {n} low-confidence matches" drawer; 0.06 minimum gap, 0.08 near-bar band, at most 20 shown, fallback floor 0.40. `valleyCut.ts` · **missing**
+- [ ] **Cards** in a 3-column grid: a thumbnail and "{score}%", tooltips for match, coverage, recall, precision, angle and scale; a click checks or unchecks. `AutoCountCandidateCard.tsx` · **missing**
+- [ ] **Card navigation** goes to the match's sheet and zooms to it. Ours never rescans on it (D-189 Q5). `AutoCountPanel.tsx` · **missing**
+- [ ] **Overlay:** hover linked both ways between card and plan box. Legacy paints checked boxes amber always; ours in the colour the item will get (D-189 Q19). `overlayPaint.ts`, `AutoCountOverlay.tsx` · **missing**
+
+**States**
+
+- [ ] Progress: "Pass {k} of {N}", "Scanning sheet {i} of {n}…" or "Scanning page…", with a bar and Stop. `AutoCountPanel.tsx` · **missing**
+- [ ] "Found: 0" with mode advice (or Try Image mode); "Auto Count could not scan this page." is only the error fallback. `AutoCountPanel.tsx` (`AutoCountZeroState`) · **missing**
+- [ ] "Stopped before the first pass completed — no results yet" with Run again; "Stopped early — {n} pass(es) completed…". `AutoCountPanel.tsx` · **missing**
+- [ ] "Scan failed" with Retry (Run again belongs to the stopped state). "{n} sheets were not searched" with a reason each. `AutoCountPanel.tsx` · **missing**
+
+**Create**
+
+- [ ] **Create ({n})** opens the standard New Measurement dialog (type count, name "Count"). Legacy honours name, folder and colour only; ours every field: symbol, size, opacity, evidence links, cost row, dimensions, sub-items, rough measurement (D-189 Q13). `AutoCountPanel.tsx`, `ProjectTakeoff.tsx` · **missing**
+- [ ] One count item, a mark at each match's box centre on each sheet. Legacy writes a sentinel between every mark; ours one shape row per mark (D-32, D-189 Q14). `ProjectTakeoff.tsx` · **missing**
+- [ ] One undo. Legacy's deletes the whole item; ours removes exactly the batch's marks, the item with them only if new and empty (D-189 Q17). Toast "Counted {n} symbol(s) — {name} — Ctrl+Z to undo." `ProjectTakeoff.tsx` · **missing**
+- [ ] Ours, beyond legacy: "Add to the selected count item" when one is selected (D-189 Q18). · **missing**
 
 ## 18. AI tools
 
@@ -1105,7 +1116,7 @@ A retired line counts as driven, because there is nothing left to drive.
 | 14 | Markup | 12 | 0 | 0 | 12 | 0 | 12 |
 | 15 | Evidence and snippets | 9 | 0 | 0 | 9 | 0 | 9 |
 | 16 | Earthwork | 53 | 0 | 0 | 53 | 0 | 14 |
-| 17 | Auto Count | 40 | 0 | 0 | 40 | 0 | 8 |
+| 17 | Auto Count | 42 (rewritten against the code, D-189) | 0 | 0 | 41 | **1** (retired by D-189) | 8 |
 | 18 | AI tools | 30 | 0 | 0 | 30 | 0 | 10 |
 | 19 | Reports | 9 | 0 | 0 | 9 | 0 | 9 |
 | 20 | Community | 10 | 0 | 0 | 10 | 0 | 10 |
