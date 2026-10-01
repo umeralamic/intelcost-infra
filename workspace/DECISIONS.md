@@ -6183,3 +6183,99 @@ deviations named)
     D-154);
   - it gains legacy's "Custom" colour input; the colour is the user's data, kept per
     browser as before.
+
+## D-160 — The volume panel, shape menus and TIN tips nearer legacy's
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Takeoff › Earthwork panel, the canvas shape menus, the TIN toggles; Frontend
+
+- **Found by** a code-level comparison of legacy's `EarthworkVolumePanel`,
+  `EarthworkCalculateDialog` and `EarthworkToolbarGroup` with ours. A live comparison
+  would have needed a Calculate on live legacy. Then a side-by-side check of the canvas's
+  area menu.
+- **Now as legacy:**
+  - **Panel header:**
+    - a grip, on a muted header;
+    - the isochore button filled when on, titled "Toggle isochore depth map (red = cut,
+      blue = fill)";
+    - close titled "Close panel".
+  - **Stale state:** the whole body dims when stale. The stale banner has its warning
+    glyph and shows only over a result.
+  - **Messages and chips:** the empty and absent messages are italic. Error chips are
+    red-tinted, titled "Jump to this row in the Quantity Table".
+  - **Figures:**
+    - Cut, Fill and Net without boxes, their tooltip the exact figure with its unit;
+    - the region breakdown under a rule, its heading small capitals, Remaining Site last,
+      the figures bold;
+    - the assumptions line italic.
+  - **Line colours:** topsoil amber, Soil Export and Import blue, undercut and subgrade
+    green (status tokens).
+  - **The canvas shape menus' explanations** ("Press and drag the markup to its new
+    position", …) are tooltips, as legacy's `title`, not lines under the label.
+    `MenuItem.title` is added; mode hints stay lines.
+  - **TIN toggles** say "(run Calculate first)" only until a Calculate has given that
+    TIN, and Calculate's Play glyph is an outline.
+- **Also fixed:** a panel box saved in a wider window is brought back on screen.
+- **Left, with reasons:**
+  - **The panel lives in screen space.** Legacy draws it in sheet space: it pans and zooms
+    with the drawing, its text scales with the box, and it has eight resize handles. That
+    is a larger change for the founder.
+  - **Our line order and names** (D-136 Q9) and our footnote formula (Q31).
+  - **The "(top wins: …)" suffix** on overlap warnings.
+  - **The Calculate dialog's width and native controls.**
+
+## D-161 — The canvas shape menus headed by the clicked section's figure
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Takeoff canvas right-click on a Linear or Area shape; Frontend
+
+- **What the side-by-side check found:**
+  - **Legacy's header** reads "{name} · Linear Total: …" and "{name} · Area Total: …".
+    Its figure is the clicked section's own quantity (`getSectionQuantity`): whole at 100
+    and over, else one place.
+  - **Ours:** the area header showed the item's total over every sheet, to two places
+    ("3,019.15 SF" for a 1,290 SF section), and the Linear menu had no header.
+- **Now as legacy:**
+  - both menus are headed by the section's figure: an area net of the deducts it owns,
+    a run's length ("SF 3 · Area Total: 1290 SF", "LF 5 · Linear Total: 568 LF");
+  - on an unscaled sheet, the item's total.
+
+## D-162 — Export to Excel in legacy's layout; legacy's small dialog titles on Export and Dock
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Estimating › Export, Takeoff › Dock; Frontend
+
+- **What the side-by-side check found:** legacy's "Export to Excel"
+  (`ExportOptionsDialog`) has a 14 px title, the line "Choose what goes into the workbook.
+  Your selection is remembered for this project; Layers always follows the tab.", and each
+  choice's two options stacked. Ours had the large title, no line, and the options side
+  by side. Legacy's "Dock — setup" title is also 14 px.
+- **Now as legacy:** Export carries the line, stacks each pair, and uses the Dialog's
+  `dense` header (legacy's 14 px title); Dock setup uses it too.
+
+## D-163 — Legacy's dotted tree guides in the Sheets and Takeoff panels
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Sheets panel, Takeoff panel; Frontend
+
+- **What the side-by-side check found:** legacy draws PlanSwift-style dotted guides in
+  both trees (`index.css` `.tree-branch`, `.tree-row`, `.tree-rail`, `.tree-guide`):
+  - a vertical rail under each open folder's chevron;
+  - a short stub to each child;
+  - the same under a sheet's items.
+
+  Our `index.css` carries the same classes, but no panel used them. The Sheets panel drew
+  a solid line beside a sheet's items, and the Takeoff panel nothing.
+- **Now as legacy:**
+  - **Takeoff panel:** a folder's items hang on a dotted rail under its chevron, each
+    with its stub; the last one ends the rail at its midline. An item's sub-items and cost
+    rows carry the rail past when a sibling follows.
+  - **Sheets panel:**
+    - an open folder's sheets and sub-folders hang on a rail under its chevron, with stubs;
+    - a sheet's items hang on a rail under the sheet's chevron, which replaces the solid
+      line.
+- **Left:** nested folders inside the Takeoff panel do not draw their own rails yet.
