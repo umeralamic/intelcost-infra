@@ -5990,3 +5990,74 @@ deviations named)
   Earthwork Markups' closed-folder message. Legacy did not guard this.
 - **The menu component** gains a strip under the rows with its own heading (legacy's cost
   icons). Menu labels no longer wrap when the menu opens by the right edge.
+
+## D-150 — A dialog's autofocused field keeps its focus, its text selected
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Every dialog; Frontend
+
+- **What the side-by-side check found:** legacy's Strip Area dialog opens with Name focused
+  and its text selected. Ours opened with focus on the Close button. Every one of our
+  dialogs with an `autoFocus` field did the same.
+- **The cause:** React's `autoFocus` focuses the field on mount but writes no `autofocus`
+  attribute. The dialog's own focus step looked for that attribute, found nothing, and
+  moved focus to the first control, the header's Close.
+- **Now:**
+  - a field inside the dialog that already holds focus keeps it;
+  - otherwise the step is as before (an `[autofocus]` attribute, the first control, the
+    panel);
+  - a text or number field it lands on has its contents selected, as legacy's Radix
+    dialogs do, so typing replaces a default name ("COUNT 7", "Strip Area").
+
+## D-151 — The Sheets row menu with legacy's glyphs, rules and "Name from page region…"
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Sheets panel; Frontend
+
+- **What the side-by-side check found:** legacy's sheet row menu (`SheetTree` `actionSpecs`,
+  the same for the ⋮ and a right-click) gives every entry a glyph and draws rules before
+  Bookmark, before the naming group and before Open in new tab. It also carries
+  "Auto-Name Sheet" and "Name from page region…". Ours had plain rows and neither naming
+  entry.
+- **Now as legacy:**
+  - legacy's glyphs: Pencil, Maximize, Star (filled amber when bookmarked), Printer,
+    dashed box, Copy, External link;
+  - legacy's rules;
+  - "Name from page region…", which opens the D-116 naming dialog on that sheet. The
+    dialog gains legacy's "Current selection (N)" range and starts on it.
+- **Auto-Name Sheet** stays absent until F14 (an AI call; see the F14 draft).
+
+## D-152 — The canvas menu's tool strip and glyphs as legacy's; Reset Orientation
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Takeoff canvas right-click; Frontend
+
+- **What the side-by-side check found:** legacy's canvas menu (`SheetContextMenu`) shows
+  seven tools in its strip, drawn with the toolbar's own icons (`CANVAS_STRIP_TOOLS`), and
+  a glyph on every row. Its Rotate Page submenu also has Mirror Page and Reset
+  Orientation. Ours had five tools with stand-in icons, glyphs on two rows, and three
+  rotations.
+- **Now as legacy:**
+  - the strip has Dimension, Area, Linear, Segment, Count, Highlight and Note, with the
+    toolbar's glyphs; Highlight and Note shipped with F11, so their D-75 absence ends;
+  - glyphs on Paste, Show All, Hide All, Rotate Page (and its turns), Show Legend,
+    Calibrate Scale and Bookmark This Page;
+  - "Reset Orientation" turns the sheet back to 0° (the shared view rotation, as P-20a's
+    turns).
+- **Mirror Page** stays absent until there is a mirrored view.
+
+## D-153 — Menus at legacy's 12 px
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Every right-click and dropdown menu built on `ContextMenu`; Frontend
+
+- **What the side-by-side check found:** legacy's takeoff menus set their rows at 12 px:
+  `SheetContextMenu`'s `text-xs`, `SheetTree`'s `text-xs gap-2`, and `itemActionMenu`'s
+  `text-xs`. Ours were 14 px, so every menu stood a size larger than legacy's.
+- **Now:** menu rows are 12 px, and a disabled row's reason is 11 px. Padding, width, glyphs
+  and headings are unchanged. Our canvas menu now matches legacy's row for row at
+  1440 × 900.
