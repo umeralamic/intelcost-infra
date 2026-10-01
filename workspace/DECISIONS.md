@@ -6325,5 +6325,30 @@ deviations named)
 - **Now:** each tool's width is kept when it folds. The bar unfolds it once that much
   room is free after its last control, as well as when it grows. After a discarded contour
   at 1440, every tool is back.
-- **Left:** legacy shows no draw group while an earthwork contour is drawn; ours shows
-  Properties, Stop and the mode.
+- **And as legacy, no draw group for an earthwork tool:** legacy's `drawActive` covers
+  the four measure tools only. Contour, Spot and Boundary borrow Linear, Count or Area but
+  draw no item, so they now show no Properties, Stop or mode group (which was what crowded
+  the bar). Our hint bubble for them stays.
+
+## D-167 — The takeoff Open dialog with legacy's two tabs
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback)
+**Area:** Takeoff header › Open; Frontend, Api
+
+- **What the side-by-side check found:** legacy's "Open" (`OpenProjectDialog`) has two
+  tabs:
+  - "Open takeoff": projects with drawings;
+  - "Set up takeoff on existing project": projects without, plus a new project, with an
+    upload.
+
+  Its list is sorted by name, with a Close button. Ours showed every project unsorted,
+  with no tabs. Its "has drawings" filter read a `sheet_count` that the project list does
+  not carry, so it never filtered.
+- **Now:**
+  - the api's project list carries `has_sheets` (one grouped query a page);
+  - the dialog has legacy's two tabs, its list by name, and Close;
+  - "Set up" lists the projects without drawings and opens a project's empty takeoff, where
+    its files load (F5).
+- **Not taken:** legacy's new-project form and upload inside the dialog. The dashboard and
+  the empty takeoff already do both.

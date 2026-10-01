@@ -287,7 +287,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [ ] Sheet thumbnails render the sheet with its markups on it. `src/components/takeoff/SheetThumbImage.tsx`, `src/lib/takeoff/thumbnails/thumbMarkup.ts` · **missing**
 - [ ] Step between sheets with a previous and next stepper. `src/components/takeoff/SheetStepper.tsx` · **missing**
 - [ ] The read-only sheet viewer opens one sheet, fits, zooms, shows or hides markups, refetches them, and splits into two panes. `src/pages/SheetViewer.tsx` (641 lines) · **missing**
-- [ ] Open a different project from inside the takeoff workspace. `src/components/takeoff/OpenProjectDialog.tsx` · **missing**
+- [ ] Open a different project from inside the takeoff workspace. `src/components/takeoff/OpenProjectDialog.tsx` · **partial** (D-167: Open takeoff and Set up takeoff on existing project tabs, by name, Close; the in-dialog upload and new project are the dashboard's and the empty takeoff's) · *smoke-tested (D-70)*
 - [x] Deleting a folder in bulk takes its emptied subfolders with its sheets. `.lovable/plan/bulk-delete-emptied-folders-go-with-their-sheets-2026-08-03.md` · **ported** (F5 Block D, D-48: a sheet delete takes the folders it empties, deepest first, and the confirm names them) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [ ] Folders sort in a defined order and carry file counters. `.lovable/plan/folder-order-file-counters-2026-08-29.md` · **missing**
 
