@@ -6011,6 +6011,10 @@ deviations named)
     panel);
   - a text or number field it lands on has its contents selected, as legacy's Radix
     dialogs do, so typing replaces a default name ("COUNT 7", "Strip Area").
+- **Amended the same night:** the step remembers the autofocused field from its first run.
+  In development React runs the effect twice; the first run's cleanup gave focus back to the
+  opener, so dialogs like Site Features still landed on Close. Production ran once and was
+  unaffected.
 
 ## D-151 — The Sheets row menu with legacy's glyphs, rules and "Name from page region…"
 
@@ -6469,3 +6473,30 @@ deviations named)
   - disabled at half opacity, and a focus ring.
 - **Specificity zero (`:where`):** a control's own size class still wins, so Estimating's
   12 px select column keeps its size.
+
+## D-175 — Settings sliders as legacy's
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Takeoff Settings dialog; Frontend
+
+- **What the side-by-side check found:** legacy's Settings sliders are Radix's:
+  - an 8 px rounded track in the secondary colour;
+  - the part up to the value in the primary;
+  - a 20 px thumb in the page colour, ringed in the primary.
+
+  Ours were the browser's thin range, tinted.
+- **Now:** the Settings slider is a native range drawn so (class `.ic-range` in `index.css`,
+  its fill from a `--fill` percentage), from tokens. Other ranges in the app are
+  unchanged.
+
+## D-176 — Small dialogs keep a tight footer
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** The dialogs with legacy's small header (`dense`): Settings, Export to Excel, Dock, Save as assembly, Edit sub-item, Duplicate item, Name from page region; Frontend
+
+- **What the side-by-side check found:** legacy's Settings footer (Reset this section, Restore
+  all defaults, Cancel, Save) is about 50 px tall; ours was about 80.
+- **Now:** a dense dialog's footer is padded 16 × 10 px (49 px in Settings); every other
+  dialog is unchanged.

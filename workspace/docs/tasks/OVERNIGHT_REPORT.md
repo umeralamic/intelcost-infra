@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (33 fixed so far, D-147 to D-174) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (36 fixed so far, D-147 to D-176) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -117,6 +117,9 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 31 | A Sheets-panel item's right-click opened the full menu; its ⋮ carried Make Site Feature | The short menu, as the Takeoff panel's; no Site Feature row on either ⋮ | (D-149, D-155) |
 | 32 | The move handle: white disc ringed blue, the total in a slow tooltip | Legacy's primary disc and its hover chip "SF 3 — 1290 SF" | D-173 |
 | 33 | Checkboxes and radios: the browser's own | Legacy's 16 px primary-bordered controls, app-wide, from tokens | D-174 |
+| 34 | Site Features (and any dialog under React's development double effect) opened on Close | The autofocused field is remembered across both runs | (D-150) |
+| 35 | Settings sliders: the browser's thin range | Legacy's 8 px track, primary fill, ringed thumb | D-175 |
+| 36 | Small dialogs' footers about 80 px; legacy's 50 | A tight footer on dense dialogs (49 px) | D-176 |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).
@@ -138,6 +141,8 @@ Left, with reasons:
 - **Scale menu labels:** legacy lists "1/8" = 1'", ours "1/8" = 1'-0"", the form the sheet
   chip and the saved scale use.
 - **Unfiled's right-click:** legacy shows nothing; ours offers Rename (F6-S9).
+- **Estimating's column header:** legacy draws a thick dark line under it (from its
+  frozen-header shadow rules); ours is the token rule at 2 px. Not chased this late.
 - **Double-click on an item's name:** both apps open Properties and start the inline rename
   together, legacy's behaviour; left as is.
 
@@ -227,6 +232,8 @@ system (CSI: DIV 31 › 31.03 Grading) and coded:
 | D-172 | Settings switches at legacy's size |
 | D-173 | The move handle and its chip |
 | D-174 | Checkboxes and radios as legacy's |
+| D-175 | Settings sliders as legacy's |
+| D-176 | Small dialogs keep a tight footer |
 
 ## Questions for you
 
@@ -273,11 +280,12 @@ layers and provenance; debug strip; the unbuilt backlog.
 - **The hard rule 7 hook has a gap** (above). Not fixed: the guard is yours.
 - **No retries were exhausted.** Every item that failed once was fixed and re-checked
   before moving on.
-- **Four bugs found and fixed by the side-by-side:**
+- **Five bugs found and fixed by the side-by-side:**
   - the Highlight and Note carets opened nothing (D-159);
   - tools stuck in More (D-166);
   - the Open dialog's drawings filter read a field the list never had (D-167);
-  - a volume panel saved in a wider window opened off screen (D-160).
+  - a volume panel saved in a wider window opened off screen (D-160);
+  - in development, React's double effect sent some dialogs' focus to Close (D-150).
 - **Converting an earthwork item to a rough measurement** was accepted by the api, past
   Earthwork Markups' closed-folder rule. It is now refused (D-149).
 - **The test project's classification system** became `csi` during Block F's smoke (on the
