@@ -608,7 +608,7 @@ The Earthwork tab. `src/lib/takeoff/earthwork/`.
 
 - [x] Trace a contour line, entering its elevation on Enter. `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/trace/` · **ported** (D-137: point to point, legacy's popover, pre-fill last ± Δ; *smoke-tested (D-70)*)
 - [x] Place a spot elevation, entering the elevation per click. `src/components/takeoff/ElevationPopover.tsx` · **ported** (D-137; *smoke-tested (D-70)*)
-- [ ] Edit a spot elevation inline from the Quantity Table, using the same range and parse contract as the canvas popover. `src/lib/takeoff/earthwork/elevation.ts` · **missing**
+- [x] Edit a spot elevation inline from the Quantity Table, using the same range and parse contract as the canvas popover. `src/lib/takeoff/earthwork/elevation.ts` · **ported** (D-181: the item's child rows, "Click to edit elevation" on a contour or spot, `validateElevation`, undoable; *smoke-tested (D-70)*)
 - [x] Elevations are stored in canonical feet on every sheet regardless of the sheet's display system, converting metric at entry and back at display. `src/lib/takeoff/earthwork/elevation.ts` · **ported** (D-136 Q5, D-137: `lib/takeoff/earthwork/elevation.ts`, every write through `toCanonicalFt`)
 - [x] Tag a contour or spot as Existing ground (EG) or Proposed grade (FG). `src/components/takeoff/EarthworkToolbarGroup.tsx`, `src/lib/takeoff/earthwork/roles.ts` · **ported** (D-137: the EG / FG toggle, `shape_meta.surface`)
 - [x] Draw a work boundary that limits the calculation, a hard singleton per sheet. `src/lib/takeoff/earthwork/containers.ts` · **ported** (D-137: one "Work Boundary" shape per sheet, legacy's replace confirm)

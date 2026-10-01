@@ -6626,3 +6626,126 @@ deviations named)
   finding 10) is known and accepted.
 - **Community is no longer blocked.** It goes back to Planned. The draft's other 17 questions
   still wait for the founder, and nothing is built for Community yet.
+
+---
+
+## D-181 — Editing earthwork contours, spots and the boundary, as legacy
+
+**Date:** 2026-10-01
+**Status:** decided (the founder asked for legacy's behaviour, in session); the "kept ours" points are this session's, pending founder review
+**Area:** Earthwork (F12) tab, Takeoff panel; Frontend
+
+**How it was compared:** legacy's source on `UmeralamDEV` (`engine.ts`, `PdfCanvas.tsx`,
+`ProjectTakeoff.tsx`, `ItemRowShared.tsx`, `useTakeoff.ts`), its plans, and a live drive of
+legacy ("Bench comparison" Page 1) against ours (C-200).
+
+**Ours before:** earthwork shapes were drawn but not editable. The canvas never saw them
+(`measuredItems` filters them out); the only acts were a right-click "Edit elevation…" and
+"Delete run".
+
+**Now as legacy:**
+- **Selecting** (Select tool):
+  - A click selects one run.
+  - Its look: a contour drawn 2.75 px over a white halo; the boundary dashed and 3 px; a
+    spot's crosshair 2.25 px and its dot r 3. Every vertex gets a 7 × 7 white square handle,
+    stroked in the run's colour.
+  - The item's Takeoff row is selected and expands to the run's child row, highlighted. A
+    child row's click selects its run.
+  - Box select encloses runs fully inside the box, and Ctrl+A takes them too. Both draw the
+    dashed selection outline.
+  - Shift and Ctrl clicks add nothing, as legacy.
+- **Deleting:**
+  - The Delete key removes the selected run, with no confirm, and it is undoable.
+  - The menu's last row is "Delete this contour", "Delete this spot" or "Delete this boundary".
+  - The last run of a container removes the container; undo brings it back.
+  - A child row's trash asks "Delete this run?" first, as legacy's.
+- **Points:**
+  - "Add point here" on a contour or boundary edge.
+  - "Delete this point" on a vertex, or a double-click on a vertex (a spot's included).
+  - A run left with too few points goes, with "Point removed" / "That section had too few
+    points left, so it was removed."
+  - The last point of a container is refused: "Can't delete the last point" / "Delete the
+    whole contour instead — right-click it and choose Delete."
+  - Any vertex of the selected run can be dragged, endpoints included; a spot moves by
+    dragging its point.
+  - A double-click on an edge does nothing, as legacy.
+- **Moving:** a second press on a selected contour or boundary drags the whole run. There is
+  no move handle for earthwork. Arrow keys nudge a box selection only.
+- **Copy and paste:** only a box selection's "Copy", within the same item, offset, the
+  elevation kept. The single-select action bar (Start, Resume, Copy, Delete) and the ⋮
+  "Duplicate" are not offered for earthwork items, as legacy's.
+  - This fixes a bug in ours: the action bar's Resume armed plain Linear on a contour item.
+- **Elevation:**
+  - "Edit elevation…" on a contour or spot.
+  - A child row's "Click to edit elevation", inline.
+  - The canvas label is legacy's pill: "102 ft" in 600 10 px type, on the paper colour, with
+    a 1 px border in the surface colour.
+- **Menus:**
+  - The header: "<item> · Contour #N of M · EL x ft", "<item> · Spot Elevation · EL x ft",
+    or "<item> · Boundary".
+  - Then, each only where it applies: Edit elevation…, Resume drawing, Add point here,
+    Delete this point, Break contour at this point, Break contour here; a rule; the delete
+    row.
+- **Break:**
+  - "Break contour at this point" works on an interior vertex; "Break contour here" on an
+    edge. Both halves keep the surface and the elevation.
+  - "Contour split into two" / "Both halves keep surface EG at EL x ft."
+  - A half with fewer than two points is refused: "Can't break here" / "Pick a spot in the
+    middle of the contour to break it."
+- **Resume drawing:** arms Contour on the run's surface, pre-filled from its elevation.
+- **The panel:** an earthwork item's row reads "N contours", "N spots" or "N regions"
+  (italic, no unit), not a quantity. Its child rows read "Contour · EL 102 (EG) · C-200 #1",
+  "Spot · EL 103 (EG)" and "Region".
+- **Hover:** legacy's card: the item, "Contour · #N of M", "EL x ft", "Marked by".
+- **Drawing:** Ortho does not bend Contour or Boundary clicks (legacy's earthwork tools
+  bypass it). Snap still applies.
+
+**Kept ours, on purpose:**
+- **The crossing guard (the founder's rule).** An edit is refused when it would make the
+  line cross itself, or cross a line of its own surface, more often than before. This
+  covers a vertex drag, a move, an added point and a break. A line already crossing stays
+  editable, so it can be fixed. Legacy only flags crossings after the fact; ours still does
+  that too (blue lines, the toast).
+- **The boundary keeps three points.** Legacy lets it drop to two, which no longer encloses.
+- **An elevation edit is undoable.** Legacy's is not.
+- **Stale follows the points.** Legacy's key sums `geometry_version`, with a 120 s debounce,
+  so an undo still shows stale. Ours hashes the inputs: any edit shows stale at once, and an
+  undo back to the computed shape is current again.
+- **Earthwork is drawn on reload.** Legacy's `earthworkLayers` memo leaves the geometries
+  out of its dependencies, so after a fresh load the shapes are missing until the next
+  earthwork write. Found live, and not copied.
+- **Break at a vertex** does not repeat the vertex in the second half. Legacy's does: a
+  defect.
+
+**Left:**
+- **Snap while dragging a vertex.** Legacy snaps the dragged vertex to Linear and Area points
+  and to PDF linework; ours does not snap an earthwork drag yet.
+- **Backspace** removes the selection in ours; in legacy, with nothing drafted, it is undo.
+  That is app-wide (F7), not an earthwork difference.
+
+**Also found in ours and fixed:** the status line read "Calculated: 584.73 LF" for a
+contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's rows now read
+"N contours" too, counting that sheet's runs, as legacy's tree does.
+
+**Proved:**
+- the gates;
+- the quantity table, 97 earthwork rows right (14 new `ewedit-*` rows: insert, remove,
+  split, the guard);
+- a smoke check on C-200. It drove:
+  - selection and its look, the handles, the panel child rows and the hover card;
+  - the vertex, edge, spot and boundary menus, row for row against live legacy's;
+  - a vertex drag, and a self-crossing drag refused;
+  - Break contour here, a double-click on a vertex, a whole-run move;
+  - Delete and Ctrl+Z (the container gone and back);
+  - a box select framing five runs;
+  - the inline elevation edit and the "Delete this run?" confirm;
+  - a slanted contour drawn with Ortho on.
+
+**Where:**
+- app:
+  - `lib/takeoff/earthwork/{edit,runRows}.ts` (new, pure);
+  - `features/takeoff/earthwork/{EarthworkLayer,useEarthwork,EarthworkHover,EarthworkRunRows}.tsx`;
+  - `features/takeoff/components/{ItemRow,QuantityPanel,SheetCanvas}.tsx`;
+  - `features/takeoff/sheets/SheetsPanel.tsx`;
+  - `pages/ProjectTakeoff.tsx`;
+- infra: `browser/quantity-table.mjs`, `browser/lib/earthwork-cases.mjs`.
