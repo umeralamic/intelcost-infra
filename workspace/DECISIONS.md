@@ -6749,3 +6749,31 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - `features/takeoff/sheets/SheetsPanel.tsx`;
   - `pages/ProjectTakeoff.tsx`;
 - infra: `browser/quantity-table.mjs`, `browser/lib/earthwork-cases.mjs`.
+
+---
+
+## D-182 — A dragged point snaps only as the Snap toggles say
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; closes D-181's first "Left" point)
+**Area:** Takeoff and Earthwork canvas (F7, F12); Frontend
+
+- **One rule for every point placed or dragged.** This covers a new point, a box drag's
+  corners, a Linear or Area vertex drag, and an earthwork vertex or spot drag:
+  - **Snap off and Snap PDF off:** the point goes where the cursor is, with no pull at all.
+  - **Snap on:** it snaps to nearby markup: your Linear and Area points, edges, midpoints
+    and crossings, the dimensions, and the run being drawn.
+  - **Snap PDF on:** it also snaps to the drawing's own printed lines. Your own markup wins
+    at an equal rank, as legacy's.
+- **As legacy** (`engine.ts` `findSnap`, called on every pointer move, drags included).
+  Ours before: a new point followed the toggles, but no drag snapped at all.
+- **A dragged point never snaps to itself, nor to its own two edges.** They move with it.
+  Legacy's index is built before the drag, so its dragged point can stick to where it
+  started; that is not copied. The rest of the run is still a target.
+- **Earthwork lines are not snap targets,** as legacy's (its index holds Linear and Area
+  layers only).
+- **Left:** a whole shape or run being moved does not snap. Legacy snaps the move's cursor
+  too; that was not asked for here.
+- **Where:** app `features/takeoff/components/SheetCanvas.tsx` (`snapNear`, `dragSnap`,
+  passed to the markup layer as `snap`); `features/takeoff/earthwork/EarthworkLayer.tsx`;
+  `pages/ProjectTakeoff.tsx`.
