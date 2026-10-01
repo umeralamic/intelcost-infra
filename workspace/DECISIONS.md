@@ -6823,3 +6823,40 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
     asked "Delete highlight?".
 - **Where:** app `pages/ProjectTakeoff.tsx`, `features/takeoff/markup/MarkupLayer.tsx`,
   `features/takeoff/hooks/useSessionHistory.ts`.
+
+---
+
+## D-184 — Ctrl+Z takes back a run's points one at a time; Ctrl+Shift+Z and Ctrl+Y put them back
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session)
+**Area:** Takeoff and Earthwork canvas (F7, F12); Frontend
+
+- **While a line is being drawn, Ctrl+Z removes its last placed point, one at a time.**
+  This is F7's order: an arc being placed unwinds first, then the run's last point, and
+  only with nothing left in the run does the page's history hear the key. Backspace does
+  the same (D-183). It covers every run drawn on the canvas: Linear, Area and Segment, and
+  in Earthwork the Contour, the Boundary, a Strip Area outline and a Site Feature. All of
+  them draw through the canvas's own Linear or Area tool, so they share one rule.
+- **Ctrl+Shift+Z and Ctrl+Y put the points back while the line is still being drawn,**
+  last taken first, each with the arc it ended. Legacy has no such step: its Ctrl+Shift+Z
+  mid-draw goes to the history. This is the founder's addition.
+  - What can be put back is forgotten when a new point is placed, when the run is
+    finished, dropped or the tool changes, and when an undo reaches the history.
+  - With nothing to put back, the keys do nothing mid-draw, as before.
+- **Once the line is finished, Ctrl+Z undoes the whole line, as before.**
+- **Fixed on the way: the run is always asked first.** The canvas hears these keys before
+  the page's history (a capture-phase listener). Before, which one heard Ctrl+Z first
+  depended on which listener was added last. When the page came first, it claimed the key
+  and the run's point stayed.
+- **Where:** app `features/takeoff/components/SheetCanvas.tsx` (`putBackRef`, the
+  capture-phase key listener).
+- **Proved:**
+  - Contour: 3 points, Ctrl+Z twice, Ctrl+Shift+Z and Ctrl+Y: 3 points saved. Then
+    Ctrl+Z on the finished line took it whole.
+  - Boundary: 4 points, Ctrl+Z twice, Ctrl+Y, a new point, Ctrl+Y again: saved as points
+    1, 2, 3 and the new one. The second Ctrl+Y did nothing, since the new point had
+    cleared what could be put back.
+  - A Strip Area outline (with Ctrl+Shift+Z) and a Site Feature (with Ctrl+Y): the same
+    sequence and the same result. Each finished one went whole on one Ctrl+Z.
+  - Backspace mid-contour still took the last point.
