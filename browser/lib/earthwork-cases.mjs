@@ -591,6 +591,40 @@ export const EARTHWORK_CASES = [
   },
   // Ours: a two-decimal number is a spot, never a contour's label.
   { id: "trace-spot-not-label", kind: "trace", pieces: [{ pts: [[100, 100], [200, 110]] }, { pts: [[230, 113], [330, 123]] }], labels: [{ str: "703.95", at: [215, 111.5], angle: 0.0997 }], expect: { elevations: "", spots: "703.95" } },
+  // D-144, suggestions for unlabelled EG lines: three dashed EG lines 40 pt apart; a
+  // labelled FG line ends on the first (700, a tie-in) and another on the third (702). The
+  // middle one lies between them: 701 from its neighbours, confirmed by the second tie-in.
+  {
+    id: "trace-suggest-tie-and-neighbours",
+    kind: "trace",
+    suggest: "EG",
+    pieces: [
+      { pts: [[100, 500], [400, 503]], dash: [4, 4] },
+      { pts: [[100, 540], [400, 543]], dash: [4, 4] },
+      { pts: [[100, 580], [400, 583]], dash: [4, 4] },
+      { pts: [[200, 501], [205, 380]] },
+      { pts: [[300, 582], [305, 700]] },
+    ],
+    labels: [
+      { str: "700", at: [202.5, 440], angle: -1.5295 },
+      { str: "702", at: [302.5, 641], angle: 1.5284 },
+    ],
+    expect: { EG: 3, FG: 2, elevations: "700 702", suggested: "700:tie-in 701:neighbours 702:tie-in" },
+  },
+  // One tie-in alone: its line is suggested, its neighbours are not (no second seed to say
+  // which way the ground goes up).
+  {
+    id: "trace-suggest-one-seed",
+    kind: "trace",
+    suggest: "EG",
+    pieces: [
+      { pts: [[100, 500], [400, 503]], dash: [4, 4] },
+      { pts: [[100, 540], [400, 543]], dash: [4, 4] },
+      { pts: [[200, 501], [205, 380]] },
+    ],
+    labels: [{ str: "700", at: [202.5, 440], angle: -1.5295 }],
+    expect: { suggested: "700:tie-in" },
+  },
   // Legacy's TraceIndex: the nearest line within 6 pt is picked, nothing 100 pt away.
   { id: "trace-pick", kind: "trace", pieces: [{ pts: [[100, 100], [400, 130]] }, { pts: [[100, 300], [400, 330]] }], pick: [[250, 118, 6], [250, 215, 6]], expect: { pick: "hit miss" } },
 ];

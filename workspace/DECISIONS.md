@@ -5793,3 +5793,38 @@ frame, and a spot that is not a contour label.
 `takeoff/earthwork/{EarthworkToolbar,useEarthwork}.tsx` (`adopt`, `adoptMany`),
 `pages/ProjectTakeoff.tsx`; infra `browser/lib/earthwork-cases.mjs`,
 `browser/quantity-table.mjs`.
+
+## D-144 — Suggested elevations for unlabelled contours; C-200's existing grade is not on C-200
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review
+**Area:** Earthwork (F12), Frontend
+
+- **The finding.** C-200 prints no existing-grade elevations.
+  - All 37 contour labels sit in boxes on solid FG lines (the founder's reading); the 195
+    dashed EG lines carry none. Its text holds no other elevation either.
+  - The existing ground is labelled on **page 3**, the boundary and topographic survey: 47
+    labelled EG contours, 697 to 729.
+  - Page 3 is drawn at another scale and placement, and probably rotation. A Hough vote over
+    contour samples at ten scale ratios found no reliable overlay (best 32 % of samples on a
+    line), so the labels cannot be carried across automatically tonight.
+- **Suggestions, never adopted on their own.** `lib/takeoff/earthwork/trace/infer.ts`
+  suggests a value only from the sheet's evidence:
+  - **Tie-in:** a labelled FG contour's end lying on an EG line gives that EG line its
+    elevation (where the new grade meets the old).
+  - **Neighbours:** contours step by the interval. A group of lines connected by normals is
+    solved both ways from one seed, and a way is kept only when other seeds agree at least
+    3:1. A line reached with two values suggests nothing.
+  - The hint chip says "no label, suggested 709 (tie-in)" or "(from neighbours)". A click
+    pre-fills the popover with it for the person to confirm. **"Adopt labelled" never takes
+    a suggestion.**
+  - On C-200: 10 tie-ins and 5 from neighbours, about 14 % of the EG length. In a hold-out
+    check, 4 re-derived right, 0 wrong and 6 not re-derived.
+- **Quantity table:** 2 rows (tie-ins and a neighbour between them; one seed alone suggests
+  only its own line).
+- **Idea:** register a second sheet by two clicked control points (property corners) and
+  carry its labelled EG contours onto the grading sheet. That is what C-200 needs.
+
+**Where:** app `lib/takeoff/earthwork/trace/infer.ts` (new),
+`features/takeoff/earthwork/trace/useAutoTrace.tsx`, `pages/ProjectTakeoff.tsx`; infra
+`browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.

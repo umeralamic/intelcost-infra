@@ -109,6 +109,7 @@ try {
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
+    const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
@@ -202,6 +203,9 @@ try {
           selfCrossings: r.stats.selfCrossings,
           spots: r.spots.map((s) => s.elevation).join(" "),
         };
+        if (c.suggest) {
+          out.suggested = [...inf.suggestElevations(r.lines, c.suggest, 1).values()].map((v) => `${v.value}:${v.source}`).sort().join(" ");
+        }
         if (c.pick) {
           const idx = new tr.TraceHitIndex(r.lines);
           out.pick = c.pick.map(([x, y, rad]) => (idx.pick({ x, y }, rad) ? "hit" : "miss")).join(" ");
