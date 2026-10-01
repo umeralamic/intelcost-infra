@@ -6448,3 +6448,24 @@ deviations named)
   - the chip on hover, with the section's figure, as the shape menus' header (D-161).
 - Its size and placement stay ours (the founder's round 3 B7: inside an area's widest part,
   out of its deducts; 18 to 28 px as the page fills the canvas).
+
+## D-174 — Checkboxes and radios as legacy's
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Every native checkbox and radio in the app; Frontend
+
+- **What the side-by-side check found:** legacy's checkboxes and radios (shadcn's) are
+  16 px:
+  - bordered in the primary colour;
+  - a checkbox filled with it when on, with a tick in the primary's foreground;
+  - a radio with a primary dot.
+
+  Seen in Properties, Settings, Export to Excel, Strip Area, Calculate and Columns. Ours
+  were the browser's own, only tinted.
+- **Now:**
+  - one base rule in `index.css` draws them so, from tokens, with an indeterminate dash
+    (Estimating's select-all);
+  - disabled at half opacity, and a focus ring.
+- **Specificity zero (`:where`):** a control's own size class still wins, so Estimating's
+  12 px select column keeps its size.

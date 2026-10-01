@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (32 fixed so far, D-147 to D-173) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (33 fixed so far, D-147 to D-174) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -116,6 +116,7 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 30 | Settings switches 36 × 20; legacy 44 × 24 | 44 × 24 | D-172 |
 | 31 | A Sheets-panel item's right-click opened the full menu; its ⋮ carried Make Site Feature | The short menu, as the Takeoff panel's; no Site Feature row on either ⋮ | (D-149, D-155) |
 | 32 | The move handle: white disc ringed blue, the total in a slow tooltip | Legacy's primary disc and its hover chip "SF 3 — 1290 SF" | D-173 |
+| 33 | Checkboxes and radios: the browser's own | Legacy's 16 px primary-bordered controls, app-wide, from tokens | D-174 |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).
@@ -128,9 +129,8 @@ Left, with reasons:
 - **Mirror Page:** no mirrored view yet.
 - **Search inputs:** legacy's look 14 px because its shadcn Input's `md:text-sm` overrides
   its own `text-[11px]`. Ours honour the 11 px both write.
-- **Shared widgets:** legacy's dialogs are 448 px wide (ours 512) and its checkboxes are
-  bordered in the primary colour (ours native). Both are app-wide styles, left for a
-  design pass.
+- **Default dialog width:** legacy's is 448 px, ours 512. App-wide, left for a design
+  pass (its checkboxes and radios now match, D-174).
 - **The empty toolbar group legacy draws after Split:** Markups and Legend are hidden by
   preference, leaving an empty bordered box. Not copied.
 - **Menu sizes:** legacy's item ⋮ renders at 14 px (a shadcn default) while its other
@@ -226,6 +226,7 @@ system (CSI: DIV 31 › 31.03 Grading) and coded:
 | D-171 | New folder named in place in the Takeoff panel |
 | D-172 | Settings switches at legacy's size |
 | D-173 | The move handle and its chip |
+| D-174 | Checkboxes and radios as legacy's |
 
 ## Questions for you
 
@@ -304,8 +305,7 @@ layers and provenance; debug strip; the unbuilt backlog.
   so a printed engineer's factor cannot be typed backwards.
 - **Use the `has_sheets` flag beyond Open:** the dashboard could mark projects that have
   no drawings yet.
-- **One more app-wide pass:** checkbox borders in the primary colour, and the 448 px
-  default dialog width, to finish legacy's look.
+- **One more app-wide pass:** the 448 px default dialog width, to finish legacy's look.
 
 ## Click-only checks for the morning, most important first
 
