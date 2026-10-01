@@ -302,26 +302,28 @@ export const EARTHWORK_CASES = [
   { id: "bal-legacy-import", kind: "balance", input: { cut: 100, fill: 300, reuseBank: 50, suitable: true, swell: 1.25, shrink: 1 }, expect: { exportLoose: null, importLoose: 187.5 } },
   { id: "bal-legacy-export", kind: "balance", input: { cut: 300, fill: 100, reuseBank: 50, suitable: true, swell: 1.25, shrink: 1 }, expect: { exportLoose: 312.5, importLoose: null } },
   { id: "bal-legacy-haul-off", kind: "balance", input: { cut: 300, fill: 100, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1 }, expect: { exportLoose: 250, importLoose: null } },
-  // Shrink 0.9 (Q31, by hand):
-  // suitable, C 300 F 100: net = 300 x 0.9 - 100 = 170 compacted; 170 / 0.9 = 188.888... bank; x 1.25.
-  { id: "bal-shrink-suitable-export", kind: "balance", input: { cut: 300, fill: 100, reuseBank: 0, suitable: true, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: (170 / 0.9) * 1.25, importLoose: null } },
-  // suitable, C 100 F 300 R 50: net = 150 x 0.9 - 300 = -165; 165 / 0.9 x 1.25 = 229.1666...
-  { id: "bal-shrink-suitable-import", kind: "balance", input: { cut: 100, fill: 300, reuseBank: 50, suitable: true, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: null, importLoose: (165 / 0.9) * 1.25 } },
-  // not suitable, C 100 F 300 R 50: need = 300 - 45 = 255; import 255 / 0.9 x 1.25; export 100 x 1.25.
-  { id: "bal-shrink-unsuitable-both", kind: "balance", input: { cut: 100, fill: 300, reuseBank: 50, suitable: false, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: 125, importLoose: (255 / 0.9) * 1.25 } },
-  // not suitable, C 300 F 20 R 50: need = 20 - 45 = -25 (re-use left over); export (300 + 25 / 0.9) x 1.25.
-  { id: "bal-shrink-unsuitable-surplus", kind: "balance", input: { cut: 300, fill: 20, reuseBank: 50, suitable: false, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: (300 + 25 / 0.9) * 1.25, importLoose: null } },
-  // suitable, C 100 F 90: 100 x 0.9 = 90 fills 90 exactly: neither line (legacy, unshrunk, would export 12.5).
-  { id: "bal-shrink-exact-balance", kind: "balance", input: { cut: 100, fill: 90, reuseBank: 0, suitable: true, swell: 1.25, shrink: 0.9 }, expect: { exportLoose: null, importLoose: null } },
-  // The C-200 engineer's table (Hidden Valley, founder's benchmark, D-142): excavation 14,263,
-  // embankment 8,727, "shrink 1.10" (1.10 bank per compacted), swell 1.15. In our measure a
-  // bank CY compacts to s = 1 / 1.10, so the embankment needs 8,727 x 1.10 = 9,599.7 bank and
-  // the surplus is 14,263 - 9,599.7 = 4,663.3 bank, 4,663.3 x 1.15 = 5,362.795 loose. (The
-  // table's 6,803 subtracts that bank figure from the excavation's loose 16,402.45.)
-  { id: "bal-c200-engineer", kind: "balance", input: { cut: 14263, fill: 8727, reuseBank: 0, suitable: true, swell: 1.15, shrink: 1 / 1.1 }, expect: { exportLoose: (14263 - 8727 * 1.1) * 1.15, importLoose: null } },
-  // The same table typed as printed (shrink 1.10 into our bank-to-compacted field): the
-  // cut is taken to grow, net = 14,263 x 1.1 - 8,727 = 6,962.3 compacted, / 1.1 x 1.15.
-  { id: "bal-c200-as-printed", kind: "balance", input: { cut: 14263, fill: 8727, reuseBank: 0, suitable: true, swell: 1.15, shrink: 1.1 }, expect: { exportLoose: ((14263 * 1.1 - 8727) / 1.1) * 1.15, importLoose: null } },
+  // Shrink typed as printed (D-177): "fill needs x more cut", k bank per compacted. These rows
+  // were worked in the old bank-to-compacted form s = 0.9, so k = 1 / 0.9; the answers are
+  // the same numbers. A compacted CY of fill needs 1 / 0.9 = 1.111... bank.
+  // suitable, C 300 F 100: surplus = 300 - 100 / 0.9 = 188.888... bank; x 1.25.
+  { id: "bal-shrink-suitable-export", kind: "balance", input: { cut: 300, fill: 100, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: (170 / 0.9) * 1.25, importLoose: null, exportBank: 170 / 0.9 } },
+  // suitable, C 100 F 300 R 50: surplus = 150 - 300 / 0.9 = -183.333... = -165 / 0.9; x 1.25 = 229.1666...
+  { id: "bal-shrink-suitable-import", kind: "balance", input: { cut: 100, fill: 300, reuseBank: 50, suitable: true, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: null, importLoose: (165 / 0.9) * 1.25, importBank: 165 / 0.9 } },
+  // not suitable, C 100 F 300 R 50: need = 300 / 0.9 - 50 = 255 / 0.9 bank; import x 1.25; export 100 x 1.25.
+  { id: "bal-shrink-unsuitable-both", kind: "balance", input: { cut: 100, fill: 300, reuseBank: 50, suitable: false, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: 125, importLoose: (255 / 0.9) * 1.25 } },
+  // not suitable, C 300 F 20 R 50: need = 20 / 0.9 - 50 = -25 / 0.9 (re-use left over); export (300 + 25 / 0.9) x 1.25.
+  { id: "bal-shrink-unsuitable-surplus", kind: "balance", input: { cut: 300, fill: 20, reuseBank: 50, suitable: false, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: (300 + 25 / 0.9) * 1.25, importLoose: null } },
+  // suitable, C 100 F 90: 90 / 0.9 = 100 bank, exactly the cut: neither line (legacy, unshrunk, would export 12.5).
+  { id: "bal-shrink-exact-balance", kind: "balance", input: { cut: 100, fill: 90, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: null, importLoose: null } },
+  // The C-200 engineer's table (Hidden Valley, the founder's benchmark, D-142, D-177), typed
+  // as printed: excavation 14,263 BCY, embankment 8,727 CCY, shrink 1.10, swell 1.15. The
+  // embankment needs 8,727 x 1.10 = 9,599.7 BCY; the surplus is 14,263 - 9,599.7 = 4,663.3
+  // BCY; it exports 4,663.3 x 1.15 = 5,362.795 LCY (5,363). The table's "net 6,803" subtracts
+  // the bank 9,599.7 from the excavation's loose 16,402.45 and overstates the haul.
+  { id: "bal-c200-printed", kind: "balance", input: { cut: 14263, fill: 8727, reuseBank: 0, suitable: true, swell: 1.15, shrink: 1.1 }, expect: { fillBank: 9599.7, exportBank: 4663.3, exportLoose: 5362.795, importLoose: null, importBank: null } },
+  // Legacy's old form (bank to compacted, s = 1 / 1.10 = 0.9091) converted by D-177's
+  // migration to k = round(1 / 0.9091, 4) = 1.1: the same export, to the cent.
+  { id: "bal-c200-old-form-converted", kind: "balance", input: { cut: 14263, fill: 8727, reuseBank: 0, suitable: true, swell: 1.15, shrink: Math.round((1 / 0.9091) * 1e4) / 1e4 }, expect: { exportLoose: 5362.795 } },
   // --- Site Features (F12 Block D; legacy's siteFeatures.test.ts, and D-136 Q6, Q7) --------
   // A 10 x 20 ft rectangle on a 200 x 100 pt page at 1 ft/pt, pushed out 2 ft with square
   // corners: 14 x 24 = 336 SF (the x and y scales apart).
@@ -441,7 +443,11 @@ export const EARTHWORK_CASES = [
       "strip:s1:name": 'Strip Topsoil (6") — S (bank)',
       "strip_reuse_fill:s1": 50,
       "soil_import:__soil_import__": 187.5,
-      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill",
+      // D-177: the import's bank figure in brackets, 300 - 150 = 150 BCY; fill is compacted.
+      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill (150 BCY)",
+      "soil_import:__soil_import__:unit": "LCY",
+      "cut:remainder:unit": "BCY",
+      "fill:remainder:unit": "CCY",
     },
   },
   // Cut 300, fill 100, strip 50 re-used: export (350 - 100) x 1.25 = 312.5.
@@ -458,9 +464,10 @@ export const EARTHWORK_CASES = [
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 300, fillCY: 100 }], stripAreas: [{ id: "s1", label: "S", depthFt: 0.5, areaSF: 1, volumeCY: 50 }], stripMeta: [{ id: "s1", name: "S", disposition: "haul_off", reuseKind: null }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 } },
     expect: { "strip_haul:s1": 62.5, "strip_haul:s1:unit": "LCY", "soil_export:__soil_export__": 250 },
   },
-  // A pad: undercut 270 CF = 10 BCY re-used, 2 ft; prep 135 SF, 12 in, 2 lifts; shrink 0.9,
-  // swell 1.25, cut 100, fill 300, suitable. Re-use line 10 x 0.9 = 9 CCY; replacement
-  // 10 CCY; net = (100 + 10) x 0.9 - 300 = -201; import 201 / 0.9 x 1.25 = 279.1666...
+  // A pad: undercut 270 CF = 10 BCY re-used, 2 ft; prep 135 SF, 12 in, 2 lifts; shrink as
+  // printed 1 / 0.9 (D-177; the old form's 0.9), swell 1.25, cut 100, fill 300, suitable.
+  // Re-use line 10 / (1 / 0.9) = 9 CCY; replacement 10 CCY; surplus = 100 + 10 - 300 / 0.9 =
+  // -201 / 0.9; import 201 / 0.9 x 1.25 = 279.1666...
   {
     id: "lines-undercut-reuse-shrink",
     kind: "lines",
@@ -468,7 +475,7 @@ export const EARTHWORK_CASES = [
       units: "CY",
       regions: [{ id: null, label: "Remainder", cutCY: 100, fillCY: 300 }],
       features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 135, volumeCF: 270, material: "Select Fill", disposition: "reuse" }, prep: { depthFt: 1, lifts: 2, areaSF: 135 } }],
-      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 0.9 },
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 / 0.9 },
     },
     expect: {
       roles: "undercut:pad undercut_reuse_fill:pad undercut_replace:pad prep:pad cut:remainder fill:remainder soil_import:__soil_import__",
@@ -544,8 +551,53 @@ export const EARTHWORK_CASES = [
       "cut:park:name": "Parking Cut",
       "fill:remainder:name": "Remaining Site Fill",
       "soil_export:__soil_export__": 125,
+      "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
       "soil_import:__soil_import__": 100,
-      "soil_import:__soil_import__:name": "Soil Import — Select Borrow",
+      "soil_import:__soil_import__:name": "Soil Import — Select Borrow (80 BCY)",
+    },
+  },
+  // --- D-177: the factors as printed; each line in its true unit; the bank figure named ---
+  // C-200 (the founder's numbers): cut 14,263 BCY, fill 8,727 CCY, shrink 1.10, swell 1.15:
+  // the fill needs 9,599.7 BCY, the surplus is 4,663.3 BCY, the export 5,362.795 LCY. The
+  // name rounds the bank figure to the whole yard: 4,663.
+  {
+    id: "lines-c200-export",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 14263, fillCY: 8727 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.15, shrink: 1.1 } },
+    expect: {
+      roles: "cut:remainder fill:remainder soil_export:__soil_export__",
+      "cut:remainder": 14263,
+      "cut:remainder:unit": "BCY",
+      "fill:remainder": 8727,
+      "fill:remainder:unit": "CCY",
+      "soil_export:__soil_export__": 5362.795,
+      "soil_export:__soil_export__:unit": "LCY",
+      "soil_export:__soil_export__:name": "Soil Export (4,663 BCY)",
+    },
+  },
+  // A shortfall: cut 100 BCY, fill 300 CCY, shrink 1.10: the fill needs 330 BCY, 230 short;
+  // import 230 x 1.25 = 287.5 LCY, named with its 230 BCY.
+  {
+    id: "lines-import-bank-name",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 100, fillCY: 300 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
+    expect: {
+      "soil_import:__soil_import__": 287.5,
+      "soil_import:__soil_import__:unit": "LCY",
+      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill (230 BCY)",
+    },
+  },
+  // Metric, thousands separated: cut 2,500.4 BCM, no fill, swell 1.2: export 3,000.48 LCM,
+  // named "(2,500 BCM)"; the fill line in CCM.
+  {
+    id: "lines-metric-export-name",
+    kind: "lines",
+    input: { units: "m3", regions: [{ id: null, label: "Remainder", cutCY: 2500.4, fillCY: 0 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.2, shrink: 1 } },
+    expect: {
+      "fill:remainder:unit": "CCM",
+      "soil_export:__soil_export__": 3000.48,
+      "soil_export:__soil_export__:unit": "LCM",
+      "soil_export:__soil_export__:name": "Soil Export (2,500 BCM)",
     },
   },
   // --- Block G, Auto Trace (D-143): legacy's stitch.test.ts cases, page 1000 x 1000 pt, ---
