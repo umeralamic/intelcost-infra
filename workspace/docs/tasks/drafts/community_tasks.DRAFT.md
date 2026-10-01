@@ -1,20 +1,5 @@
 # F15 (part): Community (draft spec, questions open)
 
-> ⛔ **BLOCKING — decide before anything is built (the founder, 2026-10-01).**
-> - **The problem.** Legacy's forum is **global**: one forum for every customer of every
->   workspace. Bug Reports invite screenshots, and estimators paste screenshots of their
->   drawings. So a customer's drawings, their client's site and building plans, are visible
->   to every other customer.
-> - **Decide one of these first:**
->   - **(a) Per workspace:** each workspace's forum is visible to its own members only.
->   - **(b) Global, without drawing images, and moderated:** no pasted or uploaded images of
->     drawings, enforced by the product. Posts are moderated by IntelCost staff.
-> - **No part of Community is built** until this is decided and logged as a `D-NN`: not its
->   tables, its routes or its takeoff tab. It answers question 1 (global or per workspace)
->   and finding 10 (privacy), and bounds question 9 (media).
-> - **Legacy's existing posts** hold such images today. Whether they migrate (F17), and how,
->   follows from the same decision.
-
 > **Draft, written overnight 2026-10-01 (task 7 of the plan).** Nothing is built. The
 > founder's answers to the questions at the end come before any code.
 > - **Sources:** legacy's source on `UmeralamDEV` (e99cddcb, unchanged for Community since
@@ -146,9 +131,9 @@ in takeoff. The new app has none.
 Each gives legacy's behaviour and my recommendation. None is decided.
 
 **Scope and privacy**
-1. **Global or per workspace.** Legacy: one global forum; every customer sees every post,
-   name, avatar and screenshot. *Recommend:* keep it global, show only first name and
-   initial, and warn on paste that drawings are visible to every IntelCost customer.
+1. **Global or per workspace.** ✅ **Answered, D-180:** global, as legacy. Everything
+   posted (text, images, attachments) is visible to all users. *(Was: legacy is one global
+   forum; every customer sees every post, name, avatar and screenshot.)*
 2. **Who may post.** Legacy: any signed-in user (`canComment` unchecked). *Recommend:*
    enforce `canComment`, so viewers read only.
 3. **Who moderates.** Legacy: IntelCost platform admins only; no report button.

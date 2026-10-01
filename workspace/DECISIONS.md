@@ -6611,3 +6611,18 @@ deviations named)
   - The no-node fallback was run alone.
   - A live multi-line Bash call with an in-place `sed` on its second line was refused by the
     hook, and its scratch file was left unchanged.
+
+---
+
+## D-180 — Community stays one global forum, everything posted visible to all users
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; answers the Community draft's Q1)
+**Area:** F15 Community (not built)
+
+- **The forum is global, as legacy's.** One forum for every customer of every workspace.
+  Everything posted (text, images, attachments) is visible to every signed-in user.
+- **No per-workspace forum, and no ban on drawing images.** The privacy finding (the draft's
+  finding 10) is known and accepted.
+- **Community is no longer blocked.** It goes back to Planned. The draft's other 17 questions
+  still wait for the founder, and nothing is built for Community yet.
