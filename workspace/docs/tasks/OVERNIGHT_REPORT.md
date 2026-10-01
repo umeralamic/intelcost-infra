@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (7 fixed so far, D-147 to D-153) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (11 fixed so far, D-147 to D-156) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -91,6 +91,10 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 5 | The sheet row menu had no glyphs, rules or "Name from page region…" | Legacy's glyphs and rules; the naming dialog gains "Current selection (N)" | D-151 |
 | 6 | The canvas menu's strip had five tools with stand-in icons; rows lacked glyphs | Seven tools with the toolbar's glyphs, glyphs on every row, Reset Orientation | D-152 |
 | 7 | Menu text 14 px; legacy's is 12 px | Menu rows 12 px | D-153 |
+| 8 | The Scale menu's rows 48 px with 24 px icons (the toolbar's sizing leaked into it) | Menus inside the toolbar keep their own sizes: 24 px rows | D-154 |
+| 9 | The Sheets panel ⋮ lacked Expand All, Collapse All and Sheet naming, and listed levels inline; the item ⋮ led with Make Site Feature | Legacy's layout, ticks and dots, end-aligned; Site Feature row only on the right-click and canvas | D-155 |
+| 10 | Draw-mode menus 350 px wide with 11 px one-line hints | 9 px wrapping hints, about 230 px | D-156 |
+| 11 | The Assemblies empty state said "right-click an item" for Save as assembly… (legacy says the same, and is wrong too) | Points at the ⋮ More actions | (D-149) |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).
@@ -108,6 +112,13 @@ Left, with reasons:
   design pass.
 - **The empty toolbar group legacy draws after Split:** Markups and Legend are hidden by
   preference, leaving an empty bordered box. Not copied.
+- **Menu sizes:** legacy's item ⋮ renders at 14 px (a shadcn default) while its other
+  menus are 12 px. Ours are 12 px throughout.
+- **Scale menu labels:** legacy lists "1/8" = 1'", ours "1/8" = 1'-0"", the form the sheet
+  chip and the saved scale use.
+- **Unfiled's right-click:** legacy shows nothing; ours offers Rename (F6-S9).
+- **Double-click on an item's name:** both apps open Properties and start the inline rename
+  together, legacy's behaviour; left as is.
 
 ### Finding: a gap in the hard rule 7 hook (03:42)
 

@@ -6115,3 +6115,71 @@ deviations named)
   11 px on one line, about 350 px wide, reaching over the canvas.
 - **Now:** hints are 9 px and wrap at 9.5 rem; the Linear menu measures about 230 px.
   Labels, glyphs and the current mode's dot are unchanged.
+
+## D-157 — Estimating's Format panel in legacy's layout
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's layout; the overnight fallback; amends D-92's panel)
+**Area:** Estimating › Format; Frontend
+
+- **What the side-by-side check found:** legacy's Format panel (`FormatPanel.tsx`) opens
+  on a "Format theme" list, then six folded sections, then "Reset all to defaults":
+  - **The list:** "Default — stock look", "Workspace format — you can edit / view only"
+    (or "Create workspace format…" for an admin), "My formatting" (or "Create my
+    formatting (starts from the current view)…"), and teammates' "— shared" ones.
+  - **Below the list:** "Share my formatting with the workspace", and on a read-only
+    theme its reason with "Save as my formatting".
+  - **The sections:** Text, Rows & columns, Grid & borders, Colors, More options and What
+    Export carries, each with its own Reset.
+
+  Ours was a select, a read-only box and one long open list.
+- **Now as legacy's layout, over D-92's fields:**
+  - **Rows & columns** holds the row heights and the column widths (each viewer's own,
+    live on any theme).
+  - **More options** holds bold parents, zebra, Freeze main header (each viewer's own),
+    thousands and decimals.
+  - **Section Resets** restore the Default's values for that section; Grid & borders
+    restores the preset and the borders together.
+  - **Reset all** restores the Default and the column widths.
+  - **"Make this the workspace format"** is now legacy's "Create workspace format…",
+    offered only while no workspace theme exists.
+- **Not taken:** legacy's "All header text / All data text" deltas; ours keep the absolute
+  sizes D-92 chose.
+
+## D-158 — Dock setup in legacy's layout and defaults
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's behaviour; the overnight fallback; amends D-111's dialog)
+**Area:** Takeoff › Dock; Frontend
+
+- **What the side-by-side check found:** legacy's "Dock — setup" (`DockSetupDialog`):
+  - offers Sheet then Snapshot as two full-width buttons with glyphs, and starts on Sheet
+    unless a snapshot was handed to it;
+  - lists compact rows with a file or image glyph under a search box with its icon;
+  - shows the border colour as one swatch with its hex, which opens the palette;
+  - slides the width 0–6 px (default 1.5) and the radius 0–40 px (default 0);
+  - has a Hyperlink switch with its glyph.
+
+  Ours offered "Snapshot | Sheet thumbnail" (Snapshot first when any existed), plain
+  rows, the whole palette open, width 0–8 (default 2) and radius 0–24 (default 4), and a
+  Hyperlink checkbox.
+- **Now as legacy:** all of the above. A placed dock's properties (D-116 round 10) still
+  open on its saved values.
+
+## D-159 — The Highlight and Note style carets open again; legacy's Custom colour
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (a bug fix and legacy's behaviour; the overnight fallback)
+**Area:** Takeoff toolbar › Highlight ▾, Note ▾; Frontend
+
+- **What the side-by-side check found:** the carets beside Highlight and Note (D-109) did
+  nothing when clicked. Their popover was absolute inside the toolbar row, which clips
+  what overflows it, so it was never seen. The toolbar's sizing rules would also have
+  stretched its swatches. Legacy's opens under the caret, with a "Custom" colour row
+  under the palette.
+- **Now:**
+  - the popover is fixed under the caret, kept inside the window;
+  - it is marked `data-toolbar-popover`, which the toolbar's sizing rules skip (as menus,
+    D-154);
+  - it gains legacy's "Custom" colour input; the colour is the user's data, kept per
+    browser as before.
