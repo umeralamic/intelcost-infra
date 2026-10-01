@@ -11,7 +11,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 1 | Auto Count answers (docs) | done (D-189): spec adopted, PARITY §17 rewritten (42 lines, 1 retired), F13 In Progress | 20:40 | 21:00 | 20 min |
 | 2 | EG from another sheet (F18 Blocks A, B, acceptance on C-200) | built (D-190 to D-192), smoke-tested; **acceptance not met** (cut −35.6 %, fill −11.7 %; the link is exact, C-200's FG inputs are short); a volume-engine defect found and fixed (D-191) | 21:00 | 21:38 | 38 min |
 | 3 | SPEC: site stitching | done: [site_stitching_tasks.DRAFT.md](drafts/site_stitching_tasks.DRAFT.md), the founder's design decided, 16 questions; F19 Planned | 21:38 | 21:39 | (written alongside task 2) |
-| 4 | Build Auto Count (F13) A, B, C, D, F, E | in progress | 21:40 | | |
+| 4 | Build Auto Count (F13) A, B, C, D, F, E | A, B, C, D, F built (D-193), smoke-tested; E (Image) in progress | 21:40 | | |
 | 5 | Overlay | to do | | | |
 | 6 | Auto Trace cache in IndexedDB | to do | | | |
 | 7 | Default dialog width 448 px | to do | | | |
@@ -103,3 +103,43 @@ update; say so.
   - the sheet ⋮ entry opened page 3's panel.
 
   Passed.
+
+### Task 3: site stitching spec (21:38 to 21:39)
+
+[site_stitching_tasks.DRAFT.md](drafts/site_stitching_tasks.DRAFT.md) holds the founder's
+design, written in as decided. It covers:
+- joining by match lines and the fit (F18's engine);
+- one continuous drawing of the actual sheets, placed and clipped, rendered per member;
+- editing across the join (shapes split at the line into pieces sharing one id);
+- one Calculate and one site balance;
+- Auto Trace stitched;
+- the survey link;
+- data and api, the pure engine, the quantity rows, blocks A to F;
+- **16 questions**, each with a recommendation (listed in "Stitching questions" below).
+
+On the board as F19, Planned.
+
+### Task 4: Auto Count (from 21:40)
+
+**Blocks A, B, C, D and F built (D-193).** Vector mode with quarter turns and the mirror.
+- **Time per page:**
+  - E102 (10,079 strokes): 5.9 s with turns and the mirror, 3.9 s as drawn only;
+  - 8.8 s from opening the panel to results, the sheet's read included.
+- **Turned symbols found:**
+  - On E102, boxing one receptacle-like symbol found 5 above the bar: the boxed one and
+    **four turned 90°**, plus a sixth turned 180° at 78 % (shown, unchecked).
+  - Legacy's as-drawn search finds 1.
+  - On the quantity table's synthetic sheet, all of the same symbol turned 90°, 180° and
+    270°, mirrored and mirrored-and-turned are found, each with its orientation.
+- **Three defects found in legacy's matcher and fixed (D-193):**
+  - turned strokes read as one-offs;
+  - a circle touching its leader chained with it, so the boxed symbol scored itself 46 %;
+    now 100 %;
+  - clamped scores tied between orientations.
+- **Smoke:**
+  - Create through the dialog made 5;
+  - "Add to the selected count item" made 10;
+  - Ctrl+Z gave 5, and Ctrl+Z again removed the item;
+  - the settings were saved per person, then reset.
+
+  Passed; nothing left behind.

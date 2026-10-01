@@ -7173,3 +7173,92 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - infra: `quantity-table.sh`, `browser/quantity-table.mjs`,
     `browser/lib/{register-cases,earthwork-cases}.mjs`, `browser/lib/c200-acceptance.json`,
     `drives/quantity-table.py`.
+
+---
+
+## D-193 — Auto Count (F13) Blocks A, B, C, D and F built: Vector mode with quarter turns and the mirror
+
+**Date:** 2026-10-01
+**Status:** built overnight; choices beyond D-189 are this session's, pending founder review
+**Area:** F13 Auto Count; Frontend, Backend (settings)
+
+- **The matcher.** Legacy's `vectorMatch`, `resultPipeline` and `valleyCut` are ported into
+  `lib/takeoff/autoCount/` (pure, hard rule 2). The scan runs in a Web Worker (Q1); the pdf.js
+  read is `features/takeoff/autoCount/readSymbols.ts` (strokes with their PDF layer, every
+  text run).
+- **Orientations (Q6), beyond legacy.** The template is searched turned 0°, 90°, 180° and
+  270°, each also mirrored (Include Mirror, on by default). The 48 × 48 mask is normalised to
+  its box, so a turn is an exact permutation of cells. The letter inside turns but is never
+  mirrored, as printed text in a mirrored block. A turned instance's window has its sides
+  swapped and rescaled by the page's width over its height, because points are fractions of
+  each. Each card names its orientation ("Rotated 90°", "Mirrored, 270°").
+- **Found and fixed on the way (beyond legacy):**
+  - **Turned strokes counted as one-offs.** Drop Unique Features uses a stroke signature
+    that is not turn-invariant, so a turned instance's circle (starting at a turned vertex)
+    read as unique and lost its anchor. With turns or mirror on, the signature is the least
+    of the eight orientations'.
+  - **A closed stroke touching a leader chained with it.** On the page, a circle whose end
+    touches its tail or leader chained into a larger element; its window came out 15 %
+    larger and off-centre, and the boxed symbol scored itself 46 %. Each stroke closed on
+    its own is now also an element by itself, as the template's anchor prefers. The boxed
+    symbol scores 100 %. Windows are only added.
+  - **Scores clamp at 1, so orientations tie.** A tie is broken by the unclamped evidence
+    (glyph + adjunct + letter F1).
+- **Speed.**
+  - Window membership comes from a grid of stroke boxes, not a pass over every stroke per
+    window.
+  - An anchored window is scored only in the orientations whose placement landed on it.
+  - With a dominant anchor, generic windows (which Auto drops, legacy's generic-path rule)
+    are searched as drawn only. A turned search is then about 1.5× legacy's single
+    orientation, not 8×.
+- **Measured on Hidden Valley's E102 (page 26, 10,079 strokes, every one on a PDF layer):**
+  - as drawn, 3.9 s, 1 match above the bar;
+  - with turns and the mirror, 5.9 s, 5 above the bar (the boxed one and four turned 90°),
+    a sixth turned 180° at 78 %.
+  - The panel's open-to-results time was 8.8 s, the read included.
+- **The panel** (legacy's words): a 300 px draggable panel that scans on open.
+  - The preview "Your selection — click to navigate to source"; Mode; Search pages (Current
+    page, All pages, Choose… with "Filter sheets…").
+  - Layers (Auto / All layers / Specific, only on a layered sheet); Rotation search (Vector
+    4 or 1; Image 8, 4, 2, 1); Sensitivity.
+  - Cards with crops of the sheet's fit image (proportions kept) and the low-confidence
+    drawer.
+  - The states: "Scanning page…" or "Scanning sheet i of n…" with Stop, "Scan failed" with
+    Retry, the no-vector-ink message, the stopped states, "Found: 0".
+  - Saturation reads "…Select the symbol more tightly, then scan again. Create stays
+    disabled." (Q11).
+  - Esc stops a scan, and a second Esc closes the panel (Q21).
+- **The gear:** Overlap allowed (Q12; legacy's Min Match Spacing, the IoU, default 60 %),
+  Include Mirror with its amber note, Drop Unique Features, Include Text; Image's Scale
+  variants; Reset to Defaults; Done.
+  - Overlap allowed re-filters at once, with no rescan: it is the pipeline's IoU, and the
+    Layers re-filter uses it too (Q12).
+  - A change to the matcher's inputs (turns, mirror, unique features, text) rescans once.
+- **Settings per person (Q23):** `takeoff_prefs.auto_count` on the api, the sensitivity too
+  (Q8). Legacy's browser "Save as Default" is not copied.
+- **The overlay (Q19):** checked matches in the colour the item will get, the hovered match
+  in the canvas's hover blue. Hover is linked both ways with the cards, and a click on a box
+  checks or unchecks it.
+- **Card navigation (Q5):** goes to the match's sheet and zooms to it, never rescanning; the
+  source stays pinned.
+- **Create:**
+  - **A new item:** legacy's New Measurement dialog (type count, name "Count"), every field
+    honoured (Q13, through the same field builder a drawn item uses), sub-items included.
+  - **"Add to the selected count item (name)"** when a count item was selected (Q18).
+  - One shape row per mark at each match's centre, on its own sheet (Q14, Q16).
+  - Toast "Counted n symbols — name — Ctrl+Z to undo."
+  - One undo removes exactly the batch. A new item goes with it only if nothing else
+    remains (Q17).
+- **Not built yet:** Image mode (Block E; its option says so), legacy's thumbnails rendered
+  from the PDF (crops of the fit image instead), and pass-by-pass progress within a sheet.
+- **Proved:**
+  - gates;
+  - the quantity table: 8 Auto Count rows (the same synthetic symbol turned 90°, 180° and
+    270°, mirrored and mirrored-and-turned, each found with its orientation; a decoy
+    below the bar; legacy's as-drawn search for comparison; NMS; auto-check; saturation;
+    valley cut; settings);
+  - a smoke on E102 (below).
+- **Smoke (MCP, Hidden Valley E102):** the region menu's Auto Count; the scan; Create through
+  the dialog, which made 5; Add to the selected item, which made 10; Ctrl+Z gave 5, and Ctrl+Z
+  again removed the item; the sensitivity and Overlap allowed were saved per person; Esc
+  closed the panel. The settings were put back to the defaults, and no item was left.

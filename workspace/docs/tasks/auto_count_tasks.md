@@ -300,9 +300,9 @@ Each is gated, quantity-tabled and smoke-tested.
 - [x] Draft written overnight 2026-10-01 from legacy's source, plans and a live drive.
 - [x] The founder's answers (D-189); spec adopted.
 - [x] PARITY §17 rewritten.
-- [ ] Block A
-- [ ] Block B
-- [ ] Block C
-- [ ] Block D
-- [ ] Block F
+- [x] Block A (D-193)
+- [x] Block B (D-193): turns and mirror; three fixes beyond legacy (turn-invariant signatures, closed strokes as their own elements, tie-breaks)
+- [x] Block C (D-193)
+- [x] Block D (D-193)
+- [x] Block F (D-193)
 - [ ] Block E
