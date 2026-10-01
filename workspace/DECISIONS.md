@@ -6392,3 +6392,14 @@ deviations named)
   - **Delete on this sheet only** removes the selection's shapes on the open sheet through
     the canvas's own delete, with its undo.
   - **Delete everywhere…** keeps our confirm, which names what goes.
+
+## D-170 — Estimating's header menu as legacy's "Main header"
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Estimating, right-click on a column header; Frontend
+
+- **Legacy's menu:** a "Main header" label, Freeze Header and Unfreeze Header with the
+  snowflake glyph, and a ✓ on the one in force, which is greyed.
+- **Ours:** the two rows with an orange dot on the current one.
+- **Now as legacy.**

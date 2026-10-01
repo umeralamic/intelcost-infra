@@ -151,3 +151,159 @@ raw JSON.
 
 **Proposed fix (not applied; the guard is yours to change):** also accept a JSON-escaped
 newline or tab before the command name, or decode the command with `jq` before grepping.
+
+## The final CSI table (D-142)
+
+Calculate writes each line as an item, filed under the earthwork scope of the project's
+system (CSI: DIV 31 › 31.03 Grading) and coded:
+
+| Line | CSI node |
+|---|---|
+| Cut | 31.04.01 |
+| Fill | 31.04.04 |
+| Soil Import | 31.04.07 **Import Borrow** (new) |
+| Soil Export | 31.04.08 **Export / Disposal** (new) |
+| Strip topsoil, and its stockpile on site or re-use as topsoil | 31.01.04 |
+| Any haul-off (strip or undercut) | 31.04.08 Export / Disposal |
+| Strip or undercut re-used as general fill | 31.04.04 |
+| Undercut excavation, its stockpile, replacement fill | 31.05.03 |
+| Replacement fill when the material is aggregate | 31.05.04 |
+| Prepare subgrade | 31.05.02 |
+
+31.04.07 and 31.04.08 were added to the seeded CSI trees and the template (migration
+`5b2e8c41f0a9`).
+
+## Commits (all on `umer-dev`, pushed)
+
+- **intelcost-app-react, 34:**
+  - `ae71fb1` Block F;
+  - `1df05ae` and `1ee84c4` Block G;
+  - `9b5b124` Snap PDF;
+  - `e2e9adc` F15;
+  - `c907b2d` through `f96d913`, the fallback (D-147 to D-170), one commit per fix.
+- **intelcost-app-fastapi, 4:**
+  - `e7390c2` Block F;
+  - `d10207c` F15;
+  - `5c7ecd5` the earthwork guard on Convert to rough;
+  - `1c6900a` `has_sheets`.
+- **intelcost-infra, 16:** the quantity-table rows (`70ac88d`, `1b5529a`, `920da0a`,
+  `a63684c`) and the workspace mirror after every block.
+
+`git log --since=2026-09-30T23:30Z` in each repo lists them.
+
+## Decisions to review (all "decided overnight, pending founder review")
+
+| D | What |
+|---|---|
+| D-142 | Block F: the lines on your CSI nodes, stale marks, units |
+| D-143 | Block G: Auto Trace rebuilt to beat legacy's |
+| D-144 | Suggested elevations; C-200's EG is not on C-200 |
+| D-145 | Snap PDF |
+| D-146 | F15 slice: Reports, Shifts, Time Tracking, tracking, Clock in |
+| D-147, D-164 | The earthwork row at legacy's sizes |
+| D-148 | Estimating row density |
+| D-149 | A Takeoff row's right-click: legacy's short menu; Convert to rough measurement |
+| D-150 | Dialogs keep the autofocused field, its text selected |
+| D-151, D-155, D-168 | Sheets panel menus (row, ⋮, selection) |
+| D-152, D-161 | The canvas menus (strip, glyphs, Reset Orientation, section header) |
+| D-153, D-154, D-156 | Menu text 12 px, toolbar menus' own sizes, mode hints |
+| D-157 | Estimating's Format panel layout |
+| D-158, D-162 | Dock setup, Export to Excel, small dialog titles |
+| D-159 | **Bug fix:** the Highlight and Note style carets |
+| D-160 | The volume panel's look; Calculate dialog width |
+| D-163 | Dotted tree guides |
+| D-165 | Shared equipment's Add… |
+| D-166 | **Bug fix:** tools stuck in More; no draw group for earthwork tools |
+| D-167 | The Open dialog's two tabs (api: `has_sheets`) |
+| D-169 | The Takeoff bulk menu |
+| D-170 | Estimating's header menu |
+
+## Questions for you
+
+**The shrink factor (from task 2), the most important.** The engineer prints "Shrink factor
+1.10" meaning fill × 1.10 = bank needed; our field means bank → compacted (default 1.00).
+Typed as printed, ours gives 7,279 LCY export against the engineer-equivalent 5,363.
+Options:
+- relabel the field;
+- accept the engineer's convention and invert it;
+- show both.
+
+**The volume panel in sheet space (D-160).** Legacy draws it on the sheet, panning and
+zooming with the drawing; ours floats on the screen. Which do you want?
+
+**F13 Auto Count, 27 questions** ([draft](drafts/auto_count_tasks.DRAFT.md)): where matching
+runs; modes in v1; the OpenCV arm; memory and the canvas probe; the source sheet when
+navigating; rotation search; image scale tolerance; sensitivity default; fixed floors;
+valley cut and drawer; saturation; Min Match Spacing; which dialog fields Create honours;
+run shape; one item or one per sheet; mark position; undo; append to an existing count;
+overlay colour; auto-rescan or Scan; Esc; entry points; where settings persist; threads;
+layers and provenance; debug strip; the unbuilt backlog.
+
+**F14 AI tools and credits, 25 questions** ([draft](drafts/ai_tools_tasks.DRAFT.md)):
+- **Cost:** model and provider; pricing per call or per token; retail and packs; the
+  overdraft; the monthly refill; the trial cap.
+- **Spending:** who may spend; a refused debit; a failed read; logging per tool; the
+  cache; "Admins only" AI usage.
+- **Naming:** the sparkle on single-sheet naming; auto-name's crop; a partial read; naming
+  on upload; silent failures.
+- **Ask AI and schedules:** Ask AI's conversation; the "Read this schedule as rows" chip;
+  confidence; evidence links; a typed quantity; the low-balance warning.
+- **Settings:** the per-user limit; the dashboard meter.
+
+**F15 Community, 18 questions** ([draft](drafts/community_tasks.DRAFT.md)):
+- **Scope and access:** global or per workspace (customers' screenshots are visible to every
+  customer in legacy); who may post; who moderates; where it is reached; the takeoff tab.
+- **Content:** boards; statuses; rich text; media limits and quota; deleting; edit
+  history.
+- **Behaviour:** notifications; realtime; sorting, paging and search; votes; identity;
+  legacy's attachments; public or not.
+
+## Failures and findings
+
+- **The hard rule 7 hook has a gap** (above). Not fixed: the guard is yours.
+- **No retries were exhausted.** Every item that failed once was fixed and re-checked
+  before moving on.
+- **Four bugs found and fixed by the side-by-side:**
+  - the Highlight and Note carets opened nothing (D-159);
+  - tools stuck in More (D-166);
+  - the Open dialog's drawings filter read a field the list never had (D-167);
+  - a volume panel saved in a wider window opened off screen (D-160).
+- **Converting an earthwork item to a rough measurement** was accepted by the api, past
+  Earthwork Markups' closed-folder rule. It is now refused (D-149).
+- **The test project's classification system** became `csi` during Block F's smoke (on the
+  first Calculate); its value before is unknown. Its earthwork assumptions were put back to
+  "never asked" after each check.
+- **Still waiting on you from the previous night:** the SF 3 restore script awaits
+  "restore".
+- **An empty Takeoff-panel folder made through the api did not show in the panel** during a
+  check. It was removed straight after, and the cause was not investigated: it may be
+  legacy's "hide empty folders" or a refresh.
+
+## Ideas
+
+- **Register page 3 to C-200 by two clicked control points** and carry the EG labels across
+  (D-144). That makes C-200's cut and fill computable without typing 55 elevations.
+- **Cache each sheet's trace in IndexedDB**, keyed by the document, so a second visit skips
+  the 1 to 2 s read.
+- **Auto Count: "append to an existing count item"** as a first-class option (F13 Q18).
+- **Show the shrink factor as "Fill needs × bank"** beside our field (the question above),
+  so a printed engineer's factor cannot be typed backwards.
+- **Use the `has_sheets` flag beyond Open:** the dashboard could mark projects that have
+  no drawings yet.
+- **One more app-wide pass:** checkbox borders in the primary colour, and the 448 px
+  default dialog width, to finish legacy's look.
+
+## Click-only checks for the morning, most important first
+
+1. **Earthwork on C-200:** Earthwork tab → Trace → "Adopt N labelled"; draw a boundary,
+   add a few EG spots; Calculate; Estimating shows the lines under DIV 31 › Grading on your
+   CSI nodes.
+2. **Right-click a Takeoff row:** Convert to rough measurement, then Classify this item…
+   back out.
+3. **Select two items, right-click:** Duplicate, Move to folder ▸, the two deletes.
+4. **Snap PDF:** turn it on, draw a Linear near a printed line, press D mid-draw.
+5. **Reports and Settings:** Reports › Time & Activities; Settings › Shifts (New shift);
+   Settings › Time Tracking (manual on), then the takeoff header's Clock in.
+6. **Open (top left):** the two tabs.
+7. **Highlight ▾ and Note ▾:** the colour popover opens.
+8. **Estimating › Format:** the theme list and folded sections; Export to Excel's layout.
