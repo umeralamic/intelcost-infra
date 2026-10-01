@@ -5976,7 +5976,9 @@ deviations named)
   - "Costs…", then legacy's "Add cost component" heading with the four kind icons under it
     (for a seat that prices, on an item not priced through sub-items).
   The ⋮ keeps the full menu, and a sub-item's right-click also keeps it (legacy gives a
-  sub-item no menu of its own).
+  sub-item no menu of its own). An item row in the Sheets panel behaves the same (legacy's
+  `SheetItemList` shares the row context): its right-click opens the short menu, and its ⋮
+  the full one, deleting on that sheet only.
 - **Convert to rough measurement** writes `is_reference`. The api files the item under
   Rough Measurements (made on first use), and legacy's toast follows: "Moved to Rough
   Measurements" / "This item is excluded from the estimate." This closes the first half
@@ -6416,3 +6418,13 @@ deviations named)
   opened a "New folder" dialog.
 - **Now as legacy:** the inline row, with its folder glyph. Add sub-folder opens its
   parent first.
+
+## D-172 — Settings switches at legacy's size
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Takeoff Settings dialog; Frontend
+
+- **What the side-by-side check found:** legacy's Settings switches are shadcn's, 44 × 24
+  with a 20 px thumb; ours were 36 × 20. Every section's layout and words otherwise match.
+- **Now:** 44 × 24, thumb 20 px.

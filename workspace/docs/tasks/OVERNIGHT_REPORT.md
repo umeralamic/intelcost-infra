@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | SPEC: F13 Auto Count draft | done: [auto_count_tasks.DRAFT.md](drafts/auto_count_tasks.DRAFT.md), 27 questions; legacy driven live | 01:19 | 02:06 | 47 min (interleaved with 6) |
 | 6 | F15 Reports, Time Tracking, Shifts | done (D-146), smoke-tested; built while task 5's research ran | 01:25 | 01:57 | 32 min |
 | 7 | SPEC: F14 AI tools and Community drafts | done: [ai_tools_tasks.DRAFT.md](drafts/ai_tools_tasks.DRAFT.md), 25 questions; [community_tasks.DRAFT.md](drafts/community_tasks.DRAFT.md), 18 questions; from legacy's source (neither driven live: AI calls spend real credits, and the forum is global) | 02:06 | 02:26 | 20 min (research from 01:57) |
-| F | Fallback: side-by-side differences | in progress (29 fixed so far, D-147 to D-171) | 02:10 | | |
+| F | Fallback: side-by-side differences | in progress (31 fixed so far, D-147 to D-172) | 02:10 | | |
 
 ## Notes as they happen
 
@@ -113,6 +113,8 @@ Estimating tabs, their menus and the earthwork dialogs. Fixed, most visible firs
 | 27 | Estimating's header menu: no label, a dot | "Main header", snowflakes, ✓ | D-170 |
 | 28 | Takeoff panel's New folder opened a dialog; legacy names it in place | The inline "Folder name" row, root and sub-folder | D-171 |
 | 29 | The Sheets "+" menu opened rightward over the canvas | End-aligned at the button | (D-155) |
+| 30 | Settings switches 36 × 20; legacy 44 × 24 | 44 × 24 | D-172 |
+| 31 | A Sheets-panel item's right-click opened the full menu | The short menu, as the Takeoff panel's | (D-149) |
 
 Left, with reasons:
 - **Header and tab strip:** ours is one row (D-121).
@@ -221,6 +223,7 @@ system (CSI: DIV 31 › 31.03 Grading) and coded:
 | D-169 | The Takeoff bulk menu |
 | D-170 | Estimating's header menu |
 | D-171 | New folder named in place in the Takeoff panel |
+| D-172 | Settings switches at legacy's size |
 
 ## Questions for you
 
