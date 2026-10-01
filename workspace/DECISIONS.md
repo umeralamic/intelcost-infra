@@ -7072,3 +7072,104 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - the grading sheet's earthwork section shows **"Existing grade: linked from {sheet}"**,
     one line per source.
 - **No copied items.** The grading sheet holds the links only (D-188 Q1).
+
+---
+
+## D-191 — A difference triangle with one corner on the zero line splits there: legacy's lost cut and fill fixed
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (a defect fix; found building F18)
+**Area:** Earthwork (F12) volume engine; Frontend
+
+- **The defect.** The volume engine (`volume/split.ts`, ported unchanged from legacy) splits
+  each difference triangle at Δz = 0. When one corner sits exactly on the zero line (Δz 0)
+  and the other two lie on opposite sides, its search for the "minority corner" finds none
+  and falls back to the whole triangle, tagged with one sign. Its mean Δz then cancels, so
+  **that triangle's cut and fill both vanish**; only the net survives.
+- **Where it bites.** A tie-in (an FG contour ending on the EG contour of the same
+  elevation) is exactly such a corner, and so is any point both surfaces share at one
+  elevation. On a real grading plan they are everywhere along the daylight line.
+- **Found by** F18's two-source quantity row, then on one sheet: the plane
+  z = 100 + 2x + 2y with six spots against FG 103 gave cut 0 and fill 370.37 CY where the
+  answer is cut 15.43, fill 385.80. Legacy's `split.ts` is byte-identical, so legacy has it.
+- **Now:** such a triangle splits from the zero corner to the crossing on the opposite
+  edge, into one fill and one cut triangle.
+- **Every stored result shows stale** (the version key goes to `v4`), since a result
+  computed before may have lost cut and fill. The next Calculate is right.
+- **Proved:** the quantity table, 103 earthwork rows (new `vol-zero-corner-split`); every
+  legacy fixture still right.
+- **Where:** app `lib/takeoff/earthwork/volume/split.ts`, `lib/takeoff/earthwork/versionKey.ts`.
+
+---
+
+## D-192 — F18 Blocks A and B built: sheet links by control points, Calculate through them
+
+**Date:** 2026-10-01
+**Status:** built overnight; the choices below not set by D-188 or D-190 are this session's, pending founder review
+**Area:** F18 (F12 addition): EG from other sheets; Frontend, Backend
+
+- **Block A, the engine and the table:**
+  - `lib/takeoff/earthwork/register.ts` (pure): `toFeet`, `fitRigid` (least squares in real
+    feet through each sheet's scale; the scale only with "Fit the scale too"), the distance
+    check (0.5 % / 2 %), residuals from three pairs, mirror refused from three pairs,
+    `mapRuns` (the source's whole EG, its offset added, each run named `item@sheet`),
+    `mergeEg`, `matchScore`, `tieInOffset`, `linkKey`, `linkedEg`.
+  - Its Python twin `earthwork/register.py`; the api fits the pairs again before it keeps a
+    link (hard rule 6).
+  - `sheet_registration` (migration `8e1f3a7c5b20`): unique per pair of sheets, several
+    sources per target, `eg_source`, `scale_fitted`, `elevation_offset_ft`, the api's fit.
+    Routes `GET …/earthwork/registration`, `PUT` and `DELETE …/registration/{target}/{source}`;
+    refused with no scale on either sheet, a sheet linked to itself, a mirror, or a 2 % miss
+    without the fitted scale. Event `earthwork.registration.changed`.
+  - The version key folds every link (points, offset, fitted scale, both scales) and the
+    mapped EG, so a source edit, a link change or a recalibration shows the grading sheet
+    stale; an undo back shows it current.
+- **Block B, the panel and Calculate:**
+  - **Entries (Q11):** "Linked EG" on the Earthwork row (with the count of links), and
+    "Existing grade from other sheets…" on a sheet row's ⋮ menu, which opens that sheet's
+    Earthwork tab with the panel.
+  - **The panel:** floats over the Takeoff panel, above the volume panel. It lists the
+    sources with their checks; "Add a source sheet…" lists the other sheets, those without a
+    scale disabled; Edit points, Remove (asks first).
+  - **Picking:** the source opens in Split view on the right. A click there, then on the
+    grading sheet (either order), makes a pair. Snap PDF is on on both sides while picking,
+    whatever the toggles say. The pairs are numbered on both sheets; the worst is amber when
+    it misses by over 1 ft. "Last point" removes the last pair. **Dragging a pair is not
+    built** (pending).
+  - **Checks, live:** the distance check with its rule, the rotation ("turned 114.6°
+    clockwise"), residuals from three pairs, the match score with its 30 % warning, the
+    datum offset field and the tie-in proposal.
+  - **Ghosts:** while editing, the source's EG mapped through the pairs, dashed, labelled
+    with elevation and sheet. Once linked, the grading sheet shows every linked source's EG
+    the same way on its Earthwork tab, and a line "Existing grade: linked from Page 3".
+  - **Calculate** merges the sheet's own EG with every linked source's into one TIN (Q6);
+    errors name the sheet ("Page 3 · Existing Ground"). The EG TIN view shows the merge. A
+    fitted scale adds a warning to the result ("EG scale fitted on Page 3 (+2.4 %)").
+  - Every link is fitted again from its stored points with the sheets' scales as they are
+    now, so a recalibration flows through.
+- **Found and fixed on the way:** the volume engine's split lost cut and fill at a zero
+  corner (D-191).
+- **Proved:**
+  - gates;
+  - the quantity table: 7 registration rows, equal on both engines and right; 7 F18
+    earthwork rows (a turned sheet equal to one sheet, two sources merged, a datum offset,
+    the tie-ins, the match score, the acceptance row);
+  - a smoke on Hidden Valley (below).
+- **The acceptance check (Q12) is not met.** Page 3 was scaled 1" = 60' from its graphic scale
+  and linked to C-200 by four points: distance 469.0 / 469.1 ft (0.0 %), rotation 114.6°,
+  misses 0.02 to 0.05 ft, match 34 %. With C-200's adopted FG (15 contours and 58 spot
+  grades) and a boundary on the FG hull, Calculate gave **cut 9,185 BCY, fill 7,706 CCY**
+  against the engineer's 14,263 and 8,727: −35.6 % and −11.7 %. The link is right (the
+  linework overlays exactly); the inputs are short. 22 of C-200's 37 FG labels were not
+  adopted (the pond, parts of the outer ring), and no pavement or pad subgrade is modelled.
+  The row `regaccept-c200-from-page-3` pins the figure from a snapshot of those inputs.
+- **Where:**
+  - app: `lib/takeoff/earthwork/{register,versionKey}.ts`,
+    `features/takeoff/earthwork/registration/{RegistrationPanel,LinkLayers}.tsx`,
+    `features/takeoff/earthwork/{api,useVolumes,useEarthwork}.tsx`,
+    `features/takeoff/split/ReferencePane.tsx`, `features/takeoff/sheets/SheetsPanel.tsx`,
+    `features/drawing/realtime.ts`, `pages/ProjectTakeoff.tsx`;
+  - api: `earthwork/{register,registration_routes,models,schemas}.py`, `main.py`;
+  - infra: `quantity-table.sh`, `browser/quantity-table.mjs`,
+    `browser/lib/{register-cases,earthwork-cases}.mjs`, `browser/lib/c200-acceptance.json`,
+    `drives/quantity-table.py`.
