@@ -6956,3 +6956,37 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - with Snap on as well, a point near the contour's own first point took that point
     exactly, not Ortho's line;
   - a Boundary drawn with Ortho on came out with square corners.
+
+---
+
+## D-188 — Existing grade from other sheets: the founder's answers; spec adopted, Planned
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; answers the EG-from-survey draft's 13 questions)
+**Area:** F18 (F12 addition): EG from survey sheets; Frontend, Backend
+
+- **Q1 A:** C-200 reads the survey's EG through the link; it holds no copies.
+- **Q2:** label transfer onto the grading sheet's own EG lines comes later (Block C).
+- **Q3:** a failed distance check may be met by "Fit the scale too", with a warning on
+  every result that comes from that link.
+- **Q4:** warn at 0.5 %; at 2 % the fitted-scale choice is required.
+- **Q5:** a datum offset field (default 0), proposed by the tie-in check.
+- **Q6:** the grading sheet's own EG and the linked sheets' EG merge into one TIN. Chips name
+  the sheet on crossings.
+- **Q7:** several source sheets per grading sheet, in v1: topographic surveys are often split
+  over two or more sheets. This changes the draft: the table is unique per pair of sheets,
+  and a target lists its sources.
+- **Q8:** show the match score; warn under 30 %.
+- **Q9:** anyone who may edit earthwork links sheets, the same as Calculate (`canEditTakeoff`
+  in the app, the write-workspace guard in the api).
+- **Q10:** F11's Overlay will share these registrations. One row per pair of sheets serves
+  both.
+- **Q11:** both entries: the Earthwork row and the sheet's ⋮ menu.
+- **Q12:** C-200 is computed from page 3 and compared with the engineer's 14,263 cut and
+  8,727 fill, ±5 % each. It is recorded as a quantity-table row when built.
+- **Q13:** legacy's `sheet_overlays` are not migrated (F17).
+- **The spec is adopted** as [eg_from_survey_tasks.md](docs/tasks/eg_from_survey_tasks.md),
+  with these answers written in. The draft is removed.
+- **On the board as F18, Planned and ready to build:** Blocks A (engine and table) and B (the
+  dialog, Calculate through the links) next, Block C (label transfer) later.
+- **Nothing is built.**

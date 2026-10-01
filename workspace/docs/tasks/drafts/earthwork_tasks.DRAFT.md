@@ -12,7 +12,7 @@
 > "loose / bank". The fill lines are **CCY**, not bank. Soil Export and Import stay LCY and
 > carry their BCY figure in the name. The balance is struck in bank measure. The legacy
 > sections below still describe legacy as it is. **D-178:** the volume panel stays in screen
-> space. **EG from another sheet:** [eg_from_survey_tasks.DRAFT.md](eg_from_survey_tasks.DRAFT.md).
+> space. **EG from other sheets:** adopted as F18's spec, [eg_from_survey_tasks.md](../eg_from_survey_tasks.md) (D-188).
 
 ## The problem
 
