@@ -6860,3 +6860,38 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - A Strip Area outline (with Ctrl+Shift+Z) and a Site Feature (with Ctrl+Y): the same
     sequence and the same result. Each finished one went whole on one Ctrl+Z.
   - Backspace mid-contour still took the last point.
+
+---
+
+## D-185 — A shape or run moved whole snaps only as the Snap toggles say
+
+**Date:** 2026-10-01
+**Status:** decided (the founder, in session; closes D-182's "Left" point)
+**Area:** Takeoff and Earthwork canvas (F7, F12); Frontend
+
+- **The grabbed point follows the toggles, as a dragged vertex does (D-182).** The shape
+  follows the grabbed point, so it keeps its shape and only moves:
+  - **Snap off and Snap PDF off:** the shape moves freely with the cursor.
+  - **Snap on:** the grabbed point snaps to nearby markup: your Linear and Area points,
+    edges, midpoints and crossings, and the dimensions.
+  - **Snap PDF on:** it also snaps to the drawing's own lines.
+- **It covers:**
+  - Move from a section's menu (a press on the armed section);
+  - the move handle;
+  - dragging a selected contour or boundary whole in Earthwork.
+- **As legacy:** its engine snaps the cursor of every drag, a whole-run move included.
+- **A moved shape never snaps to itself, nor to the deducts it carries.** Earthwork lines
+  are still not snap targets (D-182).
+- **A box selection has no drag move,** in ours or in legacy. It moves only by the arrow
+  keys, in fixed steps (Shift ten times further), with no grabbed point, so a nudge
+  stays an exact step and never snaps.
+- **Unchanged:** a pasted copy is still placed at the cursor, without snapping.
+- **Where:** app `features/takeoff/components/SheetCanvas.tsx` (`snapNear`'s `skip` with no
+  index; `dragMove`, `endMove`); `features/takeoff/earthwork/EarthworkLayer.tsx`.
+- **Proved:**
+  - A Linear run moved by Move, pressed on its end point, landed exactly on another run's
+    end point with Snap on.
+  - The move handle with Snap off moved the run by exactly the cursor's travel. With Snap
+    on, the handle (the run's middle) landed on the other run's first point.
+  - A selected contour dragged whole: with Snap on, its grabbed point landed exactly on
+    the Linear run's end point; with Snap off, it moved by exactly the cursor's travel.
