@@ -10,8 +10,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 0 | Test project classification | done: no earlier value recorded; left as CSI (below) | 20:18 | 20:40 | 22 min |
 | 1 | Auto Count answers (docs) | done (D-189): spec adopted, PARITY §17 rewritten (42 lines, 1 retired), F13 In Progress | 20:40 | 21:00 | 20 min |
 | 2 | EG from another sheet (F18 Blocks A, B, acceptance on C-200) | built (D-190 to D-192), smoke-tested; **acceptance not met** (cut −35.6 %, fill −11.7 %; the link is exact, C-200's FG inputs are short); a volume-engine defect found and fixed (D-191) | 21:00 | 21:38 | 38 min |
-| 3 | SPEC: site stitching | to do | | | |
-| 4 | Build Auto Count (F13) A, B, C, D, F, E | to do | | | |
+| 3 | SPEC: site stitching | done: [site_stitching_tasks.DRAFT.md](drafts/site_stitching_tasks.DRAFT.md), the founder's design decided, 16 questions; F19 Planned | 21:38 | 21:39 | (written alongside task 2) |
+| 4 | Build Auto Count (F13) A, B, C, D, F, E | in progress | 21:40 | | |
 | 5 | Overlay | to do | | | |
 | 6 | Auto Trace cache in IndexedDB | to do | | | |
 | 7 | Default dialog width 448 px | to do | | | |
