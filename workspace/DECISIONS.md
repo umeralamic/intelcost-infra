@@ -5920,3 +5920,21 @@ deviations named)
     retention setting is stored, and compaction comes with a scheduled job when volume
     asks for it.
   - **The Activity sub-tab** reuses Settings › Activity's feed.
+
+## D-147 — The earthwork row drawn as legacy's
+
+**Date:** 2026-10-01
+**Status:** decided overnight, pending founder review (legacy's look; the overnight fallback)
+**Area:** Takeoff › Earthwork tab; Frontend
+
+- The fallback's side-by-side check at 2048 × 1050 and 1440 × 900 found our earthwork row
+  drawn in the takeoff toolbar's larger style. Legacy's row is compact: 24 px buttons,
+  9 px words, 12 px icons, each bordered.
+- **Now as legacy:**
+  - every button on the row is 24 px with 9 px words and 12 px icons, bordered, filled in
+    the primary colour when pressed (`earthButton.ts`);
+  - the EG TIN and FG TIN toggles are bordered in their surface's colour and filled with it
+    when shown;
+  - Calculate is always the filled primary button;
+  - the Δ input is 24 px high.
+- Colours stay tokens (hard rule 4); nothing else on the row moved.
