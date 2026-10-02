@@ -11,6 +11,7 @@ import { readFile, writeFile } from "node:fs/promises";
 
 import { APP, openBrowser } from "./lib/bench.mjs";
 import { COST_CASES, ENV_ITEMS, ENV_SHEET } from "./lib/cost-cases.mjs";
+import { CREDIT_CASES } from "./lib/credit-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
@@ -20,11 +21,13 @@ const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-cases.json`, JSON.stringify(CASES));
   await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
+  await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
 
 const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
@@ -483,6 +486,14 @@ for (const [i, c] of EARTHWORK_CASES.entries()) {
   }
 }
 
+// Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
+for (const c of CREDIT_CASES) {
+  const got = pythonCredits.get(c.id);
+  for (const [field, want] of Object.entries(c.expect)) {
+    if (JSON.stringify(got?.[field]) !== JSON.stringify(want)) wrong.push(`${c.id}.${field}: ${JSON.stringify(got?.[field])}, expected ${JSON.stringify(want)}`);
+  }
+}
+
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
   for (const line of [...disagree, ...wrong]) console.log(`FAIL  ${line}`);
@@ -490,5 +501,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; passed`,
 );

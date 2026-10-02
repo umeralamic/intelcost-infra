@@ -1,15 +1,12 @@
-# F14: AI tools and AI credits (draft spec, questions open)
+# F14: AI tools and AI credits
 
-> **Draft, written overnight 2026-10-01 (task 7 of the plan).** Nothing is built. The
-> founder's answers to the questions at the end come before any code.
-> - **Sources:** legacy's source on `UmeralamDEV` (its three AI edge functions, the shared
->   credit code, the takeoff page, the AI Credits tab, the reports), its migrations and
->   plans, and PARITY's F14 lines.
-> - **Not driven live:** every legacy AI call spends real credits on the live workspace.
-> - **PARITY** is corrected where the code disagrees (below).
-> - **Scope (D-235, 2026-10-02):** only the AI tools live legacy shows today (region naming,
->   Ask AI, Extract Schedule, Auto-Name Sheets, and the credit screens); retired AI features
->   are out. Metering research and a usage-based design: [ai_credits_research.md](ai_credits_research.md).
+> **Adopted 2026-10-02 (D-236)** with the founder's fifteen answers, A9 to A25 as recommended.
+> - **Scope (D-235):** only the AI tools live legacy shows today: the region menu's Page Name,
+>   Sheet # and Scale (each with ALL), Ask AI and Extract Schedule; Auto-Name Sheets; the credit
+>   screens. Retired AI features are out.
+> - **Research and the metering design:** [ai_credits_research.md](drafts/ai_credits_research.md).
+> - **Built from** legacy's source on `UmeralamDEV`, its plans and live legacy (screens only:
+>   every legacy AI call spends real credits).
 
 ## The problem
 
@@ -214,115 +211,81 @@ schedule table still has to be typed by hand.
   - Modify's toast;
   - the notes mode "Schedule qty: N".
 
-## Design proposal (pending the answers)
+## Design (D-236)
 
-- **The api owns it (D-03).**
-  - An `ai` feature: one model client behind a provider setting, key in the api only
-    (hard rule 5).
-  - **Endpoints:**
-    - region read (field number, name or scale);
-    - title-block read;
-    - ask;
-    - schedule read;
-    - schedule extractions (saved reads and markers).
-  - The browser sends the crop it already renders; the api never trusts a quantity it did
-    not compute.
-- **Credits on the api:**
-  - The wallet, ledger and usage events.
-  - **Reserve before the call, settle after** (so a refused debit is never free), inside
-    one row lock.
-  - A scheduled monthly refill (Celery beat), independent of Stripe.
-  - Nothing in the wallet is writable from a client.
-  - Top-up checkout belongs to F16 (billing); this feature reads its grants.
-- **Logging:** one action kind per tool (region read, title block, ask, schedule).
-- **The AI Usage report** fills D-146's empty tab from those events, with visibility
-  enforced on the api as D-146 does for time.
-- **Blocks:**
-  - **A.** The model client, the wallet, ledger, events and gate; Settings › AI Credits
-    (Balance and Per-user limit); the report tab.
-  - **B.** The OCR fallbacks:
-    - region naming · All;
-    - Scale;
-    - Auto-Name Sheets (row, panel, selection), per PDF and in a worker.
-  - **C.** Ask AI.
-  - **D.** Extract Schedule: review, file, create, saved reads and markers.
-  - **E.** Top up (after F16's checkout).
+**The api owns it (D-03).** An `ai` feature:
+- **One model client behind a provider setting** (`AI_PROVIDER`, `AI_MODEL`, `AI_MODEL_ASK`):
+  - `gemini` and `openai`, keys in the api only (hard rule 5);
+  - `fake` on the bench, deterministic, with real token counts for the crop it is sent.
+- **The meter** (pure, `app/features/ai/meter.py`):
+  - `credits = (in × price_in + out × price_out) ÷ (retail × (1 − margin))`;
+  - a 0.01 minimum, 4 decimals half up;
+  - each call stamps the price row and margin it used.
+- **The ceiling:** a conservative input count (prompt characters ÷ 3 plus the provider's
+  image tokens for the crop's pixel size, + 10 %), plus the tool's output cap.
+- **The estimate:** the input count plus the tool's median output over its last 50 calls in
+  the workspace (fallback: naming 150, Ask AI 400, schedule 4,500 tokens).
+- **Holds** (pure arithmetic in `meter.py`, applied under `SELECT … FOR UPDATE` on the
+  wallet row):
+  - **The hold** refuses when the ceiling does not fit any of:
+    - the wallet (included + purchased − held);
+    - the person's monthly limit;
+    - the Tier 3 trial cap.
+  - **Settle** charges the actual from included credits first, then purchased, and releases
+    the rest.
+  - **A failed or unusable reply** releases it all, and the call is logged at 0.
+  - **A sweep** every 5 minutes releases any hold older than 10 minutes.
+- **The wallet:**
+  - seats × 100 a month, refilled by Celery beat for every workspace;
+  - purchased credits never expire;
+  - the three member switches;
+  - the per-user limit.
 
-## Questions for the founder
+  No client writes a balance or the seat count.
+- **The ledger:** one row per refill, grant, purchase and spend.
+- **The call log:** one row per call, with:
+  - tool, model, tokens in and out;
+  - cost at list price and credits;
+  - status: ok, failed, unusable or cached;
+  - project and sheet.
+- **The cache:** per workspace, 30 days, keyed by tool, model and a hash of the crop and
+  its parameters.
+- **Who may call:** `canRunAi`.
+- **Who sees what** (enforced on the api):
+  - owners and admins: estimates, the balance chip, the "Used x · y left" line and
+    everyone's calls;
+  - members: each of the three only when its switch in Settings › AI Credits is on.
 
-Each gives legacy's behaviour and my recommendation. None is decided.
+## Blocks
 
-**Provider and cost**
-1. **Model and provider.** Legacy: Gemini 2.5 Flash through the Lovable gateway, which the
-   new stack does not have. *Recommend:* a provider setting on the api; Claude Haiku 4.5
-   for reads (title block, region, schedule) and a larger model only for Ask AI, priced
-   from real rates.
-2. **How a call is priced.** Legacy: by actual tokens (about 0.03 credits a call) with a
-   0.01 floor; the per-action table is unused. *Recommend:* fixed per-action prices
-   (simpler to explain and to report), reviewed against token cost monthly.
-3. **Retail and packs.** Legacy: $1 = 100 credits; seeded packs $2.50 / $10 / $50 against
-   the plan's $10 to $300. *Recommend:* keep $1 = 100; you pick the pack set.
-4. **The overdraft.** Legacy: a lifetime 15 credits, never reset. *Recommend:* drop it;
-   reserve before the call instead.
-5. **The monthly refill.** Legacy: only when the billing row changes; trial or comped
-   workspaces never refill. *Recommend:* a scheduled refill on the period start for every
-   workspace.
-6. **The trial cap.** Legacy: 30 credits for trial tier 3, defined and never enforced.
-   *Recommend:* enforce it.
-
-**Who and what**
-7. **Who may spend.** Legacy: anyone who can read the sheet, viewers included.
-   *Recommend:* annotate rights.
-8. **A refused debit after the answer.** Legacy: the answer is free. *Recommend:* reserve
-   the estimate before the call and settle after, so it cannot happen.
-9. **A failed read.** Legacy: an unparseable schedule reply is charged. *Recommend:*
-   refund any call whose reply cannot be used.
-10. **Logging per tool.** Legacy: Extract Schedule logged as Ask AI; every OCR use as
-    "Auto-Name Sheets". *Recommend:* one kind per tool.
-11. **The cache.** Legacy: title-block and region reads cached 30 days, shared across
-    workspaces. *Recommend:* per workspace, region and title-block reads only.
-12. **"Admins only" AI usage.** Legacy: members still read their own rows. *Recommend:*
-    enforce it on the api, as D-146 does for time.
-
-**Naming and scale**
-13. **The sparkle on single Page Name and Sheet #.** Legacy: sparkle, no AI. *Recommend:*
-    give the single-sheet read the same model fallback as All, so the sparkle is true.
-14. **Auto-name's crop.** Legacy: a fixed bottom-right 30% × 22%. *Recommend:* use the
-    saved naming regions when set, else legacy's crop.
-15. **A partial read.** Legacy: a number-only row blanks the sheet name. Ours keeps the
-    old name (D-116). *Recommend:* keep ours.
-16. **Naming on upload.** Legacy: sheets start as "Page N". *Recommend:* offer
-    "Auto-name these sheets" once after an upload, never automatically (it spends credits).
-17. **Silent failures.** Legacy: the scale fallback and tool seeding swallow out-of-credits.
-    *Recommend:* show the out-of-credits message everywhere a call is made.
-
-**Ask AI and Extract Schedule**
-18. **Ask AI's conversation.** Legacy: single turn, no history, no copy or insert, no
-    streaming. *Recommend:* keep single turn, add Copy and "Add as note", and stream the
-    answer.
-19. **"Read this schedule as rows."** Legacy: an Ask AI chip that overlaps Extract
-    Schedule. *Recommend:* replace it with a link to Extract Schedule.
-20. **Confidence.** Legacy: returned, never shown. *Recommend:* warn below 0.6.
-21. **Evidence.** Legacy: schedule items have no link to the schedule row they came from
-    (planned, never built). *Recommend:* link each item to its saved read and row; the
-    marker already exists.
-22. **A typed quantity.** Legacy: dropped outside the printed-quantity mode. *Recommend:*
-    a typed quantity always wins.
-23. **The low-balance warning.** Legacy: below 10, once a session, Ask AI and Extract
-    Schedule only. *Recommend:* every AI call.
-
-**Settings**
-24. **The per-user limit.** Legacy:
-    - the member list is hidden while the limit is off;
-    - each value saves on blur;
-    - a cleared amount saves 0.
-
-    *Recommend:* keep the list and blur-save; a cleared amount reverts.
-25. **The dashboard meter.** Legacy: unmounted. *Recommend:* leave it out; the Reports
-    card links to AI Usage.
+- **A.** The metering, holds and settlement: the model client, meter, wallet, ledger, call
+  log, cache, refill, trial cap and per-user limit; the credit rows in the quantity table.
+- **B.** The estimate and result display:
+  - "≈ x credits (at most y)" and "Used x credits · y left";
+  - the confirmation above 15 credits;
+  - the balance chip in both headers;
+  - Settings › AI Credits: Balance, Per-user limit, the three switches, Top up listing the
+    packs (checkout is F16's).
+- **C.** The per-call history:
+  - Settings › AI Credits "Recent AI calls";
+  - Reports › AI Usage filled (tiles, Per estimator / project / tool, and per call), CSV.
+- **D.** AI economics (platform admin):
+  - exposure;
+  - implied and realized margin;
+  - the tripwire with an email;
+  - prices, the margin and packs, each appended, never edited in place;
+  - the model in use per tool.
+- **E.** Naming and Scale with the AI fallback (single and ALL), Auto-Name Sheets (row,
+  panel, selected, the naming dialog's link), and the offer after an upload.
+- **F.** Ask AI.
+- **G.** Extract Schedule: review, file, create, saved reads and markers, evidence links.
+- **The model test:** `python -m app.features.ai.trial` (20 sheets for naming, 3
+  schedules). Run once with the provider keys set; the results go into D-236's follow-up.
 
 ## Progress
 
-- [x] Draft written overnight 2026-10-01 from legacy's source and plans.
-- [ ] The founder's answers.
-- [ ] PARITY's F14 lines corrected on adoption.
+- [x] Draft written 2026-10-01; research 2026-10-02.
+- [x] The founder's answers (D-236); spec adopted.
+- [x] A (2026-10-02) · [ ] B · [ ] C · [ ] D · [ ] E · [ ] F · [ ] G
+- [ ] The model test (needs a provider key on the api).
+- [ ] PARITY's F14 lines corrected and ticked.

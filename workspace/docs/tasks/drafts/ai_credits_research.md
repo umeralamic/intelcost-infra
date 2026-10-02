@@ -6,7 +6,7 @@
 > `AiCreditsTab.tsx`, `AiUsageReport.tsx`, `PlatformAiEconomics.tsx`), its plans, and live
 > legacy read without spending a credit (Settings › AI Credits, Reports › AI Usage, AI
 > economics, and the account's own `ai_usage_events` rows, read only).
-> Companion to [ai_tools_tasks.DRAFT.md](ai_tools_tasks.DRAFT.md); its questions A1 and
+> Companion to [../ai_tools_tasks.md](../ai_tools_tasks.md); its questions A1 and
 > A4 to A25 stay open and are answered with this.
 > **Scope (D-235):** only the AI tools live legacy shows today; every retired AI feature is
 > out of F14, its figures included.
@@ -184,4 +184,4 @@ email when the tripwire fires.
     empty? Retired tools' history is not migrated either way.
 
 The rest of the AI tools questions (A11 to A25) are unchanged in
-[ai_tools_tasks.DRAFT.md](ai_tools_tasks.DRAFT.md).
+[../ai_tools_tasks.md](../ai_tools_tasks.md).

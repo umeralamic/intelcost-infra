@@ -8376,3 +8376,114 @@ forum, everything posted visible to all users.
 - **Our AI usage report lists only our tools.**
 - **F17:** legacy's AI usage history for retired tools is not migrated. Whether the active
   tools' history comes across is a question for the founder.
+
+## D-236 — F14 AI tools and credits: the founder's answers; spec adopted
+
+**Date:** 2026-10-02
+**Status:** decided (the founder, in session); A9 to A25 are my recommendations, accepted
+**Area:** F14 AI tools and credits; F17 migration
+
+The founder reviewed [ai_credits_research.md](docs/tasks/drafts/ai_credits_research.md).
+The spec is adopted as [ai_tools_tasks.md](docs/tasks/ai_tools_tasks.md). Scope stays
+D-235: the active tools only.
+
+**The fifteen answers**
+1. **Model:** a provider setting on the api.
+   - Before choosing, two cheap models are tested on 20 real sheets (naming) and 3 real
+     schedules, and the more accurate per credit wins.
+   - A bigger model for Ask AI only if that test shows a need.
+   - The candidates, at today's list prices (checked 2026-10-02 on the providers' pages),
+     per 1M tokens in / out:
+     - `gemini-2.5-flash-lite`, $0.10 / $0.40;
+     - `gemini-2.5-flash`, $0.30 / $2.50 (legacy's model);
+     - `gpt-5-nano`, $0.05 / $0.40 (its reasoning tokens bill as output).
+2. **Retail and margin:** $1 = 100 credits and a 30 % margin, so one credit costs
+   $0.0070 to serve, priced from today's list prices.
+   - **Legacy's price row is stale.** It holds Gemini 2.5 Flash at $0.075 / $0.30;
+     today's list price is $0.30 / $2.50.
+   - So live legacy charges about a quarter of its input cost and an eighth of its output
+     cost, below cost.
+3. **Minimum:** 0.01 credit a call; credits kept to 4 decimals (half up).
+4. **Estimate before a call, "≈ x credits (at most y)":**
+   - always shown to owners and admins;
+   - shown to members only when Settings › AI Credits "Show AI cost estimates to members"
+     is on (off by default; owners and admins switch it).
+5. **Confirmation above 15 credits** (a multi-sheet run), for everyone. When a member
+   does not see estimates, the confirmation says the run is large without the number.
+6. **Output caps fixed per tool:**
+
+   | Tool | Output cap (tokens) |
+   |---|---:|
+   | Naming and Scale reads | 300 |
+   | Auto-Name | 300 |
+   | Ask AI | 1,500 |
+   | Extract Schedule | 8,000 |
+
+   The ceiling is the input plus the cap.
+7. **No overdraft; holds instead.**
+   - Under a row lock, reserve the ceiling and refuse when it does not fit.
+   - Call the model with the cap, charge the actual, release the rest.
+   - A sweep releases any hold older than 10 minutes.
+8. **Allowance:** seats × 100 credits a month, refilled on schedule for every workspace.
+   - Unused included credits do not roll over.
+   - Seats default to 1 until F16's subscription writes them; no client can write them.
+9. **Packs:** live legacy's four:
+
+   | Price | Credits |
+   |---:|---:|
+   | $10 | 1,000 |
+   | $25 | 2,500 |
+   | $50 | 5,000 |
+   | $100 | 10,000 |
+
+   They never expire and are spent after the included credits. The checkout is F16's.
+10. **The Tier 3 trial cap of 30 credits is enforced.**
+    - It counts credits spent and held since the trial started.
+    - A Billing tiers override replaces the 30, and "lift all restrictions" removes the cap.
+11. **Failed or unusable answers are free:** the hold is released and the call is logged at 0.
+12. **Cache per workspace,** shown as "free (cached)":
+    - for the naming, scale, Auto-Name and schedule reads, for 30 days, keyed by tool, model
+      and the exact crop;
+    - Ask AI is not cached ("Ask again" means a fresh answer).
+13. **Per-call history:**
+    - owners and admins see everyone's;
+    - members see their own only when "Members can see their own AI usage" is on (off by
+      default).
+
+    This switch replaces the AI usage visibility choice D-146 put in Settings › Time
+    Tracking, whose "Anyone" option goes.
+14. **The balance chip, and "Used x credits · y left" on AI results:**
+    - always shown to owners and admins;
+    - shown to members only when "Show credit balance to members" is on (off by default).
+15. **F17 migrates no AI credit data:** no balances, purchased credits or usage history
+    (legacy had testers only). Every workspace starts with its normal allowance.
+
+**The draft's questions**
+- **A1 to A8:** answered by the fifteen.
+- **A7, who may spend:** the workspace's existing "Run AI actions" capability
+  (`canRunAi`), which viewers do not hold.
+
+**A9 to A25: my recommendations, accepted**
+- **A9:** an unusable reply is free (as 11).
+- **A10:** each tool is logged as its own kind: naming, scale, Auto-Name, Ask AI and Extract
+  Schedule.
+- **A11:** the cache as 12.
+- **A12:** visibility is enforced on the api (as 13).
+- **Naming and scale (A13 to A17):**
+  - **A13:** the single-sheet Page Name and Sheet # get the same model fallback as ALL.
+  - **A14:** Auto-Name reads the saved naming regions when set, else legacy's bottom-right
+    30 % × 22 %.
+  - **A15:** a partial read keeps the old name (D-116).
+  - **A16:** after an upload, "Auto-name these sheets" is offered once, never run on its own.
+  - **A17:** the out-of-credits message shows wherever a call is made.
+- **Ask AI and Extract Schedule (A18 to A23):**
+  - **A18:** Ask AI is single turn, with Copy and "Add as note", and the answer streams.
+  - **A19:** the chip "Read this schedule as rows." becomes a link to Extract Schedule.
+  - **A20:** a read below 0.6 confidence carries a warning.
+  - **A21:** each item made from a schedule links to its saved read and row.
+  - **A22:** a typed quantity always wins.
+  - **A23:** the low-balance notice (below 10) follows every AI call.
+- **Settings (A24, A25):**
+  - **A24:** the per-user limit keeps its member list, saved on blur; a cleared amount
+    reverts.
+  - **A25:** no dashboard meter; the Reports card links to AI Usage.
