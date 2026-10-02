@@ -7769,3 +7769,22 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
   stored as other / "Smoke tag", then deleted (bench browser, Hidden Valley Spec C-200).
 - **Left:** the width, legacy's `max-w-[420px]` against our 448 px `md`.
 - **Where:** app `features/takeoff/markup/SnippetDialogs.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-211 — Bug: Split view's close was pushed out of the reference pane
+
+**Date:** 2026-10-02
+**Status:** fixed overnight (the fallback, side by side with live legacy)
+**Area:** F7 Split view; Frontend
+
+- **Found:** at 1440 × 900 with C-200 – Site Grade Plan as the reference, the pane's header
+  ran past its edge.
+  - "View-only", the markups eye and the × "Close split view" were cut off, so the pane
+    could not be closed from itself.
+  - The picker button and "View-only" could not shrink: no `min-w-0`, and "View-only" was
+    inline.
+- **Now, as legacy's:** the sheet name truncates inside its 220 px button, "View-only"
+  truncates to "Vie…", and the zoom group, the eye and the × never shrink, so they stay in
+  the pane.
+- **Where:** app `features/takeoff/split/ReferencePane.tsx`.
