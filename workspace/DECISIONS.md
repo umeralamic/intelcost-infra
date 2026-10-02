@@ -7998,3 +7998,33 @@ Count was picked in both apps at 1440 × 900.
   aborted, so no scale was written.
 - **Where:** app `lib/takeoff/engine/calibration.ts`, `lib/takeoff/{index,scales}.ts`,
   `components/CalibrationDialog.tsx`, `features/drawing/api.ts`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-223 — Metric scales save the sheet metric; Custom Scale's metric UI, as live legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F5 scales; Frontend
+
+- **Bug, found beside legacy:**
+  - Picking a metric preset (1 : 5 to 1 : 5000) saved the sheet's scale with unit "ft", so its
+    quantities stayed in feet under a metric scale.
+  - Legacy's `applyScaleDirect(…, preset.group === "metric" ? "metric" : "imperial")` makes the
+    sheet metric.
+  - A scale choice now carries its unit: metric presets and metric custom scales save "m", the
+    rest "ft". The api already stored the unit.
+- **Custom Scale, as live legacy's** (its `CALIBRATE_METRIC_UI` is on; Q5's "flag off" is
+  superseded with D-222):
+  - 448 px;
+  - an Imperial | Metric switch;
+  - Metric as Ratio (1 : N, feet per point N / 864), or as Distance (L page mm, cm or m = R
+    real mm, cm or m).
+  - Ours was the 384 px imperial-only form.
+- **Proved:** on uncalibrated Page 1, the save requests were read and aborted, so nothing was
+  written:
+  - "1 : 50" went as unit m;
+  - a metric ratio "1 : 100" went as unit m, at 0.115741 ft/pt;
+  - an imperial "1/8"" preset went as ft.
+- **Where:** app `components/ScaleControls.tsx`, `features/drawing/api.ts`,
+  `pages/ProjectTakeoff.tsx`.

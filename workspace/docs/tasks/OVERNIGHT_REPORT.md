@@ -204,6 +204,8 @@ Hidden Valley Spec. Fixed, most visible first:
 | 43 | Count's size sliders unfilled native ranges; colour swatch 36 px | Filled sliders; legacy's 32 px | D-220 |
 | 44 | Six sliders still on the browser's own range | Legacy's filled slider on all | D-221 |
 | 45 | Set sheet scale: 384 px, no unit picker (Q5's flag off); live legacy ships the picker on, 512 px | Legacy's flag-on dialog; metric calibrations saved as m | D-222 |
+| 46 | **Bug:** a metric preset saved the sheet in feet; legacy makes it metric | Scale choices carry their unit | D-223 |
+| 47 | Custom Scale imperial only, 384 px; live legacy has Imperial / Metric, 448 px | Legacy's metric UI | D-223 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
