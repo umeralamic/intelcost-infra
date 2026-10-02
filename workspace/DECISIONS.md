@@ -8106,3 +8106,30 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 - **Left:** legacy has a "Draw" button beside each region, to draw one from inside the dialog.
   Ours points to the box menu's All. A small feature, logged for the PARITY line.
 - **Where:** app `features/takeoff/sheets/NameFromRegionDialog.tsx`.
+
+---
+
+## D-228 — The toolbar folds every tool after Scale, from the right, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 toolbar; Frontend
+
+- **Found (09:58):** at 1024 × 768 legacy folds every tool after Scale into More, from the
+  right. Ours folded only Linear, Segment, Area and Count, so below about 1200 px the most-used
+  tools went first while Snapshot to Split stayed.
+- **Now:** the bar folds from the right in its own order: Split, Fullscreen, Overlay, Note,
+  Highlight, Dock, Snapshot, Count, Area, Segment, Linear. More lists whatever has folded, in the
+  bar's order, and runs it: a markup arms its tool, Overlay opens its dialog, Fullscreen and
+  Split toggle ("Exit fullscreen", "Turn off split view" when on). A group whose last button
+  folds leaves the bar.
+- **Kept:** Dimension stays beside Scale (D-99), so it never folds.
+- **Also fixed:** the fold count is now worked out from the rendered count. Before, the
+  effect's fit and the observer's could both fold on one reading. That was harmless while
+  only the draw tools folded, but with tools that can be absent it looped on a narrow first
+  load.
+- **Seen:** driven at 2048, 1440, 1280, 1100, 960, 820 and 700 px. Everything shows at 1280 and
+  wider. At 1100 Fullscreen and Split fold; at 700 nine tools fold. Widening brings every tool
+  back. Split view toggles on and off from More. A first load at 1100 px renders with no
+  console errors.
+- **Where:** app `features/takeoff/components/Toolbar.tsx`.

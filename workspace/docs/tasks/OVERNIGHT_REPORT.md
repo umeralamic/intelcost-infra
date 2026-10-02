@@ -210,6 +210,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 49 | Scale-change guard 384 px, no earthwork clause; confirmation titles bold | Legacy's 448 px and words; semibold | D-225 |
 | 50 | Duplicate page: "(0 markups)"; legacy "(0 highlights, notes and docks)" | Legacy's words | D-226 |
 | 51 | Name from page region with no region read every page ("Reading…"); legacy prompts to draw one | Nothing read; legacy's prompt | D-227 |
+| 52 | The toolbar folded only the draw tools; legacy folds everything after Scale from the right | Every tool after Scale folds from the right; More runs them all | D-228 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
@@ -309,6 +310,7 @@ width (D-197).
   - `5b04255` scale-change guard (D-225)
   - `50c9dd8` Duplicate page words (D-226)
   - `fae71d5` Name from page region with no region (D-227)
+  - `81fa7e0` the toolbar's fold order (D-228)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -365,6 +367,8 @@ width (D-197).
 - **D-224:** Pick a standard scale. **D-225:** the scale-change guard; confirmation titles.
 - **D-226:** Duplicate page's words. **D-227:** Name from page region reads nothing until a
   region is drawn.
+- **D-228:** the toolbar folds every tool after Scale from the right, as legacy's. Dimension stays
+  beside Scale.
 
 ## Stitching questions (from the draft spec; none decided)
 
@@ -430,15 +434,10 @@ width (D-197).
   Every dialog checked fits at 375 px (task 7). **Live legacy does the same** (checked at
   375 × 740: both panels stay, the canvas squeezed), so this is parity, not a regression. A
   collapse-the-panels rule for narrow windows is under Ideas.
-- **Found, not fixed: the toolbar's fold order at narrow windows (09:58).**
-  - At 1024 × 768 legacy folds every tool after Scale into More, in order from the right.
-  - Ours folds only the measuring tools (Linear, Segment, Area, Count) and keeps Snapshot, Dock,
-    Highlight, Note, Overlay, Fullscreen and Split visible. Below about 1200 px the most-used
-    tools are the first to go.
-  - At 1280 × 650 and wider both show everything.
-  - **The fix:** make every group foldable from the right (Split, Fullscreen, Note, Highlight,
-    Overlay, Dock, Snapshot, Dimension, then Count to Linear), with the More menu rendering
-    markup tools and actions as well as draw tools.
+- **The toolbar's fold order at narrow windows: found 09:58, fixed 10:25 (D-228).** Legacy folds
+  every tool after Scale into More from the right. Ours folded only the draw tools. Ours now
+  folds the way legacy's does. Making it fit also exposed a render loop on a narrow first load.
+  That loop came from two fits folding on one reading, and it is fixed in the same change.
   - Left because it reworks `components/Toolbar.tsx`'s overflow, too large to start in the last
     hour. It is a PARITY item for F7.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
