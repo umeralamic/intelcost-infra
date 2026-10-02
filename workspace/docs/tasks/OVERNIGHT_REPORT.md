@@ -425,6 +425,10 @@ width (D-197).
 - **Metric scales (D-223):** before tonight, picking 1 : 100 or any metric preset saved the sheet
   in feet, so its quantities read in LF and SF under a metric scale. No sheet on the bench is
   metric. Any made elsewhere before this fix keeps unit "ft" until its scale is picked again.
+- **The Takeoff screen at phone width (375 px)** keeps both 280 px side panels, leaving the
+  canvas about 60 px wide, so drawing (Calibrate's two clicks, for one) is not usable there.
+  Every dialog checked fits at 375 px (task 7). The layout itself was never built for a phone, so
+  this predates tonight. A collapse-the-panels rule for narrow windows is under Ideas.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
   not chased.
 
@@ -441,8 +445,10 @@ width (D-197).
 - Auto Count: a reference editor and several references per search (Q27, out of F13).
 - Snapshot custom types as workspace rows (legacy's), not only the project's labels.
 - Legacy's sub-items editor (tabs, classification column, Seed from…, variables).
-- One more dialog size for legacy's 420 px dialogs (Export, Snapshot), and per-menu widths
-  (legacy's 240 px Sheets panel menu).
+- Collapse the Takeoff screen's side panels below a tablet width, so the canvas is usable on a
+  phone.
+- Legacy's in-dialog Draw and Redraw in Name from page region.
+- A metric-aware look at sheets calibrated in metric before D-223, if any exist in production.
 
 ## Click-only checks for the morning, most important first
 
