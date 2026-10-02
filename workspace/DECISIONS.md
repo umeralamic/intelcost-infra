@@ -7837,3 +7837,17 @@ Measured in both apps at 1440 × 900 (computed styles).
 - This closes two of D-205's and D-210's "left" widths.
 - **Where:** app `components/ui/dialog.tsx`, `estimate/ExportDialog.tsx`,
   `markup/SnippetDialogs.tsx`.
+
+---
+
+## D-215 — The Sheets panel's ⋮ menu at legacy's 240 px
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 Sheets panel; Frontend
+
+- Legacy's panel menu is `w-60`, 240 px. Ours took the menus' 208 px minimum.
+- A menu anchor can now ask for a minimum width (`minWidth`), and the panel ⋮ asks for 240.
+  It measures 240 px in both apps.
+- Legacy's is 32 px taller only by its Auto-Name Sheets row, which waits for F14.
+- **Where:** app `components/ui/context-menu.tsx`, `sheets/SheetsPanel.tsx`.

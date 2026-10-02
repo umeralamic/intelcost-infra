@@ -195,6 +195,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 34 | "Sheets" title 14 px Archivo grey; legacy 12 px Inter, text colour | Legacy's title | D-213 |
 | 35 | Toggles and scale chip 20 px; chip darker green, medium | Legacy's 22 px; emerald, semibold, 10 px padding | D-213 |
 | 36 | Export to Excel 384 px, New snapshot 448; legacy 420 | A 420 px size for both | D-214 |
+| 37 | Sheets panel ⋮ menu 208 px; legacy 240 | Legacy's width | D-215 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
@@ -217,7 +218,6 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 - **Menu sizes:**
   - Legacy's item ⋮ and layer menus' "Add layer…" use 14 px rows (a shadcn default); ours are
     12 px throughout.
-  - The Sheets panel ⋮ menu is 240 px in legacy, 208 in ours.
 - **Shared equipment:** ours has a Done button in the footer; legacy has only the ×.
 - **Dark mode:** legacy's light classification band is not copied; our muted text would vanish
   on it (D-203).
