@@ -7,6 +7,9 @@
 >   plans, and PARITY's F14 lines.
 > - **Not driven live:** every legacy AI call spends real credits on the live workspace.
 > - **PARITY** is corrected where the code disagrees (below).
+> - **Scope (D-235, 2026-10-02):** only the AI tools live legacy shows today (region naming,
+>   Ask AI, Extract Schedule, Auto-Name Sheets, and the credit screens); retired AI features
+>   are out. Metering research and a usage-based design: [ai_credits_research.md](ai_credits_research.md).
 
 ## The problem
 

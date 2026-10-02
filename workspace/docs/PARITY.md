@@ -802,18 +802,25 @@ Metered against the workspace wallet before the model runs.
 
 ## 20. Community
 
-`/community`, plus the Community tab inside takeoff.
+`/community`, plus the Community tab inside takeoff. Rewritten 2026-10-02 against legacy's
+code and the founder's answers (D-180, D-234); spec [community_tasks.md](tasks/community_tasks.md).
 
-- [ ] Browse posts in four sections, filtered and searchable. `src/pages/Community.tsx`, `src/components/community/CommunityBoard.tsx`, table `community_posts` · **missing**
-- [ ] Create a post with a title and a rich-text body. `src/components/community/NewPostDialog.tsx`, `src/components/community/editor/` · **missing**
-- [ ] Attach an image or a file to a post, and attach a bug report. `src/components/community/BugAttachment.tsx`, bucket `community-attachments`, table `community_media` · **missing**
-- [ ] Reply to a post, and delete a reply. `src/components/community/CommunityPostView.tsx`, rpc `soft_delete_community_reply`, table `community_replies` · **missing**
-- [ ] Upvote a post and remove the upvote. table `community_votes` · **missing**
-- [ ] Mark a reply as the answer, and unmark it. `src/components/community/CommunityPostView.tsx` · **missing**
-- [ ] Set a post's status: Open, Under Review, Planned, In Progress, Completed. `src/components/community/StatusBadge.tsx` · **missing**
-- [ ] Delete a post, with confirmation. rpc `soft_delete_community_post` · **missing**
-- [ ] Links in the editor are universal, with no YouTube special case. `.lovable/plan/community-editor-drop-youtube-make-links-universal-2026-08-22.md` · **missing**
-- [ ] Read and post to Community from inside the takeoff workspace. `src/components/community/CommunityPanel.tsx` · **missing**
+- [x] Four boards (Q&A, Feature Requests, Bug Reports, Cool Stuff) with legacy's descriptions, its own header ("Intelcost Community", "Back to app") and the boards on the left; `/community` → Q&A, a post under the wrong board moves to its own. `src/pages/Community.tsx`, `CommunityLayout.tsx`, `src/lib/community/sections.ts` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] A board: "Search posts…" over the title and the text (not the markup, debounced), sort Newest activity / Top (trending) / Most replies, status tabs on Feature Requests and Bug Reports, paged on the api (legacy: the newest 200 in the browser). `CommunityBoard.tsx` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] A post with a title and legacy's rich text: bold, italic, underline, strike, two headings, quote, both lists, links (Link and Text to show). `NewPostDialog.tsx`, `editor/` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [ ] Images and MP4 video in posts and replies: paste, drop, the Add an image and Add a video dialogs, 10 MB and 100 MB, 1 GB a member counting live media, posters, the lightbox. `editor/Insert*Dialog.tsx`, `src/lib/community/media.ts`, table `community_media` · **missing** (Block B)
+- [x] Reply, edit a reply ("edited"), delete a reply. `CommunityPostView.tsx` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Upvote a post or a reply and take it back; never your own (D-234 C17). table `community_votes` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Mark a reply as the answer on Q&A, and unmark it; the post's author or staff; it must be a live reply of that post. · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Staff set a status (Open, Planned, Under Review, In Progress, Completed) on Feature Requests and Bug Reports only (D-234 C8). `StatusBadge.tsx` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Delete a post, the author or staff ("Delete (admin)"), with a confirm saying staff can restore it for 30 days. · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Links are universal (no YouTube special case); a paragraph that is only a URL draws as a link card, built as elements. `.lovable/plan/community-editor-drop-youtube-make-links-universal-2026-08-22.md` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Read and post to Community from the takeoff's Community tab, the same forum, kept once visited. `CommunityPanel.tsx` · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Posting, replying and voting need `canComment` (legacy never checked it, D-234 C1). · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] "Community" in the app header (D-234 C3). · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [ ] "Report" on posts and replies reaching staff; staff restore a deleted post within 30 days, then it is removed (D-234 C2, C11). · **missing** (Block D)
+- [ ] New posts and replies appear live (D-234 C15). · **missing** (Block C)
+- [ ] Email and in-app notices: a reply to your post, your answer accepted, your post's status changed (D-234 C14). · **missing** (Block C)
 
 ## 21. Billing
 
@@ -1119,7 +1126,7 @@ A retired line counts as driven, because there is nothing left to drive.
 | 17 | Auto Count | 42 (rewritten against the code, D-189) | 30 | 0 | 11 | **23** (1 retired by D-189; D-193) | 8 |
 | 18 | AI tools | 30 | 0 | 0 | 30 | 0 | 10 |
 | 19 | Reports | 9 | 0 | 0 | 9 | 0 | 9 |
-| 20 | Community | 10 | 0 | 0 | 10 | 0 | 10 |
+| 20 | Community | 16 (rewritten, D-234) | 12 | 0 | 4 | **12** (F15 Block A, smoke-tested) | 10 |
 | 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
 | 22 | Platform admin | 20 | 9 | 0 | 11 | **9** (F16a, smoke-tested, D-70) | 8 |
 | 23 | Keyboard and mouse | 36 | 1 | 3 | 32 | **1** | new |

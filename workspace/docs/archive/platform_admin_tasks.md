@@ -2,7 +2,8 @@
 
 > **Written 2026-10-02** from legacy's source on `UmeralamDEV` (`e99cddcb`), its plan files,
 > and live legacy driven as its platform-admin account (the Developer menu, the Starter Pack
-> picker). Decisions: D-233 (inventory, order, legacy's answers, pending founder review).
+> picker). Decisions: D-233 (inventory, order, legacy's answers), accepted by the founder 2026-10-02.
+> **Shipped 2026-10-02 and archived:** Blocks A to D built, smoke-tested and reviewed.
 > Platform admin stays resolved in the permission layer (D-23): `user.is_platform_admin`,
 > never a role; internal routes render the ordinary 404.
 

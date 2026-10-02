@@ -8260,7 +8260,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 ## D-233 — Platform admin as legacy (F16a): the inventory, the order, legacy's answers
 
 **Date:** 2026-10-02
-**Status:** pending founder review
+**Status:** accepted by the founder 2026-10-02
 **Area:** F16 admin panel, F10 Starter Pack; Auth, Backend, Frontend
 
 **Context:** the founder asked for every platform-admin piece legacy has, listed against
@@ -8269,7 +8269,7 @@ legacy's behaviour where a question would normally be asked. Legacy's source on
 `UmeralamDEV`, its plans, and live legacy driven as its platform-admin account (the
 Developer menu: Activity, AI economics, Billing tiers; the Starter Pack picker with "New
 starter assembly", the pack empty) give sixteen pieces, listed in
-[platform_admin_tasks.md](docs/tasks/platform_admin_tasks.md).
+[platform_admin_tasks.md](docs/archive/platform_admin_tasks.md).
 
 **Options considered:**
 
@@ -8305,3 +8305,74 @@ C Billing tiers' first four tabs, D Overrides, lock and flagged accounts), each 
   `platform-secret-status`), from the api's own settings.
 - **Ideas, not built:** granting platform admin from a screen, a feature flag screen,
   workspace search with read-only support access, Starter Pack changes live everywhere.
+
+---
+
+## D-234 — Community (F15): the founder's answers; spec adopted
+
+**Date:** 2026-10-02
+**Status:** decided (the founder, in session)
+**Area:** F15 Community; Frontend, Backend
+
+The founder accepted the recommendation on every open question of the Community draft
+(C1 to C17 in the session's list; the draft's Q2 to Q18). Q1 stays as D-180: one global
+forum, everything posted visible to all users.
+
+- **Scope and access**
+  - **C1 (Q2):** posting needs `canComment`; a viewer reads only.
+  - **C2 (Q3):** IntelCost staff (platform admins, D-23) moderate; posts and replies get a
+    "Report" action that reaches staff.
+  - **C3 (Q4):** a "Community" link in the app header beside Reports; the takeoff tab stays.
+  - **C4 (Q5):** the takeoff tab is the same forum, no project context; sharing a snapshot
+    from the canvas comes later.
+  - **C5 (Q18):** private, signed in only.
+  - **C6 (Q16):** full name, avatar and the "IntelCost" staff badge, as legacy.
+- **Content**
+  - **C7 (Q6):** the four boards as named: Q&A, Feature Requests, Bug Reports, Cool Stuff.
+  - **C8 (Q7):** a status on Feature Requests and Bug Reports only; Q&A shows "Answered".
+  - **C9 (Q8):** legacy's rich text: bold, italic, underline, strike, H1/H2, quote, lists,
+    links, images, MP4; no code or tables.
+  - **C10 (Q9):** images ≤ 10 MB, video ≤ 100 MB, 1 GB per member, counting live media
+    only; a deleted post's media is freed after 30 days.
+  - **C11 (Q10):** delete is soft for 30 days and restorable by staff; the confirm says so.
+  - **C12 (Q11):** an "edited" marker only.
+  - **C13 (Q17):** none of legacy's old attachments are migrated.
+- **Behaviour**
+  - **C14 (Q12):** email and in-app notices for a reply to your post, your answer accepted,
+    and your post's status changing.
+  - **C15 (Q13):** new posts and replies appear live, on one global topic.
+  - **C16 (Q14):** paging and sorting on the api; search over the text (not the markup),
+    debounced.
+  - **C17 (Q15):** upvotes only, no self-votes.
+- **The spec is adopted** as [community_tasks.md](docs/tasks/community_tasks.md) with these
+  answers written in, and the draft is removed. Built block by block from legacy's source,
+  its plans and live legacy, matching legacy except where these answers differ.
+
+---
+
+## D-235 — F14 brings only the AI tools live legacy shows today
+
+**Date:** 2026-10-02
+**Status:** decided (the founder, in session)
+**Area:** F14 AI tools and credits; F17 migration
+
+- **Scope:** F14 ports only the AI tools reachable in live legacy's screens today. The list
+  was confirmed by driving live legacy on 2026-10-02 (menus opened, no credit spent):
+  - **the region menu** (a Select-tool box over empty sheet): Page Name, Sheet # and Scale,
+    each with "ALL", and **Ask AI** and **Extract Schedule**, all five with the AI sparkle
+    (Auto Count, beside them, is not AI);
+  - **Auto-Name Sheets** in the Sheets panel's ⋮ menu and **Auto-Name Sheet** in a sheet
+    row's menu (with "Name from page region…" beside them);
+  - and the credit screens: Settings › AI Credits, Reports › AI Usage, AI economics.
+
+  Nothing AI was found on the dashboard, New project, Project Home, Estimating, Earthwork
+  or Collaborator. The project map's address lookup (an unmetered AI call in legacy's code)
+  is P-17's, behind its own provider decision (D-28), not F14's.
+- **Out of F14 completely:** every retired AI feature no longer reachable in live legacy's
+  UI: parse subquote, Project Intake, import takeoff, Estimate AI, bulk fix cautions, draft
+  trade scope, subquote clarification, and any other. Their code, prompts, costs and place
+  in the AI usage report are not ported.
+- **Research figures** come only from the active tools.
+- **Our AI usage report lists only our tools.**
+- **F17:** legacy's AI usage history for retired tools is not migrated. Whether the active
+  tools' history comes across is a question for the founder.
