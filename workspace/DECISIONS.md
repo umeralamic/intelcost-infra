@@ -7740,3 +7740,32 @@ cells). This closes the last run's "thick dark line under the header, not chased
 - **Header cells:** legacy's 4.5 by 8 px padding, bold, on a 1.375 line. They were 8 px,
   medium and tight. The header is now 49 px against legacy's 50.
 - **Where:** app `index.css`, `features/estimate/EstimatingView.tsx`.
+
+---
+
+## D-210 — The Snapshot dialog, as legacy's SnippetDetailsDialog
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 Snapshot tool; Frontend
+
+A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (cancelled).
+- **Words:** "New snapshot" over "Name and tag this snapshot so it's easy to find in the
+  Snippets panel." (edit: "Rename / retag snippet", "Update the name, tag and note for this
+  snippet."). Ours said "Save snapshot", with no description.
+- **Fields:**
+  - "Name", with the placeholder "e.g. Wall type W1";
+  - "Tag";
+  - "Note (optional)" with "Anything worth remembering about this area…";
+  - foreground labels; a 128 px preview; built-in tags in legacy's lowercase.
+  - Ours had "Title", "Notes" and muted labels.
+- **Custom types:** legacy's tag list holds Built-in and Custom groups and ends with
+  "+ Add custom type…", which turns the select into "New tag name…" and Add.
+  - Ours had a separate "Custom tag (optional)" field under "other".
+  - Legacy's custom types are workspace rows. Here the Custom group is the custom labels the
+    project's snapshots already use, and one typed in joins it. The stored data is unchanged:
+    `tag_type` other with `custom_tag_label`.
+- **Proved:** a snapshot saved through the dialog with "+ Add custom type…" "Smoke tag" was
+  stored as other / "Smoke tag", then deleted (bench browser, Hidden Valley Spec C-200).
+- **Left:** the width, legacy's `max-w-[420px]` against our 448 px `md`.
+- **Where:** app `features/takeoff/markup/SnippetDialogs.tsx`, `pages/ProjectTakeoff.tsx`.
