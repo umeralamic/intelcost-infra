@@ -7788,3 +7788,18 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
   truncates to "Vie…", and the zoom group, the eye and the × never shrink, so they stay in
   the pane.
 - **Where:** app `features/takeoff/split/ReferencePane.tsx`.
+
+---
+
+## D-212 — The open sheet marked on its name, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 Sheets panel; Frontend
+
+- **Legacy:** the open sheet is marked on its name's button only: a dark rounded pill (the
+  foreground colour, radius 6 px, 8 px padding). The scale and item chips stay on the light row
+  beside it.
+- **Ours** filled the whole row, chips included. Now it marks the name's button as legacy's. A
+  multi-selected row keeps its row-wide tint, as before.
+- **Where:** app `features/takeoff/sheets/SheetsPanel.tsx`.
