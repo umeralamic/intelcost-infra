@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | Overlay | done (D-195), smoke-tested | 23:52 | 00:20 | 28 min |
 | 6 | Auto Trace cache in IndexedDB | done (D-196): C-200 5.9 s cold → 0.32 s from the cache | 00:20 | 00:30 | 10 min |
 | 7 | Default dialog width 448 px | done (D-197): md is 448, `wide` 512 for Calculate and Overlay; fits at 1280 × 650 and 375 | 00:30 | 00:48 | 18 min |
-| F | Fallback: side-by-side differences | done: 55 differences fixed (D-198 to D-230), the rest listed with reasons (below) | 00:48 | 11:00 | 10 h 12 min |
+| F | Fallback: side-by-side differences | done: 55 differences fixed (D-198 to D-230), the rest listed with reasons (below) | 00:48 | 10:58 | 10 h 10 min |
 
 ## Notes as they happen
 
