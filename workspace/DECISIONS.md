@@ -7597,3 +7597,28 @@ Measured at 1440 × 900 (computed styles) on Share, Find Text and Print.
 - **Also checked:** the dark Takeoff and Earthwork tabs match. Legacy's orange theme button
   was only its hover state.
 - **Where:** app `index.css`.
+
+---
+
+## D-204 — Strip Area's radios and Calculate's fields spaced as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F12 Earthwork dialogs; Frontend
+
+The three Earthwork dialogs were driven in both apps at 1440 × 900 and opened only, never
+submitted (Calculate on live legacy writes). The widths matched already.
+- **Strip Area:** legacy's RadioGroup (`grid gap-2` with `space-y-1`) puts its radio rows
+  12 px apart; ours were 4. Where to strip, Stripped soil goes to and the re-use choices are
+  now 12 px apart.
+- **Calculate's assumptions:**
+  - `py-2` round the body, and 8 px from each label to its field;
+  - Yes and No 24 px apart, at 16 px, with 8 px from radio to label;
+  - the select and the two factors at the default 40 px (ours forced 36).
+- **Result:** the dialog is 591 px against legacy's 574; ours is taller only because D-177's
+  longer hints wrap.
+- **Kept:**
+  - "Engineered Fill" (D-136 Q13);
+  - the swell and shrink wording (D-177).
+- **Site Features** matched.
+- **Where:** app `features/takeoff/earthwork/{StripAreaDialog,CalculateDialog}.tsx`.

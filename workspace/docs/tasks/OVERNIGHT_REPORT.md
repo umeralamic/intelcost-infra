@@ -183,3 +183,5 @@ the headed MCP browser opened the native print dialog, which blocks the page, an
 `browser_close` then hung too. From then on every smoke check was driven from the bench's own
 headless browser container (throwaway scripts in `intelcost-infra/browser/`, deleted after
 use), where print is a no-op. **Never click Print in the MCP browser.**
+| 20 | Strip Area radios 4 px apart; legacy 12 | Legacy's spacing | D-204 |
+| 21 | Calculate assumptions: 36 px fields, 14 px Yes/No, tight spacing | Legacy's 40 px fields, 16 px Yes/No, spacing | D-204 |
