@@ -430,6 +430,17 @@ width (D-197).
   Every dialog checked fits at 375 px (task 7). **Live legacy does the same** (checked at
   375 × 740: both panels stay, the canvas squeezed), so this is parity, not a regression. A
   collapse-the-panels rule for narrow windows is under Ideas.
+- **Found, not fixed: the toolbar's fold order at narrow windows (09:58).**
+  - At 1024 × 768 legacy folds every tool after Scale into More, in order from the right.
+  - Ours folds only the measuring tools (Linear, Segment, Area, Count) and keeps Snapshot, Dock,
+    Highlight, Note, Overlay, Fullscreen and Split visible. Below about 1200 px the most-used
+    tools are the first to go.
+  - At 1280 × 650 and wider both show everything.
+  - **The fix:** make every group foldable from the right (Split, Fullscreen, Note, Highlight,
+    Overlay, Dock, Snapshot, Dimension, then Count to Linear), with the More menu rendering
+    markup tools and actions as well as draw tools.
+  - Left because it reworks `components/Toolbar.tsx`'s overflow, too large to start in the last
+    hour. It is a PARITY item for F7.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
   not chased.
 
