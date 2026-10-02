@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | Overlay | done (D-195), smoke-tested | 23:52 | 00:20 | 28 min |
 | 6 | Auto Trace cache in IndexedDB | done (D-196): C-200 5.9 s cold → 0.32 s from the cache | 00:20 | 00:30 | 10 min |
 | 7 | Default dialog width 448 px | done (D-197): md is 448, `wide` 512 for Calculate and Overlay; fits at 1280 × 650 and 375 | 00:30 | 00:48 | 18 min |
-| F | Fallback: side-by-side differences | in progress (below) | 00:48 | | |
+| F | Fallback: side-by-side differences | done: 53 differences fixed (D-198 to D-229), the rest listed with reasons (below) | 00:48 | 10:50 | 10 h 2 min |
 
 ## Notes as they happen
 
@@ -425,6 +425,13 @@ width (D-197).
   - Estimating's 8 rows;
   - Calculate opened and cancelled;
   - Settings opened.
+- **The last regression smoke, at 10:45,** in the bench browser at 1440 × 900 with writes
+  blocked and no console errors. It came after the toolbar (D-228) and the dialog header
+  (D-229) changes, and it drove:
+  - the Scale menu's Calibrate, opened and cancelled;
+  - Settings, opened and closed by its ×;
+  - Estimating's TOTAL, and back to Takeoff;
+  - the toolbar at 1024 × 768, with "3 more tools" in More.
 - **My slips:** twice I reached for `sed -i` (once on a scratch file, once on this report), and
   the hard rule 7 hook blocked both before they ran. Both were redone with the editor. Nothing was
   harmed; the hook works as meant.
