@@ -427,8 +427,9 @@ width (D-197).
   metric. Any made elsewhere before this fix keeps unit "ft" until its scale is picked again.
 - **The Takeoff screen at phone width (375 px)** keeps both 280 px side panels, leaving the
   canvas about 60 px wide, so drawing (Calibrate's two clicks, for one) is not usable there.
-  Every dialog checked fits at 375 px (task 7). The layout itself was never built for a phone, so
-  this predates tonight. A collapse-the-panels rule for narrow windows is under Ideas.
+  Every dialog checked fits at 375 px (task 7). **Live legacy does the same** (checked at
+  375 × 740: both panels stay, the canvas squeezed), so this is parity, not a regression. A
+  collapse-the-panels rule for narrow windows is under Ideas.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
   not chased.
 
