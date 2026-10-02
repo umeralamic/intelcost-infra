@@ -7622,3 +7622,23 @@ submitted (Calculate on live legacy writes). The widths matched already.
   - the swell and shrink wording (D-177).
 - **Site Features** matched.
 - **Where:** app `features/takeoff/earthwork/{StripAreaDialog,CalculateDialog}.tsx`.
+
+---
+
+## D-205 — Shared equipment at legacy's width
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F9 Estimating; Frontend
+
+Estimating's Columns, Format, Shared equipment and Export were driven in both apps at
+1440 × 900.
+- **Shared equipment** is legacy's 1024 px (the `2xl` size, D-202); ours was 768.
+- **Matched already:**
+  - Columns' list and its two actions;
+  - Format's theme list and its six folded sections (the theme rows differ only by what each
+    workspace has saved).
+- **Left:** Export to Excel is legacy's `max-w-[420px]` against our 384 px `sm` (36 px, not
+  worth another size); ours has a Done button in Shared equipment's footer where legacy has
+  only the ×.
+- **Where:** app `features/estimate/EquipmentDialog.tsx`.

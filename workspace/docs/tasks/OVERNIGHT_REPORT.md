@@ -185,3 +185,4 @@ headless browser container (throwaway scripts in `intelcost-infra/browser/`, del
 use), where print is a no-op. **Never click Print in the MCP browser.**
 | 20 | Strip Area radios 4 px apart; legacy 12 | Legacy's spacing | D-204 |
 | 21 | Calculate assumptions: 36 px fields, 14 px Yes/No, tight spacing | Legacy's 40 px fields, 16 px Yes/No, spacing | D-204 |
+| 22 | Shared equipment 768 px; legacy 1024 | Legacy's width | D-205 |
