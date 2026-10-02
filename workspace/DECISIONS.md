@@ -7969,3 +7969,32 @@ Count was picked in both apps at 1440 × 900.
   browser's look.
 - **Where:** app `items/MeasurementDialog.tsx`, `assembly/TemplateDialogs.tsx`,
   `markup/{DockSetupDialog,StyleCaret}.tsx`, `dimension/DimensionPropertiesPanel.tsx`.
+
+---
+
+## D-222 — Calibrate's unit picker, as live legacy ships it (supersedes F5 Q5's "flag off")
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F5 calibration; Frontend, `lib/takeoff`
+
+- **Found:** F5 Q5 ported legacy's metric calibration units "behind a flag, off", because legacy
+  held `CALIBRATE_METRIC_UI` false then. Live legacy (UmeralamDEV) now ships it true. Its "Set
+  sheet scale" is 512 px, with a unit select beside the distance: ft, in, m, cm, mm, km. Ours
+  was the 384 px flag-off dialog.
+- **Now, legacy's flag-on dialog:**
+  - **The unit** opens on the sheet's own system (metric → m), else the last unit picked in this
+    browser session, else ft.
+  - **Reading the distance** follows legacy's `parseToFeet`: ft through `parseFeet`, in, m, cm,
+    mm and km as a bare number or with the unit's suffix. The parsers sit beside `parseFeet`
+    in `lib/takeoff/engine/calibration.ts` (pure, hard rule 2).
+  - **The interpreted line:** "Interpreted as **25.50 ft** (7.77 m)" for imperial, "**10.00 m**
+    (32.81 ft)" for metric.
+  - **What is saved:** a metric unit saves the sheet's calibration with `unit` "m" and legacy's
+    label `1 : N` (N = feet per point × 864). The api already stored the unit, and the app
+    already reads it for metric quantities. The toast and the scale guard speak in metres.
+- **Proved:** on uncalibrated Page 1, Calibrate → m → "10" read "Interpreted as 10.00 m
+  (32.81 ft)". Save sent `unit` m, `label` "1 : 24", 32.81 ft. The request was intercepted and
+  aborted, so no scale was written.
+- **Where:** app `lib/takeoff/engine/calibration.ts`, `lib/takeoff/{index,scales}.ts`,
+  `components/CalibrationDialog.tsx`, `features/drawing/api.ts`, `pages/ProjectTakeoff.tsx`.
