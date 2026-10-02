@@ -7642,3 +7642,24 @@ Estimating's Columns, Format, Shared equipment and Export were driven in both ap
   worth another size); ours has a Done button in Shared equipment's footer where legacy has
   only the ×.
 - **Where:** app `features/estimate/EquipmentDialog.tsx`.
+
+---
+
+## D-206 — The canvas menu's rules and every flyout's chevron, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 canvas menu, every menu with a flyout; Frontend
+
+A right-click on empty sheet was driven in both apps at 1440 × 900. The items matched
+already; ours was 29 px taller.
+- **Rules:**
+  - Legacy's canvas menu (`SheetContextMenu`) draws its rules as the row's own top border,
+    taking no space. They sit above Rotate Page and Calibrate Scale, and above Annotations
+    and Reset Orientation in the flyouts. There is none between Paste and Show All.
+  - Ours drew spaced separators, one of them extra.
+  - The menu gains a `rule` option. The canvas menu uses it, and the extra rule is gone:
+    301 px against legacy's 297.
+- **Flyout rows:** they end in legacy's ChevronRight (14 px) in place of a small "▸", in
+  every menu.
+- **Where:** app `components/ui/context-menu.tsx`, `pages/ProjectTakeoff.tsx`.

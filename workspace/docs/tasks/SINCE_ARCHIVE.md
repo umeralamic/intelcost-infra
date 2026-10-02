@@ -217,3 +217,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-10-02 | Estimating tab and header colours fixed across themes, as legacy's (D-203) | app `index.css` | side by side with live legacy in dark mode at 1440 × 900 | none |
 | 2026-10-02 | Strip Area radios 12 px apart; Calculate assumptions spaced as legacy (40 px fields, 16 px Yes/No) (D-204) | app `earthwork/{StripAreaDialog,CalculateDialog}.tsx` | side by side with live legacy at 1440 × 900 (opened only) | none |
 | 2026-10-02 | Shared equipment dialog 1024 px, as legacy (D-205) | app `estimate/EquipmentDialog.tsx` | side by side with live legacy at 1440 × 900 | none |
+| 2026-10-02 | Canvas menu rules as row borders where legacy has them; flyout rows end in a chevron (D-206) | app `components/ui/context-menu.tsx`, `ProjectTakeoff.tsx` | side by side with live legacy at 1440 × 900: 301 px against 297 | any fixture that read "▸" in a menu row |
