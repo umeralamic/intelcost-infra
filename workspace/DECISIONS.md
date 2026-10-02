@@ -7556,3 +7556,25 @@ Driven at 1440 × 900: Linear picked in both apps, the dialog read.
 - **Result:** the dialog with both sections closed is about legacy's height (769 px with
   them open on the estimator, against legacy's 569 closed).
 - **Where:** app `features/takeoff/items/MeasurementDialog.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-202 — Dialog titles semibold, Share at legacy's width, toasts as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** Frontend, every dialog and toast
+
+Measured at 1440 × 900 (computed styles) on Share, Find Text and Print.
+- **Dialog titles** are weight 600, legacy's `font-semibold`; ours were 700. Same Archivo,
+  same 18 px.
+- **Share** is legacy's 1024 px (`max-w-5xl`), a new dialog size `2xl`; ours was 768.
+- **Toasts** are legacy's shadcn toast:
+  - 16 px from the corner, 388 px wide;
+  - `p-6 pr-8`;
+  - a semibold title over a description at 90 % of the text colour;
+  - an error drawn solid red (legacy's destructive variant).
+  - Ours were 356 px, `p-4`, a medium title over muted text, and an error outlined.
+- **Find Text** matched already. Its search field's 14 px against our 11 px is the known
+  difference left on purpose in the last run.
+- **Where:** app `components/ui/{dialog,toaster}.tsx`, `features/takeoff/share/ShareDialog.tsx`.

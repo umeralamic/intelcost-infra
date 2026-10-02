@@ -173,3 +173,6 @@ Hidden Valley Spec. Fixed, most visible first:
 | 13 | Estimating tab, header and band colours off legacy's stock format | Legacy's `DEFAULT_FORMAT` values as the light tokens; TOTAL in mono | D-200 |
 | 14 | "Name this LF measurement": the name typed in and numbered by this sheet ("LF 2"); legacy's is a placeholder numbered by the project | Legacy's placeholder and number | D-201 |
 | 15 | The measurement dialog's sections roomier than legacy's, Rough and Earthwork on two rows | Legacy's spacing, one row | D-201 |
+| 16 | Dialog titles 700; legacy's 600 | Semibold | D-202 |
+| 17 | Share 768 px; legacy 1024 | Legacy's width | D-202 |
+| 18 | Toasts smaller and lighter than legacy's; errors outlined, legacy's solid red | Legacy's toast | D-202 |
