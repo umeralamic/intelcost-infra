@@ -8087,3 +8087,22 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
   docks)". Ours now uses legacy's words. Its clouds, callouts and arrows are Highlight and Note
   variants, so the count is the same set.
 - **Where:** app `features/takeoff/sheets/DuplicateSheetDialog.tsx`.
+
+---
+
+## D-227 — Name from page region with no region: nothing read, legacy's prompt
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 sheet naming; Frontend
+
+- **Found:** "Name from page region…" opened from a sheet's ⋮, with no region drawn yet.
+  - Ours still read the text of every page in range (29 on Hidden Valley Spec): a row per page
+    and "Reading…" until each finished, all to find nothing.
+  - Legacy reads nothing and says "Draw a sheet-number region to preview.", with "Apply to 0
+    sheets".
+- **Now:** with neither region set, nothing is read and legacy's line shows. With a region
+  (from a box's All, D-199) it reads as before.
+- **Left:** legacy has a "Draw" button beside each region, to draw one from inside the dialog.
+  Ours points to the box menu's All. A small feature, logged for the PARITY line.
+- **Where:** app `features/takeoff/sheets/NameFromRegionDialog.tsx`.

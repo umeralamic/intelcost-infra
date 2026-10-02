@@ -209,6 +209,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 48 | "Pick a standard scale": 384 px, every preset at 24 px running the window's height | Legacy's 448 px, 300 px list, 32 px rows | D-224 |
 | 49 | Scale-change guard 384 px, no earthwork clause; confirmation titles bold | Legacy's 448 px and words; semibold | D-225 |
 | 50 | Duplicate page: "(0 markups)"; legacy "(0 highlights, notes and docks)" | Legacy's words | D-226 |
+| 51 | Name from page region with no region read every page ("Reading…"); legacy prompts to draw one | Nothing read; legacy's prompt | D-227 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
