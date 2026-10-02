@@ -3,9 +3,10 @@
 > **Spec, adopted 2026-10-01 with the founder's answers (D-188) and the link's behaviour
 > (D-190).** **Blocks A and B built overnight 2026-10-01 (D-192); Block C later.** The
 > acceptance check on C-200 is not met yet: the link is exact, C-200's FG inputs are short
-> (D-192). **How to close it** (FG adoption, this spec's Block C, pavement and pad subgrade)
-> is a draft spec, nothing built:
-> [c200_acceptance_tasks.DRAFT.md](drafts/c200_acceptance_tasks.DRAFT.md).
+> (D-192). **The acceptance on C-200 is the founder's own test, by hand (D-232).** The draft
+> on closing the gap is parked as reference, nothing in it built:
+> [c200_acceptance_tasks.DRAFT.md](drafts/c200_acceptance_tasks.DRAFT.md). Hidden Valley
+> Spec's earthwork data is left exactly as it is unless the founder asks.
 > - **Sources:**
 >   - legacy's source on `UmeralamDEV`: Overlay, `alignment.ts`, `sheet_overlays`, the
 >     earthwork Calculate path, "Paste on another sheet…", and its 295 plan files;

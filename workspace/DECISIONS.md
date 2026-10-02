@@ -8229,3 +8229,28 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
     [c200_acceptance_tasks.DRAFT.md](docs/tasks/drafts/c200_acceptance_tasks.DRAFT.md)
     (FG adoption with curb trims and more suggestions, F18 Block C, pavement and pad subgrade
     through Site Features at the plan's section depths), with 11 questions.
+
+---
+
+## D-232 — The C-200 acceptance is the founder's own test; Hidden Valley's earthwork data is left as it is
+
+**Date:** 2026-10-02
+**Status:** decided (the founder, in session)
+**Area:** F12 Earthwork, F18 EG from other sheets; test data
+
+- **No drawing or building for the C-200 grading gap.** The founder continues the earthwork on
+  C-200 by hand from what is there now (existing and proposed contours, Site Features with
+  depths) and runs the test.
+- **The gap spec is parked:**
+  [c200_acceptance_tasks.DRAFT.md](docs/tasks/drafts/c200_acceptance_tasks.DRAFT.md) is kept
+  as reference, marked "parked, founder testing by hand". Its 11 questions stay unanswered,
+  and its Blocks A to D are not built.
+- **The F12/F18 acceptance on C-200 is the founder's own test,** recorded on the board.
+- **Hidden Valley Spec's earthwork data is left exactly as it is,** now and in later sessions,
+  unless the founder asks:
+  - page 3's EG contours and its scale;
+  - the page 3 → C-200 link;
+  - C-200's adopted and hand-drawn contours.
+
+  Nothing is added, changed or removed. This applies to smoke checks too: a check that needs
+  earthwork data uses another project, or a throwaway one.

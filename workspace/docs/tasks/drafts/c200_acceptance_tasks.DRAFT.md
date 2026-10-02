@@ -1,4 +1,10 @@
-# Closing the C-200 acceptance gap (draft spec, nothing built)
+# Closing the C-200 acceptance gap (draft spec, parked)
+
+> **Parked, founder testing by hand (D-232, 2026-10-02).** The founder continues the earthwork
+> on C-200 by hand from what is there now and runs the test. This draft is kept as
+> reference only: nothing in it is to be built or drawn, and its questions stay unanswered.
+> Hidden Valley Spec's earthwork data is not to be added to, changed or removed unless the
+> founder asks.
 
 > **Draft, written 2026-10-02 at the founder's request. SPEC ONLY: nothing is built.** It
 > spans three features:
@@ -309,5 +315,5 @@ and D's final pass.
 ## Progress
 
 - [x] Draft written 2026-10-02 (spec only, nothing built).
-- [ ] The founder's answers.
-- [ ] Blocks A to D.
+- [x] **Parked 2026-10-02 (D-232):** the founder tests C-200 by hand. The questions stay
+  unanswered and Blocks A to D are not to be built.
