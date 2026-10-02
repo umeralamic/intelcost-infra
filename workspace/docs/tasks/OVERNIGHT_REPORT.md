@@ -211,6 +211,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 50 | Duplicate page: "(0 markups)"; legacy "(0 highlights, notes and docks)" | Legacy's words | D-226 |
 | 51 | Name from page region with no region read every page ("Reading…"); legacy prompts to draw one | Nothing read; legacy's prompt | D-227 |
 | 52 | The toolbar folded only the draw tools; legacy folds everything after Scale from the right | Every tool after Scale folds from the right; More runs them all | D-228 |
+| 53 | Pick a standard scale's Back was in the footer; legacy's chevron is beside the title | The chevron beside the title; Cancel alone in the footer | D-229 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
@@ -242,7 +243,6 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 - **Item history:** ours keeps readable labels where legacy prints raw JSON.
 - **Name from page region:** legacy's in-dialog Draw and Redraw buttons; ours takes a region from
   the box menu's All (PARITY line).
-- **Pick a standard scale:** legacy's back chevron beside the title; ours is "‹ Back" in the footer.
 - **The mode menus** are 210 px against legacy's 192, and the Print menu 276 against 256.
 - **The reference pane** opens at 100 % in legacy; ours opens fitted.
 
@@ -311,6 +311,7 @@ width (D-197).
   - `50c9dd8` Duplicate page words (D-226)
   - `fae71d5` Name from page region with no region (D-227)
   - `81fa7e0` the toolbar's fold order (D-228)
+  - `2fb132e` Pick a standard scale's back chevron (D-229)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -369,6 +370,7 @@ width (D-197).
   region is drawn.
 - **D-228:** the toolbar folds every tool after Scale from the right, as legacy's. Dimension stays
   beside Scale.
+- **D-229:** Pick a standard scale's back chevron beside the title; Dialog gains `onBack`.
 
 ## Stitching questions (from the draft spec; none decided)
 

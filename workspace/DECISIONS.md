@@ -8133,3 +8133,22 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
   back. Split view toggles on and off from More. A first load at 1100 px renders with no
   console errors.
 - **Where:** app `features/takeoff/components/Toolbar.tsx`.
+
+---
+
+## D-229 — Pick a standard scale: legacy's back chevron beside the title
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F5 scales; Frontend
+
+- **Found (D-224's "Left"):** legacy's back chevron sits beside "Pick a standard scale". Ours
+  had "‹ Back" at the left of the footer.
+- **Now:** the shared dialog takes an `onBack`, drawn as a chevron before the title, and the
+  scale step uses it. The footer keeps only Cancel, at the right.
+- **Not re-checked:** legacy's footer was not driven again for this. Cancel stays because
+  legacy's step is taller than ours (466 px against 432), which fits a footer row.
+- **Seen:** at 1440 × 900 on an unscaled page: Linear, then "Set scale directly", gives a
+  448 × 434 step with Close, Back and Cancel. Back returns to "Set a scale for this sheet".
+  Writes were blocked for the run, and there were no console errors.
+- **Where:** app `components/ui/dialog.tsx`, `features/takeoff/components/ScaleControls.tsx`.
