@@ -7822,3 +7822,18 @@ Measured in both apps at 1440 × 900 (computed styles).
   `status-green` the other green chips keep.
 - **Where:** app `pages/ProjectTakeoff.tsx`, `components/ScaleControls.tsx`,
   `sheets/SheetsPanel.tsx`, `index.css`.
+
+---
+
+## D-214 — Legacy's 420 px form dialogs
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** Frontend dialogs
+
+- Legacy draws Export to Excel and New snapshot at `max-w-[420px]`. Ours were 384 (`sm`) and
+  448 (`md`).
+- A dialog size `form` (420 px) now serves both. Export measures 420 px, as legacy's.
+- This closes two of D-205's and D-210's "left" widths.
+- **Where:** app `components/ui/dialog.tsx`, `estimate/ExportDialog.tsx`,
+  `markup/SnippetDialogs.tsx`.
