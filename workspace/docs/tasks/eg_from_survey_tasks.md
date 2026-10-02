@@ -3,7 +3,9 @@
 > **Spec, adopted 2026-10-01 with the founder's answers (D-188) and the link's behaviour
 > (D-190).** **Blocks A and B built overnight 2026-10-01 (D-192); Block C later.** The
 > acceptance check on C-200 is not met yet: the link is exact, C-200's FG inputs are short
-> (D-192).
+> (D-192). **How to close it** (FG adoption, this spec's Block C, pavement and pad subgrade)
+> is a draft spec, nothing built:
+> [c200_acceptance_tasks.DRAFT.md](drafts/c200_acceptance_tasks.DRAFT.md).
 > - **Sources:**
 >   - legacy's source on `UmeralamDEV`: Overlay, `alignment.ts`, `sheet_overlays`, the
 >     earthwork Calculate path, "Paste on another sheet…", and its 295 plan files;

@@ -6996,7 +6996,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-189 — Auto Count (F13): the founder's answers; spec adopted
 
 **Date:** 2026-10-01
-**Status:** decided (the founder, in the overnight plan of 2026-10-01; answers the Auto Count draft's 27 questions). Spec details marked "overnight" below are this session's, pending founder review.
+**Status:** decided (the founder, in the overnight plan of 2026-10-01; answers the Auto Count draft's 27 questions). Spec details marked "overnight" below are this session's, accepted by the founder 2026-10-02.
 **Area:** F13 Auto Count; Frontend, Backend
 
 - **Accepted as recommended:** Q1, Q3 to Q5, Q7 to Q10, Q14 to Q16, Q19 to Q26.
@@ -7078,7 +7078,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-191 — A difference triangle with one corner on the zero line splits there: legacy's lost cut and fill fixed
 
 **Date:** 2026-10-01
-**Status:** decided overnight, pending founder review (a defect fix; found building F18)
+**Status:** decided overnight, accepted by the founder 2026-10-02 (a defect fix; found building F18)
 **Area:** Earthwork (F12) volume engine; Frontend
 
 - **The defect.** The volume engine (`volume/split.ts`, ported unchanged from legacy) splits
@@ -7105,7 +7105,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-192 — F18 Blocks A and B built: sheet links by control points, Calculate through them
 
 **Date:** 2026-10-01
-**Status:** built overnight; the choices below not set by D-188 or D-190 are this session's, pending founder review
+**Status:** built overnight; the choices below not set by D-188 or D-190 are this session's, accepted by the founder 2026-10-02
 **Area:** F18 (F12 addition): EG from other sheets; Frontend, Backend
 
 - **Block A, the engine and the table:**
@@ -7179,7 +7179,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-193 — Auto Count (F13) Blocks A, B, C, D and F built: Vector mode with quarter turns and the mirror
 
 **Date:** 2026-10-01
-**Status:** built overnight; choices beyond D-189 are this session's, pending founder review
+**Status:** built overnight; choices beyond D-189 are this session's, accepted by the founder 2026-10-02
 **Area:** F13 Auto Count; Frontend, Backend (settings)
 
 - **The matcher.** Legacy's `vectorMatch`, `resultPipeline` and `valleyCut` are ported into
@@ -7268,7 +7268,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-194 — Auto Count (F13) Block E: Image mode, all 8 angles, measured
 
 **Date:** 2026-10-01
-**Status:** built overnight; choices beyond D-189 are this session's, pending founder review
+**Status:** built overnight; choices beyond D-189 are this session's, accepted by the founder 2026-10-02
 **Area:** F13 Auto Count, Image mode; Frontend
 
 - **The matcher is legacy's,** `lib/takeoff/autoCount/imageMatch.ts` and its worker, ported
@@ -7323,7 +7323,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-195 — Overlay, as legacy, on the sheet links' rows
 
 **Date:** 2026-10-02
-**Status:** built overnight (the overlay plan's task 5); choices beyond legacy are this session's, pending founder review
+**Status:** built overnight (the overlay plan's task 5); choices beyond legacy are this session's, accepted by the founder 2026-10-02
 **Area:** F11 Overlay (brought forward), F18's `sheet_registration`; Frontend, Backend
 
 - **Legacy's Overlay:** the toolbar's Overlay button, after Dock in the markup cluster, lit
@@ -7376,7 +7376,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-196 — Auto Trace's results kept in this browser (IndexedDB)
 
 **Date:** 2026-10-02
-**Status:** built overnight (the overnight plan's task 6), pending founder review
+**Status:** built overnight (the overnight plan's task 6), accepted by the founder 2026-10-02
 **Area:** F12 Auto Trace; Frontend
 
 - **What:** a sheet traced once opens its trace again after a reload without the read and
@@ -7396,7 +7396,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-197 — The default dialog is 448 px, as legacy renders it
 
 **Date:** 2026-10-02
-**Status:** built overnight (the overnight plan's task 7), pending founder review
+**Status:** built overnight (the overnight plan's task 7), accepted by the founder 2026-10-02
 **Area:** Frontend, every dialog
 
 - **What:** the `Dialog` primitive's default size `md` is now 448 px (`max-w-md`), the width
@@ -7423,7 +7423,7 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 ## D-198 — Dialogs' title and footer spaced as legacy's; every slider filled
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** Frontend, every dialog and slider
 
 Found on the Overlay dialog at 1440 × 900, against live legacy's "Bench comparison".
@@ -7458,7 +7458,7 @@ Found on the Overlay dialog at 1440 × 900, against live legacy's "Bench compari
 ## D-199 — The box menu and the Auto Count panel as legacy's; selects drawn as its trigger
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 region tools, F13 Auto Count, every select; Frontend
 
 Found at 1440 × 900 against live legacy's "Bench comparison" (a Select-tool box on empty
@@ -7505,7 +7505,7 @@ sheet space, then Auto Count).
 ## D-200 — The Sheets panel's rows and the Estimating grid's stock colours, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Sheets panel, F9 Estimating; Frontend
 
 Measured in both apps at 1440 × 900 (computed styles) and seen at 2048 × 1050.
@@ -7532,7 +7532,7 @@ Measured in both apps at 1440 × 900 (computed styles) and seen at 2048 × 1050.
 ## D-201 — "Name this measurement", as legacy's NewItemDialog
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F6 the measurement dialog; Frontend
 
 Driven at 1440 × 900: Linear picked in both apps, the dialog read.
@@ -7562,7 +7562,7 @@ Driven at 1440 × 900: Linear picked in both apps, the dialog read.
 ## D-202 — Dialog titles semibold, Share at legacy's width, toasts as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** Frontend, every dialog and toast
 
 Measured at 1440 × 900 (computed styles) on Share, Find Text and Print.
@@ -7584,7 +7584,7 @@ Measured at 1440 × 900 (computed styles) on Share, Find Text and Print.
 ## D-203 — Estimating's tab and header the same in dark mode, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F9 Estimating, the dark theme; Frontend
 
 - **What legacy does:** its stock format uses fixed values, so the Estimating grid's bands
@@ -7603,7 +7603,7 @@ Measured at 1440 × 900 (computed styles) on Share, Find Text and Print.
 ## D-204 — Strip Area's radios and Calculate's fields spaced as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F12 Earthwork dialogs; Frontend
 
 The three Earthwork dialogs were driven in both apps at 1440 × 900 and opened only, never
@@ -7628,7 +7628,7 @@ submitted (Calculate on live legacy writes). The widths matched already.
 ## D-205 — Shared equipment at legacy's width
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F9 Estimating; Frontend
 
 Estimating's Columns, Format, Shared equipment and Export were driven in both apps at
@@ -7648,7 +7648,7 @@ Estimating's Columns, Format, Shared equipment and Export were driven in both ap
 ## D-206 — The canvas menu's rules and every flyout's chevron, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 canvas menu, every menu with a flyout; Frontend
 
 A right-click on empty sheet was driven in both apps at 1440 × 900. The items matched
@@ -7669,7 +7669,7 @@ already; ours was 29 px taller.
 ## D-207 — The sheet's ⋮ menu named and end-aligned; item ⋮ menus end-aligned
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Sheets panel and item rows; Frontend
 
 The sheet row's ⋮ ("Page actions") and the layer menu were driven in both apps at
@@ -7692,7 +7692,7 @@ The sheet row's ⋮ ("Page actions") and the layer menu were driven in both apps
 ## D-208 — An item's Override, Costs, History and Link screenshots, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F6/F7 item dialogs; Frontend
 
 The dialogs behind a Takeoff-panel item's ⋮ were opened in both apps at 1440 × 900 and
@@ -7725,7 +7725,7 @@ closed unsaved.
 ## D-209 — The Estimating grid's rules and header cells, as legacy's stock format
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F9 Estimating; Frontend
 
 Measured in both apps at 1440 × 900 (computed styles on the header cells and the first body
@@ -7746,7 +7746,7 @@ cells). This closes the last run's "thick dark line under the header, not chased
 ## D-210 — The Snapshot dialog, as legacy's SnippetDetailsDialog
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Snapshot tool; Frontend
 
 A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (cancelled).
@@ -7775,7 +7775,7 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
 ## D-211 — Bug: Split view's close was pushed out of the reference pane
 
 **Date:** 2026-10-02
-**Status:** fixed overnight (the fallback, side by side with live legacy)
+**Status:** fixed overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Split view; Frontend
 
 - **Found:** at 1440 × 900 with C-200 – Site Grade Plan as the reference, the pane's header
@@ -7794,7 +7794,7 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
 ## D-212 — The open sheet marked on its name, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Sheets panel; Frontend
 
 - **Legacy:** the open sheet is marked on its name's button only: a dark rounded pill (the
@@ -7809,7 +7809,7 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
 ## D-213 — The Sheets title, the status-line toggles and the scale chip, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Sheets panel and status line; Frontend
 
 Measured in both apps at 1440 × 900 (computed styles).
@@ -7828,7 +7828,7 @@ Measured in both apps at 1440 × 900 (computed styles).
 ## D-214 — Legacy's 420 px form dialogs
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** Frontend dialogs
 
 - Legacy draws Export to Excel and New snapshot at `max-w-[420px]`. Ours were 384 (`sm`) and
@@ -7843,7 +7843,7 @@ Measured in both apps at 1440 × 900 (computed styles).
 ## D-215 — The Sheets panel's ⋮ menu at legacy's 240 px
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 Sheets panel; Frontend
 
 - Legacy's panel menu is `w-60`, 240 px. Ours took the menus' 208 px minimum.
@@ -7857,7 +7857,7 @@ Measured in both apps at 1440 × 900 (computed styles).
 ## D-216 — Shared equipment without a footer, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F9 Estimating; Frontend
 
 - Legacy's Shared equipment dialog has no footer; it closes by its × (and Escape, and the
@@ -7872,7 +7872,7 @@ Measured in both apps at 1440 × 900 (computed styles).
 ## D-217 — Auto Count's settings in a popover, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, against legacy's source), pending founder review
+**Status:** decided overnight (the fallback, against legacy's source), accepted by the founder 2026-10-02
 **Area:** F13 Auto Count; Frontend
 
 - **Legacy's AutoCountSettingsPopover:** a 288 px popover under the panel's gear. It has a
@@ -7894,7 +7894,7 @@ Measured in both apps at 1440 × 900 (computed styles).
 ## D-218 — The Linear and Area mode menus, as legacy's ModeMenuBody
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F5 draw modes; Frontend
 
 The toolbar's mode carets were driven in both apps at 1440 × 900.
@@ -7916,7 +7916,7 @@ The toolbar's mode carets were driven in both apps at 1440 × 900.
 ## D-219 — Estimating's Columns list as legacy's checkbox menu
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F9 Estimating; Frontend
 
 - **Legacy's Columns list** is a menu of `DropdownMenuCheckboxItem`s: a ✓ at the left where
@@ -7933,7 +7933,7 @@ The toolbar's mode carets were driven in both apps at 1440 × 900.
 ## D-220 — Count's True size greyed with its reason; the dialog's sliders filled
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F6 the measurement dialog (Count); Frontend
 
 Count was picked in both apps at 1440 × 900.
@@ -7955,7 +7955,7 @@ Count was picked in both apps at 1440 × 900.
 ## D-221 — Every remaining slider on legacy's Radix look
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** Frontend sliders
 
 - Six sliders still drew the browser's own range with `accent-primary`, where legacy draws its
@@ -7975,7 +7975,7 @@ Count was picked in both apps at 1440 × 900.
 ## D-222 — Calibrate's unit picker, as live legacy ships it (supersedes F5 Q5's "flag off")
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F5 calibration; Frontend, `lib/takeoff`
 
 - **Found:** F5 Q5 ported legacy's metric calibration units "behind a flag, off", because legacy
@@ -8004,7 +8004,7 @@ Count was picked in both apps at 1440 × 900.
 ## D-223 — Metric scales save the sheet metric; Custom Scale's metric UI, as live legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F5 scales; Frontend
 
 - **Bug, found beside legacy:**
@@ -8034,7 +8034,7 @@ Count was picked in both apps at 1440 × 900.
 ## D-224 — "Pick a standard scale", as legacy's step
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F5 scales; Frontend
 
 Linear was picked on an unscaled sheet in both apps at 1440 × 900, then "Set scale directly".
@@ -8055,7 +8055,7 @@ Linear was picked on an unscaled sheet in both apps at 1440 × 900, then "Set sc
 ## D-225 — The scale-change guard, as legacy's; confirmation titles semibold
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F5 scales, every confirmation; Frontend
 
 A preset was picked on a measured sheet in both apps at 1440 × 900, then cancelled. Nothing was
@@ -8076,7 +8076,7 @@ during the run.
 ## D-226 — Duplicate page's annotation count in legacy's words
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 sheet actions; Frontend
 
 Three menu-opened dialogs were driven in both apps at 1440 × 900 and cancelled (legacy's writes
@@ -8093,7 +8093,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 ## D-227 — Name from page region with no region: nothing read, legacy's prompt
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 sheet naming; Frontend
 
 - **Found:** "Name from page region…" opened from a sheet's ⋮, with no region drawn yet.
@@ -8112,7 +8112,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 ## D-228 — The toolbar folds every tool after Scale, from the right, as legacy's
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F7 toolbar; Frontend
 
 - **Found (09:58):** at 1024 × 768 legacy folds every tool after Scale into More, from the
@@ -8139,7 +8139,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 ## D-229 — Pick a standard scale: legacy's back chevron beside the title
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Status:** decided overnight (the fallback, side by side with live legacy), accepted by the founder 2026-10-02
 **Area:** F5 scales; Frontend
 
 - **Found (D-224's "Left"):** legacy's back chevron sits beside "Pick a standard scale". Ours
@@ -8158,7 +8158,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 ## D-230 — The draw-mode menus at legacy's 192 px, the Print menu at 256
 
 **Date:** 2026-10-02
-**Status:** decided overnight (the fallback, read from legacy's source), pending founder review
+**Status:** decided overnight (the fallback, read from legacy's source), accepted by the founder 2026-10-02
 **Area:** F7 toolbar; Frontend
 
 - **Found:** the Linear and Area mode menus were 210 px; legacy's are 192.
@@ -8180,3 +8180,52 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
   (D-102) and opens fitted. Opening at 100 % would be far zoomed in. It was tried, then reverted.
 - **Where:** app `components/ui/context-menu.tsx`, `components/ui/menu.tsx`,
   `features/takeoff/components/ModeGlyphs.tsx`.
+
+---
+
+## D-231 — Site stitching (F19): the founder's answers; spec adopted, Planned
+
+**Date:** 2026-10-02
+**Status:** decided (the founder, in session; answers the site stitching draft's 16 questions)
+**Area:** F19 (F12 addition): site stitching; Frontend, Backend
+
+- **Accepted as recommended:** Q1, Q3 to Q9, Q11 to Q14, Q16.
+  - **Q1:** a site row at the top of the Sheets panel with its members under it; each member
+    keeps its own row, with an "in site" chip.
+  - **Q3:** one site per sheet at most; a join across two sites offers to merge them.
+  - **Q4:** any polyline, matched by arc length.
+  - **Q5:** "Fit the scale too" with F18's 0.5 % / 2 % rules and the warning on every result.
+  - **Q6:** the side holding the centre of the sheet's drawing area, with "Keep the other
+    side".
+  - **Q7:** the anchor sheet's up; Rotate turns the whole site.
+  - **Q8:** the members on screen plus one at full resolution; measured on a four-sheet set.
+  - **Q9:** a shared join point moves along the match line only.
+  - **Q11:** a survey links once, to the site; a duplicate link to another member is refused.
+  - **Q12:** one table, `sheet_registration` with a `kind` (`survey` | `join`).
+  - **Q13:** a member may be removed; its pieces stay on their sheets; a one-member site
+    dissolves and its result goes stale.
+  - **Q14:** the site's lines grouped under its name in Estimating and Reports, with the
+    member sheets' chips.
+  - **Q16:** the acceptance crop overlaps about 10 % of C-200's width each way, the match line
+    on a printed feature both halves carry.
+- **With the founder's notes:**
+  - **Q2 changed:** the Match line tool sits on the Earthwork row **and** in the sheet's ⋮
+    menu as **"Join to another sheet at match line…"** (which opens that sheet's Earthwork
+    tab with the tool armed).
+  - **Q10:** a member's own sheet result is marked **"Superseded by Site X"** and its lines are
+    hidden from Estimating while the site's lines exist. `earthwork_result` gains
+    `superseded_by_site_id`.
+  - **Q15:** Linear, Area and Count work across joined sheets with the same split-at-the-join
+    storage: a run split at the line, an area clipped into one piece per member, a count mark
+    never split.
+- **The spec is adopted** as [site_stitching_tasks.md](docs/tasks/site_stitching_tasks.md)
+  with these answers written in, and the draft is removed.
+- **On the board as F19, Planned and ready to build:** Blocks A to F.
+- **Nothing is built.**
+- **Also this session (the founder):**
+  - **D-189 to D-230 are accepted.** Their statuses read "accepted by the founder
+    2026-10-02".
+  - **The C-200 acceptance gap** has a draft spec, nothing built:
+    [c200_acceptance_tasks.DRAFT.md](docs/tasks/drafts/c200_acceptance_tasks.DRAFT.md)
+    (FG adoption with curb trims and more suggestions, F18 Block C, pavement and pad subgrade
+    through Site Features at the plan's section depths), with 11 questions.
