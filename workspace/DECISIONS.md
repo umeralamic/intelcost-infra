@@ -8254,3 +8254,54 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 
   Nothing is added, changed or removed. This applies to smoke checks too: a check that needs
   earthwork data uses another project, or a throwaway one.
+
+---
+
+## D-233 — Platform admin as legacy (F16a): the inventory, the order, legacy's answers
+
+**Date:** 2026-10-02
+**Status:** pending founder review
+**Area:** F16 admin panel, F10 Starter Pack; Auth, Backend, Frontend
+
+**Context:** the founder asked for every platform-admin piece legacy has, listed against
+ours, then built in legacy's order of importance, Starter Pack authoring first, choosing
+legacy's behaviour where a question would normally be asked. Legacy's source on
+`UmeralamDEV`, its plans, and live legacy driven as its platform-admin account (the
+Developer menu: Activity, AI economics, Billing tiers; the Starter Pack picker with "New
+starter assembly", the pack empty) give sixteen pieces, listed in
+[platform_admin_tasks.md](docs/tasks/platform_admin_tasks.md).
+
+**Options considered:**
+
+| Option | Pro | Con |
+|--------|-----|-----|
+| A — Build every platform page now, AI economics included | Parity in one go | AI economics edits the model prices, margin and packs that F14's open questions 1 to 3 decide; built now, it is rebuilt after the answers |
+| B — Build what stands on its own (Starter Pack, Developer menu, Activity, Billing tiers with overrides and lock); park what hangs on unbuilt or undecided features | Nothing built twice | AI economics, Library admin and Community moderation wait |
+
+**Decision:** Option B, in four blocks (A Starter Pack, B Developer menu and Activity,
+C Billing tiers' first four tabs, D Overrides, lock and flagged accounts), each as legacy.
+
+**Consequences (legacy's answers, each pending founder review):**
+- **A starter assembly is written by a platform admin only**, as legacy's access rule; no
+  capability is asked of them on a starter row, Costs included. A workspace's own templates
+  keep D-112's gates. "New starter assembly" makes an Area / SF / `#2563eb` template, as
+  legacy's `createTemplate`. The Starter Pack has no folders.
+- **Starter Pack edits are not live in other workspaces** (legacy has no realtime there);
+  they read it on their next load. The author's workspace hears
+  `workspace.assembly.changed` as today.
+- **Super admin is folded into platform admin.** Legacy's `is_super_admin` is live only in
+  Community's media rules; one flag is enough until F15 says otherwise.
+- **AI economics waits for F14** (its questions 1 to 3); the Developer menu shows it
+  disabled. **Library admin waits for the Library (P-09). Community moderation waits for
+  F15.**
+- **The audit log reads ours:** our audit rows have `action`, `target` and the actor's
+  name, not legacy's `entity_type` and `entity_id`; "Entity type" filters the target.
+- **Recent sign-ins** lists `user.last_sign_in_at`, provider "email" (we have no other).
+- **A lock and extra trial days are enforced now, as legacy's `effective_trial_limits`:**
+  extra days extend the trial window, and a locked workspace reads as an expired trial (the
+  trial mask). **The per-workspace limits are stored and shown only**; F16 enforces them
+  with the tier rules, which nothing enforces yet either.
+- **Secrets are reported present or absent, never their values** (legacy's
+  `platform-secret-status`), from the api's own settings.
+- **Ideas, not built:** granting platform admin from a screen, a feature flag screen,
+  workspace search with read-only support access, Starter Pack changes live everywhere.
