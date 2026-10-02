@@ -7370,3 +7370,23 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
     clicks; the toast; the nudges and Enter saved the matrix and the two pairs; Comparative
     drew additions and deletions with two masks; Delete removed the overlay-only row and
     left C-200's survey link.
+
+---
+
+## D-196 — Auto Trace's results kept in this browser (IndexedDB)
+
+**Date:** 2026-10-02
+**Status:** built overnight (the overnight plan's task 6), pending founder review
+**Area:** F12 Auto Trace; Frontend
+
+- **What:** a sheet traced once opens its trace again after a reload without the read and
+  the trace. The page already kept its four newest traces in memory; this adds a copy in
+  IndexedDB (`intelcost.autoTrace`) under them.
+- **The key** is the sheet's document (its id and tile version), the trace settings (both
+  surfaces' profiles), and `TRACE_CACHE_VERSION`. A new document or new settings make a new
+  key, so a stale entry is never read. The version is bumped when the trace engine changes.
+- The newest 24 are kept. Any storage failure is a miss, and the trace runs as before.
+- **Measured on C-200** (Trace pressed until "Adopt n labelled" shows):
+  - **5.9 s** cold, with the cache cleared;
+  - **0.32 s and 0.56 s** after a reload, read from the cache.
+- **Where:** app `features/takeoff/earthwork/trace/{traceCache.ts,useAutoTrace.tsx}`.
