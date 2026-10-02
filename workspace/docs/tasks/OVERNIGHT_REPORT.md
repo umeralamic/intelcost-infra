@@ -290,6 +290,8 @@ width (D-197).
   - `4cbef2a` Auto Count settings popover (D-217)
   - `582f0d0` mode menus (D-218)
   - `493a6ad` Columns list ticks (D-219)
+  - `0631cd0` Count's True size and sliders (D-220)
+  - `c224488` every remaining slider (D-221)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -327,7 +329,7 @@ width (D-197).
   - D-209, Estimating grid;
   - D-210, Snapshot dialog.
 - **D-211:** a bug fix (Split view's close).
-- **D-212 to D-219:** more of the fallback's legacy matches:
+- **D-212 to D-221:** more of the fallback's legacy matches:
   - D-212, the open sheet's pill;
   - D-213, the Sheets title, toggles and scale chip;
   - D-214, 420 px form dialogs;
@@ -335,7 +337,9 @@ width (D-197).
   - D-216, Shared equipment's footer;
   - D-217, Auto Count's settings popover;
   - D-218, the mode menus;
-  - D-219, the Columns list.
+  - D-219, the Columns list;
+  - D-220, Count's True size rule;
+  - D-221, the last native sliders.
 
 ## Stitching questions (from the draft spec; none decided)
 
@@ -384,8 +388,15 @@ width (D-197).
 - **The core flow, after every interface change of the night:** Linear through the new name
   dialog created "LF 9" (259.88 LF) from two clicks and Enter; the item was deleted again and the
   project's items counted 8 of 8 (bench browser, 07:27).
-- **My slip:** a `sed -i` on a scratch file (not source) was blocked by the hard rule 7 hook; it was
-  redone with the editor. Nothing was harmed.
+- **A wider regression smoke at 08:16,** in the bench browser, with no console errors:
+  - a sheet switch both ways;
+  - Count through its dialog with two marks ("COUNT 9", 2 EA), then deleted, items 8 of 8;
+  - Estimating's 8 rows;
+  - Calculate opened and cancelled;
+  - Settings opened.
+- **My slips:** twice I reached for `sed -i` (once on a scratch file, once on this report), and
+  the hard rule 7 hook blocked both before they ran. Both were redone with the editor. Nothing was
+  harmed; the hook works as meant.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
   not chased.
 
