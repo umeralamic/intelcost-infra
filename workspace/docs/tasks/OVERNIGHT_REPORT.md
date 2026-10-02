@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | Overlay | done (D-195), smoke-tested | 23:52 | 00:20 | 28 min |
 | 6 | Auto Trace cache in IndexedDB | done (D-196): C-200 5.9 s cold → 0.32 s from the cache | 00:20 | 00:30 | 10 min |
 | 7 | Default dialog width 448 px | done (D-197): md is 448, `wide` 512 for Calculate and Overlay; fits at 1280 × 650 and 375 | 00:30 | 00:48 | 18 min |
-| F | Fallback: side-by-side differences | done: 53 differences fixed (D-198 to D-229), the rest listed with reasons (below) | 00:48 | 10:50 | 10 h 2 min |
+| F | Fallback: side-by-side differences | done: 55 differences fixed (D-198 to D-230), the rest listed with reasons (below) | 00:48 | 11:00 | 10 h 12 min |
 
 ## Notes as they happen
 
@@ -212,6 +212,8 @@ Hidden Valley Spec. Fixed, most visible first:
 | 51 | Name from page region with no region read every page ("Reading…"); legacy prompts to draw one | Nothing read; legacy's prompt | D-227 |
 | 52 | The toolbar folded only the draw tools; legacy folds everything after Scale from the right | Every tool after Scale folds from the right; More runs them all | D-228 |
 | 53 | Pick a standard scale's Back was in the footer; legacy's chevron is beside the title | The chevron beside the title; Cancel alone in the footer | D-229 |
+| 54 | The draw-mode menus 210 px; legacy's `w-48` is 192 | 192 px, fixed | D-230 |
+| 55 | The Print menu 276 px, one line a label; legacy's `w-64` is 256, its long entry on two lines | 256 px; a fixed-width menu wraps a long label | D-230 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
@@ -243,8 +245,12 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 - **Item history:** ours keeps readable labels where legacy prints raw JSON.
 - **Name from page region:** legacy's in-dialog Draw and Redraw buttons; ours takes a region from
   the box menu's All (PARITY line).
-- **The mode menus** are 210 px against legacy's 192, and the Print menu 276 against 256.
-- **The reference pane** opens at 100 % in legacy; ours opens fitted.
+- **The reference pane's opening zoom:** legacy reads 100 %, ours a fitted percentage (6 % on
+  C-200). Both show the page fitted. Legacy's zoom is relative to the canvas, so its 100 % is
+  the fit, and its pane never fits on open (legacy's `ReferenceCanvasPane` starts at zoom 1, and
+  only the page's `ProjectTakeoff` fits on sheet open). Ours is absolute (D-102), so 100 %
+  would be far zoomed in. A change to open at 100 % was tried at 10:45 and reverted for that
+  reason. The difference is only the number in the header, and D-102 already covers it.
 
 ### Task 5: Overlay (23:52 to 00:20)
 
@@ -312,6 +318,8 @@ width (D-197).
   - `fae71d5` Name from page region with no region (D-227)
   - `81fa7e0` the toolbar's fold order (D-228)
   - `2fb132e` Pick a standard scale's back chevron (D-229)
+  - `dea5a6c` the mode menus at 192 px (D-230)
+  - `dc06a20` the Print menu at 256 px (D-230)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -371,6 +379,8 @@ width (D-197).
 - **D-228:** the toolbar folds every tool after Scale from the right, as legacy's. Dimension stays
   beside Scale.
 - **D-229:** Pick a standard scale's back chevron beside the title; Dialog gains `onBack`.
+- **D-230:** the draw-mode menus at legacy's fixed 192 px and the Print menu at 256, where a long
+  label wraps; Menu gains `width`.
 
 ## Stitching questions (from the draft spec; none decided)
 
@@ -425,7 +435,7 @@ width (D-197).
   - Estimating's 8 rows;
   - Calculate opened and cancelled;
   - Settings opened.
-- **The last regression smoke, at 10:45,** in the bench browser at 1440 × 900 with writes
+- **The last regression smoke, at 10:39,** in the bench browser at 1440 × 900 with writes
   blocked and no console errors. It came after the toolbar (D-228) and the dialog header
   (D-229) changes, and it drove:
   - the Scale menu's Calibrate, opened and cancelled;
@@ -511,3 +521,8 @@ width (D-197).
 17. **The Sheets panel:**
     - the open sheet is a dark pill on its name only;
     - the status line's toggles and the green scale chip are a touch taller.
+18. **Narrow the window to about 1000 px:** the tools fold into "More" from the right, Split
+    first, and More runs them (Split view, a markup, Overlay). Widen it again and every tool
+    returns. Linear ▾ is 192 px wide; Print ▾ is 256 px, with its last entry on two lines.
+19. **Linear on an unscaled sheet → "Set scale directly":** the chevron beside "Pick a standard
+    scale" goes back a step.

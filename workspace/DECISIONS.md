@@ -8152,3 +8152,31 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
   448 × 434 step with Close, Back and Cancel. Back returns to "Set a scale for this sheet".
   Writes were blocked for the run, and there were no console errors.
 - **Where:** app `components/ui/dialog.tsx`, `features/takeoff/components/ScaleControls.tsx`.
+
+---
+
+## D-230 — The draw-mode menus at legacy's 192 px, the Print menu at 256
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, read from legacy's source), pending founder review
+**Area:** F7 toolbar; Frontend
+
+- **Found:** the Linear and Area mode menus were 210 px; legacy's are 192.
+  - Legacy's source (`Toolbar.tsx`, `DropdownMenuContent className="w-48"`) gives them a fixed
+    `w-48`.
+  - Ours took the shared menu's `min-w-52` floor.
+- **Now:** `MenuAnchor` and `Menu` take an exact `width`, and the mode carets ask for 192. The
+  hints already wrap under each label, as legacy's do.
+- **Seen:** at 1440 × 900, Linear measures 192 × 301 and Area 192 × 241, and no row overflows.
+- **The Print menu (10:57):** it was 276 px against legacy's `w-64` (256).
+  - Legacy's longest entry, "Print All Pages with Takeoffs or Annotations", wraps onto two
+    lines.
+  - Ours never wrapped a label, because a menu opened at the right edge measures itself before
+    it moves. A fixed-width menu already knows its size, so its long labels now wrap.
+  - Print asks for 256. Its last row wraps to 44 px, as legacy's does.
+  - Menus without a width still never wrap (the canvas menu: 218 px, no row wrapped).
+- **Also checked, not changed:** the reference pane's opening zoom (the report's "Left"). Legacy
+  reads 100 % because its zoom is relative to the canvas, so 100 % is its fit. Ours is absolute
+  (D-102) and opens fitted. Opening at 100 % would be far zoomed in. It was tried, then reverted.
+- **Where:** app `components/ui/context-menu.tsx`, `components/ui/menu.tsx`,
+  `features/takeoff/components/ModeGlyphs.tsx`.
