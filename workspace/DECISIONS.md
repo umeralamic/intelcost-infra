@@ -7686,3 +7686,36 @@ The sheet row's ⋮ ("Page actions") and the layer menu were driven in both apps
   default this session leaves, as the last run did for item menus.
 - **Where:** app `components/ui/context-menu.tsx`, `sheets/SheetsPanel.tsx`,
   `components/ItemRow.tsx`.
+
+---
+
+## D-208 — An item's Override, Costs, History and Link screenshots, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F6/F7 item dialogs; Frontend
+
+The dialogs behind a Takeoff-panel item's ⋮ were opened in both apps at 1440 × 900 and
+closed unsaved.
+- **Override quantity** is legacy's `OverrideDialog`, 512 px:
+  - "Calculated from geometry: **n**. Override to use a manual value instead. The original
+    geometry stays intact.";
+  - the quantity with the placeholder "Override quantity";
+  - the reason as a textarea, placeholder "Reason for override";
+  - Cancel, Clear override (only while an override stands) and Save override.
+  - Ours had labels "Quantity (LF)" and "Reason", a one-line reason, and "Save".
+- **Costs** is legacy's 448 px; ours was 384.
+- **Item history** is legacy's `HistoryDrawer`: a full-height panel at the right edge,
+  384 px, one bordered card per change.
+  - Our readable labels and details are kept; legacy prints raw JSON.
+  - The Dialog primitive gains a `side` placement for it.
+- **Link screenshots to {item}** is legacy's `LinkedEvidenceViewerDialog`, 768 px:
+  - "Currently linked (n)", then "Available screenshots (n)" with its search;
+  - each snapshot a card (thumbnail, title, tag, sheet), × to unlink, click or + to link;
+  - legacy's dashed empty states.
+  - Ours was a 448 px ticked list.
+- **Left, too big for a fallback fix:** Create sub-items. Legacy's is an 829 px editor with
+  Formulas and Costs tabs, a classification column, Seed from… and the project's variables.
+  Ours is the 672 px formula table. Its own spec line.
+- **Where:** app `components/ui/dialog.tsx`, `items/{TreeDialogs,ItemHistoryDialog}.tsx`,
+  `estimate/ItemCostsDialog.tsx`, `markup/SnippetDialogs.tsx`, `pages/ProjectTakeoff.tsx`.

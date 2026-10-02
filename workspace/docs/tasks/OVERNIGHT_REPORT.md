@@ -188,3 +188,7 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 | 22 | Shared equipment 768 px; legacy 1024 | Legacy's width | D-205 |
 | 23 | Canvas menu: spaced separators, one extra; "▸" on flyouts | Legacy's row-border rules; ChevronRight | D-206 |
 | 24 | Sheet ⋮ menu: no heading, opened rightward; item ⋮ menus rightward | Legacy's bold heading; end-aligned (leftward) | D-207 |
+| 25 | Override quantity: labels, one-line reason, "Save", 448 px | Legacy's sentence, placeholders, textarea, Save override, 512 px | D-208 |
+| 26 | Costs 384 px; legacy 448 | Legacy's width | D-208 |
+| 27 | Item history a centred table; legacy's a right-hand drawer | A 384 px side panel of cards | D-208 |
+| 28 | Link Screenshot a ticked list, 448 px | Legacy's two sections of cards, 768 px | D-208 |
