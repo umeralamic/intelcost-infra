@@ -7390,3 +7390,30 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - **5.9 s** cold, with the cache cleared;
   - **0.32 s and 0.56 s** after a reload, read from the cache.
 - **Where:** app `features/takeoff/earthwork/trace/{traceCache.ts,useAutoTrace.tsx}`.
+
+---
+
+## D-197 — The default dialog is 448 px, as legacy renders it
+
+**Date:** 2026-10-02
+**Status:** built overnight (the overnight plan's task 7), pending founder review
+**Area:** Frontend, every dialog
+
+- **What:** the `Dialog` primitive's default size `md` is now 448 px (`max-w-md`), the width
+  legacy's dialogs render at. It was 512 px (`max-w-lg`). Every dialog with no size or with
+  `size="md"` narrows with it: Bid summary, Wastage, Strip Area, Site Features, the assembly,
+  template, snippet and component dialogs, Layer control, Dock setup, Scale's dialog, the row,
+  tree and move dialogs, Settings' shifts.
+- **A new size `wide` (512 px)** keeps the two dialogs measured wider in legacy:
+  - Calculate's Earthwork assumptions (D-160, measured at 512 px);
+  - Overlay (legacy's is 520 px).
+- `sm` (384), `lg` (672) and `xl` (768) are unchanged.
+- **Proved:**
+  - the gates and the quantity table;
+  - a smoke at 1280 × 650 and at 375 × 740: Bid summary and Wastage at 448 px; Strip Area and
+    Site Features at 448 px; Calculate and Overlay at 512 px; Export (sm), New project (lg) and
+    Shared equipment (xl) unchanged.
+  - Every dialog was inside the window at both sizes, no content past its edge. Strip Area is
+    the tallest at 618 px of the 650 px window.
+- **Where:** app `components/ui/dialog.tsx`, `features/takeoff/earthwork/CalculateDialog.tsx`,
+  `features/takeoff/overlay/OverlayDialog.tsx`.
