@@ -239,6 +239,10 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 - **Create sub-items:** legacy's 829 px editor (Formulas and Costs tabs, a classification column,
   Seed from…, variables) against our formula table. Logged on its PARITY line (D-208).
 - **Item history:** ours keeps readable labels where legacy prints raw JSON.
+- **Name from page region:** legacy's in-dialog Draw and Redraw buttons; ours takes a region from
+  the box menu's All (PARITY line).
+- **Pick a standard scale:** legacy's back chevron beside the title; ours is "‹ Back" in the footer.
+- **The mode menus** are 210 px against legacy's 192, and the Print menu 276 against 256.
 - **The reference pane** opens at 100 % in legacy; ours opens fitted.
 
 ### Task 5: Overlay (23:52 to 00:20)
@@ -303,6 +307,8 @@ width (D-197).
   - `6f1ce4d` metric scales saved metric; Custom Scale metric (D-223)
   - `4104435` Pick a standard scale (D-224)
   - `5b04255` scale-change guard (D-225)
+  - `50c9dd8` Duplicate page words (D-226)
+  - `fae71d5` Name from page region with no region (D-227)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -357,6 +363,8 @@ width (D-197).
   - D-223: Custom Scale's metric mode, and a **bug fix**: our metric presets saved the sheet in
     feet.
 - **D-224:** Pick a standard scale. **D-225:** the scale-change guard; confirmation titles.
+- **D-226:** Duplicate page's words. **D-227:** Name from page region reads nothing until a
+  region is drawn.
 
 ## Stitching questions (from the draft spec; none decided)
 
