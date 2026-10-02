@@ -7578,3 +7578,22 @@ Measured at 1440 × 900 (computed styles) on Share, Find Text and Print.
 - **Find Text** matched already. Its search field's 14 px against our 11 px is the known
   difference left on purpose in the last run.
 - **Where:** app `components/ui/{dialog,toaster}.tsx`, `features/takeoff/share/ShareDialog.tsx`.
+
+---
+
+## D-203 — Estimating's tab and header the same in dark mode, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F9 Estimating, the dark theme; Frontend
+
+- **What legacy does:** its stock format uses fixed values, so the Estimating grid's bands
+  don't change with the theme. In dark mode the tab is still #0f172a, the header and TOTAL
+  rows still #475569, and the classification band still a light #b8c5d6 with dark text.
+- **Ours:** the dark-theme tab and header now take the same values (their text was already
+  light).
+- **Not copied:** the light classification band in dark mode. Our group rows carry muted
+  text, which would vanish on it, so the band stays our dark one.
+- **Also checked:** the dark Takeoff and Earthwork tabs match. Legacy's orange theme button
+  was only its hover state.
+- **Where:** app `index.css`.

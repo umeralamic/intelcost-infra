@@ -176,3 +176,10 @@ Hidden Valley Spec. Fixed, most visible first:
 | 16 | Dialog titles 700; legacy's 600 | Semibold | D-202 |
 | 17 | Share 768 px; legacy 1024 | Legacy's width | D-202 |
 | 18 | Toasts smaller and lighter than legacy's; errors outlined, legacy's solid red | Legacy's toast | D-202 |
+| 19 | Dark mode: Estimating's tab and header darkened; legacy keeps its stock values | Same values in both themes (the light group band not copied) | D-203 |
+
+**Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
+the headed MCP browser opened the native print dialog, which blocks the page, and
+`browser_close` then hung too. From then on every smoke check was driven from the bench's own
+headless browser container (throwaway scripts in `intelcost-infra/browser/`, deleted after
+use), where print is a no-op. **Never click Print in the MCP browser.**
