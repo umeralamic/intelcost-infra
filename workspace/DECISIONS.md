@@ -7866,3 +7866,25 @@ Measured in both apps at 1440 × 900 (computed styles).
 - **Proved:** the bench browser opened it, found no footer buttons, measured 1024 px (D-205),
   and closed it by the ×.
 - **Where:** app `features/estimate/EquipmentDialog.tsx`.
+
+---
+
+## D-217 — Auto Count's settings in a popover, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, against legacy's source), pending founder review
+**Area:** F13 Auto Count; Frontend
+
+- **Legacy's AutoCountSettingsPopover:** a 288 px popover under the panel's gear. It has a
+  title and a line, then Shared, Vector and Image sections between rules: grey 11 px labels on
+  the left, their controls on the right. At its foot are Reset to Defaults (ghost, with its
+  glyph) and Save as Default.
+- **Ours** expanded inline under the panel's header and ended in "Done". It is now the popover
+  in legacy's layout. A click outside closes it, as legacy's Popover does.
+- **What closing does is unchanged (D-193):**
+  - the values are committed to this person's settings, and the scan runs again once;
+  - so the commit button reads legacy's "Save as Default";
+  - the words "Overlap allowed" (Q12) are kept.
+- **Proved:** in the bench browser the popover opened under the gear (288 px), showed Reset to
+  Defaults and Save as Default, and closed on a click outside with nothing changed.
+- **Where:** app `features/takeoff/autoCount/AutoCountPanel.tsx`.
