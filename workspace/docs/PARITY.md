@@ -835,7 +835,7 @@ Two plans: Collaborator ($9.99/mo, $99.99/yr) and Pro ($29.99/mo, $299.99/yr).
 
 Behind `PlatformRoute`, invisible to customers.
 
-- [ ] **Activity.** Recent sign-ins across the platform, read with the service role. `src/pages/PlatformActivity.tsx`, `supabase/functions/platform-recent-signins/` · **missing**
+- [x] **Activity.** Recent sign-ins across the platform, read with the service role. `src/pages/PlatformActivity.tsx`, `supabase/functions/platform-recent-signins/` · **ported** (F16a Block B, D-233, 2026-10-02, with legacy's Audit log tab: every workspace's audit rows, filtered, 50 a page, opening to Before and After; *smoke-tested (D-70)*)
 - [ ] **AI economics.** Record provider pricing per model per million tokens, set a margin, and set a serving-cost target split into input and output anchors. `src/pages/PlatformAiEconomics.tsx`, rpc `platform_ai_economics`, tables `ai_provider_pricing`, `ai_credit_regimes` · **missing**
 - [ ] **AI economics.** Define credit packs and link each to a Stripe price, or clear the link. `src/pages/PlatformAiEconomics.tsx`, table `ai_credit_packs` · **missing**
 - [ ] **Billing tiers.** Edit per-tier trial limits: max projects, max storage MB, max measurements, AI credits and PDF throttle. `src/pages/PlatformBillingTiers.tsx`, table `billing_tier_rules` · **missing**
@@ -857,7 +857,7 @@ miss in a port that only checks the three platform pages.
 - [ ] **Library bulk add.** Select rows, select all on a page, and add the selection into a project in one action. `src/pages/Library.tsx` · **missing**
 - [ ] A workspace-level price override on a library item is visibly distinguished from the shared value ("Override for this workspace"), so an admin can tell which figure is theirs. `src/pages/Library.tsx`, table `workspace_library_overrides` · **missing**
 - [ ] **Assembly tagging.** Tag library assemblies, with the tag list itself maintained by a platform admin, and filter the panel by tag. `src/components/library/AssemblyTagPicker.tsx`, `AssembliesFilterDropdown.tsx` · **missing**
-- [ ] **Developer menu.** Platform-internal pages are reachable from a developer menu in the app chrome rather than by typing a URL, including the AI economics page. `.lovable/plan/surface-the-ai-economics-page-in-the-developer-menu-2026-08-25.md` · **missing**
+- [x] **Developer menu.** Platform-internal pages are reachable from a developer menu in the app chrome rather than by typing a URL, including the AI economics page. `.lovable/plan/surface-the-ai-economics-page-in-the-developer-menu-2026-08-25.md` · **ported** (F16a Block B, D-233, 2026-10-02: "Platform tools", Activity, AI economics greyed "Waits for F14", Billing tiers; *smoke-tested (D-70)*)
 - [ ] A named person can be granted platform admin and developer access. `.lovable/plan/give-touseef-dev-intelcostestimate-com-admin-developer-acces-2026-08-05.md`, table `platform_admins`, rpc `is_platform_admin` · **missing**
 - [ ] Platform admin is distinct from super admin, and both are read through functions rather than a role string in a component. rpcs `is_platform_admin`, `is_super_admin` · **missing**
 - [ ] The CSI default template loads once, idempotently, from a checksummed seed file. `supabase/functions/load-csi-template/` · **missing**
