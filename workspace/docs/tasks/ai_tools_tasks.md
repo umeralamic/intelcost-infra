@@ -286,6 +286,6 @@ schedule table still has to be typed by hand.
 
 - [x] Draft written 2026-10-01; research 2026-10-02.
 - [x] The founder's answers (D-236); spec adopted.
-- [x] A (2026-10-02) · [x] B · [ ] C · [ ] D · [ ] E · [ ] F · [ ] G
+- [x] A (2026-10-02) · [x] B · [x] C · [ ] D · [ ] E · [ ] F · [ ] G
 - [ ] The model test (needs a provider key on the api).
 - [ ] PARITY's F14 lines corrected and ticked.
