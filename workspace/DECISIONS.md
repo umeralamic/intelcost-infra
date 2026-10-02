@@ -7452,3 +7452,50 @@ Found on the Overlay dialog at 1440 × 900, against live legacy's "Bench compari
 - **Where:** app `components/ui/{dialog.tsx,rangeFill.ts}`, `index.css`,
   `features/takeoff/overlay/{OverlayDialog,OverlayBar}.tsx`, `autoCount/AutoCountPanel.tsx`,
   `settings/TakeoffSettingsDialog.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-199 — The box menu and the Auto Count panel as legacy's; selects drawn as its trigger
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 region tools, F13 Auto Count, every select; Frontend
+
+Found at 1440 × 900 against live legacy's "Bench comparison" (a Select-tool box on empty
+sheet space, then Auto Count).
+- **The box menu (legacy's `RegionSelectMenu`):**
+  - **The tool strip:** legacy's seven tools (Dimension, Area, Linear, Segment, Count,
+    Highlight, Note) over the box menu too. Ours had them only on the canvas menu.
+  - **Linear, Area, Segment and Count are named from the box:** legacy's
+    `armToolFromRegion`. The text in the box is read, cleaned by the ported
+    `regionNaming` helpers and title-cased (80 characters at most), then offered as the new
+    item's name.
+    - No readable text arms the tool unnamed, with legacy's toast.
+    - A named Count makes a new item even when a count item is selected.
+  - **Page Name, Sheet # and Scale:** each now has legacy's glyph and an "All" pill (the
+    same box over a page range). Our three separate "· All pages…" rows are gone. The menu
+    gains an `aside` option for the pill.
+  - **Rules and glyphs:** legacy's rules around Auto Count; 14 px glyphs; Auto Count's glyph
+    is `Scan`.
+  - **Not copied:**
+    - legacy's sparkle "AI-assisted" marks: our readers never call a model;
+    - Ask AI and Extract Schedule: AI tools, waiting on the founder.
+- **The Auto Count panel:**
+  - Legacy's place: docked at the right, 56 px from the top and bottom (300 × 788 at
+    1440 × 900, identical). Once dragged it is as tall. Ours floated lower and was only as
+    tall as its content.
+  - 24 px header buttons in the text colour.
+  - The preview shows the selection alone (clipped); ours showed the sheet beside it.
+- **Selects, app-wide:** legacy's SelectTrigger look on our native selects, which stay
+  native by design. There is no browser arrow; a chevron at half the text colour, drawn in
+  CSS gradients from `currentColor` (no colour value), sits 10 px from the right, with room
+  kept for it. The panel's selects take legacy's `rounded-md px-3`.
+- **Proved:**
+  - gates; quantity table unchanged;
+  - the probe again: the panel sits at 1132, 56, 300 × 788 in both apps;
+  - MCP on C-200: a box over "ESTIMATED QUANTITIES", Linear from the strip opened "Name this
+    LF measurement" named "Estimated Quantities Unadjusted Volumes (CY)" (cancelled); Page
+    Name's All opened Name from page region (closed).
+- **Where:** app `components/ui/context-menu.tsx`, `index.css`,
+  `features/takeoff/autoCount/{AutoCountPanel,SheetCrop}.tsx`,
+  `features/takeoff/sheets/NameFromRegionDialog.tsx`, `pages/ProjectTakeoff.tsx`.

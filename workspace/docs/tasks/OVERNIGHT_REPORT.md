@@ -163,3 +163,8 @@ Hidden Valley Spec. Fixed, most visible first:
 | 3 | Overlay's opacity and Auto Count's sliders drew no filled part | `rangeFill()` on every slider | D-198 |
 | 4 | Sliders took 20 px of layout; legacy's 8 | 8 px of layout, 20 px hit area | D-198 |
 | 5 | Overlay's page list: "name" for an unnumbered sheet; legacy "Page N – name" | Legacy's label | D-198 |
+| 6 | The box menu had no tool strip; legacy's names the new item from the box | Legacy's strip, each measuring tool named from the box text | D-199 |
+| 7 | Page Name, Sheet #, Scale: no glyphs, three extra "· All pages…" rows; legacy has glyphs and "All" pills | Legacy's rows and pills | D-199 |
+| 8 | Auto Count panel floated at 144 px, content-tall; legacy docks at 56 px, full height | Legacy's place and height | D-199 |
+| 9 | Auto Count's preview showed the sheet beside the selection | Clipped to the selection | D-199 |
+| 10 | Native select arrows; legacy's trigger has a faint chevron | Legacy's chevron on every select, app-wide | D-199 |
