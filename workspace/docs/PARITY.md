@@ -819,8 +819,8 @@ code and the founder's answers (D-180, D-234); spec [community_tasks.md](tasks/c
 - [x] Posting, replying and voting need `canComment` (legacy never checked it, D-234 C1). · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
 - [x] "Community" in the app header (D-234 C3). · **ported** (F15 Block A, D-234, 2026-10-02; *smoke-tested (D-70)*)
 - [ ] "Report" on posts and replies reaching staff; staff restore a deleted post within 30 days, then it is removed (D-234 C2, C11). · **missing** (Block D)
-- [ ] New posts and replies appear live (D-234 C15). · **missing** (Block C)
-- [ ] Email and in-app notices: a reply to your post, your answer accepted, your post's status changed (D-234 C14). · **missing** (Block C)
+- [x] New posts and replies appear live (D-234 C15), and votes, answers and status with them, on one global topic. · **ported** (F15 Block C, D-234, 2026-10-02; *smoke-tested (D-70)*)
+- [x] Email and in-app notices: a reply to your post, your answer accepted, your post's status changed (D-234 C14); a bell in the app and Community headers, never for your own act. · **ported** (F15 Block C, D-234, 2026-10-02; *smoke-tested (D-70)*)
 
 ## 21. Billing
 
@@ -1126,7 +1126,7 @@ A retired line counts as driven, because there is nothing left to drive.
 | 17 | Auto Count | 42 (rewritten against the code, D-189) | 30 | 0 | 11 | **23** (1 retired by D-189; D-193) | 8 |
 | 18 | AI tools | 30 | 0 | 0 | 30 | 0 | 10 |
 | 19 | Reports | 9 | 0 | 0 | 9 | 0 | 9 |
-| 20 | Community | 16 (rewritten, D-234) | 13 | 0 | 3 | **13** (F15 Blocks A, B, smoke-tested) | 10 |
+| 20 | Community | 16 (rewritten, D-234) | 15 | 0 | 1 | **15** (F15 Blocks A to C, smoke-tested) | 10 |
 | 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
 | 22 | Platform admin | 20 | 9 | 0 | 11 | **9** (F16a, smoke-tested, D-70) | 8 |
 | 23 | Keyboard and mouse | 36 | 1 | 3 | 32 | **1** | new |

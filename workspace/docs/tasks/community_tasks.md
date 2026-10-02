@@ -153,6 +153,6 @@ in `max-w-5xl`, kept mounted once visited, no header.
 
 - [x] Block A, the forum (api `2572d71`, app `209be0c`)
 - [x] Block B, media (api `72db06a`, app `6b71fe9`)
-- [ ] Block C, live and notices
+- [x] Block C, live and notices (api `aaca392`, app `6c90d0b`)
 - [ ] Block D, moderation
 - [x] PARITY §20 rewritten
