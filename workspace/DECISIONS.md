@@ -7949,3 +7949,23 @@ Count was picked in both apps at 1440 × 900.
   D-198's filled `ic-range`.
 - **Colour:** the swatch and the shuffle are legacy's 32 px; ours were 36.
 - **Where:** app `items/MeasurementDialog.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-221 — Every remaining slider on legacy's Radix look
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** Frontend sliders
+
+- Six sliders still drew the browser's own range with `accent-primary`, where legacy draws its
+  Radix slider everywhere (8 px track filled to the value, ringed 20 px thumb):
+  - the measurement dialog's Opacity;
+  - Save as assembly's Opacity;
+  - Dock's border width and corner radius;
+  - the dimension panel's sliders;
+  - the Note style caret's opacity.
+- Each now uses `.ic-range` with `rangeFill` (D-198). No range input in the app is left on the
+  browser's look.
+- **Where:** app `items/MeasurementDialog.tsx`, `assembly/TemplateDialogs.tsx`,
+  `markup/{DockSetupDialog,StyleCaret}.tsx`, `dimension/DimensionPropertiesPanel.tsx`.

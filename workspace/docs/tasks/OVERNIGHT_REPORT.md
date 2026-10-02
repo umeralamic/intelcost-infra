@@ -202,6 +202,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 41 | Estimating's Columns list: checkboxes, 24 px rows; legacy ticks, 28 px | Legacy's tick items | D-219 |
 | 42 | Count: True size choosable with no dimensions; legacy greys it, "Needs a diameter" | Legacy's rule and reason | D-220 |
 | 43 | Count's size sliders unfilled native ranges; colour swatch 36 px | Filled sliders; legacy's 32 px | D-220 |
+| 44 | Six sliders still on the browser's own range | Legacy's filled slider on all | D-221 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
