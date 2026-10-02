@@ -297,6 +297,10 @@ width (D-197).
   - `493a6ad` Columns list ticks (D-219)
   - `0631cd0` Count's True size and sliders (D-220)
   - `c224488` every remaining slider (D-221)
+  - `f22de7d` Calibrate's unit picker (D-222)
+  - `6f1ce4d` metric scales saved metric; Custom Scale metric (D-223)
+  - `4104435` Pick a standard scale (D-224)
+  - `5b04255` scale-change guard (D-225)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -345,6 +349,12 @@ width (D-197).
   - D-219, the Columns list;
   - D-220, Count's True size rule;
   - D-221, the last native sliders.
+- **D-222 and D-223 supersede F5 Q5's "metric behind a flag, off":** live legacy now ships its
+  metric UI on.
+  - D-222: Calibrate's unit picker.
+  - D-223: Custom Scale's metric mode, and a **bug fix**: our metric presets saved the sheet in
+    feet.
+- **D-224:** Pick a standard scale. **D-225:** the scale-change guard; confirmation titles.
 
 ## Stitching questions (from the draft spec; none decided)
 
@@ -402,6 +412,9 @@ width (D-197).
 - **My slips:** twice I reached for `sed -i` (once on a scratch file, once on this report), and
   the hard rule 7 hook blocked both before they ran. Both were redone with the editor. Nothing was
   harmed; the hook works as meant.
+- **Metric scales (D-223):** before tonight, picking 1 : 100 or any metric preset saved the sheet
+  in feet, so its quantities read in LF and SF under a metric scale. No sheet on the bench is
+  metric. Any made elsewhere before this fix keeps unit "ft" until its scale is picked again.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
   not chased.
 
@@ -457,6 +470,8 @@ width (D-197).
     outside closes it.
 14. **Estimating → Columns:** ticks, not checkboxes.
 15. **Linear ▾ and Area ▾:** "LINEAR MODE" in small caps over a rule.
-16. **The Sheets panel:**
+16. **Scale → Calibrate on an unscaled sheet:** the unit picker beside the distance. Pick m and
+    type 10: "Interpreted as 10.00 m (32.81 ft)". Scale → 1 : 100 makes the sheet metric (LM, SM).
+17. **The Sheets panel:**
     - the open sheet is a dark pill on its name only;
     - the status line's toggles and the green scale chip are a touch taller.
