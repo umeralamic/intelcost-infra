@@ -279,6 +279,14 @@ width (D-197).
   - `3992ddb` Estimating grid (D-209)
   - `4ee40b2` Snapshot dialog (D-210)
   - `2fea85f` Split view header bug (D-211)
+  - `6792b18` open sheet pill (D-212)
+  - `b9daf32` Sheets title, toggles, scale chip (D-213)
+  - `ad634e0` 420 px form dialogs (D-214)
+  - `2f45cf2` Sheets panel menu width (D-215)
+  - `34406b6` Shared equipment footer (D-216)
+  - `4cbef2a` Auto Count settings popover (D-217)
+  - `582f0d0` mode menus (D-218)
+  - `493a6ad` Columns list ticks (D-219)
 - **intelcost-app-fastapi:**
   - `8832ea6` F18 `sheet_registration`, the register twin, routes, event
   - `4809b8d` Auto Count settings in `takeoff_prefs`
@@ -316,6 +324,15 @@ width (D-197).
   - D-209, Estimating grid;
   - D-210, Snapshot dialog.
 - **D-211:** a bug fix (Split view's close).
+- **D-212 to D-219:** more of the fallback's legacy matches:
+  - D-212, the open sheet's pill;
+  - D-213, the Sheets title, toggles and scale chip;
+  - D-214, 420 px form dialogs;
+  - D-215, the panel menu's width;
+  - D-216, Shared equipment's footer;
+  - D-217, Auto Count's settings popover;
+  - D-218, the mode menus;
+  - D-219, the Columns list.
 
 ## Stitching questions (from the draft spec; none decided)
 
@@ -361,6 +378,11 @@ width (D-197).
   revoke it if it is not wanted.
 - **The bench estimator's WBS and Sub-items sections are saved open.** That's why the
   measurement dialog is taller there than legacy's default.
+- **The core flow, after every interface change of the night:** Linear through the new name
+  dialog created "LF 9" (259.88 LF) from two clicks and Enter; the item was deleted again and the
+  project's items counted 8 of 8 (bench browser, 07:27).
+- **My slip:** a `sed -i` on a scratch file (not source) was blocked by the hard rule 7 hook; it was
+  redone with the editor. Nothing was harmed.
 - **A right-click on an Estimating row** opened no menu in legacy at the spot the probe clicked;
   not chased.
 
@@ -412,3 +434,10 @@ width (D-197).
     panel shows the custom tag.
 12. **Split view** with C-200 as the reference: the × and the eye are in the pane, "View-only"
     truncated.
+13. **Auto Count's gear:** a popover under it, with Reset to Defaults and Save as Default; a click
+    outside closes it.
+14. **Estimating → Columns:** ticks, not checkboxes.
+15. **Linear ▾ and Area ▾:** "LINEAR MODE" in small caps over a rule.
+16. **The Sheets panel:**
+    - the open sheet is a dark pill on its name only;
+    - the status line's toggles and the green scale chip are a touch taller.
