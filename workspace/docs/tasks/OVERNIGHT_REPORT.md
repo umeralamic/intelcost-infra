@@ -208,6 +208,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 47 | Custom Scale imperial only, 384 px; live legacy has Imperial / Metric, 448 px | Legacy's metric UI | D-223 |
 | 48 | "Pick a standard scale": 384 px, every preset at 24 px running the window's height | Legacy's 448 px, 300 px list, 32 px rows | D-224 |
 | 49 | Scale-change guard 384 px, no earthwork clause; confirmation titles bold | Legacy's 448 px and words; semibold | D-225 |
+| 50 | Duplicate page: "(0 markups)"; legacy "(0 highlights, notes and docks)" | Legacy's words | D-226 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in

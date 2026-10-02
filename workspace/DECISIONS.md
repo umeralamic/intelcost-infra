@@ -8070,3 +8070,20 @@ during the run.
 - **Every confirmation's title** is now the 18 px semibold line the dialogs have (D-202).
   `ConfirmDialog` is its own component and still drew bold.
 - **Where:** app `components/ui/confirm-dialog.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-226 — Duplicate page's annotation count in legacy's words
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 sheet actions; Frontend
+
+Three menu-opened dialogs were driven in both apps at 1440 × 900 and cancelled (legacy's writes
+blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
+- **Print Multiple Pages and Rotate Pages** matched: the same sections, words and widths; only
+  the sheet lists differ.
+- **Duplicate page** read "Copy annotations (0 markups)". Legacy reads "(0 highlights, notes and
+  docks)". Ours now uses legacy's words. Its clouds, callouts and arrows are Highlight and Note
+  variants, so the count is the same set.
+- **Where:** app `features/takeoff/sheets/DuplicateSheetDialog.tsx`.
