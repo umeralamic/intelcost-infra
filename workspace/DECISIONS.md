@@ -7851,3 +7851,18 @@ Measured in both apps at 1440 × 900 (computed styles).
   It measures 240 px in both apps.
 - Legacy's is 32 px taller only by its Auto-Name Sheets row, which waits for F14.
 - **Where:** app `components/ui/context-menu.tsx`, `sheets/SheetsPanel.tsx`.
+
+---
+
+## D-216 — Shared equipment without a footer, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F9 Estimating; Frontend
+
+- Legacy's Shared equipment dialog has no footer; it closes by its × (and Escape, and the
+  backdrop). Ours added a "Done" button. It is gone: edits save as they are made, so the button
+  did nothing the × does not.
+- **Proved:** the bench browser opened it, found no footer buttons, measured 1024 px (D-205),
+  and closed it by the ×.
+- **Where:** app `features/estimate/EquipmentDialog.tsx`.
