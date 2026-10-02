@@ -7927,3 +7927,25 @@ The toolbar's mode carets were driven in both apps at 1440 × 900.
 - **Proved:** in the bench browser, a click on "Details Ref." showed its column (28 px row,
   ticked), and a second click hid it again, leaving the view as found.
 - **Where:** app `features/estimate/EstimatingView.tsx`.
+
+---
+
+## D-220 — Count's True size greyed with its reason; the dialog's sliders filled
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F6 the measurement dialog (Count); Frontend
+
+Count was picked in both apps at 1440 × 900.
+- **True size from dimensions:**
+  - Legacy greys the option (60 %, disabled) until the symbol's dimensions and the sheet's
+    scale allow it. It names the reason under the radios from `trueSizeStatus`: "Needs a
+    diameter", "Needs a length or width", "This symbol is a marker…", "This sheet has no scale
+    set yet". If an existing item is already set to it, legacy shows "Drawing at the fixed pixel
+    size — {reason}".
+  - Ours let it be chosen with nothing to size from. The ported `trueSizeStatus` now drives the
+    same, with the dialog told whether the sheet has a scale.
+- **Sliders:** Size Pixels and Size Scaled were still plain native ranges. They now draw
+  D-198's filled `ic-range`.
+- **Colour:** the swatch and the shuffle are legacy's 32 px; ours were 36.
+- **Where:** app `items/MeasurementDialog.tsx`, `pages/ProjectTakeoff.tsx`.
