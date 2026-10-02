@@ -192,3 +192,5 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 | 26 | Costs 384 px; legacy 448 | Legacy's width | D-208 |
 | 27 | Item history a centred table; legacy's a right-hand drawer | A 384 px side panel of cards | D-208 |
 | 28 | Link Screenshot a ticked list, 448 px | Legacy's two sections of cards, 768 px | D-208 |
+| 29 | Estimating's rules light slate; legacy's #0f172a (the dark line under the header the last run left) | Legacy's rule colour on lines, dividers, frame | D-209 |
+| 30 | Estimating header cells 8 px padding, medium; legacy 4.5 px, bold | Legacy's padding, weight, line height | D-209 |

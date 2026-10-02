@@ -7719,3 +7719,24 @@ closed unsaved.
   Ours is the 672 px formula table. Its own spec line.
 - **Where:** app `components/ui/dialog.tsx`, `items/{TreeDialogs,ItemHistoryDialog}.tsx`,
   `estimate/ItemCostsDialog.tsx`, `markup/SnippetDialogs.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-209 — The Estimating grid's rules and header cells, as legacy's stock format
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F9 Estimating; Frontend
+
+Measured in both apps at 1440 × 900 (computed styles on the header cells and the first body
+cells). This closes the last run's "thick dark line under the header, not chased".
+- **Rules:**
+  - Legacy's stock format (`DEFAULT_FORMAT.options.borders.color`) draws every grid rule in
+    #0f172a: the body's lines, the header's column dividers, its 2 px bottom edge and the
+    frame.
+  - Ours drew them light slate, with white-tint dividers in the header and a slate frame.
+  - The light theme's `--estimate-rule` is now #0f172a, and the header dividers and the frame
+    take it. The dark theme keeps its own rule. A Format's border colour still overrides all.
+- **Header cells:** legacy's 4.5 by 8 px padding, bold, on a 1.375 line. They were 8 px,
+  medium and tight. The header is now 49 px against legacy's 50.
+- **Where:** app `index.css`, `features/estimate/EstimatingView.tsx`.
