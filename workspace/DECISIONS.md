@@ -7803,3 +7803,22 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
 - **Ours** filled the whole row, chips included. Now it marks the name's button as legacy's. A
   multi-selected row keeps its row-wide tint, as before.
 - **Where:** app `features/takeoff/sheets/SheetsPanel.tsx`.
+
+---
+
+## D-213 — The Sheets title, the status-line toggles and the scale chip, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 Sheets panel and status line; Frontend
+
+Measured in both apps at 1440 × 900 (computed styles).
+- **The "Sheets" panel title** is legacy's 12 px Inter, bold, in the text colour. Ours was
+  14 px Archivo in a grey.
+- **The toggles** (Ortho, Snap, Snap PDF, Auto Merge, Auto Scroll) are legacy's 22 px tall;
+  ours were 20.
+- **The scale chip** is legacy's: 22 px, semibold, 10 px each side, emerald #059669, the same in
+  both themes. It has a new `--scale-chip` token. Ours was 20 px, medium, 8 px, on the darker
+  `status-green` the other green chips keep.
+- **Where:** app `pages/ProjectTakeoff.tsx`, `components/ScaleControls.tsx`,
+  `sheets/SheetsPanel.tsx`, `index.css`.

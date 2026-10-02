@@ -192,6 +192,8 @@ Hidden Valley Spec. Fixed, most visible first:
 | 31 | Snapshot dialog: "Save snapshot", Title, Notes, a separate custom-tag field | Legacy's words and fields, + Add custom type… in the tag list | D-210 |
 | 32 | **Bug:** Split view's × and eye cut off by a long sheet name | Truncation as legacy's; controls never shrink | D-211 |
 | 33 | The open sheet's whole row filled dark, chips included; legacy marks the name only | Legacy's pill on the name | D-212 |
+| 34 | "Sheets" title 14 px Archivo grey; legacy 12 px Inter, text colour | Legacy's title | D-213 |
+| 35 | Toggles and scale chip 20 px; chip darker green, medium | Legacy's 22 px; emerald, semibold, 10 px padding | D-213 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
