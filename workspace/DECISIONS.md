@@ -8028,3 +8028,24 @@ Count was picked in both apps at 1440 × 900.
   - an imperial "1/8"" preset went as ft.
 - **Where:** app `components/ScaleControls.tsx`, `features/drawing/api.ts`,
   `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-224 — "Pick a standard scale", as legacy's step
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F5 scales; Frontend
+
+Linear was picked on an unscaled sheet in both apps at 1440 × 900, then "Set scale directly".
+- **The first step** ("Set a scale for this sheet") matched already.
+- **The second step:**
+  - Legacy's "Pick a standard scale" is 448 px, its presets in a 300 px scrolling list between
+    rules, at 14 px in 32 px rows.
+  - Ours was 384 px, listing all 63 presets at the menu's 12 px and 24 px, and ran the height of
+    the window.
+  - Now 448 px, with the list capped at 300 px and legacy's row size. The Scale menu keeps its
+    compact rows (a `roomy` option on the shared list).
+  - The step measures 432 px against legacy's 466.
+- **Left:** legacy's back chevron sits beside the title; ours is "‹ Back" in the footer.
+- **Where:** app `features/takeoff/components/ScaleControls.tsx`.
