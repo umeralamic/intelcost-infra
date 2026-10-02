@@ -7317,3 +7317,56 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - the quantity table unchanged (its 8 Auto Count rows are Vector's);
   - a smoke on E102: Image mode chosen in the panel, the 0° pass published live, Stop kept
     the results with legacy's wording.
+
+---
+
+## D-195 — Overlay, as legacy, on the sheet links' rows
+
+**Date:** 2026-10-02
+**Status:** built overnight (the overlay plan's task 5); choices beyond legacy are this session's, pending founder review
+**Area:** F11 Overlay (brought forward), F18's `sheet_registration`; Frontend, Backend
+
+- **Legacy's Overlay:** the toolbar's Overlay button, after Dock in the markup cluster, lit
+  while the sheet has one. It opens legacy's three steps in its words:
+  1. "Overlay Type": Standard with its Opacity, or Comparative.
+  2. "Select Overlay Page": "Search sheets…", the other sheets; a double-click goes on.
+  3. "Align Overlay?": the tint or additions colour (legacy's ten, Custom), then Skip
+     alignment or Align overlay.
+- **The picture (a picture only: it feeds no calculation):**
+  - **Standard:** the overlay's ink in its colour, paper clear, at its opacity.
+  - **Comparative:** additions (ink only on the overlay) in the colour and deletions (ink
+    only on the base) in its complement, each through a luminance mask of the other sheet.
+  - It is drawn from the sheets' fit images, so it blurs at a high zoom; legacy renders the
+    PDF at the canvas's resolution (Ideas).
+- **Two-point alignment:** legacy's grab and pin, as four clicks with the instructions in the
+  strip:
+  - click a point on the overlay, then where it belongs (a move);
+  - a second point, then where it belongs (legacy's `similarityFromPairs`: move, turn,
+    scale);
+  - "Overlay aligned" with its scale and turn.
+  - **Nudges, as legacy's:** arrows move 1 pt (Shift 10), [ ] turn 0.1° (Shift 1°), − + scale
+    0.5 % (Shift 2.5 %), about the page's centre; Enter or Done ends, Esc cancels mid-clicks.
+  - Legacy's alignment maths is ported unchanged (`lib/takeoff/overlay/alignment.ts`), in
+    page points.
+- **One alignment per pair of sheets (D-188 Q10):**
+  - The overlay is saved on the pair's `sheet_registration` row, in a new `overlay` column:
+    mode, colour, opacity, hidden, and the matrix after nudges (migration `9a2c4e6f8b31`).
+  - A pair with no row gets one with no EG link. Its two clicked points are kept as the
+    pair's `pairs`, so a later survey link starts from them. A survey link's own checked
+    points are never replaced by an overlay's.
+  - Removing the overlay keeps a survey link on the same pair. Removing the link keeps an
+    overlay.
+  - Routes: `PUT` and `DELETE …/registration/{target}/{source}/overlay`, the same event.
+- **Managing an overlay:** legacy lists each overlay as a sub-row under its base sheet in the
+  Sheets panel (colour, opacity, visibility, Realign, Delete). Here the same controls sit in a
+  strip under the toolbar on the base sheet; the Sheets panel's sub-rows are not built
+  (pending).
+- **Not ported:** legacy's live "grab" preview between clicks (the translation shows after
+  the first pair).
+- **Proved:**
+  - gates;
+  - the quantity table unchanged;
+  - a smoke on Hidden Valley E102 with E101 laid over it: Standard tinted; four alignment
+    clicks; the toast; the nudges and Enter saved the matrix and the two pairs; Comparative
+    drew additions and deletions with two masks; Delete removed the overlay-only row and
+    left C-200's survey link.

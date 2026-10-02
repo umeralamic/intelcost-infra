@@ -12,8 +12,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 2 | EG from another sheet (F18 Blocks A, B, acceptance on C-200) | built (D-190 to D-192), smoke-tested; **acceptance not met** (cut −35.6 %, fill −11.7 %; the link is exact, C-200's FG inputs are short); a volume-engine defect found and fixed (D-191) | 21:00 | 21:38 | 38 min |
 | 3 | SPEC: site stitching | done: [site_stitching_tasks.DRAFT.md](drafts/site_stitching_tasks.DRAFT.md), the founder's design decided, 16 questions; F19 Planned | 21:38 | 21:39 | (written alongside task 2) |
 | 4 | Build Auto Count (F13) A, B, C, D, F, E | all six blocks built (D-193, D-194), smoke-tested; Image mode slow (126 s to first results, 454 s a page) | 21:40 | 23:52 | 2 h 12 min |
-| 5 | Overlay | in progress | 23:52 | | |
-| 6 | Auto Trace cache in IndexedDB | to do | | | |
+| 5 | Overlay | done (D-195), smoke-tested | 23:52 | 00:20 | 28 min |
+| 6 | Auto Trace cache in IndexedDB | in progress | 00:20 | | |
 | 7 | Default dialog width 448 px | to do | | | |
 | F | Fallback: side-by-side differences | to do | | | |
 
