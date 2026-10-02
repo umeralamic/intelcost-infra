@@ -7663,3 +7663,26 @@ already; ours was 29 px taller.
 - **Flyout rows:** they end in legacy's ChevronRight (14 px) in place of a small "▸", in
   every menu.
 - **Where:** app `components/ui/context-menu.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-207 — The sheet's ⋮ menu named and end-aligned; item ⋮ menus end-aligned
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 Sheets panel and item rows; Frontend
+
+The sheet row's ⋮ ("Page actions") and the layer menu were driven in both apps at
+1440 × 900.
+- **A heading:** legacy's sheet menu opens with the sheet's name in bold over a rule (its
+  `DropdownMenuLabel`). Ours now does. The menu gains a `heading` option, distinct from the
+  muted `header` band that shape menus use.
+- **End-aligned:** legacy's sheet and item ⋮ menus are `align="end"`, opening leftward from
+  the button. Ours opened rightward over the canvas. The sheet menu, the sheet-selection
+  menu and every item's ⋮ now sit end-aligned (`alignEnd`).
+- **F18's entry** ("Existing grade from other sheets…") joins legacy's naming group: no rule
+  of its own between Name from page region… and Duplicate page.
+- **Matched:** the layer menu (Base Bid ▾). Its "Add layer…" is 14 px in legacy, the shadcn
+  default this session leaves, as the last run did for item menus.
+- **Where:** app `components/ui/context-menu.tsx`, `sheets/SheetsPanel.tsx`,
+  `components/ItemRow.tsx`.

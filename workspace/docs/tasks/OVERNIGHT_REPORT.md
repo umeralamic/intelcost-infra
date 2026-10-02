@@ -187,3 +187,4 @@ use), where print is a no-op. **Never click Print in the MCP browser.**
 | 21 | Calculate assumptions: 36 px fields, 14 px Yes/No, tight spacing | Legacy's 40 px fields, 16 px Yes/No, spacing | D-204 |
 | 22 | Shared equipment 768 px; legacy 1024 | Legacy's width | D-205 |
 | 23 | Canvas menu: spaced separators, one extra; "▸" on flyouts | Legacy's row-border rules; ChevronRight | D-206 |
+| 24 | Sheet ⋮ menu: no heading, opened rightward; item ⋮ menus rightward | Legacy's bold heading; end-aligned (leftward) | D-207 |
