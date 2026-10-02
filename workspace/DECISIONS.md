@@ -7888,3 +7888,25 @@ Measured in both apps at 1440 × 900 (computed styles).
 - **Proved:** in the bench browser the popover opened under the gear (288 px), showed Reset to
   Defaults and Save as Default, and closed on a click outside with nothing changed.
 - **Where:** app `features/takeoff/autoCount/AutoCountPanel.tsx`.
+
+---
+
+## D-218 — The Linear and Area mode menus, as legacy's ModeMenuBody
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F5 draw modes; Frontend
+
+The toolbar's mode carets were driven in both apps at 1440 × 900.
+- **Heading:** legacy heads the menu with a 9 px uppercase muted label over a separator. Ours
+  had an 11 px group heading and no rule. The menu's `heading` gains a caps variant for it.
+- **Hints:**
+  - Legacy's 9 px hints keep the row's 16 px line. Ours were set tight, so rows were 53 px
+    against legacy's 60.
+  - The hints now wrap at 128 px (they were 152).
+- **Result:**
+  - the menu is 285 px tall with 60 px rows, as legacy's;
+  - it is 210 px wide against legacy's 192 (left: our row keeps its own gap before the
+    current-mode dot).
+- **Left:** the Print menu, 276 px against legacy's 256, items equal.
+- **Where:** app `components/ui/context-menu.tsx`, `components/ModeGlyphs.tsx`.

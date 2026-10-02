@@ -198,6 +198,7 @@ Hidden Valley Spec. Fixed, most visible first:
 | 37 | Sheets panel ⋮ menu 208 px; legacy 240 | Legacy's width | D-215 |
 | 38 | Shared equipment had a Done button; legacy has only the × | Footer removed | D-216 |
 | 39 | Auto Count's settings expanded inline, ending in "Done"; legacy's are a popover | Legacy's popover, Save as Default, outside click closes | D-217 |
+| 40 | Mode menus: 11 px heading, no rule, tight hints (53 px rows); legacy 9 px caps over a rule, 60 px rows | Legacy's heading and hint lines | D-218 |
 <!-- next fallback row -->
 
 **Finding (03:15 to 03:48):** the Playwright MCP browser hung for an hour in two calls: Print in
