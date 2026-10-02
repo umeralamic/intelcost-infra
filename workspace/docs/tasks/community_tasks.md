@@ -152,7 +152,7 @@ in `max-w-5xl`, kept mounted once visited, no header.
 ## Progress
 
 - [x] Block A, the forum (api `2572d71`, app `209be0c`)
-- [ ] Block B, media
+- [x] Block B, media (api `72db06a`, app `6b71fe9`)
 - [ ] Block C, live and notices
 - [ ] Block D, moderation
 - [x] PARITY §20 rewritten
