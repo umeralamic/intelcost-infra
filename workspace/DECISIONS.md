@@ -7910,3 +7910,20 @@ The toolbar's mode carets were driven in both apps at 1440 × 900.
     current-mode dot).
 - **Left:** the Print menu, 276 px against legacy's 256, items equal.
 - **Where:** app `components/ui/context-menu.tsx`, `components/ModeGlyphs.tsx`.
+
+---
+
+## D-219 — Estimating's Columns list as legacy's checkbox menu
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F9 Estimating; Frontend
+
+- **Legacy's Columns list** is a menu of `DropdownMenuCheckboxItem`s: a ✓ at the left where
+  the column shows, nothing where it is hidden, label text at the 32 px indent, rows 28 px.
+- **Ours** drew filled checkboxes in 24 px rows. The rows, the built-in and the custom columns
+  alike, now draw legacy's tick. The checkbox stays for screen readers (`sr-only`) and still
+  carries the change.
+- **Proved:** in the bench browser, a click on "Details Ref." showed its column (28 px row,
+  ticked), and a second click hid it again, leaving the view as found.
+- **Where:** app `features/estimate/EstimatingView.tsx`.
