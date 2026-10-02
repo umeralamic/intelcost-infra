@@ -7417,3 +7417,38 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
     the tallest at 618 px of the 650 px window.
 - **Where:** app `components/ui/dialog.tsx`, `features/takeoff/earthwork/CalculateDialog.tsx`,
   `features/takeoff/overlay/OverlayDialog.tsx`.
+
+---
+
+## D-198 — Dialogs' title and footer spaced as legacy's; every slider filled
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** Frontend, every dialog and slider
+
+Found on the Overlay dialog at 1440 × 900, against live legacy's "Bench comparison".
+- **The footer:**
+  - Legacy's buttons sit 16 px under the content, with no rule, and 24 px from the bottom
+    (shadcn's `gap-4` and `p-6`). Ours drew a rule, padded 20 + 16 px above the buttons and
+    16 px below.
+  - Now the rule shows only while the body scrolls, where it marks the edge the content
+    passes under (a `ResizeObserver` sets `data-scrolls` on the footer). Otherwise there is
+    no rule, legacy's 16 px gap, and 24 px below.
+  - Dense dialogs keep D-176's tight footer.
+- **The title:** legacy's is one 18 px line (`leading-none tracking-tight`), its description
+  6 px under it, the body 16 px under that. Ours had a 28 px line, then 4 px, then 20 px.
+- **Sliders:**
+  - Only the Settings sliders set `--fill`, so Overlay's opacity and Auto Count's Sensitivity
+    and Overlap drew no primary part up to the thumb. A shared `rangeFill()` now serves all of
+    them.
+  - Legacy's Radix root is as tall as its 8 px track, the thumb overhanging it. `.ic-range`
+    keeps its 20 px hit area but takes 8 px of the layout (negative block margins).
+- **Overlay's page list** names an unnumbered sheet "Page N  –  name", as legacy's.
+- **Result:** the Overlay dialog's three steps measure 399, 547 and 325 px tall, against
+  legacy's 397, 256 and 324. Step 2's difference is the sheet count (28 against legacy's one);
+  the list caps at 320 px in both.
+- **Kept on purpose:** step 3's last line ends "…delete this overlay later." where legacy's
+  says "…later from the Sheets panel": ours manages it from the strip (D-195).
+- **Where:** app `components/ui/{dialog.tsx,rangeFill.ts}`, `index.css`,
+  `features/takeoff/overlay/{OverlayDialog,OverlayBar}.tsx`, `autoCount/AutoCountPanel.tsx`,
+  `settings/TakeoffSettingsDialog.tsx`, `pages/ProjectTakeoff.tsx`.

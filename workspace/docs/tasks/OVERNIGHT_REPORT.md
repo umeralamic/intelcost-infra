@@ -15,7 +15,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 5 | Overlay | done (D-195), smoke-tested | 23:52 | 00:20 | 28 min |
 | 6 | Auto Trace cache in IndexedDB | done (D-196): C-200 5.9 s cold → 0.32 s from the cache | 00:20 | 00:30 | 10 min |
 | 7 | Default dialog width 448 px | done (D-197): md is 448, `wide` 512 for Calculate and Overlay; fits at 1280 × 650 and 375 | 00:30 | 00:48 | 18 min |
-| F | Fallback: side-by-side differences | to do | | | |
+| F | Fallback: side-by-side differences | in progress (below) | 00:48 | | |
 
 ## Notes as they happen
 
@@ -150,3 +150,16 @@ budget, coarse to fine over a worker pool, progressive passes.
   454 s for the page.**
 - The speed target is not met. The bench has no scanned set to measure on, which is the
   first need (Ideas).
+
+### Fallback: side by side with live legacy (from 00:48)
+
+Driven with throwaway scripts in the bench's browser, live legacy's "Bench comparison" beside
+Hidden Valley Spec. Fixed, most visible first:
+
+| # | Difference | Fix | Decision |
+|---|---|---|---|
+| 1 | Every dialog's footer: a rule and 36 px above the buttons; legacy has no rule, 16 px | Rule only while the body scrolls; legacy's spacing | D-198 |
+| 2 | Dialog titles on a 28 px line; legacy's 18 px, description 6 px under | Legacy's title line and gaps | D-198 |
+| 3 | Overlay's opacity and Auto Count's sliders drew no filled part | `rangeFill()` on every slider | D-198 |
+| 4 | Sliders took 20 px of layout; legacy's 8 | 8 px of layout, 20 px hit area | D-198 |
+| 5 | Overlay's page list: "name" for an unnumbered sheet; legacy "Page N – name" | Legacy's label | D-198 |
