@@ -7526,3 +7526,33 @@ Measured in both apps at 1440 × 900 (computed styles) and seen at 2048 × 1050.
 - **TOTAL** is set in the monospace, as legacy's.
 - **Where:** app `features/takeoff/settings/settings.ts`, `components/ItemRow.tsx`,
   `sheets/SheetsPanel.tsx`, `index.css`, `features/estimate/EstimatingView.tsx`.
+
+---
+
+## D-201 — "Name this measurement", as legacy's NewItemDialog
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F6 the measurement dialog; Frontend
+
+Driven at 1440 × 900: Linear picked in both apps, the dialog read.
+- **The default name:**
+  - **The number** is legacy's `defaultNameForType`: every top-level item in the project
+    plus one ("LF 9" on Hidden Valley Spec, with its 8 items). Ours counted this sheet's
+    items ("LF 2").
+  - **The field:** legacy leaves it empty with the default as its placeholder, and only a
+    name read off a box (D-199) is typed in (legacy's `prefillName`). Ours typed "LF 2" in
+    and selected it.
+  - An empty field still creates the default, as before.
+  - Edit, paste and Auto Count's dialog keep their typed-in names.
+- **Spacing:**
+  - The sections are legacy's `p-2` boxes on a faint muted fill, 10 px apart, with
+    `gap-1.5` inside.
+  - The hints are 10 px, flush with the checkbox (ours were 12 px and indented).
+  - The named-dimension buttons are 24 px at 11 px.
+  - Rough measurement and Earthwork markup share one row.
+- **Found, not a difference:** WBS and Sub-items open as each person last left them, in
+  both apps, and legacy's default is closed. The bench's estimator has them saved open.
+- **Result:** the dialog with both sections closed is about legacy's height (769 px with
+  them open on the estimator, against legacy's 569 closed).
+- **Where:** app `features/takeoff/items/MeasurementDialog.tsx`, `pages/ProjectTakeoff.tsx`.

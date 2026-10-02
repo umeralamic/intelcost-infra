@@ -171,3 +171,5 @@ Hidden Valley Spec. Fixed, most visible first:
 | 11 | Sheet and folder rows ignored Settings' text styles (12 px; legacy 11) | Applied, as item rows | D-200 |
 | 12 | Sheet rows 26 px apart; legacy 18 | Legacy's 16 px row, 2 px gap | D-200 |
 | 13 | Estimating tab, header and band colours off legacy's stock format | Legacy's `DEFAULT_FORMAT` values as the light tokens; TOTAL in mono | D-200 |
+| 14 | "Name this LF measurement": the name typed in and numbered by this sheet ("LF 2"); legacy's is a placeholder numbered by the project | Legacy's placeholder and number | D-201 |
+| 15 | The measurement dialog's sections roomier than legacy's, Rough and Earthwork on two rows | Legacy's spacing, one row | D-201 |
