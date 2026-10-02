@@ -8049,3 +8049,24 @@ Linear was picked on an unscaled sheet in both apps at 1440 × 900, then "Set sc
   - The step measures 432 px against legacy's 466.
 - **Left:** legacy's back chevron sits beside the title; ours is "‹ Back" in the footer.
 - **Where:** app `features/takeoff/components/ScaleControls.tsx`.
+
+---
+
+## D-225 — The scale-change guard, as legacy's; confirmation titles semibold
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F5 scales, every confirmation; Frontend
+
+A preset was picked on a measured sheet in both apps at 1440 × 900, then cancelled. Nothing was
+written: our scale save was watched and none was sent; legacy's own writes were aborted
+during the run.
+- **Legacy's ScaleChangeGuardDialog** is 448 px. Its sentence ends "linear and area quantities
+  update automatically; earthwork volumes recompute on next Calculate". Ours was 384 px and
+  stopped at "automatically".
+  - Ours now has the clause. It holds here too: a scale change makes the earthwork result
+    stale.
+  - It is 448 px: `ConfirmDialog` gains a `width` option, `md`.
+- **Every confirmation's title** is now the 18 px semibold line the dialogs have (D-202).
+  `ConfirmDialog` is its own component and still drew bold.
+- **Where:** app `components/ui/confirm-dialog.tsx`, `pages/ProjectTakeoff.tsx`.
