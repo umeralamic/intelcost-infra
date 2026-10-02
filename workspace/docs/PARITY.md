@@ -838,11 +838,11 @@ Behind `PlatformRoute`, invisible to customers.
 - [x] **Activity.** Recent sign-ins across the platform, read with the service role. `src/pages/PlatformActivity.tsx`, `supabase/functions/platform-recent-signins/` · **ported** (F16a Block B, D-233, 2026-10-02, with legacy's Audit log tab: every workspace's audit rows, filtered, 50 a page, opening to Before and After; *smoke-tested (D-70)*)
 - [ ] **AI economics.** Record provider pricing per model per million tokens, set a margin, and set a serving-cost target split into input and output anchors. `src/pages/PlatformAiEconomics.tsx`, rpc `platform_ai_economics`, tables `ai_provider_pricing`, `ai_credit_regimes` · **missing**
 - [ ] **AI economics.** Define credit packs and link each to a Stripe price, or clear the link. `src/pages/PlatformAiEconomics.tsx`, table `ai_credit_packs` · **missing**
-- [ ] **Billing tiers.** Edit per-tier trial limits: max projects, max storage MB, max measurements, AI credits and PDF throttle. `src/pages/PlatformBillingTiers.tsx`, table `billing_tier_rules` · **missing**
-- [ ] **Billing tiers.** Map a two-letter country code to a tier, and remove the mapping so it falls back to Tier 3. `src/pages/PlatformBillingTiers.tsx`, table `billing_country_tiers` · **missing**
-- [ ] **Billing tiers.** Add a domain to the disposable-email blocklist. `src/pages/PlatformBillingTiers.tsx`, table `disposable_email_domains` · **missing**
+- [x] **Billing tiers.** Edit per-tier trial limits: max projects, max storage MB, max measurements, AI credits and PDF throttle. `src/pages/PlatformBillingTiers.tsx`, table `billing_tier_rules` · **ported** (F16a Block C, D-233, 2026-10-02; *smoke-tested (D-70)*)
+- [x] **Billing tiers.** Map a two-letter country code to a tier, and remove the mapping so it falls back to Tier 3. `src/pages/PlatformBillingTiers.tsx`, table `billing_country_tiers` · **ported** (F16a Block C, D-233, 2026-10-02; *smoke-tested (D-70)*)
+- [x] **Billing tiers.** Add a domain to the disposable-email blocklist. `src/pages/PlatformBillingTiers.tsx`, table `disposable_email_domains` · **ported** (F16a Block C, D-233, 2026-10-02, refused at every tier per D-19; *smoke-tested (D-70)*)
 - [ ] **Billing tiers.** Override the limits for one named workspace, and lock or unlock a workspace. `src/pages/PlatformBillingTiers.tsx`, table `workspace_limit_overrides` · **missing**
-- [ ] Billing secrets report presence only, never values. `supabase/functions/platform-secret-status/` · **missing**
+- [x] Billing secrets report presence only, never values. `supabase/functions/platform-secret-status/` · **ported** (F16a Block C, D-233, 2026-10-02; *smoke-tested (D-70)*)
 
 **Admin-only powers inside customer screens**
 
