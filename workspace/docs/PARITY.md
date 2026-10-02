@@ -841,7 +841,7 @@ Behind `PlatformRoute`, invisible to customers.
 - [x] **Billing tiers.** Edit per-tier trial limits: max projects, max storage MB, max measurements, AI credits and PDF throttle. `src/pages/PlatformBillingTiers.tsx`, table `billing_tier_rules` · **ported** (F16a Block C, D-233, 2026-10-02; *smoke-tested (D-70)*)
 - [x] **Billing tiers.** Map a two-letter country code to a tier, and remove the mapping so it falls back to Tier 3. `src/pages/PlatformBillingTiers.tsx`, table `billing_country_tiers` · **ported** (F16a Block C, D-233, 2026-10-02; *smoke-tested (D-70)*)
 - [x] **Billing tiers.** Add a domain to the disposable-email blocklist. `src/pages/PlatformBillingTiers.tsx`, table `disposable_email_domains` · **ported** (F16a Block C, D-233, 2026-10-02, refused at every tier per D-19; *smoke-tested (D-70)*)
-- [ ] **Billing tiers.** Override the limits for one named workspace, and lock or unlock a workspace. `src/pages/PlatformBillingTiers.tsx`, table `workspace_limit_overrides` · **missing**
+- [x] **Billing tiers.** Override the limits for one named workspace, and lock or unlock a workspace. `src/pages/PlatformBillingTiers.tsx`, table `workspace_limit_overrides` · **ported** (F16a Block D, D-233, 2026-10-02: extra trial days and the lock enforced on the trial mask, the limits stored for F16; *smoke-tested (D-70)*)
 - [x] Billing secrets report presence only, never values. `supabase/functions/platform-secret-status/` · **ported** (F16a Block C, D-233, 2026-10-02; *smoke-tested (D-70)*)
 
 **Admin-only powers inside customer screens**
@@ -1121,7 +1121,7 @@ A retired line counts as driven, because there is nothing left to drive.
 | 19 | Reports | 9 | 0 | 0 | 9 | 0 | 9 |
 | 20 | Community | 10 | 0 | 0 | 10 | 0 | 10 |
 | 21 | Billing | 10 | 0 | 1 | 9 | 0 | 10 |
-| 22 | Platform admin | 20 | 0 | 0 | 20 | 0 | 8 |
+| 22 | Platform admin | 20 | 9 | 0 | 11 | **9** (F16a, smoke-tested, D-70) | 8 |
 | 23 | Keyboard and mouse | 36 | 1 | 3 | 32 | **1** | new |
 | 24 | App-wide | 47 | 11 | 2 | 34 | **10** | new |
 | | **Total** | **606** | **109** | **29** | **465** | **111** | **347** |

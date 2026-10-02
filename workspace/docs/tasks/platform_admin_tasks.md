@@ -94,4 +94,4 @@ Retired and not live: `src/retired/pages/Admin*.tsx`, `DevMethod*.tsx`,
 - [x] Block A, Starter Pack authoring (api `a690595`, app `90a767c`)
 - [x] Block B, Developer menu and Activity (api `fbbdf6d`, app `87170e0`)
 - [x] Block C, Billing tiers: secrets, countries, rules, blocklist (api `45d91c8`, app `d2908b1`)
-- [ ] Block D, Overrides, lock and flagged accounts
+- [x] Block D, Overrides, lock and flagged accounts (api `36007ee`, `933b772`; app `a273919`)
