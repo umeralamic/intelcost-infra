@@ -168,3 +168,6 @@ Hidden Valley Spec. Fixed, most visible first:
 | 8 | Auto Count panel floated at 144 px, content-tall; legacy docks at 56 px, full height | Legacy's place and height | D-199 |
 | 9 | Auto Count's preview showed the sheet beside the selection | Clipped to the selection | D-199 |
 | 10 | Native select arrows; legacy's trigger has a faint chevron | Legacy's chevron on every select, app-wide | D-199 |
+| 11 | Sheet and folder rows ignored Settings' text styles (12 px; legacy 11) | Applied, as item rows | D-200 |
+| 12 | Sheet rows 26 px apart; legacy 18 | Legacy's 16 px row, 2 px gap | D-200 |
+| 13 | Estimating tab, header and band colours off legacy's stock format | Legacy's `DEFAULT_FORMAT` values as the light tokens; TOTAL in mono | D-200 |

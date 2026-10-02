@@ -7499,3 +7499,30 @@ sheet space, then Auto Count).
 - **Where:** app `components/ui/context-menu.tsx`, `index.css`,
   `features/takeoff/autoCount/{AutoCountPanel,SheetCrop}.tsx`,
   `features/takeoff/sheets/NameFromRegionDialog.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-200 — The Sheets panel's rows and the Estimating grid's stock colours, as legacy's
+
+**Date:** 2026-10-02
+**Status:** decided overnight (the fallback, side by side with live legacy), pending founder review
+**Area:** F7 Sheets panel, F9 Estimating; Frontend
+
+Measured in both apps at 1440 × 900 (computed styles) and seen at 2048 × 1050.
+- **The Sheets panel's text:**
+  - Settings › General's "Sheet name" and "Folder" text styles (font, size, colour) were
+    saved but never applied: only item rows read theirs. Sheet and folder rows now apply
+    theirs too, legacy's 11 px by default (ours drew 12 px).
+  - The style helper (`panelTextStyle`) moved into the settings module and serves all three.
+- **Sheet rows** are legacy's 16 px, 2 px apart: an 18 px pitch, against 26 before. A
+  29-sheet set now shows about a third more rows.
+- **The Estimating grid's stock colours** are legacy's `DEFAULT_FORMAT`. Its fixed values
+  are now our light-theme tokens (the dark theme keeps its own):
+  - the open tab #0f172a (it took the header's colour before), with a new
+    `--estimate-tab` token;
+  - the header and TOTAL rows #475569 on #f1f5f9;
+  - the classification band #b8c5d6.
+  - A workspace or personal Format still overrides each.
+- **TOTAL** is set in the monospace, as legacy's.
+- **Where:** app `features/takeoff/settings/settings.ts`, `components/ItemRow.tsx`,
+  `sheets/SheetsPanel.tsx`, `index.css`, `features/estimate/EstimatingView.tsx`.
