@@ -151,6 +151,26 @@ export const COST_CASES = [
     expect: { totalMaterialCost: 250, itemCost: 250 },
   },
 
+  // --- Seed from… an assembly (D-243): a seeded sub-item costs what the assembly's does --
+  // The assembly's sub-item "Rebar" is PARENT * 1.2, so 120 LF under a 100 LF parent. Typed
+  // labour 0.1 MH/LF at $50/h: 120 × 0.1 × 50 = $600. A material component QTY × 1.1 at
+  // $2: 132 × 2 = $264. An equipment lump, $400/day × 3 days + $150 mob = $1,350. Total
+  // $2,214: the assembly's at 120 LF (its Costs preview), and the seeded sub-item's with
+  // the components as the api's copy writes them (`drives/quantity-table.py seed`).
+  {
+    id: "seed-copies-components",
+    kind: "seed",
+    parentQty: 100,
+    formula: "PARENT*1.2",
+    unit: "LF",
+    input: rates({ unit_man_hours: 0.1, hourly_wage: 50 }),
+    template: [
+      component("material", { qty_formula: "QTY*1.1", unit_price: 2 }),
+      component("equipment", { pricing_mode: "lump", equip_rate: 400, equip_basis: "day", duration_formula: "3", mob_demob: 150 }),
+    ],
+    expect: { quantity: 120, assembly: 2214, seeded: 2214, copied: 2 },
+  },
+
   // --- A formula error carries the last good total; no quantity carries lumps ----------
   // The formula no longer reads, so the $123 saved before it rides as a lump, never $0.
   {

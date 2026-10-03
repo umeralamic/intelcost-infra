@@ -22,6 +22,7 @@ if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-cases.json`, JSON.stringify(CASES));
   await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
   await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
+  await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
@@ -29,6 +30,7 @@ if (process.env.GEN === "1") {
 const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
 let costs;
@@ -52,7 +54,7 @@ try {
     });
   }, CASES);
   // The cost rows: F9's money through the app's own lib/estimate.
-  costs = await page.evaluate(async ([cases, envItems, envSheet]) => {
+  costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
     const comps = await import("/src/lib/estimate/components.ts");
     const alloc = await import("/src/lib/estimate/equipmentAllocation.ts");
@@ -60,7 +62,16 @@ try {
     const workbook = await import("/src/lib/estimate/workbook.ts");
     const removal = await import("/src/lib/estimate/componentRemoval.ts");
     const bid = await import("/src/lib/estimate/bidSummary.ts");
+    const formula = await import("/src/lib/takeoff/subItems/formula.ts");
     return cases.map((c) => {
+      if (c.kind === "seed") {
+        // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
+        // sub-item with the api's copies under its real parent.
+        const qty = formula.evaluateFormula(c.formula, { parent: c.parentQty }).value;
+        const line = (rows, env) => costing.computeLineCost({ quantity: qty, unit: c.unit, input: c.input, unitWastage: new Map(), components: rows.map((row) => comps.evaluateComponent(row, env)), netQty: qty }).itemCost;
+        const copies = (seedCopies[c.id] ?? []).map((row, i) => ({ ...row, id: `copy-${i}`, takeoff_item_id: "sub", position: i }));
+        return { quantity: qty, assembly: line(c.template, { parent: qty, qty }), seeded: line(copies, { parent: c.parentQty, qty }), copied: copies.length };
+      }
       if (c.kind === "bidsheet") {
         const wb = workbook.buildWorkbook([{ name: "T", banner: null, rows: [] }], [{ key: "item_cost", label: "Item Cost", width: 60, kind: "money" }], { formulas: true, grids: false, grouping: false });
         workbook.appendBidSheet(wb, c.totals, c.rates);
@@ -108,7 +119,7 @@ try {
         equipmentAllocation: c.equipmentAllocation ?? null,
       });
     });
-  }, [COST_CASES, ENV_ITEMS, ENV_SHEET]);
+  }, [COST_CASES, ENV_ITEMS, ENV_SHEET, pythonSeed]);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");

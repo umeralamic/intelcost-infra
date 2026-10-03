@@ -8517,7 +8517,7 @@ D-235: the active tools only.
 ## D-238 — The sub-items editor, as legacy's `SubItemDialog` (closes D-208's difference)
 
 **Date:** 2026-10-03
-**Status:** decided overnight, pending founder review
+**Status:** decided overnight, accepted by the founder 2026-10-03
 **Area:** F6-S5 sub-items; Frontend, Backend
 
 Legacy's source (`SubItemDialog.tsx` on `UmeralamDEV`) read, and the editor driven in live
@@ -8605,7 +8605,7 @@ legacy at 1440 × 900 on "Bench comparison" (opened and cancelled).
 ## D-239 — Overlays as sub-rows under their base sheet, as legacy's
 
 **Date:** 2026-10-03
-**Status:** decided overnight, pending founder review
+**Status:** decided overnight, accepted by the founder 2026-10-03
 **Area:** F11 Overlay (D-195); Frontend
 
 Legacy's source (`SheetTree.tsx`, the `sheetOverlays` block and its two pickers) read on
@@ -8645,7 +8645,7 @@ Legacy's source (`SheetTree.tsx`, the `sheetOverlays` block and its two pickers)
 ## D-240 — Name from page region's Draw and Redraw, as legacy's (closes D-227's "Left")
 
 **Date:** 2026-10-03
-**Status:** decided overnight, pending founder review
+**Status:** decided overnight, accepted by the founder 2026-10-03
 **Area:** F7 sheet naming; Frontend
 
 Legacy's `NameFromRegionDialog.tsx` (`RegionRow`) and `ProjectTakeoff.tsx`
@@ -8678,7 +8678,7 @@ Legacy's `NameFromRegionDialog.tsx` (`RegionRow`) and `ProjectTakeoff.tsx`
 ## D-241 — Custom snapshot types are workspace rows, as legacy's `evidence_tag_types`
 
 **Date:** 2026-10-03
-**Status:** decided overnight, pending founder review
+**Status:** decided overnight, accepted by the founder 2026-10-03
 **Area:** F7 Snapshot tool (D-210); Backend, Frontend
 
 Legacy's `useEvidenceTagTypes.ts`, its migration (`evidence_tag_types`, unique label per
@@ -8717,7 +8717,8 @@ workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
 ## D-242 — Below a tablet's width the side panels open over the canvas (beyond legacy)
 
 **Date:** 2026-10-03
-**Status:** decided overnight, pending founder review (the founder's request; beyond legacy)
+**Status:** decided overnight (the founder's request; beyond legacy), accepted by the founder
+2026-10-03, the 1024 px breakpoint included
 **Area:** F7 the takeoff screen's layout; Frontend
 
 - **Why:** at 375 px legacy keeps both side panels and leaves the canvas about 60 px wide, and
@@ -8759,3 +8760,70 @@ workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
 - **At 1440 × 900** the panels were back in the row and the header was a grid again.
 - **Where:** app `features/takeoff/hooks/useCompactLayout.ts` (new), `pages/ProjectTakeoff.tsx`,
   `components/Toolbar.tsx` (`scroll`), `components/TakeoffHeader.tsx`.
+
+---
+
+## D-243 — Assemblies carry cost components; Seed from… copies them; the draft editor knows the count symbol
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 1, "match legacy"); one small call beyond legacy, below
+**Area:** F10 assemblies, F6-S5 sub-items; Backend, Frontend
+
+The founder accepted D-238 to D-242 on 2026-10-03 (the 1024 px breakpoint, dimension names in
+formulas and an overlay row opening its base sheet included), then asked for D-238's two open
+legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx`,
+`templateCosts.ts`, `saveTemplate.ts`, `SubItemDialog.tsx` (`seedFromAssembly`),
+`ProjectTakeoff.tsx` (path #4, `draftItemCtx`), migrations 20260926210336, 213412 and
+213818.
+- **Why it was more than a copy:** our assemblies had no cost components at all (legacy diff
+  #22, "for F10's spec"), so a seed had nothing to copy. They are built now, as legacy's.
+- **Table `assembly_component`** (migration `d4f7b2a95e13`): legacy's
+  `assembly_template_cost_components`, the fields of `takeoff_cost_component` without its
+  cached total, on the assembly (no sub-item) or on one of its sub-items.
+- **Legacy's host rules, in its words:** the assembly itself hosts only while it has no
+  sub-items ("This assembly has sub-items — add cost components to its sub-items
+  instead."); a sub-item cannot be added under an assembly whose top item has components
+  ("This assembly's top item has N cost component(s). Remove them before adding
+  sub-items.").
+- **Costs… on an assembly or one of its sub-items** gains legacy's Cost components section
+  under the rates: Preview quantity (100), "Components total", the rows with their totals
+  or "formula error", + Labor, Material, Equipment, Subcontract (our cost component dialog,
+  with PARENT as "Assembly"), and "Delete from assembly?" with legacy's words. Needs
+  `canEditEstimates`, as the rates do.
+- **The copies, as legacy's:**
+  - **Save as assembly…** copies the item's components (no sub-items) or each sub-item's.
+  - **Use on sheet and Link assembly** copy each template sub-item's components onto the
+    sub-item it becomes, after its rates, or the top item's onto the item when the assembly
+    has no sub-items. Legacy's `apply_assembly_precheck` refusals, in its words. Each
+    kind's first copy keeps the item's typed rates (legacy's snapshot trigger).
+  - **Seed from… › Assembly:** each seeded row remembers its template sub-item; after the
+    save and the rates, `POST …/assembly/{uuid}/copy-costs` copies that sub-item's
+    components onto the new sub-item, one call per assembly. On failure the sub-items stay
+    and a "Components not copied" toast offers Retry (legacy's). The New Measurement
+    dialog's draft rows carry the same link to the write.
+  - All copies need `canEditEstimates` (D-95's pricing seat); without it only the rows and
+    no prices come, as before.
+- **Beyond legacy, small (pending founder review):** Copy to my assemblies also copies the
+  Starter assembly's components. Legacy's copy leaves them behind.
+- **Left:** the template's shared-equipment usage entries and their pending links (legacy's
+  `assembly_template_equipment_usage`, "Shared equipment missing").
+- **1b, the draft editor's count symbol:** the New Measurement dialog hands its picked count
+  symbol to the sub-items editor with its dimensions, so a circle or square count offers its
+  footprint, side and volume recipes before the first mark (legacy's `draftItemCtx`). It is
+  read when the editor opens, as the dimensions are.
+- **Proved:**
+  - gates;
+  - the quantity table, with a new cost row through both halves: the api's copy maps a
+    template's material and equipment components; at 120 LF (PARENT × 1.2 over 100 LF) the
+    assembly's preview and the seeded sub-item both cost $2,214.00, by hand;
+  - a smoke on Hidden Valley Spec A101: a throwaway assembly's sub-item got a Material
+    component (QTY × 1.1 at $2) through Costs…, previewing $220.00 at 100; Seed from… onto a
+    throwaway 57.6 LF item made "Smoke rebar" 69.12 LF with the component, $152.06 in
+    Estimating; both removed. Count → circle, + Dia 4, + Depth 5, Create sub-item, Insert
+    listed "Area 1 (Count × Footprint [Dia])" and the volume before any mark; cancelled.
+- **Where:**
+  - api: `assembly/{models,schemas,routes}.py`, migration `d4f7b2a95e13`;
+  - app: `assembly/{api.ts,TemplateComponents.tsx,TemplateDialogs.tsx}`,
+    `takeoff/items/{SubItemsDialog,MeasurementDialog}.tsx`, `pages/ProjectTakeoff.tsx`;
+  - infra: `browser/lib/cost-cases.mjs`, `browser/quantity-table.mjs`,
+    `drives/quantity-table.py` (`seed`), `quantity-table.sh`.

@@ -8,7 +8,8 @@ runs both halves.
 
 With `register`, it reads F18's registration rows instead and fits each through the api's
 `earthwork/register.py` (D-188). With `credits`, F14's credit rows through the api's
-`ai/meter.py` (D-236): metering, the estimate, holds, settlement, refunds and refills.
+`ai/meter.py` (D-236): metering, the estimate, holds, settlement, refunds and refills. With
+`seed`, the assembly seed rows through the api's component copy (D-243).
 """
 
 import json
@@ -17,7 +18,10 @@ import sys
 from decimal import Decimal
 
 from app.features.ai import meter
+from app.features.assembly.models import COMPONENT_COPY_FIELDS as COPY_FIELDS
+from app.features.assembly.models import AssemblyComponent, component_fields
 from app.features.earthwork import register
+from app.features.estimate.models import TakeoffCostComponent
 from app.features.takeoff import quantity
 from app.features.takeoff.models import TakeoffItemType
 
@@ -116,8 +120,26 @@ def credit(case: dict) -> dict:
     }
 
 
+def seed(case: dict) -> list[dict]:
+    """Seed from… an assembly (D-243): each template component through the api's copy, as
+    `_copy_host_components` writes it onto the seeded sub-item."""
+    out = []
+    for row in case["template"]:
+        template = AssemblyComponent(**{k: row[k] for k in COPY_FIELDS if k in row})
+        copied = TakeoffCostComponent(**component_fields(template))
+        out.append({k: _plain(getattr(copied, k)) for k in COPY_FIELDS})
+    return out
+
+
+def _plain(value: object) -> object:
+    return float(value) if isinstance(value, Decimal) else value
+
+
 def main() -> None:
     cases = json.load(sys.stdin)
+    if sys.argv[1:] == ["seed"]:
+        print(json.dumps([{"id": c["id"], "value": seed(c)} for c in cases]))
+        return
     if sys.argv[1:] == ["credits"]:
         print(json.dumps([{"id": c["id"], "value": credit(c)} for c in cases]))
         return
