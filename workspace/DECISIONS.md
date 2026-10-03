@@ -9153,3 +9153,63 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 - **Where:** app `lib/estimate/{exportFormulas,workbook,lines,sharedEquipment}.ts`,
   `features/estimate/EstimatingView.tsx`; infra `browser/lib/excel-cases.mjs`,
   `browser/quantity-table.mjs`.
+
+---
+
+## D-250 — "How this quantity is derived" on Estimating's Qty cells
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 4; beyond legacy)
+**Area:** F9 the Estimating grid; Frontend
+
+- **Opening it:** a single click on a Qty cell opens a small popover in the style of the
+  multiplier's "How this multiplier is built". Escape or a click outside closes it.
+  - It never starts editing. A sub-item's double-click still opens Edit sub-item, so a
+    click waits a quarter second to be sure it is not the first half of one.
+- **On a sub-item:**
+  - its name and figure with unit;
+  - **Formula**, as the sub-items editor writes it: dimension, variable and rough
+    measurement names, derived entries by their Insert names;
+  - **With values**: the same formula with each value put in, derived entries spelled out
+    with π·D²/4 visible and the unit's "÷ 27";
+  - the step between (the top level's parts, each worked out), then the result;
+  - **Reads**: PARENT with the parent's name, quantity and unit, then each dimension,
+    variable, sibling, rough measurement and derived entry used, with its value and unit;
+  - when the formula does not read now, its error, and that the quantity shown is the last
+    good figure it gave.
+- **On a measured item (a parent, or any item that is not a sub-item):**
+  - its figure; the measured total;
+  - each sheet with its shape count, deduct count and the deducts' own area (when the sheet
+    has a scale), its quantity as the Sheets panel reads it, and its share when there are
+    several;
+  - the height (linear to area) with the value as typed; the slope factor with its entry;
+  - an override with its reason;
+  - the multipliers apart from the measured figure ("30 LF × 2 = 60 LF") with each layer
+    or folder step, or "No layer or folder multiplier".
+  - The parent's Qty cell itself now exists (D-249).
+- **The figures are the grid's:** `lib/estimate/quantityExplain.ts` reads every value and
+  part with formula.ts, in the environment the grid's figures come from
+  (`itemFormulaEnv`). The quantity table checks the popover's figure equals formula.ts's.
+- **Proved:**
+  - gates; the new libraries are pure;
+  - the quantity table, 5 new explanation rows:
+    - the Laterals Pipe zone "172.7033 × 3 × 2 ÷ 27 − 172.7033 × (π × 0.5² ÷ 4) ÷ 27" =
+      "38.3785 − 1.2559" = 37.1226;
+    - the typed trench "117.69 × (3 × 2.5 − π × (1.2083 ÷ 2)^2) ÷ 27" = "117.69 × 6.3533 ÷
+      27" = 27.6932;
+    - the round footings "3 × (π × 4² ÷ 4 × 5) ÷ 27" = "188.4956 ÷ 27" = 6.9813;
+    - PARENT × 1.05 with no step;
+    - a parent's "30 LF × 2 = 60 LF" with shares 75 % / 25 %.
+  - a smoke on Hidden Valley Spec's Estimating tab:
+    - **Laterals Pipe zone** (cell 37.12): Formula `{Volume 3 @ CY}-{Volume 5 @ CY}`, the
+      values line and "= 38.3785 − 1.2559", "= 37.1226 CY". Reads: PARENT HDPE 6"
+      172.7033 LF, Width 3 ft, Depth (pipe zone) 2 ft, Dia 0.5 ft, Volume 3 (Linear ×
+      Width × Depth (pipe zone)) 38.3785 CY, Volume 5 (Linear × π·Dia²/4) 1.2559 CY.
+      Escape closed it; no edit opened.
+    - **HDPE 6"** (cell 172.70): measured 172.7033 LF, C-300 with 1 shape, 172.7033 LF,
+      no multiplier. A click outside closed it.
+    - A double-click on Pipe zone opened Edit sub-item and no popover; it was cancelled.
+- **Where:** app `lib/estimate/quantityExplain.ts` (new), `lib/takeoff/subItems/ast.ts` (new,
+  the parser shared with the export), `features/estimate/QuantityPopover.tsx` (new),
+  `features/estimate/EstimatingView.tsx`; infra `browser/lib/explain-cases.mjs`,
+  `browser/quantity-table.mjs`.
