@@ -16,6 +16,7 @@ import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
+import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -41,6 +42,7 @@ let earth;
 let reg;
 let ac;
 let subs;
+let xl;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -157,6 +159,23 @@ try {
       return out;
     });
   }, SUBITEM_CASES);
+  // Exported-formula rows (D-249): lib/estimate/exportFormulas, read as Excel reads them.
+  xl = await page.evaluate(async ([cases, cells]) => {
+    const x = await import("/src/lib/estimate/exportFormulas.ts");
+    const f = await import("/src/lib/takeoff/subItems/formula.ts");
+    const envOf = (e) => ({ ...e, dims: new Map(Object.entries(e.dims ?? {})) });
+    const cellsFn = new Function("env", "links", `return (${cells})(env, links)`);
+    return cases.map((c) => {
+      if ("verified" in c) return { verified: x.verifiedQtyExpression(c.formula, envOf(c.env), f.evaluateFormula(c.formula, envOf(c.env)).value) };
+      const expr = x.toExcelExpression(c.formula, envOf(c.env));
+      if (!expr) return { text: null };
+      const text = x.resolveLinks(expr, (kind, key) => (kind === "P" ? c.links.P : c.links[key]) ?? null);
+      const read = (values) => x.evaluateCellFormula(text, (ref, sheet) => values[sheet ? `${sheet}!${ref}` : ref] ?? null);
+      const out = { text, value: read(cellsFn(c.env, c.links)), app: f.evaluateFormula(c.formula, envOf(c.env)).value };
+      if (c.change) Object.assign(out, { changed: read(cellsFn(c.change, c.links)), appChanged: f.evaluateFormula(c.formula, envOf(c.change)).value });
+      return out;
+    });
+  }, [EXCEL_CASES, cellsOf.toString()]);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
@@ -559,6 +578,23 @@ for (const [i, c] of SUBITEM_CASES.entries()) {
   if (typeof web.value !== "number" || !close(web.value, c.expect)) wrong.push(`${c.id}: ${web.value}, expected ${c.expect}`);
 }
 
+// Exported-formula rows (D-249): the text, Excel's reading equal to the app's and to the
+// hand answer, before and after the linked cells change.
+for (const [i, c] of EXCEL_CASES.entries()) {
+  const got = xl[i];
+  if ("verified" in c) {
+    if (got.verified !== c.verified) wrong.push(`${c.id}: ${JSON.stringify(got.verified)}, expected ${JSON.stringify(c.verified)}`);
+    continue;
+  }
+  if (got.text !== c.text) wrong.push(`${c.id}: wrote ${got.text}, expected ${c.text}`);
+  if (!(typeof got.value === "number" && Math.abs(got.value - got.app) <= 1e-9 * Math.max(1, Math.abs(got.app)))) disagree.push(`${c.id}: Excel ${got.value}, app ${got.app}`);
+  if (!(typeof got.value === "number" && Math.abs(got.value - c.value) <= 1e-6 * Math.max(1, Math.abs(c.value)))) wrong.push(`${c.id}: ${got.value}, expected ${c.value}`);
+  if (c.change) {
+    if (!(typeof got.changed === "number" && Math.abs(got.changed - got.appChanged) <= 1e-9 * Math.max(1, Math.abs(got.appChanged)))) disagree.push(`${c.id} changed: Excel ${got.changed}, app ${got.appChanged}`);
+    if (!(typeof got.changed === "number" && Math.abs(got.changed - c.changed) <= 1e-6 * Math.max(1, Math.abs(c.changed)))) wrong.push(`${c.id} changed: ${got.changed}, expected ${c.changed}`);
+  }
+}
+
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
 for (const c of CREDIT_CASES) {
   const got = pythonCredits.get(c.id);
@@ -574,5 +610,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; passed`,
 );

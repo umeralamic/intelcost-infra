@@ -9090,3 +9090,66 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     showed the messages above. Cancelled.
 - **Where:** app `lib/takeoff/subItems/formula.ts`; api `takeoff/formula.py`; infra
   `browser/lib/subitem-cases.mjs`, `browser/quantity-table.mjs`, `drives/quantity-table.py`.
+
+---
+
+## D-249 — The workbook links sub-items to their parent's Qty and a Dimensions sheet
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 3; beyond legacy, which writes numbers into its formulas)
+**Area:** F9-S11 the Excel export; Frontend
+
+- **a) Qty and Unit on every row.** Legacy blanks a parent's Qty and Unit, in the grid and
+  in its export.
+  - **Parents, beyond legacy:** a parent now shows its own measured quantity and unit in
+    both. They are a separate field on the line (`parentQty` / `parentUnit`) and are never
+    priced: the parent's money stays the SUM of its sub-items'.
+  - **Cost components** already carried theirs.
+  - **Shared-machine rows** now show the host's use of the machine, in the grid and in the
+    file: usage hours (HR) on an hours basis, the host's quantity and unit on a quantity
+    basis, its manual share in % (`sharedUse`).
+  - Context copies of a parent (above its sub-items in another group) stay blank.
+- **b) Linked sub-items.** A sub-item's Qty formula points at its parent's Qty cell for
+  PARENT, and for the measured base of a derived token when that base is the parent's
+  quantity. Example: `=J28*Dimensions!C9*Dimensions!C12/27-J28*(PI()*Dimensions!C14^2/4)/27`.
+  - Changing the parent's Qty recomputes the sub-items, their cost cells, the parent's SUMs
+    and TOTAL.
+  - A perimeter, a sibling, a variable or a rough measurement is still written as its
+    number.
+- **c) Dimensions as cells.** A "Dimensions" sheet lists each exported item's named
+  dimensions: Item, Dimension, Value (ft), Unit, As typed, Key. Sub-item formulas point at
+  the Value cells. A layer named "Dimensions" becomes "Dimensions 2".
+- **How:** `exportFormulas.ts` now parses the formula with the app's own grammar and writes
+  it back for Excel with the brackets Excel needs. Excel's minus binds before ^ and its ^
+  chains left to right, so `-(2^2)` and `2^(3^2)` go out (D-248).
+  - The parent and each dimension go out as links carrying their figure (`⟦P|…⟧`,
+    `⟦D|dN|…⟧`).
+  - The workbook makes a link a cell reference only where that cell holds that figure.
+- **d) The safety rule, kept and widened.** A sub-item's formula is kept only when Excel's
+  reading of it gives the app's figure, read across rows and sheets with Excel's
+  precedence and its ROUND (half away from zero). Failing that, the literal formula is
+  tried; failing that, the number is written.
+  - Example: `round(-2.5)` is -2 in the app and -3 in Excel, so it stays a number.
+- **Proved:**
+  - gates;
+  - the quantity table, 8 new exported-formula rows: the exact text; Excel's reading equal
+    to the app's figure and to the hand answer, before and after the linked cells change.
+    The rows cover the Laterals Pipe zone (37.1226 → 57.8048 CY at 200 LF and Width 4),
+    PARENT, the round footings (6.9813 → 11.6355 CY at 5), `-(2^2)`, `2^(3^2)`,
+    PI × (Dia/2)^2, the typed trench (27.6931 CY) and the ROUND fallback.
+  - **The founder's proof:** Hidden Valley Spec exported from Estimating (all columns,
+    rows and layers, with formulas), then opened and recalculated in an independent Excel
+    engine (the Python `formulas` package, in a throwaway container):
+    - HDPE 6"'s sub-items read `=J28*Dimensions!C9*…`, the 12" HDPE Pipe `=J21`.
+    - Before any edit, every sub-item's cost, the parent and TOTAL equal the app's written
+      figures (to $0.00001).
+    - HDPE 6" Qty set to 200 and its Width to 4: Trench 148.1481, Bedding 14.8148, Pipe
+      zone 57.8048 and Native 74.0741 CY, the app evaluator's own figures.
+    - Each Item Cost followed its rates (temporary rates on the four sub-items: $3,259.26,
+      $466.67, $751.46, $333.33).
+    - HDPE 6"'s SUM was $4,810.72, and TOTAL moved by exactly the sub-items' change
+      ($1,699.20).
+    - The temporary rate rows (none existed before) were deleted after.
+- **Where:** app `lib/estimate/{exportFormulas,workbook,lines,sharedEquipment}.ts`,
+  `features/estimate/EstimatingView.tsx`; infra `browser/lib/excel-cases.mjs`,
+  `browser/quantity-table.mjs`.
