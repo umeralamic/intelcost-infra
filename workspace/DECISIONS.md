@@ -8766,7 +8766,7 @@ workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
 ## D-243 — Assemblies carry cost components; Seed from… copies them; the draft editor knows the count symbol
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 1, "match legacy"); one small call beyond legacy, below
+**Status:** decided (the founder's item 1, "match legacy"); one small call beyond legacy, below; accepted by the founder 2026-10-03
 **Area:** F10 assemblies, F6-S5 sub-items; Backend, Frontend
 
 The founder accepted D-238 to D-242 on 2026-10-03 (the 1024 px breakpoint, dimension names in
@@ -8833,7 +8833,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-244 — Sub-items before the measurement is drawn: checked, not blocked; the parent's classification by default
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 2); 2a is beyond legacy, 2b matches legacy and extends it to the draft
+**Status:** decided (the founder's item 2); 2a is beyond legacy, 2b matches legacy and extends it to the draft; accepted by the founder 2026-10-03
 **Area:** F6-S5 sub-items, the New Measurement dialog (D-132); Frontend
 
 - **2a, beyond legacy.** Legacy's draft editor reads a formula that needs the measurement
@@ -8889,7 +8889,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-245 — Dia on Linear and Segment items; the round section in Derived; every derived label says its calculation
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 3, beyond legacy)
+**Status:** decided (the founder's item 3, beyond legacy); accepted by the founder 2026-10-03
 **Area:** F6-S3 named dimensions, F6-S5 Derived; Frontend, Backend (the formula engine's twin)
 
 - **3a, "+ Dia" on runs:** Linear and Segment items (both `lf`) offer + Width, + Depth,
@@ -8954,7 +8954,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-246 — Browser autofill off outside sign-in and sign-up
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 4; beyond legacy)
+**Status:** decided (the founder's item 4; beyond legacy); accepted by the founder 2026-10-03
 **Area:** every frontend field; Frontend
 
 - **Why:** Chrome offered "Save ID card" (Google Wallet) while the founder typed a named
@@ -8993,3 +8993,53 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     check 1 below.
 - **Where:** app `components/ui/input.tsx`, `components/ui/prompt-dialog.tsx`, and the 18 files
   of the pass (takeoff, estimate, assembly, ai), `MeasurementDialog.tsx`, `SubItemsDialog.tsx`.
+
+---
+
+## D-247 — The sub-items editor follows the dimensions on screen, saved or not (bug fix, as legacy's)
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 1, a bug; matches legacy)
+**Area:** F6-S3 / F6-S5; Frontend
+
+- **The cause:** every way into the editor handed it a snapshot of dimensions.
+  - **Properties' own sub-items bar** opened the editor on the item as last saved, so a
+    dimension added, renamed or removed in Properties was not in Insert's Dimensions or
+    Derived.
+  - **The New Measurement dialog** passed its dimensions once, when the editor opened, so
+    later edits in the dialog behind it were not followed.
+  - From an item's menu, the saved dimensions were already right.
+- **The fix, legacy's (`onDraftContextChange`, `draftItemCtx`, `editItemCtx`,
+  `pendingDimensions`):**
+  - The measurement dialog reports what is on screen (its dimensions, its count symbol and,
+    when creating, its WBS pick) on every change.
+  - While that dialog is open, the editor over it reads those: the Dimensions list, the
+    Derived Area and Volume entries, every formula's preview and validation, and the
+    names shown in formulas. Added, renamed or removed rows show at once, with the editor
+    still open.
+  - With no dialog open (an item's menu, Manage sub-items), the saved dimensions are read,
+    refreshed when Properties saves.
+  - An assembly's sub-items have no dimensions (a template carries none), as before.
+- **Legacy's Cancel guard (RUNG P2h), ported with it:** a sub-item saved from Properties may
+  read a dimension Properties has not saved. Cancel then asks legacy's question: "Discard
+  these changes?" / "\"Zone\" is used by: Zone use" / "Discard it and that formula breaks
+  — it can't be repaired, because the dimension's key is never reissued." The answers are
+  Go back, Discard anyway, or Keep "Zone" (the saved rows plus the ones read; every other
+  edit is discarded).
+- **Proved:**
+  - gates; the quantity table unchanged;
+  - a smoke on Hidden Valley Spec A101 with a throwaway Linear item (Width 3 saved):
+    - Properties › + Depth 2, then its own Create sub-item: Insert listed Volume (Linear ×
+      Width × Depth), Area 2 (Linear × Depth) and Depth 2 FT. `{Depth} * 2` previewed
+      4.00.
+    - Depth renamed "Zone" in Properties with the editor open: Insert and the formula read
+      "Zone" at once.
+    - The sub-item was created; Cancel on Properties asked the question above; Keep saved
+      "Zone", and the api computed the sub-item 4.
+    - New Measurement › Create sub-item, then + Width 1'-6" in the dialog behind: Width 1.5
+      FT appeared; removed, it went.
+    - The item's menu showed Width and Zone.
+    - Item removed.
+- **Where:** app `takeoff/items/MeasurementDialog.tsx` (`onContextChange`, `DialogContext`),
+  `pages/ProjectTakeoff.tsx` (`reportDialogContext`, `liveContextFor`, `asOnScreen`, the two
+  editor sites, the Cancel guard).
