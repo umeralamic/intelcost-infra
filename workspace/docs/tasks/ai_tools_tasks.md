@@ -287,5 +287,5 @@ schedule table still has to be typed by hand.
 - [x] Draft written 2026-10-01; research 2026-10-02.
 - [x] The founder's answers (D-236); spec adopted.
 - [x] A (2026-10-02) · [x] B · [x] C · [x] D · [x] E · [x] F · [x] G
-- [ ] The model test (needs a provider key on the api).
-- [ ] PARITY's F14 lines corrected and ticked.
+- [ ] The model test: `app/features/ai/trial.py` is written and dry-run on the fake (crops render from the real PDFs, calls are priced); it needs `AI_PROVIDER` and `GEMINI_API_KEY` / `OPENAI_API_KEY` on the api to run for real.
+- [x] PARITY's F14 lines ticked (§2, §10, §18, §19, §22); the two scale-evidence lines in §18 belong to the scale work, not F14.
