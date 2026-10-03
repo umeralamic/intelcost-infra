@@ -15,6 +15,7 @@ import { CREDIT_CASES } from "./lib/credit-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
+import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -23,6 +24,7 @@ if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
   await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
   await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
+  await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse)));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
@@ -30,6 +32,7 @@ if (process.env.GEN === "1") {
 const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonSub = new Map(JSON.parse(await readFile(`${HERE}/.qt-subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
@@ -37,6 +40,7 @@ let costs;
 let earth;
 let reg;
 let ac;
+let subs;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -120,6 +124,32 @@ try {
       });
     });
   }, [COST_CASES, ENV_ITEMS, ENV_SHEET, pythonSeed]);
+  // Sub-item formula rows (D-244, D-245): lib/takeoff/subItems, before and after drawing.
+  subs = await page.evaluate(async (cases) => {
+    const envs = await import("/src/lib/takeoff/subItems/env.ts");
+    const f = await import("/src/lib/takeoff/subItems/formula.ts");
+    const bd = await import("/src/lib/takeoff/subItems/beforeDrawing.ts");
+    const pd = await import("/src/lib/takeoff/dimensions/parseDimension.ts");
+    return cases.map((c) => {
+      if (c.parse) {
+        const r = pd.parseDimension(c.parse, "FT");
+        return { feet: "feet" in r ? r.feet : r.error };
+      }
+      const dims = new Map(Object.entries(c.dims));
+      const out = {};
+      if (c.before) {
+        const [r] = bd.evaluateBeforeDrawing([{ name: "row", formula: c.formula }], { parent: 0, baseUnavailableMessage: "Not until the measurement is drawn", dims }, c.type);
+        out.before = !r.ok ? "error" : r.pending ? "pending" : "value";
+      }
+      const shapes = (c.shapes ?? []).map((s) => ({ sheet: "s", geomType: c.type, vertices: s.map(([x, y]) => ({ x, y })), closed: c.type === "sf", meta: null }));
+      const scaleOf = () => ({ feetPerPt: c.fpp, page: { widthPt: c.page[0], heightPt: c.page[1] } });
+      const prims = envs.parentPrimitives(c.type, shapes, scaleOf);
+      const parent = c.type === "count" ? c.count : c.type === "sf" ? prims.areaSF : prims.linearFT;
+      const r = f.evaluateFormula(c.formula, envs.buildFormulaEnv({ parentType: c.type, parentQuantity: parent, shapes, scaleOf, dims, siblings: new Map() }));
+      out.value = r.ok ? r.value : null;
+      return out;
+    });
+  }, SUBITEM_CASES);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
@@ -497,6 +527,24 @@ for (const [i, c] of EARTHWORK_CASES.entries()) {
   }
 }
 
+// Sub-item rows (D-244, D-245): the browser against the api (1e-9), both against the hand
+// answer, and what the draft editor shows before drawing.
+for (const [i, c] of SUBITEM_CASES.entries()) {
+  const web = subs[i];
+  if (c.parse) {
+    if (!(typeof web.feet === "number" && close(web.feet, c.expect))) wrong.push(`${c.id}: ${web.feet} ft, expected ${c.expect}`);
+    continue;
+  }
+  const api = pythonSub.get(c.id);
+  if (c.before && web.before !== c.before) wrong.push(`${c.id}: before drawing ${web.before}, expected ${c.before}`);
+  if (c.expect === undefined) {
+    if (web.value !== null || api !== null) wrong.push(`${c.id}: read ${web.value} / ${api}, expected a refusal`);
+    continue;
+  }
+  if (typeof api !== "number" || typeof web.value !== "number" || !close(api, web.value)) disagree.push(`${c.id}: api ${api}, browser ${web.value}`);
+  if (typeof web.value !== "number" || !close(web.value, c.expect)) wrong.push(`${c.id}: ${web.value}, expected ${c.expect}`);
+}
+
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
 for (const c of CREDIT_CASES) {
   const got = pythonCredits.get(c.id);
@@ -512,5 +560,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; passed`,
 );

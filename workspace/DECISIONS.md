@@ -8827,3 +8827,59 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     `takeoff/items/{SubItemsDialog,MeasurementDialog}.tsx`, `pages/ProjectTakeoff.tsx`;
   - infra: `browser/lib/cost-cases.mjs`, `browser/quantity-table.mjs`,
     `drives/quantity-table.py` (`seed`), `quantity-table.sh`.
+
+---
+
+## D-244 — Sub-items before the measurement is drawn: checked, not blocked; the parent's classification by default
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 2); 2a is beyond legacy, 2b matches legacy and extends it to the draft
+**Area:** F6-S5 sub-items, the New Measurement dialog (D-132); Frontend
+
+- **2a, beyond legacy.** Legacy's draft editor reads a formula that needs the measurement
+  against a missing base and shows "Not until the measurement is drawn" as the row's
+  error, so Create stays grey (`SubItemDialog.tsx`, `quantitiesPending`). Now:
+  - Each draft row is read twice, against two stand-in measurements of the parent's type
+    (`lib/takeoff/subItems/beforeDrawing.ts`, pure).
+  - **Either read failing is a real error:** bad syntax, an unknown name, a unit the item
+    cannot give. It keeps its red message and still blocks Create ("Fix the formula to
+    continue").
+  - **Two different figures mean the row needs the drawing:** PARENT, PERIMETER, LINEAR,
+    AREA_SF, SEGMENT_COUNT, a derived Area or Volume, or a sibling that needs one. Qty
+    shows "—" in the muted colour with "Calculated once drawn" under the row, not red, and
+    Create is allowed.
+  - **The same figure twice** ({Width} * 2) is shown as it is.
+  - The rows ride on the draft and are written with the item when its first shape lands;
+    the api computes them then, as before.
+- **2b, the parent's classification:**
+  - Every new row, from the first row, Add another sub-item or Seed from…, starts with the
+    parent's Classification / Scope. It can still be changed per row. This was already
+    legacy's and ours on an existing item (D-238).
+  - **New: the draft gets it.** The New Measurement dialog hands its WBS pick (Preset
+    Classification) to the editor.
+  - **A row picked by hand keeps its choice.** The others follow the parent: when the editor
+    reopens, and again when the measurement is written, so a WBS changed after the editor
+    closed still reaches them. "By hand" is a client-side flag, never sent.
+- **Proved:**
+  - gates;
+  - the quantity table, with seven new sub-item rows through both engines (browser
+    `env.ts` + `formula.ts`, api `sub_items.py` + `formula.py`): what the draft shows
+    before drawing ("pending", "value", "error") and the figure after drawing, by hand
+    (PARENT × 1.05 over 40 ft = 42; Linear × Width × Depth 40 × 3 × 2.5 = 11.1111 CY;
+    {dim:d1} × 2 = 6 before drawing; Perimeter × Height 40 × 8 = 320; 3 marks × 2 = 6;
+    "PARENT*" and "PARENT*FOO" refused);
+  - a smoke on Hidden Valley Spec A101. Linear "Smoke draft run", WBS DIV 33 › Sanitary
+    Sewer, + Width 3, Create sub-item:
+    - "PARENT * 1.05" read "—" with "Calculated once drawn", Create enabled, the row in
+      Sanitary Sewer;
+    - Add another sub-item started in Sanitary Sewer too;
+    - "PARENT *" ("Unexpected end of formula") and "PARENT * FOO" (`Unknown identifier
+      "FOO"`) greyed Create with "Fix the formula to continue";
+    - Insert › Area (Linear × Width) › ft² read "—" too; "Create 2".
+    - A 73.38 LF run drawn: the sub-items came to 77.04 LF and 220.13 SF, both filed under
+      Sanitary Sewer.
+    - Removed.
+- **Where:** app `lib/takeoff/subItems/beforeDrawing.ts` (new), `takeoff/items/SubItemsDialog.tsx`,
+  `takeoff/items/MeasurementDialog.tsx`, `pages/ProjectTakeoff.tsx`; infra
+  `browser/lib/subitem-cases.mjs` (new), `browser/quantity-table.mjs`,
+  `drives/quantity-table.py` (`subitems`), `quantity-table.sh`.

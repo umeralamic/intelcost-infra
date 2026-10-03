@@ -9,20 +9,23 @@ runs both halves.
 With `register`, it reads F18's registration rows instead and fits each through the api's
 `earthwork/register.py` (D-188). With `credits`, F14's credit rows through the api's
 `ai/meter.py` (D-236): metering, the estimate, holds, settlement, refunds and refills. With
-`seed`, the assembly seed rows through the api's component copy (D-243).
+`seed`, the assembly seed rows through the api's component copy (D-243). With `subitems`,
+the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245).
 """
 
 import json
 import math
 import sys
 from decimal import Decimal
+from types import SimpleNamespace
 
 from app.features.ai import meter
 from app.features.assembly.models import COMPONENT_COPY_FIELDS as COPY_FIELDS
 from app.features.assembly.models import AssemblyComponent, component_fields
 from app.features.earthwork import register
 from app.features.estimate.models import TakeoffCostComponent
-from app.features.takeoff import quantity
+from app.features.takeoff import quantity, sub_items
+from app.features.takeoff.formula import FormulaEnv, evaluate
 from app.features.takeoff.models import TakeoffItemType
 
 
@@ -135,8 +138,31 @@ def _plain(value: object) -> object:
     return float(value) if isinstance(value, Decimal) else value
 
 
+def subitem(case: dict) -> float | None:
+    """A sub-item's formula against its drawn parent, as `recompute_children` reads it
+    (D-244, D-245)."""
+    kind = TakeoffItemType(case["type"])
+    dims = {key: float(feet) for key, feet in case["dims"].items()}
+    if kind is TakeoffItemType.COUNT:
+        env = FormulaEnv(parent=float(case["count"]), count_ea=float(case["count"]), dims=dims)
+    else:
+        page = (float(case["page"][0]), float(case["page"][1]))
+        runs = [
+            SimpleNamespace(vertices_json=s, shape_meta={"closed": True} if kind is TakeoffItemType.SF else None, sheet_id=1, role="add", geom_type=kind)
+            for s in case["shapes"]
+        ]
+        prims = sub_items.parent_primitives(kind, runs, {1: (float(case["fpp"]), page)})  # type: ignore[arg-type]
+        parent = prims["area_sf"] if kind is TakeoffItemType.SF else prims["linear_ft"]
+        env = FormulaEnv(parent=parent, dims=dims, **prims)  # type: ignore[arg-type]
+    result = evaluate(case["formula"], env)
+    return result.value if result.ok else None
+
+
 def main() -> None:
     cases = json.load(sys.stdin)
+    if sys.argv[1:] == ["subitems"]:
+        print(json.dumps([{"id": c["id"], "value": subitem(c)} for c in cases]))
+        return
     if sys.argv[1:] == ["seed"]:
         print(json.dumps([{"id": c["id"], "value": seed(c)} for c in cases]))
         return
