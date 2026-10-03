@@ -9368,7 +9368,7 @@ sheet tools now read both from the query cache, refreshed before the run
 ## D-253 — The model choices applied; a sheet's name is its whole title, never a caption
 
 **Date:** 2026-10-03
-**Status:** decided (the founder, on accepting D-252); the text-layer rule goes beyond legacy
+**Status:** decided (the founder, on accepting D-252); the text-layer rule goes beyond legacy; accepted (the founder, 2026-10-03), with the rewrite below
 **Area:** F14 AI tools (choices); F5 sheet naming (Page Name, Sheet #, their ALL sweeps, naming regions); Frontend
 
 1. **Model choices, applied on Developer › AI economics:**
@@ -9417,8 +9417,12 @@ nothing written), against the AI's full titles:
   Control Plan**.
 - With the whole block, the old read added "S H E E T" to 12 names and took the caption on
   G-001.
-- **Hidden Valley's stored names are untouched.** Rewriting the 8 waits for the founder's
-  word.
+- **Hidden Valley's 8 short names were rewritten on the founder's word** (2026-10-03, names only,
+  through the api as window-b@ with the new read): G-001 Sheet NO. → Cover Sheet; V-100
+  Existing → Existing Conditions; C-001 General → General Notes & Details; C-100 Site Layout →
+  Site Layout Plan; C-200 Site Grade → Site Grade Plan; C-300 Site Utility → Site Utility
+  Plan; C-900 and C-901 Erosion & → Erosion & Sediment Control Plan. Every other column of
+  every sheet hashed the same before and after; no takeoff item or earthwork row touched.
 
 **Proved:**
 - gates; the quantity table;
