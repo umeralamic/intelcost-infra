@@ -9248,7 +9248,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-252 — Both AI providers at once: a primary and a fallback model per tool, chosen on AI economics (amends D-236 1)
 
 **Date:** 2026-10-03
-**Status:** decided (the founder, in session); the points marked *mine* are my calls within it
+**Status:** decided (the founder, in session); the points marked *mine* are my calls within it; accepted with the model test (the founder, 2026-10-03), the choices applied in D-253
 **Area:** F14 AI tools and credits; Backend, Frontend, bench
 
 **Why:** Google no longer serves `gemini-2.5-flash-lite` or `gemini-2.5-flash` to new keys
@@ -9364,3 +9364,68 @@ sheet tools now read both from the query cache, refreshed before the run
   `pages/PlatformAiEconomics.tsx`, `pages/ProjectTakeoff.tsx`; infra
   `browser/lib/credit-cases.mjs`, `drives/quantity-table.py`.
 - **`.env.ai` keeps only:** `GEMINI_API_KEY=…` and `OPENAI_API_KEY=…`.
+
+## D-253 — The model choices applied; a sheet's name is its whole title, never a caption
+
+**Date:** 2026-10-03
+**Status:** decided (the founder, on accepting D-252); the text-layer rule goes beyond legacy
+**Area:** F14 AI tools (choices); F5 sheet naming (Page Name, Sheet #, their ALL sweeps, naming regions); Frontend
+
+1. **Model choices, applied on Developer › AI economics:**
+
+   | Tool | Primary | Fallback |
+   |---|---|---|
+   | Sheet naming and Auto-Name | `gpt-5-nano` | `gemini-3.1-flash-lite` |
+   | Scale read | `gpt-5-nano` | `gemini-3.1-flash-lite` |
+   | Extract Schedule | `gemini-3.5-flash-lite` | `gpt-5-nano` |
+   | Ask AI | `gemini-3.5-flash-lite` | `gpt-5-nano` |
+
+   - Naming and Scale were already the seeded defaults, so they kept their seeded rows.
+   - Extract Schedule and Ask AI were saved on the screen by the bench's throwaway platform
+     admin, so the screen says "by Bench Estimator".
+   - `.env.ai` holds only the two keys. With `AI_PROVIDER` and `AI_MODEL` gone, the server
+     default is the bench's fake, used only if no chosen model can be called.
+2. **A name is the whole title the box touches** (`lib/takeoff/naming/regionNaming.ts`,
+   `titlePieces`, `regionLinesForNaming`):
+   - It grows from what the box touches to the rest of the title: text runs of the same
+     height (±20 %), on the same row or stacked within 0.6 of a line and overlapping across.
+     It stops at captions, sheet numbers and other text sizes, at most 5 lines.
+   - Legacy reads only what the box covers, so a box over "EROSION &" read "Erosion &".
+3. **A caption is never a name:**
+   - "SHEET NO.", "SHEET TITLE", "SCALE:", "DATE", "PROJECT NUMBER", "DRAWN" and the like,
+     letter-spaced ones too ("S H E E T"), are dropped.
+   - A Page Name box that holds only a caption or a number reads the title nearest it, within
+     4 lines in the box's column.
+   - A Sheet # box never picks up a name it did not touch.
+   - Whole-text match, so "TITLE SHEET" or "SITE PLAN" are still names.
+4. **Every non-AI naming path uses it:** Page Name and Sheet # from a box, their ALL sweeps,
+   and the naming regions dialog.
+
+**Measured on Hidden Valley Spec's 20 test sheets** (the app's own pdf.js text, no AI,
+nothing written), against the AI's full titles:
+
+| Read | Match |
+|---|---:|
+| The names stored now | 12 / 20 |
+| Before: a box over the title's first line | 16 / 20 |
+| After: the same box (Page Name, ALL sweep, naming regions) | **20 / 20** |
+| Before: a box over the whole title block (number and name) | 7 / 20 |
+| After: the same box | **20 / 20**, every number right too |
+
+- The before misses: G-001 "Sheet NO." → **Cover Sheet**, C-001 "General Notes &" →
+  **General Notes & Details**, C-900 and C-901 "Erosion & Sediment" → **Erosion & Sediment
+  Control Plan**.
+- With the whole block, the old read added "S H E E T" to 12 names and took the caption on
+  G-001.
+- **Hidden Valley's stored names are untouched.** Rewriting the 8 waits for the founder's
+  word.
+
+**Proved:**
+- gates; the quantity table;
+- a smoke as the throwaway, on a copy of C-900 in Riverside (no AI call made):
+  - a box over "EROSION &" alone → Page Name stored "Erosion & Sediment Control Plan";
+  - a box over "SHEET NO." and the number → "Apply both" offered C-900 / "Erosion & Sediment
+    Control Plan"; cancelled;
+  - the copy, its file and folder and the work sessions were removed after.
+
+**Where:** app `lib/takeoff/naming/regionNaming.ts`, `pages/ProjectTakeoff.tsx`.
