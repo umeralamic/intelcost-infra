@@ -8999,7 +8999,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-247 — The sub-items editor follows the dimensions on screen, saved or not (bug fix, as legacy's)
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 1, a bug; matches legacy)
+**Status:** decided (the founder's item 1, a bug; matches legacy); accepted by the founder 2026-10-03
 **Area:** F6-S3 / F6-S5; Frontend
 
 - **The cause:** every way into the editor handed it a snapshot of dimensions.
@@ -9049,7 +9049,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-248 — The power operator ^ and exact π in formulas
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 2; beyond legacy, whose formulas have no ^)
+**Status:** decided (the founder's item 2; beyond legacy, whose formulas have no ^); accepted by the founder 2026-10-03, its precedence amended by D-251
 **Area:** F6-S5 formulas (both engines), F9 export; Frontend, Backend
 
 - **^ in both engines** (browser `lib/takeoff/subItems/formula.ts`, api
@@ -9096,7 +9096,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-249 — The workbook links sub-items to their parent's Qty and a Dimensions sheet
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 3; beyond legacy, which writes numbers into its formulas)
+**Status:** decided (the founder's item 3; beyond legacy, which writes numbers into its formulas); accepted by the founder 2026-10-03
 **Area:** F9-S11 the Excel export; Frontend
 
 - **a) Qty and Unit on every row.** Legacy blanks a parent's Qty and Unit, in the grid and
@@ -9159,7 +9159,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 ## D-250 — "How this quantity is derived" on Estimating's Qty cells
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 4; beyond legacy)
+**Status:** decided (the founder's item 4; beyond legacy); accepted by the founder 2026-10-03
 **Area:** F9 the Estimating grid; Frontend
 
 - **Opening it:** a single click on a Qty cell opens a small popover in the style of the
@@ -9213,3 +9213,34 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
   the parser shared with the export), `features/estimate/QuantityPopover.tsx` (new),
   `features/estimate/EstimatingView.tsx`; infra `browser/lib/explain-cases.mjs`,
   `browser/quantity-table.mjs`.
+
+---
+
+## D-251 — ^ reads as Excel reads it (amends D-248)
+
+**Date:** 2026-10-03
+**Status:** decided (the founder, on accepting D-247 to D-250)
+**Area:** F6-S5 formulas (both engines), F9 export, D-250's popover; Frontend, Backend
+
+- **Amends D-248's precedence; the rest of D-248 stands.** Both engines (browser
+  `formula.ts`, api `formula.py`) and the shared tree (`ast.ts`) now read:
+  - `factor := sign ('^' sign)*`, `sign := ('+'|'-') sign | atom`;
+  - a leading minus binds tighter than ^: **-2^2 = (-2)^2 = 4**, as Excel;
+  - ^ is left-associative: **2^3^2 = (2^3)^2 = 64**, as Excel;
+  - unchanged: ^ binds tighter than * and / (2*3^2 = 18), 2^-2 = 0.25, exact π, and every
+    error message.
+- **The export writes formulas as typed** (`-2^2`, `2^3^2`): Excel now agrees, so the added
+  brackets of D-249 are gone. A bracket the user typed stays (`-(2^2)` = -4 in both). The
+  popover's "With values" line follows the same rule.
+- **Bench check:** all 11 sub-items on the bench were re-read with the new api engine in a
+  transaction rolled back, against their stored quantities. 11 the same, 0 differ (none
+  uses ^). No cost component or assembly sub-item uses ^.
+- **Proved:**
+  - gates;
+  - the quantity table: the sub-item rows (2^3^2 = 64, -2^2 = 4, -(2^2) = -4, 2*3^2 = 18,
+    2^-2 = 0.25) on both engines, and the export rows writing `-2^2`, `2^3^2`, `-(2^2)` and
+    `2*3^2` as typed, Excel's reading equal to the app's;
+  - a smoke in the sub-items editor: -2^2 4.00, 2^3^2 64.00, 2*3^2 18.00, -(2^2) -4.00,
+    2^-2 0.25; cancelled.
+- **Where:** app `lib/takeoff/subItems/{formula,ast}.ts`, `lib/estimate/{exportFormulas,quantityExplain}.ts`;
+  api `takeoff/formula.py`; infra `browser/lib/{subitem,excel}-cases.mjs`.

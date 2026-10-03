@@ -108,14 +108,15 @@ SUBITEM_CASES.push(
 // PI × (Dia / 2)^2 at 14.5": π × 0.60417² = 1.1467 SF, the same as Area (π·Dia²/4).
 // The founder's spelling with 3.1416 reads too: 3.1416 × 0.60417² = 1.14675.
 // The trench zone typed out: 117.69 × (3 × 2.5 − π × 0.60417²) / 27 = 27.6931 CY.
-// ^ binds tighter than * and /, right to left: 2^3^2 = 2^9 = 512; a leading minus after it:
-// -2^2 = -4; 2 × 3^2 = 18; 2^-2 = 0.25; (-2)^3 = -8.
+// ^ as Excel reads it (D-251): tighter than * and /, left to right, 2^3^2 = (2^3)^2 = 64;
+// a leading minus binds first, -2^2 = (-2)^2 = 4; 2 × 3^2 = 18; 2^-2 = 0.25; (-2)^3 = -8.
 SUBITEM_CASES.push(
   { id: "pow-pi-half-dia-squared", type: "lf", page: SQUARE, fpp: 0.25, shapes: LINEAR_117, dims: { d1: DIA }, formula: "PI*({dim:d1}/2)^2", before: "value", expect: SECTION },
   { id: "pow-3.1416-half-dia-squared", type: "lf", page: SQUARE, fpp: 0.25, shapes: LINEAR_117, dims: { d1: DIA }, formula: "3.1416 * ({dim:d1} / 2)^2", before: "value", expect: 3.1416 * (DIA / 2) ** 2 },
   { id: "pow-trench-typed", type: "lf", page: SQUARE, fpp: 0.25, shapes: LINEAR_117, dims: { d1: 3, d2: 2.5, d3: DIA }, formula: "PARENT * ({dim:d1} * {dim:d2} - PI * ({dim:d3} / 2)^2) / 27", before: "pending", expect: (117.69 * (3 * 2.5 - SECTION)) / 27 },
-  { id: "pow-right-associative", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "2^3^2", before: "value", expect: 512 },
-  { id: "pow-unary-minus-after", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "-2^2", before: "value", expect: -4 },
+  { id: "pow-left-associative", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "2^3^2", before: "value", expect: 64 },
+  { id: "pow-unary-minus-first", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "-2^2", before: "value", expect: 4 },
+  { id: "pow-minus-bracketed", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "-(2^2)", before: "value", expect: -4 },
   { id: "pow-over-times", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "2*3^2", before: "value", expect: 18 },
   { id: "pow-negative-exponent", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "2^-2", before: "value", expect: 0.25 },
   { id: "pow-negative-base", type: "lf", page: SQUARE, fpp: 0.1, shapes: RUN_40, dims: {}, formula: "(-2)^3", before: "value", expect: -8 },

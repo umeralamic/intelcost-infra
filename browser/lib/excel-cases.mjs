@@ -35,9 +35,11 @@ export const EXCEL_CASES = [
     change: { parent: 5, countEA: 5, dims: { d1: 4, d2: 5 } },
     changed: (5 * Math.PI * 16 * 5) / 4 / 27,
   },
-  // ^ goes out bracketed, since Excel's sign binds first and its ^ chains left to right.
-  { id: "excel-unary-minus-power", formula: "-2^2", env: { parent: 0, dims: {} }, links: {}, text: "-(2^2)", value: -4 },
-  { id: "excel-right-associative", formula: "2^3^2", env: { parent: 0, dims: {} }, links: {}, text: "2^(3^2)", value: 512 },
+  // ^ goes out as typed: the app reads it as Excel does (D-251).
+  { id: "excel-unary-minus-power", formula: "-2^2", env: { parent: 0, dims: {} }, links: {}, text: "-2^2", value: 4 },
+  { id: "excel-left-associative", formula: "2^3^2", env: { parent: 0, dims: {} }, links: {}, text: "2^3^2", value: 64 },
+  { id: "excel-minus-bracketed", formula: "-(2^2)", env: { parent: 0, dims: {} }, links: {}, text: "-(2^2)", value: -4 },
+  { id: "excel-over-times", formula: "2*3^2", env: { parent: 0, dims: {} }, links: {}, text: "2*3^2", value: 18 },
   { id: "excel-pi-half-dia-squared", formula: "PI*({dim:d1}/2)^2", env: { parent: 0, dims: { d1: DIA } }, links: { d1: "Dimensions!C2" }, text: "PI()*(Dimensions!C2/2)^2", value: (Math.PI * DIA * DIA) / 4, change: { parent: 0, dims: { d1: 2 } }, changed: Math.PI },
   // The trench typed with ^ over 117.69 LF: 27.6931 CY.
   {
