@@ -8599,3 +8599,43 @@ legacy at 1440 × 900 on "Bench comparison" (opened and cancelled).
     `index.css` (`--shadow-floating`);
   - api: `takeoff/{schemas,service}.py`, `assembly/schemas.py`, `estimate/schemas.py`,
     `auth/schemas.py`.
+
+---
+
+## D-239 — Overlays as sub-rows under their base sheet, as legacy's
+
+**Date:** 2026-10-03
+**Status:** decided overnight, pending founder review
+**Area:** F11 Overlay (D-195); Frontend
+
+Legacy's source (`SheetTree.tsx`, the `sheetOverlays` block and its two pickers) read on
+`UmeralamDEV`.
+- **Where:** each overlay is a sub-row under its base sheet in the Sheets panel. It sits below
+  the sheet's row and above its items, indented on a rule. It shows in List and Thumbnail
+  views, whatever sheet is open.
+- **The row, legacy's order:**
+  - the colour dot, opening legacy's ten swatches and Custom;
+  - "overlay" with a layers glyph, and "cmp" when Comparative;
+  - the opacity as "NN%", Standard only, opening a 10 to 100 slider in fives that saves on
+    release;
+  - the eye ("Hide overlay" / "Show overlay"; the row dims while hidden);
+  - on hover, Re-align (crosshair) and Delete (red trash). Delete asks nothing, as legacy's.
+- **Differences, kept:**
+  - Legacy's click on the row only marks the overlay active. We have no active overlay, so
+    the click opens the base sheet.
+  - Re-align and the other actions also work from another sheet: they open the base sheet
+    first.
+  - Hidden is stored on the pair, as D-195 already had it. Legacy keeps it in the session.
+  - Colour, opacity, Re-align and Delete need `canEditTakeoff`.
+- **The strip under the toolbar** now shows only the alignment's instruction and Done. Its
+  overlay controls are gone.
+- **Proved:**
+  - gates;
+  - the quantity table;
+  - a smoke on Hidden Valley Spec. E101 was laid over E102 through the api. The sub-row read
+    "overlay 50%". 60 % was saved from the slider, the colour set to #00A3FF, hidden and shown
+    again. Re-align showed "Click a point on the overlay (tinted)" and Esc ended it. Delete
+    removed the row.
+  - The C-200 link row was untouched.
+- **Where:** app `features/takeoff/sheets/OverlaySubRows.tsx` (new), `sheets/SheetsPanel.tsx`,
+  `overlay/OverlayBar.tsx`, `pages/ProjectTakeoff.tsx`.
