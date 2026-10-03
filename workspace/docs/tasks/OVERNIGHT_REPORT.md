@@ -11,7 +11,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 | 1 | Sub-items editor, exactly as legacy's | done (D-238), gates, quantity table and smoke passed | 01:35 | 02:12 | 37 min |
 | 2 | Overlay sub-rows in the Sheets panel | done (D-239), gates, quantity table and smoke passed | 02:12 | 02:20 | 8 min |
 | 3 | Name from page region: in-dialog Draw and Redraw | done (D-240), gates, quantity table and smoke passed | 02:20 | 02:32 | 12 min |
-| 4 | Custom snapshot types as workspace rows | pending | | | |
+| 4 | Custom snapshot types as workspace rows | done (D-241), gates, quantity table and smoke passed | 02:36 | 02:58 | 22 min |
 | 5 | Phone-width takeoff layout (beyond legacy) | pending | | | |
 
 ## Commits

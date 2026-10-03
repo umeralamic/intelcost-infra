@@ -8672,3 +8672,42 @@ Legacy's `NameFromRegionDialog.tsx` (`RegionRow`) and `ProjectTakeoff.tsx`
     set" and "Draw" twice; Draw closed it with the toast; a box over the title block brought it
     back with "E102 …" and "Redraw"; Cancel. No snippet was saved and no sheet was written.
 - **Where:** app `features/takeoff/sheets/NameFromRegionDialog.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-241 — Custom snapshot types are workspace rows, as legacy's `evidence_tag_types`
+
+**Date:** 2026-10-03
+**Status:** decided overnight, pending founder review
+**Area:** F7 Snapshot tool (D-210); Backend, Frontend
+
+Legacy's `useEvidenceTagTypes.ts`, its migration (`evidence_tag_types`, unique label per
+workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
+- **Where legacy manages them:** only in the Snapshot dialog's tag list. The list holds a
+  "Custom" group, sorted by label, and "+ Add custom type…". Add saves the label as the
+  workspace's at once, before the snapshot is saved, then picks it. Legacy has no screen to
+  rename or delete one, so neither do we.
+- **Table `snippet_tag_type`:** workspace, label (120), creator; label unique per workspace;
+  migration `c3e6a9d14f27`.
+  - `GET /api/workspace/{w}/snippet-tag-type` lists them by label, for every member.
+  - `POST` adds one and needs `canUseAnnotations`. A label already there is answered with the
+    one there, not refused.
+- **Migration:** the custom labels the projects' snippets already carry, trimmed and
+  de-duplicated, become their workspace's types, the earliest snippet's author as creator.
+  The bench had none. The query was proved on literal rows: one per workspace, blanks
+  skipped.
+- **A snippet saved or retagged with a custom label** puts that label in the workspace's
+  types too, so no path leaves a label unlisted. The snippet still stores `tag_type` "other"
+  and `custom_tag_label`, unchanged.
+- **The dialog** lists the workspace's types under Custom. D-210 listed the project's own
+  labels.
+- **Migration note for F17:** legacy's `evidence_tag_types` rows map to `snippet_tag_type`.
+- **Proved:**
+  - gates;
+  - the quantity table;
+  - a smoke. "+ Add custom type…" "Smoke type" on Hidden Valley Spec E102 was saved to the
+    workspace on Add and picked. The snapshot was saved as other / "Smoke type". The same
+    workspace's "Test 3" listed it under Custom. The snippet and the type were removed after.
+- **Where:**
+  - api: `markup/{models,schemas,snippets}.py`, `main.py`, migration `c3e6a9d14f27`;
+  - app: `markup/SnippetDialogs.tsx`, `markup/snippets.ts`, `pages/ProjectTakeoff.tsx`.

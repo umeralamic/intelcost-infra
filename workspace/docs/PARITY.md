@@ -589,7 +589,7 @@ The Collaborator tab, the $9.99 tier. `src/components/takeoff/ReviewMarkupLayer.
 `src/components/takeoff/EvidencePanel.tsx`, `src/hooks/useEvidence.ts`.
 
 - [ ] Drag the Snapshot tool over an area to capture it as a snippet. `src/components/takeoff/Toolbar.tsx`, table `evidence_snippets` · **missing**
-- [ ] Name, tag and annotate a snippet, with built-in and custom tag types. `src/components/takeoff/SnippetDetailsDialog.tsx`, `src/hooks/useEvidenceTagTypes.ts`, table `evidence_tag_types` · **missing**
+- [x] Name, tag and annotate a snippet, with built-in and custom tag types. `src/components/takeoff/SnippetDetailsDialog.tsx`, `src/hooks/useEvidenceTagTypes.ts`, table `evidence_tag_types` · **ported** (D-210: the dialog in legacy's words; D-241, 2026-10-03: custom types are workspace rows, `snippet_tag_type`, shared by every project, added by "+ Add custom type…" at once; the labels projects already carried migrated; *smoke-tested (D-70)*: "Smoke type" added on Hidden Valley Spec, saved on the snippet, listed under Custom in Test 3; cleaned)
 - [ ] List snippets and bookmarks in their own panel, with a row menu on each. `src/components/takeoff/EvidencePanel.tsx` · **partial** (D-77, 2026-09-28: the Bookmarks | Snippets pane under the Sheets panel; Bookmarks with Open sheet and Remove bookmark; Snippets waits for the Snapshot tool, F11)
 - [ ] Open a snippet in a floating preview window. `src/components/takeoff/SnippetPreviewWindow.tsx` · **missing**
 - [ ] Snippets do not disappear when the page changes. `.lovable/plan/snippets-stop-them-disappearing-when-you-change-pages-2026-08-01.md` · **missing**
