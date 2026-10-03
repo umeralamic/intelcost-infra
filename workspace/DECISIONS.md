@@ -8948,3 +8948,48 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 - **Where:** app `lib/takeoff/subItems/derived.ts`, `lib/takeoff/dimensions/{dimensionPresets,itemDimensions}.ts`,
   `takeoff/items/{MeasurementDialog,SubItemsDialog}.tsx`; api `takeoff/{formula,dimensions}.py`;
   infra `browser/lib/subitem-cases.mjs`, `browser/quantity-table.mjs`.
+
+---
+
+## D-246 — Browser autofill off outside sign-in and sign-up
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 4; beyond legacy)
+**Area:** every frontend field; Frontend
+
+- **Why:** Chrome offered "Save ID card" (Google Wallet) while the founder typed a named
+  dimension. A takeoff or estimating field is never a person, an address, a card or an ID.
+- **The rule:**
+  - The shared `Input` now defaults to `autoComplete="off"`. A field that wants autofill says
+    so.
+  - Sign-in, sign-up, password reset, forgot password and accept invite already name theirs
+    (`email`, `current-password`, `new-password`, `name`, `organization-title`) and keep
+    them.
+  - Every raw `<input>` and `<textarea>` in the takeoff, estimating, assembly,
+    classification and Ask AI code has `autoComplete="off"`: 34 tags in 18 files. That
+    includes:
+    - the sub-items editor's description, formula, costs and variable form;
+    - item-row rename;
+    - the Earthwork rows and toolbar;
+    - registration;
+    - snippets, notes and overlay;
+    - Estimating's cells, format panel, item costs and row dialogs;
+    - the assembly and template dialogs.
+  - Checkboxes, radios, sliders, colours and files are left alone.
+- **Neutral names**, so no field reads as personal to Chrome's heuristics:
+  - `measurement-label` (the item's Name);
+  - `dimension-dN-label` / `dimension-dN-value` (each named dimension);
+  - `sub-item-N-description`, `sub-item-formula`;
+  - `prompt-value` (folder and other names typed in the prompt).
+  - The only other `name`s in scope are radio groups ("layer-move", "wbs-folder", …).
+  - Visible labels are unchanged.
+- **Proved:**
+  - gates; the quantity table unchanged;
+  - a smoke in the bench's Chromium on Hidden Valley Spec A101, counting the text fields
+    without `autocomplete="off"`: the takeoff screen 0 of 2, LF 4's Properties 0 of 3
+    (Name carrying `measurement-label`), the sub-items editor 0 of 4, Estimating 0 of 3.
+  - **Not provable here:** the Google Wallet "Save ID card" prompt itself needs the
+    founder's Chrome profile. The bench's Playwright Chromium has no Wallet. Click-only
+    check 1 below.
+- **Where:** app `components/ui/input.tsx`, `components/ui/prompt-dialog.tsx`, and the 18 files
+  of the pass (takeoff, estimate, assembly, ai), `MeasurementDialog.tsx`, `SubItemsDialog.tsx`.
