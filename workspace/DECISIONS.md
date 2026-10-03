@@ -8487,3 +8487,27 @@ D-235: the active tools only.
   - **A24:** the per-user limit keeps its member list, saved on blur; a cleared amount
     reverts.
   - **A25:** no dashboard meter; the Reports card links to AI Usage.
+
+## D-237 — F14 Block E: where the AI naming and scale fallbacks spend credits
+
+**Date:** 2026-10-02
+**Status:** pending founder review (my calls within D-236)
+**Area:** F14 AI tools
+
+- **Single Page Name, Sheet # and Scale** (A13):
+  - the text layer first;
+  - when it finds nothing, the model reads the box at once;
+  - the result's toast says what it cost.
+- **The ALL dialog and the Scale sweep** read the text layer only when they open.
+  - The fields or sheets left empty get a button: "Read N empty fields with AI" or "read the
+    boxed region with AI".
+  - The button shows the estimate and asks first above 15 credits.
+  - Legacy's dialog called the model on open, and again on every range change (its defect 8).
+  - The Scale sweep's AI button goes beyond legacy, whose sweep is text only.
+- **Auto-Name's crop:** the saved Sheet # and Page Name regions joined into one box when
+  either is set, else legacy's bottom-right 30 % × 22 % (A14).
+- **Auto-Name runs in the browser, one sheet at a time**, as legacy's.
+  - It stops at the first refusal and says how many were named.
+  - One unreadable sheet does not stop the run.
+- **After Add Pages**, a toast offers "Auto-name these sheets" for the new sheets only (A16).
+  Nothing runs without the click.
