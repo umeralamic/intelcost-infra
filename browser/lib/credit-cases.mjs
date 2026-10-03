@@ -10,6 +10,10 @@ const LITE = ["0.10", "0.40"]; // gemini-2.5-flash-lite, list 2026-10-02
 const FLASH = ["0.30", "2.50"]; // gemini-2.5-flash, list 2026-10-02
 const LEGACY = ["0.075", "0.30"]; // legacy's stale row for gemini-2.5-flash
 const R30 = ["0.01", "0.30"];
+const NANO = ["0.05", "0.40"]; // gpt-5-nano, list 2026-10-03 (D-252)
+const G31_LITE = ["0.25", "1.50"]; // gemini-3.1-flash-lite, list 2026-10-03
+const G35_LITE = ["0.30", "2.50"]; // gemini-3.5-flash-lite, list 2026-10-03
+const G35_FLASH = ["1.50", "9.00"]; // gemini-3.5-flash, list 2026-10-03
 
 export const CREDIT_CASES = [
   // --- Metering: (in × price_in + out × price_out) / 1e6 / 0.007, at least 0.01, 4 dp half up.
@@ -62,4 +66,28 @@ export const CREDIT_CASES = [
   { id: "credit-colleague-hold-kept", kind: "wallet", start: ["1", "0", "0"], ops: [["hold", "0.5"], ["hold", "0.4"], ["settle", "0.5", "0.8"], ["settle", "0.4", "0.4"]], expect: { included: "0.0000", purchased: "0.0000", held: "0.0000", charged: "1.0000", refused: null } },
   // The monthly refill: 2 seats × 100; the 3.2 left of the old allowance is gone, the 7 purchased stays.
   { id: "credit-refill", kind: "wallet", start: ["3.2", "7", "0"], ops: [["refill", 2]], expect: { included: "200.0000", purchased: "7.0000", held: "0.0000", charged: "0.0000", refused: null } },
+
+  // --- A primary and a fallback (D-252 5): "≈" is the primary's, the hold the dearer ceiling,
+  // a refusal free, the answer charged at the price of the model that gave it.
+  // The founder's defaults on the 1400 × 900 title block: gpt-5-nano, then gemini-3.1-flash-lite.
+  // nano's input: 44 × 29 = 1,276 patches × 2.46 = 3,138.96 → 3,139, + 200 = 3,339.
+  // ≈ nano (3,339, 150): (166.95 + 60) / 1e6 / 0.007 = 0.032421 → 0.0324.
+  // Ceilings: nano (4,174, 300): (208.7 + 120) / 1e6 / 0.007 = 0.046957 → 0.0470;
+  // 3.1 Flash-Lite (2,185, 300): (546.25 + 450) / 1e6 / 0.007 = 0.142321 → 0.1423. Held: the higher, 0.1423.
+  { id: "credit-chain-defaults", kind: "chain", tool: "title_block", promptChars: 600, width: 1400, height: 900, typicalOut: null, chain: [["openai", NANO], ["gemini", G31_LITE]], regime: R30, expect: { tokensIn: 3339, estimate: "0.0324", ceiling: "0.1423" } },
+  // The dearer model first: ≈ 3.5 Flash (1,748, 150): (2,622 + 1,350) / 1e6 / 0.007 = 0.567429 → 0.5674;
+  // its ceiling (2,185, 300): (3,277.5 + 2,700) / 1e6 / 0.007 = 0.853929 → 0.8539, above nano's 0.0470.
+  { id: "credit-chain-dear-first", kind: "chain", tool: "title_block", promptChars: 600, width: 1400, height: 900, typicalOut: null, chain: [["gemini", G35_FLASH], ["openai", NANO]], regime: R30, expect: { tokensIn: 1748, estimate: "0.5674", ceiling: "0.8539" } },
+  // Gemini refuses (no credit), nano answers Auto-Name's median (2,483 in, 124 out): the refusal 0,
+  // the answer at nano's price: (124.15 + 49.6) / 1e6 / 0.007 = 0.024821 → 0.0248.
+  { id: "credit-fallback-answers", kind: "attempts", attempts: [null, [2483, 124]], prices: [G31_LITE, NANO], regime: R30, expect: { charges: ["0.0000", "0.0248"], answered: 1 } },
+  // The primary answers: the fallback is never tried. 3.1 Flash-Lite: (620.75 + 186) / 1e6 / 0.007 = 0.11525 → 0.1153 (half up).
+  { id: "credit-primary-answers", kind: "attempts", attempts: [[2483, 124], [2483, 124]], prices: [G31_LITE, NANO], regime: R30, expect: { charges: ["0.1153"], answered: 0 } },
+  // A schedule falls back from nano to 3.5 Flash-Lite and is charged at 3.5 Flash-Lite's price, not nano's:
+  // (840.9 + 10,602.5) / 1e6 / 0.007 = 1.634771 → 1.6348 (nano's would be 0.2624).
+  { id: "credit-fallback-own-price", kind: "attempts", attempts: [null, [2803, 4241]], prices: [NANO, G35_LITE], regime: R30, expect: { charges: ["0.0000", "1.6348"], answered: 1 } },
+  // Both refuse: nothing charged, no answer.
+  { id: "credit-both-refuse", kind: "attempts", attempts: [null, null], prices: [NANO, G31_LITE], regime: R30, expect: { charges: ["0.0000", "0.0000"], answered: null } },
+  // The wallet: hold the chain's 0.1423, the fallback's 0.0248 charged, the rest released.
+  { id: "credit-fallback-wallet", kind: "wallet", start: ["10", "0", "0"], ops: [["hold", "0.1423"], ["settle", "0.1423", "0.0248"]], expect: { included: "9.9752", purchased: "0.0000", held: "0.0000", charged: "0.0248", refused: null } },
 ];

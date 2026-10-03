@@ -9244,3 +9244,123 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     2^-2 0.25; cancelled.
 - **Where:** app `lib/takeoff/subItems/{formula,ast}.ts`, `lib/estimate/{exportFormulas,quantityExplain}.ts`;
   api `takeoff/formula.py`; infra `browser/lib/{subitem,excel}-cases.mjs`.
+
+## D-252 — Both AI providers at once: a primary and a fallback model per tool, chosen on AI economics (amends D-236 1)
+
+**Date:** 2026-10-03
+**Status:** decided (the founder, in session); the points marked *mine* are my calls within it
+**Area:** F14 AI tools and credits; Backend, Frontend, bench
+
+**Why:** Google no longer serves `gemini-2.5-flash-lite` or `gemini-2.5-flash` to new keys
+(404, "no longer available to new users"), and a provider can refuse for want of credit (402).
+One provider setting on the api made either a full outage.
+
+1. **Keys only, in `.env.ai`:** `GEMINI_API_KEY`, `OPENAI_API_KEY`. A provider is available when
+   its key is present. *Mine:* the bench's `fake` is available wherever the api is not in
+   production, so a bench without keys still drives every credit path.
+2. **The choice moves to Developer › AI economics** (platform admins). For each tool, a
+   primary and a fallback model, from the priced, unretired models of the available
+   providers. *Mine:* four tools, as the founder named them:
+   - **Sheet naming and Auto-Name:** Page Name, Sheet # and the title-block read;
+   - **Scale read**;
+   - **Ask AI**;
+   - **Extract Schedule**.
+
+   Choices are appended with who set them, never edited; the newest per tool is in force
+   (the same rule as prices and the margin). The fallback may be "none".
+3. **Prices at today's list** (checked 2026-10-03 on the providers' pages), per 1M tokens in /
+   out:
+
+   | Model | In | Out | Charged in / out at 30 % | Tokens per credit in / out | Auto-Name median | Schedule median |
+   |---|---:|---:|---:|---:|---:|---:|
+   | `gpt-5-nano` | $0.05 | $0.40 | $0.0714 / $0.5714 | 140,000 / 17,500 | 0.0248 | 0.2624 |
+   | `gemini-3.1-flash-lite` | $0.25 | $1.50 | $0.3571 / $2.1429 | 28,000 / 4,666 | 0.1153 | 1.0089 |
+   | `gemini-3.5-flash-lite` | $0.30 | $2.50 | $0.4286 / $3.5714 | 23,333 / 2,800 | 0.1507 | 1.6348 |
+   | `gemini-3.5-flash` | $1.50 | $9.00 | $2.1429 / $12.8571 | 4,666 / 777 | 0.6915 | 6.0534 |
+
+   - The medians are legacy's (Auto-Name 2,483 in / 124 out; Schedule 2,803 in / 4,241 out),
+     in credits. `gpt-5-nano`'s reasoning tokens bill as output, so its real figure runs
+     higher; the model test reports it.
+   - **The credit itself does not move:** $1 = 100 credits at a 30 % margin is $0.0070 to
+     serve, whatever the model. What the new prices change is the credits a call costs and
+     the tokens a credit buys, recalculated above and on the screen.
+   - **The 2.5 rows are retired, not deleted** (`ai_price.retired_at`): past calls keep the
+     price they were charged at; a retired model cannot be chosen, and a saved choice naming
+     one skips it.
+4. **Defaults until the model test decides:** `gpt-5-nano` primary,
+   `gemini-3.1-flash-lite` fallback, for every tool (seeded by the migration).
+5. **Fallback:**
+   - If the primary refuses (no credit, a retired model, an outage, a timeout, any
+     non-200), the call is retried once on the fallback. *Mine:* a saved model whose
+     provider has no key is skipped without a call, as a refusal would be.
+   - **Only the call that answered is charged,** at its own model's price.
+   - The refused attempt is logged at 0 credits (`failed`, with the error and the model it fell
+     back to); the answering call is logged under its own provider and model, with the model
+     it replaced.
+   - *Mine:*
+     - **An unusable answer is not a refusal.** The model answered, so it is free (D-236 11)
+       and is not retried.
+     - **Ask AI falls back only before its first word streams.**
+     - **The hold is the higher ceiling of the two models,** so a fallback never costs more
+       than was held; "≈ x" is the primary's.
+     - **The cache is keyed on the primary,** so a read served before is free whichever
+       model made it.
+6. **`AI_PROVIDER` and `AI_MODEL` are no longer needed.** They are read only as the default
+   for a tool with no saved choice, or whose saved models are all unavailable.
+   - On the bench both default to `fake`, so a fresh bench with no keys and no choice
+     still works.
+   - `AI_MODEL_ASK` is retired: Ask AI has its own choice now.
+7. *Mine:* **Gemini 3 reads `thinkingLevel: "minimal"`** in place of 2.5's
+   `thinkingBudget: 0`, which Gemini 3 does not take. Proved: both Gemini 3 models
+   answered 23 calls each with it, 0 thinking tokens.
+8. **Reasoning tokens are logged** on every call (`detail.reasoning_tokens`). They are
+   already inside the output the provider bills.
+
+**The model test (2026-10-03, Hidden Valley Spec, 20 title blocks + 3 schedules each)**
+
+| Model | Numbers right | Names as stored | Naming per call | Naming time | Schedules right | All 23 calls |
+|---|---:|---:|---:|---:|---|---:|
+| `gpt-5-nano` | 20 / 20 | 11 / 20 | $0.000065, 0.0100 cr (minimum) | 1.7 s | 1 of 3 (finish 11 of 22 rows, door 9 of 23) | $0.0032 |
+| `gemini-3.1-flash-lite` | 20 / 20 | 12 / 20 | $0.000360, 0.0514 cr | 2.3 s | 1½ of 3 (finish 22, door 14 of 23, M102 nothing) | $0.0188 |
+| `gemini-3.5-flash-lite` | 20 / 20 | 12 / 20 | $0.000452, 0.0646 cr | 1.6 s | 3 of 3 (finish 22, door 23, M102 2) | $0.0284 |
+
+- Reasoning tokens were 0 on every call (nano at `minimal` effort, Gemini at `minimal` level).
+- The 8 naming "misses" shared by all three are the stored names being the text layer's
+  truncations ("Existing", "Site Layout", "Erosion &"); each model read the full title. On
+  S100, nano read "General Structural Notes" against the stored "General Structural Notes
+  Detail Sections". Schedule truth was checked by eye on the crops.
+- **My pick, for the founder:** naming and scale `gpt-5-nano`, fallback
+  `gemini-3.1-flash-lite`; Extract Schedule `gemini-3.5-flash-lite`, fallback `gpt-5-nano`
+  (another provider, so one provider's outage or empty account never stops it); Ask AI
+  keeps the defaults, untested. Not applied: the defaults stay until the founder picks.
+
+**Bug fixed on the way (D-237's Add Pages offer, A16):** "Auto-name these sheets" read the
+page's sheets and files as they were when the toast was made, before the upload was fetched,
+so it skipped the new sheet without a call and said "Couldn't read the title block". The AI
+sheet tools now read both from the query cache, refreshed before the run
+(`ProjectTakeoff.tsx`). The fake never reached it.
+
+**Proved:**
+- gates; the quantity table with 7 new credit rows (the chain's "≈" and higher ceiling,
+  a refusal free, the answer at its own model's price, both refusing, the wallet after a
+  fallback);
+- a smoke as the throwaway, platform admin for the run:
+  - AI economics showed both keys and every tool on the founder's defaults with its
+    recalculated figures;
+  - a price recorded for Google's retired `gemini-2.5-flash-lite`, then chosen as Scale's
+    primary with `gpt-5-nano` behind it;
+  - naming set to `gemini-3.5-flash`: Auto-Name Sheets on the 113-sheet project asked "about
+    82.59 credits (at most 119.60)"; cancelled, nothing spent;
+  - a scanned copy of A101 (no text layer) through Add Pages: the offer, then "Named 1 of 1
+    sheet · Used 0.01 credits" (A101, Over-All Floor Plan);
+  - the region's Scale on it: Google refused (404), logged free with `fell_back_to`;
+    `gpt-5-nano` read `1/8" = 1'-0"` with the AI chip, charged 0.01 at its own price,
+    logged with `fallback_from`; cancelled at Apply.
+
+  Every row the smoke made was removed (sheets, files, calls, ledger, holds, cache, wallet,
+  choices, the price, its work sessions) and the admin flag cleared.
+- **Where:** api `features/ai/{provider,service,meter,models,routes,schedule,trial}.py`,
+  `platform/ai_economics.py`, `config.py`, migration `e5b8d2f4a7c1`; app
+  `pages/PlatformAiEconomics.tsx`, `pages/ProjectTakeoff.tsx`; infra
+  `browser/lib/credit-cases.mjs`, `drives/quantity-table.py`.
+- **`.env.ai` keeps only:** `GEMINI_API_KEY=…` and `OPENAI_API_KEY=…`.

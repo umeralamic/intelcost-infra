@@ -214,8 +214,10 @@ schedule table still has to be typed by hand.
 ## Design (D-236)
 
 **The api owns it (D-03).** An `ai` feature:
-- **One model client behind a provider setting** (`AI_PROVIDER`, `AI_MODEL`, `AI_MODEL_ASK`):
-  - `gemini` and `openai`, keys in the api only (hard rule 5);
+- **One model client over both providers** (D-252; was one `AI_PROVIDER` setting):
+  - `gemini` and `openai`, each available when its key is in the api (hard rule 5);
+  - each tool's primary and fallback model chosen on AI economics; one retry on a refusal,
+    only the answer charged, at its own model's price;
   - `fake` on the bench, deterministic, with real token counts for the crop it is sent.
 - **The meter** (pure, `app/features/ai/meter.py`):
   - `credits = (in × price_in + out × price_out) ÷ (retail × (1 − margin))`;
@@ -287,5 +289,5 @@ schedule table still has to be typed by hand.
 - [x] Draft written 2026-10-01; research 2026-10-02.
 - [x] The founder's answers (D-236); spec adopted.
 - [x] A (2026-10-02) · [x] B · [x] C · [x] D · [x] E · [x] F · [x] G
-- [ ] The model test: `app/features/ai/trial.py` is written and dry-run on the fake (crops render from the real PDFs, calls are priced); it needs `AI_PROVIDER` and `GEMINI_API_KEY` / `OPENAI_API_KEY` on the api to run for real.
+- [x] The model test (2026-10-03): gpt-5-nano, gemini-3.1-flash-lite, gemini-3.5-flash-lite on 20 sheets and 3 schedules; results and my pick in D-252, the pick awaits the founder.
 - [x] PARITY's F14 lines ticked (§2, §10, §18, §19, §22); the two scale-evidence lines in §18 belong to the scale work, not F14.

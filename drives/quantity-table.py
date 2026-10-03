@@ -92,6 +92,22 @@ def credit(case: dict) -> dict:
         tokens_in = meter.input_tokens(case["provider"], case["promptChars"], case["width"], case["height"])
         est = meter.estimate(case["tool"], tokens_in, case["typicalOut"], price(case["price"]), regime)
         return {"tokensIn": tokens_in, "estimate": _four(est.estimate), "ceiling": _four(est.ceiling)}
+    if case["kind"] == "chain":
+        regime = meter.Regime(Decimal(case["regime"][0]), Decimal(case["regime"][1]))
+        chain = [(name, price(p)) for name, p in case["chain"]]
+        tokens_in, est = meter.chain_estimate(case["tool"], case["promptChars"], case["width"], case["height"], case["typicalOut"], chain, regime)
+        return {"tokensIn": tokens_in, "estimate": _four(est.estimate), "ceiling": _four(est.ceiling)}
+    if case["kind"] == "attempts":
+        # The service's loop (D-252 5): each model in order until one answers.
+        regime = meter.Regime(Decimal(case["regime"][0]), Decimal(case["regime"][1]))
+        charges: list[str] = []
+        answered = None
+        for i, (tokens, p) in enumerate(zip(case["attempts"], case["prices"], strict=True)):
+            charges.append(_four(meter.attempt_charge(tuple(tokens) if tokens else None, price(p), regime)))
+            if tokens is not None:
+                answered = i
+                break
+        return {"charges": charges, "answered": answered}
     inc, pur, held = (Decimal(v) for v in case["start"])
     wallet = meter.Wallet(inc, pur, held)
     charged = Decimal(0)
