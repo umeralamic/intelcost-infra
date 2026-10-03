@@ -8,3 +8,5 @@ workspace/.claude/scheduled_tasks.lock
 
 # Real credentials for the legacy site. Never commit.
 .env.legacy
+# The AI provider's real keys, loaded by the api (F14). Never commit.
+.env.ai

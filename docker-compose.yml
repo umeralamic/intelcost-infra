@@ -68,6 +68,12 @@ services:
       #   docker compose exec api sh -lc "ruff check app alembic scripts && mypy app"
       # Production images build the last stage, `production`, which has neither.
       target: dev
+    # The AI provider and its real keys (F14), git-ignored like .env.legacy. Absent, the
+    # api stays on the fake provider. Read when the container is created, so a change
+    # needs `docker compose up -d api`; a plain restart keeps the old values.
+    env_file:
+      - path: .env.ai
+        required: false
     environment:
       ENVIRONMENT: local
       DEBUG: "true"
