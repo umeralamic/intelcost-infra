@@ -8711,3 +8711,51 @@ workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
 - **Where:**
   - api: `markup/{models,schemas,snippets}.py`, `main.py`, migration `c3e6a9d14f27`;
   - app: `markup/SnippetDialogs.tsx`, `markup/snippets.ts`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-242 — Below a tablet's width the side panels open over the canvas (beyond legacy)
+
+**Date:** 2026-10-03
+**Status:** decided overnight, pending founder review (the founder's request; beyond legacy)
+**Area:** F7 the takeoff screen's layout; Frontend
+
+- **Why:** at 375 px legacy keeps both side panels and leaves the canvas about 60 px wide, and
+  so did we (the last run's finding). Drawing and Calibrate were not usable on a phone.
+- **The rule:** below 1024 px (`max-width: 1023.98px`, tablets and phones), the Sheets column
+  and the Takeoff panel leave the row and the canvas takes the full width.
+  - Each panel opens over the canvas from its edge tab, 320 px wide or the window less 40 px.
+  - The tab rides the open panel's edge and closes it.
+  - One panel at a time: opening one closes the other.
+  - Opening a sheet from the Sheets panel puts it away.
+  - Nothing is stored. Settings › Panels and the stored widths apply again at 1024 and up,
+    and the canvas never refits when a panel opens.
+- **What else had to give at that width:**
+  - The toolbar still folds into More from the right, as legacy's (D-228). It also scrolls
+    sideways, because at 375 px the fixed tools alone (Pan to Scale) are wider than the window
+    and More fell out of reach. At 375 More sits just past Dimension; at 768 everything fits.
+  - The header scrolls sideways too, rather than clip its tabs and buttons.
+  - The status line takes two rows: the item and the scale chip (the way to Calibrate) on
+    top, the five toggles under them, scrolling sideways. At 375 px the scale chip used to
+    sit on the toggles.
+- **Proved:**
+  - gates;
+  - the quantity table;
+  - smokes on Hidden Valley Spec.
+- **At 375 × 740:**
+  - the canvas 327 px wide;
+  - the left panel opened at 320 px with its tab beside it, and A101 picked from it closed it;
+  - the Takeoff panel opened from the right;
+  - Linear drew a 114.50 LF run with two clicks and Enter; Ctrl+Z took it back. After the
+    folding was restored, More, reached by scrolling the bar, listed Linear to Split view,
+    and its Linear opened "Name this LF measurement";
+  - the scale chip, then Calibrate Scale and two clicks, gave "Set sheet scale", inside the
+    window; it was cancelled.
+- **At 768 × 1024:**
+  - the canvas 720 px;
+  - each panel opened, the other closing;
+  - a run drawn and undone;
+  - Calibrate's dialog opened and was cancelled.
+- **At 1440 × 900** the panels were back in the row and the header was a grid again.
+- **Where:** app `features/takeoff/hooks/useCompactLayout.ts` (new), `pages/ProjectTakeoff.tsx`,
+  `components/Toolbar.tsx` (`scroll`), `components/TakeoffHeader.tsx`.
