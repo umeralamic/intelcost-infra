@@ -8639,3 +8639,36 @@ Legacy's source (`SheetTree.tsx`, the `sheetOverlays` block and its two pickers)
   - The C-200 link row was untouched.
 - **Where:** app `features/takeoff/sheets/OverlaySubRows.tsx` (new), `sheets/SheetsPanel.tsx`,
   `overlay/OverlayBar.tsx`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-240 — Name from page region's Draw and Redraw, as legacy's (closes D-227's "Left")
+
+**Date:** 2026-10-03
+**Status:** decided overnight, pending founder review
+**Area:** F7 sheet naming; Frontend
+
+Legacy's `NameFromRegionDialog.tsx` (`RegionRow`) and `ProjectTakeoff.tsx`
+(`startRegionPick`, `commitRegionPick`, the Snapshot capture hand-off) read on `UmeralamDEV`.
+- **The Regions box, legacy's rows:**
+  - "Sheet number" and "Sheet name (optional)";
+  - under each, what the open sheet reads in the region, or "— no text in region —", or
+    "Not set";
+  - beside each, an outline button with the dashed-box glyph: "Draw", or "Redraw" once set.
+  - Our "Not set — box it, then All beside Sheet #" lines are gone.
+- **Draw:** the dialog closes, the Snapshot tool is armed and a toast says "Drag a box over
+  the sheet number" (or "the sheet name"). The box dragged becomes that region, not a snippet:
+  the tool goes back to Select, the open sheet's text in it is read for the line, and the
+  dialog opens again with its range kept.
+- **The box menu's All** still sets a region. It now fills the same line under it.
+- **"Current selection (N)"** shows with no selection too, greyed and disabled, as legacy's.
+  It used to be hidden.
+- **Beyond legacy, a guard:** a Draw left for another tool is dropped, so a later snapshot stays
+  a snapshot. Legacy keeps the pick armed until the next box.
+- **Proved:**
+  - gates;
+  - the quantity table;
+  - a smoke on Hidden Valley Spec E102: Name from page region from the sheet's menu read "Not
+    set" and "Draw" twice; Draw closed it with the toast; a box over the title block brought it
+    back with "E102 …" and "Redraw"; Cancel. No snippet was saved and no sheet was written.
+- **Where:** app `features/takeoff/sheets/NameFromRegionDialog.tsx`, `pages/ProjectTakeoff.tsx`.
