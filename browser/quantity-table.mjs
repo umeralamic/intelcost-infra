@@ -24,7 +24,7 @@ if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
   await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
   await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
-  await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse)));
+  await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
@@ -130,7 +130,13 @@ try {
     const f = await import("/src/lib/takeoff/subItems/formula.ts");
     const bd = await import("/src/lib/takeoff/subItems/beforeDrawing.ts");
     const pd = await import("/src/lib/takeoff/dimensions/parseDimension.ts");
+    const dv = await import("/src/lib/takeoff/subItems/derived.ts");
     return cases.map((c) => {
+      if (c.offers) {
+        const dims = c.offers.dims.map(([local_key, name, kind]) => ({ local_key, name, kind }));
+        const unit = (o) => (o.dimension === "volume" ? "CY" : o.dimension === "area" ? "SF" : "LF");
+        return { labels: dv.derivedOffers(c.offers.bases, dims, { countShape: c.offers.countShape ?? null }).map((o) => `${o.label} ${dv.offerToken(o, unit(o))}`) };
+      }
       if (c.parse) {
         const r = pd.parseDimension(c.parse, "FT");
         return { feet: "feet" in r ? r.feet : r.error };
@@ -531,6 +537,10 @@ for (const [i, c] of EARTHWORK_CASES.entries()) {
 // answer, and what the draft editor shows before drawing.
 for (const [i, c] of SUBITEM_CASES.entries()) {
   const web = subs[i];
+  if (c.offers) {
+    if (JSON.stringify(web.labels) !== JSON.stringify(c.expect)) wrong.push(`${c.id}: ${JSON.stringify(web.labels)}`);
+    continue;
+  }
   if (c.parse) {
     if (!(typeof web.feet === "number" && close(web.feet, c.expect))) wrong.push(`${c.id}: ${web.feet} ft, expected ${c.expect}`);
     continue;

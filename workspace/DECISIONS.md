@@ -8883,3 +8883,68 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
   `takeoff/items/MeasurementDialog.tsx`, `pages/ProjectTakeoff.tsx`; infra
   `browser/lib/subitem-cases.mjs` (new), `browser/quantity-table.mjs`,
   `drives/quantity-table.py` (`subitems`), `quantity-table.sh`.
+
+---
+
+## D-245 — Dia on Linear and Segment items; the round section in Derived; every derived label says its calculation
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 3, beyond legacy)
+**Area:** F6-S3 named dimensions, F6-S5 Derived; Frontend, Backend (the formula engine's twin)
+
+- **3a, "+ Dia" on runs:** Linear and Segment items (both `lf`) offer + Width, + Depth,
+  + Height, + Thickness and now **+ Dia** (kind `diameter`). A second is "Dia (2)", as the
+  others. Count circles keep their Dia; area items have none. The name is "Dia" everywhere.
+- **3b, values as typed:** every named dimension already read feet and inches
+  (`parseDimension`: 14.5" = 1.2083 ft, 1'-2.5", 1.21). It is stored in feet with the text
+  as typed, and shown back as typed. Two gaps are closed:
+  - a value stored with no text now shows as feet to 2 decimals;
+  - unreadable text is outlined red with "Enter a length like 14.5", 1'-2.5" or 1.21."
+    (it was silently dropped).
+  - Insert's Dimensions list shows at most 4 decimals ("1.2083 FT", not
+    "1.2083333333333333 FT").
+- **3c:** a circle count's True size still needs a Dia; unchanged.
+- **3d, the round section, two new derived forms, read alike by both engines** (browser
+  `derived.ts`, api `formula.py`, and both "used by" scans):
+  - `{qty:SECTION.CIRC_AREA.dN@…}`: π·Dia²/4, one of it, on any item with a Dia. It needs
+    no drawing, so it has its figure in the New Measurement dialog. Label "Area N
+    (π·Dia²/4)".
+  - `{qty:LINEAR.CIRC_AREA.dN@…}`: the run's length × π·Dia²/4. Label "Volume N (Linear ×
+    π·Dia²/4)".
+  - One set per Dia ("π·Dia (2)²/4"). They insert tokens with legacy's unit list, like
+    every other derived entry, so they combine with the rest of a formula.
+- **3e, every derived label checked against its token.** Changed:
+  - count circle: "Area (Count × Footprint [Dia])" → "Area (Count × π·Dia²/4)";
+  - "Volume (Count × Dia × Depth)" → "Volume (Count × π·Dia²/4 × Depth)";
+  - the round side "Area (Count × Dia × Depth)", which is π·Dia·Depth → "Area (Count ×
+    π·Dia × Depth)";
+  - count square: the box side "Area (Count × Length × Width × Height)", which is
+    2·(Length + Width)·Height → "Area (Count × 2·(Length + Width) × Height)", or "4·Width"
+    for one width.
+  - Unchanged, already true: Linear × Width / Depth / Width × Depth; Area × Thickness;
+    Perimeter × Height / × Width; Count × a dimension; Count × Length × Width; Count ×
+    Length × Width × Height.
+  - "Pipe" is never named; "Footprint" is gone.
+  - Stored formulas are unchanged; only the labels and the in-formula display numbering can
+    move (a run with a Dia now has "Volume 1, 2…").
+- **The founder's trench example:** our formula language, like legacy's, has no `^`. Typed
+  as written, `… 3.1416 * ({Dia} / 2)^2 …` is refused ("Unexpected character"). The same
+  calculation is written with the new entry:
+  `PARENT * ({Width} * {Depth (Pipe zone)} - {Area 1 @ SF}) / 27`. Adding `^` (in both
+  engines) is a question for the founder, not built.
+- **Proved:**
+  - gates;
+  - the quantity table, 12 new rows: 14.5" = 1.2083 ft, 1'-2.5" the same, 1.21 stays;
+    π·Dia²/4 at 14.5" = 1.1467 SF before and after drawing; Linear × π·Dia²/4 over 117.69
+    LF = 4.9985 CY for a Linear run and for three Segment runs; the trench zone 117.69 ×
+    (3 × 2.5 − 1.1467) / 27 = 27.6931 CY; 3 footings Dia 4 Depth 5 = 6.9813 CY (6.98); the
+    labels of a run, a circle count, a square count and an area, each with its token. The
+    formula rows agree to 1e-9 between the engines.
+  - a smoke on Hidden Valley Spec A101. Linear offered + Dia; two read "Dia" and
+    "Dia (2)"; "abc" showed the message, 14.5" and 1'-2.5" cleared it. Insert › Derived
+    listed Volume 1 / 2 (Linear × π·Dia²/4 and Dia (2)) and Area 1 / 2 (π·Dia²/4). Area 1
+    read 1.15 before drawing; Volume 1 @ CY read "—" with "Calculated once drawn". Drawn
+    73.38 LF, the api stored 1.1467 SF and 3.1164 CY, the values as typed. Removed.
+- **Where:** app `lib/takeoff/subItems/derived.ts`, `lib/takeoff/dimensions/{dimensionPresets,itemDimensions}.ts`,
+  `takeoff/items/{MeasurementDialog,SubItemsDialog}.tsx`; api `takeoff/{formula,dimensions}.py`;
+  infra `browser/lib/subitem-cases.mjs`, `browser/quantity-table.mjs`.
