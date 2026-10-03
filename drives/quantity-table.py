@@ -138,7 +138,7 @@ def _plain(value: object) -> object:
     return float(value) if isinstance(value, Decimal) else value
 
 
-def subitem(case: dict) -> float | None:
+def subitem(case: dict) -> float | dict:
     """A sub-item's formula against its drawn parent, as `recompute_children` reads it
     (D-244, D-245)."""
     kind = TakeoffItemType(case["type"])
@@ -155,7 +155,7 @@ def subitem(case: dict) -> float | None:
         parent = prims["area_sf"] if kind is TakeoffItemType.SF else prims["linear_ft"]
         env = FormulaEnv(parent=parent, dims=dims, **prims)  # type: ignore[arg-type]
     result = evaluate(case["formula"], env)
-    return result.value if result.ok else None
+    return result.value if result.ok and result.value is not None else {"error": result.error}
 
 
 def main() -> None:

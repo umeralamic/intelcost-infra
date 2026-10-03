@@ -153,6 +153,7 @@ try {
       const parent = c.type === "count" ? c.count : c.type === "sf" ? prims.areaSF : prims.linearFT;
       const r = f.evaluateFormula(c.formula, envs.buildFormulaEnv({ parentType: c.type, parentQuantity: parent, shapes, scaleOf, dims, siblings: new Map() }));
       out.value = r.ok ? r.value : null;
+      if (!r.ok) out.error = r.error;
       return out;
     });
   }, SUBITEM_CASES);
@@ -548,7 +549,10 @@ for (const [i, c] of SUBITEM_CASES.entries()) {
   const api = pythonSub.get(c.id);
   if (c.before && web.before !== c.before) wrong.push(`${c.id}: before drawing ${web.before}, expected ${c.before}`);
   if (c.expect === undefined) {
-    if (web.value !== null || api !== null) wrong.push(`${c.id}: read ${web.value} / ${api}, expected a refusal`);
+    // A refusal: both engines refuse, in the same words, and in the row's when it names them.
+    if (web.value !== null || typeof api !== "object" || api === null) wrong.push(`${c.id}: read ${web.value} / ${JSON.stringify(api)}, expected a refusal`);
+    else if (api.error !== web.error) disagree.push(`${c.id}: api "${api.error}", browser "${web.error}"`);
+    else if (c.error && web.error !== c.error) wrong.push(`${c.id}: "${web.error}", expected "${c.error}"`);
     continue;
   }
   if (typeof api !== "number" || typeof web.value !== "number" || !close(api, web.value)) disagree.push(`${c.id}: api ${api}, browser ${web.value}`);

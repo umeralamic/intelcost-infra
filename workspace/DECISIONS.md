@@ -9043,3 +9043,50 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 - **Where:** app `takeoff/items/MeasurementDialog.tsx` (`onContextChange`, `DialogContext`),
   `pages/ProjectTakeoff.tsx` (`reportDialogContext`, `liveContextFor`, `asOnScreen`, the two
   editor sites, the Cancel guard).
+
+---
+
+## D-248 — The power operator ^ and exact π in formulas
+
+**Date:** 2026-10-03
+**Status:** decided (the founder's item 2; beyond legacy, whose formulas have no ^)
+**Area:** F6-S5 formulas (both engines), F9 export; Frontend, Backend
+
+- **^ in both engines** (browser `lib/takeoff/subItems/formula.ts`, api
+  `takeoff/formula.py`). The grammar is `factor := ('+'|'-') factor | power` and
+  `power := atom ('^' factor)?`, so:
+  - ^ binds tighter than * and / (2 × 3^2 = 18);
+  - it is right-associative (2^3^2 = 2^9 = 512);
+  - a leading minus applies after it (-2^2 = -4);
+  - a negative exponent reads (2^-2 = 0.25).
+- **Not quite Excel, said plainly:** Excel computes `=-2^2` as 4 and `=2^3^2` as 64 (its
+  minus binds first, its ^ chains left to right). The founder's figures, -4 and 512, are
+  the app's. So the Excel export writes a power fully bracketed, `-(2^2)` and `2^(3^2)`,
+  and the "formula only when Excel gives the app's figure" rule stays the guard
+  (D-249).
+- **Refusals, the same words in both engines:**
+  - "A negative number ^ a fraction has no real value": JavaScript would give NaN, Python a
+    complex number.
+  - "Division by zero (0 ^ a negative power)".
+  - `Use ^ for powers ("**" is not a formula operator)`.
+  - `Unexpected character "²" — write powers with ^, e.g. {Dia}^2`.
+  - "Expected a number after ^".
+- **Exact π:** `PI` and `pi()` read as JavaScript's `Math.PI` / Python's `math.pi`. Every
+  circle the app works out (the round-section and count forms, D-245) already used exact
+  π; nothing in the code or the quantity table used 3.1416. A formula typed with 3.1416
+  is read as typed.
+- **Proved:**
+  - gates;
+  - the quantity table, 14 new rows through both engines:
+    - PI × (Dia / 2)^2 at 14.5" = 1.1467;
+    - 3.1416 × (Dia / 2)^2 = 1.14675;
+    - the trench typed out over 117.69 LF, 3 ft, 2.5 ft, 14.5" = 27.6931 CY;
+    - 2^3^2 = 512, -2^2 = -4, 2 × 3^2 = 18, 2^-2 = 0.25, (-2)^3 = -8, pi() × 2^2 / 4 = π;
+    - five refusals, each compared word for word between the engines.
+  - Refusal rows now compare the two engines' messages, not only that both refuse.
+  - a smoke in the sub-items editor over a New Measurement (Dia 14.5", Width 3):
+    `3.1416 * ({Dia} / 2)^2` and `PI * ({Dia} / 2)^2` read 1.15; the trench read "—" with
+    "Calculated once drawn"; 2^3^2 read 512.00, -2^2 -4.00; `2**3`, `{Dia}²` and `PARENT^`
+    showed the messages above. Cancelled.
+- **Where:** app `lib/takeoff/subItems/formula.ts`; api `takeoff/formula.py`; infra
+  `browser/lib/subitem-cases.mjs`, `browser/quantity-table.mjs`, `drives/quantity-table.py`.
