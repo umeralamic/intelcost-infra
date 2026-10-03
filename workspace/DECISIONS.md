@@ -8511,3 +8511,91 @@ D-235: the active tools only.
   - One unreadable sheet does not stop the run.
 - **After Add Pages**, a toast offers "Auto-name these sheets" for the new sheets only (A16).
   Nothing runs without the click.
+
+---
+
+## D-238 — The sub-items editor, as legacy's `SubItemDialog` (closes D-208's difference)
+
+**Date:** 2026-10-03
+**Status:** decided overnight, pending founder review
+**Area:** F6-S5 sub-items; Frontend, Backend
+
+Legacy's source (`SubItemDialog.tsx` on `UmeralamDEV`) read, and the editor driven in live
+legacy at 1440 × 900 on "Bench comparison" (opened and cancelled).
+- **The window:** a floating window, not a modal. No backdrop; the drawing stays live. It is
+  laid out 1152 px wide and drawn at 0.72, legacy's `SCALE`, so it reads 829 px. It opens at
+  the same spot as legacy's (305, 108 at 1440 × 900) and is dragged by its header (grip, title,
+  Formulas | Costs, ×). Escape closes this window only, after any open popover.
+- **Its popovers are drawn full size outside it:** Insert (380 px), Classification (520 px),
+  Seed from…, Add Variables and Edit variable (320 px). Below their trigger, or above when
+  there is more room.
+- **Formulas view:** the Parent box with "PARENT = n unit". Then Description | Formula | Qty |
+  Unit | Classification / Scope, one row per sub-item:
+  - "e.g. Waste 5%";
+  - "fx", a growing formula box ("PARENT * 1.05"; Enter commits) and Insert ▾;
+  - the live figure, or a red "—";
+  - the unit list with "—" first;
+  - "Select classification…";
+  - the trash.
+  - Under a row, the engine's message in red, legacy's ("Formula is empty", "Unexpected end
+    of formula", `Unknown identifier "FOO"`).
+  - A list variable's chips change one reference's value. A removed saved row reads "Will
+    delete on save" with Undo.
+- **Insert, every legacy entry:**
+  - Values: PARENT, PERIMETER, SEGMENT_COUNT, POINT_COUNT, with their figures;
+  - Derived, each opening its units;
+  - Dimensions;
+  - Variables (through the tag filter; a list variable asks which value);
+  - Sub-items: the other named rows, live;
+  - Rough measurements.
+  - The token goes in at the caret. A new row's unit follows a formula with one knowable unit
+    (legacy's `qtyUnitHint`).
+  - Our old menu's AREA_SF and LINEAR_FT entries are gone (legacy has none).
+  - Our "Manage variables…" moved to the editor's own Add Variables and panel.
+- **Under the rows:** Add another sub-item and Seed from… Seed from has Measurement and
+  Assembly tabs, "Search…", "Show all types (currently Linear only)", "n sub-items" and
+  legacy's empty lines. Seeding appends, an assembly's rows with their rates.
+- **Variables, legacy's panel:**
+  - "+ Add Variables" opens the variable form: Single quantity | List, unit, default or options,
+    tags, the units note.
+  - The panel: the tag chips filter (this person's own, stored per workspace in
+    `takeoff_prefs.variable_tags`) and "clear".
+  - Each variable has its project value (saved on leaving the field) or its list, a unit list
+    and ✎.
+  - Archive asks legacy's question. Rename and archive need `canManageWorkspace`, legacy's
+    owner or admin.
+- **Costs view:** Description, Qty, Unit, Unit Labor Hrs, Per Hour Wage, Unit Material, Unit
+  Equip, Total Equip, Notes.
+  - Equipment is one or the other.
+  - Kinds that cost components cover read "From components".
+  - Legacy's note at the foot.
+  - The rates are written to Estimating's rows after Save, so new rows have uuids. A template's
+    rates go to the assembly. The per-row $ button is gone.
+- **Save rules, legacy's:**
+  - "Create", "Create N" or "Save changes".
+  - Save changes stays grey until something changes.
+  - The grey button says why: "Name this sub-item to continue", "Fix the formula to
+    continue", "Pick a classification to continue". A classification is needed only while
+    the parent is classified.
+  - Rows marked for deletion still ask first (D-73).
+- **Backend:**
+  - A sub-item row carries its own `classification_ref_id`. When sent, the row is filed
+    under it, as an item is (`file_under`), or under the parent's folder when it is null.
+    When not sent, a new row takes the parent's and a saved row keeps its own.
+  - A sub-item's or a template child's unit may be empty, legacy's "—". The item and line reads
+    accept it. This was found by the smoke: the first try 500'd on the read.
+- **Kept on purpose:**
+  - Dimensions show by name (`{Depth}`); legacy shows `{dim:d1}`. The stored text is the
+    same.
+  - The preview reads each row in order, seeing the rows above, as the api does. Legacy reads
+    siblings' stored figures. So the quantity table's sub-item rows are unchanged.
+- **Left:**
+  - Seeding from an assembly does not copy the template's cost components after Save (legacy
+    does).
+  - The draft path's Derived does not know the count symbol yet.
+- **Where:**
+  - app: `features/takeoff/items/SubItemsDialog.tsx` (rewritten), `lib/takeoff/subItems/variables.ts`
+    (new, pure), `pages/ProjectTakeoff.tsx`, `features/takeoff/api.ts`, `features/assembly/api.ts`,
+    `index.css` (`--shadow-floating`);
+  - api: `takeoff/{schemas,service}.py`, `assembly/schemas.py`, `estimate/schemas.py`,
+    `auth/schemas.py`.
