@@ -9468,3 +9468,25 @@ nothing written), against the AI's full titles:
 **Where:** app `lib/takeoff/engine/{dimension,markupSize,shapes,hit}.ts`,
 `features/takeoff/dimension/DimensionLayer.tsx`, `features/takeoff/components/SheetCanvas.tsx`,
 `features/takeoff/hooks/useItemMutations.ts`, `pages/ProjectTakeoff.tsx`, `index.css`.
+
+---
+
+## D-255 — The run being drawn is solid in its markup's colour; Settings › Takeoffs chooses its style and colour
+
+**Status:** decided (the founder, in session, 2026-10-04); beyond legacy
+
+1. **Default solid, in the markup's colour.** A Linear, Segment or Area run being drawn, and
+   the shape awaiting its save, are drawn solid in the colour of the markup being drawn (the
+   item a shape joins, else the armed draft's) at a Linear run's saved weight. Before, the run
+   was the theme's orange, dashed 5/3 at 2 px, and the saved shape dashed 4/3 until its save.
+2. **The awaiting-save shape stays until the refreshed items carry the shape**
+   (`settleOptimistic`), rather than leaving the moment the write settles: the sheet no longer
+   blinks or changes look for the length of the refetch.
+3. **Settings › Takeoffs:** "Drawing line style" — Solid (default), Dashed (6/4), Long dash
+   (14/6), Dotted (1/5, round caps); "Drawing line color" — Markup's color (default) or
+   Custom, a colour picker. Kept per browser with the other takeoff settings
+   (`takeoffs.drawLineStyle`, `takeoffs.drawLineColor`, empty = the markup's colour).
+4. Calibration's two-point line keeps the primary dash; it is not a markup.
+
+**Where:** app `features/takeoff/settings/{settings.ts,TakeoffSettingsDialog.tsx}`,
+`features/takeoff/components/SheetCanvas.tsx`, `pages/ProjectTakeoff.tsx`.
