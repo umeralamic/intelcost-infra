@@ -9519,3 +9519,26 @@ on a non-square sheet that grew with the zoom.
 **Where:** app `lib/takeoff/engine/{segment.ts (new),selection.ts}`,
 `features/takeoff/components/{SheetCanvas,ItemRow,ActionGroup,ActionGlyphs}.tsx`,
 `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-257 — The item records the tool that made it: Segment and Linear are two tools (supersedes D-256 2)
+
+**Status:** decided (the founder, in session, 2026-10-04): "linear and segment are two different
+tools; linear with two points is still a linear"
+
+1. **`takeoff_item.draw_tool`** (migration `a6c3e9f1d204`): "segment" for an item the Segment
+   tool made, null for every other item. Segment and Linear both author `lf` items, so the
+   type cannot say. Set on create (the armed draft's first run, the post-draw dialog, and a
+   run with no item in hand), carried by duplicate (every column is copied) and by paste into a
+   new item.
+2. **A Segment item is `draw_tool = "segment"`, nothing else.** Its row shows the Segment glyph,
+   Resume and Start arm Segment, the selection bar's Resume draws more segments, and the hover
+   panel names it Segment. A Linear run of two points stays Linear everywhere. Legacy's
+   point-count rule (`isSegmentVertices`, which D-256 2 followed) is dropped.
+3. **Existing items stay Linear:** nothing on them records the tool they were drawn with.
+   F17 (legacy migration): legacy stores no tool either, so migrated items arrive null.
+
+**Where:** api `takeoff/{models,schemas,routes}.py`, migration `a6c3e9f1d204`; app
+`lib/takeoff/engine/segment.ts`, `core/api/types.ts`, `features/takeoff/api.ts`,
+`features/takeoff/components/{ItemRow,HoverPanel}.tsx`, `pages/ProjectTakeoff.tsx`.
