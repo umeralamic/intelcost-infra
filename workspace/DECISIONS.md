@@ -9490,3 +9490,8 @@ nothing written), against the AI's full titles:
 
 **Where:** app `features/takeoff/settings/{settings.ts,TakeoffSettingsDialog.tsx}`,
 `features/takeoff/components/SheetCanvas.tsx`, `pages/ProjectTakeoff.tsx`.
+
+**Amended 2026-10-04 (the founder, in session):** the points placed while a run is drawn are
+round in screen px and tapered with the zoom, white with a ring in the run's colour, as a
+saved run's points and legacy's `handleDot`. They were circles of 0.004 of the page, so ovals
+on a non-square sheet that grew with the zoom.
