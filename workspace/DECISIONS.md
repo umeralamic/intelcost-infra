@@ -9433,3 +9433,38 @@ nothing written), against the AI's full titles:
   - the copy, its file and folder and the work sessions were removed after.
 
 **Where:** app `lib/takeoff/naming/regionNaming.ts`, `pages/ProjectTakeoff.tsx`.
+
+---
+
+## D-254 — Canvas feel: dimension text tapers, rectangles edit as polygons, heavier runs, blue selection, counts and dimensions picked and dragged
+
+**Status:** decided (the founder, in session, 2026-10-04); points 1, 3, 4 and 6 go beyond legacy
+
+1. **Dimension text tapers when zoomed out.** Under "Fixed size" (the default) the label, its
+   heads and its offset are drawn at `fontSize × clamp(zoom, 0.35, 1)` (zoom 1 = Fit), never
+   under 5 px; zoomed in they stay at the set size. Legacy keeps 12 px at every zoom, so a
+   short dimension on a zoomed-out sheet carried a label larger than itself. "Scale with
+   zoom" is unchanged.
+2. **A rectangle is points and edges, as legacy's.** A Rectangle-mode shape and a press-and-drag
+   box (Linear or Area) keep `kind: "rectangle"`, but only an ellipse or an arc is analytic
+   for editing: a rectangle shows its points, its points drag, its edges take Insert point and
+   double-click, and a vertex edit refreshes `corners` from the live ring. Quantity is
+   unchanged in both engines: they already read a rectangle from its live vertices.
+3. **Weights** (base px at Fit, tapered as before): Linear at rest 1.75 → 2.75, Linear selected
+   3.5 → 4.5, an area's selected perimeter 1.5 → 3. At rest a run stays lighter than selected.
+4. **Selected is blue.** A selected area's perimeter and a selected count's marks are outlined
+   in `--markup-selected` (#1e6bff, the hover highlight's default; one value in both themes,
+   drawn on paper). A Linear run keeps its own colour, heavier.
+5. **Counts as legacy's `pickCountHitAt`:** a mark is hit anywhere inside its drawn symbol
+   (floor 14 px), the nearest mark winning; a click selects the whole count item; a press
+   anywhere inside a mark drags that mark (Select, not locked), with its grab offset kept.
+   The hovered mark is outlined in the hover highlight's colour.
+6. **Dimensions are picked (Select):** a press on a dimension's line or label selects it and
+   drags it whole; a press on either end drags that end, lengthening or shortening it; Delete
+   removes the selected one; a click elsewhere or Escape deselects. They stay unsaved, per
+   sheet, as before. Legacy never picks a dimension.
+7. **Delete removes a box selection,** as the box menu's Delete does (one undo step).
+
+**Where:** app `lib/takeoff/engine/{dimension,markupSize,shapes,hit}.ts`,
+`features/takeoff/dimension/DimensionLayer.tsx`, `features/takeoff/components/SheetCanvas.tsx`,
+`features/takeoff/hooks/useItemMutations.ts`, `pages/ProjectTakeoff.tsx`, `index.css`.
