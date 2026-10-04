@@ -9495,3 +9495,27 @@ nothing written), against the AI's full titles:
 round in screen px and tapered with the zoom, white with a ring in the run's colour, as a
 saved run's points and legacy's `handleDot`. They were circles of 0.004 of the page, so ovals
 on a non-square sheet that grew with the zoom.
+
+---
+
+## D-256 — Resume joins any item of the project; a Segment item is known by its runs; Select works past the paper
+
+**Status:** decided (the founder, in session, 2026-10-04); point 1 is a bug fix, 2 is legacy's rule,
+3 goes beyond legacy's bleed
+
+1. **Resume adds to its item, wherever its shapes are.** The run a resumed item takes is matched
+   against every item of the project, not only this sheet's: the Takeoff panel lists every item
+   (D-54), and an item with no shape on this sheet yet fell through to "Name this measurement".
+2. **A Segment item** is a Linear item whose every run (deducts aside) is two points, open and
+   not a rectangle, ellipse or arc (legacy's `isSegmentVertices`; the item's type stays `lf`).
+   Its row shows the Segment glyph; Resume and Start arm Segment, not Linear; the selection bar's
+   Resume draws more segments rather than adding points to one.
+3. **Select past the paper.** With Select, the grey margin takes the click, the press and the
+   hover as a measure tool's already did (F7-S11), so a markup past the edge is picked, its
+   points dragged, moved, hovered and right-clicked as one on the paper. A selection box keeps
+   its dragged size (`boxOf(…, false)`), so it encloses markups past the edge; the region box
+   and the region menu stay on the paper.
+
+**Where:** app `lib/takeoff/engine/{segment.ts (new),selection.ts}`,
+`features/takeoff/components/{SheetCanvas,ItemRow,ActionGroup,ActionGlyphs}.tsx`,
+`pages/ProjectTakeoff.tsx`.
