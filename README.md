@@ -51,7 +51,7 @@ first: `docker compose down` before `-f docker-compose.dev.yml up`, and the reve
 
 ### The PyCharm run configuration
 
-Module `uvicorn`, parameters `app.main:app --reload --port 8000`, working directory
+Module `uvicorn`, parameters `main:app --reload --port 8000`, working directory
 `intelcost-api`. Everything below goes in the run configuration's environment, or in
 `intelcost-api/.env`. These are host addresses, not the container names the compose
 file uses, and the ports are the published ones: 5433 and 6380, not 5432 and 6379.
@@ -62,17 +62,16 @@ DEBUG=true
 DATABASE_URL=postgresql+asyncpg://intelcost:intelcost@localhost:5433/intelcost
 REDIS_URL=redis://localhost:6380/0
 JWT_SECRET=bench-only-secret-not-for-anything-real
-S3_ENDPOINT_URL=http://localhost:9000
-S3_PUBLIC_ENDPOINT_URL=http://localhost:9000
-S3_BUCKET=intelcost-local
-S3_ACCESS_KEY_ID=minioadmin
-S3_SECRET_ACCESS_KEY=minioadmin
-S3_FORCE_PATH_STYLE=true
 CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
-SMTP_HOST=localhost
-SMTP_PORT=1025
 APP_URL=http://localhost:5173
 ```
+
+Storage and mail are not on that list; both live in `intelcost-app-fastapi/.env` and nowhere
+else. Storage: the api no longer takes an S3 endpoint, so MinIO cannot stand in for S3, and
+`S3_REGION`, `S3_BUCKET` and the AWS key pair are the real bucket's. Mail: the `SMTP_*` and
+`MAIL_FROM*` values are the SES relay's, so bench mail reaches real inboxes and MailHog
+receives nothing. The api, the worker and beat on both compose files read the same file, so
+every process shares one bucket and one relay.
 
 `JWT_SECRET` has to match the worker's, or a token the api signs is one the worker
 cannot read.

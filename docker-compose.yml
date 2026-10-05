@@ -68,10 +68,18 @@ services:
       #   docker compose exec api sh -lc "ruff check app alembic scripts && mypy app"
       # Production images build the last stage, `production`, which has neither.
       target: dev
+    # Storage and mail come from the api's own .env. Storage: S3_REGION, S3_BUCKET and the
+    # AWS key pair; the api no longer takes an S3 endpoint, so MinIO cannot stand in for S3
+    # and the bench uses the real bucket. Mail: the SMTP_* and MAIL_FROM* values of the SES
+    # relay, so bench mail is real mail to real inboxes, not MailHog. Nothing below may set
+    # those, because a value under `environment:` beats one from env_file. The rest of that
+    # .env is laptop values, so the bench pins its own below.
+    #
     # The AI provider and its real keys (F14), git-ignored like .env.legacy. Absent, the
-    # api stays on the fake provider. Read when the container is created, so a change
-    # needs `docker compose up -d api`; a plain restart keeps the old values.
+    # api stays on the fake provider. Both are read when the container is created, so a
+    # change needs `docker compose up -d api`; a plain restart keeps the old values.
     env_file:
+      - path: ../intelcost-app-fastapi/.env
       - path: .env.ai
         required: false
     environment:
@@ -83,19 +91,9 @@ services:
       # Short-lived tokens on demand, so re-auth on refresh can be driven in minutes rather
       # than half an hour (F8-S3). browser/f8-s3.sh sets it and puts it back.
       ACCESS_TOKEN_MINUTES: "${ACCESS_TOKEN_MINUTES:-30}"
-      S3_ENDPOINT_URL: http://minio:9000
-      # The browser cannot resolve "minio", so presigned links are signed against the
-      # host it actually calls. See app/config.py.
-      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
-      S3_BUCKET: intelcost-local
-      S3_ACCESS_KEY_ID: minioadmin
-      S3_SECRET_ACCESS_KEY: minioadmin
-      S3_FORCE_PATH_STYLE: "true"
       # :5174 is app-b, the second window of the realtime profile (F8-S5); :5175 is
       # app-prod, the built app of the prod profile (D-49).
       CORS_ORIGINS: '["http://localhost:5173","http://localhost:5174","http://localhost:5175","http://localhost:3000"]'
-      SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
       # Geo. Empty by default, which is what makes the bench inert and every signup
       # Tier 1. Point them at the fake to drive the MaxMind branches (F2-S5, F2-S8):
@@ -112,8 +110,10 @@ services:
     # is restarting (1012), which is what the app reconnects on at once (F8-S1 AC5).
     command: >
       sh -c "alembic upgrade head &&
-             exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+             exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
+      # The app is the api's top-level main.py; app/ is everything it mounts.
+      - ../intelcost-app-fastapi/main.py:/srv/main.py
       - ../intelcost-app-fastapi/app:/srv/app
       - ../intelcost-app-fastapi/alembic:/srv/alembic
       # Scripts are run from in here, because a host without Python cannot run them
@@ -135,19 +135,15 @@ services:
   worker:
     build:
       context: ../intelcost-app-fastapi
+    # Storage and mail from the api's .env, as on the api above. This is the process that
+    # sends mail, through the SES relay.
+    env_file:
+      - path: ../intelcost-app-fastapi/.env
     environment:
       ENVIRONMENT: local
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real
-      S3_ENDPOINT_URL: http://minio:9000
-      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
-      S3_BUCKET: intelcost-local
-      S3_ACCESS_KEY_ID: minioadmin
-      S3_SECRET_ACCESS_KEY: minioadmin
-      S3_FORCE_PATH_STYLE: "true"
-      SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
       # Polling, for the reason DEV_WATCH_POLL exists on the app: a bind mount from a
       # Windows or macOS host may deliver no filesystem events into the container.
@@ -187,14 +183,15 @@ services:
   beat:
     build:
       context: ../intelcost-app-fastapi
+    # Storage from the api's .env, as on the api above. Beat never touches S3, but
+    # Settings requires the bucket and key pair at boot.
+    env_file:
+      - path: ../intelcost-app-fastapi/.env
     environment:
       ENVIRONMENT: local
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real
-      S3_BUCKET: intelcost-local
-      S3_ACCESS_KEY_ID: minioadmin
-      S3_SECRET_ACCESS_KEY: minioadmin
       WATCHFILES_FORCE_POLLING: "true"
     command: >
       watchfiles --filter python --sigint-timeout 10
@@ -247,7 +244,7 @@ services:
   api-b:
     extends: api
     profiles: ["realtime"]
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports: !override
       - "8010:8000"
 

@@ -66,19 +66,16 @@ services:
   worker:
     build:
       context: ../intelcost-app-fastapi
+    # Storage and mail from the api's .env, the same file the PyCharm api reads, so the
+    # worker and the api share one bucket and the worker sends through the SES relay.
+    # See docker-compose.yml.
+    env_file:
+      - path: ../intelcost-app-fastapi/.env
     environment:
       ENVIRONMENT: local
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real
-      S3_ENDPOINT_URL: http://minio:9000
-      S3_PUBLIC_ENDPOINT_URL: http://localhost:9000
-      S3_BUCKET: intelcost-local
-      S3_ACCESS_KEY_ID: minioadmin
-      S3_SECRET_ACCESS_KEY: minioadmin
-      S3_FORCE_PATH_STYLE: "true"
-      SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
       APP_URL: http://localhost:5173
       WATCHFILES_FORCE_POLLING: "true"
     # Restarted on every .py change under app/, as in docker-compose.yml (D-30).
