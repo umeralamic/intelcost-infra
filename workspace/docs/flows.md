@@ -23,8 +23,8 @@ Redis, SES, the Lightsail box, Stripe's dashboard): they are Abdullah's under D-
 | Postgres | Beside the api | Every row. Only the api and its workers touch it |
 | Redis | Beside the api | Celery's broker, realtime fan-out, collaboration claims |
 | Worker and beat | Celery, same codebase as the api | Mail, purges, file preparation. Beat only schedules |
-| S3 | AWS (MinIO on the bench) | Every file. The browser reads and writes it on presigned URLs, never through the api |
-| Mail | SES in production (MailHog on the bench) | Verification, reset, invitations, notices |
+| S3 | AWS, the bench too: its bucket from the api's `.env` (D-259) | Every file. The browser reads and writes it on presigned URLs, never through the api |
+| Mail | SES, the bench too: the relay from the api's `.env` (D-259) | Verification, reset, invitations, notices |
 | Caddy | The Lightsail box | TLS, and the proxy in front of the api and the app |
 
 Two rules shape every flow below:
