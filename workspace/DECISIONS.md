@@ -9567,3 +9567,46 @@ MinIO is unreachable: every upload, preview and presigned link goes to AWS with 
 credentials. That needs staging's agreement, not a patch here.
 
 **Where:** api `app/main.py`, `main.py`.
+
+## D-259 — The bench uses the real S3 bucket and the SES relay, both from the api's `.env` (answers D-258 Open)
+
+**Status:** decided (the founder, in session, 2026-10-05): "credentials to be picked from .env
+file in fastapi repo"; "use ses setup for sendings emails from .env in app-fastapi"
+
+After 2d72790 the api has no S3 endpoint setting, so the bench's MinIO values went to AWS:
+`/health` read `"storage":"error: bucket not reachable"`, a 403 on `HeadBucket` for
+`intelcost-local` with `minioadmin`.
+
+1. **One source for storage and mail: `intelcost-app-fastapi/.env`.** The api, worker,
+   worker-previews and beat in `docker-compose.yml`, and the worker in
+   `docker-compose.dev.yml`, load it as `env_file`. No `S3_*`, `AWS_*`, `SMTP_*` or
+   `MAIL_FROM*` value is set under `environment:`, because one set there beats the file.
+   The bench still pins its own database, Redis, JWT secret, CORS origins and `APP_URL`.
+   The PyCharm api reads the same file, so every process shares one bucket and one relay.
+2. **Storage is the real bucket** (`umer-local-intelcost1`, us-east-2, IAM user
+   `local-access-account`). This amends the bench's "fakes for every external service" for
+   storage: bench uploads, previews and presigned links are real objects in AWS. MinIO still
+   starts and nothing uses it. `ensure_bucket` stays gone (D-258 3): the bucket is never
+   created by the api.
+3. **Mail is the SES relay**, sent from `IntelCost <no-reply@ictakeoff.com>`. This amends it for
+   mail: bench mail goes to real inboxes, and MailHog receives nothing. A smoke test reads a
+   verification or reset link from that inbox, not from MailHog. A throwaway account's
+   address must be able to receive mail, or each sign-up is a bounce against the SES account.
+4. **A `.env` change needs the containers recreated** (`docker compose up -d api worker
+   worker-previews beat`); a plain restart keeps the old values.
+
+**State on 2026-10-05, outside the repo:**
+- **Bucket permissions, done:** the IAM user now holds `s3:ListBucket` and the object actions.
+  Checked 2026-10-05: `/health` ok; put, get, copy, delete and a multipart upload started
+  and aborted all worked; a presigned PUT from the host returned 200.
+- **Bucket CORS, open:** the bucket has no CORS rule. A preflight from `http://localhost:5173`
+  answered 403, so browser uploads and presigned reads fail until the bucket allows the
+  bench origins (GET, PUT, HEAD; `ETag` exposed for multipart).
+- **SES endpoint, open:** the Mail Manager endpoint in `.env` (`…fips.yxbq.mail-manager-smtp…:587`)
+  refuses or drops connections from this network on 25, 465, 587, 2465, 2587 and 443. The
+  standard SES SMTP endpoint (`email-smtp.us-east-2.amazonaws.com`) answers on 2587, but
+  needs its own SES SMTP credentials. Until one of them is reachable, mail fails and the
+  worker retries it. Use 2587, not 465: `mail.send` opens plain SMTP with STARTTLS.
+
+**Where:** infra `docker-compose.yml`, `docker-compose.dev.yml`, `README.md` (84c0c62); api
+`Dockerfile` (d1db8b4).
