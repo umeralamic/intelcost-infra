@@ -9685,3 +9685,19 @@ project and workspace tables and the api over the engine.
 
 **Where:** api `app/features/wage_calculator/`, `alembic/versions/c4d7a2e9b815_wage_calculator.py`,
 `Dockerfile`, `app/core/errors.py` (`RateLimitedError`).
+
+## D-263: Wage Calculator, the spec in the repo, L-02 on the client, A-05 and the PDF summary
+
+**Status:** decided (the founder, in session, 2026-10-05)
+
+Step 3 of the Wage Calculator build: the first screens, and the open points Step 2 left.
+
+1. **One spec.** `docs/wage-calculator/spec.md` in the api repo is the single source of
+   truth for the Wage Calculator spec. The Claude Doc it came from is no longer read.
+2. **L-02 is the frontend's.** The ZIP lookup returns the resolved message (L-04, L-04b,
+   L-05) with `padded: true` when it added leading zeros; the frontend shows L-02 for it.
+3. **Out-of-state contractor (A-05)** is stored as a workspace SUTA override for that state,
+   not a field of its own. Built in Step 3b with Advanced settings.
+4. **The PDF rate summary** ("Download PDF summary") is deferred.
+
+**Where:** api `docs/wage-calculator/spec.md`; app `src/features/wage-calculator/`.
