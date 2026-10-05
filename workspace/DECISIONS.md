@@ -9662,3 +9662,26 @@ package written against tables, roles and a location rule the new stack does not
 **Where:** api `docs/wage-calculator/` (BUILD_BRIEF.md, README.md, DB_NOTE.md,
 `001_wage_calculator_schema.sql`), `app/wagecalc/`, `app/config.py` (`wagecalc_seed_dir`);
 CLAUDE.md hard rule 8 (the D-260 exception removed).
+
+## D-262: Wage Calculator tables, reference checks, seed in the image, ZIP rate limit
+
+**Status:** decided (the founder, in session, 2026-10-05)
+
+Step 2 of the Wage Calculator build (api `docs/wage-calculator/BUILD_BRIEF.md`): the
+project and workspace tables and the api over the engine.
+
+1. **House model pattern.** The new Wage Calculator tables carry `ModelMixin` (bigint `id`
+   plus `uuid`) and `WorkspaceScopedMixin`. `created_by_id` and `updated_by_id` are bigint
+   foreign keys to `user.id`.
+2. **Reference codes are checked in code.** `craft_code` and `crew_code` are validated
+   against the engine's reference data. No database foreign keys to `refdata` until that
+   schema is loaded.
+3. **Seed in the image.** The Docker image copies only `docs/wage-calculator/seed/ref_*.csv`,
+   to the fixed path `/srv/wagecalc-seed`, and sets `WAGECALC_SEED_DIR` to it. The
+   `internal_*.csv` files are never copied into the image.
+4. **ZIP lookups are rate limited in process**, per user: 60 a minute and 2,000 a day, each
+   breach logged. TODO: a shared store replaces it once the api runs on more than one
+   instance.
+
+**Where:** api `app/features/wage_calculator/`, `alembic/versions/c4d7a2e9b815_wage_calculator.py`,
+`Dockerfile`, `app/core/errors.py` (`RateLimitedError`).
