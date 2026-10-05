@@ -88,6 +88,8 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    passed, and fix a failure before moving on. **Not covered by this rule:** the gates
    (lint, typecheck, build; ruff, mypy) and the **shared quantity table**
    (`intelcost-infra/quantity-table.sh`), which both run after every group or block.
+   **One run, by exception (D-260):** the Wage Calculator engine's own suite, once, after
+   the engine is ported into the api.
 
 ## Git
 

@@ -9610,3 +9610,21 @@ After 2d72790 the api has no S3 endpoint setting, so the bench's MinIO values we
 
 **Where:** infra `docker-compose.yml`, `docker-compose.dev.yml`, `README.md` (84c0c62); api
 `Dockerfile` (d1db8b4).
+
+## D-260 — The Wage Calculator engine's own test suite runs once, after the port (exception to rule 8)
+
+**Status:** decided (the founder, in session, 2026-10-05)
+
+The Wage Calculator package (api `docs/wage-calculator/`, 4877dc1) ships its engine with a
+pytest suite: `engine/tests/test_wagecalc.py`, twelve wage determination fixtures under
+`engine/tests/fixtures/`, and `engine/run_tests.py`. Hard rule 8 (D-70) bars running it.
+
+1. **One run, after the port.** Once `docs/wage-calculator/engine` is ported into the api,
+   its existing suite runs once, to confirm the port changed no numbers: crew costs, burden,
+   WD parsing.
+2. **Nothing more.** No new tests are written, the suite is not wired into CI, and it is not
+   run again unless the engine is re-ported.
+3. **Everything else follows rule 8.** All other Wage Calculator work is checked with
+   Playwright MCP smoke tests and manual click checks.
+
+**Where:** CLAUDE.md hard rule 8.
