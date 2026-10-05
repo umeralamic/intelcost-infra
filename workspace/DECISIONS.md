@@ -9542,3 +9542,28 @@ tools; linear with two points is still a linear"
 **Where:** api `takeoff/{models,schemas,routes}.py`, migration `a6c3e9f1d204`; app
 `lib/takeoff/engine/segment.ts`, `core/api/types.ts`, `features/takeoff/api.ts`,
 `features/takeoff/components/{ItemRow,HoverPanel}.tsx`, `pages/ProjectTakeoff.tsx`.
+
+## D-258 — The second staging merge in the api, reconciled as D-129: the full app restored
+
+**Status:** decided (the founder, in session, 2026-10-05): "first take the pull from umer-dev
+then make the fix"
+
+Abdullah's "var updates" and "Merge branch 'staging' into umer-dev" (c567ce3, 2ebfff3,
+2026-10-05) emptied `app/main.py` again. The top-level `main.py` became a cut-down app that
+mounts 7 of 33 routers and has no `RequestContextMiddleware`, no realtime hub and no
+`/health/code`. Settings › Classification read "That did not load / Not Found": the route
+was not mounted.
+
+1. **As D-129:** `app/main.py` is ours and holds the whole factory; the top-level `main.py`
+   re-exports it (`from app.main import app`), so `uvicorn main:app` (staging, the bench)
+   and `app.main:app` serve the same app.
+2. **Two staging changes kept:** `/docs`, `/redoc` and `/openapi.json` are served only with
+   `DEBUG` on, and `/health` probes storage with the read-only `check_bucket`.
+3. **`ensure_bucket` is not restored.** "s3 references updates" (2d72790) removed it with
+   `s3_endpoint_url`; the lifespan no longer creates the bucket.
+
+**Open, for the founder:** after 2d72790 storage has no endpoint setting, so the bench's
+MinIO is unreachable: every upload, preview and presigned link goes to AWS with the bench's
+credentials. That needs staging's agreement, not a patch here.
+
+**Where:** api `app/main.py`, `main.py`.
