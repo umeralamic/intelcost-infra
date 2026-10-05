@@ -9701,3 +9701,28 @@ Step 3 of the Wage Calculator build: the first screens, and the open points Step
 4. **The PDF rate summary** ("Download PDF summary") is deferred.
 
 **Where:** api `docs/wage-calculator/spec.md`; app `src/features/wage-calculator/`.
+
+## D-264: Wage Calculator, no legacy screen, P-02 deferred, one default at a time, reachable without a drawing
+
+**Status:** decided (the founder, in session, 2026-10-05)
+
+Step 3b of the Wage Calculator build: wage data entry, Advanced settings, and the fixes
+Step 3a left.
+
+1. **No legacy comparison.** Legacy has no Wage Calculator screen to compare (its wage
+   pages are retired), so CLAUDE.md's legacy comparison does not apply to this feature.
+2. **P-02 is deferred.** Saving Advanced settings recalculates nothing and shows A-08,
+   "New settings apply the next time rates are calculated."
+3. **Reference defaults one value at a time.** Advanced settings shows a default only for
+   the state or craft just picked, as a placeholder, never as a list or table. The api
+   answers one state or one craft per request (`burden-profile/default`).
+4. **Reachable before any drawing.** The Wage Calculator has its own project route, the
+   same component, project and saved rate set as the Estimating sub-tab, opened from the
+   project's page and the project list. Nothing is added to project creation.
+5. **P-01 is general.** A saved set keeps the project type it was calculated for
+   (`project_wage_set.project_type`); a change to project type, wage determination,
+   pricing basis or location asks P-01 before the next save. B-02 stays for a basis switch.
+
+**Where:** api `alembic/versions/d8e3b6f1a947_wage_set_project_type.py`,
+`app/features/wage_calculator/`, `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`; app
+`src/features/wage-calculator/`, `pages/ProjectWageCalculator.tsx`, `pages/SettingsWageCalculator.tsx`.
