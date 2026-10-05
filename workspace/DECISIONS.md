@@ -9613,7 +9613,8 @@ After 2d72790 the api has no S3 endpoint setting, so the bench's MinIO values we
 
 ## D-260 — The Wage Calculator engine's own test suite runs once, after the port (exception to rule 8)
 
-**Status:** decided (the founder, in session, 2026-10-05)
+**Status:** decided (the founder, in session, 2026-10-05). **Superseded by D-261 8:** the
+suite is not run.
 
 The Wage Calculator package (api `docs/wage-calculator/`, 4877dc1) ships its engine with a
 pytest suite: `engine/tests/test_wagecalc.py`, twelve wage determination fixtures under
@@ -9628,3 +9629,36 @@ pytest suite: `engine/tests/test_wagecalc.py`, twelve wage determination fixture
    Playwright MCP smoke tests and manual click checks.
 
 **Where:** CLAUDE.md hard rule 8.
+
+## D-261: Wage Calculator ground rules for the port (supersedes D-260)
+
+**Status:** decided (the founder, in session, 2026-10-05)
+
+The Step 0 discovery (api `docs/wage-calculator/discovery/discovery_report.md`) found the
+package written against tables, roles and a location rule the new stack does not have.
+
+1. **Existing tables, bigint keys.** The Wage Calculator uses the existing `project` and
+   `workspace` tables, with foreign keys to their bigint `id`. The project ZIP is
+   `project.postal_code`, normalised to its first 5 digits.
+2. **`internal` is protected in code** until separate database roles exist: no non-admin
+   route reads `internal`; admin routes require the platform-admin dependency
+   (`require_platform_admin`).
+3. **County is written back.** The project info panel writes county to `project.county`;
+   each saved wage set also stores its own county snapshot.
+4. **House style P6.** Wage Calculator labels and messages keep the wording of `spec.md`;
+   em dashes become commas or colons.
+5. **PDF extraction** of a wage determination is blocked on trial and allowed otherwise,
+   until F16 adds real plan checks. The check carries a `TODO(F16)`.
+6. **The direct-labor "Labor burden" line is a bid markup** with a new base option, "Direct
+   labor only" (Step 4), not a new line type.
+7. **Location is optional.** Project creation never requires an address or ZIP. The Wage
+   Calculator requires only project type. Without a ZIP it calculates at national average
+   with no location adjustment and shows L-08; when a ZIP is added later, P-01 offers to
+   recalculate. There is no workspace or user address fallback.
+8. **The package's test suite is reference material only** (`docs/wage-calculator/engine/tests`):
+   not ported, not run, not wired into CI (rule 8). Verification is by throwaway smoke
+   checks and manual click checks. Supersedes D-260.
+
+**Where:** api `docs/wage-calculator/` (BUILD_BRIEF.md, README.md, DB_NOTE.md,
+`001_wage_calculator_schema.sql`), `app/wagecalc/`, `app/config.py` (`wagecalc_seed_dir`);
+CLAUDE.md hard rule 8 (the D-260 exception removed).
