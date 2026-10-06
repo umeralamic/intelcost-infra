@@ -382,5 +382,10 @@ TIN and volumes stay in the browser, as today.
   12). Still open: Site Features and Strip Areas across members, Q14's group in Estimating.
 - [x] Block E3 (overnight 2026-10-06): the site's saved result goes stale when a member's drawing
   changes (checked while a member sheet is open, D-271 13).
-- [ ] C2 (per-member pdf.js window renders, the members on screen plus one at full
-  resolution, Snap, Snap PDF and Find Text across members), then D to F.
+- [x] Block C2 (overnight 2026-10-06), live renders: each member on screen is drawn by pdf.js over
+  its fit image through the canvas's caches, the whole page up to 4,096 px and the window the
+  screen shows above it, mapped back through the view's turn and the member's placement; a
+  member off screen holds no raster. Snap, Snap PDF and Find Text across members belong with
+  drawing in the site view (Block D).
+- [ ] D to F (drawing and measuring across the join, Site Features and Strip Areas in a site
+  Calculate, Q14's group, Auto Trace on the stitched drawing, the C-200 acceptance row).

@@ -280,6 +280,17 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - The first run of line 2 failed because the script changed a spot on the match line itself. The site keeps the anchor-nearest copy of such a spot, so its key rightly did not move (D-271 13).
 - Commits: api `482220c`; app `a089081`; infra: the workspace commit for D-271 13 and this report.
 
-**Stopped after E3** (04:45).
+**C2. Live pdf.js renders in the site view: done.**
+- `MemberRaster` draws each on-screen member with pdf.js over its fit image, through the canvas's caches (refcounted documents, bitmap budget), at the screen's resolution for the member's own scale.
+- Up to 4,096 px it draws the whole page; above that, the window the screen shows, mapped back through the view's turn and the placement. A member off screen holds no raster.
+- Snap, Snap PDF and Find Text across members are left with drawing (D).
+- Smoke 3/3:
+  1. at fit, Page 1 had a 381 px bitmap for 380 px on screen, Page 2 571 for 570;
+  2. at 32.5 px/ft, Page 1 drew a 36.5 of 170 ft window and Page 2 a 37.9 of 255 ft window;
+  3. panned so Page 1 left the screen, only Page 2 was drawn.
+- **Bench finding:** the bench's S3 bucket sends no CORS headers to the bench browser's origin, so no sheet PDF opens in the bench browser at all; the main canvas falls back to fit images too. The C2 smoke routed the bucket's responses through Playwright and added the header. Worth fixing in the bucket's CORS for `http://localhost:5173`.
+- Commits: app `b96b68c`; infra: the workspace commit for this report.
+
+**Stopped after C2** (04:55).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
