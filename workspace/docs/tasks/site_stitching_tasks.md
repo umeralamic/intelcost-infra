@@ -354,4 +354,9 @@ TIN and volumes stay in the browser, as today.
   routes under `…/project/{uuid}/site`: list, create, rename, delete, join a member (merge with
   `merge: true`), regions, remove a member (dissolve at one, re-base when the anchor leaves). F18's
   routes read survey links only (D-271). The site result routes come with Block E.
-- [ ] Blocks B to F.
+- [x] Block B (overnight 2026-10-06): "Match line" on the Earthwork row and "Join to another sheet at
+  match line…" in the sheet's ⋮ (Q2), the Join panel (this sheet left, the other in Split view,
+  the line clicked on each, the checks, Fit the scale too, Keep the other side), the merge
+  question (Q3), the Sheets panel's site rows and "in site" chips (Q1), Remove from the site
+  (Q13). Opening a site row's stitched canvas is Block C. D-271 5 to 7.
+- [ ] Blocks C to F.

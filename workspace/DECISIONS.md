@@ -9980,6 +9980,17 @@ spec leaves open:
 Also: F18's registration routes read `kind = 'survey'` rows only, so a join never shows as a
 survey link; one join per pair of sheets, whichever way it was drawn.
 
+**Block B, the same night:**
+5. **Both match lines in one sitting.** The spec draws the line on sheet A, later on sheet
+   B. As F18's link (D-188), the Join panel puts this sheet on the left and the other in
+   Split view on the right, and the line is clicked on each in one sitting. No half-drawn
+   line has to be stored between visits, so "which line it matches" never needs asking.
+6. **Who joins whom.** A sheet already in a site is the partner; with neither in one, the
+   sheet the panel was opened on anchors a new site, named "[its label] site" (renamed
+   later); with both in different sites, the other site is asked to merge into this one.
+7. **The centre of the drawing area is the page's centre** until sheet borders are found;
+   "Keep the other side" flips the joining sheet's side of the new line.
+
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,
 `EarthworkResult.superseded_by_site_id`), `registration_routes.py`, migration

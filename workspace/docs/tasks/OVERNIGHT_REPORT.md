@@ -207,3 +207,24 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   7. rename and delete.
 - Decisions: D-271 (join direction, merge on the join, regions from the browser, the anchor leaving).
 - Commits: api `999a493`; infra: the workspace commit with D-271.
+
+**B. Joining in the app: done.**
+- **Match line.** On the Earthwork row next to Boundary, and "Join to another sheet at match line…" in a sheet's ⋮ menu, which opens that sheet's Earthwork tab with the panel. Both are the founder's Q2.
+- **Join panel** (`features/takeoff/earthwork/site/useSiteJoin.tsx`):
+  - pick the other sheet, which opens in Split view;
+  - click the match line on both, with undo per side;
+  - live checks on the engine: lengths and their % apart, turn, miss;
+  - Fit the scale too, Keep the other side;
+  - Join: creates the site when needed, sends both visible regions, asks the merge question on the api's 409;
+  - lists the site's sheets with Remove from the site.
+- **Sheets panel.** Site rows at the top ("Site: Page 1 site, 2 sheets" with the members) and "in site" chips. A site row's stitched canvas is Block C, not built.
+- **Smoke 5/5** (throwaway, three calibrated sheets):
+  - B1: Match line opens the panel; Page 2 opens on the right.
+  - B2: two clicks on each sheet read "0.3 % apart, turn 0.0°, miss 0.20 ft"; Join made "Page 1 site" with Page 2 at (50.34, −19.90). The hand-worked answer is (50, −20); the gap is pixel clicking.
+  - B3: the site row with 2 sheets and 2 chips.
+  - B4: Page 3's ⋮ entry opened its Earthwork tab with the panel.
+  - B5: removing Page 2 dissolved the site and the rows went.
+- Decisions: D-271 5 to 7.
+- Commits: app `0bde9f6`; infra: the workspace commit for D-271 5 to 7.
+
+**Stopped before C.** Blocks C to F (stitched canvas, editing and measuring across the join, site Calculate, stitched trace) were not started. Each needs the stitched canvas first (C), a large piece of rendering work on the canvas (per-member placement, clipping and window renders).
