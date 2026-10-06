@@ -9812,10 +9812,15 @@ api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
 Step 2b of the Wage Calculator build: reading wage determinations from PDF files, and an AI
 fallback for files the rule parser cannot read.
 
-1. **Rules first.** A PDF's text layer is extracted (PyMuPDF) and read by the same rule
+1. **Rules first.** A PDF's text layer is extracted and read by the same rule
    parser as a text file, free. AI credits are used only when the rules cannot read the
    file (the self-check fails, or no rate is read) and the user confirms U-07. Nothing
-   calls AI without that confirmation.
+   calls AI without that confirmation. The text layer is read in layout mode (pypdf
+   `extraction_mode="layout"`, not PyMuPDF's plain text), so each rate line keeps its
+   title, rate and fringe on one line, and the self-check counts every line in the rates
+   section (after "Publication Date", before "WELDERS - Receive rate") with a dot leader
+   followed by a dollar amount, passing only when that count is above zero and equals the
+   classifications parsed, so a split line fails the check instead of being lost.
 2. **Only what the document says.** The model is told to transcribe, never to infer,
    complete or correct, and to leave a missing value null. Its answer is then held to the
    document: a classification is kept only when its base rate, and its fringe when that is
