@@ -159,11 +159,11 @@ dialog.
 9. A test-mode run with test cards before live keys.
 10. Comps for testers.
 
-**Commit:** infra (workspace mirror) with Part 5's or the next commit; the document lives at the
-workspace root like every task file.
+**Commit:** infra `11bc602` (the workspace mirror; the document lives at the workspace root like
+every task file).
 
 **Decision I made:** the checklist tells Abdullah to allow portal quantity changes on the **seat**
 prices only. The base price stays at 1, because Checkout bills the base once plus seats − 1 at the
-seat price (D-277 point 22 and Block B). If the portal let the base quantity change, the seat
+seat price (Block B's Checkout). If the portal let the base quantity change, the seat
 count the api reads would still be right (it sums both items), but the price per seat would not
 be.

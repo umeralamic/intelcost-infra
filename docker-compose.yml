@@ -286,6 +286,8 @@ services:
       # site noindex, which is what a local copy should be.
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:5173
+      # Where the pages read plan prices (the api's public catalog route, D-285), server side.
+      INTELCOST_API_URL: http://api:8000
       # Read by next.config.ts: polls the mounted source, as the app's does, because
       # the bind mount delivers no filesystem events.
       DEV_WATCH_POLL: "1"

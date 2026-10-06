@@ -10720,3 +10720,35 @@ are the calls it left open
 `pages/PlatformSubscriptions.tsx` (new), `pages/PlatformBillingTiers.tsx` (`CompForm` shared),
 `features/platform/api.ts`, `config/routes.ts`, `App.tsx`, `components/app-shell.tsx`; infra
 `fakes/stripe/server.py`.
+
+## D-285: The price page reads its prices from the plan catalog
+
+**Status:** decided (the founder's overnight brief, 2026-10-07); points 3 and 4 are my calls
+
+1. **A public route, display fields only.** `GET /api/public/plans` (anonymous) answers the
+   active `billing_plan` rows' code, name, monthly, annual, seat monthly and seat annual prices,
+   and nothing else: no Stripe ids, no credits per seat. One answer is kept 60 seconds in the
+   process (`Cache-Control: public, max-age=60`); saving a plan on the platform drops it. Each
+   client address may ask 120 times a minute, counted in the process as the ZIP lookup's limit is
+   (D-262 4); there was no shared limiter for public routes to reuse.
+2. **The site stays static.** `intelcost-market-next` reads the route on the server
+   (`lib/catalog.ts`) at build time and again after `PLANS_REVALIDATE_SECONDS` (default 300) by
+   Next's revalidation. The pricing page, the home page's "Plans from $…" and both pages'
+   descriptions and Product JSON-LD use it. Visitors are always served a built page.
+3. **When the api is down:** at build (or in dev) the prices written in `config/plans.ts` stand in,
+   so a build never fails on it; on a revalidation the read throws, so Next keeps serving the last
+   built page with the last prices it read. The plan words (descriptions, highlights) stay in
+   `config/plans.ts`; the catalog brings the name and the four prices, and a plan not on sale
+   drops off the page.
+4. **The seat total follows Checkout:** the card's total is the plan price for the first seat
+   and the seat price for each one after, as Checkout bills it (it was price × seats; equal while
+   the two prices are equal).
+5. **D-02 stays true:** the app and Stripe are the authority on what is charged; the site mirrors
+   the catalog. The site needs `INTELCOST_API_URL` (default `https://api.intelcost.io`) at build
+   and at run time.
+
+**Where:** api `app/features/billing/public.py` (new), `main.py`, `platform/subscriptions.py`
+(`public.forget()` on save); marketing `src/lib/catalog.ts` (new), `config/plans.ts`,
+`app/{page,pricing/page}.tsx`, `components/marketing/{Hero,PricingSection}.tsx`,
+`components/seo/JsonLd.tsx`; infra `docker-compose.yml` (`INTELCOST_API_URL` on the bench's
+marketing service).
