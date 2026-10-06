@@ -10445,3 +10445,68 @@ calls it left open
 `f2a9c4d7e1b6`; app `pages/SettingsBilling.tsx`, `features/workspace/realtime.ts`,
 `core/auth/{session,session-context}.ts(x)`, `pages/Signup.tsx`; infra `fakes/stripe/server.py`,
 `docker-compose.yml`.
+
+## D-279: Smoke checks never send real email: the bench's mail guard
+
+**Status:** decided (the founder's brief, 2026-10-06)
+
+Since `84c0c62` the bench sends mail through the SES relay, so every throwaway signup and invite
+in a smoke check was a real message to an address that does not exist (F16 Block B's smoke sent
+six).
+
+1. **The guard.** A setting, `MAIL_GUARD`, off by default and so off in staging and production,
+   on for the bench in `intelcost-infra/docker-compose.yml` on every service that loads the api's
+   `.env` (api, worker, beat). With it on, a message goes out through the real relay only when its
+   recipient is on `MAIL_ALLOWLIST` (comma-separated, exact, case-insensitive; the bench default is
+   the founder's own address, `umeralam.q@gmail.com`). Every other message is captured.
+2. **Captured means MailHog.** The bench's own catcher (`mailhog`, SMTP 1025, inbox and API on
+   8025) receives it exactly as rendered, links included, so the smoke helpers that read
+   invitation and confirmation links (`browser/lib/bench.mjs`) keep working. The worker logs
+   `mail captured (guard): <subject> [<template>] to <address>`; a real send still logs
+   `mail sent: ...`. Each message carries an `X-IntelCost-Template` header.
+3. **Fails closed.** With the guard on, a capture that cannot reach MailHog is retried, never
+   sent through the relay instead.
+4. **The rule:** smoke checks never send real email. A smoke check uses throwaway addresses and
+   reads its mail from MailHog; an address only goes on the allowlist on purpose.
+
+**Where:** api `app/config.py` (`mail_guard`, `mail_allowlist`, `mail_capture_host`,
+`mail_capture_port`), `app/core/mail.py` (`send`, `guarded`), `app/worker/tasks/mail.py`; infra
+`docker-compose.yml`; workspace `docs/flows.md` section 7.
+
+## D-280: F16 Block C as built: the view-only refusal, the trial button, channel 7's clock
+
+**Status:** decided in the build (2026-10-06); the founder's brief set the scope, these are the
+calls it left open
+
+1. **One refusal for "view-only".** A write refused only because the workspace is view-only (the
+   role would allow it) answers 403 with `code: "workspace_locked"` and says why: the trial ended,
+   a payment's grace passed, the subscription ended, or our team locked it. `WorkspaceContext`
+   carries the reason (`view_only_reason`); `trial_expired` is now "a reason exists". The app's one
+   locked dialog listens for that code from any request, so no screen handles it itself.
+2. **The capability read carries billing standing:** `subscribed`, `trial_ends_at` (extra days
+   included, while on trial) and `view_only_reason`. The trial button and the dialog read it, and
+   `workspace.plan.changed` and channel 7 refresh it.
+3. **The trial button** sits in the app header and the takeoff header, beside the credits chip.
+   It shows from three days left; the owner goes to Billing, anyone else gets a toast to ask the
+   owner.
+4. **Channel 7 has a clock.** A trial ending and a grace or paid period running out happen with
+   no request, so a beat task (`sweep_billing_clock`, every minute, a 65-second window) publishes
+   `workspace.trial.changed` or `workspace.plan.changed` for each. A trial starting (workspace
+   creation), extra days or a comp on Billing tiers, and a subscription coming into force (the
+   webhook) publish it directly.
+5. **Q13 lives in Stripe's portal configuration.** Seat decreases on annual plans waiting for
+   renewal is a portal setting ("schedule downgrades at period end"), not something the api can
+   enforce per request. `STRIPE_PORTAL_CONFIGURATION` names the configuration to open (optional;
+   otherwise the account default). The bench fake applies every portal change at once.
+6. **Who sees Billing:** the tab is drawn for `canManageWorkspace` (owner and admins); the page is
+   read-only without `canManageBilling` (the owner's alone); the api refuses everyone else.
+7. **Prices on the cards** are the first seat at the plan price and the rest at the seat price,
+   as Checkout bills them, with no tax wording (Q16) and no refund wording (Q8).
+
+**Where:** api `core/dependencies.py` (`view_only_reason`, `trial_ends_at`, `require_capability`,
+`VIEW_ONLY_MESSAGES`), `workspace/{schemas,routes,service}.py`, `billing/{service,routes,schemas,
+stripe}.py` (`billing_read`, `open_portal`, `create_portal_session`), `platform/billing.py`,
+`worker/tasks/billing.py`, `worker/celery_app.py`, `config.py`; app `pages/SettingsBilling.tsx`,
+`features/billing/{api.ts,TrialButton.tsx,LockedDialog.tsx}`, `core/api/{client,locked}.ts`,
+`components/{app-shell,settings-layout}.tsx`, `TakeoffHeader.tsx`, `workspace/realtime.ts`; infra
+`fakes/stripe/server.py` (the portal).

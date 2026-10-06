@@ -340,8 +340,20 @@ A person pays on its hosted page (Checkout's URL, then Pay). A script drives it:
     curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/delete  # Stripe ends it
     curl -s -X POST "localhost:12111/_fake/events/<evt_id>/resend?signature=bad"
 
+Manage billing opens its portal page (`/portal/<bps_id>`): seats, cancel at period end and plan
+switch, each sent to the api as `customer.subscription.updated` (F16 Block C).
+
 State is in memory; a restart forgets it. For real Stripe, unset `STRIPE_API_BASE` and set the
 key, the webhook secret and the eight price ids in the api's environment (D-278 2).
+
+## The mail guard (D-279)
+
+Smoke checks never send real email. The api, worker and beat run with `MAIL_GUARD=true`: mail
+goes through the SES relay only to `MAIL_ALLOWLIST` (the founder's address by default) and is
+captured in MailHog otherwise, links intact. Read captured mail at http://localhost:8025, or
+`GET localhost:8025/api/v2/search?kind=to&query=<address>` (what `browser/lib/bench.mjs` reads
+invitation and confirmation links from). The worker logs each one as
+`mail captured (guard): <subject> [<template>] to <address>`; a real send logs `mail sent`.
 
 ## Known gaps
 

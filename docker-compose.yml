@@ -10,6 +10,17 @@
 # Data is deliberately NOT persisted. A named volume for Postgres would hide the
 # migration bugs a customer meets on a fresh install.
 
+# The bench's mail guard (D-279): smoke checks never send real email. Mail goes through the
+# SES relay only to MAIL_ALLOWLIST (the founder's own address by default); everything else is
+# captured in MailHog (http://localhost:8025), links intact. Merged into every service that
+# loads the api's .env, since any of them may send. Override the list per run:
+#   MAIL_ALLOWLIST=someone@example.com docker compose up -d api worker beat
+x-mail-guard: &mail-guard
+  MAIL_GUARD: "true"
+  MAIL_ALLOWLIST: "${MAIL_ALLOWLIST-umeralam.q@gmail.com}"
+  MAIL_CAPTURE_HOST: mailhog
+  MAIL_CAPTURE_PORT: "1025"
+
 name: intelcost-bench
 
 services:
@@ -83,6 +94,7 @@ services:
       - path: .env.ai
         required: false
     environment:
+      <<: *mail-guard
       ENVIRONMENT: local
       DEBUG: "true"
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
@@ -151,10 +163,11 @@ services:
     build:
       context: ../intelcost-app-fastapi
     # Storage and mail from the api's .env, as on the api above. This is the process that
-    # sends mail, through the SES relay.
+    # sends mail: through the SES relay to the allowlist, to MailHog otherwise (D-279).
     env_file:
       - path: ../intelcost-app-fastapi/.env
     environment:
+      <<: *mail-guard
       ENVIRONMENT: local
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
@@ -203,6 +216,7 @@ services:
     env_file:
       - path: ../intelcost-app-fastapi/.env
     environment:
+      <<: *mail-guard
       ENVIRONMENT: local
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0

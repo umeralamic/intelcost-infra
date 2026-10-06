@@ -316,6 +316,11 @@ the bench's Stripe fake. What is decided:
 5. Legacy's `create-checkout-session`, `create-topup-checkout`, `stripe-webhook` and
    `trial-gate` edge functions are the behaviour reference. AI credit top-ups (F14) use
    the same checkout.
+6. **Smoke checks never send real email (D-279).** The bench's mail guard (`MAIL_GUARD`, on
+   for the bench only) lets mail through the SES relay only to `MAIL_ALLOWLIST` (the founder's
+   own address by default) and captures everything else in MailHog (`http://localhost:8025`,
+   API `/api/v2/search?kind=to&query=<address>`), links intact, logged by the worker as
+   `mail captured (guard)`. A smoke check reads its confirmation and invitation links there.
 
 ```mermaid
 sequenceDiagram

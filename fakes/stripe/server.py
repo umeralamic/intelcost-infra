@@ -5,6 +5,9 @@ It serves the three calls the api makes, shaped like Stripe's, on Stripe's paths
 
     POST /v1/customers                  a customer, `cus_...`
     POST /v1/checkout/sessions          a session, `cs_...`, its `url` this fake's own page
+    POST /v1/billing_portal/sessions    a portal session, `bps_...`, its `url` this fake's portal:
+                                        change seats, cancel at period end, switch plan, each
+                                        sent as customer.subscription.updated
     GET  /v1/subscriptions/<id>         the subscription, period dates on its items only (the
                                         newer API's shape, so the api's Q14 path is the one used)
 
@@ -55,6 +58,7 @@ MONTH = 30 * 24 * 3600
 YEAR = 365 * 24 * 3600
 
 customers: dict[str, dict[str, Any]] = {}
+portals: dict[str, dict[str, Any]] = {}
 sessions: dict[str, dict[str, Any]] = {}
 subscriptions: dict[str, dict[str, Any]] = {}
 events: dict[str, dict[str, Any]] = {}
@@ -180,6 +184,68 @@ def complete(session: dict[str, Any]) -> dict[str, Any]:
     return {**result, "subscription": sub["id"]}
 
 
+def portal_subscription(portal: dict[str, Any]) -> dict[str, Any] | None:
+    """The customer's live subscription, as the real portal shows it."""
+    for sub in subscriptions.values():
+        if sub["customer"] == portal["customer"] and sub["status"] != "canceled":
+            return sub
+    return None
+
+
+def set_seats(sub: dict[str, Any], seats: int) -> None:
+    """The base line once and the seat line for the rest, as Checkout made them; a plan with no
+    seat line (a per-unit price) takes the count on its one line."""
+    items = sub["items"]["data"]
+    base = items[0]
+    seat = next((i for i in items[1:] if "_seat_" in str(i["price"]["id"])), None)
+    if seat is None and "price_bench_" in str(base["price"]["id"]) and seats > 1:
+        seat = json.loads(json.dumps(base))
+        seat.update(id=new_id("si"))
+        seat["price"]["id"] = str(base["price"]["id"]).replace("price_bench_", "price_bench_seat_")
+        items.append(seat)
+    if seat is None:
+        base["quantity"] = seats
+    else:
+        base["quantity"] = 1
+        seat["quantity"] = seats - 1
+        sub["items"]["data"] = [i for i in items if i is base or i is seat or i["quantity"] > 0]
+    sub["metadata"]["seats"] = str(seats)
+
+
+def switch_plan(sub: dict[str, Any], plan: str) -> None:
+    other = "essentials" if plan == "professional" else "professional"
+    for item in sub["items"]["data"]:
+        item["price"]["id"] = str(item["price"]["id"]).replace(other, plan)
+    sub["metadata"]["plan"] = plan
+
+
+def portal_page(portal: dict[str, Any]) -> bytes:
+    sub = portal_subscription(portal)
+    if sub is None:
+        body = "<p>No active subscription.</p>"
+    else:
+        seats = sum(int(i["quantity"]) for i in sub["items"]["data"])
+        plan = html.escape(str(sub["metadata"].get("plan")))
+        base = f"/portal/{portal['id']}"
+        body = (
+            f"<p data-plan>{plan}</p><p data-seats>{seats} seats</p>"
+            f"<p data-cancel>{'Cancels at period end' if sub['cancel_at_period_end'] else 'Renews'}</p>"
+            f"<form method=post action='{base}/seats'><label>Seats "
+            f"<input name=seats type=number min=1 value={seats}></label> <button>Update seats</button></form>"
+            f"<form method=post action='{base}/cancel'><button>Cancel at period end</button></form>"
+            f"<form method=post action='{base}/plan'><select name=plan>"
+            "<option value=essentials>Essentials</option><option value=professional>Professional</option>"
+            "</select> <button>Switch plan</button></form>"
+        )
+    page = (
+        "<!doctype html><meta charset=utf-8><title>Bench billing portal</title>"
+        "<body style='font-family:sans-serif;max-width:32rem;margin:3rem auto'>"
+        f"<h1>Bench billing portal (Stripe fake)</h1>{body}"
+        f"<p><a href='{html.escape(portal['return_url'])}'>Return to IntelCost</a></p>"
+    )
+    return page.encode()
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt: str, *args: Any) -> None:  # quieter than the default
         print(f"stripe-fake {self.command} {self.path} {args[1] if len(args) > 1 else ''}")
@@ -224,6 +290,12 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, session) if session else self._missing("session")
         elif path == "/_fake/events":
             self._send(200, sent)
+        elif m := re.fullmatch(r"/portal/([\w]+)", path):
+            portal = portals.get(m[1])
+            if portal:
+                self._send(200, portal_page(portal), "text/html; charset=utf-8")
+            else:
+                self._missing("portal session")
         elif m := re.fullmatch(r"/checkout/([\w]+)", path):
             session = sessions.get(m[1])
             if not session:
@@ -258,6 +330,33 @@ class Handler(BaseHTTPRequestHandler):
             customer = {"id": new_id("cus"), "object": "customer", **fields}
             customers[customer["id"]] = customer
             self._send(200, customer)
+        elif path == "/v1/billing_portal/sessions":
+            if not self._authorized():
+                return
+            portal_id = new_id("bps")
+            portal = {
+                "id": portal_id,
+                "object": "billing_portal.session",
+                "customer": fields.get("customer"),
+                "return_url": fields.get("return_url") or "/",
+                "configuration": fields.get("configuration"),
+                "url": f"{PUBLIC_URL}/portal/{portal_id}",
+            }
+            portals[portal_id] = portal
+            self._send(200, portal)
+        elif m := re.fullmatch(r"/portal/([\w]+)/(seats|cancel|plan)", path):
+            portal = portals.get(m[1])
+            sub = portal_subscription(portal) if portal else None
+            if not portal or not sub:
+                return self._missing("subscription")
+            if m[2] == "seats":
+                set_seats(sub, max(1, int(fields.get("seats") or 1)))
+            elif m[2] == "cancel":
+                sub["cancel_at_period_end"] = True
+            else:
+                switch_plan(sub, str(fields.get("plan")))
+            emit("customer.subscription.updated", sub)
+            self._redirect(f"/portal/{portal['id']}")
         elif path == "/v1/checkout/sessions":
             if not self._authorized():
                 return

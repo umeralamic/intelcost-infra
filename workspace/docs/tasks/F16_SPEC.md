@@ -1,6 +1,6 @@
 # F16: Billing, plans, trials
 
-**Status:** adopted 2026-10-06 (D-277). Blocks A and B built (D-278 records Block B's calls). The founder's answers to the draft's
+**Status:** adopted 2026-10-06 (D-277). Blocks A, B and C built (D-278 and D-280 record the calls Blocks B and C made; D-279 the bench's mail guard). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
 ([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
 
@@ -38,7 +38,7 @@ bid markups in the estimate keep theirs.
   - the upgrade dialog;
   - the locked-workspace dialog;
   - a Billing page under Settings.
-- Realtime channels 6 (`workspace.plan.changed`) and 7 (`workspace.trial.changed`).
+- Realtime channels 6 (`workspace.plan.changed`) and 7 (`workspace.trial.changed`). **Both built** (Blocks B and C).
 - The platform admin additions billing needs (subscriptions list, manual comp).
 
 **Not in F16.**
@@ -56,6 +56,8 @@ bid markups in the estimate keep theirs.
 | Table | Purpose | Key columns |
 |---|---|---|
 | `billing_plan` | The catalog, editable on the platform | `code` (essentials, professional), name, `monthly_usd`, `annual_usd`, `seat_monthly_usd`, `seat_annual_usd`, `credits_per_seat`, `stripe_price_*` (4 ids), `active` |
+| `workspace.stripe_customer_id` | The workspace's Stripe customer, made by the first Checkout and reused (D-278 3) | unique, nullable |
+| `user.signup_plan`, `signup_cadence`, `signup_seats` | The price page's choice kept at signup (Q12), beside the D-18 signup columns | nullable |
 | `workspace_subscription` | One row per workspace, written only by the webhook (and platform comp) | `plan_code`, `cadence`, `seats`, `status` (trialing, active, past_due, canceled, unpaid, comp), `stripe_customer_id`, `stripe_subscription_id`, `current_period_start/end`, `cancel_at_period_end`, `canceled_at`, `grace_until` |
 | `stripe_event` | Idempotency and audit of webhook events | `stripe_event_id` (unique), type, `received_at`, `processed_at`, `error` |
 
@@ -100,21 +102,25 @@ cadence, as legacy billed plan price × seats):
    - Route: `POST /api/stripe/webhook`, unauthenticated, verified with the signing secret and a 5-minute tolerance.
    - Each event id is stored once (`stripe_event`). A repeat is a 200 no-op.
    - Events:
-     - `checkout.session.completed`: subscription (sync) or `kind=ai_topup` (credit the pack once per session).
+     - `checkout.session.completed`: subscription (sync). A payment-mode session (an AI top-up) is recorded and left alone until Block F credits the pack once per session.
      - `customer.subscription.created`, `.updated`, `.deleted`: sync.
-     - `invoice.paid`: refill the allowance at the period start (Q4).
+     - `invoice.paid`: re-syncs the subscription. The allowance refill at the period start (Q4) is Block D's.
      - `invoice.payment_failed`: mark `past_due` and stamp `grace_until` = now + 7 days (Q5).
    - The sync re-reads the subscription from Stripe rather than trusting the payload.
    - **Period dates come from the subscription items** (`items.data[].current_period_start/end`),
      not the subscription's top level, so the code works on newer API versions (Q14). The
      founder confirms the account's API version.
    - After the commit it publishes `workspace.plan.changed` (D-20).
-3. **Customer portal.**
-   - Route: `POST {ws}/billing/portal`, owner only.
+3. **Customer portal. Built, Block C.**
+   - Route: `POST {ws}/billing/portal`, owner only; returns to `/settings/billing`.
    - Returns a portal session URL for card, invoices, seat quantity, plan switch and cancellation.
    - Seat changes made in the portal arrive as `subscription.updated`.
    - **Annual seats (Q13):** adding seats mid-year is allowed, prorated by Stripe; removing seats
-     takes effect at renewal (the portal's seat decrease scheduled to the period end).
+     takes effect at renewal (the portal's seat decrease scheduled to the period end). That rule
+     lives in the Stripe portal configuration, not in our code: the api opens the configuration
+     named by `STRIPE_PORTAL_CONFIGURATION` (or the account's default), and whoever sets up the
+     account turns on "schedule downgrades at period end" there (D-280 5). The bench fake applies
+     every change at once.
    - **Cancellation (Q5)** takes effect at the end of the paid period (`cancel_at_period_end`).
 4. **No refunds (Q8, replaced).** Fees are non-refundable, as the Terms say.
 5. **Bench. Built, Block B (D-278 2).** The Stripe fake is `intelcost-infra/fakes/stripe/server.py` (service `stripe-fake`, port 12111), and the bench api points `STRIPE_API_BASE` at it with a test key, the bench signing secret and `price_bench_*` ids. Production keeps the default base and sets the real key, signing secret and price ids; the products, prices and the webhook endpoint in Stripe are Abdullah's (`flows.md` §7).
@@ -148,29 +154,38 @@ cadence, as legacy billed plan price × seats):
 6. **Expiry.**
    - The trial mask (`capabilities.py`) makes an expired, lapsed or locked workspace view-only, on the server.
    - A workspace with a subscription in `active` (or `comp`) is never on trial and never expired; `trial_expired` checks the subscription first (built, Block A).
-7. **Visible in the app.**
-   - A trial button in the chrome: "N days left" when 3 or fewer days remain, and after expiry.
-   - The locked dialog on any refused write, sending the user to Billing.
-   - Channel 7 refreshes open tabs.
+7. **Visible in the app. Built, Block C.**
+   - A trial button in the chrome (the app header and the takeoff header): "N days left" when 3 or
+     fewer days remain, "Trial ended" after expiry; the owner goes to Billing, anyone else is told
+     to ask the owner.
+   - The locked dialog on any write refused because the workspace is view-only (code
+     `workspace_locked`): what happened, Billing for the owner, "Ask the workspace owner" for others.
+   - Channel 7, `workspace.trial.changed`: a trial starts (workspace created), is extended or
+     changed on Billing tiers, ends (a one-minute sweep), or is cleared by a subscription; open tabs
+     re-read permissions and Billing. The sweep also publishes `workspace.plan.changed` when a
+     payment's grace or a canceled subscription's paid period runs out.
 
 ## 5. Plan checks replacing each F16 marker
 
-| Where | Before | F16 |
+Line numbers as of 2026-10-06, after Block C.
+
+| Where | Before F16 | F16 |
 |---|---|---|
-| `app/core/dependencies.py:150` | `resolve(..., plan=Plan.PRO)` | the workspace's plan (`essentials` or `professional`); during a trial, Professional (Q1). **Built, Block A** |
-| `app/features/workspace/capabilities.py:369-376, 428` | `Plan` enum; `_COLLABORATOR_PLAN` mask exists, never reached | renamed `Plan.ESSENTIALS` / `Plan.PROFESSIONAL` and `_ESSENTIALS_PLAN`, which keeps administration and billing (D-277 19); reached for Essentials subscribers. **Built, Block A** |
-| `app/features/wage_calculator/service.py:907-923` (`on_trial`, `TODO(F16)`) | "on trial" = a trial window exists and is not lifted | an active or comp subscription is never on trial; `ai_allowed` = `RUN_AI` and Professional and not on trial (Q3). **Built, Block A** |
-| `app/features/ai/models.py:61` (`AiWallet.seats`) | fixed 1 | written from the subscription's seats (Block D) |
-| `app/features/ai/meter.py:27` (`CREDITS_PER_SEAT=100`), `ai/service.py:171 refill_due` | monthly Celery refill for every workspace | per plan's `credits_per_seat` (Essentials 0); refill at each billing period start, annual plans monthly on the anniversary day; a trial gets one allowance at its start and no refill (Q4) |
-| `app/features/ai/routes.py:236`, app `src/pages/SettingsAiCredits.tsx:266-273` | packs listed; "Buy now" disabled, "Checkout arrives with billing" | `POST {ws}/billing/topup {pack}` → Checkout (payment mode); button live for the owner and admins (Q11) |
-| `app/features/platform/ai_economics.py:14`, `src/pages/PlatformAiEconomics.tsx:97` | manual grant stands in for sales | stays as a platform comp tool |
-| `app/features/billing/models.py:83-85, 101, 118`; migration `b17d4e90c3a2:13, 85` | tier rules and override limits stored | enforced as §4.5 |
-| `app/features/workspace/models.py:103, 109`; `app/features/auth/models.py:53` | tier stamped | read by the caps |
-| `app/features/project/schemas.py:165`, `project/service.py:967` | no storage total | the tier's storage total at initiate time (D-27) |
-| `app/features/platform/billing.py:72` | Stripe secrets shown as slots, never set | settings defined; presence shows "Set". **Built, Block A** |
-| `src/pages/Signup.tsx:74-78` | reads `plan`, `cadence`, `seats` from marketing and ignores them | signup starts the trial; Checkout is offered later, pre-filled with them (Q12). Block A names the plan from either code |
-| `src/features/workspace/capabilities.ts:29, 106, 111` | `canManageBilling` unused | gates the Billing page and plan Checkout (owner only); top-up for owner and admins (Q11) |
-| `STATUS.md` | "No billing" | "F16 Block A built" |
+| `app/core/dependencies.py:179` (`plan=self.plan`), `:191` `plan`, `:209` `view_only_reason`, `:235` `trial_expired`, `:256` `require_capability` | `resolve(..., plan=Plan.PRO)` | the workspace's plan from its subscription, Professional on trial (Q1); the view-only reason; a write refused only for it answers code `workspace_locked`. **Built, Blocks A to C** |
+| `app/features/workspace/capabilities.py:369` `Plan`, `:378` `AI_PLAN_LOCKED`, `:393` `_ESSENTIALS_PLAN`, `:436` `apply_plan_mask` | `Plan` enum; legacy's lighter-plan mask, never reached | `Plan.ESSENTIALS` / `Plan.PROFESSIONAL`; the Essentials mask keeps administration and billing (D-277 19). **Built, Block A** |
+| `app/features/wage_calculator/service.py:922` `on_trial`, `:938` `ai_allowed`, `:948` `ai_refusal` | "on trial" = a trial window exists and is not lifted | a subscription in force is never on trial; `ai_allowed` = `RUN_AI` and Professional and not on trial (Q3). **Built, Block A** |
+| `app/features/ai/models.py:60` (`AiWallet.seats`) | fixed 1 | written from the subscription's seats (Block D) |
+| `app/features/ai/meter.py:27` (`CREDITS_PER_SEAT`), `ai/service.py:171` `refill_due` | monthly Celery refill for every workspace | per plan's `credits_per_seat` (Essentials 0); refill at each billing period start, annual plans monthly on the anniversary day; a trial gets one allowance at its start and no refill (Q4). Block D |
+| `app/features/ai/service.py:392` `trial_cap` | Tier 3's 30 credits while the trial runs | off for a subscriber (Q2). **Built, Block A** |
+| `app/features/ai/routes.py:235` (`/packs`), app `src/pages/SettingsAiCredits.tsx:267` | packs listed; "Buy now" disabled, "Checkout arrives with billing" | `POST {ws}/billing/topup {pack}` → Checkout (payment mode); live for the owner and admins (Q11). Block F |
+| `app/features/platform/ai_economics.py:471` `grant`, app `src/pages/PlatformAiEconomics.tsx:492` | manual grant stands in for sales | stays as a platform comp tool |
+| `app/features/billing/models.py:82` `BillingTierRule`, `:119` `WorkspaceLimitOverride`; migration `b17d4e90c3a2` | tier rules and override limits stored | enforced as §4.5. Block E |
+| `app/features/workspace/models.py:105, 113`; `app/features/auth/models.py:58` | tier and trial stamped | read by the caps (Block E) and the plan read |
+| `app/features/project/schemas.py:165`, `project/service.py:967` | no storage total | the tier's storage total at initiate time (D-27). Block E |
+| `app/features/platform/billing.py:66` (`SECRET_SLOTS`) | Stripe secrets shown as slots, never set | settings defined; presence shows "Set". **Built, Block A** |
+| app `src/pages/Signup.tsx:78` | reads `plan`, `cadence`, `seats` from marketing and ignores them | kept on the user (`signup_*`) and pre-filled on the Billing page's cards (Q12). **Built, Blocks B and C** |
+| app `src/features/workspace/capabilities.ts:29, 106, 111` | `canManageBilling` unused | gates Start subscription and Manage billing (owner only); the Billing tab is drawn for `canManageWorkspace` (owner and admins, read-only for admins). **Built, Block C**; top-up for owner and admins (Q11) in Block F |
+| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to C built" |
 
 ## 6. AI credits
 
@@ -232,9 +247,9 @@ later (the Billing page and the trial button), pre-filled with them (Block C).
    - Checkout session, signed webhook, idempotent events, sync (period dates from the items, Q14).
    - `past_due` grace stamping; `workspace.plan.changed`.
    - Smoke: a fake checkout turns an expired trial into an editable Professional workspace in an open tab.
-3. **C. Billing page and portal.**
-   - Settings › Billing: plan, seats, status, period, "Manage billing" (portal), "Upgrade".
-   - The trial button in the chrome; the locked dialog; channel 7; Checkout offered with the signup choice (Q12).
+3. **C. Billing page and portal.** *Built 2026-10-06 (D-280).*
+   - Settings › Billing: plan, cadence, seats, status, period; on trial or ended the two plan cards (prices from `billing_plan`, monthly or annual, seats) and "Start subscription"; subscribed, "Manage billing" (portal). The owner acts, admins read, nobody else sees it.
+   - The trial button in the chrome; the locked dialog; channel 7; Checkout pre-filled with the signup choice (Q12).
 4. **D. Seats.**
    - Seats from the subscription to `ai_wallet.seats`.
    - Refill per Q4.
