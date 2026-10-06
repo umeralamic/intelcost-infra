@@ -102,6 +102,21 @@ services:
       MAXMIND_BASE_URL: "${MAXMIND_BASE_URL:-https://geoip.maxmind.com}"
       MAXMIND_ACCOUNT_ID: "${MAXMIND_ACCOUNT_ID:-}"
       MAXMIND_LICENSE_KEY: "${MAXMIND_LICENSE_KEY:-}"
+      # Stripe (F16 Block B, D-278): the bench's Stripe fake, `stripe-fake` below. The base
+      # URL is overridden here only; production leaves STRIPE_API_BASE unset (api.stripe.com)
+      # and sets a real key, signing secret and price ids. Blank STRIPE_SECRET_KEY to drive
+      # "billing not switched on".
+      STRIPE_API_BASE: "${STRIPE_API_BASE:-http://stripe-fake:12111}"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY-sk_test_bench_fake}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-whsec_bench_fake}"
+      STRIPE_PRICE_ESSENTIALS_MONTHLY: price_bench_essentials_monthly
+      STRIPE_PRICE_ESSENTIALS_ANNUAL: price_bench_essentials_annual
+      STRIPE_PRICE_PROFESSIONAL_MONTHLY: price_bench_professional_monthly
+      STRIPE_PRICE_PROFESSIONAL_ANNUAL: price_bench_professional_annual
+      STRIPE_PRICE_SEAT_ESSENTIALS_MONTHLY: price_bench_seat_essentials_monthly
+      STRIPE_PRICE_SEAT_ESSENTIALS_ANNUAL: price_bench_seat_essentials_annual
+      STRIPE_PRICE_SEAT_PROFESSIONAL_MONTHLY: price_bench_seat_professional_monthly
+      STRIPE_PRICE_SEAT_PROFESSIONAL_ANNUAL: price_bench_seat_professional_annual
     # Migrations run on start, so a fresh bench is a working bench.
     #
     # `exec`, so uvicorn replaces the shell as PID 1 and receives the stop signal. Without
@@ -284,6 +299,22 @@ services:
     depends_on:
       api:
         condition: service_started
+
+  # A stand-in for Stripe (F16 Block B, D-278): customers, Checkout sessions and subscriptions
+  # on Stripe's paths, a hosted Pay page, and signed webhooks to the api. On by default, so
+  # Checkout works on a fresh bench. Its control routes (/_fake/...) drive payment failures,
+  # cancellations and replays; see fakes/stripe/server.py.
+  stripe-fake:
+    image: python:3.14-slim
+    environment:
+      STRIPE_FAKE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-whsec_bench_fake}"
+      STRIPE_FAKE_WEBHOOK_URL: http://api:8000/api/stripe/webhook
+      STRIPE_FAKE_PUBLIC_URL: http://localhost:12111
+    volumes:
+      - ./fakes/stripe:/fake:ro
+    command: python -u /fake/server.py
+    ports:
+      - "12111:12111"
 
   # A stand-in for MaxMind Insights, so the signup gate's geo branches can be driven
   # without a paid key (F2-S5). Off by default, on the "fakes" profile.

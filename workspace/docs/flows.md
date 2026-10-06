@@ -299,7 +299,8 @@ sequenceDiagram
 
 ## 7. Trial to paid
 
-**Not built: F16.** What is decided:
+**F16 Blocks A and B built** (D-277, D-278): the plan read, Checkout, the signed webhook and
+the bench's Stripe fake. What is decided:
 
 1. At signup the tier and the trial length are resolved once and stamped on the
    workspace (D-18); disposable mailboxes are refused at every tier (D-19).
@@ -310,8 +311,8 @@ sequenceDiagram
    Stripe's webhook tells the api the payment happened. The api records the plan and
    publishes `workspace.plan.changed` (channel 6), and the capability mask lifts in every
    open tab.
-4. 🔧 **Stripe:** products and prices, the webhook endpoint and its signing secret, and
-   the bench's missing fake (infra README, Known gaps).
+4. 🔧 **Stripe:** products and prices, the webhook endpoint and its signing secret. The
+   bench's fake is built (F16 Block B, D-278: `intelcost-infra/fakes/stripe`).
 5. Legacy's `create-checkout-session`, `create-topup-checkout`, `stripe-webhook` and
    `trial-gate` edge functions are the behaviour reference. AI credit top-ups (F14) use
    the same checkout.
@@ -349,4 +350,4 @@ Every 🔧 step above, collected:
 | 3 | Caddy, uvicorn, Redis | The realtime note in `intelcost-infra/notes/` |
 | 5 | Beat | Exactly one in production |
 | 5 | Worker sizing | Concurrency and memory on the 4 GB box after D-14 |
-| 7 | Stripe | Products, prices, webhook endpoint and secret, and a bench fake |
+| 7 | Stripe | Products, prices, webhook endpoint and secret (the bench fake is built, D-278) |

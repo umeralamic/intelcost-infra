@@ -10296,36 +10296,40 @@ or a re-split carried that `shape_meta` onto pieces it did not describe.
 
 ## D-277: F16 billing: the founder's answers; plans renamed Essentials and Professional; spec adopted
 
-**Status:** decided (the founder's brief, 2026-10-06); points 18 to 24 are my calls inside it
+**Status:** decided (the founder's brief, 2026-10-06); points 18 to 24 are my calls inside it.
+**Amended** 2026-10-06 by the founder's next brief: Q3, Q6 and Q8 corrected, point 25 added, points
+18, 20 and 24 updated (marked "Amended").
 
 The founder answered the sixteen questions of `docs/tasks/F16_SPEC_DRAFT.md`. The spec is adopted
 as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
 
 **Plan names**
-1. **Renamed.** The plan "Collaborator" is now **Essentials** (code `essentials`) and "Pro" is
-   **Professional** (code `professional`); "Pro" stays acceptable as a short form in UI copy.
-   The **Collaborator role** keeps its name: only the plan is renamed.
+1. **Renamed.** Legacy's two plans are **Essentials** (code `essentials`; legacy's code
+   `collaborator`), the annotations and comments plan, and **Professional** (code `professional`;
+   legacy's `pro`); "Pro" stays acceptable as a short form in UI copy. The **Collaborator role**
+   keeps its name: only the plans are renamed.
 
 **The sixteen answers**
 2. **Q1, trial plan.** A workspace on trial uses the Professional plan.
 3. **Q2, tier caps after paying.** A restricted tier's caps end when the workspace subscribes,
    whatever its country.
 4. **Q3, AI on Essentials.** AI tools, AI credits and PDF or AI wage determination extraction are
-   Professional only; Essentials gets no AI credits (`credits_per_seat` 0). Text-file wage
-   determination autofill stays free on every plan and on trial.
+   Professional only; Essentials gets no AI credits (`credits_per_seat` 0). **Amended:** text-file
+   wage determination autofill is free wherever estimating is available (Professional and trials).
+   Essentials is the annotations and comments plan (annotations, comments and viewing; no
+   measuring, no estimating), so it has no Wage Calculator. Block A's behaviour is correct.
 5. **Q4, refill.** A subscriber's AI allowance refills at each billing period start; an annual
    plan refills monthly on the subscription's anniversary day. A trial gets a one-time allowance
    at trial start and no monthly refill.
 6. **Q5, lapse.** `past_due` gets a 7-day grace period, then view-only. A cancellation takes
    effect at the end of the paid period, then view-only. Data is never deleted on lapse.
-7. **Q6, seats.** Seats are the members holding an editing role (owner, admin, editor); view-only
-   members are free. An invite past the seat count is refused with "Add a seat". Our roles have
-   no "editor": Block D reads it as every role that can edit takeoff or pricing (owner, admin,
-   estimator, takeoff, pricing), and the founder confirms that mapping before it is built.
+7. **Q6, seats. Amended:** a seat is any member whose role can edit takeoff or pricing; view-only
+   members and members limited to annotations and comments are free. An invite past the seat
+   count is refused with "Add a seat".
 8. **Q7, invoices.** Through the Stripe customer portal only; no invoice list in the app.
-9. **Q8, refunds.** A 30-day money-back guarantee on the first payment only. The Terms must say the
-   same: today `intelcost-market-next/src/app/terms/page.tsx:294` says fees are non-refundable.
-   That legal text is the founder's to change; it is flagged, not edited.
+9. **Q8, refunds. Replaced:** no refunds. Fees are non-refundable, as the Terms page already says
+   (`intelcost-market-next/src/app/terms/page.tsx:294`). There is no money-back guarantee, and no
+   page promises one.
 10. **Q9, measurements cap.** The trial measurements cap counts live items.
 11. **Q10, packs.** AI credit packs as D-236 9.
 12. **Q11, who buys.** Plan Checkout: the owner only. AI credit top-ups: the owner and admins.
@@ -10346,18 +10350,17 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
     while its trial window runs (Q1) and view-only after it. A lapsed subscription (`canceled`,
     `unpaid`, `past_due` past its grace, or a comp past its end date) is view-only whatever the
     trial window says. A `past_due` row with no `grace_until` yet counts as in grace: Block B's
-    webhook stamps it. The platform's Lock still wins over a subscription.
-19. **Essentials keeps administration.** Legacy's Collaborator mask removed every capability but
+    webhook stamps it. The platform's Lock still wins over a subscription. **Amended (Block B,
+    Q5):** a `canceled` subscription gives its plan until its `current_period_end`, then is
+    view-only.
+19. **Essentials keeps administration.** Legacy's mask for this plan removed every capability but
     comments, uploads and annotations, administration and billing included, so an owner on that
     plan could not invite, manage the workspace or reach Billing to upgrade (and Q11 needs the
     owner to buy). The Essentials mask grants comments, uploads and annotations, plus the
     administration the expired trial keeps (manage the workspace, invite, remove, assign roles,
     grant owner, transfer, billing, workspace activity). No takeoff, no estimating, no AI.
-20. **Text autofill on Essentials.** It has no plan check of its own, so the plan never refuses it.
-    The Wage Calculator writes estimating data and asks for "Edit estimates", which the Essentials
-    mask removes, so on Essentials the upload is refused by that permission like the rest of the
-    calculator. If Essentials should keep the Wage Calculator, that is a change to the mask for
-    the founder to make.
+20. **Text autofill on Essentials. Amended:** settled by Q3 as amended. Essentials has no Wage
+    Calculator; the upload is refused there by "Edit estimates", which the Essentials mask removes.
 21. **The AI refusal.** On Essentials every AI entry point (the AI tools, the AI wage determination
     read, PDF reading) answers "AI tools are on the Professional plan." in the api, and the app
     shows the same words on its locked controls. The plan check holds for a platform admin too,
@@ -10369,8 +10372,14 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
     Professional $29.99 a month, $299.99 a year; a seat costs the same as the plan at the same
     cadence (legacy bills plan price × seats).
 24. **Comp plan.** Platform admin's "Comp plan" writes a `comp` subscription (plan, seats, an
-    optional end date in `current_period_end`); removing it deletes the row. Marketing still
-    sends `plan=collaborator|pro` to signup, and the app reads both the old and the new codes.
+    optional end date in `current_period_end`); removing it deletes the row. **Amended:** marketing
+    sends `plan=essentials|professional` to signup; the app still reads legacy's codes too.
+
+**Added by the founder**
+25. **"Annotations", not "Markup".** User-facing text calls the drawing tools Essentials has
+    "Annotations" (not "Markup"); bid markups in the estimate keep their name. Code identifiers,
+    routes and database values are unchanged. On Essentials the takeoff toolbar shows only the
+    annotation tools on every tab: the measure tools are absent, not drawn disabled.
 
 **Where:** api `app/features/billing/models.py` (`BillingPlan`, `WorkspaceSubscription`,
 `StripeEvent`), `alembic/versions/e7c3f1a8b2d5_billing_plans_subscriptions.py`,
@@ -10384,3 +10393,55 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
 `pages/ProjectTakeoff.tsx`, `features/takeoff/sheets/SheetsPanel.tsx` (`aiLocked`),
 `features/wage-calculator/WageData.tsx`, `pages/PlatformBillingTiers.tsx`, `features/platform/api.ts`,
 `pages/Signup.tsx`.
+
+## D-278: F16 Block B as built: the Stripe fake, the workspace's customer, seats from the billed lines
+
+**Status:** decided in the build (2026-10-06); the founder's brief set the scope, these are the
+calls it left open
+
+1. **No SDK.** The api makes three Stripe calls over httpx (`billing/stripe.py`: create a
+   customer, create a Checkout session, retrieve a subscription) and checks webhook signatures
+   itself (HMAC-SHA256 of `t.payload`, any `v1`, 5 minutes' tolerance). Every call goes to
+   `STRIPE_API_BASE`, which only the bench overrides.
+2. **The bench's Stripe fake** is `intelcost-infra/fakes/stripe/server.py`, service
+   `stripe-fake` (port 12111), on by default. It serves those calls on Stripe's paths, hosts a
+   Pay page for a person, and sends signed events to `/api/stripe/webhook`; its `/_fake/` routes
+   drive a payment, a failed payment, a cancellation, the end of a subscription and a replay or a
+   badly signed event for a script. Its subscriptions carry period dates on their items only, the
+   newer API's shape (Q14). The bench api is wired to it with a test key, the bench signing
+   secret and eight `price_bench_*` ids, so Billing tiers now shows the Stripe settings "Set".
+   **Real Stripe later:** unset `STRIPE_API_BASE` (the default is `https://api.stripe.com`), set
+   `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (the endpoint's `whsec_`) and the eight
+   `STRIPE_PRICE_*` ids in the api's environment, and point a Stripe webhook endpoint at
+   `https://api.intelcost.io/api/stripe/webhook` with the six events of spec section 3.
+3. **The workspace keeps its Stripe customer** (`workspace.stripe_customer_id`). The first
+   Checkout makes it and every later one reuses it, so an abandoned Checkout leaves no second
+   customer. Spec section 2 named only the subscription's copy.
+4. **Seats are the subscription's billed quantities summed** (the base line and the seat line),
+   not its metadata, so a seat change made in the portal (Block C) is read as Stripe bills it.
+   Metadata is the fallback. Plan and cadence come from metadata, then from the price ids.
+5. **Stripe's other statuses:** `incomplete` and `paused` are stored as `unpaid`,
+   `incomplete_expired` as `canceled`; neither gives a plan.
+6. **Event handling.** Each event id is stored once; a processed repeat answers 200 and does
+   nothing. A handler's writes run in a savepoint: a failure rolls them back, keeps the error on
+   the event's row and answers 500, so Stripe sends the event again and the retry handles it. A
+   bad signature is a 400 and writes nothing. `checkout.session.completed` in payment mode (AI
+   top-ups) is recorded and left to Block F.
+7. **A failed payment's grace** starts at the first failure (now + 7 days) and a later failure
+   does not extend it; any status other than `past_due` clears it.
+8. **The refusal Checkout gives while a subscription is running** is a 409 with
+   `code: "manage_billing"` (errors may now carry a `code`). A `canceled` subscription, or a comp,
+   does not block Checkout; the platform's Comp plan may also replace a `canceled` one.
+9. **Checkout's return** is `/settings/billing?checkout=success|cancelled`, a minimal page that
+   says the result and the current plan and follows `workspace.plan.changed`; no settings tab
+   until Block C.
+10. **The price page's choice** (Q12) is kept on the user (`signup_plan`, `signup_cadence`,
+    `signup_seats`, legacy's codes read as ours), beside the D-18 signup columns, since no
+    workspace exists at signup. Block C pre-fills Checkout from it.
+
+**Where:** api `app/features/billing/{stripe,service,routes,schemas}.py`, `billing/models.py`
+(`in_force`), `core/errors.py` and `main.py` (`code`), `config.py` (`stripe_api_base`),
+`workspace/models.py`, `auth/{models,schemas,service}.py`, `platform/billing.py`, migration
+`f2a9c4d7e1b6`; app `pages/SettingsBilling.tsx`, `features/workspace/realtime.ts`,
+`core/auth/{session,session-context}.ts(x)`, `pages/Signup.tsx`; infra `fakes/stripe/server.py`,
+`docker-compose.yml`.

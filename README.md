@@ -326,9 +326,25 @@ measurement, reload, and see the quantity survive.
 
 A stub that returns success is a bug, not proof.
 
+## The Stripe fake (F16, D-278)
+
+`stripe-fake` (`fakes/stripe/server.py`, port 12111) stands in for Stripe and is on by
+default; the api reaches it through `STRIPE_API_BASE`. It answers the three calls the api makes
+(customer, Checkout session, subscription) and sends signed events to `/api/stripe/webhook`.
+A person pays on its hosted page (Checkout's URL, then Pay). A script drives it:
+
+    curl -s localhost:12111/_fake/sessions/<cs_id>                       # the session as created
+    curl -s -X POST localhost:12111/_fake/sessions/<cs_id>/complete      # pay it
+    curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/payment_failed
+    curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/cancel  # at period end
+    curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/delete  # Stripe ends it
+    curl -s -X POST "localhost:12111/_fake/events/<evt_id>/resend?signature=bad"
+
+State is in memory; a restart forgets it. For real Stripe, unset `STRIPE_API_BASE` and set the
+key, the webhook secret and the eight price ids in the api's environment (D-278 2).
+
 ## Known gaps
 
-- **Stripe has no local fake.** Billing is not built anyway.
 - **The marketing site is not here.** `intelcost-market-next` has no session, no
   database and no money, so it shares no seam with anything the bench tests. It has a
   production Dockerfile of its own and is added the day a test needs it.

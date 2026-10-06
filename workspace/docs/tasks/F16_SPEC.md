@@ -1,6 +1,6 @@
 # F16: Billing, plans, trials
 
-**Status:** adopted 2026-10-06 (D-277). Block A built. The founder's answers to the draft's
+**Status:** adopted 2026-10-06 (D-277). Blocks A and B built (D-278 records Block B's calls). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
 ([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
 
@@ -12,9 +12,11 @@ D-27, D-29, D-233, D-236, D-261 5, D-267 5, D-277. Notes: `docs/flows.md` §7, P
 `docs/archive/workspace_roles_tasks.md`. The current api and app code (file:line below, as of
 2026-10-06, before Block A).
 
-**Plan names (D-277 1).** Legacy's "Collaborator" plan is **Essentials** (`essentials`) and its
-"Pro" is **Professional** (`professional`; "Pro" is fine as a short form in UI copy). The
-**Collaborator role** is unrelated and keeps its name.
+**Plan names (D-277 1, 25).** **Essentials** (`essentials`) is the annotations and comments plan:
+annotations, comments and viewing, no measuring, no estimating, no AI. **Professional**
+(`professional`; "Pro" is fine as a short form in UI copy) is everything. User-facing text calls
+Essentials' drawing tools "Annotations". The Collaborator role is unrelated and keeps its name;
+bid markups in the estimate keep theirs.
 
 ## 1. Scope
 
@@ -41,7 +43,8 @@ D-27, D-29, D-233, D-236, D-261 5, D-267 5, D-277. Notes: `docs/flows.md` §7, P
 
 **Not in F16.**
 - Marketing's price page. It mirrors prices only; the app and Stripe are the authority (D-02).
-  It still says "Collaborator" and "Pro" and sends `plan=collaborator|pro`; the app reads both.
+  It names Essentials and Professional and sends `plan=essentials|professional` (the app also
+  reads legacy's codes).
 - Per-workspace tiering for a second workspace (D-18 keeps inheritance; a change needs its own D-NN).
 - **Tax (Q16).** No tax collection at launch; Stripe Tax off. No price anywhere mentions tax (no
   "including" or "excluding" wording). Checkout still collects the billing country and state.
@@ -77,10 +80,8 @@ cadence, as legacy billed plan price × seats):
 **Seats.**
 - The source of truth is `workspace_subscription.seats`, written only by the webhook (D-236 8: "no client can write them").
 - `ai_wallet.seats` follows it.
-- **Who takes a seat (Q6):** members with an editing role (owner, admin, editor). Our roles have no
-  "editor"; Block D reads it as every role that can edit takeoff or pricing (owner, admin,
-  estimator, takeoff, pricing) once the founder confirms. View-only members (viewer, collaborator,
-  the QA roles) are free.
+- **Who takes a seat (Q6, amended):** any member whose role can edit takeoff or pricing. View-only
+  members and members limited to annotations and comments are free.
 
 ## 3. Stripe
 
@@ -90,11 +91,12 @@ cadence, as legacy billed plan price × seats):
    - The api creates a subscription-mode session:
      - Line items follow legacy: the base price × 1, plus the seat add-on price × (seats − 1) when an add-on price exists; otherwise the base × seats.
      - `client_reference_id` = workspace uuid; metadata carries plan, cadence and seats.
-     - It reuses the workspace's Stripe customer when one exists. Legacy made a new one each time.
-     - It refuses when an active subscription exists, and sends the owner to the portal instead. Legacy had no guard.
+     - It reuses the workspace's Stripe customer (`workspace.stripe_customer_id`), made by the first Checkout. Legacy made a new one each time.
+     - It refuses (409, `code: "manage_billing"`) while a subscription is running, so the app can send the owner to Manage billing. A canceled subscription or a comp does not block it. Legacy had no guard.
      - Stripe Tax off; billing address collection on (country and state, Q16).
-   - Success and cancel return to `/settings/billing?checkout=success|cancelled`.
-2. **Webhook.**
+   - Success and cancel return to `/settings/billing?checkout=success|cancelled` (a minimal landing in Block B; the page is Block C's).
+   - **Built, Block B.**
+2. **Webhook. Built, Block B** (D-278 6, 7).
    - Route: `POST /api/stripe/webhook`, unauthenticated, verified with the signing secret and a 5-minute tolerance.
    - Each event id is stored once (`stripe_event`). A repeat is a 200 no-op.
    - Events:
@@ -114,10 +116,8 @@ cadence, as legacy billed plan price × seats):
    - **Annual seats (Q13):** adding seats mid-year is allowed, prorated by Stripe; removing seats
      takes effect at renewal (the portal's seat decrease scheduled to the period end).
    - **Cancellation (Q5)** takes effect at the end of the paid period (`cancel_at_period_end`).
-4. **Refunds (Q8).** A 30-day money-back guarantee on the first payment only, refunded by hand
-   from the Stripe dashboard. The Terms (`intelcost-market-next/src/app/terms/page.tsx:294`, "fees
-   are non-refundable") must be changed to match by the founder; this spec does not edit legal text.
-5. **Bench.** A Stripe fake on the bench (`flows.md` §7: Abdullah owns products, prices, the webhook secret and the fake). The secret names on Billing tiers are `app/config.py` settings (built, Block A), named for the new plan codes.
+4. **No refunds (Q8, replaced).** Fees are non-refundable, as the Terms say.
+5. **Bench. Built, Block B (D-278 2).** The Stripe fake is `intelcost-infra/fakes/stripe/server.py` (service `stripe-fake`, port 12111), and the bench api points `STRIPE_API_BASE` at it with a test key, the bench signing secret and `price_bench_*` ids. Production keeps the default base and sets the real key, signing secret and price ids; the products, prices and the webhook endpoint in Stripe are Abdullah's (`flows.md` §7).
 
 ## 4. Trials and the plan read
 
@@ -127,9 +127,9 @@ cadence, as legacy billed plan price × seats):
 
    | Subscription | Plan | View-only |
    |---|---|---|
-   | `active`; `comp` before its end date (or with none); `past_due` within `grace_until` | its plan | never (unless locked) |
+   | `active`; `comp` before its end date (or with none); `past_due` within `grace_until`; `canceled` before `current_period_end` (Block B) | its plan | never (unless locked) |
    | none, or `trialing` | Professional | when the trial window has closed |
-   | `canceled`, `unpaid`, `past_due` past its grace, `comp` past its end | (Professional, masked) | always |
+   | `canceled` past its period end, `unpaid`, `past_due` past its grace, `comp` past its end | (Professional, masked) | always |
 
    The platform's Lock makes a workspace view-only whatever its subscription.
 4. **Lapse (Q5).** `past_due` has 7 days' grace, then view-only. A cancellation ends at the period
@@ -217,8 +217,9 @@ No data comes from legacy (D-236 15 for credits; nothing else exists).
 
 ## 10. Signup from the price page (Q12)
 
-Signup always starts the trial. The plan, cadence and seats passed in are kept, and the app
-offers Checkout later (the Billing page and the trial button), pre-filled with them.
+Signup always starts the trial. The plan, cadence and seats passed in are kept on the user
+(`signup_plan`, `signup_cadence`, `signup_seats`; built, Block B), and the app offers Checkout
+later (the Billing page and the trial button), pre-filled with them (Block C).
 
 ## 11. Build order (one session each)
 
@@ -227,7 +228,7 @@ offers Checkout later (the Billing page and the trial button), pre-filled with t
    - The plan read: `dependencies.py` takes the plan from the subscription (none: Professional on trial, Q1); `trial_expired` and `on_trial` read the subscription first.
    - AI gated to Professional (Q3); the comp plan on Billing tiers.
    - Smoke: a comp Essentials workspace loses takeoff editing and AI.
-2. **B. Stripe fake on the bench, Checkout and webhook.**
+2. **B. Stripe fake on the bench, Checkout and webhook.** *Built 2026-10-06 (D-278).*
    - Checkout session, signed webhook, idempotent events, sync (period dates from the items, Q14).
    - `past_due` grace stamping; `workspace.plan.changed`.
    - Smoke: a fake checkout turns an expired trial into an editable Professional workspace in an open tab.

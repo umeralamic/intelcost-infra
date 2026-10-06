@@ -43,7 +43,7 @@ tag `fixtures-archive-2026-09-28` in `intelcost-infra` (D-68).
 is 9 of 25**, and the 16 it does not ship each name the feature that owns it, in the
 line itself. Two ticked lines carry a named remainder rather than a clean close, and
 both say so on the line: the platform-admin line owed F5 its on-screen half (**paid by
-F5-S18, 2026-09-27**), and the collaborator-plan line is unreachable end to end until F16 supplies a plan value. One
+F5-S18, 2026-09-27**), and the Essentials plan line was unreachable end to end until F16 supplied a plan value (**paid by F16 Block B, 2026-10-06**). One
 §2 line, "Members — list with role, shift and last activity", stays **partial** on
 purpose: last activity ships, the shift column waits for F15.
 
@@ -196,7 +196,7 @@ Nine roles: `owner`, `admin`, `estimator`, `takeoff`, `pricing`, `qa_takeoff`,
 - [x] Only the owner can grant the owner role, and only through a transfer. `src/lib/permissions/capabilities.ts` · **ported** (F3-S9; `canGrantOwnerRole` is locked in the matrix per **D-25**, so no override and no custom role can hand it out) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [x] A role or permission change reaches an open tab live, with no reload. `src/hooks/usePermissions.ts` · **ported** (F3-S8 on focus; **live since F8-S15**: a role change, an override and a custom role each reach an unfocused tab within a second, `f8-s15`) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 - [x] "Can the user do this" and "is the feature shipped" stay separate gates, the second being a feature flag. `src/hooks/useFeatureFlag.ts`, table `feature_flags` · **ported** (F3-S13; two calls, two answers, ANDed only where a control is drawn, and the two refusals read differently) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
-- [x] A `collaborator`-plan workspace loses the measure tools and keeps the markup tools. `src/lib/billing/planCapabilities.ts`, `src/components/takeoff/Toolbar.tsx` · **ported** (F3-S2 — **the mask is built and driven at module level, and no workspace can reach it end to end**: the plan reads a constant `pro` until **F16** supplies a real value, and there are no measure tools to lose until F5. Re-drive this line in F16) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
+- [x] An Essentials workspace gets annotations and comments, and not the measure tools. `src/lib/billing/planCapabilities.ts`, `src/components/takeoff/Toolbar.tsx` · **ported** (F3-S2 built the mask; **driven end to end in F16 Block B, 2026-10-06** (D-277 25): a workspace on Essentials shows the Annotations tab, Highlight, Cloud, Callout, Arrow and Note enabled and no Linear, Area or Count, checked on screen with a screenshot; the api refuses takeoff writes there) · *driven by fixture, archived at tag fixtures-archive-2026-09-28; re-driven by a throwaway smoke, F16 B*
 - [x] Platform-internal routes render the 404 page for a non-platform user, so internal tooling is invisible to customers. `src/components/route-guards/PlatformRoute.tsx` · **ported** (F3-S4; `RequirePlatformAdmin` renders `<NotFound/>`, anonymous callers included) · *driven by fixture, archived at tag fixtures-archive-2026-09-28*
 
 ## 4. Projects dashboard
@@ -566,9 +566,10 @@ The Estimating tab. `src/components/estimate/ProjectEstimatingView.tsx` (5,138 l
 - [ ] Export the library, with a "Fetching all items, this may take a moment." progress state. `src/pages/Library.tsx` · **missing**
 - [ ] Tag library assemblies and save the tags. `src/components/library/AssemblyTagPicker.tsx` · **missing**
 
-## 14. Markup
+## 14. Annotations
 
-The Collaborator tab, the $9.99 tier. `src/components/takeoff/ReviewMarkupLayer.tsx`
+The Annotations tab; what an Essentials workspace ($9.99) gets: annotations and comments
+(D-277 25). `src/components/takeoff/ReviewMarkupLayer.tsx`
 (826 lines), `NoteLayer.tsx` (764 lines), `HighlighterLayer.tsx`.
 
 - [ ] Place a cloud, callout, arrow, note or highlight, and select it afterwards. `src/components/takeoff/ReviewMarkupLayer.tsx`, `src/hooks/useReviewMarkups.ts` · **missing**
@@ -582,7 +583,7 @@ The Collaborator tab, the $9.99 tier. `src/components/takeoff/ReviewMarkupLayer.
 - [ ] The action bar for a selected markup sits next to the tools, not at the far right, and turns light yellow while a markup is in progress. `src/components/takeoff/DrawActionStrip.tsx` · **missing**
 - [ ] Box-select several markups and act on all of them from one action bar. `.lovable/plan/box-select-markups-selection-action-bar-and-a-selection-righ-2026-09-01.md` · **missing**
 - [ ] Highlights, notes and docks each arrive live for other viewers. `src/hooks/useHighlights.ts`, `useNotes.ts`, `useDocks.ts` · **missing** (D-10; the transport is built, F8. The events `takeoff.dock.changed`, `takeoff.highlight.changed` and `takeoff.note.changed` are named and F11 emits them)
-- [ ] A collaborator-plan user gets the markup tools and not the measure tools. `src/components/takeoff/Toolbar.tsx` · **missing**
+- [x] An Essentials workspace gets annotations and comments, and not the measure tools. `src/components/takeoff/Toolbar.tsx` · **ported** (the same line as §3's, driven in F16 Block B, 2026-10-06, D-277 25)
 
 ## 15. Evidence and snippets
 
@@ -1141,8 +1142,8 @@ behind their ticks. 606, not 595: F4 split §5's location line in two, D-35 adde
 "sharp at every zoom up to 4000%", and F8 added the collaboration lines.)
 
 One line inside the 111 carries a named remainder rather than a clean close, and the line
-itself says which: §3's collaborator-plan line is built and driven at module level but
-unreachable end to end until **F16** supplies a plan value. §3's platform-admin line owed
+itself says which: §3's Essentials plan line was built and driven at module level and
+unreachable end to end until **F16** supplied a plan value; F16 Block B drove it on screen. §3's platform-admin line owed
 **F5** its on-screen half, and F5-S18 paid it (`f5-s18`).
 
 The 2 remaining retired lines (D-15, D-17) are counted as driven and not as ported.
@@ -1461,7 +1462,7 @@ copying legacy structure, which D-11 says not to do:
 - `seed-from-assembly-show-the-real-assemblies-filtered-by-pare-2026-09-02`
 - `takeoff-layers-assemblies-starter-pack-2026-08-13`
 
-**§14 Markup**
+**§14 Annotations**
 
 - `action-bar-callout-text-for-the-annotation-tools-2026-08-24`
 - `action-bar-dot-callout-drag-handle-text-scale-fix-arrow-tuni-2026-08-24`
