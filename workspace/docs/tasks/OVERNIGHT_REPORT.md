@@ -5,11 +5,11 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after each part. Times are
 | Part | State |
 |---|---|
 | 1. Block F: AI credit top-ups | done 22:57 |
-| 2. Block G: platform billing pages | in progress |
-| 3. F16 end-to-end check | not started |
-| 4. Go-live checklist | not started |
-| 5. Auto Count accuracy and speed | not started |
-| 6. Marketing prices from the catalog | not started |
+| 2. Block G: platform billing pages | done 23:16 |
+| 3. F16 end-to-end check | done 23:29 |
+| 4. Go-live checklist | done 23:35 |
+| 5. Auto Count accuracy and speed | not started (moved after 6 to 8, see the plan) |
+| 6. Marketing prices from the catalog | in progress |
 | 7. Old arcs refit | not started |
 | 8. Old-migration lint | not started |
 | 9. Parity gap report | not started |
@@ -53,3 +53,117 @@ container, and `require_ai` for the refusal; only the provider call is skipped.
 - Members who are not admins see "To buy more, ask the workspace owner." on AI Credits.
 
 **F16_SPEC.md:** Block F marked built; §5 and §6 updated.
+
+## Part 2. Block G: platform billing pages (D-284)
+
+**Built.** Platform › Subscriptions (`/platform/subscriptions`, Developer menu), platform admins
+only, three tabs:
+- **Subscriptions:** every subscription and comp, with plan and cadence, seats and seats in use,
+  status, period, grace or cancel date, and Stripe ids linked to the dashboard (test or live by
+  the key). Filters by status and plan, search by workspace or owner email, 50 a page. Comps can
+  be made, edited and ended here.
+- **Webhook events:** the stored events, errors only on request, with Retry for an errored one.
+  Retry runs from the event's kept body (new `stripe_event.payload`) through the webhook's own
+  path.
+- **Plans:** the catalog editor (validated), with the "new Checkouts only" note.
+
+**Commits:** api `b48efbb`, app `ef2a13e`, infra `ca5b47b`.
+
+**Smoke** (throwaways, mail guard on, 0 sent):
+
+| # | Result |
+|---|---|
+| 1 | PASS: two subscribed (Professional monthly, Essentials annual) and one comp listed with the right plan, cadence, seats in use and status; the status and plan filters and the search by workspace and by owner email work on screen and api; Stripe links in test mode |
+| 2 | PASS: the fake hid a subscription and changed its seats: the webhook failed (500, "No such subscription." kept on the event, seats unchanged); unhidden, **Retry on screen** processed it: seats 3, +100 credits once; a second Retry answered "already processed", nothing doubled |
+| 3 | PASS: Professional's monthly price set to $41 with Stripe price id `…_v2` on screen ("Saved. New prices apply to new Checkouts only…"); a new Checkout carried the v2 price; the existing subscription kept its old price; restored afterwards |
+| 4 | PASS: Essentials credits per seat 100 refused on screen and api (422, "…stays 0") |
+| 5 | PASS: a comp made on screen (Professional, 2 seats: 200 credits), edited to 4 seats (+200 "Seats added", period kept), ended (trial still running: editable again); a second workspace whose trial was over went view-only (`trial_ended`) when its comp ended |
+| 6 | PASS: a non-admin gets "Page not found" at `/platform/subscriptions` and 403 on all seven routes |
+
+**Fixed along the way:**
+- Editing a running comp restarted its period, so every edit refilled the month's allowance. It
+  now keeps the period, and added seats bring only their own credits.
+- The plan cards remounted after a save and lost the saved message; they are keyed by plan code
+  now.
+
+**Decisions I made:**
+- **Prices reach Checkout only through Stripe price ids.** Checkout sends price ids, never
+  amounts. So "a new Checkout sends the new amount" means a new Checkout carries the new price
+  id. In real Stripe that id holds the new amount; the fake has no price objects. The editor
+  warns when a price changed but its price id did not.
+- The dashboard link is test mode unless the key is `sk_live_` or `rk_live_`.
+- Events received before Block G have no stored body and say "resend it from the Stripe dashboard".
+- One page with three tabs, rather than three pages.
+
+**Question for you:** should saving a price in the catalog create the new Stripe price itself? I
+did not: Stripe stays the authority for what is charged (D-02), and Abdullah creates the prices
+(Part 4's checklist covers it).
+
+## Part 3. F16 end-to-end check
+
+One throwaway account through the whole billing life in a real browser (bench app, marketing
+site, Stripe fake; mail guard on, 0 sent, 7 captured), in four browser phases with bench steps
+between them (moving the tier, moving a period end into the past, the fake's payment controls).
+
+| Step | Result |
+|---|---|
+| Price page: Yearly, Professional, 3 seats, the CTA | PASS: `signup?plan=professional&cadence=annual&seats=3`; signup reads "Starting on Professional, billed annual, 3 seats."; signed up and named the workspace |
+| Trial | PASS: Professional, "Trial, 14 days left", 100 credits, "a one-time allowance; no monthly refill" |
+| Restricted-tier caps on a second workspace | PASS: Billing lists the four caps as used of limit; a second project refused with the trial cap dialog and Go to Billing |
+| Billing pre-filled | PASS: Annual pressed, 3 seats, Professional chosen |
+| Checkout | PASS: Start subscription, the fake's Pay, back on Billing: active, annual, 3 seats |
+| Seats up in the portal | PASS: Manage billing, the portal to 4 seats; credits 300 -> 400 at once |
+| Invite past seats refused | PASS: with 4 of 4 in use, an invite says "All 4 seats are in use. Add a seat in Billing…" with a Billing link |
+| Buy a credit pack | PASS: $10 pack through the fake: 1,400 credits |
+| Payment failed (grace) | PASS: "Payment failed. Access continues until October 13, 2026." |
+| Recovered | PASS: "Active" |
+| Cancel at period end | PASS: "Cancels on October 6, 2027" |
+| Lapsed: view-only, the locked dialog | PASS **after a fix** (below): the dashboard says the workspace is view-only, the chrome button reads "Subscription ended", a write opens the locked dialog, Go to Billing reads ended |
+| Resubscribe | PASS: plan card, Pay, active; a project can be created again |
+| Essentials workspace | PASS: capabilities are administration, comments, annotations and uploads only; no takeoff, pricing or AI; the chip reads "AI on Professional"; AI credits `can_run` false |
+
+**Bug found and fixed** (its own commit, app `67f3172`):
+- A workspace whose **subscription ended** (or whose payment grace passed) had no way to Billing
+  outside Settings: the chrome button only knew "Trial ended". It now reads "Subscription ended"
+  or "Payment overdue".
+- The dashboard's disabled New project said **"Your role cannot create projects."** on a
+  view-only workspace, which blames the role. It now says "This workspace is view-only. Billing
+  has the details."
+
+**Not a fix, noted:** the locked dialog appears on a *refused write*. On a view-only workspace
+most write controls are already disabled, so it is mostly reached through the chrome button and
+Billing rather than the dialog. I drove the write through the app's own api client to show the
+dialog.
+
+**Questions for you:**
+1. **Wage Calculator on Essentials.** Project Home still shows the Wage Calculator button on
+   Essentials, and the page opens with its inputs. Edits are refused by the api (D-277 point 20:
+   no "Edit estimates"). Should the button and page be hidden on Essentials, or show the plan
+   message, rather than open read-only?
+2. **Estimating button on Essentials.** Project Home shows it too (I did not open it). Same
+   question.
+
+## Part 4. Go-live checklist
+
+[F16_GO_LIVE.md](F16_GO_LIVE.md), for Abdullah, in order:
+1. Products and prices: eight plan prices (base and seat, monthly and annual, per plan) and the
+   four one-time packs.
+2. Price ids into the catalog (Plans tab) and the pack table, with the settings as fallback.
+3. The key and signing secret, with `STRIPE_API_BASE` left unset and `APP_URL`.
+4. The webhook endpoint `https://api.intelcost.io/api/stripe/webhook` and its exact seven events.
+5. The customer portal, including "schedule downgrades at period end" (Q13), then
+   `STRIPE_PORTAL_CONFIGURATION`.
+6. Stripe Tax off.
+7. The API version, with blanks for him to record it (Q14).
+8. The mail guard off in staging and production.
+9. A test-mode run with test cards before live keys.
+10. Comps for testers.
+
+**Commit:** infra (workspace mirror) with Part 5's or the next commit; the document lives at the
+workspace root like every task file.
+
+**Decision I made:** the checklist tells Abdullah to allow portal quantity changes on the **seat**
+prices only. The base price stays at 1, because Checkout bills the base once plus seats − 1 at the
+seat price (D-277 point 22 and Block B). If the portal let the base quantity change, the seat
+count the api reads would still be right (it sums both items), but the price per seat would not
+be.
