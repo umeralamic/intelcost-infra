@@ -9712,7 +9712,8 @@ Step 3a left.
 1. **No legacy comparison.** Legacy has no Wage Calculator screen to compare (its wage
    pages are retired), so CLAUDE.md's legacy comparison does not apply to this feature.
 2. **P-02 is deferred.** Saving Advanced settings recalculates nothing and shows A-08,
-   "New settings apply the next time rates are calculated."
+   "New settings apply the next time rates are calculated." *Superseded by D-270: P-02 is
+   built.*
 3. **Reference defaults one value at a time.** Advanced settings shows a default only for
    the state or craft just picked, as a placeholder, never as a list or table. The api
    answers one state or one craft per request (`burden-profile/default`).
@@ -9921,3 +9922,34 @@ crews and hide IntelCost crews (Settings › Project Setup › Crews).
 `components/settings-layout.tsx`, `App.tsx`, `config/routes.ts`,
 `features/estimate/CrewRows.tsx`, `componentDraft.ts`; api `docs/wage-calculator/spec.md`,
 `BUILD_BRIEF.md`.
+
+## D-270: P-02 un-deferred: recalculate open projects after a settings change (reverses D-264 2)
+
+**Status:** decided (the founder's overnight brief, Part 5, 2026-10-06)
+
+D-264 2 deferred P-02. It is now built:
+
+1. **When.** An admin saves Advanced settings (the settings page or the review drawer) and
+   the workspace has open projects with a current saved set: "Recalculate labor rates on
+   [N] open projects?" with "Recalculate" and "Not now". "Not now", or no such project,
+   keeps today's behaviour: A-08, nothing recalculated.
+2. **Open.** A project in an Active status (Bidding, Revision required, Waiting on quotes,
+   Submitted, Change order), not archived, not in Trash, with a current set.
+3. **Same inputs, new settings.** Each project's current set is rebuilt from what was
+   saved: basis, wage determination, pricing basis, ZIP, county, state, partial fill,
+   policy, its WD upload, the wage data entered (a wage-data set's crafts that kept a base
+   wage) and the user's own rates (R-04, `rate_origin` user_override). It is saved through
+   the normal save, so following labor rows, the Labor burden markup and cached totals move
+   as on any save; rows with "Your rate" keep it.
+4. **One request.** Server-side, one savepoint per project, so a project that cannot be
+   recalculated is skipped and named ("[X] projects updated, [Y] skipped" with the reasons)
+   without undoing the others. Open projects per workspace are tens and each is one engine
+   run; the Celery path stays unused until a workspace needs it.
+5. **What moves.** National Average burdened rates are the published figures and do not
+   follow General liability or hours (the engine's own rule); a settings change moves
+   wage-data sets and company-benefit changes. A recalculation still saves a new set for
+   every open project.
+
+**Where:** api `app/features/wage_calculator/recalc.py`, `routes.py` (`GET`/`POST
+…/wage-calculator/recalculate`), `schemas.py`; app `features/wage-calculator/AdvancedSettings.tsx`,
+`api.ts`, `text.ts`; api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.

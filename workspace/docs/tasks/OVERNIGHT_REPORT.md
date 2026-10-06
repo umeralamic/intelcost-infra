@@ -144,3 +144,29 @@ It ends with 16 "Questions for Umer". Research came from three read-only agents 
   - pack prices: D-236 against legacy;
   - Collaborator AI credits;
   - refund wording: the pricing page against the Terms.
+
+## Part 5. P-02, recalculate after a settings change: done
+
+**Built.**
+- An admin who saves Advanced settings, when open projects have saved rates, is asked "Recalculate labor rates on [N] open projects?" (Recalculate / Not now). "Not now", or no such project, shows A-08 as before.
+- Recalculate rebuilds each open project's current set from its saved inputs, the entered wage data and its R-04 rates, and saves it through the normal save. Following rows, the Labor burden markup and cached totals move.
+- It runs in one request with a savepoint per project, and shows "[X] projects updated, [Y] skipped" with the reasons.
+- D-270 reverses D-264 2, which now carries a superseded note.
+
+**Commits.** api `8057eed`; app `e4a96dc`; infra: the workspace commit for D-270 and this report.
+
+**Smoke 2/2.**
+1. Two wage-data projects (Laborer $30 base, Carpenter $36, ZIP 06320, R-04 Plumber $88). General liability 6%, then Recalculate:
+   - "2 projects updated, 0 skipped";
+   - both Laborer rates $41.57 → $42.47;
+   - the following labor row $42.47; the "Your rate" row stayed $99;
+   - Plumber R-04 $88 kept; ZIP and basis kept.
+2. 7% then Not now: A-08, rates unchanged.
+
+**Decisions made on my own (in D-270).**
+- "Open" = an Active status, not archived, not in Trash.
+- Entries are rebuilt from craft rows that kept a base wage; there is no separate inputs table.
+- One request, not Celery.
+- National Average sets are still re-saved even though General liability does not move them (published figures); the count includes them.
+
+**Question.** Should P-02 count only projects whose rates the change actually moves (wage-data sets, or any set when company benefits change), so that a General liability change on a workspace of National Average projects asks nothing?
