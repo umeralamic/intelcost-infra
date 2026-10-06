@@ -395,6 +395,9 @@ TIN and volumes stay in the browser, as today.
   boundary drawn across the join in the site view; contour pieces into their surface's container,
   the boundary replacing each member's own; the site Calculate reads them as one contour and one
   boundary (D-271 14, 15).
+- [x] Block E4 (overnight 2026-10-06): Site Features and Strip Areas in a site's Calculate: each
+  member's mapped into the site frame and kept to its territory, a feature across the join one
+  feature (D-271 16); two quantity rows (a strip on each half strips the whole site; a feature
+  across the join, its undercut, prep and a strip made from it on one member).
 - [ ] D2b (select, move, copy and delete a `site_shape` as one, the join point slide (Q9), undo as
-  one step, arcs, Ortho, Snap and Snap PDF across members), then E and F's rest (Site Features and Strip Areas in a site
-  Calculate, Q14's group, Auto Trace on the stitched drawing, the C-200 acceptance row).
+  one step, arcs, Ortho, Snap and Snap PDF across members), then E and F's rest (Q14's group, Auto Trace on the stitched drawing, the C-200 acceptance row).

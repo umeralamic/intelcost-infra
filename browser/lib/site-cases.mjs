@@ -166,6 +166,40 @@ SITE_SHAPE_CASES.push(
     halves: halves(() => 100, ([x]) => 100 + (5.4 * (x - 50)) / 50),
     expect: { siteCutCY: 500, siteFillCY: 500, westExport: 500, eastImport: 500, siteExport: null, siteImport: null },
   },
+  {
+    // Block E4: a 0.5 ft Strip Area over each member's boundary strips the whole site, 10,000
+    // × 0.5 = 5,000 ft³; graded off stripped EG (the plane less 0.5) against FG 103, cut is
+    // where x + y > 175 (1,250 / 24 ft³) and fill is the net 15,000 plus it.
+    id: "site-strip-across-join",
+    kind: "site-extras",
+    halves: halves(([x, y]) => 100 + (2 * x) / 100 + (2 * y) / 100, () => 103),
+    strips: [
+      { uuid: "sa", sheet_uuid: "A", depth_ft: 0.5, source: "boundary", created_at: "2026-10-06T01:00:00Z" },
+      { uuid: "sb", sheet_uuid: "B", depth_ft: 0.5, source: "boundary", created_at: "2026-10-06T02:00:00Z" },
+    ],
+    features: [],
+    expect: { strips: 2, stripCY: 5000 / 27, cutCY: 1250 / 24 / 27, fillCY: 361250 / 24 / 27 },
+  },
+  {
+    // A Site Feature drawn across the join (ground x 40 to 70, y 20 to 60, 1,200 ft²) is one
+    // feature: undercut 2 ft at a 5 ft offset over 40 × 50 = 2,000 ft² (4,000 ft³), prep over
+    // its 1,200 ft². A Strip Area from it on A strips A's 400 ft² of it only, 1 ft deep.
+    id: "site-feature-across-join",
+    kind: "site-extras",
+    halves: halves(([x, y]) => 100 + (2 * x) / 100 + (2 * y) / 100, () => 103),
+    strips: [{ uuid: "sf", sheet_uuid: "A", depth_ft: 1, source: "features", feature_uuids: ["F"], created_at: "2026-10-06T03:00:00Z" }],
+    features: [
+      {
+        uuid: "F",
+        pieces: { A: [[40, 20], [50, 20], [50, 60], [40, 60]], B: [[50, 20], [70, 20], [70, 60], [50, 60]] },
+        undercut_depth_ft: 2,
+        undercut_offset_ft: 5,
+        prep_depth_ft: 1,
+        prep_lifts: 2,
+      },
+    ],
+    expect: { features: 1, undercutSF: 2000, undercutCF: 4000, prepSF: 1200, strips: 1, stripCY: 400 / 27 },
+  },
   { id: "stitch-three-joined", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, 705, 710]), expect: { joined: 3, flags: "" } },
   { id: "stitch-one-mismatch", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, 705, 711]), expect: { joined: 2, flags: "mismatch:Elevation differs across the match line (710 / 711)" } },
   { id: "stitch-one-unpartnered", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, null, 710]), expect: { joined: 2, flags: "unpartnered:No partner across the match line" } },

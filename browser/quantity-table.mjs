@@ -272,6 +272,8 @@ try {
     const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
     const vol = await import("/src/lib/takeoff/earthwork/volume/index.ts");
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
+    const sf = await import("/src/lib/takeoff/earthwork/surfaces.ts");
+    const fe = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
     const pt = ([x, y]) => ({ x, y });
     const fmt = (p) => `${+p.x.toFixed(9)},${+p.y.toFixed(9)}`;
@@ -316,7 +318,7 @@ try {
         return { chains: chains.length, totalFt: total, ends: [ch[0], ch[ch.length - 1]].sort((p, q) => p.x - q.x).map(fmt).join(" ") };
       }
       if (c.kind === "slide") return { point: fmt(st.slideOnMatchLine(pt(c.point), c.line.map(pt))) };
-      if (c.kind === "site-volume" || c.kind === "site-balance" || c.kind === "stitch") {
+      if (c.kind === "site-volume" || c.kind === "site-balance" || c.kind === "site-extras" || c.kind === "stitch") {
         const SA = { sheet: "A", scale: sc(h.P01), placement: st.ANCHOR, region: st.visibleRegion([h.aLine.map(pt)], pt(h.aCentre)), sortOrder: 0 };
         const SB = { sheet: "B", scale: sc(h.P02), placement: h.bPlacement, region: st.visibleRegion([h.bLine.map(pt)], pt(h.bCentre)), sortOrder: 1 };
         if (c.kind === "stitch") {
@@ -335,6 +337,34 @@ try {
         const ra = runs(c.halves.a, "a");
         const rb = runs(c.halves.b, "b");
         const surface = st.siteRuns([SA, SB], new Map([["A", ra], ["B", rb]]));
+        if (c.kind === "site-extras") {
+          // The members' drawings as items (sheetRuns and sheetFeatures read them), on sheets A and B.
+          const geom = (sheet, points, meta, k) => ({ uuid: sheet + k, sheet_uuid: sheet, vertices_json: points, shape_meta: meta, geometry_version: 1, role: "add" });
+          const on = { A: ([gx, gy]) => [gx / 100, gy / 100], B: ([gx, gy]) => [gx / 200, (gy + 50) / 200] };
+          const items = [
+            ...[["A", c.halves.a], ["B", c.halves.b]].flatMap(([sheet, list]) => list.map((x, k) => ({ uuid: sheet + x.item + k, type: x.kind, name: x.item, created_at: "", geometries: [geom(sheet, x.points, { surface: x.surface, elevation: x.elevation }, k)] }))),
+            ...c.features.map((f) => ({
+              uuid: f.uuid, type: "sf", name: f.uuid, created_at: "2026-10-06T00:00:00Z", is_site_feature: true, role_depth_ft: 0,
+              undercut_depth_ft: f.undercut_depth_ft, undercut_offset_ft: f.undercut_offset_ft, undercut_fill_material: null, undercut_disposition: "haul_off", prep_depth_ft: f.prep_depth_ft, prep_lifts: f.prep_lifts,
+              geometries: Object.entries(f.pieces).map(([sheet, pts], k) => geom(sheet, pts.map(on[sheet]), null, k)),
+            })),
+          ];
+          const rows = c.strips.map((x) => ({ name: x.uuid, feature_uuids: [], vertices_json: null, color: "", disposition: "haul_off", reuse_kind: null, is_hidden: false, ...x }));
+          const own = st.siteRuns([SA, SB], new Map(["A", "B"].map((s) => [s, sf.sheetRuns(items, s)])));
+          const ex = st.siteExtras([SA, SB], items, rows, own);
+          const frame = { feetPerNorm: 1, widthPt: own.page.widthPt, heightPt: own.page.heightPt };
+          const bnd = own.runs.find((x) => x.kind === "boundary");
+          const labels = new Map(items.map((x) => [x.uuid, x.name]));
+          const out = vol.computeVolumes({ eg: tin.runTinForSurface(own.runs, "EG", labels), fg: tin.runTinForSurface(own.runs, "FG", labels), boundary: bnd ? bnd.points : null, calibration: frame, units: "CY", roleAreas: fe.roleAreasOf(ex.features), stripAreas: ex.strips }, own.runs, labels);
+          if (out.ok !== true) return { error: out.error ? out.error.message : String(out.ok) };
+          const fx = fe.computeFeatureExtras(ex.features, bnd ? bnd.points : null, frame);
+          const u = fx.find((x) => x.undercut);
+          const p = fx.find((x) => x.prep);
+          const res = { strips: (out.stripAreas ?? []).filter((x) => x.volumeCY > 0).length, stripCY: (out.stripAreas ?? []).reduce((t, x) => t + x.volumeCY, 0), features: ex.features.length, cutCY: out.cutCY, fillCY: out.fillCY };
+          if (u) Object.assign(res, { undercutSF: u.undercut.areaSF, undercutCF: u.undercut.volumeCF });
+          if (p) res.prepSF = p.prep.areaSF;
+          return res;
+        }
         const siteCalc = calc(surface.runs, { feetPerNorm: 1, widthPt: surface.page.widthPt, heightPt: surface.page.heightPt });
         const bnd = surface.runs.find((x) => x.kind === "boundary");
         const boundarySF = bnd ? Math.abs(st.area(bnd.points)) * surface.page.widthPt * surface.page.heightPt : 0;

@@ -10026,6 +10026,15 @@ survey link; one join per pair of sheets, whichever way it was drawn.
 15. **Pieces meet exactly.** Boundary pieces are snapped to 0.001 ft after their clip, so the
     pieces of one boundary unite into one ring across the join. The site's Calculate reads the
     items fresh, as a sheet's does, so a line drawn a moment before is counted.
+16. **Site Features and Strip Areas on a site (E4)** are each member's, read as its own sheet
+    reads them, carried into the site frame and kept to its territory (`siteExtras`). A
+    feature drawn across the join is one feature: its pieces are united before its undercut
+    offset and its prep. A strip stays its member's: a strip over a member's boundary strips
+    that member's part of the site's boundary, and one made from a feature strips the
+    feature's part on that member. So a site with no strip on one member strips nothing there,
+    as that sheet alone would. The site preview shows the strip, undercut and prep with the
+    cut and fill, and its balance is the one the lines price. The version key reads the
+    members' strips and the site's features.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

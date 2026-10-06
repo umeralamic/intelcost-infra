@@ -316,6 +316,19 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decisions: D-271 14, 15.
 - Commits: app `d162771`; infra: the workspace commit for D-271 14, 15 and this report.
 
-**Stopped after D2a** (06:00).
+**E4. Site Features and Strip Areas in a site Calculate: done.**
+- Each member's Site Features and Strip Areas, as its own sheet reads them, are carried into the site frame and kept to its territory. A feature drawn across the join is one feature; a strip stays its member's (D-271 16).
+- The site preview now shows Strip, Undercut and Prep beside the cut and fill. Its balance is the one the lines price, so topsoil kept for reuse counts.
+- Quantity table: 2 new rows, both right first time (17 site rows):
+  - a 0.5 ft strip on each half strips the whole 10,000 ft² site, and the stripped grade's cut and fill match the hand-worked plane;
+  - a feature across the join is one feature (undercut 2,000 ft² at a 5 ft offset, prep 1,200 ft²), and a strip made from it on one member strips only that member's 400 ft².
+- Smoke 3/3 (throwaway). Setup: a 120 × 100 ft boundary, an EG plane against FG 102, a 40 × 20 ft Pad across the join (undercut 2 ft at 5 ft, prep 1 ft), and a 0.5 ft strip on each member.
+  1. Calculate read "Cut 91 BCY, Fill 313 CCY, Strip 222 BCY, Undercut 111 BCY, Prep 800 SF", the hand-worked answer.
+  2. Save to estimate wrote the site's lines under "Grade: …": two strips at 111.1, undercut 111.1, prep 800, cut 90.7, fill 313.0. Checked in the database: the script's own read of the item list misread the response shape, a script fault.
+  3. A strip's depth changed on member B: the view showed "Stale: a sheet of the site changed since".
+- Decisions: D-271 16.
+- Commits: app `6b7530a`; infra: the quantity rows, D-271 16 and this report.
+
+**Stopped after E4** (06:20).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
