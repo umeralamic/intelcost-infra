@@ -1,78 +1,48 @@
-# Overnight plan (2026-10-03, the founder's words, verbatim)
+# Overnight plan, 2026-10-06 (stop 11:30 UTC)
 
-I am going to sleep. Work autonomously on the tasks below until they are
-all done, then finish the report and stop. Hard limit: stop by 11:30 UTC
-(4:30 PM Pakistan time) on the next such time from now, even if not done.
+Rule for every part: finished, gated (app tsc/eslint/build; api ruff/format/mypy), quantity
+table, throwaway smoke check, committed and pushed on `umer-dev` before the next starts.
+Unfinished work at 11:30 goes to a named stash `overnight-<part>-unfinished`, never a commit.
+The report (`docs/tasks/OVERNIGHT_REPORT.md`) is updated after each part.
 
-READ FIRST: CLAUDE.md, MANAGER.md, FEATURES.md, DECISIONS.md (latest
-most relevant, through D-237), docs/PARITY.md, docs/legacy_comparison.md,
-docs/tasks/SINCE_ARCHIVE.md, and the last overnight report in
-docs/archive/ for the differences left with reasons.
-Where things stand: F2 to F16a and F18 Blocks A and B are built; F19
-site stitching waits for another night (do not start it). Hidden Valley
-Spec's earthwork is the founder's own test: do not add, change or remove
-any of it.
+## Part 1. Wage Calculator Step 5 (crews and classification)
+Built, smoke 6/6, committed 02:15 UTC. See the report.
 
-HARD RULES
-- Never stop to report, never ask me anything, never wait for me until
-  every task is done. Where you would normally ask, choose legacy's
-  behaviour and log a D-NN marked "decided overnight, pending founder
-  review".
-- After 3 failed attempts on one item, record the evidence and move on.
-- At 11:15 UTC, if still working, stop starting new work: commit, push,
-  refresh the mirror, finish the report, then end.
-- Save these instructions verbatim to docs/tasks/OVERNIGHT_PLAN.md
-  (replace the old one) and start a new docs/tasks/OVERNIGHT_REPORT.md
-  (archive the old one to docs/archive/ with its date) with a progress
-  checklist at the top, updated after every task. After any compaction,
-  re-read CLAUDE.md, OVERNIGHT_PLAN.md, OVERNIGHT_REPORT.md and
-  docs/legacy_comparison.md, then continue from the checklist.
-- Never touch main. Never force-push. Never run docker compose down -v.
-- Clean up ONLY rows your own checks created. Never click Print in the
-  MCP browser.
+## Part 2. Wage Calculator Step 6, workspace crew settings
+1. **Data.** One migration: `workspace_crew_map_override` (system, node_code, table_type,
+   crew_code, is_default, sort_order, hidden; one default per node and table, partial
+   unique index), `workspace_crew` (table_type, name unique per workspace and table,
+   division, `code` "W-" + 10 hex of its uuid), `workspace_crew_member` (crew, craft_code,
+   member_count > 0, position), `workspace_crew_hidden` (crew_code, table_type).
+2. **Resolution.** Engine `resolve_node(ref, system, code, table, overrides)`: the Step 5
+   chain (the node and its parents up to the crosswalk, then the CSI chain), walked twice:
+   first for a workspace override anywhere on it, then for IntelCost rows. Result: default,
+   suggested, source (workspace / IntelCost) and the node it came from. Feature layer: a
+   workspace catalog (IntelCost + custom crews, hidden set, overrides) used by the Step 5
+   suggestions, auto-fill and classification change, and by the settings tree.
+3. **Hidden crews.** Dropped from Suggested, Other [trade] crews and the default (the
+   first visible suggested crew becomes the default); still in Search all crews.
+4. **Custom crews.** In every picker (Search all crews, Other [trade] crews by lead craft)
+   and in the project's current rates (priced live from the saved set's crafts). Crafts
+   must exist in the crew's table.
+5. **API** (`/api/workspace/{ws}/wage-calculator/crew-settings/…`): tree children (or a
+   search) for a system and table with the effective crews and their source; orphaned
+   overrides; set / reset a node override; custom crews CRUD (delete removes it from
+   overrides); hide / unhide; a crew catalog for the pickers. Reads any member, writes
+   `MANAGE_WORKSPACE`.
+6. **App.** Settings › Project Setup › Crews: system and table switch, orphans banner,
+   tree with search, node editor (three-section picker plus custom crews, reorder), Custom
+   crews tab with IntelCost crews to hide, Hidden crews list. Read-only for non-admins.
+7. **Docs.** spec "Workspace crew settings", brief Step 6, one DECISIONS entry, SINCE_ARCHIVE.
+8. **Smoke** E1 to E8, then commit both repos.
 
-TEST PROJECT: "Hidden Valley Spec" in "F5 Block A demo 15:16", as
-estimator@bench.intelcost.io, outside its earthwork. Remove throwaway
-data after each check.
+## Part 3. End-to-end Wage Calculator check (if time remains)
+One Playwright pass over the listed flow; fix clear bugs only, one commit each.
 
-METHOD for every item: legacy source on UmeralamDEV, its plan files,
-drive live legacy (credentials in intelcost-infra/.env.legacy; never
-print or commit them), list every visible control, label, menu entry,
-default and state change, then build to match legacy exactly. Any
-improvement beyond legacy you notice goes under "Ideas" in the report,
-not built.
+## Part 4. F16 billing spec draft (if time remains)
+`docs/tasks/F16_SPEC_DRAFT.md`, documents only, ending with "Questions for Umer".
 
-TESTING (speed mode): after each item run the gates, the quantity table
-(./quantity-table.sh, always), and a throwaway Playwright smoke check.
-Fix failures before moving on. No fixture files. Commit and push per
-item.
+## Part 5. P-02 recalculate on settings change (if time remains)
 
-TASKS, in order:
-1. SUB-ITEMS EDITOR, exactly as legacy's: its full editor (about 829 px)
-   with the Formulas and Costs tabs, the classification column, "Seed
-   from…", variables, and the Insert menu with every entry legacy has
-   (dimensions, variables, parent quantities, sibling sub-items, and
-   anything else). Match its layout, columns, row actions, validation
-   messages, live preview, keyboard behaviour and save rules. Replace
-   our formula table with it (D-208 left this difference; it is now
-   to be closed). Keep the quantity table green: sub-item formulas must
-   compute exactly as before.
-2. OVERLAY SUB-ROWS in the Sheets panel: overlays listed under their
-   base sheet as legacy shows them, with legacy's row actions.
-3. NAME FROM PAGE REGION: legacy's in-dialog Draw and Redraw buttons.
-4. CUSTOM SNAPSHOT TYPES as workspace rows, as legacy (shared across the
-   workspace's projects, managed where legacy manages them), migrating
-   any project labels we already store.
-5. PHONE-WIDTH TAKEOFF LAYOUT (a founder request, beyond legacy): below a
-   tablet width, collapse the Sheets and Takeoff panels so the canvas is
-   usable (legacy keeps both panels and squeezes the canvas to about
-   60 px at 375 px). Panels open as overlays from their edge tabs. Log
-   it as a D-NN beyond legacy. Check at 375x740 and 768x1024 that
-   drawing, Calibrate and the panels work.
-
-When all five are done, finish and stop. Do not start anything else.
-
-MORNING REPORT (docs/tasks/OVERNIGHT_REPORT.md): tasks with status,
-start, end and duration; commits; decisions to review; legacy
-differences fixed and any left with reasons; failures and findings;
-Ideas; and short click-only checks, most important first.
+## Part 6. F19 site stitching (if time remains)
+Block list written here before starting, from the F19 spec and D-231.

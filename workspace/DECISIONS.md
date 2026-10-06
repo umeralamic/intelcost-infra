@@ -9884,3 +9884,40 @@ app `features/estimate/CrewRows.tsx`, `componentDraft.ts`, `useComponentEditor.t
 `ComponentDialog.tsx`, `EstimatingView.tsx`, `pages/ProjectTakeoff.tsx`,
 `features/wage-calculator/api.ts`, `hooks.ts`, `text.ts`; api `docs/wage-calculator/spec.md`,
 `BUILD_BRIEF.md`.
+
+## D-269: Workspace crew settings: workspace lists first, hidden crews searchable, saved rows untouched
+
+**Status:** decided (the founder's Step 6 brief, 2026-10-06, overnight)
+
+Step 6 lets a workspace set which crews each classification node suggests, make its own
+crews and hide IntelCost crews (Settings › Project Setup › Crews).
+
+1. **Resolution order.** A node's crews are the workspace's own list found anywhere on its
+   Step 5 chain (the node, its parents up to the crosswalk, the CSI node and its parents),
+   nearest first; IntelCost's rows only when no node on the chain has one. Read
+   literally from the brief ("workspace override … > IntelCost default"), so a list set
+   on a division wins over IntelCost rows on the scopes below it.
+2. **Hidden crews.** Never suggested, never "Other [trade] crews", never a default: a
+   hidden default gives way to the first crew still suggested, so a node keeps a default
+   while it suggests anything. "Search all crews" still finds them. Only IntelCost crews
+   are hidden; a workspace crew is deleted instead.
+3. **Snapshot rule.** Settings never touch saved estimate items. Only new picks and
+   auto-fills read them. Deleting a workspace crew removes it from node lists; rows using
+   it keep their rows, and its name rides on the rows (`crew_name`).
+4. **Orphans.** A workspace list whose node is gone from the workspace's classification is
+   listed as "Node no longer exists" with Delete; it still applies to a node of that code
+   if one is made again.
+5. **Workspace crews are priced live.** They are not stored in a saved rate set; the
+   project's crews read adds them, priced from the set's crafts, available when the set
+   has every craft. Their crafts must be of their table.
+6. **A node list records what it dropped.** IntelCost crews the node had and the list
+   leaves out are stored as `hidden` rows: a record, never suggested.
+
+**Where:** api `alembic/versions/f1c6a8e3d527_workspace_crew_settings.py`,
+`app/features/wage_calculator/models.py`, `crew_settings.py`, `scope.py` (`CrewBook`),
+`routes.py`, `schemas.py`; `app/wagecalc/scope.py` (`chain`, `resolve_node`);
+`app/features/estimate/schemas.py` (`CrewRow.crew_name`); app
+`features/wage-calculator/CrewSettings.tsx`, `api.ts`, `pages/SettingsCrews.tsx`,
+`components/settings-layout.tsx`, `App.tsx`, `config/routes.ts`,
+`features/estimate/CrewRows.tsx`, `componentDraft.ts`; api `docs/wage-calculator/spec.md`,
+`BUILD_BRIEF.md`.
