@@ -10268,3 +10268,28 @@ and area were wrong. On the same isotropic basis as D-272:
 `engine/selection.ts`, `lib/takeoff/quantity.ts` (`trueArc`), `SheetCanvas.tsx`,
 `site/siteEdit.ts`; api `app/features/takeoff/quantity.py` (`arc_radii`, `circular_arc`,
 `true_arc`), migration `d5a2b7e9c1f4`; infra `browser/lib/quantity-cases.mjs`.
+
+## D-276: In the site view a shape's stored geometry moves with it; a curve over a match line becomes segments
+
+**Status:** decided (the founder's brief, 2026-10-06)
+
+The site view moved a member's own shape by its vertices only, so an ellipse's centre, inline
+arcs' centres and a rectangle's corners stayed behind (drawn and measured wrong), and a copy
+or a re-split carried that `shape_meta` onto pieces it did not describe.
+
+1. **Within a sheet.** A move or a copy of a member's own shape takes every vertex and every
+   point its `shape_meta` stores (an ellipse's centre, inline arcs' centres, a rectangle's
+   corners) by the same move on its page (`movedShape`, through the canvas's own
+   `placeShape`), so it is drawn and measured as before.
+2. **Over a match line.** An ellipse, or a run or an area with inline arcs, moved or copied so
+   that it reaches another member becomes its drawn outline in site feet as chords of at most
+   2°, split at the joins (a line, closed when the curve is) or clipped to each member (an
+   area), under a new `site_shape`, with "Curve crossing a match line was converted to
+   segments." (as D-273 does for arcs; its length within 0.005 %, its area within 0.02 %).
+   Pieces split at a join keep no geometry `shape_meta` (`plainMeta`): a piece is points only.
+3. **Handles.** A curve's samples take no vertex handles in the site view, as on the sheet;
+   a press on it moves it whole. It is shown and picked along its drawn outline.
+
+**Where:** app `features/takeoff/earthwork/site/siteEdit.ts` (`isCurve`, `holdsGeometry`,
+`plainMeta`, `movedShape`, `curveAcross`; `movedOnPage` removed), `site/SiteView.tsx`
+(`replaceCurve`, the move and copy paths, handles).
