@@ -94,3 +94,24 @@ seated with psql on the throwaway workspace.
 **Not smoke-tested by UI.** The orphans banner (API checked), editing and deleting a custom crew, Unhide.
 
 **No longer matching.** Nothing known; spec "Workspace crew settings" and brief Step 6 were written with the code.
+
+## Part 3. End-to-end Wage Calculator check: done, no bugs found
+
+One Playwright pass (throwaway account and workspace, script deleted), 11/11:
+1. Project with no drawing → Wage Calculator → Commercial, National Average, no ZIP: L-08, S-01, strip "National Average · Open Shop / Market Wage · Burdened (fully loaded) · No location".
+2. Padded ZIP "6320": L-02 "We read this as ZIP 06320, New London, CT. Is that right?", Yes, L-04, saved.
+3. Save after the location change: P-01 "Project info changed since rates were saved. Recalculate?", Recalculate; strip "Southeastern Connecticut Planning Region, CT".
+4. Multi-county ZIP 78932: L-05 "covers Fayette County (55%) and Washington County (45%)", second county picked and saved.
+5. ZIP cleared: back to L-08.
+6. Public, Prevailing Federal, ZIP 79714, My wage data with tx115.txt: 19 crafts carry R-01 (Laborer $60.53, "Raised to local market rate (WD minimum $9.22)"), saved through B-02.
+7. Open shop manual entry: Carpenter $6.00 shows M-01; at $38.00 the review gives $48.85.
+8. Advanced settings: General liability 2.5% saved (stored 0.025), "New settings apply the next time rates are calculated."
+9. One-page drawing, Commercial, Direct, National Average saved; a labor component on a CSI 26.04 item opened with Electrician + Laborer, Auto.
+10. Direct: Labor burden line 48.7158% of direct labor, $23.81 on $48.86 of labor, the crafts' weighted burden (the set's average is 51.8680%).
+11. R-04 Laborer $60.00 on review, S-02 confirm, the labor row following the saved rates now $60.
+
+**Commits.** None: nothing to fix. Every failure during the pass was the script's (waiting on a refetch, a locator, the strip naming the county not the ZIP, B-02 rather than P-01 when the basis also changed); each was checked against the app before being put down to the script, once with a probe of the context refetch (it lands about 100 ms after S-01).
+
+**Questions for you.**
+- The Labor burden line shows four decimals ("48.7158%"). D-266 says "the effective percentage"; is two decimals (48.72%) what you want on the bid summary?
+- Connecticut ZIPs show the 2022 planning region as the county ("Southeastern Connecticut Planning Region"). Fine for the strip, or should it read the old county name (New London County) that WDs before 2022 use (U-02 note in the spec)?
