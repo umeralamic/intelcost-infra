@@ -82,6 +82,7 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
 - **E3** (done 04:45): the site result goes stale with a member's drawing.
 - **C2** (done 04:58): live pdf.js renders per member in the site view.
+- **D2a** (05:15 to 06:00): contours and the boundary drawn across the join.
 - **D1** (started 05:00, done 05:10): draw Linear, Area and Count across the join in the site view, straight
   segments, into a chosen item; each shape split per member (`splitAtJoins`, `clipAreaToMembers`,
   a count to the member it falls in) and saved on the members' own sheets with one `site_shape` id;

@@ -301,6 +301,21 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   3. a mark east of the line saved on the east sheet only; Light 2 EA; 8 shapes drawn in the view.
 - Commits: app `a83cf91`; infra: the workspace commit for this report.
 
-**Stopped after D1** (05:10).
+**D2a. Contours and the boundary across the join: done.**
+- EG and FG contours (elevation typed) and the work boundary are drawn in the site view and split per member. Contour pieces go into their surface's container; the boundary replaces each member's own.
+- The site Calculate reads them as one contour per elevation and one boundary.
+- Smoke 3/3 (throwaway, two sheets joined at x = 100):
+  1. a 120 × 100 boundary saved as 2 pieces, and the west sheet's own boundary was replaced;
+  2. EG 100 and 104, FG 102 twice, each drawn across: 8 contour pieces;
+  3. Calculate read "Cut 148 BCY, Fill 148 CCY, Balanced on site", the hand-worked answer: the EG plane between y = 30 and 110 against FG 102 over a 100 ft width gives 4,000 ft³ each way.
+- **Three bugs found and fixed while getting there:**
+  - the sheets' labels took a drawing click (and opened the sheet), now inert while drawing;
+  - the boundary pieces did not unite across the join (a 1e-10 ft float sliver from each territory's edge), now snapped to 0.001 ft after the clip;
+  - the site Calculate read the page's item list before it refetched, so a contour drawn a moment before was missed ("All points are collinear"); it now fetches the items fresh, as a sheet's Calculate does.
+- Also, on the way: a TIN leaves out contour points outside the boundary, as a sheet's does. My first test drew every contour outside the boundary, and that, not the app, gave nothing to triangulate.
+- Decisions: D-271 14, 15.
+- Commits: app `d162771`; infra: the workspace commit for D-271 14, 15 and this report.
+
+**Stopped after D2a** (06:00).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

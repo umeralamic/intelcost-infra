@@ -391,7 +391,10 @@ TIN and volumes stay in the browser, as today.
   view into a chosen item, straight segments; a run split at the match lines, an area clipped to
   each member, a mark on the member it falls in, the pieces saved on the members' own sheets with
   one `site_shape` id (Q15); the members' shapes shown in the view, clipped to their sides.
-- [ ] D2 (select, move, copy and delete a `site_shape` as one, the join point slide (Q9), undo as
-  one step, arcs, Ortho, Snap and Snap PDF across members, contours and the boundary drawn
-  across), then E and F's rest (Site Features and Strip Areas in a site
+- [x] Block D2a (overnight 2026-10-06): EG and FG contours (at a typed elevation) and the work
+  boundary drawn across the join in the site view; contour pieces into their surface's container,
+  the boundary replacing each member's own; the site Calculate reads them as one contour and one
+  boundary (D-271 14, 15).
+- [ ] D2b (select, move, copy and delete a `site_shape` as one, the join point slide (Q9), undo as
+  one step, arcs, Ortho, Snap and Snap PDF across members), then E and F's rest (Site Features and Strip Areas in a site
   Calculate, Q14's group, Auto Trace on the stitched drawing, the C-200 acceptance row).

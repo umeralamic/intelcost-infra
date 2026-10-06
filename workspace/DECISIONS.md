@@ -10016,6 +10016,17 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     changed since." A spot on a match line counts once (the anchor-nearest copy), so changing
     the other copy changes nothing.
 
+**Block D, the same night (D1 takeoff, D2a earthwork):**
+14. **Drawing in the site view** is straight segments into a chosen item (D1), and EG or FG
+    contours at a typed elevation and the work boundary (D2a). The pieces are saved on the
+    members' own sheets with one `site_shape` id in their shape meta. A contour's pieces go
+    into its surface's container (made on first use). The site boundary replaces each member's
+    own, one piece per member (a sheet keeps one boundary). Selecting, moving and deleting a
+    `site_shape` as one, the join-point slide, arcs, Ortho and Snap across members are D2b.
+15. **Pieces meet exactly.** Boundary pieces are snapped to 0.001 ft after their clip, so the
+    pieces of one boundary unite into one ring across the join. The site's Calculate reads the
+    items fresh, as a sheet's does, so a line drawn a moment before is counted.
+
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,
 `EarthworkResult.superseded_by_site_id`), `registration_routes.py`, migration
