@@ -10293,3 +10293,94 @@ or a re-split carried that `shape_meta` onto pieces it did not describe.
 **Where:** app `features/takeoff/earthwork/site/siteEdit.ts` (`isCurve`, `holdsGeometry`,
 `plainMeta`, `movedShape`, `curveAcross`; `movedOnPage` removed), `site/SiteView.tsx`
 (`replaceCurve`, the move and copy paths, handles).
+
+## D-277: F16 billing: the founder's answers; plans renamed Essentials and Professional; spec adopted
+
+**Status:** decided (the founder's brief, 2026-10-06); points 18 to 24 are my calls inside it
+
+The founder answered the sixteen questions of `docs/tasks/F16_SPEC_DRAFT.md`. The spec is adopted
+as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
+
+**Plan names**
+1. **Renamed.** The plan "Collaborator" is now **Essentials** (code `essentials`) and "Pro" is
+   **Professional** (code `professional`); "Pro" stays acceptable as a short form in UI copy.
+   The **Collaborator role** keeps its name: only the plan is renamed.
+
+**The sixteen answers**
+2. **Q1, trial plan.** A workspace on trial uses the Professional plan.
+3. **Q2, tier caps after paying.** A restricted tier's caps end when the workspace subscribes,
+   whatever its country.
+4. **Q3, AI on Essentials.** AI tools, AI credits and PDF or AI wage determination extraction are
+   Professional only; Essentials gets no AI credits (`credits_per_seat` 0). Text-file wage
+   determination autofill stays free on every plan and on trial.
+5. **Q4, refill.** A subscriber's AI allowance refills at each billing period start; an annual
+   plan refills monthly on the subscription's anniversary day. A trial gets a one-time allowance
+   at trial start and no monthly refill.
+6. **Q5, lapse.** `past_due` gets a 7-day grace period, then view-only. A cancellation takes
+   effect at the end of the paid period, then view-only. Data is never deleted on lapse.
+7. **Q6, seats.** Seats are the members holding an editing role (owner, admin, editor); view-only
+   members are free. An invite past the seat count is refused with "Add a seat". Our roles have
+   no "editor": Block D reads it as every role that can edit takeoff or pricing (owner, admin,
+   estimator, takeoff, pricing), and the founder confirms that mapping before it is built.
+8. **Q7, invoices.** Through the Stripe customer portal only; no invoice list in the app.
+9. **Q8, refunds.** A 30-day money-back guarantee on the first payment only. The Terms must say the
+   same: today `intelcost-market-next/src/app/terms/page.tsx:294` says fees are non-refundable.
+   That legal text is the founder's to change; it is flagged, not edited.
+10. **Q9, measurements cap.** The trial measurements cap counts live items.
+11. **Q10, packs.** AI credit packs as D-236 9.
+12. **Q11, who buys.** Plan Checkout: the owner only. AI credit top-ups: the owner and admins.
+13. **Q12, signup from the price page.** Signup starts the trial and offers Checkout later,
+    pre-filled with the plan, cadence and seats passed in.
+14. **Q13, annual seats.** Adding seats mid-year is allowed (prorated by Stripe); removing seats
+    takes effect at renewal.
+15. **Q14, API version.** Code reads a subscription's period dates from its subscription items, so
+    it works on newer Stripe API versions. The founder will confirm the account's API version.
+16. **Q15, abuse signals.** Only the VPN flag at signup in F16; fuller signals later.
+17. **Q16, tax.** No tax collection at launch and Stripe Tax off. Prices never mention tax anywhere
+    (no "including" or "excluding" wording). Checkout still collects billing country and state.
+
+**My calls (Block A)**
+18. **The plan read.** A subscription that is `active`, `comp` (until its end date, if it has
+    one) or `past_due` within its grace gives its plan, and the workspace is never on trial
+    and never expired. With no subscription, or one `trialing`, the workspace is Professional
+    while its trial window runs (Q1) and view-only after it. A lapsed subscription (`canceled`,
+    `unpaid`, `past_due` past its grace, or a comp past its end date) is view-only whatever the
+    trial window says. A `past_due` row with no `grace_until` yet counts as in grace: Block B's
+    webhook stamps it. The platform's Lock still wins over a subscription.
+19. **Essentials keeps administration.** Legacy's Collaborator mask removed every capability but
+    comments, uploads and annotations, administration and billing included, so an owner on that
+    plan could not invite, manage the workspace or reach Billing to upgrade (and Q11 needs the
+    owner to buy). The Essentials mask grants comments, uploads and annotations, plus the
+    administration the expired trial keeps (manage the workspace, invite, remove, assign roles,
+    grant owner, transfer, billing, workspace activity). No takeoff, no estimating, no AI.
+20. **Text autofill on Essentials.** It has no plan check of its own, so the plan never refuses it.
+    The Wage Calculator writes estimating data and asks for "Edit estimates", which the Essentials
+    mask removes, so on Essentials the upload is refused by that permission like the rest of the
+    calculator. If Essentials should keep the Wage Calculator, that is a change to the mask for
+    the founder to make.
+21. **The AI refusal.** On Essentials every AI entry point (the AI tools, the AI wage determination
+    read, PDF reading) answers "AI tools are on the Professional plan." in the api, and the app
+    shows the same words on its locked controls. The plan check holds for a platform admin too,
+    though the capability masks do not (D-23).
+22. **Secret names follow the plans.** The Stripe price settings are named for the new codes
+    (`STRIPE_PRICE_ESSENTIALS_MONTHLY`, `STRIPE_PRICE_SEAT_PROFESSIONAL_ANNUAL` and so on), all
+    optional, unset on the bench; Billing tiers shows "Set" or "Not set" from them.
+23. **Seeded prices** are legacy's `plans.ts`: Essentials $9.99 a month, $99.99 a year;
+    Professional $29.99 a month, $299.99 a year; a seat costs the same as the plan at the same
+    cadence (legacy bills plan price × seats).
+24. **Comp plan.** Platform admin's "Comp plan" writes a `comp` subscription (plan, seats, an
+    optional end date in `current_period_end`); removing it deletes the row. Marketing still
+    sends `plan=collaborator|pro` to signup, and the app reads both the old and the new codes.
+
+**Where:** api `app/features/billing/models.py` (`BillingPlan`, `WorkspaceSubscription`,
+`StripeEvent`), `alembic/versions/e7c3f1a8b2d5_billing_plans_subscriptions.py`,
+`app/features/workspace/capabilities.py` (`Plan`, `_ESSENTIALS_PLAN`, `AI_PLAN_LOCKED`),
+`app/core/dependencies.py` (`WorkspaceContext.subscription`, `subscribed`, `plan`,
+`trial_expired`, `require_ai`), `workspace/{schemas,routes}.py` (the capability read carries
+`plan`), `app/config.py`, `platform/{billing,schemas}.py` (the slots, Comp plan),
+`wage_calculator/service.py` (`on_trial`, `ai_allowed`, `ai_refusal`), `ai/{service,routes}.py`
+(`require_ai`, `trial_cap`, `can_run`), `models_registry.py`; app `features/workspace/plan.ts`,
+`features/workspace/hooks/use-permissions.ts` (`plan`, `aiLockedReason`), `core/api/types.ts`,
+`pages/ProjectTakeoff.tsx`, `features/takeoff/sheets/SheetsPanel.tsx` (`aiLocked`),
+`features/wage-calculator/WageData.tsx`, `pages/PlatformBillingTiers.tsx`, `features/platform/api.ts`,
+`pages/Signup.tsx`.

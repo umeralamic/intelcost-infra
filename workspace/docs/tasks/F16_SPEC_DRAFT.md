@@ -1,5 +1,7 @@
 # F16: Billing, plans, trials (DRAFT)
 
+> **Superseded by [F16_SPEC.md](F16_SPEC.md)** (adopted 2026-10-06, D-277). Kept for history.
+
 **Status:** draft for review (overnight 2026-10-06). Documents only: nothing here is built or
 decided. It ends with the questions that need an answer before a block can start.
 
