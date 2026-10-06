@@ -10035,6 +10035,14 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     as that sheet alone would. The site preview shows the strip, undercut and prep with the
     cut and fill, and its balance is the one the lines price. The version key reads the
     members' strips and the site's features.
+17. **Q14, the site's lines in Estimating (E5):** they are filed in a folder of the site's name
+    under the earthwork folder, so Estimating groups them under it (by division and by custom
+    folder alike); the folder is renamed with the site and dropped once its lines are gone (the
+    result removed, the site deleted or dissolved). Each line's Takeoff Ref. is the sheets it
+    comes from: a Strip Area's lines, its strip's sheet; a Site Feature's, the members it is
+    drawn on; the rest (the remaining site, the balance), every member, in the site's order.
+    The api works this out when it reads the items (no column). Reports in this app are time
+    reports today and carry no lines; the Excel export follows Estimating's groups.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

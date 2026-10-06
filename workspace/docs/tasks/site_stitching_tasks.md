@@ -399,5 +399,8 @@ TIN and volumes stay in the browser, as today.
   member's mapped into the site frame and kept to its territory, a feature across the join one
   feature (D-271 16); two quantity rows (a strip on each half strips the whole site; a feature
   across the join, its undercut, prep and a strip made from it on one member).
+- [x] Block E5 (overnight 2026-10-06), Q14: the site's lines filed in a folder of its name
+  (Estimating groups them under it; renamed with the site, dropped with its lines), each line's
+  Takeoff Ref. the sheets it comes from (D-271 17).
 - [ ] D2b (select, move, copy and delete a `site_shape` as one, the join point slide (Q9), undo as
-  one step, arcs, Ortho, Snap and Snap PDF across members), then E and F's rest (Q14's group, Auto Trace on the stitched drawing, the C-200 acceptance row).
+  one step, arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing, the C-200 acceptance row).

@@ -329,6 +329,22 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decisions: D-271 16.
 - Commits: app `6b7530a`; infra: the quantity rows, D-271 16 and this report.
 
-**Stopped after E4** (06:20).
+**E5. Q14, the site's lines grouped under its name: done (api only).**
+- The site's lines are filed in a folder named after the site, under the earthwork folder. Estimating groups them under it, by division and by custom folder alike.
+- The folder follows a rename and is dropped once its lines are gone.
+- Each line's Takeoff Ref. is the sheets it comes from:
+  - a strip's lines: its strip's sheet;
+  - a feature's lines: the members it is drawn on;
+  - the rest: every member.
+- This needed no app change: Estimating already groups by folder and reads chips from .
+- Smoke 4/4 (throwaway):
+  1. Takeoff Ref.: Topsoil West on A, Topsoil East on B, the Pad's undercut on A and B, the Remaining Site on A and B;
+  2. Estimating shows a "Grade" group with the site's 10 rows;
+  3. after a rename, the group reads "Grade North" and the old one is gone;
+  4. Remove result took the lines and the folder (checked in the database: no "Grade" folder left).
+- Decision made alone: Reports are time reports in this app, so Q14's "and Reports" has nothing to group yet; the Excel export follows Estimating's groups (D-271 17).
+- Commits: api `100b209`; infra: D-271 17 and this report.
+
+**Stopped after E5** (06:30).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
