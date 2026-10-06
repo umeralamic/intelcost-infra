@@ -468,7 +468,13 @@ Blocks in the order built (the plan's list in `OVERNIGHT_PLAN.md`): A1, A2, B, C
 
 ## Regression pass over the earlier F19 smokes
 
-Running at the time of writing: A2 7/7 again; the rest follow.
+After F3 I re-ran the earlier F19 smokes against the finished code, since later blocks changed shared pieces: the square site frame, closed rings, the site view's key handling, and the site lines' folder and Takeoff Ref.
+- They were rebuilt from this session's transcript (throwaway, deleted after). A2 7/7, B 5/5, C1 4/4, D1 3/3, E1 2/2, E2 4/4, E3 2/2: 27 of 27.
+- No regression.
+- The first attempt failed B, E2 and E3, for reasons in the scripts and in me, not the app:
+  - the rebuilt scripts lacked fixes made to them during the night by shell commands (B's sheets are "Page N", E2 reads "Site Fill", E3 moves a spot off the match line);
+  - I purged the fixture workspaces while E2 was still running.
+- C2 and D2a were not re-run: too many of their night fixes were shell commands to rebuild faithfully. Their paths were driven again by the later blocks' smokes (live renders under every site-view smoke; contours, boundary and Calculate under E4).
 
 ## Questions for Umer
 
