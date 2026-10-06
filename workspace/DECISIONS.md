@@ -10134,3 +10134,36 @@ survey link; one join per pair of sheets, whichever way it was drawn.
 `EarthworkResult.superseded_by_site_id`), `registration_routes.py`, migration
 `a7d2f9c4e816`; infra `browser/lib/site-cases.mjs`, `browser/quantity-table.mjs`,
 `drives/quantity-table.py`, `quantity-table.sh`.
+
+## D-272: Earthwork is computed in true feet, for sheets and sites; old sheet results go stale, never rewritten
+
+**Status:** decided (the founder's answer to the overnight report's question 5, 2026-10-06)
+
+A sheet's TIN was triangulated in normalised page space, x scaled to the page's width and y
+to its height, so its volumes depended on the page's proportions (D-271 20: C-200 alone gave
+9,021.24 cut and 7,692.42 fill; in true geometry 9,184.16 and 8,050.26). A site was already
+triangulated in feet (its square frame).
+
+1. **One path.** `computeTin` takes the page the points are normalised to and scales x and
+   y to one length, the longer side, before Delaunator and Constrainautor; the mesh keeps the
+   normalised points. `runTinForSurface` passes it on, and `computeVolumes` triangulates its
+   difference TIN on the calibration's page. Everything after the triangulation (clipping,
+   barycentric Δz, the zero-crossing split, areas through the calibration, region centroids)
+   reads the same in either frame. The sheet's Calculate and its EG TIN / FG TIN toggles pass
+   the sheet's page; a site passes its square frame, which is triangulated as before, so no
+   site result moves (the 20 site rows, the C-200 acceptance row included, are unchanged).
+2. **Old sheet results go stale, never rewritten.** A sheet's version key goes to `v5`, so a
+   result saved before shows stale in its panel and marks its lines stale when the sheet is
+   opened; a migration (`c4f1a9e2d7b3`) marks every sheet's own earthwork lines stale at
+   once, so Estimating shows them stale before anyone opens the sheet. The next Calculate
+   replaces the result. A site's key stays `v4` (`basis: "site"`): nothing about it changed.
+   Hidden Valley Spec is not touched (D-232): it shows stale and the founder recalculates it.
+3. **The quantity table.** One row's expected values move: `regaccept-c200-from-page-3`
+   (page 3's EG through the link onto C-200, C-200's FG and boundary), cut 9,185 → 9,312,
+   fill 7,706 → 8,072 CY, against the engineer's 14,263 / 8,727: −35.6 → −34.7 % and
+   −11.7 → −7.5 %. Every other row (square pages, or planar surfaces) is unchanged.
+
+**Where:** app `lib/takeoff/earthwork/tin/compute.ts` (`TinFrame`, `squareScale`),
+`tin/index.ts`, `volume/index.ts`, `versionKey.ts`, `features/takeoff/earthwork/useVolumes.tsx`,
+`useEarthwork.tsx`, `site/siteKey.ts`, `site/SiteView.tsx`, `pages/ProjectTakeoff.tsx`; api
+migration `c4f1a9e2d7b3`; infra `browser/quantity-table.mjs`, `browser/lib/earthwork-cases.mjs`.

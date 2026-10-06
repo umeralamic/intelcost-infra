@@ -341,7 +341,7 @@ try {
         const labels = new Map(whole.map((x) => [x.item, x.item]));
         const calc = (rs, calibration) => {
           const b = rs.find((x) => x.kind === "boundary");
-          return vol.computeVolumes({ eg: tin.runTinForSurface(rs, "EG", labels), fg: tin.runTinForSurface(rs, "FG", labels), boundary: b ? b.points : null, calibration, units: "CY" }, rs, labels);
+          return vol.computeVolumes({ eg: tin.runTinForSurface(rs, "EG", labels, calibration), fg: tin.runTinForSurface(rs, "FG", labels, calibration), boundary: b ? b.points : null, calibration, units: "CY" }, rs, labels);
         };
         // A crop: the runs clipped to x in [x0, x1] of C-200's page, normalised to the crop's own page.
         const crop = ([x0, x1]) => {
@@ -416,8 +416,9 @@ try {
           return { scale: { feetPerPt: tgt.feetPerPt, widthPt: tgt.widthPt * w, heightPt: tgt.heightPt }, runs, line: [pt([(c.line - x0) / w, 0]), pt([(c.line - x0) / w, 1])] };
         };
         // C-200 as one sheet: its own page's linework (page 3's EG runs past it; a trace of C-200
-        // sees its page only), triangulated in true geometry, as the site is (a square frame;
-        // the sheet engine triangulates in its page's proportions, D-271 20).
+        // sees its page only), triangulated in true geometry, as the site is (a square frame,
+        // D-271 20). The sheet engine triangulates in true feet too since D-272; the row keeps
+        // its own square frame, unchanged.
         const fw = tgt.widthPt * tgt.feetPerPt;
         const fh = tgt.heightPt * tgt.feetPerPt;
         const L = Math.max(fw, fh);
@@ -458,7 +459,7 @@ try {
         const labels = (rs) => new Map(rs.map((x) => [x.item, x.item]));
         const calc = (rs, calibration) => {
           const b = rs.find((x) => x.kind === "boundary");
-          const out = vol.computeVolumes({ eg: tin.runTinForSurface(rs, "EG", labels(rs)), fg: tin.runTinForSurface(rs, "FG", labels(rs)), boundary: b ? b.points : null, calibration, units: "CY" }, rs, labels(rs));
+          const out = vol.computeVolumes({ eg: tin.runTinForSurface(rs, "EG", labels(rs), calibration), fg: tin.runTinForSurface(rs, "FG", labels(rs), calibration), boundary: b ? b.points : null, calibration, units: "CY" }, rs, labels(rs));
           return out.ok === true ? out : { ok: out.ok, cutCY: NaN, fillCY: NaN, error: out.error ? out.error.message : String(out.ok) };
         };
         const ra = runs(c.halves.a, "a");
@@ -482,7 +483,7 @@ try {
           const frame = { feetPerNorm: 1, widthPt: own.page.widthPt, heightPt: own.page.heightPt };
           const bnd = own.runs.find((x) => x.kind === "boundary");
           const labels = new Map(items.map((x) => [x.uuid, x.name]));
-          const out = vol.computeVolumes({ eg: tin.runTinForSurface(own.runs, "EG", labels), fg: tin.runTinForSurface(own.runs, "FG", labels), boundary: bnd ? bnd.points : null, calibration: frame, units: "CY", roleAreas: fe.roleAreasOf(ex.features), stripAreas: ex.strips }, own.runs, labels);
+          const out = vol.computeVolumes({ eg: tin.runTinForSurface(own.runs, "EG", labels, frame), fg: tin.runTinForSurface(own.runs, "FG", labels, frame), boundary: bnd ? bnd.points : null, calibration: frame, units: "CY", roleAreas: fe.roleAreasOf(ex.features), stripAreas: ex.strips }, own.runs, labels);
           if (out.ok !== true) return { error: out.error ? out.error.message : String(out.ok) };
           const fx = fe.computeFeatureExtras(ex.features, bnd ? bnd.points : null, frame);
           const u = fx.find((x) => x.undercut);
@@ -593,7 +594,9 @@ try {
         const boundary = d.boundary.map(([x, y]) => ({ x, y }));
         const runs = [...fg, { item: "b", geometry: "b", version: 1, kind: "boundary", surface: null, elevation: null, points: boundary }, ...rg.mapRuns(eg, f.fit, src, tgt, 0, "p3")];
         const labels = new Map([["eg@p3", "Page 3 · Existing Ground"], ["fg", "Proposed Grade"], ["fgspots", "FG Spots"], ["b", "Work Boundary"]]);
-        const r = vol.computeVolumes({ eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: { feetPerNorm: tgt.feetPerPt, widthPt: tgt.widthPt, heightPt: tgt.heightPt }, units: "CY" }, runs, labels);
+        // The sheet's Calculate: its TINs and the difference on C-200's page, in true feet (D-272).
+        const cal = { feetPerNorm: tgt.feetPerPt, widthPt: tgt.widthPt, heightPt: tgt.heightPt };
+        const r = vol.computeVolumes({ eg: tin.runTinForSurface(runs, "EG", labels, cal), fg: tin.runTinForSurface(runs, "FG", labels, cal), boundary, calibration: cal, units: "CY" }, runs, labels);
         if (r.ok !== true) return { ok: r.ok, message: r.error?.message };
         return { ok: true, cutCY: Math.round(r.cutCY), fillCY: Math.round(r.fillCY), cutVsEngineerPct: Math.round(((r.cutCY - 14263) / 14263) * 1000) / 10, fillVsEngineerPct: Math.round(((r.fillCY - 8727) / 8727) * 1000) / 10 };
       }

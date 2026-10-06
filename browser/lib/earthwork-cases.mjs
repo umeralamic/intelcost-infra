@@ -830,5 +830,6 @@ export const EARTHWORK_CASES = [
   // what our engine computes from those inputs; the gap (cut −35.6 %, fill −11.7 %) is the
   // inputs', explained in the overnight report: 22 of C-200's 37 FG labels were not adopted
   // (the pond, parts of the outer ring), and no pavement or pad subgrade is modelled.
-  { id: "regaccept-c200-from-page-3", kind: "regaccept", data: C200, expect: { ok: true, cutCY: 9185, fillCY: 7706, cutVsEngineerPct: -35.6, fillVsEngineerPct: -11.7 } },
+  // In true feet (D-272): was 9185 / 7706 (-35.6 / -11.7 %) triangulated in the page's proportions.
+  { id: "regaccept-c200-from-page-3", kind: "regaccept", data: C200, expect: { ok: true, cutCY: 9312, fillCY: 8072, cutVsEngineerPct: -34.7, fillVsEngineerPct: -7.5 } },
 ];
