@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 // F19's site rows (D-231): the app's lib/takeoff/earthwork/site.ts and, for the join's fit
 // and a member's placement, the api's earthwork/site.py, both against answers worked by
 // hand. A sheet's scale is [feet per PDF point, width pt, height pt]; lines and points are
@@ -204,5 +206,14 @@ SITE_SHAPE_CASES.push(
   { id: "stitch-one-mismatch", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, 705, 711]), expect: { joined: 2, flags: "mismatch:Elevation differs across the match line (710 / 711)" } },
   { id: "stitch-one-unpartnered", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, null, 710]), expect: { joined: 2, flags: "unpartnered:No partner across the match line" } },
 );
+
+// The acceptance row (Q16): C-200's adopted linework (`c200-acceptance.json`, the snapshot of
+// 2026-10-01; the founder's project itself is never touched, D-232) cut into a west crop
+// (0 to 60 % of its width) and an east crop (40 to 100 %), so each carries about 10 % of the
+// width past the match line at 50 %. Each crop's runs are the linework clipped to it, as a
+// trace of that crop gives them. Joined at the line, stitched and calculated, the site must
+// equal C-200 as one sheet: cut, fill and export to the cent.
+const C200 = JSON.parse(readFileSync(new URL("./c200-acceptance.json", import.meta.url), "utf8"));
+SITE_SHAPE_CASES.push({ id: "site-accept-c200-halves", kind: "site-accept", data: C200, west: [0, 0.6], east: [0.4, 1], line: 0.5, expect: { ok: true, cutEqual: true, fillEqual: true, exportEqual: true } });
 
 export const SITE_GROUND = { S20, S30, A_LINE, B_LINE, A_CENTRE, B_CENTRE };

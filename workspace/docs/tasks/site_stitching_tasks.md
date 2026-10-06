@@ -408,4 +408,9 @@ TIN and volumes stay in the browser, as today.
 - [x] Block D2b2 (overnight 2026-10-06), the join point slide (Q9): handles on a selected
   shape, a join point sliding along its match line with both pieces, any other vertex kept in
   its member's visible region (D-271 19).
-- [ ] D2b rest (copy, arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing, the C-200 acceptance row).
+- [x] Block F1 (overnight 2026-10-06), the acceptance row (Q16) as a quantity row on C-200's
+  frozen linework: two overlapping crops stitched and calculated equal C-200 to the cent when
+  both are triangulated in true geometry; `siteRuns` drops the cut points and its frame is square
+  (D-271 20). Open: the sheet engine triangulates in its page's proportions (a question for the
+  founder); the row clips the linework rather than tracing raster crops.
+- [ ] D2b rest (copy, arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing in the app).

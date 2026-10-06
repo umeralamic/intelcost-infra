@@ -374,6 +374,24 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decision made alone: a drag off the line is projected onto the line, rather than refused (Q9 says "moves along the match line only").
 - Commits: app 8663804; infra: D-271 19 and this report.
 
-**Stopped after D2b2** (06:55).
+**F1. The C-200 acceptance row (Q16): done, with a finding.**
+- A quantity row on C-200's frozen linework (`c200-acceptance.json`; Hidden Valley itself not touched):
+  - west and east crops (0 to 60 % and 40 to 100 %), the match line at 50 %;
+  - each crop's runs clipped to its page, as its trace gives them;
+  - joined, stitched and calculated against C-200 as one sheet.
+- It passes to the cent: cut 9,184.1604 against 9,184.1569, fill 8,050.2574 against 8,050.2573, the export equal.
+- **Two fixes in `siteRuns` came out of it** (D-271 20):
+  - a cut point is dropped after the rejoin where it lies straight between its neighbours, so a contour is its linework again;
+  - the site frame is square. The old frame stretched with the drawing's proportions, which moved the TIN's triangles whenever something was drawn further out.
+- **Finding: the sheet engine's TIN depends on the page's proportions.** It triangulates in normalised page space, x and y scaled apart:
+  - C-200 alone gives 9,021.24 cut and 7,692.42 fill;
+  - in true geometry it gives 9,184.16 and 8,050.26 (fill +4.6 %);
+  - the same linework with x stretched by 1 / 0.6 gives 9,110.21 and 8,068.22.
+  So against today's sheet engine, a site and its sheets differ by this effect, not by the stitching. I left the sheet engine as it is: it is legacy's, and every saved sheet result would move. **Question for Umer** (below).
+- Spec mismatch: the row clips the adopted linework rather than running Auto Trace on raster crops (Auto Trace stitched in the app is not built yet).
+- Smoke 1/1 (throwaway, the square frame in the browser): the E4 setup's site Calculate read the same numbers, Cut 91, Fill 313, Strip 222, Undercut 111, Prep 800.
+- Commits: app aa81693; infra: the acceptance row, D-271 20 and this report.
+
+**Stopped after F1** (07:20).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

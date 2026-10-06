@@ -318,6 +318,123 @@ try {
         return { chains: chains.length, totalFt: total, ends: [ch[0], ch[ch.length - 1]].sort((p, q) => p.x - q.x).map(fmt).join(" ") };
       }
       if (c.kind === "slide") return { point: fmt(st.slideOnMatchLine(pt(c.point), c.line.map(pt))) };
+      if (c.kind === "site-accept") {
+        // C-200 as one sheet: page 3's EG through its link, C-200's FG and boundary (as regaccept).
+        const d = c.data;
+        const src = { feetPerPt: 60 / 72, widthPt: 2448, heightPt: 1584 };
+        const tgt = { feetPerPt: 30 / 72, widthPt: 2448, heightPt: 1584 };
+        const fit = r.fitRigid(d.pairs.map((pr) => ({ source: pt(pr.source), target: pt(pr.target) })), src, tgt);
+        if (!fit.ok) return { ok: false, reason: fit.reason };
+        const eg = d.eg.map((x, i) => ({ item: "eg", geometry: "eg" + i, version: 1, kind: "contour", surface: "EG", elevation: x.z, points: x.p.map(pt) }));
+        const fg = d.fg.map((x, i) => ({ item: x.kind === "contour" ? "fg" : "fgspots", geometry: "fg" + i, version: 1, kind: x.kind === "contour" ? "contour" : "spot_elevation", surface: "FG", elevation: x.z, points: x.p.map(pt) }));
+        const whole = [...fg, { item: "b", geometry: "b", version: 1, kind: "boundary", surface: null, elevation: null, points: d.boundary.map(pt) }, ...r.mapRuns(eg, fit.fit, src, tgt, 0, "p3")];
+        const labels = new Map(whole.map((x) => [x.item, x.item]));
+        const calc = (rs, calibration) => {
+          const b = rs.find((x) => x.kind === "boundary");
+          return vol.computeVolumes({ eg: tin.runTinForSurface(rs, "EG", labels), fg: tin.runTinForSurface(rs, "FG", labels), boundary: b ? b.points : null, calibration, units: "CY" }, rs, labels);
+        };
+        // A crop: the runs clipped to x in [x0, x1] of C-200's page, normalised to the crop's own page.
+        const crop = ([x0, x1]) => {
+          const w = x1 - x0;
+          const local = (q) => ({ x: (q.x - x0) / w, y: q.y });
+          // Liang–Barsky against the crop's page, [x0, x1] × [0, 1]: the piece of a segment
+          // inside it, and whether it entered or left there.
+          const clipSeg = (a, b) => {
+            let t0 = 0;
+            let t1 = 1;
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            for (const [pp, qq] of [[-dx, a.x - x0], [dx, x1 - a.x], [-dy, a.y], [dy, 1 - a.y]]) {
+              if (pp === 0) {
+                if (qq < 0) return null;
+                continue;
+              }
+              const t = qq / pp;
+              if (pp < 0) {
+                if (t > t1) return null;
+                if (t > t0) t0 = t;
+              } else {
+                if (t < t0) return null;
+                if (t < t1) t1 = t;
+              }
+            }
+            return { a: { x: a.x + t0 * dx, y: a.y + t0 * dy }, b: { x: a.x + t1 * dx, y: a.y + t1 * dy }, entered: t0 > 0, left: t1 < 1 };
+          };
+          const lines = (pts) => {
+            const out = [];
+            let cur = null;
+            for (let k = 1; k < pts.length; k++) {
+              const piece = clipSeg(pts[k - 1], pts[k]);
+              if (!piece) {
+                if (cur) out.push(cur), (cur = null);
+                continue;
+              }
+              if (cur && piece.entered) out.push(cur), (cur = null);
+              if (!cur) cur = [piece.a];
+              cur.push(piece.b);
+              if (piece.left) out.push(cur), (cur = null);
+            }
+            if (cur) out.push(cur);
+            return out.filter((q) => q.length >= 2);
+          };
+          // Sutherland–Hodgman, one page edge at a time.
+          const clipPoly = (poly, keep, cross) => {
+            const out = [];
+            for (let k = 0; k < poly.length; k++) {
+              const a = poly[k];
+              const b = poly[(k + 1) % poly.length];
+              if (keep(a)) out.push(a);
+              if (keep(a) !== keep(b)) out.push(cross(a, b));
+            }
+            return out;
+          };
+          const atX = (x) => (a, b) => ({ x, y: a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x) });
+          const atY = (y) => (a, b) => ({ x: a.x + ((b.x - a.x) * (y - a.y)) / (b.y - a.y), y });
+          const inPage = (q) => q.x >= x0 && q.x <= x1 && q.y >= 0 && q.y <= 1;
+          const runs = [];
+          for (const run of whole) {
+            if (run.kind === "boundary") {
+              let ring = clipPoly(run.points, (q) => q.x >= x0, atX(x0));
+              ring = clipPoly(ring, (q) => q.x <= x1, atX(x1));
+              ring = clipPoly(ring, (q) => q.y >= 0, atY(0));
+              ring = clipPoly(ring, (q) => q.y <= 1, atY(1));
+              if (ring.length >= 3) runs.push({ ...run, points: ring.map(local) });
+            } else if (run.kind === "spot_elevation") {
+              if (inPage(run.points[0])) runs.push({ ...run, points: run.points.map(local) });
+            } else lines(run.points).forEach((piece, k) => runs.push({ ...run, geometry: run.geometry + "#" + k, points: piece.map(local) }));
+          }
+          return { scale: { feetPerPt: tgt.feetPerPt, widthPt: tgt.widthPt * w, heightPt: tgt.heightPt }, runs, line: [pt([(c.line - x0) / w, 0]), pt([(c.line - x0) / w, 1])] };
+        };
+        // C-200 as one sheet: its own page's linework (page 3's EG runs past it; a trace of C-200
+        // sees its page only), triangulated in true geometry, as the site is (a square frame;
+        // the sheet engine triangulates in its page's proportions, D-271 20).
+        const fw = tgt.widthPt * tgt.feetPerPt;
+        const fh = tgt.heightPt * tgt.feetPerPt;
+        const L = Math.max(fw, fh);
+        const one = calc(
+          crop([0, 1]).runs.map((x) => ({ ...x, points: x.points.map((q) => ({ x: (q.x * fw) / L, y: (q.y * fh) / L })) })),
+          { feetPerNorm: 1, widthPt: L, heightPt: L },
+        );
+        if (one.ok !== true) return { ok: false, message: "one sheet: " + (one.error?.message ?? one.ok) };
+        const W = crop(c.west);
+        const E = crop(c.east);
+        const joined = st.fitJoin(E.line, E.scale, W.line, W.scale, { sourceCentre: pt([0.9, 0.5]), targetCentre: pt([0.1, 0.5]) });
+        if (!joined.ok) return { ok: false, reason: joined.reason };
+        const MW = { sheet: "W", scale: W.scale, placement: st.ANCHOR, region: st.visibleRegion([W.line], pt([0.1, 0.5])), sortOrder: 0 };
+        const ME = { sheet: "E", scale: E.scale, placement: st.placeMember(st.ANCHOR, joined.join.fit), region: st.visibleRegion([E.line], pt([0.9, 0.5])), sortOrder: 1 };
+        const surface = st.siteRuns([MW, ME], new Map([["W", W.runs], ["E", E.runs]]));
+        const two = calc(surface.runs, { feetPerNorm: 1, widthPt: surface.page.widthPt, heightPt: surface.page.heightPt });
+        if (two.ok !== true) return { ok: false, message: "site: " + (two.error?.message ?? two.ok) };
+        const b = (x) => bal.soilBalance({ cut: x.cutCY, fill: x.fillCY, reuseBank: 0, suitable: true, swell: 1.15, shrink: 1.1 });
+        const cents = (a, z) => Math.abs(a - z) < 0.005;
+        return {
+          ok: true,
+          cutEqual: cents(one.cutCY, two.cutCY),
+          fillEqual: cents(one.fillCY, two.fillCY),
+          exportEqual: cents(b(one).exportLoose ?? 0, b(two).exportLoose ?? 0),
+          detail: `one ${one.cutCY.toFixed(4)}/${one.fillCY.toFixed(4)} site ${two.cutCY.toFixed(4)}/${two.fillCY.toFixed(4)}`,
+        };
+      }
       if (c.kind === "site-volume" || c.kind === "site-balance" || c.kind === "site-extras" || c.kind === "stitch") {
         const SA = { sheet: "A", scale: sc(h.P01), placement: st.ANCHOR, region: st.visibleRegion([h.aLine.map(pt)], pt(h.aCentre)), sortOrder: 0 };
         const SB = { sheet: "B", scale: sc(h.P02), placement: h.bPlacement, region: st.visibleRegion([h.bLine.map(pt)], pt(h.bCentre)), sortOrder: 1 };

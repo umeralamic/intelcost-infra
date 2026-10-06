@@ -10062,6 +10062,27 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     moves together. Any other vertex is kept inside its member's visible region (the nearest
     point of its edge when dragged past it). All the changed pieces go in one write and undo
     as one step.
+20. **The acceptance row (Q16) and the site's frame.** The row is a quantity row on C-200's
+    frozen linework (`c200-acceptance.json`; the founder's project is not touched, D-232):
+    west and east crops (0 to 60 % and 40 to 100 % of its width, the match line at 50 %), each
+    crop's runs the linework clipped to its page as its trace gives them, joined, stitched and
+    calculated, against C-200 as one sheet (its own page's linework). Two things in `siteRuns`
+    came out of it:
+    - **A cut point is dropped after the rejoin** where it lies straight between its
+      neighbours, so a contour is the linework it was before the cut, not one with an extra
+      vertex at the line (an extra vertex moves the Delaunay triangles).
+    - **The site frame is square:** one length both ways (the longer extent), not the
+      drawing's width and height apart. The TIN is triangulated in normalised space, so a
+      frame stretched by the drawing's proportions changed the triangles, and with them the
+      volumes, whenever something was drawn further out. Square, the site's TIN is the
+      true-geometry triangulation.
+    The row passes to the cent against C-200 triangulated the same way: cut 9,184.1604 against
+    9,184.1569, fill 8,050.2574 against 8,050.2573, the export equal. **Against the sheet
+    engine as it is, it does not:** a sheet's TIN is triangulated in its page's proportions
+    (x and y normalised apart), so C-200 alone gives 9,021.24 cut and 7,692.42 fill, and the
+    same linework with x stretched by 1 / 0.6 gives 9,110.21 and 8,068.22. The sheet engine is
+    left as it is (it is legacy's, every saved sheet result would move); whether a sheet's TIN
+    should be triangulated in feet is a question for the founder (overnight report).
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,
