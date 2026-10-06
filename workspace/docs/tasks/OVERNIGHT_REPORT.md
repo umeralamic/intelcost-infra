@@ -336,7 +336,7 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   - a strip's lines: its strip's sheet;
   - a feature's lines: the members it is drawn on;
   - the rest: every member.
-- This needed no app change: Estimating already groups by folder and reads chips from .
+- This needed no app change: Estimating already groups by folder and reads chips from `sheet_uuids`.
 - Smoke 4/4 (throwaway):
   1. Takeoff Ref.: Topsoil West on A, Topsoil East on B, the Pad's undercut on A and B, the Remaining Site on A and B;
   2. Estimating shows a "Grade" group with the site's 10 rows;
