@@ -359,4 +359,9 @@ TIN and volumes stay in the browser, as today.
   the line clicked on each, the checks, Fit the scale too, Keep the other side), the merge
   question (Q3), the Sheets panel's site rows and "in site" chips (Q1), Remove from the site
   (Q13). Opening a site row's stitched canvas is Block C. D-271 5 to 7.
-- [ ] Blocks C to F.
+- [x] Block C1 (overnight 2026-10-06), the stitched view read-only: a site row opens it over the
+  canvas; each member's fit image placed by its placement (a CSS matrix in feet), clipped to its
+  visible region in its own page space (the clip turns with it), pan, wheel and button zoom,
+  Fit, Rotate (the anchor's `view_rotation` first, Q7), a member's label opens its sheet.
+- [ ] C2 (per-member pdf.js window renders, the members on screen plus one at full
+  resolution, Snap, Snap PDF and Find Text across members), then D to F.

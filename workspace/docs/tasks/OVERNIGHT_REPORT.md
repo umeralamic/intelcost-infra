@@ -227,4 +227,15 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decisions: D-271 5 to 7.
 - Commits: app `0bde9f6`; infra: the workspace commit for D-271 5 to 7.
 
-**Stopped before C.** Blocks C to F (stitched canvas, editing and measuring across the join, site Calculate, stitched trace) were not started. Each needs the stitched canvas first (C), a large piece of rendering work on the canvas (per-member placement, clipping and window renders).
+**C1. The stitched view, read-only: done** (Block C split; C2 not started).
+- `features/takeoff/earthwork/site/SiteView.tsx`, opened from a site row in the Sheets panel, over the canvas.
+- Each member's fit image is placed in feet by its placement and clipped to its visible region with a `clip-path` in its own page space, so the clip turns with it.
+- Pan (drag), zoom (wheel and buttons, px per ft shown), Fit, Rotate (starting from the anchor's `view_rotation`). A member's label opens its sheet.
+- Smoke 4/4:
+  1. Two sheets at 1" = 20' and 30' joined at ground x = 100: both drawn, both clipped, Page 2 east of Page 1, the pieces meeting at the line. Checked on a screenshot, deleted after.
+  2. Rotate: Page 2 below Page 1.
+  3. Zoom in 2.42 → 3.02 px/ft, Fit back to 2.42.
+  4. Page 2's label opened Page 2 and closed the view.
+- Commits: app `ee37929`; infra: the workspace commit for this report.
+
+**Stopped after C1.** C2 (per-member pdf.js window renders at full resolution for the members on screen plus one, Snap, Snap PDF and Find Text across members) and D to F (editing and measuring across the join, site Calculate with superseded member results, stitched trace and the C-200 acceptance row) were not started: each is several hours of canvas work, and C2 needs a measured four-sheet set (Q8).

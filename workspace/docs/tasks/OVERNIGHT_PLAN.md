@@ -45,4 +45,30 @@ One Playwright pass over the listed flow; fix clear bugs only, one commit each.
 ## Part 5. P-02 recalculate on settings change (if time remains)
 
 ## Part 6. F19 site stitching (if time remains)
-Block list written here before starting, from the F19 spec and D-231.
+Parts 1 to 5 done by 03:10 UTC. Blocks, from the spec (`site_stitching_tasks.md`) and D-231,
+smaller than the spec's A to F so each finishes, gates, smokes and commits on its own:
+
+- **A1. Site engine (pure) and its Python twin.** `lib/takeoff/earthwork/site.ts`:
+  `matchLinePairs`, `fitJoin`, `placeMember`, `visibleRegion`, `toSite` / `fromSite`,
+  `splitAtJoins`, `clipAreaToMembers`, `rejoinRuns`, `slideOnMatchLine`. Python
+  `earthwork/site.py`: `match_line_pairs`, `place_member` (the fit is F18's). The spec's
+  quantity rows for these (square halves at two scales, a reversed line, a bent line, split,
+  clip with a deduct, rejoin, slide), both engines where the twin covers them. Smoke: the
+  quantity table runs them in the bench's Chromium.
+- **A2. Data and routes.** Migration: `site`, `site_member` (one site per sheet),
+  `sheet_registration.kind` (survey | join) with the two match lines,
+  `earthwork_result.superseded_by_site_id`. Routes: sites list/create/rename/delete, join a
+  member (the api fits the match lines again with the twin), remove a member (a one-member
+  site dissolves), merge. Events `site.changed`. Smoke: the routes driven from a throwaway
+  Playwright script (no screen yet).
+- **B. Joining in the app** (only if A1 and A2 are done with time to spare): the Match line
+  tool on the Earthwork row and "Join to another sheet at match line…" in the sheet's ⋮ menu,
+  the join prompt with its checks, the merge offer, the Sheets panel's site row and "in site"
+  chips.
+- **C1. The stitched view, read-only** (A1, A2 and B done by 03:46): the site row opens a
+  Site view over the canvas, each member's fit image placed by its placement, turned and
+  clipped to its visible region (CSS transform and clip-path, so the clip turns with it), pan,
+  zoom, Fit, Rotate (the anchor's up first). No pdf.js window renders, no snapping: those are
+  C2.
+- **C2 to F** (per-member pdf.js renders and snap across members, editing across the join,
+  site Calculate, stitched trace): not attempted tonight.
