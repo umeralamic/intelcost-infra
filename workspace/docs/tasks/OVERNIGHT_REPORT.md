@@ -392,6 +392,24 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Smoke 1/1 (throwaway, the square frame in the browser): the E4 setup's site Calculate read the same numbers, Cut 91, Fill 313, Strip 222, Undercut 111, Prep 800.
 - Commits: app aa81693; infra: the acceptance row, D-271 20 and this report.
 
-**Stopped after F1** (07:20).
+**D2b3. Snap, Snap PDF, Ortho and Duplicate in the site view: done.**
+- Three toggles on the site view's row:
+  - Snap: the members' shapes;
+  - Snap PDF: the printed lines of the member under the pen, through its placement;
+  - Ortho: 45° steps from the last point.
+- A Duplicate button on the selection bar copies the shape 10 ft over, split anew (D-271 21).
+- Smoke 4/4 (throwaway):
+  1. a point 1.5 ft from a run's end showed the vertex mark and landed on it, giving (60,50)-(60,90);
+  2. Ortho with Snap off: a point 3 ft off level landed level, (20,150)-(60.11,150);
+  3. Snap PDF: a point near the printed border's corner landed on it, (20,44.44);
+  4. Duplicate copied the run across the join to A (70,60)-(100,60) | B (100,60)-(150,60).
+- **One bug found and fixed:** a shape made whole (a move, a copy) kept the point its pieces met at as a redundant vertex, so a copy carried an extra vertex at (110, 60). It is now dropped where straight.
+- Decisions made alone:
+  - the toggles' defaults (Snap on, Snap PDF and Ortho off), not saved;
+  - Copy as a Duplicate 10 ft over, not copy-and-place;
+  - no arcs in the site view yet.
+- Commits: app 1abec00; infra: D-271 21 and this report.
+
+**Stopped after D2b3** (07:30).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

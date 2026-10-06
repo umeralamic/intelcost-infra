@@ -82,6 +82,7 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
 - **E3** (done 04:45): the site result goes stale with a member's drawing.
 - **C2** (done 04:58): live pdf.js renders per member in the site view.
+- **D2b3** (07:20 to 07:30): Snap, Snap PDF, Ortho, Duplicate.
 - **F1** (06:55 to 07:20): the C-200 acceptance row; the square site frame.
 - **D2b2** (06:45 to 06:55): the join-point slide (Q9).
 - **D2b1** (06:30 to 06:45): select, move, delete as one; undo.

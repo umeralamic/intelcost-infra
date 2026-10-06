@@ -413,4 +413,8 @@ TIN and volumes stay in the browser, as today.
   both are triangulated in true geometry; `siteRuns` drops the cut points and its frame is square
   (D-271 20). Open: the sheet engine triangulates in its page's proportions (a question for the
   founder); the row clips the linework rather than tracing raster crops.
-- [ ] D2b rest (copy, arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing in the app).
+- [x] Block D2b3 (overnight 2026-10-06): Snap, Snap PDF (each member's own index through its
+  placement) and Ortho while drawing in the site view; Duplicate; the points a whole shape's
+  pieces met at dropped where straight (D-271 21).
+- [ ] Still open: arcs in the site view (split analytically at the line); Find Text across
+  members; Auto Trace on the stitched drawing in the app (F).

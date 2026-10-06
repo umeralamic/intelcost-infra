@@ -10083,6 +10083,19 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     same linework with x stretched by 1 / 0.6 gives 9,110.21 and 8,068.22. The sheet engine is
     left as it is (it is legacy's, every saved sheet result would move); whether a sheet's TIN
     should be triangulated in feet is a question for the founder (overnight report).
+21. **Snap, Snap PDF, Ortho and Copy in the site view (D2b3).** Three toggles on the site
+    view's row: Snap (on at first) takes the members' shapes and the line being drawn, in the
+    site frame; Snap PDF (off at first) takes the printed lines of the member under the pen,
+    from that sheet's own index (`pdfSnapIndex`), queried in its page and carried through its
+    placement; Ortho (off at first) holds each segment to 45° steps from the last point, on
+    screen. Ortho first, then the snap (legacy's order), with legacy's 12 px. They are the
+    site view's own and are not saved. **Copy** is a Duplicate button on the selection bar:
+    the shape copied 10 ft right and down, split anew, under a new `site_shape`; a boundary is
+    not copied (a sheet keeps one). When a shape across the join is made whole (a move, a
+    copy), the points its pieces met at are dropped where they lie straight between their
+    neighbours, so a shape does not gather a vertex at each line it has crossed. **Arcs are not
+    offered in the site view yet** (an arc split analytically at the line needs its own
+    engine work).
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,
