@@ -9846,3 +9846,41 @@ fallback for files the rule parser cannot read.
 `alembic/versions/e5b2c8d4f1a6_wd_import_pdf_ai.py`; `app/features/ai/service.py`
 (`TOOL_GROUP`), `meter.py` (caps), `usage.py` (label); app `features/wage-calculator/WageData.tsx`,
 `api.ts`, `text.ts`, `WageCalculator.tsx`; api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
+
+## D-268: Crews follow the classification until the user picks one; other crews by lead craft
+
+**Status:** decided (the founder's Step 5 brief, 2026-10-06)
+
+Step 5 of the Wage Calculator build loads the approved crew mapping (scope-to-crew map and
+crosswalk, `docs/wage-calculator/crew-mapping/`) and uses it on labor cost components.
+
+1. **Auto, then sticky.** A new labor component on a classified item, when the project has
+   saved rates, starts with the node's default crew, its rows marked `auto`. While a group
+   is `auto` it belongs to the classification: when the item's (or sub-item's)
+   classification changes, the api replaces it with the new node's default crew at the
+   saved rates, or removes it when the new node has none, and moves the cached total with
+   the crew rate. Picking a crew, or any edit to an auto group's rows (a count, a rate, a
+   row removed), makes the group the user's (`auto` false); a classification change then
+   keeps it and marks it `scope_changed` ("Crew may not match the new scope", with "Use
+   suggested crew" and "Keep"). Rows typed by hand and single crafts never move.
+2. **Other [trade] crews.** Beside the suggested crews, Add crew offers every crew of the
+   project's table that holds the default crew's lead craft: its first member craft that
+   is not a Laborer, a Helper or a Truck Driver. Suggested crews are left out; the trade
+   in the heading is the default crew's division ("Other electrical crews"). Taken
+   literally, a crew led by a Crane Operator (R-097, 4 Ironworkers + Crane Op + Driver)
+   offers the other crane crews.
+3. **Resolution by code.** Parents are found from the code as the templates build them
+   (dotted codes drop a segment, UniFormat `D5020` to `D50`), so a node a workspace added
+   under a seeded parent resolves through that parent.
+4. **The app sends the auto rows.** The labor dialog opens with the default crew already
+   in its draft, so the user sees it before saving; the api fills the same rows only when
+   a create sends no `crew` at all.
+
+**Where:** api `app/wagecalc/data.py` (`scope_map`, `crosswalk`), `app/wagecalc/scope.py`,
+`app/features/wage_calculator/scope.py`, `routes.py` (`GET …/crews`),
+`app/features/estimate/routes.py` (add), `schemas.py` (`CrewRow.auto`, `scope_changed`),
+`app/features/takeoff/routes.py` (item update, sub-items); seed `docs/wage-calculator/seed/`;
+app `features/estimate/CrewRows.tsx`, `componentDraft.ts`, `useComponentEditor.tsx`,
+`ComponentDialog.tsx`, `EstimatingView.tsx`, `pages/ProjectTakeoff.tsx`,
+`features/wage-calculator/api.ts`, `hooks.ts`, `text.ts`; api `docs/wage-calculator/spec.md`,
+`BUILD_BRIEF.md`.
