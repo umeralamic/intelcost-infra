@@ -1,6 +1,6 @@
 # F16: Billing, plans, trials
 
-**Status:** adopted 2026-10-06 (D-277). Blocks A to D built (D-278, D-280 and D-281 record the calls Blocks B, C and D made; D-279 the bench's mail guard). The founder's answers to the draft's
+**Status:** adopted 2026-10-06 (D-277). Blocks A to E built (D-278, D-280, D-281 and D-282 record the calls Blocks B to E made; D-279 the bench's mail guard). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
 ([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
 
@@ -139,17 +139,22 @@ cadence, as legacy billed plan price × seats):
    The platform's Lock makes a workspace view-only whatever its subscription.
 4. **Lapse (Q5).** `past_due` has 7 days' grace, then view-only. A cancellation ends at the period
    end, then view-only. Data is never deleted on lapse.
-5. **Mid-trial caps (restricted tiers only, seeded Tier 3).** They end when the workspace subscribes (Q2).
+5. **Mid-trial caps (restricted tiers only, seeded Tier 3). Built, Block E (D-282,
+   `billing/caps.py`).** Only while the trial runs; a subscription in force, any plan, ends them
+   all (Q2).
 
-   | Cap | Limit | Enforced | Error |
+   | Cap | Limit | Enforced | Error (409, code `trial_cap`) |
    |---|---|---|---|
-   | Projects | 1 | `project/service.py:365 create_project` | "Your trial allows 1 project…" |
-   | Storage | 500 MB | the upload reserve, `project/service.py:967` (D-27) | |
-   | Measurements | 1,000 | item create in the takeoff service | Counts **live items** (Q9): a deleted item frees its place |
-   | AI credits | 30 | already enforced (`ai/service.py:392`); off for a subscriber (Block A) | |
-   | PDF throttle | 1,200 ms | a render delay in the app, read from the context | |
+   | Projects | 1 | `project/service.py` `create_project`, `restore_project` (active: not in the trash) | "Your trial allows 1 project. Subscribe to add more." |
+   | Storage | 500 MB | the upload reserve, `project/service.py` `start_upload` (D-27), before any byte | "Your trial includes 500 MB of storage. Subscribe for more." |
+   | Measurements | 1,000 | after every insert of items: `takeoff/service.py` `create_item`, `duplicate_item`, `set_sub_items` (assembly apply), `takeoff/snapshot.py` `restore`, `earthwork/lines.py` `write_lines`, a project restored | Counts **live items** (Q9). "Your trial allows 1,000 measurements. Subscribe for unlimited measurements."; a bulk request past the room is refused whole |
+   | AI credits | 30 | `ai/service.py` `room`, reading the same rules | |
+   | PDF throttle | 1,200 ms | the app, before each page render (`lib/billing/pdfThrottle.ts`), from the capability read; never on the server | |
 
-   An override replaces a cap; "lift all restrictions" removes them all.
+   An override replaces a cap (Billing tiers › Overrides › Limits; blank is the tier's value);
+   "lift all restrictions" removes them all. The app shows one dialog (Billing for the owner,
+   "Ask the workspace owner." for others), checks the room before a create that takes several
+   requests, and lists each cap as used of limit on Settings › Billing.
 6. **Expiry.**
    - The trial mask (`capabilities.py`) makes an expired, lapsed or locked workspace view-only, on the server.
    - A workspace with a subscription in `active` (or `comp`) is never on trial and never expired; `trial_expired` checks the subscription first (built, Block A).
@@ -178,13 +183,13 @@ Line numbers as of 2026-10-06, after Block C.
 | `app/features/ai/service.py:392` `trial_cap` | Tier 3's 30 credits while the trial runs | off for a subscriber (Q2). **Built, Block A** |
 | `app/features/ai/routes.py:235` (`/packs`), app `src/pages/SettingsAiCredits.tsx:267` | packs listed; "Buy now" disabled, "Checkout arrives with billing" | `POST {ws}/billing/topup {pack}` → Checkout (payment mode); live for the owner and admins (Q11). Block F |
 | `app/features/platform/ai_economics.py:471` `grant`, app `src/pages/PlatformAiEconomics.tsx:492` | manual grant stands in for sales | stays as a platform comp tool |
-| `app/features/billing/models.py:82` `BillingTierRule`, `:119` `WorkspaceLimitOverride`; migration `b17d4e90c3a2` | tier rules and override limits stored | enforced as §4.5. Block E |
-| `app/features/workspace/models.py:105, 113`; `app/features/auth/models.py:58` | tier and trial stamped | read by the caps (Block E) and the plan read |
-| `app/features/project/schemas.py:165`, `project/service.py:967` | no storage total | the tier's storage total at initiate time (D-27). Block E |
+| `app/features/billing/models.py:82` `BillingTierRule`, `:119` `WorkspaceLimitOverride`; migration `b17d4e90c3a2` | tier rules and override limits stored | enforced as §4.5 (`billing/caps.py`). **Built, Block E** |
+| `app/features/workspace/models.py:105, 113`; `app/features/auth/models.py:58` | tier and trial stamped | read by the caps and the plan read. **Built, Blocks A and E** |
+| `app/features/project/schemas.py:165`, `project/service.py` `start_upload` | no storage total | the tier's storage total at initiate time (D-27). **Built, Block E** |
 | `app/features/platform/billing.py:66` (`SECRET_SLOTS`) | Stripe secrets shown as slots, never set | settings defined; presence shows "Set". **Built, Block A** |
 | app `src/pages/Signup.tsx:78` | reads `plan`, `cadence`, `seats` from marketing and ignores them | kept on the user (`signup_*`) and pre-filled on the Billing page's cards (Q12). **Built, Blocks B and C** |
 | app `src/features/workspace/capabilities.ts:29, 106, 111` | `canManageBilling` unused | gates Start subscription and Manage billing (owner only); the Billing tab is drawn for `canManageWorkspace` (owner and admins, read-only for admins). **Built, Block C**; top-up for owner and admins (Q11) in Block F |
-| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to D built" |
+| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to E built" |
 
 ## 6. AI credits
 
@@ -200,6 +205,9 @@ Line numbers as of 2026-10-06, after Block C.
     anniversary day, by the hourly task. Each refill once per period.
   - A trial gets a one-time allowance when the workspace is made (100, or the restricted tier's
     30) and no refill; no subscription and no running trial, none.
+  - Seats added mid-period bring their credits at once: the added seats × credits per seat, once
+    per seat per period (`ai_wallet.allowance_seats`); a decrease takes nothing back (D-281 11,
+    Block E).
   - On Essentials the chip and the AI Credits page say "AI tools are on the Professional plan."
   - Existing balances were kept; the rules apply from the next refill point.
 - **Top-up.**
@@ -265,7 +273,9 @@ later (the Billing page and the trial button), pre-filled with them (Block C).
    - Seats from the subscription to `ai_wallet.seats`.
    - Refill per Q4.
    - The seat rule per Q6 (§9), at invite, accept and role change.
-5. **E. Trial caps.** Projects, storage, measurements (live items), PDF throttle for restricted tiers, with overrides; errors and the dialog.
+5. **E. Trial caps.** *Built 2026-10-06 (D-282).*
+   - Projects, storage, measurements (live items), PDF throttle for restricted tiers, with overrides; errors and the dialog.
+   - Seats added mid-period bring their credits at once (D-281 11).
 6. **F. AI top-up.**
    - "Buy now", payment Checkout, the webhook credit, ledger rows.
    - Smoke: buy a pack on the fake and see the balance.

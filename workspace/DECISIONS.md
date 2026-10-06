@@ -10554,10 +10554,19 @@ stripe}.py` (`billing_read`, `open_portal`, `create_portal_session`), `platform/
 8. **Existing workspaces keep their balances as they are.** The new rules apply from the next
    refill point; a workspace from before Block D with no wallet gets one on first read, with the
    allowance its state calls for.
-9. **A seat added mid-period** raises `ai_wallet.seats` at once and the allowance at the next
-   refill point.
+9. **A seat added mid-period** raises `ai_wallet.seats` at once. **Amended (the founder's Block E
+   brief, 2026-10-06):** and its included credits come at once too, as point 11; no longer at
+   the next refill point.
 10. **The bench fake** gains `renew` (the next period starts, `invoice.paid`), and the scheduled
     task takes a date (`refill_ai_wallets(at)`) so the anniversary day can be driven.
+11. **Seats added mid-period bring their credits at once (amended in Block E).** When a
+    subscription's seats rise (the webhook, or a comp's seats raised on Billing tiers), the
+    wallet gains the added seats x the plan's `credits_per_seat`, once per seat per period:
+    `ai_wallet.allowance_seats` holds the seats this period's allowance covers (each refill sets
+    it; an added seat raises it), so a replayed webhook, or a seat removed and added back in
+    the same period, grants nothing twice. A decrease takes nothing back. Essentials (0 per
+    seat) grants nothing. A `refill` ledger row says "Seats added". Where: `ai/allowance.py`
+    `grant_added_seats`, `on_subscription`; migration `a8d3e5f1c7b9`.
 
 **Where:** api `app/features/billing/seats.py` (new), `billing/{routes,schemas,service}.py`
 (`/seats`, `_follow`), `workspace/{routes,service}.py` (the four refusals, the wallet at
@@ -10566,3 +10575,59 @@ routes,meter}.py` (`meter.refill` takes the plan's credits per seat), `worker/ta
 `pages/{SettingsMembers,SettingsBilling,SettingsAiCredits}.tsx`, `MembersTable.tsx`,
 `features/ai/parts.tsx`, `workspace/realtime.ts`; infra `fakes/stripe/server.py` (`renew`),
 `drives/quantity-table.py` and `browser/lib/credit-cases.mjs` (an Essentials refill row).
+
+## D-282: F16 Block E: trial caps on restricted tiers, where they bite, and the throttle is the app's
+
+**Status:** decided (the founder's brief, 2026-10-06); points 3, 5, 7 and 8 are my calls inside it
+
+1. **When caps apply:** only while the workspace's trial runs, and only when its tier's rule is
+   `restricted` (seeded: the restricted tier, Tier 3). A subscription in force, any plan, active or
+   comp, ends them all (Q2); an ended trial needs none (view-only). Values come from
+   `billing_tier_rule`; a Billing tiers override replaces any single cap (null is the tier's
+   value); "Lift all restrictions" removes them all. One reader, `billing/caps.py` `trial_caps`,
+   which the AI trial cap and a new trial's one-time AI allowance now read too.
+2. **Where each is enforced, on the server** (409, code `trial_cap`, with the cap's name and
+   limit, so the app shows one dialog):
+   - **Projects** (seeded 1): active projects, not in the trash, at `project/service.py`
+     `create_project`. "Your trial allows [N] project. Subscribe to add more."
+   - **Storage** (seeded 500 MB): every project file's bytes in the workspace, unfinished uploads
+     and the trash included, at the upload reserve (`start_upload`), before any byte is sent.
+     "Your trial includes [X] MB of storage. Subscribe for more."
+   - **Measurements** (seeded 1,000): live takeoff items (Q9: a deleted item frees its place),
+     sub-items and earthwork lines included, in projects not in the trash. "Your trial allows
+     [N] measurements. Subscribe for unlimited measurements."
+   - **AI credits** (seeded 30): as before (`ai/service.py` `room`), reading `trial_caps`.
+3. **Every insert of items is checked, one request one check** (my call): `takeoff/service.py`
+   `create_item`, `duplicate_item` (with its sub-items), `set_sub_items` (which assembly apply
+   uses), `takeoff/snapshot.py` `restore` (undo of a delete), `earthwork/lines.py` `write_lines`
+   (Calculate's lines, net of those it removes), and a project restored from the trash (which
+   also checks the projects cap). The items are flushed, the live count read, and a request past
+   the cap is refused whole; its transaction rolls back, so nothing is half made.
+4. **Bulk creates.** A request that adds several items past the room left answers "This would add
+   [K] measurements and your trial has room for [R] more, so nothing was added." with the
+   measurements message. Auto Count, paste and Auto Trace create at most one item per request.
+   Where the app needs several requests for one act (a new item with draft sub-items or an armed
+   assembly, Auto Count's new item with sub-items, bulk Duplicate, Extract Schedule), it reads the
+   room first (`GET {ws}/billing/caps`) and, short of it, opens the dialog with the same words and
+   sends nothing.
+5. **The dialog** (`TrialCapDialog`, the locked dialog's style): the api's message; "Go to
+   Billing" for the owner, "Ask the workspace owner." for anyone else. The client announces it for
+   code `trial_cap` from any request, as it does `workspace_locked`.
+6. **The PDF throttle is client-side only.** The capability read carries `pdf_throttle_ms` (the
+   tier rule's, seeded 1,200 ms, on a restricted trial; 0 otherwise) and `trial_capped`; the app
+   waits that long before each page render (`lib/billing/pdfThrottle.ts`, awaited in
+   `raster.ts` `renderPage`; a cached bitmap is not a render), as legacy's knob. The api never
+   enforces it.
+7. **Usage on Settings > Billing** on a restricted trial: projects, storage (MB), measurements
+   and AI credits, each "used of limit". Nothing on an unrestricted trial or a subscription.
+8. **Billing tiers > Overrides gains "Limits"** (my call): a workspace's four caps, blank for the
+   tier's value. The page had "+7 trial days", "Lift all restrictions" and "Comp plan" but no way
+   to set a single cap, and the save could not set one back to null; it now can for the four caps.
+
+**Where:** api `app/features/billing/caps.py` (new), `billing/{routes,schemas}.py` (`/caps`),
+`project/service.py`, `takeoff/{service,snapshot}.py`, `earthwork/lines.py`, `ai/{service,
+allowance}.py`, `workspace/{routes,schemas}.py` (the capability read), `platform/billing.py`,
+`core/errors.py` and `main.py` (`AppError.extra`); app `features/billing/{TrialCapDialog.tsx,
+PdfThrottle.tsx,room.ts,api.ts}`, `lib/billing/pdfThrottle.ts`, `lib/takeoff/pdf/raster.ts`,
+`core/api/{client,locked}.ts`, `pages/{SettingsBilling,PlatformBillingTiers,ProjectTakeoff}.tsx`,
+`features/workspace/hooks/use-permissions.ts`, `App.tsx`.
