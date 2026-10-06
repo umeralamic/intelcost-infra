@@ -10096,6 +10096,24 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     neighbours, so a shape does not gather a vertex at each line it has crossed. **Arcs are not
     offered in the site view yet** (an arc split analytically at the line needs its own
     engine work).
+22. **Auto Trace on the stitched drawing (F2).** Trace in the site view traces each member's
+    page as the sheet's wand does (the same read, cache and worker, the settings' profiles),
+    then keeps each line to the member's visible region (`clipTrace`: a line past a match line
+    is cut there; a closed line cut by it is open pieces, the two meeting at its first point
+    made one), and stitches the pieces (`stitchTrace`, 3 pt). The traced pieces show in the
+    site view, the joined ones stronger; the flags are listed and their ends ringed amber.
+    **Adopt labelled** takes every traced line with an elevation (a joined line takes it from
+    any of its pieces): each is one contour, its pieces on their sheets under one
+    `site_shape`, into the surface's container, simplified with the profile's tolerance as the
+    sheet's adopt is; a line already drawn is left; the lot undo as one step (a `trace_batch`
+    id in the pieces' meta). An unlabelled line is not adopted from the site view (no
+    elevation suggestions here yet). The read is the whole page, then clipped, not a read
+    clipped first: the same result, and the sheet's cache serves both.
+23. **Rings are closed in `site.ts`.** `clipRun` walks a ring's edges in pairs and the
+    region rings were open, so a region whose last edge was the match line was never cut at
+    it: an east-side member's traced lines came through whole, and in `siteRuns` an anchor
+    whose region ended on its match line would have kept or dropped a crossing segment whole.
+    Found by the clip-and-stitch rows; fixed for every caller.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

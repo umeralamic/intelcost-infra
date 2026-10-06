@@ -202,6 +202,28 @@ SITE_SHAPE_CASES.push(
     ],
     expect: { features: 1, undercutSF: 2000, undercutCF: 4000, prepSF: 1200, strips: 1, stripCY: 400 / 27 },
   },
+  // Block F2: each sheet traced whole, its lines kept to its side (clipTrace), then stitched.
+  // Three contours from ground x 20 (60 on B, its page starts at 50) to 180: cut at the line
+  // on each sheet and joined, three times. A closed loop (60, 30) to (140, 90) on both: one
+  // piece a side (A's two, meeting at the loop's first point, made one), joined as one.
+  {
+    id: "stitch-clipped-through",
+    kind: "clipstitch",
+    lines: {
+      a: [40, 60, 80].map((y, i) => ({ id: i + 1, z: 700 + 5 * i, pts: [[20, y], [180, y]] })),
+      b: [40, 60, 80].map((y, i) => ({ id: i + 1, z: 700 + 5 * i, pts: [[60, y], [180, y]] })),
+    },
+    expect: { aPieces: 3, bPieces: 3, joined: 3, flags: "" },
+  },
+  {
+    id: "stitch-clipped-loop",
+    kind: "clipstitch",
+    lines: {
+      a: [{ id: 1, z: 705, closed: true, pts: [[60, 30], [140, 30], [140, 90], [60, 90]] }],
+      b: [{ id: 1, z: 705, closed: true, pts: [[60, 30], [140, 30], [140, 90], [60, 90]] }],
+    },
+    expect: { aPieces: 1, bPieces: 1, joined: 1, flags: "" },
+  },
   { id: "stitch-three-joined", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, 705, 710]), expect: { joined: 3, flags: "" } },
   { id: "stitch-one-mismatch", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, 705, 711]), expect: { joined: 2, flags: "mismatch:Elevation differs across the match line (710 / 711)" } },
   { id: "stitch-one-unpartnered", kind: "stitch", pieces: tracePieces([700, 705, 710], [700, null, 710]), expect: { joined: 2, flags: "unpartnered:No partner across the match line" } },

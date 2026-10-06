@@ -416,5 +416,9 @@ TIN and volumes stay in the browser, as today.
 - [x] Block D2b3 (overnight 2026-10-06): Snap, Snap PDF (each member's own index through its
   placement) and Ortho while drawing in the site view; Duplicate; the points a whole shape's
   pieces met at dropped where straight (D-271 21).
+- [x] Block F2 (overnight 2026-10-06), Auto Trace on the stitched drawing: each member traced and
+  kept to its side (`clipTrace`), stitched at the match lines, the flags listed and marked,
+  "Adopt labelled" as one contour per line across the join, one undo step (D-271 22); two
+  clip-and-stitch quantity rows; the open-ring bug fixed (D-271 23).
 - [ ] Still open: arcs in the site view (split analytically at the line); Find Text across
-  members; Auto Trace on the stitched drawing in the app (F).
+  members; elevation suggestions for unlabelled traced lines in the site view.

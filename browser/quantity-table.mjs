@@ -318,6 +318,16 @@ try {
         return { chains: chains.length, totalFt: total, ends: [ch[0], ch[ch.length - 1]].sort((p, q) => p.x - q.x).map(fmt).join(" ") };
       }
       if (c.kind === "slide") return { point: fmt(st.slideOnMatchLine(pt(c.point), c.line.map(pt))) };
+      if (c.kind === "clipstitch") {
+        // Ground to each sheet's points: A 3.6 pt a foot; B 2.4 pt a foot of ground − (50, −20).
+        const onA = ([x, y]) => ({ x: x * 3.6, y: y * 3.6 });
+        const onB = ([x, y]) => ({ x: (x - 50) * 2.4, y: (y + 20) * 2.4 });
+        const traced = (list, on) => list.map((l) => ({ id: l.id, surface: "EG", elevation: l.z, closed: Boolean(l.closed), pts: l.pts.map(on) }));
+        const pa = st.clipTrace(traced(c.lines.a, onA), A);
+        const pb = st.clipTrace(traced(c.lines.b, onB), B);
+        const res = st.stitchTrace([pa, pb], [{ ...A, matchLines: [g.A_LINE.map(pt)] }, { ...B, matchLines: [g.B_LINE.map(pt)] }], 3);
+        return { aPieces: pa.length, bPieces: pb.length, joined: res.joined.length, flags: res.flags.map((f) => f.code + ":" + f.message).join("|") };
+      }
       if (c.kind === "site-accept") {
         // C-200 as one sheet: page 3's EG through its link, C-200's FG and boundary (as regaccept).
         const d = c.data;

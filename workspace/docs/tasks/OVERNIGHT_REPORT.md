@@ -410,6 +410,26 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   - no arcs in the site view yet.
 - Commits: app 1abec00; infra: D-271 21 and this report.
 
-**Stopped after D2b3** (07:30).
+**F2. Auto Trace on the stitched drawing: done.**
+- Trace in the site view:
+  - traces each member's page (the sheet's read, cache and worker);
+  - keeps each line to the member's side (`clipTrace`);
+  - stitches the pieces at the match lines;
+  - lists and rings the flags amber.
+- "Adopt labelled" saves each labelled line as one contour across the join, undone as one step (D-271 22).
+- Quantity table: 2 new rows (20 site rows):
+  - three contours traced past the line on both sheets are clipped and joined, 3;
+  - a closed loop across the line is one piece a side, joined as one.
+- **One real bug found and fixed:** the site engine's region rings were open, so a region whose last edge is the match line was never cut there. The east sheet's traced lines came through whole, and `siteRuns` would have mis-clipped an anchor whose region ends on its match line (D-271 23).
+- Smoke 3/3 (throwaway, on a two-page PDF made for it: wavy contours labelled in gaps, 705 on both sheets, 710 on A against 711 on B, 715 on A only):
+  1. Trace read "4 lines traced, 1 joined across the match line, 4 labelled" and flagged "Elevation differs across the match line (710 / 711)" and "No partner across the match line";
+  2. Adopt labelled saved A:705 B:705 (one site shape) and A:710 A:715 B:711;
+  3. Ctrl+Z left 0 contours.
+- Decisions made alone:
+  - unlabelled traced lines are not adopted from the site view (no elevation suggestions there yet);
+  - the trace reads the whole page, then clips.
+- Commits: app 577357a; infra: the two rows, D-271 22 and 23, and this report.
+
+**Stopped after F2** (08:00).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
