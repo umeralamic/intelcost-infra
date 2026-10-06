@@ -10167,3 +10167,29 @@ triangulated in feet (its square frame).
 `tin/index.ts`, `volume/index.ts`, `versionKey.ts`, `features/takeoff/earthwork/useVolumes.tsx`,
 `useEarthwork.tsx`, `site/siteKey.ts`, `site/SiteView.tsx`, `pages/ProjectTakeoff.tsx`; api
 migration `c4f1a9e2d7b3`; infra `browser/quantity-table.mjs`, `browser/lib/earthwork-cases.mjs`.
+
+## D-273: An arc across a match line is converted to segments; arcs stay single-sheet objects
+
+**Status:** decided (the founder's answer to the overnight report's question 6, 2026-10-06; supersedes D-271 21's "Arcs are not offered in the site view yet")
+
+An arc is stored as a circle in its own page's normalised space (`{kind: "arc", cx, cy, r, a0,
+sweep}`); carried through another member's turn and page proportions it is a rotated ellipse,
+which that model cannot hold. Arcs stay single-sheet objects in the data model.
+
+1. **Drawing.** The site view has an Arc tool beside Linear (three clicks: start, through,
+   end, into a Linear item). Kept to one member, it is saved as that sheet's arc, through the
+   three points on its page, as the sheet canvas draws one: an arc drawn within one sheet is
+   unchanged. Crossing a match line, it is the true arc (the circle in site feet through the
+   three points) as straight chords of at most 2° (`arcChords`: a chord of θ is short of
+   its arc by about θ²/24, under 0.01 % at 2°), split at the joins like any polyline, under one
+   `site_shape`, and the site view says "Arc crossing a match line was converted to segments."
+2. **Editing.** A sheet's arc selected in the site view shows its three points as handles. A
+   move or a copy that keeps it to one member keeps it an arc (in place on its own sheet); one
+   that takes it over a match line converts it along the path it is drawn on (its page's
+   circle in site feet, `arcPath`, the same 2° chords) and splits it, with the notice. A
+   handle dragged re-fits the arc through the three points, by the same rule as drawing.
+3. Three points in a line are a two-segment run, as legacy's; no notice.
+
+**Where:** app `lib/takeoff/engine/shapes.ts` (`arcChords`),
+`features/takeoff/earthwork/site/siteEdit.ts` (`placeArc`, `arcPath`, `arcHandles`,
+`arcThrough`, the arc grab), `SiteView.tsx` (the Arc tool, its draft, `replaceArc`, copy).
