@@ -10055,6 +10055,13 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     replaced. The site view takes Delete, Backspace, Escape and Ctrl+Z first (capture, default
     prevented) so the sheet canvas underneath never acts on them too. Redo is not offered
     here. A locked item's shapes are refused.
+19. **The join-point slide (Q9, D2b2).** A selected shape shows its vertices as handles, each
+    once; a point on two members' pieces (a join point) is drawn round. Dragged, a join point
+    is projected onto its match line's segment (the member's visible-region edge it lies on),
+    so a drag off the line moves it along the line rather than refusing it, and every copy
+    moves together. Any other vertex is kept inside its member's visible region (the nearest
+    point of its edge when dragged past it). All the changed pieces go in one write and undo
+    as one step.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

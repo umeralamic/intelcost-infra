@@ -363,6 +363,17 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   - copy, the join-point slide (Q9), arcs, Ortho and Snap are left for D2b's rest.
 - Commits: app b3d4595; infra: D-271 18 and this report.
 
-**Stopped after D2b1** (06:45).
+**D2b2. The join-point slide (Q9): done.**
+- A selected shape shows handles; a join point is round. Dragged, it slides along its match line with both pieces' copies.
+- Any other vertex stays inside its member's visible region. One write, one undo step (D-271 19).
+- Smoke 4/4 (throwaway):
+  1. a run from x 60 to 140 showed 2 end handles and 1 round join handle;
+  2. the join handle dragged to (130, 80) slid to (100, 80): A (60,50)-(100,80) | B (100,80)-(140,50);
+  3. an end dragged off A's page to (-20, 50) was held at (0, 50);
+  4. Ctrl+Z put it back at (60, 50).
+- Decision made alone: a drag off the line is projected onto the line, rather than refused (Q9 says "moves along the match line only").
+- Commits: app 8663804; infra: D-271 19 and this report.
+
+**Stopped after D2b2** (06:55).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

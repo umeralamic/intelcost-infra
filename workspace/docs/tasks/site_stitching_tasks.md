@@ -405,4 +405,7 @@ TIN and volumes stay in the browser, as today.
 - [x] Block D2b1 (overnight 2026-10-06): select, move and delete a `site_shape` as one in the
   site view, a move re-splitting it at the match lines; the site view's own undo, one step per
   drawing, move or delete (D-271 18).
-- [ ] D2b rest (copy, the join point slide (Q9), arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing, the C-200 acceptance row).
+- [x] Block D2b2 (overnight 2026-10-06), the join point slide (Q9): handles on a selected
+  shape, a join point sliding along its match line with both pieces, any other vertex kept in
+  its member's visible region (D-271 19).
+- [ ] D2b rest (copy, arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing, the C-200 acceptance row).

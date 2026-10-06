@@ -82,6 +82,7 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
 - **E3** (done 04:45): the site result goes stale with a member's drawing.
 - **C2** (done 04:58): live pdf.js renders per member in the site view.
+- **D2b2** (06:45 to 06:55): the join-point slide (Q9).
 - **D2b1** (06:30 to 06:45): select, move, delete as one; undo.
 - **E5** (06:20 to 06:30): Q14, the site's lines grouped under its name.
 - **E4** (06:00 to 06:20): Site Features and Strip Areas in a site Calculate.
