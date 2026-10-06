@@ -423,5 +423,6 @@ TIN and volumes stay in the browser, as today.
 - [x] Block C3 (overnight 2026-10-06), Find across members: a Find box in the site view, each
   member's text searched, a hit kept only on its member's visible side, hits ringed, Next
   centring each (D-271 24).
-- [ ] Still open: arcs in the site view (split analytically at the line); elevation
-  suggestions for unlabelled traced lines in the site view.
+- [x] Block F3 (overnight 2026-10-06): a traced line adopted alone at an elevation the person
+  confirms, pre-filled from its label or the wand's suggestion (D-271 25).
+- [ ] Still open: arcs in the site view (split analytically at the line).

@@ -10121,6 +10121,13 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     found twice. Hits are ringed amber in the site frame; Enter or Next (Shift+Enter back)
     centres the view on each in turn. The sheet's match modes and the results list stay on the
     sheet's Find Text panel.
+25. **A traced line adopted alone (F3).** With the site's trace shown, a click on a traced
+    line opens a prompt on the trace row: the line (all its pieces across the join), its
+    elevation pre-filled from its label, else from the wand's suggestion (worked per member on
+    its whole page, as the sheet's wand works it, and offered only when every piece that has
+    one agrees), and "Adopt this line". The person confirms or types it: a suggestion is never
+    adopted on its own (D-144), so "Adopt labelled" still takes labelled lines only. The trace
+    stays up after one line is taken.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

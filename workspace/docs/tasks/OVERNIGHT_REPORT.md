@@ -437,6 +437,14 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   2. Next moved to the other hit. The view's centring was not asserted.
 - Commits: app b0da072; infra: D-271 24 and this report.
 
-**Stopped after C3** (08:10).
+**F3. A traced line adopted alone: done.**
+- With the trace shown, a click on a traced line opens a prompt: its elevation, pre-filled from its label or the wand's suggestion, and "Adopt this line".
+- The person confirms: a suggestion is never adopted on its own (D-144, D-271 25).
+- Smoke 2/2 (throwaway, a PDF with 705 and 715 labelled and an unlabelled line between, on both sheets):
+  1. a click on the unlabelled line opened "FG line, 2 pieces". The pre-fill was empty: this drawing gave no suggestion, so the suggestion path was not exercised here;
+  2. 710 typed and adopted: A:710 and B:710 under one site shape.
+- Commits: app c2a0ea8; infra: D-271 25 and this report.
+
+**Stopped after F3** (08:20).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
