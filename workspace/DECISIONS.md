@@ -9726,3 +9726,46 @@ Step 3a left.
 **Where:** api `alembic/versions/d8e3b6f1a947_wage_set_project_type.py`,
 `app/features/wage_calculator/`, `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`; app
 `src/features/wage-calculator/`, `pages/ProjectWageCalculator.tsx`, `pages/SettingsWageCalculator.tsx`.
+
+## D-265: Wage Calculator in the estimate: rows follow saved rates, markup base, Labor burden kept once edited
+
+**Status:** points 1 to 3 decided (the founder's Step 4 brief, 2026-10-05); point 4's
+pricing-basis rule and the copy of the bid defaults in point 3 are the build's, pending
+review.
+
+Step 4 of the Wage Calculator build: the saved rates reach labor cost components and the
+bid summary.
+
+1. **Rows that follow the saved rates update on save, after confirmation.** A labor crew
+   row added with Add crew or Add craft names its craft (`craft_code`, and `crew_code` and
+   `crew_group` for a crew) and has `rate_source` "wage_set". Its hourly wage is the
+   project's current saved rate for that craft: the api writes it whenever the component
+   is saved, and writes the new rate into every such row when a new set is saved. Before
+   that save the Wage Calculator says "This updates labor rates on [N] rows in your
+   estimate." (alone, or inside P-01 or B-02), and the save answers with the count. Typing
+   a row's rate makes it `rate_source` "manual" ("Your rate"); "Use saved rate" switches
+   it back. Rows typed by hand, and every row from before, are left as they are. The keys
+   live in the existing `crew` JSONB: no migration.
+2. **Bid markups have a base.** Each extra markup is taken on "Total direct cost" (the
+   running subtotal, as before, and the default for every stored markup) or "Direct labor
+   only" (the estimate's total labor cost). Stored as `base` on the markup in
+   `estimate_bid_rates.extra`: no migration.
+3. **An edited Labor burden is never overwritten.** Saving a Direct-priced set adds a
+   "Labor burden" markup on Direct labor only at the set's `labor_burden_pct`, or updates
+   it, first among the extras; a project still on the workspace's bid defaults gets a row
+   of its own, copied from them. Once its percentage is changed by hand (the api compares
+   with the stored one and sets `edited`; the browser cannot), later saves leave it and it
+   shows "Your rate". A save priced Burdened removes the line if never edited; an edited
+   one is kept, with a note that the saved rates already include the burden.
+4. **R-04 on the review screen** is saved with the set (`rate_origin` user_override) and
+   prices the crews; the calculator offers the saved overrides again only while the
+   pricing basis is unchanged, since a burdened rate is not a payable wage.
+
+**Where:** api `app/features/wage_calculator/labor.py` (new), `service.py`, `routes.py`
+(`GET …/wage-set/current`), `schemas.py`; `app/features/estimate/bid.py`
+(`sync_labor_burden`), `components.py` (`with_saved_rates`), `schemas.py` (`CrewRow`,
+`BidExtra`), `routes.py`; app `features/estimate/CrewRows.tsx` (new), `ComponentDialog.tsx`,
+`useComponentEditor.tsx`, `BidSummary.tsx`, `EstimatingView.tsx`, `api.ts`,
+`lib/estimate/bidSummary.ts`, `lib/estimate/workbook.ts`, `lib/estimate/components.ts`,
+`features/wage-calculator/` (`WageCalculator.tsx`, `WageReview.tsx`, `api.ts`, `hooks.ts`,
+`text.ts`, `index.ts`); api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
