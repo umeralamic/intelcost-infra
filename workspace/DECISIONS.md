@@ -9804,3 +9804,37 @@ Wage Calculator over the takeoff and returns to the item's component dialog.
 `features/wage-calculator/WageReview.tsx`; api `app/features/wage_calculator/labor.py`
 (`retotal`), `service.py` (`_burden`), `schemas.py`, `app/features/estimate/components.py`;
 api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
+
+## D-267: Wage determinations from PDF: rules first, AI only on confirmation and only for what the document says
+
+**Status:** decided (the founder's Step 2b brief, 2026-10-05)
+
+Step 2b of the Wage Calculator build: reading wage determinations from PDF files, and an AI
+fallback for files the rule parser cannot read.
+
+1. **Rules first.** A PDF's text layer is extracted (PyMuPDF) and read by the same rule
+   parser as a text file, free. AI credits are used only when the rules cannot read the
+   file (the self-check fails, or no rate is read) and the user confirms U-07. Nothing
+   calls AI without that confirmation.
+2. **Only what the document says.** The model is told to transcribe, never to infer,
+   complete or correct, and to leave a missing value null. Its answer is then held to the
+   document: a classification is kept only when its base rate, and its fringe when that is
+   a number, appear in the text exactly as written; the rest are removed and listed ("Not
+   found in the document, removed"). None kept is a failure (U-08): the hold is released
+   and nothing is charged. Credits are settled only on success, never shown as an amount.
+3. **No scanned PDFs.** There is no OCR. A PDF with no usable text layer answers U-09 ("This
+   PDF is a scanned image and can't be read…"), with no credits.
+4. **The original PDF is not stored yet.** `wd_import` keeps the extracted text and the
+   parser's output, and for an AI read the credits it used (`ai_credits_used`).
+5. **Trial blocked, plan check still to come.** PDF upload and AI extraction are refused on
+   trial (U-06). Trial is a running trial window not lifted on Billing tiers, a stand-in
+   marked `TODO(F16)` until billing knows paid subscriptions (D-261 5).
+6. **The model is Extract Schedule's.** The tool `wage_determination` runs on the model
+   choice the platform sets for Extract Schedule on AI economics (D-252), with its own
+   output cap (16,000 tokens), through the existing hold, settle and release path.
+
+**Where:** api `app/features/wage_calculator/wd_ai.py` (new), `service.py` (`parse_wd`,
+`parse_wd_ai`, `on_trial`, `_result`), `routes.py` (`POST …/wd/ai`), `schemas.py`, `models.py`,
+`alembic/versions/e5b2c8d4f1a6_wd_import_pdf_ai.py`; `app/features/ai/service.py`
+(`TOOL_GROUP`), `meter.py` (caps), `usage.py` (label); app `features/wage-calculator/WageData.tsx`,
+`api.ts`, `text.ts`, `WageCalculator.tsx`; api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
