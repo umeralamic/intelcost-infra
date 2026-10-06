@@ -198,6 +198,40 @@ started with. `run` in `browser/lib/bench.mjs` asks it before a script's first s
 runs nothing if either is behind, waiting up to 45 s for a restart already under way.
 `browser/bench-code.mjs` asks the same question on its own.
 
+## The marketing site
+
+It comes up with everything else too: http://localhost:3000 is `intelcost-market-next`
+under `next dev`, the address the app's `VITE_MARKETING_URL` already links to. Its
+CTAs point at the bench app on :5173, and it is `noindex` because its site URL is not
+intelcost.io. It restarts on its own if it falls over.
+
+The whole repo is mounted, so an edit or a `git pull` there shows on the next browser
+refresh. The dev server polls for changes (`DEV_WATCH_POLL`, as the app's does), because
+the bind mount delivers no filesystem events. `node_modules` and `.next` live in
+container volumes, not the Windows folder, so a host install or a host `npm run build`
+never touches the running site.
+
+**After a package change** (a pull or an edit that changes `package-lock.json`), restart
+it. On start it compares the lockfile with what it last installed and runs `npm ci` only
+when they differ, which takes about a minute (`docker compose logs -f marketing` shows
+`installing` and then `Ready`):
+
+```bash
+docker compose restart marketing
+```
+
+There is no image to rebuild. If the install itself goes bad, drop its volumes and start
+fresh:
+
+```bash
+docker compose rm -sf marketing
+docker volume rm intelcost-bench_marketing-node-modules intelcost-bench_marketing-next
+docker compose up -d marketing
+```
+
+Only one dev server can own port 3000. Stop a host `npm run dev` in
+`intelcost-market-next` before `docker compose up`, or the container cannot bind it.
+
 ## After each block (D-68)
 
 1. **The gates.** `npm run lint && npm run typecheck && npm run build` in the app;
@@ -255,6 +289,7 @@ container first: `docker compose stop app`.
 | `worker` | | Itself | `docker compose logs -f worker` |
 | `beat` | | The production scheduler | `docker compose logs -f beat` |
 | `app` | 5173 | Itself | http://localhost:5173 |
+| `marketing` | 3000 | The marketing site, `next dev` | http://localhost:3000 |
 | `api-b` | 8010 | A second api process (F8, `realtime` profile) | http://localhost:8010/docs |
 | `app-b` | 5174 | A second window, talking to `api-b` (`realtime` profile) | http://localhost:5174 |
 | `app-prod` | 5175 | The built app behind nginx, as production serves it (`prod` profile, D-49) | http://localhost:5175 |
@@ -357,9 +392,9 @@ invitation and confirmation links from). The worker logs each one as
 
 ## Known gaps
 
-- **The marketing site is not here.** `intelcost-market-next` has no session, no
-  database and no money, so it shares no seam with anything the bench tests. It has a
-  production Dockerfile of its own and is added the day a test needs it.
+- **The marketing site runs in dev mode only.** The `marketing` service is `next dev`.
+  Its production image (`intelcost-market-next/Dockerfile`, `next build` behind the
+  standalone server) is not on the bench.
 - **The app image is dev only.** Its Dockerfile builds one stage, `dev`, running the
   Vite dev server. Production packaging is F11's work and is deliberately not
   pretended at here.

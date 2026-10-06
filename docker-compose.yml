@@ -262,6 +262,49 @@ services:
       api:
         condition: service_started
 
+  # The marketing site (intelcost-market-next) under `next dev`, on http://localhost:3000,
+  # the address the app's VITE_MARKETING_URL and the api's CORS list already name.
+  #
+  # The whole repo is mounted, so an edit or a git pull shows on the next refresh. Two
+  # things are not the Windows folder: node_modules and .next live in container volumes,
+  # so a host install built for Windows never loads here and a host `npm run build`
+  # never clobbers the dev server's cache. Dependencies install at start, and only when
+  # package-lock.json differs from what the volume last installed, so a pull that
+  # changes packages needs `docker compose restart marketing`, not a rebuild.
+  marketing:
+    # Debian slim for the same reason as the app image: the lockfile was resolved on
+    # a glibc host.
+    image: node:24.15.0-slim
+    working_dir: /site
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # The bench's own origins. A SITE_URL other than intelcost.io also turns the
+      # site noindex, which is what a local copy should be.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:5173
+      # Read by next.config.ts: polls the mounted source, as the app's does, because
+      # the bind mount delivers no filesystem events.
+      DEV_WATCH_POLL: "1"
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        want=$$(sha1sum package-lock.json | cut -d' ' -f1)
+        if [ "$$(cat node_modules/.lock-sha1 2>/dev/null)" != "$$want" ]; then
+          echo "marketing: package-lock.json changed, installing"
+          npm ci --no-audit --no-fund
+          echo "$$want" > node_modules/.lock-sha1
+        fi
+        exec node_modules/.bin/next dev --hostname 0.0.0.0 --port 3000
+    volumes:
+      - ../intelcost-market-next:/site
+      - marketing-node-modules:/site/node_modules
+      - marketing-next:/site/.next
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
   # A second api process and a second app pointed at it (F8-S5, the "realtime" profile).
   #
   #   docker compose --profile realtime up -d
@@ -386,3 +429,9 @@ services:
       # The app a fixture opens: empty is the dev server on :5173; the prod profile's
       # built app is http://localhost:5175 (D-49).
       FX_APP: ${FX_APP:-}
+
+# Dependency and build caches only, never data. `down -v` drops them with everything
+# else, and the next start reinstalls.
+volumes:
+  marketing-node-modules:
+  marketing-next:
