@@ -248,4 +248,14 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decision (D-271 8): a site's boundary is the union of the members' own boundaries, each clipped to its territory, until Block D draws one boundary across the join.
 - Commits: app `4520a23`; infra: the commit with the rows and this report.
 
-**Stopped after C1.** C2 (per-member pdf.js window renders at full resolution for the members on screen plus one, Snap, Snap PDF and Find Text across members) and D to F (editing and measuring across the join, site Calculate with superseded member results, stitched trace and the C-200 acceptance row) were not started: each is several hours of canvas work, and C2 needs a measured four-sheet set (Q8).
+**E1. Calculate a site, as a preview: done.**
+- "Calculate" in the site view runs one Calculate over every member's EG, FG and boundary in the site frame (`siteRuns`), with one TIN per surface across the joins.
+- It shows one cut, one fill and one balance with the project's assumptions ("Native soil taken as suitable until the assumptions are confirmed" when they are not). It is marked "Preview: not saved to the estimate."
+- Smoke 2/2 (throwaway): a 120 × 100 ft pad over two sheets at 1" = 20' and 30', joined at x = 100, EG 100 and FG 102:
+  1. Calculate read "Cut 0 BCY, Fill 889 CCY, Import 1,111 LCY";
+  2. with the east half of the boundary deleted, "Fill 444 CCY, Import 556 LCY". The line's title in the script said it removed a scale; what it did was remove that boundary half.
+- Commits: app `df8bd3c`; infra: the workspace commit for this report.
+
+**Stopped after E1** (04:15).
+- **E2 not started.** It covers the site result saved, the members' results marked Superseded with their lines kept out of Estimating (Q10), the site's lines grouped under its name (Q14), and Site Features and Strip Areas across members. It changes how earthwork lines are keyed (they belong to one sheet today) and what Estimating shows, and needs a decision on where the site's lines live (see the questions at the end).
+- **C2, D and F's app side** were not started either: each is canvas work of several hours.

@@ -370,5 +370,10 @@ TIN and volumes stay in the browser, as today.
   with the spec's rows: the plane over two joined halves equals the one-sheet answer; west cut
   and east fill export and import alone and net to neither line as a site; three contours
   joined, one mismatch, one unpartnered. The Superseded row waits for Block E.
+- [x] Block E1 (overnight 2026-10-06), Calculate a site as a preview: Calculate in the site view runs
+  one Calculate over the members' EG, FG and boundaries (`siteRuns`), one TIN per surface
+  across the joins, and shows one cut, one fill and one balance with the project's assumptions.
+  Not saved, no lines: Site Features and Strip Areas, the site result, the members' results
+  marked Superseded (Q10) and the lines grouped under the site (Q14) are Block E2.
 - [ ] C2 (per-member pdf.js window renders, the members on screen plus one at full
   resolution, Snap, Snap PDF and Find Text across members), then D to F.

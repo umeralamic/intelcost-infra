@@ -70,5 +70,9 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   clipped to its visible region (CSS transform and clip-path, so the clip turns with it), pan,
   zoom, Fit, Rotate (the anchor's up first). No pdf.js window renders, no snapping: those are
   C2.
-- **C2 to F** (per-member pdf.js renders and snap across members, editing across the join,
-  site Calculate, stitched trace): not attempted tonight.
+- **A3** (done 04:05): the rest of Block A's engine (`siteRuns`, `stitchTrace`) and its rows.
+- **E1** (done 04:15): Calculate in the site view as a preview (one cut, fill and balance), not
+  saved. E2 (saving, Superseded, lines grouped under the site, Site Features and Strip Areas
+  across members) is larger: it changes how earthwork lines are keyed and what Estimating
+  shows, so it is not started.
+- **C2, D, E2, F's app side**: not attempted tonight.
