@@ -10224,3 +10224,47 @@ which that model cannot hold. Arcs stay single-sheet objects in the data model.
 `app/features/wage_calculator/recalc.py` (`_rates`, the rollback), `schemas.py`
 (`LocationRow.wd_counties`, `WageSetSummary.wd_county`, `RecalcResult.unchanged`),
 `service.py` (`_wd_county`), `routes.py`; api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
+
+## D-275: Arcs are circles in true feet; saved arcs measured again, a change over 0.5 % shows stale
+
+**Status:** decided (the founder's brief, 2026-10-06)
+
+An arc was fitted through its three points in page fractions (`{cx, cy, r, a0, sweep}`), so on
+a page that is not square it was elliptical in feet, and its length (legacy's r·√(W·H)·|sweep|)
+and area were wrong. On the same isotropic basis as D-272:
+
+1. **Stored true.** Every arc (the sheet's Arc mode, the site view's Arc, inline arcs on runs
+   and area boundaries) is fitted through its three points in the page's points (x by its
+   width, y by its height) and stored `{cx, cy, rx, ry, a0, sweep}`: the point at angle t is
+   (cx + rx·cos t, cy + ry·sin t) with rx·W = ry·H, a circle in true feet with t its true
+   angle, drawable without the page. `arcFrom3(p1, mid, p3, page)` fits it; `circularArc`
+   fits in a frame already in feet (the site view's).
+2. **Measured true.** Both engines read every arc through `trueArc` / `true_arc`: the circle
+   in points through its start, the middle of its sweep and its end as stored. Length
+   r·|sweep|, an inline arc's share of an area exact by Green's theorem on that circle, the
+   api's clipping outline sampled along it. An arc stored true is itself; three points in a
+   line are their two chords.
+3. **Saved arcs.** A legacy arc keeps its points and parameters (one `r`) and is drawn as
+   stored; it is measured as the true circle through its three points. Migration
+   `d5a2b7e9c1f4` measures every item with an arc again the way `_measure` does; an item whose
+   quantity moves by more than 0.5 % is marked stale, its sub-items too (the next measure of
+   the item clears it). On the bench: one, Hidden Valley Spec's "LF 7" (a Linear item, not its
+   earthwork data), 35.684 → 38.942 LF, stale.
+4. **Turned and copied.** An arc stored true turns a quarter on any page as itself (its centre
+   turned, a0 ± π/2) and is copied to another scale with rx·sx, ry·sy; a legacy arc keeps
+   legacy's handling (its run of points when the page or the scales are not even). This
+   supersedes D-273's "on a non-square page the sheet's arc is slightly elliptical".
+5. **The quantity table.** Rows with a hand-worked answer (square pages) are unchanged. The
+   legacy-arc rows on landscape and portrait pages have no hand-worked answer (both engines
+   compared) and move: `arc-landscape` 51.5528 → 51.3742 LF, `arc-run-landscape`
+   66.5764 → 67.4628 LF, `arc-area-landscape` 3,115.19 → 3,298.41 SF, and 40 of the 60
+   generated `gen-arc-*` rows (the non-square ones), −17.4 % to +27.7 %. Four rows added with
+   answers worked by hand: a 20 ft radius quarter on C-200's page and on a square page at
+   1" = 30' (10π LF), and a 10 ft radius half circle stored true on a landscape page, as a run
+   (10π LF) and closed (50π SF).
+
+**Where:** app `lib/takeoff/engine/draw.ts` (`ArcFit`, `arcFrom3`, `circularArc`, `arc`,
+`shapeFrom`), `engine/shapes.ts` (`arcRadii`, `expandArcs`, `arcChords`, `shapeOutline`),
+`engine/selection.ts`, `lib/takeoff/quantity.ts` (`trueArc`), `SheetCanvas.tsx`,
+`site/siteEdit.ts`; api `app/features/takeoff/quantity.py` (`arc_radii`, `circular_arc`,
+`true_arc`), migration `d5a2b7e9c1f4`; infra `browser/lib/quantity-cases.mjs`.

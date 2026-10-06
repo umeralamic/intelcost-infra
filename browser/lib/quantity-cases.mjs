@@ -15,6 +15,9 @@ const rect = (x0, y0, x1, y1, closedLinear = false) => {
   return { vertices: closedLinear ? [...corners, corners[0]] : corners, meta: { kind: "rectangle", corners } };
 };
 const arc = (cx, cy, r, a0, sweep) => ({ vertices: [], meta: { kind: "arc", cx, cy, r, a0, sweep } });
+/** An arc stored true (D-275): centre in page fractions, radius `rPt` in points on `page`. */
+const radiiT = (cx, cy, rPt, [w, h]) => ({ cx, cy, rx: rPt / w, ry: rPt / h });
+const arcT = (cx, cy, rPt, page, a0, sweep) => ({ vertices: [], meta: { kind: "arc", ...radiiT(cx, cy, rPt, page), a0, sweep } });
 const poly = (points, meta = null) => ({ vertices: points, meta });
 const hole = (shape) => ({ ...shape, role: "subtract" });
 
@@ -49,6 +52,14 @@ export const CASES = [
   { id: "arc-area-half-disc", type: "sf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.3, 0.5], [0.5, 0.5]], { closed: true, arcs: [{ i: 1, cx: 0.4, cy: 0.5, r: 0.1, a0: 0, sweep: Math.PI }] })], expect: (Math.PI * 100) / 2 },
   { id: "arc-area-landscape", type: "sf", page: LANDSCAPE, fpp: 0.25, shapes: [poly([[0.3, 0.5], [0.5, 0.5], [0.5, 0.7]], { closed: true, arcs: [{ i: 2, cx: 0.4, cy: 0.6, r: Math.hypot(0.1, 0.1), a0: Math.atan2(0.1, 0.1), sweep: Math.PI }] })] },
   { id: "arc-run-landscape", type: "lf", page: LANDSCAPE, fpp: 1 / 6, shapes: [poly([[0.2, 0.2], [0.4, 0.2], [0.5, 0.3]], { arcs: [{ i: 1, cx: 0.4, cy: 0.3, r: 0.1, a0: -Math.PI / 2, sweep: Math.PI / 2 }] })] },
+  // Arcs stored true (D-275): a circle in feet, rx·W = ry·H. A quarter of a 20 ft radius on
+  // C-200's page at 1" = 30' is 10π ft, and the same on a square page.
+  { id: "arc-true-c200-quarter-r20", type: "lf", page: [2448, 1584], fpp: 30 / 72, shapes: [arcT(0.5, 0.5, 48, [2448, 1584], 0, Math.PI / 2)], expect: 10 * Math.PI },
+  { id: "arc-true-square-quarter-r20", type: "lf", page: [1584, 1584], fpp: 30 / 72, shapes: [arcT(0.5, 0.5, 48, [1584, 1584], 0, Math.PI / 2)], expect: 10 * Math.PI },
+  // Inline arcs stored true on a landscape page: a half circle of 10 ft radius, as a run and
+  // closed as a half disc.
+  { id: "arc-true-run-landscape", type: "lf", page: LANDSCAPE, fpp: 0.25, shapes: [poly([[0.5 - 40 / 1224, 0.5], [0.5 + 40 / 1224, 0.5]], { arcs: [{ i: 0, ...radiiT(0.5, 0.5, 40, LANDSCAPE), a0: Math.PI, sweep: Math.PI }] })], expect: 10 * Math.PI },
+  { id: "arc-true-area-landscape", type: "sf", page: LANDSCAPE, fpp: 0.25, shapes: [poly([[0.5 - 40 / 1224, 0.5], [0.5 + 40 / 1224, 0.5]], { closed: true, arcs: [{ i: 1, ...radiiT(0.5, 0.5, 40, LANDSCAPE), a0: 0, sweep: Math.PI }] })], expect: 50 * Math.PI },
   { id: "count-marks", type: "count", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.1], [0.2, 0.2], [0.3, 0.3]])], expect: 3 },
 ];
 
