@@ -9820,7 +9820,10 @@ fallback for files the rule parser cannot read.
    complete or correct, and to leave a missing value null. Its answer is then held to the
    document: a classification is kept only when its base rate, and its fringe when that is
    a number, appear in the text exactly as written; the rest are removed and listed ("Not
-   found in the document, removed"). None kept is a failure (U-08): the hold is released
+   found in the document, removed"). The base rate must also sit next to its own title, on
+   the line where the title's last three words end or one of the next two lines, with a
+   numeric fringe on that same line; one that does not is removed as "Rate not found next
+   to this classification, removed". None kept is a failure (U-08): the hold is released
    and nothing is charged. Credits are settled only on success, never shown as an amount.
 3. **No scanned PDFs.** There is no OCR. A PDF with no usable text layer answers U-09 ("This
    PDF is a scanned image and can't be read…"), with no credits.
