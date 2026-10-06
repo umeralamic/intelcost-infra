@@ -1,6 +1,6 @@
 # F16: Billing, plans, trials
 
-**Status:** adopted 2026-10-06 (D-277). Blocks A, B and C built (D-278 and D-280 record the calls Blocks B and C made; D-279 the bench's mail guard). The founder's answers to the draft's
+**Status:** adopted 2026-10-06 (D-277). Blocks A to D built (D-278, D-280 and D-281 record the calls Blocks B, C and D made; D-279 the bench's mail guard). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
 ([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
 
@@ -33,9 +33,8 @@ bid markups in the estimate keep theirs.
   - a paid subscription ends the trial and the tier caps, whatever the country (Q2).
 - Seats set the AI allowance (D-236 8) and the member count (Q6).
 - AI credit top-ups: "Buy now" through Checkout, and the webhook crediting packs.
-- Upgrade surfaces:
+- Upgrade surfaces (all built, Block C):
   - a trial button in the app chrome;
-  - the upgrade dialog;
   - the locked-workspace dialog;
   - a Billing page under Settings.
 - Realtime channels 6 (`workspace.plan.changed`) and 7 (`workspace.trial.changed`). **Both built** (Blocks B and C).
@@ -55,7 +54,7 @@ bid markups in the estimate keep theirs.
 
 | Table | Purpose | Key columns |
 |---|---|---|
-| `billing_plan` | The catalog, editable on the platform | `code` (essentials, professional), name, `monthly_usd`, `annual_usd`, `seat_monthly_usd`, `seat_annual_usd`, `credits_per_seat`, `stripe_price_*` (4 ids), `active` |
+| `billing_plan` | The catalog (editing it on the platform is Block G) | `code` (essentials, professional), name, `monthly_usd`, `annual_usd`, `seat_monthly_usd`, `seat_annual_usd`, `credits_per_seat`, `stripe_price_*` (4 ids), `active` |
 | `workspace.stripe_customer_id` | The workspace's Stripe customer, made by the first Checkout and reused (D-278 3) | unique, nullable |
 | `user.signup_plan`, `signup_cadence`, `signup_seats` | The price page's choice kept at signup (Q12), beside the D-18 signup columns | nullable |
 | `workspace_subscription` | One row per workspace, written only by the webhook (and platform comp) | `plan_code`, `cadence`, `seats`, `status` (trialing, active, past_due, canceled, unpaid, comp), `stripe_customer_id`, `stripe_subscription_id`, `current_period_start/end`, `cancel_at_period_end`, `canceled_at`, `grace_until` |
@@ -174,8 +173,8 @@ Line numbers as of 2026-10-06, after Block C.
 | `app/core/dependencies.py:179` (`plan=self.plan`), `:191` `plan`, `:209` `view_only_reason`, `:235` `trial_expired`, `:256` `require_capability` | `resolve(..., plan=Plan.PRO)` | the workspace's plan from its subscription, Professional on trial (Q1); the view-only reason; a write refused only for it answers code `workspace_locked`. **Built, Blocks A to C** |
 | `app/features/workspace/capabilities.py:369` `Plan`, `:378` `AI_PLAN_LOCKED`, `:393` `_ESSENTIALS_PLAN`, `:436` `apply_plan_mask` | `Plan` enum; legacy's lighter-plan mask, never reached | `Plan.ESSENTIALS` / `Plan.PROFESSIONAL`; the Essentials mask keeps administration and billing (D-277 19). **Built, Block A** |
 | `app/features/wage_calculator/service.py:922` `on_trial`, `:938` `ai_allowed`, `:948` `ai_refusal` | "on trial" = a trial window exists and is not lifted | a subscription in force is never on trial; `ai_allowed` = `RUN_AI` and Professional and not on trial (Q3). **Built, Block A** |
-| `app/features/ai/models.py:60` (`AiWallet.seats`) | fixed 1 | written from the subscription's seats (Block D) |
-| `app/features/ai/meter.py:27` (`CREDITS_PER_SEAT`), `ai/service.py:171` `refill_due` | monthly Celery refill for every workspace | per plan's `credits_per_seat` (Essentials 0); refill at each billing period start, annual plans monthly on the anniversary day; a trial gets one allowance at its start and no refill (Q4). Block D |
+| `app/features/ai/models.py:60` (`AiWallet.seats`) | fixed 1 | written from the subscription's seats by the webhook and comp (`billing/service.py` `_follow`, `platform/billing.py`). **Built, Block D** |
+| `app/features/ai/allowance.py` (new; replaced `meter.CREDITS_PER_SEAT` and `ai/service.py` `refill_due`) | monthly Celery refill for every workspace | per plan's `credits_per_seat` (Essentials 0); monthly subscribers on `invoice.paid`, annual and comp on the anniversary day, a trial once at creation (Q4). **Built, Block D** |
 | `app/features/ai/service.py:392` `trial_cap` | Tier 3's 30 credits while the trial runs | off for a subscriber (Q2). **Built, Block A** |
 | `app/features/ai/routes.py:235` (`/packs`), app `src/pages/SettingsAiCredits.tsx:267` | packs listed; "Buy now" disabled, "Checkout arrives with billing" | `POST {ws}/billing/topup {pack}` → Checkout (payment mode); live for the owner and admins (Q11). Block F |
 | `app/features/platform/ai_economics.py:471` `grant`, app `src/pages/PlatformAiEconomics.tsx:492` | manual grant stands in for sales | stays as a platform comp tool |
@@ -185,7 +184,7 @@ Line numbers as of 2026-10-06, after Block C.
 | `app/features/platform/billing.py:66` (`SECRET_SLOTS`) | Stripe secrets shown as slots, never set | settings defined; presence shows "Set". **Built, Block A** |
 | app `src/pages/Signup.tsx:78` | reads `plan`, `cadence`, `seats` from marketing and ignores them | kept on the user (`signup_*`) and pre-filled on the Billing page's cards (Q12). **Built, Blocks B and C** |
 | app `src/features/workspace/capabilities.ts:29, 106, 111` | `canManageBilling` unused | gates Start subscription and Manage billing (owner only); the Billing tab is drawn for `canManageWorkspace` (owner and admins, read-only for admins). **Built, Block C**; top-up for owner and admins (Q11) in Block F |
-| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to C built" |
+| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to D built" |
 
 ## 6. AI credits
 
@@ -193,11 +192,16 @@ Line numbers as of 2026-10-06, after Block C.
   on Professional (and on trial, which is Professional). On Essentials they are locked with "AI
   tools are on the Professional plan." Text-file wage determination autofill has no plan check
   (on Essentials the Wage Calculator itself needs "Edit estimates", D-277 20).
-- **Included allowance (Q4).**
-  - Seats × the plan's `credits_per_seat` (Professional 100, Essentials 0), no rollover.
-  - A subscriber refills at each billing period start (`invoice.paid`); an annual plan refills
-    monthly on the subscription's anniversary day, by schedule.
-  - A trial gets a one-time allowance at its start and no monthly refill.
+- **Included allowance (Q4). Built, Block D (D-281, `ai/allowance.py`).**
+  - Seats × the plan's `credits_per_seat` (Professional 100, Essentials 0), no rollover;
+    `ai_wallet.seats` follows the subscription (webhook and comp only).
+  - A monthly subscriber refills at each billing period start (`invoice.paid`, and when the
+    subscription first comes into force); an annual subscriber or a comp monthly on the
+    anniversary day, by the hourly task. Each refill once per period.
+  - A trial gets a one-time allowance when the workspace is made (100, or the restricted tier's
+    30) and no refill; no subscription and no running trial, none.
+  - On Essentials the chip and the AI Credits page say "AI tools are on the Professional plan."
+  - Existing balances were kept; the rules apply from the next refill point.
 - **Top-up.**
   - Packs from `ai_pack`, as D-236 9 (Q10): $10/1,000, $25/2,500, $50/5,000, $100/10,000.
   - "Buy now" (owner and admins, Q11) opens a payment-mode Checkout carrying the pack's `stripe_price_id`.
@@ -222,13 +226,20 @@ No workspace has paid; every workspace is a tester's. On deploy:
 
 No data comes from legacy (D-236 15 for credits; nothing else exists).
 
-## 9. Seats and members (Q6)
+## 9. Seats and members (Q6). Built, Block D (D-281)
 
-- An invite, and an invite's acceptance, is refused when the members holding an editing role
-  would exceed the subscription's seats: "Add a seat". A role change into an editing role is
-  checked the same way.
-- View-only members never count.
-- On trial there is no seat count (no subscription), so no limit.
+- A seat is a member whose role (override or custom role included) can edit takeoff or
+  pricing: owner, admin, estimator, takeoff, pricing. View-only members and members limited to
+  annotations and comments (viewer, collaborator, the QA roles) use none. One function,
+  `billing/seats.py` `uses_seat`.
+- The limit is the subscription's seats while it is in force; a trial has no limit.
+- Refused (409, `seats_full`) when one more seat would pass the limit: an invite for a
+  seat-using role, its acceptance, a role change onto one, a seat-using custom role. "All N
+  seats are in use. Add a seat in Billing or change a member's role." The owner gets a Billing
+  link, anyone else "Ask the workspace owner". An ownership transfer is never refused.
+- Seats below use remove nobody: a banner for the owner and admins on Members and Billing, and
+  adding seat-using members stays refused until use fits. Members shows "Seats: U of S in use"
+  (or "no limit during trial") and marks each member using a seat.
 
 ## 10. Signup from the price page (Q12)
 
@@ -250,14 +261,15 @@ later (the Billing page and the trial button), pre-filled with them (Block C).
 3. **C. Billing page and portal.** *Built 2026-10-06 (D-280).*
    - Settings › Billing: plan, cadence, seats, status, period; on trial or ended the two plan cards (prices from `billing_plan`, monthly or annual, seats) and "Start subscription"; subscribed, "Manage billing" (portal). The owner acts, admins read, nobody else sees it.
    - The trial button in the chrome; the locked dialog; channel 7; Checkout pre-filled with the signup choice (Q12).
-4. **D. Seats.**
+4. **D. Seats.** *Built 2026-10-06 (D-281).*
    - Seats from the subscription to `ai_wallet.seats`.
    - Refill per Q4.
-   - The member-count rule per Q6 (§9), at invite and accept.
+   - The seat rule per Q6 (§9), at invite, accept and role change.
 5. **E. Trial caps.** Projects, storage, measurements (live items), PDF throttle for restricted tiers, with overrides; errors and the dialog.
 6. **F. AI top-up.**
    - "Buy now", payment Checkout, the webhook credit, ledger rows.
    - Smoke: buy a pack on the fake and see the balance.
 7. **G. Platform.**
    - Subscriptions list, webhook event errors.
+   - `billing_plan` editable on the platform (prices, credits per seat, Stripe price ids).
    - Then a full run restored from the fixture tag before any deploy to testers (CLAUDE.md).

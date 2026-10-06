@@ -22,7 +22,8 @@ fake's own and not Stripe's:
                                                     collection, every form field received)
     POST /_fake/sessions/<id>/complete              pay: subscription made, checkout.session.completed
     POST /_fake/subscriptions/<id>/payment_failed   past_due, invoice.payment_failed
-    POST /_fake/subscriptions/<id>/paid             active, invoice.paid
+    POST /_fake/subscriptions/<id>/paid             active, invoice.paid (the same period)
+    POST /_fake/subscriptions/<id>/renew            the next period starts, invoice.paid
     POST /_fake/subscriptions/<id>/cancel           cancel_at_period_end, customer.subscription.updated
     POST /_fake/subscriptions/<id>/delete           canceled, customer.subscription.deleted
                                                     (each of these four takes ?signature=bad)
@@ -392,6 +393,14 @@ class Handler(BaseHTTPRequestHandler):
                 sub["status"] = "past_due"
                 self._send(200, emit("invoice.payment_failed", invoice_for(sub, "open"), bad=bad))
             elif action == "paid":
+                sub["status"] = "active"
+                self._send(200, emit("invoice.paid", invoice_for(sub, "paid"), bad=bad))
+            elif action == "renew":
+                # The next period starts and is paid: what a renewal looks like to the api.
+                for item in sub["items"]["data"]:
+                    annual = item["price"].get("recurring", {}).get("interval") == "year"
+                    item["current_period_start"] = item["current_period_end"]
+                    item["current_period_end"] += YEAR if annual else MONTH
                 sub["status"] = "active"
                 self._send(200, emit("invoice.paid", invoice_for(sub, "paid"), bad=bad))
             elif action == "cancel":

@@ -10510,3 +10510,59 @@ stripe}.py` (`billing_read`, `open_portal`, `create_portal_session`), `platform/
 `features/billing/{api.ts,TrialButton.tsx,LockedDialog.tsx}`, `core/api/{client,locked}.ts`,
 `components/{app-shell,settings-layout}.tsx`, `TakeoffHeader.tsx`, `workspace/realtime.ts`; infra
 `fakes/stripe/server.py` (the portal).
+
+## D-281: F16 Block D: seats from roles, refused at four points; the AI allowance follows the plan
+
+**Status:** decided (the founder's brief, 2026-10-06); points 4, 7 and 10 are my calls inside it
+
+**Seats (Q6)**
+1. **One rule, `billing/seats.py` `uses_seat`:** a member uses a seat when their role, as the
+   workspace resolves it (its override or custom role included, no plan or trial mask), can
+   edit takeoff or pricing. Built-in roles: owner, admin, estimator, takeoff and pricing use a
+   seat; qa_takeoff, qa_pricing, collaborator and viewer do not. `seats_of` counts them.
+2. **The limit** is `workspace_subscription.seats` while the subscription is in force (active,
+   past due in grace, canceled before its period end, comp). A trial has no limit.
+3. **Refused at four points** when one more seat would pass the limit: an invite for a
+   seat-using role, its acceptance, a role change onto one, and a seat-using custom role
+   assigned. 409, code `seats_full`: "All [N] seats are in use. Add a seat in Billing or change
+   a member's role." The app links the owner to Billing and tells anyone else to ask the owner.
+   A member already using a seat who changes role never needs a new one.
+4. **An ownership transfer is never refused for seats** (my call): handing the workspace over
+   must not wait on billing.
+5. **Seats below use remove nobody.** The owner and admins see "[U] members use seats but the
+   plan has [S]. Add seats or change roles." on Settings > Members and Billing, and adding
+   seat-using members stays refused until use fits. Members shows "Seats: U of S in use" (or
+   "Seats: no limit during trial") and marks each member using a seat.
+
+**The AI allowance (Q3, Q4, D-236 8)**
+6. **Seats follow the subscription:** `ai_wallet.seats` is written by the webhook's sync and by
+   the platform's comp, never by a client. Included credits per period are seats x the plan's
+   `credits_per_seat` (Professional 100, Essentials 0). On Essentials the credit chip and the AI
+   Credits page say "AI tools are on the Professional plan." instead of a balance.
+7. **Refills** (`ai/allowance.py`), each idempotent per period (a wallet already starting that
+   period is left alone):
+   - a monthly Stripe subscriber at each billing period start: on `invoice.paid`, and when the
+     subscription first comes into force;
+   - an annual subscriber, or a comp (my call: a comp has no invoices), monthly on the
+     anniversary day, counted from its period start without drift, by the hourly task;
+   - a trial once, when the workspace is made: 100 credits, or the tier's trial AI cap where one
+     applies (seeded 30 for the restricted tier; a Billing tiers override replaces it, "lift all
+     restrictions" gives 100); no refill during the trial;
+   - no subscription and no running trial: never.
+   The old refill of every workspace each month, and the refill inside each AI call, are gone.
+   Unused included credits do not roll over; purchased credits are never touched.
+8. **Existing workspaces keep their balances as they are.** The new rules apply from the next
+   refill point; a workspace from before Block D with no wallet gets one on first read, with the
+   allowance its state calls for.
+9. **A seat added mid-period** raises `ai_wallet.seats` at once and the allowance at the next
+   refill point.
+10. **The bench fake** gains `renew` (the next period starts, `invoice.paid`), and the scheduled
+    task takes a date (`refill_ai_wallets(at)`) so the anniversary day can be driven.
+
+**Where:** api `app/features/billing/seats.py` (new), `billing/{routes,schemas,service}.py`
+(`/seats`, `_follow`), `workspace/{routes,service}.py` (the four refusals, the wallet at
+creation), `platform/billing.py` (comp), `app/features/ai/allowance.py` (new), `ai/{service,
+routes,meter}.py` (`meter.refill` takes the plan's credits per seat), `worker/tasks/ai.py`; app `features/billing/{api.ts,seats.ts,SeatNotices.tsx}`,
+`pages/{SettingsMembers,SettingsBilling,SettingsAiCredits}.tsx`, `MembersTable.tsx`,
+`features/ai/parts.tsx`, `workspace/realtime.ts`; infra `fakes/stripe/server.py` (`renew`),
+`drives/quantity-table.py` and `browser/lib/credit-cases.mjs` (an Essentials refill row).

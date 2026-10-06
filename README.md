@@ -370,6 +370,7 @@ A person pays on its hosted page (Checkout's URL, then Pay). A script drives it:
 
     curl -s localhost:12111/_fake/sessions/<cs_id>                       # the session as created
     curl -s -X POST localhost:12111/_fake/sessions/<cs_id>/complete      # pay it
+    curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/renew     # next period, invoice.paid
     curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/payment_failed
     curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/cancel  # at period end
     curl -s -X POST localhost:12111/_fake/subscriptions/<sub_id>/delete  # Stripe ends it

@@ -179,7 +179,8 @@ def credit(case: dict) -> dict:
         elif op[0] == "release":
             wallet = meter.release(wallet, Decimal(op[1]))
         elif op[0] == "refill":
-            wallet = meter.refill(wallet, int(op[1]))
+            # Seats x the plan's credits per seat: Professional's 100 unless the row says (D-281).
+            wallet = meter.refill(wallet, int(op[1]), Decimal(op[2] if len(op) > 2 else 100))
     return {
         "included": _four(wallet.included),
         "purchased": _four(wallet.purchased),

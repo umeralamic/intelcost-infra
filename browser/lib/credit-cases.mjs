@@ -64,8 +64,10 @@ export const CREDIT_CASES = [
   // A charge never eats a colleague's hold: A (0.5) and B (0.4) hold 0.9 of 1. A settles at 0.8: only 0.6 is free → 0.6.
   // B then settles at 0.4 from the 0.4 left → 0. Charged 0.6 + 0.4.
   { id: "credit-colleague-hold-kept", kind: "wallet", start: ["1", "0", "0"], ops: [["hold", "0.5"], ["hold", "0.4"], ["settle", "0.5", "0.8"], ["settle", "0.4", "0.4"]], expect: { included: "0.0000", purchased: "0.0000", held: "0.0000", charged: "1.0000", refused: null } },
-  // The monthly refill: 2 seats × 100; the 3.2 left of the old allowance is gone, the 7 purchased stays.
+  // A period's refill on Professional: 2 seats × 100; the 3.2 left of the old allowance is gone, the 7 purchased stays.
   { id: "credit-refill", kind: "wallet", start: ["3.2", "7", "0"], ops: [["refill", 2]], expect: { included: "200.0000", purchased: "7.0000", held: "0.0000", charged: "0.0000", refused: null } },
+  // On Essentials (0 credits a seat, D-281): 3 seats refill nothing; the purchased 7 stays.
+  { id: "credit-refill-essentials", kind: "wallet", start: ["3.2", "7", "0"], ops: [["refill", 3, "0"]], expect: { included: "0.0000", purchased: "7.0000", held: "0.0000", charged: "0.0000", refused: null } },
 
   // --- A primary and a fallback (D-252 5): "≈" is the primary's, the hold the dearer ceiling,
   // a refusal free, the answer charged at the price of the model that gave it.
