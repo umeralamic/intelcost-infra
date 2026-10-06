@@ -10,8 +10,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after each part. Times are
 | 4. Go-live checklist | done 23:35 |
 | 5. Auto Count accuracy and speed | not started (moved after 6 to 8, see the plan) |
 | 6. Marketing prices from the catalog | done 23:40 |
-| 7. Old arcs refit | in progress |
-| 8. Old-migration lint | not started |
+| 7. Old arcs refit | done 23:47 |
+| 8. Old-migration lint | in progress |
 | 9. Parity gap report | not started |
 
 ## Part 1. Block F: AI credit top-ups (D-283)
@@ -207,3 +207,32 @@ clicked in Part 2's line 3.
 `ovn-mkt-next`. My commands to remove them were denied by the permission settings. To remove:
 `docker stop ovn-mkt && docker rm ovn-mkt && docker volume rm ovn-mkt-next`. Neither touches the
 bench's own marketing service or its volumes.
+
+## Part 7. Old arcs refit (D-275 amended, point 6)
+
+**Built.** Migration `d8e2c4a6f1b3` refits the drawing parameters of every legacy takeoff arc
+(whole arcs and inline arcs on runs and areas) to `{cx, cy, rx, ry, a0, sweep}`. The new
+parameters describe the true-feet circle through the three points the arc's quantity is already
+measured from (start, middle of its stored sweep, end), using the same fit as new arcs
+(`quantity.refit_legacy_arc`).
+- The points (`vertices_json`) are not touched.
+- No quantity can move, and the migration checks it per shape and stops if one would.
+- Idempotent.
+- Annotation arcs (sheet markups) are left as they are.
+
+**Commits:** api `5f8eecc`, infra `18510ff`.
+
+**Smoke:**
+
+| Check | Result |
+|---|---|
+| Throwaway old-style arc on a 2448 × 1584 page (legacy one-`r` fit, 1/8" scale) | PASS: after the migration the drawn arc is a circle in feet, passes through its three points, starts and ends exactly on them; 83.864916 LF before, 83.864916 stored and re-measured after |
+| Second run | PASS: refits nothing |
+| Hidden Valley Spec "LF 7" | refitted (drawing only): 38.941519 LF before and after. Before `cx 0.52196, cy 0.17422, r 0.09945, a0 −1.79026, sweep 1.52589`; after `cx 0.52564, cy 0.23742, rx 0.10981, ry 0.16471, a0 −1.80358, sweep 1.23137` |
+
+The bench had one legacy arc (LF 7) besides the throwaway; no inline legacy arcs.
+
+**Decision I made:** "three stored points" is read as the three points D-275 already measures a
+legacy arc from (start, the middle of its stored sweep, end), not the arc's original clicks.
+Using these is what guarantees no quantity moves. The original clicks were never stored; the
+vertices hold 49 samples of the old page-space path.

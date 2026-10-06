@@ -147,6 +147,9 @@ services:
       - ../intelcost-app-fastapi/main.py:/srv/main.py
       - ../intelcost-app-fastapi/app:/srv/app
       - ../intelcost-app-fastapi/alembic:/srv/alembic
+      # The gates read their settings from it (ruff, mypy), so they run on the repo's own,
+      # not the copy the image was built with.
+      - ../intelcost-app-fastapi/pyproject.toml:/srv/pyproject.toml:ro
       # Scripts are run from in here, because a host without Python cannot run them
       # from outside: docker compose exec api python scripts/<name>.py
       - ../intelcost-app-fastapi/scripts:/srv/scripts
