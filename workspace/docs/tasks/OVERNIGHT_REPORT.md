@@ -2,6 +2,25 @@
 
 Started 02:05 UTC; stop at 11:30 UTC. Updated after each part.
 
+**Summary.**
+- All six parts are done:
+  - Part 1: Step 5, crews and classification;
+  - Part 2: Step 6, workspace crew settings;
+  - Part 3: the end-to-end Wage Calculator check, 11/11, nothing to fix;
+  - Part 4: the F16 spec draft, with 16 questions;
+  - Part 5: P-02, recalculate after a settings change;
+  - Part 6: F19 site stitching, built in 20 blocks.
+- **F19 left:** only arcs in the site view, which need your decision (question 6 at the end).
+- **Real bugs found and fixed in F19:**
+  - drawing clicks were taken by the sheets' labels;
+  - boundary pieces did not unite at the line;
+  - the site Calculate read stale items;
+  - a whole shape kept the point its pieces met at;
+  - the site region rings were open, so a match line that was a ring's last edge was never cut.
+- **One finding for you:** a sheet's TIN depends on its page's proportions (question 5).
+- No named stash: nothing was left half-built.
+- Questions, mismatches and every commit are at the end.
+
 ## Part 1. Wage Calculator Step 5, crews and classification: done
 
 **Built.** The approved crew mapping is loaded (14 crafts, 75 crews appended to the seed;
@@ -171,9 +190,9 @@ It ends with 16 "Questions for Umer". Research came from three read-only agents 
 
 **Question.** Should P-02 count only projects whose rates the change actually moves (wage-data sets, or any set when company benefits change), so that a General liability change on a workspace of National Average projects asks nothing?
 
-## Part 6. F19 site stitching (in progress)
+## Part 6. F19 site stitching: done, except arcs in the site view
 
-Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in the app; C to F not attempted.
+Blocks in the order built (the plan's list in `OVERNIGHT_PLAN.md`): A1, A2, B, C1, A3, E1, E2, E3, C2, D1, D2a, E4, E5, D2b1, D2b2, F1, D2b3, F2, C3, F3. Every block was gated, smoke-tested and committed before the next. Left: arcs in the site view (see the questions at the end).
 
 **A1. Site engine and its Python twin: done.**
 - `lib/takeoff/earthwork/site.ts`: `matchLinePairs` (arc length, either direction), `fitJoin`, `lineCheck`, `placeMember`, `toSite` / `toMember` / `fromSite`, `visibleRegion` (page halves per match line, the side holding the centre or the other side), `splitAtJoins`, `clipAreaToMembers` (members' territories never overlap: a later member loses what an earlier one holds), `rejoinRuns`, `slideOnMatchLine`.
@@ -227,7 +246,7 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decisions: D-271 5 to 7.
 - Commits: app `0bde9f6`; infra: the workspace commit for D-271 5 to 7.
 
-**C1. The stitched view, read-only: done** (Block C split; C2 not started).
+**C1. The stitched view, read-only: done** (Block C was split: C2 and C3 below).
 - `features/takeoff/earthwork/site/SiteView.tsx`, opened from a site row in the Sheets panel, over the canvas.
 - Each member's fit image is placed in feet by its placement and clipped to its visible region with a `clip-path` in its own page space, so the clip turns with it.
 - Pan (drag), zoom (wheel and buttons, px per ft shown), Fit, Rotate (starting from the anchor's `view_rotation`). A member's label opens its sheet.
@@ -291,7 +310,7 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - **Bench finding:** the bench's S3 bucket sends no CORS headers to the bench browser's origin, so no sheet PDF opens in the bench browser at all; the main canvas falls back to fit images too. The C2 smoke routed the bucket's responses through Playwright and added the header. Worth fixing in the bucket's CORS for `http://localhost:5173`.
 - Commits: app `b96b68c`; infra: the workspace commit for this report.
 
-**D1. Drawing across the join: done** (Block D split; D2 not started).
+**D1. Drawing across the join: done** (Block D was split: D2a and D2b1 to D2b3 below).
 - Linear, Area and Count in the site view, into a chosen item. Straight segments: Enter or double click finishes, Backspace takes back a point, Esc stops.
 - A run is split at the match lines, an area clipped to each member, a mark kept on the member it falls in. The pieces are saved on the members' own sheets with one `site_shape` id, so each sheet's quantities add up to the whole.
 - The members' shapes show in the view, each clipped to its member's side.
@@ -445,6 +464,58 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   2. 710 typed and adopted: A:710 and B:710 under one site shape.
 - Commits: app c2a0ea8; infra: D-271 25 and this report.
 
-**Stopped after F3** (08:20).
-- **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
-- **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
+**Part 6 ended after F3** (08:20). Then the regression pass below and this report.
+
+## Regression pass over the earlier F19 smokes
+
+Running at the time of writing: A2 7/7 again; the rest follow.
+
+## Questions for Umer
+
+1. **Labor burden decimals** (Part 3). The bid summary shows "48.7158%". Two decimals (48.72%)?
+2. **Connecticut counties** (Part 3). The strip names the 2022 planning region ("Southeastern Connecticut Planning Region"). Should it read the old county (New London County), which pre-2022 WDs use?
+3. **P-02 scope** (Part 5). Should the prompt count only projects whose rates the change moves, so that a General liability change on a workspace of National Average projects asks nothing?
+4. **F16** (Part 4). The 16 questions at the end of `docs/tasks/F16_SPEC_DRAFT.md`. The ones that block a build are 1 (the trial's plan), 4 (refill timing), 5 (failed payment and cancellation), 6 (seats against members) and 8 (refunds: the pricing page against the Terms).
+5. **The sheet TIN's page proportions** (Part 6, F1, D-271 20). A sheet's TIN is triangulated in normalised page space, x and y scaled apart, so its volumes depend on the page's proportions:
+   - C-200 alone gives 9,021.24 cut and 7,692.42 fill;
+   - triangulated in true geometry it gives 9,184.16 and 8,050.26 (fill +4.6 %).
+
+   The site engine now triangulates in true geometry. Should the sheet engine too? It is legacy's behaviour, and every saved sheet result (Hidden Valley's included) would move once recalculated. I changed nothing there.
+6. **Arcs across a match line** (Part 6). An arc is stored as a circle in its own page's normalised space (`{cx, cy, r, a0, sweep}`). Carried through another member's turn and page proportions, it is a rotated ellipse, which that model cannot hold. Options:
+   - (a) an arc drawn in the site view must stay on one member, refused when it crosses a line;
+   - (b) a general elliptical arc in `shape_meta`, read analytically by both engines. This is a spec change under hard rule 3.
+
+   I recommend (a) now. Nothing was built.
+7. **The site view's undo** (Part 6, D-271 18). The site view keeps its own undo (no redo), separate from the sheet canvas's history. Is that enough, or should a site step also show in the canvas's history?
+8. **The Wage Calculator on the board.** It has no row in FEATURES.md or MANAGER.md; its steps are tracked in the api's `docs/wage-calculator/`. Add an F-row for it?
+
+## Spec and brief mismatches
+
+- **Parts 1, 2, 3 and 5:** none found. The Step 5 and Step 6 spec sections and brief were written with the code.
+- **Part 4:** three contradictions for you, inside the F16 material (pack prices: D-236 against legacy; Collaborator AI credits; refund wording).
+- **Part 6 (F19), each recorded in D-271:**
+  - **Q16, the acceptance row:** it clips C-200's adopted linework into the two crops rather than running Auto Trace on raster crops. It holds "to the cent" against C-200 triangulated in true geometry, not against the sheet engine as it is (question 5).
+  - **Q9:** a join point dragged off the line is projected onto it, not refused.
+  - **Undo:** the site view's own undo, not the session history the spec names (question 7).
+  - **Copy:** a Duplicate 10 ft over, not a copy and place.
+  - **Arcs** in the site view: not built (question 6).
+  - **Find Text** in the site view uses the sheet's default match (every word, contains, any case), with no mode choice or results list.
+  - **Unlabelled traced lines:** adopted one at a time, the person confirming the elevation (D-144). "Adopt labelled" takes labelled lines only.
+  - **Q14's "and Reports":** Reports are time reports today and carry no lines.
+
+## Named stash
+
+None. Every part and block was finished, gated, smoke-tested and committed before the next; nothing was stashed.
+
+## Commits by repo, overnight
+
+Times are the commit clock (UTC−5).
+- **api** (`intelcost-app-fastapi`):
+  - Wage Calculator: `893888a` (Step 5), `ed9099c` (Step 6), `8057eed` (P-02), plus the earlier `8a64edf` (BUILD_BRIEF line 78);
+  - F19: `d4374c7` (A1), `999a493` (A2), `96dab3a` (E2), `482220c` (E3), `100b209` (E5).
+- **app** (`intelcost-app-react`):
+  - Wage Calculator: `c4e882a` (Step 5), `ed80c1e` (Step 6), `e4a96dc` (P-02);
+  - F19: `0562f7e` (A1), `0bde9f6` (B), `ee37929` (C1), `4520a23` (A3), `df8bd3c` (E1), `e8bb51c` (E2), `a089081` (E3), `b96b68c` (C2), `a83cf91` (D1), `d162771` (D2a), `6b7530a` (E4), `b3d4595` (D2b1), `8663804` (D2b2), `aa81693` (F1), `1abec00` (D2b3), `577357a` (F2), `b0da072` (C3), `c2a0ea8` (F3).
+- **infra** (`intelcost-infra`): the quantity rows (`d63a933`, `016b06d`, `a5246f2`, `21b1a3b`, `bf29ba0`), and a workspace mirror commit after every block (DECISIONS D-268 to D-271, the specs, this report, SINCE_ARCHIVE, MANAGER and FEATURES), last `fe6a28d`.
+
+All on `umer-dev`, pushed. Legacy untouched. Hidden Valley Spec's earthwork data untouched (the acceptance row reads the frozen `c200-acceptance.json` in infra).
