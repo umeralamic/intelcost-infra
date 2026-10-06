@@ -291,6 +291,16 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - **Bench finding:** the bench's S3 bucket sends no CORS headers to the bench browser's origin, so no sheet PDF opens in the bench browser at all; the main canvas falls back to fit images too. The C2 smoke routed the bucket's responses through Playwright and added the header. Worth fixing in the bucket's CORS for `http://localhost:5173`.
 - Commits: app `b96b68c`; infra: the workspace commit for this report.
 
-**Stopped after C2** (04:55).
+**D1. Drawing across the join: done** (Block D split; D2 not started).
+- Linear, Area and Count in the site view, into a chosen item. Straight segments: Enter or double click finishes, Backspace takes back a point, Esc stops.
+- A run is split at the match lines, an area clipped to each member, a mark kept on the member it falls in. The pieces are saved on the members' own sheets with one `site_shape` id, so each sheet's quantities add up to the whole.
+- The members' shapes show in the view, each clipped to its member's side.
+- Smoke 3/3 (throwaway, two sheets at 1" = 20' and 30' joined at ground x = 100; each item started with a shape of its own on the west sheet):
+  1. a curb from x = 60 to 160 saved as 2 pieces (one per sheet, one `site_shape`); Curb 110.00 LF (10 + 100);
+  2. an 80 × 40 area saved as 2 pieces; Paving 3,300.0 SF (100 + 3,200);
+  3. a mark east of the line saved on the east sheet only; Light 2 EA; 8 shapes drawn in the view.
+- Commits: app `a83cf91`; infra: the workspace commit for this report.
+
+**Stopped after D1** (05:10).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

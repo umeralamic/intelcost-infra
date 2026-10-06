@@ -80,4 +80,10 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   with the site), the members' own lines flagged `earthwork_superseded` and left out of Estimating
   while the site's lines exist (Q10), members' results marked "Superseded by Site X", Remove result;
   cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
-- **C2, D, F's app side**: not attempted tonight.
+- **E3** (done 04:45): the site result goes stale with a member's drawing.
+- **C2** (done 04:58): live pdf.js renders per member in the site view.
+- **D1** (started 05:00, done 05:10): draw Linear, Area and Count across the join in the site view, straight
+  segments, into a chosen item; each shape split per member (`splitAtJoins`, `clipAreaToMembers`,
+  a count to the member it falls in) and saved on the members' own sheets with one `site_shape` id;
+  the members' shapes shown in the view, clipped. D2 (select, move and delete as one, the join
+  point slide, arcs, Ortho, Snap across members) and F's app side are not attempted.

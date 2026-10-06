@@ -387,5 +387,11 @@ TIN and volumes stay in the browser, as today.
   screen shows above it, mapped back through the view's turn and the member's placement; a
   member off screen holds no raster. Snap, Snap PDF and Find Text across members belong with
   drawing in the site view (Block D).
-- [ ] D to F (drawing and measuring across the join, Site Features and Strip Areas in a site
+- [x] Block D1 (overnight 2026-10-06): Linear, Area and Count drawn across the join in the site
+  view into a chosen item, straight segments; a run split at the match lines, an area clipped to
+  each member, a mark on the member it falls in, the pieces saved on the members' own sheets with
+  one `site_shape` id (Q15); the members' shapes shown in the view, clipped to their sides.
+- [ ] D2 (select, move, copy and delete a `site_shape` as one, the join point slide (Q9), undo as
+  one step, arcs, Ortho, Snap and Snap PDF across members, contours and the boundary drawn
+  across), then E and F's rest (Site Features and Strip Areas in a site
   Calculate, Q14's group, Auto Trace on the stitched drawing, the C-200 acceptance row).
