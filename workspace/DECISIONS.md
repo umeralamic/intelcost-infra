@@ -9769,3 +9769,38 @@ bid summary.
 `lib/estimate/bidSummary.ts`, `lib/estimate/workbook.ts`, `lib/estimate/components.ts`,
 `features/wage-calculator/` (`WageCalculator.tsx`, `WageReview.tsx`, `api.ts`, `hooks.ts`,
 `text.ts`, `index.ts`); api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
+
+## D-266: The Labor burden markup is weighted by craft
+
+**Status:** decided (the founder's Step 4 fixes brief, 2026-10-05)
+
+The Labor burden line of a Direct-priced project (D-265 3) was the set's simple average
+burden, the same percentage for a crew of roofers as for a crew of laborers. It is now the
+estimate's own:
+
+1. **Amount.** The sum, over every labor row in the estimate, of the row's cost times its
+   craft's burden %, where a craft's burden % is (burdened − payable) ÷ payable from the
+   project's saved rate (`project_craft_rate`). Labor that names no craft (rows typed by
+   hand, and labor typed on a line) takes the set's `labor_burden_pct`.
+2. **Shown.** The line carries that amount and the effective percentage it makes of direct
+   labor. It is worked out in the browser with every other figure (`evaluateComponent`
+   gives each labor component its cost-weighted burden fraction, `computeLineCost`
+   carries `laborBurden` through wastage, multiplier, unit or lump and sheet share as
+   `laborCost`, `computeBid` takes it), so it moves when labor rows or quantities do.
+3. **Edited.** A percentage the user typed (D-265 3, `edited`) applies flat to direct
+   labor instead, with "Your rate"; the weighting is not used.
+4. **Rates to the browser.** The current-set read gives each craft's `burden_pct` and the
+   set's `labor_burden_pct`: the project's own saved rates, never a reference table.
+
+With it, from the same brief: a component's cached total moves with the wages the api
+writes into rows that follow the saved rates, in proportion to the crew rate (a labor
+total is crew-hours × crew rate); the R-04 breakdown shows the user's rate as used and the
+calculated rate greyed as "Calculated rate (not used)"; E-01 in the Takeoff panel opens the
+Wage Calculator over the takeoff and returns to the item's component dialog.
+
+**Where:** app `lib/estimate/components.ts` (`crewBurdenFraction`, `LaborBurdenRates`),
+`lib/estimate/costing.ts` (`laborBurden`), `lib/estimate/bidSummary.ts` (`BidTotals`),
+`features/estimate/EstimatingView.tsx`, `pages/ProjectTakeoff.tsx`,
+`features/wage-calculator/WageReview.tsx`; api `app/features/wage_calculator/labor.py`
+(`retotal`), `service.py` (`_burden`), `schemas.py`, `app/features/estimate/components.py`;
+api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
