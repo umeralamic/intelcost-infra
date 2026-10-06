@@ -115,3 +115,32 @@ One Playwright pass (throwaway account and workspace, script deleted), 11/11:
 **Questions for you.**
 - The Labor burden line shows four decimals ("48.7158%"). D-266 says "the effective percentage"; is two decimals (48.72%) what you want on the bid summary?
 - Connecticut ZIPs show the 2022 planning region as the county ("Southeastern Connecticut Planning Region"). Fine for the strip, or should it read the old county name (New London County) that WDs before 2022 use (U-02 note in the spec)?
+
+## Part 4. F16 billing spec draft: done (documents only)
+
+**Written.** `docs/tasks/F16_SPEC_DRAFT.md`:
+- scope;
+- data model (`billing_plan`, `workspace_subscription`, `stripe_event`, optional `billing_invoice`, with the existing tier and AI tables kept);
+- Stripe: Checkout with legacy's seat line items, a signed idempotent webhook, the customer portal legacy lacked, a bench fake;
+- trials: per-tier length, mid-trial caps with their enforcement points, view-only on expiry, a subscription ending the trial;
+- the plan checks replacing every F16 marker, by file and line (there is only one literal `TODO(F16)`, `wage_calculator/service.py:912`; the rest are F16 mentions in docstrings);
+- AI credits: allowance, top-up Checkout, ledger;
+- platform admin additions;
+- existing workspaces (none paid; comp testers);
+- a build order in seven blocks (A to G).
+
+It ends with 16 "Questions for Umer". Research came from three read-only agents (legacy on `UmeralamDEV`, the current api and app, the decisions and notes).
+
+**Commits.** infra: the workspace commit with this report (the draft lives in `docs/tasks/`, mirrored).
+
+**Notable findings.**
+- **Paid customers.** Nothing knows about paid subscriptions, so an expired trial makes every workspace view-only. The Wage Calculator's `on_trial` has the inverse gap: after expiry it lets PDF and AI through.
+- **Legacy defects F16 should not copy:**
+  - annual plans refill AI credits yearly;
+  - owners can edit their own billing row;
+  - the admin lock is checked on the client only;
+  - cancelled or past-due subscriptions keep full access.
+- **Contradictions for you:**
+  - pack prices: D-236 against legacy;
+  - Collaborator AI credits;
+  - refund wording: the pricing page against the Terms.
