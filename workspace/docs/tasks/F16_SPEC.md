@@ -1,6 +1,6 @@
 # F16: Billing, plans, trials
 
-**Status:** adopted 2026-10-06 (D-277). Blocks A to F built (D-278, D-280 to D-283 record the calls Blocks B to F made; D-279 the bench's mail guard). The founder's answers to the draft's
+**Status:** adopted 2026-10-06 (D-277). Blocks A to G built (D-278, D-280 to D-284 record the calls Blocks B to G made; D-279 the bench's mail guard). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
 ([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
 
@@ -189,7 +189,7 @@ Line numbers as of 2026-10-06, after Block C.
 | `app/features/platform/billing.py:66` (`SECRET_SLOTS`) | Stripe secrets shown as slots, never set | settings defined; presence shows "Set". **Built, Block A** |
 | app `src/pages/Signup.tsx:78` | reads `plan`, `cadence`, `seats` from marketing and ignores them | kept on the user (`signup_*`) and pre-filled on the Billing page's cards (Q12). **Built, Blocks B and C** |
 | app `src/features/workspace/capabilities.ts:29, 106, 111` | `canManageBilling` unused | gates Start subscription and Manage billing (owner only); the Billing tab is drawn for `canManageWorkspace` (owner and admins, read-only for admins). **Built, Block C**; top-up for owner and admins (Q11) in Block F |
-| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to F built" |
+| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to G built" |
 
 ## 6. AI credits
 
@@ -226,7 +226,9 @@ Line numbers as of 2026-10-06, after Block C.
 - **Billing tiers** (built, F16a):
   - the secret slots are real settings (Block A);
   - Overrides gains "Comp plan" (Essentials or Professional, seats, an optional end date), written as a `comp` subscription (Block A).
-- **New: Subscriptions.** Per workspace: plan, seats, status, period, Stripe ids (link to the Stripe dashboard), and the last webhook events with errors.
+- **Subscriptions. Built, Block G (D-284).** Platform › Subscriptions: per workspace plan, cadence, seats and seats in use, status, period, grace or cancel date, Stripe ids linked to the dashboard (test or live by the key); filters, search, pages. Comps made, edited and ended here too.
+- **Webhook events. Built, Block G.** The stored events (errors only on request) and Retry for an errored one, from its kept body, idempotent.
+- **Plan catalog. Built, Block G.** `billing_plan` edited on the platform: prices, credits per seat (Essentials stays 0), the four Stripe price ids, on sale; new prices reach new Checkouts through the price ids only.
 - **AI economics** (built): pack Stripe price ids exist; nothing more.
 
 ## 8. Existing workspaces
@@ -283,7 +285,7 @@ later (the Billing page and the trial button), pre-filled with them (Block C).
 6. **F. AI top-up.** *Built 2026-10-06 (D-283).*
    - "Buy now", payment Checkout, the webhook credit, ledger rows.
    - Smoke: buy a pack on the fake and see the balance.
-7. **G. Platform.**
+7. **G. Platform.** *Built 2026-10-07 (D-284).*
    - Subscriptions list, webhook event errors.
    - `billing_plan` editable on the platform (prices, credits per seat, Stripe price ids).
    - Then a full run restored from the fixture tag before any deploy to testers (CLAUDE.md).

@@ -26,6 +26,8 @@ fake's own and not Stripe's:
     POST /_fake/subscriptions/<id>/renew            the next period starts, invoice.paid
     POST /_fake/subscriptions/<id>/cancel           cancel_at_period_end, customer.subscription.updated
     POST /_fake/subscriptions/<id>/delete           canceled, customer.subscription.deleted
+    POST /_fake/subscriptions/<id>/seats?to=N       seats set, customer.subscription.updated
+    POST /_fake/subscriptions/<id>/hide | unhide    404 for it while hidden (an event that fails)
                                                     (each of these four takes ?signature=bad)
     POST /_fake/events/<id>/resend[?signature=bad]  the same event again (same id), freshly signed,
                                                     or with a signature that does not verify
@@ -62,6 +64,8 @@ customers: dict[str, dict[str, Any]] = {}
 portals: dict[str, dict[str, Any]] = {}
 sessions: dict[str, dict[str, Any]] = {}
 subscriptions: dict[str, dict[str, Any]] = {}
+hidden: set[str] = set()
+"""Subscriptions the fake answers 404 for (`/_fake/subscriptions/<id>/hide`), to fail an event."""
 events: dict[str, dict[str, Any]] = {}
 sent: list[dict[str, Any]] = []
 
@@ -289,7 +293,7 @@ class Handler(BaseHTTPRequestHandler):
         if m := re.fullmatch(r"/v1/subscriptions/([\w]+)", path):
             if not self._authorized():
                 return
-            sub = subscriptions.get(m[1])
+            sub = subscriptions.get(m[1]) if m[1] not in hidden else None
             self._send(200, sub) if sub else self._missing("subscription")
         elif m := re.fullmatch(r"/_fake/sessions/([\w]+)", path):
             session = sessions.get(m[1])
@@ -394,7 +398,15 @@ class Handler(BaseHTTPRequestHandler):
             if not sub:
                 return self._missing("subscription")
             action, bad = m[2], query.get("signature") == "bad"
-            if action == "payment_failed":
+            if action in ("hide", "unhide"):
+                # Block G's Retry: while hidden, Stripe "has no such subscription", so an
+                # event about it fails in the api; unhidden, a retry succeeds.
+                (hidden.add if action == "hide" else hidden.discard)(sub["id"])
+                self._send(200, {"subscription": sub["id"], "hidden": sub["id"] in hidden})
+            elif action == "seats":
+                set_seats(sub, max(1, int(query.get("to") or 1)))
+                self._send(200, emit("customer.subscription.updated", sub, bad=bad))
+            elif action == "payment_failed":
                 sub["status"] = "past_due"
                 self._send(200, emit("invoice.payment_failed", invoice_for(sub, "open"), bad=bad))
             elif action == "paid":

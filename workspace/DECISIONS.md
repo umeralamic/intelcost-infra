@@ -10674,3 +10674,49 @@ PdfThrottle.tsx,room.ts,api.ts}`, `lib/billing/pdfThrottle.ts`, `lib/takeoff/pdf
 `ai/{models,routes,schemas}.py`, `config.py`, migration `b9e4f2a6d8c1` (`ai_ledger.user_id`,
 `pack_id`, `stripe_session_id`); app `pages/SettingsAiCredits.tsx`, `features/ai/api.ts`; infra
 `fakes/stripe/server.py`, `docker-compose.yml`.
+
+## D-284: F16 Block G: the platform's Subscriptions, webhook Retry and plan catalog, as built
+
+**Status:** decided in the build (the founder's overnight brief, 2026-10-06, set the scope); these
+are the calls it left open
+
+1. **One page, three tabs:** Platform › Subscriptions (`/platform/subscriptions`, the Developer
+   menu beside Billing tiers): Subscriptions, Webhook events, Plans. Platform admins only, on
+   the api (`require_platform_admin` on the router) and in the app (`RequirePlatformAdmin`,
+   which answers "Page not found" to anyone else).
+2. **Subscriptions** lists every `workspace_subscription` row (Stripe or comp): workspace, owner,
+   plan and cadence, seats and seats in use (`billing/seats.py`), status (and "not in force"),
+   the current period, the grace end or the cancel date, and the Stripe customer and subscription
+   ids linked to the dashboard. **The dashboard's mode follows the key:** live only for an
+   `sk_live_` or `rk_live_` key, test otherwise (including no key). Filters by status and plan,
+   search by workspace name or owner email, 50 a page.
+3. **Webhook events keep their body.** `stripe_event.payload` (migration `c3f7a1d9e5b2`) holds the
+   verified event, so **Retry** processes an errored event again through the webhook's own path
+   (`billing/service.py` `process`). A processed event answers "already processed"; every handler
+   is idempotent (the subscription is read again from Stripe; a top-up credits once per Checkout
+   session; seat credits once per seat per period), so a retry never doubles an effect. Events
+   from before this revision have no body and can only be resent from the Stripe dashboard.
+4. **The plan catalog editor** writes `billing_plan`: name, the four prices (each > 0), credits per
+   seat (>= 0), the four Stripe price ids (blank is the `STRIPE_PRICE_*` setting) and on sale.
+   **Prices reach Checkout only through the price ids:** Checkout sends Stripe price ids, never
+   amounts, so a new amount needs a Stripe price holding it. Saving says "New prices apply to new
+   Checkouts only, through this plan's Stripe price ids; existing subscriptions keep their Stripe
+   price.", and adds a warning when a price changed but its price id did not. The amounts here
+   are what the Billing page's cards (and, from Part 6, the price page) show.
+5. **Essentials' credits per seat stays 0** (D-277 Q3): any other value is refused (422) with
+   "Essentials has no AI credits (D-277 Q3), so its credits per seat stays 0." The code is not
+   editable.
+6. **Comps from Subscriptions:** New comp (find a workspace, the Billing tiers form), Edit (plan,
+   seats, until) and End on each comp row, through the same routes as Overrides. **Editing a
+   running comp keeps its period** (a fix): it used to restart the period, so every edit
+   refilled the month's allowance; now added seats bring only their own credits (D-281 11).
+   Ending a comp applies the normal rules at once: the trial if its window is still open,
+   otherwise view-only.
+7. **The bench fake** gains `/_fake/subscriptions/<id>/hide|unhide` (Stripe answers "no such
+   subscription" while hidden, so an event about it fails) and `/seats?to=N`.
+
+**Where:** api `app/features/platform/subscriptions.py` (new), `platform/{billing,schemas}.py`,
+`billing/{service,models}.py`, migration `c3f7a1d9e5b2`, `main.py`; app
+`pages/PlatformSubscriptions.tsx` (new), `pages/PlatformBillingTiers.tsx` (`CompForm` shared),
+`features/platform/api.ts`, `config/routes.ts`, `App.tsx`, `components/app-shell.tsx`; infra
+`fakes/stripe/server.py`.
