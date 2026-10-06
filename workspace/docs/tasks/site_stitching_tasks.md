@@ -349,4 +349,9 @@ TIN and volumes stay in the browser, as today.
   `earthwork/site.py` (`matchLinePairs`, `fitJoin`, `placeMember`), with 10 quantity rows (5 on both
   engines). A straight match line fits exactly both ways round; the way that puts the two
   sheets either side of the line is kept (D-271).
-- [ ] Blocks A2 (tables and routes), B to F.
+- [x] Block A2 (overnight 2026-10-06): migration `a7d2f9c4e816` (`site`, `site_member`,
+  `sheet_registration.kind` and the match lines, `earthwork_result.superseded_by_site_id`) and the
+  routes under `…/project/{uuid}/site`: list, create, rename, delete, join a member (merge with
+  `merge: true`), regions, remove a member (dissolve at one, re-base when the anchor leaves). F18's
+  routes read survey links only (D-271). The site result routes come with Block E.
+- [ ] Blocks B to F.

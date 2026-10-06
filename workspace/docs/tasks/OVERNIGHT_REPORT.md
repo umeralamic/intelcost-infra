@@ -170,3 +170,40 @@ It ends with 16 "Questions for Umer". Research came from three read-only agents 
 - National Average sets are still re-saved even though General liability does not move them (published figures); the count includes them.
 
 **Question.** Should P-02 count only projects whose rates the change actually moves (wage-data sets, or any set when company benefits change), so that a General liability change on a workspace of National Average projects asks nothing?
+
+## Part 6. F19 site stitching (in progress)
+
+Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in the app; C to F not attempted.
+
+**A1. Site engine and its Python twin: done.**
+- `lib/takeoff/earthwork/site.ts`: `matchLinePairs` (arc length, either direction), `fitJoin`, `lineCheck`, `placeMember`, `toSite` / `toMember` / `fromSite`, `visibleRegion` (page halves per match line, the side holding the centre or the other side), `splitAtJoins`, `clipAreaToMembers` (members' territories never overlap: a later member loses what an earlier one holds), `rejoinRuns`, `slideOnMatchLine`.
+- `app/features/earthwork/site.py`: `match_line_pairs`, `line_check`, `fit_join`, `place_member`, `to_site`.
+- The quantity table has 10 site rows, the spec's hand-worked ones for these functions, 5 of them compared on both engines:
+  - halves at 1" = 20' and 1" = 30';
+  - the line drawn backwards;
+  - a bent line on a sheet turned 90°;
+  - a 1 % long line that warns;
+  - a composed placement;
+  - visible regions;
+  - a split run (50 + 100 ft);
+  - a clipped rectangle (3,000 + 6,000 sf) with a deduct (400 + 400);
+  - rejoined pieces;
+  - a slid join point.
+- Smoke: the quantity table runs them in the bench's Chromium. They passed with every other row.
+- Commits: app `0562f7e`, api `d4374c7`, infra `d63a933`.
+- Decision (D-271, logged with the F19 work): a straight match line fits exactly both ways round, so the way that puts the two sheets' drawing centres on opposite sides of the line is kept; the spec's "smaller miss" decides only when the misses differ.
+
+**A2. Tables and routes: done.**
+- Migration `a7d2f9c4e816` adds `site` and `site_member` (one site per sheet), and gives `sheet_registration` a `kind` and two match lines (the pair index now includes the kind), plus `earthwork_result.superseded_by_site_id`.
+- Routes under `/api/workspace/{ws}/project/{p}/site`: list, create (anchor), rename, delete, join a member (`PUT …/member/{sheet}`, the api fits the lines again with the twin; 409 on a 2 % length miss without Fit the scale; 409 with the merge question for a sheet in another site; `merge: true` carries that site in), `PUT …/regions`, and remove a member (joins dropped, a lone member dissolves the site, a leaving anchor re-bases the frame). Event `site.changed`.
+- F18's registration routes now read survey links only.
+- Smoke 7/7 (throwaway script against the routes, three calibrated sheets at 1" = 20', 30' and 20'):
+  1. create;
+  2. B joined at ground x = 100, placed (50, −20), the F18 list empty;
+  3. a second site for a member refused, a 5 % long line refused;
+  4. the merge asked, then merged with C at (280, 0);
+  5. anchor removed: B at the origin, C at (230, 20);
+  6. the last join removed: dissolved;
+  7. rename and delete.
+- Decisions: D-271 (join direction, merge on the join, regions from the browser, the anchor leaving).
+- Commits: api `999a493`; infra: the workspace commit with D-271.

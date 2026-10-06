@@ -9953,3 +9953,35 @@ D-264 2 deferred P-02. It is now built:
 **Where:** api `app/features/wage_calculator/recalc.py`, `routes.py` (`GET`/`POST
 …/wage-calculator/recalculate`), `schemas.py`; app `features/wage-calculator/AdvancedSettings.tsx`,
 `api.ts`, `text.ts`; api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
+
+## D-271: F19 site stitching, Blocks A1 and A2 as built: join direction, merge on join, regions from the browser
+
+**Status:** decided while building (overnight 2026-10-06), for the founder's review
+
+Building F19's engine and data (spec `site_stitching_tasks.md`, D-231) needed four calls the
+spec leaves open:
+
+1. **Which way round a straight match line goes.** A straight line fits exactly both ways
+   (the miss is 0 either way), so "the smaller miss" cannot choose. The join keeps the way
+   that puts the two sheets' drawing centres on opposite sides of the line, since joined
+   sheets lie either side of their match line. The miss still decides a bent line.
+2. **Merging happens on the join.** A merge needs the join that ties the two sites, so the
+   spec's `POST …/site/{uuid}/merge/{other}` is the member join with `merge: true`: without
+   it a sheet in another site answers 409 "C-201 is in Site East. Merge Site East into Site
+   West?"; with it every member of the other site is carried into this frame by the same
+   motion and the other site is deleted.
+3. **Visible regions are clipped in the browser.** The Python twin covers the fit and the
+   placement (as the spec says), not polygon clipping, so the browser sends the regions it
+   worked out with the join, and `PUT …/site/{uuid}/regions` takes them again (after a member
+   leaves, or "Keep the other side"). A member left with no join gets its whole page back.
+4. **The anchor can leave.** The next member by `sort_order` becomes the anchor and every
+   placement is re-based on it, so the site frame stays "the anchor's page in feet".
+
+Also: F18's registration routes read `kind = 'survey'` rows only, so a join never shows as a
+survey link; one join per pair of sheets, whichever way it was drawn.
+
+**Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
+`site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,
+`EarthworkResult.superseded_by_site_id`), `registration_routes.py`, migration
+`a7d2f9c4e816`; infra `browser/lib/site-cases.mjs`, `browser/quantity-table.mjs`,
+`drives/quantity-table.py`, `quantity-table.sh`.
