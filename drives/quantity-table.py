@@ -7,7 +7,8 @@ runs both halves.
     docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py" <cases.json
 
 With `register`, it reads F18's registration rows instead and fits each through the api's
-`earthwork/register.py` (D-188). With `credits`, F14's credit rows through the api's
+`earthwork/register.py` (D-188). With `site`, F19's join and placement rows through
+`earthwork/site.py` (D-231). With `credits`, F14's credit rows through the api's
 `ai/meter.py` (D-236): metering, the estimate, holds, settlement, refunds and refills. With
 `seed`, the assembly seed rows through the api's component copy (D-243). With `subitems`,
 the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245).
@@ -22,7 +23,7 @@ from types import SimpleNamespace
 from app.features.ai import meter
 from app.features.assembly.models import COMPONENT_COPY_FIELDS as COPY_FIELDS
 from app.features.assembly.models import AssemblyComponent, component_fields
-from app.features.earthwork import register
+from app.features.earthwork import register, site
 from app.features.estimate.models import TakeoffCostComponent
 from app.features.takeoff import quantity, sub_items
 from app.features.takeoff.formula import FormulaEnv, evaluate
@@ -57,6 +58,55 @@ def registration(case: dict) -> dict:
         "rotationDeg": degrees - 360 if degrees > 180 else degrees,
         "scale": fit.scale,
         "maxResidualFt": max(fit.residuals_ft),
+    }
+    if fit.distance is not None:
+        out["diffPct"] = fit.distance.diff_pct
+        out["level"] = fit.distance.level
+    if case.get("probe"):
+        x, y = register.map_point((case["probe"][0], case["probe"][1]), fit, src, tgt)
+        out["probe"] = f"{_short(x)},{_short(y)}"
+    return out
+
+
+def site_row(case: dict) -> dict:
+    """F19's join and placement rows through the api's `earthwork/site.py` (D-231)."""
+
+    def scale(s: list) -> register.SheetScale:
+        return register.SheetScale(float(s[0]), float(s[1]), float(s[2]))
+
+    def degrees(rotation: float) -> float:
+        d = math.degrees(rotation) % 360
+        return d - 360 if d > 180 else d
+
+    if case["kind"] == "place":
+        b, f = case["base"], case["fit"]
+        placed = site.place_member(
+            site.Placement(math.radians(b["rotationDeg"]), b["scale"], b["tx"], b["ty"]),
+            site.Placement(math.radians(f["rotationDeg"]), f["scale"], f["tx"], f["ty"]),
+        )
+        return {"rotationDeg": degrees(placed.rotation), "scale": placed.scale, "tx": placed.tx, "ty": placed.ty}
+    src, tgt = scale(case["src"]), scale(case["tgt"])
+    points = lambda line: [(float(x), float(y)) for x, y in line]  # noqa: E731
+    centre = lambda key: tuple(case[key]) if case.get(key) else (0.5, 0.5)  # noqa: E731
+    try:
+        join = site.fit_join(
+            points(case["source"]),
+            src,
+            points(case["target"]),
+            tgt,
+            fit_scale=bool(case.get("fitScale")),
+            source_centre=centre("sourceCentre"),
+            target_centre=centre("targetCentre"),
+        )
+    except register.FitError as error:
+        return {"ok": False, "reason": error.reason}
+    fit = join.fit
+    out: dict = {
+        "ok": True,
+        "reversed": join.reversed,
+        "rotationDeg": degrees(fit.rotation),
+        "scale": fit.scale,
+        "missFt": join.miss_ft,
     }
     if fit.distance is not None:
         out["diffPct"] = fit.distance.diff_pct
@@ -184,6 +234,9 @@ def main() -> None:
         return
     if sys.argv[1:] == ["credits"]:
         print(json.dumps([{"id": c["id"], "value": credit(c)} for c in cases]))
+        return
+    if sys.argv[1:] == ["site"]:
+        print(json.dumps([{"id": c["id"], "value": site_row(c)} for c in cases]))
         return
     if sys.argv[1:] == ["register"]:
         print(json.dumps([{"id": c["id"], "value": registration(c)} for c in cases]))

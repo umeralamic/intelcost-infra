@@ -15,6 +15,7 @@ import { CREDIT_CASES } from "./lib/credit-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
+import { SITE_GROUND, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./lib/site-cases.mjs";
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
@@ -24,6 +25,7 @@ const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-cases.json`, JSON.stringify(CASES));
   await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
+  await writeFile(`${HERE}/.qt-site.json`, JSON.stringify(SITE_JOIN_CASES));
   await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
   await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
   await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
@@ -34,6 +36,7 @@ if (process.env.GEN === "1") {
 const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonSite = new Map(JSON.parse(await readFile(`${HERE}/.qt-site-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSub = new Map(JSON.parse(await readFile(`${HERE}/.qt-subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
@@ -41,6 +44,7 @@ let web;
 let costs;
 let earth;
 let reg;
+let site;
 let ac;
 let subs;
 let xl;
@@ -261,6 +265,58 @@ try {
       return out;
     });
   }, REGISTER_CASES);
+  // F19's site rows: lib/takeoff/earthwork/site.ts (D-231).
+  site = await page.evaluate(async ([joins, shapes, g]) => {
+    const st = await import("/src/lib/takeoff/earthwork/site.ts");
+    const r = await import("/src/lib/takeoff/earthwork/register.ts");
+    const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
+    const pt = ([x, y]) => ({ x, y });
+    const fmt = (p) => `${+p.x.toFixed(9)},${+p.y.toFixed(9)}`;
+    const rad = (d) => (d * Math.PI) / 180;
+    const join = joins.map((c) => {
+      if (c.kind === "place") {
+        const p = st.placeMember({ rotation: rad(c.base.rotationDeg), scale: c.base.scale, tx: c.base.tx, ty: c.base.ty }, { rotation: rad(c.fit.rotationDeg), scale: c.fit.scale, tx: c.fit.tx, ty: c.fit.ty });
+        return { rotationDeg: r.rotationDegrees(p.rotation), scale: p.scale, tx: p.tx, ty: p.ty };
+      }
+      const res = st.fitJoin(c.source.map(pt), sc(c.src), c.target.map(pt), sc(c.tgt), { fitScale: Boolean(c.fitScale), sourceCentre: c.sourceCentre && pt(c.sourceCentre), targetCentre: c.targetCentre && pt(c.targetCentre) });
+      if (!res.ok) return { ok: false, reason: res.reason };
+      const f = res.join.fit;
+      const out = { ok: true, reversed: res.join.reversed, rotationDeg: r.rotationDegrees(f.rotation), scale: f.scale, missFt: res.join.missFt };
+      if (f.distance) Object.assign(out, { diffPct: f.distance.diffPct, level: f.distance.level });
+      if (c.probe) out.probe = fmt(r.mapPoint(pt(c.probe), f, sc(c.src), sc(c.tgt)));
+      return out;
+    });
+    const A = { sheet: "A", scale: sc(g.S20), placement: st.ANCHOR, region: st.visibleRegion([g.A_LINE.map(pt)], pt(g.A_CENTRE)), sortOrder: 0 };
+    const fitB = st.fitJoin(g.B_LINE.map(pt), sc(g.S30), g.A_LINE.map(pt), sc(g.S20), { sourceCentre: pt(g.B_CENTRE), targetCentre: pt(g.A_CENTRE) });
+    const B = { sheet: "B", scale: sc(g.S30), placement: st.placeMember(st.ANCHOR, fitB.join.fit), region: st.visibleRegion([g.B_LINE.map(pt)], pt(g.B_CENTRE)), sortOrder: 1 };
+    const members = [A, B];
+    const lenFt = (pts, m) => pts.slice(1).reduce((t, p, i) => { const a = r.toFeet(pts[i], m.scale); const b = r.toFeet(p, m.scale); return t + Math.hypot(b.x - a.x, b.y - a.y); }, 0);
+    const areaFt = (rings, m) => rings.reduce((t, ring, k) => { const a = Math.abs(st.area(ring.map((p) => r.toFeet(p, m.scale)))); return t + (k === 0 ? a : -a); }, 0);
+    const six = (v) => +v.toFixed(6);
+    const shape = shapes.map((c) => {
+      if (c.kind === "region") return { aArea: Math.abs(st.area(A.region)), bArea: Math.abs(st.area(B.region)) };
+      if (c.kind === "split") {
+        const ps = st.splitAtJoins(c.run.map(pt), members);
+        const ls = ps.map((p) => lenFt(p.points, members[p.member]));
+        return { pieces: ps.length, members: ps.map((p) => p.member).join(","), lengthsFt: ls.map(six).join(","), totalFt: ls.reduce((a, b) => a + b, 0) };
+      }
+      if (c.kind === "clip") {
+        const as = st.clipAreaToMembers(c.polygon.map(pt), members).map((p) => areaFt(p.rings, members[p.member]));
+        const ds = st.clipAreaToMembers(c.deduct.map(pt), members).map((p) => areaFt(p.rings, members[p.member]));
+        return { areasSf: as.map(six).join(","), totalSf: as.reduce((a, b) => a + b, 0), deductSf: ds.map(six).join(",") };
+      }
+      if (c.kind === "rejoin") {
+        const ps = st.splitAtJoins(c.run.map(pt), members).map((p) => p.points.map((q) => st.toSite(q, members[p.member])));
+        const chains = st.rejoinRuns([[...ps[1]].reverse(), ps[0]]);
+        const ch = chains[0];
+        const total = ch.slice(1).reduce((t, p, i) => t + Math.hypot(p.x - ch[i].x, p.y - ch[i].y), 0);
+        return { chains: chains.length, totalFt: total, ends: [ch[0], ch[ch.length - 1]].sort((p, q) => p.x - q.x).map(fmt).join(" ") };
+      }
+      if (c.kind === "slide") return { point: fmt(st.slideOnMatchLine(pt(c.point), c.line.map(pt))) };
+      return { error: c.kind };
+    });
+    return { join, shape };
+  }, [SITE_JOIN_CASES, SITE_SHAPE_CASES, SITE_GROUND]);
   // F12's rows: lib/takeoff/earthwork on legacy's hand-worked fixtures (D-136).
   earth = await page.evaluate(async (cases) => {
     const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
@@ -550,6 +606,29 @@ for (const [i, c] of REGISTER_CASES.entries()) {
   }
 }
 
+// Site rows (F19): the join and placement against the api's twin, field by field; every
+// row against the hand-worked answer.
+for (const [i, c] of SITE_JOIN_CASES.entries()) {
+  const api = pythonSite.get(c.id);
+  const got = site.join[i];
+  if (!api) disagree.push(`${c.id}: no api answer`);
+  else
+    for (const key of new Set([...Object.keys(api), ...Object.keys(got)])) {
+      const [a, w] = [api[key], got[key]];
+      const equal = typeof a === "number" && typeof w === "number" ? close(a, w) : a === w;
+      if (!equal) disagree.push(`${c.id}.${key}: api ${JSON.stringify(a)}, browser ${JSON.stringify(w)}`);
+    }
+}
+for (const [list, results] of [[SITE_JOIN_CASES, site.join], [SITE_SHAPE_CASES, site.shape]]) {
+  for (const [i, c] of list.entries()) {
+    for (const [field, want] of Object.entries(c.expect)) {
+      const got = results[i]?.[field];
+      const ok = typeof want === "number" ? typeof got === "number" && close(got, want) : got === want;
+      if (!ok) wrong.push(`${c.id}.${field}: ${JSON.stringify(got)}, expected ${JSON.stringify(want)}`);
+    }
+  }
+}
+
 // Auto Count rows: each named field against the hand-worked answer.
 for (const [list, results] of [[AUTOCOUNT_CASES, ac.vector], [AUTOCOUNT_PIPELINE_CASES, ac.pipeline]]) {
   for (const [i, c] of list.entries()) {
@@ -641,5 +720,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; passed`,
 );

@@ -345,4 +345,8 @@ TIN and volumes stay in the browser, as today.
 - [x] The founder's answers (D-231, 2026-10-02).
 - [x] Adopted as `docs/tasks/site_stitching_tasks.md`; F19 on the board, Planned, ready to
   build.
-- [ ] Blocks A to F.
+- [x] Block A1 (overnight 2026-10-06): the engine `lib/takeoff/earthwork/site.ts` and its Python twin
+  `earthwork/site.py` (`matchLinePairs`, `fitJoin`, `placeMember`), with 10 quantity rows (5 on both
+  engines). A straight match line fits exactly both ways round; the way that puts the two
+  sheets either side of the line is kept (D-271).
+- [ ] Blocks A2 (tables and routes), B to F.
