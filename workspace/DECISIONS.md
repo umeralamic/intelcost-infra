@@ -10008,9 +10008,13 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     `earthwork_superseded`, which Estimating leaves out; a member's own Calculate under a saved
     site result keeps its new lines out too. Removing the site's result, a member leaving, or
     the site dissolving gives them back; a member leaving marks the site's lines stale.
-12. **Not in E2:** Site Features and Strip Areas across members, and a stale mark for the site
-    when a member's drawing changes (the site view shows the saved result; a new Calculate
-    replaces it).
+12. **Not in E2:** Site Features and Strip Areas across members.
+13. **The site goes stale (E3)** as a sheet does: while a member sheet is open, the site's live
+    key (its runs in the site frame, the assumptions, each member's place and clip) is compared
+    with the saved result's; when it moved on, the site's lines are marked stale once
+    (`POST …/site/{uuid}/result/stale`), and the site view says "Stale: a sheet of the site
+    changed since." A spot on a match line counts once (the anchor-nearest copy), so changing
+    the other copy changes nothing.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

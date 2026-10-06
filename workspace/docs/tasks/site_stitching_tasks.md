@@ -379,7 +379,8 @@ TIN and volumes stay in the browser, as today.
   and writes its lines (on the anchor sheet, named "[site]: …"); the members' own results read
   "Superseded by Site X" and their own lines stay out of Estimating while the site's lines exist
   (Q10); "Remove result" gives them back; dissolving or a member leaving does too (D-271 9 to
-  12). Still open: Site Features and Strip Areas across members, the site's own stale mark,
-  Q14's group in Estimating.
+  12). Still open: Site Features and Strip Areas across members, Q14's group in Estimating.
+- [x] Block E3 (overnight 2026-10-06): the site's saved result goes stale when a member's drawing
+  changes (checked while a member sheet is open, D-271 13).
 - [ ] C2 (per-member pdf.js window renders, the members on screen plus one at full
   resolution, Snap, Snap PDF and Find Text across members), then D to F.

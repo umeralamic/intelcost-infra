@@ -271,6 +271,15 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decisions: D-271 9 to 12.
 - Commits: api `96dab3a`; app `e8bb51c`; infra: the workspace commit for D-271 9 to 12 and this report.
 
-**Stopped after E2** (04:35).
-- **Still open in E:** Site Features and Strip Areas across members, a stale mark for the site when a member's drawing changes, and Q14's group in Estimating (today the site's name on each line).
+**E3. The site goes stale: done.**
+- `features/takeoff/earthwork/site/siteKey.ts` is the site's surface and version key, shared by the view and the check.
+- `useSiteStale`: while a member sheet is open, it compares the site's live key with the saved one and marks the site's lines stale once (`POST …/site/{uuid}/result/stale`). The site view shows "Stale: a sheet of the site changed since. Calculate again and save."
+- Smoke 2/2 (throwaway):
+  1. saved, then opened again: 3 site lines, none stale;
+  2. an FG spot on the east sheet moved to 103: opening that sheet marked all 3 lines stale, and the view said so.
+- The first run of line 2 failed because the script changed a spot on the match line itself. The site keeps the anchor-nearest copy of such a spot, so its key rightly did not move (D-271 13).
+- Commits: api `482220c`; app `a089081`; infra: the workspace commit for D-271 13 and this report.
+
+**Stopped after E3** (04:45).
+- **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.
