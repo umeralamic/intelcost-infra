@@ -363,5 +363,12 @@ TIN and volumes stay in the browser, as today.
   canvas; each member's fit image placed by its placement (a CSS matrix in feet), clipped to its
   visible region in its own page space (the clip turns with it), pan, wheel and button zoom,
   Fit, Rotate (the anchor's `view_rotation` first, Q7), a member's label opens its sheet.
+- [x] Block A3 (overnight 2026-10-06), the rest of Block A's engine: `siteRuns` (every member's runs
+  in the site frame, kept to its territory, a contour's pieces rejoined at the line, spots on the
+  line kept once, the members' boundaries united into one) and `stitchTrace` (joins, "No partner
+  across the match line", "Elevation differs across the match line (710 / 711)", one flag a pair),
+  with the spec's rows: the plane over two joined halves equals the one-sheet answer; west cut
+  and east fill export and import alone and net to neither line as a site; three contours
+  joined, one mismatch, one unpartnered. The Superseded row waits for Block E.
 - [ ] C2 (per-member pdf.js window renders, the members on screen plus one at full
   resolution, Snap, Snap PDF and Find Text across members), then D to F.

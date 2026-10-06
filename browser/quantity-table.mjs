@@ -15,7 +15,7 @@ import { CREDIT_CASES } from "./lib/credit-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
-import { SITE_GROUND, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./lib/site-cases.mjs";
+import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./lib/site-cases.mjs";
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
@@ -266,9 +266,12 @@ try {
     });
   }, REGISTER_CASES);
   // F19's site rows: lib/takeoff/earthwork/site.ts (D-231).
-  site = await page.evaluate(async ([joins, shapes, g]) => {
+  site = await page.evaluate(async ([joins, shapes, g, h]) => {
     const st = await import("/src/lib/takeoff/earthwork/site.ts");
     const r = await import("/src/lib/takeoff/earthwork/register.ts");
+    const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");
+    const vol = await import("/src/lib/takeoff/earthwork/volume/index.ts");
+    const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
     const pt = ([x, y]) => ({ x, y });
     const fmt = (p) => `${+p.x.toFixed(9)},${+p.y.toFixed(9)}`;
@@ -313,10 +316,42 @@ try {
         return { chains: chains.length, totalFt: total, ends: [ch[0], ch[ch.length - 1]].sort((p, q) => p.x - q.x).map(fmt).join(" ") };
       }
       if (c.kind === "slide") return { point: fmt(st.slideOnMatchLine(pt(c.point), c.line.map(pt))) };
+      if (c.kind === "site-volume" || c.kind === "site-balance" || c.kind === "stitch") {
+        const SA = { sheet: "A", scale: sc(h.P01), placement: st.ANCHOR, region: st.visibleRegion([h.aLine.map(pt)], pt(h.aCentre)), sortOrder: 0 };
+        const SB = { sheet: "B", scale: sc(h.P02), placement: h.bPlacement, region: st.visibleRegion([h.bLine.map(pt)], pt(h.bCentre)), sortOrder: 1 };
+        if (c.kind === "stitch") {
+          const ms = [{ ...A, matchLines: [g.A_LINE.map(pt)] }, { ...B, matchLines: [g.B_LINE.map(pt)] }];
+          const lines = (list) => list.map((l) => ({ ...l, pts: l.pts.map(pt) }));
+          const res = st.stitchTrace([lines(c.pieces.a), lines(c.pieces.b)], ms, 3);
+          return { joined: res.joined.length, flags: res.flags.map((f) => f.code + ":" + f.message).join("|") };
+        }
+        const runs = (list, tag) => list.map((x, i) => ({ item: x.item, geometry: tag + i, version: 1, kind: x.kind, surface: x.surface, elevation: x.elevation, points: x.points.map(pt) }));
+        const labels = (rs) => new Map(rs.map((x) => [x.item, x.item]));
+        const calc = (rs, calibration) => {
+          const b = rs.find((x) => x.kind === "boundary");
+          const out = vol.computeVolumes({ eg: tin.runTinForSurface(rs, "EG", labels(rs)), fg: tin.runTinForSurface(rs, "FG", labels(rs)), boundary: b ? b.points : null, calibration, units: "CY" }, rs, labels(rs));
+          return out.ok === true ? out : { ok: out.ok, cutCY: NaN, fillCY: NaN, error: out.error ? out.error.message : String(out.ok) };
+        };
+        const ra = runs(c.halves.a, "a");
+        const rb = runs(c.halves.b, "b");
+        const surface = st.siteRuns([SA, SB], new Map([["A", ra], ["B", rb]]));
+        const siteCalc = calc(surface.runs, { feetPerNorm: 1, widthPt: surface.page.widthPt, heightPt: surface.page.heightPt });
+        const bnd = surface.runs.find((x) => x.kind === "boundary");
+        const boundarySF = bnd ? Math.abs(st.area(bnd.points)) * surface.page.widthPt * surface.page.heightPt : 0;
+        if (c.kind === "site-volume") return { ok: siteCalc.ok, cutCY: siteCalc.cutCY, fillCY: siteCalc.fillCY, boundarySF, error: siteCalc.error };
+        const west = calc(ra, { feetPerNorm: h.P01[0], widthPt: h.P01[1], heightPt: h.P01[2] });
+        const east = calc(rb, { feetPerNorm: h.P02[0], widthPt: h.P02[1], heightPt: h.P02[2] });
+        const b = (cut, fill) => bal.soilBalance({ cut, fill, reuseBank: 0, suitable: true, swell: 1, shrink: 1 });
+        const w = b(west.cutCY, west.fillCY);
+        const e = b(east.cutCY, east.fillCY);
+        const s = b(siteCalc.cutCY, siteCalc.fillCY);
+        const round = (v) => (v === null || v === undefined ? null : Math.round(v * 1e6) / 1e6);
+        return { siteCutCY: siteCalc.cutCY, siteFillCY: siteCalc.fillCY, westExport: round(w.exportLoose), eastImport: round(e.importLoose), siteExport: round(s.exportLoose), siteImport: round(s.importLoose) };
+      }
       return { error: c.kind };
     });
     return { join, shape };
-  }, [SITE_JOIN_CASES, SITE_SHAPE_CASES, SITE_GROUND]);
+  }, [SITE_JOIN_CASES, SITE_SHAPE_CASES, SITE_GROUND, SITE_HALVES]);
   // F12's rows: lib/takeoff/earthwork on legacy's hand-worked fixtures (D-136).
   earth = await page.evaluate(async (cases) => {
     const tin = await import("/src/lib/takeoff/earthwork/tin/index.ts");

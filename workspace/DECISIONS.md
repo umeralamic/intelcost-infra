@@ -9990,6 +9990,10 @@ survey link; one join per pair of sheets, whichever way it was drawn.
    later); with both in different sites, the other site is asked to merge into this one.
 7. **The centre of the drawing area is the page's centre** until sheet borders are found;
    "Keep the other side" flips the joining sheet's side of the new line.
+8. **A site's boundary (A3)** is the union of its members' own boundaries, each clipped to its
+   territory, until Block D lets one boundary be drawn across the join (stored as pieces and
+   rejoined, as the spec says). Spots on a match line are kept once, the anchor-nearest
+   member's; a mismatch across the line is one flag for the pair.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

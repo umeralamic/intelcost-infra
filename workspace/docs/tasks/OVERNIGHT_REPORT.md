@@ -238,4 +238,14 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   4. Page 2's label opened Page 2 and closed the view.
 - Commits: app `ee37929`; infra: the workspace commit for this report.
 
+**A3. The rest of Block A's engine: done.**
+- `siteRuns` gives one Calculate's inputs for a site: the members' runs in the site frame, each kept to its own territory. Contour pieces meeting at the line are rejoined, spots on the line are kept once, and the members' boundaries are united into one. Output is on a page of 1 ft per point, so the existing TIN and volume engine read it unchanged.
+- `stitchTrace`: joins traced ends facing across a match line. Flags "No partner across the match line", and "Elevation differs across the match line (710 / 711)" once per pair.
+- 5 new quantity rows, now 15 site rows:
+  - the plane z = 100 + 2x + 2y over two halves at 0.1 and 0.2 ft/pt against FG 103: cut 10,000/24/27 and fill 250,000/24/27 CY, the one-sheet answer, boundary 10,000 sf;
+  - west all cut and east all fill, 500 CY each: alone they export 500 and import 500; as a site, neither line;
+  - three traced contours joined; one at 711 flagged as a mismatch; one missing flagged as unpartnered.
+- Decision (D-271 8): a site's boundary is the union of the members' own boundaries, each clipped to its territory, until Block D draws one boundary across the join.
+- Commits: app `4520a23`; infra: the commit with the rows and this report.
+
 **Stopped after C1.** C2 (per-member pdf.js window renders at full resolution for the members on screen plus one, Snap, Snap PDF and Find Text across members) and D to F (editing and measuring across the join, site Calculate with superseded member results, stitched trace and the C-200 acceptance row) were not started: each is several hours of canvas work, and C2 needs a measured four-sheet set (Q8).
