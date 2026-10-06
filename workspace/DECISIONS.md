@@ -10193,3 +10193,34 @@ which that model cannot hold. Arcs stay single-sheet objects in the data model.
 **Where:** app `lib/takeoff/engine/shapes.ts` (`arcChords`),
 `features/takeoff/earthwork/site/siteEdit.ts` (`placeArc`, `arcPath`, `arcHandles`,
 `arcThrough`, the arc grab), `SiteView.tsx` (the Arc tool, its draft, `replaceArc`, copy).
+
+## D-274: Wage Calculator small fixes: burden to 2 decimals, Connecticut's region with its old county, P-02 counts unchanged projects
+
+**Status:** decided (the founder's answers to the overnight report's questions 1 to 3, 2026-10-06)
+
+1. **Labor burden to 2 decimals.** The percentage shows to 2 decimals wherever it shows: D-01
+   ("est. 48.72%") and the estimate's Labor burden markup line (the sidebar, the editor and
+   its preview); the workbook already formats every rate `0.00%`. Calculations keep full
+   precision. The editor shows the stored percentage rounded and, while its text is left as
+   shown, saves the full stored value back, so showing it rounded never marks the line
+   edited (D-265's `edited` compares percentages).
+2. **Connecticut's county.** Wherever the project location's county is shown (the ZIP
+   confirmation and county choice, L-05's list, the Project info panel, the status strip, the
+   review's header, the SAM.gov guide), a Connecticut county reads "[planning region]
+   ([pre-2022 county])": the pre-2022 county is the ZIP's first `ref_zip_wd_county` (largest
+   share), the one wage determinations are matched against, and is shown only when the
+   county is one of the ZIP's own. The api gives it on the location (`wd_counties`) and on
+   the status strip's set (`wd_county`). Other states unchanged.
+3. **P-02's result.** The prompt still counts every open project with saved rates. The result
+   reads "[X] projects updated, [Y] unchanged, [Z] skipped". **Unchanged** is a project whose
+   recalculated rates are identical to its current set's (the set's burden and location
+   factors, every craft's rate, payable, burdened and burden %, every crew's rates); its
+   savepoint is rolled back, so its current set, its date and its estimate stay as they were.
+   This narrows D-270 5's "a recalculation still saves a new set for every open project".
+
+**Where:** app `features/estimate/BidSummary.tsx`, `features/wage-calculator/WageReview.tsx`,
+`text.ts` (`countyLabel`, `wdCountyOf`, `P02_DONE`), `ProjectInfoPanel.tsx`,
+`WageStatusStrip.tsx`, `WageData.tsx`, `AdvancedSettings.tsx`, `api.ts`; api
+`app/features/wage_calculator/recalc.py` (`_rates`, the rollback), `schemas.py`
+(`LocationRow.wd_counties`, `WageSetSummary.wd_county`, `RecalcResult.unchanged`),
+`service.py` (`_wd_county`), `routes.py`; api `docs/wage-calculator/spec.md`, `BUILD_BRIEF.md`.
