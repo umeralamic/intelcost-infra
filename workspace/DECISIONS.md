@@ -10114,6 +10114,13 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     it: an east-side member's traced lines came through whole, and in `siteRuns` an anchor
     whose region ended on its match line would have kept or dropped a crossing segment whole.
     Found by the clip-and-stitch rows; fixed for every caller.
+24. **Find text across the site (C3).** A Find box on the site view's row searches the text
+    printed on every member, as Find Text searches a sheet with its defaults (every word,
+    contains, any case), from the sheet's own cached text lines. A hit counts only where its
+    box's centre lies on the side its member shows, so the overlap past a match line is never
+    found twice. Hits are ringed amber in the site frame; Enter or Next (Shift+Enter back)
+    centres the view on each in turn. The sheet's match modes and the results list stay on the
+    sheet's Find Text panel.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

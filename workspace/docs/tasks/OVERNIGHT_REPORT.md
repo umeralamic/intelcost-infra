@@ -430,6 +430,13 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   - the trace reads the whole page, then clips.
 - Commits: app 577357a; infra: the two rows, D-271 22 and 23, and this report.
 
-**Stopped after F2** (08:00).
+**C3. Find text across the site: done.**
+- A Find box on the site view's row searches every member's printed text. A hit counts only on its member's visible side; hits are ringed, and Next steps through them (D-271 24).
+- Smoke 2/2 (throwaway, a PDF made for it: "MH-1" at ground x 40 and 120 on A, 150 and 70 on B):
+  1. searching "mh-1" found 2, at x ≈ 43 and 155; the two copies past the match line were not found;
+  2. Next moved to the other hit. The view's centring was not asserted.
+- Commits: app b0da072; infra: D-271 24 and this report.
+
+**Stopped after C3** (08:10).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

@@ -82,6 +82,7 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
 - **E3** (done 04:45): the site result goes stale with a member's drawing.
 - **C2** (done 04:58): live pdf.js renders per member in the site view.
+- **C3** (08:00 to 08:10): Find text across the site.
 - **F2** (07:30 to 08:00): Auto Trace on the stitched drawing; rings closed.
 - **D2b3** (07:20 to 07:30): Snap, Snap PDF, Ortho, Duplicate.
 - **F1** (06:55 to 07:20): the C-200 acceptance row; the square site frame.

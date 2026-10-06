@@ -420,5 +420,8 @@ TIN and volumes stay in the browser, as today.
   kept to its side (`clipTrace`), stitched at the match lines, the flags listed and marked,
   "Adopt labelled" as one contour per line across the join, one undo step (D-271 22); two
   clip-and-stitch quantity rows; the open-ring bug fixed (D-271 23).
-- [ ] Still open: arcs in the site view (split analytically at the line); Find Text across
-  members; elevation suggestions for unlabelled traced lines in the site view.
+- [x] Block C3 (overnight 2026-10-06), Find across members: a Find box in the site view, each
+  member's text searched, a hit kept only on its member's visible side, hits ringed, Next
+  centring each (D-271 24).
+- [ ] Still open: arcs in the site view (split analytically at the line); elevation
+  suggestions for unlabelled traced lines in the site view.
