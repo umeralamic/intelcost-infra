@@ -345,6 +345,24 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
 - Decision made alone: Reports are time reports in this app, so Q14's "and Reports" has nothing to group yet; the Excel export follows Estimating's groups (D-271 17).
 - Commits: api `100b209`; infra: D-271 17 and this report.
 
-**Stopped after E5** (06:30).
+**D2b1. Select, move and delete across the join; undo: done.**
+- A click picks the shape under it; a shape drawn across the join selects whole (a bar names it: "2 pieces on 2 sheets").
+- A drag moves it: the pieces are made whole, moved and split anew at the match lines. Delete removes every piece.
+- Undo (Ctrl+Z or the button) takes back the site view's last drawing, move or delete as one step.
+- The keys are taken before the sheet canvas underneath, so it never deletes or undoes as well (D-271 18).
+- New file: `siteEdit.ts` (pieces in the site frame, hit test, whole, place).
+- Smoke 5/5 (throwaway):
+  1. a Linear run drawn from ground x 60 to 140 saved as A 60..100 | B 100..140, and a click selected both pieces;
+  2. dragged 50 ft east, it is one piece, B 110..190;
+  3. dragged 80 ft back west, it is split anew, A 30..100 | B 100..110;
+  4. Ctrl+Z gave back B 110..190;
+  5. Delete left 0 pieces, and Ctrl+Z brought B 110..190 back.
+- Decisions made alone:
+  - a member's own shape moves on its sheet without a re-split, so its hidden part is kept;
+  - no redo in the site view;
+  - copy, the join-point slide (Q9), arcs, Ortho and Snap are left for D2b's rest.
+- Commits: app b3d4595; infra: D-271 18 and this report.
+
+**Stopped after D2b1** (06:45).
 - **Still open in E:** Site Features and Strip Areas across members, and Q14's group in Estimating (today the site's name on each line).
 - **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

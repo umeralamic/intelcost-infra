@@ -10043,6 +10043,18 @@ survey link; one join per pair of sheets, whichever way it was drawn.
     drawn on; the rest (the remaining site, the balance), every member, in the site's order.
     The api works this out when it reads the items (no column). Reports in this app are time
     reports today and carry no lines; the Excel export follows Estimating's groups.
+18. **Select, move, delete and undo in the site view (D2b1).** A click with no tool picks the
+    shape under it on the member that shows the point; a shape drawn across the join selects
+    whole (its `site_shape` pieces in its item). A drag moves it: the pieces are made whole in
+    the site frame (a run rejoined, an area united at 0.001 ft), moved and split anew, so a
+    piece carried over a line lands on the sheet beyond it and the pieces keep their
+    `site_shape`. A member's own shape (no `site_shape`) moves on its own sheet and is not
+    re-split, so its hidden part past the line is never cut off. Delete removes every piece.
+    The site view keeps its own undo (Ctrl+Z, and an Undo button) of its drawings, moves and
+    deletes, one step each; an undo of a site boundary brings back the members' boundaries it
+    replaced. The site view takes Delete, Backspace, Escape and Ctrl+Z first (capture, default
+    prevented) so the sheet canvas underneath never acts on them too. Redo is not offered
+    here. A locked item's shapes are refused.
 
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,

@@ -402,5 +402,7 @@ TIN and volumes stay in the browser, as today.
 - [x] Block E5 (overnight 2026-10-06), Q14: the site's lines filed in a folder of its name
   (Estimating groups them under it; renamed with the site, dropped with its lines), each line's
   Takeoff Ref. the sheets it comes from (D-271 17).
-- [ ] D2b (select, move, copy and delete a `site_shape` as one, the join point slide (Q9), undo as
-  one step, arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing, the C-200 acceptance row).
+- [x] Block D2b1 (overnight 2026-10-06): select, move and delete a `site_shape` as one in the
+  site view, a move re-splitting it at the match lines; the site view's own undo, one step per
+  drawing, move or delete (D-271 18).
+- [ ] D2b rest (copy, the join point slide (Q9), arcs, Ortho, Snap and Snap PDF across members), then F's rest (Auto Trace on the stitched drawing, the C-200 acceptance row).
