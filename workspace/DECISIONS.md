@@ -9995,6 +9995,23 @@ survey link; one join per pair of sheets, whichever way it was drawn.
    rejoined, as the spec says). Spots on a match line are kept once, the anchor-nearest
    member's; a mismatch across the line is one flag for the pair.
 
+**Block E, the same night (E1 a preview, E2 saved):**
+9. **The site's result** is its own row (`earthwork_site_result`, one per site), saved from
+   the site view (`PUT …/site/{uuid}/result`, `DELETE` to remove; the spec's
+   `…/earthwork/site-result/{site}` path moved under the site's routes).
+10. **The site's lines** are earthwork items keyed to the site (`takeoff_item.earthwork_site_id`,
+    one per region and role), kept on the anchor sheet and named "[site]: [line]", so
+    Estimating reads them apart from a sheet's own. Q14's grouping under the site's name is
+    this name until Estimating has a site group.
+11. **Superseded (Q10):** while a site's lines exist, each member's own result carries
+    `superseded_by_site_id` ("Superseded by Site X" in its volume panel) and its own lines
+    `earthwork_superseded`, which Estimating leaves out; a member's own Calculate under a saved
+    site result keeps its new lines out too. Removing the site's result, a member leaving, or
+    the site dissolving gives them back; a member leaving marks the site's lines stale.
+12. **Not in E2:** Site Features and Strip Areas across members, and a stale mark for the site
+    when a member's drawing changes (the site view shows the saved result; a new Calculate
+    replaces it).
+
 **Where:** app `lib/takeoff/earthwork/site.ts`; api `app/features/earthwork/site.py`,
 `site_routes.py`, `models.py` (`Site`, `SiteMember`, `SheetRegistration.kind`,
 `EarthworkResult.superseded_by_site_id`), `registration_routes.py`, migration

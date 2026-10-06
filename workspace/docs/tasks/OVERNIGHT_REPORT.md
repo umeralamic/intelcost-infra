@@ -256,6 +256,21 @@ Block list in `OVERNIGHT_PLAN.md`: A1 engine, A2 tables and routes, B joining in
   2. with the east half of the boundary deleted, "Fill 444 CCY, Import 556 LCY". The line's title in the script said it removed a scale; what it did was remove that boundary half.
 - Commits: app `df8bd3c`; infra: the workspace commit for this report.
 
-**Stopped after E1** (04:15).
-- **E2 not started.** It covers the site result saved, the members' results marked Superseded with their lines kept out of Estimating (Q10), the site's lines grouped under its name (Q14), and Site Features and Strip Areas across members. It changes how earthwork lines are keyed (they belong to one sheet today) and what Estimating shows, and needs a decision on where the site's lines live (see the questions at the end).
-- **C2, D and F's app side** were not started either: each is canvas work of several hours.
+**E2. A site's result saved, its members superseded: done.**
+- API: migration `b3e8c1d5f972` adds `earthwork_site_result`, `takeoff_item.earthwork_site_id` and `earthwork_superseded`. The sheet-line unique index now covers sheet lines only, and a second one covers site lines.
+- Routes `GET …/site/result/all`, `PUT …/site/{uuid}/result` (with lines), `DELETE …/site/{uuid}/result`. Member results carry `superseded_by_site`; items carry `earthwork_superseded`.
+- Clean-ups: a member leaving, dissolving and deleting the site give the members' own results and lines back, and a member leaving marks the site's lines stale. A member's own Calculate under a saved site result keeps its new lines out of Estimating.
+- App: "Save to estimate" and "Remove result" in the site view. The site's lines are named "[site]: …". Estimating leaves superseded lines out. The volume panel shows "Superseded by Site X".
+- Smoke 4/4 (throwaway, the E1 pad with each sheet's own Calculate saved first, 444.44 CCY each):
+  1. Estimating showed both sheets' own "Remaining Site Fill";
+  2. Calculate then Save: site lines "Pad: Remaining Site Cut" 0, "Pad: Remaining Site Fill" 888.89, "Pad: Soil Import — Engineered Fill (889 BCY)" 1,111.11; the 4 own lines superseded; both results "Superseded by Site Pad";
+  3. Estimating showed "Pad: Remaining Site Fill" 888.89 CCY and no own fill line;
+  4. Remove result: both own lines back, no result superseded.
+- Plus an API check: a member's own Calculate under the saved site result wrote its new line superseded.
+- The volume panel's "Superseded by" banner was not driven in the browser; the API field it reads was checked.
+- Decisions: D-271 9 to 12.
+- Commits: api `96dab3a`; app `e8bb51c`; infra: the workspace commit for D-271 9 to 12 and this report.
+
+**Stopped after E2** (04:35).
+- **Still open in E:** Site Features and Strip Areas across members, a stale mark for the site when a member's drawing changes, and Q14's group in Estimating (today the site's name on each line).
+- **Not started:** C2 (per-member pdf.js renders, snap across members), D (drawing and measuring across the join) and F's app side (Auto Trace on the stitched drawing, the C-200 acceptance row). Each is several hours of canvas work.

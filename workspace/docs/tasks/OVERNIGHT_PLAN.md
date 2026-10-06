@@ -75,4 +75,9 @@ smaller than the spec's A to F so each finishes, gates, smokes and commits on it
   saved. E2 (saving, Superseded, lines grouped under the site, Site Features and Strip Areas
   across members) is larger: it changes how earthwork lines are keyed and what Estimating
   shows, so it is not started.
-- **C2, D, E2, F's app side**: not attempted tonight.
+- **E2** (started 04:20, done 04:35): the site result saved (`earthwork_site_result`), the site's lines as
+  earthwork items keyed to the site (`takeoff_item.earthwork_site_id`, on the anchor sheet, named
+  with the site), the members' own lines flagged `earthwork_superseded` and left out of Estimating
+  while the site's lines exist (Q10), members' results marked "Superseded by Site X", Remove result;
+  cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
+- **C2, D, F's app side**: not attempted tonight.

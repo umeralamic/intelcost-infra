@@ -375,5 +375,11 @@ TIN and volumes stay in the browser, as today.
   across the joins, and shows one cut, one fill and one balance with the project's assumptions.
   Not saved, no lines: Site Features and Strip Areas, the site result, the members' results
   marked Superseded (Q10) and the lines grouped under the site (Q14) are Block E2.
+- [x] Block E2 (overnight 2026-10-06): "Save to estimate" in the site view keeps the site's result
+  and writes its lines (on the anchor sheet, named "[site]: …"); the members' own results read
+  "Superseded by Site X" and their own lines stay out of Estimating while the site's lines exist
+  (Q10); "Remove result" gives them back; dissolving or a member leaving does too (D-271 9 to
+  12). Still open: Site Features and Strip Areas across members, the site's own stale mark,
+  Q14's group in Estimating.
 - [ ] C2 (per-member pdf.js window renders, the members on screen plus one at full
   resolution, Snap, Snap PDF and Find Text across members), then D to F.
