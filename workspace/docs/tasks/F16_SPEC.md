@@ -1,6 +1,6 @@
 # F16: Billing, plans, trials
 
-**Status:** adopted 2026-10-06 (D-277). Blocks A to E built (D-278, D-280, D-281 and D-282 record the calls Blocks B to E made; D-279 the bench's mail guard). The founder's answers to the draft's
+**Status:** adopted 2026-10-06 (D-277). Blocks A to F built (D-278, D-280 to D-283 record the calls Blocks B to F made; D-279 the bench's mail guard). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
 ([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
 
@@ -181,7 +181,7 @@ Line numbers as of 2026-10-06, after Block C.
 | `app/features/ai/models.py:60` (`AiWallet.seats`) | fixed 1 | written from the subscription's seats by the webhook and comp (`billing/service.py` `_follow`, `platform/billing.py`). **Built, Block D** |
 | `app/features/ai/allowance.py` (new; replaced `meter.CREDITS_PER_SEAT` and `ai/service.py` `refill_due`) | monthly Celery refill for every workspace | per plan's `credits_per_seat` (Essentials 0); monthly subscribers on `invoice.paid`, annual and comp on the anniversary day, a trial once at creation (Q4). **Built, Block D** |
 | `app/features/ai/service.py:392` `trial_cap` | Tier 3's 30 credits while the trial runs | off for a subscriber (Q2). **Built, Block A** |
-| `app/features/ai/routes.py:235` (`/packs`), app `src/pages/SettingsAiCredits.tsx:267` | packs listed; "Buy now" disabled, "Checkout arrives with billing" | `POST {ws}/billing/topup {pack}` → Checkout (payment mode); live for the owner and admins (Q11). Block F |
+| `app/features/ai/routes.py` (`/packs`), app `src/pages/SettingsAiCredits.tsx` | packs listed; "Buy now" disabled, "Checkout arrives with billing" | `POST {ws}/billing/topup {pack}` → Checkout (payment mode); live for the owner and admins on Professional with a subscription in force (Q11, Q3). **Built, Block F (D-283)** |
 | `app/features/platform/ai_economics.py:471` `grant`, app `src/pages/PlatformAiEconomics.tsx:492` | manual grant stands in for sales | stays as a platform comp tool |
 | `app/features/billing/models.py:82` `BillingTierRule`, `:119` `WorkspaceLimitOverride`; migration `b17d4e90c3a2` | tier rules and override limits stored | enforced as §4.5 (`billing/caps.py`). **Built, Block E** |
 | `app/features/workspace/models.py:105, 113`; `app/features/auth/models.py:58` | tier and trial stamped | read by the caps and the plan read. **Built, Blocks A and E** |
@@ -189,7 +189,7 @@ Line numbers as of 2026-10-06, after Block C.
 | `app/features/platform/billing.py:66` (`SECRET_SLOTS`) | Stripe secrets shown as slots, never set | settings defined; presence shows "Set". **Built, Block A** |
 | app `src/pages/Signup.tsx:78` | reads `plan`, `cadence`, `seats` from marketing and ignores them | kept on the user (`signup_*`) and pre-filled on the Billing page's cards (Q12). **Built, Blocks B and C** |
 | app `src/features/workspace/capabilities.ts:29, 106, 111` | `canManageBilling` unused | gates Start subscription and Manage billing (owner only); the Billing tab is drawn for `canManageWorkspace` (owner and admins, read-only for admins). **Built, Block C**; top-up for owner and admins (Q11) in Block F |
-| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to E built" |
+| `STATUS.md` (api, app) | "No billing" | "F16 Blocks A to F built" |
 
 ## 6. AI credits
 
@@ -210,12 +210,16 @@ Line numbers as of 2026-10-06, after Block C.
     Block E).
   - On Essentials the chip and the AI Credits page say "AI tools are on the Professional plan."
   - Existing balances were kept; the rules apply from the next refill point.
-- **Top-up.**
+- **Top-up. Built, Block F (D-283, `billing/topup.py`).**
   - Packs from `ai_pack`, as D-236 9 (Q10): $10/1,000, $25/2,500, $50/5,000, $100/10,000.
-  - "Buy now" (owner and admins, Q11) opens a payment-mode Checkout carrying the pack's `stripe_price_id`.
-  - The webhook writes a `purchase` ledger row and `purchased` balance, once per session.
-  - Purchased credits never expire and are spent after the included ones (D-236).
-- **Usage reports.** Already built (F14: `usage.py`, the AI Credits page). F16 adds purchases to the ledger view.
+  - "Buy now" (owner and admins, Q11, only with a Professional subscription in force; a trial
+    is told to subscribe to Professional, Essentials keeps the plan message) opens a
+    payment-mode Checkout carrying the pack's `stripe_price_id` (else `STRIPE_PRICE_PACK_*`).
+  - The webhook writes a `purchase` ledger row (buyer, pack, Checkout session) and the
+    `purchased` balance, once per session; Settings › AI Credits lists purchases.
+  - Purchased credits never expire and are spent after the included ones (D-236, `meter.settle`);
+    they stay on a lapsed or Essentials wallet and cannot be spent there.
+- **Usage reports.** Already built (F14: `usage.py`, the AI Credits page). Block F added the purchases list.
 
 ## 7. Platform admin
 
@@ -276,7 +280,7 @@ later (the Billing page and the trial button), pre-filled with them (Block C).
 5. **E. Trial caps.** *Built 2026-10-06 (D-282).*
    - Projects, storage, measurements (live items), PDF throttle for restricted tiers, with overrides; errors and the dialog.
    - Seats added mid-period bring their credits at once (D-281 11).
-6. **F. AI top-up.**
+6. **F. AI top-up.** *Built 2026-10-06 (D-283).*
    - "Buy now", payment Checkout, the webhook credit, ledger rows.
    - Smoke: buy a pack on the fake and see the balance.
 7. **G. Platform.**

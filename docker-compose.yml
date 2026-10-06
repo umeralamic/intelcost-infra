@@ -129,6 +129,10 @@ services:
       STRIPE_PRICE_SEAT_ESSENTIALS_ANNUAL: price_bench_seat_essentials_annual
       STRIPE_PRICE_SEAT_PROFESSIONAL_MONTHLY: price_bench_seat_professional_monthly
       STRIPE_PRICE_SEAT_PROFESSIONAL_ANNUAL: price_bench_seat_professional_annual
+      STRIPE_PRICE_PACK_1000: price_bench_pack_1000
+      STRIPE_PRICE_PACK_2500: price_bench_pack_2500
+      STRIPE_PRICE_PACK_5000: price_bench_pack_5000
+      STRIPE_PRICE_PACK_10000: price_bench_pack_10000
     # Migrations run on start, so a fresh bench is a working bench.
     #
     # `exec`, so uvicorn replaces the shell as PID 1 and receives the stop signal. Without

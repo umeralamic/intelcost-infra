@@ -10631,3 +10631,46 @@ allowance}.py`, `workspace/{routes,schemas}.py` (the capability read), `platform
 PdfThrottle.tsx,room.ts,api.ts}`, `lib/billing/pdfThrottle.ts`, `lib/takeoff/pdf/raster.ts`,
 `core/api/{client,locked}.ts`, `pages/{SettingsBilling,PlatformBillingTiers,ProjectTakeoff}.tsx`,
 `features/workspace/hooks/use-permissions.ts`, `App.tsx`.
+
+## D-283: F16 Block F: AI credit top-ups, who buys, and what purchased credits do off Professional
+
+**Status:** decided (the founder's overnight brief, 2026-10-06); points 4, 6 and 7 are my calls inside it
+
+1. **Packs** are D-236 9's four `ai_pack` rows: $10 / 1,000, $25 / 2,500, $50 / 5,000, $100 /
+   10,000 credits.
+2. **Who can buy:** the owner and admins (Q11), only on a workspace with a Professional
+   subscription in force (active, past due within grace, canceled before its period end, or
+   comp). A trial cannot buy: Settings › AI Credits says "Subscribe to Professional to buy more
+   credits." with Go to Billing for the owner and "Ask the workspace owner." for others. A lapsed
+   subscription reads the same. Essentials cannot buy (Q3): the page keeps the plan message and
+   shows no packs. Members who are not admins are told to ask the workspace owner. The api
+   refuses with 403 and code `topup_role`, `topup_subscribe` or `topup_plan` (`billing/topup.py`
+   `buy_block`, one rule for the page and the route).
+3. **Purchased credits never expire and are spent after the included ones** (D-236), decided in
+   one place, `meter.settle`. They stay on the wallet if the workspace lapses or moves to
+   Essentials, and nothing can spend them there: Essentials is refused by the plan
+   (`require_ai`, "AI tools are on the Professional plan.") and a lapsed workspace is view-only
+   (`workspace_locked`, D-280), the same refusal as every other write. Back on Professional they
+   are usable again.
+4. **Checkout** (`POST {ws}/billing/topup {pack}`) is payment mode with the pack's
+   `stripe_price_id`, else the `STRIPE_PRICE_PACK_<credits>` setting (my call: four settings
+   beside the plan prices, the same fallback rule as D-277 22). Metadata `kind=ai_topup`, the
+   pack, the credits, the workspace and the buyer; the workspace's Stripe customer is reused (or
+   made once); the billing address is collected with no tax wording (Q16). Success and cancel
+   return to `/settings/ai-credits?topup=success|cancelled`, which shows a result line.
+5. **The webhook credits once per Checkout session:** `checkout.session.completed` (or
+   `checkout.session.async_payment_succeeded`, for a delayed payment method) with
+   `kind=ai_topup` and `payment_status=paid` adds one `purchase` ledger row carrying
+   `stripe_session_id` (unique), the buyer (`user_id`) and the pack (`pack_id`), and raises the
+   purchased balance. A replayed event, or the second of the two events for one session,
+   credits nothing. `ai.credits.changed` refreshes open tabs.
+6. **The AI Credits page** (my call on layout): included and purchased shown apart under the
+   total (as before), Buy now live or off with the reason under the packs, and a Purchases list
+   (date, pack, credits, who bought; `GET {ws}/ai/credits/purchases`, owners and admins).
+7. **The bench fake** completes a payment-mode session without a subscription and emits
+   `checkout.session.completed`; the bench sets `STRIPE_PRICE_PACK_*` to `price_bench_pack_*`.
+
+**Where:** api `app/features/billing/topup.py` (new), `billing/{service,routes,schemas}.py`,
+`ai/{models,routes,schemas}.py`, `config.py`, migration `b9e4f2a6d8c1` (`ai_ledger.user_id`,
+`pack_id`, `stripe_session_id`); app `pages/SettingsAiCredits.tsx`, `features/ai/api.ts`; infra
+`fakes/stripe/server.py`, `docker-compose.yml`.

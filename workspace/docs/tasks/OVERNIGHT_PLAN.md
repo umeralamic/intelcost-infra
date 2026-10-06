@@ -1,99 +1,61 @@
-# Overnight plan, 2026-10-06 (stop 11:30 UTC)
+# Overnight plan, 2026-10-06 22:40 UTC to 2026-10-07 11:30 UTC
 
-Rule for every part: finished, gated (app tsc/eslint/build; api ruff/format/mypy), quantity
-table, throwaway smoke check, committed and pushed on `umer-dev` before the next starts.
-Unfinished work at 11:30 goes to a named stash `overnight-<part>-unfinished`, never a commit.
-The report (`docs/tasks/OVERNIGHT_REPORT.md`) is updated after each part.
+Brief: the founder's overnight brief (F16 Blocks F and G, the F16 end-to-end check, the go-live
+checklist, Auto Count accuracy and speed, marketing prices from the catalog, old arcs refit,
+old-migration lint, the parity gap report). Report: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md),
+updated after each part.
 
-## Part 1. Wage Calculator Step 5 (crews and classification)
-Built, smoke 6/6, committed 02:15 UTC. See the report.
+## Rules held for every part
 
-## Part 2. Wage Calculator Step 6, workspace crew settings
-1. **Data.** One migration: `workspace_crew_map_override` (system, node_code, table_type,
-   crew_code, is_default, sort_order, hidden; one default per node and table, partial
-   unique index), `workspace_crew` (table_type, name unique per workspace and table,
-   division, `code` "W-" + 10 hex of its uuid), `workspace_crew_member` (crew, craft_code,
-   member_count > 0, position), `workspace_crew_hidden` (crew_code, table_type).
-2. **Resolution.** Engine `resolve_node(ref, system, code, table, overrides)`: the Step 5
-   chain (the node and its parents up to the crosswalk, then the CSI chain), walked twice:
-   first for a workspace override anywhere on it, then for IntelCost rows. Result: default,
-   suggested, source (workspace / IntelCost) and the node it came from. Feature layer: a
-   workspace catalog (IntelCost + custom crews, hidden set, overrides) used by the Step 5
-   suggestions, auto-fill and classification change, and by the settings tree.
-3. **Hidden crews.** Dropped from Suggested, Other [trade] crews and the default (the
-   first visible suggested crew becomes the default); still in Search all crews.
-4. **Custom crews.** In every picker (Search all crews, Other [trade] crews by lead craft)
-   and in the project's current rates (priced live from the saved set's crafts). Crafts
-   must exist in the crew's table.
-5. **API** (`/api/workspace/{ws}/wage-calculator/crew-settings/…`): tree children (or a
-   search) for a system and table with the effective crews and their source; orphaned
-   overrides; set / reset a node override; custom crews CRUD (delete removes it from
-   overrides); hide / unhide; a crew catalog for the pickers. Reads any member, writes
-   `MANAGE_WORKSPACE`.
-6. **App.** Settings › Project Setup › Crews: system and table switch, orphans banner,
-   tree with search, node editor (three-section picker plus custom crews, reorder), Custom
-   crews tab with IntelCost crews to hide, Hidden crews list. Read-only for non-admins.
-7. **Docs.** spec "Workspace crew settings", brief Step 6, one DECISIONS entry, SINCE_ARCHIVE.
-8. **Smoke** E1 to E8, then commit both repos.
+- Each part is finished, gated (ruff + mypy; lint + typecheck + build; the quantity table),
+  smoke-checked with throwaway accounts on the bench, committed and pushed on `umer-dev` before
+  the next starts. Nothing half-built is committed; at 11:30 UTC a part in progress is stashed as
+  `overnight-<part>-unfinished`.
+- The mail guard (D-279) is on for every smoke; smoke scripts and throwaway data are deleted.
+- Wording: Essentials and Professional; Essentials is "annotations and comments"; no tax, refund
+  or money-back wording.
+- The founder's data is read only: Hidden Valley Spec, and in Bench Construction Test the projects
+  Waxing City and Hidden Valley Spec Building Rebid. Tests run on throwaway copies.
+- Unclear points: the option that matches F16_SPEC.md and DECISIONS.md, recorded in the report.
 
-## Part 3. End-to-end Wage Calculator check (if time remains)
-One Playwright pass over the listed flow; fix clear bugs only, one commit each.
+## Order and rough budget
 
-## Part 4. F16 billing spec draft (if time remains)
-`docs/tasks/F16_SPEC_DRAFT.md`, documents only, ending with "Questions for Umer".
+| # | Part | Budget | Start not later than |
+|---|---|---|---|
+| 1 | Block F: AI credit top-ups (rules entry, topup route, webhook credit, AI Credits page, spend order, fake, docs, 6-line smoke) | 2 h | 22:45 |
+| 2 | Block G: platform Subscriptions, webhook events with Retry, plan catalog editor, comp tools (6-line smoke) | 2 h | 00:45 |
+| 3 | F16 end-to-end pass; clear bugs fixed as their own commits | 1 h | 02:45 |
+| 4 | F16_GO_LIVE.md for Abdullah (documents only) | 0.5 h | 03:45 |
+| 6 | Marketing prices from the catalog (public route, market-next ISR) | 1 h | 04:15 |
+| 7 | Old arcs refit migration (D-275 follow-up) | 0.75 h | 05:15 |
+| 8 | Old-migration lint and the whole-repo ruff gate | 0.5 h | 06:00 |
+| 5 | Auto Count accuracy and speed (time-boxed 3.5 h of new steps) | 3.5 h | 06:30 |
+| 9 | PARITY_GAPS.md (documents only) | 1 h | 10:15 |
+| — | Final report | 0.25 h | 11:15 |
 
-## Part 5. P-02 recalculate on settings change (if time remains)
+Part 5 is moved after the short parts 6 to 8 so they are not starved by its time-box; it is
+the open-ended one. Part 9 is documents only and goes last because it can be cut down cleanly
+(the ranked list first, detail after) if time runs short.
 
-## Part 6. F19 site stitching (if time remains)
-Parts 1 to 5 done by 03:10 UTC. Blocks, from the spec (`site_stitching_tasks.md`) and D-231,
-smaller than the spec's A to F so each finishes, gates, smokes and commits on its own:
+## Part notes
 
-- **A1. Site engine (pure) and its Python twin.** `lib/takeoff/earthwork/site.ts`:
-  `matchLinePairs`, `fitJoin`, `placeMember`, `visibleRegion`, `toSite` / `fromSite`,
-  `splitAtJoins`, `clipAreaToMembers`, `rejoinRuns`, `slideOnMatchLine`. Python
-  `earthwork/site.py`: `match_line_pairs`, `place_member` (the fit is F18's). The spec's
-  quantity rows for these (square halves at two scales, a reversed line, a bent line, split,
-  clip with a deduct, rejoin, slide), both engines where the twin covers them. Smoke: the
-  quantity table runs them in the bench's Chromium.
-- **A2. Data and routes.** Migration: `site`, `site_member` (one site per sheet),
-  `sheet_registration.kind` (survey | join) with the two match lines,
-  `earthwork_result.superseded_by_site_id`. Routes: sites list/create/rename/delete, join a
-  member (the api fits the match lines again with the twin), remove a member (a one-member
-  site dissolves), merge. Events `site.changed`. Smoke: the routes driven from a throwaway
-  Playwright script (no screen yet).
-- **B. Joining in the app** (only if A1 and A2 are done with time to spare): the Match line
-  tool on the Earthwork row and "Join to another sheet at match line…" in the sheet's ⋮ menu,
-  the join prompt with its checks, the merge offer, the Sheets panel's site row and "in site"
-  chips.
-- **C1. The stitched view, read-only** (A1, A2 and B done by 03:46): the site row opens a
-  Site view over the canvas, each member's fit image placed by its placement, turned and
-  clipped to its visible region (CSS transform and clip-path, so the clip turns with it), pan,
-  zoom, Fit, Rotate (the anchor's up first). No pdf.js window renders, no snapping: those are
-  C2.
-- **A3** (done 04:05): the rest of Block A's engine (`siteRuns`, `stitchTrace`) and its rows.
-- **E1** (done 04:15): Calculate in the site view as a preview (one cut, fill and balance), not
-  saved. E2 (saving, Superseded, lines grouped under the site, Site Features and Strip Areas
-  across members) is larger: it changes how earthwork lines are keyed and what Estimating
-  shows, so it is not started.
-- **E2** (started 04:20, done 04:35): the site result saved (`earthwork_site_result`), the site's lines as
-  earthwork items keyed to the site (`takeoff_item.earthwork_site_id`, on the anchor sheet, named
-  with the site), the members' own lines flagged `earthwork_superseded` and left out of Estimating
-  while the site's lines exist (Q10), members' results marked "Superseded by Site X", Remove result;
-  cleared on dissolve or a member leaving. Site Features and Strip Areas across members stay out.
-- **E3** (done 04:45): the site result goes stale with a member's drawing.
-- **C2** (done 04:58): live pdf.js renders per member in the site view.
-- **F3** (08:10 to 08:20): a traced line adopted alone.
-- **C3** (08:00 to 08:10): Find text across the site.
-- **F2** (07:30 to 08:00): Auto Trace on the stitched drawing; rings closed.
-- **D2b3** (07:20 to 07:30): Snap, Snap PDF, Ortho, Duplicate.
-- **F1** (06:55 to 07:20): the C-200 acceptance row; the square site frame.
-- **D2b2** (06:45 to 06:55): the join-point slide (Q9).
-- **D2b1** (06:30 to 06:45): select, move, delete as one; undo.
-- **E5** (06:20 to 06:30): Q14, the site's lines grouped under its name.
-- **E4** (06:00 to 06:20): Site Features and Strip Areas in a site Calculate.
-- **D2a** (05:15 to 06:00): contours and the boundary drawn across the join.
-- **D1** (started 05:00, done 05:10): draw Linear, Area and Count across the join in the site view, straight
-  segments, into a chosen item; each shape split per member (`splitAtJoins`, `clipAreaToMembers`,
-  a count to the member it falls in) and saved on the members' own sheets with one `site_shape` id;
-  the members' shapes shown in the view, clipped. D2 (select, move and delete as one, the join
-  point slide, arcs, Ortho, Snap across members) and F's app side are not attempted.
+- **1.** Rules per D-236 9 and Q11, Q3: owner and admins buy, only with a Professional
+  subscription in force; purchased credits never expire, are spent after included, and are
+  unusable off Professional (lapsed or Essentials). Checkout in payment mode with the pack's
+  `stripe_price_id` (or a `STRIPE_PRICE_PACK_*` setting); the webhook credits once per session.
+  One place decides the spend order (`meter`).
+- **2.** Platform routes under `/api/platform/billing`; platform admin only. Retry re-runs the
+  stored event's processing, idempotent by the same keys as the webhook. Catalog prices used by
+  Checkout when set; settings remain the fallback.
+- **3.** One Playwright pass through the billing life; fixes as separate commits; questions in
+  the report.
+- **5.** Legacy's Auto Count read first and compared; ported techniques before new ones; each
+  change kept only if all 8 runs hold or improve; numbers committed with each kept change.
+- **6.** `GET /api/public/plans` (display fields only), cached and rate-limited; market-next reads
+  it at build with revalidation and falls back to the last built values.
+- **7.** An idempotent data migration refitting `{cx, cy, rx, ry, a0, sweep}` from the three
+  stored points in true feet; quantities printed before and after and compared.
+- **8.** Formatting-only fixes in old migrations; ruff over the whole repo; a schema dump of a
+  fresh `upgrade head` compared before and after.
+- **9.** Legacy (UmeralamDEV) and PARITY.md against the new app; top 15 to build next; a
+  do-not-port list.

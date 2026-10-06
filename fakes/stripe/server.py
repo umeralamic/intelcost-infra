@@ -148,10 +148,15 @@ def invoice_for(sub: dict[str, Any], status: str) -> dict[str, Any]:
 
 
 def complete(session: dict[str, Any]) -> dict[str, Any]:
-    if session.get("subscription"):
-        return {"error": "already completed", "subscription": session["subscription"]}
+    if session.get("subscription") or session.get("payment_intent"):
+        return {"error": "already completed", "subscription": session.get("subscription")}
     now = int(time.time())
     customer = session.get("customer") or new_id("cus")
+    if session.get("mode") == "payment":
+        # A one-off payment (F16 Block F, an AI credit pack): paid at once, no subscription.
+        session.update(status="complete", payment_status="paid", payment_intent=new_id("pi"))
+        session["customer"] = customer
+        return emit("checkout.session.completed", session)
     items = []
     for line in session.get("line_items") or []:
         annual = "annual" in str(line.get("price"))
