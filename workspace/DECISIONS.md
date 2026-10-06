@@ -10263,6 +10263,18 @@ and area were wrong. On the same isotropic basis as D-272:
    1" = 30' (10π LF), and a 10 ft radius half circle stored true on a landscape page, as a run
    (10π LF) and closed (50π SF).
 
+6. **Amended 2026-10-07 (overnight Part 7): legacy arcs are drawn true too.** Point 3 left a
+   legacy arc drawn along its old page-space path while its quantity followed the true circle.
+   Migration `d8e2c4a6f1b3` refits the drawing parameters of every legacy arc on a takeoff shape
+   (a whole arc, or an inline arc on a run or an area) to `{cx, cy, rx, ry, a0, sweep}` of the
+   circle in true feet through the three points it is measured from (its start, the middle of
+   its stored sweep, its end; `quantity.refit_legacy_arc`, the fit new arcs use). The points
+   (`vertices_json`) are not changed. Since the circle and its ends are the ones already
+   measured, no quantity moves: the migration computes each shape before and after and stops if
+   any differs. Annotation arcs (sheet markups, no quantity) are left as they are. Idempotent.
+   On the bench: Hidden Valley Spec's "LF 7" (a Linear item, not its earthwork data), drawing
+   refitted, 38.941519 LF before and after.
+
 **Where:** app `lib/takeoff/engine/draw.ts` (`ArcFit`, `arcFrom3`, `circularArc`, `arc`,
 `shapeFrom`), `engine/shapes.ts` (`arcRadii`, `expandArcs`, `arcChords`, `shapeOutline`),
 `engine/selection.ts`, `lib/takeoff/quantity.ts` (`trueArc`), `SheetCanvas.tsx`,

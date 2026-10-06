@@ -9,8 +9,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after each part. Times are
 | 3. F16 end-to-end check | done 23:29 |
 | 4. Go-live checklist | done 23:35 |
 | 5. Auto Count accuracy and speed | not started (moved after 6 to 8, see the plan) |
-| 6. Marketing prices from the catalog | in progress |
-| 7. Old arcs refit | not started |
+| 6. Marketing prices from the catalog | done 23:40 |
+| 7. Old arcs refit | in progress |
 | 8. Old-migration lint | not started |
 | 9. Parity gap report | not started |
 
@@ -167,3 +167,43 @@ prices only. The base price stays at 1, because Checkout bills the base once plu
 seat price (Block B's Checkout). If the portal let the base quantity change, the seat
 count the api reads would still be right (it sums both items), but the price per seat would not
 be.
+
+## Part 6. Marketing prices from the plan catalog (D-285)
+
+**Built:**
+- **The route:** `GET /api/public/plans` (anonymous) returns the active plans' code, name and
+  four prices only. It is cached 60 s, and saving a plan on the platform clears the cache. Each
+  client address is limited to 120 requests a minute.
+- **The site:** the marketing pricing page and the home page read the route on the server at
+  build time and on revalidation (`PLANS_REVALIDATE_SECONDS`, default 300). That covers the
+  cards, "Plans from $…", the page descriptions and the Product JSON-LD.
+- **When the api is down:** the first build falls back to the prices written in
+  `config/plans.ts`. During a revalidation the site keeps serving its last built page.
+
+**Commits:** api `c085e56`, marketing `586221d`, infra `ad8b7e9` (the bench marketing service
+gets `INTELCOST_API_URL`).
+
+**Smoke** (a production build of the site in a throwaway container, revalidating every 15 s):
+
+| # | Result |
+|---|---|
+| 1 | PASS: Professional monthly changed $29.99 → $31.49 through the catalog editor's route; after the window `/pricing` and `/` both show $31.49 |
+| 2 | PASS: api stopped, past the window: both pages still answer 200 with $31.49 |
+| 3 | PASS: price restored to $29.99; the page shows it again |
+
+The price change in line 1 went through the editor's own api route (`PUT
+/api/platform/billing/plans/professional`), not by clicking the editor. The editor itself was
+clicked in Part 2's line 3.
+
+**Decisions I made:**
+- The card's total for several seats is now the first-seat price plus the seat price for each
+  further seat, as Checkout bills it. It used to be price × seats; the two are equal while the
+  prices are equal.
+- A plan switched off sale in the catalog drops off the price page.
+- The plan words (descriptions, highlights) stay in the marketing repo; only the name and the
+  prices come from the catalog.
+
+**Left behind:** the throwaway production container `ovn-mkt` (port 3100) and its volume
+`ovn-mkt-next`. My commands to remove them were denied by the permission settings. To remove:
+`docker stop ovn-mkt && docker rm ovn-mkt && docker volume rm ovn-mkt-next`. Neither touches the
+bench's own marketing service or its volumes.
