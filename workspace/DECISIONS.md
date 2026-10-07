@@ -10330,6 +10330,9 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
    wage determination autofill is free wherever estimating is available (Professional and trials).
    Essentials is the annotations and comments plan (annotations, comments and viewing; no
    measuring, no estimating), so it has no Wage Calculator. Block A's behaviour is correct.
+   **Amended by D-287 1:** Essentials views the Estimating tab and the project's saved wage
+   rates read only, dollar amounts and totals included; still no estimating edits, no Wage
+   Calculator editing and no AI.
 5. **Q4, refill.** A subscriber's AI allowance refills at each billing period start; an annual
    plan refills monthly on the subscription's anniversary day. A trial gets a one-time allowance
    at trial start and no monthly refill.
@@ -10803,3 +10806,35 @@ run on E200 tonight.
 
 **Where:** app `lib/takeoff/autoCount/{vectorMatch,valleyCut,resultPipeline}.ts`,
 `features/takeoff/autoCount/{scan.ts,imageScan.ts,AutoCountPanel.tsx,autoCount.worker.ts}`.
+
+## D-287: The founder's answers to the last run's questions: Essentials views estimates, catalog prices stay manual, Auto Count tag variants, TYP. tags, the mirror rule, the Library parked
+
+**Status:** decided (the founder's brief, 2026-10-07). Amends D-277 Q3 (point 1).
+
+1. **Essentials views Estimating and the saved wage rates (amends D-277 Q3).** On Essentials the
+   Estimating tab and the Wage Calculator open read only: items, cost components, crews, rates,
+   markups, the bid summary and totals, dollar amounts included, and the project's saved wage set
+   (location and the three factors, wage determination, pricing basis, craft and crew rates,
+   notes). Every edit control is hidden, not shown and then refused, and one line at the top says
+   "View only. Editing estimates is on the Professional plan." There is still no estimating edit,
+   no Wage Calculator editing and no AI on Essentials: the server keeps refusing those writes, and
+   gains read access only where the view needs it.
+2. **Plan catalog prices stay manual.** Abdullah creates each Stripe price in Stripe; the platform
+   plan editor (D-284) only takes the price id. No automatic Stripe price creation.
+3. **Auto Count tag suffix variants.** A run finds the sampled tag and its suffix variants (the
+   tag plus a qualifier: "C", "C/NL", "C-EM"). All are checked, and each distinct tag becomes its
+   own takeoff item named by its tag, in the same folder ("C" 24 and "C/NL" 2 on Hidden Valley
+   E101). A variant drawn slightly differently (half-shaded night lights) is accepted when its tag
+   is the base tag plus a suffix and its shape matches the base symbol apart from shading. The
+   result panel lists each tag with its count before the items are created.
+4. **Auto Count "TYP." tags.** When a fixture's tag is printed once (for example with "TYP."),
+   untagged instances of the same symbol are checked when no other fixture type with the same
+   shape exists on the sheet; when one does, they are normal unchecked suggestions, not
+   low-confidence. General, never tied to one sheet.
+5. **Auto Count mirror rule.** On construction drawings text is practically never mirrored (CAD
+   keeps text readable). Symbols without text can be mirrored; text can be rotated.
+6. **The legacy Library page is parked** for later (PARITY_GAPS, MANAGER F10). Not built, not
+   dropped.
+
+**Where:** points 1, 3 to 5 are built in the overnight run of 2026-10-07; their own entries
+record how.

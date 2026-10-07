@@ -48,7 +48,7 @@ _Updated: 2026-10-03_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
-| F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). | Be Fe | Umer | _not yet specced_ |
+| F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). **The Library page is parked for later (D-287 6).** | Be Fe | Umer | _not yet specced_ |
 | F11 | Annotations and comments, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): the Legend and Print.** Dimension was brought forward and built in round 3 (D-97); the AI-verified witness layer came with the scale check (D-131). | Be Fe | Umer | _not yet specced_ |
 | F17 | Legacy data migration and cutover. Legacy passwords are Supabase bcrypt. Verify bcrypt on login and rehash to Argon2, or every migrated user must reset. Password length rule applies on set/change only, never on login. Legacy custom roles resolve absent capabilities through their base role. Migration must write each legacy custom role's full effective map, or migrated roles silently lose access. **Earthwork (D-177):** legacy's `projects.earthwork_shrink_factor` is bank → compacted; ours is as printed, so migrate 1 / it (1.00 stays 1.00); swell carries over as is. **Overlays (D-188 Q13):** legacy's `sheet_overlays` are not migrated. **Snapshot types (D-241):** legacy's `evidence_tag_types` rows become `snippet_tag_type` rows of the same workspace. **AI credits (D-235, D-236):** no AI credit data is migrated: no balances, purchased credits or usage history; every workspace starts with its normal allowance. | Infra | Abdullah | _not yet specced_ |
 

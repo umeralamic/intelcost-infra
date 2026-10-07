@@ -1,61 +1,53 @@
-# Overnight plan, 2026-10-06 22:40 UTC to 2026-10-07 11:30 UTC
+# Overnight plan, 2026-10-07 04:37 UTC to 11:30 UTC
 
-Brief: the founder's overnight brief (F16 Blocks F and G, the F16 end-to-end check, the go-live
-checklist, Auto Count accuracy and speed, marketing prices from the catalog, old arcs refit,
-old-migration lint, the parity gap report). Report: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md),
-updated after each part.
+Brief: the founder's second overnight brief: Part A (his decisions, Essentials read-only
+Estimating and Wage Calculator, Auto Count tag variants, the TYP. rule and a background vector
+index) and Part B (Image-mode speed, B1 to B8). Report: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md),
+updated after each step. The last run's plan and report are in git
+(`intelcost-infra/workspace/docs/tasks/`, commit `6049564`).
 
-## Rules held for every part
+## Rules held for every step
 
-- Each part is finished, gated (ruff + mypy; lint + typecheck + build; the quantity table),
-  smoke-checked with throwaway accounts on the bench, committed and pushed on `umer-dev` before
-  the next starts. Nothing half-built is committed; at 11:30 UTC a part in progress is stashed as
-  `overnight-<part>-unfinished`.
-- The mail guard (D-279) is on for every smoke; smoke scripts and throwaway data are deleted.
-- Wording: Essentials and Professional; Essentials is "annotations and comments"; no tax, refund
-  or money-back wording.
-- The founder's data is read only: Hidden Valley Spec, and in Bench Construction Test the projects
-  Waxing City and Hidden Valley Spec Building Rebid. Tests run on throwaway copies.
-- Unclear points: the option that matches F16_SPEC.md and DECISIONS.md, recorded in the report.
+- Each step is finished, gated (ruff + mypy; lint + typecheck + build; the quantity table, which
+  carries Auto Count's regression cases), checked on the bench with throwaway accounts, committed
+  and pushed on `umer-dev` before the next starts. At 11:30 UTC a step in progress is stashed as
+  `overnight-<step>-unfinished`, not committed. No step starts that cannot plausibly finish.
+- The mail guard (D-279) is on; check scripts and throwaway data are deleted afterwards.
+- Wording: Essentials and Professional; Essentials is "annotations and comments"; no tax or refund
+  wording.
+- The founder's projects are read only (Hidden Valley Spec; Waxing City and Hidden Valley Spec
+  Building Rebid in Bench Construction Test). The Auto Count sheets are copied out of them into a
+  throwaway workspace.
+- Unclear points: the option that matches DECISIONS.md and the specs, recorded in the report.
 
-## Order and rough budget
+## Auto Count test bed
 
-| # | Part | Budget | Start not later than |
+- Throwaway workspace with copies of E101 (Hidden Valley Spec Building Rebid) and E200 (Waxing
+  City); ground truth from the sheets' own tags (68 office "A"; 24 "C" + 2 "C/NL"); E200's 12 hatched
+  and 6 empty fixtures as last run. Sensitivity 70%.
+- A throwaway harness (not committed) runs the panel's own scan and result step in the bench's
+  browser and records time, time to first results, checked right/wrong per tag, unchecked count,
+  and every kept candidate's position, score, angle and mirror (the Part B results contract).
+- Image baseline of all four tests is taken at the start (about 70 minutes on the bench); Part A
+  does not touch Image mode's scan or result path, so it stands as "after Part A". If a Part A
+  change does touch it, the baseline is re-taken.
+
+## Order
+
+| Step | What | Repos | Done when |
 |---|---|---|---|
-| 1 | Block F: AI credit top-ups (rules entry, topup route, webhook credit, AI Credits page, spend order, fake, docs, 6-line smoke) | 2 h | 22:45 |
-| 2 | Block G: platform Subscriptions, webhook events with Retry, plan catalog editor, comp tools (6-line smoke) | 2 h | 00:45 |
-| 3 | F16 end-to-end pass; clear bugs fixed as their own commits | 1 h | 02:45 |
-| 4 | F16_GO_LIVE.md for Abdullah (documents only) | 0.5 h | 03:45 |
-| 6 | Marketing prices from the catalog (public route, market-next ISR) | 1 h | 04:15 |
-| 7 | Old arcs refit migration (D-275 follow-up) | 0.75 h | 05:15 |
-| 8 | Old-migration lint and the whole-repo ruff gate | 0.5 h | 06:00 |
-| 5 | Auto Count accuracy and speed (time-boxed 3.5 h of new steps) | 3.5 h | 06:30 |
-| 9 | PARITY_GAPS.md (documents only) | 1 h | 10:15 |
-| — | Final report | 0.25 h | 11:15 |
+| A1 | One DECISIONS entry (D-287): the founder's six decisions; D-277 Q3 amended; Library parked in PARITY_GAPS and MANAGER | workspace | committed in the mirror |
+| A2 | Essentials read-only Estimating and Wage Calculator: entry points shown, edit controls hidden, the one-line message, a read endpoint for the saved wage set (factors, notes); server writes still refused | api, app | gates, smoke (Essentials with rates + estimate, without rates, a refused write, Professional unchanged), docs |
+| A3 | Auto Count: tag suffix variants as separate items (one item per tag, same folder, panel lists tag counts), the TYP. rule, the mirror rule for text (Vector), a background per-sheet vector index (worker, stored, re-indexed on file change) | app (api if storage needs it) | vector table before/after, no accuracy lost, index build time, D-entry, SINCE_ARCHIVE |
+| B1 | Image-mode Timing line (stages, passes run/skipped, sizes, workers, scorer) and per-result angle/mirror | app | identical results |
+| B2 | First pass (0°, own orientation) whole page, result step, shown checked at once; other passes add in the background | app | identical final results; time to first results |
+| B3 | Skip symmetric passes (a); text rule skips mirror passes (b) | app | identical (a); every change listed (b) |
+| B4 | Image workers kept alive for the scan and while the sheet is open; band data sent once | app | identical |
+| B5 | WASM SIMD fine scorer, JS fallback | app | every window within 0.001 |
+| B6 | OpenCV shortlist prefilter, lazy | app | zero dropped on every test; total time down |
+| B7 | WebGPU scorer behind a setting (stretch) | app | |
+| B8 | Other safe levers found while profiling | app | identical |
 
-Part 5 is moved after the short parts 6 to 8 so they are not starved by its time-box; it is
-the open-ended one. Part 9 is documents only and goes last because it can be cut down cleanly
-(the ranked list first, detail after) if time runs short.
-
-## Part notes
-
-- **1.** Rules per D-236 9 and Q11, Q3: owner and admins buy, only with a Professional
-  subscription in force; purchased credits never expire, are spent after included, and are
-  unusable off Professional (lapsed or Essentials). Checkout in payment mode with the pack's
-  `stripe_price_id` (or a `STRIPE_PRICE_PACK_*` setting); the webhook credits once per session.
-  One place decides the spend order (`meter`).
-- **2.** Platform routes under `/api/platform/billing`; platform admin only. Retry re-runs the
-  stored event's processing, idempotent by the same keys as the webhook. Catalog prices used by
-  Checkout when set; settings remain the fallback.
-- **3.** One Playwright pass through the billing life; fixes as separate commits; questions in
-  the report.
-- **5.** Legacy's Auto Count read first and compared; ported techniques before new ones; each
-  change kept only if all 8 runs hold or improve; numbers committed with each kept change.
-- **6.** `GET /api/public/plans` (display fields only), cached and rate-limited; market-next reads
-  it at build with revalidation and falls back to the last built values.
-- **7.** An idempotent data migration refitting `{cx, cy, rx, ry, a0, sweep}` from the three
-  stored points in true feet; quantities printed before and after and compared.
-- **8.** Formatting-only fixes in old migrations; ruff over the whole repo; a schema dump of a
-  fresh `upgrade head` compared before and after.
-- **9.** Legacy (UmeralamDEV) and PARITY.md against the new app; top 15 to build next; a
-  do-not-port list.
+Realistic reach in under seven hours: A1 to A3, then B1 to B4 at least; B5 onward only if each
+can finish and pass its identical-results check before 11:30 UTC. What is not reached is listed
+in the report with where it stopped.
