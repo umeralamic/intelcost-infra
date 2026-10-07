@@ -1,6 +1,6 @@
 # Overnight report, 2026-10-07 (second run)
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 04:37 UTC. Updated after each step. The
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 04:37 UTC, ended 09:30 UTC (every step finished before 11:30). Updated after each step. The
 previous run's report is in git (`intelcost-infra/workspace/docs/tasks/OVERNIGHT_REPORT.md` at
 commit `6049564`).
 
@@ -131,7 +131,8 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
 |---|---|
 | E101 office | 68 / 0, unchanged |
 | E101 "C" | 24 / 0, the two C/NL missed (Image mode has no tags, and they are drawn differently) |
-| E200 A and A1 | not measured: a single Image run on E200 went past 80 minutes on the bench and was stopped at the run's 100-minute limit |
+| E200 A (hatched) | 4 / 0, 8 missed, 2 unchecked shown at 70 (final code, one 47-minute run; Vector checks all 12) |
+| E200 A1 (empty) | 6 / 0, 0 missed, 0 unchecked (final code, one 45-minute run) |
 
 **Checks.** All pass:
 - **Quantity table:** passed, including the 8 Auto Count rows, run after the change.
@@ -184,8 +185,8 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
 |---|---|---|
 | E101 office | 152 s / 550 s | **76 s / 248 s** |
 | E101 "C" | 144 s / 600 s | **67 s / 245 s** |
-| E200 A | not measured (over 80 min) | see the E200 note below |
-| E200 A1 | not measured | see the E200 note below |
+| E200 A | not measured (over 80 min) | 701 s / 2,797 s (one run, final code) |
+| E200 A1 | not measured | 654 s / 2,717 s (one run, final code) |
 
 - **Where the time goes now** (office, from the Timing line): page render 2.8 s, ink 1.2 s,
   shortlist 30.5 s, fine scoring 204.3 s, result step 0.1 s.
@@ -259,11 +260,14 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
    - (b) the other angles searched only where the first pass found nothing nearby;
    - (c) more workers (below).
    Each breaks "identical" on some sheet. Which do you accept?
-2. **Image workers.** B4 sends each page once, split across the workers, so more workers no longer
-   cost memory per worker. May the automatic pool use the cores less one above the current cap of
-   six (legacy's Threads went to 16)? It would help most on machines with more than eight cores.
-3. **E200 Image.** It is too slow on the bench to check (over 80 minutes a run before tonight's
-   changes). Can you run E200 A on your desktop once, with Timing open, so its results are on record?
+2. **Image workers.** Since B4 sends each page once, split across the workers, more workers no
+   longer cost memory each. I tried lifting the six-worker cap on the bench (uncommitted): 11
+   workers ran the office test in 250 s against 248 s with 6, so the bench shows no gain. Your
+   desktop may differ. Worth trying there before deciding whether the automatic pool should go past
+   six (legacy's Threads went to 16; Q24 keeps it on Auto).
+3. **E200 in Image mode** took 47 and 45 minutes a test on the bench even after tonight's changes
+   (A: 4 of 12 checked, 0 wrong; A1: 6 of 6). E200 is a vector sheet, where Vector checks all 18.
+   Is Image mode on vector sheets worth more work, or should the panel suggest Vector there?
 4. **The refusal wording on Essentials** still says "Your role cannot …" for a plan limit (the api's
    message, unchanged by the brief). Change it to the plan wording?
 
@@ -291,6 +295,21 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
 
 ## Left behind
 
-- No stash in any repo.
-- Throwaway data (the `fx.*` accounts, their workspaces and the check items), the harness scripts
-  and the worktrees are removed at the end; see the cleanup line below.
+- No stash in any repo. All three repos are clean and even with `origin/umer-dev`.
+- Removed:
+  - the worktrees `wt-app` and `wt-gate`, and the throwaway dev server `ovn-wt`;
+  - the harness scripts (`intelcost-infra/browser/ovn-*.mjs`, never committed);
+  - the throwaway accounts and their workspaces (`purge-fx`, then the two accounts by name), and
+    their captured mail and Stripe fake events;
+  - the browser tool's snapshots and screenshots, and the scratch files.
+- The worker-cap experiment was never committed.
+- The founder's projects were only read: the two sheets' PDFs were copied out once.
+- The C and C/NL items from the A3 check were made on the throwaway copy and deleted.
+
+## Commits
+
+| Repo | Commits |
+|---|---|
+| api | `fcefe6f` (A2) |
+| app | `0c4fddd` (A2), `23f529b` (A3), `e04afd7` (B1), `be53fc5` (B2), `2782068` (B8a), `7fe07ad` (B8b), `1cc5b85` (B3), `e63c7e9` (B8c), `8cc577e` (B2 fix), `ee2d471` (B4) |
+| infra (workspace mirror) | `d346d2f` (A1), `691781a` (A2 docs), `8b77513` (A3 docs), `b76ec11` (Part B docs), `a4e2661` (FEATURES), and this report |
