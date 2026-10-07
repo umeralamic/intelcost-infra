@@ -451,7 +451,7 @@ throwaway copies are deleted, so none remain.
 ## Final
 
 All nine parts are done, each gated, smoke-checked, committed and pushed on `umer-dev`. **No
-stash was left behind.** The run ended at about 02:50 UTC, well before 11:30: every part was
+stash was left behind.** The run ended at about 02:45 UTC, well before 11:30: every part was
 finished, and Part 5's time box had no step left worth starting.
 
 **Commits per repo** (in order):
@@ -512,4 +512,3 @@ found contradicts the code.
   no real email was sent);
 - the smoke scripts, harnesses and throwaway databases, and the frozen app server and its
   worktree.
-- The bench's Tier 3 throttle went back to its earlier value (0) after Block E's smoke.
