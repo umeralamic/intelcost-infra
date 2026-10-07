@@ -10838,3 +10838,48 @@ run on E200 tonight.
 
 **Where:** points 1, 3 to 5 are built in the overnight run of 2026-10-07; their own entries
 record how.
+
+## D-288: Auto Count: tag suffix variants as their own items, the TYP. rule, the mirror rule, a background sheet index
+
+**Status:** decided in the overnight run of 2026-10-07 (the founder's D-287 3 to 5); each change
+kept only when no test lost accuracy, measured on throwaway copies of E101 and E200 at 70%.
+
+1. **Suffix variants (D-287 3).** A printed tag relates to the sample's as the same tag, a
+   suffix variant (the sample's tag, then "/", "-" or "." and a qualifier: "C/NL", "C-EM",
+   "C.1"), or another type ("CL", "B"). A variant is the same symbol: checked like the sample's
+   own tag (×1.2, capped at 1). A variant drawn with shading is accepted on its outline: when at
+   least 75% of the sample's ink is covered (`VARIANT_RECALL_MIN`), that coverage stands in for
+   the shape score. E101's two C/NL fixtures: shape F1 0.56 (the half shading's extra ink),
+   outline 0.81 covered, so 0.67 before and 0.98 now. Every match carries its tag
+   (`SymbolCandidate.tag`); the panel lists each tag with its count above Create, and Create
+   makes one count item per tag, named by its tag, in the same folder (the largest group takes
+   the dialog's name, its tag by default, or goes into the selected item; the others go into
+   that item's folder). Each item is its own undo step.
+2. **The TYP. rule (D-287 4), general.** It runs on one sheet's candidates once the worker shares
+   are together (`applyTagRules`). It applies when the sample's tag is printed on only one
+   instance of the shape (shape score ≥ 0.7), or a "TYP", "TYP." or "TYPICAL" word sits within
+   four symbol sizes of a tagged instance. Then an untagged instance of the same shape (≥ 0.7)
+   keeps its shape score instead of the empty tier, and is checked by the bar. When the sheet
+   also has a differently tagged instance of the same shape, it is a suggestion instead:
+   `suggestOnly`, never checked by the bar, never in the drawer. A sheet with no text layer, or
+   a sample with no tag, is untouched. None of the four test sheets prints a tag only once, so
+   their results do not move. The rule was checked on made-up candidates: printed once; another
+   type present; tagged everywhere; "TYP." beside; no text layer.
+3. **The mirror rule (D-287 5).** Vector mode already turns a sample's letters with the symbol
+   and never mirrors them; the symbol's strokes are still searched mirrored, since a CAD block
+   can be mirrored with its text kept readable. Image mode has no mirror pass at all (its passes
+   are angles only), so there is no mirror pass to skip there.
+4. **Background sheet index.** A sheet's vector content (strokes, layers, text runs) is read
+   once, in a worker (pdf.js runs in the worker's own thread, with no fonts and every option that
+   would need `document` given), 1.5 s after the sheet is first opened in takeoff. It is packed
+   into typed arrays and kept in this browser's IndexedDB (`intelcost.symbolIndex`, the newest
+   60 sheets) under the sheet's document key (its id and tile version), so a changed file is
+   indexed again and a stale index is never read. Auto Count reads memory, then the stored
+   index, then builds one; only if the worker cannot run does it fall back to the main-thread
+   read. A sheet just uploaded is indexed the first time it is opened. The index is per browser,
+   not on the server: the matcher's numbers must be the browser's own pdf.js walk (D-189 Q1), so
+   a server-side extraction could differ.
+
+**Where:** app `lib/takeoff/autoCount/{vectorMatch,resultPipeline,valleyCut}.ts`,
+`features/takeoff/autoCount/{scan.ts,readSymbols.ts,symbolIndex.ts,symbolIndex.worker.ts,symbolPack.ts,walkSymbols.ts,AutoCountPanel.tsx}`,
+`features/takeoff/pdf/pdfjs.ts`, `pages/ProjectTakeoff.tsx`.
