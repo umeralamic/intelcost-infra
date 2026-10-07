@@ -10933,3 +10933,49 @@ below is exact by construction, not by tolerance, so E200's results cannot move 
 
 **Where:** app `features/takeoff/autoCount/{imageScan.ts,imageMatch.worker.ts,AutoCountPanel.tsx,TimingLine.tsx,scan.ts}`,
 `lib/takeoff/autoCount/imageMatch.ts`.
+
+## D-290: Wage Calculator reference data in the database, through the api's migrations
+
+**Status:** decided in session, 2026-10-07 (the founder's brief: load `refdata` through
+Alembic so it deploys with the app, and switch the engine to it). Answers BUILD_BRIEF Step 1's
+"until Abdullah's database load is done" and D-262 2's "until that schema is loaded".
+
+1. **A schema of its own, `refdata`.** The house setup supports it: the tables have no ORM
+   models, and `alembic/env.py` leaves `include_schemas` off, so autogenerate and `alembic
+   check` never see them. No table prefix in `public`. `alembic_version` stays in `public`.
+2. **Two migrations, nothing by hand.** `e2a7c9f4b1d6` creates the 19 tables of
+   `001_wage_calculator_schema.sql` (refdata part) and `003_crew_scope_mapping.sql`;
+   `f4b8d1e6a3c2` loads every `ref_*.csv` from `WAGECALC_SEED_DIR` by COPY, after emptying the
+   tables (idempotent), then fails unless each table's count equals its file's. Downgrades
+   empty the tables, then drop them and the schema (not CASCADE). `001` and `002` stay as the
+   package's reference, marked do not run. A later edition, or any change to a loaded file, is
+   a new data migration.
+3. **No internal data anywhere in the app.** No `internal` schema; `internal_*.csv` stay in
+   `docs/wage-calculator/seed/` as the founder's review material, never in the image (D-262 3
+   unchanged: the image copies only `ref_*.csv`, now for the migration) or the database.
+4. **Adapted to the house.** `varchar` for the package's `char(n)` (no blank padding), named
+   check constraints, indexes for the engine's lookups beyond the primary keys (county by
+   state, ZIP by state, ZIP county by county, craft and crew members by craft, crew by table,
+   scope map by crew, crosswalk by CSI code). The crew search GIN index is left out: the
+   search runs over the in-memory copy. No foreign keys from the `public` Wage Calculator
+   tables to `refdata` yet: codes stay checked in code (D-262 2).
+5. **`seq` on every table:** the row's position in its seed file. The engine's member order
+   (lead craft), tie order among equal ZIP county shares, and the order crafts and crews are
+   listed in all come from the file, and most files are not in primary-key order, so the
+   engine reads `ORDER BY seq`.
+6. **The engine reads the database by default.** `RefData` loads every table once per
+   process (one connection, the shared sync engine), keeps the same attributes and methods,
+   and reads only the active edition's and tax year's rows (`edition_id`, `tax_year`). One
+   parser serves both sources: a database row becomes the strings its CSV line holds.
+   `WAGECALC_REF_SOURCE=csv` (`settings.wagecalc_ref_source`) keeps the CSV loader for local
+   tools. No formula or value changed: on the bench every attribute was identical to the CSV
+   loader's, order included, and 26 engine cases and the api's preview and save gave the same
+   rates.
+7. **Access.** No route returns bulk reference data (unchanged). The api connects as one role,
+   so read-only is enforced in code (D-261 2); a separate read-only role is an optional later
+   step for Abdullah.
+
+**Where:** api `alembic/versions/e2a7c9f4b1d6_wagecalc_refdata_schema.py`,
+`f4b8d1e6a3c2_wagecalc_refdata_load.py`, `alembic/env.py` (comment), `app/wagecalc/data.py`,
+`app/config.py` (`wagecalc_ref_source`), `Dockerfile` (comment); api
+`docs/wage-calculator/{DB_NOTE.md,README.md,BUILD_BRIEF.md,001_wage_calculator_schema.sql,002_load_seed.sql}`.
