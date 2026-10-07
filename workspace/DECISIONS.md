@@ -10979,3 +10979,52 @@ Alembic so it deploys with the app, and switch the engine to it). Answers BUILD_
 `f4b8d1e6a3c2_wagecalc_refdata_load.py`, `alembic/env.py` (comment), `app/wagecalc/data.py`,
 `app/config.py` (`wagecalc_ref_source`), `Dockerfile` (comment); api
 `docs/wage-calculator/{DB_NOTE.md,README.md,BUILD_BRIEF.md,001_wage_calculator_schema.sql,002_load_seed.sql}`.
+
+## D-291: The marketing site: wording rules, a multi-page structure, and pictures through a manifest
+
+**Status:** decided in session, 2026-10-07 (the founder's two marketing briefs, passes 1 and 2,
+`intelcost-market-next` on `umer-dev`). Binding on every page, guide and card the site carries.
+
+1. **Wording.**
+   - IntelCost is **cloud software**: "cloud-based takeoff and estimating", "your projects live
+     in the cloud", "nothing to install". Never "browser-based", "browser-native" or "runs in
+     your browser".
+   - The plans are **Essentials** and **Professional**. Essentials is always "annotations and
+     comments", never "Collaborator" and never "markup tools".
+   - No refund or money-back wording. Prices never mention tax.
+   - Never name the sources behind wage rates, location factors, crews or ZIP and county data.
+     Telling a user to bring their own SAM.gov wage determination is fine. No bulk reference
+     data on any page.
+   - No speed, accuracy or quantity claims unless the founder supplies them.
+   - No invented proof: no customers, testimonials, logos, statistics or awards. A marked
+     placeholder holds the place, and shows on preview builds only.
+   - Plain words an estimator uses, no em dashes. Every claim traces to
+     `docs/marketing/FEATURE_INVENTORY.md`.
+2. **A multi-page site, not a one-page one.**
+   - The home page is a front door: hero, short feature tiles that link out, at most two
+     highlights with a large picture, three steps, audience tiles, a short FAQ and the CTA.
+   - The detail (big screenshots, image and text rows, how it works, FAQs) lives on the feature
+     and solution pages.
+   - Every header, footer, tile and button link goes to its own page, never a home-page
+     `#anchor`.
+   - Guides, glossary terms and comparisons are Markdown under `src/content/`.
+   - `npm run build` crawls the built site and fails on any internal 404.
+3. **Pictures through a manifest.**
+   - Every product picture is an entry in `src/content/media-manifest.ts`: id, file, final alt
+     text, aspect and the intended shot. `<FeatureMedia>` renders the file if it exists, else a
+     labelled placeholder of the same aspect. Dropping the file in replaces the placeholder
+     with no code change.
+   - A production build stops while any entry is still a placeholder, unless
+     `ALLOW_PLACEHOLDERS=true`.
+   - Captures of drawing sheets are redacted before they ship: title blocks, owners, addresses,
+     firms, stamps (`scripts/screenshots/redact.config.mjs`).
+4. **Leads are kept before they are thanked.**
+   - Until the api has a demo-requests route (PARITY_GAPS item 14), the marketing route stores
+     each lead as a line on a mounted volume, then notifies.
+   - The notifier is log-only for now; Amazon SES is switched on by environment variables
+     alone (`docs/marketing/LEADS_SETUP.md`).
+
+**Where:** `intelcost-market-next`: `CLAUDE.md` (wording rules, hard rules 3, 4, 6, 7),
+`docs/marketing/{FEATURE_INVENTORY,CONTENT_FORMAT,LEADS_SETUP,SCREENSHOT_TODO,MARKETING_REPORT}.md`,
+`src/content/media-manifest.ts`, `src/components/marketing/FeatureMedia.tsx`,
+`scripts/check-links/`, `scripts/launch-guards/`, `scripts/screenshots/`, `src/lib/leads/`.
