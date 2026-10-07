@@ -13,7 +13,10 @@ D-27, D-29, D-233, D-236, D-261 5, D-267 5, D-277. Notes: `docs/flows.md` §7, P
 2026-10-06, before Block A).
 
 **Plan names (D-277 1, 25).** **Essentials** (`essentials`) is the annotations and comments plan:
-annotations, comments and viewing, no measuring, no estimating, no AI. **Professional**
+annotations, comments and viewing, no measuring, no estimating, no AI. **Amended (D-287 1):** Essentials views the
+Estimating tab and the project's saved wage rates read only, dollar amounts and totals included: every edit
+control is hidden, one line says "View only. Editing estimates is on the Professional plan.", and the api
+refuses the writes as before. **Professional**
 (`professional`; "Pro" is fine as a short form in UI copy) is everything. User-facing text calls
 Essentials' drawing tools "Annotations". The Collaborator role is unrelated and keeps its name;
 bid markups in the estimate keep theirs.
@@ -196,7 +199,7 @@ Line numbers as of 2026-10-06, after Block C.
 - **Professional only (Q3).** AI tools, AI credits and PDF or AI wage determination extraction are
   on Professional (and on trial, which is Professional). On Essentials they are locked with "AI
   tools are on the Professional plan." Text-file wage determination autofill has no plan check
-  (on Essentials the Wage Calculator itself needs "Edit estimates", D-277 20).
+  (on Essentials the Wage Calculator itself needs "Edit estimates", D-277 20; it opens read only, D-287 1).
 - **Included allowance (Q4). Built, Block D (D-281, `ai/allowance.py`).**
   - Seats × the plan's `credits_per_seat` (Professional 100, Essentials 0), no rollover;
     `ai_wallet.seats` follows the subscription (webhook and comp only).
