@@ -10764,3 +10764,42 @@ are the calls it left open
 `app/{page,pricing/page}.tsx`, `components/marketing/{Hero,PricingSection}.tsx`,
 `components/seo/JsonLd.tsx`; infra `docker-compose.yml` (`INTELCOST_API_URL` on the bench's
 marketing service).
+
+## D-286: Auto Count accuracy and speed on E101 and E200: what changed, from legacy and new
+
+**Status:** decided in the overnight run (the founder's brief, 2026-10-07); each change kept only
+when no test lost accuracy and accuracy or time improved, measured on throwaway copies of E101
+(Hidden Valley Spec Building Rebid) and E200 (Waxing City)
+
+1. **Tags decide the fixture type (Vector, new).**
+   - Text runs on one line that touch are one word, so the "A" of "P2A" is not a tag "A".
+   - A tag with a "/" qualifier is the same type (C/NL is a type C).
+   - A different tag goes to the low-confidence drawer: ×0.3, after the score is capped at 1. It
+     used to show as an unchecked suggestion (D-189's "visible, the user decides"). The brief
+     asks that a circle with a different tag never be suggested.
+   - On a sheet with a text layer, a candidate with no tag where the sample has one is the empty
+     tier (×0.35). The stroke fallback stays for a sheet without text.
+2. **Hollow against filled (Vector, new).** A sample with nothing inside its anchor keeps that
+   region; a candidate with more than 3% of it inked (hatched or filled) is the empty tier. Fill
+   was never a feature before: Vector reads strokes only.
+3. **Suggestions stay in the drawing area (both modes, new).** On a sheet with at least three
+   checked matches, an unchecked candidate outside the box round them (widened by their typical
+   size) goes to the drawer. The schedule's own symbols, legends and other details no longer
+   crowd the list; "Show low" still lists them.
+4. **Vector matching over a pool (new).** Up to four workers each score every fourth window.
+5. **Image mode's scan floor 0.45 (from legacy).** Its panel and workers keep candidates from 0.45, not 0.15. One helper, `scanFloor(mode)`, sets both. On E101 the office test went from 596 to 528 s and the "C" test from 1,521 to 593 s, with the same results, and the suggestions shown fell from 114 and 208 to 0 (together with point 3).
+6. **Tried and reverted, no measurable gain:**
+   - Image mode drawing a page once and reading it back in bands, from legacy: 528 to 529 s and
+     593 to 588 s. Matching is nearly all of the time on the bench.
+   - Reading the sheet through the canvas’s document cache, and asking pdf.js for the canvas’s
+     own operator list: the first read of a sheet did not get faster.
+
+**Not done, next:** the first read of a dense sheet (about 6 s on E101: pdf.js's operator list
+walked on the main thread, then the polylines cloned to each worker) keeps E101's office test
+above 7 s; moving the walk into the worker and sending the polylines once as transferable arrays
+is the next step. Image mode on the bench's headless Chromium is far slower than on a desktop
+(596 s against the founder's about 120 s for the same test), which made Image rounds too slow to
+run on E200 tonight.
+
+**Where:** app `lib/takeoff/autoCount/{vectorMatch,valleyCut,resultPipeline}.ts`,
+`features/takeoff/autoCount/{scan.ts,imageScan.ts,AutoCountPanel.tsx,autoCount.worker.ts}`.

@@ -101,7 +101,7 @@ cadence, as legacy billed plan price × seats):
    - Route: `POST /api/stripe/webhook`, unauthenticated, verified with the signing secret and a 5-minute tolerance.
    - Each event id is stored once (`stripe_event`). A repeat is a 200 no-op.
    - Events:
-     - `checkout.session.completed`: subscription (sync). A payment-mode session (an AI top-up) is recorded and left alone until Block F credits the pack once per session.
+     - `checkout.session.completed`: subscription (sync). A payment-mode session (an AI top-up, `metadata.kind=ai_topup`) credits its pack once per session (Block F, D-283); so does `checkout.session.async_payment_succeeded`.
      - `customer.subscription.created`, `.updated`, `.deleted`: sync.
      - `invoice.paid`: re-syncs the subscription. The allowance refill at the period start (Q4) is Block D's.
      - `invoice.payment_failed`: mark `past_due` and stamp `grace_until` = now + 7 days (Q5).

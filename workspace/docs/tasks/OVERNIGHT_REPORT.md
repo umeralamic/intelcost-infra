@@ -8,11 +8,11 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after each part. Times are
 | 2. Block G: platform billing pages | done 23:16 |
 | 3. F16 end-to-end check | done 23:29 |
 | 4. Go-live checklist | done 23:35 |
-| 5. Auto Count accuracy and speed | not started (moved after 6 to 8, see the plan) |
+| 5. Auto Count accuracy and speed | done 02:45 (time box to 03:26; no new step after the last Image round) |
 | 6. Marketing prices from the catalog | done 23:40 |
 | 7. Old arcs refit | done 23:47 |
 | 8. Old-migration lint | done 23:55 |
-| 9. Parity gap report | not started |
+| 9. Parity gap report | done 00:40 (written during Part 5's long Image runs) |
 
 ## Part 1. Block F: AI credit top-ups (D-283)
 
@@ -259,3 +259,257 @@ new gate command.
   exactly, and the seeded row counts are the same (tier rules, country tiers, AI prices, plans,
   packs).
 - **Cleanup:** the throwaway databases were dropped.
+
+## Part 9. Parity gap report
+
+[PARITY_GAPS.md](PARITY_GAPS.md): every live legacy route and feature folder checked against the
+new app and api, one table per area (gap, what legacy does, where, PARITY.md section, tester
+visibility, size, dependencies), a ranked top 15 to build next, and a "recommend NOT porting"
+list with the decisions behind each.
+
+**Commit:** infra `9bf189a` (workspace mirror).
+
+**What stands out:**
+- **The tracking docs are well behind the code.** PARITY.md still counts sections 12 to 22 as
+  barely started, and FEATURES and MANAGER list P-09, P-10, P-14, F10 and F11 as Planned. Most
+  of that is built. A re-tick pass would shrink PARITY's 240 open lines to roughly the report's
+  rows.
+- **Top five gaps:**
+  1. Drawing folder management in the Sheets panel (rename, subfolder, delete, move).
+  2. The markup Properties panel, which is most of what an Essentials workspace gets.
+  3. Confirm double-click to finish a point-to-point run; the hint promises it.
+  4. Run the AI tools against a real model.
+  5. A decision on legacy's Library page, which feeds nothing else in legacy.
+- **Not to port:** legacy dead code such as the assembly component modes (their dialog is never
+  opened), `TakeoffDocViewerPanel` and `useProjectDraft`, plus Lovable artifacts and
+  Supabase-only mechanisms.
+
+**Method note:** an agent drafted it from the code, and I reviewed and kept it. Legacy was read at
+the local `UmeralamDEV` (`e99cddcb`) without a fetch. Rows it could not confirm in code say
+"(unverified)".
+
+## Part 5. Auto Count: accuracy and speed
+
+*(Written while the part runs; the results table is at the end of this section.)*
+
+**Setup.**
+- **Test copies:** a throwaway workspace with copies of E101 (Hidden Valley Spec Building Rebid)
+  and E200 (Waxing City), the same one-page PDFs read from storage and loaded through the
+  normal upload. The founder's projects were only read.
+- **Samples:** the new app keeps no record of an Auto Count run (no table, no browser storage),
+  and neither project holds any takeoff items. **The founder's runs could not be found, so I
+  sampled each symbol myself** from a clean instance:
+  - an office fixture square with its "A";
+  - a "C" circle with its tag and leader;
+  - one hatched type A 2×4;
+  - one empty type A1 2×4.
+- **Ground truth,** read from the sheets themselves:
+  - E101's text layer: 68 "A" tags in the office plan; in E8, 24 "C" and 2 "C/NL".
+  - E200's vector paths: 12 hatched and 6 empty rectangles inside the plan.
+- **"C/NL" question:** E101 has 26 "C" words, but 2 of them are the border's grid-row labels.
+  So the founder's 26 is **24 "C" plus the 2 "C/NL"**: the C/NL fixtures are included. I used
+  26.
+- **Harness:** a script in the bench browser runs the panel's own pipeline in the app page:
+  scan, Layers (Auto), finalize at the scan floor, partition at the sensitivity, and the valley
+  cut. It times each run from the scan's start to its last result. That is the user's click to
+  the results, less React drawing the cards. It counts checked right and wrong against the
+  ground truth, and the suggestions the panel shows (the valley cut's visible unchecked; the
+  low-confidence drawer is not counted). It notes the main thread's peak heap; the workers'
+  memory is not visible there.
+- **One scan, both sensitivities:** sensitivity only moves the checked bar, so each run is
+  judged at 70% and at the default 78% from the same scan.
+- **Bench speed:** Image mode is far slower here than on the founder's machine. The office test
+  took 596 s against his about 120 s, because headless Chromium in the container renders
+  without a GPU. The before/after ratios are what to read.
+
+**Legacy comparison** (legacy's `UmeralamDEV` working tree, read by an agent and checked by me):
+- **The matching code is the same.** The new app's `imageMatch.ts`, `valleyCut.ts`,
+  `resultPipeline.ts` and `settings.ts` were ported from legacy nearly byte for byte.
+  `vectorMatch.ts` was extended in the new app: quarter turns, closed single strokes, a spatial
+  grid, and a worker.
+- **The differences are in how the scan is driven:**
+  1. Image mode's scan floor is 0.45 in legacy and 0.15 in the new app. Legacy's own perf ledger
+     measured the "C" circles at 330 s against 166 s for this alone.
+  2. Legacy scores the boxed instance itself in Image mode (`templateScoreAt`), so it is never
+     lost to the coarse shortlist.
+  3. Legacy draws a page once and reads it back in bands; the new app redraws the whole page
+     once per 16-megapixel band.
+  4. Legacy caches extracted vectors in IndexedDB across reloads.
+  5. Legacy yields while extracting, which keeps the UI responsive.
+  6. Legacy captures line width and seeds the stroke plan with it.
+  7. When the shortlist is empty, legacy scans the whole page; the new app skips the fine pass.
+  8. Legacy honours a Threads setting.
+  9. Legacy has a canvas-limit probe and a scale-drift check.
+- **Legacy is behind the new app on:** the Vector worker and grid, quarter turns, all eight
+  Image angles, one render per sheet across passes, and the small-template shortlist.
+- **Gaps in both:** no drawing-area or legend exclusion, no tag outside the drag box, no
+  OCR, fill-only symbols invisible to Vector, and one Vector worker per sheet.
+- **Legacy could not be run.** There is no preview deployment and no local copy runs against
+  the bench, so legacy has no second baseline.
+
+**Causes found:**
+- **Office, Vector, 4 wrong checked:** four "B" strip lights. The template's anchor is the
+  fixture's small circle, and the strip light is drawn round the same circle. The strip light
+  has no "A" tag, but a candidate with no text fell back to a stroke check that passed it (two
+  at 1.00).
+- **"C" circles, Vector, 20 suggestions:** circles with other tags (D, F and others). A tag
+  mismatch multiplied the score by 0.62, which is "visible, unchecked" by design (D-189). The
+  two C/NL fixtures are drawn half-shaded with a dashed leader, so they score lower.
+- **E200 A1 (empty), 17 suggestions:** the 12 hatched type A panels at about 0.60. A hollow
+  sample had no interior check, so a filled or hatched look-alike was never told apart.
+- **E200 A (hatched), 11 suggestions:** symbols outside the plan: the fixture schedule's own
+  symbols, the switch bank and the dimension ticks. Nothing limits suggestions to the drawing
+  area.
+- **Office, Image, 114 suggestions:** Image mode keeps everything from a 0.15 floor; most of
+  the suggestions sit at exactly 0.45.
+- **Vector speed:** one worker scores every window. The first read of a sheet (pdf.js's operator
+  list walked on the main thread) is about 6 s on E101 and is not the fetch or parse.
+  Reading through the canvas's document cache (V4) measured no gain and was reverted.
+
+### Part 5 results
+
+**At 70%.** Figures are right / wrong checked, missed, and suggestions shown. Times are on the
+bench's headless browser.
+
+| Test | Ground truth | Before | After | Target met? |
+|---|---|---|---|---|
+| E101 office, Vector | 68 | 13.7 s; 68 / **4 wrong**; 5 suggestions | **10.6 s**; 68 / 0; 0 | accuracy yes; speed no (7 s target; first read about 6 s) |
+| E101 office, Image | 68 | 596 s; 68 / 0; **114** suggestions | **528 s**; 68 / 0; **0** | accuracy yes; speed no (45 s target; see below) |
+| E101 "C", Vector | 26 | 5.3 s; 24 / 0, 2 missed; **20** suggestions | **2.3 s**; 24 / 0, 2 missed; 2 (the two C/NL at 67) | speed yes; 24 of 26 checked |
+| E101 "C", Image | 26 | 1,521 s; 24 / 0, 2 missed; **208** suggestions | **593 s**; 24 / 0, 2 missed; **0** | 24 of 26; speed no |
+| E200 A (hatched, 12), Vector | 12 | 7.9 s; 12 / 0; **11** suggestions | **5.7 s**; 12 / 0; **0** | yes |
+| E200 A1 (empty, 6), Vector | 6 | 5.5 s; 6 / 0; **17** suggestions (all 12 hatched A) | **2.7 s**; 6 / 0; **0** | yes |
+| E200 A, Image | 12 | not measured | not measured | — |
+| E200 A1, Image | 6 | not measured | not measured | — |
+
+**At the default (78%):**
+- Every Vector test is the same as at 70%.
+- E101 "C" in Image mode: 23 / 0, 3 missed, before and after; suggestions 1 after.
+- E101 office in Image mode: the same as at 70%.
+
+**Peak memory:** the main thread's heap stayed at 92 to 177 MB in every run. The workers are
+not visible from the page.
+
+**The founder's baseline, for comparison:**
+- E101 office, Vector: 14 s, 72 checked (4 wrong), 6 suggestions. **Matched by my baseline.**
+- E101 office, Image: about 120 s on his machine, 68 checked, 120 suggestions. On the bench it
+  was 596 s, 68 checked and 114 suggestions.
+- E101 "C" at 70%: 0 checked, 32 low-confidence suggestions. My sample of the "C" (the circle
+  with its tag and leader) checked 24 before any change. His sample may have left the tag out:
+  his run could not be found to compare.
+
+**Kept (each committed with its numbers):**
+
+| # | Change | Where from | Commit |
+|---|---|---|---|
+| V1 | Tags decide the type: whole words, "C/NL" is a C, a different tag goes to the drawer, a missing tag on a texted sheet is the empty tier | new | app `6c7a7de` |
+| V2 | A hollow sample tells filled and hatched look-alikes apart | new | app `e489f44` |
+| V3 | Suggestions outside the matches' drawing area go to the drawer (both modes) | new | app `16fb92b` |
+| V5 | Vector matching over a pool of up to four workers | new | app `25623a4` |
+| I1 | Image scan floor 0.45 | **legacy** | app `c6842f7` |
+
+**Tried and reverted (no measurable gain):**
+- V4 and V4b: reading through the canvas's document cache, and asking pdf.js for the canvas's
+  operator list.
+- I2: legacy's single render with banded readback.
+
+**Not reached, and the next ideas:**
+- **Exact 26 on "C" at 70%.** The two C/NL fixtures are drawn half-shaded with a dashed
+  leader. They score 67 and show as the only two suggestions. Options:
+  1. at 65% they check;
+  2. a matching tag (C/NL against C) could carry more weight than the shape. I held back
+     because that is a product call: how much a printed tag should outweigh a different symbol.
+- **Vector at most 7 s on the office test (10.6 s).** Matching is 3.5 s. The rest is the first
+  read of the sheet: pdf.js's operator list walked on the main thread, then the polylines cloned
+  to each worker. Next steps:
+  1. walk the operator list in a worker;
+  2. send the polylines once as transferable typed arrays;
+  3. keep a sheet's extraction in the workers between scans;
+  4. legacy's IndexedDB cache for repeat runs.
+- **Image at most 45 s.** On the bench's headless browser, Image matching itself is about 520 s
+  for the office test, and rendering is negligible (I2 showed nothing). The founder measured
+  about 120 s for the same test on his machine, so these times run four to five times slower
+  than a desktop. Next steps:
+  1. legacy's self-instance anchor (recall);
+  2. a SIMD/WASM fine scorer (legacy's ledger judged it feasible);
+  3. a coarser first pass on large plans;
+  4. a timing pass on a real desktop browser, since the bench's numbers mislead here.
+- **E200 in Image mode** was not measured: a run took over 25 minutes on the bench. Tonight's
+  Image change (the floor) and V3 apply to it, but there are no numbers.
+
+**Founder's projects:** only read (the PDFs copied out). No item, run or setting was written
+to them. The throwaway workspace, its user and the harness are deleted.
+
+**Screenshots:** the harness measured results numerically and saved no screenshots. The
+throwaway copies are deleted, so none remain.
+
+**Part 5 commits:** app `6c7a7de` (V1), `e489f44` (V2), `16fb92b` (V3), `25623a4` (V5),
+`c6842f7` (I1); the docs (D-286, SINCE_ARCHIVE) in the final workspace commit.
+
+---
+
+## Final
+
+All nine parts are done, each gated, smoke-checked, committed and pushed on `umer-dev`. **No
+stash was left behind.** The run ended at about 02:50 UTC, well before 11:30: every part was
+finished, and Part 5's time box had no step left worth starting.
+
+**Commits per repo** (in order):
+- **api:**
+  - `8a62a03` Block F
+  - `b48efbb` Block G
+  - `c085e56` marketing prices
+  - `5f8eecc` arcs refit
+  - `0bc0fd9` migration lint
+- **app:**
+  - `e817cdf` Block F
+  - `ef2a13e` Block G
+  - `67f3172` end-to-end fix
+  - `6c7a7de`, `e489f44`, `16fb92b`, `25623a4`, `c6842f7` Auto Count
+- **marketing:** `586221d` prices from the catalog
+- **infra:**
+  - `01d077d` Block F
+  - `ca5b47b` Block G
+  - `11bc602` go-live and report
+  - `ad8b7e9` marketing env
+  - `18510ff` arcs
+  - `55b392a` gate mount
+  - `9bf189a` parity
+  - the final workspace commit
+
+**Decisions logged:** D-283 (Block F), D-284 (Block G), D-285 (marketing prices), D-275 point
+6 (arcs refit), D-286 (Auto Count). The decisions I made on my own are listed under each part
+above.
+
+**Open questions for you:**
+1. **Catalog prices and Stripe (Part 2).** Should saving a price in the plan catalog create the
+   new Stripe price itself? Today it does not: the editor takes a new Stripe price id, and
+   Abdullah creates prices.
+2. **Wage Calculator and Estimating on Essentials (Part 3).** Project Home still shows both
+   buttons on Essentials, and the Wage Calculator opens with its inputs (the api refuses edits).
+   Hide them, or show the plan message?
+3. **C/NL on "C" (Part 5).** Should a matching printed tag outweigh a differently drawn symbol,
+   so the two half-shaded C/NL fixtures check at 70%? They score 67 today and show as the only
+   suggestions.
+4. **Tag-less candidates (Part 5).** Where a sheet prints a fixture's tag only once ("TYP."), an
+   untagged instance now goes to the low-confidence drawer. It is still visible with "Show low".
+   Is that right, or should untagged instances stay visible as suggestions?
+5. **Library page (Part 9).** Build it, or drop it by decision? It feeds nothing else in legacy.
+
+**F16_SPEC.md:** Blocks A to G are marked built, and the one stale line found (payment-mode
+sessions "until Block F") is fixed. What remains before testers, as the spec says, is the full
+run restored from the fixture tag, plus the go-live steps in F16_GO_LIVE.md. Nothing else I
+found contradicts the code.
+
+**Left behind, needing you:**
+- The throwaway production marketing container `ovn-mkt` (port 3100) and its volume
+  `ovn-mkt-next`. Removing them was denied by the permission settings. To remove:
+  `docker stop ovn-mkt && docker rm ovn-mkt && docker volume rm ovn-mkt-next`.
+
+**Everything else is cleaned up:**
+- every throwaway workspace and user;
+- the Stripe event rows they made, and their captured mail (the mail guard was on throughout;
+  no real email was sent);
+- the smoke scripts, harnesses and throwaway databases, and the frozen app server and its
+  worktree.
+- The bench's Tier 3 throttle went back to its earlier value (0) after Block E's smoke.
