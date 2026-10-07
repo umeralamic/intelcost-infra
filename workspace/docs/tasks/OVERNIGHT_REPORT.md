@@ -224,3 +224,73 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
 - **B7, GPU:** a stretch, not reached.
 
 **Decisions:** D-289.
+
+## Decisions made on my own
+
+1. **App work in a worktree on a second dev server.** The Image baseline needed the main dev
+   server untouched for over an hour, so the app work ran in `E:\Intelcost\wt-app`, served on
+   5175. Commits were built from each step's exact tree and gated in a throwaway container, then
+   pushed to `umer-dev` as fast-forwards; the main checkout followed. To reach the sheet bucket
+   from 5175 (its CORS lists 5173 only), the measuring harness fetched the bucket's files itself.
+   The app was not changed for this.
+2. **A suffix variant's tag.** A variant is the base tag plus "/", "-" or "." and a qualifier.
+   "CL" is another type, not a variant.
+3. **The variant bar, 75% of the sample's outline**, from E101's measured C/NL (0.81). It applies
+   only when the printed tag is the base tag's variant.
+4. **Where a variant's item goes** when "Add to the selected count item" is on: the largest group
+   goes into that item, and every other tag becomes a new item in that item's folder. Each item is
+   its own undo step ("Ctrl+Z undoes one item at a time").
+5. **The TYP. trigger.** The sample's tag on only one instance of the shape (shape ≥ 0.7), or
+   "TYP", "TYP." or "TYPICAL" within four symbol sizes of a tagged instance.
+6. **The index lives in the browser** (IndexedDB, newest 60 sheets), not on the server: the matcher
+   must read the browser's own pdf.js walk (D-189 Q1). "When the sheet is uploaded" is met at its
+   first opening, since uploads are processed on the server.
+7. **Steps checked together** where one step cannot change matching (B1, B2) or is an exact rewrite
+   (B8a and B8b; B3 with B8c). Each step still has its own commit and gate.
+8. **Image Threads unchanged.** The brief's B4 says "same pool size rule", and Q24 keeps Threads on
+   Auto, so the six-worker cap stays (see the open questions).
+
+## Open questions for you
+
+1. **Image speed against the identical-results rule.** About 40 s on your desktop for the office test
+   is what exact changes reached; 10 to 15 s needs one of these:
+   - (a) the as-drawn pass only by default, with the other angles on request (most matches come
+     from it, you noted);
+   - (b) the other angles searched only where the first pass found nothing nearby;
+   - (c) more workers (below).
+   Each breaks "identical" on some sheet. Which do you accept?
+2. **Image workers.** B4 sends each page once, split across the workers, so more workers no longer
+   cost memory per worker. May the automatic pool use the cores less one above the current cap of
+   six (legacy's Threads went to 16)? It would help most on machines with more than eight cores.
+3. **E200 Image.** It is too slow on the bench to check (over 80 minutes a run before tonight's
+   changes). Can you run E200 A on your desktop once, with Timing open, so its results are on record?
+4. **The refusal wording on Essentials** still says "Your role cannot …" for a plan limit (the api's
+   message, unchanged by the brief). Change it to the plan wording?
+
+## F16_SPEC
+
+- Updated for D-287 1 (Essentials views Estimating and the saved wage rates). Nothing else in it
+  disagrees with tonight's work.
+
+## How to test Image mode on your desktop
+
+1. Pull `umer-dev` in `intelcost-app-react` (or open the deployed bench), open Hidden Valley Spec
+   Building Rebid, sheet E101.
+2. Select (the arrow), drag a box tightly round one office fixture (detail A8), choose
+   **Auto Count**, then set **Mode: Image** in the panel. Leave the sensitivity at 70 for the same
+   numbers as here.
+3. Note:
+   - when the first checkmarks appear (the as-drawn pass, with "Pass 2 of 4 — results below are
+     live");
+   - when "Still scanning other angles… n added" ends and the scan finishes.
+4. Open **Timing** under the panel's results. It shows the total, first results, each stage, the
+   passes (run and skipped, and why), the sizes, the workers and the scorer (JavaScript today).
+   Expected: 68 checked, about 40 s total and about 12 s to first results, if the bench's six-to-one
+   ratio holds on your machine.
+5. Nothing is written to the project until Create; Esc closes the panel and leaves it as it was.
+
+## Left behind
+
+- No stash in any repo.
+- Throwaway data (the `fx.*` accounts, their workspaces and the check items), the harness scripts
+  and the worktrees are removed at the end; see the cleanup line below.
