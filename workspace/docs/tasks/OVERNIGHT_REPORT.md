@@ -9,7 +9,14 @@ commit `6049564`).
 | A1 Founder decisions | done (D-287) |
 | A2 Essentials read-only Estimating and Wage Calculator | done |
 | A3 Auto Count tag variants, TYP., vector index | done (D-288) |
-| B1 to B8 Image-mode speed | B1, B2 and two B8 changes built in the worktree, under check |
+| B1 Timing line | done |
+| B2 First pass at once | done (with a fix: "n added" counts checked matches) |
+| B3 Skip passes that cannot add | done (no test sample is symmetric; Image has no mirror pass) |
+| B4 Keep image workers alive | done |
+| B5 WebAssembly SIMD scorer | not done (see Part B) |
+| B6 OpenCV shortlist | not done (see Part B) |
+| B7 GPU scorer | not done (stretch) |
+| B8 Other safe levers | three done: pixel positions, refinement cache, largest size near the others |
 
 ## How the work was run
 
@@ -138,3 +145,82 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
     in 2 items — C (24), C/NL (2)".
 
 **Commits:** app `23f529b` (gated: lint, typecheck, build).
+
+## Part B. Image-mode speed
+
+**The results contract.** The Image results of the four tests were saved at the start of the run
+(Part A does not touch Image mode's scan or result path).
+
+- **E101:** office and "C" saved. Office 550 s, 68 / 0. "C" 600 s, 24 / 0, the two C/NL missed.
+- **E200:** nothing saved. A single E200 Image run passed 80 minutes on the bench and was stopped
+  at the run's 100-minute limit, so E200 has no saved results.
+- **Check after every step:** both E101 tests compared, every kept candidate (checked or not) at
+  the same place within 1 px, with the same score within 0.001 and the same checked state. Every
+  step: **identical**, 68 and 70 candidates. The quantity table (Auto Count rows) passed after
+  the steps.
+- **Steps checked together:** B1, B2, B8a and B8b were checked together (B1 and B2 change no
+  matching code; B8a and B8b are exact rewrites). B3 and B8c were checked together, then B4
+  alone. B3 skipped no pass on any sample, so its tree runs the same passes as before.
+
+**Built.**
+
+| Step | What | App commit |
+|---|---|---|
+| B1 | Timing line (collapsed): total, first results, page render, ink, shortlist, fine scoring, result step, passes run and skipped with the reason, sizes, workers, scorer. Each card's tooltip already named its angle and mirroring | `e04afd7` |
+| B2 | The sample as drawn (0°) first over the whole page, its matches shown checked at once (as before), then "Still scanning other angles… n added" | `be53fc5`, fix `8cc577e` |
+| B8a | The scorer's template pixel positions worked out once per template (same arithmetic) | `2782068` |
+| B8b | Each refinement window scored once per call | `7fe07ad` |
+| B3 | An angle pass whose turned template equals one already searched pixel for pixel is skipped | `1cc5b85` |
+| B8c | With the 2-of-3 sizes rule, the largest size is searched only near the other sizes' matches | `e63c7e9` |
+| B4 | One worker pool for the scan (same pool size rule); each band sent once per sheet (transferred) and its integral built once | `ee2d471` |
+
+- **The B2 fix:** the first version of "n added" counted every kept candidate, so in the browser it
+  said "25 added" while the checked matches stayed 24. It now counts checked matches.
+- **Gates:** every commit's own tree was gated (lint, typecheck, build).
+
+**Bench times** (headless Chromium in a container, no GPU, run alone; read them relative):
+
+| Test | Before: first results / finish | After: first results / finish |
+|---|---|---|
+| E101 office | 152 s / 550 s | **76 s / 248 s** |
+| E101 "C" | 144 s / 600 s | **67 s / 245 s** |
+| E200 A | not measured (over 80 min) | see the E200 note below |
+| E200 A1 | not measured | see the E200 note below |
+
+- **Where the time goes now** (office, from the Timing line): page render 2.8 s, ink 1.2 s,
+  shortlist 30.5 s, fine scoring 204.3 s, result step 0.1 s.
+- **Against your target:** the bench ran about 6 times slower than your desktop on this test (528 s
+  against 88 s), so 248 s here suggests about 40 s on your desktop, with the first checked results
+  after about 12 s. **The 10 to 15 s target is not met.** What stands between is fine scoring under
+  the identical-results rule, which forbids dropping the later passes. Your observation that they
+  rarely add matches is right on these tests, but "rarely" is not "never".
+- **In the host browser** (Chrome on this Windows machine, with other runs going), the "C" sample
+  after B2: first checked results at 120 s, done at 449 s. That was before B8c and B4.
+
+**Passes run and skipped, per sample (B3).**
+
+| Sample | Before | After |
+|---|---|---|
+| E101 office, E101 "C", E200 A, E200 A1 | 4 angle passes (0°, 90°, 180°, 270°), 3 sizes | the same: none symmetric pixel for pixel (each crop carries a letter or nearby ink) |
+
+- **B3b (the text rule):** Image mode has no mirror pass at all (passes are angles only), so it has
+  nothing to skip. No result changed under B3b, because nothing ran differently.
+- **Vector** keeps searching mirrored strokes with the letters never mirrored (D-288 3).
+
+**Which scorer ran:** JavaScript on every run. No WebAssembly or GPU scorer exists yet.
+
+**Not done:**
+- **B5, WebAssembly SIMD:**
+  - No toolchain on the bench (no clang, rustc, wat2wasm or emcc), so it would mean hand-written
+    WAT assembled with a package fetched for the purpose.
+  - The brief turns it on by default only after an identical check on all four tests, which E200's
+    run time rules out here.
+  - Also, the hot loop gathers page pixels at scattered addresses and sums in order, which SIMD
+    lanes do not speed up without reordering the sum.
+- **B6, OpenCV shortlist:**
+  - Not brought across. It needs `@techstark/opencv-js` (13 MB) added to the app and its image.
+  - The zero-dropped proof is required on every test, and E200 cannot be run.
+  - Legacy itself ships this path switched off (`AUTO_COUNT_OPENCV_COARSE = false`).
+- **B7, GPU:** a stretch, not reached.
+
+**Decisions:** D-289.

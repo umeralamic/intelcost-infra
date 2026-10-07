@@ -10883,3 +10883,53 @@ kept only when no test lost accuracy, measured on throwaway copies of E101 and E
 **Where:** app `lib/takeoff/autoCount/{vectorMatch,resultPipeline,valleyCut}.ts`,
 `features/takeoff/autoCount/{scan.ts,readSymbols.ts,symbolIndex.ts,symbolIndex.worker.ts,symbolPack.ts,walkSymbols.ts,AutoCountPanel.tsx}`,
 `features/takeoff/pdf/pdfjs.ts`, `pages/ProjectTakeoff.tsx`.
+
+## D-289: Auto Count Image mode speed: the Timing line, pass order, exact skips, one worker pool, a faster exact scorer
+
+**Status:** decided in the overnight run of 2026-10-07 (the founder's brief, Part B). The results
+contract held at every step: each kept candidate, checked or not, at the same place (within 1 px)
+with the same score (within 0.001), checked on the two E101 tests. E200 could not be checked: a
+single Image run there passed 80 minutes on the bench, so it has no saved results. Every change
+below is exact by construction, not by tolerance, so E200's results cannot move either.
+
+1. **Timing line (B1).** Collapsed under Image mode's results: the total and the time to the first
+   results, page render, ink conversion, shortlist, fine scoring and the result step, the passes
+   run and skipped with the reason, the sizes, the workers and the scorer. Each card's tooltip
+   already named its angle and whether it was found mirrored.
+2. **Pass order (B2).** The sample as drawn (0°, not mirrored) is searched first over the whole
+   page, and its matches go through the result step and show checked at once. The other angles
+   follow in the background, and the panel says "Still scanning other angles… n added", counting
+   the checked matches they add. The final results are the full scan's.
+3. **Exact skips (B3).**
+   - An angle pass is skipped only when its turned template, both the fine one and the shortlist
+     one, equals one already searched pixel for pixel ("symmetric: the same as 0°"). A nearly
+     symmetric sample keeps every pass.
+   - None of the four test samples is symmetric (each crop carries a letter or nearby ink), so
+     all four still run four passes.
+   - Image mode has no mirror pass at all, so the text rule (D-287 5) has nothing to skip there.
+     The founder's observation that later passes rarely add a match is not acted on: skipping a
+     pass that can add one would break the results contract.
+4. **One worker pool (B4).** One pool of image workers, cores less one and at most six as before,
+   kept between scans and ended by Stop. Each page is split into the same row bands as before,
+   band k always to worker k mod size. A band is sent once per sheet (transferred, with the halo
+   the tallest template of any pass needs), and its ink integral is built there once. The app is
+   not cross-origin isolated, so there is no SharedArrayBuffer.
+5. **A faster scorer, same arithmetic (B8).**
+   - Each template pixel's column and row are kept with the template, so the hot loop no longer
+     divides per pixel per offset.
+   - The fine pass's refinement scores each window once per call; nearby hits' neighbourhoods
+     used to score it again.
+   - With the 2-of-3 sizes rule, the largest size is searched only where its window could end
+     within a quarter of its long side, plus the fine stride, of a smaller size's match. A
+     largest-size match anywhere else had no peer, and was the only peer it could give.
+6. **Scorer order.** JavaScript is the only scorer built. The intended order, GPU, then
+   WebAssembly SIMD, then JavaScript, waits on the two not built:
+   - **B5, WebAssembly SIMD:** no toolchain on the bench, and the brief turns it on by default
+     only after an identical check on all four tests, which E200's run time rules out here.
+   - **B7, GPU:** a stretch, not reached.
+   - **B6, OpenCV shortlist:** not brought across. Legacy ships its own OpenCV coarse path off
+     (`AUTO_COUNT_OPENCV_COARSE = false`), and keeping it needs a 13 MB dependency plus the
+     zero-dropped proof on every test, which E200's run time rules out here.
+
+**Where:** app `features/takeoff/autoCount/{imageScan.ts,imageMatch.worker.ts,AutoCountPanel.tsx,TimingLine.tsx,scan.ts}`,
+`lib/takeoff/autoCount/imageMatch.ts`.

@@ -306,3 +306,4 @@ Each is gated, quantity-tabled and smoke-tested.
 - [x] Block D (D-193)
 - [x] Block F (D-193)
 - [x] Block E (D-194): Image mode; measured 126 s to the first pass and 454 s a page on E102 (4 angles × 3 scales); the speed target is not met yet
+- [x] Overnight 2026-10-07 (D-288, D-289): tag suffix variants as their own items and the TYP. rule (Vector); a background sheet index (Vector); Image mode's Timing line, first pass shown at once with "n added", exact symmetric-pass skip, one worker pool, and a faster exact scorer. Image speed on the bench and the founder's desktop test: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md).
