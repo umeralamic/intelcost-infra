@@ -11,7 +11,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after each part. Times are
 | 5. Auto Count accuracy and speed | not started (moved after 6 to 8, see the plan) |
 | 6. Marketing prices from the catalog | done 23:40 |
 | 7. Old arcs refit | done 23:47 |
-| 8. Old-migration lint | in progress |
+| 8. Old-migration lint | done 23:55 |
 | 9. Parity gap report | not started |
 
 ## Part 1. Block F: AI credit top-ups (D-283)
@@ -236,3 +236,26 @@ The bench had one legacy arc (LF 7) besides the throwaway; no inline legacy arcs
 legacy arc from (start, the middle of its stored sweep, end), not the arc's original clicks.
 Using these is what guarantees no quantity moves. The original clicks were never stored; the
 vertices hold 49 samples of the old page-space path.
+
+## Part 8. Old-migration lint
+
+**Done.** Twenty-two older Alembic migrations cleaned with formatting-only changes: import order,
+line wrapping and quote style. One docstring's first line was shortened by a word (the
+migration's description, not an operation).
+
+Ruff now gates the whole api repo again: `ruff check .` and `ruff format --check .`, plus
+`mypy app`. The bench api container now mounts the repo's `pyproject.toml`; it used the copy
+built into the image. That `pyproject.toml` excludes `drives` and `wagecalc-seed`, which are
+mounted from the infra repo and are not api code. The api's STATUS and my memory note carry the
+new gate command.
+
+**Commits:** api `0bc0fd9`, infra `55b392a`.
+
+**Checks:**
+- **Code unchanged:** every changed migration has the same syntax tree as before, with imports
+  compared as a set and the docstring aside: 22 of 22 identical.
+- **Schema unchanged:** `alembic upgrade head` on a fresh throwaway database, before and after,
+  gives identical schema dumps (0 diff lines). The dump also matched the bench's own schema
+  exactly, and the seeded row counts are the same (tier rules, country tiers, AI prices, plans,
+  packs).
+- **Cleanup:** the throwaway databases were dropped.
