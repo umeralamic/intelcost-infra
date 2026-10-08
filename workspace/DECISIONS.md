@@ -9599,9 +9599,15 @@ After 2d72790 the api has no S3 endpoint setting, so the bench's MinIO values we
 - **Bucket permissions, done:** the IAM user now holds `s3:ListBucket` and the object actions.
   Checked 2026-10-05: `/health` ok; put, get, copy, delete and a multipart upload started
   and aborted all worked; a presigned PUT from the host returned 200.
-- **Bucket CORS, open:** the bucket has no CORS rule. A preflight from `http://localhost:5173`
-  answered 403, so browser uploads and presigned reads fail until the bucket allows the
-  bench origins (GET, PUT, HEAD; `ETag` exposed for multipart).
+- **Bucket CORS, resolved (Abdullah, confirmed 2026-10-08):** the bucket answers a preflight
+  from `http://localhost:5173` with GET, PUT, HEAD, `content-type` allowed and `ETag`
+  exposed. Checked in host Chrome on the bench: a new project's PDF uploaded through the app
+  (multipart PUTs straight to S3, completed, pages ready), then opened in takeoff (the fit
+  image and the PDF read on presigned GETs, 200, the sheet drawn). Other origins (5175, the
+  prod profile) are still refused, so a check against `app-prod` reads sheets only from 5173's
+  origin. The overnight harness that fetched bucket files itself for 5175 was never committed,
+  so nothing was left to remove; the marketing capture's `SHOTS_S3_MIRROR` stays, because it
+  stands in for Hidden Valley Spec's objects that are not in this bucket, not for CORS.
 - **SES endpoint, open:** the Mail Manager endpoint in `.env` (`…fips.yxbq.mail-manager-smtp…:587`)
   refuses or drops connections from this network on 25, 465, 587, 2465, 2587 and 443. The
   standard SES SMTP endpoint (`email-smtp.us-east-2.amazonaws.com`) answers on 2587, but
@@ -11033,7 +11039,8 @@ Alembic so it deploys with the app, and switch the engine to it). Answers BUILD_
 
 **Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 1, after
 the investigation found four typed elevations had moved C-200's result by about 15,000 CY with
-no warning). Pending founder review on the allowance in 2.
+no warning). **The allowance in 2 (twice the contour interval on the between test) is approved
+by the founder (overnight brief, 2026-10-08).**
 
 1. **Each surface is checked on its own sheet, by itself, live.** `lib/takeoff/earthwork/
    elevationCheck.ts` (pure, hard rule 2) runs over the open sheet's runs whenever they change,
@@ -11163,3 +11170,54 @@ replacing the investigation's proposed project switch).
 
 **Where:** app `lib/takeoff/earthwork/register.ts` (`linkMatrix`), `features/takeoff/earthwork/
 registration/RegistrationPanel.tsx`, `pages/ProjectTakeoff.tsx`.
+
+## D-298: An assembly's crew is its makeup, priced at the project's rates when applied
+
+**Status:** decided (the founder's overnight brief, 2026-10-08, Step 1.2). Built and checked
+that night.
+
+1. **An assembly stores the crew's makeup only:** for each row its craft (code and name), how
+   many, and the crew it came from (code, name, group). No hourly wage, rate source or
+   classification flag is kept. Production stays on the component (production rate, basis,
+   hours per crew-day), as for any labour component. The api strips a crew to its makeup on
+   every write to a template: Costs…'s add and save, Save as assembly from an item, Copy to
+   mine (`wage_calculator/makeup.py` `makeup`, `assembly/routes.py` `_template_fields`).
+2. **Applied, the crew is priced exactly as a crew added directly** in a labour component
+   (`crewRowsOf`, D-265): each craft row lands with `rate_source` "wage_set" and the project's
+   current rate for its craft, so it follows a later wage set like any such row
+   (`labor.update_following`), Labor burden included. This covers Use on sheet, Link assembly
+   and Seed from… (`_copy_host_components`, the one path from a template onto an item).
+3. **No saved wage set:** a crew added directly cannot be added then (E-01); a row following
+   the saved rates with no rate keeps what it has, which for a makeup row is nothing. So an
+   applied craft row is $0 and follows the rates once they are saved. No other fallback.
+4. **A craft of the other wage table** (the assembly's crafts are commercial, the project is
+   residential, or the reverse; the two tables have different codes, `CC-nn` and `RC-nn`)
+   takes the project's craft of the same name, so it still follows the project's set. A craft
+   with no namesake in the project's table (e.g. "Bricklayer Tender" against residential's
+   "Bricklayer Helper") stays at $0, like a craft the set has no rate for.
+5. **The editor** (an assembly's Costs…, a Labor component) shows "Priced at the project's
+   rates" instead of the wage cells: rows are a craft and a count; Add crew and Add craft pick
+   from the workspace's crew catalog (`GET …/wage-calculator/crew-settings/crews`, `…/craft`)
+   with a Commercial / Residential crafts choice; a new labor component starts with no rows.
+   Labor shows its crew-hours and man-hours and "Labor at the project's rates" in place of a
+   dollar figure, in the dialog and in the Costs list. Template cost components are still
+   copied onto items as before.
+6. **Existing assemblies:** migration `c7d1e9a3b5f2` strips typed wages, rate sources and
+   flags from every assembly crew row and keeps the makeup. A row typed by hand before this
+   (a role with no craft) keeps its role and count, shows "no craft", and lands at $0.
+   **Affected on the bench: 0 assemblies** (3 assemblies, none with a cost component). Legacy's
+   `assembly_template_cost_components` crews are typed rows; F17's migration lands them through
+   this rule.
+
+**Checked** (throwaway workspace, a project with a national-average commercial set for ZIP
+43215): an assembly whose labour component was sent with typed wages ($99 and $11) and mixed
+sources was stored without them; applied to a 12 EA count item (0.5 EA/hr, 2 Electrician +
+1 Laborer), the item's crew took $86.32 and $61.61 from the project's set: Estimating's Total
+Labor Cost **$5,622.00** (24 crew-hours × $234.25). The Electrician rate saved again at
+$91.32 (+$5): the crew followed it, **$5,862.00** (24 × $244.25). The editor added a craft from
+the catalog with "Priced at the project's rates" and no wage cell.
+
+**Where:** api `app/features/wage_calculator/makeup.py`, `app/features/assembly/routes.py`,
+migration `c7d1e9a3b5f2_assembly_crew_makeup.py`; app `features/estimate/{CrewRows,
+ComponentDialog}.tsx`, `features/assembly/TemplateComponents.tsx`,
+`features/wage-calculator/index.ts`, `pages/ProjectTakeoff.tsx`.

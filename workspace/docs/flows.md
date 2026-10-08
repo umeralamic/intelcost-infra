@@ -94,7 +94,8 @@ Project Home renders PDFs to PNGs today and F5 retires it.
    S3 multipart upload, and answers with the part size (at least 8 MiB, sized to fit in
    10,000 parts).
 2. The app asks for presigned part URLs in batches and PUTs the parts straight to S3,
-   retrying a failed part and pausing while offline. 🔧 **S3 CORS** must allow `PUT` from
+   retrying a failed part and pausing while offline. **S3 CORS** (resolved on the bench
+   bucket, D-259, 2026-10-08: GET, PUT, HEAD from `http://localhost:5173`, `ETag` exposed) must allow `PUT` from
    `https://app.intelcost.io`.
 3. The app asks the api to complete. The api lists the parts S3 holds and completes the
    upload itself, so the browser never needs the `ETag` header. It publishes
@@ -348,7 +349,7 @@ Every 🔧 step above, collected:
 | Flow | Step | What to confirm |
 |---|---|---|
 | 1, 6 | SES | Sender identity, DKIM and SPF, SMTP credentials in the api and worker |
-| 2 | S3 CORS | `PUT` from the app origin for multipart parts |
+| 2 | S3 CORS | `PUT` from the app origin for multipart parts. **Bench bucket resolved (D-259, 2026-10-08)**; production origin still to add |
 | 2 | S3 lifecycle | `AbortIncompleteMultipartUpload` |
 | 2 | S3 range reads | `GET` with `Range`, and `Accept-Ranges`, `Content-Range`, `Content-Length` exposed, for pdf.js (F5) |
 | 2 | Split-source worker | Where it runs, and its concurrency (D-14) |
