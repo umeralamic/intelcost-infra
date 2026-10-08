@@ -523,6 +523,8 @@ try {
     const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
     const ed = await import("/src/lib/takeoff/earthwork/edit.ts");
     const rg = await import("/src/lib/takeoff/earthwork/register.ts");
+    const ec = await import("/src/lib/takeoff/earthwork/elevationCheck.ts");
+    const sx = await import("/src/lib/takeoff/earthwork/surfaces.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -750,8 +752,78 @@ try {
         if (c.fillWithin) out.fillWithin = r.fillCY > c.fillWithin[0] && r.fillCY < c.fillWithin[1];
         return out;
       }
+      if (c.kind === "synthsite") return synthSite(c.site);
+      if (c.kind === "elevcheck") {
+        // Parallel contours 30 ft apart on a 1" = 30' page, one elevation each.
+        const runs = c.contours.map((z, i) => ({ item: "c", geometry: `c${i}`, version: 1, kind: "contour", surface: "EG", elevation: z, points: [{ x: (100 + i * 72) / 2448, y: 0.1 }, { x: (100 + i * 72) / 2448, y: 0.9 }] }));
+        const r = ec.checkElevations(runs, { page: { widthPt: 2448, heightPt: 1584 }, feetPerPt: 30 / 72 });
+        return { flags: r.flags.map((f) => `${f.geometry}:${f.reason}`).join("|"), interval: r.interval.EG };
+      }
       return { error: `unknown kind ${c.kind}` };
     });
+
+    /** The synthetic site's Calculate, as useVolumes runs it (D-292 to D-296). */
+    function synthSite(o) {
+      const W = 2448;
+      const H = 1584;
+      const fT = 30 / 72;
+      const fS = 60 / 72;
+      const onC = ([gx, gy], shift = [0, 0]) => [(gx + 125 + shift[0]) / (W * fT), (gy + 125 + shift[1]) / (H * fT)];
+      const onV = ([gx, gy]) => [(-gy + 400) / (W * fS), (gx + 100) / (H * fS)];
+      const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+      const geo = (sheet, uuid, pts, meta) => ({ uuid, sheet_uuid: sheet, vertices_json: pts, shape_meta: meta, geometry_version: 1, role: "add" });
+      const egZ = ([gx]) => 100 + (o.egSlope ?? 0) * gx;
+      const east = o.fgEastX ?? 420;
+      const fgSpots = [[-20, -20], [east, -20], [east, 220], [-20, 220], [Math.min(200, east - 20), 100]].map((g, i) => [`fg${i}`, g, i === 4 && o.fgTypo !== undefined ? o.fgTypo : o.fgZ]);
+      if (o.fgTypo !== undefined) for (const [k, g] of [[160, 100], [240, 100], [200, 60], [200, 140]].entries()) fgSpots.push([`fgn${k}`, g, o.fgZ]);
+      const eg = o.egContours
+        ? Array.from({ length: 11 }, (_, k) => {
+            const x = -50 + 50 * k;
+            const typo = [o.egTypo, o.egTypo2].find((t) => t && t.at === x);
+            return geo("V", `egc${k}`, [onV([x, -60]), onV([x, 100]), onV([x, 260])], { kind: "polyline", surface: "EG", elevation: typo ? typo.z : 100 + 0.02 * x });
+          })
+        : [[-60, -60], [460, -60], [460, 260], [-60, 260], [200, 100]].map((g, i) => geo("V", `eg${i}`, [onV(g)], { kind: "spot", surface: "EG", elevation: egZ(g) }));
+      const items = [
+        { uuid: "eg", type: o.egContours ? "contour" : "spot_elevation", name: "Existing Ground", geometries: eg },
+        { uuid: "fg", type: "spot_elevation", name: "FG Spots", geometries: fgSpots.map(([id, g, z]) => geo("C", id, [onC(g)], { kind: "spot", surface: "FG", elevation: z })) },
+        { uuid: "b", type: "boundary", name: "Work Boundary", geometries: [geo("C", "b0", rect(0, 0, 400, 200).map((g) => onC(g)), { kind: "boundary" })] },
+        { uuid: "pave", type: "sf", name: "Pavement", created_at: "2026-01-01T00:00:01", is_site_feature: true, role_depth_ft: o.pave ?? 1, geometries: [geo("C", "pave0", rect(20, 20, 120, 80).map((g) => onC(g)), null)] },
+        { uuid: "pad", type: "sf", name: "Building Pad", created_at: "2026-01-01T00:00:02", is_site_feature: true, role_depth_ft: o.pad ?? 0.5, geometries: [geo("C", "pad0", rect(200, 50, 350, 150).map((g) => onC(g)), null)] },
+        { uuid: "walk", type: "sf", name: "Sidewalk", created_at: "2026-01-01T00:00:03", is_site_feature: true, role_depth_ft: o.walk ?? 4 / 12, geometries: [geo("C", "walk0", rect(340, 50, 380, 150).map((g) => onC(g)), null)] },
+      ];
+      const strips = [{ uuid: "s1", sheet_uuid: "C", name: "Strip", depth_ft: o.strip ?? 0.5, source: o.stripWhole ? "boundary" : "drawn", feature_uuids: [], vertices_json: o.stripWhole ? null : rect(0, 0, 300, 200).map((g) => onC(g)), created_at: "2026-01-01T00:00:04" }];
+      const a = ((o.linkTurnDeg ?? 0) * Math.PI) / 180;
+      const turn = ([x, y]) => [Math.cos(a) * x - Math.sin(a) * y, Math.sin(a) * x + Math.cos(a) * y];
+      const pairs = [[0, 0], [400, 0], [400, 200]].map((g) => {
+        const [sx, sy] = onV(g);
+        const [tx, ty] = onC(turn(g), o.linkShift ?? [0, 0]);
+        return { source: { x: sx, y: sy }, target: { x: tx, y: ty } };
+      });
+      const scales = { C: { feetPerPt: fT, widthPt: W, heightPt: H }, V: { feetPerPt: fS, widthPt: W, heightPt: H } };
+      const link = rg.linkedEg("C", [{ source: "V", target: "C", pairs, scaleFitted: false, offsetFt: 0, egSource: true }], (u) => sx.sheetRuns(items, u), (u) => scales[u] ?? null, (i) => i, (u) => u);
+      const runs = [...sx.sheetRuns(items, "C"), ...link.runs];
+      const labels = new Map(items.map((i) => [i.uuid, i.name]));
+      for (const [k, v] of link.labels) labels.set(k, v);
+      const features = sf.sheetFeatures(items, "C");
+      const cal = { feetPerNorm: fT, widthPt: W, heightPt: H };
+      const boundary = sx.findBoundaryRun(runs);
+      const r = vol.computeVolumes(
+        { eg: tin.runTinForSurface(runs, "EG", labels, cal), fg: tin.runTinForSurface(runs, "FG", labels, cal), boundary: boundary.points, calibration: cal, units: "CY", withoutStrip: true, roleAreas: sf.roleAreasOf(features), stripAreas: st.stripInputs(strips, "C", boundary.points, features) },
+        runs,
+        labels,
+      );
+      // The elevation check, each sheet on its own (the survey's runs on the survey).
+      const checks = ["V", "C"].map((sheet) => [sheet, ec.checkElevations(sx.sheetRuns(items, sheet), { page: { widthPt: W, heightPt: H }, feetPerPt: scales[sheet].feetPerPt, spotThresholdFt: o.threshold })]);
+      const flags = checks.flatMap(([sheet, k]) => k.flags.map((f) => `${sheet}:${f.surface}:${f.kind}:${f.reason}:${f.neighbors.join(",")}:${f.elevation}`)).join("|");
+      if (r.ok !== true) return { ok: r.ok, message: r.error?.message, flags };
+      const out = { ok: true, cutCY: r.cutCY, fillCY: r.fillCY, stripCY: (r.stripAreas ?? []).reduce((t, s) => t + s.volumeCY, 0), coverage: r.coveredSF / r.boundarySF, flags, intervalEG: checks[0][1].interval.EG };
+      const u = r.uncovered.areaSF;
+      Object.assign(out, { uncoveredSF: u.eg + u.fg + u.both + u.edge, "uncovered:eg": u.eg, "uncovered:fg": u.fg, "uncovered:both": u.both });
+      for (const g of r.regions) for (const k of ["cutCY", "fillCY", "areaSF", "avgEgFt", "avgFgFt", "depthFt", "stripFt"]) out[`region:${g.id ?? "remainder"}:${k}`] = g[k];
+      Object.assign(out, { cut0CY: r.withoutStrip.cutCY, fill0CY: r.withoutStrip.fillCY });
+      for (const g of r.withoutStrip.regions) out[`region0:${g.id ?? "remainder"}:cutCY`] = g.cutCY;
+      return out;
+    }
   }, EARTHWORK_CASES);
 } finally {
   await browser.close();

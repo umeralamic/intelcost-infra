@@ -11028,3 +11028,138 @@ Alembic so it deploys with the app, and switch the engine to it). Answers BUILD_
 `docs/marketing/{FEATURE_INVENTORY,CONTENT_FORMAT,LEADS_SETUP,SCREENSHOT_TODO,MARKETING_REPORT}.md`,
 `src/content/media-manifest.ts`, `src/components/marketing/FeatureMedia.tsx`,
 `scripts/check-links/`, `scripts/launch-guards/`, `scripts/screenshots/`, `src/lib/leads/`.
+
+## D-292: The elevation sanity check
+
+**Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 1, after
+the investigation found four typed elevations had moved C-200's result by about 15,000 CY with
+no warning). Pending founder review on the allowance in 2.
+
+1. **Each surface is checked on its own sheet, by itself, live.** `lib/takeoff/earthwork/
+   elevationCheck.ts` (pure, hard rule 2) runs over the open sheet's runs whenever they change,
+   as contours and spots are entered or edited; Calculate runs it over the open sheet and every
+   sheet it reads EG from. Distances are real feet through the sheet's scale (page points
+   without one).
+2. **Contours.** Each contour is sampled along its length (at most 60 samples); at each sample
+   the nearest contour of another elevation within 150 ft is found on its left and on its
+   right; a side's neighbour is the elevation most samples found. Two different neighbours:
+   the contour must lie between them, give or take twice the surface's usual contour interval
+   ("out of sequence"). One neighbour, or two equal (a ridge, a swale): within twice the
+   interval of it ("far from its neighbours"). The interval is the commonest difference
+   between neighbouring contours, so index contours alone are their own interval.
+   **The allowance (my call):** the founder's wording flags any contour not between its
+   neighbours. On C-200's real proposed contours that flagged 12 correct ones (swales,
+   ridges, contours ending at a 702.75 curb line), so the between test carries the same
+   2 × interval allowance as the second test. A typo of a digit is caught either way (669
+   among 698 and 700 is 29 ft out); a one-foot slip is not.
+3. **Spots.** The spot's four nearest contours and spots of its surface within 100 ft (two at
+   least) give a range; a spot more than the threshold outside it is an outlier. The threshold
+   is 3 ft by default, the project's (`earthwork_review.spot_threshold_ft`), set in the Volumes
+   panel ("Flag spots more than n ft off their neighbours").
+4. **One culprit at a time.** A typo makes its correct neighbours look out of place too, so the
+   worst offender is flagged and set aside from everyone's neighbours, and the check runs
+   again until nothing is left out of place.
+5. **How it shows.** A flagged contour or spot is drawn in the crossing check's blue
+   (`--earthwork-error`); the linked contours drawn over a grading sheet are blue too when
+   flagged on their own sheet. The hover card (Select tool) lists every reason, a crossing and
+   an elevation both when both apply: "Entered 669 — neighbors are 698 and 700",
+   "Entered 600 — nearby grades are 703.79 to 704". The selected blue run shows its reasons
+   under its label. The highlight clears by itself when the value is corrected.
+6. **"This is correct."** The run's right-click menu has "Elevation is correct — clear
+   warning"; the dismissal is kept per project (`earthwork_review.dismissed`, shape uuid → the
+   elevation dismissed) and holds while the elevation is unchanged; "Check this elevation
+   again" undoes it. Two people dismissing at once both land (the row is locked while the
+   dismissals merge); a colleague's sees it live (`earthwork.review.changed`).
+7. **On Calculate** the result keeps the warnings found (`elevationWarnings`: sheet, run,
+   surface, kind, elevation, message, where); the Volumes panel shows "N elevation warnings" at
+   the top, dismissed ones left out, each item framing its run (another sheet opens on the
+   Earthwork tab first). Found in the smoke check: a jump into a sheet just opened was undone
+   by that sheet’s opening fit; `SheetCanvas.zoomToRect` now reports not ready until the
+   opening fit has run, and the caller retries (Find across sheets had the same race). Warnings never block Calculate, and nothing in the review settings
+   enters the version key, so none of it makes a result stale.
+
+**Where:** app `lib/takeoff/earthwork/elevationCheck.ts`, `features/takeoff/earthwork/
+{useEarthwork,EarthworkLayer,EarthworkHover,VolumePanel,useVolumes,useReview,api}.ts(x)`,
+`features/takeoff/earthwork/registration/LinkLayers.tsx`, `features/drawing/realtime.ts`,
+`pages/ProjectTakeoff.tsx`, `tailwind.config.ts` (the earthwork colours as classes); api
+`earthwork/{models,schemas,routes}.py` (`GET`/`PATCH …/earthwork/review`), migration
+`b5e2d8a4c1f9`; infra `browser/lib/earthwork-cases.mjs`, `browser/quantity-table.mjs`.
+
+## D-293: The Volumes panel's breakdown details
+
+**Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 4).
+
+1. Every region the engine returns also carries its covered area, its area-weighted average EG
+   and FG (each sub-triangle's centroid, EG interpolated on the difference TIN's own
+   triangles), its section depth and its area-weighted strip depth. Computed in the same pass
+   as the volumes, over the same sub-triangles; the cut and fill are unchanged.
+2. "Breakdown by region" has a Details toggle: Region, Area, Avg EG, Avg FG, Depth, Strip, Cut,
+   Fill, the Remaining Site last; depths in inches (cm on a metric sheet). A result saved
+   before this shows "Calculate to see the breakdown."
+
+**Where:** app `lib/takeoff/earthwork/volume/{index,types}.ts` (`RegionResult`),
+`features/takeoff/earthwork/{VolumePanel.tsx,api.ts}`.
+
+## D-294: Net says its direction
+
+**Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 3).
+
+Under the Cut, Fill and Net tiles: "1,793 CY more cut than fill", "6,234 CY more fill than cut",
+or "Cut and fill balance" (as measured, before shrink and swell; m³ on a metric sheet). The
+Net tile itself is unchanged.
+
+**Where:** app `features/takeoff/earthwork/VolumePanel.tsx` (`netWords`).
+
+## D-295: "Compare without topsoil strip", a view, not a calculation switch
+
+**Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 5,
+replacing the investigation's proposed project switch).
+
+1. Every Calculate also computes cut and fill to the unstripped existing grade (the engine's
+   `withoutStrip` input: the same pieces split again with no strip shift), kept in the result
+   as `withoutStrip` (totals and per region).
+2. The Volumes panel has a per-project toggle, "Compare without topsoil strip"
+   (`earthwork_review.compare_without_strip`), shown when the sheet strips anything. On, it
+   shows the saved (stripped) and the unstripped cut, fill and net side by side under
+   "Comparison only", and the breakdown's details add each region's unstripped cut and fill
+   in grey. A result saved before this says "Calculate to see the comparison."
+3. It never changes the saved cut and fill, the soil export or import, or the Division 31
+   lines: `linesFor` and the api read `cutCY`/`fillCY` only. Topsoil is never counted twice.
+
+**Where:** app `lib/takeoff/earthwork/volume/{index,types}.ts`, `features/takeoff/earthwork/
+{useVolumes,VolumePanel,useReview}.ts(x)`; api `earthwork_review` (D-292).
+
+## D-296: Where coverage is missing
+
+**Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 6).
+
+1. The engine returns the boundary's uncovered pieces: the boundary less the difference TIN's
+   hull, each piece named by what is missing there: outside the EG TIN ("Existing grade
+   missing"), outside the FG TIN ("Proposed grade missing"), outside both, or inside both but
+   past the last points the two share ("between the surfaces' last points"). Pieces under
+   1 SF are dropped. The coverage ratio is kept on the result.
+2. When coverage is under 100 %, the sheet shades the pieces on the Earthwork tab, hatched in
+   the missing surface's colour (EG red, FG green, both amber, between grey); the Volumes
+   panel shows "Coverage n % of the boundary", each kind's area with its swatch, a "Shade on
+   sheet" toggle (on, per session), and the coverage % beside the partial-coverage warning.
+3. Nothing about the volumes changes: the shaded area is not in cut or fill, as before.
+
+**Where:** app `lib/takeoff/earthwork/volume/{index,types}.ts` (`UncoveredAreas`),
+`features/takeoff/earthwork/{CoverageLayer,VolumePanel,useVolumes}.tsx`,
+`pages/ProjectTakeoff.tsx`.
+
+## D-297: "Show linked EG" on its own toggle; Overlay through the link
+
+**Status:** decided in session, 2026-10-07 (the founder's earthwork build brief, item 7).
+
+1. The Earthwork row has "Show linked EG" beside Linked EG: the linked sheets' existing
+   contours drawn over the grading sheet (dashed, labelled), on or off for this viewer
+   (remembered in the browser), independent of Markups. Off when no sheet is linked.
+2. A sheet linked for its existing grade overlays through the link: the overlay's matrix is
+   the link's fit in page points (`linkMatrix`: scale × the two sheets' feet per point,
+   rotation, translation), so its drawing lies exactly where its EG is read. A new overlay of
+   a linked sheet starts there, and each row of the Linked EG panel has "Overlay this sheet's
+   drawing through the link", which lays it (or puts an existing overlay back) there.
+
+**Where:** app `lib/takeoff/earthwork/register.ts` (`linkMatrix`), `features/takeoff/earthwork/
+registration/RegistrationPanel.tsx`, `pages/ProjectTakeoff.tsx`.

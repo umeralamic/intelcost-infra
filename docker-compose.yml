@@ -263,6 +263,9 @@ services:
       # The config too: it serves pdf.js's decoders (D-99), and a stale copy baked
       # into the image served none.
       - ../intelcost-app-react/vite.config.ts:/app/vite.config.ts
+      # And the Tailwind config: a colour added there (the earthwork tokens, D-292) made no
+      # class from the image's stale copy.
+      - ../intelcost-app-react/tailwind.config.ts:/app/tailwind.config.ts
     ports:
       - "5173:5173"
     depends_on:

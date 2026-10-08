@@ -832,4 +832,106 @@ export const EARTHWORK_CASES = [
   // (the pond, parts of the outer ring), and no pavement or pad subgrade is modelled.
   // In true feet (D-272): was 9185 / 7706 (-35.6 / -11.7 %) triangulated in the page's proportions.
   { id: "regaccept-c200-from-page-3", kind: "regaccept", data: C200, expect: { ok: true, cutCY: 9312, fillCY: 8072, cutVsEngineerPct: -34.7, fillVsEngineerPct: -7.5 } },
+
+  // --- The synthetic site (the founder's investigation, 2026-10-07; D-292 to D-296) ---------
+  // Calculate as the app runs it (useVolumes): the target sheet C at 1" = 30', the existing
+  // grade on a survey sheet V at 1" = 60' turned 90° and read through a three-point link,
+  // Site Features newest-wins, a Strip Area. Ground feet, the boundary 400 × 200 (80,000 SF):
+  //   pavement x 20–120, y 20–80 (6,000 SF), 12"; building pad x 200–350, y 50–150, 6";
+  //   sidewalk x 340–380, y 50–150 (4,000 SF), 4", newer than the pad, so the pad owns
+  //   14,000 SF; a drawn strip x 0–300 (60,000 SF), 6". Remaining site 56,000 SF.
+  //   Stripped: pavement 6,000, pad 10,000, remaining 44,000; unstripped: pad 4,000,
+  //   sidewalk 4,000, remaining 12,000.
+  // Δz = (FG − depth) − (EG − strip). Hand answers in cubic feet / 27.
+  ...synthRows(),
 ];
+
+/** The synthetic site's rows: each worked by hand in its comment. */
+function synthRows() {
+  const cy = (cf) => cf / 27;
+  const rows = [];
+  // CUT: EG 100, FG 98 (Δz −2). Pavement −2.5 × 6,000 = 15,000; pad −2 × 10,000 + −2.5 ×
+  // 4,000 = 30,000; sidewalk −(2 + 1/3) × 4,000 = 28,000/3; remaining −1.5 × 44,000 − 2 ×
+  // 12,000 = 90,000. Strip 0.5 × 60,000 = 30,000. Without strip: pavement 18,000, pad
+  // 35,000, sidewalk 28,000/3, remaining 112,000.
+  const cutTotal = 15000 + 30000 + 28000 / 3 + 90000;
+  rows.push({
+    id: "synth-cut-base",
+    kind: "synthsite",
+    site: { fgZ: 98 },
+    expect: {
+      ok: true, cutCY: cy(cutTotal), fillCY: 0, stripCY: cy(30000), coverage: 1, uncoveredSF: 0,
+      "region:pave:cutCY": cy(15000), "region:pad:cutCY": cy(30000), "region:walk:cutCY": cy(28000 / 3), "region:remainder:cutCY": cy(90000),
+      "region:pad:areaSF": 14000, "region:pad:avgEgFt": 100, "region:pad:avgFgFt": 98, "region:pad:depthFt": 0.5, "region:pad:stripFt": (10000 * 0.5) / 14000,
+      "region:remainder:areaSF": 56000, "region:remainder:stripFt": (44000 * 0.5) / 56000, "region:pave:stripFt": 0.5, "region:walk:stripFt": 0,
+      cut0CY: cy(18000 + 35000 + 28000 / 3 + 112000), fill0CY: 0, "region0:pad:cutCY": cy(35000),
+      flags: "",
+    },
+  });
+  // Each depth 12" deeper moves the cut by its own area / 27, more cut.
+  rows.push({ id: "synth-cut-pavement-plus-12", kind: "synthsite", site: { fgZ: 98, pave: 2 }, expect: { cutCY: cy(cutTotal + 6000), "region:pave:cutCY": cy(21000) } });
+  rows.push({ id: "synth-cut-pad-plus-12", kind: "synthsite", site: { fgZ: 98, pad: 1.5 }, expect: { cutCY: cy(cutTotal + 14000), "region:pad:cutCY": cy(44000) } });
+  rows.push({ id: "synth-cut-sidewalk-plus-12", kind: "synthsite", site: { fgZ: 98, walk: 4 / 12 + 1 }, expect: { cutCY: cy(cutTotal + 4000) } });
+  // The strip 12" deeper over its 60,000 SF: 60,000 / 27 less cut, as much more strip.
+  rows.push({ id: "synth-cut-strip-plus-12", kind: "synthsite", site: { fgZ: 98, strip: 1.5 }, expect: { cutCY: cy(cutTotal - 60000), stripCY: cy(90000), cut0CY: cy(18000 + 35000 + 28000 / 3 + 112000) } });
+  // A whole-boundary strip: the 20,000 SF unstripped before gain 0.5 ft, so 10,000 less cut;
+  // the strip is the boundary's 80,000 × 0.5.
+  rows.push({ id: "synth-cut-whole-boundary-strip", kind: "synthsite", site: { fgZ: 98, stripWhole: true }, expect: { cutCY: cy(cutTotal - 10000), stripCY: cy(40000) } });
+  // FILL: FG 103 (Δz +3). Pavement 2.5 × 6,000 = 15,000; pad 3 × 10,000 + 2.5 × 4,000 =
+  // 40,000; sidewalk (3 − 1/3) × 4,000 = 32,000/3; remaining 3.5 × 44,000 + 3 × 12,000 =
+  // 190,000. Without strip: 12,000 + 35,000 + 32,000/3 + 168,000.
+  const fillTotal = 15000 + 40000 + 32000 / 3 + 190000;
+  rows.push({
+    id: "synth-fill-base",
+    kind: "synthsite",
+    site: { fgZ: 103 },
+    expect: {
+      ok: true, cutCY: 0, fillCY: cy(fillTotal), stripCY: cy(30000),
+      "region:pave:fillCY": cy(15000), "region:pad:fillCY": cy(40000), "region:walk:fillCY": cy(32000 / 3), "region:remainder:fillCY": cy(190000),
+      "region:pad:avgFgFt": 103, cut0CY: 0, fill0CY: cy(12000 + 35000 + 32000 / 3 + 168000),
+    },
+  });
+  rows.push({ id: "synth-fill-pavement-plus-12", kind: "synthsite", site: { fgZ: 103, pave: 2 }, expect: { fillCY: cy(fillTotal - 6000) } });
+  rows.push({ id: "synth-fill-pad-plus-12", kind: "synthsite", site: { fgZ: 103, pad: 1.5 }, expect: { fillCY: cy(fillTotal - 14000) } });
+  rows.push({ id: "synth-fill-sidewalk-plus-12", kind: "synthsite", site: { fgZ: 103, walk: 4 / 12 + 1 }, expect: { fillCY: cy(fillTotal - 4000) } });
+  rows.push({ id: "synth-fill-strip-plus-12", kind: "synthsite", site: { fgZ: 103, strip: 1.5 }, expect: { fillCY: cy(fillTotal + 60000), stripCY: cy(90000) } });
+  // The link's sensitivity: EG a 2 % slope rising east (z = 100 + 0.02 x), FG flat 110, all
+  // fill. Pavement (x̄ 70) 8.1 × 6,000 = 48,600; pad 5.0 × 10,000 + 3.1 × 4,000 = 62,400;
+  // sidewalk (x̄ 360) (2.8 − 1/3) × 4,000; remaining 340,400 + 34,400 = 374,800.
+  const slope = 48600 + 62400 + (2.8 - 1 / 3) * 4000 + 374800;
+  rows.push({ id: "synth-slope-base", kind: "synthsite", site: { fgZ: 110, egSlope: 0.02 }, expect: { ok: true, cutCY: 0, fillCY: cy(slope), "region:pave:avgEgFt": 101.4, "region:pave:avgFgFt": 110 } });
+  // The link's clicks on the grading sheet 1 ft east: the EG lands 1 ft east, 0.02 ft lower
+  // everywhere: 0.02 × 80,000 more fill. 5 ft east, five times that. 5 ft north: along the
+  // contours, no change.
+  rows.push({ id: "synth-slope-link-1ft-east", kind: "synthsite", site: { fgZ: 110, egSlope: 0.02, linkShift: [1, 0] }, expect: { fillCY: cy(slope + 1600) } });
+  rows.push({ id: "synth-slope-link-5ft-east", kind: "synthsite", site: { fgZ: 110, egSlope: 0.02, linkShift: [5, 0] }, expect: { fillCY: cy(slope + 8000) } });
+  rows.push({ id: "synth-slope-link-5ft-north", kind: "synthsite", site: { fgZ: 110, egSlope: 0.02, linkShift: [0, 5] }, expect: { fillCY: cy(slope) } });
+  // Turned 0.5° about the ground's origin: EG at q is 100 + 0.02 (cos θ qx + sin θ qy);
+  // its mean over the boundary rises by 0.02 ((cos θ − 1) 200 + sin θ 100), × 80,000 less fill.
+  const t = (0.5 * Math.PI) / 180;
+  rows.push({ id: "synth-slope-link-turned-half-degree", kind: "synthsite", site: { fgZ: 110, egSlope: 0.02, linkTurnDeg: 0.5 }, expect: { fillCY: cy(slope - 0.02 * ((Math.cos(t) - 1) * 200 + Math.sin(t) * 100) * 80000) } });
+  // Coverage (D-296): the FG spots stop at x 300, so x 300–400 (20,000 SF) has no proposed
+  // grade; the EG covers it. Coverage 75 %.
+  rows.push({ id: "synth-coverage-fg-short", kind: "synthsite", site: { fgZ: 103, fgEastX: 300 }, expect: { coverage: 0.75, "uncovered:fg": 20000, "uncovered:eg": 0, "uncovered:both": 0 } });
+
+  // --- The elevation check on the synthetic site (D-292): deliberate typos ----------------
+  // EG as contours on the survey sheet, every 1 ft (x = −50 … 450 every 50 ft on the 2 %
+  // slope, 99 … 109): clean, nothing flagged, the interval 1.
+  rows.push({ id: "synth-check-clean", kind: "synthsite", site: { fgZ: 110, egContours: true }, expect: { ok: true, flags: "", intervalEG: 1 } });
+  // 104 typed 140 (the x = 200 contour): out of sequence between 103 and 105. Its correct
+  // neighbours are not flagged with it.
+  rows.push({ id: "synth-check-contour-typo", kind: "synthsite", site: { fgZ: 110, egContours: true, egTypo: { at: 200, z: 140 } }, expect: { flags: "V:EG:contour:out_of_sequence:103,105:140" } });
+  // 105 typed 150 and 104 typed 401: both flagged, worst first. With 401 set aside, the
+  // 150 contour’s west neighbour is 103, so it is out of sequence between 103 and 106.
+  rows.push({ id: "synth-check-two-typos", kind: "synthsite", site: { fgZ: 110, egContours: true, egTypo: { at: 250, z: 150 }, egTypo2: { at: 200, z: 401 } }, expect: { flags: "V:EG:contour:out_of_sequence:103,150:401|V:EG:contour:out_of_sequence:103,106:150" } });
+  // A proposed spot 103 typed 10.3 among four at 103 (±40 ft): outside their range by more
+  // than 3 ft.
+  rows.push({ id: "synth-check-spot-typo", kind: "synthsite", site: { fgZ: 103, fgTypo: 10.3 }, expect: { flags: "C:FG:spot_elevation:spot_outlier:103,103:10.3" } });
+  // Within the threshold, not flagged: 101 among 103s (2 ft); with the threshold at 1 ft it is.
+  rows.push({ id: "synth-check-spot-within", kind: "synthsite", site: { fgZ: 103, fgTypo: 101 }, expect: { flags: "" } });
+  rows.push({ id: "synth-check-spot-threshold-1", kind: "synthsite", site: { fgZ: 103, fgTypo: 101, threshold: 1 }, expect: { flags: "C:FG:spot_elevation:spot_outlier:103,103:101" } });
+  // A ridge (100 101 102 101 100) and index contours only (every 5 ft) are not typos.
+  rows.push({ id: "synth-check-ridge", kind: "elevcheck", contours: [100, 101, 102, 101, 100], expect: { flags: "", interval: 1 } });
+  rows.push({ id: "synth-check-index-contours", kind: "elevcheck", contours: [100, 105, 110, 115, 120], expect: { flags: "", interval: 5 } });
+  return rows;
+}
