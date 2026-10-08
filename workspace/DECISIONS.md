@@ -11266,8 +11266,35 @@ night in host Chrome. Supersedes D-189 Q8 (sensitivity remembered per person) an
    halo its windows and refinement read; a crop over 1 M pixels goes as row bands). Each worker
    scores into one reused integral buffer, and returns hits without the scorer's components.
    Render bands are 2 M pixels. A raster slice may now be any rectangle (`RasterView.originX`),
-   and the region gates cover only the call's own part of the grid. Every Image result is the
-   same as before (raw candidates identical on all four tests).
+   and the region gates cover only the call's own part of the grid. The matching is unchanged:
+   the same windows by construction, and the same raw candidate counts and right/wrong on all
+   four tests.
 9. **The Excel export:** an empty number is written as a blank cell, never as empty text, which
    Excel's arithmetic rejected (`#VALUE!` in Total Man Hours on subcontract lines with no labor;
    found by the marketing capture).
+
+## D-300: Auto Count Image speed, Part 2: only exact changes ship
+
+**Status:** decided in the overnight run (the founder's brief, 2026-10-08, Step 5): every speed
+change must give results identical to Part 1's Image results; measured in host Chrome against
+the Part 1 code's own candidates, compared one by one (angle, place, score).
+
+1. **(a) Symmetry on the outline only: built, not shipped.** The outline is the template's ink
+   left once pieces reaching the box's edge without spanning it (wires, leaders) and small pieces
+   (letters) are set aside; a pass whose turned outline repeats a kept one within a pixel is
+   skipped. It skips 180° and 270° on both E200 samples (rectangles) and nothing on E101 (wires
+   and tags). E200 A went from 580 s to 353 s with the same 12 / 0 and the same 19 kept
+   candidates, but one checked fixture came from the 0° pass at 99.6 % instead of the 180° pass at
+   100.0 % (a slightly different place) and one suggestion went 66.7 → 66.6: not identical, so it
+   is kept in the app repo's stash `overnight-part2a-outline-symmetry` for the founder to accept
+   or drop.
+2. **The offset search without allocation: shipped.** The scorer's rigid-offset recall search
+   wrote an object per offset tried (25 or more per window) and a closure per window; it now
+   writes one module scratch and keeps the best as scalars, the same sums in the same order.
+   Identical on all four tests (office 1,195, "C" 82, E200 A 212, E200 A1 80 candidates, each
+   matched); office 164 → 148 s, "C" 75 → 69 s, E200 A 585 → 527 s, E200 A1 1,779 → 1,589 s.
+3. **(b) OpenCV, (c) a WebAssembly fine scorer, (d) a WebGPU scorer: not attempted** (see the
+   overnight report): on E200, 98 % of the time is the fine stage, which (b) does not touch;
+   legacy's own OpenCV arm is off and gates on ground-truth identity, not byte identity, because
+   its correlation is floating point; (c) and (d) mean porting the whole component scorer, not a
+   loop, and could not be proved identical on E200 (a 30-minute run per proof) in what remained.

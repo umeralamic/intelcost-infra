@@ -1,6 +1,6 @@
 # Overnight report, 2026-10-08
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 01:29 UTC. Updated after every step. The
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 01:29 UTC, finished 06:51 UTC. Updated after every step. The
 previous run's plan and report are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-07.md`.
 
 | Step | State |
@@ -13,8 +13,8 @@ previous run's plan and report are archived as `docs/archive/OVERNIGHT_{PLAN,REP
 | 1.4 Delete "EW Typo Check" | done |
 | 2 Marketing screenshots and the earthwork section | done |
 | 3 Auto Count Part 1, accuracy | done (D-299); memory under 500 MB not met (1,215 → ~800 MB) |
-| 4 Auto Count marketing shot, build, Pass 5 | not started |
-| 5 Auto Count Part 2, speed | not started |
+| 4 Auto Count marketing shot, build, Pass 5 | done |
+| 5 Auto Count Part 2, speed | partly: one exact lever shipped (8–11 %); outline symmetry stashed (not identical); b, c, d not attempted |
 
 ## Step 0. Checks
 
@@ -189,8 +189,10 @@ timer stopping the shared worker pool; the row above is the rerun, still on the 
    (8 pixels a byte); each pass's variants go to every worker once (prepared templates cached);
    the shortlist's bands and the fine pass's crops round the shortlist are unpacked and sent one at
    a time per worker, each scored into one reused integral buffer, and hits come back without the
-   scorer's components. Every Image result is identical to before: the raw candidates are the
-   same on all four tests (office 1,195, "C" 82, E200 A 212, E200 A1 80).
+   scorer's components. The Image matching is unchanged: the same number of raw candidates on
+   all four tests (office 1,195, "C" 82, E200 A 212, E200 A1 80) and the same right and wrong
+   counts. (I did not keep the old code's candidates to compare one by one; the windows scored
+   are the same by construction: same bands, edges, halos and regions.)
 8. **Step 3.5 (an OpenCV "looks the same" check in Vector) was not needed**: Vector reaches 12 / 0
    and 6 / 0 at the default (and at every slider value) with steps 2 to 4, so Vector stays pure
    geometry.
@@ -223,7 +225,7 @@ opens, so a person opening Auto Count a few seconds after opening the sheet find
 index read is already inline when nothing is stored (the scan waits on the build in flight,
 never a second one).
 
-Image (6 workers unless stated; identical raw candidates to before on every test):
+Image (6 workers unless stated; the same raw candidate counts as before on every test):
 
 | Test | Before: time, peak | After: time (first results), peak | After 38 % | After 70 % |
 |---|---|---|---|---|
@@ -258,3 +260,100 @@ Professional plan." All passed.
 **Gates:** typecheck, lint, build; the quantity table passed (329 rows) after its Auto Count
 settings row was updated to the new default (70, D-299).
 **Commits:** app `5601343`, infra `5457295`.
+
+## Step 4. The Auto Count marketing shot, the build, Pass 5
+
+Run by the same background agent after Part 1 was committed.
+
+- **auto-count-tag-variants: captured** (`public/images/features/auto-count/auto-count-tag-variants.webp`,
+  the right panel at x 1130–1432 CSS, about 0.39:1). On "Marketing Demo – Office Building"
+  (workspace "F5 Block A demo 15:16", the bid set's own E101), the "C" sample boxed, Auto Count at
+  the default (Vector, 70 %): "2 items, one per tag: C 24 · C/NL 2", Create (26). Create was not
+  clicked; the project still has its 12 items. No drawing text in the crop needed covering; I
+  looked at the image. (The panel's own UI text under Mode says "fast, exact, and scale-invariant":
+  app text in a screenshot, not site copy.)
+- **Production build without `ALLOW_PLACEHOLDERS`: passed** (check-media "all 64 manifest pictures
+  present", next build, check-links: 59 pages, 179 assets, 59 sitemap URLs, no broken internal
+  links), and `npm run check:links` on its own passed; lint and typecheck exit 0.
+- **SCREENSHOT_TODO.md:** no placeholders left.
+- **MARKETING_REPORT.md:** a "Pass 5" section (P5-1 each shot and how; P5-2 demo projects and
+  members; P5-3 the earthwork sections, FAQs and images by page; P5-4 founder projects not
+  modified, with the check: the newest updated_at or computed_at across items, geometry, earthwork
+  results and review, registrations, strip areas, projects and sheets of Bench Construction Test
+  and the founder's projects in the demo workspace, all earlier than the pass's start, checked
+  again after the Auto Count shot). I added a line that the export's `#VALUE!` is fixed in the app.
+- **Commits (marketing):** `b7c0fc5` (the shot, TODO, Pass 5), `f073a04` (the export note).
+
+## Step 5. Auto Count, Part 2: speed (D-300)
+
+**The rule held:** a change ships only if its Image results equal Part 1's, compared candidate by
+candidate (angle, place within a millionth of the page, score within 0.001) on all four tests.
+The reference is the Part 1 code's own run of each test, saved before the change was served.
+
+| Item | State | Result |
+|---|---|---|
+| a. Symmetry on the outline only | **built, not shipped: stash `overnight-part2a-outline-symmetry`** (app repo, `3e46ace`) | Skips 180° and 270° on both E200 samples (rectangles), nothing on E101 (wires and tags make them asymmetric). E200 A: 580 s → **353 s**, same 12 / 0, same 19 kept candidates, but one checked fixture now comes from the 0° pass at 99.6 % instead of the 180° pass at 100.0 % (a slightly different place) and one suggestion moved 66.7 → 66.6. Not identical, so not shipped; your call. |
+| (found on the way) The offset search without an object per offset | **shipped** (`8f2ab56`) | Identical on all four tests (office 1,195 of 1,195, "C" 82 of 82, E200 A 212 of 212, E200 A1 80 of 80). Office 164 → 148 s, "C" 75 → 69 s, E200 A 585 → 527 s, E200 A1 1,779 → 1,589 s. No measurable memory change. |
+| b. OpenCV candidate stage | not attempted | On E200, 98 % of the Image time is the fine stage, which a coarse stage does not touch; on office and "C" the shortlist is 35–55 %. Legacy's own arm (`AUTO_COUNT_OPENCV_COARSE = false` on `UmeralamDEV`, unchanged since Sep 27) replaces only the coarse shortlist with `matchTemplate` on a grayscale page and gates on ground-truth identity, explicitly not byte identity, because DFT correlation is floating point; its 150 DPI cap (486 vs 1,057 MB) applies only with that arm on. Under your identical rule it could only prefilter ahead of our shortlist. opencv.js is not in the app or its image. |
+| c. WebAssembly fine scorer | not attempted | The hot path is the whole component scorer (offset search, features, precision, gates), not one loop; a port plus a 30-minute identical proof per E200 test did not fit what remained. |
+| d. WebGPU scorer | not attempted | Same reason, on top of (c). |
+
+**Where E200's time goes** (a counter probe, not committed, over the first 2.5 minutes of E200 A):
+470k windows; 227k pass the ink checks and enter the scorer; 199k of those leave only after the
+full rigid-offset recall search, 43k at the recall bound; 60 are kept. An exact speed-up for E200
+needs a provable bound that stops those 199k before the offset search; the obvious one (the
+window's own ink caps its coverage) would not catch them, since they pass recall. That is the
+next thing to look at.
+
+## Decisions logged
+
+- **D-259** marked resolved (bucket CORS), with `docs/flows.md`.
+- **D-292** item 2 marked approved by you.
+- **D-298** assembly crews: makeup only, priced at the project's rates.
+- **D-299** Auto Count review (the run's own valley, one drawn size, lettering, slider at 70,
+  suggestions), quick wins, Image memory, the Excel blank cells.
+- **D-300** Part 2: what shipped (the offset search), what did not (outline symmetry, stashed) and
+  why b, c and d were not attempted.
+
+## Commits
+
+| Repo | Commits |
+|---|---|
+| app | `e96e077` (1.1), `106d684` (1.2), `5601343` (Step 3, D-299), `8f2ab56` (Part 2, D-300) |
+| api | `3417c06` (1.2, D-298) |
+| marketing | `28bc931` (shots, pipeline), `99454b5` (earthwork section), `b7c0fc5` (auto-count shot, TODO, Pass 5), `f073a04` (export note) |
+| infra | `bbd29c7`, `0c20081` (workspace mirror), `5457295` (quantity table default 70), and the closing mirror commit |
+
+## Stashes
+
+- App repo: `overnight-part2a-outline-symmetry` (`3e46ace`): the outline-symmetry skip
+  (`lib/takeoff/autoCount/outlineSymmetry.ts` and its use in `imageScan.ts`), finished but not
+  identical (above). Nothing unfinished is stashed.
+
+## Left behind and cleaned up
+
+- **Removed:** the throwaway workspace "Overnight AC 1008" (purged with its storage), its account
+  `fx.overnight.1791423387@bench.intelcost.io` and its one captured mail; the "EW Typo Check"
+  project (purged); the temporary Essentials subscription row (removed straight after the check);
+  the worktree `wt-ac` and branch `ovn-ac`; the harness, its saved candidates and every
+  screenshot under `.playwright-mcp`; the memory samplers (stopped by their stop file); the copied
+  sheet PDFs in the api container's `/tmp`.
+- **Kept on purpose (marketing demo data):** in "F5 Block A demo 15:16", the eight invented
+  dashboard projects, "Marketing Demo – Federal Building", "Marketing Demo – Site", the demo
+  members Dana Mercer and Luis Ortega (`fx.mktdemo.*`), and the Office Building's assignee.
+- **Founder projects:** only read. Their newest change is from 00:53 UTC, before the run began.
+- **Not done or not met:** Image memory under 500 MB on "C" (about 800 MB, from 1,215); E200 A
+  Vector cold under 5 s without a stored index (6.7 s; 3.1 s warm, 3.7–5.1 s cold for A1); the
+  schedule-sample A1 test finds 5 of 6; Part 2 b, c, d.
+
+## Questions for you
+
+1. **Part 2a, outline symmetry:** accept it? It makes the E200 Image tests about 40 % faster with
+   the same counts, but not identical results (one checked fixture's score 100.0 → 99.6). It is
+   in the stash.
+2. **Memory:** is the 500 MB for the tab as Task Manager shows it, or for the scan's own
+   addition? The tab here idles near 300 MB under the dev server, so "C" adds about 500 MB.
+   Bringing it lower means a lighter scorer or fewer workers by default.
+3. **The checked rule's constants** (valley ≥ 70 % of the largest gap, at ≥ 60 %; size within
+   2.6×; at most 5 suggestions) were set from these four tests and the two schedule samples.
+   Worth trying on a few more of your sheets.
