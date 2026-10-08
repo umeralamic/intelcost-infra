@@ -11302,7 +11302,7 @@ the Part 1 code's own candidates, compared one by one (angle, place, score).
 ## D-301: Auto Count speed work ships on the review's results, not identical candidates
 
 **Status:** decided by the founder, 2026-10-08 (morning brief, item 2). Supersedes D-300's
-"identical candidates" rule for every later speed change.
+"identical candidates" rule for every later speed change. Amended by D-305: wrong-type suggestions may differ.
 
 1. **The contract.** A speed change ships when, on all four tests (E101 office, E101 "C", E200 A,
    E200 A1) at 38 % and 70 %, the review gives the same **checked** set, the same **unchecked**
@@ -11335,7 +11335,7 @@ under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101
    pixels cost what it saved (office 155 s, E200 A 571 s, alone); the run-sum version is kept.
 3. **(3c) The offset search in WebAssembly** (`wasm/scorer/scorer.c`, clang in a throwaway
    container, 1.6 KB), the same sums in the same order; JavaScript when it cannot run.
-4. **(1) Symmetry on the outline: not shipped.** Under D-301 it keeps E101 (no pass skipped), E200
+4. **(1) Symmetry on the outline: not shipped** (shipped later, D-305). Under D-301 it keeps E101 (no pass skipped), E200
    A and a synthetic exit sign with an arrow (not treated as symmetric, all 18 found), but on
    E200 A1 it loses two suggestions (hatched panels at 74.1 % and 73.2 %, wrong-type look-alikes)
    that the 270° pass found. In the app stash `morning-item1-outline-symmetry`.
@@ -11372,3 +11372,17 @@ A visit reads memory, then this browser's IndexedDB, then the api's copy, and bu
 none is there. Only an editor (Edit takeoff) stores it; a viewer reads it. E200 A in Vector mode,
 the scan started as the sheet opens: 9.6 s with nothing stored (index built in 4.7 s), 4.9 s on a
 first visit from another browser (the api's copy, 2.6 s), 2.6 s on a returning visit.
+
+## D-305: Outline symmetry ships; the speed contract protects correct fixtures
+
+**Status:** decided by the founder, 2026-10-08 (day session). Amends D-301 and reverses D-302 item 4.
+
+1. **The contract (D-301), amended:** wrong-type suggestions may differ (a look-alike of another
+   type shown, or not, in the suggestions); the checked set must still be the same and no correct
+   fixture may be lost.
+2. **Outline symmetry ships** (app `1112f12`, from the stash `morning-item1-outline-symmetry`): an
+   angle pass whose turned outline repeats a kept pass's is skipped. Measured on the shipped code
+   (one OpenCV worker per scan, 300 peaks), symmetry off against on, at 38 % and 70 %: office,
+   "C" and the synthetic exit sign skip no pass and review the same; E200 A skips 180° and 270°,
+   the same review, 22.3 → 13.5 s; E200 A1 skips 180° and 270°, 6 / 0 both ways, and two hatched
+   "A" panels (74.1 %, 73.2 %, wrong type for an A1 search) are no longer suggested, 49.7 → 27.6 s.

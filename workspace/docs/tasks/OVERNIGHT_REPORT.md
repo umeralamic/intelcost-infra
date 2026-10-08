@@ -3,6 +3,38 @@
 Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 01:29 UTC, finished 06:51 UTC. Updated after every step. The
 previous run's plan and report are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-07.md`.
 
+## Day session, 2026-10-08 16:16 to 17:15 UTC
+
+Same rules; throwaway workspace "Day AC 1008" (account `fx.day.1791476259@bench.intelcost.io`),
+E101, E200 and the synthetic exit sign copied as before; host Chrome, the dev server, 6 workers,
+one OpenCV worker per scan, 300 peaks per angle.
+
+**Shipped: outline symmetry (D-305, app `1112f12`).** The stash `morning-item1-outline-symmetry`
+applied cleanly onto this morning's code. Symmetry off against on, at 38 % and 70 %: the same
+checked sets everywhere and no correct fixture lost; office, "C" and the exit sign skip no pass
+and review the same (exit sign 18 / 0); E200 A skips 180° and 270° and reviews the same; E200 A1
+skips 180° and 270°, 6 / 0 both ways, and the two hatched "A" panels (74.1 %, 73.2 %; checked
+against the sheet: both are type A) are no longer suggested, as you accepted. Lint, typecheck and
+the quantity table passed. The stash is dropped (its code is the commit); the night's
+`overnight-part2a-outline-symmetry` is still there and now superseded.
+
+**Image timings with what's shipped** (one OpenCV worker per scan, symmetry on; after one warm-up
+scan in the page):
+
+| Test | Reference this morning | Symmetry off | **Shipped (symmetry on)** | Review |
+|---|---|---|---|---|
+| E101 office | 147 s | 17.6 s | **16.4 s** | 68 / 0 |
+| E101 "C" | 68 s | 19.9 s | **21.2 s** | 24 / 0 (C/NL 2 missed in Image, as before) |
+| E200 A | 536 s | 22.3 s | **13.5 s** | 12 / 0, 4 suggestions at 38 % |
+| E200 A1 | 1,584 s | 49.7 s | **27.6 s** | 6 / 0, 2 suggestions (was 4) |
+
+Office and "C" skip no pass, so symmetry does not change them (the 1–1.5 s differences are
+run-to-run spread). Every scan reloads opencv.js in its one worker (D-303), which is most of why
+office is above this morning's warm 12.7 s.
+
+**Commits:** app `1112f12`; infra: the workspace mirror. **Stashes:** none new.
+**Cleaned up:** the workspace, account and mail, the harness and sheet copies.
+
 ## Morning run, 2026-10-08 08:13 to 12:00 UTC (the founder's follow-up)
 
 Same rules as the night: founder projects read only, mail guard on, no AI credits, only my own
@@ -15,7 +47,7 @@ by box overlap, IoU ≥ 0.5).
 
 | Item | State |
 |---|---|
-| 1 Outline symmetry | **not shipped**: misses the contract on E200 A1 (two suggestions lost); stash `morning-item1-outline-symmetry` |
+| 1 Outline symmetry | not shipped this morning (two E200 A1 suggestions lost); **shipped in the day session** (D-305, `1112f12`) |
 | 2 Results contract | logged (D-301) |
 | 3a OpenCV as the matcher | **shipped** (`47ec917`, D-302; 300 peaks per angle in `b9ee597`) |
 | 3b Early reject in the fine stage | **shipped** (`ea42fee`, D-302), the second version |
