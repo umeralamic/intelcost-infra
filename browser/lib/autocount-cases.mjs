@@ -128,10 +128,11 @@ export const AUTOCOUNT_PIPELINE_CASES = [
   },
   {
     // Legacy's stored minSpacing read as Overlap allowed; a bad vector rotation and a
-    // non-boolean mirror fall back to their defaults; image mode's 8 means 8 angles.
+    // non-boolean mirror fall back to their defaults; image mode's 8 means 8 angles. The
+    // sensitivity default is 70 since D-299 (the panel opens there every run).
     id: "autocount-settings-normalise",
     kind: "settings",
     raw: { minSpacing: 0.3, rotations: 8, vectorRotations: 2, includeMirror: "yes" },
-    expect: { overlapAllowed: 0.3, rotations: 8, vectorRotations: 4, includeMirror: true, sensitivity: 78, angles: 8 },
+    expect: { overlapAllowed: 0.3, rotations: 8, vectorRotations: 4, includeMirror: true, sensitivity: 70, angles: 8 },
   },
 ];
