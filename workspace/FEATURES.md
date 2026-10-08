@@ -71,6 +71,7 @@ _Updated: 2026-10-02_
 | P-14 | Sharing and guest view, Reports, time tracking and shifts, Community | both | |
 | P-16 | Legacy data migration and cutover | infra | Abdullah (D-11) |
 | P-17 | Project map and geocoder: Show Map on the project location, and resolve a US address to city, state, zip and county | both | Deferred out of F4 by D-28. Needs a provider decision (geocoding and map tiles) and a bench fake. Legacy's never returned coordinates |
+| P-23 | Alembic drift: `alembic check` fails on three indexes that migrations create and no model declares, so autogenerate would drop them: `uq_estimate_format_theme_workspace` on `estimate_format_theme` (unique `workspace_id` where `owner_id IS NULL`; migration `a4c8e2f6b1d3`, `4fe7e8a`, 2026-09-29), `uq_project_equipment_resource_name` on `project_equipment_resource` (unique `project_id, lower(regexp_replace(name, '\s+', '', 'g'))`; `b7d3f1a5c9e2`, `94c6277`, 2026-09-29), `ix_takeoff_cost_component_item` on `takeoff_cost_component` (`takeoff_item_id, kind, position`; `f1b6c4d8e2a9`, `19bbdb5`, 2026-09-28) | api | Found 2026-10-08 during F5-LF; not fixed. The fix declares each index in its model's `__table_args__` so the models match the database; no migration needed |
 
 ---
 

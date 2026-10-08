@@ -11317,10 +11317,14 @@ one-page PDFs became ten folders of one "Page 1" each. Now:
 4. **A name that already exists at that level merges**: the sheets go into the existing folder
    (matched trimmed and case-blind, among folders that do not mirror a Project Files folder), and
    two files in one Load given the same name share one folder. No "Electrical (2)".
+   **The merged folder's name:** an existing folder keeps its own name; within a single Load,
+   the first row in the dialog's order wins (the Load sends the rows in that order).
 5. **Sheet names:** loose, a one-page file's sheet is its stem (`S0.00`), a page of a multi-page
    file `<stem> – p.N`. In a folder, "Page N" as before, unless the folder holds or will hold
    sheets of another file (a merge), when the incoming sheets are `<stem> – p.N` so no two read
    "Page 3". Sheets already loaded are never renamed.
+   **Sheets already named "Page N" are not renamed when another file merges into their
+   folder;** the folder then mixes "Page N" and `<stem> – p.N`, and that is accepted.
 6. **The mirrored Project Files chain is unchanged**: loose means loose in the mirror of the
    file's Project Files folder (the root when it has none), without the extra file-named folder.
 7. **A file already in takeoff keeps its place**: new pages go to the folder of its existing

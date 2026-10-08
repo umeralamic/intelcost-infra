@@ -29,8 +29,9 @@ move and rename as before, so no throwaway folder is made and dropped.
 
 ## Check (2026-10-08)
 
-Gates green (ruff, format, mypy; lint, typecheck, build); quantity table passed. `alembic check`
-reports three index differences on estimate and takeoff tables this work did not touch.
+All gates pass except pre-existing alembic drift (three indexes created by F9 migrations and
+declared by no model: `uq_estimate_format_theme_workspace`, `uq_project_equipment_resource_name`,
+`ix_takeoff_cost_component_item`; P-23). Quantity table passed.
 
 Smoke, Playwright MCP, throwaway account: 3 one-page and 3 multi-page PDFs loaded at once →
 S0.00–S0.02 loose at the root; Electrical with a blank name → "Electrical Set" folder; Plumbing
