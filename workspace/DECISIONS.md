@@ -409,27 +409,10 @@ promotion of `umer-dev` to `main`.
 
 ---
 
-## D-12 — Sheet rendering stays as built
+## D-12 — Merged into D-14
 
-**Date:** 2026-09-24
-**Status:** Superseded by D-14
-**Area:** Takeoff, Backend
-
-**Context:** The new stack renders pages server-side. The legacy app renders with
-pdf.js in the browser. Changing now would stall the port.
-
-**Options considered:**
-
-| Option | Pro | Con |
-|--------|-----|-----|
-| A — Keep server rendering as built | No rework now | Features that need PDF vector data have no source for it yet |
-| B — Switch to pdf.js now | Matches legacy | Rework before any feature ships |
-
-**Decision:** Option A. Rendering stays as currently built. Abdullah updates it later.
-
-**Consequences:**
-- Revisit before porting Auto Count, Auto Trace, Find Text, Name from region and
-  vector snap. All of them read PDF vector data through pdf.js in the legacy app.
+**Status:** Merged into D-14 (D-307). It kept server rendering as built; D-14 reversed it
+the same day and now records both.
 
 ---
 
@@ -507,7 +490,9 @@ every api process over Redis pub/sub.
 **Date:** 2026-09-24
 **Status:** Accepted; amended by D-41 (pdf.js reads only a sheet's own one-page PDF, never the set)
 **Area:** Takeoff, Frontend, Backend
-**Supersedes:** D-12
+**Supersedes:** D-12, merged in here (D-307). D-12, earlier the same day, kept server
+rendering as built (Option A below) so as not to stall the port, with a revisit due before
+Auto Count, Auto Trace, Find Text, Name from region and vector snap; this is that revisit.
 
 **Context:** The new stack renders each page to a flat PNG on the server, a Celery
 task driving PyMuPDF, and the browser displays that image. The legacy app renders
@@ -1577,10 +1562,11 @@ work". Cursors are sent and received but **rendered by F7**, as D-33 says, so th
 
 ---
 
-## D-35 — Zoom runs 50% to 4000%, and the sheet is sharp at every level
+## D-35 — Zoom runs 10% to 4000%, 100% is 170 CSS px per inch, and the sheet is sharp at every level
 
-**Date:** 2026-09-26
-**Status:** Accepted (the founder's)
+**Date:** 2026-09-26; D-102 (2026-09-29) merged in (D-307)
+**Status:** Accepted (the founder's); D-102 accepted (the founder's round 5, item 2), its
+choices marked *pending founder review* below
 **Area:** Takeoff, Frontend
 **Builds on:** D-14 (pdf.js in the browser)
 
@@ -1596,17 +1582,40 @@ stretching a bitmap.
 | A — Legacy's 25% to 3000% | Faithful | 25% is too small to be useful on a sheet; 3000% falls short on dense civil sheets |
 | B — 50% to 4000%, sharp throughout | Deeper inspection of small details; no unreadable far-out level | Beyond legacy; the windowed re-raster must hold up at 4000% |
 
-**Decision (the founder's):** Option B. Zoom runs **50% to 4000%**, from one module
-every clamp reads (wheel, Fit, the buttons, Find Text jumps). **The sheet renders sharp
-at every level up to 4000%:** pdf.js re-rasterises the visible window at the new scale
-once the zoom settles; a CSS-scaled bitmap is only ever the interim frame between two
-rasters, never the settled picture. Legacy's step rule is kept: +0.25 below 2×, ×1.25
-above.
+**Decision (the founder's):** Option B, first as 50% to 4000% of the fitted width, then
+re-based by D-102. From one module every clamp reads (`lib/takeoff/pdf/zoom`: wheel, Fit,
+the buttons, Find Text jumps). **The sheet renders sharp at every level up to 4000%:**
+pdf.js re-rasterises the visible window at the new scale once the zoom settles; a
+CSS-scaled bitmap is only ever the interim frame between two rasters, never the settled
+picture.
+
+**The baseline (D-102).** 100% had been "the page's width fits the canvas", so it moved
+with the window and the panels, and Fit read 81% on the founder's second monitor (2560 ×
+1440 at 125%) where zzTakeoff reads 22%. The founder asked for a fixed px-per-inch baseline
+in CSS px, about 4.05 × the old 100%, so the same sheet fits at about 20% there:
+- **100% = 170 CSS px per inch of sheet** (`PX_PER_INCH`, 170 / 72 px per PDF point). On
+  that monitor (a maximised window, about 2048 × 1050 CSS px) a 36 × 24 in sheet fits at
+  34 px per inch across our default panels (1223 CSS px of page), and at 34.2 in the
+  founder's layout, where the height binds and Fit read 81%: 20% either way (4.05 × 42 px per
+  inch is 171). Independent of the device pixel ratio: the bitmap under it still follows the
+  screen's ratio.
+- **Display only.** Every stored coordinate stays normalised to the page and every quantity
+  reads PDF points; nothing measured reads the zoom. Markup sizes keep their look: they
+  taper with the page's width over the canvas's width (the old zoom), not with the new
+  percentage, so a mark or stroke is the size it was at every view.
+- **Range 10% to 4000%.** *Pending founder review:* the floor is lowered to a sheet's fit
+  when its fit is below 10% (a 48 × 36 in sheet in a 1440 × 900 window fits at about 9.6%),
+  so Fit is always inside the range, as the founder asked.
+- **Steps.** *Pending founder review:* one press of zoom in or out is × 1.25 at every zoom
+  (legacy's step above 2×); legacy's + 0.25 below 2× would jump from 20% to 45%.
+- **The 0 key zooms to fit** (*pending founder review*): legacy's 0 reset to its 100%, the
+  fitted width, which is Fit's picture, not the new 100%.
 
 **Consequences:**
-- PARITY §24's zoom lines read 50% to 4000%, beyond legacy.
-- Above legacy's 2.5× windowing threshold only the visible window is rasterised, so a
-  4000% view never allocates a full-page bitmap.
+- PARITY §24's zoom lines read 10% to 4000%, beyond legacy.
+- Windowing stays where it was on screen: once the page is more than 2.5 times the
+  canvas's width only the visible window is rasterised, so a 4000% view never allocates a
+  full-page bitmap.
 - F5-S10 and S11 prove sharpness at 100%, 400%, 2000% and 4000% on a dpr-2 profile.
 
 ---
@@ -1761,46 +1770,10 @@ and answered them.
 
 ---
 
-## D-40 — The browser reads drawings straight from S3, shaped as legacy's reads
+## D-40 — Merged into D-41
 
-**Date:** 2026-09-26
-**Status:** Superseded by D-41 (the founder's test: IDM took the ranged reads too)
-**Area:** Takeoff, Backend, Frontend, Infra
-
-**Context:** The founder's 429 MB set would not open in Choose pages with IDM on. Two
-read paths failed:
-- a presigned link answered with `Content-Disposition: inline; filename=…pdf`, which
-  pdf.js first asked for whole;
-- the api's `…/file/{uuid}/bytes`, 206 `application/octet-stream`.
-
-Legacy, with IDM on, opens the same set. Its request is pdf.js on a Supabase signed URL,
-one GET with no `Range`, answered 200 `application/pdf` with no Content-Disposition, the
-whole file read (`PdfPageRenderer.ts` `loadPdfFromUrl`). Supabase hides `Accept-Ranges`,
-so pdf.js never ranges there.
-
-**Options considered:**
-
-| Option | Pro | Con |
-|--------|-----|-----|
-| A — Exact legacy: one plain GET, whole file | The one shape proven safe with IDM | Downloads the whole set on Choose pages (the 429 MB set once) |
-| B — Legacy's headers, ranged: a presigned S3 link answered `application/pdf` with no Content-Disposition, read by 206 ranges | Reads only what pages need; off the api | Not proven with IDM; needs S3 CORS to expose the range headers |
-| C — B, falling back to A when the first read fails | Always opens | IDM may pop up on the first read before the fallback |
-
-**Decision:** Option B, built first; if the founder's test shows IDM takes it, switch to A.
-No fallback between them. The api's `…/bytes` stays as a manual fallback, for a
-deployment whose bucket cannot answer ranged reads to the browser; the app does not use
-it.
-
-**Consequences:**
-- `GET …/file/{uuid}/read` gives a presigned GET with `ResponseContentType` set
-  (`application/pdf` for a PDF) and no `ResponseContentDisposition`. `…/download`, for
-  saving a copy, keeps its filename.
-- The app reads with only a `Range` header: no token, no header of ours, no credentials.
-- **S3 CORS for production (for Abdullah):** on the drawings bucket, allow the app's
-  origin, methods `GET` and `HEAD`, request header `Range`, and expose `Content-Range`,
-  `Accept-Ranges`, `Content-Length` and `ETag`. The bench's MinIO already does.
-- If A is chosen after the test, the read becomes pdf.js on that same link with ranges
-  off (`disableRange`); the bucket then needs no exposed headers.
+**Status:** Merged into D-41 (D-307). It read drawings from S3 by `application/pdf`
+ranges; the founder's test showed IDM took those too, and D-41 records the attempt.
 
 ---
 
@@ -1809,7 +1782,9 @@ it.
 **Date:** 2026-09-26
 **Status:** Accepted (the founder's); point 4 amended by D-42 (how the canvas reads a sheet's PDF)
 **Area:** Takeoff, Backend, Frontend, Infra
-**Supersedes:** D-40
+**Supersedes:** D-40, merged in here (D-307). D-40 tried a presigned S3 link answered
+`application/pdf` with no Content-Disposition, read by 206 ranges, with `…/bytes` kept as a
+manual fallback; IDM took it, so its routes and range headers are removed below (point 5).
 **Amends:** D-14 (what pdf.js reads), D-36 F5 Q1 (Choose pages' thumbnails)
 
 **Context:** With IDM on, the founder's 429 MB set would not open in Choose pages, by any
@@ -2895,33 +2870,38 @@ come back is added, not merged, since the browser does not yet know the first.
 ## D-70 — No test suites or scripted tests; one smoke test through the Playwright MCP
 
 **Date:** 2026-09-28
-**Status:** Accepted (founder decision)
+**Status:** Accepted (founder decision); D-78 (the founder, click check round 2, 2026-09-28)
+merged in (D-307): the shared quantity table is kept
 **Area:** Process, Bench
-**Supersedes:** D-68 item 4's `./quantity-table.sh` step and its throwaway Playwright script
+**Supersedes:** D-68 item 4's throwaway Playwright script
 
 **Context:** D-68 cut the fixture suite but kept two scripted checks per block: the shared
-quantity table and a throwaway Playwright script. The founder wants those gone too, and
-the session's work checked by hand in a real browser.
+quantity table and a throwaway Playwright script. The founder wants the script gone, and
+the session's work checked by hand in a real browser. The table first went too; the founder
+then kept it (D-78): it compares the api's and the browser's engines against each other and
+against hand-worked answers in seconds, and is how a quantity regression shows at once.
 
 **Decision:**
-1. No test suite or scripted test is run or written: not `pytest`, not
-   `./quantity-table.sh`, not a Playwright script, not the archived fixture suite. This is
-   CLAUDE.md hard rule 8.
-2. After each block: the gates (lint, typecheck, build; ruff, mypy), which are not tests,
-   then one smoke test through the Playwright MCP of the feature developed in the session.
-   It signs in with a throwaway account (never the seeded account), opens the changed
-   screen and drives the new behaviour. The report says in one line what it drove and
-   whether it passed. A failure is fixed before moving on.
-3. `./quantity-table.sh`, `browser/lib/` and the `browser` service stay in the tree,
-   unused, until a later decision removes them.
+1. No test suite or scripted test is run or written: not `pytest`, not a Playwright
+   script, not the archived fixture suite. This is CLAUDE.md hard rule 8. **Not covered:**
+   the shared quantity table (`intelcost-infra/quantity-table.sh`).
+2. After each group or block: the gates (lint, typecheck, build; ruff, mypy), which are not
+   tests; then the shared quantity table, its line reported; then one smoke test through
+   the Playwright MCP of the feature developed in the session. It signs in with a throwaway
+   account (never the seeded account), opens the changed screen and drives the new
+   behaviour. The report says in one line what it drove and whether it passed. A failure
+   or a table mismatch is fixed before moving on.
+3. `browser/lib/` and the `browser` service stay in the tree, unused, until a later decision
+   removes them.
 
 Unchanged from D-68: the fixture archive tag, the running list in
 [docs/tasks/SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md), the full run restored from the
 tag before any deploy to testers or promotion to `main`, and commit and push per block.
 
-**Consequences:** Bid quantities are no longer checked against hand-worked answers between
-blocks. A quantity regression is caught by the smoke test's eye or by the full run before
-a deploy. A session needs the Playwright MCP connected to finish a block.
+**Consequences:** A quantity regression shows in the table between blocks; anything else is
+caught by the smoke test's eye or by the full run before a deploy. A session needs the
+Playwright MCP connected to finish a block. CLAUDE.md hard rule 8 and "Development speed
+mode" say so.
 
 ## D-71 — F7-S22: the session history, as before-and-after rows undone in one transaction
 
@@ -3214,24 +3194,10 @@ live drive say what each control is and does.
 The Takeoff panel is the tree, as legacy's; every field of an item is reached through
 Properties or the ⋮ menu.
 
-## D-78 — The shared quantity table runs after every group (amends D-70)
+## D-78 — Merged into D-70
 
-**Date:** 2026-09-28
-**Status:** Accepted (the founder, click check round 2)
-**Area:** Process
-**Serves:** CLAUDE.md hard rule 8, D-68, D-70
-
-**Context:** D-70 barred every scripted check, and hard rule 8 named `quantity-table.sh`
-among them. The founder wants the table kept: it compares the api's and the browser's
-engines against each other and against hand-worked answers in seconds, and is how a
-quantity regression shows at once.
-
-**Decision:** The shared quantity table (`intelcost-infra/quantity-table.sh`) is not covered
-by the no-scripted-tests rule. It runs after every group or block, after the gates and
-before the Playwright MCP smoke test, and its line is reported. Everything else in D-70
-stands.
-
-**Consequences:** CLAUDE.md hard rule 8 and "Development speed mode" say so.
+**Status:** Merged into D-70 (D-307). The shared quantity table runs after every group or
+block, after the gates and before the smoke test: D-70 items 1 and 2.
 
 ## D-79 — Round 2, group A: no scrollbars, box-drag, deselect, Ortho tolerance, the takeoff settings store
 
@@ -3692,7 +3658,8 @@ that `null` means "follow the design token".
 ## D-93 — F9 Block B: shared equipment, legacy's
 
 **Date:** 2026-09-29
-**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
+**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95); D-94
+(Unallocated rows in their home group) merged in (D-307)
 **Area:** Estimating (Frontend, Backend)
 **Serves:** F9 Block B ("Live legacy since the draft"); D-91
 
@@ -3711,35 +3678,26 @@ equipment.
   allocation are computed in the browser, never stored. Usage reads legacy's order: the
   typed hours, else the host's labour crew-hours, else the formula over `QTY`.
 - The grid: "Shared equipment" in the toolbar opens legacy's dialog; each host's share is
-  added to its equipment; "Expand components" shows "Shared — {machine}" under a host;
-  "Unallocated — {machine}" rows sit in a "Shared equipment — unallocated" group at the
-  foot of the grid and count in its TOTAL. **Differs:** legacy places an Unallocated row
-  in its home division's group; here they are gathered at the foot (pending review).
-  **Superseded by D-94:** they now sit in their home group, as legacy's.
-- **Not yet:** the Sheet pivot's pseudo-sheet, the workbook's shared and unallocated rows,
-  assemblies' pending equipment links. (The first two since built: D-94, `5c05895`.)
+  added to its equipment; "Expand components" shows "Shared — {machine}" under a host.
+- **Unallocated rows in their machine's home group (D-94, legacy's).** First built gathered
+  in one "Shared equipment — unallocated" group at the foot of the grid; live legacy files
+  each under its machine's home division (`unallocLines`, `unallocDivision`,
+  `unallocChain`), and so do we now:
+  - Each machine's unspread cost is a line (`unallocatedLine` in `lib/estimate/lines.ts`)
+    filed under its home classification: the folder that carries it or its nearest
+    ancestor's, else the division by name. Every pivot then groups, filters, totals and
+    exports it like a row: under its classification, its subcontractor, "No custom folder".
+  - The Sheet pivot keeps legacy's pseudo-sheet: a "Shared equipment — unallocated" group
+    at the end.
+  - Money only (Total Equipment and Item Cost); its name opens Shared equipment; no row
+    menu; on the first layer tab and the workbook's first sheet.
+- **Not yet:** assemblies' pending equipment links. (The Sheet pivot's pseudo-sheet and the
+  workbook's shared and unallocated rows are built: above, `5c05895`.)
 
-## D-94 — F9: Unallocated rows in their machine's home group, legacy's
+## D-94 — Merged into D-93
 
-**Date:** 2026-09-29
-**Status:** Accepted; decided overnight; accepted by the founder 2026-09-29 (D-95)
-**Area:** Estimating (Frontend)
-**Serves:** F9 Block B; supersedes D-93's placement of Unallocated rows
-
-**Context:** D-93 gathered every "Unallocated — {machine}" row in one group at the foot of
-the grid, where live legacy files each under its machine's home division
-(`unallocLines`, `unallocDivision`, `unallocChain`) and keeps a group of its own only in
-the Sheet pivot.
-
-**Decision (legacy's):**
-- Each machine's unspread cost is a line (`unallocatedLine` in `lib/estimate/lines.ts`)
-  filed under its home classification: the folder that carries it or its nearest
-  ancestor's, else the division by name. Every pivot then groups, filters, totals and
-  exports it like a row: under its classification, its subcontractor, "No custom folder".
-- The Sheet pivot keeps legacy's pseudo-sheet: a "Shared equipment — unallocated" group
-  at the end.
-- Money only (Total Equipment and Item Cost); its name opens Shared equipment; no row
-  menu; on the first layer tab and the workbook's first sheet.
+**Status:** Merged into D-93 (D-307). Unallocated rows sit in their machine's home group,
+as legacy's.
 
 ## D-95 — The founder's review of the overnight run: F9 answers, pricing gate, D-79 to D-94
 
@@ -4093,40 +4051,10 @@ of what is left is the click's own React render, 80 to 120 ms on the bench.
 
 ---
 
-## D-102 — 100% is 170 CSS px per inch of sheet; zoom runs 10% to 4000% (amends D-35)
+## D-102 — Merged into D-35
 
-**Date:** 2026-09-29
-**Status:** Accepted (the founder's round 5, item 2); the choices marked below are decided,
-pending founder review
-**Area:** Takeoff, Frontend
-**Amends:** D-35 (its 50% to 4000% of the fitted width)
-
-**Context:** 100% was "the page's width fits the canvas", so it moved with the window and
-the panels, and Fit read 81% on the founder's second monitor (2560 × 1440 at 125%) where
-zzTakeoff reads 22%. The founder: set our 100% so the same sheet fits at about 20% there,
-today's 100% × about 4.05, a fixed px-per-inch baseline in CSS px, independent of the
-device pixel ratio; display only; 10% to 4000%.
-
-**Decision:**
-- **100% = 170 CSS px per inch of sheet** (`PX_PER_INCH`, 170 / 72 px per PDF point). On
-  that monitor (a maximised window, about 2048 × 1050 CSS px) a 36 × 24 in sheet fits at
-  34 px per inch across our default panels (1223 CSS px of page), and at 34.2 in the
-  founder's layout, where the height binds and Fit read 81%: 20% either way (4.05 × 42 px per
-  inch is 171). Independent of the device pixel ratio: the bitmap under it still follows the
-  screen's ratio.
-- **Display only.** Every stored coordinate stays normalised to the page and every quantity
-  reads PDF points; nothing measured reads the zoom. Markup sizes keep today's look: they
-  taper with the page's width over the canvas's width (the old zoom), not with the new
-  percentage, so a mark or stroke is the size it was at every view.
-- **Range 10% to 4000%,** from `lib/takeoff/pdf/zoom`. *Pending founder review:* the floor is
-  lowered to a sheet's fit when its fit is below 10% (a 48 × 36 in sheet in a 1440 × 900
-  window fits at about 9.6%), so Fit is always inside the range, as the founder asked.
-- **Steps.** *Pending founder review:* one press of zoom in or out is × 1.25 at every zoom
-  (legacy's step above 2×); legacy's + 0.25 below 2× would jump from 20% to 45%.
-- **The 0 key zooms to fit** (*pending founder review*): legacy's 0 reset to its 100%, the
-  fitted width, which is Fit's picture, not the new 100%.
-- **Windowing** stays where it was on screen: only the visible window is drawn once the
-  page is more than 2.5 times the canvas's width.
+**Status:** Merged into D-35 (D-307). 100% is 170 CSS px per inch of sheet and zoom runs
+10% to 4000%: D-35's "The baseline (D-102)".
 
 ---
 
@@ -4894,27 +4822,10 @@ side-by-side is `docs/tasks/d119-notes-29.png`.
 
 ---
 
-## D-120 — Estimating's table fills its frame; one column takes the slack
+## D-120 — Merged into D-130
 
-**Date:** 2026-09-30
-**Status:** superseded by D-130 (columns keep their widths, the frame hugs the table)
-**Area:** Estimating, Frontend
-**Beyond legacy:** legacy leaves the gap
-
-**Evidence.** The table was set to the exact sum of its visible column widths, but its bordered
-frame stretches to the toolbar's width above it. With the default columns (about 1,795 px) the
-table is the wider of the two and nothing shows. With columns switched off it is narrower, and
-the frame shows an empty band at the right. Live legacy has the same band.
-
-**Decision.** The table is `width: 100%` of its frame with `min-width` at its columns' sum, so it
-still scrolls sideways when the columns do not fit. One column's `<col>` is left auto and takes
-the slack: Assembly when shown, otherwise the last visible column. Every other column keeps the
-width the person set. Dragging the filling column's edge starts from the width it shows, and it
-cannot be dragged narrower than the room it fills. The stored widths, Print and Export are
-unchanged.
-
-**Where:** `intelcost-app-react/src/features/estimate/EstimatingView.tsx` (`fillKey`, the
-`<table>` and `<colgroup>`, the header's resize handle).
+**Status:** Merged into D-130 (D-307). It stretched one column to fill the frame; D-130
+replaced that and records both.
 
 ---
 
@@ -5155,7 +5066,12 @@ the reconciliation). D-117 is resolved and F9b is unblocked.
 **Date:** 2026-09-30
 **Status:** decided
 **Area:** Estimating, Frontend
-**Supersedes:** D-120
+**Supersedes:** D-120, merged in here (D-307)
+
+**Evidence.** The table's bordered frame stretches to the toolbar's width above it, so with
+columns switched off an empty band shows at the right (live legacy has the same band). D-120
+first filled it: the table at `width: 100%` with one column (Assembly, else the last) left
+auto to take the slack.
 
 **Decision.** With most columns hidden, the table no longer stretches a column to fill the
 room. Every column stays at its default width, or the width the person dragged or
@@ -6898,11 +6814,12 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
 
 ---
 
-## D-186 — The Earthwork tab keeps its own Snap, Snap PDF and Ortho, all off to start
+## D-186 — The Earthwork tab keeps its own Snap, Snap PDF and Ortho, all off to start; Ortho, when on, bends Contour and Boundary
 
 **Date:** 2026-10-01
-**Status:** decided (the founder, in session)
-**Area:** Earthwork (F12) tab, the canvas status line; Frontend
+**Status:** decided (the founder, in session); D-187 (the founder, in session, the same day;
+amends D-181) merged in (D-307)
+**Area:** Earthwork (F12) tab, the canvas status line, Contour and Boundary drawing; Frontend
 
 - **On the Earthwork tab, Snap, Snap PDF and Ortho all start off.** Any of them can be
   turned on there, by the status line or by the S, D and O keys, and then works as usual.
@@ -6916,11 +6833,18 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
     Earthwork's under its own `takeoff.pdfSnap.earthwork`. Earthwork's is off until it
     is first turned on there.
 - **Legacy keeps one set for every tab;** this split is the founder's.
-- **Unchanged:** Contour and Boundary still bypass Ortho, as legacy's do (D-181). Earthwork's
-  Ortho applies to the Strip Area outline and to Site Features, which draw with the Area
-  tool.
+- **Ortho, once switched on in Earthwork, applies to every earthwork tool** (D-187): the Strip
+  Area outline and Site Features (the Area tool), and Contour and Boundary, whose points it
+  bends as it does Linear's:
+  - 45° steps from the last placed point, 22.5° with Alt held;
+  - only within the tolerance set in Settings › Snapping (D-79);
+  - with Snap on, a snap point near the cursor still wins over Ortho. Ortho bends the point
+    first, then the snap takes it.
+- **Not legacy's.** Legacy's earthwork tools bypass Ortho; D-181 had copied that, and D-187
+  ended it. Ortho still starts off on the Earthwork tab, so contours are free by default.
 - **Where:** app `pages/ProjectTakeoff.tsx` (`takeoffOrtho` / `earthOrtho`, `takeoffSnap` /
-  `earthSnap`, `pdfSnaps`).
+  `earthSnap`, `pdfSnaps`); the canvas gets the Earthwork tab's Ortho as it is, no longer
+  switched off while an earthwork tool is armed.
 - **Proved:**
   - Takeoff loaded as Ortho on, Snap on, Snap PDF off. Set there to Ortho off and Snap PDF
     on, then Earthwork opened with all three off.
@@ -6929,33 +6853,21 @@ contour item; legacy's reads "Existing Ground · CONTOUR". The Sheets panel's ro
   - With Earthwork's Snap off (Takeoff's on), a contour vertex dragged 3 px from a Linear
     point stayed free. With Earthwork's Snap on, it landed on the point exactly.
   - After a reload, Earthwork was all off and Takeoff's Snap PDF was still on.
+  - Ortho on Contour and Boundary (D-187), on C-200's Earthwork tab, which loaded with all
+    three toggles off:
+    - with Ortho off, a contour kept its 12 px slant;
+    - with Ortho on, a contour went level and kept its length;
+    - with Alt held, the second point sat at exactly 22.5°;
+    - with Snap on as well, a point near the contour's own first point took that point
+      exactly, not Ortho's line;
+    - a Boundary drawn with Ortho on came out with square corners.
 
 ---
 
-## D-187 — On the Earthwork tab, Ortho applies to Contour and Boundary when it is on
+## D-187 — Merged into D-186
 
-**Date:** 2026-10-01
-**Status:** decided (the founder, in session; amends D-186 and D-181)
-**Area:** Earthwork (F12) tab, Contour and Boundary drawing; Frontend
-
-- **Ortho, once switched on in Earthwork, bends Contour and Boundary points as it does
-  Linear's:**
-  - 45° steps from the last placed point, 22.5° with Alt held;
-  - only within the tolerance set in Settings › Snapping (D-79);
-  - with Snap on, a snap point near the cursor still wins over Ortho. Ortho bends the point
-    first, then the snap takes it.
-- **Not legacy's.** Legacy's earthwork tools bypass Ortho; D-181 had copied that, and this
-  decision ends it.
-- **Ortho still starts off on the Earthwork tab (D-186),** so contours are free by default.
-- **Where:** app `pages/ProjectTakeoff.tsx`: the canvas gets the Earthwork tab's Ortho as
-  it is, no longer switched off while an earthwork tool is armed.
-- **Proved:** on C-200's Earthwork tab, which loaded with all three toggles off:
-  - with Ortho off, a contour kept its 12 px slant;
-  - with Ortho on, a contour went level and kept its length;
-  - with Alt held, the second point sat at exactly 22.5°;
-  - with Snap on as well, a point near the contour's own first point took that point
-    exactly, not Ortho's line;
-  - a Boundary drawn with Ortho on came out with square corners.
+**Status:** Merged into D-186 (D-307). On the Earthwork tab, Ortho, when on, bends Contour
+and Boundary points as Linear's.
 
 ---
 
@@ -9046,24 +8958,26 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 
 ---
 
-## D-248 — The power operator ^ and exact π in formulas
+## D-248 — The power operator ^, read as Excel reads it, and exact π in formulas
 
 **Date:** 2026-10-03
-**Status:** decided (the founder's item 2; beyond legacy, whose formulas have no ^); accepted by the founder 2026-10-03, its precedence amended by D-251
-**Area:** F6-S5 formulas (both engines), F9 export; Frontend, Backend
+**Status:** decided (the founder's item 2; beyond legacy, whose formulas have no ^); accepted by the founder 2026-10-03. D-251 (the founder, on accepting D-247 to D-250, the same day) merged in (D-307): ^ reads as Excel reads it
+**Area:** F6-S5 formulas (both engines), F9 export, D-250's popover; Frontend, Backend
 
 - **^ in both engines** (browser `lib/takeoff/subItems/formula.ts`, api
-  `takeoff/formula.py`). The grammar is `factor := ('+'|'-') factor | power` and
-  `power := atom ('^' factor)?`, so:
+  `takeoff/formula.py`, and the shared tree `ast.ts`), **read as Excel reads it** (D-251).
+  The grammar is `factor := sign ('^' sign)*`, `sign := ('+'|'-') sign | atom`, so:
   - ^ binds tighter than * and / (2 × 3^2 = 18);
-  - it is right-associative (2^3^2 = 2^9 = 512);
-  - a leading minus applies after it (-2^2 = -4);
+  - it is left-associative: **2^3^2 = (2^3)^2 = 64**, as Excel;
+  - a leading minus binds tighter than ^: **-2^2 = (-2)^2 = 4**, as Excel;
   - a negative exponent reads (2^-2 = 0.25).
-- **Not quite Excel, said plainly:** Excel computes `=-2^2` as 4 and `=2^3^2` as 64 (its
-  minus binds first, its ^ chains left to right). The founder's figures, -4 and 512, are
-  the app's. So the Excel export writes a power fully bracketed, `-(2^2)` and `2^(3^2)`,
-  and the "formula only when Excel gives the app's figure" rule stays the guard
-  (D-249).
+- **First built otherwise:** right-associative with the minus applied after (2^3^2 = 512,
+  -2^2 = -4, the founder's first figures), the export bracketing every power so Excel agreed.
+  D-251 moved both engines to Excel's reading.
+- **The export writes formulas as typed** (`-2^2`, `2^3^2`): Excel agrees, so D-249's added
+  brackets are gone, and the "formula only when Excel gives the app's figure" rule stays the
+  guard. A bracket the user typed stays (`-(2^2)` = -4 in both). The popover's "With
+  values" line follows the same rule.
 - **Refusals, the same words in both engines:**
   - "A negative number ^ a fraction has no real value": JavaScript would give NaN, Python a
     complex number.
@@ -9088,8 +9002,18 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     `3.1416 * ({Dia} / 2)^2` and `PI * ({Dia} / 2)^2` read 1.15; the trench read "—" with
     "Calculated once drawn"; 2^3^2 read 512.00, -2^2 -4.00; `2**3`, `{Dia}²` and `PARENT^`
     showed the messages above. Cancelled.
-- **Where:** app `lib/takeoff/subItems/formula.ts`; api `takeoff/formula.py`; infra
-  `browser/lib/subitem-cases.mjs`, `browser/quantity-table.mjs`, `drives/quantity-table.py`.
+  - These were the first reading's figures. **After D-251:** gates; the quantity table's
+    sub-item rows (2^3^2 = 64, -2^2 = 4, -(2^2) = -4, 2*3^2 = 18, 2^-2 = 0.25) on both
+    engines, and the export rows writing `-2^2`, `2^3^2`, `-(2^2)` and `2*3^2` as typed,
+    Excel's reading equal to the app's; a smoke in the sub-items editor: -2^2 4.00, 2^3^2
+    64.00, 2*3^2 18.00, -(2^2) -4.00, 2^-2 0.25; cancelled.
+  - **Bench check (D-251):** all 11 sub-items on the bench were re-read with the new api
+    engine in a transaction rolled back, against their stored quantities: 11 the same, 0
+    differ (none uses ^). No cost component or assembly sub-item uses ^.
+- **Where:** app `lib/takeoff/subItems/{formula,ast}.ts`,
+  `lib/estimate/{exportFormulas,quantityExplain}.ts`; api `takeoff/formula.py`; infra
+  `browser/lib/{subitem,excel}-cases.mjs`, `browser/quantity-table.mjs`,
+  `drives/quantity-table.py`.
 
 ---
 
@@ -9216,34 +9140,10 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
 
 ---
 
-## D-251 — ^ reads as Excel reads it (amends D-248)
+## D-251 — Merged into D-248
 
-**Date:** 2026-10-03
-**Status:** decided (the founder, on accepting D-247 to D-250)
-**Area:** F6-S5 formulas (both engines), F9 export, D-250's popover; Frontend, Backend
-
-- **Amends D-248's precedence; the rest of D-248 stands.** Both engines (browser
-  `formula.ts`, api `formula.py`) and the shared tree (`ast.ts`) now read:
-  - `factor := sign ('^' sign)*`, `sign := ('+'|'-') sign | atom`;
-  - a leading minus binds tighter than ^: **-2^2 = (-2)^2 = 4**, as Excel;
-  - ^ is left-associative: **2^3^2 = (2^3)^2 = 64**, as Excel;
-  - unchanged: ^ binds tighter than * and / (2*3^2 = 18), 2^-2 = 0.25, exact π, and every
-    error message.
-- **The export writes formulas as typed** (`-2^2`, `2^3^2`): Excel now agrees, so the added
-  brackets of D-249 are gone. A bracket the user typed stays (`-(2^2)` = -4 in both). The
-  popover's "With values" line follows the same rule.
-- **Bench check:** all 11 sub-items on the bench were re-read with the new api engine in a
-  transaction rolled back, against their stored quantities. 11 the same, 0 differ (none
-  uses ^). No cost component or assembly sub-item uses ^.
-- **Proved:**
-  - gates;
-  - the quantity table: the sub-item rows (2^3^2 = 64, -2^2 = 4, -(2^2) = -4, 2*3^2 = 18,
-    2^-2 = 0.25) on both engines, and the export rows writing `-2^2`, `2^3^2`, `-(2^2)` and
-    `2*3^2` as typed, Excel's reading equal to the app's;
-  - a smoke in the sub-items editor: -2^2 4.00, 2^3^2 64.00, 2*3^2 18.00, -(2^2) -4.00,
-    2^-2 0.25; cancelled.
-- **Where:** app `lib/takeoff/subItems/{formula,ast}.ts`, `lib/estimate/{exportFormulas,quantityExplain}.ts`;
-  api `takeoff/formula.py`; infra `browser/lib/{subitem,excel}-cases.mjs`.
+**Status:** Merged into D-248 (D-307). ^ reads as Excel reads it (-2^2 = 4, 2^3^2 = 64), and
+the export writes formulas as typed.
 
 ## D-252 — Both AI providers at once: a primary and a fallback model per tool, chosen on AI economics (amends D-236 1)
 
@@ -9498,50 +9398,44 @@ on a non-square sheet that grew with the zoom.
 
 ---
 
-## D-256 — Resume joins any item of the project; a Segment item is known by its runs; Select works past the paper
+## D-256 — Resume joins any item of the project; a Segment item is one the Segment tool made; Select works past the paper
 
-**Status:** decided (the founder, in session, 2026-10-04); point 1 is a bug fix, 2 is legacy's rule,
-3 goes beyond legacy's bleed
+**Status:** decided (the founder, in session, 2026-10-04); point 1 is a bug fix, 2 goes beyond
+legacy (D-257, the founder the same day, merged in, D-307: "linear and segment are two
+different tools; linear with two points is still a linear"), 3 goes beyond legacy's bleed
 
 1. **Resume adds to its item, wherever its shapes are.** The run a resumed item takes is matched
    against every item of the project, not only this sheet's: the Takeoff panel lists every item
    (D-54), and an item with no shape on this sheet yet fell through to "Name this measurement".
-2. **A Segment item** is a Linear item whose every run (deducts aside) is two points, open and
-   not a rectangle, ellipse or arc (legacy's `isSegmentVertices`; the item's type stays `lf`).
-   Its row shows the Segment glyph; Resume and Start arm Segment, not Linear; the selection bar's
-   Resume draws more segments rather than adding points to one.
+2. **A Segment item is `takeoff_item.draw_tool = "segment"`, nothing else** (D-257, migration
+   `a6c3e9f1d204`). Segment and Linear both author `lf` items, so the type cannot say.
+   - `draw_tool` is "segment" for an item the Segment tool made, null for every other item.
+     Set on create (the armed draft's first run, the post-draw dialog, and a run with no item
+     in hand), carried by duplicate (every column is copied) and by paste into a new item.
+   - Its row shows the Segment glyph; Resume and Start arm Segment, not Linear; the selection
+     bar's Resume draws more segments rather than adding points to one; the hover panel names
+     it Segment. A Linear run of two points stays Linear everywhere.
+   - First built on legacy's point-count rule (`isSegmentVertices`: every run two points, open,
+     not a rectangle, ellipse or arc); dropped by D-257.
+   - Items drawn before the column stay Linear: nothing on them records the tool.
 3. **Select past the paper.** With Select, the grey margin takes the click, the press and the
    hover as a measure tool's already did (F7-S11), so a markup past the edge is picked, its
    points dragged, moved, hovered and right-clicked as one on the paper. A selection box keeps
    its dragged size (`boxOf(…, false)`), so it encloses markups past the edge; the region box
    and the region menu stay on the paper.
 
-**Where:** app `lib/takeoff/engine/{segment.ts (new),selection.ts}`,
-`features/takeoff/components/{SheetCanvas,ItemRow,ActionGroup,ActionGlyphs}.tsx`,
+**Where:** api `takeoff/{models,schemas,routes}.py`, migration `a6c3e9f1d204`; app
+`lib/takeoff/engine/{segment.ts (new),selection.ts}`, `core/api/types.ts`,
+`features/takeoff/api.ts`,
+`features/takeoff/components/{SheetCanvas,ItemRow,ActionGroup,ActionGlyphs,HoverPanel}.tsx`,
 `pages/ProjectTakeoff.tsx`.
 
 ---
 
-## D-257 — The item records the tool that made it: Segment and Linear are two tools (supersedes D-256 2)
+## D-257 — Merged into D-256
 
-**Status:** decided (the founder, in session, 2026-10-04): "linear and segment are two different
-tools; linear with two points is still a linear"
-
-1. **`takeoff_item.draw_tool`** (migration `a6c3e9f1d204`): "segment" for an item the Segment
-   tool made, null for every other item. Segment and Linear both author `lf` items, so the
-   type cannot say. Set on create (the armed draft's first run, the post-draw dialog, and a
-   run with no item in hand), carried by duplicate (every column is copied) and by paste into a
-   new item.
-2. **A Segment item is `draw_tool = "segment"`, nothing else.** Its row shows the Segment glyph,
-   Resume and Start arm Segment, the selection bar's Resume draws more segments, and the hover
-   panel names it Segment. A Linear run of two points stays Linear everywhere. Legacy's
-   point-count rule (`isSegmentVertices`, which D-256 2 followed) is dropped.
-3. **Existing items stay Linear:** nothing on them records the tool they were drawn with.
-   F17 (legacy migration): legacy stores no tool either, so migrated items arrive null.
-
-**Where:** api `takeoff/{models,schemas,routes}.py`, migration `a6c3e9f1d204`; app
-`lib/takeoff/engine/segment.ts`, `core/api/types.ts`, `features/takeoff/api.ts`,
-`features/takeoff/components/{ItemRow,HoverPanel}.tsx`, `pages/ProjectTakeoff.tsx`.
+**Status:** Merged into D-256 (D-307). The item records the tool that made it
+(`draw_tool`): D-256 point 2.
 
 ## D-258 — The second staging merge in the api, reconciled as D-129: the full app restored
 
@@ -9617,24 +9511,10 @@ After 2d72790 the api has no S3 endpoint setting, so the bench's MinIO values we
 **Where:** infra `docker-compose.yml`, `docker-compose.dev.yml`, `README.md` (84c0c62); api
 `Dockerfile` (d1db8b4).
 
-## D-260 — The Wage Calculator engine's own test suite runs once, after the port (exception to rule 8)
+## D-260 — Merged into D-261
 
-**Status:** decided (the founder, in session, 2026-10-05). **Superseded by D-261 8:** the
-suite is not run.
-
-The Wage Calculator package (api `docs/wage-calculator/`, 4877dc1) ships its engine with a
-pytest suite: `engine/tests/test_wagecalc.py`, twelve wage determination fixtures under
-`engine/tests/fixtures/`, and `engine/run_tests.py`. Hard rule 8 (D-70) bars running it.
-
-1. **One run, after the port.** Once `docs/wage-calculator/engine` is ported into the api,
-   its existing suite runs once, to confirm the port changed no numbers: crew costs, burden,
-   WD parsing.
-2. **Nothing more.** No new tests are written, the suite is not wired into CI, and it is not
-   run again unless the engine is re-ported.
-3. **Everything else follows rule 8.** All other Wage Calculator work is checked with
-   Playwright MCP smoke tests and manual click checks.
-
-**Where:** CLAUDE.md hard rule 8.
+**Status:** Merged into D-261 (D-307). It allowed the Wage Calculator engine's pytest suite
+one run after the port; D-261 point 8 withdrew that the same day.
 
 ## D-261: Wage Calculator ground rules for the port (supersedes D-260)
 
@@ -9661,9 +9541,11 @@ package written against tables, roles and a location rule the new stack does not
    Calculator requires only project type. Without a ZIP it calculates at national average
    with no location adjustment and shows L-08; when a ZIP is added later, P-01 offers to
    recalculate. There is no workspace or user address fallback.
-8. **The package's test suite is reference material only** (`docs/wage-calculator/engine/tests`):
-   not ported, not run, not wired into CI (rule 8). Verification is by throwaway smoke
-   checks and manual click checks. Supersedes D-260.
+8. **The package's test suite is reference material only** (`docs/wage-calculator/engine/tests`:
+   `test_wagecalc.py`, twelve wage determination fixtures, `run_tests.py`): not ported, not
+   run, not wired into CI (rule 8). Verification is by throwaway smoke checks and manual
+   click checks. Supersedes D-260, merged in here (D-307), which had allowed the suite one
+   run after the port to confirm it changed no numbers.
 
 **Where:** api `docs/wage-calculator/` (BUILD_BRIEF.md, README.md, DB_NOTE.md,
 `001_wage_calculator_schema.sql`), `app/wagecalc/`, `app/config.py` (`wagecalc_seed_dir`);
@@ -11302,12 +11184,15 @@ the Part 1 code's own candidates, compared one by one (angle, place, score).
 ## D-301: Auto Count speed work ships on the review's results, not identical candidates
 
 **Status:** decided by the founder, 2026-10-08 (morning brief, item 2). Supersedes D-300's
-"identical candidates" rule for every later speed change. Amended by D-305: wrong-type suggestions may differ.
+"identical candidates" rule for every later speed change. D-305 point 1 (the founder, the same
+day) merged in (D-307): wrong-type suggestions may differ.
 
 1. **The contract.** A speed change ships when, on all four tests (E101 office, E101 "C", E200 A,
    E200 A1) at 38 % and 70 %, the review gives the same **checked** set, the same **unchecked**
    set and the same **suggestions shown** as the code before it, and no correct fixture is missed.
-   Small differences in a score or an exact position are fine.
+   Small differences in a score or an exact position are fine. **Wrong-type suggestions may
+   differ** (D-305): a look-alike of another type shown, or not, in the suggestions; the checked
+   set must still be the same and no correct fixture may be lost.
 2. **How it is checked.** Each set is compared one to one, a candidate matching one in the other
    run when their boxes overlap by at least half (IoU 0.5); the right / wrong / missed tally
    against the sheets' ground truth is reported with it. The reference is the code before the
@@ -11335,10 +11220,17 @@ under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101
    pixels cost what it saved (office 155 s, E200 A 571 s, alone); the run-sum version is kept.
 3. **(3c) The offset search in WebAssembly** (`wasm/scorer/scorer.c`, clang in a throwaway
    container, 1.6 KB), the same sums in the same order; JavaScript when it cannot run.
-4. **(1) Symmetry on the outline: not shipped** (shipped later, D-305). Under D-301 it keeps E101 (no pass skipped), E200
-   A and a synthetic exit sign with an arrow (not treated as symmetric, all 18 found), but on
-   E200 A1 it loses two suggestions (hatched panels at 74.1 % and 73.2 %, wrong-type look-alikes)
-   that the 270° pass found. In the app stash `morning-item1-outline-symmetry`.
+4. **(1) Symmetry on the outline: shipped** (D-305 point 2, the founder's day session, merged in,
+   D-307; first held back here). Under D-301 it keeps E101 (no pass skipped), E200 A and a
+   synthetic exit sign with an arrow (not treated as symmetric, all 18 found), but on E200 A1 it
+   loses two suggestions (hatched panels at 74.1 % and 73.2 %, wrong-type look-alikes) that the
+   270° pass found, so it was kept in the app stash `morning-item1-outline-symmetry`. Once D-301
+   allowed wrong-type suggestions to differ, it shipped (app `1112f12`): an angle pass whose
+   turned outline repeats a kept pass's is skipped. Measured on the shipped code (one OpenCV
+   worker per scan, 300 peaks), symmetry off against on, at 38 % and 70 %: office, "C" and the
+   synthetic exit sign skip no pass and review the same; E200 A skips 180° and 270°, the same
+   review, 22.3 → 13.5 s; E200 A1 skips 180° and 270°, 6 / 0 both ways, the two hatched "A"
+   panels no longer suggested, 49.7 → 27.6 s.
 5. **Measured** (all four tests meet D-301 at 38 % and 70 %; times in the overnight report): the
    three together take office 147 → 12.7 s, "C" 68 → 11.4 s, E200 A 536 → 17.8 s, E200 A1 1,584 →
    45.6 s with 300 peaks per angle and four OpenCV workers kept warm (16.4 / 13.0 / 25.8 / 84.8 s
@@ -11373,16 +11265,66 @@ none is there. Only an editor (Edit takeoff) stores it; a viewer reads it. E200 
 the scan started as the sheet opens: 9.6 s with nothing stored (index built in 4.7 s), 4.9 s on a
 first visit from another browser (the api's copy, 2.6 s), 2.6 s on a returning visit.
 
-## D-305: Outline symmetry ships; the speed contract protects correct fixtures
+## D-305: Merged into D-301 and D-302
 
-**Status:** decided by the founder, 2026-10-08 (day session). Amends D-301 and reverses D-302 item 4.
+**Status:** Merged (D-307). Point 1, wrong-type suggestions may differ, is in D-301's contract;
+point 2, outline symmetry ships, is D-302 item 4.
 
-1. **The contract (D-301), amended:** wrong-type suggestions may differ (a look-alike of another
-   type shown, or not, in the suggestions); the checked set must still be the same and no correct
-   fixture may be lost.
-2. **Outline symmetry ships** (app `1112f12`, from the stash `morning-item1-outline-symmetry`): an
-   angle pass whose turned outline repeats a kept pass's is skipped. Measured on the shipped code
-   (one OpenCV worker per scan, 300 peaks), symmetry off against on, at 38 % and 70 %: office,
-   "C" and the synthetic exit sign skip no pass and review the same; E200 A skips 180° and 270°,
-   the same review, 22.3 → 13.5 s; E200 A1 skips 180° and 270°, 6 / 0 both ways, and two hatched
-   "A" panels (74.1 %, 73.2 %, wrong type for an A1 search) are no longer suggested, 49.7 → 27.6 s.
+## D-306: No legacy data is migrated; F17 is dropped
+
+**Status:** decided by the founder, 2026-10-08.
+
+The new system is a clone built from scratch, so no legacy data is ported: no users, passwords,
+roles, projects, sheets, items, earthwork values, overlays, snapshot types or AI credits. F17
+(legacy data migration and cutover) is dropped from the board. The migration notes it carried
+(bcrypt rehash, custom role maps, D-177's shrink conversion, D-188 Q13, D-241, D-235/D-236's AI
+credits) no longer bind anything.
+
+## D-307: Overlapping decisions are merged; their numbers stay as stubs
+
+**Status:** decided by the founder, 2026-10-08.
+
+Where a decision existed only to amend, supersede or reverse one earlier decision, the two are
+one entry: the survivor states the current rule, with what it first said and when it changed;
+the absorbed number stays as a short stub naming where it went, so every `D-NN` cited in the
+repos, specs, commits and code still resolves. Numbers are never reused or renumbered.
+
+Merged: D-12 into D-14, D-40 into D-41, D-78 into D-70, D-102 into D-35, D-94 into D-93,
+D-120 into D-130, D-187 into D-186, D-251 into D-248, D-257 into D-256, D-260 into D-261, and
+D-305 into D-301 (point 1) and D-302 (point 2).
+
+Not merged: a later decision with its own substance beyond the change (D-50, D-252, D-270,
+D-273, D-275, D-287, D-299, D-300), and the round reviews that touch many decisions at once
+(D-79, D-95, D-96, D-97).
+
+## D-308: A loaded file gets its own folder only when it brings a set
+
+**Status:** decided by the founder, 2026-10-08.
+
+Legacy, and F5 until now, put every loaded file's sheets in a folder named after the file, so ten
+one-page PDFs became ten folders of one "Page 1" each. Now:
+
+1. **The folder is a choice per file on the Choose pages step**, ticked by default when two or
+   more new pages of that file are chosen, unticked when exactly one is. The control shows for
+   every multi-page file either way; its name box opens on the file name and can be changed. A
+   master "Put each set in its own folder" sets every multi-page row at once; a row can then
+   differ. A one-page file has no folder control and no Select all, Clear or "1 of 1 pages" of its
+   own: one-page files share one grid with the grid's own Select all and Clear.
+2. **The request says it** (`LoadFile.folder`): `{name}` puts the file's sheets in that folder,
+   `null` loads them loose, and no `folder` at all (Upload drawing, which has no page step) applies
+   the same default on the server: a folder for two or more pages, loose for one.
+3. **The name is trimmed on the server too**; blank or whitespace falls back to the file's stem.
+4. **A name that already exists at that level merges**: the sheets go into the existing folder
+   (matched trimmed and case-blind, among folders that do not mirror a Project Files folder), and
+   two files in one Load given the same name share one folder. No "Electrical (2)".
+5. **Sheet names:** loose, a one-page file's sheet is its stem (`S0.00`), a page of a multi-page
+   file `<stem> – p.N`. In a folder, "Page N" as before, unless the folder holds or will hold
+   sheets of another file (a merge), when the incoming sheets are `<stem> – p.N` so no two read
+   "Page 3". Sheets already loaded are never renamed.
+6. **The mirrored Project Files chain is unchanged**: loose means loose in the mirror of the
+   file's Project Files folder (the root when it has none), without the extra file-named folder.
+7. **A file already in takeoff keeps its place**: new pages go to the folder of its existing
+   sheets (or loose beside them), whatever the request says, and the step hides the control
+   for it, so one set is never split by a second Load.
+8. **Existing projects are not touched**: no migration; one-page folders already made stay until
+   a person drags the sheets out.
