@@ -23,9 +23,11 @@ by box overlap, IoU ≥ 0.5).
 | 4 Threads Auto by device memory | **shipped** (`59ef78e`, D-303) |
 | 5 Vector index stored | **shipped** (app `b660c2f`, api `f0db060`, D-304) |
 
-**Image, office plan: 147 s → 12.7 s** (your target 10–15 s: met). All four tests meet the
-contract with the three changes together: "C" 68 → 11.4 s, E200 A 536 → 17.8 s, E200 A1 1,584 →
-45.6 s. (The last step, at 11:15, halved OpenCV's peaks per angle; see "300 peaks".)
+**Image, office plan: 147 s → 12.7 s with four OpenCV workers kept warm** (your target 10–15
+s), and all four tests meet the contract: "C" 68 → 11.4 s, E200 A 536 → 17.8 s, E200 A1 1,584 →
+45.6 s. **But those four workers took the tab to 1.8 GB on "C"** (measured at 11:25), so the
+shipped default is one OpenCV worker ended with each scan: **office 18.9 s, "C" 18.2 s, peak
+950 MB**. See "OpenCV memory" and question 4.
 
 ### The reference (`8f2ab56`, the code at the start)
 
@@ -96,6 +98,22 @@ With 25 minutes left, on a rebuilt test bed (workspace "Overnight AC 1008 d"), t
 The default was then checked in the page: 300 per angle, office 12.3 s warm, 68 / 0. Lint,
 typecheck and the quantity table passed.
 
+### OpenCV memory (`3fa8c71`, D-303)
+
+Measured last (renderer private memory every 0.5 s, the E101 copy, "C" sample; the tab idles at
+about 390 MB):
+
+| OpenCV workers | "C" peak | after the scan | "C" time | office time | office peak |
+|---|---|---|---|---|---|
+| 4, kept between scans (as committed at `b9ee597`) | 1,785–1,838 MB | 1,234 MB | 11.4 s warm, 16.3 s fresh page | 12.7 s warm | not measured |
+| 2, ended with the scan | 1,266–1,278 MB | back to ~450 MB | 15.4–17.1 s | 17.3 s | 1,194 MB |
+| **1, ended with the scan (shipped)** | **950 MB** | back to ~450 MB | 18.2–18.5 s | 16.3–18.9 s | 972 MB |
+
+Each worker holds its own opencv.js (10.8 MB of code, its wasm heap, the correlation bands). One
+worker adds about 560 MB at the peak (before OpenCV, D-299: about 430 MB at 6 workers); the
+results do not depend on the worker count (the same raw candidates). Ending the worker costs a
+reload of opencv.js each scan (3–4 s), which is why office is back at about 16–19 s.
+
 ### Item 1: outline symmetry, not shipped
 
 - **E101 office and "C":** no pass is skipped (wires and tags make the outline asymmetric), so the
@@ -150,9 +168,10 @@ mypy passed; the quantity table passed (329 rows).
 
 ### Cleaned up
 
-The throwaway workspaces "Overnight AC 1008 c" and "Overnight AC 1008 d" (purged with their
+The throwaway workspaces "Overnight AC 1008 c", "d" and "e" (purged with their
 storage, including the stored index copies), their accounts `fx.overnight3.1791447309@` and
-`fx.overnight4.1791457652@bench.intelcost.io` and their captured mail; the worktree `wt-am` and its
+`fx.overnight4.1791457652@`, `fx.overnight5.1791458597@bench.intelcost.io` and their captured mail; the
+memory samplers (stopped by their stop file); the worktree `wt-am` and its
 merged branch; the harness, saved runs and copied sheet PDFs. Kept: the app image rebuilt with
 opencv.js (needed), and the `alpine:3.22` image the WebAssembly build script uses. Founder projects
 were not opened; their latest change is from 2026-10-07 22:28 UTC.
@@ -161,7 +180,7 @@ were not opened; their latest change is from 2026-10-07 22:28 UTC.
 
 | Repo | Commits |
 |---|---|
-| app | `ea42fee` (3b), `47ec917` (3a), `288c1a4` (3c), `59ef78e` (4), `b660c2f` (5), `b9ee597` (300 peaks) |
+| app | `ea42fee` (3b), `47ec917` (3a), `288c1a4` (3c), `59ef78e` (4), `b660c2f` (5), `b9ee597` (300 peaks), `3fa8c71` (one OpenCV worker) |
 | api | `f0db060` (5) |
 | infra | the workspace mirror (decisions D-301 to D-304, this report) |
 
@@ -174,8 +193,13 @@ were not opened; their latest change is from 2026-10-07 22:28 UTC.
    differ, and it can go in as it is (E200 A1 60 s instead of 85 s).
 2. **Item 4:** with a third of memory and your per-worker figure, 4 GB keeps 6 workers. Keep it,
    or a smaller share?
-3. **Office at 12.7 s** is inside 10–15 s; E200 A1 is the slow one now (46 s). The first scan on
-   a freshly loaded page adds 3–4 s (opencv.js into four workers). More to try is listed above.
+3. **Office:** 12.7 s with four warm OpenCV workers (1.8 GB), 16–19 s with the shipped one
+   (950 MB). E200 A1 is the slow one now (46 s).
+4. **Memory against speed:** keep one OpenCV worker ended per scan (shipped), or keep it warm
+   between scans (about 3–4 s faster a scan; four warm held about 800 MB over idle after a scan, so one about
+   200 MB, estimated), or
+   use four warm workers only where `navigator.deviceMemory` is 8? A smaller correlation page would
+   cut both; not tried.
 
 ## The night run
 

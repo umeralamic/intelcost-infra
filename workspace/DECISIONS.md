@@ -11320,7 +11320,7 @@ the Part 1 code's own candidates, compared one by one (angle, place, score).
 under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101 and E200.
 
 1. **(3a) OpenCV says where to look; our scorer decides.** For each angle, opencv.js 4.12
-   (`@techstark/opencv-js`, lazy-loaded in its own workers, Image mode only, angles in parallel)
+   (`@techstark/opencv-js`, lazy-loaded in its own worker, Image mode only, ended with the scan; see D-303)
    correlates the coarse template (the 1.00 size) over the coarse page; local peaks of 0.15 or more,
    with legacy's ink guard, the best 300 per angle (600 first; 300 gave the same review, `b9ee597`). The fine scorer then scores only the window
    origins within a coarse pixel of each peak (and the larger sizes' growth) at full resolution,
@@ -11341,7 +11341,9 @@ under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101
    that the 270° pass found. In the app stash `morning-item1-outline-symmetry`.
 5. **Measured** (all four tests meet D-301 at 38 % and 70 %; times in the overnight report): the
    three together take office 147 → 12.7 s, "C" 68 → 11.4 s, E200 A 536 → 17.8 s, E200 A1 1,584 →
-   45.6 s (with 300 peaks per angle; 16.4 / 13.0 / 25.8 / 84.8 s with 600).
+   45.6 s with 300 peaks per angle and four OpenCV workers kept warm (16.4 / 13.0 / 25.8 / 84.8 s
+   with 600). The shipped default is one OpenCV worker ended with each scan (D-303), which costs 3
+   to 4 s a scan: office 18.9 s and "C" 18.2 s on a fresh page.
 
 ## D-303: Threads on Auto stays within a third of the device's memory
 
@@ -11352,6 +11354,12 @@ Auto is legacy's rule (cores less one, at most 6), capped where the browser repo
 `navigator.deviceMemory` (Chrome and Edge, in GB, at most 8) so that 150 MB plus 45 MB a worker
 (D-299's measurement on E101 "C") stays within a third of it. Auto picks 6 on 8 GB, 4 GB and
 2 GB, 4 on 1 GB, and 1 on 0.5 GB or less. The Threads setting, when set, is used as it is.
+
+**The OpenCV worker (D-302) is one, and it ends with the scan** (`3fa8c71`): each holds its own
+opencv.js. On E101 "C" (renderer, idle ~390 MB) four kept between scans peaked at 1.8 GB and held
+1.2 GB after; two ended with the scan 1.27 GB; one 950 MB, back to ~450 MB after. One worker adds
+about 560 MB at the peak (D-299's figure, before OpenCV, was about 430 MB at 6 workers), for 3
+to 4 s more a scan.
 
 ## D-304: A sheet's vector index is stored with the sheet
 
