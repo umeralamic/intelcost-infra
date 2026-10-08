@@ -332,8 +332,10 @@ next thing to look at.
 
 ## Left behind and cleaned up
 
-- **Removed:** the throwaway workspace "Overnight AC 1008" (purged with its storage), its account
-  `fx.overnight.1791423387@bench.intelcost.io` and its one captured mail; the "EW Typo Check"
+- **Removed:** the throwaway workspaces "Overnight AC 1008" and "Overnight AC 1008 b" (the second
+  made after the close-out for the Threads/memory sweep; both purged with their storage), their
+  accounts `fx.overnight.1791423387@` and `fx.overnight2.1791442336@bench.intelcost.io` and their
+  captured mail; the "EW Typo Check"
   project (purged); the temporary Essentials subscription row (removed straight after the check);
   the worktree `wt-ac` and branch `ovn-ac`; the harness, its saved candidates and every
   screenshot under `.playwright-mcp`; the memory samplers (stopped by their stop file); the copied
@@ -344,7 +346,10 @@ next thing to look at.
 - **Founder projects:** only read. Their newest change is from 00:53 UTC, before the run began.
 - **Not done or not met:** Image memory under 500 MB on "C" (about 800 MB, from 1,215); E200 A
   Vector cold under 5 s without a stored index (6.7 s; 3.1 s warm, 3.7–5.1 s cold for A1); the
-  schedule-sample A1 test finds 5 of 6; Part 2 b, c, d.
+  schedule-sample A1 test finds 5 of 6 (the missed panel, bottom left at x 0.253, y 0.462, gets
+  only a smaller turned window, 0.0105 × 0.0304 against 0.0142 × 0.041, scoring 43.7: a window-placement
+  matter in the matcher for that one instance, which a wire crosses; the plan sample finds all six);
+  Part 2 b, c, d.
 
 ## Questions for you
 
@@ -352,8 +357,20 @@ next thing to look at.
    the same counts, but not identical results (one checked fixture's score 100.0 → 99.6). It is
    in the stash.
 2. **Memory:** is the 500 MB for the tab as Task Manager shows it, or for the scan's own
-   addition? The tab here idles near 300 MB under the dev server, so "C" adds about 500 MB.
-   Bringing it lower means a lighter scorer or fewer workers by default.
+   addition? Measured after the run's changes, "C" in Image mode in a fresh page (the tab idles
+   at 255–365 MB under the dev server), the same 82 candidates each time:
+
+   | Threads | Time | Renderer peak |
+   |---|---|---|
+   | 6 (Auto on this machine) | 66 s | 689 MB |
+   | 4 | 81 s | 604 MB |
+   | 3 | 95 s | 598 MB |
+   | 2 | 119 s | 485 MB |
+   | 1 | 191 s | 455 MB |
+
+   About 45 MB per worker on top of about 150 MB for the scan itself. Under 500 MB for the tab
+   means 2 workers here (1.8× the time) or a lighter scorer; which do you want, or is the
+   scan's own addition (about 430 MB at 6 workers) the figure you meant?
 3. **The checked rule's constants** (valley ≥ 70 % of the largest gap, at ≥ 60 %; size within
    2.6×; at most 5 suggestions) were set from these four tests and the two schedule samples.
    Worth trying on a few more of your sheets.
