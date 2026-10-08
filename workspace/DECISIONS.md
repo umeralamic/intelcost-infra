@@ -11221,3 +11221,53 @@ the catalog with "Priced at the project's rates" and no wage cell.
 migration `c7d1e9a3b5f2_assembly_crew_makeup.py`; app `features/estimate/{CrewRows,
 ComponentDialog}.tsx`, `features/assembly/TemplateComponents.tsx`,
 `features/wage-calculator/index.ts`, `pages/ProjectTakeoff.tsx`.
+
+## D-299: Auto Count checks what the scan's own scores set apart; sensitivity only moves suggestions
+
+**Status:** decided (the founder's overnight brief, 2026-10-08, Step 3); built and measured that
+night in host Chrome. Supersedes D-189 Q8 (sensitivity remembered per person) and the
+"checked at or above the slider" rule of D-189 Q10.
+
+1. **The slider opens at 70 % on every run and is never remembered.** Its stored value is read
+   and ignored. 38 % was never a default: it was the value last left on the slider.
+2. **The checked set comes from the run, not the slider** (`lib/takeoff/autoCount/review.ts`).
+   Among the matches that can be checked, sorted by score, the gaps between neighbours at or
+   above 60 % are measured; the valley is the first gap from the top that is at least 70 % of the
+   largest, and everything above it is checked. Two look-alike clusters below the true one
+   (Image mode, E200 "A1": the six at 99–100 %, another rectangle at 88 %, the hatched panels at
+   73 %) so cut under the true cluster. A run with no gap of 6 points is checked down to its last
+   match when that sits 6 points above the scan floor; otherwise the bar is 70 %.
+   - **Lettering is never checkable** at any level: a window whose strokes are mostly
+     glyph-sized (at least 6 strokes, 70 % each under 30 % of the window on both axes) is
+     marked in the matcher, unless the sample itself is like that, and sits in the drawer.
+   - **One drawn size:** the best match that is not the sample's own sets the size; a match
+     whose area is more than 2.6 times off it either way cannot be checked (E101's two plans
+     differ by 2.25). The sample's own match is left out of the gap and is checked only when it
+     is that size, so a sample boxed on a schedule or legend is not counted.
+   - A TYP. suggestion (D-287 4) stays a suggestion; a card the person touched keeps their
+     choice.
+3. **Sensitivity only widens or narrows the suggestions:** an unchecked match at or above it is
+   shown, best first, at most 5 (TYP. suggestions apart); the rest go to the drawer, with the
+   remote ones as before. It never lowers the checked bar.
+4. **A suffix variant's tag is read from its first letter** ("C/NL"): a word whose leading
+   character lies in the match's box is its tag, as well as one whose centre does.
+5. **Auto mode:** Vector first; a box with no vector linework (a scan) switches to Image by
+   itself and says so; Image chosen on a vector sheet shows "Vector mode is faster and exact
+   here" with Use Vector.
+6. **Image mode's Stop** says "Scan stopped after pass N of M"; **Threads** (Auto, 2 to 16) is
+   in the gear's Image section and sizes the worker pool (Auto stays cores less one, at most 6).
+7. **Essentials:** the region menu's Auto Count is disabled with "This is on the Professional
+   plan."
+8. **Image mode's memory:** no worker holds a page any more. Both pages (the shortlist's and the
+   working one) are kept on the main thread packed, 8 pixels a byte. Each pass's variants go to
+   every worker once (their prepared templates kept per image); the shortlist's row bands are
+   unpacked and sent one at a time per worker (B4's band count, edges and halos, so the same
+   windows); the fine pass is sent crops round the shortlist's clustered regions (each with the
+   halo its windows and refinement read; a crop over 1 M pixels goes as row bands). Each worker
+   scores into one reused integral buffer, and returns hits without the scorer's components.
+   Render bands are 2 M pixels. A raster slice may now be any rectangle (`RasterView.originX`),
+   and the region gates cover only the call's own part of the grid. Every Image result is the
+   same as before (raw candidates identical on all four tests).
+9. **The Excel export:** an empty number is written as a blank cell, never as empty text, which
+   Excel's arithmetic rejected (`#VALUE!` in Total Man Hours on subcontract lines with no labor;
+   found by the marketing capture).
