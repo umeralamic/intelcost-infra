@@ -3,6 +3,155 @@
 Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 01:29 UTC, finished 06:51 UTC. Updated after every step. The
 previous run's plan and report are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-07.md`.
 
+## Morning run, 2026-10-08 08:13 to 12:00 UTC (the founder's follow-up)
+
+Same rules as the night: founder projects read only, mail guard on, no AI credits, only my own
+processes stopped by PID, tests on throwaway copies (workspace "Overnight AC 1008 c", account
+`fx.overnight3.1791447309@bench.intelcost.io`, E101 and E200 copied from their stored sheet
+sources, plus a synthetic exit-sign sheet). Every Image figure is host Chrome, 6 workers, the
+dev server. The results contract is D-301: on all four tests at 38 % and 70 %, the same checked
+set, unchecked set and suggestions shown, and no correct fixture missed (sets compared one to one
+by box overlap, IoU ≥ 0.5).
+
+| Item | State |
+|---|---|
+| 1 Outline symmetry | **not shipped**: misses the contract on E200 A1 (two suggestions lost); stash `morning-item1-outline-symmetry` |
+| 2 Results contract | logged (D-301) |
+| 3a OpenCV as the matcher | **shipped** (`47ec917`, D-302) |
+| 3b Early reject in the fine stage | **shipped** (`ea42fee`, D-302), the second version |
+| 3c WebAssembly fine scorer | **shipped** (`288c1a4`, D-302) |
+| 4 Threads Auto by device memory | **shipped** (`59ef78e`, D-303) |
+| 5 Vector index stored | **shipped** (app `b660c2f`, api `f0db060`, D-304) |
+
+**Image, office plan: 147 s → 16 s** (your target 10–15 s: just above it; see "Where the time
+goes"). All four tests meet the contract with the three changes together.
+
+### The reference (`8f2ab56`, the code at the start)
+
+| Test | Time | 38 % | 70 % |
+|---|---|---|---|
+| E101 office | 147 s | 68 / 0, 0 suggestions, 0 more unchecked | same |
+| E101 "C" | 68 s | 24 / 0 (C/NL 2 missed, as since D-299), 0 suggestions | same |
+| E200 A | 536 s | 12 / 0, 4 suggestions, 3 more unchecked | 12 / 0, 0 suggestions, 7 unchecked |
+| E200 A1 | 1,584 s | 6 / 0, 4 suggestions, 1 more unchecked | same |
+
+(The night measured office 148 s, "C" 69 s, E200 A 527 s, E200 A1 1,589 s on the same code.)
+
+### Image times, each change alone and together
+
+Every row below meets the contract on that test, except where marked.
+
+| Test | Reference | 1 symmetry alone | 3a OpenCV alone (first build) | 3b alone (first build) | 3c WebAssembly alone | **All shipped (3a + 3b + 3c)** | Shipped without 3b | Shipped without 3c | Shipped + symmetry |
+|---|---|---|---|---|---|---|---|---|---|
+| office | 147 s | same (no pass skipped) | 77 s | 155 s | 98 s | **16.4 s** | 15.2 s | 20.3 s | 18.3 s |
+| "C" | 68 s | same (no pass skipped) | 23 s | 63 s | 46 s | **13.0 s** | 12.9 s | 11.7 s | 12.0 s |
+| E200 A | 536 s | 309 s | 220 s | 571 s | 343 s | **25.8 s** | 28.9 s | 41.5 s | 15.3 s |
+| E200 A1 | 1,584 s | not run alone (stopped for time) | stopped after 15 min | not run (slower on A) | not run (time) | **84.8 s** | 92.1 s | 147.5 s | 60.0 s, **misses the contract** |
+
+- **"First build"** of 3a: OpenCV peaks (threshold 0.3, 300 per angle, one worker) feeding
+  legacy's padded regions; the shipped one uses the peaks' own origins (a coarse pixel either way),
+  0.15 / 600 per angle and one worker per angle. The first build of 3b scanned each window's pixels
+  for the precision bound and cost what it saved; the shipped one sums the dilated template's row
+  runs on the integral.
+- **3a feasibility (office only, as asked):** 147 → 77 s, 1,093 peaks, all 68 found, 0 wrong, the
+  same review. OpenCV's correlation took 7.6 s of it.
+- **3b, windows removed:** against the shipped scan without it, the bound stops 5,209 windows
+  on office, 3,491 on "C", 9,656 on E200 A and 4,639 on E200 A1 before the offset search (the
+  windows fully scored fall from 22,713 / 4,829 / 17,380 / 10,830 to 17,504 / 1,340 / 7,755 /
+  6,628). Time saved: 3 s on E200 A, 7 s on E200 A1; none on E101 (office 1.2 s slower, inside the
+  2 s spread between two identical office runs).
+- **3c:** the offset search alone in WebAssembly takes office 147 → 98 s, E200 A 536 → 343 s; in the
+  shipped scan it saves 4 s on office, 16 s on E200 A, 63 s on E200 A1 ("C" is faster in
+  JavaScript by 1 s). The npm opencv.js is not a SIMD build; a SIMD build of OpenCV itself was not
+  attempted (an Emscripten build of OpenCV).
+- **No correct fixture is missed** in any shipped configuration: office 68 / 68, "C" 24 / 24 (the
+  two C/NL are missed by Image mode since D-299, before and after), E200 A 12 / 12, E200 A1 6 / 6.
+
+**Where the time goes now (office, 16 s):** opencv.js load and correlation 2.7 s of wall time (the
+four angles' correlation is 10–12 s of worker time in parallel; the first scan of a page also
+loads opencv.js into four workers, 3–4 s), the fine scorer 7.9 s, drawing and ink 3.5 s, the rest
+(about 2 s) the template's plan and the result steps. **Next to try:** fewer peaks (600 per angle is generous; office has
+68 fixtures and 2,400 peaks), correlation on a 2× smaller page for small templates ("C"'s 18 s of
+worker time), and keeping the OpenCV workers warm across sheets. E200 A1 (85 s) is dominated by
+the fine scorer on 201k windows round 2,324 peaks.
+
+**In the panel** (E101 copy, the "C" sample, Mode Image, a freshly loaded page): 28.1 s, first
+results 27.2 s, 24 checked, Create (24), the "Vector is faster here" hint shown. The extra 15 s over
+the measured 13 s is opencv.js loading into four workers on a fresh page. Closed without creating.
+
+### Item 1: outline symmetry, not shipped
+
+- **E101 office and "C":** no pass is skipped (wires and tags make the outline asymmetric), so the
+  scan is the reference's by construction; checked in every run's pass list.
+- **Synthetic exit sign** (a box with a shaft and a filled arrowhead, a wire leaving its top, 18
+  copies at 0°, 90°, 180°, 270°, plus 3 plain boxes and 2 double-headed ones): with symmetry on, no
+  pass is skipped, the window counts are identical, and all 18 are found with 0 wrong (87 s, 86 s).
+- **E200 A:** 536 → 309 s, the same review.
+- **E200 A1: misses the contract.** It skips 180° and 270°; the 270° pass was where two hatched "A"
+  panels scored 74.1 % and 73.2 % as A1 look-alikes, shown as suggestions in the reference. With
+  symmetry they are gone (the same with OpenCV on: 60 s with symmetry, 85 s without, and only the
+  run without it keeps the 4 suggestions). The checked sets were the same (6 / 0).
+- The code is in the app stash `morning-item1-outline-symmetry` (with a switch,
+  `IMAGE_PASSES.outlineSymmetry`); the night's `overnight-part2a-outline-symmetry` is still there.
+
+### Item 4: Threads on Auto by device memory (D-303)
+
+Auto = cores less one, at most 6, capped so 150 MB + 45 MB a worker stays within a third of
+`navigator.deviceMemory` (Chrome and Edge report it, in GB, at most 8):
+
+| deviceMemory | Auto picks (on a 12-thread machine) |
+|---|---|
+| 8 GB | 6 |
+| 4 GB | 6 (6 workers ≈ 420 MB, a third is 1,365 MB) |
+| 2 GB | 6 |
+| 1 GB | 4 |
+| 0.5 GB | 1 |
+
+With your numbers the cap only bites at 1 GB and below, so 4 GB and 8 GB machines both get 6. If
+you meant 4 GB machines to run fewer, the share would need to be about a tenth. The OpenCV
+workers (up to 4, loaded only in Image mode) add memory on top of this; not measured this morning.
+
+### Item 5: the vector index stored with the sheet (D-304)
+
+E200 A, Vector mode, the scan started as soon as the sheet opens (the throwaway E200 copy):
+
+| Visit | Scan time | Index |
+|---|---|---|
+| Cold: nothing stored anywhere | 9.6 s | built in the worker, 4.7 s, then stored in IndexedDB and through the api |
+| First visit from another browser (IndexedDB empty) | 4.9 s | the api's copy, 2.6 s (presigned GET from S3 and decode) |
+| Returning visit | 2.6 s | IndexedDB, 12 ms |
+
+All three: 12 / 0. The api route was also probed directly: no copy → `url: null`; a bad version
+refused; a sheet under another project → 404. Only an editor stores the index. "Right after
+upload" was not added: the first open of a sheet stores it, so only that first open is cold.
+
+### Gates and checks
+
+App lint, typecheck and build passed (opencv.js lands only in the OpenCV worker's chunk, 10.8 MB,
+fetched on the first Image scan); each intermediate commit typechecked on its own; api ruff and
+mypy passed; the quantity table passed (329 rows).
+
+### Commits this morning
+
+| Repo | Commits |
+|---|---|
+| app | `ea42fee` (3b), `47ec917` (3a), `288c1a4` (3c), `59ef78e` (4), `b660c2f` (5) |
+| api | `f0db060` (5) |
+| infra | the workspace mirror (decisions D-301 to D-304, this report) |
+
+**Stash:** app `morning-item1-outline-symmetry` (item 1, measurements above).
+
+### Questions for you
+
+1. **Item 1:** the two lost suggestions on E200 A1 are wrong-type look-alikes (hatched "A" panels
+   at 73–74 %). Under your contract it does not ship; say if suggestions of the wrong type may
+   differ, and it can go in as it is (E200 A1 60 s instead of 85 s).
+2. **Item 4:** with a third of memory and your per-worker figure, 4 GB keeps 6 workers. Keep it,
+   or a smaller share?
+3. **Office at 16 s:** close to 10–15 s; the next steps are listed above. Worth another pass?
+
+## The night run
+
 | Step | State |
 |---|---|
 | 0.1 Browser tool on host Chrome | done |

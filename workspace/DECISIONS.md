@@ -11298,3 +11298,68 @@ the Part 1 code's own candidates, compared one by one (angle, place, score).
    legacy's own OpenCV arm is off and gates on ground-truth identity, not byte identity, because
    its correlation is floating point; (c) and (d) mean porting the whole component scorer, not a
    loop, and could not be proved identical on E200 (a 30-minute run per proof) in what remained.
+
+## D-301: Auto Count speed work ships on the review's results, not identical candidates
+
+**Status:** decided by the founder, 2026-10-08 (morning brief, item 2). Supersedes D-300's
+"identical candidates" rule for every later speed change.
+
+1. **The contract.** A speed change ships when, on all four tests (E101 office, E101 "C", E200 A,
+   E200 A1) at 38 % and 70 %, the review gives the same **checked** set, the same **unchecked**
+   set and the same **suggestions shown** as the code before it, and no correct fixture is missed.
+   Small differences in a score or an exact position are fine.
+2. **How it is checked.** Each set is compared one to one, a candidate matching one in the other
+   run when their boxes overlap by at least half (IoU 0.5); the right / wrong / missed tally
+   against the sheets' ground truth is reported with it. The reference is the code before the
+   change, run in the same session in host Chrome.
+3. **Timings** are reported alone and combined with the other changes, on all four tests.
+
+## D-302: Auto Count Image speed: OpenCV peaks, a precision bound, a WebAssembly search
+
+**Status:** decided by the founder's brief of 2026-10-08 (items 1 and 3), measured in host Chrome
+under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101 and E200.
+
+1. **(3a) OpenCV says where to look; our scorer decides.** For each angle, opencv.js 4.12
+   (`@techstark/opencv-js`, lazy-loaded in its own workers, Image mode only, angles in parallel)
+   correlates the coarse template (the 1.00 size) over the coarse page; local peaks of 0.15 or more,
+   with legacy's ink guard, the best 600 per angle. The fine scorer then scores only the window
+   origins within a coarse pixel of each peak (and the larger sizes' growth) at full resolution,
+   and every checked or unchecked match is its result. The recall shortlist stays as the fallback
+   when opencv.js cannot load. The published build is the npm one (not a SIMD build; building
+   opencv.js with SIMD needs an Emscripten build of OpenCV, not attempted). Loaded through a
+   static-import wrapper: the runtime is thenable, and a dynamic import of the package never settles.
+2. **(3b) A precision bound before the offset search.** The score is at most the precision, and
+   the precision does not depend on the offset; the ink on the template's dilated mask is summed
+   over the mask's row runs on the integral, so a window whose precision is already under the bar
+   is dropped before the rigid-offset search. Exact. A first version that scanned the window's
+   pixels cost what it saved (office 155 s, E200 A 571 s, alone); the run-sum version is kept.
+3. **(3c) The offset search in WebAssembly** (`wasm/scorer/scorer.c`, clang in a throwaway
+   container, 1.6 KB), the same sums in the same order; JavaScript when it cannot run.
+4. **(1) Symmetry on the outline: not shipped.** Under D-301 it keeps E101 (no pass skipped), E200
+   A and a synthetic exit sign with an arrow (not treated as symmetric, all 18 found), but on
+   E200 A1 it loses two suggestions (hatched panels at 74.1 % and 73.2 %, wrong-type look-alikes)
+   that the 270° pass found. In the app stash `morning-item1-outline-symmetry`.
+5. **Measured** (all four tests meet D-301 at 38 % and 70 %; times in the overnight report): the
+   three together take office 147 → 16 s, "C" 68 → 13 s, E200 A 536 → 26 s, E200 A1 1,584 → 85 s.
+
+## D-303: Threads on Auto stays within a third of the device's memory
+
+**Status:** decided by the founder, 2026-10-08 (item 4): the memory target is what a scan adds,
+not the whole tab; 6 workers stay the default.
+
+Auto is legacy's rule (cores less one, at most 6), capped where the browser reports
+`navigator.deviceMemory` (Chrome and Edge, in GB, at most 8) so that 150 MB plus 45 MB a worker
+(D-299's measurement on E101 "C") stays within a third of it. Auto picks 6 on 8 GB, 4 GB and
+2 GB, 4 on 1 GB, and 1 on 0.5 GB or less. The Threads setting, when set, is used as it is.
+
+## D-304: A sheet's vector index is stored with the sheet
+
+**Status:** decided by the founder, 2026-10-08 (item 5): a later visit never starts cold.
+
+The first browser that builds a sheet's Auto Count index (D-288) also stores it through the api
+(`GET`/`PUT /drawing/sheet/{sheet}/symbol-index/{version}`, the version being the index format and
+the sheet's tile version), under the sheet's own storage prefix, so deleting the sheet deletes it.
+A visit reads memory, then this browser's IndexedDB, then the api's copy, and builds only when
+none is there. Only an editor (Edit takeoff) stores it; a viewer reads it. E200 A in Vector mode,
+the scan started as the sheet opens: 9.6 s with nothing stored (index built in 4.7 s), 4.9 s on a
+first visit from another browser (the api's copy, 2.6 s), 2.6 s on a returning visit.
