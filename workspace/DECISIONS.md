@@ -11322,7 +11322,7 @@ under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101
 1. **(3a) OpenCV says where to look; our scorer decides.** For each angle, opencv.js 4.12
    (`@techstark/opencv-js`, lazy-loaded in its own workers, Image mode only, angles in parallel)
    correlates the coarse template (the 1.00 size) over the coarse page; local peaks of 0.15 or more,
-   with legacy's ink guard, the best 600 per angle. The fine scorer then scores only the window
+   with legacy's ink guard, the best 300 per angle (600 first; 300 gave the same review, `b9ee597`). The fine scorer then scores only the window
    origins within a coarse pixel of each peak (and the larger sizes' growth) at full resolution,
    and every checked or unchecked match is its result. The recall shortlist stays as the fallback
    when opencv.js cannot load. The published build is the npm one (not a SIMD build; building
@@ -11340,7 +11340,8 @@ under D-301 against the code before (`8f2ab56`), on the throwaway copies of E101
    E200 A1 it loses two suggestions (hatched panels at 74.1 % and 73.2 %, wrong-type look-alikes)
    that the 270° pass found. In the app stash `morning-item1-outline-symmetry`.
 5. **Measured** (all four tests meet D-301 at 38 % and 70 %; times in the overnight report): the
-   three together take office 147 → 16 s, "C" 68 → 13 s, E200 A 536 → 26 s, E200 A1 1,584 → 85 s.
+   three together take office 147 → 12.7 s, "C" 68 → 11.4 s, E200 A 536 → 17.8 s, E200 A1 1,584 →
+   45.6 s (with 300 peaks per angle; 16.4 / 13.0 / 25.8 / 84.8 s with 600).
 
 ## D-303: Threads on Auto stays within a third of the device's memory
 

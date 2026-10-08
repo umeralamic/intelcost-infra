@@ -17,14 +17,15 @@ by box overlap, IoU ≥ 0.5).
 |---|---|
 | 1 Outline symmetry | **not shipped**: misses the contract on E200 A1 (two suggestions lost); stash `morning-item1-outline-symmetry` |
 | 2 Results contract | logged (D-301) |
-| 3a OpenCV as the matcher | **shipped** (`47ec917`, D-302) |
+| 3a OpenCV as the matcher | **shipped** (`47ec917`, D-302; 300 peaks per angle in `b9ee597`) |
 | 3b Early reject in the fine stage | **shipped** (`ea42fee`, D-302), the second version |
 | 3c WebAssembly fine scorer | **shipped** (`288c1a4`, D-302) |
 | 4 Threads Auto by device memory | **shipped** (`59ef78e`, D-303) |
 | 5 Vector index stored | **shipped** (app `b660c2f`, api `f0db060`, D-304) |
 
-**Image, office plan: 147 s → 16 s** (your target 10–15 s: just above it; see "Where the time
-goes"). All four tests meet the contract with the three changes together.
+**Image, office plan: 147 s → 12.7 s** (your target 10–15 s: met). All four tests meet the
+contract with the three changes together: "C" 68 → 11.4 s, E200 A 536 → 17.8 s, E200 A1 1,584 →
+45.6 s. (The last step, at 11:15, halved OpenCV's peaks per angle; see "300 peaks".)
 
 ### The reference (`8f2ab56`, the code at the start)
 
@@ -67,7 +68,7 @@ Every row below meets the contract on that test, except where marked.
 - **No correct fixture is missed** in any shipped configuration: office 68 / 68, "C" 24 / 24 (the
   two C/NL are missed by Image mode since D-299, before and after), E200 A 12 / 12, E200 A1 6 / 6.
 
-**Where the time goes now (office, 16 s):** opencv.js load and correlation 2.7 s of wall time (the
+**Where the time went at 600 peaks (office, 16 s):** opencv.js load and correlation 2.7 s of wall time (the
 four angles' correlation is 10–12 s of worker time in parallel; the first scan of a page also
 loads opencv.js into four workers, 3–4 s), the fine scorer 7.9 s, drawing and ink 3.5 s, the rest
 (about 2 s) the template's plan and the result steps. **Next to try:** fewer peaks (600 per angle is generous; office has
@@ -78,6 +79,22 @@ the fine scorer on 201k windows round 2,324 peaks.
 **In the panel** (E101 copy, the "C" sample, Mode Image, a freshly loaded page): 28.1 s, first
 results 27.2 s, 24 checked, Create (24), the "Vector is faster here" hint shown. The extra 15 s over
 the measured 13 s is opencv.js loading into four workers on a fresh page. Closed without creating.
+
+### 300 peaks per angle (`b9ee597`)
+
+With 25 minutes left, on a rebuilt test bed (workspace "Overnight AC 1008 d"), the shipped setting
+(600 peaks per angle) against 300, after a warm-up scan; compared set to set (D-301), against the
+600 run, whose sets match the reference's:
+
+| Test | 600 per angle | 300 per angle | Review |
+|---|---|---|---|
+| office | 15.3 s | **12.7 s** | same (68 / 0) |
+| "C" | 11.8 s | **11.4 s** | same (24 / 0) |
+| E200 A | 25.8 s | **17.8 s** | same (12 / 0, 4 suggestions at 38 %) |
+| E200 A1 | 84.4 s | **45.6 s** | same (6 / 0, 4 suggestions) |
+
+The default was then checked in the page: 300 per angle, office 12.3 s warm, 68 / 0. Lint,
+typecheck and the quantity table passed.
 
 ### Item 1: outline symmetry, not shipped
 
@@ -131,11 +148,20 @@ App lint, typecheck and build passed (opencv.js lands only in the OpenCV worker'
 fetched on the first Image scan); each intermediate commit typechecked on its own; api ruff and
 mypy passed; the quantity table passed (329 rows).
 
+### Cleaned up
+
+The throwaway workspaces "Overnight AC 1008 c" and "Overnight AC 1008 d" (purged with their
+storage, including the stored index copies), their accounts `fx.overnight3.1791447309@` and
+`fx.overnight4.1791457652@bench.intelcost.io` and their captured mail; the worktree `wt-am` and its
+merged branch; the harness, saved runs and copied sheet PDFs. Kept: the app image rebuilt with
+opencv.js (needed), and the `alpine:3.22` image the WebAssembly build script uses. Founder projects
+were not opened; their latest change is from 2026-10-07 22:28 UTC.
+
 ### Commits this morning
 
 | Repo | Commits |
 |---|---|
-| app | `ea42fee` (3b), `47ec917` (3a), `288c1a4` (3c), `59ef78e` (4), `b660c2f` (5) |
+| app | `ea42fee` (3b), `47ec917` (3a), `288c1a4` (3c), `59ef78e` (4), `b660c2f` (5), `b9ee597` (300 peaks) |
 | api | `f0db060` (5) |
 | infra | the workspace mirror (decisions D-301 to D-304, this report) |
 
@@ -148,7 +174,8 @@ mypy passed; the quantity table passed (329 rows).
    differ, and it can go in as it is (E200 A1 60 s instead of 85 s).
 2. **Item 4:** with a third of memory and your per-worker figure, 4 GB keeps 6 workers. Keep it,
    or a smaller share?
-3. **Office at 16 s:** close to 10–15 s; the next steps are listed above. Worth another pass?
+3. **Office at 12.7 s** is inside 10–15 s; E200 A1 is the slow one now (46 s). The first scan on
+   a freshly loaded page adds 3–4 s (opencv.js into four workers). More to try is listed above.
 
 ## The night run
 
