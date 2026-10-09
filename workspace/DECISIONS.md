@@ -11693,3 +11693,40 @@ sheet could only be deleted by ticking a second. This departs from legacy on pur
    Move selected to) survives a later load; only the new ones are slotted. Folders still come
    before loose sheets. *(call)* "The open sheet never moves" is met for its folder; a sheet
    slotted above it in the same folder pushes it down a row.
+
+## D-320: Name and scale on load
+
+*2026-10-09. Founder request.* Supersedes A16's one-off "Auto-name these sheets" offer after
+a Load.
+
+1. **Two ticks in the Load screen's footer**, left of the buttons, where "Loading N pages…"
+   was (that text is now on the Load button while it runs): "Name sheets from title block"
+   and "Set scale automatically". Both on by default; each person's last choice is kept in
+   browser storage (`load-auto-read-v1:<user>`). The same footer serves first run, Add sheets
+   and "<Project> — Project files".
+2. **What runs.** The Load queues its new sheets (`features/takeoff/load/auto-read.ts`); the
+   project's takeoff page reads each one once the worker has prepared it, one at a time,
+   shown as "Reading name & scale · N of M" (`SheetReadsPanel`). *(call)* It runs in the
+   browser because every reader is the browser's (`regionNaming`, `scaleText`, `scaleVerify`)
+   and the api has none; a reload drops what was not read yet, and those sheets keep their
+   file names, unscaled.
+   - **Name:** the text layer, in the saved naming regions if any, else the title block
+     corner (`TITLE_BLOCK_BOX`). Written only while the sheet still has the Load's name and no
+     number, so a name someone has edited is never overwritten. Nothing read flags "name not
+     read".
+   - **Scale:** every printed scale on the page (`findAllScales`). One scale is checked
+     against the drawn dimensions and applied with its check (verified, or suggested where
+     there are no dimensions); one the dimensions contradict, none, or more than one leaves
+     the sheet unscaled and flagged. *(call)* This writes a suggested scale on its own, which
+     D-131's open-sheet panel does not; the founder's "one clear scale is applied" rules here,
+     and the stored `verify_status` still says it was not proved.
+   - **AI:** only for a sheet with no text layer (a scan): the title block read (`title_block`)
+     and the scale read (`scale`), under Auto-Name's gating (plan and Run AI). A refusal for
+     credits stops the AI for the rest of the run, quietly; those sheets are flagged.
+3. **After the run:** a dismissible "N sheets need a look" notice lists each flagged sheet
+   with why (name not read, no scale found, more than one scale, scale doesn't match its
+   dimensions); a click opens the sheet. A run with nothing flagged closes on its own.
+4. **Credits** (the founder's question): the text-layer reads are free and make no api call.
+   The AI reads cost credits, priced by tokens (`ai/meter.py`), never shown here as an amount. Trials get credits: a one-time 100 (`TRIAL_ALLOWANCE`),
+   30 on the restricted Tier 3; Essentials has no AI. So the footer shows "Uses AI credits"
+   (no amount) while a tick is on and the person may run AI; hidden otherwise.
