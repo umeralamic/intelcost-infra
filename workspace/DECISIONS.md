@@ -11502,3 +11502,134 @@ overnight 2026-10-09, block by block. Calls made on the founder's behalf are mar
    p95 50 ms, 1 frame of 144 over 50 ms; 48 tiles in the document; first draw 671 ms (was 991),
    ticking all 500 373 ms (was 570). *(call)* The 500 files for the check were copies of one
    landed file made in the database (uploading 500 to the real bucket ran ~6 s a file).
+
+## D-316: Image mode's OpenCV workers: 4 on 8 GB or more, kept warm, released after 2 minutes
+
+**Status:** decided by the founder, 2026-10-09 (overnight brief, Auto Count item 1); built and
+measured overnight. Amends D-303's "one OpenCV worker, ended with the scan".
+
+1. **How many.** 4 OpenCV workers where the browser reports `navigator.deviceMemory` of 8 GB or
+   more, 1 below that or where it does not say (`opencvWorkersFor`).
+2. **Kept between scans, released after 2 minutes with no scan.** A finished scan keeps them;
+   the next scan cancels the timer. Stop and a failure still end them at once.
+3. **One loads at a time** *(call)*. Four compiling opencv.js at once took 44 s each on the
+   bench against 20 s for one, which made a first scan with four about 20 s slower than with
+   one. So the first worker loads, the next starts loading once every earlier one is ready, and
+   an angle goes to the least busy ready worker (before any is ready, it queues on the first).
+4. **Measured** in the MCP's Chromium on the Windows host (Intel UHD 630, ANGLE D3D11; 32 GB;
+   the dev server, 6 matching workers), throwaway copies of E101 and E200 in "Night AC copies",
+   samples placed again from the sheets (the old harness and boxes were not kept): every
+   configuration found the identical raw candidate set on all four tests (one signature, so the
+   checked and unchecked sets at 70 % and 38 % are the same). This browser is slower than the
+   one behind D-305's baseline (shipped office 38.5 s here against 16.4 s there; opencv.js takes
+   14–25 s to load into a fresh worker here), so the comparison is within this browser:
+
+   | Test | Shipped (1, ended) | 1 kept, first / next | 4 kept, all at once, first / next | **4 kept, one loads at a time, first / next** |
+   |---|---|---|---|---|
+   | E101 office | 38.5 s | 37.7 / 21.9 s | 61.7 / 19.5 s | **43.4 / 24.4 s** |
+   | E101 "C" | 45.6 s | 46.4 / 28.9 s | 64.6 / 21.6 s | **46.3 / 29.4 s** |
+   | E200 A | 80.2 s | 81.1 / 62.9 s | 96.7 / 62.3 s | **84.1 / 62.7 s** |
+   | E200 A1 | 54.5 s | 55.3 / 36.6 s | 73.0 / 36.8 s | **54.9 / 42.8 s** |
+
+   **Memory** (the tab's renderer, private MB, workers included): before a scan 520–720; peak
+   shipped 1,070–1,370, one kept 1,150–1,350, four kept 1,680–2,260; between back-to-back scans
+   four kept hold 1,350–1,860. Released: after two office scans the tab held 1,655 MB for two
+   minutes, then 869 MB at 2:05 and 850 MB at 3:20 (the 6 matching workers are kept between scans
+   by design, D-289; the 617 MB before is a fresh tab).
+5. **Read honestly:** keeping the workers is the gain (a next scan 30–45 % faster); four help
+   only once all four are loaded (the "all at once" column's next scans: office 19.5, "C" 21.6
+   s), and the second scan after a fresh tab still has workers loading in turn. Shipped as the
+   brief set it; one kept worker would give nearly the same next-scan times for ~600 MB less.
+
+## D-314: Reports in the avatar menu; All projects as a dialog (App shell Part B)
+
+**Status:** decided by the founder, 2026-10-09 (the approved plan, its answers and amendments);
+built overnight. Calls made on the founder's behalf are marked *(call)*.
+
+1. **Block 5: Reports in the avatar menu**, between Workspace & team and Community, opening
+   `/reports` (which keeps "Back to takeoff"). Gated as the reports page itself is, the founder's
+   answer 5: every workspace member has a Reports page (Takeoff Progress is always there; Per
+   Estimator and Per Project follow "reports visibility", Activity `canViewWorkspaceActivity`,
+   AI Usage the AI-credits rule), so the entry shows to anyone in a workspace. The card's own
+   gating (which counted `ai_usage_visibility` and the activity capability for the Time button)
+   is gone with the card, which leaves the projects page.
+2. **Block 6: All projects is a dialog over whatever is open.** It opens from the Open menu or
+   `?projects=open` (so `/projects`, which redirects to `/?projects=open`, opens it over Home's
+   landing, and the back button closes it). Everything the page had stays, except as listed:
+   search (new; the api's `q`, every tab, results show their status, the tabs step aside while
+   it runs), the workspace's status tabs exactly as before with counts, Needs follow-up,
+   Filters, the four sorts with today's default, New project, the status picker with Lost's
+   reason and Manage statuses, the follow-up badge, the subtitle. Rows load fifty at a time as
+   the list scrolls. **Each row:** the name and **Takeoff** open the project on its last sheet
+   (`useOpenProject`, shared with the Open menu) and close the dialog; tags "No sheets yet",
+   "Archived", "Cancelled"; ⋯ holds Rename (in place: Enter or leaving the field saves, its
+   own Escape cancels; closing the dialog by ×, Escape or a click outside saves a rename being
+   typed), Archive or Unarchive, and Move to Trash (confirmed). **Footer:** "Trash" opens
+   Settings › Trash; trashed projects are not in the dialog. **Dropped from the page:** the
+   heading "<workspace>" / "Your projects." (the dialog is titled "All projects"), the ruler
+   icon (the row and Takeoff do it), ⋯ Wage Calculator (to Estimating, D-315). Its state is
+   its own: takeoff's `?tab=` is not a status tab. `Dashboard`, `ProjectsCard` and `ProjectRow`
+   are deleted. **Archive keeps the status it leaves** (`project.status_before_archive`,
+   migration `d314b2c6e8a1`), set whenever a project moves into Archived or Cancelled by any
+   path; Unarchive (`POST …/{project}/unarchive`) puts it back, or the workspace's first active
+   status when none was kept or it is gone or hidden. A no-sheets project's tab title is
+   "<project> · Takeoff" again (the no-sheets page had it).
+
+## D-315: Edit project, files in the load screen, the project page removed (App shell Part C)
+
+**Status:** decided by the founder, 2026-10-09 (the approved plan, its answers and amendments);
+built overnight. Calls made on the founder's behalf are marked *(call)*.
+
+1. **Block 7: Edit project** is New project's edit mode (`EditProjectDialog`): "Edit project",
+   one Save. The same fields as create, assignees included, plus **Status** (the founder's
+   answer 10; a Lost status asks its reason and notes, as the picker does), **Scope of Work**
+   and **Project Notes** (the rich-text editor inline: no Save of its own, compact while
+   empty, growing with its text). With unsaved changes, ×, Escape, a click outside, Cancel
+   and "← All projects" ask "Discard changes?" (Discard / Keep editing); "unsaved" is known
+   before the next click (a layout effect, after a first try missed a click straight after
+   typing). Opened by `?edit=<project>`: from the Open menu's "Project details" for the
+   current project; from All projects' ⋯ "Edit project" for any project with
+   `from=projects`, which gives "← All projects" back to the list, while ×, Escape or a click
+   outside close everything and leave the project underneath, its sheet and its Recent as
+   they were. *(call)* Editing another project's details does not open it, so it is no visit.
+6. **SIMD opencv.js: built, measured, not shipped** (stash `overnight-simd` in the app, with the
+   build in `public/__ocv/`). opencv 4.12.0 with `--simd` (emsdk 3.1.64; 2.0.10, the shipped
+   build's generation, lacks `wasm_i8x16_shuffle`), single file, 13.7 MB. The new Emscripten
+   exports a promise of the module, so the worker awaits it (boxed). On E101 office, 4 kept
+   workers: the identical raw candidate set; correlation 7.6 s against about 9 s (≈15 %
+   faster), next scan 24.4 → 20.2 s, **but the first scan 43.4 → 155.4 s**: loading the SIMD
+   file into a worker took 135.6 s against 20.9 s (evaluated from text, not through Vite's
+   module graph, and a larger wasm). Not faster, so not shipped, per the brief; "C" and the two
+   E200 tests were not run with it (the office first scan already decides it). A SIMD build
+   loaded as a module with streaming compilation is what would have to be tried next.
+2. **Block 8: file housekeeping in the load screen's tree, and Files from All projects.**
+   Every file and folder row has ⋯ (and the same on right-click): Download, Rename, Move… and
+   Delete; an unfinished upload, Discard upload; a folder, New subfolder. Above the tree, New
+   folder and Upload (any file, into the folder in focus; a file takeoff cannot use is listed
+   greyed and keeps its menu). A file with pages in takeoff is not deleted: "1 sheet from this
+   file is in takeoff. Remove it first." (the api's 409 says the same now); a folder's delete
+   says what it holds ("Specs and everything in it … 0 files") and is refused, naming the files,
+   when any file beneath has sheets. The permissions are the file browser's (upload and new
+   folder `canUploadDocuments`; rename, move, delete `canCreateProjects`; download anyone). The
+   "Open project files" link is gone (the project page goes in block 9). **Files** on an All
+   projects row opens that project's load screen in its Files mode (`?files=<project>&from=projects`)
+   over the project open now, which is not switched to: "<Project> — Project files", nothing
+   ticked, "← All projects" back to the list, ×, Escape or a click outside close everything,
+   Perform Takeoff opens the project (its last sheet, else the load screen), and Load loads the
+   ticked pages and opens the project on the first new sheet. No Estimating or Wage Calculator
+   button there. *(call)* Upload in the tree takes any file, not only drawings: the project page's
+   Upload files and Upload folder had no other home, and specs and reports still need one.
+3. **Block 9: the project page is gone.** **C3:** the Wage Calculator is Estimating's Wage
+   Calculator pane (it was already there beside Estimate), now reachable on a project with no
+   sheets (block 3's shell); `?pane=wage` opens it, and the old `/project/:id/wage-calculator`
+   redirects there. It left the Open menu and All projects' rows. **C4:** the Open menu is
+   Search, Recent, All projects, New project, Project details, Switch workspace (with more than
+   one workspace, as before). **C5:** `/project/:id` and legacy's `/projects/:id` redirect to
+   the project's takeoff with Edit project open (`routes.project` is now that URL;
+   `routes.wageCalculator` the Wage pane's). Deleted with the page: `ProjectHome`,
+   `ProjectWageCalculator`, `EditDetailsDialog` (Edit project replaces it), `LocationCard`,
+   `PlansDatedCard`, `ProjectTextPanel` (Edit project holds the address, Plans Dated, assignees,
+   Scope and Notes), `PerformTakeoffButton`, and the file browser (`FileBrowser`, `FolderTree`,
+   `FolderCountBadge`, `UnfinishedUploads`, `DestinationPicker`; the tree's housekeeping, block
+   8, replaces it). Dropped as the founder ruled: the "N sheets, N measurements" line.
+   **C6:** no PDF viewer: a spec is read by loading it into takeoff, or downloaded.
