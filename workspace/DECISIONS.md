@@ -11633,3 +11633,12 @@ built overnight. Calls made on the founder's behalf are marked *(call)*.
    `FolderCountBadge`, `UnfinishedUploads`, `DestinationPicker`; the tree's housekeeping, block
    8, replaces it). Dropped as the founder ruled: the "N sheets, N measurements" line.
    **C6:** no PDF viewer: a spec is read by loading it into takeoff, or downloaded.
+
+## D-317: One sheet can be deleted from its own row menu
+
+*2026-10-09. Founder request.* The Sheets panel's ⋮ and right-click menu on a single sheet gain
+**Delete page**, last, under a rule, in the destructive colour, behind the same permission
+(Upload documents) and the same "Delete 1 sheet?" confirmation, with its impact line, as the
+selection menu's Delete selected pages. Legacy (`SheetTree` `actionSpecs`) has no single-sheet
+Delete: its only Delete is in the selection menu, which needs 2 or more sheets ticked, so one
+sheet could only be deleted by ticking a second. This departs from legacy on purpose.
