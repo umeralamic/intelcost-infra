@@ -11730,3 +11730,80 @@ a Load.
    The AI reads cost credits, priced by tokens (`ai/meter.py`), never shown here as an amount. Trials get credits: a one-time 100 (`TRIAL_ALLOWANCE`),
    30 on the restricted Tier 3; Essentials has no AI. So the footer shows "Uses AI credits"
    (no amount) while a tick is on and the person may run AI; hidden otherwise.
+
+## D-321: The load progress view; name and scale read on the server
+
+*2026-10-09. Founder request (follow-ups on D-317 to D-320, and the freeze report).*
+Supersedes D-320 2 (the browser read), D-320 3's flags, and D-318 3's project-row tick.
+
+1. **The freeze, measured first.** The browser read each loaded sheet on the main thread. Seven
+   generated sheets: 7 long tasks of 51 to 83 ms. Seven real plans (Hidden Valley Rebid A101,
+   A102, A201, S101, M101, A601, E101, copied read-only): 41.1 s of main thread blocked in a
+   202 s read window, three tasks of 18.3 s, 15.7 s and 6.7 s. The cause is the dimension
+   check's stroke walk and its collinear merge, which compares every segment with every other.
+2. **The server reads, in the prepare worker** (`drawing/reading.py`, `drawing/read_on_load.py`,
+   `worker/tasks/prepare.py`). A Load sends the two ticks (`read: {name, scale}`). Each new
+   sheet owes its reads (`read_name`, `read_scale`, `read_state` "pending", `read_by_id` the
+   loader). The worker prepares the page, marks it ready, then reads it ("reading") and keeps
+   the result. The readers are the app's, ported: same rules, same constants, same normalized
+   view space. *(call)* There are two speed departures: the merge groups segments by direction
+   and offset, and the tick and line lookups use a grid. PyMuPDF's `get_cdrawings` is about six
+   times faster than `get_drawings`. Strokes are read only when the page prints a scale and has
+   dimensions to check it against. The slowest real plan reads in about 2 s, off the browser.
+   *(call)* **The name is better than the app's:** a title sits beside its number, so the name
+   is the title nearest the number, grown over its own lines. Scale strings, dimensions, dates
+   and one-letter grid bubbles are never name text. On the seven real plans this reads "Over-All
+   Floor Plan", "Exterior Elevations", "Electric Lighting Plan" and so on. The app's reader joined
+   the whole title block corner ("Hidden Valley Leasing Spec Building Kerr Road …").
+   **A name given by hand is never overwritten:** a rename clears `read_name`, and the worker
+   reads the flag fresh before it writes. **A scan** (no text) is read by the AI as the loader,
+   through `ai.service.run`, so the plan, Run AI permission, credits, hold, charge and cache are
+   Auto-Name's. A refusal leaves the sheet read as having found nothing. The worker now takes the
+   AI keys (`.env.ai`) as the api does. A failed read never leaves a sheet "reading". Reads
+   survive a reload or a closed tab: the server owns them, and the browser's read queue is gone
+   (founder's item 2).
+3. **Scale rules** (replace D-320's "one clear scale is applied"):
+   - **Verified** (a drawn dimension proves the printed scale): applied, with its witness and
+     the printed string's box in the existing highlight colour, labelled "Verified by
+     dimension". *(call)* Where several scales are printed, the one the dimensions prove wins,
+     else the most printed one is the claim.
+   - **Unverified** (no dimension to prove it, or the dimensions measure something else): not
+     applied. It is kept on the sheet (`scale_suggestion`) and drawn as a dashed amber box with
+     Apply beside it. *(call)* The card sits left of the box when the box is in the right part of
+     the sheet. Apply saves it as the person's own scale, with the printed string as evidence,
+     and the box is then drawn in the verified style labelled "Applied by user".
+   - **Reduced print** *(call: a page whose long side is 17.5 in or less prints at a scale meant
+     for a larger sheet)*: the amber box says "Page looks like a reduced print, check before
+     applying."
+   - **NTS or no scale:** nothing is applied, drawn or flagged.
+4. **"N sheets need a look"** lists a run's sheets with an unverified scale (a click opens the
+   sheet with the amber box in view) or a name not read. NTS sheets are not listed. A sheet put
+   right since drops off.
+5. **The load progress view** (`LoadProgressDialog`), opened by Load in place of the Load
+   button's "Loading N pages…":
+   - **Overall:** "Loading N of M sheets", with a bar of ready sheets when there is more than one.
+   - **Each sheet**, virtualized: name, folder and the server's stage (Queued = `pending`,
+     Preparing = `rendering`, now set while the worker is on the page, Reading name & scale =
+     `read_state`, Ready, or Failed with `render_error` and Retry). The server reports no
+     percentage for a page, so no row has a bar.
+   - **Buttons:** Continue in background, Cancel remaining (deletes the pages not yet ready;
+     ready ones stay; the worker skips a page deleted under it), and Retry all when any failed.
+   - **All ready:** the view closes and opens the first sheet. **Any failed:** it stays open.
+   - **Counts:** one `runCounts` feeds the view and the tray. The stages come from the sheet
+     list, refreshed by the worker's events and a 5 s poll. *(call)* A run lives in the tab's
+     memory. After a reload the server still finishes every sheet; only the view and the tray
+     for that run are gone.
+   - **The tray** (`LoadRunsTray`), bottom right above the upload tray: a run left in the
+     background shows its bar, and a click reopens the view (staying on the open sheet when
+     already in that project).
+   - **New api:** `POST …/sheet/retry`. Failed pages carry their reason.
+6. **One event a page.** A page whose name and scale are read is announced once, after the
+   read. The app batches page events for a second (`useSettledRefetch(1000)`), so a Load does not
+   redraw the takeoff page for every page. **Measured during a 32-sheet load, production build:**
+   idle, 4 long tasks of 55 to 82 ms in 12 s; panning and zooming meanwhile, 0 long tasks with
+   frames at most 35 ms apart. *(caveat)* The bench bucket's CORS admits only the dev origin, so
+   that tab drew the prepared page images without the vector layer. The development build is
+   slower: about one 50 to 90 ms re-render a second while sheets arrive (the panel, dev-mode
+   React). That cost is the sheet list redrawing, not reading, and it is a follow-up.
+7. **The project row's tick applies the size rule**, as a folder's and a file's do (founder's
+   item 3). The pane's Select all stays the explicit everything.

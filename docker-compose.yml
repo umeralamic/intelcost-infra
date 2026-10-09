@@ -171,8 +171,12 @@ services:
       context: ../intelcost-app-fastapi
     # Storage and mail from the api's .env, as on the api above. This is the process that
     # sends mail: through the SES relay to the allowlist, to MailHog otherwise (D-279).
+    # The AI keys too, as the api's: a scanned sheet's name and scale are read here, as it
+    # is prepared (D-321).
     env_file:
       - path: ../intelcost-app-fastapi/.env
+      - path: .env.ai
+        required: false
     environment:
       <<: *mail-guard
       ENVIRONMENT: local
