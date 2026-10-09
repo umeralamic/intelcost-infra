@@ -51,6 +51,7 @@ _Updated: 2026-10-08_
 
 | # | Story (problem → solution) | Scope | Owner | Spec |
 |---|----------------------------|-------|-------|------|
+| FX | Chore | The fixture suite is archived at `fixtures-archive-2026-09-28` (D-68, D-70), and the features built since have moved under it. → **Rewrite the archived fixtures (F2, F4, F5 and earlier) as one block**, from the running list in [SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md), then the full run from the tag. **Ahead of the tester deploy:** no deploy to testers and no promotion to `main` until this block's full run passes. | Bench | Umer | [SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md) |
 | F10 | Assemblies, Starter Pack, Library. Emits realtime events (D-13). **The Library page is parked for later (D-287 6).** | Be Fe | Umer | _not yet specced_ |
 | F11 | Annotations and comments, print, find text, snippets and bookmarks. Emits realtime events (D-13). **Also owns, from F7 (D-39 Q9): the Legend and Print.** Dimension was brought forward and built in round 3 (D-97); the AI-verified witness layer came with the scale check (D-131). | Be Fe | Umer | _not yet specced_ |
 ---

@@ -45,3 +45,23 @@ every block. Smoke tests through the Playwright MCP, throwaway accounts:
 - **D-311 D**: three loose files dropped → takeoff in 374 ms, "New project – Oct 8, 2026"
   selected for rename → "Drop Test" → load screen; a folder dropped → project "BidSet", its
   files at the root and Electrical kept.
+
+## Follow-ups (2026-10-09, D-311 7 and 8)
+
+- **A1**: three projects; the last visit trashed → the other visited project; archived → the
+  same; both visited gone → the latest live project (never visited); restored and visited → it.
+- **A2**: a member on Beta's sheet removed by the owner → toast, Home in their own workspace in
+  659 ms, no error screen. A member with no other workspace and no socket → their next request
+  refused `not_a_member` → Home → "Name your workspace", no error screen.
+- **A3** (5 Mbps up over CDP, real S3): a 210 MB 3-page set plus a 30-file folder through New
+  project. The load screen opened at once; 24 drawings ticked as they landed, 6 specs not; the
+  big file's row "Uploading…" (once the file list was asked for while the queue ran), then
+  "Preparing…", then 3/3 ticked. Offline → tray "Paused" within 2 s, back online → it carried on.
+  S3 parts refused → "Upload failed · Retry" on the row → Retry resumed at 23 %, not 0. A file
+  that failed did not stop the next. Cancel from the row and from the tray: no file row left.
+  Reload mid-upload → the browser's leave-page prompt; dismissed, the upload went on. Found and
+  fixed: the tray behind the modal (row actions), toasts over the tray, no "Uploading…" row.
+- **A4**: ticks by size derived at render (no effect, no refs); held through A3 in StrictMode.
+- **A5**: `?company=  <b>Acme</b>\nCo‮  ` → "<b>Acme</b> Co", shown as text in the app; the
+  invitation mail's HTML had the name raw, now escaped (`&lt;b&gt;`), with every name in mail.
+- **A6**: the fixture rewrite is a Planned block (FX) on MANAGER, ahead of the tester deploy.

@@ -11413,3 +11413,16 @@ its four seed folders".
 6. **One upload queue for the app**, with a tray (progress, pause, retry, cancel per file) and a
    warning before leaving the page while it runs. Project Files, the empty-state drop, Upload
    drawing and New Project all use it; New Project no longer waits (D-310 7).
+7. **Follow-ups (2026-10-09, the founder's A1 to A6).** Removed from a workspace with a screen
+   open, a person goes Home to their next workspace (or naming), never an error: the realtime
+   removal and any request refused `not_a_member` (the api's code for it) both re-read the
+   workspace list first, then go Home. The load screen's ticks by size are worked out at render
+   from the sizes so far, with a file's own picks once touched: no effect, no run-once ref, no
+   updater to run twice. `?company=` is plain text: control characters become spaces, format
+   characters go, spaces collapse, 80 at most; the api cleans every workspace name the same way,
+   and the mail's HTML part escapes every name it carries.
+8. **The queue on the load screen (2026-10-09).** The load screen is modal and covers the tray,
+   so its rows carry the queue's actions: "Uploading… · Cancel", "Upload failed · Retry". It
+   asks for the file list while anything is on its way, so a file appears ("Uploading…") as soon
+   as its upload opens. The tray says "Paused" as soon as the browser goes offline, and toasts
+   stack above the tray, not over its buttons.
