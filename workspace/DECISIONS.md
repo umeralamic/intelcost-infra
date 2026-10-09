@@ -11642,3 +11642,54 @@ built overnight. Calls made on the founder's behalf are marked *(call)*.
 selection menu's Delete selected pages. Legacy (`SheetTree` `actionSpecs`) has no single-sheet
 Delete: its only Delete is in the selection menu, which needs 2 or more sheets ticked, so one
 sheet could only be deleted by ticking a second. This departs from legacy on purpose.
+
+## D-318: Empty-state copy; one fixed landscape frame for every load-screen tile
+
+*2026-10-09. Founder request.*
+
+1. **Empty state** (no projects): the subtitle's last sentence "Details can wait." becomes "Or
+   use New project to enter the details first." Headline and buttons unchanged.
+2. **Load screen tiles:** every tile, page or file on its way, is one fixed landscape frame
+   from its first appearance; the grid never reflows as sizes or thumbnails arrive. A thumbnail
+   is fitted inside it (contain, centred; a portrait sheet sits centred). The state shows inside
+   the frame, faint: "Uploading…", "Preparing…" (size not yet known), "Loading preview…" (size
+   known, thumbnail not yet), "No preview" (ready, none made). A waiting tile's caption row is as
+   tall as a page tile's, so a row of mixed tiles is one height. *(call)* The frame is 3:2, an
+   Arch D sheet's landscape shape, since the founder named landscape but no ratio. Supersedes
+   D-308's page-shaped tiles and D-313 A3's portrait placeholder.
+3. **Project-level selection and the tree pane** (founder's 1c and its amendment). The tree's
+   project row shows only when the project has two or more top-level items (folders or loose
+   files); with one top folder, that folder is the project's control and there is no extra
+   row. The project row's tick takes **every page** of every file (a folder's tick still takes
+   the size rule's pages). When the project is in focus (its row, or its one top folder when
+   there is no row), the right pane heads everything with "Whole project · N of M pages
+   selected · Select all · Clear · Drawings only". Drawings only re-applies the size rule
+   across the project, over any picks made by hand: drawing-size pages ticked, letter, A4 and
+   images not. N is the Load button's own count. A file still on its way or fully in takeoff
+   is left be. Per-folder Select all and Clear are unchanged. The tree pane is resizable at its
+   divider (drag or arrow keys), 200 to 480 px *(call: the dialog is 1024 px at most)*,
+   320 px by default (was 272), kept per person in browser storage
+   (`load-tree-width-v1:<user>`); indent is 8 px a level (was 12). *(call)* A file that has
+   landed but is not yet in the file list reads "Preparing…", not "Upload unfinished".
+
+## D-319: Sheets panel: no "At root", no flash, recursive counts, natural order
+
+*2026-10-09. Founder request, after a folder load.*
+
+1. **No "At root" heading.** Loose sheets list at the top level after the folders, unlabelled.
+2. **No flat-then-folders flash.** The api already makes the mirrored folders in the same
+   transaction as the sheets (`drawing/load.py`); the flash was the panel's, which drew sheets
+   whose folders it had not fetched yet as loose. Now `buildTree` holds back a sheet whose
+   folder has not arrived, the takeoff page fetches the folders as soon as a sheet names one it
+   lacks, and the Load refreshes folders and sheets together. A sheet appears in its final
+   folder or not at all.
+3. **Folder counts are recursive**: every sheet beneath (Building A 41, not 0), hidden only
+   when there are none. Search narrows them as before.
+4. **Natural order on load.** The api puts each new sheet in its natural-order slot among
+   its folder's sheets (by number, else name: A0.00A, A1.01, A1.02A, A2.01 … A10.00), and a
+   new mirrored or set folder among its siblings, then renumbers the folder in steps of 1000.
+   The slot is set when the sheet is made, so a sheet still preparing is already in place.
+   *(call)* Sheets and folders already there keep their order, so a hand reorder (drag,
+   Move selected to) survives a later load; only the new ones are slotted. Folders still come
+   before loose sheets. *(call)* "The open sheet never moves" is met for its folder; a sheet
+   slotted above it in the same folder pushes it down a row.
