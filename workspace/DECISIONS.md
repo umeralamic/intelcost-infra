@@ -11895,3 +11895,80 @@ vector check measured whole dimension strings as one (D-322 point 3).
      re-reads every sheet of the set, except names typed by hand.
    - **Typed by hand** (`name_source = "user"`): a rename. Never overwritten by a read.
    - Shown as "<number> – <title>". A failure is listed under "needs a look", never guessed.
+
+   - *(amended by D-324: a set is one upload's sheets of one page size.)*
+
+## D-324: Inch scales as printed, reads in parallel, no reading in the browser, screen-space scale markers
+
+Founder's follow-ups on D-322/D-323, and the scale box at zoom out.
+
+1. **Inch and word scales, as printed.** A6.11 and A9.00 print `SCALE: 6" = 1'-0"`; with no 6"
+   preset the reader formatted it `1" = 0.17'`.
+   - The server's list (and the app's) gains `6" = 1'-0"` and `12" = 1'-0"`, beside the
+     `3"` and `1-1/2"` it had.
+   - An inch scale off the list keeps its printed words (`9" = 1'-0"`), never `1" = X'`.
+   - `FULL SIZE` and `HALF FULL SIZE` read as scales (1 and 2 real inches a page inch, labelled
+     as printed) when they are the whole line, `SCALE:` at most before them, so "full size"
+     in a note never reads as one. `3" = 1'-6"` reads its inches.
+   - The browser has no scale parser any more (point 4), so the drag box reads the same.
+2. **Reads in parallel** *(measured)*. Before: the worker read each page right after preparing
+   it, inside the one job that prepares a file, so a set's pages were read one at a time
+   (2 worker processes, and a one-file set used one).
+   - Now a ready page goes to its own read task on a `reads` queue, served by a read pool:
+     `READ_WORKERS` processes, default 4 *(call: with the 2 main workers and the previews
+     worker, 7 of the bench's 12 cores at most; production: about half the host's cores)*.
+     Re-reads (Scale All, Page Name / Sheet # All, a template forming) also go one task a sheet.
+   - The prepared page is left on a disk the read pool shares (`worker_dir`) so it is not
+     fetched back from storage; without that disk it is.
+   - **40 copies of A0.00B** (133,000 lines a page), the worker's own prepare and read code
+     with storage taken out: serial 608 s (3.3 s prepare + 11.9 s read a page); 4 readers
+     247 s; 6 readers 268 s (cores contend; each read slows to about 24 s). The prepare loop
+     (about 5.5 s a page beside the readers) is now the floor. A reader peaks at about 600 MB.
+   - **Found on the way, fixed:** a prepare slice counted its 300 s from before it fetched
+     the file, and every continuation fetched the whole file again. The bench's link to the
+     bucket ran at 0.15 MB/s that day; a 178 MB set took 435 s to fetch, so every slice ended
+     before its first page and the set never prepared. The slice now counts from the file
+     being open and always prepares one page; the file is kept on the worker's disk between
+     slices and deleted when its last page is ready.
+   - The sweep re-sends a ready page's read still owed after `prepare_stale_minutes`, and
+     clears work files a dead job left, a day on.
+3. **Approve on a sheet with measurements** asks first, scaled or not: "N measurements on this
+   sheet will be recalculated at <scale>." with Change scale / Cancel.
+4. **No naming or scale reading in the browser.** The Sheets row's "Name from page region…"
+   reads each row on the server (`POST …/naming/preview`, nothing written; a number box alone
+   reads number and title, as legacy's one box did), and so does the line under each region.
+   Deleted: `scaleText.ts`, the verify half of `scaleVerify.ts` (what is left, reading the
+   saved proof back, is `scaleEvidence.ts`), and the page-reading half of `regionNaming.ts`.
+   *(left, not page reading)* Title-casing what the AI read, and naming a measurement from
+   the drag box's text, stay in the app.
+5. **Naming sets by source.** A set is the sheets of one source of one page size: their folder
+   (`d<folder>:<w>x<h>`); loose, their file when it has several pages (`f<file>:…`), else the
+   project's loose one-page files together (`loose:…`) *(call: D-308 loads a one-page file
+   loose, and keyed by file each would be a set of one and never form a template)*. Two
+   consultants' sheets of one size no longer share a template; an outlier sheet is still read
+   on its own. Migration
+   `d324c5a0e7f1` widens `size_key` and drops the templates keyed by size alone (the next
+   reads form their set's own).
+6. **Scale markers in screen space** (founder's zoom-out screenshots).
+   - The amber and applied boxes, the proving dimension's line and ticks, the ✓, the leader:
+     stroke widths and dashes a fixed size on screen (1.5 px; `non-scaling-stroke`, which in
+     Chrome keeps dashes on screen too, checked). Only positions and the box outline follow
+     the sheet. The ✓, the box padding and the ticks were sized with the sheet; now in screen px.
+   - "Approve" and its note, and the "AI Verified" label, a fixed size on screen.
+   - A box under 12 px tall on screen: a thin solid outline, no fill, no dashes, no ✓, and its
+     Approve card hidden until zoomed in.
+   - The label's room is cleared on the server for a page 900 px wide on screen *(call; D-323
+     used 1400)*, stored as `labelFitPx`; the app shows the label at that width or wider and
+     hides it below, so it never covers drawing text. An older proof keeps 1400.
+   - The larger room is found further out more often: a label two steps or more beyond the
+     dimension's text now gets the thin leader too, and every leader meets the line just past
+     the dimension's text (`leaderTo`), never through it (A1.02B: the label 7% of the sheet
+     above its line, found in clear space, now tied back).
+   - A thin outline stands 2 px clear of the text it marks, so its edges never sit on it.
+   - **Smoke** (A4.00 amber, A1.02B applied, ctrl+wheel on the box from 7% to 414%): strokes
+     1.5 px and dashes 5/3 px at every level from 47–51% up; below that (box under 12 px) a 1 px
+     outline, no fill or dashes, Approve hidden; the label 13.5 px tall at every level shown,
+     hidden while the page is under 900 px wide on screen; the ✓ 7 px wide throughout.
+   - Checked the other on-sheet markers: Auto Count's boxes, Find Text's hits, the drag-box
+     selection, the earthwork strips and link markers already draw in screen space. Markups
+     keep growing with the sheet, as legacy's.

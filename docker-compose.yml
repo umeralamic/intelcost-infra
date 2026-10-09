@@ -197,9 +197,25 @@ services:
       /srv/app
     volumes:
       - ../intelcost-app-fastapi/app:/srv/app
+      # A drawing's source between its prepare slices, and a prepared page until the read
+      # pool below reads it (D-324): shared, so neither is fetched back from storage.
+      - worker-work:/tmp/intelcost-work
     depends_on:
       api:
         condition: service_started
+
+  # A sheet's name and scale reads, side by side (D-324). A dense sheet takes 10 to 15 s of
+  # one core to read; read inline, one at a time, a 40-sheet set took 40 of them in a row.
+  # READ_WORKERS processes (default 4) on the `reads` queue, so with the 2 above and the
+  # previews worker the bench uses 7 of its 12 cores at most. Production runs the same
+  # split: a worker with `-Q reads --concurrency=N`, N about half the host's cores.
+  worker-reads:
+    extends:
+      service: worker
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=${READ_WORKERS:-4} -Q reads -n reads@%h"
+      /srv/app
 
   # Choose pages' thumbnails, on their own queue (D-43). A 268-page set takes minutes to
   # thumbnail; on the worker above it held up the Load right after it, and a person who
@@ -449,5 +465,6 @@ services:
 # Dependency and build caches only, never data. `down -v` drops them with everything
 # else, and the next start reinstalls.
 volumes:
+  worker-work:
   marketing-node-modules:
   marketing-next:
