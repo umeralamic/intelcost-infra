@@ -11332,3 +11332,84 @@ one-page PDFs became ten folders of one "Page 1" each. Now:
    for it, so one set is never split by a second Load.
 8. **Existing projects are not touched**: no migration; one-page folders already made stay until
    a person drags the sheets out.
+
+## D-309: New project starts empty; one drop zone for files or a folder
+
+**Status:** decided by the founder, 2026-10-08. Supersedes D-31's "every project is created with
+its four seed folders".
+
+1. **No seed folders.** A new project has no Plans, Specs, Reports or Site Photos. Folders come
+   from what is uploaded (a dropped or chosen folder keeps its tree) or from New folder. Nothing
+   in the product read those four by name; in takeoff they only added a mirrored folder (D-308).
+   Existing projects keep theirs: no migration.
+2. **Add files is one compact drop zone**: "Drag files or a folder here", with Choose files and
+   Choose folder. Loose files go to the project root; a folder, dropped or chosen, lands with its
+   tree (the same find-or-create path as Upload folder, F4-S17). The four category rows are gone.
+3. Beyond legacy on purpose: legacy seeded the four (`createBlankProject`).
+
+## D-310: Upload to takeoff is one screen, preselected by page size
+
+**Status:** decided by the founder, 2026-10-08. Amended by D-311 (point 7).
+
+1. **One screen** replaces "Load project files into takeoff" then "Choose pages", wherever it
+   opens (first run, Add sheets, after New Project): the Project Files tree with ticks on the
+   left, the focused item's pages on the right. A multi-page file shows its pages with D-308's
+   folder controls; a folder (or the project) shows its one-page PDFs as the compact grid and its
+   sets as rows. One Load button. A file's tick reads all, some or none of its pages.
+2. **Default ticks by page size** on first run and after New Project: a page is a drawing when
+   its short side is ≥ 750 pt and its long side ≥ 1150 pt, rotation ignored (A3 842×1191 and
+   11×17 792×1224 in, slightly undersized exports too; Letter, Legal and A4 out). Images and
+   TIFFs start unticked. **Add sheets starts with nothing ticked.** A page whose size is not yet
+   known starts unticked and takes its default when its size arrives, unless the person has
+   touched that file. Ticking a file selects its drawing-size pages, or every page if it has
+   none.
+3. **Sizes come first.** The worker's page task already writes sizes before thumbnails, but it
+   runs one file at a time on the previews queue (D-43), so a later file's sizes waited behind
+   earlier thumbnails. A light measuring task on the main queue writes every page's size by
+   ranged reads at upload-complete (whole-file PyMuPDF as the fallback); thumbnails stay where
+   they are. One project-level request (`GET …/file/page-sizes`) carries every PDF's status,
+   count and sizes, no links; thumbnails are fetched for the focused file only.
+4. **The screen opens at once.** A file still uploading shows "Uploading…" and cannot be ticked;
+   one still preparing shows its pages by number (shaped when sizes arrive, pictured when
+   thumbnails do) and can be ticked and loaded before it is ready: the Load counts pages itself
+   and the sheets render when the worker has them (D-47).
+5. **Nothing loads without Load.** Upload drawing puts its files in the tree, preselected, and
+   no longer loads them by itself. Skip and Cancel load nothing.
+6. **New Project has one Create.** With files it opens takeoff on this screen, preselected by
+   size; without, an empty takeoff.
+7. **Superseded by D-311 (point 6):** "Create waits for the uploads in the dialog". Uploads go on
+   the app-wide queue and Create opens the screen at once, its rows "Uploading…".
+
+## D-311: Takeoff-first app shell
+
+**Status:** decided by the founder, 2026-10-08. Built after D-310, in blocks A, B, C, E, D.
+
+1. **Home (`/`) redirects**, checked against current access each time: the last sheet visited in
+   this workspace → that project's first sheet (or D-310's screen if it has files and no sheets)
+   → the most recently updated project the person can open → the empty state. A deleted sheet,
+   an archived or deleted project and a removed membership each fall through to the next step.
+   There is no per-project access list (every member opens every live project), so "removed
+   from a project" means the project went to Trash, was set Archived or Cancelled, or the
+   person left or lost the workspace.
+   The dashboard list moves to `/projects` ("All projects"). `routes.dashboard` becomes
+   `routes.home`, plus `routes.projects`.
+2. **The last sheet is stored on the server** (`project_visit`: user, workspace, project, last
+   sheet, when), written 2 s after the sheet changes (debounced). The same rows give the recent
+   projects.
+3. **New signups get a workspace named for them**: the company name if signup has one, else
+   "<Name>'s workspace", renamable in Settings. The naming step is dropped for new signups;
+   `RequireWorkspace` still sends anyone without a workspace to it.
+4. **Empty state:** "Drop your drawings here to start", Choose files, Choose folder and New
+   project. A drop creates the project (a folder → its name, its contents at the project root
+   with its subfolders kept, not the folder again inside itself; one file → its stem; several
+   → "New project – <date>", selected for rename) and opens D-310's screen at once. Details stay
+   optional, under Project details & files. A person who cannot create projects sees "No
+   projects shared with you yet".
+5. **Top bar.** Left, the project name menu: recent projects (each opens on its last sheet), All projects, New project, Project
+   details & files (`/project/:id`), Wage Calculator, Switch workspace. Right, an avatar menu in
+   place of the Dashboard link: Account settings, Billing & plan, Workspace & team, Community,
+   Developer (platform admins only), Sign out. Settings, Reports, Community and Platform go
+   "Back to takeoff" (Home).
+6. **One upload queue for the app**, with a tray (progress, pause, retry, cancel per file) and a
+   warning before leaving the page while it runs. Project Files, the empty-state drop, Upload
+   drawing and New Project all use it; New Project no longer waits (D-310 7).
