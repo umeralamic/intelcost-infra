@@ -100,14 +100,14 @@ A bench with no data in it is ten minutes of clicking before you reach the thing
 came to test. One command instead:
 
 ```bash
-docker compose exec -T api sh -lc "cd /srv && python scripts/seed.py --storage-host host.docker.internal:9000"
+docker compose exec -T api sh -lc "cd /srv && python scripts/seed.py"
 ```
 
 Since F5-S9 the seed goes the way a person does: the PDF is uploaded into the project's
 Plans folder through the multipart path, loaded into takeoff through `/drawing/load`, and
-prepared by the worker. `--storage-host` is for running it inside the api container, where
-the presigned `localhost:9000` is not MinIO; the part is sent there with the signed Host
-kept. `--reset` seeds a fresh timestamped account instead of the seeded one.
+prepared by the worker. `--storage-host` dates from MinIO: since D-259 the presigned links are the real
+bucket's and reachable from the container, so do not pass it (it would send the parts to that
+host instead). `--reset` seeds a fresh timestamped account instead of the seeded one.
 
 Then sign in at http://localhost:5173 with:
 
@@ -283,7 +283,7 @@ container first: `docker compose stop app`.
 |---|---|---|---|
 | `postgres` | 5433 | The managed database | `psql -h localhost -p 5433 -U intelcost` |
 | `redis` | 6380 | The managed broker | `redis-cli -p 6380` |
-| `minio` | 9000, 9001 | S3 | http://localhost:9001 (minioadmin / minioadmin) |
+| `minio` | 9000, 9001 | Nothing since D-259: storage is the real bench bucket (`umer-local-intelcost1`); MinIO still starts | http://localhost:9001 (minioadmin / minioadmin) |
 | `mailhog` | 1025, 8025 | The mail provider | http://localhost:8025 |
 | `api` | 8000 | Itself | http://localhost:8000/docs |
 | `worker` | | Itself | `docker compose logs -f worker` |
@@ -350,8 +350,10 @@ docker compose logs -f api
 docker compose logs -f worker      # rendering, tiling, purge
 ```
 
-Uploads land in MinIO under `takeoff/{workspace}/{project}/{sheet}/v{n}/`. Open the
-console at :9001 to see exactly what the worker wrote.
+Uploads land in the real bench bucket (D-259), keyed `<area>/{workspace}/{project}/…`
+(`project-file/…` for uploads, `takeoff/{workspace}/{project}/{sheet}/v{n}/` for the worker's
+output). `python drives/bench-workspaces.py list-storage <uuids>` counts what is left under a
+workspace's prefixes, read only; `purge-fx` prints the uuids it purged for it.
 
 ## The acceptance rule
 

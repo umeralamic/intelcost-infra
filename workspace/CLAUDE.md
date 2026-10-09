@@ -17,7 +17,7 @@ and compute earthwork cut and fill from a surface TIN.
 | `intelcost-market-next/` | The marketing site. `intelcost.io`. No session, no database, no money. | Next 16, React 19, Tailwind 4 | Built, never deployed |
 | `intelcost-app-react/` | The application frontend. `app.intelcost.io`. Everything behind a session. | React 18, Vite 8, Tailwind 3 | Being built |
 | `intelcost-app-fastapi/` | The backend. `api.intelcost.io`. Owns the database, the files, the money, the jobs. | FastAPI, Python 3.14, Postgres 18, Celery, S3 | Being built |
-| `intelcost-infra/` | The live bench. A Docker Compose clone of the whole system with ephemeral data and fakes for every external service. | Docker Compose | In use |
+| `intelcost-infra/` | The live bench. A Docker Compose clone of the whole system with ephemeral data and fakes for every external service except storage, which is the real bench bucket (D-259). | Docker Compose | In use |
 
 Testing is **conducted** on the bench in `intelcost-infra/`, **not written**.
 

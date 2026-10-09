@@ -10,6 +10,8 @@
                             (`fx.<fixture>.<stamp>@bench.intelcost.io`) or by a seat a
                             fixture made (`<tag>-<role>-<stamp>@…`); regress.sh ends
                             with this. Bench Construction is never one of them
+    list-storage <uuids>    read only: objects and open multipart uploads left under each
+                            storage area of these workspaces (purge-fx prints the uuids)
     snapshot                print the seeded account's workspace uuids, comma-joined,
                             on a line starting `uuids `
     check <uuids>           FAIL if the seeded account is in a workspace not in <uuids>
@@ -123,6 +125,37 @@ async def purge_fx() -> None:
     doomed = [uuid for uuid, email in owned if FX_OWNER.match(email) and email != SEEDED]
     gone = await delete_workspaces(doomed)
     print(f"purged {gone} workspaces owned by fixture accounts")
+    # For `list-storage` afterwards: the bench's storage is the real bucket (D-259).
+    print(f"uuids {','.join(str(uuid) for uuid in doomed)}")
+
+
+def list_storage(uuids: str) -> None:
+    """Read only: count the objects and open multipart uploads under every area prefix of
+    these workspaces. After a purge each line should read 0 and 0 (D-313 A7)."""
+    client = storage._client()
+    bucket = storage.settings.s3_bucket
+    left = 0
+    # The bench's IAM user may not list open multipart uploads; then that column says so.
+    can_list_uploads = True
+    for uuid in (u for u in uuids.split(",") if u):
+        for area in get_args(storage.Area):
+            prefix = f"{area}/{uuid}/"
+            objects = sum(
+                page.get("KeyCount", 0)
+                for page in client.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix)
+            )
+            uploads = "n/a"
+            if can_list_uploads:
+                try:
+                    found = client.list_multipart_uploads(Bucket=bucket, Prefix=prefix).get("Uploads", [])
+                    uploads = str(len(found))
+                    left += len(found)
+                except client.exceptions.ClientError:
+                    can_list_uploads = False
+            left += objects
+            print(f"storage {prefix} objects {objects} open-uploads {uploads}")
+    note = "" if can_list_uploads else " (open uploads not visible: IAM lacks s3:ListBucketMultipartUploads)"
+    print(f"storage total left {left}{note}")
 
 
 async def purge_owner(email: str) -> None:
@@ -172,5 +205,7 @@ if __name__ == "__main__":
         asyncio.run(snapshot())
     elif step == "check":
         asyncio.run(check(args[0] if args else ""))
+    elif step == "list-storage":
+        list_storage(args[0] if args else "")
     else:
         fail(f"no step {step}")

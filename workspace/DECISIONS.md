@@ -11455,3 +11455,18 @@ and D-167's Open dialog.
 7. **The shared menu gains a search field** (`ContextMenu`'s `search`): typing stays in the
    field, ↑ ↓ Enter Escape drive the rows, and the first match is highlighted as rows change.
    Rows can carry a `tag`.
+
+## D-313: Load screen fixes (App shell Part A)
+
+**Status:** decided by the founder, 2026-10-09 (the approved plan and its answers); built
+overnight 2026-10-09, block by block. Calls made on the founder's behalf are marked *(call)*.
+
+1. **Block 1.** A one-page file's tree row has no "n/m selected" note (its tick says it all); a
+   multi-page file keeps it. File and folder names truncate with the whole name as a tooltip.
+   Search results tag a closed project "Archived" or "Cancelled" (before "No sheets yet").
+   **Storage stays the real bench bucket (D-259);** `bench-workspaces.py list-storage <uuids>`
+   counts what is left under each area prefix, read only, and `purge-fx` prints the uuids it
+   purged. *(call)* The bench's IAM user lacks `s3:ListBucketMultipartUploads`, so open
+   multipart uploads are reported "n/a", not counted; a lifecycle rule aborting incomplete
+   uploads would cover them (not set tonight: it is the bucket owner's). `alembic check` runs
+   with every gate and its line is reported (P-23's 3 indexes only).
