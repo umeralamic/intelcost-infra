@@ -11426,3 +11426,32 @@ its four seed folders".
    asks for the file list while anything is on its way, so a file appears ("Uploading…") as soon
    as its upload opens. The tray says "Paused" as soon as the browser goes offline, and toasts
    stack above the tray, not over its buttons.
+
+## D-312: Open is a menu; the project name is plain text
+
+**Status:** decided by the founder, 2026-10-09. Supersedes D-311 point 5's project-name menu
+and D-167's Open dialog.
+
+1. **"Open" stays "Open"** and opens a menu, not a dialog: Search projects, Recent projects (up
+   to 8, the current one marked), All projects (`/projects`), New project, Project details &
+   files, Wage Calculator, Switch workspace ▸ (shown with more than one workspace, as before).
+2. **Search** covers every project the person can open (every project not in Trash, archived
+   ones included): the api searches by name (`q`, any case, its wildcards escaped), asked once
+   typing pauses, so none is missed past a page. While typing, the menu shows only the matches;
+   Enter or a click opens the first or the chosen one. No stale rows: a new query shows
+   "Searching…" until its answer is in.
+3. **A project opens on the sheet last open there** (`GET …/{project}/visit`), else its first
+   sheet, else the load screen when it has files (`takeoffEntry`).
+4. **The centre of the takeoff header is the project's name as plain text**: no chevron, no
+   menu, not a link; truncated, the whole name as its tooltip. Home's empty state has no project
+   and shows no name.
+5. **The Open dialog is deleted**, both tabs. "Set up takeoff on existing project" is the list
+   itself: a project with files and no sheets carries "No sheets yet" (`has_files` and
+   `has_sheets` on the list and on the recent projects) and opens on the load screen.
+6. **Every opener repointed.** The Open dialog had one: the Open button in the takeoff header's
+   group. The "o" key in takeoff is Ortho, not Open, and no empty state or link opened it. The
+   no-sheets takeoff screen gains the same Open menu beside its project link, so a project with
+   no sheets is not a dead end.
+7. **The shared menu gains a search field** (`ContextMenu`'s `search`): typing stays in the
+   field, ↑ ↓ Enter Escape drive the rows, and the first match is highlighted as rows change.
+   Rows can carry a `tag`.
