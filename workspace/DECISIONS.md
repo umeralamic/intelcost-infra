@@ -11470,3 +11470,35 @@ overnight 2026-10-09, block by block. Calls made on the founder's behalf are mar
    multipart uploads are reported "n/a", not counted; a lifecycle rule aborting incomplete
    uploads would cover them (not set tonight: it is the bucket owner's). `alembic check` runs
    with every gate and its line is reported (P-23's 3 indexes only).
+2. **Block 2: the modal stack and one count.** Every modal (`Dialog`, `ConfirmDialog`,
+   `PromptDialog`) registers in `modal-stack.ts` while open; keys belong to the one on top, so
+   a confirm's Escape closes only the confirm (before, every modal listened on `window` and a
+   nested Escape closed both), and an Escape a menu already handled closes nothing. The upload
+   tray renders nothing while any modal is open and comes back on close; the load screen shows
+   the same progress at the top of its right pane ("Uploading 8 of 24 files · 38%" with a bar).
+   **One count** (`uploadProgress`): files landed of every file not cancelled, and bytes for the
+   %, for the tray and the load screen alike; the tray no longer says "done + 1". Tree folders
+   say "(12 files)": files takeoff can use beneath, on their way included. The Load button says
+   pages (an image or a TIFF counts 1).
+3. **Block 3: no-sheets projects in the takeoff shell.** One route,
+   `/project/:id/takeoff/:sheetUuid?`, renders the takeoff page either way; `TakeoffStart` is
+   deleted. With no sheet named, a project with sheets goes on to its first (the query, e.g.
+   `?tab=estimating`, along); one without stays: header, tabs, Open menu and name, the Sheets
+   panel, and "No sheets yet" with Add sheets on the canvas. The first-run load screen and the
+   dated project's rename offer ride router state, read once per arrival (switching projects
+   keeps the page mounted), then cleared, so a refresh does not ask again. Skip leaves the empty
+   takeoff; the Sheets panel's + → Add Pages opens the same load screen.
+4. **Block 4: a folder shows everything beneath it.** Focusing a folder (or the root) shows the
+   folder's own files, then each subfolder's under its path ("Architecture", "Sub 1 / Old"), in
+   tree order: one-page PDFs as tiles with each folder's own Select all and Clear, files on their
+   way or not yet measured as grey tiles ("Uploading…", "Preparing…"), sets and images as rows.
+   The pane is never blank while files sit beneath it. **One request:** a one-page PDF's
+   thumbnail link rides on `GET …/file/page-sizes` (kept per page across polls), which is asked
+   again while thumbnails are still being drawn; only an open multi-page set asks for its own
+   pages. **The 500-tile check stuttered** with every tile in the document (programmatic scroll
+   p50 50 ms a frame, long tasks of 50–70 ms), so, as the founder ruled, the pane is virtualized
+   with `@tanstack/react-virtual` (rows: heading, grid header, a row of 3 or 4 tiles, a folder's
+   sets), tile rows memoized so a scroll only moves them: wheel scrolling over 500 tiles p50 17 ms,
+   p95 50 ms, 1 frame of 144 over 50 ms; 48 tiles in the document; first draw 671 ms (was 991),
+   ticking all 500 373 ms (was 570). *(call)* The 500 files for the check were copies of one
+   landed file made in the database (uploading 500 to the real bucket ran ~6 s a file).
