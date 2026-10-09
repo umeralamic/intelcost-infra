@@ -98,8 +98,8 @@ s, but first scan 43.4 → 155.4 s (the 13.7 MB SIMD file took 135.6 s to load i
 
 ## Clean-up
 
-- Purged the night's throwaway workspace (`fx.night.1791522322849@bench.intelcost.io`, "<Night
-  Owner>'s workspace", uuid `d6d6138f-…`) and listed its 8 storage prefixes: 0 objects left in
+- Purged the night's throwaway workspace (`fx.night.1791522322849@bench.intelcost.io`, "Night's
+  workspace", uuid `d6d6138f-…`) and listed its 8 storage prefixes: 0 objects left in
   each (open multipart uploads not visible to the bench's IAM user). The October 8 session's two
   purged workspaces were listed the same way at the start: 0 objects.
 - Removed: the harness and memory sampler, the sheet copies (`public/__smoke`, deleted before the
