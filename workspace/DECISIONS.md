@@ -11807,3 +11807,91 @@ Supersedes D-320 2 (the browser read), D-320 3's flags, and D-318 3's project-ro
    React). That cost is the sheet list redrawing, not reading, and it is a follow-up.
 7. **The project row's tick applies the size rule**, as a folder's and a file's do (founder's
    item 3). The pane's Select all stays the explicit everything.
+
+## D-322: Reduced prints by dimension, several scales never applied, progress at once
+
+Founder's follow-ups on D-321. Supersedes D-321 point 3's reduced-print rule and its "the one a
+dimension proves wins".
+
+1. **Reduced print.** Page size says nothing: 11 x 17 and A3 are full-size formats too.
+   - The dimensions measure half or twice the printed scale: the box reads "Printed X, but
+     dimensions measure as Y. Reduced print?" and Apply offers Y. Never applied on load.
+   - No dimension to measure: the reduced-print note shows only when the sheet's own text says so
+     (HALF SIZE, REDUCED PRINT, "IF THIS SHEET IS NOT 24x36" and the like, `says_reduced`).
+2. **Several different printed scales:** none is applied on load, a proved one included. Each
+   distinct scale gets its own amber box and Apply; the proved one reads "matches a dimension"
+   and, applied, is saved as verified with its witness. `scale_suggestion` becomes a list, one
+   entry per printed scale; a sheet read under D-321 holds one bare entry and is read as a list
+   of one.
+3. **Vector check, the server's merge** *(fix)*: collinear lines are joined only where their
+   ends touch, as the app's `mergeCollinear` does. The server had joined overlapping ones, so a
+   dimension string (each line runs a little past its ticks) was measured as one long dimension.
+4. **Tray after a reload:** a project opened with sheets still preparing or being read gets its
+   run rebuilt from the server's per-sheet status, in the tray, once per project opened.
+5. **The progress view opens on Load** (founder's item 6), before the api answers: the pages
+   chosen, each Queued, the bar at 0; the sheets the server makes take the rows over. Load sends
+   once per press. A failed request shows its reason in the view with Try again (the same
+   request); nothing was loaded.
+6. **Backlog:** the development build's Sheets panel redraw during a Load (about 50 to 90 ms a
+   second) is its own Planned item.
+
+## D-323: One reading engine for load and the drag box; no scale dialog; naming templates
+
+Founder's test on real plans: load left A1.02B unscaled while the drag box's Scale verified 1/4"
+against 34 dimensions.
+
+**Cause** *(report)*: that Load ran before D-321 reached the bench, so the browser read on load
+(D-320): every sheet's dimension check on the main thread, one after another. The first sheet,
+A0.00B, has 131,728 strokes and the all-pairs check stalled there; A1.02B's scale was never
+checked at load. Running the server engine (D-321) on the same files showed a second gap: its
+vector check measured whole dimension strings as one (D-322 point 3).
+
+1. **One engine, the server's.** The drag box's Scale and Scale All, and its Page Name / Sheet #
+   and their All, read on the server with the engine load uses (`reading.py`), under the same
+   rules. The AI stays the fallback for a sheet with no text layer, as before. The browser's
+   dimension check (`find/sheetStrokes.ts`) and the scale dialogs are deleted. *(left)* The
+   Sheets panel row's "Name from page region…" preview dialog still reads its preview in the
+   browser; moving it onto the server is a follow-up.
+   - **Parity, measured:** the server's collinear merge is now a rule-for-rule port of the
+     app's `mergeCollinear` (it joins a line only where it starts on the chain, in drawing
+     order; a string drawn end to start stays apart), indexed by place and direction so a
+     133,000-line sheet reads in about 18 s in the worker instead of freezing a tab. On the
+     founder's sheets the two engines agree on every sheet compared (A1.01 11 = 11 vector
+     witnesses, A9.20 34 = 34, A4.02 12 = 12 with the same verdicts; A1.02B 35 against 34,
+     same verdict).
+   - A re-read fetches the page up to three times; one that still fails is flagged "needs a
+     look", never left silently as it was.
+2. **No scale dialog.** "Apply this scale?" and the Scale-on-every-sheet dialog are gone.
+   - Verified (one printed scale, a dimension proves it): applied silently.
+   - Otherwise an amber box on each printed scale with a small "Approve" text link beside it
+     (left of the box near the right edge). One click applies; the box restyles to applied.
+   - What was checked (dimensions checked, the longest) stays on the saved evidence and in the
+     toast; *(call)* "Change scale on this sheet?", which protects drawn quantities, stays.
+   - A re-run on a sheet that already has a scale: a proved scale equal to it changes nothing; a
+     different proved one is applied when the sheet has no measured items, else it waits as an
+     amber box. Amber boxes show whenever the sheet keeps suggestions.
+3. **Markers** (founder's later note supersedes the first wording): no label at the scale text;
+   the scale box style is the only signal there (applied: the normal highlight with a small tick
+   outside the text). The proving dimension keeps its purple line and its "AI Verified 60'-0""
+   label, 10% smaller, placed beyond the dimension's own text in clear space, or, with none
+   near, in the sheet margin with a thin leader. The server picks the place when it proves the
+   scale (`witness.labelAt`), clear of every text run and stroke for the label's footprint
+   *(call: sized as on a page 1400 px wide at Fit)*; the app draws a placed label at exactly
+   that footprint, in page units, so it fills the space that was found on any screen. An older
+   proof without `labelAt` keeps its label beside the line.
+   - **Approve** on a sheet that already has a scale and drawn quantities still asks "Change
+     scale on this sheet?" first, as the Scale menu does *(call)*.
+4. **Naming templates.** A set is the project's sheets of one page size *(call)*.
+   - The first sheets of a set are read on their own: the number is the largest sheet-number
+     text in the title block; the title is the nearest block of large type to it that is not
+     a date, a stamp ("ISSUED FOR CONSTRUCTION"), a field caption, or text found identical on
+     the set's other sheets (project name, firm, address). Two sheets that agree on where the
+     number is make the set's template: the number and title regions, in the drag box's form.
+   - Every other sheet is read through the template; one where it reads nothing valid is read
+     on its own, and only that sheet changes.
+   - Valid: the number matches a sheet-number pattern and agrees with the file name when the
+     file is named that way; the title has words and varies across the set.
+   - The drag box's Page Name / Sheet # + All replaces that region of the set's template and
+     re-reads every sheet of the set, except names typed by hand.
+   - **Typed by hand** (`name_source = "user"`): a rename. Never overwritten by a read.
+   - Shown as "<number> – <title>". A failure is listed under "needs a look", never guessed.
