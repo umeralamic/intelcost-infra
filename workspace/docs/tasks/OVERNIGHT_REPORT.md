@@ -13,7 +13,7 @@ smoke below ran through it.
 | 3 | P-23 alembic drift | **done** | api `806d3c4`, infra `9a2b894` |
 | 4 | Auto Count part 1 | **done** | app `68eeaaf`, infra `d01a2b8`, `8c1f0c0` |
 | 5 | Competitor-name scan | **done** (rule added, hits listed, nothing changed) | infra `8c1f0c0` |
-| 6 | P-24 | in progress | |
+| 6 | P-24 | **done** | app `eb23ece` and the row step (below), infra `65d5413` |
 
 ## 1. Settings speed (D-325)
 
@@ -175,3 +175,29 @@ files, left out) for "zz", "zzTakeoff", "PlanSwift", "Bluebeam", "STACK", "On-Sc
   validate_seed.py:31, 32`, `intelcost-infra/.regress/f5-s13.log:12`,
   `intelcost-infra/.regress/full-f5-close/f5-s13.log:12`.
 - "STACK" (as a product), "On-Screen Takeoff", "OST": no other hits.
+
+## 6. P-24 (D-329)
+
+**Why the panel redrew:** each prepared page refetches the sheet list, the signed assets and the
+scales (at most once a second); the takeoff page redraws for each, and the panel took dozens of
+inline callbacks plus `sites`/`overlayActions` rebuilt every render; and every assets read signs
+every thumbnail URL anew (SigV4 carries the time), so the thumbnails map was always new (in
+thumbnail view each image was fetched again).
+
+**Now:** the panel is memoized behind `useStableProps` (stable callers of the page's latest
+callbacks; none goes stale), `sites` memoized, thumbnail URLs kept while the object is the same
+and the signature young, and each row memoized (`SheetRow`: drawn from plain props, its handlers
+through a ref to the panel's latest).
+
+| Dev build, a 40-page Load, panel open | Before | Panel memoized | **And its rows** |
+|---|---|---|---|
+| Panel redraws over 1 ms | 96 (0.83 a second) | 46 | 49 |
+| One redraw, median / max | 19 / 34 ms | 18 / 27 ms | **5 / 11 ms** |
+| Redraws over 16 ms | 79 | 38 | **0** |
+| Time redrawing | 1.8 s | 0.87 s | **0.27 s** |
+
+**Smoke:** open, Ctrl/Shift range, the selection ⋮ menu and the row ⋮ menu, right-click, plain
+click clears, rename in place, drag to reorder (saved), Thumbnails view (40 tiles, a tile opens),
+items open/close, an item selects and right-clicks, Name from page region opens the page's
+dialog: **passed**. Also, the new page pool with an image upload (a PNG wrapped, prepared, ready
+in 25 s, its kept source cleaned up): **passed**.

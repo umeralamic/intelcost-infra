@@ -12147,18 +12147,24 @@ the 2026-10-10 overnight report, unchanged, for the founder to decide on.
    each callback becomes one stable caller of the page's latest, so none goes stale, and a bag of
    callbacks (`overlayActions`) a stable object; `sites` is memoized (and the hook gives one empty
    list); a sheet keeps its thumbnail URL while the object is the same and the signature is under
-   half its hour, so the map keeps its identity. *(call)* Rows are not memoized one by one: they
-   close over the panel's selection and drag state, and a skipped render could leave a stale
-   handler; the panel as a whole is the safe cut.
+   half its hour, so the map keeps its identity. Then each row (`SheetRow`) is memoized too: what
+   it draws comes in as plain props (its sheet, active, checked, open, marker, label, …), and what
+   it does goes through a ref to the panel's latest handlers, set after every draw, so a row
+   skipped by `memo` never acts on an old selection or drag; an open row's item list is drawn by
+   the panel, which has the page's item details.
 3. **Measured** (dev build, a 40-page Load of A1.01 copies, the panel open, a React Profiler on
    it during the Load only, removed after):
 
-   | | Before | After |
-   |---|---|---|
-   | Panel redraws | 96 (0.83 a second) | 46 (0.33 a second) |
-   | Time redrawing | 1.8 s | 0.87 s |
-   | One redraw, median / max | 19 / 34 ms | 18 / 27 ms |
+   | | Before | Panel memoized | **And its rows** |
+   |---|---|---|---|
+   | Panel redraws over 1 ms | 96 (0.83 a second) | 46 (0.33 a second) | 49 |
+   | One redraw, median / max | 19 / 34 ms | 18 / 27 ms | **5 / 11 ms** |
+   | Redraws over 16 ms | 79 | 38 | **0** |
+   | Time redrawing | 1.8 s | 0.87 s | **0.27 s** |
 
-   The redraws left are the list's own changes (a sheet ready or read). Smoke after: a row opens
-   its sheet, Ctrl and Shift select a range, the row menu's Name from page region opens the page's
-   dialog, a rename in place saves and shows: passed.
+   What redraws now is the row whose sheet changed. Smoke after both steps: a row opens its sheet;
+   Ctrl and Shift select a range; the ⋮ of a selected row gives the selection menu, of another its
+   11-item row menu; right-click; a plain click clears the selection; rename in place; a drag to
+   reorder (saved); Thumbnails view (40 tiles, a tile opens its sheet); a sheet's items open and
+   close, an item selects and right-clicks to its menu; the row menu's Name from page region opens
+   the page's dialog: passed.
