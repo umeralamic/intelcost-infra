@@ -1,44 +1,19 @@
-# Overnight plan, 2026-10-09 (04:56 → 11:30 UTC)
+# Overnight plan, 2026-10-10 (00:01 → 11:30 UTC)
 
 The founder's brief, in order. Each block: gates (lint, typecheck, build; ruff, mypy, alembic
-check with the P-23 line), quantity table, one Playwright MCP smoke on a throwaway account,
-commit and push on `umer-dev`, then the report updated. Unfinished work goes to a named stash
-`overnight-<block>`. Mail guard on (checked: `MAIL_GUARD=true`, allowlist set). Founder
-projects (Hidden Valley Spec, Waxing City, Hidden Valley Spec Building Rebid) read only.
+check), quantity table, one Playwright MCP smoke on a throwaway account, commit and push on
+`umer-dev` (the workspace mirror in the same commit), then [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md)
+updated. Unfinished work goes to a named stash `overnight-<block>`. The 2026-10-09 run's files
+are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-09.md`.
 
-## Pre-flight
+Browser tool: the Playwright MCP connects and drives the app (checked 00:02 UTC).
 
-- Browser tool: Playwright MCP connects and drives `localhost:5173` (checked 04:56).
-- D-259 bucket CORS: already recorded resolved in DECISIONS (D-259, 2026-10-08) and
-  `docs/flows.md` (:97, :352); the harness workaround was never committed, nothing to drop.
-
-## 1. App shell, Part A (D-313)
-
-| Block | Contents |
-|---|---|
-| 1 | A4 one-page notes off, name room + tooltip; A6 Archived / Cancelled tags; A7 `list-storage` drive, stale MinIO/fakes docs; A8 alembic check in the gates |
-| 2 | A1 dialog stack (only the top dialog takes Escape and the backdrop), tray hidden under any modal, progress line in the load screen; A2 one counting function |
-| 3 | A5 no-sheets projects in the takeoff shell; TakeoffStart deleted |
-| 4 | A3 recursive folder pane grouped by subfolder, placeholders, batched thumbnails, 500-tile check (react-virtual only if it stutters) |
-
-## 2. Auto Count
-
-- Drop stash `overnight-part2a-outline-symmetry` (shipped as D-305).
-- OpenCV worker policy: 4 workers at ≥ 8 GB, else 1; kept warm, released after 2 min idle;
-  memory before / peak / between / +3 min; timings for office, "C", E200 A, E200 A1 at 70 % and
-  38 %, 4 and 1 workers, first and back-to-back, in host Chrome.
-- SIMD opencv.js under the same-checked-set contract; ship only if faster.
-
-## 3. App shell, Parts B and C (D-314, D-315)
-
-| Block | Contents |
-|---|---|
-| 5 | B1 Reports in the avatar menu, gated as the reports page |
-| 6 | B2 All projects dialog (status tabs as today, search across tabs, Takeoff / Files buttons, ⋯ Edit / rename / archive / unarchive / Trash, footer Trash link), `previous_status` column, `/projects` redirect |
-| 7 | C1 Edit project (edit mode of New project, status, scope, notes, Discard prompt, from the list without switching) |
-| 8 | C2 file housekeeping in the tree + Files-from-list mode |
-| 9 | C3–C6 Wage Calculator in Estimating, final Open menu, project page deleted, redirects |
-
-## End
-
-Purge throwaway workspaces, list their S3 prefixes (empty), final report.
+| # | Block | Plan | Budget |
+|---|---|---|---|
+| 1 | Settings speed | Measure first/second visit per tab, dev and prod (`app-prod` started), before. One layout route for settings: the frame (header, title, both tab rows) renders once, tabs are child routes, a Suspense placeholder only in the content area. Prefetch the other tabs' chunks at idle on entering settings, and on tab hover. Settings queries fresh for 60 s; mutations invalidate what they change (check each page). Classification `?system=csi`: profile, cache server side, ETag / long client cache, target < 100 ms. Measure after. Report only: the Linux filesystem estimate. | 00:05–03:00 |
+| 2 | D-324 follow-ups | Prepare stage on a pool (one page a task, a cap by CPU and memory), the first-ticked sheet prepared and read first, then tree order; 40-sheet wall time before/after on one set. Scale parsing computed: any architectural, engineering, metric scale to a ratio, displayed as printed; metric and engineering test sheets in the smoke. Sizing note for Abdullah. | 03:00–06:00 |
+| 3 | P-23 drift | Declare the three indexes in their models as their migrations define them; alembic check clean; P-23 closed. | 06:00–06:30 |
+| 4 | Auto Count part 1 | One kept OpenCV worker everywhere, 2-minute release (D-316 updated). Benchmark protocol: prod build, four fixed fixtures with sheet copies, truth table at 70% and 38%, first/next scan, memory; a one-click dev page. Run before and after. | 06:30–10:00 |
+| 5 | Competitor names | The standing rule in CLAUDE.md and DECISIONS; list every hit, change nothing. | 10:00–10:30 |
+| 6 | P-24 | Only with time left. | 10:30–11:15 |
+| — | Final report | Purge throwaway workspaces, list their prefixes empty. | 11:15–11:30 |

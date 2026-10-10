@@ -11972,3 +11972,49 @@ Founder's follow-ups on D-322/D-323, and the scale box at zoom out.
    - Checked the other on-sheet markers: Auto Count's boxes, Find Text's hits, the drag-box
      selection, the earthwork strips and link markers already draw in screen space. Markups
      keep growing with the sheet, as legacy's.
+
+## D-325: Settings opens at once: one frame, prefetched pages, fresh data, a cached tree
+
+**Status:** decided by the founder, 2026-10-10 (overnight brief, block 1, from the diagnosis
+of 2026-10-09); built and measured overnight.
+
+1. **One settings frame.** `/settings` is one layout route (`SettingsRoute`): the header, the
+   heading and both tab rows are drawn once; every tab and section is a child route. A click
+   marks the tab at once and only the content area waits, with a quiet "Opening" placeholder
+   that appears only after 150 ms. No full-page "Loading", no frame rebuilt per click. A page
+   still wraps itself in `SettingsLayout`, which inside the frame only names the browser tab
+   and sets the frame's width; embedded in the Share dialog it is the content alone, as before.
+2. **Prefetch** (`pages/settings-pages.ts`, one map for the routes and the prefetch): entering
+   settings fetches the other pages' code one at a time at idle, and a tab's on hover or
+   focus. Not at app start.
+3. **Fresh for a minute** *(call: scoped)*. While the settings frame is open, queries under the
+   settings pages' key prefixes (`workspace`, `classification`, `classification-systems`,
+   `subcontractors`, `subcontractor-scopes`, `estimate-bid-defaults`, `estimate-packages`,
+   `wage-calculator`, `shifts`, `report-settings`, `project-status`, `ai`, `billing`, `trash`)
+   count as fresh for 60 s, and any save made there marks them all stale, so it shows at once.
+   Several of these keys are also read on the takeoff (the classification picker, the AI
+   credits chip); leaving settings puts them back as they were, so nothing outside settings
+   changes behaviour.
+4. **The classification tree.** `classification?system=csi` took 1.05–1.5 s from the browser
+   on every read. Cause: 1,835 nodes as 568 KB of uncompressed JSON on every visit (110 ms to
+   build in the api, the rest moving it to the browser through Docker Desktop's port
+   forwarding and parsing it); the first read of a new workspace also seeds the tree. Now
+   (`core/http_cache.py`) the body is kept per workspace and system and built once per
+   version (node count, latest change, and the usage counts behind `used`), gzipped once,
+   sent with a weak ETag and `Cache-Control: private, no-cache`; an unchanged tree is a 304
+   with no body. *(call)* Per endpoint, not app-wide gzip: the AI tools stream NDJSON, which a
+   gzip middleware would hold back. The tree stays per workspace, as it is editable (D-58).
+5. **Measured** (MCP Chromium, throwaway workspace, every tab and section clicked twice from a
+   fresh load of General; "marked" = the clicked tab shown selected, "settled" = no spinner):
+   - **Production build**, before → after: tab marked 118–203 ms → 43–84 ms; the frame left
+     the screen on the first click → never; first visits settled 74–763 ms after (Project
+     Setup 1,283 → 763 ms); second visits 44–231 ms with the same api calls → 47–175 ms with
+     none (fresh for 60 s).
+   - **Dev server, cold** (restarted before each run), before → after: tab marked 2.6–11.9 s
+     → 43–86 ms; first visits settled 2.6–14.7 s → 2.1–9.9 s when clicked straight away (Vite
+     compiling each page while the idle prefetch competes), and **64–366 ms** once the
+     prefetch has finished (about 80 s after the first load on a cold dev server).
+   - The classification tree from the browser: 1.05–1.5 s → 60–84 ms (304), 110 → 30 ms in
+     the api.
+   - Saves show at once: General's phone and a new CSI division, after switching tabs and
+     back, and the division after a reload, in both builds.
