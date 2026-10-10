@@ -12231,3 +12231,9 @@ The applied scale's tick (`ScaleEvidenceLayer`) takes the same size as that type
 4. **Label size** (founder, same day): its type is 6 page points, so it grows as the sheet is
    zoomed in, held between 5.4 px on screen (fully zoomed out, 40 % under the first 9 px) and
    13 px; the box keeps its proportions to the type.
+
+## D-334: The applied scale's box keeps its fill at every zoom
+
+**Status:** Accepted (2026-10-10, founder: "dont loose the fill color of this box on zoom out").
+Amends D-324 for `ScaleEvidenceLayer`'s scale box: under `THIN_BOX_PX` on screen it keeps its
+fill (it still stands 2 px clear of the text). The unapplied red box is unchanged.
