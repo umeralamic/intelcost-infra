@@ -12376,3 +12376,34 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    or a folder of the branch). The confirm reads "Delete "<classification>" from all projects in this
    workspace?", with "N items in M projects use this classification…" when used, and "Projects
    affected: M" (0 when nothing anywhere has it) when not.
+
+## D-339: Storage deletes held to one tenant; why the bench's older sheets had no files
+
+**Status:** Accepted (2026-10-10, founder asked for the check).
+
+1. **Why the files were missing.** Nothing deleted them. Every object of a row made on or before
+   2026-09-29 is absent from the real bucket and present, at the same key, in the bench's old MinIO
+   store (`intelcost-local`, 45 GB, still in the `minio` container). D-259 (2026-10-05) moved the
+   bench from MinIO to the real bucket and did not copy the objects over, so the older rows point
+   at keys the new bucket never had. Every row made from 2026-10-06 is in the bucket. The IAM user
+   cannot read the bucket's versions or lifecycle, so the bucket itself shows no delete history.
+   - Throwaway workspace: Riverside Medical Center (rows of 2026-09-28/29) and zz switching (113
+     sheets): every older object missing, in MinIO.
+   - Founder projects, read only: **Hidden Valley Spec Building Rebid** 29 sheets and **Waxing City**
+     1 sheet, every file, page, picture and source present and decoded, and all 30 drawn in the
+     browser by a viewer seat; **HIdden Valley Spec** (the bench copy, spelled so, in "F5 Block A
+     demo 15:16", made 2026-09-29): all 29 sheets and both files missing from the bucket, present in
+     MinIO.
+2. **The purge code could not reach another tenant, and now cannot by construction.**
+   `delete_prefix` only counted slashes; `delete_object` had no check. Every caller built its key or
+   prefix from its own rows with a closing slash (project purge, a generated drawing's prefixes,
+   community media, logos, the bench script by workspace uuid), so nothing outside the purged
+   workspace was ever deleted. Both now refuse anything not `<known area>/<uuid>/…` (a prefix must end
+   in `/`), and take the workspace or project they may touch: the purge job passes its project, the
+   bench script its workspace. `bench-workspaces.py` refuses to purge any of the seeded account's
+   workspaces a fixture did not make, whoever owns it now (`purge-fx` spared only Bench Construction
+   by slug, so a fixture's handover of Bench Construction Test would have handed it the founder's
+   projects; it never happened).
+3. **Wording** (D-338 polish): the Takeoff settings hint "Group the panel by the project's
+   classification (division › scope). …"; "N items in M projects use this classification. Move them
+   to another classification before deleting it." ("1 item … uses … Move it …"); "Number" stays.

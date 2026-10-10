@@ -85,10 +85,17 @@ def kind(workspace: Workspace) -> str:
 
 
 async def delete_workspaces(uuids: list[object]) -> int:
+    # Never a workspace a person keeps (D-339): the seeded account's own, other than the ones
+    # a fixture made, whoever owns it now. A fixture that handed one over to a seat it made
+    # would otherwise hand purge-fx the founder's projects.
+    kept = {str(w.uuid): w.name for w in await seeded_workspaces() if kind(w) != "fixture"}
+    refused = [kept[str(uuid)] for uuid in uuids if str(uuid) in kept]
+    if refused:
+        fail(f"refusing to purge kept workspaces: {', '.join(refused)}")
     areas = get_args(storage.Area)
     for uuid in uuids:
         for area in areas:
-            storage.delete_prefix(f"{area}/{uuid}/")
+            storage.delete_prefix(f"{area}/{uuid}/", workspace_uuid=uuid)  # type: ignore[arg-type]
     async with SessionFactory() as session:
         result = await session.execute(delete(Workspace).where(Workspace.uuid.in_(uuids)))
         await session.commit()
