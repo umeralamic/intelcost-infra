@@ -1,6 +1,6 @@
 # Overnight report, 2026-10-10
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every block. The 2026-10-09 run's
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every block. **All six blocks done by 05:25 UTC**; the rest of the night went to a clean real-Load timing for block 2, an image upload through the new page pool, P-24's row step and a final production check. The 2026-10-09 run's
 files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-09.md`.
 
 **Browser tool:** the Playwright MCP connects and drives the app (checked 00:02 UTC); every
@@ -13,7 +13,7 @@ smoke below ran through it.
 | 3 | P-23 alembic drift | **done** | api `806d3c4`, infra `9a2b894` |
 | 4 | Auto Count part 1 | **done** | app `68eeaaf`, infra `d01a2b8`, `8c1f0c0` |
 | 5 | Competitor-name scan | **done** (rule added, hits listed, nothing changed) | infra `8c1f0c0` |
-| 6 | P-24 | **done** | app `eb23ece` and the row step (below), infra `65d5413` |
+| 6 | P-24 | **done** | app `eb23ece`, `259cc00`; infra `65d5413`, `afb5df7` |
 
 ## 1. Settings speed (D-325)
 
@@ -201,3 +201,59 @@ click clears, rename in place, drag to reorder (saved), Thumbnails view (40 tile
 items open/close, an item selects and right-clicks, Name from page region opens the page's
 dialog: **passed**. Also, the new page pool with an image upload (a PNG wrapped, prepared, ready
 in 25 s, its kept source cleaned up): **passed**.
+
+## Final check (production build, all of tonight's code)
+
+Settings click-through again, browser cache cleared: every tab marked selected in 42–73 ms, the
+frame never left, second visits 41–156 ms with no api calls (fresh for 60 s). Two first-visit
+"settled" figures read 2–4 s in this rapid run (AI Credits, Wage Calculator); opened on their
+own, cold, Wage Calculator settles in 0.47 s and its calls take ~20 ms: the script clicks faster
+than the idle prefetch fetches each page's code. Gates after the last commit: app lint,
+typecheck, build OK; ruff, mypy clean; **alembic check clean**; quantity table 329 rows, passed.
+
+## Decisions made on your behalf (all in DECISIONS)
+
+- D-325: the 60-second freshness applies only while the settings frame is open (several of those
+  keys also feed the takeoff); the classification tree is cached per endpoint, not by app-wide
+  gzip (the AI tools stream). The tree stays per workspace (it is editable).
+- D-326: one capped pool for preparing and reading, not two; a Load's first page and its read go
+  at the top broker priority; a page task holds its page by a renewed Redis lease (found tonight:
+  a 13-minute source fetch let the sweep send the page again); scale labels are the printed text.
+- D-327: the Auto Count samples were not kept from earlier runs, so I chose them by trying
+  instances and keeping the best-reviewing one per test; "right" = a checked match whose box (a
+  fifth wider) holds a truth point; fixtures served as `.sheet` (a download manager here takes PDFs).
+- D-329: the Sheets panel and its rows memoized, every handler through the panel's latest.
+- P-25 is a new FEATURES row (the settings work, Live).
+
+## For your click check
+
+1. **Settings** (prod or dev): click through the tabs; the tab marks at once, the frame stays;
+   save something and switch tabs, it shows.
+2. **Auto Count benchmark:** `docker compose --profile prod up -d --build app-prod` (from
+   `intelcost-infra/`), open <http://localhost:5175/bench/autocount>, press Run (~3 minutes).
+   `?opencv=4` compares four workers. Do the samples look like the ones you meant?
+3. **A Load:** the first sheet you tick shows Ready first, with **Open**; a metric sheet (`1:100`)
+   offers Approve; an engineering sheet with dimensions applies `1" = 30'` as printed.
+4. **Sheets panel during a Load:** it should feel smooth now, in dev too.
+5. **Competitor names:** the list in block 5 is yours to decide; nothing was changed. Note
+   CLAUDE.md's own opening line is on it.
+
+## For Abdullah
+
+- **Bucket CORS:** add `http://localhost:5175` (the production preview) to the bench bucket.
+- **Page pool:** production needs a worker on `-Q prepare,reads` with
+  `--concurrency=PAGE_WORKERS`, PAGE_WORKERS = min(cores ÷ 2, (RAM − reserve) ÷ 700 MB); one
+  page process peaks near 600 MB on the densest sheets. The main worker keeps 2, previews 1. The
+  broker transport now uses Redis priority steps (0–9, separator ":"): queues gain `:N` siblings.
+- **Lifecycle rule** for unfinished multipart uploads on the bucket (our IAM cannot list them, so
+  a purge cannot show they are gone).
+- **Shared work disk:** the page pool's processes share `worker_dir` (`/tmp/intelcost-work`); on
+  the bench a named volume. Without one they re-fetch from storage (slower, still correct).
+
+## Cleanup
+
+Throwaway workspace purged (`fx overnight 1010`, f3189492-…): every prefix 0 objects
+(project-file, takeoff, intake, scope-doc, trade-scope-doc, subquote, assembly-screenshot,
+workspace-logo; open multipart uploads not visible to our IAM). Scratch files removed from the
+containers and the host; the workers' work disk empty; `app-prod` stopped again; the temporary
+P-24 profiler removed before each commit. All repos clean on `umer-dev`.
