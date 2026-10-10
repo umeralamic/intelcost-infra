@@ -12237,3 +12237,13 @@ The applied scale's tick (`ScaleEvidenceLayer`) takes the same size as that type
 **Status:** Accepted (2026-10-10, founder: "dont loose the fill color of this box on zoom out").
 Amends D-324 for `ScaleEvidenceLayer`'s scale box: under `THIN_BOX_PX` on screen it keeps its
 fill (it still stands 2 px clear of the text). The unapplied red box is unchanged.
+
+## D-335: No "Earthwork markup" tick on a measurement
+
+**Status:** Accepted (2026-10-10, founder). Amends D-137's New Measurement checkbox.
+The tick only filed a Linear, Segment, Area or Count measurement in Earthwork Markups, out of
+the estimate; no earthwork calculation read it (site features are areas made a Site Feature,
+`is_site_feature`; contours, spots, boundaries and strips come from the Earthwork tools). It
+looked like an earthwork input and was not, so it is gone from the dialog, with its draft field.
+To keep a measurement out of the estimate, Rough measurement. The Earthwork Markups folder, the
+api's `is_earthwork_markup` and the items already filed there are unchanged.
