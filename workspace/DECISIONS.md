@@ -12132,3 +12132,33 @@ files: code, comments, DECISIONS, specs, task files, commit messages, fixtures, 
 decision states the estimator's need, never "product X does this"; a competitor's wording is
 never reused for a label, a message or a feature. The hits found before the rule are listed in
 the 2026-10-10 overnight report, unchanged, for the founder to decide on.
+
+## D-329: The Sheets panel redraws only for its own data (P-24)
+
+**Status:** P-24 from the backlog, taken overnight 2026-10-10 (block 6).
+
+1. **Why it redrew.** A Load's every prepared page refetches the sheet list, the signed assets
+   and the scales (at most once a second), and the takeoff page around the panel redraws for
+   each; the panel took dozens of inline callbacks and two props rebuilt on every render
+   (`sites`, `overlayActions`), so it redrew every time. Every assets read also signs every
+   thumbnail URL anew (SigV4 carries the time), so the thumbnails map was new each time, and in
+   thumbnail view each image was fetched again.
+2. **Now.** The panel is memoized behind `useStableProps` (`core/hooks/use-stable-props.ts`):
+   each callback becomes one stable caller of the page's latest, so none goes stale, and a bag of
+   callbacks (`overlayActions`) a stable object; `sites` is memoized (and the hook gives one empty
+   list); a sheet keeps its thumbnail URL while the object is the same and the signature is under
+   half its hour, so the map keeps its identity. *(call)* Rows are not memoized one by one: they
+   close over the panel's selection and drag state, and a skipped render could leave a stale
+   handler; the panel as a whole is the safe cut.
+3. **Measured** (dev build, a 40-page Load of A1.01 copies, the panel open, a React Profiler on
+   it during the Load only, removed after):
+
+   | | Before | After |
+   |---|---|---|
+   | Panel redraws | 96 (0.83 a second) | 46 (0.33 a second) |
+   | Time redrawing | 1.8 s | 0.87 s |
+   | One redraw, median / max | 19 / 34 ms | 18 / 27 ms |
+
+   The redraws left are the list's own changes (a sheet ready or read). Smoke after: a row opens
+   its sheet, Ctrl and Shift select a range, the row menu's Name from page region opens the page's
+   dialog, a rename in place saves and shows: passed.
