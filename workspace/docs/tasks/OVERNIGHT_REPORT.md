@@ -272,6 +272,6 @@ P-24 profiler removed before each commit. All repos clean on `umer-dev`.
   chip is grey; the upload tray closes itself 3 s after every file lands. Smoke (3-sheet Load:
   unverified, two scales, NTS): no popups, tray gone, flags right, Approve then rename turned
   A-101 into a grey `1/4"=1'-0"` chip, folder count 2 → 1: passed. A failed upload was not
-  forced; the tray's failure path is unchanged, and the new timer runs only with no failures.
+  forced; the tray's failure path is unchanged, and the new timer runs only with no failures. App `13bec9e`.
 - Gates after both: app lint, typecheck, build OK; ruff, mypy clean; alembic check clean;
   quantity table 329 rows, passed. Throwaway workspaces purged (`purge-owner`, 5 accounts).
