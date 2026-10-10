@@ -12299,3 +12299,32 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    only toggles Excel outlines) and follows the screen. Now Classification reads the classification
    chain (or the code's path), Custom Folder the custom chain, unchanged otherwise; the multiplier
    popover lists both chains.
+8. **Both chains multiply, and say so** (founder, 2026-10-10). An item's multiplier is every
+   multiplier in its custom folder chain (all levels) × every multiplier in its classification
+   chain (the code's folders and the folders inside them) × its layer chain (D-57): Buildings ×4
+   and a level-4 classification folder ×2 make ×8. A **folder row**, in either view, shows only its
+   own multiplier ("Buildings ×4", "Level 4 ×2"), never a combined figure: one folder can hold items
+   of different totals. An **item row** shows the item's total, the same in both views: "×4" from
+   one source, "×4 · ×2 = ×8" from more (`multiplierSources.ts`). The panel's quantity stays the
+   measured figure (D-57). The quantity popover, the multiplier popover and Estimating's Multiplier
+   cell show the breakdown by source (folder, classification, layer).
+   - **Warned, never refused.** Setting or changing a folder's multiplier (Folder Properties, or
+     Estimating's popover), moving items into a folder (a drop, Move to folder, Properties),
+     classifying them (a drop inside a code, Change classification…, Properties) or making a new one
+     with both places, when that leaves an item multiplied by both chains with a new total: a
+     confirm names the chain already there and the new total ("12 items here are already ×4 from
+     folder 'Buildings'. Their total will become ×8. Continue?"). Cancel changes nothing.
+   - **The bench before this:** no item was multiplied by both chains (one multiplied folder, a
+     classification folder ×2).
+9. **Every dialog that makes an item has both places.** The measurement dialog (Linear, Area,
+   Segment, Count, a paste, a run drawn first, Auto Count's Create, Find Text's Create ›
+   Measurement) and the item's Properties carry Folder and Classification as two optional fields,
+   the panel's view first. Extract Schedule's filing step gains the Folder field and no longer
+   requires a code. A paste keeps the folder inside the code. The earthwork dialogs (Site Feature,
+   Strip Area) make no estimate items and have neither.
+10. **Fixes.** Undo of Change classification… restores the exact place, a folder inside the old code
+   included. The delete-folder confirm says where the items go ("Items return to <code>" in the
+   classification tree, "Items move to the top level" for a custom folder); "Unfiled" is not a word
+   the panel uses. A code's row has the folder row's menu: New folder, Folder Properties (its
+   multiplier; the name is the code's), Change colour; Rename and Delete are off with the reason. A
+   code with no folder yet offers New folder only. Folder rows gain New folder too.
