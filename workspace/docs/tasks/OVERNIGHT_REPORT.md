@@ -275,3 +275,13 @@ P-24 profiler removed before each commit. All repos clean on `umer-dev`.
   forced; the tray's failure path is unchanged, and the new timer runs only with no failures. App `13bec9e`.
 - Gates after both: app lint, typecheck, build OK; ruff, mypy clean; alembic check clean;
   quantity table 329 rows, passed. Throwaway workspaces purged (`purge-owner`, 5 accounts).
+- **D-336, two work breakdown structures (P-26).** Each item now has a custom folder and a place in
+  the classification tree; the Takeoff panel shows one ("Folders | Classification" under its header,
+  per person per project, a project default in Takeoff settings › Panels for editors). Folders: an
+  unfiled item at the top. Classification: codes holding items ("Show all" for every code), folders
+  only inside a code, Unclassified, then Rough Measurements and Earthwork Markups; a drop never
+  crosses a code; right-click "Change classification…" (one undo step). A folder or code clicked is
+  where new items land (manual, assemblies with their own code first, Auto Count). Estimating:
+  Classification reads the classification chain, Custom Folder the custom chain. Migration checked
+  on a full copy of the bench database: every item identical up and down. Gates green, quantity
+  table passed. **No browser smoke, at the founder's word: for the founder's check.**

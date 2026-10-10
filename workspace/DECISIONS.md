@@ -12247,3 +12247,55 @@ the estimate; no earthwork calculation read it (site features are areas made a S
 looked like an earthwork input and was not, so it is gone from the dialog, with its draft field.
 To keep a measurement out of the estimate, Rough measurement. The Earthwork Markups folder, the
 api's `is_earthwork_markup` and the items already filed there are unchanged.
+
+## D-336: Two work breakdown structures, one shown at a time
+
+**Status:** Accepted (2026-10-10, founder). Supersedes D-59's "filed in the leaf" for the
+Takeoff panel; D-59's node folders stay as the classification tree. Spec:
+[wbs_split_tasks.md](docs/tasks/wbs_split_tasks.md).
+
+1. **Two places per item.** `folder_id` is the item's **custom folder** (or none: unfiled).
+   New `class_folder_id` is its place in the **classification tree**: the node folder `file_under`
+   makes for its code (D-59), or a folder the person made inside that code. Choosing one never
+   clears the other. A folder carries `tree` (`custom` or `classification`); the classification
+   tree is the node folders and every folder made inside them.
+2. **Multipliers are kept.** An item's multiplier is its custom chain × its classification chain
+   × its layer chain (D-57), so no item's estimate changes in the split: an item that sat in a
+   node folder moves to `class_folder_id` with its chain, and an item in a custom folder keeps
+   its chain and has no classification folder until it is next classified.
+3. **The panel shows one tree.** "Folders | Classification", a toggle in the Takeoff panel's
+   header and in Takeoff settings, per person, remembered per project (`takeoff_prefs.panel_view`);
+   a project default (`project.panel_view_default`) for those who have not chosen, set by whoever
+   may edit the project; Folders when neither is set.
+   - **Folders:** custom folders, Rough Measurements and Earthwork Markups; an unfiled item at
+     the top level, no "Unfiled" group.
+   - **Classification:** division › scope from the codes, only codes with items unless "Show
+     all"; folders may be made only inside a code; items with no code in "Unclassified" at the
+     end, then Rough Measurements and Earthwork Markups. An item is never dragged across codes:
+     right-click "Change classification…", one undo step.
+4. **New items land where the person is:** the selected folder (Folders) or code or folder
+   inside one (Classification), else unfiled or unclassified. An assembly's own code wins over the
+   selected code. The New Measurement dialog shows Folder and Classification as two fields, the
+   current view's first; neither is required. **Assemblies carry a code** (`AssemblyTemplate.
+   classification_ref_id`; Save as assembly copies the item's), and an item made from one is
+   classified with it (the armed draft sends it).
+5. **Estimating keeps its own Group by**, independent of the panel: Classification reads the
+   item's classification tree (its classification folder chain, or its code's path when it has no
+   folder there), Custom Folder its custom folder, Scope and Subcontractor its code, Sheet its
+   sheets; the Excel export follows the screen's grouping.
+6. **Migration** `d336…`: folders with a node and every folder below them become
+   `classification`; an item in one moves to `class_folder_id` (its `folder_id` cleared).
+   Downgrade puts them back. A folder someone had made inside a code's folder is now a folder
+   inside that code (Classification), and its items have no custom folder. **Checked on a full
+   copy of the bench database** (every project, 160 items, 50 code folders, one ×2): every item's
+   calculated and effective quantity, multiplier and code identical after the upgrade, and after
+   the downgrade identical again with every item back in its exact folder; then the bench itself,
+   identical. Estimate totals follow: a line's money is its item's quantity × multiplier with its
+   cost components, none of which moved.
+7. **Estimating before the split** (the founder asked): Group by offers Classification (read the
+   item's one folder chain, custom folders mixed in), Custom Folder (that chain minus code
+   folders), Scope and Subcontractor (the item's code), Sheet (its sheets); Sub-scope and Level 4
+   exist but are off the menu (D-125). The export has no grouping of its own (Editable grouping
+   only toggles Excel outlines) and follows the screen. Now Classification reads the classification
+   chain (or the code's path), Custom Folder the custom chain, unchanged otherwise; the multiplier
+   popover lists both chains.
