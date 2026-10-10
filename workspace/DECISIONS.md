@@ -12168,3 +12168,22 @@ the 2026-10-10 overnight report, unchanged, for the founder to decide on.
    reorder (saved); Thumbnails view (40 tiles, a tile opens its sheet); a sheet's items open and
    close, an item selects and right-clicks to its menu; the row menu's Name from page region opens
    the page's dialog: passed.
+
+## D-330: Home's empty start is drawn over the takeoff
+
+**Status:** Accepted (2026-10-10, founder: "takeoff app should be visible in background").
+
+1. **What a new signup sees first.** "Drop your drawings here to start" sits on a shade over the
+   takeoff screen, as Load project files does: the takeoff's own bar, live (Open with All projects,
+   New project and Switch workspace; credits; theme; the account menu), the confirm-email banner
+   under it, and behind the shade an empty toolbar, Sheets column, sheet area and Takeoff panel
+   (`TakeoffBackdrop`: a picture, `inert` and hidden from assistive technology). A file dropped
+   anywhere on the shade counts as a drop on the box. The viewer's "No projects shared with you
+   yet" sits in the same place. The bar without a project has no timer and no Share, and Open no
+   Project details.
+2. **No blank page on the way in.** Home fetches the takeoff's code at idle and again with the
+   project it makes; the takeoff route's fallback while its code loads is the same empty frame
+   (`TakeoffLoading`, without the empty-panel texts) in place of "Loading", for every way into a
+   project; and Home seeds the route guard's answer for the project it just made, so no
+   "Opening" page passes. Checked: from the drop box to the load screen, every frame carries the
+   takeoff bar.
