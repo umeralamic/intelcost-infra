@@ -12328,3 +12328,34 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    the panel uses. A code's row has the folder row's menu: New folder, Folder Properties (its
    multiplier; the name is the code's), Change colour; Rename and Delete are off with the reason. A
    code with no folder yet offers New folder only. Folder rows gain New folder too.
+
+## D-337: A compact WBS section, and codes deleted rather than archived
+
+**Status:** Accepted (2026-10-10, founder).
+
+1. **Folder** is one searchable dropdown, "None (top level)" by default, "+ New folder" at the
+   bottom of its list (makes it and selects it).
+2. **Classification** is one picker (`ClassificationPicker`, every place a code is chosen: the
+   measurement dialog and Properties, Change classification…, Extract Schedule, assemblies, sub-items):
+   type to search every level, each hit with its full path ("DIV 09 › Finishes › Gypsum Board
+   Assemblies"); or browse with cascading dropdowns, Division → Scope → Sub-scope → …, each shown
+   once the one before is chosen, "+ Add division" / "+ Add scope" / "+ Add sub-scope" at the bottom
+   of its list for those who manage classification. The choice reads as one line with × to clear.
+3. **The system is the project's**, chosen in New project and Edit details ("Classification
+   system", the workspace's enabled systems, CSI MasterFormat first); the picker shows it as small
+   text and never chooses it. The api refuses a change of system once the project has a classified
+   item or a code's folder ("…classified in CSI MasterFormat…"). A project with none set still takes
+   the first code filed (D-59).
+4. **The collapsed WBS section** says what is set on one line: "Folder: Building A · DIV 09 ›
+   Gypsum Board", or "Not set".
+5. **No archive.** Before this, archiving a code hid it from the pickers and from `file_under`
+   ("…archived. Restore it to file under it."), Settings had "Show archived" / Restore, a delete of a
+   used code offered "Archive instead", the earthwork lines skipped an archived scope, and the crew map
+   and subcontractor packages marked one "legacy". Takeoff folders never had an archive. Now a code
+   (with its branch) used by **no item** is deleted at once, its folders in every project with it (a
+   code's folder and the folders made inside it); assemblies that carried it lose the code. One used by
+   items is refused: "N items use this code. Move them to another code first.", with "Move items to…"
+   (a picker outside the branch) that re-files every item of the branch under the code chosen, then
+   Delete. `used` counts items only. Migration `d337…` deletes archived codes whose branch no item
+   uses, and drops `archived_at`; an archived code still used would become a live one (the bench had
+   **no archived code** at all, so nothing was deleted or listed).
