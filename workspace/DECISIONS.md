@@ -11505,6 +11505,9 @@ overnight 2026-10-09, block by block. Calls made on the founder's behalf are mar
 
 ## D-316: Image mode's OpenCV workers: 4 on 8 GB or more, kept warm, released after 2 minutes
 
+*(Amended by D-327, 2026-10-10: one kept OpenCV worker on every machine, the 2-minute release
+kept.)*
+
 **Status:** decided by the founder, 2026-10-09 (overnight brief, Auto Count item 1); built and
 measured overnight. Amends D-303's "one OpenCV worker, ended with the scan".
 
@@ -12078,3 +12081,54 @@ built and measured overnight. Replaces D-45's one preparation job a file, in sli
    (ratio 100), M-102 two boxes, nothing applied. A 5-page Load: the first ticked (A-121) was
    ready while the other four were still preparing; its Open opened it and the view stepped
    into the tray. Passed.
+
+## D-327: One kept OpenCV worker everywhere; the standing Auto Count benchmark
+
+**Status:** decided by the founder, 2026-10-10 (overnight brief, Auto Count part 1); built and
+run overnight. Amends D-316.
+
+1. **One kept OpenCV worker on every machine**, released after 2 minutes with no scan (Stop still
+   ends it at once). `IMAGE_OPENCV.workers` stays a knob for the benchmark; `opencvWorkersFor`
+   is gone.
+2. **The benchmark protocol** (`intelcost-infra/bench/autocount/README.md`), the standing one:
+   - the production build only (the bench's `app-prod`, built with `VITE_BENCH=1`), never the
+     dev server; the page `/bench/autocount` exists only in a dev or `VITE_BENCH` build;
+   - four fixed samples on fixed sheet copies, kept in `bench/autocount/` with their truth
+     points: E101 office "A" (68), E101 "C" with tag (24 + 2 C/NL), E200 A (12), E200 A1 (6);
+   - each test scanned in Image mode twice, a first scan from cold (every worker ended first)
+     and the next, each reviewed at 70 % and 38 % and scored against the truth: checked right /
+     checked wrong, then true symbols missed and suggestions shown; first-scan and next-scan
+     times; the page's peak heap, and the renderer's private memory sampled from the OS;
+   - one click: open the page, press Run; the table is printed and left on `window`.
+   *(calls)* "Right" is a checked match whose box (a fifth wider each way) holds a truth point
+   not already counted: the tag's centre on E101, the outline's centre on E200; the samples were
+   not kept from the earlier runs, so they were chosen tonight by trying instances and keeping
+   the one each test reviewed best with. The fixtures are served as the app serves sheets, not as
+   PDFs: a download manager on the bench host answered PDFs with an empty 204.
+3. **The run** (MCP Chrome on the Windows host, 12 threads, 32 GB; production build; the same
+   review on both runs, so the worker count changes only time and memory):
+
+   | Test | Review, 70 % and 38 % | 4 kept, first / next | **1 kept, first / next** |
+   |---|---|---|---|
+   | E101 office "A" | 68 / 0 (the truth) | 18.9 / 11.2 s | **18.2 / 14.4 s** |
+   | E101 "C" with tag | 23 / 0, 3 missed (C/NL) | 27.2 / 20.3 s | **27.1 / 23.3 s** |
+   | E200 A | 10 / 0, 2 missed (1 suggestion at 38 %) | 35.2 / 29.8 s | **35.2 / 31.1 s** |
+   | E200 A1 | 4 / 0, 2 missed | 11.0 / 7.4 s | **10.6 / 7.2 s** |
+   | Renderer private memory, peak (start ~670 MB) | | 1,939 MB | **1,319 MB** |
+
+   One kept worker: first scans the same, **620 MB less** at peak; next scans 3 s slower on the
+   two E101 tests and within 1.3 s on E200 here, where D-316's numbers had one kept within a
+   few seconds of four. Switched as decided; the benchmark keeps the comparison one click away.
+   What the review misses on "C", E200 A and A1 is the engine's, shown against the truth for the
+   next part (shared compile, IndexedDB cache, the SIMD retry; not tonight).
+
+## D-328: No competitor names in the repo
+
+**Status:** decided by the founder, 2026-10-10 (overnight brief, item 5). A standing rule, also
+CLAUDE.md hard rule 9.
+
+No competitor's name, screenshot, UI text or feature name anywhere in the repos or the workspace
+files: code, comments, DECISIONS, specs, task files, commit messages, fixtures, file names. A
+decision states the estimator's need, never "product X does this"; a competitor's wording is
+never reused for a label, a message or a feature. The hits found before the rule are listed in
+the 2026-10-10 overnight report, unchanged, for the founder to decide on.
