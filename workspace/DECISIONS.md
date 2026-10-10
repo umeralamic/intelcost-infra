@@ -12207,3 +12207,10 @@ cautious sign or review sign in the sheets panel against each sheet in red").
 5. **The upload tray closes itself** 3 s after every file has landed; a failure keeps it open,
    with Retry, until it is closed.
 6. The open sheet's own status line ("… has no scale · Calibrate") is unchanged.
+
+## D-332: The unapplied scale box is solid red; its card follows the zoom
+
+**Status:** Accepted (2026-10-10, founder). Amends D-324's look for `ScaleSuggestionLayer` only.
+The box is a solid red outline (no dashes), a fixed 1.5 px on screen at every zoom, with a faint
+red fill until it is under `THIN_BOX_PX` tall on screen. The card (the scale and Approve) is no
+longer hidden zoomed out: its type is 35 % of the box's height on screen, between 11 and 28 px.
