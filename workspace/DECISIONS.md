@@ -12359,3 +12359,20 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    Delete. `used` counts items only. Migration `d337…` deletes archived codes whose branch no item
    uses, and drops `archived_at`; an archived code still used would become a live one (the bench had
    **no archived code** at all, so nothing was deleted or listed).
+
+## D-338: "Classification", never "code", and deletes said to be workspace-wide
+
+**Status:** Accepted (2026-10-10, founder).
+
+1. **Wording.** User-facing text never calls a classification a "code": labels, tooltips,
+   confirms, toasts, refusals (the api's too), empty states. "N items use this classification.
+   Move them to another classification first.", "That's another classification", "Items return to
+   <classification>". A division's identifier field ("03", "1.1") is labelled **Number**, its
+   refusals "Number and name are both required." and "That number already exists in this system."
+   Internal names (`code`, `classification_ref_id`, `codeLabel`) stay.
+2. **A delete is workspace-wide, and says so.** The in-use count was already workspace-wide
+   (`_usage` counts every item of the workspace by `workspace_id`, all projects). New
+   `GET …/classification/{node}/usage` gives the branch's items and the projects it touches (an item
+   or a folder of the branch). The confirm reads "Delete "<classification>" from all projects in this
+   workspace?", with "N items in M projects use this classification…" when used, and "Projects
+   affected: M" (0 when nothing anywhere has it) when not.
