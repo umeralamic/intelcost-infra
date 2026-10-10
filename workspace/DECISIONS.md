@@ -12070,7 +12070,7 @@ built and measured overnight. Replaces D-45's one preparation job a file, in sli
    was everything else a page does: its upload (a 4.5 MB one-page PDF and two images) went one
    page at a time. A real Load of the 40 dense pages on the bench (bucket link 0.3–0.4 MB/s):
    from the source on disk to 40 prepared and 37 read in about 7 minutes, against about 9.5
-   minutes for the same set before; indicative only, two worker restarts cut into it.
+   minutes for the same set before; indicative only, two worker restarts cut into it. **A clean run, later** (no restarts, 04:19 UTC): Load to the first page ready 10.6 minutes (the 178 MB source fetch, on a link shared with the page-thumbnail job), then all 40 ready and read **6.9 minutes** after it, against about 9.5 minutes before.
 8. **Sizing, for production:** `PAGE_WORKERS` = min(cores ÷ 2, (RAM − reserve) ÷ 700 MB): each
    page process peaks near 600 MB on the densest sheets seen (A0.00B, 133,000 lines), with
    about 100 MB of headroom. The main worker keeps its 2 (the coordinators, mail, the rest);

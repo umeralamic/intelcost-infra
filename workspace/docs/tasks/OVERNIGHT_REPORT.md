@@ -108,7 +108,7 @@ On compute alone reading dominates (dense: ~5 s to prepare, ~20 s to read a page
 process count the new layout matches the old and scales with processes. What was serial was a
 page's uploads; a real Load of the 40 dense pages on the bench's slow bucket link: source on disk
 → 40 prepared and 37 read in about 7 minutes, against about 9.5 minutes for the same set before
-(indicative: two worker restarts cut into it; the last 3 reads were re-sent by the sweep).
+(indicative: two worker restarts cut into it; the last 3 reads were re-sent by the sweep). **A clean run, later** (no restarts, 04:19 UTC): Load to the first page ready 10.6 minutes (the 178 MB source fetch, on a link shared with the page-thumbnail job), then all 40 ready and read **6.9 minutes** after it, against about 9.5 minutes before.
 
 **For Abdullah, sizing:** `PAGE_WORKERS` = min(cores ÷ 2, (RAM − reserve) ÷ 700 MB). One page
 process peaks near **600 MB** on the densest sheet seen (A0.00B, 133,000 lines), about 220 MB on
