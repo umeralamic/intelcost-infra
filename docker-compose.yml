@@ -385,8 +385,13 @@ services:
       args:
         VITE_API_URL: http://localhost:8000
         VITE_MARKETING_URL: http://localhost:3000
+        # The Auto Count benchmark page, /bench/autocount (D-327); never set in production.
+        VITE_BENCH: "1"
     ports:
       - "5175:80"
+    volumes:
+      # Its fixed fixtures: two sheet copies, the four sample boxes and the truth.
+      - ./bench/autocount:/usr/share/nginx/html/bench-fixtures:ro
     depends_on:
       api:
         condition: service_started
