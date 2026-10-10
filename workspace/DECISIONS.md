@@ -12215,3 +12215,5 @@ The box is a solid red outline (no dashes), a fixed 1.5 px on screen at every zo
 red fill until it is under `THIN_BOX_PX` tall on screen. The card (the scale and Approve) is no
 longer hidden zoomed out: its type is 35 % of the box's height on screen, between 8.8 and 28 px.
 Its link reads **Apply** (was Approve), in red, not underlined.
+The applied scale's tick (`ScaleEvidenceLayer`) takes the same size as that type (`markPx` in
+`lib/takeoff/scaleEvidence.ts`) and shows at every zoom.
