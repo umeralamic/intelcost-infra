@@ -12228,3 +12228,6 @@ The applied scale's tick (`ScaleEvidenceLayer`) takes the same size as that type
    the sheet, as the dimension does.
 3. **The label sits on the copy, parallel to it** (never upside down), not out in the margin on
    a dotted leader; the server's `labelAt` and leader are no longer drawn.
+4. **Label size** (founder, same day): its type is 6 page points, so it grows as the sheet is
+   zoomed in, held between 5.4 px on screen (fully zoomed out, 40 % under the first 9 px) and
+   13 px; the box keeps its proportions to the type.
