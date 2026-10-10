@@ -12407,3 +12407,62 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
 3. **Wording** (D-338 polish): the Takeoff settings hint "Group the panel by the project's
    classification (division › scope). …"; "N items in M projects use this classification. Move them
    to another classification before deleting it." ("1 item … uses … Move it …"); "Number" stays.
+
+## D-340: Restore the bench's pre-switch objects from MinIO; purge clear-out made durable; orphan report
+
+**Status:** Accepted (2026-10-10, founder).
+
+1. **Restore, scoped.** `intelcost-infra/drives/restore-from-minio.py` (bench only) copies into the
+   bench bucket exactly the objects the bench database names (every `…key`/`…path` text column with
+   the key scheme) that the bucket lacks and MinIO has: never over an object the bucket has
+   (`If-None-Match: *` after a head), each copy checked by size and MD5, every key logged. MinIO is
+   backed up first to `E:\bench-backups\minio-intelcost-local-2026-10-10.tar` and kept until the
+   founder says otherwise. Nothing from 2026-09-30 to 2026-10-05 was missing: every gap is a row of
+   2026-09-24 to 09-29.
+2. **"Umer plans test" is not restored.** 46.3 GB of 47.8; not needed. The project (id 2545, uuid
+   ffc60967-90b0-4458-b2c4-fb2bc1580c52, 625 sheets, workspace 939 "F5 Block A demo 15:16") was
+   moved to Trash and purged through the api's own service functions; its objects stay in MinIO and
+   the tar. HIdden Valley Spec, in the same workspace, checked untouched (row, 29 sheets, 55 items,
+   92 geometries, 2 files, its earthwork result's fingerprint, 117 keys in MinIO).
+3. **Purge clear-out is durable whoever purges.** The log row is written in the purge's own
+   transaction; the clear itself was dispatched after commit, at most once, and only by the request
+   path or a worker's `commit_and_drain` (a script's purge never dispatched it). The nightly job's
+   first pass retried only rows that had failed, so a clear never dispatched was never retried. It
+   now takes every purge log not yet cleared. The paths that delete permanently outside a request:
+   the nightly Trash expiry (clears inline, now also picks up any undispatched clear), stale-upload
+   abort (aborts inline before the row goes), the community sweep (storage first, inline), the bench
+   script (storage first, inline). A file deleted through the api has no log row: if its dispatch is
+   lost its objects are orphaned, which the report below lists.
+4. **Weekly orphan report, list only** (`report_storage_orphans`, Sundays 05:00): bucket objects
+   older than a day that no row names (a live sheet's symbol index counts as its sheet's), grouped
+   by area and workspace, logged. First run: 61 objects, 20.8 MB, in 7 workspaces, 6 of which no
+   longer exist in the database (no code path in the repos deletes a workspace without clearing
+   it first; most likely a bench database reset). Nothing deleted.
+
+## D-341: A file, folder or drawing delete's storage is tracked like a project purge's; the restore done
+
+**Status:** Accepted (2026-10-10, founder).
+
+1. **Tracked clear-out.** Every delete that removes rows naming objects writes a `storage_clear_log`
+   row in its own transaction (migration `d341c7a2e5f0`): the keys, the prefixes and the unfinished
+   uploads. Its clear is dispatched after the commit as before; the nightly job's pass 0 clears every
+   row still open after 10 minutes (`CLEAR_GRACE`). Covered: a project file (its object, its page
+   thumbnails, its sheetless drawing's split pages), a folder (the same for every file under it; it
+   used to leave the thumbnails), a generated file no sheet uses (D-134), and a drawing file (its
+   split pages and its sheets' images, which the route used to leave behind). Clears are pinned to
+   the log's workspace (D-339). Smoke: "Blank R3 smoke.pdf" (Riverside, throwaway) deleted through
+   `delete_file` with its dispatch dropped; the object stayed and the row was open; the nightly job
+   cleared it (`files_cleared 1`) and the object was gone.
+2. **Orphans deleted.** Of the first report's 61 orphans, the 42 (5.75 MB) in six workspaces that no
+   longer exist (none of their nine projects exists either) were deleted with
+   `drives/delete-orphans.py --delete`, every key printed to
+   `E:\bench-backups\orphans-deleted-2026-10-10.txt`. The 19 in "U.'s workspace", which exists, are
+   left for a person.
+3. **The restore (D-340), done.** Tar `E:\bench-backups\minio-intelcost-local-2026-10-10.tar`,
+   47.93 GB, 15,149 entries, 4,641 objects as MinIO's disk has (2,500 of "Umer plans test", as
+   MinIO). Copied 1,973 objects, 1.464 GB, none skipped, none failed, each MD5-checked, logged in
+   `E:\bench-backups\restore-log-2026-10-10.csv` (2,598 planned before the purge took that project's
+   625 page thumbnails with it). Every one of the 3,511 keys the database names is now in the bucket.
+   HIdden Valley Spec: 29 of 29 sheets decode, earthwork result fingerprint unchanged; Riverside 7 of
+   7, zz switching 113 of 113, Test 3 63 of 63, Loaded from files 3 of 3 decode; Riverside's 7 and a
+   spread of zz switching drawn in the browser.
