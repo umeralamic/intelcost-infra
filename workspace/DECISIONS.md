@@ -12217,3 +12217,14 @@ longer hidden zoomed out: its type is 35 % of the box's height on screen, betwee
 Its link reads **Apply** (was Approve), in red, not underlined.
 The applied scale's tick (`ScaleEvidenceLayer`) takes the same size as that type (`markPx` in
 `lib/takeoff/scaleEvidence.ts`) and shows at every zoom.
+
+## D-333: The scale's witness is blue, drawn just outside the plan's dimension, label on it
+
+**Status:** Accepted (2026-10-10, founder). Amends D-131 and D-323's drawing of the witness.
+1. **Blue**, line and label (`--scale-witness`, both themes).
+2. **Offset, not overlaid:** the witness is a copy of the plan's dimension drawn 14 page points
+   outside it (the side away from the page's middle), with thin extension lines back to the
+   dimension's ends, so the plan's own line and its text are never covered. The offset follows
+   the sheet, as the dimension does.
+3. **The label sits on the copy, parallel to it** (never upside down), not out in the margin on
+   a dotted leader; the server's `labelAt` and leader are no longer drawn.
