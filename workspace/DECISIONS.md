@@ -12187,3 +12187,23 @@ the 2026-10-10 overnight report, unchanged, for the founder to decide on.
    project; and Home seeds the route guard's answer for the project it just made, so no
    "Opening" page passes. Checked: from the drop box to the load screen, every frame carries the
    takeoff bar.
+
+## D-331: What a read leaves for a person is flagged on its row, not in a popup
+
+**Status:** Accepted (2026-10-10, founder: "i dont want them … show something like amber or
+cautious sign or review sign in the sheets panel against each sheet in red").
+
+1. **No end-of-Load popups.** "N sheets need a look" (`SheetReadsPanel`, D-320, D-321) is gone,
+   and a Load's run ends when its sheets settle (no "finished" state is kept for a notice).
+2. **The flag is on the row, in the scale's place.** A sheet with anything left by its read
+   (`lookReasons`: name not read, scale not verified, N scales printed, reduced print?, scale
+   doesn't match its dimensions) shows a red ⚠ **Review** where the scale chip goes; its tooltip
+   lists the reasons. A click opens the sheet with its amber boxes in view. Once everything is
+   put right (Approve, a scale set, the name edited), the row shows its scale as usual. A sheet
+   with no scale and nothing to review (NTS) shows nothing.
+3. **The scale chip is neutral** (grey on muted), so a red flag stands out.
+4. **Folders** carry a red ⚠ N for the flagged sheets beneath them, subfolders included, so a
+   closed folder hides no flag.
+5. **The upload tray closes itself** 3 s after every file has landed; a failure keeps it open,
+   with Retry, until it is closed.
+6. The open sheet's own status line ("… has no scale · Calibrate") is unchanged.

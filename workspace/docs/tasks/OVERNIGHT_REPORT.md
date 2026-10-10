@@ -257,3 +257,21 @@ Throwaway workspace purged (`fx overnight 1010`, f3189492-…): every prefix 0 o
 workspace-logo; open multipart uploads not visible to our IAM). Scratch files removed from the
 containers and the host; the workers' work disk empty; `app-prod` stopped again; the temporary
 P-24 profiler removed before each commit. All repos clean on `umer-dev`.
+
+## Day follow-ups (2026-10-10)
+
+- **D-330, Home's empty start over the takeoff.** A new signup's "Drop your drawings here to
+  start" now sits on a shade over the empty takeoff screen, under the takeoff's own live bar
+  (Open, credits, theme, account menu) and the confirm-email banner. A drop anywhere on the shade
+  works. On the way in, the takeoff's code is fetched ahead, the takeoff route shows the same
+  empty frame while its code loads, and the route guard's answer is seeded, so nothing blank
+  passes. Smoke on three fresh signups: passed. App `fa4e54c`.
+- **D-331, Review flags in place of the end-of-Load popups.** "N sheets need a look" is gone; a
+  sheet with something left by its read shows a red ⚠ Review in the scale's place (tooltip:
+  the reasons; click: the sheet with its amber boxes in view); a folder shows ⚠ N; the scale
+  chip is grey; the upload tray closes itself 3 s after every file lands. Smoke (3-sheet Load:
+  unverified, two scales, NTS): no popups, tray gone, flags right, Approve then rename turned
+  A-101 into a grey `1/4"=1'-0"` chip, folder count 2 → 1: passed. A failed upload was not
+  forced; the tray's failure path is unchanged, and the new timer runs only with no failures.
+- Gates after both: app lint, typecheck, build OK; ruff, mypy clean; alembic check clean;
+  quantity table 329 rows, passed. Throwaway workspaces purged (`purge-owner`, 5 accounts).
