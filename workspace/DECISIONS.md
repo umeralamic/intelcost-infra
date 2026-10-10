@@ -12018,3 +12018,63 @@ of 2026-10-09); built and measured overnight.
      the api.
    - Saves show at once: General's phone and a new CSI division, after switching tabs and
      back, and the division after a reload, in both builds.
+
+## D-326: Pages prepared side by side, the first ticked first; scales computed, labelled as printed
+
+**Status:** decided by the founder, 2026-10-10 (overnight brief, block 2, follow-ups on D-324);
+built and measured overnight. Replaces D-45's one preparation job a file, in slices.
+
+1. **Was preparation one page at a time?** Yes. One job a file, under a file lock, page after
+   page (several files side by side, up to the main worker's 2 processes); since D-324 each
+   page's read went to the read pool once prepared.
+2. **The page pool.** Each page is its own task (`prepare_sheet`) on the `prepare` queue, and
+   the read pool became the page pool: one worker (`worker-pages`, `-Q prepare,reads`,
+   `PAGE_WORKERS` processes, default 4) does both, so preparation and reading together never
+   take more than its cap of cores and memory *(call: one pool, not two, so the cap holds for
+   both)*. A page task claims its page first (pending, or "preparing" and stale), so a Retry
+   or the sweep never prepares a page twice. The drawing's source is fetched once onto the
+   pool's disk under a per-file lock; a page task that finds it being fetched waits for it.
+   `prepare_drawing_file` now only sends a file's unprepared pages to the pool (Retry, Rekey,
+   the sweep); `prepare_slice_seconds` is gone.
+3. **The first ticked, first.** A Load sends its pages in the order they were ticked: the first
+   goes alone; once it is ready its read is queued and then the rest go, in order. So it is
+   ready and read before the others. In the progress view a ready row has **Open**: the sheet
+   opens and the view steps into the tray while the rest load.
+4. **Scales computed.** Any printed architectural, engineering or metric scale is read as its
+   ratio from what is printed (`3/64" = 1'-0"`, `1 IN = 40 FT`, `1:1250`), so one on no list
+   verifies, is applied and is approved like any other. The label is the printed text, tidied
+   (`1/4"=1'-0"` → `1/4" = 1'-0"`, `1 : 50` → `1:50`), never a preset's words *(call)*; one
+   scale printed two ways on a sheet is one finding, under the first way it was printed.
+5. **One task a page, held by a lease.** A page task holds its page by a lease in Redis,
+   renewed every 30 s while it works, and the beat also touches the drawing file, the
+   heartbeat the sweep reads. Found on the bench: a 178 MB source took 13 minutes to fetch on
+   its link; with no beat the sweep took the file for dead and sent the page again. A task that
+   dies lets go within 2 minutes and the sweep's next send takes the page.
+6. **The first page ahead of other Loads.** Priorities on the broker (Redis, 0 most urgent,
+   everything else sent at 5): a Load's first page and its read go at 0, so the sheet a person
+   opens first does not wait behind another Load's backlog. Checked: with the pool paused, six
+   page tasks sent at the default and then one at 0, the pool took the 0 first.
+7. **Measured** (the worker's own prepare and read code on 40 pages, storage taken out):
+
+   | Set | Before (1 preparer + 4 readers) | After, 4 | After, 6 | After, 8 |
+   |---|---|---|---|---|
+   | 40 × A0.00B (dense) | 231–252 s | 248 s | 210 s | 186 s |
+   | 40 × A1.01 (light) | 51 s | 50 s | 43 s | — |
+
+   On compute alone reading dominates (a dense page about 5 s to prepare and 20 s to read), so
+   at the same process count the pool matches the old layout, and it scales with processes:
+   each process peaks near 600 MB on the dense sheet, 220 MB on the light one. What was serial
+   was everything else a page does: its upload (a 4.5 MB one-page PDF and two images) went one
+   page at a time. A real Load of the 40 dense pages on the bench (bucket link 0.3–0.4 MB/s):
+   from the source on disk to 40 prepared and 37 read in about 7 minutes, against about 9.5
+   minutes for the same set before; indicative only, two worker restarts cut into it.
+8. **Sizing, for production:** `PAGE_WORKERS` = min(cores ÷ 2, (RAM − reserve) ÷ 700 MB): each
+   page process peaks near 600 MB on the densest sheets seen (A0.00B, 133,000 lines), with
+   about 100 MB of headroom. The main worker keeps its 2 (the coordinators, mail, the rest);
+   the previews worker its 1.
+9. **Smoke:** copies of the engineering, metric and off-list sheets (C-101 `1" = 30'`, C-102
+   `1" = 50'`, A-121 `3/64" = 1'-0"`, M-101 `1:100`, M-102 `1:200` and `1:50`): the first three
+   verified and applied with their printed labels, M-101 one amber box, approved to 1:100
+   (ratio 100), M-102 two boxes, nothing applied. A 5-page Load: the first ticked (A-121) was
+   ready while the other four were still preparing; its Open opened it and the view stepped
+   into the tray. Passed.
