@@ -38,7 +38,7 @@ another system refuses a CSI node (409). So before that Calculate the value was 
 **empty (no system chosen yet)** or already **CSI**: no other system can have been
 overwritten. Which of the two is not recorded anywhere, so it is left as CSI, as the plan
 says. If you want it empty again (so the first classified item picks the system), that is one
-update; say so.
+update; say so. *(Kept as CSI; closed 2026-10-11, confirmed by Umer.)*
 
 ### Task 2: EG from another sheet (21:00 to 21:38)
 
@@ -423,7 +423,8 @@ width (D-197).
 - **The MCP browser hung for an hour** (above). Never click Print in it.
 - **Hidden Valley Spec has a live "Anyone with Link" share link.** Its row was created on
   2026-10-01 at 02:37 UTC, during the previous overnight run, not tonight. It was left untouched;
-  revoke it if it is not wanted.
+  revoke it if it is not wanted. *(Kept as it is: Umer revokes it himself if needed, and no session
+  ever touches it. closed 2026-10-11, confirmed by Umer.)*
 - **The bench estimator's WBS and Sub-items sections are saved open.** That's why the
   measurement dialog is taller there than legacy's default.
 - **The core flow, after every interface change of the night:** Linear through the new name

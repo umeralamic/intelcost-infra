@@ -8404,7 +8404,7 @@ D-235: the active tools only.
 ## D-237 — F14 Block E: where the AI naming and scale fallbacks spend credits
 
 **Date:** 2026-10-02
-**Status:** pending founder review (my calls within D-236)
+**Status:** pending founder review (my calls within D-236); accepted, closed 2026-10-11, confirmed by Umer
 **Area:** F14 AI tools
 
 - **Single Page Name, Sheet # and Scale** (A13):
@@ -9621,7 +9621,7 @@ Step 3a left.
 
 **Status:** points 1 to 3 decided (the founder's Step 4 brief, 2026-10-05); point 4's
 pricing-basis rule and the copy of the bid defaults in point 3 are the build's, pending
-review.
+review. Accepted, closed 2026-10-11, confirmed by Umer.
 
 Step 4 of the Wage Calculator build: the saved rates reach labor cost components and the
 bid summary.
@@ -12134,6 +12134,10 @@ decision states the estimator's need, never "product X does this"; a competitor'
 never reused for a label, a message or a feature. The hits found before the rule are listed in
 the 2026-10-10 overnight report, unchanged, for the founder to decide on (reworded by D-342; closed 2026-10-11, confirmed by Umer).
 
+**Scope (Umer, 2026-10-11):** the rule also covers the names of published cost books and other
+data sources. The one hit, `intelcost-app-fastapi/docs/wage-calculator/README.md:55`, is to be
+reworded (not done yet).
+
 ## D-329: The Sheets panel redraws only for its own data (P-24)
 
 **Status:** P-24 from the backlog, taken overnight 2026-10-10 (block 6). Accepted, closed 2026-10-11, confirmed by Umer.
@@ -12491,7 +12495,7 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
 
 ## D-343: Auto Count Image mode: exact search at strong peaks; one strong size passes consensus
 
-**Status:** Accepted (2026-10-11 overnight brief, item 2; calls made on the founder's behalf).
+**Status:** Accepted (2026-10-11 overnight brief, item 2; calls made on the founder's behalf; closed 2026-10-11, confirmed by Umer).
 **Area:** Auto Count, Frontend. **Amends:** D-302 (the fine pass round OpenCV's peaks), D-189
 (legacy's 2-of-3 sizes rule).
 
@@ -12670,7 +12674,7 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
 
 ## D-349: Duplicate project, a background copy with its own storage
 
-**Status:** Accepted (2026-10-11 day brief, stretch item 6; calls made on the founder's behalf).
+**Status:** Accepted (2026-10-11 day brief, stretch item 6; calls made on the founder's behalf; closed 2026-10-11, confirmed by Umer).
 **Area:** Projects, Backend, Frontend.
 
 1. **What is copied:** the project row (name "<name> (copy)", the workspace's first active status,

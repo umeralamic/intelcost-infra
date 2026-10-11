@@ -115,7 +115,7 @@ exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed.
   never part of finishing a task.
 - **The workspace files are versioned in `intelcost-infra/workspace/`.** The four files
   at the workspace root, `docs/` and `.claude/` (the rule 7 hook) live outside every
-  repo, so git protects none of them. `intelcost-infra/workspace/` is an exact mirror and is the versioned copy; the
+  repo, so git protects none of them. `intelcost-infra/workspace/` is an exact mirror of all three (the four files, `docs/` and `.claude/`) and is the versioned copy; the
   root stays the working copy. **Every close-out and every commit that changes a
   workspace file also refreshes `intelcost-infra/workspace/` in the same session and
   commits it.** A mirror refreshed later is a mirror nobody can trust.
