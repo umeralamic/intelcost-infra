@@ -538,3 +538,36 @@ The after-list is
 and `--skip-workspace` or `--skip-project` to protect a customer. Review the list, then run it with
 `--apply`. Its measurements and scales columns say which pages have takeoff on them; the stored box
 changes none of those.
+
+**Final checks:**
+
+1. **The final, linted script against the before state.** One transaction set the 17 boxes back to the
+   before-snapshot's stored values, then the script's dry run ran on that same session. Its output equals
+   `minmar_cropbox_before.csv` byte for byte (`diff` and `cmp`). Then the transaction was rolled back; the
+   17 rows still hold the corrected box. A dry run on the current state finds **0 pages**.
+2. **Where the two writers get the box:**
+   - **`prepare.py:894`, the thumbnail task:** opens the whole file with MuPDF and stores MuPDF's
+     `page.cropbox` as is.
+   - **`prepare.py:1151`/`:1161`, the size measure:** stores `_ranged_sizes`, which is pypdf reading the box
+     as MuPDF does (`_page_size`, D-351). If that read fails it uses `_whole_sizes`, which is MuPDF's
+     `page.cropbox`.
+   - **One writer per row:** the measure runs first, and the thumbnail task skips pages already stored.
+
+   **Proof:** hard rule 8 forbids writing tests, so this was the re-prepare route, never Minmar or the
+   founder projects. A0.00B, the same drawing as Minmar's (media box `[-1512.12 -1080 1512.12 1080]`),
+   was uploaded to a throwaway account, `fx.cropcheck1011.a`. Its page row was then cleared and each
+   writer run on its own:
+
+   | Source | Box stored |
+   |---|---|
+   | upload flow (size measure) | `[-1512.12 0 1512.12 2160]` |
+   | `measure_file_pages` alone | `[-1512.12 0 1512.12 2160]` |
+   | `prepare_file_pages` (thumbnail task) alone | `[-1512.12 0 1512.12 2160]` |
+   | `_ranged_sizes` / `_whole_sizes` (read) | `[-1512.12 0 1512.12 2160]` |
+   | the pre-D-351 formula, for reference | `[0 0 3024.24 2160]` (what Minmar held) |
+
+   Every value is exactly MuPDF's `[-1512.1199951171875, 0, 1512.1199951171875, 2160]`. Neither writer
+   can store the old value, so nothing needed fixing.
+
+   The throwaway workspace (`dd252668-f0da-431b-bf7f-66f2957ae6e6`) is purged through the guarded script.
+   Every prefix lists 0 objects.
