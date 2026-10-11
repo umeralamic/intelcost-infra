@@ -12617,3 +12617,26 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    and score by score with the D-343 search (`?exactall=1`) on all four tests at 70 % and 38 %, 3
    runs each: identical. Next scans, medians: E200 A 20.8 → 19.9 s, office 8.1 → 7.7 s, "C" 12.9 →
    13.0 s and A1 4.0 → 4.2 s (both within the ±0.5 s noise).
+
+## D-347: A sheet delete, a re-prepare and a cancelled prepare clear their own storage
+
+**Status:** Accepted (2026-10-11 day brief, item 1; the bug found by the overnight orphan report).
+**Amends:** D-341 (the tracked clear-out now covers sheets too).
+
+1. **Sheet delete** (`drawing/service.py` `_queue_sheet_storage`, from `delete_sheets`): before the
+   rows go, each sheet's `takeoff/{ws}/{project}/{sheet}/` prefix (its images, every version, and
+   its Auto Count index) and its one-page split are logged through `storage_clear.queue` in the
+   delete's own transaction, so D-341's dispatch and nightly pass 0 clear them. The split is left
+   when a sheet that stays reads the same key. One route serves the Sheets panel's delete and the
+   Load's Cancel remaining.
+2. **Re-prepare** (`prepare._prepare_page`): a page prepared before has its previous version's
+   prefix (`v{n}/`) and the Auto Count index built on it (the keys under `symbols/` ending `-t{n}`,
+   listed, since the index's format is the app's) logged in the prepare's transaction.
+3. *(call)* **A prepare whose page was deleted under it** (Cancel remaining while the page was being
+   prepared): the task had written its split and images before its commit failed, and the delete's
+   clear may already have run. It now logs a clear of the sheet's prefix and its split (unless
+   another sheet reads it) in a new transaction (`_clear_abandoned`). Not in the brief; the same gap.
+4. `storage.list_keys`, read only; `storage_clear.queue` takes a sync or async session.
+   `drives/delete-orphans.py --workspace <uuid>` deletes the orphans of one named workspace that
+   exists, once a person has decided; the 19 of "U.'s workspace" (15.0 MB) were deleted with it,
+   every key in `E:\bench-backups\orphans-deleted-2026-10-11-u-workspace.txt`.

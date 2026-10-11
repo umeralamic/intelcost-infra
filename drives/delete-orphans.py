@@ -5,7 +5,11 @@
     docker compose exec -T api sh -lc "cd /srv && python drives/delete-orphans.py --delete"
 
 The weekly report (`report_storage_orphans`) only lists. An orphan under a workspace that still
-exists is left alone here too: it may be a row to put back, not bytes to drop.
+exists is left alone here too: it may be a row to put back, not bytes to drop. Unless the
+workspace is named, once a person has decided its orphans go (D-347: the 19 of "U.'s workspace",
+deleted sheets' files):
+
+    docker compose exec -T api sh -lc "cd /srv && python drives/delete-orphans.py --workspace <uuid> [--delete]"
 """
 
 import sys
@@ -21,7 +25,7 @@ from app.database import SyncSessionFactory
 from app.worker.tasks.storage import ORPHAN_GRACE, referenced_keys
 
 
-def main(delete: bool) -> None:
+def main(delete: bool, workspace: str | None = None) -> None:
     with SyncSessionFactory() as session:
         known = referenced_keys(session)
         sheets = {str(u) for u in session.execute(text("select uuid from drawing_sheet")).scalars()}
@@ -42,13 +46,20 @@ def main(delete: bool) -> None:
                     continue
                 if len(parts) > 4 and parts[4] == "symbols" and parts[3] in sheets:
                     continue
+                if workspace is not None:
+                    if area != "community" and parts[1] == workspace:
+                        doomed.append((key, int(obj.get("Size", 0))))
+                    else:
+                        kept += 1
+                    continue
                 if area == "community" or parts[1] in workspaces:
                     kept += 1
                     continue
                 doomed.append((key, int(obj.get("Size", 0))))
     total = sum(size for _, size in doomed)
-    print(f"orphans in workspaces that no longer exist: {len(doomed)} ({total} bytes)")
-    print(f"orphans left alone (their workspace exists, or community): {kept}")
+    where = f"workspace {workspace}" if workspace else "workspaces that no longer exist"
+    print(f"orphans in {where}: {len(doomed)} ({total} bytes)")
+    print(f"orphans left alone: {kept}")
     for key, size in doomed:
         if delete:
             storage.delete_object(key)
@@ -56,4 +67,6 @@ def main(delete: bool) -> None:
 
 
 if __name__ == "__main__":
-    main("--delete" in sys.argv[1:])
+    args = sys.argv[1:]
+    named = args[args.index("--workspace") + 1] if "--workspace" in args else None
+    main("--delete" in args, named)

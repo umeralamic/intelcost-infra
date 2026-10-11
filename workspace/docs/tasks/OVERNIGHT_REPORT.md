@@ -11,11 +11,47 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 | # | Block | State | Commits |
 |---|---|---|---|
 | 5 | Drop stashes | **done**: `overnight-simd`, `overnight-simd2`, `overnight-cnl` dropped (app has no stash) | — |
-| 2 | "C" next-scan re-measure | **done**: machine load; the change's own cost cut where it was largest | see block 2 |
-| 1 | Sheet delete storage | in progress | |
+| 2 | "C" next-scan re-measure | **done**: machine load; the change's own cost cut where it was largest | app `1148f60`, infra `3b1a49a` |
+| 1 | Sheet delete storage | **done**, 19 orphans deleted | see block 1 |
 | 3 | Auto Count fill check | not started | |
 | 4 | First page before the whole file | not started | |
 | 6 | Stretch: Duplicate project | not started | |
+
+## 1. Sheet delete storage (D-347)
+
+- **Sheet delete** (`drawing/service.py` `_queue_sheet_storage`, called from `delete_sheets` before
+  the rows go): each sheet's `takeoff/{ws}/{project}/{sheet}/` prefix (every `v<n>` image and
+  `symbols/*`) and its split `pages/{file}/{page}`, unless a sheet that stays reads the same split,
+  are logged with `storage_clear.queue` in the delete's transaction: D-341's dispatch clears them
+  after the commit and nightly pass 0 if that is lost. The Sheets panel's delete and the Load's
+  Cancel remaining share this route.
+- **Re-prepare** (`prepare._prepare_page`): writing `v<n+1>` logs `v<n>/` and the Auto Count index
+  built on it (`symbols/*-t<n>`, listed) for clearing in the same transaction.
+- *(call, not in the brief)* **A page cancelled while it was being prepared:** the task had already
+  written its split and images when its commit failed, so they had no row and the delete's clear
+  could have run first. It now logs a clear of what it wrote (`_clear_abandoned`).
+- **Comment fixed** at `drawing/routes.py` (`_symbol_index_key`): says which code clears the index.
+- **The 19 orphans deleted** (15,026,435 bytes) with a new `--workspace <uuid>` option on
+  `drives/delete-orphans.py` (lists unless `--delete`): the 13 sheet images and the index of the six
+  deleted sheets and their 6 splits, exactly last night's list; re-run shows 0. Every key is in
+  `E:\bench-backups\orphans-deleted-2026-10-11-u-workspace.txt`:
+  `takeoff/60edce3e-…/6ce25834-…/{033e23c2,29ab5a2c,40834193,4c2648c4,689fc6a3,7ff620d2}-…/v2/{fit,thumb}.webp`,
+  `…/7ff620d2-…/symbols/symbols-1-t2`, `…/pages/{8ebf44cc,9bbd5644,9e38cf95,b1c442ba,daac240c,e89886a5}-…/1`.
+
+**Smoke** (throwaway, dev app and bench worker):
+- *Re-prepare:* the E200 copy at v2 with `symbols-1-t2`, put back to pending and prepared again as
+  Retry does: afterwards only `v3/fit.webp`, `v3/thumb.webp` and the split; the clear ran 2 s after
+  the commit (`failed: 0`).
+- *Sheet delete:* the same sheet (now `v3/` and `symbols-1-t3`) deleted from its row menu ("Delete 1
+  sheet?"): its prefix and its split gone 2 s later; the project file's preview stays (it is the
+  file's).
+- *Cancel remaining:* a 16-page throwaway PDF loaded, cancelled when page 1 was Ready (page 2
+  preparing, 3–4 being read, 5–16 queued): the 3 sheets that stayed (pages 1, 3, 4) keep their images
+  and splits; page 2, whose prepare finished 8 s after the cancel ("gone"), left no prefix and no
+  split; the queued pages wrote nothing. **Passed.**
+
+**Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
+rows, passed.
 
 ## 2. Auto Count "C" next-scan re-measure (D-346)
 
