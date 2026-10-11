@@ -13,9 +13,9 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 | 5 | Drop stashes | **done**: `overnight-simd`, `overnight-simd2`, `overnight-cnl` dropped (app has no stash) | — |
 | 2 | "C" next-scan re-measure | **done**: machine load; the change's own cost cut where it was largest | app `1148f60`, infra `3b1a49a` |
 | 1 | Sheet delete storage | **done**, 19 orphans deleted | api `ce1ea15`, infra `22d3094` |
-| 3 | Auto Count fill check | **done**, contract met | see block 3 |
+| 3 | Auto Count fill check | **done**, contract met | app `c32575b`, infra `a31c71a` |
 | 4 | First page before the whole file | not started | |
-| 6 | Stretch: Duplicate project | not started | |
+| 6 | Stretch: Duplicate project | **done** | see block 6 |
 
 ## 1. Sheet delete storage (D-347)
 
@@ -52,6 +52,46 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 
 **Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
 rows, passed.
+
+## 6. Stretch: Duplicate project (D-349)
+
+**Built:** All projects ⋯ › **Duplicate project** (anyone who may create projects; the plan's project
+cap as New project). The request decides the workspace's first active status and queues a Celery
+job; a toast shows "Reading", "Copying files N %", "Copying takeoff N %"; when it is done the copy
+opens. The job (`project/duplicate.py`) is one generic copier over the model metadata:
+- **Copied:** the project ("<name> (copy)", then "(copy 2)", …; status reset, no submitted / awarded /
+  lost / follow-up history), project folders, files and their pages, drawing folders, files, sheets,
+  naming templates, calibrations, markups, registrations, sites, earthwork assumptions, results,
+  reviews, strip areas, takeoff layers, folders, items, dimensions, geometries, cost components,
+  variable values, snippets and links, estimate lines, bid rates, custom columns and values, unit
+  wastage, equipment, fill materials, subcontractor overrides, wage sets, craft and crew rates, wage
+  determination imports, assignees.
+- **Not copied:** visits (Recent), item events and work sessions (activity), AI calls and schedule
+  reads, share links, render jobs, and the estimate lines' comments *(call: the only comment field a
+  project has; notes are kept)*.
+- **How:** every foreign key into a copied table remapped (self references in a second pass); every
+  string and JSON value has each copied row's uuid replaced by its new one, which rewrites the
+  storage keys (all sit under their project's uuid: checked on all 3,765 key values the bench's project rows hold) and JSON references;
+  objects copied inside S3 first (orphans skipped), then all rows in one transaction; on failure the
+  copied objects are logged for clearing. Seen working: the first UI run failed on a NULL-binding bug;
+  its copied objects were cleared (`failed: 0`) and nothing half-made appeared.
+
+**Check of a copy** (script on the bench, throwaway project with 3 sheets from a 16-page file, an
+Auto Count item and a priced estimate line): every table's row count equal (layers 3, folders 1,
+project files 2, drawing files 2, file pages 17, sheets 3, items 1, geometries 6, estimate lines 1);
+no foreign key of the copy points into the original; no value of the copy names the original project;
+29 objects → 29, all 30 keys the copy names present; the estimate line equal in every value but its
+own uuid references.
+
+**Smoke** (dev app, throwaway): ⋯ › Duplicate project → toast progress → "E200 day copy (copy 2)"
+opened in 12.6 s on its first sheet, drawn; the same 3 sheets and "A1 fixtures dup smoke" 6 EA;
+Estimating total $75.00 in both; unit cost changed to $20 in the copy → copy $120.00, original still
+$12.50 / $75.00; the copy trashed and deleted permanently from Settings › Trash → its prefixes 0
+objects, the original's 29 untouched: **passed**.
+
+**Gates** (on the staged snapshot, the page-pool agent's unfinished files left out): ruff format, ruff
+check, mypy (205 files) clean; alembic check clean; app lint, typecheck, build OK; quantity table
+passed.
 
 ## 3. Auto Count fill check (D-348)
 

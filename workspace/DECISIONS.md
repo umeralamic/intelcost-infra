@@ -12662,3 +12662,32 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    `fillDropped`; `?diagnose=1` has a "review: fill check" stage.
 4. *(call)* A sample boxed with much lettering inside could have a busy interior; the band is wide, but a
    new fixture with an unusual box is worth a look.
+
+## D-349: Duplicate project, a background copy with its own storage
+
+**Status:** Accepted (2026-10-11 day brief, stretch item 6; calls made on the founder's behalf).
+**Area:** Projects, Backend, Frontend.
+
+1. **What is copied:** the project row (name "<name> (copy)", the workspace's first active status,
+   its own new uuid) and every row of: project folders and files (and their pages), drawing folders,
+   files, sheets, naming templates, calibrations, markups, registrations, sites and their members,
+   earthwork assumptions, results, reviews and strip areas, takeoff layers, folders, items, item
+   dimensions, geometries, cost components, variable values, snippets and their links, estimate
+   lines, bid rates, custom columns and values, unit wastage, equipment resources and usage, fill
+   materials, subcontractor overrides, wage sets, craft and crew rates, wage determination imports,
+   and the assignees. **Not copied:** visits (Recent), item events and work sessions (activity),
+   AI calls and schedule reads (history and billing), share links (access grants), render jobs.
+   *(call)* The only comment a project holds is an estimate line's `comment_text`: the copy leaves it
+   empty (its `notes` are kept). A second copy is "(copy 2)", and so on.
+2. **How:** one generic copier over the model metadata (`project/duplicate.py`): rows read for the
+   included tables (children by their parent's foreign key), each given a new uuid; every foreign key
+   into a copied table remapped to the new row (self references in a second pass); every string and
+   JSON value has each copied row's uuid replaced by its new one, which rewrites the storage keys
+   (every key a project names sits under its project uuid, checked on the bench) and the uuid
+   references inside JSON (earthwork regions, a markup's snippet); no JSON in these tables holds an
+   integer id (checked). Objects under the project's prefixes copied server-side to the rewritten
+   keys first (an object naming no copied row, an orphan, is skipped), then every row inserted in one
+   transaction, so a half-copied project is never seen; on failure the copied objects are logged for
+   clearing (D-341). A Celery job, its progress in Redis; the copy opens when ready.
+3. Plan caps as New project (`caps.require_project`); the duplicate needs the right to create
+   projects. Deleting the copy clears only its own prefixes (they are its uuid's).
