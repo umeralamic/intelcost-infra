@@ -95,6 +95,10 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    estimator's need ("an estimator needs to count a symbol across the set"), never "product X
    does this". Never reuse a competitor's wording for a label, a message or a feature. The hits
    found before this rule were reworded on 2026-10-11 (D-342); only git history still names one.
+10. **Never run prettier in the app or marketing repos.** Neither uses it: `npx prettier` installs
+   one and rewrites whole files (on 2026-10-11 it turned nine edited files into 14,000 changed lines).
+   App formatting is eslint only: `npm run lint` (and `npx eslint --fix <files>` for its fixable
+   rules). The api formats with `ruff format`.
 
 ## Git
 

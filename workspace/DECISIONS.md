@@ -12743,3 +12743,38 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    (~225 s) to **1.16 MB / 16 requests / 7.8 s**; Vol1 115 MB from 54 MB / 823 requests / 243 s then the
    whole file to **0.65 MB / 8 requests / 4.1 s**. Broken cross-references now reach the whole-file
    read in one GET instead of pulling the file through ranges.
+
+## D-352: A calculated earthwork line is Calculate's: excavator glyph, no Resume, guarded in the api
+
+**Status:** Accepted (2026-10-11 follow-ups, the founder's rules 0a to 0f).
+
+1. **What is calculated:** an item whose `source_type` is `earthwork_computed`, never judged by its
+   type (Prepare Subgrade is a calculated "sf"). One test each side: `isCalculated` in
+   `lib/takeoff/earthwork/surfaces.ts` (with `isEarthworkRow`, inputs or calculated, and `glyphType`),
+   and `is_calculated` / `guard_calculated` in `takeoff/service.py`.
+2. **Glyph:** legacy's excavator (`EarthworkIcon`) on every earthwork row, inputs (contour, spot
+   elevation, boundary) and calculated lines, in both panels; a plain mark titled "Earthwork", never a
+   button. Estimating shows a colour swatch, no type glyph, so nothing changes there.
+3. **A calculated line, in the app, as legacy:** no Resume (the glyph never starts a tool), the name
+   read only, the row menu without Properties, Override quantity, Link assembly, Duplicate, Save as
+   assembly…, Create sub-item, Make Site Feature or either Delete; a double-click (and the menu's
+   "Details") opens a read-only view: what wrote it (the site, or the sheet), when, the surface inputs
+   its Calculate read (on its sheet or the site's members, and existing grade linked in from survey),
+   and its quantity, with "Open earthwork site". Still allowed: select, move to folder or
+   classification (Change classification… now offered on it), layer, colour, Costs and cost
+   components, every Estimating field. *(call)* Estimating's "Add Sub-item" is hidden on it and the
+   earthwork site's draw-target list leaves it out (a Prepare Subgrade line was offered as an area).
+   Bulk Duplicate leaves out every earthwork row and bulk Delete every calculated line, saying how many.
+4. **Earthwork inputs:** the excavator and no Resume (legacy's); their own editing unchanged.
+5. **The api refuses** (409, "Calculated by earthwork. Change it from the earthwork site."): a
+   rename or any field beyond placement, look, notes, lock and review (`CALCULATED_EDITABLE`); a
+   quantity override; delete (single and bulk); duplicate and Make Site Feature; dimensions;
+   sub-items (so Link assembly too) and Save as assembly; every geometry write; creating an item marked
+   calculated from a client. Calculate writes its rows directly and is unaffected; a sheet delete still
+   takes its lines.
+6. **A person's placement survives Calculate** *(call: without it a move would be undone by the next
+   run)*: a new `takeoff_item.placed_by_hand`, set when a person moves a calculated line to another
+   folder, code or class folder; `write_lines` then keeps its folder, class folder and classification,
+   as it already kept the layer (Q16). This supersedes D-142's "an update patches folder and
+   classification" for such a line only.
+7. **The item read** carries `earthwork_site_uuid` (the info view's site).
