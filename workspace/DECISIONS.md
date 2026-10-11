@@ -13038,3 +13038,11 @@ opens).
 **Where:** app `MeasurementDialog.tsx`, `ProjectTakeoff.tsx`, `features/takeoff/api.ts`, `core/api/types.ts`,
 `items/manualQuantity.ts`; api migration `d365c2a9e4b1`, `takeoff/models.py`, `schemas.py`, `routes.py`,
 `service.py` (`_manual_unit`, `_set_unit`).
+
+## D-366: The Manual Quantity unit list scrolls, with a search
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-365 2.
+
+The unit picker was a native select, which opened the full height of its 20 units. It is the app's
+`SearchSelect`: about eight rows that scroll (192 px), a "Search units…" box, the tool's own unit
+first as the default. **Where:** app `MeasurementDialog.tsx`.
