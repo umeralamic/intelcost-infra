@@ -12519,9 +12519,10 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    interpolation accidents, which score low; a thin-line "C" scored 0.85 at its own size and was
    dropped. *(call)* 0.8: 0.7 gave the same review on every test, so the margin is real; the
    review's gap still sets what is checked.
-3. **The C/NL pair is left.** They score 0.41 at best against a "C" sample: checking them needs a
-   bar under 0.41, below `CHECK_MIN` (0.6), where look-alikes live. Not attempted; a "C/NL" sample
-   counts them.
+3. **The C/NL pair is left.** They score 0.41 at best against a "C" sample. Tried and stashed
+   (`overnight-cnl`): the image floor and `CHECK_MIN` at 0.38 left "C" at 24/0 with both still missed
+   (the gap's bar sits under the true "C" cluster, about 0.85), added suggestions (2 on "C", 5 on
+   office at 38 %) and slowed A1's first scan 8.3 → 12.0 s. A "C/NL" sample counts them.
 4. **Contract held** (before → after, both scans, 70 % and 38 %): office 68/0 → 68/0, "C" 23/0 → 24/0,
    E200 A 10/0 → 12/0, E200 A1 4/0 → 6/0; no wrong match anywhere. E200 A1 shows 5 unchecked
    suggestions at about 0.75 (the hatched type A); E200 A 4 at 38 % (was 1). Bench knobs:
@@ -12583,3 +12584,10 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    the tab's first worker in a run, then 0.3 s; after a reload 0.3–0.4 s; HTTP cache cleared 0.5 s.
    First scans 22.6 / 27.5 / 38.4 / 11.3 s → 17.1 / 24.3 / 34.0 / 8.3 s; next scans unchanged within
    noise; every review identical.
+5. **SIMD opencv.js, retried on this path: not shipped** (stash `overnight-simd2`). The 2026-10-09
+   SIMD build split into its glue (144 KB) and module (10.2 MB) and loaded the same way: ready in
+   0.1–0.7 s (the old 135 s was evaluating 13.7 MB of base64 text); checked and suggested sets
+   identical on all four tests at 70 % and 38 %. Two paired runs, in both orders: next scans 0–1.4 s
+   faster in the first pair, ±0.4 s in the second, where three first scans were 0.1–0.6 s slower. Not
+   "no slower" on both, so not shipped (it would also bring a 10 MB self-built binary into the repo
+   and a fallback for browsers without SIMD).

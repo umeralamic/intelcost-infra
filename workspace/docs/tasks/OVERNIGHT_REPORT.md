@@ -15,7 +15,7 @@ failed with "Cannot allocate memory" (os error 12). Restarted at 00:12; nothing 
 | 3 | Orphans in "U.'s workspace" | **done** (report only) | — |
 | 4 | Dense-sheet read speed | **done** (same results, ~2× faster on dense sheets) | api `42828cc`, infra `fa3abea` |
 | 5 | Revision sets | **done** (spec) | with block 1's mirror |
-| 6 | Auto Count speed part 2 | a. compiled once per tab: **done**; b. SIMD: in progress | see block 6 |
+| 6 | Auto Count speed part 2 | a. compiled once per tab: **done**; b. SIMD: **stashed** (`overnight-simd2`, not faster) | a: app `3cf3473`, infra `6f77d95` |
 
 ## 1. Competitor names + Wage Calculator warm-up (D-342)
 
@@ -88,8 +88,11 @@ test's misses share a row: symbols in one row sit at one phase of the stride-5 g
    the cause was the refinement bar, not the grid.)*
 2. **A one-size hit of 0.8 or more passes the sizes' consensus.** 0.7 gave the identical review on
    all four tests, so 0.8 has margin.
-3. **C/NL not attempted:** 0.41 at best, under `CHECK_MIN` 0.6 where look-alikes live; checking them
-   from a "C" sample would need a bar that admits wrong matches. A "C/NL" sample counts them.
+3. **C/NL left, attempt stashed** (`overnight-cnl`): they score 0.41 at best against a "C" sample.
+   With the image floor and `CHECK_MIN` lowered to 0.38: "C" still 24 / 0 with both missed (the
+   review's gap puts the bar under the true "C" cluster, ~0.85), 2 new suggestions on "C" and 5 on
+   office at 38 %, A1's first scan 8.3 → 12.0 s; no wrong checked, no gain. A "C/NL" sample counts
+   them.
 
 **d. Benchmark, production build, 1 kept OpenCV worker** (right / wrong; first / next scan):
 
@@ -232,6 +235,26 @@ earlier builds too); quantity table passed. **Smoke:** the production bench ran 
 new path with identical reviews; in the dev app (embedded copy) an Image count on E200 ran to the
 end (Create (8) from a box padded 2 px wider than the benchmark's, so not comparable to its 12):
 **passed**.
+
+### b. SIMD retry: not shipped (stash `overnight-simd2`)
+
+The 2026-10-09 SIMD build (opencv 4.12.0, emsdk 3.1.64) split into its glue (144 KB) and module
+(10.2 MB, 3.1 MB gzipped) and loaded on the new path (`?simd=1`, trial only): it is ready in
+0.1–0.7 s now (its old 135 s was evaluating 13.7 MB of base64 text). Checked and suggested sets
+identical on all four tests at 70 % and 38 % (compared box by box, score included). Times, two pairs
+in both orders (first / next scan):
+
+| Test | Shipped, pair 1 | SIMD, pair 1 | SIMD, pair 2 | Shipped, pair 2 |
+|---|---|---|---|---|
+| office | 16.1 / 13.6 | 16.0 / 12.2 | 14.0 / 12.8 | 15.4 / 12.9 |
+| "C" | 23.9 / 21.2 | 22.3 / 20.5 | 23.2 / 21.2 | 22.6 / 21.2 |
+| E200 A | 34.3 / 31.3 | 34.3 / 31.0 | 34.2 / 31.4 | 33.9 / 31.0 |
+| E200 A1 | 9.1 / 7.4 | 8.7 / 6.8 | 8.3 / 6.7 | 8.2 / 7.0 |
+
+In pair 2 three first scans and one next scan were slower with SIMD: within noise either way, not
+"no slower" on both, so not shipped (and it would add a 10 MB self-built binary to the repo plus a
+fallback for browsers without SIMD). The earlier `overnight-simd` stash is superseded by it; both
+kept for you to drop.
 
 ## 5. Revision sets (spec only)
 
