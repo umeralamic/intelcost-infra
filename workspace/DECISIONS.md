@@ -12526,3 +12526,34 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    E200 A 10/0 → 12/0, E200 A1 4/0 → 6/0; no wrong match anywhere. E200 A1 shows 5 unchecked
    suggestions at about 0.75 (the hatched type A); E200 A 4 at 38 % (was 1). Bench knobs:
    `?exact=0`, `?minpeak=`, `?solo=off|<bar>`, `?diagnose=1`; `?opencv=N` was already any count.
+
+## D-345: The dimension check merges lines only where it looks; the page's text read once
+
+**Status:** Accepted (2026-10-11 overnight brief, item 4).
+**Area:** Drawing reads, Backend. **Amends:** D-321–D-326 (speed only; every result the same).
+
+1. **Where the time went** (cProfile, A0.00B, 331,711 stroke items, 2 dimensions): merging the whole
+   page's ~130,000 collinear lines 17.4 s of 32.4; turning drawing items into lines 4.7 s; PyMuPDF's
+   `get_cdrawings` 4–5 s; the dimension measure itself 3.3 s; the page text read twice 1.3 s. The
+   check asks about 2–5 places; it paid for merging all of them.
+2. **Merged where looked at** (`reading.Strokes`, `_touch_groups`, `page_strokes`). A line joins a
+   chain only when one of its ends is within 0.35 pt of a chain end (always an end of a member) and
+   its direction within 0.6° of the chain's first line, so within 1.2° of the line it touches. The
+   lines are split (numpy) into groups by a wider net (0.4 pt, 1.25°), so no chain can span two
+   groups; a look merges, once, every group whose box reaches the place (1 pt spare), in drawing
+   order. That gives exactly the chains, in the same order, as merging the page. A page with
+   non-finite or huge coordinates falls back to one group (the old path, failing where it failed).
+   `merge_collinear` is unchanged in body (split into `_merge`) and `page_segments` keeps its output.
+3. **Smaller exact speedups:** the point transform written inline; `_Seg` length and angle cached; the
+   dimension grid holds only lines within 8° of level or plumb (the only candidates), order kept; the
+   page's `get_text("dict")` read once for pieces and name spans. `numpy>=2.0` declared (already
+   installed with shapely).
+4. *(calls)* **Rejected:** limiting the search to the region near each printed scale, and stopping once
+   a scale is proven: both can change which dimensions are measured, so the median and the witness.
+   The D-326 test sheets (C-101, C-102, A-121, M-101, M-102) no longer existed; they were rebuilt with
+   a generator (16 sheets: engineering, inch, metric, two-scale, reduced-print, NTS, conflict,
+   rotated) and compared with 103 prepared bench pages (none of the founder's projects).
+5. **Results:** old against new, every field (names, scales, verified/unverified, proving dimension and
+   witness, bands, every merged line): 119 of 119 identical. CPU per read, median of 3: A0.00B
+   19.6 → 9.1 s, S0.04 15.3 → 8.8 s, A9.30 4.9 → 4.0 s; light sheets 1.2–6× faster. What remains on
+   dense sheets is PyMuPDF's drawing extraction and the loop over its items.

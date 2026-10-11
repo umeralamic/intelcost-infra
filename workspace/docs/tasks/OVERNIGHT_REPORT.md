@@ -11,9 +11,9 @@ failed with "Cannot allocate memory" (os error 12). Restarted at 00:12; nothing 
 | # | Block | State | Commits |
 |---|---|---|---|
 | 1 | Competitor names + Wage Calculator warm-up | **done** | app `7985c69`, api `9018702`, infra `ca9dd6a` |
-| 2 | Auto Count accuracy | **done** (3 of 4 at truth; "C" 24 of 26, the 2 C/NL left) | see block 2 |
+| 2 | Auto Count accuracy | **done** (3 of 4 at truth; "C" 24 of 26, the 2 C/NL left) | app `dc7ca84`, infra `f7d3597` |
 | 3 | Orphans in "U.'s workspace" | **done** (report only) | — |
-| 4 | Dense-sheet read speed | not started | |
+| 4 | Dense-sheet read speed | **done** (same results, ~2× faster on dense sheets) | see block 4 |
 | 5 | Revision sets | **done** (spec) | with block 1's mirror |
 | 6 | Auto Count speed part 2 | not started | |
 
@@ -152,6 +152,56 @@ sheet's `takeoff/…/<sheet>/` prefix and its `source_key` (unless a surviving s
 before the rows go, and `storage_clear.queue(...)` them in the same transaction, as `delete_file`
 does, so D-341's log and nightly pass 0 cover it. **Related risk, not seen here:** a re-prepare
 writes `v<n+1>` and never deletes `v<n>`. The 19 are safe to delete; none should be restored.
+
+## 4. Dense-sheet read speed (D-345)
+
+**Profile, before** (cProfile, read run in-process in the api container on copies):
+
+| | A0.00B (331,711 items, 2 dims) | S0.04 (232,904, 5 dims, 2 scales) | A9.30 (180,903, 5 dims) |
+|---|---|---|---|
+| Merging collinear lines, whole page | 17.4 s of 32.4 | ~7 s | ~0.1 s |
+| Drawing items → lines (Python loop) | 4.7 s | ~3.5 s | — |
+| PyMuPDF `get_cdrawings` | 3.9–5 s | 3.6–8 s | 4–5 s |
+| Dimension measure (grids over every line) | 3.3 s | 0.5 s | < 0.1 s |
+| Page text read twice | 1.3 s | 0.6–1.3 s | — |
+
+So "the dimension check" was really the merge of all ~130,000 lines to answer 2–5 places.
+
+**Change:** lines are split into groups no merged chain can span (an end within 0.4 pt and a
+direction within 1.25°, wider than the merge's own 0.35 pt / 1.2°), and only the groups whose box
+reaches a place the check looks at are merged, in drawing order; that yields exactly the chains of a
+whole-page merge. Plus exact small speedups (inline transform, cached lengths and angles, the grid
+holding only near-level/plumb lines, the page text read once). *(Rejected, because they can change
+which dimensions are measured: limiting the search to the printed scale's region, and stopping at
+the first proven scale.)*
+
+**Read time, CPU seconds, median of 3** (old and new interleaved on the same pages; the bench was
+busy, an earlier quiet run gave A0.00B 11.4 → 5.7 before the last grouping speedup):
+
+| Sheet | Before | After |
+|---|---|---|
+| A0.00B | 19.6 | **9.1** |
+| S0.04 | 15.3 | **8.8** |
+| A9.30 (mostly curves, never merged) | 4.9 | 4.0 |
+| Office Building p10 | 4.9 | 3.6 |
+| 14 Minmar sheets | — | 1.2–6× faster each (P1.02 4.7 → 0.76) |
+| Generated sheets | 0.007–0.042 | 0.005–0.024 |
+
+**Result comparison: identical.** Old against new, every field (names, scales, verified /
+unverified, proving dimension and witness, bands, every merged line), on 119 sheets: 103 prepared
+bench pages (Minmar 44, the Office Building marketing demo 28, Hendrick Honda 26, others 5; none of
+the founder's projects) and 16 generated sheets. *(call)* The D-321–D-326 test copies no longer
+existed anywhere, so the set was rebuilt by a generator: engineering (C-101 `1" = 30'`, C-102
+`1 IN = 50 FT`, C-103 band only), inch (A-121 `3/64"`, A-122 `1-1/2"`), metric (M-101 `1:100`, M-103
+`1:1250`), two scales (M-102 `1:200` + `1:50`), reduced print (R-101, R-102), NTS (N-101, N-102),
+conflict (X-101), full size (F-101), rotated (T-101, T-102). The shipped `read_page` matched the old
+engine on A0.00B, A1.02B, C-101, M-102, T-102. What is left on a dense sheet is PyMuPDF's drawing
+extraction (3–5 s) and the loop over its items.
+
+**Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
+rows, passed. **Smoke** (dev app, throwaway): C-101 and M-102 loaded; C-101 applied `1" = 30'`,
+verified by vector with its witness; M-102 offered `1:200` verified and `1:50`, applied neither:
+**passed**.
 
 ## 5. Revision sets (spec only)
 
