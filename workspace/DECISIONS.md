@@ -13021,3 +13021,20 @@ opens).
 
 **Where:** app `MeasurementDialog.tsx`, `ProjectTakeoff.tsx`, `features/takeoff/api.ts`; api
 `takeoff/schemas.py` (`lump_sum`), `takeoff/service.py` (`LUMP_SUM`, `update_item`, `_name_and_unit`, `set_override`).
+
+## D-365: "Change measurement" closes on a pick; a manual quantity in any listed unit; "Manual Quantity"
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-364 1, 2, 3.
+
+1. **One pick closes the list.** Clicking an option toggles it, as before, and closes the dropdown.
+2. **Units.** A manual quantity is in the tool's own unit (listed first) or any unit of the
+   sub-items editor's list (`UNIT_OPTIONS`: EA, IN, FT, LF, SF, SY, CY, LCY, BCY, TON, LB, %,
+   GAL, HR, LS, MM, M, M2, M3, KG). Stored as `takeoff_item.manual_unit` (migration
+   `d365c2a9e4b1`; null is the tool's own; an LS item with an override was carried over), checked
+   against the unit registry. The item reads in it while it has a manual quantity; clearing the
+   quantity gives the measured unit back. D-364's `lump_sum` flag is replaced.
+3. **Words.** "Manual Quantity", in the list, on the field and in the Resume refusal.
+
+**Where:** app `MeasurementDialog.tsx`, `ProjectTakeoff.tsx`, `features/takeoff/api.ts`, `core/api/types.ts`,
+`items/manualQuantity.ts`; api migration `d365c2a9e4b1`, `takeoff/models.py`, `schemas.py`, `routes.py`,
+`service.py` (`_manual_unit`, `_set_unit`).

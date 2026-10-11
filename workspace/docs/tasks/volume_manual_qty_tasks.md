@@ -43,3 +43,5 @@ Gates; quantity table; one smoke through the Playwright MCP: a Linear item with 
 - **D-364:** height, volume, manual quantity and rough moved into one "Change measurement"
   dropdown of toggles (slope stays a tick box); a manual quantity is in the tool's unit or LS,
   and excludes the height and the volume.
+- **D-365:** the dropdown closes on a pick; a manual quantity in the tool's unit or any unit of the
+  sub-items list (`manual_unit`); the words "Manual Quantity".
