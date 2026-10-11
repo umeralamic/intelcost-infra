@@ -12600,3 +12600,20 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    faster in the first pair, ±0.4 s in the second, where three first scans were 0.1–0.6 s slower. Not
    "no slower" on both, so not shipped (it would also bring a 10 MB self-built binary into the repo
    and a fallback for browsers without SIMD).
+
+## D-346: The exact search at strong peaks skips the sizes the grid already found
+
+**Status:** Accepted (2026-10-11 day brief, item 2). **Amends:** D-343 1.
+
+1. **Re-measured on a quiet machine** (the dev server, api, workers, beat and marketing stopped; only
+   the production preview serving; host near idle), 3 runs each, interleaved, production build. "C"
+   next scan: shipped 13.6 s (13.2–14.5), `?exact=0&solo=off` 12.6 s (12.6–13.0). Last night's
+   17.5 → 23.9 s was the machine's load, not the change (every scan is about twice as fast quiet).
+   The change did cost: about 0.6 s on "C" next (`?exact=0` alone isolates it to the exact search;
+   the one-size consensus costs nothing) and 1.3 s on E200 A next.
+2. **Cut without changing results:** for each size, the exact search now runs only round the strong
+   peaks where the grid found no hit of that size within the peak's error region; where it did, its
+   refinement already took the best window there. Checked and suggested sets compared box by box
+   and score by score with the D-343 search (`?exactall=1`) on all four tests at 70 % and 38 %, 3
+   runs each: identical. Next scans, medians: E200 A 20.8 → 19.9 s, office 8.1 → 7.7 s, "C" 12.9 →
+   13.0 s and A1 4.0 → 4.2 s (both within the ±0.5 s noise).

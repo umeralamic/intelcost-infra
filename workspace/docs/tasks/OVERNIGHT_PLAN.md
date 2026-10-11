@@ -1,26 +1,21 @@
-# Overnight plan, 2026-10-11 (00:10 → 11:30 UTC)
+# Day plan, 2026-10-11 (04:47 → 13:00 UTC)
 
-The founder's brief, in order. Each block: gates (format, lint, typecheck, build; ruff, mypy,
-alembic check), quantity table, one Playwright MCP smoke on a throwaway account, commit and push on
-`umer-dev` (the workspace mirror in the same session), then [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md)
-updated with the hashes. Unfinished work goes to a named stash `overnight-<block>`. The 2026-10-10
-run's files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-10.md`.
+The founder's day brief, in order, then the stretch list. Each block: gates (format, lint,
+typecheck, build; ruff, mypy, alembic check), quantity table, one Playwright MCP smoke on a
+throwaway account, commit and push on `umer-dev` (the workspace mirror in the same session), then
+[OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md) updated with the hashes. Unfinished work goes to a named
+stash `overnight-<block>`. Last night's files are archived as
+`docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-11.md`. Next decision: D-346.
 
-Browser tool: the Playwright MCP connects and drives the app (checked 00:13 UTC). On arrival the
-worker, page pool and beat had exited (the file watcher hit "Cannot allocate memory"); restarted.
-Mail guard on (`MAIL_GUARD=true`, allowlist the founder only). Founder projects read only.
+Bench at 04:47: api healthy, worker / page pool / previews answer a Celery ping, beat scheduling;
+`app-prod` stopped (started for measurements). Browser tool connects. Mail guard on.
 
 | # | Block | Plan | Budget |
 |---|---|---|---|
-| 1a | Competitor names | Reword every D-328 hit to describe the behaviour (code and CSS comments, docs, DESIGN/STATUS/PARITY, drafts, DECISIONS, the archived report line), meaning kept; CLAUDE.md's opening line; delete the competitor screenshot in `docs/tasks/`; no history rewrite; re-scan to zero outside history and legacy. | 00:15–01:00 |
-| 1b | Wage Calculator warm-up | Time first visit after an api restart; load the crafts reference data at api start; time again. | 00:15–01:00 |
-| 2 | Auto Count accuracy | Benchmark before (prod build). Per missed truth point: where, which stage dropped it, score vs cut, why (instrumented copy of the pipeline on the saved fixtures). Fix only what that supports; contract: no new wrong at 70 %/38 %, right never down, times and memory reported. `?opencv=2`. Benchmark after. | 01:00–05:30 |
-| 3 | Orphans in "U.'s workspace" | Report only: key, size, created, area/feature, why unreferenced, bug or not. Investigated alongside block 2. | alongside |
-| 4 | Dense-sheet read speed | Profile A0.00B and two other dense copies; speed the dimension check without changing any result on the D-321–D-326 test set; before/after per sheet and identical-result comparison. | 05:30–09:00 |
-| 5 | Revision sets | Spec only: `docs/tasks/revision_sets_spec.md` (pairing, carry-over, compare, reads, Estimating, data model, block plan, open questions). Drafted alongside. | alongside |
-| 6 | Auto Count speed part 2 | Only after block 2 is committed, with time left: compiled module once per tab, compressed + long cache, IndexedDB cache; then SIMD retry from `overnight-simd`. | 09:00–11:00 |
-| — | Final report | Purge throwaway workspaces through the guarded purge, list their prefixes empty. | 11:00–11:30 |
-
-**As run:** blocks 3 and 5 by agents in parallel from 00:15; block 1 done 00:40; block 2 at 02:20;
-block 4 (by an agent, profiled alongside block 2) at 03:00; block 6a at 03:16, 6b stashed at 03:40;
-block 4's follow-up at 04:16; closed at about 04:25.
+| 1 | Sheet delete storage | `delete_sheets` gathers each doomed sheet's `takeoff/…/<sheet>/` prefix and its `source_key` (unless a surviving sheet shares it) before the rows go, queued through `storage_clear` in the same transaction; a re-prepare queues the version it replaces; the comment at `routes.py:609`; then the 19 orphans deleted with their keys listed. Smoke: sheet delete, Cancel remaining, re-prepare. | 04:50–06:30 |
+| 2 | "C" next-scan re-measure | Quiet machine, production build: shipped vs `?exact=0&solo=off`, 3 runs each, all four tests. If the change costs, find and cut it without changing results. | 06:30–07:30 |
+| 3 | Auto Count fill check | Interior ink density (and hatch) of each candidate against the sample; drop or down-rank clear mismatches. Contract: no right lost, no new wrong, suggestions equal or fewer; E200 A1 6/0 with no hatched-A suggestion; E200 A must not suggest empty A1. | 07:30–09:30 |
+| 4 | First page before the whole file | Prepare the first ticked page from ranged reads of the source; fall back to the full download when the PDF cannot be read so; identical output; time-to-first-sheet before/after (throttled and normal). | 09:30–12:00 |
+| 5 | Drop stashes | `overnight-simd`, `overnight-simd2`, `overnight-cnl` (app). | with block 1 |
+| 6 | Stretch: Duplicate project | Only with time left. | 12:00– |
+| — | Final report | Purge throwaway workspaces through the guarded purge, list their prefixes. | 12:45–13:00 |
