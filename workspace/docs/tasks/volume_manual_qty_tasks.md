@@ -40,3 +40,6 @@ Gates; quantity table; one smoke through the Playwright MCP: a Linear item with 
   its number; a volume's name suffix is left off while nothing is measured.
 - **D-363:** Resume (row icon, both panels), Start and Deduct are off for an item with a manual
   quantity, with the reason in their titles; `resumeItem` refuses it too.
+- **D-364:** height, volume, manual quantity and rough moved into one "Change measurement"
+  dropdown of toggles (slope stays a tick box); a manual quantity is in the tool's unit or LS,
+  and excludes the height and the volume.

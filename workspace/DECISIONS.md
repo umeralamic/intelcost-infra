@@ -13000,3 +13000,24 @@ opens).
 3. **Kept (Umer, 2026-10-11):** Estimating's Insert row lines stay listed on their home sheet (D-362 2).
 
 **Where:** app `features/takeoff/items/manualQuantity.ts`, `ItemRow.tsx`, `ActionGroup.tsx`, `pages/ProjectTakeoff.tsx`.
+
+## D-364: "Change measurement": one dropdown for the height, volume, manual quantity and rough; a manual quantity in the tool's unit or LS
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-359 1, D-360 4, D-362.
+
+1. **The dropdown.** "This measurement" keeps "Apply a slope factor" as a tick box. Under it,
+   "Change measurement" holds, in the same order: Convert to area using a height (runs), Convert to
+   volume (runs and areas), Manual quantity, Rough measurement (a count lists the last two). Each
+   is a toggle, as its tick box was: clicking marks it picked (a check) or not, and several can be
+   picked; closed, the box names what is picked, or "None". What is picked opens its fields under
+   the dropdown (Height; Width and Depth; the manual number and its unit).
+2. **Manual quantity's unit.** The tool's own (Linear and Segment LF, Area SF, Count EA) or LS. It
+   no longer follows a height or volume: picking Manual quantity clears those two (nothing is drawn
+   to convert), and picking either clears Manual quantity. Height and volume still exclude each
+   other; Rough measurement goes with any of them.
+3. **LS on the api.** `ItemUpdate.lump_sum`: true reads the item in LS, false gives the unit back to
+   its type and modifiers; a create sends `unit: "LS"`. Recompute keeps LS; clearing the override
+   (here or from the row menu) gives the measured unit back.
+
+**Where:** app `MeasurementDialog.tsx`, `ProjectTakeoff.tsx`, `features/takeoff/api.ts`; api
+`takeoff/schemas.py` (`lump_sum`), `takeoff/service.py` (`LUMP_SUM`, `update_item`, `_name_and_unit`, `set_override`).
