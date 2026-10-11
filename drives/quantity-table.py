@@ -38,8 +38,23 @@ def figure(case: dict) -> float:
     if kind is TakeoffItemType.SF:
         positives = [(s["vertices"], s["meta"]) for s in shapes if s.get("role") != "subtract"]
         deducts = [(s["vertices"], s["meta"]) for s in shapes if s.get("role") == "subtract"]
-        return quantity.area_on_sheet(positives, deducts, fpp, page)
-    return sum(quantity.compute(kind, s["vertices"], s["meta"], fpp, page) for s in shapes)
+        base = quantity.area_on_sheet(positives, deducts, fpp, page)
+    else:
+        base = sum(quantity.compute(kind, s["vertices"], s["meta"], fpp, page) for s in shapes)
+    mods = case.get("mods")
+    if not mods:
+        return base
+    # A row with `mods` (D-360): the measured figure through the item's modifiers.
+    return quantity.apply_modifiers(
+        base,
+        item_type=kind,
+        height_ft=mods.get("heightFt"),
+        pitch_factor=mods.get("pitchFactor"),
+        folder_multiplier=1.0,
+        layer_multiplier=1.0,
+        volume_width_ft=mods.get("volumeWidthFt"),
+        volume_depth_ft=mods.get("volumeDepthFt"),
+    )
 
 
 def registration(case: dict) -> dict:

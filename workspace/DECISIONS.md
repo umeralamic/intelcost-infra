@@ -12939,3 +12939,22 @@ opens).
    new quantity (area × depth on an item) and needs its own spec (hard rule 3) before it appears here.
 
 **Where:** app `features/takeoff/items/MeasurementDialog.tsx`.
+
+## D-360: Convert to volume (CY) and Manual quantity in the measurement dialog (F22)
+
+**Status:** Accepted (2026-10-11, Umer). **Spec:** [volume_manual_qty_tasks.md](docs/tasks/volume_manual_qty_tasks.md).
+**Amends:** D-359 (what "This measurement" lists).
+
+1. **Convert to volume.** A run (Linear, Segment) takes a width and a depth; an area takes a depth.
+   Each is a length typed as the height is (`2'-0"`, `1.5`), above zero. The quantity is in CY:
+   run length × width × depth ÷ 27, area × depth ÷ 27. Analytic, on both engines, in the quantity
+   table with hand-worked answers.
+2. **Order of modifiers.** The slope factor first (it stretches the run or the area), then the
+   volume. Volume and "Convert to area using a height" exclude each other, as height and slope do.
+3. **Storage.** `volume_width_ft` / `volume_width_raw` (runs), `volume_depth_ft` / `volume_depth_raw`.
+   A depth set turns volume on; the item's unit is `CY`.
+4. **Manual quantity.** On all four tools, above Rough measurement: a tick and a number in the item's
+   unit. It is the item's existing override (`manual_quantity_override`, reason "Manual quantity"),
+   not a new field: the drawn quantity is kept underneath, and unticking clears the override.
+5. **"This measurement" order:** Apply a slope factor, Convert to area using a height (runs),
+   Convert to volume (runs and areas), Manual quantity, Rough measurement.

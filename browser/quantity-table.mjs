@@ -55,7 +55,7 @@ try {
   web = await page.evaluate(async (cases) => {
     const q = await import("/src/lib/takeoff/quantity.ts");
     const pts = (v) => v.map(([x, y]) => ({ x, y }));
-    return cases.map((c) => {
+    const measured = (c) => {
       const page = { widthPt: c.page[0], heightPt: c.page[1] };
       if (c.type === "sf") {
         const pos = c.shapes.filter((s) => s.role !== "subtract").map((s) => ({ points: pts(s.vertices), meta: s.meta }));
@@ -63,6 +63,11 @@ try {
         return q.areaOnSheet(pos, neg, c.fpp, page);
       }
       return c.shapes.reduce((sum, s) => sum + q.quantityFor(c.type, pts(s.vertices), c.fpp, s.meta, page), 0);
+    };
+    // A row with `mods` (D-360): the measured figure through the item's modifiers.
+    return cases.map((c) => {
+      const base = measured(c);
+      return c.mods && base !== null ? q.applyModifiers(base, { geomType: c.type, ...c.mods }) : base;
     });
   }, CASES);
   // The cost rows: F9's money through the app's own lib/estimate.

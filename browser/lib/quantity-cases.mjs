@@ -61,6 +61,21 @@ export const CASES = [
   { id: "arc-true-run-landscape", type: "lf", page: LANDSCAPE, fpp: 0.25, shapes: [poly([[0.5 - 40 / 1224, 0.5], [0.5 + 40 / 1224, 0.5]], { arcs: [{ i: 0, ...radiiT(0.5, 0.5, 40, LANDSCAPE), a0: Math.PI, sweep: Math.PI }] })], expect: 10 * Math.PI },
   { id: "arc-true-area-landscape", type: "sf", page: LANDSCAPE, fpp: 0.25, shapes: [poly([[0.5 - 40 / 1224, 0.5], [0.5 + 40 / 1224, 0.5]], { closed: true, arcs: [{ i: 1, ...radiiT(0.5, 0.5, 40, LANDSCAPE), a0: 0, sweep: Math.PI }] })], expect: 50 * Math.PI },
   { id: "count-marks", type: "count", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.1], [0.2, 0.2], [0.3, 0.3]])], expect: 3 },
+  // The item's modifiers (`mods`) on the measured figure (D-360). A 27 ft run, a 10 × 27 ft area.
+  // A wall: 27 LF × 8 ft = 216 SF.
+  { id: "mod-height-wall", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { heightFt: 8 }, expect: 216 },
+  // A footing: 27 LF × 2 ft × 1 ft = 54 CF = 2 CY.
+  { id: "mod-volume-run", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { volumeWidthFt: 2, volumeDepthFt: 1 }, expect: 2 },
+  // A trench 1'-6" wide, 6" deep: 27 × 1.5 × 0.5 = 20.25 CF = 0.75 CY.
+  { id: "mod-volume-run-inches", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { volumeWidthFt: 1.5, volumeDepthFt: 0.5 }, expect: 0.75 },
+  // A slab: 270 SF × 1 ft = 270 CF = 10 CY.
+  { id: "mod-volume-area", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { volumeDepthFt: 1 }, expect: 10 },
+  // A slab 4" deep on a slope ×1.25: 270 × 1.25 × (1/3) / 27 = 4.1666… CY.
+  { id: "mod-volume-area-slope", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { pitchFactor: 1.25, volumeDepthFt: 1 / 3 }, expect: (270 * 1.25) / 3 / 27 },
+  // A slab with a 5 × 5 ft deduct: (270 − 25) × 1 / 27 CY.
+  { id: "mod-volume-area-deduct", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37), hole(rect(0.12, 0.12, 0.17, 0.17))], mods: { volumeDepthFt: 1 }, expect: 245 / 27 },
+  // Height and volume exclude each other; were both stored, the height stands (LF → SF).
+  { id: "mod-height-over-volume", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { heightFt: 8, volumeWidthFt: 2, volumeDepthFt: 1 }, expect: 216 },
 ];
 
 // A few hundred more, generated the same way every run (a fixed seed), across page shapes.
