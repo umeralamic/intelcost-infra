@@ -13089,3 +13089,13 @@ quantity story say "Width".
    rows (SY, m², CF, m³, gal, a wrong-kind unit), hand-worked.
 3. **Storage.** `result_unit` (migration `d370f5b2c8d3`, items and assembly templates), checked against
    the registry (an area or volume unit that converts).
+
+## D-371: Length examples in feet and inches with their decimal; "Apply a Slope Factor"
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-368.
+
+Every length example in the measurement dialog is feet and inches, spaced, beside the same length in
+decimal feet: Height `7' - 6" or 7.5`; Area width `4' - 6" or 4.5`; Volume width `2' - 6" or 2.5`;
+Depth `1' - 4" or 1.33`; a named dimension `0' - 0"`, its error "like 1' - 4" or 1.33". The hints,
+placeholders and error messages use them; the parser reads the spaced form (2' - 6" → 2.5). The
+slope tick box reads "Apply a Slope Factor". **Where:** app `MeasurementDialog.tsx`.
