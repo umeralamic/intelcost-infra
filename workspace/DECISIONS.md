@@ -4070,7 +4070,7 @@ A zoom menu opens from the zoom percentage. Ours: **Zoom to Fit, 100%, 50%, 25%,
 (the page point there stays there) and draws sharp as every zoom does; Fit is the canvas's
 own `fit`.
 
-*Pending founder review:* where it opens. *(Umer, 2026-10-11: remove it from the top right; the menu stays only on the bottom-right cluster's percentage, between + and −. Open until built.)* The bottom-right zoom cluster gains the
+*Pending founder review:* where it opens. *(Umer, 2026-10-11: remove it from the top right; the menu stays only on the bottom-right cluster's percentage, between + and −. Built as D-357 (app `245f94d`); closed 2026-10-11, confirmed by Umer.)* The bottom-right zoom cluster gains the
 percentage as its top button, always shown; the canvas's top-right percentage, shown for two
 seconds after a zoom (diff #16), becomes clickable and opens the same menu.
 
@@ -12890,3 +12890,17 @@ look for a role that would not help.
    - the Estimating and Wage Calculator banner (`ESTIMATES_PLAN_LOCKED`);
    - the takeoff lock reason;
    - the New project control in the Open menu and All projects.
+
+## D-357: The zoom menu opens only from the bottom-right cluster; the top-right percentage goes
+
+**Status:** Accepted (2026-10-11, Umer: pending_umer D2). **Amends:** D-103 (where the zoom menu
+opens).
+
+1. **Removed:** the canvas's top-right zoom percentage. It showed for two seconds after a zoom and
+   opened the zoom menu when clicked. Removed with it, because nothing else used them:
+   - its timer;
+   - the "quiet" fit that kept the opening fit from showing it;
+   - the canvas's `onZoomMenu` prop.
+2. **Unchanged:** the bottom-right cluster's percentage, between + and −, opens the zoom menu as
+   before (Zoom to Fit, 100%, 50%, 25%, 10%). The steps, the range and the 0 key are unchanged
+   (D-35, accepted 2026-10-11).

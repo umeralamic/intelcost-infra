@@ -43,8 +43,9 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
     - D23: the api's wage calculator docs say "any source or book name" (api `6bfd541`).
     - D18: built as D-356 (api `9091002`, app `aa9baeb`), with your two sentences.
   - **Open:** D8.8, below.
-- **Batch 4 (2026-10-11):** D1 accepted and D3 passed, both closed in DECISIONS. D2 changed: the
-  zoom menu leaves the top right. It stays open below until built.
+- **Batch 4 (2026-10-11):** D1 accepted and D3 passed, both closed in DECISIONS. D2 was built
+  as D-357 (app `245f94d`): the top-right zoom percentage is gone, and the menu opens only from
+  the bottom-right cluster.
 
 ---
 
@@ -52,21 +53,9 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
 
 | # | File:line | What it is | What you need from me | How I check it | Already done elsewhere? |
 |---|---|---|---|---|---|
-| D2 | DECISIONS.md:4064, 4073 (D-103) | Where the zoom menu opens: the bottom-right cluster's percentage, and the clickable percentage at the top right. | **Your answer:** "remove from the top right; remains as is, in between the + and − button at the bottom-right cluster." Work below. | — | Partly overtaken by D-122, which moved the cluster's percentage between Zoom in and Zoom out. |
 | D8.8 | DECISIONS.md:10306 (D-278 1) | We talk to Stripe directly, without its software library, and check Stripe's signatures ourselves. | **Your answer, no:** "before go-live, use Stripe's official Python library for API calls and webhook signature checks instead of our own code." Work below. | — | No. |
 
 ## Work described (not started)
-
-- **D2: the zoom menu only at the bottom right.** About 30 minutes.
-  - **What goes:** the floating percentage at the canvas's top right. It shows for two seconds
-    after a zoom and opens the zoom menu when clicked.
-  - **What stays:** the bottom-right cluster's percentage, between + and −, keeps opening the
-    zoom menu (Zoom to Fit, 100%, 50%, 25%, 10%). Nothing else about zoom changes.
-  - **Process:** a D-NN that amends D-103 first, then the gates, the quantity table, and one smoke
-    on Riverside page 1. The smoke checks that a wheel zoom shows no top-right percentage and that
-    the cluster's percentage opens the menu.
-  - **One question:** remove the top-right percentage entirely (recommended, matching your words),
-    or keep it as a plain two-second readout that does nothing on click?
 
 - **D8.8: Stripe's official library before go-live.** About half a day, mostly the fake and the
   checks.
