@@ -20,3 +20,7 @@ Mail guard on (`MAIL_GUARD=true`, allowlist the founder only). Founder projects 
 | 5 | Revision sets | Spec only: `docs/tasks/revision_sets_spec.md` (pairing, carry-over, compare, reads, Estimating, data model, block plan, open questions). Drafted alongside. | alongside |
 | 6 | Auto Count speed part 2 | Only after block 2 is committed, with time left: compiled module once per tab, compressed + long cache, IndexedDB cache; then SIMD retry from `overnight-simd`. | 09:00–11:00 |
 | — | Final report | Purge throwaway workspaces through the guarded purge, list their prefixes empty. | 11:00–11:30 |
+
+**As run:** blocks 3 and 5 by agents in parallel from 00:15; block 1 done 00:40; block 2 at 02:20;
+block 4 (by an agent, profiled alongside block 2) at 03:00; block 6a at 03:16, 6b stashed at 03:40;
+block 4's follow-up at 04:16; closed at about 04:25.

@@ -1,7 +1,9 @@
 # Overnight report, 2026-10-11
 
 Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every block. The 2026-10-10 run's
-files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-10.md`.
+files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-10.md`. **Every item of the
+brief was done or stashed with its numbers by 04:16 UTC**, block 4 cut further in the time left;
+the report was closed at about 04:25 UTC, with nothing left in the brief to build.
 
 **Browser tool:** the Playwright MCP connects and drives the app (checked 00:13 UTC); every smoke
 below ran through it, on the throwaway `fx.overnight1011.a@bench.intelcost.io`.
@@ -13,7 +15,7 @@ failed with "Cannot allocate memory" (os error 12). Restarted at 00:12; nothing 
 | 1 | Competitor names + Wage Calculator warm-up | **done** | app `7985c69`, api `9018702`, infra `ca9dd6a` |
 | 2 | Auto Count accuracy | **done** (3 of 4 at truth; "C" 24 of 26, the 2 C/NL left) | app `dc7ca84`, infra `f7d3597` |
 | 3 | Orphans in "U.'s workspace" | **done** (report only) | — |
-| 4 | Dense-sheet read speed | **done** (same results, ~2× faster on dense sheets) | api `42828cc`, infra `fa3abea` |
+| 4 | Dense-sheet read speed | **done** (same results; A0.00B ~2.8× less CPU, its real read 6.6 s) | api `42828cc`, `9a9804c`; infra `fa3abea`, `db8f07c` |
 | 5 | Revision sets | **done** (spec) | with block 1's mirror |
 | 6 | Auto Count speed part 2 | a. compiled once per tab: **done**; b. SIMD: **stashed** (`overnight-simd2`, not faster) | a: app `3cf3473`, infra `6f77d95` |
 
@@ -328,6 +330,21 @@ Not adopted: a 🗓 Planned row in FEATURES (F21) points to it; no MANAGER row a
    and the sheet delete needs the fix described there. Say if you want it built.
 7. **Stashes to drop or keep:** app `overnight-simd2`, `overnight-cnl`, and the superseded
    `overnight-simd`.
+
+## Cleanup
+
+- **Throwaway workspace purged** through the guarded script (`bench-workspaces.py purge-owner
+  fx.overnight1011.a@bench.intelcost.io`; `purge-fx` matches only `fx.<fixture>.<stamp>@` addresses
+  and found none): workspace `56c432a4-4582-4aa3-b05f-48f817c40a31`, every prefix 0 objects
+  (project-file, takeoff, intake, scope-doc, trade-scope-doc, subquote, assembly-screenshot,
+  workspace-logo; open multipart uploads not visible to our IAM).
+- **Founder projects** were never written: Auto Count used the saved benchmark fixtures and a throwaway
+  copy of E200; the reads used copies (none of the founder's projects).
+- **Scratch removed:** tonight's Playwright MCP files and the smoke copies under `E:\Intelcost`, the
+  block-4 pages and scripts in the api container's `/tmp`, a data-only database dump the orphan
+  investigation left in the postgres container's `/tmp` (it held password hashes; deleted), the
+  scratchpad. `app-prod` stopped again. All four repos clean on `umer-dev`, even with origin.
+- **Stashes** (app): `overnight-cnl`, `overnight-simd2` (new), `overnight-simd` (superseded).
 
 ## For Abdullah
 
