@@ -60,7 +60,7 @@ changes:
 | 26 | Debug strip | A developer flag, never shown to users. |
 | 27 | The unbuilt backlog | **Out of F13.** The reference editor and several references go under Ideas. |
 
-**Spec details decided overnight (D-189, pending founder review):**
+**Spec details decided overnight (D-189, pending founder review; accepted 2026-10-02, closed 2026-10-11, confirmed by Umer):**
 - **Vector orientations are exact.** A vector symbol turned a quarter turn or mirrored is the
   same strokes under an exact transform, so the template's strokes are transformed and
   re-rasterised, never resampled from pixels.

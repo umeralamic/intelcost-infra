@@ -315,7 +315,7 @@ layers and provenance; debug strip; the unbuilt backlog.
   no drawings yet.
 - **One more app-wide pass:** the 448 px default dialog width, to finish legacy's look.
 
-## Click-only checks for the morning, most important first
+## Click-only checks for the morning, most important first (items outside an open MANAGER click check skipped, covered by later work; closed 2026-10-11, confirmed by Umer)
 
 1. **Earthwork on C-200:** Earthwork tab → Trace → "Adopt N labelled"; draw a boundary,
    add a few EG spots; Calculate; Estimating shows the lines under DIV 31 › Grading on your

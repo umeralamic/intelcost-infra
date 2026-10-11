@@ -289,5 +289,5 @@ schedule table still has to be typed by hand.
 - [x] Draft written 2026-10-01; research 2026-10-02.
 - [x] The founder's answers (D-236); spec adopted.
 - [x] A (2026-10-02) · [x] B · [x] C · [x] D · [x] E · [x] F · [x] G
-- [x] The model test (2026-10-03): gpt-5-nano, gemini-3.1-flash-lite, gemini-3.5-flash-lite on 20 sheets and 3 schedules; results and my pick in D-252, the pick awaits the founder.
+- [x] The model test (2026-10-03): gpt-5-nano, gemini-3.1-flash-lite, gemini-3.5-flash-lite on 20 sheets and 3 schedules; results and my pick in D-252, the pick awaits the founder (accepted in D-252 and D-253; closed 2026-10-11, confirmed by Umer).
 - [x] PARITY's F14 lines ticked (§2, §10, §18, §19, §22); the two scale-evidence lines in §18 belong to the scale work, not F14.

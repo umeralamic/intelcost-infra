@@ -1,4 +1,4 @@
-# F12: Earthwork and Auto Trace (spec, questions open)
+# F12: Earthwork and Auto Trace (spec; questions answered in D-136, closed 2026-10-11, confirmed by Umer)
 
 > **Answered 2026-09-30 (D-136); being built block by block.** Specced 2026-09-30 from legacy's source on `UmeralamDEV` (e99cddcb; no earthwork change
 > since 2026-09-27) and live legacy's Earthwork tab. Nothing is built. The founder's

@@ -150,7 +150,7 @@ AI Credits and Trash.
 1. **Sheet folder management** (rename, subfolder, delete with legacy's guard, move): every multi-discipline set uses folders, and today a mistyped folder cannot be fixed. Small, and nothing blocks it.
 2. **Markup Properties panel**: an Essentials workspace gets only markups, so their styling is that plan's main surface. Medium, and nothing blocks it.
 3. **Confirm or fix double-click to finish a run**: the on-screen hint promises it. If it is missing, every estimator hits it in their first minute. Small: drive it first.
-4. **Run the AI tools against a real model**: the tools are on screen, so a tester will click them. Small if the keys are in place.
+4. **Run the AI tools against a real model**: the tools are on screen, so a tester will click them. Small if the keys are in place. *(Keys and model settled in D-252, D-253; closed 2026-10-11, confirmed by Umer.)*
 5. **The Library: parked for later (D-287 6).** A header button in legacy with nothing behind it in the new app; legacy's Library feeds nothing else (see below). The founder parked it: not built now, not dropped.
 6. **Legacy URL redirects**: small, and needed before any legacy user, email or migrated link reaches the new app. This unblocks the cutover.
 7. **F17 migration spec**: large and owned by Abdullah. It has to start now so that testers who used legacy see their own work. It also settles whether old ids map to new uuids (item 6).

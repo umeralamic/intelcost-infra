@@ -196,7 +196,7 @@ Also: live legacy is the `UmeralamDEV` branch, 161 commits past our local `intel
 5. Drag a column edge; double-click it to fit; right-click the header for Freeze / Unfreeze Header.
 6. With the header frozen, scroll a long estimate quickly: the header's column lines stay steady, no white flashes.
 
-**Task 4 (sign-in, sign-up, Settings)**
+**Task 4 (sign-in, sign-up, Settings)** *(skipped, covered by later work; closed 2026-10-11, confirmed by Umer.)*
 1. Sign out and open the sign-in page: the orange IC tile and "Intelcost" top left, "Welcome back" in the card, "Forgot password?" beside Password. Sign up reads "Start your free trial" with Job title second.
 2. Open Settings: "← Dashboard" top right, "Workspace settings", the "Editing workspace" buttons, and pill tabs; People & Access shows Members, Roles & Permissions, Ownership, Collaboration, Activity in a second row.
 3. General: Logo, Workspace name, Company info, "Save settings" bottom right; saving says "Settings saved".

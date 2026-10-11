@@ -188,7 +188,7 @@ No data comes from legacy (D-236 15 for credits; nothing else exists).
    - Subscriptions list, comp plan, webhook event errors.
    - Then a full run restored from the fixture tag before any deploy to testers (CLAUDE.md).
 
-## Questions for Umer
+## Questions for Umer (answered in D-277 except Q14; closed 2026-10-11, confirmed by Umer)
 
 1. **Trial plan.** During a trial, is the workspace Pro (legacy defaulted every new workspace to Pro) or something else?
 2. **Tier caps after paying.** Do a Tier 3 workspace's restrictions end when it subscribes (legacy cleared them on an active subscription), whatever its country?

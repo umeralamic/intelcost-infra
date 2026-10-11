@@ -480,13 +480,13 @@ width (D-197).
 - Legacy's in-dialog Draw and Redraw in Name from page region.
 - A metric-aware look at sheets calibrated in metric before D-223, if any exist in production.
 
-## Click-only checks for the morning, most important first
+## Click-only checks for the morning, most important first (items outside an open MANAGER click check skipped, covered by later work; closed 2026-10-11, confirmed by Umer)
 
 1. **F18:** open C-200 on the Earthwork tab.
    - Expect "Existing grade: linked from Page 3" and Links… opens the link.
    - Calculate: the result uses page 3's contours.
 2. **Auto Count:** on E102 (page 26), Select-drag a box round one receptacle symbol, then Auto
-   Count in the menu.
+   Count in the menu. *(Folded into the F13 click check; closed 2026-10-11, confirmed by Umer.)*
    - Expect five found above the bar, four of them turned 90°.
    - Create, then Ctrl+Z.
 3. **Overlay:** on E102, Overlay → Standard → E101 → Align. Click two pairs, nudge with the arrows,

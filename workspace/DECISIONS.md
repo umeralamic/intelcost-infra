@@ -3267,7 +3267,7 @@ shows it.
 - **Action group states, legacy's order:** multi, subtract, **draw** from the moment the
   naming dialog is confirmed (not the first point) and while an item is in hand, then
   **select** for a selected item whatever the tool, then **armed**, else none.
-- **The item's session (decided overnight, pending founder review):** Enter, or an Escape
+- **The item's session (decided overnight, pending founder review; closed 2026-10-11, confirmed by Umer):** Enter, or an Escape
   that ends a run, ends the item's session with the tool still armed (legacy's), except
   after a new item's first run, whose session legacy re-arms once the item exists; the
   next run opens the naming dialog after the draw ("post" mode) and becomes a new item. An
@@ -3381,7 +3381,7 @@ first comparison listed); the sheet row's menu entries owned by later features.
   above it clear of the reticle, below it near the top; moving 5 px hides it at once. An
   area run under the pointer is outlined at once in the highlight colour over a white
   casing, never on the selected item, never mid-draw.
-- **Decided overnight:** the panel is hidden the moment another tool is picked or a pan
+- **Decided overnight (closed 2026-10-11, confirmed by Umer):** the panel is hidden the moment another tool is picked or a pan
   begins (legacy leaves a stale panel up there); the "Section #n of m" count is legacy's
   (n counts the sheet's runs with deducts, m the sections), kept as is.
 - **Reticle (S26 AC4):** legacy's `paintCursor` on its own Canvas 2D layer over the canvas
@@ -3413,7 +3413,7 @@ Pointers were being sent but never drawn.
   rectangle, an ellipse or an arc in its own mode, as their outline; a run as its points.
   A deduct being cut carries `deduct` on the draft frame (api `DraftFrame`, new, default
   false) and draws hatched in its colour.
-- **Two windows (S30), decided overnight:** driven with A on the api and B (a second
+- **Two windows (S30), decided overnight; closed 2026-10-11, confirmed by Umer:** driven with A on the api and B (a second
   member) on api-b, so every update crossed Redis: A's pointer and tag, A's box outline and
   tag, the saved shape, a deduct's hatched draft and its figure dropping on B, and A's
   undo reaching B; a count marked by both at once ended on the same total in both windows.
@@ -3507,7 +3507,7 @@ legacy's Estimating tab first, then build. Live legacy (`UmeralamDEV`, 161 commi
 the local checkout) has moved on since the draft: cost components, shared equipment and a
 cost-type filter.
 
-**Decision (each legacy's behaviour; the draft's differing recommendation in brackets):**
+**Decision (each legacy's behaviour; the draft's differing recommendation in brackets; accepted in D-95, closed 2026-10-11, confirmed by Umer):**
 1. No markups or bid total in F9.
 2. Excel only.
 3. Plain numbers (IEEE doubles) in `costing.ts`, floats in the Python twin, the same
@@ -4101,7 +4101,7 @@ level; dark pixels 4.7% → 0.7% and 6.0% → 0.9%; E101 0.36% → 0.17% and 1.3
 and 25% unchanged. The 4 × draw at 10% costs what a 25% draw does (650 to 760 ms on the
 dense sheet in the bench's software renderer).
 
-**Left, for the founder:** a Fit that is itself far out (13.6% on the dense sheet at
+**Left, for the founder (settled by D-118; closed 2026-10-11, confirmed by Umer):** a Fit that is itself far out (13.6% on the dense sheet at
 1440 × 900) draws as before, dark (mean 233); supersampling at and just above a low Fit is an
 idea, not built.
 
@@ -4227,7 +4227,7 @@ and close. The pane opens on the sheet being measured; its sheet and width are k
 next open, and it unmounts when closed, freeing its raster. It draws the same measurements
 the page reads for that sheet, and nothing in it edits.
 
-*Pending founder review, where it differs from legacy:* its zoom steps and range are the
+*Pending founder review (closed 2026-10-11, confirmed by Umer), where it differs from legacy:* its zoom steps and range are the
 canvas's (× 1.25 a step, 10% to 4000%, D-102) rather than legacy's + 0.25 steps to 1200%; the
 zoom keys (+, −, 0) act on the main canvas only. Legacy's dock hyperlinks open Split on their
 target sheet; they arrive with the Dock markup (task 4).
@@ -4262,7 +4262,7 @@ Ported from legacy's `ShareLinkBlock`, `useProjectShareLink`, `guest-project` an
   and Estimating (Qty, +Waste, Item Cost, legacy's guest arithmetic) tables. A password is
   asked for once per tab.
 
-*Pending founder review:* **presence for guests is stored but shows nothing**: legacy's
+*Pending founder review (closed 2026-10-11, confirmed by Umer):* **presence for guests is stored but shows nothing**: legacy's
 guests poll page beacons its members write; our presence carries item claims and broadcast
 cursors, not stored beacons, so `/presence` returns an empty list until beacons exist. The
 link is built on the app's own origin (legacy used `APP_URL` for non-localhost hosts).
@@ -4307,7 +4307,7 @@ text colour), the toolbar "Markups" toggle (everything drawn, hidden from the to
 default as legacy's), "Annotations" in the sheet menu's Show All / Hide All, and markups
 read-only in Split view. The guest view shows none, as legacy's.
 
-*Left for later, pending founder review:* the Properties panel per kind and undo of markup
+*Left for later, pending founder review (closed 2026-10-11, confirmed by Umer; still unbuilt, kept in the backlog under P-10):* the Properties panel per kind and undo of markup
 edits.
 
 ---
@@ -4336,7 +4336,7 @@ From legacy's Snapshot tool, `useEvidence`, `EvidencePanel` and `LinkEvidenceToI
 - **Storage:** `snippet` (sheet, box in page fractions, PNG key, title, tag, notes) and
   `snippet_link`; the PNG under `takeoff/{ws}/{project}/snippets/`, removed with the row.
 
-*Pending founder review:* legacy's custom tag list per workspace (`evidence_tag_types`) is a
+*Pending founder review (closed 2026-10-11, confirmed by Umer):* legacy's custom tag list per workspace (`evidence_tag_types`) is a
 free label on "other" here; Open at snapshot opens the sheet but does not yet zoom to the box;
 Copy image and the floating preview window are a dialog; OCR and AI summaries are F14's.
 *Update (05:07):* Open at snapshot now zooms to the box, as legacy's `openSnippetAtSnapshot`.
@@ -4358,7 +4358,7 @@ A dock draws its picture inside its border, moves and resizes as any box, and it
 ("↗ A-101") opens the target sheet in Split view (legacy's `onFollowHyperlink`). Stored as a
 `dock` markup (D-109), its source and border in its style.
 
-*Pending founder review:* legacy's "Dock this snapshot" shortcut in the Snippets menu and
+*Pending founder review (closed 2026-10-11, confirmed by Umer):* legacy's "Dock this snapshot" shortcut in the Snippets menu and
 its properties popover on a placed dock are not built; a dock's border is restyled by
 deleting and placing again.
 *Update (05:07):* "Dock this snapshot" is built (Snippets menu, setup opens with it picked).
@@ -4403,7 +4403,7 @@ are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssembl
   siblings' references (Q6); there is no type filter (Q8); there is no blank "New
   assembly" (Q9). The Starter Pack ships empty (Q4).
 
-*Pending founder review:*
+*Pending founder review (closed 2026-10-11, confirmed by Umer):*
 - Writes need `canEditTakeoff`, where legacy checks nothing (Q1).
 - Use on sheet from the Starter Pack applies its sub-items and rates, where legacy probably
   does not (unconfirmed).
@@ -4444,9 +4444,9 @@ From legacy's `FindTextDialog`, `textSearch.ts` (ported unchanged into
     on the hit's own sheet.
   - **Measurement** opens New Measurement as Count, named from the first hit. The hits'
     boxes are not placed as marks: this is legacy's behaviour, and Q5's "a count mark per
-    hit" is left for the founder.
+    hit" is left for the founder (dropped: legacy's behaviour stands; closed 2026-10-11, confirmed by Umer).
 
-*Pending founder review:*
+*Pending founder review (closed 2026-10-11, confirmed by Umer):*
 - Choose Pages is a flat, searchable page list, not legacy's folder tree with checkboxes.
 - ~~Region select's "Search as Text" seed is not wired.~~ Built 05:34: the region box menu
   has legacy's Copy as Text, Copy as Image, Search as Text, New Snapshot, Crop as New Page.
@@ -4477,7 +4477,7 @@ answered in legacy's favour: printing happens in the browser, not as a server PD
   the browser picks paper or PDF. No legend, dimensions or title block, as legacy does.
 - **Orientation:** pages print unturned, as legacy's do.
 
-*Pending founder review:* a dock prints as its border on white, without its picture, as
+*Pending founder review (closed 2026-10-11, confirmed by Umer):* a dock prints as its border on white, without its picture, as
 legacy's does.
 
 ---
@@ -4507,7 +4507,7 @@ From legacy's `takeoff_item_history`, `recordHistoryAsync`, `HistoryDrawer` and
   Every row is written by the api in the same transaction as its change, not
   fire-and-forget as in legacy, so a row cannot be lost apart from its change.
 
-*Pending founder review:*
+*Pending founder review (closed 2026-10-11, confirmed by Umer):*
 - Legacy's "calibration changed" and "quantity recalculated" rows are not written: our
   quantities are computed on read, and a scale change is not an item write.
 - ~~Estimating's "Modified by" cell that opens the same history is not wired.~~ Wired 05:40: the
@@ -5093,7 +5093,7 @@ wrapper, `<table>` width, `<colgroup>`, the header's resize handle).
 ## D-131 — A printed scale is a claim: checked against the sheet's drawn dimensions, as legacy's
 
 **Date:** 2026-09-30
-**Status:** decided, **pending founder review** (the brief's items 1 to 4: legacy's behaviour chosen where I would have asked)
+**Status:** decided, **pending founder review** (accepted in D-135; closed 2026-10-11, confirmed by Umer) (the brief's items 1 to 4: legacy's behaviour chosen where I would have asked)
 **Area:** Takeoff, Frontend, Api
 
 **Decision.** Scale from a box and Scale · All pages check each printed scale against the
@@ -6542,7 +6542,7 @@ deviations named)
 - **No per-workspace forum, and no ban on drawing images.** The privacy finding (the draft's
   finding 10) is known and accepted.
 - **Community is no longer blocked.** It goes back to Planned. The draft's other 17 questions
-  still wait for the founder, and nothing is built for Community yet.
+  still wait for the founder (answered in D-234; closed 2026-10-11, confirmed by Umer), and nothing is built for Community yet.
 
 ---
 
@@ -6948,7 +6948,7 @@ and Boundary points as Linear's.
   - **Q18:** "Add to the selected count item" when one is selected, beyond legacy.
   - **Q27:** the unbuilt backlog is out of F13. The reference editor and several references
     go under Ideas.
-- **Spec details (overnight, pending founder review):**
+- **Spec details (overnight, pending founder review; accepted 2026-10-02, closed 2026-10-11, confirmed by Umer):**
   - **Vector orientations.** A vector symbol turned by a quarter turn or mirrored is the
     same strokes under an exact transform, so the template is transformed, never
     resampled. The panel's Rotation search shows in both modes: Vector offers 4 (90° steps,
@@ -8194,7 +8194,7 @@ starter assembly", the pack empty) give sixteen pieces, listed in
 **Decision:** Option B, in four blocks (A Starter Pack, B Developer menu and Activity,
 C Billing tiers' first four tabs, D Overrides, lock and flagged accounts), each as legacy.
 
-**Consequences (legacy's answers, each pending founder review):**
+**Consequences (legacy's answers, each pending founder review; accepted 2026-10-02, closed 2026-10-11, confirmed by Umer):**
 - **A starter assembly is written by a platform admin only**, as legacy's access rule; no
   capability is asked of them on a starter row, Costs included. A workspace's own templates
   keep D-112's gates. "New starter assembly" makes an Area / SF / `#2563eb` template, as
@@ -8716,7 +8716,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     dialog's draft rows carry the same link to the write.
   - All copies need `canEditEstimates` (D-95's pricing seat); without it only the rows and
     no prices come, as before.
-- **Beyond legacy, small (pending founder review):** Copy to my assemblies also copies the
+- **Beyond legacy, small (pending founder review; accepted 2026-10-03, closed 2026-10-11, confirmed by Umer):** Copy to my assemblies also copies the
   Starter assembly's components. Legacy's copy leaves them behind.
 - **Left:** the template's shared-equipment usage entries and their pending links (legacy's
   `assembly_template_equipment_usage`, "Shared equipment missing").
@@ -8844,7 +8844,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
   as written, `… 3.1416 * ({Dia} / 2)^2 …` is refused ("Unexpected character"). The same
   calculation is written with the new entry:
   `PARENT * ({Width} * {Depth (Pipe zone)} - {Area 1 @ SF}) / 27`. Adding `^` (in both
-  engines) is a question for the founder, not built.
+  engines) is a question for the founder, not built (settled by D-248; closed 2026-10-11, confirmed by Umer).
 - **Proved:**
   - gates;
   - the quantity table, 12 new rows: 14.5" = 1.2083 ft, 1'-2.5" the same, 1.21 stays;
@@ -9457,7 +9457,7 @@ was not mounted.
 3. **`ensure_bucket` is not restored.** "s3 references updates" (2d72790) removed it with
    `s3_endpoint_url`; the lifespan no longer creates the bucket.
 
-**Open, for the founder:** after 2d72790 storage has no endpoint setting, so the bench's
+**Open, for the founder (settled by D-259; closed 2026-10-11, confirmed by Umer):** after 2d72790 storage has no endpoint setting, so the bench's
 MinIO is unreachable: every upload, preview and presigned link goes to AWS with the bench's
 credentials. That needs staging's agreement, not a patch here.
 
@@ -10659,7 +10659,7 @@ marketing service).
 
 ## D-286: Auto Count accuracy and speed on E101 and E200: what changed, from legacy and new
 
-**Status:** decided in the overnight run (the founder's brief, 2026-10-07); each change kept only
+**Status:** (closed 2026-10-11, confirmed by Umer) decided in the overnight run (the founder's brief, 2026-10-07); each change kept only
 when no test lost accuracy and accuracy or time improved, measured on throwaway copies of E101
 (Hidden Valley Spec Building Rebid) and E200 (Waxing City)
 
@@ -10730,7 +10730,7 @@ record how.
 
 ## D-288: Auto Count: tag suffix variants as their own items, the TYP. rule, the mirror rule, a background sheet index
 
-**Status:** decided in the overnight run of 2026-10-07 (the founder's D-287 3 to 5); each change
+**Status:** (closed 2026-10-11, confirmed by Umer) decided in the overnight run of 2026-10-07 (the founder's D-287 3 to 5); each change
 kept only when no test lost accuracy, measured on throwaway copies of E101 and E200 at 70%.
 
 1. **Suffix variants (D-287 3).** A printed tag relates to the sample's as the same tag, a
@@ -10775,7 +10775,7 @@ kept only when no test lost accuracy, measured on throwaway copies of E101 and E
 
 ## D-289: Auto Count Image mode speed: the Timing line, pass order, exact skips, one worker pool, a faster exact scorer
 
-**Status:** decided in the overnight run of 2026-10-07 (the founder's brief, Part B). The results
+**Status:** (closed 2026-10-11, confirmed by Umer) decided in the overnight run of 2026-10-07 (the founder's brief, Part B). The results
 contract held at every step: each kept candidate, checked or not, at the same place (within 1 px)
 with the same score (within 0.001), checked on the two E101 tests. E200 could not be checked: a
 single Image run there passed 80 minutes on the bench, so it has no saved results. Every change
@@ -10937,7 +10937,7 @@ by the founder (overnight brief, 2026-10-08).**
    ("out of sequence"). One neighbour, or two equal (a ridge, a swale): within twice the
    interval of it ("far from its neighbours"). The interval is the commonest difference
    between neighbouring contours, so index contours alone are their own interval.
-   **The allowance (my call):** the founder's wording flags any contour not between its
+   **The allowance (my call; approved, closed 2026-10-11, confirmed by Umer):** the founder's wording flags any contour not between its
    neighbours. On C-200's real proposed contours that flagged 12 correct ones (swales,
    ridges, contours ending at a 702.75 curb line), so the between test carries the same
    2 × interval allowance as the second test. A typo of a digit is caught either way (669
@@ -11169,7 +11169,7 @@ the Part 1 code's own candidates, compared one by one (angle, place, score).
    and tags). E200 A went from 580 s to 353 s with the same 12 / 0 and the same 19 kept
    candidates, but one checked fixture came from the 0° pass at 99.6 % instead of the 180° pass at
    100.0 % (a slightly different place) and one suggestion went 66.7 → 66.6: not identical, so it
-   is kept in the app repo's stash `overnight-part2a-outline-symmetry` for the founder to accept
+   is kept in the app repo's stash `overnight-part2a-outline-symmetry` for the founder to accept (shipped by D-305; closed 2026-10-11, confirmed by Umer)
    or drop.
 2. **The offset search without allocation: shipped.** The scorer's rigid-offset recall search
    wrote an object per offset tried (25 or more per window) and a closure per window; it now
@@ -12132,11 +12132,11 @@ No competitor's name, screenshot, UI text or feature name anywhere in the repos 
 files: code, comments, DECISIONS, specs, task files, commit messages, fixtures, file names. A
 decision states the estimator's need, never "product X does this"; a competitor's wording is
 never reused for a label, a message or a feature. The hits found before the rule are listed in
-the 2026-10-10 overnight report, unchanged, for the founder to decide on.
+the 2026-10-10 overnight report, unchanged, for the founder to decide on (reworded by D-342; closed 2026-10-11, confirmed by Umer).
 
 ## D-329: The Sheets panel redraws only for its own data (P-24)
 
-**Status:** P-24 from the backlog, taken overnight 2026-10-10 (block 6).
+**Status:** P-24 from the backlog, taken overnight 2026-10-10 (block 6). Accepted, closed 2026-10-11, confirmed by Umer.
 
 1. **Why it redrew.** A Load's every prepared page refetches the sheet list, the signed assets
    and the scales (at most once a second), and the takeoff page around the panel redraws for
@@ -12458,7 +12458,7 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    longer exist (none of their nine projects exists either) were deleted with
    `drives/delete-orphans.py --delete`, every key printed to
    `E:\bench-backups\orphans-deleted-2026-10-10.txt`. The 19 in "U.'s workspace", which exists, are
-   left for a person.
+   left for a person (deleted by D-347; closed 2026-10-11, confirmed by Umer).
 3. **The restore (D-340), done.** Tar `E:\bench-backups\minio-intelcost-local-2026-10-10.tar`,
    47.93 GB, 15,149 entries, 4,641 objects as MinIO's disk has (2,500 of "Umer plans test", as
    MinIO). Copied 1,973 objects, 1.464 GB, none skipped, none failed, each MD5-checked, logged in

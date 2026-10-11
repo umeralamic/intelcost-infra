@@ -261,7 +261,7 @@ Everything below was driven side by side with live legacy's "Bench comparison" p
   claim"). The parser is ready in `lib/takeoff/scaleText.ts`.
 - **The item history is ready for more kinds**, such as calibration changes on items.
 
-## Click-only checks
+## Click-only checks (skipped, covered by later work; closed 2026-10-11, confirmed by Umer)
 
 Most important first.
 

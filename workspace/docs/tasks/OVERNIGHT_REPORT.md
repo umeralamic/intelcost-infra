@@ -255,7 +255,7 @@ passed.
   services stopped for block 2's quiet measurement were started again at 05:19.
 - **Stashes:** none (block 5 dropped the three). All four repos clean on `umer-dev`, even with origin.
 
-## Decisions made on your behalf (all in DECISIONS)
+## Decisions made on your behalf (all in DECISIONS; closed 2026-10-11, confirmed by Umer)
 
 - **D-346:** the quiet machine for block 2 meant stopping the bench's dev server, api, workers, beat and
   marketing for the measurement (restarted after); the exact search's cut keeps results identical box
@@ -462,7 +462,7 @@ row unchanged; the pass that ran excluded it.
 - **The copy:** deleted, its prefixes 0. **Scratch removed:** the smoke PDFs, MCP snapshots and container
   scripts. All repos are clean on `umer-dev`.
 
-## Decisions made on your behalf
+## Decisions made on your behalf (closed 2026-10-11, confirmed by Umer)
 
 - **D-352:**
   - a person's placement of a calculated line survives Calculate (`placed_by_hand`);

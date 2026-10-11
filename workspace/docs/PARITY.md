@@ -603,7 +603,7 @@ The Annotations tab; what an Essentials workspace ($9.99) gets: annotations and 
 
 The Earthwork tab. `src/lib/takeoff/earthwork/`.
 
-> **Specced 2026-09-30** in [tasks/drafts/earthwork_tasks.DRAFT.md](tasks/drafts/earthwork_tasks.DRAFT.md) (Strip Areas, Site Features, the new lines, CSI, shrink, Auto Trace), awaiting the founder's answers; this section is rewritten to it on adoption.
+> **Specced 2026-09-30** in [tasks/drafts/earthwork_tasks.DRAFT.md](tasks/drafts/earthwork_tasks.DRAFT.md) (Strip Areas, Site Features, the new lines, CSI, shrink, Auto Trace), the founder's answers given in D-136 (closed 2026-10-11, confirmed by Umer); this section is rewritten to it on adoption.
 
 **Drawing the surfaces**
 

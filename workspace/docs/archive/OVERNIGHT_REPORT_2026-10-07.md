@@ -276,7 +276,7 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
 - Updated for D-287 1 (Essentials views Estimating and the saved wage rates). Nothing else in it
   disagrees with tonight's work.
 
-## How to test Image mode on your desktop
+## How to test Image mode on your desktop (folded into the F13 click check; closed 2026-10-11, confirmed by Umer)
 
 1. Pull `umer-dev` in `intelcost-app-react` (or open the deployed bench), open Hidden Valley Spec
    Building Rebid, sheet E101.
