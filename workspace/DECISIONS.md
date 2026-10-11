@@ -1603,12 +1603,12 @@ in CSS px, about 4.05 × the old 100%, so the same sheet fits at about 20% there
   reads PDF points; nothing measured reads the zoom. Markup sizes keep their look: they
   taper with the page's width over the canvas's width (the old zoom), not with the new
   percentage, so a mark or stroke is the size it was at every view.
-- **Range 10% to 4000%.** *Pending founder review:* the floor is lowered to a sheet's fit
+- **Range 10% to 4000%.** *Pending founder review (closed 2026-10-11, confirmed by Umer):* the floor is lowered to a sheet's fit
   when its fit is below 10% (a 48 × 36 in sheet in a 1440 × 900 window fits at about 9.6%),
   so Fit is always inside the range, as the founder asked.
-- **Steps.** *Pending founder review:* one press of zoom in or out is × 1.25 at every zoom
+- **Steps.** *Pending founder review (closed 2026-10-11, confirmed by Umer):* one press of zoom in or out is × 1.25 at every zoom
   (legacy's step above 2×); legacy's + 0.25 below 2× would jump from 20% to 45%.
-- **The 0 key zooms to fit** (*pending founder review*): legacy's 0 reset to its 100%, the
+- **The 0 key zooms to fit** (*pending founder review; closed 2026-10-11, confirmed by Umer*): legacy's 0 reset to its 100%, the
   fitted width, which is Fit's picture, not the new 100%.
 
 **Consequences:**
@@ -4070,7 +4070,7 @@ A zoom menu opens from the zoom percentage. Ours: **Zoom to Fit, 100%, 50%, 25%,
 (the page point there stays there) and draws sharp as every zoom does; Fit is the canvas's
 own `fit`.
 
-*Pending founder review:* where it opens. The bottom-right zoom cluster gains the
+*Pending founder review:* where it opens. *(Umer, 2026-10-11: remove it from the top right; the menu stays only on the bottom-right cluster's percentage, between + and −. Open until built.)* The bottom-right zoom cluster gains the
 percentage as its top button, always shown; the canvas's top-right percentage, shown for two
 seconds after a zoom (diff #16), becomes clickable and opens the same menu.
 
@@ -4760,7 +4760,7 @@ founder's GPU shows the bitmap and the device box equal (D-105).
 
 **Date:** 2026-09-30
 **Status:** decided (the founder's goal, the option chosen by measurement; pending his
-monitor check)
+monitor check; passed on his monitor, closed 2026-10-11, confirmed by Umer)
 **Area:** Takeoff, Frontend
 **Amends:** D-118
 
