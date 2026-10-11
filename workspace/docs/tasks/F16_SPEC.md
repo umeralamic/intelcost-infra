@@ -110,8 +110,8 @@ cadence, as legacy billed plan price × seats):
      - `invoice.payment_failed`: mark `past_due` and stamp `grace_until` = now + 7 days (Q5).
    - The sync re-reads the subscription from Stripe rather than trusting the payload.
    - **Period dates come from the subscription items** (`items.data[].current_period_start/end`),
-     not the subscription's top level, so the code works on newer API versions (Q14). The
-     founder confirms the account's API version.
+     not the subscription's top level, so the code works on newer API versions (Q14).
+     Abdullah confirms the account's API version during the Stripe setup (F16_GO_LIVE.md step 7; Umer, 2026-10-11).
    - After the commit it publishes `workspace.plan.changed` (D-20).
 3. **Customer portal. Built, Block C.**
    - Route: `POST {ws}/billing/portal`, owner only; returns to `/settings/billing`.

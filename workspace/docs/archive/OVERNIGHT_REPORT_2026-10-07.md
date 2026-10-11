@@ -269,7 +269,8 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
    (A: 4 of 12 checked, 0 wrong; A1: 6 of 6). E200 is a vector sheet, where Vector checks all 18.
    Is Image mode on vector sheets worth more work, or should the panel suggest Vector there?
 4. **The refusal wording on Essentials** still says "Your role cannot …" for a plan limit (the api's
-   message, unchanged by the brief). Change it to the plan wording?
+   message, unchanged by the brief). Change it to the plan wording? *(Done 2026-10-11 as D-356,
+   with Umer's sentences; closed 2026-10-11, confirmed by Umer.)*
 
 ## F16_SPEC
 

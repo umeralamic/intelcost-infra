@@ -6549,7 +6549,7 @@ deviations named)
 ## D-181 — Editing earthwork contours, spots and the boundary, as legacy
 
 **Date:** 2026-10-01
-**Status:** decided (the founder asked for legacy's behaviour, in session); the "kept ours" points are this session's, pending founder review
+**Status:** decided (the founder asked for legacy's behaviour, in session); the "kept ours" points are this session's, pending founder review; the six "kept ours" points accepted, closed 2026-10-11, confirmed by Umer
 **Area:** Earthwork (F12) tab, Takeoff panel; Frontend
 
 **How it was compared:** legacy's source on `UmeralamDEV` (`engine.ts`, `PdfCanvas.tsx`,
@@ -6618,20 +6618,20 @@ legacy ("Bench comparison" Page 1) against ours (C-200).
   bypass it). Snap still applies.
 
 **Kept ours, on purpose:**
-- **The crossing guard (the founder's rule).** An edit is refused when it would make the
+- **The crossing guard (the founder's rule).** *(closed 2026-10-11, confirmed by Umer)* An edit is refused when it would make the
   line cross itself, or cross a line of its own surface, more often than before. This
   covers a vertex drag, a move, an added point and a break. A line already crossing stays
   editable, so it can be fixed. Legacy only flags crossings after the fact; ours still does
   that too (blue lines, the toast).
-- **The boundary keeps three points.** Legacy lets it drop to two, which no longer encloses.
-- **An elevation edit is undoable.** Legacy's is not.
-- **Stale follows the points.** Legacy's key sums `geometry_version`, with a 120 s debounce,
+- **The boundary keeps three points.** *(closed 2026-10-11, confirmed by Umer)* Legacy lets it drop to two, which no longer encloses.
+- **An elevation edit is undoable.** *(closed 2026-10-11, confirmed by Umer)* Legacy's is not.
+- **Stale follows the points.** *(closed 2026-10-11, confirmed by Umer)* Legacy's key sums `geometry_version`, with a 120 s debounce,
   so an undo still shows stale. Ours hashes the inputs: any edit shows stale at once, and an
   undo back to the computed shape is current again.
-- **Earthwork is drawn on reload.** Legacy's `earthworkLayers` memo leaves the geometries
+- **Earthwork is drawn on reload.** *(closed 2026-10-11, confirmed by Umer)* Legacy's `earthworkLayers` memo leaves the geometries
   out of its dependencies, so after a fresh load the shapes are missing until the next
   earthwork write. Found live, and not copied.
-- **Break at a vertex** does not repeat the vertex in the second half. Legacy's does: a
+- **Break at a vertex** *(closed 2026-10-11, confirmed by Umer)* does not repeat the vertex in the second half. Legacy's does: a
   defect.
 
 **Left:**
@@ -10242,13 +10242,13 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
 14. **Q13, annual seats.** Adding seats mid-year is allowed (prorated by Stripe); removing seats
     takes effect at renewal.
 15. **Q14, API version.** Code reads a subscription's period dates from its subscription items, so
-    it works on newer Stripe API versions. The founder will confirm the account's API version.
+    it works on newer Stripe API versions. Abdullah confirms the account's API version during the Stripe setup (F16_GO_LIVE.md step 7; Umer, 2026-10-11).
 16. **Q15, abuse signals.** Only the VPN flag at signup in F16; fuller signals later.
 17. **Q16, tax.** No tax collection at launch and Stripe Tax off. Prices never mention tax anywhere
     (no "including" or "excluding" wording). Checkout still collects billing country and state.
 
 **My calls (Block A)**
-18. **The plan read.** A subscription that is `active`, `comp` (until its end date, if it has
+18. **The plan read.** *(closed 2026-10-11, confirmed by Umer)* A subscription that is `active`, `comp` (until its end date, if it has
     one) or `past_due` within its grace gives its plan, and the workspace is never on trial
     and never expired. With no subscription, or one `trialing`, the workspace is Professional
     while its trial window runs (Q1) and view-only after it. A lapsed subscription (`canceled`,
@@ -10257,25 +10257,25 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
     webhook stamps it. The platform's Lock still wins over a subscription. **Amended (Block B,
     Q5):** a `canceled` subscription gives its plan until its `current_period_end`, then is
     view-only.
-19. **Essentials keeps administration.** Legacy's mask for this plan removed every capability but
+19. **Essentials keeps administration.** *(closed 2026-10-11, confirmed by Umer)* Legacy's mask for this plan removed every capability but
     comments, uploads and annotations, administration and billing included, so an owner on that
     plan could not invite, manage the workspace or reach Billing to upgrade (and Q11 needs the
     owner to buy). The Essentials mask grants comments, uploads and annotations, plus the
     administration the expired trial keeps (manage the workspace, invite, remove, assign roles,
     grant owner, transfer, billing, workspace activity). No takeoff, no estimating, no AI.
-20. **Text autofill on Essentials. Amended:** settled by Q3 as amended. Essentials has no Wage
+20. **Text autofill on Essentials. Amended:** *(closed 2026-10-11, confirmed by Umer)* settled by Q3 as amended. Essentials has no Wage
     Calculator; the upload is refused there by "Edit estimates", which the Essentials mask removes.
-21. **The AI refusal.** On Essentials every AI entry point (the AI tools, the AI wage determination
+21. **The AI refusal.** *(closed 2026-10-11, confirmed by Umer)* On Essentials every AI entry point (the AI tools, the AI wage determination
     read, PDF reading) answers "AI tools are on the Professional plan." in the api, and the app
     shows the same words on its locked controls. The plan check holds for a platform admin too,
     though the capability masks do not (D-23).
-22. **Secret names follow the plans.** The Stripe price settings are named for the new codes
+22. **Secret names follow the plans.** *(closed 2026-10-11, confirmed by Umer)* The Stripe price settings are named for the new codes
     (`STRIPE_PRICE_ESSENTIALS_MONTHLY`, `STRIPE_PRICE_SEAT_PROFESSIONAL_ANNUAL` and so on), all
     optional, unset on the bench; Billing tiers shows "Set" or "Not set" from them.
-23. **Seeded prices** are legacy's `plans.ts`: Essentials $9.99 a month, $99.99 a year;
+23. **Seeded prices** *(closed 2026-10-11, confirmed by Umer)* are legacy's `plans.ts`: Essentials $9.99 a month, $99.99 a year;
     Professional $29.99 a month, $299.99 a year; a seat costs the same as the plan at the same
     cadence (legacy bills plan price × seats).
-24. **Comp plan.** Platform admin's "Comp plan" writes a `comp` subscription (plan, seats, an
+24. **Comp plan.** *(closed 2026-10-11, confirmed by Umer)* Platform admin's "Comp plan" writes a `comp` subscription (plan, seats, an
     optional end date in `current_period_end`); removing it deletes the row. **Amended:** marketing
     sends `plan=essentials|professional` to signup; the app still reads legacy's codes too.
 
@@ -10303,11 +10303,11 @@ as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
 **Status:** decided in the build (2026-10-06); the founder's brief set the scope, these are the
 calls it left open
 
-1. **No SDK.** The api makes three Stripe calls over httpx (`billing/stripe.py`: create a
+1. **No SDK.** *(Umer, 2026-10-11, no: before go-live, use Stripe's official Python library for the API calls and the webhook signature check. Open.)* The api makes three Stripe calls over httpx (`billing/stripe.py`: create a
    customer, create a Checkout session, retrieve a subscription) and checks webhook signatures
    itself (HMAC-SHA256 of `t.payload`, any `v1`, 5 minutes' tolerance). Every call goes to
    `STRIPE_API_BASE`, which only the bench overrides.
-2. **The bench's Stripe fake** is `intelcost-infra/fakes/stripe/server.py`, service
+2. **The bench's Stripe fake** *(closed 2026-10-11, confirmed by Umer)* is `intelcost-infra/fakes/stripe/server.py`, service
    `stripe-fake` (port 12111), on by default. It serves those calls on Stripe's paths, hosts a
    Pay page for a person, and sends signed events to `/api/stripe/webhook`; its `/_fake/` routes
    drive a payment, a failed payment, a cancellation, the end of a subscription and a replay or a
@@ -10318,28 +10318,28 @@ calls it left open
    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (the endpoint's `whsec_`) and the eight
    `STRIPE_PRICE_*` ids in the api's environment, and point a Stripe webhook endpoint at
    `https://api.intelcost.io/api/stripe/webhook` with the six events of spec section 3.
-3. **The workspace keeps its Stripe customer** (`workspace.stripe_customer_id`). The first
+3. **The workspace keeps its Stripe customer** *(closed 2026-10-11, confirmed by Umer)* (`workspace.stripe_customer_id`). The first
    Checkout makes it and every later one reuses it, so an abandoned Checkout leaves no second
    customer. Spec section 2 named only the subscription's copy.
-4. **Seats are the subscription's billed quantities summed** (the base line and the seat line),
+4. **Seats are the subscription's billed quantities summed** *(closed 2026-10-11, confirmed by Umer)* (the base line and the seat line),
    not its metadata, so a seat change made in the portal (Block C) is read as Stripe bills it.
    Metadata is the fallback. Plan and cadence come from metadata, then from the price ids.
-5. **Stripe's other statuses:** `incomplete` and `paused` are stored as `unpaid`,
+5. **Stripe's other statuses:** *(closed 2026-10-11, confirmed by Umer)* `incomplete` and `paused` are stored as `unpaid`,
    `incomplete_expired` as `canceled`; neither gives a plan.
-6. **Event handling.** Each event id is stored once; a processed repeat answers 200 and does
+6. **Event handling.** *(closed 2026-10-11, confirmed by Umer)* Each event id is stored once; a processed repeat answers 200 and does
    nothing. A handler's writes run in a savepoint: a failure rolls them back, keeps the error on
    the event's row and answers 500, so Stripe sends the event again and the retry handles it. A
    bad signature is a 400 and writes nothing. `checkout.session.completed` in payment mode (AI
    top-ups) is recorded and left to Block F.
-7. **A failed payment's grace** starts at the first failure (now + 7 days) and a later failure
+7. **A failed payment's grace** *(closed 2026-10-11, confirmed by Umer)* starts at the first failure (now + 7 days) and a later failure
    does not extend it; any status other than `past_due` clears it.
-8. **The refusal Checkout gives while a subscription is running** is a 409 with
+8. **The refusal Checkout gives while a subscription is running** *(closed 2026-10-11, confirmed by Umer)* is a 409 with
    `code: "manage_billing"` (errors may now carry a `code`). A `canceled` subscription, or a comp,
    does not block Checkout; the platform's Comp plan may also replace a `canceled` one.
-9. **Checkout's return** is `/settings/billing?checkout=success|cancelled`, a minimal page that
+9. **Checkout's return** *(closed 2026-10-11, confirmed by Umer)* is `/settings/billing?checkout=success|cancelled`, a minimal page that
    says the result and the current plan and follows `workspace.plan.changed`; no settings tab
    until Block C.
-10. **The price page's choice** (Q12) is kept on the user (`signup_plan`, `signup_cadence`,
+10. **The price page's choice** *(closed 2026-10-11, confirmed by Umer)* (Q12) is kept on the user (`signup_plan`, `signup_cadence`,
     `signup_seats`, legacy's codes read as ours), beside the D-18 signup columns, since no
     workspace exists at signup. Block C pre-fills Checkout from it.
 
@@ -10382,29 +10382,29 @@ six).
 **Status:** decided in the build (2026-10-06); the founder's brief set the scope, these are the
 calls it left open
 
-1. **One refusal for "view-only".** A write refused only because the workspace is view-only (the
+1. **One refusal for "view-only".** *(closed 2026-10-11, confirmed by Umer)* A write refused only because the workspace is view-only (the
    role would allow it) answers 403 with `code: "workspace_locked"` and says why: the trial ended,
    a payment's grace passed, the subscription ended, or our team locked it. `WorkspaceContext`
    carries the reason (`view_only_reason`); `trial_expired` is now "a reason exists". The app's one
    locked dialog listens for that code from any request, so no screen handles it itself.
-2. **The capability read carries billing standing:** `subscribed`, `trial_ends_at` (extra days
+2. **The capability read carries billing standing:** *(closed 2026-10-11, confirmed by Umer)* `subscribed`, `trial_ends_at` (extra days
    included, while on trial) and `view_only_reason`. The trial button and the dialog read it, and
    `workspace.plan.changed` and channel 7 refresh it.
-3. **The trial button** sits in the app header and the takeoff header, beside the credits chip.
+3. **The trial button** *(closed 2026-10-11, confirmed by Umer)* sits in the app header and the takeoff header, beside the credits chip.
    It shows from three days left; the owner goes to Billing, anyone else gets a toast to ask the
    owner.
-4. **Channel 7 has a clock.** A trial ending and a grace or paid period running out happen with
+4. **Channel 7 has a clock.** *(closed 2026-10-11, confirmed by Umer)* A trial ending and a grace or paid period running out happen with
    no request, so a beat task (`sweep_billing_clock`, every minute, a 65-second window) publishes
    `workspace.trial.changed` or `workspace.plan.changed` for each. A trial starting (workspace
    creation), extra days or a comp on Billing tiers, and a subscription coming into force (the
    webhook) publish it directly.
-5. **Q13 lives in Stripe's portal configuration.** Seat decreases on annual plans waiting for
+5. **Q13 lives in Stripe's portal configuration.** *(closed 2026-10-11, confirmed by Umer)* Seat decreases on annual plans waiting for
    renewal is a portal setting ("schedule downgrades at period end"), not something the api can
    enforce per request. `STRIPE_PORTAL_CONFIGURATION` names the configuration to open (optional;
    otherwise the account default). The bench fake applies every portal change at once.
-6. **Who sees Billing:** the tab is drawn for `canManageWorkspace` (owner and admins); the page is
+6. **Who sees Billing:** *(closed 2026-10-11, confirmed by Umer)* the tab is drawn for `canManageWorkspace` (owner and admins); the page is
    read-only without `canManageBilling` (the owner's alone); the api refuses everyone else.
-7. **Prices on the cards** are the first seat at the plan price and the rest at the seat price,
+7. **Prices on the cards** *(closed 2026-10-11, confirmed by Umer: no tax collection, as decided)* are the first seat at the plan price and the rest at the seat price,
    as Checkout bills them, with no tax wording (Q16) and no refund wording (Q8).
 
 **Where:** api `core/dependencies.py` (`view_only_reason`, `trial_ends_at`, `require_capability`,
@@ -10431,7 +10431,7 @@ stripe}.py` (`billing_read`, `open_portal`, `create_portal_session`), `platform/
    assigned. 409, code `seats_full`: "All [N] seats are in use. Add a seat in Billing or change
    a member's role." The app links the owner to Billing and tells anyone else to ask the owner.
    A member already using a seat who changes role never needs a new one.
-4. **An ownership transfer is never refused for seats** (my call): handing the workspace over
+4. **An ownership transfer is never refused for seats** *(closed 2026-10-11, confirmed by Umer)* (my call): handing the workspace over
    must not wait on billing.
 5. **Seats below use remove nobody.** The owner and admins see "[U] members use seats but the
    plan has [S]. Add seats or change roles." on Settings > Members and Billing, and adding
@@ -10443,7 +10443,7 @@ stripe}.py` (`billing_read`, `open_portal`, `create_portal_session`), `platform/
    the platform's comp, never by a client. Included credits per period are seats x the plan's
    `credits_per_seat` (Professional 100, Essentials 0). On Essentials the credit chip and the AI
    Credits page say "AI tools are on the Professional plan." instead of a balance.
-7. **Refills** (`ai/allowance.py`), each idempotent per period (a wallet already starting that
+7. **Refills** *(closed 2026-10-11, confirmed by Umer)* (`ai/allowance.py`), each idempotent per period (a wallet already starting that
    period is left alone):
    - a monthly Stripe subscriber at each billing period start: on `invoice.paid`, and when the
      subscription first comes into force;
@@ -10461,7 +10461,7 @@ stripe}.py` (`billing_read`, `open_portal`, `create_portal_session`), `platform/
 9. **A seat added mid-period** raises `ai_wallet.seats` at once. **Amended (the founder's Block E
    brief, 2026-10-06):** and its included credits come at once too, as point 11; no longer at
    the next refill point.
-10. **The bench fake** gains `renew` (the next period starts, `invoice.paid`), and the scheduled
+10. **The bench fake** *(closed 2026-10-11, confirmed by Umer)* gains `renew` (the next period starts, `invoice.paid`), and the scheduled
     task takes a date (`refill_ai_wallets(at)`) so the anniversary day can be driven.
 11. **Seats added mid-period bring their credits at once (amended in Block E).** When a
     subscription's seats rise (the webhook, or a comp's seats raised on Billing tiers), the
@@ -10501,7 +10501,7 @@ routes,meter}.py` (`meter.refill` takes the plan's credits per seat), `worker/ta
      sub-items and earthwork lines included, in projects not in the trash. "Your trial allows
      [N] measurements. Subscribe for unlimited measurements."
    - **AI credits** (seeded 30): as before (`ai/service.py` `room`), reading `trial_caps`.
-3. **Every insert of items is checked, one request one check** (my call): `takeoff/service.py`
+3. **Every insert of items is checked, one request one check** *(closed 2026-10-11, confirmed by Umer)* (my call): `takeoff/service.py`
    `create_item`, `duplicate_item` (with its sub-items), `set_sub_items` (which assembly apply
    uses), `takeoff/snapshot.py` `restore` (undo of a delete), `earthwork/lines.py` `write_lines`
    (Calculate's lines, net of those it removes), and a project restored from the trash (which
@@ -10514,7 +10514,7 @@ routes,meter}.py` (`meter.refill` takes the plan's credits per seat), `worker/ta
    assembly, Auto Count's new item with sub-items, bulk Duplicate, Extract Schedule), it reads the
    room first (`GET {ws}/billing/caps`) and, short of it, opens the dialog with the same words and
    sends nothing.
-5. **The dialog** (`TrialCapDialog`, the locked dialog's style): the api's message; "Go to
+5. **The dialog** *(closed 2026-10-11, confirmed by Umer)* (`TrialCapDialog`, the locked dialog's style): the api's message; "Go to
    Billing" for the owner, "Ask the workspace owner." for anyone else. The client announces it for
    code `trial_cap` from any request, as it does `workspace_locked`.
 6. **The PDF throttle is client-side only.** The capability read carries `pdf_throttle_ms` (the
@@ -10522,9 +10522,9 @@ routes,meter}.py` (`meter.refill` takes the plan's credits per seat), `worker/ta
    waits that long before each page render (`lib/billing/pdfThrottle.ts`, awaited in
    `raster.ts` `renderPage`; a cached bitmap is not a render), as legacy's knob. The api never
    enforces it.
-7. **Usage on Settings > Billing** on a restricted trial: projects, storage (MB), measurements
+7. **Usage on Settings > Billing** *(closed 2026-10-11, confirmed by Umer)* on a restricted trial: projects, storage (MB), measurements
    and AI credits, each "used of limit". Nothing on an unrestricted trial or a subscription.
-8. **Billing tiers > Overrides gains "Limits"** (my call): a workspace's four caps, blank for the
+8. **Billing tiers > Overrides gains "Limits"** *(closed 2026-10-11, confirmed by Umer)* (my call): a workspace's four caps, blank for the
    tier's value. The page had "+7 trial days", "Lift all restrictions" and "Comp plan" but no way
    to set a single cap, and the save could not set one back to null; it now can for the four caps.
 
@@ -10556,7 +10556,7 @@ PdfThrottle.tsx,room.ts,api.ts}`, `lib/billing/pdfThrottle.ts`, `lib/takeoff/pdf
    (`require_ai`, "AI tools are on the Professional plan.") and a lapsed workspace is view-only
    (`workspace_locked`, D-280), the same refusal as every other write. Back on Professional they
    are usable again.
-4. **Checkout** (`POST {ws}/billing/topup {pack}`) is payment mode with the pack's
+4. **Checkout** *(closed 2026-10-11, confirmed by Umer)* (`POST {ws}/billing/topup {pack}`) is payment mode with the pack's
    `stripe_price_id`, else the `STRIPE_PRICE_PACK_<credits>` setting (my call: four settings
    beside the plan prices, the same fallback rule as D-277 22). Metadata `kind=ai_topup`, the
    pack, the credits, the workspace and the buyer; the workspace's Stripe customer is reused (or
@@ -10568,10 +10568,10 @@ PdfThrottle.tsx,room.ts,api.ts}`, `lib/billing/pdfThrottle.ts`, `lib/takeoff/pdf
    `stripe_session_id` (unique), the buyer (`user_id`) and the pack (`pack_id`), and raises the
    purchased balance. A replayed event, or the second of the two events for one session,
    credits nothing. `ai.credits.changed` refreshes open tabs.
-6. **The AI Credits page** (my call on layout): included and purchased shown apart under the
+6. **The AI Credits page** *(closed 2026-10-11, confirmed by Umer)* (my call on layout): included and purchased shown apart under the
    total (as before), Buy now live or off with the reason under the packs, and a Purchases list
    (date, pack, credits, who bought; `GET {ws}/ai/credits/purchases`, owners and admins).
-7. **The bench fake** completes a payment-mode session without a subscription and emits
+7. **The bench fake** *(closed 2026-10-11, confirmed by Umer)* completes a payment-mode session without a subscription and emits
    `checkout.session.completed`; the bench sets `STRIPE_PRICE_PACK_*` to `price_bench_pack_*`.
 
 **Where:** api `app/features/billing/topup.py` (new), `billing/{service,routes,schemas}.py`,
@@ -10584,39 +10584,39 @@ PdfThrottle.tsx,room.ts,api.ts}`, `lib/billing/pdfThrottle.ts`, `lib/takeoff/pdf
 **Status:** decided in the build (the founder's overnight brief, 2026-10-06, set the scope); these
 are the calls it left open
 
-1. **One page, three tabs:** Platform › Subscriptions (`/platform/subscriptions`, the Developer
+1. **One page, three tabs:** *(closed 2026-10-11, confirmed by Umer)* Platform › Subscriptions (`/platform/subscriptions`, the Developer
    menu beside Billing tiers): Subscriptions, Webhook events, Plans. Platform admins only, on
    the api (`require_platform_admin` on the router) and in the app (`RequirePlatformAdmin`,
    which answers "Page not found" to anyone else).
-2. **Subscriptions** lists every `workspace_subscription` row (Stripe or comp): workspace, owner,
+2. **Subscriptions** *(closed 2026-10-11, confirmed by Umer)* lists every `workspace_subscription` row (Stripe or comp): workspace, owner,
    plan and cadence, seats and seats in use (`billing/seats.py`), status (and "not in force"),
    the current period, the grace end or the cancel date, and the Stripe customer and subscription
    ids linked to the dashboard. **The dashboard's mode follows the key:** live only for an
    `sk_live_` or `rk_live_` key, test otherwise (including no key). Filters by status and plan,
    search by workspace name or owner email, 50 a page.
-3. **Webhook events keep their body.** `stripe_event.payload` (migration `c3f7a1d9e5b2`) holds the
+3. **Webhook events keep their body.** *(closed 2026-10-11, confirmed by Umer)* `stripe_event.payload` (migration `c3f7a1d9e5b2`) holds the
    verified event, so **Retry** processes an errored event again through the webhook's own path
    (`billing/service.py` `process`). A processed event answers "already processed"; every handler
    is idempotent (the subscription is read again from Stripe; a top-up credits once per Checkout
    session; seat credits once per seat per period), so a retry never doubles an effect. Events
    from before this revision have no body and can only be resent from the Stripe dashboard.
-4. **The plan catalog editor** writes `billing_plan`: name, the four prices (each > 0), credits per
+4. **The plan catalog editor** *(closed 2026-10-11, confirmed by Umer)* writes `billing_plan`: name, the four prices (each > 0), credits per
    seat (>= 0), the four Stripe price ids (blank is the `STRIPE_PRICE_*` setting) and on sale.
    **Prices reach Checkout only through the price ids:** Checkout sends Stripe price ids, never
    amounts, so a new amount needs a Stripe price holding it. Saving says "New prices apply to new
    Checkouts only, through this plan's Stripe price ids; existing subscriptions keep their Stripe
    price.", and adds a warning when a price changed but its price id did not. The amounts here
    are what the Billing page's cards (and, from Part 6, the price page) show.
-5. **Essentials' credits per seat stays 0** (D-277 Q3): any other value is refused (422) with
+5. **Essentials' credits per seat stays 0** *(closed 2026-10-11, confirmed by Umer)* (D-277 Q3): any other value is refused (422) with
    "Essentials has no AI credits (D-277 Q3), so its credits per seat stays 0." The code is not
    editable.
-6. **Comps from Subscriptions:** New comp (find a workspace, the Billing tiers form), Edit (plan,
+6. **Comps from Subscriptions:** *(closed 2026-10-11, confirmed by Umer)* New comp (find a workspace, the Billing tiers form), Edit (plan,
    seats, until) and End on each comp row, through the same routes as Overrides. **Editing a
    running comp keeps its period** (a fix): it used to restart the period, so every edit
    refilled the month's allowance; now added seats bring only their own credits (D-281 11).
    Ending a comp applies the normal rules at once: the trial if its window is still open,
    otherwise view-only.
-7. **The bench fake** gains `/_fake/subscriptions/<id>/hide|unhide` (Stripe answers "no such
+7. **The bench fake** *(closed 2026-10-11, confirmed by Umer)* gains `/_fake/subscriptions/<id>/hide|unhide` (Stripe answers "no such
    subscription" while hidden, so an event about it fails) and `/seats?to=N`.
 
 **Where:** api `app/features/platform/subscriptions.py` (new), `platform/{billing,schemas}.py`,
@@ -10639,12 +10639,12 @@ are the calls it left open
    (`lib/catalog.ts`) at build time and again after `PLANS_REVALIDATE_SECONDS` (default 300) by
    Next's revalidation. The pricing page, the home page's "Plans from $…" and both pages'
    descriptions and Product JSON-LD use it. Visitors are always served a built page.
-3. **When the api is down:** at build (or in dev) the prices written in `config/plans.ts` stand in,
+3. **When the api is down:** *(closed 2026-10-11, confirmed by Umer)* at build (or in dev) the prices written in `config/plans.ts` stand in,
    so a build never fails on it; on a revalidation the read throws, so Next keeps serving the last
    built page with the last prices it read. The plan words (descriptions, highlights) stay in
    `config/plans.ts`; the catalog brings the name and the four prices, and a plan not on sale
    drops off the page.
-4. **The seat total follows Checkout:** the card's total is the plan price for the first seat
+4. **The seat total follows Checkout:** *(closed 2026-10-11, confirmed by Umer)* the card's total is the plan price for the first seat
    and the seat price for each one after, as Checkout bills it (it was price × seats; equal while
    the two prices are equal).
 5. **D-02 stays true:** the app and Stripe are the authority on what is charged; the site mirrors
@@ -11467,7 +11467,7 @@ overnight 2026-10-09, block by block. Calls made on the founder's behalf are mar
    Search results tag a closed project "Archived" or "Cancelled" (before "No sheets yet").
    **Storage stays the real bench bucket (D-259);** `bench-workspaces.py list-storage <uuids>`
    counts what is left under each area prefix, read only, and `purge-fx` prints the uuids it
-   purged. *(call)* The bench's IAM user lacks `s3:ListBucketMultipartUploads`, so open
+   purged. *(call, closed 2026-10-11, confirmed by Umer: Abdullah's IAM item gains the multipart listing permission, so n/a goes away in production)* The bench's IAM user lacks `s3:ListBucketMultipartUploads`, so open
    multipart uploads are reported "n/a", not counted; a lifecycle rule aborting incomplete
    uploads would cover them (not set tonight: it is the bucket owner's). `alembic check` runs
    with every gate and its line is reported (P-23's 3 indexes only).
@@ -11501,7 +11501,7 @@ overnight 2026-10-09, block by block. Calls made on the founder's behalf are mar
    with `@tanstack/react-virtual` (rows: heading, grid header, a row of 3 or 4 tiles, a folder's
    sets), tile rows memoized so a scroll only moves them: wheel scrolling over 500 tiles p50 17 ms,
    p95 50 ms, 1 frame of 144 over 50 ms; 48 tiles in the document; first draw 671 ms (was 991),
-   ticking all 500 373 ms (was 570). *(call)* The 500 files for the check were copies of one
+   ticking all 500 373 ms (was 570). *(call, closed 2026-10-11, confirmed by Umer)* The 500 files for the check were copies of one
    landed file made in the database (uploading 500 to the real bucket ran ~6 s a file).
 
 ## D-316: Image mode's OpenCV workers: 4 on 8 GB or more, kept warm, released after 2 minutes
@@ -11595,7 +11595,7 @@ built overnight. Calls made on the founder's behalf are marked *(call)*.
    current project; from All projects' ⋯ "Edit project" for any project with
    `from=projects`, which gives "← All projects" back to the list, while ×, Escape or a click
    outside close everything and leave the project underneath, its sheet and its Recent as
-   they were. *(call)* Editing another project's details does not open it, so it is no visit.
+   they were. *(call, closed 2026-10-11, confirmed by Umer)* Editing another project's details does not open it, so it is no visit.
 6. **SIMD opencv.js: built, measured, not shipped** (stash `overnight-simd` in the app, with the
    build in `public/__ocv/`). opencv 4.12.0 with `--simd` (emsdk 3.1.64; 2.0.10, the shipped
    build's generation, lacks `wasm_i8x16_shuffle`), single file, 13.7 MB. The new Emscripten
@@ -11621,7 +11621,7 @@ built overnight. Calls made on the founder's behalf are marked *(call)*.
    ticked, "← All projects" back to the list, ×, Escape or a click outside close everything,
    Perform Takeoff opens the project (its last sheet, else the load screen), and Load loads the
    ticked pages and opens the project on the first new sheet. No Estimating or Wage Calculator
-   button there. *(call)* Upload in the tree takes any file, not only drawings: the project page's
+   button there. *(call, closed 2026-10-11, confirmed by Umer: checked: any file is stored; PDF, PNG, JPG and TIFF are offered as sheets, anything else is refused as a sheet)* Upload in the tree takes any file, not only drawings: the project page's
    Upload files and Upload folder had no other home, and specs and reports still need one.
 3. **Block 9: the project page is gone.** **C3:** the Wage Calculator is Estimating's Wage
    Calculator pane (it was already there beside Estimate), now reachable on a project with no
@@ -11658,7 +11658,7 @@ sheet could only be deleted by ticking a second. This departs from legacy on pur
    is fitted inside it (contain, centred; a portrait sheet sits centred). The state shows inside
    the frame, faint: "Uploading…", "Preparing…" (size not yet known), "Loading preview…" (size
    known, thumbnail not yet), "No preview" (ready, none made). A waiting tile's caption row is as
-   tall as a page tile's, so a row of mixed tiles is one height. *(call)* The frame is 3:2, an
+   tall as a page tile's, so a row of mixed tiles is one height. *(call, closed 2026-10-11, confirmed by Umer)* The frame is 3:2, an
    Arch D sheet's landscape shape, since the founder named landscape but no ratio. Supersedes
    D-308's page-shaped tiles and D-313 A3's portrait placeholder.
 3. **Project-level selection and the tree pane** (founder's 1c and its amendment). The tree's
@@ -11671,9 +11671,9 @@ sheet could only be deleted by ticking a second. This departs from legacy on pur
    across the project, over any picks made by hand: drawing-size pages ticked, letter, A4 and
    images not. N is the Load button's own count. A file still on its way or fully in takeoff
    is left be. Per-folder Select all and Clear are unchanged. The tree pane is resizable at its
-   divider (drag or arrow keys), 200 to 480 px *(call: the dialog is 1024 px at most)*,
+   divider (drag or arrow keys), 200 to 480 px *(call, closed 2026-10-11, confirmed by Umer: the dialog is 1024 px at most)*,
    320 px by default (was 272), kept per person in browser storage
-   (`load-tree-width-v1:<user>`); indent is 8 px a level (was 12). *(call)* A file that has
+   (`load-tree-width-v1:<user>`); indent is 8 px a level (was 12). *(call, closed 2026-10-11, confirmed by Umer)* A file that has
    landed but is not yet in the file list reads "Preparing…", not "Upload unfinished".
 
 ## D-319: Sheets panel: no "At root", no flash, recursive counts, natural order
@@ -11693,9 +11693,9 @@ sheet could only be deleted by ticking a second. This departs from legacy on pur
    its folder's sheets (by number, else name: A0.00A, A1.01, A1.02A, A2.01 … A10.00), and a
    new mirrored or set folder among its siblings, then renumbers the folder in steps of 1000.
    The slot is set when the sheet is made, so a sheet still preparing is already in place.
-   *(call)* Sheets and folders already there keep their order, so a hand reorder (drag,
+   *(call, closed 2026-10-11, confirmed by Umer)* Sheets and folders already there keep their order, so a hand reorder (drag,
    Move selected to) survives a later load; only the new ones are slotted. Folders still come
-   before loose sheets. *(call)* "The open sheet never moves" is met for its folder; a sheet
+   before loose sheets. *(call, closed 2026-10-11, confirmed by Umer)* "The open sheet never moves" is met for its folder; a sheet
    slotted above it in the same folder pushes it down a row.
 
 ## D-320: Name and scale on load
@@ -11750,11 +11750,11 @@ Supersedes D-320 2 (the browser read), D-320 3's flags, and D-318 3's project-ro
    sheet owes its reads (`read_name`, `read_scale`, `read_state` "pending", `read_by_id` the
    loader). The worker prepares the page, marks it ready, then reads it ("reading") and keeps
    the result. The readers are the app's, ported: same rules, same constants, same normalized
-   view space. *(call)* There are two speed departures: the merge groups segments by direction
+   view space. *(call, closed 2026-10-11, confirmed by Umer)* There are two speed departures: the merge groups segments by direction
    and offset, and the tick and line lookups use a grid. PyMuPDF's `get_cdrawings` is about six
    times faster than `get_drawings`. Strokes are read only when the page prints a scale and has
    dimensions to check it against. The slowest real plan reads in about 2 s, off the browser.
-   *(call)* **The name is better than the app's:** a title sits beside its number, so the name
+   *(call, closed 2026-10-11, confirmed by Umer)* **The name is better than the app's:** a title sits beside its number, so the name
    is the title nearest the number, grown over its own lines. Scale strings, dimensions, dates
    and one-letter grid bubbles are never name text. On the seven real plans this reads "Over-All
    Floor Plan", "Exterior Elevations", "Electric Lighting Plan" and so on. The app's reader joined
@@ -11773,7 +11773,7 @@ Supersedes D-320 2 (the browser read), D-320 3's flags, and D-318 3's project-ro
      else the most printed one is the claim.
    - **Unverified** (no dimension to prove it, or the dimensions measure something else): not
      applied. It is kept on the sheet (`scale_suggestion`) and drawn as a dashed amber box with
-     Apply beside it. *(call)* The card sits left of the box when the box is in the right part of
+     Apply beside it. *(call, closed 2026-10-11, confirmed by Umer)* The card sits left of the box when the box is in the right part of
      the sheet. Apply saves it as the person's own scale, with the printed string as evidence,
      and the box is then drawn in the verified style labelled "Applied by user".
    - **Reduced print** *(call: a page whose long side is 17.5 in or less prints at a scale meant
@@ -11870,7 +11870,7 @@ vector check measured whole dimension strings as one (D-322 point 3).
    - Otherwise an amber box on each printed scale with a small "Approve" text link beside it
      (left of the box near the right edge). One click applies; the box restyles to applied.
    - What was checked (dimensions checked, the longest) stays on the saved evidence and in the
-     toast; *(call)* "Change scale on this sheet?", which protects drawn quantities, stays.
+     toast; *(call, closed 2026-10-11, confirmed by Umer)* "Change scale on this sheet?", which protects drawn quantities, stays.
    - A re-run on a sheet that already has a scale: a proved scale equal to it changes nothing; a
      different proved one is applied when the sheet has no measured items, else it waits as an
      amber box. Amber boxes show whenever the sheet keeps suggestions.
@@ -11947,7 +11947,7 @@ Founder's follow-ups on D-322/D-323, and the scale box at zoom out.
    the drag box's text, stay in the app.
 5. **Naming sets by source.** A set is the sheets of one source of one page size: their folder
    (`d<folder>:<w>x<h>`); loose, their file when it has several pages (`f<file>:…`), else the
-   project's loose one-page files together (`loose:…`) *(call: D-308 loads a one-page file
+   project's loose one-page files together (`loose:…`) *(call, closed 2026-10-11, confirmed by Umer: D-308 loads a one-page file
    loose, and keyed by file each would be a set of one and never form a template)*. Two
    consultants' sheets of one size no longer share a template; an outlier sheet is still read
    on its own. Migration
@@ -11991,7 +11991,7 @@ of 2026-10-09); built and measured overnight.
 2. **Prefetch** (`pages/settings-pages.ts`, one map for the routes and the prefetch): entering
    settings fetches the other pages' code one at a time at idle, and a tab's on hover or
    focus. Not at app start.
-3. **Fresh for a minute** *(call: scoped)*. While the settings frame is open, queries under the
+3. **Fresh for a minute** *(call, closed 2026-10-11, confirmed by Umer: scoped)*. While the settings frame is open, queries under the
    settings pages' key prefixes (`workspace`, `classification`, `classification-systems`,
    `subcontractors`, `subcontractor-scopes`, `estimate-bid-defaults`, `estimate-packages`,
    `wage-calculator`, `shifts`, `report-settings`, `project-status`, `ai`, `billing`, `trash`)
@@ -12006,7 +12006,7 @@ of 2026-10-09); built and measured overnight.
    (`core/http_cache.py`) the body is kept per workspace and system and built once per
    version (node count, latest change, and the usage counts behind `used`), gzipped once,
    sent with a weak ETag and `Cache-Control: private, no-cache`; an unchanged tree is a 304
-   with no body. *(call)* Per endpoint, not app-wide gzip: the AI tools stream NDJSON, which a
+   with no body. *(call, closed 2026-10-11, confirmed by Umer)* Per endpoint, not app-wide gzip: the AI tools stream NDJSON, which a
    gzip middleware would hold back. The tree stays per workspace, as it is editable (D-58).
 5. **Measured** (MCP Chromium, throwaway workspace, every tab and section clicked twice from a
    fresh load of General; "marked" = the clicked tab shown selected, "settled" = no spinner):
@@ -12034,7 +12034,7 @@ built and measured overnight. Replaces D-45's one preparation job a file, in sli
 2. **The page pool.** Each page is its own task (`prepare_sheet`) on the `prepare` queue, and
    the read pool became the page pool: one worker (`worker-pages`, `-Q prepare,reads`,
    `PAGE_WORKERS` processes, default 4) does both, so preparation and reading together never
-   take more than its cap of cores and memory *(call: one pool, not two, so the cap holds for
+   take more than its cap of cores and memory *(call, closed 2026-10-11, confirmed by Umer: one pool, not two, so the cap holds for
    both)*. A page task claims its page first (pending, or "preparing" and stale), so a Retry
    or the sweep never prepares a page twice. The drawing's source is fetched once onto the
    pool's disk under a per-file lock; a page task that finds it being fetched waits for it.
@@ -12047,7 +12047,7 @@ built and measured overnight. Replaces D-45's one preparation job a file, in sli
 4. **Scales computed.** Any printed architectural, engineering or metric scale is read as its
    ratio from what is printed (`3/64" = 1'-0"`, `1 IN = 40 FT`, `1:1250`), so one on no list
    verifies, is applied and is approved like any other. The label is the printed text, tidied
-   (`1/4"=1'-0"` → `1/4" = 1'-0"`, `1 : 50` → `1:50`), never a preset's words *(call)*; one
+   (`1/4"=1'-0"` → `1/4" = 1'-0"`, `1 : 50` → `1:50`), never a preset's words *(call, closed 2026-10-11, confirmed by Umer)*; one
    scale printed two ways on a sheet is one finding, under the first way it was printed.
 5. **One task a page, held by a lease.** A page task holds its page by a lease in Redis,
    renewed every 30 s while it works, and the beat also touches the drawing file, the
@@ -12136,7 +12136,7 @@ the 2026-10-10 overnight report, unchanged, for the founder to decide on (reword
 
 **Scope (Umer, 2026-10-11):** the rule also covers the names of published cost books and other
 data sources. The one hit, `intelcost-app-fastapi/docs/wage-calculator/README.md:55`, is to be
-reworded (not done yet).
+reworded: done 2026-10-11 (api `6bfd541`), "Never show any source or book name to users."
 
 ## D-329: The Sheets panel redraws only for its own data (P-24)
 
@@ -12861,3 +12861,32 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
      - A4.00 still reads 241.70 LF and 1,335.22 SF;
      - its 5 shapes' coordinates and the six scales are unchanged.
    - **Lists:** `docs/tasks/minmar_cropbox_before.csv` and `minmar_cropbox_after.csv`.
+
+## D-356: On Essentials, a refusal the plan causes says the plan, not the role
+
+**Status:** Accepted (2026-10-11, Umer: pending_umer D18, with the two sentences below).
+
+The api answered every refusal with "Your role cannot …", even when the role allows the action
+and only the Essentials plan removes it (the 2026-10-07 report, item 4). The reader was told to
+look for a role that would not help.
+
+1. **The api** (`core/dependencies.py` `require_capability`): when the role would allow the
+   capability and only the plan mask removes it, the refusal is the plan's sentence:
+   - estimates and pricing: "Editing estimates isn't included in Essentials. Upgrade to
+     Professional to edit." (Umer's wording);
+   - takeoff: "Takeoff isn't included in Essentials. Upgrade to Professional to measure."
+     (Umer's wording);
+   - AI: unchanged, "AI tools are on the Professional plan." (D-277 21);
+   - any other capability the plan removes: "This is on the Professional plan.", the app's
+     existing words for a Professional-only control (D-299).
+
+   A view-only workspace still refuses with its own reason first (D-280 1). A refusal the role
+   causes keeps "Your role cannot …". The estimate's pricing refusal (`estimate/routes.py`)
+   asks the same question before its own role sentence. The estimate, bid and format routes
+   take `EstimateWriteWorkspace`: the same takeoff gate as before, but on Essentials its
+   refusal is the estimates sentence, since the reader is on the Estimating tab. Who may
+   write is unchanged.
+2. **The app** says the same words where it explains a locked control itself:
+   - the Estimating and Wage Calculator banner (`ESTIMATES_PLAN_LOCKED`);
+   - the takeoff lock reason;
+   - the New project control in the Open menu and All projects.

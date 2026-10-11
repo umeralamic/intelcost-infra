@@ -125,7 +125,8 @@ record) and nothing names tax: not the products, not the prices, not the receipt
 The code reads a subscription's period dates from its **subscription items**
 (`items.data[].current_period_start/end`), falling back to the subscription's own fields, so it
 works on both the older and the newer API versions (Q14). Check the account's API version
-(Developers › API version) and **note it here** when you go live:
+(Developers › API version) and **note it here** when you go live. Confirming it is yours
+(Umer, 2026-10-11):
 
 - Test mode API version: ______________
 - Live mode API version: ______________
