@@ -12904,3 +12904,21 @@ opens).
 2. **Unchanged:** the bottom-right cluster's percentage, between + and −, opens the zoom menu as
    before (Zoom to Fit, 100%, 50%, 25%, 10%). The steps, the range and the 0 key are unchanged
    (D-35, accepted 2026-10-11).
+
+## D-358: Community is renamed Forum, at `/forum`; flyouts open on the side that has room
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-234 (the forum's name and address).
+
+1. **Forum.** Every label the user sees says Forum where it said Community: the account menu, the
+   takeoff tab, the page header ("Intelcost Forum"), the tab title, the read-only notice, the fallback
+   author name, the Roles permission ("Comment & post in the Forum"), the report notice, and the
+   marketing footer and contact page. Code names, the api's `/api/community` routes, the tables and
+   the realtime topic keep `community`: renaming them changes nothing a user sees.
+2. **Address.** The app's pages move to `/forum`, `/forum/:section`, `/forum/:section/:postId`. New
+   notifications link there. `/community/*` redirects to the same path under `/forum`, because
+   notifications already stored carry the old path.
+3. **Board descriptions.** Q&A: "Ask about the product, its tools and features, or any issue you
+   face." Feature Requests: "Suggest what we should build next, or how to improve a feature."
+4. **Flyouts.** A menu's flyout (Developer, Move to layer, Add cost component, Move to folder and the
+   rest; all drawn by `ContextMenu`) opens to the right, or to the left when the right has no room,
+   and rises to keep its bottom on screen. A menu opened at the window's right edge hid its flyouts.
