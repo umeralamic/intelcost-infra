@@ -105,7 +105,7 @@ passed.
 on the big sets (pypdf's lenient open reads every object's header: most of a 115 MB file). Now strict
 first, no whole-file hunt through ranges, missing references null, and boxes read exactly as MuPDF
 reads them, which also fixed a wrong stored crop box on pages whose media box does not start at 0.
-Identical to the full read on all nine PDFs. Bench link: **Vol2 191 s of ranges + the whole file (~225
+Identical to the full read on all nine PDFs (api `1ffbd14`, infra `affd7de`). Bench link: **Vol2 191 s of ranges + the whole file (~225
 s) → 1.16 MB, 16 requests, 7.8 s; Vol1 243 s + the whole file → 0.65 MB, 8 requests, 4.1 s.** Smoke: a
 new 20-page upload listed with 20 pages 21 s after it was chosen, sizes and rotations right: passed.
 Gates clean.
@@ -152,11 +152,12 @@ projects. Marketing Demo – Site 231 rows (an earthwork result, assumptions, re
 Riverside Medical Center 135 (cost components, wage sets with 68 craft and 208 crew rates), Marketing
 Demo – Office Building 358 (28 sheets, markups, a registration), Test 3 228, Minmar 358, Hendrick Honda
 66, Mirammar Cove 28 (a snippet): every table's count equal, no foreign key into the original, no
-value naming the original: **no problems**. 27 of the 40 tables were exercised; these 12 hold no row
-anywhere on the bench, so they are copied by the same rules but untested on real data: sites and
-site members, site results, estimate custom columns and values, equipment resources and usage, fill
-materials, subcontractor overrides, takeoff variable values, wage determination imports, snippet
-links. UI smoke again after the change: "E200 day copy (copy)" duplicated in 14.9 s, opened: passed.
+value naming the original: **no problems**. Then, in the throwaway project, an estimate custom
+column with a value and a shared equipment resource made through Estimating, and the dry run again:
+104 rows, no problems. 31 of the 40 tables exercised; these 9 hold no row anywhere on the bench, so
+they are copied by the same rules but untested on real data: sites and site members, site results,
+equipment usage, fill materials, subcontractor overrides, takeoff variable values, wage determination
+imports, snippet links. UI smoke again after the change: "E200 day copy (copy)" duplicated in 14.9 s, opened: passed.
 
 **Gates** (on the staged snapshot, the page-pool agent's unfinished files left out): ruff format, ruff
 check, mypy (205 files) clean; alembic check clean; app lint, typecheck, build OK; quantity table

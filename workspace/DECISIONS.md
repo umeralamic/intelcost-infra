@@ -12640,6 +12640,11 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    `drives/delete-orphans.py --workspace <uuid>` deletes the orphans of one named workspace that
    exists, once a person has decided; the 19 of "U.'s workspace" (15.0 MB) were deleted with it,
    every key in `E:\bench-backups\orphans-deleted-2026-10-11-u-workspace.txt`.
+5. **The worker's disk after a cancel** (found by the smoke): a page cancelled mid-prepare returned
+   before the "no page left, drop the source" step, so a cancelled Load left its whole source file on
+   the page pool's disk until the sweep's day-old clear. That page now drops the source when its file
+   has no page left to prepare. A page cancelled before its turn has no row to find its file by; the
+   day-old clear still covers that case.
 
 ## D-348: Auto Count's fill check: a filled and an empty variant never suggest each other
 
