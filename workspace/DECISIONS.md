@@ -12824,3 +12824,36 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    (`earthworkVersionKey(..., aliases)`, applied before the parts are sorted): the same drawing gives
    the stored key, so the copy reads current; any real change still reads stale. The next Calculate
    stores the copy's own key and clears the aliases.
+
+## D-355: The crop-box backfill, a script with a dry run; Minmar's 17 pages fixed
+
+**Status:** Accepted (2026-10-11, the founder's approval for exactly these 17 pages).
+
+1. **Who reads the stored crop box** (`project_file_page.crop_box`), api and app:
+   - `project/models.py:322`: the column.
+   - `worker/tasks/prepare.py:894` and `:1161`: written, by the thumbnail task (MuPDF) and the size measure.
+   - `project/routes.py:683` and `schemas.py:362`: returned in a file's pages (Choose pages).
+   - app `core/api/types.ts:547`: the type.
+   - app `LoadSheetsDialog.tsx:354`: set to `[]` on the entries it builds itself.
+
+   Nothing computes a position, a quantity or a scale from it.
+2. **`intelcost-infra/drives/crop-backfill.py`** (for prod too):
+   - **Dry run by default:** it re-reads every stored page with the current code and lists, as CSV, each page
+     whose stored crop box differs. The columns are page id, file, page, sheet, stored and correct box,
+     measurements and set scales.
+   - **Writing needs `--apply`:** it writes the crop box only, in one transaction. A page whose size or
+     rotation also differs is reported and never written.
+   - **Scope:** `--workspace`, `--project`, `--pages`, `--skip-workspace`, `--skip-project`.
+
+   Its dry run on Minmar reproduced `minmar_cropbox_before.csv` byte for byte.
+3. **Minmar (Bench Construction Test), the 17 pages:**
+   - **Written:** `--project … --pages <the 17> --apply`, crop box only. The value is MuPDF's single-precision
+     `[-1512.1199951171875, 0, 1512.1199951171875, 2160]`, as on the other 83, shown `[-1512.12 0 1512.12 2160]`.
+     No re-prepare, no image, no bucket write.
+   - **Checked through the api against a snapshot taken before the write:**
+     - the 17 pages report the new box;
+     - the other 27 files' pages are unchanged, and their stored rows byte for byte;
+     - the 17 rows changed in `crop_box` only;
+     - A4.00 still reads 241.70 LF and 1,335.22 SF;
+     - its 5 shapes' coordinates and the six scales are unchanged.
+   - **Lists:** `docs/tasks/minmar_cropbox_before.csv` and `minmar_cropbox_after.csv`.

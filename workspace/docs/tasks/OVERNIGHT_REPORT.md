@@ -488,4 +488,53 @@ row unchanged; the pass that ran excluded it.
 - **A new Redis key**, `prepare:download_rate`, expires after 7 days; the page pool reads it before a Load's
   first page.
 - **The crop-box backfill** was a one-off on the bench data; production needs the same re-read if it holds
-  pages measured between 2026-10-08 and the D-351 fix.
+  pages measured between 2026-10-08 and the D-351 fix. *(superseded below: use `drives/crop-backfill.py`)*
+
+## Minmar's 17 crop boxes (D-355)
+
+**Step 1, before the write:** the list is
+[minmar_cropbox_before.csv](minmar_cropbox_before.csv). Seven of the 17 pages have a set scale or
+measurements:
+- six have a set scale: A1.01, A1.02B, A4.00, A4.01B, A9.20, A9.30;
+- A4.00 also has 5 shapes, LF 1 241.70 LF and SLAB 1,335.22 SF.
+
+I stopped there and reported. You approved the 17 boxes.
+
+**Who reads the stored box** (searched in the api and the app):
+
+| Where | What it does with it |
+|---|---|
+| `intelcost-app-fastapi/app/features/project/models.py:322` | the column |
+| `intelcost-app-fastapi/app/worker/tasks/prepare.py:894` | written by the thumbnail task, from MuPDF |
+| `intelcost-app-fastapi/app/worker/tasks/prepare.py:1151`, `:1161` | written by the size measure (Choose pages) |
+| `intelcost-app-fastapi/app/features/project/routes.py:683` | returned in a file's pages |
+| `intelcost-app-fastapi/app/features/project/schemas.py:362` | that response's field |
+| `intelcost-app-react/src/core/api/types.ts:547` | the type |
+| `intelcost-app-react/src/features/takeoff/components/load/LoadSheetsDialog.tsx:354` | set to `[]` on page entries the dialog builds itself |
+
+No code computes a position, quantity or scale from it, so the write went ahead.
+
+**The write:** `drives/crop-backfill.py --project <Minmar> --pages <the 17> --apply`, the crop box only. The
+script's dry run first reproduced the before-list byte for byte. The value written is MuPDF's
+single-precision box, `[-1512.1199951171875, 0, 1512.1199951171875, 2160]`, shown as
+`[-1512.12 0 1512.12 2160]`. That is the same value the other 83 pages got and the one new uploads
+store. No re-prepare, no new image, no bucket write.
+
+**Checked through the api** (logged in as Bench Estimator; the project never opened in the app), against a
+snapshot taken before the write:
+- all 17 pages report the new box;
+- the other 27 files' pages read the same (thumbnail links aside, which are fresh each read), and
+  their 27 stored rows are byte-for-byte unchanged;
+- the 17 rows changed in `crop_box` only;
+- A4.00 reads 241.70 LF and 1,335.22 SF, as before;
+- its 5 shapes' coordinates, shape data and versions are unchanged;
+- all six scales are unchanged.
+
+The after-list is
+[minmar_cropbox_after.csv](minmar_cropbox_after.csv). A dry run on Minmar now lists 0 pages.
+
+**For Abdullah, prod:** run the script from the api container. It lists only, by default:
+`python drives/crop-backfill.py > before.csv`, optionally scoped with `--workspace`, `--project` or `--pages`,
+and `--skip-workspace` or `--skip-project` to protect a customer. Review the list, then run it with
+`--apply`. Its measurements and scales columns say which pages have takeoff on them; the stored box
+changes none of those.
