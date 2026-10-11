@@ -38,3 +38,5 @@ Gates; quantity table; one smoke through the Playwright MCP: a Linear item with 
 - **D-362:** with Manual quantity ticked, Create makes the item at once with no shape on the open
   sheet and does not arm the tool; the Sheets panel lists such an item under its home sheet with
   its number; a volume's name suffix is left off while nothing is measured.
+- **D-363:** Resume (row icon, both panels), Start and Deduct are off for an item with a manual
+  quantity, with the reason in their titles; `resumeItem` refuses it too.

@@ -12986,3 +12986,17 @@ opens).
    sheet with that number. This includes Estimating's Insert row lines (F9-S7), which are the same
    kind of item.
 3. **Name.** A volume's suffix is left off while nothing is measured, so no "(0.0 SF, 6"D)".
+
+## D-363: Resume, Start and Deduct are off for an item with a manual quantity
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-362.
+
+1. **Off.** An item with a manual quantity (its override set, from the dialog or the row menu) has
+   nothing to draw: drawing on it changes nothing it reports. Its row's Resume icon, in the Takeoff
+   and Sheets panels, is greyed and disabled, and the action bar's Start, Resume and Deduct are
+   too, each titled "Manual quantity: nothing to draw. Untick Manual quantity in Properties to
+   measure it." `resumeItem` refuses it as well, with the same words as a toast.
+2. **Back on.** Unticking Manual quantity in Properties (or clearing the override) turns them on.
+3. **Kept (Umer, 2026-10-11):** Estimating's Insert row lines stay listed on their home sheet (D-362 2).
+
+**Where:** app `features/takeoff/items/manualQuantity.ts`, `ItemRow.tsx`, `ActionGroup.tsx`, `pages/ProjectTakeoff.tsx`.
