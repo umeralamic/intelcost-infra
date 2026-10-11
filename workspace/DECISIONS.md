@@ -12719,3 +12719,22 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    where the link is fast anyway). Identity: 34 pages of 9 PDFs (dense, object streams, rotated 90 /
    270, incremental saves, scans) identical in split (but its fresh `/ID`), images, pixels, size,
    rotation, text layer and name/scale read. All-pages-ready comes later by the ranged time.
+
+## D-351: Choose pages' sizes from ranges on large and incrementally saved sets; boxes as MuPDF reads them
+
+**Status:** Accepted (2026-10-11 day run, a follow-up to D-350 found while building it).
+
+1. **Why big sets fell back:** pypdf's lenient open reads every object's header from the
+   cross-reference, one small read each, scattered: on 115 MB sets most of the file, past the 32 MB
+   budget, then the whole file. Now `_ranged_sizes` reads strictly first and leniently only if that
+   fails, both through `ranged_page.RangedSource`, which refuses a whole-file hunt (that goes straight
+   to the existing one-GET whole-file read); a reference missing from the cross-reference is null.
+2. **Values as MuPDF reads them** (`_page_size`): single-precision numbers, a non-array or empty box as
+   missing, a missing media box 612 × 792, the crop box falling back to the media box with y measured
+   from the media box's top, `/Rotate` truncated and normalised. This fixes a bug: on a page whose media
+   box does not start at 0 (Elec Vol 4) the ranged read stored a crop box unlike the full read's.
+3. **Measured:** identical to the full read (count, width, height, rotation, crop box) on all nine
+   PDFs of D-350; bench S3 link: Vol2 117 MB from 41 MB / 624 requests / 191 s then the whole file
+   (~225 s) to **1.16 MB / 16 requests / 7.8 s**; Vol1 115 MB from 54 MB / 823 requests / 243 s then the
+   whole file to **0.65 MB / 8 requests / 4.1 s**. Broken cross-references now reach the whole-file
+   read in one GET instead of pulling the file through ranges.

@@ -14,7 +14,7 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 | 2 | "C" next-scan re-measure | **done**: machine load; the change's own cost cut where it was largest | app `1148f60`, infra `3b1a49a` |
 | 1 | Sheet delete storage | **done**, 19 orphans deleted | api `ce1ea15`, infra `22d3094` |
 | 3 | Auto Count fill check | **done**, contract met | app `c32575b`, infra `a31c71a` |
-| 4 | First page before the whole file | **done**: first sheet 225 → 45 s on a 117 MB set | see block 4 |
+| 4 | First page before the whole file | **done**: first sheet 225 → 45 s on a 117 MB set | api `1da98e2`, infra `82355e6` |
 | 6 | Stretch: Duplicate project | **done** | api `ea15889`, app `ae9c6a3`, infra `f4617be` |
 
 ## 1. Sheet delete storage (D-347)
@@ -99,9 +99,16 @@ thumb images and identical splits by size and rendering; sheet numbers, sizes, r
 text layer as expected: **passed**.
 
 **Gates:** ruff format, ruff check, mypy (206 files) clean; alembic check clean; quantity table
-passed. **Separate finding, not changed:** the page-count read (`_ranged_sizes`) falls back to the
-whole file on Vol2 (its lenient pass hunts the file for dangling references); treating a missing
-object as null, as here, would fix it.
+passed.
+
+**Follow-up, Choose pages' sizes (D-351):** the page-count and size read fell back to the whole file
+on the big sets (pypdf's lenient open reads every object's header: most of a 115 MB file). Now strict
+first, no whole-file hunt through ranges, missing references null, and boxes read exactly as MuPDF
+reads them, which also fixed a wrong stored crop box on pages whose media box does not start at 0.
+Identical to the full read on all nine PDFs. Bench link: **Vol2 191 s of ranges + the whole file (~225
+s) → 1.16 MB, 16 requests, 7.8 s; Vol1 243 s + the whole file → 0.65 MB, 8 requests, 4.1 s.** Smoke: a
+new 20-page upload listed with 20 pages 21 s after it was chosen, sizes and rotations right: passed.
+Gates clean.
 
 ## 6. Stretch: Duplicate project (D-349)
 
@@ -220,3 +227,45 @@ E200 A 12/0, A1 6/0 (5 suggestions).
 **Gates:** app lint, typecheck, build OK; quantity table 329 rows, passed. **Smoke** (dev app,
 throwaway): an E200 copy dropped on the empty start, boxed one A1, Image mode → Create (6), five at
 100 % and one at 97 %, the same as last night: **passed**.
+
+## Decisions made on your behalf (all in DECISIONS)
+
+- **D-346:** the quiet machine for block 2 meant stopping the bench's dev server, api, workers, beat and
+  marketing for the measurement (restarted after); the exact search's cut keeps results identical box
+  by box rather than trading any.
+- **D-347:** a page deleted *while* it is being prepared (Cancel remaining mid-prepare) also clears what
+  its task wrote: not in the brief, the same gap. The 19 orphans deleted through a new
+  `delete-orphans.py --workspace` option; every key kept in `E:\bench-backups\`.
+- **D-348:** a fill mismatch is treated as lettering is (never checked, never suggested, in the drawer)
+  rather than scored down; thresholds 0.12 and ×2.5, about 2× from each side of the measured data.
+- **D-349 (stretch):** what "settings" covers (bid rates, wastage, custom columns, wage sets and rates,
+  equipment, fill materials, subcontractor overrides, naming templates, assignees); comments = the
+  estimate lines' `comment_text`, left empty; share links, AI history, render jobs and activity not
+  copied; a copy of "X" is "X (copy)", then "(copy 2)"; created by the person who duplicates; the plan's
+  project cap applies.
+- **D-350:** only the first page takes the ranged path (the rest still need the whole file, which now
+  starts after page 1, so all-pages-ready is later by the ranged time); any doubt falls back.
+
+## For your click check
+
+1. **Sheet delete:** in a throwaway project, delete a sheet; within seconds the bucket holds nothing
+   under its `takeoff/<ws>/<project>/<sheet>/` prefix and its split page is gone (the worker logs
+   `clear_storage_log … {'failed': 0}`).
+2. **Auto Count, E200 A1:** box one empty A1, Image mode: 6 checked, no 75 % hatched suggestions (they
+   are in "Show N low-confidence matches"). E200 A: no empty-outline suggestions at 38 %. Bench:
+   `?fill=off` shows the old behaviour.
+3. **Duplicate project:** All projects ⋯ › Duplicate project on a project of yours (not a founder
+   project if you want to keep them untouched): the toast counts up, the copy opens; change something
+   in the copy and the original stays.
+4. **A big Load:** the first sheet you tick shows Ready long before the rest (a 117 MB set: 45 s, not
+   4 minutes, on the bench's link).
+
+## For Abdullah
+
+- **A new Celery task**, `app.worker.tasks.projects.duplicate_project`, on the default queue (the main
+  worker). It copies objects inside S3 with 16 threads (`CopyObject`, same bucket): the IAM user needs
+  `s3:GetObject` and `s3:PutObject` on the bucket for server-side copies (it already lists and deletes).
+- **Ranged reads:** the page pool now opens a Load's first page with ranged GETs (up to 8 in parallel,
+  about 25–35 requests for a page); the bucket must allow `Range` requests (it does today).
+- The 19 orphan objects in "U.'s workspace" are deleted (15.0 MB); the weekly report should now list
+  none there.
