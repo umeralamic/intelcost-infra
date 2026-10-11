@@ -12922,3 +12922,20 @@ opens).
 4. **Flyouts.** A menu's flyout (Developer, Move to layer, Add cost component, Move to folder and the
    rest; all drawn by `ContextMenu`) opens to the right, or to the left when the right has no room,
    and rises to keep its bottom on screen. A menu opened at the window's right edge hid its flyouts.
+
+## D-359: The measurement dialog's sections reordered; Rough measurement inside "This measurement"; shaded section headings
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-201 (the dialog's order, which followed legacy).
+
+1. **This measurement.** Shown for every type. A run lists "Apply a slope factor" first, then
+   "Convert to area using a height", then "Rough measurement"; an area lists the slope factor, then
+   Rough measurement; a count lists only Rough measurement. Rough measurement no longer stands alone
+   below the dimensions. The slope factor and the height stay mutually exclusive.
+2. **Order.** Name and colour, Opacity (and the count's symbol), This measurement, the Work Breakdown
+   Structure, Named dimensions, Sub-items, on all three types.
+3. **Headings.** Each section's heading sits on a shaded band (`bg-muted`, semibold) across the top
+   of its box; WBS and Sub-items, which open and close, use the same band as their toggle.
+4. **Convert to volume** was asked for in the same request. It is not built: a volume modifier is a
+   new quantity (area × depth on an item) and needs its own spec (hard rule 3) before it appears here.
+
+**Where:** app `features/takeoff/items/MeasurementDialog.tsx`.
