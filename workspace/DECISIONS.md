@@ -13046,3 +13046,12 @@ opens).
 The unit picker was a native select, which opened the full height of its 20 units. It is the app's
 `SearchSelect`: about eight rows that scroll (192 px), a "Search units…" box, the tool's own unit
 first as the default. **Where:** app `MeasurementDialog.tsx`.
+
+## D-367: Rough measurement stands alone in "Change measurement"
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-364 2 ("Rough measurement goes with any of them").
+
+A rough measurement is the person's own figure, read by formulas and never estimated: it needs no
+height, volume or manual quantity. Picking Rough measurement clears those three; picking any of them
+clears Rough measurement. Height, volume and Manual Quantity keep D-364's rules among themselves.
+The slope factor, a tick box outside the list, is not touched. **Where:** app `MeasurementDialog.tsx` (`toggleRough`).
