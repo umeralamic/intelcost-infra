@@ -12557,3 +12557,29 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    witness, bands, every merged line): 119 of 119 identical. CPU per read, median of 3: A0.00B
    19.6 → 9.1 s, S0.04 15.3 → 8.8 s, A9.30 4.9 → 4.0 s; light sheets 1.2–6× faster. What remains on
    dense sheets is PyMuPDF's drawing extraction and the loop over its items.
+
+## D-344: opencv.js's module compiled once per tab, streamed from its own compressed file
+
+**Status:** Accepted (2026-10-11 overnight brief, item 6).
+**Area:** Auto Count, Frontend, the production image. **Amends:** D-302, D-316.
+
+1. **Its own file.** The npm opencv.js carries its 8.0 MB WebAssembly as 10.6 MB of base64 in the
+   script; every OpenCV worker decoded it and compiled it again, without streaming. A Vite plugin
+   (`vite.config.ts` `opencvWasm`, on the app and on the worker bundle) cuts it into a hashed
+   `opencv-*.wasm` (the worker script 10.8 MB → 145 KB), exports its URL as `virtual:opencv-wasm`,
+   and lets the script take its settings from `self.__intelcostOpencv`. The dev server pre-bundles
+   the package, so there the URL is null and the embedded copy is used, as before.
+2. **Compiled once per tab.** `imageScan.ts` streams and compiles it (`WebAssembly.compileStreaming`,
+   an array-buffer compile as the fallback) on the first worker's creation and posts the compiled
+   module to every OpenCV worker, which only instantiates it (`instantiateWasm`); if the page cannot
+   compile it, the worker streams the file itself.
+3. **Cached.** The image writes a `.gz` beside the wasm and the large scripts; nginx serves them as
+   is (`gzip_static`) with the existing year-long immutable cache: 8.0 MB → 2.5 MB on the wire.
+   *(call)* The compiled module is also offered to IndexedDB and read back first; Chrome refuses to
+   store a module (checked: the store stays empty), so there the reload win comes from Chrome's own
+   cache of a streamed, cacheable module. Kept for browsers that allow it; every step guarded.
+4. **Measured** (production build, opencv.js ready from the worker's creation): before, 2.0–2.6 s for
+   every first scan (each test's new worker), 2.6 s with the HTTP cache cleared; after, 2.2 s for
+   the tab's first worker in a run, then 0.3 s; after a reload 0.3–0.4 s; HTTP cache cleared 0.5 s.
+   First scans 22.6 / 27.5 / 38.4 / 11.3 s → 17.1 / 24.3 / 34.0 / 8.3 s; next scans unchanged within
+   noise; every review identical.

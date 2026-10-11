@@ -13,9 +13,9 @@ failed with "Cannot allocate memory" (os error 12). Restarted at 00:12; nothing 
 | 1 | Competitor names + Wage Calculator warm-up | **done** | app `7985c69`, api `9018702`, infra `ca9dd6a` |
 | 2 | Auto Count accuracy | **done** (3 of 4 at truth; "C" 24 of 26, the 2 C/NL left) | app `dc7ca84`, infra `f7d3597` |
 | 3 | Orphans in "U.'s workspace" | **done** (report only) | — |
-| 4 | Dense-sheet read speed | **done** (same results, ~2× faster on dense sheets) | see block 4 |
+| 4 | Dense-sheet read speed | **done** (same results, ~2× faster on dense sheets) | api `42828cc`, infra `fa3abea` |
 | 5 | Revision sets | **done** (spec) | with block 1's mirror |
-| 6 | Auto Count speed part 2 | not started | |
+| 6 | Auto Count speed part 2 | a. compiled once per tab: **done**; b. SIMD: in progress | see block 6 |
 
 ## 1. Competitor names + Wage Calculator warm-up (D-342)
 
@@ -201,6 +201,36 @@ extraction (3–5 s) and the loop over its items.
 **Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
 rows, passed. **Smoke** (dev app, throwaway): C-101 and M-102 loaded; C-101 applied `1" = 30'`,
 verified by vector with its witness; M-102 offered `1:200` verified and `1:50`, applied neither:
+**passed**.
+
+## 6. Auto Count speed part 2
+
+### a. opencv.js compiled once per tab (D-344)
+
+The npm opencv.js holds its 8.0 MB WebAssembly as 10.6 MB of base64 inside the script, and every
+OpenCV worker decoded and compiled it again. Now the build cuts it into a hashed `opencv-*.wasm`
+(the worker script 10.8 MB → 145 KB); the page compiles it once per tab with
+`WebAssembly.compileStreaming` and posts the compiled module to each worker, which only instantiates
+it. nginx serves a pre-compressed copy (8.0 → 2.5 MB on the wire) under the year-long immutable
+cache. The compiled module is also offered to IndexedDB; Chrome refuses to store one (checked: the
+store stays empty), so on a reload Chrome's own cache of the streamed module does that job. The dev
+server keeps the embedded copy (it pre-bundles the package).
+
+**opencv.js ready** (from the worker's creation to usable; a new bench column), production build:
+
+| | Before | After |
+|---|---|---|
+| Each test's first scan, one run (office, "C", E200 A, A1) | 2.6, 2.1, 2.1, 2.0 s | **2.2, 0.3, 0.3, 0.3 s** |
+| After a page reload | 2.0–2.6 s | **0.3–0.4 s** |
+| HTTP cache cleared | 2.6 s | **0.5 s** |
+| First scan (office, "C", E200 A, A1) | 22.6 / 27.5 / 38.4 / 11.3 s | **17.1 / 24.3 / 34.0 / 8.3 s** |
+| Next scan | 15.4 / 23.6 / 33.3 / 7.5 s | 13.0 / 21.0 / 31.5 / 7.2 s |
+| Review | | identical on all four, 70 % and 38 % |
+
+**Gates:** app lint, typecheck, build OK (the "path externalized" note is opencv.js's own, in
+earlier builds too); quantity table passed. **Smoke:** the production bench ran all four tests on the
+new path with identical reviews; in the dev app (embedded copy) an Image count on E200 ran to the
+end (Create (8) from a box padded 2 px wider than the benchmark's, so not comparable to its 12):
 **passed**.
 
 ## 5. Revision sets (spec only)
