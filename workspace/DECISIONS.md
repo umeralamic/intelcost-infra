@@ -12750,7 +12750,7 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
 
 1. **What is calculated:** an item whose `source_type` is `earthwork_computed`, never judged by its
    type (Prepare Subgrade is a calculated "sf"). One test each side: `isCalculated` in
-   `lib/takeoff/earthwork/surfaces.ts` (with `isEarthworkRow`, inputs or calculated, and `glyphType`),
+   `lib/takeoff/earthwork/surfaces.ts` (with `isEarthworkRow`, inputs or calculated),
    and `is_calculated` / `guard_calculated` in `takeoff/service.py`.
 2. **Glyph:** legacy's excavator (`EarthworkIcon`) on every earthwork row, inputs (contour, spot
    elevation, boundary) and calculated lines, in both panels; a plain mark titled "Earthwork", never a
@@ -12778,3 +12778,49 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    as it already kept the layer (Q16). This supersedes D-142's "an update patches folder and
    classification" for such a line only.
 7. **The item read** carries `earthwork_site_uuid` (the info view's site).
+
+## D-353: The ranged first page only where it is quicker than the whole file
+
+**Status:** Accepted (2026-10-11 follow-ups, item 1). Refines D-350.
+
+1. **The rule** (`prepare._worth_ranges`): the head of a Load takes its page from ranges only when
+   the whole file would come slower, on the link's measured download rate: whole = size / rate
+   against ranged = 4 s + (1 MB + share × size) / rate, the share 15 % or one page's share of a short
+   set (1 / pages), whichever is larger (D-350's measurements: 2 of 9.5 MB, 16 to 22 of 155 MB). A
+   one-page file always goes whole (its page is the file: the smoke's 4.5 MB sheet fetched all of it
+   by ranges, 21 s against about 16 s whole). With no rate known yet, only a source over 50 MB goes
+   by ranges (the founder's example).
+2. **The rate** (`_note_rate`): every whole-file fetch of 4 MB or more is timed into a running mean
+   in Redis (`prepare:download_rate`, a week), the newest fetch half of it. *(call)* The page
+   thumbnail task's download counts too: it runs on upload, normally before the Load, so a Load
+   nearly always has a rate and a fast link never takes the cold 50 MB rule.
+3. **Measured** (time to page 1 made; "before" is the whole-file path, as before D-350):
+
+   | link | file | before | ranged | chosen | after |
+   |---|---|---|---|---|---|
+   | bench S3 | 4.5 MB, 1 page | 62.6 s | 19.4 s | whole (one page) | whole |
+   | bench S3 | 24.7 MB, 28 pages | 76.3 s | 13.1 s | ranged | 13.1 s |
+   | bench S3 | 117 MB, 96 pages | 137.4 s | 67.1 s | ranged | 67.1 s |
+   | local MinIO | 4.5 MB | 5.2 s | 4.5 s | whole | 5.2 s |
+   | local MinIO | 24.7 MB | 2.3 s | 6.6 s | whole | 2.3 s |
+   | local MinIO | 117 MB | 2.7 s | 6.0 s | whole | 2.7 s |
+
+   On the fast link the choice is the whole file every time, the path from before D-350, so it is
+   no slower. The 4.5 MB row measured before the one-page rule; that file now goes whole.
+
+## D-354: A copied project's earthwork result reads as current
+
+**Status:** Accepted (2026-10-11 follow-ups, found by item 3's check of a copy).
+
+1. **The bug:** an earthwork result's version key hashes row uuids (a Site Feature's item, a Strip
+   Area and its features, a linked survey sheet). Duplicate project gives every row a new uuid, so
+   the copy's stored key never matched its drawing: the first open of the copy marked every line
+   "Needs recalculating" (seen on Hidden Valley Spec Building Rebid (copy): all 17 lines), while
+   the original's stayed current.
+2. **The fix:** `earthwork_result.key_aliases` and `earthwork_site_result.key_aliases` (JSONB, null
+   but on a copy). The copier writes, on each copied result, every Site Feature item, Strip Area
+   and sheet uuid it gave a new one, new against old (following the original's own aliases, so a
+   copy of a copy works). The app computes the key with those uuids read back to the old ones
+   (`earthworkVersionKey(..., aliases)`, applied before the parts are sorted): the same drawing gives
+   the stored key, so the copy reads current; any real change still reads stale. The next Calculate
+   stores the copy's own key and clears the aliases.

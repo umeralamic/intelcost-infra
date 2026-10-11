@@ -300,3 +300,192 @@ passed.
   about 25–35 requests for a page); the bucket must allow `Range` requests (it does today).
 - The 19 orphan objects in "U.'s workspace" are deleted (15.0 MB); the weekly report should now list
   none there.
+
+---
+
+# Follow-ups, 2026-10-11 afternoon (14:00 → 16:10 UTC)
+
+Run in the order asked: item 3 first (its copy served item 0's smoke), then 0, 1, 2. Every block passed
+its gates (ruff format, ruff check, mypy 206 files, alembic check; app lint, typecheck, build) and the
+quantity table (329 rows, passed).
+
+| # | Item | State | Commits |
+|---|---|---|---|
+| 3 | Duplicate project with earthwork | **done**; found and fixed a real bug (D-354); copy deleted, original identical | api `a50773d`, app `01a4ca1` |
+| 0 | Earthwork rows: icon, Resume, guards | **done** (D-352) | api `ac863f5`, app `01a4ca1` |
+| 1 | Ranged first page only where it helps | **done** (D-353) | api `027ae8d` |
+| 2 | Crop-box backfill | **done**: 83 rows fixed, 17 reported only | data only (no code) |
+
+Workspace: D-352 to D-354, CLAUDE.md rule 10, SINCE_ARCHIVE rows (infra `b7b8dc1` and the close-out commit).
+
+## 3. Duplicate project with earthwork
+
+- **Fingerprint first**, read only: every copied table's rows hashed exactly and by content, the
+  earthwork result (cut 11,483.74, fill 9,596.09 CY), the 27 items' quantities and the 17 lines' stale
+  flags, the storage key list with sizes and ETags (118 objects).
+- **One copy**, made in the UI as Bench Estimator: "Hidden Valley Spec Building Rebid (copy)". Against
+  the original: every one of the 40 tables the same rows by content, the earthwork result, sites (none),
+  fill materials (none), equipment usage (none), the item quantities and the lines' stale flags equal;
+  118 objects copied. Estimate: the project has no estimate lines.
+- **Bug found and fixed (D-354):** opening the copy marked all 17 lines "Needs recalculating", which the
+  original never does. The version key hashes row uuids (Site Features, Strip Areas, linked sheets), and a
+  copy has new ones. The copier now writes each copied result's aliases (new uuid → old) and the app
+  reads the key through them; the next Calculate clears them. Proved on the copy put back in a fresh
+  copy's state (the original's key, the 36 aliases, the original's swell): all 17 lines stayed current.
+- **The 9 untested tables:** this project has no rows in any of them, so, as agreed, test rows were made
+  for the copy inside one transaction (site, 2 members, a site result, equipment resource and usage, fill
+  material, subcontractor override, a variable value with the one workspace variable it needs, a wage
+  determination import, a snippet and its link), the copier read and inserted the copy in the same
+  transaction, and everything was **rolled back**. Every table 1 → 1 (members 2 → 2), no foreign key into
+  the source, no value naming its rows, the site result's key and JSON rewritten with 36 aliases, the
+  usage pointing at the new item, the variable value keeping the workspace's variable. Afterwards none
+  of the test rows exists.
+- **Deleted at the end:** Trash, then Delete permanently, as Bench Estimator. Its 8 storage prefixes list
+  **0 objects** (`clear_purged_storage … {'failed': 0}`).
+- **The original after:** identical to its first fingerprint (all 40 tables row for row, 118 objects by
+  size and ETag) but for two things outside it: the two new columns (`placed_by_hand` false,
+  `key_aliases` null) that today's migrations added to every row, and **two Auto Count index caches**
+  (`symbols/symbols-1-t2` on C-200 and on E101). *(incident)* The app opened the original twice: sign-in
+  landed on its last sheet (C-200), and a later visit to `/signup` while signed in redirected to its E101.
+  Each open builds that sheet's index. The DB was untouched both times. Per your decision they are left
+  and excluded; after the second I signed in with `?next=` straight to the copy.
+
+## 0. Earthwork rows (D-352)
+
+**Why it happened:** the new app had no notion of a calculated item. `TypeGlyph` drew every unknown
+type as Linear, and only the inputs' types were kept from Resume.
+
+**Now:**
+- **Icon:** the excavator (legacy's `EarthworkIcon`) on every earthwork row, 4 inputs and 17 lines on C-200,
+  never a button. Site Features keep the area glyph and Resume, as legacy.
+- **A calculated line** (`isCalculated`, by `source_type`, so Prepare Subgrade counts):
+  - no Resume, and the name is read only;
+  - ⋮ offers Details, Link Screenshot, Move to layer, Add cost component, Costs… and History;
+  - the right-click now offers Change classification;
+  - a double-click opens a read-only view: what wrote it, when, its quantity, the surfaces read (here the
+    boundary, existing grade linked from V-100, FG Spots and Proposed Grade), and Open earthwork site.
+- **The api refuses** rename, override, delete (single and bulk), duplicate, Make Site Feature, dimensions,
+  sub-items (so Link assembly), Save as assembly, any geometry write and a client-made calculated item.
+  Each gets a 409 "Calculated by earthwork. Change it from the earthwork site." Colour, notes, folder,
+  code, layer, lock and review go through.
+- *(call)* **A person's move survives Calculate:** a new `placed_by_hand` flag. Without it, the next Calculate
+  re-filed the line, which would have undone the move you asked to allow.
+
+**0f, the other places that act on items:**
+
+| Place | Gap | Done |
+|---|---|---|
+| Bulk Duplicate / Delete everywhere | took calculated lines | leaves them out, says how many |
+| Estimating "Add Sub-item" | offered on a line | hidden (api refuses too) |
+| Make Site Feature (right-click) | offered on Prepare Subgrade lines | hidden (api refuses too) |
+| Earthwork site's draw-target list | offered Prepare Subgrade lines as areas | leaves them out |
+| Assemblies: Link, Save as | no check | api refuses; menu hidden |
+| Calculate overwrote a person's folder/code | — | kept (`placed_by_hand`) |
+| Duplicate project | copy's lines turned stale | fixed (D-354) |
+| Auto Count | targets count items only | no gap |
+| Copy/paste, Delete key, box delete | act on shapes; lines have none | no gap (api refuses geometry anyway) |
+| Sheet delete | deletes the sheet's lines with it | intended, unchanged |
+| Cost components, Estimating fields, snippet links | allowed by your list | unchanged |
+
+Existing overrides on lines: none on the bench (0 rows), so nothing to migrate.
+
+**Smoke** (MCP, the copy's C-200, as Bench Estimator):
+- icons right for inputs and outputs, no Resume;
+- a double-click on the name opened the details view, not a rename;
+- ⋮ and the right-click menu hide the right entries;
+- Change classification moved Remaining Site Cut from 31.04.01 to 31.04.02;
+- 9 forced api writes got a 409 and colour got a 200;
+- Calculate with swell 1.15 → 1.25 updated Haul Off 4,167.01 → 4,529.36 LCY and Soil Export 1,067.25 →
+  1,160.05 LCY, cleared every stale flag, and kept the moved line on 31.04.02 and its colour.
+
+**Passed.**
+
+## 1. Ranged first page only where it helps (D-353)
+
+The head of a Load takes ranges only when the whole file would come slower, on the link's measured rate.
+That rate is timed from whole-file fetches, including the thumbnail task's on upload, so a Load nearly
+always has one. A one-page file always goes whole. With no rate known, only a file over 50 MB takes ranges.
+
+| link | file | before (whole) | ranged | chosen now |
+|---|---|---|---|---|
+| bench S3 | 4.5 MB, 1 page | 62.6 s | 19.4 s | whole (one page: ranges fetch it all) |
+| bench S3 | 24.7 MB, 28 pages | 76.3 s | 13.1 s | ranged |
+| bench S3 | 117 MB, 96 pages | 137.4 s | 67.1 s | ranged |
+| local MinIO | 4.5 / 24.7 / 117 MB | 5.2 / 2.3 / 2.7 s | 4.5 / 6.6 / 6.0 s | whole, every size |
+
+On the fast link "after" is the whole-file path, so it is no slower than before D-350.
+
+**Smoke** (MCP, throwaway `fx.followup1011.a`):
+- the rate was set by the upload's thumbnail task (0.28 MB/s);
+- a 1-page Load prepared from the whole file in 12.6 s;
+- a 28-page Load's page 1 came from ranges, 2.5 of 24.7 MB, ready 32 s after Load (the whole file was
+  estimated at 83 s).
+
+*(found by the smoke)* The first version estimated one page at 15 % of any file. A one-page 4.5 MB sheet
+then went by ranges and fetched the whole file (21 s, against about 16 s whole); the page-count rule fixes
+that.
+
+**Passed.**
+
+## 2. Crop-box backfill (D-351)
+
+All 1,429 stored page measurements of 314 files, every workspace, were re-read with the current code:
+**100 differ, every one on the crop box only, every one on a page whose media box is not at 0** (e.g.
+media `[-1512, -1080, 1512, 1080]` stored as `[0, 0, 3024, 2160]`, now `[-1512, 0, 1512, 2160]`).
+
+| Workspace / project | Rows | Done |
+|---|---|---|
+| U.'s workspace / Building A | 14 | fixed |
+| MIKE's workspace / 01-PLANS | 35 | fixed |
+| MIKE's workspace / Test | 17 | fixed |
+| Mike's workspace / Building B | 17 | fixed |
+| Bench Construction Test / Minmar | 17 | **reported only** *(call: your item 3 rule, nothing else written in that workspace)* |
+| Founder projects (Hidden Valley Spec, Rebid, Waxing City) | 0 | none affected |
+
+**Images:** nothing renders from this column (sheet images come from MuPDF reading the PDF itself; the
+app ignores `crop_box`), so none needed re-preparing. A re-scan shows only Minmar's 17. The list as it
+was before is in `E:\bench-backups\crop-backfill-2026-10-11-before.json`. *(incident)* The first apply
+pass did not exclude that workspace. I stopped it, and its process, before it committed, and confirmed a
+row unchanged; the pass that ran excluded it.
+
+## Incidents
+
+- **Prettier churn:** a stray `npx prettier` rewrote nine app files. They were confirmed free of anyone
+  else's work, restored from HEAD and my edits re-applied by hand; CLAUDE.md rule 10 now forbids it.
+- **The original opened twice:** two cache objects, as above.
+- **The backfill's first apply:** stopped before committing, as above.
+
+## Cleanup
+
+- **Throwaway workspace purged** through the guarded script: `fx.followup1011.a@…` (workspace
+  `827ae034-93ac-476a-b268-276866a676bd`). Every prefix lists 0 objects.
+- **The copy:** deleted, its prefixes 0. **Scratch removed:** the smoke PDFs, MCP snapshots and container
+  scripts. All repos are clean on `umer-dev`.
+
+## Decisions made on your behalf
+
+- **D-352:**
+  - a person's placement of a calculated line survives Calculate (`placed_by_hand`);
+  - Change classification is offered on lines;
+  - Estimating's Add Sub-item and Make Site Feature are hidden on lines, and refused by the api;
+  - bulk actions leave lines out;
+  - Site Features keep their area glyph.
+- **D-353:** the cost model (4 s plus 1 MB plus the page's share, 15 % or one page's), the thumbnail task timing the rate, and a
+  one-page file always going whole.
+- **D-354:** the copy-stale fix, beyond the brief, because it made every copy's earthwork look stale.
+- **Backfill:** Minmar left as it is, being in the founder's workspace.
+
+## For your click check
+
+1. On a project with earthwork, C-200: the outputs show an excavator, clicking the icon does nothing,
+   double-clicking a line opens its details, and ⋮ has no Delete.
+2. Duplicate a project with earthwork: open the copy's grading sheet; its lines are not "Needs recalculating".
+
+## For Abdullah
+
+- **Two migrations:** `d352a4c1b7e9` (`takeoff_item.placed_by_hand`) and `d354b2e8c4a1` (`key_aliases` on both
+  earthwork result tables). Both are applied on the bench.
+- **A new Redis key**, `prepare:download_rate`, expires after 7 days; the page pool reads it before a Load's
+  first page.
+- **The crop-box backfill** was a one-off on the bench data; production needs the same re-read if it holds
+  pages measured between 2026-10-08 and the D-351 fix.
