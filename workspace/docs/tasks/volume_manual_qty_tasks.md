@@ -45,3 +45,5 @@ Gates; quantity table; one smoke through the Playwright MCP: a Linear item with 
   and excludes the height and the volume.
 - **D-365:** the dropdown closes on a pick; a manual quantity in the tool's unit or any unit of the
   sub-items list (`manual_unit`); the words "Manual Quantity".
+- **D-368 to D-370:** the dialog's words capitalised ("Change Measurement Type", "N/A"); Convert to
+  Area with Width; a converted area or volume in a picked unit (in², yd², acre, m², ft³, m³, gal…).

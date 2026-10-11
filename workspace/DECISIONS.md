@@ -13055,3 +13055,37 @@ A rough measurement is the person's own figure, read by formulas and never estim
 height, volume or manual quantity. Picking Rough measurement clears those three; picking any of them
 clears Rough measurement. Height, volume and Manual Quantity keep D-364's rules among themselves.
 The slope factor, a tick box outside the list, is not touched. **Where:** app `MeasurementDialog.tsx` (`toggleRough`).
+
+## D-368: The measurement dialog's words, capitalised
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-359, D-364.
+
+"This Measurement", "Named Dimensions", "Change Measurement Type" (was "Change measurement"); an empty
+pick reads "N/A" (was "None"); the options read "Convert to Area with Height", "Convert to Area with
+Width" (D-369), "Convert to Volume", "Manual Quantity", "Rough Measurement".
+
+## D-369: Convert to Area with Width
+
+**Status:** Accepted (2026-10-11, Umer).
+
+A run (Linear, Segment) may be made an area by its width as well as by its height: the same
+arithmetic (length × the value, SF) and the same field, its words "Width" and its name suffix "W"
+(" (40.8 LF, 5W)") where a height reads "H". Stored as `area_basis = "width"` beside `height_ft`
+(migration `d369e1f4a7c2`, on items and assembly templates; null is a height). The two "Convert to
+Area" options exclude each other and everything a height excludes. The hover panel and Estimating's
+quantity story say "Width".
+
+## D-370: A converted area or volume in the unit the person picks
+
+**Status:** Accepted (2026-10-11, Umer).
+
+1. **The pick.** Under Convert to Area's field and Convert to Volume's fields, "Result in" offers the
+   sub-items menu's convertible units (`offerableUnits`): area in², ft², yd², square (100 ft²), acre,
+   mm², cm², m², km²; volume in³, ft³, yd³, mm³, cm³, m³, gal. Default ft² (SF) and yd³ (CY). A pick
+   of the other kind is dropped when the conversion changes.
+2. **The quantity.** Both engines convert after the modifiers: an area from SF, a volume from CY
+   through cubic feet, by the unit registry's factors (`quantity.result_unit_of`, `resultUnitOf`); a
+   unit that does not fit what was made is ignored. The item reads in that unit. Six quantity-table
+   rows (SY, m², CF, m³, gal, a wrong-kind unit), hand-worked.
+3. **Storage.** `result_unit` (migration `d370f5b2c8d3`, items and assembly templates), checked against
+   the registry (an area or volume unit that converts).

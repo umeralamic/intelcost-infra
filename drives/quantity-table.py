@@ -54,6 +54,7 @@ def figure(case: dict) -> float:
         layer_multiplier=1.0,
         volume_width_ft=mods.get("volumeWidthFt"),
         volume_depth_ft=mods.get("volumeDepthFt"),
+        result_unit=mods.get("resultUnit"),
     )
 
 

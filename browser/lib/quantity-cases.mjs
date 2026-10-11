@@ -77,6 +77,17 @@ export const CASES = [
   { id: "mod-volume-area-slope", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { pitchFactor: 1.25, volumeDepthFt: 1 / 3 }, expect: (270 * 1.25) / 3 / 27 },
   // A slab with a 5 × 5 ft deduct: (270 − 25) × 1 / 27 CY.
   { id: "mod-volume-area-deduct", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37), hole(rect(0.12, 0.12, 0.17, 0.17))], mods: { volumeDepthFt: 1 }, expect: 245 / 27 },
+  // The picked result unit (D-370). A wall, 216 SF = 24 SY; by width the same arithmetic.
+  { id: "mod-height-in-sy", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { heightFt: 8, resultUnit: "SY" }, expect: 24 },
+  // 216 SF in m²: 216 × 0.3048² = 20.06706… m².
+  { id: "mod-height-in-m2", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { heightFt: 8, resultUnit: "M2" }, expect: 216 * 0.3048 * 0.3048 },
+  // A footing, 2 CY = 54 CF.
+  { id: "mod-volume-in-cf", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { volumeWidthFt: 2, volumeDepthFt: 1, resultUnit: "CF" }, expect: 54 },
+  // A slab, 270 CF in m³: 270 × 0.3048³ = 7.64555… m³; in US gallons, 270 × 1728 / 231.
+  { id: "mod-volume-in-m3", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { volumeDepthFt: 1, resultUnit: "M3" }, expect: 270 * 0.3048 ** 3 },
+  { id: "mod-volume-in-gal", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { volumeDepthFt: 1, resultUnit: "GAL" }, expect: (270 * 1728) / 231 },
+  // A unit of the wrong kind is ignored: an area unit on a volume stays CY.
+  { id: "mod-volume-wrong-unit", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { volumeDepthFt: 1, resultUnit: "SY" }, expect: 10 },
   // Height and volume exclude each other; were both stored, the height stands (LF → SF).
   { id: "mod-height-over-volume", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { heightFt: 8, volumeWidthFt: 2, volumeDepthFt: 1 }, expect: 216 },
 ];
