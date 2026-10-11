@@ -1,19 +1,22 @@
-# Overnight plan, 2026-10-10 (00:01 → 11:30 UTC)
+# Overnight plan, 2026-10-11 (00:10 → 11:30 UTC)
 
-The founder's brief, in order. Each block: gates (lint, typecheck, build; ruff, mypy, alembic
-check), quantity table, one Playwright MCP smoke on a throwaway account, commit and push on
-`umer-dev` (the workspace mirror in the same commit), then [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md)
-updated. Unfinished work goes to a named stash `overnight-<block>`. The 2026-10-09 run's files
-are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-09.md`.
+The founder's brief, in order. Each block: gates (format, lint, typecheck, build; ruff, mypy,
+alembic check), quantity table, one Playwright MCP smoke on a throwaway account, commit and push on
+`umer-dev` (the workspace mirror in the same session), then [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md)
+updated with the hashes. Unfinished work goes to a named stash `overnight-<block>`. The 2026-10-10
+run's files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-10.md`.
 
-Browser tool: the Playwright MCP connects and drives the app (checked 00:02 UTC).
+Browser tool: the Playwright MCP connects and drives the app (checked 00:13 UTC). On arrival the
+worker, page pool and beat had exited (the file watcher hit "Cannot allocate memory"); restarted.
+Mail guard on (`MAIL_GUARD=true`, allowlist the founder only). Founder projects read only.
 
 | # | Block | Plan | Budget |
 |---|---|---|---|
-| 1 | Settings speed | Measure first/second visit per tab, dev and prod (`app-prod` started), before. One layout route for settings: the frame (header, title, both tab rows) renders once, tabs are child routes, a Suspense placeholder only in the content area. Prefetch the other tabs' chunks at idle on entering settings, and on tab hover. Settings queries fresh for 60 s; mutations invalidate what they change (check each page). Classification `?system=csi`: profile, cache server side, ETag / long client cache, target < 100 ms. Measure after. Report only: the Linux filesystem estimate. | 00:05–03:00 |
-| 2 | D-324 follow-ups | Prepare stage on a pool (one page a task, a cap by CPU and memory), the first-ticked sheet prepared and read first, then tree order; 40-sheet wall time before/after on one set. Scale parsing computed: any architectural, engineering, metric scale to a ratio, displayed as printed; metric and engineering test sheets in the smoke. Sizing note for Abdullah. | 03:00–06:00 |
-| 3 | P-23 drift | Declare the three indexes in their models as their migrations define them; alembic check clean; P-23 closed. | 06:00–06:30 |
-| 4 | Auto Count part 1 | One kept OpenCV worker everywhere, 2-minute release (D-316 updated). Benchmark protocol: prod build, four fixed fixtures with sheet copies, truth table at 70% and 38%, first/next scan, memory; a one-click dev page. Run before and after. | 06:30–10:00 |
-| 5 | Competitor names | The standing rule in CLAUDE.md and DECISIONS; list every hit, change nothing. | 10:00–10:30 |
-| 6 | P-24 | Only with time left. | 10:30–11:15 |
-| — | Final report | Purge throwaway workspaces, list their prefixes empty. | 11:15–11:30 |
+| 1a | Competitor names | Reword every D-328 hit to describe the behaviour (code and CSS comments, docs, DESIGN/STATUS/PARITY, drafts, DECISIONS, the archived report line), meaning kept; CLAUDE.md's opening line; delete the competitor screenshot in `docs/tasks/`; no history rewrite; re-scan to zero outside history and legacy. | 00:15–01:00 |
+| 1b | Wage Calculator warm-up | Time first visit after an api restart; load the crafts reference data at api start; time again. | 00:15–01:00 |
+| 2 | Auto Count accuracy | Benchmark before (prod build). Per missed truth point: where, which stage dropped it, score vs cut, why (instrumented copy of the pipeline on the saved fixtures). Fix only what that supports; contract: no new wrong at 70 %/38 %, right never down, times and memory reported. `?opencv=2`. Benchmark after. | 01:00–05:30 |
+| 3 | Orphans in "U.'s workspace" | Report only: key, size, created, area/feature, why unreferenced, bug or not. Investigated alongside block 2. | alongside |
+| 4 | Dense-sheet read speed | Profile A0.00B and two other dense copies; speed the dimension check without changing any result on the D-321–D-326 test set; before/after per sheet and identical-result comparison. | 05:30–09:00 |
+| 5 | Revision sets | Spec only: `docs/tasks/revision_sets_spec.md` (pairing, carry-over, compare, reads, Estimating, data model, block plan, open questions). Drafted alongside. | alongside |
+| 6 | Auto Count speed part 2 | Only after block 2 is committed, with time left: compiled module once per tab, compressed + long cache, IndexedDB cache; then SIMD retry from `overnight-simd`. | 09:00–11:00 |
+| — | Final report | Purge throwaway workspaces through the guarded purge, list their prefixes empty. | 11:00–11:30 |

@@ -68,7 +68,7 @@ a drawing surface, and marketing has no drawing surface.
 | Canvas | `canvas-surface`, `tool-active`, `tool-hover` | The grey surround behind the white PDF page, and the active-tool tint |
 | Earthwork | `earthwork-eg`, `earthwork-fg`, `earthwork-boundary`, `earthwork-error` | Industry convention: existing grade red, finished grade green, crossing contours blue |
 | Shell | `sidebar-background`, `sidebar-foreground`, `sidebar-primary`, `sidebar-accent`, `sidebar-border`, `sidebar-ring` | The app has a sidebar |
-| Tree | `folder` (manila gold), `row-selected` (PlanSwift blue bar) | The file tree and the takeoff tree |
+| Tree | `folder` (manila gold), `row-selected` (standard blue selection bar) | The file tree and the takeoff tree |
 
 If a marketing page ever needs one of these, copy the value from the app rather than
 inventing a near-match.

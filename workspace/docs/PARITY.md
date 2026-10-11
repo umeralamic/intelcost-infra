@@ -1288,7 +1288,7 @@ copying legacy structure, which D-11 says not to do:
 - `selecting-a-markup-on-the-sheet-highlights-its-row-in-blue-2026-08-22`
 - `sheet-row-menu-3-dots-right-click-and-bookmarks-2026-08-01`
 - `sheet-row-status-chips-scale-takeoff-markup-2026-08-01`
-- `sheets-panel-3-dot-panel-menu-planswift-parity-markup-thumbn-2026-08-13`
+- the 2026-08-13 legacy screenshot of the Sheets panel's 3-dot panel menu (markup, thumbnails)
 - `sheets-panel-align-tree-lines-under-the-chevron-enlarge-the-2026-08-23`
 - `sheets-panel-header-match-the-takeoff-panel-2026-08-13`
 - `sheets-panel-match-the-takeoff-panel-s-item-menus-2026-09-07`

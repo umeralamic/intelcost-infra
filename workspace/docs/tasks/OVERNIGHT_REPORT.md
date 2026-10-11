@@ -1,287 +1,115 @@
-# Overnight report, 2026-10-10
+# Overnight report, 2026-10-11
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every block. **All six blocks done by 05:25 UTC**; the rest of the night went to a clean real-Load timing for block 2, an image upload through the new page pool, P-24's row step and a final production check. The 2026-10-09 run's
-files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-09.md`.
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every block. The 2026-10-10 run's
+files are archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-10.md`.
 
-**Browser tool:** the Playwright MCP connects and drives the app (checked 00:02 UTC); every
-smoke below ran through it.
+**Browser tool:** the Playwright MCP connects and drives the app (checked 00:13 UTC); every smoke
+below ran through it, on the throwaway `fx.overnight1011.a@bench.intelcost.io`.
+**On arrival** the worker, the page pool and beat had exited two hours earlier: their file watcher
+failed with "Cannot allocate memory" (os error 12). Restarted at 00:12; nothing else touched.
 
 | # | Block | State | Commits |
 |---|---|---|---|
-| 1 | Settings speed | **done** | app `bc40cbb`, api `9b4aabb`, infra `9a2b894` |
-| 2 | D-324 follow-ups | **done** | api `c7e6f08`, app `2897c51`, infra `2cb66f4` |
-| 3 | P-23 alembic drift | **done** | api `806d3c4`, infra `9a2b894` |
-| 4 | Auto Count part 1 | **done** | app `68eeaaf`, infra `d01a2b8`, `8c1f0c0` |
-| 5 | Competitor-name scan | **done** (rule added, hits listed, nothing changed) | infra `8c1f0c0` |
-| 6 | P-24 | **done** | app `eb23ece`, `259cc00`; infra `65d5413`, `afb5df7` |
+| 1 | Competitor names + Wage Calculator warm-up | **done** | see below |
+| 2 | Auto Count accuracy | in progress | |
+| 3 | Orphans in "U.'s workspace" | **done** (report only) | — |
+| 4 | Dense-sheet read speed | not started | |
+| 5 | Revision sets | **done** (spec) | with block 1's mirror |
+| 6 | Auto Count speed part 2 | not started | |
 
-## 1. Settings speed (D-325)
+## 1. Competitor names + Wage Calculator warm-up (D-342)
 
-- **One frame:** `/settings` is a layout route; header, heading and both tab rows render once;
-  every tab is a child route with a placeholder only in the content area (after 150 ms).
-- **Prefetch:** entering settings fetches the other pages' code one at a time at idle; a tab's
-  on hover or focus. Not at app start.
-- **Fresh for 60 s** while settings is open (the settings pages' key prefixes); any save made
-  there marks them stale, so it shows at once. *(call)* Scoped to the open frame, because
-  several of the keys are also read on the takeoff; leaving settings restores them.
-- **Classification tree:** the cause of 1.2 s was 568 KB of uncompressed JSON (1,835 CSI
-  nodes) on every read, 110 ms to build and the rest to cross Docker Desktop's port
-  forwarding; the first read of a new workspace also seeds the tree. Now built once per
-  version per workspace, gzipped once, ETag + `private, no-cache`: an unchanged tree is a
-  304. From the browser 1.05–1.5 s → **60–84 ms**; in the api 110 → 30 ms. *(call)* Per
-  endpoint rather than app-wide gzip, because the AI tools stream NDJSON.
+**a. Names.** Every hit D-328 listed is reworded to describe the behaviour, meaning kept:
 
-**Timings** (every tab and section, twice, from a fresh load of General; marked = the tab shows
-selected, settled = no spinner):
+| Where | Now reads |
+|---|---|
+| `CLAUDE.md:3-4` opening | "…specialty subs: the desktop takeoff and plan-markup tool estimators already know, rebuilt for the web." Rule 9's last sentence now says the hits were reworded (D-342). |
+| `DECISIONS.md` zoom and image comparisons (11 lines, around D-102 and D-119) | "the reference viewer" (compared against), "A zoom menu opens from the zoom percentage" |
+| `DECISIONS.md` ~6190 | "fine dotted tree-connector guides" |
+| `docs/code_style/design.md:71`, `intelcost-app-react/design.md:23, 40`, `STATUS.md:202`, `src/index.css:38` | "standard blue selection bar" |
+| `src/index.css:86, 481` | "as in the reference viewer", "fine dotted rails and stubs" (comments only) |
+| `src/lib/takeoff/overlay/alignment.ts:1` | "Two-point overlay alignment math (pick two matching points on each sheet)." |
+| `ZoomCluster.tsx:6`, `zoomMenu.ts:2`, `pdf/zoom.ts:6` | the product's name dropped from the comment |
+| `docs/tasks/drafts/zoom_hybrid_images.DRAFT.md:8, 40, 123` | "the reference viewer" |
+| `docs/PARITY.md:1291` | the legacy screenshot named by description, not by its file name |
+| `docs/archive/OVERNIGHT_REPORT_2026-10-10.md` block 5 | the hit list keeps every location, labels by behaviour |
+| `docs/tasks/zz-notes-29.webp` | **deleted** |
+| `docs/tasks/d119-notes-29.png` | **deleted** *(call)*: D-119's side-by-side, the other product's crop with its name in the header; ours alone stays (`ours-notes-29.webp`); both are in the mirror's history |
+
+`docs/archive/OVERNIGHT_REPORT_2026-09-27.md:187` already had no name in it. Git history left
+alone: one commit body (`intelcost-app-react bfaad75`) still names a product.
+
+**Re-scan** (case-insensitive, every repo but legacy, the root files, `docs/`, `.claude/`; mirror,
+`node_modules`, `.git`, `dist`, `.venv` left out): the product names, their short forms and
+abbreviations, and file names → **zero hits**. What remains for "stack"/"swift"/"zz" is generic
+(tech/call/modal stack, three place names in the wage seed, smoke names like "zz switching", a
+pandas variable).
+
+**b. Wage Calculator first visit after an api restart** (MCP, dev app, click Project Setup ›
+Wage Calculator until settled):
 
 | | Before | After |
 |---|---|---|
-| Prod, tab marked | 118–203 ms | **43–84 ms** |
-| Prod, first visit settled | 123–1,283 ms | 64–763 ms (one 4.5 s: Wage Calculator's crafts reference data, loaded once per api process after a reload; reopened 238 ms) |
-| Prod, second visit | 44–231 ms, api calls repeated | 47–175 ms, no api calls |
-| Prod, frame disappears | on the first click | never |
-| Dev (cold), tab marked | 2.6–11.9 s | **43–86 ms** |
-| Dev (cold), first visit settled | 2.6–14.7 s | 2.1–9.9 s clicked at once; **64–366 ms** once the idle prefetch finished (~80 s after first load on a cold dev server) |
-| Dev, second visit | 56–244 ms | 48–239 ms |
-| Dev, first page load (cold server) | 38.5 s | 23–26 s |
+| First visit after restart | **6.4 s** (`/burden-profile` answered at 6,390 ms) | **0.20 s** (155 ms) |
 
-**Smoke** (prod and dev): every tab clicked twice, the tab marked at once, the frame never
-left; a phone number saved on General and a new CSI division showed after switching tabs and
-back (the division after a reload too): **passed**.
+The reference data takes ~9 s to load in a fresh process; `lifespan` now starts it as a task at
+boot (the api reports healthy at once) and a lock makes a request that arrives mid-load share that
+load. A visit within ~9 s of boot waits only for the remainder.
 
-**Report only: the repos on the Linux filesystem.** Measured inside the app container (same
-Node, same CPU), the polled Windows share against a copy on the container's own disk:
+**Gates:** ruff format, ruff check, mypy (203 files): clean; alembic check: clean. App lint,
+typecheck, build: OK (the app has no separate formatter; eslint is its format gate). Quantity table:
+329 rows, passed. **Smoke:** Wage Calculator first visit after an api restart settled in 0.2 s with
+the craft and state pickers filled: **passed**.
 
-| | Windows share (today) | Container disk |
-|---|---|---|
-| Read all 515 source files | 6,834 ms | 37 ms |
-| One stat pass over `src` (what each poll does, every 200 ms) | 2,410 ms | 7 ms |
-| Cold Vite compile of all 513 modules | **456 s** (median 3 ms, slowest 6.3 s) | **9.9 s** (median 7 ms, slowest 0.6 s) |
+## 3. Orphans in "U.'s workspace" (report only; nothing changed)
 
-So a cold dev server would be roughly 40× faster to warm up, and the bench would stop paying
-for polling: the Docker VM sits at a load average of 15–17 with the bench idle, because the
-api, the three workers, beat and the app each poll the share (`WATCHFILES_FORCE_POLLING`,
-`DEV_WATCH_POLL`). **What moving involves:** clone the repos inside WSL2 (e.g.
-`~/intelcost/…` in an Ubuntu distro) and run Docker Desktop's WSL2 integration from there;
-the bind mounts then carry native file events, so `DEV_WATCH_POLL` and
-`WATCHFILES_FORCE_POLLING` come off; edit with VS Code's WSL remote. Cost: the workspace
-files and the hook (`.claude/`) move too or are reached through `\\wsl$`; Windows tools that
-read the repos directly (Explorer, the MCP's upload folder under `E:\Intelcost`) go through
-`\\wsl$`, which is slow the other way. Not done; a decision for you.
+**All 19 come from one Load and one live bug.** Project "Building A" (id 6321, uuid
+`6ce25834-…`, workspace 3289 `60edce3e-…`, live). Written 2026-10-09 03:02:47–03:03:44 UTC while a
+45-file Load prepared its first six sheets (A0.00A, A1.01, A1.02A, A4.00, A4.01A, A4.02). Those six
+sheets were then deleted through `POST /sheet/delete`, which does not clear storage for a sheet of
+an uploaded file. P = `takeoff/60edce3e-…/6ce25834-…/`:
 
-## 3. P-23 alembic drift
-
-The three indexes are declared on their models exactly as their migrations made them
-(`app/features/estimate/models.py`); no migration was needed. `alembic check`: **clean**. P-23
-moved to ✅ Live in FEATURES. Gates now report "alembic check clean".
-
-## Gates (blocks 1 and 3)
-
-App lint, typecheck, build: OK. Ruff, mypy: clean. `alembic check`: **clean**. Quantity table:
-329 rows, passed.
-
-## 2. D-324 follow-ups (D-326)
-
-**Was preparation one page at a time? Yes:** one job a file, page after page (files side by
-side up to the main worker's 2 processes). Now each page is its own task on one capped **page
-pool** (`worker-pages`, `-Q prepare,reads`, `PAGE_WORKERS`, default 4) that also does the reads,
-so preparation and reading together never pass the cap.
-- **First ticked first:** a Load sends its pages in tick order; the first goes alone, and once
-  it is ready its read and then the rest go. Broker priorities put a Load's first page (and its
-  read) ahead of another Load's backlog: checked with the pool paused, six tasks at the default
-  then one urgent; the pool took the urgent one first. A ready row in the progress view has
-  **Open**.
-- **Found and fixed on the way:** a page task's claim went stale while a 178 MB source took 13
-  minutes to fetch, and the sweep sent the page again; now a Redis lease renewed every 30 s,
-  whose beat also keeps the file's heartbeat.
-- **Scales computed** from what is printed, labelled as printed: `3/64" = 1'-0"`, `1 IN = 40 FT`,
-  `1:1250` all read; one scale printed two ways is one finding.
-
-**40-sheet timings** (the worker's own code, storage taken out):
-
-| Set | Before (1 preparer + 4 readers) | After, 4 | After, 6 | After, 8 |
+| Key | Size | Created (10-09) | Written by | Why no row names it |
 |---|---|---|---|---|
-| 40 × A0.00B (dense) | 231–252 s | 248 s | 210 s | 186 s |
-| 40 × A1.01 (light) | 51 s | 50 s | 43 s | — |
+| P`689fc6a3-…/v2/fit.webp`, `thumb.webp` | 105 KB, 16 KB | 03:02:49–50 | sheet images, `worker/tasks/prepare.py:556, 560` | sheet row deleted |
+| P`29ab5a2c-…/v2/fit.webp`, `thumb.webp` | 157 KB, 23 KB | 03:02:54–55 | same | sheet row deleted |
+| P`7ff620d2-…/v2/fit.webp`, `thumb.webp` | 187 KB, 21 KB | 03:02:54–55 | same | sheet row deleted |
+| P`7ff620d2-…/symbols/symbols-1-t2` | 4.0 MB | 03:03:16 | Auto Count vector index (D-304), `drawing/routes.py:646` | never stored on a row; the report spares it only while its sheet lives |
+| P`033e23c2-…/v2/fit.webp`, `thumb.webp` | 124 KB, 14 KB | 03:03:00–01 | sheet images | sheet row deleted |
+| P`4c2648c4-…/v2/fit.webp`, `thumb.webp` | 158 KB, 22 KB | 03:03:04–05 | sheet images | sheet row deleted |
+| P`40834193-…/v2/fit.webp`, `thumb.webp` | 141 KB, 14 KB | 03:03:38–44 | sheet images | sheet row deleted |
+| `…/pages/<file>/1` × 6 (files 1454–1459) | 0.33–6.1 MB | 03:02:47–03:03:25 | split page, `prepare.py:77, 549` | only `drawing_sheet.source_key` named it; the drawing files remain with 0 sheets |
 
-On compute alone reading dominates (dense: ~5 s to prepare, ~20 s to read a page), so at equal
-process count the new layout matches the old and scales with processes. What was serial was a
-page's uploads; a real Load of the 40 dense pages on the bench's slow bucket link: source on disk
-→ 40 prepared and 37 read in about 7 minutes, against about 9.5 minutes for the same set before
-(indicative: two worker restarts cut into it; the last 3 reads were re-sent by the sweep). **A clean run, later** (no restarts, 04:19 UTC): Load to the first page ready 10.6 minutes (the 178 MB source fetch, on a link shared with the page-thumbnail job), then all 40 ready and read **6.9 minutes** after it, against about 9.5 minutes before.
+About 15.0 MB in all. Evidence: the project has 45 project files and 45 drawing files but 39
+sheets; files 1454–1459 have none; the six sheet uuids appear nowhere in a full data dump; no
+clear log, purge log or audit row; the sheets' objects are the first in the bucket's timeline,
+interleaved with the surviving 39 (first ticked first, D-326). Exactly when and from which button
+(the Sheets panel's delete or the Load's "cancel remaining") is unknown: the api's logs went with
+its restart and nothing records sheet deletes.
 
-**For Abdullah, sizing:** `PAGE_WORKERS` = min(cores ÷ 2, (RAM − reserve) ÷ 700 MB). One page
-process peaks near **600 MB** on the densest sheet seen (A0.00B, 133,000 lines), about 220 MB on
-a light one. The main worker (coordinators, mail, the rest) keeps 2 processes, the previews
-worker 1. Production needs the same split: a worker on `-Q prepare,reads`.
+**Bug (live since `a2c5194`, 2026-09-27; not covered by D-341):** `drawing/service.py:225`
+`delete_sheets` removes the rows but queues storage only for generated files (D-134). For a sheet of
+an uploaded file, `takeoff/<ws>/<project>/<sheet>/` stays (every `v<n>` image and `symbols/*`), and
+so does its split page. The comment at `drawing/routes.py:609` ("deleting the sheet deletes its
+index") is not true for those. **Suggested fix** (not made): in `delete_sheets`, gather each doomed
+sheet's `takeoff/…/<sheet>/` prefix and its `source_key` (unless a surviving sheet shares it)
+before the rows go, and `storage_clear.queue(...)` them in the same transaction, as `delete_file`
+does, so D-341's log and nightly pass 0 cover it. **Related risk, not seen here:** a re-prepare
+writes `v<n+1>` and never deletes `v<n>`. The 19 are safe to delete; none should be restored.
 
-**Smoke:** C-101 `1" = 30'` and C-102 `1" = 50'` (dimensioned) and A-121 `3/64" = 1'-0"`
-verified and applied with their printed labels; M-101 `1:100` amber, Approve set it (ratio
-100); M-102 `1:200` + `1:50` two boxes, nothing applied; a 5-page Load's first ticked (A-121)
-ready while the other four prepared, Open opened it: **passed**.
+## 5. Revision sets (spec only)
 
-## 4. Auto Count part 1 (D-327)
-
-- **One kept OpenCV worker** on every machine, released after 2 minutes idle (D-316 amended).
-- **The standing benchmark** (`intelcost-infra/bench/autocount/`, README there): production
-  build only; four fixed samples with sheet copies and truth points; first and next scan, each
-  reviewed at 70 % and 38 %, scored right / wrong against the truth; heap and renderer memory.
-  **One click for you:** `docker compose --profile prod up -d --build app-prod`, then open
-  <http://localhost:5175/bench/autocount> and press Run (no sign-in). `?opencv=4` compares four
-  workers.
-- *(calls)* The samples from the earlier runs were not kept, so I chose them tonight by trying
-  instances and keeping the best-reviewing one per test; "right" = a checked match whose box
-  (a fifth wider) holds a truth point. Fixtures are served as the app serves sheets: a download
-  manager on this host answered PDFs with an empty 204.
-
-| Test | Review at 70 % and 38 % | 4 kept, first / next | **1 kept, first / next** |
-|---|---|---|---|
-| E101 office "A" | 68 / 0 (the truth) | 18.9 / 11.2 s | **18.2 / 14.4 s** |
-| E101 "C" with tag | 23 / 0, 3 missed | 27.2 / 20.3 s | **27.1 / 23.3 s** |
-| E200 A | 10 / 0, 2 missed, 1 suggestion at 38 % | 35.2 / 29.8 s | **35.2 / 31.1 s** |
-| E200 A1 | 4 / 0, 2 missed | 11.0 / 7.4 s | **10.6 / 7.2 s** |
-| Renderer memory, peak | | 1,939 MB | **1,319 MB** |
-
-One kept: same first scans, **620 MB less**; next scans 3 s slower on the E101 pair here (your
-earlier numbers had one kept tying four). The misses on "C", E200 A and A1 are the engine's,
-now visible against the truth for part 2.
-
-## 5. Competitor names (D-328, report only)
-
-The rule is CLAUDE.md hard rule 9 and D-328. **Nothing was changed.** Searched every repo and the
-workspace files (legacy `intelcost/` and the `workspace/` mirror, which duplicates the root
-files, left out) for "zz", "zzTakeoff", "PlanSwift", "Bluebeam", "STACK", "On-Screen Takeoff",
-"OST" (and lower-case forms of the product names):
-
-- **Competitor names:**
-  - `CLAUDE.md:4` (the opening line names three products)
-  - `DECISIONS.md:1594, 4068, 4204, 4768, 4773, 4788, 4790, 4793, 4799, 4815, 4862` (zzTakeoff,
-    zoom and image comparisons), `DECISIONS.md:6190` (PlanSwift-style guides)
-  - `docs/code_style/design.md:71`, `intelcost-app-react/design.md:23, 40`,
-    `intelcost-app-react/STATUS.md:202` (PlanSwift blue selection bar)
-  - `intelcost-app-react/src/index.css:38, 481` (PlanSwift-style), `src/index.css:86` (zzTakeoff)
-  - `intelcost-app-react/src/lib/takeoff/overlay/alignment.ts:1` (PlanSwift-style)
-  - `intelcost-app-react/src/features/takeoff/components/ZoomCluster.tsx:6`,
-    `src/features/takeoff/components/zoomMenu.ts:2`, `src/lib/takeoff/pdf/zoom.ts:6` (zzTakeoff)
-  - `docs/tasks/drafts/zoom_hybrid_images.DRAFT.md:8, 40, 123` (zzTakeoff)
-  - `docs/archive/OVERNIGHT_REPORT_2026-09-27.md:187` (PlanSwift)
-  - `docs/PARITY.md:1291` (a legacy screenshot name containing "planswift")
-  - `docs/tasks/zz-notes-29.webp` (a file named zz-…, likely a competitor screenshot)
-  - commit `intelcost-app-react bfaad75` (body names zzTakeoff)
-- **"zz" that is not the competitor** (smoke names prefixed zz, "zzz"/"zzq" no-match searches,
-  a pandas variable): `docs/tasks/SINCE_ARCHIVE.md:20, 100, 104, 156, 183, 185, 249, 277, 279,
-  280`, `docs/tasks/takeoff_first_tasks.md:81`, `docs/tasks/ZOOM_GLITCH_STATUS.md:75, 76`
-  (`zz-e101.pdf` uploads and `zz run` markups), `intelcost-app-fastapi/docs/wage-calculator/
-  validate_seed.py:31, 32`, `intelcost-infra/.regress/f5-s13.log:12`,
-  `intelcost-infra/.regress/full-f5-close/f5-s13.log:12`.
-- "STACK" (as a product), "On-Screen Takeoff", "OST": no other hits.
-
-## 6. P-24 (D-329)
-
-**Why the panel redrew:** each prepared page refetches the sheet list, the signed assets and the
-scales (at most once a second); the takeoff page redraws for each, and the panel took dozens of
-inline callbacks plus `sites`/`overlayActions` rebuilt every render; and every assets read signs
-every thumbnail URL anew (SigV4 carries the time), so the thumbnails map was always new (in
-thumbnail view each image was fetched again).
-
-**Now:** the panel is memoized behind `useStableProps` (stable callers of the page's latest
-callbacks; none goes stale), `sites` memoized, thumbnail URLs kept while the object is the same
-and the signature young, and each row memoized (`SheetRow`: drawn from plain props, its handlers
-through a ref to the panel's latest).
-
-| Dev build, a 40-page Load, panel open | Before | Panel memoized | **And its rows** |
-|---|---|---|---|
-| Panel redraws over 1 ms | 96 (0.83 a second) | 46 | 49 |
-| One redraw, median / max | 19 / 34 ms | 18 / 27 ms | **5 / 11 ms** |
-| Redraws over 16 ms | 79 | 38 | **0** |
-| Time redrawing | 1.8 s | 0.87 s | **0.27 s** |
-
-**Smoke:** open, Ctrl/Shift range, the selection ⋮ menu and the row ⋮ menu, right-click, plain
-click clears, rename in place, drag to reorder (saved), Thumbnails view (40 tiles, a tile opens),
-items open/close, an item selects and right-clicks, Name from page region opens the page's
-dialog: **passed**. Also, the new page pool with an image upload (a PNG wrapped, prepared, ready
-in 25 s, its kept source cleaned up): **passed**.
-
-## Final check (production build, all of tonight's code)
-
-Settings click-through again, browser cache cleared: every tab marked selected in 42–73 ms, the
-frame never left, second visits 41–156 ms with no api calls (fresh for 60 s). Two first-visit
-"settled" figures read 2–4 s in this rapid run (AI Credits, Wage Calculator); opened on their
-own, cold, Wage Calculator settles in 0.47 s and its calls take ~20 ms: the script clicks faster
-than the idle prefetch fetches each page's code. Gates after the last commit: app lint,
-typecheck, build OK; ruff, mypy clean; **alembic check clean**; quantity table 329 rows, passed.
-
-## Decisions made on your behalf (all in DECISIONS)
-
-- D-325: the 60-second freshness applies only while the settings frame is open (several of those
-  keys also feed the takeoff); the classification tree is cached per endpoint, not by app-wide
-  gzip (the AI tools stream). The tree stays per workspace (it is editable).
-- D-326: one capped pool for preparing and reading, not two; a Load's first page and its read go
-  at the top broker priority; a page task holds its page by a renewed Redis lease (found tonight:
-  a 13-minute source fetch let the sweep send the page again); scale labels are the printed text.
-- D-327: the Auto Count samples were not kept from earlier runs, so I chose them by trying
-  instances and keeping the best-reviewing one per test; "right" = a checked match whose box (a
-  fifth wider) holds a truth point; fixtures served as `.sheet` (a download manager here takes PDFs).
-- D-329: the Sheets panel and its rows memoized, every handler through the panel's latest.
-- P-25 is a new FEATURES row (the settings work, Live).
-
-## For your click check
-
-1. **Settings** (prod or dev): click through the tabs; the tab marks at once, the frame stays;
-   save something and switch tabs, it shows.
-2. **Auto Count benchmark:** `docker compose --profile prod up -d --build app-prod` (from
-   `intelcost-infra/`), open <http://localhost:5175/bench/autocount>, press Run (~3 minutes).
-   `?opencv=4` compares four workers. Do the samples look like the ones you meant?
-3. **A Load:** the first sheet you tick shows Ready first, with **Open**; a metric sheet (`1:100`)
-   offers Approve; an engineering sheet with dimensions applies `1" = 30'` as printed.
-4. **Sheets panel during a Load:** it should feel smooth now, in dev too.
-5. **Competitor names:** the list in block 5 is yours to decide; nothing was changed. Note
-   CLAUDE.md's own opening line is on it.
-
-## For Abdullah
-
-- **Bucket CORS:** add `http://localhost:5175` (the production preview) to the bench bucket.
-- **Page pool:** production needs a worker on `-Q prepare,reads` with
-  `--concurrency=PAGE_WORKERS`, PAGE_WORKERS = min(cores ÷ 2, (RAM − reserve) ÷ 700 MB); one
-  page process peaks near 600 MB on the densest sheets. The main worker keeps 2, previews 1. The
-  broker transport now uses Redis priority steps (0–9, separator ":"): queues gain `:N` siblings.
-- **Lifecycle rule** for unfinished multipart uploads on the bucket (our IAM cannot list them, so
-  a purge cannot show they are gone).
-- **Shared work disk:** the page pool's processes share `worker_dir` (`/tmp/intelcost-work`); on
-  the bench a named volume. Without one they re-fetch from storage (slower, still correct).
-
-## Cleanup
-
-Throwaway workspace purged (`fx overnight 1010`, f3189492-…): every prefix 0 objects
-(project-file, takeoff, intake, scope-doc, trade-scope-doc, subquote, assembly-screenshot,
-workspace-logo; open multipart uploads not visible to our IAM). Scratch files removed from the
-containers and the host; the workers' work disk empty; `app-prod` stopped again; the temporary
-P-24 profiler removed before each commit. All repos clean on `umer-dev`.
-
-## Day follow-ups (2026-10-10)
-
-- **D-330, Home's empty start over the takeoff.** A new signup's "Drop your drawings here to
-  start" now sits on a shade over the empty takeoff screen, under the takeoff's own live bar
-  (Open, credits, theme, account menu) and the confirm-email banner. A drop anywhere on the shade
-  works. On the way in, the takeoff's code is fetched ahead, the takeoff route shows the same
-  empty frame while its code loads, and the route guard's answer is seeded, so nothing blank
-  passes. Smoke on three fresh signups: passed. App `fa4e54c`.
-- **D-331, Review flags in place of the end-of-Load popups.** "N sheets need a look" is gone; a
-  sheet with something left by its read shows a red ⚠ Review in the scale's place (tooltip:
-  the reasons; click: the sheet with its amber boxes in view); a folder shows ⚠ N; the scale
-  chip is grey; the upload tray closes itself 3 s after every file lands. Smoke (3-sheet Load:
-  unverified, two scales, NTS): no popups, tray gone, flags right, Approve then rename turned
-  A-101 into a grey `1/4"=1'-0"` chip, folder count 2 → 1: passed. A failed upload was not
-  forced; the tray's failure path is unchanged, and the new timer runs only with no failures. App `13bec9e`.
-- Gates after both: app lint, typecheck, build OK; ruff, mypy clean; alembic check clean;
-  quantity table 329 rows, passed. Throwaway workspaces purged (`purge-owner`, 5 accounts).
-- **D-336, two work breakdown structures (P-26).** Each item now has a custom folder and a place in
-  the classification tree; the Takeoff panel shows one ("Folders | Classification" under its header,
-  per person per project, a project default in Takeoff settings › Panels for editors). Folders: an
-  unfiled item at the top. Classification: codes holding items ("Show all" for every code), folders
-  only inside a code, Unclassified, then Rough Measurements and Earthwork Markups; a drop never
-  crosses a code; right-click "Change classification…" (one undo step). A folder or code clicked is
-  where new items land (manual, assemblies with their own code first, Auto Count). Estimating:
-  Classification reads the classification chain, Custom Folder the custom chain. Migration checked
-  on a full copy of the bench database: every item identical up and down. Gates green, quantity
-  table passed. **No browser smoke, at the founder's word: for the founder's check.**
+[revision_sets_spec.md](revision_sets_spec.md). In short: a revision loads through the existing
+Load and is read for names and scales exactly as on load; each new sheet pairs to the one it
+replaces by normalised sheet number, with title and a thumbnail hash as checks, each pair High /
+Check / Low and same / renumbered / split / duplicate / new / not in this revision, editable on a
+pairing screen. Carry-over **moves** each measurement (it keeps its id, so its estimate line and
+history follow) through the pair's Overlay alignment, found automatically from words printed once
+on both pages, else identity, else the Overlay's two-point step; quantities recompute analytically
+on the new sheet's scale. The old sheet stays as a read-only earlier revision shown from an archive
+of its rows (live old shapes would double quantities). "May have moved" flags from linework match,
+changed dimension text, revision clouds and an image difference under each shape, shown with the
+existing red Review mark. Estimating: quantities follow the current revision; old → new per item
+per revision; a "Revision changes" report. Data model, api, UI states, risks, 18 open questions
+with recommended defaults; eight blocks, ~15 days (A–D, ~8.5 days, is the first useful cut).
+Not adopted, so no FEATURES or MANAGER row and no decision yet.

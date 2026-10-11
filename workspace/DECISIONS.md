@@ -1591,7 +1591,7 @@ picture.
 
 **The baseline (D-102).** 100% had been "the page's width fits the canvas", so it moved
 with the window and the panels, and Fit read 81% on the founder's second monitor (2560 ×
-1440 at 125%) where zzTakeoff reads 22%. The founder asked for a fixed px-per-inch baseline
+1440 at 125%) where the reference viewer compared against reads 22%. The founder asked for a fixed px-per-inch baseline
 in CSS px, about 4.05 × the old 100%, so the same sheet fits at about 20% there:
 - **100% = 170 CSS px per inch of sheet** (`PX_PER_INCH`, 170 / 72 px per PDF point). On
   that monitor (a maximised window, about 2048 × 1050 CSS px) a 36 × 24 in sheet fits at
@@ -4065,7 +4065,7 @@ of what is left is the click's own React render, 80 to 120 ms on the bench.
 review
 **Area:** Takeoff, Frontend
 
-zzTakeoff opens a zoom menu from its percentage. Ours: **Zoom to Fit, 100%, 50%, 25%, 10%**
+A zoom menu opens from the zoom percentage. Ours: **Zoom to Fit, 100%, 50%, 25%, 10%**
 (on D-102's baseline), the level in force marked. A level zooms around the view's centre
 (the page point there stays there) and draws sharp as every zoom does; Fit is the canvas's
 own `fit`.
@@ -4201,7 +4201,7 @@ still gets × 2.
 per unit of ink (so lighter lines do not count as blur), on the busiest blocks of two test
 sheets: 0.726 → 0.875 and 0.862 → 1.022 at 100% scaling, 0.885 → 0.957 and 0.737 → 0.955 at
 125%. Crisper at every point measured, so the rule applies at 29% too. Lines and text read
-lighter (thinner), as zzTakeoff's.
+lighter (thinner), as the reference viewer's do.
 
 **Trade-off.** The wheel's landing waits for the larger draw: 25% and 29% landed in 426 to
 1006 ms before and 520 to 1096 ms after on the bench (worst case + 540 ms, a 36 in dense
@@ -4765,12 +4765,12 @@ monitor check)
 **Amends:** D-118
 
 **Evidence.** The founder cropped the same notes block ("GENERAL STRUCTURAL NOTES", sheet
-c95b4606 of Hidden Valley Spec) at about 29% on his monitor, in zzTakeoff and in ours after
+c95b4606 of Hidden Valley Spec) at about 29% on the founder's monitor, in the reference viewer compared against and in ours after
 D-118. The gap is contrast and stroke weight, not blur.
 
 | His crop | Mean lum | Dark % (<100) | Ink's mean lum | Grey fringe % (192–223) | Edge |
 |---|---|---|---|---|---|
-| zzTakeoff | 227.9 | 4.19 | 133.6 | 5.7 | 22.9 |
+| Reference viewer | 227.9 | 4.19 | 133.6 | 5.7 | 22.9 |
 | Ours (D-118) | 226.0 | 1.93 | 146.2 | 10.5 | 19.7 |
 
 The bench draws the same block much darker (8.6% dark at × 1). Chrome on Windows rasterises
@@ -4785,18 +4785,18 @@ is untouched and the draw time is unchanged. At or below Fit, nothing changes (D
 **Options tried** (time box 90 minutes, 12:35 to 13:00). The notes block was drawn through the
 app's own pdf.js at a real forced 1.25, at 25, 29, 35 and 50%. Each option was measured on its
 bitmap and timed on a settle-sized draw, 1913 × 1275 to 2560 × 1600 device px. The software
-bench's times vary by ± 100 ms. The crops were compared with zzTakeoff's.
+bench's times vary by ± 100 ms. The crops were compared with the reference viewer's.
 - **Gamma 1.6 or 2.2, and unsharp 0.6 or 1.0:** they darken the whole block, not only the
-  strokes. On his crop, gamma 1.4 already put the mean at 218 against zzTakeoff's 228. Unsharp
+  strokes. On his crop, gamma 1.4 already put the mean at 218 against the reference viewer's 228. Unsharp
   costs 400 to 800 ms.
 - **Supersampling × 2 (high-quality) or × 3 (area average), then a curve:** + 270 to 1000 ms
-  per settle, over the budget. It is no closer to zzTakeoff's than the curve alone.
+  per settle, over the budget. It is no closer to the reference viewer's than the curve alone.
 - **pdf.js glyphs as paths (`disableFontFace`):** identical to × 1 on the bench. There is no
   lever to measure here, and the font path on Windows is unknown.
 - **Emboldening** (fills also stroked, strokes at least 1.6 device px): far too heavy, 17 to
   19% dark at 25 to 29%.
 - **Contrast curves on his crop:** levels 40 to 235 matched best. With it he gets 227.3 mean,
-  4.52% dark, 133.6 ink, 7.1% fringe and 22.2 edge, against zzTakeoff's 227.9, 4.19%, 133.6,
+  4.52% dark, 133.6 ink, 7.1% fringe and 22.2 edge, against the reference viewer's 227.9, 4.19%, 133.6,
   5.7% and 22.9.
 - **The same curve done in JavaScript** (read, map, write every pixel): + 60 to 240 ms. As a
   CSS filter it adds nothing to the draw, so the filter was chosen.
@@ -4812,8 +4812,9 @@ on one frame:
 | 35% | 4.54 → 8.03 | 134.1 → 117.1 | 9.7 → 6.7 | 21.2 → 24.5 | 223.7 → 223.6 |
 | 50% | 8.37 → 10.34 | 112.9 → 91.6 | 6.0 → 4.3 | 19.3 → 22.4 | 223.8 → 222.1 |
 
-zzTakeoff at 29% on his monitor reads 4.19% dark, 133.6 ink, 5.7% fringe and 22.9 edge. The
-side-by-side is `docs/tasks/d119-notes-29.png`.
+The reference viewer at 29% on the founder's monitor reads 4.19% dark, 133.6 ink, 5.7% fringe and 22.9 edge. The
+side-by-side image was deleted on 2026-10-11 (it showed the other product, D-328); ours alone is
+`docs/tasks/ours-notes-29.webp`.
 
 **Trade-offs.**
 - Greys darker than 40 turn black, and greys lighter than 235 turn white. A very light
@@ -4859,7 +4860,7 @@ tabs text size" and "Bold", which still size them.
 **Date:** 2026-09-30
 **Status:** decided
 **Area:** Takeoff, Frontend
-**Beyond legacy:** the percentage (zzTakeoff's, round 5 item 3) sat above the cluster's buttons
+**Beyond legacy:** the percentage (round 5 item 3, the figure that opens the zoom menu) sat above the cluster's buttons
 
 **Decision.** The floating zoom cluster reads, top to bottom: Zoom in (+), the zoom percentage
 (which still opens the zoom menu: Zoom to Fit, 100%, 50%, 25%, 10%), Zoom out (−), Zoom to fit,
@@ -6187,7 +6188,7 @@ deviations named)
 **Status:** decided overnight, accepted by the founder 2026-10-01 (legacy's look; the overnight fallback)
 **Area:** Sheets panel, Takeoff panel; Frontend
 
-- **What the side-by-side check found:** legacy draws PlanSwift-style dotted guides in
+- **What the side-by-side check found:** legacy draws fine dotted tree-connector guides in
   both trees (`index.css` `.tree-branch`, `.tree-row`, `.tree-rail`, `.tree-guide`):
   - a vertical rail under each open folder's chevron;
   - a short stub to each child;
@@ -12466,3 +12467,24 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    HIdden Valley Spec: 29 of 29 sheets decode, earthwork result fingerprint unchanged; Riverside 7 of
    7, zz switching 113 of 113, Test 3 63 of 63, Loaded from files 3 of 3 decode; Riverside's 7 and a
    spread of zz switching drawn in the browser.
+
+## D-342: Competitor names reworded out; the Wage Calculator's reference data loads at api start
+
+**Status:** Accepted (2026-10-11 overnight brief, item 1; the founder decided the rewording).
+**Amends:** D-328 (the hits it listed unchanged are now changed).
+
+1. **Every D-328 hit reworded** to the behaviour it meant, the meaning kept: "the standard blue
+   selection bar", "fine dotted tree-connector guides", "two-point overlay alignment", "the
+   reference viewer" for the zoom and image comparisons (D-102, D-118, D-119), in code and CSS
+   comments, design/STATUS/PARITY files, the zoom draft, DECISIONS, the archived reports and
+   CLAUDE.md's opening line. The competitor screenshot in `docs/tasks/` is deleted. *(call)* So is
+   D-119's side-by-side `d119-notes-29.png`: it was the same crop with the other product's name in
+   its header, which D-328 forbids as a screenshot; ours alone (`ours-notes-29.webp`) stays, and
+   both remain in the workspace mirror's history. Git history is left alone (one commit body in
+   `intelcost-app-react`, `bfaad75`, still names a product). Scan after: zero hits outside history
+   and legacy.
+2. **The crafts reference data warms at boot.** `app.main.lifespan` starts
+   `wage_calculator.service.reference()` as a task (off the event loop; the api is healthy at once)
+   and a lock makes the warm-up and a first request share one load. First Wage Calculator visit
+   after an api restart: 6.4 s → 0.2 s. A visit inside the first ~9 s after boot still waits for
+   the remainder.

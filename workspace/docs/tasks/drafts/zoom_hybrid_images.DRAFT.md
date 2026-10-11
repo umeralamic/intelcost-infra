@@ -5,7 +5,8 @@ the end wait on the founder.
 
 ## The ask
 
-zzTakeoff zoomed in August with about 918 MB against our 5.1 GB. Proposed: pdf.js first
+The reference viewer the founder compares against zoomed in August with about 918 MB
+against our 5.1 GB. Proposed: pdf.js first
 paint as now; during a zoom gesture, the GPU scales pre-made images at a few zoom levels,
 made by `worker-previews` after upload; the sharp pdf.js raster only once the zoom settles.
 
@@ -37,7 +38,7 @@ renderer (the bench has no GPU).
   composited layer and canvas. The bench's software renderer has no such memory, so this
   table cannot show it. **Step 0 of this proposal is to measure on the founder's machine.**
   Use Chrome's Task Manager (Shift+Esc): the tab's memory footprint and the GPU process,
-  on the same sheet and dance, ours against zzTakeoff. If the GPU process is where the
+  on the same sheet and dance, ours against the reference viewer. If the GPU process is where the
   gigabytes are, the cheapest win is below (Ideas), not this proposal.
 
 ## The proposal
@@ -120,7 +121,7 @@ machine: a zoom into a tiled sheet with IDM running, and IDM's download list sta
 ## Questions for the founder
 
 1. **Measure first?** Run step 0 on your machine (Chrome's Task Manager, ours and
-   zzTakeoff, the same sheet and dance) before any of this is built?
+   the reference viewer, the same sheet and dance) before any of this is built?
 2. **Which levels?** 4096 and 8192, or one level (8192 tiled) only?
 3. **When to make them?** Every page as it is prepared, or only a set's pages once opened
    in takeoff (less storage for sets never measured)?

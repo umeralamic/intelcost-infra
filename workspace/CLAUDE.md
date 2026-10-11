@@ -1,7 +1,8 @@
 # CLAUDE.md — IntelCost workspace
 
 Browser-native construction takeoff and estimating for general contractors and
-specialty subs. The PlanSwift / Bluebeam / STACK class of tool, in the browser.
+specialty subs: the desktop takeoff and plan-markup tool estimators already know,
+rebuilt for the web.
 
 Upload a drawing set, calibrate each sheet's scale, measure linear (LF), area (SF)
 and count (EA) quantities on the sheets, roll them up by sheet and classification,
@@ -92,9 +93,8 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    feature name anywhere in the repos or the workspace files: code, comments, DECISIONS,
    specs, task files, commit messages, fixtures, file names. A decision states the
    estimator's need ("an estimator needs to count a symbol across the set"), never "product X
-   does this". Never reuse a competitor's wording for a label, a message or a feature. Hits
-   found before this rule are listed in the 2026-10-10 overnight report for the founder to
-   decide on; they are not changed until then.
+   does this". Never reuse a competitor's wording for a label, a message or a feature. The hits
+   found before this rule were reworded on 2026-10-11 (D-342); only git history still names one.
 
 ## Git
 
