@@ -30,3 +30,11 @@ Metric (CM). A volume on a count. Width or depth from a named dimension.
 Gates; quantity table; one smoke through the Playwright MCP: a Linear item with volume
 (width 2', depth 1') drawn 27 ft long reads 2.00 CY; an Area item 10 × 27 ft with depth 1' reads
 10.00 CY; a Count with Manual quantity 12 reads 12 EA.
+
+## Follow-ups (same day)
+
+- **D-361:** a Linear item's slope factor now multiplies its length on both engines (legacy's),
+  stored items backfilled by migration `d361b4e8f2c7`.
+- **D-362:** with Manual quantity ticked, Create makes the item at once with no shape on the open
+  sheet and does not arm the tool; the Sheets panel lists such an item under its home sheet with
+  its number; a volume's name suffix is left off while nothing is measured.

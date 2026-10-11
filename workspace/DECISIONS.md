@@ -12958,3 +12958,31 @@ opens).
    not a new field: the drawn quantity is kept underneath, and unticking clears the override.
 5. **"This measurement" order:** Apply a slope factor, Convert to area using a height (runs),
    Convert to volume (runs and areas), Manual quantity, Rough measurement.
+
+## D-361: A Linear item's slope factor multiplies its length, as legacy's
+
+**Status:** Accepted (2026-10-11, Umer). **Fixes:** a parity defect since F6-S2.
+
+1. **The defect.** The dialog says "Multiplies the length by a slope factor", and legacy's
+   `quantityService` multiplies a run's length by it, but the api's `apply_modifiers` (and the
+   app's twin) applied the factor to an area only: a sloped run stored its plan length and showed
+   the slope only in its name.
+2. **The fix.** Both engines multiply a run by its slope factor, before a volume (D-360). Two
+   quantity-table rows: a sloped run (27 LF × 1.25 = 33.75 LF) and a sloped footing (2.5 CY).
+3. **Stored items.** Migration `d361b4e8f2c7` applies the factor once to every Linear item with a
+   slope (height and slope exclude each other, so each stored the plain length); the effective
+   quantity follows unless overridden. On the bench: one item, 117.687624 → 117.689742 LF.
+
+## D-362: Manual quantity on Create makes the item at once, with nothing to draw
+
+**Status:** Accepted (2026-10-11, Umer). **Amends:** D-360 4.
+
+1. **Create.** With Manual quantity ticked, Create makes the item on the open sheet (its home
+   sheet), with no shape, its override the typed number (reason "Manual quantity"), its draft
+   sub-items written; the tool is not armed and the item is selected. The hint reads "Creates the
+   item with the number you enter. Nothing is drawn." Properties keeps D-360's wording: the
+   number replaces the measured quantity and what is drawn stays.
+2. **Sheets panel.** An item with a manual quantity and no shape anywhere is listed under its home
+   sheet with that number. This includes Estimating's Insert row lines (F9-S7), which are the same
+   kind of item.
+3. **Name.** A volume's suffix is left off while nothing is measured, so no "(0.0 SF, 6"D)".

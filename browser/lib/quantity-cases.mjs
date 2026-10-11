@@ -68,6 +68,9 @@ export const CASES = [
   { id: "mod-volume-run", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { volumeWidthFt: 2, volumeDepthFt: 1 }, expect: 2 },
   // A trench 1'-6" wide, 6" deep: 27 × 1.5 × 0.5 = 20.25 CF = 0.75 CY.
   { id: "mod-volume-run-inches", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { volumeWidthFt: 1.5, volumeDepthFt: 0.5 }, expect: 0.75 },
+  // A sloped run (D-361, legacy's): 27 LF × 1.25 = 33.75 LF; and as a footing, × 2 × 1 / 27 = 2.5 CY.
+  { id: "mod-slope-run", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { pitchFactor: 1.25 }, expect: 33.75 },
+  { id: "mod-volume-run-slope", type: "lf", page: SQUARE, fpp: 0.1, shapes: [poly([[0.1, 0.5], [0.37, 0.5]])], mods: { pitchFactor: 1.25, volumeWidthFt: 2, volumeDepthFt: 1 }, expect: 2.5 },
   // A slab: 270 SF × 1 ft = 270 CF = 10 CY.
   { id: "mod-volume-area", type: "sf", page: SQUARE, fpp: 0.1, shapes: [rect(0.1, 0.1, 0.2, 0.37)], mods: { volumeDepthFt: 1 }, expect: 10 },
   // A slab 4" deep on a slope ×1.25: 270 × 1.25 × (1/3) / 27 = 4.1666… CY.
