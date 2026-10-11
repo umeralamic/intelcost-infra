@@ -1,25 +1,32 @@
-# Day plan, 2026-10-11 (04:47 → 13:00 UTC)
+# Overnight plan, 2026-10-11 → 12 (23:35 → 11:30 UTC)
 
-The founder's day brief, in order, then the stretch list. Each block: gates (format, lint,
-typecheck, build; ruff, mypy, alembic check), quantity table, one Playwright MCP smoke on a
-throwaway account, commit and push on `umer-dev` (the workspace mirror in the same session), then
-[OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md) updated with the hashes. Unfinished work goes to a named
-stash `overnight-<block>`. Last night's files are archived as
-`docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-11.md`. Next decision: D-346.
+The founder's brief: currency, the measurement system (metric) and the dialog titles. Steps in
+order; what time does not reach is left for the next session. The day's plan and report are archived
+as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-11-day.md`.
 
-Bench at 04:47: api healthy, worker / page pool / previews answer a Celery ping, beat scheduling;
-`app-prod` stopped (started for measurements). Browser tool connects. Mail guard on.
+**Every step:** log its decision in DECISIONS.md first; gates (app lint, typecheck, build; api ruff,
+format, mypy, `alembic upgrade head`); the quantity table; one Playwright MCP smoke on the throwaway
+account (`estimator+1790627038@bench.intelcost.io`, project "zz switching"), never the seeded account,
+never the founder projects ("Hidden Valley Spec", "Waxing City", "Hidden Valley Spec Building Rebid"),
+which are read only. Commit and push on `umer-dev`, refresh the workspace mirror, update
+[OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md). Unfinished work goes into a named stash, recorded in the
+report. Mail guard stays on.
 
-| # | Block | Plan | Budget |
-|---|---|---|---|
-| 1 | Sheet delete storage | `delete_sheets` gathers each doomed sheet's `takeoff/…/<sheet>/` prefix and its `source_key` (unless a surviving sheet shares it) before the rows go, queued through `storage_clear` in the same transaction; a re-prepare queues the version it replaces; the comment at `routes.py:609`; then the 19 orphans deleted with their keys listed. Smoke: sheet delete, Cancel remaining, re-prepare. | 04:50–06:30 |
-| 2 | "C" next-scan re-measure | Quiet machine, production build: shipped vs `?exact=0&solo=off`, 3 runs each, all four tests. If the change costs, find and cut it without changing results. | 06:30–07:30 |
-| 3 | Auto Count fill check | Interior ink density (and hatch) of each candidate against the sample; drop or down-rank clear mismatches. Contract: no right lost, no new wrong, suggestions equal or fewer; E200 A1 6/0 with no hatched-A suggestion; E200 A must not suggest empty A1. | 07:30–09:30 |
-| 4 | First page before the whole file | Prepare the first ticked page from ranged reads of the source; fall back to the full download when the PDF cannot be read so; identical output; time-to-first-sheet before/after (throttled and normal). | 09:30–12:00 |
-| 5 | Drop stashes | `overnight-simd`, `overnight-simd2`, `overnight-cnl` (app). | with block 1 |
-| 6 | Stretch: Duplicate project | Only with time left. | 12:00– |
-| — | Final report | Purge throwaway workspaces through the guarded purge, list their prefixes. | 12:45–13:00 |
+| Step | What | Ships as |
+|---|---|---|
+| 0 | Browser check: the Playwright MCP connects and drives the app | report line |
+| 1 | Dialog titles by tool: Name this Linear / Segment / Area / Count Measurement; Properties unchanged | commit |
+| 2 | Inventory of every hard-coded unit and money label, by area | report section |
+| 3 | Currency: workspace default (Settings › Estimating, USD), project override (Edit project), one money formatter, symbol only, never converted; Wage Calculator and crew wages stay USD with a notice in a non-USD project | commit |
+| 4 | Measurement system, Phase A: workspace default (Settings › General, Imperial), project override, feature flag (platform admins only until Phase E), the "Metric · CA$" tag, display only | commit |
+| 5 | Phase B, display: m / m² / m³ at 2 decimals across the inventory except Estimating rates and the export; metric scale presets confirmed | commit |
+| 6 | Phase C, entry: metres and millimetres in every length field, exact round trips (150 mm stays 150 mm), the zero rule in both systems | commit |
+| 7 | `METRIC_PHASE_DE_PLAN.md`: Phases D and E designed, files, quantity-table rows, questions | doc commit |
+| 8 | Phase D: Estimating, export and every unit rate converted at display and entry only; totals identical to the cent | commit only if every total matches; else stash `overnight-metric-phase-d` |
+| 9 | Phase E: sub-item formulas in the project's units, template unit-system tag and warning, quantity-table rows | **stash `overnight-metric-phase-e`, not committed** |
 
-**As run:** block 5 at 04:50; block 2 first, on a quiet machine, 04:55–05:34; block 1 05:35–06:13 with
-blocks 3 and 4 by agents alongside (3 committed 06:24, 4 at 07:10); block 6 (stretch) 06:25–07:02;
-hardening (duplicate dry runs, D-351 sizes, D-347 5) to 08:00; closed about 08:05.
+After Step 9: no new feature work; re-verify Steps 1–8 in the browser and tighten the report.
+
+**Principles carried through every step:** storage stays imperial (feet, SF, CY) everywhere, in both
+engines and the quantity table; metric is a display and entry layer; switching a project's system or
+currency never writes a stored quantity, rate or amount.

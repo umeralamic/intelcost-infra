@@ -13099,3 +13099,13 @@ decimal feet: Height `7' - 6" or 7.5`; Area width `4' - 6" or 4.5`; Volume width
 Depth `1' - 4" or 1.33`; a named dimension `0' - 0"`, its error "like 1' - 4" or 1.33". The hints,
 placeholders and error messages use them; the parser reads the spaced form (2' - 6" → 2.5). The
 slope tick box reads "Apply a Slope Factor". **Where:** app `MeasurementDialog.tsx`.
+
+## D-372: The new-measurement dialog is titled by the tool that opened it
+
+**Status:** Accepted (2026-10-11, Umer; overnight brief Step 1). **Amends:** the F6-S1 title "Name this LF measurement".
+
+"Name this Linear Measurement", "Name this Segment Measurement", "Name this Area Measurement",
+"Name this Count Measurement". A Segment item shares Linear's `lf` type, so the dialog is told the
+tool: Segment's create, a run drawn with Segment, and a paste of a Segment item read "Segment".
+Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:** app
+`MeasurementDialog.tsx` (`segment` prop), `pages/ProjectTakeoff.tsx`.
