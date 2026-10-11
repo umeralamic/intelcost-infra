@@ -12488,3 +12488,41 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    and a lock makes the warm-up and a first request share one load. First Wage Calculator visit
    after an api restart: 6.4 s → 0.2 s. A visit inside the first ~9 s after boot still waits for
    the remainder.
+
+## D-343: Auto Count Image mode: exact search at strong peaks; one strong size passes consensus
+
+**Status:** Accepted (2026-10-11 overnight brief, item 2; calls made on the founder's behalf).
+**Area:** Auto Count, Frontend. **Amends:** D-302 (the fine pass round OpenCV's peaks), D-189
+(legacy's 2-of-3 sizes rule).
+
+**Diagnosis** (the benchmark's new `?diagnose=1`, production build, the four D-327 fixtures).
+Every miss before, at 70 % and 38 % alike:
+
+| Test, truth point | Stage that lost it | Score vs the cut |
+|---|---|---|
+| E200 A1 (0.288, 0.375) | fine pass: never scored | peak 1.00; a full search there scores 1.00 at 1.00 and 0.98 at 1.05; the stride-5 grid's windows all under 0.7 × floor, so none was refined |
+| E200 A1 (0.247, 0.375) | sizes' consensus | 1.00 at size 1.00 only (0.95: 0.33, 1.05: none) |
+| E200 A (0.330, 0.462), (0.303, 0.462) | sizes' consensus | 0.75 at 1.00; the 0.95 peer (0.49) exists but the grid never refined it |
+| E101 "C" (0.235, 0.318) | sizes' consensus | 0.85 at 1.00; 0.41 / 0.42 at 0.95 / 1.05, under the floor |
+| E101 "C" (0.321, 0.318), (0.661, 0.318) | fine score under the floor | at best 0.41 at any size and angle (peaks 0.67): the two C/NL tags, unlike the "C" sample |
+
+Each test's misses share one row: symbols in a row sit at one phase of the stride-5 grid.
+
+1. **Exact search at strong peaks.** The widened grid refines a window only when it already scores
+   0.7 of the floor; a thin-line symbol 2 px off scores almost nothing, so a true one between the
+   grid's points was never refined. At every OpenCV peak of 0.6 or more, each size's window is now
+   also scored at every 2 px within the peak's own error of where it starts; it only adds to the
+   grid's hits. *(call)* Scoring the whole peak region at 2 px instead fixed E200 too but cost
+   E200 A 33 → 142 s and lost three "C" (their 1.05 peers had been found by the refinement's reach
+   beyond the region), so not that.
+2. **A one-size hit of 0.8 or more passes the sizes' consensus.** The 2-of-3 rule rejects one-size
+   interpolation accidents, which score low; a thin-line "C" scored 0.85 at its own size and was
+   dropped. *(call)* 0.8: 0.7 gave the same review on every test, so the margin is real; the
+   review's gap still sets what is checked.
+3. **The C/NL pair is left.** They score 0.41 at best against a "C" sample: checking them needs a
+   bar under 0.41, below `CHECK_MIN` (0.6), where look-alikes live. Not attempted; a "C/NL" sample
+   counts them.
+4. **Contract held** (before → after, both scans, 70 % and 38 %): office 68/0 → 68/0, "C" 23/0 → 24/0,
+   E200 A 10/0 → 12/0, E200 A1 4/0 → 6/0; no wrong match anywhere. E200 A1 shows 5 unchecked
+   suggestions at about 0.75 (the hatched type A); E200 A 4 at 38 % (was 1). Bench knobs:
+   `?exact=0`, `?minpeak=`, `?solo=off|<bar>`, `?diagnose=1`; `?opencv=N` was already any count.

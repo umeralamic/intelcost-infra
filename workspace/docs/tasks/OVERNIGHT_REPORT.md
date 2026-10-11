@@ -10,8 +10,8 @@ failed with "Cannot allocate memory" (os error 12). Restarted at 00:12; nothing 
 
 | # | Block | State | Commits |
 |---|---|---|---|
-| 1 | Competitor names + Wage Calculator warm-up | **done** | see below |
-| 2 | Auto Count accuracy | in progress | |
+| 1 | Competitor names + Wage Calculator warm-up | **done** | app `7985c69`, api `9018702`, infra `ca9dd6a` |
+| 2 | Auto Count accuracy | **done** (3 of 4 at truth; "C" 24 of 26, the 2 C/NL left) | see block 2 |
 | 3 | Orphans in "U.'s workspace" | **done** (report only) | — |
 | 4 | Dense-sheet read speed | not started | |
 | 5 | Revision sets | **done** (spec) | with block 1's mirror |
@@ -60,6 +60,62 @@ load. A visit within ~9 s of boot waits only for the remainder.
 typecheck, build: OK (the app has no separate formatter; eslint is its format gate). Quantity table:
 329 rows, passed. **Smoke:** Wage Calculator first visit after an api restart settled in 0.2 s with
 the craft and state pickers filled: **passed**.
+
+## 2. Auto Count accuracy (D-343)
+
+**a. Diagnosis.** The benchmark page has a new `?diagnose=1`: one scan per test with the scan
+recording OpenCV's peaks and the fine pass's hits before the sizes' consensus, plus an exhaustive
+probe (every 2 px origin round each truth point, every size, no floor). For each true symbol missed
+it names the furthest stage reached. Same misses at 70 % and 38 %:
+
+| Test | Missed (sheet fraction) | Stage that dropped it | Score vs the cut | Why |
+|---|---|---|---|---|
+| E200 A1 | (0.288, 0.375) | fine score: never scored | OpenCV peak 1.00; probe 1.00 at size 1.00, 0.98 at 1.05; floor 0.45 | the stride-5 grid refines a window only if it already scores 0.7 × floor (0.315); the empty outline 2 px off scores nearly 0, so its true spot was never refined |
+| E200 A1 | (0.247, 0.375) | sizes' consensus | 1.00 at 1.00; 0.33 at 0.95; 1.05 gated | 2-of-3 sizes needed, only one size there |
+| E200 A | (0.330, 0.462), (0.303, 0.462) | sizes' consensus | 0.75 at 1.00; probe 0.49 at 0.95 (≥ floor) | the 0.95 peer exists but, as above, the grid never refined it |
+| E101 "C" | (0.235, 0.318) | sizes' consensus | 0.85 at 1.00; probe 0.41 / 0.42 at 0.95 / 1.05 | a thin circle is scale-sensitive: its other sizes fall under the floor |
+| E101 "C" | (0.321, 0.318), (0.661, 0.318) | fine score under the floor | best 0.41 at any size and angle (peaks 0.67) | the two **C/NL** tags against a "C" sample |
+
+Candidate generation (OpenCV peaks), overlap suppression and the review's cut lost nothing. Every
+test's misses share a row: symbols in one row sit at one phase of the stride-5 grid.
+
+**b. Fixes** (only what the diagnosis supports):
+1. **Exact search at strong peaks.** At each OpenCV peak of 0.6 or more, each size's window is also
+   scored at every 2 px within the peak's own error of where that size starts; it only adds to the
+   grid's hits. *(Tried first and dropped: scoring whole peak regions at 2 px — E200 to truth, but
+   E200 A 33 → 142 s and "C" 23 → 20, because the 1.05 peers had come from the refinement reaching
+   past the region. And widening tiny regions to hold a grid point: no change, which is what showed
+   the cause was the refinement bar, not the grid.)*
+2. **A one-size hit of 0.8 or more passes the sizes' consensus.** 0.7 gave the identical review on
+   all four tests, so 0.8 has margin.
+3. **C/NL not attempted:** 0.41 at best, under `CHECK_MIN` 0.6 where look-alikes live; checking them
+   from a "C" sample would need a bar that admits wrong matches. A "C/NL" sample counts them.
+
+**d. Benchmark, production build, 1 kept OpenCV worker** (right / wrong; first / next scan):
+
+| Test | Before 70 % | Before 38 % | **After 70 %** | **After 38 %** | Before first / next | After first / next |
+|---|---|---|---|---|---|---|
+| E101 office "A" (68) | 68 / 0 | 68 / 0 | **68 / 0** | **68 / 0** | 20.9 / 15.0 s | 20.5 / 14.8 s |
+| E101 "C" (24 + 2 C/NL) | 23 / 0, 3 missed | 23 / 0, 3 missed | **24 / 0**, 2 missed | **24 / 0**, 2 missed | 26.8 / 17.5 s | 27.7 / 23.9 s |
+| E200 A (12) | 10 / 0, 2 missed | 10 / 0, 2 missed, 1 sugg. | **12 / 0** | **12 / 0**, 4 sugg. | 32.9 / 29.5 s | 37.2 / 32.9 s |
+| E200 A1 (6) | 4 / 0, 2 missed | 4 / 0, 2 missed | **6 / 0**, 5 sugg. | **6 / 0**, 5 sugg. | 9.6 / 6.5 s | 10.8 / 7.9 s |
+| Peak heap (page) | | | | | 113–176 MB | 125–224 MB |
+| Largest browser process (OS) | | | | | 862 MB | 896 MB |
+
+Contract: no new wrong checked match on any test at either sensitivity; no right count went down.
+Both scans of each test reviewed the same. The new unchecked suggestions: E200 A1's five at about
+0.75 are the hatched type A fixtures; E200 A's four at 38 % score 0.50. "C"'s next scan reads 23.9 s
+against 17.5 s before; a run tonight whose search was the old one (the region-widening try, same
+results as before) read 21.2 s, so most of that is load on this machine (the block-4 profiling ran
+alongside), not the change. E200 A's +4 s first scan is the extra search.
+
+**c. `?opencv=2`:** the page already took any count; documented in the bench README, and run once:
+office 18.8 / 12.0 s, "C" 28.1 / 20.9, E200 A 38.0 / 32.4, A1 11.4 / 7.7; same review as 1.
+
+**Gates:** app lint, typecheck, build OK; quantity table 329 rows, passed (8 Auto Count rows right).
+**Smoke** (dev app, throwaway): an E200 copy uploaded and loaded; boxed one A1 fixture, Auto Count in
+Image mode → 6 checked (five 100 %, one 97 %) and five 75 % suggestions; Create (6) made "A1 fixtures
+smoke" 6 EA: **passed**.
 
 ## 3. Orphans in "U.'s workspace" (report only; nothing changed)
 

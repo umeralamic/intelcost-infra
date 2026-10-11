@@ -16,8 +16,14 @@ each scanned twice (a first scan from cold, the next straight after) and reviewe
    the console (`console.table`). `window.__autocountBenchDetail` holds every checked and
    suggested box with its score, and the true symbols missed.
 
-Options: `?opencv=4` runs with another OpenCV worker count (the shipped one is 1, D-316 as
-amended); `?only=c` runs one test; `?only=c&box=x,y,w,h` tries another sample box for it.
+Options: `?opencv=2` (or any count, e.g. `?opencv=4`) runs with that many kept OpenCV workers
+(the shipped one is 1, D-316 as amended), so 1 / 2 / 4 compare run against run; `?only=c` runs
+one test; `?only=c&box=x,y,w,h` tries another sample box for it. D-343's two changes can be
+switched off to compare: `?exact=0` (no exact search at strong peaks; `?minpeak=0.5` moves its
+bar) and `?solo=off` (the 2-of-3 sizes rule alone; `?solo=0.7` moves the one-size bar).
+`?diagnose=1` runs one scan per test and says, for each true symbol missed, the stage that lost
+it (OpenCV peak, fine score, sizes' consensus, overlap suppression, review) with its score
+against the cut; on `window.__autocountDiagnosis` and in the console.
 
 Memory beyond the page's heap (the scan's workers live in the tab's renderer): sample the
 renderer processes' private bytes from the OS while it runs, as the overnight reports do.
