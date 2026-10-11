@@ -139,6 +139,18 @@ Estimating total $75.00 in both; unit cost changed to $20 in the copy → copy $
 $12.50 / $75.00; the copy trashed and deleted permanently from Settings › Trash → its prefixes 0
 objects, the original's 29 untouched: **passed**.
 
+**Hardening after the commit** (`read_rows` split out so a dry run reuses it): the copier's rows run
+inside a transaction and rolled back, no objects copied, on the bench's richest non-founder
+projects. Marketing Demo – Site 231 rows (an earthwork result, assumptions, review and strip area),
+Riverside Medical Center 135 (cost components, wage sets with 68 craft and 208 crew rates), Marketing
+Demo – Office Building 358 (28 sheets, markups, a registration), Test 3 228, Minmar 358, Hendrick Honda
+66, Mirammar Cove 28 (a snippet): every table's count equal, no foreign key into the original, no
+value naming the original: **no problems**. 27 of the 40 tables were exercised; these 12 hold no row
+anywhere on the bench, so they are copied by the same rules but untested on real data: sites and
+site members, site results, estimate custom columns and values, equipment resources and usage, fill
+materials, subcontractor overrides, takeoff variable values, wage determination imports, snippet
+links. UI smoke again after the change: "E200 day copy (copy)" duplicated in 14.9 s, opened: passed.
+
 **Gates** (on the staged snapshot, the page-pool agent's unfinished files left out): ruff format, ruff
 check, mypy (205 files) clean; alembic check clean; app lint, typecheck, build OK; quantity table
 passed.
