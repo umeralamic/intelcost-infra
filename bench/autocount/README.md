@@ -21,6 +21,11 @@ Options: `?opencv=2` (or any count, e.g. `?opencv=4`) runs with that many kept O
 one test; `?only=c&box=x,y,w,h` tries another sample box for it. D-343's two changes can be
 switched off to compare: `?exact=0` (no exact search at strong peaks; `?minpeak=0.5` moves its
 bar) and `?solo=off` (the 2-of-3 sizes rule alone; `?solo=0.7` moves the one-size bar).
+`?fill=off` runs without the fill check (D-348: a match whose interior ink share, the
+middle half of its window, clearly differs from the sample's is kept out of the checked and
+suggested sets, so E200's empty A1 and hatched A never suggest each other); the shares are still
+recorded, and `window.__autocountBenchDetail` gives each checked and suggested box's `fill`, the
+sample's `sampleFill`, and `fillDropped`, the matches at or above the sensitivity the check kept out.
 `?diagnose=1` runs one scan per test and says, for each true symbol missed, the stage that lost
 it (OpenCV peak, fine score, sizes' consensus, overlap suppression, review) with its score
 against the cut; on `window.__autocountDiagnosis` and in the console.

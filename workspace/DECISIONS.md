@@ -12640,3 +12640,25 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    `drives/delete-orphans.py --workspace <uuid>` deletes the orphans of one named workspace that
    exists, once a person has decided; the 19 of "U.'s workspace" (15.0 MB) were deleted with it,
    every key in `E:\bench-backups\orphans-deleted-2026-10-11-u-workspace.txt`.
+
+## D-348: Auto Count's fill check: a filled and an empty variant never suggest each other
+
+**Status:** Accepted (2026-10-11 day brief, item 3). **Area:** Auto Count, Frontend.
+
+1. **The check** (`lib/takeoff/autoCount/fillCheck.ts`, pure): the interior of a window is its middle
+   half (a quarter cut from each side); its ink share uses the matcher's 180 threshold. The sample's
+   share comes from the template variant that found the match (same angle and size), the
+   candidate's from the packed working page (`imageScan.ts` `publish`). A clear mismatch: the shares
+   differ by at least 0.12 **and** the larger is at least 2.5 times the smaller (0.03 added to each).
+   A mismatch is handled as lettering is in `review.ts`: out of the reference size and the gap, never
+   checked or suggested, kept in the drawer.
+2. **Thresholds from the data** (production build, `?fill=off`): true matches differ from their
+   sample by at most 0.059 (ratio ≤ 1.25): office 0.243 vs 0.188–0.302, "C" 0.301 vs 0.270–0.345,
+   E200 A 0.185 vs 0.180–0.189, A1 0.000 vs 0.000; the look-alikes by at least 0.169 (ratio ≥ 6.6):
+   A1's hatched type A 0.169–0.197, A's empty outlines 0.000. Both bars sit about 2× from each side.
+3. **Result:** checked sets identical box by box and score by score with `?fill=off` on all four tests
+   at 70 % and 38 %; suggestions only dropped: E200 A1 5 → 0 at both, E200 A 4 → 0 at 38 %. No
+   measurable cost. Bench `?fill=off`; the detail shows each box's `fill`, `sampleFill` and
+   `fillDropped`; `?diagnose=1` has a "review: fill check" stage.
+4. *(call)* A sample boxed with much lettering inside could have a busy interior; the band is wide, but a
+   new fixture with an unusual box is worth a look.
