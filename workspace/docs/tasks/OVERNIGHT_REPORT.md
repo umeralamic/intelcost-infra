@@ -1,7 +1,11 @@
 # Day report, 2026-10-11
 
 Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every block. Last night's files are
-archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-11.md`.
+archived as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-11.md`. **Every block of the brief and the
+stretch item were done and pushed by 07:10 UTC**; the time after went to hardening what shipped
+(Duplicate project dry runs on seven bench projects, Choose pages' sizes from ranges, a work-disk leak
+the cancel smoke found). Closed at about 08:05 UTC. *(call)* Nothing in the brief was left, so I did
+not start features it did not ask for.
 
 **Bench at 04:47 UTC:** api healthy; worker, page pool and previews answer a Celery ping; beat
 scheduling; nothing had died. `app-prod` was stopped (started for measurements). **Browser tool:**
@@ -52,6 +56,79 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 
 **Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
 rows, passed.
+
+**Found later in the day, fixed (D-347 5):** the cancel smoke left the 16-page file's whole source on
+the page pool's disk: a page cancelled mid-prepare returned before the "no page left, drop the source"
+step (the sweep's day-old clear would have taken it). That page now drops the source when its file
+has none left to prepare. Smoke on a second throwaway account: a 16-page Load cancelled with pages 2–5
+preparing and 6–16 queued; the disk was empty 4 s after the last in-flight prepare ended ("gone"):
+**passed**. Gates and quantity table passed. api `598472d`, infra `0c805b0`.
+
+## 2. Auto Count "C" next-scan re-measure (D-346)
+
+Run first, on a quiet machine: the dev server, api, workers, beat and marketing stopped for the
+measurement (they poll the Windows share; the Docker VM sat at a load of 10–11), only `app-prod`
+serving, host near idle. Production build, 3 runs each, interleaved:
+
+| Median (range) | "C" first | **"C" next** | office next | E200 A first / next | A1 next |
+|---|---|---|---|---|---|
+| Shipped (D-343) | 15.2 s | **13.6 s** (13.2–14.5) | 8.0 s | 23.8 / 21.0 s | 4.4 s |
+| `?exact=0&solo=off` (before D-343) | 14.3 s | **12.6 s** (12.6–13.0) | 7.9 s | 22.0 / 19.7 s | 4.0 s |
+
+**Verdict: machine load.** Quiet, every scan runs about twice as fast as last night's figures, and
+"C" next is 12.6–14.5 s either way, not 17.5 → 23.9. **The change has a cost of its own**, though:
+on "C" alone, 3 × 3 runs isolate it to the exact search (shipped 13.6 s, `?exact=0` 13.0 s, the
+one-size consensus nothing), and E200 A pays about 1.3 s.
+
+**Cut, results unchanged:** the exact search now skips, per size, the strong peaks where the grid
+already found a hit of that size within the peak's error. Box-by-box and score-by-score comparison
+with the D-343 search (`?exactall=1`), 3 runs each, all four tests, 70 % and 38 %: **identical**.
+
+| Next scan, median of 3 | E200 A | office | "C" | A1 |
+|---|---|---|---|---|
+| D-343 search everywhere | 20.8 s | 8.1 s | 12.9 s | 4.0 s |
+| **Skip where found** | **19.9 s** | **7.7 s** | 13.0 s | 4.2 s |
+
+"C" and A1 are within the ±0.5 s noise. Reviews on every run: office 68/0, "C" 24/0 (2 C/NL),
+E200 A 12/0, A1 6/0 (5 suggestions).
+
+**Gates:** app lint, typecheck, build OK; quantity table 329 rows, passed. **Smoke** (dev app,
+throwaway): an E200 copy dropped on the empty start, boxed one A1, Image mode → Create (6), five at
+100 % and one at 97 %, the same as last night: **passed**.
+
+## 3. Auto Count fill check (D-348)
+
+**Interior ink share** (the middle half of the window; production build, `?fill=off`):
+
+| Test | Sample | True matches | Look-alikes |
+|---|---|---|---|
+| office "A" | 0.243 | 0.188–0.302 | — |
+| "C" | 0.301 | 0.270–0.345 | — |
+| E200 A (hatched) | 0.185 | 0.180–0.189 | its 4 suggestions at 38 % (0.50): 0.000, the empty outlines |
+| E200 A1 (empty) | 0.000 | 0.000 | the 5 hatched type A at 0.75: 0.169–0.183; more under the cap: 0.188–0.197 |
+
+**Built:** `fillCheck.ts` (pure): a clear mismatch differs by ≥ 0.12 **and** by a ratio ≥ 2.5 (0.03
+added to each share). True matches differ by ≤ 0.059 (ratio ≤ 1.25), look-alikes by ≥ 0.169 (ratio ≥
+6.6). A mismatch is treated like lettering by the review: never checked or suggested, in the drawer.
+
+**Benchmark, production build** (right / wrong, missed, suggestions; first / next scan):
+
+| Test | Before 70 % | Before 38 % | **After 70 %** | **After 38 %** | Before | After (run 1; run 2) |
+|---|---|---|---|---|---|---|
+| office | 68/0 | 68/0 | 68/0 | 68/0 | 16.2 / 15.2 s | 14.7 / 13.3; 14.4 / 12.7 s |
+| "C" | 24/0, 2 missed | 24/0, 2 missed | 24/0, 2 missed | 24/0, 2 missed | 24.1 / 21.5 | 22.2 / 21.3; 23.5 / 21.8 |
+| E200 A | 12/0 | 12/0, 4 sugg. | 12/0 | **12/0, 0 sugg.** | 33.6 / 31.0 | 33.1 / 30.5; 32.8 / 31.0 |
+| E200 A1 | 6/0, 5 sugg. | 6/0, 5 sugg. | **6/0, 0 sugg.** | **6/0, 0 sugg.** | 9.3 / 7.9 | 8.9 / 7.5; 8.4 / 7.1 |
+
+(These runs were on a working bench, so the times sit above block 2's quiet ones.) `?fill=off` on
+the same build reproduced the old review exactly, at the same times: no measurable cost. **Contract:**
+checked sets identical box by box and score by score with `?fill=off` on all 8 test × sensitivity
+pairs; every remaining suggestion is in the fill-off set; nothing kept out on office or "C". Target
+met: A1 6/0 with no hatched-A suggestion, and A suggests no empty A1.
+
+**Gates:** app lint, typecheck, build OK; quantity table passed (8 Auto Count rows right). **Smoke**
+(dev app, throwaway): the E200 copy, one A1 boxed, Image mode → Create (6), five 100 % and one 97 %,
+and no 75 % suggestions (the hatched A are in the drawer): **passed**.
 
 ## 4. First page ready before the whole file downloads (D-350)
 
@@ -163,71 +240,20 @@ imports, snippet links. UI smoke again after the change: "E200 day copy (copy)" 
 check, mypy (205 files) clean; alembic check clean; app lint, typecheck, build OK; quantity table
 passed.
 
-## 3. Auto Count fill check (D-348)
+## Cleanup
 
-**Interior ink share** (the middle half of the window; production build, `?fill=off`):
-
-| Test | Sample | True matches | Look-alikes |
-|---|---|---|---|
-| office "A" | 0.243 | 0.188–0.302 | — |
-| "C" | 0.301 | 0.270–0.345 | — |
-| E200 A (hatched) | 0.185 | 0.180–0.189 | its 4 suggestions at 38 % (0.50): 0.000, the empty outlines |
-| E200 A1 (empty) | 0.000 | 0.000 | the 5 hatched type A at 0.75: 0.169–0.183; more under the cap: 0.188–0.197 |
-
-**Built:** `fillCheck.ts` (pure): a clear mismatch differs by ≥ 0.12 **and** by a ratio ≥ 2.5 (0.03
-added to each share). True matches differ by ≤ 0.059 (ratio ≤ 1.25), look-alikes by ≥ 0.169 (ratio ≥
-6.6). A mismatch is treated like lettering by the review: never checked or suggested, in the drawer.
-
-**Benchmark, production build** (right / wrong, missed, suggestions; first / next scan):
-
-| Test | Before 70 % | Before 38 % | **After 70 %** | **After 38 %** | Before | After (run 1; run 2) |
-|---|---|---|---|---|---|---|
-| office | 68/0 | 68/0 | 68/0 | 68/0 | 16.2 / 15.2 s | 14.7 / 13.3; 14.4 / 12.7 s |
-| "C" | 24/0, 2 missed | 24/0, 2 missed | 24/0, 2 missed | 24/0, 2 missed | 24.1 / 21.5 | 22.2 / 21.3; 23.5 / 21.8 |
-| E200 A | 12/0 | 12/0, 4 sugg. | 12/0 | **12/0, 0 sugg.** | 33.6 / 31.0 | 33.1 / 30.5; 32.8 / 31.0 |
-| E200 A1 | 6/0, 5 sugg. | 6/0, 5 sugg. | **6/0, 0 sugg.** | **6/0, 0 sugg.** | 9.3 / 7.9 | 8.9 / 7.5; 8.4 / 7.1 |
-
-(These runs were on a working bench, so the times sit above block 2's quiet ones.) `?fill=off` on
-the same build reproduced the old review exactly, at the same times: no measurable cost. **Contract:**
-checked sets identical box by box and score by score with `?fill=off` on all 8 test × sensitivity
-pairs; every remaining suggestion is in the fill-off set; nothing kept out on office or "C". Target
-met: A1 6/0 with no hatched-A suggestion, and A suggests no empty A1.
-
-**Gates:** app lint, typecheck, build OK; quantity table passed (8 Auto Count rows right). **Smoke**
-(dev app, throwaway): the E200 copy, one A1 boxed, Image mode → Create (6), five 100 % and one 97 %,
-and no 75 % suggestions (the hatched A are in the drawer): **passed**.
-
-## 2. Auto Count "C" next-scan re-measure (D-346)
-
-Run first, on a quiet machine: the dev server, api, workers, beat and marketing stopped for the
-measurement (they poll the Windows share; the Docker VM sat at a load of 10–11), only `app-prod`
-serving, host near idle. Production build, 3 runs each, interleaved:
-
-| Median (range) | "C" first | **"C" next** | office next | E200 A first / next | A1 next |
-|---|---|---|---|---|---|
-| Shipped (D-343) | 15.2 s | **13.6 s** (13.2–14.5) | 8.0 s | 23.8 / 21.0 s | 4.4 s |
-| `?exact=0&solo=off` (before D-343) | 14.3 s | **12.6 s** (12.6–13.0) | 7.9 s | 22.0 / 19.7 s | 4.0 s |
-
-**Verdict: machine load.** Quiet, every scan runs about twice as fast as last night's figures, and
-"C" next is 12.6–14.5 s either way, not 17.5 → 23.9. **The change has a cost of its own**, though:
-on "C" alone, 3 × 3 runs isolate it to the exact search (shipped 13.6 s, `?exact=0` 13.0 s, the
-one-size consensus nothing), and E200 A pays about 1.3 s.
-
-**Cut, results unchanged:** the exact search now skips, per size, the strong peaks where the grid
-already found a hit of that size within the peak's error. Box-by-box and score-by-score comparison
-with the D-343 search (`?exactall=1`), 3 runs each, all four tests, 70 % and 38 %: **identical**.
-
-| Next scan, median of 3 | E200 A | office | "C" | A1 |
-|---|---|---|---|---|
-| D-343 search everywhere | 20.8 s | 8.1 s | 12.9 s | 4.0 s |
-| **Skip where found** | **19.9 s** | **7.7 s** | 13.0 s | 4.2 s |
-
-"C" and A1 are within the ±0.5 s noise. Reviews on every run: office 68/0, "C" 24/0 (2 C/NL),
-E200 A 12/0, A1 6/0 (5 suggestions).
-
-**Gates:** app lint, typecheck, build OK; quantity table 329 rows, passed. **Smoke** (dev app,
-throwaway): an E200 copy dropped on the empty start, boxed one A1, Image mode → Create (6), five at
-100 % and one at 97 %, the same as last night: **passed**.
+- **Throwaway workspaces purged** through the guarded script (`bench-workspaces.py purge-owner`):
+  `fx.day1011.a@…` (workspace `2306d429-88fc-4cc4-844f-8978e768b27c`, with the duplicated copies in
+  it) and `fx.day1011.b@…` (`193239d0-19a0-4a95-8eda-44c277626c7d`). Both list every prefix at 0
+  objects: project-file, takeoff, intake, scope-doc, trade-scope-doc, subquote, assembly-screenshot,
+  workspace-logo (open multipart uploads not visible to our IAM).
+- **Founder projects never written.** Auto Count used the benchmark fixtures and throwaway copies;
+  block 4 read copies in Test 3 and the marketing demos; Duplicate project's dry runs (rolled back)
+  used only non-founder projects.
+- **Scratch removed:** tonight's MCP files and smoke PDFs under `E:\Intelcost`, scripts in the api and
+  worker containers, the page pool's work disk (empty), the scratchpad. `app-prod` stopped; the bench
+  services stopped for block 2's quiet measurement were started again at 05:19.
+- **Stashes:** none (block 5 dropped the three). All four repos clean on `umer-dev`, even with origin.
 
 ## Decisions made on your behalf (all in DECISIONS)
 
@@ -246,6 +272,10 @@ throwaway): an E200 copy dropped on the empty start, boxed one A1, Image mode �
   project cap applies.
 - **D-350:** only the first page takes the ranged path (the rest still need the whole file, which now
   starts after page 1, so all-pages-ready is later by the ranged time); any doubt falls back.
+
+- **D-351 (follow-up, not in the brief):** Choose pages' sizes read strictly first and never hunted
+  through ranges; page boxes now read exactly as MuPDF does, which fixed stored crop boxes on pages
+  whose media box does not start at 0.
 
 ## For your click check
 

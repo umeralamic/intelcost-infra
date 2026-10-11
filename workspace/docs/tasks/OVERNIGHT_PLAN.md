@@ -19,3 +19,7 @@ Bench at 04:47: api healthy, worker / page pool / previews answer a Celery ping,
 | 5 | Drop stashes | `overnight-simd`, `overnight-simd2`, `overnight-cnl` (app). | with block 1 |
 | 6 | Stretch: Duplicate project | Only with time left. | 12:00– |
 | — | Final report | Purge throwaway workspaces through the guarded purge, list their prefixes. | 12:45–13:00 |
+
+**As run:** block 5 at 04:50; block 2 first, on a quiet machine, 04:55–05:34; block 1 05:35–06:13 with
+blocks 3 and 4 by agents alongside (3 committed 06:24, 4 at 07:10); block 6 (stretch) 06:25–07:02;
+hardening (duplicate dry runs, D-351 sizes, D-347 5) to 08:00; closed about 08:05.
