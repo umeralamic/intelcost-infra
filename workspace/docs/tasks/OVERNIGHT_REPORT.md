@@ -14,8 +14,8 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 | 2 | "C" next-scan re-measure | **done**: machine load; the change's own cost cut where it was largest | app `1148f60`, infra `3b1a49a` |
 | 1 | Sheet delete storage | **done**, 19 orphans deleted | api `ce1ea15`, infra `22d3094` |
 | 3 | Auto Count fill check | **done**, contract met | app `c32575b`, infra `a31c71a` |
-| 4 | First page before the whole file | not started | |
-| 6 | Stretch: Duplicate project | **done** | see block 6 |
+| 4 | First page before the whole file | **done**: first sheet 225 → 45 s on a 117 MB set | see block 4 |
+| 6 | Stretch: Duplicate project | **done** | api `ea15889`, app `ae9c6a3`, infra `f4617be` |
 
 ## 1. Sheet delete storage (D-347)
 
@@ -52,6 +52,56 @@ the Playwright MCP connects and drives the app; smokes run on the throwaway
 
 **Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
 rows, passed.
+
+## 4. First page ready before the whole file downloads (D-350)
+
+**Built:** the first ticked page of a stored PDF is prepared from ranged reads: pypdf (strict) reads
+through ranged GETs only what MuPDF needs to open the file and split that page, into a sparse copy on
+the worker's disk, and the page is prepared from it by the same MuPDF code as from the whole file.
+After preparing, if MuPDF repaired the file or touched any object not read, or pypdf warned, the
+result is dropped and the page comes from the whole file. The rest of the pages as before (the whole
+file fetched once onto the disk, now after page 1). `RangedObject` fetches a contiguous run in one GET
+and can prefetch side by side.
+
+**Time to the first sheet ready** (Load to page 1 ready; "before" = the whole-file fetch + page 1):
+
+| File | Size / pages | Link | Before | **After** | Read for page 1 |
+|---|---|---|---|---|---|
+| Vol2 plan set (bench copy) | 117.4 MB / 96 | bench S3, ≈0.45 MB/s ("throttled") | 225.3 s | **45.3 s** (page 48: 18.8 s) | 17.5 MB, 34 requests |
+| Vol1 plan set (bench copy) | 114.5 MB / 41 | bench S3 | 234.6 s | **55.3 s** | 16.5 MB, 25 requests |
+| Office Building set | 24.7 MB / 28 | bench S3 | 36.7 s | **17.3 s** | 2.5 MB, 18 requests |
+| Dense test file (three sets joined) | 155.0 MB / 95 | local MinIO ("normal", fast) | 3.9 s | 5.2–7.2 s | 22.2 MB, 111 requests |
+| Same, with object streams | 154.9 MB / 95 | local MinIO | 3.8 s | 3.2 s | 16.1 MB, 18 requests |
+| Vol2 / Vol1 | 117 / 114 MB | local MinIO | 2.5 / 3.6 s | 7.4 / 5.2 s | |
+
+On a fast link the ranged path is 1–4 s slower (pypdf and the requests: the floor); on the bench's
+real link it saves roughly the file size over the page's bytes. All-pages-ready comes later by the
+ranged time. *(The bench's Vol1/Vol2 are copies in the "Test 3" project; nothing of the founder's was
+read.)*
+
+**Identity** (repo code, ranged against whole-file): 34 pages of 9 PDFs — the dense file (pages 1,
+20 rotated 90, 41, 45, 60 and 80 rotated 270, 95), its object-stream version, the office set (incl.
+rotated), Hendrick (rotated 270), an incremental save that changed a rotation, scanned image-only
+pages, Elec Vol 4, Vol1, Vol2 (incremental save with dangling references): identical split (but its
+fresh `/ID`, which differs between two whole-file runs too), fit and thumb bytes, decoded pixels,
+size, rotation, text layer and name/scale read.
+
+**Falls back to the whole file:** encrypted PDFs, broken cross-references (tested), image uploads
+(wrapped first), a source already on the disk, misplaced objects (pypdf's whole-file hunt blocked),
+any pypdf warning but the incremental-save one, and anything MuPDF repaired or read beyond what was
+fetched (proved by leaving `/Outlines` out: "MuPDF parsed 38 objects not read"). Linearized PDFs: not
+tested (no tool on the bench to make one); the check covers them.
+
+**Smoke** (dev app, throwaway): a new 20-page file (benchmark fixture copies) loaded; the worker
+logged "page 1 … from ranges, 2.0 of 9.5 MB in 25 requests, 11.3 s"; page 1 Ready 23 s after Load,
+all 20 in 87 s; page 1 (ranged) and page 3 (the same drawing, whole file) have byte-identical fit and
+thumb images and identical splits by size and rendering; sheet numbers, sizes, rotation (270) and
+text layer as expected: **passed**.
+
+**Gates:** ruff format, ruff check, mypy (206 files) clean; alembic check clean; quantity table
+passed. **Separate finding, not changed:** the page-count read (`_ranged_sizes`) falls back to the
+whole file on Vol2 (its lenient pass hunts the file for dangling references); treating a missing
+object as null, as here, would fix it.
 
 ## 6. Stretch: Duplicate project (D-349)
 

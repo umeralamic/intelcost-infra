@@ -12691,3 +12691,31 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    clearing (D-341). A Celery job, its progress in Redis; the copy opens when ready.
 3. Plan caps as New project (`caps.require_project`); the duplicate needs the right to create
    projects. Deleting the copy clears only its own prefixes (they are its uuid's).
+
+## D-350: A Load's first page is prepared from ranged reads, not the whole file
+
+**Status:** Accepted (2026-10-11 day brief, item 4). **Amends:** D-324, D-326 (the first page).
+
+1. **The first page** (D-326's `first`: the head of a Load, a Retry, the sweep), when its source is a
+   stored PDF not yet on the worker's disk, is taken from ranged reads (`drawing/ranged_page.py`,
+   `prepare._ranged_page`): pypdf, strict, reads through `storage.RangedObject` only what MuPDF needs
+   to open the file and split that page (trailer, cross-references, catalogue, the page tree's
+   dictionaries, the page's ancestors, everything the page reaches); those bytes go at their offsets in
+   a sparse copy on the worker's disk, and the page is prepared from it by the same MuPDF code as from
+   the whole file (`_make_page`), so the output is the same. The rest of the pages as before, from the
+   whole file fetched once (`_kept_source`), which now starts after page 1.
+2. **Trusted only when proven:** after preparing and before storing, if MuPDF repaired the file or
+   parsed an object pypdf never read, or pypdf warned (except the incremental-save "not zero-indexed"
+   one) or began a whole-file hunt, the result is dropped and the page comes from the whole file,
+   logged with why. Falls back: encrypted PDFs, broken cross-references, image uploads (wrapped first),
+   a source already on the disk. A reference to an object missing from the cross-reference is null, as
+   MuPDF treats it. *(call)* Linearized PDFs were not tested (no tool on the bench to make one); they
+   open through the same chain and the check covers them.
+3. **`RangedObject`:** the blocks a read lacks come in one GET per contiguous run; `prefetch` fetches
+   blocks side by side (8 threads).
+4. **Measured** (Load to page 1 ready; "before" = the whole-file fetch plus page 1): bench S3 (≈0.45
+   MB/s) Vol2 117 MB / 96 pages 225 → 45 s, Vol1 115 MB / 41 pages 235 → 55 s, office set 25 MB 37 →
+   17 s; local MinIO (fast) 2.5–3.9 → 3.2–7.4 s (pypdf and request overhead: the compute floor, only
+   where the link is fast anyway). Identity: 34 pages of 9 PDFs (dense, object streams, rotated 90 /
+   270, incremental saves, scans) identical in split (but its fresh `/ID`), images, pixels, size,
+   rotation, text layer and name/scale read. All-pages-ready comes later by the ranged time.
