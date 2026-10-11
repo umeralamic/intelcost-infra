@@ -1,9 +1,9 @@
-# F21 (P-27): Revisions of a drawing set, paired, carried over and compared
+# F21: Revisions of a drawing set, paired, carried over and compared
 
-> **Draft spec, 2026-10-10. Not adopted, nothing built.** Written from the founder's brief of
-> 2026-10-10. Its decision is logged as the next `D-NN` (D-342 at the time of writing) when the
-> founder answers the questions at the end. On adoption: a 🗓 row in FEATURES.md, the F21 row
-> on MANAGER.md, and this file renamed `revision_sets_tasks.md`.
+> **Draft spec, overnight 2026-10-11. Not adopted, nothing built.** Written from the founder's
+> overnight brief. Its decision is logged as the next `D-NN` when the founder answers the
+> questions at the end. The 🗓 row is in FEATURES.md (F21); on adoption, the F21 row on
+> MANAGER.md and this file renamed `revision_sets_tasks.md`.
 >
 > Sources, read for this draft:
 > - the sheet and load model as built: `drawing_sheet`, `drawing_file`, `sheet_calibration`,
@@ -561,6 +561,6 @@ safe to trust and should follow at once.
 
 ## Progress
 
-- [x] Draft written 2026-10-10 from the founder's brief.
+- [x] Draft written 2026-10-11 (overnight) from the founder's brief.
 - [ ] The founder's answers, logged as the next `D-NN`; the spec adopted.
 - [ ] Blocks A to H.

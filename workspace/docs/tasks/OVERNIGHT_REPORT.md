@@ -201,6 +201,26 @@ conflict (X-101), full size (F-101), rotated (T-101, T-102). The shipped `read_p
 engine on A0.00B, A1.02B, C-101, M-102, T-102. What is left on a dense sheet is PyMuPDF's drawing
 extraction (3–5 s) and the loop over its items.
 
+**Follow-up, same night** (the loop over PyMuPDF's items vectorised with numpy, same floats; tuples
+built only for merged groups; the text read without image blocks). CPU, median of 3, a quieter run,
+original / first commit / now:
+
+| Sheet | Original | First commit | **Now** |
+|---|---|---|---|
+| A0.00B | 10.43 | 5.21 | **3.72** |
+| S0.04 | 7.72 | 5.12 | **4.14** |
+| A9.30 | 3.52 | 3.10 | **2.63** |
+| Office Building p10 | 3.58 | 2.80 | 2.43 |
+| P1.02 | 3.51 | 0.63 | 0.55 |
+| A1.02B | 0.86 | 0.74 | 0.63 |
+
+(The two tables' absolute numbers differ with the bench's load; compare within a table.) Equality
+again 119 of 119 against the original code. PyMuPDF's own `get_cdrawings` is now ~60 % of a dense
+read (2–2.5 s); no cheaper PyMuPDF call yields the same segments exactly. **Real Load of an A0.00B
+copy** (throwaway): prepare 24.0 s, then the read task **6.6 s** wall including its fetch (the brief's
+~20 s), named "Architectural Site Location Building B" with the `3/32" = 1'-0"` suggestion, exactly as
+the original sheet.
+
 **Gates:** ruff format, ruff check, mypy (203 files) clean; alembic check clean; quantity table 329
 rows, passed. **Smoke** (dev app, throwaway): C-101 and M-102 loaded; C-101 applied `1" = 30'`,
 verified by vector with its witness; M-102 offered `1:200` verified and `1:50`, applied neither:
@@ -271,4 +291,54 @@ changed dimension text, revision clouds and an image difference under each shape
 existing red Review mark. Estimating: quantities follow the current revision; old → new per item
 per revision; a "Revision changes" report. Data model, api, UI states, risks, 18 open questions
 with recommended defaults; eight blocks, ~15 days (A–D, ~8.5 days, is the first useful cut).
-Not adopted, so no FEATURES or MANAGER row and no decision yet.
+Not adopted: a 🗓 Planned row in FEATURES (F21) points to it; no MANAGER row and no decision yet.
+
+## Decisions made on your behalf (all in DECISIONS)
+
+- **D-342:** D-119's side-by-side image (`d119-notes-29.png`) deleted along with the screenshot you
+  named: it carried the other product's crop and name, which D-328 forbids; ours alone stays. Both are
+  in the workspace mirror's history. The zoom comparisons now say "the reference viewer".
+- **D-342:** the Wage Calculator data warms in the background at boot, not before the api reports
+  healthy (a visit in the first ~9 s waits for the rest).
+- **D-343:** strong peaks = OpenCV correlation ≥ 0.6; a one-size hit passes the sizes' consensus at
+  ≥ 0.8 (0.7 gave the same review, so the margin is real). The C/NL pair left (they need a "C/NL"
+  sample). Rejected: scoring whole peak regions at 2 px (slow, lost three "C").
+- **D-344:** the compiled module is offered to IndexedDB even though Chrome refuses it (kept for
+  browsers that allow it); the dev server keeps the embedded copy.
+- **D-345:** the D-326 test sheets no longer existed, so the set was rebuilt by a generator (16 sheets)
+  and compared together with 103 bench pages; the region-limited search and the early exit were
+  rejected because either can change the proving dimension.
+- SIMD retried and stashed (`overnight-simd2`): faster in one pair, slower in the other.
+- FEATURES: P-27 to P-30 added as Live rows; F21 (revision sets) added as Planned, not adopted.
+
+## For your click check
+
+1. **Wage Calculator after an api restart:** `docker compose restart api` (from `intelcost-infra/`),
+   wait for it, open Settings › Project Setup › Wage Calculator: it fills at once.
+2. **Auto Count benchmark:** `docker compose --profile prod up -d --build app-prod`, open
+   <http://localhost:5175/bench/autocount>, Run (~3 minutes): office 68/0, "C" 24/0 (2 C/NL missed),
+   E200 A 12/0, A1 6/0. `?opencv=2` (or 4) compares kept workers; `?diagnose=1` shows where each miss
+   is lost; `?exact=0&solo=off` gives last night's engine for comparison. The new "opencv.js ready"
+   column shows the load.
+3. **Auto Count in the app, E200 A1:** box one empty type A1 fixture, Image mode: 6 checked; the five
+   unchecked 75 % suggestions are the hatched type A, is that acceptable as suggestions?
+4. **A dense Load** (e.g. A0.00B): names and scales as before, the read about twice as fast.
+5. **Revision sets spec:** [revision_sets_spec.md](revision_sets_spec.md), 18 open questions at the end.
+6. **Orphans:** the 19 in "U.'s workspace" are deleted sheets' files (block 3); deleting them is safe,
+   and the sheet delete needs the fix described there. Say if you want it built.
+7. **Stashes to drop or keep:** app `overnight-simd2`, `overnight-cnl`, and the superseded
+   `overnight-simd`.
+
+## For Abdullah
+
+- **The production image:** the app's Dockerfile now writes `.gz` copies of `assets/*.wasm` and large
+  scripts, and nginx serves them with `gzip_static on` (`application/wasm` added to `gzip_types`).
+  A CDN in front must pass `Accept-Encoding` through, keep `Content-Type: application/wasm` and the
+  year-long immutable cache on `/assets/`, so `WebAssembly.compileStreaming` streams and the
+  browser keeps its compiled copy.
+- **api start-up:** the api now loads the Wage Calculator reference data in the background at boot
+  (about 9 s of one core per api process, once, at start; it was paid by the first visitor before).
+- **numpy** is now a declared api dependency (it was already installed with shapely).
+- **Bench:** the worker, page pool and beat had died of the file watcher's "Cannot allocate memory"
+  (os error 12) two hours before the run; the polling watchers on the Windows share are the likely
+  load (see the 2026-10-10 report's note on moving the repos to the Linux filesystem).

@@ -12558,6 +12558,15 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    witness, bands, every merged line): 119 of 119 identical. CPU per read, median of 3: A0.00B
    19.6 → 9.1 s, S0.04 15.3 → 8.8 s, A9.30 4.9 → 4.0 s; light sheets 1.2–6× faster. What remains on
    dense sheets is PyMuPDF's drawing extraction and the loop over its items.
+6. **Follow-up, same night:** the item loop only gathers each segment's drawn numbers; the rotation is
+   applied to all ends at once in numpy (the same products and sums in the same order, so the same
+   floats; zero-length dropped by the same `!=`), `Strokes` takes the array and builds tuples only for
+   groups it merges, and the one text read leaves out image blocks (neither reader looks at them).
+   Original / D-345 / now, CPU, a quieter run: A0.00B 10.4 / 5.2 / 3.7 s, S0.04 7.7 / 5.1 / 4.1 s,
+   A9.30 3.5 / 3.1 / 2.6 s. Again 119 of 119 identical against the original code. PyMuPDF's
+   `get_cdrawings` is now ~60 % of a dense read; no cheaper call gives the same segments exactly.
+   A real Load of an A0.00B copy: the read task 6.6 s wall, name and `3/32" = 1'-0"` suggestion as
+   the original sheet's.
 
 ## D-344: opencv.js's module compiled once per tab, streamed from its own compressed file
 
