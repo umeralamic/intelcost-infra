@@ -13494,3 +13494,18 @@ any other failure rolls the transaction back, so nothing is written. One realtim
 its undo step and redo are one request each with each row's prior or new values; a refusal reads
 "Could not save; nothing changed". Each line is still written with its own reads (about 3 s for 200
 rows on the bench); reading the items and lines in bulk is the next step if that matters.
+
+## D-395: A share link's password is checked once, then a viewer pass
+
+**Status:** Accepted (2026-10-12; the founder's call after D-393).
+
+The guest page sent the password on every request, so every presence poll (once a second per viewer)
+ran the slow password hash check (argon2 on this api). Now the password is sent once, to
+`POST /api/share/{token}/pass`, which checks it and answers a signed pass for 12 hours, bound to the
+link's token and its current password hash (`share/viewer_pass.py`, signed with the api's JWT secret).
+`/meta`, `/bundle`, `/presence` (`X-Share-Pass`) and save-a-copy (`viewer_pass`) take the pass and check
+its signature only. A missing, wrong or stale pass answers `password_required`, and the page asks for
+the password again; the old `X-Share-Password` still works. Regenerating the link (new token), setting a
+password (a new hash, even for the same password) or revoking (no link) refuses an old pass at once:
+every owner change to the link also drops the kept presence answer once it commits. The tab keeps the
+pass, never the password.

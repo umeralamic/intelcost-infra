@@ -216,8 +216,9 @@ small "1 in use" beside them; the page text runs them together.
      `.completed_at` (backfilled from `created_at`) and a unique index on link and viewer (D-392).
 - **Viewer presence load** (D-385, D-393): every viewer of a shared link polls
   `GET /api/share/{token}/presence` once a second. The answer is kept in Redis for one second per link,
-  so a burst of viewers makes one database read, but every request still reaches the api (and checks
-  the link's password with bcrypt when it has one). Size uvicorn and Redis for viewers × 1 request a
+  so a burst of viewers makes one database read, but every request still reaches the api. bcrypt only on
+  password entry (D-395): a password link's viewers send a signed pass, checked by signature, not by hash
+  (the api hashes with argon2). Size uvicorn and Redis for viewers × 1 request a
   second at the expected peak; the Redis keys are `share:presence:*` (1 s) and `share:watch:*` (60 s).
 - **Rate limit on the public share endpoints** (D-393): `/api/share/{token}/meta`, `/bundle` and
   `/presence` are public and unthrottled. A per-IP limit at Caddy or the CDN, generous enough for one
