@@ -381,3 +381,17 @@ Bugs, not choices, so fixed in the remaining time:
   on (under the default higher-of the rate is raised, on your list); 19 fails: no breakdown for National
   Average crafts (on your list). The workspace's company benefits were set back to blank, read back
   from the api. Test 12 then passed too (09:50 UTC, a third copy, purged): only test 15 (the UI string search) is not driven.
+
+## State at 09:55 UTC (after the final report)
+
+- **Shipped after the final report:** D-386 (app `d27194c`: the double-click end point, upload Cancel,
+  the editor after a resize), D-387 (app `649fd40`: undo waits for an Estimating save), D-388 (app
+  `1c205f6`: the Wage Calculator's dead end on review; Advanced on the project's state). Each with
+  gates, the quantity table and a browser check; all pushed on `umer-dev`.
+- **C31** now has 19 of its 21 acceptance tests driven (17 pass, 16 fixed, 5 and 19 on your list; 21
+  passes only with WD-only, also on your list); 7 and 8 need AI credits, 15 not driven.
+- **The switch:** `METRIC_ENABLED=false`; rechecked at 09:52: a non-admin's PATCH to `metric` → 403
+  "Metric is not available yet.", "zz switching" still Imperial. Mail guard on.
+- **Throwaways:** every copy made since the final report purged; storage 0 under deleted projects. The
+  workspace's company benefits set back to blank (read back from the api).
+- **Repos:** app, api and infra on `umer-dev`, clean, nothing unpushed; the workspace mirror current.
