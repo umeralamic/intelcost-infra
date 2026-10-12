@@ -380,4 +380,4 @@ Bugs, not choices, so fixed in the remaining time:
 - **Then (09:45 UTC) tests 18–21** on another copy (purged): 18 and 20 pass; 21 passes with WD-only
   on (under the default higher-of the rate is raised, on your list); 19 fails: no breakdown for National
   Average crafts (on your list). The workspace's company benefits were set back to blank, read back
-  from the api. Test 12 then passed too (09:55 UTC, a third copy, purged): only test 15 (the UI string search) is not driven.
+  from the api. Test 12 then passed too (09:50 UTC, a third copy, purged): only test 15 (the UI string search) is not driven.
