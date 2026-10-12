@@ -13229,3 +13229,31 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
    scale (`PARENT * 0.5`, `PARENT * (1 + 0.05)`) converts correctly and is not listed. Placed formulas
    are written in the project's system (they go through the same write as a typed one).
 5. **Not in this decision:** cost-component formulas (`QTY`-based) stay as they are (follow-up).
+
+## D-379: Metric fixes: small lengths in mm, earthwork names from the stored bank figure, unit pickers in both systems
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 2).
+
+1. **Small lengths.** In metric, a height, width, depth or dimension under 1 m reads in whole mm,
+   however it was typed (4" → 102 mm, 0.3 m → 300 mm, 25 cm → 250 mm); 1 m and over reads in metres at
+   two places, or in mm when typed in mm (1200 mm). The Dimension tool and the depth labels in earthwork
+   line names follow the same rule. Quantities stay at two decimals in m, m², m³. Supersedes D-376 2's
+   cm read-back.
+2. **Earthwork names.** Calculate stores the exact bank volume on each Soil Export and Import line
+   (`takeoff_item.earthwork_bank_quantity`, in the line's bank unit). Its name's bracket is rebuilt from
+   it in the project's system and rounded as the panel rounds, so the name and the panel always agree
+   (22.69 BCY: "23 BCY", "17 BCM"). A line written before has no figure until the next Calculate and
+   keeps the one in its name.
+3. **Unit pickers in both systems.** A row's unit (Estimating's row edit and insert row), sub-item units,
+   the manual quantity's unit, Variables and cost-component units offer the project's own system first,
+   a divider, then the other system.
+   - A unit of the project's own system follows the normal rule: in a metric project "m" stores LF and
+     a switch converts it; a figure typed in it is stored ÷ f.
+   - A unit of the other system is stored and shown exactly as picked and never converted. In a metric
+     project an imperial unit is stored with `unit_pinned` (on items and sub-items, cost components and
+     their templates); its quantity and its rates read per the picked unit in both systems ($2.50/LF
+     stays $2.50/LF). In an imperial project a metric unit is stored as its metric code (M, M2, M3, MM,
+     KG), which nothing converts, and reads "m", "m²"….
+   - **Variables** are never converted, so every pick, own or other, is stored as its code (metric
+     codes for metric units).
+   - A tool's own unit (a measured item's) is never pinned.

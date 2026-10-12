@@ -17,7 +17,7 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
     (3163–3168) and their result row (27);
   - the "Phase E template smoke" assembly (24).
   - **Storage:** every key under the workspace's project areas was listed. 366 objects belong to
-    Riverside and 38 to "zz switching"; **0 objects** sit under a project that no longer exists.
+    "zz switching" and 38 to Riverside; **0 objects** sit under a project that no longer exists.
 - **Abdullah's list** (pending_umer.md, "For Abdullah"): migrations `d373a1b9c4e5` and
   `d374b6c2d9e1`, and `METRIC_ENABLED=false` in production.
 
@@ -59,3 +59,53 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
 - **For your list:** a template placed in a project of the other system has its formulas written in the
   project's system (they go through the same write as typed ones), which is why the warning exists. The
   other reading, keeping the template's system, would need no warning at all.
+
+## Block 2 — Metric fixes (D-379) — shipped (05:40 UTC)
+
+- **Small lengths in whole mm.** A height, width, depth or dimension under 1 m reads in whole mm in
+  metric, however typed: 4" → **102 mm**, 0.3 m → 300 mm, 25 cm → 250 mm (this replaces D-376's cm
+  read-back). Names, hover, the Dimension tool and the depth labels in earthwork names. Quantities stay
+  at 2 decimals.
+- **Earthwork names from the stored bank figure.** Calculate stores the exact bank volume on each Soil
+  Export and Import line (`earthwork_bank_quantity`); the name's bracket is rebuilt from it in the
+  project's system, rounded as the panel rounds.
+- **Unit pickers in both systems:** Estimating's row edit and insert row, sub-item units, the manual
+  quantity unit, Variables, cost-component units (now a picker, was free text). The project's own system,
+  a divider, the other system. Own-system units follow the normal rule; other-system units are stored and
+  shown as picked (`unit_pinned` for an imperial unit in a metric project; the metric code for a metric
+  unit in an imperial project). The sub-items editor's Formulas view now shows each row's quantity in the
+  unit the row shows (it showed the stored figure).
+- **Commits:** app `3f251db`, api `0c111ca` (migration `d379e1a4b7c2`: `earthwork_bank_quantity`, and
+  `unit_pinned` on `takeoff_item`, `takeoff_cost_component`, `assembly_child`, `assembly_component`;
+  up, down and up again on the bench), infra `fe98f05`.
+- **Gates:** app lint, typecheck, build; api ruff, format, mypy. **Quantity table:** 344 rows passed, 34
+  sub-item rows, 12 metric formula rows, and **38 metric rows** (was 17): 4" → 102 mm and the changed
+  read-backs; 6 earthwork-name rows (23 BCY / 17 BCM from 22.6949, no-bank fallback 18 BCM, a fill
+  import 944 BCM, a metric sheet's line, a 6" depth → 152 mm); 2 Dimension-tool rows; 6 pinned-unit rows;
+  6 pick rows (what each choice stores in each system).
+- **Browser (a duplicate of "zz switching"):**
+  - **Pinned vs own units, priced, 5 switches.** In Metric, the sub-item picker read "EA, m, m², m³, BCM,
+    LCM, mm, kg, %, HR, LS, ──────, IN, FT, LF, SF, SY, CY, LCY, BCY, TON, LB, GAL". Under "Slope smoke",
+    "Pinned LF" (`PARENT`, LF from the other group) and "Own m" (`PARENT`, m), each priced at $2.50 in
+    Unit Material Cost typed in Metric. Stored: both LF; pinned true / false; rates 2.500000 / 0.762000.
+    Then five Imperial ↔ Metric switches with a reload each:
+    | | Metric | Imperial |
+    |---|---|---|
+    | Pinned LF | 45.62 LF, $2.50, $114.04 | 45.62 LF, $2.50, $114.04 |
+    | Own m | 13.9 m, $2.50, $34.76 | 45.62 LF, $0.76, $34.76 |
+    | TOTAL / Full estimate | $3,688.76 | $3,688.76 |
+    All 11 readings as above, identical to the cent. **Passed.**
+  - **Small lengths:** the grid read "Slab smoke (100.24 m², 102 mmD)" and "Footing smoke (25.07 m,
+    610 mmW, 305 mmD)". **Passed.**
+  - **Earthwork:** last night's small site rebuilt on the copy (EG 100 ft, FG 98 ft, a square boundary)
+    and Calculate run in Metric. The panel read "Soil Export (17 BCM)", 22 LCM; stored: bank 22.694874,
+    name "Soil Export (23 BCY)". Takeoff panel: "(17 BCM)" in Metric, "(23 BCY)" in Imperial (last
+    night's name read 18 BCM against the panel's 17). **Passed.**
+  - **Manual quantity picker (Imperial):** the tool's EA, then IN … LS, a divider, mm, m, m², m³, kg.
+    **Passed.**
+- **Purged:** the duplicate (trash, purge). Storage: 0 objects under a deleted project.
+- **For your list:**
+  - Variables store every pick as its code and are never converted (they never were), so "m" in a
+    metric project's Variables is stored as M, not as LF.
+  - A unit already stored before today that is metric-coded (M, M2…) now reads "m", "m²" instead of
+    "M", "M2" in every project.
