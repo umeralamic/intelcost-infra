@@ -352,7 +352,7 @@ Bugs, not choices, so fixed in the remaining time:
 - **Commit:** app `d27194c`. **Gates:** lint, typecheck, build; quantity table passed. The duplicate
   purged; storage 0 under deleted projects. The C items stay open for your own check.
 
-## Undo during an Estimating save (D-387) (09:15 UTC)
+## Undo during an Estimating save (D-387) (09:05 UTC)
 
 - **The bug (from C15):** an edit's undo step was recorded only once its save came back, so a Ctrl+Z
   pressed during Set values did nothing, or undid the edit before it.
