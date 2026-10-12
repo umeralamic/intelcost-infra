@@ -228,11 +228,12 @@ try {
     const e = await import("/src/lib/takeoff/subItems/inSystem.ts");
     return {
       fx: cases.map((c) => {
-        const env = { parent: c.parent, dims: new Map(Object.entries(c.dims ?? {})) };
-        const r = e.evaluateInSystem(c.formula, env, { system: c.system, parentUnit: c.parentUnit, resultUnit: c.resultUnit });
+        const m = (o) => new Map(Object.entries(o ?? {}));
+        const env = { parent: c.parent, dims: m(c.dims), subs: m(c.subs), refs: m(c.refs) };
+        const r = e.evaluateInSystem(c.formula, env, { system: c.system, parentUnit: c.parentUnit, resultUnit: c.resultUnit, subUnits: m(c.subUnits), refUnits: m(c.refUnits) });
         return r.ok ? r.value : { error: r.error };
       }),
-      constants: constants.map((c) => e.formulasWithConstants(c.rows).map((r) => r.name)),
+      constants: constants.map((c) => e.formulasWithAddedConstants(c.rows).map((r) => r.name)),
     };
   }, [FORMULA_SYSTEM_CASES, CONSTANT_CASES]);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).

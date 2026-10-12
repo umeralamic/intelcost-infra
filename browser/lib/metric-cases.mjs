@@ -40,16 +40,26 @@ export const FORMULA_SYSTEM_CASES = [
   { id: "fx-divide", formula: "PARENT / 2", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 50 },
   // A constant added is not: 30.48 + 1 = 31.48 m = 103.2808… LF (imperial reads 101).
   { id: "fx-plus-one", formula: "PARENT + 1", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 31.48 / M },
+  // The same formula written in imperial reads 101 in any project: the formula's system decides,
+  // never the project's, so a switch never moves it.
   { id: "fx-plus-one-imperial", formula: "PARENT + 1", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "imperial", expect: 101 },
   // A named dimension converts: 2 ft = 0.6096 m × 9.290304 m² = 5.6634… m³ = 200 CF.
   { id: "fx-dim", formula: "{dim:d1} * PARENT", parent: 100, parentUnit: "SF", resultUnit: "CF", dims: { d1: 2 }, system: "metric", expect: 200 },
   // ^ before * (D-251): 30.48 × 4 = 121.92 m = 400 LF.
   { id: "fx-power", formula: "PARENT * 2^2", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 400 },
   // A sub-item in EA takes its figure as computed (no metric form): 30.48 m / 2 = 15.24 EA.
+  // A sibling converts by its own unit, not the parent's: Edge 40 LF = 12.192 m, × 2 + 1 = 25.384 m
+  // = 83.2808… LF (read with the parent's SF factor it would be 8.43 LF).
+  { id: "fx-sibling", formula: "[Edge] * 2 + 1", parent: 100, parentUnit: "SF", resultUnit: "LF", subs: { edge: 40 }, subUnits: { edge: "LF" }, system: "metric", expect: 25.384 / M },
+  // A rough measurement converts by its own unit: 100 LF = 30.48 m, + 1 = 31.48 m = 103.2808… LF.
+  { id: "fx-ref", formula: "{ref:0f0e0d0c-0000-4000-8000-000000000001} + 1", parent: 50, parentUnit: "SF", resultUnit: "LF", refs: { "0f0e0d0c-0000-4000-8000-000000000001": 100 }, refUnits: { "0f0e0d0c-0000-4000-8000-000000000001": "LF" }, system: "metric", expect: 31.48 / M },
+  // A sibling in EA has no metric form and is read as stored: 12 EA × 0.5 = 6, LF result = 6 m = 19.685… LF.
+  { id: "fx-sibling-ea", formula: "[Posts] * 0.5", parent: 100, parentUnit: "LF", resultUnit: "LF", subs: { posts: 12 }, subUnits: { posts: "EA" }, system: "metric", expect: 6 / M },
   { id: "fx-ea-result", formula: "PARENT / 2", parent: 100, parentUnit: "LF", resultUnit: "EA", system: "metric", expect: 15.24 },
 ];
 
-/** The cross-system apply's warning: which formulas hold a numeric constant (app only). */
+/** The cross-system apply's warning: only formulas that add or subtract a constant to something
+ *  that varies (app only). A pure scale converts correctly and is not listed. */
 export const CONSTANT_CASES = [
   {
     id: "fx-template-warning",
@@ -59,7 +69,28 @@ export const CONSTANT_CASES = [
       { name: "Dim", formula: "{dim:d1} * PARENT" },
       { name: "Token", formula: "{qty:LINEAR.d1@CY}" },
     ],
-    expect: ["Half", "Plus one"],
+    expect: ["Plus one"],
+  },
+  {
+    id: "fx-constant-detector",
+    rows: [
+      { name: "a", formula: "PARENT * 0.5" },
+      { name: "b", formula: "PARENT / 2" },
+      { name: "c", formula: "PARENT + 1" },
+      { name: "d", formula: "1 + PARENT" },
+      { name: "e", formula: "PARENT * 2^2" },
+      { name: "f", formula: "PARENT * (1 + 0.05)" },
+      { name: "g", formula: "{dim:d1} - 0.5" },
+      { name: "h", formula: "PARENT * -1" },
+      { name: "i", formula: "(PARENT + 2) * 3" },
+      { name: "j", formula: "PARENT * (1 + round(0.05, 2))" },
+      { name: "k", formula: "ROUNDUP(PARENT, 0) + 1" },
+      { name: "l", formula: "[Wall] + [Door]" },
+      { name: "m", formula: "PARENT - [Door] * 2" },
+      { name: "n", formula: "-1 + PARENT" },
+      { name: "o", formula: "PARENT * PI" },
+    ],
+    expect: ["c", "d", "g", "i", "k", "n"],
   },
 ];
 
