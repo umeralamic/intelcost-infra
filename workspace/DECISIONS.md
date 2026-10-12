@@ -13559,3 +13559,60 @@ Earthwork's elevations, contour intervals, Site Feature and Strip Area entry fol
 unit (`calibration.unit`): a sheet scaled in metres takes metres, one scaled in feet takes feet,
 because elevations are typed in the drawing's own units. That stays. What earthwork shows (volumes,
 names, panels) follows the project's measurement system (D-374, D-379). Not a gap to close.
+
+## D-399: The shared view reads in the project's measurement system
+
+**Status:** Accepted (2026-10-12; the founder's item 1 of the six).
+
+The share bundle carries the project's `unit_system`; the guest page wraps its view in the project's
+locale (`ProjectLocaleProvider`), so its sheet, its takeoff list (names, quantities, units) and its
+estimating table (Qty and +Waste) read as the project's own screens do. Costs are unchanged (money per
+stored unit).
+
+## D-400: The sub-items Insert menu previews in metric
+
+**Status:** Accepted (2026-10-12; item 2 of the six).
+
+In a metric project the Insert menu shows PARENT, PERIMETER, the siblings and rough measurements
+through the project's format (m, m², …) and each named dimension through its own unit in metres
+(under 1 m in whole mm), the figures a metric formula reads (D-378). Variables stay as stored (never
+converted, D-379). Imperial is unchanged.
+
+## D-401: The Linked EG panel and its datum offset in the project's system
+
+**Status:** Accepted (2026-10-12; item 3 of the six).
+
+In a metric project the link panel's offsets, point-to-point distances and residuals read in metres,
+and the datum offset is typed in metres (`registration/offset.ts`): stored in feet as every other entry
+is (÷ 0.3048), loaded back as metres to 4 places; an offset left as loaded keeps its stored figure
+exactly, so opening and confirming a link never drifts it. The tie-in proposal compares and offers in
+the same units. Earthwork's calculation is unchanged (D-398). Imperial is unchanged.
+
+## D-402: The site join check in the project's system
+
+**Status:** Accepted (2026-10-12; item 4 of the six).
+
+In a metric project the Join panel's checks read in metres: the two match lines' lengths (2 places)
+and the miss (3 places), through `site/joinText.ts`; the percentages and the turn are unitless.
+Imperial is unchanged. The fit itself is the engine's (D-398).
+
+## D-403: The assembly library's preview and rates in the project's system
+
+**Status:** Accepted (2026-10-12; item 5 of the six).
+
+In a metric project an assembly's Costs dialog shows its units in metric, takes the preview quantity in
+the project's units (held in the host's stored unit, `templatePreviewEnv`) and reads its components'
+formulas in the project's system, as placing the assembly tags them (D-397). Its per-unit rates (unit
+labour hours, unit material, unit equipment) follow the Phase D rule (D-377 1): shown ÷ f and typed
+× f (`perUnitShown`, `perUnitStored`), the wage and the lump unconverted; a rate left as loaded keeps
+its stored figure exactly. The component editor opened from it reads the same way.
+
+## D-404: Shared equipment usage formulas follow Phase E's rule
+
+**Status:** Accepted (2026-10-12; item 6 of the six).
+
+A host's usage formula for a shared machine (hours from QTY) carries `formula_unit_system`
+(`project_equipment_usage`, migration `d385a1c7e9b2`, existing ones imperial), set to the project's
+system when the formula is typed or changed; one left as it was keeps its tag. It is always read in that
+system (`resolveUsage`, through the components' `evalQtyFormula`): in metric QTY and the rest in their
+metric units; the result is hours and never converts. A switch never moves a machine's cost.
