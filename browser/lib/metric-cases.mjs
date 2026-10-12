@@ -221,4 +221,10 @@ export const CLOSE_CASES = [
   { id: "insert-perimeter", kind: "guest-format", value: 50, unit: "LF", expect: "15.24 m" },
   { id: "insert-dim-in", kind: "dim-length", dim: { local_key: "d1", name: "Height", kind: "vertical", value: 36, unit: "IN" }, expect: "914 mm" },
   { id: "insert-dim-ft", kind: "dim-length", dim: { local_key: "d1", name: "Height", kind: "vertical", value: 12, unit: "FT" }, expect: "3.66 m" },
+  // D-401, the link panel: a stored 0.5 ft offset reads 0.1524 m, and 0.1524 m typed stores 0.5 ft;
+  // 1.25 m stores 4.1010… ft; imperial is as typed.
+  { id: "offset-shown", kind: "offset-shown", feet: 0.5, metric: true, expect: "0.1524" },
+  { id: "offset-feet", kind: "offset-feet", typed: "0.1524", metric: true, expect: 0.5 },
+  { id: "offset-feet-125", kind: "offset-feet", typed: "1.25", metric: true, expect: 1.25 / M },
+  { id: "offset-imperial", kind: "offset-feet", typed: "2", metric: false, expect: 2 },
 ];
