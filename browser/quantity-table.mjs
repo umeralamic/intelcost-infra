@@ -19,7 +19,7 @@ import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./l
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
-import { CONSTANT_CASES, DISPLAY_CASES, ENTRY_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES } from "./lib/metric-cases.mjs";
+import { CONSTANT_CASES, DIMENSION_TOOL_CASES, DISPLAY_CASES, ENTRY_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES, NAME_CASES, PICK_CASES, PINNED_CASES } from "./lib/metric-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -207,8 +207,11 @@ try {
     });
   }, EXPLAIN_CASES);
   // Metric rows (D-375, D-376): lib/measure and the dimension parser.
-  mt = await page.evaluate(async ([entry, display, manual]) => {
+  mt = await page.evaluate(async ([entry, display, manual, names, dims, pinned, picks]) => {
+    const u = await import("/src/lib/takeoff/subItems/units.ts");
     const m = await import("/src/lib/measure.ts");
+    const n = await import("/src/lib/takeoff/displayName.ts");
+    const dt = await import("/src/lib/takeoff/engine/dimension.ts");
     const d = await import("/src/lib/takeoff/dimensions/parseDimension.ts");
     const z = await import("/src/lib/takeoff/dimensions/itemDimensions.ts");
     return {
@@ -221,8 +224,16 @@ try {
         const stored = c.typed / m.metricFactor(c.tool);
         return { stored, shownText: m.formatDisplayQuantity(stored, c.tool, "metric") };
       }),
+      names: names.map((c) => n.displayName(c.item, c.system)),
+      dims: dims.map((c) => dt.formatMeters(c.feet)),
+      pinned: pinned.map((c) => ({ ...m.displayQuantity(c.value, c.ref, c.system), factor: c.system === "metric" ? m.metricFactor(c.ref) : null })),
+      picks: picks.map((c) => {
+        const g = u.unitChoices(c.system);
+        const hit = g[c.group].find((x) => x.label === c.label);
+        return hit ? { code: hit.code, pinned: hit.pinned } : null;
+      }),
     };
-  }, [ENTRY_CASES, DISPLAY_CASES, MANUAL_CASES]);
+  }, [ENTRY_CASES, DISPLAY_CASES, MANUAL_CASES, NAME_CASES, DIMENSION_TOOL_CASES, PINNED_CASES, PICK_CASES]);
   // Phase E: sub-item formulas in a metric project, and the template warning's constants.
   mt.fx = await page.evaluate(async ([cases, constants]) => {
     const e = await import("/src/lib/takeoff/subItems/inSystem.ts");
@@ -1028,6 +1039,17 @@ for (const [i, c] of MANUAL_CASES.entries()) {
   if (!near(got.stored, c.stored) || got.shownText !== c.shownText) wrong.push(`${c.id}: stored ${got.stored} shown "${got.shownText}"`);
 }
 
+for (const [i, c] of NAME_CASES.entries()) if (mt.names[i] !== c.expect) wrong.push(`${c.id}: "${mt.names[i]}", expected "${c.expect}"`);
+for (const [i, c] of PINNED_CASES.entries()) {
+  const got = mt.pinned[i];
+  if (!near(got.value, c.shown) || got.unit !== c.label || (c.factor === null ? got.factor !== null : !near(got.factor, c.factor))) wrong.push(`${c.id}: ${got.value} ${got.unit} factor ${got.factor}`);
+}
+for (const [i, c] of PICK_CASES.entries()) {
+  const got = mt.picks[i];
+  if (!got || got.code !== c.code || got.pinned !== c.pinned) wrong.push(`${c.id}: ${JSON.stringify(got)}`);
+}
+for (const [i, c] of DIMENSION_TOOL_CASES.entries()) if (mt.dims[i] !== c.expect) wrong.push(`${c.id}: "${mt.dims[i]}", expected "${c.expect}"`);
+
 // Phase E rows: both engines equal, each the hand-worked stored figure; the warning's list exactly.
 for (const [i, c] of FORMULA_SYSTEM_CASES.entries()) {
   const web = mt.fx.fx[i];
@@ -1054,5 +1076,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); passed`,
 );
