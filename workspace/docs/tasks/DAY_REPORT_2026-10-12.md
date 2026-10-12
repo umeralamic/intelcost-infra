@@ -395,3 +395,35 @@ Bugs, not choices, so fixed in the remaining time:
 - **Throwaways:** every copy made since the final report purged; storage 0 under deleted projects. The
   workspace's company benefits set back to blank (read back from the api).
 - **Repos:** app, api and infra on `umer-dev`, clean, nothing unpushed; the workspace mirror current.
+
+## Your decisions, carried out (14:40 UTC)
+
+- **C31 tests 5, 19, 21:** the spec's tests changed (county factor; "Published rate: no breakdown
+  available"; holds with "WD rates only" on), and the breakdown line is in the app. **D-389**, api
+  `5840dab`, app `ecbcd96`.
+- **WD-only filled crafts at a quarter of national:** a bug. Filled crafts are national × a local index
+  (the median of the entered rates over national); the MAX with national that lifts an index below 1 back
+  to national ran under higher-of only, so WD-only carried a low determination's wage level onto crafts
+  it does not cover. The MAX now runs whenever a WD floor applies (one condition, both engine copies,
+  README). Browser, tx115 at 79714: WD-only Air Tool Operator $62.19 (was $15.34), Ironworker $92.02, the
+  WD's Laborer still $9.22. **D-389.** Left for you: open shop's filled crafts still follow the index
+  (about 58% of national with C31 test 12's entries) under a "National avg" tag.
+- **C4:** the Load screen's AI options start unticked; a tick is still kept per person. Browser: a
+  person with no stored choice saw both unticked; Name ticked, closed, reopened: Name on, Scale off.
+  **D-390**, app `2fcae8f`.
+- **C1** kept; **tests 7 and 8** yours.
+- **Gates** (api ruff, format, mypy; app lint, typecheck, build) and the **quantity table** passed; the
+  copy purged.
+
+### C15: Set values in one request (plan only)
+- **Api:** `PATCH …/estimate/costs` with `{ lines: [{ item_uuid, changes }] }` (up to the grid's row
+  count). One transaction: the hold check for every item first (any item held by someone else → 409,
+  nothing written), then `costs.set_costs` per line, then one realtime event naming the items. Any
+  failure rolls back every line: all rows or none. About 60 lines (route, schema, a loop over the
+  existing service).
+- **App:** `applyValues` sends one request; the undo step sends one request with each row's prior values,
+  redo one with the new; a failure reads "Could not save; nothing changed". The realtime listener
+  refetches once for the batch event. About 30 lines; the four-at-a-time loop stays for nothing else.
+- **Size:** about 2 to 3 hours with gates, quantity table and the smoke (ten rows in one request; one row
+  held by a second account so the whole batch is refused and nothing changes; one Ctrl+Z restores all
+  ten). It needs one D-number when built.

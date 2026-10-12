@@ -75,27 +75,23 @@ double-click; C22's Cancel that did nothing on an upload in flight (now stops in
 file is discarded); C12's editor left off-screen after the window narrowed. The C items stay open for
 your own click check.
 
-**Not fixed, for you:**
-- **C1:** the Delete page confirmation reads "removes … every measurement … on it. No measurements
-  are affected." (the second sentence is the live count) and reads as a contradiction.
-- **C4:** in Add sheets, "Name sheets from title block" and "Set scale automatically" (AI credits) were
-  ticked by default for a new workspace.
-- **C15 (half fixed):** a Ctrl+Z pressed while Set values saves now waits and undoes it (D-387, app
-  `649fd40`). Still yours: Set values saves one row per request, four at a time (about 2 s for ten
-  rows); one request for the whole batch would be an api addition.
+**Decided by you (2026-10-12) and done:**
+- **C1:** legacy wording kept.
+- **C4:** the Load screen's AI options start unticked (D-390, app `2fcae8f`).
+- **C31 tests 5, 19, 21:** tests changed as decided; a national craft's breakdown reads "Published rate:
+  no breakdown available" (D-389, api `5840dab`, app `ecbcd96`).
+- **C31, WD-only filled crafts:** a bug, fixed (D-389): the MAX with national ran under higher-of only,
+  so WD-only carried the WD's wage level onto crafts it does not cover. Now Air Tool Operator reads
+  $62.19 under either policy.
+- **Tests 7 and 8:** you run them.
 
-- **C31 test 5 (the spec's acceptance tests):** at 35203 rates come out national × 1.189, not the
-  spec's × 1.16. With the county confirmed, Jefferson County's labour factor (+18.898%) wins over the
-  ZIP's (+16%), which is the reference engine's own rule. Which one is meant?
-- **C31, WD-only:** crafts the determination doesn't cover are filled at national × local index (Air
-  Tool Operator $15.34 against $62.57) and tagged "National avg" (the spec's R-02 tag). That follows
-  the engine's rule; the tag may mislead.
-
-- **C31 test 19:** with company benefits at 0% the rate drops as it should, but there is no breakdown
-  ("Company benefits $0.00") for National Average crafts: the engine returns no parts for them, and
-  the review hides zero parts. Splitting a published national rate into parts is a design call.
-- **C31 test 21:** "Rate = WD base wage" holds only with WD-only on; under the default higher-of the WD
-  rate is raised (R-01). Should the test say WD-only, or should Direct labor skip higher-of?
+**Still open, for you:**
+- **Open shop's filled crafts** still follow the local index: with own rates at about 58% of national
+  (C31 test 12's entries), a filled craft tagged "National avg" reads about 58% of national (Air Tool
+  Operator $31.26 against $53.76 at Ada County). Your rule ("a National avg tag shows close to the
+  national figure") would mean dropping the index there too: one line in the engine (the MAX always),
+  or a different tag for an indexed fill. Your call; not changed.
+- **C15 Set values in one request:** planned, not built (plan in the day report).
 
 **Fixed later in the day (D-388, app `1c205f6`):** the Wage Calculator's dead end when the wage
 determination changed on review, and Advanced opening on "Pick a state" for a Texas project (test 16).

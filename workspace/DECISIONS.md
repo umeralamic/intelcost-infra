@@ -13410,3 +13410,31 @@ remaining time).
    Advanced: A-03b on the unemployment field) failed: the field started on "Pick a state". Opened from
    a project's review it now starts on the project's state with its note; Settings › Wage Calculator
    still starts blank (`AdvancedSettings.tsx` `projectState`, `WageReview.tsx`).
+
+## D-389: The Wage Calculator's acceptance decisions, and filled crafts under "WD rates only"
+
+**Status:** Accepted (2026-10-12; the founder's calls on C31 tests 5, 19 and 21, and a bug traced from them).
+
+1. **Test 5: the county's labour factor.** Once a county is confirmed its factor wins over the ZIP's, as
+   the reference engine does (35203 with Jefferson County: +18.898%, not the ZIP's +16%). The test is
+   changed, not the code.
+2. **Test 19: national rates are not split into parts.** A National Average craft's breakdown reads
+   "Published rate: no breakdown available" (`WageReview.tsx`); the spec's breakdown row and test 19 say so.
+3. **Test 21: the default policy stays higher-of.** "Rate = WD base wage" holds with "WD rates only" on;
+   the test says so.
+4. **"WD rates only" governs the WD's own crafts only.** A craft the determination does not cover is
+   filled at national × the local index (the median of the entered rates over national), and the MAX
+   with national that lifts an index below 1 back to national ran under higher-of only. Under WD-only a
+   low-wage determination therefore pulled every filled craft down with it (tx115: Air Tool Operator
+   $15.34 against $62.19, tagged "National avg"). The MAX now runs whenever a WD floor applies, under
+   either policy (`app/wagecalc/rates.py`, the reference engine, README). The WD's own crafts keep their
+   legal minimum under WD-only. Open shop's filled crafts still follow the index (unchanged; listed for
+   the founder).
+
+## D-390: The Load screen's AI options start unticked
+
+**Status:** Accepted (2026-10-12; the founder's call on C4).
+
+"Name sheets from title block" and "Set scale automatically" start unticked for someone who has never
+chosen (a scan's read can use AI credits). A choice made is still kept per person; only an explicit
+tick reads as ticked (`features/takeoff/load/auto-read.ts`).
