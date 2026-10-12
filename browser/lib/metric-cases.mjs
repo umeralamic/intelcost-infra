@@ -240,4 +240,9 @@ export const CLOSE_CASES = [
   { id: "rate-shown-lf", kind: "rate-shown", stored: 3.048, f: M, expect: 10 },
   { id: "rate-stored-lf", kind: "rate-stored", typed: 10, f: M, expect: 3.048 },
   { id: "rate-stored-sf", kind: "rate-stored", typed: 2, f: SF_M2, expect: 0.185806 },
+  // D-404, shared equipment usage: QTY / 10 on a 100 LF host reads 30.48 m / 10 = 3.048 h when written
+  // in metric, 10 h in imperial; a constant: 3.048 + 1 = 4.048 h. Hours are never converted.
+  { id: "eq-usage-metric", kind: "usage", qty: 100, unit: "LF", formula: "QTY / 10", system: "metric", expect: 3.048 },
+  { id: "eq-usage-imperial", kind: "usage", qty: 100, unit: "LF", formula: "QTY / 10", system: "imperial", expect: 10 },
+  { id: "eq-usage-plus", kind: "usage", qty: 100, unit: "LF", formula: "QTY / 10 + 1", system: "metric", expect: 4.048 },
 ];

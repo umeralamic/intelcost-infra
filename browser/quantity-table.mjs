@@ -288,6 +288,7 @@ try {
     const dm = await import("/src/lib/takeoff/dimensions/itemDimensions.ts");
     const os = await import("/src/features/takeoff/earthwork/registration/offset.ts");
     const jt = await import("/src/features/takeoff/earthwork/site/joinText.ts");
+    const se = await import("/src/lib/estimate/sharedEquipment.ts");
     const ce = await import("/src/lib/estimate/componentEnv.ts");
     const cm = await import("/src/lib/estimate/components.ts");
     const metric = lo.measureFormat("metric");
@@ -298,6 +299,11 @@ try {
         const env = ce.templatePreviewEnv(c.typed, c.unit, c.system);
         const e = cm.evaluateComponent({ ...c.c, formula_unit_system: c.system, id: c.id, takeoff_item_id: "t", position: 0, name: c.id }, env);
         return e.error ? { error: e.error } : Math.round(e.total * 100) / 100;
+      }
+      if (c.kind === "usage") {
+        const host = { id: "h", name: "h", effNode: null, qty: c.qty, unit: c.unit, laborCrewHours: null, hasSubcontract: false, env: { parent: c.qty, qty: c.qty, units: { qty: c.unit, parent: c.unit } } };
+        const r = se.resolveUsage(host, { resource_id: "r", takeoff_item_id: "h", usage_formula: c.formula, formula_unit_system: c.system, usage_hours_override: null, manual_pct: null, excluded: false, last_share: null });
+        return r.error ? { error: r.error } : r.hours;
       }
       if (c.kind === "rate-shown") return ms.perUnitShown(c.stored, c.f);
       if (c.kind === "rate-stored") return ms.perUnitStored(c.typed, c.f);
