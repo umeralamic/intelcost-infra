@@ -180,3 +180,22 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
   `2026-09-30.endive`, to note beside the account's own (D9).
 - **Noticed, not changed:** the throwaway workspace's Billing read "Seats 11 in use" for a one-person
   workspace. Not part of this block; listed for you.
+
+## Block 6 — Share dialog, project only (D-383) — shipped (06:55 UTC)
+
+- **What:** the Share dialog has no tab bar; it opens straight on what was Project Users (the public link
+  block and the assignees). The Workspace and Roles & Permissions tabs are gone from it; Settings ›
+  People & Access › Members and Roles & Permissions are unchanged. Under "Invite someone new to the
+  workspace": "Manage workspace members and roles in Settings", "Settings" a link to Members. The invite
+  button, which used to switch to the Workspace tab, opens Members too; both close the dialog.
+  (Settings has no page called "Workspace & team"; its members and roles are under People & Access.)
+- **Found and fixed:** the expiry field showed the day after the one picked west of UTC (2026-12-31 read
+  2027-01-01 in the bench browser's America/Chicago): it now shows the local day.
+- **Commit:** app `133820d`.
+- **Gates:** lint, typecheck, build; quantity table passed.
+- **Browser (a duplicate of "zz switching"):** no tabs. Link on; password set (field reads "•••••• (set)");
+  expiry 2026-12-31, the same after a reload; Copy Link put the link on the clipboard; Regenerate issued a
+  new token; Revoke turned the link off ("Off — only workspace members can open this project", the api
+  has no link); Add person listed Bench Estimator and Sara Wells and assigned one. The Settings link and
+  the invite button both landed on Settings › Members with the dialog closed; Roles & Permissions opens
+  from there. **Passed.** The duplicate purged; storage 0 under deleted projects.

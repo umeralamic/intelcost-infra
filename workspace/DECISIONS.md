@@ -13300,3 +13300,19 @@ it belongs to, as before; the colour palette keeps `data-noedit`.
 3. The bench's Stripe fake gains `?signature=expired` on `/_fake/events/<id>/resend` (signed ten minutes
    ago) for the replay check.
 4. **Abdullah:** the production image is rebuilt for the new dependency.
+
+## D-383: Share is about the project only
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 6). Changes D-99's three tabs.
+
+1. The Share dialog drops its "Workspace" and "Roles & Permissions" tabs and opens straight on what was
+   "Project Users": the public link block (link, password, expiry, Copy, Regenerate, Revoke) and who
+   the work is assigned to (Add person). No tab bar.
+2. Members and roles stay where they are, unchanged: Settings › People & Access (Members, Roles &
+   Permissions).
+3. Under "Invite someone new to the workspace" one small line, "Manage workspace members and roles in
+   Settings", links there. The invite button, which used to switch to the Workspace tab, opens the
+   same Members page, where invitations are sent; both close the dialog.
+4. **Found while checking (fixed):** the expiry field showed the day after the one picked anywhere west
+   of UTC (the date is stored as 23:59:59 local and was read back as its UTC date); it now shows the
+   local day.
