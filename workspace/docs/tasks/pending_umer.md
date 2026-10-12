@@ -51,6 +51,38 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
 
 ---
 
+## Choices from the day run 2026-10-12 (DAY_REPORT_2026-10-12.md)
+
+Each is a default I picked to finish the block; answer by number like the others (CH1 ok, CH3 no: …).
+
+| # | Block | The choice made for now | The other way |
+|---|---|---|---|
+| CH1 | 1 (D-378) | A template placed in a project of the other system has its formulas written in the project's system, so the warning lists constants that will now read in the new system. | Keep the template's system on placed formulas: no warning needed. |
+| CH2 | 2 (D-379) | Variables store every unit pick as its code and are never converted (metric picks stored as M, M2…). | Variables follow the own-system rule like sub-items (store LF, show m). |
+| CH3 | 2 (D-379) | Units already stored as metric codes (M, M2…) now read "m", "m²" in every project. | Keep showing the codes. |
+| CH4 | 7 (D-384) | Items on layers the link does not share are not copied into a saved copy. | Copy every layer. |
+| CH5 | 7 (D-384) | Assignees, workspace variable values and subcontractor overrides never cross into a saved copy (a formula reading a workspace variable reads "Unknown variable" there). | Copy the variables into the viewer's workspace. |
+| CH6 | 7 (D-384) | A custom classification code with no match in the viewer's workspace leaves the item unclassified. | Create the code in the viewer's workspace. |
+| CH7 | 7 (D-384) | Unit wastage counts as pricing (left out when pricing is off). | Treat it as quantity. |
+| CH8 | 7 (D-384) | Two saved copies of one project carry the same name, "<Project> (shared copy)". | Number them "(shared copy 2)". |
+| CH9 | 7 (D-384) | "Saved by N people" counts copies (one person saving twice reads 2), as the brief's check expects. | Count people. |
+| CH10 | 5 (D-382) | The Stripe library pins API version 2026-09-30.endive; our code reads both subscription shapes. | Pin our own version setting. |
+
+## Found in the click sessions, not fixed (DAY_REPORT, stretch list)
+
+- **C28:** a double-click that finishes a Linear run stores its end point twice (a zero-length last
+  segment); quantities are right, point counts read one too many.
+- **C22:** in Add sheets, Cancel on an upload in flight did nothing and no Retry appeared (seen with
+  the browser's upload speed emulated at 50 KB/s; the file was left unfinished).
+- **C12:** the sub-items editor opened at desktop width and then narrowed to 390 px stays partly
+  off-screen (Save hidden) until dragged; opened at 390 px it fits.
+- **C1:** the Delete page confirmation reads "removes … every measurement … on it. No measurements
+  are affected." (the second sentence is the live count) and reads as a contradiction.
+- **C4:** in Add sheets, "Name sheets from title block" and "Set scale automatically" (AI credits) were
+  ticked by default for a new workspace.
+- **C15:** Set values took over two seconds to reach the grid; a Ctrl+Z pressed meanwhile did nothing.
+- **Block 5:** a one-person throwaway workspace's Billing read "Seats 11 in use".
+
 ## Decisions
 
 | # | File:line | What it is | What you need from me | How I check it | Already done elsewhere? |

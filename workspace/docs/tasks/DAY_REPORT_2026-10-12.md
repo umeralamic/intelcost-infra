@@ -265,3 +265,74 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
 - **Owner's dialog:** the new wording; "Show team members' names" appears only while live work is ticked;
   new and existing links default to names on.
 - **Purged:** the throwaway workspace; storage 0.
+
+## Stretch list — click sessions B and A, the 820 px top bar (08:00–08:35 UTC)
+
+Evidence for every check is in `E:\bench-evidence\2026-10-12\<check>\` (screenshots, exported files,
+storage and log extracts, and a RESULT.md each); summaries in `SESSION_B.md` and `SESSION_A.md` there.
+All on a throwaway account (fx.zzclick.1791791351422) with its own priced Riverside from the Block 4
+helper, purged afterwards. No C item was closed.
+
+| Check | Status |
+|---|---|
+| C12 The item model | auto-pass for what was driven: 7' - 6" × 40 ft → 300.61 SF; 6/12 → 1,157.49 SF; Mesh `PARENT * 1.05` 1,215.37 SF; Duplicate "Slab (2)"; editor at 390 px. Variables, folder ×2, layers, classification not driven |
+| C14 Estimating tab and export | auto-pass for what was driven (pricing, seven groupings, wastage LF 10 %, components, Format, export formulas); Excel recalculation couldn't run (no Excel) |
+| C15 Sidebar and reports | auto-pass (report totals = TOTAL, Needs attention 9 = 9, collapse after reload, Set values on 10 rows and one undo) |
+| C16 Bid summary | **auto-pass: Bid total $126,120.72**; the export's Bid Summary sheet chains every amount from its rate cell; Excel itself couldn't run |
+| C31 Wage Calculator | auto-pass for steps 1, 2 (Bridgeport, CT), 4 (26 classifications), 6 (Labor burden 51.87 %), 7 (Laborer $60 offered again on the same basis only) |
+| C1 Deleting a sheet clears its files | auto-pass ({'failed': 0}; 0 objects left for the sheet) |
+| C3 Duplicate project | auto-pass (toast counted up, copy opened in 8.4 s, independent, deleted from Trash, 0 objects) |
+| C4 First ticked page ready first (117 MB) | auto-pass: ready in 30 s |
+| C22 Takeoff-first, no OS drag | **auto-fail on the upload's Cancel** (emulated slow link: Cancel did nothing, no Retry); no seed folders, drawing-size pre-tick, Home, "zzq" all pass; the drag parts couldn't run |
+| C23 Folders on load | auto-pass (one-page loose, blank → the file's name per the spec, "Wet Trades" merged) |
+| C28 Double-click finishes a run | auto-pass (yes); **defect found:** the end point is stored twice |
+
+**The 820 px top bar** (`TOPBAR_820.md` in the evidence folder): the header's content is 912 px in an
+820 px window, so Settings and the account avatar are clipped and unreachable. Fix: below 1024 px the
+dark-mode switch and the AI credits chip move into the account menu and the project name truncates
+(about 107 px freed). Size: app only, about 35 lines in two files, about an hour with the smoke. Not
+built, as asked.
+
+## FINAL REPORT
+
+Run from 04:21 to the time of this report; every block and every stretch item was done.
+
+### Shipped (all pushed on `umer-dev`)
+
+| Block | What | Decision | Commits |
+|---|---|---|---|
+| 0 | Phase E stash → `wip/metric-phase-e` (pushed), stashes dropped; last night's test data purged; Abdullah's list | — | infra `c41659d` |
+| 1 | Metric Phase E: each formula read in the system it was written in; siblings and references by their own units; the warning lists added constants only | **D-378** | app `17959d4`, api `5335137`, infra `161629c` (merges of `wip/metric-phase-e`) |
+| 2 | Small lengths in whole mm; earthwork names from the stored bank figure; unit pickers in both systems (`unit_pinned`) | **D-379** | app `3f251db`, api `0c111ca`, infra `fe98f05` |
+| 3 | A click on a row's grey name suffix selects the row (the manual-quantity "bug") | **D-380** | app `0485f50` |
+| 4 | The throwaway Riverside on the new shell, and priced | **D-381** | infra `749dc6e` |
+| 5 | Stripe's official library behind our five names | **D-382** | api `c78fa5d`, infra `c4bd131` |
+| 6 | Share is about the project only; expiry shows the local day | **D-383** | app `133820d` |
+| 7 | Viewers save a copy to their own workspace | **D-384** | api `43f8a41`, app `6b8d770` |
+| 8 | Viewers watch live work, with names or User A / User B | **D-385** | api `b228968`, app `0a6bcec` |
+
+Migrations added: `d378c9d2e6f4`, `d379e1a4b7c2`, `d380a5c7e2f1`, `d381b2c4e6a8` (all applied on the
+bench). Workspace mirror: infra, last commit with this report.
+
+### On the wip branch
+`wip/metric-phase-e` (app, api, infra) holds last night's Phase E stash and today's finishing commit; it
+was merged into `umer-dev` after it passed (Block 1). It stays pushed; nothing is left only there.
+
+### Evidence folders
+`E:\bench-evidence\2026-10-12\` — C1, C3, C4, C12, C14, C15, C16, C22, C23, C28, C31, SESSION_A.md,
+SESSION_B.md, TOPBAR_820.md, topbar-820.png.
+
+### Choices left for you
+CH1–CH10 in pending_umer.md ("Choices from the day run"), plus the defects found in the click sessions
+listed under them (C28 double end point, C22 upload Cancel, C12 editor after a resize, C1 wording, C4 AI
+options ticked by default, C15 undo during a save, "Seats 11 in use").
+
+### The switch
+`METRIC_ENABLED=false` on the bench (off since the Block 5 rebuild); checked at the end: a non-admin's
+PATCH to `metric` answered **403 "Metric is not available yet."**, `metric_available` false, "zz
+switching" Imperial. Mail guard on.
+
+### Throwaways
+Every fixture account's workspace purged after each block (`purge-fx`, storage 0 each time); the
+duplicates made in the estimator throwaway workspace purged (trash, purge; 0 objects under deleted
+projects). "zz switching" and Riverside in that workspace are as they were this morning.
