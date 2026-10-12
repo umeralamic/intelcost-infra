@@ -518,6 +518,96 @@ export const EARTHWORK_CASES = [
       "prep:pad:name": "Prepare Subgrade (15.2cm, 1 lift) — Pad",
     },
   },
+  // D-405 Soil Stabilization, by hand: 10,000 SF = 1,111.1 SY; tons = SF x ft x pcf x % / 2000.
+  // 10,000 x 1 x 110 x 0.06 / 2000 = 33.0; at 8 % 44.0; 16" (4/3 ft) at 6 % 44.0;
+  // a blend 3 % + 10 % = 16.5 + 55.0. The parent and Mix and Compact both read the SY.
+  ...[
+    { id: "lines-stabilize-lime-6", depthFt: 1, agents: [["Hydrated Lime", 6]], tons: [33], depth: '12"' },
+    { id: "lines-stabilize-lime-8", depthFt: 1, agents: [["Hydrated Lime", 8]], tons: [44], depth: '12"' },
+    { id: "lines-stabilize-16in", depthFt: 16 / 12, agents: [["Hydrated Lime", 6]], tons: [44], depth: '16"' },
+    { id: "lines-stabilize-blend", depthFt: 1, agents: [["Hydrated Lime", 3], ["Fly Ash, Class C", 10]], tons: [16.5, 55], depth: '12"' },
+  ].map((c) => ({
+    id: c.id,
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: null, prep: { depthFt: c.depthFt, lifts: 1, areaSF: 10000, method: "stabilize", agents: c.agents.map(([agent, pct]) => ({ agent, pct })), dryPcf: null } }],
+      assumptions: null,
+      soilDryPcf: 110,
+    },
+    expect: {
+      roles: ["stabilize:pad", "stabilize_mix:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder", "fill:remainder"].join(" "),
+      "stabilize:pad": 10000 / 9,
+      "stabilize:pad:unit": "SY",
+      "stabilize:pad:name": `Pad — Soil Stabilization, ${c.agents.map(([a, p]) => `${a} ${p}%`).join(" + ")}, ${c.depth} (1 lift)`,
+      "stabilize_mix:pad": 10000 / 9,
+      "stabilize_mix:pad:unit": "SY",
+      "stabilize_mix:pad:name": "Mix and Compact",
+      ...Object.fromEntries(
+        c.agents.flatMap(([a, p], k) => [
+          [`stabilize_agent_${k + 1}:pad`, c.tons[k]],
+          [`stabilize_agent_${k + 1}:pad:unit`, "TON"],
+          [`stabilize_agent_${k + 1}:pad:name`, `${a} (${p}% of dry wt @ 110 pcf)`],
+        ]),
+      ),
+    },
+  })),
+  // The feature's own dry unit weight wins over the project's: 10,000 x 1 x 100 x 0.06 / 2000 = 30.
+  {
+    id: "lines-stabilize-feature-dry",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: null, prep: { depthFt: 1, lifts: 1, areaSF: 10000, method: "stabilize", agents: [{ agent: "Hydrated Lime", pct: 6 }], dryPcf: 100 } }],
+      assumptions: null,
+      soilDryPcf: 120,
+    },
+    expect: { "stabilize_agent_1:pad": 30, "stabilize_agent_1:pad:name": "Hydrated Lime (6% of dry wt @ 100 pcf)" },
+  },
+  // A sheet in metres: 10,000 SF = 929.0304 M²; 33 TON x 0.90718474 = 29.93709642 TONNE;
+  // 110 pcf x 16.0184634 = 1,762.03 kg/m³, named 1,762; 1 ft = 30.48 cm, labelled 30.5cm.
+  {
+    id: "lines-stabilize-metric",
+    kind: "lines",
+    input: {
+      units: "m3",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: null, prep: { depthFt: 1, lifts: 1, areaSF: 10000, method: "stabilize", agents: [{ agent: "Hydrated Lime", pct: 6 }], dryPcf: null } }],
+      assumptions: null,
+    },
+    expect: {
+      "stabilize:pad": 929.0304,
+      "stabilize:pad:unit": "M²",
+      "stabilize:pad:name": "Pad — Soil Stabilization, Hydrated Lime 6%, 30.5cm (1 lift)",
+      "stabilize_agent_1:pad": 29.93709642,
+      "stabilize_agent_1:pad:unit": "TONNE",
+      "stabilize_agent_1:pad:name": "Hydrated Lime (6% of dry wt @ 1,762 kg/m³)",
+    },
+  },
+  // The other two methods stay one SF line, named after the method (D-405 7).
+  {
+    id: "lines-prep-methods",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [
+        { itemId: "a", label: "Pad", undercut: null, prep: { depthFt: 1, lifts: 2, areaSF: 135, method: "compact" } },
+        { itemId: "b", label: "Drive", undercut: null, prep: { depthFt: 0.5, lifts: 1, areaSF: 200, method: "scarify_compact" } },
+      ],
+      assumptions: null,
+    },
+    expect: {
+      roles: "prep:a prep:b cut:remainder fill:remainder",
+      "prep:a": 135,
+      "prep:a:unit": "SF",
+      "prep:a:name": 'Compacted Subgrade (12", 2 lifts) — Pad',
+      "prep:b": 200,
+      "prep:b:name": 'Scarify, Moisture Condition and Compact Subgrade (6", 1 lift) — Drive',
+    },
+  },
   // --- Block F (D-142): what the api writes, in Q32's order -------------------------------
   // Two strips (stockpiled, re-used as topsoil), a crushed-stone undercut stockpiled, two
   // regions, not suitable: every cut exported, every fill imported. Strip 100 CY x 1.25 =

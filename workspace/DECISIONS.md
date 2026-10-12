@@ -13616,3 +13616,79 @@ A host's usage formula for a shared machine (hours from QTY) carries `formula_un
 system when the formula is typed or changed; one left as it was keeps its tag. It is always read in that
 system (`resolveUsage`, through the components' `evalQtyFormula`): in metric QTY and the rest in their
 metric units; the result is hours and never converts. A switch never moves a machine's cost.
+
+## D-405: Prepare subgrade methods and soil stabilization (F25)
+
+**Status:** Accepted (2026-10-12, Umer). **Spec:** [subgrade_prep_methods_tasks.md](docs/tasks/subgrade_prep_methods_tasks.md).
+**Amends:** D-136 (Option 2 of a Site Feature), D-142 (the earthwork roles and their CSI codes),
+D-177 (the unit table gains SY and TON), D-375 2 (TON now converts in metric).
+
+1. **The method.** Option 2, Prepare subgrade, asks for a method first, then Depth and Compacted in
+   lifts. The three methods are Compacted Subgrade, Scarify, Moisture Condition and Compact Subgrade,
+   and Soil Stabilization. A new feature opens on Scarify, Moisture Condition and Compact, which is
+   what Option 2 meant until now. Stored as `takeoff_item.prep_method`: `compact`, `scarify_compact`
+   or `stabilize`.
+2. **Features with no method.** Every feature saved before this decision has no method stored. It
+   keeps its line ("Prepare Subgrade (12", 2 lifts) — Pad", SF, 31.05.02) and its version key, so no
+   result goes stale. Opening and saving one without touching the method keeps it with none.
+3. **Stabilizing agents.** Each agent is dosed as a % of the soil's dry weight. The dialog
+   pre-fills each agent's typical rate:
+
+   | Agent | Typical | Pre-filled |
+   |---|---|---|
+   | Quicklime | 3–6 % | 4 % |
+   | Hydrated Lime | 4–8 % | 6 % |
+   | Lime Kiln Dust | 5–10 % | 7 % |
+   | Portland Cement | 3–10 % | 5 % |
+   | Fly Ash, Class C | 10–16 % | 12 % |
+   | Cement Kiln Dust | 6–15 % | 10 % |
+   | Slag Cement | 5–10 % | 6 % |
+
+   "Other…" takes a typed name. Polymers and enzymes are dosed by volume and are left out. A blend
+   adds an optional second agent with its own %. A rate must be over 0 and at most 30 %.
+   Stored as `stabilizer_agents`, a JSON list of one or two `{agent, pct}`.
+4. **Soil dry unit weight.** This is a project setting in the earthwork assumptions
+   (`earthwork_assumptions.soil_dry_unit_weight_pcf`), next to swell and shrink in Calculate's
+   dialog. It defaults to 110 pcf and must be 40 to 160 pcf. A stabilized feature can override it
+   (`takeoff_item.stabilizer_dry_pcf`); left blank, the feature uses the project's value. It is
+   stored in pcf. A metric project shows kg/m³ in whole units, so the default reads 1,762 kg/m³.
+5. **Quantity.** Analytic: tons = area SF × depth ft × dry pcf × % ÷ 100 ÷ 2000. For example,
+   10,000 SF × 1 ft × 110 pcf × 6 % gives 33.0 TON.
+6. **Stabilization lines.** One parent row with sub-items, all filed under CSI 31.07.02
+   Stabilization:
+   - **Parent** (`stabilize`): "Pad — Soil Stabilization, Hydrated Lime 6%, 12" (1 lift)", the area in
+     SY. A blend reads "…, Hydrated Lime 3% + Fly Ash, Class C 10%, 12" (1 lift)".
+   - **Sub-item "Mix and Compact"** (`stabilize_mix`), the same area in SY.
+   - **One sub-item per agent** (`stabilize_agent_1`, `stabilize_agent_2`):
+     "Hydrated Lime (6% of dry wt @ 110 pcf)", in TON.
+
+   Estimating prices only rows without sub-items, and a parent shows the roll-up of its sub-items
+   (legacy's). Without the Mix and Compact sub-item, the mixing could not be priced on the SY
+   parent, so the parent's area is repeated as that sub-item.
+7. **The other two methods** stay one SF row each, under 31.05.02, named after the method with the
+   lifts as now: "Compacted Subgrade (12", 2 lifts) — Pad", "Scarify, Moisture Condition and Compact
+   Subgrade (12", 1 lift) — Pad".
+8. **Calculate writes the sub-items.** A line can name its parent's role (`parent_role`); the api
+   links the child to that row (`parent_item_id`) in the same write. A Calculate's sub-item is
+   guarded as its parent is (D-352). Re-reading formulas skips it, because it has no formula: only
+   a Calculate changes its quantity. A sheet's stale lines are deleted children first.
+9. **Metric.** Everything is stored imperial: SY, TON, inches and pcf. A metric project shows:
+   - SY as m²;
+   - the depth in mm (D-379);
+   - pcf as kg/m³;
+   - TON as tonnes. `TON` joins the units that convert (0.90718474 t per ton), so a TON row and its
+     rates read per tonne. This is the one exception to D-375 2's "weights shown as stored". TONNE
+     and the other weights are unchanged.
+
+   A sheet calibrated in metres writes as its other lines do: M², TONNE and the cm depth label, with
+   "@ 1,762 kg/m³" in the name.
+10. **Checks** (quantity table, hand-worked). Each is 10,000 SF, 110 pcf, one lift:
+
+    | Input | Parent | Agent sub-items |
+    |---|---|---|
+    | 12", Lime 6 % | 1,111.1 SY | 33.0 TON |
+    | 12", Lime 8 % | 1,111.1 SY | 44.0 TON |
+    | 16", Lime 6 % | 1,111.1 SY | 44.0 TON |
+    | 12", Lime 3 % + Fly Ash 10 % | 1,111.1 SY | 16.5 and 55.0 TON |
+
+    A feature with no method writes the same line as before this decision.
