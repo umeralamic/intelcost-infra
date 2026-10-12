@@ -109,3 +109,47 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
     metric project's Variables is stored as M, not as LF.
   - A unit already stored before today that is metric-coded (M, M2…) now reads "m", "m²" instead of
     "M", "M2" in every project.
+
+## Block 3 — The manual-quantity selection bug (D-380) — shipped (06:05 UTC)
+
+- **Cause, found by tracing:** not the manual item. A single click that lands on a row's grey,
+  auto-generated name suffix ("(25.07 m, 610 mmW, 305 mmD)") was ignored: the suffix carried
+  `data-noedit`, which the row reads as a control. A shapeless manual-quantity item has no suffix, so
+  clicking it always worked; the next click, on an item whose suffix sits under the pointer, did
+  nothing, and Properties stayed on the manual item. A traced run showed no selection write at all for
+  that click, and the row handler returning on `[data-noedit]`.
+- **Fix:** the suffix is no longer a control (`ItemRow.tsx`, one attribute). Double-click still
+  renames; the colour palette keeps `data-noedit`.
+- **Commit:** app `0485f50`.
+- **Gates:** lint, typecheck, build; quantity table passed (no engine change).
+- **Browser (a duplicate of "zz switching", Metric):** reproduced first (3 of 3: Properties opened the
+  manual item). After the fix, three shapeless items each selected, Properties opened on them, then a
+  click on another row's suffix, 3 times each: Properties opened Footing smoke, Slab smoke and
+  Sidewalk smoke every time (9 of 9). **Passed.** The duplicate purged; storage 0 under deleted
+  projects.
+
+## Block 4 — The throwaway-Riverside helper (D-381) — shipped (06:20 UTC)
+
+- **Commit:** infra `749dc6e`.
+- **What broke:** `riversideWorld()` timed out in `enterWorkspace`, waiting for the header's workspace
+  `<select>`; the new shell has none (a probe showed no header select on Home or Settings).
+- **Fix (infra `browser/lib/bench.mjs`):** `enterWorkspace` stores the choice under
+  `intelcost.workspace`, as Open › Switch workspace does, and opens Settings; `shellSettled` waits for
+  that choice and a drawn screen.
+- **Priced:** `pricedRiverside(world)` (`browser/lib/world.mjs`) adds a fixed priced takeoff and a
+  National Average wage set, so the throwaway carries an estimate.
+- **Proof, two throwaways built in two runs:**
+  | | Throwaway 1 (`682a0d58`) | Throwaway 2 (`c0e03217`) |
+  |---|---|---|
+  | Items (sub-items) | 4 (1) | 4 (1) |
+  | Shapes | 6 | 6 |
+  | Quantities | Doors 4, Footing 60, Rebar 63, Slab 1,035.29 | same |
+  | Priced lines | 3 | 3 |
+  | Cost components | 1 | 1 |
+  | Wage sets / craft rates / crew rates | 1 / 34 / 104 | 1 / 34 / 104 |
+- **Browser:** signed in as throwaway 2, its Riverside's Estimating read Footing 60 LF, Rebar 63 LF
+  ($173.88), Slab 1,035.29 SF ($8,670.59), Doors 4 EA ($700.00), Full estimate **$9,544.47**. **Passed.**
+- **Purged:** every fixture account's workspace (`purge-fx`, 6 workspaces); storage under them 0
+  objects.
+- **Note:** no Riverside on the bench carries wage sets today (the seeded Riverside, 28 items, has
+  none), so the counts are the helper's own fixed set, not a copy of a seeded project.

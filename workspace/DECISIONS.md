@@ -13257,3 +13257,28 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
    - **Variables** are never converted, so every pick, own or other, is stored as its code (metric
      codes for metric units).
    - A tool's own unit (a measured item's) is never pinned.
+
+## D-380: A click on a row's grey name suffix selects the row
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 3).
+
+The Takeoff panel ignored a single click that landed on a row's auto-generated suffix
+("(25.07 m, 610 mmW, 305 mmD)"): the suffix carried `data-noedit`, which the row reads as a control.
+It showed after a shapeless manual-quantity item was selected because such an item has no suffix, so
+the next click on an item with one appeared to leave Properties behind. The suffix is no longer a
+control: a click on it selects the row like the rest of the name. Double-click still renames the name
+it belongs to, as before; the colour palette keeps `data-noedit`.
+
+## D-381: The throwaway Riverside works with the new app shell and can be priced
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 4).
+
+1. The app shell has no header workspace switcher any more (Open › Switch workspace writes the
+   app's stored choice, `intelcost.workspace`), so the bench's `enterWorkspace` stores the choice
+   as the app does and opens Settings on it, and `shellSettled` waits for that choice and a drawn
+   screen. `riversideWorld()` (`browser/lib/world.mjs`) builds again.
+2. `pricedRiverside(world)` adds the same priced takeoff on every run: Footing (LF) with the
+   sub-item Rebar = PARENT * 1.05, Slab (SF), Doors (4 EA) with a material cost component, typed
+   rates on three lines, and the Wage Calculator's National Average (commercial, burdened) saved
+   to the project. Two throwaways built with it carry equal counts, so a click check on a
+   throwaway has an estimate to read.
