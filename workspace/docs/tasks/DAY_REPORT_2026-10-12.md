@@ -382,7 +382,7 @@ Bugs, not choices, so fixed in the remaining time:
   Average crafts (on your list). The workspace's company benefits were set back to blank, read back
   from the api. Test 12 then passed too (09:50 UTC, a third copy, purged): only test 15 (the UI string search) is not driven.
 
-## State at 09:55 UTC (after the final report)
+## State at 09:51 UTC (after the final report)
 
 - **Shipped after the final report:** D-386 (app `d27194c`: the double-click end point, upload Cancel,
   the editor after a resize), D-387 (app `649fd40`: undo waits for an Estimating save), D-388 (app
