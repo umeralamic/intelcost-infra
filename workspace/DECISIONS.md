@@ -13705,7 +13705,10 @@ D-177 (the unit table gains SY and TON), D-375 2 (TON now converts in metric).
      Estimating, never the Takeoff panel.
    - **Fix:** Calculate now writes each sub-item's quantity into `formula_qty` too, with no error.
      Migration `d406c2a8e4b1` backfills the sub-items already written, so no recalculation is
-     needed. The smoke now reads the Takeoff panel on an edited existing feature as well as a new
+     needed. It fills only an empty `formula_qty`: a value already there is never changed. On
+     the bench it filled 2 rows in 1 project, both empty. Its lift fill writes only where no
+     thickness is stored. Both run on prod: see
+     `intelcost-infra/notes/2026-10-12_f25_data_migrations_for_abdullah.md`. The smoke now reads the Takeoff panel on an edited existing feature as well as a new
      one.
 2. **Lifts by thickness.** The box reads "Compacted in [ __ ] in lifts" (mm in metric) and holds
    the lift thickness. The count follows in grey, "(3 lifts)": depth ÷ thickness, rounded up
