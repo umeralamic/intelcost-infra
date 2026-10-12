@@ -287,9 +287,11 @@ try {
     const ms = await import("/src/lib/measure.ts");
     const dm = await import("/src/lib/takeoff/dimensions/itemDimensions.ts");
     const os = await import("/src/features/takeoff/earthwork/registration/offset.ts");
+    const jt = await import("/src/features/takeoff/earthwork/site/joinText.ts");
     const metric = lo.measureFormat("metric");
     return cases.map((c) => {
       if (c.kind === "offset-shown") return os.offsetShown(c.feet, c.metric);
+      if (c.kind === "join-length") return jt.joinLength(c.feet, c.places, c.metric);
       if (c.kind === "offset-feet") return os.offsetFeet(c.typed, c.metric);
       if (c.kind === "dim-length") return ms.formatMetricLength(dm.dimensionFeetMap([{ ...c.dim, id: "x", item_id: "i" }]).get(c.dim.local_key) ?? NaN);
       if (c.kind === "guest-format") return metric.format(c.value, c.unit);

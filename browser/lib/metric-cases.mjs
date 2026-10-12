@@ -227,4 +227,8 @@ export const CLOSE_CASES = [
   { id: "offset-feet", kind: "offset-feet", typed: "0.1524", metric: true, expect: 0.5 },
   { id: "offset-feet-125", kind: "offset-feet", typed: "1.25", metric: true, expect: 1.25 / M },
   { id: "offset-imperial", kind: "offset-feet", typed: "2", metric: false, expect: 2 },
+  // D-402, the site join check: 120 ft = 36.58 m; a 0.25 ft miss = 0.076 m; imperial as before.
+  { id: "join-line", kind: "join-length", feet: 120, places: 2, metric: true, expect: "36.58 m" },
+  { id: "join-miss", kind: "join-length", feet: 0.25, places: 3, metric: true, expect: "0.076 m" },
+  { id: "join-imperial", kind: "join-length", feet: 12.34, places: 1, metric: false, expect: "12.3 ft" },
 ];
