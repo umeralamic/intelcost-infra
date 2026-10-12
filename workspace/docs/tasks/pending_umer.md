@@ -43,9 +43,8 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
     - D23: the api's wage calculator docs say "any source or book name" (api `6bfd541`).
     - D18: built as D-356 (api `9091002`, app `aa9baeb`), with your two sentences.
   - **Open:** D8.8, below.
-- **Batch 4 (2026-10-11):** D1 accepted and D3 passed, both closed in DECISIONS. D2 was built
-  as D-357 (app `245f94d`): the top-right zoom percentage is gone, and the menu opens only from
-  the bottom-right cluster.
+- **Batch 4 (2026-10-11):** D1 accepted and D3 passed, both closed in DECISIONS. D2 changed: the
+  zoom menu leaves the top right. It stays open below until built.
 
 ---
 
@@ -147,6 +146,10 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
   - products, prices, the webhook secret and the portal configuration;
   - **the account's API version:** confirm and note it in F16_GO_LIVE.md step 7 (D9, Umer
     2026-10-11).
+- **Currency and measurement system** (D-373, D-374; OVERNIGHT_REPORT.md, 2026-10-12):
+  - two migrations: `d373a1b9c4e5` (currency) and `d374b6c2d9e1` (unit system);
+  - `METRIC_ENABLED=false` in production's api environment. It is the default, but set it
+    explicitly so Metric stays limited to platform admins until it is released.
 - **Optional:** a read-only database role for the wage reference data (DECISIONS.md:10864).
 - **Legacy data migration and cutover, P-16/F17** (FEATURES.md:86): not yet specced.
 - **The 🔧 review table** (flows.md:345–359): SES, production CORS, lifecycle, worker sizing, and the Stripe setup.
