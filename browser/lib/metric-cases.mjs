@@ -31,6 +31,38 @@ export const DISPLAY_CASES = [
   { id: "show-bcm-as-is", value: 3, unit: "BCM", shown: 3, label: "BCM" },
 ];
 
+/** Sub-item formulas in a metric project (metric Phase E): inputs in metric, the result stored in the
+ *  sub-item's imperial unit. Both engines (inSystem.ts, formula_system.py). `expect` is the stored
+ *  figure, worked by hand. */
+export const FORMULA_SYSTEM_CASES = [
+  // A pure scale is system-neutral: 100 LF = 30.48 m, × 0.5 = 15.24 m = 50 LF.
+  { id: "fx-half", formula: "PARENT * 0.5", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 50 },
+  { id: "fx-divide", formula: "PARENT / 2", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 50 },
+  // A constant added is not: 30.48 + 1 = 31.48 m = 103.2808… LF (imperial reads 101).
+  { id: "fx-plus-one", formula: "PARENT + 1", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 31.48 / M },
+  { id: "fx-plus-one-imperial", formula: "PARENT + 1", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "imperial", expect: 101 },
+  // A named dimension converts: 2 ft = 0.6096 m × 9.290304 m² = 5.6634… m³ = 200 CF.
+  { id: "fx-dim", formula: "{dim:d1} * PARENT", parent: 100, parentUnit: "SF", resultUnit: "CF", dims: { d1: 2 }, system: "metric", expect: 200 },
+  // ^ before * (D-251): 30.48 × 4 = 121.92 m = 400 LF.
+  { id: "fx-power", formula: "PARENT * 2^2", parent: 100, parentUnit: "LF", resultUnit: "LF", system: "metric", expect: 400 },
+  // A sub-item in EA takes its figure as computed (no metric form): 30.48 m / 2 = 15.24 EA.
+  { id: "fx-ea-result", formula: "PARENT / 2", parent: 100, parentUnit: "LF", resultUnit: "EA", system: "metric", expect: 15.24 },
+];
+
+/** The cross-system apply's warning: which formulas hold a numeric constant (app only). */
+export const CONSTANT_CASES = [
+  {
+    id: "fx-template-warning",
+    rows: [
+      { name: "Half", formula: "PARENT * 0.5" },
+      { name: "Plus one", formula: "PARENT + 1" },
+      { name: "Dim", formula: "{dim:d1} * PARENT" },
+      { name: "Token", formula: "{qty:LINEAR.d1@CY}" },
+    ],
+    expect: ["Half", "Plus one"],
+  },
+];
+
 /** A manual quantity typed in metric, stored in the tool's imperial unit, shown back (D-376 3). */
 export const MANUAL_CASES = [
   { id: "manual-10m", typed: 10, tool: "LF", stored: 10 / M, shownText: "10.00 m" },
