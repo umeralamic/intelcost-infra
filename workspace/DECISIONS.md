@@ -13348,3 +13348,22 @@ it belongs to, as before; the colour palette keeps `data-noedit`.
    owner's people and workspace), so a formula reading a workspace variable reads "Unknown variable" in
    the copy; a custom classification code with no match in the viewer's workspace is left unclassified;
    unit wastage counts as pricing; two copies of the same project carry the same name.
+
+## D-385: Viewers may watch live work, with team members' names or "User A"
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 8). Replaces D-108's empty guest presence.
+
+1. **Owner.** "Allow anonymous viewers to see mouse cursor of internal users and which page they are
+   on" becomes "Let viewers watch live work" (cursors and which page people are on), and under it, while
+   ticked, "Show team members' names", on by default (`project_share_link.show_member_names`).
+2. **What viewers see.** Each team member on the project, once per sheet they are on (several tabs read
+   as one): a marker on that sheet in the viewer's sheet list, and their cursor on the sheet the viewer
+   has open while it moves. Members' tabs say which sheet they are on when they open it and every 15 s
+   (a `view` frame, never fanned out); the realtime connection notes cursors and views for viewers in
+   Redis for a few seconds (`share/watch.py`); the guest page polls `/api/share/{token}/presence` every
+   second.
+3. **Names off.** "User A", "User B" in cursors and page markers, the same letter for the same person
+   on that link for a day. The api replaces the identity before anything leaves it: the presence answer
+   carries no name, email, avatar or user id (its `id` is a hash salted with the link), and the guest
+   bundle's items carry no creator name.
+4. **Live work off:** the presence answer is empty: no cursors, no page markers.

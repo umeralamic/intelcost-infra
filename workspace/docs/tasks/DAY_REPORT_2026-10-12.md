@@ -235,3 +235,33 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
   - two copies of the same project have the same name;
   - "Saved by N people" counts copies, so one person saving twice reads "2 people", as the brief's
     check expects.
+
+## Block 8 — Live work and hidden names (D-385) — shipped (07:50 UTC)
+
+- **Found first:** the old option ("Allow anonymous viewers to see mouse cursor…") did nothing: the guest
+  presence route always answered an empty list (D-108 left it for later). So this block built live work
+  for viewers, not just the new wording.
+- **What:**
+  - **Owner:** "Let viewers watch live work" (cursors and which page people are on), with "Show team
+    members' names" under it, on by default.
+  - **Members' tabs:** a `view` frame on opening a sheet and every 15 s. The realtime connection notes
+    cursors and views for viewers in Redis (`share/watch.py`).
+  - **Viewer:** the shared page polls `/presence` every second, draws cursors on the open sheet and
+    markers in the sheet list.
+  - **Names off:** "User A", "User B", stable per person on the link. The api swaps the identity before
+    anything leaves it (presence and bundle).
+- **Commits:** api `b228968` (migration `d381b2c4e6a8`: `project_share_link.show_member_names`, default
+  true), app `0a6bcec`.
+- **Gates:** app lint, typecheck, build; api ruff, format, mypy (209 files); quantity table passed.
+- **Browser (a throwaway Riverside, owner and Sara W. signed in, each in their own browser context, moving
+  their pointers on pages 1 and 2; a signed-out viewer on the link):**
+  | State | Presence answer (raw) | Viewer's screen |
+  |---|---|---|
+  | Names on | "Fixture O." on page 1, "Sara W." on page 2, both moving; bundle creator "Fixture O." | cursor "Fixture O." on page 1; markers "Fixture O.", "Sara W." |
+  | Names off | "User A" on page 1, "User B" on page 2; no name, email or id in the presence or the bundle (`created_by_name` null) | cursor "User A"; markers "User A", "User B"; the same letters after a reload |
+  | Live work off | `[]` | no cursor, no marker |
+  **Passed.** The first run showed each person three times (three tabs open); the api now sends one
+  entry per person per sheet, and the rerun above is with that.
+- **Owner's dialog:** the new wording; "Show team members' names" appears only while live work is ticked;
+  new and existing links default to names on.
+- **Purged:** the throwaway workspace; storage 0.
