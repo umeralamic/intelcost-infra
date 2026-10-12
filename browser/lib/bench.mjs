@@ -53,17 +53,18 @@ export function quietFor(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** The app's stored choice of workspace (`ACTIVE_WORKSPACE_KEY` in the app's session). */
+const ACTIVE_WORKSPACE_KEY = "intelcost.workspace";
+
 /**
- * Make `workspaceUuid` the active workspace in the header's switcher, and wait until the
- * shell has drawn it: the switcher shows it and the person's standing in it has arrived.
- * Clicking on while the shell was still redrawing is what made f8-s2 AC4 and f8-s15 miss.
+ * Make `workspaceUuid` the active workspace and wait until the shell has drawn it. The app shell
+ * has no header switcher any more (Open › Switch workspace writes the app's stored choice), so the
+ * choice is stored as the app stores it and Settings opened on it.
  */
 export async function enterWorkspace(page, workspaceUuid) {
-  const select = page.locator("header select");
-  await select.locator(`option[value="${workspaceUuid}"]`).waitFor({ state: "attached", timeout: 20000 });
-  // Always chosen, even when it already shows: choosing is what the app stores, and a
-  // workspace shown only as the first of the list moves when a rename re-sorts it.
-  await select.selectOption(workspaceUuid);
+  if (!page.url().startsWith(APP)) await page.goto(APP);
+  await page.evaluate(([key, uuid]) => localStorage.setItem(key, uuid), [ACTIVE_WORKSPACE_KEY, workspaceUuid]);
+  await page.goto(`${APP}/settings`);
   await shellSettled(page, workspaceUuid);
 }
 
@@ -104,15 +105,15 @@ export async function pageSettled(page, { timeout = 20000 } = {}) {
   });
 }
 
-/** The shell has drawn: the switcher names the active workspace (this one, if given) and
- *  the person's role in it is shown, so capabilities have arrived. */
+/** The shell has drawn on the active workspace (this one, if given). */
 export async function shellSettled(page, workspaceUuid) {
+  // The stored choice is the one asked for, and the screen has drawn past its loading state.
   await page.waitForFunction(
-    (uuid) => {
-      const value = document.querySelector("header select")?.value;
-      return Boolean(value) && (!uuid || value === uuid) && Boolean(document.querySelector("header [data-standing]"));
+    ([key, uuid]) => {
+      const value = localStorage.getItem(key);
+      return Boolean(value) && (!uuid || value === uuid) && document.querySelector("h1, h2, [role=tablist]") !== null;
     },
-    workspaceUuid ?? null,
+    [ACTIVE_WORKSPACE_KEY, workspaceUuid ?? null],
     { timeout: 20000 },
   );
 }

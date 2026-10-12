@@ -78,3 +78,60 @@ export function riversideWorld() {
 
 /** This run's owner, when a fixture needs only the account and not the world. */
 export const worldOwner = fixtureOwner;
+
+/**
+ * Riverside priced (day run Block 4): the same takeoff, rates, cost component and wage set on
+ * every run, so two throwaways carry equal counts and a click check has an estimate to read.
+ * Page 1 is calibrated at 200 ft per unit (BAR), so the shapes below measure the same each time.
+ *
+ *   Footing   a 0.3-unit run, LF, with the sub-item Rebar = PARENT * 1.05
+ *   Slab      a 0.2 × 0.2 area, SF
+ *   Doors     four marks, EA, with a material cost component (Hardware, $85 / EA)
+ *   rates     labour, wage and material typed on Slab and Rebar; labour on Doors
+ *   wages     the Wage Calculator's National Average, commercial, burdened, saved to the project
+ */
+export async function pricedRiverside(world) {
+  const { token, r } = world;
+  const project = r.takeoff.replace(/\/takeoff$/, "");
+  const estimate = `${project}/estimate`;
+  const ok = (res, what, code = [200, 201]) => {
+    expect([].concat(code).includes(res.status), `${what}: ${res.status} ${JSON.stringify(res.body).slice(0, 300)}`);
+    return res.body;
+  };
+  const item = (name, type, unit, geomType, vertices, meta = null) =>
+    call(token, "POST", `${r.takeoff}/item`, {
+      name,
+      type,
+      unit,
+      sheet_uuid: r.sheet,
+      geometry: { geom_type: geomType, vertices_json: vertices, shape_meta: meta, client_uuid: crypto.randomUUID() },
+    }).then((res) => ok(res, `item ${name}`));
+
+  const footing = await item("Footing", "lf", "LF", "lf", [[0.2, 0.3], [0.5, 0.3]]);
+  const slab = await item("Slab", "sf", "SF", "sf", [[0.2, 0.4], [0.4, 0.4], [0.4, 0.6], [0.2, 0.6]], { closed: true });
+  const doors = await item("Doors", "count", "EA", "count", [[0.6, 0.3]]);
+  ok(
+    await call(token, "POST", `${r.takeoff}/item/${doors.uuid}/shapes`, {
+      create: [[0.65, 0.3], [0.7, 0.3], [0.75, 0.3]].map((at) => ({ geom_type: "count", vertices_json: [at], shape_meta: null, sheet_uuid: r.sheet })),
+    }),
+    "door marks",
+  );
+  const subs = ok(
+    await call(token, "PUT", `${r.takeoff}/item/${footing.uuid}/sub-items`, { sub_items: [{ name: "Rebar", formula_text: "PARENT * 1.05", unit: "LF" }] }),
+    "sub-items",
+  );
+  const rebar = subs[0];
+  const rate = (uuid, rates) => call(token, "PATCH", `${estimate}/costs/${uuid}`, rates).then((res) => ok(res, `rates ${uuid}`));
+  await rate(slab.uuid, { unit_man_hours: 0.05, hourly_wage: 42.5, unit_material_cost: 6.25 });
+  await rate(rebar.uuid, { unit_man_hours: 0.02, hourly_wage: 48, unit_material_cost: 1.8 });
+  await rate(doors.uuid, { unit_man_hours: 2, hourly_wage: 45 });
+  ok(
+    await call(token, "POST", `${estimate}/components`, { item_uuid: doors.uuid, kind: "material", name: "Hardware", pricing_mode: "unit", unit_price: 85 }),
+    "cost component",
+  );
+  ok(
+    await call(token, "POST", `${project}/wage-calculator/wage-set`, { project_type: "commercial", pricing_basis: "burdened", basis: "national_average" }),
+    "wage set",
+  );
+  return { footing: footing.uuid, slab: slab.uuid, doors: doors.uuid, rebar: rebar.uuid };
+}
