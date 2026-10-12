@@ -153,3 +153,30 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
   objects.
 - **Note:** no Riverside on the bench carries wage sets today (the seeded Riverside, 28 items, has
   none), so the counts are the helper's own fixed set, not a copy of a seeded project.
+
+## Block 5 — D8.8, Stripe's official library (D-382) — shipped (06:45 UTC)
+
+- **What:** `app/features/billing/stripe.py` on `stripe` 16.0.0 (`StripeClient`, async over httpx, no
+  automatic retries, base URL from `STRIPE_API_BASE`). The five names and their answers are unchanged,
+  so none of the callers in `service.py` and `topup.py` changed. The signature check is the library's
+  `WebhookSignature.verify_header` with the same 300 s tolerance. The hand-written form encoder is gone.
+- **Fake:** `/_fake/events/<id>/resend?signature=expired` signs correctly but ten minutes ago.
+- **Commits:** api `c78fa5d` (code, `pyproject.toml`), infra `c4bd131` (fake). The bench's api and worker
+  images were rebuilt (`docker compose up -d --build`); the image reports stripe 16.0.0.
+- **Gates:** api ruff, format, mypy (208 files); quantity table passed, credit rows included.
+- **Smoke (bench, Stripe fake, a throwaway account and workspace):**
+  - **Checkout:** Settings › Billing › Professional › Start subscription → the fake's hosted page
+    (`price_bench_professional_monthly × 1`) → Pay → back on Billing: Professional, Monthly, Active,
+    October 12 to November 11, 2026. Manage billing opened the fake's portal. **Passed.**
+  - **Real webhooks:** `checkout.session.completed` 200 "processed"; a fresh `invoice.paid` 200
+    "processed". **Passed.**
+  - **Forged** (`?signature=bad`): 400 "Invalid signature." **Passed.**
+  - **Expired** (signed 600 s ago): 400 "Invalid signature." **Passed.** (The first try returned 200,
+    because the fake was still running its old code; it was restarted and the check redone on a new
+    workspace and event.)
+  - A valid resend of the same event: 200 "duplicate".
+- **Purged:** both throwaway workspaces (`purge-fx`).
+- **Abdullah** (added to pending_umer.md): rebuild the production image; the library pins API version
+  `2026-09-30.endive`, to note beside the account's own (D9).
+- **Noticed, not changed:** the throwaway workspace's Billing read "Seats 11 in use" for a one-person
+  workspace. Not part of this block; listed for you.

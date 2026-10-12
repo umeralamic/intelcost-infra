@@ -13282,3 +13282,21 @@ it belongs to, as before; the colour palette keeps `data-noedit`.
    rates on three lines, and the Wage Calculator's National Average (commercial, burdened) saved
    to the project. Two throwaways built with it carry equal counts, so a click check on a
    throwaway has an estimate to read.
+
+## D-382: Stripe calls and webhook signatures through Stripe's official Python library
+
+**Status:** Accepted (2026-10-12, Umer: D8.8 "no", day run Block 5). Supersedes D-278 1's "no SDK".
+
+1. `app/features/billing/stripe.py` keeps its five names (`create_customer`,
+   `create_checkout_session`, `create_portal_session`, `retrieve_subscription`, `verify_signature`)
+   and their answers (plain dicts and strings), so no caller changed. Underneath, `stripe>=16.0.0`'s
+   `StripeClient` (async, over httpx, no automatic retries) pointed at `STRIPE_API_BASE`, and the
+   signature check is the library's `WebhookSignature.verify_header` with the same five-minute
+   tolerance. Stripe's refusals keep becoming `StripeRequestError` with Stripe's own message.
+2. **API version.** The library sends its pinned version (`2026-09-30.endive` in 16.0.0); our own
+   client sent none, so Stripe answered in the account's default. The subscription read already takes
+   period dates from the items first and the top level second (Q14), so both shapes read. The account's
+   version is still Abdullah's to confirm (D9).
+3. The bench's Stripe fake gains `?signature=expired` on `/_fake/events/<id>/resend` (signed ten minutes
+   ago) for the replay check.
+4. **Abdullah:** the production image is rebuilt for the new dependency.

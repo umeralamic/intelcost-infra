@@ -43,6 +43,9 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
     - D23: the api's wage calculator docs say "any source or book name" (api `6bfd541`).
     - D18: built as D-356 (api `9091002`, app `aa9baeb`), with your two sentences.
   - **Open:** D8.8, below.
+- **Day run 2026-10-12:** D8.8 built as D-382 (api `c78fa5d`, infra `c4bd131`): the five Stripe
+  functions on Stripe's official library, its signature check; checkout, a real webhook, a forged one
+  and an expired one smoke-tested on the fake (DAY_REPORT_2026-10-12.md, Block 5).
 - **Batch 4 (2026-10-11):** D1 accepted and D3 passed, both closed in DECISIONS. D2 changed: the
   zoom menu leaves the top right. It stays open below until built.
 
@@ -52,7 +55,7 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
 
 | # | File:line | What it is | What you need from me | How I check it | Already done elsewhere? |
 |---|---|---|---|---|---|
-| D8.8 | DECISIONS.md:10306 (D-278 1) | We talk to Stripe directly, without its software library, and check Stripe's signatures ourselves. | **Your answer, no:** "before go-live, use Stripe's official Python library for API calls and webhook signature checks instead of our own code." Work below. | — | No. |
+| D8.8 | DECISIONS.md (D-382) | Built: Stripe's official library behind our five names, its signature check. | Nothing; for your record. The library pins API version `2026-09-30.endive` (D-382 2). | DAY_REPORT_2026-10-12.md, Block 5. | Yes, D-382. |
 
 ## Work described (not started)
 
@@ -142,6 +145,8 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
   - the CORS origin;
   - Redis `maxmemory`.
 - **Migrations on start** (`intelcost-infra/notes/2026-10-02_api_migrations_on_start_for_abdullah.md:33–40`): option A or B, and the worker must wait for it.
+- **Stripe library** (D-382): rebuild the production image for the new dependency (`stripe>=16.0.0`);
+  the library sends API version `2026-09-30.endive`, so note it beside the account's own (D9).
 - **Stripe** (F16_GO_LIVE.md; F16_SPEC.md:122–128; DECISIONS.md:10711):
   - products, prices, the webhook secret and the portal configuration;
   - **the account's API version:** confirm and note it in F16_GO_LIVE.md step 7 (D9, Umer
