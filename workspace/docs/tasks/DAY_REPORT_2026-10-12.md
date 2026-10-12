@@ -351,3 +351,18 @@ Bugs, not choices, so fixed in the remaining time:
   (x 124–382, Save at 321–370) (7-editor-after-resize-D386.png).
 - **Commit:** app `d27194c`. **Gates:** lint, typecheck, build; quantity table passed. The duplicate
   purged; storage 0 under deleted projects. The C items stay open for your own check.
+
+## Undo during an Estimating save (D-387) (09:15 UTC)
+
+- **The bug (from C15):** an edit's undo step was recorded only once its save came back, so a Ctrl+Z
+  pressed during Set values did nothing, or undid the edit before it.
+- **Fixed:** an edit that is saving holds the history; a Ctrl+Z pressed meanwhile waits, then undoes it.
+  Set values, a rate, a custom cell and a multiplier all hold. App `649fd40`.
+- **Checked:** on a copy of Riverside in the throwaway workspace, with every cost save slowed by
+  1.5 s: Wall's unit material $5 → $7, then Set values $3 on two rows, Ctrl+Z pressed 0.2 s later.
+  The two $3 saves, then the two undo saves, went out in that order. The rows were blank again and Wall
+  stayed $7; a second Ctrl+Z took Wall back to $5. Passed.
+- **Gates:** lint, typecheck, build; quantity table passed. The copy was purged.
+- **"Seats 11 in use" withdrawn:** it reads "1" and then "1 in use"; I had run the two together.
+- **C1's wording and C4's AI defaults** stay on your list: the first copies legacy word for word on
+  purpose, and the second is a product default.

@@ -13383,3 +13383,15 @@ remaining time).
    cancelled.
 3. **The sub-items editor stays on screen when the window narrows.** A resize pulls the floating panel
    back inside the window (`SubItemsDialog`), as dragging already kept a strip of it on screen.
+
+## D-387: An undo pressed while an Estimating edit saves waits for it
+
+**Status:** Accepted (2026-10-12; a bug seen while running C15, fixed in the day run's remaining
+time).
+
+The Estimating tab recorded each edit's undo step only once its save came back. A Ctrl+Z pressed in
+between (Set values on ten rows takes about two seconds) found no step for that edit: it did nothing, or
+undid the edit before it. An edit that is saving now holds the history (`useEstimateHistory().hold()`,
+released once the step is recorded or the save failed); a Ctrl+Z or Ctrl+Y pressed meanwhile waits for
+it and then undoes that edit. Set values, a rate, a custom cell and a multiplier all hold. Set values
+still saves one row per request, four at a time; one request for the batch is not decided here.

@@ -80,8 +80,12 @@ your own click check.
   are affected." (the second sentence is the live count) and reads as a contradiction.
 - **C4:** in Add sheets, "Name sheets from title block" and "Set scale automatically" (AI credits) were
   ticked by default for a new workspace.
-- **C15:** Set values took over two seconds to reach the grid; a Ctrl+Z pressed meanwhile did nothing.
-- **Block 5:** a one-person throwaway workspace's Billing read "Seats 11 in use".
+- **C15 (half fixed):** a Ctrl+Z pressed while Set values saves now waits and undoes it (D-387, app
+  `649fd40`). Still yours: Set values saves one row per request, four at a time (about 2 s for ten
+  rows); one request for the whole batch would be an api addition.
+
+Withdrawn: Block 5's "Seats 11 in use" was my misreading. Billing shows the seats ("1") and a separate
+small "1 in use" beside them; the page text runs them together.
 
 ## Decisions
 
