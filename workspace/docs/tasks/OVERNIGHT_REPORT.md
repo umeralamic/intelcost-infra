@@ -441,7 +441,7 @@ The committed code was run with Phase E stashed and the app container restarted.
   The total is lower than Step 8's $4,726.60 because Phase E's test sub-items made "Slope smoke" a
   parent whose unpriced sub-items replace its own $1,186.64 (4,726.60 − 1,186.64 = 3,539.96). Passed.
 
-### Final regression pass (03:10 UTC, committed code, switch off)
+### Final regression pass (03:00 UTC, committed code, switch off)
 - Gates: app lint, typecheck, build; api ruff, format, mypy. Quantity table: 344 rows + 17 metric rows
   passed.
 - Browser, as a default user (Imperial, USD): no header tag; "Name this Linear Measurement"; Convert to
