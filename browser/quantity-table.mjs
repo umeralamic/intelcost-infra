@@ -19,7 +19,7 @@ import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./l
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
-import { CONSTANT_CASES, DIMENSION_TOOL_CASES, DISPLAY_CASES, ENTRY_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES, NAME_CASES, PICK_CASES, PINNED_CASES } from "./lib/metric-cases.mjs";
+import { COMPONENT_SYSTEM_CASES, CONSTANT_CASES, DIMENSION_TOOL_CASES, DISPLAY_CASES, ENTRY_CASES, EXCEL_METRIC_CASES, EXPLAIN_METRIC_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES, NAME_CASES, PICK_CASES, PINNED_CASES } from "./lib/metric-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -247,6 +247,40 @@ try {
       constants: constants.map((c) => e.formulasWithAddedConstants(c.rows).map((r) => r.name)),
     };
   }, [FORMULA_SYSTEM_CASES, CONSTANT_CASES]);
+  // D-397: cost-component formulas, the Quantity popover and the export in a metric project.
+  mt.b2 = await page.evaluate(async ([comps, explainCases, excelCases]) => {
+    const cm = await import("/src/lib/estimate/components.ts");
+    const qe = await import("/src/lib/estimate/quantityExplain.ts");
+    const sy = await import("/src/lib/takeoff/subItems/inSystem.ts");
+    const xf = await import("/src/lib/estimate/exportFormulas.ts");
+    const map = (o) => new Map(Object.entries(o ?? {}));
+    const names = { lengthUnit: "m", dimension: () => "Depth", variable: () => null, rough: () => null, derived: () => null };
+    const components = comps.map((c) => {
+      const env = { parent: c.qty, qty: c.qty, units: { qty: c.hostUnit, parent: c.hostUnit } };
+      const e = cm.evaluateComponent({ ...c.c, id: c.id, takeoff_item_id: "host", position: 0, name: c.id }, env);
+      return e.error ? { error: e.error } : e.total;
+    });
+    const explains = explainsIn(explainCases);
+    function explainsIn(list) {
+      return list.map((c) => {
+        if (c.sheets) {
+          const e = qe.parentInMetric(qe.explainParent(c.parent, c.sheets), c.parent.unit);
+          return { measured: e.measured, unit: e.unit, deductArea: e.sheets[0]?.deductArea ?? null, areaUnit: e.areaUnit, lengthUnit: e.lengthUnit, multiplied: e.multiplied, depth: e.volume?.depthFt ?? null, volumeIn: e.volumeIn };
+        }
+        const env = sy.metricEnv({ parent: c.parent, dims: map(c.dims) }, c.parentUnit, {});
+        const e = qe.explainSubItem(c.formula, env, names);
+        return { substituted: e.substituted, value: e.value, dimUnit: e.inputs.find((i) => i.kind === "dimension")?.unit ?? null };
+      });
+    }
+    const excels = excelCases.map((c) => {
+      const env = sy.metricEnv({ parent: c.parent, dims: map(c.dims) }, c.parentUnit, {});
+      const expr = xf.verifiedQtyExpression(c.formula, env, c.cell);
+      if (!expr) return { live: false };
+      const read = xf.evaluateCellFormula(xf.literalExpression(expr), () => null);
+      return { live: true, read, expr };
+    });
+    return { components, explains, excels };
+  }, [COMPONENT_SYSTEM_CASES, EXPLAIN_METRIC_CASES, EXCEL_METRIC_CASES]);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
@@ -1061,6 +1095,25 @@ for (const [i, c] of CONSTANT_CASES.entries()) {
   if (JSON.stringify(mt.fx.constants[i]) !== JSON.stringify(c.expect)) wrong.push(`${c.id}: ${JSON.stringify(mt.fx.constants[i])}`);
 }
 
+// D-397 rows: component totals to the cent; the popover's metric figures and words; the export's
+// metric expression live (and read as Excel reads it) or kept as its number.
+const cents = (v) => Math.round(v * 100) / 100;
+for (const [i, c] of COMPONENT_SYSTEM_CASES.entries()) {
+  const got = mt.b2.components[i];
+  if (typeof got !== "number" || cents(got) !== c.expect) wrong.push(`${c.id}: ${JSON.stringify(got)}, expected ${c.expect}`);
+}
+for (const [i, c] of EXPLAIN_METRIC_CASES.entries()) {
+  const got = mt.b2.explains[i];
+  for (const [field, want] of Object.entries(c.expect)) {
+    const ok = typeof want === "number" ? near(got[field], want) : got[field] === want;
+    if (!ok) wrong.push(`${c.id}.${field}: ${JSON.stringify(got[field])}, expected ${JSON.stringify(want)}`);
+  }
+}
+for (const [i, c] of EXCEL_METRIC_CASES.entries()) {
+  const got = mt.b2.excels[i];
+  if (got.live !== c.live || (c.live && !near(got.read, c.cell))) wrong.push(`${c.id}: ${JSON.stringify(got)}`);
+}
+
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
 for (const c of CREDIT_CASES) {
   const got = pythonCredits.get(c.id);
@@ -1076,5 +1129,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; passed`,
 );

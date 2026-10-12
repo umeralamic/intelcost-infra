@@ -146,3 +146,65 @@ export const PICK_CASES = [
   { id: "pick-imperial-lf", system: "imperial", label: "LF", group: "own", code: "LF", pinned: false },
   { id: "pick-imperial-m", system: "imperial", label: "m", group: "other", code: "M", pinned: false },
 ];
+
+// Block 2 of 2026-10-12 (D-397): what was still imperial inside a metric project.
+
+const SF_M2 = M * M;
+const CY_M3 = 27 * M * M * M;
+
+/** A cost component's formulas in the system they were written in (Phase E's rule): QTY and PARENT
+ *  read in metric, the result back in the component's stored unit; the total to the cent. */
+const component = (o) => ({
+  kind: "material", qty_formula: null, unit: "LF", unit_pinned: false, pricing_mode: "unit", unit_price: 2, crew: null, production_rate: null,
+  production_basis: null, crew_day_hours: null, equip_rate: null, equip_basis: null, duration_formula: null, mob_demob: null, sub_calc: null,
+  quote_amount: null, unit_rate: null, formula_unit_system: "metric", ...o,
+});
+export const COMPONENT_SYSTEM_CASES = [
+  // A scale is system-neutral: 30.48 m × 1.1 = 33.528 m = 110 LF, × $2 = $220.00.
+  { id: "cc-scale-metric", c: component({ qty_formula: "QTY * 1.1" }), qty: 100, hostUnit: "LF", expect: 220 },
+  // A constant is not: 30.48 + 1 = 31.48 m = 103.2808… LF, × $2 = $206.56.
+  { id: "cc-plus-metric", c: component({ qty_formula: "QTY + 1" }), qty: 100, hostUnit: "LF", expect: 206.56 },
+  // The same formula written in imperial: 101 LF, $202.00, in any project.
+  { id: "cc-plus-imperial", c: component({ qty_formula: "QTY + 1", formula_unit_system: "imperial" }), qty: 100, hostUnit: "LF", expect: 202 },
+  // A pinned unit is never converted: 31.48 taken as LF, × $2 = $62.96.
+  { id: "cc-pinned", c: component({ qty_formula: "QTY + 1", unit_pinned: true }), qty: 100, hostUnit: "LF", expect: 62.96 },
+  // An area: 1,000 SF = 92.90304 m², × 0.5 = 46.45152 m² = 500 SF, × $1.50 = $750.00.
+  { id: "cc-area", c: component({ qty_formula: "QTY * 0.5", unit: "SF", unit_price: 1.5 }), qty: 1000, hostUnit: "SF", expect: 750 },
+  // A duration is time: QTY / 10 reads 30.48 m / 10 = 3.048 h, × $50 = $152.40 (imperial: 10 h, $500.00).
+  { id: "cc-duration-metric", c: component({ kind: "equipment", equip_basis: "hr", equip_rate: 50, duration_formula: "QTY / 10" }), qty: 100, hostUnit: "LF", expect: 152.4 },
+  { id: "cc-duration-imperial", c: component({ kind: "equipment", equip_basis: "hr", equip_rate: 50, duration_formula: "QTY / 10", formula_unit_system: "imperial" }), qty: 100, hostUnit: "LF", expect: 500 },
+  // A blank formula is QTY as stored, in any system: 100 LF × $2 = $200.00.
+  { id: "cc-blank", c: component({}), qty: 100, hostUnit: "LF", expect: 200 },
+];
+
+/** The Quantity popover told in metric: a parent's figures and units, a sub-item's substitution. */
+const parentItem = (o) => ({
+  unit: "SF", calculated_quantity: 1000, effective_quantity: 1000, manual_quantity_override: null, override_reason: null, height_ft: null, height_raw: null,
+  pitch_factor: null, pitch_mode: null, pitch_entry: null, volume_depth_ft: null, volume_width_ft: null, multiplier: 1, ...o,
+});
+export const EXPLAIN_METRIC_CASES = [
+  // 1,000 SF = 92.90304 m²; the 100 SF deduct 9.290304 m²; × 2 told in m².
+  {
+    id: "ex-parent-metric", parent: parentItem({ multiplier: 2 }), sheets: [{ sheet: "A1", shapes: 1, deducts: 1, deductArea: 100, quantity: 1000 }],
+    expect: { measured: 1000 * SF_M2, unit: "m²", deductArea: 100 * SF_M2, areaUnit: "m²", lengthUnit: "m", multiplied: "92.903 m² × 2 = 185.8061 m²" },
+  },
+  // A volume: 10 CY = 7.64555 m³, its 6" depth 0.1524 m, reached as m² × m.
+  {
+    id: "ex-volume-metric", parent: parentItem({ unit: "CY", calculated_quantity: 10, effective_quantity: 10, volume_depth_ft: 0.5 }), sheets: [],
+    expect: { measured: 10 * CY_M3, unit: "m³", depth: 0.5 * M, volumeIn: "in m³" },
+  },
+  // A sub-item written in metric: PARENT 100 LF read as 30.48 m.
+  { id: "ex-sub-metric", formula: "PARENT * 0.5", parent: 100, parentUnit: "LF", expect: { substituted: "30.48 × 0.5", value: 15.24 } },
+  // A dimension read in metres: 2 ft = 0.6096 m, × 100 SF = 9.290304 m².
+  { id: "ex-sub-dim", formula: "{dim:d1} * PARENT", parent: 100, parentUnit: "SF", dims: { d1: 2 }, expect: { substituted: "0.6096 × 9.2903", value: 0.6096 * 100 * SF_M2, dimUnit: "m" } },
+];
+
+/** The export in metric: a sub-item's live expression read on the metric environment against the
+ *  metric cell, the parent's Qty and the Dimensions sheet in metric; null keeps the number. */
+export const EXCEL_METRIC_CASES = [
+  { id: "xm-scale", formula: "PARENT * 0.5", parent: 100, parentUnit: "LF", cell: 50 * M, live: true },
+  { id: "xm-dim", formula: "{dim:d1} * PARENT", parent: 100, parentUnit: "SF", dims: { d1: 2 }, cell: 200 * M * M * M, live: true },
+  // Written in imperial with a constant: 101 LF = 30.7848 m in the cell, but read in metric it is
+  // 31.48: it keeps its number.
+  { id: "xm-plus-imperial", formula: "PARENT + 1", parent: 100, parentUnit: "LF", cell: 101 * M, live: false },
+];
