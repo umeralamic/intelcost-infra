@@ -336,3 +336,18 @@ switching" Imperial. Mail guard on.
 Every fixture account's workspace purged after each block (`purge-fx`, storage 0 each time); the
 duplicates made in the estimator throwaway workspace purged (trash, purge; 0 objects under deleted
 projects). "zz switching" and Riverside in that workspace are as they were this morning.
+
+## After the final report — three bugs from the click sessions fixed (D-386) (08:40 UTC)
+
+Bugs, not choices, so fixed in the remaining time:
+- **C28:** finishing a run with a double-click stored the end point twice. Now: click + double-click
+  stores 2 points, click + click + double-click 3 (checked in the database on a duplicate of "zz
+  switching").
+- **C22:** Cancel on an upload in flight waited for the whole part (a file under the part size: the whole
+  file), with no sign it was heard. Now the part in flight is aborted: on a 3 MB file at an emulated
+  50 KB/s, the row's Cancel was gone 144 ms after the click and the file was discarded from the project
+  (7-cancel-after-D386.png, 7b-cancel-timed.png).
+- **C12:** the sub-items editor opened wide and the window narrowed to 390 px now comes back on screen
+  (x 124–382, Save at 321–370) (7-editor-after-resize-D386.png).
+- **Commit:** app `d27194c`. **Gates:** lint, typecheck, build; quantity table passed. The duplicate
+  purged; storage 0 under deleted projects. The C items stay open for your own check.

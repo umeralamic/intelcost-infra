@@ -68,14 +68,14 @@ Each is a default I picked to finish the block; answer by number like the others
 | CH9 | 7 (D-384) | "Saved by N people" counts copies (one person saving twice reads 2), as the brief's check expects. | Count people. |
 | CH10 | 5 (D-382) | The Stripe library pins API version 2026-09-30.endive; our code reads both subscription shapes. | Pin our own version setting. |
 
-## Found in the click sessions, not fixed (DAY_REPORT, stretch list)
+## Found in the click sessions
 
-- **C28:** a double-click that finishes a Linear run stores its end point twice (a zero-length last
-  segment); quantities are right, point counts read one too many.
-- **C22:** in Add sheets, Cancel on an upload in flight did nothing and no Retry appeared (seen with
-  the browser's upload speed emulated at 50 KB/s; the file was left unfinished).
-- **C12:** the sub-items editor opened at desktop width and then narrowed to 390 px stays partly
-  off-screen (Save hidden) until dragged; opened at 390 px it fits.
+**Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
+double-click; C22's Cancel that did nothing on an upload in flight (now stops in about 0.1 s and the
+file is discarded); C12's editor left off-screen after the window narrowed. The C items stay open for
+your own click check.
+
+**Not fixed, for you:**
 - **C1:** the Delete page confirmation reads "removes … every measurement … on it. No measurements
   are affected." (the second sentence is the live count) and reads as a contradiction.
 - **C4:** in Add sheets, "Name sheets from title block" and "Set scale automatically" (AI credits) were

@@ -13367,3 +13367,19 @@ it belongs to, as before; the colour palette keeps `data-noedit`.
    carries no name, email, avatar or user id (its `id` is a hash salted with the link), and the guest
    bundle's items carry no creator name.
 4. **Live work off:** the presence answer is empty: no cursors, no page markers.
+
+## D-386: Three fixes from the 2026-10-12 click sessions
+
+**Status:** Accepted (2026-10-12; bugs found while running C28, C22 and C12, fixed in the day run's
+remaining time).
+
+1. **A double-click finishing a run stores its end point once.** The double-click's second click placed
+   the end point again (a zero-length last segment; point counts one too many). Finishing on a
+   double-click drops trailing repeats (`SheetCanvas.handleDoubleClick`). Enter is unchanged.
+2. **Cancel stops an upload at once.** A cancel took effect only between parts, so a one-part file (any
+   file under the part size) ran to the end with no sign the cancel was heard. The part in flight is now
+   aborted (`uploads/store.ts` holds an `AbortController` per job; `upload.ts` passes its signal to
+   `uploadPart` and turns the abort into `UploadCancelled`), the file is discarded and the row reads
+   cancelled.
+3. **The sub-items editor stays on screen when the window narrows.** A resize pulls the floating panel
+   back inside the window (`SubItemsDialog`), as dragging already kept a strip of it on screen.
