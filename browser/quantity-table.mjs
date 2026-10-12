@@ -19,6 +19,7 @@ import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./l
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
+import { DISPLAY_CASES, ENTRY_CASES, MANUAL_CASES } from "./lib/metric-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -49,6 +50,7 @@ let ac;
 let subs;
 let xl;
 let ex;
+let mt;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -202,6 +204,23 @@ try {
       return { substituted: e.substituted, steps: e.steps, value: e.value, app: f.evaluateFormula(c.formula, env).value };
     });
   }, EXPLAIN_CASES);
+  // Metric rows (D-375, D-376): lib/measure and the dimension parser.
+  mt = await page.evaluate(async ([entry, display, manual]) => {
+    const m = await import("/src/lib/measure.ts");
+    const d = await import("/src/lib/takeoff/dimensions/parseDimension.ts");
+    const z = await import("/src/lib/takeoff/dimensions/itemDimensions.ts");
+    return {
+      entry: entry.map((c) => {
+        const feet = d.parseHeightFeet(c.raw, true);
+        return { feet, readback: feet === null ? null : m.formatMetricLength(feet, c.raw), zero: feet === null ? null : z.isEmptyOrZeroDimensionValue(feet) };
+      }),
+      display: display.map((c) => m.displayQuantity(c.value, c.unit, "metric")),
+      manual: manual.map((c) => {
+        const stored = c.typed / m.metricFactor(c.tool);
+        return { stored, shownText: m.formatDisplayQuantity(stored, c.tool, "metric") };
+      }),
+    };
+  }, [ENTRY_CASES, DISPLAY_CASES, MANUAL_CASES]);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
@@ -977,6 +996,23 @@ for (const [i, c] of EXPLAIN_CASES.entries()) {
   if (!(typeof got.value === "number" && Math.abs(got.value - c.value) <= 1e-6 * Math.max(1, Math.abs(c.value)))) wrong.push(`${c.id}: ${got.value}, expected ${c.value}`);
 }
 
+// Metric rows (D-375, D-376): exact feet, the read-back text exactly, the zero rule.
+const near = (a, b) => typeof a === "number" && Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b));
+for (const [i, c] of ENTRY_CASES.entries()) {
+  const got = mt.entry[i];
+  if (!near(got.feet, c.feet)) wrong.push(`${c.id}: ${got.feet} ft, expected ${c.feet}`);
+  if (got.readback !== c.readback) wrong.push(`${c.id}: read back "${got.readback}", expected "${c.readback}"`);
+  if (Boolean(c.zero) !== Boolean(got.zero)) wrong.push(`${c.id}: zero rule ${got.zero}`);
+}
+for (const [i, c] of DISPLAY_CASES.entries()) {
+  const got = mt.display[i];
+  if (!near(got.value, c.shown) || got.unit !== c.label) wrong.push(`${c.id}: ${got.value} ${got.unit}, expected ${c.shown} ${c.label}`);
+}
+for (const [i, c] of MANUAL_CASES.entries()) {
+  const got = mt.manual[i];
+  if (!near(got.stored, c.stored) || got.shownText !== c.shownText) wrong.push(`${c.id}: stored ${got.stored} shown "${got.shownText}"`);
+}
+
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
 for (const c of CREDIT_CASES) {
   const got = pythonCredits.get(c.id);
@@ -992,5 +1028,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length} metric rows right; passed`,
 );
