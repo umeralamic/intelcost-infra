@@ -91,7 +91,11 @@ your own click check.
   Operator $31.26 against $53.76 at Ada County). Your rule ("a National avg tag shows close to the
   national figure") would mean dropping the index there too: one line in the engine (the MAX always),
   or a different tag for an indexed fill. Your call; not changed.
-- **C15 Set values in one request:** planned, not built (plan in the day report).
+- **C15 Set values in one request:** built (D-394).
+- **Metric, still imperial (D-397 5):** sub-items Insert menu previews (M); earthwork registration
+  panel and datum offset in feet (M); site join check in feet (S–M); earthwork units follow the sheet
+  scale, not the project: your call first (M); guest shared view quantities (M/L); template library
+  preview (M); shared equipment usage formulas untagged (S–M).
 
 **Fixed later in the day (D-388, app `1c205f6`):** the Wage Calculator's dead end when the wage
 determination changed on review, and Advanced opening on "Pick a state" for a Texas project (test 16).
@@ -203,7 +207,7 @@ small "1 in use" beside them; the page text runs them together.
   - two migrations: `d373a1b9c4e5` (currency) and `d374b6c2d9e1` (unit system);
   - Metric is live for all; no setting needed (D-396: `METRIC_ENABLED` is removed).
 - **Migrations since `d374b6c2d9e1`** (2026-10-12, in order, each after the one before; head
-  `d383e7a2b5c4`):
+  `d384f2a6c8e1`):
   1. `d378c9d2e6f4`: `takeoff_item.formula_unit_system`, `assembly_template.unit_system` (D-378);
   2. `d379e1a4b7c2`: `earthwork_bank_quantity`, and `unit_pinned` on `takeoff_item`,
      `takeoff_cost_component`, `assembly_child`, `assembly_component` (D-379);
@@ -212,7 +216,8 @@ small "1 in use" beside them; the page text runs them together.
   4. `d381b2c4e6a8`: `project_share_link.show_member_names` (D-385);
   5. `d382c6f1a9b3`: `project_craft_rate.local_index` (D-391);
   6. `d383e7a2b5c4`: `project_share_copy.link_id`, `.copy_project_id`, `.job_uuid`,
-     `.completed_at` (backfilled from `created_at`) and a unique index on link and viewer (D-392).
+     `.completed_at` (backfilled from `created_at`) and a unique index on link and viewer (D-392);
+  7. `d384f2a6c8e1`: `takeoff_cost_component.formula_unit_system`, default imperial (D-397).
 - **Viewer presence load** (D-385, D-393): every viewer of a shared link polls
   `GET /api/share/{token}/presence` once a second. The answer is kept in Redis for one second per link,
   so a burst of viewers makes one database read, but every request still reaches the api. bcrypt only on

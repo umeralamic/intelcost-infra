@@ -13520,3 +13520,33 @@ until Phase E ships).
 workspace update), `metric_available` on the workspace read, and the app's `metricOffered` gate and its
 "Metric is coming soon." line. Every account sees Imperial and Metric in Settings › General and in Edit
 project. Storage stays imperial (D-374); a switch changes how quantities are shown and typed only.
+
+## D-397: The last imperial spots inside a metric project
+
+**Status:** Accepted (2026-10-12; the founder's Block 2).
+
+1. **Cost-component formulas follow Phase E's rule (D-378).** Each component carries
+   `formula_unit_system` (migration `d384f2a6c8e1`, existing ones imperial), set to the project's
+   system when its QTY or duration formula is typed or changed, or placed from an assembly; a formula
+   left as it was keeps its tag. It is always read in that system (`lib/estimate/components.ts`): in
+   metric QTY, PARENT, siblings and rough measurements in their own metric units and dimensions in
+   metres (the env carries each figure's unit, `componentEnv`), the result back in the component's
+   stored unit (a pinned unit never converts); a duration's result is time, unconverted. Only the
+   app evaluates components; the api stores the tag. The dialog's preview reads as the save will tag.
+2. **The Quantity popover tells its math in metric.** A metric-written sub-item formula is explained
+   on the metric environment (values, steps, result, inputs in m, m², …); one still written in
+   imperial is shown as it was worked, with "Written in Imperial … = 99.10 m²". A parent's figures,
+   deducts, height and volume (as m² × m, no ÷ 27) are told in metric (`parentInMetric`).
+3. **The export in metric.** The Dimensions sheet holds metres (unit M), each dimension through its
+   own unit; a sub-item's live expression is read on the metric environment against the metric cell,
+   so a metric-written formula or a pure scale goes out live (`Dimensions!C2*E7`, `E7+1`) and one
+   adding a constant in imperial units keeps its number.
+4. **Small spots fixed:** the live vertex-drag badge and the "Drawing:" figure show the metric unit
+   in metric; the assemblies panel, the template costs dialog and Link to measurement show units
+   through `m.unit`.
+5. **Listed, not fixed (founder's list):** the sub-items Insert menu's PARENT, perimeter and
+   dimension previews (M); earthwork registration panel and datum offset input in feet (M); site join
+   check in feet (S–M); earthwork's unit following the sheet's scale rather than the project (a
+   decision first, M); the guest shared view's quantities (needs `unit_system` in the bundle, M/L);
+   the template library's preview quantity and rates (M); shared equipment usage formulas (QTY in
+   hours), not tagged yet (S–M, the same rule as components).
