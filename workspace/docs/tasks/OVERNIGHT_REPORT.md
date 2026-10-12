@@ -61,6 +61,36 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Re-verification after Step 9 (02:35–03:00 UTC)
+
+The committed code was run with Phase E stashed and the app container restarted.
+
+- **Earthwork in metric (not yet driven before):** a small site was built on "zz switching" through the
+  app's own routes (a square Work Boundary; EG spots at 100 ft and FG spots at 98 ft, so a uniform 2 ft
+  cut), then Calculate was run in the browser.
+  - Imperial: Cut 23 BCY (22.6949), Net −23 CY, Soil Export (23 BCY) 28 LCY, 172 SF uncovered.
+  - Metric: Cut 17 BCM (17.3515 = 22.6949 × 0.764555), Net −17 m³, Soil Export 22 LCM, 16 m²
+    uncovered, threshold in m. Back to Imperial: byte-identical. Passed.
+  - The Takeoff panel rows: Remaining Site Cut 22.69 BCY → 17.35 BCM; Remaining Site Fill 0 CCY →
+    0.00 CCM; Soil Export 28.37 LCY → 21.69 LCM.
+  - **Bug found and fixed (`a38ce4a`):** Calculate's line names kept "(23 BCY)" in metric. The api sends
+    `name_base` equal to the whole name, so the conversion was skipped, and the row printed the base
+    directly. Calculate's lines now convert their whole name, at the figure's own precision ("Soil
+    Export (18 BCM)"). **Known limit:** the name carries Calculate's whole number (23), so its metric
+    bracket (18) can be one off the panel's exact 17. Exact needs Calculate to store the bank figure on
+    the line (or names rebuilt per system at Calculate time). Left for review.
+- **Hover (not yet driven before):** inside "Slab smoke": Imperial "1,078.94 SF × 4"D ÷ 27 = 13.32 CY";
+  Metric "100.24 m² × 0.10 mD = 10.18 m³". Passed. **Cosmetic:** a 4" depth is 0.1016 m and shows
+  "0.10 m", so the shown product (10.02) looks off from the true 10.18. Three places below 1 m would read
+  better; left for review.
+- **Dimension tool (not yet driven before):** a new dimension read `40'-9 5/8"` in Imperial and
+  "12.44 m" in Metric. Passed.
+- **The tag:** "Metric · €" (both changed), "CA$" (currency only), none at the defaults. Passed.
+- **Currency and Metric together:** Estimating in EUR + Metric vs USD + Imperial. Every total (labour,
+  equipment, material, item cost) had the same number, € shown; Full estimate €3,539.96 / $3,539.96.
+  The total is lower than Step 8's $4,726.60 because Phase E's test sub-items made "Slope smoke" a
+  parent whose unpriced sub-items replace its own $1,186.64 (4,726.60 − 1,186.64 = 3,539.96). Passed.
+
 ## Step 9 — Metric Phase E, sub-item formulas — STASHED `overnight-metric-phase-e` (02:31 UTC)
 
 **Not committed, as the brief says.** The same stash name is used in three repos (`git stash list` in each):
