@@ -208,3 +208,11 @@ export const EXCEL_METRIC_CASES = [
   // 31.48: it keeps its number.
   { id: "xm-plus-imperial", formula: "PARENT + 1", parent: 100, parentUnit: "LF", cell: 101 * M, live: false },
 ];
+
+// D-399…D-404: the six imperial spots closed. Each row names the screen it stands for.
+export const CLOSE_CASES = [
+  // D-399, the guest view: the shared project's quantities through the project's own format.
+  { id: "guest-sf", kind: "guest-format", value: 1000, unit: "SF", expect: "92.90 m²" },
+  { id: "guest-lf-waste", kind: "guest-quantity", value: 44 * 1.1, unit: "LF", expect: 44 * 1.1 * M },
+  { id: "guest-ea", kind: "guest-format", value: 11, unit: "EA", expect: "11 EA" },
+];
