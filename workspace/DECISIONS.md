@@ -13815,3 +13815,15 @@ D-177 (the unit table gains SY and TON), D-375 2 (TON now converts in metric).
       - 10,000 × 2 × 110 × 0.06 ÷ 2000 = 66.0 TON;
       - Excavate & Recompact 740.7 CY.
     - **lb/SY:** 40 lb/SY on 10,000 SF = 1,111.1 SY × 40 ÷ 2000 = 22.2 TON.
+
+## D-408: The overlapping Site Features warning is not shown
+
+**Status:** Accepted (2026-10-13, Umer).
+
+The Earthwork Volumes panel, and the site view's result, no longer list "Overlapping role areas: A ↔ B,
+… — top item wins the overlap."
+- **Why:** overlapping Site Features are by design, with the one drawn last winning
+  (D-136 Q6), so the line was noise. On a real site it ran to a paragraph.
+- **Engine:** it still returns the `role_overlap` warning in the result. The quantity table and
+  stored results are unchanged; only the panels filter it out (`lib/takeoff/earthwork/warnings.ts`).
+- Every other warning still shows (partial coverage, surface errors, the elevation checks).
