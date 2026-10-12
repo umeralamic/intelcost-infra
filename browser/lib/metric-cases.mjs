@@ -215,4 +215,10 @@ export const CLOSE_CASES = [
   { id: "guest-sf", kind: "guest-format", value: 1000, unit: "SF", expect: "92.90 m²" },
   { id: "guest-lf-waste", kind: "guest-quantity", value: 44 * 1.1, unit: "LF", expect: 44 * 1.1 * M },
   { id: "guest-ea", kind: "guest-format", value: 11, unit: "EA", expect: "11 EA" },
+  // D-400, the sub-items Insert menu: PARENT and PERIMETER as a metric formula reads them, and a
+  // dimension typed in inches (36 in = 3 ft = 0.9144 m, under 1 m in whole mm).
+  { id: "insert-parent", kind: "guest-format", value: 100, unit: "LF", expect: "30.48 m" },
+  { id: "insert-perimeter", kind: "guest-format", value: 50, unit: "LF", expect: "15.24 m" },
+  { id: "insert-dim-in", kind: "dim-length", dim: { local_key: "d1", name: "Height", kind: "vertical", value: 36, unit: "IN" }, expect: "914 mm" },
+  { id: "insert-dim-ft", kind: "dim-length", dim: { local_key: "d1", name: "Height", kind: "vertical", value: 12, unit: "FT" }, expect: "3.66 m" },
 ];

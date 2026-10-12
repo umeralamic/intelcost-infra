@@ -284,8 +284,11 @@ try {
   // D-399…D-404: the six spots closed, each through the code its screen calls.
   mt.close = await page.evaluate(async (cases) => {
     const lo = await import("/src/features/project/locale.ts");
+    const ms = await import("/src/lib/measure.ts");
+    const dm = await import("/src/lib/takeoff/dimensions/itemDimensions.ts");
     const metric = lo.measureFormat("metric");
     return cases.map((c) => {
+      if (c.kind === "dim-length") return ms.formatMetricLength(dm.dimensionFeetMap([{ ...c.dim, id: "x", item_id: "i" }]).get(c.dim.local_key) ?? NaN);
       if (c.kind === "guest-format") return metric.format(c.value, c.unit);
       if (c.kind === "guest-quantity") return metric.quantity(c.value, c.unit).value;
       return { error: "unknown kind " + c.kind };
