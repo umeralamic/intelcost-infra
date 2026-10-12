@@ -91,6 +91,12 @@ your own click check.
   Tool Operator $15.34 against $62.57) and tagged "National avg" (the spec's R-02 tag). That follows
   the engine's rule; the tag may mislead.
 
+- **C31 test 19:** with company benefits at 0% the rate drops as it should, but there is no breakdown
+  ("Company benefits $0.00") for National Average crafts: the engine returns no parts for them, and
+  the review hides zero parts. Splitting a published national rate into parts is a design call.
+- **C31 test 21:** "Rate = WD base wage" holds only with WD-only on; under the default higher-of the WD
+  rate is raised (R-01). Should the test say WD-only, or should Direct labor skip higher-of?
+
 **Fixed later in the day (D-388, app `1c205f6`):** the Wage Calculator's dead end when the wage
 determination changed on review, and Advanced opening on "Pick a state" for a Texas project (test 16).
 
