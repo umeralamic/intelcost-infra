@@ -377,7 +377,7 @@ Bugs, not choices, so fixed in the remaining time:
   the old code, gone on the new), and Advanced starting on the project's state with A-03b.
 - **Gates:** lint, typecheck, build; quantity table passed. The copy was purged.
 
-- **Then (09:55 UTC) tests 18–21** on another copy (purged): 18 and 20 pass; 21 passes with WD-only
+- **Then (09:45 UTC) tests 18–21** on another copy (purged): 18 and 20 pass; 21 passes with WD-only
   on (under the default higher-of the rate is raised, on your list); 19 fails: no breakdown for National
   Average crafts (on your list). The workspace's company benefits were set back to blank, read back
   from the api. Only 12 and 15 of the 21 are still not driven.
