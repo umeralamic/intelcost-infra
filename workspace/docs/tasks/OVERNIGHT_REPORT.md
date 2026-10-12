@@ -61,6 +61,79 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Step 9 — Metric Phase E, sub-item formulas — STASHED `overnight-metric-phase-e` (02:31 UTC)
+
+**Not committed, as the brief says.** The same stash name is used in three repos (`git stash list` in each):
+
+| Repo | What the stash holds |
+|---|---|
+| app | `lib/takeoff/subItems/inSystem.ts` (new: `evaluateInSystem`, `metricEnv`, `hasNumericConstant`, `formulasWithConstants`); `features/takeoff/items/SubItemsDialog.tsx` (the editor's preview evaluates in the project's system); `pages/ProjectTakeoff.tsx` (`placeAssembly`, the cross-system warning before Use on sheet); `features/assembly/api.ts` (`unit_system`) |
+| api | `takeoff/formula_system.py` (new, the twin: `evaluate_in_system`, `metric_env`, `TO_METRIC`); `takeoff/sub_items.py` (`recompute_children(unit_system=…)`); `takeoff/service.py` (`recompute_item` reads the project's system); `assembly/{models,schemas,routes}.py` (`assembly_template.unit_system`, a template saved from a metric project is tagged metric); migration `d378c9d2e6f4` |
+| infra | the quantity table's Phase E rows (`metric-cases.mjs` `FORMULA_SYSTEM_CASES`, `CONSTANT_CASES`), the api driver's `fxsystem` mode, `quantity-table.sh` |
+
+**To try it:** `git stash apply stash^{/overnight-metric-phase-e}` in each repo, then
+`alembic upgrade head` in the api container. **The bench was downgraded back to `d374b6c2d9e1`
+before stashing,** so it matches the committed code.
+
+### What it does
+- **Imperial project:** `evaluateInSystem` / `evaluate_in_system` call the existing evaluator unchanged
+  (the same call, no factor multiplied in).
+- **Metric project:** PARENT in the parent's metric unit (× f of its stored unit), PERIMETER and every
+  named dimension in metres. The result is stored ÷ f of the sub-item's own unit. Primitives with an
+  explicit unit (`AREA_SF`, `LINEAR_M`) and `{qty:…@UNIT}` tokens keep their imperial sources, because
+  they convert themselves. A sub-item in EA, LS or a unit with no metric form keeps the figure as
+  computed.
+- **Templates:** a `unit_system` tag (existing ones imperial). Using a template from the other system
+  names every formula with a numeric constant before it is placed ("Use anyway" / Cancel).
+
+### Phase E quantity-table results (with the stash applied)
+All **344 rows + 17 metric rows + the 34 existing sub-item rows passed unchanged**, plus **8 Phase E rows**,
+7 of them on both engines with the app and api agreeing to 1e-9:
+
+| Row | Formula | Parent | Sub-item unit | Stored (expected) | Result |
+|---|---|---|---|---|---|
+| fx-half | `PARENT * 0.5` | 100 LF | LF | 50 | right, both engines |
+| fx-divide | `PARENT / 2` | 100 LF | LF | 50 | right, both engines |
+| fx-plus-one | `PARENT + 1` | 100 LF | LF | 103.280840 (31.48 m) | right, both engines |
+| fx-plus-one-imperial | `PARENT + 1` | 100 LF, imperial | LF | 101 | right, both engines |
+| fx-dim | `{dim:d1} * PARENT`, d1 = 2 ft | 100 SF | CF | 200 | right, both engines |
+| fx-power | `PARENT * 2^2` (^ first, D-251) | 100 LF | LF | 400 | right, both engines |
+| fx-ea-result | `PARENT / 2` | 100 LF | EA | 15.24 | right, both engines |
+| fx-template-warning | four formulas | — | — | ["Half", "Plus one"] | right (app) |
+
+### Browser checks (with the stash applied, on the throwaway)
+- **Imperial results byte-identical.** Five sub-items were made on "zz switching" before the Phase E
+  code went in (`PARENT * 0.5`, `PARENT / 2`, `PARENT + 1`, `{dim:d1} * PARENT` with d1 = 2 ft,
+  `PARENT * 2^2`), and every sub-item in the throwaway workspace (6, with Riverside's) was snapshotted
+  from the database. Both imperial parents were then recomputed with Phase E live (`updated_at` moved).
+  `diff` of before and after: **byte-identical**. Passed.
+- **Metric:** with the project switched to Metric and recomputed, `PARENT + 1` stored **48.896627 LF**
+  (45.615787 LF = 13.9037 m, + 1 m, ÷ 0.3048, hand-checked). The four other formulas were unchanged.
+  Back to Imperial and recomputed: 46.615787 again. A switch alone (no recompute) changed nothing.
+- **Template warning:** "Slope smoke" saved as the assembly "Phase E template smoke" from the imperial
+  project, then the project set to Metric and the assembly used on the sheet. The dialog read:
+  "'Phase E template smoke' was written in Imperial; this project is Metric. These formulas contain
+  numeric constants, which are not converted: E half (PARENT * 0.5); E divide (PARENT / 2); E plus one
+  (PARENT + 1); E power (PARENT * 2^2)." `{dim:d1} * PARENT` was not listed. Passed. (The project was
+  set back to Imperial. The assembly stays in the throwaway workspace.)
+
+### What I am unsure of (review before it ships)
+1. **A switch changes stored results on the next recompute, for any formula with an added constant.**
+   `PARENT + 1` is 46.615787 LF in Imperial and 48.896627 LF after a metric recompute. A switch alone
+   writes nothing, but the next recompute does, so the project reads inconsistently until then. That
+   contradicts "switching never changes a stored value" (D-374 2). **Recommendation:** tag each sub-item
+   formula with the system it was written in (`formula_unit_system`), and always evaluate it in that
+   system. Switching a project then never moves a result, and only new or retyped formulas follow the
+   project. It is a small addition to this stash.
+2. **Sibling and rough-measurement references** (`{ref:…}`, a sibling's name) are read at their stored
+   imperial values in a metric formula. Should they be converted by their own units?
+3. **Variables** keep their stated units (question 4 of the plan).
+4. **The brief asks for every formula with a numeric constant** in the warning. That includes pure scale
+   factors (`PARENT * 0.5`), which convert correctly. The warning could be limited to added and
+   subtracted constants, which do not.
+5. **Cost-component formulas** (`QTY`-based) are not in this stash. They price per unit and follow
+   Phase D's rate rule, but their QTY is imperial.
+
 ## Step 8 — Metric Phase D, Estimating, export, rates (D-377) — shipped (02:03 UTC)
 
 - **What:**
