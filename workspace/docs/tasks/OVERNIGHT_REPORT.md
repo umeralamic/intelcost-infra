@@ -4,7 +4,6 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Updated after every step. Started 
 
 ## Step 0 — Browser check
 
-_In progress._
 Done 23:37 UTC. The Playwright MCP connects and drives the app on the bench (`localhost:5173`),
 signed in as the throwaway account on "zz switching". The MCP is used for every check tonight.
 
@@ -19,3 +18,129 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
 - **Gates:** lint, typecheck, build pass; quantity table 344 rows passed.
 - **Browser:** Linear, Segment, Area and Count each opened their dialog with the right title;
   Properties on "Slab smoke" read "Properties". Passed.
+
+## Step 3 — Currency (D-373) — shipped (00:32 UTC)
+
+- **What:**
+  - `workspace.currency` and `project.currency` (ISO code, default USD; migration `d373a1b9c4e5`).
+    A new project copies the workspace's currency; changing the workspace later leaves projects alone.
+  - Settings › Estimating has "Currency" with the note "Changing currency changes the symbol only.
+    Amounts are not converted." Edit project has "Currency" with the same note.
+  - One formatter (`lib/money.ts`: `formatMoney`, `currencySymbol`, `excelMoneyFormat`) and a project
+    locale context (`features/project/locale.ts`: `useCurrency`, `useMoney`) mounted on the project
+    screen and the Estimating settings preview.
+  - `fmtMoney` takes the currency. Every "$" in the inventory now uses it: Estimating grid, sidebar
+    reports, bid summary, cost components, equipment, the item costs, set values and sub-item cost
+    placeholders, assembly placeholders and the "priced" badge, the cost-component total in item rows,
+    delete prompts, the guest share page (the api's guest bundle carries `currency`), and the Excel
+    money format (`moneyFmt(currency)` on the grid and the Bid Summary sheet). Estimating's typed-number
+    parser strips any symbol.
+  - **Wages stay USD:** the Wage Calculator and the crew rows keep "$". In a non-USD project the Wage
+    Calculator shows "Wage data is US data in USD. This project is in EUR; the rates below are shown in
+    US dollars and are not converted."
+- **Files:** api `core/locale.py` (new), `workspace/{models,schemas,routes,service}.py`,
+  `project/{models,schemas,service}.py`, `share/{schemas,routes}.py`, migration `d373a1b9c4e5`; app
+  `lib/money.ts`, `features/project/locale.ts` (new), `lib/estimate/{costing,workbook,componentEnv}.ts`,
+  `features/estimate/{EstimatingView,BidSummary,ComponentDialog,EquipmentDialog,ItemCostsDialog,SetValuesDialog}.tsx`,
+  `features/assembly/{AssembliesPanel,TemplateComponents,TemplateDialogs}.tsx`, `features/takeoff/components/ItemRow.tsx`,
+  `features/takeoff/items/SubItemsDialog.tsx`, `features/wage-calculator/WageCalculator.tsx`,
+  `features/project/components/NewProjectDialog.tsx`, `features/share/api.ts`, `pages/{ProjectTakeoff,SettingsEstimating,GuestProject}.tsx`,
+  `core/api/types.ts`.
+- **Commits:** app `57f7b80`, api `1fe9f82`.
+- **Gates:** app lint, typecheck, build; api ruff, format, mypy, `alembic upgrade head`; quantity table
+  344 rows passed.
+- **Browser (throwaway "zz switching", priced through Set values: 5 % wastage, 0.25 MH at 42.50/h,
+  1.75 equipment, 12.40 material on 9 rows; Full estimate 4,726.60):**
+  - 40 amounts on the screen read in USD, then EUR, then CA$, then USD again through Edit project.
+    Every value was identical each time, only the symbol changed ($ → € → CA$ → $). Passed.
+  - Excel export in EUR and in USD: the money cells' format was `_("€"* #,##0.00_)…` and
+    `_("$"* #,##0.00_)…` on Base Bid and Bid Summary. All 130 numeric cells were identical between the
+    two files. Passed.
+  - Wage Calculator in EUR showed the US-data notice; in USD it did not. Passed.
+  - Settings › Estimating set to EUR: "zz switching" stayed USD, and a new project "zz currency smoke"
+    started in EUR. The workspace was set back to USD afterwards. Passed.
+- **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
+
+## Step 2 — Hard-coded unit and money inventory — done (00:20 UTC)
+
+Read-only sweep of both repos (tests, comments, the two unit registries and billing/AI-credit `$`
+excluded). Paths are app `src/` unless marked `api:`.
+
+**Three findings that shape Steps 4–9:**
+1. **Not all stored earthwork data is imperial.** A sheet calibrated in metres makes Calculate store
+   BCM/LCM/CCM and "M²" lines in metric (`lib/takeoff/earthwork/lines.ts:77-84`, `useVolumes.tsx:206`,
+   `api:features/earthwork/lines.py:218`). "Storage stays imperial" holds for takeoff items; earthwork
+   lines already follow the *sheet's* calibration unit, and Phase B must not convert them twice.
+2. **Unit text is baked into stored names.** Item names carry the suffix (" (40.0 LF, 7' - 6"H)",
+   `api:naming.py`); earthwork line names carry units ("Soil Export (1,234 BCY)", `lines.ts`). A display
+   toggle does not reach them unless names are rebuilt for display.
+3. **Metric exists piecemeal, keyed on the sheet's calibration unit "m"**, not on a project setting:
+   `descriptionSuffix.ts` (M, M²), `unitLabelFor` (LM/SM, no callers), the dimension tool
+   (`formatMeters`), `formatDimension`, the earthwork VolumePanel, Site Feature and Strip Area dialogs,
+   elevations, CalibrationDialog.
+
+### 1. Takeoff panel, item rows, Sheets panel, folder totals
+- `ItemRow.tsx:48` local `formatQuantity`; `:385` `{item.unit}`; `:556` sub-item unit; **`:614` cost total `$…`**; `:616` unit or "LS".
+- `SheetsPanel.tsx:95-96,798` local `formatQuantity(value, unit)` → "N {unit}".
+- `ProjectTakeoff.tsx:204-207` `TOOL_UNITS` LF/SF/EA; `:217-218` local `formatQuantity` (used 3547, 4935, 5661, 7572); `:7568` status bar type "LF"/"SF"; `:7577` "Perimeter: N LF"; `:4929` "Point Count: N EA"; `:4940` "N SF"/"N LF"; **`:3023` money with `currency: "USD"`**; `:6225,4236` "EA"/"SF".
+- Folder totals: `api:takeoff/service.py:2155-2173` rollup keyed by stored unit (no screen renders it).
+- `SnippetDialogs.tsx:337` unit; `AssembliesPanel.tsx:219,230` "0.00 {unit}", **`:220,231` "$" badge**.
+
+### 2. Hover panel, canvas labels, measure readouts
+- `HoverPanel.tsx:88` `sectionUnit` SF/LF; `:117-124` SF and LF lines; `:162,184,190` "This sheet", "Item total … {unit}"; `:194` "Unit:".
+- `SheetCanvas.tsx:2185` move chip "N SF"/"N LF".
+- Dimension tool: `engine/dimension.ts:9` `formatFeetInches`, `:27` `formatMeters`, `:45` `dimensionLabel` (on `page.metric`); `DimensionLayer.tsx:50`.
+- `LegendOverlay.tsx:202` "· perim N LF"; `:205` unit column.
+- `ScaleControls.tsx:181` "…compute LF / SF"; `:307,341` custom scale ft.
+- `CalibrationDialog.tsx:22,100,108` "Interpreted as N ft (N m)"; `ProjectTakeoff.tsx:1351,8218` toasts "N ft/m between points".
+- No scale bar, no live length readout while drawing.
+
+### 3. Measurement dialog, sub-items, named dimensions, variables
+- `MeasurementDialog.tsx:261` SF/CY fallback; `:312-314` tool unit; `:418-423` "…to give SF/CY"; `:449` dimension unit "FT"; `:914` "Manual Quantity in {unit}"; `:1061,1093` sub-item units.
+- `SubItemsDialog.tsx:638,1369` "PARENT = N {unit}"; `:646-647,733-734` Qty/Unit; **`:710-713` "$" placeholders**; `:1370-1372` "N LF", "N EA"; `:1408,918,1422,1437,1452` values with units.
+- `VariablesDialog.tsx:41` its own unit list (a fork of `UNIT_OPTIONS`); `:64` "(unit)".
+- `subItems/units.ts:11-14` `UNIT_OPTIONS`; `descriptionSuffix.ts:57-102`; `parseDimension.ts:173` `formatDimension`; `derived.ts`, `formula.ts` base units (formula syntax).
+- `TakeoffSettingsDialog.tsx:407-410` "Area (SF)", "Linear (LF)", "Count (EA)".
+
+### 4. Estimating tab
+- `EstimatingView.tsx:114-130` headers (Qty, Unit, Unit Man Hours, Per Hour Wage, Unit Equipment, Unit Material Cost, Totals, Item Cost); `:1242,1355` unit cell; **money via `fmtMoney`** at 1131, 1269-1295, 1624-1628, 1652, 1664-1668, 1736, 1818-1823, 1850; `:254-256` parser strips "$"; `:578-589,2343` "EA", "Unit changed to…".
+- **`BidSummary.tsx:67,72,234,239` `fmtMoney`.**
+- `QuantityPopover.tsx:77-166` "N {unit}", "(−N SF)", "× N ft", "÷ 27".
+- `ComponentDialog.tsx:135` host qty; `:181-182` "units / hr"; **`:201,275` `fmtMoney`; `:208,212,240,255,257` "Unit price ($)", "Rate ($)", "Mob / demob ($)", "Unit rate ($)", "Quote amount ($)"**.
+- **`EquipmentDialog.tsx:122,308-314,361,393` `fmtMoney`, literal "$0.00"; `:251,265` "Rate ($)", "Mob / demob ($)"; `:328,332` "$" header.**
+- `CostFormulaField.tsx:146-231` "N LF", "N EA".
+- **`ItemCostsDialog.tsx:22-25` "$" placeholders;** `:110` qty.
+- **`SetValuesDialog.tsx:17-21` "$ per hour", "$ per unit", "$ lump".**
+- **`CrewRows.tsx:124` "$N/hr"; `:216` "priced at $0"; `:399` "$/hr"** (crew wages: stay USD, D-373 4).
+- `SubItemEditDialog.tsx`, `RowDialogs.tsx`, `WastageDialog.tsx` units; **`componentEnv.ts:134` `currency: "USD"`**; `lines.ts:280-282` "EA"; `quantityExplain.ts` ft/SF/CF.
+
+### 5. Earthwork
+- `SiteView.tsx:124,1191-1217` Cut BCY, Fill CCY, Export/Import LCY, Strip/Undercut BCY, Prep SF (hard-coded); `:898` `units: "CY"`; `:300,503-504,531` "10 ft over"; `:1007` "px/ft"; `:1074` "Elev. ft".
+- `VolumePanel.tsx:121-124` metric-aware; `:198-200,273,359,538` rows, net, threshold, line qty.
+- `CalculateDialog.tsx:75-76` "each CY of compacted fill needs N CY of bank cut".
+- `SiteFeatureDialog.tsx`, `StripAreaDialog.tsx:128`, `useStripAreas.tsx:222` metric-aware.
+- `RegistrationPanel.tsx:40-41,240,284,291`, `useSiteJoin.tsx:274,278` ft only.
+- `EarthworkLayer.tsx:102`, `useEarthwork.tsx:391`, `ElevationPopover.tsx:84`, `EarthworkRunRows.tsx:93`, `LineInfoDialog.tsx:39` units.
+- `lib/takeoff/earthwork/lines.ts:65-153` units in line names; `surfaces.ts:45-53`; `volume/types.ts:28`; `elevationCheck.ts:291`.
+
+### 6. Crews, Wage Calculator, assemblies
+- Wage Calculator (stays USD, D-373 4): `wage-calculator/text.ts:178-179` `money()`; `WageReview.tsx` "$/hr", "$/manhour", "$/crew-hour"; `WageData.tsx:285-286,386-387`; `AdvancedSettings.tsx:108,179`, `text.ts:96` "per $100"; `api:wage_calculator/service.py:459,626`.
+- Assemblies: `TemplateDialogs.tsx:81-82` unit; **`:142-146` "$" placeholders**; `:197` "0.00 {unit}"; **`TemplateComponents.tsx:80,113` `fmtMoney`**; `api:assembly/routes.py:717` default "SF".
+
+### 7. Excel export
+- **`workbook.ts:28` `MONEY_FMT` with "$"** (used 119, 222, 280, 297, 388-418 bid sheet); `:345,359` Dimensions sheet unit "FT"; unit column from `line.unit`; `exportFormulas.ts:71` conversion formulas only.
+
+### 8. Reports, PDF/print, legends
+- `pages/Reports.tsx` is time tracking only (no units or money). Estimating's report totals are `fmtMoney`.
+- `print/*` no unit text. **`GuestProject.tsx:28,202,214,232` share page "N {unit}", "Qty", cost `$…`.**
+
+### 9. API-produced labels
+- `api:naming.py` units and the stored name suffix; `api:takeoff/service.py:787-797,2172` unit and rollup; `api:takeoff/formula.py` base units and errors; `api:share/routes.py:199` (lookup only); `api:estimate/*` passes units; `api:ai/*` billing only; `api:takeoff/models.py:409`, `schemas.py:226` default "EA".
+
+### 10. Settings
+- `SettingsEstimating` → `BidRatesEditor` "%" and `fmtMoney` preview; Wage Calculator and Crews as area 6.
+
+### 11. Other
+- `ExtractScheduleDialog.tsx:233,346`; `scheduleExtraction.ts:44`; `calibration.ts:34-41` `unitLabelFor`. Excluded as billing: `SettingsBilling`, `SettingsAiCredits`, `PlatformAiEconomics`, `PlatformSubscriptions`.
+
+**Answers.** *Weights:* only as units a person may pick (`UNIT_OPTIONS` TON, LB, KG; the Variables list LB, TON); nothing the app computes carries a weight, earthwork never does. *Money formatter:* `fmtMoney` in `lib/estimate/costing.ts:306`, hard-coded USD ("—" for 0), used by Estimating, Bid summary, Component and Equipment dialogs, assembly components; bypassed at `ItemRow:614`, `GuestProject:232`, wage `text.ts:179`, `componentEnv:134`, `ProjectTakeoff:3023`, `CrewRows:124`, `workbook` `MONEY_FMT`. *Quantity formatter:* none shared (eleven local copies). *Metric scale presets:* `lib/takeoff/scales.ts:54-85` has 1:5 to 1:5000, including 1:20, 1:50, 1:100, 1:200, 1:500; picking one sets the sheet metric.

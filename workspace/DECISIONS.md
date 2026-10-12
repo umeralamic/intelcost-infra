@@ -13109,3 +13109,21 @@ slope tick box reads "Apply a Slope Factor". **Where:** app `MeasurementDialog.t
 tool: Segment's create, a run drawn with Segment, and a paste of a Segment item read "Segment".
 Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:** app
 `MeasurementDialog.tsx` (`segment` prop), `pages/ProjectTakeoff.tsx`.
+
+## D-373: Currency: a workspace default and a per-project setting; the symbol only
+
+**Status:** Accepted (2026-10-11, Umer; overnight brief Step 3).
+
+1. **Where.** Settings › Estimating: "Currency", default USD, beside the bid defaults; the note
+   "Changing currency changes the symbol only. Amounts are not converted." Edit project: "Currency".
+   A new project copies the workspace's; changing the workspace later leaves existing projects alone.
+2. **Symbol only.** A currency is an ISO code (USD, CAD, EUR, GBP, AUD, NZD, PKR, INR, AED, SAR,
+   QAR, MXN, ZAR, SGD). Changing it changes how amounts are written (the symbol and the number
+   format), never their value: $10.00 becomes €10.00, not its exchange.
+3. **One formatter.** `formatMoney(amount, currency)` (and a currency-aware Excel number format)
+   replaces every hard-coded "$" in Estimating, the bid summary, cost components, the Excel export
+   and Reports, from the inventory in the overnight report (Step 2).
+4. **Wages stay USD.** The Wage Calculator and crew wage rates are US data in USD: they keep "$"
+   whatever the project's currency, and in a project whose currency is not USD the Wage Calculator
+   says so ("Wage data is US data in USD.") rather than relabelling its numbers.
+5. **Storage.** `workspace.currency` and `project.currency`, `String(3)`, not null, default `USD`.
