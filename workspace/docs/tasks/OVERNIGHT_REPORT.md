@@ -61,6 +61,21 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Step 7 — Phases D and E plan — written (01:35 UTC)
+
+[METRIC_PHASE_DE_PLAN.md](METRIC_PHASE_DE_PLAN.md):
+- **The rate rule:** stored per imperial unit, shown ÷ f, typed × f. A production rate (units per time)
+  is × f. Totals are the stored products, so they are identical to the cent.
+- **Phase D:** every per-unit field (unit man hours, unit material, unit equipment, a component's unit
+  price, unit rate and production rate), the grid's quantities and units, names, the Quantity popover,
+  the export's cells, and the Dimensions sheet.
+- **Phase E:** formulas evaluate with metric inputs and convert the result back, in both engines (the
+  app's `formula.ts` and the api's `formula.py`/`sub_items.py`). Imperial projects skip the path
+  entirely. Templates carry a unit-system tag and warn about formulas with constants.
+- The quantity-table rows for both phases, and **five questions for the founder** (sub-item units in
+  metric, wastage keys, constants on a cross-system apply, variables, earthwork's stored unit in a
+  metric project).
+
 ## Step 6 — Metric Phase C, entry (D-376) — shipped (01:30 UTC)
 
 - **What:**
