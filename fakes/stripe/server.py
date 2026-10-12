@@ -29,8 +29,11 @@ fake's own and not Stripe's:
     POST /_fake/subscriptions/<id>/seats?to=N       seats set, customer.subscription.updated
     POST /_fake/subscriptions/<id>/hide | unhide    404 for it while hidden (an event that fails)
                                                     (each of these four takes ?signature=bad)
-    POST /_fake/events/<id>/resend[?signature=bad]  the same event again (same id), freshly signed,
-                                                    or with a signature that does not verify
+    POST /_fake/events/<id>/resend[?signature=bad|expired]
+                                                    the same event again (same id), freshly signed,
+                                                    with a signature that does not verify, or
+                                                    signed correctly ten minutes ago (past the api's
+                                                    five-minute tolerance)
     GET  /_fake/events                              every event sent, with the api's answer
 
 Each control route answers with the event id and the api's status and body. State is in memory: a
@@ -95,19 +98,19 @@ def unflatten(pairs: list[tuple[str, str]]) -> dict[str, Any]:
     return listify(root)
 
 
-def sign(payload: bytes, *, bad: bool = False) -> str:
-    stamp = int(time.time())
+def sign(payload: bytes, *, bad: bool = False, expired: bool = False) -> str:
+    stamp = int(time.time()) - (600 if expired else 0)
     key = (SECRET + "x" if bad else SECRET).encode()
     digest = hmac.new(key, f"{stamp}.".encode() + payload, hashlib.sha256).hexdigest()
     return f"t={stamp},v1={digest}"
 
 
-def deliver(event: dict[str, Any], *, bad: bool = False) -> tuple[int, Any]:
+def deliver(event: dict[str, Any], *, bad: bool = False, expired: bool = False) -> tuple[int, Any]:
     payload = json.dumps(event).encode()
     request = urllib.request.Request(
         WEBHOOK_URL,
         data=payload,
-        headers={"Content-Type": "application/json", "Stripe-Signature": sign(payload, bad=bad)},
+        headers={"Content-Type": "application/json", "Stripe-Signature": sign(payload, bad=bad, expired=expired)},
         method="POST",
     )
     body: Any = None
@@ -122,7 +125,7 @@ def deliver(event: dict[str, Any], *, bad: bool = False) -> tuple[int, Any]:
         body = json.loads(raw) if raw else None
     except ValueError:
         body = raw.decode(errors="replace")
-    sent.append({"event": event["id"], "type": event["type"], "status": status, "body": body, "bad": bad})
+    sent.append({"event": event["id"], "type": event["type"], "status": status, "body": body, "bad": bad, "expired": expired})
     return status, body
 
 
@@ -432,7 +435,7 @@ class Handler(BaseHTTPRequestHandler):
             event = events.get(m[1])
             if not event:
                 return self._missing("event")
-            status, body = deliver(event, bad=query.get("signature") == "bad")
+            status, body = deliver(event, bad=query.get("signature") == "bad", expired=query.get("signature") == "expired")
             self._send(200, {"event": event["id"], "webhook_status": status, "webhook_body": body})
         else:
             self._missing("route")
