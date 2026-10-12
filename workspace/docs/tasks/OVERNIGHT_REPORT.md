@@ -61,6 +61,60 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Step 8 — Metric Phase D, Estimating, export, rates (D-377) — shipped (02:03 UTC)
+
+- **What:**
+  - **Grid:** Qty, Qty with Wastage and Total Qty are shown × f; Unit in metric; names rebuilt (D-375).
+    Unit Man Hours, Unit Equipment and Unit Material Cost are shown ÷ f, and a typed value is stored × f.
+    f is the line's own stored unit's factor; EA, LS, HR, %, TON and BCM rows have none.
+  - **Set values** stores each row's figure in its own unit, and "Use this row's rates" seeds the shown
+    figures.
+  - **Item Costs** (the item menu's Costs…), the **cost-component dialog** (unit price and unit rate
+    ÷ f; production rate × f; host quantity in metric) and the **sub-items editor's** cost cells and
+    quantities all convert.
+  - **Excel export:** quantity, unit and per-unit rate cells in the project's system; totals unchanged.
+  - **Stored precision:** a converted rate is stored at 6 places, the api's `Rate` and the column's
+    `Numeric(16, 6)`. The first try sent 12.5419104 and got a 422 from the api. That is why a typed
+    rate is rounded to storage's 6 places, so "full precision" means storage's precision.
+- **Left as is, by design:**
+  - The Quantity popover explains formula arithmetic, which is imperial until Phase E.
+  - Assembly template costs get the unit-system tag in Phase E.
+  - The export's Dimensions sheet stays in feet, because the exported sub-item formulas reference it
+    and are imperial until Phase E (D-377 5).
+  - Unit pickers (a row's unit select) still list codes.
+- **Files:** app `features/estimate/{EstimatingView,ItemCostsDialog,ComponentDialog}.tsx`,
+  `features/takeoff/items/SubItemsDialog.tsx`, `lib/measure.ts` (`storedRate`).
+- **Commit:** app `b0afbef`.
+- **Gates:** lint, typecheck, build; quantity table 344 + 17 metric rows passed.
+
+### Phase D total comparison (browser, "zz switching", priced)
+
+| Row (unit) | Unit material, Imperial | Unit material, Metric | Total material, both | Item cost, both |
+|---|---|---|---|---|
+| Footing smoke (CY) | $12.40 | $16.22 /m³ | $79.34 | $158.51 |
+| Manual smoke (EA) | $12.40 | $12.40 (EA) | $13.02 | $26.01 |
+| Slab smoke (CY) | $12.40 | $16.22 /m³ | $173.43 | $346.51 |
+| No-draw smoke (CY) | $12.40 | $16.22 /m³ | $651.00 | $1,300.69 |
+| Slope smoke (LF) | $12.40 | $40.68 /m | $593.92 | $1,186.64 |
+| Trench allowance (CY) | $12.40 | $16.22 /m³ | $520.80 | $1,040.55 |
+| Rebar allowance (TON) | $12.40 | $12.40 (TON) | $39.06 | $78.04 |
+| Sidewalk smoke (SY) | $12.40 | $14.83 /m² | $295.12 | $589.65 |
+
+- Every extended total in the grid (Total Man Hours, Total Labor Cost, Total Equipment, Total Material
+  Cost, Item Cost) **matched to the cent** between Imperial and Metric. All 40 money figures on the
+  screen did too, including the sidebar reports and the bid summary. Unit man hours read 0.25 MH/LF =
+  0.82 MH/m. Back in Imperial the screen was byte-identical to before. **Passed.**
+- **Stored rates:** all 14 lines' stored wage, material, equipment, man-hours, subcontract and wastage
+  (read from `/estimate/costs`) were byte-identical across five Imperial ↔ Metric round trips.
+  **Passed.**
+- **Exports:** Imperial vs Metric, 96 total and Bid Summary money cells, every one equal to the cent.
+  21 rate cells and 22 quantity cells differ, as converted. **Passed.**
+- **Typed in metric:** $15 into Unit Material Cost on the SY row read back $15.00, and stored
+  $12.541910/SY (15 × 0.83612736, at 6 places). The row's Total Material read $298.50 in Metric
+  (19.9 m² × 15) and $298.50 in Imperial (23.8 SY × 12.54191). $12.40 was typed back in Imperial
+  afterwards. **Passed.**
+- **Committed**, because every total matched.
+
 ## Step 7 — Phases D and E plan — written (01:35 UTC)
 
 [METRIC_PHASE_DE_PLAN.md](METRIC_PHASE_DE_PLAN.md):
@@ -195,8 +249,10 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
   - With the switch on: Settings › General offered Metric. "zz switching" switched Imperial → Metric →
     Imperial five times through Edit project. The header tag read "Metric" each time and disappeared on
     Imperial. Every stored figure of its 10 items (calculated and effective quantity, unit, height,
-    depth, override) and 9 estimate lines (wage, material, equipment, man-hours) was byte-identical
-    after every switch. Passed.
+    depth, override) was byte-identical after every switch. Passed. **Correction (02:03):** the line
+    rates in this check were read from `/estimate/line`, which does not carry them, so the claim about
+    9 estimate lines proved nothing. Re-checked under Step 8 against `/estimate/costs`: all 14 lines'
+    stored rates were byte-identical across five round trips.
 
 ## Step 2 — Hard-coded unit and money inventory — done (00:20 UTC)
 

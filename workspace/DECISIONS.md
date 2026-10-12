@@ -13185,3 +13185,25 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
 5. **The zero rule** holds in both systems: zero is zero in feet and in metres.
 6. **The check** is the quantity table's entry rows (150 mm, 2.5 m, 1200 mm, 0.3 m, 7' - 6" typed in a
    metric project, parsed, stored and read back), not a test suite (hard rule 8).
+
+## D-377: Metric Phase D: Estimating, the export and every unit rate, converted at display and entry only
+
+**Status:** Accepted (2026-10-12, Umer; overnight brief Step 8). **Plan:** [METRIC_PHASE_DE_PLAN.md](docs/tasks/METRIC_PHASE_DE_PLAN.md).
+
+1. **Rates.** Every per-unit figure stays stored per imperial unit. With `f` the line's stored unit's
+   metric factor (LF → 0.3048), a per-unit rate (unit man hours, unit material, unit equipment, a
+   component's unit price and unit rate) is shown ÷ f and a typed one stored × f at full precision
+   ($5.00/SF shows $53.82/m²; $54/m² stores $5.016764/SF). A production rate (units per hour or per
+   crew-day) is the other way round: shown × f, stored ÷ f. Lump sums, hourly wages, totals, wastage %
+   and multipliers are unaffected.
+2. **No conversion step.** Switching a priced project is display only: no confirmation, nothing
+   written. Toggling never changes a stored rate.
+3. **Totals identical.** Every extended total is the stored quantity × the stored rate, so it is the
+   same to the cent in both systems.
+4. **Quantities and names.** Estimating's Qty, Qty with Wastage, Total Qty, Unit and item names follow
+   D-375; a row whose unit has no metric form (EA, LS, HR, %, weights, BCM already metric) is shown and
+   typed as stored.
+5. **Export.** Quantity, unit and per-unit rate cells in the project's system; the totals are the same
+   numbers as the imperial export's. The Dimensions sheet stays in feet until Phase E: the exported
+   sub-item formulas are imperial and reference it; a formula whose Excel reading no longer matches the
+   app falls back to its value, as the export already does (`verifiedFormula`).
