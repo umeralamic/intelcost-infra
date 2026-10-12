@@ -13438,3 +13438,59 @@ remaining time).
 "Name sheets from title block" and "Set scale automatically" start unticked for someone who has never
 chosen (a scan's read can use AI credits). A choice made is still kept per person; only an explicit
 tick reads as ticked (`features/takeoff/load/auto-read.ts`).
+
+## D-391: An indexed fill says so: "National avg × local index (0.58)"
+
+**Status:** Accepted (2026-10-12; the founder's call on open shop's filled crafts).
+
+Open shop's filled crafts keep no national floor: they stay national × the local index (the median of
+the entered rates over national). Their tag now names the index, "National avg × local index (0.58)",
+the index as calculated to two places, in the review's notes, the craft's breakdown and the saved set's
+view (Essentials' read-only view uses the same). Where the national floor set the rate (a prevailing or
+union fill with an index below 1) the tag stays "National avg". The engine returns `local_index` only on
+a fill the index priced; the saved craft row keeps it (`project_craft_rate.local_index`, migration
+`d382c6f1a9b3`). No export lists craft rates or their tags (the estimate workbook carries each line's
+wage only), so there is no export to change.
+
+## D-392: One saved copy per viewer per share link
+
+**Status:** Accepted (2026-10-12; the founder's call after Block 7).
+
+1. **Proven first, unchanged:** saving a copy from an expired link answers 403 "This link no longer
+   allows saving a copy." (the link's page 410); from a password link with no password, or a wrong one,
+   403 "Enter the link's password to save a copy."
+2. **One copy per viewer per link.** The viewer's copy record is made with the request and carries the
+   link, the copy and its job (`project_share_copy.link_id`, `copy_project_id`, `job_uuid`,
+   `completed_at`; a unique index on link and viewer; migration `d383e7a2b5c4`). A second attempt
+   answers with the copy already saved (out of Trash, in a workspace the viewer is still in) and the app
+   opens it with "You already saved a copy."; while the first copy is still being made it answers with
+   that job. A copy deleted or in Trash frees the slot; saving again makes a new copy on the same record.
+   Two clicks at once: the unique index stops the second, which answers with the first's job.
+3. **"Saved by N people" counts people:** one row per person, their latest copy; a copy still being
+   made is not listed. Copies saved before this count as made.
+
+## D-393: Viewer presence is answered once a second per link
+
+**Status:** Accepted (2026-10-12; the founder's call after Block 8).
+
+Every viewer of a shared link polls `/api/share/{token}/presence` each second. The answer (the link's
+password hash and the beacons) is kept in Redis for one second under the token's hash; one token per
+project, so this is per project. While it is fresh no viewer's request reads the database; the
+password is still checked on every request against the kept hash. On a miss one request fills it
+(a two-second Redis lock) and the rest wait up to 0.5 s for its answer, so a burst makes one read. A
+refusal is never kept. A link revoked or expired can answer for at most that second (on the bench it
+answered 404 at once). The load at scale and a rate limit on the public share endpoints are on
+Abdullah's list.
+
+## D-394: Set values is one request, all rows or none
+
+**Status:** Accepted (2026-10-12; the founder's call on C15, built as planned).
+
+`PATCH …/estimate/costs` takes `{ lines: [{ item_uuid, changes }] }` (1 to 5,000). In One at a time
+every row's hold is checked first, from one read of the project's claims (`presence.guard_many`); a
+row someone else holds refuses the whole batch (409, "Sara W. is editing this item right now."), and
+any other failure rolls the transaction back, so nothing is written. One realtime event,
+`estimate.lines.changed`, refetches every open grid once. The app sends Set values as that one request;
+its undo step and redo are one request each with each row's prior or new values; a refusal reads
+"Could not save; nothing changed". Each line is still written with its own reads (about 3 s for 200
+rows on the bench); reading the items and lines in bulk is the next step if that matters.

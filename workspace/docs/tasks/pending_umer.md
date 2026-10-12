@@ -203,6 +203,26 @@ small "1 in use" beside them; the page text runs them together.
   - two migrations: `d373a1b9c4e5` (currency) and `d374b6c2d9e1` (unit system);
   - `METRIC_ENABLED=false` in production's api environment. It is the default, but set it
     explicitly so Metric stays limited to platform admins until it is released.
+- **Migrations since `d374b6c2d9e1`** (2026-10-12, in order, each after the one before; head
+  `d383e7a2b5c4`):
+  1. `d378c9d2e6f4`: `takeoff_item.formula_unit_system`, `assembly_template.unit_system` (D-378);
+  2. `d379e1a4b7c2`: `earthwork_bank_quantity`, and `unit_pinned` on `takeoff_item`,
+     `takeoff_cost_component`, `assembly_child`, `assembly_component` (D-379);
+  3. `d380a5c7e2f1`: `project_share_link.allow_save_copy`, `.copy_include_pricing`, table
+     `project_share_copy` (D-384);
+  4. `d381b2c4e6a8`: `project_share_link.show_member_names` (D-385);
+  5. `d382c6f1a9b3`: `project_craft_rate.local_index` (D-391);
+  6. `d383e7a2b5c4`: `project_share_copy.link_id`, `.copy_project_id`, `.job_uuid`,
+     `.completed_at` (backfilled from `created_at`) and a unique index on link and viewer (D-392).
+- **Viewer presence load** (D-385, D-393): every viewer of a shared link polls
+  `GET /api/share/{token}/presence` once a second. The answer is kept in Redis for one second per link,
+  so a burst of viewers makes one database read, but every request still reaches the api (and checks
+  the link's password with bcrypt when it has one). Size uvicorn and Redis for viewers × 1 request a
+  second at the expected peak; the Redis keys are `share:presence:*` (1 s) and `share:watch:*` (60 s).
+- **Rate limit on the public share endpoints** (D-393): `/api/share/{token}/meta`, `/bundle` and
+  `/presence` are public and unthrottled. A per-IP limit at Caddy or the CDN, generous enough for one
+  viewer polling every second (presence) and strict on repeated wrong passwords (the 401s), is not
+  built.
 - **Optional:** a read-only database role for the wage reference data (DECISIONS.md:10864).
 - **Legacy data migration and cutover, P-16/F17** (FEATURES.md:86): not yet specced.
 - **The 🔧 review table** (flows.md:345–359): SES, production CORS, lifecycle, worker sizing, and the Stripe setup.
