@@ -540,7 +540,8 @@ export const EARTHWORK_CASES = [
       roles: ["stabilize:pad", "stabilize_mix:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder", "fill:remainder"].join(" "),
       "stabilize:pad": 10000 / 9,
       "stabilize:pad:unit": "SY",
-      "stabilize:pad:name": `Pad — Soil Stabilization, ${c.agents.map(([a, p]) => `${a} ${p}%`).join(" + ")}, ${c.depth} (1 lift)`,
+      // A count stored before D-406 reads as its thickness, depth / count: here the depth itself.
+      "stabilize:pad:name": `Pad — Soil Stabilization, ${c.agents.map(([a, p]) => `${a} ${p}%`).join(" + ")}, ${c.depth} in ${c.depth} lifts (1 lift)`,
       "stabilize_mix:pad": 10000 / 9,
       "stabilize_mix:pad:unit": "SY",
       "stabilize_mix:pad:name": "Mix and Compact",
@@ -580,13 +581,14 @@ export const EARTHWORK_CASES = [
     expect: {
       "stabilize:pad": 929.0304,
       "stabilize:pad:unit": "M²",
-      "stabilize:pad:name": "Pad — Soil Stabilization, Hydrated Lime 6%, 30.5cm (1 lift)",
+      "stabilize:pad:name": "Pad — Soil Stabilization, Hydrated Lime 6%, 30.5cm in 30.5cm lifts (1 lift)",
       "stabilize_agent_1:pad": 29.93709642,
       "stabilize_agent_1:pad:unit": "TONNE",
       "stabilize_agent_1:pad:name": "Hydrated Lime (6% of dry wt @ 1,762 kg/m³)",
     },
   },
-  // The other two methods stay one SF line, named after the method (D-405 7).
+  // The other two methods stay one SF line each (D-405 7), named as D-406 3 has them:
+  // Compacted Subgrade carries no lifts; a count stored before D-406 reads as depth / count.
   {
     id: "lines-prep-methods",
     kind: "lines",
@@ -603,9 +605,59 @@ export const EARTHWORK_CASES = [
       roles: "prep:a prep:b cut:remainder fill:remainder",
       "prep:a": 135,
       "prep:a:unit": "SF",
-      "prep:a:name": 'Compacted Subgrade (12", 2 lifts) — Pad',
+      "prep:a:name": 'Pad — Compacted Subgrade, 12"',
       "prep:b": 200,
-      "prep:b:name": 'Scarify, Moisture Condition and Compact Subgrade (6", 1 lift) — Drive',
+      "prep:b:name": 'Drive — Scarify, Moisture Condition & Compact, 6" in 6" lifts (1 lift)',
+    },
+  },
+  // D-406 2, by hand: lifts = depth / thickness rounded up. 24 / 8 = 3; 20 / 8 = 2.5 → 3;
+  // 12 / 12 = 1. Quantities stay the area (SF) or SY and tons, untouched by the lifts.
+  {
+    id: "lines-lifts-by-thickness",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [
+        { itemId: "a", label: "Pad", undercut: null, prep: { depthFt: 2, lifts: 3, liftFt: 8 / 12, areaSF: 900, method: "scarify_compact" } },
+        { itemId: "b", label: "Drive", undercut: null, prep: { depthFt: 20 / 12, lifts: 3, liftFt: 8 / 12, areaSF: 900, method: "scarify_compact", compaction: "95% Standard Proctor" } },
+        { itemId: "c", label: "Lot", undercut: null, prep: { depthFt: 1, lifts: 1, liftFt: 1, areaSF: 10000, method: "stabilize", agents: [{ agent: "Hydrated Lime", pct: 6 }], dryPcf: null } },
+        { itemId: "d", label: "Yard", undercut: null, prep: { depthFt: 2, lifts: 2, liftFt: 1, areaSF: 20595.540231, method: "stabilize", agents: [{ agent: "Hydrated Lime", pct: 6 }], dryPcf: null } },
+      ],
+      assumptions: null,
+      soilDryPcf: 110,
+    },
+    expect: {
+      "prep:a": 900,
+      "prep:a:name": 'Pad — Scarify, Moisture Condition & Compact, 24" in 8" lifts (3 lifts)',
+      "prep:b:name": 'Drive — Scarify, Moisture Condition & Compact, 20" in 8" lifts (3 lifts, 95% Std Proctor)',
+      "stabilize:c:name": 'Lot — Soil Stabilization, Hydrated Lime 6%, 12" in 12" lifts (1 lift)',
+      "stabilize:c": 10000 / 9,
+      "stabilize_agent_1:c": 33,
+      // The founder's row: 2,288.39 SY = 20,595.54 SF; x 2 ft x 110 x 0.06 / 2000 = 135.93 TON.
+      "stabilize:d:name": 'Yard — Soil Stabilization, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
+      "stabilize:d": 20595.540231 / 9,
+      "stabilize_mix:d": 20595.540231 / 9,
+      "stabilize_agent_1:d": (20595.540231 * 2 * 110 * 0.06) / 2000,
+    },
+  },
+  // D-406 3: Compacted Subgrade with a compaction spec, and one typed.
+  {
+    id: "lines-compacted-proctor",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [
+        { itemId: "a", label: "Pad", undercut: null, prep: { depthFt: 1, lifts: null, areaSF: 500, method: "compact", compaction: "95% Standard Proctor" } },
+        { itemId: "b", label: "Walk", undercut: null, prep: { depthFt: 0.5, lifts: null, areaSF: 300, method: "compact", compaction: "100% Standard Proctor" } },
+      ],
+      assumptions: null,
+    },
+    expect: {
+      "prep:a": 500,
+      "prep:a:name": 'Pad — Compacted Subgrade, 12" (95% Std Proctor)',
+      "prep:b:name": 'Walk — Compacted Subgrade, 6" (100% Standard Proctor)',
     },
   },
   // --- Block F (D-142): what the api writes, in Q32's order -------------------------------

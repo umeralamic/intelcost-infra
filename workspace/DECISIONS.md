@@ -13692,3 +13692,57 @@ D-177 (the unit table gains SY and TON), D-375 2 (TON now converts in metric).
     | 12", Lime 3 % + Fly Ash 10 % | 1,111.1 SY | 16.5 and 55.0 TON |
 
     A feature with no method writes the same line as before this decision.
+
+## D-406: F25 fixes — sub-item quantities, lifts by thickness, compaction, calculated tonnes, the agent list
+
+**Status:** Accepted (2026-10-12, Umer). **Spec:** [subgrade_prep_methods_tasks.md](docs/tasks/subgrade_prep_methods_tasks.md).
+**Amends:** D-405 (1, 3, 6, 7, 9).
+
+1. **Sub-item quantities (bug).** The Takeoff panel showed "—" for Mix and Compact and for each agent.
+   - **Cause:** the panel, the component editor and cost-formula sibling references all read a
+     sub-item's `formula_qty`. Calculate's sub-items have no formula, so it stayed null.
+   - **Why the smoke missed it:** the D-405 smoke read the volume panel, the database and
+     Estimating, never the Takeoff panel.
+   - **Fix:** Calculate now writes each sub-item's quantity into `formula_qty` too, with no error.
+     Migration `d406c2a8e4b1` backfills the sub-items already written, so no recalculation is
+     needed. The smoke now reads the Takeoff panel on an edited existing feature as well as a new
+     one.
+2. **Lifts by thickness.** The box reads "Compacted in [ __ ] in lifts" (mm in metric) and holds
+   the lift thickness. The count follows in grey, "(3 lifts)": depth ÷ thickness, rounded up
+   (24" in 8" → 3; 20" in 8" → 3; 12" in 12" → 1).
+   - **Storage:** `takeoff_item.prep_lift_ft`. The api derives `prep_lifts`, the count.
+   - **Existing features:** migration `d406c2a8e4b1` gives each one that stored a count the
+     thickness depth ÷ count, so the count, its name and its quantity are unchanged.
+   - **Defaults:** 8" for Scarify, Moisture Condition and Compact; 12" for Soil Stabilization.
+3. **The methods' fields and names:**
+
+   | Method | Fields | Name |
+   |---|---|---|
+   | Compacted Subgrade | Depth only, no lifts. Optional Compaction | "Pad — Compacted Subgrade, 12" (95% Std Proctor)", or "Pad — Compacted Subgrade, 12"" with none |
+   | Scarify, Moisture Condition and Compact | Depth, the lift thickness, optional Compaction | "Pad — Scarify, Moisture Condition & Compact, 24" in 8" lifts (3 lifts)". With a compaction: "…(3 lifts, 95% Std Proctor)" |
+   | Soil Stabilization | Mixing depth, the lift thickness | "Pad — Soil Stabilization, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)" |
+
+   - **Compaction** is stored as `takeoff_item.prep_compaction`. The choices are 95% Standard
+     Proctor, 98% Standard Proctor, 95% Modified Proctor and Other… (typed). The name uses the
+     short form ("95% Std Proctor", "95% Mod Proctor"); a typed one reads as typed.
+   - **A feature with no method** keeps "Prepare Subgrade (12", 2 lifts) — Pad".
+4. **Small lengths in the dialog.** The Site Feature dialog's depths and lift thickness read in
+   whole mm in a metric project or on a sheet in metres, as D-379 has every small length read,
+   replacing cm. They are still stored in feet.
+5. **Description.** The dialog reads "A Site Feature sets subgrade depth for grading. Option 1 and
+   Option 2 add their own lines to Estimating."
+6. **Calculated tonnes only.** This replaces D-405 9's TON conversion.
+   - Only a Calculate line in TON (`source_type` `earthwork_computed`) shows in tonnes in a metric
+     project, with its quantity, its rates per tonne and the export.
+   - A TON a person picked keeps D-379's rule: stored and shown as picked.
+   - Neither formula engine converts TON, and the unit pickers are back as they were.
+7. **The agent list.** "+ Add agent…" saves a typed agent to the project, as "+ Add material…" saves
+   a replacement fill. Both live in `project_fill_material`, told apart by `kind` (`fill` or
+   `stabilizer`). The list is the seven built in, then the project's own. An agent stored on a
+   feature but missing from the list is still shown.
+8. **Checks** (quantity table, hand-worked):
+   - 24" in 8" lifts → 3; 20" in 8" → 3; 12" in 12" → 1.
+   - Compacted Subgrade writes no lifts.
+   - A feature with no method keeps its name and quantity.
+   - In metric, a calculated TON line reads 13.8421 × 0.90718474 t, and a hand-picked TON reads
+     as TON.

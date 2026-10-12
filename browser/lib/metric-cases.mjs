@@ -106,6 +106,9 @@ export const MANUAL_CASES = [
  *  so it agrees with the panel; depths under 1 m in whole mm. `displayName` in either system. */
 const EW = { source_type: "earthwork_computed", type: "cy", calculated_quantity: 0 };
 export const NAME_CASES = [
+  // D-406: a stabilization line's name in metric: 24" = 610 mm, 12" = 305 mm, 110 pcf = 1,762 kg/m³.
+  { id: "ew-stabilize-metric", item: { ...EW, name: 'Pad — Soil Stabilization, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)', unit: "SY" }, system: "metric", expect: "Pad — Soil Stabilization, Hydrated Lime 6%, 610 mm in 305 mm lifts (2 lifts)" },
+  { id: "ew-agent-metric", item: { ...EW, name: "Hydrated Lime (6% of dry wt @ 110 pcf)", unit: "TON" }, system: "metric", expect: "Hydrated Lime (6% of dry wt @ 1,762 kg/m³)" },
   { id: "ew-export-imperial", item: { ...EW, name: "Soil Export (23 BCY)", unit: "LCY", earthwork_bank_quantity: 22.6949 }, system: "imperial", expect: "Soil Export (23 BCY)" },
   // 22.6949 BCY × 0.764555 = 17.35 BCM: 17, as the panel shows (the old rounded name gave 18).
   { id: "ew-export-metric", item: { ...EW, name: "Soil Export (23 BCY)", unit: "LCY", earthwork_bank_quantity: 22.6949 }, system: "metric", expect: "Soil Export (17 BCM)" },
@@ -135,6 +138,12 @@ export const PINNED_CASES = [
   // m picked in an imperial project: stored as the metric code M, read "m" in either system, never converted.
   { id: "metric-code-m", value: 12, ref: { unit: "M", unit_pinned: false }, system: "metric", shown: 12, label: "m", factor: null },
   { id: "metric-code-m2-imperial", value: 12, ref: { unit: "M2", unit_pinned: false }, system: "imperial", shown: 12, label: "m²", factor: null },
+  // D-406 6: a Calculate's tonnage reads in tonnes in metric (13.8421 x 0.90718474); a TON a
+  // person picked, pinned or not, stays TON in either system.
+  { id: "ton-calculated-metric", value: 13.8421, ref: { unit: "TON", source_type: "earthwork_computed" }, system: "metric", shown: 13.8421 * 0.90718474, label: "t", factor: 0.90718474 },
+  { id: "ton-calculated-imperial", value: 13.8421, ref: { unit: "TON", source_type: "earthwork_computed" }, system: "imperial", shown: 13.8421, label: "TON", factor: null },
+  { id: "ton-hand-metric", value: 12, ref: { unit: "TON", unit_pinned: false }, system: "metric", shown: 12, label: "TON", factor: null },
+  { id: "ton-hand-pinned-metric", value: 12, ref: { unit: "TON", unit_pinned: true }, system: "metric", shown: 12, label: "TON", factor: null },
 ];
 
 /** What each pick stores: `unitChoices` in each system, by the label a person picks. */

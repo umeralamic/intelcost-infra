@@ -29,9 +29,25 @@ taken off.
 Agents dosed by volume (polymers, enzymes). A project list of custom agents ("Other…" is typed on
 the feature). Prices in the dialog: cost is entered in Estimating on the TON sub-item.
 
+## Fixes (D-406)
+
+Sub-item quantities carried in `formula_qty` (the Takeoff panel showed "—"); lifts entered as a
+thickness with the count shown; Compacted Subgrade without lifts and with an optional compaction,
+as is Scarify; mm in metric; the dialog's description; calculated tonnage alone in tonnes; "+ Add
+agent…" saved to the project (`project_fill_material.kind`). Migration `d406c2a8e4b1` converts stored
+counts to thickness and backfills the sub-items already written.
+
 ## Check
 
-Gates; quantity table; one smoke through the Playwright MCP on a throwaway account. Draw a Site
-Feature with Soil Stabilization (Hydrated Lime 6 %, 12", 1 lift), then Calculate. The Estimating
-tab shows the parent row in SY under 31.07.02, with "Mix and Compact" in SY and "Hydrated Lime (6% of
-dry wt @ 110 pcf)" in TON beneath it, and the TON row takes a material rate.
+Gates; quantity table; one smoke through the Playwright MCP on a fresh throwaway account. If its
+trial expires mid-test, make another; never move trial or billing dates.
+
+1. **Edited feature:** draw a feature with Scarify (24" in 8" lifts → 3 lifts), then Calculate.
+   Edit it to Soil Stabilization (Hydrated Lime 6 %, 12" lifts → 2 lifts), save and Calculate.
+2. **New feature:** make one with Soil Stabilization and an agent added through "+ Add agent…".
+   The added agent is offered to the next feature.
+3. **For both:** in the **Takeoff panel** (not only the volume panel or Estimating), Mix and Compact
+   shows the parent's SY and the agent shows its TON.
+4. **Metric:** price a hand-picked TON item and the agents per TON, then switch Imperial ↔ Metric
+   five times. The hand-picked row reads TON every time, the agents read tonnes in metric, and
+   every total is identical to the cent.
