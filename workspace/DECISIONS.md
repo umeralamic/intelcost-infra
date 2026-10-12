@@ -13550,3 +13550,12 @@ project. Storage stays imperial (D-374); a switch changes how quantities are sho
    decision first, M); the guest shared view's quantities (needs `unit_system` in the bundle, M/L);
    the template library's preview quantity and rates (M); shared equipment usage formulas (QTY in
    hours), not tagged yet (S–M, the same rule as components).
+
+## D-398: Earthwork calculates in the sheet's units and displays in the project's
+
+**Status:** Accepted (2026-10-12; the founder's call).
+
+Earthwork's elevations, contour intervals, Site Feature and Strip Area entry follow the sheet's scale
+unit (`calibration.unit`): a sheet scaled in metres takes metres, one scaled in feet takes feet,
+because elevations are typed in the drawing's own units. That stays. What earthwork shows (volumes,
+names, panels) follows the project's measurement system (D-374, D-379). Not a gap to close.
