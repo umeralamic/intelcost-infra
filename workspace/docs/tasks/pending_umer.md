@@ -84,6 +84,16 @@ your own click check.
   `649fd40`). Still yours: Set values saves one row per request, four at a time (about 2 s for ten
   rows); one request for the whole batch would be an api addition.
 
+- **C31 test 5 (the spec's acceptance tests):** at 35203 rates come out national × 1.189, not the
+  spec's × 1.16. With the county confirmed, Jefferson County's labour factor (+18.898%) wins over the
+  ZIP's (+16%), which is the reference engine's own rule. Which one is meant?
+- **C31, WD-only:** crafts the determination doesn't cover are filled at national × local index (Air
+  Tool Operator $15.34 against $62.57) and tagged "National avg" (the spec's R-02 tag). That follows
+  the engine's rule; the tag may mislead.
+
+**Fixed later in the day (D-388, app `1c205f6`):** the Wage Calculator's dead end when the wage
+determination changed on review, and Advanced opening on "Pick a state" for a Texas project (test 16).
+
 Withdrawn: Block 5's "Seats 11 in use" was my misreading. Billing shows the seats ("1") and a separate
 small "1 in use" beside them; the page text runs them together.
 

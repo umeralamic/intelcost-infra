@@ -13395,3 +13395,18 @@ undid the edit before it. An edit that is saving now holds the history (`useEsti
 released once the step is recorded or the save failed); a Ctrl+Z or Ctrl+Y pressed meanwhile waits for
 it and then undoes that edit. Set values, a rate, a custom cell and a multiplier all hold. Set values
 still saves one row per request, four at a time; one request for the batch is not decided here.
+
+## D-388: The Wage Calculator keeps its basis on review, and Advanced starts on the project's state
+
+**Status:** Accepted (2026-10-12; found running the Wage Calculator's acceptance tests in the day run's
+remaining time).
+
+1. **The basis calculated with stays.** Calculate on the preselected National Average left the choice
+   unset, so it was re-derived from the wage determination on every render; a determination changed to
+   a prevailing one on review then suggested My wage data, no data existed, and nothing showed under
+   Project info until a reload. Calculate and Next now fix the basis the user went on with
+   (`WageCalculator.tsx`).
+2. **Advanced opened from a project starts on its state.** Acceptance test 16 (a Texas project, open
+   Advanced: A-03b on the unemployment field) failed: the field started on "Pick a state". Opened from
+   a project's review it now starts on the project's state with its note; Settings › Wage Calculator
+   still starts blank (`AdvancedSettings.tsx` `projectState`, `WageReview.tsx`).

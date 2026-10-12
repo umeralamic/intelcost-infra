@@ -366,3 +366,13 @@ Bugs, not choices, so fixed in the remaining time:
 - **"Seats 11 in use" withdrawn:** it reads "1" and then "1 in use"; I had run the two together.
 - **C1's wording and C4's AI defaults** stay on your list: the first copies legacy word for word on
   purpose, and the second is a product default.
+
+## C31 deeper: the Wage Calculator's acceptance tests, and D-388 (09:45 UTC)
+
+- **Driven** on a copy of Riverside (purged): the spec's tests 2, 3, 4, 13, 14 and 17 pass; 9, 10 and 11
+  pass on tx115; 5 fails as written (county factor ×1.189 against the spec's ×1.16, which is the
+  engine's own rule; on your list); 16 failed and is fixed; 7 and 8 couldn't run (AI credits); 12, 15
+  and 18–21 not driven. Evidence: `C31/RESULT.md` and `C31/extra/`.
+- **Fixed (D-388, app `1c205f6`):** the review's dead end after a wage determination change (seen on
+  the old code, gone on the new), and Advanced starting on the project's state with A-03b.
+- **Gates:** lint, typecheck, build; quantity table passed. The copy was purged.
