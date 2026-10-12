@@ -13166,3 +13166,22 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
    the stored figures), and earthwork's outputs.
 6. **Sheet scale stays independent.** A sheet's scale (imperial or metric presets, 1:5 to 1:5000) is how
    the drawing was printed and is set per sheet as before.
+
+## D-376: Metric Phase C: lengths and manual quantities typed in metric, stored imperial, read back as typed
+
+**Status:** Accepted (2026-10-12, Umer; overnight brief Step 6).
+
+1. **Lengths.** In a metric project the Height, Width, Depth and named-dimension fields read a bare
+   number as metres; "2.5 m", "2500 mm", "250 cm" and imperial ("7' - 6"") are read in either system.
+   Hints read "2.5 m or 2500 mm". The value is stored in feet, the text as typed.
+2. **Read back as typed.** A length typed in mm reads back in whole mm (150 mm → stored 0.4921… ft →
+   "150 mm", never 149.99), in cm to one place, otherwise in metres at two places; an imperial entry in
+   a metric project reads back in metres. Names rebuilt in metric (D-375) use the same rule.
+3. **Manual Quantity.** In a metric project its first unit is the tool's in metric (m, m², EA). The typed
+   number is stored in the tool's imperial unit (10 m → 32.8084 LF), so storage stays imperial and the
+   display returns 10.00 m. Any other unit picked is stored as picked (D-365).
+4. **Result in.** In a metric project the chips' default is m² or m³ (the item still stores SF or CY;
+   the display converts). A unit picked explicitly is stored as picked (D-370).
+5. **The zero rule** holds in both systems: zero is zero in feet and in metres.
+6. **The check** is the quantity table's entry rows (150 mm, 2.5 m, 1200 mm, 0.3 m, 7' - 6" typed in a
+   metric project, parsed, stored and read back), not a test suite (hard rule 8).

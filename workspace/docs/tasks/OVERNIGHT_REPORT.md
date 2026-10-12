@@ -61,6 +61,48 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Step 6 — Metric Phase C, entry (D-376) — shipped (01:30 UTC)
+
+- **What:**
+  - In a metric project, Height, Width (area and volume), Depth and named dimensions read a bare number
+    as metres. "2.5 m", "2500 mm", "25 cm" and imperial (`7' - 6"`) are read in either system. Every
+    hint, placeholder and error message reads "2.5 m or 2500 mm". The value is stored in feet and the
+    text as typed.
+  - **Read back as typed:** mm in whole mm, cm to one place, otherwise metres at two places. An imperial
+    entry in a metric project reads back in metres. Rebuilt names use the same rule ("150 mmW").
+  - **Manual Quantity:** its first unit is the tool's in metric (m, m², EA). The figure is stored in the
+    tool's imperial unit (10 m → 32.808399 LF) and reopens as 10 in m.
+  - **Result in:** the chips' default reads m² or m³ in a metric project.
+  - **Zero rule:** unchanged. Zero is zero in both systems.
+- **Tests, per hard rule 8:** not a test suite. The quantity table gained **17 metric rows**
+  (`browser/lib/metric-cases.mjs`):
+  - *Entry:* 150 mm → 0.4921259843 ft → "150 mm"; 2.5 m → "2.50 m"; 1200 mm → "1200 mm"; 0.3 m →
+    "0.30 m"; `7' - 6"` → 7.5 ft → "2.29 m"; a bare "2.5" → metres; 25 cm → "25 cm"; "0 mm" → the zero
+    rule.
+  - *Display:* LF, SF, SY, CY, BCY, EA, and BCM shown as it is.
+  - *Manual quantity:* 10 m and 50 m² stored and shown back.
+- **Files:** app `features/takeoff/items/MeasurementDialog.tsx`, `lib/measure.ts`
+  (`metricFactor`, `formatMetricLength`, `METRIC_LENGTH_HINT`, `inputFigure`), `lib/takeoff/displayName.ts`;
+  infra `browser/lib/metric-cases.mjs` (new), `browser/quantity-table.mjs`.
+- **Commits:** app `b99c108`, infra `cc14b25`.
+- **Gates:** lint, typecheck, build; quantity table 344 rows + 17 metric rows passed.
+- **Browser ("zz switching" set to Metric, then back to Imperial):**
+  - The dialog showed the hint "2.5 m or 2500 mm" on Height, Width and Depth, "Result in" defaulted to
+    m³, and Manual Quantity's unit read "m".
+  - Each test value was drawn on a 40.8 LF (12.44 m) run. The panel read: Height "2.5 m" → "(12.44 m,
+    2.50 mH)" 31.09 m²; "1200 mm" → "(12.44 m, 1200 mmH)" 14.92 m²; `7' - 6"` → "(12.44 m, 2.29 mH)"
+    28.43 m². Volume "150 mm" × "0.3 m" → "(12.44 m, 150 mmW, 0.30 mD)" 0.56 m³. Manual 10 → "10.00 m".
+    Every figure checked by hand.
+  - **Stored:** SF and CY units, heights and depths in feet (3.937008, 8.202100, 7.5, 0.492126,
+    0.984252), raws as typed, manual 32.808399 LF. 0.492126 ft (the database's 6 places) is 149.99999
+    mm and reads back as **150 mm**.
+  - Properties reopened with "150 mm", "0.3 m", and the manual 10 in m.
+  - **Estimating read-back** is checked under Step 8, because Estimating's names and units are Phase D.
+  - Passed.
+- **Noticed, not fixed:** after a shapeless manual-quantity item was selected, a single click on
+  another row's name left the action bar's Properties pointing at the manual item. A double-click on
+  the row opened the right one. Small, so left for the next session.
+
 ## Step 5 — Metric Phase B, display (D-375) — shipped (01:13 UTC)
 
 - **What:**
