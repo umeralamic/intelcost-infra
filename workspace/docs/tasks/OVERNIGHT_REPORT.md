@@ -441,6 +441,14 @@ The committed code was run with Phase E stashed and the app container restarted.
   The total is lower than Step 8's $4,726.60 because Phase E's test sub-items made "Slope smoke" a
   parent whose unpriced sub-items replace its own $1,186.64 (4,726.60 − 1,186.64 = 3,539.96). Passed.
 
+### Final regression pass (03:10 UTC, committed code, switch off)
+- Gates: app lint, typecheck, build; api ruff, format, mypy. Quantity table: 344 rows + 17 metric rows
+  passed.
+- Browser, as a default user (Imperial, USD): no header tag; "Name this Linear Measurement"; Convert to
+  Volume hints `2' - 6" or 2.5` / `1' - 4" or 1.33` with yd³ as the default; panel units LF, SF, CY,
+  EA, SY, TON, BCY, CCY, LCY; Estimating "Full estimate $3,539.96". Nothing metric shows unless a
+  project is set to Metric. Passed.
+
 ## FINAL REPORT (03:00 UTC)
 
 Every step of the brief was done by 03:00 UTC. The rest of the window went to the re-verification above,
