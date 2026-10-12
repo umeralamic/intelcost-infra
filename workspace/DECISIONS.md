@@ -13851,3 +13851,14 @@ The Earthwork Volumes panel, and the site view's result, no longer list "Overlap
    by hand. It fills empty values only.
    - Site lines move at their site's next save.
    - The migration writes data on prod: see Abdullah's F25 note.
+
+## D-410: The Calculate lines folder is named "Earthwork"
+
+**Status:** Accepted (2026-10-13, Umer). **Amends:** D-409 (its name only).
+
+D-409's folder is named "Earthwork", not "Earthwork (Grading)".
+- New folders take the new name.
+- Migration `d410b8f3c1e5` renames the folders made so far, only those still called exactly
+  "Earthwork (Grading)". A name a person typed is kept.
+- D-409's own migration now inserts "Earthwork", so prod, which has run neither, gets that name
+  directly.

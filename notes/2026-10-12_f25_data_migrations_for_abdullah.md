@@ -44,6 +44,12 @@ neither changes a quantity.
 - Agents stored by D-405 / D-406 keep `{agent, pct}`, which still reads; a rate in lb/SY is a new
   `lb_sy` key on new agents only.
 
+## `d410b8f3c1e5` (D-410): renames only
+
+Renames the folders `d409c4e2a7b6` made from "Earthwork (Grading)" to "Earthwork", only where
+the name is still exactly that. On prod `d409c4e2a7b6` already inserts "Earthwork", so this
+touches 0 rows there.
+
 ## `d409c4e2a7b6` (D-409): schema plus one data fill
 
 - New `takeoff_folder.is_earthwork_lines` (`false` default).
