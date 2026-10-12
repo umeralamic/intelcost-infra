@@ -13827,3 +13827,27 @@ The Earthwork Volumes panel, and the site view's result, no longer list "Overlap
 - **Engine:** it still returns the `role_overlap` warning in the result. The quantity table and
   stored results are unchanged; only the panels filter it out (`lib/takeoff/earthwork/warnings.ts`).
 - Every other warning still shows (partial coverage, surface errors, the elevation checks).
+
+## D-409: Calculate's lines in an "Earthwork (Grading)" folder
+
+**Status:** Accepted (2026-10-13, Umer).
+**Amends:** D-142, D-336 (where a Calculate line sits in the custom tree), D-352.
+
+1. **The folder.** Each project gets one "Earthwork (Grading)" folder in the custom tree (Takeoff ›
+   Folders).
+   - It is made by the first Calculate that writes lines, and found by its flag
+     (`takeoff_folder.is_earthwork_lines`), not by its name, so a rename keeps it.
+   - It sits just above Earthwork Markups (position 998000).
+   - Unlike Earthwork Markups it is an ordinary folder: items can be moved out of it.
+2. **What goes in it.** Every line a Calculate writes, in the order Calculate writes them: strip
+   topsoil and its disposition, undercut, prep and stabilization (with their sub-items), each
+   region's cut and fill, and Soil Export or Import.
+   - A line a person moved (D-352) stays where they put it.
+   - In the Classification tree each line keeps its code folder, as before.
+3. **Sites (F19).** A site's lines go in a folder of the site's name inside "Earthwork (Grading)",
+   so renaming the site, or dropping it, touches only its own folder.
+4. **Lines written before.** Migration `d409c4e2a7b6` makes the folder for every project that has
+   loose sheet lines, and files the lines whose custom folder is empty and which were not placed
+   by hand. It fills empty values only.
+   - Site lines move at their site's next save.
+   - The migration writes data on prod: see Abdullah's F25 note.

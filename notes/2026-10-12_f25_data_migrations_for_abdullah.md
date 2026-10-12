@@ -44,6 +44,18 @@ neither changes a quantity.
 - Agents stored by D-405 / D-406 keep `{agent, pct}`, which still reads; a rate in lb/SY is a new
   `lb_sy` key on new agents only.
 
+## `d409c4e2a7b6` (D-409): schema plus one data fill
+
+- New `takeoff_folder.is_earthwork_lines` (`false` default).
+- **Data:** every project with a sheet's Calculate lines sitting in no custom folder (and not
+  moved by hand) gets one folder, "Earthwork (Grading)", position 998000, custom tree. Those
+  lines are filed into it.
+  - It fills `folder_id` only where it was empty. The classification placement
+    (`class_folder_id`) is untouched.
+  - On the bench: 4 folders and 51 lines.
+  - Site lines move at their site's next save, not in the migration.
+- The downgrade unfiles those lines and deletes the folders.
+
 ## Before promoting
 
 - Run `alembic upgrade head` as part of the deploy (see the 2026-10-02 note: the production
