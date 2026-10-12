@@ -367,7 +367,7 @@ Bugs, not choices, so fixed in the remaining time:
 - **C1's wording and C4's AI defaults** stay on your list: the first copies legacy word for word on
   purpose, and the second is a product default.
 
-## C31 deeper: the Wage Calculator's acceptance tests, and D-388 (09:45 UTC)
+## C31 deeper: the Wage Calculator's acceptance tests, and D-388 (09:40 UTC)
 
 - **Driven** on a copy of Riverside (purged): the spec's tests 2, 3, 4, 13, 14 and 17 pass; 9, 10 and 11
   pass on tx115; 5 fails as written (county factor ×1.189 against the spec's ×1.16, which is the
