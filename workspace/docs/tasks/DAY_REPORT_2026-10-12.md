@@ -388,9 +388,9 @@ Bugs, not choices, so fixed in the remaining time:
   the editor after a resize), D-387 (app `649fd40`: undo waits for an Estimating save), D-388 (app
   `1c205f6`: the Wage Calculator's dead end on review; Advanced on the project's state). Each with
   gates, the quantity table and a browser check; all pushed on `umer-dev`.
-- **C31** now has 19 of its 21 acceptance tests driven: 15 pass (15 only partly), 21 passes only with
+- **C31** now has 19 of its 21 acceptance tests driven: 15 pass (test 15 only partly), 21 passes only with
   WD-only (on your list), 16 failed and is fixed, 5 and 19 fail as written (on your list); 7 and 8 need AI credits; 15 passed for the data-source names (the cost book's name not searched, by today's rules).
-- **The switch:** `METRIC_ENABLED=false`; rechecked at 09:52: a non-admin's PATCH to `metric` → 403
+- **The switch:** `METRIC_ENABLED=false`; rechecked at 09:50: a non-admin's PATCH to `metric` → 403
   "Metric is not available yet.", "zz switching" still Imperial. Mail guard on.
 - **Throwaways:** every copy made since the final report purged; storage 0 under deleted projects. The
   workspace's company benefits set back to blank (read back from the api).
