@@ -396,7 +396,7 @@ Bugs, not choices, so fixed in the remaining time:
   workspace's company benefits set back to blank (read back from the api).
 - **Repos:** app, api and infra on `umer-dev`, clean, nothing unpushed; the workspace mirror current.
 
-## Your decisions, carried out (14:40 UTC)
+## Your decisions, carried out (14:37 UTC)
 
 - **C31 tests 5, 19, 21:** the spec's tests changed (county factor; "Published rate: no breakdown
   available"; holds with "WD rates only" on), and the breakdown line is in the app. **D-389**, api
