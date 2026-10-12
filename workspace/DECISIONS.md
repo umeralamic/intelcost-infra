@@ -13207,3 +13207,25 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
    numbers as the imperial export's. The Dimensions sheet stays in feet until Phase E: the exported
    sub-item formulas are imperial and reference it; a formula whose Excel reading no longer matches the
    app falls back to its value, as the export already does (`verifiedFormula`).
+
+## D-378: Metric Phase E: a sub-item formula is evaluated in the system it was written in
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 1). **Plan:** [METRIC_PHASE_DE_PLAN.md](docs/tasks/METRIC_PHASE_DE_PLAN.md).
+
+1. **The tag.** Each sub-item carries `formula_unit_system` (`imperial`/`metric`). Every existing formula
+   is imperial. A formula typed or retyped is tagged with the project's system at that moment; one left
+   unchanged keeps its tag. A duplicated item, page or project copies it.
+2. **Always read in its own system.** Both engines (`inSystem.ts`, `formula_system.py`) evaluate a
+   formula in its tag's system, never the project's current one. Switching a project, with or without a
+   recompute, therefore never moves a stored sub-item result (D-374 2). An imperial formula is the plain
+   evaluator, unchanged.
+3. **A metric formula's inputs.** PARENT in the parent's metric unit, PERIMETER and named dimensions in
+   metres, and **siblings and rough-measurement references each by their own stored unit**. A figure
+   whose unit has no metric form (EA, LS, weights) is read as stored. Primitives with an explicit unit
+   and `{qty:…@UNIT}` tokens convert themselves. The result is stored in the sub-item's imperial unit.
+4. **Templates.** A template carries `unit_system`: its sub-items' own system when they agree, else the
+   project's. Using it in a project of the other system warns before placing, listing **only formulas
+   that add or subtract a constant to something that varies** (`PARENT + 1`, `{dim:d1} - 0.5`). A pure
+   scale (`PARENT * 0.5`, `PARENT * (1 + 0.05)`) converts correctly and is not listed. Placed formulas
+   are written in the project's system (they go through the same write as a typed one).
+5. **Not in this decision:** cost-component formulas (`QTY`-based) stay as they are (follow-up).

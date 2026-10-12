@@ -77,7 +77,7 @@ Metric; every total must match to the cent; switch back; every stored rate is by
 from the api). Export in both systems and compare every money cell. **Commit only if all of that
 holds; otherwise stash `overnight-metric-phase-d` and report what differed.**
 
-## Phase E — sub-item formulas (Step 9: named stash `overnight-metric-phase-e`, not committed)
+## Phase E — sub-item formulas (merged 2026-10-12 as D-378: each formula is read in the system it was written in)
 
 ### Evaluation in the project's units
 
