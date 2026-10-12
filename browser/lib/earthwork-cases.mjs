@@ -641,6 +641,132 @@ export const EARTHWORK_CASES = [
       "stabilize_agent_1:d": (20595.540231 * 2 * 110 * 0.06) / 2000,
     },
   },
+  // D-407, by hand: 10,000 SF x 24" = 20,000 CF = 740.7407 CY; shrink 1.10, swell 1.25.
+  // Imported Engineered Fill: as before. 740.74 BCY out, hauled 740.74 x 1.25 = 925.93 LCY,
+  // replaced 740.74 CCY; nothing else on site, so no export or import line.
+  {
+    id: "lines-undercut-imported-unchanged",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: "Engineered Fill", disposition: "haul_off" }, prep: null }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
+    },
+    expect: {
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad cut:remainder fill:remainder",
+      "undercut:pad": 20000 / 27,
+      "undercut_haul:pad": (20000 / 27) * 1.25,
+      "undercut_replace:pad": 20000 / 27,
+      "undercut_replace:pad:name": "Undercut Replacement Fill: Engineered Fill — Pad (compacted in place)",
+    },
+  },
+  // The same, imported with an 8" lift thickness: the lifts join the fill line's name.
+  {
+    id: "lines-undercut-imported-lifts",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: "Engineered Fill", disposition: "haul_off", native: null, liftFt: 8 / 12 }, prep: null }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
+    },
+    expect: { "undercut_replace:pad:name": 'Undercut Replacement Fill: Engineered Fill, 24" in 8" lifts (3 lifts) — Pad (compacted in place)' },
+  },
+  // Native, moisture conditioned: one 740.74 CY line, no undercut export or import. Suitable,
+  // cut 1,000: surplus = 1,000 - 740.74 x 0.10 = 925.926 BCY, exported x 1.25 = 1,157.41 LCY.
+  {
+    id: "lines-undercut-native-compacted",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: null, disposition: "haul_off", native: "compacted", liftFt: 8 / 12 }, prep: null }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
+    },
+    expect: {
+      roles: "undercut_native:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      "undercut_native:pad": 20000 / 27,
+      "undercut_native:pad:unit": "CY",
+      "undercut_native:pad:name": 'Pad — Undercut & Recompact Native Soil, 24" in 8" lifts (3 lifts)',
+      "soil_export:__soil_export__": (1000 - (20000 / 27) * 0.1) * 1.25,
+    },
+  },
+  // Not suitable, nothing cut or filled: the shortfall alone comes in, 74.074 BCY x 1.25 = 92.59 LCY.
+  {
+    id: "lines-undercut-native-shortfall-import",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: null, disposition: "haul_off", native: "compacted", liftFt: 8 / 12 }, prep: null }],
+      assumptions: { suitable: false, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
+    },
+    expect: {
+      roles: "undercut_native:pad cut:remainder fill:remainder soil_import:__soil_import__",
+      "soil_import:__soil_import__": (20000 / 27) * 0.1 * 1.25,
+    },
+  },
+  // Native, stabilized, Lime 6 %, 110 pcf: 10,000 x 2 x 110 x 0.06 / 2000 = 66.0 TON; Excavate &
+  // Recompact 740.74 CY; 24" in 12" lifts = 2 lifts.
+  {
+    id: "lines-undercut-native-stabilized",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: null, disposition: "haul_off", native: "stabilized", liftFt: 1, agents: [{ agent: "Hydrated Lime", pct: 6 }], dryPcf: null }, prep: null }],
+      assumptions: null,
+      soilDryPcf: 110,
+    },
+    expect: {
+      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad cut:remainder fill:remainder",
+      "undercut_stabilize:pad": 20000 / 27,
+      "undercut_stabilize:pad:name": 'Pad — Undercut & Stabilize Native Soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
+      "undercut_stabilize_mix:pad": 20000 / 27,
+      "undercut_stabilize_mix:pad:name": "Excavate & Recompact",
+      "undercut_agent_1:pad": 66,
+      "undercut_agent_1:pad:unit": "TON",
+      "undercut_agent_1:pad:name": "Hydrated Lime (6% of dry wt @ 110 pcf)",
+    },
+  },
+  // On a sheet in metres: 20,000 CF = 566.337 m³; 66 TON x 0.90718474 = 59.8742 t; 2 ft = 61cm.
+  {
+    id: "lines-undercut-native-stabilized-metric",
+    kind: "lines",
+    input: {
+      units: "m3",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: null, disposition: "haul_off", native: "stabilized", liftFt: 1, agents: [{ agent: "Hydrated Lime", pct: 6 }], dryPcf: null }, prep: null }],
+      assumptions: null,
+      soilDryPcf: 110,
+    },
+    expect: {
+      "undercut_stabilize:pad": 20000 / 35.3146667,
+      "undercut_stabilize:pad:unit": "M3",
+      "undercut_stabilize:pad:name": "Pad — Undercut & Stabilize Native Soil, Hydrated Lime 6%, 61cm in 30.5cm lifts (2 lifts)",
+      "undercut_agent_1:pad": 66 * 0.90718474,
+      "undercut_agent_1:pad:unit": "TONNE",
+    },
+  },
+  // D-407 4: a rate in lb/SY. 10,000 SF = 1,111.11 SY x 40 lb / 2000 = 22.22 TON, whatever the
+  // depth or dry weight.
+  {
+    id: "lines-stabilize-lb-sy",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
+      features: [{ itemId: "pad", label: "Pad", undercut: null, prep: { depthFt: 1, lifts: 1, liftFt: 1, areaSF: 10000, method: "stabilize", agents: [{ agent: "Hydrated Lime", lb_sy: 40 }], dryPcf: 100 } }],
+      assumptions: null,
+      soilDryPcf: 110,
+    },
+    expect: {
+      "stabilize:pad:name": 'Pad — Soil Stabilization, Hydrated Lime 40 lb/SY, 12" in 12" lifts (1 lift)',
+      "stabilize_agent_1:pad": ((10000 / 9) * 40) / 2000,
+      "stabilize_agent_1:pad:name": "Hydrated Lime (40 lb/SY)",
+    },
+  },
   // D-406 3: Compacted Subgrade with a compaction spec, and one typed.
   {
     id: "lines-compacted-proctor",

@@ -13749,3 +13749,69 @@ D-177 (the unit table gains SY and TON), D-375 2 (TON now converts in metric).
    - A feature with no method keeps its name and quantity.
    - In metric, a calculated TON line reads 13.8421 × 0.90718474 t, and a hand-picked TON reads
      as TON.
+
+## D-407: Undercut with native soil as the replacement; agent rates in lb/SY (F25)
+
+**Status:** Accepted (2026-10-12, Umer). **Spec:** [subgrade_prep_methods_tasks.md](docs/tasks/subgrade_prep_methods_tasks.md).
+**Amends:** D-136 (Option 1), D-142 (roles and CSI codes), D-177 (the balance), D-405 3 and 5
+(agent rates), D-406.
+
+1. **Replacement fill, grouped.**
+   - **Imported:** Engineered Fill, Select Fill, Crushed Stone / Aggregate Base, Structural Fill,
+     Flowable Fill, the project's own, and "+ Add material…", as today.
+   - **Native soil (reuse):** Native Soil — Moisture Conditioned & Compacted, and Native Soil —
+     Stabilized.
+   - Stored as `takeoff_item.undercut_native`: null (imported), `compacted` or `stabilized`. A
+     native choice stores no material, and hides "Undercut spoil goes to": the soil stays on site.
+2. **Lifts.** Every choice except Flowable Fill shows "Compacted in [ ] in lifts (N lifts)", by
+   D-406 2's rule. It is stored as `takeoff_item.undercut_lift_ft`. The dialog opens on 8", or 12"
+   for Native Soil — Stabilized.
+3. **Native Soil — Stabilized** uses Option 2's stabilization block: one or two agents, each rate,
+   the soil dry unit weight (blank: the project's) and the saved agent list. Stored as
+   `undercut_stabilizer_agents` and `undercut_stabilizer_dry_pcf`. Tons = undercut area ×
+   undercut depth × dry unit weight × % ÷ 2000. The undercut area includes "Extend beyond edge".
+4. **Rates in lb/SY, both options.** Each agent's rate is either % of dry weight or lb/SY (kg/m²
+   in metric, stored lb/SY): `{agent, pct}` or `{agent, lb_sy}`.
+   - lb/SY tons = area ÷ 9 × lb/SY ÷ 2000, with no depth or dry weight.
+   - Names read "Hydrated Lime 40 lb/SY" and "Hydrated Lime (40 lb/SY)".
+   - Existing agents are all %.
+5. **The balance (Calculate).**
+   - **Imported:** unchanged. The undercut excavation, its spoil disposition, and the
+     replacement line.
+   - **Native, either kind:** no undercut excavation, haul, stockpile, reuse or replacement
+     line. The soil is excavated and recompacted in place.
+   - **Shrink shortfall:** refilling V bank CY compacted needs V × k bank. The shortfall,
+     V × (k − 1) bank, joins the fill's bank need in both of D-177's forms:
+     - suitable: `surplus = C + R − F × k − V × (k − 1)`;
+     - not suitable: `need = F × k − R + V × (k − 1)`.
+   - At k = 1.00 the shortfall is 0; with k under 1 it is a surplus.
+   - The volume panel shows "Undercut reused on site — Pad: 0 CY export, shrink shortfall 74 CY".
+6. **Estimating lines.** Native lines are CY in place (area × depth ÷ 27), as the founder chose:
+   740.7 CY for 10,000 SF × 24", never doubled for excavate plus recompact.
+
+   | Choice | Lines | CSI |
+   |---|---|---|
+   | Imported | As today. The fill line's name gains the lifts: "Undercut Replacement Fill: Engineered Fill, 24" in 8" lifts (3 lifts) — Pad (compacted in place)". A feature with no thickness stored keeps its name | As today |
+   | Native, Moisture Conditioned & Compacted | One CY line (`undercut_native`): "Pad — Undercut & Recompact Native Soil, 24" in 8" lifts (3 lifts)" | 31.05.03 |
+   | Native, Stabilized | A CY parent (`undercut_stabilize`): "Pad — Undercut & Stabilize Native Soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)". Sub-items written by Calculate (D-405 8, D-406 1): "Excavate & Recompact" CY (`undercut_stabilize_mix`) and one TON per agent (`undercut_agent_1/2`) | 31.07.02 |
+
+7. **Stabilized twice.** A feature with Native Soil — Stabilized and Option 2's Soil Stabilization
+   shows a warning in the dialog, not a block: "This feature is stabilized twice: in the undercut
+   and in subgrade prep. Check the spec."
+8. **Existing features.** Every new column is null on existing rows, and null means today's
+   behaviour, so their lines, names, balance and version keys are unchanged. The migration
+   (`d407e5b9c3f1`) adds columns only and writes no data.
+9. **Metric.** Everything is stored imperial: CY, inches, pcf, lb/SY and TON. A metric project
+   shows m³, mm, kg/m³, kg/m² and tonnes (Calculate's tonnage only, D-406 6).
+10. **Checks** (quantity table, hand-worked). Each is 10,000 SF with a 24" undercut and shrink
+    1.10:
+    - **Imported Engineered Fill:** the lines and balance as before. 740.7 BCY excavated, and the
+      replacement 740.7 CCY.
+    - **Native Moisture Conditioned:**
+      - 740.7 CY line, "24" in 8" lifts (3 lifts)";
+      - no undercut export or import;
+      - shortfall 740.74 × 0.10 = 74.07 BCY in the balance.
+    - **Native Stabilized, Lime 6 %, 110 pcf:**
+      - 10,000 × 2 × 110 × 0.06 ÷ 2000 = 66.0 TON;
+      - Excavate & Recompact 740.7 CY.
+    - **lb/SY:** 40 lb/SY on 10,000 SF = 1,111.1 SY × 40 ÷ 2000 = 22.2 TON.

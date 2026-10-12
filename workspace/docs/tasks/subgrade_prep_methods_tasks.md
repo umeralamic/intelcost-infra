@@ -51,3 +51,24 @@ trial expires mid-test, make another; never move trial or billing dates.
 4. **Metric:** price a hand-picked TON item and the agents per TON, then switch Imperial ↔ Metric
    five times. The hand-picked row reads TON every time, the agents read tonnes in metric, and
    every total is identical to the cent.
+
+## Undercut with native soil (D-407)
+
+Option 1's replacement list is grouped: Imported (as before) and Native soil (reuse), which offers
+Moisture Conditioned & Compacted or Stabilized (`takeoff_item.undercut_native`).
+- **Lifts:** every choice but Flowable Fill has a lift thickness (`undercut_lift_ft`).
+- **Native Soil — Stabilized** uses the shared stabilization block (`StabilizationFields.tsx`,
+  `useStabilization.ts`).
+- **Agent rates:** % of dry weight or lb/SY, on both options.
+- **Native undercut lines:** native undercuts write no excavation, haul, reuse or replacement line.
+  The shrink shortfall, V × (k − 1), joins the balance, and the volume panel states it per
+  feature.
+- **Native lines are CY in place:** "Undercut & Recompact Native Soil", or "Undercut & Stabilize
+  Native Soil" with the sub-items "Excavate & Recompact" and each agent's TON.
+- **Warning:** stabilized twice (undercut and Option 2) shows a warning, never a block.
+
+**D-407's smoke** (fresh throwaway):
+1. **Existing feature edited to native:** an imported undercut (24" in 8" lifts), then Native Soil
+   — Stabilized. Check the volume panel, the Takeoff panel's sub-items and Estimating.
+2. **New feature:** Native Moisture Conditioned. The warning appears and Draw stays enabled.
+3. **Metric:** one Imperial → Metric → Imperial round trip.

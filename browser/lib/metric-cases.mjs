@@ -106,6 +106,9 @@ export const MANUAL_CASES = [
  *  so it agrees with the panel; depths under 1 m in whole mm. `displayName` in either system. */
 const EW = { source_type: "earthwork_computed", type: "cy", calculated_quantity: 0 };
 export const NAME_CASES = [
+  // D-407: names in metric. 40 lb/SY x 0.542492 = 21.70 kg/m²; 24" = 610 mm, 8" = 203 mm.
+  { id: "ew-agent-lb-sy-metric", item: { ...EW, name: "Hydrated Lime (40 lb/SY)", unit: "TON" }, system: "metric", expect: "Hydrated Lime (21.7 kg/m²)" },
+  { id: "ew-undercut-native-metric", item: { ...EW, name: 'Pad — Undercut & Recompact Native Soil, 24" in 8" lifts (3 lifts)', unit: "CY" }, system: "metric", expect: "Pad — Undercut & Recompact Native Soil, 610 mm in 203 mm lifts (3 lifts)" },
   // D-406: a stabilization line's name in metric: 24" = 610 mm, 12" = 305 mm, 110 pcf = 1,762 kg/m³.
   { id: "ew-stabilize-metric", item: { ...EW, name: 'Pad — Soil Stabilization, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)', unit: "SY" }, system: "metric", expect: "Pad — Soil Stabilization, Hydrated Lime 6%, 610 mm in 305 mm lifts (2 lifts)" },
   { id: "ew-agent-metric", item: { ...EW, name: "Hydrated Lime (6% of dry wt @ 110 pcf)", unit: "TON" }, system: "metric", expect: "Hydrated Lime (6% of dry wt @ 1,762 kg/m³)" },

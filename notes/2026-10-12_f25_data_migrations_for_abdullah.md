@@ -35,6 +35,15 @@ neither changes a quantity.
    index `uq_project_fill_material_name` is dropped and rebuilt with `kind` in it; the table is
    small.
 
+## `d407e5b9c3f1` (D-407): schema only
+
+- New nullable columns on `takeoff_item`: `undercut_native` (with a check constraint),
+  `undercut_lift_ft`, `undercut_stabilizer_agents` (JSONB) and `undercut_stabilizer_dry_pcf`.
+- **No row's values change.** Null means today's behaviour, so every existing undercut keeps its
+  lines, names, balance and version key.
+- Agents stored by D-405 / D-406 keep `{agent, pct}`, which still reads; a rate in lb/SY is a new
+  `lb_sy` key on new agents only.
+
 ## Before promoting
 
 - Run `alembic upgrade head` as part of the deploy (see the 2026-10-02 note: the production
