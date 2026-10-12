@@ -13316,3 +13316,35 @@ it belongs to, as before; the colour palette keeps `data-noedit`.
 4. **Found while checking (fixed):** the expiry field showed the day after the one picked anywhere west
    of UTC (the date is stored as 23:59:59 local and was read back as its UTC date); it now shows the
    local day.
+
+## D-384: Viewers of a shared link may save a copy to their own workspace
+
+**Status:** Accepted (2026-10-12, Umer; day run Block 7). The copy-content defaults in 6 are for review.
+
+1. **Owner.** Under "Allow 'Anyone with Link' to view", while it is ticked: "Allow viewers to save a copy
+   to their own workspace", and under it "Include pricing (rates, costs, markups)", off by default; the
+   grey note "A saved copy belongs to the person who saved it. Revoking the link stops new copies but
+   doesn't remove copies already saved."; and "Saved by N people" with each copy's workspace name and
+   date (`project_share_copy`, the project's, so it outlives a revoke or a new link). N counts saved
+   copies.
+2. **Viewer.** On the shared page, when saving is allowed: signed in on Professional, or a trial still
+   running, "Save to my workspace" runs the Duplicate project job into the viewer's active workspace as
+   "<Project> (shared copy)", a copy that is theirs and never syncs. Essentials or an expired trial: the
+   button shows disabled, with "Saving a copy needs a Professional plan." and Billing. Signed out: "Sign in
+   with a Professional plan to save this project to your workspace." Over a trial's limits (projects,
+   storage, measurements): the app's trial-limit dialog.
+3. **The api decides** (`POST /api/workspace/{viewer}/share-copy`, 403 for every refusal): the link
+   revoked or expired, its password not given or wrong, saving not allowed, the viewer's plan (Essentials,
+   an expired trial) or role. `GET …/share-copy/eligibility` tells the page which button to show.
+4. **Pricing off:** takeoff, sheets, files, folders, layers, classifications and quantities; none of the
+   estimate's tables (lines and their rates, cost components, bid settings, custom columns, unit wastage,
+   shared equipment, wage sets with craft and crew rates, wage determination imports). **Pricing on:** the
+   same as Duplicate project.
+5. **Across workspaces** (`duplicate.Into`): every row's workspace and every storage key move to the
+   viewer's; user references become the saver's or none; classification codes match the viewer's own
+   nodes by system and code (none where there is no match).
+6. **Not covered by the brief, chosen for now, for your list:** items on layers the link does not share
+   are not copied; assignees, variable values and subcontractor overrides never cross (they name the
+   owner's people and workspace), so a formula reading a workspace variable reads "Unknown variable" in
+   the copy; a custom classification code with no match in the viewer's workspace is left unclassified;
+   unit wastage counts as pricing; two copies of the same project carry the same name.

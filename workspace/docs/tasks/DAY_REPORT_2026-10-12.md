@@ -199,3 +199,39 @@ Run from 04:21 UTC until 11:30 UTC. Blocks 0–5, then the stretch list. Updated
   has no link); Add person listed Bench Estimator and Sara Wells and assigned one. The Settings link and
   the invite button both landed on Settings › Members with the dialog closed; Roles & Permissions opens
   from there. **Passed.** The duplicate purged; storage 0 under deleted projects.
+
+## Block 7 — Let viewers save a copy (D-384) — shipped (07:25 UTC)
+
+- **What:**
+  - **Owner:** the two options under "Allow 'Anyone with Link' to view", the grey note, and "Saved by N
+    people" with each copy's workspace name and date.
+  - **Viewer:** "Save to my workspace" on the shared page, in four states (Professional or running
+    trial; Essentials or expired trial; signed out; over a trial's limits).
+  - **Copy:** the Duplicate project job, extended to copy into another workspace (`duplicate.Into`), named
+    "<Project> (shared copy)".
+  - **Api:** `POST/GET /api/workspace/{viewer}/share-copy[/eligibility]`, 403 for every refusal.
+- **Commits:** api `43f8a41` (migration `d380a5c7e2f1`: `project_share_link.allow_save_copy`,
+  `.copy_include_pricing`, table `project_share_copy`), app `6b8d770`.
+- **Gates:** app lint, typecheck, build; api ruff, format, mypy (208 files); quantity table passed.
+- **Browser, three throwaway accounts plus a signed-out browser** (owner Professional with the priced
+  Riverside from Block 4; viewer Professional; viewer Essentials; plans bought on the Stripe fake):
+  | Check | Result |
+  |---|---|
+  | Pro viewer, pricing off | "Riverside Medical Center (shared copy)": sheets 2, files 1, folders, layers 3, calibration, items 4, shapes 6, quantities equal; estimate lines, cost component, wage set 0; nothing in the copy names the owner's workspace or people. **Passed.** |
+  | Pro viewer, pricing on | every table equal to the original (lines 3, component 1, wage set with 34 craft and 104 crew rates); Slab's code moved to the viewer's own CSI 03; 10 storage objects under the viewer's workspace; Full estimate $9,544.47, the original's. **Passed.** |
+  | Independence | the viewer renamed Slab in the copy: the original kept "Slab"; the owner renamed Doors in the original: neither copy changed. **Passed.** |
+  | Essentials viewer | button disabled, "Saving a copy needs a Professional plan." and Billing; the api answered 403 `plan_required`. **Passed.** |
+  | Signed out | "Sign in with a Professional plan to save this project to your workspace.", no button. **Passed.** |
+  | After Revoke | 403 "This link no longer allows saving a copy."; both copies still open, priced. **Passed.** |
+  | Owner | "Saved by 2 people", each with the viewer's workspace and Oct 12, 2026, one "with pricing". **Passed.** |
+  | Duplicate project (same workspace) | unchanged: "(copy)", every table equal. **Passed.** |
+- **Purged:** the three accounts' workspaces (`purge-fx`); storage 0.
+- **For your list (D-384 6), what a copy includes beyond the brief:**
+  - items on layers the link does not share are not copied;
+  - assignees, workspace variable values and subcontractor overrides never cross, so a formula reading a
+    workspace variable reads "Unknown variable" in the copy;
+  - a custom classification code with no match in the viewer's workspace is left unclassified;
+  - unit wastage counts as pricing;
+  - two copies of the same project have the same name;
+  - "Saved by N people" counts copies, so one person saving twice reads "2 people", as the brief's
+    check expects.
