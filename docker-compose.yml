@@ -103,9 +103,6 @@ services:
       # Short-lived tokens on demand, so re-auth on refresh can be driven in minutes rather
       # than half an hour (F8-S3). browser/f8-s3.sh sets it and puts it back.
       ACCESS_TOKEN_MINUTES: "${ACCESS_TOKEN_MINUTES:-30}"
-      # Metric for everyone (D-374 3): off, as in production, until Phase E ships. On for a
-      # metric check: METRIC_ENABLED=true docker compose up -d api; back with docker compose up -d api.
-      METRIC_ENABLED: "${METRIC_ENABLED:-false}"
       # :5174 is app-b, the second window of the realtime profile (F8-S5); :5175 is
       # app-prod, the built app of the prod profile (D-49).
       CORS_ORIGINS: '["http://localhost:5173","http://localhost:5174","http://localhost:5175","http://localhost:3000"]'
