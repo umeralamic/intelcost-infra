@@ -231,4 +231,13 @@ export const CLOSE_CASES = [
   { id: "join-line", kind: "join-length", feet: 120, places: 2, metric: true, expect: "36.58 m" },
   { id: "join-miss", kind: "join-length", feet: 0.25, places: 3, metric: true, expect: "0.076 m" },
   { id: "join-imperial", kind: "join-length", feet: 12.34, places: 1, metric: false, expect: "12.3 ft" },
+  // D-403, the assembly library preview: 30 m typed = 98.4252 LF held; QTY * 1.1 read in metric is
+  // 33 m = 108.2677 LF, × $3.048/LF ($10/m) = $330.00. Imperial: 100 LF → 110 LF → $335.28.
+  { id: "tpl-preview-metric", kind: "template-preview", typed: 30, unit: "LF", system: "metric", c: component({ qty_formula: "QTY * 1.1", unit_price: 3.048 }), expect: 330 },
+  { id: "tpl-preview-imperial", kind: "template-preview", typed: 100, unit: "LF", system: "imperial", c: component({ qty_formula: "QTY * 1.1", unit_price: 3.048, formula_unit_system: "imperial" }), expect: 335.28 },
+  // The Phase D rate rule: $3.048 per LF reads $10 per m; $10 per m typed stores $3.048 per LF; $2 per m²
+  // stores $0.185806 per SF.
+  { id: "rate-shown-lf", kind: "rate-shown", stored: 3.048, f: M, expect: 10 },
+  { id: "rate-stored-lf", kind: "rate-stored", typed: 10, f: M, expect: 3.048 },
+  { id: "rate-stored-sf", kind: "rate-stored", typed: 2, f: SF_M2, expect: 0.185806 },
 ];

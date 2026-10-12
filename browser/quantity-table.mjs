@@ -288,10 +288,19 @@ try {
     const dm = await import("/src/lib/takeoff/dimensions/itemDimensions.ts");
     const os = await import("/src/features/takeoff/earthwork/registration/offset.ts");
     const jt = await import("/src/features/takeoff/earthwork/site/joinText.ts");
+    const ce = await import("/src/lib/estimate/componentEnv.ts");
+    const cm = await import("/src/lib/estimate/components.ts");
     const metric = lo.measureFormat("metric");
     return cases.map((c) => {
       if (c.kind === "offset-shown") return os.offsetShown(c.feet, c.metric);
       if (c.kind === "join-length") return jt.joinLength(c.feet, c.places, c.metric);
+      if (c.kind === "template-preview") {
+        const env = ce.templatePreviewEnv(c.typed, c.unit, c.system);
+        const e = cm.evaluateComponent({ ...c.c, formula_unit_system: c.system, id: c.id, takeoff_item_id: "t", position: 0, name: c.id }, env);
+        return e.error ? { error: e.error } : Math.round(e.total * 100) / 100;
+      }
+      if (c.kind === "rate-shown") return ms.perUnitShown(c.stored, c.f);
+      if (c.kind === "rate-stored") return ms.perUnitStored(c.typed, c.f);
       if (c.kind === "offset-feet") return os.offsetFeet(c.typed, c.metric);
       if (c.kind === "dim-length") return ms.formatMetricLength(dm.dimensionFeetMap([{ ...c.dim, id: "x", item_id: "i" }]).get(c.dim.local_key) ?? NaN);
       if (c.kind === "guest-format") return metric.format(c.value, c.unit);
