@@ -13127,3 +13127,22 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
    whatever the project's currency, and in a project whose currency is not USD the Wage Calculator
    says so ("Wage data is US data in USD.") rather than relabelling its numbers.
 5. **Storage.** `workspace.currency` and `project.currency`, `String(3)`, not null, default `USD`.
+
+## D-374: Measurement system: a workspace default and a per-project setting, display only, behind a flag
+
+**Status:** Accepted (2026-10-12, Umer; overnight brief Step 4, metric Phase A).
+
+1. **Where.** Settings › General: "Measurement system", Imperial (default) or Metric. Edit project:
+   "Measurement system". A new project copies the workspace's; changing the workspace later leaves
+   existing projects alone (as D-373).
+2. **Display only.** The system decides how quantities and lengths are shown and typed (Phases B and C).
+   It never changes a stored value: quantities stay in feet, SF and CY in both engines and the
+   quantity table, and switching back and forth writes nothing but the setting.
+3. **Behind a flag.** Metric is offered only to platform admins until Phase E ships
+   (`settings.metric_enabled`, off). The api refuses anyone else setting Metric ("Metric is not
+   available yet."); `WorkspaceRead.metric_available` tells the app whether to offer it. A project that
+   copies a metric workspace is not refused.
+4. **The tag.** Beside the project's name in the takeoff header, a small tag names whatever differs
+   from the workspace's defaults: "Metric", the currency's symbol, or both ("Metric · CA$").
+5. **Storage.** `workspace.unit_system` and `project.unit_system`, `String(8)`, not null, default
+   `imperial` (migration `d374b6c2d9e1`).

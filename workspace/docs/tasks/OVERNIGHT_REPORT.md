@@ -61,6 +61,43 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Step 4 — Measurement system, Phase A (D-374) — shipped (00:48 UTC)
+
+- **What:**
+  - `workspace.unit_system` and `project.unit_system` (`imperial`/`metric`, default imperial; migration
+    `d374b6c2d9e1`), with the same inheritance as currency.
+  - Settings › General has "Measurement system" ("Imperial (ft, SF, CY)", "Metric (m, m², m³)") and the
+    note "Changes how quantities are shown and typed. Stored measurements never change." Edit project
+    has the same picker beside Currency.
+  - **Flag:** `settings.metric_enabled` (off). The api refuses Metric from anyone but a platform admin
+    (403 "Metric is not available yet."). `WorkspaceRead.metric_available` tells the app whether to
+    offer it, and a project already metric keeps the option. The bench passes
+    `METRIC_ENABLED` through compose (`${METRIC_ENABLED:-false}`).
+  - **Tag:** beside the project's name in the takeoff header, what differs from the workspace's
+    defaults ("Metric", the currency's symbol, or "Metric · CA$").
+  - The locale context carries `unitSystem` (`useUnitSystem()`), and `lib/measure.ts` holds the system's
+    types and helpers. Nothing reads the system for display yet; that is Phase B.
+- **Files:** api `core/locale.py`, `config.py`, `workspace/{models,schemas,routes,service}.py`,
+  `project/{models,schemas,routes,service}.py`, migration `d374b6c2d9e1`; app `lib/measure.ts` (new),
+  `features/project/locale.ts`, `features/takeoff/components/TakeoffHeader.tsx`,
+  `features/project/components/NewProjectDialog.tsx`, `pages/{SettingsGeneral,ProjectTakeoff}.tsx`,
+  `core/api/types.ts`; infra `docker-compose.yml`.
+- **Commits:** app `7ac21dd`, api `4af79f4`, infra `62e5250`.
+- **Gates:** app lint, typecheck, build; api ruff, format, mypy, migration; quantity table 344 rows passed.
+- **Browser:**
+  - As the throwaway (not a platform admin), with the switch off: Settings › General offered only
+    Imperial, and a PATCH of the project to `metric` was refused with 403 "Metric is not available
+    yet." Passed.
+  - **Making the throwaway a platform admin was refused** by the session's permission classifier, so it
+    was not done. The bench's `METRIC_ENABLED` switch was turned on instead
+    (`METRIC_ENABLED=true docker compose up -d api`; mail guard checked still on). **It stays on for
+    the metric checks tonight and is turned off at the end of the run.**
+  - With the switch on: Settings › General offered Metric. "zz switching" switched Imperial → Metric →
+    Imperial five times through Edit project. The header tag read "Metric" each time and disappeared on
+    Imperial. Every stored figure of its 10 items (calculated and effective quantity, unit, height,
+    depth, override) and 9 estimate lines (wage, material, equipment, man-hours) was byte-identical
+    after every switch. Passed.
+
 ## Step 2 — Hard-coded unit and money inventory — done (00:20 UTC)
 
 Read-only sweep of both repos (tests, comments, the two unit registries and billing/AI-credit `$`
