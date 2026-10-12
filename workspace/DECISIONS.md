@@ -13146,3 +13146,23 @@ Auto Count's Create reads "Count". Editing an item keeps "Properties". **Where:*
    from the workspace's defaults: "Metric", the currency's symbol, or both ("Metric · CA$").
 5. **Storage.** `workspace.unit_system` and `project.unit_system`, `String(8)`, not null, default
    `imperial` (migration `d374b6c2d9e1`).
+
+## D-375: Metric Phase B: quantities shown in m, m², m³ at render, never stored
+
+**Status:** Accepted (2026-10-12, Umer; overnight brief Step 5).
+
+1. **One conversion.** `lib/measure.ts` turns a stored quantity and its unit into what a metric project
+   shows: any length (LF, FT, IN, YD, MI) → m, area (SF, SY, SQ, AC, SI) → m², volume (CY, CF, CI, GAL)
+   → m³, by the unit registry's factors; earthwork's swell yards keep their kind (BCY → BCM, LCY → LCM,
+   CCY → CCM, × 0.764555). EA, LS, HR, % and weights are shown as stored.
+2. **Never twice.** A unit already metric (m, m², m³, mm, cm, BCM, LCM, CCM, "M²" — earthwork lines
+   calculated on a sheet calibrated in metres store these) is shown as it is.
+3. **Precision.** 2 decimals for m, m², m³.
+4. **Weights skipped.** No quantity the app computes carries a weight; LB, TON and KG appear only as
+   units a person picks for a manual quantity or a sub-item, and are shown as picked.
+5. **Where.** Every display in the Step 2 inventory except Estimating's rates and the export (Phase D):
+   the Takeoff and Sheets panels and their sub-item and cost rows, hover, the status bar, the canvas
+   menu and move chip, the legend, the dimension tool, item names (the suffix rebuilt in metric from
+   the stored figures), and earthwork's outputs.
+6. **Sheet scale stays independent.** A sheet's scale (imperial or metric presets, 1:5 to 1:5000) is how
+   the drawing was printed and is set per sheet as before.

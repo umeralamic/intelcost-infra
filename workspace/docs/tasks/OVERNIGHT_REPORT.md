@@ -61,6 +61,49 @@ signed in as the throwaway account on "zz switching". The MCP is used for every 
     started in EUR. The workspace was set back to USD afterwards. Passed.
 - **Left open:** none. The test project "zz currency smoke" stays in the throwaway workspace.
 
+## Step 5 — Metric Phase B, display (D-375) — shipped (01:13 UTC)
+
+- **What:**
+  - **Conversion:** one layer in `lib/measure.ts` (`displayQuantity`, `displayUnit`,
+    `formatDisplayQuantity`, `formatMetres`), read through `useMeasure()` / `measureFormat()`. A stored
+    LF/FT/IN/YD/MI becomes m; SF/SY/SQ/AC/SI becomes m²; CY/CF/CI/GAL becomes m³; BCY/LCY/CCY become
+    BCM/LCM/CCM. Factors are exact (1 ft = 0.3048 m), at 2 decimals. EA, LS, HR, % and weights are
+    shown as stored. A unit already metric is never converted again.
+  - **Weights skipped:** nothing the app computes carries LB/TON/KG. They appear only as units a person
+    picks (manual quantity, sub-items), and are shown as picked.
+  - **Item names:** `lib/takeoff/displayName.ts` rebuilds the stored imperial suffix in metric from the
+    stored figures. The measured figure is the calculated quantity divided by what the engine's own
+    `applyModifiers` multiplies by, so it is exact, e.g. "Sidewalk smoke (12.44 m, 1.52 mW)". Earthwork's
+    Calculate lines ("Soil Export (1,234 BCY)") have their figures converted. A person's own name is
+    never rewritten.
+  - **Where:** Takeoff panel rows (name suffix, quantity, unit), sub-item rows, Sheets panel rows, hover
+    (every line, the height and volume lines, item total, unit), the status bar (name, type, Calculated,
+    Perimeter), the canvas menu header and section figure, the move chip, the legend, the delete prompt
+    and the hidden-panel chip.
+  - **Dimension tool:** reads in metres on a metric sheet or in a metric project.
+  - **Earthwork:** the volume panel shows a CY result in m³ (a display copy with every `…CY` figure ×
+    0.764555; the stored result is untouched). The stitched-site bar (Cut, Fill, Export/Import, Strip,
+    Undercut, Prep) converts. The Calculate dialog's shrink sentence reads "each m³ … m³".
+  - **Sheet scale:** the scale picker already offers the metric presets 1:5 to 1:5000, including 1:20,
+    1:50, 1:100, 1:200 and 1:500 (`lib/takeoff/scales.ts`). It stays per sheet, independent of the
+    project's system.
+- **Not converted, by design:** Earthwork's computing inputs (Site Features, Strip Areas, Calculate's
+  units) still follow the sheet's calibration unit, because they decide what Calculate stores
+  (inventory finding 1). Estimating and the export are Phase D. The measurement dialog's entry and
+  hints are Phase C.
+- **Files:** app `lib/measure.ts`, `lib/takeoff/displayName.ts` (new), `features/project/locale.ts`,
+  `features/takeoff/components/{ItemRow,HoverPanel,SheetCanvas}.tsx`, `features/takeoff/sheets/SheetsPanel.tsx`,
+  `features/takeoff/legend/LegendOverlay.tsx`, `features/takeoff/earthwork/{VolumePanel,CalculateDialog}.tsx`,
+  `features/takeoff/earthwork/site/SiteView.tsx`, `pages/ProjectTakeoff.tsx`.
+- **Commit:** app `10ab1bf`.
+- **Gates:** lint, typecheck, build; quantity table 344 rows passed (its purity check on `lib/takeoff`
+  passed with `displayName.ts`).
+- **Browser ("zz switching", 10 items: LF, CY, SF, EA, SY, TON, with height, width, volume, slope,
+  manual and lump-sum items):** Imperial → Metric → Imperial five times. In Metric every quantity read
+  its imperial value × the exact factor (LF → m × 0.3048, SF → m² × 0.0929, SY → m² × 0.8361, CY → m³ ×
+  0.7646) at 2 decimals, with the metric unit. EA and TON were unchanged, and the names were rebuilt in
+  metric. After each return to Imperial, the panel's text was byte-identical to the original. Passed.
+
 ## Step 4 — Measurement system, Phase A (D-374) — shipped (00:48 UTC)
 
 - **What:**
