@@ -201,8 +201,7 @@ small "1 in use" beside them; the page text runs them together.
     2026-10-11).
 - **Currency and measurement system** (D-373, D-374; OVERNIGHT_REPORT.md, 2026-10-12):
   - two migrations: `d373a1b9c4e5` (currency) and `d374b6c2d9e1` (unit system);
-  - `METRIC_ENABLED=false` in production's api environment. It is the default, but set it
-    explicitly so Metric stays limited to platform admins until it is released.
+  - Metric is live for all; no setting needed (D-396: `METRIC_ENABLED` is removed).
 - **Migrations since `d374b6c2d9e1`** (2026-10-12, in order, each after the one before; head
   `d383e7a2b5c4`):
   1. `d378c9d2e6f4`: `takeoff_item.formula_unit_system`, `assembly_template.unit_system` (D-378);

@@ -13509,3 +13509,14 @@ the password again; the old `X-Share-Password` still works. Regenerating the lin
 password (a new hash, even for the same password) or revoking (no link) refuses an old pass at once:
 every owner change to the link also drops the kept presence answer once it commits. The tab keeps the
 pass, never the password.
+
+## D-396: Metric for everyone; the switch is gone
+
+**Status:** Accepted (2026-10-12; the founder's call). Supersedes D-374 3 (Metric for platform admins
+until Phase E ships).
+
+`METRIC_ENABLED` is removed: the setting (`app/config.py`), the bench compose variable, the api's check
+(`require_unit_system` and its 403 "Metric is not available yet." on project create, project update and
+workspace update), `metric_available` on the workspace read, and the app's `metricOffered` gate and its
+"Metric is coming soon." line. Every account sees Imperial and Metric in Settings › General and in Edit
+project. Storage stays imperial (D-374); a switch changes how quantities are shown and typed only.
