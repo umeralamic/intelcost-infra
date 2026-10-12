@@ -19,7 +19,7 @@ import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./l
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
-import { DISPLAY_CASES, ENTRY_CASES, MANUAL_CASES } from "./lib/metric-cases.mjs";
+import { CONSTANT_CASES, DISPLAY_CASES, ENTRY_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES } from "./lib/metric-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 
 const HERE = "/drive/scripts";
@@ -30,6 +30,7 @@ if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
   await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
   await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
+  await writeFile(`${HERE}/.qt-fxsystem.json`, JSON.stringify(FORMULA_SYSTEM_CASES));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
@@ -39,6 +40,7 @@ const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.
 const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSite = new Map(JSON.parse(await readFile(`${HERE}/.qt-site-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSub = new Map(JSON.parse(await readFile(`${HERE}/.qt-subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonFx = new Map(JSON.parse(await readFile(`${HERE}/.qt-fxsystem-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
@@ -221,6 +223,19 @@ try {
       }),
     };
   }, [ENTRY_CASES, DISPLAY_CASES, MANUAL_CASES]);
+  // Phase E: sub-item formulas in a metric project, and the template warning's constants.
+  mt.fx = await page.evaluate(async ([cases, constants]) => {
+    const e = await import("/src/lib/takeoff/subItems/inSystem.ts");
+    return {
+      fx: cases.map((c) => {
+        const m = (o) => new Map(Object.entries(o ?? {}));
+        const env = { parent: c.parent, dims: m(c.dims), subs: m(c.subs), refs: m(c.refs) };
+        const r = e.evaluateInSystem(c.formula, env, { system: c.system, parentUnit: c.parentUnit, resultUnit: c.resultUnit, subUnits: m(c.subUnits), refUnits: m(c.refUnits) });
+        return r.ok ? r.value : { error: r.error };
+      }),
+      constants: constants.map((c) => e.formulasWithAddedConstants(c.rows).map((r) => r.name)),
+    };
+  }, [FORMULA_SYSTEM_CASES, CONSTANT_CASES]);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
@@ -1013,6 +1028,17 @@ for (const [i, c] of MANUAL_CASES.entries()) {
   if (!near(got.stored, c.stored) || got.shownText !== c.shownText) wrong.push(`${c.id}: stored ${got.stored} shown "${got.shownText}"`);
 }
 
+// Phase E rows: both engines equal, each the hand-worked stored figure; the warning's list exactly.
+for (const [i, c] of FORMULA_SYSTEM_CASES.entries()) {
+  const web = mt.fx.fx[i];
+  const api = pythonFx.get(c.id);
+  if (!(typeof web === "number" && typeof api === "number" && Math.abs(web - api) <= 1e-9 * Math.max(1, Math.abs(api)))) disagree.push(`${c.id}: app ${JSON.stringify(web)}, api ${JSON.stringify(api)}`);
+  if (!near(web, c.expect)) wrong.push(`${c.id}: ${JSON.stringify(web)}, expected ${c.expect}`);
+}
+for (const [i, c] of CONSTANT_CASES.entries()) {
+  if (JSON.stringify(mt.fx.constants[i]) !== JSON.stringify(c.expect)) wrong.push(`${c.id}: ${JSON.stringify(mt.fx.constants[i])}`);
+}
+
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
 for (const c of CREDIT_CASES) {
   const got = pythonCredits.get(c.id);
@@ -1028,5 +1054,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length} metric rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); passed`,
 );

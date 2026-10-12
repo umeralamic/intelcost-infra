@@ -25,7 +25,7 @@ from app.features.assembly.models import COMPONENT_COPY_FIELDS as COPY_FIELDS
 from app.features.assembly.models import AssemblyComponent, component_fields
 from app.features.earthwork import register, site
 from app.features.estimate.models import TakeoffCostComponent
-from app.features.takeoff import quantity, sub_items
+from app.features.takeoff import formula_system, quantity, sub_items
 from app.features.takeoff.formula import FormulaEnv, evaluate
 from app.features.takeoff.models import TakeoffItemType
 
@@ -241,8 +241,31 @@ def subitem(case: dict) -> float | dict:
     return result.value if result.ok and result.value is not None else {"error": result.error}
 
 
+def fx_system(case: dict) -> object:
+    """A sub-item formula in the project's system (metric Phase E), as recompute reads it."""
+    def floats(key: str) -> dict[str, float]:
+        return {k: float(v) for k, v in (case.get(key) or {}).items()}
+
+    env = FormulaEnv(
+        parent=float(case["parent"]), dims=floats("dims"), subs=floats("subs"), refs=floats("refs")
+    )
+    result = formula_system.evaluate_in_system(
+        case["formula"],
+        env,
+        system=case["system"],
+        parent_unit=case.get("parentUnit"),
+        result_unit=case.get("resultUnit"),
+        sub_units=case.get("subUnits") or {},
+        ref_units=case.get("refUnits") or {},
+    )
+    return result.value if result.ok and result.value is not None else {"error": result.error}
+
+
 def main() -> None:
     cases = json.load(sys.stdin)
+    if sys.argv[1:] == ["fxsystem"]:
+        print(json.dumps([{"id": c["id"], "value": fx_system(c)} for c in cases]))
+        return
     if sys.argv[1:] == ["subitems"]:
         print(json.dumps([{"id": c["id"], "value": subitem(c)} for c in cases]))
         return
