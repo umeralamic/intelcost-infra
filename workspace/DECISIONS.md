@@ -14484,5 +14484,12 @@ has Balance and the tie-out under five scope headings, no code and no "EG" or "F
    portrait by default, remembered per person (`takeoff_prefs.report_page`). The page size, its
    margins and the pictures' height limits are set for that paper at print time.
 3. **Footer on every page:** project and sheet on the left, "Page N of M" on the right (the
-   page's margin boxes).
-4. Checked at A4 portrait, Letter portrait and Letter landscape: nothing cut.
+   page's margin boxes). Written as a page rule at print time with the paper (`printReport.ts`):
+   the build dropped margin boxes written in `index.css`, so none printed from there. A picture's
+   height is held to the paper's height less the margins and its heading and key.
+4. Checked at A4 portrait, Letter portrait and Letter landscape on the Rebid copy: 14, 14 and 16
+   pages at 595 × 842, 612 × 792 and 792 × 612 pt, the footer on every page, no line of text past
+   a page's edge. The dialog opened on A4 portrait; the last choice (Letter landscape) came back
+   next time and was stored on the person (`takeoff_prefs.report_page`).
+5. A label's value wraps (right-aligned) when long, so a narrow paper cuts nothing; the features
+   plan's callouts are about 7 pt on A4 and wrap to two lines, shortened past that.
