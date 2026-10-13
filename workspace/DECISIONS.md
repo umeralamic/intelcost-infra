@@ -14345,3 +14345,11 @@ number; it found these, all fixed:
 7. Models are kept for the last three sheets only (each holds every prism and both TINs).
 
 The stored result on the Rebid copy is unchanged bit for bit.
+
+## D-442: The site view's tools wrap instead of running past the side panel
+
+**Status:** Accepted (2026-10-13, Umer; a layout bug seen while building F26 3D-6).
+
+The site view's one tool row ran past its right edge over the Takeoff panel in a narrow canvas
+(its last buttons drawn on the panel's header). It now wraps onto a second line; no button
+reaches past the view (checked at 1,700 px with both side panels open).
