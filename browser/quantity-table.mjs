@@ -861,6 +861,21 @@ try {
         });
         const sum = (k) => r.regions.reduce((t, g) => t + g[k], 0);
         out.regionsSumToTotals = Math.abs(sum("cutCY") - r.cutCY) < 1e-9 && Math.abs(sum("fillCY") - r.fillCY) < 1e-9;
+        // The grading report's statistics (F26 R-1, D-430).
+        for (const g of r.regions) {
+          if (!g.stats) continue;
+          const k = `stats:${g.id ?? "remainder"}`;
+          for (const side of ["cut", "fill"]) {
+            const s = g.stats[side];
+            Object.assign(out, { [`${k}:${side}:areaSF`]: s.areaSF, [`${k}:${side}:avgFt`]: s.avgFt, [`${k}:${side}:maxFt`]: s.maxFt, [`${k}:${side}:egMin`]: s.eg?.min ?? null, [`${k}:${side}:egMax`]: s.eg?.max ?? null, [`${k}:${side}:fgMin`]: s.fg?.min ?? null, [`${k}:${side}:fgMax`]: s.fg?.max ?? null });
+          }
+          out[`${k}:area3d:fg`] = g.stats.area3dSF.fg;
+          out[`${k}:area3d:eg`] = g.stats.area3dSF.eg;
+        }
+        if (r.stats) {
+          out["stats:areaSF"] = r.stats.areaSF;
+          for (const s of ["eg", "fg"]) if (r.stats[s]) Object.assign(out, { [`stats:${s}:min`]: r.stats[s].min, [`stats:${s}:max`]: r.stats[s].max, [`stats:${s}:avg`]: r.stats[s].avg, [`stats:${s}:area3d`]: r.stats[s].area3dSF });
+        }
         const cov = r.warnings.find((w) => w.code === "partial_coverage");
         if (cov) Object.assign(out, { coverage: cov.ratio, coverageSurfaces: cov.surfaces, coverageMessage: cov.message });
         const ov = r.warnings.find((w) => w.code === "role_overlap");

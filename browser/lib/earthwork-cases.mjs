@@ -115,6 +115,55 @@ export const EARTHWORK_CASES = [
   },
   // --- Block C: cut and fill (legacy's volume.test.ts and e4.test.ts) -------------------
   // side: feet per point on a 1 x 1 point page, so the unit square is side x side feet.
+  // --- F26 R-1: the grading report's statistics (D-430), on planes worked by hand -------
+  // 100 x 100 ft, EG flat at 100; FG a plane rising 2 ft west to east: all fill, height 0 to 2,
+  // average 1; the proposed surface's true area 100 x sqrt(100^2 + 2^2).
+  {
+    id: "stats-plane-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [100, 102, 102, 100])],
+    expect: {
+      ok: true, cutCY: 0, fillCY: 10000 / 27,
+      "stats:remainder:fill:areaSF": 10000, "stats:remainder:fill:avgFt": 1, "stats:remainder:fill:maxFt": 2,
+      "stats:remainder:fill:egMin": 100, "stats:remainder:fill:egMax": 100, "stats:remainder:fill:fgMin": 100, "stats:remainder:fill:fgMax": 102,
+      "stats:remainder:cut:areaSF": 0, "stats:remainder:cut:avgFt": 0, "stats:remainder:cut:maxFt": 0,
+      "stats:remainder:area3d:fg": 100 * Math.sqrt(100 * 100 + 4), "stats:remainder:area3d:eg": 10000,
+      "stats:areaSF": 10000, "stats:eg:min": 100, "stats:eg:max": 100, "stats:eg:avg": 100, "stats:fg:min": 100, "stats:fg:max": 102, "stats:fg:avg": 101,
+      "stats:fg:area3d": 100 * Math.sqrt(100 * 100 + 4), "stats:eg:area3d": 10000,
+    },
+  },
+  // FG from 99 to 101: cut on the west half, fill on the east, each 5,000 SF at 0.5 average, 1 deepest.
+  {
+    id: "stats-plane-cut-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 101, 101, 99])],
+    expect: {
+      ok: true, cutCY: 2500 / 27, fillCY: 2500 / 27,
+      "stats:remainder:cut:areaSF": 5000, "stats:remainder:cut:avgFt": 0.5, "stats:remainder:cut:maxFt": 1, "stats:remainder:cut:fgMin": 99, "stats:remainder:cut:fgMax": 100,
+      "stats:remainder:fill:areaSF": 5000, "stats:remainder:fill:avgFt": 0.5, "stats:remainder:fill:maxFt": 1, "stats:remainder:fill:fgMin": 100, "stats:remainder:fill:fgMax": 101,
+      "stats:remainder:area3d:fg": 100 * Math.sqrt(100 * 100 + 4),
+    },
+  },
+  // The first plane under a feature 0.5 ft deep: the zero line moves to x = 25 ft. Cut 2,500 SF,
+  // 0.25 average, 0.5 deepest; fill 7,500 SF, 0.75 average, 1.5 highest, proposed 100.5 to 102.
+  {
+    id: "stats-plane-feature-depth",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [100, 102, 102, 100])],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: UNIT }],
+    expect: {
+      ok: true, cutCY: 625 / 27, fillCY: 5625 / 27,
+      "stats:pad:cut:areaSF": 2500, "stats:pad:cut:avgFt": 0.25, "stats:pad:cut:maxFt": 0.5, "stats:pad:cut:fgMin": 100, "stats:pad:cut:fgMax": 100.5,
+      "stats:pad:fill:areaSF": 7500, "stats:pad:fill:avgFt": 0.75, "stats:pad:fill:maxFt": 1.5, "stats:pad:fill:fgMin": 100.5, "stats:pad:fill:fgMax": 102,
+      "stats:pad:area3d:fg": 100 * Math.sqrt(100 * 100 + 4), "stats:pad:area3d:eg": 10000,
+    },
+  },
   { id: "vol-f1-flat-pad", kind: "volume", side: 100, boundary: UNIT, runs: pad(100, 105), expect: { ok: true, cutCY: 0, fillCY: 50000 / 27, netCY: 50000 / 27 } },
   {
     id: "vol-f2-one-corner-up",

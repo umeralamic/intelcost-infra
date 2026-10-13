@@ -14163,3 +14163,21 @@ A sheet with no image has the box greyed.
    CUT & FILL and "2D" to close. After a reload the model is built again from the same inputs and
    used only when it gives the saved numbers (D-423 3), otherwise "Calculate again".
 3. No drape for a site (no single sheet image); the readout and the controls are the sheet's.
+
+## D-430: The grading report's statistics, computed with the volumes and stored (F26 R-1)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-1.
+
+1. `lib/takeoff/earthwork/volume/stats.ts` `regionStats`: a pass of its own over the prisms the
+   volumes already summed, so it cannot move a volume (the Rebid copy's Calculate stores the same
+   JSON as before, bit for bit, apart from the new `stats`).
+2. **Per region** (`regions[].stats`): cut area and fill area apart (a prism's plan area by the
+   sign of its volume; a level prism in neither); average (volume over area) and maximum (the
+   deepest corner) cut depth and fill height, in feet, the depth the volume used (strip and
+   section depth folded in); existing and proposed levels, lowest and highest, over the cut part
+   and the fill part; the 3D area of the proposed surface and of the existing over the region.
+3. **For the computed area** (`stats`): plan area; each surface's lowest, highest and area-weighted
+   mean level and its 3D area.
+4. Results saved before carry none; the report says "Calculate again for these figures" there.
+5. Quantity table: three rows on planes worked by hand (all fill; cut and fill split at
+   mid-site; the same under a 0.5 ft section depth), 148 earthwork rows right.
