@@ -1,6 +1,6 @@
 # Earthwork 3D view and Grading report: what exists, and a plan
 
-_Plan only. Written 2026-10-13 for the founder. Nothing built, nothing written to any project._
+_Written 2026-10-13 for the founder; adopted with its defaults (D-422). **Built overnight 2026-10-13:** 3D-1 to 3D-7 (D-423 to D-429), R-1 to R-7 (D-430 to D-436), Calculate in a worker (D-437, D-438). The input comparison: [kcp_input_comparison.md](kcp_input_comparison.md)._
 
 The ask: (1) a 3D view on the Earthwork tab with existing, proposed and cut/fill surfaces,
 vertical exaggeration and colour keys; (2) a "Grading report" that opens beside the work like
