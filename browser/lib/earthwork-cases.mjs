@@ -134,6 +134,22 @@ export const EARTHWORK_CASES = [
       "stats:fg:area3d": 100 * Math.sqrt(100 * 100 + 4), "stats:eg:area3d": 10000,
     },
   },
+  // F26 3D-4: the readout on the rising plane under a 0.5 ft feature, worked by hand. At x = 0.75:
+  // EG 100, FG 101.5, depth 1.5 - 0.5 = 1.0 (fill); at x = 0.1: FG 100.2, depth 0.2 - 0.5 = -0.3 (cut).
+  {
+    id: "readout-plane-feature",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [100, 102, 102, 100])],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: UNIT }],
+    readout: [[0.75, 0.5], [0.1, 0.3]],
+    expect: {
+      ok: true,
+      "readout:0:eg": 100, "readout:0:fg": 101.5, "readout:0:depth": 1,
+      "readout:1:eg": 100, "readout:1:fg": 100.2, "readout:1:depth": -0.3,
+    },
+  },
   // FG from 99 to 101: cut on the west half, fill on the east, each 5,000 SF at 0.5 average, 1 deepest.
   {
     id: "stats-plane-cut-fill",

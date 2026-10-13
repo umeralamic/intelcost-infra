@@ -638,6 +638,7 @@ try {
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
     const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
+    const sc = await import("/src/lib/takeoff/earthwork/scene3d.ts");
     const ed = await import("/src/lib/takeoff/earthwork/edit.ts");
     const rg = await import("/src/lib/takeoff/earthwork/register.ts");
     const ec = await import("/src/lib/takeoff/earthwork/elevationCheck.ts");
@@ -834,10 +835,11 @@ try {
         const runs = runsOf(c.runs);
         const labels = labelsOf(c.runs);
         const pts = (poly) => poly.map(([x, y]) => ({ x, y }));
+        const [egT, fgT] = [tin.runTinForSurface(runs, "EG", labels), tin.runTinForSurface(runs, "FG", labels)];
         const r = vol.computeVolumes(
           {
-            eg: tin.runTinForSurface(runs, "EG", labels),
-            fg: tin.runTinForSurface(runs, "FG", labels),
+            eg: egT,
+            fg: fgT,
             boundary: c.boundary ? pts(c.boundary) : null,
             calibration: { feetPerNorm: c.side, widthPt: 1, heightPt: 1 },
             units: c.units ?? "CY",
@@ -861,6 +863,11 @@ try {
         });
         const sum = (k) => r.regions.reduce((t, g) => t + g[k], 0);
         out.regionsSumToTotals = Math.abs(sum("cutCY") - r.cutCY) < 1e-9 && Math.abs(sum("fillCY") - r.fillCY) < 1e-9;
+        // The readout under the cursor (F26 3D-4, D-426): EG, FG and the depth used at each point.
+        (c.readout ?? []).forEach(([x, y], k) => {
+          const rd = sc.readoutAt({ eg: egT, fg: fgT, boundary: c.boundary ? pts(c.boundary) : null, volumes: r }, { x, y });
+          Object.assign(out, { [`readout:${k}:eg`]: rd.eg, [`readout:${k}:fg`]: rd.fg, [`readout:${k}:depth`]: rd.depth });
+        });
         // The grading report's statistics (F26 R-1, D-430).
         for (const g of r.regions) {
           if (!g.stats) continue;

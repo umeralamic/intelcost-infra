@@ -14353,3 +14353,11 @@ The stored result on the Rebid copy is unchanged bit for bit.
 The site view's one tool row ran past its right edge over the Takeoff panel in a narrow canvas
 (its last buttons drawn on the panel's header). It now wraps onto a second line; no button
 reaches past the view (checked at 1,700 px with both side panels open).
+
+## D-443: The readout in the shared quantity table
+
+**Status:** Accepted (2026-10-13, Umer; for D-426).
+
+One earthwork row, `readout-plane-feature`: the rising plane (EG 100, FG 100 → 102 over 100 ft)
+under a 0.5 ft feature, read by `readoutAt` at two points against answers worked by hand (x = 75 ft:
+EG 100, FG 101.5, fill 1.0; x = 10 ft: EG 100, FG 100.2, cut 0.3). 149 earthwork rows right.
