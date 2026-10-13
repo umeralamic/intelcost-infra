@@ -14276,3 +14276,18 @@ the library cannot embed them (D-422 9); the PDF carries them.
    otherwise identical (a throwaway two-sheet site saved before and after: identical apart from
    `stats`, same key).
 3. No 2D picture for a site (a site has no single sheet image); the 3D picture stays the sheet's.
+
+## D-437: Calculate's model built in a Web Worker (F26 stretch)
+
+**Status:** Accepted (2026-10-13, Umer; the plan's risk mitigation, after 3D-1). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) Risks.
+
+1. A sheet's Calculate and the after-reload rebuild (D-423) run `buildModel` in a module worker
+   (`earthwork/model.worker.ts`, `modelWorker.ts`, one worker kept for the page, 81 kB); where a
+   worker cannot start, the same builder runs on the page as before. Calculate is disabled while
+   one runs.
+2. **Numbers unchanged, bit for bit:** on the Rebid copy with its test features, the worker's
+   stored result equals the page's (old code, same inputs) in every field, statistics included.
+3. **The page stays live:** the longest frame gap during a Calculate fell from 5.5 s (one block) to
+   1.15 s; what is left is the page's own work after the model returns (drawing ~7,700 CUT & FILL
+   triangles as SVG, the elevation check, the lines), a candidate for later.
+4. A site's Calculate stays on the page for now (its inputs are assembled differently).
