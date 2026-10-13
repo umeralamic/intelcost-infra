@@ -14086,3 +14086,18 @@ program's project file comes after both, as a study first.
    has none (the plan's 3D-7 message, built here).
 6. The model is built when 3D VIEW or CUT & FILL wants it and the result is current, once the
    result has loaded (`want3d`).
+
+## D-425: Vertical exaggeration and colour keys in 3D VIEW (F26 3D-3)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-3.
+
+1. **Vertical exaggeration** 1× to 10× in steps of 0.5 (a slider, starting at 1×): the levels are
+   scaled about the scene's lowest level, so plan distances stay true; the scene is not rebuilt.
+2. **A colour key** under it, titled by the surface: Existing grade / Proposed grade with its
+   low, middle and high level; Cut & fill depth diverging about zero with the deepest cut, half
+   of it, 0, half the highest fill and the highest fill ("Cut 14.13 ft … Fill 6.50 ft" on the
+   Rebid copy). Values in the sheet's elevation unit, two decimals.
+3. **One formula for the key and the surface** (`shade` in `scene3d.ts`), the 2D layers' own:
+   a grade 50 % → 5 % lightness over its range on its hue token; cut and fill 65 % → 15 % as the
+   depth nears the deepest of either, on the cut and fill hue tokens; exactly zero in `--muted`.
+   The key's swatch is that formula at its stops, as CSS on the tokens: no colour in the code.
