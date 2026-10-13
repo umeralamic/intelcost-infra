@@ -14150,3 +14150,16 @@ A sheet with no image has the box greyed.
    a scan of every prism per pointer move.
 3. **No WebGL** says "3D VIEW needs WebGL…", the sheet, 2D layers and numbers working without it
    (built with 3D-2, D-424 5).
+
+## D-429: A joined site in 3D VIEW (F26 3D-6)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-6.
+
+1. The site view's Calculate goes through one function (`computeSite` in `SiteView.tsx`) and keeps
+   its model: both TINs and the prisms in the site frame. Its saved result is unchanged bit for
+   bit (a throwaway two-sheet site saved with the code before and after: identical JSON).
+2. **3D VIEW** on the site's preview bar and on its saved bar (hidden while stale) opens the same
+   view over the site view, in the site frame at one foot a unit, with EXIST. GRADE / PROP. GRADE /
+   CUT & FILL and "2D" to close. After a reload the model is built again from the same inputs and
+   used only when it gives the saved numbers (D-423 3), otherwise "Calculate again".
+3. No drape for a site (no single sheet image); the readout and the controls are the sheet's.
