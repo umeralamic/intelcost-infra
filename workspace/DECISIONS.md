@@ -13862,3 +13862,92 @@ D-409's folder is named "Earthwork", not "Earthwork (Grading)".
   "Earthwork (Grading)". A name a person typed is kept.
 - D-409's own migration now inserts "Earthwork", so prod, which has run neither, gets that name
   directly.
+
+## D-411: The surface toggle reads "EXISTING" / "PROPOSED"
+
+**Status:** Accepted (2026-10-13, Umer).
+
+The Earthwork toolbar's surface toggle, which picks the surface a new contour or spot is drawn on,
+shows "EXISTING" and "PROPOSED" in place of "EG" and "FG", stacked in the row's height: PROPOSED
+on top, EXISTING below, in bold.
+- The tool buttons beside it read "Contour", "Trace", "Spot Elev." and "Boundary" (briefly Draw
+  Contour, Auto Trace Contour, Place Spot Elev., Draw Boundary; first Contour, Trace, Spot,
+  Boundary).
+- The contour interval sits between the EXISTING / PROPOSED toggle and Contour, without its Δ
+  mark: one bordered unit the row's height, + / − on top, the step box under them.
+- The tools from Contour to CUT & FILL sit in one bordered cluster like the takeoff row's, so
+  they, the surface toggle, the interval and Undo / Redo all stand the same height.
+- Site Features, then Strip Area, follow Boundary (before Match line). The Strip Area button, its
+  More entry and its new-strip window read "Stripping"; one strip is still a "Strip Area" (its
+  properties, menu and delete).
+- "Linked EG" and "Show linked EG" read "Linked EC" and "Show Linked EC" (existing contour), and
+  follow Match line; Calculate comes next, then the TIN toggles, then Isochore.
+- The TIN toggles read "EXIST. GRADE" and "PROP. GRADE" (were EG TIN, FG TIN; briefly EXISTING
+  GRADE / PROPOSED GRADE, then Ex. / Pr. GRADE), and Isochore
+  reads "CUT & FILL".
+- Contour's icon is nested closed contour loops (`ContourIcon`), in place of the mountain.
+- CUT & FILL's icon is a hump of cut above a grade line with hatched fill below it
+  (`CutFillIcon`), in place of the palette, on the row and in Earthwork Volumes' header.
+- The buttons' hover hints, the Auto Trace messages, the surface toasts, the CUT & FILL button
+  in Earthwork Volumes, the Linked EC panel's heading and the Trace settings blurb use the new
+  names. So do the site view's contour buttons ("EXISTING Contour" / "PROPOSED Contour"), the
+  run rows' surface tag ("(EXISTING)" / "(PROPOSED)") and the Sheets panel's "Linked EC…".
+- **No squeezing.** The row's buttons keep their width and one-line label. When the row is too
+  narrow they fold from the right into a "More" menu at its end, as the takeoff row does
+  (D-228); the surface toggle and the interval never fold. A toggle that is on shows its dot in
+  More.
+- Labels only: the stored surface stays `EG` / `FG`, so no data, quantity or key changes.
+
+## D-412: The takeoff header gives way in steps on a narrow window
+
+**Status:** Accepted (2026-10-13, Umer).
+
+The takeoff header no longer scrolls sideways or squeezes below a tablet's width. As the window
+narrows it gives way in this order:
+1. The project name shortens with "…" (the whole name on hover).
+2. Once it would be shorter than about 96 px, the name (and its units/currency tag) goes.
+3. The tabs after Earthwork fold into a "More" segment at the end of the tab group: Forum first,
+   then Estimating, then Annotations.
+4. The right side goes: the credits chip, Share, the work timer, the trial button, the theme
+   toggle, Settings. Share, the theme toggle and Settings are then in More, under the folded tabs.
+5. Earthwork, then Takeoff, fold into More.
+- The open tab and the account menu never go. Each step undoes once the room it needed is back.
+- While there is room the two sides share it equally, so the name stays in the true middle.
+
+## D-413: A sheet with earthwork opens on the Earthwork tab
+
+**Status:** Accepted (2026-10-13, Umer).
+
+Opening a sheet from the Sheets panel (its row, or its red Review flag) lands on the Earthwork
+tab, with its tools, when the sheet has earthwork on it: a contour, a spot elevation, a work
+boundary, a Site Feature, or a match line join to a site. Any other sheet opens as before.
+
+## D-414: The Earthwork tab's tools take the measure tools' place in one row
+
+**Status:** Accepted (2026-10-13, Umer).
+
+On the Earthwork tab the takeoff row drops what earthwork does not use and carries the earthwork
+tools itself, so there is no second row.
+- **Gone from this tab:** Linear, Segment, Area, Count, Snapshot, Dock, Highlight, Note, Overlay,
+  Fullscreen, Split, Markups and Legend. Overlays are added from the Takeoff or Annotations tab.
+  Their keys (L, A, N, S) pick nothing here; V, H and D still do.
+- **Kept:** Pan, Select, Print, Find Text; Undo and Redo; Scale with Dimension beside it.
+- **In their place:** the earthwork tools in D-411's order, in the takeoff row's look (the icon over
+  its label, at Settings › Toolbar's size). Calculate stays filled; the surface toggles keep
+  their colours. When the row is short they fold into their own More at its end.
+- The "Existing grade: linked from …" bar under the row is gone; Linked EC's hover hint names
+  the linked sheets and any link problem, and the button opens the links panel.
+- Site Features and Strip Areas still draw on the area mechanics; Snap, Ortho and the arc keys
+  work while drawing them.
+
+## D-415: The Earthwork tab keeps Select, Undo and Redo only
+
+**Status:** Accepted (2026-10-13, Umer). **Amends:** D-414 (what it kept).
+
+Of the takeoff row's own tools the Earthwork tab now shows only Select, Undo and Redo, then the
+earthwork tools. Pan, Print, Find Text, Scale and Dimension go from this tab; they stay on the
+Takeoff tab.
+- Moving around the sheet is the middle or right mouse drag and the wheel, as on every tab.
+- A sheet is calibrated from the Takeoff tab.
+- Of the tool keys only V (Select) acts here; H, L, A, N, D and S pick nothing. Snap, Ortho and the
+  arc keys still work while a Site Feature or Strip Area is being drawn.
