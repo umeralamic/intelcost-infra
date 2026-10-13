@@ -14591,3 +14591,36 @@ The 2D EXIST. GRADE and PROP. GRADE layers, on the canvas and wherever a report 
 
 Calculate, its triangles and every quantity are untouched: proved by the copy's stored result being
 byte-identical before and after.
+
+## D-454: Report pictures' titles, one cut and fill range, full-width pairs, depth bands
+
+**Status:** Accepted (2026-10-13, Umer; fixes from his own A4 portrait export).
+
+1. **Titles in one pattern, "and" not "&":** "Features — 2D", "Contours — 2D", "Cut and fill —
+   2D", "Existing grade — 3D, 2× vertical", "Proposed grade — 3D, 2× vertical", "Cut and fill —
+   3D, N× vertical" (the exaggeration used). The cut and fill keys read "Cut and fill depth".
+2. **One cut and fill range.** Both keys read the same calculated model (3D-1, `volumes.model`),
+   but the 2D key took each prism's mean depth (max cut 14.08 ft) and the 3D key the prisms'
+   corner depths (14.13 ft), which is what the 3D surface is coloured by. Both now read
+   `cutFillRange` (scene3d): the deepest cut and highest fill at the corners. The 2D picture still
+   shades each prism by its mean depth, now on that same range, so its colours match its key.
+   Display only: Calculate's stored result is untouched.
+3. Key labels spaced so they never touch, at any paper: the key is as wide as its widest value
+   needs (the ends flush, the rest centred), up to the picture's width (done in D-452).
+4. Footer: "Generated with IntelCost.io", and the project and the full sheet name, on two lines
+   rather than cut (done in D-452).
+5. **Paired pictures at the same full width.** The pictures that share a page are drawn wide, 1.9
+   to 1 (Letter portrait, the tightest paper, needs 1.89): the 3D pages render at that shape and
+   the cut and fill plan's crop takes in more of the sheet round the site to have it. Stacked in
+   portrait each fills the text width; side by side in landscape each fills its half.
+6. **Depth bands:** the Depth column only as wide as its words; Cut and Fill share the rest, each
+   bar under its number, right-aligned, as long as the column allows (the earlier look).
+
+## D-455: The PDF dialog, plainer
+
+**Status:** Accepted (2026-10-13, Umer).
+
+The PDF dialog has its title only (no line under it); the paper list shows the names alone (A4,
+Letter, Legal, Tabloid, A3); the file name box is wider and wraps to a second line, so the default
+name ("Grading Report, <project>") shows whole. Enter does not break the name; it stays one line
+of text.
