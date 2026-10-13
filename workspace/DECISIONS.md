@@ -14249,3 +14249,16 @@ own inputs or the written lines; nothing calculated again:
    table rows never split, pictures within the page.
 4. Checked with the print call stubbed (never the print dialog in the automated browser): the
    root holds all eleven sections and the picture, no buttons, and lays out under print media.
+
+## D-435: The Grading report as an Excel workbook (F26 R-6)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422 9). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-6.
+
+**Excel** in the report's header downloads "Grading report - {project} - {sheet}.xlsx" with
+xlsx-js-style, loaded only then (`report/reportWorkbook.ts`): **Summary** (cut, fill, net, strip,
+Soil Export/Import, area computed, each surface's levels and 3D area, the proposed as the
+headline), **By feature** (the report's table, 22 columns, totals, the overlap rule), **Strip**,
+**Lines** (as written, with CSI codes) and **Inputs** (surfaces drawn, levels, interval, the
+linked sheet, the assumptions). Numbers at full precision with a two-decimal format (the Rebid
+copy's totals equal the stored result exactly); a metric project's in m³, m², m. No pictures:
+the library cannot embed them (D-422 9); the PDF carries them.
