@@ -14220,3 +14220,16 @@ own inputs or the written lines; nothing calculated again:
 6. **Warnings**, **Assumptions** (suitability, imported fill, swell, shrink, dry unit weight) and
    the **Division 31 lines** as written, each with its CSI code read from the workspace's CSI tree.
 7. A result saved before R-1 says "Calculate again for the ranges, levels and 3D areas".
+
+## D-433: The Grading report's images (F26 R-4)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-4.
+
+1. **2D:** the print renderer (`renderSheetForPrint`) draws an earthwork layer over the sheet,
+   Cut & fill, Existing grade, Proposed grade or Coverage, by the 2D layers' own formulas on the
+   same tokens, with the boundary, cropped to the boundary's box plus 5 %. The report's Images
+   section draws the one picked (Cut & fill on the Rebid copy: 1227 × 1133 px in 2.5 s).
+2. **3D:** "To report" in 3D VIEW puts the current camera in the report as a picture, captioned
+   with the surface and the exaggeration ("Cut & fill depth, 5× vertical").
+3. Both are kept per sheet for the session (not stored), for the PDF (R-5) to carry. Opening the
+   report builds the calculated model if a reload left none (D-423), for the layers that need it.
