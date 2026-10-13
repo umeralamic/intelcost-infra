@@ -14015,3 +14015,26 @@ EXIST. GRADE, PROP. GRADE and CUT & FILL show on the canvas one at a time.
 
 The Stripping button's icon is a line-drawn dozer (track, cab, blade; `DozerIcon`), in place of
 the stacked layers.
+
+## D-422: The earthwork 3D view and grading report plan adopted, with its ten defaults
+
+**Status:** Accepted (2026-10-13, Umer). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md);
+the input comparison behind it: [kcp_input_comparison.md](docs/tasks/kcp_input_comparison.md).
+
+The plan's open questions, as the founder answered them: every default, and two stated.
+
+1. Meshes and prisms are not stored on the server; they are rebuilt in the browser from the
+   inputs, and only when the stored `version_key` matches them.
+2. Plain three.js, no React binding.
+3. 3D shows in place of the sheet (an overlay in the canvas area); the report goes in the split pane.
+4. The sheet image draped on the proposed surface: available, off by default.
+5. **3D area of both surfaces, the proposed as the headline**, existing beside it.
+6. **Overlaps: the newest feature wins (today's rule), and the report says so.**
+7. Coverage gaps are not extrapolated: reported and mapped.
+8. The report is per sheet, or per site when the sheet's result is superseded by one.
+9. No images in Excel; the PDF carries them.
+10. Our colours and words: the EG red, FG green and CUT & FILL purple tokens, plain labels.
+
+Order of work: the 3D blocks (3D-1 to 3D-7), then the report (R-1 to R-7); every block leaves
+Calculate's numbers identical, proved on "Hidden Valley Rebid — 3D test". Importing another
+program's project file comes after both, as a study first.
