@@ -14552,9 +14552,12 @@ print path and D-448 3.
 2. **One document, two renderings:** the report's sections are built once as a list of blocks
    (`reportDoc.ts`); the pane draws them on screen and `reportPdf.ts` lays the same blocks out on
    the paper picked (D-448 2). Nothing is computed twice.
-3. **Page:** margins 14 mm top, 12 mm sides, 16 mm bottom on every paper. Footer on every page:
-   project and sheet left, "Prepared by IntelCost.io" centred, "Page N of M" right. No page is
-   started unless something goes on it, so there is no blank last page.
+3. **Page:** margins 14 mm top and sides and 23 mm at the foot on every paper; the footer sits in
+   the foot's margin with its baseline 12.5 mm from the edge, so nothing on a page comes nearer
+   than 12 mm to any edge. Footer on every page: project and sheet left (on two lines when one
+   will not hold them), "Generated with IntelCost.io" centred (Umer, 2026-10-13; the header's
+   "Prepared by" stays the person's name), "Page N of M" right. No page is started unless
+   something goes on it, so there is no blank last page.
 4. **Page 1:** the header and the four headline numbers, then the Features plan with its callouts
    filling the rest of the page; there is no separate Features plan page.
 5. **Pictures may share a page** when both stay readable at the orientation picked: stacked at the
