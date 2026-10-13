@@ -254,7 +254,7 @@ Nothing was changed to make the numbers match.
 | Block | What | Hours |
 |---|---|---|
 | 3D-1 | **One source of truth.** Calculate keeps its EG/FG meshes and prisms (not only the prisms). After a reload, rebuild them from the inputs only when the stored `version_key` matches; otherwise 3D says "Calculate first". The 2D grade layers switch to the same meshes, so 2D and 3D show exactly what was calculated. Emit absolute EG and FG z on prism vertices (already computed inside, not emitted) | 5 |
-| 3D-2 | **Viewer.** three.js, lazy-loaded when 3D VIEW opens, in an overlay over the canvas area (the SiteView pattern). Existing, proposed and cut/fill surfaces; one shown at a time, matching the 2D buttons (D-417). Orbit, pan, zoom and fit; the boundary outline; feature outlines on the proposed surface | 12 |
+| 3D-2 | **Viewer.** three.js, lazy-loaded when 3D VIEW opens, in an overlay over the canvas area (the SiteView pattern). Existing, proposed and cut/fill surfaces; one shown at a time, matching the 2D buttons (D-417). Orbit, pan, zoom and fit; **rotatable to any view (the founder, 2026-10-13): all the way round and from below, with Plan / Front / Back / Left / Right / angled views and rotate and tilt buttons**; the boundary outline; feature outlines on the proposed surface | 12 |
 | 3D-3 | **Vertical exaggeration** (1×–10×, a slider) and **colour keys:** an elevation key for the grade surfaces and a diverging depth key for cut/fill, with values at the ends and midpoints, in our own tokens | 5 |
 | 3D-4 | **Hover readout.** Raycast to the point; show EG, FG and Δz there. The same readout in 2D, using `sampleZAt` on the shared meshes | 6 |
 | 3D-5 | **Drape the sheet image** on the proposed surface (toggle). Uses the sheet raster already loaded | 4 |

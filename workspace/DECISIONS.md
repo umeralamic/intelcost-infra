@@ -14101,3 +14101,25 @@ program's project file comes after both, as a study first.
    a grade 50 % → 5 % lightness over its range on its hue token; cut and fill 65 % → 15 % as the
    depth nears the deepest of either, on the cut and fill hue tokens; exactly zero in `--muted`.
    The key's swatch is that formula at its stops, as CSS on the tokens: no colour in the code.
+
+## D-426: The value under the cursor in 2D and 3D, and a 3D view turned to any side (F26 3D-4)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422; point 4 the founder's instruction of the same day).
+**Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-4.
+
+1. **One readout, one function.** `readoutAt(model, point)` (`scene3d.ts`): inside the volumes,
+   the existing level, the proposed level and the depth the volume used there (strip and section
+   depth folded in, "Cut" or "Fill"), interpolated on the prism under the point; outside them,
+   each surface's own TIN and "outside the volumes". The 2D layers and the 3D view show the same
+   card (`ReadoutCard.tsx`), so a point reads the same in both: on the Rebid copy, page point
+   (0.6123, 0.5747) read Existing 697.80 ft, Proposed 702.92 ft, Fill 4.81 ft in 3D and in 2D.
+2. **In 2D** the card shows while EXIST. GRADE, PROP. GRADE or CUT & FILL is on and the model is
+   current; the pointer reaches it by a small bus (`pointerBus.ts`), never re-rendering the
+   takeoff screen. Turning a grade layer on builds the model if a reload left none.
+3. **In 3D** the pointer's ray meets the surface; the hit, with the exaggeration undone, maps
+   back to the page and is read by the same function.
+4. **Rotatable to any view** (the founder, 2026-10-13): drag turns the site all the way round and
+   over the top to below it, no angle limits; Plan, Front, Back, Left, Right (from each edge of
+   the sheet) and 3D (angled, framed) views; rotate 45° left or right and tilt 15° up or down.
+5. Frame rate on the Rebid copy (7,693 prisms) while orbiting: 60.2 fps (the automated Chromium on
+   this machine), measured over a four-second continuous drag.
