@@ -14194,3 +14194,29 @@ A sheet with no image has the box greyed.
 3. It reads the stored result only (D-423): the sheet, when it was calculated, a stale or
    superseded notice, and the summary (cut, fill, net, topsoil strip, area computed). The other
    sections are R-3's.
+
+## D-432: The Grading report's content (F26 R-3)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422 5, 6, 7, 10). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-3.
+
+One scrolling page, plain headings, every figure from the stored result (D-423), the drawing's
+own inputs or the written lines; nothing calculated again:
+
+1. **Summary** (cut, fill, net, topsoil strip, area computed) and **Balance** (Soil Export or
+   Import with its bank figure, and each native undercut's shrink shortfall or surplus).
+2. **Surfaces**, each: what is drawn (contours, spots, points; EG named with the sheet it is read
+   from through its link), the contour levels and interval (the most common step), the levels
+   over the computed area with their mean, and the **3D surface area, the proposed in bold as the
+   headline (D-422 5)**; then the plan area computed (`lib/takeoff/earthwork/surfaceSummary.ts`).
+3. **By feature**, a table: depth, 2D and 3D area (existing on hover), cut and fill areas, average
+   and maximum cut depth and fill height, existing and proposed levels over the cut and the fill
+   parts, cut, fill and net, with totals. Under it, plainly: depths are the depth the volume used,
+   and **where Site Features overlap the newest wins (D-422 6)**, naming the overlaps.
+4. **Topsoil strip** by Strip Area (depth, area, volume, where it goes); **Undercut, subgrade
+   preparation and stabilization**, the lines with their agents as sub-rows.
+5. **Coverage**: the area computed, each missing kind's area, and a **map** of the boundary with
+   the uncovered parts shaded by what is missing, on the earthwork tokens; not extrapolated
+   (D-422 7).
+6. **Warnings**, **Assumptions** (suitability, imported fill, swell, shrink, dry unit weight) and
+   the **Division 31 lines** as written, each with its CSI code read from the workspace's CSI tree.
+7. A result saved before R-1 says "Calculate again for the ranges, levels and 3D areas".
