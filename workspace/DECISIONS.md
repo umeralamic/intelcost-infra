@@ -14181,3 +14181,16 @@ A sheet with no image has the box greyed.
 4. Results saved before carry none; the report says "Calculate again for these figures" there.
 5. Quantity table: three rows on planes worked by hand (all fill; cut and fill split at
    mid-site; the same under a 0.5 ft section depth), 148 earthwork rows right.
+
+## D-431: The Grading report in the split-view slot (F26 R-2)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422 3). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-2.
+
+1. **Report** on the Earthwork row opens the Grading report in the split-view slot beside the
+   canvas, with the same divider and width as the reference sheet (15 % to 85 %, drag or arrow
+   keys). The divider is one shared component now (`components/ui/split-separator.tsx`).
+2. One slot: opening the report closes the reference sheet; while the reference sheet is open
+   it holds the slot. The report shows on the Earthwork tab only.
+3. It reads the stored result only (D-423): the sheet, when it was calculated, a stale or
+   superseded notice, and the summary (cut, fill, net, topsoil strip, area computed). The other
+   sections are R-3's.
