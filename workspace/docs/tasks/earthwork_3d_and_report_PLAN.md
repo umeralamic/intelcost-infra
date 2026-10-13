@@ -379,7 +379,8 @@ practice, common to the field and owned by no one product:
    green for fill), darker with depth, and a neutral at the daylight line.
 
 **Our look is our own.** The colours are this app's tokens (`--terrain-*`: our green-tan-brown
-for existing, a plum-clay-sand ramp for proposed so it never reads as fill, our existing red and
+for existing, a neutral grey ramp, dark slate to light grey, for proposed (D-450; first a
+plum-clay-sand ramp) so it never reads as fill, our existing red and
 blue for cut and fill). The layout follows the app's own pattern: view buttons along the top in
 our toolbar style, the exaggeration, toggles and key in one card at the lower left, the readout
 card as in 2D. No screen, palette, icon or label was taken from the reference program or any

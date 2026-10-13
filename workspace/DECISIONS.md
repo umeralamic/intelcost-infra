@@ -14504,3 +14504,87 @@ layer as 3D VIEW and the site view, which come later in the page and hid them. T
 both overlays, so either panel can be put away and back while in 3D VIEW; the 3D view resizes to
 the room it gets. Driven on the Rebid copy: both tabs hidden and shown from 3D VIEW, the view
 widening to the full width and back.
+
+## D-450: Proposed grade in a grey ramp
+
+**Status:** Accepted (2026-10-13, Umer; grading report polish, item 1).
+
+The proposed grade's elevation tint (3D VIEW, the report's 3D page and its key) is a neutral grey
+ramp, dark slate low to light grey high, in place of plum, clay and sand (D-446 4). Existing grade
+keeps its earth tones; red and blue stay for cut and fill only. The draped contours on the grey use
+their own ink, a near-black slate, a little heavier than on the existing grade, so both the 1 ft and
+the 5 ft lines read from the darkest to the lightest grey. Tokens only (`--terrain-fg-*`,
+`--terrain-fg-contour`).
+
+## D-451: Report wording, order and depths
+
+**Status:** Accepted (2026-10-13, Umer; grading report polish, items 2 to 7).
+
+1. **Features plan callouts** are never shortened: a name wraps to two lines, three when it needs
+   them, a word longer than the margin broken inside it. Each callout's slot is as tall as its
+   lines, and the slots are pushed apart so none overlap.
+2. **Feature order:** the features' sections run from the largest plan area to the smallest, and
+   Remaining site is always last. Each feature carries its place in that order as a number, on its
+   callout in the features plan and before its section's title, so the callouts read in the same
+   order while each still sits level with its feature (sorting the callouts down the margin by size
+   would cross their leaders).
+3. **Depths in inches** (mm on a metric project), because they are entered in inches: a feature's
+   section depth below proposed grade (9.8", 12"), the subgrade prep and stabilization depths and
+   every lift thickness ("Lifts 2 of 4""). An undercut's depth stays in feet from 2 ft (0.6 m) up,
+   in inches (mm) below that.
+4. **Feature rows:** the 3D area is two rows, "Surface area, proposed" and "Surface area,
+   existing". The net reads "Surplus N BCY" or "Needs N BCY from elsewhere".
+5. **Site summary:** the net row is "Surplus after shrink" (or "Shortfall after shrink") with the
+   quantity alone; the formula is shown only in the Balance table.
+6. **Basis of Quantities** opens with the method paragraph ("Cut and fill are the volumes…") and
+   has a row "Overlapping features: the newest feature takes the overlap".
+
+## D-452: The report's PDF is built in the app and downloaded
+
+**Status:** Accepted (2026-10-13, Umer; grading report polish, items 8 to 11). Supersedes D-434's
+print path and D-448 3.
+
+1. **Why:** the browser's print dialog decides the margins (a person whose dialog says None got
+   content 4 mm from the edge) and whether the page's footer prints at all, and it can add a blank
+   last page and names the file after the tab. None of that can be guaranteed from the page. The
+   PDF is now drawn by the app itself (jsPDF, loaded only when PDF is pressed) and downloaded
+   directly: no print dialog.
+2. **One document, two renderings:** the report's sections are built once as a list of blocks
+   (`reportDoc.ts`); the pane draws them on screen and `reportPdf.ts` lays the same blocks out on
+   the paper picked (D-448 2). Nothing is computed twice.
+3. **Page:** margins 14 mm top, 12 mm sides, 16 mm bottom on every paper. Footer on every page:
+   project and sheet left, "Prepared by IntelCost.io" centred, "Page N of M" right. No page is
+   started unless something goes on it, so there is no blank last page.
+4. **Page 1:** the header and the four headline numbers, then the Features plan with its callouts
+   filling the rest of the page; there is no separate Features plan page.
+5. **Pictures may share a page** when both stay readable at the orientation picked: stacked at the
+   full page width in portrait, side by side at half width in landscape. Readable: every word on
+   or under a picture at least 7 pt (the callouts and legends drawn in it, measured as a share of
+   its width; its title and key are drawn at 7.5 pt and up), and a picture with line work (the
+   plans, the 3D pages' contours) at least 110 mm wide. Default pairs: Existing grade 3D with
+   Proposed grade 3D, Cut & fill plan with Cut & fill 3D. The Contours plan has no pair and stays
+   alone. A picture that fails the rule when paired gets a page of its own.
+6. **File name:** "Grading Report, <project>.pdf", and the workbook "Grading Report,
+   <project>.xlsx" (a site's report: "Grading Report, <project>, Site <name>"). The PDF dialog shows
+   the name and the person can change it before downloading; characters a file name cannot hold are
+   replaced by a space.
+7. The PDF is on paper whatever the screen's theme: its ink, rules and paper come from the
+   `--report-*` tokens, which have no dark variant.
+
+## D-453: The 2D grade views drawn smooth and clipped
+
+**Status:** Accepted (2026-10-13, Umer; grading report polish, item 12). Display only.
+
+The 2D EXIST. GRADE and PROP. GRADE layers, on the canvas and wherever a report draws them:
+
+1. No triangle edges.
+2. The shading is clipped to the boundary exactly, and to where the surface exists inside it: no
+   triangle reaches past the boundary's edge (the saw-tooth along the existing grade's top edge).
+3. Smooth: each triangle shaded by elevation across its corners (the three corner colours blended),
+   on the 3D view's own scales (earth tones existing, the grey ramp proposed, D-450), with a colour
+   key in a corner of the view.
+4. The surface's own contours, 1 ft with every fifth heavier (0.5 m and 2.5 m metric), traced on
+   top, with a toggle (on by default).
+
+Calculate, its triangles and every quantity are untouched: proved by the copy's stored result being
+byte-identical before and after.
