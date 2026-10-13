@@ -14233,3 +14233,19 @@ own inputs or the written lines; nothing calculated again:
    with the surface and the exaggeration ("Cut & fill depth, 5× vertical").
 3. Both are kept per sheet for the session (not stored), for the PDF (R-5) to carry. Opening the
    report builds the calculated model if a reload left none (D-423), for the layers that need it.
+
+## D-434: The Grading report as a PDF, through the browser's print path (F26 R-5)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-5.
+
+1. **PDF** in the report's header copies the report's own page into the print-only root (Takeoff
+   Print's, `#takeoff-print-root`) under a heading (sheet, project, when calculated, when
+   printed), its pictures inline, its buttons and screen-only hints left out, then opens the
+   print dialog; the browser saves the PDF. No PDF library (plan §6).
+2. With no 2D picture drawn yet, Cut & fill is drawn first, so the PDF always carries one; the 3D
+   picture is in when "To report" was pressed.
+3. Print styles (`index.css`): a named landscape letter page, 0.4 in margins, colours kept, a page
+   break before Images, By feature, Coverage and Division 31 lines, small sections kept whole,
+   table rows never split, pictures within the page.
+4. Checked with the print call stubbed (never the print dialog in the automated browser): the
+   root holds all eleven sections and the picture, no buttons, and lays out under print media.
