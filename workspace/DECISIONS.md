@@ -14361,3 +14361,15 @@ reaches past the view (checked at 1,700 px with both side panels open).
 One earthwork row, `readout-plane-feature`: the rising plane (EG 100, FG 100 → 102 over 100 ft)
 under a 0.5 ft feature, read by `readoutAt` at two points against answers worked by hand (x = 75 ft:
 EG 100, FG 101.5, fill 1.0; x = 10 ft: EG 100, FG 100.2, cut 0.3). 149 earthwork rows right.
+
+## D-444: The toolbars' fold can no longer loop and take the page down
+
+**Status:** Accepted (2026-10-13, Umer; a fault in D-228 and D-414 found while proving the report's PDF).
+
+Laid out at a paper's width (a PDF of the screen at 816 px), the takeoff row's fold (D-228) and the
+Earthwork row's (D-414) flipped a tool in and out of More without end, React stopped at "Maximum
+update depth exceeded" and the whole takeoff screen unmounted. Both now measure at most eight times
+per animation frame, and leave the fold as it is while the row is not laid out (0 px wide).
+Driven: a PDF of the screen on both tabs keeps the page alive; the folds still fold at 900 px and
+unfold at 1,700 px. The Grading report's real PDF, from print media, is 8 landscape letter pages
+with its breaks (`morning-report-2026-10-13/grading-report-sample.pdf`, outside the repos).
