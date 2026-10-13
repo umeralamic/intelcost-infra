@@ -14310,3 +14310,13 @@ path per shade (148 on the Rebid copy) in place of one per prism (8,633). The co
 most 0.25 % lightness; nothing numeric reads it. Turning the layer on held the page 876 ms; now
 195 ms. With the worker (D-437), the longest freeze in a whole Calculate on the Rebid copy is
 806 ms (5.5 s before both); the stored result is unchanged bit for bit.
+
+## D-440: A failed rebuild is not retried in a loop; a site's mismatch says so every time
+
+**Status:** Accepted (2026-10-13, Umer; fixes in D-423 and D-429 found on review).
+
+1. A rebuild of the calculated model that throws is remembered for its key and not tried again
+   until the key moves (it was retried by the effect, a toast each time). 3D VIEW says "The
+   calculated surfaces could not be built — Calculate again" (state `failed`).
+2. A site whose rebuild did not give the saved numbers says "Calculate again to see the surfaces"
+   on every 3D VIEW press (the second press did nothing).
