@@ -14291,3 +14291,12 @@ the library cannot embed them (D-422 9); the PDF carries them.
    1.15 s; what is left is the page's own work after the model returns (drawing ~7,700 CUT & FILL
    triangles as SVG, the elevation check, the lines), a candidate for later.
 4. A site's Calculate stays on the page for now (its inputs are assembled differently).
+
+## D-438: A joined site's Calculate in the worker too
+
+**Status:** Accepted (2026-10-13, Umer; completes D-437 4).
+
+The site view's Calculate and its 3D rebuild build the site's model in the same worker
+(`buildSiteModel` in `lib/takeoff/earthwork/model.ts`, the calls the page made, in the same order;
+on the page where no worker starts). A throwaway two-sheet site saved through the worker stores
+the same JSON as saved on the page, every field, same key.
