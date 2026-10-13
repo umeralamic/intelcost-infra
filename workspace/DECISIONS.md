@@ -14038,3 +14038,26 @@ The plan's open questions, as the founder answered them: every default, and two 
 Order of work: the 3D blocks (3D-1 to 3D-7), then the report (R-1 to R-7); every block leaves
 Calculate's numbers identical, proved on "Hidden Valley Rebid — 3D test". Importing another
 program's project file comes after both, as a study first.
+
+## D-423: One earthwork model, shared by Calculate, the grade layers and CUT & FILL (F26 3D-1)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-1.
+
+1. **One builder.** `lib/takeoff/earthwork/model.ts` `buildModel` makes the EG and FG TINs and
+   the volumes with exactly Calculate's calls; Calculate now goes through it. Its stored result
+   is unchanged bit for bit (proved on "Hidden Valley Rebid — 3D test": Calculate with the code
+   before and after stores identical JSON, every field).
+2. **Kept.** The session keeps Calculate's model (both TINs and the prisms), not the prisms only.
+3. **Rebuilt only from unchanged inputs.** After a reload, when the live key equals the stored
+   `version_key`, the model is built again on demand (CUT & FILL, 3D), from the same items in
+   the same order, and checked against the stored totals and every region's cut and fill. It
+   is used only when they agree to 1e-6 CY (`REBUILD_TOLERANCE_CY`): the same calls sum in the
+   order the rows arrive, and a copied project's rows arrive in another order (2.9e-11 CY on the
+   Rebid copy). Otherwise it is not shown: "Calculate again to see the surfaces".
+4. **The 2D layers read it.** While the result is current, EXIST. GRADE and PROP. GRADE draw the
+   model's TINs (built cheaply, the TINs alone, until the whole model is asked for); when stale
+   or never calculated they draw the drawing's live TIN, as before. CUT & FILL now works after a
+   reload (before, only in the session that calculated).
+5. **Levels on the prisms.** Each prism carries existing and proposed z at its corners
+   (`egA..C`, `fgA..C`: existing as the difference TIN interpolates it, proposed as existing
+   plus the Δz before strip and section depth). Not stored; the numbers do not read them.
