@@ -354,3 +354,33 @@ Nothing was changed to make the numbers match.
 - Recalculate there.
 - Each report block is checked against hand-worked values for the copy. The original Rebid stays
   read-only.
+
+## Part 3: making relief visible (research note, D-446)
+
+What earthwork and terrain programs generally do so that a few metres of relief read on a
+site hundreds of metres across. These are long-standing cartographic and visualisation
+practice, common to the field and owned by no one product:
+
+1. **Vertical exaggeration.** A building site's height range is often 1–5 % of its width; at
+   true scale it looks flat. Exaggerating 2–5× is near universal, always labelled.
+2. **Hillshading.** Light from a low sun, by long convention from the north-west (upper left),
+   30–45° above the horizon, so slopes facing it are bright and the rest fall into shade; a
+   soft fill or sky light keeps the shaded side readable.
+3. **Hypsometric tinting.** Colour by elevation: low green through yellow-tan to high brown is
+   the classic atlas ramp. Engineering views usually give the design surface a different ramp
+   from the ground, so the two are never confused.
+4. **Draped contours.** Lines at a regular interval traced on the surface, every fifth line
+   (the index contour) heavier, as on a survey drawing.
+5. **A block base.** The surface sat on a solid block with side walls down to a flat bottom,
+   so its outline and the depth of cut along the edges read at a glance.
+6. **An oblique default camera.** About 30–40° above the horizon, from the low side looking
+   uphill, so slopes rise away from the viewer instead of hiding behind the nearest ridge.
+7. **Cut and fill diverging about zero.** Two opposed hues (commonly red for cut, blue or
+   green for fill), darker with depth, and a neutral at the daylight line.
+
+**Our look is our own.** The colours are this app's tokens (`--terrain-*`: our green-tan-brown
+for existing, a plum-clay-sand ramp for proposed so it never reads as fill, our existing red and
+blue for cut and fill). The layout follows the app's own pattern: view buttons along the top in
+our toolbar style, the exaggeration, toggles and key in one card at the lower left, the readout
+card as in 2D. No screen, palette, icon or label was taken from the reference program or any
+other; the reference screenshot was used only to check the numbers in Part 1.

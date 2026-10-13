@@ -14415,16 +14415,24 @@ with its breaks (`morning-report-2026-10-13/grading-report-sample.pdf`, outside 
 3. **A solid base:** side walls from the surface's outer edge down to a flat bottom below the
    lowest point, and the bottom, in a neutral token colour.
 4. **Colour:** the existing grade in an elevation tint from low green to high brown, the proposed
-   grade in its own tint (low slate to high sand), red and blue for cut and fill only. Tokens
-   `--terrain-*`, light and dark.
+   grade in its own tint (low plum through clay to high sand: no blue, which is fill), red and
+   blue for cut and fill only. Tokens `--terrain-*`, light and dark.
 5. **Default camera:** from the corner of the site lowest on its best-fit plane (the corner that
    looks uphill across the most relief), 32° above horizontal, the whole site framed. **Default
    exaggeration** 2×, or 3× when the height range is under 2 % of the site's longer side.
 6. **Saved report views:** "Use this view in report" keeps the camera and exaggeration for that
    surface's report page; "Reset to best view" returns to the default. Kept per project and sheet
-   in the project's earthwork review settings (`report_views`), outside every version key.
-7. **Research note** in the plan (F26): what terrain programs generally do to make relief visible,
-   and why this look is our own.
+   in the project's earthwork review settings (`report_views`), outside every version key. The
+   same migration adds the report's truck size (`truck_lcy`, D-447 4). "To report" (D-433's 3D
+   snapshot) is gone: the report draws its 3D pages itself, offscreen, by the same scene
+   (`terrainScene.ts`).
+7. **Research note** in the plan (F26, Part 3): what terrain programs generally do to make relief
+   visible, and why this look is our own.
+
+Driven on the Rebid copy: 60 fps on each surface; a kept view (rotated, 3×) stored on the copy's
+sheet and drawn by the report at 3×; Reset dropped it and the report went back to 2×. The lazy
+3D chunks: `terrainScene` (three.js and the scene) 541.88 kB / 135.69 kB gzip, `Earth3DView`
+28.63 kB / 7.67 kB; three.js is still in no other chunk.
 
 ## D-447: The grading report's order and pages
 
