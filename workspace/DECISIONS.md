@@ -14460,7 +14460,19 @@ with no codes.
 5. **Notes** list only what changes a reading: overlaps past D-445 6, uncovered areas past 0.5 % of
    the boundary, the engine's other warnings, a stale or superseded result.
 6. **No table or number set twice**: the headline's four numbers are the only figures repeated
-   (in the site summary and the balance's last row, where they are the totals).
+   (in the site summary and the balance's last row, where they are the totals). Surfaces' sources
+   appear only in Basis of Quantities, a feature's figures only in its section, the steps only in
+   the balance.
+7. The report shell's own summary and the separate "Images" section (D-433's layer buttons) are
+   gone: the plans and 3D pages draw themselves, and PDF waits until all six are drawn. A site's
+   report (R-7) uses the same document; it has no sheet to draw plans on (D-436), so those pages
+   say so, and its 3D pages come from the site's model once 3D VIEW has built it.
+
+Driven on the Rebid copy: the twelve sections in order, six pictures drawn, the PDF 14 A4 pages.
+Every figure checked against Calculate's written lines: cut 11,571 BCY, fill 9,439 CCY, export
+1,176 BCY and 1,352 LCY, undercut 2,689 BCY, topsoil 3,622 BCY stripped and 4,121 LCY hauled,
+lime 5.28 TON. The depth bands add to 11,570 / 9,439 (Calculate's totals, rounded). The workbook
+has Balance and the tie-out under five scope headings, no code and no "EG" or "FG".
 
 ## D-448: The report's page size, footer and page numbers
 
