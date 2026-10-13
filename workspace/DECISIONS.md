@@ -14123,3 +14123,13 @@ program's project file comes after both, as a study first.
    the sheet) and 3D (angled, framed) views; rotate 45° left or right and tilt 15° up or down.
 5. Frame rate on the Rebid copy (7,693 prisms) while orbiting: 60.2 fps (the automated Chromium on
    this machine), measured over a four-second continuous drag.
+
+## D-427: The sheet draped on the 3D surface, off by default (F26 3D-5)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422 4). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-5.
+
+"Drape the sheet" under the exaggeration slider lays the sheet's raster (the image the canvas
+already loaded) over the shown surface, each corner at its own place on the page; the colour key
+stays for reference. Off when 3D VIEW opens. The texture is loaded once per scene and swapped in
+and out; an image that cannot load says "could not load the image" and the shaded surface stays.
+A sheet with no image has the box greyed.
