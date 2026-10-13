@@ -14262,3 +14262,17 @@ headline), **By feature** (the report's table, 22 columns, totals, the overlap r
 linked sheet, the assumptions). Numbers at full precision with a two-decimal format (the Rebid
 copy's totals equal the stored result exactly); a metric project's in m³, m², m. No pictures:
 the library cannot embed them (D-422 9); the PDF carries them.
+
+## D-436: A joined site's Grading report (F26 R-7)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422 8). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) R-7.
+
+1. **Report** on the site view's preview and saved bars opens the same report beside the site,
+   from the preview's result when there is one, else the saved one (`earthwork_site_result`),
+   with its PDF and Excel. Surfaces are read from the site's own runs in the site frame; the lines
+   are the site's (`earthwork_site_uuid`). A sheet whose result is superseded by a site says so
+   in its own report (R-2) and points to the site's.
+2. A site's Calculate now keeps the report's statistics too (`stats`): its saved result is
+   otherwise identical (a throwaway two-sheet site saved before and after: identical apart from
+   `stats`, same key).
+3. No 2D picture for a site (a site has no single sheet image); the 3D picture stays the sheet's.
