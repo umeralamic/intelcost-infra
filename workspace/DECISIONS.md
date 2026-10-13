@@ -14133,3 +14133,20 @@ already loaded) over the shown surface, each corner at its own place on the page
 stays for reference. Off when 3D VIEW opens. The texture is loaded once per scene and swapped in
 and out; an image that cannot load says "could not load the image" and the shaded surface stays.
 A sheet with no image has the box greyed.
+
+## D-428: 3D VIEW's limits: a display budget, a prism index, the no-WebGL message (F26 3D-7)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-7.
+
+1. **Display budget: 250,000 prisms.** Within it every prism is drawn. Past it the view draws the
+   calculated surface sampled on a regular grid through the prisms (about 250,000 triangles; a
+   cell only where its four corners are inside the volumes) and says so: "display simplified to N
+   triangles from M; the numbers are Calculate's". The numbers, the 2D layers and the readout
+   never read the simplified mesh. Driven with the budget lowered to 5,000 for the check
+   (3,262 triangles from 7,693 on the Rebid copy), then put back.
+2. **A prism index** (a uniform grid over the prisms' page boxes, built once per model) behind
+   the readout: it finds the same first prism a scan in order would, so the values are identical
+   (20,000 points on the Rebid model, 17,219 inside the volumes, all equal to a scan), in place of
+   a scan of every prism per pointer move.
+3. **No WebGL** says "3D VIEW needs WebGL…", the sheet, 2D layers and numbers working without it
+   (built with 3D-2, D-424 5).
