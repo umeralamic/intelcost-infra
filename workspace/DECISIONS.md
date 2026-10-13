@@ -14373,3 +14373,96 @@ per animation frame, and leave the fold as it is while the row is not laid out (
 Driven: a PDF of the screen on both tabs keeps the page alive; the folds still fold at 900 px and
 unfold at 1,700 px. The Grading report's real PDF, from print media, is 8 landscape letter pages
 with its breaks (`morning-report-2026-10-13/grading-report-sample.pdf`, outside the repos).
+
+## D-445: Report numbers: lift counts, tons, net after shrink, the balance steps and depth bands
+
+**Status:** Accepted (2026-10-13, Umer; the grading report restructure, part 1 of 4).
+
+1. **Lift counts allow for entries in hundredths of a foot** (`liftCount`, the api's `lift_count`).
+   8" in 4" lifts is stored as 0.67 ft in 0.33 ft lifts, which the plain ratio (2.03) counted as
+   3 lifts. Each value can be half a hundredth off, so the count allows the ratio that much slack
+   (ratio × (0.005 / depth + 0.005 / thickness)): 2 lifts. Only line names and the dialog's count
+   move; no quantity reads a lift count. D-406's hand-worked rows (24 / 8 = 3, 20 / 8 = 3,
+   12 / 12 = 1) are unchanged. On the Rebid copy T2's line now reads "(2 lifts, 95% Std Proctor)",
+   1,600 SF as before.
+2. **Tons to two decimals** wherever the report shows them (the lines keep full precision).
+3. **Net is after shrink**, never cut BCY − fill CCY: `net = cut + re-used soil − fill × shrink −
+   native undercut shortfall`, in BCY: the balance's own surplus (`soilBalance`). A feature's net is
+   `cut − fill × shrink` (BCY), its share of it.
+4. **The balance as steps** (`balanceSteps`, takeoff-core): cut, re-used soil, the supply, fill, ×
+   shrink, the native undercut shortfall, the demand, the surplus or shortfall, × swell, and the
+   export or import. Every number is the one `soilBalance` struck; its last rows are the lines'
+   Soil Export and Import exactly. Both branches (native soil suitable or not).
+5. **Depth bands** (`depthBands`, takeoff-core): the plan area and volume of cut and of fill in
+   bands of depth (0–0.5, 0.5–1, 1–2, 2–3, 3–5, 5–10, over 10 ft; metric sheets 0–0.15, 0.15–0.3,
+   0.3–0.6, 0.6–1, 1–1.5, 1.5–3, over 3 m), each prism split exactly where its linear depth
+   crosses a band edge. The bands add up to Calculate's cut and fill.
+6. **Overlaps worth a note** (`featureOverlaps`): each pair of Site Features' overlap in SF. The
+   report lists an overlap only past 100 SF or 1 % of either feature's area; below that, none.
+7. **"Existing grade" and "Proposed grade"** in every label a person reads (report, 3D view,
+   panels, messages); EG and FG stay in code only.
+
+## D-446: The 3D view shows the terrain's shape
+
+**Status:** Accepted (2026-10-13, Umer; the grading report restructure, part 2 of 4).
+
+1. **Hillshade:** a low directional light (about 35° above the horizon, from the site's upper
+   left), a soft fill and a dim ambient, with flat-shaded facets. On the Rebid copy the facets read
+   the slopes better than smoothed normals, which blurred the contour steps into a haze.
+2. **Contours draped on the surface:** 1 ft, every 5 ft bolder (metric sheets: 0.5 m and 2.5 m),
+   on by default, a toggle in the key. Traced from the shown surface's own prisms
+   (`contourSegments`), so they lie exactly on it.
+3. **A solid base:** side walls from the surface's outer edge down to a flat bottom below the
+   lowest point, and the bottom, in a neutral token colour.
+4. **Colour:** the existing grade in an elevation tint from low green to high brown, the proposed
+   grade in its own tint (low slate to high sand), red and blue for cut and fill only. Tokens
+   `--terrain-*`, light and dark.
+5. **Default camera:** from the corner of the site lowest on its best-fit plane (the corner that
+   looks uphill across the most relief), 32° above horizontal, the whole site framed. **Default
+   exaggeration** 2×, or 3× when the height range is under 2 % of the site's longer side.
+6. **Saved report views:** "Use this view in report" keeps the camera and exaggeration for that
+   surface's report page; "Reset to best view" returns to the default. Kept per project and sheet
+   in the project's earthwork review settings (`report_views`), outside every version key.
+7. **Research note** in the plan (F26): what terrain programs generally do to make relief visible,
+   and why this look is our own.
+
+## D-447: The grading report's order and pages
+
+**Status:** Accepted (2026-10-13, Umer; the grading report restructure, part 3 of 4).
+
+The report, in order: (1) header and four headline numbers with the unit key; (2) contours plan;
+(3) cut & fill plan; (4) features plan with callouts; (5) three 3D pages; (6) one section per Site
+Feature with a key map; (7) remaining site; (8) topsoil strip; (9) site summary with truckloads and
+the depth bands; (10) balance steps; (11) Basis of Quantities; (12) notes. The Division 31 list and
+every CSI code leave the printed report; Excel keeps the line-by-line tie-out under scope headings
+with no codes.
+
+1. **Plans** are the sheet, faded, cropped to the boundary, with the report's own overlay drawn on
+   top. The contours plan's legend goes in the corner where it covers the least drawing (scored on
+   the overlay's own ink, then the sheet's). The features plan's callouts sit in white margins left
+   and right of the site, ordered by height and spaced so none overlap, each with a leader to a
+   point inside its feature: no callout covers a feature.
+2. **3D pages** are drawn offscreen by the 3D view's own scene (three.js loaded only then), from the
+   saved view or the best view (D-446 5).
+3. **A feature's section** shows only what applies: areas (2D, 3D), cut, fill, net after shrink,
+   depth range, levels, section depth, undercut, subgrade preparation and stabilization. Remaining
+   site is laid out the same way.
+4. **Truckloads:** the site summary's truck size is editable (default 12 LCY) and kept per project
+   (`truck_lcy` in the earthwork review settings); loads round up.
+5. **Notes** list only what changes a reading: overlaps past D-445 6, uncovered areas past 0.5 % of
+   the boundary, the engine's other warnings, a stale or superseded result.
+6. **No table or number set twice**: the headline's four numbers are the only figures repeated
+   (in the site summary and the balance's last row, where they are the totals).
+
+## D-448: The report's page size, footer and page numbers
+
+**Status:** Accepted (2026-10-13, Umer; the grading report restructure, part 4 of 4).
+
+1. **Laid out at A4 portrait width** (180 mm of text), which also fits Letter. No wide table: a
+   feature's figures are label and value pairs; the few tables have five columns or fewer and wrap.
+2. **PDF asks for the paper:** A4, Letter, Legal, Tabloid or A3, portrait or landscape; A4
+   portrait by default, remembered per person (`takeoff_prefs.report_page`). The page size, its
+   margins and the pictures' height limits are set for that paper at print time.
+3. **Footer on every page:** project and sheet on the left, "Page N of M" on the right (the
+   page's margin boxes).
+4. Checked at A4 portrait, Letter portrait and Letter landscape: nothing cut.

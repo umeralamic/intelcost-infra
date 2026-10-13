@@ -639,6 +639,7 @@ try {
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
     const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
     const sc = await import("/src/lib/takeoff/earthwork/scene3d.ts");
+    const bd = await import("/src/lib/takeoff/earthwork/volume/bands.ts");
     const ed = await import("/src/lib/takeoff/earthwork/edit.ts");
     const rg = await import("/src/lib/takeoff/earthwork/register.ts");
     const ec = await import("/src/lib/takeoff/earthwork/elevationCheck.ts");
@@ -829,6 +830,14 @@ try {
         const lines = ln.earthworkLines(c.input);
         const out = { roles: lines.map((l) => `${l.role}:${l.regionId}`).join(" ") };
         for (const l of lines) Object.assign(out, { [`${l.role}:${l.regionId}`]: l.quantity, [`${l.role}:${l.regionId}:unit`]: l.unit, [`${l.role}:${l.regionId}:name`]: l.name });
+        // The report's balance steps (F26, D-445 4): each row, and the net after shrink.
+        const input = ln.balanceInputOf(c.input);
+        if (c.steps && input) {
+          const r = bal.balanceSteps(input);
+          out.steps = r.steps.map((s) => s.key).join(" ");
+          for (const s of r.steps) out[`step:${s.key}`] = s.value;
+          out.net = r.net;
+        }
         return out;
       }
       if (c.kind === "volume") {
@@ -889,6 +898,12 @@ try {
         if (ov) out.overlap = ov.overlappingLabels;
         if (c.vertices) out.vertices = c.vertices.map(([x, y]) => r.prisms.some((pr) => [pr.a, pr.b, pr.c].some((q) => Math.abs(q.x - x) < 1e-4 && Math.abs(q.y - y) < 1e-4)));
         if (c.fillWithin) out.fillWithin = r.fillCY > c.fillWithin[0] && r.fillCY < c.fillWithin[1];
+        // Depth bands (F26, D-445 5): each band's cut and fill area and volume, and their sums.
+        if (c.bands) {
+          const bands = bd.depthBands(r.prisms, c.bands);
+          bands.forEach((b, k) => Object.assign(out, { [`band:${k}:cut:areaSF`]: b.cut.areaSF, [`band:${k}:cut:volumeCF`]: b.cut.volumeCF, [`band:${k}:fill:areaSF`]: b.fill.areaSF, [`band:${k}:fill:volumeCF`]: b.fill.volumeCF }));
+          out.bandsSumToTotals = Math.abs(bands.reduce((t, b) => t + b.cut.volumeCF, 0) / 27 - r.cutCY) < 1e-9 && Math.abs(bands.reduce((t, b) => t + b.fill.volumeCF, 0) / 27 - r.fillCY) < 1e-9;
+        }
         return out;
       }
       if (c.kind === "synthsite") return synthSite(c.site);

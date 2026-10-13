@@ -69,21 +69,21 @@ export const EARTHWORK_CASES = [
     kind: "tin",
     surface: "EG",
     runs: [s("A", "EG 100", "EG", 100, 0.5, 0.5), s("B", "EG 105", "EG", 105, 0.5, 0.5), s("c", "EG c", "EG", 101, 0.1, 0.1), s("d", "EG d", "EG", 102, 0.9, 0.2)],
-    expect: { ok: false, code: "elevation_conflict", message: "EG: Conflicting elevations at the same location: EG 105 run 1 (Z=105) vs EG 100 run 1 (Z=100)." },
+    expect: { ok: false, code: "elevation_conflict", message: "Existing grade: Conflicting elevations at the same location: EG 105 run 1 (Z=105) vs EG 100 run 1 (Z=100)." },
   },
   {
     id: "tin-crossing-contours",
     kind: "tin",
     surface: "EG",
     runs: [c("A", "EG 100", "EG", 100, [[0, 0], [1, 1]]), c("B", "EG 105", "EG", 105, [[0, 1], [1, 0]])],
-    expect: { ok: false, code: "crossing_constraints", message: "EG: EG 100 (run 1) crosses EG 105 (run 1) — contours must not intersect.", crossingRuns: 2 },
+    expect: { ok: false, code: "crossing_constraints", message: "Existing grade: EG 100 (run 1) crosses EG 105 (run 1) — contours must not intersect.", crossingRuns: 2 },
   },
   {
     id: "tin-self-intersecting",
     kind: "tin",
     surface: "EG",
     runs: [c("A", "EG 100", "EG", 100, [[0, 0], [1, 1], [1, 0], [0, 1]]), s("x", "EG x", "EG", 104, 0.5, 0.95)],
-    expect: { ok: false, code: "self_intersecting_contour", message: "EG: EG 100 (run 1) crosses itself — edit the trace so it does not self-intersect.", crossingRuns: 1 },
+    expect: { ok: false, code: "self_intersecting_contour", message: "Existing grade: EG 100 (run 1) crosses itself — edit the trace so it does not self-intersect.", crossingRuns: 1 },
   },
   {
     id: "tin-diagonal-constraint-kept",
@@ -164,6 +164,24 @@ export const EARTHWORK_CASES = [
       "stats:remainder:area3d:fg": 100 * Math.sqrt(100 * 100 + 4),
     },
   },
+  // F26 depth bands (D-445 5), by hand on the same plane: depth |−1 + x / 50| over 100 ft north
+  // to south. Cut: 0–0.5 ft at x 25–50 (2,500 SF, 100 x ∫(1 − x/50) = 625 CF), 0.5–1 ft at x 0–25
+  // (2,500 SF, 1,875 CF); fill the mirror. Nothing deeper; the bands sum to the cut and fill.
+  {
+    id: "bands-plane-cut-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 101, 101, 99])],
+    bands: [0.5, 1, 2],
+    expect: {
+      ok: true,
+      "band:0:cut:areaSF": 2500, "band:0:cut:volumeCF": 625, "band:0:fill:areaSF": 2500, "band:0:fill:volumeCF": 625,
+      "band:1:cut:areaSF": 2500, "band:1:cut:volumeCF": 1875, "band:1:fill:areaSF": 2500, "band:1:fill:volumeCF": 1875,
+      "band:2:cut:areaSF": 0, "band:2:cut:volumeCF": 0, "band:3:fill:areaSF": 0,
+      bandsSumToTotals: true,
+    },
+  },
   // The first plane under a feature 0.5 ft deep: the zero line moves to x = 25 ft. Cut 2,500 SF,
   // 0.25 average, 0.5 deepest; fill 7,500 SF, 0.75 average, 1.5 highest, proposed 100.5 to 102.
   {
@@ -228,7 +246,7 @@ export const EARTHWORK_CASES = [
       cutCY: 0,
       coverage: 0.25,
       coverageSurfaces: ["FG"],
-      coverageMessage: "Volumes cover 25% of the area within the boundary; EG or FG doesn't extend to the limit of work. Adjust boundary or contours as required.",
+      coverageMessage: "Volumes cover 25% of the area within the boundary; the existing or proposed grade doesn't extend to the limit of work. Adjust boundary or contours as required.",
     },
   },
   {
@@ -704,6 +722,52 @@ export const EARTHWORK_CASES = [
       "stabilize:d": 20595.540231 / 9,
       "stabilize_mix:d": 20595.540231 / 9,
       "stabilize_agent_1:d": (20595.540231 * 2 * 110 * 0.06) / 2000,
+    },
+  },
+  // F26 balance steps (D-445 4), by hand. Native soil suitable: cut 1,000 BCY, strip 100 BCY
+  // re-used as fill: 1,100 available. Fill 800 CCY x 1.10 = 880 BCY; a native undercut of 2,700
+  // CF = 100 BCY short by 100 x 0.10 = 10: 890 needed. Surplus 210 BCY, x 1.25 = 262.5 LCY out.
+  // T2's prep, 0.67 ft in 0.33 ft lifts (8" in 4"): 2 lifts (D-445 1), not 3.
+  {
+    id: "lines-balance-steps-suitable",
+    kind: "lines",
+    steps: true,
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 800 }],
+      stripAreas: [{ id: "s1", label: "Strip", depthFt: 0.5, areaSF: 5400, volumeCY: 100 }],
+      stripMeta: [{ id: "s1", name: "Strip", disposition: "reuse", reuseKind: "general" }],
+      features: [
+        { itemId: "u", label: "Pad", undercut: { depthFt: 1, offsetFt: 0, areaSF: 2700, volumeCF: 2700, material: null, disposition: "haul_off", native: "compacted", liftFt: 0.5 }, prep: null },
+        { itemId: "t2", label: "T2", undercut: null, prep: { depthFt: 0.67, lifts: 3, liftFt: 0.33, areaSF: 1600, method: "scarify_compact", compaction: "95% Standard Proctor" } },
+      ],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
+    },
+    expect: {
+      steps: "cut reuse supply fill shrink fill_bank native demand net export_bank swell export",
+      "step:cut": 1000, "step:reuse": 100, "step:supply": 1100, "step:fill": 800, "step:shrink": 1.1, "step:fill_bank": 880,
+      "step:native": 10, "step:demand": 890, "step:net": 210, "step:export_bank": 210, "step:swell": 1.25, "step:export": 262.5,
+      net: 210,
+      "soil_export:__soil_export__": 262.5,
+      "prep:t2:name": 'T2 — Scarify, Moisture Condition & Compact, 8" in 4" lifts (2 lifts, 95% Std Proctor)',
+    },
+  },
+  // Not suitable: all 500 BCY of cut leaves (x 1.3 = 650 LCY); fill 300 CCY x 1.2 = 360 BCY comes
+  // in (x 1.3 = 468 LCY). Net after shrink 500 − 360 = 140 BCY.
+  {
+    id: "lines-balance-steps-unsuitable",
+    kind: "lines",
+    steps: true,
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 500, fillCY: 300 }],
+      assumptions: { suitable: false, fillType: "Engineered Fill", swell: 1.3, shrink: 1.2 },
+    },
+    expect: {
+      steps: "fill shrink fill_bank cut export_bank swell export import_bank swell_in import",
+      "step:fill_bank": 360, "step:export_bank": 500, "step:export": 650, "step:import_bank": 360, "step:import": 468,
+      net: 140,
+      "soil_export:__soil_export__": 650, "soil_import:__soil_import__": 468,
     },
   },
   // D-407, by hand: 10,000 SF x 24" = 20,000 CF = 740.7407 CY; shrink 1.10, swell 1.25.
