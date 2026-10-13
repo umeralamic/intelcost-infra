@@ -14320,3 +14320,28 @@ most 0.25 % lightness; nothing numeric reads it. Turning the layer on held the p
    calculated surfaces could not be built — Calculate again" (state `failed`).
 2. A site whose rebuild did not give the saved numbers says "Calculate again to see the surfaces"
    on every 3D VIEW press (the second press did nothing).
+
+## D-441: Fixes from the review of tonight's F26 work
+
+**Status:** Accepted (2026-10-13, Umer). An independent read of the F26 diff found no change to any
+number; it found these, all fixed:
+
+1. **"Building…" could stay forever** where no worker starts (the page's build settled before the
+   deferred "building" flag was set): the build in flight is now a ref, the flag only reflects it,
+   and a page build is settled like a worker's reply.
+2. **WebGL contexts were not released** (`dispose()` keeps the context; the WebGL check leaked
+   one per open): the view forces the context's loss on cleanup and the check releases its probe.
+   24 surface switches on the Rebid copy: one canvas, 60 fps, no warning.
+3. **Report pictures outlived a new Calculate**, so the PDF could pair new numbers with an old
+   picture: each picture is kept with its sheet and the result's calculation time, and a new
+   Calculate drops them (driven: the 3D picture gone after Calculate).
+4. A metric project's native-undercut shortfall was labelled BCY while converted to m³: now the
+   report's bank unit.
+5. The drape was lost when the scene was rebuilt (a colleague's edit, a refetch), and the shaded
+   material leaked when draped at cleanup: the drape follows every rebuild; both materials are
+   disposed.
+6. A Calculate finishing after a sheet switch turned on CUT & FILL and the panel on the sheet now
+   open: only on its own sheet now (its result is saved to its own sheet, as before).
+7. Models are kept for the last three sheets only (each holds every prism and both TINs).
+
+The stored result on the Rebid copy is unchanged bit for bit.
