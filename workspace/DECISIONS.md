@@ -14493,3 +14493,14 @@ has Balance and the tie-out under five scope headings, no code and no "EG" or "F
    next time and was stored on the person (`takeoff_prefs.report_page`).
 5. A label's value wraps (right-aligned) when long, so a narrow paper cuts nothing; the features
    plan's callouts are about 7 pt on A4 and wrap to two lines, shortened past that.
+
+## D-449: The side panels' edge tabs show over 3D VIEW and the site view
+
+**Status:** Accepted (2026-10-13, Umer: "in 3D view, buttons for hiding side panels on both side
+should be shown").
+
+The two edge tabs that put the Sheets column and the Takeoff panel away (D-77) sat at the same
+layer as 3D VIEW and the site view, which come later in the page and hid them. They now sit above
+both overlays, so either panel can be put away and back while in 3D VIEW; the 3D view resizes to
+the room it gets. Driven on the Rebid copy: both tabs hidden and shown from 3D VIEW, the view
+widening to the full width and back.
