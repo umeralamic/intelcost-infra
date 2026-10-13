@@ -14061,3 +14061,28 @@ program's project file comes after both, as a study first.
 5. **Levels on the prisms.** Each prism carries existing and proposed z at its corners
    (`egA..C`, `fgA..C`: existing as the difference TIN interpolates it, proposed as existing
    plus the Δz before strip and section depth). Not stored; the numbers do not read them.
+
+## D-424: 3D VIEW: a lazy three.js view of the calculated model, in place of the sheet (F26 3D-2)
+
+**Status:** Accepted (2026-10-13, Umer; under D-422). **Spec:** [earthwork_3d_and_report_PLAN.md](docs/tasks/earthwork_3d_and_report_PLAN.md) 3D-2.
+
+1. **What it draws.** The model Calculate computed on (D-423), never a surface of its own: one
+   triangle per prism, inside the boundary, as the volumes summed them. EXIST. GRADE puts each
+   corner at its existing level, PROP. GRADE at its proposed level, CUT & FILL at the proposed
+   level coloured by the depth the volume used (strip and section depth folded in). Uncovered
+   parts of the boundary are holes, as they count nothing. Colours are the 2D layers' formulas
+   on the same hue tokens, read from the page (`lib/takeoff/earthwork/scene3d.ts`).
+2. **The same three buttons pick the surface** in 3D (one at a time, D-417); entering 3D with
+   none on turns CUT & FILL on. The boundary is outlined in its token, the Site Features on the
+   proposed and cut & fill surfaces.
+3. **Where.** An overlay over the canvas area (`view3d/Earth3DPane.tsx`), the side panels and the
+   Earthwork row staying, as the site view. Orbit (drag), pan (right-drag), zoom (wheel), Fit.
+4. **Loaded only when 3D VIEW opens.** `view3d/Earth3DView.tsx` and three.js 0.186.0 (no React
+   binding, D-422 2) are one lazy chunk, **558.18 kB raw, 139.01 kB gzip, measured** from the
+   production build; three.js appears in no other chunk. The WebGL check is its own tiny module.
+5. **Said plainly when there is nothing to show:** "Calculate first", "The drawing changed since
+   Calculate", "Building the calculated surfaces…", "Calculate again to see the surfaces" (a
+   rebuild that does not give the stored numbers), and "3D VIEW needs WebGL" when the browser
+   has none (the plan's 3D-7 message, built here).
+6. The model is built when 3D VIEW or CUT & FILL wants it and the result is current, once the
+   result has loaded (`want3d`).
