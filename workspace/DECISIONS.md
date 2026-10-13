@@ -13951,3 +13951,67 @@ Takeoff tab.
 - A sheet is calibrated from the Takeoff tab.
 - Of the tool keys only V (Select) acts here; H, L, A, N, D and S pick nothing. Snap, Ortho and the
   arc keys still work while a Site Feature or Strip Area is being drawn.
+
+## D-416: A 3D VIEW / 2D VIEW toggle after Calculate
+
+**Status:** Accepted (2026-10-13, Umer).
+
+The Earthwork row gets a stacked toggle right after Calculate, built like the surface toggle:
+"3D VIEW" on top, "2D VIEW" below, bold, the one in force filled in the primary colour (orange)
+with white text. 2D VIEW is on by default. In More it reads as a switch to the other view.
+- **No 3D viewer exists yet.** Picking 3D VIEW lights it and says the 3D view is coming; the
+  sheet stays drawn in 2D. The viewer is a feature of its own, to be specified.
+
+## D-417: One earthwork layer on the canvas at a time, in 2D VIEW
+
+**Status:** Accepted (2026-10-13, Umer).
+
+EXIST. GRADE, PROP. GRADE and CUT & FILL show on the canvas one at a time.
+- Turning one on turns the other two off, whether from the row, its More, or the CUT & FILL
+  button in Earthwork Volumes. Turning the lit one off leaves none shown.
+- CUT & FILL can be picked only once a Calculate has given volumes (as before). A Calculate now
+  ends with CUT & FILL shown and both grades off; it used to light both grades.
+- The three act in 2D VIEW only: in 3D VIEW they are greyed, their hint saying to switch to
+  2D VIEW (D-416).
+
+## D-418: Fewer, smaller elevation labels zoomed out; layers hide the contours
+
+**Status:** Accepted (2026-10-13, Umer).
+
+1. **Labels.** The sheet's elevation labels (contours and spot elevations) and the linked
+   sheet's ghost labels shrink as the sheet zooms out, to 70 % of their size at most, and a
+   label that would overlap one already placed is left out. Zoomed in, all show again. The
+   selected run's label always shows.
+   - Hovering a run still gives its elevation (the hover card, with Select). A linked ghost
+     line now names itself on hover too ("707 ft · V-100 …"), while nothing is being drawn.
+2. **Layers hide the contours.** While EXIST. GRADE, PROP. GRADE or CUT & FILL is on (D-417), the
+   sheet's contours and spot elevations and the linked ghost contours are not drawn; the work
+   boundary stays. Turning the layer off brings them back.
+3. **Panel Hide reaches the canvas.** An earthwork item hidden in the takeoff or sheet panel
+   (its eye) is no longer drawn on the canvas; before, Hide did not reach earthwork shapes.
+
+## D-419: The work boundary is drawn in its swatch's colour, blue by default
+
+**Status:** Accepted (2026-10-13, Umer). **Amends:** D-136 Q29 (amber).
+
+- The work boundary on the canvas takes its item's colour, so the panel's colour swatch changes
+  it; before, it was always drawn amber whatever the swatch said.
+- A new boundary is blue; one with no colour is drawn blue. A boundary made before keeps its
+  stored amber until its swatch changes it.
+- The "both missing" coverage shading, which shares the boundary token, turns blue with it.
+
+## D-420: CUT & FILL in dark purple; the grade toggles' icons are its halves
+
+**Status:** Accepted (2026-10-13, Umer).
+
+- CUT & FILL is outlined in dark purple (`--earthwork-cutfill`), and filled with it and white
+  type when on, as the grade toggles are in their surface's colour.
+- EXIST. GRADE's icon is CUT & FILL's grade line and the hump above it; PROP. GRADE's is the
+  grade line and the hatched fill below it (in place of the triangle).
+
+## D-421: Stripping's icon is a dozer
+
+**Status:** Accepted (2026-10-13, Umer).
+
+The Stripping button's icon is a line-drawn dozer (track, cab, blade; `DozerIcon`), in place of
+the stacked layers.
