@@ -14959,3 +14959,17 @@ Calculates), Stripping first, Remaining site and Site balance last. The headings
 line's own region and role (`earthwork_region_id`, `earthwork_role`); nothing is stored. The
 workbook export follows the same grouping (its group rows are the tab's). The Sheet pivot keeps
 its own sheet grouping.
+
+## D-475: Keys named in the Contour and Boundary hints; the Sheets panel redraws when item details arrive
+
+**Status:** Accepted (2026-10-14, run brief X1, X2). No quantity changes.
+
+1. **Help (X1).** The canvas hint and the toolbar tooltip of Contour and Boundary name the keys that
+   work while drawing, as in every drawing tool: A arc, Backspace back a point, Ctrl+Y put it back,
+   S snap, O ortho, D snap PDF, Enter or a double-click to finish, Esc.
+2. **Undo and redo (X2)** were checked step by step for contours, spots, the boundary and Site
+   Features: drawing (with an arc), moving a point, an arc armed mid-run, deleting. Each undoes and
+   redoes as it should, arcs kept. One fault found on the way: the Sheets panel (redrawn only when
+   its own props change, P-24) could draw a newly made item's row before the item's details had
+   arrived, as a bare name with no Resume or selection, and keep it so until something else redrew
+   the panel. It now redraws when the details change.
