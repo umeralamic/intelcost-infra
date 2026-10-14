@@ -14743,3 +14743,19 @@ workspace whose country is the United States and A4 portrait everywhere else. Th
 workspace's billing country (set from its owner's sign-up country), now sent with the workspace;
 where none is stored, the browser's locale region decides (en-US: Letter). A saved choice is never
 changed.
+
+## D-464: The workbook ties out with the PDF
+
+**Status:** Accepted (2026-10-14, Umer, night brief E1).
+
+Every number in the workbook was checked against the A4 portrait PDF (feature areas, cut, fill,
+net after shrink, undercut, stabilization tons, topsoil, balance, truckloads). Two differed and are
+fixed in the workbook:
+
+1. **By feature, Total "Net after shrink"** summed the features' own nets (1,187.82 BCY on the Rebid
+   copy) while the Summary, the Balance and the PDF give the surplus after shrink (1,175.96). The
+   balance's own additions now sit above the Total as rows of their own ("Native undercut
+   recompacted: shrink shortfall" −11.85; "Strip and undercut soil re-used as fill" when there is
+   any), so the Total is the surplus after shrink.
+2. **Truckloads** were not in the workbook: the Summary now has the truck and each haul's loads,
+   counted as the PDF counts them (loose quantity over the report's truck, rounded up).
