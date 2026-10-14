@@ -68,24 +68,19 @@ Each is a default I picked to finish the block; answer by number like the others
 | CH9 | 7 (D-384) | "Saved by N people" counts copies (one person saving twice reads 2), as the brief's check expects. | Count people. |
 | CH10 | 5 (D-382) | The Stripe library pins API version 2026-09-30.endive; our code reads both subscription shapes. | Pin our own version setting. |
 
-## Run 2026-10-14 (morning-report-2026-10-14\RUN_REPORT_2026-10-14.md)
+## Run 2026-10-15 (morning-report-2026-10-15\RUN_REPORT_2026-10-15.md)
 
-Answered on 2026-10-14 and done: N1 (D-470), N2 (D-471), N3 kept, N4 left, N5, N6, N8, N9 as
-recommended. N7 is yours to re-check (fps at 5×). Answer the rest by number.
+Answered on 2026-10-15 and done: R1, R2, R5, R6 kept as recommended; R3 (D-479), R4 (D-478), R8 parts
+1–3 (D-483), R10 (D-481), R11 (D-482). R7 kept for now, with a proposal below. N7 is still yours
+(fps at 5×). Answer the rest by number.
 
 | # | Item | Where it stands | Your call |
 |---|---|---|---|
-| R1 | 3.1 (D-471) | A newer feature takes an older one's undercut only where the two **outlines** overlap; the older undercut's offset fringe outside its own outline stays its own. Building Pad: 2,596.05 BCY (−3.73). If newer features also took the fringe, the pad would read 2,264 BCY (−336, 2,267 SF of its 5 ft fringe under the Sidewalk, Concrete and Aggregate). | Keep the outline rule? (Recommended: yes; you over-excavate past the pad whatever is paved next to it.) |
-| R2 | 2.2 (D-470) | A Site Feature's subtract shape (a hole) stays clear of its undercut as drawn: the undercut offset pushes the outline out, not the hole in. | Keep? (Recommended: yes.) |
-| R3 | 4.2 | The page still re-renders on every pan step (the pan position lives in the page); the earthwork layers no longer redraw for it. Pan on the copy: 32 → 55 fps. | Move the pan state out of the page, so nothing re-renders on a pan? About half a day. (Recommended: yes, as its own block.) |
-| R4 | X3 | A new spot or contour shows about 3 s after Enter (2.96 s with 27 spots, 3.29 s with 527): the save and the refetch of every item, not the drawing. | Keep drawing it, as pending, until it is saved? (Recommended: yes; small.) |
-| R5 | 5.3 (D-473) | Contours and spots settings: 3D takes colour, dashes and the index, not the weight (WebGL lines are one pixel); the report's plan has no labels or spots, as before; the linked sheets' ghost lines keep their own look. | Accept these limits? |
-| R6 | 4.3 | A contour, spot or boundary container shows no action bar, so its "takeoff tools" Resume is the run's right-click "Resume drawing" (and "Redraw boundary"). | Keep, or show the action bar's Resume for them too? |
-| R7 | 6.5 (D-474) | The Estimating tab's Sheet pivot keeps its own sheet grouping, without the feature headings. | Keep? |
-| R8 | X4 | Contour elevation entry: a proposal (no code), in the run report's Decisions. | Pick the parts you want. |
-| R10 | X7 | While a sheet's result is out of date the grading report's pictures never draw: they need the calculated model, built only for a current result, so the PDF button stays "Drawing…" (older behaviour, D-447). | Show "Calculate to draw the pictures" there, or export without them? (Recommended: say so on the button.) |
-| R11 | X9 | The index interval reads in the sheet's elevation unit (feet on the copy, metres on a metric-drawn sheet); 3D does the same; the report, unset, always uses 5 ft (as before). | Should the report follow the sheet's unit too (2.5 m on a metric-drawn sheet)? |
-| R9 | 2.8 | The .kcp input comparison was not re-run (skipped as you asked). Features with arcs now read 44,734 / 20,433 / 20,432 SF, so the comparison's own areas move. | Re-run it in a later run? |
+| S1 | T3 (zoom) | Not committed. A zoom's frames go to the GPU re-drawing the overlays (contours, the V-100 lines, hatching) at every frame's scale; React is ~100 ms of a 6.5 s zoom. Letting the browser scale the stage as a picture during the wheel took zoom from 21 to 57 fps, but the settled view was not always identical: about one landing in four stayed slightly soft (forcing a fresh layout after landing did not fully cure it). | (a) accept a soft moment after some zooms for 57 fps, (b) leave as is (21–25 fps), or (c) a later block: cache each overlay layer as its own bitmap per zoom. (Recommended: c, about a day; b meanwhile.) |
+| S2 | E1 (R7) | The Sheet view lists each sheet's rows from what is measured on it; a calculated earthwork line has no shape (49 lines, 0 shapes on the copy), so from the code it is not listed under any sheet there. Proposal in the run report: a Grading group under the sheet the Calculate was made on, with the same feature headings. | Build it? (Recommended: yes, about half a day; display only.) |
+| S3 | R8 | Two parts of the X4 proposal were not picked: offer the difference of the last two contours as the interval; batch entry (draw several, give the first level, the rest follow in drawing order). | Want either? |
+| R9 | 2.8 | The .kcp input comparison was not re-run (later, as you said). | When? |
+| S4 | for your record | On the copy, a Calculate was made at 22:47:56 UTC from another browser (not my scripts): same result (md5 fab4d151), it cleared the 49 stale flags set at 21:12. A Work Boundary shape was made at 21:13, not on C-200 (the sheet's key did not move). | Nothing, unless that was not you. |
 
 ## Found in the click sessions
 
