@@ -68,22 +68,22 @@ Each is a default I picked to finish the block; answer by number like the others
 | CH9 | 7 (D-384) | "Saved by N people" counts copies (one person saving twice reads 2), as the brief's check expects. | Count people. |
 | CH10 | 5 (D-382) | The Stripe library pins API version 2026-09-30.endive; our code reads both subscription shapes. | Pin our own version setting. |
 
-## Night run 2026-10-14 (morning-report-2026-10-13\MORNING_REPORT_2026-10-14.md)
+## Run 2026-10-14 (morning-report-2026-10-14\RUN_REPORT_2026-10-14.md)
 
-Answer by number (N1 ok, N3 no: …). Every item of the brief is done; these are the calls left to you.
-None of them is built; each says what it would change.
+Answered on 2026-10-14 and done: N1 (D-470), N2 (D-471), N3 kept, N4 left, N5, N6, N8, N9 as
+recommended. N7 is yours to re-check (fps at 5×). Answer the rest by number.
 
 | # | Item | Where it stands | Your call |
 |---|---|---|---|
-| N1 | B1 | Calculate reads a Site Feature's arcs as straight chords (`sheetFeatures` takes `vertices_json` only; `shape_meta` arcs and subtract shapes are ignored). Heavy Duty Aggregate loses 2,174.57 SF, the asphalts gain 1,638.94 and 163.29 SF. Shared takeoff math: not patched (your rule 7). Spec in the morning report. | Approve the spec. It changes those features' areas, cut and fill, and the totals. |
-| N2 | B1/B2 | T6's undercut keeps its full 1,600 SF (88.89 BCY) under T7, because an undercut or prep overlap goes only to a newer feature with undercut or prep of its own (`computeFeatureExtras`). | Should any newer feature take it? T6 would read 1,000 SF, 55.56 BCY. |
-| N3 | B2 | T4's stabilization is on its whole 1,600 SF (177.78 SY, cement 2.67 t, fly ash 4.00 t), including the 112 SF where a grade is missing. It is already "the area left after overlaps": T4 has none. | Keep, or drop the not-computed part (165.30 SY, 2.48 t, 3.72 t)? |
-| N4 | B5 | Standard Duty Asphalt's depth is stored as 0.816667 ft = 9.8" in both the copy and the original Rebid. The report shows what is stored. | If you meant 9.75", change it in the feature's dialog (on the copy; the original is yours). |
-| N5 | B5/E1/E3 | Line names keep legacy's one-decimal depth label: "Strip Topsoil (4")" while the report shows 3.96" (0.33 ft stored); metric names read "20.4cm" while the report reads mm. | Rename the lines to the exact depth (two decimals, mm)? It renames Calculate's lines. |
-| N6 | A3 | Off-surface boundary is dashed at the base. On the Rebid copy only about 11 % of the boundary has surface under it, so the far side's dashes sit behind the solid and are hidden. | Keep, or draw the hidden dashes faintly through the solid? |
-| N7 | F2 | 25 fps at 5× could not be reproduced: 60 fps at 1×, 2× and 5×, idle and orbiting, at pixel ratio 1 and 2, no scene rebuilds. The counter's first second after a switch reads low (39.8). | Re-check on your machine 2 s after switching; tell me the machine and browser if it is still slow. |
-| N8 | C3 | A workspace with no country (both bench workspaces) falls back to the browser's region: en-US gets Letter. | Keep, or A4 when no country? |
-| N9 | E3 | Metric: depths and lifts in mm under 1 m; the undercut turns to metres at 1 m (was 0.6 m, D-451 3); keys and depth-band edges stay in metres as scales. | Keep? |
+| R1 | 3.1 (D-471) | A newer feature takes an older one's undercut only where the two **outlines** overlap; the older undercut's offset fringe outside its own outline stays its own. Building Pad: 2,596.05 BCY (−3.73). If newer features also took the fringe, the pad would read 2,264 BCY (−336, 2,267 SF of its 5 ft fringe under the Sidewalk, Concrete and Aggregate). | Keep the outline rule? (Recommended: yes; you over-excavate past the pad whatever is paved next to it.) |
+| R2 | 2.2 (D-470) | A Site Feature's subtract shape (a hole) stays clear of its undercut as drawn: the undercut offset pushes the outline out, not the hole in. | Keep? (Recommended: yes.) |
+| R3 | 4.2 | The page still re-renders on every pan step (the pan position lives in the page); the earthwork layers no longer redraw for it. Pan on the copy: 32 → 55 fps. | Move the pan state out of the page, so nothing re-renders on a pan? About half a day. (Recommended: yes, as its own block.) |
+| R4 | X3 | A new spot or contour shows about 3 s after Enter (2.96 s with 27 spots, 3.29 s with 527): the save and the refetch of every item, not the drawing. | Keep drawing it, as pending, until it is saved? (Recommended: yes; small.) |
+| R5 | 5.3 (D-473) | Contours and spots settings: 3D takes colour, dashes and the index, not the weight (WebGL lines are one pixel); the report's plan has no labels or spots, as before; the linked sheets' ghost lines keep their own look. | Accept these limits? |
+| R6 | 4.3 | A contour, spot or boundary container shows no action bar, so its "takeoff tools" Resume is the run's right-click "Resume drawing" (and "Redraw boundary"). | Keep, or show the action bar's Resume for them too? |
+| R7 | 6.5 (D-474) | The Estimating tab's Sheet pivot keeps its own sheet grouping, without the feature headings. | Keep? |
+| R8 | X4 | Contour elevation entry: a proposal (no code), in the run report's Decisions. | Pick the parts you want. |
+| R9 | 2.8 | The .kcp input comparison was not re-run (skipped as you asked). Features with arcs now read 44,734 / 20,433 / 20,432 SF, so the comparison's own areas move. | Re-run it in a later run? |
 
 ## Found in the click sessions
 
@@ -182,6 +182,12 @@ small "1 in use" beside them; the page text runs them together.
 | S5 | LEGACY_UMERALAMDEV_DIFF.md (items 1–23) | Legacy changes since 2026-09-24 still to schedule. Mostly cost components and estimating. Earthwork is done. | Say which are still owed. | Read it. | Partly: the earthwork items were built in F12. |
 
 ## For Abdullah (listed only, not for you to check)
+
+- **Run 2026-10-14:**
+  - one migration, `e6b2d8a4c1f9` (earthwork review `contour_style`, JSONB, empty by default);
+  - after D-470 reaches staging and main, every saved earthwork result reads "Out of date" until
+    its next Calculate; nothing is written or recalculated
+    (`intelcost-infra/notes/2026-10-14_earthwork_out_of_date_after_d470_for_abdullah.md`).
 
 - **Today's report** (OVERNIGHT_REPORT.md:296–302, 486–491, 536–540):
   - the duplicate-project worker task needs S3 read/write on the bucket;
