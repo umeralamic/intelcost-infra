@@ -15059,3 +15059,15 @@ cache: back from Estimating to the sheet, the full view is up in 0.62–0.66 s, 
 Open → full view on the bench: 5.16 s before, 3.51 s after (the same calls; the difference is the
 bench's network, not this change). First frame: wrong numbers before; placeholders after, from
 1.35 s. Screens `T4-before-first-frame.png`, `T4-after-first-frame.png`.
+
+## D-481: An out-of-date report's PDF button says to Calculate, and why
+
+**Status:** Accepted (2026-10-15, run brief T5, R10). No quantity changes.
+
+While a result is out of date its report's plans and 3D pages are not drawn (D-447), so the PDF
+button stayed on "Drawing…", disabled, for good. Now it reads "Calculate to draw the pictures" and
+stays clickable; a click explains: the result is out of date (the drawing changed after it, or it is
+an earlier engine's, D-470), the PDF's pictures are drawn from a current result, press Calculate on
+the Earthwork toolbar; the figures shown are this result's, and the Excel workbook still downloads
+them. Once a Calculate is done the button is "PDF" again. A current result still shows "Drawing…"
+while its pictures draw, as before.
