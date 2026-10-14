@@ -14811,3 +14811,15 @@ The workbook's By feature sheet lists the features as the report does (D-451 2):
 first, numbered 1, 2, 3 … the same as the report's sections and the Features plan's callouts, the
 remaining site last. The Lines sheet follows the same order inside each scope (strip lines keep
 theirs), so a feature's undercut, preparation and cut and fill lines read in the report's order.
+
+## D-468: No base walls inside the 3D surface
+
+**Status:** Accepted (2026-10-14, night run, found while checking A3). Display only.
+
+The 3D view's solid base built a wall on every triangle edge only one triangle has. The prisms are
+clipped region by region, so inside the surface a triangle's corner can sit on a neighbour's edge
+and that edge counts as an outer one; its wall stood up through the surface as short light grey
+streaks (visible zoomed in, and in the report's 3D pictures). An edge now gets a wall only when
+the point 0.02 ft outside it, away from its own triangle, has no surface. The outer walls are
+unchanged; the light vertical strip on the south wall of the Rebid copy is a real step in the
+computed area's edge, not a stray wall.
