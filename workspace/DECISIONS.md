@@ -14873,3 +14873,22 @@ newer, now takes 207 SF; Heavy Duty Asphalt's report area falls from 20,879 to 1
 Standard Duty Asphalt's from 20,596 to 20,432 SF (its takeoff area); the surplus after shrink
 goes from 1,176 to 1,162 BCY. On the bench, 3 projects have arcs and none has a subtract shape
 (the note for Abdullah, `intelcost-infra/notes/2026-10-14_…`).
+
+## D-471: The newer feature takes undercut, preparation and stabilization overlaps (N2)
+
+**Status:** Accepted (2026-10-14, Umer: N2 yes; run brief Block 3).
+
+Undercut and preparation layered only among features with that work, so a newer feature that
+only grades (T7 over T6) left the older one its whole undercut. Now, as for cut and fill, every
+newer feature that grades (a depth over 0) or has its own undercut or preparation takes the
+overlap. Stabilization is a preparation's (or an undercut's) area, so it follows.
+
+Where the two outlines overlap, the newer feature keeps the work. A newer feature with its own
+undercut keeps its whole undercut extent, as before. An older undercut's offset fringe outside
+its own outline stays its own unless such an undercut covers it. That is the reading of "the same
+as cut and fill" taken here (the other reading is a decision for Umer, N10 in pending_umer.md).
+
+Each overlap taken is stored on the result (`features[].taken`) and listed in Notes at the
+overlaps' threshold (over 100 SF or 1 %). On the 3D test copy: T6's undercut is 1,000 SF, 55.56
+BCY (was 1,600 SF, 88.89); the Building Pad's 17,523 SF, 2,596.05 BCY (was 17,549 SF, 2,599.79),
+the Sidewalk, Heavy Duty Concrete and Heavy Duty Aggregate outlines taking 25.20 SF of it.

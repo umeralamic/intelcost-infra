@@ -441,6 +441,35 @@ export const EARTHWORK_CASES = [
     ],
     expect: { order: "B,A", roleAreas: "B,A", "B:prepSF": 70, "A:prepSF": 50 },
   },
+  // D-471 (N2): a newer feature that only grades (a depth, no undercut or prep of its own) takes the
+  // overlap of an older one's undercut and prep, as for cut and fill. A 10 x 10 ft square A (undercut
+  // 1 ft, offset 0; prep 1 ft) and a newer 10 x 10 ft B 5 ft east, grading 0.5 ft: they overlap by
+  // 5 x 10 = 50 SF, so A keeps 100 - 50 = 50 SF of undercut (50 CF) and 50 SF of prep. Before, B
+  // took nothing (it has no work of its own) and A kept 100 SF of each.
+  {
+    id: "sf-n2-newer-grading-takes-undercut-and-prep",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "B,A", roleAreas: "B", "A:undercutSF": 50, "A:undercutCF": 50, "A:prepSF": 50 },
+  },
+  // D-471: the older undercut's offset fringe outside its own outline stays its own. A 10 x 10 ft
+  // square A, undercut 1 ft, offset 1 ft: 12 x 12 = 144 SF (square corners). A newer grading-only
+  // B, x 10-20 ft, touches A's east edge and covers 1 x 10 ft of A's fringe but none of A's outline:
+  // A keeps all 144 SF.
+  {
+    id: "sf-n2-fringe-stays",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_offset_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] },
+      { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, polygons: [[[0.12, 0.02], [0.22, 0.02], [0.22, 0.12], [0.12, 0.12]]] },
+    ],
+    expect: { order: "B,A", roleAreas: "B", "A:undercutSF": 144, "A:undercutCF": 144 },
+  },
   // Q7: depth comes only from Site Features; a plain area with a depth, a feature at depth
   // 0 (no section) and a line give grading nothing. Same times: ties by uuid, last first.
   {
