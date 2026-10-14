@@ -68,6 +68,23 @@ Each is a default I picked to finish the block; answer by number like the others
 | CH9 | 7 (D-384) | "Saved by N people" counts copies (one person saving twice reads 2), as the brief's check expects. | Count people. |
 | CH10 | 5 (D-382) | The Stripe library pins API version 2026-09-30.endive; our code reads both subscription shapes. | Pin our own version setting. |
 
+## Night run 2026-10-14 (morning-report-2026-10-13\MORNING_REPORT_2026-10-14.md)
+
+Answer by number (N1 ok, N3 no: …). Every item of the brief is done; these are the calls left to you.
+None of them is built; each says what it would change.
+
+| # | Item | Where it stands | Your call |
+|---|---|---|---|
+| N1 | B1 | Calculate reads a Site Feature's arcs as straight chords (`sheetFeatures` takes `vertices_json` only; `shape_meta` arcs and subtract shapes are ignored). Heavy Duty Aggregate loses 2,174.57 SF, the asphalts gain 1,638.94 and 163.29 SF. Shared takeoff math: not patched (your rule 7). Spec in the morning report. | Approve the spec. It changes those features' areas, cut and fill, and the totals. |
+| N2 | B1/B2 | T6's undercut keeps its full 1,600 SF (88.89 BCY) under T7, because an undercut or prep overlap goes only to a newer feature with undercut or prep of its own (`computeFeatureExtras`). | Should any newer feature take it? T6 would read 1,000 SF, 55.56 BCY. |
+| N3 | B2 | T4's stabilization is on its whole 1,600 SF (177.78 SY, cement 2.67 t, fly ash 4.00 t), including the 112 SF where a grade is missing. It is already "the area left after overlaps": T4 has none. | Keep, or drop the not-computed part (165.30 SY, 2.48 t, 3.72 t)? |
+| N4 | B5 | Standard Duty Asphalt's depth is stored as 0.816667 ft = 9.8" in both the copy and the original Rebid. The report shows what is stored. | If you meant 9.75", change it in the feature's dialog (on the copy; the original is yours). |
+| N5 | B5/E1/E3 | Line names keep legacy's one-decimal depth label: "Strip Topsoil (4")" while the report shows 3.96" (0.33 ft stored); metric names read "20.4cm" while the report reads mm. | Rename the lines to the exact depth (two decimals, mm)? It renames Calculate's lines. |
+| N6 | A3 | Off-surface boundary is dashed at the base. On the Rebid copy only about 11 % of the boundary has surface under it, so the far side's dashes sit behind the solid and are hidden. | Keep, or draw the hidden dashes faintly through the solid? |
+| N7 | F2 | 25 fps at 5× could not be reproduced: 60 fps at 1×, 2× and 5×, idle and orbiting, at pixel ratio 1 and 2, no scene rebuilds. The counter's first second after a switch reads low (39.8). | Re-check on your machine 2 s after switching; tell me the machine and browser if it is still slow. |
+| N8 | C3 | A workspace with no country (both bench workspaces) falls back to the browser's region: en-US gets Letter. | Keep, or A4 when no country? |
+| N9 | E3 | Metric: depths and lifts in mm under 1 m; the undercut turns to metres at 1 m (was 0.6 m, D-451 3); keys and depth-band edges stay in metres as scales. | Keep? |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
