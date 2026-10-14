@@ -14847,3 +14847,29 @@ armed earthwork tool for Area. Match lines are picked points (no arcs to keep).
 
 This changes no quantity by itself: no stored contour or boundary had arcs. Calculate reading the
 arcs is D-470.
+
+## D-470: Calculate reads every shape as the takeoff measures it (N1)
+
+**Status:** Accepted (2026-10-14, Umer: N1 yes; run brief Block 2).
+
+Calculate built each Site Feature, the boundary and each contour from its corner points alone, so
+an arc was a straight line and a subtract shape was ignored. Every earthwork shape is now read
+through one function, `storedOutline` (`lib/takeoff/earthwork/runArcs.ts`), the outline the
+takeoff measures: inline arcs bent in, an ellipse round, a rectangle by its corners, curves read
+every 1° (short of the true curve by under 0.005 %). A Site Feature's subtract shapes are holes:
+cut out of its grading region, its undercut and preparation (a hole stays clear of the undercut
+as drawn; the offset pushes the outline only), its strips, the Remaining Site and the overlap
+notes. A sheet's runs carry the outline as their points (every engine, layer, plan and 3D view
+reads it) and their corners for editing (D-469). Cut and fill, the report, the workbook, the key
+maps, the Features plan and 3D all read the same outline.
+
+**Old results.** The version key moves to v6 (a sheet's) and v5 (a site's). A result saved
+before reads as out of date, worked out when it is read: the Volumes panel opens once and asks for
+a Calculate. Nothing is written to mark it (the Estimating lines' stale flag, a write, is skipped
+for this case only) and nothing is recalculated. An ordinary edit still flags the lines as before.
+
+On the 3D test copy, Heavy Duty Aggregate's outline is 44,734 SF (takeoff 44,736), of which T1,
+newer, now takes 207 SF; Heavy Duty Asphalt's report area falls from 20,879 to 19,397 SF and
+Standard Duty Asphalt's from 20,596 to 20,432 SF (its takeoff area); the surplus after shrink
+goes from 1,176 to 1,162 BCY. On the bench, 3 projects have arcs and none has a subtract shape
+(the note for Abdullah, `intelcost-infra/notes/2026-10-14_…`).

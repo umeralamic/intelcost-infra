@@ -1241,7 +1241,81 @@ export const EARTHWORK_CASES = [
   //   sidewalk 4,000, remaining 12,000.
   // Δz = (FG − depth) − (EG − strip). Hand answers in cubic feet / 27.
   ...synthRows(),
+  ...realShapeRows(),
 ];
+
+/**
+ * D-470: Calculate reads every shape as the takeoff measures it, arcs bent in and subtract
+ * shapes as holes. Each row goes in as stored (`vertices_json` with `shape_meta.arcs`, a
+ * subtract shape's role), through the app's own sheetRuns, sheetFeatures and computeVolumes.
+ * The unit page at 100 ft a side (1 normalised unit = 100 ft). EG and FG flat from four corner
+ * spots, so a volume is an area times a height. Answers rounded to 0.1 (an arc is read every
+ * 1°, which is short of the true curve by 0.016 SF on a 20 ft semicircle: 628.3027 against
+ * 628.3185).
+ */
+function realShapeRows() {
+  const geo = (vertices_json, shape_meta = null, role = "add") => ({ sheet_uuid: "s", vertices_json, shape_meta, role });
+  const spots = (surface, z) =>
+    [[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => ({ uuid: `${surface}${i}`, type: "spot_elevation", name: `${surface} spots`, geometries: [geo([[x, y]], { kind: "spot", surface, elevation: z })] }));
+  const boundary = (vertices_json, shape_meta = { kind: "boundary", closed: true }) => ({ uuid: "b", type: "boundary", name: "Work Boundary", geometries: [geo(vertices_json, shape_meta)] });
+  // The square x 0.2–0.6, y 0.2–0.6 (40 × 40 ft = 1,600 SF) with its east edge, (0.6, 0.2) to
+  // (0.6, 0.6), bent out as a semicircle of radius 0.2 (20 ft) about (0.6, 0.4): a0 −90°, sweep
+  // +180°, through (0.8, 0.4). Area 1,600 + π × 20² / 2 = 1,600 + 628.3185 = 2,228.3185 SF.
+  // Read as straight lines it was the square alone, 1,600 SF.
+  const D_SQUARE = [[0.2, 0.2], [0.6, 0.2], [0.6, 0.6], [0.2, 0.6]];
+  const EAST_ARC = { i: 1, cx: 0.6, cy: 0.4, rx: 0.2, ry: 0.2, a0: -Math.PI / 2, sweep: Math.PI };
+  const feature = (uuid, depth, geometries) => ({ uuid, type: "sf", name: uuid, created_at: "2026-10-14T00:00:00Z", is_site_feature: true, role_depth_ft: depth, geometries });
+  return [
+    // 1. A Site Feature with an arc, 1 ft deep, on a flat pad (EG = FG = 100) inside the unit
+    // boundary: its area 2,228.3 SF and its cut 2,228.3 SF × 1 ft = 2,228.3 CF.
+    {
+      id: "real-shape-feature-arc",
+      kind: "realshape",
+      side: 100,
+      items: [...spots("EG", 100), ...spots("FG", 100), boundary([[0, 0], [1, 0], [1, 1], [0, 1]]), feature("arc", 1, [geo(D_SQUARE, { closed: true, arcs: [EAST_ARC] })])],
+      expect: { "feature:arc:areaSF": 2228.3, cutCF: 2228.3, fillCF: 0 },
+    },
+    // 2. A Site Feature with a subtract shape: x 0.2–0.8, y 0.2–0.8 (60 × 60 = 3,600 SF) less
+    // x 0.4–0.6, y 0.4–0.6 (20 × 20 = 400 SF) = 3,200 SF; 1 ft deep on the flat pad, so its cut
+    // is 3,200 CF. Read without the hole it was 3,600.
+    {
+      id: "real-shape-feature-subtract",
+      kind: "realshape",
+      side: 100,
+      items: [
+        ...spots("EG", 100),
+        ...spots("FG", 100),
+        boundary([[0, 0], [1, 0], [1, 1], [0, 1]]),
+        feature("hole", 1, [geo([[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]], { closed: true }), geo([[0.4, 0.4], [0.6, 0.4], [0.6, 0.6], [0.4, 0.6]], { closed: true }, "subtract")]),
+      ],
+      expect: { "feature:hole:areaSF": 3200, cutCF: 3200, fillCF: 0 },
+    },
+    // 3. A boundary with an arc: the square with the semicircle above as the work boundary, EG
+    // 100 and FG 101 (1 ft of fill everywhere): fill 2,228.3 SF × 1 ft = 2,228.3 CF; the
+    // boundary's own area 2,228.3 SF. Read as straight lines it was 1,600.
+    {
+      id: "real-shape-boundary-arc",
+      kind: "realshape",
+      side: 100,
+      items: [...spots("EG", 100), ...spots("FG", 101), boundary(D_SQUARE, { kind: "boundary", closed: true, arcs: [EAST_ARC] })],
+      expect: { boundarySF: 2228.3, cutCF: 0, fillCF: 2228.3 },
+    },
+    // 4. A contour with an arc: an EG contour at 110 from (0.6, 0.2) to (0.6, 0.6) along the same
+    // semicircle, beside the four EG corner spots at 100. The surface takes the curve: the arc is
+    // read every 1°, 180 steps, so the contour gives 181 points (its two ends and 179 between)
+    // and 180 kept edges; with the four spots the TIN has 185 points. One of them is the
+    // semicircle's far point (0.8, 0.4), at 110. Read as straight lines the contour was 2 points
+    // and 1 edge (a TIN of 6 points), and (0.8, 0.4) was not on it.
+    {
+      id: "real-shape-contour-arc",
+      kind: "realshape",
+      side: 100,
+      items: [...spots("EG", 100), { uuid: "eg", type: "contour", name: "Existing Ground", geometries: [geo([[0.6, 0.2], [0.6, 0.6]], { kind: "polyline", surface: "EG", elevation: 110, arcs: [EAST_ARC] })] }],
+      tinOnly: { surface: "EG", at: [0.8, 0.4] },
+      expect: { egPoints: 185, egConstraints: 180, egZAt: 110 },
+    },
+  ];
+}
 
 /** The synthetic site's rows: each worked by hand in its comment. */
 function synthRows() {

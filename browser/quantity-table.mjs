@@ -747,6 +747,34 @@ try {
         }
         return out;
       }
+      if (c.kind === "realshape") {
+        // D-470: shapes as stored, through the app's own readers and Calculate.
+        const items = c.items.map((it) => ({ created_at: "", is_site_feature: false, ...it, geometries: it.geometries.map((g, k) => ({ uuid: `${it.uuid}-${k}`, geometry_version: 1, ...g })) }));
+        const runs = sx.sheetRuns(items, "s");
+        const labels = new Map(items.map((i) => [i.uuid, i.name]));
+        const r1 = (v) => Math.round(v * 10) / 10;
+        if (c.tinOnly) {
+          const t = tin.runTinForSurface(runs, c.tinOnly.surface, labels);
+          if (t.ok !== true) return { ok: t.ok, message: t.error?.message };
+          const m = t.mesh;
+          let z = null;
+          for (let k = 0; k < m.points.length / 2; k++) if (Math.hypot(m.points[2 * k] - c.tinOnly.at[0], m.points[2 * k + 1] - c.tinOnly.at[1]) < 1e-9) z = m.elevations[k];
+          return { egPoints: m.points.length / 2, egConstraints: m.constraints.length, egZAt: z };
+        }
+        const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
+        const feats = sf.sheetFeatures(items, "s");
+        const bnd = runs.find((r) => r.kind === "boundary");
+        const boundary = bnd ? bnd.points : null;
+        const r = vol.computeVolumes(
+          { eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: scale, units: "CY", roleAreas: sf.roleAreasOf(feats) },
+          runs,
+          labels,
+        );
+        if (r.ok !== true) return { ok: r.ok, message: r.error?.message };
+        const out = { cutCF: r1(r.cutCY * 27), fillCF: r1(r.fillCY * 27), boundarySF: r1(sf.mpAreaSqFt([[boundary.map((p) => [p.x, p.y])]], scale)) };
+        for (const [id, a] of sf.featureOwnAreas(feats, boundary, scale)) out[`feature:${id}:areaSF`] = r1(a);
+        return out;
+      }
       if (c.kind === "strips") {
         const feature = (f) => ({ itemId: f.id, label: f.id, depthFt: 0, polygons: f.polygons.map(xy), undercutDepthFt: null, undercutOffsetFt: 0, undercutMaterial: null, undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null });
         const row = (r) => ({ sheet_uuid: "s", feature_uuids: [], vertices_json: null, color: "#000000", disposition: "haul_off", reuse_kind: null, is_hidden: false, ...r });
