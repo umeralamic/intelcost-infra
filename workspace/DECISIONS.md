@@ -15023,3 +15023,21 @@ writes still queue per container.
 Enter → visible: spot 2.34–2.72 s before, 106–134 ms after; contour 2.20–3.49 s before, 95–135 ms
 after. Enter → saved run drawn is unchanged (2.1–3.1 s). Toast actions (Retry, Verify) now sit on
 one line beside the text; they had been squeezed to a letter column.
+
+## D-479: A pan re-renders nothing outside the canvas
+
+**Status:** Accepted (2026-10-15, run brief T2, R3). Nothing looks different; no quantity changes.
+
+The pan's position was already the canvas's own (the stage's transform), not page state; what
+re-rendered the takeoff page on every pan step was the earthwork hover card. Its state (the run
+under the pointer) lived in the page, and a pan drags the pointer across contour after contour,
+so each crossing set it and the whole page rendered again: 104 page renders in a 60-step pan.
+Found by recording every state update the page received during a pan. The hover card's run is
+now held in a small store outside the page, which only the card's own slot reads; the card shows
+and hides exactly as before.
+
+On the 3D test copy, a 60-step pan: page renders 104 → 4 (the pan's start and end), canvas
+renders 72 → 2, long tasks 3,020 ms (worst 194) → 144 ms (one). Frame rate 42.4 → 53.1 and 107.5
+fps in two runs (the display's own rate varied between runs, 60 or 120 Hz). Zoom unchanged
+(20.5 → 22.0 and 24.9 fps; T3). Realtime presence updates arrive during a pan too, but they bail
+out without rendering.
