@@ -14624,3 +14624,18 @@ The PDF dialog has its title only (no line under it); the paper list shows the n
 Letter, Legal, Tabloid, A3); the file name box is wider and wraps to a second line, so the default
 name ("Grading Report, <project>") shows whole. Enter does not break the name; it stays one line
 of text.
+
+## D-456: New icons for EXIST. GRADE, PROP. GRADE and CUT & FILL
+
+**Status:** Accepted (2026-10-13, Umer, from his drawing).
+
+- EXIST. GRADE: an uneven ground line over a grey base bar.
+- PROP. GRADE: a graded pad (a flat top with sloped sides) over the same grey bar.
+- CUT & FILL: one wave across a dashed grade line, the hump above it filled light red (cut), the
+  dip below it light blue (fill).
+
+Drawn like the app's other icons (24 grid, round caps, the line in the text colour); the bar is
+the text colour faded, so it reads on a button filled when shown, and the fills are tokens
+(`--earthwork-cut-h`, `--earthwork-fill-h`). Used
+wherever the old ones were: the toolbar's three buttons, CALCULATE's CUT & FILL and the volumes
+panel's header.
