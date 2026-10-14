@@ -14892,3 +14892,27 @@ Each overlap taken is stored on the result (`features[].taken`) and listed in No
 overlaps' threshold (over 100 SF or 1 %). On the 3D test copy: T6's undercut is 1,000 SF, 55.56
 BCY (was 1,600 SF, 88.89); the Building Pad's 17,523 SF, 2,596.05 BCY (was 17,549 SF, 2,599.79),
 the Sidewalk, Heavy Duty Concrete and Heavy Duty Aggregate outlines taking 25.20 SF of it.
+
+## D-472: Drawing and panels: feature colours, speed, resume, strip rows
+
+**Status:** Accepted (2026-10-14, run brief Block 4). No quantity changes.
+
+1. **A new Site Feature's colour** is the first colour of the measurement palette
+   (`DARK_MEASUREMENT_PALETTE`) that no Site Feature in the project uses yet, in the palette's
+   order; when all are used it goes round again. The user can still pick any colour; existing
+   features keep theirs. Making a Site Feature from an area keeps the area's colour (D-136 Q21).
+2. **Speed with contours.** A zoom redrew every contour and ghost line, and a pan re-rendered the
+   page and with it hashed every drawn point (the version key) and built a number formatter per
+   row of the Takeoff panel. The lines are now drawn by memoized children whose props hold still
+   through a zoom (ghost lines keep their screen width by `vector-effect`, as the sheet's own);
+   the version key is worked out when the drawing changes; the number formatters are built once.
+   Nothing looks different. The page still re-renders on each pan step; that is structural and is
+   left for later (pending_umer.md).
+3. **Resume** of a contour, spot or boundary container from the Takeoff panel or the Sheets panel
+   does exactly what "Resume drawing" on its last run does: the same tool, surface and elevation
+   pre-fill, the next run joining the same container. The run menu offers it on a spot too, and on
+   the boundary as "Redraw boundary". A Site Feature resumes as before, the same from all three
+   places. A calculated line still never resumes; a Strip Area has one outline and no resume.
+4. **Strip Areas** show in the Sheets panel under the open sheet's markups, as under Earthwork
+   Markups in the Takeoff panel. They are not items, so nothing is filed or moved: they cannot sit
+   in another folder, and no quantity changes.
