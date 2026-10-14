@@ -14802,3 +14802,12 @@ an edge and no blank page. Two faults were found and fixed in the plans:
 
 The harness was a scratch script, run by hand, not kept (hard rule 8); one A4 portrait PDF per case
 is in the morning report folder of 2026-10-14 under `layout-tests\`.
+
+## D-467: The workbook's features in the report's order
+
+**Status:** Accepted (2026-10-14, Umer, night brief F1).
+
+The workbook's By feature sheet lists the features as the report does (D-451 2): largest plan area
+first, numbered 1, 2, 3 … the same as the report's sections and the Features plan's callouts, the
+remaining site last. The Lines sheet follows the same order inside each scope (strip lines keep
+theirs), so a feature's undercut, preparation and cut and fill lines read in the report's order.
