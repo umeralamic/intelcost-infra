@@ -14916,3 +14916,25 @@ the Sidewalk, Heavy Duty Concrete and Heavy Duty Aggregate outlines taking 25.20
 4. **Strip Areas** show in the Sheets panel under the open sheet's markups, as under Earthwork
    Markups in the Takeoff panel. They are not items, so nothing is filed or moved: they cannot sit
    in another folder, and no quantity changes.
+
+## D-473: Takeoff settings › Contours and spots, per project
+
+**Status:** Accepted (2026-10-14, run brief Block 5). No quantity changes.
+
+A new section of Takeoff settings sets how contours and spot elevations are drawn, existing and
+proposed apart: a contour's colour, line weight (times the usual), solid or dashed, the heavier
+index contour and its interval (in feet, or metres on a metric sheet), labels on or off and their
+size; a spot's colour, symbol size, labels and their size.
+
+- **Per project.** Stored on the project's earthwork review row (`contour_style`, a new JSONB
+  column, empty by default), so everyone who opens the project sees the same; saved the moment
+  it is picked, as Collaboration is. "Reset this section" stores nothing again.
+- **Defaults are exactly today's look.** A field not set draws as it always did. The heavier index
+  contour was drawn in the report and 3D but not on the sheet, so it has three values: "Report and
+  3D (usual)", "Everywhere", "Off"; its interval defaults to 5 ft, or 2.5 m (five 0.5 m contours)
+  on a metric sheet.
+- **Where it applies.** On the sheet (2D): everything. In 3D: the contours' colour, dashes and index
+  interval; WebGL draws every line one pixel wide, so the weight does not reach 3D; 3D has no
+  labels or spots. The report's Contours page and its key: colour, weight, dashes and index (its
+  legend says what is heavier); the report's plan never had labels or spots, and still has none.
+  The linked sheets' ghost lines keep their own look.
