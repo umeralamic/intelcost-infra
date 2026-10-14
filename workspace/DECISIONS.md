@@ -14781,3 +14781,24 @@ built its lines from the stored CY result. Now:
 
 Left as they are: the sheet's printed scale ("1" = 30'") is the drawing's own notation, and a
 feature's name is what the person typed ("… (lb/SY)").
+
+## D-466: Report plans hold up at the extremes
+
+**Status:** Accepted (2026-10-14, Umer, night brief E2).
+
+Nine made-up cases (no features, one, 25, an 80-character name, a 648 SF site, only cut, only fill,
+no topsoil strip, no undercut) were exported on A4 and Letter, portrait and landscape (36 PDFs),
+through the app's own report builder, with the Features and Contours plans drawn on a real sheet.
+Every one has a footer "Page N of M" that is right, no words overlapping, nothing within 12 mm of
+an edge and no blank page. Two faults were found and fixed in the plans:
+
+1. **A small site's plan had unreadable callouts.** The sheet is drawn 6,000 px wide at most, so a
+   648 SF site's crop was about 180 px and everything drawn over it was drawn that small, then
+   enlarged. The crop is now drawn up to the working width first, so the boundary, outlines and
+   callouts are drawn at full size (the drawing itself stays as sharp as the sheet allows).
+2. **25 features: leaders crossed** in the side columns (too many for the bands above and below).
+   The side columns now untangle as the bands do: two crossing leaders swap their callouts and the
+   column is placed again.
+
+The harness was a scratch script, run by hand, not kept (hard rule 8); one A4 portrait PDF per case
+is in the morning report folder of 2026-10-14 under `layout-tests\`.
