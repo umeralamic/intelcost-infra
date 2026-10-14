@@ -14681,3 +14681,55 @@ short of the boundary) that put corners at the TIN's level beyond the solid, so 
 surface and hung in the air; the segment below the south-east corner was the boundary's run past the
 surface's south-east tip. Both are now dashed at the base. On the Rebid copy about 11 % of the
 boundary has surface under it within one step; the rest is dashed. Display only: no quantity reads it.
+
+## D-460: Report wording: area not computed in Notes, the undercut's two rows, lifts, depths as entered
+
+**Status:** Accepted (2026-10-14, Umer, night brief B1 to B5). Wording only; no quantity changes.
+
+1. **Notes list a feature's area not computed.** Where more than 100 SF of a feature (after the
+   newer features took their overlaps) lies where a grade is missing, Notes say so: "T4 …: 112 SF of
+   its 1,600 SF lies where a grade is missing; its cut and fill cover 1,488 SF." The overlap notes
+   keep D-451's rule.
+2. **Basis of Quantities** says what the stabilization, preparation and undercut areas are: each
+   feature's own area after the overlaps that a newer feature with its own stabilization,
+   preparation or undercut takes, the whole of it (where a grade is missing too). Nothing about the
+   computation changes (the rule is takeoff-core's, `computeFeatureExtras`); for T4 the mix area is its
+   1,600 SF, the area left after overlaps.
+3. **Undercut:** "Depth 4.00 ft" and, on its own row, "Extends 5.00 ft past the outline".
+4. **Lifts:** "4 lifts of 12"" (one: "1 lift of 12""). The line names already say "in 12" lifts
+   (4 lifts)" and keep legacy's wording.
+5. **Depths as entered:** a depth in inches is shown to two decimals at most, trailing zeros
+   dropped (9.75", 12"); metric to the whole millimetre. The report only; the line names keep
+   legacy's one-decimal label (`depthLabel`) so the Calculate lines are not renamed.
+
+B1's area table (drawn, report, why) is in the morning report of 2026-10-14. Its one real fault, a
+feature's arcs read as straight chords by Calculate, is takeoff-core math and is left for a spec.
+
+## D-461: Report pictures fill their page; landscape one picture a page; 3D framed at 90 %
+
+**Status:** Accepted (2026-10-14, Umer, night brief B6, B7, B9, B10).
+
+1. **Each picture is drawn again at its slot's shape when the PDF is made** (`ReportPane` hands
+   `buildReportPdf` a redraw): the Features plan in the rest of page 1, every other picture in its
+   page or its half page. A plan takes in more of the sheet round the site to have the shape; the
+   Features plan's callout margins stay a quarter of the drawing each side; the 3D pictures render
+   at the shape. The pane keeps its own pictures.
+2. **Landscape: one picture a page,** never paired: title above, picture, key below, footer clear.
+   Portrait keeps the pairing rule of D-452 5.
+3. **A table is kept whole** on one page when it fits on one (the depth bands broke after their
+   first row); a longer table still breaks with its header repeated.
+4. **3D pictures framed at about 90 %:** from the kept view or the best one, same angle, the camera
+   panned and moved along its line of sight until the model (with its dashed boundary) fills about
+   90 % of the picture's width or height, whichever it reaches first. "Use this view in report"
+   keeps its angle and exaggeration; only the distance and centring change.
+   Margins stay 14 mm sides and top, 23 mm foot (nothing within 12 mm of an edge).
+
+## D-462: The cut ramp stops at a dark red
+
+**Status:** Accepted (2026-10-14, Umer, night brief B8). Display only.
+
+Cut runs from 65 % lightness at zero to 32 % at the deepest (a dark red), not 15 % (near black,
+which read as a hole). Fill is unchanged (65 % to 15 %). One function (`shade`) colours the 3D
+surface, the 3D key, the report's 2D picture and key, and now the app's 2D CUT & FILL layer too,
+which also reads the shared range (`cutFillRange`, D-454 2) instead of its own peak, so every key
+and picture matches.
