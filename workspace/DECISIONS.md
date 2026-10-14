@@ -14990,3 +14990,19 @@ With 500 spots a pan runs at 61.5 fps (was 32.6) and a zoom has no long task (wa
 copy as it is, a pan runs at 55.5 fps (32.0 this morning) and a zoom at 17.2 fps (12.2). A zoom's
 frame rate is then the sheet's own raster. A spot shows about 3 s after Enter with or without the
 500 (2.96 s against 3.29 s): the save and the refetch, not the drawing.
+
+## D-477: Checks after the run's blocks (X5, X7–X10); the report's index stays 5 ft by default
+
+**Status:** Accepted (2026-10-14, run brief X5, X7–X10). No quantity changes.
+
+- **X5:** the report's Features plan and its key maps draw each Site Feature in its own colour; all 13
+  on the copy match the app.
+- **X7:** after D-470 the report's Features plan, key maps and Contours page, and the sheet's own
+  layers, draw arcs as curves (read every 1°).
+- **X8:** in 3D the arcs of features and the boundary are smooth at normal zoom; 3D contours are
+  traced from the surface, whose curve follows an arc's samples.
+- **X9 (metric):** the Estimating headings read m²; the Contours and spots section reads the index
+  interval in the sheet's elevation unit (the copy's are feet). One fault fixed: with a metric
+  project the report's index contour had defaulted to 2.5 m, where it has always been 5 ft; unset,
+  it is 5 ft again, as before D-473.
+- **X10 (dark mode):** the settings section and the Estimating headings read clearly.

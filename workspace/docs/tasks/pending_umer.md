@@ -83,6 +83,8 @@ recommended. N7 is yours to re-check (fps at 5×). Answer the rest by number.
 | R6 | 4.3 | A contour, spot or boundary container shows no action bar, so its "takeoff tools" Resume is the run's right-click "Resume drawing" (and "Redraw boundary"). | Keep, or show the action bar's Resume for them too? |
 | R7 | 6.5 (D-474) | The Estimating tab's Sheet pivot keeps its own sheet grouping, without the feature headings. | Keep? |
 | R8 | X4 | Contour elevation entry: a proposal (no code), in the run report's Decisions. | Pick the parts you want. |
+| R10 | X7 | While a sheet's result is out of date the grading report's pictures never draw: they need the calculated model, built only for a current result, so the PDF button stays "Drawing…" (older behaviour, D-447). | Show "Calculate to draw the pictures" there, or export without them? (Recommended: say so on the button.) |
+| R11 | X9 | The index interval reads in the sheet's elevation unit (feet on the copy, metres on a metric-drawn sheet); 3D does the same; the report, unset, always uses 5 ft (as before). | Should the report follow the sheet's unit too (2.5 m on a metric-drawn sheet)? |
 | R9 | 2.8 | The .kcp input comparison was not re-run (skipped as you asked). Features with arcs now read 44,734 / 20,433 / 20,432 SF, so the comparison's own areas move. | Re-run it in a later run? |
 
 ## Found in the click sessions
