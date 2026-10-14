@@ -14938,3 +14938,24 @@ size; a spot's colour, symbol size, labels and their size.
   labels or spots. The report's Contours page and its key: colour, weight, dashes and index (its
   legend says what is heavier); the report's plan never had labels or spots, and still has none.
   The linked sheets' ghost lines keep their own look.
+
+## D-474: The Estimating tab's earthwork lines under their features
+
+**Status:** Accepted (2026-10-14, run brief Block 6). No quantity, unit, price or name changes.
+
+Inside their group, a Calculate's lines sit under headings, as the grading report reads them:
+
+- **Each Site Feature:** a heading with its name and plan area (its takeoff area), "Heavy Duty
+  Asphalt Pavement (20,433 SF)", or m² on a metric project. Its own lines go under it in the order
+  an estimator reads them: cut, fill, undercut excavation, replacement, spoil (or stockpile, re-use,
+  native recompaction, undercut stabilization), subgrade preparation, stabilization with its
+  sub-items.
+- **Stripping:** a heading with the area stripped, each strip's lines together.
+- **Remaining site:** a heading with its computed area, its cut and fill under it.
+- **Site balance:** the site-wide soil import or export, under no feature.
+
+The features run in the report's order (D-451 2: largest computed area first, read from the saved
+Calculates), Stripping first, Remaining site and Site balance last. The headings come from each
+line's own region and role (`earthwork_region_id`, `earthwork_role`); nothing is stored. The
+workbook export follows the same grouping (its group rows are the tab's). The Sheet pivot keeps
+its own sheet grouping.
