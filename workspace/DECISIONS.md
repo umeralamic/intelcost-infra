@@ -15071,3 +15071,14 @@ an earlier engine's, D-470), the PDF's pictures are drawn from a current result,
 the Earthwork toolbar; the figures shown are this result's, and the Excel workbook still downloads
 them. Once a Calculate is done the button is "PDF" again. A current result still shows "Drawing…"
 while its pictures draw, as before.
+
+## D-482: The report's index contour follows the sheet's elevation unit, as 3D does
+
+**Status:** Accepted (2026-10-15, run brief T6, R11). No quantity changes. Refines D-477.
+
+Unset, the report's index contour now falls where 3D's does: every 5 ft on a sheet whose
+elevations are in feet, every 2.5 m (five 0.5 m contours) on a sheet whose elevations are in
+metres. D-477 had pinned the report to 5 ft whatever the units, because the default had followed
+the project's units; it now follows the sheet's own elevation unit, the one 3D and the sheet's own
+layer read. The legend says "2.5 m heavier" on such a sheet. On a sheet in feet nothing changes
+(the copy's Contours page still reads "5 ft heavier"). A set interval is used as set, as before.
