@@ -15041,3 +15041,21 @@ renders 72 → 2, long tasks 3,020 ms (worst 194) → 144 ms (one). Frame rate 4
 fps in two runs (the display's own rate varied between runs, 60 or 120 Hz). Zoom unchanged
 (20.5 → 22.0 and 24.9 fps; T3). Realtime presence updates arrive during a pan too, but they bail
 out without rendering.
+
+## D-480: The Sheets and Takeoff panels open in their final layout, grey until loaded
+
+**Status:** Accepted (2026-10-15, run brief T4). No quantity changes.
+
+On opening a sheet the Sheets panel listed its items from the sheet list's own quantities until the
+item details came, then swapped each line for the full row: "FG Spots 0 EA" and "Proposed Grade
+14,167.87 LF" for a moment, then "27 spots" and "42 contours", in a different row layout. The
+Takeoff panel showed "Earthwork Markups 0" meanwhile. Now a row whose details have not come is
+drawn in the full row's own layout (its height, rail, name and colour) with a grey bar where its
+quantity will be, never a number; the Takeoff panel shows grey rows until the details come, never
+a count of 0 or "Nothing measured yet". The details are the ones the canvas loads (one call for the
+sheet, one for the project, both already cached by the page), so opening the panel again is from
+cache: back from Estimating to the sheet, the full view is up in 0.62–0.66 s, the page's own mount.
+
+Open → full view on the bench: 5.16 s before, 3.51 s after (the same calls; the difference is the
+bench's network, not this change). First frame: wrong numbers before; placeholders after, from
+1.35 s. Screens `T4-before-first-frame.png`, `T4-after-first-frame.png`.
