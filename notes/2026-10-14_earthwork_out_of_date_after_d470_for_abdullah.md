@@ -2,8 +2,9 @@
 
 _For Abdullah, from Umer. 2026-10-14._
 
-**Nothing for you to run.** No migration, no script, no job. This note is so the "Out of date"
-banners after the release don't come as a surprise.
+**Nothing for you to run for this change.** No migration, no script, no job. (The same day's one
+migration, `e6b2d8a4c1f9` for D-473, is separate.) This note is so the "Out of date" banners after
+the release don't come as a surprise.
 
 ## What changed
 
