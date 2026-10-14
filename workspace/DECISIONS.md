@@ -14639,3 +14639,45 @@ the text colour faded, so it reads on a button filled when shown, and the fills 
 (`--earthwork-cut-h`, `--earthwork-fill-h`). Used
 wherever the old ones were: the toolbar's three buttons, CALCULATE's CUT & FILL and the volumes
 panel's header.
+
+## D-457: Cut and fill counted only where both grades exist inside the boundary
+
+**Status:** Accepted (2026-10-14, Umer, night brief).
+
+The boundary is user-drawn. Cut and fill is counted only where both existing and proposed grades
+exist inside it. Areas without both are not extrapolated, are left out of the quantities, and are
+listed in Notes (area computed % and what's missing).
+
+The report's Basis of Quantities and Notes say exactly this.
+
+## D-458: The volumes panel leads with the surplus after shrink
+
+**Status:** Accepted (2026-10-14, Umer, night brief A2).
+
+The Earthwork Volumes panel's headline is the balance the report and the lines strike
+(`balanceInputOf` → `balanceSteps`, D-445): "Surplus after shrink 1,176 BCY", "Needs N BCY from
+elsewhere" or "Balanced after shrink", never with a minus sign. Cut bank minus fill compacted "as
+measured" stays as a smaller, labelled second line ("As measured, before shrink: 2,132 CY more cut
+than fill"). With no assumptions saved (no shrink asked yet) the panel shows the as-measured line
+alone, as before. Display only.
+
+## D-459: The boundary in 3D laid on the surface, dashed at the base where there is none
+
+**Status:** Accepted (2026-10-14, Umer, night brief A3 as changed at GO).
+
+The boundary is user-drawn and the grades need not reach it (D-457). In every 3D view and 3D
+report picture the whole boundary is shown, never clipped and never floating:
+
+1. Where a surface is drawn under it, the line lies on that surface: each edge is followed in short
+   steps (1/800 of the site's width) on the shown mesh's own levels, not joined corner to corner in
+   a straight chord.
+2. Where no surface lies under it, it is dashed at the solid base's bottom.
+3. The same for the Site Features outlined on the proposed grade.
+
+**What the stray segments were.** The old outline lifted only the boundary's corners, each to a
+level read from the prisms or, outside them, from the grade's own TIN, and drew straight lines
+between them. Past the computed area (the south strip and the east edge, where one grade stops
+short of the boundary) that put corners at the TIN's level beyond the solid, so the line ran off the
+surface and hung in the air; the segment below the south-east corner was the boundary's run past the
+surface's south-east tip. Both are now dashed at the base. On the Rebid copy about 11 % of the
+boundary has surface under it within one step; the rest is dashed. Display only: no quantity reads it.
