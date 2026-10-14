@@ -14823,3 +14823,27 @@ streaks (visible zoomed in, and in the report's 3D pictures). An edge now gets a
 the point 0.02 ft outside it, away from its own triangle, has no surface. The outer walls are
 unchanged; the light vertical strip on the south wall of the Rebid copy is a real step in the
 computed area's edge, not a stray wall.
+
+## D-469: Arcs on earthwork runs (contour, boundary, strip outline)
+
+**Status:** Accepted (2026-10-14, Umer, run brief 1.1–1.3).
+
+The Contour and Boundary tools draw arcs as every takeoff tool does: A mid-run arms an arc, the next
+click is a point it passes through, the one after its end (F7-S9), with the same preview. Until now
+the canvas handed the arcs over and the earthwork save dropped them, so a contour came back as
+straight lines. A contour or boundary now stores its arcs in `shape_meta.arcs` beside its corners
+(the same `{i, cx, cy, rx, ry, a0, sweep}` an Area or Linear stores), and is drawn along them.
+
+Edits keep an arc an arc (`lib/takeoff/earthwork/runArcs.ts`): a dragged corner fits its arcs again
+through their new ends and the point they passed through; a moved run moves its arcs; "Add point
+here" on an arc splits it in two along the same circle; a deleted corner straightens the arcs that
+met at it; a broken contour gives each half its own arcs. The crossing guard checks the curves.
+Handles stay on the corners.
+
+A drawn Strip Area keeps no `shape_meta` and its outline is never edited, so an arc drawn for one is
+stored as its curve, sampled as the takeoff samples it. "Add more points" on an Area or Linear now
+keeps an arc drawn while adding. On the Earthwork tab, A with nothing drawn no longer swaps the
+armed earthwork tool for Area. Match lines are picked points (no arcs to keep).
+
+This changes no quantity by itself: no stored contour or boundary had arcs. Calculate reading the
+arcs is D-470.
