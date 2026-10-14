@@ -15116,3 +15116,16 @@ Checked each earthwork tool's canvas hint and toolbar tooltip against the keys t
   Enter or double-click, and Esc.
 - **Strip Area (drawn):** the canvas hint and the starting toast name the same keys.
 - **Match line** and **Linked EC** pick points or sheets; their instructions stand as they are.
+
+## D-485: A new Site Feature's colour is the palette's most distinct unused one
+
+**Status:** Accepted (2026-10-15, day task T0a). No quantity changes. Refines D-472.
+
+The founder saw the new-feature picker preselect "the same colour every time". D-472 did offer the
+next unused palette colour, but in the palette's order: deep red, burnt orange, dark amber, which
+read as one warm colour beside each other and beside the copy's features already orange (T1–T7
+#ea580c), rose and brown. Now the dialog offers, of the palette colours no Site Feature in the
+project uses, the one farthest (CIE Lab) from its nearest used colour, the palette's order
+breaking a tie. On the copy, three features drawn one after another after a hard reload: olive
+#4d7c0f, slate #1e293b, royal blue #1d4ed8 (before: #b91c1c, #c2410c, #a16207). The user can
+still pick any colour; features already drawn keep theirs.
