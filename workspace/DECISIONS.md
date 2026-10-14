@@ -15006,3 +15006,20 @@ frame rate is then the sheet's own raster. A spot shows about 3 s after Enter wi
   project the report's index contour had defaulted to 2.5 m, where it has always been 5 ft; unset,
   it is 5 ft again, as before D-473.
 - **X10 (dark mode):** the settings section and the Estimating headings read clearly.
+
+## D-478: A new contour or spot shows at Enter; a failed save keeps it with Retry
+
+**Status:** Accepted (2026-10-15, run brief T1, R4). No quantity changes.
+
+A new contour or spot appeared only when its save and the refetch came back, 2.2 to 3.5 s after
+Enter. Now Enter draws it at once as pending (dashed, its elevation label on it), and the saved run
+takes its place when it comes back: the shape is sent under the uuid the page gave it (the api
+keeps a client uuid as the shape's own), so the page knows which run confirms which draft. A save
+that fails leaves the draft on the sheet in the error colour, labelled "not saved · Retry", with a
+toast that also offers Retry; Retry sends the same uuid, so a save that had in fact landed is not
+made twice. Nothing drawn is lost. The next contour or spot can be drawn while one is saving; the
+writes still queue per container.
+
+Enter → visible: spot 2.34–2.72 s before, 106–134 ms after; contour 2.20–3.49 s before, 95–135 ms
+after. Enter → saved run drawn is unchanged (2.1–3.1 s). Toast actions (Retry, Verify) now sit on
+one line beside the text; they had been squeezed to a letter column.
