@@ -15101,3 +15101,18 @@ layer read. The legend says "2.5 m heavier" on such a sheet. On a sheet in feet 
 
 Checked on C-200: a proposed contour drawn through the printed "701" opened at 701; ↑ 702, ↓↓
 700; no warning at 701; 760 warned. Nothing was saved (dismissed twice).
+
+## D-484: Every earthwork tool's hint and tooltip names its keys
+
+**Status:** Accepted (2026-10-15, run brief E2). No quantity changes. Extends D-475.
+
+Checked each earthwork tool's canvas hint and toolbar tooltip against the keys that work in it:
+- **Contour and Boundary:** the hints now carry Ctrl+Y and Esc as their tooltips did; Contour's
+  both say ↑↓ steps the elevation (D-483).
+- **Spot Elev.:** hint and tooltip name S snap and D snap PDF, and Esc.
+- **Trace:** the tooltip names Shift+click, Alt+click and Esc; the hint adds "Esc puts it down".
+- **Site Features:** drawn with Area's mechanics, they showed Area's "Click the corners, double
+  click to close"; the canvas now shows a Site Feature hint with A, Backspace, Ctrl+Y, S, O, D,
+  Enter or double-click, and Esc.
+- **Strip Area (drawn):** the canvas hint and the starting toast name the same keys.
+- **Match line** and **Linked EC** pick points or sheets; their instructions stand as they are.
