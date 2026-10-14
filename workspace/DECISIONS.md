@@ -14973,3 +14973,20 @@ its own sheet grouping.
    its own props change, P-24) could draw a newly made item's row before the item's details had
    arrived, as a bare name with no Resume or selection, and keep it so until something else redrew
    the panel. It now redraws when the details change.
+
+## D-476: Many spot elevations stay smooth
+
+**Status:** Accepted (2026-10-14, run brief X3). Nothing looks different; no quantity changes.
+
+With 500 test spots on the copy, a pan dropped to about 33 fps with 15 s of long tasks (one of
+815 ms): every pan step re-rendered the page, and the page handed the earthwork layer a newly
+filtered list of runs each time, so the layer drew every spot, label and line again and placed
+every label again. Now the layer's runs are one list until they change; each spot is a memoized
+mark (as the contour lines are, D-472); and which labels show, and the runs as drawn, are worked out
+only when the runs, the selection, a drag, the look or the zoom change. The point handles reach the
+live callbacks, so nothing kept acts on old state.
+
+With 500 spots a pan runs at 61.5 fps (was 32.6) and a zoom has no long task (was 3.8 s); on the
+copy as it is, a pan runs at 55.5 fps (32.0 this morning) and a zoom at 17.2 fps (12.2). A zoom's
+frame rate is then the sheet's own raster. A spot shows about 3 s after Enter with or without the
+500 (2.96 s against 3.29 s): the save and the refetch, not the drawing.
