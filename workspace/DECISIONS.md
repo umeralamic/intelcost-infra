@@ -15082,3 +15082,22 @@ metres. D-477 had pinned the report to 5 ft whatever the units, because the defa
 the project's units; it now follows the sheet's own elevation unit, the one 3D and the sheet's own
 layer read. The legend says "2.5 m heavier" on such a sheet. On a sheet in feet nothing changes
 (the copy's Contours page still reads "5 ft heavier"). A set interval is used as set, as before.
+
+## D-483: Faster contour elevation entry: ↑/↓ step, the printed label pre-filled, a warning out of order
+
+**Status:** Accepted (2026-10-15, run brief T7, R8 parts 1–3). No quantity changes.
+
+1. **↑ and ↓** in the elevation box step the value by the sheet's contour interval (the toolbar's
+   interval); Enter commits as before. Contours only; a spot's box is unchanged.
+2. **The printed label.** On a vector sheet the page reads the sheet's printed labels once, when
+   the Contour tool is first armed on it, through Trace's own cached read (D-143). A new contour's
+   box is pre-filled with the printed contour label nearest the line just drawn, within 36 pt of
+   it: a whole number or one decimal ("701", "702.5"), never a spot's two decimals. With no such
+   label near, or on a scan, the pre-fill is the last value ± the interval, as before.
+3. **Out of order.** As a value is typed, the box runs the elevation check (D-292) on the line
+   at that value against its surface; a value that breaks the order of its neighbours, or is far
+   from them, shows the check's own words in amber ("Entered 760 — neighbors are 701 and 702.75.
+   Enter still commits it."). It never refuses: Enter commits.
+
+Checked on C-200: a proposed contour drawn through the printed "701" opened at 701; ↑ 702, ↓↓
+700; no warning at 701; 760 warned. Nothing was saved (dismissed twice).
