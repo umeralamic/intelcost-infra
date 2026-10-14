@@ -14759,3 +14759,25 @@ fixed in the workbook:
    any), so the Total is the surplus after shrink.
 2. **Truckloads** were not in the workbook: the Summary now has the truck and each haul's loads,
    counted as the PDF counts them (loose quantity over the report's truck, rounded up).
+
+## D-465: A metric project's report and workbook are metric throughout
+
+**Status:** Accepted (2026-10-14, Umer, night brief E3).
+
+The A4 portrait report of the Rebid copy exported with the project set to metric still showed the
+keys and depth bands in feet, and every line-based figure (undercut, replacement fill, spoil,
+stabilization, preparation, site summary) in BCY, CCY, LCY, CY, SF and TON, because the report
+built its lines from the stored CY result. Now:
+
+1. **The result is read in m³ when the project is metric** (the volumes panel's D-375 conversion,
+   moved to `report/units.ts` and shared): the report, its PDF and the workbook build their lines
+   from it, so they read BCM, CCM, LCM, m², kg/m² rates and tonnes (TONNE, calculated tonnage only).
+   The stored result is untouched.
+2. **Keys and depth bands in metres** in a metric project, whatever the sheet's own unit (the band
+   edges are the metric set, 0.15 m and up).
+3. **Millimetres under a metre**: depths, lifts and the undercut (which turns to metres at 1 m, no
+   longer 0.6 m) read in mm below 1 m, metres from it. Keys and band edges stay in metres, as scales.
+4. **The contours legend** names no foot in metric ("index contours heavier").
+
+Left as they are: the sheet's printed scale ("1" = 30'") is the drawing's own notation, and a
+feature's name is what the person typed ("… (lb/SY)").
