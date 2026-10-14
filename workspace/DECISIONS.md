@@ -14733,3 +14733,13 @@ which read as a hole). Fill is unchanged (65 % to 15 %). One function (`shade`) 
 surface, the 3D key, the report's 2D picture and key, and now the app's 2D CUT & FILL layer too,
 which also reads the shared range (`cutFillRange`, D-454 2) instead of its own peak, so every key
 and picture matches.
+
+## D-463: A new person's first report paper follows the workspace's country
+
+**Status:** Accepted (2026-10-14, Umer, night brief C3).
+
+Until a person has picked a paper (D-448 2 keeps it), the PDF dialog offers Letter portrait in a
+workspace whose country is the United States and A4 portrait everywhere else. The country is the
+workspace's billing country (set from its owner's sign-up country), now sent with the workspace;
+where none is stored, the browser's locale region decides (en-US: Letter). A saved choice is never
+changed.
