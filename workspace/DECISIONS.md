@@ -15351,3 +15351,14 @@ row was written. The full app in guest mode is F28, specced in `guest_full_view_
 Checked on the 3D test copy's own link: pricing off gave 0 cost rows and two columns, on gave 1 row
 and four. The link was then put back exactly as found (enabled, no password, the same token, the
 other settings unchanged); it was not revoked, being the project's one link.
+
+**D-492, two fixes the same night.**
+1. The takeoff screen does not remount between sheets, so a failed shape showed on the next sheet,
+   and its Retry would have saved it there. Pending shapes and strip drafts now carry their sheet and
+   show, and retry, only on it. The live quantity ignores failed shapes.
+2. A save the server refused (4xx: a lock, a cap, a bad request) is no longer kept for Retry, which
+   would only be refused again: it drops as before, with the reason. Only no answer or a 5xx keeps a
+   drawing as not saved.
+
+Checked: a Linear save aborted on C-200 showed its Retry on C-200 and not on V-100, and saved once
+on C-200. A 403 dropped the shape and showed "Refused for the test." Test items removed.
