@@ -16107,3 +16107,38 @@ Proved on a duplicate of the 3D test copy (deleted after).
   available", with their session kept both times.
 
 Gates, quantity table and md5 passed.
+
+## D-524: Share sections as the measurement cards; the member lookup answers alike; main tabs Medium bold (Umer, 2026-10-15)
+
+- **Share sections look like New Measurement's.** "This Measurement" is not a component: the dialog
+  builds each section from two class strings. They now live in one module,
+  `components/ui/section-styles` (`SECTION_BOX`, `SECTION_HEADER`), which `MeasurementDialog`
+  imports instead of its own copy. A small `components/ui/section-card` (`SectionCard`) draws the box
+  with its band from those two, and both Share sections use it: "Share outside your company · view
+  only" and "Your team · can edit", sentence case, 14 px semibold on the grey band with rounded top
+  corners, the content inside the bordered box. That supersedes D-523's panel header for Share; the
+  tool panels keep `panel-header`. It still fits unscrolled at 1366 × 768 (494 of 494 px), with no
+  sideways scroll at 390 px.
+- **The tool panels look as before D-523.** The Sheets, Takeoff, Assemblies and Bookmarks headers
+  were shot with the files from before the shared header (app `1b30fd0`) and with the current ones,
+  on the same project and at the same zoom. The four pairs are byte-identical PNGs. Box, padding,
+  background, border, gap, alignment and title font all measure the same. The only difference is
+  Bookmarks' band element (`div` before, `header` now), which draws nothing different.
+- **One refusal for the member lookup.** `GET /api/share-link/{token}/as-member` sends the same 404
+  bytes (`guest_session.NOT_AS_MEMBER`, `{"detail":"Open this link as a guest.","code":
+  "link_unavailable"}`) to a non-member, to a share link's guest token, and for a link that doesn't
+  exist or was revoked. The guard sends it to a guest token; the route sends it to everyone else.
+  Before this, a guest token got the guard's 403 `share_out_of_scope`, and the route's 404 was built
+  by a different serialiser.
+  - **The check:** `scripts/check_share_as_member.py` is a bench check like the quantity table, not
+    a test suite, because hard rule 8 forbids those. It reads one existing link, writes nothing, and
+    compares status and body for all three refusals; it prints one line ending passed or FAILED.
+    Run it as `docker compose exec -T api sh -c "PYTHONPATH=/srv python scripts/check_share_as_member.py"`
+    (from Git Bash with `MSYS_NO_PATHCONV=1`). A revoked link was also checked by hand on a
+    duplicate, and its answer was the same as a missing one's.
+- **Takeoff settings:** "Main tabs text size" now defaults to Medium with Bold on, both in
+  `DEFAULT_SETTINGS` and as the fallback for a stored value that isn't valid. Anyone who already
+  saved their own choice keeps it.
+- **Parked** in `pending_umer.md` as X1: the reload in the split second after a guest session ends.
+
+Gates, quantity table and md5 passed.

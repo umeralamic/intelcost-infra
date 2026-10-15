@@ -306,4 +306,5 @@ small "1 in use" beside them; the page text runs them together.
 | C18 | MANAGER.md:32; DECISIONS.md:8148 (F18, D-232) | The C-200 acceptance, your own test by hand. | Later: parked with C-200, D-232 (2026-10-11) |
 | C26 | MANAGER.md:35 (F19) | The site-stitching click check. It needs a C-200 copy. | Later: parked with C-200 (2026-10-11) |
 | V6 | guest-REPORT_2026-10-15 | Who-is-where markers in the Sheets panel (members and guests). | Later (2026-10-15) |
+| X1 | DECISIONS.md (D-523 C, known edge) | A guest whose session ends is sent back to the link's page; a reload in the split second between the refusal and that page change loads the person's own session on the project URL, which reads "No such project". | Later (2026-10-15) |
 | S2 | drafts/zoom_hybrid_images.DRAFT.md:121–129 | Sharper deep zoom from pre-made images: 4 questions. | Later (2026-10-11) |
