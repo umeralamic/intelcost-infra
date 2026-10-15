@@ -15522,3 +15522,26 @@ Checked on the 3D test copy, with a test folder, a subfolder and a blank test pa
 
 The blank page put one file in the bench bucket; it was cleared when the page was deleted (storage
 clear: 0 failed).
+
+## D-504: Trace can keep to one line style, picked off the sheet (legacy's style filter)
+
+Legacy's settings keep a trace style filter per surface: a colour and a weight, captured by
+clicking a contour rather than typed, meaning "only offer lines that look like this one". It never
+reached its Trace. It is ported and used here:
+- **The filter, per surface.** Each traced line now carries its pen: `color` "#rrggbb" and
+  `widthPt`. A filter is `{color, widthPt}` on Settings › Trace's EG or FG profile, kept per device
+  as the rest of the profile. The trace cache version is bumped (`trace-2`) so cached lines carry
+  their pen.
+- **Ctrl+click a line while Trace is armed** keeps Trace to its pen: same colour, and a weight
+  within a quarter (0.15 pt for hairlines). Hover, click and "Adopt labelled" then offer only those
+  lines, and never fall back to a line in another pen. Ctrl+click off any line, or the "One line
+  style · 0.72 pt ✕" chip on the Trace line, offers every line again.
+
+Checked on C-200 of the 3D test copy, Existing:
+- a grid sweep found 260 lines offered with any style, and 146 with one style, all from the first
+  set;
+- a line in another pen was no longer highlighted;
+- clearing the filter offered all lines again.
+
+Nothing was adopted, so no test traces were made. The filter was left cleared, the quantity table
+passed and md5 is unchanged.
