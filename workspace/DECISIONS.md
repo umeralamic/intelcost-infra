@@ -15150,3 +15150,14 @@ takes its place. **Contour** was already right (D-478's draft draws its arcs).
 Checked: at the finish the outline holds 13–65 points (was 4) for the six feature cases and Area;
 the boundary shows at 0 ms (was nothing until about 3 s); every arc is saved on the edge it was
 drawn on (first 0, middle 1, last 2, closing 3, contour 0/2/4) and comes back after a reload.
+
+## D-487: On the Earthwork tab the action group sits right after the tools
+
+**Status:** Accepted (2026-10-15, founder's question during T0b). No quantity changes.
+
+On the Earthwork tab the amber action group (Properties, Start, Resume, Copy, Delete) stood at the
+row's far right, not beside the tools as on the Takeoff tab: the earthwork toolbar stretches across
+the row so it can measure which tools fit before folding the rest into More, and the group was
+placed after it. The group is now inside the earthwork toolbar, after its last tool (and its More),
+and counts in the fold's measure, so tools fold into More to make room for it rather than it being
+pushed off. Checked at 1,420 px and 1,036 px: the group starts 4 px after the last tool.
