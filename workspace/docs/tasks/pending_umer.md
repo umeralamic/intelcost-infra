@@ -102,6 +102,19 @@ Answered on 2026-10-15 and done:
 
 All answered 2026-10-15 (D-513): V1–V5 and V7 ok, V8 noted, V6 parked.
 
+## Day-2 run 2026-10-15 (morning-report-2026-10-15day2-REPORT_2026-10-15.md)
+
+| # | Item | Where it stands | Your call |
+|---|---|---|---|
+| W1 | Your share link, again | It had changed since the guest fixes (pricing on, saving a copy on). I snapshotted its row, tested with my own password and switches, and restored it exactly (same URL, password, expiry, switches). A guest tab you had open on it ended when its password changed. | Note only. |
+| W2 | CH7 in a saved copy | The copy keeps the unit wastage and each line's own wastage, with every rate cleared. The copy's one line had no rates in the original, so the clearing was shown by the code path, not by data. | Note only. |
+| W3 | CH8 numbering and Trash | A copy in Trash keeps its name, so the next is "(shared copy 2)" while the first is in Trash (the same rule as Duplicate project's "(copy N)"). | Accept, or reuse a name once its copy is in Trash. |
+| W4 | H1 what a guest reads | The project's saved snapshot: crafts with their breakdown, crews, burden, the location factors, and the project info with its ZIP's county names. No source tables, lookups or crew suggestions. | Accept. |
+| W5 | H2 names inside posts | Members' full names, short names and emails inside a post's text are scrubbed by the link's rule; a first name alone ("Sara") is not. Authors follow the rule fully. | Accept. |
+| W6 | H3 which workspace | The copy goes into the person's active workspace; a person with several gets no picker. | Accept, or add a workspace picker. |
+| W7 | H4 details | Removed invites leave the list; a Resend counts toward the 100 a day; an Essentials workspace can still turn the link on (only invites are Professional's). | Accept. |
+| W8 | Throwaway accounts | fx.h3.* and fx.h4.* remain as accounts with no workspace (`purge-owner` removes workspaces only). | Note only. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
