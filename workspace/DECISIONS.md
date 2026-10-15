@@ -15838,3 +15838,26 @@ Rates set (34 crafts, 104 crews, labor +59 %), made only the three reads (all 20
 showed the tip; 13 other wage reads and writes with a guest token, 403. Pricing off, no Wage
 Calculator in the tab and all 16 answered 403. Gates, quantity table, md5, earthwork smoke and the
 guest write proof passed.
+
+## D-517: A share link's guest reads the Forum as a preview (day-2 H2)
+
+Replaces U7's "no Forum for a guest". Inside a valid share link only (the Forum stays closed to
+anyone without a member session or a guest token: 401), a guest has the Forum tab: every board,
+post and reply readable, and one banner at the top, "Sign up to join the discussion.", with a Sign
+up button. New Post, votes, Report and "Post reply" are greyed with the guest tip; there is no
+editor, no edit, no delete and no attachment upload.
+
+- **The server:** the guest guard lets a guest token read `GET /api/community/me`, `/posts` and
+  `/posts/{uuid}`, nothing else (staff routes 403); every Forum write is refused with every other
+  guest write (403). `/me` answers `can_post: false` for the stand-in Guest.
+- **People, by the link's switches (D-512):** a Forum author is anyone on the platform, so an
+  `author` object is a person by its key: named with names on, "User 1", "User 2" with names off
+  (numbered by the author's id), and no name or id with live work off (the app then shows no author
+  chip); never an avatar, never the real id. A member's email or name inside a post's text is
+  scrubbed as everywhere else.
+
+Proved with a test post (the estimator) and reply (Sara W.), removed after: names on, "Bench
+Estimator", "Sara Williams", salted ids, no avatar or email (the email typed in the body was taken
+out); names off, "User 1", "User 2"; live work off, no author at all. New Post, the two votes, Report
+reply and Post reply greyed, the tip on them; 8 Forum writes and the staff reports read with a guest
+token, 403. Gates, quantity table, md5, earthwork smoke and the guest write proof passed.
