@@ -15818,3 +15818,23 @@ moment got "(shared copy)" and "(shared copy 2)", both with LF 10 % and no rates
 estimator saving again was answered "You already saved a copy."; after trashing it and saving
 again, Saved by read 1 person; with Sara's, "Saved by 2 people". Test copies purged and their
 records removed. Gates, quantity table, md5, earthwork smoke and the guest write proof passed.
+
+## D-516: A share link's guest reads the project's Wage Calculator, with pricing shown (day-2 H1)
+
+Replaces U7's "no Wage Calculator for a guest". With "Show pricing" on, a guest's Estimating tab
+has the Wage Calculator pane in its read-only view (the Essentials view, D-287 1): the project's
+info, its saved basis, location adjustment, craft rates, crew rates and labor burden, as the member
+saved them. Every edit is greyed with the guest tip: "Edit labor rates", "Recalculate", and each
+project-info row's Edit. With pricing off a guest has no Wage Calculator.
+
+**No reference data reaches a guest, on the server:** the guest guard lets through, under
+`…/wage-calculator`, only `context`, `wage-set/current` and `wage-set/current/detail` (the project's
+own saved snapshot), and only with pricing shown; crew suggestions, previews and wage determination
+uploads answer 403 `share_reference_data`; the workspace's wage routes (ZIP and county lookups, the
+craft list, the burden profile, crew settings, recalculate) were never in a guest's reads (403).
+
+Proved on the 3D test copy: pricing on, the guest's calculator showed the saved Location-Adjusted
+Rates set (34 crafts, 104 crews, labor +59 %), made only the three reads (all 200), and every edit
+showed the tip; 13 other wage reads and writes with a guest token, 403. Pricing off, no Wage
+Calculator in the tab and all 16 answered 403. Gates, quantity table, md5, earthwork smoke and the
+guest write proof passed.
