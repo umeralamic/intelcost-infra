@@ -263,6 +263,9 @@ small "1 in use" beside them; the page text runs them together.
   `/presence` are public and unthrottled. A per-IP limit at Caddy or the CDN, generous enough for one
   viewer polling every second (presence) and strict on repeated wrong passwords (the 401s), is not
   built.
+- **Day-2 run 2026-10-15:** one migration, `a7e3c5b9d2f4` (table `project_share_invite`, D-519); the
+  worker image sends the new `share_invite` email (rebuild with the api); the wrong-password limit and the
+  share endpoints read the client address, so run uvicorn with `--proxy-headers` behind the proxy (V4).
 - **Optional:** a read-only database role for the wage reference data (DECISIONS.md:10864).
 - **Legacy data migration and cutover, P-16/F17** (FEATURES.md:86): not yet specced.
 - **The 🔧 review table** (flows.md:345–359): SES, production CORS, lifecycle, worker sizing, and the Stripe setup.

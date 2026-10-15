@@ -15882,3 +15882,40 @@ log in as Sara W.: "Saved to Bench Construction Test…"; saving off: "The owner
 saving a copy of this project." with View the shared project; link expired: "This share link has
 expired." Both copies, the throwaway's workspace and the save records removed after. Gates,
 quantity table, md5, earthwork smoke and the guest write proof passed.
+
+## D-519: Email invites for a share link, Professional only (day-2 H4)
+
+In Share, under the link, an owner or admin can invite people by email. Optional: the link works
+without them.
+- **One email per person,** sent from IntelCost through the worker in the house frame (the mail
+  module's one template more, `share_invite`): "<inviter> shared <project> with you", "<inviter> of
+  <workspace> invited you to view <project> on IntelCost.", one "View project" button, readable at
+  phone width. **Never the password:** a password link's email says "The sender will share the
+  password with you."
+- **Each invite has its own link** (`/s/<invite token>`, table `project_share_invite`, migration
+  `a7e3c5b9d2f4`): it opens the project exactly as the link does, its password included, and marks
+  the invite Opened. A guest session opened with it carries the invite, so **Remove access** stops
+  that person's link and ends their session (the guard re-reads it each request, the socket every
+  10 s), with the main link and everyone else's invites untouched. Revoking the link takes its
+  invites with it.
+- **In Share,** per person: the address, Sent or Opened, Resend, Remove access. An address already
+  invited is sent its invite again.
+- **Abuse limits, on the server:** 20 addresses a send (422, "Up to 20 people at a time. Send the
+  rest separately."), 100 sends a day per workspace counting resends (429, "This workspace can send
+  100 invites a day; N left today. Try again tomorrow."), counted in Redis by UTC day; a refused
+  send counts nothing.
+- **Professional only** (a running trial counts, as for saving a copy): on lower plans the field and
+  its buttons are greyed with "Sign up for Professional to use this.", and the api answers 403
+  `plan_required` with the same words.
+- **Mail guard on:** on the bench every invite was captured in MailHog; nothing left the bench.
+
+Proved on the 3D test copy's link (password on): three invites sent from Share, three emails
+captured (the password nowhere in them; the email rendered at 900 and 390 px, no sideways scroll);
+invitee A's link opened the project and A read Opened; B resent (two emails); C's access removed: C's
+link reads "This share link is no longer available.", A's open tab still worked after a reload, the
+main link opened; an invite's guest session read 200, then 401 once its access was removed; 21
+addresses refused in Share and the api; with the day's count at 99, 2 more refused and nothing
+counted; a throwaway Essentials workspace saw the field greyed with the tip and its api send 403.
+Invites, the day's count, the captured emails and the throwaway's workspace removed after. Gates
+(ruff, format, mypy; lint, typecheck, build), migration up, down and up, quantity table, md5,
+earthwork smoke and the guest write proof passed.
