@@ -15295,3 +15295,23 @@ afterwards), dev bench, 1,600 × 900:
   thousand rows and shapes (React dev mode, layout of the table). The fix is row virtualisation in
   Estimating and the Takeoff panel, which is a block of its own. Zoom on V-100 with 472 shapes is
   18–23 fps (the T1 patch addresses it); pan is 57–59 fps.
+
+## D-495: Check grades: a read-only list of this sheet's grading trouble
+
+**Status:** Accepted (2026-10-15, night run X5, the founder's brief). No quantity changes.
+
+A "Check grades" button after Report on the Earthwork tab opens a panel beside the drawing. It
+lists four things on the open sheet's own contours and spots:
+- contours that break the order of their neighbours, D-292's out-of-sequence and far-from-neighbours
+  flags, worded the same way;
+- contours with no elevation;
+- spots further from their neighbours than the project's flag distance, which the panel shows;
+- contours that cross another of their surface.
+
+Each row frames its place on the sheet (the Volumes panel's jump). It writes nothing, is open to
+anyone who can see the sheet, and honours the elevation check's dismissals as the blue highlight
+does. A linked survey sheet's contours are checked on their own sheet.
+
+Checked on the 3D test copy: C-200 and V-100 list nothing. On A101, five test contours gave 3 out of
+order and 2 crossing, and a row zoomed from 0.18 to 2.48 onto its contour. The test shapes were
+removed (77 items, 190 shapes, md5 as before).
