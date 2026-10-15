@@ -15545,3 +15545,47 @@ Checked on C-200 of the 3D test copy, Existing:
 
 Nothing was adopted, so no test traces were made. The filter was left cleared, the quantity table
 passed and md5 is unchanged.
+
+## D-505: A share link opens the full app as a Guest, view only (F28 Blocks C and D)
+
+The share page `/s/:token` now opens the real takeoff screen, as a member sees it:
+- **The session.** The page unlocks the link (with the password and pass flow, unchanged), takes a
+  guest token (D-498) and keeps it in this tab's sessionStorage. A signed-in member's own session is
+  never read or touched; every other tab stays theirs. The tab then opens the project.
+- **The look.** The tab has no socket, leaves no visit and starts no work session. The profile is
+  "Guest" with Sign up and Log in, and "Sign up" takes the trial button's place. Share, Settings,
+  the timer, credits and the Forum tab are not shown.
+- **Write tools.** Every write tool stays visible and greyed out, because a guest is a Viewer. One
+  helper (`share/view-only.ts`) gives each greyed control the tooltip "View only. Sign up to take off
+  your own plans.", and gives a control back its own title once it is enabled. Menus give the same
+  reason.
+- **Earthwork in full.** Exist. Grade, Prop. Grade and Cut & Fill work in 2D and 3D, with contours
+  and spots drawn. A guest cannot Calculate, so a "Volumes" button opens the stored volumes, read
+  only. Check grades is read only. The grading report downloads; "Use this view in report" is not
+  offered.
+- **Estimating.** No Wage Calculator. With the link's pricing off:
+  - one line, "Pricing is not shown on this shared link.";
+  - every money cell reads "—";
+  - no bid summary;
+  - the Excel export has no amounts. Its 193 money-formatted cells are all blank or zero.
+
+  With pricing on, the same totals as a member's.
+- **The api** answers a guest only through its own branches (D-498 guard). These are the stand-in
+  `/api/auth/me`, the one workspace as a Viewer, resolve within the link's project, and the
+  workspace's money-free reads the screen needs. The reads are capability, classification and its
+  systems, estimate format, report settings, snippet tag types, and subcontractors and their
+  scopes. Everything else stays refused.
+- **A link revoked, turned off or regenerated mid-visit** sends the tab back to the link's page:
+  "This share link is no longer available."
+
+Checked on the 3D test copy with a test link, which was revoked afterwards; the copy has no share
+link, as found:
+- every view and download above, as a guest;
+- 9 direct writes refused 403 (item, shape, edit, Calculate result, markup, work session, visit,
+  `/me`, DELETE);
+- another project and another workspace refused;
+- one workspace listed, as Viewer;
+- the token refused (401) once the link was revoked;
+- the member's own header and session unchanged.
+
+Gates, the quantity table, md5 and the earthwork smoke all passed.

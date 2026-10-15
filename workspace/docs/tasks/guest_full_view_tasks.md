@@ -2,8 +2,9 @@
 
 _Spec written in the night run of 2026-10-15. **Blocks A and B (api) built and committed the same night
 (D-498, D-499, api `76fbac5`, `c4bca07`), every proof in §5 passed except the screenshots, which belong
-to C and D.** Blocks C and D (frontend) are not started; they wait on the four questions in §6. The old
-guest page is unchanged._
+to C and D.** Blocks C and D (frontend) built in the day run of 2026-10-15 (D-505), on the recommended answers in §6
+(a synthetic Guest, per-tab view state, "—" for money with pricing off, the old page kept as the fallback
+when a guest session cannot be had)._
 
 ## 1. The ask (the founder, 2026-10-15)
 
