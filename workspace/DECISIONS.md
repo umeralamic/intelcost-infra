@@ -15790,3 +15790,31 @@ Smoke on the 3D test copy (open shop, nothing saved): the basis picker; a review
 (Laborer $15, Carpenter $20) whose 32 filled crafts read "Location-adjusted (index 0.25)", no
 "National" left on the page; the Estimating Excel (all columns) with no basis label in it. Gates,
 quantity table, md5 and the guest write proof passed.
+
+## D-515: Wastage is quantity; numbered shared copies; Saved by counts people; no money columns for a guest without pricing (day-2 Task 2: CH7, CH8, CH9, U1)
+
+- **CH7, wastage is quantity.** "Qty with Wastage" is what gets ordered, so a share link's guest sees
+  each line's wastage and Qty with Wastage with pricing off, and a copy saved without pricing keeps
+  them. The guard lets a pricing-off guest read `GET …/estimate/costs` and cuts it on the server
+  to each line's `item_uuid` and `wastage_pct_override` and the unit wastage, nothing else (no rate,
+  note or comment); every other estimate route stays refused (403). A copy saved without pricing
+  keeps `estimate_unit_wastage` and its estimate lines, with every rate cleared (`unit_rate` 0; man
+  hours, wage, material, equipment, subcontract, notes, rate review and the rates snapshot null).
+- **CH8, numbered copies.** "<Project> (shared copy)", then "(shared copy 2)", "(shared copy 3)": the
+  first free in the viewer's workspace (a copy in Trash keeps its name), picked as the copy is made,
+  under a lock per workspace, so two people saving at once get two numbers. Duplicate project's
+  "(copy N)" uses the same rule and lock.
+- **CH9, Saved by N people** counts distinct people: one record per viewer per link (D-392), so a
+  person saving again (after trashing their copy) still counts once.
+- **U1.** With pricing hidden, a guest's Estimating and its Excel have no money column at all (the
+  Quantities-only set: man-hours, wage, labor, equipment, material, subcontract, item cost) and no
+  Bid Summary; pricing on is unchanged.
+
+Proved on the 3D test copy (LF wastage 10 % set as test data, removed after): pricing off, the
+guest's grid reads ITEM NO. … QTY, UNIT, COLOR, WASTAGE, QTY WITH WASTAGE (LF 28: 15 LF, 10 %, 16.5);
+its Excel has no money column, no $ format, sheets Base Bid and Dimensions only; pricing on, all 18
+columns as before. Saved copies into F5 Block A demo: the estimator and Sara W. saving at the same
+moment got "(shared copy)" and "(shared copy 2)", both with LF 10 % and no rates or wage set; the
+estimator saving again was answered "You already saved a copy."; after trashing it and saving
+again, Saved by read 1 person; with Sara's, "Saved by 2 people". Test copies purged and their
+records removed. Gates, quantity table, md5, earthwork smoke and the guest write proof passed.
