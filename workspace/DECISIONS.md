@@ -15603,3 +15603,11 @@ touchpad drags the sheet with Pan or Space.
 Proved on the 3D test copy's link in a guest tab: the Pan tool, Space, middle and right drags each
 moved the view; the wheel and a pinch zoomed. Gates, the quantity table, md5 and the earthwork
 smoke passed; every guest write 403.
+
+## D-507: A link's guest has no Volumes button in Earthwork (G3)
+
+The grading report covers what the read-only Volumes panel showed, so the guest's Volumes button
+(D-505) is gone. Everything else in a guest's Earthwork stays: Calculate greyed, both views, the
+three surfaces, Report and Check grades. Members are unchanged. Smoke: the guest's Earthwork on
+C-200 lists no Volumes (`guest-G3-earthwork-no-volumes.png`), its views all draw; a member's
+Earthwork and its Calculate dialog open and close as before.
