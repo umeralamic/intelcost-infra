@@ -15628,3 +15628,19 @@ and its mode caret, Count, the sheet's scale chip, every item row's Resume and C
 Earthwork: Contour, Trace, Spot Elev., Boundary, Site Features, Stripping, Match line, Calculate;
 Annotations: Undo, Redo, Scale; the item menu: Convert to rough measurement, Change
 classification… and every other greyed entry; Estimating: Expand components. Members are unchanged.
+
+## D-509: A link's guest sees the overlays members made, and shows or hides them for itself (G2)
+
+The Overlay tool is greyed for every seat that cannot measure (a link's guest, a Viewer), with
+the guest's tip (D-508), on the toolbar and in More. The overlays and comparisons members made
+still show for them, as members see them: the sub-rows under their sheet in the Sheets panel
+(colour, "overlay", CMP for a comparison, the opacity as read-only text) and drawn on the sheet.
+Their eye shows and hides an overlay in that tab only, writing nothing; the stored setting is the
+start. Re-align, Delete, the colour and the opacity stay members' (they write).
+
+Proved on the 3D test copy with two test overlays a member made on C-300 (C-100 standard 50 %,
+V-100 comparative), then removed: the member and the guest read the same rows ("overlay 50%",
+"overlay CMP") and the same two drawn; the guest hid the comparison (one drawn) and showed it
+again (two), sending no write; the member's rows were unchanged after a reload; the guest's Overlay
+tool greyed with the tip. Gates, the quantity table, md5 and the earthwork smoke passed; every
+guest write 403.
