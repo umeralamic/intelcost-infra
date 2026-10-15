@@ -15500,3 +15500,25 @@ the id names. The plan editor (Platform › Subscriptions › Plans) has no doll
   `stripe.retrieve_price`.
 - No price id was changed. The bench's plans are as before (all ids blank; 9.99/99.99 and
   29.99/299.99).
+
+## D-503: A Sheets panel folder moves with its contents, and is deleted only when empty
+
+A Sheets panel folder had no menu, so it could be neither moved nor deleted on its own. A
+right-click on a folder now opens "Folder actions":
+- **Move to…** a flyout listing "Top level" and every folder by its path, except the folder itself
+  and its own subfolders. The folder's current place is shown as "Already here". Only the folder's
+  parent changes, so its sheets and subfolders come with it intact; it goes last among its new
+  siblings. The api refuses a move into itself or one of its subfolders (422).
+- **Delete folder** is greyed while the folder holds a sheet or a subfolder, with "Move or remove
+  its contents first". The api refuses the same with 409 `folder_not_empty`.
+- **Routes:** `PATCH` and `DELETE /drawing/folder/{uuid}`.
+
+Checked on the 3D test copy, with a test folder, a subfolder and a blank test page:
+- the delete was blocked in the menu and refused by the api;
+- the folder moved under another folder and back, its subfolder and page with it;
+- a move into its own subfolder was refused (422);
+- an empty folder deleted from the menu;
+- everything was removed afterwards.
+
+The blank page put one file in the bench bucket; it was cleared when the page was deleted (storage
+clear: 0 failed).
