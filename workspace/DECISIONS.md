@@ -15483,3 +15483,20 @@ Checked on the 3D test copy (C-100, two sessions: the estimator and window-b):
 - the three lost-answer cases are quiet and right.
 
 31 test items were made and deleted through the api.
+
+## D-502: The platform plan editor takes the Stripe price id only; the amount is read from Stripe
+
+A typed amount could disagree with what Checkout charges, because Checkout charges the Stripe price
+the id names. The plan editor (Platform › Subscriptions › Plans) has no dollar fields now:
+- **Each price id field shows that price as Stripe has it,** read-only: "Price in Stripe: $29.99 /
+  month". It reads the plan's own id, else the `STRIPE_PRICE_*` setting it falls back to. It shows
+  "—" when the price cannot be read: no key, no such price, Stripe unreachable, or the bench's fake,
+  which has no price endpoint.
+- **Saving sends the name, credits per seat, price ids and on-sale switch only**
+  (`CatalogPlanUpdate`). An amount in the request is ignored.
+- **The stored amount the public price page shows follows Stripe** whenever a USD price can be read
+  on save. Otherwise it is kept.
+- **New routes:** `GET /api/platform/billing/plans/{code}/stripe-prices`, and
+  `stripe.retrieve_price`.
+- No price id was changed. The bench's plans are as before (all ids blank; 9.99/99.99 and
+  29.99/299.99).
