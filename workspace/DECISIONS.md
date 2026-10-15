@@ -15444,3 +15444,15 @@ Checked on the 3D test copy's link (id 28), every project GET route with a guest
 Found on the way, not changed: `GET /estimate/line` answers 500 for members too on a project with a
 classified item that has no line yet. The line sync inserts the item's uuid
 `classification_ref_id` into the line's text column. The app never calls this route.
+
+## D-500: An estimate line's classification is stored as text, so the line read never fails (N11)
+
+`GET /estimate/line` makes the missing lines first, in one batch insert. A classified item's
+`classification_ref_id` is a uuid, but the line's column is text. Handed a uuid, the whole insert
+failed, so the route answered 500, for every member, on any project with a classified item that had
+no line yet. The value is now written as its text form.
+
+Checked on the 3D test copy:
+- a member's `GET /estimate/line` now answers 200 (it was 500);
+- the 76 lines the read made (all at a $0 rate) were deleted afterwards, leaving the copy as found;
+- quantity table passed; md5 unchanged.
