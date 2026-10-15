@@ -270,3 +270,45 @@ The harness lived in the session's scratch folder and is not kept. To redo it:
 - Convert levels to feet (× 3.280839895).
 - Run `computeVolumes` on the swapped inputs.
 - Check that R0 reproduces the stored result to the last decimal before trusting any other row.
+
+## 8. Re-run, 2026-10-15 (night run T6), after arcs and subtract shapes are read
+
+The harness is now kept: `intelcost-app-react/tools/kcp-compare/compare.cjs`. It reads the .kcp in
+place (never extracted or copied), runs our own `buildModel` on inputs captured off one Calculate
+on "Hidden Valley Rebid — 3D test" (C-200), and checks R0 against the stored result first.
+
+```
+node tools/kcp-compare/compare.cjs --inputs <model-input.json> --stored <stored.json> --kcp <file.kcp>
+```
+
+| Step | Change | Cut CY | Fill CY | Δ cut | Δ fill |
+|---|---|---|---|---|---|
+| R0 | the 3D test copy, as stored (reproduced to 1e-6 CY) | 11,583.92 | 9,463.48 | | |
+| R0' | without the night runs' test features T1–T7 and test strip | 11,501.92 | 9,620.44 | | |
+| S1 | their Standard Duty Asphalt depth (9.75") | 11,501.02 | 9,622.69 | −0.90 | +2.25 |
+| S2 | their feature outlines | **11,447.13** | **9,748.99** | −53.89 | +126.30 |
+| S3 | their limit as the boundary | **11,464.41** | **9,734.97** | +17.29 | −14.02 |
+| S4 | their existing ground (14 contours) | **11,200.33** | **9,203.65** | −264.08 | −531.31 |
+| S5 | their proposed (15 contours, slabs flat as FG spots, pad depth 0) | 11,208.69 | 9,291.41 | +8.35 | +87.76 |
+| M1 | proposed tied to ground at the limit (110 FG spots, 3 m) | 11,186.35 | 9,370.66 | −22.34 | +79.25 |
+| M2 | their overlap order | 11,186.44 | 9,370.55 | +0.09 | −0.11 |
+| M3 | existing carried out to its outline (65 EG spots, 10 m, modelled) | 11,660.59 | 9,387.17 | +474.16 | +16.61 |
+
+**What changed, and why.**
+1. **Only our own starting point moved.** R0' is 11,501.92 / 9,620.44 against §4's R0 of
+   11,483.74 / 9,596.09: +18.18 CY cut, +24.35 CY fill. Neither file has an arc or a subtract
+   shape on C-200's earthwork inputs except our curved feature outlines, which are now read with
+   their arcs bent in (D-470, D-486): Heavy Duty Aggregate 44,734 SF (§1 had 42,561), Standard Duty
+   Asphalt 20,432 SF (20,596), Heavy Duty Asphalt 20,433 SF (22,071). Those are now the takeoff's
+   own quantities (§1 noted the mismatch). No subtract shapes are drawn on these features.
+2. **From S2 on, the study is reproduced to the cent** (S2, S3, S4 in bold): once their outlines
+   replace ours, nothing on our side differs from 2026-10-13. So §4's chain from S2 onward, and
+   with it **the unexplained remainder, −27.87 CY cut (0.24 %) and +33.74 CY fill (0.36 %), is
+   unchanged.** What the arcs change is the total gap between the two programs: reference − ours
+   is now +187.62 CY cut (1.6 %) and −290.71 CY fill (3.1 %), against +205.80 and −266.36 before;
+   the whole change sits in S2 (their outlines against ours).
+3. **S5, M1 and M3 are rebuilt, not recovered.** §4 did not record how the slabs were made flat
+   or how the ties were placed, and this rebuild's choices (slab spots every 3 m kept off their
+   contours; one closing vertex of their 700 ft loop dropped, which our TIN would otherwise see on
+   the loop's own edge) give a remainder of +28.95 CY cut (0.25 %) and −57.44 CY fill (0.62 %): the
+   same size as §4's, opposite in sign, from the modelling of rows the reference doesn't define.
