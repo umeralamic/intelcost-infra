@@ -15743,3 +15743,25 @@ off, "User 1"; names on, the names. The grading report names no one in any setti
 (the estimator and Sara W.) on C-100: cursors "User 1", "User 2" before and after a reload, the
 Estimating filter "User 1" (the estimator, who made the items); names on, "Bench E.", "Sara W.".
 Gates, the quantity table, md5 and the earthwork smoke passed; every guest write 403.
+
+## D-513: Umer's answers of 2026-10-15 (confirmed by Umer)
+
+Answered in the day-2 brief, 2026-10-15, confirmed by Umer:
+- **Kept as built:** CH1, CH2, CH3, CH4, CH5, CH6 and CH10 (the day run of 2026-10-12, D-378, D-379,
+  D-382, D-384); U2, U4 and U5 (the day run of 2026-10-15); V1 to V5 and V7 (the guest fixes,
+  D-506 to D-512; V4's proxy-headers note stays with Abdullah). U3, U6, U8 and V8 noted.
+- **Changed, built in the day-2 run:**
+  - **CH7:** unit wastage is quantity, not pricing. "Qty with Wastage" is what gets ordered, so a
+    guest and a saved copy keep wastage with pricing off; money is still removed on the server.
+  - **CH8:** saved copies are numbered: "<Project> (shared copy)", then "(shared copy 2)", "(shared
+    copy 3)", the next free number in the viewer's workspace.
+  - **CH9:** "Saved by N people" counts distinct people, not copies.
+  - **U1:** a guest's Excel with pricing off has no money columns at all.
+  - **U7** is replaced by H1 (the Wage Calculator for guests, read only, with pricing on) and H2 (a
+    read-only Forum preview for guests).
+- **F17 / P-16: no legacy data migration.** Legacy had testers only; the new app starts fresh.
+  Removed from the cutover blockers (FEATURES.md P-16) and from the parity list (PARITY_GAPS.md).
+- **Open shop's filled crafts** keep the local index; their tag changes (day-2 Task 1).
+- **N1:** Umer tries the T1 zoom patch himself; not applied. **N2:** T2 dropped. **N4:** row
+  virtualisation stays its own later block.
+- **V6 parked:** who-is-where markers in the Sheets panel.

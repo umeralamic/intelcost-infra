@@ -31,7 +31,7 @@ rows below. The tables below list only what is still missing or different.
 | Gap | What legacy does | Where in legacy | PARITY.md section | Visibility | Size | Depends on |
 |---|---|---|---|---|---|---|
 | Project map and address lookup | "Show Map" beside the address fields, and a lookup that fills city, state, zip and county from a street address. Legacy's lookup always returns `lat: null`, so the map has only ever said "Could not locate address." | `src/components/projects/{ShowMapPopover,ProjectAddressFields}.tsx`, `supabase/functions/geocode-address/` | §5 | low | medium | P-17: a geocoding and map-tile provider decision, plus a bench fake (D-28) |
-| Old links do not resolve | Legacy URLs that will be in emails, bookmarks and migrated data: `/invite/:token`, `/settings/workspace?ws=`, `/projects/:id/takeoff`, `/projects/:id/sheets/:sheetId/viewer`, `/library?workspace=`. The new app redirects only `/projects/:id`, `/app`, `/files` and `/takeoff`. The rest end on NotFound | `src/App.tsx` | — | medium (at cutover) | small | F17: whether legacy ids map to new uuids |
+| Old links do not resolve | Legacy URLs that will be in emails, bookmarks and migrated data: `/invite/:token`, `/settings/workspace?ws=`, `/projects/:id/takeoff`, `/projects/:id/sheets/:sheetId/viewer`, `/library?workspace=`. The new app redirects only `/projects/:id`, `/app`, `/files` and `/takeoff`. The rest end on NotFound | `src/App.tsx` | — | medium (at cutover) | small | none: no migration (D-513), so no legacy ids carry over |
 
 ## Takeoff: sheets panel
 
@@ -133,7 +133,7 @@ rows below. The tables below list only what is still missing or different.
 
 | Gap | What legacy does | Where in legacy | PARITY.md section | Visibility | Size | Depends on |
 |---|---|---|---|---|---|---|
-| Legacy data migration | A tester who used legacy finds none of their projects, sheets, items, estimates or members in the new app. F17 (P-16) is Abdullah's and not yet specced. MANAGER lists its known rules: bcrypt rehash, custom roles' full maps, 1 / shrink, snapshot types, no overlays, no AI credit data | the Supabase schema | — | high for legacy users | large | D-11 (Abdullah), the deploy |
+| Legacy data migration | **Decided: no migration (D-513, 2026-10-15, confirmed by Umer).** Legacy had testers only; the new app starts fresh. Not a gap and not a cutover blocker. | — | — | — | — | — |
 
 ## Mobile / responsive, Community, Notifications, Settings
 
@@ -153,7 +153,7 @@ AI Credits and Trash.
 4. **Run the AI tools against a real model**: the tools are on screen, so a tester will click them. Small if the keys are in place. *(Keys and model settled in D-252, D-253; closed 2026-10-11, confirmed by Umer.)*
 5. **The Library: parked for later (D-287 6).** A header button in legacy with nothing behind it in the new app; legacy's Library feeds nothing else (see below). The founder parked it: not built now, not dropped.
 6. **Legacy URL redirects**: small, and needed before any legacy user, email or migrated link reaches the new app. This unblocks the cutover.
-7. **F17 migration spec**: large and owned by Abdullah. It has to start now so that testers who used legacy see their own work. It also settles whether old ids map to new uuids (item 6).
+7. ~~**F17 migration spec**~~ **Dropped: no migration (D-513, 2026-10-15, confirmed by Umer).** Legacy had testers only; the new app starts fresh.
 8. **Box-select markups and the selection action bar**: builds on item 2. A reviewer marking up a sheet notices it at once.
 9. **Restore the last workspace tab**: small. Testers who work in Estimating or Earthwork will notice it on every reopen.
 10. **Volume panel jumps to its Quantity Table row**: small, finishes F12's visible gaps, and the panel is the first thing an earthwork estimator reads.

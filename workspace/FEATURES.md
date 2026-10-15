@@ -90,7 +90,7 @@ _Updated: 2026-10-02_
 | P-09 | Assemblies, Starter Pack, Library | both | |
 | P-10 | Annotations and comments, print, find text, snippets and bookmarks | both | What an Essentials workspace gets ($9.99): annotations, comments and viewing, not the measure tools. **Unbuilt, kept (D-109; closed 2026-10-11, confirmed by Umer):** the markup Properties panel per kind, and undo of markup edits |
 | P-14 | Sharing and guest view, Reports, time tracking and shifts, Community | both | |
-| P-16 | Legacy data migration and cutover | infra | Abdullah (D-11) |
+| P-16 | Legacy cutover, no data migration | infra | **Decided: no migration (D-513, 2026-10-15, confirmed by Umer).** Legacy had testers only, so the new app starts fresh; F17 is dropped and is not a cutover blocker. Cutover is the deploy alone (Abdullah, D-11) |
 | P-17 | Project map and geocoder: Show Map on the project location, and resolve a US address to city, state, zip and county | both | Deferred out of F4 by D-28. Needs a provider decision (geocoding and map tiles) and a bench fake. Legacy's never returned coordinates |
 
 ---

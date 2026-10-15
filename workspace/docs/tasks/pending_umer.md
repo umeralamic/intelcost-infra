@@ -46,6 +46,7 @@ All projects ⋯ › Duplicate project and work in the copy. Delete the copy aft
 - **Day run 2026-10-12:** D8.8 built as D-382 (api `c78fa5d`, infra `c4bd131`): the five Stripe
   functions on Stripe's official library, its signature check; checkout, a real webhook, a forged one
   and an expired one smoke-tested on the fake (DAY_REPORT_2026-10-12.md, Block 5).
+- **Day-2 answers (2026-10-15, D-513):** CH1–CH6 and CH10 ok; CH7, CH8, CH9 and U1 changed (built in the day-2 run); U2, U4, U5 ok; U3, U6, U8 noted; U7 replaced by H1 and H2; V1–V5 and V7 ok, V8 noted, V6 parked; N1 yours, N2 dropped, N4 later; F17 dropped (no migration); open shop keeps the local index with a new tag.
 - **Batch 4 (2026-10-11):** D1 accepted and D3 passed, both closed in DECISIONS. D2 changed: the
   zoom menu leaves the top right. It stays open below until built.
 
@@ -57,16 +58,9 @@ Each is a default I picked to finish the block; answer by number like the others
 
 | # | Block | The choice made for now | The other way |
 |---|---|---|---|
-| CH1 | 1 (D-378) | A template placed in a project of the other system has its formulas written in the project's system, so the warning lists constants that will now read in the new system. | Keep the template's system on placed formulas: no warning needed. |
-| CH2 | 2 (D-379) | Variables store every unit pick as its code and are never converted (metric picks stored as M, M2…). | Variables follow the own-system rule like sub-items (store LF, show m). |
-| CH3 | 2 (D-379) | Units already stored as metric codes (M, M2…) now read "m", "m²" in every project. | Keep showing the codes. |
-| CH4 | 7 (D-384) | Items on layers the link does not share are not copied into a saved copy. | Copy every layer. |
-| CH5 | 7 (D-384) | Assignees, workspace variable values and subcontractor overrides never cross into a saved copy (a formula reading a workspace variable reads "Unknown variable" there). | Copy the variables into the viewer's workspace. |
-| CH6 | 7 (D-384) | A custom classification code with no match in the viewer's workspace leaves the item unclassified. | Create the code in the viewer's workspace. |
-| CH7 | 7 (D-384) | Unit wastage counts as pricing (left out when pricing is off). | Treat it as quantity. |
-| CH8 | 7 (D-384) | Two saved copies of one project carry the same name, "<Project> (shared copy)". | Number them "(shared copy 2)". |
-| CH9 | 7 (D-384) | "Saved by N people" counts copies (one person saving twice reads 2), as the brief's check expects. | Count people. |
-| CH10 | 5 (D-382) | The Stripe library pins API version 2026-09-30.endive; our code reads both subscription shapes. | Pin our own version setting. |
+| CH7 | 7 (D-384) | **No (2026-10-15):** unit wastage is quantity; shown with pricing off. | Built in day-2 Task 2. |
+| CH8 | 7 (D-384) | **No (2026-10-15):** number the copies "(shared copy 2)", "(shared copy 3)". | Built in day-2 Task 2. |
+| CH9 | 7 (D-384) | **No (2026-10-15):** count distinct people. | Built in day-2 Task 2. |
 
 ## Run 2026-10-15 (morning-report-2026-10-15\RUN_REPORT_2026-10-15.md)
 
@@ -86,10 +80,9 @@ Answered on 2026-10-15 and done:
 
 | # | Item | Where it stands | Your call |
 |---|---|---|---|
-| N1 | T1 zoom | The patch (`night-T1-stretch-and-fresh-layer.patch`) stretches the stage while wheeling and gives it a fresh layer at the landing. Zoom went from 26–40 to 43–55 fps. Over 50 zooms, 0 stayed soft after settling (the 1-in-4 soft landings are gone). The test as written is "sharp 300 ms after stopping": 26–27 of 50 are, against today's 39 of 50, because the landing waits about 60 ms more. The cause on both sides is the sheet's pdf.js redraw (0.15–0.9 s on C-200), not the overlays. Not committed, as the brief said. | (a) Commit the patch and judge "sharp" as "sharp once landed" (recommended); (b) keep the 300 ms bar, which needs a pre-drawn sheet pyramid (multi-day); (c) leave zoom as it is. |
-| N2 | T2 | Not built. Per-layer bitmaps speed the overlays, which N1 already does, but they don't shorten the sheet's redraw, so they can't pass the 300 ms test either. | Agree to drop T2 (recommended), or say what it should prove instead. |
+| N1 | T1 zoom | **Answered 2026-10-15:** you try the patch (`night-T1-stretch-and-fresh-layer.patch`) yourself; not applied. | Yours. |
 | N3 | X2b full guest app | One slice is built (D-497): "Show pricing" off by default and enforced on the server, "Sign up" on the guest page, and direct writes with a pass refused. The full app in guest mode is F28, specced in `guest_full_view_tasks.md` (§6 has four questions), at about two days. | Answer §6's four questions (recommended: the defaults given), then go. |
-| N4 | X3 big projects | With 1,000 items (production build): sheet 5.7 s, Estimating open 2.9–3.2 s, Group by 0.7–4.1 s, zoom 28–37 fps, pan 60 fps. The api reads were fixed (D-494). What is left is laying out a thousand-row table (already `table-fixed`). | Row virtualisation in Estimating and the Takeoff panel, about a day (recommended, as its own block). |
+| N4 | X3 big projects | **Answered 2026-10-15:** row virtualisation stays its own block, later. | Later. |
 | N5 | Metric | `METRIC_ENABLED` no longer exists. The api setting went with D-396 (already on staging), the app never had its own flag, and the bench Compose dropped it. Metric is on for everyone. | Nothing to do. |
 | N6 | Share link on the 3D test copy | Tested with the copy's own link and put back exactly as found (same token, no password). It was not revoked, because it is the project's one link and may be in use. | Say if it should be revoked. |
 | N7b | X2 reload limits | A boundary **replace**, and an Auto Merge that rewrites sections, are not kept for replay: sent twice, they would be refused. A reload mid-save keeps the old outline. | Accept for now (recommended). |
@@ -102,27 +95,12 @@ Answered on 2026-10-15 and done:
 
 | # | Item | Where it stands | Your call |
 |---|---|---|---|
-| U1 | D6 guest Excel, pricing off | No amounts anywhere, but the export still has its money columns. They are formatted as money and every cell is blank or zero, so Excel shows "$ -". | Accept, or drop the money columns from a guest's export (small). |
-| U2 | Share link on the 3D test copy | The copy's link (id 28) was gone when the day run began (a revoke deletes it). D6 made two test links and revoked both, so the copy has none, as found. | Make one in Share when you want it. |
-| U3 | 49 lines flagged "Needs recalculating" at 08:56:49 | A member tab marked C-200's result stale with no drawing change. It came from the app's own stale check, never a guest's write. It did not come back on reload or on opening the Takeoff tab. My best guess is the dev server fully reloading that tab while it re-optimised dependencies. The next Calculate cleared it, and md5 was unchanged. | Watch for it; worth a look if a tester sees false ⚠ marks. |
-| U4 | D2 own later edit | An older edit replayed after you edited the same item again yourself is skipped, with a notice ("You changed … again after that"), rather than overwriting your newer edit. | Accept (my pick), or let your own older edit replay. |
-| U5 | D3 stored amounts | The editor takes price ids only. On save, a readable USD Stripe price also updates the stored amount the public price page shows. On the bench nothing is readable, so nothing changed. | Accept. |
-| U6 | D4 test page | The test made one blank page, which put a file in the bench bucket. It was cleared when the page was deleted (storage clear: 0 failed). | Note only. |
-| U7 | D6 scope | The spec's 4 questions were taken at their recommended answers. A guest also has no Forum tab and no Wage Calculator, even with pricing on. | Accept, or show the Wage Calculator read-only with pricing on. |
-| U8 | D3 save | Saving Professional unchanged set its `updated_by` to the throwaway admin used for the check. The account is deactivated, and the amounts and ids are unchanged. | Note only. |
+| U1 | D6 guest Excel, pricing off | **No (2026-10-15):** drop the money columns. | Built in day-2 Task 2. |
+| U7 | D6 scope | **Replaced (2026-10-15)** by H1 (guest Wage Calculator, read only, pricing on) and H2 (guest Forum preview). | Built in day-2 Tasks 3 and 4. |
 
 ## Guest view fixes 2026-10-15 (morning-report-2026-10-15\guest-REPORT_2026-10-15.md)
 
-| # | Item | Where it stands | Your call |
-|---|---|---|---|
-| V1 | Your share link on the 3D test copy | The copy had one link (id 32, made 13:25, with a password I don't know), and a project has one link. I used it for every test (password, expiry, live work, names changed and changed back), then restored its database row exactly from a snapshot taken first: same URL, password, expiry and switches. Any guest tab you had open on it ended when its password changed; open the link again with your password. | Note only. |
-| V2 | G1 Space+drag | Added for every seat, members too (legacy had none). A touchpad's two-finger scroll still zooms, as it does for a member; a touchpad drags with Pan or Space. | Accept, or make two-finger scroll pan (members too). |
-| V3 | G2 guest overlay eye | A guest's show/hide of an overlay lasts in that tab only and writes nothing. | Accept. |
-| V4 | G6 the address the password limit counts | Five wrong tries per link per address, then 30 s doubling to 15 min. Behind a proxy the api must read the forwarded address (uvicorn `--proxy-headers`), or every viewer shares one count (for Abdullah). The password page also names the project before the password, as file-sharing pages do. | Accept. |
-| V5 | G7 times | Every change showed on the guest within about 2 s of the member's action; most of that is the member's own save (the guest refetched 0.3–0.9 s after it landed). The first, cold run read the draw at 3.5 s and a rename at 2.5 s. Calculate itself takes 15 s in the member's browser. | Accept. |
-| V6 | G4 "sheet markers" | The app's Sheets panel shows no one, for members either (no who-is-where markers there). Only the fallback guest page has sheet markers, numbered the same way. | Accept, or add who-is-where markers to the Sheets panel (members and guests). |
-| V7 | G4 emails and ids | A guest never gets an email, avatar or a person's real id, even with names on (ids are a link-salted uuid). Live work off also drops the Created by and Modified by columns from Estimating and its Excel. | Accept. |
-| V8 | G7 Calculate on C-200 | The live test ran Calculate twice on the copy's C-200: the same numbers were stored again (md5 `fab4d151…` unchanged), so only the result's time moved. LF 28 was renamed and named back twice. | Note only. |
+All answered 2026-10-15 (D-513): V1–V5 and V7 ok, V8 noted, V6 parked.
 
 ## Found in the click sessions
 
@@ -142,11 +120,7 @@ your own click check.
 - **Tests 7 and 8:** you run them.
 
 **Still open, for you:**
-- **Open shop's filled crafts** still follow the local index: with own rates at about 58% of national
-  (C31 test 12's entries), a filled craft tagged "National avg" reads about 58% of national (Air Tool
-  Operator $31.26 against $53.76 at Ada County). Your rule ("a National avg tag shows close to the
-  national figure") would mean dropping the index there too: one line in the engine (the MAX always),
-  or a different tag for an indexed fill. Your call; not changed.
+- **Open shop's filled crafts:** answered 2026-10-15 (D-513): keep the local index; the tag reads "Location-adjusted (index N)" (day-2 Task 1).
 - **C15 Set values in one request:** built (D-394).
 - **Metric, the six spots of D-397 5:** closed (D-399 to D-404); earthwork units stay with the sheet's scale for
   calculation and the project for display (D-398).
@@ -306,4 +280,5 @@ small "1 in use" beside them; the page text runs them together.
 | D22 | PARITY_GAPS.md:154, 182 (D-287 6) | The Library page. | Later: keep parked (2026-10-11) |
 | C18 | MANAGER.md:32; DECISIONS.md:8148 (F18, D-232) | The C-200 acceptance, your own test by hand. | Later: parked with C-200, D-232 (2026-10-11) |
 | C26 | MANAGER.md:35 (F19) | The site-stitching click check. It needs a C-200 copy. | Later: parked with C-200 (2026-10-11) |
+| V6 | guest-REPORT_2026-10-15 | Who-is-where markers in the Sheets panel (members and guests). | Later (2026-10-15) |
 | S2 | drafts/zoom_hybrid_images.DRAFT.md:121–129 | Sharper deep zoom from pre-made images: 4 questions. | Later (2026-10-11) |
