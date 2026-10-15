@@ -15456,3 +15456,30 @@ Checked on the 3D test copy:
 - a member's `GET /estimate/line` now answers 200 (it was 500);
 - the 76 lines the read made (all at a $0 rate) were deleted afterwards, leaving the copy as found;
 - quantity table passed; md5 unchanged.
+
+## D-501: An unsent takeoff change replays after a reload, and a teammate's newer change wins
+
+D-493 kept only creates. An item's edit or rename, a moved point, or a deleted item that was still
+on its way when the page went was simply lost. So:
+- **The browser keeps these too:** PATCH and DELETE on an item or a shape, the bulk delete, and a
+  shapes batch that updates or deletes. Each is stamped with when it was made, on the api's clock.
+  The api now sends that clock to the millisecond on every answer (`X-Server-Time`, exposed by
+  CORS), because `Date` has whole seconds only.
+- **Sent again, it says when it was made (`X-Replay-Since`).** The takeoff router refuses it with
+  409 `replay_superseded` when another member changed the same item after that. "Changed" means an
+  item event (edit, rename, shape added, deleted) or a shape they last changed. The refusal names
+  them: "Sara W. changed “…” after you, so your earlier change was skipped and theirs was kept."
+- **An item edit already as asked answers as done**, because the first send landed. When the person
+  edited the item again themselves after that, the older edit is skipped and said so.
+- **A replayed shape move that finds its own newer version** is refused as stale, quietly. So is a
+  delete that finds nothing.
+- **The app shows each skip once** ("An older change was skipped", 10 s). "Saved N changes from
+  before the reload" is now shown once, not twice.
+
+Checked on the 3D test copy (C-100, two sessions: the estimator and window-b):
+- edit, rename, point move and delete, each with the teammate's change in between: the teammate's
+  stands, with one notice each;
+- with no teammate change, the rename lands;
+- the three lost-answer cases are quiet and right.
+
+31 test items were made and deleted through the api.
