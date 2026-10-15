@@ -15223,3 +15223,31 @@ count and do not offer it.
 
 Checked on the 3D test copy: contours at 800 and 802 ft, then a third offered 2 ft; one click made
 ↑ step 803 → 805. The test contours were undone and one Calculate cleared the stale flags (md5 as before).
+
+## D-492: Never lose a drawing: every drawing tool keeps a failed save on the sheet with "not saved · Retry"
+
+**Status:** Accepted (2026-10-15, night run X1, the founder's brief). No quantity changes.
+
+Contours and spots already did this (R4). Now every tool does, the same way: what is drawn shows at
+once; a save that fails leaves it on the sheet in the error colour with "not saved · Retry"; Retry
+sends the same write again under the same client uuid, so a save that did land but whose answer was
+lost is never doubled.
+- **Linear, Segment, Area, Count, and a Site Feature (drawn with Area):** were drawn at once and gone
+  when the write failed (only the banner was left). The pending shape now carries its client uuid
+  through the first-shape create, a join to an item and an Auto Merge; a failed one stays, marked.
+  A count mark awaiting its save is drawn as a ring.
+- **Work Boundary:** its draft was removed on failure. It now stays as failed with its own label and
+  the drafts' Retry.
+- **Strip Area (drawn):** was not drawn until saved, and lost on failure. It is drawn at once as a
+  draft and kept on failure; a Retry that meets the api's "already back" (409) counts as saved.
+- **Annotations (Highlight, Cloud, Callout, Arrow, Note):** were not drawn until saved, and lost on
+  failure. Drawn at once as a draft apart from the server's list (a refetch never drops it), kept on
+  failure; a draft takes no clicks until it is saved.
+- **The api:** item create is idempotent on its first shape's `client_uuid` (the item that shape
+  already made is returned, not a second, empty one); markup create takes an optional `client_uuid`,
+  the same way. Dimensions are the canvas's own and never saved, so there is nothing to lose.
+
+Checked on the 3D test copy with each tool's first save aborted once, then Retry: Linear, Area,
+Count on C-200; Highlight, Boundary and a drawn Strip Area on C-100; a Site Feature on V-100. Each
+stayed drawn as not saved, and Retry saved it once. Every test markup was removed (the copy back to
+77 items, 190 shapes, md5 as before).
