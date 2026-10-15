@@ -15207,3 +15207,19 @@ follow their parent. Rows on two sheets keep their per-sheet split, as before.
 Checked on the 3D test copy in all ten Group by × Layer tabs combinations: 59 items, none doubled,
 the same quantity per unit and the same TOTAL ($18.19) in each. The Excel export reads the same
 groups (the grid's `buildGroups`).
+
+## D-491: After two contours, the elevation box offers their difference as the interval
+
+**Status:** Accepted (2026-10-15, night run T5; the founder's S3 "yes", batch entry later). No quantity changes.
+
+When a new contour's elevation is asked and the last two contours committed on that sheet and
+surface differ by an amount other than the interval, the popover shows one button under the
+elevation box: "Interval: use 2 ft, the last two contours' difference". A click sets the sheet's
+contour interval (the toolbar's box), so ↑ and ↓ step by it from then on; the button goes once the
+interval matches. Nothing is automatic: the pre-fill (the nearest printed label, else the last value
+± the interval), ↑/↓ and the order warning (D-483) are as they were. The difference is in the
+entry units (ft, or m in metric), to the hundredth; edits of an existing contour's elevation do not
+count and do not offer it.
+
+Checked on the 3D test copy: contours at 800 and 802 ft, then a third offered 2 ft; one click made
+↑ step 803 → 805. The test contours were undone and one Calculate cleared the stale flags (md5 as before).
