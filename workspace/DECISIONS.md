@@ -15315,3 +15315,21 @@ does. A linked survey sheet's contours are checked on their own sheet.
 Checked on the 3D test copy: C-200 and V-100 list nothing. On A101, five test contours gave 3 out of
 order and 2 crossing, and a row zoomed from 0.18 to 2.48 onto its contour. The test shapes were
 removed (77 items, 190 shapes, md5 as before).
+
+## D-496: All projects and the load screen load when first opened, not with the app
+
+**Status:** Accepted (2026-10-15, night run X7). No quantity changes. Speed only.
+
+The main bundle carried All projects and the load screen (its file picker, page chooser and folder
+pane), though neither shows on the first screen. Both are now lazy, loaded on first open (the
+`AllProjectsHost`; the takeoff screen already imports the load screen in its own chunk). The main
+bundle went from 445 KB to 366 KB (gzip 131 → 109 KB), and the login page's JavaScript from 671 KB
+to 588 KB.
+
+Production build on the bench, three runs each:
+- sign-in screen shown in 0.58–0.60 s;
+- the sheet shown 1.2–1.6 s after Sign in (before 1.9–4.5 s, though that includes the api's state);
+- All projects listed in 0.9 s, as before.
+
+The New Project dialog stays in the main bundle: the empty Home and the Open menu show it at once.
+zod and react-hook-form stay too, because the sign-in form uses them.
