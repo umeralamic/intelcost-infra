@@ -1,7 +1,9 @@
 # Shared link: the full app in guest view-only mode (X2b)
 
-_Spec written in the night run of 2026-10-15. **Not built.** The reasons are in "Why not tonight"
-at the end. Status: Planned, awaiting Umer's go-ahead on the four questions in §6._
+_Spec written in the night run of 2026-10-15. **Blocks A and B (api) built and committed the same night
+(D-498, D-499, api `76fbac5`, `c4bca07`), every proof in §5 passed except the screenshots, which belong
+to C and D.** Blocks C and D (frontend) are not started; they wait on the four questions in §6. The old
+guest page is unchanged._
 
 ## 1. The ask (the founder, 2026-10-15)
 

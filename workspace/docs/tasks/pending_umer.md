@@ -95,6 +95,8 @@ Answered on 2026-10-15 and done:
 | N7b | X2 reload limits | A boundary **replace**, and an Auto Merge that rewrites sections, are not kept for replay: sent twice, they would be refused. A reload mid-save keeps the old outline. | Accept for now (recommended). |
 | N8 | T6 | The rows from S2 on (S2–S4) reproduce the study to the cent. Our side moved only because curved outlines are now read with their arcs (+18 CY cut, +24 CY fill). The unexplained 0.24 % / 0.36 % stands. S5–M3 were rebuilt rather than recovered, giving 0.25 % / 0.62 %. | Nothing, unless you want the study's own S5–M3 modelling recovered. |
 | N9 | Promotion | `intelcost-infra/notes/2026-10-15_promotion_since_staging_merge_for_abdullah.md`: 10 migrations since staging (`f2c9a7d4e1b8` is tonight's), and D-470's out-of-date results. | Forward to Abdullah. |
+| N10 | X2b / F28 | The api half is built and committed: Blocks A and B (D-498, D-499). The frontend (C and D) waits on the four questions in `guest_full_view_tasks.md` §6. The test link on the 3D test copy (id 28) was regenerated twice and is now **off**, with pricing off. | Answer the four questions, then turn link 28 back on if you want it. |
+| N11 | Bug found | `GET /estimate/line` answers 500 for members too on a project with a classified item that has no line yet. The cause: the line sync puts a uuid into a text column (`estimate/service.py`, `classification_ref_id`). The app never calls this route, so nobody sees it. | A one-line fix (`str(...)`), if you want it. |
 
 ## Found in the click sessions
 

@@ -15387,3 +15387,60 @@ Checked:
 - **Boundary:** a replace whose answer was lost kept the boundary.
 - **The X2 suite:** all eight tools, never sent and answer lost, one row each.
 - **Test rows:** removed (77 items, 190 shapes, md5 as before).
+
+## D-498: A share link's guest session: one guard, reads on its own project only, the link re-read every request (F28 Block A)
+
+The full app behind a share link (F28) needs the guest to call the ordinary project routes. A route
+must never have to ask "is this a guest". So:
+- `POST /api/share/{token}/session` (password or viewer pass as the guest page) mints a 12-hour
+  `share_guest` token pinned to the link's workspace and project, and bound to the link's id, token
+  and password hash.
+- **One guard** (`share/guest_session.py`, `ShareGuestGuard`, pure ASGI in `main.py`) sees every
+  request carrying such a token, before any route:
+  - anything but GET, HEAD or OPTIONS: 403 `share_view_only`;
+  - a path outside `/api/workspace/{w}/project/{p}`, or the project's `share-link` routes:
+    403 `share_out_of_scope`;
+  - the link read again: revoked, turned off, expired, its project deleted, regenerated or its
+    password changed: 401 `share_link_changed`.
+- Past the guard, `current_user` answers a stand-in user (id 0, never stored) and
+  `current_workspace` a Viewer seat on the link's workspace (never stored). Every capability is a
+  Viewer's. Any other token kind still refuses a guest token, so the realtime socket and every
+  non-project route stay closed.
+- Money is not yet removed from these reads (Block B); the frontend (C–D) is not built.
+
+Checked on the 3D test copy's link (id 28), direct requests:
+- reads: items and project 200;
+- 9 writes refused 403 `share_view_only`, none landed: POST item, POST geometry, PATCH item, PUT
+  estimate settings, POST markup, POST share-link regenerate, POST project, DELETE item, DELETE
+  project;
+- 6 reads out of scope refused 403: another project in the workspace (twice), a project in another
+  workspace, the share-link settings, the workspace, `/api/auth/me`;
+- the link regenerated: the old token 401 on its next request; revoked (turned off): 401, and a new
+  session 404;
+- a member's access token unchanged: 200.
+
+## D-499: A guest with pricing off reaches only the project's money-free parts (F28 Block B)
+
+With the link's "Show pricing" off (D-497, the default), the guard from D-498 refuses a guest
+token anywhere but the project's money-free parts. Those are the project itself, drawing,
+earthwork, file, folder, markup, site, snippet, takeoff and visit. Everything else gets 403
+`share_pricing_hidden`: the Estimating routes (bid, columns, components, costs, equipment, lines,
+packages) and the wage calculator.
+
+It is an allowlist, read live from the link on every request. So a route added later stays closed
+until it is named, and turning pricing on or off takes effect on the guest's next request. With
+pricing on, the guest reads the Estimating routes as a Viewer.
+
+Checked on the 3D test copy's link (id 28), every project GET route with a guest token:
+- **Pricing off:**
+  - 33 routes answered 200, and their answers carry no money: the only key hits are
+    `bid_due_date` (a date) and `wage_determination` (a label, "open_shop");
+  - 13 money routes were refused with 403;
+  - the item snapshot was refused by the Viewer seat itself, since it needs edit rights.
+- **Pricing on:** the money routes answered.
+- **The D-498 proofs**, re-run on this code, all held.
+- **The link is left revoked** (turned off).
+
+Found on the way, not changed: `GET /estimate/line` answers 500 for members too on a project with a
+classified item that has no line yet. The line sync inserts the item's uuid
+`classification_ref_id` into the line's text column. The app never calls this route.
