@@ -15129,3 +15129,24 @@ project uses, the one farthest (CIE Lab) from its nearest used colour, the palet
 breaking a tie. On the copy, three features drawn one after another after a hard reload: olive
 #4d7c0f, slate #1e293b, royal blue #1d4ed8 (before: #b91c1c, #c2410c, #a16207). The user can
 still pick any colour; features already drawn keep theirs.
+
+## D-486: A shape is drawn along its arcs from the moment it is finished; the boundary too
+
+**Status:** Accepted (2026-10-15, day task T0b). No quantity changes.
+
+**The glitch (founder):** a Site Feature drawn with an arc showed with straight sides from Enter
+until its save came back (about 1.2–2.5 s on the bench), then the arc reappeared. Reproduced on
+C-200: a feature with an arc as its first edge, a middle edge (bulging in), the last edge, the
+closing edge, first and last together over other shapes, and a tiny one; every one showed as its
+bare corners (4 points) at the finish. The Area tool did the same. The cause: the shape painted
+while its save is in flight (D-255) was drawn from its corner points alone; its shape data (arcs,
+an ellipse, a box) was not carried with it. It now is, and it is drawn through the same outline as
+a saved shape, so the save changes nothing on screen.
+
+**Boundary:** the work boundary was not painted at all from Enter until its save came back. It is
+now drawn at once, dashed, along its arcs, as contours and spots are (D-478), and the saved one
+takes its place. **Contour** was already right (D-478's draft draws its arcs).
+
+Checked: at the finish the outline holds 13–65 points (was 4) for the six feature cases and Area;
+the boundary shows at 0 ms (was nothing until about 3 s); every arc is saved on the edge it was
+drawn on (first 0, middle 1, last 2, closing 3, contour 0/2/4) and comes back after a reload.
