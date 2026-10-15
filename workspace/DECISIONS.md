@@ -15672,3 +15672,36 @@ Proved on the 3D test copy's link with a test password: before and after screens
 right password in that wait was refused 429 on `/pass` and on `/bundle` alike, and opened the
 project once the wait ended. Gates (app and api), the quantity table, md5 and the earthwork smoke
 passed; every guest write 403.
+
+## D-511: A link's guest joins the realtime socket, read only, while the link shows live work (G7)
+
+With "Let viewers watch live work" on, the guest tab opens the app's own realtime socket with its
+guest token. Members' new, changed and deleted takeoff, markups and earthwork results reach it as
+they reach a member (the events name what changed and the tab refetches through the guarded
+routes), with members' cursors and live drawing. With it off the guest opens no socket: it sees
+changes on a refresh, and no cursors.
+
+- **The socket's own read-only guard** (`realtime.service`, `realtime.connection`): a guest token
+  authenticates only while its link still holds and shows live work; it may join its link's
+  project topic and nothing else (the workspace topic, another project, the forum, a person's
+  topic: refused); every frame it sends but `auth`, `ping`, `join` and `leave` is dropped (no
+  cursor, view, draft or focus of a guest reaches anyone). Its link is read again every 10 s: turned
+  off, regenerated, expired or live work turned off, and the socket closes 4401. The HTTP guard
+  (`ShareGuestGuard`) is unchanged and still refuses every write.
+- **What a guest's socket is sent:** the same frames, each a copy with the people swapped: user
+  and tab ids for a link-salted uuid that is the same for the same person and maps back to no one;
+  the name kept while the link shows names, else the link's pseudonym (D-385; renamed to "User N" in
+  G4).
+- **The app:** the guest session keeps `allowPresence`; the socket starts for a guest only with it;
+  a guest tab joins project topics only and sends no presence frames.
+
+Proved on the 3D test copy, a member and a guest each in their own window on C-100 (a second run;
+the first, cold, read the draw at 3.48 s and the rename at 2.47 s), seconds from the member's action
+until the guest's screen showed it, and after the member's save landed: cursor 0.26; Linear drawn in
+the member's UI 2.28 (0.49 after the save); rename 1.24 (0.78); markup added 1.28 (0.33); markup
+deleted 0.77 (0.34); item deleted 1.13 (0.94); earthwork Calculate on C-200 re-read by the guest
+0.43 s after the result saved (Calculate itself 15 s in the member's browser; md5 unchanged). Live
+work off: no socket, no cursor, a rename not shown after 10 s and shown on a refresh; a guest socket
+refused 4401. A guest socket's join of the workspace and another project refused, its cursor and
+draft frames never reached the member. Test item, markup and rename removed. Gates, the quantity
+table, md5 and the earthwork smoke passed; every guest write 403.
