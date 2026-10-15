@@ -15705,3 +15705,41 @@ work off: no socket, no cursor, a rename not shown after 10 s and shown on a ref
 refused 4401. A guest socket's join of the workspace and another project refused, its cursor and
 draft frames never reached the member. Test item, markup and rename removed. Gates, the quantity
 table, md5 and the earthwork smoke passed; every guest write 403.
+
+## D-512: What a link's guest reads about people, taken out on the server (G4)
+
+Every answer a share link's guest is sent (the guest token's HTTP reads, the guest page's
+`/bundle`, its socket's frames) passes one scrub (`features/share/people.py`) before it leaves the
+api, by the link's two switches:
+
+| Setting | Names | Emails, avatars | Person ids | App |
+|---|---|---|---|---|
+| "Let viewers watch live work" off | none (a list of people emptied) | none | none | no User filter, no Created by / Modified by, on screen or in Excel |
+| live work on, "Show team members' names" off | "User 1", "User 2"… | none | a link-salted uuid | as members, with the numbers |
+| both on | as members read them | none | a link-salted uuid | as members |
+
+- **"User N" replaces "User A"** (D-385): numbered per link in Redis, first seen first numbered,
+  kept 30 days past last use; a person is their user id, so the same person has the same number in
+  cursors, the Takeoff panel, the Estimating user filter and grouping, the item history and the
+  Excel, and across reloads. The guest's own stand-in (`/me`) is not numbered.
+- **People are found by key and by value**, so a route added later is covered: keys
+  (`created_by_name`, `actor_name`, `owner_name`, `full_name`… any `*email`, `*avatar_url`,
+  `user_uuid`, `*_by_uuid`, `assignee*`) and values (a string equal to, or containing, a name, short
+  name, email or id of the workspace's members or of anyone who wrote items or markups on the
+  project). An answer that holds neither is sent untouched, unparsed. Not a person: a file's
+  `display_name`, the project's `client_name`.
+- **Sheets panel:** the app's Sheets panel shows no one in any setting (it has no who-is-where
+  markers, for members either); the guest page's fallback view keeps its sheet markers, numbered
+  the same way.
+
+Proved on the 3D test copy by scanning everything a guest tab received while it opened Takeoff
+(C-100), Earthwork, Annotations, Estimating and an item's history, for the 59 people's names,
+short names, emails and ids (132 strings): before, 15 hits (`created_by_name` "Bench E." on items,
+`actor_name` "Sara Williams" and "Bench Estimator" in the history); after, with live work off
+**0 hits** in 191 answers (7.3 MB) and the screen; names off **0 hits** in 265 answers and 37
+socket frames; names on, names only (16, as members see them), **0 emails, 0 ids**. The Excel from
+Estimating (all columns): live work off, no people and no Created by or Modified by column; names
+off, "User 1"; names on, the names. The grading report names no one in any setting. Two members
+(the estimator and Sara W.) on C-100: cursors "User 1", "User 2" before and after a reload, the
+Estimating filter "User 1" (the estimator, who made the items); names on, "Bench E.", "Sara W.".
+Gates, the quantity table, md5 and the earthwork smoke passed; every guest write 403.
