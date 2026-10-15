@@ -15644,3 +15644,31 @@ V-100 comparative), then removed: the member and the guest read the same rows ("
 again (two), sending no write; the member's rows were unchanged after a reload; the guest's Overlay
 tool greyed with the tip. Gates, the quantity table, md5 and the earthwork smoke passed; every
 guest write 403.
+
+## D-510: The share link's own pages are branded, and wrong passwords are slowed on the server (G6)
+
+The password page, and the "expired" and "no longer available" pages, share one frame: the IntelCost
+mark with "Takeoff and Estimating" under it, one card, "Powered by IntelCost" at the foot, at
+phone width too (`features/share/GuestGate.tsx`). The password card: a lock, the project's name,
+"This project is password protected. Enter the password to view it.", a password field with show
+and hide, one "View project" button, and "That password isn't right. Try again." on a wrong entry.
+The closed pages say what happened and to ask for a new link.
+
+- **The project's name before the password:** `/meta` names the project of a live link that still
+  asks its password, and nothing else (no presence, no save-a-copy, no data). As file-sharing pages
+  do: the recipient sees what they were sent before typing.
+- **Wrong passwords:** five wrong tries from one address on one link are free; then every try waits,
+  30 s doubling to 15 min, until a right password (which clears the count) or an hour with none.
+  Counted in Redis (every api process counts the same tries), in the one place a password is checked
+  (`share.service.check_password`: the password page's `/pass`, and the `X-Share-Password` header on
+  every guest route), so no route is a way round it. A try during the wait is refused 429
+  `password_rate_limited` with `Retry-After`, even when it is right; the page counts the wait down
+  with the button off. The address is the connection's: behind a proxy in production the api must
+  read the forwarded address (uvicorn `--proxy-headers`), or every viewer shares one count (for
+  Abdullah).
+
+Proved on the 3D test copy's link with a test password: before and after screenshots of each page
+(desktop and 390 px); show and hide; a wrong entry; the fifth wrong try started a 30 s wait, the
+right password in that wait was refused 429 on `/pass` and on `/bundle` alike, and opened the
+project once the wait ended. Gates (app and api), the quantity table, md5 and the earthwork smoke
+passed; every guest write 403.
