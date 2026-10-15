@@ -15765,3 +15765,28 @@ Answered in the day-2 brief, 2026-10-15, confirmed by Umer:
 - **N1:** Umer tries the T1 zoom patch himself; not applied. **N2:** T2 dropped. **N4:** row
   virtualisation stays its own later block.
 - **V6 parked:** who-is-where markers in the Sheets panel.
+
+## D-514: The wage basis "National Average" reads "Location-Adjusted Rates" (day-2 Task 1)
+
+The Wage Calculator's first basis is national wage averages adjusted for the project's area, so its
+name says so. Labels only: the basis key (`national_average`), the rate origins and every api field
+are unchanged.
+- **The card:** "Location-Adjusted Rates", "National wage averages adjusted for your project's area.
+  No data needed.", the "Recommended to start" chip kept.
+- **Everywhere the basis is named:** the Estimating tab's Wage Calculator strip and the calculator's
+  review and status (`BASIS_LABEL`), the partial-fill choice ("Fill the rest with Location-Adjusted
+  Rates (recommended)") and its question (W-01), N-01 ("Base wage estimated from national averages
+  adjusted for your project's area…").
+- **Open shop's filled crafts:** "Location-adjusted (index 0.58)", the index the project's own
+  calculation gives (replaces "National avg × local index (0.58)").
+- **"National" stays only where the figure is national, unadjusted:** the plain "National avg" tag
+  (a filled craft with no index), L-07 and its button ("Use national averages without a location
+  adjustment"), L-08 ("Location not set: rates are national average").
+- **Not labelled anywhere else:** the estimate's Excel export, project settings, onboarding and the
+  guest view carry no wage-basis label (checked: the export's text names no basis); there is no wage
+  PDF.
+
+Smoke on the 3D test copy (open shop, nothing saved): the basis picker; a review with two own rates
+(Laborer $15, Carpenter $20) whose 32 filled crafts read "Location-adjusted (index 0.25)", no
+"National" left on the page; the Estimating Excel (all columns) with no basis label in it. Gates,
+quantity table, md5 and the guest write proof passed.
