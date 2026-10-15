@@ -96,7 +96,20 @@ Answered on 2026-10-15 and done:
 | N8 | T6 | The rows from S2 on (S2–S4) reproduce the study to the cent. Our side moved only because curved outlines are now read with their arcs (+18 CY cut, +24 CY fill). The unexplained 0.24 % / 0.36 % stands. S5–M3 were rebuilt rather than recovered, giving 0.25 % / 0.62 %. | Nothing, unless you want the study's own S5–M3 modelling recovered. |
 | N9 | Promotion | `intelcost-infra/notes/2026-10-15_promotion_since_staging_merge_for_abdullah.md`: 10 migrations since staging (`f2c9a7d4e1b8` is tonight's), and D-470's out-of-date results. | Forward to Abdullah. |
 | N10 | X2b / F28 | The api half is built and committed: Blocks A and B (D-498, D-499). The frontend (C and D) waits on the four questions in `guest_full_view_tasks.md` §6. The test link on the 3D test copy (id 28) was regenerated twice and is now **off**, with pricing off. | Answer the four questions, then turn link 28 back on if you want it. |
-| N11 | Bug found | `GET /estimate/line` answers 500 for members too on a project with a classified item that has no line yet. The cause: the line sync puts a uuid into a text column (`estimate/service.py`, `classification_ref_id`). The app never calls this route, so nobody sees it. | A one-line fix (`str(...)`), if you want it. |
+| N11 | Bug found | **Fixed in the day run (D-500).** `GET /estimate/line` answered 500 on a project with a classified item that had no line yet. | — |
+
+## Day run 2026-10-15 (morning-report-2026-10-15\day-RUN_REPORT_2026-10-15.md)
+
+| # | Item | Where it stands | Your call |
+|---|---|---|---|
+| U1 | D6 guest Excel, pricing off | No amounts anywhere, but the export still has its money columns. They are formatted as money and every cell is blank or zero, so Excel shows "$ -". | Accept, or drop the money columns from a guest's export (small). |
+| U2 | Share link on the 3D test copy | The copy's link (id 28) was gone when the day run began (a revoke deletes it). D6 made two test links and revoked both, so the copy has none, as found. | Make one in Share when you want it. |
+| U3 | 49 lines flagged "Needs recalculating" at 08:56:49 | A member tab marked C-200's result stale with no drawing change. It came from the app's own stale check, never a guest's write. It did not come back on reload or on opening the Takeoff tab. My best guess is the dev server fully reloading that tab while it re-optimised dependencies. The next Calculate cleared it, and md5 was unchanged. | Watch for it; worth a look if a tester sees false ⚠ marks. |
+| U4 | D2 own later edit | An older edit replayed after you edited the same item again yourself is skipped, with a notice ("You changed … again after that"), rather than overwriting your newer edit. | Accept (my pick), or let your own older edit replay. |
+| U5 | D3 stored amounts | The editor takes price ids only. On save, a readable USD Stripe price also updates the stored amount the public price page shows. On the bench nothing is readable, so nothing changed. | Accept. |
+| U6 | D4 test page | The test made one blank page, which put a file in the bench bucket. It was cleared when the page was deleted (storage clear: 0 failed). | Note only. |
+| U7 | D6 scope | The spec's 4 questions were taken at their recommended answers. A guest also has no Forum tab and no Wage Calculator, even with pricing on. | Accept, or show the Wage Calculator read-only with pricing on. |
+| U8 | D3 save | Saving Professional unchanged set its `updated_by` to the throwaway admin used for the check. The account is deactivated, and the amounts and ids are unchanged. | Note only. |
 
 ## Found in the click sessions
 
