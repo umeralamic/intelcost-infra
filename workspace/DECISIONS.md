@@ -15174,3 +15174,19 @@ asks. Asked to match the grade icons' size, it is framed a little tighter (viewB
 drawing ~9 % larger) and its lines are heavier (ground 1.8, bench 2.2, where the design has 1.1 and
 1.3; the grade icons draw 2.5), so it reads as large as EXIST. GRADE and PROP. GRADE at 12 px. The
 Report button moved from after Calculate to right after CUT & FILL.
+
+## D-489: Site Features take their colour from a mid-tone palette of their own
+
+**Status:** Accepted (2026-10-15, founder's T0a follow-up). No quantity changes. Refines D-485.
+
+D-485 offered #1e293b (slate) as a new feature's colour: near black, it hid the drawing's
+linework as a fill and looked like a black contour or boundary line. Site Features now draw from
+their own palette of 14 mid-tones (Lab lightness 47–62): red, orange, amber, gold, lime, green,
+emerald, teal, purple, fuchsia, pink, rose, brown, olive. No near-black (slate, indigo, navy),
+nothing pale, and no blue or violet, which sat beside the boundary's, a selection's and a crossing
+contour's blue. The rule stays D-485's: the unused colour least like any the project's features
+use. Other measurements keep the measurement palette.
+
+Re-tested after a hard reload, three features through the dialog on C-200, drawn over the plan's
+own linework: green #16a34a, fuchsia #c026d3, olive #84862b, each a see-through fill with the
+linework showing through. Olive reads more quietly where it lies over green hatching and contours.
