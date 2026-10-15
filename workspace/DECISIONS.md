@@ -15985,3 +15985,53 @@ entry page with a wrong key and then the right one. The emails were checked with
 only, expiry only and neither (no "password", no "browser", "Or open:" in each). The api answered
 403 for a guest token and for an estimator member, 404 with no key and 409 for an old key. Gates,
 migration up, down and up, quantity table and md5 passed.
+
+## D-522: The Share dialog: the switch pauses, confirms, a summary, Preview as viewer (Umer, 2026-10-15)
+
+- **"Allow Anyone with Link to view" pauses the link; it doesn't revoke it.** Off sets `enabled = false`.
+  The main link and every email invite are then refused at once ("This share link is no longer
+  available."), and open guest tabs end on their next request (the guard re-reads the link). The
+  link row, its settings, access key, expiry and invite list are kept. On again, the same link,
+  settings, key, expiry and invites work again, and nothing is regenerated. The off text reads
+  "Off — only workspace members can open this project. Turn on again to restore the same link and
+  invites." Only Revoke deletes the link (its invites go with it), and Revoke is offered while off too.
+- **Confirms.** Regenerate asks "Make a new link?", with "Everyone using the current link and all
+  email invites will lose access. Invites must be resent." Regenerate now also gives every live
+  invite a new token: the old invite links die, the rows stay, and Resend sends the new one.
+  Revoke asks "Delete this link?", with "Everyone using it and all email invites lose access.
+  Settings and the invite list are deleted."
+- **Layout.**
+  - "Share outside your company · view only": the switch with "Layers: All" (or "Layers: 3 of 7");
+    then the link row (link, Copy Link, Preview as viewer); then the summary line; then live work,
+    pricing and save a copy; then Access key and Expires; then a small row with Regenerate,
+    Revoke and "Last opened…"; then the invites.
+  - A divider, then "Your team · can edit": "Everyone in this workspace can open this project.",
+    and under "Assigned to", "The first person listed is the primary assignee.", the list, Add
+    person, "Invite to workspace" and the Settings link.
+- **The summary line** reads "Viewers see:", then the pricing part in bold ("quantities and prices"
+  or "quantities only"). After it, only what applies: "N of M layers", "live work with names" or
+  "without names", "can save a copy with pricing" or "without pricing", "access key on", and
+  "expires Dec 31, 2026". It updates with every switch.
+- **The pricing hint follows the switch:** "Viewers see rates and costs." or "Viewers see quantities
+  only, no rates or costs."
+- **Preview as viewer** (owners and admins) opens `/s/<token>?preview=<workspace>.<project>` in a new
+  tab. That tab asks `POST …/share-link/preview`, with the member's own session, for a guest token
+  to the link as it is now, and opens the full guest app. No access key is asked, and nothing is
+  counted: not the link's last open, not an invite's open, not a wrong try. The member's other tabs
+  stay members. Another role gets 403; a link that is off or expired gets 409.
+- **Invite rows** read "Sent Oct 15" (the last send), then "· Opened Oct 16, 9:12 am" (the first
+  open), in the reader's own time. On a phone the email takes its own line.
+
+Proved on a duplicate of the 3D test copy (deleted after).
+- **Off and on:** off refused the main link and an invite link with 404, and that invite's open guest
+  session with 401. On again restored the same URL and all 4 invites, and each answered 200 again.
+- **The confirms:** both shown with Cancel changing nothing. A real Regenerate killed the old invite
+  link and the old URL (404), while the invite's new link answered 200. A real Revoke deleted the
+  link and its invites.
+- **The rest:** the summary was checked in three combinations, and the hint both ways. Preview
+  opened the guest app with a key set and no prompt, and the last-open time, invite opens and
+  wrong-try counters were unchanged. A non-manager's preview got 403. The invite rows read Sent and
+  Sent · Opened. At 390 px nothing scrolls sideways (two overflows found and fixed: the invite rows
+  and the team buttons).
+
+Gates, quantity table and md5 passed.
