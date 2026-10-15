@@ -15251,3 +15251,27 @@ Checked on the 3D test copy with each tool's first save aborted once, then Retry
 Count on C-200; Highlight, Boundary and a drawn Strip Area on C-100; a Site Feature on V-100. Each
 stayed drawn as not saved, and Retry saved it once. Every test markup was removed (the copy back to
 77 items, 190 shapes, md5 as before).
+
+## D-493: A reload while a drawing is saving loses nothing: the write outbox
+
+**Status:** Accepted (2026-10-15, night run X2, the founder's brief). No quantity changes.
+
+A drawing's create is written to this browser's storage (`intelcost.outbox`) as it is sent and
+cleared when any answer comes back; a reload, a closed tab or a crash in between leaves it there,
+and the takeoff screen sends it again when it next opens (a toast says so), once at a time. Only the
+creates the api answers idempotently on a client uuid are kept: the item with its first shape, a
+shape joining an item, a create-only shapes batch (contours, spots into their container), a markup
+(D-492's `client_uuid`) and a Strip Area (its `uuid`, "already back" counted as saved). Entries
+older than three days are dropped. The api takes a transaction advisory lock on the client uuid
+for these creates, so a replay beside the first send (two tabs, a remount) makes one row, never an
+item and an empty twin.
+
+Not kept: a boundary **replace** (it deletes the old outline; sent twice it would be refused), an
+Auto Merge that updates or deletes sections, and any edit. A reload during those keeps what the
+server last had.
+
+Checked on the 3D test copy, each tool drawn and the page reloaded with its save held: (A) never
+sent, and (B) received by the api with its answer lost. Linear, Area, Count (C-200), Highlight,
+Boundary (first on a sheet), Contour, Strip Area (C-100), Site Feature (V-100): one row each in
+every case, none lost, none doubled, the outbox empty after. Before: (A) lost the drawing; a
+Boundary and a Site Feature replayed twice at once made an empty second item (fixed by the lock).
