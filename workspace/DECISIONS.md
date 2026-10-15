@@ -16142,3 +16142,22 @@ Gates, quantity table and md5 passed.
 - **Parked** in `pending_umer.md` as X1: the reload in the split second after a guest session ends.
 
 Gates, quantity table and md5 passed.
+
+## D-525: The access key selects in one click in the invite email (Umer, 2026-10-15)
+
+- **No Copy button, no new page.** The bordered box draws the border only. The key inside it is its
+  own span, on its own line (`display:block; white-space:nowrap`), plain text and never a link,
+  20 px bold monospace. Only that span carries `user-select: all` (with the `-webkit-`, `-moz-` and
+  `-ms-` forms), so one click or tap selects the whole key where the client honours it. Clients that
+  ignore it fall back to normal selection, and a double-click or long-press on the one line still
+  takes it.
+- **Unchanged:** "Type it exactly as shown, including capitals and hyphens." stays under the box.
+  With no key set there is no box, no label and no note. The plain-text part is as before.
+
+Checked in MailHog on a duplicate of the 3D test copy (deleted after), mail guard on:
+- **One click:** at 1366 px and at 390 px, one click on the key selected exactly `7KQM-RT4X-WN9P`.
+- **Elsewhere in the box:** a click on the box's padding selected nothing.
+- **Double-click:** also took the whole key, hyphens included.
+- **No key:** the no-key email had no box and no note.
+
+The api gates passed.
