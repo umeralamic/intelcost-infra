@@ -19,9 +19,9 @@ from the last fetch (2026-10-12); if `staging` moved since, re-check the counts 
   the migrations below by itself. One thing to check on the box: the script stops unless
   `API_SERVICE` is set, and it ships as `API_SERVICE=""`. It is probably already set there.
 
-## Migrations (api): 9, one straight chain
+## Migrations (api): 10, one straight chain
 
-They run from staging's head `d383e7a2b5c4` to the new head **`e6b2d8a4c1f9`**. None changes a
+They run from staging's head `d383e7a2b5c4` to the new head **`f2c9a7d4e1b8`**. None changes a
 stored quantity.
 
 | # | Revision | After | What it does |
@@ -35,6 +35,7 @@ stored quantity.
 | 7 | `d410b8f3c1e5` | `d409c4e2a7b6` | Renames "Earthwork (Grading)" folders to "Earthwork" (should touch 0 rows) |
 | 8 | `c7d3e9a1b4f6` | `d410b8f3c1e5` | `earthwork_review.report_views` (JSONB, default `{}`), `truck_lcy` (default 12) |
 | 9 | `e6b2d8a4c1f9` | `c7d3e9a1b4f6` | `earthwork_review.contour_style` (JSONB, default `{}`) |
+| 10 | `f2c9a7d4e1b8` | `e6b2d8a4c1f9` | `project_share_link.show_pricing` (not null, default false): every existing link stops showing prices to viewers until its owner turns it on (D-497) |
 
 Numbers 3 to 7 are covered in more detail in `2026-10-12_f25_data_migrations_for_abdullah.md`.
 
