@@ -15362,3 +15362,28 @@ other settings unchanged); it was not revoked, being the project's one link.
 
 Checked: a Linear save aborted on C-200 showed its Retry on C-200 and not on V-100, and saved once
 on C-200. A 403 dropped the shape and showed "Refused for the test." Test items removed.
+
+**D-492 and D-493, the review's fixes (same night).** A review of the night's changes found the
+Retry path fragile under quick draws and lost answers. It is now as follows:
+- Each shape's save has its own promise. A second `mutate` took over the first's callbacks, so the
+  first's failure went unheard.
+- A pending shape goes only once saved: its write answered, or the refreshed items carry it. Another
+  shape's settle never takes it.
+- A draft's later shapes and its Retries join the draft's one item. When the first make failed, a
+  later shape makes it and the rest join. An old draft's Retry never takes over the armed draft.
+- A Retry whose first write did land is not sent again. A boundary replace sent twice would have
+  deleted the boundary, and a merge its own section.
+- Each write carries the sheet it was drawn on.
+- Only "no answer" or a 5xx is kept for Retry. A trial-cap refusal is not.
+- **The outbox:**
+  - it keeps writes that got a 5xx or an expired session;
+  - it replays only the signed-in person's writes;
+  - it skips an entry another tab has answered;
+  - Strip Area and shapes-batch creates take the same per-uuid lock.
+
+Checked:
+- **Count:** three marks drawn while saves failed showed three Retries, and gave one item with three
+  marks.
+- **Boundary:** a replace whose answer was lost kept the boundary.
+- **The X2 suite:** all eight tools, never sent and answer lost, one row each.
+- **Test rows:** removed (77 items, 190 shapes, md5 as before).
