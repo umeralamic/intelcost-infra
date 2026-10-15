@@ -15161,3 +15161,16 @@ the row so it can measure which tools fit before folding the rest into More, and
 placed after it. The group is now inside the earthwork toolbar, after its last tool (and its More),
 and counts in the fold's measure, so tools fold into More to make room for it rather than it being
 pushed off. Checked at 1,420 px and 1,036 px: the group starts 4 px after the last tool.
+
+## D-488: The CUT & FILL icon redrawn (E8); Report beside CUT & FILL
+
+**Status:** Accepted (2026-10-15, founder's design E8). No quantity changes.
+
+The CUT & FILL toolbar icon is the founder's drawing: the existing ground as a curve, the proposed
+grade as a flat bench with its two end walls, the cut between them in light red (#F7C1C1) and the
+fill in light blue (#B5D4F4), its paths exactly as given. The two fills are tokens
+(`--earthwork-icon-cut`, `--earthwork-icon-fill`, the same hues in both themes), as hard rule 4
+asks. Asked to match the grade icons' size, it is framed a little tighter (viewBox 1 1 22 22, the
+drawing ~9 % larger) and its lines are heavier (ground 1.8, bench 2.2, where the design has 1.1 and
+1.3; the grade icons draw 2.5), so it reads as large as EXIST. GRADE and PROP. GRADE at 12 px. The
+Report button moved from after Calculate to right after CUT & FILL.
