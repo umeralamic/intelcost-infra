@@ -276,6 +276,9 @@ small "1 in use" beside them; the page text runs them together.
   `/presence` are public and unthrottled. A per-IP limit at Caddy or the CDN, generous enough for one
   viewer polling every second (presence) and strict on repeated wrong passwords (the 401s), is not
   built.
+- **Invite emails (D-520):** migration `b8f4d6c1e3a5` (`project_share_link.password_sealed`); the api
+  image adds `cryptography`; set `SHARE_PASSWORD_KEY` (its own secret) in production, before any link
+  password is saved there.
 - **Day-2 run 2026-10-15:** one migration, `a7e3c5b9d2f4` (table `project_share_invite`, D-519); the
   worker image sends the new `share_invite` email (rebuild with the api); the wrong-password limit and the
   share endpoints read the client address, so run uvicorn with `--proxy-headers` behind the proxy (V4).

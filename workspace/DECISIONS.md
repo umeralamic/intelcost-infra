@@ -15919,3 +15919,33 @@ counted; a throwaway Essentials workspace saw the field greyed with the tip and 
 Invites, the day's count, the captured emails and the throwaway's workspace removed after. Gates
 (ruff, format, mypy; lint, typecheck, build), migration up, down and up, quantity table, md5,
 earthwork smoke and the guest write proof passed.
+
+## D-520: Invite emails carry the link's own password and expiry (Umer, 2026-10-15)
+
+Invites use the link's existing Password and Expires fields, and no other box (confirmed by Umer):
+- **Password set:** the email reads "Password: <password>". **Expiry set:** "Access expires on
+  <date>" (the day the Share dialog shows). **Neither:** the email says nothing about either, and
+  the link stays open. Replaces D-519's "never the password".
+- **The password is sealed to be emailable:** saving it in Share now keeps, beside its argon2 hash
+  (the login check, unchanged), the same password sealed with AES-GCM (`share/sealed.py`,
+  `project_share_link.password_sealed`, migration `b8f4d6c1e3a5`, the `cryptography` package). The
+  key is `SHARE_PASSWORD_KEY` when set (production sets its own), else derived from the JWT secret
+  (the bench). It is never sent to the browser (the link read says only `has_password` and
+  `password_in_invites`) and the field still shows "•••••• (set)". Clearing the password clears both.
+- **A password saved before D-520** has its hash only: Send invites is refused (409
+  `password_not_emailable`, "This link's password was saved before invites could include it. Type it
+  again in Password above, save, then send."), and Share says the same above the list.
+- **Changing them later sends nothing:** Share notes "Already-sent invites show the old password.
+  Resend to update them."; Resend uses the link's current password and expiry.
+- **Share's words:** "Invite viewers by email"; under the field, "View only. They can't edit. Each
+  person gets their own link."
+- **Pricing in a copy:** with Show pricing off, "Include pricing" is greyed and off; the api refuses
+  turning it on (422), turns it off when pricing is turned off, and never puts pricing in a copy the
+  link hides (the copy job reads include pricing only with Show pricing on).
+
+Proved on a duplicate of the 3D test copy (deleted after; the founder's link untouched by the
+test): password + expiry, password only, expiry only, neither: each email as above, the "neither" and
+"expiry only" emails without the word password; after the password changed, Resend carried the new
+one; an old (hash only) password refused with the message, sendable once saved again; the link's
+right password still opens it (200), a wrong one 401; Include pricing refused while pricing was off
+and turned off with it. Gates, migration up, down and up, quantity table and md5 passed.
