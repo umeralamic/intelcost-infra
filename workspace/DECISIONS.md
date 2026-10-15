@@ -15949,3 +15949,39 @@ test): password + expiry, password only, expiry only, neither: each email as abo
 one; an old (hash only) password refused with the message, sendable once saved again; the link's
 right password still opens it (200), a wrong one 401; Include pricing refused while pricing was off
 and turned off with it. Gates, migration up, down and up, quantity table and md5 passed.
+
+## D-521: The share link's password is an "access key" (Umer, 2026-10-15)
+
+Labels only: the database fields, the api's JSON keys and routes (`password`, `has_password`,
+`/password`) and `SHARE_PASSWORD_KEY` keep their names.
+- **Words:** Share's field is "Access key (optional)", "••••••" when set, "No access key" when not.
+  The guest page reads "Enter your access key", field "Access key", button "View project"; a wrong
+  try "That access key isn't right. Try again."; the wait "Too many wrong access keys. You can try
+  again in …" (the lockout itself unchanged). The email: "Access key" over the key in a bordered
+  monospace box (selectable as one piece), only when set; the expiry line only when set; "Or open:
+  <link>" under the button; footer "IntelCost — cloud takeoff and estimating."; no "browser" in it.
+  The old-key note and the save-copy refusal say "access key". No other user-facing "password"
+  about share links is left in the app or the api.
+- **Generate, Show, Clear** beside the field. Generate makes 8 characters from the browser's secure
+  random, from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (no 0/O, 1/I/L), as XXXX-XXXX, saves it through
+  the same call as a typed key, and leaves it shown. With a key already set it asks first: "Replace
+  the current access key?" / "Guests using the old key will need the new one." A typed key is saved
+  with Set or Enter. Show fetches the key (`GET …/share-link/password`, owners and admins only,
+  `Cache-Control: no-store`; a guest token or another role gets 403; never in the link's normal
+  read) and becomes Hide; the key is held in the panel only and is gone when the panel closes. A key
+  saved before D-520 (hash only) greys Show with "Saved before keys could be shown. Type or generate
+  a new one to replace it." (the api answers 409 `password_not_viewable`). Clear as before.
+- **The key is checked exactly as stored.** A generated key is upper case with its hyphen; a guest
+  typing it otherwise is refused. The email box and Show make copying it the easy way.
+- **The resend note** shows only while an invite was last sent before the key or expiry changed:
+  the link keeps `access_changed_at` (migration `c9a5e7d2f4b6`), set when the key or the expiry
+  actually changes (saving the same key or day again is no change); Resend clears the note for that
+  invite. Links untouched since the migration show no note.
+
+Proved on a duplicate of the 3D test copy (deleted after). The Share panel with no key, a generated
+key, hidden, shown, the replace prompt and an old key (Show greyed) were all checked. So were the
+resend note hidden after a send, shown after the key changed and hidden after Resend, and the guest
+entry page with a wrong key and then the right one. The emails were checked with key and expiry, key
+only, expiry only and neither (no "password", no "browser", "Or open:" in each). The api answered
+403 for a guest token and for an estimator member, 404 with no key and 409 for an old key. Gates,
+migration up, down and up, quantity table and md5 passed.

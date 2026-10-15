@@ -279,6 +279,12 @@ small "1 in use" beside them; the page text runs them together.
 - **Invite emails (D-520):** migration `b8f4d6c1e3a5` (`project_share_link.password_sealed`); the api
   image adds `cryptography`; set `SHARE_PASSWORD_KEY` (its own secret) in production, before any link
   password is saved there.
+- **Access key (D-521):** migration `c9a5e7d2f4b6` (`project_share_link.access_changed_at`). **Treat
+  `SHARE_PASSWORD_KEY` like a database password:** back it up with the other production secrets; use
+  a different value for staging and for live; never change it without a re-encrypt step. Changed or
+  lost, every saved access key stops being readable: Show and Send invites are refused until
+  each link's key is typed or generated again (guests are unaffected, they are checked against the
+  hash).
 - **Day-2 run 2026-10-15:** one migration, `a7e3c5b9d2f4` (table `project_share_invite`, D-519); the
   worker image sends the new `share_invite` email (rebuild with the api); the wrong-password limit and the
   share endpoints read the client address, so run uvicorn with `--proxy-headers` behind the proxy (V4).
