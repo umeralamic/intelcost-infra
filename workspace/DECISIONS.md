@@ -15190,3 +15190,20 @@ use. Other measurements keep the measurement palette.
 Re-tested after a hard reload, three features through the dialog on C-200, drawn over the plan's
 own linework: green #16a34a, fuchsia #c026d3, olive #84862b, each a see-through fill with the
 linework showing through. Olive reads more quietly where it lies over green hatching and contours.
+
+## D-490: Group by Sheet lists every line once: a Calculate's under a "Grading" group of its sheet
+
+**Status:** Accepted (2026-10-15, night run T4; the founder's S2 "yes"). No quantity changes. Display only.
+
+Group by Sheet built each sheet's rows from what is measured on it, so a line with no shape fell
+out: on the 3D test copy 49 of 59 lines were missing (every Calculate line), and C-200 had no group
+at all. Now a line with no shape is listed once, under the sheet it was made on (its `sheet_uuid`,
+legacy's Takeoff Ref.): a Calculate's lines in a "Grading" group after the sheet's measured rows,
+under D-474's headings (each Site Feature with its plan area, Stripping, Remaining site, Site
+balance) in the report's order; a manual-quantity line as a plain row. A site's Calculate lines go
+in one "Site: <name>" group after the sheets; a line with no sheet at all in "No sheet". Sub-items
+follow their parent. Rows on two sheets keep their per-sheet split, as before.
+
+Checked on the 3D test copy in all ten Group by × Layer tabs combinations: 59 items, none doubled,
+the same quantity per unit and the same TOTAL ($18.19) in each. The Excel export reads the same
+groups (the grid's `buildGroups`).
