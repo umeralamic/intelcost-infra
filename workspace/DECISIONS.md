@@ -16035,3 +16035,75 @@ Proved on a duplicate of the 3D test copy (deleted after).
   and the team buttons).
 
 Gates, quantity table and md5 passed.
+
+## D-523: Share dialog, polish and compact layout; a member opening a share link (Umer, 2026-10-15)
+
+**A. Access key**
+- **Matching is exact.** Capitals and hyphens count, as before. The email says, under the key box,
+  "Type it exactly as shown, including capitals and hyphens." (in the text part too). The guest
+  entry page says "Access keys are case-sensitive." under the field.
+- **A generated key is 12 characters,** XXXX-XXXX-XXXX, from the same alphabet (capitals and
+  digits, no 0/O, 1/I/L). Keys already saved (8-character or typed) keep working.
+- **The Show button is gone.** An eye sits inside the field at its right edge: "Show key" or "Hide
+  key", fetched only on click and only for owners and admins, as before. For an old key it is greyed
+  with "Saved before keys could be shown. Type or generate a new one to replace it." Generate and
+  Clear stay. The field is 13.5 rem wide, enough for XXXX-XXXX-XXXX in full.
+
+**B. Layout** (it fits unscrolled at 1366 × 768, with two invites and two assignees)
+- **Headers.** The section headers use the tool panels' own header: `components/ui/panel-header`,
+  pulled out of the Sheets, Takeoff, Assemblies and Bookmarks panels and the takeoff backdrop, which
+  all use it now. Same band, 12 px Inter bold, same colour.
+- **The guest section, top to bottom:**
+  - the switch "Anyone with the link can view", with "Layers: All ▾" on the right;
+  - the link, Copy link, Preview as viewer, and a ⋯ menu with Regenerate link and Revoke link (both
+    keep their confirms);
+  - "Last opened …" or "Not opened yet", then the summary line. With no key the summary says
+    "anyone with the link"; with no expiry it says nothing of one;
+  - the settings as switches, one line each, with no helper text and no pricing hint. "Live work"
+    is followed by "Show names" when on. "Show pricing" stands alone. "Allow saving a copy" has an
+    (i) carrying the copy note, then "Include pricing" when on (greyed and off while Show pricing
+    is off), then "Saved by N people" with who and when on hover;
+  - Access key and Expires on one row;
+  - Invites: "Invite viewers", the field ("name@company.com, … each person gets their own link")
+    and Send invites on one row. "View only. They can't edit." is gone. Rows read email · Sent ·
+    Opened · Resend · Remove.
+- **The switch** is the takeoff settings' Switch, moved to `components/ui/switch`.
+- **The team section, three lines:**
+  - "Everyone in this workspace can open this project. Manage members ›";
+  - "Assigned to" with initials and name chips, "Primary" on the first, an × each, then + Add
+    person and Invite to workspace;
+  - the primary-assignee sentence is gone.
+- **Off is unchanged:** one line.
+
+**C. A signed-in person opening a share link**
+- **A member of the link's workspace** opens the project as themselves.
+  `GET /api/share-link/{token}/as-member` (the link's or an invite's token) answers the project to
+  a member and 404 to anyone else; nothing is counted. The link's page then loads the project, and
+  the takeoff screen shows "You're a member — this is the full project. Use Preview as viewer to
+  see the guest view." (dismissible; flagged in this tab's sessionStorage). The tab never becomes
+  a guest tab, and the session is not touched.
+- **Signed in but not a member:** the guest view, in that tab only, with their own session kept.
+- **When a guest session ends** (key changed, link off, regenerated, expired), the guest's first
+  refused request (401) ends the guest session in that tab and replaces the page with the link's
+  own page: the access key page or "no longer available". The sign-in page and "Name your
+  workspace" are never shown, and the person's session is kept. As a backstop, Home sends a guest
+  with no workspace back to the link. This was the earlier finding: a guest's 401 was never
+  handled, so the lost-workspace path took the tab Home with no workspace.
+- **Known edge:** a guest tab that makes no request keeps showing what it had until its next
+  request. A reload in the instant between that refusal and the page change loads the person's own
+  session on the project URL ("No such project").
+
+Proved on a duplicate of the 3D test copy (deleted after).
+- **Dialog and key:** at 1366 × 768 the dialog fits unscrolled (scroll height 467 of 467, and 489
+  of 489 with every setting on). The ⋯ menu was checked. A generated 12-character key showed in
+  full; the eye's hide and show (200) and the old key's greyed eye were checked. At 390 px nothing
+  scrolls sideways (one overflow, the key row, found and fixed).
+- **Email and matching:** the email carries the exact-typing note. Lower case and no hyphens were
+  refused (401) and the exact key opened (200); an 8-character key still opened.
+- **A member** opened the link and got the project with the banner: not a guest tab, session the
+  same. A key change left them as they were.
+- **A non-member,** signed in, got the guest view with their session kept. A key change took the
+  tab to the access key page with no stop on the way, and the link off showed "no longer
+  available", with their session kept both times.
+
+Gates, quantity table and md5 passed.
