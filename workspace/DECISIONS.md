@@ -15861,3 +15861,24 @@ Estimator", "Sara Williams", salted ids, no avatar or email (the email typed in 
 out); names off, "User 1", "User 2"; live work off, no author at all. New Post, the two votes, Report
 reply and Post reply greyed, the tip on them; 8 Forum writes and the staff reports read with a guest
 token, 403. Gates, quantity table, md5, earthwork smoke and the guest write proof passed.
+
+## D-518: "Log in or sign up to save this project to your workspace" (day-2 H3)
+
+While the owner lets viewers save a copy, a share link's guest has a header button, "Log in or sign
+up to save this project to your workspace". It ends the guest session in that tab and opens Log in
+with a return to `/s/<link>?save=1` (Log in's "Sign up" link carries the same return). Back on the
+link with a member's session, the page runs the saved-copy flow (D-384) at once into the person's
+active workspace, numbered as D-515, and says what happened in the link's own frame: "Saved to <workspace>…"
+with Open the copy, "You already saved a copy in <workspace>." with Open the copy, or the api's own
+refusal in words ("The owner has not allowed saving a copy of this project.", the plan's, the
+trial's), with See plans where a plan is the reason and View the shared project. An expired or
+closed link shows the link's own expired or no-longer-available page. A password link reuses the
+tab's viewer pass, or asks for the password first. The guest session now carries
+`allow_save_copy`.
+
+Proved on the 3D test copy's link: sign up as a new throwaway from the guest's button: back on the
+link, "Saved to H3's workspace…", the copy "Hidden Valley Rebid — 3D test (shared copy)" opened;
+log in as Sara W.: "Saved to Bench Construction Test…"; saving off: "The owner has not allowed
+saving a copy of this project." with View the shared project; link expired: "This share link has
+expired." Both copies, the throwaway's workspace and the save records removed after. Gates,
+quantity table, md5, earthwork smoke and the guest write proof passed.
