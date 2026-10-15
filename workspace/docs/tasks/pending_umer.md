@@ -70,17 +70,31 @@ Each is a default I picked to finish the block; answer by number like the others
 
 ## Run 2026-10-15 (morning-report-2026-10-15\RUN_REPORT_2026-10-15.md)
 
-Answered on 2026-10-15 and done: R1, R2, R5, R6 kept as recommended; R3 (D-479), R4 (D-478), R8 parts
-1–3 (D-483), R10 (D-481), R11 (D-482). R7 kept for now, with a proposal below. N7 is still yours
-(fps at 5×). Answer the rest by number.
+Answered on 2026-10-15 and done:
+- R1, R2, R5 and R6 were kept as recommended.
+- R3 (D-479), R4 (D-478), R8 parts 1–3 (D-483), R10 (D-481) and R11 (D-482) are done.
+- **The night run of 2026-10-15** closed S1 (no soft zoom; see N1 below) and S2 (built, D-490). It
+  closed S3's interval part (built, D-491) and parked S3's batch entry. R9 was re-run (kcp
+  comparison §8).
+- N7 is still yours (fps at 5×). Answer the rest by number.
 
 | # | Item | Where it stands | Your call |
 |---|---|---|---|
-| S1 | T3 (zoom) | Not committed. A zoom's frames go to the GPU re-drawing the overlays (contours, the V-100 lines, hatching) at every frame's scale; React is ~100 ms of a 6.5 s zoom. Letting the browser scale the stage as a picture during the wheel took zoom from 21 to 57 fps, but the settled view was not always identical: about one landing in four stayed slightly soft (forcing a fresh layout after landing did not fully cure it). | (a) accept a soft moment after some zooms for 57 fps, (b) leave as is (21–25 fps), or (c) a later block: cache each overlay layer as its own bitmap per zoom. (Recommended: c, about a day; b meanwhile.) |
-| S2 | E1 (R7) | The Sheet view lists each sheet's rows from what is measured on it; a calculated earthwork line has no shape (49 lines, 0 shapes on the copy), so from the code it is not listed under any sheet there. Proposal in the run report: a Grading group under the sheet the Calculate was made on, with the same feature headings. | Build it? (Recommended: yes, about half a day; display only.) |
-| S3 | R8 | Two parts of the X4 proposal were not picked: offer the difference of the last two contours as the interval; batch entry (draw several, give the first level, the rest follow in drawing order). | Want either? |
-| R9 | 2.8 | The .kcp input comparison was not re-run (later, as you said). | When? |
 | S4 | for your record | On the copy, a Calculate was made at 22:47:56 UTC from another browser (not my scripts): same result (md5 fab4d151), it cleared the 49 stale flags set at 21:12. A Work Boundary shape was made at 21:13, not on C-200 (the sheet's key did not move). | Nothing, unless that was not you. |
+
+## Night run 2026-10-15 (morning-report-2026-10-15\NIGHT_REPORT_2026-10-15.md)
+
+| # | Item | Where it stands | Your call |
+|---|---|---|---|
+| N1 | T1 zoom | The patch (`night-T1-stretch-and-fresh-layer.patch`) stretches the stage while wheeling and gives it a fresh layer at the landing. Zoom went from 26–40 to 43–55 fps. Over 50 zooms, 0 stayed soft after settling (the 1-in-4 soft landings are gone). The test as written is "sharp 300 ms after stopping": 26–27 of 50 are, against today's 39 of 50, because the landing waits about 60 ms more. The cause on both sides is the sheet's pdf.js redraw (0.15–0.9 s on C-200), not the overlays. Not committed, as the brief said. | (a) Commit the patch and judge "sharp" as "sharp once landed" (recommended); (b) keep the 300 ms bar, which needs a pre-drawn sheet pyramid (multi-day); (c) leave zoom as it is. |
+| N2 | T2 | Not built. Per-layer bitmaps speed the overlays, which N1 already does, but they don't shorten the sheet's redraw, so they can't pass the 300 ms test either. | Agree to drop T2 (recommended), or say what it should prove instead. |
+| N3 | X2b full guest app | One slice is built (D-497): "Show pricing" off by default and enforced on the server, "Sign up" on the guest page, and direct writes with a pass refused. The full app in guest mode is F28, specced in `guest_full_view_tasks.md` (§6 has four questions), at about two days. | Answer §6's four questions (recommended: the defaults given), then go. |
+| N4 | X3 big projects | With 1,000 items (production build): sheet 5.7 s, Estimating open 2.9–3.2 s, Group by 0.7–4.1 s, zoom 28–37 fps, pan 60 fps. The api reads were fixed (D-494). What is left is laying out a thousand-row table (already `table-fixed`). | Row virtualisation in Estimating and the Takeoff panel, about a day (recommended, as its own block). |
+| N5 | Metric | `METRIC_ENABLED` no longer exists. The api setting went with D-396 (already on staging), the app never had its own flag, and the bench Compose dropped it. Metric is on for everyone. | Nothing to do. |
+| N6 | Share link on the 3D test copy | Tested with the copy's own link and put back exactly as found (same token, no password). It was not revoked, because it is the project's one link and may be in use. | Say if it should be revoked. |
+| N7b | X2 reload limits | A boundary **replace**, and an Auto Merge that rewrites sections, are not kept for replay: sent twice, they would be refused. A reload mid-save keeps the old outline. | Accept for now (recommended). |
+| N8 | T6 | The rows from S2 on (S2–S4) reproduce the study to the cent. Our side moved only because curved outlines are now read with their arcs (+18 CY cut, +24 CY fill). The unexplained 0.24 % / 0.36 % stands. S5–M3 were rebuilt rather than recovered, giving 0.25 % / 0.62 %. | Nothing, unless you want the study's own S5–M3 modelling recovered. |
+| N9 | Promotion | `intelcost-infra/notes/2026-10-15_promotion_since_staging_merge_for_abdullah.md`: 10 migrations since staging (`f2c9a7d4e1b8` is tonight's), and D-470's out-of-date results. | Forward to Abdullah. |
 
 ## Found in the click sessions
 
@@ -256,6 +270,7 @@ small "1 in use" beside them; the page text runs them together.
 | # | File:line | What it is | Your answer |
 |---|---|---|---|
 | S3 | drafts/c200_acceptance_tasks.DRAFT.md:276–313 | C-200 gap: 11 questions, parked on purpose by D-232. | Later (2026-10-11) |
+| S3b | RUN_REPORT_2026-10-15 R8 | Contour batch entry: draw several, give the first level, the rest follow in drawing order. | Later (2026-10-15, the night brief) |
 | D7 | DECISIONS.md:9848 (D-271) | About 25 site-stitching calls made while building. | Later: parked with C26 (2026-10-11) |
 | D16 | DECISIONS.md:12424 (D-340) | The 47.9 GB storage backup at `E:\bench-backups\minio-intelcost-local-2026-10-10.tar`. | Later: keep until MinIO is retired (around 2026-10-18), then delete. Tied to the MinIO retirement, already tracked; no separate reminder (2026-10-11) |
 | D17 | archive/OVERNIGHT_REPORT_2026-10-10.md:52 | Moving the repos onto the Linux disk. | Later: parked, revisit later (2026-10-11) |
