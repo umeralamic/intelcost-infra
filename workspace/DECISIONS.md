@@ -15611,3 +15611,20 @@ The grading report covers what the read-only Volumes panel showed, so the guest'
 three surfaces, Report and Check grades. Members are unchanged. Smoke: the guest's Earthwork on
 C-200 lists no Volumes (`guest-G3-earthwork-no-volumes.png`), its views all draw; a member's
 Earthwork and its Calculate dialog open and close as before.
+
+## D-508: One tip on every greyed control a link's guest hovers, with Sign up (G5)
+
+A guest hovering any greyed tool, button, field or menu item sees one tip, in the app's popover
+style: "Sign up for Professional to use this." and a "Sign up" link (it ends the guest session in
+that tab and opens Sign up, as the header's button does). The tip stays while the pointer moves
+onto it. It is set in one place (`features/share/GuestTips.tsx`, with `useViewOnlyTitles`, which
+now takes the greyed controls' own titles away while the tip stands in for them and gives them
+back when a control is enabled again); the menus' inline reason reads the same sentence (it
+replaces D-505's "View only. Sign up to take off your own plans.").
+
+Covered on the 3D test copy (every greyed control on screen, hovered one by one; 61 of 61 in view
+on Takeoff showed the tip): Takeoff: Undo, Redo, Scale, Linear and its mode caret, Segment, Area
+and its mode caret, Count, the sheet's scale chip, every item row's Resume and Change colour;
+Earthwork: Contour, Trace, Spot Elev., Boundary, Site Features, Stripping, Match line, Calculate;
+Annotations: Undo, Redo, Scale; the item menu: Convert to rough measurement, Change
+classification… and every other greyed entry; Estimating: Expand components. Members are unchanged.
