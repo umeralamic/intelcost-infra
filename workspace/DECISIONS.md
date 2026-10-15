@@ -15589,3 +15589,17 @@ link, as found:
 - the member's own header and session unchanged.
 
 Gates, the quantity table, md5 and the earthwork smoke all passed.
+
+## D-506: Pan works for a seat that cannot measure; Space+drag pans everywhere (G1)
+
+A link's guest, and any Viewer, could not pan with the Pan tool: the takeoff screen forced the
+active tool to Select for every seat without takeoff rights, Pan included. Pan only looks, so it
+is kept. Space held while dragging with the left button now pans too, in every tool and for every
+seat (legacy had no Space drag; asked for the guest view, and a member gets it as well). The
+middle and right drags and the wheel's zoom were already working and are unchanged. A touchpad's
+two-finger scroll zooms, as it does for a member (the wheel zooms, never scrolls, since A1); a
+touchpad drags the sheet with Pan or Space.
+
+Proved on the 3D test copy's link in a guest tab: the Pan tool, Space, middle and right drags each
+moved the view; the wheel and a pinch zoomed. Gates, the quantity table, md5 and the earthwork
+smoke passed; every guest write 403.
