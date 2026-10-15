@@ -15275,3 +15275,23 @@ sent, and (B) received by the api with its answer lost. Linear, Area, Count (C-2
 Boundary (first on a sheet), Contour, Strip Area (C-100), Site Feature (V-100): one row each in
 every case, none lost, none doubled, the outbox empty after. Before: (A) lost the drawing; a
 Boundary and a Site Feature replayed twice at once made an empty second item (fixed by the lock).
+
+## D-494: Big projects: item reads memoise uuids per request; Estimating builds environments lazily
+
+**Status:** Accepted (2026-10-15, night run X3). No quantity changes. Speed only.
+
+Measured on the 3D test copy with 944 test items (472 Area, 472 Linear, on V-100 and A101; removed
+afterwards), dev bench, 1,600 × 900:
+- **The api's item reads** asked for the same few layers' and folders' uuids once per item, one
+  query each. `_uuid_of` now remembers them for the request: the item list went from 3.2 s to 0.27 s,
+  the project's item details from 3.3 s to 0.8–0.9 s, and one sheet's from 1.7 s to 0.26 s.
+- **Estimating** built every line's formula environment, each a pass over every item, though only
+  lines with cost components or a formula-driven machine read it. It is now built lazily, once per
+  item per render. Its number formatters are now made once, not per cell. A Sheet-view row's host
+  and a parent's sub-items are now map lookups. Opening the tab went from 15 s to 9 s, and Group by
+  Sheet from 5.7 s to 3.8 s.
+- **Still over 1 s, not fixed tonight:** in the dev build, opening the sheet (13–24 s), opening
+  Estimating (9 s) and switching Group by (2–3.8 s). What remains is rendering and laying out a
+  thousand rows and shapes (React dev mode, layout of the table). The fix is row virtualisation in
+  Estimating and the Takeoff panel, which is a block of its own. Zoom on V-100 with 472 shapes is
+  18–23 fps (the T1 patch addresses it); pan is 57–59 fps.
