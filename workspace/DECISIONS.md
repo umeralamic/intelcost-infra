@@ -15333,3 +15333,21 @@ Production build on the bench, three runs each:
 
 The New Project dialog stays in the main bundle: the empty Home and the Open menu show it at once.
 zod and react-hook-form stay too, because the sign-in form uses them.
+
+## D-497: Share links: "Show pricing", off by default, enforced on the server; "Sign up" on the guest page
+
+**Status:** Accepted (2026-10-15, night run X2b, the first slice of F28). No quantity changes.
+
+The guest page showed every viewer the estimate's rates and costs. The share dialog now has "Show
+pricing" (off by default, and off for every existing link: migration `f2c9a7d4e1b8`,
+`project_share_link.show_pricing`). Off, the guest bundle carries no cost rows at all, so nothing
+can be read from the network, and the guest Estimating shows Description and Qty only (wastage is a
+pricing input too). On, it is as before. Any visitor gets a "Sign up" button in the guest header.
+
+A share pass was tried directly against the api: create an item, create a markup, delete items,
+change the share link (each 401: a pass is not a session) and a POST to the guest bundle (405). No
+row was written. The full app in guest mode is F28, specced in `guest_full_view_tasks.md`.
+
+Checked on the 3D test copy's own link: pricing off gave 0 cost rows and two columns, on gave 1 row
+and four. The link was then put back exactly as found (enabled, no password, the same token, the
+other settings unchanged); it was not revoked, being the project's one link.
