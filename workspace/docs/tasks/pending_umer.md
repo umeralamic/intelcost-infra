@@ -111,6 +111,19 @@ Answered on 2026-10-15 and done:
 | U7 | D6 scope | The spec's 4 questions were taken at their recommended answers. A guest also has no Forum tab and no Wage Calculator, even with pricing on. | Accept, or show the Wage Calculator read-only with pricing on. |
 | U8 | D3 save | Saving Professional unchanged set its `updated_by` to the throwaway admin used for the check. The account is deactivated, and the amounts and ids are unchanged. | Note only. |
 
+## Guest view fixes 2026-10-15 (morning-report-2026-10-15\guest-REPORT_2026-10-15.md)
+
+| # | Item | Where it stands | Your call |
+|---|---|---|---|
+| V1 | Your share link on the 3D test copy | The copy had one link (id 32, made 13:25, with a password I don't know), and a project has one link. I used it for every test (password, expiry, live work, names changed and changed back), then restored its database row exactly from a snapshot taken first: same URL, password, expiry and switches. Any guest tab you had open on it ended when its password changed; open the link again with your password. | Note only. |
+| V2 | G1 Space+drag | Added for every seat, members too (legacy had none). A touchpad's two-finger scroll still zooms, as it does for a member; a touchpad drags with Pan or Space. | Accept, or make two-finger scroll pan (members too). |
+| V3 | G2 guest overlay eye | A guest's show/hide of an overlay lasts in that tab only and writes nothing. | Accept. |
+| V4 | G6 the address the password limit counts | Five wrong tries per link per address, then 30 s doubling to 15 min. Behind a proxy the api must read the forwarded address (uvicorn `--proxy-headers`), or every viewer shares one count (for Abdullah). The password page also names the project before the password, as file-sharing pages do. | Accept. |
+| V5 | G7 times | Every change showed on the guest within about 2 s of the member's action; most of that is the member's own save (the guest refetched 0.3–0.9 s after it landed). The first, cold run read the draw at 3.5 s and a rename at 2.5 s. Calculate itself takes 15 s in the member's browser. | Accept. |
+| V6 | G4 "sheet markers" | The app's Sheets panel shows no one, for members either (no who-is-where markers there). Only the fallback guest page has sheet markers, numbered the same way. | Accept, or add who-is-where markers to the Sheets panel (members and guests). |
+| V7 | G4 emails and ids | A guest never gets an email, avatar or a person's real id, even with names on (ids are a link-salted uuid). Live work off also drops the Created by and Modified by columns from Estimating and its Excel. | Accept. |
+| V8 | G7 Calculate on C-200 | The live test ran Calculate twice on the copy's C-200: the same numbers were stored again (md5 `fab4d151…` unchanged), so only the result's time moved. LF 28 was renamed and named back twice. | Note only. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
