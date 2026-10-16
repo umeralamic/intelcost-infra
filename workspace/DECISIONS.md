@@ -16291,3 +16291,49 @@ has them).
 - **Live replacement.** The guest's view switched to the member's result live.
 - **Unchanged elsewhere.** The original copy's C-200 md5 is `fab4d151…`, unchanged. Gates and the quantity
   table passed.
+
+## D-528: An undercut counts existing ground only (F29 Block 0.5A, Q13; night run 2026-10-16, Task 2.1)
+
+A Site Feature's undercut was a flat slab, area × depth. In a fill area it counted, as dug soil, the band between
+existing ground and the subgrade, which is fill.
+
+1. **The rule.** The undercut's bottom is the subgrade less its depth d. What is dug is the soil between that
+   bottom and the lower of existing ground and the subgrade. With Δz the graded subgrade above existing ground,
+   the dug depth at a point is d − max(0, Δz), never below 0. Δz is the volume prisms' own, with strip and
+   section depth already folded in. So:
+   - in cut, d (unchanged);
+   - in fill, d less the fill;
+   - where the fill is d or more, nothing.
+2. **Exact (hard rule 3).** Over each prism Δz is linear. The undercut's extent, clipped to the prism and cut at
+   Δz = 0 and Δz = d, integrates a linear depth in closed form (area and first moments). A part of the extent no
+   prism covers keeps the flat depth d (`lib/takeoff/earthwork/undercut.ts`). The replacement fill and the spoil
+   follow the dug volume, as before.
+3. **The fringe.** The undercut's offset fringe outside the feature's outline uses the graded surface there.
+4. **Out of date, nothing written.** A feature with an undercut adds "q13" to its key, and the version key of a
+   sheet or site with one reads "v6u" ("v5u" for a site).
+   - **How it reads.** A result stored before reads out of date by its version alone (D-470's way): no stale
+     mark is written and nothing is recalculated. The panel says "Out of date: calculated before an undercut
+     counted existing ground only. Press Calculate to update these quantities."
+   - **Results without an undercut** keep their key.
+5. **Which results read out of date once.** Three stored results hold an undercut:
+   - **the 3D test copy's C-200.** Its stored result and md5 (`fab4d151…`) are unchanged;
+   - **the duplicate made for tonight's checks;**
+   - **Hidden Valley Spec Building Rebid's C-200.** It was computed by the v5 engine, so it already read out of
+     date (D-470), and nothing changes for it.
+
+   No site result holds one.
+
+**Checks (quantity table, worked by hand):**
+
+| Case | Expected |
+|---|---|
+| 7,000 SF pad, subgrade 2.0 ft above existing ground, 6.5 ft undercut | **1,166.67 CY** (flat, as before: 1,685.19) |
+| The same pad in cut | unchanged at **1,685.19** |
+| The pad across a plane, Δz = 4x − 1 | **1,393.52** |
+| The pad under its own 0.5 ft section | **1,166.67** |
+
+**On a duplicate of the 3D test copy,** a member's Calculate changed:
+- the Building Pad's 48 in undercut from 2,596.05 to **130.65 BCY**, because the pad is in fill averaging about
+  4.4 ft;
+- T6's from 55.56 to 21.32 BCY;
+- T5's from 118.52 to 8.71 CY.
