@@ -17556,3 +17556,108 @@ run the guard refused its visit and work-session writes, but the copy loaded.
   copy. With `__benchOpen` set, it opened the fresh duplicate directly.
 - **Node** parses the four files.
 - **The quantity table,** which imports `lib/bench.mjs`, passed: 344 rows.
+
+## D-567: A guest's Calculate over a current result says "The saved result is up to date." (night run 2026-10-17, A0)
+
+**The rule (D-527, unchanged).** A guest's Calculate is offered only while the saved result is out of date or missing. Over
+a current result it is greyed, and its tip read "Sign up for Professional to use this.", the tip every greyed control on a
+guest page shows, which read like a plan limit (D-562).
+
+**Built.**
+- **`features/share/view-only.ts`:** a greyed control may carry its own reason, `data-guest-reason`. `guestTipFor` reads it
+  (on the control, or on the control its wrapper holds) and falls back to the Professional tip. `useViewOnlyTitles` puts
+  that reason in the control's `aria-description`, and follows the attribute as it changes.
+- **`GuestTips.tsx`:** shows the control's own reason alone, with no Sign up link, since signing up would not change it.
+  Every other greyed control keeps "Sign up for Professional to use this." and its link.
+- **`useVolumes.tsx`:** `localUpToDate`, true while a guest's saved result is current. **`ProjectTakeoff.tsx`** gives the
+  Calculate button the reason "The saved result is up to date." then (`CalculateButtons.tsx`, `guestReason`).
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", through its own link:
+- **Current:** the member calculated C-200 (saved 22:16:10 UTC). The guest's Calculate was greyed; its tip read "The
+  saved result is up to date." with no Sign up link. Contour, greyed, still read "Sign up for Professional to use this. Sign
+  up".
+- **Out of date:** the member added a soil layer. After a reload the guest's Calculate was enabled, with no reason; it ran
+  and read "Calculated in your view, not saved to the project."
+- **Writes:** the guest sent only its link's two session POSTs (22:17:28), none during the Calculate. The saved result
+  stayed at 22:16:10.
+- **Gates:** pass. **Quantity table:** passed, 344 rows.
+
+## D-568: The pipe catalog's last blanks: RCP barrel ODs, derived CMP ODs and Wall C, ACPA for Wall B, and the later rows (night run 2026-10-17, A1–A6)
+
+Docs (`docs/tasks/pipe_catalog_DRAFT.md`) and the catalog's data in the app (D-569).
+- **A1, RCP's OD.** Trench width and displacement use the barrel OD, ID + 2 × wall. Rinker's printed OD is the bell's; it is
+  kept as "bell OD" only and never used. A 12 in Wall B pipe is 16 in, not 23 (quantity row `util-A1-rcp-barrel-od`).
+- **A2, CMP's OD:** OD = ID + 2 × corrugation depth + 2 × thickness, with a depth of 0.5 in for 2-2/3 x 1/2 and 1 in for 3 x 1
+  and 5 x 1. Every size and gage is filled, marked "derived: corrugation depth", and pickable (rows `util-A2-…`).
+- **A3, RCP Wall C at 12–21 in,** by ACPA's rule (Wall A = the diameter in feet, in inches; B = A + 1; C = B + 0.75). The
+  draft first shows the rule giving every printed Wall C from 24 to 96 in (15 of 15; row `util-A3-rcp-wall-c-rule` checks
+  it in code). Filled: 2-3/4, 3, 3-1/4 and 3-1/2 in, marked "derived: ACPA rule". Two things the check showed:
+  - the same rule gives every printed Wall B, 12–96 in, except ACPA's 33 in misprint;
+  - ACPA's printed Wall A column is not the rule's A below 36 in (1-3/4 at 12 in … 2-7/8 at 33 in); Wall A is not in the
+    catalog.
+- **A4, RCP Wall B:** ACPA's Table 2 (S6, ASTM C76) is the source, "association citing the standard"; Rinker (S5) is the
+  cross-check and agrees at every size but 33 in, where ACPA prints 3-1/4 in and the row keeps 3-3/4 in (ACPA's own
+  weight, Rinker and the rule), noted.
+- **A5, sheets citing F714, M36 or A760: none with the same dimensions,** so HDPE pressure and CMP stay "Unverified
+  source". Read:
+  - Viaflex's PE4710 IPS sheet (S20, October 2025): cites ASTM F714 from 4 in, but stops at 4 in and has no DR 17. Its 4 in
+    DR 11 OD (4.500) and wall (0.409) agree with S7; its ID (3.682) is OD − 2 × wall, where S7 prints the average ID
+    (3.633);
+  - Contech's HEL-COR flier (S21, 2017) and nestable pipe specification (S22, 2016): both say AASHTO M 36 or ASTM A760;
+    the flier lists sizes and gages for heights of cover only, and neither prints a thickness;
+  - JM Eagle's HDPE pipe is listed to F714 only on a distributor's pages, not used.
+- **A6, later rows** (the draft only, not loaded in Block 2): PVC Schedule 40 at 4 and 6 in, PE water service tube SDR 9 at
+  3/4–2 in, and HDPE DIPS, all blank; dual-wall HDPE at 42, 48 and 60 in (ADS, ODs 48, 54 and 67 in for reference) and
+  ductile iron at 30 and 36 in (McWane, ODs 32.00 and 38.30 in, walls for five classes), as their sheets print them.
+- **What is still blank:** only C909's wall-only walls (4, 14, 18 and 20 in, and Class 165 at 6–12 and 24 in). Nothing
+  that drives the trench width is blank.
+
+## D-569: The pipe catalog and the trench engine in code (F29 Block 2B, and 2D's section, protection and exact integration)
+
+**Built** (`intelcost-app-react/src/lib/takeoff/earthwork/utilities/`, pure: no React, no network):
+- **`catalog.ts`:** every row of the draft with its source and mark (D-526, D-550 C2, D-568). PVC sewer 4–48 in on D3034
+  by default and F679 at 18–36 in as the alternate per run (D-563), no 33 in (D-565); C900; C909 on cast-iron ODs, C900's
+  at 4, 14, 18 and 20 in (D-564); ductile iron by class; RCP Wall B and C with barrel ODs and the bell kept apart; HDPE IPS
+  and dual wall; CMP by gage with derived ODs; copper K and L; conduit Schedule 40 and 80.
+  - `resolvePipe`: the OD and ID a run uses. A typed OD is flagged "OD typed by <user>". A blank wall takes the closest
+    published wall, flagged "Wall not published for this size: <wall> in from <class or size> used." (D-560).
+  - `unverified`: "Unverified source" for a row whose source names no standard.
+- **`trench.ts`:** Utility settings with U-UT27 and U-UT28's defaults; the pipe width; Auto bucket; the box (the run's,
+  a typed width, or the smallest listed box that fits); the width rule and its label; depth ranges.
+- **`section.ts`:** vertical, sloped (with rock cut vertical below, Q11) and benched walls; exact areas between any two
+  heights; bedding, pipe zone (less the pipe) and backfill.
+- **`protection.ts`:** the slope at a station by federal OSHA or the geotech table (§3.7), water and caving counting as C,
+  the forced box from 5 ft, benching where allowed, and the notes and flags of spec §18.
+- **`quantities.ts`:** a run on a profile of knots; the cuts inside each interval (h at 5 and 20 ft, the rule's limits,
+  the cave-in depth and the bench levels; the bottom against layers and water; the ranges); the prismoidal rule on every
+  piece. It gives excavation by layer, rock and its LF, the zones, native and imported, spoils, pipe LF by invert depth,
+  protection LF by method and trench depth, dewatering LF and stretches, the spec-width quantities and restoration SF.
+  `averageEndArea` is the profile's reading table.
+
+**Quantity rows** (`intelcost-infra/browser/lib/utility-cases.mjs`): 33 rows, every one right. They cover:
+- Part A and the catalog rules;
+- §3.6 (a), (a′), (b), (b′), (c), (c′), (d), the spec width and "8 ft as the invert depth";
+- §3.7 to §3.10 (2e to 2n);
+- §3.16's run with typed grades (2q's run part; its manholes are Block 3's).
+
+All at the D-555 figures. Writing them found one bug, fixed before the commit: the trench bottom had left out the bedding.
+
+**Taken overnight, Umer to confirm:**
+1. **Ties in the width label.** When the bucket equals the pipe width, the label names the bucket ("Width 24 in —
+   bucket"), and a box ties the same way: what digs the trench is named.
+2. **"Vertical" at 5 ft and deeper.** A run set to Vertical is vertical under 5 ft and sloped from 5 ft, where the spec
+   requires protection.
+3. **Stable rock below the water stays rock,** cut vertical (Q11); the "counts as C below water" rule is for soil.
+4. **Native backfill's shrink.** It is the excavated reusable layers' shrink, weighted by their bank volumes. The native
+   reused is capped at what they give.
+5. **The cave-in depth** is compared with the trench depth below the start surface.
+6. **Under 5 ft, caving** reads "Caving logged near this run: under 5 ft, flagged only." (U-UT23 gives no wording).
+7. **Two fixtures differ from the plan's prose:**
+   - 2h has no topsoil (the trench starts at the subgrade);
+   - 2i uses a 6 in side clearance, so that a 24 in bucket is the width with a 4 in pipe.
+8. **Block 2's order:** 2A, 2B and 2D's engine before 2C's screens, since the engine is checked by rows alone.
+
+**Not yet:** the profile from the surfaces and the layer model (`breakpoints.ts`), the existing-grade rule in a cut
+area, and every screen. No screen reaches this code yet, so there was no browser smoke beyond the quantity table, which
+runs it in the bench's Chromium.
+**Gates:** pass. **Quantity table:** passed, 344 rows; 177 earthwork and 33 utility rows right.

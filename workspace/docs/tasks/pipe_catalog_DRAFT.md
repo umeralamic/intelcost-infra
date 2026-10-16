@@ -44,8 +44,8 @@ document (S-number, with the link in Sources) and that document's own date. ASTM
   in) and Westlake's F679 sheet both go from 30 to 36 in.
 - **The blanks (D-560, with D-564).** Each value still blank is marked in its table, in check 9 and in "Where the
   blanks may be filled":
-  - **"drives trench width":** an outside diameter, or an RCP wall, which sets the OD (OD = ID + 2 × wall). CMP's OD
-    and RCP Wall C at 12–21 in.
+  - **"drives trench width":** an outside diameter, or an RCP wall, which sets the OD (OD = ID + 2 × wall). None is left:
+    CMP's OD and RCP Wall C at 12–21 in are now derived (D-568).
   - **"wall only":** the OD is printed and only the wall, and the ID that follows from it, is missing. C909 at 4, 14,
     18 and 20 in in every class (their ODs C900's), and C909 Class 165 at 6–12 and 24 in.
 - **Block 2's rule (spec §9.2, Pipe):**
@@ -94,12 +94,12 @@ from a manufacturer's sheet or an association's table. In order of what most aff
 
    Westlake makes 30 and 36 in to cast-iron OD as SDR 35 and SDR 26; the older F679 walls are thinner.
 4. **Rows filled from sources other than a manufacturer citing the standard:**
-   - **RCP Wall B:** Rinker's sheet, which names "current ASTM specifications" but not C76, and does not label its
-     walls as Wall B. They equal the Wall B column of ACPA's table.
-   - **RCP Wall C:** the manufacturers' association (ACPA), not a manufacturer. It counts like a manufacturer (C2).
-   - **HDPE DR 11 and DR 17:** Performance Pipe's sheet names no standard.
+   - **RCP Wall B and Wall C:** the manufacturers' association (ACPA, S6, ASTM C76), not a manufacturer. It counts like a
+     manufacturer (C2). Rinker's sheet (S5), which names "current ASTM specifications" but not C76, is the cross-check
+     for Wall B (D-568). Wall C at 12–21 in is derived by ACPA's rule (D-568).
+   - **HDPE DR 11 and DR 17:** Performance Pipe's sheet names no standard. No sheet citing F714 prints them (D-568).
    - **CMP thickness, 90 and 96 in included:** Contech's table says it is "not for specification use", and names no
-     standard.
+     standard. Contech's sheets that cite AASHTO M36 or ASTM A760 print no thickness (D-568). The ODs are derived.
    - **Copper:** the Copper Development Association's handbook (S17), an association citing ASTM B88. It counts like a
      manufacturer (C2).
 5. **ACPA's table has errors:**
@@ -141,12 +141,11 @@ from a manufacturer's sheet or an association's table. In order of what most aff
    - **C909 walls:** 4, 14, 18 and 20 in in every class, and Class 165 at 6–12 and 24 in (**wall only**). The 4, 14, 18
      and 20 in ODs are C900's (D-564). JM Eagle does not make these, and Westlake's AquaMax page refused the fetch
      (403).
-   - **RCP Wall C 12–21 in** (**drives trench width:** the wall sets the OD). No manufacturer's or association's table
-     printing them was found. ACPA's FAQ gives a
-     rule, C wall = A wall + 1.75 in with the A wall equal to the diameter in feet; it would give 2-3/4, 3, 3-1/4 and
-     3-1/2 in. That is a lead, not a printed value, so the cells stay blank.
-   - **CMP OD** (**drives trench width**, every size). No sheet read prints one: Contech's design guide and the DOT
-     specifications seen measure to the inside crests.
+   - **RCP Wall C 12–21 in:** no table printing them was found. **Filled from ACPA's rule** (D-568), C wall = A wall +
+     1.75 in with the A wall equal to the diameter in feet: 2-3/4, 3, 3-1/4 and 3-1/2 in, marked "derived: ACPA rule".
+     The rule gives every printed Wall C from 24 to 96 in (the RCP section).
+   - **CMP OD:** no sheet read prints one; Contech's design guide and the DOT specifications seen measure to the inside
+     crests. **Derived** (D-568): ID + 2 × corrugation depth + 2 × thickness, marked "derived: corrugation depth".
 
    PVC sewer 33 in is not a blank: the size is left out (D-565), since no manufacturer read makes it.
 
@@ -164,6 +163,10 @@ from a manufacturer's sheet or an association's table. In order of what most aff
   - "Manufacturer, no standard named" rows show in the app as **"Unverified source"** until checked.
 - **Blanks (D-560):** a "not found" value also says "drives trench width" (an OD, or an RCP wall, which sets the OD) or
   "wall only". Block 2's rule for each is in the section on the blanks above (D-560).
+- **Derived (D-568):** a value worked from printed values by a stated rule, not printed itself, says so: "derived: ACPA
+  rule" (RCP Wall C 12–21 in) and "derived: corrugation depth" (every CMP OD). A derived value is pickable.
+- **The source as the app shows it:** "Unverified source" for every row of a "manufacturer, no standard named" source
+  (S7, S9), whatever is derived from it (D-550 C2).
 
 ## Sources
 
@@ -188,6 +191,10 @@ from a manufacturer's sheet or an association's table. In order of what most aff
 | S17 | Copper Development Association, "Copper Tube Handbook", CDA Publication A4015-14/17, © 2016, Table 14.1 (Types K and L to ASTM B 88) and Tables 14.2a (Type K) and 14.2b (Type L), nominal dimensions; copy posted by Cerro Flow Products on BuildSite: https://www.buildsite.com/pdf/cerro_flow_products/Cerro-Flow-Products-Handbook-Installation-Instructions-1595822.pdf | association citing the standard (ASTM B88) |
 | S18 | Contech Engineered Solutions, "Equal Stiffness: 3x1 & 5x1 HEL-COR® CSP", © 2017: https://www.conteches.com/media/sfunmhjg/5x1-vs-3x1_cmp-flier.pdf | manufacturer, no standard named (mentions AASHTO approval) |
 | S19 | JM Eagle, "Gravity Sewer, Submittal and Data Sheet" (ASTM D3034 4–15 in, ASTM F679 18–48 in), file dated July 2010: https://www.jmeagle.com/sites/default/files/jme_GravitySewer.pdf | manufacturer citing the standard; compared only (check 3) |
+| S20 | Viaflex, "PE4710 HDPE IPS Fusible Pipe", 03-0032, October 2025: https://www.viaflex.com/wp-content/uploads/2025/09/03-0032-HANDOUT-PE4710-Hdpe-Ips-Fusible-Pipe-Spec-Sheet-17x11-CUSTOMER-PDF.pdf | manufacturer citing the standard (ASTM F714 from 4 in); 3/4–4 in only, DR 7–13.5; a cross-check (A5) |
+| S21 | Contech Engineered Solutions, "Advantages of HEL-COR® vs. Riveted Pipe", with its specification page for ALT2 CSP, © 2017: https://www.conteches.com/media/csyb12c4/hc-vs-rp-flier.pdf | manufacturer citing the standard (AASHTO M 36 or ASTM A760); heights of cover only, no thickness (A5) |
+| S22 | Contech Engineered Solutions, "Specification for Corrugated Metal Pipe, Nestable Pipe – Aluminized Steel Type 2", 11/9/2016: https://www.conteches.com/media/slchtkyn/819-specification-nestable-csp-aluminized-steel-type-2.pdf | manufacturer citing the standard (AASHTO M 36 or ASTM A760); no dimension (A5) |
+| S23 | ADS, "ADS N-12 ST IB Pipe (ASTM F2648) Specification" (the same sheet as S8), its 42, 48 and 60 in rows | manufacturer citing the standard (ASTM F2648); for the later rows (A6) |
 
 **Read but not used:**
 - Piping Supply Co.'s F679 submittal: a distributor, and it stops at 30 in.
@@ -342,35 +349,75 @@ McWane (S4):
   wall, only the steel.
 - Which wall a class is made in is the manufacturer's choice; Wall B and Wall C are the usual ones.
 
-**Wall B:** Rinker (S5).
-- Its walls equal ACPA's Wall B.
-- Rinker prints the *bell* OD. From 84 in its pipe has no bell, and the sheet marks that line as the pipe's OD.
+**The OD for the trench (A1, D-568).** Trench width and the pipe's displacement use the **barrel OD = ID + 2 × wall**.
+Rinker's printed OD is the *bell* OD; it is stored only as "bell OD" and never used for width or displacement. So a 12 in
+Wall B pipe is 12 + 2 × 2 = **16 in**, not Rinker's 23 in (quantity row `util-A1-rcp-barrel-od`).
 
-**Wall C:** ACPA (S6). Below 24 in: not found (check 9); the wall sets the OD, so each blank drives the trench width.
+**Wall B: ACPA (S6, Table 2, ASTM C76), with Rinker (S5) as the cross-check (A4, D-568).**
+- ACPA's Wall B column and Rinker's walls are equal at every size both print, except 33 in, where ACPA prints 3-1/4 in.
+  ACPA's own weight for that row (451 lb/ft), Rinker's sheet and ACPA's rule (below) all give 3-3/4 in, which the row
+  keeps, with the note.
+- Rinker prints the *bell* OD. From 84 in its pipe has no bell, and the sheet marks that line as the pipe's OD. Stored as
+  "bell OD" only.
 
-| ID (nominal) | Wall B | Rinker bell OD (pipe OD from 84) | Mark (Wall B) | Wall C | Mark (Wall C) | Source |
+**Wall C: ACPA (S6). 12–21 in derived by ACPA's rule (A3, D-568).**
+- **The rule** (ACPA's FAQ): Wall A = the diameter in feet, in inches; Wall B = A + 1 in; Wall C = B + 0.75 in.
+- **It reproduces every printed Wall C from 24 to 96 in** (the table below), so 12–21 in are filled from it and marked
+  "derived: ACPA rule".
+- **It also gives every printed Wall B from 12 to 96 in** but ACPA's 33 in misprint.
+- **ACPA's printed Wall A column is not the rule's A below 36 in** (1-3/4 at 12 in … 2-7/8 at 33 in, against 1 to 2-3/4):
+  C76's Wall A has floors at small sizes. The rule's A is only the step to B and C, and Wall A is not in the catalog.
+
+| ID | Rule: A = ID/12 | B = A + 1 | C = B + 0.75 | Printed Wall B (S6) | Printed Wall C (S6) | Agrees |
 |---|---|---|---|---|---|---|
-| 12 | 2 | 23 | manufacturer, no standard named | not found: drives trench width | not found | B: S5 (undated) |
-| 15 | 2-1/4 | 26 | manufacturer, no standard named | not found: drives trench width | not found | B: S5 (undated) |
-| 18 | 2-1/2 | 29 | manufacturer, no standard named | not found: drives trench width | not found | B: S5 (undated) |
-| 21 | 2-3/4 | 32 | manufacturer, no standard named | not found: drives trench width | not found | B: S5 (undated) |
-| 24 | 3 | 35 | manufacturer, no standard named | 3-3/4 | association citing the standard (check 5) | B: S5; C: S6 (2007-10) |
-| 27 | 3-1/4 | 38-3/4 | manufacturer, no standard named | 4 | association citing the standard (check 5) | B: S5; C: S6 (2007-10) |
-| 30 | 3-1/2 | 42-1/4 | manufacturer, no standard named | 4-1/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 33 | 3-3/4 (ACPA prints 3-1/4) | 46-3/4 | manufacturer, no standard named | 4-1/2 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 36 | 4 | 50-1/4 | manufacturer, no standard named | 4-3/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 42 | 4-1/2 | 58 | manufacturer, no standard named | 5-1/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 48 | 5 | 64 | manufacturer, no standard named | 5-3/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 54 | 5-1/2 | 70 | manufacturer, no standard named | 6-1/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 60 | 6 | 76 | manufacturer, no standard named | 6-3/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 66 | 6-1/2 | 82 | manufacturer, no standard named | 7-1/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 72 | 7 | 88 | manufacturer, no standard named | 7-3/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 78 | 7-1/2 | 94 | manufacturer, no standard named | 8-1/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 84 | 8 | 100 (pipe OD) | manufacturer, no standard named | 8-3/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 90 | 8-1/2 | 107 (pipe OD) | manufacturer, no standard named | 9-1/4 | association citing the standard | B: S5; C: S6 (2007-10) |
-| 96 | 9 | 114 (pipe OD) | manufacturer, no standard named | 9-3/4 | association citing the standard | B: S5; C: S6 (2007-10) |
+| 12 | 1 | 2 | 2-3/4 | 2 | not printed | B yes; C filled from the rule |
+| 15 | 1-1/4 | 2-1/4 | 3 | 2-1/4 | not printed | B yes; C filled from the rule |
+| 18 | 1-1/2 | 2-1/2 | 3-1/4 | 2-1/2 | not printed | B yes; C filled from the rule |
+| 21 | 1-3/4 | 2-3/4 | 3-1/2 | 2-3/4 | not printed | B yes; C filled from the rule |
+| 24 | 2 | 3 | 3-3/4 | 3 | 3-3/4 | yes |
+| 27 | 2-1/4 | 3-1/4 | 4 | 3-1/4 | 4 | yes |
+| 30 | 2-1/2 | 3-1/2 | 4-1/4 | 3-1/2 | 4-1/4 | yes |
+| 33 | 2-3/4 | 3-3/4 | 4-1/2 | 3-1/4 (misprint, check 5) | 4-1/2 | C yes; B: the misprint |
+| 36 | 3 | 4 | 4-3/4 | 4 | 4-3/4 | yes |
+| 42 | 3-1/2 | 4-1/2 | 5-1/4 | 4-1/2 | 5-1/4 | yes |
+| 48 | 4 | 5 | 5-3/4 | 5 | 5-3/4 | yes |
+| 54 | 4-1/2 | 5-1/2 | 6-1/4 | 5-1/2 | 6-1/4 | yes |
+| 60 | 5 | 6 | 6-3/4 | 6 | 6-3/4 | yes |
+| 66 | 5-1/2 | 6-1/2 | 7-1/4 | 6-1/2 | 7-1/4 | yes |
+| 72 | 6 | 7 | 7-3/4 | 7 | 7-3/4 | yes |
+| 78 | 6-1/2 | 7-1/2 | 8-1/4 | 7-1/2 | 8-1/4 | yes |
+| 84 | 7 | 8 | 8-3/4 | 8 | 8-3/4 | yes |
+| 90 | 7-1/2 | 8-1/2 | 9-1/4 | 8-1/2 | 9-1/4 | yes |
+| 96 | 8 | 9 | 9-3/4 | 9 | 9-3/4 | yes |
 
-Rinker also makes 39 in (wall 4-1/4, bell OD 54); ACPA's table has no 39 in.
+Every printed Wall C from 24 to 96 in agrees, so 12–21 in are filled. A secondary website's 2-3/4 in for 12 in (check 5)
+agrees too; it is not the source.
+
+| ID (nominal) | Wall B | Barrel OD, Wall B (ID + 2B) | Rinker bell OD, stored only (pipe OD from 84) | Mark (Wall B) | Wall C | Barrel OD, Wall C | Mark (Wall C) | Source |
+|---|---|---|---|---|---|---|---|---|
+| 12 | 2 | 16 | 23 | association citing the standard | 2-3/4 | 17-1/2 | derived: ACPA rule | B: S6 (2007-10), S5 agrees; C: the rule (S6's FAQ) |
+| 15 | 2-1/4 | 19-1/2 | 26 | association citing the standard | 3 | 21 | derived: ACPA rule | B: S6, S5 agrees; C: the rule |
+| 18 | 2-1/2 | 23 | 29 | association citing the standard | 3-1/4 | 24-1/2 | derived: ACPA rule | B: S6, S5 agrees; C: the rule |
+| 21 | 2-3/4 | 26-1/2 | 32 | association citing the standard | 3-1/2 | 28 | derived: ACPA rule | B: S6, S5 agrees; C: the rule |
+| 24 | 3 | 30 | 35 | association citing the standard | 3-3/4 | 31-1/2 | association citing the standard (check 5) | B: S6, S5 agrees; C: S6 (2007-10) |
+| 27 | 3-1/4 | 33-1/2 | 38-3/4 | association citing the standard | 4 | 35 | association citing the standard (check 5) | B: S6, S5 agrees; C: S6 |
+| 30 | 3-1/2 | 37 | 42-1/4 | association citing the standard | 4-1/4 | 38-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 33 | 3-3/4 (S6 prints 3-1/4; its weight, S5 and the rule give 3-3/4) | 40-1/2 | 46-3/4 | association citing the standard, with the misprint noted | 4-1/2 | 42 | association citing the standard | B: S6 corrected by S5; C: S6 |
+| 36 | 4 | 44 | 50-1/4 | association citing the standard | 4-3/4 | 45-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 42 | 4-1/2 | 51 | 58 | association citing the standard | 5-1/4 | 52-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 48 | 5 | 58 | 64 | association citing the standard | 5-3/4 | 59-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 54 | 5-1/2 | 65 | 70 | association citing the standard | 6-1/4 | 66-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 60 | 6 | 72 | 76 | association citing the standard | 6-3/4 | 73-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 66 | 6-1/2 | 79 | 82 | association citing the standard | 7-1/4 | 80-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 72 | 7 | 86 | 88 | association citing the standard | 7-3/4 | 87-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 78 | 7-1/2 | 93 | 94 | association citing the standard | 8-1/4 | 94-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 84 | 8 | 100 | 100 (pipe OD) | association citing the standard | 8-3/4 | 101-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 90 | 8-1/2 | 107 | 107 (pipe OD) | association citing the standard | 9-1/4 | 108-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+| 96 | 9 | 114 | 114 (pipe OD) | association citing the standard | 9-3/4 | 115-1/2 | association citing the standard | B: S6, S5 agrees; C: S6 |
+
+From 84 in, where Rinker's pipe has no bell, its printed OD equals ID + 2 × Wall B: a cross-check of the rule above.
+
+Rinker also makes 39 in (wall 4-1/4, bell OD 54); ACPA's table has no 39 in, so it is not in the catalog.
 
 ## HDPE pressure, IPS, DR 11 and DR 17 (4–24 in)
 
@@ -378,6 +425,12 @@ Performance Pipe (S7), PE4710:
 - DR 11 is 200 psi and DR 17 is 125 psi.
 - The sheet's average ID is "calculated using IPS OD and Minimum wall plus 6%", the same convention as D3034's appendix.
 - The sheet names no standard. ASTM F714 is the usual one for IPS 4 in and up, but that is not from the sheet.
+- **The source stays "Unverified source" (A5, D-568).** No manufacturer's sheet read cites ASTM F714 and prints these sizes:
+  - Viaflex's PE4710 IPS sheet (S20, October 2025) cites "ASTM F714 – Applicable for nominal pipe sizes ≥ 4”", but stops
+    at 4 in and prints no DR 17. Its 4 in DR 11 agrees on the OD (4.500) and the minimum wall (0.409); its ID, 3.682, is
+    OD − 2 × wall, where S7 prints the average ID 3.633 (minimum wall + 6 %). A cross-check for one row, not a source;
+  - JM Eagle's HDPE DR 11 and DR 17 are listed as made to ASTM F714 only on a distributor's pages, which are not used;
+    JM Eagle's own sheet was not found.
 
 | Nominal | OD | DR 11 min wall | DR 11 avg ID | DR 17 min wall | DR 17 avg ID | Mark | Source |
 |---|---|---|---|---|---|---|---|
@@ -422,29 +475,39 @@ ADS N-12 ST IB (S8), ASTM F2648:
 Contech (S9), helical lockseam:
 - **ID and thickness:** the inside diameter, and the specified thickness by gage.
 - **Thickness by gage:** 18 gage 0.052, 16 gage 0.064, 14 gage 0.079, 12 gage 0.109, 10 gage 0.138, 8 gage 0.168.
-- **OD:** not printed (check 9). Every OD cell below drives the trench width (D-560).
 - **90 and 96 in:** Table 2, 3 x 1 or 5 x 1 corrugation. Contech's 2017 flier (S18) gives cover heights for the same
   five gages at these sizes.
+- **The source stays "Unverified source" (A5, D-568).** No sheet read prints these thicknesses and names AASHTO M36 or
+  ASTM A760 together:
+  - Contech's specification sheets (S22, 2016; the ALT2 page of S21, 2017) say the pipe is made to "AASHTO M 36 or
+    ASTM A760", but print no dimension;
+  - Contech's HEL-COR flier (S21, 2017) names both standards and lists 12–72 in at 16, 14, 12 and 10 gage, for heights of
+    cover only: no thickness, and no 18 or 8 gage;
+  - S9, which prints the thicknesses, names no standard.
 
-| ID | Gages made (thickness above) | OD | Mark | Source |
-|---|---|---|---|---|
-| 12 | 18, 16, 14 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 15 | 18, 16, 14 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 18 | 18, 16, 14 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 21 | 18, 16, 14, 12 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 24 | 18, 16, 14, 12 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 30 | 18, 16, 14, 12 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 36 | 18, 16, 14, 12, 10 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 42 | 18, 16, 14, 12, 10, 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 48 | 16, 14, 12, 10, 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 54 | 14, 12, 10, 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 60 | 12, 10, 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 66 | 12, 10, 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 72 | 10, 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 78 | 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 84 | 8 | not found: drives trench width | manufacturer, no standard named | S9 (2012) |
-| 90 | 16, 14, 12, 10, 8 (3 x 1 or 5 x 1 corrugation) | not found: drives trench width | manufacturer, no standard named | S9 Table 2 (2012); S18 (2017) agrees |
-| 96 | 16, 14, 12, 10, 8 (3 x 1 or 5 x 1 corrugation) | not found: drives trench width | manufacturer, no standard named | S9 Table 2 (2012); S18 (2017) agrees |
+**The OD is derived (A2, D-568):** OD = ID + 2 × corrugation depth + 2 × thickness, with the depth 0.5 in for 2-2/3 x 1/2
+and 1 in for 3 x 1 and 5 x 1. Each OD is marked **"derived: corrugation depth"**, depends on the gage, and is pickable.
+No sheet read prints a CMP OD (check 9); this replaces the blank.
+
+| ID | Corrugation (depth) | OD by gage, derived (gage: OD) | Mark (OD) | Mark (ID, thickness) | Source |
+|---|---|---|---|---|---|
+| 12 | 2-2/3 x 1/2 (0.5) | 18: 13.104; 16: 13.128; 14: 13.158 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 15 | 2-2/3 x 1/2 (0.5) | 18: 16.104; 16: 16.128; 14: 16.158 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 18 | 2-2/3 x 1/2 (0.5) | 18: 19.104; 16: 19.128; 14: 19.158 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 21 | 2-2/3 x 1/2 (0.5) | 18: 22.104; 16: 22.128; 14: 22.158; 12: 22.218 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 24 | 2-2/3 x 1/2 (0.5) | 18: 25.104; 16: 25.128; 14: 25.158; 12: 25.218 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 30 | 2-2/3 x 1/2 (0.5) | 18: 31.104; 16: 31.128; 14: 31.158; 12: 31.218 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 36 | 2-2/3 x 1/2 (0.5) | 18: 37.104; 16: 37.128; 14: 37.158; 12: 37.218; 10: 37.276 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 42 | 2-2/3 x 1/2 (0.5) | 18: 43.104; 16: 43.128; 14: 43.158; 12: 43.218; 10: 43.276; 8: 43.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 48 | 2-2/3 x 1/2 (0.5) | 16: 49.128; 14: 49.158; 12: 49.218; 10: 49.276; 8: 49.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 54 | 2-2/3 x 1/2 (0.5) | 14: 55.158; 12: 55.218; 10: 55.276; 8: 55.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 60 | 2-2/3 x 1/2 (0.5) | 12: 61.218; 10: 61.276; 8: 61.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 66 | 2-2/3 x 1/2 (0.5) | 12: 67.218; 10: 67.276; 8: 67.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 72 | 2-2/3 x 1/2 (0.5) | 10: 73.276; 8: 73.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 78 | 2-2/3 x 1/2 (0.5) | 8: 79.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 84 | 2-2/3 x 1/2 (0.5) | 8: 85.336 | derived: corrugation depth | manufacturer, no standard named | S9 (2012) |
+| 90 | 3 x 1 or 5 x 1 (1.0) | 16: 92.128; 14: 92.158; 12: 92.218; 10: 92.276; 8: 92.336 | derived: corrugation depth | manufacturer, no standard named | S9 Table 2 (2012); S18 (2017) agrees |
+| 96 | 3 x 1 or 5 x 1 (1.0) | 16: 98.128; 14: 98.158; 12: 98.218; 10: 98.276; 8: 98.336 | derived: corrugation depth | manufacturer, no standard named | S9 Table 2 (2012); S18 (2017) agrees |
 
 ## Copper water tube, Type K and Type L (1/2–4 in)
 
@@ -491,11 +554,27 @@ JM Eagle (S15), NEMA TC-2, for 5 and 6 in and the Schedule 80 3-1/2 in ID:
 | 5 | 5.563 | 0.258 | 5.021 (nominal) | 0.375 | 4.776 (nominal) | manufacturer citing the standard | S15 (2026-06) |
 | 6 | 6.625 (S16; S15's cell overprinted) | 0.280 | 6.037 (nominal) | 0.432 | 5.718 (nominal) | manufacturer citing the standard | S15 (2026-06); OD: S16 (2018-06) |
 
+## Later rows: in the draft only, not loaded in Block 2 (A6, D-568)
+
+Values are filled only where a sheet read prints them; every other cell is blank. None of these is pickable in Block 2.
+
+| Pipe | Sizes | OD | Wall | ID | Mark | Source, or where to look |
+|---|---|---|---|---|---|---|
+| PVC Schedule 40 pipe (ASTM D1785) | 4 | blank | blank | blank | not found | A pipe maker's D1785 sheet. The conduit tables above share the IPS ODs, but conduit is another product, so not used |
+| PVC Schedule 40 pipe (ASTM D1785) | 6 | blank | blank | blank | not found | The same |
+| PE water service tube, SDR 9 (CTS OD) | 3/4, 1, 1-1/4, 1-1/2, 2 | blank | blank | blank | not found | A PE service tube maker's sheet (ASTM D2737, AWWA C901) |
+| HDPE DIPS (ductile-iron OD) | not chosen | blank | blank | blank | not found | A PE maker's DIPS sheet (ASTM F714, AWWA C906); one search result showed a 4 in DR 11 row (OD 4.800, wall 0.436) that was not read from its sheet |
+| HDPE dual wall (ASTM F2648) | 42 | 48 (reference, ±1) | n/a | 42 (nominal = ID) | manufacturer citing the standard | S23 (2022-11) |
+| HDPE dual wall (ASTM F2648) | 48 | 54 (reference, ±1) | n/a | 48 (nominal = ID) | manufacturer citing the standard | S23 (2022-11) |
+| HDPE dual wall (ASTM F2648) | 60 | 67 (reference, ±1) | n/a | 60 (nominal = ID) | manufacturer citing the standard | S23 (2022-11) |
+| Ductile iron (AWWA C151) | 30 | 32.00 | 150: 0.34; 200: 0.38; 250: 0.42; 300: 0.45; 350: 0.49 | the iron's, OD − 2 × wall | manufacturer citing the standard | S4 (2022-04) |
+| Ductile iron (AWWA C151) | 36 | 38.30 | 150: 0.38; 200: 0.42; 250: 0.47; 300: 0.51; 350: 0.56 | the iron's, OD − 2 × wall | manufacturer citing the standard | S4 (2022-04) |
+
 ## Where the blanks may be filled
 
 | Blank | Kind (D-560) | Where to look |
 |---|---|---|
 | C909 walls at 4, 14, 18 and 20 in (their ODs are C900's, D-564) | wall only | Westlake's AquaMax data sheet (its page refused the fetch), another PVCO maker's sheet, or AWWA C909 itself |
 | C909 Class 165 at 6–12 and 24 in | wall only | The same |
-| RCP Wall C 12–21 in | drives trench width (the wall sets the OD) | A regional RCP manufacturer's Wall B and C table, or ASTM C76; ACPA's FAQ rule is a lead (check 9) |
-| CMP OD | drives trench width | A CSP manufacturer's dimension sheet that prints one; the sheets read measure to the inside crests |
+
+RCP Wall C 12–21 in and every CMP OD are no longer blank: both are derived (D-568), and marked so.

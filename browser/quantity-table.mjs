@@ -13,6 +13,7 @@ import { APP, openBrowser } from "./lib/bench.mjs";
 import { COST_CASES, ENV_ITEMS, ENV_SHEET } from "./lib/cost-cases.mjs";
 import { CREDIT_CASES } from "./lib/credit-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
+import { UTILITY_CASES } from "./lib/utility-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
 import { REGISTER_CASES } from "./lib/register-cases.mjs";
 import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./lib/site-cases.mjs";
@@ -49,6 +50,7 @@ let earth;
 let reg;
 let site;
 let ac;
+let util;
 let subs;
 let xl;
 let ex;
@@ -1133,6 +1135,91 @@ try {
       return out;
     }
   }, EARTHWORK_CASES);
+  // F29 Block 2's rows (plan §6): the utilities engine and the pipe catalog.
+  util = await page.evaluate(async (cases) => {
+    const cat = await import("/src/lib/takeoff/earthwork/utilities/catalog.ts");
+    const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
+    const q = await import("/src/lib/takeoff/earthwork/utilities/quantities.ts");
+    const r2 = (v) => Math.round(v * 100) / 100;
+    return cases.map((c) => {
+      if (c.kind === "catalog") {
+        const p = cat.resolvePipe(c.pick, c.typed ?? {});
+        if (!p) return { resolved: false };
+        const pick = c.pick ? cat.catalogPick(c.pick) : null;
+        const out = { resolved: true, od: p.od, id: p.id, wall: p.wall, flags: p.flags };
+        if (pick) {
+          Object.assign(out, { odMark: pick.size.odMark, wallMark: pick.size.wallMark, pickable: cat.pickable(pick.size), unverified: cat.unverified(pick.size) });
+          if (pick.size.bellOd !== undefined) out.bellOd = pick.size.bellOd;
+          out.pipeWidthIn = tr.pipeWidthFt(p.od, 1, 0, 12, 24) * 12;
+          if (pick.entry.key === "rcp_c76_wall_c") {
+            const printed = pick.entry.sizes.filter((z) => z.nominalIn >= 24);
+            out.rulePrintedWallC = printed.every((z) => Math.abs(cat.acpaWall(z.nominalIn, "C") - z.wall) < 1e-9) && printed.length === 15 ? "all agree" : "disagree";
+          }
+        }
+        if (c.alternate) {
+          const a = cat.catalogPick(c.alternate);
+          Object.assign(out, { alternateOd: a.size.od, alternateWall: a.size.wall, alternateOf: a.entry.alternateOf });
+        }
+        return out;
+      }
+      // A run on a profile: ends at s = 0 and s = length; layers and water by depth below the start surface.
+      const p = cat.resolvePipe(c.pipe);
+      const drop = (p.od - p.id) / 2 / 12;
+      const bedding = 6 / 12;
+      const at = (i) => {
+        const G = c.ground[i];
+        const invert = c.inverts ? c.inverts[i] : c.invertDepth ? G - c.invertDepth[i] : G - c.depth[i] + drop + bedding;
+        const bottoms = c.layers.map((l) => (l.depth === null ? -1e6 : G - l.depth));
+        return { s: i === 0 ? 0 : c.length, G, invert, bottoms, water: c.water ? G - c.water[i] : null, caving: false, caveInFt: c.caveInFt ?? null };
+      };
+      const boxes = c.boxes ?? [];
+      const P = tr.pipeWidthFt(p.od, 1, 0, c.sideClearanceIn ?? 12, 24);
+      const input = {
+        knots: [at(0), at(1)],
+        layers: c.layers.map((l) => ({ layerId: null, ...l })),
+        noBores: Boolean(c.noBores),
+        pipe: { odIn: p.od, idIn: p.id, pipes: 1, gapIn: 0 },
+        section: { sideClearanceIn: c.sideClearanceIn ?? 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+        bucket: c.bucket ?? "auto",
+        box: tr.boxFor(P, boxes, { boxRef: c.boxRef ?? null, boxOutsideFt: c.boxOutsideFt ?? null }),
+        specMaxIn: c.specMaxIn ?? null,
+        protection: c.protection,
+        limitedWidth: false,
+        rule: c.rule ?? null,
+        depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+        materials: { bedding: "imported", zone: "imported", backfill: "native" },
+        restoration: null,
+      };
+      const r = q.runQuantities(input);
+      const cy = (cf) => r2(cf / 27);
+      const out = {
+        widthText: r.widthText,
+        excavationCY: cy(r.excavationCF),
+        areaSF: r2(r.excavationCF / r.lengthFt),
+        beddingCY: cy(r.beddingCF),
+        zoneCY: cy(r.zoneCF),
+        backfillCY: cy(r.backfillCF),
+        pipeLF: r.pipeLF.map((x) => ({ range: x.range, lf: r2(x.lf) })),
+        protectionLF: r.protectionLF.map((x) => ({ method: x.method, slope: x.slope, range: x.range, lf: r2(x.lf) })),
+        methods: [...new Set(r.protectionLF.map((x) => x.method))],
+        boxLF: r2(r.protectionLF.filter((x) => x.method === "box").reduce((a, x) => a + x.lf, 0)),
+        maxTopWidthFt: r2(r.maxTopWidthFt),
+        dewateringLF: r2(r.dewateringLF),
+        dewatering: r.dewatering.map(([a, b]) => [r2(a), r2(b)]),
+        layerCY: r.byLayer.map((l) => cy(l.cf)),
+        rockCY: cy(r.rockCF),
+        rockLF: r2(r.rockLF),
+        nativeBankCY: cy(r.nativeBankCF),
+        spoilsSuitableCY: cy(r.spoils.suitableCF),
+        specExcavationCY: r.spec ? cy(r.spec.excavationCF) : null,
+        invertStart: Math.round(input.knots[0].invert * 1e4) / 1e4,
+        hasFlag: r.flags.find((f) => f === c.expect.hasFlag) ?? r.flags,
+        hasNote: r.notes.find((n) => n === c.expect.hasNote) ?? r.notes,
+      };
+      if (c.aea) out.aeaOverCF = c.aea.map((step) => r2(q.averageEndArea(input, step) - r.excavationCF));
+      return out;
+    });
+  }, UTILITY_CASES);
 } finally {
   await browser.close();
 }
@@ -1221,6 +1308,12 @@ const same = (got, want) =>
 for (const [i, c] of EARTHWORK_CASES.entries()) {
   for (const [field, want] of Object.entries(c.expect)) {
     if (!same(earth[i]?.[field], want)) wrong.push(`${c.id}.${field}: ${JSON.stringify(earth[i]?.[field])}, expected ${JSON.stringify(want)}`);
+  }
+}
+// Utility rows (F29 Block 2): the same comparison.
+for (const [i, c] of UTILITY_CASES.entries()) {
+  for (const [field, want] of Object.entries(c.expect)) {
+    if (!same(util[i]?.[field], want)) wrong.push(`${c.id}.${field}: ${JSON.stringify(util[i]?.[field])}, expected ${JSON.stringify(want)}`);
   }
 }
 
@@ -1359,5 +1452,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; passed`,
 );
