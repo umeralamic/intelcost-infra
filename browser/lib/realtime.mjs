@@ -12,7 +12,7 @@
 import { request } from "node:http";
 import { lookup } from "node:dns/promises";
 
-import { FIXTURE, OWNER_FULL_NAME, apiLogin, apiRegister, serviceUrl, stamp } from "./bench.mjs";
+import { FIXTURE, OWNER_FULL_NAME, SIGN_IN_LANDING, apiLogin, apiRegister, serviceUrl, stamp } from "./bench.mjs";
 
 export const WS_URL = "ws://localhost:8000/api/realtime";
 
@@ -42,13 +42,13 @@ export async function ensureWindowB() {
   return apiLogin(WINDOW_B.email, WINDOW_B.password);
 }
 
-/** Sign in through the UI of either app. */
-export async function signInAt(page, app, email, password = "bench-password-1") {
-  await page.goto(`${app}/login`);
+/** Sign in through the UI of either app, landing on `next`, never Home (D-566). */
+export async function signInAt(page, app, email, password = "bench-password-1", next = SIGN_IN_LANDING) {
+  await page.goto(`${app}/login?next=${encodeURIComponent(next)}`);
   await page.fill("#email", email);
   await page.fill("#password", password);
   await page.click('button[type="submit"]');
-  await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });
+  await page.waitForURL((url) => url.pathname.startsWith(next.split("?")[0]), { timeout: 20000 });
 }
 
 /** A second browser window beside the step's own, recording its sockets. The caller

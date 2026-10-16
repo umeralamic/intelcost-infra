@@ -26,3 +26,14 @@ changed to accommodate the driver — that is what makes the pass worth anything
 **Screenshots** land in `shots/`, which is git-ignored, and are deleted once the pass
 is reported. CLAUDE.md: leave nothing stray.
 
+**A Playwright MCP session** runs two files first, each with `browser_run_code_unsafe`'s
+`filename`:
+1. `mcp-guard.js` (D-542): every context refuses a write to a protected project.
+2. `mcp-signin.js` (D-566): signs in as window-b and lands on Account settings. With
+   `page.context().__benchOpen` set to a duplicate's uuid, it goes on to that BENCH DUP.
+
+**Never sign in to Home.** Home (`/`, and `/projects` over it) reopens the account's last
+sheet, and for window-b that has been the 3D test copy. The sign-in helpers in `lib/`
+(`signInThroughUi`, `signInAs`, `signInAt`) land on Account settings too, or on the
+`next` they are given.
+

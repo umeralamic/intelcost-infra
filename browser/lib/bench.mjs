@@ -432,13 +432,23 @@ export async function clearMail(address) {
   }
 }
 
-/** A signed-in page, without clicking through the form every time. */
-export async function signInThroughUi(page, email = SEEDED.email, password = SEEDED.password) {
-  await page.goto(`${APP}/login`);
+/** Where a sign-in through the UI lands unless told otherwise (D-566): Account settings, which
+ *  opens no project. Never Home: Home reopens the account's last sheet, and for an account that has
+ *  visited the 3D test copy, that is the copy. */
+export const SIGN_IN_LANDING = "/settings/account";
+
+/** The login page with its return path: it goes on to `next` once signed in. */
+const loginTo = (app, next) => `${app}/login?next=${encodeURIComponent(next)}`;
+/** The page has reached `next` (a takeoff URL may gain its sheet once there). */
+const reached = (next) => (url) => url.pathname.startsWith(next.split("?")[0]);
+
+/** A signed-in page, without clicking through the form every time. It lands on `next`, never Home. */
+export async function signInThroughUi(page, email = SEEDED.email, password = SEEDED.password, next = SIGN_IN_LANDING) {
+  await page.goto(loginTo(APP, next));
   await page.fill("#email", email);
   await page.fill("#password", password);
   await page.click('button[type="submit"]');
-  await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 15000 });
+  await page.waitForURL(reached(next), { timeout: 15000 });
 }
 
 export function expect(condition, message) {
@@ -654,13 +664,13 @@ export async function matrix(token, workspaceUuid) {
   return response.json();
 }
 
-/** Sign in through the UI and land on the app. Most F3 fixtures start here. */
-export async function signInAs(page, email, password = "bench-password-1") {
-  await page.goto(`${APP}/login`);
+/** Sign in through the UI and land on `next`, never Home (D-566). Most F3 fixtures start here. */
+export async function signInAs(page, email, password = "bench-password-1", next = SIGN_IN_LANDING) {
+  await page.goto(loginTo(APP, next));
   await page.fill("#email", email);
   await page.fill("#password", password);
   await page.click('button[type="submit"]');
-  await page.waitForURL((url) => url.pathname === "/", { timeout: 20000 });
+  await page.waitForURL(reached(next), { timeout: 20000 });
 }
 
 /** A built-in role, retuned for one workspace. Sparse on purpose (F3-S6). */
