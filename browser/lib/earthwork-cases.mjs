@@ -148,6 +148,105 @@ export const EARTHWORK_CASES = [
       "clamp0:text": "Clay kept under Fill over 555.56 SF, up to 2.00 ft, near TP-4", ordered: true, atLeastPoints: "TP-4",
     },
   },
+  // 1.1: Midway's pits (pp.23-25), TP-1 (0, 0), TP-2 (100, 0), TP-3 (0, 100): topsoil to 0.5 ft in each,
+  // fill to 1.0, 1.5 and 1.0, natural granular below. EG level 100.00, FG level 98.80 (a 1.20 ft cut),
+  // no strip, the work the pits' triangle (5,000 SF). Fill's bottom D = 1.0 + 0.005x.
+  // Total 5,000 x 1.20 = 6,000 CF = 222.22 CY; topsoil 5,000 x 0.50 = 92.59 CY; granular where 1.2 > D
+  // (x < 40): the integral of (0.2 - 0.005x)(100 - x) from 0 to 40 = 346.67 CF = 12.84 CY; fill the rest,
+  // 116.79 CY (0.7 x 5,000 - 346.67 = 3,153.33 CF agrees).
+  {
+    id: "geo-1.1-midway-cut-by-layer",
+    kind: "volume",
+    side: 100,
+    boundary: [[0, 0], [1, 0], [0, 1]],
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [98.8, 98.8, 98.8, 98.8])],
+    geo: {
+      layers: [["top", "Topsoil"], ["fill", "Fill"], ["gran", "Granular"]],
+      bores: [
+        { id: "tp1", code: "TP-1", x: 0, y: 0, total: 7.5, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 7.5 }] },
+        { id: "tp2", code: "TP-2", x: 100, y: 0, total: 7.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.5 }, { layerId: "gran", top: 1.5, bottom: 7.0 }] },
+        { id: "tp3", code: "TP-3", x: 0, y: 100, total: 6.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 6.0 }] },
+      ],
+      box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    },
+    expect: { ok: true, cutCY: 6000 / 27, "geo:Topsoil:CY": 2500 / 27, "geo:Fill:CY": (3500 - 1040 / 3) / 27, "geo:Granular:CY": 1040 / 3 / 27, "geo:sum-equals-cut": true },
+  },
+  // 1.1 under the fixtures' six-layer list: Asphalt and base on top and Fat clay between Fill and the
+  // granular soil, neither logged at Midway, so both have no thickness (a layer missing from a log that
+  // goes on below it, plan §3.1): 0.00 CY each, and the other three exactly as 1.1.
+  {
+    id: "geo-1.1b-zero-thickness-layers",
+    kind: "volume",
+    side: 100,
+    boundary: [[0, 0], [1, 0], [0, 1]],
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [98.8, 98.8, 98.8, 98.8])],
+    geo: {
+      layers: [["asph", "Asphalt"], ["top", "Topsoil"], ["fill", "Fill"], ["clay", "Fat clay"], ["gran", "Granular"], ["sand", "Sand"]],
+      bores: [
+        { id: "tp1", code: "TP-1", x: 0, y: 0, total: 7.5, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 7.5 }] },
+        { id: "tp2", code: "TP-2", x: 100, y: 0, total: 7.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.5 }, { layerId: "gran", top: 1.5, bottom: 7.0 }] },
+        { id: "tp3", code: "TP-3", x: 0, y: 100, total: 6.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 6.0 }] },
+      ],
+      box: { minX: -500, minY: -500, maxX: 600, maxY: 600 },
+    },
+    expect: { ok: true, cutCY: 6000 / 27, "geo:Asphalt:CY": 0, "geo:Topsoil:CY": 2500 / 27, "geo:Fill:CY": (3500 - 1040 / 3) / 27, "geo:Fat clay:CY": 0, "geo:Granular:CY": 1040 / 3 / 27, "geo:Sand:CY": 0, "geo:sum-equals-cut": true },
+  },
+  // 1.2: the same with a 0.50 ft strip (stripping wins): the strip 92.59 CY; the cut below it 129.63 CY =
+  // fill 116.79 + granular 12.84; no topsoil left in the cut.
+  {
+    id: "geo-1.2-midway-strip-wins",
+    kind: "volume",
+    side: 100,
+    boundary: [[0, 0], [1, 0], [0, 1]],
+    stripFt: 0.5,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [98.8, 98.8, 98.8, 98.8])],
+    geo: {
+      layers: [["top", "Topsoil"], ["fill", "Fill"], ["gran", "Granular"]],
+      bores: [
+        { id: "tp1", code: "TP-1", x: 0, y: 0, total: 7.5, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 7.5 }] },
+        { id: "tp2", code: "TP-2", x: 100, y: 0, total: 7.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.5 }, { layerId: "gran", top: 1.5, bottom: 7.0 }] },
+        { id: "tp3", code: "TP-3", x: 0, y: 100, total: 6.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 6.0 }] },
+      ],
+      box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    },
+    expect: { ok: true, cutCY: 3500 / 27, stripCY: 2500 / 27, "geo:Topsoil:CY": 0, "geo:Fill:CY": (3500 - 1040 / 3) / 27, "geo:Granular:CY": 1040 / 3 / 27, "geo:sum-equals-cut": true },
+  },
+  // 1.3: the work the square 0-100 each way: beyond the hypotenuse the fill bottom takes the hypotenuse's
+  // values, D = 1.25 + 0.0025(x - y). Total 444.44 = topsoil 185.19 + fill 242.47 + granular 16.79
+  // ((346.67 + 106.67) CF).
+  {
+    id: "geo-1.3-midway-square-extrapolated",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [98.8, 98.8, 98.8, 98.8])],
+    geo: {
+      layers: [["top", "Topsoil"], ["fill", "Fill"], ["gran", "Granular"]],
+      bores: [
+        { id: "tp1", code: "TP-1", x: 0, y: 0, total: 7.5, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 7.5 }] },
+        { id: "tp2", code: "TP-2", x: 100, y: 0, total: 7.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.5 }, { layerId: "gran", top: 1.5, bottom: 7.0 }] },
+        { id: "tp3", code: "TP-3", x: 0, y: 100, total: 6.0, rows: [{ layerId: "top", top: 0, bottom: 0.5 }, { layerId: "fill", top: 0.5, bottom: 1.0 }, { layerId: "gran", top: 1.0, bottom: 6.0 }] },
+      ],
+      box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    },
+    expect: { ok: true, cutCY: 12000 / 27, "geo:Topsoil:CY": 5000 / 27, "geo:Fill:CY": (7000 - 1360 / 3) / 27, "geo:Granular:CY": 1360 / 3 / 27, "geo:sum-equals-cut": true },
+  },
+  // 1.8: Bidwell (pp.45-50): B-1, B-2, B-4, B-5, B-6 log 8, 7, 8, 4 and 3 in of topsoil, 6.0 in on
+  // average, so 0.50 ft; B-3 has asphalt at the surface and is left out.
+  {
+    id: "geo-1.8-topsoil-suggestion",
+    kind: "geo-topsoil",
+    topsoil: ["top"],
+    bores: [
+      { code: "B-1", rows: [{ layerId: "top", top: 0, bottom: 8 / 12 }] },
+      { code: "B-2", rows: [{ layerId: "top", top: 0, bottom: 7 / 12 }] },
+      { code: "B-3", rows: [{ layerId: "asphalt", top: 0, bottom: 2 / 12 }] },
+      { code: "B-4", rows: [{ layerId: "top", top: 0, bottom: 8 / 12 }] },
+      { code: "B-5", rows: [{ layerId: "top", top: 0, bottom: 4 / 12 }] },
+      { code: "B-6", rows: [{ layerId: "top", top: 0, bottom: 3 / 12 }] },
+    ],
+    expect: { depthFt: 0.5, bores: "B-1,B-2,B-4,B-5,B-6" },
+  },
   // 1.6 and 1.7: each bore's design water level (plan §3.5).
   {
     id: "geo-1.6-1.7-design-water",

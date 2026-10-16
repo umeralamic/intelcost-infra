@@ -647,6 +647,7 @@ try {
     const gw = await import("/src/lib/takeoff/earthwork/geotech/water.ts");
     const gf = await import("/src/lib/takeoff/earthwork/geotech/field.ts");
     const gm = await import("/src/lib/takeoff/earthwork/geotech/model.ts");
+    const gc = await import("/src/lib/takeoff/earthwork/geotech/materials.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -739,6 +740,10 @@ try {
         const out = {};
         for (const [x, y] of c.at) out[`D(${x},${y})`] = gf.valueAt(pieces, x, y);
         return out;
+      }
+      if (c.kind === "geo-topsoil") {
+        const s = gc.topsoilSuggestion(c.bores, new Set(c.topsoil));
+        return { depthFt: s?.depthFt ?? null, bores: s?.bores.join(",") ?? "" };
       }
       if (c.kind === "geo-water") {
         const out = {};
@@ -921,6 +926,19 @@ try {
         if (r.ok === false) return { ok: false, code: r.error.code, message: r.error.message };
         if (r.ok !== true) return { ok: r.ok };
         const out = { ok: true, units: r.units, cutCY: r.cutCY, fillCY: r.fillCY, netCY: r.netCY, stripCY: r.strip ? r.strip.volumeCY : null, regions: r.regions.length };
+        // F29 step 1c (D-534): the cut split by layer, from bores, exactly.
+        if (c.geo) {
+          const g = c.geo;
+          const m = gm.buildLayerModel({ layers: g.layers.map(([id, name]) => ({ id, name, interpolate: "depth" })), bores: g.bores.map((b) => ({ ...b, ground: null, termination: "planned", refusalReason: null })), box: g.box });
+          const split = gc.cutByLayer(r.prisms, { feetPerNorm: c.side, widthPt: 1, heightPt: 1 }, g.layers.map(([id]) => id), m.bottoms, new Map([[null, 0]]));
+          let sum = 0;
+          for (const [id, name] of g.layers) {
+            const cf = split.reduce((t, reg) => t + (reg.layers.find((l) => l.layerId === id)?.bankCF ?? 0), 0);
+            out[`geo:${name}:CY`] = cf / 27;
+            sum += cf / 27;
+          }
+          out["geo:sum-equals-cut"] = Math.abs(sum - r.cutCY) < 1e-6;
+        }
         // Q13 (D-528): a feature's undercut against the graded prisms, and flat as before.
         if (c.undercut) {
           const u = c.undercut;
