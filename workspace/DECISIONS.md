@@ -16996,3 +16996,39 @@ them at 0.
 - **Member:** "Delete all 2" turned the filter off and showed all rows under the bar's message and Undo. The filter on
   again showed the new empty message, never "No line items yet.".
 - **Guest:** the bar showed "Delete all 2" disabled, and the page sent nothing.
+
+## D-548: 0.00, never -0.00, wherever a quantity is shown (Part B4)
+
+**The bug.** A computed quantity a hair below zero prints with its sign. Examples: a sub-item's formula gives
+-5.55e-17, and a layer of no thickness gives -8.7e-13 BCY. `toLocaleString` and `toFixed` at two places make that
+"-0.00", and `Intl.NumberFormat` prints even -0 itself as "-0". Excel shows such a cell under a "0.00" format as -0.00
+too.
+
+**Built.**
+1. **The rule:** `src/lib/zero.ts`, `shownZero(value, decimals)`. A value that rounds to zero at the places shown is
+   shown as 0. Pure (hard rule 2).
+2. **Excel:** `cellZero(value, fmt)` applies the rule at the places a cell's number format shows ("0.0%" counts as 3:
+   a share is shown ×100).
+3. **Where it is applied** (every place a quantity is formatted for a person):
+   - the shared formatters: `formatDisplayQuantity`, `formatMetres`, `formatMoney`, Estimating's `fmtMoney`,
+     `fmtMH`, `fmtQtyW` and `fmtPct`, `fmtFigure`, the earthwork headings' areas, the lines' bank brackets,
+     `formatDimension`, `formatElevation`, `formatLevel`, `formatFeetInches`, the description suffix, the display
+     names;
+   - the Takeoff panel's rows, the Estimating grid and its explanations, the sub-items and measurement dialogs, the
+     component and cost dialogs, the hover panel, the legend, the live quantity on the canvas, the override dialog,
+     the guest page;
+   - Earthwork: the volume panel, the line info dialog, the section's figures and axis, the design water text, the
+     grading report and its workbook, the site panel, and the registration shifts and scale-fit percents (+0.0 %,
+     never −0.0 %);
+   - the estimate workbook's cells and totals.
+4. **Left as they were:**
+   - figures that cannot be negative: factors, rates, depths, coverage, loads;
+   - figures that are not shown as quantities: coordinates, keys, SVG paths, error text, fps, file sizes;
+   - templates of `Number(x.toFixed(n))`, which print -0 as "0".
+5. **Money too:** "-$0.00" was the same bug in the same two formatters. Estimating's money, man-hour and quantity cells
+   read a value that rounds to nothing as they read 0, "—".
+
+**Checked** on a bench duplicate, with a sub-item whose formula `0.3-0.1*3` stores -5.55e-17 LF:
+- the Takeoff panel reads "0 LF", and Estimating reads Qty "0" with Qty with Wastage "—";
+- the guest's Estimating reads "0";
+- in the same browser, the formatter used before gives "-0", and "-0.00" at two places.
