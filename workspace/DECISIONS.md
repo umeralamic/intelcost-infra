@@ -16337,3 +16337,63 @@ existing ground and the subgrade, which is fill.
   4.4 ft;
 - T6's from 55.56 to 21.32 BCY;
 - T5's from 118.52 to 8.71 CY.
+
+## D-529: A priced Calculate line is kept at 0 when its key leaves a Calculate (F29 Block 0.5B, Q6; night run 2026-10-16, Task 2.2)
+
+A Calculate line whose key (region and role) is not in the next Calculate used to be deleted, with its estimate
+line, rates and notes. Now:
+
+1. **Kept at 0 when someone put something on it.** That is any of:
+   - a rate on its estimate line: the unit rate, waste, wastage, man-hours, wage, material, equipment or
+     subcontract;
+   - a note or comment on the estimate line, or a note on the item;
+   - a typed value (a manual quantity);
+   - a cost component.
+
+   Such a line stays, with quantity 0, flagged `takeoff_item.earthwork_retired` and shown as "Not in the last
+   Calculate". Its rates, notes and typed value are kept as they were; only the quantity reads 0. A kept
+   sub-item keeps its parent too, since the database deletes a parent's sub-items with it.
+2. **An untouched line is deleted, as before.**
+3. **Back with its key.** When a later Calculate makes the same key, the row comes back to life: the same
+   id, its quantity, its rates and notes.
+4. **Deleting.** A retired line may be deleted by a person: from Estimating's filter, or from its ⋮ Delete in
+   the Takeoff panel. A live Calculate line still may not (D-352).
+5. **Estimating.**
+   - The sidebar has "Not in the last Calculate (n)" under Needs attention. With it on, a bar offers "Delete
+     all n", and then one "Undo" that puts every row back from its snapshot (ids, rates, notes).
+   - A retired row carries the words "Not in the last Calculate" and counts in Needs attention.
+   - The Takeoff panel marks it "Not in last Calculate".
+6. **Migration** `d529a4e7c1b3`: `takeoff_item.earthwork_retired`, false for every existing row. The duplicate
+   copier copies it, because it copies whole rows.
+
+**Checks.**
+- **`scripts/check_retired.py`** runs on a duplicate inside one transaction that is rolled back (it writes
+  nothing). 13 of 13 right:
+  - a rate, a note and a typed value each keep their line at 0, intact, while an untouched line is deleted;
+  - back with the key, with quantity and rate;
+  - a live line's delete is refused 409, and a retired line's is allowed;
+  - U-UT39 (D-531).
+- **On a duplicate in the browser:**
+  - a $3.25 equipment rate on the Building Pad's undercut line;
+  - the undercut was switched off, then Calculate: kept at 0 with $3.25, and the filter listed it;
+  - the undercut back on, then Calculate: 130.65 BCY at $3.25 = $424.62;
+  - "Delete all", then "Undo", put a $7.50 line back.
+
+## D-530: Estimating shows "Needs recalculating" on a stale Calculate line (F29 Block 0.5C, U-UT38)
+
+A Calculate line the drawing has moved on from (`is_stale`, D-142) now reads "Needs recalculating" in Estimating,
+in red, as the Takeoff panel's mark says. It is counted in Needs attention, with the reason "Needs recalculating:
+the drawing changed since Calculate". The next Calculate clears both together.
+
+Checked on a duplicate: one contour changed, the sheet opened, and 47 lines read "Needs recalculating" (Needs
+attention 55 → 58). After one Calculate, 0 lines and Needs attention back at 55.
+
+## D-531: "Move items to…" counts as placed by hand (F29 Block 0.5D, U-UT39)
+
+The classification editor's "Move items to…" re-files every item under a code. A Calculate line it moves is
+now marked `placed_by_hand`, as a single move is (D-352), so the next Calculate keeps it where it was put.
+Checked by `scripts/check_retired.py`: three lines moved, then a Calculate, and all three stayed under their
+new code.
+
+"Move items to…" acts on the whole workspace, founder projects included, so it was only run inside the check's
+rolled-back transaction, never for real.

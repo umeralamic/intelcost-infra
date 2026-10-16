@@ -200,6 +200,9 @@ not built.
 | G2 | Over a current saved result, a guest's Calculate is greyed with the tip; a guest opens the result with "Volumes" (back, replacing D-507). | As built (D-527 2, 3). | Say if you want Calculate to open Volumes instead. |
 | G3 | A guest's Calculate uses the saved assumptions and shows no assumptions dialog. | As built: the numbers then match a member's Calculate exactly. | Say if a guest should be able to try other assumptions locally. |
 | G4 | Sheet "Properties (rename)" and "Default Expand Level" are greyed for a guest (they write). | As built. | None expected. |
+| B1 | A retired line's quantity reads 0 even when it has a typed value; the typed value is kept and counts again when the key returns (D-529). | As built: "kept at 0" as you asked. | Say if a typed value should keep pricing while retired. |
+| B2 | The 3D test copy, once recalculated, will show the Building Pad's 48 in undercut at about 130.65 BCY, not 2,596.05: the pad sits in fill about 4.4 ft deep (D-528). Its stored result is untouched (md5 `fab4d151…`) and reads out of date until you press Calculate. | Recalculate it when you look. | Say if Q13 should leave fill under a pad counted as before. |
+| B3 | "Move items to…" re-files every item under a code across the whole workspace, so it was checked only inside a rolled-back transaction, never run for real (D-531). | As built. | None. |
 
 ## Found in the click sessions
 
@@ -292,7 +295,7 @@ small "1 in use" beside them; the page text runs them together.
 | S1 | revision_sets_spec.md:516–560 (F21) | Revision sets: a new set's sheets paired with the old ones, takeoff carried over, and changes flagged. 18 open questions, each with a default. Plan: about 15 days in 8 blocks; first cut A–D, 8.5 days. | Answer the 18, or say "defaults", and approve the plan. | Read the spec. | No. |
 | S4 | PARITY_GAPS.md:146–193 | Two lists: "build next, top 15", and "recommend not porting". | Confirm or reorder the top 15; sign off the not-porting list. | Read it. | No. |
 | S5 | LEGACY_UMERALAMDEV_DIFF.md (items 1–23) | Legacy changes since 2026-09-24 still to schedule. Mostly cost components and estimating. Earthwork is done. | Say which are still owed. | Read it. | Partly: the earthwork items were built in F12. |
-| S6 | earthwork_utilities_PLAN.md (F29) | Bores, soil layers, utilities, structures and over-excavation on the Earthwork tab. Plan: Block 0.5, then 5 blocks, about 167 h. | **Approved, not started (2026-10-15, D-526).** Q1–Q15 and U-UT1–U-UT52 answered. Say "go" to start Block 0.5. | Read the plan, §7 for the blocks. | Answered. |
+| S6 | earthwork_utilities_PLAN.md (F29) | Bores, soil layers, utilities, structures and over-excavation on the Earthwork tab. Plan: Block 0.5, then 5 blocks, about 167 h. | **Approved 2026-10-15 (D-526); Block 0.5 built 2026-10-16 (D-528 to D-531).** Q1–Q15 and U-UT1–U-UT52 answered. Block 1 is the night run's Task 3. | Read the plan, §7 for the blocks. | Answered. |
 
 ## For Abdullah (listed only, not for you to check)
 
