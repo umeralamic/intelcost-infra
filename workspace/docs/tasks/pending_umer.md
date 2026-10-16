@@ -206,6 +206,7 @@ are worked in the continued night run (below).
 | B5 | A soil layer set "by elevation" (Layer 1, Layer 2 and Layer 3 on the 3D test copy) is never split on a sheet: the sheet's layer model is not given the existing grade's pieces, so the panel notes "no existing ground to read it against" and the cut goes to the last layer. Found in Task D; it predates tonight (step 1b, D-533). | Not changed: outside tonight's tasks, and fixing it changes the copy's split on its next Calculate. | Say go and it is a short fix: pass the existing grade's TIN pieces to the model on sheets and sites. |
 | B6 | Through a link, a bore's typed ground takes the link's datum offset; an untyped one reads the grading sheet's existing grade where it lands (D-540 2). | As built. | None expected. |
 | B7 | On a site, every member's bores count, even one past a match line in another member's part (a Bore ID is unique, so it is never a copy) (D-540 3). | As built. | Say if a bore in another sheet's part should be left out. |
+| E1 | Block 2 step 2a (utility runs: drawing, run fields, the pipe catalog with sources, the trench width rule, the section and protection at a station, one run's exact volumes) was not started: the plan sizes those parts at about 25 to 30 h (2B, 2C and most of 2D, with 2A's tables), and 3 h 46 min were left. | Not started, as the brief allows. | Give it a day run of its own, with the pipe catalog's sources gathered first. |
 
 ## Found in the click sessions
 
