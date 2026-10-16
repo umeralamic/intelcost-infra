@@ -17032,3 +17032,43 @@ too.
 - the Takeoff panel reads "0 LF", and Estimating reads Qty "0" with Qty with Wastage "—";
 - the guest's Estimating reads "0";
 - in the same browser, the formatter used before gives "-0", and "-0.00" at two places.
+
+## D-549: A guest's 3D VIEW of an out-of-date result shows the saved Calculate, with a note (Part B5)
+
+**The problem.** 3D VIEW draws only the surfaces a result's numbers were computed on (D-423). Once the drawing changed,
+the surfaces could no longer be had, so a guest on an out-of-date result saw no 3D at all, only a message. A guest
+cannot save a Calculate.
+
+**Built.**
+1. **Each Calculate keeps its own inputs** with its saved result: `earthwork_result.inputs`, migration `d549c1e7a2b4`.
+   - **What is kept:** the sheet's runs as Calculate read them (its own and every linked sheet's existing grade, each
+     run's points), their labels, the page and scale, the Site Features and the Strip Areas.
+   - **Storage:** the column is deferred, so the results list never carries it. A share link's guest reads it on its
+     own route, `GET …/earthwork/result/<sheet>/inputs`.
+   - **What it replaces:** a Calculate's save replaces them, so an earlier Calculate's inputs never outlive it.
+   - **Size:** C-200 keeps 166 runs, 2,700 points, about 220 kB.
+2. **A guest's 3D VIEW on an out-of-date result** builds the saved Calculate's surfaces in the worker, two ways in turn:
+   - **From the drawing as it stands.** A change to bores, layers or assumptions leaves the surfaces as they were.
+   - **Else from the kept inputs.**
+   - **Shown only when it gives the saved numbers** (`sameNumbers`, as D-423), with the note "Shows the last saved
+     Calculate. The drawing has changed since."
+3. **When neither gives them** (a result saved before inputs were kept, on a drawing whose surfaces changed), the pane
+   says so in words instead of showing nothing: "That Calculate's surfaces were not kept with it, so they cannot be
+   shown. Calculate in your view to see the drawing as it is now; nothing is saved."
+4. **The guest's own Calculate stays offered.** Once run, its result and 3D are the drawing as it is now, without the
+   note.
+
+**Not changed:**
+- A member on an out-of-date result still reads "The drawing changed since Calculate"; a member's Calculate saves.
+- A site's 3D is as before.
+- Both are the founder's calls (pending_umer B5a, B5b).
+
+**Checked** on a bench duplicate, as a guest through its own link, with nothing written in any case:
+- **(C)** a result saved before this change, with an FG spot deleted since: the message, and Calculate offered;
+- **(A)** a result saved with its inputs, with only a layer's setting changed since: the saved surfaces from the drawing
+  as it stands, with the note, at 55 fps;
+- **(B)** the same with another FG spot deleted: the saved surfaces from the kept inputs (read once, 21 s), with the
+  note;
+- **the guest's own Calculate:** "Calculated in your view, not saved to the project." and the 3D without the note.
+
+The 3D test copy's own result was saved before inputs were kept: its next Calculate keeps them.
