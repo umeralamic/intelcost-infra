@@ -220,6 +220,12 @@ and you press Calculate on the copy.
 | A4 | Duplicates keep the copy's name with "(copy)", which is what made them look like the copy. | Not changed. | Say if bench duplicates should be renamed at once, e.g. "BENCH DUPLICATE <time> — delete me". |
 | A5 | Part B1 asks for one Calculate on the copy; the new guard refuses every write to it. | Not run. | Your go for Part B also allows that one Calculate, through a one-time exception logged in the report. |
 
+## Part B of the audit brief, 2026-10-16 (D-545 on; morning-report-2026-10-16/PART_B_2026-10-16.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| B1a | A layer no bore logs, set by elevation, takes the ground above the bores' level. On a fresh duplicate of the copy, Layer 1 (no bore logs it) takes 11,464.21 of the 11,583.92 CY: its bottom is the surface through B-1 to B-4's ground levels, the bores stand on the pad, and the cut is on the higher ground around it. Set to follow the ground, it takes nothing, and Layer 2 takes 11,579.57 (no clamp). Your logs are in order: the one clamp ("Layer 1 kept under New layer over 44761.44 SF, up to 3.07 ft, near B-4") comes from this rule, not from a typed depth. | Built as plan §3.1 has it: a layer missing from a log has no thickness at that bore; by elevation, that is the bore's ground level, read across the site. | Keep the rule, or: a layer no bore logs has no thickness anywhere, by elevation too (recommended; then the copy splits as with Layer 1 following the ground). Or set the copy's Layer 1 to "Follows the ground" yourself. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a

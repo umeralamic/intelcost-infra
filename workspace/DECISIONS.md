@@ -16877,3 +16877,67 @@ Findings:
 4. **The fingerprint's check at the start and end of every run** lists every other project whose name starts with the
    fingerprinted project's name, marked FAIL (a copy that kept the name), and every "BENCH DUP …" project not yet
    purged. Neither is in the digest.
+
+## D-545: A layer set "by elevation" is split on a sheet and a site (B5, Part B1 of the 2026-10-16 audit brief)
+
+**The bug.** The layer model reads a layer set by elevation against the existing ground's pieces (plan §3.2), but
+neither a sheet nor a site ever passed them. Such a layer had no surface, so no thickness. Everything below the layer
+above it fell through to the layers below and, with every layer under it by elevation too, to the last: on the 3D test
+copy all 11,583.92 CY of cut was Layer 3 (hard dig), shown as "Hard dig and rock (always exported)". The result's notes
+said why ("Layer 1 is by elevation: no existing ground to read it against.").
+
+**The fix.**
+1. **The model gets the existing ground** (`placedModel(…, eg)`), the TIN's triangles as pieces in feet
+   (`tinPieces`). A layer by elevation is read as depth below that ground, as plan §3.2 has it. It reaches only as far
+   as the existing ground does, and so do the layers below it; the cut always lies inside that ground.
+2. **Calculate gives the split the very surface its volumes used** (`EarthworkModel.eg`).
+   - The model is built again on it; a bore with no typed ground reads its ground from it too.
+   - So the split and its clamp report follow that surface exactly, on a sheet (`useVolumes`) and on a site
+     (`SiteView`, which had built the same TIN a second time for the bores' grounds).
+   - A guest's Calculate in its tab takes the same path.
+3. **3D VIEW and the section draw the layers on the shown result's ground** (`useBores().sceneWith(eg)`). The Bores
+   panel's model reads the sheet's ground through the bores' own ground reader.
+4. **Speed.** A layer read against the ground has a piece per triangle of it, thousands on C-200. Its pieces are found
+   through a grid of their boxes, visited in their own order (`boxIndex`), so every sum is the same as before:
+   - in the overlay that clamps the layers;
+   - in the split's integral per prism;
+   - in the 3D's reader per vertex.
+   - On C-200: Calculate, the result saved, in 11.7 s; 3D VIEW opens in 1.5 s and holds 58–60 fps with every layer on.
+
+**The bench check** (quantity table, two rows, worked by hand).
+1. `geo-B5-depth-over-elevation`: topsoil by depth over clay by elevation, on a ground rising 0.01 ft/ft.
+   - The clay's bottom is level at 96.00, so 4 + 0.01x below the ground.
+   - Topsoil 370.37, clay 1,296.30, rock 555.56 CY; no clamp.
+   - By depth the clay would have taken 1,111.11; before the fix it had none.
+2. `geo-B5-elevation-clamped-under-depth`: the clay's bottom rises above the topsoil's on a falling ground.
+   - Clamp: "Clay kept under Topsoil over 5000.00 SF, up to 0.50 ft, near B-1".
+   - Topsoil 370.37, clay 46.30, rock 324.07 CY.
+- The 1c rows are unchanged; 176 earthwork rows right.
+
+**On a fresh duplicate of the copy, with the founder's bores and layers** (`4e213c8a`, "BENCH DUP 2026-10-16 12:52 —
+delete me"; the copy itself is untouched, A5).
+- **Its layers:** New layer by depth; Layers 1, 2 and 3 by elevation (Layer 3 hard dig, unsuitable).
+- **Its logs:** one row each, B-1, B-3 and B-4 "Layer 2, 0–20 ft", B-2 "Layer 3, 0–20 ft"; none typed a ground.
+- **The split:**
+
+  | Layer | Before the fix (the copy's result) | After |
+  |---|---|---|
+  | New layer | 0.00 | 0.00 |
+  | Layer 1 | 0.00 | 11,464.21 |
+  | Layer 2 | 0.00 | 115.36 |
+  | Layer 3 (hard dig) | 11,583.92 | 4.35 |
+  | Total | 11,583.92 | 11,583.92 |
+
+- **The clamp report:** "Layer 1 kept under New layer over 44761.44 SF, up to 3.07 ft, near B-4".
+- **Why the layers cross: B5, not the typing.** Every log is in order. No bore logs New layer or Layer 1, so both
+  have no thickness at the bores (plan §3.1). Layer 1 is set by elevation, so its bottom is the surface through the four
+  bores' ground levels.
+  - Where the ground dips below that surface (up to 3.07 ft, near B-4), Layer 1 is kept under the ground: the clamp.
+  - Where the ground rises above it, the material above the bores' level is Layer 1's: the 11,464.21 CY. The bores
+    stand on the pad, and the cut is on the higher ground around it.
+- **The same with Layer 1 set to follow the ground** (on the duplicate, for comparison): Layer 2 11,579.57, Layer 3
+  4.35, the rest 0.00; no clamp.
+- Whether a layer no bore logs should take nothing even by elevation is the founder's call (pending_umer B1a).
+
+**Also in the guard (A4's work, D-544):** a member opening a link (`/api/share-link/<token>/as-member`) is held to the
+link rule too. It counts nothing (D-523), but a run opens only links it made.
