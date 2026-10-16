@@ -199,14 +199,22 @@ under a pad is the estimator's choice through the feature's undercut and subgrad
 copy's bores, layers and Calculates stay, and its C-200 md5 baseline is now `ff91644a…`. B3 and T2 were changed and
 are worked in the continued night run (below).
 
-**Continued night run 2026-10-16 (new calls):**
+**Continued night run 2026-10-16: answered 2026-10-16 (D-543).** B5 go (built in the audit brief's Part B1), B6 ok, B7
+ok, E1 agreed (step 2a gets its own day run after you review the pipe catalog, Part C).
 
-| # | What | Default taken (recommended) | Your call |
+## Audit of the 3D test copy, 2026-10-16 (D-542; morning-report-2026-10-16/AUDIT_2026-10-16.md)
+
+None of my test data was ever on the copy: what the screenshots showed was my duplicates, named "Hidden Valley Rebid —
+3D test (copy…)", all purged. Two kinds of my writes did reach it (A1, A2); my seven duplicate requests only read it.
+Part B waits for your go.
+
+| # | What | Where it stands | Your call |
 |---|---|---|---|
-| B5 | A soil layer set "by elevation" (Layer 1, Layer 2 and Layer 3 on the 3D test copy) is never split on a sheet: the sheet's layer model is not given the existing grade's pieces, so the panel notes "no existing ground to read it against" and the cut goes to the last layer. Found in Task D; it predates tonight (step 1b, D-533). | Not changed: outside tonight's tasks, and fixing it changes the copy's split on its next Calculate. | Say go and it is a short fix: pass the existing grade's TIN pieces to the model on sheets and sites. |
-| B6 | Through a link, a bore's typed ground takes the link's datum offset; an untyped one reads the grading sheet's existing grade where it lands (D-540 2). | As built. | None expected. |
-| B7 | On a site, every member's bores count, even one past a match line in another member's part (a Bore ID is unique, so it is never a copy) (D-540 3). | As built. | Say if a bore in another sheet's part should be left out. |
-| E1 | Block 2 step 2a (utility runs: drawing, run fields, the pipe catalog with sources, the trench width rule, the section and protection at a station, one run's exact volumes) was not started: the plan sizes those parts at about 25 to 30 h (2B, 2C and most of 2D, with 2A's tables), and 3 h 46 min were left. | Not started, as the brief allows. | Give it a day run of its own, with the pipe catalog's sources gathered first. |
+| A1 | My browsers' activity rows on the copy: window-b's last-sheet marker and two work sessions (2026-10-16 02:16 and 06:19, 4 s and 0 s), and two estimator@ work sessions (2026-10-15 22:30 and 23:31, 1 s and 2 s) from a session of mine that signed the browser in as your account. A sign-in landed on the account's last project, the copy, before moving to a duplicate. | Recorded (A-my-activity-rows-on-the-original.json), not removed: the session's safety check refused deleting activity records. They change no project content. | Leave them (recommended), or delete them yourself. |
+| A2 | Your link's last access read 12:29:20 today: my guard's first version read the link's public meta twice (12:28:22, 12:29:20), and the api stamps every guest request, a read too. Token, password and switches unchanged. | The guard now never touches a link it did not make. The old time is not written back (I do not know it exactly). | None expected. |
+| A3 | On 2026-10-15 at 23:11 two share-link previews, and at 23:30:36 and 23:30:49 two PATCHes of the copy's link, came from a browser that was not mine (mine was closed 22:43–23:31, and no tool of mine sent them). | Taken as yours. | Say if they were not. |
+| A4 | Duplicates keep the copy's name with "(copy)", which is what made them look like the copy. | Not changed. | Say if bench duplicates should be renamed at once, e.g. "BENCH DUPLICATE <time> — delete me". |
+| A5 | Part B1 asks for one Calculate on the copy; the new guard refuses every write to it. | Not run. | Your go for Part B also allows that one Calculate, through a one-time exception logged in the report. |
 
 ## Found in the click sessions
 

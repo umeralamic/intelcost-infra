@@ -16779,3 +16779,70 @@ predates tonight (step 1b).
   in a side-by-side check.
 - **Nothing reads the 3D layers for a quantity,** so no quantity moves.
 - **The layers still start hidden** (T2, as answered).
+
+## D-542: The audit of the 3D test copy, the guard against writing to protected projects, and its fingerprint (2026-10-16)
+
+**The question.** The founder's screenshots showed my test data (the T-site site, bore L-1, fixture layers and bores,
+"(copy 2)") under "Hidden Valley Rebid — 3D test (copy)", taken for the 3D test copy itself.
+
+**What the audit found.** Sources:
+- every table that holds the copy's rows, read by the new fingerprint script;
+- the api's logs from 2026-10-15 22:00 UTC;
+- the audit log's trash and purge entries;
+- my session transcripts.
+
+Findings:
+1. **None of my test data was ever on the copy.**
+   - **Since 22:00 UTC its content changed only in the founder's sessions:** 04:55–05:21 (four bores and their logs and
+     water, four soil layers, the assumptions, two Calculates, two geotech settings saves) and from 11:58 (a Calculate at
+     12:20, the assumptions, eight geotech settings saves).
+   - **What the screenshots showed was my duplicates,** each named "Hidden Valley Rebid — 3D test (copy…)"; the copy is
+     named "Hidden Valley Rebid — 3D test".
+   - **Which duplicate held what:**
+     - the fixture layers and the 0–0.5 / 0.5–1 / 1–20 ft log were `e7e2be1b` "(copy)" and `dcc47eb8` "(copy) (copy)";
+     - the fixture bores were `ed8ff9d1` "(copy 2)", purged at 05:39:34;
+     - T-site, L-1, Layer 4 and Layer 5 were `649cd140` "(copy)", purged at 08:04:42.
+   - Every duplicate made since 22:00 UTC is purged (audit log).
+2. **What of mine did reach the copy:**
+   - **Seven duplicate requests,** which read it.
+   - **Activity rows.** A browser that signed in landed on the account's last project, the copy, before it moved to a
+     duplicate. That wrote its last-sheet marker and a work-session row:
+     - for window-b at 02:16 and 06:19 on 2026-10-16;
+     - for estimator@ at 22:30 and 23:31 on 2026-10-15, when a session of mine signed the browser in as the seeded
+       account against CLAUDE.md.
+   - **The link's last access.** Today the guard's first version read the copy's link's public meta twice (12:28:22 and
+     12:29:20). The api stamps `last_accessed_at` on every guest request, a read too. The link's token, password and
+     switches are unchanged.
+3. **Removing my activity rows was refused** by the session's safety check, as tampering with an activity record. They
+   are left as they are and listed for the founder (pending_umer A1).
+
+**The guard** (`intelcost-infra/browser/lib/protected.mjs`, `browser/mcp-guard.js`, api `scripts/protected.py`).
+- **The protected projects:** the 3D test copy and the founder's four (HIdden Valley Spec, Hidden Valley Spec Building
+  Rebid, Waxing City, Minmar).
+- **Refused, before the request leaves:**
+  - any request but GET, HEAD and OPTIONS whose path or body names one, except `POST …/project/<copy>/duplicate`;
+  - every request to a share link the run did not make, a read too, since any guest request stamps the link;
+  - a browser sign-in as the seeded account.
+- **Where it sits:**
+  - in every fetch of a script using `bench.mjs`, and every browser context `openBrowser()` makes;
+  - in every MCP session, which runs `mcp-guard.js` first;
+  - in the api's check scripts, which refuse a protected project by name;
+  - in the workspace purge drive, which refuses a workspace holding one.
+- **Checked:**
+  - 14 rows on the rule;
+  - the same refusals in Node, in the bench's containerised browser and in the MCP browser;
+  - the api log showed none of the refused requests arriving, and the link's last access stayed put.
+
+**The fingerprint** (`intelcost-infra/fingerprint.sh`, api `scripts/project_fingerprint.py`, read only).
+- It replaces the one result's md5.
+- **What it reads:** every table holding the project's rows (row count, latest change), every stored result's md5
+  (sheets and sites), and one digest.
+- **Kept apart:** people's own activity (last sheet, work sessions), out of the digest.
+- **When:** taken at the start and the end of every run, and reported.
+
+## D-543: Founder's answers to the continued night run's calls (2026-10-16)
+
+- **B5: go.** A layer set "by elevation" is split on a sheet (Part B1 of the 2026-10-16 audit brief).
+- **B6: ok.** A linked bore's typed ground takes the link's datum offset (D-540 2).
+- **B7: ok.** A site counts every member's bores, wherever they land (D-540 3).
+- **E1: agreed.** Block 2 step 2a gets its own day run later, after the founder reviews the pipe catalog (Part C).
