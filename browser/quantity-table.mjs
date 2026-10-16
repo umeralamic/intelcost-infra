@@ -391,6 +391,7 @@ try {
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/surfaces.ts");
     const fe = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
+    const md = await import("/src/lib/takeoff/earthwork/model.ts");
     const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
     const pt = ([x, y]) => ({ x, y });
     const fmt = (p) => `${+p.x.toFixed(9)},${+p.y.toFixed(9)}`;
@@ -563,7 +564,7 @@ try {
           detail: `one ${one.cutCY.toFixed(4)}/${one.fillCY.toFixed(4)} site ${two.cutCY.toFixed(4)}/${two.fillCY.toFixed(4)}`,
         };
       }
-      if (c.kind === "site-volume" || c.kind === "site-balance" || c.kind === "site-extras" || c.kind === "stitch") {
+      if (c.kind === "site-volume" || c.kind === "site-balance" || c.kind === "site-extras" || c.kind === "site-kept" || c.kind === "stitch") {
         const SA = { sheet: "A", scale: sc(h.P01), placement: st.ANCHOR, region: st.visibleRegion([h.aLine.map(pt)], pt(h.aCentre)), sortOrder: 0 };
         const SB = { sheet: "B", scale: sc(h.P02), placement: h.bPlacement, region: st.visibleRegion([h.bLine.map(pt)], pt(h.bCentre)), sortOrder: 1 };
         if (c.kind === "stitch") {
@@ -582,7 +583,7 @@ try {
         const ra = runs(c.halves.a, "a");
         const rb = runs(c.halves.b, "b");
         const surface = st.siteRuns([SA, SB], new Map([["A", ra], ["B", rb]]));
-        if (c.kind === "site-extras") {
+        if (c.kind === "site-extras" || c.kind === "site-kept") {
           // The members' drawings as items (sheetRuns and sheetFeatures read them), on sheets A and B.
           const geom = (sheet, points, meta, k) => ({ uuid: sheet + k, sheet_uuid: sheet, vertices_json: points, shape_meta: meta, geometry_version: 1, role: "add" });
           const on = { A: ([gx, gy]) => [gx / 100, gy / 100], B: ([gx, gy]) => [gx / 200, (gy + 50) / 200] };
@@ -600,6 +601,15 @@ try {
           const frame = { feetPerNorm: 1, widthPt: own.page.widthPt, heightPt: own.page.heightPt };
           const bnd = own.runs.find((x) => x.kind === "boundary");
           const labels = new Map(items.map((x) => [x.uuid, x.name]));
+          if (c.kind === "site-kept") {
+            // D-554: the site view's Calculate inputs, kept, sent as JSON, read back, built again.
+            const inputs = { runs: own.runs, labels, frame, boundary: bnd ? bnd.points : null, roleAreas: fe.roleAreasOf(ex.features), stripAreas: ex.strips };
+            const first = md.buildSiteModel(inputs);
+            const back = md.fromKeptSite(JSON.parse(JSON.stringify(md.keptSiteInputs(inputs, own.page, ex.features))));
+            if (first.volumes.ok !== true || !back) return { error: first.volumes.ok !== true ? String(first.volumes.ok) : "not read back" };
+            const again = md.buildSiteModel(back.inputs);
+            return { same: md.sameNumbers(again.volumes, first.volumes), cutCY: again.volumes.cutCY, fillCY: again.volumes.fillCY, keptStrips: (back.inputs.stripAreas ?? []).length, keptRead: back.page.widthPt === own.page.widthPt && back.features.length === ex.features.length };
+          }
           const out = vol.computeVolumes({ eg: tin.runTinForSurface(own.runs, "EG", labels, frame), fg: tin.runTinForSurface(own.runs, "FG", labels, frame), boundary: bnd ? bnd.points : null, calibration: frame, units: "CY", roleAreas: fe.roleAreasOf(ex.features), stripAreas: ex.strips }, own.runs, labels);
           if (out.ok !== true) return { error: out.error ? out.error.message : String(out.ok) };
           const fx = fe.computeFeatureExtras(ex.features, bnd ? bnd.points : null, frame);

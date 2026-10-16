@@ -202,6 +202,20 @@ SITE_SHAPE_CASES.push(
     ],
     expect: { features: 1, undercutSF: 2000, undercutCF: 4000, prepSF: 1200, strips: 1, stripCY: 400 / 27 },
   },
+  {
+    // D-554: a site Calculate's inputs kept with its saved result, sent as JSON and read back,
+    // build the same model: the stripped site above, cut 1,250 / 24 / 27 and fill 361,250 / 24 /
+    // 27 CY again, its two Strip Areas kept, and `sameNumbers` true against the first build.
+    id: "site-kept-inputs-rebuild",
+    kind: "site-kept",
+    halves: halves(([x, y]) => 100 + (2 * x) / 100 + (2 * y) / 100, () => 103),
+    strips: [
+      { uuid: "sa", sheet_uuid: "A", depth_ft: 0.5, source: "boundary", created_at: "2026-10-06T01:00:00Z" },
+      { uuid: "sb", sheet_uuid: "B", depth_ft: 0.5, source: "boundary", created_at: "2026-10-06T02:00:00Z" },
+    ],
+    features: [],
+    expect: { same: true, cutCY: 1250 / 24 / 27, fillCY: 361250 / 24 / 27, keptStrips: 2, keptRead: true },
+  },
   // Block F2: each sheet traced whole, its lines kept to its side (clipTrace), then stitched.
   // Three contours from ground x 20 (60 on B, its page starts at 50) to 180: cut at the line
   // on each sheet and joined, three times. A closed loop (60, 30) to (140, 90) on both: one
