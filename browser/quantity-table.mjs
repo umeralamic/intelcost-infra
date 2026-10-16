@@ -746,7 +746,7 @@ try {
       }
       if (c.kind === "geo-slope") {
         const out = {};
-        gs.UTAH_TEMPLATE.rows.forEach((r, i) => (out[`row${i}:steeper`] = gs.steeperThanOsha(r, c.layers)));
+        gs.SLOPE_TEMPLATE.rows.forEach((r, i) => (out[`row${i}:steeper`] = gs.steeperThanOsha(r, c.layers)));
         return out;
       }
       if (c.kind === "geo-topsoil") {

@@ -313,7 +313,7 @@ export const EARTHWORK_CASES = [
     ],
     expect: { depthFt: 0.5, bores: "B-1,B-2,B-4,B-5,B-6" },
   },
-  // Spec §8: the Utah template (Midway p.9) on a project with Fat clay (Type B) and a granular soil
+  // Spec §8: the slope template (D-552) on a project with Fat clay (Type B) and a granular soil
   // (Type C). Cohesive 0.5:1 is under B's 1:1, granular 0.5:1 and 1:1 under C's 1.5:1: "Steeper than
   // federal OSHA" on the first three; the shoring row says nothing.
   {
