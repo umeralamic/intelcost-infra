@@ -275,6 +275,28 @@ export const EARTHWORK_CASES = [
       "geo:clamps": "Clay kept under Topsoil over 5000.00 SF, up to 0.50 ft, near B-1",
     },
   },
+  // B1a (D-551): a layer no bore logs takes nothing, by elevation too. The ground and the cut as in
+  // geo-B5-depth-over-elevation (EG = 100 + 0.01x, a 6 ft cut, 60,000 CF); B-1 (0, 0) and B-2 (0, 100), ground
+  // 100.00, log topsoil 0-1 ft and rock 1-20 ft; clay, by elevation, lies between them in the list and no bore logs
+  // it. Topsoil 1 ft everywhere, 10,000 CF = 370.37 CY; clay 0; rock the other 50,000 CF = 1,851.85 CY. Before
+  // the rule, the clay's bottom stood at the bores' 99.00 (zero thickness there) and, read by elevation, took the
+  // ground above it: 0.01x thick, 5,000 CF.
+  {
+    id: "geo-B1a-unlogged-elevation-layer-between-logged",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 101, 101, 100]), ...corners("FG", [94, 95, 95, 94])],
+    geo: {
+      layers: [["top", "Topsoil"], ["clay", "Clay", "elevation"], ["rock", "Rock"]],
+      bores: [
+        { id: "b1", code: "B-1", x: 0, y: 0, ground: 100, total: 20, rows: [{ layerId: "top", top: 0, bottom: 1 }, { layerId: "rock", top: 1, bottom: 20 }] },
+        { id: "b2", code: "B-2", x: 0, y: 100, ground: 100, total: 20, rows: [{ layerId: "top", top: 0, bottom: 1 }, { layerId: "rock", top: 1, bottom: 20 }] },
+      ],
+      box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    },
+    expect: { ok: true, cutCY: 60000 / 27, "geo:Topsoil:CY": 10000 / 27, "geo:Clay:CY": 0, "geo:Rock:CY": 50000 / 27, "geo:sum-equals-cut": true, "geo:clamps": "" },
+  },
   // 1.8: Bidwell (pp.45-50): B-1, B-2, B-4, B-5, B-6 log 8, 7, 8, 4 and 3 in of topsoil, 6.0 in on
   // average, so 0.50 ft; B-3 has asphalt at the surface and is left out.
   {
