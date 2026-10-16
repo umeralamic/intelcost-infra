@@ -288,8 +288,9 @@ The formulas and worked examples are in the plan, §3.1 to §3.4.
 
 ## 8. Excavation slope rule
 
-A project setting, in Takeoff settings › Earthwork › Excavation slope rule (saved at once, as Contours and spots
-is, D-473).
+A project setting, in the Bores panel's Slope rule tab on the Earthwork tab (saved at once for the project, read by
+every member and, read only, by a share link's guest, with who last changed it and when; D-546). It was first in
+Takeoff settings, which are one person's on one device.
 
 **Federal OSHA (the default),** as 29 CFR 1926 Subpart P, Appendix B prints it (Table B-1 and Figure B-1):
 - **Slopes:** A ¾:1, B 1:1, C 1½:1, stable rock vertical. Over 20 ft deep, a registered professional engineer

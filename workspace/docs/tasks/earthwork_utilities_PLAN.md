@@ -973,7 +973,7 @@ right like the others.
 |  Fat clay  OSHA [B v]  Suggested: C — change if your geotech report says otherwise.|
 ```
 
-### 4.4 Takeoff settings › Earthwork › Excavation slope rule
+### 4.4 The Bores panel › Slope rule (moved from Takeoff settings, D-546)
 
 ```text
 | Excavation slope rule (this project)                                              |

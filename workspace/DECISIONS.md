@@ -16941,3 +16941,35 @@ delete me"; the copy itself is untouched, A5).
 
 **Also in the guard (A4's work, D-544):** a member opening a link (`/api/share-link/<token>/as-member`) is held to the
 link rule too. It counts nothing (D-523), but a run opens only links it made.
+
+## D-546: The excavation slope rule is set in the Bores panel, for the project, with who last changed it (Part B2)
+
+**The problem.** The rule and the design water buffer were already saved on the project (`earthwork_assumptions`,
+D-535). But the only place to set them was Takeoff settings, which says "These preferences are saved on this device
+for you only." Nothing said who had changed the rule, or when.
+
+**Built.**
+1. **Where:** a third tab, **Slope rule**, in the Bores panel on the Earthwork tab, beside Bores and Soil layers, with
+   the project's other geotech inputs.
+   - Every member opens it: a seat that may measure changes it, saved at once for the project as before.
+   - A share link's guest reads it, every field disabled ("Read only.").
+   - Takeoff settings no longer lists it.
+   - The Edit Project dialog was the other place named; it is not open to a guest.
+2. **Who and when:**
+   - `earthwork_assumptions` gains `slope_rule_changed_at` and `slope_rule_changed_by_id` (migration
+     `d545b2c8e7a1`).
+   - They are set when a save changes the rule or the buffer. A new row counts as federal OSHA with a 1 ft buffer, so
+     saving the defaults is no change.
+   - The geotech read returns `rule_changed: {at, updated_by_name}`; the tab says "Last changed by Sara W., Oct 16,
+     2026, 8:40 AM.", in the reader's own time.
+   - Before any recorded change it says "No change recorded yet.": a change from before the columns came is not
+     known.
+3. **A guest and the name:** `updated_by_name` is one of the names a share link's answers are scrubbed of
+   (`share/people.py`). A guest sees it named, numbered or not at all, as the link's live-work settings say. A new link
+   has live work off, so its guest reads "Last changed Oct 16, 2026, 8:40 AM."
+
+**Checked** on a bench duplicate:
+- **Member:** window-b changed the buffer; the tab named them at once, and another member read the same record from
+  the api.
+- **Guest:** the tab was read only with no name, and nothing was sent. A PUT made with the guest's own sign-in was
+  refused: 403 "This shared project is view only."
