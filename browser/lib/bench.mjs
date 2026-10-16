@@ -15,7 +15,7 @@ import path from "node:path";
 
 import { chromium } from "playwright";
 
-import { guardBrowser, guardFetch } from "./protected.mjs";
+import { copyMade, guardBrowser, guardFetch, TEST_COPY } from "./protected.mjs";
 
 // Browser-facing. These are the addresses a page is opened at and the ones the
 // bundle was compiled against, so they say localhost and the resolver rule below
@@ -165,8 +165,9 @@ export async function openBrowser() {
   const browser = await chromium.launch({
     args: [`--host-resolver-rules=MAP localhost ${gateway}`],
   });
-  // Every context it makes refuses writes to the protected projects (D-542).
-  return guardBrowser(browser);
+  // Every context it makes refuses writes to the protected projects (D-542), and renames a copy
+  // its pages make at once (A4, D-544), its own requests sent from here by service name.
+  return guardBrowser(browser, { nodeUrl: fromNode });
 }
 
 /**
@@ -627,6 +628,21 @@ export async function discardProject(token, workspaceUuid, projectUuid) {
   if (![200, 404].includes(purged.status)) {
     throw new Error(`purge ${projectUuid}: ${purged.status} ${JSON.stringify(purged.body)}`);
   }
+}
+
+/** A duplicate of the 3D test copy, the one way a run tests it (D-542): made through the api by a
+ *  member who may (its owner, signed in from here, never from a browser), and renamed by the guard
+ *  the moment it is made, "BENCH DUP <yyyy-mm-dd hh:mm> — delete me" (A4, D-544). Returns
+ *  `{ uuid, name }`; throws when the copy failed or kept another name. */
+export async function duplicateTestCopy(token, workspaceUuid) {
+  const base = `/api/workspace/${workspaceUuid}/project`;
+  const started = await apiCall(token, "POST", `${base}/${TEST_COPY}/duplicate`);
+  if (started.status !== 202) throw new Error(`duplicate the 3D test copy: ${started.status} ${JSON.stringify(started.body)}`);
+  const made = await copyMade(started.body.job);
+  if (!made) throw new Error(`duplicate the 3D test copy: job ${started.body.job} made no copy`);
+  const read = await apiCall(token, "GET", `${base}/${made.uuid}`);
+  if (read.body?.name !== made.name) throw new Error(`duplicate ${made.uuid}: named "${read.body?.name}", not "${made.name}"`);
+  return made;
 }
 
 /** The roles matrix, as the api resolved it. */

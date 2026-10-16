@@ -9,7 +9,12 @@
 // Share links: every request to `/api/share/<token>/…`, reads included, is refused unless the run
 // made that link itself (`allowShareToken`, on a duplicate). Every guest request, a read too, stamps
 // the link's last access, and a link's token does not say whose project it opens, so nothing is
-// looked up: a link the run did not make is never touched (D-542).
+// looked up: a link the run did not make is never touched (D-542). A Save to my workspace names
+// its link in the body (`…/share-copy`) and is held to the same rule.
+//
+// Copies: every project copy a guarded fetch or browser starts (Duplicate project, or a link's
+// Save to my workspace) is followed to its end and renamed at once, "BENCH DUP <yyyy-mm-dd hh:mm>
+// — delete me" (UTC), so no bench copy looks like the project it was made from (A4, D-544).
 
 /** uuid → name, as the projects are named on the bench. */
 export const PROTECTED_PROJECTS = Object.freeze({
@@ -56,11 +61,78 @@ export function allowShareToken(token) {
 }
 
 /** Why a request to a share link is refused, or null: any method, unless the run made the link. */
-export function shareRefusal(url, allowed = allowedTokens) {
+export function shareRefusal(url, allowed = allowedTokens, body = "") {
+  if (SHARE_COPY.test(String(url))) {
+    let token = null;
+    try {
+      token = JSON.parse(String(body)).token;
+    } catch {
+      // No body to read: no link of the run's.
+    }
+    return allowed.has(String(token)) ? null : `save a copy refused: a link this run did not make (allowShareToken), never touched (D-542)`;
+  }
   const m = String(url).match(/\/api\/share\/([^/?#]+)\//);
   if (!m) return null;
   const token = decodeURIComponent(m[1]);
   return allowed.has(token) ? null : `share link refused: a link this run did not make (allowShareToken), never touched (D-542)`;
+}
+
+const SHARE_COPY = /\/api\/workspace\/[^/]+\/share-copy\/?(?:[?#]|$)/;
+
+/** A request that starts a project copy: Duplicate project, or a link's Save to my workspace. The
+ *  workspace the copy is made in is the first group. */
+const COPY_START = /\/api\/workspace\/([^/]+)\/(?:project\/[^/]+\/duplicate|share-copy)\/?(?:[?#]|$)/;
+
+/** A bench copy's name, the moment it is made (A4, D-544): "BENCH DUP <yyyy-mm-dd hh:mm> — delete
+ *  me", in UTC. */
+export function benchDupName(at = new Date()) {
+  const iso = at.toISOString();
+  return `BENCH DUP ${iso.slice(0, 10)} ${iso.slice(11, 16)} — delete me`;
+}
+
+/**
+ * A copy's job followed to its end and the copy renamed at once (A4, D-544). `send(method, url,
+ * body)` is the caller's transport, carrying the caller's own sign-in; it returns the parsed
+ * response or throws. Resolves to the copy's `{ uuid, name }`, or null when the job made none.
+ */
+export async function renameWhenMade(apiBase, workspace, job, send, { timeout = 900000 } = {}) {
+  const deadline = Date.now() + timeout;
+  const projects = `${apiBase}/api/workspace/${workspace}/project`;
+  for (;;) {
+    const state = await send("GET", `${projects}/duplicate/${job}`);
+    if (state?.state === "done" && state.project_uuid) {
+      const name = benchDupName();
+      const renamed = await send("PATCH", `${projects}/${state.project_uuid}`, { name });
+      if (renamed?.name !== name) throw new Error(`copy ${state.project_uuid}: not renamed to "${name}"`);
+      return { uuid: state.project_uuid, name };
+    }
+    if (!state || state.state === "failed") return null;
+    if (Date.now() > deadline) throw new Error(`copy job ${job}: not done after ${timeout / 1000} s`);
+    // A job's progress, polled as the app's own dialog polls it.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
+/** Copies this process started, by job: each resolves to the renamed copy (`copyMade`). */
+const copies = new Map();
+
+/** The copy a job of this process made, once it is renamed: `{ uuid, name }`, or null. */
+export function copyMade(job) {
+  const made = copies.get(String(job));
+  if (!made) throw new Error(`copy job ${job}: not started through the guard`);
+  return made;
+}
+
+/** A copy's start seen in a response: its job followed and the copy renamed, in the background. */
+function followCopy(url, job, send, registry) {
+  const match = String(url).match(COPY_START);
+  if (!match || !job || registry.has(String(job))) return;
+  const apiBase = String(url).slice(0, String(url).indexOf("/api/"));
+  const made = renameWhenMade(apiBase, match[1], job, send).catch((error) => {
+    console.error(`[guard] ${error.message}`);
+    return null;
+  });
+  registry.set(String(job), made);
 }
 
 /**
@@ -75,30 +147,66 @@ export function guardFetch() {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const method = init.method ?? (typeof input === "object" && "method" in input ? input.method : "GET");
     const body = typeof init.body === "string" ? init.body : "";
-    const refusal = writeRefusal(method, url, body) ?? shareRefusal(url);
+    const refusal = writeRefusal(method, url, body) ?? shareRefusal(url, allowedTokens, body);
     if (refusal) throw new Error(refusal);
-    return real(input, init);
+    const response = await real(input, init);
+    if (String(method).toUpperCase() === "POST" && response.ok && COPY_START.test(url)) {
+      const job = (await response.clone().json().catch(() => null))?.job;
+      const headers = new Headers(init.headers ?? (typeof input === "object" && "headers" in input ? input.headers : undefined));
+      followCopy(url, job, nodeSend(real, headers.get("authorization")), copies);
+    }
+    return response;
   };
   guarded.__protected = true;
   globalThis.fetch = guarded;
 }
 
+/** The guard's own requests from Node, signed in as the request it follows. */
+function nodeSend(real, authorization) {
+  return async (method, url, body) => {
+    const response = await real(url, {
+      method,
+      headers: { ...(authorization ? { authorization } : {}), ...(body ? { "content-type": "application/json" } : {}) },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    if (!response.ok) throw new Error(`${method} ${url}: ${response.status}`);
+    return response.json().catch(() => null);
+  };
+}
+
+/** The guard's own requests beside a browser context, signed in as the page. `nodeUrl` maps the
+ *  page's address to one Node reaches (the bench's containerised browser, `bench.mjs`). */
+function contextSend(context, authorization, nodeUrl) {
+  return async (method, url, body) => {
+    const response = await context.request.fetch(await nodeUrl(url), {
+      method,
+      headers: authorization ? { authorization } : {},
+      ...(body ? { data: body } : {}),
+    });
+    if (!response.ok()) throw new Error(`${method} ${url}: ${response.status()}`);
+    return response.json().catch(() => null);
+  };
+}
+
 /**
  * A browser context's requests, aborted when they would write to a protected project, touch a
- * share link the run did not make, or sign in as the seeded account. Returns the list of refused requests, for the run to report.
+ * share link the run did not make, or sign in as the seeded account; a copy the page starts is
+ * renamed the moment it is made. Returns the list of refused requests, for the run to report.
  */
-export async function guardContext(context) {
+export async function guardContext(context, { nodeUrl = (url) => url } = {}) {
   if (context.__protectedRefusals) return context.__protectedRefusals;
   const refused = [];
   context.__protectedRefusals = refused;
   // A context's own links, as the run makes them (`context.__allowShare.add(token)`).
   context.__allowShare = context.__allowShare ?? new Set();
+  // The copies its pages started, by job, each resolving to the renamed copy.
+  context.__copies = context.__copies ?? new Map();
   await context.route("**/api/**", async (route) => {
     const request = route.request();
     const body = request.postData() ?? "";
     const refusal =
       writeRefusal(request.method(), request.url(), body) ??
-      shareRefusal(request.url(), new Set([...allowedTokens, ...context.__allowShare])) ??
+      shareRefusal(request.url(), new Set([...allowedTokens, ...context.__allowShare]), body) ??
       signInRefusal(request.method(), request.url(), body);
     if (refusal) {
       refused.push(`${request.method()} ${request.url()}: ${refusal}`);
@@ -106,17 +214,26 @@ export async function guardContext(context) {
     }
     return route.fallback();
   });
+  context.on("response", (response) => {
+    const request = response.request();
+    if (request.method() !== "POST" || !response.ok() || !COPY_START.test(request.url())) return;
+    void (async () => {
+      const job = (await response.json().catch(() => null))?.job;
+      const authorization = (await request.allHeaders()).authorization;
+      followCopy(request.url(), job, contextSend(context, authorization, nodeUrl), context.__copies);
+    })();
+  });
   return refused;
 }
 
 /** Every context of this browser guarded, now and when made later (`newContext`, `newPage`). */
-export async function guardBrowser(browser) {
-  for (const context of browser.contexts()) await guardContext(context);
+export async function guardBrowser(browser, options = {}) {
+  for (const context of browser.contexts()) await guardContext(context, options);
   if (browser.__protected) return browser;
   const newContext = browser.newContext.bind(browser);
   browser.newContext = async (...args) => {
     const context = await newContext(...args);
-    await guardContext(context);
+    await guardContext(context, options);
     return context;
   };
   browser.newPage = async (...args) => {
