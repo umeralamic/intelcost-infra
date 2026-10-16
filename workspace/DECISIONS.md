@@ -16161,3 +16161,79 @@ Checked in MailHog on a duplicate of the 3D test copy (deleted after), mail guar
 - **No key:** the no-key email had no box and no note.
 
 The api gates passed.
+
+## D-526: Bores, soil layers, utilities, structures and over-excavation (F29): the plan approved, not started (Umer, 2026-10-15)
+
+**Status:** Planned: approved, not started (Umer, 2026-10-15). Nothing is built.
+**Spec:** [earthwork_utilities.md](docs/tasks/earthwork_utilities.md). **Plan:**
+[earthwork_utilities_PLAN.md](docs/tasks/earthwork_utilities_PLAN.md). **Order:** Block 0.5 first, then Blocks
+1 to 5 in order, when Umer says go.
+
+1. **The plan's fifteen questions: all yes, as recommended.**
+   - **Q1.** Soil layers are interpolated by depth below the existing ground; weathered rock, bedrock and water by
+     elevation.
+   - **Q2.** A bore never makes a layer, rock or water shallower than it shows.
+   - **Q3.** Volumes are exact between breakpoints. The 5 ft station table is for reading only.
+   - **Q4.** "Work scope" is built, with a mapping per classification system: a scope, an optional work type and
+     an optional kind.
+   - **Q5.** Today's 24 earthwork lines move onto work scopes too, with mappings that repeat today's codes.
+     - **When built:** on a duplicate first, with every project total, rate and line count proved unchanged before
+       and after.
+     - **No backfill;** founder projects are never touched.
+   - **Q6.** A priced Calculate line whose key is gone stays at 0 ("Not in the last Calculate") and returns with
+     its rates. Estimating filters to these rows, so they can be cleared in one go.
+   - **Q7.** Trenches start from the proposed subgrade by default. Where there is no proposed surface they start
+     from the existing grade, and the run says so.
+   - **Q8.** Utility sheets are read through a control-point link; the ground comes from rims where no surface
+     covers a run.
+   - **Q9.** Lines are added up per sheet, by utility type, material, size and range. The per-run breakdown stays
+     in the run panel and the grading report.
+   - **Q10.** Pipe ranges go by invert depth, protection ranges by trench depth.
+   - **Q11.** Stable rock under soil is cut vertical, with the soil above sloped.
+   - **Q12.** Over-excavation with an outward slope is the vertical-walled box at the full bottom extent: 32.5
+     SF/LF on Bidwell's footing detail.
+   - **Q13.** Today's fixed undercut counts existing ground only.
+   - **Q14.** Geogrid and geotextile are added to F25's Option 2; there is no second tool.
+   - **Q15.** Fire water 21.02.05, electric 33.08.02 and 33.08.04, trench excavation 33.11.01, dewatering 31.06.
+2. **Utilities-only projects are a requirement.** A project with no grading (no EG, FG or boundary) Calculates its
+   runs and structures from rims and typed grades.
+3. **OSHA bench sizes from Appendix B itself.**
+   - **Where they are.** The appendix's text (LII) gives the benching rule but has the sizes only in its figures,
+     so they were read from the printed figures of the official CFR (2023 edition).
+   - **Type A:** the bottom vertical side at most 4 ft, further benches at most 5 ft, ¾:1.
+   - **Type B:** 4 ft and 4 ft at 1:1, "This bench allowed in cohesive soil only."
+   - **Type C:** no benching.
+   - **Where the benches sit.** Inside the maximum slope drawn from the toe, so a benched wall digs less than the
+     simple slope.
+   - **What changed.** U-UT25 and the plan's §3.8 are updated. The 8 ft Type B example is unchanged (207.41 CY in
+     the 36 in bucket); Block 0's Type A figure is withdrawn.
+4. **Pipe dimensions** from manufacturers' sheets are accepted, with the source on each catalog row.
+5. **U-UT17 to U-UT52 are accepted,** except U-UT26 (replaced) and U-UT27 (extended) by the trench-width rule:
+   - **The width.** The bottom width at a station is the **largest** of:
+     - **the pipe width:** pipes, gaps and 2 × side clearance, at least the minimum width;
+     - **the bucket:** 12, 18, 24, 30, 36, 42, 48 or 60 in, or typed. Auto is the smallest standard bucket at or
+       above the pipe width; the project's default is in Utility settings;
+     - **the box's outside width,** wherever a box or shoring is used.
+   - **The box.**
+     - A box comes from a project list of the contractor's boxes (name, inside width, outside width, height), or
+       its width is typed.
+     - The default is the smallest listed box whose inside width fits the pipe width.
+     - With no list, a typed width is required, and the run is flagged until it is set.
+   - **Spec max width.** It is optional, per run or per pipe size.
+     - Over it, the run shows "Wider than spec max — pay width may be limited", with the spec-width quantities
+       beside the actual ones.
+     - The actual width is never reduced.
+   - **What follows from the width.** Slopes and benches start from it, and the run panel says what set it
+     ("Width 36 in — bucket").
+   - **The plan's examples, reworked.** 8" PVC SDR-35, 8 ft, Type B sloped: Auto picks the 36 in bucket, 325.93 CY
+     (317.04 at the pipe width). In a 6 ft outside box: 177.78 CY.
+6. **Nothing in the plan's "What could be cut" is cut without asking.**
+7. **Block 0.5 is built first:** the four existing issues the plan found.
+   - The undercut in fill areas (Q13).
+   - Priced lines kept at 0, with the filter (Q6).
+   - Estimating showing "Needs recalculating" (U-UT38).
+   - "Move items to…" counting as placed by hand (U-UT39).
+8. **Housekeeping.**
+   - The spec and plan move to `docs/tasks/`, CLAUDE.md's place for specs.
+   - Block 0's total of 156 h was mis-added: it was 154 h.
+   - With Block 0.5 and the width rule, the plan is about 167 h.

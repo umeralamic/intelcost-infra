@@ -1,14 +1,14 @@
 # F29: Bores, soil layers, utilities, structures and over-excavation (Earthwork tab)
 
-_Spec, drafted 2026-10-15 in Block 0 (planning only). **Not adopted; nothing here is built.**_
+_Spec, drafted 2026-10-15 in Block 0. **Approved 2026-10-15 (D-526), not started; nothing here is built.** Block 0.5
+(four existing issues) is built first, then Blocks 1 to 5 in order._
 
 - **Plan:** [earthwork_utilities_PLAN.md](earthwork_utilities_PLAN.md). It holds what exists today, the data model, every
   formula with a worked example, the wireframes, the estimating tables, the checks, the blocks, the risks and
   the questions.
-- **Recommended answers are written in.** Where this spec depends on one of the plan's questions (Q1 to Q15),
-  it says so and uses the recommended answer.
-- **Defaults** are listed in [pending_umer.md](../tasks/pending_umer.md) as U-UT1 onward.
-- **Decisions:** the founder's answers will be logged as the next D-NN before Block 1 starts.
+- **The founder's answers are written in** (D-526): Q1 to Q15 as recommended, with D-526's notes on Q5, Q6, Q7, Q9
+  and Q12, the trench-width rule (§9.2), and utilities-only projects as a requirement (§9.1).
+- **Defaults** are in [pending_umer.md](pending_umer.md) as U-UT1 to U-UT52, answered in D-526.
 
 ## 1. Problem and solution
 
@@ -291,11 +291,19 @@ The formulas and worked examples are in the plan, §3.1 to §3.4.
 A project setting, in Takeoff settings › Earthwork › Excavation slope rule (saved at once, as Contours and spots
 is, D-473).
 
-**Federal OSHA (the default).**
-- Slopes: A ¾:1, B 1:1, C 1½:1, stable rock vertical.
-- Benching: in A and B only, and in B only in cohesive soil. The bottom vertical side is at most 4 ft; the
-  benches are at most 4 ft high in B and 5 ft in A (U-UT25, to be confirmed against Appendix B's figures in
-  Block 2).
+**Federal OSHA (the default),** as 29 CFR 1926 Subpart P, Appendix B prints it (Table B-1 and Figure B-1):
+- **Slopes:** A ¾:1, B 1:1, C 1½:1, stable rock vertical. Over 20 ft deep, a registered professional engineer
+  designs the sloping or benching (Table B-1, note 3).
+- **Benching, Type A** ("Simple Bench", "Multiple Bench"): the bottom vertical side at most 4 ft, each further
+  bench at most 5 ft high.
+- **Benching, Type B** ("Single Bench", "Multiple Bench", "This bench allowed in cohesive soil only."): the bottom
+  vertical side and each further bench at most 4 ft.
+- **Type C:** no benching.
+- **Where the benches sit.** The benches stay inside the maximum slope drawn from the toe of the trench; each
+  bench's back corner sits on that line. So a benched wall digs less than the simple slope (plan §3.8, U-UT25).
+- **Not offered:** Type A's short-term ½:1 slope (12 ft or less, open 24 hours or less); its unsupported vertical
+  lower portion (3½ ft); and the shielded vertical lower portion with a slope above (every type). A box is full
+  height.
 
 **From the geotech report.**
 - A table of rows. Each row has:
@@ -337,6 +345,8 @@ and says so: "No geotech rule for Clay at 9.0 ft: federal OSHA used."
   through a control-point link, the same link that brings linked EG in (F18, Q8).
 - **Ground from rims.** Where no surface covers a run, its ground runs straight from structure rim to structure
   rim (or between typed end grades). The stretch is marked "Grade from rims" (U-UT33).
+- **Utilities-only projects (a requirement, D-526).** A project with no grading (no EG, no FG, no boundary) still
+  Calculates its runs and structures, from rims and typed grades. Mass cut and fill are simply absent.
 
 ### 9.2 Run fields
 
@@ -346,15 +356,27 @@ and says so: "No geotech rule for Clay at 9.0 ft: federal OSHA used."
 | Pipe | Material and class from the catalog (PVC SDR-35, PVC C900, DIP, RCP Class III, HDPE, CMP, copper, conduit Sch 40 or 80, and others), then the nominal size | Required. OD and ID fill in from the catalog row with its standard cited ("ASTM D3034, 8 in: OD 8.400 in"); both can be edited. A catalog value with no source is blank, and its row is listed in pending_umer. Values are never guessed. |
 | Pipes in the trench | Count, and the clear gap between pipes | 1, no gap. |
 | Vertical | (a) start and end inverts; (b) start invert and slope %; (c) depth of cover, for pressure pipes, with the crown at a constant cover below the start surface | (a). An invert at a connected structure is that structure's: one value, edited from either panel. |
-| Start surface | Proposed subgrade, or existing grade | Proposed subgrade (Q7), shown on the panel and the profile. |
+| Start surface | Proposed subgrade, or existing grade | Proposed subgrade (Q7). Where no proposed surface covers the run, the existing grade, and the run says so ("No proposed surface: trench from existing grade, 0+00 to 0+40."). Where neither covers it, rims and typed grades (§9.1). Shown on the panel and the profile. |
 | Section | Side clearance, minimum bottom width, bedding under the pipe, pipe zone above the crown | From Utility settings (12 in, 24 in, 6 in, 12 in), editable per run. |
+| Bucket | Auto, a standard bucket (12, 18, 24, 30, 36, 42, 48 or 60 in), or a typed width | Auto: the smallest standard bucket at or above the pipe width. The project's default is in Utility settings. |
+| Box | A box from the project's list (name, inside width, outside width, height), or a typed outside width | Wherever a box or shoring is used: the smallest listed box whose inside width fits the pipe width. With no list, a typed width is required, and the run is flagged until it is set. |
+| Spec max width | Inches, per run, or per pipe size in Utility settings | None. |
 | Materials | Bedding, pipe zone and backfill: each a name, native or imported, an optional density (pcf) for tons, and an optional compaction note | From Utility settings. |
 | Restoration | None, asphalt, concrete or sod, and a width | None. When on, the default width is the trench's top width plus 1 ft each side. |
 | Protection | Auto, box or shoring, sloped, benched, vertical | Auto: a box where the run is marked "limited width / in street", otherwise sloped. |
 | Segments | Station from and to, plus overrides of materials, section or protection | None. |
 
-The trench's bottom width is the pipes and their gaps plus a side clearance each side, but never less than the
-minimum width.
+**The trench-width rule (D-526).** The bottom width at a station is the **largest** of:
+- **the pipe width:** the pipes and their gaps plus a side clearance each side, at least the minimum width;
+- **the bucket width:** the run's bucket (Auto picks the smallest standard bucket at or above the pipe width);
+- **the box's outside width,** wherever a box or shoring is used at that station.
+
+**How the width is used and shown.**
+- **Slopes and benches** start from this width.
+- **The run panel** says what set it: "Width 36 in — bucket".
+- **A spec max width never shrinks the actual width.** Over it, the run shows "Wider than spec max — pay width may
+  be limited", with the quantities at the spec width beside the actual ones (§9.4).
+- **A box shorter than the trench** is noted; stacked boxes are not modelled.
 
 ### 9.3 Protection, station by station
 
@@ -370,6 +392,8 @@ A box or shoring is forced where:
 - the trench bottom is below the design water in granular soil;
 - the governing bore logs caving (see Caving below);
 - the geotech rule says "shoring required".
+
+Wherever a box or shoring is used, the box's outside width enters the trench-width rule (§9.2).
 
 **Sloped.**
 - **The slope.** The slope rule's ratio for the flattest layer the trench passes through at that station.
@@ -411,6 +435,8 @@ A box or shoring is forced where:
 - **Protection LF** by method, in trench-depth ranges.
 - **Dewatering LF** where the trench bottom is below the design water surface, drawn blue on the plan.
 - **Surface restoration** in SF and SY.
+- **Spec width.** Over a spec max width, the same quantities worked at the spec width are shown beside the actual
+  ones, in the run panel and the report. The estimate lines carry the actual quantities.
 
 **Estimate lines.** These are written per sheet, added up by utility type, material, size and range (Q9). The
 run panel and the report keep each run's own figures.
@@ -509,7 +535,8 @@ For example, Heinsohn's 3.5 ft of reconditioned native under 3.0 ft of select fi
 - The over-excavation in the site balance.
 
 **Only existing ground is removed.** The new modes remove existing ground only: from the undercut bottom up to the
-lower of the existing ground and the subgrade. Today's fixed mode does the same, if Q13 is answered yes.
+lower of the existing ground and the subgrade. Today's fixed mode does the same (Q13); that fix is built first, in
+Block 0.5.
 
 **Treatment (Option 2, F25).**
 - Kept: compacted, scarify, and stabilization with lime, cement and other agents.
@@ -544,14 +571,18 @@ lower of the existing ground and the subgrade. Today's fixed mode does the same,
   type and variant.
 - **Never the user's:** name and quantity. **Kept:** the row, its rates, notes and layer.
 - **Placing by hand.** A folder, classification or scope placed by hand is never overwritten. "Move items to…"
-  now counts as by hand, as a single move already does.
-- **Rows Calculate no longer makes.**
-  - A row with a price on it stays at zero, marked "Not in the last Calculate" (Q6), and the user can delete it.
+  now counts as by hand, as a single move already does (built first, Block 0.5).
+- **Rows Calculate no longer makes** (Q6, D-526; built first, Block 0.5).
+  - A row with a price on it stays at zero, marked "Not in the last Calculate". It comes back with its rates if
+    Calculate makes it again.
+  - Estimating's sidebar filters to these rows, so they can be cleared in one go: filter, select all, Delete, one
+    undo. A retired row can be deleted; Calculate's live rows still cannot.
   - A row with no price is removed, as today.
 - **Unit costs** start empty, because the app has no price library to match.
 - **Out of date.**
   - The flag is the earthwork results' own.
-  - Estimating now shows the same "Needs recalculating" mark as the Takeoff panel (U-UT38).
+  - Estimating now shows the same "Needs recalculating" mark as the Takeoff panel (U-UT38; built first, Block
+    0.5).
 
 ### 13.2 Classification through work scopes (Q4)
 
@@ -576,8 +607,12 @@ lower of the existing ground and the subgrade. Today's fixed mode does the same,
     Classification › Work scopes, or "Map scope…" on the line).
   - Every project using that scope then picks it up.
 - **Hand classification.** A classification set on a line by hand is never overwritten.
-- **Today's lines (Q5).** The 24 lines Calculate already writes move onto work scopes too. Their mappings
+- **Today's lines (Q5, D-526).** The 24 lines Calculate already writes move onto work scopes too. Their mappings
   reproduce today's codes in all five systems, so nothing moves.
+  - **Duplicates first.** It is built on a duplicate first. Every project total, rate and line count is proved
+    unchanged before and after, on duplicates only.
+  - **No backfill.** No migration writes to existing lines: a line takes its scope on its next Calculate. Founder
+    projects are never touched.
 
 ## 14. Folders
 
@@ -652,9 +687,13 @@ lower of the existing ground and the subgrade. Today's fixed mode does the same,
 | Unmapped line | Not classified in NRM2 |
 | Retired priced row | Not in the last Calculate |
 | Grade from rims | Grade from rims: no surface here. |
+| No proposed surface | No proposed surface: trench from existing grade, 0+00 to 0+40. |
+| What set the width | Width 36 in — bucket |
+| Over the spec width | Wider than spec max — pay width may be limited |
+| Box not set | Box width not set: pick a box or type its outside width. |
 
-The em dashes in rows 2, 3 and 5 are the brief's wording for UI text. Existing earthwork line names use the same
-" — " form.
+Where a message has an em dash, it is the founder's wording for UI text. Existing earthwork line names use the
+same " — " form.
 
 ## 19. Out of scope
 

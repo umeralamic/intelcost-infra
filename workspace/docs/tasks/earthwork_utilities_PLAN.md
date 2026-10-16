@@ -1,10 +1,13 @@
 # Bores, soil layers, utilities, structures and over-excavation: what exists, and a plan (F29)
 
-_Written 2026-10-15 for the founder, in Block 0 (planning only). **Not adopted; nothing is built.**_
+_Written 2026-10-15 for the founder, in Block 0. **Approved 2026-10-15 (D-526), not started; nothing is built.**
+Block 0.5 (four existing issues, §7) is built first, then Blocks 1 to 5 in order. Nothing in "What could be cut"
+is cut without asking._
 
 - **Spec:** [earthwork_utilities.md](earthwork_utilities.md).
-- **Answering:** reply "go" or "go Block N", and answer the questions by number ("Q3 no: …"). Every default is
-  also listed in [pending_umer.md](../tasks/pending_umer.md) as U-UT1 onward.
+- **Answers:** Q1 to Q15 as recommended, with D-526's notes (§9). The defaults are in
+  [pending_umer.md](pending_umer.md) as U-UT1 to U-UT52, answered in D-526. The trench-width rule (§3.6) replaces
+  U-UT26 and extends U-UT27.
 - **What was read for this plan:**
   - the earthwork engine, Calculate and storage;
   - the estimating lines, out-of-date flags, classification and folders;
@@ -12,12 +15,12 @@ _Written 2026-10-15 for the founder, in Block 0 (planning only). **Not adopted; 
   - the nine geotech reports in `fixtures/geotech/`, read as text with every log page checked against the drawn
     log.
 - **Hand-worked numbers.** Each was worked twice: by hand, and by a scratch calculator (deleted after the run).
-- **Two external values were checked on the web:**
-  - the 8" SDR-35 dimensions, against manufacturers' sheets citing ASTM D3034 (the standard's own table could not
-    be read);
-  - the OSHA bench limits, against a training summary of Appendix B (osha.gov refused the fetch).
-
-  Both are marked "to confirm" where they are used.
+- **External values:**
+  - **The 8" SDR-35 dimensions** come from manufacturers' sheets citing ASTM D3034. The founder accepts
+    manufacturers' sheets, with the source on each catalog row (D-526).
+  - **The OSHA bench limits** come from the official Appendix B (29 CFR 1926 Subpart P, CFR 2023 edition, Table
+    B-1 and Figure B-1). LII's text of the appendix says "maximum bench dimensions as follows:" but carries no
+    figures, so the sizes were read from the printed figures (§3.8).
 
 ---
 
@@ -141,11 +144,12 @@ own patterns.
 
 | Block | Reused | Built new |
 |---|---|---|
+| 0.5 Four existing issues (built first) | `computeFeatureExtras`, `write_lines`, `move_items`, Estimating's sidebar filters | The undercut worked against the surfaces (Q13); `earthwork_retired` with its filter and delete (Q6); the stale mark in Estimating (U-UT38); placed by hand on "Move items to…" (U-UT39) |
 | 1 Bores and the layer model | `computeTin` and its preflight (point TINs); `indexMesh`/`meshLevelAt` (sampling); `polygon-clipping` and `split.ts` (exact splits); the Calculate worker; `scene3d.ts`/`terrainScene.ts` (more meshes in the same group); the Strip Area pattern (own table, undoable CRUD, realtime); Spot's placement mechanics; the report's block model; the Contours and spots settings pattern | **api:** tables `earthwork_soil_layer`, `earthwork_bore`, `earthwork_bore_layer`, `earthwork_bore_water`; columns on `earthwork_assumptions`; `earthwork/geotech_routes.py`; schemas in `earthwork/schemas.py`. **app (pure):** `lib/takeoff/earthwork/geotech/{points,fields,water,split,clamp}.ts`. **app (UI):** `features/takeoff/earthwork/geotech/{BoresButton,BoreLayer,BoresPanel,SoilLayersTab,useBores}.tsx`, `section/SectionPane.tsx`, a settings section `SlopeRuleSection.tsx` |
 | 2 Utilities | Linear's drawing (mechanics `lf`); item writes (`createItem`, `applyShapes`); F7's select, vertex edit and undo; F18's link (`register.ts` `mapRuns`) for utility sheets; Block 1's fields | **api:** table `utility_run`; `takeoff_item.is_utility`, `.earthwork_variant`, `.work_scope_id`, `.work_type`, `.work_kind`; tables `workspace_work_scope`, `workspace_scope_mapping` (with the CSI defaults); `takeoff_folder.auto_key`. **app (pure):** `lib/takeoff/earthwork/utilities/{catalog,breakpoints,section,protection,trench,quantities,lines}.ts`. **app (UI):** `features/takeoff/earthwork/utilities/{UtilitiesButton,RunPanel,RunLayer,ProfilePane,UtilitySettingsSection}.tsx`; a new snap source in `SheetCanvas.tsx` |
 | 3 Structures | Spot's placement; the run engine's soil, water and protection | **api:** table `utility_structure`. **app:** `utilities/structures.ts` (pits, overlap), `StructurePanel.tsx`, structures in `RunLayer.tsx` and in 3D |
 | 4 Over-excavation | `computeFeatureExtras`, `offsetNormRingFt`, D-471's overlaps, `StabilizationFields.tsx`, `SiteFeatureDialog.tsx` | **api:** `takeoff_item.undercut_mode`, `.undercut_layer_id`, `.undercut_elevation_ft`, `.undercut_slope_h`, `.undercut_fill_stack`, `.prep_geosynthetics`; `project_fill_material.compaction_pct`, `.compaction_standard`. **app:** `lib/takeoff/earthwork/overex.ts` |
-| 5 Balance, Estimating, report | `soilBalance`, `write_lines`, `ensure_lines_folder`, `file_under`, Settings › Classification, the report | The balance's new inputs and before/after columns; Settings › Classification › Work scopes; "Map scope…"; today's 24 roles onto work scopes (Q5); retired priced rows kept (Q6); the stale mark in Estimating; the report sections and Excel sheets |
+| 5 Balance, Estimating, report | `soilBalance`, `write_lines`, `ensure_lines_folder`, `file_under`, Settings › Classification, the report | The balance's new inputs and before/after columns; Settings › Classification › Work scopes; "Map scope…"; today's 24 roles onto work scopes (Q5); the report sections and Excel sheets |
 
 ---
 
@@ -234,7 +238,10 @@ Every new project table joins `COPIED` in `project/duplicate.py`, so Duplicate p
 | `section` | JSONB, null | Overrides of Utility settings. |
 | `protection` | String(10) | auto, box, sloped, benched, vertical |
 | `limited_width` | Boolean | |
-| `box_width_ft` | Numeric, null | |
+| `bucket_in` | Numeric(6,2), null | Null: Auto. |
+| `box_ref` | String(36), null | A box in the project's list (Utility settings). |
+| `box_outside_ft` | Numeric(8,3), null | A typed outside width, when no listed box is picked. |
+| `spec_max_width_in` | Numeric(6,2), null | Overrides the project's value for the pipe size. |
 | `restoration` | JSONB, null | `{kind, width_ft}` |
 | `segments` | JSONB | `[{from_ft, to_ft, overrides}]` |
 
@@ -281,10 +288,10 @@ row wins.
 | Table | Columns | Block |
 |---|---|---|
 | `earthwork_assumptions` | `water_buffer_ft` Numeric(8,3), default 1.0; `slope_rule` JSONB, null (null means federal OSHA) | 1 |
-| `earthwork_assumptions` | `utility_settings` JSONB, null (null means the defaults of U-UT27 and U-UT28) | 2 |
+| `earthwork_assumptions` | `utility_settings` JSONB, null (null means the defaults of U-UT27 and U-UT28). It also holds the default bucket, the project's box list (id, name, inside, outside and height) and spec max widths per pipe size. | 2 |
 | `takeoff_item` | `is_utility` Boolean (kept out of Estimating as `is_site_feature` is, `lib/estimate/lines.ts`); `earthwork_variant` String(96); `work_scope_id` FK, SET NULL; `work_type` String(40); `work_kind` String(40) | 2 |
 | `takeoff_item` | the two earthwork line indexes rebuilt on (sheet or site, region, role, coalesce(variant, '')) | 2 |
-| `takeoff_item` | `earthwork_retired` Boolean (Q6) | 5 |
+| `takeoff_item` | `earthwork_retired` Boolean (Q6) | 0.5 |
 | `takeoff_folder` | `auto_key` String(64), null, unique per project (`utilities`, `utilities.sanitary`) | 2 |
 | `takeoff_item` | `undercut_mode` String(10) (fixed, layer, elevation); `undercut_layer_id` FK, SET NULL; `undercut_elevation_ft`; `undercut_slope_h`; `undercut_fill_stack` JSONB; `prep_geosynthetics` JSONB `[{kind, overlap_pct}]` | 4 |
 | `project_fill_material` | `compaction_pct` Numeric(5,2), null; `compaction_standard` String(8), null (D698 or D1557) | 4 |
@@ -294,20 +301,22 @@ row wins.
 Each id is 12 lowercase hex, starting `d<NNN>` with the decision that adopts it (house convention). Each revises
 the one before, from head `c9a5e7d2f4b6`.
 
-1. **Block 1, `earthwork_geotech`:**
+1. **Block 0.5, `earthwork_retired`:** `takeoff_item.earthwork_retired`.
+2. **Block 1, `earthwork_geotech`:**
    - the four geotech tables;
    - `earthwork_assumptions.water_buffer_ft` and `.slope_rule`.
-2. **Block 2, `earthwork_utilities`:**
-   - `utility_run`;
+3. **Block 2, `earthwork_utilities`:**
+   - `utility_run`, with the bucket, box and spec max columns;
    - the `takeoff_item` columns and the rebuilt line indexes;
    - `takeoff_folder.auto_key`;
    - `earthwork_assumptions.utility_settings`.
-3. **Block 2, `work_scopes`:**
+4. **Block 2, `work_scopes`:**
    - `workspace_work_scope` and `workspace_scope_mapping`.
    - No seed rows: defaults are made on first use per workspace, as the CSI tree is seeded on first use (D-58).
-4. **Block 3, `utility_structures`:** `utility_structure`.
-5. **Block 4, `earthwork_overex`:** the undercut and geosynthetic columns, and the compaction note columns.
-6. **Block 5, `earthwork_retired`:** `takeoff_item.earthwork_retired`.
+5. **Block 3, `utility_structures`:** `utility_structure`.
+6. **Block 4, `earthwork_overex`:** the undercut and geosynthetic columns, and the compaction note columns.
+
+No migration writes to existing rows (Q5: no backfill).
 
 **Packages:** none new. three.js, Delaunator, Constrainautor, polygon-clipping and jsPDF are already in the app.
 **For Abdullah:** six migrations, no new package, no new environment value.
@@ -345,8 +354,9 @@ Station tables are not stored; the profile rebuilds them from the inputs, as 3D 
   - the 3D test copy's md5 does not move (U-UT40).
 - **Edits mark lines stale.** An edit to a bore, a layer, a reading, a run, a structure or a setting moves the
   live key. The existing effect then marks the sheet's lines stale, as an edited contour does (D-142 Q10).
-- **Q13 (yes)** adds a feature-key part only to features with an undercut, so only results with an undercut read
-  out of date once. This is D-470's mechanism, worked out on read.
+- **Q13 (yes; built first, Block 0.5)** adds a feature-key part only to features with an undercut, so only
+  results with an undercut read out of date once. This is D-470's mechanism, worked out on read: nothing is
+  written, so a stored result and its md5 do not change.
 
 ### 2.6 Sites, links, copies, realtime and guests
 
@@ -540,7 +550,21 @@ G_b − T at such a bore, that bore adds the point G_b − T.
 ### 3.6 The trench section at a station
 
 At station s:
-- **Bottom width:** W = n·OD + (n − 1)·g + 2c, at least W_min. One pipe gives OD + 2c.
+- **Start surface G:** where a proposed surface covers the station, the proposed subgrade (FG less the Site
+  Feature's depth). Otherwise the existing grade, stated on the run. Otherwise the ground from rims or typed grades
+  (Q7, D-526).
+- **Bottom width W: the largest of these three** (the trench-width rule, D-526):
+  - **the pipe width** P = n·OD + (n − 1)·g + 2c, at least W_min (one pipe gives OD + 2c);
+  - **the bucket** B: the run's, or Auto, the smallest of 12, 18, 24, 30, 36, 42, 48 and 60 in that is at least
+    P;
+  - **the box's outside width** X, wherever a box or shoring is used. The box is the run's, or the smallest
+    listed box whose inside width is at least P. With no list and no typed width the run is flagged.
+
+  The run panel names the one that set W ("Width 36 in — bucket").
+- **Spec max width S** (optional):
+  - if W > S, the run is flagged "Wider than spec max — pay width may be limited";
+  - every quantity is worked again with S in place of W, and shown beside the actual one;
+  - W itself is never reduced.
 - **Trench bottom:** TB = I − (OD − ID)/2 − t_b, where I is the invert and t_b the bedding.
 - **Depths:**
   - trench depth h = G − TB, where G is the start surface;
@@ -552,7 +576,7 @@ At station s:
 |---|---|
 | Vertical, box | W·h |
 | Sloped at k (H:V) | W·h + k·h² (each wall k·h²/2) |
-| Benched (§3.8) | W·h + k·(h − v)(h − v + r) |
+| Benched (§3.8) | W·h + k·(h − v)(h + v − r), for equal benches r over a bottom vertical side v |
 | Stable rock under soil (Q11): rock from TB up to RT, soil from RT to G, h_s = G − RT | W·h + k·h_s² (rock vertical, the soil sloped from the top of the rock) |
 
 **Zones** (sloped case; width at height z above TB is W + 2kz):
@@ -562,24 +586,32 @@ At station s:
 
 The parts add up to A(h).
 
-**Worked examples.** All are 100 LF of 8" PVC SDR-35 (ASTM D3034: OD 8.400 in, wall 0.240 in, ID 7.920 in, to
-confirm in Block 2). Side clearance is 12 in, so W = 0.700 + 2.000 = **2.700 ft**. Bedding is 6 in, the zone runs
-to 12 in above the crown, and the trench depth is **8.00 ft**, so the invert depth is 7.48 ft and the invert is
-92.52 on flat ground at 100.00.
+**Worked examples (reworked for the trench-width rule, D-526).**
+- **The pipe:** 100 LF of 8" PVC SDR-35: OD 8.400 in, wall 0.240 in, ID 7.920 in, from manufacturers' sheets citing
+  ASTM D3034.
+- **The width:** the pipe width is 0.700 + 2 × 1.000 = 2.700 ft (32.4 in), so Auto picks the **36 in bucket**: W =
+  **3.00 ft** ("Width 36 in — bucket").
+- **The depth:** bedding 6 in; the zone runs to 12 in above the crown; the trench depth is **8.00 ft**, so the
+  invert depth is 7.48 ft and the invert is 92.52 on flat ground at 100.00.
 
-| Case | Soil and rule | A (SF) | Excavation | Bedding | Pipe zone (pipe deducted) | Backfill |
-|---|---|---|---|---|---|---|
-| (a) | Clay, Type B, OSHA sloped 1:1 | 85.60 | **317.04 CY** | 5.93 | 32.58 | 277.11 |
-| (b) | Same, trench box | 21.60 | **80.00 CY** | 5.00 | 15.58 | 58.00 |
-| (c) | Same, benched (§3.8) | 53.60 | **198.52 CY** | 5.00 | 15.58 | 176.52 |
-| (d) | Sand, Type C: benching refused; sloped 1½:1 | 117.60 | **435.56 CY** | 6.39 | 41.08 | 386.67 |
-| (f) | 3 ft of clay (B) over sand (C): the flatter governs, 1½:1 | 117.60 | **435.56 CY** | 6.39 | 41.08 | 386.67 |
-| (g) | Clay, the Utah template: cohesive up to 8 ft, 0.5:1 | 53.60 | **198.52 CY** | 5.46 | 24.08 | 167.56 |
+| Case | Soil, rule and width | A (SF) | Excavation | Bedding | Pipe zone (pipe deducted) | Backfill | Top width |
+|---|---|---|---|---|---|---|---|
+| (a) | Clay, Type B, OSHA sloped 1:1; 36 in bucket | 88.00 | **325.93 CY** | 6.48 | 34.46 | 283.56 | 19.00 ft |
+| (a′) | Same, bucket typed 24 in, so the pipe width governs (32.4 in) | 85.60 | **317.04 CY** | 5.93 | 32.57 | 277.11 | 18.70 ft |
+| (b) | Same in a box from the list, 6.00 ft outside (5.00 ft inside, 8 ft high): "Width 6.00 ft — box" | 48.00 | **177.78 CY** | 11.11 | 36.35 | 128.89 | 6.00 ft |
+| (c) | Same, benched (§3.8): one 4 ft bench over a 4 ft vertical side | 56.00 | **207.41 CY** | 5.56 | 17.46 | 182.96 | 11.00 ft |
+| (d) | Sand, Type C: benching refused; sloped 1½:1 | 120.00 | **444.44 CY** | 6.94 | 42.96 | 393.11 | 27.00 ft |
+| (f) | 3 ft of clay (B) over sand (C): the flatter governs, 1½:1 | 120.00 | **444.44 CY** | 6.94 | 42.96 | 393.11 | 27.00 ft |
+| (g) | Clay, the Utah template: cohesive up to 8 ft, 0.5:1 | 56.00 | **207.41 CY** | 6.02 | 25.96 | 174.00 | 11.00 ft |
 
 - **Pipe area:** π × 0.7² ÷ 4 = 0.3848 SF/LF.
-- **(c) and (g)** give the same area by coincidence: 21.6 + 32.
-- **(g)** also shows "Steeper than federal OSHA…", because 0.5 is under 1.0 for Type B.
-- **If "8 ft" meant the invert depth** in (a): h = 8.52 and A = 95.59 SF, so **354.05 CY**.
+- **The box case.** In (b) the zones fill the trench's full 6.00 ft width.
+- **A coincidence.** (c) and (g) give the same area: 24.0 + 32.0.
+- **The OSHA note.** (g) also shows "Steeper than federal OSHA…", because 0.5 is under 1.0 for Type B.
+- **Spec max 30 in on (a):**
+  - the run shows "Wider than spec max — pay width may be limited";
+  - at the spec width, A = 2.5 × 8 + 64 = 84.00 SF, so **311.11 CY**, shown beside the actual 325.93 CY.
+- **If "8 ft" meant the invert depth in (a):** h = 8.52 and A = 3.0 × 8.52 + 8.52² = 98.15 SF, so **363.52 CY**.
 
 ### 3.7 Choosing the slope at a station
 
@@ -607,10 +639,10 @@ to 12 in above the crown, and the trench depth is **8.00 ft**, so the invert dep
 
 **Worked examples (the Utah template, Midway TP-1, p.23 and p.12).**
 - **The site.** GM gravel lies from 1.0 ft. The design water there is 5.20 − 1.00 = 4.20 ft. The bottom width is
-  3.0 ft (assumed).
+  3.0 ft (a 36 in bucket).
 - **4.00 ft trench:** granular, above water, up to 4 ft, so 0.5:1. A = 3 × 4 + 0.5 × 16 = **20.00 SF/LF**.
 - **5.00 ft trench:** the bottom is 0.80 ft below the design water in granular soil, so a box is forced (the
-  template's "saturated granular, shoring"). A = 3 × 5 = **15.00 SF/LF**, flagged.
+  template's "saturated granular, shoring"). With a box 3.0 ft outside, A = 3 × 5 = **15.00 SF/LF**, flagged.
 
 **Worked example (Bidwell B-1, cave-in at 7.0 ft after tools removed, p.45).** The soil is CH, which the report
 classes as OSHA "Class B" (p.17).
@@ -619,20 +651,43 @@ classes as OSHA "Class B" (p.17).
 
 ### 3.8 Benching
 
-Allowed only where every layer passed is A, or B and cohesive (OSHA; U-UT25).
+Allowed only where every layer passed is A, or B and cohesive.
+
+**Source (U-UT25).** The sizes and the geometry come from the official figures: 29 CFR 1926 Subpart P,
+Appendix B, Figure B-1, as printed in the CFR (2023 edition). LII's text of the appendix says "maximum bench
+dimensions as follows:" and carries no figures, so the sizes were read from the printed figures.
+
+| Type | Figures | Bottom vertical side | Each further bench | Slope |
+|---|---|---|---|---|
+| A | Simple Bench, Multiple Bench | at most 4 ft | at most 5 ft | ¾:1 |
+| B | Single Bench, Multiple Bench: "This bench allowed in cohesive soil only." | at most 4 ft | at most 4 ft | 1:1 |
+| C | none | | | 1½:1, sloped only |
 
 **The geometry.**
-- **The bottom.** A vertical side v = min(4 ft, h).
-- **The benches.** Then m = ⌈(h − v)/r_max⌉ equal benches, each of riser r = (h − v)/m. r_max is 4 ft in B and
-  5 ft in A.
-- **Where the benches sit.** Each bench is w = k·r wide, with every nose on the slope line drawn from the top of
-  the vertical side, so the benches stay below the allowed slope, as OSHA requires.
-- **Outside one wall,** the area is Σ j·w·r = k·(h − v)(h − v + r)/2.
+- **Where the benches sit.** The figures draw the maximum slope as a line from the toe of the trench, and put the
+  back corner of every bench on that line. The steps stay inside the line, so a benched wall digs less than the
+  simple slope:
+  - the bottom vertical side leaves a wedge of k·v²/2 per wall;
+  - each bench of height r leaves another k·r²/2.
+- **What "Benched" means.** The multiple bench with the fewest benches the limits allow: v = min(4 ft, h), then
+  n = ⌈(h − v)/r_max⌉ equal benches of height r = (h − v)/n. r_max is 5 ft in A and 4 ft in B.
+- **The area.**
+  - The bench levels are z1 = v, z2 = v + r, …, zn, and the ground is at h (zn+1 = h).
+  - One wall digs k·Σ zj·(zj+1 − zj) beyond the bottom width.
+  - For equal benches, both walls together give k·(h − v)(h + v − r).
+  - The top width is W + 2k·zn.
 
-**Worked example (case c).** h = 8, v = 4, r = 4, m = 1, k = 1. A = 2.7 × 8 + 1 × 4 × 8 = **53.60 SF/LF**,
-**198.52 CY**, with a top width of 2.7 + 8 = 10.7 ft.
+**Worked examples.**
+- **Case (c),** Type B: h = 8, v = 4, one bench of r = 4, k = 1, W = 3.0 (36 in bucket).
+  - A = 3.0 × 8 + 1 × 4 × 8 = **56.00 SF/LF**, so **207.41 CY** per 100 LF.
+  - The top width is 3.0 + 8 = 11.00 ft.
+  - Because v = r here, Block 0's drawing (with the benches outside the line) gave the same area.
+- **Type A, 14 ft deep:** v = 4, two benches of 5 ft, k = ¾, W = 3.0, so the levels are 4 and 9.
+  - Both walls dig 2 × 0.75 × (4 × 5 + 9 × 5) = 97.50 SF, so A = 42.00 + 97.50 = **139.50 SF/LF**.
+  - The top width is 3.0 + 2 × 0.75 × 9 = 16.50 ft.
+  - The simple slope would be 189.00 SF/LF. Block 0's drawing gave 154.50 SF/LF; it is withdrawn.
 
-**Changes in m.** m changes where h crosses v + j·r. Those depths are breakpoints (§3.10).
+**Changes in n.** n changes where h crosses v + j·r_max. Those depths are breakpoints (§3.10).
 
 ### 3.9 Pipe displacement and native or imported backfill
 
@@ -643,10 +698,10 @@ Allowed only where every layer passed is A, or B and cohesive (OSHA; U-UT25).
 - **Spoils** = excavation − native reused (bank). The suitable part goes to the balance (§3.14); unsuitable, hard
   dig and rock are always exported.
 
-**Example (case a).**
-- Native backfill 277.11 CCY needs 277.11 × 1.10 = 304.82 BCY of the clay.
-- Spoils = 317.04 − 304.82 = **12.21 BCY**, suitable.
-- Bedding 5.93 CCY and pipe zone 32.58 CCY are imported materials: listed apart, not soil import.
+**Example (case a, 36 in bucket).**
+- Native backfill 283.56 CCY needs 283.56 × 1.10 = 311.91 BCY of the clay.
+- Spoils = 325.93 − 311.91 = **14.01 BCY**, suitable.
+- Bedding 6.48 CCY and pipe zone 34.46 CCY are imported materials: listed apart, not soil import.
 
 ### 3.10 Along a run, exactly: breakpoints and the prismoidal rule (Q3)
 
@@ -684,11 +739,11 @@ still shows a 5 ft station table for reading.
   **100.00 LF in 6–8** and **100.00 LF in 8–10**.
 - **Dewatering LF.** 100 ft with the trench bottom at 92.00 and the design water rising from 91.00 to 93.00
   along it. The bottom is below the water from s = 50, so **50.00 LF**, drawn blue for the second half.
-- **Maricopa B-1** (CL to 10 ft, p.43; the report's "Type C", 1½(h):1(v), p.20). 2.0 ft bottom width (assumed),
+- **Maricopa B-1** (CL to 10 ft, p.43; the report's "Type C", 1½(h):1(v), p.20). 2.0 ft bottom width (a 24 in bucket),
   6.0 ft deep: A = 2 × 6 + 1.5 × 36 = **66.00 SF/LF**, so 100 LF is **244.44 CY**. The published water is at
   81.80 ft, so dewatering is **0 LF**. The user sets the layer to C, overriding the B suggested for clay, as the
   report says.
-- **Miami B-2** (fill 0.5–4.0, limestone from 4.0 ft, p.30). A 3.0 ft shored trench, 8.0 ft deep, 100 LF:
+- **Miami B-2** (fill 0.5–4.0, limestone from 4.0 ft, p.30). A trench in a box 3.0 ft outside, 8.0 ft deep, 100 LF:
   - total **88.89 CY**;
   - common, 0–4 ft: **44.44 CY**;
   - limestone, from the weathered rock layer (always exported): **44.44 CY**, with **100 LF** of trench in rock;
@@ -739,12 +794,12 @@ still shows a 5 ft station table for reading.
   the shapes change. That is exact for the polynomial pieces, and within 1e−6 CF for the round ones.
 
 **Worked example.** The 48" manhole above, with the trench of case (a) leaving it: invert 90.00, so the trench
-bottom is 89.48 and h = 10.52; 1:1, W = 2.7.
-- **Overlap:** **849.43 CF = 31.46 CY**. Treating the pit wall as flat where the trench enters gives 36.75 CY,
+bottom is 89.48 and h = 10.52; 1:1, W = 3.0 (36 in bucket).
+- **Overlap:** **859.20 CF = 31.82 CY**. Treating the pit wall as flat where the trench enters gives 37.42 CY,
   which would overstate the deduction.
-- **The trench's own length** beyond the outline: 100 − 4.417 = 95.58 ft. 95.58 × 139.07 SF = 492.34 CY, less
-  31.46 = **460.88 CY**.
-- **Pit and trench:** **599.65 CY**.
+- **The trench's own length** beyond the outline: 100 − 4.417 = 95.58 ft. 95.58 × 142.23 SF = 503.51 CY, less
+  31.82 = **471.69 CY**.
+- **Pit and trench:** **610.46 CY**.
 
 ### 3.12 Over-excavation (Block 4)
 
@@ -825,13 +880,13 @@ bottom is 89.48 and h = 10.52; 1:1, W = 2.7.
 | | Before | With trench (a) and Midway's fill removal |
 |---|---|---|
 | Site cut, suitable | 1,000.00 BCY | 1,000.00 BCY |
-| Trench excavation, clay, suitable | none | 317.04 BCY |
+| Trench excavation, clay, suitable | none | 325.93 BCY |
 | Site fill | 900.00 CCY | 900.00 CCY |
-| Native trench backfill | none | 277.11 CCY |
-| Surplus (bank) | 1,000 − 900 × 1.10 = **10.00 BCY** | (1,317.037 ÷ 1.10 − 1,177.111) × 1.10 = **22.21 BCY** (full precision; the rounded figures give 22.22) |
-| Soil export | **12.50 LCY** | **27.77 LCY** |
+| Native trench backfill | none | 283.56 CCY |
+| Surplus (bank) | 1,000 − 900 × 1.10 = **10.00 BCY** | (1,325.93 ÷ 1.10 − 1,183.56) × 1.10 = **24.01 BCY** |
+| Soil export | **12.50 LCY** | **30.02 LCY** |
 | Always exported | none | Undocumented fill 123.46 BCY → **154.32 LCY** |
-| Imported materials (not soil import) | none | Bedding 5.93 CCY, pipe zone 32.58 CCY, replacement select fill 123.46 CCY |
+| Imported materials (not soil import) | none | Bedding 6.48 CCY, pipe zone 34.46 CCY, replacement select fill 123.46 CCY |
 
 ### 3.15 Topsoil suggestion
 
@@ -841,6 +896,25 @@ at the surface are left out. It is rounded to 0.05 ft.
 **Example (Bidwell, pp.45–50).**
 - B-1, B-2, B-4, B-5 and B-6 log 8, 7, 8, 4 and 3 in, an average of 6.0 in, so the suggestion is **0.50 ft**.
 - B-3 has 2 in of asphalt at the surface and is left out.
+
+### 3.16 A project with no grading (a requirement, D-526)
+
+**The rule.** A project with no EG, no FG and no boundary still Calculates its runs and structures.
+- Mass cut and fill are simply absent.
+- The ground comes from rims and typed grades (spec §9.1).
+- With no bores, the soil is Type C.
+
+**Worked examples.** All use 8" PVC SDR-35 in a 36 in bucket (W = 3.0) at 1½:1.
+- **A run with typed grades:** 100 ft, the ground from 100.00 to 99.00, the inverts from 92.00 to 91.00.
+  - The trench depth is 8.52 all along: A = 3.0 × 8.52 + 1.5 × 8.52² = 134.45 SF, so **497.95 CY**.
+  - Pipe: 100 LF at 8.00 ft (8–10). Protection: Sloped 1½:1, 8–10 ft, 100 LF.
+  - The run says where its ground and soil came from: "No bores: Type C assumed."
+- **Between two manholes.** Two 48" manholes (OD 4.833 ft, over-dig 2 ft): rims 100.00; floors and inverts 92.00;
+  slab and stone 0.5 ft each; 100 ft centre to centre. The line is level, so the check is exact.
+  - **Each pit:** h = 9.0, V = π·(19.507 × 9 + 4.417 × 1.5 × 81 + 2.25 × 729 ÷ 3) = **146.48 CY**; 8.00 VF (8–10).
+  - **The trench between the pit outlines:** 100 − 2 × 4.417 = 91.17 ft × 134.45 SF = **453.96 CY**, less the two
+    overlaps with the pits (§3.11), **37.51 CY** each.
+  - **Total: 671.91 CY.** "Grade from rims: no surface here." and "No bores: Type C assumed."
 
 ---
 
@@ -925,6 +999,11 @@ right like the others.
 | Pipe zone [Sand           ] (o) Imported ( ) Native  Density [   ] pcf             |
 | Backfill  [Native         ] ( ) Imported (o) Native                               |
 | Trench from (o) Proposed subgrade ( ) Existing grade                              |
+| Bucket [Auto v]  (smallest of 12 18 24 30 36 42 48 60 in at or above the pipe)   |
+| Boxes                                  inside    outside   height       + Box     |
+|   Box 4x8                              3.50 ft   4.00 ft   8.0 ft                 |
+|   Box 6x8                              5.00 ft   6.00 ft   8.0 ft                 |
+| Spec max width by size    8" [30] in   12" [36] in                 + Size        |
 | Depth ranges [0 6 8 10 12 14 16] ft     Water buffer [1.0] ft                     |
 ```
 
@@ -937,15 +1016,16 @@ right like the others.
 | Vertical (o) Inverts ( ) Start + slope ( ) Cover                                 |
 |   Start invert [92.52] at MH-1     End invert [91.52] at MH-2                    |
 | Trench from (o) Proposed subgrade ( ) Existing grade                             |
-| Section: width 2.70 ft (OD + 2 x 12"), bedding 6", zone 12" above crown  [edit]  |
+| Bucket [Auto v]   Box [Box 6x8 v]   Spec max [   ] in                            |
+| Width 36 in — bucket  (pipe width 32.4 in)  bedding 6", zone 12" above crown     |
 | Protection [Auto v]  [ ] Limited width / in street   Restoration [None v]       |
 | Segments  0+00-0+40  Near building: clay backfill, no gravel bedding   + Segment |
 | -- Last Calculate -------------------------------------------------------------- |
 | Length 100.00 LF        6-8 ft 100.00 LF                                         |
-| Excavation 317.04 BCY (Clay 317.04)     Rock 0                                   |
-| Bedding 5.93 CCY  Zone 32.58 CCY  Backfill 277.11 CCY native                     |
+| Excavation 325.93 BCY (Clay 325.93)     Rock 0                                   |
+| Bedding 6.48 CCY  Zone 34.46 CCY  Backfill 283.56 CCY native                     |
 | Sloped 1:1 (Type B), 8-10 ft 100.00 LF    Dewatering 0 LF                        |
-| Spoils 12.21 BCY to the site balance                                             |
+| Spoils 14.01 BCY to the site balance                                             |
 | ! notes                                        [Profile]  [Cross-section]        |
 +----------------------------------------------------------------------------------+
 ```
@@ -1019,9 +1099,9 @@ right like the others.
 |   Fat clay              980.10   2,103.20   3,083.30 BCY                       |
 |   Limestone               0.00     55.00      55.00 BCY  (rock)                |
 | Site balance                    Before utilities    With utilities             |
-|   Soil export                         12.50 LCY          27.77 LCY             |
+|   Soil export                         12.50 LCY          30.02 LCY             |
 |   Always exported                        --            154.32 LCY             |
-|   Imported materials: bedding 5.93 CCY . pipe zone 32.58 CCY . select 123.46 |
+|   Imported materials: bedding 6.48 CCY . pipe zone 34.46 CCY . select 123.46 |
 ```
 
 ### 4.12 Estimating
@@ -1029,12 +1109,13 @@ right like the others.
 ```text
 | v Utilities > Sanitary                                                          |
 |   8" PVC SDR-35 Pipe, 6-8 ft deep — Sanitary Sewer         100.00 LF   33.03.01 |
-|   Trench Excavation, Fat clay (bank) — Sanitary Sewer      317.04 BCY  33.11.01 |
-|   Pipe Bedding, #57 stone (compacted) — Sanitary Sewer       5.93 CCY  33.11.02 |
+|   Trench Excavation, Fat clay (bank) — Sanitary Sewer      325.93 BCY  33.11.01 |
+|   Pipe Bedding, #57 stone (compacted) — Sanitary Sewer       6.48 CCY  33.11.02 |
 |   Trench Protection, Sloped 8-10 ft — Sanitary Sewer       100.00 LF   31.09.01 |
 | On an NRM2 project:                                                             |
-|   Trench Excavation, Fat clay (bank) — Sanitary Sewer  317.04 BCY               |
+|   Trench Excavation, Fat clay (bank) — Sanitary Sewer  325.93 BCY               |
 |     Site Utilities — Sanitary Sewer . Not classified in NRM2   [Map scope...]    |
+| Sidebar filter: [x] Not in the last Calculate (3)  ->  Select all . Delete       |
 ```
 
 ### 4.13 Settings › Classification › Work scopes
@@ -1202,6 +1283,10 @@ drain and junction box (approximate); sloped and benched protection (approximate
   - "Earthwork — Over-excavation": undercut roles;
   - "Earthwork — Subgrade Treatment": prep and stabilization.
 - Nothing moves on any project.
+- **Proved on duplicates first (D-526).** Every project total, every rate and the line count are compared before
+  and after, on duplicates only.
+- **No backfill.** No migration writes to existing lines; each line takes its scope on its next Calculate.
+  Founder projects are never opened.
 
 ### 5.4 Sync rules
 
@@ -1218,11 +1303,13 @@ drain and junction box (approximate); sloped and benched protection (approximate
   to…" now sets `placed_by_hand` (U-UT39).
 - **Never the user's:** name and quantity (`CALCULATED_EDITABLE`, as today).
 - **Kept because the row's id is kept:** rates (`estimate_line_item`, `takeoff_cost_component`), notes and layer.
-- **A key that disappears** (Q6):
+- **A key that disappears** (Q6, D-526; built first, Block 0.5):
   - a row with any price or cost component is kept at 0, with `earthwork_retired` and "Not in the last
     Calculate";
   - a row without one is deleted, as today;
-  - a kept row comes back to life when its key returns.
+  - a kept row comes back to life when its key returns;
+  - Estimating's sidebar filters to the retired rows, so they can be cleared in one go: filter, select all,
+    Delete, one undo. A retired row can be deleted; a live Calculate line still cannot (`CALCULATED_EDITABLE`).
 - **Unit costs** start empty. There is no price library to match (§1.1); a returning key keeps its old rates.
 - **Mapping changes.** When a mapping row changes, every line in the workspace with that scope, type and kind is
   re-resolved, in projects on that system, unless placed by hand. Every project using the scope picks it up.
@@ -1250,6 +1337,16 @@ Nothing is a test suite.
   line that ends passed or FAILED, as `check_share_as_member.py` does (D-524).
 - **Where the brief asks for 0.5 %,** the rows hold 0.01 CY, which is tighter.
 
+### 6.0 Block 0.5 (built first)
+
+| # | Check | Expected | Source |
+|---|---|---|---|
+| 0.5a | Q13: a 7,000 SF pad whose subgrade is 2.0 ft above existing ground, with a 6.5 ft undercut | 1,166.67 CY (today 1,685.19); a pad in a cut area is unchanged (Heinsohn's 1,685.19) | synthetic; Heinsohn pp.17–18 |
+| 0.5b | Q6: a priced line whose key disappears | kept at 0, "Not in the last Calculate", rates intact; back with its rates when the key returns; Estimating's filter lists it; select all and Delete removes the retired rows only, in one undo; a live Calculate line still cannot be deleted | `check_retired.py` and the smoke |
+| 0.5c | U-UT38 | a stale Calculate line shows "Needs recalculating" in Estimating | the smoke |
+| 0.5d | U-UT39 | "Move items to…" sets `placed_by_hand` on Calculate lines; the next Calculate leaves them where they were moved | `check_retired.py` |
+| 0.5e | Nothing written | the 3D test copy's stored result and md5 (`fab4d151…`) unchanged. A result with an undercut reads out of date when read (D-470's mechanism); the copy's Building Pad has one, so the copy reads out of date until its next Calculate | the copy |
+
 ### 6.1 Block 1
 
 | # | Check | Expected | Source |
@@ -1269,21 +1366,26 @@ Nothing is a test suite.
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 2a | 100 LF of 8" PVC SDR-35, 8.00 ft trench, Type B, OSHA sloped | 317.04 CY; bedding 5.93; zone 32.58; backfill 277.11; pipe LF 6–8 100; protection Sloped 8–10 100 LF | ASTM D3034 (to confirm), OSHA App B |
-| 2b | Same, box | 80.00 CY; 5.00 / 15.58 / 58.00 | same |
-| 2c | Same, benched | 198.52 CY; top width 10.70 ft | same; U-UT25 |
-| 2d | Sand, Type C, benched | refused "Benching isn't allowed in this soil."; sloped 435.56 CY | OSHA |
+| 2a | 100 LF of 8" PVC SDR-35, 8.00 ft trench, Type B, OSHA sloped, Auto bucket | "Width 36 in — bucket"; 325.93 CY; bedding 6.48; zone 34.46; backfill 283.56; pipe LF 6–8 100; protection Sloped 8–10 100 LF | manufacturers' sheets (ASTM D3034); OSHA App B |
+| 2a′ | Same, bucket typed 24 in | the pipe width governs (32.4 in): 317.04 CY; 5.93 / 32.57 / 277.11 | same |
+| 2b | Same, in a 6.00 ft outside box from the list (5.00 ft inside, 8 ft high) | "Width 6.00 ft — box"; 177.78 CY; 11.11 / 36.35 / 128.89 | same; D-526 |
+| 2b′ | A box with no list and no typed width | the run is flagged "Box width not set: pick a box or type its outside width." until it is set | D-526 |
+| 2c | Same, benched | 207.41 CY; top width 11.00 ft | OSHA App B Figure B-1 (Type B) |
+| 2c′ | Type A, 14 ft deep, benched | two 5 ft benches over a 4 ft vertical side: 139.50 SF/LF; top width 16.50 ft | OSHA App B Figure B-1 (Type A) |
+| 2d | Sand, Type C, benched | refused "Benching isn't allowed in this soil."; sloped 444.44 CY | OSHA |
 | 2e | Water above the trench bottom | dewatering 50.00 LF (water 91 → 93, bottom 92) and 100.00 LF when fully under; box forced in granular | synthetic |
-| 2f | Clay over sand | the flatter governs: 1½:1, 435.56 CY | synthetic |
-| 2g | (a) with the Utah template | 198.52 CY and the "Steeper than federal OSHA…" note | Midway p.9 |
+| 2f | Clay over sand | the flatter governs: 1½:1, 444.44 CY | synthetic |
+| 2g | (a) with the Utah template | 207.41 CY and the "Steeper than federal OSHA…" note | Midway p.9 |
 | 2h | Utah template at Midway TP-1 | 4 ft: 0.5:1, 20.00 SF/LF; 5 ft: box forced (below the 4.20 ft design water) | Midway p.9, p.23, p.12 |
 | 2i | Maricopa B-1 Type C | 66.00 SF/LF, 244.44 CY; dewatering 0 | Maricopa p.20, p.43, p.8 |
 | 2j | Miami B-2, shored | 88.89 CY: common 44.44, rock 44.44, rock 100 LF, dewatering 100 LF | Miami p.30, p.15 |
 | 2k | Bidwell B-1 cave-in 7.0 ft | 6 ft trench sloped 1:1; 8 ft trench box forced, flagged | Bidwell p.45, p.17 |
 | 2l | LF by invert depth | 6–8 100.00 LF, 8–10 100.00 LF | synthetic |
-| 2m | Spoils | 12.21 BCY suitable to the balance | synthetic |
+| 2m | Spoils | 14.01 BCY suitable to the balance | synthetic |
 | 2n | Exact rule against 5-ft stations | depth 6 → 10 at 1:1: exact 266.67 CF under one-interval AEA, 0.67 CF under 5-ft AEA | synthetic |
 | 2o | `check_utilities.py` | a run's fields are refused when out of range; a Calculate line keyed by variant keeps its id across Calculates; mapping resolution returns 33.03.01 on CSI and none on NRM2 | api |
+| 2p | Spec max 30 in on (a) | "Wider than spec max — pay width may be limited"; 311.11 CY at the spec width beside the actual 325.93; the actual not reduced | D-526 |
+| 2q | Utilities only: no EG, FG or boundary (a requirement) | run with typed grades 497.95 CY; two manholes from their rims 146.48 CY each, 8.00 VF each; the run between them 453.96 CY less two overlaps of 37.51; total 671.91 CY; "No bores: Type C assumed." | §3.16 |
 
 ### 6.3 Block 3
 
@@ -1291,7 +1393,7 @@ Nothing is a test suite.
 |---|---|---|---|
 | 3a | 48" manhole, 10 VF, Type B, sloped | pit 138.77; stone 1.14; backfill 130.50 CY; 10.00 VF, range 10–12 | synthetic |
 | 3b | Lift station, water above the floor | clay counts C below the water: 1,014.52 CY, dewatering flag; sand: shoring forced, 132.74 CY | synthetic |
-| 3c | Trench into the manhole | overlap 31.46 CY deducted; trench 460.88 CY; pit + trench 599.65 CY | synthetic |
+| 3c | Trench into the manhole (36 in bucket) | overlap 31.82 CY deducted; trench 471.69 CY; pit + trench 610.46 CY | synthetic |
 
 ### 6.4 Block 4
 
@@ -1302,19 +1404,18 @@ Nothing is a test suite.
 | 4c | Bidwell lime 8 % at 16 in | 1,111.11 SY, 58.67 TON at the project's 110 pcf; Gallia 36.67 and 51.33 TON | Bidwell p.21; Gallia p.11 |
 | 4d | Midway remove fill to natural soil | 216.05 CY: topsoil 92.59, fill 123.46, both exported | Midway pp.23–25 |
 | 4e | Bidwell footing undercut | box 120.37 CY per 100 LF (zone 74.07 if Q12 is no) | Bidwell p.25, p.42 |
-| 4f | Q13 fill area | 1,166.67 CY (today 1,685.19) | synthetic |
 | 4g | Geotextile, 10 % | 1,222.22 SY | synthetic |
 
 ### 6.5 Block 5
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 5a | Balance before and after | 10.00 BCY / 12.50 LCY before; 22.21 BCY / 27.77 LCY after; always exported 154.32 LCY; imported materials listed apart | §3.14 |
+| 5a | Balance before and after | 10.00 BCY / 12.50 LCY before; 24.01 BCY / 30.02 LCY after; always exported 154.32 LCY; imported materials listed apart | §3.14 |
 | 5b | Default mapping on CSI | every line's code as in §5.3; "Other" and "custom" not mapped | `csi-default-v1.txt` |
 | 5c | NRM2 project | "Not classified in NRM2" until mapped once; then every project on the scope shows the node; a line classified by hand keeps it | `check_scopes.py` |
-| 5d | Renames and folders | a renamed work scope and a renamed "Utilities" folder are kept after Calculate; "Move items to…" sets placed by hand | `check_scopes.py` |
-| 5e | Retired priced row | a priced 6–8 ft line kept at 0 when the run gets deeper; it comes back with its rate when it returns | `check_scopes.py` |
-| 5f | Today's lines (Q5) | on the 3D test copy's duplicate, every existing line keeps its code and folder after Calculate | the duplicate |
+| 5d | Renames and folders | a renamed work scope and a renamed "Utilities" folder are kept after Calculate | `check_scopes.py` |
+| 5e | Retired priced row, utility lines | a priced 6–8 ft pipe line kept at 0 when the run gets deeper; back with its rate when it returns (the rule is Block 0.5's) | `check_scopes.py` |
+| 5f | Today's lines (Q5, D-526) | on duplicates only, never a founder project: before and after, every project total, every rate and the line count identical, with every existing line keeping its code and folder; no migration writes to existing lines | the duplicates |
 
 ### 6.6 Every build block closes with
 
@@ -1339,6 +1440,17 @@ Nothing is a test suite.
 **How the hours count.** Hours are counted as F26's plan counted them: 80 h, built in one overnight run plus
 fixes. Each sub-block is committable on its own, so a run can stop at a sub-block boundary.
 
+### Block 0.5: four existing issues, built first (about 11 h; D-526)
+
+| Sub-block | What | Hours |
+|---|---|---|
+| 0.5A | **Q13: today's fixed undercut counts existing ground only.** The undercut is worked inside the model, against the surfaces. Features with an undercut get a feature-key part, so their results read out of date once (D-470's mechanism: nothing is written). | 5 |
+| 0.5B | **Q6: priced rows are kept.** `takeoff_item.earthwork_retired` (migration). `write_lines` keeps a priced row at 0 and revives it when its key returns. Estimating gets the "Not in the last Calculate" filter, with select all and Delete in one undo; a retired row can be deleted. `check_retired.py`. | 4 |
+| 0.5C | **U-UT38:** Estimating shows "Needs recalculating" on stale Calculate lines. | 1.5 |
+| 0.5D | **U-UT39:** "Move items to…" sets `placed_by_hand` on Calculate lines. | 0.5 |
+
+Block 0.5 closes as every block does (§6.6), with the checks in §6.0.
+
 ### Block 1: bores and the 3D layer model (about 46 h; the brief says 1–2 days)
 
 | Sub-block | What | Hours |
@@ -1354,15 +1466,15 @@ fixes. Each sub-block is committable on its own, so a run can stop at a sub-bloc
 **Why it is bigger than the brief's estimate.** The exact split by layer (1C, 1D) and the bore form with paste and
 tab-through (1B) are each about a day.
 
-### Block 2: utilities (about 52 h; the brief says 2–3 days)
+### Block 2: utilities (about 57 h; the brief says 2–3 days)
 
 | Sub-block | What | Hours |
 |---|---|---|
-| 2A | `utility_run`, item columns, rebuilt line indexes, folder keys, work scope tables with the CSI defaults (no UI yet), Utility settings | 7 |
-| 2B | The pipe catalog with a standard cited per row; blanks listed | 4 |
-| 2C | Utilities button, drawing, snap to structures and runs (new snap source), the run panel with segments, the run layer (colours, labels), filing under Utilities › type | 12 |
-| 2D | The engine: breakpoints, sections, protection selection, exact integration, zones, pipe displacement, native and imported, spoils, ranges, dewatering, restoration | 14 |
-| 2E | Utility sheets through a link (Q8), ground from rims | 4 |
+| 2A | `utility_run`, item columns, rebuilt line indexes, folder keys, work scope tables with the CSI defaults (no UI yet); Utility settings with the default bucket, the box list and spec max widths per size | 8 |
+| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed | 4 |
+| 2C | Utilities button, drawing, snap to structures and runs (new snap source), the run panel with segments, bucket, box and spec max, the run layer (colours, labels), filing under Utilities › type | 12 |
+| 2D | The engine: breakpoints, the trench-width rule, sections, protection selection, exact integration, zones, pipe displacement, native and imported, spoils, ranges, dewatering, restoration, the spec-width quantities | 16 |
+| 2E | Utility sheets through a link (Q8); ground from rims and typed grades; utilities-only projects Calculate with no EG, FG or boundary (a requirement, D-526) | 6 |
 | 2F | The profile pane; pipes in the cross-section | 5 |
 | 2G | Results in the panel, the lines (classified by work scope), the report's Utilities section and Excel sheet, `check_utilities.py` | 6 |
 
@@ -1375,33 +1487,34 @@ tab-through (1B) are each about a day.
 | 3C | Pits (round and rectangular), protection, stone, backfill, VF, flags, the trench cut-off and slice overlap | 6 |
 | 3D | Lines, report rows, 3D structures and pipes | 2 |
 
-### Block 4: over-excavation and treatment (about 14 h; the brief says 1 day)
+### Block 4: over-excavation and treatment (about 13 h; the brief says 1 day)
 
 | Sub-block | What | Hours |
 |---|---|---|
 | 4A | Columns and migration; compaction notes | 2 |
-| 4B | The engine: modes with existing ground, the extent box, the split by layer, stacks, geosynthetics, the Q13 key part | 6 |
+| 4B | The engine: modes with existing ground, the extent box, the split by layer, stacks, geosynthetics (Q13's fix is Block 0.5's) | 5 |
 | 4C | Site Feature dialog, Options 1 and 2; notes in Estimating and the report | 4 |
 | 4D | Lines, the report section, the checks | 2 |
 
-### Block 5: balance, Estimating, classification, folders, report (about 28 h; the brief says 1 day)
+### Block 5: balance, Estimating, classification, folders, report (about 24 h; the brief says 1 day)
 
 | Sub-block | What | Hours |
 |---|---|---|
 | 5A | The balance's new inputs, per-layer factors, before and after, the lines | 6 |
 | 5B | Settings › Classification › Work scopes; "Map scope…"; "Not classified in <system>"; re-resolving on change | 8 |
-| 5C | Today's 24 roles onto work scopes (Q5), reproducing every system's codes | 3 |
-| 5D | Retired priced rows (Q6), "Move items to…" placed by hand, the stale mark in Estimating, `check_scopes.py` | 3 |
-| 5E | Guest pass over everything; the report's Bores and layers, Cut by material and Over-excavation sections and Excel sheets; a final metric pass | 6 |
+| 5C | Today's 24 roles onto work scopes (Q5), reproducing every system's codes. Proved on duplicates first: every project total, rate and line count, before and after. No backfill. `check_scopes.py`. | 4 |
+| 5D | Guest pass over everything; the report's Bores and layers, Cut by material and Over-excavation sections and Excel sheets; a final metric pass | 6 |
 
 **Why it is bigger than the brief's estimate.** The brief assumed the scope mapping existed. It does not, so 5B
 builds it.
 
-**Total: about 156 h.** As runs, roughly:
+**Total: about 167 h** (Block 0.5 11, Block 1 46, Block 2 57, Block 3 16, Block 4 13, Block 5 24). Block 0's
+total of 156 h was mis-added: its Block 5 sub-blocks came to 26 h, not 28, so it was 154 h. As runs, roughly:
+- Block 0.5: part of one day run;
 - Block 1 and Block 2: one long day run each, possibly two;
 - Block 3, Block 4 and Block 5: one each.
 
-### What can be cut, if needed
+### What could be cut (nothing is cut without asking, D-526)
 
 **Block 1**
 - The cross-section tool: move it to Block 2, where it shares the profile's code.
@@ -1420,7 +1533,7 @@ builds it.
 
 **Block 3**
 - Rectangular pits.
-- The slice overlap: use the flat-wall rule, which in §3.11's example overstates the deduction by 5.29 CY.
+- The slice overlap: use the flat-wall rule, which in §3.11's example overstates the deduction by 5.60 CY.
 
 **Block 4**
 - The outward slope.
@@ -1446,9 +1559,11 @@ builds it.
 2. **Our CSI is not MasterFormat.** It is legacy's tree with its own numbering, so the brief's candidate codes do
    not exist as written. The defaults are matched by title (§5.3), and a workspace that edited its tree may lose
    some.
-3. **Calculate's guards need EG, FG and a boundary.** A utilities-only job (a street with no grading) still has to
-   calculate. The guards in `useVolumes` and `computeVolumes` change, and so does the "ground from rims" path.
-   The version key rule and the md5 check guard against moving existing results.
+3. **Calculate's guards need EG, FG and a boundary,** and a utilities-only project must Calculate anyway (a
+   requirement, D-526).
+   - The guards in `useVolumes` and `computeVolumes` change, and so does the "ground from rims" path (2E, check
+     2q).
+   - The version key rule and the md5 check guard against moving existing results.
 
 **Engine and performance**
 
@@ -1457,15 +1572,19 @@ builds it.
 5. **The TIN engine knows only EG and FG.** `TinSurface` needs a widened type or a wrapper. `sampleZAt` is O(T)
    per call, so stations must use the indexed lookups.
 6. **Today's undercut ignores the ground.** It is a flat slab. The new modes need EG and the subgrade everywhere,
-   which is a new path. Q13 also changes the old path, and those results read out of date once.
+   which is a new path.
+   - Q13 (Block 0.5) also changes the old path, so results with an undercut read out of date once. That includes
+     the 3D test copy, whose Building Pad has one.
+   - Nothing is written, so the copy's stored result and its md5 do not change.
 
 **Lines and Estimating**
 
 7. **Rates go when rows go.** Depth-range lines come and go with small design changes, and a deleted row's rates
-   cascade away. Q6 keeps priced rows instead.
-8. **"Move items to…" does not set `placed_by_hand`,** so a Calculate re-files lines moved that way (fixed in 5D).
+   cascade away. Q6 keeps priced rows instead (Block 0.5).
+8. **"Move items to…" does not set `placed_by_hand`,** so a Calculate re-files lines moved that way (fixed in
+   Block 0.5).
 9. **Estimating does not show `is_stale`** today, so the brief's "same out-of-date flags" is half invisible there
-   (fixed in 5D).
+   (fixed in Block 0.5).
 
 **Canvas, sheets and 3D**
 
@@ -1484,11 +1603,16 @@ builds it.
 
 **External values and the reports**
 
-14. **The pipe catalog.** ASTM and AWWA tables are not free to read. The catalog may ship partly blank, by the
-    brief's rule. Check (a) uses D3034's 8" (OD 8.400 in, wall 0.240 in) from manufacturers' sheets citing the
-    standard; the standard's own table was not read.
-15. **OSHA's bench figures were not fetched** (osha.gov refused). The bench limits come from a training summary
-    of Appendix B (U-UT25, to confirm).
+14. **The pipe catalog.** ASTM and AWWA tables are not free to read.
+    - Manufacturers' sheets are accepted, with the source on each row (D-526).
+    - A value with no source stays blank and is listed.
+    - Check (a) uses D3034's 8" (OD 8.400 in, wall 0.240 in) from those sheets.
+15. **OSHA's bench sizes are drawn only in the figures.**
+    - LII's text says "maximum bench dimensions as follows:" and has no figures.
+    - The sizes were read from the official CFR's printed figures (2023 edition). Those figures also showed that
+      the benches sit inside the slope line from the toe, which corrected Block 0's drawing (§3.8).
+    - OSHA's other configurations are not offered: Type A's short-term ½:1 slope and unsupported vertical lower
+      portion, and the shielded lower portion with a slope above.
 16. **No report gives coordinates or ground elevations** on its logs (all nine). Bores are placed by eye from the
     report's location figure, and their ground comes from our EG. A report on its own datum stays informational.
 
@@ -1507,10 +1631,17 @@ builds it.
 
 ---
 
-## 9. Questions
+## 9. Questions, answered
 
-Reply by number ("Q3 no: …"). Each recommended answer is already written into the spec, and is listed again in
-pending_umer.md as U-UT1 to U-UT15.
+**Answered 2026-10-15 (D-526): all fifteen yes, as recommended,** with these notes:
+- **Q5:** built on a duplicate first, with every project total, rate and line count proved unchanged before and
+  after. No backfill. Founder projects are never touched.
+- **Q6:** plus an Estimating filter for "Not in the last Calculate", so those rows can be cleared in one go.
+- **Q7:** where there is no proposed surface, the existing grade, stated on the run.
+- **Q9:** the per-run breakdown stays in the run panel and the grading report.
+- **Q12:** the box: 32.5 SF/LF on Bidwell's footing.
+
+The questions as asked follow, unchanged.
 
 **Q1. How are layer bottoms interpolated?**
 Soils by **depth below the existing ground**, so they follow the terrain; weathered rock and bedrock by
