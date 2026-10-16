@@ -16461,3 +16461,61 @@ Built to the approved spec (§3, §4) and plan (§2.1 to §2.3, §4.2, §4.3):
 - **In the browser, on a duplicate:** two bores placed, undone and redone, a log typed and saved, three layers
   added from the tab. The duplicate of the duplicate carried the same layers, bore and log. In the guest view
   every control in the panel was greyed (23 of 23) and nothing could be placed. In metric, 20 ft read 6.1 m.
+
+## D-533: The layer model and each bore's design water (F29 Block 1, step 1b)
+
+Built to spec §5 and §6 and plan §3.1 to §3.3 and §3.5, as pure modules in `lib/takeoff/earthwork/geotech/`:
+
+1. **`water.ts`.** A bore's design water level, the first rule that applies:
+   - the shallowest seasonal high estimate;
+   - the shallowest measured reading less the project's buffer (never above the ground; perched flagged);
+   - published data, labelled, never shallower than the bore's own "not encountered" depth;
+   - "Below T (not encountered)", with no buffer;
+   - none.
+
+   The panel shows it in the spec's words ("4.20 ft (5.20 measured − 1.00 buffer)").
+2. **`field.ts`.** A surface from its points, exact:
+   - three or more points: a Delaunay TIN;
+   - one point: level;
+   - two points, or more on one line: linear along the line, constant across;
+   - outside the hull: the nearest point of the hull's boundary (a strip beyond each edge, a wedge beyond each
+     vertex).
+
+   So the plane is convex pieces, each with one linear value, clipped to the work.
+3. **`model.ts`.**
+   - **Points.** What each bore gives each layer's bottom (plan §3.1): its logged bottom where the log goes on
+     below; zero thickness where it is missing from a log that goes on below it; "at least" its total depth
+     where it ended inside the layer at planned depth, kept only where the other bores' surface is shallower;
+     nothing where it ended above. Refusal for caving or an obstruction counts as planned depth.
+   - **Surfaces.** Each bottom by depth, or by elevation against the existing ground's pieces.
+   - **Clamps.** From the top down, exact: each piece is split on the line where the layer meets the one
+     above. Each clamp is reported as the spec words it ("Clay kept under Fill over 555.56 SF, up to 2.00 ft,
+     near TP-4"); under 0.01 ft or 1 SF, it is not listed.
+   - **Water surface.** By elevation, never above a "not encountered" bore's total depth there.
+4. **The panel.** Each bore shows its design water level. The Soil layers tab reports the open sheet's model:
+   its clamps, or "No layer crosses another.", "No groundwater in any bore." when none has water, and notes such as
+   a bore with no ground elevation left out of a layer by elevation.
+
+**Checks: four new quantity-table rows, all right (166 earthwork rows).**
+- **1.4:** D(50, −30) = 7.00, D(−20, 50) = 5.00, D(150, −50) = 8.00, and inside D(20, 30) = 5.80.
+- **1.5:** one clamp, "Clay kept under Fill over 555.56 SF, up to 2.00 ft, near TP-4". TP-4's "at least" point is
+  the only one kept, and at every piece corner each bottom is at or below the one above.
+- **1.6 and 1.7:**
+
+  | Bore | Design water |
+  |---|---|
+  | W-1 | 4.00 (4.20 without the seasonal high) |
+  | Deland B-1 | 5.00 |
+  | Maricopa | 81.80 (published) |
+  | Plain City B-13 | 4.00 |
+  | Plain City B-12 | 6.00 |
+  | Midway TP-3 | 3.00 |
+  | Manila Creek B-1 | below 41.5 |
+
+**Fixtures** were typed from the reports onto a duplicate (`fixtures.mjs` in the run's scratch, listed in the night
+report): Midway TP-1 to TP-3 (pp.23–25), Bidwell B-1 to B-6 (pp.45–50) and Deland B-1 (p.21), on three sheets
+under one six-layer list. The panel reads Midway 4.20, 3.50 and 3.00 ft, Deland 5.00 ft and Bidwell "Below
+20.00 ft (not encountered)". Positions and ground are assumed, because no report gives them. Deland's sands are
+one row: the scanned log's sub-strata depths could not be read.
+
+Calculate is still untouched (step 1c), so the 3D test copy's md5 is `fab4d151…`.
