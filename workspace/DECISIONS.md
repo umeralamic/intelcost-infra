@@ -16237,3 +16237,57 @@ The api gates passed.
    - The spec and plan move to `docs/tasks/`, CLAUDE.md's place for specs.
    - Block 0's total of 156 h was mis-added: it was 154 h.
    - With Block 0.5 and the width rule, the plan is about 167 h.
+
+## D-527: A link's guest: the saved Calculate in 2D and 3D, Calculate in its own tab, read-only Properties, one tip in every menu (night run 2026-10-16, Task 1)
+
+1. **3D for a guest.** The 3D view stayed on "Calculate first" after a sheet switch, so a guest, who always
+   lands on the first sheet, never saw it.
+   - **Cause.** The model was asked for once, before the new sheet's page and scale had loaded, and not again.
+     Members hit it too after a switch while in 3D.
+   - **Fix.** The build waits for the page and scale, then runs (`useVolumes`). The 2D grade surfaces wait the
+     same way.
+2. **Calculate for a guest, in its tab only.**
+   - **When.** Calculate is enabled for a guest only while the saved result is out of date, or there is none.
+     Over a current result it stays greyed, with the guest's tip.
+   - **What it runs.** It uses the saved assumptions, with no dialog. It runs the same engine and inputs as a
+     member's Calculate. It writes nothing: no result, no lines, no assumptions, no stale mark. A write
+     attempt is still 403.
+   - **What shows.** The 2D layers, 3D and Volumes update in that tab. A banner reads "Calculated in your view,
+     not saved to the project." with "Back to saved result".
+   - **No money.** The Volumes panel carries none, so there is none to hide with pricing off.
+   - **A member's new Calculate replaces it.** When a member saves one, the guest's local result is dropped
+     and the new saved one is shown. This is live when the link lets viewers watch live work (D-511);
+     without that, it shows on the guest's next reload.
+3. **Volumes for a guest.** A guest has a "Volumes" button again (read only). This replaces D-507: the brief
+   asks for Volumes beside the grading report.
+4. **The item action bar.**
+   - **Properties** is enabled for a guest and opens the item's dialog read only: every field shown and greyed,
+     every section open, Close only.
+   - **Start, Resume, Deduct, Copy and Delete** are greyed with the tip. Multi-select's Delete is greyed too.
+   - **Same rule for other properties.** Folder Properties, Site Feature properties and Strip Area properties
+     open read only, the same way.
+5. **Menus for a guest.**
+   - **Every right-click and ⋮ menu on the screen:** sheet rows, the Sheets panel's options, items in both
+     panels, folders, canvas shapes, selection, region, scale evidence, earthwork runs, Strip Areas,
+     bookmarks and Estimating rows.
+   - **One list decides what stays enabled.** Only the view entries in `GUEST_VIEW_ACTIONS`
+     (`share/view-only.ts`) stay enabled: Properties read only, History, Hide and Show, Preview window,
+     Print selected page, Open and Open in new tab, List and Thumbnails, Expand and Collapse, Copy as Text
+     and Search text. Everything else is greyed, its own reason left out ("View only", "Needs the Upload
+     documents permission" and the rest). The one tip says why: "Sign up for Professional to use this."
+     with Sign up.
+   - **Members are unchanged.** They keep their own permission labels.
+   - **The tip in a menu** sits beside the menu, level with the row, so it never covers the next row.
+   - **Estimating rows.** For a guest, the row menu now shows its changes (Insert row above and below, Add
+     Sub-item, Add comment…) greyed, where it used to leave them out.
+6. **Server.** Every change those menus and bars send was tried with a guest token and refused 403 (16 routes,
+   listed in the night report).
+
+Checked on a duplicate of the 3D test copy, with its own link (pricing and live work on, as the copy's own link
+has them).
+- **Same numbers.** A member changed one contour. The guest saw it out of date live, calculated in its tab and
+  sent no write. The member's real Calculate then saved a result whose canonical JSON has the same md5 as the
+  guest's (`f6f28b5c…`, then again `a00eade9…` for the other contour value).
+- **Live replacement.** The guest's view switched to the member's result live.
+- **Unchanged elsewhere.** The original copy's C-200 md5 is `fab4d151…`, unchanged. Gates and the quantity
+  table passed.

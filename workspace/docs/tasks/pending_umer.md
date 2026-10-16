@@ -192,6 +192,15 @@ not built.
 - **Approximate:** area drain (mapped to Inlets), junction box (to the Structures parent), sloped and benched
   protection (to 31.09.01).
 
+## Night run 2026-10-16 (morning-report-2026-10-16NIGHT_REPORT_2026-10-16.md)
+
+| # | What | Default taken (recommended) | Your call |
+|---|---|---|---|
+| G1 | A guest's view switches to a member's new Calculate live only when the link lets viewers watch live work (D-511). Without it, on reload. | Keep D-511: the owner's live-work switch decides (D-527 2). | Say if a guest should always poll for a new Calculate. |
+| G2 | Over a current saved result, a guest's Calculate is greyed with the tip; a guest opens the result with "Volumes" (back, replacing D-507). | As built (D-527 2, 3). | Say if you want Calculate to open Volumes instead. |
+| G3 | A guest's Calculate uses the saved assumptions and shows no assumptions dialog. | As built: the numbers then match a member's Calculate exactly. | Say if a guest should be able to try other assumptions locally. |
+| G4 | Sheet "Properties (rename)" and "Default Expand Level" are greyed for a guest (they write). | As built. | None expected. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
