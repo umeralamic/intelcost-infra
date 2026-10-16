@@ -206,7 +206,11 @@ ok, E1 agreed (step 2a gets its own day run after you review the pipe catalog, P
 
 None of my test data was ever on the copy: what the screenshots showed was my duplicates, named "Hidden Valley Rebid —
 3D test (copy…)", all purged. Two kinds of my writes did reach it (A1, A2); my seven duplicate requests only read it.
-Part B waits for your go.
+
+**Answered 2026-10-16 (D-544), closed:** A1 leave them; A2 noted; A3 yours (the Share dialog); A4 yes, built: every
+bench copy is renamed "BENCH DUP <yyyy-mm-dd hh:mm> — delete me" the moment it is made, by the duplicate helper and the
+guard, and the fingerprint flags a copy that kept the name; A5 no exception: Part B1's check runs on a fresh duplicate,
+and you press Calculate on the copy.
 
 | # | What | Where it stands | Your call |
 |---|---|---|---|

@@ -16846,3 +16846,34 @@ Findings:
 - **B6: ok.** A linked bore's typed ground takes the link's datum offset (D-540 2).
 - **B7: ok.** A site counts every member's bores, wherever they land (D-540 3).
 - **E1: agreed.** Block 2 step 2a gets its own day run later, after the founder reviews the pipe catalog (Part C).
+
+## D-544: Founder's answers to the audit's calls; every bench copy renamed the moment it is made (2026-10-16)
+
+**Answers** (pending_umer, "Audit of the 3D test copy"):
+- **A1: leave them.** My activity rows on the copy stay as they are.
+- **A2: noted.**
+- **A3: the founder's.** The 2026-10-15 23:11 previews and 23:30 PATCHes of the copy's link were the founder testing
+  the Share dialog.
+- **A4: yes.** Every bench copy is renamed the moment it is made, "BENCH DUP <yyyy-mm-dd hh:mm> — delete me", in the
+  duplicate helper and in the guard's checks.
+- **A5: no exception.** The guard stays absolute: no bench run writes to the copy, a Calculate included. Part B1's check
+  runs on a fresh duplicate of the copy, which carries the founder's bores and layers; the founder presses Calculate on
+  the copy.
+- **The audit brief's premise was the founder's mistake:** the screenshots showed my duplicates, not the copy.
+
+**A4, as built.**
+1. **The duplicate helper,** `duplicateTestCopy(token, workspace)` in `intelcost-infra/browser/lib/bench.mjs`: Duplicate
+   project on the copy through the api, the job followed to its end, the copy renamed at once and read back. It throws
+   when the copy kept another name.
+2. **The guard renames every copy it sees started** (`lib/protected.mjs` for scripts and the bench's browser,
+   `mcp-guard.js` for Playwright MCP sessions):
+   - **What counts as a copy:** Duplicate project and a link's Save to my workspace (`…/share-copy`), from a script or
+     from a page.
+   - **How:** the guard follows the job from the response and renames the copy as it is made, signed in as whoever
+     started it.
+   - The name is in UTC.
+3. **A gap closed in the guard:** Save to my workspace names its link in the body, not the path, so the share-link rule
+   did not see it. It is now refused unless the run made that link, like every other request to a link.
+4. **The fingerprint's check at the start and end of every run** lists every other project whose name starts with the
+   fingerprinted project's name, marked FAIL (a copy that kept the name), and every "BENCH DUP …" project not yet
+   purged. Neither is in the digest.
