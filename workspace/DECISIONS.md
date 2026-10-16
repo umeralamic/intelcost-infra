@@ -17072,3 +17072,71 @@ cannot save a Calculate.
 - **the guest's own Calculate:** "Calculated in your view, not saved to the project." and the 3D without the note.
 
 The 3D test copy's own result was saved before inputs were kept: its next Calculate keeps them.
+
+## D-550: Founder's answers to Part B and Part C's calls (2026-10-16)
+
+- **B1a: yes (high).** A soil layer that no bore logs takes nothing, whether set by depth or by elevation. On a
+  duplicate of the copy, Layer 1 (no bore logs it, by elevation) took 11,464.21 of 11,583.92 CY: wrong. Fix, with a
+  bench check: an unlogged elevation layer between two logged layers takes 0, and the logged layers share the cut. The
+  existing 1c checks stay unchanged. The founder Calculates the copy.
+- **B2a: yes, for settings that change quantities.** The contour and spot rules that feed Calculate move to project
+  settings like the slope rule, with who changed them and when. Pure display preferences stay personal. List which went
+  where.
+- **B5a: yes.** The saved 3D on joined sites too.
+- **B5b: yes.** Members see the saved 3D too, with the same note.
+- **C1:** the catalog stores the standard's average ID where it prints one. OD drives the trench and the displacement.
+  The plan's §3.6 examples take 7.891 in for the 8" SDR-35 ID, and the report says what changed in each.
+- **C2:** both added marks stay. "Association citing the standard" counts like "manufacturer citing the standard".
+  "Manufacturer, no standard named" rows show in the app as "Unverified source" until checked.
+- **C3:** blanks are filled from manufacturers' sheets, a link and a date per row; no standard is bought now. Any row
+  where two sources disagree is noted.
+- **The reference reports' names come out of the app.** The geotech reports the founder sent were for reference; users
+  bring their own. The slope rule's template loses "Utah reports" and the report names in its source line.
+- Each fix: gates, quantity table, smoke with screenshots, guest check, commit and push, a D-NN. Then stop: Block 2
+  waits for the founder's review of the catalog.
+
+## D-551: A soil layer no bore logs takes nothing, by depth or by elevation (B1a, D-550)
+
+**The rule before.** A layer missing from a log has no thickness at that bore (plan §3.1). For a layer that no bore
+logs at all, that meant zero thickness only *at the bores*. Read by elevation, its bottom was the surface through the
+bores' levels, so it took any ground standing above them: on a duplicate of the copy, Layer 1 took 11,464.21 of
+11,583.92 CY.
+
+**Built** (`lib/takeoff/earthwork/geotech/model.ts`).
+1. **The model is built over the logged layers alone,** with the old rules unchanged among them, then laid back over
+   the whole list.
+   - An unlogged layer's bottom is the bottom of the layer above it, so it has no thickness anywhere.
+   - When unlogged layers lie below the deepest logged one, that layer has no bottom of its own and takes everything
+     under the layer above it; its bottom entry lies far below any cut (`BOTTOMLESS_FT`).
+   - With no layer logged at all, the cut is not split.
+2. **The result's notes say which layers take nothing:** "No bore logs New layer, Layer 1 and Layer 5: they take
+   nothing."
+3. **The version key:** a frame's geotech key gains a mark when some layer is unlogged there, so a result split under
+   the old rule reads out of date and is recalculated (as D-470). A frame where every layer is logged keeps its key.
+4. **3D VIEW, the section and the readout:**
+   - they list only the logged layers;
+   - the bottomless layer is the list's last, taking everything below;
+   - an unlogged layer is neither drawn nor offered.
+
+**The bench check:** quantity row `geo-B1a-unlogged-elevation-layer-between-logged`.
+- **Setup:** an unlogged clay, by elevation, between logged topsoil and rock, on a ground rising 0.01 ft/ft.
+- **Result:** the clay takes 0; topsoil 370.37 and rock 1,851.85 CY share the 2,222.22 CY cut.
+- **Under the old rule** the clay took 5,000 CF, so the row tests the change.
+- **The 1c rows are unchanged** (1.1b's unlogged layers were 0 before and are 0 now); 177 earthwork rows right.
+
+**On a fresh duplicate of the copy** ("BENCH DUP 2026-10-16 16:53 — delete me"), with the founder's bores and five
+layers:
+
+| Layer | How it is set | Logged by | Before (D-545) | After |
+|---|---|---|---|---|
+| New layer | by depth | none | 0.00 | 0.00 |
+| Layer 1 | by elevation | none | 11,464.21 | 0.00 |
+| Layer 2 | by elevation | B-1, B-3, B-4 | 115.36 | 11,579.57 |
+| Layer 3 (hard dig) | by elevation | B-2 | 4.35 | 4.35 |
+| Layer 5 (added 16:41) | by depth | none | (not then in the list) | 0.00 |
+| Total cut, CY | | | 11,583.92 | 11,583.92 |
+
+- **Clamp report:** none (it had one: Layer 1 under New layer).
+- **Hard dig and rock:** 4.35 CY.
+- **The guest's view:** the same split and note; the guest wrote nothing.
+- **3D VIEW:** only Layer 2 to show, under the ground.

@@ -222,6 +222,10 @@ and you press Calculate on the copy.
 
 ## Part B of the audit brief, 2026-10-16 (D-545 on; morning-report-2026-10-16/PART_B_2026-10-16.md)
 
+**Answered 2026-10-16 (D-550), closed:** B1a yes, a layer no bore logs takes nothing, by depth or by elevation; B2a
+yes for settings that change quantities, display preferences stay personal; B5a yes (sites); B5b yes (members, same
+note). Built in the answers run (D-551 on).
+
 | # | What | Where it stands | Your call |
 |---|---|---|---|
 | B1a | A layer no bore logs, set by elevation, takes the ground above the bores' level. On a fresh duplicate of the copy, Layer 1 (no bore logs it) takes 11,464.21 of the 11,583.92 CY: its bottom is the surface through B-1 to B-4's ground levels, the bores stand on the pad, and the cut is on the higher ground around it. Set to follow the ground, it takes nothing, and Layer 2 takes 11,579.57 (no clamp). Your logs are in order: the one clamp ("Layer 1 kept under New layer over 44761.44 SF, up to 3.07 ft, near B-4") comes from this rule, not from a typed depth. | Built as plan §3.1 has it: a layer missing from a log has no thickness at that bore; by elevation, that is the bore's ground level, read across the site. | Keep the rule, or: a layer no bore logs has no thickness anywhere, by elevation too (recommended; then the copy splits as with Layer 1 following the ground). Or set the copy's Layer 1 to "Follows the ground" yourself. |
@@ -233,6 +237,11 @@ and you press Calculate on the copy.
 
 Research only, no code. Only PVC sewer 4–15 in was read from the standard itself (ASTM D3034-00). The rest comes from
 manufacturers' sheets, one association table (ACPA) and blanks. The draft's top section lists what to check.
+
+**Answered 2026-10-16 (D-550), closed:** C1, the standard's average ID where printed, and OD drives trench and
+displacement; C2, both marks stay, an association counts like a manufacturer, and "manufacturer, no standard named" rows
+show "Unverified source" in the app until checked; C3, blanks filled from manufacturers' sheets, disagreements noted, no
+standard bought.
 
 | # | What | Your call |
 |---|---|---|
