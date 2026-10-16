@@ -16519,3 +16519,53 @@ under one six-layer list. The panel reads Midway 4.20, 3.50 and 3.00 ft, Deland 
 one row: the scanned log's sub-strata depths could not be read.
 
 Calculate is still untouched (step 1c), so the 3D test copy's md5 is `fab4d151…`.
+
+## D-534: Calculate splits the cut by layer; the topsoil suggestion; stripping wins (F29 Block 1, step 1c)
+
+Built to spec §7 and plan §2.4, §2.5, §3.4 and §3.15:
+
+1. **The split, exact** (`lib/takeoff/earthwork/geotech/materials.ts`).
+   - **The band.** In each cut prism the band runs from d1, the strip at that point, to d2 = d1 − Δz, in
+     depths below the existing ground. The strip at a corner is (Δz − (FG − EG)) plus its region's section
+     depth.
+   - **A layer's part.** Layer L takes clip(d2) − clip(d1) between its clamped top and bottom.
+   - **Integrated in closed form.** With G_k(x) = ∫ max(x − D′k, 0), each G is the positive part of a linear
+     function over the prism met with the bottom's convex pieces (area and first moments). The layers add up
+     to the total cut exactly: the checks hold the sum to 1e−6 CY.
+   - **Stripping wins.** The split starts below the strip.
+2. **Stored.** A result on a sheet with bores gains:
+   - `materials`, per region: each layer's bank volume in the result's units, rock (hard dig, weathered rock,
+     bedrock: always exported) and unsuitable apart;
+   - `geotech`: the clamps and notes.
+
+   The Volumes panel shows "Cut by material (bank)" with the rock and unsuitable lines and the notes.
+3. **The version key** gains a `geo:` part (the layer list, the sheet's bores and logs, the water buffer) only
+   on a sheet with bores. A bore edit then moves the key and marks the lines stale as a contour edit does.
+   A sheet with no bores keeps exactly its key and its result.
+4. **Topsoil suggestion.** With a Topsoil layer, the Strip Area dialog says "The bores suggest 6.0 in of topsoil
+   (B-1, B-2, …)" with "Use". It is the average thickness of the bores that log topsoil at the surface (pavement
+   at the surface leaves a bore out), to 0.05 ft. Nothing changes until "Use" is pressed. Calculate's own dialog
+   has no strip field, so the suggestion lives in the Strip Area dialog only.
+5. **Stripping wins, said.** Where a bore's topsoil differs from the strip at it, Calculate notes "Strip 0.50 ft.
+   B-1 logs 0.67 ft of topsoil: 0.17 ft is in the cut." (or that the strip takes some of the next layer).
+6. **A fault found and fixed in step 1b's clamp.** A layer of no thickness met the one above with h ≡ 0, and both
+   sides of the split kept the piece. The cover doubled, and the split went negative on the fixtures (−11,583.92
+   BCY for an unlogged Asphalt layer). A piece is now split only where h changes sign, and a quantity-table row
+   holds it.
+
+**Checks.**
+- **Quantity table: five new rows, all right (171 earthwork rows).**
+
+  | Check | Expected |
+  |---|---|
+  | 1.1, Midway's pits under a flat 1.20 ft cut | total 222.22 = topsoil 92.59 + fill 116.79 + granular 12.84 |
+  | 1.1b, the same under the six-layer list | Asphalt and Fat clay 0.00, the rest as 1.1 |
+  | 1.2, a 0.50 ft strip | strip 92.59; below it 129.63 = fill 116.79 + granular 12.84; topsoil 0 |
+  | 1.3, the square (extrapolated) | 444.44 = 185.19 + 242.47 + 16.79 |
+  | 1.8, the topsoil suggestion | 0.50 ft from B-1, B-2, B-4, B-5 and B-6, B-3 left out |
+
+  A deliberately wrong expectation failed, as it should.
+- **No bores, no change (1.9).** On the fixtures duplicate's C-200, a Calculate with the Midway bores and one with
+  them removed give the same result, byte for byte, once `materials` and `geotech` are set aside (canonical md5
+  `0d655ff7…` both). With bores, the four layers sum to the 11,583.93 BCY cut. The 3D test copy is not
+  recalculated: its md5 is `fab4d151…`.
