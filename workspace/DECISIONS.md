@@ -16397,3 +16397,67 @@ new code.
 
 "Move items to…" acts on the whole workspace, founder projects included, so it was only run inside the check's
 rolled-back transaction, never for real.
+
+## D-532: Bores and soil layers: tables, panel and placement (F29 Block 1, step 1a; night run 2026-10-16, Task 3)
+
+Built to the approved spec (§3, §4) and plan (§2.1 to §2.3, §4.2, §4.3):
+
+1. **Tables** (migration `d532b7e3f0a9`):
+   - `earthwork_soil_layer` (project), `earthwork_bore` (sheet), `earthwork_bore_layer` and `earthwork_bore_water`
+     (bore);
+   - `earthwork_assumptions.water_buffer_ft` (1.0) and `.slope_rule` (null: federal OSHA).
+
+   Every existing row keeps its values. Duplicate project copies the four tables (risk 17).
+2. **Routes**, under the project's `earthwork/`:
+   - one read, `GET geotech`: layers, bores with their logs and readings, the buffer and the slope rule;
+   - soil layers: create (at a place in the list), update, reorder, delete;
+   - bores: create (an undo brings one back under its own uuid and time), update, delete;
+   - `PUT geotech/settings`.
+
+   Every write publishes `earthwork.geotech.changed`. A guest reads and every guest write is 403.
+3. **Rules, checked on write, the row named** (spec §3.2):
+   - a log runs contiguous from 0 to the total depth: no gap, overlap or short last row;
+   - each row's layer sits at or below the previous row's in the list ("Sand is above Clay in the Soil layers
+     list. Move it in the list, or add a new layer.");
+   - a reorder that would break a bore's log is refused, the bore named;
+   - only rock under a refusal on rock may run on below the bore;
+   - a Bore ID is unique in the project, and a clash names the other bore's sheet;
+   - a layer a bore logs is not deleted, the bores named;
+   - hours go with "after N hours" only.
+4. **The foreign key from a log row to its layer is NO ACTION, not the plan's RESTRICT.** RESTRICT fired in the
+   middle of a project's purge, before the cascade reached the bores' rows (found on the bench: the purge
+   returned 500). The api refuses deleting a layer in use (409), so the rule holds.
+5. **The app.**
+   - **Bores button.** On the Earthwork row after Stripping (its own icon, same group and style, folds into
+     More). For a seat that may edit it arms placement and opens the panel. Each click places one bore (the next
+     free "B-n", 20 ft deep), and Enter or Esc ends placement. A seat that only looks gets the panel, read only.
+   - **On the sheet.** A bore draws as a circled cross with its ID, with a bar under it for a refusal, and is
+     highlighted when picked. A click picks it, a drag moves it, and a right-click gives "Open in the Bores
+     panel" and "Delete bore". Placing, moving, editing and deleting each undo and redo.
+   - **The panel.** The banner always shows. The Bores tab has the list and the picked bore's fields, as the
+     spec's table gives them. Ground is blank by default and reads "700.16 ft, from the existing surface", or
+     "No existing surface here: type the ground elevation."; the report elevation shows its gap. Below come the
+     water readings (not encountered, hours, published source) and the log.
+   - **The log.** From, To and thickness, any two giving the third, with a row's bottom carried to the next
+     row's top; then layer, description, USCS and PI. Each row shows its layer's shared properties ("Applies to
+     … in n bores"), and "+ New layer…" sits in the layer cell. The log also has "Copy from <the bore placed or
+     edited last>", "Paste rows" (four columns, matched by layer name then soil group, unmatched rows
+     highlighted with "+ New layer"), Enter on the last row to add a row, and the "Rock below … ft" ask on a
+     refusal on rock.
+   - **Soil layers tab.** Rows are dragged to reorder, with colour, name, group (its defaults applied, U-UT21),
+     OSHA type with the brief's "Suggested: …" text (C for cemented soil where a bore logs caving), the four
+     flags, swell, shrink and surface (follows the ground or by elevation).
+   - **Units.** Depths and elevations show in the project's units (metres in metric) and are stored in feet.
+6. **Nothing in Calculate changes in this step.** Bores do not touch the version key until step 1c, so the 3D test
+   copy's md5 stays `fab4d151…`.
+
+**Checks.**
+- **`scripts/check_geotech.py`: 13 of 13 right, nothing written:**
+  - gap, overlap, out of order, short and not-from-the-surface logs refused with the row named, a good log
+    accepted, then the same through the api (409s);
+  - a used Bore ID refused, naming its sheet;
+  - a layer in use kept, naming the bores;
+  - the guest's 8 writes 403, and its read 200.
+- **In the browser, on a duplicate:** two bores placed, undone and redone, a log typed and saved, three layers
+  added from the tab. The duplicate of the duplicate carried the same layers, bore and log. In the guest view
+  every control in the panel was greyed (23 of 23) and nothing could be placed. In metric, 20 ft read 6.1 m.
