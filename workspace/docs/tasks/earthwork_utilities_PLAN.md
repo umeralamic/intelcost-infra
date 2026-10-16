@@ -1484,7 +1484,7 @@ tab-through (1B) are each about a day.
 | Sub-block | What | Hours |
 |---|---|---|
 | 2A | `utility_run`, item columns, rebuilt line indexes, folder keys, work scope tables with the CSI defaults (no UI yet); Utility settings with the default bucket, the box list and spec max widths per size | 8 |
-| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed. A row whose sheet names no standard shows "Unverified source" until checked; the ID is the standard's average ID where printed (D-550 C1, C2). A size with no OD can't be picked until the user types one ("OD typed by <user>"); a blank wall takes the closest published wall, flagged (D-560). PVC sewer 18 in and up on F679's walls, the current D3034's as an alternate per run (D-558) | 4 |
+| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed. A row whose sheet names no standard shows "Unverified source" until checked; the ID is the standard's average ID where printed (D-550 C1, C2). A size with no OD can't be picked until the user types one ("OD typed by <user>"); a blank wall takes the closest published wall, flagged (D-560). PVC sewer 18 in and up on the current D3034's walls, F679's as an alternate per run for older specs (D-563); C909 at cast-iron ODs, its missing ODs C900's (D-564); no PVC sewer 33 in (D-565) | 4 |
 | 2C | Utilities button, drawing, snap to structures and runs (new snap source), the run panel with segments, bucket, box and spec max, the run layer (colours, labels), filing under Utilities › type | 12 |
 | 2D | The engine: breakpoints, the trench-width rule, sections, protection selection, exact integration, zones, pipe displacement, native and imported, spoils, ranges, dewatering, restoration, the spec-width quantities | 16 |
 | 2E | Utility sheets through a link (Q8); ground from rims and typed grades; utilities-only projects Calculate with no EG, FG or boundary (a requirement, D-526) | 6 |
@@ -1626,8 +1626,10 @@ total of 156 h was mis-added: its Block 5 sub-blocks came to 26 h, not 28, so it
     - A value with no source stays blank and is listed, marked "drives trench width" (an OD, or an RCP wall) or "wall
       only" (D-560). A size with no OD can't be picked unless the user types one, and the run shows "OD typed by
       <user>". A blank wall takes the closest published wall, and the run is flagged (spec §9.2, Pipe).
-    - PVC sewer 18 in and up takes F679's walls by default; the current D3034's are an alternate standard picked per
-      run (D-558).
+    - PVC sewer 18 in and up takes the current D3034's walls by default (F679 was withdrawn in 2024); F679's are an
+      alternate standard picked per run, for older specs (D-563). The two print the same ODs.
+    - C909 is made to cast-iron ODs, as C900 is, so its 4, 14, 18 and 20 in ODs are C900's and only their walls are
+      blank (D-564). PVC sewer 33 in is left out: no manufacturer read makes it (D-565).
     - Check (a) uses D3034's 8": OD 8.400 in and minimum wall 0.240 in, and the average ID 7.891 in from Table X1.1,
       read in the standard itself (D-550 C1; it was 7.920, OD − 2 × minimum wall).
 15. **OSHA's bench sizes are drawn only in the figures.**

@@ -27,27 +27,35 @@ document (S-number, with the link in Sources) and that document's own date. ASTM
 
   Rows where two sources disagree are listed in check 8. What is still blank is in check 9.
 
-## D-558 and D-560: PVC sewer 18 in and up, and the blanks
+## PVC sewer 18 in and up, C909's ODs, and the blanks (D-560, D-563 to D-565)
 
-- **R5, PVC sewer 18 in and up (D-558).**
-  - **The default is F679's walls:** Westlake's table (S2), PS 46 and PS 115, 18–36 in.
-  - **The current D3034's walls stay as an alternate standard:** JM Eagle's table (S14), SDR 35 and SDR 26. The user
-    picks it per run, and the run names the standard it uses.
-  - **42 and 48 in are only in the D3034 table** (S2 stops at 36 in), so a run at those sizes uses the alternate.
-- **The blanks (D-560).** Each value still blank is marked in its table, in check 9 and in "Where the blanks may be
-  filled":
-  - **"drives trench width":** an outside diameter, or an RCP wall, which sets the OD (OD = ID + 2 × wall). CMP's OD,
-    RCP Wall C at 12–21 in, C909 at 4, 14, 18 and 20 in, and PVC sewer 33 in.
-  - **"wall only":** the OD is printed and only the wall, and the ID that follows from it, is missing. C909 Class 165 at
-    6–12 and 24 in.
+- **PVC sewer 18 in and up (D-563, reversing D-558).** ASTM F679 was withdrawn in 2024 and its sizes moved into D3034.
+  - **The default is the current D3034's walls:** JM Eagle's table (S14, October 2025), SDR 35 and SDR 26, 18–48 in.
+  - **F679's walls stay as an alternate standard, for older specs:** Westlake's table (S2), PS 46 and PS 115, 18–36
+    in. The user picks it per run, and the run names the standard it uses.
+  - **The ODs are the same** in both tables at every size both print: 18.701, 22.047, 24.803, 27.953, 32.000 and
+    38.300 in at 18, 21, 24, 27, 30 and 36 in. Only the walls differ, and the IDs that follow from them.
+  - **42 and 48 in** are only in the D3034 table.
+- **C909's ODs (D-564).** C909 is made to cast-iron ODs, as C900 is.
+  - JM Eagle's C909 sheet (S13, January 2026) heads its dimension table "CIOD (AWWA C909)" on both pages.
+  - Its six ODs (6.90, 9.05, 11.10, 13.20, 17.40 and 25.80 in) equal C900's at every size both print (S3).
+  - So C909's 4, 14, 18 and 20 in ODs are C900's (S3): 4.800, 15.300, 19.500 and 21.600 in.
+- **PVC sewer 33 in (D-565):** not in the catalog. No manufacturer read makes it: JM Eagle's current D3034 table (18–48
+  in) and Westlake's F679 sheet both go from 30 to 36 in.
+- **The blanks (D-560, with D-564).** Each value still blank is marked in its table, in check 9 and in "Where the
+  blanks may be filled":
+  - **"drives trench width":** an outside diameter, or an RCP wall, which sets the OD (OD = ID + 2 × wall). CMP's OD
+    and RCP Wall C at 12–21 in.
+  - **"wall only":** the OD is printed and only the wall, and the ID that follows from it, is missing. C909 at 4, 14,
+    18 and 20 in in every class (their ODs C900's), and C909 Class 165 at 6–12 and 24 in.
 - **Block 2's rule (spec §9.2, Pipe):**
   - **No outside diameter:** the size can't be picked unless the user types an OD. The run then shows "OD typed by
     <user>".
   - **Wall only:** the run takes the closest published wall and is flagged. The closest published wall is the same
     size's wall in the nearest class or standard that prints one. If no class prints that size, it is the same
     class's wall at the nearest size, the thicker when two are equally near.
-  - **A size typed with an OD and no wall** (C909 at 4, 14, 18 and 20 in; PVC sewer 33 in) takes its wall by the same
-    rule.
+  - **C909 at 4, 14, 18 and 20 in** have an OD and no wall in any class, so each takes the same class's wall at the
+    nearest size.
 
 ## Check these first
 
@@ -74,8 +82,9 @@ from a manufacturer's sheet or an association's table. In order of what most aff
    | 30 | 0.915 | 0.917 | 1.231 | 1.233 |
    | 36 | 1.095 | 1.098 | 1.474 | 1.475 |
 
-   Both tables are below. **Decided (D-558, R5):** F679's walls by default; the current D3034's are an alternate
-   standard the user picks per run.
+   Both tables are below. **Decided (D-563, reversing D-558):** the current D3034's walls by default, since F679 is
+   withdrawn; F679's are an alternate standard the user picks per run, for older specs. Both tables print the same ODs
+   at every size they share.
 3. **PVC sewer 30 and 36 in walls, every source read:**
 
    | Size | Westlake, F679 PS 46 (S2, 2023) | JM Eagle, D3034 SDR 35 (S14, 2025) | JM Eagle, F679 PS 46 (S19, 2010) | Distributor sheet / older T-2 tables |
@@ -110,8 +119,8 @@ from a manufacturer's sheet or an association's table. In order of what most aff
    - **JM Eagle's June 2026 conduit sheet (S15):** its 6 in OD cell is overprinted, two numbers on top of each other.
      The 6.625 in its June 2018 sheet (S16) is used.
 8. **Where two sources disagree:**
-   - **PVC sewer 18–36 in walls:** F679 against the current D3034 (checks 2 and 3). F679 is the default; D3034 is
-     the alternate (D-558).
+   - **PVC sewer 18–36 in walls:** F679 against the current D3034 (checks 2 and 3). The current D3034 is the default;
+     F679 is the alternate (D-563).
    - **C900 16 in DR 14 wall:** 1.243 on Westlake's sheet (S3); 1.242 on JM Eagle's, 2018 and 2026 (S12).
    - **C909 12 in Class 235 wall:** 0.423 on JM Eagle's sheet (S13); 0.45 on Westlake's AquaMax overview (read, not
      used, a single value).
@@ -125,11 +134,12 @@ from a manufacturer's sheet or an association's table. In order of what most aff
        against 4.002). JM Eagle's 2018 and 2026 sheets print different nominal IDs for the same walls (5 in Schedule
        40: 5.047 in 2018, 5.021 in 2026).
    - **Agreeing, as cross-checks:** every conduit wall both Wheatland and JM Eagle print; every C900 DR 18 wall on
-     Westlake's and JM Eagle's sheets; Mueller's copper ODs and the handbook's; the C909 ODs and ductile iron's (S4);
-     Contech's 90 and 96 in gages on S9 and S18.
+     Westlake's and JM Eagle's sheets; Mueller's copper ODs and the handbook's; the C909 ODs and ductile iron's (S4)
+     and C900's (S3); the PVC sewer ODs in the F679 and current D3034 tables (S2, S14); Contech's 90 and 96 in gages
+     on S9 and S18.
 9. **Still not found** (blank below), each marked (D-560):
-   - **C909:** 4, 14, 18 and 20 in in every class (**drives trench width:** no OD; their walls, wall only); Class 165
-     at 6–12 and 24 in (**wall only**). JM Eagle does not make them, and Westlake's AquaMax page refused the fetch
+   - **C909 walls:** 4, 14, 18 and 20 in in every class, and Class 165 at 6–12 and 24 in (**wall only**). The 4, 14, 18
+     and 20 in ODs are C900's (D-564). JM Eagle does not make these, and Westlake's AquaMax page refused the fetch
      (403).
    - **RCP Wall C 12–21 in** (**drives trench width:** the wall sets the OD). No manufacturer's or association's table
      printing them was found. ACPA's FAQ gives a
@@ -137,8 +147,8 @@ from a manufacturer's sheet or an association's table. In order of what most aff
      3-1/2 in. That is a lead, not a printed value, so the cells stay blank.
    - **CMP OD** (**drives trench width**, every size). No sheet read prints one: Contech's design guide and the DOT
      specifications seen measure to the inside crests.
-   - **PVC sewer 33 in** (**drives trench width:** no OD; its walls, wall only). Neither manufacturer read makes it: JM Eagle's current D3034 table (18–48 in) and Westlake's
-     F679 sheet both go from 30 to 36 in.
+
+   PVC sewer 33 in is not a blank: the size is left out (D-565), since no manufacturer read makes it.
 
 **Marks.**
 - The brief's three:
@@ -153,7 +163,7 @@ from a manufacturer's sheet or an association's table. In order of what most aff
   - "Association citing the standard" counts like "manufacturer citing the standard".
   - "Manufacturer, no standard named" rows show in the app as **"Unverified source"** until checked.
 - **Blanks (D-560):** a "not found" value also says "drives trench width" (an OD, or an RCP wall, which sets the OD) or
-  "wall only". Block 2's rule for each is in the D-558 and D-560 section above.
+  "wall only". Block 2's rule for each is in the section on the blanks above (D-560).
 
 ## Sources
 
@@ -203,7 +213,7 @@ from a manufacturer's sheet or an association's table. In order of what most aff
 
 All values are in inches.
 
-## PVC gravity sewer, SDR 35 and SDR 26 (4–36 in)
+## PVC gravity sewer, SDR 35 and SDR 26 (4–48 in)
 
 **4–15 in: ASTM D3034 (S1).**
 - OD is the average OD (Table 1), with its tolerance.
@@ -220,28 +230,12 @@ All values are in inches.
 | 12 | 12.500 | ±0.018 | 0.360 | 11.737 | 0.481 | 11.480 | standard | S1 (2000) |
 | 15 | 15.300 | ±0.023 | 0.437 | 14.374 | 0.588 | 14.053 | standard | S1 (2000) |
 
-**18–36 in: ASTM F679, Westlake (S2). The default at 18 in and up (D-558).**
-- F679 classes pipe by stiffness: PS 46 and PS 115. Westlake prints SDR 35 and SDR 26 against PS 46 and PS 115 for its
-  30 and 36 in.
-- The ID is Westlake's, "calculated using nominal OD and minimum wall".
-- PS 75 is also made (18": wall 0.584, ID 17.533 … 36": 1.197, 35.906).
-- Westlake makes no 33 in.
-
-| Nominal | OD | PS 46 min wall | PS 46 ID | PS 115 min wall | PS 115 ID | Mark | Source |
-|---|---|---|---|---|---|---|---|
-| 18 | 18.701 | 0.499 | 17.703 | 0.671 | 17.359 | manufacturer citing the standard | S2 (2023) |
-| 21 | 22.047 | 0.588 | 20.871 | 0.791 | 20.465 | manufacturer citing the standard | S2 (2023) |
-| 24 | 24.803 | 0.661 | 23.481 | 0.889 | 23.025 | manufacturer citing the standard | S2 (2023) |
-| 27 | 27.953 | 0.745 | 26.463 | 1.002 | 25.949 | manufacturer citing the standard | S2 (2023) |
-| 30 | 32.000 | 0.915 | 30.173 | 1.231 | 29.535 | manufacturer citing the standard (see check 3) | S2 (2023) |
-| 33 | not found: drives trench width | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found (check 9) | |
-| 36 | 38.300 | 1.095 | 36.110 | 1.474 | 35.354 | manufacturer citing the standard (see check 3) | S2 (2023) |
-
-**18–48 in: the current ASTM D3034 (Type PSM), JM Eagle (S14). The alternate standard, picked per run (D-558); the
-only table with 42 and 48 in.**
+**18–48 in: the current ASTM D3034 (Type PSM), JM Eagle (S14). The default at 18 in and up (D-563); the only table
+with 42 and 48 in.**
 - F679's sizes as the current D3034 has them (check 2). OD is the average OD; the walls are minimums.
 - The ID is JM Eagle's "nominal ID", which at these sizes equals OD − 2 × 1.06 × min wall.
-- 30–48 in are cast-iron OD ("CIOD"). There is no 33 in.
+- 30–48 in are cast-iron OD ("CIOD").
+- No 33 in: no manufacturer read makes it, so the catalog leaves the size out (D-565).
 
 | Nominal | OD | SDR 35 min wall | SDR 35 nominal ID | SDR 26 min wall | SDR 26 nominal ID | Mark | Source |
 |---|---|---|---|---|---|---|---|
@@ -253,6 +247,23 @@ only table with 42 and 48 in.**
 | 36 (CIOD) | 38.300 | 1.098 | 35.972 | 1.475 | 35.173 | manufacturer citing the standard | S14 (2025-10) |
 | 42 (CIOD) | 44.500 | 1.276 | 41.794 | 1.714 | 40.866 | manufacturer citing the standard | S14 (2025-10) |
 | 48 (CIOD) | 50.800 | 1.456 | 47.713 | 1.957 | 46.651 | manufacturer citing the standard | S14 (2025-10) |
+
+**18–36 in: ASTM F679, Westlake (S2). The alternate standard, picked per run for older specs (D-563).**
+- F679 classes pipe by stiffness: PS 46 and PS 115. Westlake prints SDR 35 and SDR 26 against PS 46 and PS 115 for its
+  30 and 36 in.
+- Its ODs equal the current D3034's at every size (the table above).
+- The ID is Westlake's, "calculated using nominal OD and minimum wall".
+- PS 75 is also made (18": wall 0.584, ID 17.533 … 36": 1.197, 35.906).
+- Westlake makes no 33 in (D-565).
+
+| Nominal | OD | PS 46 min wall | PS 46 ID | PS 115 min wall | PS 115 ID | Mark | Source |
+|---|---|---|---|---|---|---|---|
+| 18 | 18.701 | 0.499 | 17.703 | 0.671 | 17.359 | manufacturer citing the standard | S2 (2023) |
+| 21 | 22.047 | 0.588 | 20.871 | 0.791 | 20.465 | manufacturer citing the standard | S2 (2023) |
+| 24 | 24.803 | 0.661 | 23.481 | 0.889 | 23.025 | manufacturer citing the standard | S2 (2023) |
+| 27 | 27.953 | 0.745 | 26.463 | 1.002 | 25.949 | manufacturer citing the standard | S2 (2023) |
+| 30 | 32.000 | 0.915 | 30.173 | 1.231 | 29.535 | manufacturer citing the standard (see check 3) | S2 (2023) |
+| 36 | 38.300 | 1.095 | 36.110 | 1.474 | 35.354 | manufacturer citing the standard (see check 3) | S2 (2023) |
 
 ## PVC pressure, AWWA C900, DR 18 and DR 14 (4–24 in)
 
@@ -282,23 +293,24 @@ Westlake's row. JM Eagle's DR 18 walls (S12) equal Westlake's at every size both
 ## PVCO pressure, AWWA C909 (6–24 in)
 
 JM Eagle (S13), ANSI/AWWA C909, cast-iron OD ("CIOD"):
-- **OD:** the same values as ductile iron's at each size (S4). AWWA's store page for C909-22 calls them
-  "ductile-iron (DI)-equivalent".
+- **OD:** cast-iron OD. The sheet heads its dimension table "CIOD (AWWA C909)" on both pages, and its ODs equal C900's
+  (S3) and ductile iron's (S4) at every size they share. AWWA's store page for C909-22 calls them "ductile-iron
+  (DI)-equivalent". The 4, 14, 18 and 20 in ODs, which JM Eagle does not make, are C900's (S3, D-564).
 - **Walls:** minimums, by pressure class.
 - **ID:** JM Eagle's "nominal ID".
 - **Sizes made:** 6, 8, 10, 12, 16 and 24 in at 305 and 235 psi; 16 in only at 165 psi.
 
 | Nominal | OD | Class 165 min wall | Class 165 ID | Class 235 min wall | Class 235 ID | Class 305 min wall | Class 305 ID | Mark | Source |
 |---|---|---|---|---|---|---|---|---|---|
-| 4 | not found: drives trench width | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found | |
+| 4 | 4.800 (C900's, D-564) | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | OD: manufacturer citing the standard; walls: not found | OD: S3 (2024), CIOD per S13 (2026-01) |
 | 6 | 6.90 | not found: wall only | not found: wall only | 0.221 | 6.43 | 0.284 | 6.30 | manufacturer citing the standard | S13 (2026-01) |
 | 8 | 9.05 | not found: wall only | not found: wall only | 0.290 | 8.44 | 0.373 | 8.26 | manufacturer citing the standard | S13 (2026-01) |
 | 10 | 11.10 | not found: wall only | not found: wall only | 0.356 | 10.35 | 0.457 | 10.13 | manufacturer citing the standard | S13 (2026-01) |
 | 12 | 13.20 | not found: wall only | not found: wall only | 0.423 (Westlake overview: 0.45) | 12.31 | 0.544 | 12.05 | manufacturer citing the standard (check 8) | S13 (2026-01) |
-| 14 | not found: drives trench width | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found | |
+| 14 | 15.300 (C900's, D-564) | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | OD: manufacturer citing the standard; walls: not found | OD: S3 (2024), CIOD per S13 (2026-01) |
 | 16 | 17.40 | 0.395 | 16.55 | 0.557 | 16.19 | 0.717 | 15.85 | manufacturer citing the standard | S13 (2026-01) |
-| 18 | not found: drives trench width | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found | |
-| 20 | not found: drives trench width | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found | |
+| 18 | 19.500 (C900's, D-564) | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | OD: manufacturer citing the standard; walls: not found | OD: S3 (2024), CIOD per S13 (2026-01) |
+| 20 | 21.600 (C900's, D-564) | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | not found: wall only | OD: manufacturer citing the standard; walls: not found | OD: S3 (2024), CIOD per S13 (2026-01) |
 | 24 | 25.80 | not found: wall only | not found: wall only | 0.827 | 24.06 | 1.063 | 23.57 | manufacturer citing the standard | S13 (2026-01) |
 
 ## Ductile iron, AWWA C151, pressure classes (4–24 in)
@@ -483,8 +495,7 @@ JM Eagle (S15), NEMA TC-2, for 5 and 6 in and the Schedule 80 3-1/2 in ID:
 
 | Blank | Kind (D-560) | Where to look |
 |---|---|---|
-| C909 4, 14, 18 and 20 in | drives trench width (no OD); walls, wall only | Westlake's AquaMax data sheet (its page refused the fetch), another PVCO maker's sheet, or AWWA C909 itself |
+| C909 walls at 4, 14, 18 and 20 in (their ODs are C900's, D-564) | wall only | Westlake's AquaMax data sheet (its page refused the fetch), another PVCO maker's sheet, or AWWA C909 itself |
 | C909 Class 165 at 6–12 and 24 in | wall only | The same |
 | RCP Wall C 12–21 in | drives trench width (the wall sets the OD) | A regional RCP manufacturer's Wall B and C table, or ASTM C76; ACPA's FAQ rule is a lead (check 9) |
 | CMP OD | drives trench width | A CSP manufacturer's dimension sheet that prints one; the sheets read measure to the inside crests |
-| PVC sewer 33 in | drives trench width (no OD); walls, wall only | Not made by the two manufacturers read; the current ASTM D3034 itself |

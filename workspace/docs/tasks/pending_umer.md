@@ -258,6 +258,12 @@ are GT-01 to GT-09 in both repos and the mirror, with the mapping only in `fixtu
 (D-557); R5, PVC sewer 18 in and up takes F679's walls by default, the current D3034's kept as an alternate standard
 chosen per run (D-558). Done in the R answers run, with two fixes (D-559, D-560) and the Bores panel (D-561).
 
+**Follow-ups 2026-10-16 (D-562 to D-566):** R5 reversed: the current D3034 is the default and F679 the alternate for
+older specs, with the same ODs (D-563); C909 takes cast-iron ODs, so its 4, 14, 18 and 20 in blanks are wall only, with
+C900's ODs (D-564); PVC sewer 33 in is out of the catalog (D-565); bench sign-ins land on Account settings or a BENCH
+DUP, never Home (D-566). A guest's Calculate over a current result is greyed by D-527's rule, not by a regression or a
+link setting (D-562).
+
 | # | What | Where it stands | Your call |
 |---|---|---|---|
 | R1 | Auto Merge changes an area item's total: on, a new section over your own on the item is merged, and the overlap counts once. | Personal (D-553): it acts at draw time, in front of the person, on takeoff items, not on contours or spots. | Make it the project's, or leave it. |

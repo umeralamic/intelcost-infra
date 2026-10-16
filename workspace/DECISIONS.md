@@ -17395,6 +17395,8 @@ Docs only. The catalog draft, the spec's Pipe row, the plan's 2B row and open po
 
 pending_umer R5 is closed.
 
+**Reversed by D-563:** the current D3034 is the default, and F679 the alternate.
+
 ## D-559: The unlogged-layer note reads "…, so they take nothing", "or" before the last name (Fix 1, D-556)
 
 **Built** (`lib/takeoff/earthwork/geotech/model.ts`): "No bore logs Layer 4, Layer 5 or Layer 6, so they take nothing."
@@ -17415,8 +17417,9 @@ calculated again; the note is stored with it.
     Layer 4, Layer 5 or Layer 6, so they take nothing." Each took 0.00 BCY, and the other layers kept 4,660.06,
     916.95 and 6,006.92 BCY.
   - **Layer 5 and Layer 6 deleted:** "No bore logs Layer 4, so it takes nothing.", in the panel and after a Calculate.
-- **Guest** (the duplicate's own link): the saved result reads the same note. The guest's Calculate button is disabled
-  for this link ("Sign up for Professional to use this."). The guest sent nothing but its own link's session.
+- **Guest** (the duplicate's own link): the saved result reads the same note. The guest's Calculate was greyed because
+  the saved result was current (D-527's rule, D-562). Its tip, "Sign up for Professional to use this.", is the one the
+  guest page puts on every greyed control. The guest sent nothing but its own link's session.
 
 ## D-560: A blank catalog value drives the trench width or is wall only; Block 2's rule for each (Fix 2, D-556)
 
@@ -17432,6 +17435,10 @@ Docs only.
   - **The closest published wall** is the same size's wall in the nearest class or standard that prints one. If none
     prints that size, it is the same class's wall at the nearest size, the thicker when two are equally near.
   - **A size typed with an OD and no wall** takes its wall by the same rule.
+
+**Amended by D-564 and D-565:**
+- C909 at 4, 14, 18 and 20 in takes C900's cast-iron ODs, so only its walls are blank (wall only).
+- PVC sewer 33 in is out of the catalog.
 
 ## D-561: The Bores panel moves by its header and floats above the edge tabs (D-556)
 
@@ -17465,3 +17472,87 @@ The guest sent only its link's session.
 
 **Found in the smoke and fixed before the commit:** a place saved in a wide window put Close off-screen in a narrow
 one. The clamp now keeps the whole width inside.
+
+## D-562: Founder's follow-ups to the R answers run (2026-10-16)
+
+1. **Guest Calculate:** find why it was greyed on D-559's link. If that is a regression, fix it and show a guest Calculate
+   on a fresh BENCH DUP link that writes nothing. If it is the link's own setting, name the setting and say whether new
+   links default to it.
+2. **R5 reversed:** F679 is withdrawn, so the current D3034 (JM Eagle, October 2025) is the default for PVC sewer 18 in
+   and up. F679 (Westlake) becomes the alternate standard, picked per run for older specs. Confirm the two share their
+   ODs at 18–36 in.
+3. **C909's ODs:** check on a manufacturer's sheet whether C909 uses cast-iron ODs, as C900 does. If it does, its blanks
+   at 4, 14, 18 and 20 in are wall only, with the OD from the C900 series and the sheet cited.
+4. **PVC sewer 33 in:** out of the catalog draft, with a note that no manufacturer read makes it.
+5. **Bench sign-in:** bench sessions land on the dashboard or open the BENCH DUP directly, so they never load the copy.
+   The guard stays as it is.
+
+**Item 1's answer: neither a regression nor a link setting.**
+- D-527 enables a guest's Calculate "only while the saved result is out of date, or there is none". The code
+  (`useVolumes.tsx`, `canLocal`) is unchanged since D-527's commit.
+- In D-559's check the member had just calculated, so the result was current and the button greyed.
+- Its tip, "Sign up for Professional to use this.", is the one the guest page puts on every greyed control
+  (`useViewOnlyTitles`). That made it read like a plan gate.
+- No link setting decides it.
+
+**Checked** on a fresh duplicate ("BENCH DUP 2026-10-16 21:11 — delete me") through its own link:
+- **Current result:** the member calculated (saved 21:12:12 UTC), and the guest's Calculate was greyed.
+- **Out of date:** the member added a soil layer. After a reload (a new link has live updates off), the guest's
+  Calculate was offered.
+- **The guest's Calculate:** it ran in the guest's tab and read "Calculated in your view, not saved to the project.",
+  with Layer 4 at 0.00 BCY.
+- **Writes:** the guest's browser sent only its link's session, two POSTs at 21:13:05, before the Calculate. The api
+  log from 21:14 holds 29 requests naming the duplicate or its link, all GETs, 4 of them during the Calculate. The
+  saved result stayed at 21:12:12.
+
+## D-563: PVC sewer 18 in and up: the current D3034 by default, F679 per run for older specs (reverses D-558)
+
+Docs only. The catalog draft, the spec's Pipe row, the plan's 2B row and open point 14, and pending_umer say:
+- **The default:** the current D3034's walls (JM Eagle, October 2025), SDR 35 and SDR 26, 18–48 in. The catalog draft
+  now lists that table first.
+- **The alternate standard:** F679's walls (Westlake), PS 46 and PS 115, 18–36 in. The user picks it per run, for older
+  specs, and the run names its standard.
+- **The ODs are the same** at every size both print: 18.701, 22.047, 24.803, 27.953, 32.000 and 38.300 in at 18, 21,
+  24, 27, 30 and 36 in. None differs; only the walls and the IDs that follow from them do.
+- **42 and 48 in** are only in the D3034 table.
+
+## D-564: C909 takes cast-iron ODs, so its 4, 14, 18 and 20 in blanks are wall only, with C900's ODs (amends D-560)
+
+Docs only.
+- **The sheet:** JM Eagle, "Ultra Blue™ PVCO C909, Submittal and Data Sheet", V2.0, updated January 2026 (catalog
+  source S13). Both pages head its dimension table "CIOD (AWWA C909)".
+- **Its average ODs,** 6.90, 9.05, 11.10, 13.20, 17.40 and 25.80 in, equal C900's (Westlake, S3) at every size both
+  print.
+- **Filled from C900 (S3):** 4 in 4.800, 14 in 15.300, 18 in 19.500 and 20 in 21.600.
+- **The walls at those sizes** stay blank, marked wall only. By D-560's rule each takes the same class's wall at the
+  nearest size.
+- **Drives trench width** now covers only CMP's OD and RCP Wall C at 12–21 in.
+
+## D-565: PVC sewer 33 in is out of the catalog (amends D-560)
+
+Docs only. No manufacturer read makes it: JM Eagle's current D3034 table (18–48 in) and Westlake's F679 sheet both go
+from 30 to 36 in. The row is gone from the F679 table, from check 9 and from "Where the blanks may be filled", and both
+tables note it.
+
+## D-566: Bench sign-ins land on Account settings or a BENCH DUP, never Home (D-562 item 5)
+
+**The cause.** Home (`/`) reopens the account's last sheet visited, and the projects list (`/projects`) is a dialog
+over Home. For window-b that last sheet was the 3D test copy, so a sign-in through the form loaded the copy. In D-561's
+run the guard refused its visit and work-session writes, but the copy loaded.
+
+**Built** (infra only; the guard is unchanged):
+- **`browser/mcp-signin.js`**, run second in every MCP session, after `mcp-guard.js`. It signs in as window-b through
+  `/login?next=/settings/account`, the login page's own return path, so it lands on Account settings, which opens no
+  project.
+  - With `page.context().__benchOpen` set to a project's uuid, it goes on to that project, once the api names it
+    "BENCH DUP … — delete me".
+  - It refuses to run before the guard.
+- **The script helpers:** `lib/bench.mjs` (`signInThroughUi`, `signInAs`) and `lib/realtime.mjs` (`signInAt`) land on
+  the same page (`SIGN_IN_LANDING`), or on the `next` they are given. They wait for it, never for Home.
+- **`browser/README.md`:** an MCP session runs `mcp-guard.js`, then `mcp-signin.js`; never sign in to Home.
+
+**Checked.**
+- **In the MCP:** the sign-in landed on `/settings/account`, the guard refused nothing, and not one request named the
+  copy. With `__benchOpen` set, it opened the fresh duplicate directly.
+- **Node** parses the four files.
+- **The quantity table,** which imports `lib/bench.mjs`, passed: 344 rows.
