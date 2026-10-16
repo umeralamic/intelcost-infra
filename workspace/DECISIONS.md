@@ -16639,3 +16639,54 @@ at commit, when the log rows are gone (migration `d537c4a9e2f1`). A layer a bore
 the app: the api refuses it and names the bores.
 
 **Checked:** both duplicates with bores, layers and logs purged (200).
+
+## D-538: Founder's answers to the night run's calls (2026-10-16)
+
+Answered on 2026-10-16 (pending_umer, "Night run 2026-10-16"):
+- **G1 to G4:** ok, kept as built (D-527).
+- **B1:** ok. A retired line reads 0 even with a typed value (D-529).
+- **B2:** ok, kept as built. U-UT35 is unchanged: fill above the existing ground under a pad stays the site's fill.
+  Special fill is the estimator's choice, through the feature's undercut and subgrade prep options.
+- **B3:** no. "Move items to…" is run for real, in a throwaway workspace with its own seeded items (never the bench
+  seed's or Bench Construction Test's), and a Calculate is shown keeping the moves. The workspace is deleted after.
+- **B4:** the 04:55 UTC bores, layers and Calculates on the 3D test copy were the founder's. They stay. The copy's C-200
+  md5 baseline is now `ff91644a…` for every check, and the copy's bores and layers are not changed.
+- **T1, T3:** ok.
+- **T2:** ok to start the 3D layers hidden, but their speed is fixed: with every layer shown, the 3D view stays at
+  30 fps or more on the bench's production build (5 layers, water and bores).
+
+Further work, in order: the guest local Calculate mismatch (Task C); bores on joined sites and through linked sheets
+(plan §2.6, U-UT42; Task D); the 3D layers' speed (Task D2); and Block 2 step 2a only with more than 2 h left.
+
+## D-539: Calculate reads the drawing by its own requests, started at the click (night run, Task C)
+
+**The question.** In the night run's checks, one capture of a guest's local Calculate held the earlier drawing's
+numbers (D-527, "one run did not match").
+
+**Reproduction.** 38 runs on a duplicate of the 3D test copy, a member in one browser and the link's guest in
+another (isolated sessions). The member moved one Proposed Grade contour (697 ↔ 697.5) through the api, then:
+- the guest calculated, then the member (12 runs, and 12 again after the fix);
+- both pressed Calculate together, or the member 0.4 s later (included in those 12);
+- the guest calculated, went "Back to saved result" and calculated again, with the member's Calculate before or
+  during the second one (10 runs);
+- the guest's item reads were slowed by 2.5 s, with a member write landing while its Calculate read (12 runs).
+
+Every run matched: the guest's first model after its click equalled the member's saved result field for field
+(cut, fill, net and every region, compared as canonical JSON), and the guest's panel showed the same numbers. The
+original mismatch did not occur again.
+
+**The cause, as far as it can be shown.**
+1. **Most likely, the capture.** It clicked "Back to saved result", pressed Calculate, then waited for the banner
+   and read the panel 1.5 s later. A wait that finds a banner still on the page reads the previous local result.
+   The harness used tonight waits for the banner to go before it calculates again.
+2. **One real weakness in the code, now fixed.** Calculate re-read the project's items and strips through the
+   query cache (`fetchQuery`). That call reuses a read already in flight, which may have reached the server before
+   the last write. And when a live event cancels that read, the cancel fell back to the drawing of the last render.
+   Either way, Calculate could run on a drawing older than the one on the server at the click.
+
+**The fix.** A sheet's Calculate and a site's Calculate read the items and the strips with requests of their own,
+started at the click, then put them in the cache (`useVolumes`, `SiteView`). A failed read still falls back to the
+page's drawing, as before. Nothing else changes: the same inputs reach the same engine, so no quantity moves.
+
+**Checked:** 12 of 12 matching after the fix; a guest's local Calculate sent no request but GETs; the quantity
+table passed; the 3D test copy's C-200 md5 is `ff91644a…`, unchanged.

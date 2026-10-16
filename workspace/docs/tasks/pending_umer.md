@@ -194,19 +194,10 @@ not built.
 
 ## Night run 2026-10-16 (morning-report-2026-10-16NIGHT_REPORT_2026-10-16.md)
 
-| # | What | Default taken (recommended) | Your call |
-|---|---|---|---|
-| G1 | A guest's view switches to a member's new Calculate live only when the link lets viewers watch live work (D-511). Without it, on reload. | Keep D-511: the owner's live-work switch decides (D-527 2). | Say if a guest should always poll for a new Calculate. |
-| G2 | Over a current saved result, a guest's Calculate is greyed with the tip; a guest opens the result with "Volumes" (back, replacing D-507). | As built (D-527 2, 3). | Say if you want Calculate to open Volumes instead. |
-| G3 | A guest's Calculate uses the saved assumptions and shows no assumptions dialog. | As built: the numbers then match a member's Calculate exactly. | Say if a guest should be able to try other assumptions locally. |
-| G4 | Sheet "Properties (rename)" and "Default Expand Level" are greyed for a guest (they write). | As built. | None expected. |
-| B1 | A retired line's quantity reads 0 even when it has a typed value; the typed value is kept and counts again when the key returns (D-529). | As built: "kept at 0" as you asked. | Say if a typed value should keep pricing while retired. |
-| B2 | The 3D test copy, once recalculated, will show the Building Pad's 48 in undercut at about 130.65 BCY, not 2,596.05: the pad sits in fill about 4.4 ft deep (D-528). Its stored result is untouched (md5 `fab4d151…`) and reads out of date until you press Calculate. | Recalculate it when you look. | Say if Q13 should leave fill under a pad counted as before. |
-| B3 | "Move items to…" re-files every item under a code across the whole workspace, so it was checked only inside a rolled-back transaction, never run for real (D-531). | As built. | None. |
-| B4 | **The 3D test copy was used from another browser tonight.** From 04:55 UTC, a browser signed in as estimator@ placed four bores and four soil layers on "Hidden Valley Rebid — 3D test" and saved Calculates on C-200 at 05:07 and 05:19. Two bore saves at 05:17 were refused (409). Those Calculates ran on the new engine (Q13), so C-200's stored md5 is now `ff91644a…`, no longer `fab4d151…`. My work never wrote to the copy: I used duplicates only, and my two `POST …/duplicate` calls only read it. The refused saves were probably a gap or a row past the total depth. "+ Row" no longer adds a row past the total depth (D-535). | Say if that was not you. Delete the test bores and layers from the copy if you want it clean. | Yours. |
-| T1 | Bores and their layers are typed per project; the fixtures put three reports on one duplicate under one six-layer list, so each sheet's model sees layers its report never logs (zero thickness, and the last layer, Sand, takes the cut below the Midway pits' depth). | As built: one report per project in real use. | None. |
-| T2 | The 3D layers start hidden (five translucent surfaces ran at about 1 fps on the bench); water and bores show. | As built. | Say if they should start shown. |
-| T3 | The cross-section samples 240 stations along the line (a picture: no quantity reads it). | As built. | None. |
+**Answered 2026-10-16 (D-538):** G1–G4, B1, B2, T1 and T3 ok, kept as built (B2: U-UT35 unchanged; special fill
+under a pad is the estimator's choice through the feature's undercut and subgrade prep options). B4 was yours: the
+copy's bores, layers and Calculates stay, and its C-200 md5 baseline is now `ff91644a…`. B3 and T2 were changed and
+are worked in the continued night run (below).
 
 ## Found in the click sessions
 
