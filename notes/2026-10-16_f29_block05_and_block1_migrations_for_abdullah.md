@@ -1,10 +1,11 @@
 # F29 night run 2026-10-16: migrations for Abdullah
 
-Listed only. Every migration below adds columns or tables; none writes to an existing row's data.
+Listed only. Every migration below adds columns or tables (the log row's foreign key to its layer is NO ACTION, so a project purge cascades cleanly); none writes to an existing row's data.
 
 | Revision | Down revision | What | Decision |
 |---|---|---|---|
 | `d529a4e7c1b3` | `c9a5e7d2f4b6` | `takeoff_item.earthwork_retired` Boolean, server default false, not null | D-529 |
+| `d532b7e3f0a9` | `d529a4e7c1b3` | Tables `earthwork_soil_layer`, `earthwork_bore`, `earthwork_bore_layer`, `earthwork_bore_water`; `earthwork_assumptions.water_buffer_ft` (Numeric, default 1.0) and `.slope_rule` (JSONB, null) | D-532 |
 
 No new packages (app or api).
 
