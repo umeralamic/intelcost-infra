@@ -649,6 +649,8 @@ try {
     const gm = await import("/src/lib/takeoff/earthwork/geotech/model.ts");
     const gc = await import("/src/lib/takeoff/earthwork/geotech/materials.ts");
     const gs = await import("/src/lib/takeoff/earthwork/geotech/slopeRule.ts");
+    const gp = await import("/src/features/takeoff/earthwork/geotech/placed.ts");
+    const sk = await import("/src/features/takeoff/earthwork/site/siteKey.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -754,6 +756,44 @@ try {
       if (c.kind === "geo-water") {
         const out = {};
         for (const b of c.bores) out[b.id] = gw.designWater(b.readings, b.total, c.buffer ?? 1).depthFt;
+        return out;
+      }
+      if (c.kind === "geo-link" || c.kind === "geo-site") {
+        // Row 1.5's layers and bores as the api returns them (D-540).
+        const row = (id, top, bottom) => ({ soil_layer_uuid: id, depth_top_ft: top, depth_bottom_ft: bottom, open_bottom: false });
+        const full = [row("fill", 0, 1), row("clay", 1, 5), row("sand", 5, 10)];
+        const bore = (code, sheet, point, total, layers) => ({ uuid: code, code, sheet_uuid: sheet, point, ground_elev_ft: null, total_depth_ft: total, termination: "planned", refusal_reason: null, cave_in_depth_ft: null, perched_water: false, water: [], layers });
+        const geo = (bores) => ({ layers: [["fill", "Fill"], ["clay", "Clay"], ["sand", "Sand"]].map(([uuid, name]) => ({ uuid, name, interpolate: "depth", soil_group: "fill", unsuitable: false, color: "x" })), bores, water_buffer_ft: 1 });
+        const out = {};
+        let placed, frame;
+        if (c.kind === "geo-link") {
+          const scales = { tgt: { feetPerPt: 0.1, widthPt: 1200, heightPt: 1200 }, src: { feetPerPt: 0.2, widthPt: 600, heightPt: 600 } };
+          const pair = (s, t) => ({ source: { x: s[0], y: s[1] }, target: { x: t[0], y: t[1] } });
+          const link = { source: "src", target: "tgt", pairs: [pair([0, 0], [1, 0]), pair([1, 0], [1, 1]), pair([0, 1], [0, 0])], scaleFitted: false, offsetFt: 2, egSource: true };
+          const linked = rg.linkedEg("tgt", [link], () => [], (s) => scales[s], () => "EG", (s) => s);
+          const m = linked.maps[0];
+          const at = m.map({ x: 1, y: 0 });
+          Object.assign(out, { mappedX: at.x, mappedY: at.y });
+          const own = [bore("B-1", "tgt", [0, 0], 10, full), bore("B-2", "tgt", [1, 1 / 6], 10, full), bore("B-3", "tgt", [1 / 6, 1], 10, full)];
+          placed = [...own.map((b) => ({ bore: b, at: b.point, ground: null, from: null })), { bore: bore("TP-4", "src", [1, 0], 7, [row("fill", 0, 7)]), at: [at.x, at.y], ground: null, from: "src" }];
+          frame = { feetPerNorm: 0.1, widthPt: 1200, heightPt: 1200 };
+        } else {
+          const scale = { feetPerPt: 0.1, widthPt: 1400, heightPt: 1400 };
+          const page = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }];
+          const members = [
+            { sheet: "A", scale, placement: { rotation: 0, scale: 1, tx: -10, ty: -10 }, region: [{ x: 0, y: 0 }, { x: 0.5, y: 0 }, { x: 0.5, y: 1 }, { x: 0, y: 1 }], sortOrder: 0 },
+            { sheet: "B", scale, placement: { rotation: Math.PI / 2, scale: 1, tx: 130, ty: -10 }, region: page, sortOrder: 1 },
+          ];
+          const data = geo([bore("B-1", "A", [1 / 14, 1 / 14], 10, full), bore("B-3", "A", [3 / 14, 13 / 14], 10, full), bore("B-2", "B", [3 / 14, 1 / 14], 10, full), bore("TP-4", "B", [13 / 14, 1 / 14], 7, [row("fill", 0, 7)]), bore("X-9", "B", [2 / 14, 12 / 14], 10, full)]);
+          placed = sk.sitePlaced(members, { runs: [], page: { widthPt: 120, heightPt: 120 }, origin: { x: 0, y: 0 } }, data);
+          const tp4 = placed.find((p) => p.bore.code === "TP-4");
+          Object.assign(out, { tp4X: tp4?.at[0], tp4Y: tp4?.at[1] });
+          frame = { feetPerNorm: 1, widthPt: 120, heightPt: 120 };
+        }
+        out.placed = placed.map((p) => p.bore.code).join(",");
+        const m = gp.placedModel(geo(placed.map((p) => p.bore)), placed, frame);
+        out.clamps = m.clamps.length;
+        m.clamps.forEach((k, i) => Object.assign(out, { [`clamp${i}:areaSF`]: k.areaSF, [`clamp${i}:maxFt`]: k.maxFt, [`clamp${i}:near`]: k.nearBore }));
         return out;
       }
       if (c.kind === "geo-clamp") {

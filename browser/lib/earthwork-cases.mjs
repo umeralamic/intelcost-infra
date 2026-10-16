@@ -256,6 +256,27 @@ export const EARTHWORK_CASES = [
     layers: [{ soil_group: "clay", osha_type: "B" }, { soil_group: "gravel", osha_type: "C" }],
     expect: { "row0:steeper": true, "row1:steeper": true, "row2:steeper": true, "row3:steeper": false },
   },
+  // Bores through a link and on a joined site (plan §2.6, U-UT42, D-540): row 1.5's bores moved 20 ft,
+  // so the work is 0..120 ft each way, B-1 (0, 0), B-2 (120, 20), B-3 (20, 120), TP-4 (120, 120).
+  // Through a link: B-1..B-3 on the grading sheet (120 ft square); TP-4 on a survey sheet (also 120 ft,
+  // 0.2 ft a point) at its (120, 0) ft, linked turned 90 degrees: grading = (120 - sy, sx). Pairs:
+  // (0, 0) > (120, 0), (120, 0) > (120, 120), (0, 120) > (0, 0). TP-4 lands at (120, 120): row 1.5's
+  // clamp again, 555.56 SF, up to 2.00 ft, near TP-4.
+  {
+    id: "geo-link-bore-through-link",
+    kind: "geo-link",
+    expect: { mappedX: 1, mappedY: 1, placed: "B-1,B-2,B-3,TP-4", clamps: 1, "clamp0:areaSF": 5000 / 9, "clamp0:maxFt": 2, "clamp0:near": "TP-4" },
+  },
+  // On a site of two 140 ft sheets: A, moved -10 ft each way (site = a - 10), shows its left half (site
+  // x up to 60) with B-1 at its (10, 10) ft and B-3 at (30, 130); B, turned 90 degrees and moved
+  // (130, -10) (site = (130 - by, bx - 10)), shows the rest, with B-2 at its (30, 10) ft, TP-4 at (130, 10)
+  // and X-9 at (20, 120), which lands at site (10, 10), in A's part: kept (a Bore ID is unique, so it is
+  // no copy of A's), and outside triangle B-2, TP-4, B-3, so the clamp is row 1.5's.
+  {
+    id: "geo-site-bores-joined",
+    kind: "geo-site",
+    expect: { placed: "B-1,B-3,B-2,TP-4,X-9", tp4X: 1, tp4Y: 1, clamps: 1, "clamp0:areaSF": 5000 / 9, "clamp0:maxFt": 2, "clamp0:near": "TP-4" },
+  },
   // 1.6 and 1.7: each bore's design water level (plan §3.5).
   {
     id: "geo-1.6-1.7-design-water",
