@@ -17229,3 +17229,45 @@ check's spot threshold is already the project's (D-292).
   2026, 12:34 PM.", no name, as the link hides names. Its PATCH was refused: 403 "This shared project is view only."
 - **A bug the guest check found:** the dialog opened before the rules arrived and kept the defaults. Fixed: it follows
   the project's rules until a change is made in it, and Trace waits for them.
+
+## D-554: The saved Calculate's 3D for members too, and on joined sites (B5a, B5b, D-550)
+
+**Built.**
+1. **Members, on a sheet (B5b).** 3D VIEW of an out-of-date result shows the saved Calculate's surfaces with the note
+   "Shows the last saved Calculate. The drawing has changed since.", as a guest's does (D-549). The surfaces come
+   from, in turn:
+   - this tab's own Calculate, when it is the saved one;
+   - else the drawing as it stands, when it gives the saved numbers;
+   - else the inputs kept with the result.
+
+   When none can be had, a member reads "…Calculate again to see the drawing as it is now.", since a member's
+   Calculate saves. A guest keeps "…Calculate in your view…; nothing is saved."
+2. **Joined sites (B5a).** A site's saved result keeps its Calculate's inputs:
+   - **What is kept:** every member's runs in the site frame, the labels, the frame, the boundary, the Site Features
+     and the Strip Areas (about 225 kB for the bench site).
+   - **Storage:** `earthwork_site_result.inputs`, deferred (migration `d554b2f8c6e3`), read on
+     `GET …/site/<site>/result/inputs`, by a guest too. The site's Save sends them.
+   - **On an out-of-date site result,** 3D VIEW is offered (it was hidden) and shows that Calculate, with the same
+     note: from the drawing as it stands when it gives the saved numbers, else from the kept inputs. The bores are
+     shown as they stand, read against that Calculate's ground, while the site's frame is unchanged.
+   - **A site result saved before this kept no inputs:** "The site changed since its last saved Calculate … cannot be
+     shown. Calculate the site to see it as it is now."
+3. **The quantity table** gains `site-kept-inputs-rebuild`: a site's inputs, kept, sent as JSON, read back and built
+   again, give the same numbers: cut 1,250 / 24 / 27 and fill 361,250 / 24 / 27 CY, with both Strip Areas kept.
+4. **A bug the smoke found, fixed before the commit.** When the tab's own Calculate was the saved one, the answer
+   landed before the "building" state and was overwritten by it, so the pane stayed on "Building…". The answer now
+   always lands last.
+
+**Checked** on the bench duplicate ("BENCH DUP 2026-10-16 17:07 — delete me"):
+- **Member, sheet C-200,** with a proposed spot moved 0.5 ft after a Calculate:
+  - after a reload, 3D VIEW showed the saved Calculate from its kept inputs, with the note;
+  - after a Calculate in the tab and a change, it showed that Calculate at once.
+- **Member, a test site** "Bench site": C-200, with 49 existing-grade spots added, and C-100 joined at C-200's right
+  margin.
+  - Calculated: cut 40,713 BCY, fill 1,380 CCY.
+  - Saved with its inputs (224,908 bytes).
+  - After the spot changed, the site read "Stale…", and 3D VIEW showed the saved Calculate from its kept inputs in
+    15 s, with the note.
+- **Guest, through the duplicate's own link:** the sheet's and the site's 3D VIEW each showed the saved Calculate with
+  the note. The guest sent no write, only its link session.
+- **Gates:** pass. **Quantity table:** passed, 21 site rows right.
