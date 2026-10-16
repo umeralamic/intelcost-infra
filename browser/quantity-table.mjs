@@ -995,6 +995,8 @@ try {
             eg: byElevation && egT.ok === true ? gf.tinPieces(egT.mesh, c.side, c.side) : null,
           });
           out["geo:clamps"] = m.clamps.map((k) => k.text).join(" | ");
+          // D-559: the notes, word for word.
+          out["geo:notes"] = m.notes.join(" | ");
           const split = gc.cutByLayer(r.prisms, { feetPerNorm: c.side, widthPt: 1, heightPt: 1 }, g.layers.map(([id]) => id), m.bottoms, new Map([[null, 0]]));
           let sum = 0;
           for (const [id, name] of g.layers) {

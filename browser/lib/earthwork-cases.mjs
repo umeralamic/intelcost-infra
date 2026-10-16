@@ -148,14 +148,14 @@ export const EARTHWORK_CASES = [
       "clamp0:text": "Clay kept under Fill over 555.56 SF, up to 2.00 ft, near TP-4", ordered: true, atLeastPoints: "TP-4",
     },
   },
-  // 1.1: Midway's pits (pp.23-25), TP-1 (0, 0), TP-2 (100, 0), TP-3 (0, 100): topsoil to 0.5 ft in each,
+  // 1.1: GT-08's pits (pp.23-25), TP-1 (0, 0), TP-2 (100, 0), TP-3 (0, 100): topsoil to 0.5 ft in each,
   // fill to 1.0, 1.5 and 1.0, natural granular below. EG level 100.00, FG level 98.80 (a 1.20 ft cut),
   // no strip, the work the pits' triangle (5,000 SF). Fill's bottom D = 1.0 + 0.005x.
   // Total 5,000 x 1.20 = 6,000 CF = 222.22 CY; topsoil 5,000 x 0.50 = 92.59 CY; granular where 1.2 > D
   // (x < 40): the integral of (0.2 - 0.005x)(100 - x) from 0 to 40 = 346.67 CF = 12.84 CY; fill the rest,
   // 116.79 CY (0.7 x 5,000 - 346.67 = 3,153.33 CF agrees).
   {
-    id: "geo-1.1-midway-cut-by-layer",
+    id: "geo-1.1-gt08-cut-by-layer",
     kind: "volume",
     side: 100,
     boundary: [[0, 0], [1, 0], [0, 1]],
@@ -172,7 +172,7 @@ export const EARTHWORK_CASES = [
     expect: { ok: true, cutCY: 6000 / 27, "geo:Topsoil:CY": 2500 / 27, "geo:Fill:CY": (3500 - 1040 / 3) / 27, "geo:Granular:CY": 1040 / 3 / 27, "geo:sum-equals-cut": true },
   },
   // 1.1 under the fixtures' six-layer list: Asphalt and base on top and Fat clay between Fill and the
-  // granular soil, neither logged at Midway, so both have no thickness (a layer missing from a log that
+  // granular soil, neither logged at GT-08, so both have no thickness (a layer missing from a log that
   // goes on below it, plan §3.1): 0.00 CY each, and the other three exactly as 1.1.
   {
     id: "geo-1.1b-zero-thickness-layers",
@@ -189,12 +189,16 @@ export const EARTHWORK_CASES = [
       ],
       box: { minX: -500, minY: -500, maxX: 600, maxY: 600 },
     },
-    expect: { ok: true, cutCY: 6000 / 27, "geo:Asphalt:CY": 0, "geo:Topsoil:CY": 2500 / 27, "geo:Fill:CY": (3500 - 1040 / 3) / 27, "geo:Fat clay:CY": 0, "geo:Granular:CY": 1040 / 3 / 27, "geo:Sand:CY": 0, "geo:sum-equals-cut": true },
+    expect: {
+      ok: true, cutCY: 6000 / 27, "geo:Asphalt:CY": 0, "geo:Topsoil:CY": 2500 / 27, "geo:Fill:CY": (3500 - 1040 / 3) / 27, "geo:Fat clay:CY": 0, "geo:Granular:CY": 1040 / 3 / 27, "geo:Sand:CY": 0, "geo:sum-equals-cut": true,
+      // D-559: three layers, "or" before the last.
+      "geo:notes": "No bore logs Asphalt, Fat clay or Sand, so they take nothing.",
+    },
   },
   // 1.2: the same with a 0.50 ft strip (stripping wins): the strip 92.59 CY; the cut below it 129.63 CY =
   // fill 116.79 + granular 12.84; no topsoil left in the cut.
   {
-    id: "geo-1.2-midway-strip-wins",
+    id: "geo-1.2-gt08-strip-wins",
     kind: "volume",
     side: 100,
     boundary: [[0, 0], [1, 0], [0, 1]],
@@ -215,7 +219,7 @@ export const EARTHWORK_CASES = [
   // values, D = 1.25 + 0.0025(x - y). Total 444.44 = topsoil 185.19 + fill 242.47 + granular 16.79
   // ((346.67 + 106.67) CF).
   {
-    id: "geo-1.3-midway-square-extrapolated",
+    id: "geo-1.3-gt08-square-extrapolated",
     kind: "volume",
     side: 100,
     boundary: UNIT,
@@ -295,9 +299,13 @@ export const EARTHWORK_CASES = [
       ],
       box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
     },
-    expect: { ok: true, cutCY: 60000 / 27, "geo:Topsoil:CY": 10000 / 27, "geo:Clay:CY": 0, "geo:Rock:CY": 50000 / 27, "geo:sum-equals-cut": true, "geo:clamps": "" },
+    expect: {
+      ok: true, cutCY: 60000 / 27, "geo:Topsoil:CY": 10000 / 27, "geo:Clay:CY": 0, "geo:Rock:CY": 50000 / 27, "geo:sum-equals-cut": true, "geo:clamps": "",
+      // D-559: one layer, "it takes".
+      "geo:notes": "No bore logs Clay, so it takes nothing.",
+    },
   },
-  // 1.8: Bidwell (pp.45-50): B-1, B-2, B-4, B-5, B-6 log 8, 7, 8, 4 and 3 in of topsoil, 6.0 in on
+  // 1.8: GT-01 (pp.45-50): B-1, B-2, B-4, B-5, B-6 log 8, 7, 8, 4 and 3 in of topsoil, 6.0 in on
   // average, so 0.50 ft; B-3 has asphalt at the surface and is left out.
   {
     id: "geo-1.8-topsoil-suggestion",
@@ -353,24 +361,24 @@ export const EARTHWORK_CASES = [
       { id: "W-1", total: 15, readings: [{ kind: "while_drilling", depth_ft: 7.5 }, { kind: "at_completion", depth_ft: 6 }, { kind: "after_hours", depth_ft: 5.2, hours: 24 }, { kind: "seasonal_high", depth_ft: 4 }] },
       // W-1 without its seasonal high: 5.20 - 1.00.
       { id: "W-1 no seasonal", total: 15, readings: [{ kind: "while_drilling", depth_ft: 7.5 }, { kind: "at_completion", depth_ft: 6 }, { kind: "after_hours", depth_ft: 5.2, hours: 24 }] },
-      // Deland B-1 (p.21, p.8): 6.0 ft after 24 h or more; NRCS published 18-24 in (p.4), not used.
-      { id: "Deland B-1", total: 20, readings: [{ kind: "after_hours", depth_ft: 6, hours: 24 }, { kind: "published", depth_ft: 1.5, source: "NRCS" }] },
-      // Maricopa (p.8): no groundwater to 31.5 ft; ADWR published 81.80 ft.
-      { id: "Maricopa", total: 31.5, readings: [{ kind: "at_completion", depth_ft: null }, { kind: "published", depth_ft: 81.8, source: "ADWR site 330001112004301" }] },
-      // Plain City B-13 (p.36): 5.0 at drilling. B-12 (p.35, p.12): 7.0 in PVC after 12 days.
-      { id: "Plain City B-13", total: 20, readings: [{ kind: "while_drilling", depth_ft: 5 }] },
-      { id: "Plain City B-12", total: 20, readings: [{ kind: "stabilized", depth_ft: 7 }] },
-      // Midway TP-3 (p.25, p.12): not encountered 10/2; 4.0 ft on 10/11 (216 h).
-      { id: "Midway TP-3", total: 6, readings: [{ kind: "at_completion", depth_ft: null }, { kind: "after_hours", depth_ft: 4, hours: 216 }] },
+      // GT-02 B-1 (p.21, p.8): 6.0 ft after 24 h or more; NRCS published 18-24 in (p.4), not used.
+      { id: "GT-02 B-1", total: 20, readings: [{ kind: "after_hours", depth_ft: 6, hours: 24 }, { kind: "published", depth_ft: 1.5, source: "NRCS" }] },
+      // GT-06 (p.8): no groundwater to 31.5 ft; ADWR published 81.80 ft.
+      { id: "GT-06", total: 31.5, readings: [{ kind: "at_completion", depth_ft: null }, { kind: "published", depth_ft: 81.8, source: "ADWR" }] },
+      // GT-09 B-13 (p.36): 5.0 at drilling. B-12 (p.35, p.12): 7.0 in PVC after 12 days.
+      { id: "GT-09 B-13", total: 20, readings: [{ kind: "while_drilling", depth_ft: 5 }] },
+      { id: "GT-09 B-12", total: 20, readings: [{ kind: "stabilized", depth_ft: 7 }] },
+      // GT-08 TP-3 (p.25, p.12): not encountered 10/2; 4.0 ft on 10/11 (216 h).
+      { id: "GT-08 TP-3", total: 6, readings: [{ kind: "at_completion", depth_ft: null }, { kind: "after_hours", depth_ft: 4, hours: 216 }] },
     ],
-    expect: { "W-1": 4, "W-1 no seasonal": 4.2, "Deland B-1": 5, Maricopa: 81.8, "Plain City B-13": 4, "Plain City B-12": 6, "Midway TP-3": 3 },
+    expect: { "W-1": 4, "W-1 no seasonal": 4.2, "GT-02 B-1": 5, "GT-06": 81.8, "GT-09 B-13": 4, "GT-09 B-12": 6, "GT-08 TP-3": 3 },
   },
-  // Manila Creek B-1 (p.24): not encountered to 41.5 ft, no other source: below 41.5, no point.
+  // GT-05 B-1 (p.24): not encountered to 41.5 ft, no other source: below 41.5, no point.
   {
-    id: "geo-1.7-manila-below",
+    id: "geo-1.7-gt05-below",
     kind: "geo-water",
-    bores: [{ id: "Manila Creek B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
-    expect: { "Manila Creek B-1": 41.5 },
+    bores: [{ id: "GT-05 B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
+    expect: { "GT-05 B-1": 41.5 },
   },
   // --- Q13 (D-526 Block 0.5, D-528): an undercut counts existing ground only -------------
   // A 100 x 70 ft pad (7,000 SF) on a 100 x 100 ft site, undercut 6.5 ft below the subgrade.
