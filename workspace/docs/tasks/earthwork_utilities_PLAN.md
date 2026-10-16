@@ -979,8 +979,8 @@ right like the others.
 | Excavation slope rule (this project)                                              |
 | (o) Federal OSHA   A 3/4:1 . B 1:1 . C 1 1/2:1 . stable rock vertical             |
 |                    Benching in A, and in B in cohesive soil only                  |
-| ( ) From the geotech report     Source [Midway report, p.9          ]            |
-|     [Load template v]                                                             |
+| ( ) From the geotech report     Source [Your geotech report, page   ]            |
+|     [Load template]                                                               |
 |     Soil         Up to   Water          Slope H:V                                |
 |     Cohesive     8 ft    above/below    0.5     ! Steeper than federal OSHA ...   |
 |     Granular     4 ft    above          0.5     ! Steeper than federal OSHA ...   |

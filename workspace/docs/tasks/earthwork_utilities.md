@@ -313,8 +313,8 @@ Takeoff settings, which are one person's on one device.
   - water: above, below or either;
   - a slope H:V, or "shoring required".
 - A source note gives the report and page.
-- **Template.** "Load template" preloads the Utah reports' rules (Midway p.9; the same in Manila Creek p.9 and
-  Plain City p.10):
+- **Template.** "Load template" preloads a starting table of the kind geotech reports print. The source line stays
+  the user's own report and page; the reports this table was drawn from are not named in the app (D-552):
 
   | Soil | Water | Up to | Slope |
   |---|---|---|---|

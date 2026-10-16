@@ -17140,3 +17140,27 @@ layers:
 - **Hard dig and rock:** 4.35 CY.
 - **The guest's view:** the same split and note; the guest wrote nothing.
 - **3D VIEW:** only Layer 2 to show, under the ground.
+
+## D-552: The reference reports' names come out of the app (D-550)
+
+The geotech reports the founder sent were for reference; users bring their own.
+
+**Built.**
+- **The template's button** reads "Load template", not "Load template (Utah reports)".
+- **The template's source line** is empty; it named three of the reports. "Load template" keeps whatever source the
+  user typed.
+- **The source field** shows the placeholder "Your geotech report, page".
+- **The constant** `UTAH_TEMPLATE` is `SLOPE_TEMPLATE`, in the app and in the quantity table's harness.
+- **The spec (§8) and the plan's §4.4 mock** no longer name the reports for the template or the source.
+- **The app's code has no report name left.** "Utah" stays in the wage calculator, where it is the state.
+
+**Not changed:**
+- **The copy's saved slope rule still has the old source line,** because it was loaded at 16:39 before this change.
+  The guard forbids a bench run to write to the copy; clearing its Source field is one edit for the founder.
+- **Internal records still name the reports as provenance of hand-worked values:** the plan's worked examples and
+  research notes, the quantity rows' comments and ids, and DECISIONS. The founder decides whether those go too.
+
+**Checked** on a bench duplicate:
+- **Member:** "Load template" loaded the four rows with an empty source under the placeholder, and no report name
+  showed in the panel.
+- **Guest:** the button was disabled, no name showed, and nothing was sent.
