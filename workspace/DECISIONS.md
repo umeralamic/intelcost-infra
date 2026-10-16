@@ -16616,3 +16616,13 @@ Built to spec §7 and plan §2.4, §2.5, §3.4 and §3.15:
   - "+ Row" split 1–7.5 into 1–4.25 and 4.25–7.5, and the save returned 200.
 - **As a guest** (a real guest session on the duplicate's link): the section drew and the Bores button did not
   arm placement. No request but reads was sent.
+
+## D-536: The 3D readout names the soil layer under the cursor (F29 Block 1, spec §6.6)
+
+On a sheet with bores, 3D VIEW's hover card adds "Soil" with the layer and its depth. On EXIST. GRADE it reads at the
+ground. On the proposed grade it reads where that grade is below the ground, so in cut, the layer the cut reaches.
+A layer of no thickness there is skipped.
+
+Checked on the fixtures duplicate: at a fill point, "Soil: Topsoil, 0.00 ft down" (Asphalt and base has no
+thickness at Midway). In the same run: "Copy from TP-1" brought TP-1's three layers into a new bore; "Paste rows"
+matched "gravel" to Natural granular by its soil group; the save returned 200.
