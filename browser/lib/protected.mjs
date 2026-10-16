@@ -6,7 +6,8 @@
 // protected project. One exception: `POST …/project/<3D test copy>/duplicate`, which reads the copy
 // to make a duplicate and writes only the new project.
 //
-// Share links: every request to `/api/share/<token>/…`, reads included, is refused unless the run
+// Share links: every request to `/api/share/<token>/…` or `/api/share-link/<token>/…` (a member
+// opening a link), reads included, is refused unless the run
 // made that link itself (`allowShareToken`, on a duplicate). Every guest request, a read too, stamps
 // the link's last access, and a link's token does not say whose project it opens, so nothing is
 // looked up: a link the run did not make is never touched (D-542). A Save to my workspace names
@@ -71,7 +72,8 @@ export function shareRefusal(url, allowed = allowedTokens, body = "") {
     }
     return allowed.has(String(token)) ? null : `save a copy refused: a link this run did not make (allowShareToken), never touched (D-542)`;
   }
-  const m = String(url).match(/\/api\/share\/([^/?#]+)\//);
+  // A guest's requests, and a member opening a link (`/api/share-link/<token>/as-member`).
+  const m = String(url).match(/\/api\/share(?:-link)?\/([^/?#]+)\//);
   if (!m) return null;
   const token = decodeURIComponent(m[1]);
   return allowed.has(token) ? null : `share link refused: a link this run did not make (allowShareToken), never touched (D-542)`;

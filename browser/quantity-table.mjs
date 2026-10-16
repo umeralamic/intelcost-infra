@@ -975,7 +975,16 @@ try {
         // F29 step 1c (D-534): the cut split by layer, from bores, exactly.
         if (c.geo) {
           const g = c.geo;
-          const m = gm.buildLayerModel({ layers: g.layers.map(([id, name]) => ({ id, name, interpolate: "depth" })), bores: g.bores.map((b) => ({ ...b, ground: null, termination: "planned", refusalReason: null })), box: g.box });
+          // B5 (D-545): a layer by elevation (a third field) read against the existing ground the
+          // volumes used, its TIN as pieces in feet; a bore's typed ground where it has one.
+          const byElevation = g.layers.some(([, , how]) => how === "elevation");
+          const m = gm.buildLayerModel({
+            layers: g.layers.map(([id, name, how]) => ({ id, name, interpolate: how ?? "depth" })),
+            bores: g.bores.map((b) => ({ ...b, ground: b.ground ?? null, termination: "planned", refusalReason: null })),
+            box: g.box,
+            eg: byElevation && egT.ok === true ? gf.tinPieces(egT.mesh, c.side, c.side) : null,
+          });
+          out["geo:clamps"] = m.clamps.map((k) => k.text).join(" | ");
           const split = gc.cutByLayer(r.prisms, { feetPerNorm: c.side, widthPt: 1, heightPt: 1 }, g.layers.map(([id]) => id), m.bottoms, new Map([[null, 0]]));
           let sum = 0;
           for (const [id, name] of g.layers) {

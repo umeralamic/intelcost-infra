@@ -231,6 +231,50 @@ export const EARTHWORK_CASES = [
     },
     expect: { ok: true, cutCY: 12000 / 27, "geo:Topsoil:CY": 5000 / 27, "geo:Fill:CY": (7000 - 1360 / 3) / 27, "geo:Granular:CY": 1360 / 3 / 27, "geo:sum-equals-cut": true },
   },
+  // B5 (D-545): one layer by depth over one by elevation, on a sloping ground. EG = 100 + 0.01x over the
+  // 100 ft square, FG = EG - 6 (a 6 ft cut, 60,000 CF = 2,222.22 CY). B-1 (0, 0) and B-2 (0, 100), ground
+  // 100.00, log topsoil 0-1 ft, clay 1-4 ft (its bottom at elevation 96.00) and rock 4-20 ft. Topsoil by
+  // depth, 1 ft everywhere: 10,000 CF = 370.37 CY. Clay by elevation: its bottom level at 96.00, so
+  // 4 + 0.01x below the ground: the integral of (3 + 0.01x) = 35,000 CF = 1,296.30 CY; rock (2 - 0.01x),
+  // 15,000 CF = 555.56 CY. Read by depth, the clay's bottom would be 4 ft everywhere (30,000 and 20,000 CF);
+  // before B5 the clay had no thickness and the rock took all 50,000 CF below the topsoil. No clamp.
+  {
+    id: "geo-B5-depth-over-elevation",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 101, 101, 100]), ...corners("FG", [94, 95, 95, 94])],
+    geo: {
+      layers: [["top", "Topsoil"], ["clay", "Clay", "elevation"], ["rock", "Rock"]],
+      bores: [
+        { id: "b1", code: "B-1", x: 0, y: 0, ground: 100, total: 20, rows: [{ layerId: "top", top: 0, bottom: 1 }, { layerId: "clay", top: 1, bottom: 4 }, { layerId: "rock", top: 4, bottom: 20 }] },
+        { id: "b2", code: "B-2", x: 0, y: 100, ground: 100, total: 20, rows: [{ layerId: "top", top: 0, bottom: 1 }, { layerId: "clay", top: 1, bottom: 4 }, { layerId: "rock", top: 4, bottom: 20 }] },
+      ],
+      box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    },
+    expect: { ok: true, cutCY: 60000 / 27, "geo:Topsoil:CY": 10000 / 27, "geo:Clay:CY": 35000 / 27, "geo:Rock:CY": 15000 / 27, "geo:sum-equals-cut": true, "geo:clamps": "" },
+  },
+  // B5: the clay's bottom, level at 98.50, rises above the topsoil's on a falling ground. EG = 100 - 0.01x,
+  // FG = EG - 2 (a 2 ft cut, 20,000 CF = 740.74 CY). B-1 (0, 50), ground 100.00: topsoil 0-1, clay 1-1.5,
+  // rock 1.5-20. The clay's bottom is 1.5 - 0.01x below the ground, above the topsoil's 1 ft where x > 50:
+  // kept under it over 5,000 SF, up to 0.50 ft (at x = 100), near B-1. Topsoil 10,000 CF = 370.37 CY; clay
+  // the integral of (0.5 - 0.01x) for x < 50, 1,250 CF = 46.30 CY; rock 3,750 + 5,000 = 8,750 CF = 324.07 CY.
+  {
+    id: "geo-B5-elevation-clamped-under-depth",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 99, 99, 100]), ...corners("FG", [98, 97, 97, 98])],
+    geo: {
+      layers: [["top", "Topsoil"], ["clay", "Clay", "elevation"], ["rock", "Rock"]],
+      bores: [{ id: "b1", code: "B-1", x: 0, y: 50, ground: 100, total: 20, rows: [{ layerId: "top", top: 0, bottom: 1 }, { layerId: "clay", top: 1, bottom: 1.5 }, { layerId: "rock", top: 1.5, bottom: 20 }] }],
+      box: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+    },
+    expect: {
+      ok: true, cutCY: 20000 / 27, "geo:Topsoil:CY": 10000 / 27, "geo:Clay:CY": 1250 / 27, "geo:Rock:CY": 8750 / 27, "geo:sum-equals-cut": true,
+      "geo:clamps": "Clay kept under Topsoil over 5000.00 SF, up to 0.50 ft, near B-1",
+    },
+  },
   // 1.8: Bidwell (pp.45-50): B-1, B-2, B-4, B-5, B-6 log 8, 7, 8, 4 and 3 in of topsoil, 6.0 in on
   // average, so 0.50 ft; B-3 has asphalt at the surface and is left out.
   {

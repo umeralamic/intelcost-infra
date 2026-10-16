@@ -29,7 +29,8 @@ async (page) => {
       }
       if (!allowed.has(String(token))) return "save a copy refused: a link not made by this session (D-542)";
     }
-    const share = url.match(/\/api\/share\/([^/?#]+)\//);
+    // A guest's requests, and a member opening a link (`/api/share-link/<token>/as-member`).
+    const share = url.match(/\/api\/share(?:-link)?\/([^/?#]+)\//);
     // Every guest request stamps the link, a read too: only links this session made.
     if (share && !allowed.has(decodeURIComponent(share[1]))) return "share link refused: not made by this session (D-542)";
     const verb = String(method).toUpperCase();
