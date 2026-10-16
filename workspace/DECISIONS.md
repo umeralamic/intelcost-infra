@@ -16690,3 +16690,57 @@ page's drawing, as before. Nothing else changes: the same inputs reach the same 
 
 **Checked:** 12 of 12 matching after the fix; a guest's local Calculate sent no request but GETs; the quantity
 table passed; the 3D test copy's C-200 md5 is `ff91644a…`, unchanged.
+
+## D-540: Bores through linked sheets and on joined sites (F29 Block 1, plan §2.6, U-UT42; night run Task D)
+
+1. **One build for every frame.** The layer model, its version key part, Calculate's split by layer and the 3D
+   scene are built from bores placed on a frame (`geotech/placed.ts`). A frame is a sheet's page, or a site's
+   frame in feet. Each bore has its point there and its ground in that frame's datum.
+2. **Through a link (F18).** A grading sheet reads its own bores, plus each linked survey sheet's bores.
+   - **Which links:** the links that feed its existing grade.
+   - **The point:** mapped through the link's fit. `linkedEg` now returns each fitted source's map and datum offset.
+   - **The ground:**
+     - a typed ground takes the link's offset;
+     - otherwise the ground is the grading sheet's existing grade where the bore lands, as for its own bores.
+   - **What reads them:** the clamps, the water, the split by layer, the 3D columns and the readout. The survey
+     sheet's own drawing still shows only its bores.
+3. **On a site (F19).** A site's Calculate reads every member's bores, mapped into the site frame through its join,
+   as its contours are.
+   - **The ground:** typed, or else read from the site's existing grade.
+   - **What is built:** the site's split by layer, saved with its result, and its 3D view's layers, water and bores.
+   - **Every bore is kept, even past a match line.** A Bore ID is unique in the project (D-532), so a bore is never
+     drawn twice, and leaving one out would lose an exploration.
+4. **The version key.**
+   - A sheet's own bores keep step 1c's key part exactly (D-534), so no saved result moves.
+   - Bores from a linked sheet add a part with their sheet and the offset.
+   - A site's key gains the bores' part only when it has bores.
+   - A site's stale check waits for the geotech, as a sheet's does.
+5. **Copies (D-354), a fix to D-532 and D-534.** A copied project with bores read its results as out of date:
+   - the result's aliases did not cover the soil layers' and bores' new uuids;
+   - the bores were sorted by uuid before the aliases were applied, so a copy sorted them in another order.
+
+   Now:
+   - the aliases include both tables;
+   - with a copy's aliases, the bores' key part reads each uuid back before sorting.
+
+   An original project's key is unchanged.
+
+**Checks.**
+- **Quantity table:** two new rows, `geo-link-bore-through-link` and `geo-site-bores-joined`. Row 1.5's clamp
+  (555.56 SF, up to 2.00 ft, near TP-4) comes out the same through a 90° link and on a two-sheet site turned 90°
+  (174 earthwork rows, all right).
+- **On a duplicate of the 3D test copy:**
+  - **Through the link:** bore L-1, placed on V-100 (the survey sheet linked to C-200), split C-200's cut 1,404.44
+    New layer + 10,179.49 Layer 3 = 11,583.92 BCY. C-200's own bores log no New layer.
+  - **On a site:** C-100 and C-300 were joined, each with EG 100 / FG 98 spots and a boundary piece. Cut 7,978.67
+    BCY (408 × 264 ft × 2 ft).
+    - With bore S-2 on C-300 logging 3 ft of New layer: New layer 6,710.80, Layer 3 1,267.87.
+    - With S-2 at 1 ft, like S-1 and S-3: the site read stale, and Calculate gave exactly 3,989.33 and 3,989.33.
+  - **A copy of that duplicate:** C-200 and the site both read current, with no stale mark sent.
+  - **The guest on the duplicate's link:** C-200 read current with the linked bore's split; Calculate was greyed;
+    it sent no writes.
+- **The 3D test copy's C-200 md5** is `ff91644a…`, unchanged.
+
+**Found, not changed (pending_umer B5).** A soil layer set "by elevation" is never split on a sheet. The sheet's layer
+model is not given the existing grade's pieces, so the model notes "no existing ground to read it against". This
+predates tonight (step 1b).

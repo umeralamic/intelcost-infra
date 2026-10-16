@@ -199,6 +199,14 @@ under a pad is the estimator's choice through the feature's undercut and subgrad
 copy's bores, layers and Calculates stay, and its C-200 md5 baseline is now `ff91644a…`. B3 and T2 were changed and
 are worked in the continued night run (below).
 
+**Continued night run 2026-10-16 (new calls):**
+
+| # | What | Default taken (recommended) | Your call |
+|---|---|---|---|
+| B5 | A soil layer set "by elevation" (Layer 1, Layer 2 and Layer 3 on the 3D test copy) is never split on a sheet: the sheet's layer model is not given the existing grade's pieces, so the panel notes "no existing ground to read it against" and the cut goes to the last layer. Found in Task D; it predates tonight (step 1b, D-533). | Not changed: outside tonight's tasks, and fixing it changes the copy's split on its next Calculate. | Say go and it is a short fix: pass the existing grade's TIN pieces to the model on sheets and sites. |
+| B6 | Through a link, a bore's typed ground takes the link's datum offset; an untyped one reads the grading sheet's existing grade where it lands (D-540 2). | As built. | None expected. |
+| B7 | On a site, every member's bores count, even one past a match line in another member's part (a Bore ID is unique, so it is never a copy) (D-540 3). | As built. | Say if a bore in another sheet's part should be left out. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
