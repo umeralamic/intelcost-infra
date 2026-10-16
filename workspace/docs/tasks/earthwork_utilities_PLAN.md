@@ -18,6 +18,9 @@ is cut without asking._
 - **External values:**
   - **The 8" SDR-35 dimensions** come from manufacturers' sheets citing ASTM D3034. The founder accepts
     manufacturers' sheets, with the source on each catalog row (D-526).
+  - **Which ID the catalog stores** (D-550 C1): the standard's average ID where it prints one, else the source's.
+    For 8" SDR-35 that is D3034's 7.891 in (Table X1.1), not OD − 2 × minimum wall (7.920 in). The OD drives the
+    trench width and the pipe's displacement; the ID only places the trench bottom under the invert.
   - **The OSHA bench limits** come from the official Appendix B (29 CFR 1926 Subpart P, CFR 2023 edition, Table
     B-1 and Figure B-1). LII's text of the appendix says "maximum bench dimensions as follows:" but carries no
     figures, so the sizes were read from the printed figures (§3.8).
@@ -587,12 +590,15 @@ At station s:
 The parts add up to A(h).
 
 **Worked examples (reworked for the trench-width rule, D-526).**
-- **The pipe:** 100 LF of 8" PVC SDR-35: OD 8.400 in, wall 0.240 in, ID 7.920 in, from manufacturers' sheets citing
-  ASTM D3034.
+- **The pipe:** 100 LF of 8" PVC SDR-35: OD 8.400 in, minimum wall 0.240 in, and D3034's average ID 7.891 in (Table
+  X1.1; D-550 C1). The ID was 7.920 in (OD − 2 × minimum wall) before D-550.
+- **What the ID changes here:** only where the trench bottom sits under the invert: (OD − ID)/2 = 0.2545 in, so
+  0.02121 ft, was 0.02 ft. The width and the pipe's displacement use the OD.
 - **The width:** the pipe width is 0.700 + 2 × 1.000 = 2.700 ft (32.4 in), so Auto picks the **36 in bucket**: W =
   **3.00 ft** ("Width 36 in — bucket").
 - **The depth:** bedding 6 in; the zone runs to 12 in above the crown; the trench depth is **8.00 ft**, so the
-  invert depth is 7.48 ft and the invert is 92.52 on flat ground at 100.00.
+  invert depth is 7.48 ft and the invert is 92.52 on flat ground at 100.00 (exactly 7.4788 and 92.5212; both were
+  7.4800 and 92.5200, the same at two places).
 
 | Case | Soil, rule and width | A (SF) | Excavation | Bedding | Pipe zone (pipe deducted) | Backfill | Top width |
 |---|---|---|---|---|---|---|---|
@@ -611,7 +617,10 @@ The parts add up to A(h).
 - **Spec max 30 in on (a):**
   - the run shows "Wider than spec max — pay width may be limited";
   - at the spec width, A = 2.5 × 8 + 64 = 84.00 SF, so **311.11 CY**, shown beside the actual 325.93 CY.
-- **If "8 ft" meant the invert depth in (a):** h = 8.52 and A = 3.0 × 8.52 + 8.52² = 98.15 SF, so **363.52 CY**.
+- **Cases (a) to (g) do not change with the ID:** each gives the trench depth (8.00 ft), and its areas use W, h, k
+  and, for the pipe deducted, the OD.
+- **If "8 ft" meant the invert depth in (a):** h = 8 + 0.02121 + 0.5 = 8.5212 and A = 3.0 × 8.5212 + 8.5212² =
+  98.17 SF, so **363.61 CY** (it was 8.52, 98.15 SF and 363.52 CY with ID 7.920).
 
 ### 3.7 Choosing the slope at a station
 
@@ -794,12 +803,13 @@ still shows a 5 ft station table for reading.
   the shapes change. That is exact for the polynomial pieces, and within 1e−6 CF for the round ones.
 
 **Worked example.** The 48" manhole above, with the trench of case (a) leaving it: invert 90.00, so the trench
-bottom is 89.48 and h = 10.52; 1:1, W = 3.0 (36 in bucket).
-- **Overlap:** **859.20 CF = 31.82 CY**. Treating the pit wall as flat where the trench enters gives 37.42 CY,
+bottom is 89.4788 and h = 10.5212 (ID 7.891, D-550 C1); 1:1, W = 3.0 (36 in bucket).
+- **Overlap:** **859.27 CF = 31.82 CY**. Treating the pit wall as flat where the trench enters gives 37.43 CY,
   which would overstate the deduction.
-- **The trench's own length** beyond the outline: 100 − 4.417 = 95.58 ft. 95.58 × 142.23 SF = 503.51 CY, less
-  31.82 = **471.69 CY**.
-- **Pit and trench:** **610.46 CY**.
+- **The trench's own length** beyond the outline: 100 − 4.417 = 95.58 ft. 95.58 × 142.26 SF = 503.62 CY, less
+  31.82 = **471.79 CY**.
+- **Pit and trench:** **610.56 CY**.
+- **With ID 7.920** (before D-550) these were h 10.52, 859.20 CF, 37.42, 142.23 SF, 503.51, 471.69 and 610.46 CY.
 
 ### 3.12 Over-excavation (Block 4)
 
@@ -906,15 +916,17 @@ at the surface are left out. It is rounded to 0.05 ft.
 
 **Worked examples.** All use 8" PVC SDR-35 in a 36 in bucket (W = 3.0) at 1½:1.
 - **A run with typed grades:** 100 ft, the ground from 100.00 to 99.00, the inverts from 92.00 to 91.00.
-  - The trench depth is 8.52 all along: A = 3.0 × 8.52 + 1.5 × 8.52² = 134.45 SF, so **497.95 CY**.
+  - The trench depth is 8.5212 all along (ID 7.891, D-550 C1): A = 3.0 × 8.5212 + 1.5 × 8.5212² = 134.48 SF, so
+    **498.07 CY** (8.52, 134.45 SF and 497.95 CY with ID 7.920).
   - Pipe: 100 LF at 8.00 ft (8–10). Protection: Sloped 1½:1, 8–10 ft, 100 LF.
   - The run says where its ground and soil came from: "No bores: Type C assumed."
 - **Between two manholes.** Two 48" manholes (OD 4.833 ft, over-dig 2 ft): rims 100.00; floors and inverts 92.00;
   slab and stone 0.5 ft each; 100 ft centre to centre. The line is level, so the check is exact.
   - **Each pit:** h = 9.0, V = π·(19.507 × 9 + 4.417 × 1.5 × 81 + 2.25 × 729 ÷ 3) = **146.48 CY**; 8.00 VF (8–10).
-  - **The trench between the pit outlines:** 100 − 2 × 4.417 = 91.17 ft × 134.45 SF = **453.96 CY**, less the two
-    overlaps with the pits (§3.11), **37.51 CY** each.
-  - **Total: 671.91 CY.** "Grade from rims: no surface here." and "No bores: Type C assumed."
+  - **The trench between the pit outlines:** 100 − 2 × 4.417 = 91.17 ft × 134.48 SF = **454.08 CY**, less the two
+    overlaps with the pits (§3.11), **37.52 CY** each.
+  - **Total: 672.02 CY.** "Grade from rims: no surface here." and "No bores: Type C assumed."
+  - **With ID 7.920** (before D-550): 453.96 CY, overlaps 37.51 CY each, total 671.91 CY. The pits do not change.
 
 ---
 
@@ -1012,7 +1024,7 @@ right like the others.
 ```text
 +- SS-1 . Sanitary sewer ----------------------------------------------------- x -+
 | Type [Sanitary sewer v]  Pipe [PVC SDR-35 (ASTM D3034) v]  Size [8" v]          |
-| OD 8.400 in  ID 7.920 in  (catalog, edit)     Pipes [1]  Gap [--]                |
+| OD 8.400 in  ID 7.891 in  (catalog, edit)     Pipes [1]  Gap [--]                |
 | Vertical (o) Inverts ( ) Start + slope ( ) Cover                                 |
 |   Start invert [92.52] at MH-1     End invert [91.52] at MH-2                    |
 | Trench from (o) Proposed subgrade ( ) Existing grade                             |
@@ -1366,7 +1378,7 @@ Nothing is a test suite.
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 2a | 100 LF of 8" PVC SDR-35, 8.00 ft trench, Type B, OSHA sloped, Auto bucket | "Width 36 in — bucket"; 325.93 CY; bedding 6.48; zone 34.46; backfill 283.56; pipe LF 6–8 100; protection Sloped 8–10 100 LF | manufacturers' sheets (ASTM D3034); OSHA App B |
+| 2a | 100 LF of 8" PVC SDR-35, 8.00 ft trench, Type B, OSHA sloped, Auto bucket | "Width 36 in — bucket"; 325.93 CY; bedding 6.48; zone 34.46; backfill 283.56; pipe LF 6–8 100; protection Sloped 8–10 100 LF | ASTM D3034 Table 1 (OD) and Table X1.1 (average ID 7.891, D-550 C1); OSHA App B |
 | 2a′ | Same, bucket typed 24 in | the pipe width governs (32.4 in): 317.04 CY; 5.93 / 32.57 / 277.11 | same |
 | 2b | Same, in a 6.00 ft outside box from the list (5.00 ft inside, 8 ft high) | "Width 6.00 ft — box"; 177.78 CY; 11.11 / 36.35 / 128.89 | same; D-526 |
 | 2b′ | A box with no list and no typed width | the run is flagged "Box width not set: pick a box or type its outside width." until it is set | D-526 |
@@ -1385,7 +1397,7 @@ Nothing is a test suite.
 | 2n | Exact rule against 5-ft stations | depth 6 → 10 at 1:1: exact 266.67 CF under one-interval AEA, 0.67 CF under 5-ft AEA | synthetic |
 | 2o | `check_utilities.py` | a run's fields are refused when out of range; a Calculate line keyed by variant keeps its id across Calculates; mapping resolution returns 33.03.01 on CSI and none on NRM2 | api |
 | 2p | Spec max 30 in on (a) | "Wider than spec max — pay width may be limited"; 311.11 CY at the spec width beside the actual 325.93; the actual not reduced | D-526 |
-| 2q | Utilities only: no EG, FG or boundary (a requirement) | run with typed grades 497.95 CY; two manholes from their rims 146.48 CY each, 8.00 VF each; the run between them 453.96 CY less two overlaps of 37.51; total 671.91 CY; "No bores: Type C assumed." | §3.16 |
+| 2q | Utilities only: no EG, FG or boundary (a requirement) | run with typed grades 498.07 CY; two manholes from their rims 146.48 CY each, 8.00 VF each; the run between them 454.08 CY less two overlaps of 37.52; total 672.02 CY; "No bores: Type C assumed." | §3.16 (ID 7.891, D-550 C1) |
 
 ### 6.3 Block 3
 
@@ -1393,7 +1405,7 @@ Nothing is a test suite.
 |---|---|---|---|
 | 3a | 48" manhole, 10 VF, Type B, sloped | pit 138.77; stone 1.14; backfill 130.50 CY; 10.00 VF, range 10–12 | synthetic |
 | 3b | Lift station, water above the floor | clay counts C below the water: 1,014.52 CY, dewatering flag; sand: shoring forced, 132.74 CY | synthetic |
-| 3c | Trench into the manhole (36 in bucket) | overlap 31.82 CY deducted; trench 471.69 CY; pit + trench 610.46 CY | synthetic |
+| 3c | Trench into the manhole (36 in bucket) | overlap 31.82 CY deducted; trench 471.79 CY; pit + trench 610.56 CY (ID 7.891, D-550 C1) | synthetic |
 
 ### 6.4 Block 4
 
@@ -1471,7 +1483,7 @@ tab-through (1B) are each about a day.
 | Sub-block | What | Hours |
 |---|---|---|
 | 2A | `utility_run`, item columns, rebuilt line indexes, folder keys, work scope tables with the CSI defaults (no UI yet); Utility settings with the default bucket, the box list and spec max widths per size | 8 |
-| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed | 4 |
+| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed. A row whose sheet names no standard shows "Unverified source" until checked; the ID is the standard's average ID where printed (D-550 C1, C2) | 4 |
 | 2C | Utilities button, drawing, snap to structures and runs (new snap source), the run panel with segments, bucket, box and spec max, the run layer (colours, labels), filing under Utilities › type | 12 |
 | 2D | The engine: breakpoints, the trench-width rule, sections, protection selection, exact integration, zones, pipe displacement, native and imported, spoils, ranges, dewatering, restoration, the spec-width quantities | 16 |
 | 2E | Utility sheets through a link (Q8); ground from rims and typed grades; utilities-only projects Calculate with no EG, FG or boundary (a requirement, D-526) | 6 |
@@ -1605,8 +1617,14 @@ total of 156 h was mis-added: its Block 5 sub-blocks came to 26 h, not 28, so it
 
 14. **The pipe catalog.** ASTM and AWWA tables are not free to read.
     - Manufacturers' sheets are accepted, with the source on each row (D-526).
+    - **How a row's source counts** (D-550 C2):
+      - read from the standard, or from a manufacturer's or an association's sheet that cites it: shown as cited;
+      - from a manufacturer's sheet that names no standard: shown in the app as "Unverified source" until checked.
+    - Blanks are filled from manufacturers' sheets, with a link and a date on each row; no standard is bought now
+      (D-550 C3). A row where two sources disagree is noted.
     - A value with no source stays blank and is listed.
-    - Check (a) uses D3034's 8" (OD 8.400 in, wall 0.240 in) from those sheets.
+    - Check (a) uses D3034's 8": OD 8.400 in and minimum wall 0.240 in, and the average ID 7.891 in from Table X1.1,
+      read in the standard itself (D-550 C1; it was 7.920, OD − 2 × minimum wall).
 15. **OSHA's bench sizes are drawn only in the figures.**
     - LII's text says "maximum bench dimensions as follows:" and has no figures.
     - The sizes were read from the official CFR's printed figures (2023 edition). Those figures also showed that

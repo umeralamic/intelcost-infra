@@ -241,7 +241,8 @@ manufacturers' sheets, one association table (ACPA) and blanks. The draft's top 
 **Answered 2026-10-16 (D-550), closed:** C1, the standard's average ID where printed, and OD drives trench and
 displacement; C2, both marks stay, an association counts like a manufacturer, and "manufacturer, no standard named" rows
 show "Unverified source" in the app until checked; C3, blanks filled from manufacturers' sheets, disagreements noted, no
-standard bought.
+standard bought. Done in the answers run (D-555): the plan's examples reworked for 7.891, the marks in the spec and plan,
+the blanks filled where a sheet prints them; one new call, R5.
 
 | # | What | Your call |
 |---|---|---|
@@ -257,6 +258,7 @@ standard bought.
 | R2 | Contours and spots is display only (colour, weight, dashes, index contour, labels, spot size) and feeds no quantity. | The project's, as D-473 left it, so the grading report looks the same whoever prints it. It stays in the Settings window under its own banner, and the window's line now says such a section is the project's (D-553). | Make it personal, move it to the Earthwork row, or leave it. |
 | R3 | The copy's saved slope rule still has the old source line, naming three of the reference reports (loaded 16:39). | Not changed (D-552): the guard keeps me off the copy. | Clear its Source field (one edit). |
 | R4 | Internal records name the reference reports as provenance of hand-worked values: the plan's worked examples and research notes, the quantity rows' comments and ids, and DECISIONS. | Kept (D-552); the app names none. | Scrub them too, or keep them. |
+| R5 | PVC sewer 18–36 in: Westlake's sheet gives F679's PS 46 and PS 115 walls; JM Eagle's October 2025 sheet gives the current D3034's (F679 was withdrawn in 2024) SDR 35 and SDR 26 walls, thicker at 18–27 in (18 in: 0.499 against 0.536). | Both tables in the catalog draft, check 2 (D-555). | Which one the catalog's 18–36 in rows use. |
 
 ## Found in the click sessions
 

@@ -17271,3 +17271,51 @@ check's spot threshold is already the project's (D-292).
 - **Guest, through the duplicate's own link:** the sheet's and the site's 3D VIEW each showed the saved Calculate with
   the note. The guest sent no write, only its link session.
 - **Gates:** pass. **Quantity table:** passed, 21 site rows right.
+
+## D-555: The pipe catalog and the plan after C1–C3 (D-550)
+
+Docs only: no code, so no gate, quantity row or smoke applies. Block 2, which builds the catalog, has not started.
+
+**C1, the ID** (plan §3.6, §3.11, §3.16, the run-panel mock, checks 2a, 2q and 3c, open point 14). The catalog stores
+the standard's average ID where it prints one; for 8" SDR-35 that is D3034's 7.891 in (Table X1.1), not 7.920 (OD − 2 ×
+minimum wall). The OD drives the width and the displacement; the ID only places the trench bottom under the invert,
+(OD − ID)/2 = 0.02121 ft (was 0.02).
+
+| Example | With 7.920 | With 7.891 |
+|---|---|---|
+| §3.6 cases (a)–(g), trench depth given as 8.00 ft | as before | unchanged: their areas use W, h, k and the OD |
+| §3.6, the invert under (a) | 92.5200, invert depth 7.4800 | 92.5212 and 7.4788: 92.52 and 7.48 at two places |
+| §3.6, "8 ft" as the invert depth | h 8.52, 98.15 SF, 363.52 CY | h 8.5212, 98.17 SF, **363.61 CY** |
+| §3.11, trench into the 48" manhole | h 10.52; overlap 859.20 CF = 31.82 CY; flat wall 37.42; trench 503.51 − 31.82 = 471.69; pit and trench 610.46 CY | h 10.5212; 859.27 CF = 31.82 CY; 37.43; 503.62 − 31.82 = **471.79**; **610.56 CY** |
+| §3.16, a run with typed grades | h 8.52, 134.45 SF, 497.95 CY | h 8.5212, 134.48 SF, **498.07 CY** |
+| §3.16, between two manholes | trench 453.96; overlaps 37.51 each; total 671.91 CY | 454.08; 37.52 each; **672.02 CY** (the pits do not change) |
+
+Every new figure came from a scratch calculator that first gave each old figure to the cent; the calculator was
+deleted after the run.
+
+**C2, the marks** (spec's Pipe row; plan Block 2B and open point 14; the catalog draft):
+- an association citing the standard counts like a manufacturer citing it;
+- a row from a manufacturer's sheet that names no standard reads "Unverified source" in the app until checked.
+
+**C3, the blanks** (`docs/tasks/pipe_catalog_DRAFT.md`): filled from manufacturers' sheets and the Copper Development
+Association's handbook. Each row names its source and that document's date. No standard was bought.
+- **Filled:**
+  - C900 DR 14 at 18, 20 and 24 in (JM Eagle, January 2026);
+  - C909 at 6–12, 16 and 24 in (JM Eagle, January 2026);
+  - the PVC sewer 4 in IDs, and the current D3034's 18–48 in table (JM Eagle, October 2025);
+  - conduit 5 and 6 in, and the Schedule 80 3-1/2 in ID (JM Eagle, June 2026, with its June 2018 sheet for the
+    overprinted 6 in OD);
+  - copper Type K and L, 1/2–4 in (CDA Copper Tube Handbook, 2016);
+  - CMP 90 and 96 in gages (Contech).
+- **Disagreements noted:**
+  - PVC sewer 18–36 in walls, F679 PS 46/115 against the current D3034 SDR 35/26;
+  - C900 16 in DR 14 (1.243 against 1.242);
+  - C909 12 in Class 235 (0.423 against 0.45);
+  - a C909 ID between two JM Eagle versions;
+  - IDs that differ by convention (C900, sewer, conduit).
+- **Still blank:**
+  - C909 4, 14, 18 and 20 in, and Class 165 at 6–12 and 24 in;
+  - RCP Wall C 12–21 in (ACPA's FAQ rule is a lead, not a printed value);
+  - CMP OD;
+  - PVC sewer 33 in, made by neither manufacturer read.
+- **New call (pending_umer R5):** which wall table the catalog's PVC sewer 18–36 in rows use.
