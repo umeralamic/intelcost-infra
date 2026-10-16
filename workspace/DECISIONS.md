@@ -16973,3 +16973,26 @@ for you only." Nothing said who had changed the rule, or when.
   the api.
 - **Guest:** the tab was read only with no name, and nothing was sent. A PUT made with the guest's own sign-in was
   refused: 403 "This shared project is view only."
+
+## D-547: Estimating after "Delete all" in "Not in the last Calculate" (Part B3)
+
+**The problem.** With the filter on, "Delete all" left a view filtered to nothing, and the empty state read "No line
+items yet." although the estimate had every other row. That message only knew of the Needs attention filter.
+
+**Built** (`EstimatingView.tsx`).
+1. **After "Delete all":** the filter turns off, so the estimate shows every row again. The bar stays for its Undo and
+   reads "No rows left that aren't in the last Calculate".
+2. **The empty state names what emptied it:**
+
+   | When | It reads |
+   |---|---|
+   | The estimate has no rows | "No line items yet." (or, grouped by sheet, "No takeoff measurements yet.") |
+   | "Not in the last Calculate" is on and empty | "No rows left that aren't in the last Calculate" |
+   | Needs attention is on and empty | "Nothing here needs attention." |
+   | A search, a filter or a layer tab leaves nothing | "No rows match this view." |
+
+**Checked** on a bench duplicate. Two Calculate lines were given notes and their feature deleted, so Calculate kept
+them at 0.
+- **Member:** "Delete all 2" turned the filter off and showed all rows under the bar's message and Undo. The filter on
+  again showed the new empty message, never "No line items yet.".
+- **Guest:** the bar showed "Delete all 2" disabled, and the page sent nothing.
