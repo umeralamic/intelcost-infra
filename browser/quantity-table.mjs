@@ -890,6 +890,16 @@ try {
         if (r.ok === false) return { ok: false, code: r.error.code, message: r.error.message };
         if (r.ok !== true) return { ok: r.ok };
         const out = { ok: true, units: r.units, cutCY: r.cutCY, fillCY: r.fillCY, netCY: r.netCY, stripCY: r.strip ? r.strip.volumeCY : null, regions: r.regions.length };
+        // Q13 (D-528): a feature's undercut against the graded prisms, and flat as before.
+        if (c.undercut) {
+          const u = c.undercut;
+          const feat = { itemId: u.id, label: u.id, depthFt: u.depthFt ?? 0, polygons: [pts(u.polygon)], undercutDepthFt: u.undercutFt, undercutOffsetFt: 0, undercutMaterial: "Select Fill", undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
+          const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
+          const [onSurfaces] = sf.computeFeatureExtras([feat], c.boundary ? pts(c.boundary) : null, scale, r.prisms);
+          const [flat] = sf.computeFeatureExtras([feat], c.boundary ? pts(c.boundary) : null, scale);
+          out["undercut:CY"] = onSurfaces.undercut.volumeCF / 27;
+          out["undercutFlat:CY"] = flat.undercut.volumeCF / 27;
+        }
         for (const g of r.regions) {
           out[`region:${g.id ?? "remainder"}:cutCY`] = g.cutCY;
           out[`region:${g.id ?? "remainder"}:fillCY`] = g.fillCY;

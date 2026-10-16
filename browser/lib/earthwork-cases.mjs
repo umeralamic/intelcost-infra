@@ -115,6 +115,53 @@ export const EARTHWORK_CASES = [
   },
   // --- Block C: cut and fill (legacy's volume.test.ts and e4.test.ts) -------------------
   // side: feet per point on a 1 x 1 point page, so the unit square is side x side feet.
+  // --- Q13 (D-526 Block 0.5, D-528): an undercut counts existing ground only -------------
+  // A 100 x 70 ft pad (7,000 SF) on a 100 x 100 ft site, undercut 6.5 ft below the subgrade.
+  // Fill area: EG 100, FG 102, so the subgrade is 2.0 ft above existing ground. Dug: 6.5 - 2.0 =
+  // 4.5 ft, 7,000 x 4.5 = 31,500 CF = 1,166.67 CY; flat, as before: 7,000 x 6.5 = 1,685.19 CY.
+  {
+    id: "q13-undercut-fill-area",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
+    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+  },
+  // Cut area: EG 102, FG 100, the subgrade below existing ground: unchanged, 1,685.19 CY.
+  {
+    id: "q13-undercut-cut-area-unchanged",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
+    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 45500 / 27, "undercutFlat:CY": 45500 / 27 },
+  },
+  // Both in one pad: EG 100, FG rising 99 to 103 west to east, so dz = 4x - 1 (x across, 0 to 1).
+  // Fill east of x = 0.25; the mean of max(0, dz) over x is the integral of 4x - 1 from 0.25 to 1 =
+  // 1.125 ft. Dug: 6.5 - 1.125 = 5.375 ft over 7,000 SF = 37,625 CF = 1,393.52 CY.
+  {
+    id: "q13-undercut-cut-and-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
+    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 37625 / 27, "undercutFlat:CY": 45500 / 27 },
+  },
+  // The pad's own 0.5 ft section: FG 102.5 less 0.5 = a subgrade at 102, 2.0 ft above EG 100:
+  // the fill-area answer again, 1,166.67 CY.
+  {
+    id: "q13-undercut-under-a-section",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102.5, 102.5, 102.5, 102.5])],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] }],
+    undercut: { id: "pad", depthFt: 0.5, undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+  },
   // --- F26 R-1: the grading report's statistics (D-430), on planes worked by hand -------
   // 100 x 100 ft, EG flat at 100; FG a plane rising 2 ft west to east: all fill, height 0 to 2,
   // average 1; the proposed surface's true area 100 x sqrt(100^2 + 2^2).
