@@ -17661,3 +17661,57 @@ All at the D-555 figures. Writing them found one bug, fixed before the commit: t
 area, and every screen. No screen reaches this code yet, so there was no browser smoke beyond the quantity table, which
 runs it in the bench's Chromium.
 **Gates:** pass. **Quantity table:** passed, 344 rows; 177 earthwork and 33 utility rows right.
+
+## D-570: Utility runs, Utility settings and work scopes in the data (F29 Block 2A)
+
+**Built, api** (`intelcost-app-fastapi`; migrations `d570a3c1e9b2` and `d570b8e2f4c6`, no row written):
+- **`utility_run`** (plan §2.1), one-to-one with an LF item, with the bucket, box and spec max columns. Three columns the
+  plan's table does not list: `start_ground_ft` and `end_ground_ft` (typed end grades, spec §9.1) and `od_typed_by`
+  ("OD typed by <user>", D-560). It joins `COPIED`, so Duplicate project copies runs; Duplicate item copies the run row.
+- **`takeoff_item`:** `is_utility`, `earthwork_variant`, `work_scope_id`, `work_type`, `work_kind`. The two line indexes
+  are rebuilt on (sheet or site, region, role, coalesce(variant, '')), so today's lines keep their keys.
+- **`takeoff_folder.auto_key`,** unique per project: "Utilities" (`utilities`) and its subfolders (`utilities.sanitary`
+  …), found by key so renames and moves are kept (U-UT37); a force main files under Sanitary.
+- **`earthwork_assumptions.utility_settings`** (null: U-UT27 and U-UT28's defaults).
+- **`workspace_work_scope` and `workspace_scope_mapping`** (Q4). `classification/work_scopes.py` makes the 17 default
+  scopes on first use, with plan §5.3's CSI rows matched in the workspace's own tree by code and title (Q15's first
+  choices), and resolves a line's node, the most specific row winning. Nothing calls it yet: Calculate's lines do, in 2G.
+  A copy into another workspace matches a line's scope by key, then name (plan §2.6).
+- **Routes** (`earthwork/utility_routes.py`), under the earthwork path, so a guest reads and the guard refuses writes:
+  - `GET …/earthwork/utilities` (settings and runs);
+  - `PUT …/earthwork/utilities/settings`;
+  - `PUT …/earthwork/utility-run/{item}`;
+  - `GET /api/workspace/{w}/work-scope` (read only).
+  
+  Each write publishes `earthwork.utilities.changed`. An item is created as a run with `is_utility` and its `utility`
+  fields, in one transaction, and files in Utilities › <type> with no classification.
+- **`scripts/check_utilities.py`** (check 2o), read-only, rolled back: 16 of 16 right. It covers:
+  - field refusals;
+  - a run filed by key, including after a rename;
+  - a force main under Sanitary;
+  - Duplicate item copying the run;
+  - two variants of one line key side by side, and the same variant refused;
+  - the 17 scopes;
+  - 33.03.01 on CSI and none on NRM2;
+  - the most specific row winning.
+
+**Built, app:** `features/takeoff/earthwork/utilities/` (`api.ts`, `useUtilityData.ts`, `UtilitySettingsSection.tsx`),
+and the realtime case in `features/drawing/realtime.ts`. **Settings › Utility settings** (plan §4.5) is the project's,
+"the same for everyone on it", with a draft that "Save for the project" writes. It holds:
+- the section;
+- the three materials, imported or native, with an optional density;
+- trench from;
+- the bucket;
+- the boxes (name, inside, outside, height);
+- the spec max widths by size;
+- the depth ranges.
+
+Inches show as mm, and feet as m, on a metric project.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me":
+- **Member:** side clearance set to 10 in, two boxes (4.0 and 6.0 ft outside), an 8 in spec max of 30 in; saved. The row
+  holds exactly that.
+- **Guest** (the duplicate's own link): a guest page has no Settings window. Its read of the utilities route gave the
+  saved settings. A hand-written PUT from its page was refused, 403 "This shared project is view only."
+- **Workers restarted** so the copy job knows `utility_run`. **Gates:** pass; ruff and mypy pass. **Quantity table:**
+  passed.
