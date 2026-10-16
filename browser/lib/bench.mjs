@@ -15,6 +15,8 @@ import path from "node:path";
 
 import { chromium } from "playwright";
 
+import { guardBrowser, guardFetch } from "./protected.mjs";
+
 // Browser-facing. These are the addresses a page is opened at and the ones the
 // bundle was compiled against, so they say localhost and the resolver rule below
 // makes localhost mean the host.
@@ -134,6 +136,10 @@ function hostGateway() {
  * harness's own fetch still resolves localhost to the container. Every api helper
  * below goes through here; the page keeps using the localhost URLs above.
  */
+// Every fetch this harness makes refuses writes to the protected projects (D-542): the 3D test
+// copy (its duplicates only) and the founder's projects. Installed before any helper runs.
+guardFetch();
+
 async function fromNode(url) {
   // The harness's own calls go over the compose network, by service name, not through
   // the host gateway and the published ports: under three fixtures at once that path
@@ -159,7 +165,8 @@ export async function openBrowser() {
   const browser = await chromium.launch({
     args: [`--host-resolver-rules=MAP localhost ${gateway}`],
   });
-  return browser;
+  // Every context it makes refuses writes to the protected projects (D-542).
+  return guardBrowser(browser);
 }
 
 /**

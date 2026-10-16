@@ -38,7 +38,12 @@ import app.models_registry  # noqa: F401  (relationships resolve by name)
 from app.core import storage
 from app.database import SessionFactory
 from app.features.auth.models import User
+from app.features.project.models import Project
 from app.features.workspace.models import Workspace, WorkspaceMember
+
+# The protected projects, shared with the api's bench scripts (scripts/protected.py, D-542).
+sys.path.insert(0, "/srv/scripts")
+from protected import PROTECTED_UUIDS
 
 SEEDED = "estimator@bench.intelcost.io"
 KEEP_SLUG = "bench-construction"
@@ -92,6 +97,17 @@ async def delete_workspaces(uuids: list[object]) -> int:
     refused = [kept[str(uuid)] for uuid in uuids if str(uuid) in kept]
     if refused:
         fail(f"refusing to purge kept workspaces: {', '.join(refused)}")
+    # Nor a workspace holding a protected project (D-542): the 3D test copy, the founder's own.
+    async with SessionFactory() as session:
+        held = list(
+            await session.scalars(
+                select(Project.name)
+                .join(Workspace, Workspace.id == Project.workspace_id)
+                .where(Workspace.uuid.in_(uuids), Project.uuid.in_(PROTECTED_UUIDS))
+            )
+        )
+    if held:
+        fail(f"refusing to purge workspaces that hold protected projects: {', '.join(held)}")
     areas = get_args(storage.Area)
     for uuid in uuids:
         for area in areas:
