@@ -229,6 +229,17 @@ and you press Calculate on the copy.
 | B5b | A member on an out-of-date result still reads "The drawing changed since Calculate" in 3D VIEW; B5 shows the saved Calculate's 3D to a guest only. | As built (D-549): a member's Calculate saves. | Show members the saved 3D with the same note too, or leave it. |
 | B2a | Takeoff settings › Contours and spots is a project setting too (D-473: "how contours and spot elevations are drawn on this project"), in the same window that says "These preferences are saved on this device for you only." | Not moved: the brief named the slope rule only (D-546). | Move it out too (to the Earthwork tab, as the slope rule went), or leave it. |
 
+## Pipe catalog draft, 2026-10-16 (Part C; docs/tasks/pipe_catalog_DRAFT.md)
+
+Research only, no code. Only PVC sewer 4–15 in was read from the standard itself (ASTM D3034-00). The rest comes from
+manufacturers' sheets, one association table (ACPA) and blanks. The draft's top section lists what to check.
+
+| # | What | Your call |
+|---|---|---|
+| C1 | Which ID the catalog stores. The plan's check uses 8" SDR-35 ID 7.920 (OD − 2 × min wall); D3034's Table X1.1 prints the average ID as 7.891 (OD − 2 × 1.06 × min wall). | The standard's average ID where it prints one, else the source's ID with its basis named (recommended); or OD − 2 × min wall everywhere. |
+| C2 | Two marks beyond the brief's three: "manufacturer, no standard named" (Rinker RCP, Performance Pipe HDPE, Contech CMP) and "association citing the standard" (ACPA, RCP Wall C). | Count them as manufacturer rows, or as not found. |
+| C3 | Blanks: C909 walls, C900 DR 14 above 16 in, RCP Wall C below 24 in, CMP OD and 90–96 in, copper walls, conduit 5–6 in, PVC sewer 33 in. | Whether to buy the AWWA C909 and ASTM C76/B88 tables or ask manufacturers, before Block 2 step 2a. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
