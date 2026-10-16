@@ -13,7 +13,8 @@ is cut without asking._
   - the estimating lines, out-of-date flags, classification and folders;
   - the toolbar, the drawing tools, 3D, the report, guest view and metric;
   - the nine geotech reports in `fixtures/geotech/`, read as text with every log page checked against the drawn
-    log.
+    log. They are named here by neutral IDs, GT-01 to GT-09, in the fixture folder's order (D-557); which report
+    each ID is lives only in that folder's index, outside every repo.
 - **Hand-worked numbers.** Each was worked twice: by hand, and by a scratch calculator (deleted after the run).
 - **External values:**
   - **The 8" SDR-35 dimensions** come from manufacturers' sheets citing ASTM D3034. The founder accepts
@@ -406,7 +407,7 @@ For a bore b with total depth T, and the layers L1 … Ln of the project list, t
 
 The last layer in the list has no bottom surface.
 
-**Worked example (Midway, test pits TP-1 to TP-3; pp.23–25).**
+**Worked example (GT-08, test pits TP-1 to TP-3; pp.23–25).**
 - **The logs:**
   - topsoil 0–0.5 ft in each pit (p.2: roots "(topsoil) to 6"" inside the fill);
   - silty clay fill below it, to 1.0, 1.5 and 1.0 ft;
@@ -471,7 +472,7 @@ the piece, so the clamped surface stays piecewise linear.
 **The report.** Each clamped layer gets the area where D′ > D, the largest D′ − D, and the nearest bore to that
 largest point. Under 0.01 ft or 1 SF it is not listed.
 
-**Worked example (synthetic, built on Midway's kind of pit).** Clay's bottom is known only at three bores, all at
+**Worked example (synthetic, built on GT-08's kind of pit).** Clay's bottom is known only at three bores, all at
 5.0 ft, so it is constant at 5.0. Fill's bottom is 1.0 ft at the same three, B-1 (−20, −20), B-2 (100, 0) and B-3
 (0, 100). A fourth pit, TP-4 at (100, 100), stopped at 7.0 ft still in fill. The other bores' fill surface gives
 1.0 there, which is shallower than 7.0, so TP-4 adds a point at 7.0 (§3.1).
@@ -503,7 +504,7 @@ largest point. Under 0.01 ft or 1 SF it is not listed.
 
 The t_L add up to d2 − d1 everywhere, so **the layers add up to the total cut exactly**, whatever their shapes.
 
-**Worked example (Midway pits, flat site).**
+**Worked example (GT-08 pits, flat site).**
 - **Setup:** EG level at 100.00, the proposed grade level at 98.80 (a 1.20 ft cut), no strip. The work boundary
   is the pits' triangle, 5,000 SF.
 - **The fill bottom:** D = 1.0 + 0.005x.
@@ -544,11 +545,11 @@ G_b − T at such a bore, that bore adds the point G_b − T.
 | Case | Readings | Design level |
 |---|---|---|
 | Synthetic W-1 (checks rule order) | while drilling 7.50; at completion 6.00; after 24 h 5.20; seasonal high 4.00 | **4.00 ft** (seasonal high). Without it: 5.20 − 1.00 = **4.20 ft**. |
-| Deland B-1 (p.21; p.8) | 6.0 ft, read 24 h or more after drilling; NRCS published seasonal high 18 to 24 in (p.4) | **5.00 ft** (6.00 − 1.00). The report's own rule, "approximately one foot above the measured level" (p.8), gives the same. The published figure is not used, because a measured reading exists, and the panel says so. |
-| Maricopa (p.8) | All logs: no groundwater, the deepest to 31.5 ft; ADWR published 81.80 ft | No measured reading, so the published value applies, labelled. It is deeper than every not-encountered depth, so the bounds agree. **81.80 ft** |
-| Manila Creek B-1 (p.24) | Not encountered to 41.5 ft; no other source | **No point.** Water lies below 41.5 ft there. With no water at any bore: "No groundwater in any bore". |
-| Plain City B-13 / B-12 (p.36; p.35, p.12) | B-13: 5.0 at drilling. B-12: 7.0 in PVC after 12 days | **4.00 ft** and **6.00 ft**. Each bore's shallowest measured reading less the buffer. |
-| Midway TP-3 (p.25, p.12) | Not encountered on 10/2; 4.0 ft on 10/11 (216 h) | **3.00 ft**. The later reading is measured; "not encountered" at excavation does not cancel it. |
+| GT-02 B-1 (p.21; p.8) | 6.0 ft, read 24 h or more after drilling; NRCS published seasonal high 18 to 24 in (p.4) | **5.00 ft** (6.00 − 1.00). The report's own rule, "approximately one foot above the measured level" (p.8), gives the same. The published figure is not used, because a measured reading exists, and the panel says so. |
+| GT-06 (p.8) | All logs: no groundwater, the deepest to 31.5 ft; ADWR published 81.80 ft | No measured reading, so the published value applies, labelled. It is deeper than every not-encountered depth, so the bounds agree. **81.80 ft** |
+| GT-05 B-1 (p.24) | Not encountered to 41.5 ft; no other source | **No point.** Water lies below 41.5 ft there. With no water at any bore: "No groundwater in any bore". |
+| GT-09 B-13 / B-12 (p.36; p.35, p.12) | B-13: 5.0 at drilling. B-12: 7.0 in PVC after 12 days | **4.00 ft** and **6.00 ft**. Each bore's shallowest measured reading less the buffer. |
+| GT-08 TP-3 (p.25, p.12) | Not encountered on 10/2; 4.0 ft on 10/11 (216 h) | **3.00 ft**. The later reading is measured; "not encountered" at excavation does not cancel it. |
 
 ### 3.6 The trench section at a station
 
@@ -608,7 +609,7 @@ The parts add up to A(h).
 | (c) | Same, benched (§3.8): one 4 ft bench over a 4 ft vertical side | 56.00 | **207.41 CY** | 5.56 | 17.46 | 182.96 | 11.00 ft |
 | (d) | Sand, Type C: benching refused; sloped 1½:1 | 120.00 | **444.44 CY** | 6.94 | 42.96 | 393.11 | 27.00 ft |
 | (f) | 3 ft of clay (B) over sand (C): the flatter governs, 1½:1 | 120.00 | **444.44 CY** | 6.94 | 42.96 | 393.11 | 27.00 ft |
-| (g) | Clay, the Utah template: cohesive up to 8 ft, 0.5:1 | 56.00 | **207.41 CY** | 6.02 | 25.96 | 174.00 | 11.00 ft |
+| (g) | Clay, the slope template: cohesive up to 8 ft, 0.5:1 | 56.00 | **207.41 CY** | 6.02 | 25.96 | 174.00 | 11.00 ft |
 
 - **Pipe area:** π × 0.7² ÷ 4 = 0.3848 SF/LF.
 - **The box case.** In (b) the zones fill the trench's full 6.00 ft width.
@@ -646,14 +647,14 @@ The parts add up to A(h).
    - caving governs: caving observed, or the trench bottom is below the cave-in depth;
    - a "shoring required" row matched.
 
-**Worked examples (the Utah template, Midway TP-1, p.23 and p.12).**
+**Worked examples (the slope template, GT-08 TP-1, p.23 and p.12).**
 - **The site.** GM gravel lies from 1.0 ft. The design water there is 5.20 − 1.00 = 4.20 ft. The bottom width is
   3.0 ft (a 36 in bucket).
 - **4.00 ft trench:** granular, above water, up to 4 ft, so 0.5:1. A = 3 × 4 + 0.5 × 16 = **20.00 SF/LF**.
 - **5.00 ft trench:** the bottom is 0.80 ft below the design water in granular soil, so a box is forced (the
   template's "saturated granular, shoring"). With a box 3.0 ft outside, A = 3 × 5 = **15.00 SF/LF**, flagged.
 
-**Worked example (Bidwell B-1, cave-in at 7.0 ft after tools removed, p.45).** The soil is CH, which the report
+**Worked example (GT-01 B-1, cave-in at 7.0 ft after tools removed, p.45).** The soil is CH, which the report
 classes as OSHA "Class B" (p.17).
 - **6.0 ft trench:** sloped 1:1 is allowed.
 - **8.0 ft trench:** the bottom is below the cave-in depth, so a box is forced and flagged.
@@ -748,11 +749,11 @@ still shows a 5 ft station table for reading.
   **100.00 LF in 6–8** and **100.00 LF in 8–10**.
 - **Dewatering LF.** 100 ft with the trench bottom at 92.00 and the design water rising from 91.00 to 93.00
   along it. The bottom is below the water from s = 50, so **50.00 LF**, drawn blue for the second half.
-- **Maricopa B-1** (CL to 10 ft, p.43; the report's "Type C", 1½(h):1(v), p.20). 2.0 ft bottom width (a 24 in bucket),
+- **GT-06 B-1** (CL to 10 ft, p.43; the report's "Type C", 1½(h):1(v), p.20). 2.0 ft bottom width (a 24 in bucket),
   6.0 ft deep: A = 2 × 6 + 1.5 × 36 = **66.00 SF/LF**, so 100 LF is **244.44 CY**. The published water is at
   81.80 ft, so dewatering is **0 LF**. The user sets the layer to C, overriding the B suggested for clay, as the
   report says.
-- **Miami B-2** (fill 0.5–4.0, limestone from 4.0 ft, p.30). A trench in a box 3.0 ft outside, 8.0 ft deep, 100 LF:
+- **GT-07 B-2** (fill 0.5–4.0, limestone from 4.0 ft, p.30). A trench in a box 3.0 ft outside, 8.0 ft deep, 100 LF:
   - total **88.89 CY**;
   - common, 0–4 ft: **44.44 CY**;
   - limestone, from the weathered rock layer (always exported): **44.44 CY**, with **100 LF** of trench in rock;
@@ -831,7 +832,7 @@ bottom is 89.4788 and h = 10.5212 (ID 7.891, D-550 C1); 1:1, W = 3.0 (36 in buck
   takes the rest. Its volume equals the removed volume, in compacted CY.
 
 **Worked examples:**
-- **Heinsohn pad** (Table 3.1, pp.17–18).
+- **GT-04 pad** (Table 3.1, pp.17–18).
   - **The pad:** the slab 90 × 60 ft (5,400 SF, the store's area, p.8), 5 ft beyond, so a 100 × 70 ft
     footprint. Over-excavation 6.5 ft below the slab (1" PVM). The slab bottom is put at existing grade, because
     the report gives no datum.
@@ -841,13 +842,13 @@ bottom is 89.4788 and h = 10.5212 (ID 7.891, D-550 C1); 1:1, W = 3.0 (36 in buck
     - select fill, the rest (3.0 ft): **777.78 CY**.
   - **Scarify 9 in at the base:** **777.78 SY**.
   - **The ½" PVM variant,** 8.5 ft: **2,203.70 CY**.
-- **Bidwell Option B** (p.22). Remove 24 in under pavement and replace it with a moderately plastic cap, on an
+- **GT-01 Option B** (p.22). Remove 24 in under pavement and replace it with a moderately plastic cap, on an
   assumed 150 × 200 ft pavement: **2,222.22 CY** removed and **2,222.22 CCY** of cap.
-- **Midway: remove all fill down to natural soil** (p.8, "remove fill"). Mode layer, X = Fill, over the pits'
+- **GT-08: remove all fill down to natural soil** (p.8, "remove fill"). Mode layer, X = Fill, over the pits'
   triangle, no grading, no extension:
   - volume = 5,000 × mean(1.0, 1.5, 1.0) = 5,833.33 CF = **216.05 CY**;
   - by layer: topsoil **92.59** and fill **123.46**, both unsuitable, so exported.
-- **Bidwell footing undercut** (p.25; Figure 4, p.42). The footing is b = 1.5 ft wide; the undercut is d = 5.0 ft
+- **GT-01 footing undercut** (p.25; Figure 4, p.42). The footing is b = 1.5 ft wide; the undercut is d = 5.0 ft
   deep at ½H:1V outward, so the bottom is b + d = 6.5 ft wide.
   - The box (Q12, recommended): 6.5 × 5 = **32.50 SF/LF**, or **120.37 CY** per 100 LF.
   - The sloped zone only: (1.5 + 6.5)/2 × 5 = **20.00 SF/LF**, or **74.07 CY**.
@@ -861,9 +862,9 @@ bottom is 89.4788 and h = 10.5212 (ID 7.891, D-550 C1); 1:1, W = 3.0 (36 in buck
 - **Geosynthetics** in SY: area ÷ 9 × (1 + overlap %).
 
 **Worked examples.**
-- **Bidwell lime,** 8 % at 16 in (p.21). The report gives **no dry unit weight**, so the project's 110 pcf
+- **GT-01 lime,** 8 % at 16 in (p.21). The report gives **no dry unit weight**, so the project's 110 pcf
   (D-405 4) is used, and the line says so. 10,000 SF gives **1,111.11 SY** and **58.67 TON**.
-- **Gallia's options** (p.11), at the same 16 in and 110 pcf: 5 % quicklime **36.67 TON**; 7 % lime kiln dust
+- **GT-03's options** (p.11), at the same 16 in and 110 pcf: 5 % quicklime **36.67 TON**; 7 % lime kiln dust
   **51.33 TON**.
 - **Geotextile** under 10,000 SF with a 10 % overlap: 1,111.11 × 1.10 = **1,222.22 SY**.
 
@@ -887,7 +888,7 @@ bottom is 89.4788 and h = 10.5212 (ID 7.891, D-550 C1); 1:1, W = 3.0 (36 in buck
 
 **Worked example.** The project's factors are swell 1.25 and shrink 1.10.
 
-| | Before | With trench (a) and Midway's fill removal |
+| | Before | With trench (a) and GT-08's fill removal |
 |---|---|---|
 | Site cut, suitable | 1,000.00 BCY | 1,000.00 BCY |
 | Trench excavation, clay, suitable | none | 325.93 BCY |
@@ -903,7 +904,7 @@ bottom is 89.4788 and h = 10.5212 (ID 7.891, D-550 C1); 1:1, W = 3.0 (36 in buck
 The suggestion is the average topsoil thickness of the bores that log topsoil at the surface; bores with pavement
 at the surface are left out. It is rounded to 0.05 ft.
 
-**Example (Bidwell, pp.45–50).**
+**Example (GT-01, pp.45–50).**
 - B-1, B-2, B-4, B-5 and B-6 log 8, 7, 8, 4 and 3 in, an average of 6.0 in, so the suggestion is **0.50 ft**.
 - B-3 has 2 in of asphalt at the surface and is left out.
 
@@ -952,7 +953,7 @@ right like the others.
 | [Bores] [Soil layers]                                                           |
 | +- List --------------+ +- B-1 -------------------------------------------------+|
 | | * B-1  Boring  20.0 | | ID [B-1   ]  Type [Boring v]  Date [04/20/2026]        ||
-| | * B-2  Boring  20.0 | | Source [Bidwell report      ]  Page [45 ]             ||
+| | * B-2  Boring  20.0 | | Source [GT-01 report        ]  Page [45 ]             ||
 | | * TP-3 Pit      6.0 | | Ground  [        ] ft   712.40 from the existing surface||
 | | + Place bores       | |         Report [711.90] ft  (0.50 ft lower)            ||
 | +---------------------+ | Total depth [20.0] ft  End [Planned v] Refusal [-- v]  ||
@@ -1353,7 +1354,7 @@ Nothing is a test suite.
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 0.5a | Q13: a 7,000 SF pad whose subgrade is 2.0 ft above existing ground, with a 6.5 ft undercut | 1,166.67 CY (today 1,685.19); a pad in a cut area is unchanged (Heinsohn's 1,685.19) | synthetic; Heinsohn pp.17–18 |
+| 0.5a | Q13: a 7,000 SF pad whose subgrade is 2.0 ft above existing ground, with a 6.5 ft undercut | 1,166.67 CY (today 1,685.19); a pad in a cut area is unchanged (GT-04's 1,685.19) | synthetic; GT-04 pp.17–18 |
 | 0.5b | Q6: a priced line whose key disappears | kept at 0, "Not in the last Calculate", rates intact; back with its rates when the key returns; Estimating's filter lists it; select all and Delete removes the retired rows only, in one undo; a live Calculate line still cannot be deleted | `check_retired.py` and the smoke |
 | 0.5c | U-UT38 | a stale Calculate line shows "Needs recalculating" in Estimating | the smoke |
 | 0.5d | U-UT39 | "Move items to…" sets `placed_by_hand` on Calculate lines; the next Calculate leaves them where they were moved | `check_retired.py` |
@@ -1363,14 +1364,14 @@ Nothing is a test suite.
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 1.1 | Midway pits, flat cut 1.20 ft over the triangle | total 222.22; topsoil 92.59; fill 116.79; granular 12.84 CY; sum = total | Midway pp.23–25, p.2 |
+| 1.1 | GT-08 pits, flat cut 1.20 ft over the triangle | total 222.22; topsoil 92.59; fill 116.79; granular 12.84 CY; sum = total | GT-08 pp.23–25, p.2 |
 | 1.2 | 1.1 with a 0.50 ft strip | strip 92.59; cut below strip 129.63 = 116.79 + 12.84; no topsoil in the cut | same |
 | 1.3 | 1.1 over the square (extrapolation) | 444.44 = 185.19 + 242.47 + 16.79 | same |
 | 1.4 | Extrapolated values | D(50, −30) = 7.00; D(−20, 50) = 5.00; D(150, −50) = 8.00 | synthetic |
-| 1.5 | Clamp: TP-4 ended in fill at 7.0 ft | Clay clamped over 555.56 SF, max 2.00 ft, near TP-4; at every piece vertex D′L ≥ D′L−1 | synthetic on Midway's pattern |
+| 1.5 | Clamp: TP-4 ended in fill at 7.0 ft | Clay clamped over 555.56 SF, max 2.00 ft, near TP-4; at every piece vertex D′L ≥ D′L−1 | synthetic on GT-08's pattern |
 | 1.6 | Design water, W-1 | 4.00 ft; without the seasonal high 4.20 ft | synthetic |
-| 1.7 | Design water, real | Deland 5.00; Maricopa 81.80 (published); Manila Creek B-1 none (below 41.5); Plain City B-13 4.00 and B-12 6.00; Midway TP-3 3.00 | Deland p.21, p.8; Maricopa p.8; Manila p.24; Plain City pp.35–36, p.12; Midway p.25, p.12 |
-| 1.8 | Topsoil suggestion | 0.50 ft (6.0 in) | Bidwell pp.45–50 |
+| 1.7 | Design water, real | GT-02 5.00; GT-06 81.80 (published); GT-05 B-1 none (below 41.5); GT-09 B-13 4.00 and B-12 6.00; GT-08 TP-3 3.00 | GT-02 p.21, p.8; GT-06 p.8; GT-05 p.24; GT-09 pp.35–36, p.12; GT-08 p.25, p.12 |
+| 1.8 | Topsoil suggestion | 0.50 ft (6.0 in) | GT-01 pp.45–50 |
 | 1.9 | No bores, no change | the 3D test copy's key equals its stored key; C-200 md5 `fab4d151…` unchanged | the copy |
 | 1.10 | `check_geotech.py` | a log with a gap, an overlap or an out-of-order layer is refused with the row named; a layer in use is not deleted; a guest write gets 403 | api |
 
@@ -1387,11 +1388,11 @@ Nothing is a test suite.
 | 2d | Sand, Type C, benched | refused "Benching isn't allowed in this soil."; sloped 444.44 CY | OSHA |
 | 2e | Water above the trench bottom | dewatering 50.00 LF (water 91 → 93, bottom 92) and 100.00 LF when fully under; box forced in granular | synthetic |
 | 2f | Clay over sand | the flatter governs: 1½:1, 444.44 CY | synthetic |
-| 2g | (a) with the Utah template | 207.41 CY and the "Steeper than federal OSHA…" note | Midway p.9 |
-| 2h | Utah template at Midway TP-1 | 4 ft: 0.5:1, 20.00 SF/LF; 5 ft: box forced (below the 4.20 ft design water) | Midway p.9, p.23, p.12 |
-| 2i | Maricopa B-1 Type C | 66.00 SF/LF, 244.44 CY; dewatering 0 | Maricopa p.20, p.43, p.8 |
-| 2j | Miami B-2, shored | 88.89 CY: common 44.44, rock 44.44, rock 100 LF, dewatering 100 LF | Miami p.30, p.15 |
-| 2k | Bidwell B-1 cave-in 7.0 ft | 6 ft trench sloped 1:1; 8 ft trench box forced, flagged | Bidwell p.45, p.17 |
+| 2g | (a) with the slope template | 207.41 CY and the "Steeper than federal OSHA…" note | GT-08 p.9 |
+| 2h | The slope template at GT-08 TP-1 | 4 ft: 0.5:1, 20.00 SF/LF; 5 ft: box forced (below the 4.20 ft design water) | GT-08 p.9, p.23, p.12 |
+| 2i | GT-06 B-1 Type C | 66.00 SF/LF, 244.44 CY; dewatering 0 | GT-06 p.20, p.43, p.8 |
+| 2j | GT-07 B-2, shored | 88.89 CY: common 44.44, rock 44.44, rock 100 LF, dewatering 100 LF | GT-07 p.30, p.15 |
+| 2k | GT-01 B-1 cave-in 7.0 ft | 6 ft trench sloped 1:1; 8 ft trench box forced, flagged | GT-01 p.45, p.17 |
 | 2l | LF by invert depth | 6–8 100.00 LF, 8–10 100.00 LF | synthetic |
 | 2m | Spoils | 14.01 BCY suitable to the balance | synthetic |
 | 2n | Exact rule against 5-ft stations | depth 6 → 10 at 1:1: exact 266.67 CF under one-interval AEA, 0.67 CF under 5-ft AEA | synthetic |
@@ -1411,11 +1412,11 @@ Nothing is a test suite.
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 4a | Heinsohn pad 6.5 ft, 5 ft beyond | 1,685.19 CY; reconditioned 907.41; select 777.78; scarify 777.78 SY; ½" PVM variant 2,203.70 | Heinsohn pp.17–18, p.8 |
-| 4b | Bidwell 24 in under pavement | 2,222.22 CY removed and as cap | Bidwell p.22 |
-| 4c | Bidwell lime 8 % at 16 in | 1,111.11 SY, 58.67 TON at the project's 110 pcf; Gallia 36.67 and 51.33 TON | Bidwell p.21; Gallia p.11 |
-| 4d | Midway remove fill to natural soil | 216.05 CY: topsoil 92.59, fill 123.46, both exported | Midway pp.23–25 |
-| 4e | Bidwell footing undercut | box 120.37 CY per 100 LF (zone 74.07 if Q12 is no) | Bidwell p.25, p.42 |
+| 4a | GT-04 pad 6.5 ft, 5 ft beyond | 1,685.19 CY; reconditioned 907.41; select 777.78; scarify 777.78 SY; ½" PVM variant 2,203.70 | GT-04 pp.17–18, p.8 |
+| 4b | GT-01 24 in under pavement | 2,222.22 CY removed and as cap | GT-01 p.22 |
+| 4c | GT-01 lime 8 % at 16 in | 1,111.11 SY, 58.67 TON at the project's 110 pcf; GT-03 36.67 and 51.33 TON | GT-01 p.21; GT-03 p.11 |
+| 4d | GT-08 remove fill to natural soil | 216.05 CY: topsoil 92.59, fill 123.46, both exported | GT-08 pp.23–25 |
+| 4e | GT-01 footing undercut | box 120.37 CY per 100 LF (zone 74.07 if Q12 is no) | GT-01 p.25, p.42 |
 | 4g | Geotextile, 10 % | 1,222.22 SY | synthetic |
 
 ### 6.5 Block 5
@@ -1483,7 +1484,7 @@ tab-through (1B) are each about a day.
 | Sub-block | What | Hours |
 |---|---|---|
 | 2A | `utility_run`, item columns, rebuilt line indexes, folder keys, work scope tables with the CSI defaults (no UI yet); Utility settings with the default bucket, the box list and spec max widths per size | 8 |
-| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed. A row whose sheet names no standard shows "Unverified source" until checked; the ID is the standard's average ID where printed (D-550 C1, C2) | 4 |
+| 2B | The pipe catalog, with the source on every row (manufacturers' sheets accepted, D-526); blanks listed. A row whose sheet names no standard shows "Unverified source" until checked; the ID is the standard's average ID where printed (D-550 C1, C2). A size with no OD can't be picked until the user types one ("OD typed by <user>"); a blank wall takes the closest published wall, flagged (D-560). PVC sewer 18 in and up on F679's walls, the current D3034's as an alternate per run (D-558) | 4 |
 | 2C | Utilities button, drawing, snap to structures and runs (new snap source), the run panel with segments, bucket, box and spec max, the run layer (colours, labels), filing under Utilities › type | 12 |
 | 2D | The engine: breakpoints, the trench-width rule, sections, protection selection, exact integration, zones, pipe displacement, native and imported, spoils, ranges, dewatering, restoration, the spec-width quantities | 16 |
 | 2E | Utility sheets through a link (Q8); ground from rims and typed grades; utilities-only projects Calculate with no EG, FG or boundary (a requirement, D-526) | 6 |
@@ -1622,7 +1623,11 @@ total of 156 h was mis-added: its Block 5 sub-blocks came to 26 h, not 28, so it
       - from a manufacturer's sheet that names no standard: shown in the app as "Unverified source" until checked.
     - Blanks are filled from manufacturers' sheets, with a link and a date on each row; no standard is bought now
       (D-550 C3). A row where two sources disagree is noted.
-    - A value with no source stays blank and is listed.
+    - A value with no source stays blank and is listed, marked "drives trench width" (an OD, or an RCP wall) or "wall
+      only" (D-560). A size with no OD can't be picked unless the user types one, and the run shows "OD typed by
+      <user>". A blank wall takes the closest published wall, and the run is flagged (spec §9.2, Pipe).
+    - PVC sewer 18 in and up takes F679's walls by default; the current D3034's are an alternate standard picked per
+      run (D-558).
     - Check (a) uses D3034's 8": OD 8.400 in and minimum wall 0.240 in, and the average ID 7.891 in from Table X1.1,
       read in the standard itself (D-550 C1; it was 7.920, OD − 2 × minimum wall).
 15. **OSHA's bench sizes are drawn only in the figures.**
@@ -1643,7 +1648,7 @@ total of 156 h was mis-added: its Block 5 sub-blocks came to 26 h, not 28, so it
     production bucket, as earlier runs read it. The smoke tests upload nothing. If the copy has no utility sheet,
     runs are drawn on C-200.
 19. **Lenses.** In a top-to-bottom list, an interbed or lens needs its own layer, logged as missing in every other
-    bore (Gallia's CH lenses, Plain City's clay interbeds). Entry is heavier; the panel's order check guides it.
+    bore (GT-03's CH lenses, GT-09's clay interbeds). Entry is heavier; the panel's order check guides it.
 20. **Units.** VF is a new unit. The metric depth ranges are defaults (U-UT28). Elevations follow the sheet's unit
     (D-398) and must not drift on a round trip.
 
@@ -1657,7 +1662,7 @@ total of 156 h was mis-added: its Block 5 sub-blocks came to 26 h, not 28, so it
 - **Q6:** plus an Estimating filter for "Not in the last Calculate", so those rows can be cleared in one go.
 - **Q7:** where there is no proposed surface, the existing grade, stated on the run.
 - **Q9:** the per-run breakdown stays in the run panel and the grading report.
-- **Q12:** the box: 32.5 SF/LF on Bidwell's footing.
+- **Q12:** the box: 32.5 SF/LF on GT-01's footing.
 
 The questions as asked follow, unchanged.
 
@@ -1721,13 +1726,13 @@ Pipe by **invert depth** (the cut to the invert, as pipe is usually priced). Pro
 
 **Q11. Stable rock under soil.**
 The rock is cut vertical and the soil above is sloped from the top of the rock (OSHA's layered-soil case), instead
-of the brief's flattest slope through the rock. On Miami's limestone, the flattest slope would multiply the rock
+of the brief's flattest slope through the rock. On GT-07's limestone, the flattest slope would multiply the rock
 volume.
 *Recommended: yes, for stable rock only. Every other mix uses the flattest slope, as the brief says.*
 
 **Q12. Over-excavation with an outward slope.**
 The excavation and the replacement are the vertical-walled box at the full extent reached at the bottom. On
-Bidwell's footing detail that is 32.50 SF/LF; the sloped zone alone is 20.00 SF/LF. A contractor cannot undercut,
+GT-01's footing detail that is 32.50 SF/LF; the sloped zone alone is 20.00 SF/LF. A contractor cannot undercut,
 so the box is what is dug and refilled.
 *Recommended: the box.*
 
@@ -1762,49 +1767,49 @@ treatment-only area is a Site Feature with no depth.
 
 | Report | What the brief expected | What the report says |
 |---|---|---|
-| Gallia | Bedrock refusal | **No bedrock and no refusal.** "Bedrock and groundwater were not encountered in any of the test borings" (p.10); all 13 borings end at 15.0 ft as planned. No report in the set has a rock refusal: Midway's refusals are caving, and Plain City B-10's is heaving sand. **The rock checks use Miami's limestone, and the clamp check is synthetic.** |
-| Bidwell | Chemical treatment with a dry density | **Lime only**, 8 % at 16 in (p.21), with **no dry unit weight** anywhere. Tons use the project's 110 pcf and say so. Gallia offers 5 % quicklime or 7 % lime kiln dust at 16 in (p.11), also without a density. |
-| Deland | Seasonal high per boring | **One boring.** The seasonal high is a rule, "approximately one foot above the measured level" (p.8). The 20 to 30 % shrinkage is "from its loose-dumped or hauled state" (p.11): loose to compacted, not bank to compacted. |
-| Maricopa | Caliche | **None.** Every layer says "no cementation" (pp.43–50). Type C and the ADWR 81.80 ft are confirmed. |
-| Miami | Limestone hard dig with detail | "Hard dig and/or weathered rock excavation" (p.3, p.11), with no rippability, hardness or OSHA type. Water was read at drilling only, in mud-rotary holes. |
-| Utah (Midway, Manila Creek, Plain City) | A slope table | **Prose, not a table**, and nothing beyond 8 ft ("not anticipated"). Plain City drops "above the water table" from the granular sentences. |
-| Heinsohn | 6.5–8.5 ft over-excavation, 5 ft beyond | Confirmed (pp.17–18). **No datum is stated** for the depth, and **no outward slope**. Water was read at 20 ft in 20 ft borings, the same depth as the bottom. |
+| GT-03 | Bedrock refusal | **No bedrock and no refusal.** "Bedrock and groundwater were not encountered in any of the test borings" (p.10); all 13 borings end at 15.0 ft as planned. No report in the set has a rock refusal: GT-08's refusals are caving, and GT-09 B-10's is heaving sand. **The rock checks use GT-07's limestone, and the clamp check is synthetic.** |
+| GT-01 | Chemical treatment with a dry density | **Lime only**, 8 % at 16 in (p.21), with **no dry unit weight** anywhere. Tons use the project's 110 pcf and say so. GT-03 offers 5 % quicklime or 7 % lime kiln dust at 16 in (p.11), also without a density. |
+| GT-02 | Seasonal high per boring | **One boring.** The seasonal high is a rule, "approximately one foot above the measured level" (p.8). The 20 to 30 % shrinkage is "from its loose-dumped or hauled state" (p.11): loose to compacted, not bank to compacted. |
+| GT-06 | Caliche | **None.** Every layer says "no cementation" (pp.43–50). Type C and the ADWR 81.80 ft are confirmed. |
+| GT-07 | Limestone hard dig with detail | "Hard dig and/or weathered rock excavation" (p.3, p.11), with no rippability, hardness or OSHA type. Water was read at drilling only, in mud-rotary holes. |
+| GT-05, GT-08, GT-09 | A slope table | **Prose, not a table**, and nothing beyond 8 ft ("not anticipated"). GT-09 drops "above the water table" from the granular sentences. |
+| GT-04 | 6.5–8.5 ft over-excavation, 5 ft beyond | Confirmed (pp.17–18). **No datum is stated** for the depth, and **no outward slope**. Water was read at 20 ft in 20 ft borings, the same depth as the bottom. |
 
 ### 10.2 What the model cannot represent
 
 | Item | Where | How it is handled |
 |---|---|---|
-| Lenses and interbeds: clay seams of ½–3 in in sand; CH lenses at different depths; 2 in gravel layers | Plain City B-8 and B-10 to B-14; Gallia B-01, B-04, B-07, B-08 (pp.10–11); Manila B-1 | A lens is its own layer, logged as missing elsewhere; seams under a few inches are merged into their host. The model cannot draw a lens that pinches out at its own depth between two bores without the user splitting the host layer at the lens's horizon. |
-| Topsoil inside a fill unit | Midway (roots to 6 in within the fill) | Entered as two layers. |
-| Refusal for caving, heave in the augers | Midway TP-2, TP-3; Plain City B-8, B-10 | A refusal for caving is never a rock top. Heave is a note. |
-| Expansive soil (PVM, swell %, EI) | Heinsohn (PVM 4¼ in, active zone 12 ft); Maricopa (swell 7.6 %, EI 36); Bidwell (PI ≥ 23 "High") | The "expansive" flag only. No movement is computed. A PVM-driven over-excavation depth is typed. |
-| Collapse potential | Maricopa (0.44 % and 0.95 %, p.9) | A note. |
-| Karst, sinkholes, mines, earth fissures | Deland (p.9), Miami (p.3), Bidwell (mines, karst "moderate", p.8, p.10), Maricopa (p.10) | Notes only. |
-| Buried features from earlier use: foundations, septic tanks, cisterns, wells, abandoned pipe | Bidwell (p.16), Heinsohn (p.33), Midway (p.8) | Not modelled; entered as an over-excavation area if priced. |
-| A bedrock depth from published maps | Bidwell, about elevation 650, 46–72 ft down (p.8) | There is no "published" rock reading. It can be entered as a layer by elevation with a typed point (a placeholder bore labelled published). |
-| A loose-to-compacted shrinkage | Deland (p.11) | The estimator splits it into swell and shrink; the dialog explains. |
-| Moisture-dependent suitability, and proof-roll failure allowances | Bidwell (pp.16, 19, 22); Gallia (p.11); Manila Creek (drying, p.9) | Flags. An allowance is an over-excavation area of an assumed size. |
-| Rules tied to the water level | Plain City (no proof roll within 1 ft of water, stabilizing fill within 2 ft, slab at least 4 ft above water); Midway and Manila (slab at least 4 ft above water) | The water surface is shown; the rules are not computed. |
-| Influence lines from existing foundations, and vibration distances | Deland (45° line, rollers 50 ft and 20 ft, p.10); Miami (1:1 line, p.62) | Not modelled. |
-| Footing-specific over-excavation | Bidwell Figure 4 (d + b; 2V:1H; "d or b, whichever is greater"); Midway (a 1-ft pad under footings, width plus 1 ft per ft of fill); Gallia (½ ft per ft) | Footings are not drawn in earthwork. A footing strip can be a Site Feature with an undercut and an outward slope; the cross-section geometry is only approximate. |
-| Location-based trench rules | Heinsohn: clay or flowable fill, no gravel bedding, from 2 ft inside to 4 ft beyond the building (p.19) | Supported as a segment, but the user draws it. The building edge is not found automatically: 6 LF at each crossing. |
+| Lenses and interbeds: clay seams of ½–3 in in sand; CH lenses at different depths; 2 in gravel layers | GT-09 B-8 and B-10 to B-14; GT-03 B-01, B-04, B-07, B-08 (pp.10–11); GT-05 B-1 | A lens is its own layer, logged as missing elsewhere; seams under a few inches are merged into their host. The model cannot draw a lens that pinches out at its own depth between two bores without the user splitting the host layer at the lens's horizon. |
+| Topsoil inside a fill unit | GT-08 (roots to 6 in within the fill) | Entered as two layers. |
+| Refusal for caving, heave in the augers | GT-08 TP-2, TP-3; GT-09 B-8, B-10 | A refusal for caving is never a rock top. Heave is a note. |
+| Expansive soil (PVM, swell %, EI) | GT-04 (PVM 4¼ in, active zone 12 ft); GT-06 (swell 7.6 %, EI 36); GT-01 (PI ≥ 23 "High") | The "expansive" flag only. No movement is computed. A PVM-driven over-excavation depth is typed. |
+| Collapse potential | GT-06 (0.44 % and 0.95 %, p.9) | A note. |
+| Karst, sinkholes, mines, earth fissures | GT-02 (p.9), GT-07 (p.3), GT-01 (mines, karst "moderate", p.8, p.10), GT-06 (p.10) | Notes only. |
+| Buried features from earlier use: foundations, septic tanks, cisterns, wells, abandoned pipe | GT-01 (p.16), GT-04 (p.33), GT-08 (p.8) | Not modelled; entered as an over-excavation area if priced. |
+| A bedrock depth from published maps | GT-01, about elevation 650, 46–72 ft down (p.8) | There is no "published" rock reading. It can be entered as a layer by elevation with a typed point (a placeholder bore labelled published). |
+| A loose-to-compacted shrinkage | GT-02 (p.11) | The estimator splits it into swell and shrink; the dialog explains. |
+| Moisture-dependent suitability, and proof-roll failure allowances | GT-01 (pp.16, 19, 22); GT-03 (p.11); GT-05 (drying, p.9) | Flags. An allowance is an over-excavation area of an assumed size. |
+| Rules tied to the water level | GT-09 (no proof roll within 1 ft of water, stabilizing fill within 2 ft, slab at least 4 ft above water); GT-08 and GT-05 (slab at least 4 ft above water) | The water surface is shown; the rules are not computed. |
+| Influence lines from existing foundations, and vibration distances | GT-02 (45° line, rollers 50 ft and 20 ft, p.10); GT-07 (1:1 line, p.62) | Not modelled. |
+| Footing-specific over-excavation | GT-01 Figure 4 (d + b; 2V:1H; "d or b, whichever is greater"); GT-08 (a 1-ft pad under footings, width plus 1 ft per ft of fill); GT-03 (½ ft per ft) | Footings are not drawn in earthwork. A footing strip can be a Site Feature with an undercut and an outward slope; the cross-section geometry is only approximate. |
+| Location-based trench rules | GT-04: clay or flowable fill, no gravel bedding, from 2 ft inside to 4 ft beyond the building (p.19) | Supported as a segment, but the user draws it. The building edge is not found automatically: 6 LF at each crossing. |
 | Compaction and testing frequencies | All | Material notes only (Block 4), never in quantities. |
-| A strength inversion: hard limestone over very loose sand (N 3) | Miami B-4 (p.38) | Represented as layers. Rock is vertical only where it lies under soil (Q11), so a trench into the sand below the rock uses the sand's slope. |
-| Water read only at drilling, in mud-rotary holes | Miami | Entered as "while drilling"; flagged as unreliable in the report's notes. |
-| A design water the report fixes itself | Miami ("a groundwater level of 6 feet", p.15) | Our rule gives 5.0. To follow the report, the estimator types a seasonal high of 6.0. |
-| Logs with latitude and longitude | Gallia | Bores are placed on the plan by hand; the sheet is not georeferenced. |
-| Tank pits on a gravel level-up | Bidwell (15 ft, p.6); Heinsohn (8–10 ft, p.27) | A custom rectangular structure approximates one. |
+| A strength inversion: hard limestone over very loose sand (N 3) | GT-07 B-4 (p.38) | Represented as layers. Rock is vertical only where it lies under soil (Q11), so a trench into the sand below the rock uses the sand's slope. |
+| Water read only at drilling, in mud-rotary holes | GT-07 | Entered as "while drilling"; flagged as unreliable in the report's notes. |
+| A design water the report fixes itself | GT-07 ("a groundwater level of 6 feet", p.15) | Our rule gives 5.0. To follow the report, the estimator types a seasonal high of 6.0. |
+| Logs with latitude and longitude | GT-03 | Bores are placed on the plan by hand; the sheet is not georeferenced. |
+| Tank pits on a gravel level-up | GT-01 (15 ft, p.6); GT-04 (8–10 ft, p.27) | A custom rectangular structure approximates one. |
 
 ### 10.3 Which report feeds which check
 
 | Report | Checks |
 |---|---|
-| Midway | 1.1–1.3, 1.7, 2g, 2h, 4d; the Utah template |
-| Manila Creek | 1.7 (no water); the template's wording (p.9) |
-| Plain City | 1.7 (at drilling against stabilized); 10.2 (interbeds) |
-| Bidwell | 1.8 (topsoil), 2k (cave-in), 4b, 4c, 4e |
-| Gallia | 4c (agents); 10.1 (no rock); 10.2 (lenses) |
-| Heinsohn | 4a; 10.2 (trench zone, PVM) |
-| Deland | 1.7 (design water); 10.1 (loose-based shrinkage) |
-| Miami | 2j (rock below water); 10.2 (water readings, inversion) |
-| Maricopa | 1.7 (published water), 2i (Type C) |
+| GT-01 | 1.8 (topsoil), 2k (cave-in), 4b, 4c, 4e |
+| GT-02 | 1.7 (design water); 10.1 (loose-based shrinkage) |
+| GT-03 | 4c (agents); 10.1 (no rock); 10.2 (lenses) |
+| GT-04 | 4a; 10.2 (trench zone, PVM) |
+| GT-05 | 1.7 (no water); the template's wording (p.9) |
+| GT-06 | 1.7 (published water), 2i (Type C) |
+| GT-07 | 2j (rock below water); 10.2 (water readings, inversion) |
+| GT-08 | 1.1–1.3, 1.7, 2g, 2h, 4d; the slope template |
+| GT-09 | 1.7 (at drilling against stabilized); 10.2 (interbeds) |

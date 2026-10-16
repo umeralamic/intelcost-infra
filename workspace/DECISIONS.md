@@ -16191,7 +16191,7 @@ The api gates passed.
    - **Q10.** Pipe ranges go by invert depth, protection ranges by trench depth.
    - **Q11.** Stable rock under soil is cut vertical, with the soil above sloped.
    - **Q12.** Over-excavation with an outward slope is the vertical-walled box at the full bottom extent: 32.5
-     SF/LF on Bidwell's footing detail.
+     SF/LF on GT-01's footing detail.
    - **Q13.** Today's fixed undercut counts existing ground only.
    - **Q14.** Geogrid and geotextile are added to F25's Option 2; there is no second tool.
    - **Q15.** Fire water 21.02.05, electric 33.08.02 and 33.08.04, trench excavation 33.11.01, dewatering 31.06.
@@ -16505,17 +16505,17 @@ Built to spec §5 and §6 and plan §3.1 to §3.3 and §3.5, as pure modules in 
   | Bore | Design water |
   |---|---|
   | W-1 | 4.00 (4.20 without the seasonal high) |
-  | Deland B-1 | 5.00 |
-  | Maricopa | 81.80 (published) |
-  | Plain City B-13 | 4.00 |
-  | Plain City B-12 | 6.00 |
-  | Midway TP-3 | 3.00 |
-  | Manila Creek B-1 | below 41.5 |
+  | GT-02 B-1 | 5.00 |
+  | GT-06 | 81.80 (published) |
+  | GT-09 B-13 | 4.00 |
+  | GT-09 B-12 | 6.00 |
+  | GT-08 TP-3 | 3.00 |
+  | GT-05 B-1 | below 41.5 |
 
 **Fixtures** were typed from the reports onto a duplicate (`fixtures.mjs` in the run's scratch, listed in the night
-report): Midway TP-1 to TP-3 (pp.23–25), Bidwell B-1 to B-6 (pp.45–50) and Deland B-1 (p.21), on three sheets
-under one six-layer list. The panel reads Midway 4.20, 3.50 and 3.00 ft, Deland 5.00 ft and Bidwell "Below
-20.00 ft (not encountered)". Positions and ground are assumed, because no report gives them. Deland's sands are
+report): GT-08 TP-1 to TP-3 (pp.23–25), GT-01 B-1 to B-6 (pp.45–50) and GT-02 B-1 (p.21), on three sheets
+under one six-layer list. The panel reads GT-08 4.20, 3.50 and 3.00 ft, GT-02 5.00 ft and GT-01 "Below
+20.00 ft (not encountered)". Positions and ground are assumed, because no report gives them. GT-02's sands are
 one row: the scanned log's sub-strata depths could not be read.
 
 Calculate is still untouched (step 1c), so the 3D test copy's md5 is `fab4d151…`.
@@ -16558,14 +16558,14 @@ Built to spec §7 and plan §2.4, §2.5, §3.4 and §3.15:
 
   | Check | Expected |
   |---|---|
-  | 1.1, Midway's pits under a flat 1.20 ft cut | total 222.22 = topsoil 92.59 + fill 116.79 + granular 12.84 |
+  | 1.1, GT-08's pits under a flat 1.20 ft cut | total 222.22 = topsoil 92.59 + fill 116.79 + granular 12.84 |
   | 1.1b, the same under the six-layer list | Asphalt and Fat clay 0.00, the rest as 1.1 |
   | 1.2, a 0.50 ft strip | strip 92.59; below it 129.63 = fill 116.79 + granular 12.84; topsoil 0 |
   | 1.3, the square (extrapolated) | 444.44 = 185.19 + 242.47 + 16.79 |
   | 1.8, the topsoil suggestion | 0.50 ft from B-1, B-2, B-4, B-5 and B-6, B-3 left out |
 
   A deliberately wrong expectation failed, as it should.
-- **No bores, no change (1.9).** On the fixtures duplicate's C-200, a Calculate with the Midway bores and one with
+- **No bores, no change (1.9).** On the fixtures duplicate's C-200, a Calculate with the GT-08 bores and one with
   them removed give the same result, byte for byte, once `materials` and `geotech` are set aside (canonical md5
   `0d655ff7…` both). With bores, the four layers sum to the 11,583.93 BCY cut. The 3D test copy is not
   recalculated: its md5 is `fab4d151…`.
@@ -16579,7 +16579,7 @@ Built to spec §7 and plan §2.4, §2.5, §3.4 and §3.15:
      Type C none, the benches inside the slope from the toe).
    - **From the geotech report**: rows of soil (a group, or Cohesive or Granular), water (above, below, either), a
      depth limit (blank is any), and a slope H:1 or "Shoring required", with a source note.
-   - **"Load template (Utah reports)"** gives the four Midway p.9 rows.
+   - **"Load template"** gives the four GT-08 p.9 rows.
    - **The OSHA note.** A row steeper than federal OSHA allows for the soils it covers (the project's own layer
      types, else the group's suggestion) shows "Steeper than federal OSHA — confirm with the geotech report and
      your state's rules." On a project with Fat clay (B) and a granular soil (C), the template flags its three
@@ -16624,7 +16624,7 @@ ground. On the proposed grade it reads where that grade is below the ground, so 
 A layer of no thickness there is skipped.
 
 Checked on the fixtures duplicate: at a fill point, "Soil: Topsoil, 0.00 ft down" (Asphalt and base has no
-thickness at Midway). In the same run: "Copy from TP-1" brought TP-1's three layers into a new bore; "Paste rows"
+thickness at GT-08). In the same run: "Copy from TP-1" brought TP-1's three layers into a new bore; "Paste rows"
 matched "gravel" to Natural granular by its soil group; the save returned 200.
 
 ## D-537: A bore log row's layer key is checked at commit (fix to D-532)
@@ -17091,7 +17091,8 @@ The 3D test copy's own result was saved before inputs were kept: its next Calcul
 - **C3:** blanks are filled from manufacturers' sheets, a link and a date per row; no standard is bought now. Any row
   where two sources disagree is noted.
 - **The reference reports' names come out of the app.** The geotech reports the founder sent were for reference; users
-  bring their own. The slope rule's template loses "Utah reports" and the report names in its source line.
+  bring their own. The slope rule's template loses the reports' state from its label and the report names from its
+  source line.
 - Each fix: gates, quantity table, smoke with screenshots, guest check, commit and push, a D-NN. Then stop: Block 2
   waits for the founder's review of the catalog.
 
@@ -17146,19 +17147,21 @@ layers:
 The geotech reports the founder sent were for reference; users bring their own.
 
 **Built.**
-- **The template's button** reads "Load template", not "Load template (Utah reports)".
+- **The template's button** reads "Load template"; it no longer names the reports' state.
 - **The template's source line** is empty; it named three of the reports. "Load template" keeps whatever source the
   user typed.
 - **The source field** shows the placeholder "Your geotech report, page".
-- **The constant** `UTAH_TEMPLATE` is `SLOPE_TEMPLATE`, in the app and in the quantity table's harness.
+- **The constant** is now `SLOPE_TEMPLATE`, no longer named for the reports' state, in the app and in the quantity
+  table's harness.
 - **The spec (§8) and the plan's §4.4 mock** no longer name the reports for the template or the source.
-- **The app's code has no report name left.** "Utah" stays in the wage calculator, where it is the state.
+- **The app's code has no report name left.** State names stay in the wage calculator, where they are states.
 
 **Not changed:**
 - **The copy's saved slope rule still has the old source line,** because it was loaded at 16:39 before this change.
   The guard forbids a bench run to write to the copy; clearing its Source field is one edit for the founder.
 - **Internal records still name the reports as provenance of hand-worked values:** the plan's worked examples and
-  research notes, the quantity rows' comments and ids, and DECISIONS. The founder decides whether those go too.
+  research notes, the quantity rows' comments and ids, and DECISIONS. The founder decides whether those go too
+  (they went: D-557).
 
 **Checked** on a bench duplicate:
 - **Member:** "Load template" loaded the four rows with an empty source under the placeholder, and no report name
@@ -17319,3 +17322,146 @@ Association's handbook. Each row names its source and that document's date. No s
   - CMP OD;
   - PVC sewer 33 in, made by neither manufacturer read.
 - **New call (pending_umer R5):** which wall table the catalog's PVC sewer 18–36 in rows use.
+
+## D-556: Founder's answers to R1–R5, two fixes, and the Bores panel (2026-10-16)
+
+- **R1:** Auto Merge stays personal. No change.
+- **R2:** Contours and spots stays a project setting, where it is. No change.
+- **R3:** the founder clears the Source field of the copy's slope rule. No run touches it.
+- **R4:** the reference reports' names come out of both repos and the workspace mirror: code, quantity row names, plan,
+  spec, DECISIONS, pending_umer and the catalog draft.
+  - They become neutral IDs, GT-01 to GT-09, in the fixture folder's order.
+  - The ID-to-report mapping is written only to `fixtures/geotech/INDEX.md`, never into a repo.
+  - A grep afterwards for each report name, town and client shows zero hits. Git history is not rewritten.
+- **R5:** PVC sewer 18 in and up defaults to F679's walls. The D3034 values stay in the catalog as an alternate
+  standard the user picks per run. The catalog draft notes the choice.
+- **Fix 1:** the B1a note reads "No bore logs <names>, so they take nothing.", with "or" before the last name ("New
+  layer, Layer 1 or Layer 5"). With one layer: "No bore logs Layer 1, so it takes nothing."
+- **Fix 2 (docs only):** each still-blank catalog value is marked "drives trench width" (an outside diameter, such as
+  CMP's OD or RCP Wall C's) or "wall only". Block 2's rule goes into the spec:
+  - a size with no outside diameter can't be picked unless the user types an OD, and the run shows "OD typed by
+    <user>";
+  - a wall-only blank takes the closest published wall and is flagged.
+- **The Bores panel** (sent during the run): the user can drag it, and the "Hide Takeoff panel" button no longer
+  shows above it.
+- Same rules as before. Stop and report; Block 2 waits for the founder's review of the catalog.
+
+## D-557: The reference reports are GT-01 to GT-09 (R4, D-556)
+
+**The IDs.** GT-01 to GT-09 follow `fixtures/geotech/` sorted by file name. `fixtures/geotech/INDEX.md` maps each ID
+to its file, report, site and town, client, consultant and date. The workspace root is not a repo, and the mirror
+holds only the four files, `docs/` and `.claude/`, so the index is in neither.
+
+**Changed.**
+- **Quantity rows** (`browser/lib/earthwork-cases.mjs`):
+  - renamed `geo-1.1-gt08-cut-by-layer`, `geo-1.2-gt08-strip-wins`, `geo-1.3-gt08-square-extrapolated` and
+    `geo-1.7-gt05-below`;
+  - the design-water row's bores read "GT-02 B-1", "GT-06", "GT-09 B-13", "GT-09 B-12", "GT-08 TP-3" and "GT-05 B-1",
+    and the comments name IDs;
+  - the published reading's source names only the agency (the well number went);
+  - every number is unchanged.
+- **The plan:**
+  - its worked examples, checks and research notes (§10) name IDs; §10.3 is sorted by ID;
+  - the §4.2 mock's source field reads "GT-01 report", at the same width;
+  - the template once named for the reports' state is "the slope template", as D-552 named the constant;
+  - the reading list says the reports go by neutral IDs and the index lies outside every repo.
+- **The spec:** its two examples.
+- **DECISIONS:** D-526 (Q12), D-533, D-534, D-535, D-536, D-550 and D-552, wherever they named a report or the
+  reports' state.
+- **pending_umer:** U-UT12 and U-UT43.
+- **Code:** the app and the api had no report name left after D-552.
+
+**Not changed.**
+- Git history.
+- The morning-report folders, which are outside every repo.
+- The wage calculator's county, state and ZIP tables. Some of these places are US counties and towns there, not the
+  reports.
+- Two namesakes:
+  - the file tree's "Manila folder gold" colour (the app's `design.md`);
+  - the catalog's source S1, a copy of ASTM D3034 that Miami County (Indiana) posts: another place.
+
+**The grep, after the mirror refresh:** zero hits for all 42 terms. It was case-sensitive and covered the app, the api,
+the infra repo with its mirror, the market site and the workspace files. The terms were the names the repos used, the
+reports' titles, towns, clients and consultants. A control first found "GT-08" (33 times), plain and through a
+lookahead, so a zero means nothing is there.
+
+## D-558: PVC sewer 18 in and up takes F679's walls; the current D3034's are an alternate per run (R5, D-556)
+
+Docs only. The catalog draft, the spec's Pipe row, the plan's 2B row and open point 14 say:
+- **The default:** F679's walls (Westlake, PS 46 and PS 115), 18–36 in.
+- **The alternate standard:** the current D3034's walls (JM Eagle, SDR 35 and SDR 26). The user picks it per run, and
+  the run names the standard it uses.
+- **42 and 48 in** are printed only in the D3034 table, so a run at those sizes uses the alternate.
+
+pending_umer R5 is closed.
+
+## D-559: The unlogged-layer note reads "…, so they take nothing", "or" before the last name (Fix 1, D-556)
+
+**Built** (`lib/takeoff/earthwork/geotech/model.ts`): "No bore logs Layer 4, Layer 5 or Layer 6, so they take nothing."
+With one layer: "No bore logs Layer 4, so it takes nothing." A result saved before keeps its old wording until it is
+calculated again; the note is stored with it.
+
+**Checks.**
+- **Quantity table:** the harness now reads the layer model's notes (`geo:notes`). Two existing rows check the note word
+  for word:
+  - 1.1b: "No bore logs Asphalt, Fat clay or Sand, so they take nothing.";
+  - B1a: "No bore logs Clay, so it takes nothing.".
+
+  344 rows, 177 earthwork rows right; the renamed rows of D-557 are right too.
+- **On a fresh duplicate** ("BENCH DUP 2026-10-16 19:40 — delete me"):
+  - **The duplicate's own layers:** Layer 1 to Layer 3, every one logged, so it had no note. The copy's list has
+    changed since D-551.
+  - **Three layers added on the duplicate:** the panel's "On this sheet" and the Calculate both read "No bore logs
+    Layer 4, Layer 5 or Layer 6, so they take nothing." Each took 0.00 BCY, and the other layers kept 4,660.06,
+    916.95 and 6,006.92 BCY.
+  - **Layer 5 and Layer 6 deleted:** "No bore logs Layer 4, so it takes nothing.", in the panel and after a Calculate.
+- **Guest** (the duplicate's own link): the saved result reads the same note. The guest's Calculate button is disabled
+  for this link ("Sign up for Professional to use this."). The guest sent nothing but its own link's session.
+
+## D-560: A blank catalog value drives the trench width or is wall only; Block 2's rule for each (Fix 2, D-556)
+
+Docs only.
+- **The catalog draft:** each blank value is marked, in its table, in check 9 and in "Where the blanks may be filled".
+  - **Drives trench width:** CMP's OD at every size; RCP Wall C at 12–21 in, since RCP's OD is the ID plus two walls;
+    C909 at 4, 14, 18 and 20 in; PVC sewer 33 in.
+  - **Wall only:** C909 Class 165 at 6–12 and 24 in.
+- **The rule, in the spec's Pipe row** (§9.2), with the plan's 2B row and open point 14:
+  - **A size with no OD** can't be picked unless the user types an OD, and the run then shows "OD typed by <user>".
+  - **A wall-only blank** takes the closest published wall, and the run is flagged "Wall not published for this size:
+    <wall> in from <class or size> used."
+  - **The closest published wall** is the same size's wall in the nearest class or standard that prints one. If none
+    prints that size, it is the same class's wall at the nearest size, the thicker when two are equally near.
+  - **A size typed with an OD and no wall** takes its wall by the same rule.
+
+## D-561: The Bores panel moves by its header and floats above the edge tabs (D-556)
+
+**The fault.** The panel was `fixed` at z-40, rendered before the canvas row. The "Hide Takeoff panel" edge tab is also
+z-40 but later in the page, so it painted over the panel. Over an open compact panel the tab was z-50, above any
+panel.
+
+**Built.**
+- **`BoresPanel.tsx`:**
+  - **Where it renders:** in a portal on the page's body, at z-45, the floating panels' level that Auto Count already
+    uses. That is above the edge tabs and the Volumes panel (z-40), and under the dialogs and menus (z-50).
+  - **The drag:** by its header (a grip, "Drag to move the Bores panel"). Its tabs and Close still click.
+  - **Its place:** kept on this device (`takeoff-bores-panel-v1`). It stays inside the window, the whole width so
+    Close stays in reach, and is clamped again when the window is resized.
+  - **Moved,** its height stops at the window's bottom edge and its body scrolls.
+- **`ProjectTakeoff.tsx`:** over an open compact panel (z-40), an edge tab rides at z-41, not z-50. It stays above its
+  own panel and under the floating ones.
+- **A guest** moves the panel too; nothing is sent.
+
+**Checked in the browser on the duplicate.** The test reads the topmost element at the tab's centre.
+
+| Case | Positions | Topmost at the tab's centre |
+|---|---|---|
+| Desktop, 1600×1000 | Panel z 45 at its default place, over the tab (z 40) | The panel |
+| Desktop, dragged | Moved by (−560, +300) to (308, 412); kept; reopened at (308, 412) | n/a |
+| Compact, 900×800, Takeoff panel open | Tab z 41; the saved place came back clamped to x 180, Close on screen | The panel |
+| Compact, Bores closed | Tab over its own panel; it still hides and shows it | The tab |
+| Guest | Dragged twice; laid over the tab | The panel |
+
+The guest sent only its link's session.
+
+**Found in the smoke and fixed before the commit:** a place saved in a wide window put Close off-screen in a narrow
+one. The clamp now keeps the whole width inside.

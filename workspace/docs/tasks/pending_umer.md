@@ -142,7 +142,7 @@ All answered 2026-10-15 (D-513): V1–V5 and V7 ok, V8 noted, V6 parked.
 | U-UT9 | Lines per sheet, added up by utility type, material, size and range | Q9, §5.1 | Yes, with the per-run breakdown kept in the run panel and the report |
 | U-UT10 | Pipe ranges by invert depth; protection ranges by trench depth | Q10, §3.10 | Yes |
 | U-UT11 | Stable rock under soil cut vertical, with the soil sloped above it; every other mix uses the flattest slope | Q11, §3.6 | Yes |
-| U-UT12 | Over-excavation with an outward slope: the vertical-walled box at the full extent at the bottom | Q12, §3.12 | Yes: 32.5 SF/LF on Bidwell's footing |
+| U-UT12 | Over-excavation with an outward slope: the vertical-walled box at the full extent at the bottom | Q12, §3.12 | Yes: 32.5 SF/LF on GT-01's footing |
 | U-UT13 | Today's fixed undercut counts existing ground only (results with an undercut read out of date once) | Q13, §3.12 | Yes (Block 0.5) |
 | U-UT14 | Treatment: geogrid and geotextile added to F25's Option 2; no second tool | Q14, §3.13 | Yes |
 | U-UT15 | Fire water pipe 21.02.05; electric conduit 33.08.02; electric handholes 33.08.04; trench excavation 33.11.01; dewatering 31.06 | Q15, §5.3 | Yes |
@@ -173,7 +173,7 @@ All answered 2026-10-15 (D-513): V1–V5 and V7 ok, V8 noted, V6 parked.
 | U-UT40 | The version key gains a part only when the project has bores, layers, a slope rule, utility settings, runs or structures; the prefix stays; the 3D test copy's key and md5 do not move | §2.5 | Yes |
 | U-UT41 | Checks: engine numbers as quantity-table rows (the engine is browser-only); api rules as `scripts/check_*.py` (read-only, one line) | §6 | Yes |
 | U-UT42 | Bores, runs and structures on a joined site map through the join; on a linked sheet, through the link | §2.6 | Yes |
-| U-UT43 | A shrinkage % is read as bank to compacted (factor 1 ÷ (1 − x)); a loose-based figure (Deland) is split by the estimator | spec §4 | Yes |
+| U-UT43 | A shrinkage % is read as bank to compacted (factor 1 ÷ (1 − x)); a loose-based figure (GT-02) is split by the estimator | spec §4 | Yes |
 | U-UT44 | 3D pipes drawn at true size in their own group, so the exaggeration moves them without stretching them | §8 | Yes |
 | U-UT45 | Geosynthetic overlap default 10 % | §3.13 | Yes |
 | U-UT46 | One "Structure Dewatering" line (EA) for the structures below the design water | §5.1 | Yes |
@@ -251,6 +251,12 @@ the blanks filled where a sheet prints them; one new call, R5.
 | C3 | Blanks: C909 walls, C900 DR 14 above 16 in, RCP Wall C below 24 in, CMP OD and 90–96 in, copper walls, conduit 5–6 in, PVC sewer 33 in. | Whether to buy the AWWA C909 and ASTM C76/B88 tables or ask manufacturers, before Block 2 step 2a. |
 
 ## Answers run, 2026-10-16 (D-550 on; morning-report-2026-10-16/PART_B_2026-10-16.md, "Answers run")
+
+**Answered 2026-10-16 (D-556 to D-558), closed:** R1, Auto Merge stays personal; R2, Contours and spots stays the
+project's, where it is; R3, the founder clears the copy's Source field, and no run touches it; R4, the reference reports
+are GT-01 to GT-09 in both repos and the mirror, with the mapping only in `fixtures/geotech/INDEX.md`, outside every repo
+(D-557); R5, PVC sewer 18 in and up takes F679's walls by default, the current D3034's kept as an alternate standard
+chosen per run (D-558). Done in the R answers run, with two fixes (D-559, D-560) and the Bores panel (D-561).
 
 | # | What | Where it stands | Your call |
 |---|---|---|---|
