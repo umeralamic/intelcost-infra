@@ -648,6 +648,7 @@ try {
     const gf = await import("/src/lib/takeoff/earthwork/geotech/field.ts");
     const gm = await import("/src/lib/takeoff/earthwork/geotech/model.ts");
     const gc = await import("/src/lib/takeoff/earthwork/geotech/materials.ts");
+    const gs = await import("/src/lib/takeoff/earthwork/geotech/slopeRule.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -739,6 +740,11 @@ try {
         const pieces = gf.fieldPieces(c.points.map(([x, y, v]) => ({ x, y, v })), c.box);
         const out = {};
         for (const [x, y] of c.at) out[`D(${x},${y})`] = gf.valueAt(pieces, x, y);
+        return out;
+      }
+      if (c.kind === "geo-slope") {
+        const out = {};
+        gs.UTAH_TEMPLATE.rows.forEach((r, i) => (out[`row${i}:steeper`] = gs.steeperThanOsha(r, c.layers)));
         return out;
       }
       if (c.kind === "geo-topsoil") {

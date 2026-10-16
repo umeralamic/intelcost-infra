@@ -247,6 +247,15 @@ export const EARTHWORK_CASES = [
     ],
     expect: { depthFt: 0.5, bores: "B-1,B-2,B-4,B-5,B-6" },
   },
+  // Spec §8: the Utah template (Midway p.9) on a project with Fat clay (Type B) and a granular soil
+  // (Type C). Cohesive 0.5:1 is under B's 1:1, granular 0.5:1 and 1:1 under C's 1.5:1: "Steeper than
+  // federal OSHA" on the first three; the shoring row says nothing.
+  {
+    id: "geo-slope-rule-template-steeper",
+    kind: "geo-slope",
+    layers: [{ soil_group: "clay", osha_type: "B" }, { soil_group: "gravel", osha_type: "C" }],
+    expect: { "row0:steeper": true, "row1:steeper": true, "row2:steeper": true, "row3:steeper": false },
+  },
   // 1.6 and 1.7: each bore's design water level (plan §3.5).
   {
     id: "geo-1.6-1.7-design-water",
