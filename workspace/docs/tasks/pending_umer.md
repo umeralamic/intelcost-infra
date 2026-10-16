@@ -115,6 +115,78 @@ All answered 2026-10-15 (D-513): V1–V5 and V7 ok, V8 noted, V6 parked.
 | W7 | H4 details | Removed invites leave the list; a Resend counts toward the 100 a day; an Essentials workspace can still turn the link on (only invites are Professional's). | Accept. |
 | W8 | Throwaway accounts | fx.h3.* and fx.h4.* remain as accounts with no workspace (`purge-owner` removes workspaces only). | Note only. |
 
+## Earthwork utilities plan, Block 0 (2026-10-15)
+
+**The documents:**
+- the spec, [earthwork_utilities.md](../specs/earthwork_utilities.md);
+- the plan, [earthwork_utilities_PLAN.md](../specs/earthwork_utilities_PLAN.md).
+
+This is planning only; nothing is built. Answer the plan's questions by number ("Q3 no: …") or a default below
+("U-UT20 no: …"), then "go" or "go Block N". U-UT1 to U-UT15 are the recommended answers to Q1 to Q15 (plan §9).
+
+| # | Default | Plan |
+|---|---|---|
+| U-UT1 | Soil layers interpolated by depth below the existing ground; weathered rock, bedrock and water by elevation; a setting per layer | Q1, §3.2 |
+| U-UT2 | A bore never makes a layer, rock or water shallower than it shows. A bore that ends inside a layer adds a point only where the other bores' surface is shallower. | Q2, §3.1 |
+| U-UT3 | Trench and pit volumes exact between breakpoints (prismoidal rule), not 5 ft average end areas; a 5 ft table in the profile for reading | Q3, §3.10 |
+| U-UT4 | Work scopes built: a workspace list and a mapping per system (scope + optional work type + optional kind, most specific wins), called "Work scope" in the UI | Q4, §2.1, §5 |
+| U-UT5 | Today's 24 earthwork lines moved onto work scopes, with mappings that repeat today's codes in all five systems | Q5, §5.3 |
+| U-UT6 | A priced Calculate line whose key is gone stays at 0 ("Not in the last Calculate") and returns with its rates | Q6, §5.4 |
+| U-UT7 | Trenches start from the proposed subgrade by default, the existing grade per run; no part counted twice with the site cut | Q7, §3.6 |
+| U-UT8 | Runs on a utility sheet are read through a control-point link (F18); the ground runs from rim to rim where no surface covers it | Q8, §2.6 |
+| U-UT9 | Lines per sheet, added up by utility type, material, size and range | Q9, §5.1 |
+| U-UT10 | Pipe ranges by invert depth; protection ranges by trench depth | Q10, §3.10 |
+| U-UT11 | Stable rock under soil cut vertical, with the soil sloped above it; every other mix uses the flattest slope | Q11, §3.6 |
+| U-UT12 | Over-excavation with an outward slope: the vertical-walled box at the full extent at the bottom | Q12, §3.12 |
+| U-UT13 | Today's fixed undercut counts existing ground only (results with an undercut read out of date once) | Q13, §3.12 |
+| U-UT14 | Treatment: geogrid and geotextile added to F25's Option 2; no second tool | Q14, §3.13 |
+| U-UT15 | Fire water pipe 21.02.05; electric conduit 33.08.02; electric handholes 33.08.04; trench excavation 33.11.01; dewatering 31.06 | Q15, §5.3 |
+| U-UT16 | The spec and plan are in a new `docs/specs/` folder, as the brief asked (CLAUDE.md keeps specs in `docs/tasks/`) | header |
+| U-UT17 | A layer's group, OSHA type, flags and factors belong to the project layer; a bore's row holds only its log; a lens is its own layer | spec §3.2 |
+| U-UT18 | A bore's ground is the existing surface unless typed; the report's elevation is shown beside it when 0.1 ft apart; bore IDs are unique per project | spec §3.2 |
+| U-UT19 | Water buffer 1.0 ft per project. Perched readings count and are flagged. Published data is used only without a measured reading. A not-encountered bore bounds the water at its total depth, without a buffer. | §3.5 |
+| U-UT20 | No bores: one assumed layer, Type C, suitable, the project's factors, stated in the results | spec §6.4 |
+| U-UT21 | Soil-group defaults (OSHA, flags, swell, shrink, interpolation) as in the plan's table: typical values for approval | §3.2 |
+| U-UT22 | Placed fill between the existing ground and the proposed subgrade is a layer "Placed fill", Type C | §3.7 |
+| U-UT23 | Caving: the nearest bore governs. Caving observed forces a box wherever protection is required; a cave-in depth forces one wherever the bottom is below it; under 5 ft, a flag only. | §3.7 |
+| U-UT24 | Geotech rows: "cohesive" is clay, silt and USCS C or M; "granular" is sand, gravel and USCS S or G. The smallest depth limit at or above the depth applies. A layer with no row, or deeper than every row, uses federal OSHA, flagged. | §3.7 |
+| U-UT25 | Benching: the bottom vertical side at most 4 ft; risers at most 4 ft in B (cohesive only) and 5 ft in A; benches equal, with the noses on the slope line. To confirm against OSHA Appendix B's figures (not fetched). | §3.8 |
+| U-UT26 | A trench box at the trench's bottom width; a box width can be typed per run | §2.1 |
+| U-UT27 | Utility settings: 12 in side clearance, 24 in minimum width, 6 in bedding, zone to 12 in above the crown; bedding and zone imported, backfill native; densities blank (no tons until typed); restoration none | spec §9.2 |
+| U-UT28 | Depth ranges 0–6, 6–8, 8–10, 10–12, 12–14, 14–16, 16+ ft; in metric 0–2, 2–2.5, 2.5–3, 3–3.5, 3.5–4, 4–5, 5+ m; each range includes its lower bound | §3.10 |
+| U-UT29 | Pipe LF along the drawn run, from structure centre to centre; several pipes multiply it | §5.1 |
+| U-UT30 | A pit follows its structure's shape (round or rectangular); over-dig 2 ft; base stone under the whole bottom; layers taken level across a pit at their depth at its centre | §3.11 |
+| U-UT31 | A trench stops at the pit's bottom outline; its overlap with the pit's sloped sides is deducted slice by slice | §3.11 |
+| U-UT32 | Overlaps between trenches (crossings, two runs leaving one structure) are not deducted; they are listed in the notes | spec §19 |
+| U-UT33 | Ground from rims where no surface covers a run; restoration width defaults to the top width plus 1 ft each side | spec §9.1 |
+| U-UT34 | Over-excavation extension 5 ft and outward slope 0 by default | spec §11 |
+| U-UT35 | Replacement fill as a stack from the bottom up, the last row taking the rest. In a fill area the stack covers only the removed ground; the fill above the existing ground stays the site's fill line. | §3.12 |
+| U-UT36 | New lines use today's "… — <group>" names; unit costs start empty (there is no price library); a material with a density gets a TON sub-item | §5.1 |
+| U-UT37 | "Utilities" and its subfolders found by key; a force main under Sanitary; renames and moves kept; a deleted folder made again on the next Calculate | spec §14 |
+| U-UT38 | Estimating shows "Needs recalculating" on stale Calculate lines (D-142 said so; today only the Takeoff panel does) | §5.4 |
+| U-UT39 | "Move items to…" marks a Calculate line as placed by hand, as a single move does | §5.4 |
+| U-UT40 | The version key gains a part only when the project has bores, layers, a slope rule, utility settings, runs or structures; the prefix stays; the 3D test copy's key and md5 do not move | §2.5 |
+| U-UT41 | Checks: engine numbers as quantity-table rows (the engine is browser-only); api rules as `scripts/check_*.py` (read-only, one line) | §6 |
+| U-UT42 | Bores, runs and structures on a joined site map through the join; on a linked sheet, through the link | §2.6 |
+| U-UT43 | A shrinkage % is read as bank to compacted (factor 1 ÷ (1 − x)); a loose-based figure (Deland) is split by the estimator | spec §4 |
+| U-UT44 | 3D pipes drawn at true size in their own group, so the exaggeration moves them without stretching them | §8 |
+| U-UT45 | Geosynthetic overlap default 10 % | §3.13 |
+| U-UT46 | One "Structure Dewatering" line (EA) for the structures below the design water | §5.1 |
+| U-UT47 | Compaction notes (% and ASTM D698 or D1557) shown in notes and the report, never in quantities | spec §11 |
+| U-UT48 | The topsoil suggestion leaves out bores with pavement at the surface, and is rounded to 0.05 ft | §3.15 |
+| U-UT49 | The new buttons go after Stripping (Bores, Utilities, Structures); their settings in Takeoff settings › Earthwork, project-level and saved at once; the cross-section and profile open in the split pane | spec §3.1, §8 |
+| U-UT50 | OSHA suggestion: silt B; cemented A unless caving; hard dig and weathered rock C | spec §3.3 |
+| U-UT51 | The balance with layers adds compacted yields (bank ÷ each layer's shrink) and uses the bank-weighted swell for the surplus; it reduces to today's formula when every layer has the project's factors | §3.14 |
+| U-UT52 | Each structure type has a default utility type (custom picks one) | spec §10.1 |
+
+**Pipe catalog values with no source** are listed here during Block 2. None are listed yet, because the catalog is
+not built.
+
+**Codes with no node in our CSI tree:**
+- **Unmapped:** other pipe, custom structure.
+- **Approximate:** area drain (mapped to Inlets), junction box (to the Structures parent), sloped and benched
+  protection (to 31.09.01).
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
@@ -206,6 +278,7 @@ small "1 in use" beside them; the page text runs them together.
 | S1 | revision_sets_spec.md:516–560 (F21) | Revision sets: a new set's sheets paired with the old ones, takeoff carried over, and changes flagged. 18 open questions, each with a default. Plan: about 15 days in 8 blocks; first cut A–D, 8.5 days. | Answer the 18, or say "defaults", and approve the plan. | Read the spec. | No. |
 | S4 | PARITY_GAPS.md:146–193 | Two lists: "build next, top 15", and "recommend not porting". | Confirm or reorder the top 15; sign off the not-porting list. | Read it. | No. |
 | S5 | LEGACY_UMERALAMDEV_DIFF.md (items 1–23) | Legacy changes since 2026-09-24 still to schedule. Mostly cost components and estimating. Earthwork is done. | Say which are still owed. | Read it. | Partly: the earthwork items were built in F12. |
+| S6 | specs/earthwork_utilities_PLAN.md (F29) | Bores, soil layers, utilities, structures and over-excavation on the Earthwork tab. 15 questions (Q1–Q15), defaults U-UT1–U-UT52. Plan: 5 blocks, about 156 h. | Answer the 15, or say "defaults"; then "go" or "go Block N". | Read the plan, §9 first. | No. |
 
 ## For Abdullah (listed only, not for you to check)
 
