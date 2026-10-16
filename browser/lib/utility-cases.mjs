@@ -239,6 +239,43 @@ export const UTILITY_CASES = [
     expect: { aeaOverCF: [266.67, 0.67] },
   },
 
+  // --- The profile (breakpoints.ts): a run read from the surfaces, a Site Feature and typed grades -
+  {
+    // FG = 100 + 0.04x over the run (0,0)→(100,0), so h runs 6 → 10 ft (2n's run, exact 8,933.33 CF);
+    // a Site Feature 1.0 ft deep over x 40–60 lowers h by 1 there: −(2·20 + 2·∫h) = −360 CF.
+    id: "util-profile-fg-with-feature",
+    kind: "profile",
+    pipe: SDR35_8,
+    path: [[0, 0], [100, 0]],
+    fg: { plane: [100, 0.04, 0], box: [-50, -50, 150, 50] },
+    features: [{ poly: [[40, -30], [60, -30], [60, 30], [40, 30]], depthFt: 1 }],
+    trenchBottom: 94,
+    layers: [{ ...CLAY_B, depth: null }],
+    expect: { excavationCY: 317.53, notes: [] },
+  },
+  {
+    id: "util-profile-existing-only",
+    kind: "profile",
+    pipe: SDR35_8,
+    path: [[0, 0], [100, 0]],
+    eg: { plane: [100, 0.04, 0], box: [-50, -50, 150, 50] },
+    trenchBottom: 94,
+    layers: [{ ...CLAY_B, depth: null }],
+    expect: { excavationCY: 330.86, notes: ["No proposed surface: trench from existing grade, 0+00 to 1+00."] },
+  },
+  {
+    // §3.16 through the profile: no surface at all, the ground typed at the ends, 100.00 to 99.00.
+    id: "util-profile-typed-grades",
+    kind: "profile",
+    pipe: SDR35_8,
+    path: [[0, 0], [60, 80]],
+    ends: [100, 99],
+    inverts: [92, 91],
+    noBores: true,
+    layers: [{ ...ASSUMED_C, depth: null }],
+    expect: { excavationCY: 498.07, notes: ["Grade from rims: no surface here."] },
+  },
+
   // --- §3.16: a project with no grading (2q, the run) -------------------------------------------
   {
     id: "util-2q-typed-grades-no-bores",

@@ -1140,6 +1140,7 @@ try {
     const cat = await import("/src/lib/takeoff/earthwork/utilities/catalog.ts");
     const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
     const q = await import("/src/lib/takeoff/earthwork/utilities/quantities.ts");
+    const bp = await import("/src/lib/takeoff/earthwork/utilities/breakpoints.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     return cases.map((c) => {
       if (c.kind === "catalog") {
@@ -1161,6 +1162,44 @@ try {
           Object.assign(out, { alternateOd: a.size.od, alternateWall: a.size.wall, alternateOf: a.entry.alternateOf });
         }
         return out;
+      }
+      // A run read through the profile builder: planes as single pieces, features, typed grades.
+      if (c.kind === "profile") {
+        const p = cat.resolvePipe(c.pipe);
+        const plane = (f) => (f ? [{ poly: [[f.box[0], f.box[1]], [f.box[2], f.box[1]], [f.box[2], f.box[3]], [f.box[0], f.box[3]]], a: f.plane[0], b: f.plane[1], c: f.plane[2] }] : null);
+        const below = (p.od - p.id) / 24 + 0.5;
+        const inv = c.inverts ?? [c.trenchBottom + below, c.trenchBottom + below];
+        const prof = bp.runProfile({
+          path: c.path,
+          eg: plane(c.eg),
+          fg: plane(c.fg),
+          features: c.features ?? [],
+          startSurface: "proposed",
+          ends: c.ends ?? null,
+          vertical: { mode: "inverts", start: inv[0], end: inv[1] },
+          odIn: p.od,
+          idIn: p.id,
+          bottoms: [],
+          water: null,
+          bores: [],
+        });
+        const r = q.runQuantities({
+          knots: prof.knots,
+          layers: c.layers.map((l) => ({ layerId: null, ...l })),
+          noBores: Boolean(c.noBores),
+          pipe: { odIn: p.od, idIn: p.id, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+          bucket: "auto",
+          box: null,
+          specMaxIn: null,
+          protection: "auto",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          materials: { bedding: "imported", zone: "imported", backfill: "native" },
+          restoration: null,
+        });
+        return { excavationCY: r2(r.excavationCF / 27), notes: prof.notes, knots: prof.knots.length };
       }
       // A run on a profile: ends at s = 0 and s = length; layers and water by depth below the start surface.
       const p = cat.resolvePipe(c.pipe);
