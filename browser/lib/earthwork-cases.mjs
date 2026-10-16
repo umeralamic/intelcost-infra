@@ -115,6 +115,68 @@ export const EARTHWORK_CASES = [
   },
   // --- Block C: cut and fill (legacy's volume.test.ts and e4.test.ts) -------------------
   // side: feet per point on a 1 x 1 point page, so the unit square is side x side feet.
+  // --- F29 Block 1 (D-533): the layer model and design water, worked by hand (plan §3.2-§3.5)
+  // 1.4: TP-1 (0, 0) D 6.0, TP-2 (100, 0) D 8.0, TP-3 (0, 100) D 4.0. Inside, D = 6 + 0.02x - 0.02y.
+  // Outside the hull, the nearest point of its boundary: (50, -30) from edge TP-1-TP-2 at (50, 0)
+  // = 7.00; (-20, 50) from edge TP-3-TP-1 at (0, 50) = 5.00; (150, -50) from vertex TP-2 = 8.00.
+  {
+    id: "geo-1.4-extrapolation",
+    kind: "geo-field",
+    points: [[0, 0, 6], [100, 0, 8], [0, 100, 4]],
+    box: { minX: -300, minY: -300, maxX: 400, maxY: 400 },
+    at: [[50, -30], [-20, 50], [150, -50], [20, 30]],
+    expect: { "D(50,-30)": 7, "D(-20,50)": 5, "D(150,-50)": 8, "D(20,30)": 5.8 },
+  },
+  // 1.5: Fill's bottom 1.0 at B-1 (-20, -20), B-2 (100, 0), B-3 (0, 100); Clay's bottom 5.0 at the
+  // same three. TP-4 (100, 100) stopped at 7.0 ft still in Fill: the others give 1.0 there, so it
+  // adds a point at 7.0 (Q2). On triangle B-2, TP-4, B-3 Fill is 1 + 6λ (λ TP-4's share), over 5.0
+  // where λ > 2/3: a third-scale triangle, 5,000 / 9 = 555.56 SF; deepest 7.0 - 5.0 = 2.00 at TP-4.
+  // The work: the box -20..100 each way, so nothing beyond the hull at TP-4.
+  {
+    id: "geo-1.5-clamp",
+    kind: "geo-clamp",
+    layers: [["fill", "Fill"], ["clay", "Clay"], ["sand", "Sand"]],
+    bores: [
+      { id: "b1", code: "B-1", x: -20, y: -20, total: 10, rows: [{ layerId: "fill", top: 0, bottom: 1 }, { layerId: "clay", top: 1, bottom: 5 }, { layerId: "sand", top: 5, bottom: 10 }] },
+      { id: "b2", code: "B-2", x: 100, y: 0, total: 10, rows: [{ layerId: "fill", top: 0, bottom: 1 }, { layerId: "clay", top: 1, bottom: 5 }, { layerId: "sand", top: 5, bottom: 10 }] },
+      { id: "b3", code: "B-3", x: 0, y: 100, total: 10, rows: [{ layerId: "fill", top: 0, bottom: 1 }, { layerId: "clay", top: 1, bottom: 5 }, { layerId: "sand", top: 5, bottom: 10 }] },
+      { id: "t4", code: "TP-4", x: 100, y: 100, total: 7, rows: [{ layerId: "fill", top: 0, bottom: 7 }] },
+    ],
+    box: { minX: -20, minY: -20, maxX: 100, maxY: 100 },
+    expect: {
+      clamps: 1, "clamp0:layer": "Clay", "clamp0:under": "Fill", "clamp0:areaSF": 5000 / 9, "clamp0:maxFt": 2, "clamp0:near": "TP-4",
+      "clamp0:text": "Clay kept under Fill over 555.56 SF, up to 2.00 ft, near TP-4", ordered: true, atLeastPoints: "TP-4",
+    },
+  },
+  // 1.6 and 1.7: each bore's design water level (plan §3.5).
+  {
+    id: "geo-1.6-1.7-design-water",
+    kind: "geo-water",
+    buffer: 1,
+    bores: [
+      // W-1: while drilling 7.50; at completion 6.00; after 24 h 5.20; seasonal high 4.00.
+      { id: "W-1", total: 15, readings: [{ kind: "while_drilling", depth_ft: 7.5 }, { kind: "at_completion", depth_ft: 6 }, { kind: "after_hours", depth_ft: 5.2, hours: 24 }, { kind: "seasonal_high", depth_ft: 4 }] },
+      // W-1 without its seasonal high: 5.20 - 1.00.
+      { id: "W-1 no seasonal", total: 15, readings: [{ kind: "while_drilling", depth_ft: 7.5 }, { kind: "at_completion", depth_ft: 6 }, { kind: "after_hours", depth_ft: 5.2, hours: 24 }] },
+      // Deland B-1 (p.21, p.8): 6.0 ft after 24 h or more; NRCS published 18-24 in (p.4), not used.
+      { id: "Deland B-1", total: 20, readings: [{ kind: "after_hours", depth_ft: 6, hours: 24 }, { kind: "published", depth_ft: 1.5, source: "NRCS" }] },
+      // Maricopa (p.8): no groundwater to 31.5 ft; ADWR published 81.80 ft.
+      { id: "Maricopa", total: 31.5, readings: [{ kind: "at_completion", depth_ft: null }, { kind: "published", depth_ft: 81.8, source: "ADWR site 330001112004301" }] },
+      // Plain City B-13 (p.36): 5.0 at drilling. B-12 (p.35, p.12): 7.0 in PVC after 12 days.
+      { id: "Plain City B-13", total: 20, readings: [{ kind: "while_drilling", depth_ft: 5 }] },
+      { id: "Plain City B-12", total: 20, readings: [{ kind: "stabilized", depth_ft: 7 }] },
+      // Midway TP-3 (p.25, p.12): not encountered 10/2; 4.0 ft on 10/11 (216 h).
+      { id: "Midway TP-3", total: 6, readings: [{ kind: "at_completion", depth_ft: null }, { kind: "after_hours", depth_ft: 4, hours: 216 }] },
+    ],
+    expect: { "W-1": 4, "W-1 no seasonal": 4.2, "Deland B-1": 5, Maricopa: 81.8, "Plain City B-13": 4, "Plain City B-12": 6, "Midway TP-3": 3 },
+  },
+  // Manila Creek B-1 (p.24): not encountered to 41.5 ft, no other source: below 41.5, no point.
+  {
+    id: "geo-1.7-manila-below",
+    kind: "geo-water",
+    bores: [{ id: "Manila Creek B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
+    expect: { "Manila Creek B-1": 41.5 },
+  },
   // --- Q13 (D-526 Block 0.5, D-528): an undercut counts existing ground only -------------
   // A 100 x 70 ft pad (7,000 SF) on a 100 x 100 ft site, undercut 6.5 ft below the subgrade.
   // Fill area: EG 100, FG 102, so the subgrade is 2.0 ft above existing ground. Dug: 6.5 - 2.0 =

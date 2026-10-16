@@ -644,6 +644,9 @@ try {
     const rg = await import("/src/lib/takeoff/earthwork/register.ts");
     const ec = await import("/src/lib/takeoff/earthwork/elevationCheck.ts");
     const sx = await import("/src/lib/takeoff/earthwork/surfaces.ts");
+    const gw = await import("/src/lib/takeoff/earthwork/geotech/water.ts");
+    const gf = await import("/src/lib/takeoff/earthwork/geotech/field.ts");
+    const gm = await import("/src/lib/takeoff/earthwork/geotech/model.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -730,6 +733,34 @@ try {
         return { score: rg.matchScore(runsOf(c.runs), idx, { widthPt: 1000, heightPt: 1000 }) };
       }
       if (c.kind === "balance") return bal.soilBalance(c.input);
+      // F29 Block 1 (D-533): a layer's surface, the clamps, a bore's design water.
+      if (c.kind === "geo-field") {
+        const pieces = gf.fieldPieces(c.points.map(([x, y, v]) => ({ x, y, v })), c.box);
+        const out = {};
+        for (const [x, y] of c.at) out[`D(${x},${y})`] = gf.valueAt(pieces, x, y);
+        return out;
+      }
+      if (c.kind === "geo-water") {
+        const out = {};
+        for (const b of c.bores) out[b.id] = gw.designWater(b.readings, b.total, c.buffer ?? 1).depthFt;
+        return out;
+      }
+      if (c.kind === "geo-clamp") {
+        const m = gm.buildLayerModel({ layers: c.layers.map(([id, name]) => ({ id, name, interpolate: "depth" })), bores: c.bores.map((b) => ({ ...b, ground: null, termination: "planned", refusalReason: null })), box: c.box });
+        const out = { clamps: m.clamps.length };
+        m.clamps.forEach((k, i) => Object.assign(out, { [`clamp${i}:layer`]: k.layer, [`clamp${i}:under`]: k.under, [`clamp${i}:areaSF`]: k.areaSF, [`clamp${i}:maxFt`]: k.maxFt, [`clamp${i}:near`]: k.nearBore, [`clamp${i}:text`]: k.text }));
+        // At every piece corner each bottom is at or below the one above.
+        let worst = Infinity;
+        for (let L = 1; L < m.bottoms.length; L++) {
+          for (const p of m.bottoms[L] ?? []) for (const [x, y] of p.poly) {
+            const above = gm.depthAt(m.bottoms[L - 1], x, y);
+            if (above != null) worst = Math.min(worst, gf.linearAt(p, x, y) - above);
+          }
+        }
+        out.ordered = worst >= -1e-7;
+        out.atLeastPoints = m.points.flat().filter((p) => p.atLeast).map((p) => p.bore).join(",");
+        return out;
+      }
       if (c.kind === "offset") return { areaSF: sf.mpAreaSqFt(sf.offsetNormRingFt(xy(c.ring), c.offsetFt, c.scale), c.scale) };
       if (c.kind === "remaining") {
         const rings = sf.remainingSiteRings(xy(c.boundary), c.excluded.map(xy));
