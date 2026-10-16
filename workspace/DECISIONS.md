@@ -17164,3 +17164,68 @@ The geotech reports the founder sent were for reference; users bring their own.
 - **Member:** "Load template" loaded the four rows with an empty source under the placeholder, and no report name
   showed in the panel.
 - **Guest:** the button was disabled, no name showed, and nothing was sent.
+
+## D-553: Trace's rules are the project's; display preferences stay each person's (B2a, D-550)
+
+**What in the Settings window changes a quantity.** Only the Trace section. Its rules decide which lines Trace offers
+and how many points each adopted contour keeps, on a sheet and across a site:
+- point detail;
+- the label gaps bridged and the tangent tolerance;
+- the shortest line kept;
+- the dash rejoin and its spacing;
+- joining across line styles;
+- the line style Ctrl+click keeps to.
+
+Calculate measures the contours they shape, and the section said so itself ("coarser settings change measured
+length"). Two estimators on one project adopted different contours from the same sheet. Nothing else in the window is
+read when a quantity is computed, or shapes a saved line without the person seeing it land.
+
+**Built.**
+1. **The api** (`earthwork/models.py`, `routes.py`, `schemas.py`; migration `d553e4b7a1c9`):
+   - `earthwork_review` gains `trace_rules` (`{"EG": {...}, "FG": {...}}`, empty for the defaults) and who last
+     changed them and when;
+   - the review's GET returns them with `trace_rules_changed {at, updated_by_name}`;
+   - its PATCH replaces them whole and keeps who and when on a real change, as the slope rule does (D-546);
+   - a guest reads them, with the name as the link allows, and a guest's write is refused.
+2. **The app.** "Rules", beside Trace on the Earthwork row, opens **Trace rules** (`earthwork/trace/TraceRulesDialog.tsx`):
+   - the Settings section's rows, existing and proposed grade apart, and the line style kept to;
+   - "The project's, the same for everyone on it. Last changed by …";
+   - a draft that "Save for the project" writes, since each change re-reads the sheet for everyone tracing;
+   - "Restore defaults";
+   - read only for a viewer and a guest.
+3. **Who uses them.** The sheet's Trace and Adopt labelled, and the site view's Trace, use the project's rules
+   (`trace/traceRules.ts`), never the defaults while the rules load. Ctrl+click's line style is saved for the project
+   and its message says so. A change applies to the next trace; contours already adopted stay as they are.
+4. **The Settings window.** Its Trace section is gone, and its line reads "These preferences are saved on this device
+   for you only, apart from a section that says it is the project's or your account's." Tuning kept on a device is
+   not carried over: each project starts at the defaults.
+
+**Which went where.**
+
+| Setting | Where it is now | Why |
+|---|---|---|
+| Trace: both surfaces' rules and the line style | The project's: Earthwork row › Rules, with who and when | They shape the contours Calculate measures |
+| Contours and spots | The project's, as D-473 left it: Settings window, under its own banner | Display only (colour, weight, dashes, index contour, labels, spot size), so it feeds no quantity. It is the project's so the grading report looks the same whoever prints it. Not made personal without the founder's word |
+| Slope rule and water buffer | The project's (D-546) | Unchanged |
+| General: quantity decimals | Personal | Display rounding; stored values are never rounded |
+| Snapping: Snap, Snap PDF, Ortho | Personal | Drawing aids; each point shows as it lands |
+| Takeoffs: drawing modes, legend, numbered duplicates, drawing line | Personal | How the tools behave and look |
+| Takeoffs: Auto Merge (also on the status line) | Personal, a call for the founder | It changes an area's total: on, a new section over your own on the item is merged and the overlap counts once. But it acts at draw time, in front of the person, on takeoff items, not on contours or spots |
+| General's other rows, Hover, Mouse, Cursor, Toolbar, Panels, Rendering | Personal | Display and handling |
+| Collaboration | Your account (D-98) | Unchanged |
+
+No spot rule is in the window: a spot's elevation is typed, or read off the sheet with no setting, and the elevation
+check's spot threshold is already the project's (D-292).
+
+**Checked** on the bench duplicate ("BENCH DUP 2026-10-16 17:07 — delete me"):
+- **Member:** "Rules" opened Trace rules, reading "No change recorded yet." Point detail for existing grade was set to
+  Normal and saved. The row held 1.2 with window-b's id and 17:34 UTC, and the dialog read "Last changed by Sara W.,
+  Oct 16, 2026, 12:34 PM."
+- **Trace:** armed with the rule, it read C-200 and offered 3 labelled EXISTING lines, 192 to label by hand.
+- **Settings window:** shows no Trace section.
+- **Earthwork:** Calculate on C-200 split the cut as before, 11,583.92 CY (Layer 2 11,579.57; Layer 3 4.35), fill
+  9,463 CCY.
+- **Guest, through the duplicate's own link:** read only, no Save. It settled on Normal with "Last changed Oct 16,
+  2026, 12:34 PM.", no name, as the link hides names. Its PATCH was refused: 403 "This shared project is view only."
+- **A bug the guest check found:** the dialog opened before the rules arrived and kept the defaults. Fixed: it follows
+  the project's rules until a change is made in it, and Trace waits for them.

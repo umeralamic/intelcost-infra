@@ -249,6 +249,15 @@ standard bought.
 | C2 | Two marks beyond the brief's three: "manufacturer, no standard named" (Rinker RCP, Performance Pipe HDPE, Contech CMP) and "association citing the standard" (ACPA, RCP Wall C). | Count them as manufacturer rows, or as not found. |
 | C3 | Blanks: C909 walls, C900 DR 14 above 16 in, RCP Wall C below 24 in, CMP OD and 90–96 in, copper walls, conduit 5–6 in, PVC sewer 33 in. | Whether to buy the AWWA C909 and ASTM C76/B88 tables or ask manufacturers, before Block 2 step 2a. |
 
+## Answers run, 2026-10-16 (D-550 on; morning-report-2026-10-16/PART_B_2026-10-16.md, "Answers run")
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| R1 | Auto Merge changes an area item's total: on, a new section over your own on the item is merged, and the overlap counts once. | Personal (D-553): it acts at draw time, in front of the person, on takeoff items, not on contours or spots. | Make it the project's, or leave it. |
+| R2 | Contours and spots is display only (colour, weight, dashes, index contour, labels, spot size) and feeds no quantity. | The project's, as D-473 left it, so the grading report looks the same whoever prints it. It stays in the Settings window under its own banner, and the window's line now says such a section is the project's (D-553). | Make it personal, move it to the Earthwork row, or leave it. |
+| R3 | The copy's saved slope rule still has the old source line, naming three of the reference reports (loaded 16:39). | Not changed (D-552): the guard keeps me off the copy. | Clear its Source field (one edit). |
+| R4 | Internal records name the reference reports as provenance of hand-worked values: the plan's worked examples and research notes, the quantity rows' comments and ids, and DECISIONS. | Kept (D-552); the app names none. | Scrub them too, or keep them. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
