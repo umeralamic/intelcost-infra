@@ -16626,3 +16626,16 @@ A layer of no thickness there is skipped.
 Checked on the fixtures duplicate: at a fill point, "Soil: Topsoil, 0.00 ft down" (Asphalt and base has no
 thickness at Midway). In the same run: "Copy from TP-1" brought TP-1's three layers into a new bore; "Paste rows"
 matched "gravel" to Natural granular by its soil group; the save returned 200.
+
+## D-537: A bore log row's layer key is checked at commit (fix to D-532)
+
+**The fault.** Purging a duplicate that held bores failed with a 500. A project's purge deletes the project in one
+statement, and the database cascades to the soil layers and, through the bores, to the log rows. Checked at once
+(RESTRICT in the plan; NO ACTION, D-532's change), the layer's delete met log rows the bores' cascade had not removed
+yet.
+
+**The fix.** The key from `earthwork_bore_layer.soil_layer_id` to the layer is DEFERRABLE INITIALLY DEFERRED: checked
+at commit, when the log rows are gone (migration `d537c4a9e2f1`). A layer a bore logs is still never deleted through
+the app: the api refuses it and names the bores.
+
+**Checked:** both duplicates with bores, layers and logs purged (200).
