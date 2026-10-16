@@ -16569,3 +16569,50 @@ Built to spec §7 and plan §2.4, §2.5, §3.4 and §3.15:
   them removed give the same result, byte for byte, once `materials` and `geotech` are set aside (canonical md5
   `0d655ff7…` both). With bores, the four layers sum to the 11,583.93 BCY cut. The 3D test copy is not
   recalculated: its md5 is `fab4d151…`.
+
+## D-535: The excavation slope rule setting, soil layers and water in 3D, and the cross-section (F29 Block 1, step 1d)
+
+1. **Takeoff settings › Excavation slope rule** (spec §8, plan §4.4), the project's, saved the moment it changes as
+   Contours and spots is. It is a setting only; Block 2's trenches read it.
+   - **Federal OSHA** (the default, stored as null): A ¾:1, B 1:1, C 1½:1, stable rock vertical; the 20 ft engineer
+     rule; benching as Appendix B's figures give it (Type A 4 ft and 5 ft, Type B 4 ft and 4 ft cohesive only,
+     Type C none, the benches inside the slope from the toe).
+   - **From the geotech report**: rows of soil (a group, or Cohesive or Granular), water (above, below, either), a
+     depth limit (blank is any), and a slope H:1 or "Shoring required", with a source note.
+   - **"Load template (Utah reports)"** gives the four Midway p.9 rows.
+   - **The OSHA note.** A row steeper than federal OSHA allows for the soils it covers (the project's own layer
+     types, else the group's suggestion) shows "Steeper than federal OSHA — confirm with the geotech report and
+     your state's rules." On a project with Fat clay (B) and a granular soil (C), the template flags its three
+     slope rows and not the shoring row.
+   - **The design water buffer** is set here too.
+
+   `lib/takeoff/earthwork/geotech/slopeRule.ts`.
+2. **3D VIEW.**
+   - **What it draws.** Each soil layer's bottom as a translucent surface over the existing grade, the water
+     surface (a new `--earthwork-water` token), and each bore as a column of its log in the layers' colours,
+     with a cap at a refusal and a ring at the cave-in depth.
+   - **Toggles.** One per layer, one for water, one for bores.
+   - **The layers start hidden.** With all five translucent surfaces on, the view ran at about 1 fps on the bench.
+3. **The cross-section.** "Section" on the Earthwork row: two clicks draw A-A′ on the sheet and the section opens in
+   the split pane. It shows the existing grade, the proposed grade (dashed), each layer as a band in its colour and
+   the water dashed blue, with stations along the bottom; hovering reads every elevation. It writes nothing, so a
+   guest may draw one too. Runs and structures join it in Blocks 2 and 3.
+4. **Two fixes found in this step.**
+   - **Step 1c's key part waited on the layer model.** The model needs the sheet's scale. While that loaded, the
+     `geo` part was absent, the live key differed for a moment, and the stale check wrote stale flags on the
+     fixtures duplicate. The key part is now built from the bores' data alone, and the stale check waits for
+     the geotech to load. Two reloads after a Calculate sent no stale mark.
+   - **"+ Row" in a bore's log.** Under a log that reached the total depth it added a row past it, which the api
+     refuses. It now splits the last row in two. A change of total depth carries a last row that ended at the old
+     total.
+
+**Checks.**
+- **Quantity table:** a new row for the template's OSHA flags (172 earthwork rows, all right).
+- **On the fixtures duplicate:**
+  - the template saved with its flags;
+  - 3D drew the layers, water and bores with their toggles;
+  - a section 413.45 ft long read, at station 1+75, existing 699.09, proposed 703.70, each layer's bottom and
+    water 695.38 ft;
+  - "+ Row" split 1–7.5 into 1–4.25 and 4.25–7.5, and the save returned 200.
+- **As a guest** (a real guest session on the duplicate's link): the section drew and the Bores button did not
+  arm placement. No request but reads was sent.
