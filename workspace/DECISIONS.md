@@ -16744,3 +16744,38 @@ table passed; the 3D test copy's C-200 md5 is `ff91644a…`, unchanged.
 **Found, not changed (pending_umer B5).** A soil layer set "by elevation" is never split on a sheet. The sheet's layer
 model is not given the existing grade's pieces, so the model notes "no existing ground to read it against". This
 predates tonight (step 1b).
+
+## D-541: The 3D soil layers in one pass; last night's "1 fps" was the view opening (night run Task D2, T2)
+
+**Measured on the bench's production build** (app-prod, port 5175).
+- **Setup:** a duplicate of the 3D test copy, C-200, with six depth layers. That gives five drawn bottoms, plus the
+  design water from four bores, and the bores.
+
+| | Before | After |
+|---|---|---|
+| 1500 × 900, layers hidden | 60 fps | 60 fps |
+| 1500 × 900, all five layers, water and bores | 60 fps | 60 fps |
+| 2560 × 1440, tilted under the layers so they fill the screen | 60 fps | 60 fps |
+| Translucent surface draws per frame | 12 (three draws a double-sided transparent surface twice) | 6 |
+| Vertices sent per frame, those surfaces | 390,564 (12 × 32,547, worked out from that rule, not counted) | 195,282 (counted) |
+| 3D VIEW opening, click to first counted second | 10.4 s | 10.0 s |
+
+**What was slow.**
+- **Not the steady view.** The target, 30 fps or more, was met before the change on this machine: 60 fps, the
+  display's cap, in every case.
+- **Last night's "about 1 fps" (T2)** was the counter's first second after the view opened on the dev server, while
+  the page was still busy. Tonight on the dev server it read 1, then 19.5, then held at 30, with every layer on (the
+  dev server's 30 was with the production tab also drawing).
+- **Ruled out by measurement:**
+  - **The layers' build.** On a C-200-sized mesh with 60 layer pieces it takes about 0.1 s.
+  - **Mesh size.** C-200's display mesh is 10,849 triangles.
+- **Tried and not kept:** a 160-cell grid for the layers. It drew 32,674 triangles a layer, three times the prism mesh,
+  so it made this sheet heavier.
+
+**What changed.**
+- **One pass.** The layers and the water draw in one pass (`forceSinglePass`), which halves their draws and vertex
+  work on any GPU. Fragment overdraw is unchanged, since the same pixels are covered.
+- **Faster lookup, same values.** Each piece's box is tried first; the vertices came out identical to the old build
+  in a side-by-side check.
+- **Nothing reads the 3D layers for a quantity,** so no quantity moves.
+- **The layers still start hidden** (T2, as answered).
