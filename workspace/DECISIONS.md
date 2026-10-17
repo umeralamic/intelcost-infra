@@ -18849,3 +18849,128 @@ D-599 (a structure snaps within its outside + 2 ft) are marked confirmed.
 - the first-Calculate work-scope seed;
 - the D-470 and D-528 out-of-date results;
 - the order to apply them.
+
+## D-602: A run that names a structure at its end saves again (found building the BENCH- test set, evening run 2026-10-17)
+
+**The bug:** `PUT …/earthwork/utility-run/<item>` answered 500 whenever a run named a start or end structure. The
+browser saw it as a CORS error.
+- **Cause:** `_runs` in `utility_routes.py` built the structures' uuids with `dict(result.tuples())`. A result has
+  `keys()`, so `dict()` read it as a mapping and subscripted it: `'ChunkedIteratorResult' object is not
+  subscriptable`.
+- **Who it hit:** every save of a run with a structure linked, and every read after one, from the run panel and
+  from scripts. Runs with no structures named were unaffected. That is why the copy's own runs never showed it.
+- **Fix:** a dict comprehension over the tuples. It was the only `dict(<result>)` in the api.
+- **Proof:** BENCH-SAN-1, BENCH-STM-1 and BENCH-DEEP-1 saved with their structures (200). Each reads back with the
+  same start and end structure uuids. Gates (ruff, mypy) pass.
+
+## D-603: A field's unit stays on its line in the structure and run panels (evening run 2026-10-17, item 8)
+
+**The fault:** the Structure panel's Shape row wrapped the Wall field's "in" onto its own line under Shape, at 1440
+and 900 px (day-9-3). The run panel's "Spec max" box wrapped the same way.
+
+**The fix:**
+- **Each field is one group:** its words, its input and its unit sit in a span that never wraps inside itself
+  (`Group`).
+- **Rows wrap only between fields,** inside the value column, never under the row's label.
+- **Structure panel:** Inside, L × W, Wall, Rim/Floor, Slab, Stone, Over-dig and Pit from.
+- **Run panel:** Box, and Spec max, which now shows its unit (in, or mm in a metric project).
+- **Smoke:** `eve-8-after-structure-1440`, `-900`, `-guest` and `eve-8-after-run-1440` (before: `eve-8-before-*`).
+
+## D-604: The export headline names rock and unsuitable that always leave (evening run 2026-10-17, item 5)
+
+**The fault:** the report's EXPORT card read "None" while Layer 3's 6,007 BCY of rock always leaves the site. The
+Volumes panel's headline gave the soil's need only.
+
+**The fix:** one helper, `exportParts` in `balance.ts` (data in, data out). It gives the soil export, then rock,
+then unsuitable, each summed over its supplies, in bank and loose.
+
+**Where it shows:**
+- **The report's EXPORT card (panel and PDF):**
+  - soil alone reads as before ("1,349 BCY / 1,552 LCY hauled");
+  - otherwise the card names what leaves first ("Rock 6,007 BCY / 8,109 LCY hauled");
+  - every other part, and the utilities' and structures' own rock and unsuitable, go on further lines;
+  - in the PDF the cards grow to fit them.
+- **The report's Summary:** "Export" becomes "Soil export" whenever something else leaves too. A row "Utility and
+  structure rock and unsuitable" is added. The "Rock export: <layer>" rows were already there.
+- **The workbook's Summary:** it already lists "Rock Export, Layer 3 (6,007 BCY)" as a balance line. Only the
+  utilities' row is added, so rock isn't listed twice.
+- **The Volumes panel:** a line under the headline, "Export: Rock 6,007 BCY · 8,109 LCY hauled; utility and
+  structure rock and unsuitable 3,241 LCY hauled", or "Export: none".
+
+**Smoke:** before and after for the report header, PDF header and Volumes panel (`eve-5-*`, `eve-5-7-*`); the
+workbooks `eve-before-` and `eve-after-grading-report.xlsx`; the guest's header matches the member's.
+
+## D-605: The report header's labels keep their width; values wrap beside them (evening run 2026-10-17, item 7)
+
+**The fault:** in the report panel, labels ran into their values: "ProjecBENCH DUP…", "Calcul10/17/2026…",
+"Printed10/17/2026". The facts used the generic `Row`, whose label may shrink below its own width while a short
+value refuses to wrap.
+
+**The fix:** the header's facts are their own list. A label keeps its whole width; its value wraps right-aligned
+beside it, at any character if it must.
+
+**The PDF** already wrapped long values in its own column. It is checked with a 120-character project name: the
+name wraps over five lines, and nothing overlaps. The panel was checked with the same name. The duplicate was
+renamed for the test and put back at once.
+
+**Smoke:** `eve-5-7-before-report-header-1440` against `eve-5-7-after-report-header-1440`, `eve-7-after-long-name-panel`
+and `eve-7-after-long-name-pdf`.
+
+## D-606: Truckloads: "Utility and structure rock and unsuitable" (evening run 2026-10-17, item 9)
+
+The haul line "Utility and structure spoils, rock and unsuitable" is renamed "Utility and structure rock and
+unsuitable" in the report and the workbook, its only two places. It counts rock and unsuitable only
+(`utilitySpoilHaul`); suitable spoils go to the site balance (D-596), so the old name overstated it.
+
+## D-607: Run and structure figures follow the project's unit (evening run 2026-10-17, item 10)
+
+**The fault:** in a metric project on a feet-scaled sheet, the run panel's lengths and elevations followed the
+sheet's unit. The ranges already followed the project's (O5, D-599).
+
+**The fix:** what is only read follows the project's unit, as D-398 has it ("the project for display"):
+- the run and structure panels: lengths, elevations, millimetres, Last Calculate;
+- the profile and cross-section panes.
+
+**What doesn't change:**
+- the engine still works in feet;
+- typed contour and spot elevations still follow the sheet's unit, unchanged.
+
+**The width line:** it now follows too, "Width 914 mm — bucket" or "Width 1.37 m — box", through
+`widthLabel(…, metric)`. The engine's stored text and every quantity row stay as they were.
+
+**Smoke:** the duplicate was switched to metric. BENCH-SAN-1 read "92.18 m", its inverts "210.617 / 211.592 m",
+and BENCH-DEEP-1 read "Width 1.37 m — box". The duplicate was then switched back to imperial and recalculated
+(`eve-10-after-metric-run-panel`).
+
+## D-608: A folder's count includes its subfolders' items (evening run 2026-10-17, item 11)
+
+**Catch basins:** checked. BENCH-CB-1 and BENCH-CB-2 default to storm (U-UT52) and file under Utilities › Storm.
+Nothing changed.
+
+**The folder counts:**
+- **The rule until now:** every folder's count in the Takeoff tree was the items filed directly in it (D-57,
+  "its count, not a total"). So Utilities read 0 over Sanitary 45 and Storm 26.
+- **The new rule, the same for every folder and every classification code:** the items in it and in every folder
+  under it. Utilities now reads 80, Sanitary 45, Storm 26, for member and guest alike.
+- **Unchanged:** a count is still of items, never a quantity total. An empty Unclassified still hides.
+
+## D-609: Utilities in 3D: a fixed on-screen thickness, a colour per type, a stronger pick (evening run 2026-10-17, item 6)
+
+**The fault:** at true size, an 8–24 in pipe on C-200 was a pixel or two wide and faded against the cut and fill
+colours (day-8-1, day-8-3).
+
+**The fix:** the true-size geometry stays. Over it:
+- **Pipes:** each run is also drawn as a screen-space stroke (three's `Line2`): 3 px in its type's colour, inside
+  a 1.5 px dark outline (`--utility-outline`). A ghost stroke shows the buried part while Show buried is on.
+- **Structures:** a 9 px footprint marker at the rim, which stays visible at any zoom, and a stroked shaft down
+  to the floor.
+- **Colour per type:** pipes and structures take their utility type's colour: sanitary lime, storm teal, water
+  pale sky, fire water fuchsia, force main green, gas yellow, electric orange, telecom violet, subdrain slate,
+  other white. Each is a token, `--utility-<type>`. An item's own colour is used only where its type isn't known.
+- **Pick:** the picked utility's strokes widen by 2 px and take a 3 px edge in the theme's primary; the others
+  fade to 30 %. A stroke can be picked within 6 px of its edge.
+
+**Speed:** 58–60 fps on C-200 at 1440 × 900, picked and not, member and guest.
+
+**Smoke:** `eve-6-before-3d-default` against `eve-6-after-3d-default`, `eve-6-after-3d-picked` (BENCH-SAN-1) and
+`eve-6-after-3d-guest`.
