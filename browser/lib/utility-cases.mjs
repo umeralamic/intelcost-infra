@@ -38,6 +38,15 @@ const caseA = (over = {}) => ({
   ...over,
 });
 
+/** Block 4's ground: a 300 ft square in two prisms, existing ground `eg`, proposed `fg`, Δz `dz`
+ *  everywhere (the strip is Δz − (FG − EG)). */
+const SQUARE = (eg, fg, dz) => [
+  { pts: [[-50, -50], [300, -50], [300, 300]], eg: [eg, eg, eg], fg: [fg, fg, fg], dz: [dz, dz, dz] },
+  { pts: [[-50, -50], [300, 300], [-50, 300]], eg: [eg, eg, eg], fg: [fg, fg, fg], dz: [dz, dz, dz] },
+];
+/** A bottom piece covering every case. */
+const BIG = [[-100, -100], [400, -100], [400, 400], [-100, 400]];
+
 export const UTILITY_CASES = [
   // --- Part A: the catalog (D-568) -----------------------------------------------------------
   {
@@ -441,5 +450,118 @@ export const UTILITY_CASES = [
       protectionLF: [{ method: "sloped", slope: 1.5, range: "8–10 ft", lf: 100 }],
       hasNote: "No bores: Type C assumed.",
     },
+  },
+
+  // --- §3.12, §3.13: over-excavation and treatment (Block 4, D-585) --------------------------------
+  {
+    // GT-04 (pp.17–18): the slab 90 × 60 ft, 5 ft beyond (100 × 70 = 7,000 SF), 6.5 ft below the slab,
+    // whose bottom is put at existing grade. 45,500 CF = 1,685.19 CY. The stack: 3.5 ft reconditioned
+    // native (24,500 CF, 907.41) under select fill, the rest (3.0 ft, 21,000 CF, 777.78).
+    id: "overex-4a-gt04-pad",
+    kind: "overex",
+    prisms: SQUARE(100, 100, 0),
+    outline: [[[50, 50], [140, 50], [140, 110], [50, 110]]],
+    extendFt: 5,
+    bottom: { kind: "fixed", depthFt: 6.5 },
+    stack: [3.5, null],
+    expect: { totalCY: 1685.19, stackCY: [907.41, 777.78], dMax: 6.5, extendFt: 5 },
+  },
+  {
+    // GT-04's ½" PVM variant: 8.5 ft over the same 7,000 SF, 59,500 CF = 2,203.70 CY.
+    id: "overex-4a-gt04-pvm-half",
+    kind: "overex",
+    prisms: SQUARE(100, 100, 0),
+    outline: [[[50, 50], [140, 50], [140, 110], [50, 110]]],
+    extendFt: 5,
+    bottom: { kind: "fixed", depthFt: 8.5 },
+    expect: { totalCY: 2203.7 },
+  },
+  {
+    // GT-01 Option B (p.22): 24 in under an assumed 150 × 200 ft pavement, 60,000 CF = 2,222.22 CY,
+    // and as much cap.
+    id: "overex-4b-gt01-cap",
+    kind: "overex",
+    prisms: SQUARE(100, 100, 0),
+    outline: [[[0, 0], [150, 0], [150, 200], [0, 200]]],
+    bottom: { kind: "fixed", depthFt: 2 },
+    expect: { totalCY: 2222.22, stackCY: [2222.22] },
+  },
+  {
+    // GT-08 (p.8): remove fill to natural soil over the pits' triangle (5,000 SF), no grading. Topsoil
+    // 0.5 ft; fill bottoms 1.0, 1.5 and 1.0 ft at the corners: 5,000 × mean = 5,833.33 CF = 216.05 CY,
+    // topsoil 2,500 CF (92.59), fill 3,333.33 CF (123.46). The deepest along the outline is 1.5 ft.
+    id: "overex-4d-gt08-to-natural",
+    kind: "overex",
+    prisms: [{ pts: [[0, 0], [100, 0], [0, 100]], eg: [100, 100, 100], fg: [100, 100, 100], dz: [0, 0, 0] }],
+    outline: [[[0, 0], [100, 0], [0, 100]]],
+    extent: [[[[0, 0], [100, 0], [0, 100]]]],
+    layers: 3,
+    bottoms: [[{ poly: BIG, a: 0.5, b: 0, c: 0 }], [{ poly: BIG, a: 1, b: 0.005, c: 0 }]],
+    bottom: { kind: "layer", index: 1 },
+    expect: { totalCY: 216.05, byLayerCY: [92.59, 123.46, 0], dMax: 1.5 },
+  },
+  {
+    // GT-01's footing (p.25, Figure 4): b 1.5 ft, d 5.0 ft at ½H:1V, so it reaches 2.5 ft out each side
+    // at the bottom; the box (Q12) 6.5 × 5 = 32.50 SF/LF, 3,250 CF = 120.37 CY per 100 LF.
+    id: "overex-4e-gt01-footing-box",
+    kind: "overex",
+    prisms: SQUARE(100, 100, 0),
+    outline: [[[0, 0], [100, 0], [100, 1.5], [0, 1.5]]],
+    slopeH: 0.5,
+    extent: [[[[0, -2.5], [100, -2.5], [100, 4], [0, 4]]]],
+    bottom: { kind: "fixed", depthFt: 5 },
+    expect: { totalCY: 120.37, extendFt: 2.5 },
+  },
+  {
+    // Q13 in a fill area, by the new engine: 7,000 SF whose subgrade is 2.0 ft above existing ground,
+    // 6.5 ft below subgrade: existing ground only, 7,000 × 4.5 = 31,500 CF = 1,166.67 CY (D-528's row).
+    id: "overex-q13-in-fill",
+    kind: "overex",
+    prisms: SQUARE(100, 102, 2),
+    outline: [[[0, 0], [100, 0], [100, 70], [0, 70]]],
+    bottom: { kind: "fixed", depthFt: 6.5 },
+    expect: { totalCY: 1166.67 },
+  },
+  {
+    // The strip wins: 0.5 ft of topsoil stripped over the GT-04 footprint (S at existing grade), 6.5 ft
+    // below subgrade. The dig starts below the strip: 6.0 ft × 7,000 = 42,000 CF = 1,555.56 CY, none of
+    // it topsoil.
+    id: "overex-strip-first",
+    kind: "overex",
+    prisms: SQUARE(100, 100, 0.5),
+    outline: [[[50, 50], [140, 50], [140, 110], [50, 110]]],
+    extendFt: 5,
+    layers: 2,
+    bottoms: [[{ poly: BIG, a: 0.5, b: 0, c: 0 }]],
+    bottom: { kind: "fixed", depthFt: 6.5 },
+    expect: { totalCY: 1555.56, byLayerCY: [0, 1555.56] },
+  },
+  {
+    // Down to elevation 95.00 under ground rising 0.02 ft/ft (100.00 at x = 0), no grading, 50 × 50 ft:
+    // the depth runs 5.0 to 6.0 ft, 2,500 × 5.5 = 13,750 CF = 509.26 CY; deepest below subgrade along the
+    // outline 6.0 ft, so a 1:1 slope reaches 6.0 ft out.
+    id: "overex-elevation",
+    kind: "overex",
+    prisms: [
+      { pts: [[0, 0], [300, 0], [300, 300]], eg: [100, 106, 106], fg: [100, 106, 106], dz: [0, 0, 0] },
+      { pts: [[0, 0], [300, 300], [0, 300]], eg: [100, 106, 100], fg: [100, 106, 100], dz: [0, 0, 0] },
+    ],
+    outline: [[[0, 0], [50, 0], [50, 50], [0, 50]]],
+    extent: [[[[0, 0], [50, 0], [50, 50], [0, 50]]]],
+    slopeH: 1,
+    bottom: { kind: "elevation", elevationFt: 95 },
+    expect: { totalCY: 509.26, dMax: 6, extendFt: 6 },
+  },
+  {
+    // GT-01 lime (p.21), 8 % at 16 in over 10,000 SF at the project's 110 pcf: 1,111.11 SY, 58.67 TON;
+    // GT-03 (p.11) 5 % quicklime 36.67, 7 % lime kiln dust 51.33. Geotextile at 10 %: 1,222.22 SY (4g).
+    id: "overex-4c-4g-treatment",
+    kind: "treatment",
+    areaSF: 10000,
+    depthFt: 16 / 12,
+    dryPcf: 110,
+    agents: [8, 5, 7],
+    overlaps: [10],
+    expect: { tons: [58.67, 36.67, 51.33], sy: 1111.11, geoSY: [1222.22] },
   },
 ];

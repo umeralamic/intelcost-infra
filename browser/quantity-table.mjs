@@ -1144,6 +1144,9 @@ try {
     const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
     const sx = await import("/src/lib/takeoff/earthwork/utilities/structures.ts");
     const sc = await import("/src/lib/takeoff/earthwork/utilities/scene.ts");
+    const ox = await import("/src/lib/takeoff/earthwork/overex.ts");
+    const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
+    const stab = await import("/src/lib/takeoff/earthwork/stabilization.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     return cases.map((c) => {
       if (c.kind === "catalog") {
@@ -1176,6 +1179,19 @@ try {
         return { excavationCY: r2(p.excavationCF / 27), stoneCY: r2(p.stoneCF / 27), structureCF: r2(p.structureCF), backfillCY: r2(p.backfillCF / 27), vf: p.vf, vfRange: p.vfRange, method: p.method, dewatering: p.dewatering };
       }
       if (c.kind === "crossing") return { crossings: bp.crossings(c.path, c.a, c.b).map((x) => [r2(x.along), r2(x.atRun)]) };
+      // Block 4 (D-585): over-excavation on prisms given in feet (a scale of 1 ft per page unit).
+      if (c.kind === "overex") {
+        const scale = { feetPerNorm: 1, widthPt: 1, heightPt: 1 };
+        const prisms = c.prisms.map((p) => ({ a: { x: p.pts[0][0], y: p.pts[0][1] }, b: { x: p.pts[1][0], y: p.pts[1][1] }, c: { x: p.pts[2][0], y: p.pts[2][1] }, egA: p.eg[0], egB: p.eg[1], egC: p.eg[2], fgA: p.fg[0], fgB: p.fg[1], fgC: p.fg[2], dzA: p.dz[0], dzB: p.dz[1], dzC: p.dz[2], regionId: p.region ?? null, areaSF: 0, volumeCF: 0, parentTriangleIndex: 0, origin: "tin" }));
+        const s = ox.overexSurfaces(prisms, scale, new Map(Object.entries(c.depths ?? {})), c.bottoms ?? [], c.layers ?? 1);
+        const dMax = ox.overexDMax(s, c.outline, c.bottom);
+        const extendFt = (c.extendFt ?? 0) + (c.slopeH ?? 0) * (dMax ?? 0);
+        // The extent: the outline offset as the feature's is (mitre, true feet), or as given.
+        const extent = c.extent ?? sf.offsetNormRingFt(c.outline[0].map(([x, y]) => ({ x, y })), extendFt, scale);
+        const v = ox.overexVolume(s, extent, c.bottom, c.stack ?? [null]);
+        return { totalCY: r2(v.totalCF / 27), byLayerCY: v.byLayerCF.map((x) => r2(x / 27)), stackCY: v.stackCF.map((x) => r2(x / 27)), dMax: dMax == null ? null : r2(dMax), extendFt: r2(extendFt), uncoveredSF: r2(v.uncoveredSF) };
+      }
+      if (c.kind === "treatment") return { tons: c.agents.map((a) => r2(stab.stabilizerTons(c.areaSF, c.depthFt, c.dryPcf, a))), sy: r2(c.areaSF / 9), geoSY: (c.overlaps ?? []).map((o) => r2(ox.geosyntheticSY(c.areaSF, o))) };
       // Block 3D: a pipe and a manhole placed in the 3D view's frame.
       if (c.kind === "scene") {
         const s = sc.utilityScene(c.origin, { pipes: c.pipes, structures: c.structures });

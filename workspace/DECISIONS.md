@@ -18154,3 +18154,126 @@ utility rows, every one right.
 
 **Open (pending_umer):** the ground is solid, so a pipe below it is seen only from below or where it leaves the
 surface. A see-through-ground toggle is not in the plan.
+
+## D-584: Over-excavation's columns and the materials' compaction notes (F29 Block 4A, plan §2.2)
+
+**Migration** `d584a1c3e5f7_earthwork_overex`. Every new column is null, so no row changes and no stored result
+moves.
+- **`takeoff_item`:**
+  - `undercut_mode`: fixed, layer or elevation; null means fixed, as before;
+  - `undercut_layer_id` (FK to `earthwork_soil_layer`, SET NULL), `undercut_elevation_ft`;
+  - `undercut_slope_h` (H per vertical foot);
+  - `undercut_fill_stack`: JSONB `[{material, native, thickness_ft}]`, bottom up, the last row's thickness null;
+  - `prep_geosynthetics`: JSONB `[{kind, overlap_pct}]`.
+- **`project_fill_material`:** `compaction_pct` and `compaction_standard` (D698 or D1557).
+
+**Api:**
+- **The item routes** read and write the layer by its uuid. A layer from another project is refused.
+- **An undercut is on** with a depth, or with a bottom by layer or elevation (`_undercut_on`). Only the mode's own
+  bottom is kept.
+- **A stack:** every row but the last needs a thickness. With a stack, the old single-fill fields carry its first
+  imported material, and no native or agent.
+- **`POST /material`** with a compaction note upserts it by name. A built-in fill gets a project row only when a
+  note is put on it.
+- **Copies:** a duplicated project remaps the layer through its generic FK remap.
+
+## D-585: The over-excavation engine (F29 Block 4B, plan §3.12, Q12, Q13)
+
+**`lib/takeoff/earthwork/overex.ts`**, pure and exact. It works in depths below the existing ground, as the cut's
+split by layer does.
+- **The dig** starts at d1 = max(strip, EG − S): existing ground only (Q13), below the strip.
+- **It ends at d2,** by mode:
+  - fixed: EG − S + d;
+  - layer: that layer's bottom;
+  - elevation: EG − E.
+- **Layer L's part** is ∫ (min(d2, D′L) − max(d1, D′L−1))⁺.
+- **A stack row** from T(i−1) to T(i) up is P(T(i−1)) − P(T(i)), with P(c) = ∫ (d2 − c − d1)⁺.
+- **Integration:** every function is linear on a prism met with the bottoms' pieces. A min or max is split along
+  the line where its two sides meet, and the positive part is integrated in closed form.
+- **d_max** (`overexDMax`) is exact along the outline, cut at every prism and piece edge.
+- **The reach** is e + s·d_max, and the dig and refill are the box out to it (Q12).
+
+**In Calculate:**
+- `computeFeatureExtras` takes the layers (`placedSoil`, on the model the cut's split reads). It sends a feature
+  down this path only when it has a mode, a slope or a stack.
+- A feature with none of them is worked exactly as before (D-528), and its key does not move.
+- Block 4's fields join `featureKey` only when set.
+- **Without surfaces:** a fixed depth is counted flat (D-528), and the stack is split flat. The other modes count
+  nothing there and say so.
+
+**Quantity rows (§6.4 and §3.12, all right first time):**
+- 4a: GT-04 1,685.19, stack 907.41 / 777.78; ½" PVM 2,203.70;
+- 4b: GT-01 cap 2,222.22;
+- 4d: GT-08 216.05 = topsoil 92.59 + fill 123.46, d_max 1.5;
+- 4e: footing box 120.37, reach 2.5;
+- Q13 in fill: 1,166.67;
+- strip first: 1,555.56, none of it topsoil;
+- elevation: 509.26, d_max 6.0;
+- 4c and 4g: tons 58.67, 36.67, 51.33; 1,111.11 SY; geotextile 1,222.22 SY.
+
+57 utility rows, every one right.
+
+**Taken overnight, Umer to confirm:**
+- **No site view yet.** Only a sheet's Calculate gets the layers. On a site, a bottom by layer says it has no
+  layer model.
+- **A plain fixed undercut stays on today's path.** A feature with no Block 4 field keeps today's single
+  excavation line (D-528), so it is not split by layer even when the sheet has bores.
+
+## D-586: The Site Feature dialog's over-excavation and geosynthetics (F29 Block 4C, plan §4.10)
+
+**Option 1:**
+- **"Remove":** a fixed depth below subgrade, down to the bottom of a layer (every layer but the last, which has
+  no bottom), or to an elevation.
+- **Outward slope**, H : 1 V. With one set, the dialog says the dig is the box at its reach.
+- **"+ Layer under it"** adds replacement rows under the top fill, bottom up, each a material or "Native soil
+  (reconditioned)" with a thickness. The fill picked below them is the rest up to subgrade.
+- **Compaction notes:** one for each imported fill in the replacement, % of ASTM D698 or D1557. Each is kept with
+  the material on Save.
+- **The spoil choice** says unsuitable layers are always exported.
+
+**Option 2** gains geogrid and geotextile, each with an overlap (10 % by default, U-UT45). They can be on with or
+without a prep (Q14).
+
+**A fixed depth stores no mode,** so a feature opened and saved as it was keeps its key. A stack reuses native
+soil reconditioned, not stabilized: the dialog says so.
+
+## D-587: Over-excavation's lines, Estimating and the report (F29 Block 4D, plan §5.1, §5.3, spec §11)
+
+**Lines.** A feature on the Block 4 path writes:
+- **"Undercut Excavation, <layer> (bank) — <Feature>"** per layer (work type `over_excavation`);
+- **"Undercut Replacement, <material> (compacted[, 95% of ASTM D698]) — <Feature>"** per stack row
+  (`replacement_fill`). The kind is aggregate or select by the material's name;
+- **both under "Earthwork — Over-excavation",** so CSI files them at 31.05.03, 31.05.04 or 31.04.05 by the
+  default mapping;
+- **"<Feature> — Geogrid / Geotextile, n% overlap"** in SY (`geosynthetics`, "Earthwork — Subgrade Treatment",
+  31.05.05).
+
+**Spoil:**
+- unsuitable and rock always go "Undercut Spoil, unsuitable and rock → Haul Off";
+- the suitable rest goes where the feature says, less what native rows reuse in place;
+- native rows' shrink shortfall joins the balance, as a native undercut's does (D-407).
+
+**Lines carry a variant and a work scope** (`EarthworkLine.variant`, `workScope`, `workKind`). A line made before
+sends neither. Estimating ranks the new roles with the undercut's and the prep's.
+
+**Taken overnight, Umer to confirm:** the compaction note is named in the replacement line's name, not in its
+notes. Notes are the estimator's, and Calculate never writes them.
+
+**The report:**
+- **The sheet report:** an "Over-excavation" block per feature: bottom, deepest below subgrade, slope and reach,
+  area, the dig by layer, each replacement with its compaction note, spoil and geosynthetics.
+- **The workbook** lists the new roles under Undercut and Subgrade preparation.
+
+**Found and fixed:** the Volumes panel keyed lines by region and role, so two layers' lines of one feature shared
+a key. The key now has the variant.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200's Building Pad: bottom of Layer 2, 5 ft beyond, 0.5 H :
+1 V, 1 ft of native reconditioned under Structural Fill (95 % D698), and geotextile 10 %.
+- **The dig:** d_max 8.41 ft, reach 9.21 ft, 893.15 BCY (Layer 1 67.18, Layer 2 825.98).
+- **The replacement:** native 384.89 and Structural Fill 508.26 CCY.
+- **Haul:** (893.15 − 384.89) × 1.15 = 584.50 LCY.
+- **Geotextile:** 1,809.62 SY.
+- **Earlier, with Layer 1:** the dig was 62.69 BCY, all of it in the native row, so there was no haul.
+- **The dialog** reopened with every field as saved.
+- **Guest:** the dialog was read-only, with "+ Layer under it" disabled, and nothing was sent.
+- **Gates:** pass. **Quantity table:** passed.
