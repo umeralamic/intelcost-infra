@@ -272,6 +272,28 @@ link setting (D-562).
 | R4 | Internal records name the reference reports as provenance of hand-worked values: the plan's worked examples and research notes, the quantity rows' comments and ids, and DECISIONS. | Kept (D-552); the app names none. | Scrub them too, or keep them. |
 | R5 | PVC sewer 18–36 in: Westlake's sheet gives F679's PS 46 and PS 115 walls; JM Eagle's October 2025 sheet gives the current D3034's (F679 was withdrawn in 2024) SDR 35 and SDR 26 walls, thicker at 18–27 in (18 in: 0.499 against 0.536). | Both tables in the catalog draft, check 2 (D-555). | Which one the catalog's 18–36 in rows use. |
 
+## Night run 2026-10-17 (morning-report-2026-10-17/NIGHT_REPORT_2026-10-17.md)
+
+Part A and F29 Blocks 2 to 5 built (D-567 to D-591). **Decisions taken overnight, each reversible, for you to confirm**
+(N), then **open items** (O).
+
+| # | What | Taken as | Your call |
+|---|---|---|---|
+| N1 | Trench engine details (D-569, items 1–8): width-label ties, "Vertical" at 5 ft and deeper, rock below water, native backfill's shrink, cave-in depth, the caving wording, two fixtures, Block 2's order | As D-569 lists | ok, or which to change |
+| N2 | The Utilities group's place and run colours (D-571) | After the earthwork tools, before More; colours by utility type | ok, or after Stripping as §4.1 drew it |
+| N3 | A pit's overlap comes off the trench's backfill too; a rectangular pit cuts the trench at its face with no slice deduction (D-581) | As stated | ok, or no |
+| N4 | Over-excavation on a joined site has no layer model yet; a plain fixed undercut stays on today's path, unsplit by layer (D-585) | As stated | ok, or build the site path / split every undercut |
+| N5 | A fill's compaction note is named in its replacement line, not written to the line's notes (D-587) | In the name | ok, or into notes |
+| N6 | Utility and structure spoils go to the balance at the project's factors; the panel's headline stays the before-utilities figure (D-588) | As stated | ok, or by layer / headline after |
+| N7 | No default mappings for other systems' utility scopes; a CSI scope fully unmapped leaves today's lines unclassified too (D-590) | As stated | ok |
+| O1 | 3D: a buried pipe is hidden by the solid ground, seen only from below or where it leaves the surface (D-583) | Not built (not in the plan) | A see-through-ground toggle (recommended), or leave |
+| O2 | "Benched" can be picked on a run where no station allows it, and reads sloped there | Unchanged | Grey it out where it cannot apply (recommended) |
+| O3 | Structures do not snap to run ends; a mark within its outside + 1 ft joins the run | Unchanged | Snap marks to run ends (recommended) |
+| O4 | A utilities-only sheet shows its runs' figures in the Volumes panel but no grading figures | Unchanged | ok, or a lighter panel |
+| O5 | Metric ranges are a sheet's (by its scale unit), not the project's: an imperial-scaled sheet in a metric project names "8–10 ft" (D-580, D-591) | Per sheet | Per project, or per sheet |
+| O6 | The bench workspace now holds the default work scopes and Q5's mappings, made by tonight's Calculates on the duplicates (workspace data; the duplicate itself is purged) | Kept | Keep, or clear them |
+| O7 | A guest's Estimating tab calls member-only endpoints (packages, columns, components, bid…), each a 403 in the console; nothing breaks | Unchanged (not tonight's) | Hide those calls for guests, or leave |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
