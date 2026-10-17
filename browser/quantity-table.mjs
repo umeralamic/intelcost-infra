@@ -1228,6 +1228,8 @@ try {
         rule: c.rule ?? null,
         depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
         materials: { bedding: "imported", zone: "imported", backfill: "native" },
+        materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
+        segments: c.segments ?? [],
         restoration: null,
       };
       const r = q.runQuantities(input);
@@ -1250,6 +1252,7 @@ try {
         rockCY: cy(r.rockCF),
         rockLF: r2(r.rockLF),
         nativeBankCY: cy(r.nativeBankCF),
+        materialsCY: r.byMaterial.map((m) => [m.zone, m.name, m.source, cy(m.cf)]).sort((a, b) => `${a[0]}|${a[1]}`.localeCompare(`${b[0]}|${b[1]}`)),
         spoilsSuitableCY: cy(r.spoils.suitableCF),
         specExcavationCY: r.spec ? cy(r.spec.excavationCF) : null,
         invertStart: Math.round(input.knots[0].invert * 1e4) / 1e4,

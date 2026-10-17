@@ -233,6 +233,23 @@ export const UTILITY_CASES = [
   },
   { id: "util-2m-spoils", ...caseA(), expect: { nativeBankCY: 311.91, spoilsSuitableCY: 14.01 } },
   {
+    // Segments (spec §9.2, D-577): case (a) with 0+00–0+40 near the building, no gravel bedding and
+    // clay in the zone and backfill. There the bottom is 0.5 ft higher (h 7.5): A 78.75, zone
+    // 7.99 − pipe, backfill 70.76 SF/LF over 40 ft; case (a) over the other 60 ft.
+    id: "util-segment-near-building",
+    ...caseA({ segments: [{ fromFt: 0, toFt: 40, beddingIn: 0, materials: { zone: { name: "Clay", source: "native" }, backfill: { name: "Clay", source: "native" } } }] }),
+    expect: {
+      excavationCY: 312.22,
+      materialsCY: [
+        ["backfill", "Clay", "native", 104.83],
+        ["backfill", "Native", "native", 170.13],
+        ["bedding", "#57 stone", "imported", 3.89],
+        ["zone", "Clay", "native", 11.27],
+        ["zone", "Sand", "imported", 20.68],
+      ],
+    },
+  },
+  {
     // Plan §5.1 and the §4.12 mock: case (a)'s lines, one per role and variant (D-572).
     id: "util-lines-case-a",
     ...caseA(),
