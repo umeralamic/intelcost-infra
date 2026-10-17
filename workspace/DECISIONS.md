@@ -18277,3 +18277,58 @@ a key. The key now has the variant.
 - **The dialog** reopened with every field as saved.
 - **Guest:** the dialog was read-only, with "+ Layer under it" disabled, and nothing was sent.
 - **Gates:** pass. **Quantity table:** passed.
+
+## D-588: The site balance with layers and utilities, before and after (F29 Block 5A, plan §3.14, §4.11, U-UT51)
+
+**The engine** (`balance.ts` `siteBalance`, pure):
+- **Yield:** each suitable bank volume adds its compacted yield, bank ÷ its own shrink.
+- **Demand:** the fill plus a native undercut's shortfall.
+- **A surplus** leaves at k̄ = Σ bank ÷ yield, loose at the bank-weighted swell.
+- **A shortfall** comes in at the project's factors.
+- **Unsuitable, hard dig and rock** always leave, each at its own swell.
+- **Native soil not suitable:** everything but re-used soil leaves, as `soilBalance` has it.
+- With every supply at the project's factors, it is today's balance exactly.
+
+**What feeds it** (`linesFor.ts` `siteInputsOf`, `lib/takeoff/earthwork/lines.ts` `siteBalanceOf`):
+- **The cut by layer.** The cut's split now keeps each layer's shrink, swell and class with the result.
+- **The strip and undercut soil re-used as fill.**
+- **The utility trenches' and structures' suitable spoils,** net of their native backfill, at the project's
+  factors. A structure now keeps its spoils as a run does.
+
+**When it applies.** It applies only with layers or utilities. Without either, the lines are exactly today's. A
+result saved before it reads today's balance until its next Calculate.
+
+**Lines:**
+- **The cut leaves out its rock.** With layers, a region's cut line leaves out its rock, which gets "Rock
+  Excavation, <layer> (bank) — <region>" (`rock_hard_dig`, "Earthwork — Rock / Hard Dig").
+- **Soil Export or Import** is the new balance's.
+- **Always exported:** "Rock Export, <layer> (n BCY)" and "Unsuitable Soil Export, <layer> (n BCY)" in LCY.
+- **Structures:** a pit's unsuitable soil and rock leave as "Structure Spoils Export, Unsuitable / Rock" per
+  utility type, each layer at its own swell. Before this they were not exported.
+
+**The panel and the report.** A "Site balance" block reads Before utilities against With utilities, then what
+always leaves. Imported materials are listed apart and never as soil import: bedding, pipe zone, imported
+backfill, structure stone and replacement fills. The report's Balance section adds the same rows.
+
+**Quantity rows:**
+- `balance-5a-before-after`: 10.00 BCY / 12.50 LCY before; 24.01 / 30.02 after; always exported 154.32 LCY;
+- `balance-layer-factors`: 42.19 BCY, 54.14 LCY;
+- `balance-not-suitable-as-today`: 1,000 / 1,250 out, 940 in.
+
+60 utility rows, every one right.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200:
+- **Before utilities:** export 1,304.94 LCY (1,135 BCY × 1.15).
+- **With layers and utilities:**
+  - Layer 3's 6,006.92 BCY of rock leaves on its own, "Rock Export, Layer 3 (6,007 BCY)" at 8,109.34 LCY;
+  - so the site imports "Soil Import — Select Borrow (4,869 BCY)", 5,599.23 LCY;
+  - the rock lines by region add to 6,006.91 BCY;
+  - Remaining Site Cut went from 6,629.68 to 2,533.87 BCY, less its 4,095.81 of rock.
+- **Guest:** the same block, nothing sent.
+- **Gates:** pass. **Quantity table:** passed.
+
+**Taken overnight, Umer to confirm:**
+- **Utility and structure spoils at the project's factors.** A run's spoil is not kept by layer. On one soil it is
+  the plan's figure exactly (5a).
+- **The panel's headline stays today's.** "Surplus after shrink" is the before-utilities figure, and the new block
+  shows the other.

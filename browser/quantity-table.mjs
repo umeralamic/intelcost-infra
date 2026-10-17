@@ -1145,6 +1145,7 @@ try {
     const sx = await import("/src/lib/takeoff/earthwork/utilities/structures.ts");
     const sc = await import("/src/lib/takeoff/earthwork/utilities/scene.ts");
     const ox = await import("/src/lib/takeoff/earthwork/overex.ts");
+    const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const stab = await import("/src/lib/takeoff/earthwork/stabilization.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
@@ -1190,6 +1191,12 @@ try {
         const extent = c.extent ?? sf.offsetNormRingFt(c.outline[0].map(([x, y]) => ({ x, y })), extendFt, scale);
         const v = ox.overexVolume(s, extent, c.bottom, c.stack ?? [null]);
         return { totalCY: r2(v.totalCF / 27), byLayerCY: v.byLayerCF.map((x) => r2(x / 27)), stackCY: v.stackCF.map((x) => r2(x / 27)), dMax: dMax == null ? null : r2(dMax), extendFt: r2(extendFt), uncoveredSF: r2(v.uncoveredSF) };
+      }
+      // Block 5A (D-588): the site balance with layers and utilities, against today's.
+      if (c.kind === "balance") {
+        const before = bal.soilBalance(c.before);
+        const after = bal.siteBalance(c.after);
+        return { beforeBank: before.exportBank == null ? null : r2(before.exportBank), beforeLoose: before.exportLoose == null ? null : r2(before.exportLoose), afterBank: after.exportBank == null ? null : r2(after.exportBank), afterLoose: after.exportLoose == null ? null : r2(after.exportLoose), importBank: after.importBank == null ? null : r2(after.importBank), always: after.always.map((a) => [a.name, r2(a.bank), r2(a.loose)]) };
       }
       if (c.kind === "treatment") return { tons: c.agents.map((a) => r2(stab.stabilizerTons(c.areaSF, c.depthFt, c.dryPcf, a))), sy: r2(c.areaSF / 9), geoSY: (c.overlaps ?? []).map((o) => r2(ox.geosyntheticSY(c.areaSF, o))) };
       // Block 3D: a pipe and a manhole placed in the 3D view's frame.

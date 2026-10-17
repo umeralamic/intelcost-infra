@@ -552,6 +552,65 @@ export const UTILITY_CASES = [
     bottom: { kind: "elevation", elevationFt: 95 },
     expect: { totalCY: 509.26, dMax: 6, extendFt: 6 },
   },
+  // --- §3.14: the site balance (Block 5A, D-588) ---------------------------------------------------
+  {
+    // 5a: swell 1.25, shrink 1.10. Before: 1,000 − 900 × 1.10 = 10.00 BCY, 12.50 LCY. With trench (a)
+    // (325.93 BCY of suitable clay, 283.56 CCY native backfill) and GT-08's undocumented fill
+    // (123.46 BCY, unsuitable): (1,325.93 ÷ 1.10 − 1,183.56) × 1.10 = 24.01 BCY, 30.02 LCY; always
+    // exported 123.46 × 1.25 = 154.32 LCY.
+    id: "balance-5a-before-after",
+    kind: "balance",
+    before: { cut: 1000, fill: 900, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1.1 },
+    after: {
+      supplies: [
+        { name: "Site cut", bank: 1000, shrink: 1.1, swell: 1.25, kind: "suitable" },
+        { name: "Trench, clay", bank: 325.93, shrink: 1.1, swell: 1.25, kind: "suitable" },
+        { name: "Fill, undocumented", bank: 123.46, shrink: 1.1, swell: 1.25, kind: "unsuitable" },
+      ],
+      fill: 900 + 283.56,
+      suitable: true,
+      shrink: 1.1,
+      swell: 1.25,
+    },
+    expect: { beforeBank: 10, beforeLoose: 12.5, afterBank: 24.01, afterLoose: 30.02, always: [["Fill, undocumented", 123.46, 154.32]] },
+  },
+  {
+    // Each layer its own factors: 100 BCY at 1.10 / 1.25 and 200 BCY at 1.00 / 1.30 against 250 CCY.
+    // Yield 90.91 + 200 = 290.91 CCY; surplus 40.91 × k̄ (300 ÷ 290.91 = 1.03125) = 42.19 BCY; swell
+    // (125 + 260) ÷ 300 = 1.2833, so 54.14 LCY.
+    id: "balance-layer-factors",
+    kind: "balance",
+    before: { cut: 300, fill: 250, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1.1 },
+    after: {
+      supplies: [
+        { name: "Clay", bank: 100, shrink: 1.1, swell: 1.25, kind: "suitable" },
+        { name: "Sand", bank: 200, shrink: 1.0, swell: 1.3, kind: "suitable" },
+      ],
+      fill: 250,
+      suitable: true,
+      shrink: 1.1,
+      swell: 1.25,
+    },
+    expect: { afterBank: 42.19, afterLoose: 54.14, importBank: null },
+  },
+  {
+    // Native soil not suitable reduces to today's: 1,000 BCY cut and 50 BCY strip re-used against 900
+    // CCY at 1.10: need 990 − 50 = 940 BCY imported; all 1,000 BCY of cut exported, 1,250 LCY.
+    id: "balance-not-suitable-as-today",
+    kind: "balance",
+    before: { cut: 1000, fill: 900, reuseBank: 50, suitable: false, swell: 1.25, shrink: 1.1 },
+    after: {
+      supplies: [
+        { name: "Site cut", bank: 1000, shrink: 1.1, swell: 1.25, kind: "suitable" },
+        { name: "Strip re-used", bank: 50, shrink: 1.1, swell: 1.25, kind: "suitable", reuse: true },
+      ],
+      fill: 900,
+      suitable: false,
+      shrink: 1.1,
+      swell: 1.25,
+    },
+    expect: { beforeBank: 1000, beforeLoose: 1250, afterBank: 1000, afterLoose: 1250, importBank: 940 },
+  },
   {
     // GT-01 lime (p.21), 8 % at 16 in over 10,000 SF at the project's 110 pcf: 1,111.11 SY, 58.67 TON;
     // GT-03 (p.11) 5 % quicklime 36.67, 7 % lime kiln dust 51.33. Geotextile at 10 %: 1,222.22 SY (4g).
