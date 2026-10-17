@@ -18409,3 +18409,30 @@ four scopes (`work_scopes.ROLE_SCOPE`):
 - **No default mappings for the other systems' utility scopes.** Plan §5.5: they read "Not classified in <system>"
   until mapped.
 - **A scope fully unmapped on CSI.** Today's lines then read that, too.
+
+## D-591: The report's bores, layers, cut by material and over-excavation; the metric and guest passes (F29 Block 5D)
+
+**The report:**
+- **"Bores and layers":** each layer with its soil group, USCS, OSHA, class and factors, and which bores log it.
+  Then this sheet's bores: ground, total depth (and refusal), the log, and the first water.
+- **"Cut by material":** each region's cut by layer, with rock and unsuitable, and the site's totals.
+- **The workbook** gains the sheets "Bores and layers", "Cut by material" and "Over-excavation" (each feature's
+  bottom, deepest below subgrade, slope, reach, area, and its dig and replacement rows).
+
+**The metric pass** (the duplicate switched to metric and back):
+- **The balance block** converts (997.70 LCM = 1,304.94 LCY).
+- **The rock and import lines** read in BCM (Rock Export 4,593 BCM).
+- **Found and fixed:** a structure's line turned its nominal size into millimetres ("Sanitary Manhole 1219 mm").
+  It now keeps its inch name, as a pipe's does (D-580): "Sanitary Manhole 48", 8–10 ft".
+- **A pit's VF range** is named in metres on a metric sheet, as a run's is (D-580), and stays in feet on a
+  sheet scaled in feet.
+
+**The guest pass**, on the duplicate's link:
+- the Volumes panel's site balance;
+- the report's Bores and layers, Cut by material, Over-excavation and balance rows;
+- the structure list;
+- earlier, the read-only Site Feature dialog, the 3D utilities and the work scope badge;
+- nothing sent.
+
+**Checked:** the report and the workbook (`block5d-grading-report.xlsx`, 11 sheets) on C-200. Gates: pass.
+Quantity table: passed (60 utility rows, 46 metric rows).
