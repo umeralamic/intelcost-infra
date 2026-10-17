@@ -270,6 +270,21 @@ export const UTILITY_CASES = [
     expect: { excavationCY: 317.53, notes: [] },
   },
   {
+    // Q7: from the existing grade, EG = 99 + 0.02x meets the flat FG 100 at x = 50. The fill side
+    // (x < 50) starts at EG, h 7 → 8: 50·(3·7.5 + 56.33) = 3,941.67 CF; the cut side counts only
+    // below the subgrade, h = 8: 50·88 = 4,400 CF. 8,341.67 CF = 308.95 CY.
+    id: "util-profile-existing-in-cut-area",
+    kind: "profile",
+    pipe: SDR35_8,
+    path: [[0, 0], [100, 0]],
+    eg: { plane: [99, 0.02, 0], box: [-50, -50, 150, 50] },
+    fg: { plane: [100, 0, 0], box: [-50, -50, 150, 50] },
+    startSurface: "existing",
+    trenchBottom: 92,
+    layers: [{ ...CLAY_B, depth: null }],
+    expect: { excavationCY: 308.95, notes: [] },
+  },
+  {
     id: "util-profile-existing-only",
     kind: "profile",
     pipe: SDR35_8,

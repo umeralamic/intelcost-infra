@@ -1175,7 +1175,7 @@ try {
           eg: plane(c.eg),
           fg: plane(c.fg),
           features: c.features ?? [],
-          startSurface: "proposed",
+          startSurface: c.startSurface ?? "proposed",
           ends: c.ends ?? null,
           vertical: { mode: "inverts", start: inv[0], end: inv[1] },
           odIn: p.od,
