@@ -18117,3 +18117,36 @@ imperial.
   - trench backfill: 138.64 Clay (its 0–40 ft segment) + 1,252.48 Native = 1,391.12 CCY, as the panel shows.
 - **Guest:** the structure panel was read-only (13 of 13 controls), Calculate greyed while current, nothing sent.
 - **Gates:** pass. **Quantity table:** passed.
+
+## D-583: Structures in the report and in 3D (F29 Block 3D)
+
+**Built:**
+- **The report:**
+  - the Utilities section gains a Structures table: type and size, VF and range, pit by layer, stone and backfill,
+    protection, dewatering, rock and the runs at it;
+  - the workbook gains a Structures sheet, one row per structure;
+  - the structure's type is named in words ("Sanitary Manhole 48"").
+- **3D VIEW** (`lib/takeoff/earthwork/utilities/scene.ts`, pure): each run's pipe along its profile, at the invert plus
+  half its ID, with a point at every bend and every knot. Each structure stands from its rim to the bottom of its
+  base, round or rectangular, at its outside size. Both come in their item's colour, under one "Utilities" toggle.
+  - They are rebuilt on the 3D model's surfaces, as the profile is. Nothing is stored except the structure's place
+    in its saved result (`StoredStructure.place`: centre, rim, base bottom, outside size).
+  - A pipe is drawn at least as thick as a bore column, so it can be seen on a whole site. Its place and level are
+    true.
+
+**Quantity row** `util-3d-scene`: an 8" pipe on a bent path, inverts 92.00 / 91.50 / 90.60, reads centre levels
+2.33, 1.83, 1.33 (at the bend) and 0.93 over a level-90 origin. A 48" manhole spans −0.50 to 10.00 at radius 2.42. 48
+utility rows, every one right.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200:
+- **MH-3:** placed at SS-1's downstream end, then Calculate: pit 103.91 BCY (Layer 1 87.65, Layer 3 16.27), 6.68 VF,
+  6–8 ft, "Runs here: SS-1".
+- **3D VIEW:** the Utilities toggle showed SS-1, SS-3 (V-100's run through its link, which runs about 85 ft past
+  C-200's graded area) and MH-3, at the levels the profile gives.
+- **The report:** the Structures row read MH-3, Sanitary Manhole 48", 6.68 VF, 103.91, 1.18 / 97.52, Sloped 1½:1, rock
+  16.27 BCY, SS-1. The Excel export had the Structures sheet (`block3d-grading-report.xlsx`).
+- **Guest:** 3D VIEW showed the Utilities toggle, the structure list read "List (1)", nothing was sent.
+- **Gates:** pass. **Quantity table:** passed.
+
+**Open (pending_umer):** the ground is solid, so a pipe below it is seen only from below or where it leaves the
+surface. A see-through-ground toggle is not in the plan.

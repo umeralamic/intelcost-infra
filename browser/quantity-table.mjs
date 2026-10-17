@@ -1143,6 +1143,7 @@ try {
     const bp = await import("/src/lib/takeoff/earthwork/utilities/breakpoints.ts");
     const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
     const sx = await import("/src/lib/takeoff/earthwork/utilities/structures.ts");
+    const sc = await import("/src/lib/takeoff/earthwork/utilities/scene.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     return cases.map((c) => {
       if (c.kind === "catalog") {
@@ -1175,6 +1176,11 @@ try {
         return { excavationCY: r2(p.excavationCF / 27), stoneCY: r2(p.stoneCF / 27), structureCF: r2(p.structureCF), backfillCY: r2(p.backfillCF / 27), vf: p.vf, vfRange: p.vfRange, method: p.method, dewatering: p.dewatering };
       }
       if (c.kind === "crossing") return { crossings: bp.crossings(c.path, c.a, c.b).map((x) => [r2(x.along), r2(x.atRun)]) };
+      // Block 3D: a pipe and a manhole placed in the 3D view's frame.
+      if (c.kind === "scene") {
+        const s = sc.utilityScene(c.origin, { pipes: c.pipes, structures: c.structures });
+        return { pipePoints: s.pipes.map((p) => p.points.map((pt) => pt.map(r2))), structureSpans: s.structures.map((t) => [r2(t.x), r2(t.z), r2(t.y0), r2(t.y1), t.r == null ? null : r2(t.r)]) };
+      }
       // A run read through the profile builder: planes as single pieces, features, typed grades.
       if (c.kind === "profile") {
         const p = cat.resolvePipe(c.pipe);
