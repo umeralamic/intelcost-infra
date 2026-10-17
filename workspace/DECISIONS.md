@@ -19046,3 +19046,84 @@ sheet with runs; kept on this device):
   open, the rest outlines), `eve-12-3d-existing-outline-close`, `eve-12-3d-san1-soil-layers`, `eve-12-3d-deep1-box`;
 - 2D: `eve-12-2d-trench-band`;
 - guest: `eve-12-2d-trench-band-guest` and `eve-12-3d-proposed-open-guest`.
+
+## D-611: The archived fixture suite runs on its own fx stack beside the bench (evening run 2026-10-17, item 2; P2 answered)
+
+**Why the bench couldn't run it as it was:**
+- the bench's storage is the real bucket (D-259);
+- the suite's serial group stops and restarts the bench's services;
+- the tag's README restore would overwrite today's guarded helpers.
+
+**How it runs now:** `./fx-suite.sh` on the **fx stack** (compose profile `fx`), beside the running bench, which is
+never stopped, restarted or repointed.
+- **Its own services:**
+  - `api-fx` on 8020 and `api-fx-b` on 8030;
+  - `worker-fx`, which serves every queue;
+  - `app-fx` on 5176 and `app-fx-b` on 5177;
+  - `browser-fx`.
+- **Its own data:** the database `intelcost_fx` (migrated on start), Redis database 1 and MinIO's bucket
+  `intelcost-fx`.
+- **How storage reaches MinIO:** through botocore's own `AWS_ENDPOINT_URL_S3`, at the host gateway's address. An IP
+  endpoint signs path-style, so the api, the worker and the containerised browser reach MinIO at one address. No api
+  code changes.
+- **Mail:** MailHog only (no allowlist, no relay); no AI keys.
+
+**The harness:**
+- **Restoring and retargeting:** `fx-suite.sh setup` restores the tag into `./fx-suite` (git-ignored) and lays
+  today's guarded `lib/*.mjs` over it. `fx-suite-patch.mjs` then retargets every address and service: api,
+  browser, the `intelcost_fx` database, Redis 1, MinIO.
+- **Fails closed:** `run` refuses to start unless `api-fx` and `worker-fx` store in MinIO, mail to MailHog only and
+  run on `intelcost_fx`.
+- **Warm-up:** `run` loads both fx apps once before the fixtures.
+- **Built apps:** `fx-suite.sh prod` swaps the dev servers for built apps on the same ports (profile `fx-prod`).
+- **Skipped and named:**
+  - f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27 (they stop or restart shared services);
+  - f5-s9 (today's `seed.py --reset` with a flag it no longer takes);
+  - d27-uploads (it needs beat);
+  - bench-tidy and the seeded snapshot (they sign in as the founder's account).
+- **Storage, confirmed:** uploads landed in `intelcost-fx` (526 MiB mid-run; emptied by the fixtures' purges). The
+  bench api logged no fx account's request. The 3D test copy's fingerprint is unchanged by the run.
+
+**The run, 102 fixtures:**
+- **Pass 1:** on the dev servers, three at a time, 165 min. 8 passed in full; 68 failures were 30 s page loads timing
+  out under load.
+- **Pass 2:** the 94 that failed, on built apps, two at a time, 99 min.
+- **Best of the two, by area:**
+
+  | Area | Fixtures | Fully pass | Steps pass |
+  |---|---|---|---|
+  | F2 auth and signup | 14 | 4 | 56 of 78 |
+  | F3 roles and settings | 13 | 5 | 55 of 68 |
+  | F4 projects and files | 23 | 2 | 35 of 124 |
+  | F5 drawings and sheets | 20 | 1 | 23 of 98 |
+  | F6 measurement and formulas | 6 | 1 | 11 of 40 |
+  | F7 canvas tools | 11 | 0 | 26 of 56 |
+  | F8 realtime | 12 | 0 | 6 of 13 |
+  | p19, p20a, d37 | 3 | 0 | 7 of 14 |
+  | **Total** | **102** | **13** | **219 of 491** |
+
+**Why fixtures fail: drift since the tag** (SINCE_ARCHIVE lists about 580 changed features):
+- **Signup and projects:**
+  - takeoff-first: a new account lands in an empty Takeoff with its workspace made, so there's no
+    `#workspace-name` onboarding screen;
+  - new projects have no seed folders ("Plans");
+  - the Projects page's heading changed;
+  - the file browser's tree root changed.
+- **The canvas:**
+  - the "Takeoff tools" group;
+  - the drawing image's alt text;
+  - the canvas bar;
+  - the Scale button.
+- **Sign-in:** sign-ins land on Account settings (D-566), and the header workspace switcher is gone.
+- **The harness itself:**
+  - a few fixtures import dev-only modules, which a built app can't serve;
+  - f8-s6 mixes today's sign-in helper with the tag's request wiring (401).
+
+**Product bugs:** none small and clear was found among the failures. Rule 8 says the fixtures are not maintained, so
+they were not rewritten to today's screens. Tonight's one real bug came from the BENCH- test set (D-602).
+
+**Taken, Umer to confirm:** running the suite on its own stack rather than on the running bench's services; and the
+skip list.
+
+**For a run that means something** (before any deploy, CLAUDE.md): the fixtures need updating to today's screens.
+That is about 1–3 days of work, and pending_umer E7 asks whether to spend it.

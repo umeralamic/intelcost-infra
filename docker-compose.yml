@@ -368,6 +368,135 @@ services:
       api-b:
         condition: service_started
 
+  # The archived fixture suite's own stack (the "fx" profile, D-611). The suite at tag
+  # fixtures-archive-2026-09-28 loads drawings, and the bench's storage is the real bucket
+  # (D-259), so it never runs against the services above. These run beside them, sharing
+  # Postgres (their own database, intelcost_fx), Redis (database 1), MinIO and MailHog,
+  # and nothing they do reaches the running api, workers or the AWS bucket:
+  #   - storage is MinIO's bucket intelcost-fx, through botocore's own AWS_ENDPOINT_URL_S3,
+  #     at the host gateway's address, so the api, the worker and the containerised browser
+  #     reach it at one address (an IP endpoint signs path-style); no api code changes;
+  #   - mail goes to MailHog only: no allowlist and no relay;
+  #   - no AI keys, so the fake provider; Stripe stays the fake.
+  # ./fx-suite.sh sets it up, runs the suite and stops it; see the README.
+  api-fx:
+    extends: api
+    profiles: ["fx"]
+    env_file: !override
+      - path: ../intelcost-app-fastapi/.env
+    environment: &fx-env
+      DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost_fx
+      REDIS_URL: redis://redis:6379/1
+      AWS_ENDPOINT_URL_S3: "http://${FX_S3_HOST:-192.168.65.254}:9000"
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET: intelcost-fx
+      S3_REGION: us-east-1
+      MAIL_ALLOWLIST: ""
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_USE_TLS: "false"
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      GEMINI_API_KEY: ""
+      OPENAI_API_KEY: ""
+      APP_URL: http://localhost:5176
+      CORS_ORIGINS: '["http://localhost:5176","http://localhost:5177"]'
+      LOCKED_PROJECTS: "{}"
+    ports: !override
+      - "8020:8000"
+    # The archived suite's own drives, restored with it (./fx-suite.sh setup).
+    volumes: !override
+      - ../intelcost-app-fastapi/main.py:/srv/main.py
+      - ../intelcost-app-fastapi/app:/srv/app
+      - ../intelcost-app-fastapi/alembic:/srv/alembic
+      - ../intelcost-app-fastapi/pyproject.toml:/srv/pyproject.toml:ro
+      - ../intelcost-app-fastapi/scripts:/srv/scripts
+      - ./fx-suite/drives:/srv/drives:ro
+
+  # Window B's api for the realtime fixtures, on the fx database; it runs no migrations.
+  api-fx-b:
+    extends: api-fx
+    profiles: ["fx"]
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports: !override
+      - "8030:8000"
+
+  # One worker for every queue, on the fx database, Redis and bucket.
+  worker-fx:
+    extends: worker
+    profiles: ["fx"]
+    env_file: !override
+      - path: ../intelcost-app-fastapi/.env
+    environment: *fx-env
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads,previews -n fx@%h"
+      /srv/app
+
+  app-fx:
+    extends: app
+    profiles: ["fx"]
+    environment:
+      VITE_API_URL: http://localhost:8020
+    ports: !override
+      - "5176:5173"
+    depends_on: !override
+      api-fx:
+        condition: service_started
+
+  app-fx-b:
+    extends: app
+    profiles: ["fx"]
+    environment:
+      VITE_API_URL: http://localhost:8030
+    ports: !override
+      - "5177:5173"
+    depends_on: !override
+      api-fx-b:
+        condition: service_started
+
+  # The fx apps built, as production serves them (the "fx-prod" profile): a page in about a second,
+  # where the dev servers above took over 30 s under three fixtures at once. On the same ports, so
+  # `./fx-suite.sh prod` stops the dev pair first.
+  app-fx-prod:
+    profiles: ["fx-prod"]
+    build:
+      context: ../intelcost-app-react
+      target: prod
+      args:
+        VITE_API_URL: http://localhost:8020
+        VITE_MARKETING_URL: http://localhost:3000
+    ports:
+      - "5176:80"
+
+  app-fx-b-prod:
+    profiles: ["fx-prod"]
+    build:
+      context: ../intelcost-app-react
+      target: prod
+      args:
+        VITE_API_URL: http://localhost:8030
+        VITE_MARKETING_URL: http://localhost:3000
+    ports:
+      - "5177:80"
+
+  # The browser for the restored suite: its own scripts, the fx addresses.
+  browser-fx:
+    extends: browser
+    profiles: ["fx"]
+    volumes: !override
+      - ./fx-suite/browser:/drive/scripts
+      - ../intelcost-app-react/src:/src/app:ro
+      - ../intelcost-app-fastapi/app:/src/api:ro
+    environment:
+      REGRESS: ${REGRESS:-}
+      FX_APP: http://localhost:5176
+      FX_APP_B: http://localhost:5177
+      FX_API: http://localhost:8020
+      FX_API_B: http://localhost:8030
+      FX_S3: "http://${FX_S3_HOST:-192.168.65.254}:9000"
+
   # The built app, served as production serves it (D-49, the "prod" profile): the
   # Dockerfile's `prod` stage, `npm run build` behind nginx, with long-lived caching
   # on the hashed assets and gzip. Timing fixtures run against it, so a cold open is

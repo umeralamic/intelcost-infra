@@ -254,13 +254,29 @@ prove something does not happen.
 The fixture suite (81 standing fixtures, `regress.sh` with its quick and full tiers, and
 their drives) was archived by D-68 at tag `fixtures-archive-2026-09-28`, in this repo and
 in `intelcost-app-fastapi` and `intelcost-app-react`. **A full run restored from the tag is
-required before any deploy to testers or promotion to `main`.** Restore it here:
+required before any deploy to testers or promotion to `main`.**
+
+**Run it with `./fx-suite.sh`, never by checking the tag out here (D-611).** A checkout over
+`browser/` would replace today's guarded helpers with the tag's unguarded ones. And the suite
+loads drawings while the bench's storage is the real bucket (D-259), and its serial group stops
+and restarts the bench's own services. `fx-suite.sh` runs it on the **fx stack** (the `fx`
+profile):
+- **Its own services:** `api-fx` on 8020, `api-fx-b` on 8030, `worker-fx`, `app-fx` on 5176,
+  `app-fx-b` on 5177 and `browser-fx`.
+- **Its own data:** the database `intelcost_fx`, Redis database 1 and MinIO's bucket
+  `intelcost-fx`.
+- **Its own mail:** MailHog only, and no AI keys.
 
 ```bash
-git checkout fixtures-archive-2026-09-28 -- browser drives regress.sh
-docker compose --profile realtime up -d api-b app-b    # F8's window B
-./regress.sh                                           # the full list, about an hour
+./fx-suite.sh setup     # restore the tag into ./fx-suite (git-ignored), retarget it, start the fx services
+./fx-suite.sh run full  # check the isolation (fails closed), warm both apps, run the whole suite
+./fx-suite.sh stop      # stop the fx services
 ```
+
+**Skipped and named on every run** (`fx-suite-patch.mjs`, `SKIPPED`): the fixtures that stop,
+restart or recreate a shared service (f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2, f4-s27), f5-s9
+(today's `seed.py --reset` with a flag it no longer takes), and d27-uploads (it needs beat).
+`bench-tidy` and the seeded-account snapshot are left out: they sign in as the founder's account.
 
 The features changed since the tag, which that run must cover and whose fixtures may need
 updating first, are listed in the workspace's `docs/tasks/SINCE_ARCHIVE.md`.

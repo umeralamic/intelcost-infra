@@ -284,12 +284,28 @@ link setting (D-562).
 
 ## Day run 2026-10-17 (morning-report-2026-10-17/DAY_REPORT_2026-10-17.md)
 
+**Answered 2026-10-17 (evening run brief), closed:**
+- **P1:** don't add umeralam.q@gmail.com to Bench Construction Test. The lock now takes writes from estimator@ and umeralam.q@gmail.com (D-601).
+- **P2:** make the archived suite safe and run it (D-611; see the evening run below).
+- **P3:** D-593, D-598 and D-599 confirmed, and marked so in DECISIONS.
+
+**Still open:**
+
 | # | What | Where it stands | Your call |
 |---|---|---|---|
-| P1 | Your account, umeralam.q@gmail.com, is not a member of Bench Construction Test, the workspace that holds the 3D test copy. The lock (D-592) lets it write, but membership stops it first (403 `not_a_member`), so today no account can change the copy. | Not changed: adding a member is an access change to your workspace. | Invite it (as Admin) from estimator@, using the rotated password in the Windows credential store, or say so and it is added. |
-| P2 | Item 10, the archived fixture suite (tag `fixtures-archive-2026-09-28`). It has **no earthwork fixtures**: its 81 fixtures cover F2 to F8 and predate F12 and F29. Most load drawings, writing to the bench's storage, which is the real bucket (D-259); "no writes to the shared AWS bucket" forbids that. Its serial group stops and restarts the api, Redis, MinIO and the worker. It builds its own projects, not BENCH DUPs. Its seeded-account sign-ins now get 401 (D-592). | **Not run.** In its place, an F29 acceptance run on a fresh BENCH DUP: every F29 bench check, the quantity table, and today's browser and guest passes, all passed (DAY_REPORT, item 10). | Say which: (a) run the archived suite once with uploads allowed to the bench bucket, on a quiet bench (about an hour, then fixture updates; recommended before any deploy); (b) write F29 fixtures first; (c) keep the acceptance run as F29's proof. |
-| P3 | Decisions taken today for you to confirm (each reversible) | D-593: Trace rules, Site Feature and the other Earthwork dialogs stay modal and movable, not floating panels; the profile and cross-section stay split panes. D-598: a pick fades the whole ground to 30 % (not just around the pick); the highlight is the theme's primary. D-599: a structure snaps to a run's end within its outside + 2 ft. | ok, or which to change |
 | P4 | Item 12 | Skipped, none has an agreed spec. The 820 px top bar is a proposal in DAY_REPORT_2026-10-12 ("not built, as asked"); the zoom patch is yours to try (N1); the Folders tab name has no spec. | Agree a spec for any you want built. |
+
+## Evening run 2026-10-17 (morning-report-2026-10-17/EVENING_REPORT_2026-10-17.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| E1 | D-610: the Cut & Fill 3D view is drawn on the proposed grade | Proposed trenches show only as outlines there. They open in the Proposed view alone, as the brief names the start surface's view. | ok, or open them in Cut & Fill too |
+| E2 | D-610: where the 2D Trench outline's key sits | At the canvas's top left on an earthwork sheet with runs: the plan had no earthwork legend to hold the switch. The run panel has the switch too. | ok, or say where |
+| E3 | D-610: the cross-section pane | It draws pipes only, no trench outline. Unchanged, as asked; the 12c check used the saved Calculate's section instead. | Leave, or add the trench outline to it (a small piece) |
+| E4 | D-611: where the archived suite runs | On its own fx stack beside the bench: its own api, worker and apps, database, Redis database and MinIO bucket. The running bench's services are never stopped, restarted or repointed. | ok, or run it differently |
+| E5 | D-611: what the suite skips | f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27 restart shared services; f5-s9 runs today's seed.py with an old flag; d27-uploads needs beat. | ok, or allow fx-only restarts (all but f8-s5's Redis outage could then run) |
+| E7 | D-611: the suite's result, 13 of 102 fixtures passing in full (219 of 491 steps) | The failures are drift since the tag: takeoff-first onboarding, no seed folders, the Projects heading, the file browser, the canvas toolbar, sign-ins landing on Account settings, no header switcher. No small, clear product bug was found among them. | Update the fixtures to today's screens before the deploy run (about 1–3 days), or keep the F29 acceptance run and smokes as the proof for now |
+| E6 | D-601: the throwaway's read | A throwaway outside Bench Construction Test gets 403 `not_a_member` on a read. window-b@ (a member) shows that a read works. | ok |
 
 ## Found in the click sessions
 
