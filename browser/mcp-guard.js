@@ -1,9 +1,9 @@
 async (page) => {
-  // Run first in every Playwright MCP session (D-542), with browser_run_code_unsafe's `filename`:
-  // every context of the browser, now and later, aborts a request that would write to a protected
-  // project, touch a share link the session did not make (a Save to my workspace from one too), or
-  // sign in as the seeded account. Reads of projects, and a duplicate of the 3D test copy, go
-  // through. A link made on a duplicate is let through with `page.context().__allowShare.add(token)`.
+  // Run first in every Playwright MCP session (D-542, D-601), with browser_run_code_unsafe's
+  // `filename`: every context of the browser, now and later, aborts a request that would write to a
+  // protected project, open one of the founder's own (reads too), touch a share link the session did
+  // not make (a Save to my workspace from one too), or sign in as one of the founder's accounts.
+  // Reads of the 3D test copy, and a duplicate of it, go through. A link made on a duplicate is let through with `page.context().__allowShare.add(token)`.
   // A copy a page starts (Duplicate project, Save to my workspace) is renamed the moment it is made,
   // "BENCH DUP <yyyy-mm-dd hh:mm> — delete me" in UTC (A4, D-544); `page.context().__copies` holds
   // each job's renamed copy. Returns each context's refusals so far.
@@ -15,7 +15,15 @@ async (page) => {
     "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "Hidden Valley Spec Building Rebid",
     "51e474d2-b55b-40d2-ab46-09433ffc5add": "Waxing City",
     "09f1fc14-42f4-4140-9726-bcaf3056ea87": "Minmar",
+    // umeralam.q@gmail.com's workspace, Intelcost Team, found by owner (2026-10-17, D-601).
+    "90cb3a75-3553-4de0-aac4-1693c7d18d57": "Miramar Cove Vault Buildings",
+    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "11",
+    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
   };
+  // The founder's own workspaces that hold no bench project: never opened, reads too (D-601).
+  const FOUNDER_WORKSPACES = { "04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team (umeralam.q@gmail.com)" };
+  // The founder's accounts: never signed in as (D-542, D-601).
+  const FOUNDER_EMAILS = ["estimator@bench.intelcost.io", "umeralam.q@gmail.com"];
   const TEST_COPY = "042c8817-4a65-47ba-95d8-686ecf986246";
   const SHARE_COPY = /\/api\/workspace\/[^/]+\/share-copy\/?(?:[?#]|$)/;
   const COPY_START = /\/api\/workspace\/([^/]+)\/(?:project\/[^/]+\/duplicate|share-copy)\/?(?:[?#]|$)/;
@@ -34,10 +42,15 @@ async (page) => {
     // Every guest request stamps the link, a read too: only links this session made.
     if (share && !allowed.has(decodeURIComponent(share[1]))) return "share link refused: not made by this session (D-542)";
     const verb = String(method).toUpperCase();
-    // The seeded account (the founder's) is never signed in from a browser (CLAUDE.md).
-    if (verb === "POST" && /\/api\/auth\/login(?:[?#]|$)/.test(url) && String(body ?? "").includes("estimator@bench.intelcost.io")) return "sign-in refused: the seeded account (D-542)";
-    if (verb === "GET" || verb === "HEAD" || verb === "OPTIONS") return null;
+    // The founder's accounts are never signed in from a browser (CLAUDE.md, D-601).
+    const lower = String(body ?? "").toLowerCase();
+    if (verb === "POST" && /\/api\/auth\/login(?:[?#]|$)/.test(url) && FOUNDER_EMAILS.some((e) => lower.includes(e))) return "sign-in refused: a founder account (D-542, D-601)";
     const text = `${url} ${body ?? ""}`;
+    // The founder's own projects and workspaces are never opened, any method (D-601).
+    for (const [uuid, name] of [...Object.entries(PROTECTED), ...Object.entries(FOUNDER_WORKSPACES)]) {
+      if (uuid !== TEST_COPY && text.includes(uuid)) return `${verb} refused: it names "${name}", the founder's own (D-601)`;
+    }
+    if (verb === "GET" || verb === "HEAD" || verb === "OPTIONS") return null;
     for (const [uuid, name] of Object.entries(PROTECTED)) {
       if (!text.includes(uuid)) continue;
       if (uuid === TEST_COPY && verb === "POST" && new RegExp(`/project/${uuid}/duplicate/?(\\?|$)`).test(url)) continue;

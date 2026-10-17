@@ -18532,7 +18532,7 @@ floating panels. They, the Earthwork assumptions (Calculate), Strip Area and Lin
 - their place kept on this device, inside the window.
 They stay modal, above the panels.
 
-**Taken, Umer to confirm:**
+**Taken; confirmed by Umer 2026-10-17 (P3):**
 - **The dialogs:** they stay modal and movable, not turned into floating panels. A floating Site Feature dialog
   would let the drawing change under an unsaved form.
 - **The profile and cross-section:** not covered. They are panes in the split view, not floating.
@@ -18689,7 +18689,7 @@ Every earlier row is unchanged: none had a short run.
   - a chip reads "<name> — click empty space to clear".
   A click anywhere else clears it. A buried utility is pickable through the ground only while Show buried is on.
 
-**Taken, Umer to confirm:**
+**Taken; confirmed by Umer 2026-10-17 (P3):**
 - **The fade:** "fades the ground around it" is done as the whole ground fading to 30 % while a pick holds. A
   local fade around the pick would need a custom shader.
 - **Highlight colour:** the theme's primary colour.
@@ -18722,7 +18722,7 @@ The guest read 47.1 fps, measured while the member's 3D view was rendering in th
 - **The rule:** a structure placed within its outside + 2 ft of a run's end on its sheet sits on that end exactly
   (the nearest one), so it joins the run.
 - **Unchanged:** the join itself is still outside + 1 ft.
-- **Taken, Umer to confirm:** the 2 ft. It catches a near miss at a usual zoom without pulling a structure meant to
+- **Taken; confirmed by Umer 2026-10-17 (P3):** the 2 ft. It catches a near miss at a usual zoom without pulling a structure meant to
   stand apart.
 - **Smoke:** a 48" manhole clicked about 2.6 ft from SS-1's end was saved on the end, 0 ft off (MH-4 on the
   duplicate).
@@ -18791,3 +18791,61 @@ show no write but the guest session's own POST.
    members, who saw the same message after a reload.
 
 **Screenshots:** `day-9b-1` to `day-9b-9`. **Workbook:** `day-9b-guest-grading-report.xlsx`. **Gates:** pass.
+
+## D-601: The 3D test copy takes writes from both founder accounts; the founder's own projects are protected by owner (evening run 2026-10-17, Part A)
+
+**Item 1 answered by Umer:** the 04:27 and 06:13 sessions were his, testing in his own Chrome as estimator@.
+
+**The lock (1a):**
+- **The change:** `LOCKED_PROJECTS` lets estimator@bench.intelcost.io and umeralam.q@gmail.com write to the copy.
+  Every other account gets 403 `project_locked`: "only estimator@bench.intelcost.io or umeralam.q@gmail.com may
+  change it".
+- **The proof,** `scripts/check_project_lock.py`, rewritten so it never acts as either founder account:
+  - **A throwaway** (`fx.lock.<stamp>@`, no workspace): write 403 `project_locked`; read 403 `not_a_member`. It
+    isn't a member of Bench Construction Test, and adding one would change the founder's workspace (1d).
+  - **window-b@** (a bench member): write 403 `project_locked`; read 200.
+  - **The two founder addresses:** only looked up, and both resolve to an account. No token is made for them.
+
+**The credential (1b):**
+- **Deleted:** estimator@'s stale entry in the Windows Credential Manager (Generic Credentials).
+- **How:** `cmdkey` can't parse a target name containing " - ", so it was removed by the Windows `CredDeleteW` call
+  from a one-off script, then the script was deleted. Nothing was read.
+- **The hook:** `no-credential-read.sh` keeps its rule unchanged. Only its comment changed: the password is
+  Umer's alone, and he resets it himself.
+
+**MailHog (1c):** one "Reset your IntelCost password" mail to estimator@ was deleted by its id, without being opened.
+The other mail to estimator@ is a forum reply notice and stays.
+
+**Not done (1d):** umeralam.q@gmail.com was not added to Bench Construction Test.
+
+**The founder's own projects, found by owner:**
+- **How they were found:** every project in a workspace that umeralam.q@gmail.com owns. That is one workspace,
+  Intelcost Team (`04df326a…`), holding:
+  - Miramar Cove Vault Buildings `90cb3a75…`;
+  - "11" `c1770e62…`;
+  - Hidden Valley Rebid — 3D test (shared copy) `4df73dc7…`, saved from his share link at 15:18 today.
+- **The guard lists:** all three were added to every copy of the list (`scripts/protected.py`,
+  `browser/lib/protected.mjs`, `browser/mcp-guard.js`), which now holds 8 projects. Intelcost Team itself is listed
+  as a founder workspace.
+- **Reads refused too:** for every protected project except the 3D test copy, and for that workspace, the browser
+  guards refuse any request that names them, reads included. They are never opened. The test copy is still read
+  to duplicate it.
+- **Sign-ins:** the guards refuse a sign-in as either founder account, from a browser or from a bench script.
+- **estimator@'s own workspaces** hold the bench seed (Riverside, Marketing Demo, Test 3) and are not covered by
+  the owner rule.
+- **The guard check** (`browser/guard-check.mjs`): the three lists must hold the same projects, workspaces and
+  accounts. `fingerprint.sh` runs it first.
+- **The fingerprint:**
+  - it prints the list, and marks FAIL any project in umeralam.q@gmail.com's workspaces that isn't on it;
+  - a founder's copy named like the test copy is no longer marked FAIL.
+
+**P3 confirmed by Umer:** D-593 (the dialogs are modal and movable), D-598 (a pick fades the ground to 30 %) and
+D-599 (a structure snaps within its outside + 2 ft) are marked confirmed.
+
+**Promotion note (item 4):** `intelcost-infra/notes/2026-10-17_f29_promotion_for_abdullah.md`. It covers:
+- the 14 migrations from staging's head `f2c9a7d4e1b8` to `d584a1c3e5f7`;
+- `cryptography` and `SHARE_PASSWORD_KEY` (D-520);
+- `LOCKED_PROJECTS`, which is bench only and stays unset elsewhere;
+- the first-Calculate work-scope seed;
+- the D-470 and D-528 out-of-date results;
+- the order to apply them.

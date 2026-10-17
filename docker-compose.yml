@@ -107,9 +107,9 @@ services:
       # app-prod, the built app of the prod profile (D-49).
       CORS_ORIGINS: '["http://localhost:5173","http://localhost:5174","http://localhost:5175","http://localhost:3000"]'
       APP_URL: http://localhost:5173
-      # The 3D test copy refuses every write but the founder's own account (D-592), on the
-      # server, in addition to the browser guard (D-542). A duplicate of it still goes through.
-      LOCKED_PROJECTS: '{"042c8817-4a65-47ba-95d8-686ecf986246":["umeralam.q@gmail.com"]}'
+      # The 3D test copy refuses every write but the founder's two accounts (D-592, D-601), on
+      # the server, in addition to the browser guard (D-542). A duplicate of it still goes through.
+      LOCKED_PROJECTS: '{"042c8817-4a65-47ba-95d8-686ecf986246":["estimator@bench.intelcost.io","umeralam.q@gmail.com"]}'
       # Geo. Empty by default, which is what makes the bench inert and every signup
       # Tier 1. Point them at the fake to drive the MaxMind branches (F2-S5, F2-S8):
       #   FAKE_VPN=1 docker compose --profile fakes up -d maxmind-fake

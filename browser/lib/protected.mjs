@@ -24,6 +24,15 @@ export const PROTECTED_PROJECTS = Object.freeze({
   "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "Hidden Valley Spec Building Rebid",
   "51e474d2-b55b-40d2-ab46-09433ffc5add": "Waxing City",
   "09f1fc14-42f4-4140-9726-bcaf3056ea87": "Minmar",
+  // umeralam.q@gmail.com's workspace, Intelcost Team, found by owner (2026-10-17, D-601).
+  "90cb3a75-3553-4de0-aac4-1693c7d18d57": "Miramar Cove Vault Buildings",
+  "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "11",
+  "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
+});
+
+/** The founder's own workspaces that hold no bench project: never opened from here (D-601). */
+export const FOUNDER_WORKSPACES = Object.freeze({
+  "04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team (umeralam.q@gmail.com)",
 });
 
 /** The 3D test copy: the one project that may be duplicated from here. */
@@ -31,8 +40,22 @@ export const TEST_COPY = "042c8817-4a65-47ba-95d8-686ecf986246";
 
 const READS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+/** Why a request is refused for opening a founder project or workspace, any method, reads too
+ *  (D-601): every protected project but the 3D test copy, which is read to duplicate it. */
+export function openRefusal(method, url, body = "") {
+  const text = `${url} ${typeof body === "string" ? body : ""}`;
+  for (const [uuid, name] of [...Object.entries(PROTECTED_PROJECTS), ...Object.entries(FOUNDER_WORKSPACES)]) {
+    if (uuid !== TEST_COPY && text.includes(uuid)) {
+      return `${String(method || "GET").toUpperCase()} refused: it names "${name}" (${uuid}), the founder's own, never opened from here (D-601)`;
+    }
+  }
+  return null;
+}
+
 /** Why this request is refused, or null. `body` is its text, if any. */
 export function writeRefusal(method, url, body = "") {
+  const opened = openRefusal(method, url, body);
+  if (opened) return opened;
   const verb = String(method || "GET").toUpperCase();
   if (READS.has(verb)) return null;
   const text = `${url} ${typeof body === "string" ? body : ""}`;
@@ -46,14 +69,18 @@ export function writeRefusal(method, url, body = "") {
 
 const allowedTokens = new Set();
 
-/** The seeded account: the founder's, never signed in from a browser (CLAUDE.md). The api's own
- *  helpers may use it, for a duplicate, a link on one, or a purge. */
+/** The seeded account: the founder's, never signed in from a browser (CLAUDE.md). Its password is
+ *  his alone (D-601); the api's own scripts act for it in its process, for a purge. */
 export const SEEDED_EMAIL = "estimator@bench.intelcost.io";
 
-/** Why a browser's request is refused for its account, or null: a sign-in as the seeded account. */
+/** The founder's accounts: never signed in as from a browser or a script (D-542, D-601). */
+export const FOUNDER_EMAILS = Object.freeze([SEEDED_EMAIL, "umeralam.q@gmail.com"]);
+
+/** Why a request is refused for its account, or null: a sign-in as one of the founder's. */
 export function signInRefusal(method, url, body = "") {
   if (String(method).toUpperCase() !== "POST" || !/\/api\/auth\/login(?:[?#]|$)/.test(String(url))) return null;
-  return String(body).includes(SEEDED_EMAIL) ? "sign-in refused: the seeded account is never signed in from a browser (CLAUDE.md, D-542)" : null;
+  const text = String(body).toLowerCase();
+  return FOUNDER_EMAILS.some((email) => text.includes(email)) ? "sign-in refused: the founder's accounts are never signed in from here (D-542, D-601)" : null;
 }
 
 /** A share link this run made, on a duplicate: its guest requests may go through. */
@@ -149,7 +176,7 @@ export function guardFetch() {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const method = init.method ?? (typeof input === "object" && "method" in input ? input.method : "GET");
     const body = typeof init.body === "string" ? init.body : "";
-    const refusal = writeRefusal(method, url, body) ?? shareRefusal(url, allowedTokens, body);
+    const refusal = writeRefusal(method, url, body) ?? shareRefusal(url, allowedTokens, body) ?? signInRefusal(method, url, body);
     if (refusal) throw new Error(refusal);
     const response = await real(input, init);
     if (String(method).toUpperCase() === "POST" && response.ok && COPY_START.test(url)) {
