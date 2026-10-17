@@ -233,6 +233,22 @@ export const UTILITY_CASES = [
   },
   { id: "util-2m-spoils", ...caseA(), expect: { nativeBankCY: 311.91, spoilsSuitableCY: 14.01 } },
   {
+    // Plan §5.1 and the §4.12 mock: case (a)'s lines, one per role and variant (D-572).
+    id: "util-lines-case-a",
+    ...caseA(),
+    lines: true,
+    expect: {
+      lines: [
+        ["8\" PVC SDR-35 Pipe, 6–8 ft deep — Sanitary Sewer", "LF", 100, "utility_pipe", "site_utilities.sanitary"],
+        ["Trench Excavation, Clay (bank) — Sanitary Sewer", "BCY", 325.93, "utility_trench_excavation", "site_utilities.sanitary"],
+        ["Pipe Bedding, #57 stone (compacted) — Sanitary Sewer", "CCY", 6.48, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
+        ["Pipe Zone, Sand (compacted) — Sanitary Sewer", "CCY", 34.46, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
+        ["Trench Backfill, Native (compacted) — Sanitary Sewer", "CCY", 283.56, "utility_backfill", "site_utilities.sanitary"],
+        ["Trench Protection, Sloped 1:1 8–10 ft — Sanitary Sewer", "LF", 100, "trench_protection", "earthwork.trench_protection"],
+      ],
+    },
+  },
+  {
     id: "util-2n-exact-vs-average-end-area",
     ...caseA({ protection: "sloped", depth: [6, 10] }),
     aea: [100, 5],

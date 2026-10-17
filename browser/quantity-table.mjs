@@ -1141,6 +1141,7 @@ try {
     const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
     const q = await import("/src/lib/takeoff/earthwork/utilities/quantities.ts");
     const bp = await import("/src/lib/takeoff/earthwork/utilities/breakpoints.ts");
+    const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     return cases.map((c) => {
       if (c.kind === "catalog") {
@@ -1256,6 +1257,21 @@ try {
         hasNote: r.notes.find((n) => n === c.expect.hasNote) ?? r.notes,
       };
       if (c.aea) out.aeaOverCF = c.aea.map((step) => r2(q.averageEndArea(input, step) - r.excavationCF));
+      if (c.lines) {
+        const made = ln.utilityLines([
+          {
+            type: "sanitary",
+            pipeLabel: '8" PVC SDR-35',
+            pipeKey: c.pipe,
+            pipes: 1,
+            q: r,
+            swell: c.layers.map(() => 1.3),
+            materials: { bedding: { name: "#57 stone", source: "imported" }, zone: { name: "Sand", source: "imported" }, backfill: { name: "Native", source: "native" } },
+            restoration: null,
+          },
+        ]);
+        out.lines = made.map((l) => [l.name, l.unit, r2(l.quantity), l.role, l.workScope]);
+      }
       return out;
     });
   }, UTILITY_CASES);
