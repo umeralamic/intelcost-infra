@@ -324,6 +324,17 @@ export const UTILITY_CASES = [
     expect: { excavationCY: 498.07, notes: ["Grade from rims: no surface here."] },
   },
 
+  {
+    // A section across a run (D-579): the run (0,0)→(60,80)→(160,80) crosses the line (100,60)→(100,100)
+    // 20 ft along the line and 140 ft along the run (100 + 40).
+    id: "util-section-crossing",
+    kind: "crossing",
+    path: [[0, 0], [60, 80], [160, 80]],
+    a: [100, 60],
+    b: [100, 100],
+    expect: { crossings: [[20, 140]] },
+  },
+
   // --- §3.16: a project with no grading (2q, the run) -------------------------------------------
   {
     id: "util-2q-typed-grades-no-bores",

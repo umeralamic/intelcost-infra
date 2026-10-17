@@ -1164,6 +1164,7 @@ try {
         }
         return out;
       }
+      if (c.kind === "crossing") return { crossings: bp.crossings(c.path, c.a, c.b).map((x) => [r2(x.along), r2(x.atRun)]) };
       // A run read through the profile builder: planes as single pieces, features, typed grades.
       if (c.kind === "profile") {
         const p = cat.resolvePipe(c.pipe);
