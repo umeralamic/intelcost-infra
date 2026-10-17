@@ -18366,3 +18366,46 @@ backfill, structure stone and replacement fills. The report's Balance section ad
 - **Guest:** Estimating loaded with no badge link and nothing sent. Its 403s are Estimating's existing member-only
   reads (packages, columns, components, bid…), not this block's.
 - **Gates:** pass.
+
+## D-590: Today's 24 earthwork roles on work scopes, every code and folder unchanged (F29 Block 5C, Q5, plan §5.3)
+
+**Scopes.** Two new default scopes: "Earthwork — Grading" and "Earthwork — Topsoil Strip". Today's roles map to
+four scopes (`work_scopes.ROLE_SCOPE`):
+- **Grading:** cut, fill, import, export;
+- **Topsoil Strip:** the five strip roles;
+- **Over-excavation:** the ten undercut roles;
+- **Subgrade Treatment:** prep and stabilization.
+
+**The seed.** `lines._role_scopes` seeds once, the first time "Earthwork — Grading" is made:
+- **On CSI:**
+  - one row per role, repeating `CSI_BY_ROLE`;
+  - the aggregate rule (undercut_replace, kind aggregate → 31.05.04);
+  - each scope to today's fallback node (31.03 Grading).
+- **On each other system whose tree the workspace has:** each scope to today's node (`_SCOPE`: G1030, 8.1, 5.02,
+  E.04).
+
+**Lines:**
+- **Each of today's lines** now carries its scope and work type (and kind). Its code is the mapping's, and with no
+  mapping in that system, today's code.
+- **Folders don't move.** Today's lines stay in today's folders (the earthwork scope's class folder, the
+  Earthwork custom folder), even when a mapping change files them again (`reresolve` moves only their code).
+- **Placed by hand:** a line placed by hand is never touched.
+- **No backfill.** No migration writes to a line; each takes its scope on its next Calculate. Founder projects
+  are never opened.
+
+**The proof** (`scripts/check_scopes.py`, read-only: `digest` before and after, then `compare`). On "BENCH DUP
+2026-10-16 22:13 — delete me":
+- **Setup:** one line was priced first, Remaining Site Cut at $12.50 material.
+- **Calculate:** C-200 and C-100 were calculated.
+- **Result:** "check_scopes: 93 lines, every quantity, code, folder and rate the same".
+- **The seed:** CSI 35 rows (24 roles, aggregate, 4 scopes, and Block 4's 6); UniFormat, NRM1, NRM2 and CESMM 4
+  each.
+- **5d:** "Earthwork — Grading" was renamed, and C-100 calculated. The rename was kept, no second Grading scope was
+  made, and 30 lines stayed on it. The name was then put back.
+- **Guest:** Calculate greyed while current, nothing sent.
+- **Gates:** pass.
+
+**Taken overnight, Umer to confirm:**
+- **No default mappings for the other systems' utility scopes.** Plan §5.5: they read "Not classified in <system>"
+  until mapped.
+- **A scope fully unmapped on CSI.** Today's lines then read that, too.
