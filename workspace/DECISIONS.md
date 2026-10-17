@@ -17642,7 +17642,7 @@ Docs (`docs/tasks/pipe_catalog_DRAFT.md`) and the catalog's data in the app (D-5
 
 All at the D-555 figures. Writing them found one bug, fixed before the commit: the trench bottom had left out the bedding.
 
-**Taken overnight, Umer to confirm:**
+**Taken overnight, confirmed by Umer 2026-10-17 (day run item 7):**
 1. **Ties in the width label.** When the bucket equals the pipe width, the label names the bucket ("Width 24 in —
    bucket"), and a box ties the same way: what digs the trench is named.
 2. **"Vertical" at 5 ft and deeper.** A run set to Vertical is vertical under 5 ft and sloped from 5 ft, where the spec
@@ -17781,7 +17781,7 @@ Inches show as mm, and feet as m, on a metric project.
   Runs (1) opened the panel read only, 21 of 21 fields disabled, the same width line. The guest sent nothing.
 - **Gates:** pass. **Quantity table:** passed (36 utility rows).
 
-**Taken overnight, Umer to confirm:** the Utilities group sits after the earthwork tools, before More, not after
+**Taken overnight, confirmed by Umer 2026-10-17 (day run item 7):** the Utilities group sits after the earthwork tools, before More, not after
 Stripping as plan §4.1 drew it, since the founder asked for a group of its own; and runs are coloured from the
 measurement palette by the usual utility colours (sewers green, storm teal, water blue, gas gold, power red, telecom
 orange).
@@ -18064,7 +18064,7 @@ imperial.
 - **`runBetweenPits`:** the trench runs from each pit's bottom outline. Its pipe LF is still measured centre to
   centre. The overlap is taken off the excavation, each layer in its share.
 
-**Taken overnight, Umer to confirm:**
+**Taken overnight, confirmed by Umer 2026-10-17 (day run item 7):**
 - **The overlap comes off the trench's backfill too.** The pit's own backfill already fills that volume. It comes off
   each backfill material in its share, and the native bank and the spoils follow from the trimmed figures.
 - **A rectangular pit cuts the trench at its face with no slice deduction.** The trench stops at half the bottom's
@@ -18213,7 +18213,7 @@ split by layer does.
 
 57 utility rows, every one right.
 
-**Taken overnight, Umer to confirm:**
+**Taken overnight, confirmed by Umer 2026-10-17 (day run item 7):**
 - **No site view yet.** Only a sheet's Calculate gets the layers. On a site, a bottom by layer says it has no
   layer model.
 - **A plain fixed undercut stays on today's path.** A feature with no Block 4 field keeps today's single
@@ -18256,7 +18256,7 @@ soil reconditioned, not stabilized: the dialog says so.
 **Lines carry a variant and a work scope** (`EarthworkLine.variant`, `workScope`, `workKind`). A line made before
 sends neither. Estimating ranks the new roles with the undercut's and the prep's.
 
-**Taken overnight, Umer to confirm:** the compaction note is named in the replacement line's name, not in its
+**Taken overnight, confirmed by Umer 2026-10-17 (day run item 7):** the compaction note is named in the replacement line's name, not in its
 notes. Notes are the estimator's, and Calculate never writes them.
 
 **The report:**
@@ -18327,7 +18327,7 @@ backfill, structure stone and replacement fills. The report's Balance section ad
 - **Guest:** the same block, nothing sent.
 - **Gates:** pass. **Quantity table:** passed.
 
-**Taken overnight, Umer to confirm:**
+**Taken overnight; changed by Umer 2026-10-17 (day run items 3 and 5, D-594, D-596):**
 - **Utility and structure spoils at the project's factors.** A run's spoil is not kept by layer. On one soil it is
   the plan's figure exactly (5a).
 - **The panel's headline stays today's.** "Surplus after shrink" is the before-utilities figure, and the new block
@@ -18405,7 +18405,7 @@ four scopes (`work_scopes.ROLE_SCOPE`):
 - **Guest:** Calculate greyed while current, nothing sent.
 - **Gates:** pass.
 
-**Taken overnight, Umer to confirm:**
+**Taken overnight, confirmed by Umer 2026-10-17 (day run item 7):**
 - **No default mappings for the other systems' utility scopes.** Plan §5.5: they read "Not classified in <system>"
   until mapped.
 - **A scope fully unmapped on CSI.** Today's lines then read that, too.
@@ -18436,3 +18436,71 @@ four scopes (`work_scopes.ROLE_SCOPE`):
 
 **Checked:** the report and the workbook (`block5d-grading-report.xlsx`, 11 sheets) on C-200. Gates: pass.
 Quantity table: passed (60 utility rows, 46 metric rows).
+
+## D-592: The 3D test copy is locked on the server; the seeded account's password is rotated (day run 2026-10-17, item 1)
+
+**What wrote the copy (item 1a).** From the api's records and this machine's processes, read 06:47–07:10 UTC:
+- **Who:** every write at 04:27–04:31 and 06:13–06:25 UTC was made as estimator@bench.intelcost.io (user 1,
+  "Bench Estimator").
+  - **At 06:13–06:25:** runs SS-1, ST-1 and ST-2, structures MH-1 to MH-3, two edits, and a Calculate of C-200 at
+    06:25:51. Its md5 moved from 94bbbcc4… to 9304b13f….
+  - **From 04:27:** those items are no longer on the copy.
+- **The client:** a desktop Chrome 155 (`… Chrome/155.0.0.0 Safari/537.36`), with the app at :5173 calling the api
+  at :8000 (CORS preflights), from the host (172.18.0.1).
+- **No sign-in that night.** Both sessions are one refresh-token chain:
+  - each token is replaced about every 29 minutes, with the new one appearing the instant the old is revoked;
+  - this run's links were 02:11 → 04:27:08 → 06:13:15 → 06:42:15;
+  - the chain runs unbroken from 2026-10-16 16:37, and before that in the same pattern.
+  Only a persistent browser profile keeps such a cookie. The night's short estimator@ work sessions on the copy
+  (23:46–02:18) came from the same browser, reloading as Vite pushed each code change.
+- **The process:**
+  - At 07:00 UTC the only Chrome running was `chrome.exe --profile-directory="Profile 1"` (PID 476). Explorer
+    started it at 06:06:22 UTC, and it opened a tab at 06:13:09, 12 s before the copy's session began.
+  - Every Playwright MCP on the machine (four Claude sessions) runs `--isolated`, an in-memory profile that keeps no
+    cookie between launches, and node starts its Chrome. Every Claude session runs `--no-chrome`, and no Chrome
+    profile has the Claude browser extension.
+- **The guard** was not loaded: it runs only inside the Playwright MCP's pages.
+- **Conclusion:** the writes came from the desktop Chrome's Profile 1 on this machine, signed in as estimator@.
+  - **Not this run or a sub-agent:** this run's browsers were Playwright, isolated, signed in as window-b@.
+  - **Not a peer session or a script:** the one scripted estimator@ sign-in was at 05:34:09 (user agent `node`). It
+    was this run's wrap-up purge of its BENCH DUP (audit: project.trashed and project.purged at 05:34:09).
+  - **Not answered:** who was at that Chrome. The records cannot tell.
+- **Since then:** one more api sign-in as estimator@ came from curl at about 07:00 UTC. It was my check that the
+  old password fails, run before the rotation had gone through. The rotation revoked that session minutes later.
+
+**The lock (item 1b).** `app/core/project_lock.py` is a pure ASGI middleware, driven by `LOCKED_PROJECTS` in the
+bench's Compose.
+- **The rule:** the 3D test copy refuses every write except umeralam.q@gmail.com's. The refusal is 403
+  `project_locked`: "This project is locked on the bench: only umeralam.q@gmail.com may change it (D-592)."
+- **What counts as a write:** any method but GET, HEAD or OPTIONS whose path, or body up to 1 MB, names the copy.
+- **The one exception:** `POST …/project/<copy>/duplicate`, as in the guard (D-542). It reads the copy and writes
+  only the new project.
+- **Scope:** it works in addition to the guard. With `LOCKED_PROJECTS` unset, it passes everything.
+- **The proof**, `scripts/check_project_lock.py`: access tokens minted in the api's process (no sign-in), and an
+  invalid body, so nothing could change.
+  - window-b@: write 403 `project_locked`, read 200;
+  - estimator@: write 403 `project_locked`, read 200;
+  - umeralam.q@gmail.com: passes the lock, then 403 `not_a_member`.
+- **Your account has no access:** umeralam.q@gmail.com is not a member of Bench Construction Test, so it cannot open
+  the copy at all (pending_umer P1).
+- **A duplicate still goes through:** window-b@ made "BENCH DUP 2026-10-17 07:04 — delete me".
+
+**The password (item 1c):**
+- **The new one:** 28 random characters, made inside one PowerShell process and passed to the api on stdin
+  (`scripts/rotate_password.py`). It was never printed, written to a file or put on a command line.
+- **Where it is:** stored only in the Windows credential store, Windows Credentials › Generic Credentials, as
+  "IntelCost bench - estimator@bench.intelcost.io".
+- **Sessions:** all 4,910 of estimator@'s open sessions were revoked, the desktop Chrome's included. The old
+  password now gets 401.
+- **The hook:** a new workspace hook (`.claude/hooks/no-credential-read.sh`) blocks any session command that would
+  read the store.
+
+**The bench after it:**
+- **Duplicates:** BENCH DUPs are made as window-b@ (`BENCH_MEMBER` in `lib/bench.mjs`).
+- **Purges:** done by `scripts/purge_bench_dups.py`, in the api's process, as each copy's workspace owner. A member
+  cannot trash a project.
+- **Breaks:** the archived fixtures' `apiLogin()` default (the seeded account), `bench-tidy.mjs` and
+  `walkthrough-setup.mjs` now get 401.
+- **Kept:** `SEEDED.password` stays as the throwaway accounts' password.
+
+**Not done (item 1d):** SS-1, ST-1, ST-2 and MH-1 to MH-3 stay on the copy for the founder to delete.

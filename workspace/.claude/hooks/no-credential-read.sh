@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# PreToolUse guard (D-592): no session reads the Windows Credential Manager.
+#
+# The seeded bench account's password (estimator@bench.intelcost.io) was rotated on 2026-10-17
+# and kept only in the Credential Manager, for the founder. No session signs in as that account,
+# so no command here may read a stored credential: the Windows credential API (CredRead,
+# CredEnumerate), the PowerShell modules that wrap it, `vaultcmd`, or anything naming the entry.
+# Listing with `cmdkey /list` shows names only and stays allowed.
+#
+# Reads the tool call as JSON on stdin and blocks (exit 2, reason on stderr) on a match.
+
+input=$(cat)
+pattern='CredRead|CredEnumerate|CredentialManager|StoredCredential|PasswordVault|vaultcmd|IntelCost bench - estimator'
+
+if printf '%s' "$input" | grep -Eiq "$pattern"; then
+  cat >&2 <<'MSG'
+Blocked (D-592): sessions never read the Windows Credential Manager. The seeded bench
+account's password is kept there for the founder only; no session signs in as that account.
+MSG
+  exit 2
+fi
+exit 0

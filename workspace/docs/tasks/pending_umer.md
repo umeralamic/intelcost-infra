@@ -274,25 +274,19 @@ link setting (D-562).
 
 ## Night run 2026-10-17 (morning-report-2026-10-17/NIGHT_REPORT_2026-10-17.md)
 
-Part A and F29 Blocks 2 to 5 built (D-567 to D-591). **Decisions taken overnight, each reversible, for you to confirm**
-(N), then **open items** (O).
+**Answered 2026-10-17 (day run brief, item 7):**
+- **Confirmed as taken:** N1, N2 (the Utilities group stays after the earthwork tools, before More), N3, N4, N5 and
+  N7, each closed in DECISIONS.
+- **Changed:** N6, by items 3 and 5. The headline follows the after-balance, and spoils and backfill use each
+  layer's own factors.
+- **Built in the day run:** O1 (expanded to item 8), O2, O3, O5 and O7.
+- **Closed:** O4 ok, no lighter panel. O6 keep.
 
-| # | What | Taken as | Your call |
+## Day run 2026-10-17 (morning-report-2026-10-17/DAY_REPORT_2026-10-17.md)
+
+| # | What | Where it stands | Your call |
 |---|---|---|---|
-| N1 | Trench engine details (D-569, items 1–8): width-label ties, "Vertical" at 5 ft and deeper, rock below water, native backfill's shrink, cave-in depth, the caving wording, two fixtures, Block 2's order | As D-569 lists | ok, or which to change |
-| N2 | The Utilities group's place and run colours (D-571) | After the earthwork tools, before More; colours by utility type | ok, or after Stripping as §4.1 drew it |
-| N3 | A pit's overlap comes off the trench's backfill too; a rectangular pit cuts the trench at its face with no slice deduction (D-581) | As stated | ok, or no |
-| N4 | Over-excavation on a joined site has no layer model yet; a plain fixed undercut stays on today's path, unsplit by layer (D-585) | As stated | ok, or build the site path / split every undercut |
-| N5 | A fill's compaction note is named in its replacement line, not written to the line's notes (D-587) | In the name | ok, or into notes |
-| N6 | Utility and structure spoils go to the balance at the project's factors; the panel's headline stays the before-utilities figure (D-588) | As stated | ok, or by layer / headline after |
-| N7 | No default mappings for other systems' utility scopes; a CSI scope fully unmapped leaves today's lines unclassified too (D-590) | As stated | ok |
-| O1 | 3D: a buried pipe is hidden by the solid ground, seen only from below or where it leaves the surface (D-583) | Not built (not in the plan) | A see-through-ground toggle (recommended), or leave |
-| O2 | "Benched" can be picked on a run where no station allows it, and reads sloped there | Unchanged | Grey it out where it cannot apply (recommended) |
-| O3 | Structures do not snap to run ends; a mark within its outside + 1 ft joins the run | Unchanged | Snap marks to run ends (recommended) |
-| O4 | A utilities-only sheet shows its runs' figures in the Volumes panel but no grading figures | Unchanged | ok, or a lighter panel |
-| O5 | Metric ranges are a sheet's (by its scale unit), not the project's: an imperial-scaled sheet in a metric project names "8–10 ft" (D-580, D-591) | Per sheet | Per project, or per sheet |
-| O6 | The bench workspace now holds the default work scopes and Q5's mappings, made by tonight's Calculates on the duplicates (workspace data; the duplicate itself is purged) | Kept | Keep, or clear them |
-| O7 | A guest's Estimating tab calls member-only endpoints (packages, columns, components, bid…), each a 403 in the console; nothing breaks | Unchanged (not tonight's) | Hide those calls for guests, or leave |
+| P1 | Your account, umeralam.q@gmail.com, is not a member of Bench Construction Test, the workspace that holds the 3D test copy. The lock (D-592) lets it write, but membership stops it first (403 `not_a_member`), so today no account can change the copy. | Not changed: adding a member is an access change to your workspace. | Invite it (as Admin) from estimator@, using the rotated password in the Windows credential store, or say so and it is added. |
 
 ## Found in the click sessions
 

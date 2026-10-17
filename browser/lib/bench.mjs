@@ -25,7 +25,15 @@ export const APP = process.env.FX_APP || "http://localhost:5173";
 export const API = "http://localhost:8000";
 export const MAILHOG = "http://localhost:8025";
 
+// The seeded account. Its password was rotated on 2026-10-17 and is known to no session (D-592):
+// `SEEDED.password` no longer signs it in and stays only as the bench's throwaway password, which
+// every fixture account still uses. A run makes its 3D test copy duplicates as BENCH_MEMBER and
+// purges them with the api's scripts/purge_bench_dups.py.
 export const SEEDED = { email: "estimator@bench.intelcost.io", password: "bench-password-1" };
+
+/** The bench's second estimator in Bench Construction Test ("Sara W."): may duplicate the 3D
+ *  test copy, may not trash it, and the server-side lock refuses its writes to it (D-592). */
+export const BENCH_MEMBER = { email: "window-b@bench.intelcost.io", password: "bench-password-1" };
 
 // --- running beside other fixtures ------------------------------------------------
 //
@@ -641,7 +649,7 @@ export async function discardProject(token, workspaceUuid, projectUuid) {
 }
 
 /** A duplicate of the 3D test copy, the one way a run tests it (D-542): made through the api by a
- *  member who may (its owner, signed in from here, never from a browser), and renamed by the guard
+ *  member who may (BENCH_MEMBER, D-592; never the owner, whose password no session knows), and renamed by the guard
  *  the moment it is made, "BENCH DUP <yyyy-mm-dd hh:mm> — delete me" (A4, D-544). Returns
  *  `{ uuid, name }`; throws when the copy failed or kept another name. */
 export async function duplicateTestCopy(token, workspaceUuid) {
