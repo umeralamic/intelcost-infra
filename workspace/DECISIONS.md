@@ -18131,8 +18131,12 @@ imperial.
   base, round or rectangular, at its outside size. Both come in their item's colour, under one "Utilities" toggle.
   - They are rebuilt on the 3D model's surfaces, as the profile is. Nothing is stored except the structure's place
     in its saved result (`StoredStructure.place`: centre, rim, base bottom, outside size).
-  - A pipe is drawn at least as thick as a bore column, so it can be seen on a whole site. Its place and level are
-    true.
+  - **Pipes follow U-UT44.** They are drawn at true size in their own group, outside the ground's scaled group.
+    Each piece is laid again from its ends' levels times the exaggeration, so the exaggeration moves it and never
+    stretches it.
+  - **Structures** are inside the ground's group: they span levels, so they stretch with it.
+  - **Found and fixed:** the first pass put the pipes in the ground's group and drew them thicker. It was corrected
+    before the run ended, and checked at 2× and 6×.
 
 **Quantity row** `util-3d-scene`: an 8" pipe on a bent path, inverts 92.00 / 91.50 / 90.60, reads centre levels
 2.33, 1.83, 1.33 (at the bend) and 0.93 over a level-90 origin. A 48" manhole spans −0.50 to 10.00 at radius 2.42. 48
