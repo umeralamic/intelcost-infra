@@ -17715,3 +17715,149 @@ Inches show as mm, and feet as m, on a metric project.
   saved settings. A hand-written PUT from its page was refused, 403 "This shared project is view only."
 - **Workers restarted** so the copy job knows `utility_run`. **Gates:** pass; ruff and mypy pass. **Quantity table:**
   passed.
+
+## D-571: Drawing utility runs, the run panel, and a run's profile from the surfaces (F29 Block 2C, and 2D's breakpoints)
+
+**Built, app** (`features/takeoff/earthwork/utilities/`, its own module; the page only mounts it):
+- **The Utilities group** (`UtilitiesToolGroup.tsx`): its own bordered group on the Earthwork row, after the earthwork
+  tools, as the founder asked, so it can move to a tab of its own later. It holds:
+  - **Utilities,** which draws a run with Linear's mechanics (A arc, Backspace, Ctrl+Y, S, O, D; Enter or a double-click
+    to finish);
+  - **Runs (n),** which opens the run panel.
+
+  `EarthworkToolbar` gains a `groups` slot for it.
+- **`useUtilities.tsx`:** a finished run is made in one write as an LF item marked a utility run, with its fields:
+  - **its name** is the type's prefix and the next number (SS-1, ST-1, W-1…);
+  - **its colour** comes from the measurement palette by type, after the usual utility colours;
+  - **its pipe** is the type's usual one from the catalog (8 in SDR-35 for sanitary);
+  - **its filing:** Utilities › <type>.
+
+  The next run takes the type last picked. A run is kept out of Estimating's rows, as a Site Feature is. Contour, Strip
+  Area and Utilities share the canvas's completion in that order, and arming one puts the others down.
+- **`RunPanel.tsx`** (plan §4.6): the sheet's runs, and the picked run's fields, each saved at once (typed values when
+  left or on Enter):
+  - **the pipe:** type; pipe and size from the catalog, with the standard, OD, mark and source under it ("Unverified
+    source" for a sheet naming no standard). A size with no OD is listed "(type its OD)" and can't be picked;
+  - **OD and ID:** editable. An OD unlike the catalog's shows "OD typed by <user>", and a borrowed wall shows its flag
+    (D-560);
+  - **pipes and gap;** vertical by inverts, start and slope, or cover; ground at the ends; trench from;
+  - **the trench:** bucket, box (the smallest listed that fits, a listed one, or a typed width), spec max (the
+    project's per size shown as the placeholder), and the width line as the rule sets it ("Width 4.00 ft — box (pipe
+    width 32.5 in)"), with "Box width not set…" when a box has none;
+  - **protection and limited width;** restoration and its width.
+
+  Read only for a viewer and a guest. Segments are not in the panel yet.
+- **Snapping:** a run is an ordinary LF item, so Snap already takes its ends and vertices. Snapping to structures comes
+  with them (Block 3).
+- **`lib/takeoff/earthwork/utilities/breakpoints.ts`** (2D): a run's profile. The run is cut at its vertices and where
+  it crosses an edge of:
+  - the EG and FG TINs;
+  - a Site Feature;
+  - a layer's or the water's pieces;
+  - a boundary between two bores' nearest areas.
+
+  Each interval reads every field from the piece its middle lies in, at both of its ends, so a feature's step in the
+  subgrade is exact on each side. The start surface is:
+  - the proposed subgrade where FG covers the run;
+  - else the existing grade, noted "No proposed surface: trench from existing grade, 0+00 to 1+00.";
+  - else the ground at the ends, noted "Grade from rims: no surface here."
+
+  The invert comes from the inverts, the slope or the cover.
+
+**Quantity rows:** three new profile rows, 36 utility rows in all, every one right:
+- a run over FG = 100 + 0.04x with a 1 ft Site Feature over 20 ft: 317.53 CY (hand-worked: 8,933.33 − 360 CF);
+- the same on EG only: 330.86 CY, with the note;
+- §3.16's typed-grade run through the profile: 498.07 CY, with "Grade from rims".
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me":
+- **Member:** Utilities drew SS-1, 287.52 LF, three clicks and Enter on C-200, and the panel opened on it. The row has:
+  - Utilities › Sanitary (keyed `utilities.sanitary`) and no classification;
+  - after typing inverts 92.00 and 90.00, picking 12 in and Box or shoring, `pvc_d3034_sdr35:12`, OD 12.500 and ID
+    11.737.
+
+  The width line read "Width 4.00 ft — box (pipe width 32.5 in)": the project's 10 in clearance, and Box 1 (3.5 ft
+  inside, 4.0 ft outside) the smallest that fits.
+- **Guest** (the duplicate's own link, after a reload): Utilities greyed with "Sign up for Professional to use this.";
+  Runs (1) opened the panel read only, 21 of 21 fields disabled, the same width line. The guest sent nothing.
+- **Gates:** pass. **Quantity table:** passed (36 utility rows).
+
+**Taken overnight, Umer to confirm:** the Utilities group sits after the earthwork tools, before More, not after
+Stripping as plan §4.1 drew it, since the founder asked for a group of its own; and runs are coloured from the
+measurement palette by the usual utility colours (sewers green, storm teal, water blue, gas gold, power red, telecom
+orange).
+
+## D-572: Calculate works out each utility run, keeps its figures and writes its lines by work scope (F29 Block 2G, with 2D and 2E's ground)
+
+**Built, app:**
+- **`features/takeoff/earthwork/utilities/calculate.ts`:** Calculate's utility pass, on a sheet with runs. Each run is
+  worked along its profile (`breakpoints.ts`) on this Calculate's own TINs and Site Features:
+  - **the soil:** Block 1's layer model over the frame (read against this Calculate's EG for a layer by elevation,
+    D-545); with no bore logging a layer, one assumed Type C layer at the project's shrink;
+  - **the water and caving:** the model's water surface, and each bore's caving and cave-in depth (the nearest bore
+    governs);
+  - **the rule:** the project's slope rule;
+  - **the trench:** the run's bucket, box and spec max, else the Utility settings' (the spec max per pipe size);
+  - **restoration.**
+
+  A run without inverts, slope or cover, without an OD, or with no ground is listed as skipped, with why.
+- **The stored result** gains `utilities` (each run's figures, notes and flags); prisms and stations are not stored,
+  as before.
+- **The version key** gains the sheet's runs (their fields and shapes) and the saved Utility settings, beside the bores'
+  part, only when the sheet has a run. A sheet without runs keeps exactly its key (U-UT40).
+- **`lib/takeoff/earthwork/utilities/lines.ts`:** the lines of plan §5.1 for:
+  - pipe LF by size and invert-depth range;
+  - trench excavation by layer;
+  - rock excavation and LF in rock;
+  - bedding, pipe zone and backfill by material and source;
+  - protection LF by method and trench-depth range;
+  - dewatering LF;
+  - restoration SY;
+  - utility spoils export (unsuitable and rock, each at its layers' swell).
+
+  Each line goes in region `util:<type>`, with its work type as its role, a variant, and its default work scope's key,
+  added up across a sheet's runs of one type (Q9).
+- **The run panel's Last Calculate** (plan §4.6): the run's length and LF by range, the width line, the excavation by
+  layer, the rock, the zones, the protection and dewatering LF, the spoils, the restoration, the spec-width
+  quantities, and the flags and notes. It reads "out of date: Calculate again" when the drawing has moved on.
+
+**Built, api** (`earthwork/lines.py`, `schemas.py`):
+- **`LineWrite`** gains the nine utility work types as roles, and `variant`, `work_scope`, `work_kind`, `utility` and
+  `folder`.
+- **`write_lines`** keys rows by (region, role, variant).
+- **A line with a work scope:**
+  - is filed by the scope's mapping in the project's system (`work_scopes.ensure_work_scopes` and `resolve`), each
+    line in its own code's folder;
+  - goes in Utilities › <type>, or the Earthwork folder for rock (spec §14);
+  - carries its scope, type and kind;
+  - is an LF item when its unit is LF and an area for SY (still never re-measured).
+
+  Today's lines are unchanged: `check_retired.py` (which drives `write_lines`) passed 13 of 13 on the duplicate.
+- **A run can be saved before its inverts, slope or cover are typed**: switching to Cover was refused while the cover
+  was blank, found in the smoke. Calculate names what is missing. `check_utilities.py`'s check now says an area can't be
+  a run: 16 of 16 right.
+
+**Quantity rows:** `util-lines-case-a`: case (a)'s six lines, names, units, quantities, roles and scopes, as plan §4.12
+shows them. 37 utility rows, every one right.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me":
+- **Member:** SS-1 set to 8 in, Auto protection, 6 ft of cover; C-200 Calculated.
+- **The run panel read:**
+  - 287.52 LF, all in 6–8 ft;
+  - "Width 30 in — bucket";
+  - 976.73 BCY: Layer 1 669.32, Layer 2 204.52, and Layer 3 (hard dig) 102.89 as rock, with 242.72 LF in rock;
+  - bedding 17.10, zone 110.67, backfill 844.86 CCY;
+  - Sloped 1:1 44.80 LF, Sloped 1½:1 242.72 LF, dewatering 12.63 LF;
+  - rock 102.89 BCY exported.
+- **Twelve lines were written**, each filed as plan §5.3 maps it: pipe 33.03.01; trench excavation 33.11.01; bedding,
+  zone and backfill 33.11.02; rock 31.04.06 in the Earthwork folder; protection 31.09.01; dewatering 31.06; spoils
+  31.04.08. The rest went in Utilities › Sanitary.
+- **The site's cut and fill are unchanged:** 11,583.92 BCY and 9,463.48 CCY.
+- **The workspace's 17 default work scopes and 65 CSI mappings** were made on this first use (workspace data, in Bench
+  Construction Test).
+- **Guest** (the duplicate's own link, after a reload): Runs showed the same Last Calculate, read only; the guest sent
+  nothing.
+- **Gates:** pass; ruff and mypy pass. **Quantity table:** passed.
+
+**Not yet:** a utilities-only Calculate when the sheet has no EG, FG or boundary (2E; the run's own typed grades work
+already where volumes Calculate); the existing-grade rule in a cut area; the report's Utilities section and Excel sheet;
+the profile pane (2F); segments.
