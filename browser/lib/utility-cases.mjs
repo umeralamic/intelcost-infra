@@ -126,6 +126,14 @@ export const UTILITY_CASES = [
       invertStart: 92.5212,
     },
   },
+  // D-610: the open trench drawn from the section the volumes integrate: top = W + 2k·h when sloped
+  // (19 = 3 + 2 × 1 × 8), the box's outside (6), benched B's last level (11 = 3 + 2 × 1 × 4), sand's
+  // 1½:1 (27 = 3 + 2 × 1.5 × 8); a trench 6.4, 8 and 9.6 ft deep at 10, 50, 90 ft (15.8, 19, 22.2).
+  { id: "util-610-trench-at-sloped", ...caseA(), trenchAt: [10, 50, 90], expect: { trench: [[19, 3, 8], [19, 3, 8], [19, 3, 8]], trenchTopGap: 0 } },
+  { id: "util-610-trench-at-box", ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6" }), trenchAt: [10, 50, 90], expect: { trench: [[6, 6, 8], [6, 6, 8], [6, 6, 8]], trenchTopGap: 0 } },
+  { id: "util-610-trench-at-benched", ...caseA({ protection: "benched" }), trenchAt: [10, 50, 90], expect: { trench: [[11, 3, 8], [11, 3, 8], [11, 3, 8]], trenchTopGap: 0 } },
+  { id: "util-610-trench-at-sand", ...caseA({ protection: "benched", layers: [{ ...SAND_C, depth: null }] }), trenchAt: [10, 50, 90], expect: { trench: [[27, 3, 8], [27, 3, 8], [27, 3, 8]], trenchTopGap: 0 } },
+  { id: "util-610-trench-at-deepening", ...caseA({ depth: [6, 10] }), trenchAt: [10, 50, 90], expect: { trench: [[15.8, 3, 6.4], [19, 3, 8], [22.2, 3, 9.6]], trenchTopGap: 0 } },
   { id: "util-2a2-bucket-24-pipe-governs", ...caseA({ bucket: 24 }), expect: { widthText: "Width 32.4 in — pipe width", excavationCY: 317.04, beddingCY: 5.93, zoneCY: 32.57, backfillCY: 277.11, maxTopWidthFt: 18.7 } },
   {
     id: "util-2b-box-from-list",

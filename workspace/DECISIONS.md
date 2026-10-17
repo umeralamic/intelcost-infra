@@ -18974,3 +18974,75 @@ colours (day-8-1, day-8-3).
 
 **Smoke:** `eve-6-before-3d-default` against `eve-6-after-3d-default`, `eve-6-after-3d-picked` (BENCH-SAN-1) and
 `eve-6-after-3d-guest`.
+
+## D-610: The trench before backfill: open trenches in 3D, a trench outline on the plan (evening run 2026-10-17, item 12)
+
+**One section for the drawing and the volumes.**
+- **`runQuantities` records each piece's trench shape:** knots, bottom width, walls, bedding and drop. It is never
+  stored with a result (as `pieces`).
+- **`trenchAt(piece, s)`** gives the section at any station: start surface, trench bottom, depth, bottom width,
+  walls (benches re-laid for the depth), top width and layer bottoms. It is the same section the volumes integrate.
+- **`trenchPlan.ts`** (data in, data out) builds both drawings from it:
+  - the plan's band polygons and the pits' outlines;
+  - the 3D walls, box panels, bedding, opening and daylight lines.
+
+**3D: "Open trenches"** (beside Utilities; off by default; kept on this device):
+- **Where a trench opens:** each trench and pit opens in the 3D view of the surface it is dug from. That is
+  Proposed for the proposed subgrade and Existing for existing grade, from the run's "Trench from" or the
+  structure's "Pit from".
+  - **The opening:** a stencil, so the ground and its contours aren't drawn over the opening. The renderer now asks
+    for a stencil buffer.
+  - **The walls:** they run from the trench bottom to the shown surface, rising past the start surface where a
+    pavement's section sits above it.
+  - **The bedding:** its top is drawn across the bottom.
+  - **The pipe:** stays in place.
+  - **Not drawn:** backfill and the pipe zone.
+- **In the other views:** the trench's daylight lines only, draped on the shown surface.
+- **Wall colours:**
+  - by protection: vertical amber, sloped green, benched violet, box sky (`--trench-*` tokens);
+  - or by soil layer with "Show soil layers in trench walls", so rock shows. Trenches and pits alike.
+- **A box:** its soil face, with translucent panels 0.2 ft inside it.
+- **Pits:** open the same way, sloped at their k, by protection or by layer.
+- **Other toggles:** Open trenches works with Show buried, ground opacity and pick (a wall picks its run).
+- **The readout:** under the pointer, an open trench gives its nearest station's section, e.g. "BENCH-SAN-1 · 1+56.52
+  · top 34.61 ft · bottom 3.00 ft · 10.54 ft deep · Sloped 1.5:1". Metres in a metric project.
+- **Speed (member, C-200, 1440 × 900, best view):** 58–60 fps with trenches open, open with soil layers, and off. The
+  same occasional dips to about 52 appear with it off: bench load from the suite's fx stack running beside it.
+
+**2D: "Trench outline"** (in the run panel's header, and in a small key at the canvas's top left on an earthwork
+sheet with runs; kept on this device):
+- **What it draws:** a band along each run at its full top width, daylight to daylight, coloured by protection, and
+  each pit's top outline.
+- **From the last Calculate:** each stored run now keeps its path and stations (half top width and protection about
+  every 5 ft, at bends and at piece ends), and each structure its open pit. On an out-of-date result the saved one
+  shows, with "The last Calculate's trenches: out of date, Calculate again".
+- **A result from before this change** has no trenches. The key says "Calculated before trench outlines: Calculate
+  again to draw them". The version key is unchanged, so nothing reads out of date by it.
+
+**Guest:** both switches work and send nothing. The run panel stays read-only, its Trench outline switch enabled.
+
+**The check (12c):**
+- **What is compared:** the cross-section pane draws pipes only, no trench outline (as built in F29 Block 2F). So
+  the 3D trench is checked against the saved Calculate's own section, at three stations each, in the Proposed view.
+- **BENCH-SAN-1:**
+  - 0+48.65: top 32.43 against 32.434;
+  - 1+56.52: top 34.61 against 34.610;
+  - 2+41.26: top 31.72 against 31.723;
+  - bottom 3.00 against 3.00.
+  All within 0.005 ft.
+- **BENCH-DEEP-1:** at 1+17.67, 0+81.74 and 0+44.43, top 4.50 and bottom 4.50 (the box) against 4.50. Equal.
+- **Quantity rows:** 5 new `util-610-trench-at-*` rows. `trenchAt` at 10, 50 and 90 ft gives the hand-worked top,
+  bottom and depth for sloped, box, benched B, sand refused benching and a deepening trench. Its widest top equals
+  the quantities' own `maxTopWidthFt`. 72 utility rows are right.
+
+**Taken, Umer to confirm:**
+- **The Cut & Fill 3D view** (drawn on the proposed grade) shows proposed trenches as outlines only. The brief names
+  the start surface's view, so they open in Proposed alone.
+- **The 2D key's place:** the canvas's top left. The plan had no earthwork legend to hold the switch.
+- **The cross-section pane** stays as it is (pipes only). A trench outline in it would be a separate piece.
+
+**Screenshots:**
+- 3D: `eve-12-3d-proposed-open` and `-close`, `eve-12-3d-existing-eg1-open`, `eve-12-3d-existing-plan` (BENCH-EG-1
+  open, the rest outlines), `eve-12-3d-existing-outline-close`, `eve-12-3d-san1-soil-layers`, `eve-12-3d-deep1-box`;
+- 2D: `eve-12-2d-trench-band`;
+- guest: `eve-12-2d-trench-band-guest` and `eve-12-3d-proposed-open-guest`.

@@ -1351,6 +1351,16 @@ try {
         hasNote: r.notes.find((n) => n === c.expect.hasNote) ?? r.notes,
       };
       if (c.aea) out.aeaOverCF = c.aea.map((step) => r2(q.averageEndArea(input, step) - r.excavationCF));
+      // D-610: the open trench as drawn (trenchAt) at given stations, [top, bottom, depth], and its
+      // widest top against the quantities' own (0: the drawing is the section the volumes integrate).
+      if (c.trenchAt) {
+        const pieceAt = (s) => r.shape.find((p) => s >= p.s0 - 1e-9 && s <= p.s1 + 1e-9);
+        out.trench = c.trenchAt.map((s) => {
+          const t = q.trenchAt(pieceAt(s), s);
+          return [r2(t.top), r2(t.W), r2(t.h)];
+        });
+        out.trenchTopGap = r2(Math.max(...r.shape.flatMap((p) => [q.trenchAt(p, p.s0).top, q.trenchAt(p, p.s1).top])) - r.maxTopWidthFt);
+      }
       if (c.lines) {
         const made = ln.utilityLines([
           {
