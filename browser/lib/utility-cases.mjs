@@ -623,4 +623,74 @@ export const UTILITY_CASES = [
     overlaps: [10],
     expect: { tons: [58.67, 36.67, 51.33], sy: 1111.11, geoSY: [1222.22] },
   },
+  {
+    // D-595, a run that is short (as SS-3 on the 3D test copy's duplicate): 767.05 CCY of native
+    // backfill at shrink 1.10 needs 767.05 × 1.10 = 843.76 BCY; the trench digs 767.43 BCY of reusable
+    // clay, all of it reused. Short 843.76 − 767.43 = 76.33 BCY, which is 76.33 ÷ 1.10 = 69.39 CCY the
+    // site must supply; no spoil.
+    id: "native-short-run",
+    kind: "native",
+    layers: [{ name: "Clay", shrink: 1.1, swell: 1.25, reuseBackfill: true }],
+    byLayerCY: [767.43],
+    nativeCCY: 767.05,
+    expect: { needBCY: 843.76, reusedBCY: 767.43, shortCCY: 69.39, spoils: [] },
+  },
+  {
+    // D-595, a run with surplus: 700 CCY native at 1.10 needs 770 BCY of the 1,000 BCY dug; the other
+    // 230 BCY is spoil, at clay's own factors.
+    id: "native-surplus-run",
+    kind: "native",
+    layers: [{ name: "Clay", shrink: 1.1, swell: 1.25, reuseBackfill: true }],
+    byLayerCY: [1000],
+    nativeCCY: 700,
+    expect: { needBCY: 770, reusedBCY: 770, shortCCY: 0, spoils: [["Clay", 230, 1.1, 1.25]] },
+  },
+  {
+    // D-595, D-596, two reusable layers and rock: clay 500 BCY (1.10 / 1.25), sand 300 BCY (1.00 / 1.30),
+    // rock 50 BCY. The shrink, bank-weighted: (1.10 × 500 + 1.00 × 300) ÷ 800 = 1.0625; 600 CCY needs
+    // 637.50 BCY, taken 637.5 ÷ 800 = 79.6875 % of each. Spoil: clay 500 × 0.203125 = 101.56 BCY, sand
+    // 300 × 0.203125 = 60.94 BCY, each at its own factors; the rock always leaves, never spoil.
+    id: "native-layers-own-factors",
+    kind: "native",
+    layers: [
+      { name: "Clay", shrink: 1.1, swell: 1.25, reuseBackfill: true },
+      { name: "Sand", shrink: 1.0, swell: 1.3, reuseBackfill: true },
+      { name: "Rock", shrink: 1.0, swell: 1.5, reuseBackfill: false, alwaysExported: true },
+    ],
+    byLayerCY: [500, 300, 50],
+    nativeCCY: 600,
+    expect: { needBCY: 637.5, reusedBCY: 637.5, shortCCY: 0, spoils: [["Clay", 101.56, 1.1, 1.25], ["Sand", 60.94, 1, 1.3]], rockBCY: 50 },
+  },
+  {
+    // D-594, the Summary, the Balance and the Truckloads agree with the lines. Cut 1,200 BCY: clay 1,000
+    // (1.10 / 1.25) and rock 200 (1.00 / 1.50); trench spoil 100 BCY of clay; 50 CCY of native backfill the
+    // trenches could not supply; fill 1,100 CCY; the project at 1.10 / 1.25.
+    // Yield 1,000 ÷ 1.10 + 100 ÷ 1.10 = 1,000.00 CCY; needed 1,100 + 50 = 1,150 CCY; short 150 CCY,
+    // × 1.10 = 165 BCY imported, × 1.25 = 206.25 LCY (18 loads of 12). The rock leaves apart:
+    // 200 × 1.50 = 300 LCY (25 loads). Net after shrink −165 BCY.
+    id: "final-balance-agrees",
+    kind: "final",
+    regions: [{ id: null, label: "Remaining Site", cutCY: 1200, fillCY: 1100 }],
+    layers: [
+      { regionId: null, layerId: "L1", name: "Clay", bank: 1000, shrink: 1.1, swell: 1.25, kind: "suitable" },
+      { regionId: null, layerId: "L3", name: "Rock", bank: 200, shrink: 1.0, swell: 1.5, kind: "rock" },
+    ],
+    spoilsByLayer: [{ source: "utility", name: "Clay", bank: 100, shrink: 1.1, swell: 1.25 }],
+    nativeShort: 50,
+    assumptions: { suitable: true, fillType: "", swell: 1.25, shrink: 1.1 },
+    truck: 12,
+    expect: { net: -165, importBank: 165, importLoose: 206.25, exportBank: null, rockLoose: 300, lastSteps: [206.25, 300], lineImport: 206.25, lineRock: 300, loads: [18, 25], agree: true },
+  },
+  {
+    // D-595, over-excavation's native rows: 120 CY dug, 15 CY of it rock, against a stack whose native
+    // row puts back 100 CCY at 1.10. It needs 110 BCY; the suitable 105 BCY is all reused, no spoil; the
+    // site supplies 110 − 105 = 5 BCY. (Before D-595: 100 reused, 5 spoiled and 10 more needed.)
+    id: "overex-native-rows-shrink",
+    kind: "oxspoil",
+    volumeCY: 120,
+    byLayer: [{ cf: 105 * 27, rock: false, unsuitable: false }, { cf: 15 * 27, rock: true, unsuitable: false }],
+    stack: [{ native: true, cf: 100 * 27, material: "Native" }],
+    shrink: 1.1,
+    expect: { reusedBCY: 105, spoilBCY: 0, badBCY: 15, shortBCY: 5 },
+  },
 ];

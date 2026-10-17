@@ -18504,3 +18504,171 @@ bench's Compose.
 - **Kept:** `SEEDED.password` stays as the throwaway accounts' password.
 
 **Not done (item 1d):** SS-1, ST-1, ST-2 and MH-1 to MH-3 stay on the copy for the founder to delete.
+
+## D-593: Every Earthwork and Utilities floating panel moves the same way (day run 2026-10-17, item 2)
+
+**One behaviour:** `components/ui/use-panel-drag.ts` (`usePanelDrag`) and `components/ui/floating-panel.tsx`
+(`FloatingPanel`, `DragGrip`). The Bores panel's drag (D-561), made shared:
+- **Moving:** drag by the header, which carries a grip. Its buttons, fields and tabs don't start a drag.
+- **Memory:** the place is kept on this device, under the panel's own key. The Bores key is unchanged, so a place
+  saved before still holds.
+- **Kept inside the window:** the whole panel stays in, its full width and its height, on open, while dragged and
+  when the window shrinks. Close stays in reach.
+- **Height:** capped to the window less 16 px, never to the room below its top. A tall panel moves up and its body
+  scrolls.
+- **Level:** z-45, the floating panels' level. The edge tabs stay under them and dialogs over them.
+
+**Panels covered**, all at z-45:
+- Bores;
+- Utility runs and Structures (before: fixed, could not move);
+- Earthwork Volumes, which keeps its resize, its size remembered per sheet, and moved from z-40;
+- Check grades (before: fixed, z-40);
+- Linked EC and Join at a match line (before: fixed, z-50).
+
+**Dialogs covered.** Trace rules and the Site Feature dialog (where undercut is set) are modal dialogs, not
+floating panels. They, the Earthwork assumptions (Calculate), Strip Area and Line info dialogs are now
+`movable`, through the same hook:
+- dragged by the title, with a grip;
+- their place kept on this device, inside the window.
+They stay modal, above the panels.
+
+**Taken, Umer to confirm:**
+- **The dialogs:** they stay modal and movable, not turned into floating panels. A floating Site Feature dialog
+  would let the drawing change under an unsaved form.
+- **The profile and cross-section:** not covered. They are panes in the split view, not floating.
+
+**Found and fixed during the smoke:** a panel dragged to the window's bottom shrank to its header (Structures to
+31 px at 900 px wide). Its height cap followed its top, and the clamp then let it lower still. The cap is now the
+window's height.
+
+**Smoke** (BENCH DUP 2026-10-17 07:04, C-200, as window-b@):
+- **What was driven:** each panel and dialog dragged past the window's edge, at 1440 × 900 and at 900 × 700. Each
+  ended wholly inside, with Close reachable, at z-45 (the dialogs at the modal level).
+- **Reload:** the places were kept.
+- **Guest:** on the duplicate's link, Bores, Utility runs and Structures drag and stay inside, read-only. No write
+  was sent, only the guest session's POST.
+- **Screenshots:** `day-2-1` to `day-2-6`.
+
+**Bench:** guest links on a duplicate come from `scripts/bench_share_link.py` (BENCH DUP only, never a protected
+project). Only owners make links, and since D-592 no session signs in as the bench's owner.
+
+**Checks:** gates pass. Quantity table passed (344 rows).
+
+## D-594: One balance for the report, the workbook and the panel: the after-balance (day run 2026-10-17, item 3)
+
+**The bug.** Block 5D's report and workbook disagreed with themselves. The Summary showed the after-balance lines
+(Soil Import 4,869 BCY, Rock Export 8,109 LCY). But the "Net after shrink" row, the Balance steps and the
+Truckloads still struck today's balance (1,134.73 BCY surplus; Soil Export 1,304.94 LCY; 109 export loads; no import
+or rock loads).
+
+**The fix.**
+- **`finalBalance(lineInputs)`** (`lib/takeoff/earthwork/lines.ts`) is the one balance the lines strike. Where
+  the result has layers or utilities, that is the site balance, with its own steps (`siteBalanceSteps` in
+  `balance.ts`):
+  - each suitable supply's compacted yield at its own shrink, then the soil available;
+  - the fill, the native backfill and undercut the dig could not supply, and the soil needed;
+  - the surplus or shortfall, compacted, × the shrink (the supplies' bank-weighted shrink for a surplus, the
+    project's for imported soil), in bank;
+  - the export or import with its swell;
+  - each always-exported layer with its own swell.
+  Otherwise it is today's `balanceSteps`.
+- **What reads it:**
+  - the report's headline (Export and Import, now hauled at the balance's own swell);
+  - the Summary's Net, Export and Import, plus a "Rock export: <layer>" or "Unsuitable soil export: <layer>"
+    row for each always-exported layer;
+  - the Balance table;
+  - the workbook's Summary, Balance sheet and By-feature total (a tie-out row "Layers, utilities and
+    over-excavation" keeps the column summing to the net);
+  - the panel's headline ("Needs … BCY from elsewhere").
+- **Truckloads** now list Soil import, Rock export, Unsuitable soil export, and the trenches' and pits' rock and
+  unsuitable spoils (`utilitySpoilHaul`, each layer at its own swell), with topsoil and undercut spoil as before.
+- **The "before" balance** is kept, labelled "Before layers and utilities" (comparison only), in the report's
+  site-balance block, the workbook's Balance sheet and the panel's column. The panel's columns read "Before layers
+  and utilities" and "With layers and utilities". N6's second half is changed: the headline follows the
+  after-balance.
+
+**Row:** `final-balance-agrees` checks that the Summary's net, the Balance's last steps (Import 206.25 LCY, Rock
+300 LCY), the Soil Import and Rock Export lines and the truckloads (18 and 25 loads of 12) are one figure each.
+
+**Smoke** (BENCH DUP 2026-10-17 07:04, C-200 calculated again):
+- **The panel:** "Needs 4,629 BCY from elsewhere"; with layers and utilities, Import 5,323.33 LCY, always exported
+  8,109.34 LCY.
+- **The report:** headline Import 4,629 BCY. Summary: Shortfall after shrink 4,629 BCY; Import 4,629 BCY · 5,323 LCY;
+  Rock export Layer 3 6,007 BCY · 8,109 LCY. The Balance ends in Soil Import 5,323 LCY and Rock Export 8,109 LCY.
+- **Truckloads:** Soil import 444, Rock export 676, utility and structure rock 21, Topsoil 344, Undercut spoil 15.
+- **The workbook** (`day-3-grading-report.xlsx`): Net −4,628.98 BCY. Soil Import 5,323.33 LCY and Rock Export
+  8,109.34 LCY on the Summary and the Balance sheet alike, with the same truckloads.
+- **Guest:** the same headline, columns and note on the duplicate's link; nothing sent.
+
+## D-595: Native backfill takes placed × shrink; a shortfall is the site's, a surplus is spoil (day run 2026-10-17, item 4)
+
+**The bug.** A run reused `min(native placed × shrink, its reusable dig)` and dropped the rest of the need. SS-3
+(Block 5D's duplicate) reused 767.43 BCY for 767.05 CCY of backfill with 0 spoil. At shrink 1.10 it needed 843.76
+BCY, and the 76.33 BCY it lacked never reached the site balance.
+
+**The rule** (`nativeSplit` in `utilities/quantities.ts`, for a trench, a trench cut at pits, and a pit):
+- **Need:** native placed × the reusable layers' shrink (bank-weighted). With none reusable, the suitable layers';
+  with none, the first layer's.
+- **Supply:** the dig's reusable soil supplies the need, taken from each reusable layer in its share.
+- **Shortfall:** what the dig cannot supply is `nativeShortCF` (compacted). It goes to the site balance as soil
+  needed, a demand like the fill.
+- **Surplus:** the suitable rest of the dig is spoil.
+- Rock and unsuitable soil are never reused.
+
+**SS-3, corrected:**
+- 767.05 CCY × 1.10 = 843.76 BCY needed;
+- 767.43 BCY reused (all its dig);
+- short 76.33 BCY = 69.39 CCY, which now appears in the site balance as "Native backfill and undercut the dig could
+  not supply";
+- 0 spoil.
+
+**SS-1 on today's duplicate** (the copy's own SS-1):
+- 47.10 BCY dug: Layer 1 36.81, Layer 3 rock 10.29;
+- 18.80 CCY native × 1.10 = 20.68 BCY needed, reused from Layer 1;
+- not short;
+- spoil 16.14 BCY of Layer 1;
+- rock 10.29 BCY always exported.
+(Block 5D's SS-1 was on another duplicate and is gone; it was short as SS-3 was, and takes the same rule.)
+
+**Structures:** a pit's native backfill now takes the same rule at its layers' shrink, where before it used the
+project's shrink with no cap.
+
+**Over-excavation's native rows:**
+- **Now:** they need their volume × shrink; the suitable dig supplies what it can, the rest is the site's
+  (`shortBankCF`), and only the dig left over is spoil.
+- **Before:** they reused `min(rows, suitable dig)` without the shrink, and dropped native rows beyond the
+  suitable dig.
+- **Unchanged:** a plain native undercut already took V × (k − 1) from the balance.
+
+**Rows:**
+- `native-short-run` (SS-3's figures);
+- `native-surplus-run` (700 CCY from 1,000 BCY: 770 reused, 230 spoil);
+- `overex-native-rows-shrink` (105 reused, 5 BCY short, no spoil).
+Every earlier row is unchanged: none had a short run.
+
+## D-596: Utility and structure spoils and backfill at each layer's own shrink and swell (day run 2026-10-17, item 5; N6 changed)
+
+**What changed:**
+- **Per layer:** each run and pit keeps its suitable spoils by layer, each with its layer's shrink and swell
+  (`spoilsByLayer`). The site balance takes them as supplies, as it takes the cut's layers ("Utility trench spoils,
+  Layer 1" at 1.10 / 1.30). Their backfill takes the reusable layers' own shrink (D-595).
+- **Fallback:** the project's factors apply only where a layer has none, and to a result calculated before this
+  (which kept no split).
+- **Row:** `native-layers-own-factors`. Clay 500 BCY at 1.10 / 1.25, sand 300 BCY at 1.00 / 1.30, rock 50 BCY;
+  600 CCY of backfill gives a shrink of 1.0625, 637.50 BCY needed, spoil clay 101.56 and sand 60.94 at their own
+  factors; the rock always leaves.
+
+## D-597: Rock marked unsuitable is counted once, as rock, with a note (day run 2026-10-17, item 6)
+
+- **The case:** Layer 3 is in a rock group and is also marked unsuitable. Rock takes priority.
+  - It is always exported, on its own Rock Export line at its own swell.
+  - It is never used as fill.
+  - It is not counted again in "Of it unsuitable", which therefore reads 0.
+- **Why:** counting it in both columns would show the same 6,007 BCY twice in the always-exported figures. Rock
+  also carries its own line, role, work scope (rock and hard dig) and swell, which unsuitable soil does not.
+- **The note:** a stored layer now carries `markedUnsuitable` when both hold. The panel's Cut by material, the
+  report's Cut by material and the workbook's Cut by material sheet say: "Layer 3 is marked unsuitable and is rock or
+  hard dig: counted once, as rock (always exported), not again as unsuitable." It shows from the next Calculate,
+  and was seen on the duplicate (member and guest).
+
+**Checks (D-594 to D-597):** gates pass; quantity table passed, 65 utility rows. Screenshots `day-3-1`, `day-3-2`.

@@ -1148,6 +1148,7 @@ try {
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const stab = await import("/src/lib/takeoff/earthwork/stabilization.ts");
+    const lines = await import("/src/lib/takeoff/earthwork/lines.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     return cases.map((c) => {
       if (c.kind === "catalog") {
@@ -1197,6 +1198,29 @@ try {
         const before = bal.soilBalance(c.before);
         const after = bal.siteBalance(c.after);
         return { beforeBank: before.exportBank == null ? null : r2(before.exportBank), beforeLoose: before.exportLoose == null ? null : r2(before.exportLoose), afterBank: after.exportBank == null ? null : r2(after.exportBank), afterLoose: after.exportLoose == null ? null : r2(after.exportLoose), importBank: after.importBank == null ? null : r2(after.importBank), always: after.always.map((a) => [a.name, r2(a.bank), r2(a.loose)]) };
+      }
+      // D-595, D-596: native backfill against the dig, by layer.
+      if (c.kind === "native") {
+        const layers = c.layers.map((l) => ({ layerId: l.name, name: l.name, group: "clay", uscs: null, osha: "C", unsuitable: false, reuseBackfill: l.reuseBackfill, alwaysExported: Boolean(l.alwaysExported), shrink: l.shrink, swell: l.swell }));
+        const n = q.nativeSplit(layers, c.byLayerCY.map((x) => x * 27), c.nativeCCY * 27);
+        return { needBCY: r2(n.needBankCF / 27), reusedBCY: r2(n.reusedBankCF / 27), shortCCY: r2(n.shortCF / 27), spoils: n.spoilsByLayer.map((l) => [l.name, r2(l.cf / 27), l.shrink, l.swell]), rockBCY: r2(n.rockCF / 27) };
+      }
+      if (c.kind === "oxspoil") {
+        const o = lines.overexSpoil({ volumeCF: c.volumeCY * 27, overex: { byLayer: c.byLayer, stack: c.stack } }, c.shrink);
+        return { reusedBCY: r2(o.nativeCF / 27), spoilBCY: r2(o.spoilCF / 27), badBCY: r2(o.badCF / 27), shortBCY: r2(o.shortBankCF / 27) };
+      }
+      // D-594: the one balance the report's Summary, Balance and Truckloads read, against the lines.
+      if (c.kind === "final") {
+        const i = { units: "CY", regions: c.regions, assumptions: c.assumptions, site: { layers: c.layers, spoilsByLayer: c.spoilsByLayer, nativeShort: c.nativeShort } };
+        const f = lines.finalBalance(i);
+        const all = lines.earthworkLines(i);
+        const imp = all.find((l) => l.role === "soil_import");
+        const rock = all.filter((l) => l.role === "soil_export" && /^Rock Export/.test(l.name)).reduce((t, l) => t + l.quantity, 0);
+        const rockLoose = f.always.filter((a) => a.kind === "rock").reduce((t, a) => t + a.loose, 0);
+        const finals = f.steps.filter((x) => x.final).map((x) => r2(x.value));
+        const loads = [f.importLoose ?? 0, rockLoose].map((v) => Math.ceil(v / c.truck - 1e-9));
+        const agree = Math.abs((imp?.quantity ?? 0) - (f.importLoose ?? 0)) < 1e-9 && Math.abs(rock - rockLoose) < 1e-9 && Math.abs((f.importBank ?? 0) + f.net) < 1e-9;
+        return { net: r2(f.net), importBank: f.importBank == null ? null : r2(f.importBank), importLoose: f.importLoose == null ? null : r2(f.importLoose), exportBank: f.exportBank == null ? null : r2(f.exportBank), rockLoose: r2(rockLoose), lastSteps: finals, lineImport: imp ? r2(imp.quantity) : null, lineRock: r2(rock), loads, agree };
       }
       if (c.kind === "treatment") return { tons: c.agents.map((a) => r2(stab.stabilizerTons(c.areaSF, c.depthFt, c.dryPcf, a))), sy: r2(c.areaSF / 9), geoSY: (c.overlaps ?? []).map((o) => r2(ox.geosyntheticSY(c.areaSF, o))) };
       // Block 3D: a pipe and a manhole placed in the 3D view's frame.
