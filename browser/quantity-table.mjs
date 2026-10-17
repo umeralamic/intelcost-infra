@@ -1142,6 +1142,7 @@ try {
     const q = await import("/src/lib/takeoff/earthwork/utilities/quantities.ts");
     const bp = await import("/src/lib/takeoff/earthwork/utilities/breakpoints.ts");
     const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
+    const sx = await import("/src/lib/takeoff/earthwork/utilities/structures.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     return cases.map((c) => {
       if (c.kind === "catalog") {
@@ -1163,6 +1164,15 @@ try {
           Object.assign(out, { alternateOd: a.size.od, alternateWall: a.size.wall, alternateOf: a.entry.alternateOf });
         }
         return out;
+      }
+      if (c.kind === "pit") {
+        const Eb = c.floor - c.slab - c.stone;
+        const p = sx.pitQuantities({
+          shape: c.shape, G: c.G, rim: c.rim, floor: c.floor, baseSlabFt: c.slab, baseStoneFt: c.stone, overdigFt: c.overdig, lowestInvert: c.lowestInvert,
+          soil: { bands: c.layers.map((l) => ({ layerId: null, name: l.name, group: l.group, uscs: l.uscs, osha: l.osha, z0: -1e6, z1: c.G - Eb })), waterZ: c.waterElev != null ? c.waterElev - Eb : null, caving: false, caveInFt: null, noBores: false },
+          rule: null, protection: "auto", depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+        });
+        return { excavationCY: r2(p.excavationCF / 27), stoneCY: r2(p.stoneCF / 27), structureCF: r2(p.structureCF), backfillCY: r2(p.backfillCF / 27), vf: p.vf, vfRange: p.vfRange, method: p.method, dewatering: p.dewatering };
       }
       if (c.kind === "crossing") return { crossings: bp.crossings(c.path, c.a, c.b).map((x) => [r2(x.along), r2(x.atRun)]) };
       // A run read through the profile builder: planes as single pieces, features, typed grades.
@@ -1234,6 +1244,31 @@ try {
         segments: c.segments ?? [],
         restoration: null,
       };
+      if (c.kind === "pits-run") {
+        const pitOf = (pt) => {
+          if (!pt) return null;
+          const Eb = pt.floor - pt.slab - pt.stone;
+          return sx.pitQuantities({
+            shape: pt.shape, G: pt.rim, rim: pt.rim, floor: pt.floor, baseSlabFt: pt.slab, baseStoneFt: pt.stone, overdigFt: pt.overdig, lowestInvert: pt.floor,
+            soil: { bands: c.layers.map((l) => ({ layerId: null, name: l.name, group: l.group, uscs: l.uscs, osha: l.osha, z0: -1e6, z1: pt.rim - Eb })), waterZ: null, caving: false, caveInFt: null, noBores: Boolean(c.noBores) },
+            rule: null, protection: "auto", depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          });
+        };
+        const a = pitOf(c.pits.start);
+        const b = pitOf(c.pits.end);
+        const end = (p) => (p ? { R0: p.R0, kPit: p.k, pitBottom: p.bottomElev } : null);
+        const t = sx.runBetweenPits(input, end(a), end(b));
+        const pitsCF = (a?.excavationCF ?? 0) + (b?.excavationCF ?? 0);
+        return {
+          overlapCY: t.overlapCF.map((v) => r2(v / 27)),
+          trenchCY: r2(t.excavationCF / 27),
+          pitCY: [a, b].filter(Boolean).map((p) => r2(p.excavationCF / 27)),
+          pitVF: [a, b].filter(Boolean).map((p) => p.vf),
+          pitsAndTrenchCY: r2((pitsCF + t.excavationCF) / 27),
+          // The backfill lines are written by material: after the overlap they still add up to the run's.
+          backfillGapCY: r2((t.byMaterial.filter((m) => m.zone === "backfill").reduce((s, m) => s + m.cf, 0) - t.backfillCF) / 27),
+        };
+      }
       const r = q.runQuantities(input);
       const cy = (cf) => r2(cf / 27);
       const out = {

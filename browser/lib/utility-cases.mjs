@@ -348,6 +348,69 @@ export const UTILITY_CASES = [
     expect: { crossings: [[20, 140]] },
   },
 
+  // --- §3.11: structure pits (Block 3, checks 3a–3c; D-581) -----------------------------------------
+  {
+    // A 48" sanitary manhole, Type B, sloped 1:1: inside 4.00 ft, wall 5 in, over-dig 2 ft (R0 4.417);
+    // rim 100.00, lowest invert 90.00, floor 90.00, slab 0.50, stone 0.50: E_b 89.00, h 11.00.
+    id: "util-3a-manhole-48",
+    kind: "pit",
+    shape: { kind: "round", insideDiaFt: 4, wallFt: 5 / 12 },
+    G: 100, rim: 100, floor: 90, slab: 0.5, stone: 0.5, overdig: 2, lowestInvert: 90,
+    layers: [{ ...CLAY_B }],
+    // The plan printed the stone as 1.14 from R0 rounded to 4.417 (30.646 CF); exactly it is
+    // π × 4.41667² × 0.5 = 30.641 CF = 1.1349 CY (D-581).
+    expect: { excavationCY: 138.77, stoneCY: 1.13, structureCF: 192.65, backfillCY: 130.5, vf: 10, vfRange: "10–12 ft" },
+  },
+  {
+    // A rectangular lift station, outside 10 × 12 ft, over-dig 2 ft (bottom 14 × 16); floor 86, slab
+    // 1.0, stone 1.0 (h 16.00); clay, the design water at 92.00, so the clay counts C (1½:1).
+    id: "util-3b-lift-station-clay",
+    kind: "pit",
+    shape: { kind: "rect", insideLFt: 10, insideWFt: 12, wallFt: 0 },
+    G: 100, rim: 100, floor: 86, slab: 1, stone: 1, overdig: 2, lowestInvert: 86, waterElev: 92,
+    layers: [{ ...CLAY_B }],
+    expect: { excavationCY: 1014.52, stoneCY: 8.3, backfillCY: 939.56, method: "sloped", dewatering: true },
+  },
+  {
+    id: "util-3b2-lift-station-sand",
+    kind: "pit",
+    shape: { kind: "rect", insideLFt: 10, insideWFt: 12, wallFt: 0 },
+    G: 100, rim: 100, floor: 86, slab: 1, stone: 1, overdig: 2, lowestInvert: 86, waterElev: 92,
+    layers: [{ ...SAND_C }],
+    expect: { excavationCY: 132.74, backfillCY: 57.78, method: "box" },
+  },
+  {
+    // Case (a)'s trench leaving the 48" manhole: invert 90.00, trench bottom 89.4788, h 10.5212, 1:1,
+    // W 3.0. Its own length beyond the outline is 95.58 ft; the slices inside the pit's sides, 31.82 CY.
+    id: "util-3c-trench-into-manhole",
+    kind: "pits-run",
+    pipe: SDR35_8,
+    length: 100,
+    ground: [100, 100],
+    inverts: [90, 90],
+    layers: [{ ...CLAY_B, depth: null }],
+    pits: { start: { shape: { kind: "round", insideDiaFt: 4, wallFt: 5 / 12 }, rim: 100, floor: 90, slab: 0.5, stone: 0.5, overdig: 2 } },
+    expect: { overlapCY: [31.82, 0], trenchCY: 471.79, pitsAndTrenchCY: 610.56 },
+  },
+  {
+    // §3.16 between two 48" manholes, no grading: rims 100.00; floors and inverts 92.00; slab and stone
+    // 0.5 ft each; 100 ft centre to centre; no bores, Type C (1½:1); a 36 in bucket.
+    id: "util-2q-two-manholes",
+    kind: "pits-run",
+    pipe: SDR35_8,
+    length: 100,
+    ground: [100, 100],
+    inverts: [92, 92],
+    noBores: true,
+    bucket: 36,
+    layers: [{ ...ASSUMED_C, depth: null }],
+    pits: {
+      start: { shape: { kind: "round", insideDiaFt: 4, wallFt: 5 / 12 }, rim: 100, floor: 92, slab: 0.5, stone: 0.5, overdig: 2 },
+      end: { shape: { kind: "round", insideDiaFt: 4, wallFt: 5 / 12 }, rim: 100, floor: 92, slab: 0.5, stone: 0.5, overdig: 2 },
+    },
+    expect: { pitCY: [146.48, 146.48], pitVF: [8, 8], overlapCY: [37.52, 37.52], pitsAndTrenchCY: 672.02, backfillGapCY: 0 },
+  },
+
   // --- §3.16: a project with no grading (2q, the run) -------------------------------------------
   {
     id: "util-2q-typed-grades-no-bores",

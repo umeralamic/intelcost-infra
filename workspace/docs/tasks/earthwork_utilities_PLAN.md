@@ -782,7 +782,8 @@ still shows a 5 ft station table for reading.
   - **Inputs:** inside 4.00 ft; wall 5 in, so OD 4.833 ft; over-dig 2 ft, so R0 = 4.417 ft. Rim 100.00, lowest
     invert 90.00, floor 90.00, slab 0.50, stone 0.50.
   - **Pit:** E_b = 89.00, h = 11.00. V = π·(19.507·11 + 4.417·121 + 1331/3) = 3,746.85 CF = **138.77 CY**.
-  - **Stone** **1.14 CY**; **structure** 192.65 CF; **backfill** **130.50 CY**.
+  - **Stone** **1.13 CY** (π × 4.4167² × 0.5 = 30.64 CF; printed 1.14 before D-581, from R0 rounded to 4.417);
+    **structure** 192.65 CF; **backfill** **130.50 CY**.
   - **10.00 VF**, in the 10–12 range.
 - **Rectangular lift station.**
   - **Inputs:** outside 10 × 12 ft; over-dig 2 ft, so the bottom is 14 × 16 ft; h = 16.00 (floor 86, slab 1.0,
@@ -1052,7 +1053,7 @@ right like the others.
 | Inverts  In SS-0 90.20 . Out SS-1 90.00          Base slab [6] in  Stone [6] in  |
 | Over-dig [2.0] ft   Protection [Auto v]   Pit from (o) Proposed ( ) Existing     |
 | -- Last Calculate -------------------------------------------------------------- |
-| Pit 138.77 BCY (Clay)   Stone 1.14 CCY   Backfill 130.50 CCY native             |
+| Pit 138.77 BCY (Clay)   Stone 1.13 CCY   Backfill 130.50 CCY native             |
 | 10.00 VF (10-12 ft)   Sloped 1:1 (Type B)   Dewatering: no   Rock: no           |
 +----------------------------------------------------------------------------------+
 ```
@@ -1404,7 +1405,7 @@ Nothing is a test suite.
 
 | # | Check | Expected | Source |
 |---|---|---|---|
-| 3a | 48" manhole, 10 VF, Type B, sloped | pit 138.77; stone 1.14; backfill 130.50 CY; 10.00 VF, range 10–12 | synthetic |
+| 3a | 48" manhole, 10 VF, Type B, sloped | pit 138.77; stone 1.13 (1.14 before D-581, R0 rounded); backfill 130.50 CY; 10.00 VF, range 10–12 | synthetic |
 | 3b | Lift station, water above the floor | clay counts C below the water: 1,014.52 CY, dewatering flag; sand: shoring forced, 132.74 CY | synthetic |
 | 3c | Trench into the manhole (36 in bucket) | overlap 31.82 CY deducted; trench 471.79 CY; pit + trench 610.56 CY (ID 7.891, D-550 C1) | synthetic |
 

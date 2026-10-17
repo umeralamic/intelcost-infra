@@ -17861,3 +17861,259 @@ shows them. 37 utility rows, every one right.
 **Not yet:** a utilities-only Calculate when the sheet has no EG, FG or boundary (2E; the run's own typed grades work
 already where volumes Calculate); the existing-grade rule in a cut area; the report's Utilities section and Excel sheet;
 the profile pane (2F); segments.
+
+## D-573: A sheet with no grading Calculates its utility runs alone (F29 Block 2E, a requirement of D-526)
+
+**Built** (`useVolumes.tsx`, `VolumePanel.tsx`, `api.ts`):
+- **When it applies:** Calculate on a sheet whose volumes come back absent, or with no boundary or no surface.
+- **What it does:** it still works out the sheet's utility runs, from their typed end grades (and any surface there
+  is), and saves a result marked `utilitiesOnly` with no cut or fill. Only the runs' lines are written; no grading line
+  is.
+- **What it shows:** the Volumes panel reads "No grading on this sheet: mass cut and fill are absent. 1 utility run
+  worked out from their grades; see Runs."
+- **When it doesn't apply:** a sheet with no runs behaves as before.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", sheet C-100 (scaled; no contour, spot, boundary or link):
+- **Member:** one run, 340.00 LF, set as §3.16's example: ground 100.00 to 99.00, inverts 92.00 to 91.00, a 36 in
+  bucket.
+- **Calculate gave** 1,693.45 BCY: 340.00 LF × 134.48 SF/LF, §3.16's section exactly. It read:
+  - "Grade from rims: no surface here." and "No bores: Type C assumed.";
+  - Sloped 1½:1, 8–10 ft, 340.00 LF;
+  - the project's 30 in spec max for 8 in, flagged, with its quantities beside the actual ones.
+- **What was saved:** the result is marked utilities only with no cut, and six utility lines.
+- **Guest** (the duplicate's own link): Runs and the Volumes panel read the same; its Calculate was greyed with "The
+  saved result is up to date." (D-567). It sent nothing.
+- **Gates:** pass.
+
+## D-574: The grading report's Utilities section and Excel sheet (F29 Block 2G, spec §16)
+
+**Built** (`earthwork/report/reportDoc.ts`, `reportWorkbook.ts`):
+- **The report (screen and PDF, one definition):** a **Utilities** section after Balance, on a result with runs. It has:
+  - a table of each run: its pipe; its length and LF by invert-depth range; its excavation and the split by layer;
+    bedding, zone and backfill; its protection LF by method and range; dewatering; rock and LF in rock;
+  - each run's flags and notes, and its spec-width figures when it is wider than spec max;
+  - the runs Calculate skipped, with why.
+- **The workbook:** a **Utilities** sheet, one row per run: type, pipe, length, width, excavation, rock and LF in rock,
+  the three zones, native reused, spoils to the balance, exported, dewatering, restoration, pipe by invert depth,
+  protection by trench depth, and flags and notes. It is in project units: BCM, CCM, m and m² on a metric project.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200:
+- **Member:** the report's Utilities section read SS-1 as the run panel does (287.52 LF; 976.73 BCY by layer; 17.10 /
+  110.67 / 844.86 CCY; Sloped 1:1 44.80 LF and 1½:1 242.72 LF; dewatering 12.63 LF; rock 102.89 BCY over 242.72 LF).
+  The workbook, saved to the night's report folder, has the sheets Summary, By feature, Strip, Balance, Lines, Utilities
+  and Inputs.
+- **Guest** (the duplicate's own link): the report's Utilities section read the same; nothing was sent. PDF and Print
+  were not pressed.
+- **Gates:** pass.
+
+## D-575: Runs on a linked sheet are worked out on the grading sheet; from the existing grade, a cut area counts below the subgrade (F29 Block 2E, Q8; 2D, Q7)
+
+**Built:**
+- **Q8, runs through a link** (`utilities/calculate.ts`, `useUtilities.tsx`, `RunPanel.tsx`, the page). A sheet's
+  Calculate reads the runs drawn on every sheet linked to it for its grade (F18):
+  - each run's points come through the link's map;
+  - its typed inverts and end grades come over with the link's datum offset;
+  - an arc's bulge is the source page's, so a linked run is read along its points.
+
+  The source sheet's own Calculate leaves its runs to the grading sheet. Its run panel says "This sheet is linked into
+  C-200 – Site Grade Plan for its grade, so its runs are worked out there: Calculate C-200 – Site Grade Plan." The
+  grading sheet's Runs list shows them as "SS-3 (from V-100 – Existing Conditions)". The version key reads the linked
+  sheets' runs and offsets too.
+- **Q7, the existing grade in a cut area** (`breakpoints.ts`). A run set to start from the existing grade starts from the
+  lower of the existing grade and the proposed subgrade, so a cut area does not count again the part already in the site
+  cut. The run is cut where the two meet.
+
+**Quantity row** `util-profile-existing-in-cut-area`: EG = 99 + 0.02x crosses a flat FG of 100 at x = 50. The fill side
+starts at EG (h 7 → 8, 3,941.67 CF) and the cut side at the subgrade (h 8, 4,400 CF): 308.95 CY. 38 utility rows, every
+one right.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me":
+- **Member:** SS-3 drawn on V-100 (the survey sheet linked into C-200), 373.83 LF at 5 ft of cover. C-200 Calculated:
+  - its Runs list showed "SS-3 (from V-100 – Existing Conditions)";
+  - its length was the same on C-200, 373.83 LF, through the link;
+  - its figures: 933.74 BCY by the three layers, 0–6 ft pipe and 6–8 ft protection;
+  - "No proposed surface: trench from existing grade, 0+00 to 1+09." where the proposed grade does not cover it.
+
+  V-100's Runs panel gave the note above.
+- **Guest** (the duplicate's own link): C-200's Runs listed SS-3 with the same figures; nothing was sent.
+- **Gates:** pass. **Quantity table:** passed.
+
+## D-576: A run's profile in the split pane (F29 Block 2F)
+
+**Built:**
+- **`ProfilePane.tsx`** (plan §4.9), opened by **Profile** in the run panel; it takes the split pane, as the
+  cross-section and the report do.
+  - **What it draws along the run:** the start surface; every layer's bottom (grey dots); the water (blue dashes); the
+    trench bottom (amber dashes); the invert and the crown.
+  - **Below, two bands:** the protection method piece by piece (amber where a box is used) and the pipe's depth range;
+    dewatering stretches are a blue rule over the bands.
+  - **Hovering** gives the station, ground, invert, crown, trench bottom, invert depth, trench depth and water.
+  - **A table of stations every 5 ft,** "for reading: the quantities are exact between breakpoints".
+
+  Elevations follow the sheet's unit.
+- **The profile is rebuilt** on the shown Calculate's own surfaces and the run's inputs (`calculate.ts` returns each
+  run's profile), as 3D rebuilds its prisms. Nothing is stored. `quantities.ts` returns the run's pieces for the bands;
+  they are taken out before a result is saved.
+- **Pipes in the cross-section** (plan 2F's second item) are **not built** yet.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200:
+- **Member:** SS-1's profile opened over 287.52 ft. At 1+37: ground 703.58, invert 696.90, crown 697.55, trench bottom
+  696.38, invert depth 6.68 and trench depth 7.20 ft (6 ft of cover over an 8 in pipe), water 693.68. The table ran every
+  5 ft with the same depths, the ground stepping where Site Features change the subgrade.
+- **Guest** (the duplicate's own link): Profile opened the same; nothing was sent.
+- **Gates:** pass. **Quantity table:** passed.
+
+## D-577: Segments of a run (F29 Block 2C, spec §9.2)
+
+**Built:**
+- **The engine** (`quantities.ts`): a run takes segments, each a station range with its own protection, side
+  clearance, bedding, zone height, and bedding, zone and backfill materials (name and source). A later segment wins
+  where two overlap.
+  - A segment's ends become knots, so each interval lies in one segment and is exact.
+  - The trench bottom, the cuts and the width follow the segment's section.
+  - The zones are added up by material and source (`byMaterial`), so native material is counted stretch by stretch.
+- **The lines** (`lines.ts`): bedding, zone and backfill by material and source, so a segment's own material is a line of
+  its own ("Trench Backfill, Clay (compacted)").
+- **The run panel:** a Segments list (+ Segment), each with from and to, a note, protection, bedding inches, backfill
+  and zone material and source, and a remove button. It is stored in `utility_run.segments` as `{from_ft, to_ft,
+  overrides}`.
+
+**Quantity row** `util-segment-near-building`: case (a) with 0+00–0+40 "near the building", no gravel bedding and clay in
+the zone and backfill. There the bottom is 0.5 ft higher (h 7.5). Hand-worked:
+- **excavation:** 40 × 78.75 + 60 × 88 = 8,430 CF = 312.22 CY;
+- **bedding:** #57 stone 3.89;
+- **zone:** clay 11.27 and sand 20.68;
+- **backfill:** clay 104.83 and native 170.13 CCY.
+
+39 utility rows, every one right.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-100's SS-2 (340 LF, §3.16's grades):
+- **Member:** a segment 0–40 ft, "Near building", no bedding, Clay backfill (native). Calculate gave 1,672.85 BCY:
+  1,693.45 less 40 ft × 13.91 SF/LF, as worked by hand. The lines split the backfill: Clay 164.65 and Native 1,340.22
+  CCY.
+- **Guest:** the segment read only (11 of 11 controls disabled); nothing sent.
+- **Gates:** pass. **Quantity table:** passed.
+
+## D-578: Utility runs labelled on the plan, their dewatering drawn blue (F29 spec §9.5)
+
+**Built** (`utilities/RunLayer.tsx`, the page): on the Earthwork tab, each run on the sheet is labelled with its size and
+material ("8" PVC") at its middle, along the line and upright. The stretches the shown Calculate found below the design
+water are drawn blue over the run. The run's own line is its item's, coloured by type (D-571). The layer joins the
+canvas's layer gate, and takes no pointer events.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200: SS-1 read "8" PVC" along the line, and its 12.63 LF of
+dewatering came as two blue stretches. Gates: pass. A guest's sheet draws the same layer from the saved result.
+
+## D-579: Pipes in the cross-section (F29 Block 2F)
+
+**Built:**
+- **`breakpoints.ts`:**
+  - `knotAt` reads a run's profile at any station; the profile pane uses it too;
+  - `crossings` gives where a run's path crosses a line, as the distance along each.
+- **`SectionPane.tsx`** takes `pipes`. Each run crossing the section line is drawn at its invert, as a circle of its OD
+  to the vertical scale, labelled with its name, pipe and invert ("SS-1 8" PVC SDR-35 (inv 696.32)").
+- **The page** works the sheet's runs (and linked sheets' runs) on the shown Calculate's surfaces while a section is
+  open, as the profile does. Nothing is stored.
+
+**Quantity row** `util-section-crossing`: a run (0,0)→(60,80)→(160,80) crosses the line (100,60)→(100,100) 20 ft along
+the line and 140 ft along the run. 40 utility rows, every one right.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-200: a section drawn across SS-1 (171.51 ft) showed its pipe
+at invert 696.32, about 6.7 ft under the ground there, as the run's 6 ft of cover gives. Gates: pass. Quantity table:
+passed.
+
+## D-580: Block 2's metric pass; a box shorter than the trench is noted (F29 §6.6 step 7, spec §17, §9.2)
+
+**Metric (§6.6 step 7):**
+- **The round trip:** the duplicate was switched to metric and back. Every utility line read in m, BCM or CCM (287.52 LF
+  → 87.64 m; 1,335.36 BCY → 1,020.95 BCM), and every figure was the same after the return to imperial.
+- **Found and fixed:** the name converter turned a pipe's size into millimetres ("203 mm PVC SDR-35 Pipe"). Spec §17
+  keeps nominal inch names, so a pipe line keeps its size ("8" PVC SDR-35 Pipe, 6–8 ft deep") while every other figure
+  in its name converts (`lib/takeoff/displayName.ts`).
+- **U-UT28's metric ranges:** on a metric sheet, a project that kept the default ranges gets 0–2, 2–2.5, 2.5–3, 3–3.5,
+  3.5–4, 4–5 and 5+ m, named in metres (`trench.ts` `METRIC_RANGES_FT`, `rangeLabel`). Ranges a project typed are
+  kept, named in metres.
+- **The run panel and profile** follow the sheet's unit, as the Volumes panel does (D-398).
+
+**A box shorter than the trench** (spec §9.2): noted, "Box 6x8 is 8.0 ft high, shorter than the trench: stacked boxes
+are not modelled."
+
+**Quantity rows:**
+- `util-metric-ranges`: case (a)'s invert depth (2.28 m) and trench depth (2.44 m), both in "2–2.5 m";
+- `util-2b3-box-shorter-than-trench`: a 10 ft trench in Box 6x8 (8 ft high), 222.22 CY, with the note.
+
+42 utility rows, every one right.
+
+**Checked:** gates pass. The guest's section on C-200 showed SS-1's pipe and sent nothing. The duplicate is back on
+imperial.
+
+## D-581: Structures' data and pits engine (F29 Block 3A and 3C, spec §3.11)
+
+**3A, data** (migration `d581c4e7a2b9_utility_structures`):
+- **`utility_structure`:** one row per structure item, holding its type and utility, its shape (round inside diameter
+  or rectangular L × W), wall, rim and floor (both optional), base slab, base stone, over-dig, protection and the
+  surface the pit is cut from.
+- **Routes:** `PUT /earthwork/utility-structure/{item}`, and `GET /earthwork/utilities` now returns the structures.
+  `COPIED` copies them with the project, and a duplicated item copies its structure.
+
+**3C, the engine** (`lib/takeoff/earthwork/utilities/structures.ts`, pure):
+- **`pitQuantities`:** a round pit is a frustum from bottom radius R0 = OD/2 + over-dig. A rectangular pit is
+  L·W·h + k·h²·(L + W) + (4/3)·k²·h³. Protection comes from the same OSHA and geotech rule as a run, by layer. The pit
+  also gives base stone, backfill (pit less the structure) and VF, with its depth range, and flags dewatering and rock.
+- **`roundOverlapCF`:** the trench slice inside a round pit's sloped sides, exactly, by Gauss–Legendre.
+- **`runBetweenPits`:** the trench runs from each pit's bottom outline. Its pipe LF is still measured centre to
+  centre. The overlap is taken off the excavation, each layer in its share.
+
+**Taken overnight, Umer to confirm:**
+- **The overlap comes off the trench's backfill too.** The pit's own backfill already fills that volume. It comes off
+  each backfill material in its share, and the native bank and the spoils follow from the trimmed figures.
+- **A rectangular pit cuts the trench at its face with no slice deduction.** The trench stops at half the bottom's
+  short side, with no sloped-side overlap taken.
+
+**Plan correction:** row 3a's stone is 1.13 CCY, not 1.14. The plan had rounded R0 before squaring it.
+`earthwork_utilities_PLAN.md` §6.3 now says so.
+
+**Quantity rows:**
+- **The plan's rows:**
+  - `util-3a`: 138.77 / 1.13 / 130.50 CY, 10.00 VF;
+  - `util-3b` (clay): 1,014.52 CY with the dewatering flag;
+  - `util-3b2` (sand): shoring forced, 132.74 CY;
+  - `util-3c`: overlap 31.82, trench 471.79, together 610.56 CY.
+- **§3.16 as `util-2q-two-manholes`:** 146.48 CY per pit, overlaps 37.52, total 672.02 CY. Its backfill lines add up to
+  the run's backfill (`backfillGapCY` 0).
+- **Result:** 47 utility rows, every one right.
+
+## D-582: Structures on the sheet, in Calculate and as lines (F29 Block 3B and 3D lines, spec §9.1, §4.7)
+
+**Built:**
+- **The Utilities group gains Structures** (place a mark with each click) and **List**, the structure panel (§4.7).
+  Each structure is a count item with its `utility_structure` row; defaults come from its type.
+- **Calculate** works in three phases:
+  1. the sheet's runs;
+  2. each structure's pit at its mark. Its floor is the lowest invert of the runs ending within its outside plus a
+     foot, unless one is typed;
+  3. those runs again, through `runBetweenPits`.
+- **Ground where no surface covers the run** (spec §9.1, U-UT33):
+  - a run with no typed end grades takes the typed rims of the structures at its ends;
+  - a structure with no surface and no rim takes the ground its runs read at it.
+- **Lines** go into the work scope's folder:
+  - structure EA by type, size and depth range;
+  - manhole VF by size;
+  - structure excavation by layer;
+  - base stone and structure backfill.
+- **Found and fixed:**
+  - the backfill lines were written before the overlap came off, so on C-100 they came to 1,466.25 CCY against the
+    panel's 1,391.12;
+  - a pit on a sheet with no surface asked for its rim although its run had typed grades.
+
+**Checked** on "BENCH DUP 2026-10-16 22:13 — delete me", C-100 (no surfaces): MH-1 and MH-2 were placed at SS-2's ends
+(typed grades 100 → 99, inverts 92 → 91).
+- **Calculate:** each pit 148.44 BCY, 8.00 VF, 8–10 ft, "Runs here: SS-2".
+- **Lines:**
+  - Sanitary Manhole 48", 8–10 ft: 2 EA;
+  - Manhole VF 48": 16.00;
+  - structure excavation: 296.88 BCY;
+  - trench excavation: 1,555.22 BCY;
+  - trench backfill: 138.64 Clay (its 0–40 ft segment) + 1,252.48 Native = 1,391.12 CCY, as the panel shows.
+- **Guest:** the structure panel was read-only (13 of 13 controls), Calculate greyed while current, nothing sent.
+- **Gates:** pass. **Quantity table:** passed.
