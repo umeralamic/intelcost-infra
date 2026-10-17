@@ -124,6 +124,12 @@ export const UTILITY_CASES = [
     expect: { widthText: "Width 6.00 ft — box", excavationCY: 177.78, beddingCY: 11.11, zoneCY: 36.35, backfillCY: 128.89, maxTopWidthFt: 6 },
   },
   { id: "util-2b2-box-not-set", ...caseA({ protection: "box" }), expect: { hasFlag: "Box width not set: pick a box or type its outside width." } },
+  {
+    // Spec §9.2 (D-580): a box shorter than the trench is noted; stacked boxes are not modelled.
+    id: "util-2b3-box-shorter-than-trench",
+    ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6", depth: [10, 10] }),
+    expect: { hasNote: "Box 6x8 is 8.0 ft high, shorter than the trench: stacked boxes are not modelled.", excavationCY: 222.22 },
+  },
   { id: "util-2c-benched-b", ...caseA({ protection: "benched" }), expect: { excavationCY: 207.41, maxTopWidthFt: 11, beddingCY: 5.56, zoneCY: 17.46, backfillCY: 182.96 } },
   {
     id: "util-2c2-benched-a-14ft",
@@ -232,6 +238,13 @@ export const UTILITY_CASES = [
     expect: { pipeLF: [{ range: "6–8 ft", lf: 100 }, { range: "8–10 ft", lf: 100 }] },
   },
   { id: "util-2m-spoils", ...caseA(), expect: { nativeBankCY: 311.91, spoilsSuitableCY: 14.01 } },
+  {
+    // U-UT28's metric ranges (D-580): invert depth 7.48 ft = 2.28 m and trench depth 8.00 ft = 2.44 m
+    // both fall in 2–2.5 m.
+    id: "util-metric-ranges",
+    ...caseA({ metricRanges: true }),
+    expect: { pipeLF: [{ range: "2–2.5 m", lf: 100 }], protectionLF: [{ method: "sloped", slope: 1, range: "2–2.5 m", lf: 100 }] },
+  },
   {
     // Segments (spec §9.2, D-577): case (a) with 0+00–0+40 near the building, no gravel bedding and
     // clay in the zone and backfill. There the bottom is 0.5 ft higher (h 7.5): A 78.75, zone
