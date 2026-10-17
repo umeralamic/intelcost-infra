@@ -18760,3 +18760,34 @@ The guest read 47.1 fps, measured while the member's 3D view was rendering in th
   - a second seed changes nothing.
 
 **Checks:** gates pass; ruff, mypy pass; quantity table passed, 67 utility rows. Screenshots `day-9-1` to `day-9-4`.
+
+## D-600: The guest view across F29, checked, with three fixes (day run 2026-10-17, item 9b)
+
+**One guest pass** on the duplicate's own link (made for this run, `bench_share_link.py`). The api log and the page
+show no write but the guest session's own POST.
+
+| Check | Result |
+|---|---|
+| Bores panel (a bore, Soil layers, Slope rule) | every control greyed with the Professional tip: 52, 37 and 6 of 52, 37 and 6 |
+| Utility runs panel | 32 of 32 greyed and tipped |
+| Structures panel | 13 of 13 greyed and tipped |
+| Undercut (the Site Feature dialog) | 25 controls, none enabled |
+| Profile pane | opens, read-only; on a current result it shows once the saved Calculate's surfaces are built (**fixed**, below) |
+| Cross-section | drawn by the guest; the pane shows the grades, layers, water and the two crossing pipes |
+| The guest's own Calculate | offered only while the saved result is out of date; nothing saved. "Needs 4,589 BCY from elsewhere", Import 5,277.58 LCY, rock 8,109.34 LCY, by layer. The member's Calculate after it gave the same figures, to the cent |
+| The guest's Excel | Summary, By feature, Strip, Balance, Lines, Utilities, Structures, Bores and layers, Cut by material, Inputs; no money anywhere. Over-excavation appears only where a feature uses it, and none on this C-200 does |
+| "Map scope…" and "Not classified" | **fixed**: hidden for a guest |
+| Utility settings and work scopes | Settings is not in a guest's header. Settings pages reached by their address **fixed**: back to the shared project |
+
+**Fixed:**
+1. **The "Not classified in <system>" badge and its "Map scope…" link** were shown to a guest. They are hidden now
+   (`EstimatingView.tsx`).
+2. **A guest who typed a Settings address** (`/settings/classification`) read the workspace's Classification
+   page, work scopes included, read-only. Every Settings route now sends a guest to the shared project
+   (`SettingsRoute`, `settings-layout.tsx`).
+3. **The profile and cross-section panes** said "Calculate this sheet first" while a current result's surfaces were
+   still being built after a reload. A guest cannot press Calculate on a current result (D-527), so the message
+   sent them nowhere. The panes now say "Building the calculated surfaces…" and show once built. This also helps
+   members, who saw the same message after a reload.
+
+**Screenshots:** `day-9b-1` to `day-9b-9`. **Workbook:** `day-9b-guest-grading-report.xlsx`. **Gates:** pass.
