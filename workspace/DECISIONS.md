@@ -18672,3 +18672,91 @@ Every earlier row is unchanged: none had a short run.
   and was seen on the duplicate (member and guest).
 
 **Checks (D-594 to D-597):** gates pass; quantity table passed, 65 utility rows. Screenshots `day-3-1`, `day-3-2`.
+
+## D-598: Buried utilities seen in 3D: X-ray by default, ground opacity, click to pick (day run 2026-10-17, item 8; O1 expanded)
+
+**Built in `view3d/Earth3DView.tsx`**, the one component behind all three views (existing, proposed, cut and fill):
+- **"Show buried", on by default.** Each pipe piece and structure has a faded twin drawn with `depthFunc: GreaterDepth`
+  at 35 % opacity, so it shows only where the ground hides the solid one. The result is solid above ground and
+  faded where buried. The twin shares the solid's geometry. Off, buried parts are hidden as before.
+- **"Ground opacity", 0–100 %, default 100.** It sets the ground's material (shaded or draped); below 100 the ground
+  is drawn translucent. It and Show buried are kept on this device (`earth3d-ground-opacity-v1`,
+  `earth3d-show-buried-v1`), so the same setting holds in all three views.
+- **Click to pick.** A click (a pointer that moves under 5 px) on a run or structure picks it, by its name:
+  - the picked one is lit;
+  - the other utilities fade to 35 %;
+  - the ground fades to 30 % (or the slider's value, if lower);
+  - a chip reads "<name> — click empty space to clear".
+  A click anywhere else clears it. A buried utility is pickable through the ground only while Show buried is on.
+
+**Taken, Umer to confirm:**
+- **The fade:** "fades the ground around it" is done as the whole ground fading to 30 % while a pick holds. A
+  local fade around the pick would need a custom shader.
+- **Highlight colour:** the theme's primary colour.
+
+**Speed (C-200 on the duplicate, member, 1440 × 900):**
+- cut and fill with everything on (X-ray, 3 runs, bores, water): 60.1 fps;
+- with ST-1 picked: 60.1 fps;
+- ground at 40 %: 60.0–60.4 fps settled;
+- existing grade: 59.9–60.2 fps.
+The guest read 47.1 fps, measured while the member's 3D view was rendering in the same browser at the same time.
+
+**Guest:** the guest's 3D VIEW has Show buried, the slider and the pick (picked ST-2). No writes were sent.
+
+**Screenshots:** `day-8-1` (X-ray default), `day-8-3` (ST-1 picked), `day-8-4` (ground 40 %), `day-8-5` (guest).
+**Gates:** pass.
+
+## D-599: The open items O2, O3, O5, O7 built; O6 confirmed, with one fix (day run 2026-10-17, item 9)
+
+**O2, "Benched" greyed where it cannot apply.**
+- **The engine:** it records `benchableLF`, the length of a run where benching could apply. That is where every
+  soil passed is Type A, or Type B and cohesive (OSHA Appendix B), the engine's own rule, whatever the run's choice.
+- **The run panel:** its Protection list greys "Benched (cannot apply on this run)", with the rule as its tip, when
+  the run's last Calculate found none.
+- **Before any Calculate:** it stays offered.
+- **A segment's own Protection list:** unchanged.
+- **Rows:** `o2-benchable-clay-b` (100 LF) and `o2-not-benchable-sand-c` (0 LF).
+- **Smoke:** the duplicate's three runs all pass benchable clay somewhere, so none is greyed there.
+
+**O3, structures snap to run ends.**
+- **The rule:** a structure placed within its outside + 2 ft of a run's end on its sheet sits on that end exactly
+  (the nearest one), so it joins the run.
+- **Unchanged:** the join itself is still outside + 1 ft.
+- **Taken, Umer to confirm:** the 2 ft. It catches a near miss at a usual zoom without pulling a structure meant to
+  stand apart.
+- **Smoke:** a 48" manhole clicked about 2.6 ft from SS-1's end was saved on the end, 0 ft off (MH-4 on the
+  duplicate).
+
+**O5, metric ranges follow the project.**
+- **The rule:** Calculate names pipe and protection ranges in metres when the project is metric, whatever the sheet's
+  scale unit (`rangesMetric`). Before, the sheet's unit decided.
+- **Smoke:** the duplicate switched to metric, C-200 (scaled in feet) calculated: "0–2 m" ranges. Switched back.
+- **Not changed:** the run panel's lengths still follow the sheet ("310.26 LF" there). Item 9 named the ranges only.
+
+**O7, a guest's Estimating sends no member-only request.**
+- **Where:** the api client (`core/api/client.ts`) answers locally, with the api's own 403 and code, what a share
+  link's guest is always refused, so nothing is sent. The api's guard stays the rule.
+- **Always refused:** saved schedule reads (AI), the workspace's assemblies, recent projects.
+- **With the link's pricing off:** Estimating's packages, columns, components, equipment and bid, and the Wage
+  Calculator.
+- **Smoke, guest on the duplicate's link:**
+  - **Before:** opening Estimating gave ten 403s.
+  - **After:** none, and no console errors, after a tab switch and after a reload straight onto Estimating.
+  - The tab renders as before ("Pricing is not shown on this shared link").
+
+**O4:** ok, no lighter panel. Closed.
+
+**O6, kept; confirmed with one fix.**
+- **A workspace with no work scopes:** gets the defaults and Q5's mappings on its first Calculate (`_role_scopes`).
+- **Before that Calculate:** its earthwork lines keep their codes and folders. They have no work scope until their
+  next Calculate, and the "Not classified" badge shows only on a line that has a scope and no node.
+- **Found and fixed:** the seed wrote its mappings with `set_mapping`, which overwrites a row already there. A
+  workspace that had mapped a scope before the seed ran (Settings > Work scopes, between Blocks 5B and 5C) would have
+  lost that mapping. The seed now writes only where no mapping exists (`add_mapping_if_absent`).
+- **Proof:** `scripts/check_scope_seed.py`, in one transaction rolled back:
+  - a new workspace with one scope already mapped;
+  - after the seed, scopes 1 → 19 and mappings 90 (86 by role);
+  - the user's mapping and the scope's name kept;
+  - a second seed changes nothing.
+
+**Checks:** gates pass; ruff, mypy pass; quantity table passed, 67 utility rows. Screenshots `day-9-1` to `day-9-4`.

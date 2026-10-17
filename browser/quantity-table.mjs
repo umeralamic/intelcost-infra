@@ -1337,6 +1337,7 @@ try {
         boxLF: r2(r.protectionLF.filter((x) => x.method === "box").reduce((a, x) => a + x.lf, 0)),
         maxTopWidthFt: r2(r.maxTopWidthFt),
         dewateringLF: r2(r.dewateringLF),
+        benchableLF: r2(r.benchableLF ?? 0),
         dewatering: r.dewatering.map(([a, b]) => [r2(a), r2(b)]),
         layerCY: r.byLayer.map((l) => cy(l.cf)),
         rockCY: cy(r.rockCF),

@@ -693,4 +693,17 @@ export const UTILITY_CASES = [
     shrink: 1.1,
     expect: { reusedBCY: 105, spoilBCY: 0, badBCY: 15, shortBCY: 5 },
   },
+  {
+    // O2 (D-599): benching can apply only where every soil passed is Type A, or Type B and cohesive.
+    // Case (a) in clay, Type B, cohesive: benchable along all 100 LF.
+    ...caseA(),
+    id: "o2-benchable-clay-b",
+    expect: { benchableLF: 100 },
+  },
+  {
+    // O2 (D-599): the same run in sand, Type C: benching can apply nowhere, so "Benched" is greyed.
+    ...caseA({ layers: [{ ...SAND_C, depth: null }] }),
+    id: "o2-not-benchable-sand-c",
+    expect: { benchableLF: 0 },
+  },
 ];
