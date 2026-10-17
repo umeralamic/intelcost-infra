@@ -18332,3 +18332,37 @@ backfill, structure stone and replacement fills. The report's Balance section ad
   the plan's figure exactly (5a).
 - **The panel's headline stays today's.** "Surplus after shrink" is the before-utilities figure, and the new block
   shows the other.
+
+## D-589: Settings › Classification › Work scopes, "Map scope…" and re-filing on change (F29 Block 5B, plan §4.13, §5.4, §5.5)
+
+**Api:**
+- **`GET /work-scope`:** each scope now lists the work types and kinds it is used with: its defaults', its mappings'
+  and its lines'.
+- **`PATCH /work-scope/{scope}`:** renames a scope (Manage classification). The name must be unique, and a default
+  keeps its key, so a rename is kept.
+- **`PUT /work-scope/{scope}/mapping`:** sets or takes off one row (system, work type, kind, node).
+  - Then `work_scopes.reresolve` files every line of the scope again, in every project of the workspace on that
+    system, unless placed by hand. It sets `classification_ref_id` and `class_folder_id` (`file_under`). One
+    mapping serves every project.
+  - It publishes `workspace.classification.changed`.
+- **An item** reads its work scope (`work_scope_uuid`, `work_scope_name`).
+
+**App:**
+- **The Work scopes card** (`WorkScopesCard.tsx`, in Settings › Classification) has a system picker. Under each
+  scope, each row (every line, or a work type and kind) shows its code or "Not mapped", with Map / Change / Unmap
+  through a code-or-name finder over the system's tree. Rename is offered to anyone who manages classification.
+- **Estimating:** a Calculate line its scope leaves unclassified reads "<scope> · Not classified in <system>". It
+  has a "Map scope…" link to the card, opened on that scope and system, for someone who manages classification.
+
+**Checked** on the bench workspace:
+- **Scoped lines:** only "BENCH DUP 2026-10-16 22:13 — delete me" has any (45). It was checked before any change,
+  so no other project could move.
+- **Remap and restore:** "Earthwork — Over-excavation" › over-excavation was remapped 31.05.03 → 31.04.03.
+  Building Pad's two "Undercut Excavation" lines moved to 31.04.03 and its "Trench Excavation" folder, then went
+  back to 31.05.03.
+- **The badge:** geosynthetics was unmapped. The geotextile line then read "Earthwork — Subgrade Treatment · Not
+  classified in CSI MasterFormat". "Map scope…" opened the card on that scope, and it was mapped back to 31.05.05.
+- **Mappings as found:** every mapping is back as it was.
+- **Guest:** Estimating loaded with no badge link and nothing sent. Its 403s are Estimating's existing member-only
+  reads (packages, columns, components, bid…), not this block's.
+- **Gates:** pass.
