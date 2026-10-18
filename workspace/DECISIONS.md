@@ -19107,6 +19107,14 @@ never stopped, restarted or repointed.
   - bench-tidy and the seeded snapshot (they sign in as the founder's account).
 - **Storage, confirmed:** uploads landed in `intelcost-fx` (526 MiB mid-run; emptied by the fixtures' purges). The
   bench api logged no fx account's request. The 3D test copy's fingerprint is unchanged by the run.
+  **Corrected 2026-10-17 (D-614): "no fx account's request" was wrong.**
+  - **The gap:** ports written as numbers were not retargeted: `realtime.mjs`'s `call` (port 8000 by default), its
+    login and socket probe, and f8-s9's moves.
+  - **What reached the bench:** in both runs, about 60 fixture requests reached the bench's own api, mostly sheet-list
+    reads, with a few project creates, calibrations, logins and socket opens.
+  - **What it did:** every one was refused, 401 or 403, because the fx accounts do not exist on the bench. No fixture
+    login succeeded, and nothing was written. The storage claim stands.
+  - **The fix:** `fx-suite-patch.mjs` now swaps those ports too (D-614).
 
 **The run, 102 fixtures:**
 - **Pass 1:** on the dev servers, three at a time, 165 min. 8 passed in full; 68 failures were 30 s page loads timing
@@ -19251,3 +19259,92 @@ the pane, 0.006 ft past it, the next (30.34). Both are right; the check moved to
 - **An oblique line:** the drawing below stays square to the run and says so, with the angle the line crosses at.
   The long section stretches the trench along the line.
 - **Where the drawing sits:** below the long section in the same pane, one per crossing run.
+
+## D-614: Only the fixtures covering what F29 touched are brought up to today's screens; every other failure gets a one-line cause (answers to the evening report, item 5; E5 and E7 changed)
+
+**What F29 touched, and the archived fixtures that cover it:**
+
+| F29 area | Archived fixture | Updated and run |
+|---|---|---|
+| Classification | f6-d (systems, the tree, codes, the picker, moving items off a code) | yes |
+| Folders | f6-c (folders with multipliers, layers, the item tree, Move to folder) | yes |
+| The item's WBS (folder and classification in the measurement dialog) | f6-a (the dialog, height and pitch, named dimensions) | yes |
+| Sub-items and variables, which Estimating's lines come from | f6-b | yes |
+| Two windows on the same items | f6-e | yes |
+| The formula engine both apps share | f6-s4 | passed as it was |
+| Work scopes, Estimating lines and grouping, the Excel export, the guest view | none: the tag (2026-09-28) predates them | no fixture to update; writing new ones is new test code (rule 8), left to Umer (Q3) |
+
+**What changed in them:** only the screens, never the checks' figures. Each file's header names its changes.
+- **Every F6 fixture:** a row is `li[data-item-row] > [role=row]`, and its full menu is its ⋮ (a right-click opens
+  the quick menu, D-149).
+- **f6-a:**
+  - The dialog is "Name this Linear Measurement" by its tool, with the suggested name as the field's placeholder.
+  - Height, volume, manual quantity and Rough Measurement are picked in "Change Measurement Type" (D-364).
+  - The WBS says "Not set" when closed (D-336, D-337).
+- **f6-b:**
+  - "Create sub-item" opens the dialog either way; its title is the dialog's name, and it ends "Create N" or
+    "Save changes".
+  - Variables are a panel in the dialog: "Add Variables" opens "New variable", and Archive asks with the browser's
+    confirm.
+  - Every row has its own Insert, and the preview shows two decimals.
+- **f6-c:** there is no Unfiled group (D-336), so the folder is made through the api; multiple items move with
+  "Move to folder".
+- **f6-d:** codes by "Number" (D-338); a code in use is refused, then its items are moved and it is deleted, since
+  there is no archive (D-337); the classification picker.
+- **f6-e:** a tab holds a count with Resume (D-72); a double-click on the name renames.
+
+**Where they live (taken, Umer to confirm):** `intelcost-infra/fx-suite-updates/`, tracked, as whole files. The
+tag's file sits next to each in git history.
+- **When they are applied:** `fx-suite.sh setup` and the new `refresh` lay them over the restored tag before
+  retargeting.
+- **The shared helper:** `browser/lib/takeoff.mjs`, which the bench's own scripts use too, follows today's screens:
+  - the measure tools' group;
+  - the sheet open on `[data-canvas-scale]`;
+  - the row as `[role=row]`;
+  - the menu from its ⋮.
+
+**The port gap, fixed:** `fx-suite-patch.mjs` retargeted only `localhost:8000` written out in full.
+- **What it missed:** ports written as numbers (`realtime.mjs`'s `call`, its login and socket probe, and f8-s9's
+  moves).
+- **What happened:** those went to the bench's api, which refused every one (D-611, corrected).
+- **Now:** the patch swaps numeric 8000 and 8010 too.
+- **The proof:** the 13 fixtures it had stopped were run again. The bench api logged no refused request during the run, and f8-s1, f8-s6 and f8-s11 now pass in full.
+
+**The targeted run** (built apps from app HEAD 7528a02, three at a time):
+
+| Fixture | Steps | Final run (built apps, three at a time) | Alone |
+|---|---|---|---|
+| f6-a | 9 | 8/9: step 8's second window took 1,702 ms against its 1,500 ms bound | 9/9 (1,001 and 1,033 ms) |
+| f6-b | 9 | 9/9 | 9/9 |
+| f6-c | 10 | 9/10: step 7's sheet open timed out at 20 s | 9/10: step 10's drag re-file did not take; 10/10 earlier in the evening. A flaky drag, not a fault found |
+| f6-d | 9 | 9/9 | — |
+| f6-e | 3 | 3/3 | — |
+| f6-s4 | 3 | 1/3: it imports source modules, which a built app cannot serve (environment) | 3/3 on the dev servers |
+
+**Every other failing fixture, 84:** each has a one-line cause in
+`morning-report-2026-10-17/FIXTURE_CAUSES_2026-10-17.md`.
+- **How many were inspected:** all 89 failures of the 101-minute run, each with its log, screenshot, fixture source,
+  today's app source and the decision that changed it.
+  - 5 by me while updating them.
+  - 84 by two read-only subagents.
+  - I spot-checked 4 of theirs against the logs and screenshots (f4-dialogs, f5-s3, f7-i, f5-s16), and the one
+    product-looking finding against the code.
+- **By class:** 75 drift since the tag, 3 environment, 1 harness (f8-s4), 1 timing under load (f8-s13), 1 product bug (p19), and 3 that pass once the port gap is fixed.
+- **One looks like a product bug, not drift:**
+  - **The case:** a takeoff address for a project that does not exist, or that you cannot see, stays on "Opening
+    takeoff" indefinitely. D-37 says "Project not found".
+  - **Why:** the no-sheet branch knows only "loaded and empty" or "loading", and the page's one error branch needs a
+    sheet in the address.
+  - **Status:** found by d37-links' steps 4–5, a later step, not its first failure. Not fixed; it is Umer's call (Q4).
+- **A second product bug, found in the rerun (p19, at a phone's width of 375 px):**
+  - **Classification:** Settings › Classification is about 10 px too wide and scrolls sideways.
+  - **The open tab:** the settings tab strip does not scroll the open tab into view. On grouped pages (Collaboration,
+    Roles, Statuses) it never can: the group tab is drawn highlighted but never carries `aria-current`, which the
+    scroll looks for (`settings-layout.tsx` 218–226, 281–284).
+  - **Status:** not fixed (Q6).
+- **Three candidates rejected with evidence:**
+  - **f8-s14:** a refused preference change writes nothing.
+  - **f8-s10:** it sends a mode D-98 retired.
+  - **f8-s13:** the flood guard holds; the receiving tab's clock under-measured the span.
+
+**Taken overnight, Umer to confirm:** where the updated fixtures live (`fx-suite-updates/`).

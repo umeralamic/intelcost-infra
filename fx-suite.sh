@@ -8,8 +8,11 @@
 # pointed elsewhere, and nothing reaches the AWS bucket. Fixtures that stop or restart a service,
 # or need what the fx stack does not run, are skipped and named (fx-suite-patch.mjs, SKIPPED).
 #
-#   ./fx-suite.sh setup      restore the tag into ./fx-suite (git-ignored), retarget it, make the
+#   ./fx-suite.sh setup      restore the tag into ./fx-suite (git-ignored), lay the fixtures updated
+#                            since (./fx-suite-updates, D-614) over it, retarget it, make the
 #                            database and the bucket, start the fx services
+#   ./fx-suite.sh refresh    lay today's helpers and ./fx-suite-updates over a set-up suite again,
+#                            and retarget them (after editing an updated fixture)
 #   ./fx-suite.sh check      fail closed: every fx service stores in MinIO, mails to MailHog only,
 #                            and runs on intelcost_fx
 #   ./fx-suite.sh run [...]  check, then the suite's own regress.sh (its arguments: full, quick,
@@ -51,6 +54,8 @@ case "${1:-}" in
     # Today's guarded helpers over the tag's (lib/protected.mjs refuses the protected projects and
     # the founder's sign-ins); the tag's own formula-cases.mjs and shipped.sh stay.
     cp browser/lib/*.mjs fx-suite/browser/lib/
+    # The fixtures updated to today's screens since the tag (D-614), over the tag's own.
+    [ -d fx-suite-updates ] && cp -r fx-suite-updates/. fx-suite/
     node fx-suite-patch.mjs fx-suite "$FX_S3_HOST"
     docker compose exec -T postgres psql -U intelcost -d postgres -tc "select 1 from pg_database where datname = 'intelcost_fx'" | grep -q 1 \
       || docker compose exec -T postgres psql -U intelcost -d postgres -c "create database intelcost_fx owner intelcost" >/dev/null
@@ -62,6 +67,12 @@ case "${1:-}" in
     check
     ;;
   check) check ;;
+  refresh)
+    [ -d fx-suite ] || { echo "Run ./fx-suite.sh setup first."; exit 1; }
+    cp browser/lib/*.mjs fx-suite/browser/lib/
+    [ -d fx-suite-updates ] && cp -r fx-suite-updates/. fx-suite/
+    node fx-suite-patch.mjs fx-suite "$FX_S3_HOST"
+    ;;
   run)
     shift
     check || { echo "The fx stack is not isolated: nothing was run."; exit 1; }

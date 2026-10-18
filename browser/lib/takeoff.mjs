@@ -49,19 +49,24 @@ export async function removeItem(token, r, uuid) {
 /** Open the sheet and wait for the drawing and the panel. */
 export async function openSheet(page, r, app = APP) {
   await page.goto(r.url(app));
-  await page.locator('img[alt="Drawing sheet"]').waitFor({ timeout: 20000 });
+  // The canvas reports its scale once the sheet is up; its image comes in two layers today,
+  // the fit one hidden once the sharp one is drawn (D-614).
+  await page.locator("[data-canvas-scale]").first().waitFor({ timeout: 20000 });
   // The quantity panel, by name: since F5 Block D the sheets panel is an aside too.
   await page.locator("[data-quantity-panel]").waitFor();
 }
 
-/** The item's row in the takeoff panel. */
+/** The item's row in the takeoff panel: a `[role=row]`, no longer a button (D-614). */
 export function row(page, name) {
-  return page.locator("[data-quantity-panel] li button", { hasText: name }).first();
+  return page.locator("[data-quantity-panel] li[data-item-row] > [role=row]", { hasText: name }).first();
 }
 
-/** Right-click the row and return the open menu's item by label. */
+/** Open the row's full menu from its ⋮ (a right-click opens the quick menu, D-149) and
+ *  return its item by label. */
 export async function menuItem(page, name, label) {
-  await row(page, name).click({ button: "right" });
+  const at = row(page, name);
+  await at.hover();
+  await at.locator("[data-row-menu]").click();
   const item = page.getByRole("menuitem", { name: new RegExp(`^${label}`) });
   await item.waitFor();
   return item;
@@ -144,15 +149,19 @@ export async function setMode(token, workspaceUuid, mode) {
  * name; otherwise the default ("LF 3") stands. Returns once the tool is armed.
  */
 export async function armMeasure(page, label, { name } = {}) {
-  const tools = page.getByRole("group", { name: "Takeoff tools" });
+  // The measure tools have their own cluster now, after Pan, Select and Print (D-614).
+  const tools = page.getByRole("group", { name: MEASURE_TOOLS });
   await tools.getByRole("button", { name: label, exact: true }).click();
   await confirmMeasure(page, { name });
   await page.waitForFunction(
-    (want) => document.querySelector('[role="group"][aria-label="Takeoff tools"] button[aria-pressed="true"]')?.textContent?.includes(want),
-    label,
+    ([group, want]) => document.querySelector(`[role="group"][aria-label="${group}"] button[aria-pressed="true"]`)?.textContent?.includes(want),
+    [MEASURE_TOOLS, label],
     { timeout: 5000 },
   );
 }
+
+/** The toolbar's cluster holding Linear, Area, Count and the markups. */
+export const MEASURE_TOOLS = "Measure and annotation tools";
 
 /** Answer an open New Measurement dialog with Create (after a scale was set, say). */
 export async function confirmMeasure(page, { name } = {}) {

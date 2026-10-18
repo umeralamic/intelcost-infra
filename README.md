@@ -268,10 +268,18 @@ profile):
 - **Its own mail:** MailHog only, and no AI keys.
 
 ```bash
-./fx-suite.sh setup     # restore the tag into ./fx-suite (git-ignored), retarget it, start the fx services
+./fx-suite.sh setup     # restore the tag into ./fx-suite (git-ignored), lay ./fx-suite-updates over it, retarget it, start the fx services
+./fx-suite.sh prod      # built apps in place of the dev servers (faster, steadier under load)
 ./fx-suite.sh run full  # check the isolation (fails closed), warm both apps, run the whole suite
+./fx-suite.sh refresh   # after editing an updated fixture: lay today's helpers and ./fx-suite-updates again
 ./fx-suite.sh stop      # stop the fx services
 ```
+
+**Fixtures updated since the tag** live in `fx-suite-updates/` (tracked), as whole files over the
+tag's own, retargeted with it. They are the ones covering what F29 touched, updated to today's
+screens on the founder's word (D-614): f6-a to f6-e. Every other fixture is still the tag's.
+Retargeting also swaps ports written as numbers (D-614); before that, a few helpers' requests went
+to the bench's own api, which refused every one.
 
 **Skipped and named on every run** (`fx-suite-patch.mjs`, `SKIPPED`): the fixtures that stop,
 restart or recreate a shared service (f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2, f4-s27), f5-s9

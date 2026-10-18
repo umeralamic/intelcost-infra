@@ -3,6 +3,9 @@
 //
 //   node fx-suite-patch.mjs fx-suite <minio host>
 //
+// It is safe to run again on a patched suite (`./fx-suite.sh refresh`): every swap is a no-op the
+// second time.
+//
 // - Every address moves to the fx stack: the api 8000 → 8020 (window B's 8010 → 8030), the app
 //   5173 → 5176 (window B's 5174 → 5177), MinIO localhost:9000 → the host gateway's address, which
 //   the fx api signs its links with (path-style). The harness's own calls go by service name.
@@ -13,7 +16,7 @@
 //   fixtures that stop, restart or recreate a service, or need what the fx stack does not run,
 //   are skipped and named (SKIPPED below).
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const [root, s3Host = "192.168.65.254"] = process.argv.slice(2);
@@ -68,6 +71,20 @@ for (const dir of [browser, path.join(browser, "lib")]) {
   }
 }
 
+// Ports written as numbers, which the address swap above misses (D-614): realtime.mjs's `call`
+// (port = 8000 by default), its socket probe and its login, and the fixtures that pass a port.
+// Unswapped, those requests reached the running bench's own api, which refused every one (401,
+// 403): the fx stack's accounts do not exist there. A timeout of 8000 ms becomes 8020: harmless.
+const PORT_FILES = ["lib/realtime.mjs", "f3-s10.mjs", "f4-s20.mjs", "f8-s5.mjs", "f8-s9.mjs", "load-probe.mjs"];
+const PORTS = [
+  [/(?<![\w.-])8000(?![\w.-])/g, "8020"],
+  [/(?<![\w.-])8010(?![\w.-])/g, "8030"],
+];
+for (const name of PORT_FILES) {
+  const file = path.join(browser, name);
+  if (existsSync(file)) patch(file, (t) => swap(t, PORTS));
+}
+
 // The harness's own calls, by service name: the fx apis.
 patch(path.join(browser, "lib", "bench.mjs"), (t) => t.replace('"localhost:8020": "api:8000"', '"localhost:8020": "api-fx:8000"').replace('"localhost:8030": "api-b:8000"', '"localhost:8030": "api-fx-b:8000"'));
 
@@ -79,9 +96,9 @@ patch(path.join(root, "regress.sh"), (t) => {
   s = s.replace(/seeded_before=\$\(drive_ws snapshot[^\n]*\n/, "seeded_before=  # D-611: no seeded-account snapshot on the fx database\n");
   s = s.replace(/docker compose --profile fx run --rm browser-fx node scripts\/bench-tidy\.mjs[^\n]*\n[^\n]*\n/, "# D-611: bench-tidy signs in as the seeded account; not run on the fx stack.\n");
   s = s.replace(/seeded_check=\$\(drive_ws check "\$seeded_before"\)/, 'seeded_check="skipped on the fx stack (D-611)"');
-  // The skipped fixtures, named in the run's output.
+  // The skipped fixtures, named in the run's output (once: `refresh` patches a patched suite again).
   const skip = Object.keys(SKIPPED).join(" | ");
-  s = s.replace("      f4-s12 | f5-demo | *-outage | *-restart) continue ;;", `      f4-s12 | f5-demo | *-outage | *-restart) continue ;;\n      ${skip}) echo "SKIP $name" >&2; continue ;;`);
+  if (!s.includes('echo "SKIP $name"')) s = s.replace("      f4-s12 | f5-demo | *-outage | *-restart) continue ;;", `      f4-s12 | f5-demo | *-outage | *-restart) continue ;;\n      ${skip}) echo "SKIP $name" >&2; continue ;;`);
   s = s.replace(/^d27-uploads\b.*$/m, "");
   s = s.replace('  echo d27-uploads   # D-27\'s sweep of abandoned uploads (a drive, no browser)', "  # d27-uploads: skipped on the fx stack (D-611)");
   return s;

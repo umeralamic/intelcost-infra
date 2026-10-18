@@ -303,6 +303,24 @@ link setting (D-562).
 - **Changed:** E3, the cross-section pane draws the trench at the station (D-613). E7: only the fixtures covering
   what F29 touched are updated and run, and every other failure gets a one-line cause (D-614).
 
+## Answers run 2026-10-17 (morning-report-2026-10-17/ANSWERS_REPORT_2026-10-17.md)
+
+**Done:**
+- **Item 1:** E1, E2, E4 and E6 closed in DECISIONS.
+- **Item 2:** the pane draws the trench at the station (D-613).
+- **Item 3:** pipes in 3D at max(true size, 3 px) (D-612).
+- **Item 4:** the folder rule answered and kept (D-608).
+- **Item 5:** the F29 fixtures updated and run (D-614).
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| Q1 | D-613, an oblique section line: the trench drawing stays square to the run and names the angle the line crosses at; the long section stretches the trench along the line. The drawing sits below the long section, one per crossing run. | Taken, built. | ok, or say how and where it should draw. |
+| Q2 | D-614: the updated fixtures live in `intelcost-infra/fx-suite-updates/`, as whole files laid over the restored tag by `fx-suite.sh setup` and `refresh`. | Taken. | ok, or name another home. |
+| Q3 | Work scopes, Estimating lines and grouping, the Excel export and the guest view have no archived fixture: the tag predates them. | None written. New fixtures are new test code (rule 8). | Write fixtures for them, or leave them to the smoke checks. |
+| Q4 | A takeoff address for a project that doesn't exist, or that you can't see, stays on "Opening takeoff" indefinitely. D-37 says it should read "Project not found". Found by d37-links' steps 4–5. | Not fixed. | Fix it (recommended: when the project or its sheets read answers 404, say "Project not found" with a way back, as D-37 says), or leave it. |
+| Q5 | The other 84 failing fixtures: drift since the tag, plus a few harness and environment causes. Apart from Q4 and Q6, none looks like a product bug. | Each listed with a one-line cause (`FIXTURE_CAUSES_2026-10-17.md`); not updated (E7). | Nothing, or name fixtures to update. |
+| Q6 | At a phone's width (375 px), Settings › Classification is about 10 px too wide and scrolls sideways, and the settings tab strip does not scroll the open tab into view (on grouped pages it never can: the group tab never carries `aria-current`). Found by p19 in the rerun. | Not fixed; the 10 px element is not yet pinned. | Fix both (recommended: mark the group tab current and scroll it in; find the wide row at 375 px), or leave them. |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
