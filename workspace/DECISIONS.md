@@ -19541,3 +19541,29 @@ The deeper runs keep their volumes, with a "counted here" note.
   - a run started on B-4's marker drew;
   - the cover field was found by its new name.
 - **Guest:** on the new duplicate's link, the box is read only and its notes show.
+
+## D-618: X-ray sees through the ground only; pipes, structures and bores hide each other by depth (overnight queue 2026-10-18, item 8)
+
+**The fault:** with Show buried, a buried pipe behind a bore column drew over the bore. The ghosts were drawn wherever *anything* was in front of them (GreaterDepth): the ground, but also a bore, a structure or another pipe.
+- **Before:** `8-before-pipe-behind-bore-40` (BENCH DUP 2026-10-18, B-1 with ST-9 behind it, ground at 40 %). The pipe crosses over the bore.
+
+**Now, two passes:**
+- **The first pass draws everything as before.** The ground also marks the stencil's bit 7 where it is the nearest thing drawn, and anything drawn nearer clears that mark: a pipe's or structure's solid, a bore, a solid stroke.
+- **The second pass draws the buried layer,** only with Show buried, and with the depth cleared. The buried layer is the pipes' ghosts, the structures' ghosts and, new, each bore column.
+  - **A full-screen gate** first fills the depth nearest wherever the mark is not set. Nothing buried is drawn where the ground was not what you saw.
+  - **The buried layer's depth** is laid by depth-only copies of the buried pipes (a hair behind them), the bores and the structures.
+  - **The ghosts are tested against it.** A bore in front of a pipe hides it. Of two crossing pipes the nearer is drawn in front. A pipe in front of a bore is drawn over it.
+  - **Unchanged:** the ghosts look as before (outline, then core, each pixel once).
+- **Bores:** they are now seen through the ground with Show buried, as the pipes and structures are.
+- **Stencil bits:** the strokes' per-stroke ids moved to bits 1–6, freeing bit 7. Bit 0 stays the trench openings'.
+
+**Checks:**
+- **Screenshots:**
+  - the same view before and after, Show buried on and off, ground at 100 % and 40 % (`8-before-*`, `8-after-*`);
+  - the bore case, before and after at 100 % and 40 % (`8-before-pipe-behind-bore*`, `8-after-pipe-behind-bore*`): after, the column hides the pipe;
+  - two crossing pipes at different depths (X-MAIN under X-CROSS) in the default view.
+- **Not shot:** a pipe behind a structure could not be framed in the time. Structures are in the same depth test as bores.
+- **Frame rate:** 60.0 at 100 % and 59.9–60.4 at 40 %, with Show buried on.
+- **Guest:** `8-guest-xray`, the same view.
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** not touched.
