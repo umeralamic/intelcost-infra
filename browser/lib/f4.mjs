@@ -22,18 +22,25 @@ export async function makeProject(token, base, body, statusKey) {
   return moved.body;
 }
 
-/** Signed in (as this run's owner unless told otherwise), on this workspace's dashboard, drawn. */
+/** Signed in (as this run's owner unless told otherwise), on this workspace's projects list, drawn.
+ *  The dashboard is the All projects dialog over Home since D-314 (`/?projects=open`), and its tab
+ *  is picked in the dialog, not the address: `path`'s `?tab=` is clicked once the list is up
+ *  (D-619). */
 export async function openDashboard(page, workspaceUuid, email, path = "/") {
   await signInAs(page, email ?? (await fixtureOwner()).email, SEEDED.password);
   await enterWorkspace(page, workspaceUuid);
-  await page.goto(`${APP}${path}`);
-  await page.getByRole("heading", { name: "Projects", exact: true }).waitFor({ timeout: 20000 });
-  await page.getByRole("tablist", { name: "Project status" }).waitFor({ timeout: 20000 });
+  const tab = new URLSearchParams(path.split("?")[1] ?? "").get("tab");
+  await page.goto(`${APP}/?projects=open`);
+  const dialog = page.getByRole("dialog", { name: "All projects" });
+  await dialog.waitFor({ timeout: 20000 });
+  await dialog.getByRole("tablist", { name: "Project status" }).waitFor({ timeout: 20000 });
+  if (tab) await dialog.getByRole("tab", { name: new RegExp(`^${tab}`, "i") }).first().click();
 }
 
 /** The tab strip as drawn: [{label, count}]. */
 export async function tabStrip(page) {
-  return page.getByRole("tab").evaluateAll((tabs) =>
+  // The status tabs alone: the takeoff behind the dialog has tabs of its own (D-314, D-619).
+  return page.getByRole("tablist", { name: "Project status" }).getByRole("tab").evaluateAll((tabs) =>
     tabs.map((tab) => {
       const count = tab.querySelector("span")?.textContent ?? "";
       return { label: (tab.textContent ?? "").replace(count, "").trim(), count: Number(count) };
