@@ -19567,3 +19567,87 @@ The deeper runs keep their volumes, with a "counted here" note.
 - **Guest:** `8-guest-xray`, the same view.
 - **Gates:** lint, typecheck and build.
 - **Quantity table:** not touched.
+
+## D-619: The archived fixtures brought up to today's screens, most valuable first; drift fixed in the fixture, product faults left failing (overnight queue 2026-10-18, item 11)
+
+**Status:** taken overnight, Umer to confirm. It continues D-614's way of working past F29's fixtures.
+
+**The rules followed:**
+- **Only the screens change, never the figures.** Each overlay's header names what changed and the decision that changed it.
+- **A product fault is not "fixed" in the fixture.** The step is left failing and the fault goes to pending_umer.
+- **A fixture whose screen was removed is listed, not rewritten.** Writing it again is new test code (rule 8).
+- **Where they live:** `intelcost-infra/fx-suite-updates/browser/`, as D-614 set up.
+- **How they ran:** `./fx-suite.sh run` on the built apps, three at a time. A step that misses only a timing bound is run again on its own.
+- **Commits:** one per finished group.
+- **Order (the brief's):**
+  1. takeoff drawing and editing;
+  2. the item model (F6, D-614);
+  3. Estimating and export (none at the tag);
+  4. sharing and invites;
+  5. the rest.
+
+**Results.** Each figure is the latest run on the built apps (fx-prod). "Steps" are steps passed of steps.
+
+| Group | Fixtures updated | Whole fixtures passing | Steps | Left failing, and why |
+|---|---|---|---|---|
+| 1. Takeoff drawing and editing (F7, the sheet viewer and sheets panel, live two-window) | 25 | 21 | 116 / 120 | f5-s15 and f5-s19: one-second bounds missed by 14–363 ms (T12). f5-sheet-items step 4: T13. f8-s18 step 3: the properties pane it measures is a dialog now (D-77) |
+| 2. The item model (F6) | 6 (D-614) | 6 alone | as D-614 | — |
+| 3. Estimating and export | none at the tag | — | — | Q3 |
+| 4. Sharing and invites (F2, D-37) | 10 | 9 | 56 / 58 | d37-links steps 4–5: the product fault Q4 |
+| 5. The rest: workspace, team and roles (F3) | 7 | 4 | 30 / 33 | f3-s3 step 1: T11. f3-s10 step 4: T10. f3-s8 step 4: it counts a shell badge that Settings does not draw |
+| 5. The rest: projects list (F4), through the shared helper | `lib/f4.mjs` | 1 (f4-s9) | 18 / 26 in f4-s1, s5, s9, s11 | the steps left drive Project Home, the old sort and paging (D-314, D-315) |
+
+**Fixed in the fixture, not the product.** The causes were all drift, apart from the findings below:
+- the tool groups (D-116, D-123);
+- the status line (D-124);
+- rows and item rows (D-77);
+- Ortho On by default (D-74);
+- the draw menu (D-79);
+- submenus (F7-S24, D-155);
+- the view placed by transform with no scrollbars (D-79);
+- the Region menu (D-86);
+- Hide in the selection menu (D-75);
+- count marks dragged directly (D-254);
+- Preferences in the takeoff Settings (D-98);
+- D-324's two detail scales;
+- Home takeoff-first, with no naming step (D-311);
+- the sign-in page's words (D-87);
+- the locked-workspace refusal (D-280);
+- /platform going on to Activity (D-233);
+- the refusal wording for deleting files in takeoff;
+- the projects list as the All projects dialog (D-314).
+
+Three were timing in the fixture itself:
+- f7-i read the pasted item before its hole was added;
+- f7-j rested the cursor on the panel handle;
+- f7-b and f7-f each had one flaky pass.
+
+**Found, and left failing (pending_umer):**
+- **T10:** the workspace logo shows nowhere since D-311.
+- **T11:** `isAdmin` is back, and one of its uses is a role gate on shifts.
+- **T12:** two live updates take just over a second on the bench.
+- **T13:** "Page > Takeoff" after a reload.
+- **T9 (a question):** Ortho pulls a rectangle's far corner onto 45°.
+
+**Not updated, and why:**
+- **Screens removed:**
+  - f2-s1b: the naming screen new signups no longer reach (D-311);
+  - f4-dialogs, f4-s6, s7, s8, s10, s14, s15, s16, s17, s18, s19, s20, s21, s23, s24, s26: Project Home, the old Trash page, the dashboard's own heading and the seed folders (D-309, D-314, D-315);
+  - f5-s4: the dashboard's ruler and Project Home;
+  - f8-s15, f8-s16: the dashboard;
+  - f8-s7: no screen names the workspace any more.
+- **One load screen (D-310):** f5-big, f5-s5, f5-s6, f5-s7, f5-s8. Each needs writing again against the new screen.
+- **The renderer and zoom (D-35, D-102, D-105):** f5-s10, f5-s11, p20a.
+- **Dev server only:** f7-a, f5-s3, f3-s13, f4-s2.
+- **Harness:**
+  - f8-s4: today's workspace switch fights its init script;
+  - f4-s12 and f4-s27: phased, driven by host scripts.
+- **A product fault:** p19 (Q6).
+
+**Commits (intelcost-infra):**
+- a7fc9ca: sharing and invites;
+- 718eed8: workspace, team and roles;
+- d801eef: takeoff;
+- 7241c1b: the rest.
+
+**Checks:** this is fixture work only, with no product code changed, so there are no gates, quantity table or smoke for it. The fixture runs are the check.
