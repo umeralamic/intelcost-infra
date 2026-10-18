@@ -1245,6 +1245,20 @@ try {
           widths: worked.map(({ q: qq }) => r2(qq.widthFt)),
         };
       }
+      if (c.kind === "newrun") {
+        // D-628: a run drawn from existing grade, then a new run from the box: its "Trench from"
+        // is the project's, proposed subgrade; type, pipe and size come from the last run.
+        const last = { ...rd.defaultRun(c.type), catalog_key: c.catalogKey, nominal_in: c.nominalIn, cover_ft: c.coverFt, start_surface: "existing" };
+        const next = rd.newRunFrom(last);
+        const ground = { existing: c.groundFt.existing, proposed: c.groundFt.proposed };
+        return {
+          lastFrom: last.start_surface,
+          newFrom: next.start_surface,
+          newGroundFt: ground[next.start_surface],
+          newTrenchBottomFt: r2(ground[next.start_surface] - next.cover_ft - cat.resolvePipe(next.catalog_key).od / 12 - c.beddingIn / 12),
+          carried: [next.utility_type, next.catalog_key, next.nominal_in].join(" "),
+        };
+      }
       if (c.kind === "continue") {
         const p = cat.resolvePipe(SDR35);
         const drop = (p.od - p.id) / 2 / 12;

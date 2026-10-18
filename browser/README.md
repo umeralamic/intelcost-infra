@@ -32,6 +32,11 @@ is reported. CLAUDE.md: leave nothing stray.
 2. `mcp-signin.js` (D-566): signs in as window-b and lands on Account settings. With
    `page.context().__benchOpen` set to a duplicate's uuid, it goes on to that BENCH DUP.
 
+The BENCH- test set is one recipe, `mcp-bench-set.js` (D-627). Run it third, with
+`page.context().__benchOpen` set to a fresh BENCH DUP. It clears the copied SS-1, ST-1, ST-2 and
+MH-1..MH-4, pins the soil layers, bores and assumptions, and draws every BENCH- run and structure with
+its settings and inverts. The figures to expect after Calculate are at its head.
+
 **Never sign in to Home.** Home (`/`, and `/projects` over it) reopens the account's last
 sheet, and for window-b that has been the 3D test copy. The sign-in helpers in `lib/`
 (`signInThroughUi`, `signInAs`, `signInAt`) land on Account settings too, or on the

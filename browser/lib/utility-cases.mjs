@@ -215,6 +215,12 @@ export const UTILITY_CASES = [
   //    inner walls meet 2.5 ft up; the shared wedge is (3 − 8 + 2 · 8)² / 4 = 30.25 SF, 100 ft long:
   //    3025 CF = 112.04 CY, all of it above the bedding and the zone (2.2 ft): backfill. Equal depth:
   //    the run drawn first keeps it. After: A (3 · 8 + 8²) · 100 / 27 = 325.93, B (8800 − 3025) / 27 = 213.89.
+  // D-628: "Trench from" never carries over. Existing grade at 100.00, proposed subgrade at 98.00 (2 ft of
+  // cut). The last run, 12 in PVC SDR-35 storm with 3 ft of cover, was dug from existing grade; the new run
+  // takes its type, pipe and size but digs from proposed subgrade: its trench bottom is 98.00 - 3 (cover)
+  // - 12.50 / 12 (the pipe's OD, 1.042 ft) - 6 / 12 (bedding) = 93.46, not 95.46 from existing grade.
+  { id: "util-628-new-run-from-proposed", kind: "newrun", type: "storm", catalogKey: "pvc_d3034_sdr35:12", nominalIn: 12, coverFt: 3, beddingIn: 6, groundFt: { existing: 100, proposed: 98 },
+    expect: { lastFrom: "existing", newFrom: "proposed", newGroundFt: 98, newTrenchBottomFt: 93.46, carried: "storm pvc_d3034_sdr35:12 12" } },
   {
     id: "util-616-parallel",
     kind: "overlap",
