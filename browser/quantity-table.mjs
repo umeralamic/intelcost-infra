@@ -1152,6 +1152,7 @@ try {
     const stab = await import("/src/lib/takeoff/earthwork/stabilization.ts");
     const lines = await import("/src/lib/takeoff/earthwork/lines.ts");
     const cr = await import("/src/lib/takeoff/earthwork/utilities/continueRun.ts");
+    const ov = await import("/src/lib/takeoff/earthwork/utilities/overlaps.ts");
     const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
@@ -1182,6 +1183,49 @@ try {
       }
       // D-615: a straight 100 ft run continued 50 ft from one end, in its depth mode, then worked
       // out by the same engine as any run: length, inverts and volume.
+      // D-616: trenches that cross or join, each a straight run on flat ground (G 100) at its own
+      // trench depth; the shared ground is dug once, by the deeper.
+      if (c.kind === "overlap") {
+        const p = cat.resolvePipe(SDR35);
+        const drop = (p.od - p.id) / 2 / 12;
+        const G = 100;
+        const worked = c.runs.map((run) => {
+          const L = Math.hypot(run.path[1][0] - run.path[0][0], run.path[1][1] - run.path[0][1]);
+          const knot = (sAt) => ({ s: sAt, G, invert: G - run.depth + drop + 0.5, bottoms: [-1e6], water: null, caving: false, caveInFt: null });
+          const P = tr.pipeWidthFt(p.od, 1, 0, 12, 24);
+          const qq = q.runQuantities({
+            knots: [knot(0), knot(L)],
+            layers: [{ layerId: null, ...CLAY }],
+            noBores: false,
+            pipe: { odIn: p.od, idIn: p.id, pipes: 1, gapIn: 0 },
+            section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+            bucket: "auto",
+            box: run.protection === "box" ? tr.boxFor(P, [BOX], { boxRef: "b6", boxOutsideFt: null }) : null,
+            specMaxIn: null,
+            protection: run.protection,
+            limitedWidth: false,
+            rule: null,
+            depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+            materials: { bedding: "imported", zone: "imported", backfill: "native" },
+            materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
+            segments: [],
+            restoration: null,
+          });
+          return { run, q: qq };
+        });
+        const found = ov.trenchOverlaps(
+          worked.flatMap(({ run, q: qq }) => ov.placePieces(run.name, qq.shape, run.path)),
+          new Map(worked.map(({ run }) => [run.name, { odFt: p.od / 12, count: 1 }])),
+          c.pits ?? [],
+          c.runs.map((r) => r.name),
+        );
+        const after = worked.map(({ run, q: qq }) => r2(ov.afterOverlaps(qq, [{ layerId: null, ...CLAY }], found.filter((o) => o.loser === run.name)).excavationCF / 27));
+        return {
+          overlaps: found.map((o) => [o.loser, o.keeper, r2(o.excavationCF / 27), r2(o.beddingCF), r2(o.zoneCF), r2(o.backfillCF)]),
+          afterCY: after,
+          widths: worked.map(({ q: qq }) => r2(qq.widthFt)),
+        };
+      }
       if (c.kind === "continue") {
         const p = cat.resolvePipe(SDR35);
         const drop = (p.od - p.id) / 2 / 12;

@@ -167,6 +167,63 @@ export const UTILITY_CASES = [
     likeIndex: 1,
     expect: { names: ["MH-3", "MH-4", "MH-5"], more: "MH-6", sameSettings: true, settings: ["sanitary_manhole", 60, 8, 6, "auto"], rimFloor: [null, null] },
   },
+  // D-616 (U-UT32 changed): trenches that cross or join, on flat ground (G 100), 8 in SDR-35, each run
+  // straight at a constant trench depth. The shared ground is dug once, by the deeper there; the other
+  // loses it from its excavation, bedding (0.5 ft), pipe zone (OD 0.7 + 1.0 ft, less its pipe, 0.3848 SF)
+  // and backfill. Rows: [loser, keeper, CY, bedding CF, zone CF, backfill CF].
+  // 1. A 6 ft box 10 ft deep along x; another 8 ft deep crossing it at 60°. The shared footprint is
+  //    6 · 6 / sin 60° = 41.5692 SF, 8 ft high (the shallower): 332.554 CF = 12.32 CY. Bedding 41.5692 · 0.5
+  //    = 20.78; zone 41.5692 · 1.7 − 0.3848 · (6 / sin 60°) = 70.668 − 2.666 = 68.00; backfill the rest,
+  //    241.10. After: A 6 · 10 · 100 / 27 = 222.22 CY, B (4800 − 332.554) / 27 = 165.46.
+  {
+    id: "util-616-cross-60",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 10, protection: "box" },
+      { name: "B", path: [[25, -43.30127018922193], [75, 43.30127018922193]], depth: 8, protection: "box" },
+    ],
+    expect: { overlaps: [["B", "A", 12.32, 20.78, 68, 241.1]], afterCY: [222.22, 165.46] },
+  },
+  // 2. A tee: an 8 ft lateral (6 ft box) runs 40 ft into a 10 ft main's centreline, no structure. The
+  //    shared part is the lateral's last 3 ft, 6 · 3 · 8 = 144 CF = 5.33 CY; bedding 9.00, zone 18 · 1.7 −
+  //    0.3848 · 3 = 29.45, backfill 104.40. After: the lateral (1920 − 144) / 27 = 65.78.
+  {
+    id: "util-616-tee",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 10, protection: "box" },
+      { name: "B", path: [[50, 40], [50, 0]], depth: 8, protection: "box" },
+    ],
+    expect: { overlaps: [["B", "A", 5.33, 9, 29.45, 104.4]], afterCY: [222.22, 65.78] },
+  },
+  // 3. Two 6 ft boxes leaving one manhole 30° apart, each starting at the pit's bottom radius 4.5 ft (a
+  //    vertical pit, so no slice of either was given up to it). Their strips overlap in a rhombus;
+  //    beyond both starts it is the quadrilateral (4.5, 1.2058), (4.5, 3), (11.1962, 3), (5.3971, −0.3481):
+  //    12.0144 SF by the shoelace, 8 ft high: 96.115 CF = 3.56 CY. Bedding 6.01; zone 20.4245 − 0.3848 ·
+  //    (6 − 4.5 / cos 30°) = 20.12; backfill 69.68. After: B 95.5 · 48 = 4584 CF less 96.115: 166.22 CY.
+  {
+    id: "util-616-two-from-one-structure",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[4.5, 0], [100, 0]], depth: 10, protection: "box" },
+      { name: "B", path: [[3.897114317029974, 2.25], [86.60254037844386, 50]], depth: 8, protection: "box" },
+    ],
+    pits: [{ x: 0, y: 0, R0: 4.5, k: 0, bottom: 89, top: 100 }],
+    expect: { overlaps: [["B", "A", 3.56, 6.01, 20.12, 69.68]], afterCY: [212.22, 166.22] },
+  },
+  // 4. Two parallel 8 ft trenches 8 ft apart, sloped 1:1 in Type B clay, 3 ft at the bottom. Their
+  //    inner walls meet 2.5 ft up; the shared wedge is (3 − 8 + 2 · 8)² / 4 = 30.25 SF, 100 ft long:
+  //    3025 CF = 112.04 CY, all of it above the bedding and the zone (2.2 ft): backfill. Equal depth:
+  //    the run drawn first keeps it. After: A (3 · 8 + 8²) · 100 / 27 = 325.93, B (8800 − 3025) / 27 = 213.89.
+  {
+    id: "util-616-parallel",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "sloped" },
+      { name: "B", path: [[0, 8], [100, 8]], depth: 8, protection: "sloped" },
+    ],
+    expect: { overlaps: [["B", "A", 112.04, 0, 0, 3025]], afterCY: [325.93, 213.89], widths: [3, 3] },
+  },
   { id: "util-613-cut-sloped", ...caseA(), trenchCut: [50], expect: { cut: [[19, 3, 8, 1.75, 9.69, 76.56, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-613-cut-box", ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6" }), trenchCut: [50], expect: { cut: [[6, 6, 8, 3, 10.2, 34.8, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-613-cut-benched", ...caseA({ protection: "benched" }), trenchCut: [50], expect: { cut: [[11, 3, 8, 1.5, 5.1, 49.4, 0.85, 0.35]], cutZoneGap: 0 } },

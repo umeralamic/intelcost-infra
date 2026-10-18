@@ -19441,3 +19441,103 @@ empty list, so no stored result moves. The continuation's arithmetic is `lib/tak
   typed invert belongs to one run's ends.
 - **The box closes while drawing or counting,** and opens again on the result.
 - **Start + slope:** continuing it from the start moves its start invert, and flags it, like a projected invert.
+
+## D-616: Trenches that cross or join are dug once, by the deeper there (U-UT32 changed; overnight queue 2026-10-18, item 7)
+
+**Taken overnight, Umer to confirm.**
+
+**Today's behaviour, checked first (BENCH DUP 2026-10-18 03:59, C-200, four cases drawn with the new flow):**
+- **The overlap was counted twice:** each run's trench was worked whole, and nothing was deducted.
+- **The notes said nothing:** U-UT32's "listed in the notes" was never built.
+
+| Case | Runs | Shared ground (counted twice before) |
+|---|---|---|
+| Crossing at about 60° | ST-1 (cover 8) × ST-2 (cover 4) | 70.68 BCY |
+| Tee into a main's centreline, no structure | ST-3 (8) and ST-4 (4) | 29.36 BCY |
+| Two runs leaving one manhole, about 18° apart | ST-5 (8) and ST-6 (5) at SMH-2 | 67.14 BCY |
+| Two parallel runs about 10 ft apart | ST-7 and ST-8 (cover 5 each) | 94.23 BCY |
+
+**The rule now:**
+- **One dig:** the ground two trenches share is dug once, by the trench deeper at that spot (the lower trench bottom at the shared part's centre; on a tie, the run drawn first).
+- **What the other trench loses:** the shared part of its excavation (by layer), its bedding, its pipe zone (less its pipe there) and its backfill. Native backfill, spoils, rock and unsuitable soil are worked again from what is left, so the site balance follows.
+- **Pits:** they keep their own deduction (U-UT31). The part of a shared region inside a round pit is not taken twice.
+- **The notes:** each run says it. "Overlap with ST-1: −70.68 BCY" on the one that loses it; "Overlap with ST-2: counted here (70.68 BCY)" on the one that digs it.
+
+**After, the same four cases:**
+
+| Case | Loses it | Before | After |
+|---|---|---|---|
+| Crossing | ST-2 | 149.67 BCY | 78.99 BCY |
+| Tee | ST-4, the lateral | 110.26 BCY | 80.90 BCY |
+| Two from one manhole | ST-6 | 123.24 BCY | 56.10 BCY |
+| Parallel | ST-7 | 326.91 BCY | 232.68 BCY |
+
+The deeper runs keep their volumes, with a "counted here" note.
+
+**How (data in, data out; `lib/takeoff/earthwork/utilities/overlaps.ts`):**
+- **The solids:** each trench piece (between two knots, straight in plan) is a convex solid. Its faces are its ends, its bottom and start surface (linear along it), and its two walls.
+- **The shared part:** two pieces' shared part is clipped plane by plane and its volume summed over its faces: exact, not sampled.
+- **The split:** it is divided by the losing trench's own zone levels and layer bottoms.
+- **Two approximations, both small:**
+  - a benched wall is taken as the slope its benches lie inside, which overstates a benched overlap slightly;
+  - a round pit is a 180-sided polygon inside its circle.
+- **Left as they were:** the spec-max figures are not reduced.
+
+**Drawn as one cut:**
+- **2D trench band:** the fills sit in one translucent group, so overlaps never double. The outline is masked by every band's inside, so only the union's edge shows. This also drops the lines between one run's own stretches.
+- **3D Open trenches:** a trench's walls, box panels and bedding inside another open trench are left out. A triangle is split, to about half a foot, only where it crosses the other trench's face. The build stays near 0.2 s, at 60 fps.
+
+**Quantity rows:** four new `util-616-*` rows, each hand-worked in its comment (87 utility rows right):
+- a 60° crossing of 6 ft boxes, 12.32 CY;
+- a tee, 5.33 CY;
+- two runs from one manhole 30° apart, 3.56 CY;
+- two parallel 1:1 trenches, 112.04 CY.
+
+**Screenshots:**
+- `7-2d-four-cases-merged`;
+- `7-3d-cases-one-cut` and `7-3d-crossing-and-parallel-close` (Existing grade view: these runs start from existing grade, see D-617).
+
+## D-617: The usability pass: the BENCH- set redrawn with the new flow only; three small fixes, the rest listed (overnight queue 2026-10-18, item 9)
+
+**The pass:** a fresh BENCH DUP (2026-10-18 03:59). The copied SS-1, ST-1, ST-2 and MH-1 to MH-3 were deleted first (the copy had no MH-4). The whole BENCH- set was then drawn with the Utilities and Structures boxes only. The clicks were scripted, so the times are machine times; what matters for a person is the actions each piece took.
+
+| Piece | Actions | Scripted time |
+|---|---|---|
+| SAN-1 (the first run: sanitary 8 in from the defaults) | 8 | 12.0 s |
+| STM-1 (RCP 24 in, cover 3) | 10 | 13.0 s |
+| WTR-1 | 8 | 9.9 s |
+| DEEP-1 | 8 | 11.2 s |
+| EG-1 (from existing grade) | 8 | 12.3 s |
+| C-100's run (inverts typed) | 10 | 4.5 s |
+| MH-1 to MH-3, Count three | 6 | 12.1 s |
+| MH-4, Count more like this | 5 | 11.0 s |
+| CB-1 and CB-2 | 6 | 11.7 s |
+| SMH-1 | 5 | 10.9 s |
+| C-100's two manholes, one Count each for its own rim | 7 and 6 | 3.1 and 3.6 s |
+
+**About 87 actions in all:** 52 for the 6 runs and 35 for the 9 structures.
+
+**Fixed (small and clear):**
+1. **A new structure's type:** picking a type for a new structure now gives that type's usual shape and size. Before, a catch basin picked in the box stayed a 48 in round manhole. Runs already did this with their pipe.
+2. **Bores under a run:** a bore's marker lets the click through while a drawing or placing tool is armed. Before, a run started on bore B-4 opened the bore's panel instead of placing a point, and the run was lost.
+3. **The cover field:** it is labelled "Cover over the pipe", its own words. Before, it shared the name "Cover" with the Vertical radio button.
+
+**Not fixed, with a recommendation:**
+- **No name field in the box:** a run or structure is numbered by type (SS-1, MH-5…). The BENCH- names needed a rename afterwards, through the Takeoff panel or the api. *Recommend* an optional Name in the box, defaulting to the numbered name.
+- **"Trench from" carries over silently:** EG-1 was drawn from existing grade, so the next eight runs started from existing grade too. They then opened only in the Existing view in 3D, which looked like a bug until traced. *Recommend* marking a default that differs from the project's Utility settings (an amber "from the last run" beside it), or not carrying Trench from.
+- **One rim per Count:** structures with different rims need one Count each, or typing each rim after placing. *Recommend* leaving it: rims are per structure.
+- **Numbering is project-wide:** MH-5 and MH-6 on C-100 follow MH-1 to MH-4 on C-200. *Recommend* keeping it; names stay unique across the project.
+- **Figures differ from the evening run's BENCH- figures:**
+  - **Lengths match:** SAN-1 302.36 against 302.4 LF.
+  - **Volumes don't:** this duplicate's soil layers are "Layer 1–3", not the evening duplicate's.
+  - **The recipe is incomplete:** DEEP-1's box and EG-1's later edits were made after its first drawing.
+  - *Recommend* writing the BENCH- set's recipe down in one place, with every field, so each run can redraw it exactly.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **The fixes, in the redraw:**
+  - CB-1 and CB-2 came out rectangular;
+  - a run started on B-4's marker drew;
+  - the cover field was found by its new name.
+- **Guest:** on the new duplicate's link, the box is read only and its notes show.
