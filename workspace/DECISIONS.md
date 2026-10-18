@@ -19197,6 +19197,9 @@ line inside a faint true-size body (`ans-3-before-stm1-zoomed-in`). An exposed o
 
 **Gates:** lint, typecheck and build pass. The quantity table is untouched by it.
 
+**Frame rate, measured quiet (2026-10-18 02:5x UTC, no suite running):** 60.0–60.2 fps over 8 s, the C-200 3D
+view with every BENCH- run and structure. Under the suite's load it had read 41–60.
+
 ## D-613: The cross-section pane draws the trench at the station (answers to the evening report, item 2; E3 changed)
 
 **What the pane draws where its line crosses a run:**
@@ -19348,3 +19351,93 @@ tag's file sits next to each in git history.
   - **f8-s13:** the flood guard holds; the receiving tab's clock under-measured the span.
 
 **Taken overnight, Umer to confirm:** where the updated fixtures live (`fx-suite-updates/`).
+
+## D-615: Utilities and structures worked the way the takeoff tools are: a box with the list, + New, Takeoff or Count, edit, Continue drawing, Count more like this (overnight queue 2026-10-18, item 6)
+
+Replaces the earlier briefs for 6, 6f and 6g. Where it changed what was built:
+- **The toolbar:** "Runs (n)" and "List (n)" are gone. The counts stay in the Takeoff panel.
+- **The two buttons open boxes:** Utilities and Structures used to arm drawing and placing at once; each now opens its
+  box.
+- **New items take their settings from the box:** a new run used to take its type's default pipe, and a new
+  structure was always a 48 in manhole.
+
+**How it works now:**
+- **One box per tool,** the existing ones on its left, "+ New run" or "+ New structure" first and picked when the
+  box opens from its button.
+- **+ New run:**
+  - **Shown:** type, pipe and size, vertical (Inverts, Start + slope or Cover, with its value), trench from.
+  - **Under a folded More options:** bucket, box, spec max, protection and restoration.
+  - **Not shown until the run exists:** OD and ID, pipes, ground at ends, segments.
+  - **Defaults:** every field from the last run drawn on the project (by its item's created time), less what is
+    that run's alone: its inverts, end grades, structures, segments and notes. The slope or cover it was drawn to
+    stays.
+  - **Takeoff** draws it; **Esc or Cancel** closes the box without drawing.
+  - **Once finished,** the box edits that run, with Last Calculate. The name is numbered on (ST-2 after ST-1).
+- **+ New structure:**
+  - **Fields:** type and utility type, shape and size, rim and floor, base, protection.
+  - **Defaults:** the last structure placed on the project, less its rim, floor and sump.
+  - **Count:** each click places one more with the same settings, numbered on from the highest of its kind
+    (MH-4, MH-5…), snapped to a run's end. **Esc** stops, and the box edits the last one placed.
+- **Editing:**
+  - **From the list:** a click edits that run or structure in place; changes save as before.
+  - **By double-click:** on the sheet (Select) or on its row in the Takeoff panel, the box opens with that item
+    picked. A guest's opens read only.
+- **Continue drawing (a run's resume):**
+  - **Where it starts:** from the end nearest the click that picked the run, or the start or end named in the box.
+    The toolbar's Resume and the Takeoff panel's resume glyph do the same.
+  - **It stays one run:** one polyline, its length, segments and settings; arcs drawn on from the start are turned
+    to match.
+  - **The vertical rule:**
+    - **Cover** follows by itself.
+    - **Start + slope** follows from the end. From the start, the start invert moves back up the slope.
+    - **Inverts:** the new end takes an invert at the run's slope.
+  - **The notes:** a projected invert is flagged "Invert projected, check it" beside the field and in the Calculate
+    notes, until that invert is typed. An end that sat on a structure (Calculate's rule: within its outside + 1 ft)
+    leaves it, with a note naming it. The last Calculate reads out of date as for any change.
+- **Count more like this (a structure's resume):** placing with the picked structure's settings, numbered on. The
+  toolbar's Resume on a structure does the same.
+
+**Stored:** `utility_run.notes` (JSON, a list of {kind, text}), migration `d615b3e7a1c4`. Every existing run gets an
+empty list, so no stored result moves. The continuation's arithmetic is `lib/takeoff/earthwork/utilities/continueRun.ts`
+(data in, data out); the defaults and numbering are `utilities/runDefaults.ts`.
+
+**Where it differs from Linear, Area and Count, and why:**
+- **The setup:** a floating box with the list beside it, not the modal "Name this Linear Measurement" dialog.
+  - Why: the brief asks for the list always on the left, and a run's name is numbered by type, not typed.
+- **One run per Takeoff:** the tool goes down once a run is finished, where Linear keeps adding sections to its
+  item.
+  - Why: a utility run is one polyline from structure to structure; a second shape would be a second run.
+- **Escape:** Esc mid-draw drops the run unsaved and puts the tool down, where Linear's first Esc keeps a run with
+  enough points.
+  - Why: the brief's edge case. A run saved by accident would need its fields undone too.
+- **Resume continues from an end:** no point is inserted on an edge, as Add more points does.
+  - Why: a run's inverts are at its ends.
+- **Double-click opens the box,** not Properties, and inserts no point.
+- **Shortcuts:** the drawing keys are Linear's: A arc, Backspace back a point, Ctrl+Y put it back, S, O and D,
+  Enter or a double-click to finish. No tool has a shortcut key, Linear included, so there is none to match.
+
+**Fixed on the way:**
+- Undo and redo now refresh the utilities read, so an undone run leaves the list at once.
+- A box opened before the project's runs were read takes its defaults once they are.
+
+**Checks:**
+- **Gates:** lint, typecheck and build in the app; ruff and mypy in the api.
+- **Quantity table:** passed, with 83 utility rows right (76 before). 7 new rows, all hand-worked:
+  - `util-615-continue-*`: 50 ft added in each depth mode, from either end, with length, depths and volume in a 6 ft
+    box (291.67, 275.00, 275.00, 291.67, 266.67 CY), and the detach note;
+  - `util-615-count-three`: MH-3 to MH-5 with one set of settings, then MH-6 for Count more like this.
+- **Smoke on the BENCH DUP:**
+  - **Runs:** the new-run box; More options; drawing; edit after. A run continued from its end (207.90 → 363.83 LF,
+    end invert 689.00 → 688.25, flagged), from its start by toolbar Resume (690.00 → 690.50), and off a structure
+    ("Detached from MH-4").
+  - **Structures:** three counted in a row; MH-2 picked and edited; Count more like this (MH-4 at 60 in).
+  - **Edge cases:** Esc mid-draw saved nothing; undo after a run and after placing; a run on C-100 (typed rims); a
+    run on V-100 shown on C-200 as "(from V-100)" with Continue greyed; metric (m and mm), then back to imperial.
+- **Guest:** Utilities and Structures greyed with the Professional tip; double-click opens the box read only, with
+  no + New, and Continue drawing and Count more like this greyed.
+
+**Taken overnight, Umer to confirm:**
+- **Inverts don't carry over:** a new run starts with no inverts, though it takes the last run's slope or cover. A
+  typed invert belongs to one run's ends.
+- **The box closes while drawing or counting,** and opens again on the result.
+- **Start + slope:** continuing it from the start moves its start invert, and flags it, like a projected invert.

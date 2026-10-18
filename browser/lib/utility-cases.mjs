@@ -140,6 +140,33 @@ export const UTILITY_CASES = [
   // 3·1.7 + (2.2² − 0.5²) = 9.69, 3·5.8 + (8² − 2.2²) = 76.56, 88 in all. The box: 6 wide all the way.
   // Benched B: 3 wide to 4 ft, then 11: 1.5, 5.1, 3·1.8 + 11·4 = 49.4. Deepening, 6.4 and 9.6 ft deep:
   // backfill 3·4.2 + (6.4² − 2.2²) = 48.72 and 3·7.4 + (9.6² − 2.2²) = 109.52. The pipe rests on the bedding.
+  // D-615: a 100 ft run of 8 in SDR-35 in a 6 ft box on flat ground (G 100), continued 50 ft from one
+  // end, then worked out like any run. Box walls are vertical, so the volume is 6 × the mean depth ×
+  // the length / 27. Inverts, 8 then 9 ft deep (the invert falls 0.01 ft a foot): from the end, the new
+  // end is carried on 0.5 ft lower, 9.5 ft deep: 6 · 8.75 · 150 / 27 = 291.67; from the start, the new
+  // start is carried back 0.5 ft higher, 7.5 ft deep: 6 · 8.25 · 150 / 27 = 275.00. Start + slope 1 %
+  // the same, the start invert moved back up the slope only when continued from the start. Cover 6.8 ft
+  // over an 8.4 in OD with 6 in of bedding is 8.0 ft deep all along: 6 · 8 · 150 / 27 = 266.67. An
+  // end on a structure leaves it, with a note.
+  { id: "util-615-continue-inverts-end", kind: "continue", mode: "inverts", depth: [8, 9], end: "end", expect: { lengthFt: 150, addedFt: 50, depthsFt: [8, 9.5], excavationCY: 291.67, notes: ["end_invert_projected"], corners: [100, 200, 250] } },
+  { id: "util-615-continue-inverts-start", kind: "continue", mode: "inverts", depth: [8, 9], end: "start", expect: { lengthFt: 150, addedFt: 50, depthsFt: [7.5, 9], excavationCY: 275, notes: ["start_invert_projected"], corners: [50, 100, 200] } },
+  { id: "util-615-continue-slope-start", kind: "continue", mode: "slope", depth: [8, 9], end: "start", expect: { lengthFt: 150, depthsFt: [7.5, 9], excavationCY: 275, notes: ["start_invert_projected"] } },
+  { id: "util-615-continue-slope-end", kind: "continue", mode: "slope", depth: [8, 9], end: "end", expect: { lengthFt: 150, depthsFt: [8, 9.5], excavationCY: 291.67, notes: [] } },
+  { id: "util-615-continue-cover-end", kind: "continue", mode: "cover", depth: [8, 8], cover: 6.8, end: "end", expect: { lengthFt: 150, depthsFt: [8, 8], excavationCY: 266.67, notes: [] } },
+  { id: "util-615-continue-detached", kind: "continue", mode: "inverts", depth: [8, 9], end: "end", endOn: "MH-2", expect: { notes: ["end_invert_projected", "end_detached"] } },
+  // D-615: three manholes counted in a row after MH-1 and MH-2 (BENCH-MH-4 and SMH-9 are other
+  // kinds), each with the box's settings; then Count more like this from the second numbers on.
+  // The box's settings come from the last one placed, less its own rim and floor.
+  {
+    id: "util-615-count-three",
+    kind: "count",
+    type: "sanitary_manhole",
+    settings: { inside_dia_in: 60, wall_in: 8 },
+    existing: ["MH-1", "MH-2", "BENCH-MH-4", "SMH-9"],
+    clicks: 3,
+    likeIndex: 1,
+    expect: { names: ["MH-3", "MH-4", "MH-5"], more: "MH-6", sameSettings: true, settings: ["sanitary_manhole", 60, 8, 6, "auto"], rimFloor: [null, null] },
+  },
   { id: "util-613-cut-sloped", ...caseA(), trenchCut: [50], expect: { cut: [[19, 3, 8, 1.75, 9.69, 76.56, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-613-cut-box", ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6" }), trenchCut: [50], expect: { cut: [[6, 6, 8, 3, 10.2, 34.8, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-613-cut-benched", ...caseA({ protection: "benched" }), trenchCut: [50], expect: { cut: [[11, 3, 8, 1.5, 5.1, 49.4, 0.85, 0.35]], cutZoneGap: 0 } },

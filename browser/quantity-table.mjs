@@ -1151,8 +1151,89 @@ try {
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const stab = await import("/src/lib/takeoff/earthwork/stabilization.ts");
     const lines = await import("/src/lib/takeoff/earthwork/lines.ts");
+    const cr = await import("/src/lib/takeoff/earthwork/utilities/continueRun.ts");
+    const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
+    // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
+    const SDR35 = "pvc_d3034_sdr35:8";
+    const CLAY = { name: "Clay", group: "clay", uscs: "CH", osha: "B", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1.1 };
+    const BOX = { id: "b6", name: "Box 6x8", insideFt: 5, outsideFt: 6, heightFt: 8 };
     return cases.map((c) => {
+      // D-615: structures counted in a row, numbered on, each with the box's settings; then Count
+      // more like this from one of them.
+      if (c.kind === "count") {
+        const draft = rd.newStructureFrom({ ...rd.defaultStructure(c.type), ...c.settings, rim_ft: 712, floor_ft: 700 });
+        const names = [...c.existing];
+        const placed = [];
+        for (let i = 0; i < c.clicks; i += 1) {
+          const name = rd.nextNumbered(rd.STRUCTURE_PREFIX[draft.structure_type], names);
+          names.push(name);
+          placed.push({ name, ...draft });
+        }
+        const like = placed[c.likeIndex];
+        const more = rd.nextNumbered(rd.STRUCTURE_PREFIX[like.structure_type], names);
+        return {
+          names: placed.map((p) => p.name),
+          more,
+          sameSettings: placed.every((p) => JSON.stringify({ ...p, name: 0 }) === JSON.stringify({ ...placed[0], name: 0 })),
+          settings: [draft.structure_type, draft.inside_dia_in, draft.wall_in, draft.base_slab_in, draft.protection],
+          rimFloor: [draft.rim_ft, draft.floor_ft],
+        };
+      }
+      // D-615: a straight 100 ft run continued 50 ft from one end, in its depth mode, then worked
+      // out by the same engine as any run: length, inverts and volume.
+      if (c.kind === "continue") {
+        const p = cat.resolvePipe(SDR35);
+        const drop = (p.od - p.id) / 2 / 12;
+        const G = 100;
+        const inv = (depth) => G - depth + drop + 0.5;
+        const halfSum = (p.od + p.id) / 24;
+        const fields = {
+          vertical: c.mode,
+          start_invert_ft: c.mode === "cover" ? null : inv(c.depth[0]),
+          end_invert_ft: c.mode === "inverts" ? inv(c.depth[1]) : null,
+          slope_pct: c.mode === "slope" ? ((inv(c.depth[0]) - inv(c.depth[1])) / 100) * 100 : null,
+          start_structure_uuid: null,
+          end_structure_uuid: null,
+          notes: [],
+        };
+        const frame = { fx: 1000, fy: 1000 };
+        const vertices = [[0.1, 0.5], [0.2, 0.5]];
+        const drawn = c.end === "end" ? [{ x: 0.2, y: 0.5 }, { x: 0.25, y: 0.5 }] : [{ x: 0.1, y: 0.5 }, { x: 0.05, y: 0.5 }];
+        const done = cr.continueRun({ fields, vertices, arcs: [], drawn, drawnArcs: [], end: c.end, frame, lengthFt: 100, endOn: c.endOn ?? null });
+        let L = 0;
+        for (let i = 1; i < done.vertices.length; i += 1) L += Math.hypot((done.vertices[i][0] - done.vertices[i - 1][0]) * frame.fx, (done.vertices[i][1] - done.vertices[i - 1][1]) * frame.fy);
+        const f = done.fields;
+        const ends = c.mode === "inverts" ? [f.start_invert_ft, f.end_invert_ft] : c.mode === "slope" ? [f.start_invert_ft, f.start_invert_ft - (f.slope_pct / 100) * L] : [G - c.cover - halfSum, G - c.cover - halfSum];
+        const knot = (i) => ({ s: i === 0 ? 0 : L, G, invert: ends[i], bottoms: [-1e6], water: null, caving: false, caveInFt: null });
+        const P = tr.pipeWidthFt(p.od, 1, 0, 12, 24);
+        const r = q.runQuantities({
+          knots: [knot(0), knot(1)],
+          layers: [{ layerId: null, ...CLAY }],
+          noBores: false,
+          pipe: { odIn: p.od, idIn: p.id, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+          bucket: "auto",
+          box: tr.boxFor(P, [BOX], { boxRef: "b6", boxOutsideFt: null }),
+          specMaxIn: null,
+          protection: "box",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          materials: { bedding: "imported", zone: "imported", backfill: "native" },
+          materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
+          segments: [],
+          restoration: null,
+        });
+        return {
+          lengthFt: r2(L),
+          addedFt: r2(done.addedFt),
+          depthsFt: ends.map((e) => r2(G - (e - drop - 0.5))),
+          excavationCY: r2(r.excavationCF / 27),
+          notes: done.fields.notes.map((n) => n.kind),
+          corners: done.vertices.map(([x]) => r2(x * 1000)),
+        };
+      }
       if (c.kind === "catalog") {
         const p = cat.resolvePipe(c.pick, c.typed ?? {});
         if (!p) return { resolved: false };
