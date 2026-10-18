@@ -134,6 +134,16 @@ export const UTILITY_CASES = [
   { id: "util-610-trench-at-benched", ...caseA({ protection: "benched" }), trenchAt: [10, 50, 90], expect: { trench: [[11, 3, 8], [11, 3, 8], [11, 3, 8]], trenchTopGap: 0 } },
   { id: "util-610-trench-at-sand", ...caseA({ protection: "benched", layers: [{ ...SAND_C, depth: null }] }), trenchAt: [10, 50, 90], expect: { trench: [[27, 3, 8], [27, 3, 8], [27, 3, 8]], trenchTopGap: 0 } },
   { id: "util-610-trench-at-deepening", ...caseA({ depth: [6, 10] }), trenchAt: [10, 50, 90], expect: { trench: [[15.8, 3, 6.4], [19, 3, 8], [22.2, 3, 9.6]], trenchTopGap: 0 } },
+  // D-613: the cross-section pane's trench, square to the run. [top, bottom, depth, bedding SF, pipe
+  // zone SF with the pipe, backfill SF, pipe centre above TB, its radius]. Bedding 0–0.5 ft, the zone
+  // to 0.5 + 0.7 (8.4 in OD) + 1 = 2.2 ft, backfill to the top. Sloped 1:1: 3·0.5 + 0.5² = 1.75,
+  // 3·1.7 + (2.2² − 0.5²) = 9.69, 3·5.8 + (8² − 2.2²) = 76.56, 88 in all. The box: 6 wide all the way.
+  // Benched B: 3 wide to 4 ft, then 11: 1.5, 5.1, 3·1.8 + 11·4 = 49.4. Deepening, 6.4 and 9.6 ft deep:
+  // backfill 3·4.2 + (6.4² − 2.2²) = 48.72 and 3·7.4 + (9.6² − 2.2²) = 109.52. The pipe rests on the bedding.
+  { id: "util-613-cut-sloped", ...caseA(), trenchCut: [50], expect: { cut: [[19, 3, 8, 1.75, 9.69, 76.56, 0.85, 0.35]], cutZoneGap: 0 } },
+  { id: "util-613-cut-box", ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6" }), trenchCut: [50], expect: { cut: [[6, 6, 8, 3, 10.2, 34.8, 0.85, 0.35]], cutZoneGap: 0 } },
+  { id: "util-613-cut-benched", ...caseA({ protection: "benched" }), trenchCut: [50], expect: { cut: [[11, 3, 8, 1.5, 5.1, 49.4, 0.85, 0.35]], cutZoneGap: 0 } },
+  { id: "util-613-cut-deepening", ...caseA({ depth: [6, 10] }), trenchCut: [10, 90], expect: { cut: [[15.8, 3, 6.4, 1.75, 9.69, 48.72, 0.85, 0.35], [22.2, 3, 9.6, 1.75, 9.69, 109.52, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-2a2-bucket-24-pipe-governs", ...caseA({ bucket: 24 }), expect: { widthText: "Width 32.4 in — pipe width", excavationCY: 317.04, beddingCY: 5.93, zoneCY: 32.57, backfillCY: 277.11, maxTopWidthFt: 18.7 } },
   {
     id: "util-2b-box-from-list",

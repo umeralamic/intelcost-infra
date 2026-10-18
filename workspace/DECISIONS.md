@@ -18802,7 +18802,8 @@ show no write but the guest session's own POST.
   change it".
 - **The proof,** `scripts/check_project_lock.py`, rewritten so it never acts as either founder account:
   - **A throwaway** (`fx.lock.<stamp>@`, no workspace): write 403 `project_locked`; read 403 `not_a_member`. It
-    isn't a member of Bench Construction Test, and adding one would change the founder's workspace (1d).
+    isn't a member of Bench Construction Test, and adding one would change the founder's workspace (1d). **Confirmed
+    by Umer 2026-10-17 (E6): ok as is.**
   - **window-b@** (a bench member): write 403 `project_locked`; read 200.
   - **The two founder addresses:** only looked up, and both resolve to an account. No token is made for them.
 
@@ -18954,6 +18955,28 @@ Nothing changed.
   under it. Utilities now reads 80, Sanitary 45, Storm 26, for member and guest alike.
 - **Unchanged:** a count is still of items, never a quantity total. An empty Unclassified still hides.
 
+**Kept by Umer 2026-10-17 (answers to the evening report, item 4).** The rule before D-608, screen by screen:
+- **Takeoff panel** (Folders and Classification views; members, and guests, whose full view opens the same panel):
+  only the items filed directly in a folder or code. This held for every folder, not only Utilities: a parent
+  holding only subfolders read 0.
+- **Estimating's group rows:** already every line in the group and in every group under it (`linesIn`), with
+  "MH · cost" summed the same way.
+- **Sheets panel:** already every sheet beneath the folder (D-319).
+- **Legacy** (UmeralamDEV) counts a folder's own items plus its direct subfolders (`items.length + kids.length`).
+
+**D-608 changed the Takeoff panel alone,** in both its views, to the rule Estimating and the Sheets panel already had.
+
+**Estimating checked on the BENCH DUP** (group by Custom Folder): Test 1, Utilities 65 (Sanitary 36, Storm 21,
+Water 8), Earthwork 64, No custom folder 10. Every parent equals its lines plus its subgroups, and the TOTAL ($18.19)
+equals its groups. They reconcile exactly with the Takeoff panel's Test 1, Utilities 80 and Earthwork 61:
+- **Utilities:** 80 items, of which 15 are the drawn runs and structures. They are not estimate lines; their
+  Calculate lines are.
+- **Earthwork:** 61 items, two of which hold 5 sub-items between them. Estimating counts the sub-items in place of
+  their parents: 61 − 2 + 5 = 64.
+- **Earthwork Markups** (18) are not estimate lines.
+
+Nothing broke; the screens differ only in what they count, items or lines.
+
 ## D-609: Utilities in 3D: a fixed on-screen thickness, a colour per type, a stronger pick (evening run 2026-10-17, item 6)
 
 **The fault:** at true size, an 8–24 in pipe on C-200 was a pixel or two wide and faded against the cut and fill
@@ -19035,11 +19058,12 @@ sheet with runs; kept on this device):
   bottom and depth for sloped, box, benched B, sand refused benching and a deepening trench. Its widest top equals
   the quantities' own `maxTopWidthFt`. 72 utility rows are right.
 
-**Taken, Umer to confirm:**
-- **The Cut & Fill 3D view** (drawn on the proposed grade) shows proposed trenches as outlines only. The brief names
-  the start surface's view, so they open in Proposed alone.
-- **The 2D key's place:** the canvas's top left. The plan had no earthwork legend to hold the switch.
-- **The cross-section pane** stays as it is (pipes only). A trench outline in it would be a separate piece.
+**Confirmed by Umer 2026-10-17 (answers to the evening report):**
+- **E1 ok: the Cut & Fill 3D view** (drawn on the proposed grade) shows proposed trenches as outlines only. They open
+  in their start surface's view alone.
+- **E2 ok: the 2D key's place** stays at the canvas's top left.
+- **E3 changed: the cross-section pane** draws the trench at the station, from the same geometry as the 3D open
+  trench, and 12c is redone against the pane itself (D-613).
 
 **Screenshots:**
 - 3D: `eve-12-3d-proposed-open` and `-close`, `eve-12-3d-existing-eg1-open`, `eve-12-3d-existing-plan` (BENCH-EG-1
@@ -19122,8 +19146,108 @@ never stopped, restarted or repointed.
 **Product bugs:** none small and clear was found among the failures. Rule 8 says the fixtures are not maintained, so
 they were not rewritten to today's screens. Tonight's one real bug came from the BENCH- test set (D-602).
 
-**Taken, Umer to confirm:** running the suite on its own stack rather than on the running bench's services; and the
-skip list.
+**Confirmed by Umer 2026-10-17 (E4, E5):** the suite runs on its own stack rather than on the running bench's
+services, with the skip list as listed.
 
 **For a run that means something** (before any deploy, CLAUDE.md): the fixtures need updating to today's screens.
-That is about 1–3 days of work, and pending_umer E7 asks whether to spend it.
+That is about 1–3 days of work. **Changed by Umer 2026-10-17 (E7):** not all 102. Only the fixtures covering what F29
+touched are updated and run; every other failure is listed with a one-line cause (D-614).
+
+## D-612: Pipes in 3D at the larger of their true size and 3 px (answers to the evening report, item 3)
+
+**The question:** were pipes drawn at a fixed 3 px, or at max(true size, 3 px)?
+
+**Before, both were drawn:**
+- the pipe's true-size cylinder;
+- over its centre line, a fixed 3 px stroke (6 px with its outline, D-609) that never grew.
+
+Zoomed out, the stroke showed. Zoomed in close, a buried pipe (the usual case, with Show buried on) read as a strong 3 px
+line inside a faint true-size body (`ans-3-before-stm1-zoomed-in`). An exposed one had no outline.
+
+**Now max(true size, 3 px), at every point of the stroke:**
+- **How:** the stroke's shader widens it by however much the pipe's outside diameter, projected at each end's depth,
+  is over 3 px.
+- **Result:** a 24 in pipe close up is a 24 in band edged by its 1.5 px outline, and never under 3 px far off.
+- **Unchanged:** the pick's wider stroke and primary outline.
+
+**Two fixes so it draws cleanly at true width:**
+- **Each stroke draws a pixel once.** A translucent stroke's segments overlap at their round joints, and at true
+  width these blended twice into discs. The strokes now use the stencil's bits 1–7; bit 0 stays the trench
+  openings', and the ground tests only that bit.
+- **A buried pipe is its ghost stroke alone.** The ghost takes the pipe's front, a tenth past it, as its depth, so it
+  never draws over the pipe's own body. Pipes no longer get ghost cylinders: at each joint, one piece's ghost drew
+  across its neighbour, in pale streaks over an exposed pipe close up.
+
+**Structures:** unchanged.
+
+**Smoke (member, BENCH-STM-1, 24 in RCP):**
+- `ans-3-before-` and `ans-3-after-stm1-zoomed-out` and `-zoomed-in` (Cut & Fill view, buried);
+- `ans-3-after-stm1-open-trench-close` (Proposed, in its open trench, shaded at true size with its outline);
+- `ans-3-after-stm1-picked-close`.
+
+**Guest:** `ans-3-after-stm1-zoomed-out-guest` and `-zoomed-in-guest`, the same drawing.
+
+**Gates:** lint, typecheck and build pass. The quantity table is untouched by it.
+
+## D-613: The cross-section pane draws the trench at the station (answers to the evening report, item 2; E3 changed)
+
+**What the pane draws where its line crosses a run:**
+- **In the long section:** the run's trench as the line cuts it: its section at that station, stretched along the
+  line by the crossing's angle, walled by protection and filled faintly.
+- **Below, the trench square to the run at that station, to true scale** (one scale both ways, fitted to the pane):
+  - the walls, by protection: sloped, benched, vertical, or a box with its panels 0.2 ft inside as in 3D;
+  - the bedding, the pipe zone and the backfill, each its own fill (new tokens `--trench-zone` and
+    `--trench-backfill`);
+  - the pipe or pipes at true size, resting on the bedding;
+  - the soil layers behind the walls, from the start surface down;
+  - the start surface's line, and the top width, bottom width and depth measured on the drawing;
+  - a header (run, station, protection, top, bottom, depth) and a key.
+- **Inside a pit or past the trench's ends:** "no trench to cut here".
+- **Units:** metres in a metric project.
+
+**The same geometry as the 3D open trench:**
+- `trenchCut` (`trenchPlan.ts`, data in and out) reads `trenchAt`, the section the volumes integrate, and the 3D wall
+  builder's own profile.
+- Each trench piece now records the pipe zone's height above the crown that the volumes used, so the drawn zones are
+  the volumes' zones.
+- The run's profile view now carries its pipe count and gap.
+
+**Quantity rows:** 4 new `util-613-cut-*` rows (sloped, box, benched B, a deepening trench) check the drawn widths
+and the zones' polygon areas against hand-worked values. `cutZoneGap` is 0: the drawn zones equal the volumes'
+`zones` at every piece's ends and middle. 76 utility rows are right.
+
+**12c, against the pane itself.** Each section line was placed square to the run through the 3D readout's station,
+at 28.6 px per pt. The pane's top and bottom widths were read from its drawn walls, converted back to feet by the
+drawing's own scale:
+
+| Run | 3D readout: station, top / bottom | Pane: station, top / bottom (drawn) | Off by |
+|---|---|---|---|
+| BENCH-SAN-1 | 0+48.65, 32.43 / 3.00 | 0+48.65, 32.435 / 3.001 | ≤ 0.005 |
+| BENCH-SAN-1 | 1+56.52, 34.61 / 3.00 | 1+56.51, 34.610 / 3.001 | ≤ 0.001 |
+| BENCH-SAN-1 | 2+39.53, 31.78 / 3.00 | 2+39.53, 31.776 / 3.000 | ≤ 0.004 |
+| BENCH-DEEP-1 | 0+31.25, 4.50 / 4.50 | 0+31.25, 4.500 / 4.500 | 0.000 |
+| BENCH-DEEP-1 | 0+81.74, 4.50 / 4.50 | 0+81.74, 4.500 / 4.500 | 0.000 |
+| BENCH-DEEP-1 | 1+12.28, 4.50 / 4.50 | 1+12.28, 4.500 / 4.500 | 0.000 |
+
+All six are within 0.01 ft (the 3D readout prints two decimals). The depths agree too: 9.81, 10.54, 9.59, 13.19,
+13.11, 12.63 ft.
+
+**A step on SAN-1:** the first station tried, 0+52.21, sits where the run's start surface steps 0.82 ft. The stored
+Calculate has both widths there (half 16.3972 and 15.1722). The 3D row reads the piece that ends there (32.79), and
+the pane, 0.006 ft past it, the next (30.34). Both are right; the check moved to 0+48.65.
+
+**Smoke:**
+- **Member:**
+  - `ans-2-after-section-san1` (sloped);
+  - `ans-2-after-section-stm1-vertical`;
+  - `ans-2-after-section-deep1-box`;
+  - `ans-2-after-section-stm1-benched`: BENCH-STM-1 set to Benched for this screenshot, then back to Auto and
+    recalculated, with its figures as before;
+  - `ans-2-12c-san1-3d-and-pane`: the 3D readout and the pane side by side at 1+56.52.
+- **Guest:** `ans-2-after-section-san1-guest`, the same drawing, read only.
+- **Before:** `ans-2-before-section-san1` (the pipe alone).
+
+**Taken, Umer to confirm:**
+- **An oblique line:** the drawing below stays square to the run and says so, with the angle the line crosses at.
+  The long section stretches the trench along the line.
+- **Where the drawing sits:** below the long section in the same pane, one per crossing run.

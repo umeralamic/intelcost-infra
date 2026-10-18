@@ -1144,6 +1144,8 @@ try {
     const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
     const sx = await import("/src/lib/takeoff/earthwork/utilities/structures.ts");
     const sc = await import("/src/lib/takeoff/earthwork/utilities/scene.ts");
+    const tp = await import("/src/lib/takeoff/earthwork/utilities/trenchPlan.ts");
+    const sec = await import("/src/lib/takeoff/earthwork/utilities/section.ts");
     const ox = await import("/src/lib/takeoff/earthwork/overex.ts");
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
@@ -1360,6 +1362,30 @@ try {
           return [r2(t.top), r2(t.W), r2(t.h)];
         });
         out.trenchTopGap = r2(Math.max(...r.shape.flatMap((p) => [q.trenchAt(p, p.s0).top, q.trenchAt(p, p.s1).top])) - r.maxTopWidthFt);
+      }
+      // D-613: the cross-section pane's trench (trenchCut) at given stations: [top, bottom, depth] from
+      // its drawn walls; the bedding, the pipe zone (with the pipe) and the backfill, SF, from their
+      // polygons; the pipe's centre above the trench bottom and its radius. cutZoneGap: the drawn zones
+      // against the volumes' own (`zones`) at every piece's ends and middle (0: the section integrated).
+      if (c.trenchCut) {
+        const pipe = { odFt: p.od / 12, idFt: p.id / 12, pipes: 1, gapFt: 0 };
+        const area = (poly) => Math.abs(poly.reduce((a, [x1, y1], i) => a + x1 * poly[(i + 1) % poly.length][1] - poly[(i + 1) % poly.length][0] * y1, 0)) / 2;
+        const zoneSF = (cut, kind) => area(cut.zones.find((z) => z.kind === kind)?.poly ?? []);
+        out.cut = c.trenchCut.map((s) => {
+          const cut = tp.trenchCut(r.shape, s, pipe);
+          const w = cut.wall;
+          return [r2(2 * w[w.length - 1][0]), r2(2 * w[0][0]), r2(w[w.length - 1][1] - w[0][1]), r2(zoneSF(cut, "bedding")), r2(zoneSF(cut, "zone")), r2(zoneSF(cut, "backfill")), r2(cut.pipes[0].y - cut.TB), r2(cut.pipes[0].ro)];
+        });
+        let gap = 0;
+        for (const piece of r.shape) {
+          for (const s of [piece.s0, (piece.s0 + piece.s1) / 2, piece.s1]) {
+            const cut = tp.trenchCut([piece], s, pipe);
+            const t = q.trenchAt(piece, s);
+            const z = sec.zones(t.walls, t.W, t.h, t.tb, pipe.odFt, t.tz, 1);
+            gap = Math.max(gap, Math.abs(zoneSF(cut, "bedding") - z.bedding), Math.abs(zoneSF(cut, "zone") - z.zone - z.zonePipe), Math.abs(zoneSF(cut, "backfill") - z.backfill));
+          }
+        }
+        out.cutZoneGap = r2(gap);
       }
       if (c.lines) {
         const made = ln.utilityLines([

@@ -297,15 +297,11 @@ link setting (D-562).
 
 ## Evening run 2026-10-17 (morning-report-2026-10-17/EVENING_REPORT_2026-10-17.md)
 
-| # | What | Where it stands | Your call |
-|---|---|---|---|
-| E1 | D-610: the Cut & Fill 3D view is drawn on the proposed grade | Proposed trenches show only as outlines there. They open in the Proposed view alone, as the brief names the start surface's view. | ok, or open them in Cut & Fill too |
-| E2 | D-610: where the 2D Trench outline's key sits | At the canvas's top left on an earthwork sheet with runs: the plan had no earthwork legend to hold the switch. The run panel has the switch too. | ok, or say where |
-| E3 | D-610: the cross-section pane | It draws pipes only, no trench outline. Unchanged, as asked; the 12c check used the saved Calculate's section instead. | Leave, or add the trench outline to it (a small piece) |
-| E4 | D-611: where the archived suite runs | On its own fx stack beside the bench: its own api, worker and apps, database, Redis database and MinIO bucket. The running bench's services are never stopped, restarted or repointed. | ok, or run it differently |
-| E5 | D-611: what the suite skips | f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2 and f4-s27 restart shared services; f5-s9 runs today's seed.py with an old flag; d27-uploads needs beat. | ok, or allow fx-only restarts (all but f8-s5's Redis outage could then run) |
-| E7 | D-611: the suite's result, 13 of 102 fixtures passing in full (219 of 491 steps) | The failures are drift since the tag: takeoff-first onboarding, no seed folders, the Projects heading, the file browser, the canvas toolbar, sign-ins landing on Account settings, no header switcher. No small, clear product bug was found among them. | Update the fixtures to today's screens before the deploy run (about 1–3 days), or keep the F29 acceptance run and smokes as the proof for now |
-| E6 | D-601: the throwaway's read | A throwaway outside Bench Construction Test gets 403 `not_a_member` on a read. window-b@ (a member) shows that a read works. | ok |
+**Answered 2026-10-17 (answers to the evening report), closed in DECISIONS:**
+- **ok:** E1 (trenches open in their start surface's view only, outlines elsewhere), E2 (the key at the top left),
+  E4 with E5 (the suite on its own stack, the skip list as listed) and E6 (the throwaway's read, as is).
+- **Changed:** E3, the cross-section pane draws the trench at the station (D-613). E7: only the fixtures covering
+  what F29 touched are updated and run, and every other failure gets a one-line cause (D-614).
 
 ## Found in the click sessions
 
