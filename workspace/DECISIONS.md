@@ -19163,6 +19163,8 @@ touched are updated and run; every other failure is listed with a one-line cause
 
 ## D-612: Pipes in 3D at the larger of their true size and 3 px (answers to the evening report, item 3)
 
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9).
+
 **The question:** were pipes drawn at a fixed 3 px, or at max(true size, 3 px)?
 
 **Before, both were drawn:**
@@ -19201,6 +19203,8 @@ line inside a faint true-size body (`ans-3-before-stm1-zoomed-in`). An exposed o
 view with every BENCH- run and structure. Under the suite's load it had read 41–60.
 
 ## D-613: The cross-section pane draws the trench at the station (answers to the evening report, item 2; E3 changed)
+
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9).
 
 **What the pane draws where its line crosses a run:**
 - **In the long section:** the run's trench as the line cuts it: its section at that station, stretched along the
@@ -19258,12 +19262,14 @@ the pane, 0.006 ft past it, the next (30.34). Both are right; the check moved to
 - **Guest:** `ans-2-after-section-san1-guest`, the same drawing, read only.
 - **Before:** `ans-2-before-section-san1` (the pipe alone).
 
-**Taken, Umer to confirm:**
+**Taken (confirmed by Umer, 2026-10-18):**
 - **An oblique line:** the drawing below stays square to the run and says so, with the angle the line crosses at.
   The long section stretches the trench along the line.
 - **Where the drawing sits:** below the long section in the same pane, one per crossing run.
 
 ## D-614: Only the fixtures covering what F29 touched are brought up to today's screens; every other failure gets a one-line cause (answers to the evening report, item 5; E5 and E7 changed)
+
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9). Q2: the overlays live in `intelcost-infra/fx-suite-updates/`.
 
 **What F29 touched, and the archived fixtures that cover it:**
 
@@ -19296,7 +19302,7 @@ the pane, 0.006 ft past it, the next (30.34). Both are right; the check moved to
   there is no archive (D-337); the classification picker.
 - **f6-e:** a tab holds a count with Resume (D-72); a double-click on the name renames.
 
-**Where they live (taken, Umer to confirm):** `intelcost-infra/fx-suite-updates/`, tracked, as whole files. The
+**Where they live (confirmed by Umer, 2026-10-18):** `intelcost-infra/fx-suite-updates/`, tracked, as whole files. The
 tag's file sits next to each in git history.
 - **When they are applied:** `fx-suite.sh setup` and the new `refresh` lay them over the restored tag before
   retargeting.
@@ -19350,9 +19356,11 @@ tag's file sits next to each in git history.
   - **f8-s10:** it sends a mode D-98 retired.
   - **f8-s13:** the flood guard holds; the receiving tab's clock under-measured the span.
 
-**Taken overnight, Umer to confirm:** where the updated fixtures live (`fx-suite-updates/`).
+**Taken overnight (confirmed by Umer, 2026-10-18):** where the updated fixtures live (`fx-suite-updates/`).
 
 ## D-615: Utilities and structures worked the way the takeoff tools are: a box with the list, + New, Takeoff or Count, edit, Continue drawing, Count more like this (overnight queue 2026-10-18, item 6)
+
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9).
 
 Replaces the earlier briefs for 6, 6f and 6g. Where it changed what was built:
 - **The toolbar:** "Runs (n)" and "List (n)" are gone. The counts stay in the Takeoff panel.
@@ -19436,7 +19444,7 @@ empty list, so no stored result moves. The continuation's arithmetic is `lib/tak
 - **Guest:** Utilities and Structures greyed with the Professional tip; double-click opens the box read only, with
   no + New, and Continue drawing and Count more like this greyed.
 
-**Taken overnight, Umer to confirm:**
+**Taken overnight (confirmed by Umer, 2026-10-18):**
 - **Inverts don't carry over:** a new run starts with no inverts, though it takes the last run's slope or cover. A
   typed invert belongs to one run's ends.
 - **The box closes while drawing or counting,** and opens again on the result.
@@ -19444,7 +19452,9 @@ empty list, so no stored result moves. The continuation's arithmetic is `lib/tak
 
 ## D-616: Trenches that cross or join are dug once, by the deeper there (U-UT32 changed; overnight queue 2026-10-18, item 7)
 
-**Taken overnight, Umer to confirm.**
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9). T1: the overlap counted once, by the deeper trench; U-UT32 changed.
+
+**Taken overnight (confirmed by Umer, 2026-10-18).**
 
 **Today's behaviour, checked first (BENCH DUP 2026-10-18 03:59, C-200, four cases drawn with the new flow):**
 - **The overlap was counted twice:** each run's trench was worked whole, and nothing was deducted.
@@ -19499,6 +19509,8 @@ The deeper runs keep their volumes, with a "counted here" note.
 
 ## D-617: The usability pass: the BENCH- set redrawn with the new flow only; three small fixes, the rest listed (overnight queue 2026-10-18, item 9)
 
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9).
+
 **The pass:** a fresh BENCH DUP (2026-10-18 03:59). The copied SS-1, ST-1, ST-2 and MH-1 to MH-3 were deleted first (the copy had no MH-4). The whole BENCH- set was then drawn with the Utilities and Structures boxes only. The clicks were scripted, so the times are machine times; what matters for a person is the actions each piece took.
 
 | Piece | Actions | Scripted time |
@@ -19544,6 +19556,8 @@ The deeper runs keep their volumes, with a "counted here" note.
 
 ## D-618: X-ray sees through the ground only; pipes, structures and bores hide each other by depth (overnight queue 2026-10-18, item 8)
 
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9). T7: bores seen through the ground with Show buried.
+
 **The fault:** with Show buried, a buried pipe behind a bore column drew over the bore. The ghosts were drawn wherever *anything* was in front of them (GreaterDepth): the ground, but also a bore, a structure or another pipe.
 - **Before:** `8-before-pipe-behind-bore-40` (BENCH DUP 2026-10-18, B-1 with ST-9 behind it, ground at 40 %). The pipe crosses over the bore.
 
@@ -19562,7 +19576,8 @@ The deeper runs keep their volumes, with a "counted here" note.
   - the same view before and after, Show buried on and off, ground at 100 % and 40 % (`8-before-*`, `8-after-*`);
   - the bore case, before and after at 100 % and 40 % (`8-before-pipe-behind-bore*`, `8-after-pipe-behind-bore*`): after, the column hides the pipe;
   - two crossing pipes at different depths (X-MAIN under X-CROSS) in the default view.
-- **Not shot:** a pipe behind a structure could not be framed in the time. Structures are in the same depth test as bores.
+- **A pipe behind a structure:** shot 2026-10-18 (item 13). From the front, tilted low, BENCH-STM-1 passes behind
+  BENCH-MH-2: the column hides the pipe at ground 100 % and 40 %, Show buried on, 60 fps quiet (`13-pipe-behind-structure-*`).
 - **Frame rate:** 60.0 at 100 % and 59.9–60.4 at 40 %, with Show buried on.
 - **Guest:** `8-guest-xray`, the same view.
 - **Gates:** lint, typecheck and build.
@@ -19570,7 +19585,9 @@ The deeper runs keep their volumes, with a "counted here" note.
 
 ## D-619: The archived fixtures brought up to today's screens, most valuable first; drift fixed in the fixture, product faults left failing (overnight queue 2026-10-18, item 11)
 
-**Status:** taken overnight, Umer to confirm. It continues D-614's way of working past F29's fixtures.
+**Confirmed:** by Umer, 2026-10-18 (answers to the night report, item 9).
+
+**Status:** taken overnight; confirmed by Umer, 2026-10-18. It continues D-614's way of working past F29's fixtures.
 
 **The rules followed:**
 - **Only the screens change, never the figures.** Each overlay's header names what changed and the decision that changed it.
@@ -19651,3 +19668,410 @@ Three were timing in the fixture itself:
 - 7241c1b: the rest.
 
 **Checks:** this is fixture work only, with no product code changed, so there are no gates, quantity table or smoke for it. The fixture runs are the check.
+
+## D-620: Ortho never moves a rectangle's or an ellipse's far corner (answers to the night report, T9)
+
+**Status:** decided by Umer, 2026-10-18 (T9: "Ortho must never move a rectangle's far corner").
+
+**The fault.** The canvas's pen pulled every click after the first onto the nearest 45° ray when Ortho was on, whatever the
+draw mode. A rectangle drawn by two clicks is defined by its corners, so a 20 × 30 ft rectangle, whose diagonal is
+11.3° off 45° and inside the 15° tolerance, came out a 25.5 ft square: 650 SF instead of 600.
+
+**Now:**
+- **The pen asks the engine** (`orthoPen` and `orthoMoves` in `lib/takeoff/engine/snap.ts`, pure, hard rule 2) whether
+  Ortho may move this tool's point.
+- **Rectangle and Ellipse modes** (Linear and Area) keep both corners exactly where they are picked, with Ortho on or off.
+- **Everything else** keeps Ortho as it was.
+
+**Every tool Ortho touches, checked:**
+
+| Tool | What Ortho does | Distortion | Now |
+|---|---|---|---|
+| Area and Linear, Rectangle | pulled the far corner onto 45° | yes: the box's sides changed (650 SF for 600) | fixed |
+| Area and Linear, Ellipse / Circle | the same, on the box's far corner | yes: a 20 × 30 ft ellipse became a circle, 510.5 SF for 471.2 | fixed |
+| Linear Arc mode, and the A-arc inside any run (Linear, Area, contours, boundary, strip areas, utility runs) | pulls the through point and the end onto 45° rays from the point before | yes: the arc drawn is not the one through the points picked. Its length changes | listed, not changed (recommend the same exemption) |
+| Linear and Area Point to Point, Segment, Dimension, Calibrate, contours, boundary, strip areas, utility runs, site view drawing | turns an edge onto 45°, keeping its length | none: that is what Ortho is for. A calibration's length is kept, so the scale is right | unchanged |
+| Count, structures (Count, Count more like this) | a mark commits on its click with no point before it | never touched | unchanged |
+| Press and drag (a rectangle or an ellipse dragged) | snap only, never Ortho | none | unchanged |
+| Trace, Auto Count, site features placed from the dialog | no pen | none | unchanged |
+
+**Saved data.**
+- **Telling them apart:** a rectangle or an ellipse Ortho pulled has sides (or radii) exactly equal in page points. Ortho
+  sets the far corner on an exact 45° ray (or 22.5° with Alt, a side ratio of tan 22.5°).
+- **The caveats:** a box drawn by hand is never exact to that precision unless both corners were snapped to a true square.
+  A box that was snapped after Ortho is not detectable. Pressed-and-dragged boxes were never affected.
+- **On the bench** (the founder projects, and every workspace estimator@ or umeralam.q@gmail.com belongs to, excluded
+  before any shape was read): 4 live rectangles, no ellipses, **none** with the bug's mark.
+- **Recommendation:**
+  - leave saved items alone;
+  - run the same query on your own data and review any exact square by eye. A 650 SF that should be 600 shows at once.
+  - The query is kept in this decision's report (`morning-report-2026-10-18/answers/`).
+
+**Quantity rows** (`browser/lib/pen-cases.mjs`, 12): two clicks through `orthoPen`, then `shapeFrom`, then the quantity
+engine.
+- **Rectangles:** 20 × 30 and 30 × 20 ft, Ortho on and off, also drawn in reverse; all 600 SF.
+- **Linear rectangles:** 100 LF.
+- **An ellipse:** 471.24 SF.
+- **A landscape page:** both orientations.
+- **A control:** a run's edge still lands on 45° at its length.
+- **On the old pen:** all 8 Ortho-on box rows fail (649.9999 SF, 101.98 LF, 510.51 SF).
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke:** on a fresh BENCH DUP (A101, 1/8" = 1'-0"), Area › Rectangle with Ortho On, two clicks 20 × 30 ft apart,
+  saved 19.82 × 30.32 ft = 600.9 SF (click precision at fit: about 0.6 ft a pixel), not the 650 SF square.
+- **Screenshot:** `t9-rect-20x30-ortho-on`.
+
+## D-621: Shifts, report settings, time reports and AI credits ask for a capability, not a role (answers to the night report, T11)
+
+**Status:** decided by Umer, 2026-10-18 (T11).
+
+**What came back since F3-S3, and what each asks now.** Each one now asks `canManageWorkspace`, the seat's capability,
+which owners and admins hold and a workspace can retune (F3-S6) or grant to its own roles (F3-S7):
+
+| Where | Was | Now |
+|---|---|---|
+| api `timetrack/routes.py` `_is_admin`, `_require_admin`: shifts, role default shifts, a member's shift, the report settings, and who sees everyone's time report | `role in (owner, admin) or is_platform_admin` | `workspace.can(MANAGE_WORKSPACE)` / `require_capability(MANAGE_WORKSPACE)` |
+| api `ai/service.py` `is_admin`, `ai/routes.py` `_require_admin`: AI credits settings, limits, history | the same role test | the same capability |
+| app `SettingsMembers.tsx`: the member rows' Shift picker (`isAdmin`) | `isWorkspaceAdmin \|\| isPlatformAdmin` | `can("canManageWorkspace")` |
+| app `SettingsMembers.tsx`: the over-seats banner | `isWorkspaceAdmin \|\| can("canManageBilling")` | `can("canManageWorkspace") \|\| can("canManageBilling")` |
+| app `SettingsShifts.tsx`: add, edit and delete shifts, role defaults | `isWorkspaceAdmin \|\| isPlatformAdmin` | `can("canManageWorkspace")` |
+| app `Reports.tsx`: every estimator's time, and AI usage | `isWorkspaceAdmin \|\| isPlatformAdmin` | `can("canManageWorkspace")` |
+| app Estimating's format panel: `isAdmin` prop (its value was already `canManageWorkspace`) | the name `isAdmin` | renamed `canEditWorkspaceFormat` |
+
+**Left, on purpose:**
+- **Rules about the member acted on:** the last owner can't be demoted or leave; an owner's role can't be changed
+  without `canGrantOwnerRole`. These are ownership itself, not the caller's role (F3-S3's allowed list).
+- **The ownership list:** Settings › Ownership lists the owners.
+- **Platform staff:** `isPlatformAdmin` for the starter assemblies is our own team, D-23's second kind of admin, never a
+  workspace role.
+- **The `is_workspace_admin` field:** still read from the api, but nothing gates on it now.
+
+**A consequence:** a platform admin seated as an estimator no longer manages shifts or AI credits there. Their capabilities
+are their seat's (never masked by plan or trial, D-23), which is D-23's "neither stands in for the other".
+
+**Checks:**
+- **Gates:** ruff format and check, mypy; lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke:**
+  - **A throwaway owner:** Settings › Shifts shows Add shift and 8 role-default pickers; the api made a shift (201).
+  - **window-b, an estimator without the capability:** neither shows; the api refused, 403 "Your role cannot change
+    workspace settings."
+- **Screenshots:** `t11-shifts-owner`, `t11-shifts-window-b`.
+
+## D-622: A project or sheet that doesn't exist, or can't be seen, says "not found" with the way back (answers to the night report, Q4)
+
+**Status:** decided by Umer, 2026-10-18 (Q4).
+
+**The fault:** the takeoff's route guard asked `/api/resolve`, stepped aside on its 404, and the takeoff then waited on
+sheets that never came: "Opening takeoff" for good.
+
+**Now:**
+- **A project:** on the resolver's 404, the guard (`InItsWorkspace`) says "Project not found". The words: "This project
+  does not exist, or you do not have access to it." There is a **Back to Projects** link (`/projects`, All projects).
+  - The api's 404 is the same for both cases, so the screen is too.
+  - `/project/<id>` (Project details & files) goes the same way.
+- **A sheet:** a sheet in the address that doesn't exist, or belongs to another project, says "Sheet not found" with the
+  same link (`SheetInProject`, its own resolve of the sheet).
+- **A sheet deleted while it is open:** it keeps the takeoff's "This sheet was deleted". The answer is asked once and
+  kept.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke:**
+  - **A throwaway account:** a made-up project, the BENCH DUP it is not a member of, and `/project/<made-up>` each
+    show "Project not found" with Back to Projects. "Opening takeoff" never shows.
+  - **window-b:** the DUP with a made-up sheet shows "Sheet not found". Back to Projects opens All projects.
+- **Screenshots:** `q4-*`.
+
+## D-623: Settings fits a phone, and the open tab is scrolled into view (answers to the night report, Q6)
+
+**Status:** decided by Umer, 2026-10-18 (Q6).
+
+**Measured at 375 px**, every Settings page, as a throwaway owner (who sees every tab):
+- **Sideways scroll:** Shifts by 31 px, Crews by 29 px, Classification by 26 px.
+- **The open tab:** out of view on Account, the six Project Setup pages, Billing and Trash.
+
+**Fixed:**
+- **The open tab:**
+  - The tab strip marks its open tab itself (`data-open-tab`). NavLink sets `aria-current` only on its own address, so a
+    grouped tab open through a section never had it.
+  - It scrolls it in by measuring, again after the next frame, and whenever the strip or a tab resizes (a label's font
+    arriving moved it after the first measure).
+- **Shifts:**
+  - the six-column table scrolls in its own box, as Roles' and AI Credits' tables do;
+  - the role defaults' picker column shrinks.
+- **Crews:** the code-and-name column is narrower below `sm` and wraps.
+- **Classification:** the two panes' grid uses `minmax(0, 1fr)`, so the panes shrink.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Smoke:** all 18 pages at 375 px, loaded (network idle): 0 px sideways scroll on each, and the open tab inside the
+  strip on each.
+- **Screenshots:** `q6-375-*`.
+
+## D-624: Sheets › "Page > Takeoff" unfolds the same sheets after every reload (answers to the night report, T13)
+
+**Status:** decided by Umer, 2026-10-18 (T13).
+
+**The cause.** Three blocks in the Sheets panel open sheets' item lists as it draws, and two of them built their new set
+from that render's `expanded`:
+1. the remembered level ("Page > Takeoff" opens every sheet with items);
+2. "the open sheet shows its items";
+3. "selecting an item opens the sheets carrying it".
+
+In the render where the items arrive, (1) opened every sheet with items and (2) then replaced that with the stale, empty
+set plus the open sheet: only the open sheet stayed open. Whether the open sheet was known by that render is a matter of
+timing, hence 2 runs of 3 last night.
+
+**Now:** (2) and (3) add to what is open at that moment (functional updates), so neither undoes the level.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke:** on a BENCH DUP (A101 open), "Page > Takeoff" set, then 10 reloads. Each unfolded the same 5 sheets (C-100,
+  A101, V-100, P101, C-200). The old code, on the same data, unfolded only A101 on all 10.
+- **Screenshot:** `t13-page-takeoff-after-reload`.
+- **Cleanup:** window-b's panel was set back to "Page (Default)".
+
+## D-625: The workspace logo on the grading report PDF, both Excel exports and the guest's page (answers to the night report, T10)
+
+**Status:** decided by Umer, 2026-10-18 (T10). Not in the members' app header.
+
+**Where it shows, when a logo is uploaded:**
+- **The grading report PDF:** above the title on page 1, at most 12 mm tall and 48 mm wide.
+- **The grading report and estimate Excel exports:** at the top left of the first sheet, in its own first row (45 pt) that
+  the builders leave empty.
+  - **How it gets there:** the free SheetJS cannot place a picture, so `lib/xlsxLogo.ts` (`withLogo`, pure, with
+    `fflate`) adds the picture, a drawing anchored at A1, and their relationships and content types to the finished file.
+  - **The estimate's first sheet** is built a row down from the start, so every formula's row is right. A sub-item's link
+    to its parent's Qty and the SUMs follow.
+- **The guest's page:**
+  - a link's guest sees it in the takeoff bar beside the project name;
+  - the link's fallback page shows it in its header;
+  - the api adds `logo_url` (signed) to the guest session and the bundle.
+- **No logo uploaded:** nothing changes. There is no row, no picture, and the guest's bar is as it was.
+
+**How the logo is read:** `features/workspace/logoPicture.ts` fetches it from its signed URL and fits it in the box. It is
+drawn again as a PNG at twice that size (any format the browser shows, so a WebP or SVG works). A logo that cannot be read
+never stops an export. `fflate` is now a direct dependency, at the version already installed under jspdf.
+
+**Checks:**
+- **Gates:** ruff format and check, mypy; lint, typecheck and build.
+- **Quantity table:** passed.
+- **The stand-in logo:** uploading one would write to the shared AWS bucket. So the bench workspace's `logo_key` pointed,
+  for the test, at a picture already in storage (the DUP's C-200 thumbnail, a WebP). It was put back to null with SQL
+  afterwards, never through Remove, which would delete the object.
+- **Smoke as window-b on the BENCH DUP:**
+  - **the grading PDF:** the logo above the title (`t10-pdf-top`);
+  - **the grading Excel:** `xl/media/intelcost-logo.png` and a drawing on sheet 1; row 1 is 45 pt; the content starts in
+    A2;
+  - **the estimate Excel:** the same, with 376 formulas, each on its own row except sub-items pointing at their parent's
+    Qty, as before;
+  - **with no logo:** no picture, and the header back in row 1.
+- **Guest check:** the link's guest sees the logo beside the project name (`t10-guest-bar`), the member's header never does,
+  and with no logo the guest's bar has none.
+- **Fixed on the way:** SheetJS writes `type: "array"` as an ArrayBuffer, so the bytes are wrapped before the zip reads
+  them. A row with no cell is not written, so the logo row holds an empty cell to keep its height.
+
+## D-626: The two live updates, timed on a quiet bench: not a fault (answers to the night report, T12)
+
+**Status:** decided by Umer's rule, 2026-10-18 (T12: "only call it a fault if the median is over 1 s").
+
+**How:**
+- **Nothing else running:** the fx stack torn down, no fixture or build running, the MCP's other windows closed. The bench's
+  own services only.
+- **Two sessions** of window-b on the BENCH DUP's A101, A and B, in the one browser, so both read the same clock.
+- **20 runs each,** 1.5 s apart.
+- **The clock** starts when A's save returns, and stops when B's page shows the change (watched every frame).
+
+| What reaches window B | Median | Worst | Best |
+|---|---|---|---|
+| A calibration (a scale saved): the chip | 234 ms | 447 ms | 115 ms |
+| The same: the items' quantities (T9 Rect, 600.9 ↔ 150.2 SF) | 973 ms | 2,130 ms | 507 ms |
+| A run finished: its saved row in the Takeoff panel | 846 ms | 1,752 ms | 629 ms |
+
+**Verdict:** every median is under 1 s, so neither is a fault. The quantities after a calibration are the nearest, 27 ms
+under. The fixtures' one-second bounds (f5-s15 AC3, f5-s19 step 2) test a worst case, which this machine misses about one
+run in three.
+- **Recommended, not done:** test those two against the median of several runs.
+
+**Cleanup:** the 20 test runs were deleted, and A101's scale was left at 1/8" = 1'-0", as it was.
+
+## D-627: The BENCH- test set is one recipe file, and redraws the evening's figures exactly (answers to the night report, T8)
+
+**Status:** decided by Umer, 2026-10-18 (T8: yes).
+
+**The file:** `intelcost-infra/browser/mcp-bench-set.js`, run in the MCP after the guard and the sign-in, with
+`__benchOpen` set to a fresh BENCH DUP. It refuses anything else. In order:
+1. **Clears** the copied SS-1, ST-1, ST-2 and MH-1..MH-4.
+2. **Pins** what the figures depend on, whatever a later copy carries:
+   - the earthwork assumptions (native suitable, Select Borrow, swell 1.15, shrink 1.10, 110 pcf);
+   - the three soil layers (Layer 1 clay B, Layer 2 silt B, Layer 3 hard dig C unsuitable, with their swell, shrink and
+     reuse);
+   - the four bores' logs and water (B-1 to B-4, 20 ft; water at 6 ft in B-1).
+3. **Draws** the 9 structures and 6 runs with every setting:
+   - the runs' pipes, verticals, inverts and covers, start and end structures;
+   - DEEP-1's limited width and its box 4.5 ft outside;
+   - MH-2's and CB-2's floors, and the C-100 rims;
+   - EG-1, the one run dug from existing grade.
+4. **Reads back** every run as the api keeps it.
+
+**Recovered from:** the evening's building calls in this session's transcript, as the earlier note in the scratchpad was
+deleted at wrap-up, plus DEEP-1's later box (4.5 ft outside).
+
+**Proved:**
+- **Run and Calculated** on BENCH DUP 2026-10-18 15:39, it gives the evening's figures, to the shown rounding:
+  - SAN-1: 302.4 LF, 1,833.9 BCY (rock 1,076.7);
+  - STM-1: 247.5 LF, 643.6 BCY;
+  - WTR-1: 389.5 LF, 965.6 BCY;
+  - DEEP-1: 145.2 LF, 283.3 BCY, all rock, 4.50 ft box;
+  - EG-1: 75.7 LF, 44.6 BCY;
+  - C100-SAN-1: 153.0 LF, 597.9 BCY;
+  - every pit: MH-1 155.4 … MH-4 465.3; C-100 148.4, 123.6.
+- **The figures to expect** are written at the file's head.
+- **Last night's mismatch:** that DUP had been redrawn by hand, with DEEP-1's box and the layers not pinned. The copy's
+  layers are the evening's.
+
+**Checks:** the bench README names the file. It is a bench tool, not a test (rule 8).
+
+## D-628: "Trench from" never carries over to a new run (answers to the night report, T6, changed)
+
+**Status:** decided by Umer, 2026-10-18 (T6: "Trench from never carries over").
+
+**Now:**
+- **A new run** from the Utilities box takes the last run's type, pipe, size, vertical mode, cover and the rest (D-615),
+  except its inverts, ends, structures, segments and notes, as before.
+- **"Trench from"** is always the project's setting, proposed subgrade (`newRunFrom`).
+- **Digging from existing grade** is a choice made on that run, in its box.
+- **The BENCH recipe** follows it: every run is from proposed, and BENCH-EG-1 is set to existing on its own run.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed, 88 utility rows. The new `util-628-new-run-from-proposed`, worked by hand:
+  - existing grade 100.00, proposed 98.00;
+  - the last run, 12 in SDR-35, 3 ft cover, dug from existing;
+  - the new run takes its type, pipe and size, but digs from 98.00: trench bottom 98.00 − 3 − 12.50/12 − 6/12 = 93.46,
+    not 95.46.
+- **Smoke:** on the BENCH DUP's C-200, a run drawn with "Trench from: Existing grade" saved as existing. Then "+ New run"
+  read "Proposed subgrade", with the pipe carried over.
+- **Screenshot:** `t6-new-run-from-proposed`.
+
+## D-629: A utility run finishes as Linear does, and the tool stays armed for the next run (answers to the night report, item 11; D-615's "Esc mid-draw saves nothing" changed)
+
+**Status:** decided by Umer, 2026-10-18 (item 11).
+
+**Now:**
+- **Finishing a run** is Linear's:
+  - a double-click or Enter finishes it;
+  - the first Esc keeps a run that has enough points (two);
+  - Esc with too few points drops it, and keeps the tool;
+  - Continue drawing finishes the same way: one more point and Esc keeps it.
+  - The canvas's "Esc drops the run" switch (`escapeDrops`, D-615) is gone.
+- **After a run is finished:** the tool stays armed for the next one with the same settings, as Count does. Each run is
+  numbered on (SS-2, SS-3, SS-4…), with names reserved as they are given so two quick runs never share one. The box shows
+  the run just finished.
+- **Esc with no run in progress** puts the tool down. A second Esc after a kept run does the same.
+
+**Every difference from Linear that remains:**
+1. **The setup:** it is the Utilities box (type, pipe, size, vertical, Trench from), not the "Name this…" dialog. The run
+   is numbered by type unless named (D-630).
+2. **One run, one item:** Linear's next shape in a session is a section of the same item; each utility run is its own
+   item, as it has its own pipe, inverts and trench.
+3. **Draw modes:** a run is always Point to Point, with the A-arc inside it; Linear's Rectangle, Ellipse and Arc modes do
+   not apply to a pipe.
+4. **Continue drawing:** it draws on from an end (nearest the click, or the Start or End named). Linear's Resume adds a
+   section, and its "Add more points" inserts at a picked point.
+5. **A double-click** on a run opens its box, not Properties.
+6. **Right-click mid-draw:** it gives the same draw menu (New Section, Stop, Discard). New Section finishes the run and the
+   next click starts the next run, as each run is its own item.
+7. **Ortho and Snap:** they start Off on the Earthwork tab (its own toggles, D-186); Linear's Ortho starts On on Takeoff.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke on the BENCH DUP's C-200:**
+  - one Takeoff, then three runs ended by Enter, a double-click and the first Esc: SS-2, SS-3, SS-4 made, the tool armed
+    throughout, the box on the last one;
+  - one point and Esc: dropped, still armed;
+  - Esc again: the tool down (Select);
+  - Continue drawing on SS-2, one click and Esc: 51.98 → 102.65 LF, 2 → 3 points.
+  - A fresh load ran with no console errors.
+- **Screenshots:** `i11-armed-after-first-run`, `i11-three-runs-tool-down`.
+
+## D-630: An optional Name on utility runs and structures (answers to the night report, T5)
+
+**Status:** decided by Umer, 2026-10-18 (T5: yes).
+
+**Now:**
+- **The field:** the Utilities and Structures boxes have a Name, in new mode and edit mode (`NameField`).
+- **New mode:**
+  - blank keeps today's numbering, and the placeholder shows the number the next one will take (SS-7);
+  - a typed name goes to the first run or structure, and the ones after it in the same armed session are numbered on
+    from it: "Main A", then "Main A-2" (`nameFor`).
+- **Edit mode:** renames the item on Enter or on leaving the field. Blank gives it back the type's next number.
+- **Unique per sheet,** among the sheet's runs and structures, with letter case aside (`nameTaken`):
+  - a duplicate shows "Another run or structure on this sheet is named …" and is never saved;
+  - Takeoff and Count are off while it shows.
+- **Where a name shows:** it is the item's name, so the box's list, the Takeoff panel, the grading report, and the grading
+  report's Excel (its Utilities and Structures sheets, a row per run and structure) carry it.
+- **The run's label on the plan:** it leads with a typed name ("Main A · 8" PVC"). A numbered run keeps its pipe alone, as
+  "SS-4" says nothing the label doesn't.
+- **Not in the estimate's Excel, by design:** utility estimate lines are one per type, material, size and depth range
+  across all a sheet's runs (D-572, Q9), so a price is typed once. No line is a run's.
+  - **Recommend:** keep that. A per-run breakdown, if wanted, belongs in the grading report, which has it.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke on the BENCH DUP's C-200:**
+  - "Main A" typed and two runs drawn: "Main A" and "Main A-2";
+  - "main a" on a new run: warned, Takeoff off;
+  - SS-3 renamed "Branch 1": saved;
+  - "Main A" typed on it: warned, not saved;
+  - SS-4 blanked: SS-7;
+  - structures "Junction J" counted twice: "Junction J" and "Junction J-2";
+  - labels "Main A · 8" PVC", "Main A-2 · 8" PVC", "Branch 1 · 8" PVC", and all five in the Takeoff panel;
+  - BENCH-EG-1 renamed "EG Storm Line" and Calculated: the name in the report and in its Excel; renamed back after.
+- **Screenshots:** `t5-*`.
+
+## D-631: Estimating and export fixtures, by request (answers to the night report, Q3)
+
+**Status:** decided by Umer, 2026-10-18 (Q3: write them and add them to the suite). A named exception to hard rule 8: these two
+fixtures were asked for, and run on the fx stack only, on throwaway accounts, workspaces and projects.
+
+**Now:** two fixtures in the suite overlay, `intelcost-infra/fx-suite-updates/browser/`, run with
+`./fx-suite.sh refresh && ./fx-suite.sh run f9-estimating f9-exports`.
+- **`f9-estimating`** (9 steps), on one page at 1/6 ft per point with Slab 1,000 SF and Footing 100 LF (DIV 03, folder
+  Structure) and Paint 200 SF (DIV 09, folder Finishes):
+  - **the grid:** one row per item, its quantity and unit, $0 before pricing;
+  - **grouping:** by Classification (DIV 03 and DIV 09) and by Custom Folder (Structure and Finishes); a group folds;
+  - **pricing in the grid:** Slab $40 / SF gives $40,000; Footing 6 MH / LF at $100 / hr gives 600 MH and $60,000; the api
+    holds the rates;
+  - **the bid summary, C16:** direct $100,000, material $40,000, tax 8 %, overhead 10 %, profit 10 %, bond 1 % gives
+    $3,200, $10,320, $11,352, $1,248.72 and a Bid total of **$126,120.72**;
+  - **wastage:** 5 % on one line (1,050 SF, $42,000; the other SF line untouched), 10 % on every LF line (110 LF, $66,000);
+  - **cost components:** a Material component at $2 × QTY on Paint gives $400, and its material rate reads From components;
+  - **Set values:** Subcontract $500 on two rows in one step; Ctrl+Z takes both back (the api too), Ctrl+Y puts them back;
+  - **undo a rate:** 40 → 45 ($47,250), Ctrl+Z back to 40 ($42,000).
+- **`f9-exports`** (4 steps):
+  - **the estimate's Excel, as a member** (every column, every row, values): the file name, all ten money columns, Slab
+    $40,000 and Footing $60,000, a Bid Summary sheet at $126,120.72, no picture with no logo (D-625);
+  - **the grading report's Excel:** Calculate over EG spots at 100.0 and FG at 99.0 around a 40 × 25 ft boundary, the
+    report, Excel: "Grading Report, Exports one.xlsx" with the project's name and 37.04 CY of cut, no picture;
+  - **the estimate's Excel, as a share link's guest with pricing off:** the link opens the project, Estimating says
+    pricing is not shown and has no bid summary; an every-column export has none of the ten money columns, no Bid
+    Summary sheet and no price anywhere, and keeps Qty, Unit, Wastage and Qty with Wastage.
+- **`lib/xlsx-zip.mjs`** (new, in the overlay): reads a workbook's sheets, cells and pictures from its zip with node's
+  zlib, as the fixture image carries no spreadsheet library.
+- **The guest step** lets its own link through the bench's share guard with `allowShareToken` (D-542); no other link is
+  touched.
+
+**Not covered:** the two grid quirks the survey found are noted, not changed: grouping has no plain "Folder" choice
+(it is "Custom Folder"), and wastage and cost components are not on Ctrl+Z's list (rates, cells, multipliers and Set
+values are).
+
+**Checks:** both fixtures pass on the fx stack, 9/9 and 4/4, twice in a row. No app or api change, so no gate, quantity
+table or smoke run applies.

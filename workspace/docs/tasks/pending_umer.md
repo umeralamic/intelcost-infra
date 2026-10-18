@@ -339,6 +339,25 @@ link setting (D-562).
 | T12 | D-619 (item 11), found by f5-s15 and f5-s19: two of the second-window bounds are missed by a little in every run, including two runs on their own. A calibration reaches window B's chip in 1,014–1,086 ms and its quantities in 1,166–1,363 ms, against "within a second". A finished run reaches B's panel as a saved row in 1,110–1,174 ms. The other live paths (f8-s13, f8-s14, f8-s18 AC1, f5-s19's other steps) stay under the bound. | Not changed; the fixtures keep their bounds. | Recommend timing it on a quiet machine before calling it a fault. The bench runs every service, three browsers and the built apps on one machine. |
 | T13 | D-619 (item 11), found by f5-sheet-items: Sheets › ⋮ › Default Expand Level › "Page > Takeoff" is remembered, but after a reload it unfolded only the open sheet's items in 2 of 3 runs. The panel seems to apply the level to the sheets whose items have arrived when it first draws (`SheetsPanel.tsx` 281–292). | Not changed; the fixture step is left as it is. | Recommend: apply the level again as each sheet's items arrive. |
 
+**Answered 2026-10-18 (answers to the night report):**
+- **Confirmed as taken:** D-612 to D-619, with Q2, T1, T2, T3, T4 and T7.
+- **Done:**
+  - T5: an optional Name (D-630);
+  - T6: "Trench from" never carries over (D-628);
+  - T8: one recipe file (D-627);
+  - T9: Ortho never moves a rectangle's corner (D-620);
+  - T10: the logo on the PDF, both Excel exports and the guest page (D-625);
+  - T11: capability, not role (D-621);
+  - T12: timed, not a fault (D-626);
+  - T13: the expand level after a reload (D-624);
+  - Q4: not found (D-622);
+  - Q6: Settings at 375 px (D-623);
+  - Q3: the Estimating and export fixtures (D-631).
+- **New, left with you:**
+  - **D-620:** an Arc's through point and end are still pulled by Ortho. Recommend the same exemption as the rectangle.
+  - **D-630:** the estimate's Excel has no run names, since its utility lines are one per type, material, size and range
+    (D-572). Recommend keeping that.
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
