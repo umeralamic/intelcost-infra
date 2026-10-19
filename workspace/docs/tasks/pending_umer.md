@@ -358,6 +358,28 @@ link setting (D-562).
   - **D-630:** the estimate's Excel has no run names, since its utility lines are one per type, material, size and range
     (D-572). Recommend keeping that.
 
+## Night run 2026-10-19 (morning-report-2026-10-19/NIGHT_REPORT_2026-10-19.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| N1 | **Product fault, found by c05 (C5):** a calculated earthwork line, once selected, gets the amber selection toolbar with Properties, Start, Resume, Copy and Delete all enabled. D-352 says Calculate owns those lines. Delete does nothing (the line stays at 37.04), but Properties opens the measurement dialog and Start or Resume arm drawing onto the line. | Left failing in the fixture (c05 step 6). | Fix: grey them out for a calculated line, as its ⋮ menu already does (recommended). |
+| N2 | **Product fault, found by the f5 load-screen rewrites:** a file ticked on the load screen before the page sizes arrive (`GET …/file/page-sizes`) selects no pages. Its box stays unticked, and because the file now counts as touched, it stays that way when the sizes come. Seen twice. Against D-310 4 ("a file still preparing can be ticked"). | The fixtures wait for the sizes before ticking. | Fix: a tick in that gap selects the file's drawing-size pages once the sizes arrive (recommended). |
+| N3 | **Intermittent, seen once (f5-big):** after loading page 2 with page 1 open, the canvas showed "This sheet could not be prepared" for over 3 minutes, though the worker had the page ready in 5 s. It did not happen again on a rerun alone. | Not fixed. The likely cause is a missed realtime refresh of the sheet's images. | Look into it now, or when it comes back. |
+| N4 | **Item 8:** a 20,000-item project can't be used. It opens in 3–4 minutes, the page then stops answering, and Estimating takes 4 minutes with a 1.85 GB heap. At 5,000 items the panel scrolls at 7 fps and Estimating at 5 fps. | Measured, in `row_virtualisation_PLAN.md` (Baseline). | Schedule the row-virtualisation block. |
+| N5 | **C23:** when "Wet Trades" and " wet trades " merge into one folder, the folder takes the second spelling ("wet trades"). D-308 doesn't say which spelling wins. | Reported, not failed. | Keep the first typed spelling (recommended). |
+| N6 | **C23:** "<file> Set" is not a suffix the app adds; a blank folder name falls back to the file's own name (D-308). The click check expected "Electrical" to become "Electrical Set". | The fixture names the file "Electrical Set.pdf". | Confirm D-308 as is, or add " Set". |
+| N7 | **C31:** the tx115 upload marks 19 crafts "Matched", where the spec's test 6 says 21 mapped. It may be a counting difference. | Reported. | One look by hand. |
+| N8 | **C22:** in New project, step 1's Next button was never found by the test in one run (Enter in the name field worked). | Reported. | One click by hand. |
+| N9 | **C17:** the elevation warning names the sheet "Page 1" where the Sheets panel and the line details say "G1". | Minor, reported. | Use the sheet's number (recommended). |
+| N10 | **C30:** the Stripe fake sends its webhooks to the main api, so no fixture ever pays. Two steps stay with you: an expired trial becoming Professional after paying, and an AI pack's credits landing. | The fixture stops at the fake Checkout and checks what it was asked for. | Click those two by hand on the bench, or give the fx stack its own fake. |
+| N11 | **D-635:** an undo that has to snapshot an item (delete, duplicate) takes a few seconds on a busy api, and a Ctrl+Y pressed in that time is dropped, not queued. | Not changed. | Queue it (recommended), or leave it. |
+
+**Taken overnight, for you to confirm:**
+- D-636: the click checks written as fixtures, each on its own throwaway world.
+- D-637: the load-screen fixtures rewritten, with their figures kept.
+
+**Answered from the 2026-10-18 list:** the Arc's through point and end under Ortho (D-632).
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a

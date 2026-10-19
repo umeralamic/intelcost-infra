@@ -20075,3 +20075,220 @@ values are).
 
 **Checks:** both fixtures pass on the fx stack, 9/9 and 4/4, twice in a row. No app or api change, so no gate, quantity
 table or smoke run applies.
+
+## D-632: Ortho never moves an arc's clicks, in every tool (night run 2026-10-19, item 1)
+
+**Status:** decided by Umer, 2026-10-19 (item 1: "Ortho never changes a drawn shape").
+
+**D-620's reach, confirmed:** it covered Rectangle and Ellipse / Circle in both Linear and Area (`orthoMoves` tests
+`tool === "lf" || tool === "sf"`). What it left was the arcs.
+
+**Now:** Ortho may turn a straight edge of a Point to Point run; it never moves a shape's defining clicks.
+- **Linear Arc mode:** start, through point and end stay as clicked (`orthoMoves` exempts mode `arc`).
+- **The A-arc inside any run:** while an arc is armed, its through point and end stay as clicked (`orthoPen`'s
+  `arcArmed`, from the canvas's `arcArmRef`). Every tool that draws on the sheet borrows the Linear or Area pen (contours,
+  boundary, strip areas, utility runs, site features drawn on a sheet), so this one rule covers them all.
+- **The site view's own pen:** an arc being drawn (`draw.arc`) is never pulled either.
+- **Straight edges** are unchanged: Ortho still turns them onto 45° at their length.
+
+| Tool | Mode | Ortho on | Ortho off |
+|---|---|---|---|
+| Linear | Rectangle 20 × 30 / 30 × 20 | 100 LF | 100 LF |
+| Linear | Ellipse 20 × 30 / 30 × 20 | 79.327198 LF | 79.327198 LF |
+| Linear | Circle 10 ft | 31.415927 LF | 31.415927 LF |
+| Linear | Arc, 10 ft radius, 90° | 15.707963 LF (old pen 17.17) | 15.707963 LF |
+| Linear | Point to Point, 10 ft edge + that A-arc | 25.707963 LF (old pen 29.47) | 25.707963 LF |
+| Area | Rectangle 20 × 30 / 30 × 20 | 600 SF | 600 SF |
+| Area | Ellipse 20 × 30 / 30 × 20 | 471.238898 SF | 471.238898 SF |
+| Area | Circle 10 ft | 78.539816 SF | 78.539816 SF |
+| Area | Point to Point with that A-arc (closed by its chord) | 28.539816 SF (old pen 58.97) | 28.539816 SF |
+
+**Quantity rows:** `browser/lib/pen-cases.mjs`, now 30 (18 new). Multi-click rows check every click lands exactly as
+picked. The arc is set 10° off a ray on both chords, so the old pen pulled it: its three Ortho-on arc rows fail there.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed, 30 pen rows.
+- **Smoke on BENCH DUP 5586bbab, A101, Ortho On, Snap Off:**
+  - Linear Arc mode, three clicks on a 120 px circle at 32.5°, 77.5° and 122.5°: stored start 32.46°, sweep 89.94°
+    (pixel rounding), 110.11 LF;
+  - Point to Point, a straight lead then A, through, end: the same arc exactly, 180.07 LF.
+- **Guest:** both items shown, Linear disabled.
+- **Screenshots:** `1-arc-mode-ortho-on`, `1-run-a-arc-ortho-on`, `1-guest-arcs-read-only`.
+
+## D-633: Ctrl+Z undoes wastage and cost component edits in Estimating (night run 2026-10-19, item 3)
+
+**Status:** decided by Umer, 2026-10-19 (item 3).
+
+**Now:** both go on the Estimating tab's own history (`useEstimateHistory`), one step per Apply, Save, Add or Delete,
+redone by Ctrl+Y.
+- **Wastage:** the step keeps what the Apply replaced. "All line items" keeps the units' project defaults (a unit with no
+  default goes back as 0, which reads the same) and every line's own figure for those units, which the api clears;
+  undo puts the defaults back first and then the lines' figures. A line or group target keeps each picked line's own
+  figure.
+- **Cost components** (`useComponentEditor`, given the history by Estimating; the Takeoff panel's use is unchanged):
+  - **an edit:** saved back with its stored fields;
+  - **an add:** removed again; the first of its kind with the api's "restore", so the typed rates it replaced come
+    back (D-96);
+  - **a delete:** added again with its stored fields, then the host's typed rates for that kind put back as they
+    stood. The re-added component has a new uuid; redo deletes that one, with the same choice.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Fixture:** `f9-estimating` 11/11 on the built apps (two new steps):
+  - wastage: Paint 20 % → Ctrl+Z → Ctrl+Y → Ctrl+Z; then all SF 8 % → Ctrl+Z puts back Slab's own 5 % and Paint's 200;
+  - components: an edit, an add and a delete each undone and redone, the api read after each.
+- **Guest:** a pricing-off guest's Ctrl+Z on Estimating sends no request.
+
+## D-635: The undo audit: what Ctrl+Z takes back, and every panel refreshed after it (night run 2026-10-19, item 5)
+
+**Status:** decided by Umer, 2026-10-19 (item 5: "fix gaps where the fix is clear").
+
+**Every undo or redo on the Takeoff history now refreshes** the sheet, the Takeoff panel, the folder tree, the
+estimate's lines and components, the project's totals and the strip areas. Before, the estimate, the components and
+the folder tree stayed stale after an undo that brought an item back or took one away.
+
+**Made undoable tonight** (each one Ctrl+Z step, redone by Ctrl+Y):
+- **Takeoff:**
+  - the Properties dialog: every field back as the dialog found it;
+  - rename, colour and move-to-layer from the panels (`patchItem`);
+  - delete an item, and Delete everywhere: snapshotted first and restored whole, under its own uuids, with its sub-items
+    and estimate lines. The confirms now say "Ctrl+Z brings it back".
+  - duplicate an item: the copy goes, snapshotted, and Ctrl+Y brings it back whole.
+- **Folder tree:** move items to a folder or layer; move inside a classification; a folder's name and multiplier
+  (Properties).
+- **Sheets:** rename.
+- **Earthwork:** soil layer add, edit and reorder; the slope rule and water buffer; strip area hide/show.
+- **Utilities:** a run's fields, a structure's fields, and rename.
+- **Estimating:** the bid summary (back to the rates as they were, or to following the defaults); wastage and cost
+  components (D-633); the multiplier's undo now refreshes the folders and layers its popover reads.
+
+**Left, and why:**
+- **A clear fix, not done tonight:** sub-items and formulas; variables; quantity override from the menu; folder
+  create and delete; layer create, rename, multiplier and delete; sheet scale, calibration, reorder, rotate, crop and
+  delete; soil layer delete (its bore rows go with it); utility settings; site feature compaction and materials;
+  Estimating's insert row, equipment, columns, packages and the item costs dialog.
+- **Not undoable by design:** Calculate (earthwork and utilities) and its results; exports; share links; comments and
+  the item history; loading, retrying and deleting sheet files; reading sheets; view state (toggles, filters, tabs).
+  Lock is a collaboration control, not an edit.
+- **Two stacks stay apart:** the Takeoff history (one sheet owns it) and Estimating's. The site view keeps its own
+  undo-only stack.
+
+**Checks:**
+- **Gates:** lint, typecheck and build.
+- **Quantity table:** passed.
+- **Smoke on BENCH DUP 5586bbab, A101,** each read back from the api and the panel:
+  - Properties rename: Ctrl+Z, Ctrl+Y and Ctrl+Z, with the panel following;
+  - move to layer: Base Bid → Alternate → back → again → back;
+  - delete an item: gone, back under its own uuid at 180.07 LF, gone, back;
+  - duplicate: "(2)" made, undone in 2.7 s, redone, undone again (each read from the api; a slow api under load means
+    an undo that snapshots takes a few seconds, and a Ctrl+Y pressed meanwhile is dropped).
+- **Guest:** Ctrl+Z and Ctrl+Y on Takeoff and Estimating send no request.
+- **Screenshots:** `5-properties-redo`, `5-delete-undone`, `5-guest-estimating`.
+
+## D-636: The founder's click checks written as fixtures (night run 2026-10-19, item 6)
+
+**Status:** taken overnight, Umer to confirm. Item 6 asked for them; each runs on the fx stack on throwaway accounts,
+workspaces and projects it makes itself. A named exception to hard rule 8, as D-631.
+
+**Files:** `intelcost-infra/fx-suite-updates/browser/c<NN>-<slug>.mjs`. c20 and c30 come with a `.sh`, which sets a
+staff flag, an expired trial or a tier on `intelcost_fx` only. `lib/grading-world.mjs` builds an earthwork world through
+the api. `lib/wd/tx115.txt` is the public wage determination already in the api's docs.
+
+**Results, last run each:**
+
+| Check | Fixture | Steps |
+|---|---|---|
+| C3 Duplicate project | c03-duplicate | 5/5 |
+| C5 Calculated lines belong to Calculate | c05-calculated-lines | 6/7: step 6 fails on a product fault (pending_umer N1) |
+| C6 A copy's earthwork reads as current | c06-copied-earthwork | 5/5 |
+| C10 Two trees | c10-two-trees | 6/6 |
+| C11 Rotate pages | c11-rotate | 5/5 |
+| C12 The item model | c12-item-model | 10/10 |
+| C13 Canvas tools, two windows | c13-canvas-tools | 5/5 |
+| C14 Format and export | c14-format (with f9-estimating, f9-exports) | 4/4 |
+| C15 Sidebar and reports | c15-reports | 5/5 |
+| C16 Bid summary, live formulas | c16-bid-formulas (with f9-*) | 3/3 |
+| C17 Earthwork | c17-earthwork | 8/8 |
+| C19 Auto Count, vector | c19-auto-count | 3/3 |
+| C20 Forum | c20-forum | 5/5 |
+| C21 Shifts, time, reports | c21-time | 6/6 |
+| C22 Takeoff-first | c22-takeoff-first | 5/5 |
+| C23 Folders on load | c23-folders-on-load | 3/3 |
+| C28 Double-click finishes a run | c28-double-click | 3/3: yes, for Linear and Area |
+| C30 Billing, Stripe fake | c30-billing | 7/7: stops before paying (pending_umer N10) |
+| C31 Wage Calculator | c31-wage | 6/6 |
+
+100 of 101 steps pass. C24 is skipped (AI credits).
+
+**What a fixture cannot judge** is listed per check in the night report: feel, speed, look, real drag-and-drop, a real
+phone, Excel itself, Image-mode Auto Count on the founder's sheets, and paying.
+
+## D-638: Speed baseline for row virtualisation (night run 2026-10-19, item 8)
+
+**Status:** decided by Umer, 2026-10-19 (item 8). Docs only; no code changed.
+
+**Where:** `docs/tasks/row_virtualisation_PLAN.md`, section "Baseline". Measured in the production build at 1600 × 1000
+on a real DUP (190 items), a Test 3 copy (46 sheets) and a generated DUP at 5,000 and 20,000 items. The headline:
+- **At 5,000 items:** opens in 34 s; the panel scrolls at 7 fps; Estimating opens in 48 s and scrolls at 5 fps.
+- **At 20,000 items:** opens in 3–4 minutes and then stops answering; Estimating takes 240 s with 2.4 million DOM nodes
+  and a 1.85 GB heap.
+- **Where the time goes:** main-thread script, style and layout over every row drawn, not the network. Estimating also
+  has a floor of about 4.5 s for its reads at any size.
+- **Riverside** was not copied: its workspace is one the bench's browser account does not belong to.
+- **The machine was shared** with fixture runs, so the figures are a ceiling on speed.
+
+**The throwaway projects,** both named for the purge script, go at wrap-up:
+- the second DUP (19a757a4);
+- the Test 3 copy (8691f9b5).
+
+## D-634: BENCH DUP clean-up by a bench-only script, at every wrap-up (night run 2026-10-19, item 4)
+
+**Status:** decided by Umer, 2026-10-19 (item 4).
+
+**Why a script:** window-b, the bench's browser account, is an estimator in Bench Construction Test, and deleting a
+project needs workspace admin. The owner is estimator@, which is never signed in as. So last night's DUP stayed.
+
+**Now:** `intelcost-infra/drives/purge-bench-dups.py`, run in the api container, signing in as no one:
+- **Lists by default; `--purge` purges.**
+- **Takes a project only when its name is exactly** "BENCH DUP <yyyy-mm-dd hh:mm> — delete me", the name the MCP guard
+  gives every copy it sees made (D-544). Nothing else is touched.
+- **Refuses a matching name** on the guard's protected list (the eight projects in `mcp-guard.js` and
+  `lib/protected.mjs`) or in the founder's own workspace (Intelcost Team), printed REFUSED and left.
+- **Purges as the nightly job does** (`purge_trashed_projects`, pass 2): a `trash_purge_log` row and an audit entry
+  ("by": "bench-dup-purge") in the row delete's transaction, then the project's storage cleared in the bench bucket
+  (`umer-local-intelcost1`, D-259) with the outcome written back on the log row.
+- **Each purge is printed,** one line each: uuid, name, workspace, files, log row, storage failures.
+- **Used at every wrap-up from now on,** with throwaway projects named the same way so it takes them too.
+
+**Checks:**
+- **Ruff:** check and format.
+- **First run** (wrap-up 2026-10-19): the listing named exactly tonight's three throwaways and last night's DUP, none
+  refused.
+- **The purge** took all three, each with 2 files, its log row, and 0 storage failures:
+  - 5586bbab, "BENCH DUP 2026-10-18 15:39 — delete me";
+  - 19a757a4, the generated 20,000-item DUP;
+  - 8691f9b5, the Test 3 copy.
+- **A second listing** found none.
+
+## D-637: The archived load-screen and dev-server fixtures brought to today's screens (night run 2026-10-19, item 7)
+
+**Status:** taken overnight, Umer to confirm. D-619's rules: the screens change, never the figures. Product faults are
+left failing; none was left failing here. Two were found and worked around (pending_umer N2, N3).
+
+| Fixture | What changed (decision) | Steps |
+|---|---|---|
+| f5-s5 | One load screen; folders open from the start; "Load 5 pages"; page 1 shown loaded and locked; AC3 dropped with its footer (D-310 1, D-313, D-315) | 5/5 |
+| f5-s6 | No Choose pages step; the progress view replaces the toast (D-310 1, D-321, D-322) | 6/6 |
+| f5-s7 | Nothing loads without Load: 0 sheets after upload, then tick and Load (D-310 5) | 3/3 |
+| f5-s8 | Add Pages from the Sheets panel's +; opens at "Load 0 pages" (D-313, D-310 2) | 4/4 |
+| f5-big | Focus replaces Choose pages; timings from the Load's answer; tile-shape checks replaced by the thumbnails' own shape (D-310, D-318 2) | 6/6 |
+| f5-s3 (dev) | No Projects page: AC1 from Settings › General (315 requests, no takeoff code; the sheet then fetched 7 takeoff modules); AC3's wait 60 s for the dev server (D-311, D-314, D-330) | 2/2 |
+| f4-s2 (dev) | Step 6: New project from Home's drop box, one Create, lands on the takeoff (D-311, D-310 6, D-314) | 6/6 |
+| f3-s13 (dev) | Settings edits the workspace picked in its card (D-87) | 5/5 |
+| f7-a (dev) | Rows `[role=row]` (D-77), tool groups (D-116), empty click clears (D-79), the short item menu (D-149); the shared table's modifier rows (D-360), applied in the api drive `fx-suite-updates/drives/f7-quantity.py` through the api's own `quantity.apply_modifiers`; `f7-a.sh` reads `app-fx`, not the bench's `app` | 8/8 |
+
+**Workarounds in the fixtures, faults listed:**
+- **f5-s6 and f5-s7** wait for the page sizes before ticking (N2).
+- **f5-big's** intermittent "This sheet could not be prepared" did not recur alone (N3).
