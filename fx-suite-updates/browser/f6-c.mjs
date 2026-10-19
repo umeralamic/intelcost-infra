@@ -194,7 +194,7 @@ await run("f6-c", [
         await joinedTopic(bp, `ws:${workspace.uuid}:project:${project.uuid}`);
         await open(page, p1);
         const unfiled = await page.locator("[data-quantity-panel] [data-folder-group='Unfiled']").count();
-        const atTop = await panel(page).locator("[data-folder-group] li[data-item-row]").filter({ has: page.getByText("Door", { exact: true }) }).count();
+        const atTop = await panel(page).locator("li[data-in-group] li[data-item-row]").filter({ has: page.getByText("Door", { exact: true }) }).count();
         const site0 = await apiCall(token, "POST", `${takeoff}/folder`, { name: "Site" });
         expect(site0.status === 201, `folder: ${site0.status}`);
         const at = Date.now();

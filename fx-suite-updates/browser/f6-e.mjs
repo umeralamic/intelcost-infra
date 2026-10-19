@@ -69,7 +69,7 @@ await run("f6-e", [
         expect(filed.status === 200, `file: ${filed.status}`);
         const moved = await followed(
           b,
-          async () => (await folderOf(b.page, folder.name).locator("li[data-item-row]").filter({ has: b.page.getByText(`${name} renamed`, { exact: true }) }).count()) > 0,
+          async () => (await b.page.locator(`[data-quantity-panel] li[data-in-group="${folder.name}"] li[data-item-row]`).filter({ has: b.page.getByText(`${name} renamed`, { exact: true }) }).count()) > 0,
           "B to show it in the folder",
         );
         expect(Math.max(made, renamed, moved) < 5000, `made ${made}, renamed ${renamed}, moved ${moved} ms`);

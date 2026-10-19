@@ -56,7 +56,13 @@ async function view(page, label) {
   await panel(page).locator(`[data-panel-view="${label === "Folders" ? "folders" : "classification"}"]`).waitFor({ timeout: 10000 });
 }
 /** The names of the items listed inside a group, read from the tree. */
-const inside = (g) => g.locator("li[data-item-row] [data-item-name]").allTextContents().then((t) => t.map((s) => s.trim()));
+// A group's items by what each row says it is in (D-646): the panel is one flat, virtual list, so
+// an item row is no longer inside its folder's element.
+const inside = async (g) => {
+  const name = await g.getAttribute("data-folder-group");
+  const rows = g.page().locator(`[data-quantity-panel] li[data-in-group="${name}"] li[data-item-row] [data-item-name]`);
+  return (await rows.allTextContents()).map((s) => s.trim());
+};
 /** Opens a group (a click also makes it the landing target). */
 async function target(page, g) {
   await g.locator(":scope > [data-folder-header] > button").first().click();

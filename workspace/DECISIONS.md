@@ -20418,9 +20418,9 @@ to 9.9 s, the image arriving 15–22 s after the worker had the page ready.
   (`saveSubEdit`).
 - **Smoke:** "Studs = PARENT × 0.75" (51 LF) created, undone (gone) and redone (the same id and uuid, 51 LF).
 
-## D-645: Ctrl+Z undoes variable changes (answers item 4, 2026-10-19) *(taken overnight, Umer to confirm)*
+## D-645: Ctrl+Z undoes variable changes (answers item 4, 2026-10-19)
 
-**Status:** taken 2026-10-19, Umer to confirm.
+**Status:** taken 2026-10-19; confirmed by Umer, 2026-10-19 ("D-645 confirmed (undoing a new variable archives it)").
 
 - **A variable's value, default, fields and archive** each undo to exactly what they were.
 - **Undoing a new variable archives it.** Archiving is the app's own delete for a variable, workspace-wide; there is no
@@ -20428,3 +20428,101 @@ to 9.9 s, the image arriving 15–22 s after the worker had the page ready.
   - *(call)* This is reversible. A hard delete would need a new api route, and a rule for a variable another project
     started using meanwhile.
 - **Smoke:** "Undo Spacing" (16) made, then Ctrl+Z: archived, and the step before untouched.
+
+## D-646: The Takeoff panel draws only the rows in view (row virtualisation, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19. The plan's D1 to D4:
+- D1: both views in this block, the Takeoff panel first;
+- D2: one line with an ellipsis, the full name on hover;
+- D3: browser Find accepted, with Ctrl+F going to the app's own search;
+- D4: always on, one path.
+
+- **The tree is one flat list,** in the order it reads: a folder's header, a folder being named in it, its sub-folders,
+  its items, then the rows that are not items (Strip Areas). An item's block carries its own sub-items, cost rows and
+  runs, as `ItemRow` draws them. Collapse, expand and search change only this list.
+- **Drawn by `@tanstack/react-virtual`** in the panel's own scroller, rows measured as they mount: a few dozen rows
+  whatever the size. Always on (D4).
+- **The Sheets panel's item list under a sheet** is drawn the same way, against the Sheets panel's scroller. It was
+  not in the plan, but at 5,000 items on one sheet it held 127,000 of the page's 139,000 nodes. The open target could
+  not be met without it.
+- **A row is drawn again only when its own data changes.** Each item row is memoised. It takes its data as plain
+  values, and the panel's handlers come through one object that stays the same for every row and render (it reads the
+  latest through a ref). Selecting, hovering, expanding, picking and Ctrl+A redraw only the rows they change.
+- **Held by the panel, not the row:** whether an item's sub-items are closed and its runs open, so a row scrolled out
+  and back keeps them.
+- **Kept drawn while out of view:** the row being dragged, so its drag goes on, and the row holding focus, so focus
+  stays put. Tab moves through the drawn rows and the list follows.
+- **Scroll to a row** (a shape selected on the canvas, Find, an earthwork chip) goes by the row's index, so a row not
+  drawn yet is reached. A sub-item's row is reached through its parent's block.
+- **A drag held within 40 px of the list's top or bottom edge scrolls it,** faster nearer the edge, so a folder
+  scrolled off can still be reached.
+- **Ctrl+F inside the panel focuses "Search items…"** (D3). Elsewhere on the takeoff tab it stays Find in the drawing.
+  The panel's scroller takes focus on a click, so a click in the panel is enough.
+- **The DOM, for fixtures:**
+  - a folder is still `li[data-folder-group]` holding its `[data-folder-header]`;
+  - an item is still `li[data-item-row] > [role=row]`, now inside a wrapper `li[data-in-group="<folder name>"]`; an
+    unfiled one's wrapper is `[data-unfiled-items]`;
+  - an item row is no longer inside its folder's element, so a folder's items are read by `data-in-group`;
+  - `[data-panel-rows]` on the scroller gives the row count.
+
+  c10, f6-c and f6-e were updated to read a folder's items that way.
+- **The open's reads:**
+  - **The project's item read starts once the sheet's own read is back,** the first time only. The api answers one
+    request at a time, and the project's read ahead of the sheet's held up the sheet's image and rows by its whole
+    length.
+  - **The item detail route builds each detail once and writes the list in one pass.** Before, each read was dumped
+    and checked again, then FastAPI checked the list again. The JSON is the same, checked on the 1,000- and 5,000-item
+    DUPs.
+  - The panel's other lists (sub-items, groups, folders) are built in place, not copied per item.
+- **Figures:** see the timing table in this run's report.
+
+## D-647: Estimating draws only the rows in view, and its reads go first on its own tab (row virtualisation, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19 (D1: Estimating in the same block, after the Takeoff panel; D2, D3, D4 as
+D-646).
+
+- **The table's body is a list of rows.** Each row is its key, its height before it is measured, and how it is drawn.
+  The rows are the group headers, the spacers, the lines, and the cost-component and shared-machine rows under a host.
+  Only the rows in view, and a margin, are drawn, by `@tanstack/react-virtual`, between two spacer rows as tall as the
+  rows not drawn.
+  - The `<table>`, its column widths, the frozen header and the frozen TOTAL are unchanged: spacer rows keep the
+    table's own layout.
+  - The rows scroll in whatever scrolls the table: its own frame when the header is frozen, else the tab.
+  - A component row's figures are worked out only when it is drawn.
+- **The body is its own component** (`EstimateBody`), so a scroll redraws the body and not the whole view.
+- **A drawn row is kept until the view hands over new rows** (its data, a pick, the format or the filters changed), so
+  a scroll draws only the rows coming into view. This stands in for a row memo, as the Takeoff panel's (D-646): nothing
+  to compare, so nothing shows stale. A pick, a pick of every row, or an expand redraws the rows in view, not every
+  line. *(call: reversible.)*
+- **The drawn rows move in blocks of 24,** and the frozen frame is opaque (`bg-background`), so between block edges the
+  browser scrolls a layer it has already painted. Rows render after the scroll event (`useFlushSync: false`).
+- **Never more than 200 rows are drawn.** Before the frozen frame has its height, the whole table is its viewport, and
+  every row was drawn once: 5,066 rows, 200,000 nodes and one 5.8 s layout at 5,000 lines.
+- **Printing draws every row:** on the print media query and on `beforeprint`, synchronously, and back to the rows in
+  view after.
+- **A row holding focus** (a rate being typed) stays drawn when scrolled out.
+- **A body mounted with its table** (a search cleared) finds its scroller after the commit. It drew nothing until
+  something else redrew it. The Sheets panel's item list had the same fault and the same fix.
+- **Double-click to fit a column** measures the drawn cells as before. Every other line is measured from its text as
+  the export writes it, in the cells' font, so the fit still covers every row.
+- **D2:** the assembly name stays on one line with an ellipsis (the cells were already `truncate`), and its full name
+  shows on hover.
+- **D3:** Ctrl+F on the Estimate pane focuses Estimating's Search box. The Wage Calculator has none and keeps the
+  browser's.
+- **All three virtual lists** (the Takeoff panel, the Sheets panel's item list, Estimating):
+  - **A row is measured from its ResizeObserver report** (`core/hooks/virtual-measure.ts`), not from `offsetHeight` as it
+    mounts. The library's own measure forced one layout of the page per row: 1.1 s of a 7 s Estimating open at
+    1,000 lines.
+  - **A report of 0 keeps the size known.** A 0 comes from a list hidden under another tab, not from the row.
+  - **`getItemKey` stays the same while the rows do.** A new one each render rebuilt every row's measurement on every
+    scroll frame: 17.5 fps at 20,000 items.
+- **The takeoff header fits itself when what it holds changes,** and on resize, not on every render. Each fit reads
+  `scrollWidth`, a layout of the whole page: 5.2 s of a 5,000-item Estimating open.
+- **The reads (item 1 of the brief):**
+  - Estimating's own reads already start together, at once: costs, components, columns, packages, bid, equipment,
+    folders, layers. Its first row waits on the project's items.
+  - What held the first row back was the api answering one request at a time. The takeoff tab's reads, hidden under
+    Estimating, were in the queue too, and the sheet's own item read was the largest of them.
+  - Opened on Estimating, the project's item read now starts at once, and the sheet's own item read waits until it is
+    back. Opened on Takeoff, it is the other way round (D-646). Only one of the two large reads is ever in the way.
+- **Figures:** see the timing table in this run's report.

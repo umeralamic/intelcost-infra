@@ -143,3 +143,10 @@ the Load dialog's folder pane (`components/load/FolderPane.tsx`) and `load/LoadP
 
 **Target:** Estimating opens under 1 s with 1,000 items in production, and the Takeoff panel scrolls at 60 fps with
 5,000.
+
+## Built (row virtualisation run, 2026-10-19)
+
+Built as planned, both views in one block, the Takeoff panel first: **D-646** (the Takeoff panel and the Sheets panel's
+item list) and **D-647** (Estimating, and no forced layouts in the three lists). The before-and-after timings at
+1,000, 5,000 and 20,000 items, the canvas figures and what is left are in
+`morning-report-2026-10-19/ROWS_REPORT_2026-10-19.md`. The open items are R1 to R5 in `pending_umer.md`.
