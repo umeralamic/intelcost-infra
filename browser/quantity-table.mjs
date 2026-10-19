@@ -317,7 +317,7 @@ try {
       return { error: "unknown kind " + c.kind };
     });
   }, CLOSE_CASES);
-  // D-620: two clicks through the app's own pen (Ortho on or off), then the shape, then its figure.
+  // D-620, D-632: the clicks through the app's own pen (Ortho on or off), then the shape, then its figure.
   mt.pen = await page.evaluate(async (cases) => {
     const sn = await import("/src/lib/takeoff/engine/snap.ts");
     const dr = await import("/src/lib/takeoff/engine/draw.ts");
@@ -325,14 +325,28 @@ try {
     return cases.map((c) => {
       const page = { widthPt: c.page[0], heightPt: c.page[1] };
       const view = { pxPerNormX: c.page[0] / 2, pxPerNormY: c.page[1] / 2 };
-      const a = { x: c.a[0], y: c.a[1] };
-      const end = sn.orthoPen(a, { x: c.b[0], y: c.b[1] }, view, { ortho: c.ortho, tool: c.tool, mode: c.mode, toleranceDeg: 15 });
-      const shape = dr.shapeFrom(c.tool, c.mode, [a, end], page);
+      // Each click from the run's last vertex, as the canvas's pen: an A-arc's through point is
+      // not a vertex, so its end is taken from the arc's start too.
+      const landed = [];
+      const vertices = [];
+      for (const [k, p] of (c.clicks ?? [c.a, c.b]).entries()) {
+        const at = sn.orthoPen(vertices[vertices.length - 1], { x: p[0], y: p[1] }, view, { ortho: c.ortho, tool: c.tool, mode: c.mode, arcArmed: (c.armed ?? []).includes(k), toleranceDeg: 15 });
+        landed.push(at);
+        if (k !== c.through) vertices.push(at);
+      }
+      const drawn = c.mode === "arc" || c.mode === "rectangle" || c.mode === "ellipse" ? landed : vertices;
+      const shape = dr.shapeFrom(c.tool, c.mode, drawn, page);
+      let meta = shape.meta;
+      if (c.through !== undefined) {
+        // The canvas's inline arc (F7-S9): the edge from the vertex before the through point bends through it.
+        const i = c.through - 1;
+        meta = { ...(meta ?? {}), arcs: [{ i, ...dr.arcFrom3(landed[c.through - 1], landed[c.through], landed[c.through + 1], page) }] };
+      }
       const value =
         c.tool === "sf"
-          ? q.areaOnSheet([{ points: shape.points, meta: shape.meta }], [], c.fpp, page)
-          : q.quantityFor("lf", shape.points, c.fpp, shape.meta, page);
-      return { value, end: [end.x, end.y] };
+          ? q.areaOnSheet([{ points: shape.points, meta }], [], c.fpp, page)
+          : q.quantityFor("lf", shape.points, c.fpp, meta, page);
+      return { value, end: [landed[landed.length - 1].x, landed[landed.length - 1].y], landed: landed.map((p) => [p.x, p.y]) };
     });
   }, PEN_CASES);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
@@ -1782,9 +1796,14 @@ for (const [i, c] of CLOSE_CASES.entries()) {
 
 for (const [i, c] of PEN_CASES.entries()) {
   const got = mt.pen[i];
-  const end = c.end ?? c.b;
   if (!near(got.value, c.expect)) wrong.push(`${c.id}: ${got.value}, expected ${c.expect}`);
-  if (Math.abs(got.end[0] - end[0]) > 1e-12 || Math.abs(got.end[1] - end[1]) > 1e-12) wrong.push(`${c.id}: the pen landed at ${got.end}, expected ${end}`);
+  if (c.clicks) {
+    // Every click of a shape lands exactly as picked (D-632).
+    for (const [k, p] of c.clicks.entries()) if (Math.abs(got.landed[k][0] - p[0]) > 1e-12 || Math.abs(got.landed[k][1] - p[1]) > 1e-12) wrong.push(`${c.id}: click ${k + 1} landed at ${got.landed[k]}, picked ${p}`);
+  } else {
+    const end = c.end ?? c.b;
+    if (Math.abs(got.end[0] - end[0]) > 1e-12 || Math.abs(got.end[1] - end[1]) > 1e-12) wrong.push(`${c.id}: the pen landed at ${got.end}, expected ${end}`);
+  }
 }
 
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
