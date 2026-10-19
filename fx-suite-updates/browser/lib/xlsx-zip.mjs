@@ -43,6 +43,9 @@ export function readWorkbook(buffer) {
     const target = rels[rid] ?? "";
     const xml = text(target.startsWith("/") ? target.slice(1) : `xl/${target}`);
     const rows = [];
+    // Each cell by its reference ("C5"): its text as `rows` holds it, and its formula (the `<f>`
+    // element, without "="), so a fixture can tell a live formula from a typed value (C16).
+    const cells = {};
     for (const r of xml.matchAll(/<row [^>]*r="(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g)) {
       const row = [];
       for (const c of (r[2] ?? "").matchAll(/<c r="([A-Z]+\d+)"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
@@ -50,11 +53,13 @@ export function readWorkbook(buffer) {
         const body = c[3] ?? "";
         const v = /<v>([\s\S]*?)<\/v>/.exec(body)?.[1];
         const inline = /<t[^>]*>([\s\S]*?)<\/t>/.exec(body)?.[1];
+        const f = /<f[^>]*>([\s\S]*?)<\/f>/.exec(body)?.[1];
         row[col(c[1])] = type === "s" ? shared[Number(v)] : type === "inlineStr" ? unescape(inline ?? "") : v === undefined ? "" : unescape(v);
+        cells[c[1]] = { value: row[col(c[1])], formula: f === undefined ? null : unescape(f) };
       }
       rows[Number(r[1]) - 1] = row;
     }
-    return { name, rows };
+    return { name, rows, cells };
   });
   return { sheets, media: Object.keys(parts).filter((p) => p.startsWith("xl/media/")) };
 }
