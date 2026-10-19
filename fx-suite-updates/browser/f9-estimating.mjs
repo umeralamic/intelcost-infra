@@ -317,4 +317,113 @@ await run("f9-estimating", [
       return "45 → $47,250; Ctrl+Z → 40, $42,000 (api 40)";
     },
   },
+  {
+    title: "undo wastage (D-633): 20 % on Paint alone, Ctrl+Z back to 200 SF, Ctrl+Y 240; 8 % on every SF line, Ctrl+Z puts back Slab's own 5 % and Paint's 200",
+    run: async ({ page }) => {
+      await open(page);
+      const dialog = page.getByRole("dialog", { name: "Wastage" });
+      const apply = async (name, unit, pct, all = false) => {
+        await page.locator(`button[data-wastage="${name}"]`).click();
+        await dialog.waitFor();
+        if (all) await dialog.getByLabel("Apply to").selectOption("all");
+        await dialog.getByLabel(`Wastage for ${unit}`, { exact: true }).fill(String(pct));
+        await dialog.getByRole("button", { name: "Apply", exact: true }).click();
+        await dialog.waitFor({ state: "detached" });
+      };
+      await apply("Paint", "SF", 20);
+      await settles(page, "Paint", "Qty with Wastage", 240);
+      await blur(page);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Qty with Wastage", 200);
+      await page.keyboard.press("Control+y");
+      await settles(page, "Paint", "Qty with Wastage", 240);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Qty with Wastage", 200);
+
+      await apply("Paint", "SF", 8, true);
+      await settles(page, "Slab", "Qty with Wastage", 1080);
+      await settles(page, "Paint", "Qty with Wastage", 216);
+      await blur(page);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Slab", "Qty with Wastage", 1050);
+      await settles(page, "Paint", "Qty with Wastage", 200);
+      await settles(page, "Footing", "Qty with Wastage", 110);
+      let stored = null;
+      await waitFor(async () => {
+        stored = (await apiCall(token, "GET", `${estimate}/costs`)).body;
+        const slab = stored.lines.find((l) => l.item_uuid === items.Slab.uuid);
+        return Number(slab?.wastage_pct_override) === 5 && Number(stored.unit_wastage?.SF ?? 0) === 0 && Number(stored.unit_wastage?.LF) === 10 ? true : null;
+      }, "the undo stored", 10000).catch(() => {
+        throw new Error(`api after undo: ${JSON.stringify(stored)}`);
+      });
+      return "Paint 240 → Ctrl+Z 200 → Ctrl+Y 240 → Ctrl+Z 200; all SF 8 % (Slab 1,080, Paint 216) → Ctrl+Z Slab 1,050 (its 5 % back), Paint 200, LF 10 % kept";
+    },
+  },
+  {
+    title: "undo cost components (D-633): an edit ($2 → $3), an add (Primer $1) and a delete (Clear rates) each come back with Ctrl+Z and go again with Ctrl+Y",
+    run: async ({ page }) => {
+      await open(page);
+      const show = page.getByRole("button", { name: "Show cost components" }).first();
+      const reveal = async () => {
+        if (await show.isVisible().catch(() => false)) await show.click();
+      };
+      const components = async () => (await apiCall(token, "GET", `${estimate}/components`)).body.map((c) => `${c.name} ${Number(c.unit_price)}`).sort();
+      await reveal();
+      await page.locator(`button[data-component="Paint gallons"]`).click();
+      const editDialog = page.getByRole("dialog", { name: "Material", exact: true });
+      await editDialog.waitFor();
+      await editDialog.getByLabel("Unit price").fill("3");
+      await editDialog.getByRole("button", { name: "Save", exact: true }).click();
+      await editDialog.waitFor({ state: "detached" });
+      await settles(page, "Paint", "Total Material Cost", 600);
+      await blur(page);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Total Material Cost", 400);
+      await page.keyboard.press("Control+y");
+      await settles(page, "Paint", "Total Material Cost", 600);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Total Material Cost", 400);
+
+      await row(page, "Paint").click({ button: "right" });
+      await page.getByRole("menuitem", { name: "Add cost component" }).hover();
+      await page.getByRole("menuitem", { name: "Material", exact: true }).click();
+      const addDialog = page.getByRole("dialog", { name: "Add Material" });
+      await addDialog.waitFor();
+      await addDialog.getByLabel("Name", { exact: true }).fill("Primer");
+      await addDialog.getByLabel("Quantity formula").fill("QTY");
+      await addDialog.getByLabel("Unit price").fill("1");
+      await addDialog.getByRole("button", { name: "Add", exact: true }).click();
+      await addDialog.waitFor({ state: "detached" });
+      await settles(page, "Paint", "Total Material Cost", 600);
+      await blur(page);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Total Material Cost", 400);
+      const afterAddUndo = await components();
+      expect(afterAddUndo.join() === "Paint gallons 2", `components after undoing the add: ${afterAddUndo.join(", ")}`);
+      await page.keyboard.press("Control+y");
+      await settles(page, "Paint", "Total Material Cost", 600);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Total Material Cost", 400);
+
+      await reveal();
+      await page.locator(`button[data-component="Paint gallons"]`).click();
+      await editDialog.waitFor();
+      await editDialog.getByRole("button", { name: "Delete" }).click();
+      const ask = page.getByRole("dialog", { name: /Delete “Paint gallons”\?/ });
+      await ask.waitFor();
+      await ask.getByRole("button", { name: "Clear rates" }).click();
+      await ask.waitFor({ state: "detached" });
+      await settles(page, "Paint", "Total Material Cost", 0);
+      await blur(page);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Total Material Cost", 400);
+      const afterDeleteUndo = await components();
+      expect(afterDeleteUndo.join() === "Paint gallons 2", `components after undoing the delete: ${afterDeleteUndo.join(", ")}`);
+      await page.keyboard.press("Control+y");
+      await settles(page, "Paint", "Total Material Cost", 0);
+      await page.keyboard.press("Control+z");
+      await settles(page, "Paint", "Total Material Cost", 400);
+      return "edit $600 ↔ $400; add Primer $600 → Ctrl+Z $400 (one component) → Ctrl+Y → Ctrl+Z; delete $0 → Ctrl+Z $400 (component back) → Ctrl+Y $0 → Ctrl+Z $400";
+    },
+  },
 ]);
