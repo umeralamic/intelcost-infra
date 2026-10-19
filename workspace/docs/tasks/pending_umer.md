@@ -377,6 +377,15 @@ link setting (D-562).
 **Taken overnight, for you to confirm:**
 - D-636: the click checks written as fixtures, each on its own throwaway world.
 - D-637: the load-screen fixtures rewritten, with their figures kept.
+- D-645: a new variable is archived when undone (the app's own delete for one), and brought back by redo.
+
+**Answered and done, 2026-10-19 (afternoon, "Answers to the night report"):**
+- **N1:** a calculated line's toolbar shows Details only (D-639); c05 7/7.
+- **N2:** a tick before the sizes holds, and Load waits for them (D-640); fixture `n2-tick-before-sizes` 3/3.
+- **N3:** found and fixed (D-641). Opening a sheet unmounted the takeoff and dropped the pending refresh of its images,
+  and the canvas called a ready sheet with no image "could not be prepared". Fixture `n3-twenty-loads` 3/3.
+- **Undo, the rest:** scale (D-642, exact, 6 table rows), folders and layers (D-643), sub-items (D-644), variables
+  (D-645).
 
 **Answered from the 2026-10-18 list:** the Arc's through point and end under Ortho (D-632).
 

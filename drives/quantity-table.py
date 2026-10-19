@@ -11,7 +11,9 @@ With `register`, it reads F18's registration rows instead and fits each through 
 `earthwork/site.py` (D-231). With `credits`, F14's credit rows through the api's
 `ai/meter.py` (D-236): metering, the estimate, holds, settlement, refunds and refills. With
 `seed`, the assembly seed rows through the api's component copy (D-243). With `subitems`,
-the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245).
+the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245). With
+`scaleundo`, the scale undo rows (D-642): the one mode that opens the database, for a temporary
+table of the calibration column's own type, never committed.
 """
 
 import json
@@ -261,8 +263,68 @@ def fx_system(case: dict) -> object:
     return result.value if result.ok and result.value is not None else {"error": result.error}
 
 
+async def scale_undo(rows: list[dict]) -> list[dict]:
+    """D-642: each scale stored and read back as the calibration's own column does it (a temporary
+    table of the same type, on the app's own driver; nothing else is touched), the undo's value
+    sent through the restore schema and JSON, and each figure through the api's engine."""
+    from sqlalchemy import Column, MetaData, Numeric, Table, insert, select
+    from sqlalchemy import text as sql
+
+    from app.database import SessionFactory
+    from app.features.drawing.schemas import CalibrationRestore
+
+    held = Table("qt_scale", MetaData(), Column("v", Numeric(24, 12)), prefixes=["TEMPORARY"])
+    out = []
+    async with SessionFactory() as session:
+        await session.execute(sql("CREATE TEMPORARY TABLE qt_scale (v numeric(24,12))"))
+
+        async def stored(value: float) -> float:
+            await session.execute(sql("DELETE FROM qt_scale"))
+            await session.execute(insert(held).values(v=value))
+            return float(await session.scalar(select(held.c.v)))
+
+        def through_undo(value: float) -> float:
+            # The app sends what it read; the api validates it into the restore schema.
+            body = json.loads(json.dumps({"feet_per_norm": value}))
+            return CalibrationRestore(
+                p1_x_norm=0, p1_y_norm=0, p2_x_norm=1, p2_y_norm=0, real_distance_ft=1, **body
+            ).feet_per_norm
+
+        for row in rows:
+            page = row["page"]
+            (x1, y1), (x2, y2) = row["a"]["points"]
+            # set_calibration's own arithmetic: feet over the points' distance in points.
+            fpp_a = row["a"]["feet"] / math.hypot((x2 - x1) * page[0], (y2 - y1) * page[1])
+            a = await stored(fpp_a)
+            b = await stored(float(row["b"]["fpp"]))
+            a_back = await stored(through_undo(a))
+            b_again = await stored(through_undo(b))
+            out.append(
+                {
+                    "id": row["id"],
+                    "value": {
+                        "fppA": a,
+                        "fppB": b,
+                        "fppA2": a_back,
+                        "fppB2": b_again,
+                        "qA": figure({**row, "fpp": a}),
+                        "qB": figure({**row, "fpp": b}),
+                        "qA2": figure({**row, "fpp": a_back}),
+                        "qB2": figure({**row, "fpp": b_again}),
+                    },
+                }
+            )
+        await session.rollback()
+    return out
+
+
 def main() -> None:
     cases = json.load(sys.stdin)
+    if sys.argv[1:] == ["scaleundo"]:
+        import asyncio
+
+        print(json.dumps(asyncio.run(scale_undo(cases))))
+        return
     if sys.argv[1:] == ["fxsystem"]:
         print(json.dumps([{"id": c["id"], "value": fx_system(c)} for c in cases]))
         return

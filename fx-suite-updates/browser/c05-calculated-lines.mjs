@@ -151,10 +151,17 @@ await run("c05-calculated-lines", [
       const has = (await group.count()) > 0;
       const variant = has ? await group.first().getAttribute("data-action-group") : "none";
       const shown = has ? await group.first().locator("button").evaluateAll((els) => els.map((el) => ({ label: (el.textContent ?? "").trim(), on: !el.disabled }))) : [];
-      const offered = shown.filter((b) => b.on && ["Properties", "Start", "Resume", "Copy", "Delete"].includes(b.label)).map((b) => b.label);
+      // Shown at all, on or off, counts: only what D-352 allows is shown (D-639), and that is Details.
+      const offered = shown.filter((b) => ["Properties", "Start", "Resume", "Deduct", "Copy", "Delete"].includes(b.label)).map((b) => b.label);
       const listed = shown.map((b) => `${b.label}${b.on ? "" : " (off)"}`).join(", ") || "none";
-      expect(offered.length === 0, `with "${lines[0].name}" selected the toolbar's ${variant} group offers ${offered.join(", ")} (D-352: a calculated line has no Properties, shapes or Delete); the group: ${listed}`);
-      return `${variant} group: ${listed}`;
+      expect(offered.length === 0, `with "${lines[0].name}" selected the toolbar's ${variant} group shows ${offered.join(", ")} (D-352: a calculated line has no Properties, shapes or Delete); the group: ${listed}`);
+      expect(shown.length === 1 && shown[0].label === "Details" && shown[0].on, `the group should hold Details alone; it holds: ${listed}`);
+      // Details opens the read-only details, never the Properties dialog.
+      await group.first().locator("button").first().click();
+      await page.getByRole("dialog", { name: lines[0].name }).locator("[data-line-info]").waitFor({ timeout: 10000 });
+      expect((await page.getByRole("dialog", { name: /Properties/ }).count()) === 0, "Details opened a Properties dialog");
+      await page.keyboard.press("Escape");
+      return `${variant} group: ${listed}; Details opens the read-only details`;
     },
   },
   {

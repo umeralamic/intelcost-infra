@@ -7,13 +7,14 @@
 # summary (with its workbook sheet), each against a hand-worked answer to the cent. Then F12's earthwork
 # rows (browser/lib/earthwork-cases.mjs): legacy's TIN, volume and Site Feature fixtures and D-136's shrink
 # rows. Then F14's credit rows (browser/lib/credit-cases.mjs) through the api's meter: metering, the
-# estimate, holds, settlement, refunds, the minimum and rounding (D-236). Takes seconds; needs the bench's app and api up.
+# estimate, holds, settlement, refunds, the minimum and rounding (D-236). Then the scale undo rows
+# (browser/lib/scale-undo-cases.mjs, D-642): undo and redo of a scale give every figure back bit for bit. Takes seconds; needs the bench's app and api up.
 #
 #   ./quantity-table.sh      (from intelcost-infra/)
 
 set -u
 cd "$(dirname "$0")"
-trap 'rm -f browser/.qt-cases.json browser/.qt-python.json browser/.qt-register.json browser/.qt-register-py.json browser/.qt-site.json browser/.qt-site-py.json browser/.qt-impure.txt browser/.qt-credits.json browser/.qt-credits-py.json browser/.qt-seed.json browser/.qt-seed-py.json browser/.qt-subitems.json browser/.qt-subitems-py.json browser/.qt-fxsystem.json browser/.qt-fxsystem-py.json' EXIT
+trap 'rm -f browser/.qt-cases.json browser/.qt-python.json browser/.qt-register.json browser/.qt-register-py.json browser/.qt-site.json browser/.qt-site-py.json browser/.qt-impure.txt browser/.qt-credits.json browser/.qt-credits-py.json browser/.qt-seed.json browser/.qt-seed-py.json browser/.qt-subitems.json browser/.qt-subitems-py.json browser/.qt-fxsystem.json browser/.qt-fxsystem-py.json browser/.qt-scaleundo.json browser/.qt-scaleundo-py.json' EXIT
 
 # Hard rule 2: takeoff-core carries no React import and no network call.
 if docker compose exec -T app sh -lc "grep -rlE 'from .(react|@tanstack|axios)|fetch\(|XMLHttpRequest|new WebSocket' src/lib/takeoff" >browser/.qt-impure.txt; then
@@ -31,5 +32,6 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py cr
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py seed" <browser/.qt-seed.json >browser/.qt-seed-py.json || { echo "FAIL  the api's assembly copy did not read the seed rows"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py subitems" <browser/.qt-subitems.json >browser/.qt-subitems-py.json || { echo "FAIL  the api's formula engine did not read the sub-item rows"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py fxsystem" <browser/.qt-fxsystem.json >browser/.qt-fxsystem-py.json || { echo "FAIL  the api's formula system did not read the Phase E rows"; exit 1; }
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py scaleundo" <browser/.qt-scaleundo.json >browser/.qt-scaleundo-py.json || { echo "FAIL  the api did not store the scale undo rows"; exit 1; }
 docker compose --profile browser run --rm browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 exit "${PIPESTATUS[0]}"

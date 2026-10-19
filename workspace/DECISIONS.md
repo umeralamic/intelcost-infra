@@ -20292,3 +20292,139 @@ left failing; none was left failing here. Two were found and worked around (pend
 **Workarounds in the fixtures, faults listed:**
 - **f5-s6 and f5-s7** wait for the page sizes before ticking (N2).
 - **f5-big's** intermittent "This sheet could not be prepared" did not recur alone (N3).
+
+## D-639: A calculated line's toolbar offers Details only (answers N1, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19 ("show only what D-352 allows").
+
+- **The select group:** with a calculated earthwork line selected (D-352 1: `source_type` `earthwork_computed`), the
+  amber group shows one button, **Details**, which opens the read-only details as a double-click does. Properties, Start,
+  Resume, Deduct, Copy and Delete are not shown at all (not greyed), for a member and a guest alike.
+- **The Delete key** leaves a calculated line, as the api already refused (D-352 5).
+- **Where:** `ActionGroup.tsx` (`calculated`), `ProjectTakeoff.tsx` (the group's props, Properties → details, the
+  Delete key).
+- **Checks:** c05 7/7 (step 6 now expects Details alone and opens it); smoke and guest on the fx stack's C5 world
+  (Details only, the Delete key leaves the line at 37.04 BCY; the guest sees Details only and sends nothing).
+
+## D-640: A file ticked before its page sizes arrive stays ticked (answers N2, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19.
+
+- **On the load screen,** a PDF ticked while its sizes are not all in (`GET …/file/page-sizes`) is held as ticked
+  ("Preparing…"). As its sizes arrive its pages are chosen by the tick's usual rule (D-310 2: its drawing-size pages, or
+  every page when it has none), until it is touched again (a page picked by hand, untick, a whole-project choice).
+- **Load waits** while a ticked file is still being measured: the button reads "Measuring pages…", so its pages are
+  never left out of the Load. A file whose preparation failed stops the wait.
+- **The sizes are asked again** every 1.5 s while a ticked file has no answer yet.
+- **Where:** `LoadSheetsDialog.tsx` (`awaiting`, `sized`).
+- **Checks:** new fixture `n2-tick-before-sizes` 3/3, with the sizes held back by the test:
+  - ticked in the gap, the file reads "all", "Preparing…", and Load reads "Measuring pages…";
+  - once the sizes are in: "2/3 selected", "Load 2 pages", and pages 1 and 2 are loaded;
+  - ticked and unticked in the gap, it stays unticked.
+  Guests have no load screen.
+
+## D-641: "This sheet could not be prepared" only when the worker failed it (answers N3, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19 ("find the cause and fix it").
+
+**The cause, reproduced.** The fixture `n3-twenty-loads` failed every run on the old code: 19 to 24 lapses, the error up
+to 9.9 s, the image arriving 15–22 s after the worker had the page ready.
+1. Opening a sheet the tab had not opened before **unmounted the whole takeoff page** while `SheetInProject` asked the
+   api whose sheet it was (D-622).
+2. The unmount **cleared the settled realtime refetch** (`useSettledRefetch`, 1 s for page events) without running it,
+   so a `drawing.source.changed` heard in the second before the click was lost.
+3. On remount the sheet list refetched (it goes stale at once) and read **ready**. The signed images (`assets`, kept
+   30 min) did not refetch, so the sheet had no image.
+4. The canvas showed **"could not be prepared" for any sheet with no image that was not pending or rendering**, ready
+   included. It stayed until a later event refetched the images: minutes, after the last page of a Load.
+5. Separately, a page read for its name and scale (D-321) was **announced only after its read**. Behind a busy Load the
+   read waits in the shared pool, so open screens heard nothing although the page was ready.
+
+**The fix:**
+- **`SheetInProject`** no longer waits on a sheet the project's own list already holds, so switching sheets never
+  unmounts the takeoff.
+- **`useSettledRefetch`,** on unmount, marks the keys still settling stale instead of dropping them.
+- **The canvas** shows the error only for `render_status` **failed**, with the worker's own reason. A ready sheet whose
+  image is not signed shows "Preparing the sheet" and signs again, at once and then every 2 s while it lasts.
+- **The worker** announces a prepared page as soon as its image is in, read next or not, and the read announces again.
+  This supersedes D-321's one event a page: two events now, one settled refetch each.
+- **Where:** app `route-guard.tsx`, `use-settled-refetch.ts`, `ProjectTakeoff.tsx`; api `worker/tasks/prepare.py`.
+
+**Checks:** `n3-twenty-loads` 3/3.
+- **The run:** 20 uploads and Loads in a row on a slowed link (200 ms, about 4 Mbps), a reload mid-prepare, name and
+  scale reading on.
+- **No error ever.** Worker ready to image took at most 3.0–5.2 s (5.2 s on the reloaded tab).
+- **Every event** was followed by a refetch of the images.
+- **All 20 sheets** drew on revisit within 0.3 s.
+- **The rule itself:** a failed sheet shows the error and its reason; a ready, unsigned one shows "Preparing" and signs
+  again.
+
+## D-642: Ctrl+Z undoes a sheet's scale, every quantity back exactly (answers item 4, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19 ("sheet scale undo must restore every quantity on the sheet exactly").
+
+- **Each scale change is one Ctrl+Z step** on that sheet: Calibrate, a pick from the Scale menu, and Approve on an
+  amber box.
+- **Undo writes the prior scale back as it was stored,** field for field: its feet per point as stored, not worked out
+  again from the points, and the amber box the change cleared. A sheet that had no scale has none again. Redo writes the
+  new one. The api recomputes every item on the sheet either way.
+- **New route:** `PUT …/drawing/sheet/{uuid}/calibration/restore` (`CalibrationRestoreRequest`).
+- **Quantity table:** 6 scale-undo rows (`lib/scale-undo-cases.mjs`, the drive's `scaleundo` mode).
+  - Each row stores scale A (a calibration) and scale B (a preset) through the calibration column's own
+    `numeric(24,12)`, on the app's own driver.
+  - It then sends the undo's value through the restore schema and JSON, and stores it again.
+  - Undo gives the first figures bit for bit and redo the second, on both engines; the hand answers are right.
+- **Smoke (fx C5 world):** the sheet went from 1/8" to 1/4" (1000 → 111.111111 SF), then Ctrl+Z, Ctrl+Y, Ctrl+Z. The
+  calibration row and every quantity were byte-identical to before.
+
+## D-643: Ctrl+Z undoes folder and layer create and delete (answers item 4, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19.
+
+- **A delete is snapshotted first,** signed as an item's is (D-73). The snapshot holds:
+  - the folder or layer and everything under it;
+  - where every item, folder and sub-layer it touches stood;
+  - for a layer deleted with its measurements, each item's own snapshot.
+- **Undo restores it under its own ids and uuids:**
+  - items are filed back where they were;
+  - contents move back, and sub-layers go back under it;
+  - the default layer is the default again;
+  - deleted measurements come back whole.
+  Redo snapshots again and deletes again.
+- **A create is undone by a snapshotted delete.** A sub-layer that took its main layer's contents gives them back. Redo
+  restores it under its own uuid. "Rename Unfiled" (a new folder holding what was unfiled) works the same way.
+- **New routes:** `GET …/takeoff/folder/{uuid}/snapshot`, `GET …/takeoff/layer/{uuid}/snapshot?with_contents=` and
+  `POST …/takeoff/structure/restore`, in api `takeoff/structure.py`.
+- **App:** every create and delete through `useFolders` is a step, and the Properties dialog's new folder now goes
+  through it too. The layer delete's "This cannot be undone" now reads "Ctrl+Z brings them back".
+- **Smoke:**
+  - a folder made, undone and redone came back under the same uuid and id;
+  - a folder holding the boundary was deleted, then undone: the folder came back and the boundary was filed in it again;
+  - a layer holding the boundary was deleted with its measurements, then undone, redone and undone again. Each time the
+    state was byte-identical: the item back under its own id and uuid, with its shape and 1000 SF.
+
+## D-644: Ctrl+Z undoes a sub-items save (answers item 4, 2026-10-19)
+
+**Status:** decided by Umer, 2026-10-19 ("sub-items and formulas").
+
+- **A save of a parent's sub-items is one step:** from Manage sub-items, Create sub-item, and Estimating's Edit sub-item.
+  - Each side of the step is the parent's whole list of sub-items.
+  - Moving to a list first snapshots every row it leaves out, and restores the rows it brings back, whole and under
+    their own uuids.
+  - Then names, formulas, units, classifications and order are written as they were.
+  - Estimating's step also puts back the unit rates a unit change cleared.
+- **Not in the step:** the rates typed in the editor's Costs view. Those are Estimating's, with their own undo there.
+- **Where:** `features/takeoff/items/subItemsUndo.ts` (new), `ProjectTakeoff.tsx` (`saveSubItems`), `EstimatingView.tsx`
+  (`saveSubEdit`).
+- **Smoke:** "Studs = PARENT × 0.75" (51 LF) created, undone (gone) and redone (the same id and uuid, 51 LF).
+
+## D-645: Ctrl+Z undoes variable changes (answers item 4, 2026-10-19) *(taken overnight, Umer to confirm)*
+
+**Status:** taken 2026-10-19, Umer to confirm.
+
+- **A variable's value, default, fields and archive** each undo to exactly what they were.
+- **Undoing a new variable archives it.** Archiving is the app's own delete for a variable, workspace-wide; there is no
+  hard delete to undo with. Redo brings it back.
+  - *(call)* This is reversible. A hard delete would need a new api route, and a rule for a variable another project
+    started using meanwhile.
+- **Smoke:** "Undo Spacing" (16) made, then Ctrl+Z: archived, and the step before untouched.

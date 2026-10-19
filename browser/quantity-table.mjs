@@ -23,6 +23,7 @@ import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
 import { CLOSE_CASES, COMPONENT_SYSTEM_CASES, CONSTANT_CASES, DIMENSION_TOOL_CASES, DISPLAY_CASES, ENTRY_CASES, EXCEL_METRIC_CASES, EXPLAIN_METRIC_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES, NAME_CASES, PICK_CASES, PINNED_CASES } from "./lib/metric-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 import { PEN_CASES } from "./lib/pen-cases.mjs";
+import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 
 const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
@@ -33,6 +34,8 @@ if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
   await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
   await writeFile(`${HERE}/.qt-fxsystem.json`, JSON.stringify(FORMULA_SYSTEM_CASES));
+  // D-642: each row carries its base row's shapes.
+  await writeFile(`${HERE}/.qt-scaleundo.json`, JSON.stringify(SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c }))));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
@@ -42,6 +45,7 @@ const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.
 const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSite = new Map(JSON.parse(await readFile(`${HERE}/.qt-site-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSub = new Map(JSON.parse(await readFile(`${HERE}/.qt-subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonScale = new Map(JSON.parse(await readFile(`${HERE}/.qt-scaleundo-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonFx = new Map(JSON.parse(await readFile(`${HERE}/.qt-fxsystem-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
@@ -56,6 +60,7 @@ let subs;
 let xl;
 let ex;
 let mt;
+let scaleWeb;
 try {
   const page = await browser.newPage();
   await page.goto(`${APP}/login`);
@@ -77,6 +82,24 @@ try {
       return c.mods && base !== null ? q.applyModifiers(base, { geomType: c.type, ...c.mods }) : base;
     });
   }, CASES);
+  // D-642: the scale undo rows through the browser's engine, at the scales the api stored.
+  scaleWeb = await page.evaluate(async ([cases, stored]) => {
+    const q = await import("/src/lib/takeoff/quantity.ts");
+    const pts = (v) => v.map(([x, y]) => ({ x, y }));
+    const at = (c, fpp) => {
+      const page = { widthPt: c.page[0], heightPt: c.page[1] };
+      if (c.type === "sf") {
+        const pos = c.shapes.filter((s) => s.role !== "subtract").map((s) => ({ points: pts(s.vertices), meta: s.meta }));
+        const neg = c.shapes.filter((s) => s.role === "subtract").map((s) => ({ points: pts(s.vertices), meta: s.meta }));
+        return q.areaOnSheet(pos, neg, fpp, page);
+      }
+      return c.shapes.reduce((sum, s) => sum + q.quantityFor(c.type, pts(s.vertices), fpp, s.meta, page), 0);
+    };
+    return cases.map((c) => {
+      const v = stored[c.id];
+      return v ? { qA: at(c, v.fppA), qB: at(c, v.fppB), qA2: at(c, v.fppA2), qB2: at(c, v.fppB2) } : null;
+    });
+  }, [SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c })), Object.fromEntries(pythonScale)]);
   // The cost rows: F9's money through the app's own lib/estimate.
   costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
@@ -1806,6 +1829,26 @@ for (const [i, c] of PEN_CASES.entries()) {
   }
 }
 
+// Scale undo rows (D-642): undo gives the first figures bit for bit and redo the second, on both
+// engines; the engines agree; each against its hand-worked figure.
+for (const [i, c] of SCALE_UNDO_CASES.entries()) {
+  const api = pythonScale.get(c.id);
+  const web = scaleWeb[i];
+  if (!api || !web) {
+    wrong.push(`${c.id}: no answer (api ${JSON.stringify(api)}, browser ${JSON.stringify(web)})`);
+    continue;
+  }
+  if (api.fppA2 !== api.fppA || api.fppB2 !== api.fppB) wrong.push(`${c.id}: the scale came back as ${api.fppA2} (was ${api.fppA}), ${api.fppB2} (was ${api.fppB})`);
+  for (const [name, got] of [["api", api], ["browser", web]]) {
+    if (got.qA2 !== got.qA) wrong.push(`${c.id}: undo on the ${name} engine gives ${got.qA2}, was ${got.qA}`);
+    if (got.qB2 !== got.qB) wrong.push(`${c.id}: redo on the ${name} engine gives ${got.qB2}, was ${got.qB}`);
+  }
+  if (close(api.qA, api.qB)) wrong.push(`${c.id}: the second scale did not move the figure (${api.qA})`);
+  if (!close(api.qA, web.qA) || !close(api.qB, web.qB)) disagree.push(`${c.id}: api ${api.qA} / ${api.qB}, browser ${web.qA} / ${web.qB}`);
+  if (c.expectA !== undefined && !close(api.qA, c.expectA)) wrong.push(`${c.id}: ${api.qA}, expected ${c.expectA}`);
+  if (c.expectB !== undefined && !close(api.qB, c.expectB)) wrong.push(`${c.id}: ${api.qB} after the second scale, expected ${c.expectB}`);
+}
+
 // Credit rows (F14, D-236): the api's meter against the hand-worked answer, field by field.
 for (const c of CREDIT_CASES) {
   const got = pythonCredits.get(c.id);
@@ -1821,5 +1864,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); passed`,
 );
