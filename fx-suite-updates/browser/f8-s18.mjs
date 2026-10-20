@@ -14,6 +14,8 @@
 // (F7-S7), and a count mark is dragged by a Select press inside it (D-254).
 // Done is gone with the edit mode: Escape lets the item go. The row menu's delete is "Delete". The
 // properties pane is a dialog now (D-77), so step 3, about the pane's own scroll, finds a removed screen.
+// Updated 2026-10-20 (R5, D-648): the row menu's Delete is the undoable batch `POST …/item/delete`
+// (D-635); step 2 waited for a DELETE that no longer comes, which read as "the drag sends no save".
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
@@ -129,7 +131,9 @@ await run("f8-s18", [
 
         // Delete: A deletes the item.
         await (await menuItem(page, name, "Delete")).click();
-        const gone = page.waitForResponse((res) => res.url().includes(`/item/${item.uuid}`) && res.request().method() === "DELETE");
+        // The row menu's Delete is undoable since D-635: the batch `POST …/item/delete`, not a
+        // DELETE of the one item (R5, D-648).
+        const gone = page.waitForResponse((res) => res.url().endsWith("/item/delete") && res.request().method() === "POST");
         await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
         await gone;
         const t1 = Date.now();
