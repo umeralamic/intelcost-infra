@@ -11,7 +11,7 @@ docker compose --profile browser run --rm browser node scripts/<smoke>.mjs
 
 Since D-68 this holds no fixtures. It holds the helpers a throwaway smoke check is built
 on (`lib/`: sign-in, worlds, drawings, api calls, realtime), the bench's own tools
-(`bench-code`, `bench-tidy`, `walkthrough-setup`, `load-probe`), and the shared quantity
+(`bench-code`, `load-probe`; the tidy is `drives/bench-tidy.py` since D-662), and the shared quantity
 table (`quantity-table.mjs`, `lib/quantity-cases.mjs`; run `../quantity-table.sh`). A smoke
 check is written here for one block, run once, and deleted. The fixture suite is archived
 at tag `fixtures-archive-2026-09-28` (see the bench README).

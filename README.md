@@ -147,11 +147,13 @@ seeded account's switcher once held 860 fixture workspaces).
 - **Clean up after a session of smoke checks:**
   ```bash
   docker compose exec -T api sh -lc "cd /srv && python drives/bench-workspaces.py purge-fx"
-  docker compose --profile browser run --rm browser node scripts/bench-tidy.mjs
+  docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/bench-tidy.py --tidy"
   ```
   The first deletes every workspace a throwaway account or its seat owns (rows by cascade,
-  storage by prefix). The second removes stamped projects and seats left in Bench
-  Construction **by name only**, never the owner, Riverside, or anything made by hand.
+  storage by prefix). The second purges stamped projects and removes stamped seats left in Bench
+  Construction **by name only**, never the owner, Riverside, or anything made by hand, in the
+  api's process, signed in as no one (D-662; without `--tidy` it lists). It replaced
+  `browser/bench-tidy.mjs`, which signed in as the owner.
 - **`worker-previews`** (D-43) serves only the `previews` queue: Choose pages'
   thumbnails, one set at a time, `nice -n 19`. The `worker` serves everything else, so a
   Load never waits behind thumbnails. `docker compose up -d worker-previews` starts it.
