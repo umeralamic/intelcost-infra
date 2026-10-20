@@ -27,7 +27,7 @@ from types import SimpleNamespace
 from app.features.ai import meter
 from app.features.assembly.models import COMPONENT_COPY_FIELDS as COPY_FIELDS
 from app.features.assembly.models import AssemblyComponent, component_fields
-from app.features.earthwork import register, site
+from app.features.earthwork import georef, register, site
 from app.features.estimate.models import TakeoffCostComponent
 from app.features.takeoff import formula_system, quantity, sub_items
 from app.features.takeoff.formula import FormulaEnv, evaluate
@@ -62,7 +62,38 @@ def figure(case: dict) -> float:
     )
 
 
+def coordinates(case: dict) -> dict:
+    """GPS Export's coordinates rows (D-672) through the api's `earthwork/georef.py`."""
+    s = case["scale"]
+    scale = georef.Scale(float(s[0]), float(s[1]), float(s[2]))
+    points = [
+        georef.ControlPoint(f"CP-{i + 1}", p[0], p[1], p[2], p[3])
+        for i, p in enumerate(case["points"])
+    ]
+    try:
+        fit = georef.fit_georef(points, scale, case["units"], case.get("fitScale") is not False)
+    except georef.FitError as error:
+        return {"ok": False, "reason": error.reason}
+    degrees = math.degrees(fit.rotation) % 360
+    out: dict = {
+        "ok": True,
+        "rotationDeg": degrees - 360 if degrees > 180 else degrees,
+        "scale": fit.scale,
+        "maxResidual": max(fit.residuals),
+        "rms": fit.rms,
+    }
+    if case.get("probe"):
+        e, n = georef.plan_of(case["probe"][0], case["probe"][1], scale, case["units"])
+        cos, sin = math.cos(fit.rotation) * fit.scale, math.sin(fit.rotation) * fit.scale
+        grid_e, grid_n = cos * e - sin * n + fit.e0, sin * e + cos * n + fit.n0
+        out["probe"] = f"{_short(grid_n)},{_short(grid_e)}"
+    return out
+
+
 def registration(case: dict) -> dict:
+    if case.get("kind") == "georef":
+        return coordinates(case)
+
     def scale(s: list) -> register.SheetScale:
         return register.SheetScale(float(s[0]), float(s[1]), float(s[2]))
 

@@ -21276,3 +21276,42 @@ night run of 2026-10-20 (Step 6); the target is not met, the click is clearly fa
   the Takeoff panel's jump to the row. Under 100 ms needs the selection held outside the page's state, so only the
   canvas, the panel and Properties render: the same kind of change as Abdullah's zoom store, so not started (question).
 - **Not affected:** quantities (the quantity table passed), what is drawn (WebGL reads the same looks), the hit rules.
+
+## D-672: GPS Export step 4, coordinates: control points per sheet or site, fitted on both engines, taken through links and sites (GPS Export, D-650)
+
+**Status:** built in the night run of 2026-10-20 (Step 7) as `docs/tasks/gps_export_PLAN.md` c, with G3 and G4 as
+answered.
+
+- **Stored:** table `sheet_georef` (one row per sheet: the points with their label, picked x and y on the sheet, typed
+  n and e; the units; the coordinate system, EPSG code and vertical datum as typed; scale fitted or not; the api's own
+  fit), migration `d672a4c6e8b0`; a joined site's set on `site.georef`, its points in the site's frame (the anchor's
+  page). Duplicate project copies them.
+- **Routes** (`earthwork/georef_routes.py`): `GET …/earthwork/georef` (every sheet's and site's), `PUT`/`DELETE
+  …/georef/sheet/{sheet}` and `…/georef/site/{site}` for writers. The api fits again (`georef.py`, the Python twin of
+  `export/georef.ts`) and refuses an uncalibrated sheet, fewer than two points, points on top of each other, and a
+  mirrored fit (northing and easting swapped). `earthwork.georef.changed` on the project topic.
+- **The fit** (`lib/takeoff/earthwork/export/georef.ts`, pure): plan coordinates (easting x in feet, northing −y) in
+  the chosen units (international feet as measured, US survey feet × 0.999998, metres × 0.3048), a least-squares
+  similarity to the typed grid, the scale fitted by default; two points exact, three or more with each point's miss and
+  the RMS; warnings amber over 0.1 ft and red over 0.5 ft (G4), the fitted scale over 0.5 % from 1, points nearly in a
+  line, and "Exact with 2 points: add a third to check them". Elevations are the drawing's (only converted to metres).
+- **Through links and sites (G3):** a sheet without its own takes its site's, else an F18-linked sheet's, through the
+  link or the member's placement (`chainedFit`: three mapped corners fit exactly); the panel names where they come from
+  ("From C-200 – Site Grade Plan, through its link").
+- **The panel** (`features/takeoff/earthwork/gps/CoordinatesPanel.tsx`, `useCoordinates.ts`): **Coordinates** on the
+  Earthwork row after Linked EC (step 5's dialog will open it from "Set coordinates…"); Add point picks on the sheet
+  (Snap PDF on while picking; the earthwork runs and the linked contours step aside, as for F18), Northing and Easting
+  typed, Swap N and E, the units (metres only in a metric project), system, EPSG, vertical datum, Fit the scale, the
+  status line, the misses and warnings; Save, Remove; Set for the site when the sheet is in one.
+- **`exportSet.ts`** takes the fit as its `grid`: every file in the grid, the README with the system, datum, the fit
+  and each control point's plan, grid and miss.
+- **Quantity table:** 9 coordinates rows on both engines against hand-worked answers (a 30° turn at state-plane
+  values, US survey feet, metres, a 1.0004 grid factor at −12.5°, swapped N/E refused as mirrored, two points exact,
+  one point too few, a point typed 0.30 ft off, an uncalibrated sheet).
+- **Proved** on BENCH DUP 7bb1fa52's C-200 (no sheet of this set prints northings and eastings, only the system,
+  Ohio South NAD83(2011), so the coordinates are an assumed transform: −2.00°, E 1,930,000, N 701,500, US survey feet,
+  typed to 0.01 ft): three Building Pad corners as control points; the api's fit −1.9993°, scale 1.0000028, residuals
+  0.0026, 0.0014, 0.0025 ft. In the exported DXF (read by ezdxf) the control corners lie 0.0014 to 0.0026 ft from their
+  typed values and three other corners, not used in the fit, 0.0022 to 0.0032 ft from the assumed transform; the
+  LandXML is northing first in US survey feet; each TIN's integral is the plan figure × (0.999998 × scale)² within 7e-7.
+- **Not exercised:** a site member placed through a join (the DUPs have no join); a site anchored on its sheet was.

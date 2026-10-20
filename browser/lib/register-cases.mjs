@@ -97,3 +97,45 @@ export const REGISTER_CASES = [
     expect: { ok: false, reason: "uncalibrated" },
   },
 ];
+
+// GPS Export's coordinates (D-672): lib/takeoff/earthwork/export/georef.ts against the api's
+// earthwork/georef.py, on the same picked points with their typed northing and easting, both
+// against the answer worked here by hand. A point is [x, y, n, e]: x and y in fractions of the
+// page, n and e in the case's units. Plan coordinates: easting x × page feet, northing −y × page
+// feet, in the units (US survey feet × 1200/3937 ÷ 0.3048 is 0.999998; metres × 0.3048).
+// Output fields: ok, reason, rotationDeg, scale, maxResidual, rms, probe ("n,e" of a picked point).
+const PAGE_FT = 1000 * (20 / IN);
+const US = 0.3048 / (1200 / 3937);
+/** The grid made by hand: plan (in the units) turned `deg`, scaled `k`, moved to (n0, e0). */
+const gridOf = ([x, y], { deg, k = 1, e0, n0, per = 1 }) => {
+  const [e, n] = [x * PAGE_FT * per, -y * PAGE_FT * per];
+  const r = (deg * Math.PI) / 180;
+  return [n0 + k * (Math.sin(r) * e + Math.cos(r) * n), e0 + k * (Math.cos(r) * e - Math.sin(r) * n)];
+};
+const picked = [[0.1, 0.9], [0.9, 0.9], [0.5, 0.1]];
+const pointsFor = (how) => picked.map((p) => [...p, ...gridOf(p, how)]);
+const near = (v) => +v.toFixed(9);
+const probeFor = (how) => gridOf([0.5, 0.5], how).map(near).join(",");
+const TURNED = { deg: 30, e0: 2_000_000, n0: 500_000 };
+const GRID_FACTOR = { deg: -12.5, k: 1.0004, e0: 1_300_000, n0: 600_000 };
+
+export const GEOREF_CASES = [
+  // Three monuments, turned 30° and moved to state-plane-sized values, international feet.
+  { id: "geo-turned-30", kind: "georef", scale: S20, units: "intl-ft", points: pointsFor(TURNED), probe: [0.5, 0.5], expect: { ok: true, rotationDeg: 30, scale: 1, maxResidual: 0, rms: 0, probe: probeFor(TURNED) } },
+  // The same ground typed in US survey feet: the fit's scale stays 1 once plan feet are taken as US feet.
+  { id: "geo-us-survey-feet", kind: "georef", scale: S20, units: "us-ft", points: pointsFor({ ...TURNED, per: US }), probe: [0.5, 0.5], expect: { ok: true, rotationDeg: 30, scale: 1, maxResidual: 0, probe: probeFor({ ...TURNED, per: US }) } },
+  // Metres.
+  { id: "geo-metres", kind: "georef", scale: S20, units: "m", points: pointsFor({ ...TURNED, per: 0.3048 }), probe: [0.5, 0.5], expect: { ok: true, rotationDeg: 30, scale: 1, maxResidual: 0, probe: probeFor({ ...TURNED, per: 0.3048 }) } },
+  // A grid scale factor of 1.0004 and a turn of −12.5°: the fitted scale takes the factor.
+  { id: "geo-grid-factor", kind: "georef", scale: S20, units: "us-ft", points: pointsFor({ ...GRID_FACTOR, per: US }), probe: [0.5, 0.5], expect: { ok: true, rotationDeg: -12.5, scale: 1.0004, maxResidual: 0, probe: probeFor({ ...GRID_FACTOR, per: US }) } },
+  // Northing and easting typed swapped: mirrored, refused.
+  { id: "geo-swapped-mirrored", kind: "georef", scale: S20, units: "intl-ft", points: pointsFor(TURNED).map(([x, y, n, e]) => [x, y, e, n]), expect: { ok: false, reason: "mirrored" } },
+  // Two points fit exactly: no residuals to show.
+  { id: "geo-two-exact", kind: "georef", scale: S20, units: "intl-ft", points: pointsFor(TURNED).slice(0, 2), probe: [0.5, 0.5], expect: { ok: true, rotationDeg: 30, scale: 1, maxResidual: 0, rms: 0, probe: probeFor(TURNED) } },
+  // One point: too few.
+  { id: "geo-one-point", kind: "georef", scale: S20, units: "intl-ft", points: pointsFor(TURNED).slice(0, 1), expect: { ok: false, reason: "too_few" } },
+  // A fourth point typed 0.30 ft north of where it is: both engines agree on the misses (no hand figure).
+  { id: "geo-one-off", kind: "georef", scale: S20, units: "intl-ft", points: [...pointsFor(TURNED), ((p) => [p[0], p[1], p[2] + 0.3, p[3]])([0.9, 0.1, ...gridOf([0.9, 0.1], TURNED)])], expect: { ok: true } },
+  // An uncalibrated sheet.
+  { id: "geo-uncalibrated", kind: "georef", scale: [0, 1000, 1000], units: "intl-ft", points: pointsFor(TURNED), expect: { ok: false, reason: "uncalibrated" } },
+];

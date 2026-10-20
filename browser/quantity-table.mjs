@@ -15,7 +15,9 @@ import { CREDIT_CASES } from "./lib/credit-cases.mjs";
 import { EARTHWORK_CASES } from "./lib/earthwork-cases.mjs";
 import { UTILITY_CASES } from "./lib/utility-cases.mjs";
 import { CASES } from "./lib/quantity-cases.mjs";
-import { REGISTER_CASES } from "./lib/register-cases.mjs";
+import { GEOREF_CASES, REGISTER_CASES } from "./lib/register-cases.mjs";
+/** F18's links and GPS Export's coordinates (D-672) go through one registration file each way. */
+const REG_ROWS = [...REGISTER_CASES, ...GEOREF_CASES];
 import { SITE_GROUND, SITE_HALVES, SITE_JOIN_CASES, SITE_SHAPE_CASES } from "./lib/site-cases.mjs";
 import { SUBITEM_CASES } from "./lib/subitem-cases.mjs";
 import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
@@ -28,7 +30,7 @@ import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
   await writeFile(`${HERE}/.qt-cases.json`, JSON.stringify(CASES));
-  await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REGISTER_CASES));
+  await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REG_ROWS));
   await writeFile(`${HERE}/.qt-site.json`, JSON.stringify(SITE_JOIN_CASES));
   await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
   await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
@@ -426,8 +428,20 @@ try {
   // F18's registration rows: lib/takeoff/earthwork/register.ts (D-188).
   reg = await page.evaluate(async (cases) => {
     const r = await import("/src/lib/takeoff/earthwork/register.ts");
+    const geo = await import("/src/lib/takeoff/earthwork/export/georef.ts");
     const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
     return cases.map((c) => {
+      if (c.kind === "georef") {
+        const points = c.points.map(([x, y, n, e], i) => ({ label: "CP-" + (i + 1), at: { x, y }, n, e }));
+        const f = geo.fitGeoref(points, sc(c.scale), c.units, { fitScale: c.fitScale !== false });
+        if (!f.ok) return { ok: false, reason: f.reason };
+        const out = { ok: true, rotationDeg: r.rotationDegrees(f.fit.rotation), scale: f.fit.scale, maxResidual: Math.max(...f.fit.residuals), rms: f.fit.rms };
+        if (c.probe) {
+          const g = geo.gridOf(f.fit, { x: c.probe[0], y: c.probe[1] }, sc(c.scale));
+          out.probe = `${+g.n.toFixed(9)},${+g.e.toFixed(9)}`;
+        }
+        return out;
+      }
       const pairs = c.pairs.map(([[sx, sy], [tx, ty]]) => ({ source: { x: sx, y: sy }, target: { x: tx, y: ty } }));
       const f = r.fitRigid(pairs, sc(c.src), sc(c.tgt), { fitScale: Boolean(c.fitScale) });
       if (!f.ok) return { ok: false, reason: f.reason };
@@ -439,7 +453,7 @@ try {
       }
       return out;
     });
-  }, REGISTER_CASES);
+  }, REG_ROWS);
   // F19's site rows: lib/takeoff/earthwork/site.ts (D-231).
   site = await page.evaluate(async ([joins, shapes, g, h]) => {
     const st = await import("/src/lib/takeoff/earthwork/site.ts");
@@ -1632,7 +1646,7 @@ for (const [i, c] of COST_CASES.entries()) {
 
 // Registration rows: the browser's fit against the api's, field by field, and both against
 // the hand-worked answer (numbers to 1e-9).
-for (const [i, c] of REGISTER_CASES.entries()) {
+for (const [i, c] of REG_ROWS.entries()) {
   const api = pythonReg.get(c.id);
   const web = reg[i];
   if (!api) disagree.push(`${c.id}: no api answer`);
@@ -1864,5 +1878,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); passed`,
 );
