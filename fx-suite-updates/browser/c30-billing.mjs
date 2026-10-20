@@ -10,13 +10,12 @@
 // on the restricted tier 3: one project). STAFF is a throwaway seat made platform staff in the
 // database step, to grant the two comps through the platform api.
 //
-// What this does not do, on purpose: press Pay on the fake's Checkout. The fake (one container,
-// shared with the main bench) sends every webhook to the main bench's api, so paying would write a
-// Stripe event into the main database. The run stops at the fake's Checkout page and checks what
-// it was asked for (the plan, the lines, the workspace in its metadata). So "an expired trial
-// turns into Professional" after payment, and an AI pack's credits landing, stay with the founder.
-// Left for the founder's eye as well: the Billing page's look, the portal's flow, the Billing
-// tiers console where a comp is granted by hand.
+// Paying: the fx stack has its own Stripe fake (stripe-fake-fx, pages on :12112, webhooks to the fx
+// api; N10, D-660), so the run presses Pay on the fake's Checkout: the expired trial becomes
+// Professional once the webhook lands, and an AI pack's 1,000 credits land on the workspace's
+// purchased balance. Nothing reaches the bench's own fake or database.
+// Left for the founder's eye: the Billing page's look, the portal's flow, the Billing tiers console
+// where a comp is granted by hand.
 
 import { APP, apiCall, apiLogin, createWorkspace, enterWorkspace, expect, fixtureOwner, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { makeProject } from "./lib/f4.mjs";
@@ -96,7 +95,7 @@ await run("c30-billing", [
     },
   },
   {
-    title: "expired trial: the api refuses a new project; Billing says the trial ended; Start subscription on Professional opens the fake's Checkout for this workspace (not paid: see the header)",
+    title: "expired trial: the api refuses a new project; Billing says the trial ended; Start subscription on Professional opens the fake's Checkout for this workspace; Cancel comes back; Pay makes it Professional and a project can be made",
     run: async ({ page }) => {
       const refused = await apiCall(token, "POST", `${ws(W.expired)}/project`, { name: "After the trial" });
       expect(refused.status === 403, `a project after the trial: ${refused.status} ${said(refused)}`);
@@ -108,7 +107,7 @@ await run("c30-billing", [
       const status = ((await card.locator("[data-billing-status]").textContent()) ?? "").trim();
       const start = page.locator(`[data-plan-card="professional"]`).getByRole("button", { name: "Start subscription" });
       await start.click();
-      await page.waitForURL(/localhost:12111\/checkout\/cs_/, { timeout: 30000 });
+      await page.waitForURL(/localhost:12112\/checkout\/cs_/, { timeout: 30000 });
       await page.getByRole("heading", { name: "Bench Checkout (Stripe fake)" }).waitFor();
       const lines = (await page.locator("li").allTextContents()).map((t) => t.trim());
       expect(lines.some((l) => /price_bench_professional_monthly × 1/.test(l)), `Checkout lines ${lines.join(" | ")}`);
@@ -123,7 +122,27 @@ await run("c30-billing", [
       const back = page.locator(`[data-checkout="cancelled"]`);
       await back.waitFor({ timeout: 20000 });
       const backText = ((await back.textContent()) ?? "").trim();
-      return `refused ${refused.status}; Billing "${status}"; Checkout ${id}: ${lines.join(", ")}; open, for this workspace; Cancel: "${backText}"`;
+      // Checkout again, and Pay: the fake's webhook reaches the fx api, the trial becomes Professional.
+      await page.locator(`[data-plan-card="professional"]`).getByRole("button", { name: "Start subscription" }).click();
+      await page.waitForURL(/localhost:12112\/checkout\/cs_/, { timeout: 30000 });
+      const paidId = /checkout\/(cs_\w+)/.exec(page.url())[1];
+      await page.getByRole("button", { name: "Pay" }).click();
+      await page.waitForURL(/\/settings\/billing/, { timeout: 30000 });
+      let billing = null;
+      const until = Date.now() + 30000;
+      while (Date.now() < until) {
+        billing = (await apiCall(token, "GET", `${ws(W.expired)}/billing`)).body;
+        if (billing?.state === "active") break;
+        await page.waitForTimeout(500);
+      }
+      expect(billing?.state === "active" && billing?.plan === "professional", `after Pay: ${JSON.stringify(billing).slice(0, 300)}`);
+      await page.reload();
+      await page.locator(`[data-billing-state="active"]`).waitFor({ timeout: 20000 });
+      const plan = await page.locator("[data-billing-plan]").getAttribute("data-billing-plan");
+      expect(plan === "professional", `Billing shows plan ${plan}`);
+      const project = await apiCall(token, "POST", `${ws(W.expired)}/project`, { name: "After paying" });
+      expect(project.status === 201 || project.status === 200, `a project after paying: ${project.status} ${said(project)}`);
+      return `refused ${refused.status}; Billing "${status}"; Checkout ${id}: ${lines.join(", ")}; open, for this workspace; Cancel: "${backText}"; paid ${paidId}: Billing active, Professional; a project made ${project.status}`;
     },
   },
   {
@@ -166,23 +185,35 @@ await run("c30-billing", [
     },
   },
   {
-    title: "AI pack: on PRO, AI Credits' Buy now on the 1,000 pack opens the fake's Checkout in payment mode for that pack (not paid: see the header); a trial workspace's Buy is refused",
+    title: "AI pack: on PRO, AI Credits' Buy now on the 1,000 pack opens the fake's Checkout in payment mode for that pack; Pay lands 1,000 purchased credits; a trial workspace's Buy is refused",
     run: async ({ page }) => {
       await as(page, W.pro, "/settings/ai-credits");
       const pack = page.locator(`[data-ai-pack="1000"]`);
       await pack.waitFor({ timeout: 20000 });
       await pack.getByRole("button", { name: "Buy now" }).click();
-      await page.waitForURL(/localhost:12111\/checkout\/cs_/, { timeout: 30000 });
+      await page.waitForURL(/localhost:12112\/checkout\/cs_/, { timeout: 30000 });
       const lines = (await page.locator("li").allTextContents()).map((t) => t.trim());
       expect(lines.some((l) => /price_bench_pack_1000 × 1/.test(l)), `Checkout lines ${lines.join(" | ")}`);
       const id = /checkout\/(cs_\w+)/.exec(page.url())[1];
       const session = await fakeGet(page, `/_fake/sessions/${id}`);
       expect(session.mode === "payment" && JSON.stringify(session.metadata ?? {}).includes(W.pro), `session ${JSON.stringify(session).slice(0, 500)}`);
+      // Pay: the pack's credits land on the purchased balance.
+      const before = Number((await apiCall(token, "GET", `${ws(W.pro)}/ai/credits`)).body?.balance?.purchased ?? 0);
+      await page.getByRole("button", { name: "Pay" }).click();
+      await page.waitForURL(/localhost:5176/, { timeout: 30000 });
+      let after = before;
+      const until = Date.now() + 30000;
+      while (Date.now() < until) {
+        after = Number((await apiCall(token, "GET", `${ws(W.pro)}/ai/credits`)).body?.balance?.purchased ?? 0);
+        if (after > before) break;
+        await page.waitForTimeout(500);
+      }
+      expect(after - before === 1000, `purchased credits ${before} then ${after}`);
       const packs = (await apiCall(token, "GET", `${ws(W.capped)}/ai/packs`)).body;
       const packUuid = Array.isArray(packs) ? packs.find((p) => p.credits === 1000)?.uuid : undefined;
       const refused = packUuid ? await apiCall(token, "POST", `${ws(W.capped)}/billing/topup`, { pack: packUuid }) : null;
       expect(!refused || refused.status === 403, `a trial's pack: ${refused?.status} ${refused && said(refused)}`);
-      return `Checkout ${id}: ${lines.join(", ")}, payment mode; trial's Buy ${refused ? `${refused.status} "${refused.body?.detail ?? said(refused)}"` : "not tried (no pack list)"}`;
+      return `Checkout ${id}: ${lines.join(", ")}, payment mode; paid: purchased credits ${before} to ${after}; trial's Buy ${refused ? `${refused.status} "${refused.body?.detail ?? said(refused)}"` : "not tried (no pack list)"}`;
     },
   },
   {
@@ -195,7 +226,7 @@ await run("c30-billing", [
         throw new Error(`no Manage billing; api: state ${b?.state}, can_manage ${b?.can_manage}, can_open_portal ${b?.can_open_portal}, can_subscribe ${b?.can_subscribe}`);
       });
       await manage.click();
-      await page.waitForURL(/localhost:12111\/portal\/bps_/, { timeout: 30000 });
+      await page.waitForURL(/localhost:12112\/portal\/bps_/, { timeout: 30000 });
       await page.getByRole("heading", { name: "Bench billing portal (Stripe fake)" }).waitFor();
       const body = ((await page.locator("body").textContent()) ?? "").replace(/\s+/g, " ");
       await page.getByRole("link", { name: "Return to IntelCost" }).click();

@@ -22,7 +22,7 @@
 set -u
 cd "$(dirname "$0")"
 TAG=fixtures-archive-2026-09-28
-FX_SERVICES="api-fx api-fx-b worker-fx app-fx app-fx-b"
+FX_SERVICES="api-fx api-fx-b worker-fx app-fx app-fx-b stripe-fake-fx"
 # The host gateway's address, which the api, the worker and the containerised browser all reach
 # MinIO at (Docker Desktop: host.docker.internal).
 host=$(docker compose exec -T api python -c "import socket; print(socket.gethostbyname('host.docker.internal'))" 2>/dev/null | tr -d '\r' | tail -1)
@@ -36,12 +36,13 @@ check() {
     out=$(docker compose exec -T "$svc" python -c "
 from app.config import settings
 from app.core.storage import _client
-print(_client().meta.endpoint_url, settings.s3_bucket, settings.database_url.rsplit('/', 1)[-1], repr(settings.mail_allowlist), settings.smtp_host)" 2>/dev/null | tr -d '\r' | tail -1)
-    if [ "$out" != "http://$FX_S3_HOST:9000 intelcost-fx intelcost_fx '' mailhog" ]; then
-      echo "FAIL $svc: $out (want http://$FX_S3_HOST:9000 intelcost-fx intelcost_fx '' mailhog)"
+print(_client().meta.endpoint_url, settings.s3_bucket, settings.database_url.rsplit('/', 1)[-1], repr(settings.mail_allowlist), settings.smtp_host, settings.stripe_api_base)" 2>/dev/null | tr -d '\r' | tail -1)
+    # Stripe is the fx stack's own fake (N10, D-660): a fixture that pays never reaches the bench's.
+    if [ "$out" != "http://$FX_S3_HOST:9000 intelcost-fx intelcost_fx '' mailhog http://stripe-fake-fx:12111" ]; then
+      echo "FAIL $svc: $out (want http://$FX_S3_HOST:9000 intelcost-fx intelcost_fx '' mailhog http://stripe-fake-fx:12111)"
       bad=1
     else
-      echo "ok   $svc: storage http://$FX_S3_HOST:9000/intelcost-fx, database intelcost_fx, mail to MailHog only"
+      echo "ok   $svc: storage http://$FX_S3_HOST:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake"
     fi
   done
   return $bad

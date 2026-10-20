@@ -403,6 +403,8 @@ services:
       APP_URL: http://localhost:5176
       CORS_ORIGINS: '["http://localhost:5176","http://localhost:5177"]'
       LOCKED_PROJECTS: "{}"
+      # Its own Stripe fake (N10, D-660): a fixture may pay, and the webhook lands on the fx api.
+      STRIPE_API_BASE: http://stripe-fake-fx:12111
     ports: !override
       - "8020:8000"
     # The archived suite's own drives, restored with it (./fx-suite.sh setup).
@@ -543,6 +545,18 @@ services:
     command: python -u /fake/server.py
     ports:
       - "12111:12111"
+
+  # The fx stack's own Stripe fake (N10, D-660): the same fake, its webhooks to the fx api, its pages
+  # on :12112. So a fixture can press Pay on Checkout (C30) without writing an event into the bench's
+  # database. Started and stopped with the fx services (./fx-suite.sh).
+  stripe-fake-fx:
+    extends: stripe-fake
+    profiles: ["fx"]
+    environment:
+      STRIPE_FAKE_WEBHOOK_URL: http://api-fx:8000/api/stripe/webhook
+      STRIPE_FAKE_PUBLIC_URL: http://localhost:12112
+    ports: !override
+      - "12112:12111"
 
   # A stand-in for MaxMind Insights, so the signup gate's geo branches can be driven
   # without a paid key (F2-S5). Off by default, on the "fakes" profile.
