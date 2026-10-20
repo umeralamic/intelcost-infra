@@ -1,6 +1,6 @@
 # Open speed: a project's first open at 5,000 and 20,000 items (plan)
 
-_Plan only, no code (night run 2026-10-19, R2 in `pending_umer.md`)._
+_Plan written in the night run of 2026-10-19 (R2 in `pending_umer.md`). Answered by Umer on 2026-10-20 (O1 to O5 all yes); building began that night (D-652, D-653). See "Built so far" at the end._
 
 ## The problem and the target
 
@@ -158,9 +158,11 @@ The browser has little left to do: the time is the api's.
 | Timing with the fair test at 1,000, 5,000 and 20,000; gates; quantity table; smokes, guest included | 4 |
 | **Total** | **about 25 h (3 days)** |
 
-## Questions for you
+## Questions, answered (Umer, 2026-10-20)
 
-| # | Question | Recommendation |
+All five as recommended. O3 also asked for the request to Abdullah in a note (`intelcost-infra/notes/2026-10-20_for_abdullah.md`).
+
+| # | Question | Answer |
 |---|---|---|
 | O1 | Lean reads for the open, with the full item detail read on demand? | **Yes.** It is most of the gain: 3.5 s becomes about 0.15 s at 5,000. |
 | O2 | Compression: gzip on big JSON in the api, and JSON compression in staging's proxy? | **Both.** NDJSON streams stay out (D-325). |

@@ -20639,3 +20639,107 @@ D-646).
 - **Still needing a password:** `browser/walkthrough-setup.mjs` signs walkthrough@ in with the old one.
   - It was already broken by D-592's rotation (its `apiLogin()` default), as was `bench-tidy.mjs`.
   - Listed in pending_umer.
+
+## D-652: The item read written straight from columns, large JSON gzipped, two api processes for timing (open speed, step 1, night run 2026-10-20)
+
+**Status:** taken overnight, as `docs/tasks/open_speed_PLAN.md` with Umer's answers (O1 to O5, 2026-10-20), Umer to
+confirm.
+
+- **`GET …/takeoff/item/detail` (the sheet's read and the project's)** is built by `takeoff/detail_json.py` from column
+  reads. There are no ORM objects and no read-model check per item.
+  - **Its JSON is the old one:** the same keys, in the same order, with the same values.
+    - Checked against the old route on the 1,000-item DUP (the 3D test copy's own items included) and the 5,000-item
+      DUP, in the api's process and again over HTTP.
+    - The sheet's read is byte-identical.
+    - The project's read differs only in the order of an item's shapes and of its `sheet_uuids`. Shapes now come
+      in the order they were made (by id); before, in the database's own order.
+  - **Each value is converted as its field declares.** A nested field (stabilizer agents, fill stack) goes through
+    its own validator, so it comes out exactly as before.
+  - **The guest's bundle still reads through `item_details`,** unchanged.
+- **`GET …/drawing/sheet/items`** reads only the columns it uses, not whole shapes and items, and sums an item's
+  shapes in the order they were made. Checked equal to the old answer on both DUPs; the one change is a contour's
+  total in its 15th significant digit (the sum's order).
+- **Large JSON is gzipped:** `core/http_cache.json_body`, level 1, from 64 KB, only to a client that accepts gzip.
+  - On the item read only, not as middleware: the AI tools' streams stay untouched (D-325, O2).
+  - The proxy setting for staging is in `intelcost-infra/notes/2026-10-20_for_abdullah.md`.
+- **Two api processes for timing (O3):** `intelcost-infra/docker-compose.prodlike.yml` layers the api as staging
+  should run it (no `--reload`, DEBUG off, two processes) over the bench's.
+  - One process against two at 5,000 items: Estimating's first row 17.5 s against 12.8 s.
+- **Measured on the fair test** (production build, Chrome held to 50 Mbit/s and a 40 ms round trip, warm cache, two
+  processes):
+
+| | 1,000 | 5,000 | 20,000 |
+|---|---|---|---|
+| Panel rows | 3.9 → 4.0 s | 12.3 → 6.2 s | 56.3 → 38.7 s |
+| Estimating first row | 5.5 → 5.0 s | 12.8 → 7.1 s | 48.2 → 20.0 s |
+| The sheet's item read on the wire | 2.7 MB → 263 KB | 14.8 MB → 1.4 MB | 60 MB → 5.8 MB |
+
+## D-653: The open's start-up and read order: fonts served by the app, the takeoff code fetched at once, the Sheets panel's lists after the open's read (open speed, step 2, night run 2026-10-20)
+
+**Status:** taken overnight, as `docs/tasks/open_speed_PLAN.md` (O4 and step D), Umer to confirm.
+
+- **Fonts (O4):**
+  - Inter, Archivo and JetBrains Mono, Latin and Latin Extended, are served from the app (`public/fonts`, 244 KB in six
+    woff2 files) by `src/fonts.css`.
+  - They replace the Google Fonts `@import`, a cross-origin stylesheet that held the first paint and the app's first
+    read. Their licence notes are in `public/fonts/LICENSE.txt` (SIL Open Font License 1.1).
+- **The takeoff page's code** is fetched as the app starts when the address is a takeoff one (`main.tsx`), beside the
+  session and project checks instead of after them.
+- **`drawing/sheet/items`** (the Sheets panel's per-sheet lists) is asked for once the open's own read is back: the
+  sheet's on Takeoff, the project's on Estimating.
+- **Measured on the fair test,** after D-652:
+
+| | 1,000 | 5,000 | 20,000 |
+|---|---|---|---|
+| Panel rows | 4.0 → 2.5 s | 6.2 → 4.9–5.9 s | 38.7 → 21.7 s |
+| Estimating first row | 5.0 → 4.7 s | 7.1 → 6.5 s | 20.0 → 18.0 s |
+
+  - **From before tonight to now:** 3.9 → 2.5 s, 12.3 → about 5 s, and 56 → 22 s for the rows.
+  - **Not met yet:** 3 s at 5,000 and 6 s at 20,000. What is left is the lean read for the open (O1, step 3): the
+    sheet's read still builds every item's 87 fields at about 1.5 s for 5,000 items, and the browser parses them. At
+    20,000, the canvas's first draw of 20,000 SVG paths is the rest (the canvas plan).
+
+## D-655: Trenches that cross or join drawn as one exact cut in every 3D view; a pipe one continuous tube (6b, D-616 follow-up, night run 2026-10-20)
+
+**Status:** taken overnight, as Umer's 6b asks, Umer to confirm.
+
+**What was wrong (Umer's screenshots), and why:**
+- **Doubled patches and walls through the other trench:** D-616's 3D cut kept or dropped half-foot pieces by their
+  centre.
+  - It ran only when both trenches opened in the shown view.
+  - It never cut the outline lines, the pits, or a wall's strip lifted above its start surface.
+  - So translucent panels blended twice, and lines and walls ran on through the other trench.
+- **Rings along the pipe:** a capped cylinder per piece between profile knots. A knot falls wherever the run crosses a
+  surface's triangle edge, a few feet apart. The pipe's outline stroke, drawn piece by piece, showed every joint.
+
+**Now:**
+- **An exact cut.** Each trench piece and each pit is a convex solid (`overlaps.ts`, `trenchCutSolids`,
+  `pitCutSolid`).
+  - The solid is open at the top, so the strip of a wall lifted to the shown surface is cut too.
+  - A wall, box panel, bedding or opening triangle is clipped plane by plane, and the parts inside another run's solid
+    are dropped (`outsideSolids`). An outline is cut the same way, segment by segment (`segmentOutside`).
+  - Exact, never sampled: no slivers, no surface drawn twice.
+- **Every view:** Existing, Proposed and Cut & fill, open or outline only. Every run's solids take part whatever view
+  it opens in. Pits' walls and outlines are cut where trenches come in, and trenches' are cut inside pits.
+- **A pipe is one tube per run** (`tube.ts`, `pipeTube`):
+  - one ring shared at each point, mitred at bends, smooth normals, closed only at the run's two ends;
+  - the centreline, and the stroke drawn along it, keep only the points that bend the pipe by more than 0.1 ft
+    (`straightened`), so no ring shows where the profile only has a knot.
+- **The 2D trench band** already drew one outline round the union (one fill group, the outlines masked by every band).
+  Checked at the same crossings; no change.
+
+**Checked on a BENCH DUP of the 3D test copy, C-200,** with six cases drawn through the api and Calculated in the UI:
+- **A:** a 60° crossing (covers 8 and 4).
+- **B:** a 90° crossing (6 and 6).
+- **C:** a tee into a main's centreline.
+- **D:** two runs leaving one manhole, 18° apart (8 and 5).
+- **E:** parallel runs 8 ft apart (5 and 5).
+- **F:** a 90° crossing at different depths (4 and 10).
+
+**Screenshots:**
+- **Before** (the production build without this change) and **after**: each case in Plan, Front, Left and 3D, at
+  ground opacity 5 % (`morning-report-2026-10-20/6b-before-*`, `6b-after-*`).
+- **Case A** at opacity 100 % and 40 %, with Show buried off, with soil layers in the walls, with Open trenches off,
+  and in the Existing and Cut & fill views (outline only).
+- **The 2D band** at each case.
+- **Frame rate:** 51–60 fps in every view on the dev build (the before build: 54–60). The opacity default is unchanged.

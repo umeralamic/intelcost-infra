@@ -1,6 +1,6 @@
 # Canvas speed: pan, zoom and Ctrl+A at 5,000 and 20,000 shapes (plan)
 
-_Plan only, no code (night run 2026-10-19, R4 in `pending_umer.md`)._
+_Plan written in the night run of 2026-10-19 (R4 in `pending_umer.md`). Answered by Umer on 2026-10-20 (C1 WebGL with an SVG fallback; C2 steps A, B, C, each committed and measured; C3 yes; C4 yes, as the floor; C5 no); building began that night._
 
 ## The problem and the target
 
@@ -18,6 +18,8 @@ Ctrl+A on 20,000 shapes took 14.7 s.
 - Pan and zoom at 55–60 fps with 5,000 shapes on one sheet.
 - Usable at 20,000: at least 30 fps while moving, a hover or click answered within 100 ms.
 - Ctrl+A on 20,000 shapes under 1 s.
+- **At 1,600 × 1,000, 1920 × 1080 and 2560 × 1440** (Umer, 2026-10-20: estimators use big monitors; every target
+  applies at all three, and every step is measured at all three).
 
 ## Where the time goes (profiled tonight)
 
@@ -155,9 +157,11 @@ Three steps. Each can ship on its own and is measured at 5,000 and 20,000 before
 | Checks: gates, quantity table, smokes, timing at 1,000, 5,000 and 20,000 after each step | 6 |
 | **Total** | **about 36 h (4–5 days)** |
 
-## Questions for you
+## Questions, answered (Umer, 2026-10-20)
 
-| # | Question | Recommendation |
+All five as recommended, plus: measure pan and zoom at 1920 × 1080 and 2560 × 1440 too.
+
+| # | Question | Answer |
 |---|---|---|
 | C1 | Renderer for measured shapes: WebGL with an SVG fallback, or a 2D canvas? | **WebGL.** A 2D canvas measured 0.2 s a redraw at 5,000 here, so it cannot hold 55–60 fps through a zoom. |
 | C2 | Build in steps A, B, C, each committed and measured, or all at once? | **Steps.** A and B alone fix hover, Ctrl+A's script and the drag cost, and are worth having even if C takes longer. |
