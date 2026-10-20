@@ -27,6 +27,8 @@ stamp (or F8-S15's short one) or a fixed fixture name; the list is explicit so a
 workspace a person named is never matched by accident.
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import asyncio
 import re
 import sys
@@ -42,8 +44,7 @@ from app.features.project.models import Project
 from app.features.workspace.models import Workspace, WorkspaceMember
 
 # The protected projects, shared with the api's bench scripts (scripts/protected.py, D-542).
-sys.path.insert(0, "/srv/scripts")
-from protected import PROTECTED_UUIDS
+PROTECTED_UUIDS = set(guard.PROTECTED)
 
 SEEDED = "estimator@bench.intelcost.io"
 KEEP_SLUG = "bench-construction"
@@ -98,14 +99,15 @@ async def delete_workspaces(uuids: list[object]) -> int:
     if refused:
         fail(f"refusing to purge kept workspaces: {', '.join(refused)}")
     # Nor a workspace holding a protected project (D-542): the 3D test copy, the founder's own.
+    # Compared here, not in the query: a statement naming a protected project is refused (D-667).
     async with SessionFactory() as session:
-        held = list(
-            await session.scalars(
-                select(Project.name)
-                .join(Workspace, Workspace.id == Project.workspace_id)
-                .where(Workspace.uuid.in_(uuids), Project.uuid.in_(PROTECTED_UUIDS))
+        held = [
+            str(project_uuid)
+            for project_uuid in await session.scalars(
+                select(Project.uuid).join(Workspace, Workspace.id == Project.workspace_id).where(Workspace.uuid.in_(uuids))
             )
-        )
+            if str(project_uuid) in PROTECTED_UUIDS
+        ]
     if held:
         fail(f"refusing to purge workspaces that hold protected projects: {', '.join(held)}")
     areas = get_args(storage.Area)

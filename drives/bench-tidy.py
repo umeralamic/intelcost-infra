@@ -15,14 +15,17 @@ hand is touched:
     `seatedMember` makes, never the owner and never a founder account: their seat removed;
   - Sara W. (window-b@bench.intelcost.io) put back to Estimator if a check left her on another
     role.
-Only that one workspace; the guard's protected projects never, whatever their name.
+Only that one workspace, and only projects whose names start with a fixture prefix are read; the
+protected projects never, whatever their name, refused by the drives' guard (D-667) before any read.
 """
+
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
 
 import re
 import sys
 from datetime import UTC, datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, or_, select
 
 import app.models_registry  # noqa: F401
 from app.core import outbox
@@ -41,18 +44,9 @@ PROJECT_PREFIXES = ["F4-S1 ", "F4-S2 dialog ", "F8-S4 topic ", "F8-S8 made while
 FIXTURE_PROJECT = re.compile(rf"^({'|'.join(re.escape(p) for p in PROJECT_PREFIXES)}).*\d{{13}}$")
 FIXTURE_SEAT = re.compile(r"^[a-z0-9]+-[a-z_]+-\d{13}@bench\.intelcost\.io$")
 SARA = "window-b@bench.intelcost.io"
-FOUNDER = {"estimator@bench.intelcost.io", "umeralam.q@gmail.com"}
-# The guard's protected projects (browser/mcp-guard.js, lib/protected.mjs): never touched.
-PROTECTED = {
-    "042c8817-4a65-47ba-95d8-686ecf986246",
-    "9c348237-1ca6-42d0-bd8c-712d7cf915c1",
-    "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c",
-    "51e474d2-b55b-40d2-ab46-09433ffc5add",
-    "09f1fc14-42f4-4140-9726-bcaf3056ea87",
-    "90cb3a75-3553-4de0-aac4-1693c7d18d57",
-    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed",
-    "4df73dc7-901b-4933-b2bb-fafc327b01f0",
-}
+FOUNDER = set(guard.FOUNDER_EMAILS)
+# The guard's protected projects (scripts/protected.py, as lib/protected.mjs): never touched.
+PROTECTED = set(guard.PROTECTED)
 
 
 def main() -> None:
@@ -62,9 +56,11 @@ def main() -> None:
         workspace = session.scalar(select(Workspace).where(Workspace.slug == SLUG))
         if workspace is None:
             raise SystemExit(f"no {SLUG} workspace")
-        projects = session.scalars(select(Project).where(Project.workspace_id == workspace.id)).all()
+        # Only rows named like a fixture's are read; the workspace's other projects only counted.
+        named = or_(*(Project.name.startswith(prefix, autoescape=True) for prefix in PROJECT_PREFIXES))
+        projects = session.scalars(select(Project).where(Project.workspace_id == workspace.id, named)).all()
         doomed = [p for p in projects if FIXTURE_PROJECT.match(p.name) and str(p.uuid) not in PROTECTED]
-        kept = sorted({p.name for p in projects if p not in doomed})
+        kept = session.scalar(select(func.count()).select_from(Project).where(Project.workspace_id == workspace.id)) - len(doomed)
         for project in doomed:
             if not tidy:
                 print(f"would purge project  {project.uuid}  {project.name!r}")
@@ -108,7 +104,7 @@ def main() -> None:
         session.commit()
     verb = "removed" if tidy else "would remove"
     print(f"{verb} {len(doomed)} fixture projects and {len(seats)} fixture seats from {workspace.name}")
-    print(f"kept projects: {len(kept)}")
+    print(f"kept projects: {kept}")
     print(note)
 
 

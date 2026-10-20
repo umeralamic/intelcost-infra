@@ -14,6 +14,8 @@ Refused: any account not in MEMBERS, and anything but the local bench (ENVIRONME
 accounts are never in MEMBERS (D-542, D-601).
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import asyncio
 import json
 import sys

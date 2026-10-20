@@ -16,6 +16,12 @@ same thing without the api, for when you run the api from your IDE.
 accounts'). The fixture suite and its drives were archived by D-68; see
 [The fixture suite, archived](#the-fixture-suite-archived).
 
+**Every drive imports `drives/guard.py` first (D-667).** It refuses the protected projects as the browser's guard
+(`browser/lib/protected.mjs`) does, before any read or write: on the command line before the database is loaded, on
+every SQL statement before it is sent, and on every project row loaded. A new drive starts with
+`import guard  # noqa: F401`; a script fed on stdin puts `/srv/drives` on its path and imports it first. Never run
+an api-process script that does not.
+
 `workspace/` is not part of the bench. It is the **versioned mirror** of the four
 workspace files, `docs/` and `.claude/` (the rule 7 hook), which sit at the workspace root outside every repo and so
 have no git history of their own. The root copies are the ones anybody edits; this is

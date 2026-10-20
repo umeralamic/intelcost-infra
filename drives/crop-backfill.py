@@ -25,6 +25,8 @@ crop box only, of the pages listed, in one transaction, and prints each page it 
 is re-prepared, no image made, nothing written to the bucket.
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import argparse
 import sys
 from typing import Any

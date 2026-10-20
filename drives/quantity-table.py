@@ -16,6 +16,8 @@ the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245)
 table of the calibration column's own type, never committed.
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import json
 import math
 import sys

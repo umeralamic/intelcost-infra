@@ -20927,8 +20927,8 @@ during the drag (312.53) is the saved length (312.53 LF).
 
 ## D-658: The open's item reads built by Postgres and sent compact, every field kept; the canvas's first draw made lighter (open speed, step A)
 
-**Status:** taken during the run of 2026-10-20 as `docs/tasks/open_speed_PLAN.md` step A (O1), changed in one way,
-Umer to confirm.
+**Status:** taken during the run of 2026-10-20 as `docs/tasks/open_speed_PLAN.md` step A (O1), changed in one way.
+**Confirmed by Umer, 2026-10-20 (A2): as built, every field kept. No lean read with an editor gate.**
 
 **The change from the plan:** the plan's lean read dropped fields (the panel's ~25, the canvas's ~12) and read the
 full detail later. That would have left the takeoff page's 115 users of the project's items reading partial items
@@ -21038,7 +21038,9 @@ test"). Umer to confirm.
 
 ## D-662: bench-tidy moved into the api's process; walkthrough-setup retired (T2)
 
-**Status:** taken during the run of 2026-10-20, changed from the answer in one way. Umer to confirm.
+**Status:** taken during the run of 2026-10-20, changed from the answer in one way. **Confirmed by Umer, 2026-10-20
+(A4), once the tidy goes through the drives' guard: done the same night (D-667), a dry run naming Hidden Valley Spec
+refused with no statement sent.**
 
 - **Retired:** `browser/walkthrough-setup.mjs`, deleted.
 - **The change from the answer** ("move bench-tidy.mjs to drives/bench-session.py sessions"): `bench-session.py`
@@ -21141,3 +21143,40 @@ in and data out (hard rule 2), under `lib/takeoff/earthwork/export/`.
   table; every draped line on its surface within 3e-9 ft; every contour vertex at its level within 1e-10 ft; DXF and
   CSV round trips clean; the free checker passed (DXF AC1009, audit clean, 3D polylines only; CSV; LandXML schema).
   EG to the rebuilt subgrade against Calculate without strip: cut +0.08 %, fill +0.76 % (Calculate's own gap, A6).
+
+## D-667: The drives' guard: every api-process script refuses the protected projects before any read or write (A1)
+
+**Status:** decided by Umer, 2026-10-20 (A1: "drives/ scripts refuse the protected uuids exactly as lib/protected.mjs
+does, before any read or write"). Built in the night run of 2026-10-20 (Step 1).
+
+**Why:** `cmp_compact.py` read "Hidden Valley Spec Building Rebid" in the api's process on 2026-10-20 (A1). The browser's
+guard covers requests; nothing covered a script holding a database session.
+
+- **`intelcost-infra/drives/guard.py`,** imported first by all nine drives, before anything from `app`. Its list is the
+  api scripts' own (`scripts/protected.py`), which the guard check holds equal to `lib/protected.mjs` and
+  `mcp-guard.js`. The drives' three hand-copied lists (bench-tidy, gen-items, purge-bench-dups) now read it.
+- **The rules, `lib/protected.mjs`'s:**
+  - **Command line,** at import, before the database is even loaded: a protected project other than the 3D test
+    copy, a founder workspace or a founder account named in any argument stops the drive.
+  - **Every SQL statement,** before it is sent (`before_cursor_execute` on every engine, async included): text or
+    parameters naming a protected project other than the test copy, or a founder workspace, refused, reads too
+    (`openRefusal`); naming the test copy, refused unless a read (`writeRefusal`).
+  - **Every project row loaded** through the models: a protected one other than the test copy stops the drive as it
+    loads, before its id can be used.
+  - A refusal is a `SystemExit` (exit 1, past any `except Exception`), printing the statements sent before it.
+- **Changed to fit:** `bench-workspaces.py` compared its workspaces' projects against the list inside the query (which
+  names them); it now compares in Python. `bench-tidy.py` loaded every project in the bench workspace; it now reads
+  only rows named with a fixture prefix and counts the rest.
+- **Not caught, stated in the module:** a statement naming a protected project only by its integer id, or a Core
+  `text()` listing that returns its row. A drive learns the id only by reading the project, and both ways of
+  reading it are refused. `scripts/project_fingerprint.py` is not a drive (the read-only fingerprint, D-542).
+- **`DRIVE_GUARD_EXTRA`** adds uuids to the list for one run (never removes), so the statement and row refusals can
+  be shown on a BENCH DUP without touching a protected project.
+- **Ad-hoc scripts** run in the api's process put `/srv/drives` on the path and import the guard first (infra
+  README).
+- **Proved** (night report 2026-10-21, Step 1): `gen-items.py` on bd8fc5b0 refused, 0 statements sent, and with the
+  database address unreachable the same refusal, nothing database-related imported (`-X importtime`), while a
+  non-protected uuid tried to connect and failed; `crop-backfill.py` on BENCH DUP 7bb1fa52 ran (29 pages, 0
+  differ); a read naming a listed project refused after 1 statement, this one not sent; a write naming the test copy
+  refused; `purge-bench-dups.py` stopped as a listed row loaded; `bench-tidy.py` naming Hidden Valley Spec or Minmar
+  refused with 0 statements (A4), its plain dry run clean.

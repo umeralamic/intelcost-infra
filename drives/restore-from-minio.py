@@ -21,6 +21,8 @@ rows made before it name keys the bucket never had. This copies exactly those:
 Reads MinIO, writes only to the bucket in the api's own settings. Never deletes anything.
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import hashlib
 import re
 import sys

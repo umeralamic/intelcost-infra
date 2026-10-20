@@ -12,6 +12,8 @@ deleted sheets' files):
     docker compose exec -T api sh -lc "cd /srv && python drives/delete-orphans.py --workspace <uuid> [--delete]"
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import sys
 from datetime import UTC, datetime
 from typing import get_args

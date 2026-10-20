@@ -15,6 +15,8 @@ on each project. Each purge writes a `trash_purge_log` row and an audit entry ("
 in the bench bucket and writes the outcome back on the log row. Each is printed, one line each.
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import re
 import sys
 from datetime import UTC, datetime
@@ -33,19 +35,10 @@ from app.worker.tasks.storage import clear_purged
 
 NAME = re.compile(r"^BENCH DUP \d{4}-\d{2}-\d{2} \d{2}:\d{2} — delete me$")
 
-# The guard's protected projects (browser/mcp-guard.js, lib/protected.mjs): never purged.
-PROTECTED = {
-    "042c8817-4a65-47ba-95d8-686ecf986246": "Hidden Valley Rebid — 3D test",
-    "9c348237-1ca6-42d0-bd8c-712d7cf915c1": "HIdden Valley Spec",
-    "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "Hidden Valley Spec Building Rebid",
-    "51e474d2-b55b-40d2-ab46-09433ffc5add": "Waxing City",
-    "09f1fc14-42f4-4140-9726-bcaf3056ea87": "Minmar",
-    "90cb3a75-3553-4de0-aac4-1693c7d18d57": "Miramar Cove Vault Buildings",
-    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "11",
-    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
-}
+# The guard's protected projects (scripts/protected.py, as lib/protected.mjs): never purged.
+PROTECTED = guard.PROTECTED
 # The founder's own workspace (Intelcost Team): nothing in it is ever purged from here.
-FOUNDER_WORKSPACES = {"04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team"}
+FOUNDER_WORKSPACES = guard.FOUNDER_WORKSPACE_UUIDS
 
 
 def main() -> None:

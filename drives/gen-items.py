@@ -15,6 +15,8 @@ the founder's own workspace (D-542, D-601). Anything else is refused and nothing
 purge script (drives/purge-bench-dups.py) removes the DUP and everything in it at wrap-up.
 """
 
+import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
+
 import copy
 import json
 import random
@@ -28,17 +30,8 @@ import app.models_registry  # noqa: F401
 from app.database import SyncSessionFactory
 
 NAME = re.compile(r"^BENCH DUP \d{4}-\d{2}-\d{2} \d{2}:\d{2} — delete me$")
-PROTECTED = {
-    "042c8817-4a65-47ba-95d8-686ecf986246",
-    "9c348237-1ca6-42d0-bd8c-712d7cf915c1",
-    "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c",
-    "51e474d2-b55b-40d2-ab46-09433ffc5add",
-    "09f1fc14-42f4-4140-9726-bcaf3056ea87",
-    "90cb3a75-3553-4de0-aac4-1693c7d18d57",
-    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed",
-    "4df73dc7-901b-4933-b2bb-fafc327b01f0",
-}
-FOUNDER_WORKSPACES = {"04df326a-6dba-41df-ac98-095bf841f910"}
+PROTECTED = set(guard.PROTECTED)
+FOUNDER_WORKSPACES = set(guard.FOUNDER_WORKSPACE_UUIDS)
 FOLDERS = 50
 SKIP = {"id", "uuid", "name", "folder_id", "position", "created_at", "updated_at", "name_base"}
 
