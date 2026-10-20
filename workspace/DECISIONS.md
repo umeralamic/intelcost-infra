@@ -21180,3 +21180,54 @@ guard covers requests; nothing covered a script holding a database session.
   differ); a read naming a listed project refused after 1 statement, this one not sent; a write naming the test copy
   refused; `purge-bench-dups.py` stopped as a listed row loaded; `bench-tidy.py` naming Hidden Valley Spec or Minmar
   refused with 0 statements (A4), its plain dry run clean.
+
+## D-668: GPS Export in plan coordinates says plan feet, never a survey foot; the files assembled by `exportSet.ts` (A7 part 1)
+
+**Status:** decided by Umer, 2026-10-20 (A7: "fix the README in the test zips from US survey feet to plan feet").
+Built in the night run of 2026-10-20 (Step 3).
+
+- **The wording:** with no coordinates set, the README's units read "Horizontal: plan feet (the sheet's own scale,
+  not a survey foot). Vertical: feet, the drawing's own elevations." (plan metres on a metric project,
+  `planUnitWords`). The LandXML header said `linearUnit="USSurveyFoot"` too; a plan-coordinates file now declares
+  `foot`. With coordinates, the chosen unit is written as before.
+- **`lib/takeoff/earthwork/export/exportSet.ts`** (the plan's `exportSet.ts`, pure): the presets' defaults
+  (`presetChoices`: machine control writes subgrade and FG as LandXML with the DXF; stakeout the DXF without
+  breaklines and the CSV; CAD the DXF with surfaces as 3D faces and the CSV), every file of an export, each read back
+  and compared, and the README. A `grid` transform (step 4) puts every point in the site's grid; without one, plan
+  coordinates and the label. The test zips were built through it; the dialog (step 5) will be too.
+- **Regenerated:** the three zips in `morning-report-2026-10-20/gps-test-files/`, from BENCH DUP 7bb1fa52's C-200 (the
+  same saved Calculate as the night before). Against the old zips: the DXF and CSV files byte-identical; each LandXML
+  file differs only in `linearUnit`; each README only in its units line.
+- **Checked:** the round trip clean on every file; `gps-check.sh`: both LandXML files schema valid, the three DXFs
+  AC1009 with a clean audit and 3D polylines only, both CSVs 27 rows. Gates and the quantity table passed.
+
+## D-669: Tile Setter and Tile Finisher in the Commercial & Public table; Bricklayer Helper stays Bricklayer Tender's (A5)
+
+**Status:** asked by Umer, 2026-10-20 (A5). Built in the night run of 2026-10-20 (Step 4); the Bricklayer Helper call
+and the tile default crew are Umer's to confirm.
+
+- **Added** (migration `d669a2c5e8f1`, the gap fill's methods, `crew-mapping/README.md`):
+
+| Code | Craft | Wage + benefits | Burden | Hourly | Base | Comp |
+|---|---|---|---|---|---|---|
+| CC-35 | Tile Setter | $43.82 | 33.78 % | $58.62 | $39.13 | Tile, stone, and terrazzo, 5.23 |
+| CC-36 | Tile Finisher | $30.67 | 33.78 % | $41.03 | $27.39 | Tile, stone, and terrazzo, 5.23 |
+
+  - **Tile Setter:** residential's $40.27 ÷ 0.687 (the median residential/commercial ratio the gap fill derived the
+    residential crafts with, reversed); Marble Setter's burden, the nearest commercial craft in the same comp class;
+    the base at the table's 89.29 % of wage and benefits (by the base ratio, 30.10 ÷ 0.749, it would be $40.19).
+  - **Tile Finisher,** tile's helper on commercial work (the classification wage determinations use): 70 % of the
+    Tile Setter's wage and base, his burden and comp, as every helper of the gap fill. The WD rule "TILE FINISHER"
+    maps to it first, the Tile Setter as before only as a last resort.
+  - **Crews** C-105 "Tile · Tile Setter" and C-106 "Tile · Tile Setter + Finisher", suggested on CSI 09.04 (Tile)
+    after its three existing crews. **The default is not changed:** 09.04's default is "Terrazzo · Terrazzo Worker +
+    Laborer" in both tables (Umer's question).
+- **Bricklayer Helper: not its own Commercial & Public row.** On commercial and public work the bricklayer's helper is
+  the mason tender: the same classification (LABORER: MASON TENDER - BRICK), the same rate, and the table already has
+  it as Bricklayer Tender (C-058, C-059 use it). A second row would be a duplicate the crews never use.
+- **Spec test 6** back to "21 crafts mapped": on Commercial & Public 20 read Matched, Tile Setter among them; the 21st,
+  Bricklayer Helper, is matched as Bricklayer Tender.
+- **Checked:** gates; migration down and up; on the bench, tx115 on a BENCH DUP set to Commercial: 26 classifications,
+  rules, 20 Matched, Tile Setter ← TILE SETTER, nothing under the other classifications; Location-Adjusted in New
+  York: Tile Setter $93.19 (between Terrazzo Worker $91.62 and Marble Setter $97.32), Tile Finisher $65.23. C31 now
+  asserts 20.

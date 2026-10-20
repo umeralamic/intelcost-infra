@@ -135,7 +135,7 @@ await run("c31-wage", [
     },
   },
   {
-    title: "(4) My wage data, Upload file: tx115.txt is read by the rules as TX20260115 with 26 classifications, no credit prompt; 19 of its 21 crafts Matched in the Commercial & Public table, TILE SETTER among the other classifications",
+    title: "(4) My wage data, Upload file: tx115.txt is read by the rules as TX20260115 with 26 classifications, no credit prompt; 20 of its 21 crafts Matched in the Commercial & Public table, Tile Setter among them",
     run: async ({ page }) => {
       await openCalculator(page);
       await page.getByRole("button", { name: "Continue", exact: true }).click();
@@ -163,13 +163,13 @@ await run("c31-wage", [
       }
       await data.locator("table[data-mapping] tr[data-map-row]").first().waitFor({ timeout: 10000 });
       const matched = await data.locator("table[data-mapping] tr[data-map-row]").filter({ hasText: "Matched" }).count();
-      // Spec test 6 (N7, D-661): the rules map 21 crafts; a Commercial & Public project's table holds 19 of them,
-      // shown Matched. Tile Setter and Bricklayer Helper are not in that table: TILE SETTER is listed under the
-      // other classifications with the reason; Bricklayer Helper's classification is Bricklayer Tender's already.
-      expect(matched === 19 && parse.mapping.length === 19, `${matched} rows Matched, ${parse.mapping.length} crafts in the table (19 expected)`);
-      const tile = parse.unmatched.find((u) => u.classification === "TILE SETTER");
-      expect(tile?.reason === "No matching craft in the Commercial & Public table", `TILE SETTER listed as ${JSON.stringify(tile)}`);
-      expect(!parse.mapping.some((m) => m.craft_name === "Tile Setter" || m.craft_name === "Bricklayer Helper"), "Tile Setter or Bricklayer Helper in the Commercial & Public mapping");
+      // Spec test 6 (D-669): the rules map 21 crafts; a Commercial & Public project's table holds 20 of them since
+      // Tile Setter joined it, shown Matched. Bricklayer Helper is not a Commercial & Public craft: its classification
+      // (LABORER: MASON TENDER - BRICK) is matched as Bricklayer Tender, the table's name for the same worker.
+      expect(matched === 20 && parse.mapping.length === 20, `${matched} rows Matched, ${parse.mapping.length} crafts in the table (20 expected)`);
+      expect(parse.mapping.some((m) => m.craft_name === "Tile Setter" && m.classification === "TILE SETTER"), "Tile Setter not matched to TILE SETTER");
+      expect(!parse.unmatched.some((u) => u.classification === "TILE SETTER"), "TILE SETTER still under the other classifications");
+      expect(!parse.mapping.some((m) => m.craft_name === "Bricklayer Helper"), "Bricklayer Helper in the Commercial & Public mapping");
       return `${parse.header.wd_number}: ${count} classifications by the rules, no credit prompt; ${matched} crafts matched, ${parse.unmatched.length} other classifications`;
     },
   },
