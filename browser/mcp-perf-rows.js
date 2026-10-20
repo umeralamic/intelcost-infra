@@ -28,9 +28,12 @@ async (loader) => {
   // The login page shows its form for a moment before a held session moves it on.
   await page.waitForTimeout(1500);
   if (new URL(page.url()).pathname !== "/settings/account") {
-    await page.fill("#email", "window-b@bench.intelcost.io");
-    await page.fill("#password", "bench-password-1");
-    await page.click('button[type="submit"]');
+    // No password (D-651): a session from `node browser/bench-session-serve.mjs`, as mcp-signin.js does.
+    const answer = await page.context().request.get("http://127.0.0.1:5199/session").catch(() => null);
+    if (!answer || !answer.ok()) throw new Error("No session: start `node browser/bench-session-serve.mjs` in intelcost-infra first (D-651).");
+    const session = await answer.text();
+    await page.evaluate((value) => localStorage.setItem("intelcost.session", value), session);
+    await page.goto(`${opts.app}/settings/account`);
     await page.waitForURL((u) => u.pathname === "/settings/account", { timeout: 30000 });
   }
   const name = await page.evaluate(
