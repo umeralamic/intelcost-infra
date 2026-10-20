@@ -21,7 +21,7 @@
 // real contour drawing, and its feel); the look of the TIN, the cut and fill map, the strip
 // hatch and the uncovered shading; the panel's layout; the grading report's pictures.
 
-import { expect, run } from "./lib/bench.mjs";
+import { apiCall, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { waitFor } from "./lib/realtime.mjs";
 import { calculate, flatPad, fx, fy, grading, gradingSheets, num, openSheet, rect, richPad, storedLines } from "./lib/grading-world.mjs";
@@ -53,6 +53,9 @@ await run("c17-earthwork", [
     title: "setup: C-1 with spots, contours, the boundary, a Site Feature and a Strip Area; C-2 with proposed grade over half the boundary",
     run: async ({ page }) => {
       [c1, c2] = await gradingSheets(page, token, base, workspace, project, ["C-1", "C-2"]);
+      // C-1 numbered "G1", so the elevation warning's sheet name can be told from "Page 1" (N9, D-659).
+      const numbered = await apiCall(token, "PATCH", `${base}/${project.uuid}/drawing/sheet/${c1.uuid}`, { sheet_number: "G1" });
+      expect(numbered.status === 200, `numbering C-1: ${numbered.status}`);
       world = await richPad(g, c1);
       // C-2: the EG ring as on C-1; FG spots on a ring that ends at the boundary's middle.
       const [x0, y0] = [0.1, 0.2];
@@ -116,8 +119,11 @@ await run("c17-earthwork", [
       expect(count === "1 elevation warning", `elevation check: "${count}"`);
       if ((await warnings.locator("[data-elevation-warning]").count()) === 0) await warnings.getByRole("button").first().click();
       const warning = await text(warnings.locator("[data-elevation-warning]").first());
-      // It names the sheet "Page 1" where the Sheets panel and the line details say "G1": noted for
-      // the founder, not failed here.
+      // The warning names the sheet as the Sheets panel does (N9, D-659): it said "Page 1" where the
+      // panel said "G1".
+      const row = (await page.locator(`[data-sheet-row="${c1.uuid}"]`).first().innerText()).replace(/\s+/g, " ").trim();
+      const named = warning.split(" · ")[0].trim();
+      expect(named.startsWith("G1") && row.startsWith(named), `the warning names the sheet "${named}"; its Sheets panel row reads "${row}"`);
       expect(/EG spot/.test(warning) && /130/.test(warning) && /100/.test(warning), `the warning reads "${warning}"`);
       return `${facts}; ${count}: "${warning}"`;
     },
