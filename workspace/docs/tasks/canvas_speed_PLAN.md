@@ -1,6 +1,6 @@
 # Canvas speed: pan, zoom and Ctrl+A at 5,000 and 20,000 shapes (plan)
 
-_Plan written in the night run of 2026-10-19 (R4 in `pending_umer.md`). Answered by Umer on 2026-10-20 (C1 WebGL with an SVG fallback; C2 steps A, B, C, each committed and measured; C3 yes; C4 yes, as the floor; C5 no); building began that night._
+_Plan written in the night run of 2026-10-19 (R4 in `pending_umer.md`). Answered by Umer on 2026-10-20 (C1 WebGL with an SVG fallback; C2 steps A, B, C, each committed and measured; C3 yes; C4 yes, as the floor; C5 no); steps A (D-654) and B (D-656) built that night; step C not started._
 
 ## The problem and the target
 

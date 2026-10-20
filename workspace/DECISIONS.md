@@ -20674,6 +20674,12 @@ confirm.
 | Estimating first row | 5.5 → 5.0 s | 12.8 → 7.1 s | 48.2 → 20.0 s |
 | The sheet's item read on the wire | 2.7 MB → 263 KB | 14.8 MB → 1.4 MB | 60 MB → 5.8 MB |
 
+**Found after (same night):** the project read's new shape order reaches the earthwork Calculate, which sums in the
+order it is given. The 3D test copy's C-200 result computed through this api differs from the one computed before it
+only in the 12th significant digit (largest 4.7e-10 CF, relative 2e-12); its inputs are identical once sorted. The
+new order is the order shapes were made, so it no longer changes with the database's own order. See T4 in
+`docs/tasks/pending_umer.md`.
+
 ## D-653: The open's start-up and read order: fonts served by the app, the takeoff code fetched at once, the Sheets panel's lists after the open's read (open speed, step 2, night run 2026-10-20)
 
 **Status:** taken overnight, as `docs/tasks/open_speed_PLAN.md` (O4 and step D), Umer to confirm.
@@ -20743,3 +20749,90 @@ confirm.
   and in the Existing and Cut & fill views (outline only).
 - **The 2D band** at each case.
 - **Frame rate:** 51–60 fps in every view on the dev build (the before build: 54–60). The opacity default is unchanged.
+
+## D-654: The sheet's shapes drawn once and kept, the selection one path, the zoom without a redraw on a heavy sheet (canvas speed, step A, night run 2026-10-20)
+
+**Status:** taken overnight, as `docs/tasks/canvas_speed_PLAN.md` step A with Umer's answers (C1 to C5, 2026-10-20),
+Umer to confirm.
+
+- **Each shape is its own memoised component** (`MeasuredShape.tsx`). It redraws only when its own geometry, its
+  item's look, its selection or the zoom's stroke width changes. A hover, a selection or a save of one shape no longer
+  re-renders the other 4,999.
+- **A shape's outline is worked out once per geometry** and kept in a `WeakMap` keyed by the geometry object, so a new
+  read from the api works it out again, and nothing else does.
+- **The selection's frames are one `<path>`** (one subpath per selected shape), not a `<rect>` per shape. Ctrl+A on
+  5,000 shapes put 5,000 elements in the page; it now puts one.
+- **On a sheet of more than 1,500 shapes** the wheel's zoom moves the drawn layer as a transform while the wheel
+  turns, and draws once when it stops (`will-change: transform` while it turns). Under 1,500 it is as before.
+- **Nothing about a quantity changed:** the shapes' points, the hit test, the snap and the box selection read the same
+  data as before. The quantity table passes; a snap of a vertex onto another shape's endpoint lands exactly on it
+  (`morning-report-2026-10-20/a-1-snap-vertex-onto-endpoint.png`).
+- **Checked:** r5-drags 10/10, n11-undo-queue 2/2, rv-rows 8/8 (the guest's view), c10-two-trees 6/6, the quantity
+  table passed.
+
+**Measured** on the production build with BENCH DUPs of 5,000 and 20,000 shapes, at 1,600 × 1,000, 1,920 × 1,080 and
+2,560 × 1,440:
+
+| | Before | After step A |
+|---|---|---|
+| 5,000: pan | 1.2 to 1.3 fps | about 1.4 fps |
+| 5,000: zoom | 1.4 to 13.7 fps | 1.7 to 13.6 fps |
+| 5,000: hover | 13 to 16 fps | 41 to 59.7 fps |
+| 5,000: Ctrl+A | 30 to 34 s | 6.5 to 7.6 s (in the page's state in 245 ms) |
+| 20,000: pan | 0.2 to 0.3 fps | 0.2 to 0.3 fps |
+| 20,000: zoom | 0.6 to 0.9 fps | 0.5 to 24 fps |
+| 20,000: Ctrl+A | 83 to 143 s | 34 to 50 s |
+
+- **Hover and selection meet their targets at 5,000; pan and zoom do not.** Every landing of a pan or a zoom has the
+  GPU raster the whole SVG again, and that is what a frame waits on. Step C (WebGL, C1) is the fix for that; step B
+  (the spatial index, D-656) is next.
+
+## D-656: Shapes found by where they are, and the shape layer built once per change of what it shows (canvas speed, step B, night run 2026-10-20)
+
+**Status:** taken overnight, as `docs/tasks/canvas_speed_PLAN.md` step B with Umer's answers (2026-10-20), Umer to
+confirm.
+
+- **A grid over the sheet's shapes** (`lib/takeoff/engine/shapeIndex.ts`): each shape's bounds in every cell (a
+  fiftieth of the page) they cover, rebuilt when the shapes change. Pure (hard rule 2).
+  - **Hover and click** (`hitAt`) test only the shapes whose bounds come within reach of the pen: the line tolerance
+    or the largest count mark's hit ellipse, half again for margin.
+  - **Snap** (`snapNear`) reads only the shapes within the snap's reach.
+  - **Box selection** tests only the shapes whose bounds meet the box.
+  - **Each asks the same rules as before** (`hit.ts`, `snap.ts`, `encloses`) on what the grid gives, in draw order,
+    so the topmost still wins and what is found is what was found before.
+  - **A grid, not the plan's packed tree:** no new dependency, and every query here is a small box round the pen or a
+    box the user drew; a page's shapes spread over it.
+- **The shape layer is one memo** (`shapeLayer` in `SheetCanvas.tsx`), rebuilt when the shapes, the selection, the
+  box, the zoom's sizes or the count mark under the pointer change. A hover over a line or an area changes none of
+  them (the area's highlight draws on top), so a hover no longer walks 20,000 shapes on every move.
+- **Not done in B:** culling the SVG to the view. At the fit view every shape is in view, and zoomed in the
+  compositor already rasters only the tiles in view. Culling belongs to step C's WebGL draw.
+- **Checked:**
+  - **Smoke on the dev build** (a BENCH DUP, sheet G101): an area's hover highlight; a count's second mark outlined
+    alone on hover, cleared when the pointer leaves; a vertex dragged near another line's end snapped onto it exactly
+    and saved; a box over the area and the count picked those two
+    (`morning-report-2026-10-20/b-1-hover-count-mark.png`, `b-2-snap-vertex-onto-endpoint.png`,
+    `b-3-box-area-and-count.png`).
+  - **Fixtures** after the last change: r5-drags 10/10, n11-undo-queue 2/2, rv-rows 8/8 (the guest's view),
+    c10-two-trees 6/6. f8-s18 2/3 (step 3 is the screen D-619 removed, as before). The quantity table passed.
+  - **On the 1,000-item DUP's A101,** the 1,000 generated lines cover the whole sheet, so a press there lands on one
+    of them: the topmost item wins, as before. That is why the smoke ran on G101.
+
+**Measured** on the production build, BENCH DUPs of 5,000 and 20,000 shapes, at 1,600 × 1,000, 1,920 × 1,080 and
+2,560 × 1,440:
+
+| | After step A (D-654) | After step B |
+|---|---|---|
+| 5,000: hover | 41 to 59.7 fps | 60 fps at all three (worst frame 17 ms) |
+| 5,000: pan | about 1.4 fps | 2 to 2.2 fps |
+| 5,000: zoom | 1.7 to 13.6 fps | 2.2 to 10.9 fps |
+| 5,000: Ctrl+A | 6.5 to 7.6 s | 6.3 to 11.5 s |
+| 20,000: hover | 11 to 14 fps (worst frame 117 to 167 ms) | 58 to 60 fps (worst frame 17 to 33 ms) |
+| 20,000: pan | 0.2 to 0.3 fps | 0.2 to 0.6 fps |
+| 20,000: zoom | 0.5 to 24 fps | 0.6 to 21.7 fps |
+| 20,000: Ctrl+A | 34 to 50 s | 44 to 55 s (one reading of 0.7 s at 1,920 was the zoom's tail, not counted) |
+
+- **Hover meets its target at both sizes now** (answered within a frame at 20,000).
+- **Pan, zoom and Ctrl+A do not,** and B was not meant to move them: each waits on the GPU rastering the whole SVG
+  again (Ctrl+A redraws every shape in its selected style). Their spread is run-to-run noise on this machine.
+  Step C (WebGL) is the fix; it was not started tonight (16 h on paper, past the run's end).
