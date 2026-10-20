@@ -136,9 +136,10 @@ await run("c23-folders-on-load", [
       const wet = [...of("Plumbing.pdf"), ...of("Mech.pdf")];
       const wetFolders = new Set(sheets.filter((s) => ["Plumbing.pdf", "Mech.pdf"].includes(byFile.get(s.file_uuid))).map((s) => s.folder_uuid));
       if (wet.length !== 4 || wetFolders.size !== 1 || wet.some((s) => (s.folder ?? "").trim().toLowerCase() !== "wet trades")) problems.push(`Plumbing and Mech in ${wet.map((s) => s.folder).join(", ")} (${wetFolders.size} folders)`);
-      // Which typed spelling names the merged folder is not specified (D-308 6 only says they merge):
-      // reported, not asserted.
+      // The spelling typed first names the merged folder (N5, D-663): "Wet Trades" was typed on Plumbing
+      // before " wet trades " on Mech, though Mech is the first row in the dialog.
       const wetName = wet[0]?.folder;
+      if (wetName !== "Wet Trades") problems.push(`the merged folder is "${wetName}", not the first typed "Wet Trades"`);
       const shared = wet.filter((s) => !/^(Plumbing|Mech) – p\.\d$/.test(s.name ?? ""));
       if (shared.length) problems.push(`shared-folder sheets named ${shared.map((s) => `"${s.name}"`).join(", ")}`);
       if (folders.length !== 2) problems.push(`${folders.length} folders: ${folders.map((f) => `"${f.name}"`).join(", ")}`);
