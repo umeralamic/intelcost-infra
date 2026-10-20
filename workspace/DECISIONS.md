@@ -21246,3 +21246,33 @@ until Umer approves `docs/tasks/calculate_exact_overlay_SPEC.md`.**
   7,899.0 CY against the engineer's 14,263 / 8,727; GPS Export's +0.76 % fill gap falls to +0.06 % (the 0.1 ft face).
 - **Quantity table:** none of the 41 existing volume and strip rows moves; five new hand-worked rows (ridge, valley,
   coverage, feature over a fold).
+
+## D-671: A click at 20,000 shapes: the work a selection set off cut where it was waste; 100 ms not met (A3)
+
+**Status:** asked by Umer, 2026-10-20 (A3: profile, then fix, narrow, nothing of Abdullah's decoupling). Built in the
+night run of 2026-10-20 (Step 6); the target is not met, the click is clearly faster at 5,000 and 20,000.
+
+- **Measured first** (night report, Step 6: React's commit hook and CPU profiles in the development build, mapped to
+  source; the production build's profile; a browser timeline trace).
+- **Changed (no quantity, no stored data, no change of what is drawn or picked):**
+  - **SheetCanvas:**
+    - the items and shapes looked up by uuid (`itemById`, `shapeById`, `shapeOwner`, made once per items), in place of
+      walking every shape on each render for the selected shape, the move owner, the handles, a context menu's shape,
+      the hover's item;
+    - the hit test answers once per point of the page as drawn: a hover, a press and its click at one spot asked it
+      four or five times (`hitAt` memoised on the point, the sheet's size on screen and the count sizing; rebuilt
+      whenever anything it reads changes, so the deduct cycle still steps); it loops over the count items only;
+    - each item's looks reused while its own selection, focus, hover and count sizing are unchanged: a selection works
+      out two items' looks, not 20,000;
+    - the hidden SVG layer in groups of 256, a group kept whole while its elements are the ones it had: React walks two
+      groups, not 20,000 elements.
+  - **ProjectTakeoff:** an empty box selection is always the same array (a click no longer re-runs every memo over the
+    items); the closed Duplicate sheet and Link to measurement dialogs no longer count every shape or build a row per
+    item on each render; the selected item, the hand's item and the selected run looked up; the sub-items dialog's
+    search only while it is open.
+- **Tried and dropped:** taking the hidden layer out of the browser's hit testing (`pointer-events: none`), measured
+  interleaved: no difference (median 254 against 264 ms).
+- **Left, for a decision:** what remains is React rendering the whole takeoff page (9,855 lines) for a selection, and
+  the Takeoff panel's jump to the row. Under 100 ms needs the selection held outside the page's state, so only the
+  canvas, the panel and Properties render: the same kind of change as Abdullah's zoom store, so not started (question).
+- **Not affected:** quantities (the quantity table passed), what is drawn (WebGL reads the same looks), the hit rules.
