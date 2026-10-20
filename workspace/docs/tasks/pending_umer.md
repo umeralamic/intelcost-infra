@@ -372,7 +372,7 @@ link setting (D-562).
 | N8 | **C22:** in New project, step 1's Next button was never found by the test in one run (Enter in the name field worked). | Reported. | One click by hand. |
 | N9 | **C17:** the elevation warning names the sheet "Page 1" where the Sheets panel and the line details say "G1". | Minor, reported. | Use the sheet's number (recommended). |
 | N10 | **C30:** the Stripe fake sends its webhooks to the main api, so no fixture ever pays. Two steps stay with you: an expired trial becoming Professional after paying, and an AI pack's credits landing. | The fixture stops at the fake Checkout and checks what it was asked for. | Click those two by hand on the bench, or give the fx stack its own fake. |
-| N11 | **D-635:** an undo that has to snapshot an item (delete, duplicate) takes a few seconds on a busy api, and a Ctrl+Y pressed in that time is dropped, not queued. | Not changed. | Queue it (recommended), or leave it. |
+| N11 | **D-635:** an undo that has to snapshot an item (delete, duplicate) takes a few seconds on a busy api, and a Ctrl+Y pressed in that time is dropped, not queued. | **Done (D-649, night run 2026-10-20):** queued on Takeoff and Estimating; fixture `n11-undo-queue` 2/2 (three Ctrl+Z, three steps; a guest sends nothing). | Confirm D-649. |
 
 **Taken overnight, for you to confirm:**
 - D-636: the click checks written as fixtures, each on its own throwaway world.
@@ -397,9 +397,17 @@ link setting (D-562).
 | R2 | **First open is still api-bound at size.** The panel's rows draw at 3.4 s (1,000 items), 7.6 s (5,000) and 31 s (20,000); Estimating's first row at 4.5 s, 10.1 s and 24 s. The browser has little left to do. The time is the api's item read on one process: about 3.4 s alone at 5,000 and 13 s at 20,000, with the open's other ~25 reads queued behind it, after about 2 s of app start-up. | Targets not met: 3 s at 5,000, 6 s at 20,000, and Estimating's 1 s, 2 s and 4 s. **Plan written (night run 2026-10-19):** [open_speed_PLAN.md](open_speed_PLAN.md). Measured: 3.5 s of the 5,000-item read is Python building and writing 15.6 MB; a lean read takes 0.15 s. The start-up is 0.8 s, not 2 s. | Answer O1 to O5 in the plan. |
 | R3 | **Estimating scrolls at 33–36 fps** on a 3,000 px/s fling (52 fps at 1,000 px/s). Each new block of rows costs a table layout and paint. The Takeoff panel scrolls at 54–59 fps at every size. | Below the 55–60 target on a fling. | Lighter cells, or a grid layout instead of the `<table>` (the plan's risk note). Later. |
 | R4 | **The canvas (item 4, report only):** pan at 1.6 fps and zoom at 1.2 fps with 5,000 shapes; 0.5 and 0.3 fps with 20,000. At 1,000: 5.2 and 4.2 fps. Ctrl+A on 20,000 shapes takes 14.7 s, nearly all of it the canvas drawing every selected shape. | Not changed (the brief). **Plan written (night run 2026-10-19):** [canvas_speed_PLAN.md](canvas_speed_PLAN.md). Profiled: the GPU drawing anti-aliased SVG paths into tiles is most of the time (about 145 ms a tile at 5,000 shapes, up to 1.35 s at 20,000); React redrawing every shape comes next. | Answer C1 to C5 in the plan. |
-| R5 | **f8-s18 step 2 fails on yesterday's build too:** dragging a count mark sends no PATCH, so "an edited shape reaches the other window" times out. It passed at D-619. Step 3 is D-619's known one (the pane became a dialog). | Not this block's. Found while running the Takeoff fixtures. | Look into it (drag of a count mark in the select tool). |
+| R5 | **f8-s18 step 2 fails on yesterday's build too:** dragging a count mark sends no PATCH, so "an edited shape reaches the other window" times out. It passed at D-619. Step 3 is D-619's known one (the pane became a dialog). | **Resolved (D-648, night run 2026-10-20): not a product fault.** The drag saves; the step waited for a `DELETE` that the row menu's undoable Delete (D-635) sends as `POST …/item/delete`. Fixture fixed; f8-s18 step 2 passes. Every other drag-to-move proved saved and kept: `r5-drags` 10/10. | Confirm D-648. |
 
 **Confirmed:** D-645 (undoing a new variable archives it), in the row-virtualisation brief.
+
+## Night run 2026-10-20 (morning-report-2026-10-20/NIGHT_REPORT_2026-10-20.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| T1 | **The printed password (item 3, D-651).** window-b@ and walkthrough@ (members of Bench Construction Test) are rotated. The new passwords are only in Windows Credentials › Generic Credentials, "IntelCost bench - <email>". MCP sessions sign in through `browser/bench-session-serve.mjs`. | Done. The old password still opens walkthrough-heir@ (no workspace) and the throwaway fixture accounts, as D-592 kept it. | Confirm D-651. |
+| T2 | **`browser/walkthrough-setup.mjs` and `bench-tidy.mjs` sign in with passwords that no longer work:** estimator@ since D-592, and walkthrough@ since D-651. | Not changed (outside tonight's queue). | Move them to `drives/bench-session.py` sessions, or retire them. Recommended: retire `walkthrough-setup.mjs`, and move `bench-tidy.mjs` to a session. |
+| T3 | **f9-estimating step 4 missed two rate saves once, run three fixtures at a time;** 11/11 run alone. It typed rates while two other fixtures loaded the same fx api. | Seen once. | None unless it recurs. |
 
 ## Found in the click sessions
 

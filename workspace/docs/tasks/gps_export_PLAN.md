@@ -1,6 +1,6 @@
 # GPS Export: surfaces, linework and points for GPS and machine control (plan)
 
-_Plan only, no code (night run 2026-10-19)._
+_Plan only, no code (night run 2026-10-19). Answered by Umer on 2026-10-20 (D-650); not built yet._
 
 The research notes, with every page read, are in `E:\Intelcost\research\gps_formats.md`, outside the repos. They name
 the makers; this plan does not (rule 9) and calls them maker A, B and C.
@@ -138,7 +138,7 @@ The api fits again on save, as F18 does.
    - Page y is flipped first, because y runs down and north runs up; otherwise F18's mirror check refuses the fit.
    - A mirror after the flip means N and E were typed swapped, so the panel offers "Swap N and E".
 4. **The panel shows** each point's residual, the rotation, the fitted scale, and the status line, e.g. "±0.08 ft across 3 points" (RMS, with the worst point named).
-   - It warns amber over 0.25 ft and red over 1 ft (G4).
+   - It warns amber over 0.1 ft and red over 0.5 ft (G4, as decided).
    - It warns when the fitted scale is more than 0.5 % from 1 ("the sheet's scale may be wrong", F18's threshold), or when the points nearly line up.
    - With 2 points it says "Exact with 2 points: add a third to check them".
 5. **Units, coordinate system and vertical datum.** Elevations are not transformed: they are already the plan's.
@@ -214,8 +214,11 @@ The api fits again on save, as F18 does.
 **The states:**
 - **Out of date:** Download waits, with "Calculate again first". That button runs Calculate in place.
 - **No coordinates:** Download is allowed, and every file is labelled as plan coordinates.
+- **A guest (link switch on):** the same dialog. The coordinates block is read-only, showing the owner's figures with
+  no Set coordinates. Out of date reads "The owner must Calculate again first". Each download is logged against the link.
+- **A guest (switch off):** the button is greyed, with the guest tip.
 
-**What I would change, and why:**
+**What I would change, and why** (all seven accepted as written, 2026-10-20):
 
 | Change | Why |
 |---|---|
@@ -229,16 +232,36 @@ The api fits again on save, as F18 does.
 
 ## Guests and plans
 
-**Options:**
-- export allowed, as the grading report is today (D-600);
-- view only, with the button greyed;
-- Professional only.
+**Decided (Umer, 2026-10-20, G1; D-650):** Professional and trial members, **and** share-link guests when the link
+allows it.
 
-**Recommended: members on Professional, or on trial, only. Guests see the button greyed, with the guest tip** ("Sign up for Professional to use this.").
-- **Construction data, not a bid summary:** the export is the contractor's model, ready for a machine. A guest is usually a GC or an owner looking at a bid.
-- **Setting coordinates is a write,** and guests cannot write anyway.
-- **It is a production tool:** an Essentials workspace (annotations and viewing) gets the "Professional only" reason that already exists (`PROFESSIONAL_ONLY`).
-- **A per-link "Allow GPS export"** can come later if estimators ask for it.
+**Members:**
+- **Professional or trial:** the export, with Set coordinates.
+- **Essentials:** the button greyed, with the existing "Professional only" reason (`PROFESSIONAL_ONLY`).
+
+**Guests, through a new share-link switch "Allow GPS Export download":**
+- **Off by default.** It can be turned on only while the project's owner has Professional (or trial). The switch
+  sits with the link's other settings, beside "Show pricing".
+- **With the switch on, the same dialog, read-only on coordinates:**
+  - the guest chooses Use for, the surfaces, linework, points and files, and downloads;
+  - the coordinates, units, coordinate system and vertical datum are the owner's, shown and not changeable;
+  - Set coordinates is hidden.
+- **The label and the note apply exactly as to members:**
+  - with no coordinates set, every file is labelled `PLAN COORDINATES - NOT FOR MACHINE USE`;
+  - the accuracy note is in the dialog and the README.
+- **Every guest download is logged against the link:** the time and the files, kept in a new
+  `share_link_download` table.
+  - Project members see it in the link's settings ("Downloads: 3, last 19 Oct 16:44, C-200_Proposed-Subgrade.xml …").
+- **With the switch off,** the guest's button is greyed with the guest tip: "Sign up for Professional to use this."
+
+**How a guest's export is built:**
+- The files are made in the guest's browser, from the reads a guest already has: the stored Calculate inputs are
+  open to guests, and so is the coordinates GET.
+- The download is logged by a guest POST that the guest guard allows for this one route.
+  - It is the only write a guest makes, and it holds nothing but the log row.
+  - The api refuses it unless the link's switch is on and the owner's plan still allows it.
+- **Out of date:** a guest's Calculate is never saved (D-600's rule), so "Calculate again first" is not offered to a
+  guest. The dialog says the owner must Calculate again, and Download waits.
 
 ## f. Files touched, risks, hours and questions
 
@@ -256,8 +279,14 @@ The api fits again on save, as F18 does.
   - a `sheet_georef` table and its migration; a joined site's set is kept on its `site` row;
   - routes: GET for members and guests, PUT for writers, re-fitted with `register.py`;
   - a capability `earthwork.gps_export` in the Professional mask;
-  - the site origin kept with a site's Calculate inputs.
-- **Infra:** `gps-check.sh` (ezdxf, xmllint, the volume comparison), if G6 is yes.
+  - the site origin kept with a site's Calculate inputs;
+  - **for guests (G1):**
+    - `project_share_link.allow_gps_export` and a `share_link_download` table (link, time, files), with their migration;
+    - the switch refused unless the owner's plan allows it;
+    - the guest guard lets through one POST, the download log;
+    - members read the log in the link's settings (`features/share`).
+- **App, for guests:** the switch in the share dialog; the dialog's read-only coordinates; the link's download list.
+- **Infra:** `gps-check.sh` (ezdxf, xmllint, the volume comparison), as G6 allows.
 
 **Risks:**
 - **Accuracy:** PDF takeoff is approximate (the drawing's scale, line weight and picking), but the files look exact. The accuracy note, the README, the residuals and the plan-coordinates label all say so, and the dialog never hides them.
@@ -283,17 +312,20 @@ The api fits again on save, as F18 does.
 | Coordinates: table and migration, routes with the server fit, the panel, units, system and datum, through links and sites | 12 |
 | Dialog: presets, surface list with dates, files summary, out-of-date and plan-coordinates states, plan and guest gating | 6 |
 | Proof: in-app round trip, bench checker, test files per preset; gates, quantity table, smokes | 6 |
-| **Total** | **about 52 h (6–7 days)** |
+| Guests (G1): the link switch and its plan check, the guest dialog read-only on coordinates, the download log (table, migration, guest POST, members' list), a guest smoke | 6 |
+| **Total** | **about 58 h (7 days)** |
 
-**Questions for you:**
+**Questions, answered (Umer, 2026-10-20; logged as D-650):**
 
-| # | Question | Recommendation |
+| # | Question | Answer |
 |---|---|---|
-| G1 | Who may export? | **Members on Professional (and trial) only.** Guests see it greyed, with the guest tip. |
-| G2 | The subgrade's edge at a feature: a near-vertical face 0.1 ft inside the edge, or a typed side slope? | **The 0.1 ft face.** It is what the box is cut to; a side slope can be added later. |
-| G3 | Coordinates kept per sheet (linked sheets inherit, a joined site shares one set), or one set per project? | **Per sheet, as described.** Sheets of one project can be on different grids or scales. |
-| G4 | Residual warnings: amber over 0.25 ft, red over 1 ft? | **Yes.** At 1" = 30', a hundredth of an inch on the paper is 0.3 ft. |
-| G5 | CSV order: P,N,E,Z,D by default, with P,E,N,Z,D as a choice under Change? | **Yes.** |
-| G6 | May the bench checker (ezdxf, xmllint and the volume comparison) run by hand, like the quantity table, despite rule 8? | **Yes:** it is a checker of our files, not a test suite. |
-| G7 | Before release, can a surveyor or dealer you know load the test files into one or two makers' office software? | **Yes.** It is the only real proof. |
-| G8 | Add a "Building pad" tick to Site Features, so the pad gets its own layer? | **Yes,** a small addition. Otherwise pads sit on `FEATURE-EDGE` with every other feature. |
+| G1 | Who may export? | **Changed:** Professional and trial members, **and** share-link guests when the link's "Allow GPS Export download" is on (off by default; it can be on only while the owner has Professional). Guests get the dialog read-only on coordinates, the same label and accuracy note, and every download is logged against the link for members to see. See "Guests and plans". |
+| G2 | The subgrade's edge at a feature? | **The 0.1 ft face.** |
+| G3 | Coordinates per sheet; linked sheets inherit; a joined site shares one set? | **Yes.** |
+| G4 | Residual warnings? | **Changed:** amber over 0.1 ft, red over 0.5 ft. |
+| G5 | CSV P,N,E,Z,D by default, P,E,N,Z,D under Change? | **Yes.** |
+| G6 | The bench checker, run by hand like the quantity table? | **Yes.** |
+| G7 | A real load of the test files before release? | **Yes:** Umer's contractor client will load them. |
+| G8 | A "Building pad" tick on Site Features? | **Yes.** |
+
+The dialog's seven changes are accepted as written. **Not built yet:** GPS Export waits for its own block.

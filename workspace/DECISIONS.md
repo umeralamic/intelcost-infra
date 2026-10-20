@@ -20526,3 +20526,116 @@ D-646).
   - Opened on Estimating, the project's item read now starts at once, and the sheet's own item read waits until it is
     back. Opened on Takeoff, it is the other way round (D-646). Only one of the two large reads is ever in the way.
 - **Figures:** see the timing table in this run's report.
+
+## D-648: R5 was the fixture, not the drag; every drag-to-move proved saved and kept (night run 2026-10-20, item 1)
+
+**Status:** taken overnight, Umer to confirm.
+
+- **The cause:** the count-mark drag saves (`PATCH …/takeoff/geometry/<uuid>`, 200). f8-s18 step 2 then deletes
+  the item from the row menu and waited for `DELETE …/item/<uuid>`.
+  - Since commit `0560a59` (D-635, 2026-10-19) the row menu's Delete is the undoable batch `POST …/item/delete`.
+  - So the step waited 30 s for a request that never comes, and read as "the drag sends no save". Last night's R5
+    was that misreading.
+- **Found by:**
+  - reproducing the drag on the dev build (saved);
+  - an instrumented copy of f8-s18 on the fx stack: "SAVED OK", then a `POST …/item/delete` and no DELETE.
+- **Fixed in the fixture:** f8-s18 step 2 waits for `POST …/item/delete`. It now passes; step 3 is D-619's known
+  removed screen.
+- **Every other drag-to-move checked,** by a new fixture, `r5-drags`, 10/10. Each object is made through the api,
+  dragged with real mouse events on today's screens, its save awaited, the page reloaded, and the stored place read
+  back:
+  - a count mark;
+  - a Linear vertex and an Area vertex;
+  - a whole shape by its Move handle;
+  - a utility structure;
+  - a bore and a spot elevation (Earthwork tab);
+  - a contour vertex;
+  - a highlight markup (Annotations tab);
+  - the legend card (its place is the browser's own).
+- **Not covered, by design:** dimensions are never saved (D-254); the site view's moves need their own world.
+- **No app code changed for R5.**
+
+## D-649: An undo or redo pressed while the one before is still saving waits its turn (N11, night run 2026-10-20, item 2)
+
+**Status:** taken overnight (pending_umer N11's recommendation, "queue it"), Umer to confirm.
+
+- **The cause:** both histories dropped a press made while one was running:
+  - the takeoff page: `useSessionHistory`'s `busy` guard;
+  - Estimating: `useEstimateHistory`'s `busy` guard.
+- **Takeoff (`ProjectTakeoff.tsx`):**
+  - Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z, Backspace-as-undo and the toolbar's Undo and Redo all go through one queue.
+  - Each press runs after the press before has finished, once the page has drawn its result. It then reads the
+    history as that press left it, including the choice between a markup step and a shape step.
+- **Estimating (`useEstimateHistory.ts`):** presses are queued the same way. D-387's hold (an edit still saving) still
+  comes first.
+- **Proved by a new fixture, `n11-undo-queue`:**
+  - three moves of a count mark, then three Ctrl+Z back to back: three writes, the mark back where it began;
+  - on the build from before this change the same fixture sent one write;
+  - a guest's three Ctrl+Z and a Ctrl+Y, on Takeoff and on Estimating, send nothing.
+
+## D-650: GPS Export's plan answered; guests may download when the link allows it (night run 2026-10-20, item 5)
+
+**Status:** decided by Umer, 2026-10-20 (answers to `docs/tasks/gps_export_PLAN.md`). Not built yet.
+
+- **G1, changed:** the export is for Professional and trial members, **and** for share-link guests when the link
+  allows it.
+  - **The switch:** a new share-link switch, "Allow GPS Export download". It is off by default and can be on only
+    while the project's owner has Professional (or trial).
+  - **The guest's dialog:** read-only on coordinates. The guest chooses what to export and downloads; the
+    coordinates, units, coordinate system and datum are the owner's.
+  - **The same label and note:** the plan-coordinates label and the accuracy note apply to guests exactly as to
+    members.
+  - **The log:** each guest download is logged against the link (time and files), visible to the project's members.
+  - **Switch off:** the guest's button is greyed with the Professional tip.
+- **G2:** the 0.1 ft face at a feature's edge.
+- **G3:** coordinates per sheet; linked sheets inherit; a joined site shares one set.
+- **G4, changed:** residual warnings amber over 0.1 ft and red over 0.5 ft.
+- **G5:** CSV P,N,E,Z,D by default, P,E,N,Z,D as a choice.
+- **G6:** the bench checker runs by hand, like the quantity table.
+- **G7:** Umer's contractor client loads the test files.
+- **G8:** a "Building pad" tick on Site Features.
+- **The dialog's seven changes:** accepted as written.
+- **The plan updated:** the guest section, the dialog's states, the files, and the hours (52 h → about 58 h).
+
+## D-651: The password last night's grep printed: what it opened, and two bench members rotated (night run 2026-10-20, item 3)
+
+**Status:** done overnight as the brief says ("rotate it the same way as before"), Umer to confirm.
+
+- **What was printed:**
+  - `SEEDED.password`, from line 26 of the fixture suite's copy of `lib/bench.mjs`. That line names estimator@bench.intelcost.io.
+  - D-592 (2026-10-17) had already rotated estimator@ away from it and kept it as the throwaway fixture accounts'
+    password.
+  - It is the same password the harness typed for window-b@ (`browser/mcp-signin.js`, `mcp-perf-rows.js`).
+  - Found by masking every quoted value in the transcript's grep output. The password was never shown again.
+- **What it opened, checked against every account's hash:**
+  - **Bench database:** 4,394 of 4,472 accounts.
+  - **Fixture stack's database:** all 82 of its accounts.
+  - The password went from the transcript straight into a read-only check on stdin; only email addresses were printed.
+  - **Almost all are throwaway fixture accounts,** with timestamped names (`fx.…`, `s1b-…`, `q6-owner-…`, `smoke-…`).
+    The 89 at gmail.com and mailinator.com are the F2 sign-up fixtures' made-up addresses.
+  - **Three named accounts:**
+    - **window-b@bench.intelcost.io:** Estimator in **Bench Construction Test**, the workspace that holds the 3D test
+      copy, and in "F5 Block A demo 15:16". Not throwaway.
+    - **walkthrough@bench.intelcost.io:** Takeoff role in Bench Construction Test. Not throwaway.
+    - **walkthrough-heir@bench.intelcost.io:** in no workspace. Left as it is.
+  - **estimator@:** refused, as D-592 left it.
+- **Rotated, the D-592 way:**
+  - **The new passwords:** for window-b@ and walkthrough@, 28 random characters each, made in one PowerShell process,
+    saved to the Windows credential store and passed to `scripts/rotate_password.py` on stdin. Never printed,
+    written to a file or put on a command line.
+  - **Where they are kept:** Windows Credentials › Generic Credentials:
+    - "IntelCost bench - window-b@bench.intelcost.io";
+    - "IntelCost bench - walkthrough@bench.intelcost.io".
+  - **Sessions:** window-b@ had 669 open sessions and walkthrough@ 1; all were revoked.
+  - **The old password** is now refused for both, and for estimator@.
+  - **The fixture stack's own copies are untouched:** its database is separate, throwaway and isolated (D-611), so the
+    fixtures' window-b keeps the throwaway password.
+- **Signing in without a password from now on:**
+  - `drives/bench-session.py` mints an ordinary session for one of the bench's test members (window-b@,
+    walkthrough@) in the api's process. It refuses every other account, and anything but the local bench.
+  - `browser/bench-session-serve.mjs` serves such a session to 127.0.0.1:5199, at most 8, for 15 minutes.
+  - `browser/mcp-signin.js` and `mcp-perf-rows.js` fetch it in the MCP's own process and put it in the page's
+    storage. No token or password reaches a transcript; the typed password is gone from both files.
+- **Still needing a password:** `browser/walkthrough-setup.mjs` signs walkthrough@ in with the old one.
+  - It was already broken by D-592's rotation (its `apiLogin()` default), as was `bench-tidy.mjs`.
+  - Listed in pending_umer.
