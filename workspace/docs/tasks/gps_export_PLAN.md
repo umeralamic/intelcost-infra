@@ -1,6 +1,6 @@
 # GPS Export: surfaces, linework and points for GPS and machine control (plan)
 
-_Plan only, no code (night run 2026-10-19). Answered by Umer on 2026-10-20 (D-650); not built yet._
+_Plan written in the night run of 2026-10-19. Answered by Umer on 2026-10-20 (D-650). Steps 1 to 3 built on 2026-10-20 (D-664 to D-666: the writers and readers, the surfaces, linework and points); coordinates, the dialog, the coordinate check and guests are next._
 
 The research notes, with every page read, are in `E:\Intelcost\research\gps_formats.md`, outside the repos. They name
 the makers; this plan does not (rule 9) and calls them maker A, B and C.
@@ -328,4 +328,4 @@ allows it.
 | G7 | A real load of the test files before release? | **Yes:** Umer's contractor client will load them. |
 | G8 | A "Building pad" tick on Site Features? | **Yes.** |
 
-The dialog's seven changes are accepted as written. **Not built yet:** GPS Export waits for its own block.
+The dialog's seven changes are accepted as written. **Built so far:** the three hours-table rows "Writers and readers", "Surfaces" and "Linework and points" (D-664 to D-666).

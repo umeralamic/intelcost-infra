@@ -11300,7 +11300,8 @@ D-273, D-275, D-287, D-299, D-300), and the round reviews that touch many decisi
 
 ## D-308: A loaded file gets its own folder only when it brings a set
 
-**Status:** decided by the founder, 2026-10-08.
+**Status:** decided by the founder, 2026-10-08. Confirmed as is, 2026-10-20 (pending_umer N6): no " Set" suffix is
+added; a blank folder name falls back to the file's own name.
 
 Legacy, and F5 until now, put every loaded file's sheets in a folder named after the file, so ten
 one-page PDFs became ten folders of one "Page 1" each. Now:
@@ -20003,7 +20004,8 @@ deleted at wrap-up, plus DEEP-1's later box (4.5 ft outside).
 
 ## D-630: An optional Name on utility runs and structures (answers to the night report, T5)
 
-**Status:** decided by Umer, 2026-10-18 (T5: yes).
+**Status:** decided by Umer, 2026-10-18 (T5: yes). The estimate's Excel keeps no run names (one line per type,
+material, size and range, D-572): confirmed by Umer, 2026-10-20.
 
 **Now:**
 - **The field:** the Utilities and Structures boxes have a Name, in new mode and edit mode (`NameField`).
@@ -20189,7 +20191,7 @@ the folder tree stayed stale after an undo that brought an item back or took one
 
 ## D-636: The founder's click checks written as fixtures (night run 2026-10-19, item 6)
 
-**Status:** taken overnight, Umer to confirm. Item 6 asked for them; each runs on the fx stack on throwaway accounts,
+**Status:** taken overnight; Confirmed by Umer, 2026-10-20 (answers to the night report). Item 6 asked for them; each runs on the fx stack on throwaway accounts,
 workspaces and projects it makes itself. A named exception to hard rule 8, as D-631.
 
 **Files:** `intelcost-infra/fx-suite-updates/browser/c<NN>-<slug>.mjs`. c20 and c30 come with a `.sh`, which sets a
@@ -20274,7 +20276,7 @@ project needs workspace admin. The owner is estimator@, which is never signed in
 
 ## D-637: The archived load-screen and dev-server fixtures brought to today's screens (night run 2026-10-19, item 7)
 
-**Status:** taken overnight, Umer to confirm. D-619's rules: the screens change, never the figures. Product faults are
+**Status:** taken overnight; Confirmed by Umer, 2026-10-20 (answers to the night report). D-619's rules: the screens change, never the figures. Product faults are
 left failing; none was left failing here. Two were found and worked around (pending_umer N2, N3).
 
 | Fixture | What changed (decision) | Steps |
@@ -20529,7 +20531,7 @@ D-646).
 
 ## D-648: R5 was the fixture, not the drag; every drag-to-move proved saved and kept (night run 2026-10-20, item 1)
 
-**Status:** taken overnight, Umer to confirm.
+**Status:** taken overnight; Confirmed by Umer, 2026-10-20 (answers to the night report).
 
 - **The cause:** the count-mark drag saves (`PATCH …/takeoff/geometry/<uuid>`, 200). f8-s18 step 2 then deletes
   the item from the row menu and waited for `DELETE …/item/<uuid>`.
@@ -20557,7 +20559,7 @@ D-646).
 
 ## D-649: An undo or redo pressed while the one before is still saving waits its turn (N11, night run 2026-10-20, item 2)
 
-**Status:** taken overnight (pending_umer N11's recommendation, "queue it"), Umer to confirm.
+**Status:** taken overnight (pending_umer N11's recommendation, "queue it"), confirmed by Umer, 2026-10-20 (answers to the night report).
 
 - **The cause:** both histories dropped a press made while one was running:
   - the takeoff page: `useSessionHistory`'s `busy` guard;
@@ -20599,7 +20601,7 @@ D-646).
 
 ## D-651: The password last night's grep printed: what it opened, and two bench members rotated (night run 2026-10-20, item 3)
 
-**Status:** done overnight as the brief says ("rotate it the same way as before"), Umer to confirm.
+**Status:** done overnight as the brief says ("rotate it the same way as before"), confirmed by Umer, 2026-10-20 (T1).
 
 - **What was printed:**
   - `SEEDED.password`, from line 26 of the fixture suite's copy of `lib/bench.mjs`. That line names estimator@bench.intelcost.io.
@@ -20836,3 +20838,306 @@ confirm.
 - **Pan, zoom and Ctrl+A do not,** and B was not meant to move them: each waits on the GPU rastering the whole SVG
   again (Ctrl+A redraws every shape in its selected style). Their spread is run-to-run noise on this machine.
   Step C (WebGL) is the fix; it was not started tonight (16 h on paper, past the run's end).
+
+## D-657: The sheet's measured shapes drawn with WebGL, drawn once and moved for a pan; SVG paints them only without it (canvas speed, step C)
+
+**Status:** built as `docs/tasks/canvas_speed_PLAN.md` step C with Umer's answers (C1 WebGL with an SVG fallback,
+C2, C3, C4 as the floor), 2026-10-20.
+
+**What draws the shapes now:**
+- **One WebGL 2 canvas the size of the view** (`ShapeGL.tsx`), inside the page element under the SVG, so it stacks
+  between the sheet image and the overlays (handles, drafts, highlights, dimensions, chips) as the SVG's shapes did.
+  Each frame it is pinned back over the view and drawn for where the page is, read from the SVG's own screen
+  transform: pan, zoom, the wheel's scale and the sheet's turn included.
+- **Triangles built once** (`lib/takeoff/engine/paintMesh.ts`, pure): a fill is earcut triangles, a stroke is one
+  quad a segment drawn as a capsule in the shader at today's screen-pixel width and taper (`strokePx`), round caps
+  and joins, or dashed with butt caps. Every paint op keeps the SVG's paint order in one draw call, so translucent
+  fills blend as they did; an op's own overlaps are drawn once (its depth), as one SVG element's are.
+- **One look, read twice** (`shapeLooks.ts`): the colours, weights and count sizes are worked out once and both the
+  SVG elements and the WebGL paint read them, so the two cannot drift apart. Count symbols come from
+  `countSymbolOutline`, the same outline the SVG path is made from.
+- **Drawn once, moved many times:** the shapes are drawn into a texture a quarter of the view wider on every side;
+  a pan moves that texture (one quad a frame, whatever the count). It is drawn again when the shapes change, when a
+  pan runs past its margin, and at a new zoom: every wheel frame on a light sheet; on a heavy one (over 250,000
+  indices, about 4,500 runs) the frame before is stretched until the wheel rests 150 ms, as the sheet's raster is
+  and as D-654 did with the SVG.
+- **A change rebuilds only what changed:** each shape's triangles are cached by its look, a look that paints the
+  same is the same object, and a changed shape whose triangles take the same room (a run selected, a colour) is
+  written into the uploaded mesh in place.
+- **Box selection's frames** are their own small mesh, drawn last.
+
+**The SVG's shapes stay in the page and paint nothing** (`index.css`, `[data-gl-shapes="on"] *`): every hook,
+box and test that reads them still finds them (`data-geometry`, `data-box-selected`, `data-count-outlined`), and
+hit test, snap and box selection never read the drawing (D-656). While WebGL draws, their stroke widths stay at one
+zoom, so a zoom's landing rewrites none of them.
+- **A shape in the hand** (a vertex dragged, a section moved with its deducts) is drawn by its SVG element, live, on
+  top, and left out of the WebGL mesh until it lands: a drag frame rebuilds nothing.
+- **Without WebGL 2, or when its context is lost,** the attribute is off and the SVG paints exactly as before
+  (checked with WebGL 2 refused in a tab: `c-10-no-webgl-svg-fallback.png`; and seen once for real, when the test
+  browser lost WebGL after overlapping runs). A lost context that comes back draws again. An unmounted sheet gives
+  its context back at once.
+
+**Found and fixed on the way (both cost seconds at 20,000 shapes):**
+- **The sheet's `touch-action` switched to `none` only while a pan ran.** Each switch restyled every element under
+  the sheet, 0.9 s at 20,000, at a pan's start and again at its end, and it came too late for the touch that began
+  the pan anyway (a browser reads it when a touch starts). It is `none` always: a touch on the sheet is the sheet's.
+  The one change: a touch on the sheet no longer scrolls or pinch-zooms the browser page (the sheet has no scroll of
+  its own, and zooms itself). Taken during the run, Umer to confirm.
+- **Link to measurement's dialog built one row for each of the project's items on every render of the page,
+  closed.** It returns nothing while closed, as the dialog itself does.
+- **The hidden paths' cursor:** fixed on their group, so a tool's or a pan's cursor change stops there.
+
+**Accuracy:** quantities never come from the drawing (hard rule 3). The quantity table passed. A drawn vertex lands
+where the SVG put it: GL against SVG, pixel by pixel, on a sheet with a run, an area with a deduct and three count
+symbols, at fit and zoomed, panned near and far, with a run, an area and a count selected, and with Ctrl+A's frames:
+0.16 % to 1.6 % of pixels differ by more than 32 of 255 (anti-aliased edges and dash phases), none by more than 96
+outside a dash. A dragged vertex snapped onto another run's end exactly, saved and drawn there; the live number
+during the drag (312.53) is the saved length (312.53 LF).
+
+**Measured** (production build, BENCH DUPs, the bench machine's integrated GPU at 1,600 × 1,000, 1,920 × 1,080 and
+2,560 × 1,440; a second pan, since the first after an open carries the open's tail):
+
+| | Before (after D-656) | After |
+|---|---|---|
+| 1,000: pan | 5.3 to 6.5 fps | 60 fps |
+| 1,000: zoom | 4.9 to 5.2 fps | 59.4 to 60 fps |
+| 1,000: Ctrl+A | 3.7 to 3.9 s | 0.19 to 0.23 s |
+| 5,000: pan | 1.8 to 2.1 fps | 59.9 to 60.3 fps (first pan 50 to 54) |
+| 5,000: zoom | 1.7 to 12.1 fps | 59.8 to 60.3 fps |
+| 5,000: Ctrl+A | 6.4 to 13.6 s | 0.33 to 0.48 s |
+| 20,000: pan | 0.4 to 1.3 fps | 57.2 to 59.9 fps (first pan 50 to 57) |
+| 20,000: zoom | 0.8 to 24 fps, frames of 7 to 10 s | 34.5 to 59.7 fps, a landing frame of 0.15 to 0.45 s |
+| 20,000: Ctrl+A | 32 to 51 s, once not quiet in 2 min | 0.83 to 0.94 s |
+| 20,000: hover | 58 to 60 fps | 56.6 fps |
+
+- **Targets met:** pan and zoom 55 to 60 fps at 5,000 at all three sizes; usable at 20,000 (pan and zoom well over
+  30 fps); Ctrl+A at 20,000 under 1 s.
+- **Not met: a click answered within 100 ms at 20,000.** A click selects in 0.43 to 0.86 s there. The sheet's own
+  part is about 60 to 70 ms; the rest is the takeoff page and the Takeoff panel answering a new selection, outside
+  the canvas (pending_umer, T6).
+- **Not done:** level of detail (dots for shapes under a pixel); the cache made it unnecessary for these targets.
+
+**Checked:**
+- **Gates** (lint, typecheck, build) and the **quantity table** passed.
+- **Fixtures, every canvas and Takeoff one** (27): c03, c05, c10 to c13, c28, f6-a to f6-e, f7-a to f7-k, f8-s18, r5-drags, n11-undo-queue, rv-rows (the guest's view). All pass but three steps:
+  - f7-a step 2 imports the app's `/src` modules, which a production build does not serve (the quantity table is the same check);
+  - f8-s18 step 3 is D-619's removed screen, as before;
+  - f6-a step 8 (realtime between two api processes over 1 s) and f7-d step 4 (a dropped connection) failed with three fixtures running at once and pass run alone (9/9, 4/4).
+- **Smoke on the dev build** (`morning-report-2026-10-20/c-*.png`): an area's hover highlight; a count mark's hover outline; a run selected; a vertex dragged live (SVG, on top) and snapped onto another run's end exactly; the live number during a drag equal to the saved length; Ctrl+A's frames; the dark theme; the SVG fallback without WebGL 2.
+
+## D-658: The open's item reads built by Postgres and sent compact, every field kept; the canvas's first draw made lighter (open speed, step A)
+
+**Status:** taken during the run of 2026-10-20 as `docs/tasks/open_speed_PLAN.md` step A (O1), changed in one way,
+Umer to confirm.
+
+**The change from the plan:** the plan's lean read dropped fields (the panel's ~25, the canvas's ~12) and read the
+full detail later. That would have left the takeoff page's 115 users of the project's items reading partial items
+until the full read came back, Properties' save among them, which could write a missing field back as blank. So no
+field is dropped: the reads are made fast instead, and the same items reach every user.
+
+**What changed:**
+- **`GET …/takeoff/item/detail/compact`** (`detail_json.item_details_compact`): the same items as `…/item/detail`,
+  the field names sent once (`fields`, `geometry_fields`, `dimension_fields`) and each item an array of its values.
+  - **Postgres builds the JSON** in one statement: shapes, their sheets and dimensions gathered once per table and
+    grouped by item, then joined. Python works out only what it keeps per value: the folder and layer multipliers
+    per distinct trio, makers' short names per person, a site line's sheets.
+  - **Enum columns** are written as the read model writes them (the member's value, not its stored name), and
+    times in the read model's form.
+  - **The app reads it and expands it** (`takeoffApi.listItemDetails`): every caller gets the same objects as
+    before. The old route stays for the share guest's bundle and any other caller.
+- **Order:** both reads now sort by position, name and then id; two items of one name and position came in the
+  database's order before.
+- **Proved equal** item by item and field by field (floats to 1e-9, a shape's sheets as a set) against the old
+  route on the 1,000, 5,000 and 20,000-item DUPs (project and sheet reads) and the 3D test copy: no difference.
+- **Server time:**
+
+| | 1,000 | 5,000 | 20,000 (sheet) | 20,000 (project) |
+|---|---|---|---|---|
+| Old read | 0.4 to 0.6 s | 1.6 to 2.1 s | 6.6 to 9.9 s | 7.4 s |
+| Compact | 0.14 to 0.24 s | 0.5 to 0.6 s | 1.8 s | 2.0 s |
+| Bytes | 3.5 → 1.7 MB | 16.7 → 8.0 MB | 66 → 31 MB | 66 → 32 MB |
+
+**The canvas's first draw, made lighter (found by profiling the open):**
+- **The hidden shapes' group is keyed on whether it holds any:** the sheet's read lands as a fresh group, built off
+  the page and put in once. Thousands of shapes added to a live group one by one made React look for each one's place
+  among the rest (3 s at 20,000 on the dev build).
+- **The grid index (D-656) keeps a shape whose bounds span more than 64 cells on a short list** tested on every
+  query, instead of in hundreds of cells: a run across the sheet put 7.5 million entries in the grid at 20,000 (2 s).
+- **The hidden shapes are made just after the first paint** (a deferred render) while WebGL draws: the rows and the
+  drawing show first. Without WebGL they come with the read, as before.
+- **`byZ`** returns the item itself when its shapes are already in z order (most are), instead of copying all of its
+  fields for every item on every rebuild (1.7 s at 20,000 on the dev build).
+
+**Measured** on the fair test (production build, Chrome at 50 Mbit/s and a 40 ms round trip, warm cache, two api
+processes; the median of 2 to 3 runs; this machine's runs spread by up to a second at 20,000):
+
+| | 1,000 | 5,000 | 20,000 |
+|---|---|---|---|
+| First open (the panel's rows): before | 1.9 s | 4.5 to 5.2 s | 15.9 to 16.4 s |
+| First open: after | 1.7 to 2.3 s | 2.3 to 3.0 s (median 2.85 s) | 6.4 to 7.9 s (median 6.8 s) |
+| Estimating's first row: before | 3.1 to 3.3 s | 4.8 to 6.0 s | 13.0 s |
+| Estimating's first row: after | 2.2 to 3.7 s | 4.0 to 4.6 s | 9.8 to 11.6 s |
+
+- **Target met at 5,000** (under 3 s), narrowly. **Not met at 20,000** (under 6 s): about 6.8 s.
+- **What is left at 20,000:** the sheet's read is about 4 s of it (Postgres 1.8 s, 5.3 MB gzipped on the line, the
+  open's other reads beside it); the browser 1.3 s after it; the app's start 0.8 to 1.1 s before it. Next steps would
+  be a read of only the fields the canvas and the rows draw for the first paint, with the full read gating Properties
+  and the other editors (the plan's lean read, with that gate built), and gzip in staging's proxy.
+- **Tried and dropped:** a larger `work_mem` for the read's sort (no gain), and a high fetch priority for the sheet's
+  read (no clear gain within this machine's spread).
+
+**Checked (D-658):**
+- **Gates** (lint, typecheck, build; ruff, ruff format, mypy) and the **quantity table** passed.
+- **Fixtures** (32, the canvas, Takeoff and Estimating ones): all pass but three steps, each explained:
+  - f6-a step 2 once read the item between a run's save and its quantity's (the screen read 15.07 LF, right),
+    and step 8 once took 2.1 s for realtime with four fixtures running; f6-a run alone passed 9/9.
+  - f6-c step 10 timed out once under load and passed 10/10 run again.
+  - f8-s18 step 3 is D-619's removed screen, as before.
+  - rv-rows (the guest's rows, which still read the old route) passed 8/8.
+- **Smoke on the dev build** (window-b, the 5,000-item DUP; `morning-report-2026-10-20/a-*.png`): A101's 4,887
+  shapes drawn 3.9 s after the click; Properties open on a row with its folder and classification; Estimating's
+  rows 4.0 s after its click.
+
+## D-659: The elevation warning names the sheet as the Sheets panel does (N9)
+
+**Status:** decided by Umer, 2026-10-20 (N9). Built.
+
+- **What changed:** the warning's sheet is written in the Sheet Naming Format, as the Sheets panel writes it
+  (`formatSheetLabel`). A sheet numbered G1 reads "G1 – Page 1" in the warning when the panel's format shows the
+  number and the name, and "G1" when it shows the number alone. Before, it read the page's own "Page 1".
+- **Where:** `ProjectTakeoff.tsx` (`sheetPanelLabel`, used for the stored warning and passed to the panel),
+  `useVolumes.tsx` and `VolumePanel.tsx` (`sheetLabel`).
+- **Checked:** gates and the quantity table; C17 now numbers C-1 "G1" and asserts the warning's sheet starts with
+  "G1" and is how its Sheets panel row starts (8/8). Fixed on the way: C17's whitespace pattern was `/s+/`.
+
+## D-660: The fx stack's own Stripe fake, so C30 pays (N10)
+
+**Status:** decided by Umer, 2026-10-20 (N10: "the fx stack's own Stripe fake"). Built.
+
+- **What changed:** `stripe-fake-fx` (docker-compose.yml, the fx profile): the bench's fake, its pages on :12112, its
+  webhooks to `api-fx`. `api-fx` calls it (`STRIPE_API_BASE`). `fx-suite.sh check` also fails closed unless both fx
+  services use it. No real Stripe call, and nothing reaches the bench's own fake or database.
+- **C30 now pays:**
+  - an expired trial: Start subscription, Pay on the fake's Checkout, and the workspace reads active,
+    Professional, and a project can be made;
+  - an AI pack: Buy now on the 1,000 pack, Pay, and the purchased balance goes 0 to 1,000.
+- **Checked:** C30 7/7 (`morning-report-2026-10-20/n10-*.png`); the fx check passed.
+
+## D-661: tx115's 19 Matched crafts are right; the spec's test 6 is corrected (N7)
+
+**Status:** taken during the run of 2026-10-20 (N7: "list which two differ and why; fix if a bug, or correct the
+test"). Umer to confirm.
+
+- **The two:**
+  - **Tile Setter:** the rules map it (21 in all), but Commercial & Public's table has no Tile Setter row. The upload
+    shows TILE SETTER under Other, with its reason.
+  - **Bricklayer Helper:** mapped, but its classification is taken by Bricklayer Tender, the table's row for it.
+- **Not a bug:** 21 is how many the rules map; 19 is how many the Commercial table matches. Test 6 in
+  `intelcost-app-fastapi/docs/wage-calculator/spec.md` now says both.
+- **Checked:** C31 asserts 19 Matched, TILE SETTER's reason, and neither craft in the mapping (6/6).
+
+## D-662: bench-tidy moved into the api's process; walkthrough-setup retired (T2)
+
+**Status:** taken during the run of 2026-10-20, changed from the answer in one way. Umer to confirm.
+
+- **Retired:** `browser/walkthrough-setup.mjs`, deleted.
+- **The change from the answer** ("move bench-tidy.mjs to drives/bench-session.py sessions"): `bench-session.py`
+  mints sessions only for window-b@ and walkthrough@, and neither can do what the tidy does: window-b is an
+  Estimator and walkthrough a Takeoff seat, and the bench workspace's owner is estimator@, which is never used. So
+  the tidy is now `drives/bench-tidy.py`, run in the api's process as no one, with no session at all.
+  - **What it does:** purges the fixture projects left in the bench workspace, removes the fixture seats, and sets
+    Sara back to Estimator. It touches nothing else; without `--tidy` it only says what it would do.
+  - **Run:** `docker compose exec -T api sh -lc "cd /srv && python drives/bench-tidy.py [--tidy]"`.
+- **Checked:** the dry run found 0 projects and 0 seats to remove, Sara an Estimator. Both READMEs updated.
+
+## D-663: Folder names that merge keep the spelling typed first (N5)
+
+**Status:** decided by Umer, 2026-10-20 (N5). Built.
+
+- **What changed:** on Load, folder names that are one folder by D-308 (trimmed, case-blind) all send the spelling
+  typed first: "Wet Trades" typed, then " wet trades ", makes "Wet Trades". A name nobody typed (the file's own)
+  counts as there from the start, in the rows' order. (`load-selection.ts` `firstTypedNames`,
+  `LoadSheetsDialog.tsx`.)
+- **Checked:** C23 asserts the merged folder is "Wet Trades" (3/3; `morning-report-2026-10-20/n5-*.png`).
+
+## D-664: GPS Export step 1: the writers, their readers, the zip and the README (GPS Export, D-650)
+
+**Status:** built during the run of 2026-10-20 as `docs/tasks/gps_export_PLAN.md`'s first piece. Pure modules, data
+in and data out (hard rule 2), under `lib/takeoff/earthwork/export/`.
+
+- **`landxml.ts`:** LandXML 1.2, one full TIN a file: points northing, easting, elevation (three decimals), faces
+  counter-clockwise in plan, `<Units>` (US survey foot, international foot or metre), `<CoordinateSystem>` with the
+  typed system, EPSG code and vertical datum, the plan-coordinates label when no coordinates are set. With its reader.
+- **`dxf12.ts`:** DXF R12 (AC1009): continuous 3D polylines (`POLYLINE` 8 or 9, `VERTEX` 32) on named layers, `3DFACE`
+  for the CAD preset, `TEXT`; X easting, Y northing; ASCII; four decimals. With its reader.
+- **`pointsCsv.ts`:** P,N,E,Z,D by default or P,E,N,Z,D (G5), no header row, numbers from a set start. With its
+  reader.
+- **`bundle.ts`:** file names (the sheet, the part, `_PLAN-COORDS` with no coordinates), the README (units, the
+  system and datum, the fit and its residuals, sheets, surfaces, files, the accuracy note), the zip (`fflate`), and
+  the round trip every download makes (plan d.1): each file read back and compared, a mismatch stops it.
+- **`model.ts`:** the shared words: `PLAN COORDINATES - NOT FOR MACHINE USE` (a plain hyphen, ASCII), the accuracy
+  note, the unit names.
+- **`intelcost-infra/gps-check.sh`** (G6, run by hand): xmllint against the LandXML 1.2 schema, ezdxf (version,
+  `audit()`, only the entities GPS Export writes, every polyline 3D), the CSV's rows.
+- **Checked:** gates and the quantity table; the round trip clean on samples; the sample LandXML files schema
+  valid; the sample DXF AC1009 with no audit errors.
+
+## D-665: GPS Export step 2: the surfaces, clipped, with the subgrade's 0.1 ft face (GPS Export, D-650)
+
+**Status:** built during the run of 2026-10-20 (`lib/takeoff/earthwork/export/surfaces.ts`), pure.
+
+- **What it makes** (`exportSurfaces`), in the dialog's order, each a TIN in plan feet clipped to the work boundary,
+  or greyed with why: proposed subgrade ("No Site Features: same as finished grade"), proposed finished grade,
+  existing grade, and each soil layer's top ("No soil layers", "No bore reaches it").
+- **From what Calculate computed on:** the EG and FG TINs (`buildSurfaces` on the kept inputs, linked EG included), so
+  the export never builds a surface of its own.
+- **The subgrade (G2):** FG less each Site Feature's subgrade depth, the newest winning an overlap and its subtract
+  shapes holes, as Calculate takes them. At a feature's edge the step is a face 0.1 ft wide inside the feature,
+  from the ground outside to the depth; where two features meet, the face lies in the newer one.
+- **A layer's top:** the existing ground less the layer above's bottom, on the pieces both cover.
+- **Size (plan e):** each file's size worked out from its lines (within 0.2 % of the file), the warning at 50 MB or
+  160,000 points, and "Split by area" into west-to-east strips each within the limits.
+- **The proof's figure (plan d.2):** `volumeBetween`, the exact cut and fill between two exported surfaces where both
+  reach.
+- **Sites (F19):** the module takes any frame's TINs, a joined site's included; the dialog (step 5) passes the
+  site's.
+- **Checked** on BENCH DUP 8605c809's C-200 (`morning-report-2026-10-20/gps-step2-check.txt`):
+  - every surface round-tripped clean and schema valid;
+  - exported EG to FG agrees with 250,000 samples of Calculate's own TINs to 0.01 %;
+  - exported EG to subgrade against Calculate's figure without strip: cut +0.09 %, fill +0.65 %. The gap is
+    Calculate's: its own engine run without features is 0.44 % under the exact fill on the same TINs. Its difference
+    TIN is built on both surfaces' points and contours, not their exact overlay (reported, pending_umer A6);
+  - a layer top 5 ft under the ground gives exactly 5 ft times its area; the split keeps every triangle.
+- **Fixed on the way:** a ring's closing edge was skipped where the ring does not repeat its first point; a clip
+  against a feature drawn with curves now takes only the feature near the triangle (8.9 s to 3.6 s, same figures).
+
+## D-666: GPS Export step 3: linework and points; the subgrade made watertight (GPS Export, D-650)
+
+**Status:** built during the run of 2026-10-20 (`lib/takeoff/earthwork/export/linework.ts`, `surfaces.ts`), pure.
+
+- **The DXF's layers** (`lineworkDrawing`), in plan feet, from what Calculate computed on:
+  - `BRK-EG`, `BRK-FG`: the drawn contours that build each TIN, at their elevation (linked EG included);
+  - `FEATURE-EDGE`: each Site Feature's outline draped on finished grade; `PAD` for a feature ticked as a building pad
+    (G8; the tick itself is step 5's); `FEATURE-SUBGRADE`: its ring 0.1 ft inside, draped on the subgrade (outside
+    each of its holes);
+  - `CONT-EG`, `CONT-FG`, `CONT-SUBGRADE` and `-MAJ`: contours traced across each exported surface's own triangles
+    at 1 ft (0.5 m on a metric sheet), every fifth a major, joined into continuous polylines (closed where they
+    close);
+  - `UTIL-<SAN|STM|WTR|…>-INV`, `TRENCH`, `PIT`: taken as data (each run's profile inverts, each outline at the surface
+    it digs from); the dialog's hook (step 5) works them out as Calculate does;
+  - `BOUNDARY` draped on finished grade; `NOTE`: the plan-coordinates label and the accuracy note;
+  - `SURF-<name>`: surfaces as 3D faces for the CAD preset.
+  - **Draped** means a vertex wherever the line crosses a triangle's edge or passes a corner, so it lies on the surface.
+- **The CSV's rows** (`exportPoints`): each structure's rim (`MH-1 RIM`) and pipe-end inverts (`MH-1 INV SAN-1`), each
+  bore at its ground (`BORE B-1`), each spot elevation (`SPOT EG`, `SPOT FG`).
+- **The accuracy note** is now in every LandXML file too (its project description), after the plan-coordinates label.
+- **The subgrade, rebuilt (changes D-665):** the depth below finished grade is one continuous field. The features are
+  applied oldest to newest, each ramping inside its edge from the depth under it to its own across 0.1 ft. So the
+  newest still wins an overlap and the face still lies in the newer feature, but nothing can step: where two features
+  nearly touched, D-665's per-edge depth jumped (46 cracks on C-200). Every corner lying on another triangle's edge
+  now splits it (earcut drew diagonals through corners in line with them). C-200's subgrade: no crack, every triangle
+  wound alike.
+- **Checked** on BENCH DUP 8605c809's C-200 (`morning-report-2026-10-20/gps-step3-check.txt`): gates and the quantity
+  table; every draped line on its surface within 3e-9 ft; every contour vertex at its level within 1e-10 ft; DXF and
+  CSV round trips clean; the free checker passed (DXF AC1009, audit clean, 3D polylines only; CSV; LandXML schema).
+  EG to the rebuilt subgrade against Calculate without strip: cut +0.08 %, fill +0.76 % (Calculate's own gap, A6).
