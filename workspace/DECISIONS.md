@@ -21231,3 +21231,18 @@ and the tile default crew are Umer's to confirm.
   rules, 20 Matched, Tile Setter ← TILE SETTER, nothing under the other classifications; Location-Adjusted in New
   York: Tile Setter $93.19 (between Terrazzo Worker $91.62 and Marble Setter $97.32), Tile Finisher $65.23. C31 now
   asserts 20.
+
+## D-670: Calculate on the exact overlay of EG and FG: specced, not built (A6)
+
+**Status:** asked by Umer, 2026-10-20 (A6: spec only, no build). **Hard rule 3 holds: Calculate's engine is unchanged
+until Umer approves `docs/tasks/calculate_exact_overlay_SPEC.md`.**
+
+- **Why the engine is short:** it interpolates Δz linearly across a new triangulation of both surfaces' input points,
+  which cuts across each surface's own folds; the exact overlay (every EG triangle ∩ every FG triangle) has Δz truly
+  linear on each piece. C-200 bare: fill −0.44 %, cut −0.03 %; a single region up to −30.6 % fill.
+- **The proposal:** the overlay as the engine's parent pieces, every later step unchanged; saved results read out of
+  date by the key's version (sheet `v7`, site `v6`), nothing rewritten or recalculated.
+- **Numbers** (BENCH DUP 7bb1fa52, scratch run, not committed): C-200 without strip 13,361.9 / 7,844.2 → 13,376.2 /
+  7,899.0 CY against the engineer's 14,263 / 8,727; GPS Export's +0.76 % fill gap falls to +0.06 % (the 0.1 ft face).
+- **Quantity table:** none of the 41 existing volume and strip rows moves; five new hand-worked rows (ridge, valley,
+  coverage, feature over a fold).
