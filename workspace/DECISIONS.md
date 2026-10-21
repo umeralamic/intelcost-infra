@@ -21654,3 +21654,27 @@ the same rows).
   them a canceled Professional, a past-due-beyond-grace Professional and a canceled Essentials subscription. The api
   and the Share dialog answered the new sentence twice and "Sign up for Professional to use this." once; the switch
   stayed off.
+
+## D-689: The canvas position check on generated test sheets (M6), added to the fixtures
+
+**Accepted 2026-10-21 (Umer, M6).**
+
+- **The sheets** (`fx-suite-updates/browser/lib/position-sheets.mjs`): one PDF, four pages, each a 5 × 5 grid of
+  labelled hairline crosses at known fractions of the page as shown. L landscape 36 × 24 in; P portrait 24 × 36 in;
+  R landscape stored as a portrait page with /Rotate 90; C landscape through a CropBox offset inside a larger MediaBox
+  (a red band outside the crop must never show). Made on the spot; the Dania Pointe upload in Bench Construction
+  Test is not used and stays untouched.
+- **The check** (`fx-suite-updates/browser/m6-position.mjs`, run on the fx stack, a throwaway "BENCH DUP … — delete
+  me" project): on each sheet, (a) markup 0.22 past the top or bottom and (b) 0.15 past the left or right, a line
+  and a count drawn at Fit; then every zoom step from Fit (× 1.25 a press) to 30×, each reference beside a bleed
+  zoomed in on, and every cross in the middle of the view located from the screen's pixels against where the
+  markup layer puts its page point; at the deepest step the same line and count drawn again. Snap, Snap PDF,
+  Ortho and Auto Scroll off. **Run it whenever the canvas or the zoom changes** (SheetCanvas, `lib/takeoff/pdf`,
+  rotation, the viewport, the page worker's sizes): hard rule 8's exception, on Umer's instruction (D-687).
+- **Found:** from 3× to 27–30× every cross within 0.09 px on every sheet; R and C draw pixel-identical to L. A line
+  and a count drawn past the page at the deepest zoom store the points Fit stored to within 0.016 pt, and the same
+  quantity (ratio 1.000). The legacy fault (lengths 31 % long when the canvas grew for off-page markup) has no
+  counterpart: the canvas never grows and nothing rescales by a bleed.
+- **Known item, not changed:** at Fit and the step above it (about 0.3 px per point) the sheet image sits up to
+  0.66 px from where the markup layer puts the same point (vertically, on the clip read pixel by pixel). Display
+  only; no stored value is affected. The check allows 1 px below 3× and 0.25 px from 3× up.

@@ -465,6 +465,12 @@ All answered by Umer on 2026-10-21 (day session, D-687).
 
 C-200's gap to the engineer's figures (−6.22 / −9.49 % after D-683): **checked by Umer and fine. No action. Closed.**
 
+## Day session 2026-10-21 (morning-report-2026-10-21/DAY_REPORT_2026-10-21.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| K1 | **Known item (M6, D-689):** at Fit and the zoom step above it, the sheet image sits up to **0.66 px** from where the markup layer puts the same point | Sub-pixel, display only; no stored value affected. From 3× up every cross is within 0.09 px; lines and counts store alike at every zoom (ratio 1.000). The m6-position fixture allows 1 px below 3× | **Logged, not changed (Umer, 2026-10-21).** Revisit only if it shows on a real sheet |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
