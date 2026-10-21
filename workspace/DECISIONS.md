@@ -21604,15 +21604,18 @@ the same rows).
 - **Left:** after a change the per-sheet lists are still read whole (2.7 MB at 20,000); the workspace classification
   (520 KB) is refetched by the provider on a socket reconnect.
 
-## D-686: Estimating's first row: profiled; a deriveLines cache tried and stashed
+## D-686: Estimating's first row: profiled; two changes tried, both stashed
 
-**Status:** not shipped; stashed as `night-estimating-first-row` (app repo).
+**Status:** not shipped. Targets (2 s at 5,000 items, 4 s at 20,000) not met.
 
 - **Where the time goes** (20,000 items, production build): the project's items read is built in 1.9 s by Postgres but
-  waits about 3 s more behind ~45 other reads on the bench's single api process; then about 4 s in the browser, most
-  of it `EstimatingView` rendering 20,000 lines (`deriveLines` 1.6 s in the dev build).
-- **Tried:** `deriveLines` works out each folder chain, node path and sheet set once (1.58 → 1.09 s in the dev build).
-  Totals identical on a priced 5,000-item DUP ($14,362,388.51, every group and the first 25 rows). No measurable gain
-  in production (5,000: 4.6–5.4 → 5.1–5.6 s; 20,000: 7.4–8.1 → 7.8–10.0 s), so not committed.
-- **Next:** Estimating's open asking only for what it shows until the items arrive; then the render; the api last.
-  D-658 holds (no field dropped from any read).
+  waited about 3 s more behind ~45 other reads; then about 4 s in the browser, most of it `EstimatingView` rendering
+  20,000 lines (`deriveLines` 1.6 s in the dev build).
+- **The read hold** (stashed `night-estimating-hold`; committed as app 256856c and reverted in c755a59): on a cold
+  Estimating open the api client held back the GETs Estimating does not show until the items arrived. Faster
+  (5,000 items 4.56–4.60 → 3.58–3.70 s; 20,000 7.42–7.65 → 5.84–6.02 s, production build, same DUPs) and the totals
+  identical, **but fixture f9-estimating failed 8/11 twice**: a rate typed in the first seconds was lost when the held
+  reads landed and re-rendered the cell. 11/11 again after the revert. Needs the late reads not to disturb a cell
+  being edited before it can ship.
+- **The `deriveLines` cache** (stashed `night-estimating-first-row`): each folder chain, node path and sheet set worked
+  out once; dev 1.58 → 1.09 s, totals identical, no measurable gain in production.
