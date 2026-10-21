@@ -470,6 +470,10 @@ C-200's gap to the engineer's figures (−6.22 / −9.49 % after D-683): **check
 | # | What | Where it stands | Your call |
 |---|---|---|---|
 | K1 | **Known item (M6, D-689):** at Fit and the zoom step above it, the sheet image sits up to **0.66 px** from where the markup layer puts the same point | Sub-pixel, display only; no stored value affected. From 3× up every cross is within 0.09 px; lines and counts store alike at every zoom (ratio 1.000). The m6-position fixture allows 1 px below 3× | **Logged, not changed (Umer, 2026-10-21).** Revisit only if it shows on a real sheet |
+| Q1 | The GPS Export switch's **tooltip** on a lapsed Professional workspace says nothing until the click (the toast then gives D-688's sentence) | The app reads a lapsed plan as Professional (D-277 18) | Have the capabilities read name the lapsed plan, so the tooltip says it up front? |
+| Q2 | **Estimating's first row at 20,000 items** is now mostly the api's items read (31 MB, 2.5–3.4 s alone, 6–7 s beside the other reads) | D-691, D-692 shipped; targets not met | Go for the api read (a smaller read for Estimating, or streamed)? |
+| Q3 | **f6-a step 8** (1.8–2.0 s): the commit waits on the bench disk's flush (`COMMIT` 0.43–1.87 s logged; `pg_test_fsync` 0.54 s per 8 kB `fdatasync` on Docker Desktop's ext4 disk); the socket adds ~0 ms; window B's reads and repaint 350–700 ms | Measured only (day session Step 7) | Leave it; bench-only `synchronous_commit = off`; or move the bench's data to a faster disk? |
+| Q4 | **Window B's repaint** waits for the 150 ms settle and three list reads after the change event | Measured only | Paint the row from the single-item read first (~150 ms)? |
 
 ## Found in the click sessions
 
