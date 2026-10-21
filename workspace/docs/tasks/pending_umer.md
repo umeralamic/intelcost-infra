@@ -426,6 +426,27 @@ nothing unless it recurs; T4 was Umer's Calculate; T5 built (D-657, D-658).
 | A7 | **GPS Export, steps 1 to 3 of 7 built** (D-664 to D-666): writers and readers, surfaces, linework and points, pure and proved on C-200. Test zips per preset in plan coordinates: `morning-report-2026-10-20/gps-test-files/`. | **Left:** step 4, coordinates (the `sheet_georef` table and migration, routes with the server fit, the panel, units, system and datum, links and sites); step 5, the dialog, the GPS Export button and the "Building pad" tick (G8); step 6, the fourth-monument check and test files with coordinates; step 7, guests (the link switch, the read-only dialog, the download log). Also: utility inverts, trenches, pits, structures and bores are taken as data by step 3 and wired in step 5. In plan coordinates the README says "US survey feet" where it should say plan feet (fixed with step 4's units). | Schedule steps 4 to 7 (about 30 h on paper). The test zips can go to your contractor now as a format check (G7), knowing they are plan coordinates. |
 | A5 | **D-661 (N7):** the 19 are right (Tile Setter is not in Commercial's table; Bricklayer Helper's row is Bricklayer Tender's). The spec's test 6 was corrected, not the code. | Done. | Confirm D-661. |
 
+**Answered 2026-10-20 (night run brief):** A1 built as D-667 (the drives' guard); A2 (D-658) and A4 (D-662)
+confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built as D-669 (20 of 21 Matched); A6 specced
+(D-670, N9); A7 built through step 7 (D-668, D-672 to D-675).
+
+## Night run 2026-10-21 (morning-report-2026-10-21/NIGHT_REPORT_2026-10-21.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| N1 | **Bricklayer Helper** on Commercial & Public is matched as Bricklayer Tender (same classification and rate). | Not added (D-669). | Keep as built, or add its own row? |
+| N2 | **CSI 09.04 Tile's default crew** is still Terrazzo Worker + Laborer; the new C-105 and C-106 are suggested after it. | Default not changed. | Make a tile crew the default? |
+| N3 | **A click at 20,000 shapes selects in about 254 ms** (was 468; target 100). The rest is the takeoff page rendering for a selection, and the panel's jump. | D-671 committed. | Hold the selection outside the page (like Abdullah's zoom store): schedule it, and agree who builds it. |
+| N4 | **The ZHO Dania Pointe Page 26 case** is a legacy project, not on the bench. | The bench's position check passed instead. | Provide it as a bench copy, or accept the equivalent. |
+| N5 | **No drawing in the bench set prints control coordinates**: every GPS proof used an assumed grid. | Proved on assumed coordinates (D-672, D-674). | Provide a set with a printed control table. |
+| N6 | **A press exactly on a takeoff vertex** is not taken as a control-point pick on the Earthwork tab (a pixel off is). | Not changed. | Fix it? |
+| N7 | **A duplicated project's copied Calculate reads out of date on its first open** (the copy's key is not the original's). | Seen before tonight's code too. | Accept, or make the copy's key match? |
+| C-N8 | **Click check:** as a workspace owner or admin, Share › "Allow GPS Export download" on and off, then a guest download and its "Downloads: 1, last …" line. On a duplicate. | The Essentials refusal is proved on the server (403 `plan_required`); no permitted bench account manages the workspace. | Click it. |
+| N9 | **The exact-overlay spec** (`docs/tasks/calculate_exact_overlay_SPEC.md`, D-670): every saved result would go out of date. | Spec only. | Approve and bump the version keys? Engineer comparison without the strip? The per-region check? |
+| N10 | **A window focus refetches all 20,000 items** (641 ms in development). | Found in Step 6. | Schedule with the open-speed work? |
+| N11 | **Coordinates through a site member placed by a join** were not exercised. | No join on the DUPs. | None unless you want it checked. |
+| N12 | **Test zips with assumed grid coordinates:** `morning-report-2026-10-21/gps-test-files/`, labelled. | Ready. | Send to your contractor for a makers' software load (G7)? |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
