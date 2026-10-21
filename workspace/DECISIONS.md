@@ -21711,3 +21711,18 @@ the same rows).
   landing 3.2–3.3 s after the save, the value kept through it, a reload and a second window. c31-wage 6/6. Totals on a
   priced 5,000-item BENCH DUP (4,932 priced): identical before and after (TOTAL $14,362,388.51; the 5 group rows and
   the first 25 rows identical).
+
+## D-691: The read hold on a cold Estimating open ships (M3, part 2a)
+
+**Accepted 2026-10-21 (Umer, M3).** D-686's stashed hold, unchanged, on top of D-690.
+
+- On a cold Estimating open the api client holds the GETs Estimating does not show (earthwork, markup, snippets, AI,
+  sheet assets and folders, calibration, symbols, assemblies, sites) until the project's items arrive, 15 s at most.
+  Nothing dropped or changed (D-658); only the order.
+- **Why it can ship now:** last night's f9-estimating 8/11 was the server race D-690 fixed, not the hold. With the
+  hold: f9-estimating **12/12** (step 12 included), c31-wage 6/6.
+- **Timings** (production build, both builds tagged and timed alternately, six cold opens each, the fx stack stopped;
+  BENCH DUPs f8bb29c4, 5,000 items with 4,932 priced, and 13d98d9a, 20,000 items): 5,000 items median 4.56 → **3.98 s**
+  (−13 %); 20,000 items 9.53 → 9.25 s (within the spread, 8.3–10.8 s). Totals identical on the 5,000-item DUP (TOTAL
+  $14,362,511.96, the group rows and the first 25 rows).
+- Targets (2 s at 5,000, 4 s at 20,000) not met: the render of the lines is next (D-692).
