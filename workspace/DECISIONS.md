@@ -21678,3 +21678,36 @@ the same rows).
 - **Known item, not changed:** at Fit and the step above it (about 0.3 px per point) the sheet image sits up to
   0.66 px from where the markup layer puts the same point (vertically, on the clip read pixel by pixel). Display
   only; no stored value is affected. The check allows 1 px below 3× and 0.25 px from 3× up.
+
+## D-690: A late read never overwrites a value typed or saved after it was asked (M3, part 1)
+
+**Accepted 2026-10-21 (Umer, M3; his five points of the day session).**
+
+- **What lost input, found by the new f9-estimating step on the shipped code** (no read hold anywhere):
+  1. On a cold open the rates' cache is empty, so a save's quick cache write did nothing, and TanStack's refetch
+     after the save joined the read already in flight: that read, asked before the save, landed last and showed the
+     old figure (the new step: 0.25 typed, 0 shown).
+  2. **On the server**, an item's first two saves in quick succession (two cells left one after the other) raced to
+     make its estimate line: the second hit `uq_estimate_line_item_project_takeoff` and answered 500, and the value was
+     lost (f9-estimating's own pricing step: Footing's $100/hr gone, the api holding its 6 MH only). This, not the
+     read hold, is what failed f9-estimating 8/11 last night (D-686); it failed the same way today with no hold.
+- **app** (`features/estimate/lateReads.ts`, new; `api.ts`; `EstimatingView.tsx`; `ItemCostsDialog.tsx`):
+  1. Before a save, any read of the same data still in flight is cancelled.
+  2. The refetch after a save is always a new request (`readAfresh`: cancel, then invalidate), never joined to a read
+     asked before it.
+  3. Each read takes a stamp when asked, and each save is noted by the place it lives (an item's field; a custom
+     column's cell), pending until the api answers. When a read lands, every place saved after its stamp, or still
+     being saved, keeps the local value; its other values come in. In the api layer, so every reader and writer of the
+     rates and columns is covered (the grid, undo and redo, the item dialog, sub-items, Set values, the Wage
+     Calculator). A refused save drops its note and the api's value reads again.
+  4. A cell being typed in stays a field whatever lands: rows and cells were already keyed stably (item uuid, column
+     key), but a late read could swap the field itself for a figure (components arriving made a rate "From
+     components"; a unit equipment rate turned Total Equipment to text; sub-items or permissions arriving). The view
+     keeps the open cell in a ref (no redraw of 20,000 lines) and draws it as a field until it is left.
+- **api** (`estimate/costs.py` `line_for`): the line is made with `INSERT … ON CONFLICT DO NOTHING` on the partial
+  unique index, then read `FOR UPDATE`, so the second first-save waits for the first's row and writes into it.
+- **Proof:** f9-estimating's new step 12 (a cold open, the rates' read answered at once and handed to the page 5 s
+  later, Paint's Unit Man Hours typed during the load): before, 8/12 (steps 4–6 and 12); after, **12/12**, the held read
+  landing 3.2–3.3 s after the save, the value kept through it, a reload and a second window. c31-wage 6/6. Totals on a
+  priced 5,000-item BENCH DUP (4,932 priced): identical before and after (TOTAL $14,362,388.51; the 5 group rows and
+  the first 25 rows identical).
