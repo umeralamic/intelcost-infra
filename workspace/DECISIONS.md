@@ -21603,3 +21603,16 @@ the same rows).
   and the row shows the new colour.
 - **Left:** after a change the per-sheet lists are still read whole (2.7 MB at 20,000); the workspace classification
   (520 KB) is refetched by the provider on a socket reconnect.
+
+## D-686: Estimating's first row: profiled; a deriveLines cache tried and stashed
+
+**Status:** not shipped; stashed as `night-estimating-first-row` (app repo).
+
+- **Where the time goes** (20,000 items, production build): the project's items read is built in 1.9 s by Postgres but
+  waits about 3 s more behind ~45 other reads on the bench's single api process; then about 4 s in the browser, most
+  of it `EstimatingView` rendering 20,000 lines (`deriveLines` 1.6 s in the dev build).
+- **Tried:** `deriveLines` works out each folder chain, node path and sheet set once (1.58 → 1.09 s in the dev build).
+  Totals identical on a priced 5,000-item DUP ($14,362,388.51, every group and the first 25 rows). No measurable gain
+  in production (5,000: 4.6–5.4 → 5.1–5.6 s; 20,000: 7.4–8.1 → 7.8–10.0 s), so not committed.
+- **Next:** Estimating's open asking only for what it shows until the items arrive; then the render; the api last.
+  D-658 holds (no field dropped from any read).

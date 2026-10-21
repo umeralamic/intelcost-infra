@@ -455,7 +455,7 @@ confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built 
 |---|---|---|---|
 | M1 | **BENCH PRO workspace** ("BENCH PRO 2026-10-21 05:06 — Umer's GPS Export click", owned by your account) with its copy, for your Share click | The fingerprint flags the copy (a project in a founder-owned workspace not on the protected list) | After your click: delete it, or add it to the protected list? |
 | M2 | **Selection under 100 ms at 20,000** | Store built and stashed (`night-selection-store`): 284 → 268 ms. Left: the panel's jump (105–130 ms) and the canvas's render (about 65 ms) | Go for that block? |
-| M3 | **Estimating's first row** (5.9–7.0 s at 5,000; 10.6–11.1 s at 20,000) | Profiled, not changed: the api's items read 5.5 s and the browser 4 s at 20,000 | Go: an Estimating-only read without shapes, no takeoff canvas behind Estimating, the 1.7 s task? |
+| M3 | **Estimating's first row** (4.6–5.4 s at 5,000 priced; 7.4–8.1 s at 20,000) | Profiled; a `deriveLines` cache stashed (`night-estimating-first-row`, D-686): totals identical, no measurable gain | Go: the open asking only for what Estimating shows until the items arrive, then the render, then the api? |
 | M4 | A **lapsed subscription** refusing the GPS Export switch still says "Sign up for Professional to use this." | As built (D-679) | Its own sentence, like the trial's? |
 | M5 | Live events re-read the **per-sheet lists** whole (2.7 MB at 20,000); a reconnect re-reads the **classification** (520 KB) | D-685 left them | Make them incremental too? |
 | M6 | **ZHO Dania Pointe** bleed-on-Y check | No such sheet on the bench | Upload the PDF |
