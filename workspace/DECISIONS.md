@@ -21428,3 +21428,30 @@ set) and D-672 (coordinates).
   into More like the rest. "Check grades" reads "Check Grades".
 - **Section's icon** is the founder's drawing: the section line A–A′ dashed in the brand orange across the ground's
   profile (`SectionIcon.tsx`).
+
+## D-677: Answers to the night run's N1–N12 (night run 2, 2026-10-21)
+
+**Accepted 2026-10-21 (Umer).**
+
+- **N1:** D-669 kept as built. Bricklayer Tender is the bricklayer's helper on wage determinations; no Bricklayer
+  Helper row on Commercial & Public.
+- **N2:** CSI 09.04 Tile's default crew becomes the tile crew; Terrazzo Worker + Laborer stays the default only for
+  terrazzo. The tile scopes of every other classification system follow (built as D-681).
+- **N3:** the selection is Umer's to move outside ProjectTakeoff as an external store, on the zoom store's pattern so
+  the app has one approach (built as D-684).
+- **N4:** the bleed-on-Y position check runs only if the bench already has a landscape sheet with bleed on Y;
+  otherwise Umer uploads the ZHO Dania Pointe PDF.
+- **N5:** Umer provides a set with a printed control table. Until then GPS Export is proved on assumed coordinates
+  only, and every GPS report and README says so.
+- **N6:** a press exactly on a takeoff vertex counts as a control-point pick on the Earthwork tab (D-680).
+- **N7:** a bug against C6. A duplicated project's copied Calculate reads current on its first open (D-682).
+- **C-N8:** the refusal passed in the Share dialog on an expired trial (Umer). The positive path stays open; a
+  throwaway Professional workspace is set up for Umer to click (D-679).
+- **N9:** `calculate_exact_overlay_SPEC.md` (D-670) approved as written (D-683).
+- **N10:** a window focus fetches only the items changed since the last read (D-685).
+- **N11:** none for now; closed.
+- **N12:** every test zip's README says plainly "Assumed grid coordinates. Format test only. Not for machine use."
+  (D-678).
+
+D-NN numbers named above are reserved for the night run's steps; a step not reached leaves its number unused and says
+so in the report.

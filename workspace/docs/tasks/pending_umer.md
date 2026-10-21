@@ -432,20 +432,22 @@ confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built 
 
 ## Night run 2026-10-21 (morning-report-2026-10-21/NIGHT_REPORT_2026-10-21.md)
 
-| # | What | Where it stands | Your call |
-|---|---|---|---|
-| N1 | **Bricklayer Helper** on Commercial & Public is matched as Bricklayer Tender (same classification and rate). | Not added (D-669). | Keep as built, or add its own row? |
-| N2 | **CSI 09.04 Tile's default crew** is still Terrazzo Worker + Laborer; the new C-105 and C-106 are suggested after it. | Default not changed. | Make a tile crew the default? |
-| N3 | **A click at 20,000 shapes selects in about 254 ms** (was 468; target 100). The rest is the takeoff page rendering for a selection, and the panel's jump. | D-671 committed. | Hold the selection outside the page (like Abdullah's zoom store): schedule it, and agree who builds it. |
-| N4 | **The ZHO Dania Pointe Page 26 case** is a legacy project, not on the bench. | The bench's position check passed instead. | Provide it as a bench copy, or accept the equivalent. |
-| N5 | **No drawing in the bench set prints control coordinates**: every GPS proof used an assumed grid. | Proved on assumed coordinates (D-672, D-674). | Provide a set with a printed control table. |
-| N6 | **A press exactly on a takeoff vertex** is not taken as a control-point pick on the Earthwork tab (a pixel off is). | Not changed. | Fix it? |
-| N7 | **A duplicated project's copied Calculate reads out of date on its first open** (the copy's key is not the original's). | Seen before tonight's code too. | Accept, or make the copy's key match? |
-| C-N8 | **Click check:** as a workspace owner or admin, Share › "Allow GPS Export download" on and off, then a guest download and its "Downloads: 1, last …" line. On a duplicate. | The Essentials refusal is proved on the server (403 `plan_required`); no permitted bench account manages the workspace. | Click it. |
-| N9 | **The exact-overlay spec** (`docs/tasks/calculate_exact_overlay_SPEC.md`, D-670): every saved result would go out of date. | Spec only. | Approve and bump the version keys? Engineer comparison without the strip? The per-region check? |
-| N10 | **A window focus refetches all 20,000 items** (641 ms in development). | Found in Step 6. | Schedule with the open-speed work? |
-| N11 | **Coordinates through a site member placed by a join** were not exercised. | No join on the DUPs. | None unless you want it checked. |
-| N12 | **Test zips with assumed grid coordinates:** `morning-report-2026-10-21/gps-test-files/`, labelled. | Ready. | Send to your contractor for a makers' software load (G7)? |
+**Answered 2026-10-21 (D-677)**, worked in night run 2 (`morning-report-2026-10-21/NIGHT2_REPORT_2026-10-21.md`).
+
+| # | What | Answered 2026-10-21 |
+|---|---|---|
+| N1 | Bricklayer Helper on Commercial & Public | **Ok, closed:** kept as built; Bricklayer Tender is the bricklayer's helper on wage determinations. |
+| N2 | 09.04 Tile's default crew | **Go:** the tile crew becomes the default; Terrazzo Worker + Laborer only for terrazzo; tile scopes in every system checked (night run 2, Step 4). |
+| N3 | Selection at 20,000 shapes | **Go, Umer's (not Abdullah's):** the selection held outside ProjectTakeoff as an external store, the zoom store's pattern (night run 2, Step 7). |
+| N4 | ZHO Dania Pointe Page 26 | **Run only if the bench has a landscape sheet with bleed on Y** (night run 2, Step 8); otherwise Umer uploads the ZHO Dania Pointe PDF. |
+| N5 | A set with a printed control table | **Umer provides one.** Until then GPS Export is proved on assumed coordinates only, said in every GPS report and README. |
+| N6 | A press exactly on a takeoff vertex | **Go:** it counts as a control-point pick (night run 2, Step 3). |
+| N7 | A duplicated project's copied Calculate | **A bug against C6:** the copy reads current on its first open (night run 2, Step 5). |
+| C-N8 | Allow GPS Export download | **The refusal passed** in the Share dialog on an expired trial (Umer). The positive path is still open: night run 2, Step 2 sets up a Professional workspace for Umer to click. |
+| N9 | The exact-overlay spec | **Approved as written** (night run 2, Step 6). |
+| N10 | A window focus refetches all items | **Go:** only items changed since the last read (night run 2, Step 9). |
+| N11 | Coordinates through a joined site member | **None for now. Closed.** |
+| N12 | Test zips with assumed coordinates | **Each README says plainly "Assumed grid coordinates. Format test only. Not for machine use."** (night run 2, Step 1). |
 
 ## Found in the click sessions
 
