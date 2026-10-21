@@ -1569,7 +1569,65 @@ export const EARTHWORK_CASES = [
   // inputs', explained in the overnight report: 22 of C-200's 37 FG labels were not adopted
   // (the pond, parts of the outer ring), and no pavement or pad subgrade is modelled.
   // In true feet (D-272): was 9185 / 7706 (-35.6 / -11.7 %) triangulated in the page's proportions.
-  { id: "regaccept-c200-from-page-3", kind: "regaccept", data: C200, expect: { ok: true, cutCY: 9312, fillCY: 8072, cutVsEngineerPct: -34.7, fillVsEngineerPct: -7.5 } },
+  // Re-baselined for the exact overlay (N9, D-683): was 9312 / 8072 (−34.7 / −7.5 %). The new figures equal a
+  // 600 × 600 sampling of the same two TINs inside the boundary to 0.1 CY (9,601.7 / 8,161.0), an independent check.
+  { id: "regaccept-c200-from-page-3", kind: "regaccept", data: C200, expect: { ok: true, cutCY: 9602, fillCY: 8161, cutVsEngineerPct: -32.7, fillVsEngineerPct: -6.5 } },
+  // --- The exact overlay (N9, D-683; calculate_exact_overlay_SPEC.md §8), every answer by hand -----------------
+  // A 100 ft square. EG a ridge: 0 ft along both sides (the four corners), 10 ft along the centre line (x = 50 ft).
+  // FG flat at 10 ft, with two FG spots at 10 ft at (30, 50) and (70, 50) ft that pull a union triangulation across
+  // the ridge. EG averages 5 ft, so the fill is 100 × 100 × (10 − 5) = 50,000 CF = 1,851.852 CY, cut 0. The engine
+  // before this read 52,666.667 CF.
+  {
+    id: "vol-exact-ridge",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...[[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => s(`eg${i}`, "EG", "EG", 0, x, y)), s("egr0", "EG", "EG", 10, 0.5, 0), s("egr1", "EG", "EG", 10, 0.5, 1), ...corners("FG", [10, 10, 10, 10]), s("fgp0", "FG", "FG", 10, 0.3, 0.5), s("fgp1", "FG", "FG", 10, 0.7, 0.5)],
+    expect: { ok: true, cutCY: 0, fillCY: 50000 / 27 },
+  },
+  // The same without the two pulling spots: 50,000 CF, as the engine before also gave.
+  {
+    id: "vol-exact-ridge-no-pull",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...[[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => s(`eg${i}`, "EG", "EG", 0, x, y)), s("egr0", "EG", "EG", 10, 0.5, 0), s("egr1", "EG", "EG", 10, 0.5, 1), ...corners("FG", [10, 10, 10, 10])],
+    expect: { ok: true, cutCY: 0, fillCY: 50000 / 27 },
+  },
+  // The ridge upside down, a valley: EG 10 ft at the four corners, 0 ft along the centre line, under FG flat at 0
+  // with the same two pulling spots. EG averages 5 ft above FG: cut 100 × 100 × 5 = 50,000 CF, fill 0. A trough of
+  // Δz as the ridge was a crest.
+  {
+    id: "vol-exact-valley",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...[[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => s(`eg${i}`, "EG", "EG", 10, x, y)), s("egr0", "EG", "EG", 0, 0.5, 0), s("egr1", "EG", "EG", 0, 0.5, 1), ...corners("FG", [0, 0, 0, 0]), s("fgp0", "FG", "FG", 0, 0.3, 0.5), s("fgp1", "FG", "FG", 0, 0.7, 0.5)],
+    expect: { ok: true, cutCY: 50000 / 27, fillCY: 0 },
+  },
+  // Coverage: EG flat at 0 over x 0–60 ft, FG flat at 1 ft over x 40–100 ft, the boundary the whole 100 ft square.
+  // Only where both cover, x 40–60 ft: 20 × 100 = 2,000 SF, fill 2,000 CF = 74.074 CY, cut 0.
+  {
+    id: "vol-exact-coverage",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...[[0, 0], [0.6, 0], [0.6, 1], [0, 1]].map(([x, y], i) => s(`eg${i}`, "EG", "EG", 0, x, y)), ...[[0.4, 0], [1, 0], [1, 1], [0.4, 1]].map(([x, y], i) => s(`fg${i}`, "FG", "FG", 1, x, y))],
+    expect: { ok: true, cutCY: 0, fillCY: 2000 / 27 },
+  },
+  // A feature over a fold: the pulled ridge, with a Site Feature 1 ft deep over the west half (x 0–50 ft). There
+  // the subgrade is 9 ft over EG = 0.2·x: fill ∫₀⁴⁵ (9 − 0.2x) dx × 100 = 20,250 CF, cut ∫₄₅⁵⁰ (0.2x − 9) dx × 100 =
+  // 250 CF. The east half is the ridge's: fill 25,000 CF. Totals: fill 45,250 CF = 1,675.926 CY, cut 250 CF =
+  // 9.259 CY.
+  {
+    id: "vol-exact-feature-fold",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...[[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => s(`eg${i}`, "EG", "EG", 0, x, y)), s("egr0", "EG", "EG", 10, 0.5, 0), s("egr1", "EG", "EG", 10, 0.5, 1), ...corners("FG", [10, 10, 10, 10]), s("fgp0", "FG", "FG", 10, 0.3, 0.5), s("fgp1", "FG", "FG", 10, 0.7, 0.5)],
+    roleAreas: [{ itemId: "f1", label: "Feature", depthFt: 1, polygon: [[0, 0], [0.5, 0], [0.5, 1], [0, 1]] }],
+    expect: { ok: true, cutCY: 250 / 27, fillCY: 45250 / 27 },
+  },
 
   // --- The synthetic site (the founder's investigation, 2026-10-07; D-292 to D-296) ---------
   // Calculate as the app runs it (useVolumes): the target sheet C at 1" = 30', the existing
