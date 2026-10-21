@@ -21315,3 +21315,40 @@ answered.
   typed values and three other corners, not used in the fit, 0.0022 to 0.0032 ft from the assumed transform; the
   LandXML is northing first in US survey feet; each TIN's integral is the plan figure × (0.999998 × scale)² within 7e-7.
 - **Not exercised:** a site member placed through a join (the DUPs have no join); a site anchored on its sheet was.
+
+## D-673: GPS Export step 5, the dialog: GPS Export on the Earthwork row, its presets, the "Building pad" tick (G8), the utilities wired in, run in a worker (GPS Export, D-650)
+
+**Accepted 2026-10-21 (night run, step 8).** Plan `docs/tasks/gps_export_PLAN.md` e and G8; builds on D-668 (the export
+set) and D-672 (coordinates).
+
+- **The button:** **GPS Export** on the Earthwork row after Report. Essentials: shown greyed with "This is on the
+  Professional plan."; Professional and a trial: open. A share link's guest does not see it yet (step 7 of the plan:
+  the link switch and the read-only dialog).
+- **The dialog** (`features/takeoff/earthwork/gps/GpsExportDialog.tsx`, `useGpsExport.tsx`): Use for (Machine control,
+  GPS stakeout, CAD; remembered per project in this browser), each surface with its points and size or greyed with why,
+  the linework and points ticks (a tick with nothing to export greyed), the CSV order and first number, the coordinates
+  line (where they come from, units, system, datum) with **Set coordinates…** (opens the Coordinates panel), the files
+  named as the zip names them, and the accuracy note. Out of date (the saved Calculate's key is not the drawing's):
+  "Calculate again first", and Download waits; the surfaces are listed once it is current. No coordinates: every file
+  labelled and named plan coordinates (D-668).
+- **The job** (`lib/takeoff/earthwork/export/gpsJob.ts`, pure): the saved Calculate's kept inputs (D-549) and its time,
+  the sheet's coordinates, and what the page adds: the soil layers, the pads, each utility run at its inverts (the
+  profile Calculate works, every breakpoint), the trench tops (the dug outline at the mean ground it is dug from), each
+  pit's top at its rim, each worked-out structure's rim and the inverts of the runs that end at it (within its outside
+  plus a foot, as Calculate reads it), and the bores at their ground. Its surfaces are worked out once per opening in a
+  worker (`gps.worker.ts`; on the page where a worker cannot start, and a worker that dies answers with its error), and
+  only again for a new Calculate or new coordinates: the page's own lists are rebuilt on every refetch, and the drawing
+  changing makes the result out of date anyway.
+- **"Building pad" (G8):** a tick in Site Feature properties, `takeoff_item.building_pad` (migration `d673b5d7f9a1`,
+  false for every existing row), one of the Site Feature fields. Its edges go on the PAD layer instead of FEATURE-EDGE.
+  Never a quantity: Calculate does not read it and its version key does not change (hard rule 3).
+- **Two fixes found by the proof:** the DXF's extent was a spread of every vertex into `Math.min`, which overflows a
+  worker's stack on CAD's 3D faces (25,000 entities): now one pass (`extent`, `dxf12.ts`). A soil layer's face layer is
+  named from its surface ("SURF-TOP-OF-LAYER-2"), not its uuid.
+- **Proved** on BENCH DUP 7bb1fa52's C-200 with step 7's assumed coordinates: the three presets exported from the
+  dialog and read back (ezdxf, XML): finished grade minus subgrade 3,523.06 CY, the same as step 7's proof; the pad on
+  PAD with the control corners 0.0014 to 0.0026 ft from typed; 3 utility runs on UTIL-SAN-INV and UTIL-STM-INV at
+  their inverts; 6 trench and 3 pit outlines; the CSV with 3 structure rims, 4 bores and 27 spot elevations; CAD's
+  five surfaces as 3D faces. A duplicated project's copied Calculate reads out of date on its first open (the copy's
+  key is not the original's; seen under the build before this step too), so the DUP was calculated again first: cut
+  11,583.92 and fill 9,463.48 CY, the copied result's to the hundredth.
