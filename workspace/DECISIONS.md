@@ -21639,3 +21639,18 @@ the same rows).
   own first, with a new f9-estimating step (the same exception); then the hold ships, then the 20,000-line render.
 - **M2, M5:** go, as the day session's Steps 8 and 9.
 - **f6-a:** measured only (where the 1.8–2.0 s goes from save to second window), no change.
+
+## D-688: A lapsed Professional subscription has its own sentence on the GPS Export switch (M4)
+
+**Accepted 2026-10-21 (Umer, M4).**
+
+- The link's PATCH refusing `allow_gps_export` answers **"Your Professional plan has ended. Renew to turn this on."**
+  when the workspace's view-only reason is `ended` (canceled, past its paid period) or `grace_passed` (past due
+  beyond its grace) and the lapsed subscription's plan is Professional. A lapsed Essentials subscription keeps "Sign
+  up for Professional to use this."; an expired trial keeps D-679's sentence. Code `plan_required` as before.
+- The app shows the api's sentence in the Share dialog's toast. Its tooltip before the click stays as it was for a
+  lapsed workspace: the app reads the plan as Professional when lapsed (D-277 18) and cannot tell which plan ended.
+- **Proved on the bench:** three throwaway fx accounts, each a workspace, a project and a link; a guarded drive gave
+  them a canceled Professional, a past-due-beyond-grace Professional and a canceled Essentials subscription. The api
+  and the Share dialog answered the new sentence twice and "Sign up for Professional to use this." once; the switch
+  stayed off.
