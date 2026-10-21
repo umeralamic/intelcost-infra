@@ -21535,3 +21535,71 @@ the same rows).
 - **Not changed:** any real change on the copy marks it out of date as before. A copy made before this fix keeps the
   aliases it was given and still reads out of date once; Calculate there. A copy of a project whose own result is an
   earlier engine's reads out of date because the original does (D-470), as Marketing Demo – Site's does today.
+
+## D-683: Calculate on the exact overlay of EG and FG, built as specced (N9; D-670's spec)
+
+**Accepted 2026-10-21 (Umer, N9: approved as written).** Hard rule 3: the change was approved by spec before it was built.
+
+- **The engine:** Calculate's parent pieces are the exact overlay (`volume/overlay.ts`): every EG triangle intersected
+  with every FG triangle, each piece with both planes, so Δz is linear on it exactly. Everything after the parents is
+  unchanged (boundary clip, feature and strip partitions, the split at zero, the prisms, regions, statistics, "without
+  strip", 3D, bands, geotech). The union triangulation still runs for its checks, error codes and hull. A piece wholly
+  inside or outside the boundary, a feature or a strip skips the polygon clipper (an exact containment test; anything
+  touching goes to the clipper), which makes Calculate faster than before.
+- **Saved results:** the key's version moves, a sheet's `v6` → `v7`, a site's `v5` → `v6`. Every saved result reads
+  out of date once; nothing is written or recalculated. The panel's words for a result one version behind: "Out of
+  date: calculated before cut and fill were measured exactly between the two grades."
+- **C-200** (BENCH DUP of the 3D test copy, without strip): 13,361.9 / 7,844.2 → **13,376.2 / 7,899.0 CY** against the
+  engineer's 14,263 / 8,727 (−6.32 / −10.12 % → −6.22 / −9.49 %). With strip 11,583.9 / 9,463.5 → 11,588.1 / 9,514.2.
+  Every region equals the spec's independent scratch overlay to 0.1 CY (the per-region check), the outlier included
+  (cut 94.6 → 100.4, fill 117.9 → 81.8).
+- **Quantity table:** every existing row unchanged except `regaccept-c200-from-page-3`, re-baselined 9,312 / 8,072 →
+  9,602 / 8,161 and equal to a 600 × 600 sampling of the same TINs to 0.1 CY. Five new hand-worked rows (ridge, ridge
+  without the pull, valley, coverage, feature over a fold); the old engine fails the ridge, valley and fold rows.
+- **GPS Export's fill gap** against Calculate without strip: +0.76 % → **+0.06 %** (4.9 CY, the 0.1 ft face, as
+  designed); cut −0.03 %.
+- **Speed** (Calculate pressed to result saved, warm, same DUP): C-200 15.0–15.4 s → 12.0–12.8 s; the 20,000-item
+  DUP's C-200 21.8–26.6 s → 17.2–18.8 s.
+- **The 3D test copy (read only, nothing written):** stored key `v6u:035a0c66fa80c5`, md5 `744a1dab64bdd1c2991f986b8f9500d7`
+  (unchanged); its live key is now `v7u:113b7cbb807c91` (read through a fresh DUP's aliases), so it reads out of date on
+  open. This pair is its new baseline.
+- For Abdullah: no migration; every saved result in production reads out of date once, by design.
+
+## D-684: The selection held outside the takeoff page: built, measured, stashed (N3)
+
+**Status:** not shipped; stashed as `night-selection-store` (app repo), as the brief says for a target not met.
+
+- **What was built:** `selectionStore.ts` on the earthwork hover store's pattern (D-479), one store a page; the page
+  re-renders on a click only when a coarse key of the selection changes (the action group's kind, lock, hold), the
+  canvas, both panels and the status line subscribe themselves, every handler reads the store when it runs.
+  **There is no zoom store by Abdullah in code or git** (his commits are CI only); the hover store is the app's one
+  pattern, and the zoom store can take the same shape later.
+- **Measured** (production build, 1600 × 1000, median of 8–10 clicks): 1,000 shapes 148 → 150 ms, 5,000 201 → 193 ms,
+  20,000 284 → 268 ms. Behaviour identical to the baseline on click, shift-click, Escape, box, Ctrl+A, Properties and
+  Delete with undo. **Not a clear improvement:** the page's own render was not the cost. What remains at 20,000 is
+  two tasks, about 65 ms (the canvas and the panel rendering the new selection) and 105–130 ms (the panel's jump to
+  the row and its rows mounting); those are the next block.
+
+## D-685: A window brought back reads only the items changed since the last read (N10)
+
+**Accepted 2026-10-21 (Umer, N10).**
+
+- **Three paths re-read every item** when a window came back after its socket dropped: the realtime provider's
+  invalidate-everything on reconnect, React Query's own refetch on the browser's "online", and the missed `takeoff.*`
+  event's re-read of the project list in `useLiveItems`. All three now go through one `since` read for the two item
+  lists (the sheet's and the project's); the sheets panel's per-sheet lists, made from the items, are re-read only
+  when an item changed.
+- **api:** `GET …/takeoff/item/detail/compact?since=<time>` lists only items whose own row, shapes, dimensions,
+  folders, layer, parent, soil layer, site or work scope changed after it (a materialised set built by joins from the
+  project's items: 0.1 s at 20,000 items; written as per-item subqueries it took 12 s). Every compact read now also
+  returns `read_at`, `live` (the list's item count) and `multipliers_digest`.
+- **app (`hooks/itemsSince.ts`):** a changed item replaces its row in place. Anything it cannot take in place reads
+  the list whole, as before: an item new or gone (the count disagrees), renamed or moved in the order, the
+  multipliers changed, or the read failing. Reads overlap by 60 s, so a write committed just after a read began is
+  never missed.
+- **Measured** (20,000-item BENCH DUP, the tab offline 15 s then back): before, 33 reads including the project's
+  items (31 MB), the sheet's items and the per-sheet lists (2.7 MB); after, with nothing changed, 27–29 small reads,
+  128 KB in all, **no item read**. An item recoloured in a second window meanwhile: one `since` read, 3 KB in 1.2 s,
+  and the row shows the new colour.
+- **Left:** after a change the per-sheet lists are still read whole (2.7 MB at 20,000); the workspace classification
+  (520 KB) is refetched by the provider on a socket reconnect.

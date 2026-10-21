@@ -449,6 +449,18 @@ confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built 
 | N11 | Coordinates through a joined site member | **None for now. Closed.** |
 | N12 | Test zips with assumed coordinates | **Each README says plainly "Assumed grid coordinates. Format test only. Not for machine use."** (night run 2, Step 1). |
 
+## Night run 2, 2026-10-21 (morning-report-2026-10-21/NIGHT2_REPORT_2026-10-21.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| M1 | **BENCH PRO workspace** ("BENCH PRO 2026-10-21 05:06 — Umer's GPS Export click", owned by your account) with its copy, for your Share click | The fingerprint flags the copy (a project in a founder-owned workspace not on the protected list) | After your click: delete it, or add it to the protected list? |
+| M2 | **Selection under 100 ms at 20,000** | Store built and stashed (`night-selection-store`): 284 → 268 ms. Left: the panel's jump (105–130 ms) and the canvas's render (about 65 ms) | Go for that block? |
+| M3 | **Estimating's first row** (5.9–7.0 s at 5,000; 10.6–11.1 s at 20,000) | Profiled, not changed: the api's items read 5.5 s and the browser 4 s at 20,000 | Go: an Estimating-only read without shapes, no takeoff canvas behind Estimating, the 1.7 s task? |
+| M4 | A **lapsed subscription** refusing the GPS Export switch still says "Sign up for Professional to use this." | As built (D-679) | Its own sentence, like the trial's? |
+| M5 | Live events re-read the **per-sheet lists** whole (2.7 MB at 20,000); a reconnect re-reads the **classification** (520 KB) | D-685 left them | Make them incremental too? |
+| M6 | **ZHO Dania Pointe** bleed-on-Y check | No such sheet on the bench | Upload the PDF |
+| M7 | A **guest's out-of-date view** after the v7 bump | Not exercised separately | Put it on your click list? |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
