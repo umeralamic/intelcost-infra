@@ -289,6 +289,13 @@ screens on the founder's word (D-614): f6-a to f6-e. Every other fixture is stil
 Retargeting also swaps ports written as numbers (D-614); before that, a few helpers' requests went
 to the bench's own api, which refused every one.
 
+**Canvas or zoom changed? Run `m6-position`** (D-689): `./fx-suite.sh run named m6-position`, about
+15 minutes. It generates four test sheets (landscape, portrait, landscape turned by /Rotate 90, landscape
+through an offset CropBox; `lib/position-sheets.mjs`), measures every reference cross from the screen's
+pixels at every zoom step from Fit to 30× with markup past the page's edge, and draws the same line and
+count at Fit and at the deepest zoom. Run it after any change to `SheetCanvas.tsx`, `lib/takeoff/pdf/`,
+`lib/takeoff/rotation.ts`, `useViewport.ts` or the page worker's sizes.
+
 **Skipped and named on every run** (`fx-suite-patch.mjs`, `SKIPPED`): the fixtures that stop,
 restart or recreate a shared service (f8-s2, f8-s3, f8-s5, f8-s8, f8-s12, f5-s2, f4-s27), f5-s9
 (today's `seed.py --reset` with a flag it no longer takes), and d27-uploads (it needs beat).
