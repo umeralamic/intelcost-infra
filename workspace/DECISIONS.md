@@ -21619,3 +21619,23 @@ the same rows).
   being edited before it can ship.
 - **The `deriveLines` cache** (stashed `night-estimating-first-row`): each folder chain, node path and sheet set worked
   out once; dev 1.58 → 1.09 s, totals identical, no measurable gain in production.
+
+## D-687: Umer's answers to C-N8 and M1–M7, and the day session of 2026-10-21
+
+**Accepted 2026-10-21 (Umer).**
+
+- **C-N8 passed both ways.** In the BENCH PRO workspace Calculate ran, "Allow GPS Export download" turned on and stayed
+  on after a reload, a guest opened GPS Export (coordinates read-only, no Calculate) and downloaded, and the download
+  shows in the link's settings. Closed.
+- **M7 passed.** The guest saw the earthwork result as current after Calculate. Closed.
+- **C-200's gap** to the engineer's 14,263 / 8,727 CY (−6.22 / −9.49 % after D-683) is checked and fine. No action.
+- **M1:** the BENCH PRO workspace and its project are deleted, not protected.
+- **M4:** a lapsed Professional subscription gets its own sentence on the switch (D-688).
+- **M6:** the canvas position check runs on generated test sheets (four page layouts, every zoom step to 30×), not on
+  the Dania Pointe upload in Bench Construction Test, which stays untouched. **The generator and the check join the
+  archived fixtures** on Umer's instruction, an explicit exception to hard rule 8's "no new fixtures", so they run
+  whenever the canvas or zoom changes.
+- **M3:** late reads must never overwrite a cell being typed in or a value saved after the read was asked; fixed on its
+  own first, with a new f9-estimating step (the same exception); then the hold ships, then the 20,000-line render.
+- **M2, M5:** go, as the day session's Steps 8 and 9.
+- **f6-a:** measured only (where the 1.8–2.0 s goes from save to second window), no change.

@@ -443,7 +443,7 @@ confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built 
 | N5 | A set with a printed control table | **Umer provides one.** Until then GPS Export is proved on assumed coordinates only, said in every GPS report and README. |
 | N6 | A press exactly on a takeoff vertex | **Go:** it counts as a control-point pick (night run 2, Step 3). |
 | N7 | A duplicated project's copied Calculate | **A bug against C6:** the copy reads current on its first open (night run 2, Step 5). |
-| C-N8 | Allow GPS Export download | **The refusal passed** in the Share dialog on an expired trial (Umer). The positive path is still open: night run 2, Step 2 sets up a Professional workspace for Umer to click. |
+| C-N8 | Allow GPS Export download | **Passed both ways (Umer, 2026-10-21).** The refusal on an expired trial; then in BENCH PRO: Calculate ran, the switch turned on and stayed on after a reload, a guest opened GPS Export (coordinates read-only, no Calculate) and downloaded, and the download shows in the link's settings (D-687). **Closed.** |
 | N9 | The exact-overlay spec | **Approved as written** (night run 2, Step 6). |
 | N10 | A window focus refetches all items | **Go:** only items changed since the last read (night run 2, Step 9). |
 | N11 | Coordinates through a joined site member | **None for now. Closed.** |
@@ -451,15 +451,19 @@ confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built 
 
 ## Night run 2, 2026-10-21 (morning-report-2026-10-21/NIGHT2_REPORT_2026-10-21.md)
 
-| # | What | Where it stands | Your call |
-|---|---|---|---|
-| M1 | **BENCH PRO workspace** ("BENCH PRO 2026-10-21 05:06 — Umer's GPS Export click", owned by your account) with its copy, for your Share click | The fingerprint flags the copy (a project in a founder-owned workspace not on the protected list) | After your click: delete it, or add it to the protected list? |
-| M2 | **Selection under 100 ms at 20,000** | Store built and stashed (`night-selection-store`): 284 → 268 ms. Left: the panel's jump (105–130 ms) and the canvas's render (about 65 ms) | Go for that block? |
-| M3 | **Estimating's first row** (4.6 s at 5,000 priced; 7.5 s at 20,000) | D-686: two changes stashed. The read hold (`night-estimating-hold`) took 21 % off but lost a rate typed while the held reads landed (f9-estimating 8/11); the `deriveLines` cache (`night-estimating-first-row`) gave no measurable gain | Go: make the late reads leave an edited cell alone, ship the hold, then the render of 20,000 lines? |
-| M4 | A **lapsed subscription** refusing the GPS Export switch still says "Sign up for Professional to use this." | As built (D-679) | Its own sentence, like the trial's? |
-| M5 | Live events re-read the **per-sheet lists** whole (2.7 MB at 20,000); a reconnect re-reads the **classification** (520 KB) | D-685 left them | Make them incremental too? |
-| M6 | **ZHO Dania Pointe** bleed-on-Y check | No such sheet on the bench | Upload the PDF |
-| M7 | A **guest's out-of-date view** after the v7 bump | Not exercised separately | Put it on your click list? |
+All answered by Umer on 2026-10-21 (day session, D-687).
+
+| # | What | Answer |
+|---|---|---|
+| M1 | **BENCH PRO workspace** with its copy | **Delete both now** (day session, Step 2). Not added to the protected list. |
+| M2 | **Selection under 100 ms at 20,000** | **Go:** build on `night-selection-store`: the panel scrolls only when the row is off screen and mounts only the rows near it; the canvas redraws only the shapes whose selection changed (day session, Step 8). |
+| M3 | **Estimating's first row** | **Go, in two parts:** late reads never overwrite a cell being typed in or a value saved after the read was asked (Step 5); then ship the hold and the 20,000-line render (Step 6). |
+| M4 | A **lapsed subscription** refusing the GPS Export switch | **Its own sentence:** "Your Professional plan has ended. Renew to turn this on." (Step 3). |
+| M5 | Per-sheet lists and classification re-reads | **Go:** live events re-read only the per-sheet lists that changed; a reconnect re-reads the classification only if it changed (Step 9). |
+| M6 | Bleed-on-Y check | **Not on Dania Pointe** (leave the Bench Construction Test upload untouched): generated test sheets in four page layouts, checked at every zoom step to 30×, and added to the fixtures (Step 4). |
+| M7 | A guest's out-of-date view | **Passed (Umer):** the guest saw the earthwork result as current after Calculate. **Closed.** |
+
+C-200's gap to the engineer's figures (−6.22 / −9.49 % after D-683): **checked by Umer and fine. No action. Closed.**
 
 ## Found in the click sessions
 
