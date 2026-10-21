@@ -14,7 +14,7 @@
 // on material, overhead 10 %, profit 10 % and bond 1 %, each on the running subtotal:
 //   100,000 + 3,200 = 103,200; + 10,320 = 113,520; + 11,352 = 124,872; + 1,248.72 = 126,120.72.
 
-import { APP, apiCall, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
+import { APP, apiCall, expect, fixtureOwner, run, serviceUrl, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
 import { waitFor } from "./lib/realtime.mjs";
@@ -424,6 +424,70 @@ await run("f9-estimating", [
       await page.keyboard.press("Control+z");
       await settles(page, "Paint", "Total Material Cost", 400);
       return "edit $600 ↔ $400; add Primer $600 → Ctrl+Z $400 (one component) → Ctrl+Y → Ctrl+Z; delete $0 → Ctrl+Z $400 (component back) → Ctrl+Y $0 → Ctrl+Z $400";
+    },
+  },
+  {
+    title: "slow load (M3, D-690): on a cold open with the rates' read held 5 s, Paint's Unit Man Hours typed during the load keeps 0.25 after the late read lands, after a reload and in a second window",
+    run: async ({ page, context }) => {
+      // The first read of the rates is answered by the api at once (the figures as they were before
+      // the save) and handed to the page only 5 s later: a slow connection, on an empty cache.
+      let held = 0;
+      let landedAt = 0;
+      let holdError = null;
+      await page.route(/\/estimate\/costs(\?|$)/, async (route) => {
+        if (route.request().method() !== "GET" || held > 0) return route.fallback();
+        held += 1;
+        try {
+          // Fetched from here, over the compose network (the page's localhost is not this one's).
+          const url = route.request().url();
+          const response = await route.fetch({ url: serviceUrl(url) ?? url });
+          await new Promise((r) => setTimeout(r, 5000));
+          await route.fulfill({ response });
+        } catch (error) {
+          holdError = String(error).slice(0, 200);
+          await route.abort().catch(() => undefined);
+        }
+        landedAt = Date.now();
+      });
+      const before = (await apiCall(token, "GET", `${estimate}/costs`)).body.lines.find((l) => l.item_uuid === items.Paint.uuid) ?? {};
+      expect(Number(before.unit_man_hours ?? 0) !== 0.25, `Paint already holds 0.25 MH: ${JSON.stringify(before)}`);
+      await open(page);
+      expect(held === 1 && landedAt === 0, `the rates' read was not held: held ${held}, landed ${landedAt}`);
+      const saved = page.waitForResponse((r) => r.request().method() === "PATCH" && /\/estimate\/costs\//.test(r.url()) && r.ok());
+      await rate(page, "Unit Man Hours", "Paint", 0.25);
+      await saved;
+      const savedAt = Date.now();
+      // The held read lands after the save.
+      await waitFor(async () => (landedAt ? true : null), "the held read to land", 15000);
+      expect(!holdError, `the held read failed: ${holdError}`);
+      expect(landedAt > savedAt, `the held read landed before the save (${landedAt} ≤ ${savedAt}): nothing was tested`);
+      const shown = async (p) => num(await p.locator(`[data-rate="Unit Man Hours for Paint"]`).textContent());
+      // Read again and again after it: nothing may move the cell off 0.25 once the late read is in.
+      const reads = [];
+      await waitFor(async () => {
+        reads.push(await shown(page));
+        return reads.length >= 5 ? true : null;
+      }, "five reads of the cell", 10000);
+      expect(reads.every((v) => v === 0.25), `Paint's Unit Man Hours after the late read: ${reads.join(", ")}`);
+      const stored = (await apiCall(token, "GET", `${estimate}/costs`)).body.lines.find((l) => l.item_uuid === items.Paint.uuid) ?? {};
+      expect(Number(stored.unit_man_hours) === 0.25, `api: ${JSON.stringify(stored)}`);
+      await page.unroute(/\/estimate\/costs(\?|$)/);
+      await page.reload();
+      await row(page, "Paint").waitFor({ timeout: 30000 });
+      await waitFor(async () => ((await shown(page)) === 0.25 ? true : null), "0.25 after a reload", 15000).catch(async () => {
+        throw new Error(`after a reload: ${await shown(page)}`);
+      });
+      const second = await context.browser().newContext({ viewport: { width: 1440, height: 900 } });
+      try {
+        const other = await second.newPage();
+        await open(other);
+        await waitFor(async () => ((await shown(other)) === 0.25 ? true : null), "0.25 in a second window", 15000).catch(async () => {
+          throw new Error(`in a second window: ${await shown(other)}`);
+        });
+      } finally {
+        await second.close();
+      }
+      return `typed during the load; the held read landed ${landedAt - savedAt} ms after the save; the cell read 0.25 five times after it; the api, a reload and a second window hold 0.25`;
     },
   },
 ]);
