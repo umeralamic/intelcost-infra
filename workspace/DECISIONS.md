@@ -21379,3 +21379,37 @@ set) and D-672 (coordinates).
 - **Test files with coordinates:** the three presets in `morning-report-2026-10-21/gps-test-files/`, named
   `_ASSUMED-GRID-COORDS` and labelled so in `README-FIRST.txt` and in each README's system line. `gps-check.sh`
   passes on all three (LandXML 1.2 schema valid, AC1009, audit clean, 3D polylines only).
+
+## D-675: GPS Export step 7, guests: the link's "Allow GPS Export download", the guest's dialog, and the download log (GPS Export, D-650 G1)
+
+**Accepted 2026-10-21 (night run, step 10).** Plan `docs/tasks/gps_export_PLAN.md`, "Guests and plans".
+
+- **The switch:** "Allow GPS Export download" in the link's settings, under Show pricing (`project_share_link.allow_gps_export`,
+  migration `d675c7e9a2b4`, off for every link). Turned on only while the workspace has Professional or a running trial
+  (the PATCH refuses otherwise, "Sign up for Professional to use this."); greyed on Essentials. The guest session
+  carries it (`GuestSessionRead.allow_gps_export`, `GuestSession.allowGpsExport`).
+- **The guest's dialog:** the same dialog. The coordinates are the owner's, read only, with no Set coordinates; out of
+  date reads "The owner must Calculate again first" and offers no Calculate (a guest's is never saved, D-600). With the
+  switch off the button is greyed with "The project owner hasn't turned on GPS Export for this link." (its own reason,
+  no Sign up link: the owner's choice, not the guest's plan); "Sign up for Professional to use this." stays only where
+  the reader's own plan is the reason (a manager on Essentials turning the switch on). A lapsed owner plan reads "The
+  project owner's plan no longer includes GPS Export for this link." A greyed More entry's own `reason` is now its guest
+  tip too (`data-guest-reason` on the row). The files are made in the guest's browser from the reads a guest already has.
+- **The download log:** `share_link_download` (link, invite when opened through one, sheet, the sheet's name as it
+  was, preset, files, time). A guest's Download first posts `POST …/project/{p}/earthwork/gps-download`; a refused log
+  saves nothing. The route refuses a member ("not_a_guest"), a link without the switch ("gps_export_off"), an owner
+  whose plan no longer allows it ("plan_required"), and a sheet outside the project.
+- **The guard's one exception:** `ShareGuestGuard` lets exactly `POST /earthwork/gps-download` through, in the guest's
+  own workspace and project, and only after the link still holds; every other guest write is still refused before any
+  route. Members see the log in the link's settings: "Downloads: 1, last …, <file> and 4 more", every download in its
+  tooltip (the last 20).
+- **Proved** on BENCH DUP 7bb1fa52 (its link made by a guarded drive; the bench's two sign-in accounts are not
+  workspace managers, so the switch was set there): as a guest with the switch on, GPS Export opened, the coordinates
+  read only, no Calculate; Download logged (201, the five file names) and saved the zip. Other guest writes still 403
+  `share_view_only`. Switch off: a new guest session's button greyed with "The project owner hasn't turned on GPS
+  Export for this link.", the log refused 403 `gps_export_off`. Essentials, on the server: the api's own PATCH route,
+  called in the api's process with the DUP workspace's owner seat and an Essentials subscription held in memory (never
+  stored), refused the switch 403 `plan_required`; Professional as the control took it (200) and turned it off again. As a member: the log listed, the switch disabled for a non-manager, a member's log POST 403
+  `not_a_guest`.
+- **Not exercised in a browser:** a manager clicking the switch in the Share dialog (no permitted bench account
+  manages the workspace): on the founder's click list.
