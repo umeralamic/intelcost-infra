@@ -136,6 +136,13 @@ export const GEOREF_CASES = [
   { id: "geo-one-point", kind: "georef", scale: S20, units: "intl-ft", points: pointsFor(TURNED).slice(0, 1), expect: { ok: false, reason: "too_few" } },
   // A fourth point typed 0.30 ft north of where it is: both engines agree on the misses (no hand figure).
   { id: "geo-one-off", kind: "georef", scale: S20, units: "intl-ft", points: [...pointsFor(TURNED), ((p) => [p[0], p[1], p[2] + 0.3, p[3]])([0.9, 0.1, ...gridOf([0.9, 0.1], TURNED)])], expect: { ok: true } },
+  // The fourth-monument check (D-674): a fourth point marked check, read through the three's fit, never in it.
+  // On the transform: the fit is the three's and the check misses by 0.
+  { id: "geo-check-on", kind: "georef", scale: S20, units: "intl-ft", points: [...pointsFor(TURNED), [0.9, 0.1, ...gridOf([0.9, 0.1], TURNED), true]], probe: [0.5, 0.5], expect: { ok: true, rotationDeg: 30, scale: 1, rms: 0, checkMiss: 0, probe: probeFor(TURNED) } },
+  // Typed 0.30 ft north: the fit does not move (rms 0, the same probe) and the check misses by 0.30 exactly.
+  { id: "geo-check-off", kind: "georef", scale: S20, units: "intl-ft", points: [...pointsFor(TURNED), ((p) => [p[0], p[1], p[2] + 0.3, p[3], true])([0.9, 0.1, ...gridOf([0.9, 0.1], TURNED)])], probe: [0.5, 0.5], expect: { ok: true, rotationDeg: 30, scale: 1, rms: 0, checkMiss: 0.3, probe: probeFor(TURNED) } },
+  // One point in the fit and one check: too few in the fit.
+  { id: "geo-check-too-few", kind: "georef", scale: S20, units: "intl-ft", points: [pointsFor(TURNED)[0], [...pointsFor(TURNED)[1], true]], expect: { ok: false, reason: "too_few" } },
   // An uncalibrated sheet.
   { id: "geo-uncalibrated", kind: "georef", scale: [0, 1000, 1000], units: "intl-ft", points: pointsFor(TURNED), expect: { ok: false, reason: "uncalibrated" } },
 ];

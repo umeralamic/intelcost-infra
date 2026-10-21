@@ -432,10 +432,12 @@ try {
     const sc = ([feetPerPt, widthPt, heightPt]) => ({ feetPerPt, widthPt, heightPt });
     return cases.map((c) => {
       if (c.kind === "georef") {
-        const points = c.points.map(([x, y, n, e], i) => ({ label: "CP-" + (i + 1), at: { x, y }, n, e }));
+        const points = c.points.map(([x, y, n, e, check], i) => ({ label: "CP-" + (i + 1), at: { x, y }, n, e, ...(check ? { check: true } : {}) }));
         const f = geo.fitGeoref(points, sc(c.scale), c.units, { fitScale: c.fitScale !== false });
         if (!f.ok) return { ok: false, reason: f.reason };
         const out = { ok: true, rotationDeg: r.rotationDegrees(f.fit.rotation), scale: f.fit.scale, maxResidual: Math.max(...f.fit.residuals), rms: f.fit.rms };
+        // The fourth-monument check (D-674): the largest check point's miss.
+        if (points.some((p) => p.check)) out.checkMiss = Math.max(...f.fit.residuals.filter((_, i) => points[i].check));
         if (c.probe) {
           const g = geo.gridOf(f.fit, { x: c.probe[0], y: c.probe[1] }, sc(c.scale));
           out.probe = `${+g.n.toFixed(9)},${+g.e.toFixed(9)}`;

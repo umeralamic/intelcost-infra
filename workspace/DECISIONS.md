@@ -21352,3 +21352,30 @@ set) and D-672 (coordinates).
   five surfaces as 3D faces. A duplicated project's copied Calculate reads out of date on its first open (the copy's
   key is not the original's; seen under the build before this step too), so the DUP was calculated again first: cut
   11,583.92 and fill 9,463.48 CY, the copied result's to the hundredth.
+
+## D-674: GPS Export step 6, the fourth-monument check: a point marked Check, read through the fit and never in it (GPS Export, D-650)
+
+**Accepted 2026-10-21 (night run, step 9).** Plan `docs/tasks/gps_export_PLAN.md` d.3.
+
+- **A check point:** each point in the Coordinates panel has a **Check** tick. A checked point is left out of the fit
+  and read through the fit of the others; its miss (typed against where the fit puts it) shows in its row, amber over
+  0.1 ft and red over 0.5 ft as a residual does, with "Check point CK-4 misses by 3.29 ft: a control point, the scale
+  or the check's own value is off." The status line reads "±0.00 ft across 3 points; check CK-4 0.01 ft". At least two
+  points stay in the fit.
+- **Both engines** (`export/georef.ts`, `earthwork/georef.py`): the fit over the unchecked points only; residuals in
+  the points' order, a check point's its miss; RMS and worst over the fitted ones. A control point's residual is the
+  same formula as before, so every stored fit and every quantity-table row is unchanged. Stored in the points' JSON
+  (`check`, false when absent).
+- **The export's README** names the check: "CK-4 (corner 2): plan … -> N … E …, check point, not in the fit: misses
+  by 0.006"; "Fitted from 3 control points" counts the fitted ones.
+- **Quantity table:** three rows on both engines, by hand: a check on the transform misses by 0 and leaves the fit
+  as the three's; a check typed 0.30 ft north misses by 0.30 and moves nothing (RMS 0, the same probe); one control
+  and one check are too few.
+- **Proved** on BENCH DUP 7bb1fa52's C-200 (step 7's assumed coordinates; no sheet of the set prints a control
+  table): a fourth pad corner (corner 2) typed to 0.01 ft as a check point. Picked 3 px off in the panel, it showed
+  red at 3.29 ft while the three controls kept 0.0026, 0.0014 and 0.0025 ft. Stored at the corner: the api's fit
+  bit for bit unchanged, the check's miss 0.0058 ft (0.0047 ft of it the 0.01 ft typing). Exported from the dialog and
+  read back with ezdxf, CK-4 is 0.0058 ft from its typed value and 0.0022 ft from the assumed transform's exact one.
+- **Test files with coordinates:** the three presets in `morning-report-2026-10-21/gps-test-files/`, named
+  `_ASSUMED-GRID-COORDS` and labelled so in `README-FIRST.txt` and in each README's system line. `gps-check.sh`
+  passes on all three (LandXML 1.2 schema valid, AC1009, audit clean, 3D polylines only).

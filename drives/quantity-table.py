@@ -67,7 +67,7 @@ def coordinates(case: dict) -> dict:
     s = case["scale"]
     scale = georef.Scale(float(s[0]), float(s[1]), float(s[2]))
     points = [
-        georef.ControlPoint(f"CP-{i + 1}", p[0], p[1], p[2], p[3])
+        georef.ControlPoint(f"CP-{i + 1}", p[0], p[1], p[2], p[3], len(p) > 4 and bool(p[4]))
         for i, p in enumerate(case["points"])
     ]
     try:
@@ -82,6 +82,10 @@ def coordinates(case: dict) -> dict:
         "maxResidual": max(fit.residuals),
         "rms": fit.rms,
     }
+    # The fourth-monument check (D-674): the largest check point's miss.
+    checks = [r for r, p in zip(fit.residuals, points, strict=True) if p.check]
+    if checks:
+        out["checkMiss"] = max(checks)
     if case.get("probe"):
         e, n = georef.plan_of(case["probe"][0], case["probe"][1], scale, case["units"])
         cos, sin = math.cos(fit.rotation) * fit.scale, math.sin(fit.rotation) * fit.scale
