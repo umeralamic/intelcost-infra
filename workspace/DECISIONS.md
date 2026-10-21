@@ -21413,3 +21413,18 @@ set) and D-672 (coordinates).
   `not_a_guest`.
 - **Not exercised in a browser:** a manager clicking the switch in the Share dialog (no permitted bench account
   manages the workspace): on the founder's click list.
+
+## D-676: The Earthwork row reordered; Trace rules move to Takeoff settings (the founder, supersedes D-553's placement)
+
+**Accepted 2026-10-21 (the founder).**
+
+- **Trace rules** leave the Earthwork row (the Rules button beside Trace is gone) for Takeoff settings › "Trace rules",
+  after Takeoffs (`TraceRulesSection.tsx`, replacing `TraceRulesDialog.tsx`). D-553 stands otherwise: the rules stay the
+  project's, with who last changed them, read only for a viewer and a guest. Like Utility settings the section saves on
+  its own ("Save for the project", "Restore defaults") and "Reset this section" skips it.
+- **The row's order** after the draw tools: Linked EC, Show Linked EC, Utilities, Structures, Check Grades, Calculate,
+  (Volumes for a guest), the view, EXIST./PROP. GRADE, CUT & FILL, Report, Coordinates, GPS Export. Utilities and
+  Structures are now items of the row (`utilityItems.tsx`), no longer their own bordered group after it, so they fold
+  into More like the rest. "Check grades" reads "Check Grades".
+- **Section's icon** is the founder's drawing: the section line A–A′ dashed in the brand orange across the ground's
+  profile (`SectionIcon.tsx`).
