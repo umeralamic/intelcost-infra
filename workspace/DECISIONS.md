@@ -21726,3 +21726,27 @@ the same rows).
   (−13 %); 20,000 items 9.53 → 9.25 s (within the spread, 8.3–10.8 s). Totals identical on the 5,000-item DUP (TOTAL
   $14,362,511.96, the group rows and the first 25 rows).
 - Targets (2 s at 5,000, 4 s at 20,000) not met: the render of the lines is next (D-692).
+
+## D-692: Estimating's 20,000-line render: lines derived once, not on every render (M3, part 2b)
+
+**Accepted 2026-10-21 (Umer, M3).**
+
+- **Found:** the `lines` memo's classification nodes were a new array on every render (made in a memo keyed on
+  `useQueries`' result, itself new every render), and Estimating's sheets were mapped inline in `ProjectTakeoff`. So
+  every line was derived again on every render: about 16 times in the 9 s after a cold 20,000-item open (logged in the
+  dev build), and every memo below it with it.
+- **Changed** (`EstimatingView.tsx`, `lib/estimate/lines.ts`, `ProjectTakeoff.tsx`):
+  - the nodes come from `useQueries`' own `combine` (one array until a system's nodes change); Estimating's sheets are
+    a memo in `ProjectTakeoff`;
+  - the earthwork headings go on in a memo of their own, so the earthwork results landing do not derive every line
+    again;
+  - `deriveLines`: each folder's chain, node's path and sheet set worked out once (D-686's stashed cache), and the
+    sort's anchors and folder positions looked up once, not in each of ~300,000 comparisons (same order);
+  - `mainLayerOf`: each layer's main layer worked out once per list of layers, not a map of every layer per line.
+- **Measured** (production builds, alternately; the browser's work from the items read's end to the first row):
+  20,000 items 2.24–2.76 → **1.85–2.20 s**; 5,000 items 0.71–0.84 → **0.59–0.71 s**. Derives after a cold open: about 16
+  → 2 (the items landing, then the sheets).
+- **The first row at 20,000 is now the api's items read:** 31 MB, 2.5–3.4 s alone, ending 6–7 s into the open beside
+  the other reads. Targets (2 s at 5,000, 4 s at 20,000) not met; the api read is the next block.
+- f9-estimating 12/12, c31-wage 6/6; totals identical on the priced 5,000-item DUP (TOTAL $14,362,511.96, the group
+  rows and the first 25 rows); grouping by Classification, Custom Folder and back on the 20,000-item DUP unchanged.
