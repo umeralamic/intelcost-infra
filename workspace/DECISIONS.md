@@ -21455,3 +21455,83 @@ set) and D-672 (coordinates).
 
 D-NN numbers named above are reserved for the night run's steps; a step not reached leaves its number unused and says
 so in the report.
+
+## D-678: The test zips say "Assumed grid coordinates. Format test only. Not for machine use." (N12)
+
+**Accepted 2026-10-21 (Umer, N12).**
+
+- The three zips in `morning-report-2026-10-21/gps-test-files/` carry the sentence as the first line of each
+  `README.txt` and again under COORDINATES, and `README-FIRST.txt` opens with it. Only the READMEs were rewritten:
+  every LandXML, DXF and CSV is byte-identical to the night run's export (checked by hash), so the fit, the residuals
+  and the read-back figures stand.
+- The app writes no such line itself: it cannot know coordinates were made up. The sentence belongs to these test
+  files; any later test set with assumed coordinates carries it the same way (N5).
+- **Found on the way and fixed:** `ascii()` turned a sheet's en dash into "?" ("C-200 ? Site Grade Plan" in the
+  README, the LandXML descriptions and the DXF text). Dashes, curly quotes and narrow spaces now read as their plain
+  forms; `exportFileName` folds the dash and its spaces into one "-", so file names do not change.
+
+## D-679: The GPS Export switch on an expired trial says the trial ended; a throwaway Professional workspace for Umer's click (C-N8)
+
+**Accepted 2026-10-21 (Umer, C-N8).**
+
+- **Wording.** A manager turning "Allow GPS Export download" on in a workspace whose trial ran out reads "Your trial
+  has ended. Upgrade to Professional to turn this on." (the api's refusal, `GPS_EXPORT_TRIAL_ENDED`, and the switch's
+  tooltip). A workspace on Essentials that never had a trial keeps "Sign up for Professional to use this.", now on the
+  switch's tooltip too (it read "This is on the Professional plan.", which no longer matched the api). The test is the
+  workspace's view-only reason `trial_ended`; a lapsed subscription keeps the sign-up wording (question for Umer).
+- **Not changed:** a workspace with no trial window and no subscription still resolves to Professional (D-18: no window
+  is not an expired trial), so its switch turns on.
+- **The click setup.** A throwaway workspace "BENCH PRO 2026-10-21 05:06 — Umer's GPS Export click" owned by
+  umeralam.q@gmail.com, made by a guarded drive (D-667; the account looked up inside the script, never named on the
+  command line, the founder's own workspace never named), on Professional through the bench's Stripe fake (Checkout
+  paid, webhook processed, subscription active to 2026-11-20). In it "BENCH DUP 2026-10-21 05:06 — delete me", a copy
+  of a BENCH DUP of the 3D test copy (Save-to-workspace's across-workspace copy, pricing included), with its share link
+  on, pricing off and GPS Export off. No mail was sent; the account's active workspace was not changed. It is kept
+  out of the end-of-run DUP purge for Umer.
+
+## D-680: A control point pressed on a takeoff corner lands on the corner (N6)
+
+**Accepted 2026-10-21 (Umer, N6).**
+
+- **What was wrong:** the press was taken, but not on the corner. While a control point is picked Snap PDF is forced
+  on (D-672) and your own takeoff Snap is not, so a press exactly on a takeoff corner was pulled to the nearest
+  printed line: 8.4 px off at 662 % on C-200's Building Pad. At fit zoom the pull is under a pixel, which is why it
+  looked like a vertex was sometimes refused.
+- **The rule now:** while a coordinate is picked, the takeoff corners and edges join the snap as well as the printed
+  lines; own markup ranks first at an equal rank, so a press on or within the snap reach of a corner lands exactly on
+  it. A press on an empty spot lands where pressed (Snap PDF as before). The Snap button keeps showing the person's
+  own setting.
+
+## D-681: Tile work defaults to the tile crew; terrazzo keeps the terrazzo crew; the other systems' tile nodes reach the right CSI node (N2)
+
+**Accepted 2026-10-21 (Umer, N2).** Migration `d681e3a5c7b9` (reference data only; reversible, proved down and up to
+the same rows).
+
+- **CSI, both tables:** 09.04 Tile (and 09.04.01–.03) defaults to C-106 "Tile · Tile Setter + Finisher" (Commercial &
+  Public) and R-038 "Tile · Tile Setter + Laborer" (Residential, whose crew was mapped nowhere), the setter alone
+  second, Marble Setter + Laborer third, the terrazzo crews after. 09.06.09.03 tile base and 13.04.04.02 pool tile get
+  the same. 09.06.06 Terrazzo gets its own rows: Terrazzo Worker + Laborer the default (it took 09.06's floor layer).
+- **The other systems,** through the crosswalk (read only for crews): UniFormat C2020.03 stair tile, C3010.03 wall
+  tile and C3020.04 floor tile to 09.04 (they went to 07.05 Steep-Slope Roofing by a name match); C3020.02.01 carpet
+  tile to 09.06.02; C3020.05 terrazzo to 09.06.06; C3030.01 acoustical tile to 09.05.01; NRM2 18.02 concrete roof
+  tiles to 07.05 (was 03.01 concrete); NRM2 30.02 metal ceiling tiles to 09.05 (was roofing). NRM1 3.1.03 and 3.2.05
+  and NRM2 28.05 already reached 09.04. CESMM has no tile node. Rows changed are marked `manual`.
+- **Not moved:** a line already priced keeps its crew; a workspace's own crew list for a node still wins (D-269).
+  Roof tile (07.05.02, UniFormat B3010.02.02), carpet tile (09.06.02.01) and acoustical tile (09.05.01) keep their
+  own trades.
+
+## D-682: A duplicated project's copied Calculate reads current on its first open (N7, a bug against C6)
+
+**Accepted 2026-10-21 (Umer, N7: a bug).**
+
+- **Why it read out of date:** D-354 reads a copy's key through aliases (each copied row's uuid back to the
+  original's). Two things escaped it. (1) The utility runs' and structures' part of the key (F29) carried their items'
+  uuids, which were not aliased, and sorted the runs by the copy's uuids, so the order changed too. (2) A Site Feature
+  with two outlines lists them in the item's shape order, read by id; the copy read rows in no set order, so its shapes
+  could be inserted the other way round.
+- **The fix:** the api's aliases also cover the utility runs, the structures and their items, and the copy reads every
+  table in id order, so each copied row keeps the original's relative order (`duplicate.py`). The app sorts the
+  utility runs and structures by the original's uuids when it reads a copy's key (`utilitiesKey`'s `aliases`).
+- **Not changed:** any real change on the copy marks it out of date as before. A copy made before this fix keeps the
+  aliases it was given and still reads out of date once; Calculate there. A copy of a project whose own result is an
+  earlier engine's reads out of date because the original does (D-470), as Marketing Demo – Site's does today.
