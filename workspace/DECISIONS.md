@@ -21930,6 +21930,15 @@ the same rows).
   stale list made the delete fail, so its toast never came. **Fixed** (`ProjectTakeoff.tsx` `onSheetNow`): the
   selection's groups and the delete take an item's shapes on the open sheet from the sheet's list, its other sheets'
   from the project's. The same 4 s hold: both items and their copies deleted, the toast shown.
+  **A second cause, slowness:** the Delete ran each item's snapshot and delete one item after another before its
+  toast (eight calls for f7-h's four items); under three fixtures at once that passed the step's 10 s (run 4: every
+  shape still selected and nothing yet deleted when the wait ended, no error). Now each item's snapshot and delete
+  run at once; the undo step keeps the plan's order. Three items deleted in 382 ms on the dev build, one Ctrl+Z brings
+  all three back.
+- **Runs under load** (fx production builds, f7-h, rv-rows and c12-item-model three at a time): before both fixes
+  f7-h step 7 failed in two of five runs; with the sheet-list fix only, two of five; with both, **f7-h 8/8 in three
+  of three**. rv-rows 8/8 in four of five runs after its fix (the fifth lost step 4 to the fx app still starting).
+  c12-item-model 10/10 throughout.
 - **rv-rows step 5 (a row held at the list's top edge): the fixture.** It scrolled the panel to the bottom once and
   waited 5 s for RV-400. A single scroll to the bottom does not stay at the bottom while the list grows (rows measured
   taller than estimated, folder headers or the project's list landing after the sheet's): measured on the 5,000-item
@@ -21961,3 +21970,15 @@ the same rows).
   timed back to back on a quiet machine).
 - **Next, if wanted:** find what forces the layout in the click's frame (the canvas's per-frame reads of the view's
   box, the panel's jump) and the panel tree's render.
+
+## D-703: The renderer log as a small table on the platform's Activity page (Q7)
+
+**Accepted 2026-10-22 (Umer, Q7, D-696).**
+
+- **app** (`pages/PlatformActivity.tsx`, `features/platform/api.ts`): a third tab, **Canvas drawing**, beside Audit log
+  and Recent sign-ins. One row a drawing path: WebGL (graphics card), No WebGL 2, Software only, WebGL setup failed,
+  WebGL context lost (and any other reason the api names); sessions and people over the last 7 and 30 days, from
+  `GET /api/platform/renderers?days=7|30` (D-694). Refresh, loading and error states as the other tabs. No api change.
+- **Checked:** a throwaway account made platform admin for the check (set back after) sees 12 WebGL sessions by 3
+  people in 7 and 30 days, as the database counts them, and 0 on every other path; window-b (not an admin) gets "Page
+  not found" at the address, as for every platform page.
