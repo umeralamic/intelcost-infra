@@ -21875,3 +21875,21 @@ the same rows).
   **3.1–3.4 s**; 20,000 items **2.7–2.9 s**, every item in at 4.2–4.6 s. Totals on the priced 5,000-item DUP (4,931
   priced) identical before and after: TOTAL $22,774,236.96, 230,762.93 MH; the 5 group rows and the first 25 rows
   identical. No field dropped (D-658).
+
+## D-699: The bench commits without waiting for the disk flush; staging is measured with it on (Q3)
+
+**Accepted 2026-10-22 (Umer, Q3, D-696).**
+
+- **Bench only:** `ALTER DATABASE intelcost SET synchronous_commit = off` and the same on `intelcost_fx`, the bench's
+  own two databases. A per-database setting, in no config file, so no staging or production stack reads it; the
+  server's default stays `on`. `fx-suite.sh setup` sets it when it makes `intelcost_fx`; the infra README says how to
+  set it again on a bench rebuilt from scratch, and never on staging or production. The bench's api and workers were
+  restarted so their pooled connections read it.
+- **Measured** (eight single-row commits into a scratch table in `intelcost_fx`, dropped after): flush on, mean 244 ms
+  and up to 735 ms in one run, 2 ms in a quiet one (the disk's variable flush, as D-687's day session found); flush
+  off, under 1 ms every time.
+- **f6-a re-run:** 8/9; step 8 fails earlier than before, window B never listing the item "Roof" within 20 s on the fx
+  stack, and the same with D-698's app change reverted, so not that change; the commit's part could not be read from
+  it. Looked into with Step 5's fixtures.
+- **Staging:** a plan for measuring the same path on Abdullah's staging stack with the flush on, before testers, in
+  `docs/tasks/staging_commit_PLAN.md`. Not run.
