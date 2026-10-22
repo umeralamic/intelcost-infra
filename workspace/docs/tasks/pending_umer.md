@@ -528,6 +528,14 @@ small "1 in use" beside them; the page text runs them together.
 
 ## Work described (not started)
 
+- **D-705 follow-up: a workspace switch opens the last project used there.** Today a switch from the
+  avatar menu or Open › Switch workspace lands on Home. Instead it would open the project last used in
+  the workspace switched to, on its last sheet, as Home already does on sign-in; with none, Home as now.
+  - **Code:** the one switch (`features/workspace/hooks/use-switch-workspace.ts`) asks the workspace's
+    recent projects (`projectApi.recent`, already cached by the Open menu) and goes through
+    `useOpenProject`. Settings' picker keeps staying where it is.
+  - **Process:** a D-NN first; the gates; one smoke with two throwaway workspaces each with a project.
+
 - **D8.8: Stripe's official library before go-live.** About half a day, mostly the fake and the
   checks.
   - **Code:** our Stripe client is five small functions in one file. They are: create a customer,

@@ -22012,3 +22012,34 @@ the same rows).
   no markup write.
 - **Next blocks:** 2 tool defaults mode, 3 the realtime echo with undo (undo itself came free), 4 font family (M3) and
   lenient api validation, 5 several selected (M2).
+
+## D-705: Workspaces in the avatar menu, one switch, and the outbox never drops an edit unseen
+
+**Status:** Accepted (2026-10-22, Umer: "Go" with answers 1–4 and the two outbox additions).
+
+- **The avatar menu** (`AccountMenu.tsx`) lists every workspace under the person's name, in a "Workspaces" group:
+  the current one marked, each with the role held there as a tag (the list already carries `role`; no api change).
+  Shown with one workspace too, so the menu always says which workspace is open. More than eight rows scroll in
+  their own box (`MenuItem.scrolls`, `ContextMenu`'s runs); no search.
+- **One switch** (`features/workspace/hooks/use-switch-workspace.ts`): the avatar rows, Open › Switch workspace and
+  Settings' "Editing workspace" all go through it. The first two land on Home (follow-up in `pending_umer.md`:
+  the last project used in that workspace instead); Settings stays where it is, as before.
+- **No cache clearing on a switch.** Checked in the browser before the change (two throwaway workspaces with their
+  own classification, crew and project): every cached list is keyed by its workspace, and the socket leaves the old
+  workspace and project topics and joins the new one. Nothing of the old workspace showed after a switch.
+- **The outbox (D-493, D-501):** each entry carries its own `/workspace/{ws}/project/{p}/…` path, so a write can
+  only land where it was made. What changed:
+  - **Sent app-wide** (`components/outbox-sync.tsx`): on the switch itself, back online, the tab shown again, and
+    every 30 s while this session has anything waiting; no takeoff needs to open. A write younger than 10 s, or on
+    the wire in this tab, is left for the next try, so nothing is sent twice beside itself.
+  - **Nothing dropped unseen:** the 3-day discard is gone. A resend the api refuses (item deleted, access removed)
+    is kept as `failed` and shown in a notice naming the change and its project, with Retry and Discard. A delete
+    that finds nothing is done; a change a teammate's newer one outran is still skipped and said so (D-501).
+  - **Offline in the browser's sense** a change is not in the outbox: TanStack Query pauses the mutation in memory
+    and sends it on reconnect. A switch keeps it (the QueryClient is not cleared); a reload while offline does not.
+    Not changed here.
+- **Checked in the browser** (a throwaway, purged): offline rename → switch from the avatar → online: landed in
+  Alpha 0.7 s later. A dropped connection (writes aborted): two renames kept through a switch; restored, one sent
+  and the other, its item deleted meanwhile, shown as not saved, Retry refused again, Discard cleared it. Tab shown
+  again: sent 200 ms after `visibilitychange` (the MCP browser fires none on a tab switch, so the event was
+  dispatched). Settings' picker switched in place. Ten workspaces: the group scrolls.
