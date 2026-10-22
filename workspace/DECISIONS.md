@@ -21775,3 +21775,20 @@ the same rows).
   it, renamed). r5-drags 10/10, f7-d 4/4, c13-canvas-tools 5/5, c10-two-trees 6/6, f6-c 10/10, m6-position 5/5 (same
   figures as D-689). f7-h step 7 and rv-rows step 5 fail under parallel load **on HEAD too** (twice each), not this
   change.
+
+## D-694: The canvas falls back to the SVG drawing on software-only WebGL; each session's drawing path is logged
+
+**Accepted 2026-10-22 (Umer, day session).**
+
+- **The rule:** the takeoff canvas draws its shapes with WebGL 2 only on a graphics card. It asks the browser to decline
+  a context it would draw on the processor (`failIfMajorPerformanceCaveat`) and declines one whose renderer names
+  itself software (SwiftShader, llvmpipe, Basic Render); then, as with no WebGL 2, a failed setup or a lost context,
+  it draws with the SVG (the drawing before D-657). No blank sheet in any case.
+- **The log:** the app tells the api the path once a tab session (`POST /api/renderer-report`: `webgl`, or `svg` with
+  `no-webgl2`, `software`, `setup-failed` or `context-lost`, the GPU's own name and the user agent); a change of path
+  in the session (a context lost) is told too. Table `renderer_report` (migration `d694a1c3e5f7`). Platform admins
+  read the count of sessions and people per path and reason over the last N days (`GET /api/platform/renderers`).
+- **Proved:** the host browser on a real GPU (Intel UHD 630, ANGLE D3D11): WebGL on, one `webgl` row. Chromium in the
+  fixture container with `--disable-3d-apis`: SVG, the line, area and counts drawn (1,102 of the line's blue pixels,
+  as in every case), `svg/no-webgl2`. With `--disable-gpu` (SwiftShader only, which the browser itself flags):
+  SVG, the same drawing, `svg/software`. The container's Chromium as launched is SwiftShader too: SVG, `software`.
