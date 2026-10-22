@@ -21814,3 +21814,21 @@ the same rows).
 - **Fixtures:** f5-sheet-items 5/5, f5-s13 7/7, f6-b 9/9, c10-two-trees 6/6, c12-item-model 10/10, f9-estimating
   12/12; f5-s14 6/6 alone (5/6 in the loaded run: its delete dialog opened before the per-sheet lists had loaded);
   f6-a 8/9 (step 8, the bench disk's commit, Step 7).
+
+## D-696: Umer's answers to Q1–Q7 of the day session of 2026-10-21, and the night run of 2026-10-22
+
+**Accepted 2026-10-22 (Umer).** Worked in order in the night run (`docs/tasks/OVERNIGHT_PLAN.md`).
+
+- **Q1, yes:** the GPS Export switch's tooltip names the reason before the click (trial ended, Professional ended,
+  Essentials), in the same sentence as the toast.
+- **Q2, yes, compression first:** check whether Estimating's items read (31 MB at 20,000) is compressed end to end;
+  if not, turn it on and measure the first row at 5,000 and 20,000 before and after. A streamed read only if 20,000 is
+  still over 4 s. No field dropped from any read (D-658 holds).
+- **Q3, bench only:** `synchronous_commit = off` on the bench database, never in a production or staging config, noted
+  in the bench docs. The same path is measured on Abdullah's staging stack before testers (a plan now, not run).
+- **Q4, yes:** window B paints the changed row from the single-item read first; the wider refresh follows.
+- **Q5, yes, after Q2 and Q4:** the selection highlight as its own overlay, for a click under 100 ms at 20,000 shapes.
+- **Q6, yes, before the full suite runs for testers:** f7-h step 7 and rv-rows step 5 under load, the cause found and
+  the fixture or the app fixed.
+- **Q7, yes, small:** a table of sessions per renderer path, last 7 and 30 days, on the platform admin pages.
+- **Housekeeping:** `intelcost-infra/fx-suite/browser/shots/` deleted (Umer approved; git-ignored, re-made by a run).

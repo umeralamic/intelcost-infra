@@ -478,6 +478,19 @@ C-200's gap to the engineer's figures (−6.22 / −9.49 % after D-683): **check
 | Q6 | **f7-h step 7** (Delete pill after Ctrl+A) and **rv-rows step 5** (a drag held at the list's edge) fail under parallel load, on HEAD too | Found in day session Step 8 | Look into them as their own item? |
 | Q7 | **The renderer log** (D-694) is api only: `GET /api/platform/renderers?days=30` | Shipped | A small table on the platform's admin pages too? |
 
+**Answered by Umer (2026-10-22, D-696), worked in the night run of 2026-10-22
+(`morning-report-2026-10-22/NIGHT_REPORT_2026-10-22.md`):**
+
+| # | Answer |
+|---|---|
+| Q1 | **Yes.** The switch's tooltip names the reason before the click (trial ended, Professional ended, Essentials), the toast's sentence (Step 1). |
+| Q2 | **Yes, compression first:** check the items read is compressed end to end; turn it on if not; a streamed read only if 20,000 is still over 4 s (Step 2). |
+| Q3 | **Bench only:** `synchronous_commit = off` on the bench database, never production or staging; a plan for measuring the same path on Abdullah's staging before testers, not run (Step 3). |
+| Q4 | **Yes:** window B paints the changed row from the single-item read first (Step 4). |
+| Q5 | **Yes, after Q2 and Q4:** the selection highlight as its own overlay (Step 6). |
+| Q6 | **Yes, before the full suite runs for testers** (Step 5). |
+| Q7 | **Yes, small:** sessions per renderer path, last 7 and 30 days, on the platform admin pages (Step 8). |
+
 ## Found in the click sessions
 
 **Fixed (D-386, app `d27194c`, re-checked in the browser):** C28's doubled end point on a
