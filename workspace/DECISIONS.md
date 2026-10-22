@@ -22043,3 +22043,29 @@ the same rows).
   and the other, its item deleted meanwhile, shown as not saved, Retry refused again, Discard cleared it. Tab shown
   again: sent 200 ms after `visibilitychange` (the MCP browser fires none on a tab switch, so the event was
   dispatched). Settings' picker switched in place. Ten workspaces: the group scrolls.
+
+## D-706: Offline edits survive a reload, a leave warning while anything is unsaved, and a name's double-click only renames
+
+**Status:** Accepted (2026-10-22, Umer: the two D-705 follow-ups).
+
+- **Offline edits are kept in the outbox, not in memory.** Mutations run with `networkMode: "always"` (`App.tsx`), so
+  a write made offline reaches the api client instead of a TanStack mutation paused in memory, which a reload lost.
+  A kept write (D-493, D-501) that finds no connection stays in the outbox, which survives a reload, crash or
+  restart, and its caller waits until the outbox delivers it (`client.ts` `delivered`), as a paused mutation waited
+  before. The outbox now also keeps an item's quantity override and its dimensions (`PUT …/item/{id}/quantity`,
+  `…/dimension`: whole values, the same if sent twice). A refused one is shown with Retry and Discard (D-705).
+- **Other writes** made offline wait in memory for the browser to be online, as before, and are not durable.
+- **A leave warning:** while a kept write waits or another write is held, closing or reloading the tab asks first
+  (`beforeunload`). Browsers show their own words, not the page's.
+- **The api dates a replayed change when it was made** (`history.REPLAYED_AT`, set by the replay guard from
+  `X-Replay-Since`). Without it, two queued changes to one item cancelled each other: the first replayed was
+  recorded at its arrival, so the api read it as a later edit of the person's own (D-501) and skipped the second.
+- **Double-click on an item's name in the Takeoff panel only renames.** The row's own two-click detection (which
+  survives a re-render) opened Properties on the same double-click. Properties stays on the row's ⋮ and right-click
+  menu, the toolbar, and a double-click elsewhere on the row. The Sheets panel's rows keep opening Properties from
+  the name, by design, and do only that.
+- **Checked in the browser** (a throwaway, purged): offline, the quantity set to 55 then the item renamed; reloaded
+  offline (the error page); back online: both landed (name, quantity 55 and its reason) 8 s after the app loaded,
+  no notice. The first reload asked before leaving; a reload with nothing waiting did not. An override without a
+  reason, refused by the api, was kept and shown, then discarded. A double-click on the Takeoff panel's name: the
+  rename box only.
