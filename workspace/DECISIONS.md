@@ -21750,3 +21750,28 @@ the same rows).
   the other reads. Targets (2 s at 5,000, 4 s at 20,000) not met; the api read is the next block.
 - f9-estimating 12/12, c31-wage 6/6; totals identical on the priced 5,000-item DUP (TOTAL $14,362,511.96, the group
   rows and the first 25 rows); grouping by Classification, Custom Folder and back on the 20,000-item DUP unchanged.
+
+## D-693: Selection at 20,000 shapes: the store, the panel's jump, the hit test (M2)
+
+**Accepted 2026-10-21 (Umer, M2).** Target (under 100 ms at 20,000 shapes) **not met**; the click halved.
+
+- **Changed** (app): the selection held outside the takeoff page (D-684's stashed store: `selectionStore.ts`,
+  `WithSelection.tsx`; the page re-renders on a click only when what it shows from the selection changes); the
+  Takeoff panel moves only for a row off screen, and its virtualizer renders after a scroll, not inside it
+  (`useFlushSync: false`); the canvas's dialog watcher observes the body's own children, not the whole document (every
+  modal is portalled there; it searched the document on every change, ~17 ms a click); the canvas's looks loop
+  allocates nothing for an item whose looks stand (~20,000 objects a click before); a long linear run is indexed by
+  its segments for a point's hit test (`shapesNear`), so a click asks the runs that pass near it, not every run whose
+  bounds hold the point (6,800–16,000 on the test sheet). Box selection, snap and the rest keep `shapesIn`.
+- **Tried and undone:** the panel's overscan 12 → 4 made its drag-and-drop miss under load (f6-c 9/10 twice);
+  back to 12, f6-c 10/10 twice under the same load.
+- **Measured** (production builds, BENCH DUP 13d98d9a's A101, 19,881 shapes, all one long run copied across the
+  sheet): the click's own duration (Event Timing, from the click to the next paint), median **312 → 144–176 ms**;
+  the old benchmark (from pointer-down to the panel's row changed, Playwright's down-up gap included) 388 → 353–428 ms,
+  within its spread. What is left: the click's handler and synchronous render ~70 ms, then ~70 ms to the paint (the
+  WebGL redraw and layout).
+- **Checks:** on the 5,000-item DUP the canvas's selected shape, the panel's row and the status line name the same
+  item; a second window holds its own selection while the first's selected item is renamed elsewhere (the first keeps
+  it, renamed). r5-drags 10/10, f7-d 4/4, c13-canvas-tools 5/5, c10-two-trees 6/6, f6-c 10/10, m6-position 5/5 (same
+  figures as D-689). f7-h step 7 and rv-rows step 5 fail under parallel load **on HEAD too** (twice each), not this
+  change.
