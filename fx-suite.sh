@@ -60,6 +60,8 @@ case "${1:-}" in
     node fx-suite-patch.mjs fx-suite "$FX_S3_HOST"
     docker compose exec -T postgres psql -U intelcost -d postgres -tc "select 1 from pg_database where datname = 'intelcost_fx'" | grep -q 1 \
       || docker compose exec -T postgres psql -U intelcost -d postgres -c "create database intelcost_fx owner intelcost" >/dev/null
+    # Bench only: commits without the disk flush (D-699, README "Commits without the disk flush").
+    docker compose exec -T postgres psql -U intelcost -d postgres -c "alter database intelcost_fx set synchronous_commit = off" >/dev/null
     docker compose exec -T minio sh -c "mc alias set local http://localhost:9000 minioadmin minioadmin >/dev/null && mc mb --ignore-existing local/intelcost-fx" >/dev/null
     # --no-deps: the bench's own services are never recreated.
     docker compose --profile fx up -d --no-deps $FX_SERVICES

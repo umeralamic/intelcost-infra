@@ -423,6 +423,26 @@ switch, each sent to the api as `customer.subscription.updated` (F16 Block C).
 State is in memory; a restart forgets it. For real Stripe, unset `STRIPE_API_BASE` and set the
 key, the webhook secret and the eight price ids in the api's environment (D-278 2).
 
+## Commits without the disk flush, bench only (D-699)
+
+The bench's two databases, `intelcost` and `intelcost_fx`, run with `synchronous_commit = off`: a commit returns
+without waiting for the write-ahead log to reach the disk. Docker Desktop's virtual disk takes about 0.54 s per 8 kB
+flush, so every save waited 0.4–1.9 s on it (f6-a step 8, D-687). With it off, a crash of the bench's Postgres can
+lose the last fraction of a second of commits; the database itself stays consistent. Bench data is throwaway.
+
+It is a setting on each database, not in any config file, so nothing a staging or production stack reads carries
+it. **Never set it on staging or production** (Q3, D-696); the same path is measured there with it on
+(`docs/tasks/staging_commit_PLAN.md` in the workspace).
+
+A bench rebuilt from scratch needs it again (`fx-suite.sh setup` sets it on `intelcost_fx` when it makes it):
+
+```bash
+docker compose exec -T postgres psql -U intelcost -d postgres -c "ALTER DATABASE intelcost SET synchronous_commit = off"
+docker compose restart api worker worker-pages worker-previews   # pooled connections read it on connect
+```
+
+Check: `docker compose exec -T postgres psql -U intelcost -d intelcost -Atc "show synchronous_commit"` reads `off`.
+
 ## The mail guard (D-279)
 
 Smoke checks never send real email. The api, worker and beat run with `MAIL_GUARD=true`: mail
