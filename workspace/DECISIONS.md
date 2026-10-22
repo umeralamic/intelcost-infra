@@ -21846,3 +21846,32 @@ the same rows).
   canceled Professional subscription past its period and one an active Essentials. The tooltip before the click, the
   PATCH and the toast read the same sentence in each case; the Essentials switch stays disabled; the active trial's
   tooltip is the ordinary one and the switch turns on.
+
+## D-698: The project's items read is streamed; Estimating shows its first rows while the rest arrive (Q2)
+
+**Accepted 2026-10-22 (Umer, Q2, D-696).**
+
+- **Compression, checked first:** the items read (`GET …/takeoff/item/detail/compact`) was already gzipped end to end
+  (D-652's `json_body`, level 1): the browser asks for gzip and the api answers `Content-Encoding: gzip`. At 20,000
+  items, 31.8 MB of JSON goes as 5.4 MB. Nothing to turn on. Most of the read's time was Postgres building the one
+  31.8 MB value (2.5–3.5 s), before the first byte left.
+- **Estimating's first row before (production build):** 5,000 items 3.5–4.5 s; 20,000 items **5.8–6.2 s**, over 4 s, so
+  the streamed read was built.
+- **api** (`takeoff/detail_json.py` `item_details_compact_stream`; `?stream=1` on the compact read, not with `since`):
+  the same JSON, the same fields and values in the same order, its head on the first line and each item on a line of
+  its own. The items are read in chunks (500 first, then 4,000) in one repeatable-read, read-only transaction of its
+  own (the request's session has ended once the body is sent), gzipped as it goes and flushed after each chunk.
+  `plan_cache_mode = force_custom_plan` for that transaction: from its sixth run Postgres planned the chunk query
+  generically, and one chunk took 65 s at 20,000 items (0.2 s with its own plan).
+- **app** (`core/api/client.ts` `getLines`; `takeoff/api.ts` `readItemsStreamed`, `partialItems`; `ProjectTakeoff.tsx`;
+  `EstimatingView.tsx`): the project-wide items read streams and publishes its first 500 rows. Only Estimating shows
+  them, **read only**, with "Loading items: 500 of 20,000. Editing opens when every item is in."; everything else
+  (the Takeoff panel, the canvas, selection, naming) waits for the whole list, as before. The list the query holds is
+  the whole read, built from the same rows. A read cut short throws and is asked again.
+- **Proved:** the streamed answer parses to exactly the plain read's JSON (`read_at` aside) on the 5,000- and
+  20,000-item DUPs, project-wide and per sheet. In the api: first rows 0.13–0.29 s; the whole 2.1 s at 20,000 against
+  3.2–3.6 s for the plain read.
+- **Estimating's first row after** (production build, the same DUPs, three cold opens each after a warm-up): 5,000 items
+  **3.1–3.4 s**; 20,000 items **2.7–2.9 s**, every item in at 4.2–4.6 s. Totals on the priced 5,000-item DUP (4,931
+  priced) identical before and after: TOTAL $22,774,236.96, 230,762.93 MH; the 5 group rows and the first 25 rows
+  identical. No field dropped (D-658).
