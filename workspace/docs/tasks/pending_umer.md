@@ -535,6 +535,20 @@ small "1 in use" beside them; the page text runs them together.
     recent projects (`projectApi.recent`, already cached by the Open menu) and goes through
     `useOpenProject`. Settings' picker keeps staying where it is.
   - **Process:** a D-NN first; the gates; one smoke with two throwaway workspaces each with a project.
+- **D-706 follow-up: Estimating rows and other non-takeoff writes into the outbox.** Today a write outside
+  the takeoff list made offline (an Estimating row, a cost component, project settings) waits in memory: a
+  reload or close is warned, a crash loses it. Each would be kept in the outbox like a takeoff change, so it
+  survives a crash and shows with Retry and Discard when refused.
+  - **Code:** a write is safe to keep only if sending it twice does no harm: PUTs of whole values, PATCHes,
+    creates with a client uuid. Each route family is listed in `outbox.ts` with its rule, and creates without
+    a client uuid gain one in the api first. A teammate's newer change wins (D-501, D-707) where the api can
+    tell; that check exists today only for takeoff items.
+  - **Process:** a D-NN first; the gates; one smoke: an Estimating edit offline, reload offline, back online.
+- **D-706 follow-up: the Properties dialog's save as one outbox entry.** Today it sends the item's fields,
+  then the quantity, then the dimensions, one after another; offline, only the first is kept until it lands,
+  so a reload loses the rest. One entry would hold all three and resend them in order, or the api would take
+  them in one call.
+  - **Process:** a D-NN first; the gates; one smoke: Properties saved offline, reload offline, back online.
 
 - **D8.8: Stripe's official library before go-live.** About half a day, mostly the fake and the
   checks.

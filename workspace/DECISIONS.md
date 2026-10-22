@@ -22069,3 +22069,22 @@ the same rows).
   no notice. The first reload asked before leaving; a reload with nothing waiting did not. An override without a
   reason, refused by the api, was kept and shown, then discarded. A double-click on the Takeoff panel's name: the
   rename box only.
+
+## D-707: A resent change is measured against a teammate's on the api's clock, not the browser's
+
+**Status:** Accepted (2026-10-22, Umer: the guard on D-706).
+
+- **The hole:** a resend's `X-Replay-Since` is the browser's time (corrected by the last `X-Server-Time`, but not
+  after a reload offline or a clock change). A clock running ahead let an old offline edit beat a teammate's real
+  later change (D-501), and D-706 dated its history row in the future.
+- **Against a teammate** the api now uses `X-Replay-Seen`: the api's own time of the last answer the browser had
+  before the edit (kept across a reload, `intelcost.serverSeen`). The edit came after it, so a teammate's change
+  after it wins, with D-501's notice. Conservative: a teammate's change between that answer and the edit also wins.
+  An entry without it (made before this change) falls back to the browser's time, never later than arrival.
+- **The browser's time orders only the person's own edits** (D-501's "you changed it again"), and a resent change's
+  history row is dated at it but **never later than when the api received it** (`min(since, now)`).
+- **Checked in the browser** (two throwaways, purged): the owner renamed an item offline; the entry's time moved 20
+  minutes ahead (19:54 → 20:14) as a fast clock would stamp it; the teammate renamed it at 19:54:18; back online the
+  teammate's name stood and the owner was told "Teammate B. changed … after you, so your earlier change was
+  skipped". The owner's own quantity and rename, both 20 minutes ahead, both landed; every history row at or before
+  arrival.
