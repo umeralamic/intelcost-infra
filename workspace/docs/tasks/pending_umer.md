@@ -474,6 +474,9 @@ C-200's gap to the engineer's figures (−6.22 / −9.49 % after D-683): **check
 | Q2 | **Estimating's first row at 20,000 items** is now mostly the api's items read (31 MB, 2.5–3.4 s alone, 6–7 s beside the other reads) | D-691, D-692 shipped; targets not met | Go for the api read (a smaller read for Estimating, or streamed)? |
 | Q3 | **f6-a step 8** (1.8–2.0 s): the commit waits on the bench disk's flush (`COMMIT` 0.43–1.87 s logged; `pg_test_fsync` 0.54 s per 8 kB `fdatasync` on Docker Desktop's ext4 disk); the socket adds ~0 ms; window B's reads and repaint 350–700 ms | Measured only (day session Step 7) | Leave it; bench-only `synchronous_commit = off`; or move the bench's data to a faster disk? |
 | Q4 | **Window B's repaint** waits for the 150 ms settle and three list reads after the change event | Measured only | Paint the row from the single-item read first (~150 ms)? |
+| Q5 | **Selection at 20,000 shapes** 312 → 144–176 ms (D-693), not under 100 | Left: ~70 ms handler and render, ~70 ms to paint | Go: the highlight as its own overlay, the WebGL redraw limited to what changed? |
+| Q6 | **f7-h step 7** (Delete pill after Ctrl+A) and **rv-rows step 5** (a drag held at the list's edge) fail under parallel load, on HEAD too | Found in day session Step 8 | Look into them as their own item? |
+| Q7 | **The renderer log** (D-694) is api only: `GET /api/platform/renderers?days=30` | Shipped | A small table on the platform's admin pages too? |
 
 ## Found in the click sessions
 
