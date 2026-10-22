@@ -61,6 +61,19 @@ async function open(page, query = "") {
   await page.locator("[data-canvas-scale]").first().waitFor({ timeout: 20000 });
   await row(page, name(1)).waitFor({ timeout: 30000 });
 }
+/** The panel scrolled to its foot until `n`'s row is drawn there (D-701): one scroll to the bottom does not stay at
+ *  the bottom while the list is still growing (rows measured larger than estimated, folder headers or the project's
+ *  list landing after the sheet's), which under load left RV-400 undrawn. Waits on the page, at most `timeout`. */
+async function scrollToRow(page, n, timeout = 20000) {
+  const target = row(page, n);
+  const end = Date.now() + timeout;
+  while (Date.now() < end) {
+    await scroller(page).evaluate((el) => (el.scrollTop = el.scrollHeight));
+    if ((await target.count()) > 0 && (await inView(page, target))) return target;
+    await page.waitForTimeout(100);
+  }
+  throw new Error(`${n} never drawn at the foot of the list`);
+}
 /** Whether a row sits wholly inside the panel's scroller. */
 async function inView(page, locator) {
   const box = await locator.boundingBox();
@@ -151,9 +164,7 @@ await run("rv-rows", [
     title: "a row held at the list's top edge scrolls it until F1 shows; the drop files RV-400 in F1",
     run: async ({ page }) => {
       await open(page);
-      await scroller(page).evaluate((el) => (el.scrollTop = el.scrollHeight));
-      const from = row(page, name(N));
-      await from.waitFor({ timeout: 5000 });
+      const from = await scrollToRow(page, name(N));
       const a = await from.boundingBox();
       const frame = await scroller(page).boundingBox();
       await page.mouse.move(a.x + 60, a.y + a.height / 2);
@@ -241,7 +252,7 @@ await run("rv-rows", [
         const page = await guest.newPage();
         const writes = [];
         page.on("request", (r) => {
-          if (!["GET", "HEAD", "OPTIONS"].includes(r.method()) && /\/api\//.test(r.url()) && !/\/(session|pass|presence|visit)(\?|$)/.test(r.url())) writes.push(`${r.method()} ${r.url()}`);
+          if (!["GET", "HEAD", "OPTIONS"].includes(r.method()) && /\/api\//.test(r.url()) && !/\/(session|pass|presence|visit|renderer-report)(\?|$)/.test(r.url())) writes.push(`${r.method()} ${r.url()}`);
         });
         await page.goto(`${APP}/s/${link.body.token}`);
         await page.waitForURL(new RegExp(`/project/${project.uuid}/takeoff`), { timeout: 30000 });
@@ -254,8 +265,7 @@ await run("rv-rows", [
           });
         const top = await tips();
         // RV-399: the last row of F4 (step 5 filed RV-400 in F1).
-        await scroller(page).evaluate((el) => (el.scrollTop = el.scrollHeight));
-        await row(page, name(N - 1)).waitFor({ timeout: 5000 });
+        await scrollToRow(page, name(N - 1));
         await page.waitForTimeout(300);
         const end = await tips();
         const fresh = end.names.filter((n) => !top.names.includes(n));
