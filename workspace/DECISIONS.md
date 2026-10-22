@@ -21792,3 +21792,25 @@ the same rows).
   fixture container with `--disable-3d-apis`: SVG, the line, area and counts drawn (1,102 of the line's blue pixels,
   as in every case), `svg/no-webgl2`. With `--disable-gpu` (SwiftShader only, which the browser itself flags):
   SVG, the same drawing, `svg/software`. The container's Chromium as launched is SwiftShader too: SVG, `software`.
+
+## D-695: Live events and reconnects read only what changed: per-sheet rows and the classification (M5)
+
+**Accepted 2026-10-22 (Umer, M5).**
+
+- **Per-sheet lists:** after a change the Sheets panel's lists re-read only the changed items' rows, under each sheet
+  they are on (`GET …/drawing/sheet/items?item_uuids=…`, new), and put them in place: a row whose item left a sheet
+  goes, a sheet left with none leaves, a row new on a sheet goes in by name. Both paths: a live event (`useLiveItems`)
+  and a reconnect (`ProjectTakeoff`). When an item list had to be read whole (an item new or gone, renamed, moved, the
+  multipliers changed), every sheet's list is read again, as before.
+- **The classification:** the app keeps the tree with its ETag and asks again with `If-None-Match` itself
+  (`api.getKept`); an unchanged tree answers 304 with no body, whatever the browser's cache does. The api exposes
+  `ETag` to scripts (CORS). Found while measuring: the browser's own revalidation (D-325) never happened under
+  Playwright's interception, so it could not be proved; the app's own does not depend on it.
+- **Measured** (BENCH DUP 13d98d9a, 20,000 items, all on A101; production build; only requests started after the
+  event): an item recoloured elsewhere **2.7 MB → 15 KB** (the 6 KB `since` read and a sub-1 KB read of its rows); the
+  Sheets panel shows the new colour. A real socket reconnect (the api restarted): the per-sheet lists not read at all
+  (2.7 MB before), the classification **304, no body** (89 KB gzipped, 520 KB of tree, before); 36 small reads, 192 KB
+  in all.
+- **Fixtures:** f5-sheet-items 5/5, f5-s13 7/7, f6-b 9/9, c10-two-trees 6/6, c12-item-model 10/10, f9-estimating
+  12/12; f5-s14 6/6 alone (5/6 in the loaded run: its delete dialog opened before the per-sheet lists had loaded);
+  f6-a 8/9 (step 8, the bench disk's commit, Step 7).
