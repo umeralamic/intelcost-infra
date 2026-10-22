@@ -21918,3 +21918,46 @@ the same rows).
 - **D-501 holds:** window A offline changes the colour (kept in its outbox), window B changes it after, A comes back
   and reopens: "An older change was skipped — You changed “GEN-L-00150” again after that, so your earlier change was
   skipped."; both windows and the api show B's colour; A's outbox empty.
+
+## D-701: The two fixtures that failed under load: f7-h step 7 was the app, rv-rows step 5 the fixture (Q6)
+
+**Accepted 2026-10-22 (Umer, Q6, D-696).**
+
+- **f7-h step 7 (Copy, then Ctrl+A and the Delete pill): the app, a race.** Ctrl+A and a box select pick from what the
+  canvas draws, the open sheet's own list; the Delete pill built its groups from the project's list, which under load
+  can still be the one from before the Copy. Reproduced by holding the project-wide read back 4 s after a Copy: the
+  page said "Deleted the selection" and **the item stayed on the sheet with its copied shape**; in the fixture the same
+  stale list made the delete fail, so its toast never came. **Fixed** (`ProjectTakeoff.tsx` `onSheetNow`): the
+  selection's groups and the delete take an item's shapes on the open sheet from the sheet's list, its other sheets'
+  from the project's. The same 4 s hold: both items and their copies deleted, the toast shown.
+- **rv-rows step 5 (a row held at the list's top edge): the fixture.** It scrolled the panel to the bottom once and
+  waited 5 s for RV-400. A single scroll to the bottom does not stay at the bottom while the list grows (rows measured
+  taller than estimated, folder headers or the project's list landing after the sheet's): measured on the 5,000-item
+  DUP, 98,971 px when scrolled and 101,227 px after, not at the bottom; with the folders' read held back, 430 px when
+  scrolled, 101,251 px after. **Fixed in the fixture** (`fx-suite-updates/browser/rv-rows.mjs` `scrollToRow`): it
+  scrolls to the foot until the row is drawn, waiting on the page. Step 8's identical scroll uses it too.
+- **rv-rows step 8, found on the way:** the guest's one-time renderer report (D-694, `POST /api/renderer-report`) counted
+  as a guest write. It is a session beacon like the session, pass, presence and visit calls the check already exempts;
+  added to that list.
+
+## D-702: The selection highlight as its own overlay: built, measured, not faster; stashed (Q5)
+
+**Accepted 2026-10-22 (Umer, Q5, D-696); the result stashed as `night-selection-overlay` (app).**
+
+- **Built (stashed):** with WebGL on, the shapes' cached mesh is built from looks with no selection (`buildLooks`, a
+  second store), so a click changes nothing in it and its texture is not drawn again; the selected item's shapes are
+  a small `overlay` mesh drawn over the cached texture every frame (`ShapeGL`), all but an area's fill. The hidden SVG
+  shapes (WebGL on) are built from the same rest looks, so a click changes none of their 20,000 elements. Without
+  WebGL the looks and the SVG are as before. On the host's GPU the highlight draws as before: a run heavier, an area's
+  perimeter blue, a count's outline and dot; a click elsewhere puts each back.
+- **Measured** (production builds alternated on :5175, BENCH DUP 8653ef92's A101, 20,000 shapes; Event Timing, from
+  the click to the next paint, twelve clicks alternating two spots): before (D-700's build) median **200 ms**
+  (168–248); the overlay alone **192 ms** (168–280); with the hidden SVG at rest too **200 ms** (152–304). Not under
+  100 ms and no clear gain, so not shipped.
+- **What the click spends instead:** a CPU profile of a click shows most of it native (style, layout, paint) and
+  48–61 ms in a single `getBoundingClientRect` (a forced layout of the page), with the panel's tree about 40–60 ms;
+  the WebGL redraw was not the long part on this machine. These are higher than D-693's 144–176 ms on the same DUP
+  (the bench busier tonight: three fixture runs and image builds around the measurements, though each pair was
+  timed back to back on a quiet machine).
+- **Next, if wanted:** find what forces the layout in the click's frame (the canvas's per-frame reads of the view's
+  box, the panel's jump) and the panel tree's render.

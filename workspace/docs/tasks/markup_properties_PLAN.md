@@ -1,80 +1,92 @@
 # Markup Properties panel (plan)
 
-_Plan only, no code (day run 2026-10-17, item 11). PARITY_GAPS §14, item 2 of "build next": "an Essentials workspace
-gets only markups, so their styling is that plan's main surface."_
+_First written 2026-10-17 (day run, item 11; plan only). Rewritten 2026-10-22 (night run, Step 9) against live legacy
+(`origin/UmeralamDEV`) and the app as it is today, with the build split into blocks. PARITY_GAPS §14, item 2 of "build
+next": an Essentials workspace gets only markups, so their styling is that plan's main surface._
 
-## The problem
+## 1. What legacy's panel shows and edits
 
-Markups are highlight, note, cloud, callout and arrow (`features/takeoff/markup/`). Today, styling them is limited:
-- **Before drawing:** a tool's caret picks the next colour (`StyleCaret.tsx`).
-- **After drawing:** a selected markup's chip offers its colour and Delete.
+One floating panel, `src/components/takeoff/props/PropertiesPanel.tsx`; types and defaults in
+`src/lib/takeoff/toolStyles.ts` (`DEFAULT_TOOL_STYLES` L81-94, `CALLOUT_FONTS` L96); wired in `src/pages/ProjectTakeoff.tsx`
+L12214-12345. Three kinds of control: a colour swatch (the browser's picker, no preset grid), a slider with its value
+beside it, and a segmented choice.
 
-Everything else in a markup's style can't be changed once drawn: line width, opacity, the callout's font, bold,
-italic, underline, line end, background, text colour, the cloud's bubble size, the arrow's head size, note
-auto-fit, scale with zoom. The data and defaults already exist (`markupStyle.ts`, `MarkupStyles`, legacy's
-`DEFAULT_TOOL_STYLES`), and each markup stores its own `style` (`api.ts`). Only the panel is missing. Dimension has
-one (`dimension/DimensionPropertiesPanel.tsx`); markups do not ("left for later", D-109).
-
-For an Essentials workspace ($9.99), markups are most of the product.
-
-## The approach
-
-One docked **Markup properties** panel on the shared floating panel (`components/ui/floating-panel.tsx`, D-593):
-- **Selection, not a dialog:** it opens on a markup's selection (or "Properties" in its menu) and edits that markup
-  live. With nothing selected and a markup tool armed, it edits the tool's defaults for the next one.
-- **Fields by kind**, from `MarkupStyles`:
-
-| Kind | Fields |
+| Kind | Fields, in legacy's order (default) |
 |---|---|
-| Highlight | colour, opacity |
-| Note | fill colour, opacity, text colour, font size, auto-fit, scale with zoom |
-| Cloud | colour, line width, bubble size, opacity |
-| Callout | line colour, line width, line end (none, arrow, circle), font family, size, bold, italic, underline, background, text colour, opacity, scale with zoom |
-| Arrow | colour, line width, head size, opacity |
-| Every kind | **Reset to defaults** (the tool's defaults); **Make default** (this markup's style becomes the tool's) |
+| **Cloud** | Color (#E53935); Line width 0.5–12, step 0.5 (6); Bubble size 4–40 (24); Opacity 0.1–1, step 0.05 (1) |
+| **Arrow** | Color (#E53935); Line width 0.5–8 (5); Head size 4–40 (30); Opacity 0.1–1 (1) |
+| **Callout** | Text (textarea); Font (Arial, Helvetica, Times New Roman, Courier New, Georgia, Verdana; Arial); Font size 6–60 (12); Text scale Fixed / Scale with zoom (Scale with zoom); Style Bold, Italic, Underline (off); Line width 0.5–8 (2); Line end none / arrow / circle (arrow); Border colour (#E53935); Background (#ffffff); Text colour (#000000); Opacity 0.1–1 (1) |
+| **Highlight** ("Highlighter Properties") | Color (#FFEB3B); Opacity 0.05–1 (0.35) |
+| **Note** | Fill (#FFD54F); Text colour (#000000); Opacity 0.1–1 (0.9); Text size Auto-fit / Fixed (Auto-fit; Fixed adds Font size 6–48, 12, and Text scale, Fixed) |
+| **Dimension** | Tool defaults only (already built here, `dimension/DimensionPropertiesPanel.tsx`) |
 
-- **Saving:** each change is a debounced `PATCH` of the markup's `style` (`markupsApi.update`, already there), one
-  undo step per field change, and it goes through realtime as markup edits do today.
-- **Several markups selected:** the panel shows the fields they share. A changed field applies to all of them, in
-  one undo step.
-- **Guest and Viewer:** the panel opens read-only, greyed with the Professional tip (D-527). Nothing is sent.
+Legacy has no rectangle, ellipse, polyline, text, stamp or snapshot markup, and no lock, layer, author or link field.
 
-## Files touched (expected)
+**Behaviour in legacy:**
+- **Opens** only from the Properties button on the action bar: with a markup selected (Properties / Start / Copy /
+  Delete), or with its tool armed and nothing drawn. A new callout opens it at once. No right-click or double-click
+  route (double-click edits a callout's text on the canvas).
+- **Edits one markup at a time.** With a markup of the panel's kind selected, edits go to it live; otherwise to the
+  tool's defaults (per browser, `intelcost.toolStyles.v1`). The footer says which: "Changes apply to the selected
+  markup." / "Changes apply to the next markup you draw and are remembered."
+- **Reset** (header) always resets the tool's defaults, even with a markup selected. No "Set as default".
+- **Saving:** every slider tick writes (no debounce). Cloud, arrow and callout push one undo entry per tick ("Change
+  markup style"); highlight and note push none.
+- **Read only:** without `canUseAnnotations` nothing is selectable, so the panel never opens for a markup.
+- 320 px wide, dragged by its header, opens near the top right.
 
-| File | Change |
-|---|---|
-| `features/takeoff/markup/MarkupPropertiesPanel.tsx` (new) | the panel, its fields per kind, on `FloatingPanel` |
-| `features/takeoff/markup/markupStyle.ts` | field metadata per kind (labels, ranges), Make default |
-| `features/takeoff/markup/MarkupLayer.tsx` | opens the panel on select; draws from the markup's own style (already does); live preview while dragging a slider |
-| `features/takeoff/markup/api.ts` | a batch style update for several markups (or one PATCH each) |
-| `pages/ProjectTakeoff.tsx` | mount, undo integration |
-| api `markup` routes and schemas | validate `style` keys and ranges per kind (today a free dict); no migration (JSONB) |
+## 2. What the app has today
 
-## Risks
+- `markup/markupStyle.ts`: legacy's types and defaults for highlight, note, cloud, callout and arrow
+  (`DEFAULT_MARKUP_STYLES`), kept per browser (`patchMarkupStyle`, `useMarkupStyles`).
+- `markup/StyleCaret.tsx`: the caret on the Highlight and Note tool buttons only; the tool's defaults only: a colour
+  grid plus Custom; for a note, opacity 0.3–1 and Black or White text.
+- `markup/MarkupLayer.tsx`: a selected markup's chip with its colour (preset palette, writes `style.color`), Delete, and
+  for a dock its Settings. Double-click edits a note's or callout's text; handles move and resize.
+- `markup/api.ts`: `PATCH` of a markup's `style`, geometry or text. Drawing and selecting are gated by `canEdit`.
+- `dimension/DimensionPropertiesPanel.tsx`: legacy's Dimension panel, with Reset.
 
-- **`style` is a free dict today.** Validating it on the api could refuse markups stored with odd keys. Validate on
-  write only, and drop unknown keys rather than refuse.
-- **Live preview:** many PATCHes from sliders. Preview locally, write on release or after 300 ms of quiet.
-- **Fonts:** legacy offers a font family list. Only fonts the browser and the PDF print path (jsPDF) both have may
-  be offered, or printed markups will differ.
-- **Undo** across several markups and a realtime echo from another tab: covered by D-71's history and write tokens,
-  to check.
+## 3. The gaps
 
-## What I need you to decide
+1. No Properties panel for cloud, arrow, callout, highlight or note.
+2. After drawing, nothing edits a markup's line width, bubble size, head size, opacity, font, size, bold / italic /
+   underline, line end, background or text colour, auto-fit or text scale; only its colour, from the chip.
+3. The defaults of cloud, callout and arrow cannot be edited at all (no caret).
+4. No Reset for markup styles.
+5. No undo of a style change.
 
-| # | Question | Recommendation |
+## 4. The approach
+
+The panel on the shared floating panel (`components/ui/floating-panel.tsx`, D-593), opened as legacy opens it: a
+**Properties** button on the selected markup's chip, and on an armed markup tool's caret. With a markup selected it
+edits that markup; otherwise the tool's defaults, with legacy's footer sentence. Each change is applied on screen at
+once and written when the slider is let go (or after 300 ms of quiet), one `PATCH` of `style`; undo is one step per
+change (better than legacy's step per tick). Guests and Viewers never select a markup, so the panel never opens for
+them; with the tool caret on a read-only seat the fields show greyed with the tip (D-527).
+
+## 5. The blocks
+
+| Block | What | Hours |
 |---|---|---|
-| M1 | Docked (one place, like Dimension's) or floating by the selection? | Floating, on the shared panel, remembered where it was moved (D-593) |
-| M2 | Several selected: edit the shared fields, or one markup at a time? | Shared fields |
-| M3 | Font families: legacy's list, or the three the print path embeds (Helvetica, Times, Courier)? | The three, named as the user knows them (Arial shows as Helvetica in print) |
-| M4 | "Make default": per person on this device (today's `intelcost.toolStyles.v1`), or the workspace's? | Per person, as today; workspace defaults later if asked |
+| **1** | The panel for a **selected** markup: every legacy field for cloud, arrow, highlight and note, and callout's but its font family; Properties on the chip; live on screen, written on release; Reset (to the tool's defaults, as legacy); gated as selection is (guests and Viewers never reach it) | 5 |
+| 2 | Tool defaults mode: the panel from each markup tool's caret (cloud, callout and arrow get a caret), legacy's footer; the per-browser defaults (`intelcost.toolStyles.v1`) | 2 |
+| 3 | Undo and redo of style changes, one step per change; a realtime echo from another tab applied | 3 |
+| 4 | Callout font family (after M3); the api validating `style` per kind on write, leniently (unknown keys dropped) | 2 |
+| 5 | Several markups selected: the fields they share (M2) | 3 |
+| | **Total** | **about 15 h** |
 
-## Paper hours
+## 6. Questions for Umer (unanswered since 2026-10-17)
 
-| Piece | Hours |
-|---|---|
-| Panel shell, fields per kind, tool defaults mode, Reset and Make default | 6 |
-| Live preview, debounced writes, undo, several selected | 4 |
-| api: style validation per kind (write-time, lenient) | 2 |
-| Guest and Viewer read-only, gates, smoke on a BENCH DUP (each kind; the print PDF checked in the bench container, never Print in the browser), guest check | 3 |
-| **Total** | **about 15 h (two days)** |
+| # | Question | Recommendation (Block 1 follows it) |
+|---|---|---|
+| M1 | Docked (one place) or floating by the selection? | Floating, on the shared panel, remembered where it was moved |
+| M2 | Several selected: edit the shared fields, or one markup at a time as legacy? | One at a time first (Block 1, as legacy); shared fields in Block 5 |
+| M3 | Font families: legacy's six, or the three the print path embeds (Helvetica, Times, Courier)? | The three, named as the user knows them; Block 4 waits for the answer |
+| M4 | Defaults per person on this device (as legacy), or the workspace's? | Per person on this device, as legacy |
+
+## 7. Risks
+
+- **`style` is a free dict.** Validating it could refuse markups stored with odd keys: validate on write only, drop
+  unknown keys (Block 4).
+- **Fonts:** the print path (jsPDF) embeds three families; others print differently (M3).
+- **Undo** across a realtime echo from another tab: D-71's history and write tokens, checked in Block 3.
