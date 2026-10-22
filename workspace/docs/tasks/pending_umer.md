@@ -685,3 +685,18 @@ small "1 in use" beside them; the page text runs them together.
 | V6 | guest-REPORT_2026-10-15 | Who-is-where markers in the Sheets panel (members and guests). | Later (2026-10-15) |
 | X1 | DECISIONS.md (D-523 C, known edge) | A guest whose session ends is sent back to the link's page; a reload in the split second between the refusal and that page change loads the person's own session on the project URL, which reads "No such project". | Later (2026-10-15) |
 | S2 | drafts/zoom_hybrid_images.DRAFT.md:121–129 | Sharper deep zoom from pre-made images: 4 questions. | Later (2026-10-11) |
+
+## Night run 2026-10-22 (morning-report-2026-10-22/NIGHT_REPORT_2026-10-22.md)
+
+| # | What | Where it stands | Your call |
+|---|---|---|---|
+| R1 | **Estimating's first row at 5,000 items** is 3.1–3.4 s after the streamed read (D-698); at 20,000 it is 2.7–2.9 s | At 5,000 the read is quick; the browser's own work after it is most of the time | Go further on 5,000 (the lines worked out for the first rows before all of them), or leave it? |
+| R2 | **The streamed read's first look:** "Loading items: 500 of 20,000. Editing opens when every item is in.", read only | Shipped (D-698) | Keep the wording and read only, or let editing open on the first rows? |
+| R3 | **Staging's commit measurement** before testers | Plan written, not run (`staging_commit_PLAN.md`) | Ask Abdullah to run it (or let me run it with him)? |
+| R4 | **Selection under 100 ms at 20,000:** the overlay did not help (200 → 192–200 ms median); stashed `night-selection-overlay` | A click's cost is mostly a forced layout (48–61 ms in one `getBoundingClientRect`) and the panel's tree (40–60 ms) | Look into the forced layout and the panel's render next, drop the stash, or stop at today's 150–200 ms? |
+| R5 | **Step 7's guest check** was not run: window-b may not make share links, and a guest cannot mark lines anyway | Every member path clean; a real change marked | Run it on your click list, or give a bench member that may make links? |
+| R6 | **A guest on a link without "presence" never gets live changes** (no socket, by design); they show on reload | Found in Step 4; unchanged | Should a guest always get live updates, presence or not? |
+| R7 | **The markup Properties plan's M1–M4** (floating, several selected, font family list, defaults per person) | Block 1 follows the recommendations; Block 4 waits on M3 | Answer M1–M4 (plan §6) |
+| R8 | **The markup panel's Reset** puts legacy's defaults on the selected markup; legacy's Reset reset the tool's defaults even with a markup selected | Built as ours (D-704) | Keep ours, or match legacy? |
+| R9 | **The fx dev servers misbehaved tonight** (a port not published, blank white pages, page loads past 30 s); the production builds ran the same fixtures green | Re-verified on production builds | Make the production builds the suite's default (as the full run for testers will be)? |
+| R10 | **f6-a step 8 under parallel load:** window B 2,164 ms (bound 1 s); 9/9 twice alone | After D-699 and D-700 | Leave the bound as it is (alone it passes), or allow more under load? |
