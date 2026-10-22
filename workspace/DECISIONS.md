@@ -21893,3 +21893,28 @@ the same rows).
   it. Looked into with Step 5's fixtures.
 - **Staging:** a plan for measuring the same path on Abdullah's staging stack with the flush on, before testers, in
   `docs/tasks/staging_commit_PLAN.md`. Not run.
+
+## D-700: Window B paints a changed row from the single-item read; the canvas's shape grid updated in place (Q4)
+
+**Accepted 2026-10-22 (Umer, Q4, D-696).**
+
+- **Found:** window B's single-item read (about 50 ms after the PATCH answered) updated only the open sheet's list. The
+  Takeoff panel and Estimating read the project's list, which moved only after the 150 ms settle and the `since` read.
+  And every change to the sheet's list rebuilt the canvas's whole spatial grid of shapes (`shapeIndex`, D-656/D-693):
+  one long task of 245–358 ms at 5,000 items on the production build, about 500 ms on the dev build.
+- **app** (`takeoff/hooks/useLiveItems.ts`): the single read now also puts the item's row in the project's list, wherever
+  the item is (another sheet too). Never with an older version (`updated_at`), and never a rename, a move in the order
+  or a new item: the settled read places those, as before. The items painted early are handed to the per-sheet lists'
+  update with what the settled read found (D-695 unchanged). `updated_at`, sent by the api all along, is now in the
+  app's item type.
+- **app** (`lib/takeoff/engine/shapeIndex.ts` `updateShapeIndex`; `SheetCanvas.tsx`): when the same shapes stand in the
+  same order and at most 200 were replaced, the grid takes those out of their old cells and puts them in their new
+  ones; otherwise it is built again. Proved equal to a grid built afresh: 40,000 `shapesNear` and `shapesIn` queries
+  over random shapes, patched five times in twenty trials, no difference.
+- **Measured** (production builds, BENCH DUP f3cebf3a, 5,000 items; window A changes an item's colour through the api,
+  window B times its Takeoff panel row): before 435–534 ms, and 2.1–2.7 s in four of ten; after **105–194 ms**
+  (median about 140). A guest on a link with presence on: 84–160 ms. A guest on a link without presence opens no
+  socket (by design) and sees the change on reload, before and after.
+- **D-501 holds:** window A offline changes the colour (kept in its outbox), window B changes it after, A comes back
+  and reopens: "An older change was skipped — You changed “GEN-L-00150” again after that, so your earlier change was
+  skipped."; both windows and the api show B's colour; A's outbox empty.
