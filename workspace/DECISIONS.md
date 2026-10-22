@@ -21832,3 +21832,17 @@ the same rows).
   the fixture or the app fixed.
 - **Q7, yes, small:** a table of sessions per renderer path, last 7 and 30 days, on the platform admin pages.
 - **Housekeeping:** `intelcost-infra/fx-suite/browser/shots/` deleted (Umer approved; git-ignored, re-made by a run).
+
+## D-697: The GPS Export switch's tooltip names the reason before the click (Q1)
+
+**Accepted 2026-10-22 (Umer, Q1, D-696).**
+
+- **One rule, two readers:** `share/gps_plan.py` `gps_export_refusal(workspace)` gives the sentence refusing a link's
+  GPS Export (trial ended, D-679; Professional ended, D-688; Essentials, "Sign up for Professional to use this."), or
+  none on Professional or a running trial. The link's PATCH refuses with it (code `plan_required`, as before), and the
+  capabilities read carries it as `gps_export_refusal`. The app's switch tooltip shows the api's sentence; its own
+  derivation (which could not tell a lapsed plan, D-277 18) and the two copied sentences in `workspace/plan.ts` go.
+- **Proved:** four throwaway accounts, a workspace, a project and a link each; a guarded drive aged one trial, gave one a
+  canceled Professional subscription past its period and one an active Essentials. The tooltip before the click, the
+  PATCH and the toast read the same sentence in each case; the Essentials switch stays disabled; the active trial's
+  tooltip is the ordinary one and the switch turns on.
