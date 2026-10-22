@@ -21982,3 +21982,33 @@ the same rows).
 - **Checked:** a throwaway account made platform admin for the check (set back after) sees 12 WebGL sessions by 3
   people in 7 and 30 days, as the database counts them, and 0 on every other path; window-b (not an admin) gets "Page
   not found" at the address, as for every platform page.
+
+## D-704: The markup Properties panel, Block 1: the selected markup's style (plan `markup_properties_PLAN.md`)
+
+**Built 2026-10-22 (night run, Step 9); the plan's M1–M4 still open, Block 1 follows its recommendations.**
+
+- **The plan** (`docs/tasks/markup_properties_PLAN.md`) rewritten against live legacy (`origin/UmeralamDEV`,
+  `PropertiesPanel.tsx`, `toolStyles.ts`) and today's app: legacy's fields and ranges per kind, how its panel opens
+  and saves, the five gaps here, and five blocks (about 15 h).
+- **Block 1** (`markup/MarkupPropertiesPanel.tsx`, new; `MarkupLayer.tsx`; `markupStyle.ts`): a **Properties** button on
+  a selected markup's chip (highlight, note, cloud, callout, arrow; a dock keeps its own settings) opens legacy's
+  panel for that markup, titled as legacy ("Cloud Properties", "Highlighter Properties", …), with legacy's fields,
+  ranges and order: cloud colour, line width 0.5–12, bubble size 4–40, opacity; arrow colour, line width 0.5–8, head
+  size 4–40, opacity; callout font size 6–60, text scale, bold / italic / underline, line width, line end
+  (none / arrow / circle), border, background and text colours, opacity (**not its font family: M3**; its text stays
+  edited on the canvas); highlight colour and opacity 0.05–1; note fill, text colour, opacity, and Auto-fit / Fixed
+  with Fixed adding font size 6–48 and text scale.
+- **Saving:** a change shows on the markup at once (a preview in the layer) and is written after 300 ms of quiet, one
+  `PATCH` of the changed keys through the page's markup update, so **one undo step a write** (legacy: one per slider
+  tick, and none for highlight and note). Closing the panel or moving the selection writes what is pending.
+- **Reset** puts legacy's defaults on the selected markup, one step (legacy's Reset reset only the tool's defaults).
+- **It follows the selection** from markup to markup and closes when nothing is selected (Escape too).
+- **Who:** only a seat that may annotate selects a markup (`canUseAnnotations`, as before), so a guest or a Viewer
+  never reaches the panel and sends nothing.
+- **Checked in the browser** (a throwaway's project, one markup of each kind): each panel shows its fields; a cloud's
+  line width 6 → 10 shows at once (stroke 4.5 → 7.5 px) and is stored; three moves of an arrow's head size in one
+  burst are one write (30 → 10), Ctrl+Z → 30, Ctrl+Y → 10; a note set to Fixed shows font size and text scale, Reset
+  brings Auto-fit back; a guest on the project's link sees the markups styled, gets no chip and no panel, and sends
+  no markup write.
+- **Next blocks:** 2 tool defaults mode, 3 the realtime echo with undo (undo itself came free), 4 font family (M3) and
+  lenient api validation, 5 several selected (M2).
