@@ -22734,3 +22734,22 @@ line, and can we do something else to show the selected workspace rather than or
 - **The bench fixture** (`intelcost-infra/drives/eqlib-release-fixture.sh apply|rollback|status`) publishes a pretend
   release 2 that moves EX-CRAWL-20T day 1,040 → 1,100 and rolls it back exactly. It is a bench script, never a
   migration, never shipped; the quantity table is not run while it is applied (it dumps the national rows).
+
+## D-742: Equipment library Block P1: assemblies link shared equipment (F33; closes D-93's "Not yet")
+
+**Status:** Accepted (2026-10-23, the night's Block P1; built to plan §6).
+
+- **`assembly_equipment_link`** (migration `d718a1b3c5e7`): Save as assembly keeps every shared machine the item draws
+  on (its division is the machine's home or an extra, and the item is not excluded): the machine's name, the item's
+  usage formula on it, and how to make it again. A library machine keeps its choice (class, count, basis, period, fuel
+  load), never a rate; a hand-entered one keeps its typed rate, basis, hours and mob, as a hand-entered component does.
+- **Apply** (on the pricing seat, after the components): each link draws the item onto the project's machine of the
+  same name, matched by the project's own rule (case and spaces ignored); if the item's division is not one the
+  machine covers, it is added as an extra. With no machine of that name, one is made with the item's division as home.
+  A link with neither a class nor a rate makes a machine with no rate, noted "No data, enter a value" and warned on
+  apply: never a silent zero. An unclassified item is not linked, with a warning. The link's usage formula is written
+  to the item's usage row. The result names the machines linked and made; Estimating refreshes.
+- **Template editor:** Costs… on an assembly lists "Shared equipment" (name, usage formula, what it makes) to edit,
+  remove or add by name; Copy to my assemblies copies the links.
+- Tested in the smoke and the quantity table (`eq-p1-*`): the plan's loader, $825/day, two 16 crew-hour pads, 4 days,
+  $3,300.00, $1,650.00 each.

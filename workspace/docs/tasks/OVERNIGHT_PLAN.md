@@ -45,6 +45,6 @@ after every block. A restarted session continues from the first block below that
 | 4.1 | Library page: browse, overrides, revert, release banner | 1.2 | ☑ | app c11db81 |
 | 4.2 | Custom rows, import/export, a company's machine list | 4.1 | ☑ | api 1234e06, app eebc3d9 |
 | 4.3 | Release upgrades and notices | 4.1, 3.1 | ☑ | api a45cf9a, app 23f27e0 |
-| P1 | Assemblies link shared equipment | — | ☐ | |
+| P1 | Assemblies link shared equipment | — | ☑ | api bbb7039, app fd95203 |
 | 5.1 | Library components in assemblies | P1, 3.1 | ☐ | |
 | End | Coverage run again on the copy; report; clean-up (throwaway workspaces, scratch) | all | ☐ | |

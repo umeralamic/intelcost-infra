@@ -80,6 +80,11 @@ export const EQUIPMENT_CASES = [
   // A company machine list read against the library (Block 4.2, D-728): the plan's names.
   { id: "eq-match-machine-list", kind: "match", names: ["Excavator04, CAT 330", "Truck, 30 Ton Artic", "Dozer 12, CAT D6", "Loader 3, CAT 972", "Roller 7, 84 in smooth drum"], expect: { keys: ["EX-CRAWL-30T", "ADT-30T", "DZ-CRAWL-D6", "WL-MED-972", "CP-SD-84-SM"] } },
 
+  // An assembly's shared-machine link (Block P1, D-742): the loader the plan links two pads to, and the one an
+  // apply makes where none of that name exists. Hand-entered: $825/day, usage = each pad's 16 crew-hours.
+  { id: "eq-p1-linked-two-pads", kind: "shared", setting: {}, resource: { name: "Loader 3 yd", rate: 825, basis: "day", eq_class_key: null, eq_units: null, eq_mode: null }, hosts: [{ id: "h1", crewHours: 16 }, { id: "h2", crewHours: 16 }], expect: { total: 3300, h1: 1650, h2: 1650, unallocated: 0 } },
+  { id: "eq-p1-made-one-pad", kind: "shared", setting: {}, resource: { name: "Loader 3 yd", rate: 825, basis: "day", eq_class_key: null, eq_units: null, eq_mode: null }, hosts: [{ id: "h1", crewHours: 16 }], expect: { total: 1650, h1: 1650, unallocated: 0 } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
@@ -220,10 +225,10 @@ export async function runEquipment(page, eqlib) {
         }
         if (c.kind === "shared") {
           const lib = resolve.library(bundleFor(eqlib, c));
-          const res = { id: "r1", name: "TEST shared excavator", home_classification_id: "div", extra_classification_ids: [], subcontractor_id: null, rate: 0, basis: "day", hours_per_day: 8, days_per_week: 5, weeks_per_month: 4.33, rental_duration_override: null, mob_demob: 0, allocation_basis: "usage_hours", notes: null, eq_class_key: "EX-CRAWL-20T", eq_units: 1, eq_mode: "rental" };
+          const res = { id: "r1", name: "TEST shared excavator", home_classification_id: "div", extra_classification_ids: [], subcontractor_id: null, rate: 0, basis: "day", hours_per_day: 8, days_per_week: 5, weeks_per_month: 4.33, rental_duration_override: null, mob_demob: 0, allocation_basis: "usage_hours", notes: null, eq_class_key: "EX-CRAWL-20T", eq_units: 1, eq_mode: "rental", ...(c.resource ?? {}) };
           const machineHours = new Map(c.hosts.filter((h) => h.machineHours != null).map((h) => ["r1:" + h.id, h.machineHours]));
           const usage = c.hosts.filter((h) => h.override != null || h.excluded).map((h) => ({ resource_id: "r1", takeoff_item_id: h.id, usage_formula: null, usage_hours_override: h.override ?? null, manual_pct: null, excluded: Boolean(h.excluded), last_share: null }));
-          const hosts = c.hosts.map((h) => ({ id: h.id, name: h.id, effNode: "div", qty: 0, unit: "BCY", laborCrewHours: null, env: { qty: 0 }, hasSubcontract: false }));
+          const hosts = c.hosts.map((h) => ({ id: h.id, name: h.id, effNode: "div", qty: 0, unit: "BCY", laborCrewHours: h.crewHours ?? null, env: { qty: 0 }, hasSubcontract: false }));
           const out = se.computeSharedEquipment({ resources: [res], usage, hosts, ancestorPath: (n) => [n], subForNode: () => null, library: { lib, machineHours } });
           const v = out.views[0];
           return { total: v.result.total, h1: out.allocByHost.get("h1") ?? 0, h2: out.allocByHost.get("h2") ?? 0, unallocated: v.result.unallocated };
