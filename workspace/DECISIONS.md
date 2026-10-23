@@ -22145,3 +22145,21 @@ with Fit and below left as today until the Fit draw is tiled). **Replaces D-119;
   tooltips already said.
 - **Acts:** a sub-item click selects it and opens that sheet; its right-click is the full item menu (no "Delete on
   this sheet": it has no shapes); pencil and trash edit and delete as in the Takeoff panel.
+
+## D-710: A sheet's item list opens where the Sheets panel is; the scroll moves only for a row wholly above the view
+
+**Status:** Accepted (2026-10-22, Umer: "when i click show items on this sheet chevron … the position of the sheet or
+that parent is shifted … user has to scroll down or up to go to that item").
+
+- **The fault (two):** every sheet's item list is its own virtual list on the panel's one scroller (D-646).
+  - A virtual list scrolls its scroller to its initial offset as it attaches, 0 by default: opening any sheet's
+    items while the panel was scrolled sent the panel to the top (traced: 186 → 0 in one frame). Since D-646.
+  - The library moves the scroll when a row's measured size differs from its estimate and the row reads as above
+    the view, by the list's `scrollMargin`, measured only after the list mounts. Under D-709 a row with sub-items or
+    cost rows is taller than the 20 px estimate, so opening A101 scrolled the panel 120 px past its row.
+- **Now:** a list starts at the scroller's own position (`initialOffset`), and the scroll moves for a resized row
+  only when the row, placed from where its list is now, is wholly above the view.
+- **The Takeoff panel** has one list at the top of its own scroller, so neither applies; checked: a sub-item fold
+  with the row mid-panel and 6 px from the top left it in place.
+- **Checked in the browser** (BENCH DUP, purged): with A101's row 100 px down a panel scrolled 186 px, opening and
+  closing its items and folding and unfolding its sub-items left it at 100 px; with the row 4 px from the top, at 4.
