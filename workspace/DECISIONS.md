@@ -22163,3 +22163,35 @@ that parent is shifted … user has to scroll down or up to go to that item").
   with the row mid-panel and 6 px from the top left it in place.
 - **Checked in the browser** (BENCH DUP, purged): with A101's row 100 px down a panel scrolled 186 px, opening and
   closing its items and folding and unfolding its sub-items left it at 100 px; with the row 4 px from the top, at 4.
+
+## D-711: A selected Linear run breaks at a point from the point's own menu
+
+**Status:** Accepted (2026-10-22, Umer: "when user right click on any point it does not give the option to break …
+when i have selected the linear first").
+
+- **The gap:** with the run selected, a right-click on a point opened the canvas's point menu ("Delete this point"
+  only, legacy's too); "Break line here" was reachable only from the item menu, on an unselected run.
+- **Now:** the point menu of an open Linear run (no arcs, not an analytic shape) adds "Break line here" on a point
+  between its ends: the run becomes two runs of the item meeting at that point, in one change; one Ctrl+Z joins them.
+  On an end point there is nothing to break, so only "Delete this point". The edge break is unchanged; both go
+  through one `breakLine` on the page, with the item menu's lock rule (a toast says why when locked or held).
+- **Checked in the browser** (BENCH DUP, purged): Wall Type B on P101, 9 points, 522.70 LF: point 2 → runs of 3 and
+  7 points meeting at it, 522.70 LF; Ctrl+Z → one run of 9; end point: "Delete this point" only.
+
+## D-712: A selected run's point or edge opens the item's full menu; Linear rows say "linear", Segment rows "segment"
+
+**Status:** Accepted (2026-10-22, Umer: "when a linear or segment is selected, why right click dont show full menu";
+"any marked linear, dont show segment in right click menu, show linear … segment should only show segments name").
+
+- **Full menu:** with the run selected, a right-click on one of its points or edges opened the canvas's point menu
+  only (Delete this point / Insert point here, D-711's Break). Now it opens the item's full menu, the point's or the
+  edge's acts after Move: on a point, "Delete this point" (never below a run's least, legacy's words) and, on a
+  Linear point between its ends, "Break line here"; on an edge, "Insert point here" and, on a Linear, "Break line
+  here". The point menu stays only where the page passes no item menu.
+- **Area perimeter:** an Area's edge takes "Insert point here" in its menu too, selected or not (it had none).
+- **Words:** a Linear item's menu reads "Linear Total", "Select all similar linears on this sheet", "Delete this
+  linear", "Delete all similar linears on this sheet"; a Segment tool item's (`draw_tool` "segment", D-257) reads
+  "Segment Total" and keeps "segment(s)".
+- **Checked in the browser** (BENCH DUP, purged): Wall Type B selected: middle point, end point and edge menus as
+  above; Delete this point 9 → 8, undo 9 (database); LF 68 (Segment) reads Segment Total and segments; SF 67: point
+  menu leads with Delete this point, edge Insert point here 5 → 6 points, undo 5.
