@@ -22818,7 +22818,8 @@ line, and can we do something else to show the selected workspace rather than or
 - Check (the founder's): two Cut lines of 6,000 and 4,000 BCY in division 31 → 10,000 BCY, tier 800+, 2 ×
   EX-CRAWL-20T shared: 80 hr per machine, rental 2 × 2 weeks $11,708.00, fuel $2,791.56, mob $2,200.00, total
   $16,699.56; line hours 48 and 32; shares $10,019.74 and $6,679.82; Unallocated $0.00. Per line: $11,808.94 and
-  $9,170.63 ($20,979.57); the 4,000 BCY line's figure is under the report's Disputed numbers (Day fixes 2026-10-23).
+  $8,070.63 ($19,879.57), the 4,000 BCY line at the 500 BCY/day TEST default (the founder's correction; resolved
+  under the report's Disputed numbers, Day fixes 2026-10-23).
 
 ## D-745: Company rates import: an empty cell leaves the value; "national" reverts (F33; reverses the night's decision 18 of D-740)
 
