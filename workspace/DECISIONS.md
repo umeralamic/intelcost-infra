@@ -22240,3 +22240,13 @@ area perimeter … on segment … remove arc point"; the four choices answered t
   its menu offered Convert to arc point enabled; the pending handle showed with 9 corners; Esc gave back 10 and no
   arc; click and A, then a drag: 9 corners and one arc in one write (version 2 → 3), 526.44 LF; one Ctrl+Z: 10 corners,
   no meta, 522.70 LF.
+
+## D-715: The Area menu keeps one heading with the point and arc rows in it
+
+**Status:** Accepted (2026-10-22, Umer: "right click on area perimeter shows two area listings, remove 2nd one").
+
+- **The fault:** the menu opens a heading wherever a row's heading differs from the row above (`context-menu.tsx`).
+  The rows D-712 and D-713 put after Move (Insert point here, Delete this point, Convert to arc point, Insert arc point
+  here, Straighten edge, Arc point) had none, so "Add more points" or "New section" opened "SF · Area Total" a second
+  time. Those rows now carry the Area menu's heading. The Linear menu heads its first row only, so it never repeated.
+- **Checked in the browser** (BENCH DUP, purged): SF 67's edge and corner menus each show the heading once.
