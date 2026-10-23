@@ -22271,3 +22271,20 @@ the same line item; parent … rearrange in sheets panel and in takeoff panel"; 
   panels show it (positions 1, 2); Insulation dragged above Metal Studs (0, 1, 2); Takeoff panel, Exterior Wall
   dragged back above: the Sheets panel follows; an Earthwork Markups item dropped on Exterior Wall: refused with the
   reason; two cost rows on Metal Studs, Cost B dragged above Cost A: stored 0, 1.
+
+## D-717: Workspace rows on one line, the open one ticked and tinted
+
+**Status:** Accepted (2026-10-23, Umer: "when workspace name is long, it makes into 2nd line, i want it in single
+line, and can we do something else to show the selected workspace rather than orange dot").
+
+- **One line:** a workspace row's name never wraps; one too long for the row is cut short with "…" and shows whole as
+  the row's tip. The avatar menu is 280 px wide (was 232) and a workspace row's name sits 8 px from its role tag (was
+  16), so most names show whole.
+- **The open workspace:** a tick (lucide `Check`, primary) before its name, the name medium weight, the row tinted
+  `bg-primary/10`, `aria-current`; the other rows keep a blank where the tick goes, so the names line up. The dot is
+  gone from workspace rows.
+- **Where:** a new `currentMark: "tick"` on a menu row (`components/ui/context-menu.tsx`), set by
+  `useSwitchWorkspace`'s rows, so the avatar menu and Open › Switch workspace match. Every other `current` row (draw
+  modes, zoom, group by, tabs, Assemblies, Open's projects) keeps legacy's dot.
+- **Checked in the browser** (bench, window-b, on a BENCH DUP's takeoff, purged): two workspace rows, each 30 px
+  (one line), neither cut at 280 px; the open one ticked, tinted, no dot.
