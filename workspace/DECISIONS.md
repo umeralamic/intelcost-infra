@@ -22622,3 +22622,22 @@ line, and can we do something else to show the selected workspace rather than or
   on each item's row and in the picker, "Mob/demob counted N times: price as one shared machine?". The brief's wording
   had an em dash; the house prose rule takes a colon. Never changes a total; items with no classification are not one
   division.
+
+## D-737: Equipment library Block 3.4: Estimating rows, Needs attention, the reports and the export (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 3.4; built to D-718, D-723, D-724).
+
+- **Rows:** a library machine's component row reads "· 2 × Rental 2 weeks · 80 hr" (or "Shared machine · 61.2
+  machine-hr", "Owned · …", "Operated · … billed") with its weakest grade; a machine short of data shows "Missing
+  data" and "—" for its equipment; "Library rates changed: Update" and a crew's "Crew X hr, spread Y hr" show on their
+  rows. The host's cost chip reads "Missing data" (not "Formula error") when a blank stopped the money.
+- **Reports:** a line with missing data of a kind stays in that kind's report (`missingKinds` on the cost result, a
+  flag only, no arithmetic), so the Equipment report shows the very lines it cannot price.
+- **Needs attention** gains "Equipment: missing data: …", "Labor: missing data: operator wage …", "Equipment: library
+  rates changed since it was priced (Update in the component)" and "Labor: Crew X hr, spread Y hr".
+- **The bid:** "Incomplete: N lines have missing data" above the bid summary.
+- **Export:** each sheet's banner adds "INCOMPLETE: N lines have missing equipment data, not in the totals"; a library
+  machine's detail row carries its basis label or "MISSING: …"; a new **Equipment basis** sheet lists every library
+  machine and shared machine (item, machine, library key, activity, basis, cover and overtime, machines, hours,
+  equipment, fuel, mob, total, grade, source, missing data) and then the estimate's equipment settings with their
+  sources. A quantities-only export leaves it out.
