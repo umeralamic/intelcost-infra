@@ -550,8 +550,10 @@ small "1 in use" beside them; the page text runs them together.
   them in one call.
   - **Process:** a D-NN first; the gates; one smoke: Properties saved offline, reload offline, back online.
 - **D-708 follow-up: C-200's sharp frame after a wheel zoom is over 600 ms at every pixel ratio**, even
-  before D-708 (550–1065 ms; A010.3 is 356–603 ms). To look at with the tiles block (the Fit draw split
-  under the canvas cliff, plan first), which may share its cause.
+  before D-708 (550–1065 ms; A010.3 is 356–603 ms). To look at with the sheet-worker block below
+  (step 4 of its plan).
+- **Sheet drawing in a worker: plan approved in principle, waiting for my go.** Plan and timings:
+  [sheet_worker_tasks.md](sheet_worker_tasks.md).
 
 - **D8.8: Stripe's official library before go-live.** About half a day, mostly the fake and the
   checks.
