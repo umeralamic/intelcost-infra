@@ -22861,3 +22861,27 @@ line, and can we do something else to show the selected workspace rather than or
 - The drift was the model's, not the database's: D-694's migration made the index on purpose and the platform
   report filters on `created_at >= since`. A migration to make `alembic check` clean would have dropped it; the one
   line goes on the model instead (P-23's rule: declared so `alembic check` sees it). No database change.
+
+## D-749: Invitations inside the app: "You've been invited", Accept and Decline (the founder, 2026-10-23)
+
+**Status:** Accepted (2026-10-23, the founder's go on the invitation plan; extends D-24, does not reverse it).
+
+- **Found first:** the app does email an invitation (`_send_invitation`, on create and on Resend), through the bench's
+  live relay for an address on the mail guard's allowlist and into MailHog for any other (D-279). What was missing is
+  the invitee's side inside the app: a person signed in could not see an invitation sent to them without its link.
+- **The invitee's invitations:** the api lists the signed-in person's pending invitations, matched to their **verified**
+  address (not accepted, not revoked, not declined, not expired), newest first, and accepts or declines one by its id
+  with the same address check, so no link token is needed. An unverified address sees none: nobody can take an
+  invitation by signing up with someone else's address. Accepting in the app takes the seat exactly as the link does
+  (the seat check, a queued ownership transfer, the role's default shift) and is audited as accepted in the app.
+  Declining sets `declined_at` (migration `d749…`), is audited, and shows on the inviter's list as "Declined"; a link
+  of a declined invitation says so; Resend makes it a fresh offer again.
+- **Where:** a banner under the header while any are pending ("<inviter> invited you to <workspace> as <role>", Accept
+  and Decline; several are listed, newest first), and "Invitations (n)" in the profile menu (top right) opening the
+  same list. Accept joins the workspace and switches to it.
+- **The inviter's list:** Resend reads "Resend email (earlier links stop working)" (it replaces the token), and the
+  new-link button "Copy a new link (the old one stops working)", copying it to the clipboard.
+- **Bench mail:** the founder's address stays on the allowlist. Smoke tests invite throwaway addresses only (they land
+  in MailHog), never the founder's.
+- D-24 stands: a link is still shown once and a new one kills the old; the invited person's own account is a second way
+  in.

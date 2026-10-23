@@ -445,6 +445,43 @@ changes nothing there.
 - **HV copy:** its 9 activities' settings and 11 site machines from the Calculate.
 - The DZ-CRAWL-D6 TEST day of the import check was taken back.
 
+### Invitations inside the app (D-749)
+
+Commits: api `e9896b0`, app `f2bd614`. Gates green; quantity table passed (55 equipment rows, unchanged).
+
+- **Found first:** the app does email an invitation, on create and on Resend. On the bench, an address on the mail
+  guard's allowlist goes out through the live relay and every other address is captured in MailHog. The two Admin
+  invitations to the founder's address (17:21 UTC) went to the founder's real inbox; their links died when new ones
+  were made for the founder at their request.
+- **Bench mail rule:** the founder's address stays on the allowlist. **Smoke tests invite throwaway addresses only
+  (`fx.…@bench.intelcost.io`, captured in MailHog), never the founder's.** Today's smoke sent nothing to a real
+  address (worker log: every message "captured (guard)").
+- **Built:** the invited person's pending invitations by their verified address (`GET /api/invitation/mine`), Accept
+  and Decline by id, `declined_at` (migration `d749a1b2c3d4`); a banner under the header (on bare pages too, since a
+  member's home is the takeoff) and "Invitations (n)" in the profile menu, both listing every pending invitation newest
+  first; on the inviter's list "Declined", "Resend email (earlier links stop working)" and "Copy a new link (the old
+  one stops working)", which copies it.
+- **Smoke** (throwaways A `fx.invite.a.202610231747@…`, B and U; workspaces "zz Invite test 1" and "zz Invite test 2",
+  owned by A):
+  1. A invited B to both: B's banner "You have 2 invitations", test 2 above test 1 (newest first); the profile menu
+     "Invitations (2)", its dialog in the same order → same.
+  2. Accept test 1 from the dialog → B joined it and landed on its home; audited `invitation.accepted` `{"via":
+     "app"}` → same.
+  3. Decline test 2 from the banner → banner gone, menu without Invitations; audited `invitation.declined`; A's list
+     reads "Declined" → same (the list first read "Waiting": the api did not return `declined_at`, fixed).
+  4. A's "Copy a new link" → the link in the box, the offer "Waiting" again; A opening B's link → "Wrong account …
+     You are signed in as fx.invite.a…" → same.
+  5. B sees test 2 again; A withdraws it → B's banner gone → same.
+  6. A invited U's address before U had an account; U signed up on the ordinary sign-up page (no link): unverified, no
+     banner, `/mine` empty, Accept by id 403 "Confirm your email address first" → same; after the MailHog verification
+     link, the banner "Invite A invited you to zz Invite test 2 as Viewer" and "Invitations (1)" → same.
+- **Also today (the founder's asks):** the email footer reads "IntelCost, Takeoff and Estimating Cloud." (checked in
+  MailHog on a resend to U); the cost component dialog and Equipment settings are wider (768 px), with no sideways
+  scroll and nothing cut off, checked on zz Equip 3.6 site spread.
+- **Left:** the copy box under the inviter's list still says "The link is on its way to them" after "Copy a new link",
+  which mails nothing (wording from before today, not changed). TEST data: the three fx.invite accounts and the two
+  "zz Invite test" workspaces; U's invitation to test 2 is left pending.
+
 ### Morning checklist (day)
 
 1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are
