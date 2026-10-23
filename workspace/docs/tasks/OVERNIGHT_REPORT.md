@@ -661,6 +661,9 @@ check; app lint, typecheck, build).
 
 ### Questions (day, continued)
 
+All three answered by the founder (2026-10-23): no mob for operated machines and the flag on every line (D-756),
+B for Grade checker and Pipelayer (D-753), the founder runs the D-752 grant. See the next section.
+
 - **The hired tri-axles' mob/demob** (DT-OP-3AXLE, operated): enter a quote, confirm "none" (the truck drives itself and
   its hourly rate includes the driver), or should an operated hired machine carry no mob by rule? Until then $136,947.25
   of trucks is unpriced. And should a shared machine's missing data be flagged on every line it serves (today it is not)?
@@ -668,6 +671,45 @@ check; app lint, typecheck, build).
   $49.51, Laborer $38.04); C) a ratio you state.
 - **D-752's admin smoke:** allow a platform-admin throwaway for it (or run "Allow one more owned workspace" yourself),
   then I finish the smoke and push.
+
+### The founder's decisions on the trucks, the crafts and D-752 (D-756, D-753)
+
+- **Hired operated machines carry no mob (D-756).** Operated mode (the operated rate basis: DT-OP-*, operated cranes,
+  pumps, conveyors and boom trucks) reads "Mob/demob: In the hourly rate"; a typed quote still wins, and travel stays
+  its own input. Self-propelled bare machines keep the rule (a water truck on rental: mob missing). The five
+  crane-assembled operated cranes (CR-AT-HEAVY, CR-HYD-165T-OP to -275T-OP) fall under the same rule: an assembly
+  charge goes in as their mob quote.
+- **A shared machine with missing data now shows on every line it serves:** "Missing data: <machine> <field>" on the
+  line's component row and its "Shared — <machine>" row (shown at $0, money "—"), Item Cost marked "Missing data",
+  Needs attention, the Incomplete count and the export's INCOMPLETE banner, "MISSING: …" on the export's detail rows.
+- **Grade checker = Equipment Operator, Pipelayer = Laborer (D-753, B):** the starter's rows carry the journeyman's
+  craft (CC-11, CC-16) and follow the project's saved rate; a determination's GRADE CHECKER or PIPE LAYER line wins
+  (marked up as the set marks up that craft). On the HV copy's rate set (read only, nothing saved): Grade checker
+  $108.90 = Equipment Operator, Pipelayer $81.62 = Laborer, and a foreman over them $119.79. The determination path is
+  built but not driven: the HV copy's set is not from a determination. Neither role is on an HV copy line.
+- **Gates** green (api ruff, mypy; app lint, typecheck, build). **Quantity table** passed: 344 rows, 65 equipment rows
+  (five new: an operated truck's mob, a bare self-propelled machine's, the shared trucks $53,070.00 over 500
+  machine-hr, a shared machine flagging both its lines, and all 628 catalog classes as shared machines: every one with
+  missing data flags both its lines).
+- **HV copy recalculated** (Calculate, then the estimate; `day-756-coverage-hv-copy.xlsx`):
+
+  | | Before (D-753) | Now |
+  |---|---|---|
+  | Labour | $299,143.65 | **$299,143.65** |
+  | Equipment | $361,146.19 | **$498,093.43** |
+  | Full estimate | $888,927.86 | **$1,025,875.10** |
+
+  The trucks now price: Load and haul off (A6) $33,078.68, Haul off (A7) $62,996.86, Haul in (A8) $40,871.70 (5 ×
+  DT-OP-3AXLE each, $106.14/hr, mob in the rate), **$136,947.25**. Coverage: 90 lines with a quantity; **shared
+  machines with missing data: none; second list empty** (now including shared machines). No Incomplete bar; Needs
+  attention 7, the lines that read 0 (no rate, 6 of them with no quantity), as before.
+- **Smoke** (throwaway fx.equip, HV copy, read only): with the browser alone shown the Haul off trucks on rental (no
+  rental rate, fuel or mob), the estimate read "Incomplete: 3 lines have missing data", equipment $435,096.57 (the
+  $62,996.86 out), and each of the 3 lines showed "Missing data" on Item Cost, its component row and its "Shared —"
+  row (—), with "Equipment: missing data: Haul off (loaded by excavator): On-road dump truck 3-axle (tri-axle),
+  operated rental rate; fuel gal/hr; mob/demob …" in Needs attention: passed. (Changing the resource itself through the
+  api was refused by this session's permissions, so nothing was changed on the copy.)
+- **D-752:** waiting for "granted" on `fx.owner.c.202610232039@bench.intelcost.io`; its code stays uncommitted.
 
 ### Morning checklist (day)
 

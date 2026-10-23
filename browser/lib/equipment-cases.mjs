@@ -116,6 +116,16 @@ export const EQUIPMENT_CASES = [
   // A line on its activity's work day: 10,000 BCY at 1,000/day, 10 hr → 100 crew-hr (8 without it → 80).
   { id: "eq-751-line-10hr", kind: "host", ...DIESEL, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY", hours_per_day: 10 }, rows: [excavator({ eq_class_key: "EX-CRAWL-30T", eq_units: 1 }), operators(1)], expect: { equipment: 16471.70, crewHours: 100 } },
 
+  // A hired operated machine's mob is in its hourly rate (D-756): DT-OP-3AXLE 100 hr × $106.14 = $10,614.00, never
+  // missing; five shared over 500 machine-hr, $53,070.00. A self-propelled BARE machine keeps the rule: WT-4000's
+  // mob is missing (its fuel burn too: the catalog has none), and a shared one flags every line it serves, never a silent $0.
+  { id: "eq-756-operated-no-mob", kind: "machine", setting: {}, input: { classKey: "DT-OP-3AXLE", mode: "operated", period: "hr", hours: 100, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 10614, mob: 0, missing: [] } },
+  { id: "eq-756-bare-self-propelled", kind: "machine", ...DIESEL, input: { classKey: "WT-4000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["fuel_gph_med", "mob"] } },
+  { id: "eq-756-shared-trucks", kind: "shared", setting: {}, resource: { name: "Haul off: DT-OP-3AXLE", eq_class_key: "DT-OP-3AXLE", eq_units: 5, eq_mode: "operated", eq_hours_per_day: 10 }, hosts: [{ id: "h1", machineHours: 300 }, { id: "h2", machineHours: 200 }], expect: { total: 53070, h1: 31842, h2: 21228, unallocated: 0, flagged: 0 } },
+  { id: "eq-756-shared-missing-flags", kind: "shared", ...DIESEL, resource: { name: "TEST water truck", eq_class_key: "WT-4000", eq_units: 1, eq_mode: "rental" }, hosts: [{ id: "h1", machineHours: 24 }, { id: "h2", machineHours: 16 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
+  // Every catalog class as a shared machine on two lines (D-756): any with missing data flags both lines.
+  { id: "eq-756-shared-flag-catalog", kind: "shared-flag-catalog", ...DIESEL, expect: { unflagged: 0 } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
@@ -191,7 +201,7 @@ export async function runEquipment(page, eqlib) {
           }
           return { checked, bad };
         }
-        if (c.kind === "prod-catalog" || c.kind === "prod-d") {
+    if (c.kind === "prod-catalog" || c.kind === "prod-d") {
           const lib = resolve.library(bundleFor(eqlib, {}));
           let cells = 0;
           let d = 0;
@@ -262,7 +272,29 @@ export async function runEquipment(page, eqlib) {
           const hosts = c.hosts.map((h) => ({ id: h.id, name: h.id, effNode: "div", qty: 0, unit: "BCY", laborCrewHours: h.crewHours ?? null, env: { qty: 0 }, hasSubcontract: false }));
           const out = se.computeSharedEquipment({ resources: [res], usage, hosts, ancestorPath: (n) => [n], subForNode: () => null, library: { lib, machineHours } });
           const v = out.views[0];
-          return { total: v.result.total, h1: out.allocByHost.get("h1") ?? 0, h2: out.allocByHost.get("h2") ?? 0, unallocated: v.result.unallocated };
+          const served = v.hosts.filter((h) => !h.excluded && (h.usageHours ?? 0) > 0);
+          const flagged = served.filter((h) => out.missingByHost.has(h.id)).length;
+          return { total: v.result.total, h1: out.allocByHost.get("h1") ?? 0, h2: out.allocByHost.get("h2") ?? 0, unallocated: v.result.unallocated, flagged, unflagged: v.library?.missing.length ? served.length - flagged : 0 };
+        }
+        if (c.kind === "shared-flag-catalog") {
+          const lib = resolve.library(bundleFor(eqlib, c));
+          let missing = 0;
+          let unflagged = 0;
+          const bad = [];
+          for (const cls of eqlib.classes) {
+            const res = { id: "r1", name: cls.equip_key, home_classification_id: "div", extra_classification_ids: [], subcontractor_id: null, rate: 0, basis: "day", hours_per_day: 8, days_per_week: 5, weeks_per_month: 4.33, rental_duration_override: null, mob_demob: 0, allocation_basis: "usage_hours", notes: null, eq_class_key: cls.equip_key, eq_units: 1, eq_mode: cls.default_mode ?? "rental" };
+            const hosts = ["h1", "h2"].map((id) => ({ id, name: id, effNode: "div", qty: 0, unit: "BCY", laborCrewHours: null, env: { qty: 0 }, hasSubcontract: false }));
+            const out = se.computeSharedEquipment({ resources: [res], usage: [], hosts, ancestorPath: (n) => [n], subForNode: () => null, library: { lib, machineHours: new Map([["r1:h1", 24], ["r1:h2", 16]]) } });
+            const v = out.views[0];
+            if (!v.library?.missing.length) continue;
+            missing++;
+            const off = ["h1", "h2"].filter((h) => !out.missingByHost.has(h)).length;
+            if (off) {
+              unflagged += off;
+              bad.push(cls.equip_key + ": " + v.library.missing.join("; "));
+            }
+          }
+          return { missing, unflagged, bad };
         }
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {
@@ -286,6 +318,7 @@ const cents = (x) => Math.round(x * 100);
 export function checkEquipment(answers, wrong) {
   for (const [i, c] of EQUIPMENT_CASES.entries()) {
     const got = answers[i];
+    if (c.kind === "shared-flag-catalog") for (const line of (got.bad ?? []).slice(0, 10)) wrong.push(c.id + ": unflagged " + line);
     if (c.kind === "prod-catalog" || c.kind === "prod-d") {
       for (const line of (got.bad ?? []).slice(0, 10)) wrong.push(c.id + ": " + line);
       if ((got.bad ?? []).length > 10) wrong.push(c.id + ": and " + (got.bad.length - 10) + " more");

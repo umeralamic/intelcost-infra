@@ -22952,10 +22952,10 @@ inherits the plan", which stopped on billing).
 - **Found while checking (first version):** a paid plan is charged per workspace, per seat (`workspace_subscription`,
   one per workspace); the api stamped every new workspace with a fresh trial window from creation.
 
-## D-753: Foreman priced from its crew; a foreman premium; Grade checker and Pipelayer's rate left to the founder (2026-10-23)
+## D-753: Foreman priced from its crew; a foreman premium; Grade checker and Pipelayer at their group journeyman's rate (2026-10-23)
 
-**Status:** Accepted (the founder's follow-up 1 to D-751); Grade checker and Pipelayer's national rate is **the
-founder's call** (below).
+**Status:** Accepted (the founder's follow-up 1 to D-751); Grade checker and Pipelayer decided by the founder on
+2026-10-23 (option B, last bullet; logged after the build began, an error of order).
 
 - **Foreman** is a crew row marked `foreman`, not a reference craft (the Wage Calculator gives every reference craft a
   national rate, and a foreman's depends on the crew). Its hourly wage is the highest-paid other craft in the same crew
@@ -22977,6 +22977,16 @@ founder's call** (below).
   (never $0) until the founder picks: A) the helper rule as computed; B) the group's journeyman rate (Grade checker =
   Equipment Operator $49.51, Pipelayer = Laborer $38.04); C) a stated ratio. Then they become crafts with a
   determination rule each (a determination that lists them wins).
+- **Decided (the founder, 2026-10-23): B.** **Grade checker = the Equipment Operator journeyman rate; Pipelayer = the
+  Laborer journeyman rate; a wage determination's own rate wins where it lists one.** Built as a crew row priced as
+  its craft (`rate_as`, like the foreman a row field, not a reference craft: a reference craft would need its own
+  national rate, workers' compensation and crew rows, which would be a second copy of the journeyman's): the row
+  carries the journeyman craft's code and follows the project's saved rate for it (so the location and the set's
+  markup apply as for that craft), and its role keeps its name. **The determination:** when the project's current
+  set came from an uploaded determination with a GRADE CHECKER or PIPE LAYER classification, its base + fringe is
+  marked up exactly as the set marks up the journeyman craft's row, and wins. The row then counts among the crafts its
+  crew's foreman is paid over. The starter's rows take it up on their next read (an unedited activity refreshes
+  itself, as the foreman's did). Neither occurs on the HV copy.
 
 ## D-754: The HV copy's equipment by starter activity, reported (the founder's follow-up 2, 2026-10-23)
 
@@ -23003,3 +23013,23 @@ founder's call** (below).
 - **`undercut_stockpile` → none:** the dig is priced on the undercut line (A2); mapping this to A1 would price the
   excavator twice. The on-site haul to the stockpile is real work A2 (direct to haul-off trucks) leaves out: a project
   that stockpiles undercut maps its undercut line to A1 (on-site haul), as the starter's note says for export-heavy cut.
+
+## D-756: A hired operated machine's mob is in its hourly rate; a shared machine's missing data shows on every line it serves (the founder, 2026-10-23)
+
+**Status:** Accepted (the founder's decision 1 on D-754's finding). Logged after the build began, an error of order.
+
+- **Hired operated machines carry no mob/demob:** a machine priced on the operated rate basis (`operated` mode, e.g.
+  DT-OP-*, operated cranes and pumps) reads "Mob/demob: In the hourly rate" and is never missing it. A typed mob quote
+  still wins (one that does charge to come). Its travel time stays its own input. A self-propelled **bare** machine
+  (e.g. a water truck on rental) keeps the rule: enter a quote or confirm none. The warning "Mob/demob counted N
+  times" no longer counts operated machines. **Five operated classes are crane-assembled** (CR-AT-HEAVY,
+  CR-HYD-165T-OP to -275T-OP): they fall under the same rule; assembly, when charged, goes in as the mob quote.
+- **A shared machine with missing data shows on every line it serves** (each line with machine-hours on it, not
+  excluded): "Missing data: <machine> <field>" on its component row and on its "Shared — <machine>" row (shown even at
+  $0, its money "—"), the line's Item Cost marked "Missing data" (incomplete), a reason in Needs attention, counted in
+  the estimate's "Incomplete" count and the export's INCOMPLETE banner, and "MISSING: …" on the export's detail rows.
+  Never a silent $0.
+- **Checks:** the quantity table gains five rows (an operated truck's mob, a bare self-propelled machine's, the shared
+  trucks, a shared machine flagging its two lines, and every catalog class as a shared machine: any with missing data
+  must flag both its lines). The coverage check lists the shared machines with missing data from the Equipment basis
+  sheet, and one that no line flags goes on the second list.
