@@ -22195,3 +22195,33 @@ when i have selected the linear first").
 - **Checked in the browser** (BENCH DUP, purged): Wall Type B selected: middle point, end point and edge menus as
   above; Delete this point 9 → 8, undo 9 (database); LF 68 (Segment) reads Segment Total and segments; SF 67: point
   menu leads with Delete this point, edge Insert point here 5 → 6 points, undo 5.
+
+## D-713: Arc points (F31): a handle bending the edge between two corners, stored as the arcs a run already has
+
+**Status:** Accepted (2026-10-22, Umer: "insert arc point … convert to arc point … pressing a … for linear, and also
+area perimeter … on segment … remove arc point"; the four choices answered the same day).
+
+- **Q1, the model:** an arc point bends the edge between two corners; it is not a corner. Stored as F7-S9's inline
+  arcs (`shape_meta.arcs`, `{i, cx, cy, rx, ry, a0, sweep}`, true feet D-275), so a Segment keeps its two points and
+  neither quantity engine changes. The handle sits at the arc's middle; a drag moves that middle across the chord.
+- **Q2, Insert arc point here:** a handle at the edge's middle, straight until dragged, bending live, saved on
+  release; nothing saved without a drag.
+- **Q3, removing:** the arc handle's menu "Arc point ✓": unticking makes a corner where the handle is; "Straighten
+  edge" drops the bend.
+- **Q4, A:** a plain click on a corner picks it; A converts the picked corner to an arc point; with nothing picked A
+  arms Area as before.
+- **Runs with arcs are now edited point by point** with their arcs carried (the earthwork runs' `carryArcs`).
+- Spec: `docs/tasks/arc_points_tasks.md`.
+- **Built 2026-10-22 (Blocks A to C):** `lib/takeoff/engine/arcPoints.ts` (handle, bend, corner to arc, arc to corner,
+  break keeping arcs, `isRing`); the canvas's corner handles from the corners, the drag carrying arcs (preview, live
+  quantity, write), the edge hit along arcs, arc handles drawn and dragged, the picked corner and A; the page's
+  `onVertexMove` carrying arcs on every point edit (`exactArcs` on the write), the menu rows.
+- **Api, undo to no meta:** the shape transaction refused an update whose `shape_meta` was null while the shape had
+  meta, so an undo could not take a run back to before its first arc. It now refuses only a `shape_meta` left out
+  (`model_fields_set`), as the single-shape update already does; invariant 2 (sent together) holds.
+- **Checked in the browser** (BENCH DUP, purged): Wall Type B, Insert arc point here on edge 0, dragged 40 px:
+  9 corners kept, one arc, 522.70 → 526.30 LF on the server; corner 1 dragged, the arc followed; corner 4 clicked
+  and A: 8 corners, arcs on edges 0 and 3, Select still armed; the arc point's menu: Arc point, Straighten edge;
+  unticked: 9 corners, the other arc re-indexed in place; four undos back to 9 corners, no meta, 522.70 LF. LF 68
+  (Segment): an arc point dragged, still 2 points, 221 → 247.84 LF. SF 67: Convert to arc point on a corner: 4
+  corners and an arc, 28,430 → 36,776 SF.
