@@ -22548,3 +22548,31 @@ line, and can we do something else to show the selected workspace rather than or
 - **Fixed with it (Block 1.2):** two first writes of one override at once (Enter and the field's blur) both inserted,
   and the second failed the unique index with a 500. The api now takes a transaction lock per field before it reads,
   and the settings field sends one value once. Three concurrent writes give 200, 200, 200 and one row.
+
+## D-734: Equipment library Block 3.1: library components, the snapshot, the spread and host pricing (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 3.1; built to D-718, D-724).
+
+- **Columns** (migration `d718d8f0b2c4`): `takeoff_cost_component` gains `eq_class_key`, `eq_activity_key`, `eq_mode`,
+  `eq_period`, `eq_units` (decimal > 0), `eq_in_spread`, `eq_paces`, `eq_hours_source`, `eq_hours_formula`,
+  `eq_hours_manual`, `eq_fuel_load`, `eq_soil`, `eq_travel_hr`, `eq_include_mob`, `eq_snapshot`, `eq_auto`, and
+  `spread_linked` for labour; crew rows may carry `paces` and `for_equipment`. All NULL on existing rows. A component
+  write that does not send a library field keeps it, so a screen that knows nothing of the library cannot wipe one.
+  `estimate_item_spread` holds an item's company production per work day (`GET/PUT/DELETE …/estimate/spreads`),
+  copied with a project.
+- **Host pricing** (`lib/estimate/equipment/host.ts`, through `useHostPricing` in Estimating and the Takeoff panel):
+  a host's components are priced together. A host with no library machine and no company production goes straight
+  to `evaluateComponent`, so it prices bit for bit as before (a quantity-table row compares the two exactly).
+- **The spread** (D-724): with company production, days = quantity ÷ production (converted through the soil matrix
+  when its unit differs); else the pacing machine (marked, else the first production machine) paces at its catalog
+  production × count. Spread hours = days × hours per work day. Every library machine in the spread and the labour
+  component (unless unlinked) run the spread hours; "Own production" machines run their own; a duration machine off a
+  spread follows the crew-hours. Operator rows with `for_equipment` follow their machine's count (none for an
+  operated service or a self-operated class). An unlinked crew whose hours differ shows "Crew X hr, spread Y hr".
+- **The snapshot** (D-718, `snapshot.ts`): a machine prices from the library's values (national and company) it was
+  priced with; this estimate's own values (its overrides, fuel prices, work day, haul) stay live. The fields that have
+  moved since are listed, for "Library rates changed: Update" (Block 4.3). A quantity-table row raises the company's
+  day and week rates after pricing: the machine keeps $8,022.13 and says it changed.
+- **Missing data** stops a machine's money: its total is 0 with the error "Missing data: …" and no last good total,
+  so it is flagged wherever errors show (Block 3.4 shows it in full); while the library loads, a machine carries its
+  last good total.

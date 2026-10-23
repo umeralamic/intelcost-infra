@@ -8,6 +8,15 @@
 
 const DIESEL = { setting: { fuel_price_diesel: 6.276 } };
 
+// A host's components as the api keeps them (the fields the engine reads).
+const comp = (id, kind, fields = {}) => ({
+  id, takeoff_item_id: "host", kind, name: id, position: 0, qty_formula: null, unit: null, pricing_mode: kind === "equipment" ? "lump" : "unit",
+  crew: null, production_rate: null, production_basis: null, crew_day_hours: null, unit_price: null, equip_rate: null, equip_basis: null,
+  duration_formula: null, mob_demob: null, sub_calc: null, quote_amount: null, unit_rate: null, total: null, ...fields,
+});
+const excavator = (fields = {}) => comp("ex", "equipment", { position: 0, eq_class_key: "EX-CRAWL-20T", eq_activity_key: "EW-CUTLOAD", eq_mode: "rental", eq_period: "auto", eq_units: 2, eq_include_mob: true, ...fields });
+const operators = (count = 2, fields = {}) => comp("crew", "labor", { position: 1, crew: [{ role: "TEST Operator", count, hourly_wage: 50, for_equipment: "ex" }], production_rate: 12.5, production_basis: "units_per_hr", ...fields });
+
 export const EQUIPMENT_CASES = [
   // Every class's mob and demob at the catalog's 50 miles, as the workbook cached them (628 rows).
   { id: "eq-mob-catalog-628", kind: "mob-catalog" },
@@ -46,6 +55,16 @@ export const EQUIPMENT_CASES = [
   { id: "eq-pace-10000-bcy", kind: "pace", qty: 10000, unit: "BCY", rate: 163.344, rateUnit: "BCY/hr", units: 1, expect: { hours: 61.22050885738075 } },
   { id: "eq-pace-dot-per-day", kind: "pace", qty: 2400, unit: "LF", rate: 800, rateUnit: "LF/day", units: 1, expect: { hours: 24, days: 3 } },
   { id: "eq-pace-units-no-convert", kind: "pace", qty: 100, unit: "CY", rate: 800, rateUnit: "LF/day", units: 1, expect: { error: true } },
+
+  // A host's components priced together (Block 3.1, D-724): the spread runs together.
+  { id: "eq-host-spread-8hr", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators()], expect: { equipment: 16699.56, crewHours: 80, labor: 8000 } },
+  { id: "eq-host-spread-10hr", kind: "host", setting: { fuel_price_diesel: 6.276, hours_per_work_day: 10 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators()], expect: { equipment: 20324.46, crewHours: 100, labor: 10000 } },
+  { id: "eq-host-catalog-path", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", rows: [excavator({ eq_units: 1 }), operators(1)], expect: { equipment: 8022.13, crewHours: 61.22050885738075 } },
+  { id: "eq-host-operators-follow", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator({ eq_units: 3 }), operators(2)], expect: { crewHours: 80, labor: 12000 } },
+  { id: "eq-host-unlinked-labour", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators(2, { spread_linked: false })], expect: { crewHours: 800, warning: "Crew 800.0 hr, spread 80.0 hr" } },
+  { id: "eq-host-lift-crew-hours", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 6400, unit: "SF", rows: [comp("lift", "equipment", { eq_class_key: "AW-AB-RT-60", eq_mode: "rental", eq_include_mob: true }), comp("crew", "labor", { position: 1, crew: [{ role: "TEST Electrician", count: 2, hourly_wage: 60 }], production_rate: 100, production_basis: "units_per_hr" })], expect: { equipment: 3895.13, crewHours: 64 } },
+  { id: "eq-host-hand-entered-unchanged", kind: "host-same", qty: 120, unit: "LF", rows: [comp("eq", "equipment", { equip_rate: 450, equip_basis: "day", duration_formula: "QTY / 40", mob_demob: 300 }), comp("crew", "labor", { position: 1, crew: [{ role: "Laborer", count: 3, hourly_wage: 41.5 }], production_rate: 15, production_basis: "units_per_hr" })] },
+  { id: "eq-host-snapshot-holds", kind: "host-snapshot", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", newDay: 900, newWeek: 2500, expect: { before: 8022.13, after: 8022.13, changed: true } },
 
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
@@ -98,6 +117,9 @@ export async function runEquipment(page, eqlib) {
       const cost = await import("/src/lib/estimate/equipment/cost.ts");
       const mob = await import("/src/lib/estimate/equipment/mob.ts");
       const prod = await import("/src/lib/estimate/equipment/production.ts");
+      const comps = await import("/src/lib/estimate/components.ts");
+      const host = await import("/src/lib/estimate/equipment/host.ts");
+      const snap = await import("/src/lib/estimate/equipment/snapshot.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -153,6 +175,33 @@ export async function runEquipment(page, eqlib) {
           const p = prod.paceFor(lib, c.qty, c.unit, c.rate, c.rateUnit, c.units, 8);
           return "error" in p ? { error: true } : { hours: p.hours, days: p.days };
         }
+        if (c.kind === "host" || c.kind === "host-same" || c.kind === "host-snapshot") {
+          const env = { qty: c.qty, parent: c.qty };
+          if (c.kind === "host-same") {
+            const a = c.rows.map((r) => comps.evaluateComponent(r, env));
+            const b = host.evaluateHost(c.rows, env, { lib: null, qtyUnit: c.unit });
+            return { same: JSON.stringify(a) === JSON.stringify(b), totals: b.map((e) => e.total) };
+          }
+          if (c.kind === "host-snapshot") {
+            const bundle = bundleFor(eqlib, c);
+            const priced = { id: "ex", takeoff_item_id: "host", kind: "equipment", name: "ex", position: 0, qty_formula: null, unit: null, pricing_mode: "lump", crew: null, production_rate: null, production_basis: null, crew_day_hours: null, unit_price: null, equip_rate: null, equip_basis: null, duration_formula: null, mob_demob: null, sub_calc: null, quote_amount: null, unit_rate: null, eq_class_key: "EX-CRAWL-20T", eq_activity_key: "EW-CUTLOAD", eq_mode: "rental", eq_units: 1, eq_include_mob: true, eq_snapshot: snap.takeSnapshot(bundle, "EX-CRAWL-20T", "EW-CUTLOAD") };
+            const before = host.evaluateHost([priced], env, { lib: resolve.library(bundle), qtyUnit: c.unit })[0];
+            // The company edits its rates afterwards (workspace layer): the saved machine keeps its money.
+            const later = { ...bundle, overrides: [...bundle.overrides, ...[["rent_day", c.newDay], ["rent_week", c.newWeek]].map(([field, v], i) => ({ uuid: "ws-" + i, scope: "workspace", entity: "class", entity_key: "EX-CRAWL-20T", field, value_num: v, value_text: null, confirmed_none: false, national_at_set: null, release_at_set: 1, note: null, set_by: "qt", set_at: "", updated_by: "qt", updated_at: "" }))] };
+            const after = host.evaluateHost([priced], env, { lib: resolve.library(later), qtyUnit: c.unit })[0];
+            return { before: before.total, after: after.total, changed: after.library?.changed ?? null };
+          }
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const evals = host.evaluateHost(c.rows, env, { lib, spread: c.spread ?? null, qtyUnit: c.unit });
+          const labor = evals.find((e) => e.kind === "labor");
+          return {
+            equipment: evals.filter((e) => e.kind === "equipment").reduce((s, e) => s + e.total, 0),
+            labor: labor?.total ?? null,
+            crewHours: labor?.crewHours ?? null,
+            warning: labor?.spread?.warning ?? null,
+            errors: evals.map((e) => e.error).filter(Boolean),
+          };
+        }
         if (c.kind === "solve") {
           const [day, week, fourWeek] = c.rates;
           const r = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed);
@@ -178,6 +227,11 @@ export function checkEquipment(answers, wrong) {
       for (const line of (got.bad ?? []).slice(0, 10)) wrong.push(c.id + ": " + line);
       if ((got.bad ?? []).length > 10) wrong.push(c.id + ": and " + (got.bad.length - 10) + " more");
     }
+    if (c.kind === "host-same") {
+      if (!got.same) wrong.push(c.id + ": a host with no library machine priced differently from evaluateComponent " + JSON.stringify(got.totals));
+      continue;
+    }
+    if (c.kind === "host" && got.errors?.length) wrong.push(c.id + ": " + got.errors.join("; "));
     if (c.kind === "mob-catalog") {
       if (got.checked !== 628) wrong.push(`${c.id}: checked ${got.checked} classes, expected 628`);
       for (const line of got.bad.slice(0, 10)) wrong.push(`${c.id}: ${line}`);
