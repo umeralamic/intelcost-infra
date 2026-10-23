@@ -22717,3 +22717,20 @@ line, and can we do something else to show the selected workspace rather than or
   and row.
 - **Found and fixed in the smoke:** the "Owned $/hr (no fuel)" header was read as the fuel column; a header now goes
   to the first pattern that names it.
+
+## D-741: Equipment library Block 4.3: release notices (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 4.3; built to D-718).
+
+- **`GET …/equipment-library/release`** also returns the national changes of the releases after the one the company
+  last marked seen (`eqlib.eq_change`: entity, key, field, old, new; at most 500).
+- **The banner** lists them ("Hydraulic excavator 20-25 t day: $1,040 → $1,100 (release 2)") until Mark as seen, and,
+  whatever the release, every company value whose national value is no longer the one it was set over (each override
+  keeps `national_at_set`): "national value changed under your override: was $1,040, now $1,100 (yours $980)". A
+  workspace without a value of its own simply prices the new national value in new work.
+- **Existing estimates do not move:** each library component's snapshot holds its values until Update, and shows
+  "Library rates changed: Update" (D-718, D-734); Needs attention lists them (D-737). That is the project notice; no
+  second banner was added.
+- **The bench fixture** (`intelcost-infra/drives/eqlib-release-fixture.sh apply|rollback|status`) publishes a pretend
+  release 2 that moves EX-CRAWL-20T day 1,040 → 1,100 and rolls it back exactly. It is a bench script, never a
+  migration, never shipped; the quantity table is not run while it is applied (it dumps the national rows).
