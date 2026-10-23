@@ -22452,3 +22452,27 @@ line, and can we do something else to show the selected workspace rather than or
 - **Coverage:** on the copy, every item and sub-item with a quantity is priced (labour, library equipment, material,
   subcontract where realistic), with "TEST …" data where the library has none, Calculate run and rerun with every
   component surviving, and a coverage table in the night report.
+
+## D-730: Equipment library Block 1.1: the national schema and release 1 as loaded (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 1.1; built to D-718, D-720, D-721, D-726).
+
+- **Schema `eqlib`** (migration `d718a3c5e7f1`): `release`, `eq_class`, `eq_activity`, `eq_production`,
+  `eq_transport_class`, `eq_setting`, `eq_soil_conversion`, `eq_fuel_region`, `eq_source`, `eq_reference`, `eq_change`;
+  no ORM models (as `refdata`), every value column nullable.
+- **Release 1** (migration `d718b4d6f8a2`) from `app/features/equipment/seed/release_1/*.csv`, written by
+  `scripts/equipment_catalog_convert.py` (openpyxl in the dev container only): 628 classes, 104 activities, 592
+  production rows, 9 transport classes, 33 settings (the catalog's 32 and "hours per work day", 8, D-724), 4 soils,
+  11 fuel regions, 157 sources, 360 reference rows. Counts checked against the converter's at load.
+- **Production formulas** are kept as the catalog's Excel expressions with their inputs named (`cap`,
+  `S.<setting>`), beside the cached values, under one of 14 families (228 rows are fixed values). Rather than
+  re-deriving each family by hand, the engine evaluates these expressions (Block 2.2), so a family constant (a fill
+  factor, a cycle time) is changed by overriding the production value, not the constant.
+- **Pricing kind:** lifts, cranes and support equipment are duration (the categories Aerial work platforms, Lifting &
+  material handling, Air & power, Pumps & dewatering, Site & temporary facilities, Traffic control, Trailers, Trucks &
+  vehicles), even where the catalog lists a per-day activity for them; other classes are production when they have a
+  production row on a Production activity.
+- **Rule 9 in the seed:** the two publishers' names in the catalog's text are written generically; the source id
+  `GORDIAN` is `CDP-CCI` (no row cited it).
+- **Quantity table:** the release's counts and "no rental rate stored as 0" checked from the database
+  (`quantity-table.sh`), and the national rows dumped for the browser's equipment rows.

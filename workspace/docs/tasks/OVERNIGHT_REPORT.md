@@ -6,7 +6,8 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 06:26 UTC. Updated after e
 
 | Block | Status | Commit(s) | Quantity table | Check: expected → got |
 |---|---|---|---|---|
-| Part 1 | Done 07:40 UTC | workspace mirror | not run (no code) | answers applied, D-718 to D-729, rule 9 scan clean |
+| Part 1 | Done 06:44 UTC | infra ba75734 (mirror) | not run (no code) | answers applied, D-718 to D-729, rule 9 scan clean |
+| 1.1 (D-730) | Done 06:55 UTC | api 522670a | passed: 344 rows …, plus eqlib counts 628 104 592 9 33 4 157 and 0 zero rents | psql: classes 628 → 628; EX-CRAWL-20T 1040/2927/7950/97.76/2.78 → same; DZ-CRAWL-D1 rent NULL, owned 41.18 → same; EX-CRAWL-20T EW-CUTLOAD 163.344 → 163.344; CR-TOWER rental → rental. Smoke: throwaway fx.equip.202610230651@ signed in after the migrations, workspace "zz Equip Night" made, api health ok |
 
 ## Step A: earthwork lines (change 4)
 
@@ -21,7 +22,9 @@ Recorded in full in `EQUIPMENT_LIBRARY_PLAN.md` §1.8.
 
 ## Disputed numbers
 
-_None so far._ Every number in the brief was checked against its rule before building:
+- **The plan said 33 settings from the catalog; the catalog has 32.** The 33rd is "hours per work day" (8, D-724), which is not a catalog value. Nothing was changed to make the count fit.
+
+Every number in the brief was checked against its rule before building:
 - 8 hr: $16,699.56;
 - 10 hr: $20,324.46;
 - production 500: $11,841.56;

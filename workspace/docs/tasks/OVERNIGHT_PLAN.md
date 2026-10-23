@@ -33,7 +33,7 @@ after every block. A restarted session continues from the first block below that
 | # | Block | Depends on | Status | Commit |
 |---|---|---|---|---|
 | 0 | Part 1: answers applied to the plan, D-718 to D-729, rule 9 rewording, Step A | — | ☑ | (workspace) |
-| 1.1 | Converter, national schema, release 1 load | — | ☐ | |
+| 1.1 | Converter, national schema, release 1 load | — | ☑ | api 522670a |
 | 1.2 | Overrides, custom rows, resolve and read API | 1.1 | ☐ | |
 | 2.1 | Engine core (work-day solver, overtime, location, fuel, operated, mob) and estimate settings | 1.2 | ☐ | |
 | 2.2 | Production engine (11 families, soil, units, guardrails) | 2.1 | ☐ | |
