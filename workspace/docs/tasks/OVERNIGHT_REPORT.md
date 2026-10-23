@@ -340,6 +340,118 @@ Every number in the brief was checked against its rule before building:
    status` shows it.
 7. Before testers: the full fixture-suite run from the tag.
 
-## Morning checklist
+## Day fixes 2026-10-23
 
-_To be filled at the end._
+The founder's review of the night: accepted, with six changes, logged as D-744 to D-748 and built to the same standard
+(gates in containers, the quantity table, a browser smoke as the throwaway `fx.equip.202610230651@bench.intelcost.io`,
+commit and push on `umer-dev`, mirror). Commits: api `a373540`, app `d56485e`, infra (this report, the mirror and the
+quantity table rows) in the commit that carries this section.
+
+| Change | D-NN | Status | Quantity table | Check |
+|---|---|---|---|---|
+| 1. Site spread (Block 3.6) | D-744 | Done 16:45 UTC | passed; 56 equipment rows (6 new: the site spread, three per-line rows, two for D-747) | Below. **Found and fixed:** a line a recalculation retires never reached the attach, so its automatic machine stayed at 0 BCY (D-738's addendum rule did not run for it); the pacing count's "Production updated to …" note was wiped by the repricing after it |
+| 2. Import: empty leaves, "national" reverts | D-745 | Done | unchanged (app only) | The 4.2 file (`block-4.2-company-rates-edited.xlsx`): "Company rates: 1 changed, 0 back to national", EX-CRAWL-20T week 2,927 → 3,000; the TEST WT-2000 fuel 4.0 kept (the old rule had reverted it). A file with two machines' rows (`day-d745-TEST-two-machines.xlsx`): "1 changed, 1 back to national" (DZ-CRAWL-D6 day 2,111 → 1,500 TEST; EX-CRAWL-20T week 3,000 → national, "the cell says national"); afterwards the workspace's company values were WT-2000 and the DZ TEST day only, nothing else changed. DZ TEST taken back: the values equal the signature from before the import |
+| 3. No components on features, runs, structures | D-746 | Done | unchanged | On the HV copy: Building Pad (Site Feature), SS-1 (run), MH-1 (structure) → 409 "A Site Feature is not an estimate line: Estimating prices the lines its Calculate writes. Price the lines under this feature instead." (run and structure name themselves); their Takeoff menus have no "Add cost component" and no "Costs…"; a pipe line keeps both. **None to remove:** the 35 the night put there were removed in the night; today's query over every workspace finds 0 |
+| 4. Assembly crew with no rate | D-747 | Done | 2 rows (missing; typed $0 unchanged) | "TEST Pad prep" applied onto TEST Shared B 2,000 BCY (zz Equip 3.6 site spread): component "TEST Crew · Missing data", line marked, Needs attention "Labor: missing data: wage for TEST Laborer"; the night's TEST Pad prep 1–3 with their typed TEST $40 (no mark) still $1,280.00 each |
+| 5. `alembic check` | D-748 | Done | – | No new upgrade operations. The index is declared on the model, not dropped: D-694's migration made it on purpose and the platform report filters on `created_at` (see Decisions) |
+| 6. Tidy | – | Done | – | The second, empty "Morning checklist" heading is gone |
+
+### Block 3.6 check (zz Equip 3.6 site spread, a copy of zz Equip 10000 BCY)
+
+Two Cut lines by a synthetic Calculate, both filed under 31.04.01 (division 31); TEST Cut to fill as in the night
+(800+ tier 2 × EX-CRAWL-20T + 2 TEST operators, 200–799 tier 1 × + 1; defaults 5,000+ → 1,000 and under 5,000 → 500
+BCY/day), 8-hr day, diesel 6.276, location 1.00. Read in Estimating and the Shared equipment dialog.
+
+| | Expected | Got |
+|---|---|---|
+| Total quantity, tier | 10,000 BCY, 800+ | 10,000 BCY over 2 lines, tier 800+, default 1,000/day |
+| Shared machine | 2 × EX-CRAWL-20T | "TEST Cut to fill: Hydraulic excavator 20-25 t …", 2 machines, home division 31 |
+| Hours per machine | 80 | 160 machine-hr, 10 work days a machine |
+| Rental | 2 × 2 weeks $11,708.00 | 2 weeks $5,854.00 × 2 = $11,708.00 |
+| Fuel | $2,791.56 | $1,395.78 × 2 = $2,791.56 |
+| Mob | $2,200.00 | $1,100.00 × 2 = $2,200.00 |
+| Spread total | $16,699.56 | $16,699.56 |
+| Line hours | 48 and 32 | 96 and 64 machine-hr (48 and 32 hr × 2) |
+| Shares | $10,019.74 and $6,679.82 | $10,019.74 (60 %) and $6,679.82 (40 %) |
+| Unallocated | $0.00 | $0.00 |
+| Crew-hours, 2 operators | 48 and 32 | 48 and 32 crew-hr: 96.00 and 64.00 man-hours, $4,800.00 and $3,200.00 at TEST $50 |
+| Per line | $11,808.94 and $9,170.63 ($20,979.57) | $11,808.94 and **$8,070.63** ($19,879.57): see Disputed numbers |
+| Back to site spread | $16,699.56 | $10,019.74 + $6,679.82 = $16,699.56 |
+
+Also driven: recalculation keeps the site lines' components (same rows); the pacing count 2 → 3 in Equipment settings:
+production 1,500 BCY/day, lines $12,667.54 + $8,445.02 = $21,112.56 (the night's scaled 3-of-2 figure); 3 → 2: "Production
+set to 1,000 BCY/day: the spread matches the 800+ tier."; Apply tier: automatic again, $16,699.56. "Price this line on its
+own" on the 4,000 line: it prices per line ($8,070.63) and the 6,000 line carries the site spread alone ($11,808.94, as a
+6,000 line); "Back to the site spread": $10,019.74 + $6,679.82 again.
+
+### The HV copy on one site spread
+
+Calculate through the app at 16:29:57 UTC and again at 16:31 (every TEST activity on the company's default, one site
+spread): 9 activities, 11 shared machines, no line left on its own for want of a division; 201 components (169 automatic,
+32 by hand) with the same fingerprint after the second Calculate, and the site machines' too.
+
+| | Per line (the night, 13:05) | One site spread (now) |
+|---|---|---|
+| Equipment | $485,977.96 | **$197,021.98** |
+| Full estimate | $799,621.31 | $510,665.32 |
+| Labor, material, subcontract | $85,005.33, $183,285.35, $45,352.67 | the same |
+
+Coverage (`morning-report-2026-10-24/day-3.6-coverage-hv-copy.xlsx`, Expand components, All rows, All columns): 90 lines
+with a quantity, every one priced, **second list empty**; no Unallocated row; Needs attention 7 (the lines that read 0,
+as before).
+
+### Disputed numbers (day)
+
+- **Per line, the 4,000 BCY line: expected $9,170.63, got $8,070.63.** $9,170.63 is that line at 1,000 BCY/day on the 800+
+  tier's 2 machines (32 hr each: 2 × 1 week $5,854.00, fuel $1,116.63, 2 mobs $2,200.00); the quantity table reproduces it
+  to the cent (`eq-3.6-per-line-4000-at-1000`). Per line takes each line's default for its own quantity, and the night's
+  TEST default under 5,000 BCY is 500 BCY/day (mine, D-738), so the line is in the 200–799 tier: 1 machine, 64 hr, 2 weeks
+  $5,854.00 + fuel $1,116.63 + mob $1,100.00 = $8,070.63 (`eq-3.6-per-line-4000-test-500`, worked by hand). With only the
+  stated default (5,000 and over → 1,000) a 4,000 line would have no default and no spread at all. The expected number is
+  not changed; which default the check meant is the founder's call.
+
+### Decisions taken (day)
+
+1. **The site spread's shared machines are made and kept by the activity** (`eq_site_activity_id`, one per tier machine,
+   named "<activity>: <machine>"), homed on the division of the activity's biggest line; kept while the tier's machines
+   stay the same, made again when they change. Alternative: reuse a division's existing shared machine of the class.
+2. **A line with no classification is priced on its own** ("No division: priced on its own"): no shared machine can reach
+   it (D-736).
+3. **"Price as" lives on the company's activity (default one site spread) and an estimate can choose its own.**
+4. **Apply tier in Equipment settings leaves lines a person edited**; each keeps its own Apply tier.
+5. **Switching to Per line removes the activity's shared machines;** a machine of an edited line that drew on one prices
+   on its own again with its mob.
+6. **The pacing machine in the site spread is the tier's marked machine, else its first.**
+7. **A line in a site spread cannot have its production typed on the line** (409 from the api, field disabled in the
+   app): the production is the site's.
+8. **D-747's mark is `rate_missing` on the crew row**, set when an assembly places a role with no rate; a crew typed by
+   hand is never marked, so it prices as before ($0 included).
+9. **D-748 declares the index on the model instead of a migration:** the drift was the model's (D-694 made the index on
+   purpose, and the platform report filters on `created_at`), so a migration to quiet `alembic check` would have dropped a
+   used index. Alternative: the one-line migration the review named (`op.drop_index`).
+10. **Every project's earthwork activities move to one site spread at their next Calculate** (or an Equipment settings
+    change); until then a project keeps the per-line components it has. zz Equip 10000 BCY was not recalculated today.
+
+### The original, today
+
+The founder's own account (estimator@, "Bench Estimator") worked in "Hidden Valley Rebid — 3D test" today, 15:16–16:07
+UTC: five equipment settings of the estimate and sub-item edits; its takeoff items are 120 now (121 at the night's end)
+and its latest `updated_at` 15:38:38. Nothing of this work wrote to it: every audit row and work session on it since
+14:00 UTC is Bench Estimator's, none the throwaway's, and its workspace has no earthwork activity, so the site spread
+changes nothing there.
+
+### TEST data added today
+
+- **zz Equip 3.6 site spread** (zz Equip Night): a duplicate of zz Equip 10000 BCY, with the two synthetic Calculate lines
+  TEST Cut A 6,000 and TEST Cut B 4,000 BCY, its site machine, and TEST Pad prep applied onto TEST Shared B 2,000 BCY.
+- **HV copy:** its 9 activities' settings and 11 site machines from the Calculate.
+- The DZ-CRAWL-D6 TEST day of the import check was taken back.
+
+### Morning checklist (day)
+
+1. Decide the disputed 4,000 BCY per-line figure, and read the ten decisions above.
+2. Accept or reject D-744 to D-748.
+3. See the site spread: as the throwaway, zz Equip 3.6 site spread › Estimating › Equipment settings › Earthwork
+   production, and the HV copy's.
+4. Exports added: `day-3.6-coverage-hv-copy.xlsx`, `day-d745-TEST-two-machines.xlsx`.
+5. Before testers: the full fixture-suite run from the tag (still required).

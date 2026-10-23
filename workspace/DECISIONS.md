@@ -22777,3 +22777,86 @@ line, and can we do something else to show the selected workspace rather than or
 - **Addendum to D-740 (the end-of-run coverage):** an edit of a company machine that sends only some fields (a rename)
   reset its "hours from" to duration, because the new-machine defaults ran on every save; the TEST company unit read
   "Missing data" until fixed. The defaults now apply to a new machine only, and an edit keeps what it leaves out.
+
+## D-744: Equipment library Block 3.6: one site spread per earthwork activity (F33; the founder's review of the night)
+
+**Status:** Accepted (2026-10-23, the founder's review of the night, answer to its third question; supersedes D-727's
+"a tier's spread is each line's components" as the default).
+
+- **Price as.** Each earthwork activity is priced as **One site spread** (the default) or **Per line** (D-738 as built).
+  The company sets it on the activity (Settings › Equipment library › Earthwork production); an estimate can set its
+  own in Estimating › Equipment settings › Earthwork production.
+- **One site spread.** For each project and activity: one library shared machine (D-736) per tier machine, named
+  "<activity>: <machine>", made and kept by the activity. Its home is the division of the activity's line with the
+  largest quantity; a line in another division adds it as an extra (as D-742). Mob/demob once per machine; rental,
+  overtime and fuel over the summed machine-hours of all the activity's lines (the engine's `libraryResourceCost`, no
+  new arithmetic).
+- **Each line** keeps its tier machines as automatic components priced as those shared machines (`eq_resource_uuid`,
+  no mob of their own), and the tier's crew. Its hours are its own quantity ÷ the site production × hours per work
+  day; its equipment is its allocated share by machine-hours (largest remainder to the cent, as built); its labour is
+  its own crew-hours × the spread's crew at the saved wage set. A line that reads 0 has no spread and no share.
+- **The tier and default production** come from the activity's **total** quantity across its lines in the project
+  (every Calculate region, not only the one calculated), not each line's.
+- **Project settings per activity** (`eq_project_activity`, migration `d744…`): price as, production per work day,
+  tier, edited, note. Shown in Estimating › Equipment settings › Earthwork production with the total, the lines, the
+  machines and counts. The two-way link works there: production typed takes the matching tier's machines; the pacing
+  machine's count scales production (an exact tier match takes that tier's production, as D-738); Apply tier puts the
+  default and its tier back. A recalculation moves totals, tier and shares; an edited setting is kept and says
+  "Default production for this quantity is now in the … tier: Apply tier".
+- **A line on its own.** "Price this line on its own" (on the line's production) takes it out of the site spread: it
+  is priced per line as D-738 and leaves the total; "Back to the site spread" returns it. A line a person edited (a
+  tier component changed) keeps its components, takes the site production, and gets the Apply tier notice when the
+  site tier moves.
+- **Decided in the build:** a line with no classification cannot be a shared machine's host (D-736), so it is priced on
+  its own with the note "No division: priced on its own"; project-level Apply tier leaves lines a person edited (each
+  has its own Apply tier); switching to Per line removes the activity's shared machines, and a machine of an edited
+  line that drew on one prices on its own again with its mob.
+- **Found and fixed in the build:** a line a recalculation retires ("Not in the last Calculate") never reached the
+  attach, so D-738's addendum rule (a retired line gives its tier back) did not run for it: its automatic machine stayed
+  at 0 BCY. Retired lines now go to the attach with the rest. The pacing count's note ("Production updated to …") was
+  wiped by the repricing that follows it; it is kept now.
+- Check (the founder's): two Cut lines of 6,000 and 4,000 BCY in division 31 → 10,000 BCY, tier 800+, 2 ×
+  EX-CRAWL-20T shared: 80 hr per machine, rental 2 × 2 weeks $11,708.00, fuel $2,791.56, mob $2,200.00, total
+  $16,699.56; line hours 48 and 32; shares $10,019.74 and $6,679.82; Unallocated $0.00. Per line: $11,808.94 and
+  $9,170.63 ($20,979.57); the 4,000 BCY line's figure is under the report's Disputed numbers (Day fixes 2026-10-23).
+
+## D-745: Company rates import: an empty cell leaves the value; "national" reverts (F33; reverses the night's decision 18 of D-740)
+
+**Status:** Accepted (2026-10-23, the founder's review of the night).
+
+- An empty rate cell in a Company rates workbook leaves the company value as it is. A company value is reverted to the
+  national value only when its cell says "national" (any case, spaces trimmed). A "national" cell with no company
+  value does nothing. The diff counts reverts on their own ("N back to national"), each listed as "the cell says
+  national".
+- A file holding only some machines' rows changes only those machines.
+
+## D-746: No cost components on Site Features, utility runs and structures (the founder's review of the night)
+
+**Status:** Accepted (2026-10-23, answer to the night's first question).
+
+- Estimating leaves Site Features, utility runs and utility structures out (they are headings over the lines their
+  Calculate writes, `lib/estimate/lines.ts`), so a component on one was never in a total. The api now refuses one
+  (409, "Price the lines under this feature instead", as for a parent with sub-items), on the item and on anything
+  under it; applying an assembly whose top item carries components onto one is refused the same way. The Takeoff panel
+  does not offer "Add cost component" on them.
+- The ones already there on the throwaway copies are removed (listed in the report). The founder's own projects are not
+  touched.
+
+## D-747: An assembly crew role with no rate is missing data, never $0 (the founder's review of the night)
+
+**Status:** Accepted (2026-10-23, answer to the night's second question; extends D-298 and D-735).
+
+- When an assembly's crew lands on an item (apply, link, Seed from…) and a role has no rate at the project's wage set
+  (no saved set, a craft the set lacks, or a role with no craft), its row is marked `rate_missing`. While that row has
+  no wage, the component reads "Missing data: wage for <role>" with no total, and Needs attention lists it ("Labor:
+  missing data: wage for …"), as a library operator with no wage does (D-735). A wage typed, or a saved set that has
+  the craft, prices it.
+- A crew row typed by hand (no mark) prices exactly as before, $0 included.
+
+## D-748: `alembic check` clean: `ix_renderer_report_created_at` declared on the model (the founder's review of the night)
+
+**Status:** Accepted (2026-10-23, answer to the night's fourth question).
+
+- The drift was the model's, not the database's: D-694's migration made the index on purpose and the platform
+  report filters on `created_at >= since`. A migration to make `alembic check` clean would have dropped it; the one
+  line goes on the model instead (P-23's rule: declared so `alembic check` sees it). No database change.

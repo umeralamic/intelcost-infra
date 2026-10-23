@@ -89,6 +89,21 @@ export const EQUIPMENT_CASES = [
   // (fuel $5.00 there), on the shared machine the link made: 5,000 BCY at 163.344 BCY/hr = 30.6102 machine-hr.
   { id: "eq-5.1-mass-cut-applied", kind: "shared", setting: { fuel_price_diesel: 5 }, hosts: [{ id: "h1", machineHours: 5000 / 163.344 }], expect: { total: 4452.48, h1: 4452.48, unallocated: 0 } },
 
+  // One site spread (Block 3.6, D-744): the founder's two Cut lines of 6,000 and 4,000 BCY in one division, 10,000
+  // BCY at the 800+ tier's 1,000 BCY/day: lines of 48 and 32 hr on 2 × EX-CRAWL-20T shared (96 and 64 machine-hr,
+  // 80 hr per machine). The same lines per line: each its own tier (6,000 → 1,000/day, 2 machines; 4,000 → 500/day, 1).
+  { id: "eq-3.6-site-spread", kind: "shared", ...DIESEL, resource: { name: "TEST Cut to fill: Excavator", eq_units: 2 }, hosts: [{ id: "h1", machineHours: 48 * 2 }, { id: "h2", machineHours: 32 * 2 }], expect: { total: 16699.56, h1: 10019.74, h2: 6679.82, unallocated: 0 } },
+  { id: "eq-3.6-per-line-6000", kind: "host", ...DIESEL, qty: 6000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators()], expect: { equipment: 11808.94, crewHours: 48 } },
+  // The founder's per-line figure for the 4,000 BCY line is the 800+ tier's (1,000 BCY/day, 2 machines, 32 hr each);
+  // the night's TEST default under 5,000 BCY (500/day, mine, D-738) takes it to the 200-799 tier: 1 machine, 64 hr.
+  // Both worked by hand; which default applies is under Disputed numbers (Day fixes 2026-10-23).
+  { id: "eq-3.6-per-line-4000-at-1000", kind: "host", ...DIESEL, qty: 4000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators()], expect: { equipment: 9170.63, crewHours: 32 } },
+  { id: "eq-3.6-per-line-4000-test-500", kind: "host", ...DIESEL, qty: 4000, unit: "BCY", spread: { prod_per_day: 500, prod_unit: "BCY" }, rows: [excavator({ eq_units: 1 }), operators(1)], expect: { equipment: 8070.63, crewHours: 64 } },
+  // An assembly's crew role with no rate at the project's wage set (D-747): missing data, never $0; one typed by hand
+  // at $0 prices as before.
+  { id: "eq-d747-wage-missing", kind: "host", setting: {}, qty: 100, unit: "SF", rows: [comp("crew", "labor", { crew: [{ role: "TEST Laborer", count: 2, hourly_wage: 0, rate_missing: true }], production_rate: 10, production_basis: "units_per_hr" })], expect: { labor: 0, errors: ["Missing data: wage for TEST Laborer"] } },
+  { id: "eq-d747-typed-zero-unchanged", kind: "host", setting: {}, qty: 100, unit: "SF", rows: [comp("crew", "labor", { crew: [{ role: "TEST Laborer", count: 2, hourly_wage: 0 }], production_rate: 10, production_basis: "units_per_hr" })], expect: { labor: 0, crewHours: 10 } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
@@ -267,7 +282,7 @@ export function checkEquipment(answers, wrong) {
       if (!got.same) wrong.push(c.id + ": a host with no library machine priced differently from evaluateComponent " + JSON.stringify(got.totals));
       continue;
     }
-    if (c.kind === "host" && got.errors?.length) wrong.push(c.id + ": " + got.errors.join("; "));
+    if (c.kind === "host" && got.errors?.length && !c.expect.errors) wrong.push(c.id + ": " + got.errors.join("; "));
     if (c.kind === "mob-catalog") {
       if (got.checked !== 628) wrong.push(`${c.id}: checked ${got.checked} classes, expected 628`);
       for (const line of got.bad.slice(0, 10)) wrong.push(`${c.id}: ${line}`);
