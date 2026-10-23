@@ -85,6 +85,10 @@ export const EQUIPMENT_CASES = [
   { id: "eq-p1-linked-two-pads", kind: "shared", setting: {}, resource: { name: "Loader 3 yd", rate: 825, basis: "day", eq_class_key: null, eq_units: null, eq_mode: null }, hosts: [{ id: "h1", crewHours: 16 }, { id: "h2", crewHours: 16 }], expect: { total: 3300, h1: 1650, h2: 1650, unallocated: 0 } },
   { id: "eq-p1-made-one-pad", kind: "shared", setting: {}, resource: { name: "Loader 3 yd", rate: 825, basis: "day", eq_class_key: null, eq_units: null, eq_mode: null }, hosts: [{ id: "h1", crewHours: 16 }], expect: { total: 1650, h1: 1650, unallocated: 0 } },
 
+  // A library component applied from an assembly (Block 5.1, D-743): it resolves at the target project's layers
+  // (fuel $5.00 there), on the shared machine the link made: 5,000 BCY at 163.344 BCY/hr = 30.6102 machine-hr.
+  { id: "eq-5.1-mass-cut-applied", kind: "shared", setting: { fuel_price_diesel: 5 }, hosts: [{ id: "h1", machineHours: 5000 / 163.344 }], expect: { total: 4452.48, h1: 4452.48, unallocated: 0 } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },

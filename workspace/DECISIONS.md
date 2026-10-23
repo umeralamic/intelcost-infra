@@ -22753,3 +22753,24 @@ line, and can we do something else to show the selected workspace rather than or
   remove or add by name; Copy to my assemblies copies the links.
 - Tested in the smoke and the quantity table (`eq-p1-*`): the plan's loader, $825/day, two 16 crew-hour pads, 4 days,
   $3,300.00, $1,650.00 each.
+
+## D-743: Equipment library Block 5.1: library components in assemblies (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 5.1; built to plan §6).
+
+- **`assembly_component`** gains the library choice (migration `d718b2c4d6e8`): class, activity, basis, period,
+  machines, in-spread, pacing, hours source, formula and typed hours, fuel load, soil, travel, mob, the labour link, and
+  the shared machine it drew on **by name** (`eq_resource_name`). Never a rate, a snapshot or the automatic mark: they
+  are `COMPONENT_COPY_FIELDS` now, so Save as assembly, the template editor, Copy to my assemblies and apply all carry
+  them.
+- **Apply** resolves the assembly's machine links first (D-742), then copies the components, so a component that drew
+  on a shared machine draws on the target project's machine of that name. With no snapshot, an applied library
+  component prices at the target project's layers until its first Update.
+- **Template editor:** a library row reads "library EX-CRAWL-20T, shared: …, at the project's rates"; the dialog's
+  picker reads the national and company values, read only (no project: the total there is illustrative).
+- **Found and fixed:** the template editor's component writes passed every `ComponentFields` key (since D-734 that
+  includes `eq_snapshot`, `eq_auto`, `eq_resource_uuid`) to `AssemblyComponent`, so adding a component to an assembly
+  failed; they now keep the copied fields only.
+- **Found and fixed (Duplicate project):** an estimate's own library values (`eq_override` rows with a project) were not
+  copied, so a duplicate's library machines lost this estimate's fuel prices and values (the water truck's TEST fuel
+  went to "Missing data"). `eq_override` is now copied, and counted as pricing for a copy into another workspace.
