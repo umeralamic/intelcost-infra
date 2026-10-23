@@ -22885,3 +22885,17 @@ line, and can we do something else to show the selected workspace rather than or
   in MailHog), never the founder's.
 - D-24 stands: a link is still shown once and a new one kills the old; the invited person's own account is a second way
   in.
+
+## D-750: Shared equipment: a new resource picks its machine from the library; searchable divisions and subcontractor (the founder, 2026-10-23)
+
+**Status:** Accepted (2026-10-23, the founder's ask).
+
+- **Name** is searchable over the equipment library (type, size and key; every word typed must match), with "Use
+  "<what was typed>" as my own machine" for one typed by hand. Picking a library machine makes the resource a library
+  shared machine (D-736: class, one machine, its default mode, period auto, the library snapshot) and fills its name,
+  rate and basis (day rate when rented, owned or operated rate per hour), and mob/demob for one machine from the
+  library at this estimate's layers; those typed fields stay greyed, kept for reading, as D-736 has them, and the engine
+  prices the total. "Own machine" clears the library choice and leaves the filled numbers to edit.
+- **Home division / scope, Extra divisions / scopes and Subcontractor** are searchable pickers (the existing
+  `SearchSelect`), as long lists of codes were hard to scan.
+- A resource typed by hand prices exactly as before.

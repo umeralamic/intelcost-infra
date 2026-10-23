@@ -482,6 +482,15 @@ Commits: api `e9896b0`, app `f2bd614`. Gates green; quantity table passed (55 eq
   which mails nothing (wording from before today, not changed). TEST data: the three fx.invite accounts and the two
   "zz Invite test" workspaces; U's invitation to test 2 is left pending.
 
+### Shared equipment: a new resource from the library (D-750)
+
+Commit: app `ab75250`. Gates green. Smoke (zz Equip 3.6 site spread, the equipment throwaway): Shared equipment › New
+resource › name "excavator 30" lists "Use … as my own machine" and the library matches with their day rates; picking
+EX-CRAWL-30T fills name, rate $1,424 per day (greyed), basis day and mob/demob $3,600; home division searched "31" and
+picked "31 Earthwork"; saved, it prices from the engine ($1,424.00 + $3,600.00 = $5,038.24 with no hours yet), then
+deleted. "Own machine" clears the library choice and opens the typed rates. Divisions, extras and the subcontractor are
+searchable pickers.
+
 ### Morning checklist (day)
 
 1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are
