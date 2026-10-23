@@ -4760,7 +4760,8 @@ founder's GPU shows the bitmap and the device box equal (D-105).
 
 **Date:** 2026-09-30
 **Status:** decided (the founder's goal, the option chosen by measurement; pending his
-monitor check; passed on his monitor, closed 2026-10-11, confirmed by Umer)
+monitor check; passed on his monitor, closed 2026-10-11, confirmed by Umer). **Withdrawn by D-708
+(2026-10-22):** no filter on the sheet; low-zoom text is supersampled instead.
 **Area:** Takeoff, Frontend
 **Amends:** D-118
 
@@ -22088,3 +22089,42 @@ the same rows).
   teammate's name stood and the owner was told "Teammate B. changed … after you, so your earlier change was
   skipped". The owner's own quantity and rename, both 20 minutes ahead, both landed; every history row at or before
   arrival.
+
+## D-708: Low-zoom text drawn supersampled up to 2.4 device px per point, visible area only; the D-119 filter withdrawn
+
+**Status:** Accepted (2026-10-22, Umer: variant D of the raster experiment, `morning-report-2026-10-22/raster-experiment/`,
+with Fit and below left as today until the Fit draw is tiled). **Replaces D-119; amends D-104 and D-118.**
+
+- **The fault:** at 19–50% thin CAD stroke text and dense spec text read heavy, blocky and run together (S read as 8,
+  G as 6). pdf.js draws a stroke thinner than a device px one device px wide at full darkness; above Fit nothing was
+  supersampled, and D-119's levels curve darkened it further.
+- **The rule (`lib/takeoff/pdf/raster.ts`, `rasterPolicy` / `supersampleOf`, the one rule the canvas and its check
+  read):** density = zoom × 170/72 × the pixel ratio.
+  - **Above Fit, under `SUPERSAMPLE_BELOW` = 2.4 device px per PDF point** (about 100% at a pixel ratio of 1, 81% at
+    1.25, 68% at 1.5, 51% at 2): drawn ×2 (×4 under 1) and halved down, **only the visible area** with a 0.1-view
+    margin, within a 40 million px budget, so the budget never switches it off between about 37% and the threshold.
+  - **At and above 2.4:** pdf.js's own drawing, as before.
+  - **At or below Fit: today's rule (D-104, D-118), waiting on tiles:** ×4 within 20 million px, else ×2. One larger
+    draw crosses the browser's canvas cliff (a text-heavy draw is about 0.3 s up to about 6 million canvas px and
+    about 3.5 s from 8 million); on A010.3 at a pixel ratio of 1.25 ×4 took 3.6–7 s against today's ×2 at 0.3 s. The
+    tiles block (a plan first) splits such draws so Fit can use ×4 at every ratio.
+- **No colour filter on the sheet (D-119 withdrawn):** text without it matches the reference render at every zoom, and
+  keeping it above the threshold would make text jump darker as you zoom past it. `--raster-ink` and the rule on
+  `[data-sheet-raster]` are gone.
+- **Panning a supersampled window:** the redraw waits for the pointer's release (it restarted mid-drag, about 3 fps);
+  the frame on screen is reused while it still covers the view within 8% (`serves`), so a settle does not redraw for
+  a pixel. Pans run at about 60 fps.
+- **The check:** `r1-raster-text` (fx stack, a named exception to hard rule 8 as D-631): a made-up sheet of 0.65 pt CAD
+  stroke text and Helvetica 5.7 pt spec text, drawn as shipped and at ×8 (the reference), mean luminance difference,
+  at Fit, 19, 19 (above a lower Fit), 25, 31, 35, 40, 50, 75 and 100% and pixel ratios 1, 1.25, 1.5, 2; fails above 4.
+  Fit and below are measured but exempt until the tiles (today at 1.25: 4.2–5.2 at Fit, 4.4 at 19%). Run whenever the
+  sheet's drawing changes.
+- **Measured (bench, BENCH DUPs of A010.3 and C-200, purged):**
+  - r1-raster-text: 32 cases above Fit per text, worst 3.15 (CAD) and 3.71 (spec), both at 25% and a ratio of 1.25.
+  - Sharp frame after a wheel zoom, ms (A010.3 / C-200; C-200 before this change in brackets): ratio 1: 356–550 /
+    680–1065 (676–781); 1.25: 371–567, one 1168 / 705–894 (739–891); 1.5: 378–474 / 828–936 (692–817); 2: 473–603 /
+    824–1028 (548–664). C-200 was already over 600 ms at every ratio; it goes to the tiles work (pending_umer).
+  - C-200 at 19–50%: contours, spot grades and grid lines as clear as before for tracing, light and dark mode;
+    no visible change in darkness across the threshold at any ratio (0.4 levels or less), screenshots in
+    `morning-report-2026-10-22/raster-build/`.
+  - m6-position 5/5 alone; gates; the quantity table.

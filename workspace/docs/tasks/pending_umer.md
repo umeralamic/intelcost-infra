@@ -549,6 +549,9 @@ small "1 in use" beside them; the page text runs them together.
   so a reload loses the rest. One entry would hold all three and resend them in order, or the api would take
   them in one call.
   - **Process:** a D-NN first; the gates; one smoke: Properties saved offline, reload offline, back online.
+- **D-708 follow-up: C-200's sharp frame after a wheel zoom is over 600 ms at every pixel ratio**, even
+  before D-708 (550–1065 ms; A010.3 is 356–603 ms). To look at with the tiles block (the Fit draw split
+  under the canvas cliff, plan first), which may share its cause.
 
 - **D8.8: Stripe's official library before go-live.** About half a day, mostly the fake and the
   checks.
