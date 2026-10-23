@@ -75,6 +75,11 @@ export const EQUIPMENT_CASES = [
   { id: "eq-shared-two-hosts", kind: "shared", setting: { fuel_price_diesel: 6.276 }, hosts: [{ id: "h1", machineHours: 61.22049172298952 }, { id: "h2", override: 20 }], expect: { total: 9411.08, h1: 7093.66, h2: 2317.42, unallocated: 0 } },
   { id: "eq-shared-one-excluded", kind: "shared", setting: { fuel_price_diesel: 6.276 }, hosts: [{ id: "h1", machineHours: 61.22049172298952 }, { id: "h2", override: 20, excluded: true }], expect: { total: 8022.13, h1: 8022.13, unallocated: 0 } },
 
+  // A company machine and its own production (Block 4.2, D-740): 10,000 BCY at 150 BCY/hr owned.
+  { id: "eq-custom-company-unit", kind: "machine", ...DIESEL, custom: { classes: [{ equip_key: "U-QT", category: "Company equipment", type: "TEST Excavator 20-25 t", size_class: "company unit", fuel_type: "diesel", transport_class: "lowboy-legal", default_mode: "owned", pricing_kind: "production", owned_rate_hr_excl_fuel: 85, fuel_gph_med: 2.78 }], activities: [], production: [{ equip_key: "U-QT", activity_key: "EW-CUTLOAD", method_id: "", prod_typ: 150, unit: "BCY/hr", basis: "Company rate", confidence: "U" }] }, input: { classKey: "U-QT", mode: "owned", period: "hr", hours: 10000 / 150, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 7929.82, fuel: 1163.15, mob: 1100 } },
+  // A company machine list read against the library (Block 4.2, D-728): the plan's names.
+  { id: "eq-match-machine-list", kind: "match", names: ["Excavator04, CAT 330", "Truck, 30 Ton Artic", "Dozer 12, CAT D6", "Loader 3, CAT 972", "Roller 7, 84 in smooth drum"], expect: { keys: ["EX-CRAWL-30T", "ADT-30T", "DZ-CRAWL-D6", "WL-MED-972", "CP-SD-84-SM"] } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
@@ -111,7 +116,7 @@ export function bundleFor(eqlib, c = {}) {
     settings: [...eqlib.settings, ...app],
     soils: eqlib.soils,
     fuel_regions: [],
-    custom: { classes: [], activities: [], production: [] },
+    custom: c.custom ?? { classes: [], activities: [], production: [] },
     overrides,
     location: { factor_from_wage_set: c.location ?? null, equipment_amf: c.location == null ? null : c.location - 1, zip: c.location == null ? null : "00000", location_set: c.location != null },
   };
@@ -130,6 +135,7 @@ export async function runEquipment(page, eqlib) {
       const host = await import("/src/lib/estimate/equipment/host.ts");
       const snap = await import("/src/lib/estimate/equipment/snapshot.ts");
       const se = await import("/src/lib/estimate/sharedEquipment.ts");
+      const match = await import("/src/lib/estimate/equipment/match.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -222,6 +228,7 @@ export async function runEquipment(page, eqlib) {
           const v = out.views[0];
           return { total: v.result.total, h1: out.allocByHost.get("h1") ?? 0, h2: out.allocByHost.get("h2") ?? 0, unallocated: v.result.unallocated };
         }
+        if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {
           const [day, week, fourWeek] = c.rates;
           const r = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed);

@@ -22693,3 +22693,27 @@ line, and can we do something else to show the selected workspace rather than or
 - **Wording:** a user value shows "national $X" beside it (was "library $X"), the plan's word, everywhere the value
   component is used.
 - Writes take `canManageWorkspaceLibrary` (D-731); other members read.
+
+## D-740: Equipment library Block 4.2: company machines, rate workbooks and a machine list (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 4.2; built to D-728, D-731).
+
+- **Add a company machine:** type, size or name, category, fuel, "priced as" (owned, rental, operated), "hauled by" (a
+  transport class, so mob is the catalog's haul), "hours from" (production or duration) and its rates; a blank stays
+  "No data". Its values are its own row (edited in place, no revert) and grade **U**; a blank grades D. **Add a
+  production rate** gives any machine a fixed company rate for one activity, stored as the catalog stores rates
+  ("BCY/hr", basis "Company rate"). The catalog's owned-rate note ("a ceiling (reimbursement schedule)") shows on
+  national machines only.
+- **Export company rates:** "Company rates" (every machine: the company's value per rate column, empty where it has
+  none, and the national value beside it) and an empty "Machine list" sheet.
+- **Import:** read in the browser, applied in one api write (`POST …/equipment-library/import`, one transaction). A
+  rate cell that differs from what prices now is a change; an empty cell is "no company value": a company value the
+  file leaves empty is reverted, never set to 0. A company machine's own row is not changed by import.
+- **A machine list** (name, owned $/hr, fuel gal/hr, day, week, 4 weeks; any may be missing) lists every row with up
+  to five suggested classes (`lib/estimate/equipment/match.ts`, pure): type words, a Cat excavator model's tonnage (330
+  is the 30 t class), a dozer's D-number, a loader's model, tons, yards, inches and horsepower, scored against type and
+  size class, with a word the size class itself carries as the tie-break. The user confirms, picks another, adds it as
+  a company machine, or skips it; no row is dropped. Confirmed rows land as company values (U) noted with the file
+  and row.
+- **Found and fixed in the smoke:** the "Owned $/hr (no fuel)" header was read as the fuel column; a header now goes
+  to the first pattern that names it.
