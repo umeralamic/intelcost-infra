@@ -123,6 +123,13 @@ export const EQUIPMENT_CASES = [
   { id: "eq-756-bare-self-propelled", kind: "machine", ...DIESEL, input: { classKey: "WT-4000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["fuel_gph_med", "mob"] } },
   { id: "eq-756-shared-trucks", kind: "shared", setting: {}, resource: { name: "Haul off: DT-OP-3AXLE", eq_class_key: "DT-OP-3AXLE", eq_units: 5, eq_mode: "operated", eq_hours_per_day: 10 }, hosts: [{ id: "h1", machineHours: 300 }, { id: "h2", machineHours: 200 }], expect: { total: 53070, h1: 31842, h2: 21228, unallocated: 0, flagged: 0 } },
   { id: "eq-756-shared-missing-flags", kind: "shared", ...DIESEL, resource: { name: "TEST water truck", eq_class_key: "WT-4000", eq_units: 1, eq_mode: "rental" }, hosts: [{ id: "h1", machineHours: 24 }, { id: "h2", machineHours: 16 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
+  // An assembled crane is the exception (D-756): operated, crane-assembled, its mob/demob is a required quote.
+  // CR-HYD-165T-OP 10 hr × $520 = $5,200.00; with a $6,000.00 quote, $11,200.00. Shared, it flags both its lines.
+  { id: "eq-756-crane-quote-required", kind: "machine", setting: {}, input: { classKey: "CR-HYD-165T-OP", mode: "operated", period: "hr", hours: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["mob"] } },
+  { id: "eq-756-crane-quoted", kind: "machine", setting: {}, input: { classKey: "CR-HYD-165T-OP", mode: "operated", period: "hr", hours: 10, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 6000 }, expect: { total: 11200, mob: 6000, missing: [] } },
+  { id: "eq-756-crane-shared-flags", kind: "shared", setting: {}, resource: { name: "TEST assembled crane", eq_class_key: "CR-HYD-165T-OP", eq_units: 1, eq_mode: "operated" }, hosts: [{ id: "h1", machineHours: 6 }, { id: "h2", machineHours: 4 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
+  // Every operated crane-assembled class in the catalog asks for the quote (5 today); no other operated class does.
+  { id: "eq-756-crane-catalog", kind: "crane-catalog", setting: {}, expect: { cranes: 5, cranesWithoutQuote: 0, othersAsking: 0 } },
   // Every catalog class as a shared machine on two lines (D-756): any with missing data flags both lines.
   { id: "eq-756-shared-flag-catalog", kind: "shared-flag-catalog", ...DIESEL, expect: { unflagged: 0 } },
 
@@ -275,6 +282,22 @@ export async function runEquipment(page, eqlib) {
           const served = v.hosts.filter((h) => !h.excluded && (h.usageHours ?? 0) > 0);
           const flagged = served.filter((h) => out.missingByHost.has(h.id)).length;
           return { total: v.result.total, h1: out.allocByHost.get("h1") ?? 0, h2: out.allocByHost.get("h2") ?? 0, unallocated: v.result.unallocated, flagged, unflagged: v.library?.missing.length ? served.length - flagged : 0 };
+        }
+        if (c.kind === "crane-catalog") {
+          const lib = resolve.library(bundleFor(eqlib, c));
+          let cranes = 0;
+          let cranesWithoutQuote = 0;
+          let othersAsking = 0;
+          for (const cls of eqlib.classes) {
+            if (cls.default_mode !== "operated") continue;
+            const m = cost.machineCost(lib, { classKey: cls.equip_key, mode: "operated", period: "hr", hours: 10, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true });
+            const asks = m.missing.some((x) => x.field === "mob");
+            if (cls.transport_class === "crane-assembled") {
+              cranes++;
+              if (!asks || !m.missing.some((x) => x.label === "Mob/demob (assembled crane: enter a quote)")) cranesWithoutQuote++;
+            } else if (asks) othersAsking++;
+          }
+          return { cranes, cranesWithoutQuote, othersAsking };
         }
         if (c.kind === "shared-flag-catalog") {
           const lib = resolve.library(bundleFor(eqlib, c));

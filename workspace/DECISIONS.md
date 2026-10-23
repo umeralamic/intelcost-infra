@@ -22949,6 +22949,10 @@ inherits the plan", which stopped on billing).
   account's signup trial window as recorded at signup (the window starts at signup, not at creation); a granted extra
   workspace gets no trial and goes through Checkout for its own subscription (per-workspace, per-seat billing, as today).
 - **Platform admin › Developer:** "Allow one more owned workspace" on an account, recorded in the audit log.
+- **Built** (migration `d752a1b2c3d4`, `user.extra_owned_workspaces`; Developer › Billing tiers › Overrides › Owned
+  workspaces). Smoke on a throwaway: second create refused; granted by the founder from the Developer menu (audit
+  `platform.extra_workspace_allowed`); second allowed with a window closed at creation (`trial_ended`, Checkout
+  offered, no subscription); third refused; the first workspace's trial from signup.
 - **Found while checking (first version):** a paid plan is charged per workspace, per seat (`workspace_subscription`,
   one per workspace); the api stamped every new workspace with a fresh trial window from creation.
 
@@ -23022,8 +23026,11 @@ inherits the plan", which stopped on billing).
   DT-OP-*, operated cranes and pumps) reads "Mob/demob: In the hourly rate" and is never missing it. A typed mob quote
   still wins (one that does charge to come). Its travel time stays its own input. A self-propelled **bare** machine
   (e.g. a water truck on rental) keeps the rule: enter a quote or confirm none. The warning "Mob/demob counted N
-  times" no longer counts operated machines. **Five operated classes are crane-assembled** (CR-AT-HEAVY,
-  CR-HYD-165T-OP to -275T-OP): they fall under the same rule; assembly, when charged, goes in as the mob quote.
+  times" no longer counts operated machines.
+- **Exception, assembled cranes (the founder, 2026-10-23, revising the first version):** an operated machine whose
+  transport class is "crane-assembled" (today CR-AT-HEAVY and CR-HYD-165T-OP to -275T-OP; any other with that class)
+  keeps mob/demob as a required quote: "Missing data: mob/demob (assembled crane: enter a quote)" until one is
+  entered, flagged on every line like other missing data; its mob counts in "Mob/demob counted N times".
 - **A shared machine with missing data shows on every line it serves** (each line with machine-hours on it, not
   excluded): "Missing data: <machine> <field>" on its component row and on its "Shared — <machine>" row (shown even at
   $0, its money "—"), the line's Item Cost marked "Missing data" (incomplete), a reason in Needs attention, counted in

@@ -711,6 +711,29 @@ B for Grade checker and Pipelayer (D-753), the founder runs the D-752 grant. See
   api was refused by this session's permissions, so nothing was changed on the copy.)
 - **D-752:** waiting for "granted" on `fx.owner.c.202610232039@bench.intelcost.io`; its code stays uncommitted.
 
+### Assembled cranes, the determination case, D-752 finished (the founder's follow-up)
+
+- **Assembled cranes are the exception to D-756:** an operated machine with transport class "crane-assembled"
+  (CR-AT-HEAVY, CR-HYD-165T-OP to -275T-OP, and any other) reads "Missing data: mob/demob (assembled crane: enter a
+  quote)" until a quote is entered, flagged on every line like other missing data; the quote field's placeholder says
+  "Enter a quote". Quantity table: passed, 344 rows, **69 equipment rows** (four new: CR-HYD-165T-OP 10 hr without a
+  quote is missing mob; with a $6,000.00 quote $5,200.00 + $6,000.00 = $11,200.00; as a shared machine it flags both
+  its lines; every operated crane-assembled class in the catalog, 5, asks for the quote and no other operated class
+  does). App gates green. The HV copy has no assembled crane: its figures stand.
+- **The determination case (D-753), run:** a throwaway project "zz WD check (D-753)" in zz Equip Night (public,
+  Davis-Bacon, 72601 Harrison AR, Boone). In its Wage Calculator: My wage data, the SAM.gov text AR20260046 (Arkansas,
+  Heavy, which lists LABORER: PIPELAYER $12.56 + $1.19), Laborer matched to COMMON OR GENERAL ($12.50 + $1.18), rates
+  saved. Priced on that set (read only): **Pipelayer $37.45, the determination's rate**, i.e. $13.75 marked up as the
+  set marks up Laborer's $13.68 → $37.26, so 13.75 × 37.26 ÷ 13.68 = $37.45, **winning over Laborer's $37.26**; Grade
+  checker $49.71 = Equipment Operator (the determination lists no grade checker); the foreman over them $54.68 (EO ×
+  1.10). Passed.
+- **D-752 finished:** the founder granted `fx.owner.c.202610232039@bench.intelcost.io` from the Developer menu (audit
+  `platform.extra_workspace_allowed`, 0 → 1, 22:37 UTC). Then: second workspace 201, its trial window closed at
+  creation (started = ends = 22:50:43), billing `trial_ended` with Checkout offered and no subscription, so no trial;
+  third 409 "You already own a workspace."; the first workspace still on its signup trial (14 days left). Passed;
+  committed and pushed.
+
+
 ### Morning checklist (day)
 
 1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are
