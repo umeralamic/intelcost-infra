@@ -22128,3 +22128,20 @@ with Fit and below left as today until the Fit draw is tiled). **Replaces D-119;
     no visible change in darkness across the threshold at any ratio (0.4 levels or less), screenshots in
     `morning-report-2026-10-22/raster-build/`.
   - m6-position 5/5 alone; gates; the quantity table.
+
+## D-709: The Sheets panel lists an item's sub-items and cost components under it, as the Takeoff panel does
+
+**Status:** Accepted (2026-10-22, Umer: "the sub items are not shown in sheets panel, they show in takeoff panel";
+"the cost components should show as they show in takeoff panel").
+
+- **The gap:** legacy's sheet item list nests sub-items under their parent on every sheet; the port drew each item
+  bare, so sub-items and cost components showed only in the Takeoff panel.
+- **Now:** under a sheet, an item's row carries the same sub-item rows (↳, formula quantity, pencil, trash, hover $)
+  and the same cost rows as in the Takeoff panel: under the item when it has no sub-items, else under each sub-item.
+- **A sub-item reads its project-wide quantity** (legacy's): only the parent's figure is the sheet's. A sub-item has
+  no shapes of its own, so it is never listed on a sheet as a row of its own.
+- **Folds:** each item's sub-items open by default, folded per sheet and item (kept while the row scrolls out of
+  view). The header's "Collapse one level" folds sub-items first, and "Expand one level" opens them last, as its
+  tooltips already said.
+- **Acts:** a sub-item click selects it and opens that sheet; its right-click is the full item menu (no "Delete on
+  this sheet": it has no shapes); pencil and trash edit and delete as in the Takeoff panel.
