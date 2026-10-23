@@ -22600,3 +22600,25 @@ line, and can we do something else to show the selected workspace rather than or
   row "Operator: <the catalog's craft label>" following the machine's count joins the host's labour component (one is
   made if it has none). Its wage is a blank until a craft is picked: the labour line says "Missing data: operator
   wage", never $0.
+
+## D-736: Equipment library Block 3.3: shared machines from the library, and mob counted twice (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 3.3; built to D-724 rule 8, D-725).
+
+- **A shared machine from the library** (migration `d718e9a1c3d5`): `project_equipment_resource` gains `eq_class_key`,
+  `eq_units`, `eq_mode`, `eq_period`, `eq_fuel_load`, `eq_travel_hr`, `eq_snapshot`. Its total is the engine's
+  (`libraryResourceCost`): the work-day solver over the hosts' machine-hours across its machines, fuel over them, mob
+  once per machine; the existing allocation spreads it (a new optional `fixedTotal`, which only a library machine
+  passes). A resource typed by hand prices exactly as before.
+- **Usage** on a library machine is a host's machine-hours (its linked machine's hours × count); the override still
+  wins; a host with no linked machine keeps today's order (crew-hours, formula). A machine with
+  `eq_resource_uuid` is priced as that shared machine: its own rental, fuel and mob are the resource's, so it carries
+  nothing itself and its share arrives through the allocation; deleting the resource prices it on its own again.
+- **Price as a shared machine…** in the picker reuses the division's shared machine of the same class, or makes one
+  named after the machine, home the item's division (its classification's top node; an item with none is asked to be
+  filed first); "Price on its own" unlinks. The Shared equipment dialog shows a library machine's breakdown and
+  machine-hours and greys the typed rate, basis, mob and rental fields.
+- **Mob counted twice** (D-725): one library class with its own mob/demob on more than one item of a division warns
+  on each item's row and in the picker, "Mob/demob counted N times: price as one shared machine?". The brief's wording
+  had an em dash; the house prose rule takes a colon. Never changes a total; items with no classification are not one
+  division.

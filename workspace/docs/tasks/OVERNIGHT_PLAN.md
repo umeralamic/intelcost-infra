@@ -39,7 +39,7 @@ after every block. A restarted session continues from the first block below that
 | 2.2 | Production engine (11 families, soil, units, guardrails) | 2.1 | ☑ | app a2197f3, api 7c71a8f |
 | 3.1 | Component columns, the spread, evaluation | 2.2 | ☑ | api 77d391e, app 8e081e7 |
 | 3.2 | The picker and the spread UI | 3.1 | ☑ | app 61a3690 |
-| 3.3 | Shared resources from the library; mob counted twice | 3.1 | ☐ | |
+| 3.3 | Shared resources from the library; mob counted twice | 3.1 | ☑ | api 9c1b657, app e3666c9 |
 | 3.4 | Estimating rows, Needs attention, filter, export | 3.1 | ☐ | |
 | 3.5 | Earthwork production tiers, the two-way link, the 3D test copy, coverage | 3.2 | ☐ | |
 | 4.1 | Library page: browse, overrides, revert, release banner | 1.2 | ☐ | |
