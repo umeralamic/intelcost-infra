@@ -22527,3 +22527,24 @@ line, and can we do something else to show the selected workspace rather than or
   overrides, revertible to the company default or the library.
 - **Quantity table:** 23 equipment rows (the 628-class mob row, nine solver rows, the plan's worked examples, the
   missing-data rows, an operated minimum, and the founder's four spread totals at machine level), to the cent.
+
+## D-733: Equipment library Block 2.2: the production engine (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 2.2; built to D-724, D-730).
+
+- **The catalog's formulas, evaluated as Excel does** (`lib/estimate/equipment/expr.ts`): the small grammar they use
+  (numbers, `""`, arithmetic, comparisons, IF, OR, AND, MIN, MAX, COS, RADIANS, ROUND), a blank input as Excel's empty
+  cell, a blank result as null. The quantity table recomputes all 965 formula cells from their stored inputs at
+  release 1's settings: every one equals the workbook's cached value to 1e-9, and the 228 D rows stay blank.
+- **A production value** (`production.ts`) is an override (U); else the formula at this estimate's inputs (capacity,
+  efficiency, haul speeds as resolved), graded by the catalog's own rule (D while the typical is blank, else C); else
+  the catalog's fixed value and grade. Efficiency 0.75 gives EX-CRAWL-20T cut and load 147.60 BCY/hr.
+- **Units:** bank, loose and compacted yards convert only through the soil matrix (Loam by default; CCY → LCY × 1.39);
+  SF, SY and acres by area; a plain CY reads as the rate's yard, and says so; anything else is "Units do not convert",
+  never 1:1. A rate per hour gives hours = quantity ÷ (machines × rate); a rate per day (DOT and crew rates) gives days,
+  and hours = days × hours per work day.
+- **Guardrails** stay warnings: a value outside its row's own low–high band; the capacity per work day
+  (machines × rate × hours per day) for the spread's check (D-724 rule 10).
+- **Fixed with it (Block 1.2):** two first writes of one override at once (Enter and the field's blur) both inserted,
+  and the second failed the unique index with a 500. The api now takes a transaction lock per field before it reads,
+  and the settings field sends one value once. Three concurrent writes give 200, 200, 200 and one row.

@@ -34,6 +34,19 @@ export const EQUIPMENT_CASES = [
   { id: "eq-no-fuel-price", kind: "machine", setting: {}, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 61.22050885738075, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["fuel_price_diesel"] } },
   { id: "eq-operated-crane-minimum", kind: "machine", setting: {}, input: { classKey: "CR-HYD-40T-OP", mode: "operated", period: "hr", hours: 2, fuelLoad: "med", units: 1, includeMob: false }, expect: { total: 980 } },
 
+  // The production engine (Block 2.2, plan §3.3): every formula cell of the catalog recomputed from
+  // its stored inputs at release 1's settings, equal to the workbook's cached value; the D rows blank.
+  { id: "eq-prod-catalog-cells", kind: "prod-catalog", expect: { cells: 965 } },
+  { id: "eq-prod-d-rows-blank", kind: "prod-d", expect: { d: 228, notBlank: 0 } },
+  { id: "eq-prod-efficiency-0.75", kind: "prod-one", setting: { job_efficiency: 0.75 }, equip: "EX-CRAWL-20T", activity: "EW-CUTLOAD", expect: { typ: 147.6, grade: "C" } },
+  { id: "eq-prod-national", kind: "prod-one", setting: {}, equip: "EX-CRAWL-20T", activity: "EW-CUTLOAD", expect: { typ: 163.344, grade: "C", source: "national" } },
+  { id: "eq-prod-haul-no-speeds", kind: "prod-one", setting: {}, equip: "DT-OP-3AXLE", activity: "EW-HAUL-TRK-05", expect: { typ: null, grade: "D" } },
+  { id: "eq-convert-ccy-lcy", kind: "convert", qty: 1000, from: "CCY", to: "LCY", expect: { value: 1390 } },
+  { id: "eq-convert-bcy-lcy", kind: "convert", qty: 1000, from: "BCY", to: "LCY", expect: { value: 1250 } },
+  { id: "eq-pace-10000-bcy", kind: "pace", qty: 10000, unit: "BCY", rate: 163.344, rateUnit: "BCY/hr", units: 1, expect: { hours: 61.22050885738075 } },
+  { id: "eq-pace-dot-per-day", kind: "pace", qty: 2400, unit: "LF", rate: 800, rateUnit: "LF/day", units: 1, expect: { hours: 24, days: 3 } },
+  { id: "eq-pace-units-no-convert", kind: "pace", qty: 100, unit: "CY", rate: 800, rateUnit: "LF/day", units: 1, expect: { error: true } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
@@ -84,6 +97,7 @@ export async function runEquipment(page, eqlib) {
       const periods = await import("/src/lib/estimate/equipment/periods.ts");
       const cost = await import("/src/lib/estimate/equipment/cost.ts");
       const mob = await import("/src/lib/estimate/equipment/mob.ts");
+      const prod = await import("/src/lib/estimate/equipment/production.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -102,6 +116,42 @@ export async function runEquipment(page, eqlib) {
             if (got !== want || gotDemob !== wantDemob) bad.push(`${cls.equip_key}: ${got}/${gotDemob}, catalog ${want}/${wantDemob}`);
           }
           return { checked, bad };
+        }
+        if (c.kind === "prod-catalog" || c.kind === "prod-d") {
+          const lib = resolve.library(bundleFor(eqlib, {}));
+          let cells = 0;
+          let d = 0;
+          let notBlank = 0;
+          const bad = [];
+          for (const row of eqlib.production) {
+            const v = prod.productionValue(lib, row);
+            if (row.confidence === "D") {
+              d++;
+              if (v.typ != null) notBlank++;
+            }
+            for (const [f, cached, got] of [["formula_low", row.prod_low, v.low], ["formula_typ", row.prod_typ, v.typ], ["formula_high", row.prod_high, v.high]]) {
+              if (!row[f]) continue;
+              cells++;
+              const want = cached ?? null;
+              const ok = want == null ? got == null : got != null && Math.abs(got - want) <= 1e-9 * Math.max(1, Math.abs(want));
+              if (!ok) bad.push(row.equip_key + " " + row.activity_key + " " + f + ": " + got + ", catalog " + want);
+            }
+          }
+          return { cells, d, notBlank, bad };
+        }
+        if (c.kind === "prod-one") {
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const v = prod.productionValue(lib, lib.production(c.equip, c.activity));
+          return { typ: v.typ, grade: v.grade, source: v.source };
+        }
+        if (c.kind === "convert") {
+          const lib = resolve.library(bundleFor(eqlib, {}));
+          return { value: prod.convertQuantity(lib, c.qty, c.from, c.to)?.value ?? null };
+        }
+        if (c.kind === "pace") {
+          const lib = resolve.library(bundleFor(eqlib, {}));
+          const p = prod.paceFor(lib, c.qty, c.unit, c.rate, c.rateUnit, c.units, 8);
+          return "error" in p ? { error: true } : { hours: p.hours, days: p.days };
         }
         if (c.kind === "solve") {
           const [day, week, fourWeek] = c.rates;
@@ -124,6 +174,10 @@ const cents = (x) => Math.round(x * 100);
 export function checkEquipment(answers, wrong) {
   for (const [i, c] of EQUIPMENT_CASES.entries()) {
     const got = answers[i];
+    if (c.kind === "prod-catalog" || c.kind === "prod-d") {
+      for (const line of (got.bad ?? []).slice(0, 10)) wrong.push(c.id + ": " + line);
+      if ((got.bad ?? []).length > 10) wrong.push(c.id + ": and " + (got.bad.length - 10) + " more");
+    }
     if (c.kind === "mob-catalog") {
       if (got.checked !== 628) wrong.push(`${c.id}: checked ${got.checked} classes, expected 628`);
       for (const line of got.bad.slice(0, 10)) wrong.push(`${c.id}: ${line}`);
