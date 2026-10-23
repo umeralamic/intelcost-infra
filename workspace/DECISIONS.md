@@ -22501,3 +22501,29 @@ line, and can we do something else to show the selected workspace rather than or
 - **The bundle** carries the national pricing rows without their long text (detail has it), the custom rows, every
   override with its author, the settings (with the empty fuel prices of D-723) and the location: about 750 KB, 80 ms
   on the bench; the browser keeps it per project.
+
+## D-732: Equipment library Block 2.1: the engine core and the estimate's equipment settings (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 2.1; built to D-719, D-723, D-724).
+
+- **The engine** is pure TypeScript in `lib/estimate/equipment/` (types, resolve, periods, mob, cost), held to hard
+  rule 2's purity like `lib/takeoff` (the quantity table's grep covers it). No Python twin (D-89).
+- **Resolution in the browser** reads the api's bundle the way the api does (field by field, the same grades), so the
+  picker, the library page and the money read one `Library`.
+- **The rental solver works in whole work days** (day, 5-day week, 20-day 4-week) over the item's days rounded up,
+  cheapest first, ties to the longer period, a blank period skipped and said. **Overtime** is max(0, hours − 8 × billed
+  days) at the covering periods' hourly equivalents (day ÷ 8, week ÷ 40, 4-week ÷ 160), weighted by the billed days each
+  covers, longest first; one period kind gives exactly its rate (the brief's $7,317.50).
+- **Mob/demob** is the catalog's Mob_Demob formula, rounded to dollars as the workbook rounds it; the quantity table
+  checks all 628 classes at 50 miles equal to the workbook's cached values. A class with no haul figure
+  (self-propelled, crane-assembled) is missing data until a quote is typed or "none" confirmed; the component's existing
+  `mob_demob` holds a quote.
+- **Fuel** prices at the project's price for the class's fuel type: dual, hybrid and propane/diesel units at diesel (a
+  decision taken overnight); electric, solar and the "none" kinds burn none. **Location** (D-719): an override, else the
+  wage set's `1 + equipment_amf` ("From the wage set: Equipment −1 %"), else 1.00 ("No wage set: 1.00"); applied to
+  rental and owned only.
+- **Settings:** Estimating › Setup › Equipment settings… (fuel prices with the catalog's suggestions, D-723; hours per
+  work day; haul distance; job efficiency; location factor), each with its source; written as this estimate's
+  overrides, revertible to the company default or the library.
+- **Quantity table:** 23 equipment rows (the 628-class mob row, nine solver rows, the plan's worked examples, the
+  missing-data rows, an operated minimum, and the founder's four spread totals at machine level), to the cent.

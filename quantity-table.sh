@@ -17,8 +17,9 @@ cd "$(dirname "$0")"
 trap 'rm -f browser/.qt-cases.json browser/.qt-python.json browser/.qt-register.json browser/.qt-register-py.json browser/.qt-site.json browser/.qt-site-py.json browser/.qt-impure.txt browser/.qt-credits.json browser/.qt-credits-py.json browser/.qt-seed.json browser/.qt-seed-py.json browser/.qt-subitems.json browser/.qt-subitems-py.json browser/.qt-fxsystem.json browser/.qt-fxsystem-py.json browser/.qt-scaleundo.json browser/.qt-scaleundo-py.json browser/.qt-eqlib.json' EXIT
 
 # Hard rule 2: takeoff-core carries no React import and no network call.
-if docker compose exec -T app sh -lc "grep -rlE 'from .(react|@tanstack|axios)|fetch\(|XMLHttpRequest|new WebSocket' src/lib/takeoff" >browser/.qt-impure.txt; then
-  echo "FAIL  lib/takeoff imports React or reaches the network: $(tr '\n' ' ' <browser/.qt-impure.txt)"
+# The equipment library's engine is held to the same rule (F33, plan §3.1).
+if docker compose exec -T app sh -lc "grep -rlE 'from .(react|@tanstack|axios)|fetch\(|XMLHttpRequest|new WebSocket' src/lib/takeoff src/lib/estimate/equipment" >browser/.qt-impure.txt; then
+  echo "FAIL  lib/takeoff or lib/estimate/equipment imports React or reaches the network: $(tr '\n' ' ' <browser/.qt-impure.txt)"
   exit 1
 fi
 

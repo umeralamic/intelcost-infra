@@ -35,7 +35,7 @@ after every block. A restarted session continues from the first block below that
 | 0 | Part 1: answers applied to the plan, D-718 to D-729, rule 9 rewording, Step A | — | ☑ | (workspace) |
 | 1.1 | Converter, national schema, release 1 load | — | ☑ | api 522670a |
 | 1.2 | Overrides, custom rows, resolve and read API | 1.1 | ☑ | api 9a54a16 |
-| 2.1 | Engine core (work-day solver, overtime, location, fuel, operated, mob) and estimate settings | 1.2 | ☐ | |
+| 2.1 | Engine core (work-day solver, overtime, location, fuel, operated, mob) and estimate settings | 1.2 | ☑ | app 277b4ff |
 | 2.2 | Production engine (11 families, soil, units, guardrails) | 2.1 | ☐ | |
 | 3.1 | Component columns, the spread, evaluation | 2.2 | ☐ | |
 | 3.2 | The picker and the spread UI | 3.1 | ☐ | |

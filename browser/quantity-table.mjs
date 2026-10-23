@@ -26,6 +26,7 @@ import { CLOSE_CASES, COMPONENT_SYSTEM_CASES, CONSTANT_CASES, DIMENSION_TOOL_CAS
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 import { PEN_CASES } from "./lib/pen-cases.mjs";
 import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
+import { EQUIPMENT_CASES, checkEquipment, runEquipment } from "./lib/equipment-cases.mjs";
 
 const HERE = "/drive/scripts";
 if (process.env.GEN === "1") {
@@ -53,6 +54,7 @@ const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-see
 const browser = await openBrowser();
 let web;
 let costs;
+let equipmentAnswers;
 let earth;
 let reg;
 let site;
@@ -102,6 +104,8 @@ try {
       return v ? { qA: at(c, v.fppA), qB: at(c, v.fppB), qA2: at(c, v.fppA2), qB2: at(c, v.fppB2) } : null;
     });
   }, [SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c })), Object.fromEntries(pythonScale)]);
+  // The equipment library rows (F33): the engine against the catalog and the hand-worked answers.
+  equipmentAnswers = await runEquipment(page, JSON.parse(await readFile(`${HERE}/.qt-eqlib.json`, "utf8")));
   // The cost rows: F9's money through the app's own lib/estimate.
   costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
@@ -1873,6 +1877,8 @@ for (const c of CREDIT_CASES) {
   }
 }
 
+checkEquipment(equipmentAnswers, wrong);
+
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
   for (const line of [...disagree, ...wrong]) console.log(`FAIL  ${line}`);
@@ -1880,5 +1886,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); ${EQUIPMENT_CASES.length} equipment rows right (628 classes' mob and demob equal to the catalog); passed`,
 );
