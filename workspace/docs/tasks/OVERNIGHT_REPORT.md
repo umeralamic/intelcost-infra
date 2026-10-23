@@ -1,6 +1,17 @@
 # Night report, 2026-10-23 → 24: the Equipment Library (F33)
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 06:26 UTC. Updated after every block.
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 06:26 UTC; all 14 blocks done by 13:00 UTC; end-of-run coverage
+13:10 UTC. Updated after every block.
+
+**In one paragraph.** Every block of the build order is built, checked in the browser on a throwaway account, and
+pushed on `umer-dev` in the api, app and infra (D-730 to D-743). Every number the plan and the brief gave came out
+as given (the one display difference, capacity ≈ 2,614 against 2,613, is under Disputed numbers). The quantity table
+passes with 50 equipment rows. The founder's 3D test project was copied into a throwaway workspace and never written:
+its row counts and latest `updated_at` are the same before the copy, after it and at the end. On the copy (90 estimate
+lines) and on the 10,000 BCY test project (13 lines), every line with a quantity is priced and the second list is
+empty, at 3.5 and again at the end. Every defect the smokes found is fixed and named under "Found and fixed" in its
+block's row; two of them are older than tonight (an assembly's component could not be added in the template editor;
+Duplicate project dropped an estimate's own library values).
 
 ## Blocks
 
@@ -15,12 +26,12 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 06:26 UTC. Updated after e
 | 3.2 (D-735) | Done 08:44 UTC | app 61a3690 | passed; 41 equipment rows, 29 cost rows | Through the row menu on a TEST Cut 10,000 BCY: search "excavator 20", 20-25 t: A, $1,040 / $2,927 / $7,950 → same; cut and load 163.3 BCY/hr C, 61.22 hr, 2 weeks, $8,022.13 → same (against 1 week + 3 days $6,047, one 4-week $7,950); Owned $8,153.05 + ceiling → same; Low fuel $837.60 → same; production 1,000/day and 2 machines: capacity "2 × … ≈ 2,613 BCY/day" → **≈ 2,614** (see Disputed), $16,699.56 → same, operator row count 2 following the machine → same (wage blank until a craft: "Missing data: operator wage"), 80 crew-hr Linked → same; Unlink, 12.5 → "Crew 800.0 hr, spread 80.0 hr" → same, Link → 80. Lift on a TEST MEP item with a 64 crew-hr crew: no activity step, 64 hr, 2 weeks, $3,895.13 → same; EL-60: fuel "No data, enter a value", total "—", saved and flagged → same (flag still reads "Formula error" until Block 3.4) |
 | 3.3 (D-736) | Done 09:16 UTC | api 9c1b657, app e3666c9 | passed; 43 equipment rows (shared split to the cent), 29 cost rows | TEST Shared A 10,000 BCY (division 31) priced as shared from the picker, TEST Shared B 20 usage hr: rental 2 weeks + 1 day $6,894.00 → same, fuel $1,417.08 → same, mob $1,100.00 → same, total $9,411.08 → same, shares $7,093.66 / $2,317.42 → same (75.38 %), unallocated $0.00 → same; B excluded: H 61.22, $8,022.13 all on A → same. Two own EX-CRAWL-20T in division 31 (C, D): "Mob/demob counted 2 times: price as one shared machine?" on both → same; totals unchanged ($4,561.07 each, worked by hand) |
 | 3.4 (D-737) | Done 09:36 UTC | app d6b21ba | passed; 29 cost rows, 10 exported-formula rows, 43 equipment rows | Filter Equipment: the library rows with basis labels → "Shared machine · 61.2 machine-hr", "Rental 1 week · 30.6 hr B", "2 × Rental 2 weeks · 80 hr B"; **found and fixed:** a line whose only equipment was missing data dropped out of the Equipment report; now kept ("Rental 2 weeks · 64 hr D Missing data", "—"). Needs attention: the EL-60 line with its fuel reason → same; bid "incomplete (1 line)" → "Incomplete: 1 line has missing data". Export (`morning-report-2026-10-24/block-3.4-export-…xlsx`): Equipment basis sheet with the library rows and grades → 7 rows, the shared machine $9,411.08, settings; the banner on the sheet with the EL-60 line → "INCOMPLETE: 1 line has missing equipment data, not in the totals". The plan's "excavator row reads Rental · 2 wk · 61.22 hr · $8,022.13" is not on this project any more (that machine is shared since 3.3); the Equipment basis rows read e.g. "rental | 2 weeks | 2 | 80 | … | 16,699.56" |
-| 3.5 (D-738) | Done 11:05 UTC (code 10:40, coverage 11:05) | api 1b4f5ba, 3b0b642 (zero-line fix); app be68166; infra b7fa997, 002e9b9 | passed; 45 equipment rows (tier 500 and scaled 3-of-2 spreads), 29 cost rows | On zz Equip 10000 BCY, TEST activity "TEST Cut to fill": production 1,000 attaches 2 × EX + 2 operators → $16,699.56, 160 MH → same; 10-hr day $20,324.46, 200 MH → same; production 500 → 1 × EX one 4-week $11,841.56 → same; back to 1,000 → $16,699.56; 3 → 2 machines: exact tier match takes 1,000 → same; 2 → 3: 1,500 BCY/day, "Production updated to 1,500 BCY/day (3 … instead of 2).", $21,112.56, 53.33 hr → same; a hand-added 0.5 water truck adds $2,149.44 (line $23,262.00) and production stays → same. Recalculate (synthetic Calculate) at 4,000 BCY: the edited line keeps 3 × EX at 1,500 and reads "Default production for this quantity is now in the 200–799 tier" with Apply tier → same; Apply tier → 1 × EX at 500/day, 8 days, 64 hr, labour 64 MH, line $13,825.95, the water truck kept → same. **Found and fixed:** a tier swap deleted the open dialog's component (the dialog now closes); a tier machine with no activity was not taken as pacing; the note's en dash was stored as "N{EN DASH}"; crew-hours of a division item drew on a library shared machine ($23,102.15 instead of $16,699.56); an edited tier component lost its automatic mark, so Apply tier left it beside the new one; on the test copy, a line that reads 0 kept its automatic machine ($2,150.40 each, two lines). Coverage: HV copy 90 lines and 10,000 BCY 8 lines, every component priced, second lists empty (see Coverage) |
-| 4.1 (D-739) | Done 11:35 UTC | app c11db81 | passed (no engine change; 45 equipment rows, 29 cost rows) | On a fresh TEST Cut 4.1 10,000 BCY priced from the picker (1 × EX-CRAWL-20T, cut and load): $8,022.13 → same. Settings › Equipment library › Earthwork › Hydraulic excavator, 20-25 t day 980: U badge and "national $1,040" → "$980 U national $1,040", grid U. Component: notice library rates changed → "Library rates changed since this machine was priced"; Update → 2 weeks $5,854 (against 1 week + 3 days $5,867), $8,022.13 → same. Week 3,200: before Update $8,022.13 (snapshot); after, 1 week + 3 days $6,140.00 against 2 weeks $6,400.00, $8,308.13 → same. Revert both ("Revert all 2 company values"), Update → $8,022.13 → same. Settings tab: 23 company defaults; release banner "National library release 1 is in use", Mark as seen → "National library release 1." |
-| 4.2 (D-740) | Done 12:20 UTC | api 1234e06, app eebc3d9, infra (mirror) | passed; 47 equipment rows (the company machine $7,929.82 and the five machine-list matches added) | Add custom "Excavator 20-25 t, company unit" (renamed "TEST Excavator 20-25 t" for the night) owned $85.00/hr, fuel 2.78 med, EW-CUTLOAD 150 BCY/hr; in a component on TEST Cut 4.2 10,000 BCY: 66.67 hr, owned $5,666.67 + fuel $1,163.15 + mob (lowboy-legal) $1,100 = **$7,929.82** → same. Export company rates (629 machines, `morning-report-2026-10-24/block-4.2-Company equipment rates - release 1.xlsx`); EX-CRAWL-20T week 3,000, other cells left empty (`block-4.2-company-rates-edited.xlsx`): diff "1 changed", empty = no value → "Company rates: 1 changed, 0 back to national"; Apply → grid U, "$3,000 U national $2,927". Machine list of 5 (`block-4.2-TEST-machine-list.xlsx`): Excavator04, CAT 330 → 30-36 t excavator; Truck, 30 Ton Artic → ADT 30 t payload; Dozer 12, CAT D6 → D6 class; Loader 3, CAT 972 → Cat 972 class; Roller 7, 84 in smooth drum → 84 in smooth; all 5 listed, landed as U workspace values → same. **Found and fixed:** the rate unit doubled ("BCY/hr/hr"); company values graded B/none instead of U; the fuel column read from "Owned $/hr (no fuel)" (120 and 150 gal/hr, re-imported right: 4.4 and 4.8); the 84 in roller tie. Afterwards the 10 imported TEST values were reverted (so 4.3 and 5.1 run on catalog rates) and the WT-2000 TEST fuel 4 put back |
-| 4.3 (D-741) | Done 12:45 UTC | api a45cf9a, app 23f27e0, infra (fixture + mirror) | passed; 47 equipment rows (run with the fixture rolled back) | Bench-only release 2 (`drives/eqlib-release-fixture.sh apply`), EX-CRAWL-20T day 1,040 → 1,100. zz Equip Night with company day 980: "national value changed under your override: was $1,040, now $1,100" → "… was $1,040, now $1,100 (yours $980)", and the change listed. zz Equip HV copy (no value of its own): sees the new national value → "Day $1,100 A", change listed. Existing components show the notice, totals unmoved until Update → TEST Cut 4.1 $8,022.13 and HV copy Remaining Site Cut $5,814.20 (line $7,841.82), each "Library rates changed: Update". Rolled back → release 1, day 1,040, 0 change rows; the 980 reverted |
-| P1 (D-742) | Done 13:30 UTC | api bbb7039, app fd95203, infra (mirror) | passed; 49 equipment rows (two P1 seed rows: linked loader $3,300.00 / $1,650.00 each; made loader $1,650.00) | In zz Equip 10000 BCY: shared "Loader 3 yd" ($825/day, basis day, mob $0) on 03 Concrete; TEST Pad prep 1 with a TEST crew of 16 crew-hours saved as assembly "TEST Pad prep" → link kept (Loader 3 yd, $825/day); TEST Pad prep 2 in 03 Concrete, Link assembly → Shared equipment lists both at 16 h → same; rental ⌈32 ÷ 8⌉ = 4 days = $3,300.00 → same; $1,650.00 each → same; unallocated $0.00 → same. Renamed "Loader 3yd", applied to TEST Pad prep 3 → linked to the same machine, no second one → same. Beyond the plan: with no machine of that name, apply made "Loader 3 yd" at $825/day, mob $0, homed on the item's division (Masonry); removed afterwards. Template editor: Costs… lists the link; a usage formula saved and cleared |
-| 5.1 (D-743) | Done 14:10 UTC | api 8331115, app 79f6268, infra (mirror) | passed; 50 equipment rows (the applied Mass cut $4,452.48 added) | Saved TEST Shared A 10,000 BCY (library excavator on the shared machine) as "TEST Mass cut": component EX-CRAWL-20T, EW-CUTLOAD, rental, 1 machine, shared "Hydraulic excavator 20-25 t", no rate, no snapshot; link kept (class EX-CRAWL-20T, no rate). Second throwaway project "zz Equip 5.1 second project" (a duplicate of zz Equip 10000 BCY stripped to one TEST Cut 5,000 BCY, no shared machines) with this estimate's fuel $5.00 (the plan's TEST value); Link assembly: 30.61 hr → 30.61 machine-hr; rental 1 week ($2,927) against 4 days ($4,160) → "Rental 1 week $2,927.00"; fuel 2.78 × 30.6102 × 5.00 = $425.48 → same; the link made "Hydraulic excavator 20-25 t" in that project with mob $1,100 counted once → same; share 100 % → same; **$4,452.48** → same. **Found and fixed:** adding a component to an assembly in the template editor failed (every `ComponentFields` key was passed to the template row); Duplicate project dropped the estimate's own library values (the copy's water truck read "Missing data"); checked by an in-process duplicate: 3 values carried |
+| 3.5 (D-738) | Done 11:10 UTC (code 10:29, coverage 11:10) | api 1b4f5ba, 3b0b642 (zero-line fix); app be68166; infra b7fa997, 002e9b9 | passed; 45 equipment rows (tier 500 and scaled 3-of-2 spreads), 29 cost rows | On zz Equip 10000 BCY, TEST activity "TEST Cut to fill": production 1,000 attaches 2 × EX + 2 operators → $16,699.56, 160 MH → same; 10-hr day $20,324.46, 200 MH → same; production 500 → 1 × EX one 4-week $11,841.56 → same; back to 1,000 → $16,699.56; 3 → 2 machines: exact tier match takes 1,000 → same; 2 → 3: 1,500 BCY/day, "Production updated to 1,500 BCY/day (3 … instead of 2).", $21,112.56, 53.33 hr → same; a hand-added 0.5 water truck adds $2,149.44 (line $23,262.00) and production stays → same. Recalculate (synthetic Calculate) at 4,000 BCY: the edited line keeps 3 × EX at 1,500 and reads "Default production for this quantity is now in the 200–799 tier" with Apply tier → same; Apply tier → 1 × EX at 500/day, 8 days, 64 hr, labour 64 MH, line $13,825.95, the water truck kept → same. **Found and fixed:** a tier swap deleted the open dialog's component (the dialog now closes); a tier machine with no activity was not taken as pacing; the note's en dash was stored as "N{EN DASH}"; crew-hours of a division item drew on a library shared machine ($23,102.15 instead of $16,699.56); an edited tier component lost its automatic mark, so Apply tier left it beside the new one; on the test copy, a line that reads 0 kept its automatic machine ($2,150.40 each, two lines). Coverage: HV copy 90 lines and 10,000 BCY 8 lines, every component priced, second lists empty (see Coverage) |
+| 4.1 (D-739) | Done 11:27 UTC | app c11db81 | passed (no engine change; 45 equipment rows, 29 cost rows) | On a fresh TEST Cut 4.1 10,000 BCY priced from the picker (1 × EX-CRAWL-20T, cut and load): $8,022.13 → same. Settings › Equipment library › Earthwork › Hydraulic excavator, 20-25 t day 980: U badge and "national $1,040" → "$980 U national $1,040", grid U. Component: notice library rates changed → "Library rates changed since this machine was priced"; Update → 2 weeks $5,854 (against 1 week + 3 days $5,867), $8,022.13 → same. Week 3,200: before Update $8,022.13 (snapshot); after, 1 week + 3 days $6,140.00 against 2 weeks $6,400.00, $8,308.13 → same. Revert both ("Revert all 2 company values"), Update → $8,022.13 → same. Settings tab: 23 company defaults; release banner "National library release 1 is in use", Mark as seen → "National library release 1." |
+| 4.2 (D-740) | Done 11:57 UTC | api 1234e06, app eebc3d9, infra (mirror) | passed; 47 equipment rows (the company machine $7,929.82 and the five machine-list matches added) | Add custom "Excavator 20-25 t, company unit" (renamed "TEST Excavator 20-25 t" for the night) owned $85.00/hr, fuel 2.78 med, EW-CUTLOAD 150 BCY/hr; in a component on TEST Cut 4.2 10,000 BCY: 66.67 hr, owned $5,666.67 + fuel $1,163.15 + mob (lowboy-legal) $1,100 = **$7,929.82** → same. Export company rates (629 machines, `morning-report-2026-10-24/block-4.2-Company equipment rates - release 1.xlsx`); EX-CRAWL-20T week 3,000, other cells left empty (`block-4.2-company-rates-edited.xlsx`): diff "1 changed", empty = no value → "Company rates: 1 changed, 0 back to national"; Apply → grid U, "$3,000 U national $2,927". Machine list of 5 (`block-4.2-TEST-machine-list.xlsx`): Excavator04, CAT 330 → 30-36 t excavator; Truck, 30 Ton Artic → ADT 30 t payload; Dozer 12, CAT D6 → D6 class; Loader 3, CAT 972 → Cat 972 class; Roller 7, 84 in smooth drum → 84 in smooth; all 5 listed, landed as U workspace values → same. **Found and fixed:** the rate unit doubled ("BCY/hr/hr"); company values graded B/none instead of U; the fuel column read from "Owned $/hr (no fuel)" (120 and 150 gal/hr, re-imported right: 4.4 and 4.8); the 84 in roller tie. Afterwards the 10 imported TEST values were reverted (so 4.3 and 5.1 run on catalog rates) and the WT-2000 TEST fuel 4 put back |
+| 4.3 (D-741) | Done 12:13 UTC | api a45cf9a, app 23f27e0, infra (fixture + mirror) | passed; 47 equipment rows (run with the fixture rolled back) | Bench-only release 2 (`drives/eqlib-release-fixture.sh apply`), EX-CRAWL-20T day 1,040 → 1,100. zz Equip Night with company day 980: "national value changed under your override: was $1,040, now $1,100" → "… was $1,040, now $1,100 (yours $980)", and the change listed. zz Equip HV copy (no value of its own): sees the new national value → "Day $1,100 A", change listed. Existing components show the notice, totals unmoved until Update → TEST Cut 4.1 $8,022.13 and HV copy Remaining Site Cut $5,814.20 (line $7,841.82), each "Library rates changed: Update". Rolled back → release 1, day 1,040, 0 change rows; the 980 reverted |
+| P1 (D-742) | Done 12:37 UTC | api bbb7039, app fd95203, infra (mirror) | passed; 49 equipment rows (two P1 seed rows: linked loader $3,300.00 / $1,650.00 each; made loader $1,650.00) | In zz Equip 10000 BCY: shared "Loader 3 yd" ($825/day, basis day, mob $0) on 03 Concrete; TEST Pad prep 1 with a TEST crew of 16 crew-hours saved as assembly "TEST Pad prep" → link kept (Loader 3 yd, $825/day); TEST Pad prep 2 in 03 Concrete, Link assembly → Shared equipment lists both at 16 h → same; rental ⌈32 ÷ 8⌉ = 4 days = $3,300.00 → same; $1,650.00 each → same; unallocated $0.00 → same. Renamed "Loader 3yd", applied to TEST Pad prep 3 → linked to the same machine, no second one → same. Beyond the plan: with no machine of that name, apply made "Loader 3 yd" at $825/day, mob $0, homed on the item's division (Masonry); removed afterwards. Template editor: Costs… lists the link; a usage formula saved and cleared |
+| 5.1 (D-743) | Done 13:00 UTC | api 8331115, app 79f6268, infra (mirror) | passed; 50 equipment rows (the applied Mass cut $4,452.48 added) | Saved TEST Shared A 10,000 BCY (library excavator on the shared machine) as "TEST Mass cut": component EX-CRAWL-20T, EW-CUTLOAD, rental, 1 machine, shared "Hydraulic excavator 20-25 t", no rate, no snapshot; link kept (class EX-CRAWL-20T, no rate). Second throwaway project "zz Equip 5.1 second project" (a duplicate of zz Equip 10000 BCY stripped to one TEST Cut 5,000 BCY, no shared machines) with this estimate's fuel $5.00 (the plan's TEST value); Link assembly: 30.61 hr → 30.61 machine-hr; rental 1 week ($2,927) against 4 days ($4,160) → "Rental 1 week $2,927.00"; fuel 2.78 × 30.6102 × 5.00 = $425.48 → same; the link made "Hydraulic excavator 20-25 t" in that project with mob $1,100 counted once → same; share 100 % → same; **$4,452.48** → same. **Found and fixed:** adding a component to an assembly in the template editor failed (every `ComponentFields` key was passed to the template row); Duplicate project dropped the estimate's own library values (the copy's water truck read "Missing data"); checked by an in-process duplicate: 3 values carried |
 
 ## Step A: earthwork lines (change 4)
 
@@ -199,6 +210,40 @@ $85,005.33, material $183,285.35, equipment $485,977.96, subcontract $45,352.67)
 | 4 | TEST MEP rough-in 6,400 SF | 6,400 SF | TEST Electricians, Boom lift, articulating 60 ft electric/hybrid jib (Genie Z-60 DC/FE) · Rental 2 weeks · 64 hr | $11,026.83 |
 **Second list (no component, or a component that prices to nothing):** empty.
 
+### End of the run (13:05 UTC)
+
+- **HV copy:** Calculate at 13:04:59 and again at 13:05:45, through the app as the throwaway: 201 components (169
+  automatic, 32 by hand), the same UUIDs and values as after Block 3.5 (fingerprints equal). Exported
+  (`morning-report-2026-10-24/final-coverage-hv-copy.xlsx`): full estimate $799,621.31, the same 90 lines with the same
+  components and costs as the 3.5 table above; **second list empty**. Its 7 "Needs attention" are the lines that read 0,
+  with no component (left out by design).
+- **zz Equip 10000 BCY** (`final-coverage-10000-bcy.xlsx`): 13 lines with a quantity, full estimate $117,527.08, Needs
+  attention 0, **second list empty**. On the way: TEST Cut 4.2 read "Missing data" (a company machine's rename had
+  reset its "hours from", fixed: D-740 addendum, api 8ff86d0); the crews applied from "TEST Pad prep" priced $0 (an
+  assembly's crew is makeup, and "TEST Laborer" has no project rate: given TEST $40 on those two lines; see
+  Questions); the water truck's "Library rates changed" accepted with Update ($2,555.33 before and after).
+
+| No. | Line | Qty | Components | Line cost |
+|---|---|---|---|---|
+| 11 | TEST Pad prep 1 5,000 BCY | 5,000 BCY | TEST Crew, Shared — Loader 3yd | $2,930.00 |
+| 12 | TEST Pad prep 2 5,000 BCY | 5,000 BCY | TEST Crew, Shared — Loader 3yd | $2,930.00 |
+| 13 | TEST Pad prep 3 5,000 BCY | 5,000 BCY | TEST Crew, Shared — Loader 3yd | $2,930.00 |
+| 5 | TEST Shared A 10,000 BCY | 10,000 BCY | Hydraulic excavator 20-25 t · Shared machine · 61.2 machine-hr, Shared — Hydraulic excavator 20-25 t | $7,093.66 |
+| 6 | TEST Shared B 2,000 BCY | 2,000 BCY | Shared — Hydraulic excavator 20-25 t | $2,317.42 |
+| 7 | TEST Own C 5,000 BCY | 5,000 BCY | Hydraulic excavator 20-25 t · Rental 1 week · 30.6 hr | $4,561.07 |
+| 8 | TEST Own D 5,000 BCY | 5,000 BCY | Hydraulic excavator 20-25 t · Rental 1 week · 30.6 hr | $4,561.07 |
+| 1 | TEST Cut (Calculate) 10,000 BCY | 4,000 BCY | Water truck / tank 2,000 gal on-highway · 0.5 × Rental 2 weeks · 64 hr, Hydraulic excavator 20-25 t (~48,500-62,800 lb) · Rental 2 weeks · 64 hr, Crew | $13,825.95 |
+| 2 | TEST Cut 10,000 BCY | 10,000 BCY | Excavator 20-25 t · 2 × Rental 2 weeks · 80 hr, TEST Operators | $24,699.56 |
+| 3 | TEST Cut picker 10,000 BCY | 10,000 BCY | Hydraulic excavator 20-25 t (~48,500-62,800 lb) · 2 × Rental 2 weeks · 80 hr, Operators | $24,699.56 |
+| 4 | TEST MEP rough-in 6,400 SF | 6,400 SF | TEST Electricians, Boom lift, articulating 60 ft electric/hybrid jib (Genie Z-60 DC/FE) · Rental 2 weeks · 64 hr | $11,026.83 |
+| 9 | TEST Cut 4.1 10,000 BCY | 10,000 BCY | Hydraulic excavator 20-25 t (~48,500-62,800 lb) · Rental 2 weeks · 61.2 hr | $8,022.13 |
+| 10 | TEST Cut 4.2 10,000 BCY | 10,000 BCY | Excavator 20-25 t company unit · Owned · 66.7 hr | $7,929.82 |
+**Second list (no component, or a component that prices to nothing):** empty.
+
+- **The original "Hidden Valley Rebid — 3D test"** at 13:07 UTC: the same counts and latest `updated_at` as before the
+  copy (drawing_sheet 29, takeoff_item 121 of which 11 sub-items, cost components 1, line items 1, results 1, strip 2,
+  layers 3, bores 4, assumptions 1, runs 3, structures 3; 2026-10-20 03:47:47.511941+00).
+
 ## Disputed numbers
 
 - **The plan said 33 settings from the catalog; the catalog has 32.** The 33rd is "hours per work day" (8, D-724), which is not a catalog value. Nothing was changed to make the count fit.
@@ -240,15 +285,60 @@ Every number in the brief was checked against its rule before building:
 10. **Mob counted twice reads "…counted N times: price as one shared machine?"** with a colon, not the brief's em dash (house prose rule, D-736); items with no classification are not treated as one division. Alternative: the em dash.
 11. **One shared machine per division and class:** "Price as a shared machine…" reuses the division's machine of the same class, else makes one homed on the item's division (D-736). Alternative: always a new machine.
 12. **The follow-up's test copy** (D-729): recorded in the plan; applied from Block 3.5.
+13. **A tier keeps its machines and crew as JSON on the tier row** (D-738): copied, never priced from there. Alternative: child tables per tier.
+14. **Editing a tier's component marks the line edited, not the component** (D-738), so Apply tier puts the whole tier back. Alternative: an edited component becomes a person's and survives Apply tier.
+15. **An exact tier match after a count change takes the activity's default production if it falls in that tier, else the tier's start** (D-738). Alternative: keep the scaled production.
+16. **A line that reads 0 at two decimals gives its tier spread back** (D-738 addendum); a person's edited line keeps it. Alternative: stored precision (six decimals), which left a 0.000127 BCY line billing $2,150.40.
+17. **The TEST default "under 5,000 BCY → 500/day" is mine** (D-738), made to reach the Apply-tier check; listed as TEST.
+18. **Import: an empty rate cell is "no company value"**, so a company value the file leaves empty is reverted (D-740). Alternative: an empty cell leaves the value alone.
+19. **A company machine's values grade U** (blank D) (D-740). Alternative: no grade.
+20. **Machine-list matching by type words, model numbers and sizes**, with a size-class word as tie-break (D-740); a suggestion only.
+21. **The release fixture is a bench script, not a migration** (D-741), so nothing of it can ship; no second banner in Estimating, the component notice and Needs attention carry it.
+22. **An assembly's hand-entered shared machine keeps its typed rates; a library one its choice only** (D-742); a linked machine gains the item's division as an extra when it does not cover it; an unclassified item is not linked, with a warning.
+23. **Library components in templates keep no snapshot and no automatic mark** (D-743); the template editor's picker is read only.
+24. **Duplicate project now copies an estimate's own library values** (`eq_override` with a project, D-743), beyond the plan; found in the 5.1 smoke.
 
 ## Questions for the founder
 
 - **Components on Site Features, utility runs and structures are accepted but never priced.** Estimating leaves those items out (they are headings over their Calculate lines, `lib/estimate/lines.ts:247`), yet the api takes a cost component on them and the Takeoff panel lists it, priced "—". Tonight 35 TEST components sat there unseen by every total. Should the api refuse them (409, as it does for a parent with sub-items), or should Estimating show them? Not changed tonight.
+- **An assembly's crew role with no project rate prices at $0 without a word** (D-298's makeup: the wage is looked up at
+  the project's rates when the assembly is applied; "TEST Laborer" has none). A library operator with no wage says
+  "Missing data: operator wage" (D-735). Should a makeup role with no rate say the same? Not changed tonight.
+- **Earthwork tiers attach a full machine with its own mob to every line** of the activity, so the test copy's 70-odd
+  small lines carry $485,977.96 of equipment (TEST tiers). A real company would price the site's spread once. Should an
+  activity be able to attach its tier as the division's shared machine instead? Not changed tonight (D-727 says
+  components).
 - `alembic check` reports an index drift that predates tonight (`ix_renderer_report_created_at`, from D-694): the migration lacks the index the model declares, or the reverse. Not touched; worth one line of migration.
 
 ## Left undone
 
-_To be filled at the end._
+- **The full fixture-suite run** restored from the tag: required before any deploy to testers or promotion to `main`
+  (CLAUDE.md); not part of tonight.
+- **Plan §6, "a class key that no longer exists applies as a hand-entered component":** it applies as a library
+  component that reads "Missing data: Library class not found" with no total (the engine's rule since D-734). The money
+  is the same (none until fixed); converting it to a hand-entered row was not built.
+- **The tier lookup and scaling (3.5) and the name matching of machine links (P1)** are api logic; the quantity table
+  checks the engine's spreads and allocations for them, and the smoke checked the api.
+- **The template editor's picker** reads values only; overrides there were not built (no project to hold them).
+- **PARITY lines:** none of tonight's blocks has a PARITY line (F33 is new, not a legacy port).
+
+## Morning checklist
+
+1. Read Questions (four) and Disputed numbers (two), and the 24 decisions above; each names its D-NN.
+2. Accept or reject D-738 to D-743 (all logged Accepted for the night, to the plan).
+3. Open Settings › Equipment library as any library manager: Library, Settings, Earthwork production, the release
+   banner.
+4. To see the night's data, sign in as `fx.equip.202610230651@bench.intelcost.io` (a throwaway; its password lives in the
+   one browser session only, so a bench session sign-in is needed: `browser/bench-session-serve.mjs`). Workspaces:
+   **zz Equip Night** (zz Equip 10000 BCY; zz Equip 5.1 second project; a duplicate in the trash) and **zz Equip HV
+   copy** (the 3D test copy). All of it is TEST data; delete both workspaces when done.
+5. `morning-report-2026-10-24/` holds: block-3.4-export…, block-3.5-coverage-hv-copy.xlsx,
+   block-3.5-coverage-10000-bcy.xlsx, block-4.2-Company equipment rates - release 1.xlsx,
+   block-4.2-company-rates-edited.xlsx, block-4.2-TEST-machine-list.xlsx, final-coverage-hv-copy.xlsx,
+   final-coverage-10000-bcy.xlsx.
+6. The bench fixture for release notices is rolled back (release 1, 0 change rows); `drives/eqlib-release-fixture.sh
+   status` shows it.
+7. Before testers: the full fixture-suite run from the tag.
 
 ## Morning checklist
 

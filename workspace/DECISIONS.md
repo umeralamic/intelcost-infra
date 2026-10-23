@@ -22774,3 +22774,6 @@ line, and can we do something else to show the selected workspace rather than or
 - **Found and fixed (Duplicate project):** an estimate's own library values (`eq_override` rows with a project) were not
   copied, so a duplicate's library machines lost this estimate's fuel prices and values (the water truck's TEST fuel
   went to "Missing data"). `eq_override` is now copied, and counted as pricing for a copy into another workspace.
+- **Addendum to D-740 (the end-of-run coverage):** an edit of a company machine that sends only some fields (a rename)
+  reset its "hours from" to duration, because the new-machine defaults ran on every save; the TEST company unit read
+  "Missing data" until fixed. The defaults now apply to a new machine only, and an edit keeps what it leaves out.
