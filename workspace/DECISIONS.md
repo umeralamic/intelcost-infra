@@ -22288,3 +22288,167 @@ line, and can we do something else to show the selected workspace rather than or
   modes, zoom, group by, tabs, Assemblies, Open's projects) keeps legacy's dot.
 - **Checked in the browser** (bench, window-b, on a BENCH DUP's takeoff, purged): two workspace rows, each 30 px
   (one line), neither cut at 280 px; the open one ticked, tinted, no dot.
+
+## D-718: Equipment library: a saved component's money never moves when the library changes (F33, Q1)
+
+**Status:** Accepted (2026-10-23, Umer: "Going with your recommendation").
+
+- A library equipment component (and a library shared resource) stores the values it was priced with, with their
+  source and the library release (`eq_snapshot`), and prices from that snapshot. A library release, a workspace override
+  edited later or a project override edited elsewhere never changes its total by itself.
+- When the current resolution differs from the snapshot the component shows "Library rates changed: Update"; the
+  project gets "Update all" in Estimating. New picks always use the current values.
+- Plan: `docs/tasks/EQUIPMENT_LIBRARY_PLAN.md` §2.3, §8 R2.
+
+## D-719: Equipment library: the equipment location factor defaults from the wage set (F33, Q2)
+
+**Status:** Accepted (2026-10-23, Umer: "Going with your recommendation").
+
+- Default: `1 + project_wage_set.equipment_amf` of the project's current wage set when it has a location, shown as
+  "From the wage set: Equipment −1 %"; 1.00 when there is no wage set or no ZIP. Workspace and project overrides as for
+  every library field. Applied to bare rental and owned ex-fuel only (never fuel, operator, haul or an operated rate).
+- This replaces the brief's "default 1.00" where a wage set exists; the catalog's 0.85–1.15 band stays a warning.
+
+## D-720: Equipment library: a class opens on the basis it has a rate for (F33, Q3)
+
+**Status:** Accepted (2026-10-23, Umer's rule).
+
+- Only an operated rate → Operated. Only bare rental and/or owned → Bare (rental if it has one, else owned): this covers
+  the four `CR-RT-*-BARE` cranes, the `DT-ROAD-*` on-road dump trucks (owned only; the operated trucks are the separate
+  `DT-OP-*` rows) and crawler cranes with owned rates only. Both, or neither (for example `CR-AT-35T`, `CR-AT-60T`,
+  `CN-PUMP-BOOM-63M`) → Operated, with "No data, enter a value" where the operated rate is blank. `CR-TOWER` stays
+  rental, bare plus its own operator (locked).
+- A row that has a rate never opens on a basis that shows "No data". Switching basis stays one click.
+- Stored as `eqlib.eq_class.default_mode`, set by this rule at load; the catalog's `Rent_basis` is kept as loaded.
+
+## D-721: Equipment library: FEMA ⚠ values load as published, flagged (F33, Q4)
+
+**Status:** Accepted (2026-10-23, Umer: "Going with your recommendation").
+
+- The 26 flagged classes load with the catalog's values and flag text; the flag shows beside the owned rate wherever it
+  appears (picker, library page, the export's Equipment basis sheet). Verification comes later as a library release.
+
+## D-722: Equipment library page: Settings › Equipment library, self-contained (F33, Q5)
+
+**Status:** Accepted (2026-10-23, Umer: "Going with your recommendation").
+
+- Route `/settings/equipment`; the page is one feature folder (`features/equipment-library/`), so a later move under a
+  Lists page beside Takeoff and Assemblies is a route change. F10's parked Library page (D-287 6) is not revived.
+
+## D-723: Equipment library: the fuel price starts empty and blocks; suggestions from the catalog (F33, Q6)
+
+**Status:** Accepted (2026-10-23, Umer's wording).
+
+- The project's fuel price per fuel type starts empty; every fuel-burning library line is missing data until it is
+  filled. One-click suggestions from the catalog: US average diesel $6.276 and gasoline $4.284 (week of Oct 19 2026),
+  and the catalog's regional diesel table, labelled "on-highway, includes road taxes; off-road dyed diesel is usually
+  lower". A click records the price as a User value. A workspace default (Settings › Equipment library) prefills new
+  projects.
+
+## D-724: Equipment library: production drives the hours, and the spread runs together (F33, new D)
+
+**Status:** Accepted (2026-10-23, Umer; replaces the plan's hours-source defaults, plan §3.1 and §3.4).
+
+- **Production:** an item's production is the company production per day for its activity (production tiers, D-727,
+  or typed on the line), else the catalog machine production (plan §3.3).
+- **Work day:** a setting "hours per work day" (workspace default, project override, default 8). Days = quantity ÷
+  production per day (company), or hours = quantity ÷ (pacing machines × machine production per hour) (catalog);
+  hours = days × hours per work day.
+- **The spread runs together:** by default every library machine on the item and its labour component run the spread
+  hours; crew-hours = those hours, labour cost = crew-hours × the crew's hourly cost at the saved wage set. A machine can
+  opt out to "Own production" and is then outside the spread. Haul trucks in a spread need no haul-speed production.
+- **Pacing machine:** the production machine that sets the pace, default the first added; a crew row can be marked
+  "paces production" for crew-only items.
+- **Number of machines (`eq_units`):** decimal > 0, default 1; cost = count × one machine's cost for the spread hours.
+  Operator crew rows follow the count of machines that need an operator (none for operated services or self-operated
+  classes); fractions allowed in crew counts.
+- **Rental in work days:** the solver works in whole work days (day, 5-day week, 20-day 4-week) covering the item's days
+  rounded up. Hours per machine above 8 per billed work day are pro-rata overtime at the period's hourly equivalent
+  (day ÷ 8, week ÷ 40, 4-week ÷ 160; Rental_Terms). Single shift only; double and triple shift are not in v1.
+- **Cost per machine:** rental + fuel (gal/hr × hours × price) + standalone mob/demob, all × number of machines;
+  location factor as D-719.
+- **Shared equipment:** a host's usage on a library machine is its machine-hours (count × spread hours, or own
+  production); the usage override stays. Hosts on a hand-entered resource keep today's order (override, crew-hours,
+  formula), unchanged.
+- **Duration equipment** runs the spread hours on a spread item, else the host's crew-hours. On an item with no
+  production equipment and no company production the labour component keeps its own production rate exactly as today.
+- **Guardrail:** with company production set, the spread's catalog capacity shows beside it ("2 × Excavator 20-25 t ≈
+  2,613 BCY/day at 8 hr, catalog C"), a warning only.
+- **Control:** the labour component has "Unlink from spread" (its own production-rate field back) and "Link to
+  spread"; different hours show both and a warning ("Crew 64.0 hr, spread 61.2 hr"), never a block.
+- **Existing data does not move:** labour on items with no library equipment and no company production, and every
+  hand-entered equipment component and resource, price bit for bit as before (quantity table).
+
+## D-725: Equipment library: mob/demob counted more than once warns (F33, change 2)
+
+**Status:** Accepted (2026-10-23, Umer).
+
+- When one library class has mob included as a standalone component on more than one item in the same division, each
+  shows "Mob/demob counted N times — price as one shared machine?" with "Price as a shared machine…". A warning only;
+  it never changes a total by itself. Built in Block 3.3.
+
+## D-726: Rule 9 in the equipment reference and its seed (F33, change 3)
+
+**Status:** Accepted (2026-10-23, Umer; the reading of "competitor" was taken overnight, see the night report).
+
+- `docs/reference/equipment/Construction equipment catalog and rates.md`: every estimating, takeoff and
+  construction-software product it named is now "heavy-civil estimating product A" and so on; the equipment rate-data
+  and cost-data publishers sold to estimators are "a rate-data publisher" and "a cost-data publisher"; links whose
+  address names one read "vendor documentation (link withheld, rule 9)". Content otherwise unchanged.
+- The catalog workbook's text names the same two publishers (Sources, Location, README). The seed converter writes them
+  generically into the repo's seed files (text only; no number is touched) and refuses to write a seed file that still
+  names one.
+
+## D-727: Earthwork production settings: production and spread update each other (F33, change 4)
+
+**Status:** Accepted (2026-10-23, Umer). Built in Block 3.5.
+
+- **What Calculate makes (read from the code, plan §1.7):** every line is a `takeoff_item` with `source_type`
+  `EARTHWORK_COMPUTED`, keyed by (`earthwork_region_id`, `earthwork_role`, `earthwork_variant`); a recalculation
+  updates matched rows in place (same uuid, `lines.py` `write_lines`), creates new keys, and deletes keys no longer
+  produced unless a row is worth keeping (`_worth_keeping`: an override, notes, a cost component or a priced line), which
+  is kept at quantity 0 as "Not in the last Calculate". Components therefore survive a recalculation without new
+  matching; the two stabilization parents refuse components (sub-items), so their components go on the sub-items.
+- **Company earthwork activities** (workspace, Settings › Equipment library › Earthwork production): name and unit;
+  add, rename, delete.
+- **Line mapping:** each earthwork role maps to zero or one company activity (workspace default, project override);
+  zero means no automatic pricing.
+- **Production tiers per activity:** production-per-day ranges (from–to, the last open-ended), each holding a spread
+  (library machines with decimal counts, the pacing machine, the rate basis) and a crew (makeup rows with counts,
+  operator rows per D-724).
+- **Default production per activity,** optionally by job-quantity range.
+- **On Calculate's first write of a line,** its activity's default production for the line's quantity picks a tier
+  and the tier's spread is attached as auto components (as a crew row's auto flag, D-268).
+- **Production → spread:** production per day is editable on the line (a tier or a number); a change swaps in the
+  matching tier's spread and recomputes. **Spread → production:** changing the pacing machine's count (or a "paces
+  production" crew row's) scales production by the same ratio; if the edited spread equals a saved tier's, that tier's
+  production is used. Support machines and crew rows change cost only; swapping the pacing class keeps production and
+  shows the capacity check. Every automatic change leaves a note on the line; the last edit wins.
+- **Recalculation:** quantity flows to days, hours and cost. When the default production moves into another tier, auto
+  spreads switch; a user-edited line keeps its production and spread and shows "Default production for this quantity
+  is now in the 800–1,499 tier: Apply tier". User edits never change silently.
+- The same two-way link works on any item with company production and a spread. Everything is editable and deletable;
+  a project can turn earthwork production off; any line can be priced by hand.
+- **Ships empty:** no tier, activity or default number is invented; checks use data named "TEST …".
+
+## D-728: Equipment library: a company's machine list imports with a matching step (F33, change 5)
+
+**Status:** Accepted (2026-10-23, Umer). Built in Block 4.2.
+
+- Block 4.2's import also reads a company's own machine list (its names, owned $/hr without fuel, gal/hr, rental
+  rates). Each row gets a suggested library class the user confirms, or becomes a custom class; unmatched rows are never
+  dropped silently. Confirmed rows land as workspace overrides tagged User.
+
+## D-729: The night of 2026-10-23: block order and the test copy (F33)
+
+**Status:** Accepted (2026-10-23, Umer, the overnight brief and its follow-up).
+
+- **Order:** 1.1, 1.2, 2.1, 2.2, 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, P1, 5.1 (P1 moved to just before 5.1).
+- **Test copy:** "Hidden Valley Rebid — 3D test" in "Bench Construction Test" is a read-only source. Before Block 3.5 it
+  is copied (sheets, contours, grades, site features, strip and undercut areas, earthwork settings, estimating items)
+  into a new workspace of a throwaway account, by a one-off script that reads the source and writes only to the
+  throwaway workspace; row counts and the latest `updated_at` of the original are recorded before and after and must
+  match. Nothing is written to the original or its workspace. "Hidden Valley Spec" stays off-limits.
+- **Coverage:** on the copy, every item and sub-item with a quantity is priced (labour, library equipment, material,
+  subcontract where realistic), with "TEST …" data where the library has none, Calculate run and rerun with every
+  component surviving, and a coverage table in the night report.

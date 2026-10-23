@@ -1,31 +1,50 @@
-# Night plan, 2026-10-22 (02:06 → 11:30 UTC)
+# Night plan, 2026-10-23 → 24 (06:26 UTC → 08:00 UTC on the 24th): the Equipment Library (F33)
 
-The founder's brief: answers to Q1–Q7 of the day session of 2026-10-21, plus the Markup Properties panel. Steps in
-order; what time does not reach is left for the next session. The previous plan (night run 2 of 2026-10-21) is
-archived as `docs/archive/OVERNIGHT_PLAN_2026-10-21-night2.md`. The report is
-`morning-report-2026-10-22/NIGHT_REPORT_2026-10-22.md`, updated after every step.
+The founder's brief: apply the answers to `EQUIPMENT_LIBRARY_PLAN.md` (D-718 to D-729), then build every block in order.
+The previous plan (night of 2026-10-22) is archived as `docs/archive/OVERNIGHT_PLAN_2026-10-22.md`, and the previous
+report as `docs/archive/OVERNIGHT_REPORT_2026-10-12.md`. Results: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md), updated
+after every block. A restarted session continues from the first block below that is not ☑.
 
-**Every step:** its decision logged in DECISIONS.md first; gates (app lint, typecheck, build; api ruff, mypy); the
-quantity table; a Playwright MCP smoke in the browser on a throwaway account; the archived fixtures covering what it
-touched (fx stack); m6-position after any change to the canvas, zoom or selection; commit and push on `umer-dev`; the
-workspace mirror refreshed. Unfinished work goes into a named stash, recorded in the report. Mail guard stays on.
+**Every block:**
+1. Its D-NN in DECISIONS.md first.
+2. The gates in the containers: app lint, typecheck, build; api ruff, mypy. No prettier; no
+   `from __future__ import annotations`.
+3. `./quantity-table.sh`, with its line reported.
+4. One Playwright MCP smoke on a throwaway account and a throwaway project, including the block's by-hand check, with
+   the numbers got recorded beside the expected ones.
+5. Commit and push `umer-dev`; update `SINCE_ARCHIVE.md`; refresh the workspace mirror; update this file and the report.
 
-**Protected, read only to every tool, browser and api-process script:** "Hidden Valley Spec", "Hidden Valley Spec
-Building Rebid" (bd8fc5b0), "Waxing City", Minmar, everything in "Bench Construction Test", and the rest of the
-guard's list. Drives guard (D-667) on. Real-data proofs on BENCH DUPs only, purged at the end. Fingerprint at the
-start: **21edb8ca37565ce5**.
+**Rules for the night:**
+- Never use "Hidden Valley Spec". Never sign in as the founder's account (estimator@, umeralam.q@).
+- **Follow-up of 2026-10-23 (D-729):** "Bench Construction Test" and its project "Hidden Valley Rebid — 3D test"
+  (042c8817) are a read-only source.
+  - Before Block 3.5 the project is copied into a new workspace of a throwaway account, by a one-off script that reads
+    the source and writes only there. The original's row counts and latest `updated_at` are recorded before and after
+    the copy, and must match.
+  - No write of any kind to the original or its workspace.
+- Never change the catalog's numbers or invent rates, production, tiers or defaults. TEST data is named "TEST …" and
+  listed in the report.
+- Never weaken a gate or edit an expected number. Disputes go to the report's "Disputed numbers".
+- Hand-entered components and resources price bit for bit as before (quantity table).
+- Questions for the founder go in the report; the most reasonable reading is taken and recorded.
+- A block that fails after a solid attempt: `umer-dev` stays at the last good commit, the failure goes in the report,
+  the next independent block goes on, and the failed block is retried at the end.
 
-| Step | What | Ships as |
-|---|---|---|
-| 0 | Delete `intelcost-infra/fx-suite/browser/shots/`; Q1–Q7 recorded in `pending_umer.md` and DECISIONS | workspace commit |
-| 1 | Q1: the GPS Export switch's tooltip names the reason before the click (trial ended, Professional ended, Essentials), the toast's sentence; each case on a throwaway account | commit |
-| 2 | Q2: is the items read compressed end to end? If not, turn it on; Estimating's first row at 5,000 and 20,000 before and after; a streamed read only if 20,000 is still over 4 s; no field dropped (D-658); totals identical on a priced 5,000 DUP | commit if verified, else stash `night-items-read` |
-| 3 | Q3: `synchronous_commit = off` on the bench database only, noted in the bench docs; f6-a re-run; a plan (not run) for measuring on Abdullah's staging | commit (infra), plan file |
-| 4 | Q4: window B paints the changed row from the single-item read first, the wider refresh after; before/after (350–700 → ~150 ms); D-501's newer-change notice; a guest's view | commit |
-| 5 | Q6: f7-h step 7 and rv-rows step 5 under load: cause found; fixture or app fixed, with evidence | commit |
-| 6 | Q5: selection highlight as its own overlay, < 100 ms at 20,000; behaviour checks on WebGL and SVG; m6-position | commit if met or clearly better, else stash `night-selection-overlay` |
-| 7 | Watch: no false "Needs recalculating" after Calculate on DUPs of C-200 and the 3D test copy (reload, sheets, Estimating, second window, guest, duplicate); one real change marked | report; fix only a clear bug |
-| 8 | Q7: platform admin table of sessions per renderer path, 7 and 30 days | commit |
-| 9 | Markup Properties: `markup_properties_PLAN.md` brought up to date against legacy (UmeralamDEV) and today's app, blocks; first block built and verified as member and guest | commit verified blocks, else stash `night-markup-properties` |
-
-After Step 9, no new feature work: re-verify in the browser and tighten the report.
+| # | Block | Depends on | Status | Commit |
+|---|---|---|---|---|
+| 0 | Part 1: answers applied to the plan, D-718 to D-729, rule 9 rewording, Step A | — | ☑ | (workspace) |
+| 1.1 | Converter, national schema, release 1 load | — | ☐ | |
+| 1.2 | Overrides, custom rows, resolve and read API | 1.1 | ☐ | |
+| 2.1 | Engine core (work-day solver, overtime, location, fuel, operated, mob) and estimate settings | 1.2 | ☐ | |
+| 2.2 | Production engine (11 families, soil, units, guardrails) | 2.1 | ☐ | |
+| 3.1 | Component columns, the spread, evaluation | 2.2 | ☐ | |
+| 3.2 | The picker and the spread UI | 3.1 | ☐ | |
+| 3.3 | Shared resources from the library; mob counted twice | 3.1 | ☐ | |
+| 3.4 | Estimating rows, Needs attention, filter, export | 3.1 | ☐ | |
+| 3.5 | Earthwork production tiers, the two-way link, the 3D test copy, coverage | 3.2 | ☐ | |
+| 4.1 | Library page: browse, overrides, revert, release banner | 1.2 | ☐ | |
+| 4.2 | Custom rows, import/export, a company's machine list | 4.1 | ☐ | |
+| 4.3 | Release upgrades and notices | 4.1, 3.1 | ☐ | |
+| P1 | Assemblies link shared equipment | — | ☐ | |
+| 5.1 | Library components in assemblies | P1, 3.1 | ☐ | |
+| End | Coverage run again on the copy; report; clean-up (throwaway workspaces, scratch) | all | ☐ | |

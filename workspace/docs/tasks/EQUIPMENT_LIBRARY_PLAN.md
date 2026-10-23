@@ -1,17 +1,31 @@
 # Equipment Library: size-class rates, production and mob/demob behind the Equipment cost component (plan)
 
-_Plan written 2026-10-23. Not built; nothing in the repos has changed. The locked decisions are the brief's Step 2 and are
-not reopened here. The open questions in §9 are the only things that block the first block. When the founder answers, log
-the answers and each block's decisions as D-718 onward before building (CLAUDE.md, Task workflow)._
+_Plan written 2026-10-23. The locked decisions are the brief's Step 2 and are not reopened here. **Answered by Umer on
+2026-10-23 and logged as D-718 to D-729** (Q1–Q6, the spread rule, changes 1–5, the night's order and the test copy).
+Built overnight 2026-10-23 → 24: progress per block in `docs/tasks/OVERNIGHT_PLAN.md`, results in
+`docs/tasks/OVERNIGHT_REPORT.md`._
+
+**What the answers changed (read these first; the sections below are updated to them):**
+- **Q1 → D-718:** a saved component's money never moves: snapshot, "Library rates changed: Update", "Update all".
+- **Q2 → D-719:** location factor default `1 + equipment_amf` from the wage set; 1.00 without one.
+- **Q3 → D-720:** a class opens on the basis it has a rate for (only operated → Operated; only bare/owned → Bare;
+  both or neither → Operated; `CR-TOWER` rental).
+- **Q4 → D-721:** FEMA ⚠ loads as published, flagged. **Q5 → D-722:** Settings › Equipment library.
+- **Q6 → D-723:** fuel price starts empty and blocks; one-click catalog suggestions labelled on-highway.
+- **D-724, the spread:** production drives the hours (company production per day, else catalog machine production);
+  hours per work day (default 8); every library machine and the labour component run the spread hours; pacing
+  machine; decimal machine counts; the rental solver works in whole work days with pro-rata overtime above 8 hr/day.
+- **D-725:** mob counted more than once warns. **D-726:** rule 9 in the reference and seed. **D-727:** earthwork
+  production settings, tiers and the two-way production ↔ spread link (Block 3.5). **D-728:** a company's machine list
+  imports with a matching step (Block 4.2). **D-729:** order 1.1 … 4.3, P1, 5.1; the test copy and coverage.
 
 **Inputs, read in full:**
 - `docs/reference/equipment/IntelCost Equipment Catalog.xlsx`, all twelve sheets, read with both formulas and cached values
   (SheetJS in the bench app container).
 - `docs/reference/equipment/Construction equipment catalog and rates.md`.
 
-This plan names no software competitor (rule 9). **The design document breaks rule 9:** it names ten estimating products,
-about fifty times in all. It is a workspace file, so it needs rewording or moving out of the workspace. This plan leaves it
-untouched (plan only).
+This plan names no software competitor (rule 9). The design document named ten estimating products; since D-726 it
+calls them product A to H, "a rate-data publisher" and "a cost-data publisher", and withholds links that name them.
 
 **The catalog's numbers are loaded as published.** No rate is changed, researched or filled in. A blank stays blank and
 shows as missing (§3.2).
@@ -103,9 +117,14 @@ All paths are relative to the workspace root. API = `intelcost-app-fastapi/`, AP
   `weeks_per_month` have no field in it (defaults only, :48-49).
 - **Where the library plugs in:**
   - New nullable `eq_*` columns on the resource.
-  - The library engine gives the resource its total: the period solver over Σusage, fuel over Σusage, mob/demob from the
-    transport class.
+  - The library engine gives the resource its total: the work-day period solver over Σusage ÷ hours per work day
+    (D-724), fuel over Σusage, mob/demob from the transport class × the resource's machine count.
+  - **A host's usage on a library resource is its machine-hours** (D-724 rule 8): the count on the host's linked
+    component × its spread hours, or its own production hours. The usage override stays. Hosts on a hand-entered
+    resource keep today's order (override, crew-hours, formula), unchanged.
   - `allocateResource` then spreads that total unchanged. Mob/demob stays counted once.
+  - **Mob counted twice warns** (D-725): one library class with mob included as a standalone component on more than one
+    item of a division shows "Mob/demob counted N times — price as one shared machine?" on each.
 
 ### 1.3 Assemblies
 
@@ -201,7 +220,74 @@ All paths are relative to the workspace root. API = `intelcost-app-fastapi/`, AP
 | G5 | No Excel import anywhere in either repo | Block 4.2: the browser reads the file with `xlsx-js-style`, the api validates |
 | G6 | No "Lists" and no library page (F10's Library page is parked, D-287 6) | The library page is self-contained under Settings for now (Q5) |
 | G7 | The api never computes cost (D-89) | The engine is pure TypeScript in `APP/lib/estimate/equipment/`; the api validates and stores |
-| G8 | Shared resource `days_per_week` / `weeks_per_month` have no UI | Not needed: a library resource uses 8/40/160. Left as is |
+| G8 | Shared resource `days_per_week` / `weeks_per_month` have no UI | Not needed: a library resource uses work days (D-724). Left as is |
+
+### 1.8 Earthwork Calculate's lines (change 4, Step A; read from the code, 2026-10-23)
+
+- **Built in the browser, written by the api.**
+  - Grading lines come from `earthworkLines()` (`APP/lib/takeoff/earthwork/lines.ts:294`, roles typed `LineRole` :27-57).
+  - Utility lines come from `utilityLines()` / `structureLines()` (`APP/lib/takeoff/earthwork/utilities/lines.ts:88`,
+    `:181`), joined by `toWrite()` (`APP/features/takeoff/earthwork/linesFor.ts:83`).
+  - They are sent from `useVolumes.tsx:477-483` (sheet), `:515` (utilities) and `site/SiteView.tsx:899` (site).
+  - The api's `write_lines()` (`API/app/features/earthwork/lines.py:275`) is called by `routes.py:316` (PUT
+    `/result/{sheet}`) and `site_routes.py:640`. The roles allowed are the `LineRole` literal in
+    `API/app/features/earthwork/schemas.py:75-129`.
+- **Every line is a `takeoff_item`** with `source_type = EARTHWORK_COMPUTED` (`API/app/features/takeoff/models.py:55`).
+  - It is keyed by (`earthwork_region_id`, `earthwork_role`, `earthwork_variant`), unique per sheet or per site
+    (`models.py:153-171`).
+  - `earthwork_region_id` is the strip area, the Site Feature item, the region, `__soil_export__` / `__soil_import__`,
+    or `util:<type>`. A soil layer appears only in the variant (`layer:<id>`).
+- **The line roles and their units** (`lines.ts`):
+
+| Role | Unit | | Role | Unit |
+|---|---|---|---|---|
+| `strip` (by strip area) | BCY | | `cut` (net of rock) | BCY |
+| `strip_haul`, `strip_stockpile` | LCY | | `rock_hard_dig` (variant `site:<layer>`) | BCY |
+| `strip_reuse_topsoil` | BCY | | `fill` | CCY |
+| `strip_reuse_fill` | CCY | | `soil_export` (plus rock / unsuitable variants) | LCY |
+| `undercut` | BCY | | `soil_import` | LCY |
+| `undercut_haul`, `undercut_stockpile` | LCY | | `prep` (subgrade prep / compact / scarify) | SF |
+| `undercut_reuse_fill` | CCY | | `stabilize` (parent), `stabilize_mix` | SY |
+| `undercut_replace` | CCY | | `stabilize_agent_1/2` | TON |
+| `undercut_native` (recompacted) | CY | | `geosynthetics` (geogrid / geotextile) | SY |
+| `undercut_stabilize` (parent), `undercut_stabilize_mix` | CY | | `over_excavation` (variant `layer:<id>`) | BCY |
+| `undercut_agent_1/2` | TON | | `replacement_fill` | CCY |
+
+  - **Utilities:** `utility_pipe` (LF), `utility_trench_excavation` (BCY; structure excavation is this role with
+    `structure:<layer>`), `rock_hard_dig` (BCY or LF), `utility_bedding_pipe_zone` (CCY), `utility_backfill` (CCY),
+    `trench_protection` (LF), `dewatering` (LF; EA for structures), `surface_restoration` (SY), `spoils_export` (LCY),
+    `utility_structure` (EA or VF).
+- **The founder's list, against the code.**
+  - **Matches the code:**
+    - Strip Topsoil by strip area (BCY);
+    - Haul Off, loose (LCY);
+    - Undercut Excavation (BCY);
+    - Undercut Spoil → Haul Off (LCY);
+    - native undercut recompacted (CY);
+    - Undercut Replacement Fill (CCY);
+    - stabilization in SY, with sub-items mix (SY) and agents (TON).
+  - **"→ Re-use" is not LCY in the code:** `strip_reuse_topsoil` is BCY and `strip_reuse_fill` is CCY. The code has
+    both units; this is recorded as a finding, nothing is changed.
+  - **The code also has:** cut, fill, soil export, soil import, rock hard dig, over-excavation, replacement fill, prep,
+    geosynthetics, stockpile, and the utility roles.
+- **Recalculation updates lines in place** (`write_lines`, `lines.py:386-498`).
+  - Matched rows keep their uuid and take the new quantity.
+  - New keys get new rows.
+  - A key no longer produced is deleted, **unless the row is worth keeping** (`_worth_keeping` :140-176: an override,
+    notes, any cost component, or a priced line). A kept row is set to quantity 0 with `earthwork_retired`, shown as
+    "Not in the last Calculate".
+- **So components survive a recalculation** without new matching. The cascade from `takeoff_cost_component` and
+  `project_equipment_usage` (`API/app/features/estimate/models.py:220`, `:340`) never fires on a priced line.
+- **Stale:** the browser compares the stored `version_key` (`useVolumes.tsx:185-188`), then `mark_stale()`
+  (`lines.py:723`) sets `is_stale`. Estimating shows "Needs recalculating" (`EstimatingView.tsx:1258`).
+- **Where components can go:**
+  - Components may sit on any line except the two stabilization parents, which have sub-items (`NOT_A_HOST`,
+    `API/app/features/estimate/components.py:119`). Their components go on `*_mix` and `*_agent_*`.
+  - A line's quantity is the Calculate's quantity: the override is refused by `guard_calculated`
+    (`API/app/features/takeoff/service.py:1376`). So a component's `QTY` is the line's `effective_quantity`.
+- **Where Block 3.5 attaches:** after a line write, the browser receives the written rows' keys (`Written(created, …)`,
+  `lines.py:523`). For each created or updated line whose role maps to a company activity, it attaches or retiers the
+  spread (D-727).
 
 ---
 
@@ -299,13 +385,17 @@ value from the stored inputs at release 1's settings. That is all 965 production
 1. **A blank stays NULL.** The converter never writes 0 for a blank. An explicit 0 in the catalog (for example
    `AW-TB-60E` fuel 0/0/0, electric) is loaded as 0.
 2. **IDs are loaded unchanged**, including the lowercase `x` and `_` the README mentions.
-3. **`default_mode`** is the per-row default rate basis:
-   - `operated` where `rent_basis = operated`;
-   - `rental` where the row is bare and has any rental rate;
-   - `owned` where it is bare, has no rental rate and has an owned rate;
-   - `rental` otherwise, which shows as missing;
-   - **the tower crane (`CR-TOWER`, basis "unspecified") is `rental`**: bare plus its own operator (locked);
-   - the operated-by-default crane and truck types follow Q3.
+3. **`default_mode`** is the per-row default rate basis (D-720), read from the rates a row can actually price with:
+   rental (any of day / week / 4-week), owned (`owned_rate_hr_excl_fuel`; the fuel-included rate alone cannot price)
+   and operated (`rent_hr_operated`).
+   - only operated → `operated`;
+   - only rental and/or owned → `rental` if it has a rental rate, else `owned`. This covers `CR-RT-*-BARE`,
+     `DT-ROAD-*` and the crawler cranes with owned rates only;
+   - both → `operated`;
+   - neither → `operated` for a type the catalog sells operated (a type with at least one operated row: mobile cranes,
+     boom trucks, concrete pumps, on-road dump trucks; for example `CR-AT-35T`, `CR-AT-60T`, `CN-PUMP-BOOM-63M`), else
+     `rental` (shows "No data"). That scope is a decision taken overnight;
+   - **`CR-TOWER` is `rental`**: bare plus its own operator (locked).
 4. **Flags and FEMA ⚠ are loaded as text and shown.** How to treat ⚠ values is Q4.
 5. **`pricing_kind`** is `production` if any of the class's activities is a Production activity with a production row,
    else `duration`. Lifts, cranes and support equipment come out as duration (locked).
@@ -320,21 +410,51 @@ value from the stored inputs at release 1's settings. That is all 965 production
 | `eq_activity_key` | text | The activity served (production classes) |
 | `eq_mode` | rental / owned / operated | Rate basis on this component (default from the class's `default_mode`) |
 | `eq_period` | auto / day / wk / 4wk / hr | `auto` = cheapest combination (§3.4); `hr` only for owned and operated |
-| `eq_hours_source` | activity / crew / formula / manual | Where operating hours come from |
+| `eq_units` | numeric > 0 (null = 1) | Number of machines; decimals allowed (0.25, 0.5, 2). Cost = count × one machine's cost (D-724 rule 5) |
+| `eq_in_spread` | bool (null = true) | false = "Own production": the machine prices from its own catalog production, outside the spread |
+| `eq_paces` | bool | The pacing machine of the item's spread (at most one; default the first production machine added) |
+| `eq_hours_source` | spread / activity / crew / formula / manual | Where operating hours come from. `spread` on a spread item (D-724); `activity` = own production; `crew` = the host's crew-hours (duration equipment off a spread) |
 | `eq_hours_formula` | text | Used when the source is `formula` (the existing formula engine, `QTY` in scope) |
 | `eq_hours_manual` | numeric | Used when the source is `manual` |
+| `eq_auto` | bool | Attached by an earthwork production tier (D-727); a user edit clears it |
 | `eq_fuel_load` | low / med / high | Default `med` (catalog README: "Fuel_gal_hr_med (low/high by duty)") |
 | `eq_soil` | text | Soil for unit conversion (default `Loam (common earth)`; the catalog's default mapping) |
 | `eq_travel_hr` | numeric | Operated only: portal-to-portal travel hours (a job input, see §3.2) |
 | `eq_include_mob` | bool | Standalone components only (default true). A component linked to a shared resource never carries mob |
 | `eq_snapshot` | JSONB | The resolved inputs at last evaluation: each value, its source (national r1 / workspace / project / user), grade, and the release |
 
-**`project_equipment_resource`:** `eq_class_key`, `eq_mode`, `eq_period`, `eq_fuel_load`, `eq_travel_hr`, `eq_snapshot`.
+**Labour components** (`kind = labor`, same table): `spread_linked` bool (null = linked whenever the item has a spread;
+false = "Unlink from spread", its own production rate back). Crew rows (JSONB) gain `paces` (a crew row that paces
+production on a crew-only item) and `for_equipment` (the uuid of the machine component whose count an operator row
+follows); both are optional and absent on every existing row. Crew counts may be decimal.
+
+**`project_equipment_resource`:** `eq_class_key`, `eq_units`, `eq_mode`, `eq_period`, `eq_fuel_load`, `eq_travel_hr`,
+`eq_snapshot`.
 - When `eq_class_key` is set, the resource's `rate`, `basis` and `mob_demob` are filled from the engine and greyed.
 - `rental_duration_override` keeps working as today.
+- A host links to it through its machine component: `takeoff_cost_component.eq_resource_id` (nullable FK, SET NULL). A
+  linked component carries no rental or mob of its own; its machine-hours are its usage on the resource.
 
-**`assembly_component`:** the same `eq_*` set. **New `assembly_equipment_link`** (Block P1): `template_id`, `child_id` (null
-means the host), `resource_name`, `usage_formula`, `eq_class_key` (optional).
+**`assembly_component`:** the same `eq_*` set, including `eq_units`, `eq_in_spread`, `eq_paces`. **New
+`assembly_equipment_link`** (Block P1): `template_id`, `child_id` (null means the host), `resource_name`,
+`usage_formula`, `eq_class_key` (optional).
+
+### 2.7 The spread and earthwork production (D-724, D-727)
+
+| Table | Key | Columns |
+|---|---|---|
+| `estimate_item_spread` | `takeoff_item_id` (unique, CASCADE) | `project_id`, `prod_per_day` (numeric, null = catalog path), `prod_unit`, `company_activity_id` (null), `tier_id` (null), `user_edited` (bool), `note` (the last automatic change, shown on the line), `updated_by_id`, `updated_at` |
+| `eq_company_activity` | `id`, workspace | `name`, `unit` (BCY, LCY, CCY, CY, SY, SF, LF, TON, EA), `soil` (for conversions), `position` |
+| `eq_activity_line_map` | (`workspace_id`, `project_id` null = workspace default, `earthwork_role`) | `company_activity_id` (null = no automatic pricing) |
+| `eq_production_tier` | `id` | `company_activity_id`, `from_per_day`, `to_per_day` (null = open-ended), `position` |
+| `eq_tier_machine` | `id` | `tier_id`, `eq_class_key`, `units` (decimal), `paces`, `mode` (null = the class default), `position` |
+| `eq_tier_crew` | `tier_id` | `crew` JSONB: makeup rows (role, count, craft_code, crew_code; no wages), priced at the project's saved wage set when attached (D-298) |
+| `eq_default_production` | `id` | `company_activity_id`, `qty_from` (null = 0), `qty_to` (null = open), `prod_per_day` |
+
+- **Settings:** "hours per work day" (`eq_setting` key `hours_per_work_day`, default 8; workspace and project overrides)
+  and "earthwork production" on or off (project override, default on). These are the founder's defaults, not catalog
+  values.
+- **Ships empty** (D-727): no activity, tier or default row is seeded. The night's checks use rows named "TEST …".
 
 **No CSI or classification codes in any of these tables.**
 - A component inherits its host item's classification.
@@ -352,14 +472,22 @@ resolve(values: national → workspace → project)            resolve.ts
   ↓
 missing check (blocking vs advisory, §3.2)                 missing.ts
   ↓
-1. operating hours H                                       hours.ts
-     activity:  takeoff qty → machine unit (soil matrix) ÷ production (per hour),
-                or ÷ daily rate × hours per day (DOT-basis rows)
-     crew:      the host's labour component crew-hours
-     formula / manual
+0. the item's spread (D-724)                               spread.ts
+     company production P per work day set (tier or typed):  days = Q (in P's unit) ÷ P
+     else catalog:  hours = Q (machine unit) ÷ (pacing units × pacing machine production per hour),
+                    days = hours ÷ hours per work day        (a DOT-basis per-day rate: days = Q ÷ (units × rate))
+     spread hours S = days × hours per work day; no production machine and no company production = no spread
   ↓
-2. rate basis
-     rental:    period solver over H (8/40/160)          periods.ts
+1. operating hours H per machine                             hours.ts
+     spread:    S (every library machine in the spread; duration equipment on a spread item)
+     activity:  "Own production": Q → machine unit (soil matrix) ÷ (units × production per hour)
+     crew:      the host's labour crew-hours (duration equipment on an item with no spread)
+     formula / manual
+     the labour component, linked: crew-hours = S; unlinked or no spread: its own production rate, as today
+  ↓
+2. rate basis, for one machine
+     rental:    work-day solver over ⌈days⌉ (day, 5-day week, 20-day 4-week) + overtime  periods.ts
+                overtime hours = max(0, H − 8 × billed days) at the periods' hourly equivalent
      owned:     owned ex-fuel $/hr × H
      operated:  max(H + travel, minimum hours) × operated $/hr
   ↓
@@ -372,8 +500,13 @@ missing check (blocking vs advisory, §3.2)                 missing.ts
 6. + mob/demob, standalone only: one-way(class, miles) × (1 + demob factor)      mob.ts
      linked to a shared resource: mob sits on the resource, counted once, spread by the existing allocation
   ↓
-7. total (the component's `total` cache; NULL when a blocking value is missing)
+7. × number of machines (`eq_units`), then total (the `total` cache; NULL when a blocking value is missing)
 ```
+
+- **Operator rows** follow the machine count (`for_equipment`) for classes that need an operator (not operated
+  services, not "Trade using it", not "None"). Their crew-hours are the spread hours like the rest of the crew.
+- **The pacing machine** is the component with `eq_paces`; with none marked, the first production machine added. A crew
+  row with `paces` sets the pace on a crew-only item. Its count is what scales production on the earthwork link (D-727).
 
 - **Purity:** `APP/lib/estimate/equipment/` takes data in and returns data out, with no React and no network, as hard rule 2
   asks of `lib/takeoff`. Block 2.1 adds the folder to the quantity table's purity grep.
@@ -442,23 +575,32 @@ missing check (blocking vs advisory, §3.2)                 missing.ts
   - Prose-only bands (EW-CLR, EW-SPREAD) are shown as text.
   - See §8 R6: the catalog has no structured DOT band for calculated earthwork.
 
-### 3.4 The period solver (8 hr/day, 40 hr/week, 160 hr/4-week)
+### 3.4 The period solver in work days (day, 5-day week, 20-day 4-week; D-724 rule 6)
 
-- **The search:** over M four-weeks, W weeks and D days, minimise M × 4wk + W × wk + D × day subject to
-  160M + 40W + 8D ≥ H.
-  - For each M from 0 to ⌈H/160⌉ and W from 0 to ⌈(H − 160M)/40⌉, D is the least that covers the rest.
+- **The search:** billed days N = ⌈days⌉ (at least 1). Over M four-weeks, W weeks and D days, minimise
+  M × 4wk + W × wk + D × day subject to 20M + 5W + D ≥ N.
+  - For each M from 0 to ⌈N/20⌉ and W from 0 to ⌈(N − 20M)/5⌉, D is the least that covers the rest.
   - This is exact and cheap.
+- **Overtime (single shift, pro-rata):** overtime hours = max(0, H − 8 × N). They are billed at the hourly equivalent of
+  the periods that cover the billed days (day ÷ 8, week ÷ 40, 4-week ÷ 160). With more than one period kind, the rate is
+  the average of those equivalents weighted by the billed days each period covers, filled from the longest period down.
+  With one period kind this is exactly that period's rate (decision taken overnight, report).
 - **Rules:**
   - Ties go to the longer period.
   - A blank period rate is skipped (advisory).
   - The minimum rental is one day.
-  - A user-fixed period (`day`, `wk`, `4wk`) gives ⌈H ÷ period hours⌉ × that rate.
-- **Single shift only.** Overtime, double and triple shift, standby and rental surcharges (damage waiver, environmental
-  fee) are **not in v1**. The catalog holds them as reference (Rental_Terms, Duration_Norms) for a later block.
-- **On a shared resource,** H is Σusage over its hosts. That replaces today's ⌈Σusage ÷ basis hours⌉ for library resources
-  only.
+  - A user-fixed period (`day`, `wk`, `4wk`) gives ⌈N ÷ period days⌉ × that rate, plus overtime at that period's rate.
+- **Not in v1:** double and triple shift multipliers, standby, and rental surcharges (damage waiver, environmental fee).
+  The catalog holds them as reference (Rental_Terms, Duration_Norms) for a later block.
+- **On a shared resource,** days = Σ machine-hours ÷ (machines × hours per work day). That replaces today's
+  ⌈Σusage ÷ basis hours⌉ for library resources only.
+- **The examples below at 8 hr per work day** price the same as the hour solver did: 61.22 hr is 7.65 days, so N = 8.
+  The cheapest cover is 2 weeks ($5,854) against 1 week + 3 days ($6,047), with no overtime (61.22 < 80).
 
 ### 3.5 Worked example 1: 20–25 t excavator, bulk cut and load
+
+The first table is the **catalog path at 8 hr per work day** (no company production; the one excavator paces at its
+catalog production). The spread variant with company production follows it.
 
 - **Pick:** `EX-CRAWL-20T`, "20-25 t (~48,500-62,800 lb)", activity `EW-CUTLOAD` "Bulk cut and load trucks (hydraulic
   excavator)".
@@ -486,7 +628,24 @@ missing check (blocking vs advisory, §3.2)                 missing.ts
 - Resource total: **$9,411.08**.
 - Spread by usage, largest remainder to the cent: item 1 (75.38 %) **$7,093.66**, item 2 **$2,317.42**. Unallocated is $0.00.
 
+**Spread variant (D-724; TEST data).** Cut 10,000 BCY at company production 1,000 BCY/day, with a spread of
+2 × `EX-CRAWL-20T` and its crew of 2 operators. Diesel $6.276, mob lowboy-legal at 50 mi, location factor 1.00.
+
+| | 8-hr work day | 10-hr work day |
+|---|---|---|
+| Days | 10,000 ÷ 1,000 = 10 | 10 |
+| Hours per machine (spread hours) | 80 | 100 |
+| Rental per machine | 10 billed days = 2 weeks $5,854.00; overtime 80 − 80 = 0 | 2 weeks $5,854.00 + 20 overtime hr × ($2,927 ÷ 40) = $7,317.50 |
+| Rental × 2 | **$11,708.00** | **$14,635.00** |
+| Fuel | 2 × 2.78 × 80 × $6.276 = **$2,791.56** | 2 × 2.78 × 100 × $6.276 = **$3,489.46** |
+| Mob/demob | 2 × $1,100 = **$2,200.00** | **$2,200.00** |
+| **Equipment total** | **$16,699.56** | **$20,324.46** |
+| Crew-hours (labour linked) | 80, crew of 2 operators | 100 |
+
 ### 3.6 Worked example 2: 60 ft articulating boom lift
+
+On an item with a spread, the lift runs the spread hours. The example below is an item with no production equipment
+and no company production, so the lift follows the host's crew-hours.
 
 - **Pick:** `AW-AB-RT-60`, "60 ft engine w/ jib". Its only activity is `LF-AWP-DUR`, a Duration activity, so the picker
   skips the activity step.
@@ -606,6 +765,19 @@ The equipment block opens on **"From library" | "Enter by hand"**. "Enter by han
      hours stay one number. It is optional and asks first.
 6. **Fuel, location factor and mob,** each with its source and grade.
 
+**The spread (D-724), on the item, above its components:**
+- **Production:** "1,000 BCY/day (company)" or "163.3 BCY/hr × 1 (catalog, pacing: Excavator 20-25 t)". It is editable
+  on the line: type a number, or pick a tier (D-727). Hours per work day is shown with its source.
+- **The capacity check** sits beside company production: "2 × Excavator 20-25 t ≈ 2,613 BCY/day at 8 hr, catalog C".
+  It is a warning only.
+- **Each machine row:** number of machines (decimal), "Paces production" (one per item), "Own production" (out of the
+  spread), and its hours.
+- **The labour component:** "Linked to spread: 80.0 crew-hr" with **Unlink from spread**. Unlinked, its own production
+  field returns and **Link to spread** puts it back. Different hours show both with a warning: "Crew 64.0 hr, spread
+  61.2 hr".
+- **Operator rows** added by Add to crew follow the machine's count (`for_equipment`). Editing the count by hand breaks
+  the follow, with a note.
+
 **Every value has a grade badge.**
 - A, B, C or D as loaded.
 - **U** for a user value, with a tooltip: "Entered by name, 23 Oct 2026; national $1,040; Revert".
@@ -714,31 +886,13 @@ change the data model for that. The only cost of doing it later is where the pag
    - no `from __future__ import annotations`.
 2. **`./quantity-table.sh`** from `intelcost-infra/`, with its line reported.
 3. **One Playwright MCP smoke test** on a throwaway account (never the seeded account) and a throwaway project. **Never
-   Hidden Valley Spec.**
+   Hidden Valley Spec.** For the night of 2026-10-23 (D-729), "Bench Construction Test" and "Hidden Valley Rebid — 3D
+   test" are read-only sources. Block 3.5 and the coverage run use a copy of the 3D test in the throwaway account's own
+   workspace.
 4. Commit and push `umer-dev`, log the block's D-NN first, update `SINCE_ARCHIVE.md`, and refresh the workspace mirror.
 
 **Quantity-table rows are added** in `intelcost-infra/browser/lib/equipment-cases.mjs`, run beside `cost-cases.mjs`. They
 are rows compared against hand-worked or catalog answers; they are not a test suite (rule 8, D-78).
-
-### Phase 0: prerequisite
-
-**Block P1: assemblies link shared equipment (closes D-93's "Not yet")**
-- **Files:**
-  - `API/alembic/versions/<new>_assembly_equipment_link.py`, `API/app/features/assembly/{models,schemas,routes}.py`
-    (`from-item`, `apply`, link CRUD);
-  - `APP/features/assembly/{api.ts,TemplateComponents.tsx}`;
-  - a "Shared equipment" section in the template editor;
-  - `APP/features/estimate/EquipmentDialog.tsx` (shows linked hosts).
-- **Rules:** §6, without the library: name and usage formula.
-- **Gates:** standard. Quantity table: two seed rows (apply links to the existing resource; apply creates a missing one).
-- **Check by hand:**
-  1. In a throwaway project, make shared resource "Loader 3 yd" ($825/day, basis day, mob $0) on division A.
-  2. Item 1 has labour with 16 crew-hours. Save item 1 as assembly "Pad prep" with the link.
-  3. Make item 2 in division A and apply "Pad prep" to it.
-  - **Expected:** Shared equipment lists both items at 16 hr each. Rental is ⌈32 ÷ 8⌉ = 4 days = $3,300.00. Each item gets
-    $1,650.00. Unallocated is $0.00.
-  4. Rename the resource "Loader 3yd" and apply again to item 3.
-  - **Expected:** it links to the same resource (spaces ignored). No second resource is created.
 
 ### Phase 1: reference data (api only)
 
@@ -793,10 +947,13 @@ are rows compared against hand-worked or catalog answers; they are not a test su
   - blocking-blank rows (total NULL, never 0).
 - **Gates:** standard.
 - **Check by hand:**
-  1. Estimating › Setup › Equipment: fuel diesel is empty with "No data, enter a value" (or the Q-answer's suggestion).
-     Enter **6.276**.
-  2. The location factor shows 1.00 and its source (or the wage set's value).
-  3. Haul shows 50 mi.
+  1. Estimating › Setup › Equipment: fuel diesel is empty with "No data, enter a value" (D-723) and the suggestion
+     "US average $6.276 (on-highway, includes road taxes; off-road dyed diesel is usually lower)". Click it.
+     - **Expected:** 6.276 tagged User.
+  2. The location factor shows 1.00, "No wage set" (or "From the wage set: Equipment n %", D-719).
+  3. Haul shows 50 mi; hours per work day shows 8.
+- **Quantity table also:** the work-day solver and overtime rows: 10 days at 10 hr → 2 weeks + 20 overtime hr ×
+  $2,927 ÷ 40 = $7,317.50 per machine; 7 days → 1 week + 2 days $5,007.00; 20 days → one 4-week $7,950.00.
 
 **Block 2.2: the production engine**
 - **Files:** `APP/lib/estimate/equipment/{production,families,soil,units,guardrails}.ts`.
@@ -820,11 +977,17 @@ are rows compared against hand-worked or catalog answers; they are not a test su
   - `APP/lib/estimate/costing.ts` (a missing-data flag passed through);
   - `APP/lib/estimate/componentDraft.ts`.
 - **Gates:** standard. Quantity table: the existing cost rows unchanged (hand-entered components bit for bit), plus the
-  worked examples as component rows ($8,022.13, $8,153.05, $3,895.13, $4,497.21, and the EL-60 variant NULL).
+  worked examples as component rows ($8,022.13, $8,153.05, $3,895.13, $4,497.21, and the EL-60 variant NULL), the spread
+  variant (2 × EX-CRAWL-20T at 1,000 BCY/day: $16,699.56 and crew-hours 80 at 8 hr; $20,324.46 and 100 at 10 hr), and
+  a labour component on an item with no library equipment, bit for bit as before.
+- **Also in this block:** `estimate_item_spread`, the spread columns (`eq_units`, `eq_in_spread`, `eq_paces`,
+  `spread_linked`, crew-row `paces` and `for_equipment`) and `APP/lib/estimate/equipment/spread.ts`.
 - **Check by hand:** create through the API docs page a component with `eq_class_key='EX-CRAWL-20T'`,
   `eq_activity_key='EW-CUTLOAD'` on a Cut item of 10,000 BCY, then open Estimating.
   - **Expected:** Total Equipment $8,022.13.
   - A hand-entered component on another item still shows its old total.
+  - Set the item's company production to 1,000 BCY/day, the machine count to 2, and add a labour component with 2
+    operators. **Expected:** equipment $16,699.56, crew-hours 80. Hours per work day 10: $20,324.46, crew-hours 100.
 
 **Block 3.2: the picker**
 - **Files:**
@@ -846,6 +1009,11 @@ are rows compared against hand-worked or catalog answers; they are not a test su
      - **Expected:** no activity step, Hours from Crew 64, 2 weeks, **$3,895.13**.
   7. Pick 60 ft electric/hybrid jib.
      - **Expected:** fuel "No data, enter a value", total "—", Save allowed and the line flagged.
+  8. Back on the Cut item: type production 1,000 BCY/day and set the excavator count to 2; Add to crew.
+     - **Expected:** the capacity check "2 × Excavator 20-25 t ≈ 2,613 BCY/day at 8 hr, catalog C", equipment
+       $16,699.56, an operator row of count 2 following the machine, crew-hours 80 ("Linked to spread").
+  9. Unlink the labour component and give it 12.5 BCY/crew-hr.
+     - **Expected:** crew 800 hr against spread 80 hr, with the warning; Link to spread puts 80 back.
 
 **Block 3.3: shared resources from the library**
 - **Files:**
@@ -862,6 +1030,8 @@ are rows compared against hand-worked or catalog answers; they are not a test su
        $2,317.42, Unallocated $0.00.
   2. Exclude item 2.
      - **Expected:** H = 61.22, total $8,022.13, all on item 1.
+  3. Give a second item in the same division its own standalone EX-CRAWL-20T with mob included (D-725).
+     - **Expected:** both show "Mob/demob counted 2 times — price as one shared machine?"; totals unchanged.
 
 **Block 3.4: Estimating rows, Needs attention, filter, export**
 - **Files:** `APP/features/estimate/EstimatingView.tsx` (detail labels, markers, incomplete totals),
@@ -879,6 +1049,47 @@ are rows compared against hand-worked or catalog answers; they are not a test su
        the EL-60 line.
   4. Open the export in a spreadsheet program.
      - **Expected:** the excavator row reads Rental · 2 wk · 61.22 hr · $8,022.13.
+
+**Block 3.5: earthwork production settings; production and spread update each other (D-727)**
+- **Files:**
+  - migration `<new>_earthwork_production.py` (§2.7 tables);
+  - `API/app/features/equipment/{models,schemas,production_routes,production_service}.py`;
+  - `APP/lib/estimate/equipment/{tiers,spreadLink}.ts` (pure: tier lookup, default production by quantity, scaling on a
+    pacing count, exact tier match);
+  - `APP/features/equipment-library/EarthworkProduction.tsx` (the Settings tab: activities, line mapping, tiers with
+    machines and crew, default production by quantity);
+  - the line's production control in the spread UI;
+  - the attach step after Calculate's write (`APP/features/takeoff/earthwork/useVolumes.tsx` and `site/SiteView.tsx`,
+    after `write_lines` returns), never inside `lib/takeoff`.
+- **Rules:** §2.7 and D-727.
+  - Auto components carry `eq_auto`.
+  - A user edit to production, a count or a component sets `estimate_item_spread.user_edited`.
+  - Every automatic change writes the line's note.
+  - A project switch turns earthwork production off.
+- **TEST data (named "TEST …", never presented as rates):**
+  - activity "TEST Cut to fill" (BCY), mapped from `cut`;
+  - tiers 200–799 BCY/day = 1 × EX-CRAWL-20T + 1 operator, and 800+ BCY/day = 2 × EX-CRAWL-20T + 2 operators;
+  - default production 1,000 BCY/day.
+- **Gates:** standard. Quantity table: tier lookup, scaling (2 → 3 gives 1,500), an exact-match row, and the five check
+  totals below.
+- **Check by hand** (8-hr day unless stated; the throwaway project, then the 3D test copy, D-729):
+  1. Cut 10,000 BCY.
+     - **Expected:** 2 machines and 2 operators attach at 1,000 BCY/day: **$16,699.56**, crew-hours 80.
+  2. Set a 10-hr day.
+     - **Expected:** **$20,324.46**, crew-hours 100. Then set it back to 8.
+  3. Set production to 500.
+     - **Expected:** 1 machine, 20 days, 160 hr, rental one 4-week $7,950.00, fuel $2,791.56, mob $1,100.00, total
+       **$11,841.56**.
+  4. Set production back to 1,000, then the excavators 2 → 3.
+     - **Expected:** production 1,500 with the note, 6.67 days, 53.33 hr per machine, rental per machine 1 week + 2 days
+       = $5,007.00 × 3 = $15,021.00, fuel $2,791.56, mob $3,300.00, total **$21,112.56**, crew-hours 53.33 with 3
+       operators.
+  5. Add 0.5 water truck.
+     - **Expected:** cost changes, production stays.
+  6. Recalculate into another tier.
+     - **Expected:** the edited line keeps its spread, with the "Apply tier" notice.
+  7. The coverage run on the 3D test copy (D-729): every item and sub-item with a quantity priced, Calculate run and rerun
+     with every component surviving, and the coverage table in the night report.
 
 ### Phase 4: the library page
 
@@ -901,7 +1112,7 @@ are rows compared against hand-worked or catalog answers; they are not a test su
   4. Revert both.
      - **Expected:** $8,022.13.
 
-**Block 4.2: custom rows and import/export**
+**Block 4.2: custom rows and import/export, including a company's machine list (D-728)**
 - **Files:** `APP/features/equipment-library/{CustomForms,ImportDialog,exportWorkbook,importWorkbook}.ts(x)`, and the
   import routes in `API/app/features/equipment/routes.py`.
 - **Gates:** standard.
@@ -913,6 +1124,16 @@ are rows compared against hand-worked or catalog answers; they are not a test su
   2. Export company rates. In the file, change EX-CRAWL-20T week to 3,000, leave a cell empty and import.
      - **Expected:** the diff shows 1 changed. The empty cell is "no override", not 0.
   3. Apply. The grid shows the U badge.
+- **A company's machine list (D-728):** the import also reads a sheet of the company's own machines.
+  - The columns it reads: name, owned $/hr without fuel, gal/hr, and rental day / week / 4-week; any may be missing.
+  - **Matching:** each row gets a suggested library class (category, type and size words, tonnage, horsepower or
+    capacity read from the name, scored against the class names and specs). The user confirms it, picks another, or
+    makes the row a custom class.
+  - **Every row stays listed** as matched, custom or skipped by the user; none is dropped silently.
+  - Confirmed rows land as workspace overrides tagged User on the matched class; custom rows land as custom classes.
+  4. A 5-row list with names like "Excavator04, CAT 330" and "Truck, 30 Ton Artic".
+     - **Expected:** each row gets a suggestion (for example a 30–36 t excavator, a 30 t class articulated truck).
+       After confirming, the values land as workspace overrides tagged User, and no row is dropped.
 
 **Block 4.3: release upgrades and notices**
 - **Files:**
@@ -930,6 +1151,25 @@ are rows compared against hand-worked or catalog answers; they are not a test su
 
 ### Phase 5: assemblies with the library
 
+
+**Block P1: assemblies link shared equipment (closes D-93's "Not yet")**
+- **Files:**
+  - `API/alembic/versions/<new>_assembly_equipment_link.py`, `API/app/features/assembly/{models,schemas,routes}.py`
+    (`from-item`, `apply`, link CRUD);
+  - `APP/features/assembly/{api.ts,TemplateComponents.tsx}`;
+  - a "Shared equipment" section in the template editor;
+  - `APP/features/estimate/EquipmentDialog.tsx` (shows linked hosts).
+- **Rules:** §6, without the library: name and usage formula.
+- **Gates:** standard. Quantity table: two seed rows (apply links to the existing resource; apply creates a missing one).
+- **Check by hand:**
+  1. In a throwaway project, make shared resource "Loader 3 yd" ($825/day, basis day, mob $0) on division A.
+  2. Item 1 has labour with 16 crew-hours. Save item 1 as assembly "Pad prep" with the link.
+  3. Make item 2 in division A and apply "Pad prep" to it.
+  - **Expected:** Shared equipment lists both items at 16 hr each. Rental is ⌈32 ÷ 8⌉ = 4 days = $3,300.00. Each item gets
+    $1,650.00. Unallocated is $0.00.
+  4. Rename the resource "Loader 3yd" and apply again to item 3.
+  - **Expected:** it links to the same resource (spaces ignored). No second resource is created.
+
 **Block 5.1: library components in assemblies**
 - **Files:**
   - migration `<new>_assembly_component_eq_columns.py`;
@@ -944,7 +1184,7 @@ are rows compared against hand-worked or catalog answers; they are not a test su
      - The shared link creates resource "Excavator 20-25 t …" in that project with mob $1,100 counted once.
      - The item's share is 100 %: $2,927.00 + $425.48 + $1,100.00 = **$4,452.48**.
 
-**Totals: 5 phases plus a prerequisite, 12 blocks** (P1; 1.1, 1.2; 2.1, 2.2; 3.1 to 3.4; 4.1 to 4.3; 5.1). Phases 1 to 3
+**Totals: 5 phases, 14 blocks, built in this order (D-729):** 1.1, 1.2; 2.1, 2.2; 3.1 to 3.5; 4.1 to 4.3; P1, 5.1. Phases 1 to 3
 give a usable library from the catalog with no page. Phase 4 gives control. Phase 5 gives reuse.
 
 ---
@@ -953,7 +1193,7 @@ give a usable library from the catalog with no page. Phase 4 gives control. Phas
 
 | # | Risk | Guard |
 |---|---|---|
-| R1 | **Hand-entered equipment components change value.** | Every new column is nullable. `evaluate` branches only on `eq_class_key IS NOT NULL`, and the old path is untouched. The quantity table's existing cost rows must stay bit for bit (Block 3.1). The migration writes no data into existing rows. Shared resources without a class keep `⌈Σusage ÷ basis⌉` |
+| R1 | **Hand-entered equipment components, or labour, change value.** | Labour on an item with no library equipment and no company production keeps its own production rate exactly (D-724 rule 12); a quantity-table row proves it bit for bit. Every new column is nullable. `evaluate` branches only on `eq_class_key IS NOT NULL`, and the old path is untouched. The quantity table's existing cost rows must stay bit for bit (Block 3.1). The migration writes no data into existing rows. Shared resources without a class keep `⌈Σusage ÷ basis⌉` |
 | R2 | **A release silently moves a saved bid.** | Snapshot plus notice plus one-click Update (Q1). `eq_snapshot` carries the release and every resolved value, so a component prices from its snapshot until the user updates |
 | R3 | **A blank priced as $0** (564 classes need a rate). | Blocking blanks give NULL totals, an incomplete marker on totals, Needs attention and an export banner (§3.2). A quantity-table row asserts NULL, not 0 |
 | R4 | **The operator counted twice** (operated rate plus a crew operator). | Operated suppresses the Add-to-crew prompt. Switching to bare offers it. An operated component on a host whose labour crew has a matching-label row warns "The operated rate includes the operator" |
@@ -970,7 +1210,7 @@ give a usable library from the catalog with no page. Phase 4 gives control. Phas
 
 ---
 
-## 9. Open questions (only those that block a block), with recommended answers
+## 9. Open questions (answered 2026-10-23: D-718 to D-723; Q3 by Umer's own rule, D-720)
 
 **Q1. When a library value changes under a saved estimate (an upgrade, or a workspace override edited later), does the
 component's money move?** Blocks 3.1 and 4.3.
