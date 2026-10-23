@@ -32,7 +32,7 @@ three-click arc shape):
 | Where | Menu entry | What it does |
 |---|---|---|
 | A straight edge | **Insert arc point here** (D-713 Q2) | An arc handle appears at the edge's middle; the edge stays straight until the handle is dragged, bending live; saved on release. Esc, or a click elsewhere, drops it with nothing saved. |
-| A corner with a corner on each side | **Convert to arc point** | The corner goes; the edge between its two neighbours becomes the arc through where it was. The run keeps at least its least corners (2 for a Linear, 3 for an Area). Three corners in a line: refused, said why. |
+| A corner with a corner on each side | **Convert to arc point** | The corner goes; the edge between its two neighbours becomes the arc through where it was. The run keeps at least its least corners (2 for a Linear, 3 for an Area). A corner in line with its neighbours (D-714): a pending arc point on the edge between them, the corner taken out with the bend in one write once it is dragged. |
 | A picked corner | **A** key (D-713 Q4) | As Convert to arc point. A plain click on a corner (no drag) picks it, drawn larger; Esc or a pick elsewhere lets it go. With no corner picked, A arms Area as before. |
 | An arc handle | **Arc point ✓** (D-713 Q3) | Unticking turns it back into a corner where the handle is: the edge becomes two straight edges meeting there. |
 | An arc handle | **Straighten edge** | The arc goes; the edge is straight between its corners. |

@@ -22225,3 +22225,18 @@ area perimeter … on segment … remove arc point"; the four choices answered t
   unticked: 9 corners, the other arc re-indexed in place; four undos back to 9 corners, no meta, 522.70 LF. LF 68
   (Segment): an arc point dragged, still 2 points, 221 → 247.84 LF. SF 67: Convert to arc point on a corner: 4
   corners and an arc, 28,430 → 36,776 SF.
+
+## D-714: A corner in line with its neighbours converts to an arc point too
+
+**Status:** Accepted (2026-10-22, Umer: "why p can not be converted to arc, it should be too"). Amends D-713.
+
+- **Before:** "Convert to arc point" (and A) on a corner in line with its two neighbours was greyed out ("no arc
+  passes through it"): three points in a line have no circle through them.
+- **Now:** such a corner becomes a pending arc point, as "Insert arc point here" leaves one: its handle shows at the
+  middle of the straight edge between the neighbours, the corner's own handle hidden. Dragging it bends that edge and
+  takes the corner out, in one write and one undo; Esc, or a click elsewhere, leaves the run as it was.
+  `dropCorner` in `lib/takeoff/engine/arcPoints.ts`. Ends of an open run and a run at its least corners still refuse.
+- **Checked in the browser** (BENCH DUP, purged): Wall Type B, a point inserted a third along edge 0 (10 corners):
+  its menu offered Convert to arc point enabled; the pending handle showed with 9 corners; Esc gave back 10 and no
+  arc; click and A, then a drag: 9 corners and one arc in one write (version 2 → 3), 526.44 LF; one Ctrl+Z: 10 corners,
+  no meta, 522.70 LF.
