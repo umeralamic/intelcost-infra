@@ -22935,3 +22935,19 @@ was decided differently for that.
 - **Price as:** one site spread (D-744) for all 13.
 - **Deleting an activity** removes its site spreads' machines in every project (before, they would have stayed as plain
   shared machines).
+
+## D-752: A second workspace inherits the plan and trial end, never a fresh trial (the founder, 2026-10-23)
+
+**Status:** Accepted as policy; **the build ("New workspace…") is stopped** at the founder's own condition, pending
+their call (2026-10-23).
+
+- **Policy:** a person's second workspace gets their first workspace's plan and trial end, never a fresh trial.
+- **Why the build stopped:** a paid plan is charged **per workspace, per seat**: each workspace has its own
+  subscription (`workspace_subscription`, one per workspace: plan, seats, Stripe customer and subscription); there is no
+  account-level plan. A paying customer's second workspace would have no subscription and no seats of its own, so
+  inheriting the plan would make it a paid workspace for free; inheriting only the trial end (long past for a paying
+  customer) would make it view-only at once. The founder's instruction was to stop and say so instead of building.
+- **Found while checking:** the api's `POST /api/workspace` today stamps every new workspace with a **fresh** trial
+  window from the owner's signup (`trial_started_at` now, `trial_ends_at` now + the signup's trial days). No screen
+  reaches it for an account that already has a workspace, so nobody can use it yet; it is the opposite of this
+  decision and is changed with the build.
