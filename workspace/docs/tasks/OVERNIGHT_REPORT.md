@@ -8,6 +8,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 06:26 UTC. Updated after e
 |---|---|---|---|---|
 | Part 1 | Done 06:44 UTC | infra ba75734 (mirror) | not run (no code) | answers applied, D-718 to D-729, rule 9 scan clean |
 | 1.1 (D-730) | Done 06:55 UTC | api 522670a | passed: 344 rows …, plus eqlib counts 628 104 592 9 33 4 157 and 0 zero rents | psql: classes 628 → 628; EX-CRAWL-20T 1040/2927/7950/97.76/2.78 → same; DZ-CRAWL-D1 rent NULL, owned 41.18 → same; EX-CRAWL-20T EW-CUTLOAD 163.344 → 163.344; CR-TOWER rental → rental. Smoke: throwaway fx.equip.202610230651@ signed in after the migrations, workspace "zz Equip Night" made, api health ok |
+| 1.2 (D-731) | Done 07:08 UTC | api 9a54a16 | passed (unchanged rows; api only) | GET EX-CRAWL-20T rent_day: 1040 national A → 1040, national, A; PUT 980 → 980, workspace, U, national 1040, set by Equip Night; DELETE → 1040 national. Extra: fuel price 0 refused (422); confirm none on AW-AB-EL-60 fuel → value null, confirmed_none true (not 0). Bundle 750 KB, ~80 ms |
 
 ## Step A: earthwork lines (change 4)
 
@@ -50,7 +51,9 @@ Every number in the brief was checked against its rule before building:
      covering the billed days, weighted by the days each covers, filled from the longest period down. With one period
      kind it is that period's rate, which gives the brief's $7,317.50.
    - **Alternative:** overtime counted per work day (hours above 8 on each worked day).
-4. **The follow-up's test copy** (D-729): recorded in the plan; applied from Block 3.5.
+4. **Library writes take `canManageWorkspaceLibrary`** ("Manage workspace library", D-731), not Crews` `canManageWorkspace`: the name fits the company list; owners and admins hold both. Alternative: Crews` capability.
+5. **Fuel gal/hr grades** (D-731): the catalog has no fuel confidence column; graded D blank, C where it says "Derived (C)", else B (single source, README legend). Alternative: show no grade on fuel.
+6. **The follow-up's test copy** (D-729): recorded in the plan; applied from Block 3.5.
 
 ## Questions for the founder
 

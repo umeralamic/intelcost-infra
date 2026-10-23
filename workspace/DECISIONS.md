@@ -22476,3 +22476,28 @@ line, and can we do something else to show the selected workspace rather than or
   `GORDIAN` is `CDP-CCI` (no row cited it).
 - **Quantity table:** the release's counts and "no rental rate stored as 0" checked from the database
   (`quantity-table.sh`), and the national rows dumped for the browser's equipment rows.
+
+## D-731: Equipment library Block 1.2: overrides, custom rows, resolution and the bundle (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 1.2; built to D-718, D-723).
+
+- **Tables** (migration `d718c6e8a0b3`): `eq_override` (one field of one national or custom row, workspace scope when
+  `project_id` is NULL, else project; unique per scope and field), `eq_custom_class`, `eq_custom_activity`,
+  `eq_custom_production` (fields as JSON with the national columns' names; keys `U-…`), `eq_release_seen`.
+- **Resolution:** national → workspace → project, field by field (`service.resolve_field`), each value carrying its
+  national value, its source (national, custom, workspace, project), its grade, and who set it and when. A user value
+  is graded U. Fuel gal/hr, which has no confidence column, is graded D when blank, C when the catalog says it was
+  derived ("Derived (C)"), else B (a single published source, by the README's legend).
+- **Never a silent zero:** a numeric override needs a value or "Confirm none" (`confirmed_none`, a value of its own,
+  never 0); a setting of 0 is refused (a 0 fuel price or work day would price for free); negatives are refused.
+- **Who writes:** workspace rates and custom rows take `canManageWorkspaceLibrary` (the existing "Manage workspace
+  library" capability, which fits better than Crews' general one); a project's own overrides take the pricing gate
+  (`canEditEstimates`), as every estimate write. Every write is audited. Guests reach nothing: the workspace routes are
+  outside a link's project, and the project bundle sits under `estimate`, closed when pricing is off.
+- **Routes:** `/api/workspace/{ws}/equipment-library/…` (release, bundle, classes/{key}, reference/{sheet}, sources,
+  override, override/revert, custom classes, activities and production) and
+  `/api/workspace/{ws}/project/{p}/estimate/equipment-library/…` (bundle with the project's overrides and the wage
+  set's equipment factor, D-719; classes/{key}; override).
+- **The bundle** carries the national pricing rows without their long text (detail has it), the custom rows, every
+  override with its author, the settings (with the empty fuel prices of D-723) and the location: about 750 KB, 80 ms
+  on the bench; the browser keeps it per project.
