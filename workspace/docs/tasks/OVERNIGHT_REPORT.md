@@ -491,6 +491,79 @@ picked "31 Earthwork"; saved, it prices from the engine ($1,424.00 + $3,600.00 =
 deleted. "Own machine" clears the library choice and opens the typed rates. Divisions, extras and the subcontractor are
 searchable pickers.
 
+### Earthwork production starter (D-751)
+
+Commits: api `9199f9d`, app `8d290c7`, infra (the quantity table's starter gate and rows) in the commit that carries
+this section. Gates green; `alembic check` clean; quantity table passed: **60 equipment rows** (5 new) and the starter
+gate below.
+
+- **Loaded as release 2** from committed CSVs (`seed/earthwork_1/`, written from the workbook read with formulas and
+  values; sha256 in `release.json`), counts checked by the converter, the migration and the quantity table:
+
+  | | File | Loaded |
+  |---|---|---|
+  | Activities | 13 | 13 |
+  | Tiers | 79 | 79 (13 open-ended, stored open, never 0) |
+  | Tier machines | 165, 19 optional | 165, 19 optional |
+  | Tier crew | 127 (182 less 55 Operator rows) | 127 |
+  | Default production | 63 | 63 (13 open-ended), every one in its tier: the file's "Tier it lands in" is never 0, and recomputed equal (63 formulas) |
+  | Line mapping | 26 keys | 27 role rows (two keys name two roles each); "stockpile" skipped |
+
+- **Line mapping:** over-excavation → `over_excavation`, replacement fill → `replacement_fill`, geosynthetics →
+  `geosynthetics` (none, as the file says). **"stockpile" has no Calculate role** (the Calculate has `strip_stockpile`
+  and `undercut_stockpile`, neither a cut to stock): recorded and skipped.
+- **Crew roles with no Wage Calculator craft: Foreman, Grade checker, Pipelayer.** They read "Missing data: wage for
+  <role>" (D-747), never $0. Laborer, Laborer (spotter) and Laborer (dump spotter) → Laborer; operators per machine by
+  its catalog class → Equipment Operator (Operating Engineer), Truck Driver; the hired tri-axle (operated) and
+  attachments have none.
+- **Read live:** every workspace takes the starter up on its first read or Calculate. **This includes the founder's own
+  workspace "Intelcost Team"**: taken up at 18:52 UTC during the founder's own session there (nothing of this work drove
+  it), before a fix to the operator rows (below); those rows refresh themselves on their next read.
+- **Found and fixed in the smoke:** operator rows were built with no craft (their role went through the bracket-stripping
+  name match and came out "Operator"), so every operator read "Missing data: operator wage". Fixed; an unedited starter
+  activity taken up with the old rows is treated as stale and taken up again. The throwaway workspaces' starter rows were
+  reset for a fresh take-up (bench repair, throwaways only).
+
+**HV copy on the starter** ("zz Equip HV copy": the 9 TEST activities deleted, so the starter's 13 and its mapping
+apply; Calculate through the app twice, 19:26 and 19:27 UTC, fingerprints equal: 263 components, 231 automatic and 32
+by hand, 24 site machines):
+
+| | TEST activities, site spread (16:31) | Starter (19:27) |
+|---|---|---|
+| Equipment | $197,021.98 | **$361,146.19** |
+| Labour | $85,005.33 | **$16,052.87** |
+| Full estimate | $510,665.32 | **$605,837.08** |
+
+Coverage (`morning-report-2026-10-24/day-751-coverage-hv-copy.xlsx`): 86 lines with a quantity (the same set as before);
+**no line without a component; no "No data" from the starter** (no machine short of catalog data; the optional water
+trucks are out). **Labour: every one of the 47 starter crews on these lines has a Foreman**, which has no craft, so all 47
+read "Missing data: wage for Foreman" and carry no total; the $16,052.87 is the TEST crews kept on lines a person edited
+and the 32 components by hand. Needs attention 54 = those 47 + the 7 lines that read 0.
+
+**Worked check** (zz Equip 751 starter check, a throwaway copy in zz Equip Night; a project line map sends cut to the
+starter's A1, since that workspace maps cut to its TEST activity; one synthetic Calculate line of 10,000 BCY; diesel
+6.276; location factor set to 1.00 for this estimate, as its wage set gave 1.01):
+
+| | By hand | App |
+|---|---|---|
+| Default production, tier | 1,000 BCY/day (8,000–19,999), tier 900–1,399 | 1,000, tier 900–1,399 |
+| Spread | 1 × EX-CRAWL-30T + 2 × ADT-30T | same |
+| Days, hours | 10 days × 10 hr = 100 hr a machine | 100 machine-hr EX, 200 ADT (10 work days a machine) |
+| EX rental | 2 weeks 2 × $4,019 = $8,038.00 | |
+| EX overtime | 20 hr: $8,038 × 20 / 80 = $2,009.50 | rental with overtime $10,047.50 |
+| EX fuel | 100 × 4.5 × 6.276 = $2,824.20 | $2,824.20 |
+| EX mob/demob | $1,800 + $1,800 = $3,600.00 | $3,600.00 |
+| EX total | **$16,471.70** | **$16,471.70** |
+| ADT rental + overtime (each) | $11,528.00 + $2,882.00 = $14,410.00 | $14,410.00 |
+| ADT fuel (each) | 100 × 4.38 × 6.276 = $2,748.89 | $2,748.89 |
+| ADT mob/demob (each) | $3,600.00 | $3,600.00 |
+| ADT total (× 2) | **$41,517.78** | **$41,517.78** |
+| Line equipment | **$57,989.48** | **$57,989.48** |
+| Labour | 0.5 Foreman (no craft) + 0.5 Laborer + 3 operators, 100 crew-hr | "Missing data" (wage for Foreman) |
+
+At the project's own location factor (1.01 from its wage set) the app reads $16,572.18 and $41,805.98: 1 % of rental
+more, as the factor applies to bare rental only.
+
 ### Morning checklist (day)
 
 1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are

@@ -103,6 +103,19 @@ export const EQUIPMENT_CASES = [
   { id: "eq-d747-wage-missing", kind: "host", setting: {}, qty: 100, unit: "SF", rows: [comp("crew", "labor", { crew: [{ role: "TEST Laborer", count: 2, hourly_wage: 0, rate_missing: true }], production_rate: 10, production_basis: "units_per_hr" })], expect: { labor: 0, errors: ["Missing data: wage for TEST Laborer"] } },
   { id: "eq-d747-typed-zero-unchanged", kind: "host", setting: {}, qty: 100, unit: "SF", rows: [comp("crew", "labor", { crew: [{ role: "TEST Laborer", count: 2, hourly_wage: 0 }], production_rate: 10, production_basis: "units_per_hr" })], expect: { labor: 0, crewHours: 10 } },
 
+  // The earthwork starter's worked check (D-751): 10,000 BCY at A1's default 1,000 BCY/day, tier 900-1,399 (1 ×
+  // EX-CRAWL-30T + 2 × ADT-30T), the activity's 10-hr day, diesel 6.276: 10 days, 100 hr a machine. By hand: EX 2 weeks
+  // $8,038.00 + overtime 20 hr $2,009.50 + fuel 100 × 4.5 × 6.276 $2,824.20 + mob $3,600.00 = $16,471.70; ADT × 2
+  // weeks $23,056.00 + overtime $5,764.00 + fuel 200 × 4.38 × 6.276 $5,497.78 + mob $7,200.00 = $41,517.78.
+  { id: "eq-751-ex30-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
+  { id: "eq-751-adt30-10hr", kind: "machine", ...DIESEL, input: { classKey: "ADT-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 41517.78, fuel: 2748.89, mob: 3600 } },
+  // (The breakdown's fuel and mob are one machine's: $2,748.89 and $3,600.00, × 2 in the total.)
+  // The site machines on the activity's own work day (eq_hours_per_day 10, the library's 8 untouched).
+  { id: "eq-751-site-ex30", kind: "shared", ...DIESEL, resource: { name: "Excavate and load: EX-CRAWL-30T", eq_class_key: "EX-CRAWL-30T", eq_units: 1, eq_hours_per_day: 10 }, hosts: [{ id: "h1", machineHours: 100 }], expect: { total: 16471.70, h1: 16471.70, unallocated: 0 } },
+  { id: "eq-751-site-adt30", kind: "shared", ...DIESEL, resource: { name: "Excavate and load: ADT-30T", eq_class_key: "ADT-30T", eq_units: 2, eq_hours_per_day: 10 }, hosts: [{ id: "h1", machineHours: 200 }], expect: { total: 41517.78, h1: 41517.78, unallocated: 0 } },
+  // A line on its activity's work day: 10,000 BCY at 1,000/day, 10 hr → 100 crew-hr (8 without it → 80).
+  { id: "eq-751-line-10hr", kind: "host", ...DIESEL, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY", hours_per_day: 10 }, rows: [excavator({ eq_class_key: "EX-CRAWL-30T", eq_units: 1 }), operators(1)], expect: { equipment: 16471.70, crewHours: 100 } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },

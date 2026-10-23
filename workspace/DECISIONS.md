@@ -22899,3 +22899,39 @@ line, and can we do something else to show the selected workspace rather than or
 - **Home division / scope, Extra divisions / scopes and Subcontractor** are searchable pickers (the existing
   `SearchSelect`), as long lists of codes were hard to scan.
 - A resource typed by hand prices exactly as before.
+
+## D-751: The earthwork production starter, national data in release 2; a work day per activity (the founder, 2026-10-23)
+
+**Status:** Accepted (2026-10-23, the founder's instruction; the workbook "IntelCost Earthwork Production Starter.xlsx"
+accepted as drafted). Logged after the build began, an error of order (the workflow asks for it first); nothing in it
+was decided differently for that.
+
+- **National, like the catalog (D-718):** `scripts/earthwork_starter_convert.py` reads the workbook with formulas and
+  with values and writes `app/features/equipment/seed/earthwork_1/` (sha256 and counts in `release.json`); migrations
+  `d751a1c3e5f7` (the `eqlib.ew_*` tables and the workspace columns) and `d751b2d4f6a8` (release 2 by COPY, counts
+  checked). Counts: 13 activities, 79 tiers, 165 machine rows (19 optional), 127 crew rows (the 55 "Operator" rows left
+  out: operators follow their machines, rule 5), 63 defaults, 27 line-map rows. A blank is NULL, never 0. Release 2
+  changes no catalog row.
+- **Read live by every workspace:** each workspace takes every starter activity up as its own row (`national_key`) on
+  its first read or Calculate and follows every newer release until the company edits it (`national_edited`; a release
+  never overwrites it); one the company removes is hidden (`national_hidden`), not taken up again. A project's settings
+  stay its own overrides (D-744). The starter's line mapping applies under the workspace's and the project's own.
+- **Ranges:** the workbook's ends are inclusive (200–349); the app's ranges stop before their end, so a bounded end is
+  taken up as the workbook's + 1 and reads back as the workbook's.
+- **Line mapping:** "over-excavation", "replacement fill" and "geosynthetics" are the roles `over_excavation`,
+  `replacement_fill`, `geosynthetics`; "stockpile" has no role (only `strip_stockpile` and `undercut_stockpile`, neither
+  a cut to stock): recorded in `release.json` and skipped. "stabilize / stabilize_mix" and "stabilize_agent_1 / _2" are
+  two roles each.
+- **Optional machines** ("Optional (catalog gap)" = Y, 19 rows) are inactive spread members: shown in Settings as "Add
+  once its missing catalog value is entered" with "Include now", never priced, never a "No data" on a line.
+- **Crew** roles map to Wage Calculator crafts by name (the part before a bracket): Laborer, Laborer (spotter) and
+  Laborer (dump spotter) → Laborer. **No craft for Foreman, Grade checker or Pipelayer**: their rows are marked
+  `rate_missing` and the crew reads "Missing data: wage for <role>" (D-747), never $0. Operators: one row per machine
+  that needs one, following its count, by the machine's catalog operator class (Operating Engineer → Equipment Operator,
+  Truck Driver → Truck Driver, Laborer → Laborer; a hired operated service and a non-operated item have none).
+- **A work day per activity** (`hours_per_day`, 10 for all 13 from the starter): its lines' spreads and its site
+  machines run on it; everything else keeps the workspace's or project's (8). Rental overtime above 8 hours a day
+  applies as built.
+- **Price as:** one site spread (D-744) for all 13.
+- **Deleting an activity** removes its site spreads' machines in every project (before, they would have stayed as plain
+  shared machines).
