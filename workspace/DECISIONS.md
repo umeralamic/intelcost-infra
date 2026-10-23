@@ -22576,3 +22576,27 @@ line, and can we do something else to show the selected workspace rather than or
 - **Missing data** stops a machine's money: its total is 0 with the error "Missing data: …" and no last good total,
   so it is flagged wherever errors show (Block 3.4 shows it in full); while the library loads, a machine carries its
   last good total.
+
+## D-735: Equipment library Block 3.2: the picker, the spread panel and operators from the library (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 3.2; built to D-720, D-724).
+
+- **The Equipment component** opens on "From library" (when the library has loaded) or "Enter by hand" (today's form,
+  unchanged); a component typed by hand opens on its form. Switching to "Enter by hand" clears the library fields.
+- **The picker** (`features/equipment-library/Picker.tsx`): search, category and type, size classes with day / week /
+  4-week and the rental grade; the activity (production classes only; duration classes such as lifts skip it); the
+  rate basis side by side (owned labelled a ceiling), the period, the number of machines (decimal), Paces, Own
+  production, the fuel load, mob/demob (from the haul, or a typed quote), travel for an operated service, the FEMA ⚠
+  text where flagged. Every library value shows its grade and is editable for this estimate in place
+  (`LibraryValue`): a blank reads "No data, enter a value" with "Confirm none".
+- **The breakdown** is the engine's, priced with the host's other components: spread days × hours, the rental cover
+  against the next two, overtime, the location factor and its source, fuel, mob, × machines, then what is missing.
+  A pick takes the library's snapshot (D-718); "Library rates changed: Update" takes a new one.
+- **The spread panel** (`SpreadPanel.tsx`) on a library machine and on labour: the item's production per work day
+  (typed; it saves at once, as the item's), the spread's days and hours, the capacity check beside it ("2 ×
+  Hydraulic excavator 20-25 t … ≈ 2,614 BCY/day at 8 hr, catalog C"); on labour "Linked to spread: 80 crew-hr" with
+  Unlink, and an unlinked crew's own hours with the warning when they differ.
+- **Add an operator row to the crew** (create only, a class that needs an operator, not operated): after the save, a
+  row "Operator: <the catalog's craft label>" following the machine's count joins the host's labour component (one is
+  made if it has none). Its wage is a blank until a craft is picked: the labour line says "Missing data: operator
+  wage", never $0.
