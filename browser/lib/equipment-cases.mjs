@@ -64,6 +64,10 @@ export const EQUIPMENT_CASES = [
   { id: "eq-host-unlinked-labour", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators(2, { spread_linked: false })], expect: { crewHours: 800, warning: "Crew 800.0 hr, spread 80.0 hr" } },
   { id: "eq-host-lift-crew-hours", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 6400, unit: "SF", rows: [comp("lift", "equipment", { eq_class_key: "AW-AB-RT-60", eq_mode: "rental", eq_include_mob: true }), comp("crew", "labor", { position: 1, crew: [{ role: "TEST Electrician", count: 2, hourly_wage: 60 }], production_rate: 100, production_basis: "units_per_hr" })], expect: { equipment: 3895.13, crewHours: 64 } },
   { id: "eq-host-hand-entered-unchanged", kind: "host-same", qty: 120, unit: "LF", rows: [comp("eq", "equipment", { equip_rate: 450, equip_basis: "day", duration_formula: "QTY / 40", mob_demob: 300 }), comp("crew", "labor", { position: 1, crew: [{ role: "Laborer", count: 3, hourly_wage: 41.5 }], production_rate: 15, production_basis: "units_per_hr" })] },
+  // Earthwork production tiers (Block 3.5, D-738): the spreads a tier swap and a count change
+  // leave on the 10,000 BCY line (the tier lookup itself is the api's, driven in the smoke).
+  { id: "eq-host-tier-500", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 500, prod_unit: "BCY" }, rows: [excavator({ eq_units: 1 }), operators(1)], expect: { equipment: 11841.56, crewHours: 160, labor: 8000 } },
+  { id: "eq-host-scaled-3-of-2", kind: "host", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", spread: { prod_per_day: 1500, prod_unit: "BCY" }, rows: [excavator({ eq_units: 3 }), operators(1)], expect: { equipment: 21112.56, crewHours: 53.333333333333336 } },
   { id: "eq-host-snapshot-holds", kind: "host-snapshot", setting: { fuel_price_diesel: 6.276 }, qty: 10000, unit: "BCY", newDay: 900, newWeek: 2500, expect: { before: 8022.13, after: 8022.13, changed: true } },
 
   // A shared machine from the library (Block 3.3, D-736): the engine's total over the hosts'

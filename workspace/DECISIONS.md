@@ -22641,3 +22641,34 @@ line, and can we do something else to show the selected workspace rather than or
   machine and shared machine (item, machine, library key, activity, basis, cover and overtime, machines, hours,
   equipment, fuel, mob, total, grade, source, missing data) and then the estimate's equipment settings with their
   sources. A quantities-only export leaves it out.
+
+## D-738: Equipment library Block 3.5: earthwork production tiers and the two-way link (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 3.5; built to D-727, D-724).
+
+- **Settings › Equipment library › Earthwork production:** the company's activities (name, unit, soil), each with
+  tiers (production per work day from and to, machines with counts and the pacing mark, crew rows with the machine
+  each operator follows) and defaults by quantity range. The tier's machines and crew are JSONB on the tier row (one
+  row per tier; never priced from there, only copied). Earthwork line roles map to an activity per workspace, and a
+  project can map its own.
+- **Attach (rule 5):** at the end of each Calculate's `write_lines`, every line whose role maps to an activity gets its
+  default production for its quantity (in the activity's unit, converted through the soil's factors) and that tier's
+  spread as automatic components (`eq_auto`). An automatic line is refreshed on every recalculation; a line a person
+  has edited keeps its spread and production and, when its default moved into another tier, says "Default production
+  for this quantity is now in the 200–799 tier: Apply tier".
+- **Production typed (rule 6):** the matching tier's spread replaces the automatic components; hand-added components
+  (the 0.5 water truck of the smoke) stay. The dialog closes after a swap, since the open component may be gone.
+- **Count changed (rule 7):** the pacing machine's count scales the production by the same ratio ("Production updated
+  to 1,500 BCY/day (3 … instead of 2)."), unless the spread then equals a tier's machines exactly, when that tier's
+  production is taken (the activity's default for the quantity if it falls in the tier, else the tier's start).
+- **An edited tier component stays automatic.** Editing marks the line edited, not the component, so Apply tier puts
+  the tier's spread back whole. (The first build cleared `eq_auto` on edit and Apply tier then left the edited machine
+  beside the new one; found in the smoke, fixed.)
+- **Apply tier (rule 8):** the line takes its default production and that tier's spread and is automatic again.
+- **Pacing:** the marked machine, else the first with catalog production, else, on a line with company production,
+  the first machine.
+- **Shared library machines draw machine-hours only.** A division item's crew-hours never fall back onto a library
+  shared machine (the night's 10,000 BCY line priced $23,102.15 instead of $16,699.56 until fixed in `resolveUsage`).
+- **TEST data:** "TEST Cut to fill" (BCY) with tiers 200–799 (1 × EX-CRAWL-20T + TEST Operator $50) and 800+ (2 × and
+  2 operators), defaults under 5,000 → 500 and 5,000+ → 1,000 BCY/day. The under-5,000 range is mine, made for the
+  Apply-tier check; none of it is a company or catalog number.
