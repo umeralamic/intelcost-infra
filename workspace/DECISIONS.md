@@ -22672,3 +22672,7 @@ line, and can we do something else to show the selected workspace rather than or
 - **TEST data:** "TEST Cut to fill" (BCY) with tiers 200–799 (1 × EX-CRAWL-20T + TEST Operator $50) and 800+ (2 × and
   2 operators), defaults under 5,000 → 500 and 5,000+ → 1,000 BCY/day. The under-5,000 range is mine, made for the
   Apply-tier check; none of it is a company or catalog number.
+- **A line that reads 0 gives its tier back (addendum, the coverage run):** a recalculation that leaves an automatic
+  line at 0 as it reads (two decimals; the engine can send 4e-11 BCY), or retires it, removes its automatic components
+  and its spread; a day of rental and the mob were billed for no hours ($2,150.40 on each of two lines of the test copy).
+  A line a person edited keeps everything.
