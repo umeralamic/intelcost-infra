@@ -375,7 +375,7 @@ BCY/day), 8-hr day, diesel 6.276, location 1.00. Read in Estimating and the Shar
 | Shares | $10,019.74 and $6,679.82 | $10,019.74 (60 %) and $6,679.82 (40 %) |
 | Unallocated | $0.00 | $0.00 |
 | Crew-hours, 2 operators | 48 and 32 | 48 and 32 crew-hr: 96.00 and 64.00 man-hours, $4,800.00 and $3,200.00 at TEST $50 |
-| Per line | $11,808.94 and $9,170.63 ($20,979.57) | $11,808.94 and **$8,070.63** ($19,879.57): see Disputed numbers |
+| Per line | $11,808.94 and $8,070.63 ($19,879.57), corrected (see Disputed numbers) | $11,808.94 and $8,070.63 ($19,879.57) |
 | Back to site spread | $16,699.56 | $10,019.74 + $6,679.82 = $16,699.56 |
 
 Also driven: recalculation keeps the site lines' components (same rows); the pacing count 2 → 3 in Equipment settings:
@@ -402,13 +402,11 @@ as before).
 
 ### Disputed numbers (day)
 
-- **Per line, the 4,000 BCY line: expected $9,170.63, got $8,070.63.** $9,170.63 is that line at 1,000 BCY/day on the 800+
-  tier's 2 machines (32 hr each: 2 × 1 week $5,854.00, fuel $1,116.63, 2 mobs $2,200.00); the quantity table reproduces it
-  to the cent (`eq-3.6-per-line-4000-at-1000`). Per line takes each line's default for its own quantity, and the night's
-  TEST default under 5,000 BCY is 500 BCY/day (mine, D-738), so the line is in the 200–799 tier: 1 machine, 64 hr, 2 weeks
-  $5,854.00 + fuel $1,116.63 + mob $1,100.00 = $8,070.63 (`eq-3.6-per-line-4000-test-500`, worked by hand). With only the
-  stated default (5,000 and over → 1,000) a 4,000 line would have no default and no spread at all. The expected number is
-  not changed; which default the check meant is the founder's call.
+- **Per line, the 4,000 BCY line: corrected by the founder.** The brief's $9,170.63 (that line at 1,000 BCY/day on the
+  800+ tier's 2 machines) was wrong; the expected value is **$8,070.63**: the 500 BCY/day TEST default (under 5,000 BCY,
+  D-738), 1 machine, 8 days, rental 2 weeks $5,854.00 + fuel $1,116.63 + mob $1,100.00. Got $8,070.63. Recorded as the
+  expected value in the quantity table (`eq-3.6-per-line-4000`; the row that held $9,170.63 is withdrawn with it) and in
+  the check above. Resolved.
 
 ### Decisions taken (day)
 
@@ -449,7 +447,8 @@ changes nothing there.
 
 ### Morning checklist (day)
 
-1. Decide the disputed 4,000 BCY per-line figure, and read the ten decisions above.
+1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are
+   accepted.
 2. Accept or reject D-744 to D-748.
 3. See the site spread: as the throwaway, zz Equip 3.6 site spread › Estimating › Equipment settings › Earthwork
    production, and the HV copy's.

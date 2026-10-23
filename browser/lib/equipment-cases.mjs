@@ -94,11 +94,10 @@ export const EQUIPMENT_CASES = [
   // 80 hr per machine). The same lines per line: each its own tier (6,000 → 1,000/day, 2 machines; 4,000 → 500/day, 1).
   { id: "eq-3.6-site-spread", kind: "shared", ...DIESEL, resource: { name: "TEST Cut to fill: Excavator", eq_units: 2 }, hosts: [{ id: "h1", machineHours: 48 * 2 }, { id: "h2", machineHours: 32 * 2 }], expect: { total: 16699.56, h1: 10019.74, h2: 6679.82, unallocated: 0 } },
   { id: "eq-3.6-per-line-6000", kind: "host", ...DIESEL, qty: 6000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators()], expect: { equipment: 11808.94, crewHours: 48 } },
-  // The founder's per-line figure for the 4,000 BCY line is the 800+ tier's (1,000 BCY/day, 2 machines, 32 hr each);
-  // the night's TEST default under 5,000 BCY (500/day, mine, D-738) takes it to the 200-799 tier: 1 machine, 64 hr.
-  // Both worked by hand; which default applies is under Disputed numbers (Day fixes 2026-10-23).
-  { id: "eq-3.6-per-line-4000-at-1000", kind: "host", ...DIESEL, qty: 4000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY" }, rows: [excavator(), operators()], expect: { equipment: 9170.63, crewHours: 32 } },
-  { id: "eq-3.6-per-line-4000-test-500", kind: "host", ...DIESEL, qty: 4000, unit: "BCY", spread: { prod_per_day: 500, prod_unit: "BCY" }, rows: [excavator({ eq_units: 1 }), operators(1)], expect: { equipment: 8070.63, crewHours: 64 } },
+  // The 4,000 BCY line per line: the TEST default under 5,000 BCY (500/day, D-738) puts it in the 200-799 tier: 1 machine,
+  // 8 days, 64 hr: rental 2 weeks $5,854.00 + fuel $1,116.63 + mob $1,100.00 = $8,070.63 (the founder's corrected figure;
+  // the brief's $9,170.63 was withdrawn, Day fixes 2026-10-23).
+  { id: "eq-3.6-per-line-4000", kind: "host", ...DIESEL, qty: 4000, unit: "BCY", spread: { prod_per_day: 500, prod_unit: "BCY" }, rows: [excavator({ eq_units: 1 }), operators(1)], expect: { equipment: 8070.63, crewHours: 64 } },
   // An assembly's crew role with no rate at the project's wage set (D-747): missing data, never $0; one typed by hand
   // at $0 prices as before.
   { id: "eq-d747-wage-missing", kind: "host", setting: {}, qty: 100, unit: "SF", rows: [comp("crew", "labor", { crew: [{ role: "TEST Laborer", count: 2, hourly_wage: 0, rate_missing: true }], production_rate: 10, production_basis: "units_per_hr" })], expect: { labor: 0, errors: ["Missing data: wage for TEST Laborer"] } },
