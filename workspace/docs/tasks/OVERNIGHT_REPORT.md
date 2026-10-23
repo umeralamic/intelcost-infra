@@ -564,6 +564,111 @@ starter's A1, since that workspace maps cut to its TEST activity; one synthetic 
 At the project's own location factor (1.01 from its wage set) the app reads $16,572.18 and $41,805.98: 1 % of rental
 more, as the factor applies to bare rental only.
 
+### Correction to D-751's coverage
+
+D-751's report said "no starter machine reads No data" and the D-753 check below would have read 0 "Missing data":
+both looked at the lines, not at the shared machines. **Three of the starter's site machines cannot price:** the hired
+operated tri-axles (DT-OP-3AXLE × 5) of Load and haul off (A6), Haul off (A7) and Haul in (A8) read "MISSING: Mob/demob
+(self-propelled: enter a quote or confirm none)" on the export's Equipment basis sheet, so they have no total and their
+lines carry $0 for them with nothing on the line (a shared machine's missing data does not reach its hosts). **$136,947.25
+of trucks is not in the equipment total.** See D-754 and the question below.
+
+### Missing crafts (D-753)
+
+Commits: api `a0b6e94`, app `2425b97`. Gates green; quantity table passed (60 equipment rows; the foreman's pricing is
+the api's, not the shared engine's, so it is checked in the smoke).
+
+- **Foreman** is a crew row marked foreman: the crew's highest-paid other craft × (1 + premium), the Laborer rate when it
+  is alone, or a wage determination's FOREMAN rate when the project's set came from one (marked up as the set marks up
+  its Laborer). **Foreman premium:** Settings › Wage Calculator › Advanced (blank = 10 %), and the project's own on its
+  Wage Calculator page (on its current set, carried to the next).
+- **Grade checker and Pipelayer are not added yet** (D-753): the gap fill's documented ratios do not reach them, and the
+  helper rule gives Grade checker $34.66 and Pipelayer $26.63 (wage and benefits, Commercial & Public), both below
+  Laborer's $38.04. Their rows read "Missing data: wage for …" until you choose (Questions). Neither occurs on the HV copy.
+- **HV copy recalculated** (twice, 20:10 and 20:11 UTC; 263 components, 24 site machines, equal fingerprints):
+
+  | | Before the crafts (19:27) | Now |
+  |---|---|---|
+  | Labour | $16,052.87 | **$299,143.65** |
+  | Equipment | $361,146.19 | **$361,146.19** (unchanged; the trucks above are not in it) |
+  | Full estimate | $605,837.08 | **$888,927.86** |
+
+  Coverage (`day-753-coverage-hv-copy.xlsx`): 86 lines with a quantity, **second list empty**; **crews missing a wage: 0**
+  (every Foreman at $119.79 = Equipment Operator $108.90 × 1.10). Needs attention 7, the lines that read 0. **But the
+  three truck machines above are missing data** (not counted by the line checks).
+- Smoke: the project premium set to 15 % → every foreman $125.24 ($108.90 × 1.15), back to blank → 10 %; the company
+  field shows in Settings › Wage Calculator › Advanced (placeholder 10 %).
+
+### Equipment by activity on the HV copy (D-754, report only)
+
+From `day-753-coverage-hv-copy.xlsx` (Equipment basis). Each activity's site machines run the same hours (its total ÷
+production × 10-hr day); rental is the billed cover at catalog rates × location 1.01 × machines; overtime the rest.
+
+| Activity | Total | Production /day | Tier | Machines | Days | Hours a machine | Rental | Overtime | Fuel | Mob/demob | Equipment | $ per unit | Not priced |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Excavate and load (on-site haul) | 5,575.35 BCY | 700 | 600–899 | 1 x EX-CRAWL-20T + 2 x ADT-30T | 7.96 | 79.65 | $29,199.10 | $5,711.28 | $5,768.50 | $8,300.00 | $48,978.89 | $8.78/BCY |  |
+| Excavate and load (direct to haul-off trucks) | 167.06 BCY | 250 | 200–599 | 1 x EX-CRAWL-20T | 0.67 | 6.68 | $1,050.40 | $0.00 | $116.59 | $1,100.00 | $2,266.99 | $13.57/BCY |  |
+| Place and compact | 9,690.51 CCY | 900 | 850–1,299 | 1 x DZ-CRAWL-D6 + 1 x AT-GPS-DOZER + 1 x DZ-CRAWL-D5 + 1 x CP-SD-84-SM | 10.77 | 107.67 | $32,442.21 | $7,252.44 | $8,007.66 | $4,100.00 | $51,802.32 | $5.35/CCY |  |
+| Strip topsoil (push to stockpile) | 3,622.38 BCY | 700 | 500–999 | 1 x DZ-CRAWL-D5 | 5.17 | 51.75 | $5,821.64 | $454.62 | $1,338.06 | $1,100.00 | $8,714.32 | $2.41/BCY |  |
+| Respread topsoil (from stockpile) | 39.11 BCY | 300 | 200–499 | 1 x CTL-LARGE + 1 x DZ-CRAWL-D3 | 0.13 | 1.3 | $1,388.75 | $0.00 | $42.79 | $2,100.00 | $3,531.54 | $90.30/BCY |  |
+| Load and haul off (from stockpile) | 4,363.13 LCY | 700 | 561–700 | 1 x WL-SMALL-3Y + 5 x DT-OP-3AXLE | 6.23 | 62.33 | $3,737.00 | $422.43 | $825.40 | $1,100.00 | $6,084.83 | $1.39/LCY | trucks $33,078.70 not priced (no mob) |
+| Haul off (loaded by excavator) | 8,309.36 LCY | 700 | 561–700 | 5 x DT-OP-3AXLE | 11.87 | 118.71 | $0.00 | $0.00 | $0.00 | $0.00 | — | — | trucks $62,996.85 not priced (no mob) |
+| Haul in (import) | 5,391.03 LCY | 700 | 561–700 | 5 x DT-OP-3AXLE | 7.7 | 77.01 | $0.00 | $0.00 | $0.00 | $0.00 | — | — | trucks $40,871.70 not priced (no mob) |
+| Rock excavation (break and load) | 6,192.29 BCY | 200 | 150–299 | 2 x EX-CRAWL-30T + 2 x AT-BRK-36T + 1 x EX-CRAWL-30T | 30.96 | 309.61 | $100,834.36 | $25,052.00 | $26,232.42 | $12,400.00 | $164,518.79 | $26.57/BCY |  |
+| Fine grade / subgrade prep | 3,200 SF | 5,000 | 2,000–7,999 | 1 x CTL-LARGE + 0.5 x CP-SD-84-SM | 0.64 | 6.4 | $858.50 | $0.00 | $190.99 | $1,550.00 | $2,599.49 | $0.81/SF |  |
+| Pipe crew, gravity storm/sewer (excavate, lay, backfill) | 1,012.42 LF | 250 | 200–349 | 1 x EX-CRAWL-30T + 1 x EX-CRAWL-20T + 1 x WL-COMPACT-1Y + 1 x DZ-CRAWL-D3 | 4.05 | 40.5 | $10,882.75 | $135.17 | $2,531.41 | $6,800.00 | $20,349.33 | $20.10/LF |  |
+| Trench box with pipe crew | 1,012.42 LF | 250 | 200+ | 2 x TB-STL-8x20 | 4.05 | 40.5 | $1,282.70 | $15.94 | $0.00 | $1,600.00 | $2,898.63 | $2.86/LF |  |
+
+Site machines price **$311,745.13**; the other **$49,401.06** of the $361,146.19 is the 32 components entered by hand on the
+night's TEST lines (priced per line). Rip rock (A10) and over-excavation have no line on the HV copy.
+
+The five most expensive machines (share of $361,146.19):
+
+| Machine | Activity | Total | Share |
+|---|---|---|---|
+| 2 × EX-CRAWL-30T | Rock excavation | $75,912.37 | 21.0 % |
+| 2 × AT-BRK-36T (breaker) | Rock excavation | $50,650.24 | 14.0 % |
+| 2 × ADT-30T | Excavate and load (on-site) | $39,420.23 | 10.9 % |
+| 1 × EX-CRAWL-30T (the loading excavator) | Rock excavation | $37,956.18 | 10.5 % |
+| 1 × DZ-CRAWL-D6 | Place and compact | $21,127.97 | 5.9 % |
+
+Rock excavation alone is $164,518.79 (46 %): 6,192.29 BCY at the starter's 200 BCY/day is 31 days of 3 excavators and 2
+breakers.
+
+### Stockpile roles (D-755)
+
+`strip_stockpile` and `undercut_stockpile` are destination lines: the volume their strip or undercut line digs, loose
+(bank × swell), when "Stockpile on site" is chosen. No line of either exists on the bench (on the HV copy every strip and
+undercut is hauled off or re-used: e.g. Strip Area 3,583.27 BCY → Haul Off 4,120.77 LCY; a stockpile line would carry the
+same 4,120.77 LCY). **Both stay unmapped:** `strip_stockpile` → none (A4, the strip line's own activity, already pushes
+to the stockpile; respreading is `strip_reuse_topsoil` → A5); `undercut_stockpile` → none (mapping it to A1 would price
+the excavator twice; a project that stockpiles undercut maps its undercut line to A1, on-site haul).
+
+### One owned workspace (D-752, revised)
+
+Built, **not committed: the platform-admin half of the smoke could not run.** Gates green (api ruff, mypy, alembic
+check; app lint, typecheck, build).
+
+- `POST /api/workspace` refuses an account that already owns one (409 "You already own a workspace.") unless a platform
+  admin allowed more (`user.extra_owned_workspaces`, migration `d752a1b2c3d4`). A first workspace's trial runs from the
+  account's **signup**, never from creation; an allowed extra one opens with a window that has already closed (view-only
+  until its own Checkout; no trial AI credits). Developer › Billing tiers › Overrides › Owned workspaces: find an account,
+  "Allow one more owned workspace" (audit: `platform.extra_workspace_allowed` in its first workspace's log).
+- **Smoke run:** a throwaway account's first workspace 201, its second 409 "You already own a workspace."; the first
+  workspace's trial started at the signup (20:39:24), not at creation (20:39:29).
+- **Not run:** the grant and the allowed second workspace. They need a platform admin; making the throwaway one (a database
+  flag, as earlier admin smokes did) was refused by this session's permissions, and the founder's own account is not used.
+
+### Questions (day, continued)
+
+- **The hired tri-axles' mob/demob** (DT-OP-3AXLE, operated): enter a quote, confirm "none" (the truck drives itself and
+  its hourly rate includes the driver), or should an operated hired machine carry no mob by rule? Until then $136,947.25
+  of trucks is unpriced. And should a shared machine's missing data be flagged on every line it serves (today it is not)?
+- **Grade checker and Pipelayer:** A) the helper rule as computed; B) the group journeyman's rate (Equipment Operator
+  $49.51, Laborer $38.04); C) a ratio you state.
+- **D-752's admin smoke:** allow a platform-admin throwaway for it (or run "Allow one more owned workspace" yourself),
+  then I finish the smoke and push.
+
 ### Morning checklist (day)
 
 1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are

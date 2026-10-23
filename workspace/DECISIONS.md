@@ -22936,18 +22936,70 @@ was decided differently for that.
 - **Deleting an activity** removes its site spreads' machines in every project (before, they would have stayed as plain
   shared machines).
 
-## D-752: A second workspace inherits the plan and trial end, never a fresh trial (the founder, 2026-10-23)
+## D-752: An account owns one workspace; it joins others by invitation (the founder, 2026-10-23; revised)
 
-**Status:** Accepted as policy; **the build ("New workspace…") is stopped** at the founder's own condition, pending
-their call (2026-10-23).
+**Status:** Accepted (2026-10-23; the founder's change of decision replaces the first version, "a second workspace
+inherits the plan", which stopped on billing).
 
-- **Policy:** a person's second workspace gets their first workspace's plan and trial end, never a fresh trial.
-- **Why the build stopped:** a paid plan is charged **per workspace, per seat**: each workspace has its own
-  subscription (`workspace_subscription`, one per workspace: plan, seats, Stripe customer and subscription); there is no
-  account-level plan. A paying customer's second workspace would have no subscription and no seats of its own, so
-  inheriting the plan would make it a paid workspace for free; inheriting only the trial end (long past for a paying
-  customer) would make it view-only at once. The founder's instruction was to stop and say so instead of building.
-- **Found while checking:** the api's `POST /api/workspace` today stamps every new workspace with a **fresh** trial
-  window from the owner's signup (`trial_started_at` now, `trial_ends_at` now + the signup's trial days). No screen
-  reaches it for an account that already has a workspace, so nobody can use it yet; it is the opposite of this
-  decision and is changed with the build.
+- **One owned workspace per account.** It can join any number of other workspaces by invitation; the inviting
+  workspace pays for that seat under its own plan and seats (seat rules unchanged).
+- **No "New workspace…"** in the app.
+- **`POST /api/workspace`** refuses an account that already owns a workspace: 409 "You already own a workspace",
+  unless a platform admin has granted it an extra one. **No fresh trial in any case:** a first workspace takes the
+  account's signup trial window as recorded at signup (the window starts at signup, not at creation); a granted extra
+  workspace gets no trial and goes through Checkout for its own subscription (per-workspace, per-seat billing, as today).
+- **Platform admin › Developer:** "Allow one more owned workspace" on an account, recorded in the audit log.
+- **Found while checking (first version):** a paid plan is charged per workspace, per seat (`workspace_subscription`,
+  one per workspace); the api stamped every new workspace with a fresh trial window from creation.
+
+## D-753: Foreman priced from its crew; a foreman premium; Grade checker and Pipelayer's rate left to the founder (2026-10-23)
+
+**Status:** Accepted (the founder's follow-up 1 to D-751); Grade checker and Pipelayer's national rate is **the
+founder's call** (below).
+
+- **Foreman** is a crew row marked `foreman`, not a reference craft (the Wage Calculator gives every reference craft a
+  national rate, and a foreman's depends on the crew). Its hourly wage is the highest-paid other craft in the same crew
+  × (1 + the foreman premium); a crew with no other priced craft uses the project's Laborer rate as the base. **A wage
+  determination that lists a foreman wins:** when the project's current set came from an uploaded determination with a
+  FOREMAN classification, its base + fringe is marked up exactly as the set marks up its Laborer row. With no saved rate
+  set the row is missing data ("Missing data: wage for Foreman"), never $0 (D-747).
+- **Foreman premium:** a company setting in Settings › Wage Calculator › Advanced (`workspace_burden_profile`, blank =
+  10 %), and a project's own on its current rate set (Wage Calculator review), carried to the next set it saves. Every
+  path that prices a crew applies it: a component saved, a new rate set saved, an assembly applied, a tier taken up.
+- **The starter's "Foreman" rows** are foreman rows; an unedited starter activity taken up with the old rows refreshes
+  itself on its next read.
+- **Grade checker and Pipelayer: not added as reference crafts yet.** The gap fill's documented ratios do not reach
+  them: neither exists in either table (so the residential/commercial 0.687 has nothing to start from), and the helper
+  rule (70 % of the journeyman's wage and benefits) gives Grade checker 70 % of Equipment Operator = $34.66 and
+  Pipelayer 70 % of Laborer = $26.63 (Commercial & Public, 2026), both below Laborer's $38.04, where wage
+  determinations put both at or above it (Grade checker in the operators' lower groups, Pipelayer in the laborers'
+  groups 2-3). Loading either would be inventing a rate. Their starter rows keep reading "Missing data: wage for …"
+  (never $0) until the founder picks: A) the helper rule as computed; B) the group's journeyman rate (Grade checker =
+  Equipment Operator $49.51, Pipelayer = Laborer $38.04); C) a stated ratio. Then they become crafts with a
+  determination rule each (a determination that lists them wins).
+
+## D-754: The HV copy's equipment by starter activity, reported (the founder's follow-up 2, 2026-10-23)
+
+**Status:** Report only; nothing changed for it.
+
+- The table per activity (total quantity, production, tier, machines, days, hours a machine, rental, overtime, fuel,
+  mob/demob, equipment, $ per unit) and the five most expensive machines are in the report (Day fixes). Read from the
+  Estimating export's Equipment basis sheet; rental is the billed cover at catalog rates × the estimate's location factor
+  (1.01), overtime the rest of the sheet's rental figure.
+- **Found:** the three groups of hired operated tri-axles (DT-OP-3AXLE × 5 on A6, A7 and A8) read "MISSING: Mob/demob
+  (self-propelled: enter a quote or confirm none)", so their shared machines have no total and **$136,947.25 of trucks is
+  not in the equipment total**, with nothing on the lines that carry them (a shared machine's missing data does not reach
+  its hosts). Not changed here (report only): the fix and the mob question are the founder's (Day fixes, Questions).
+
+## D-755: The stockpile roles stay unmapped (the founder's follow-up 3, 2026-10-23)
+
+**Status:** Accepted (the founder's rule: map only separate work).
+
+- `strip_stockpile` and `undercut_stockpile` are destination lines: the volume their strip or undercut line digs,
+  loose (bank × swell), when the person chose "Stockpile on site". No line of either exists on the bench today.
+- **`strip_stockpile` → none:** the strip line's activity, "Strip topsoil (push to stockpile)" (A4), already prices the
+  push to the stockpile; respreading is its own line (`strip_reuse_topsoil` → A5), so mapping this to A5 would price a
+  respread nobody chose.
+- **`undercut_stockpile` → none:** the dig is priced on the undercut line (A2); mapping this to A1 would price the
+  excavator twice. The on-site haul to the stockpile is real work A2 (direct to haul-off trucks) leaves out: a project
+  that stockpiles undercut maps its undercut line to A1 (on-site haul), as the starter's note says for export-heavy cut.
