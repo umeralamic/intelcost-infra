@@ -22250,3 +22250,24 @@ area perimeter … on segment … remove arc point"; the four choices answered t
   here, Straighten edge, Arc point) had none, so "Add more points" or "New section" opened "SF · Area Total" a second
   time. Those rows now carry the Area menu's heading. The Linear menu heads its first row only, so it never repeated.
 - **Checked in the browser** (BENCH DUP, purged): SF 67's edge and corner menus each show the heading once.
+
+## D-716: Items, sub-items and cost components reordered by drag, one order in both panels (F32)
+
+**Status:** Accepted (2026-10-22, Umer: "subitems and cost components rearrange … move up and down, while remaining under
+the same line item; parent … rearrange in sheets panel and in takeoff panel"; answered: drag only, one shared order).
+
+- **Drag only:** a row dragged onto another lands before or after it (an inset line shows which, by the pointer's half).
+  An item stays within its group (its folder, or its code in the Classification view; its folder from the Sheets
+  panel): a drop beside another group's item is refused with the reason. A sub-item stays under its parent, a cost row
+  under its host: their drags name the parent in their type, so other rows never light.
+- **One order:** `takeoff_item.position`, as the api already lists items by (position, name, id). A move renumbers
+  its group from 0 and writes only the rows whose number changes; a locked or held row that would change stops it.
+  The Sheets panel now lists a sheet's items in that order, no longer by name.
+- **Cost components:** `takeoff_cost_component.position`, written by a new `POST /estimate/components/order`
+  (the host's every component, each once, in one write; a stale list refused; the pricing permission and the host's
+  hold, as an add).
+- Spec: `docs/tasks/reorder_rows_tasks.md`. Legacy reorders top-level items only; the rest is new.
+- **Checked in the browser** (BENCH DUP, purged): Sheets panel, Exterior Wall (2) dragged above Exterior Wall: both
+  panels show it (positions 1, 2); Insulation dragged above Metal Studs (0, 1, 2); Takeoff panel, Exterior Wall
+  dragged back above: the Sheets panel follows; an Earthwork Markups item dropped on Exterior Wall: refused with the
+  reason; two cost rows on Metal Studs, Cost B dragged above Cost A: stored 0, 1.
