@@ -22676,3 +22676,20 @@ line, and can we do something else to show the selected workspace rather than or
   line at 0 as it reads (two decimals; the engine can send 4e-11 BCY), or retires it, removes its automatic components
   and its spread; a day of rental and the mob were billed for no hours ($2,150.40 on each of two lines of the test copy).
   A line a person edited keeps everything.
+
+## D-739: Equipment library Block 4.1: the library page (F33)
+
+**Status:** Accepted (2026-10-23, the night's Block 4.1; built to D-722, D-731).
+
+- **Settings › Equipment library** opens on **Library**: a tree of the catalog's categories and types (custom classes
+  among them, marked "company"), a search, the picked type's sizes as a grid (day, week, 4 weeks, owned $/hr, fuel
+  gal/hr, the weakest rental grade and a U when the company has set a value), and the picked size's detail: rental,
+  owned, operated and fuel values and production by activity, each a company value with its grade, "national $1,040"
+  beside it, and revert; transport read only. "Revert all N company values" takes a machine back in one write.
+- **Settings** lists every editable library setting as the company's default; an estimate's own values stay in
+  Estimating › Equipment settings.
+- **Release banner:** "National library release N is in use" until a library manager marks it seen; what changed under
+  the company's values is Block 4.3.
+- **Wording:** a user value shows "national $X" beside it (was "library $X"), the plan's word, everywhere the value
+  component is used.
+- Writes take `canManageWorkspaceLibrary` (D-731); other members read.

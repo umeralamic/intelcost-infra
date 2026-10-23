@@ -42,7 +42,7 @@ after every block. A restarted session continues from the first block below that
 | 3.3 | Shared resources from the library; mob counted twice | 3.1 | ☑ | api 9c1b657, app e3666c9 |
 | 3.4 | Estimating rows, Needs attention, filter, export | 3.1 | ☑ | app d6b21ba |
 | 3.5 | Earthwork production tiers, the two-way link, the 3D test copy, coverage | 3.2 | ☑ | api 1b4f5ba (+ zero-line fix), app be68166, infra b7fa997 |
-| 4.1 | Library page: browse, overrides, revert, release banner | 1.2 | ☐ | |
+| 4.1 | Library page: browse, overrides, revert, release banner | 1.2 | ☑ | app c11db81 |
 | 4.2 | Custom rows, import/export, a company's machine list | 4.1 | ☐ | |
 | 4.3 | Release upgrades and notices | 4.1, 3.1 | ☐ | |
 | P1 | Assemblies link shared equipment | — | ☐ | |
