@@ -23094,3 +23094,18 @@ Logged after the build began, an error of order.
   full on hover.
 - Quantity table: two rows (RDT-772 on its own rates and quote, hand-worked $6,907.90; the same machine on the library
   alone: missing data, both lines flagged).
+- **Follow-up (the founder, 2026-10-23): typed values on a site-spread machine are never lost silently.**
+  - Saving a site machine with a typed value (its own rates, fuel or mob quote, or a changed count, basis, period,
+    fuel load, travel or work day) marks its activity's spread as edited: a recalculation keeps its tier and shows
+    "Apply tier" when the default production moves, as for edited lines (D-738, D-744). The resource remembers its
+    typed fields (`own_fields` on its snapshot), so a recalculation no longer resets its work day or count either.
+  - **Apply tier:** a machine class that stays in the new spread carries its typed values to the new machine of that
+    class; a class that leaves is named in the spread's notice: "Your typed values for <machine> were not used: it is
+    not in the new tier." The spread stays edited while any machine holds typed values. The same notice names typed
+    machines dropped when the activity is priced per line, its spread has no lines, or its quantity has no default
+    production.
+  - Quantity table: two rows (`drives/quantity-table.py typed`): a tier where both classes stay (values carried, the
+    added machine bare, no notice) and one where the excavator's class leaves (the truck carries, the notice names
+    the excavator). Checked on "zz Equip 751 starter check" (rolled back): typed values → edited; recalculation kept
+    900–1,399 with "Apply tier"; Apply tier to 1,400–2,199 carried both; to 2,200–3,199 carried the truck and named
+    the excavator.

@@ -387,9 +387,40 @@ def roles() -> int:
     return 1 if wrong else 0
 
 
+# Typed values on a site machine across Apply tier (D-758 follow-up): A1's spread was EX-CRAWL-30T +
+# ADT-30T with a typed week $7,000 on the excavator and day $900 + work day 9 on the truck.
+TYPED_EX = {"own": {"rent_week": 7000}}
+TYPED_ADT = {"own": {"rent_day": 900}, "own_fields": {"eq_hours_per_day": 9}}
+OLD_SPREAD = [("EX-CRAWL-30T", "A1: EX-CRAWL-30T", TYPED_EX), ("ADT-30T", "A1: ADT-30T", TYPED_ADT)]
+TYPED_CASES = [
+    # Both classes stay (the new tier adds a second truck): each carries its values, the new truck none.
+    {"id": "typed-stays", "new": ["EX-CRAWL-30T", "ADT-30T", "ADT-30T"], "expect": {"carried": {0: TYPED_EX, 1: TYPED_ADT}, "notice": None}},
+    # The excavator's class leaves (the new tier has EX-CRAWL-45T): the truck carries, the excavator is named.
+    {"id": "typed-leaves", "new": ["EX-CRAWL-45T", "ADT-30T"], "expect": {"carried": {1: TYPED_ADT}, "notice": "Your typed values for A1: EX-CRAWL-30T were not used: it is not in the new tier."}},
+]
+
+
+def typed() -> int:
+    from app.features.equipment.production import LEFT_TIER, _not_used, carry_typed
+
+    wrong = []
+    for c in TYPED_CASES:
+        carried, gone = carry_typed(OLD_SPREAD, c["new"])
+        got = {"carried": carried, "notice": _not_used(gone, LEFT_TIER)}
+        for k, want in c["expect"].items():
+            if got[k] != want:
+                wrong.append(f"FAIL  {c['id']}.{k}: {got[k]!r}, expected {want!r}")
+    for w in wrong:
+        print(w)
+    print(f"site typed values: {len(TYPED_CASES)} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
     if sys.argv[1:] == ["roles"]:
         sys.exit(roles())
+    if sys.argv[1:] == ["typed"]:
+        sys.exit(typed())
     cases = json.load(sys.stdin)
     if sys.argv[1:] == ["scaleundo"]:
         import asyncio
