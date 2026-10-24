@@ -23109,3 +23109,33 @@ Logged after the build began, an error of order.
     the excavator). Checked on "zz Equip 751 starter check" (rolled back): typed values → edited; recalculation kept
     900–1,399 with "Apply tier"; Apply tier to 1,400–2,199 carried both; to 2,200–3,199 carried the truck and named
     the excavator.
+
+## D-759: My equipment: a workspace's list of machines first in suggestions, the full library one click away (the founder, 2026-10-23)
+
+**Status:** Accepted (plan only; built in a later overnight run). Plan: [MY_EQUIPMENT_PLAN.md](docs/tasks/MY_EQUIPMENT_PLAN.md) (F34).
+
+- **The list:**
+  - Each machine (national or custom) can be "On my list".
+  - A workspace toggle switches between "Show all library equipment" (the default) and "Show my equipment only".
+  - Pickers list the company's machines first with its own values. In "my equipment only" mode the rest sits in a
+    collapsed "Search the full library".
+  - Import, "Add to my equipment" and custom machines add to the list.
+  - Earthwork activities get "Show in suggestions".
+- **Hiding never changes a price:** only suggestion lists read the list. A machine or activity off it keeps pricing
+  wherever it is used.
+- **Data:**
+  - a new table `eq_my_equipment` (one row per machine on the list);
+  - a workspace setting `eq_suggest_mine_only`;
+  - `in_suggestions` on `eq_company_activity`.
+  - Not `eq_override`: that is the priced-value layer, whose grades, exports, U badges and release notices a
+    visibility flag would leak into.
+  - Not a flag per hidden machine: a new release's machines would land on every curated list.
+- **The founder's answers (the recommended ones):**
+  - Q1: the first switch to "my equipment only" pre-ticks the classes the workspace already uses, for review.
+  - Q2: list writes take "Manage workspace library".
+  - Q3: "show all" still lists the company's machines first.
+  - Q4: starter tier machines off the list are noted, not added.
+  - Q5: workspace only, no project override.
+  - Q6: a hidden activity already mapped stays selected, labelled "(not in suggestions)".
+  - Q7: bulk off is allowed, with a count of the machines in use.
+- **Kept apart from D-751's `national_hidden`** (a starter activity the company removed): that flag is unchanged.
