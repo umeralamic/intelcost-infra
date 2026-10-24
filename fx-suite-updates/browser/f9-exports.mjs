@@ -10,6 +10,10 @@
 // Summary sheet ends at $126,120.72. The earthwork: existing grade spots at EL 100.0, proposed at
 // 99.0, around a 40 × 25 ft work boundary: 1,000 SF × 1 ft = 37.04 CY of cut, no fill. The workspace
 // has no logo, so neither workbook carries a picture (D-625).
+//
+// Updated for D-762 A1 (2026-10-24): the estimate's workbook has a new money column, "Unit Labor
+// Cost", after Per Hour Wage: the member's workbook must carry it and the guest's must drop it (the
+// money columns are eleven now).
 
 import { readFileSync } from "node:fs";
 
@@ -37,7 +41,7 @@ const rect = (x0, y0, wFt, hFt) => {
   return [[x0, y0], [x0 + dx, y0], [x0 + dx, y0 + dy], [x0, y0 + dy]];
 };
 const num = (s) => Number(String(s).replace(/[^0-9.-]/g, ""));
-const MONEY = ["Unit Man Hours", "Total Man Hours", "Per Hour Wage", "Total Labor Cost", "Unit Equipment", "Total Equipment", "Unit Material Cost", "Total Material Cost", "Subcontract", "Item Cost"];
+const MONEY = ["Unit Man Hours", "Total Man Hours", "Per Hour Wage", "Unit Labor Cost", "Total Labor Cost", "Unit Equipment", "Total Equipment", "Unit Material Cost", "Total Material Cost", "Subcontract", "Item Cost"];
 
 async function item(body) {
   const made = await apiCall(token, "POST", `${takeoff}/item`, { sheet_uuid: sheet.uuid, ...body });
@@ -179,7 +183,7 @@ await run("f9-exports", [
     },
   },
   {
-    title: "guest export, pricing off: the link opens the project; Estimating says pricing is not shown; Export with every column drops all ten money columns and the Bid Summary",
+    title: "guest export, pricing off: the link opens the project; Estimating says pricing is not shown; Export with every column drops all eleven money columns and the Bid Summary",
     run: async ({ context }) => {
       const guest = await context.browser().newContext();
       try {
