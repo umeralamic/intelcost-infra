@@ -90,11 +90,12 @@ await run("c38-components-assemblies", [
       await signInAs(page, (await fixtureOwner()).email);
       await page.goto(`${APP}/project/${target.uuid}/takeoff/${w.target.sheet}?tab=estimating`);
       await page.getByText("TEST pad 2", { exact: true }).first().waitFor({ timeout: 30000 });
-      const marker = page.getByRole("row").filter({ has: page.getByText("TEST pad 2", { exact: true }) }).first().locator("img[aria-label^='Needs attention']").first();
+      // The row's Needs attention marker names the reasons (D-747 lists the wage as missing data).
+      let seen = "";
       const said = await waitFor(async () => {
-        const t = await marker.getAttribute("aria-label").catch(() => null);
-        return t && /wage for Laborer/i.test(t) ? t : null;
-      }, "the Needs attention reason", 20000, 500);
+        seen = await page.evaluate(() => [...document.querySelectorAll("tr")].filter((tr) => tr.textContent?.includes("TEST pad 2")).flatMap((tr) => [...tr.querySelectorAll("[aria-label],[title]")].map((e) => e.getAttribute("aria-label") ?? e.getAttribute("title"))).join(" | "));
+        return /wage for Laborer/i.test(seen) ? seen.match(/[^|]*wage for Laborer[^|]*/i)[0].trim() : null;
+      }, "the Needs attention reason", 20000, 500).catch(() => { throw new Error(`row labels: ${seen}`); });
       return `crew row rate_missing; "${said}"`;
     },
   },
