@@ -130,6 +130,11 @@ export const EQUIPMENT_CASES = [
   { id: "eq-756-crane-shared-flags", kind: "shared", setting: {}, resource: { name: "TEST assembled crane", eq_class_key: "CR-HYD-165T-OP", eq_units: 1, eq_mode: "operated" }, hosts: [{ id: "h1", machineHours: 6 }, { id: "h2", machineHours: 4 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
   // Every operated crane-assembled class in the catalog asks for the quote (5 today); no other operated class does.
   { id: "eq-756-crane-catalog", kind: "crane-catalog", setting: {}, expect: { cranes: 5, cranesWithoutQuote: 0, othersAsking: 0 } },
+  // A library machine on the user's own values (D-758): RDT-772 has no rental rates in the library; own day $1,000,
+  // week $3,000, 4 weeks $9,000 and a $2,000 mob quote, 40 machine-hr at 8 hr a day = 5 days: 1 week $3,000 + fuel
+  // 40 x 7.6 (the library's) x $6.276 = $1,907.90 + mob $2,000 = $6,907.90. Without them the library has no rate.
+  { id: "eq-758-own-values", kind: "shared", ...DIESEL, resource: { name: "TEST rigid truck", eq_class_key: "RDT-772", eq_units: 1, eq_mode: "rental", eq_snapshot: { release: 1, at: "", classKey: "RDT-772", activityKey: null, class: {}, production: null, transport: null, own: { rent_day: 1000, rent_week: 3000, rent_4wk: 9000, mob_quote: 2000 } } }, hosts: [{ id: "h1", machineHours: 24 }, { id: "h2", machineHours: 16 }], expect: { total: 6907.9, h1: 4144.74, h2: 2763.16, flagged: 0 } },
+  { id: "eq-758-library-only", kind: "shared", ...DIESEL, resource: { name: "TEST rigid truck", eq_class_key: "RDT-772", eq_units: 1, eq_mode: "rental" }, hosts: [{ id: "h1", machineHours: 24 }, { id: "h2", machineHours: 16 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
   // Every catalog class as a shared machine on two lines (D-756): any with missing data flags both lines.
   { id: "eq-756-shared-flag-catalog", kind: "shared-flag-catalog", ...DIESEL, expect: { unflagged: 0 } },
 

@@ -23075,3 +23075,22 @@ inherits the plan", which stopped on billing).
 - **Earthwork production tiers:** machine and crew rows take the width left and wrap instead of running out of the
   card; a crew row that follows the project's rates shows "Project rate" (a foreman "Foreman rule") instead of 0.
 - **Line mapping:** a fixed label column and a select that fills the rest; one column on a narrow window.
+
+## D-758: A library machine is editable: the library's values are the default, the user may type their own (the founder, 2026-10-23)
+
+**Status:** Accepted (the founder: "every thing should be editable, user can either use as per library or modify").
+Logged after the build began, an error of order.
+
+- **Shared equipment, a machine from the library:** every value that prices it is editable in the dialog: machines,
+  priced as (rental, owned, hired operated), the rental period, hours per day, day / week / 4-week rates, owned $/hr,
+  operated $/hr and minimum hours, travel hours, fuel load and gal/hr, and mob/demob. Each field shows the library's
+  value as its placeholder ("No data, enter a value" where the library has none); a typed value is the machine's own
+  and wins; clearing it goes back to the library. Priced live from the draft.
+- **Stored** on the resource's snapshot as its `own` values (`mob_quote` for a typed mob/demob, which replaces the haul,
+  the in-rate rule and an assembled crane's quote); they never read as "library rates changed". The work day is the
+  resource's `eq_hours_per_day`, now saved by the api.
+- The hand-typed rate fields (rate, per, mob, rental days) show only for one's own machine, where they price it.
+- **Extras field (same day):** "Add…" fills the row, as wide as Home division; a long name in any search list shows in
+  full on hover.
+- Quantity table: two rows (RDT-772 on its own rates and quote, hand-worked $6,907.90; the same machine on the library
+  alone: missing data, both lines flagged).
