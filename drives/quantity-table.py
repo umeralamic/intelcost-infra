@@ -13,7 +13,8 @@ With `register`, it reads F18's registration rows instead and fits each through 
 `seed`, the assembly seed rows through the api's component copy (D-243). With `subitems`,
 the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245). With
 `scaleundo`, the scale undo rows (D-642): the one mode that opens the database, for a temporary
-table of the calibration column's own type, never committed.
+table of the calibration column's own type, never committed. With `roles`, the wage roles a
+determination lists (D-753 option C): its rows are here, it reads no stdin, and it prints one line.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -355,7 +356,40 @@ async def scale_undo(rows: list[dict]) -> list[dict]:
     return out
 
 
+# D-753 option C on zz WD check (D-753): AR20260046 (Heavy), Boone County AR (labour -27.431 %),
+# Davis-Bacon, burdened, company defaults. Laborer's determination line $12.50 + $1.18; Pipelayer's
+# $12.56 + $1.19. By hand: Pipelayer floor 12.56 + 1.19 + taxes (12.56 x 7.65 % + FUTA 0.021 +
+# SUTA 0.07 = 1.0518) + workers' comp 14.50 % x 12.56 (1.8212) + insurance 3 % x 12.56 (0.3768) =
+# $17.00; market $37.26 x 12.56 / 12.50 = $37.44; "higher of" prices $37.44; the determination
+# alone ("wd_only") prices the floor $17.00. Laborer stays $37.26 (national 51.34 x 0.72569 over
+# its $16.91 floor).
+ROLE_CASES = [
+    {"id": "role-c-pipelayer", "policy": "higher_of", "line": (12.56, 1.19, 0.0), "expect": {"floor": 17.00, "market": 37.44, "rate": 37.44}},
+    {"id": "role-c-pipelayer-wd-only", "policy": "wd_only", "line": (12.56, 1.19, 0.0), "expect": {"floor": 17.00, "market": 37.44, "rate": 17.00}},
+    {"id": "role-c-laborer-stays", "policy": "higher_of", "line": (12.50, 1.18, 0.0), "expect": {"floor": 16.91, "market": 37.26, "rate": 37.26}},
+]
+
+
+def roles() -> int:
+    from app.wagecalc.data import RefData
+    from app.wagecalc.rates import Settings, role_rate
+
+    ref = RefData()
+    wrong = []
+    for c in ROLE_CASES:
+        got = role_rate(ref, "CC-16", c["line"], 12.50, -0.27431, "AR", "prevailing_federal", False, Settings(public_policy=c["policy"]))
+        for k, want in c["expect"].items():
+            if round(got[k] * 100) != round(want * 100):
+                wrong.append(f"FAIL  {c['id']}.{k}: {got[k]}, expected {want}")
+    for w in wrong:
+        print(w)
+    print(f"wage roles: {len(ROLE_CASES)} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["roles"]:
+        sys.exit(roles())
     cases = json.load(sys.stdin)
     if sys.argv[1:] == ["scaleundo"]:
         import asyncio

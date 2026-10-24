@@ -22991,6 +22991,27 @@ inherits the plan", which stopped on billing).
   marked up exactly as the set marks up the journeyman craft's row, and wins. The row then counts among the crafts its
   crew's foreman is paid over. The starter's rows take it up on their next read (an unedited activity refreshes
   itself, as the foreman's did). Neither occurs on the HV copy.
+- **Superseded in part (the founder, 2026-10-23): option C for a role a wage determination lists.** The first build
+  marked a determination line up as the set marks up the craft (rate ÷ (base + fringe)): on a set where the market rate
+  won it scaled the role onto that market rate, and where the determination won it spread the burden over the fringe;
+  it was not the determination's own rate (found on "zz WD check (D-753)", where it gave Pipelayer $37.45). Now, for
+  Pipelayer, Grade checker and Foreman when the project's determination lists the role (`role_rate` in
+  `app/wagecalc/rates.py`):
+  - **Floor:** the role's determination line through the burden engine exactly as a craft's: taxes, workers' comp and
+    insurance on base only, plan fringe flat and never burdened (workers' comp class of the craft below).
+  - **Market:** the craft's location-adjusted market rate × (the role's determination base ÷ the craft's determination
+    base), scaled on base wage only, never on fringe.
+  - **Then the project's policy:** "higher of" keeps the higher of floor and market (compared fully burdened, as for a
+    craft); "the determination" (wd_only) keeps the floor.
+  - **The craft:** Equipment Operator for Grade checker, Laborer for Pipelayer and for Foreman. With no determination
+    base for the craft (its row not taken from the determination), the market is the craft's market rate unscaled; a
+    line with no numeric fringe is not used (today's rule prices the role).
+  - **With no determination line:** today's rules (Foreman = top craft × (1 + premium); Grade checker = Equipment
+    Operator; Pipelayer = Laborer).
+  - **Check on "zz WD check (D-753)"** (AR20260046, Boone County AR, "higher of"): Pipelayer floor $17.00, market
+    $37.26 × 12.56 ÷ 12.50 = $37.44, priced **$37.44**; Laborer stays **$37.26**. Quantity table: three wage-role rows
+    (`drives/quantity-table.py roles`): Pipelayer $17.00 / $37.44 / $37.44, the same under "the determination" $17.00,
+    Laborer $16.91 / $37.26 / $37.26.
 
 ## D-754: The HV copy's equipment by starter activity, reported (the founder's follow-up 2, 2026-10-23)
 
@@ -23040,3 +23061,15 @@ inherits the plan", which stopped on billing).
   trucks, a shared machine flagging its two lines, and every catalog class as a shared machine: any with missing data
   must flag both its lines). The coverage check lists the shared machines with missing data from the Equipment basis
   sheet, and one that no line flags goes on the second list.
+
+## D-757: Workspace settings wider; the equipment library's columns and earthwork tiers fit (the founder, 2026-10-23)
+
+**Status:** Accepted (the founder's screenshots).
+
+- **Workspace and account settings** are wider: forms 1024 px (was 768), wide pages 1280 px (was 1152). The equipment
+  library is a wide page.
+- **Library:** the size grid keeps at least 22 rem; the detail panel sits beside it from 1280 px and below it on a
+  narrower window (the three columns collapsed the size column to nothing on a 768 px page).
+- **Earthwork production tiers:** machine and crew rows take the width left and wrap instead of running out of the
+  card; a crew row that follows the project's rates shows "Project rate" (a foreman "Foreman rule") instead of 0.
+- **Line mapping:** a fixed label column and a select that fills the rest; one column on a narrow window.

@@ -734,6 +734,21 @@ B for Grade checker and Pipelayer (D-753), the founder runs the D-752 grant. See
   committed and pushed.
 
 
+### Role rates by option C (D-753), and the settings layout (D-757)
+
+- **Correction first:** the Pipelayer $37.45 reported as "the determination's rate wins" was Laborer's market rate
+  scaled by the determination's Pipelayer/Laborer ratio (base + fringe), not the determination's rate. Option C
+  replaces it (D-753).
+- **Option C on "zz WD check (D-753)"** (read only, the project's saved set): **Pipelayer $37.44** (floor $17.00,
+  market $37.26 × 12.56 ÷ 12.50 = $37.44, "higher of"), **Laborer $37.26** unchanged, Grade checker $49.71 =
+  Equipment Operator (no grade checker line), Foreman $54.68 (no foreman line: top craft × 1.10).
+- **Quantity table:** passed; new "wage roles: 3 rows, all right" (Pipelayer, Pipelayer under "the determination",
+  Laborer), 69 equipment rows. **Gates** green (api ruff, mypy; app lint, typecheck, build).
+- **Settings layout (D-757), browser at 1366 px (throwaway):** settings 1,280 px wide; library size column 117 px
+  with day, week, 4 weeks, owned, fuel and grade beside it and the detail panel to the right; a starter tier's rows
+  inside the card (0 controls past its edge), "Foreman rule" / "Project rate" in place of 0; the line map in two
+  columns with every select inside the card. Passed.
+
 ### Morning checklist (day)
 
 1. The 4,000 BCY per-line figure is resolved ($8,070.63, the founder's correction); D-744 to D-748 and the decisions are

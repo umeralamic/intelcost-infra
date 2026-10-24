@@ -57,5 +57,7 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py se
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py subitems" <browser/.qt-subitems.json >browser/.qt-subitems-py.json || { echo "FAIL  the api's formula engine did not read the sub-item rows"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py fxsystem" <browser/.qt-fxsystem.json >browser/.qt-fxsystem-py.json || { echo "FAIL  the api's formula system did not read the Phase E rows"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py scaleundo" <browser/.qt-scaleundo.json >browser/.qt-scaleundo-py.json || { echo "FAIL  the api did not store the scale undo rows"; exit 1; }
+# The wage roles a determination lists (D-753 option C): the api's wage engine against the hand-worked rows.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py roles" </dev/null || { echo "FAIL  wage roles (above)"; exit 1; }
 docker compose --profile browser run --rm browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 exit "${PIPESTATUS[0]}"
