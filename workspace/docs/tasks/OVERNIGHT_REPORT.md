@@ -20,23 +20,93 @@ its own api (8020, 8030), worker, built apps (5176, 5177), database `intelcost_f
 1, MinIO bucket `intelcost-fx`, MailHog only, its own Stripe fake. The isolation check passed. The api and app tags hold
 no test files (they mark the archive commit only), so nothing was restored into those repos.
 
-**The run** (started 04:05 UTC, `fx-suite/run-all.sh`): the standing list (`regress.sh full`, 102 fixtures, 9 skipped
-by D-611) and then the 29 fixtures added since the tag (c03–c31, f9-*, m6, n2, n3, n11, proof-backlog, r1, r5, rv-rows).
-Results and classification: below when it ends.
+**First full run** (04:05–05:45 UTC, `fx-suite/run-all.sh`, built apps, three at a time):
+- **Standing list** (`regress.sh full`): 102 fixtures, **41 passed, 61 failed**.
+- **The 29 fixtures added since the tag** (D-636 on): **19 passed, 10 failed**.
+- Every failing step was triaged against its log, its screenshot, today's code and DECISIONS.md (six read-only
+  investigators, one more for the 29), notes in `intelcost-infra/fx-suite/.triage/`. Then each was fixed in the app
+  (a), updated to its decision (b), retired (c) or its harness fixed (d), and run again on its own.
+- **The final full run** (after every fix, two at a time): see "Final run" below.
 
-**Fixed in the app so far (category a):**
-1. **Saving a site machine marked its unchanged count and work day as typed** (api 9f1ec9e). The change test compared
-   Decimals as strings ("2" against the stored "2.0000"), so every save put `eq_units` and `eq_hours_per_day` in
-   `own_fields`, and Apply tier then kept the old count in a tier that takes more machines (1,400–2,199 kept ADT-30T ×
-   2 instead of × 3). Found by the new c32. *Data already saved before the fix keeps those entries*; see Questions.
-2. **"Take all off" could run before the in-use counts loaded and skip the Q7 warning** (app 4fefdfa). Found by c34.
+**What made most failures (shared causes):**
+1. **D-752, one owned workspace** (≈20 fixtures): a fixture's second `createWorkspace` was a 409. Fixed once in the
+   harness (d): `browser/lib/bench.mjs` `createWorkspace` has a fresh throwaway owner make the workspace and seat the
+   asking account as admin (`{ seatAsker: false }` leaves it out). Where the claim needs the account to *own* the
+   second workspace (transfer, billing, seats: f3-s9, f3-s12, f3-s2, c30, f8-s15), the fixture gives it its own owner.
+2. **Project Home and its file browser are gone (D-315), seed folders too (D-309)** (≈15 f4/f8 fixtures): rewritten
+   against the Edit Project dialog and the load screen's tree, folders made by the fixture (b); the parts whose screen
+   was deleted outright retired (c, below).
+3. **The projects list is the All projects dialog (D-314), sign-ins land on Account settings (D-566), new signups skip
+   the naming step (D-311)**: scoped to the dialog, its own state, its row menu (b).
+4. **Sub-item rows drawn in both panels (D-709)**: locators scoped to the Takeoff panel (f6-b, f6-e, c12).
+5. **Absolute zoom opening at Fit (D-35, D-76, D-101..D-103)**: f5-s10, f5-s11, p20a, proof-backlog updated.
+6. **Dev-only modules**: seven fixtures import `/src/...` in the page, which the built fx apps cannot serve (D-619
+   already listed them "dev server only"). Run on the fx dev servers instead: **f3-s1 5/5, f3-s13 5/5, f4-s2 6/6,
+   f5-s3 2/2, f6-s4 3/3, f7-a 8/8, r1-raster-text 2/2**.
+7. **Environment, found and avoided:** an api edit hot-reloads api-fx mid-run (c20, c21 failed on it), and
+   `regress.sh`'s end-of-run purge deletes every fx account's workspaces under any fixture still running. Neither is a
+   product fault; both reruns passed.
 
-**New fixtures so far** (`fx-suite-updates/browser/`, each on its own throwaway accounts):
-| Fixture | Covers | Last run |
+**(a) App bugs the fixtures found, fixed tonight** (gates, quantity table and a rerun of the fixture after each):
+| # | Fault | Found by | Commit |
+|---|---|---|---|
+| 1 | Saving a site machine marked its unchanged count and work day as typed (Decimals compared as strings, "2" vs "2.0000"), so Apply tier kept the old count | c32 | api 9f1ec9e |
+| 2 | "Take all off" could run before the in-use counts loaded, skipping the Q7 warning | c34 | app 4fefdfa |
+| 3 | An offline sign-in hung on "Signing in" (D-706's offline hold caught the anonymous login), never saying there is no connection | f2-s3 | app c7db273 |
+| 4 | The api still named a function `is_admin` (F3-S3/D-23 forbid it; D-621 renamed only the app's) | f3-s3 | api 7550a50 |
+| 5 | A seat that cannot create projects got the reason only on hover | f4-s1, f4-s7 | app b72c057 |
+| 6 | Edit Project offered an enabled Save (and live fields) to a seat the api refuses (403) | f4-s10, f4-s14 | app b72c057, d709c2d |
+| 7 | The delete-sheets confirmation said "No measurements are affected." before the items were read | f5-s14 | app b72c057 |
+| 8 | A project in Trash still resolved by its link (no "Project not found") | f4-s15, f4-s20 | api 8ef4da6 |
+| 9 | A link to a missing project: Edit Project covered "Project not found" and its way back | f4-s20 | app d709c2d |
+| 10 | A project trashed while open in another window kept showing | f8-s16 | app d709c2d |
+| 11 | The link prompt's submit (Scope of Work) submitted and closed Edit Project | f4-s24 | app d709c2d |
+| 12 | The load screen kept "Uploading 0 of 1 · 30%" offline, never "Paused…" (the tray steps aside under it) | f4-s7 | app d709c2d |
+| 13 | Override quantity let Save through without the reason the api requires, then closed on the refusal | proof-backlog | app d709c2d (D-761) |
+| 14 | The first-run load screen opened over All projects (`?projects=open`) | f4-dialogs, f4-s7 | app d709c2d |
+
+**(b) Updated to a logged decision** (each file's header names its changes and D-numbers): f2-s1b (D-311), f3-s2 and
+its drive (D-277 1 and 19), f3-s8 (D-87), f4-s1, f4-s5, f4-s6, f4-s7, f4-s8, f4-s10, f4-s11, f4-s14, f4-s15, f4-s16,
+f4-s17, f4-s18, f4-s19, f4-s20, f4-s21, f4-s23, f4-s24, f4-s26, f4-dialogs (D-87, D-309, D-311, D-313, D-314, D-315,
+D-325, D-622), f5-s4 (D-310, D-314, D-315), f5-s10, f5-s11, p20a (D-35, D-76, D-100..D-103), f5-big step 5 (D-288,
+D-304), f6-b, f6-e, c12 (D-709), f7-e (D-712), f8-s7, f8-s15, f8-s16, f8-s18 (D-72, D-81, D-311, D-314, D-315, D-619),
+n11 (D-694), proof-backlog (D-35, D-51, D-55, D-77, D-79, D-81, D-103, D-336, D-506).
+**Expected values changed, each by its decision:** f3-s2 AC4 Essentials keeps billing (D-277 19); f4-s14 AC1 Edit
+Project offers Assigned To (D-315 1); f4-s7, f4-s8, f4-s26 a new project's folders are none (D-309 1); proof-backlog
+the zoom ceiling 4000% (D-35); f3-s12 AC2 counts the second workspace's rows against a baseline, since its throwaway
+owner's seating writes some (D-752).
+
+**(c) Retired**, the behaviour itself removed (named in each file's header): f4-s5 "?tab= and the sort survive a
+reload" and f4-s11's URL filter half (D-314 2: the dialog's state is its own); f4-s20 step 3, Project Home's loading
+skeleton, and its header's Edit details / Estimating reason / Perform Takeoff (D-315 C5); f4-dialogs' "Where should
+this folder go?" (DestinationPicker, D-315 C5); f4-s17 steps 6 and 11 (Upload folder into a project, Unfinished uploads,
+D-315 C5); f4-s19's folder count badges (FolderCountBadge, D-315 C5; the counts are still checked on the api); f5-s4
+step 6 (Project Home's Perform Takeoff, D-315 C5, D-314 2); f3-s10's and f8-s15's header logo, f8-s15's standing badge
+(D-625, D-311 5, D-619); f8-s18's inline properties pane (D-77). Nothing for access keys, request-access, trades or the
+retired platform pages failed: those fixtures were already gone from the tag.
+
+**(d) Harness, what it checks unchanged:** D-752 (above); waits for the reads a screen judges on (f5-sheet-items,
+f5-s14, c15, f8-s15, f8-s16); f8-s4 switches workspace in the page (D-705) and finds the realtime client on the built
+app; f8-s13 measures the flood on the sender's clock (D-614); proof-backlog builds its own world (it signed in as the
+founder's seeded account, which the guard refuses).
+
+**Not run (D-611, D-761):** f8-s5 and f4-s27 stop Redis and MinIO, which the live bench shares; f8-s2, f8-s3, f8-s8,
+f8-s12 and f5-s2 restart the bench's own api, api-b and worker by name; f5-s9 needs a seed flag that no longer exists;
+d27-uploads needs beat. Pointing the restart fixtures at the fx services is the next step for a truly whole run.
+
+**New fixtures** (`fx-suite-updates/browser/`, own throwaway accounts each; the brief's item 3):
+| Fixture | Covers | Result |
 |---|---|---|
-| c32-site-typed | D-758 follow-up (the brief's item 4): typed rates on site machines, recalculation into another tier, Apply tier same classes / a class leaving | 5/5 |
-| c33-invitations | D-749 (unverified sees none; banner; Accept joins; Decline shows on the inviter's list), D-752 (second owned workspace 409) | 4/4 |
-| c34-my-equipment | F34 end to end: On my list, starting list, bulk-off warning, mine-only picker and Add, reader without the capability, hidden activity, prices unchanged | 6/7 before the Q7 fix; re-run after the main run (the fx app is a build) |
+| c32-site-typed | D-758 follow-up: typed rates on site machines kept through a recalculation, Apply tier carrying same classes, naming the one that leaves (item 4) | 5/5 |
+| c33-invitations | D-749 (unverified sees none, banner, Accept, Decline on the inviter's list), D-752 (second owned workspace 409) | 4/4 |
+| c34-my-equipment | F34 end to end: On my list, starting list, bulk-off warning (Q7), mine-only picker and Add, reader without the capability, hidden activity, Estimating's Equipment total unchanged | 7/7 after fix 2 |
+| c35-equipment-library | engine and period solver with overtime ($16,471.70, D-751's check), operated mob in the rate ($10,614.00), assembled crane's quote ($11,200.00 with it), shared missing data flagged on both lines, own values (D-758), import with blank and "national" cells (D-745) | 5/5 |
+| c36-earthwork-link | the starter as a workspace takes it up (13 activities, 79 tiers, 63 defaults, 19 optional machines, Foreman / Grade checker / Pipelayer rows), the two-way link (typed production → tier machines; trucks back to 2 → exact tier 1,000/day; pacing excavator × 2 → 2,000/day; Apply tier) | 6/6 |
+| c37-wage-roles | the Wage Calculator on AR20260046 and the role rates by D-753 option C: Laborer $37.26, Pipelayer $37.44, Grade checker $49.71 (= Equipment Operator), Foreman $54.68 | 3/3 |
+| c38-components-assemblies | Save as assembly keeps the library component and the shared machine (D-742, D-743), applied elsewhere; the crew row with no rate is missing data (D-747); no component on a Site Feature (D-746); Shared equipment's library name search (D-750) | 5/5 |
+Plus `lib/xlsx-write.mjs` (a workbook without a library, for the import) and `lib/wd/ar46.txt` (the public AR20260046).
+Already covered before tonight and passing: one owned workspace's refusal in c33; the earthwork starter's line map in
+c36; cost components in f9-estimating and c14/c16; the Wage Calculator's screens in c31.
 
 **The D-758 follow-up browser check (item 4), what c32 saw** on a 150 × 90 ft pad, A1 "Excavate and load (on-site
 haul)" as one site spread:
@@ -56,6 +126,15 @@ haul)" as one site spread:
    would show in the Company rates export and Revert all.
 2. **"Imported machine lists" in the starting list = machines with company values or custom machines** (D-760), since
    earlier imports left no other trace. Alternative: only machines imported from tonight on.
+3. **D-752 in the fixture harness: a second workspace is made by a fresh throwaway owner who seats the fixture's account
+   as admin** (D-761). Alternative: the platform grant ("Allow one more owned workspace"), rejected because a granted
+   workspace has no trial and reads locked, which changes what billing and seat fixtures measure.
+4. **Override quantity requires its reason in the dialog** (D-761), as the api already did. Alternative: the api accepts
+   an empty reason, as legacy's dialog (copied by D-208) did.
+5. **A project trashed while open in another window reads "Project not found"** (D-761), D-622's link rule applied to an
+   open page. Alternative: keep showing it until the next navigation.
+6. **Two harness rules learned:** no api edit while an fx run is going (api-fx hot-reloads), and no `regress.sh` batch
+   beside single runs (its end-of-run purge deletes every fx workspace).
 
 ## Questions for the founder
 
@@ -63,6 +142,20 @@ haul)" as one site spread:
    (api 9f1ec9e). They price the same today; at the next Apply tier such a machine keeps its old count. Should a
    one-off clean-up drop the entries that equal the stored value (bench and, later, production), or leave them?
    Taken overnight: nothing changed in any data.
+2. **Override quantity's reason** (D-761): keep it required (the api's rule, now the dialog's too), or let the api take
+   an empty one as legacy did?
+3. **A project trashed while open** now says "Project not found" (D-761). Right, or should it stay until the next
+   navigation?
+4. **f3-s12 AC2** now counts the second workspace's audit rows against a baseline (its throwaway owner's seating writes
+   some), where it asserted none at all (D-752). Acceptable reading of "no other workspace sees it"?
+5. **The restart fixtures** (f8-s2, f8-s3, f8-s8, f8-s12, f5-s2) can be pointed at the fx services (api-fx, api-fx-b,
+   worker-fx) so they run too; f8-s5 and f4-s27 cannot (Redis and MinIO are shared with the live bench). Go ahead?
+6. **The load screen's tree hides Upload and New folder** for a seat without upload rights instead of showing them
+   disabled with the reason (found while updating f4-s17). Change to disabled-with-reason?
+7. **The Auto Count index reads a just-uploaded sheet's PDF a second time** (D-288; f5-big): reuse the canvas's bytes?
+   Not needed for correctness.
+8. **`components/app-shell.tsx` still draws the workspace logo** in the full header, which today shows only on
+   Home's naming and error screens (D-625 took it out of the members' header). Leftover code to remove?
 
 ## Throwaway data made tonight
 
