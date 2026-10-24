@@ -138,6 +138,17 @@ export const EQUIPMENT_CASES = [
   // Every catalog class as a shared machine on two lines (D-756): any with missing data flags both lines.
   { id: "eq-756-shared-flag-catalog", kind: "shared-flag-catalog", ...DIESEL, expect: { unflagged: 0 } },
 
+  // My equipment (F34, D-759): the list orders and filters what pickers offer, never a price. (1) A default
+  // workspace (empty list, show all) is offered every live class, 628, none under My equipment. (2) Mine-only with
+  // three on the list (one a custom machine) offers exactly those three first, and the full search still reaches
+  // all 628 national classes plus the custom one. (3) EX-CRAWL-30T on the starter's worked check prices $16,471.70
+  // on the list, off it, and off it in mine-only mode.
+  { id: "eq-759-default-offers-all", kind: "suggest", setting: {}, expect: { mine: 0, offered: 628, folded: false } },
+  { id: "eq-759-mine-only", kind: "suggest", setting: {}, myEquipment: ["EX-CRAWL-30T", "ADT-30T", "U-TEST1"], mineOnly: true, custom: { classes: [{ equip_key: "U-TEST1", category: "Company equipment", type: "TEST Loader", size_class: "TEST 3 yd", pricing_kind: "duration", custom: true }], activities: [], production: [] }, expect: { mine: 3, mineKeys: ["ADT-30T", "EX-CRAWL-30T", "U-TEST1"], folded: true, full: 629, fullNational: 628 } },
+  { id: "eq-759-on-list-prices", kind: "machine", ...DIESEL, myEquipment: ["EX-CRAWL-30T"], input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
+  { id: "eq-759-off-list-prices", kind: "machine", ...DIESEL, myEquipment: ["ADT-30T"], input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
+  { id: "eq-759-off-list-mine-only-prices", kind: "machine", ...DIESEL, myEquipment: ["ADT-30T"], mineOnly: true, input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
+
   // The founder's spread numbers at machine level (2 × EX-CRAWL-20T; the spread itself is Block 3.1).
   { id: "eq-spread-8hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 80, workDays: 10, hoursPerDay: 8, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 16699.56 } },
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
@@ -177,6 +188,8 @@ export function bundleFor(eqlib, c = {}) {
     custom: c.custom ?? { classes: [], activities: [], production: [] },
     overrides,
     location: { factor_from_wage_set: c.location ?? null, equipment_amf: c.location == null ? null : c.location - 1, zip: c.location == null ? null : "00000", location_set: c.location != null },
+    my_equipment: c.myEquipment ?? [],
+    mine_only: Boolean(c.mineOnly),
   };
 }
 
@@ -194,6 +207,7 @@ export async function runEquipment(page, eqlib) {
       const snap = await import("/src/lib/estimate/equipment/snapshot.ts");
       const se = await import("/src/lib/estimate/sharedEquipment.ts");
       const match = await import("/src/lib/estimate/equipment/match.ts");
+      const sug = await import("/src/lib/estimate/equipment/suggest.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -212,6 +226,13 @@ export async function runEquipment(page, eqlib) {
             if (got !== want || gotDemob !== wantDemob) bad.push(`${cls.equip_key}: ${got}/${gotDemob}, catalog ${want}/${wantDemob}`);
           }
           return { checked, bad };
+        }
+    if (c.kind === "suggest") {
+          // What a picker offers with nothing typed (every live class), split by the list.
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const live = lib.classes().filter((x) => !x.retired_in);
+          const s = sug.suggest(live, lib);
+          return { mine: s.mine.length, mineKeys: s.mine.map((x) => x.equip_key).sort(), folded: s.restFolded, offered: s.restFolded ? s.mine.length : s.mine.length + s.rest.length, full: s.mine.length + s.rest.length, fullNational: [...s.mine, ...s.rest].filter((x) => !x.custom).length };
         }
     if (c.kind === "prod-catalog" || c.kind === "prod-d") {
           const lib = resolve.library(bundleFor(eqlib, {}));
