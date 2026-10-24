@@ -13,22 +13,58 @@
 // never signed in as (the guard refuses it); it now builds the same world on the run's own throwaway owner
 // (lib/world.mjs riversideWorld: Riverside Medical Center, page 1 calibrated as the old seed). Nothing it checks
 // changed.
+//
+// Updated 2026-10-24 (D-77, D-81, D-79, D-97, D-35, D-103, D-357, D-315, D-55, D-506, F5-S16, F6-S8): today's screens.
+// - Step 2 (D-77, D-81): the inline properties pane is gone; Lock is the canvas's (an area's right-click "Item actions"
+//   menu), not the row's, so the step locks and unlocks a small area there. The locked row shows its "Locked" mark and
+//   its ⋮ Delete (no longer "Delete item", D-81) is disabled; a hand-written geometry add is still refused.
+// - Step 4 (D-77, D-208): Override quantity is the row's ⋮ entry and opens legacy's Override quantity dialog
+//   ("Override quantity", "Override reason", Save override, Clear override); the saved reason is read back in that
+//   dialog. The "no reason, no save" check is unchanged.
+// - Steps 6 and 13 (D-79, D-97): the canvas has no scrollbars and the view is the stage's transform, so where the
+//   view is is read from [data-sheet-stage], not scrollLeft/Top. Step 13 keeps Space+drag: D-76 removed it, D-506
+//   brought it back in every tool; the placed-point probe is the canvas's [data-draft-point].
+// - Step 7 (D-77): a click on a markup selects it (its row is the selected row); its editing is Properties, the
+//   dialog from the row's ⋮, whose Name is the item's name.
+// - Step 9 (D-35, D-103, D-357): zoom runs to 4000% (was 3000%), 100% is 170 px per inch so Fit is not 100%; the
+//   cluster's percentage opens the zoom menu, whose Zoom to Fit returns to the picture the sheet opened with.
+// - Step 10 (D-315, D-51, D-55, F5-S16): the project page's file browser is gone, and Riverside is now the run's own,
+//   so its unscaled page 2 is calibrated in place. On an unscaled sheet Count needs no scale (D-55) and opens its
+//   naming dialog; Linear asks "Set a scale for this sheet" (F5-S16, built with D-51's block) with the reason, and the
+//   panel says why. Calibrate now, two clicks, "Real distance" 50, Save calibration: the scale is feet per PDF point
+//   (D-51: 50 ft over 612 pt), and Linear goes on to its naming dialog.
+// - Step 11 (F6-S8, D-36 F6 Q7): layers are made in the Takeoff panel's layer control (the "Layers" menu): Add layer…,
+//   Add sub-layer, Edit (rename), Delete (never offered on the last; the api refuses it), and each row's eye. A new
+//   project starts with more than one layer, so the step deletes the others (contents moved) to reach the last.
+// - Step 12 (D-55, D-77, D-336): a new area is named "SF n"; its colour is the row's colour dot (legacy's 16 presets,
+//   D-77), and it is filed under a classification and a custom folder in Properties' Work Breakdown Structure.
 
-import { apiCall, expect, run } from "./lib/bench.mjs";
-import { freshWorkspace, makeProject, openFiles } from "./lib/f4.mjs";
+import { apiCall, enterWorkspace, expect, run } from "./lib/bench.mjs";
 import { riversideWorld } from "./lib/world.mjs";
-import { call, signInAt } from "./lib/realtime.mjs";
+import { call, signInAt, waitFor } from "./lib/realtime.mjs";
 import { APP } from "./lib/bench.mjs";
-import { armMeasure, countItem, menuItem, openSheet, removeItem, row } from "./lib/takeoff.mjs";
+import { MEASURE_TOOLS, armMeasure, clickSheet, countItem, menuItem, openSheet, removeItem, row, sheetPoint } from "./lib/takeoff.mjs";
 
 // The run's own Riverside (lib/world.mjs): page 1 calibrated as the old seed, page 2 unscaled.
 const world = await riversideWorld();
 const { token, workspace, r } = world;
 const made = [];
 
-const tool = (page, label) =>
-  page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { name: label, exact: true });
-const scroller = (page) => page.locator('svg[role="presentation"]').locator("xpath=ancestor::div[contains(@class,'overflow-auto')][1]");
+const measureTool = (page, label) => page.getByRole("group", { name: MEASURE_TOOLS }).getByRole("button", { name: label, exact: true });
+const scroller = (page) => page.locator("[data-sheet-scroller]");
+/** Where the view is: the stage's translate (no scrollbars since D-79; a free offset since D-97). */
+const viewAt = (page) =>
+  page.locator("[data-sheet-stage]").evaluate((e) => {
+    const m = new DOMMatrixReadOnly(getComputedStyle(e).transform);
+    return [Math.round(-m.m41), Math.round(-m.m42)];
+  });
+const zoomLabel = (page) => page.locator("[data-zoom-menu-trigger]").getAttribute("aria-label");
+const layerMenu = async (page) => {
+  const menu = page.getByRole("menu", { name: "Layers" });
+  if (!(await menu.isVisible().catch(() => false))) await page.locator("[data-quantity-panel] [data-active-layer]").click();
+  await menu.waitFor({ timeout: 5000 });
+  return menu;
+};
 
 async function areaItem(name, vertices) {
   const res = await call(token, "POST", `${r.takeoff}/item`, {
@@ -47,6 +83,7 @@ const square = (x, y, w, h) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
 
 async function signedInOnSheet(page) {
   await signInAt(page, APP, world.owner.email, world.password);
+  await enterWorkspace(page, workspace.uuid);
   await openSheet(page, r);
 }
 
@@ -71,25 +108,31 @@ await run("proof-backlog", [
     title: "§8 Lock an item so it refuses edits, and unlock it again",
     run: async ({ page }) => {
       const name = `Proof lock ${Date.now() % 100000}`;
-      const item = await countItem(token, r, name);
-      made.push(item.uuid);
+      const item = await areaItem(name, square(0.8, 0.2, 0.1, 0.1));
       await signedInOnSheet(page);
-      await row(page, name).click();
-      await page.locator("[data-properties-pane]").getByRole("button", { name: "Lock" }).click();
-      await page.getByText("This item is locked. Unlock it to change anything, including deleting it.").waitFor();
-      const del = await menuItem(page, name, "Delete item");
+      // Lock is the canvas's (D-81): an area's right-click menu.
+      const lockFromCanvas = async (label) => {
+        const at = await sheetPoint(page, 0.85, 0.25);
+        await page.mouse.click(at.x, at.y, { button: "right" });
+        await page.getByRole("menu", { name: "Item actions" }).getByRole("menuitem", { name: label, exact: true }).click();
+      };
+      await lockFromCanvas("Lock");
+      await waitFor(async () => ((await detail(item.uuid)).is_locked ? true : null), "the item locked", 10000);
+      await row(page, name).getByLabel("Locked").waitFor({ timeout: 10000 });
+      const del = await menuItem(page, name, "Delete");
       const disabled = await del.isDisabled();
       await page.keyboard.press("Escape");
       const refused = await call(token, "POST", `${r.takeoff}/item/${item.uuid}/geometry`, {
-        geom_type: "count", vertices_json: [[0.5, 0.5]], shape_meta: null, client_uuid: crypto.randomUUID(),
+        geom_type: "sf", vertices_json: square(0.8, 0.35, 0.05, 0.05), shape_meta: { closed: true }, client_uuid: crypto.randomUUID(),
       });
-      await page.locator("[data-properties-pane]").getByRole("button", { name: "Unlock" }).click();
-      await page.getByText("This item is locked.", { exact: false }).waitFor({ state: "detached" });
+      await lockFromCanvas("Unlock");
+      await waitFor(async () => ((await detail(item.uuid)).is_locked ? null : true), "the item unlocked", 10000);
+      await row(page, name).getByLabel("Locked").waitFor({ state: "detached", timeout: 10000 });
       const allowed = await call(token, "PATCH", `${r.takeoff}/item/${item.uuid}`, { name: `${name} after` });
-      expect(disabled, "Delete item was offered on a locked item");
+      expect(disabled, "Delete was offered on a locked item");
       expect(refused.status >= 400, `a hand-written add to a locked item got ${refused.status}`);
       expect(allowed.status === 200, `a rename after unlocking got ${allowed.status}`);
-      return `locked: menu disabled, api refused an add ${refused.status}; unlocked: rename 200`;
+      return `locked from the canvas: the row's Locked mark, its Delete disabled, api refused an add ${refused.status}; unlocked: rename 200`;
     },
   },
   {
@@ -127,22 +170,37 @@ await run("proof-backlog", [
       const item = await areaItem(name, square(0.1, 0.4, 0.2, 0.2));
       const measured = Number((await detail(item.uuid)).effective_quantity);
       await signedInOnSheet(page);
-      await row(page, name).click();
-      const pane = page.locator("[data-properties-pane]");
-      await pane.getByRole("button", { name: "Override quantity" }).click();
-      await pane.locator("#override-value").fill("1234.5");
-      const save = pane.getByRole("button", { name: "Save override" });
+      // The row's ⋮ "Override quantity" opens legacy's dialog (D-77, D-208).
+      const openOverride = async () => {
+        await (await menuItem(page, name, "Override quantity")).click();
+        const dialog = page.getByRole("dialog", { name: "Override quantity" });
+        await dialog.waitFor({ timeout: 5000 });
+        return dialog;
+      };
+      let dialog = await openOverride();
+      await dialog.getByLabel("Override quantity").fill("1234.5");
+      const save = dialog.getByRole("button", { name: "Save override" });
       const blockedWithoutReason = await save.isDisabled();
-      await pane.locator("#override-reason").fill("Plan revision B");
+      await dialog.getByLabel("Override reason").fill("Plan revision B");
       await save.click();
-      await pane.getByText("Plan revision B").waitFor();
-      const overridden = Number((await detail(item.uuid)).effective_quantity);
-      await pane.getByRole("button", { name: "Clear" }).click();
-      await pane.getByRole("button", { name: "Override quantity" }).waitFor();
-      const cleared = Number((await detail(item.uuid)).effective_quantity);
-      expect(blockedWithoutReason, "an override could be saved without a reason");
-      expect(overridden === 1234.5 && cleared === measured, `override ${overridden}, cleared ${cleared}, measured ${measured}`);
-      return `no reason, no save; 1,234.5 with its reason shown; Clear returns the measured ${measured}`;
+      await dialog.waitFor({ state: "detached", timeout: 5000 });
+      const overridden = await waitFor(async () => {
+        const q = Number((await detail(item.uuid)).effective_quantity);
+        return q === 1234.5 ? q : null;
+      }, "the override stored", 10000).catch(async () => Number((await detail(item.uuid)).effective_quantity));
+      // The reason stands beside the figure: the dialog reopens with it.
+      dialog = await openOverride();
+      const reasonShown = await dialog.getByLabel("Override reason").inputValue();
+      await dialog.getByRole("button", { name: "Clear override" }).click();
+      await dialog.waitFor({ state: "detached", timeout: 5000 });
+      const cleared = await waitFor(async () => {
+        const q = Number((await detail(item.uuid)).effective_quantity);
+        return q === measured ? q : null;
+      }, "the override cleared", 10000).catch(async () => Number((await detail(item.uuid)).effective_quantity));
+      const rest = `override ${overridden}, reason "${reasonShown}", cleared ${cleared}, measured ${measured}`;
+      expect(blockedWithoutReason, `an override could be saved without a reason (Save override is enabled with the reason empty; the api refuses it 409 "An overridden quantity needs a reason."); the rest: ${rest}`);
+      expect(overridden === 1234.5 && cleared === measured && reasonShown === "Plan revision B", rest);
+      return `no reason, no save; 1,234.5 with its reason shown; Clear override returns the measured ${measured}`;
     },
   },
   {
@@ -169,21 +227,20 @@ await run("proof-backlog", [
       await signedInOnSheet(page);
       await page.getByRole("button", { name: "Zoom in" }).click();
       await page.getByRole("button", { name: "Zoom in" }).click();
-      await page.waitForTimeout(300);
-      const el = scroller(page);
       // Legacy's Pan tool, armed by H (D-66); Select's drag draws a box instead.
       await page.keyboard.press("h");
-      const keyArms = await page.getByRole("group", { name: "Takeoff tools" }).getByRole("button", { pressed: true }).textContent();
-      const before = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
-      const box = await el.boundingBox();
+      const pan = page.getByRole("group", { name: /^(Takeoff tools|Measure and annotation tools)$/ }).getByRole("button", { name: "Pan" });
+      const keyArms = await waitFor(async () => ((await pan.getAttribute("aria-pressed")) === "true" ? "Pan" : null), "H arms Pan", 5000).catch(() => "nothing");
+      const before = await viewAt(page);
+      const box = await scroller(page).boundingBox();
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
       await page.mouse.down();
       await page.mouse.move(box.x + box.width / 2 - 150, box.y + box.height / 2 - 100, { steps: 8 });
       await page.mouse.up();
-      const after = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
-      expect(keyArms?.trim() === "Pan", `H armed ${keyArms?.trim()}`);
-      expect(after[0] > before[0] && after[1] > before[1], `scroll ${before} → ${after}`);
-      return `H armed ${keyArms?.trim()}; its drag panned (${before} → ${after})`;
+      const after = await viewAt(page);
+      expect(keyArms === "Pan", `H armed ${keyArms}`);
+      expect(after[0] > before[0] && after[1] > before[1], `view ${before} → ${after}`);
+      return `H armed ${keyArms}; its drag panned (${before} → ${after})`;
     },
   },
   {
@@ -192,13 +249,16 @@ await run("proof-backlog", [
       const name = `Proof select ${Date.now() % 100000}`;
       await areaItem(name, square(0.4, 0.4, 0.1, 0.1));
       await signedInOnSheet(page);
-      const box = await page.locator('svg[role="presentation"]').boundingBox();
-      await page.mouse.click(box.x + box.width * 0.45, box.y + box.height * 0.45);
-      await page.locator("[data-properties-pane]").waitFor({ timeout: 5000 });
-      // The name is the value of the pane's name field, not its text.
-      const title = await page.locator("[data-properties-pane] input").first().inputValue();
+      await clickSheet(page, 0.45, 0.45);
+      // The click selects: its row is the selected row (D-77: no inline pane opens).
+      await page.locator("[data-quantity-panel] li[data-item-row] > [role=row][data-selected='1']", { hasText: name }).waitFor({ timeout: 5000 });
+      // Its editing is Properties, the dialog (D-77), from the row's ⋮.
+      await (await menuItem(page, name, "Properties")).click();
+      const form = page.locator('[data-measurement-dialog="edit"]');
+      await form.waitFor({ timeout: 5000 });
+      const title = await form.getByLabel("Name", { exact: true }).inputValue();
       expect(title === name, `clicking the markup selected "${title}"`);
-      return "clicking the markup opened its properties";
+      return "clicking the markup selected its row; its Properties opened on it";
     },
   },
   {
@@ -221,52 +281,79 @@ await run("proof-backlog", [
     },
   },
   {
-    title: "§9 Zoom in, zoom out (to 3000%), and Fit",
+    title: "§9 Zoom in, zoom out (to 4000%, D-35), and Fit",
     run: async ({ page }) => {
       await signedInOnSheet(page);
+      const opened = await zoomLabel(page);
       const zin = page.getByRole("button", { name: "Zoom in" });
-      for (let i = 0; i < 40 && !(await zin.isDisabled()); i += 1) await zin.click();
-      const max = await page.getByRole("button", { name: /^Zoom \d+ percent/ }).getAttribute("aria-label");
-      await page.getByRole("button", { name: /^Zoom \d+ percent/ }).click();
-      const fit = await page.getByRole("button", { name: /^Zoom \d+ percent/ }).getAttribute("aria-label");
-      expect(/Zoom 100 percent/.test(fit ?? ""), `Fit reads ${fit}`);
-      expect(/Zoom 3000 percent/.test(max ?? ""), `zoom stops at "${max}"; the line (and PARITY §24) says 3000%`);
-      return `${max}; Fit returns to 100%`;
+      for (let i = 0; i < 40 && !/Zoom 4000%/.test((await zoomLabel(page)) ?? ""); i += 1) await zin.click();
+      const max = await zoomLabel(page);
+      await zin.click();
+      const past = await zoomLabel(page);
+      await page.getByRole("button", { name: "Zoom out" }).click();
+      const out = await zoomLabel(page);
+      // The percentage opens the zoom menu (D-103, D-357); its Zoom to Fit is the sheet's opening picture.
+      await page.locator("[data-zoom-menu-trigger]").click();
+      await page.getByRole("menu", { name: "Zoom" }).getByRole("menuitem", { name: "Zoom to Fit" }).click();
+      const fit = await waitFor(async () => {
+        const now = await zoomLabel(page);
+        return now === opened ? now : null;
+      }, "Zoom to Fit back at the opening zoom", 5000).catch(() => zoomLabel(page));
+      const pct = (label) => Number(/Zoom (\d+)%/.exec(label ?? "")?.[1]);
+      expect(/^Zoom 4000%/.test(max ?? "") && past === max, `zoom stops at "${max}" (one more press: "${past}"); D-35 says 4000%`);
+      expect(pct(out) < 4000 && pct(out) > 3000, `one Zoom out from 4000% reads "${out}"`);
+      expect(fit === opened, `Fit reads "${fit}", the sheet opened at "${opened}"`);
+      return `${max} and no further; Zoom out ${out}; the zoom menu's Zoom to Fit back to the opening ${opened}`;
     },
   },
   {
-    title: "§9 Calibrate from two points at a declared distance; measure tools disabled until then, and the panel says why",
+    title: "§9 Calibrate from two points at a declared distance; measure tools wait for a scale, and the panel says why",
     run: async ({ page }) => {
-      const fresh = await freshWorkspace("Proof calibrate");
-      const job = await makeProject(fresh.token, fresh.base, { name: "Calibrate job" });
-      const PDF = Buffer.from(
-        ["%PDF-1.4", "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj", "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj",
-          "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj", "trailer<</Root 1 0 R>>", "%%EOF"].join("\n"),
-      );
-      await openFiles(page, fresh.workspace.uuid, job.uuid);
-      await page.locator('input[type=file][accept="application/pdf"]').setInputFiles({ name: "Cal.pdf", mimeType: "application/pdf", buffer: PDF });
-      await page.getByText("Ready", { exact: true }).first().waitFor({ timeout: 60000 });
-      const sheet = (await apiCall(fresh.token, "GET", `${fresh.base}/${job.uuid}/drawing/sheet`)).body[0];
-      await page.goto(`${APP}/project/${job.uuid}/takeoff/${sheet.uuid}`);
-      await page.locator('img[alt="Drawing sheet"]').waitFor({ timeout: 20000 });
-      const disabled = await Promise.all(["Linear", "Area", "Count"].map((l) => tool(page, l).isDisabled()));
-      const why = await page.getByText("Set the sheet scale first. Without it a shape has no quantity.").count();
-      await tool(page, "Scale").click();
-      await page.getByRole("menu", { name: "Scale" }).getByRole("menuitem", { name: "Calibrate Scale" }).click();
-      const box = await page.locator('svg[role="presentation"]').boundingBox();
-      // A portrait page runs below the window; y 0.2 is on screen.
-      await page.mouse.click(box.x + box.width * 0.2, box.y + box.height * 0.2);
-      await page.mouse.click(box.x + box.width * 0.7, box.y + box.height * 0.2);
-      await page.locator("#calibration-feet").fill("50");
-      await page.getByRole("dialog").getByRole("button", { name: /Save|Set/ }).click();
-      await page.getByText("Scale set: 50 ft reference").waitFor({ timeout: 10000 });
-      const cal = (await apiCall(fresh.token, "GET", `${fresh.base}/${job.uuid}/drawing/sheet/${sheet.uuid}/calibration`)).body;
-      const enabled = !(await tool(page, "Linear").isDisabled());
-      const fpn = Number(cal.feet_per_norm);
-      expect(disabled.every(Boolean), `before a scale, disabled: ${disabled}`);
+      // Riverside's page 2 is unscaled (lib/world.mjs) and the run's own: calibrated here.
+      const base = r.takeoff.replace(/\/takeoff$/, "");
+      const sheet = (await apiCall(token, "GET", `${base}/drawing/sheet`)).body.find((s) => s.uuid === r.second);
+      const before = (await apiCall(token, "GET", `${base}/drawing/sheet/${sheet.uuid}/calibration`)).body;
+      expect(!before, `page 2 already has a scale: ${JSON.stringify(before)}`);
+      await signInAt(page, APP, world.owner.email, world.password);
+      await enterWorkspace(page, workspace.uuid);
+      await page.goto(`${APP}/project/${r.project}/takeoff/${sheet.uuid}`);
+      await page.locator("[data-canvas-scale]").first().waitFor({ timeout: 20000 });
+      await page.locator("[data-quantity-panel]").waitFor();
+      const why = await page.locator("[data-quantity-panel]").getByText("Set the sheet scale first. Without it a shape has no quantity.").count();
+      // A count needs no scale (D-55): its naming dialog opens.
+      await measureTool(page, "Count").click();
+      const naming = page.locator('[data-measurement-dialog="create"]');
+      const countOpens = await naming.waitFor({ timeout: 5000 }).then(() => true, () => false);
+      if (countOpens) {
+        await page.keyboard.press("Escape");
+        await naming.waitFor({ state: "detached", timeout: 5000 });
+      }
+      // Linear asks for a scale first, and says why (F5-S16).
+      await measureTool(page, "Linear").click();
+      const ask = page.getByRole("dialog", { name: "Set a scale for this sheet" });
+      await ask.waitFor({ timeout: 5000 });
+      const reason = await ask.getByText("Measurements need a scale before Linear or Area tools can be used.").count();
+      const armedUnscaled = (await measureTool(page, "Linear").getAttribute("aria-pressed")) === "true";
+      await ask.getByRole("button", { name: "Calibrate now" }).click();
+      await page.getByText("Click two points on the sheet, then enter the real distance.").waitFor({ timeout: 5000 });
+      await clickSheet(page, 0.2, 0.2);
+      await clickSheet(page, 0.7, 0.2);
+      const dialog = page.getByRole("dialog");
+      await dialog.getByRole("heading", { name: "Set sheet scale" }).waitFor({ timeout: 5000 });
+      await dialog.getByLabel("Real distance").fill("50");
+      await dialog.getByRole("button", { name: "Save calibration" }).click();
+      await page.getByText("Scale set — verify with a known dimension").first().waitFor({ timeout: 10000 });
+      const cal = (await apiCall(token, "GET", `${base}/drawing/sheet/${sheet.uuid}/calibration`)).body;
+      // With a scale, Linear goes on to its naming dialog (the tool picked before).
+      const linearOn = await naming.waitFor({ timeout: 10000 }).then(() => true, () => false);
+      // D-51: feet per PDF point; two clicks half the page apart on the page's width.
+      const want = 50 / (0.5 * Number(sheet.width_pt));
+      const fpp = Number(cal?.feet_per_norm);
       expect(why === 1, "the empty panel does not say why");
-      expect(Math.abs(fpn - 100) < 0.5 && enabled, `feet_per_norm ${fpn}, Linear enabled ${enabled}`);
-      return `tools disabled with the reason; two clicks 0.5 apart at 50 ft → feet_per_norm ${fpn.toFixed(3)}; tools enabled`;
+      expect(countOpens, "Count did not open its naming dialog on an unscaled sheet (D-55: a count needs no scale)");
+      expect(reason === 1 && !armedUnscaled, `Linear on an unscaled sheet: reason shown ${reason}, armed ${armedUnscaled}`);
+      expect(Math.abs(fpp - want) <= 0.005 * want && linearOn, `feet per point ${fpp} (want ${want.toFixed(6)}), Linear went on ${linearOn}`);
+      return `the panel says why; Count needs none; Linear asks "Set a scale for this sheet" with the reason; two clicks 0.5 apart at 50 ft → ${fpp.toFixed(6)} ft per point; Linear goes on`;
     },
   },
   {
@@ -274,47 +361,100 @@ await run("proof-backlog", [
     run: async ({ page }) => {
       await signedInOnSheet(page);
       const layers = `${r.takeoff}/layer`;
+      const list = async () => (await call(token, "GET", layers)).body;
       const name = `Proof layer ${Date.now() % 100000}`;
-      await page.getByRole("button", { name: "New layer" }).click();
-      await page.getByRole("dialog").getByRole("textbox").fill(name);
-      await page.getByRole("dialog").getByRole("button", { name: "Create" }).click();
-      await page.getByRole("button", { name: /Layers/ }).first().click();
-      await page.getByText(name).first().waitFor();
-      const all = (await call(token, "GET", layers)).body;
-      const mine = all.find((l) => l.name === name);
-      const sub = await call(token, "POST", layers, { name: `${name} sub`, parent_uuid: mine.uuid });
-      const renamed = await call(token, "PATCH", `${layers}/${mine.uuid}`, { name: `${name} renamed` });
-      await call(token, "DELETE", `${layers}/${sub.body.uuid}`);
-      const gone = await call(token, "DELETE", `${layers}/${mine.uuid}`);
-      // A layer row is one button, its name; nothing on it shows or hides the layer.
-      const rowControls = await page.locator("li", { hasText: name }).first().locator("button").count();
-      const left = (await call(token, "GET", layers)).body.length;
-      expect(sub.status === 201 && renamed.status === 200, `sub ${sub.status}, rename ${renamed.status}`);
-      expect(gone.status >= 400 || left > 0, `create, sub-layer, rename and delete work, but deleting the project's only layer was allowed (${gone.status}, ${left} left; legacy refuses "A project must keep at least one layer"; today's api refuses only the default layer)`);
-      expect(rowControls > 1, "there is no show or hide control on a layer");
-      return "all";
+      // The layer control at the top of the Takeoff panel (F6-S8): its menu is "Layers".
+      let menu = await layerMenu(page);
+      await menu.getByRole("menuitem", { name: /^Add layer/ }).click();
+      let form = page.locator("[data-add-layer]");
+      await form.getByRole("textbox").first().fill(name);
+      await form.getByRole("button", { name: "Add layer", exact: true }).click();
+      const mine = await waitFor(async () => (await list()).find((l) => l.name === name) ?? null, "the layer made", 10000);
+      menu = await layerMenu(page);
+      await menu.getByRole("button", { name: `Add sub-layer under ${name}` }).click();
+      form = page.locator("[data-add-layer]");
+      await form.getByRole("textbox").first().fill(`${name} sub`);
+      await form.getByRole("button", { name: "Add sub-layer", exact: true }).click();
+      const sub = await waitFor(async () => (await list()).find((l) => l.name === `${name} sub`) ?? null, "the sub-layer made", 10000);
+      menu = await layerMenu(page);
+      await menu.getByRole("button", { name: `Edit ${name}`, exact: true }).click();
+      const edit = page.locator("[data-edit-layer]");
+      await edit.getByRole("textbox").first().fill(`${name} renamed`);
+      await edit.getByRole("button", { name: "Save" }).click();
+      await waitFor(async () => ((await list()).find((l) => l.uuid === mine.uuid)?.name === `${name} renamed` ? true : null), "the rename stored", 10000);
+      // Show or hide on the sheet: the row's eye flips.
+      menu = await layerMenu(page);
+      const eye = menu.locator(`[data-layer="${name} renamed"] [data-layer-eye]`);
+      const eyeBefore = await eye.getAttribute("data-layer-eye");
+      await eye.click();
+      await waitFor(async () => ((await eye.getAttribute("data-layer-eye")) !== eyeBefore ? true : null), "the eye flipped", 5000).catch(() => {});
+      const eyeAfter = await eye.getAttribute("data-layer-eye");
+      // Delete: the sub-layer, then the layer, then the project's other starting layers down to the default,
+      // each through the dialog's Move contents and delete layer (contents kept on another layer).
+      const deleteOnScreen = async (target) => {
+        menu = await layerMenu(page);
+        await menu.getByRole("button", { name: `Delete ${target}`, exact: true }).click();
+        await page.locator("[data-delete-layer]").getByRole("button", { name: "Move contents and delete layer" }).click();
+        await waitFor(async () => ((await list()).some((l) => l.name === target) ? null : true), `${target} deleted`, 10000);
+      };
+      for (const target of [`${name} sub`, `${name} renamed`]) await deleteOnScreen(target);
+      for (let others = await list(); others.length > 1; others = await list()) {
+        await deleteOnScreen((others.find((l) => !l.is_default) ?? others.at(-1)).name);
+      }
+      const left = await list();
+      menu = await layerMenu(page);
+      const lastDisabled = left.length === 1 ? await menu.getByRole("button", { name: `Delete ${left[0].name}`, exact: true }).isDisabled() : false;
+      const last = left.length === 1 ? await call(token, "DELETE", `${layers}/${left[0].uuid}`) : { status: 0, body: {} };
+      expect(sub.parent_uuid === mine.uuid, `the sub-layer's parent ${sub.parent_uuid}`);
+      expect(eyeBefore !== eyeAfter, `the eye read ${eyeBefore} before and ${eyeAfter} after a click`);
+      expect(left.length === 1 && lastDisabled && last.status === 409, `${left.length} layers left; the last's Delete disabled ${lastDisabled}; the api's delete of it ${last.status} ${JSON.stringify(last.body)}`);
+      return `Add layer, Add sub-layer, Edit (rename), the eye ${eyeBefore} → ${eyeAfter}, Delete twice; the last layer's Delete disabled and the api refuses it ${last.status} ("${last.body?.detail}")`;
     },
   },
   {
     title: "§8 Create a takeoff item (SF, LF or EA), naming, colouring, filing under a classification and a custom folder",
     run: async ({ page }) => {
+      const wsBase = `/api/workspace/${workspace.uuid}`;
+      const folder = await call(token, "POST", `${r.takeoff}/folder`, { name: `Proof folder ${Date.now() % 100000}` });
+      expect(folder.status === 201, `folder: ${folder.status} ${JSON.stringify(folder.body)}`);
       await signedInOnSheet(page);
       await armMeasure(page, "Area");
-      const box = await page.locator('svg[role="presentation"]').boundingBox();
-      const at = (x, y) => [box.x + box.width * x, box.y + box.height * y];
-      for (const [x, y] of [[0.62, 0.72], [0.72, 0.72], [0.72, 0.8]]) await page.mouse.click(...at(x, y));
       const created = page.waitForResponse((res) => res.request().method() === "POST" && res.url().endsWith("/item"));
-      await page.mouse.dblclick(...at(0.62, 0.8));
+      for (const [x, y] of [[0.62, 0.72], [0.72, 0.72], [0.72, 0.8]]) await clickSheet(page, x, y);
+      const last = await sheetPoint(page, 0.62, 0.8);
+      await page.mouse.dblclick(last.x, last.y);
       const item = await (await created).json();
       made.push(item.uuid);
-      await row(page, item.name).click();
-      await page.locator("[data-properties-pane]").getByRole("radio", { name: "Blue" }).click();
-      await page.waitForTimeout(800);
-      const colour = (await detail(item.uuid)).color;
-      const classification = await page.locator("[data-properties-pane]").getByText(/Classification/).count();
-      expect(/^Area \d+$/.test(item.name) && colour === "#2563eb", `named "${item.name}", colour ${colour}`);
-      expect(classification > 0, `named "${item.name}" and recoloured; filing under a folder exists; there is no classification to file under (F6-S14)`);
-      return "all";
+      // The colour: the row's dot, legacy's 16 presets (D-77).
+      const at = row(page, item.name);
+      await at.locator("[data-row-color]").click();
+      await page.getByRole("button", { name: "#3b82f6", exact: true }).click();
+      const colour = await waitFor(async () => {
+        const c = (await detail(item.uuid)).color;
+        return c?.toLowerCase() === "#3b82f6" ? c : null;
+      }, "the colour stored", 10000).catch(async () => (await detail(item.uuid)).color);
+      // Filing: Properties' Work Breakdown Structure, a classification and a custom folder (D-336).
+      const tree = await call(token, "GET", `${wsBase}/classification?system=csi`);
+      const d03 = tree.body.find((n) => n.parent_uuid === null && n.code === "03");
+      await (await menuItem(page, item.name, "Properties")).click();
+      const form = page.locator('[data-measurement-dialog="edit"]');
+      await form.waitFor({ timeout: 5000 });
+      const toggle = form.locator("[data-wbs]").getByRole("button", { name: /^Work Breakdown Structure/ });
+      if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+      const picker = form.locator("[data-wbs-classification] [data-classification-picker]");
+      await picker.getByLabel("Search classifications").fill("Concrete");
+      await picker.locator('[data-pick="03"]').first().click();
+      await form.locator('[data-search-select="Folder"]').getByRole("button", { name: "Folder", exact: true }).click();
+      await form.getByRole("listbox", { name: "Folder" }).getByRole("option", { name: folder.body.name }).click();
+      await form.getByRole("button", { name: "Save" }).click();
+      await form.waitFor({ state: "detached", timeout: 10000 });
+      const filed = await waitFor(async () => {
+        const it = await detail(item.uuid);
+        return it.classification_ref_id === d03?.uuid && it.folder_uuid === folder.body.uuid ? it : null;
+      }, "filed under DIV 03 and the folder", 10000).catch(() => detail(item.uuid));
+      expect(/^SF \d+$/.test(item.name) && colour?.toLowerCase() === "#3b82f6", `named "${item.name}", colour ${colour}`);
+      expect(filed.classification_ref_id === d03?.uuid && filed.folder_uuid === folder.body.uuid, `named "${item.name}" and recoloured; classification ${filed.classification_ref_id} (DIV 03 is ${d03?.uuid}), folder ${filed.folder_uuid} (wanted ${folder.body.uuid})`);
+      return `drawn and named "${item.name}"; recoloured #3b82f6 from its row; filed under DIV 03 and "${folder.body.name}"`;
     },
   },
   {
@@ -324,18 +464,17 @@ await run("proof-backlog", [
       await page.getByRole("button", { name: "Zoom in" }).click();
       await page.getByRole("button", { name: "Zoom in" }).click();
       await armMeasure(page, "Linear");
-      const el = scroller(page);
-      const before = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
-      const box = await el.boundingBox();
+      const before = await viewAt(page);
+      const box = await scroller(page).boundingBox();
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
       await page.keyboard.down("Space");
       await page.mouse.down();
       await page.mouse.move(box.x + box.width / 2 - 120, box.y + box.height / 2 - 80, { steps: 8 });
       await page.mouse.up();
       await page.keyboard.up("Space");
-      const after = await el.evaluate((e) => [e.scrollLeft, e.scrollTop]);
-      const drafted = await page.locator('svg[role="presentation"] circle[r="0.004"]').count();
-      expect(after[0] > before[0] && after[1] > before[1], `scroll ${before} → ${after}`);
+      const after = await viewAt(page);
+      const drafted = await page.locator("[data-draft-point]").count();
+      expect(after[0] > before[0] && after[1] > before[1], `view ${before} → ${after}`);
       expect(drafted === 0, `the drag placed ${drafted} points while Linear was armed`);
       return `Linear armed, space-drag panned (${before} → ${after}) and placed nothing`;
     },

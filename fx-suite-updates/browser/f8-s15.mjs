@@ -9,7 +9,8 @@
 //
 // Updated 2026-10-24 (D-311, D-314, D-619, D-625, D-72, D-81, D-87):
 // - D-311 1, D-314: the dashboard is the "All projects" dialog (`/?projects=open`); step 1 watches its
-//   New project button and the refusal under it (`#new-project-refusal`).
+//   New project button and the refusal under it (`#new-project-refusal`). Home opens the project's
+//   takeoff behind the dialog, so the clock starts once its reads have finished (harness).
 // - D-311 5, D-619, D-87: no page a member reaches draws the header's workspace select or the standing
 //   badge (the takeoff pages are bare, Settings brings its own bar). Step 1's "the header names the
 //   custom role" is retired with the badge. Step 3 reads the rename in Settings > General's name field
@@ -108,6 +109,18 @@ await run("f8-s15", [
         await newProject(page).waitFor({ timeout: 20000 });
         // Disabled until the member's capabilities arrive: wait for them, then it must allow.
         await waitFor(() => mayCreate(page), "an estimator to be able to create a project to begin with", 5000);
+        // Home lands on the project's takeoff behind the dialog (D-311 1, D-314), whose own reads
+        // would queue the refetch being timed; the clock starts once no read has finished for 2 s.
+        await page.waitForFunction(
+          () => {
+            const done = performance.getEntriesByType("resource").length;
+            const s = (window.__readsSettled ??= { done: -1, since: Date.now() });
+            if (done !== s.done) Object.assign(s, { done, since: Date.now() });
+            return Date.now() - s.since >= 2000;
+          },
+          undefined,
+          { polling: 100, timeout: 45000 },
+        );
         await unfocus(page);
 
         const times = [];
@@ -238,7 +251,7 @@ await run("f8-s15", [
         expect(done.status === 200, `transfer: ${done.status} ${JSON.stringify(done.body)}`);
         const bTook = await timed(async () => (await standing(b.page)) === "Owner", "B to read Owner");
         const aTook = await timed(async () => (await standing(page)) === "Not owner", "A to read that it is no longer the owner");
-        return `B read Owner in ${bTook} ms, A read Admin in ${aTook} ms`;
+        return `B read Owner in ${bTook} ms, A read that it is no longer the owner in ${aTook} ms`;
       } finally {
         await b.context.close();
       }
