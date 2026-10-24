@@ -483,7 +483,61 @@ async def hidden() -> int:
     return 1 if wrong else 0
 
 
+async def parents() -> int:
+    """D-764 B0: a line Calculate turns into a parent gives up its automatic components and its
+    untouched spread; a person's own component stays on it. Two rows on the throwaway project "zz
+    MyEq project" inside one transaction that is rolled back: a parent with an automatic and an edited
+    component, and the release that Calculate runs."""
+    from sqlalchemy import select
+
+    from app.database import SessionFactory
+    from app.features.drawing.models import DrawingSheet
+    from app.features.equipment import production as ew
+    from app.features.estimate.models import EstimateItemSpread, TakeoffCostComponent
+    from app.features.project.models import Project
+    from app.features.takeoff.models import TakeoffItem, TakeoffItemType
+
+    wrong: list[str] = []
+    async with SessionFactory() as session:
+        try:
+            project = await session.scalar(select(Project).where(Project.name == "zz MyEq project"))
+            sheet = await session.scalar(select(DrawingSheet).where(DrawingSheet.project_id == project.id)) if project else None
+            if project is None or sheet is None:
+                print("FAIL  parents: the throwaway project zz MyEq project (or its sheet) is missing")
+                return 1
+            item = dict(workspace_id=project.workspace_id, project_id=project.id, sheet_id=sheet.id, created_by_id=project.created_by_id, type=TakeoffItemType.CY, unit="CY")
+            parent = TakeoffItem(name="qt parent", **item)
+            session.add(parent)
+            await session.flush()
+            child = TakeoffItem(name="qt sub-line", parent_item_id=parent.id, **item)
+            session.add(child)
+            comp = dict(workspace_id=project.workspace_id, project_id=project.id, takeoff_item_id=parent.id, pricing_mode="lump", created_by_id=project.created_by_id)
+            session.add(TakeoffCostComponent(kind="equipment", name="qt tier machine", eq_auto=True, position=0, **comp))
+            session.add(TakeoffCostComponent(kind="labor", name="qt edited crew", eq_auto=False, position=1, **comp))
+            session.add(EstimateItemSpread(workspace_id=project.workspace_id, project_id=project.id, takeoff_item_id=parent.id, user_edited=False))
+            await session.flush()
+            gone = await ew.release_parents(project.workspace_id, session, project.id, [parent.id])
+            left = [c.name for c in await session.scalars(select(TakeoffCostComponent).where(TakeoffCostComponent.takeoff_item_id == parent.id))]
+            spread = await session.scalar(select(EstimateItemSpread).where(EstimateItemSpread.takeoff_item_id == parent.id))
+            if gone != 1 or "qt tier machine" in left:
+                wrong.append(f"FAIL  parents-automatic: {gone} removed, left {left}; expected the tier machine removed")
+            if spread is not None:
+                wrong.append("FAIL  parents-automatic: the untouched spread stayed on the parent")
+            if left != ["qt edited crew"]:
+                wrong.append(f"FAIL  parents-edited: left {left}; expected the edited crew kept, shown not counted")
+        finally:
+            await session.rollback()
+    for w in wrong:
+        print(w)
+    print(f"parents: 2 rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["parents"]:
+        import asyncio
+
+        sys.exit(asyncio.run(parents()))
     if sys.argv[1:] == ["hidden"]:
         import asyncio
 
