@@ -14,7 +14,41 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 01:42 UTC. Updated after e
 
 ## Part 2: the fixture suite
 
-(filled in as it runs)
+**Restored** (04:00 UTC): `./fx-suite.sh setup` restored tag `fixtures-archive-2026-09-28` into `intelcost-infra/fx-suite`
+(git-ignored), laid today's guarded helpers and `fx-suite-updates/` over it and retargeted it at the fx stack (D-611):
+its own api (8020, 8030), worker, built apps (5176, 5177), database `intelcost_fx` (migrated to d759 on start), Redis
+1, MinIO bucket `intelcost-fx`, MailHog only, its own Stripe fake. The isolation check passed. The api and app tags hold
+no test files (they mark the archive commit only), so nothing was restored into those repos.
+
+**The run** (started 04:05 UTC, `fx-suite/run-all.sh`): the standing list (`regress.sh full`, 102 fixtures, 9 skipped
+by D-611) and then the 29 fixtures added since the tag (c03–c31, f9-*, m6, n2, n3, n11, proof-backlog, r1, r5, rv-rows).
+Results and classification: below when it ends.
+
+**Fixed in the app so far (category a):**
+1. **Saving a site machine marked its unchanged count and work day as typed** (api 9f1ec9e). The change test compared
+   Decimals as strings ("2" against the stored "2.0000"), so every save put `eq_units` and `eq_hours_per_day` in
+   `own_fields`, and Apply tier then kept the old count in a tier that takes more machines (1,400–2,199 kept ADT-30T ×
+   2 instead of × 3). Found by the new c32. *Data already saved before the fix keeps those entries*; see Questions.
+2. **"Take all off" could run before the in-use counts loaded and skip the Q7 warning** (app 4fefdfa). Found by c34.
+
+**New fixtures so far** (`fx-suite-updates/browser/`, each on its own throwaway accounts):
+| Fixture | Covers | Last run |
+|---|---|---|
+| c32-site-typed | D-758 follow-up (the brief's item 4): typed rates on site machines, recalculation into another tier, Apply tier same classes / a class leaving | 5/5 |
+| c33-invitations | D-749 (unverified sees none; banner; Accept joins; Decline shows on the inviter's list), D-752 (second owned workspace 409) | 4/4 |
+| c34-my-equipment | F34 end to end: On my list, starting list, bulk-off warning, mine-only picker and Add, reader without the capability, hidden activity, prices unchanged | 6/7 before the Q7 fix; re-run after the main run (the fx app is a build) |
+
+**The D-758 follow-up browser check (item 4), what c32 saw** on a 150 × 90 ft pad, A1 "Excavate and load (on-site
+haul)" as one site spread:
+- FG 82 → 9,000 BCY, 1,000 BCY/day, tier 900–1,399: EX-CRAWL-30T × 1 + ADT-30T × 2.
+- Typed in Shared equipment: the excavator's week $7,000, the truck's day $900 → the spread reads edited.
+- Recalculated at FG 55 → 22,500 BCY: the screen read "22,500 BCY over 1 line · tier 900–1,399 · default for 22,500
+  BCY: 1,500/day · edited", with **Apply tier**; both typed rates kept.
+- Apply tier (same classes) → tier 1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T × 3; both typed values carried; no notice.
+- Recalculated at FG 10 → 45,000 BCY, Apply tier → tier 2,200–3,199: EX-CRAWL-50T × 1 + ADT-30T × 3; the truck's $900
+  carried, the new excavator bare, and the screen's note: "Your typed values for Excavate and load (on-site haul):
+  Hydraulic excavator 30-36 t (~68,000-81,000 lb) were not used: it is not in the new tier."
+- Before the fix above, the same-classes Apply tier kept ADT-30T × 2.
 
 ## Decisions taken overnight
 
@@ -25,7 +59,10 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Started 01:42 UTC. Updated after e
 
 ## Questions for the founder
 
-(none yet)
+1. **Site machines saved before tonight's fix may hold `own_fields` that equal their stored count and work day**
+   (api 9f1ec9e). They price the same today; at the next Apply tier such a machine keeps its old count. Should a
+   one-off clean-up drop the entries that equal the stored value (bench and, later, production), or leave them?
+   Taken overnight: nothing changed in any data.
 
 ## Throwaway data made tonight
 
