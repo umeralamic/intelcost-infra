@@ -136,6 +136,17 @@ try {
         const summary = bid.computeBid(c.totals, c.rates);
         return { ...Object.fromEntries(summary.lines.map((l) => [l.key, l.amount])), total: summary.total };
       }
+      if (c.kind === "units") {
+        // D-762 A1: a line's (or a parent's, over its own Qty) unit figures read back from its totals.
+        const one = (q, rows, input, share) =>
+          costing.computeLineCost({ quantity: q, unit: c.unit ?? "SF", input, unitWastage: new Map(), components: (rows ?? []).map((row) => comps.evaluateComponent(row, { parent: 0, qty: q })), netQty: q, equipmentAllocation: share ?? null });
+        if (c.parts) {
+          const sum = costing.sumCosts(c.parts.map((p) => one(p.quantity, p.components, p.input, p.equipmentAllocation)));
+          return { ...costing.derivedUnits(sum, c.parentQty), itemCost: sum.itemCost };
+        }
+        const r = one(c.quantity, c.components, c.input, c.equipmentAllocation);
+        return { ...costing.derivedUnits(r, r.totalQty), itemCost: r.itemCost };
+      }
       if (c.kind === "alloc") {
         const r = alloc.allocateResource(c.res, c.hosts);
         return { total: r.total, unallocated: r.unallocated, allocations: Object.fromEntries(r.allocations) };

@@ -305,4 +305,28 @@ export const COST_CASES = [
     rates: { taxPct: 8, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] },
     expect: { taxOnMaterial: true, overheadOnSubtotal: true, total: 126120.72 },
   },
+
+  // --- Unit figures read back from the totals (D-762 A1): a unit × its quantity = its total ---------
+  // 100 SF; equipment as a lump (2 days × $500 + $200 mob = $1,200) and material $3/SF: Unit Equipment
+  // $1,200 ÷ 100 = $12.00 (today's 0 for a lump), Unit Material $3.00, Item $1,500. No total moves.
+  {
+    id: "units-lump-equipment",
+    kind: "units",
+    quantity: 100,
+    components: [
+      component("equipment", { pricing_mode: "lump", equip_basis: "day", equip_rate: 500, duration_formula: "2", mob_demob: 200 }),
+      component("material", { unit_price: 3 }),
+    ],
+    expect: { unitEquipment: 12, unitMaterial: 3, itemCost: 1500 },
+  },
+  // Typed labour, 100 SF + 10 % wastage: Total Qty 110, 0.5 MH × 110 = 55 MH × $40 = $2,200; Unit Labor
+  // $2,200 ÷ 110 = $20.00 = 0.5 × $40; Unit MH 0.5; wage $40.
+  { id: "units-typed-labor", kind: "units", quantity: 100, input: rates({ wastage_pct_override: 10, unit_man_hours: 0.5, hourly_wage: 40 }), expect: { unitLabor: 20, unitManHours: 0.5, hourlyWage: 40, itemCost: 2200 } },
+  // A shared machine's share only, $133.34 on 50 LF: Unit Equipment $133.34 ÷ 50 = $2.6668 → $2.67.
+  { id: "units-shared-only", kind: "units", quantity: 50, unit: "LF", equipmentAllocation: 133.34, expect: { unitEquipment: 2.6668, itemCost: 133.34 } },
+  // A parent (Q2): sub-items 100 SF × $2 and 50 SF × $4 = $400 of material over the parent's own 20 LF:
+  // Unit Material $400 ÷ 20 = $20.00 per LF.
+  { id: "units-parent", kind: "units", parentQty: 20, parts: [{ quantity: 100, input: rates({ unit_material_cost: 2 }) }, { quantity: 50, input: rates({ unit_material_cost: 4 }) }], expect: { unitMaterial: 20, itemCost: 400 } },
+  // Nothing to divide by: no figure, never a division by zero.
+  { id: "units-no-quantity", kind: "units", quantity: 0, components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })], expect: { unitMaterial: null, unitLabor: null } },
 ];
