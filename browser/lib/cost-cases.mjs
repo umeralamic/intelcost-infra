@@ -327,6 +327,26 @@ export const COST_CASES = [
   // A parent (Q2): sub-items 100 SF × $2 and 50 SF × $4 = $400 of material over the parent's own 20 LF:
   // Unit Material $400 ÷ 20 = $20.00 per LF.
   { id: "units-parent", kind: "units", parentQty: 20, parts: [{ quantity: 100, input: rates({ unit_material_cost: 2 }) }, { quantity: 50, input: rates({ unit_material_cost: 4 }) }], expect: { unitMaterial: 20, itemCost: 400 } },
+  // --- The reports' Summary mode (D-762 A5): a summary's total is its report's, to the cent ------------
+  // 100 SF, 10 % wastage, × 2 (Total Qty 220): a crew of 2 Laborers at $40 (1 MH per 10 SF → 10 MH net,
+  // × 2.2 = 22 MH, $880), material $3/SF per unit ($660) plus a $50 lump, a $200 machine lump and a
+  // $133.34 shared share. Each summary's total = the line's own: labour $880, material $710, equipment
+  // $333.34, the full estimate $1,923.34; the crew's 22 MH split over its one craft.
+  {
+    id: "summary-ties",
+    kind: "summary",
+    quantity: 100,
+    multiplier: 2,
+    input: rates({ wastage_pct_override: 10 }),
+    equipmentAllocation: 133.34,
+    components: [
+      component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 40 }], production_rate: 20, production_basis: "units_per_hr" }),
+      component("material", { name: "Board", unit_price: 3 }),
+      component("material", { name: "Board", pricing_mode: "lump", qty_formula: "1", unit_price: 50, usage: "Offcuts" }),
+      component("equipment", { pricing_mode: "lump", equip_basis: "day", equip_rate: 200, duration_formula: "1" }),
+    ],
+    expect: { labor: 880, material: 710, equipment: 333.34, all: 1923.34, laborMh: 22, line: 1923.34 },
+  },
   // Nothing to divide by: no figure, never a division by zero.
   { id: "units-no-quantity", kind: "units", quantity: 0, components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })], expect: { unitMaterial: null, unitLabor: null } },
 ];

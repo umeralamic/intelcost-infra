@@ -116,6 +116,7 @@ try {
     const removal = await import("/src/lib/estimate/componentRemoval.ts");
     const bid = await import("/src/lib/estimate/bidSummary.ts");
     const formula = await import("/src/lib/takeoff/subItems/formula.ts");
+    const sums = await import("/src/lib/estimate/summaries.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
@@ -135,6 +136,20 @@ try {
       if (c.kind === "bid") {
         const summary = bid.computeBid(c.totals, c.rates);
         return { ...Object.fromEntries(summary.lines.map((l) => [l.key, l.amount])), total: summary.total };
+      }
+      if (c.kind === "summary") {
+        // D-762 A5: each report's Summary over the line adds back to the line's own type total.
+        const env = { parent: 0, qty: c.quantity };
+        const evals = c.components.map((row) => comps.evaluateComponent(row, env));
+        const cost = costing.computeLineCost({ quantity: c.quantity, unit: "SF", input: c.input, unitWastage: new Map(), multiplier: c.multiplier, components: evals, netQty: c.quantity, equipmentAllocation: c.equipmentAllocation ?? null });
+        const line = {
+          name: "Wall", unit: "SF", scope: "Framing", subcontractor: "Unassigned", cost, netQty: c.quantity, share: 1,
+          components: c.components.map((row, i) => ({ row, eval: evals[i] })),
+          shares: c.equipmentAllocation ? [{ resourceId: "r1", name: "Shared loader", alloc: c.equipmentAllocation, hours: 4, machine: null }] : [],
+        };
+        const of = (r) => sums.summaryTotal(sums.summarise(r, [line]));
+        const labor = sums.summarise("labor", [line]);
+        return { labor: of("labor"), material: of("material"), equipment: of("equipment"), all: of("all"), laborMh: labor.filter((r) => r.depth === 0).reduce((s, r) => s + Number(r.values.mh ?? 0), 0), line: cost.itemCost };
       }
       if (c.kind === "units") {
         // D-762 A1: a line's (or a parent's, over its own Qty) unit figures read back from its totals.
