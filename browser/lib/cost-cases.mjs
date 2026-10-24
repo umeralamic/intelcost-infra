@@ -350,6 +350,8 @@ export const COST_CASES = [
   // --- Exports store values rounded (D-766 F0): money to cents, quantities and hours to 2 places, per-unit
   // rates to 4, the TOTAL the sum of the stored cells. The HV copy's Building Pad Fill line, as the app
   // computes it: 2,398.900895 CCY, 57.116687976190484 MH, 0.0238095… MH/CCY, $109.989…/hr, $6,282.2073938… labour.
+  // A second line of $0.005: the column balanced to its own total ($6,282.2124 → $6,282.21), the larger
+  // remainder keeping its cent, so the $0.005 line stores $0.00 and TOTAL is the screen's $6,282.21.
   {
     id: "export-stored-values",
     kind: "stored",
@@ -357,7 +359,42 @@ export const COST_CASES = [
       { qty: 2398.900895, total_mh: 57.116687976190484, unit_mh: 0.02380952380952381, wage: 109.98900000000002, labor_cost: 6282.207393813216, unit_labor: 2.618785714285715 },
       { qty: 0.004999, total_mh: 0, unit_mh: 0.00005, wage: 40, labor_cost: 0.005, unit_labor: 0.00005 },
     ],
-    expect: { qty: 2398.9, total_mh: 57.12, unit_mh: 0.0238, wage: 109.99, labor_cost: 6282.21, unit_labor: 2.6188, qty2: 0, unit_mh2: 0.0001, labor_cost2: 0.01, total: 6282.22 },
+    expect: { qty: 2398.9, total_mh: 57.12, unit_mh: 0.0238, wage: 109.99, labor_cost: 6282.21, unit_labor: 2.6188, qty2: 0, unit_mh2: 0.0001, labor_cost2: 0, total: 6282.21 },
+  },
+  // --- Cost components sum across the project (D-766): the same crew, material and equipment once ---------
+  // Two lines with the same crew (2 Laborers at $40, 20 SF/hr), material (Board $3/SF) and equipment
+  // (Loader, 1 day at $200, a lump per line). Wall A 100 SF: 5 hr → 10 MH, $400; $300; $200 = $900.
+  // Wall B 50 SF: 2.5 hr → 5 MH, $200; $150; $200 = $550. Labor one crew row, 15 MH, $600; Material one
+  // Board row, 150 SF, $450; Equipment one Loader row, 2 days, $400; Full estimate three sections (no
+  // subcontract), $1,450 = the two lines; Quantities one "Wall" row of 150 SF (same name and unit).
+  {
+    id: "components-once",
+    kind: "components",
+    lines: [
+      { name: "Wall", quantity: 100 },
+      { name: "Wall", quantity: 50 },
+    ],
+    components: [
+      component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 40 }], production_rate: 20, production_basis: "units_per_hr" }),
+      component("material", { name: "Board", unit: "SF", unit_price: 3 }),
+      component("equipment", { name: "Loader", pricing_mode: "lump", equip_basis: "day", equip_rate: 200, duration_formula: "1" }),
+    ],
+    expect: { laborRows: 1, laborMh: 15, labor: 600, materialRows: 1, material: 450, materialQty: 150, equipmentRows: 1, equipment: 400, equipmentDays: 2, sections: 3, all: 1450, lines: 1450, quantityRows: 1, quantity: 150 },
+  },
+  // The exported list in whole cents (D-766 F0): a crew of $100.00 over three crafts of $33.3333… stores
+  // $33.34 + $33.33 + $33.33 = $100.00, and two crews of $0.005 and $0.005 store $0.01 + $0.00 = $0.01.
+  {
+    id: "components-cents",
+    kind: "balance",
+    rows: [
+      { key: "a", depth: 0, label: "Crew A", values: { total: 100 } },
+      { key: "a|1", depth: 1, label: "Laborer", values: { total: 100 / 3 } },
+      { key: "a|2", depth: 1, label: "Operator", values: { total: 100 / 3 } },
+      { key: "a|3", depth: 1, label: "Foreman", values: { total: 100 / 3 } },
+      { key: "b", depth: 0, label: "Crew B", values: { total: 0.005 } },
+      { key: "c", depth: 0, label: "Crew C", values: { total: 0.005 } },
+    ],
+    expect: { crafts: 100, first: 33.34, b: 0.01, c: 0, total: 100.01 },
   },
   // Nothing to divide by: no figure, never a division by zero.
   { id: "units-no-quantity", kind: "units", quantity: 0, components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })], expect: { unitMaterial: null, unitLabor: null } },

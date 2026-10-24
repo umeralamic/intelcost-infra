@@ -143,13 +143,35 @@ try {
         const evals = c.components.map((row) => comps.evaluateComponent(row, env));
         const cost = costing.computeLineCost({ quantity: c.quantity, unit: "SF", input: c.input, unitWastage: new Map(), multiplier: c.multiplier, components: evals, netQty: c.quantity, equipmentAllocation: c.equipmentAllocation ?? null });
         const line = {
-          name: "Wall", unit: "SF", scope: "Framing", subcontractor: "Unassigned", cost, netQty: c.quantity, share: 1,
+          name: "Wall", unit: "SF", scope: "Framing", subcontractor: "Unassigned", cost, qty: c.quantity, netQty: c.quantity, share: 1,
           components: c.components.map((row, i) => ({ row, eval: evals[i] })),
           shares: c.equipmentAllocation ? [{ resourceId: "r1", name: "Shared loader", alloc: c.equipmentAllocation, hours: 4, machine: null }] : [],
         };
         const of = (r) => sums.summaryTotal(sums.summarise(r, [line]));
         const labor = sums.summarise("labor", [line]);
         return { labor: of("labor"), material: of("material"), equipment: of("equipment"), all: of("all"), laborMh: labor.filter((r) => r.depth === 0).reduce((s, r) => s + Number(r.values.mh ?? 0), 0), line: cost.itemCost };
+      }
+      if (c.kind === "balance") {
+        const out = sums.balancedRows(c.rows, ["total"]);
+        const v = (k) => out.find((r) => r.key === k).values.total;
+        return { crafts: Math.round((v("a|1") + v("a|2") + v("a|3")) * 100) / 100, first: v("a|1"), b: v("b"), c: v("c"), total: Math.round(out.filter((r) => r.depth === 0).reduce((t, r) => t + r.values.total, 0) * 100) / 100 };
+      }
+      if (c.kind === "components") {
+        // D-766: each list over several lines, the same crew, material and equipment once, tied to the lines.
+        const made = c.lines.map((l) => {
+          const evals = c.components.map((row) => comps.evaluateComponent(row, { parent: 0, qty: l.quantity }));
+          const cost = costing.computeLineCost({ quantity: l.quantity, unit: "SF", input: undefined, unitWastage: new Map(), components: evals, netQty: l.quantity });
+          return { name: l.name, unit: "SF", scope: "Framing", subcontractor: "Unassigned", cost, qty: l.quantity, netQty: l.quantity, share: 1, components: c.components.map((row, i) => ({ row, eval: evals[i] })), shares: [] };
+        });
+        const outer = (r) => sums.summarise(r, made).filter((x) => x.depth === 0);
+        const labor = outer("labor"), material = outer("material"), equipment = outer("equipment"), all = outer("all"), qty = outer("quantities");
+        return {
+          laborRows: labor.length, laborMh: labor.reduce((t, x) => t + Number(x.values.mh ?? 0), 0), labor: sums.summaryTotal(labor),
+          materialRows: material.length, material: sums.summaryTotal(material), materialQty: Number(material[0]?.values.qty ?? 0),
+          equipmentRows: equipment.length, equipment: sums.summaryTotal(equipment), equipmentDays: Number(equipment[0]?.values.days ?? 0),
+          sections: all.length, all: sums.summaryTotal(all), lines: made.reduce((t, l) => t + l.cost.itemCost, 0),
+          quantityRows: qty.length, quantity: Number(qty[0]?.values.qty ?? 0),
+        };
       }
       if (c.kind === "units") {
         // D-762 A1: a line's (or a parent's, over its own Qty) unit figures read back from its totals.
