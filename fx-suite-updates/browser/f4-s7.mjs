@@ -30,7 +30,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { APP, SEEDED, apiCall, enterWorkspace, expect, fixtureOwner, onDisk, run, seatedMember, signInAs } from "./lib/bench.mjs";
+import { apiCall, expect, onDisk, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, openDashboard } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S7 create");
@@ -75,10 +75,7 @@ async function watchBar(page) {
  *  project of an earlier step with files and no sheets opens its load screen (D-311 1), which
  *  can land over New project and take its clicks. The dialog is the same over any screen (D-314 2). */
 async function openNewProject(page, name) {
-  await signInAs(page, (await fixtureOwner()).email, SEEDED.password);
-  await enterWorkspace(page, workspace.uuid);
-  await page.goto(`${APP}/settings/account?projects=open`);
-  await page.getByRole("dialog", { name: "All projects" }).getByRole("tablist", { name: "Project status" }).waitFor({ timeout: 20000 });
+  await openDashboard(page, workspace.uuid, undefined, "/", { over: "/settings/account" });
   await page.getByRole("dialog", { name: "All projects" }).getByRole("button", { name: "New project" }).click();
   await page.getByRole("dialog", { name: "New project" }).waitFor();
   if (name) await page.fill("#new-project-name", name);

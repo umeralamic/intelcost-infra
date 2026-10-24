@@ -11,10 +11,12 @@
 // - D-311 1, D-314: the dashboard is the "All projects" dialog (`/?projects=open`); step 1 watches its
 //   status tab strip and rows there (sign-ins land on Account settings, D-566).
 // - D-315 3, C5: the project page is gone; `/project/:id` opens the takeoff with Edit project. Step 2
-//   reads A's rename in B's takeoff bar (the project name); its "Project not found" on trash (AC5) is
-//   checked against the takeoff B has open (see the step).
-// - D-315 2: the file browser is the load screen's tree (`[data-load-tree]`, folders
-//   `[data-load-folder]`, files `[data-load-file]`, New folder above it). D-309: a new project has no
+//   reads A's rename in B's takeoff bar (the project name), timed from when the takeoff has loaded
+//   (its twenty reads queue a mid-load refetch); AC5's "Project not found" on trash is kept as it
+//   was, now asked of the takeoff B has open.
+// - D-315 2: the file browser is the load screen's tree in its Files mode (`?files=<project>`, D-315
+//   C2; `[data-load-tree]`, folders `[data-load-folder]`, files `[data-load-file]`, New folder above
+//   it; a new folder is named in the "New folder" dialog). D-309: a new project has no
 //   seed folders, so step 3 no longer waits for "Plans"; it seeds one root file first, because the
 //   tree draws nothing but "No files yet" for a project with no files.
 
@@ -112,6 +114,20 @@ await run("f8-s16", [
         // The takeoff bar names the project (D-315 C5: the project page is the takeoff now).
         const barName = page.locator("[data-project-name]");
         await page.waitForFunction((n) => document.querySelector("[data-project-name]")?.textContent?.trim() === n, name, { timeout: 15000 });
+        // The takeoff opens with some twenty reads (sheets, items, estimate, earthwork); a refetch
+        // asked for mid-load queues behind them (7 s on the fx stack), so the clock starts once the
+        // screen has loaded, as it did on the light Project Home: no read has finished for 2 s.
+        // (Not waitForLoadState("networkidle"): reached once per navigation, then answered at once.)
+        await page.waitForFunction(
+          () => {
+            const done = performance.getEntriesByType("resource").length;
+            const s = (window.__readsSettled ??= { done: -1, since: Date.now() });
+            if (done !== s.done) Object.assign(s, { done, since: Date.now() });
+            return Date.now() - s.since >= 2000;
+          },
+          undefined,
+          { polling: 100, timeout: 45000 },
+        );
         await unfocus(page);
         const renamed = `${name} renamed`;
         const patched = await apiCall(token, "PATCH", `${base}/${project.uuid}`, { name: renamed, plans_dated: "2026-09-01" });
@@ -176,9 +192,6 @@ await run("f8-s16", [
         expect(shown === 1, `A's tree shows its folder ${shown} times`);
         t.echo = `A shows it once, the event carried A's own token (${echo.write_token.slice(0, 8)}), B in ${inB} ms`;
         return Object.entries(t).map(([k, v]) => `${k} ${v}${typeof v === "number" ? " ms" : ""}`).join(" · ");
-      } catch (error) {
-        await b.page.screenshot({ path: "shots/f8-s16-step3-b.png" }).catch(() => {});
-        throw error;
       } finally {
         await b.context.close();
       }

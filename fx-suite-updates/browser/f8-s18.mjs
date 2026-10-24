@@ -16,6 +16,12 @@
 // properties pane is a dialog now (D-77), so step 3, about the pane's own scroll, finds a removed screen.
 // Updated 2026-10-20 (R5, D-648): the row menu's Delete is the undoable batch `POST …/item/delete`
 // (D-635); step 2 waited for a DELETE that no longer comes, which read as "the drag sends no save".
+// Updated 2026-10-24 (D-77, D-72, D-81): step 3 moved to Resume. Its "the properties scroll on their own"
+// half is retired: the inline properties pane was removed by D-77 ("The inline properties pane is gone:
+// legacy has none, Properties is the dialog"). Its "Add a shape" arming is gone (D-81); the item is
+// armed by its row's Resume (D-72, legacy's "Resume this takeoff"), and the rest is checked as before:
+// at 1280x720, with the item selected and armed, the item list is at least 128 px tall and the row is
+// in view in it.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
@@ -150,7 +156,7 @@ await run("f8-s18", [
     },
   },
   {
-    title: "Finding 3: with an item selected, the item list still shows rows and the properties scroll on their own",
+    title: "Finding 3: with an item selected and Resume armed, the item list still shows rows",
     run: async ({ page, context, shot }) => {
       const name = `F8-S18 layout ${Date.now() % 1000000}`;
       const item = await countItem(token, r, name);
@@ -160,19 +166,16 @@ await run("f8-s18", [
         await signInAt(page, APP, world.owner.email, world.owner.password);
         await openSheet(page, r);
         await row(page, name).click();
-        await page.locator("[data-properties-pane]").waitFor();
-        await addShapeTo(page, name);
+        // Armed from the row's Resume (D-72), as "Add a shape" left the menu (D-81).
+        await page.getByRole("button", { name: `Resume ${name}`, exact: true }).first().click();
 
-        await page.screenshot({ path: shot.replace(".png", "-panel.png") });
-        const tree = await page.locator("[data-quantity-panel] > div.overflow-y-auto").first().boundingBox();
-        const pane = page.locator("[data-properties-pane]");
-        const scrolls = await pane.evaluate((el) => el.scrollHeight > el.clientHeight && getComputedStyle(el).overflowY === "auto");
+        // The item list's own scroller: the nearest scrolling box around the row.
+        const tree = await row(page, name).locator("xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' overflow-y-auto ')][1]").boundingBox();
         const rowBox = await row(page, name).boundingBox();
         const visible = rowBox && tree && rowBox.y >= tree.y - 1 && rowBox.y + rowBox.height <= tree.y + tree.height + 1;
         expect(tree.height >= 128, `the tree is ${tree.height}px tall`);
         expect(visible, "the selected item's row is not visible in the tree");
-        expect(scrolls, "the properties do not scroll in their own area");
-        return `at 1280x720 with Add a shape armed: tree ${Math.round(tree.height)}px with the row in view; properties scroll on their own`;
+        return `at 1280x720 with Resume armed: tree ${Math.round(tree.height)}px with the row in view`;
       } finally {
         await removeItem(token, r, item.uuid);
       }

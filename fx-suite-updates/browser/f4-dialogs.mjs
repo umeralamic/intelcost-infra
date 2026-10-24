@@ -16,7 +16,7 @@
 // - Edit details (steps 2, 6): Project Home and its pencil are gone (D-315 C5): `/project/<uuid>`
 //   opens the takeoff with the "Edit Project" dialog (D-315 1), whose name field and Save are checked.
 // - The file dialogs (steps 3, 7): the file browser is gone (D-315 C5); its housekeeping is the load
-//   screen's tree (D-315 2), opened as All projects' Files does, `?files=<project>&from=projects`. New
+//   screen's tree (D-315 2), opened by All projects' row menu, Files (`?files=<project>&from=projects`). New
 //   folder is the tree's toolbar button; Move… is the Specs folder row's right-click menu. A project
 //   starts with no folders (D-309), so Specs is POSTed, and a file is put in it (the tree lists
 //   folders only once the project has a file), in a project of its own ("Files job", opened only
@@ -173,7 +173,15 @@ for (const size of SIZES) {
         await seedFile(page, token, base, filesJob.uuid, specs.uuid, "Division 03.pdf", Buffer.alloc(4096, 3));
         seeded = true;
       }
-      await page.goto(`${APP}/?files=${filesJob.uuid}&from=projects`);
+      // All projects' row menu, Files (D-315 2): `?files=<project>&from=projects` over the takeoff.
+      // (Home carries only `?projects=open` on to where it lands, so a typed `/?files=` is dropped.)
+      await page.goto(`${APP}/?projects=open`);
+      const list = page.getByRole("dialog", { name: "All projects" });
+      await list.getByRole("tablist", { name: "Project status" }).waitFor({ timeout: 20000 });
+      await list.getByRole("tab", { name: /^All/ }).first().click();
+      await list.locator('li[data-project="Files job"]').click({ button: "right" });
+      await page.getByRole("menuitem", { name: "Files", exact: true }).click();
+      await page.waitForURL(new RegExp(`files=${filesJob.uuid}`), { timeout: 15000 });
       const files = page.locator("[data-load-tree]");
       await files.locator('[data-load-folder="Specs"]').waitFor({ timeout: 20000 });
 
