@@ -23139,3 +23139,29 @@ Logged after the build began, an error of order.
   - Q6: a hidden activity already mapped stays selected, labelled "(not in suggestions)".
   - Q7: bulk off is allowed, with a count of the machines in use.
 - **Kept apart from D-751's `national_hidden`** (a starter activity the company removed): that flag is unchanged.
+
+## D-760: My equipment Block A: data and api (F34; decided in the build, overnight 2026-10-24)
+
+**Status:** taken overnight under D-759; for the founder's review in the night report.
+
+- **Where the mode lives:** two columns on `workspace` (migration `d759a1b2c3d4`): `eq_suggest_mine_only` (default
+  false) and `eq_starting_list_at` (when the starting list was offered). Not an `eq_override` "setting" row: those feed
+  the Company rates export and "Revert all" (the plan's own reason for keeping the list out of `eq_override`).
+- **`eq_my_equipment`** as planned; "added_at" is the row's `created_at`. `in_suggestions` on `eq_company_activity`
+  (default true) is visibility only: setting it never marks the activity `national_edited`, so the starter's releases
+  still reach it, and it is not `national_hidden` (D-751).
+- **Routes** (all writes take "Manage workspace library", audited `library.my_equipment_added`,
+  `library.my_equipment_removed`, `library.suggest_mode`, `library.activity_suggest`):
+  `POST …/equipment-library/my-equipment/add|remove` (keys, or a category, or a type, or both), `PUT …/mode`,
+  `POST …/starting-list` (the reviewed list joins as source "starting", the offer is stamped and the mode switches
+  to "my equipment only" in one write), `GET …/in-use` (each class and where it is used: estimates' components and
+  shared machines on live projects, assemblies' components and equipment links, earthwork tiers, company values,
+  custom machines), `PUT …/earthwork-production/activities/{uuid}/suggest`. The bundle (workspace and project)
+  carries `my_equipment`, `mine_only` and `starting_list_offered`.
+- **"Imported machine lists" in the starting list (Q1)** are read as the machines the workspace holds company values for
+  or made itself, since an import before tonight left no other trace. Tier machines marked optional (a catalog gap,
+  D-751) are never priced, so they are not "in use". The in-use read takes the starter up first, as every read of
+  the activities does, so a workspace that never opened Earthwork production still gets its tiers' machines.
+- **Joins:** a new custom machine joins the list as it is made (source "custom", or "import" from a machine list);
+  an import's `my_equipment` keys (its confirmed library rows) join in the same transaction.
+- Removing by key accepts a key no longer in the library (a deleted custom machine can still come off the list).

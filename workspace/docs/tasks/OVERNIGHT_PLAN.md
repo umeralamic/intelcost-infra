@@ -1,50 +1,50 @@
-# Night plan, 2026-10-23 → 24 (06:26 UTC → 08:00 UTC on the 24th): the Equipment Library (F33)
+# Night plan, 2026-10-24 (from 01:42 UTC, no end time): My equipment (F34), then the full fixture suite
 
-The founder's brief: apply the answers to `EQUIPMENT_LIBRARY_PLAN.md` (D-718 to D-729), then build every block in order.
-The previous plan (night of 2026-10-22) is archived as `docs/archive/OVERNIGHT_PLAN_2026-10-22.md`, and the previous
-report as `docs/archive/OVERNIGHT_REPORT_2026-10-12.md`. Results: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md), updated
-after every block. A restarted session continues from the first block below that is not ☑.
+The founder's brief: (1) build "My equipment" from [MY_EQUIPMENT_PLAN.md](MY_EQUIPMENT_PLAN.md) (D-759, Q1–Q7 as
+recommended), blocks A to E; then (2) restore the fixture suite from tag `fixtures-archive-2026-09-28`, run it in full,
+classify every failure, add fixtures for what was built since the archive, and run the D-758 follow-up browser check.
+No end time: keep going until both parts are complete. The previous plan and report are archived as
+`docs/archive/OVERNIGHT_PLAN_2026-10-23.md` and `docs/archive/OVERNIGHT_REPORT_2026-10-23.md`. Results:
+[OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md), updated after every block. A restarted session continues from the first
+row below that is not ☑.
 
-**Every block:**
-1. Its D-NN in DECISIONS.md first.
-2. The gates in the containers: app lint, typecheck, build; api ruff, mypy. No prettier; no
-   `from __future__ import annotations`.
+**Every block (Part 1):**
+1. Any change found while building logged as a later D-NN first (D-759 covers the plan itself).
+2. The gates in the containers: app lint, typecheck, build; api ruff, mypy (and `alembic check` for A). No prettier;
+   no `from __future__ import annotations`.
 3. `./quantity-table.sh`, with its line reported.
-4. One Playwright MCP smoke on a throwaway account and a throwaway project, including the block's by-hand check, with
-   the numbers got recorded beside the expected ones.
+4. One Playwright MCP smoke on a throwaway account and workspace, with the block's by-hand check.
 5. Commit and push `umer-dev`; update `SINCE_ARCHIVE.md`; refresh the workspace mirror; update this file and the report.
 
+**Part 2 standard (the brief):** every failure is one of (a) an app bug: fix the app, never the test; (b) outdated by a
+logged decision: update the test, citing the D-number; (c) retired: remove it, citing the retirement. Never weaken an
+assertion, skip a test or change an expected number without a D-number. After each fix: gates, quantity table, commit
+and push `umer-dev`.
+
+**How Part 2 runs:** the suite lives only in `intelcost-infra` (the api and app tags carry no test files). It runs on
+the fx stack (D-611): `./fx-suite.sh setup`, `prod`, `run full`. Updated fixtures go in `fx-suite-updates/` (D-614,
+D-619); new ones there too, as `c<NN>-<slug>.mjs` (D-636). This brief is the founder's named exception to hard rule 8
+for tonight.
+
 **Rules for the night:**
-- Never use "Hidden Valley Spec". Never sign in as the founder's account (estimator@, umeralam.q@).
-- **Follow-up of 2026-10-23 (D-729):** "Bench Construction Test" and its project "Hidden Valley Rebid — 3D test"
-  (042c8817) are a read-only source.
-  - Before Block 3.5 the project is copied into a new workspace of a throwaway account, by a one-off script that reads
-    the source and writes only there. The original's row counts and latest `updated_at` are recorded before and after
-    the copy, and must match.
-  - No write of any kind to the original or its workspace.
-- Never change the catalog's numbers or invent rates, production, tiers or defaults. TEST data is named "TEST …" and
-  listed in the report.
-- Never weaken a gate or edit an expected number. Disputes go to the report's "Disputed numbers".
-- Hand-entered components and resources price bit for bit as before (quantity table).
-- Questions for the founder go in the report; the most reasonable reading is taken and recorded.
+- Throwaway accounts and workspaces only. Never the founder's account (estimator@, umeralam.q@), the founder's
+  workspaces, "Hidden Valley Spec" or "Bench Construction Test" (and its 3D test project).
+- No invented rates; TEST data named "TEST …" and listed in the report.
+- Questions for the founder go in the report; the most reasonable reading is taken and recorded under "Decisions taken
+  overnight" with the alternative.
 - A block that fails after a solid attempt: `umer-dev` stays at the last good commit, the failure goes in the report,
-  the next independent block goes on, and the failed block is retried at the end.
+  the next independent block goes on, and the failed one is retried at the end.
 
 | # | Block | Depends on | Status | Commit |
 |---|---|---|---|---|
-| 0 | Part 1: answers applied to the plan, D-718 to D-729, rule 9 rewording, Step A | — | ☑ | (workspace) |
-| 1.1 | Converter, national schema, release 1 load | — | ☑ | api 522670a |
-| 1.2 | Overrides, custom rows, resolve and read API | 1.1 | ☑ | api 9a54a16 |
-| 2.1 | Engine core (work-day solver, overtime, location, fuel, operated, mob) and estimate settings | 1.2 | ☑ | app 277b4ff |
-| 2.2 | Production engine (11 families, soil, units, guardrails) | 2.1 | ☑ | app a2197f3, api 7c71a8f |
-| 3.1 | Component columns, the spread, evaluation | 2.2 | ☑ | api 77d391e, app 8e081e7 |
-| 3.2 | The picker and the spread UI | 3.1 | ☑ | app 61a3690 |
-| 3.3 | Shared resources from the library; mob counted twice | 3.1 | ☑ | api 9c1b657, app e3666c9 |
-| 3.4 | Estimating rows, Needs attention, filter, export | 3.1 | ☑ | app d6b21ba |
-| 3.5 | Earthwork production tiers, the two-way link, the 3D test copy, coverage | 3.2 | ☑ | api 1b4f5ba (+ zero-line fix), app be68166, infra b7fa997 |
-| 4.1 | Library page: browse, overrides, revert, release banner | 1.2 | ☑ | app c11db81 |
-| 4.2 | Custom rows, import/export, a company's machine list | 4.1 | ☑ | api 1234e06, app eebc3d9 |
-| 4.3 | Release upgrades and notices | 4.1, 3.1 | ☑ | api a45cf9a, app 23f27e0 |
-| P1 | Assemblies link shared equipment | — | ☑ | api bbb7039, app fd95203 |
-| 5.1 | Library components in assemblies | P1, 3.1 | ☑ | api 8331115, app 79f6268 |
-| End | Coverage run again on the copy; report; clean-up (throwaway workspaces, scratch) | all | ☐ | |
+| 0 | Plan, report, archive of last night's | — | ☑ | (workspace) |
+| A | Data and api: migration, models, routes, bundle, joins, audit | — | ☑ | api 8cdabab |
+| B | Library page: On my list, bulk, header toggle, filter, starting list, bulk-off warning | A | ☐ | |
+| C | Pickers: `suggest.ts`, Picker, MachineName, template editor, tier class list, Add to my equipment | A | ☐ | |
+| D | Earthwork activities' Show in suggestions; Not in your equipment list; release banner line | A, C | ☐ | |
+| E | Close-out: FEATURES, SINCE_ARCHIVE, mirror, full gates and table, end-to-end smoke | A–D | ☐ | |
+| 2.1 | Restore the suite on the fx stack (setup, prod, check) | — | ☐ | |
+| 2.2 | Full run; classify every failure (a/b/c); fix | 2.1 | ☐ | |
+| 2.3 | New fixtures for what was built since the archive (list in the report) | 2.1 | ☐ | |
+| 2.4 | D-758 follow-up browser check (Playwright, throwaway) | — | ☐ | |
+| 2.5 | Final full run, report, clean-up | 2.2, 2.3 | ☐ | |
