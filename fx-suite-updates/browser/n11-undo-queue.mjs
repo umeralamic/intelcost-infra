@@ -9,6 +9,8 @@
 //
 // Updated 2026-10-24 (D-694): the guest's renderer report is a session beacon like session, pass, presence and
 // visit, exempted as rv-rows exempts it; every other write still fails the step.
+// Updated 2026-10-24 (D-765 7, harness): step 1 leaves out the sheet's Auto Count index PUT (`/symbol-index/`), a
+// background store on a fresh project's first open that now lands inside the three-Ctrl+Z window; still exactly three.
 
 import { APP, expect, run } from "./lib/bench.mjs";
 import { call, signInAt } from "./lib/realtime.mjs";
@@ -54,7 +56,9 @@ await run("n11-undo-queue", [
         const writes = [];
         page.on("response", (res) => {
           const method = res.request().method();
-          if (res.url().includes(r.takeoff.split("/takeoff")[0]) && !["GET", "OPTIONS"].includes(method)) writes.push(`${method} ${res.status()}`);
+          // Not the sheet's Auto Count index, stored in the background on first open (D-304), sooner since
+          // D-765 7: it is no undo write, and every other write still counts.
+          if (res.url().includes(r.takeoff.split("/takeoff")[0]) && !["GET", "OPTIONS"].includes(method) && !res.url().includes("/symbol-index/")) writes.push(`${method} ${res.status()}`);
         });
         // Back to back: the second and third come while the first is still saving.
         const box = await svg.boundingBox();
