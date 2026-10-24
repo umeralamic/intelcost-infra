@@ -23165,3 +23165,28 @@ Logged after the build began, an error of order.
 - **Joins:** a new custom machine joins the list as it is made (source "custom", or "import" from a machine list);
   an import's `my_equipment` keys (its confirmed library rows) join in the same transaction.
 - Removing by key accepts a key no longer in the library (a deleted custom machine can still come off the list).
+
+## D-761: The fixture suite restored and run in full; failures classified; fixtures for what came after the archive (overnight 2026-10-24, the founder's brief, Part 2)
+
+**Status:** taken overnight on the founder's brief (a named exception to hard rule 8 for that night); for review in the
+night report.
+
+- **Where it ran:** the fx stack (D-611), `./fx-suite.sh setup` from tag `fixtures-archive-2026-09-28` with
+  `fx-suite-updates/` laid over it; the api and app tags carry no test files. Standing list (102, nine skipped by
+  D-611) and the 29 fixtures added since (D-636 onward), then the new ones c32–c38.
+- **Every failure classified** as the brief asks: (a) an app bug, fixed in the app; (b) outdated by a logged decision,
+  updated citing it; (c) retired, removed citing the retirement; (d) harness or environment (D-752, dev-only modules on
+  the built apps, load), fixed in the fixture without changing what it checks. The per-fixture table is in the report.
+- **D-752 in the harness:** `browser/lib/bench.mjs` `createWorkspace` answers a 409 by having a fresh throwaway owner
+  make the workspace and seat the asking account as admin (`{ seatAsker: false }` leaves it out); fixtures that need
+  the account to own the second workspace give it its own owner. Not the platform grant: a granted workspace has no
+  trial (D-752) and reads locked.
+- **Override quantity needs its reason in the dialog** (proof-backlog): the api refuses an override without one
+  ("An overridden quantity needs a reason."), and the dialog let Save through and closed on the refusal. Taken: the
+  dialog waits for a reason. Alternative left to the founder: legacy allowed an empty reason (D-208 copied its dialog),
+  so the api could accept one instead.
+- **A project trashed while open** (f8-s16 AC5) now reads "Project not found" (D-622's link rule applied to an open
+  page; no decision covered it). Alternative: keep the page open until the next navigation.
+- **Not run on the fx stack (D-611, unchanged):** f8-s5 and f4-s27 (they stop Redis and MinIO, which the live bench
+  shares), f5-s9 (a seed flag that no longer exists), d27-uploads (needs beat). The service-restart fixtures f8-s2,
+  f8-s3, f8-s8, f8-s12 and f5-s2 still stop the bench's own services by name and stay skipped too.

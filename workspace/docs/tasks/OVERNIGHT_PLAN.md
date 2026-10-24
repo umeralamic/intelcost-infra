@@ -44,7 +44,7 @@ for tonight.
 | D | Earthwork activities' Show in suggestions; Not in your equipment list; release banner line | A, C | ☑ | api bcf5e05, app 58f63f2, infra 17db4af |
 | E | Close-out: FEATURES, SINCE_ARCHIVE, mirror, full gates and table, end-to-end smoke | A–D | ☑ | (workspace) |
 | 2.1 | Restore the suite on the fx stack (setup, prod, check) | — | ☑ | (fx-suite, git-ignored) |
-| 2.2 | Full run; classify every failure (a/b/c); fix | 2.1 | ◐ running (fx-suite/run-all.sh, output fx-suite/.run-all/) | |
-| 2.3 | New fixtures for what was built since the archive (list in the report) | 2.1 | ◐ c32, c33, c34 done; next equipment library, starter and link, wage roles, components | |
+| 2.2 | Full run; classify every failure (a/b/c); fix | 2.1 | ◐ standing list and the 29 newer run; every failure triaged (fx-suite/.triage/), fixed or updated; ledger fx-suite/.triage/ledger.md; next: dev-only group on fx dev apps, then the final full run | |
+| 2.3 | New fixtures for what was built since the archive (list in the report) | 2.1 | ☑ c32–c38 | infra |
 | 2.4 | D-758 follow-up browser check (Playwright, throwaway) | — | ☑ | c32 (infra 2ad06b9), fix api 9f1ec9e |
 | 2.5 | Final full run, report, clean-up | 2.2, 2.3 | ☐ | |
