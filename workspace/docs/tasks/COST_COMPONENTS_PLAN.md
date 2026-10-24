@@ -24,6 +24,8 @@ guest page), **D-763** (wastage, pricing rules) and **D-764** (parents, B0).
 | A5 | app 6ab085c, infra 3e80018 | HV copy, every report's Summary equals its report: labour $278,501.32, material $183,285.35, equipment $487,069.36, subcontract $45,352.67, full $994,208.69; every innermost group equal under Classification then Scope and under Sheet then Classification; export TOTAL $278,501.32 with live SUMs; Show levels 1–6 |
 | G | api 8b1afc9, app f929fe2 | HV copy on a fallback link (made and revoked): the 15 lines it prices equal Estimating to the cent, the 34 priced with library or shared machines show no figure, with the reason; pricing off sends no money |
 
+**Fixtures on the new build (fx stack, rebuilt apps):** f9-estimating 12/12, f9-exports 4/4 (now also requires Unit Labor Cost, and that pricing-off drops it, D-762 1; infra b220d84), c14 4/4, c15 5/5, c16 3/3 ($126,120.72 and $127,098.40 unchanged), c35 5/5 ($16,471.70, $10,614.00, $11,200.00 unchanged), c38 5/5, c34 7/7, c32 5/5, c12 10/10, f6-b 9/9, f6-e 3/3, f4-s24 6/6, rv-rows 8/8, n11 2/2 after a harness fix (infra 70ac96d: the background Auto Count index store, sooner since D-765 7, is no undo write). No total moved.
+
 **B4's bench count (D-763, read only): 21 saved lines carry wastage; 11 would move under rules 2** (11 with labour, 9 with per-unit equipment, 0 subcontract), in 2 projects of the workspace "Bench Construction": "zz switching" (9) and "Riverside Medical Center" (2). The HV copy: none.
 
 **Decisions taken in the build (for the founder's review):**
