@@ -12,6 +12,13 @@
 // so Civil.pdf, in Plans, is uploaded first and Plans/Architectural has its parent.
 // The selection's move targets are a flyout under "Move selected to", and a sheet out of every folder
 // sits at the top level with no "At root" heading.
+//
+// Updated 2026-10-24 (D-653, D-624):
+// - Every open waits for the Sheets panel's `drawing/sheet/items` read, which since D-653 is asked for only once
+//   the open's own read is back: steps 3 and 4 dragged and selected rows while that read landed and the panel
+//   re-laid itself out under the pointer (the open sheet's items unfolding, D-83/D-624), and step 5's
+//   confirmation was read before it knew the items (harness; what is checked is unchanged). The app now also
+//   holds the delete confirmation at "Counting the measurements on these sheets…" until the items are in.
 
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -35,12 +42,19 @@ const apiSheets = async () => (await apiCall(token, "GET", `${drawing}/sheet`)).
 const folderSheets = async (fileUuid) =>
   (await apiSheets()).filter((s) => s.file_uuid === fileUuid).sort((a, b) => a.sort_order - b.sort_order || a.page_number - b.page_number);
 
+/** The Sheets panel's per-sheet lists are read once the open's own read is back (D-653): a search,
+ *  a drag or a delete before that acts on a panel that does not know its sheets' items yet. */
+const sheetItemsRead = (page) =>
+  page.waitForResponse((r) => new URL(r.url()).pathname.endsWith("/drawing/sheet/items") && r.request().method() === "GET" && r.ok(), { timeout: 30000 });
+
 async function open(page, sheet, app = APP, email) {
   if (app === APP) await signInAs(page, email ?? (await fixtureOwner()).email);
   else await signInAt(page, app, email ?? (await fixtureOwner()).email);
   await enterWorkspace(page, workspace.uuid);
+  const itemsRead = sheetItemsRead(page);
   await page.goto(url(app, sheet));
   await row(page, sheet).waitFor({ timeout: 20000 });
+  await itemsRead;
 }
 
 async function select(page, sheets, how = "Control") {

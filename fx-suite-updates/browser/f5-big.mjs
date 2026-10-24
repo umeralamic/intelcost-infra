@@ -28,6 +28,14 @@
 //   thumbnails' own shape (their natural width over height), which still follows each page's
 //   real orientation.
 // - The fit image may be drawn as a canvas now, `[data-sheet-image="fit"]` either way (step 6).
+//
+// Updated 2026-10-24 (D-288, D-304):
+// - Step 5: the open sheet's PDF is now read a second time, by Auto Count's background sheet index
+//   (D-288 4: "a sheet just uploaded is indexed the first time it is opened", in a worker, 1.5 s after
+//   the open; D-304: built only when no stored copy exists). "Read once" is the canvas's own read, so
+//   page 2's reads are counted up to the canvas's own `canvas:doc-open` for it (never past its raster
+//   being drawn): on the loaded fx stack the index's read landed 1.8 s before the raster. Every read
+//   seen by the raster is still held to nothingIdmTakes (plain GET, no Range, no filename header).
 // - The workspace is entered with the harness's enterWorkspace, as today's fixtures do.
 
 import { APP, apiCall, apiLogin, enterWorkspace, expect, quietFor, run, signInAs } from "./lib/bench.mjs";
@@ -54,6 +62,7 @@ function watch(page, context) {
       disposition: headers["content-disposition"] ?? null,
       range: response.request().headers().range ?? null,
       length: Number(headers["content-length"] ?? 0),
+      at: Date.now(),
     };
     if (url.pathname.includes("/project-file/")) seen.original.push(entry);
     else if (url.pathname.includes("/previews/")) seen.thumbnails.push(entry);
@@ -218,12 +227,19 @@ await run("f5-big", [
       const until = Date.now() + 60000;
       while (!seen.sheetPdfs.some((r) => /\/2(\.pdf)?$/.test(r.path)) && Date.now() < until) await page.waitForTimeout(250);
       await page.locator('canvas[data-sheet-raster][data-raster-res="1"]').waitFor({ timeout: 120000 });
-      const took = Date.now() - t0;
+      const drawnAt = Date.now();
+      const took = drawnAt - t0;
       nothingIdmTakes(seen);
       // The takeoff page opened on page 1 (loaded in the first step) before this Load
-      // landed on page 2: page 2's file is read once.
-      const reads = seen.sheetPdfs.filter((r) => /\/2(\.pdf)?$/.test(r.path));
-      expect(reads.length === 1, `${reads.length} reads of page 2's PDF`);
+      // landed on page 2: page 2's file is read once by the canvas, before its raster is drawn.
+      // Auto Count's background index may read it again after that (D-288, D-304).
+      // The canvas's read is the one its document was opened from: those up to the canvas's own
+      // `canvas:doc-open` for page 2 (on a loaded bench the index's read can land before the raster).
+      const opened = await page.evaluate((uuid) => window.__intelcostPerf.samples().find((s) => s.label === "canvas:doc-open" && String(s.detail?.documentKey ?? "").startsWith(uuid)), two.uuid);
+      expect(opened, "no canvas:doc-open for page 2");
+      const all = seen.sheetPdfs.filter((r) => /\/2(\.pdf)?$/.test(r.path));
+      const reads = all.filter((r) => r.at <= Math.min(opened.at, drawnAt));
+      expect(reads.length === 1, `${reads.length} reads of page 2's PDF before the canvas opened it (${all.length} seen, at ${all.map((r) => r.at - t0).join(", ")} ms; opened at ${opened.at - t0} ms, drawn at ${took} ms)`);
       const [pdf] = reads;
       expect(
         pdf.status === 200 && pdf.type === "application/vnd.intelcost.sheet" && !pdf.range && !pdf.disposition && !/\.pdf$/i.test(pdf.path),

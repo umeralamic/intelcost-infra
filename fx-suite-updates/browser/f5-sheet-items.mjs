@@ -13,6 +13,11 @@
 // panel by itself (D-83), so "closed until asked" is checked on the other sheet. A sheet's items are
 // the Takeoff panel's own rows (li[data-item-row], the figure in [data-item-qty], D-77), and the
 // expand levels are a flyout under "Default Expand Level" (D-155).
+//
+// Updated 2026-10-24 (D-653, D-624):
+// - Every open (and step 4's reload) waits for the Sheets panel's `drawing/sheet/items` read, which since
+//   D-653 is asked for only once the open's own read is back; step 5 searched "door" before it had landed
+//   (harness; what is checked is unchanged). The level a reload re-applies is D-624's.
 
 import { APP, apiCall, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -39,10 +44,17 @@ const options = async (page, label) => {
   await page.getByRole("menuitem", { name: new RegExp(`^${label.replace(/[>()]/g, "\\$&")}`) }).click();
 };
 
+/** The Sheets panel's per-sheet lists are read once the open's own read is back (D-653): a search,
+ *  a drag or a delete before that acts on a panel that does not know its sheets' items yet. */
+const sheetItemsRead = (page) =>
+  page.waitForResponse((r) => new URL(r.url()).pathname.endsWith("/drawing/sheet/items") && r.request().method() === "GET" && r.ok(), { timeout: 30000 });
+
 async function open(page, sheet) {
   await signInAs(page, (await fixtureOwner()).email);
+  const itemsRead = sheetItemsRead(page);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
   await row(page, sheet).waitFor({ timeout: 20000 });
+  await itemsRead;
 }
 
 async function item(sheet, name, type, vertices) {
@@ -126,7 +138,9 @@ await run("f5-sheet-items", [
       await options(page, "Page > Takeoff");
       await list(page, p1).waitFor();
       await list(page, p2).waitFor();
+      const reread = sheetItemsRead(page);
       await page.reload();
+      await reread;
       await list(page, p2).waitFor({ timeout: 20000 });
       const remembered = (await list(page, p1).count()) === 1;
       expect(remembered, "Page > Takeoff was not remembered across a reload");

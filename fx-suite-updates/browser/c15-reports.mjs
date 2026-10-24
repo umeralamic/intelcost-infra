@@ -79,6 +79,9 @@ async function open(page) {
   await signInAs(page, (await fixtureOwner()).email);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
   await row(page, "Labor 1").waitFor({ timeout: 30000 });
+  // The Takeoff Ref. column fills when the sheet list lands, after the rows: a snapshot taken before
+  // it read every ref blank and the next one "changed" (fixture timing, 2026-10-24).
+  await page.waitForFunction(() => (document.querySelector('tr[data-estimate-row="Open 1"] td:nth-child(3)')?.textContent ?? "").trim() !== "", null, { timeout: 30000 });
   const show = page.getByRole("button", { name: "Show the sidebar", exact: true });
   if (await show.isVisible()) await show.click();
   await page.locator("aside[data-estimate-sidebar=open]").waitFor();

@@ -18,6 +18,12 @@
 //
 // Updated 2026-10-18 to today's screens (D-619): a save is confirmed by the toast "Settings saved",
 // not an inline "Saved." (D-87).
+//
+// Updated 2026-10-24 (D-625, D-87): step 4's two header checks are retired: "the logo shows in the
+// header" (AC7) and "gone from the header too" were removed by D-625 ("Not in the members' app
+// header"; it shows on the grading PDF, the Excel exports and the guest's page), and Settings brings
+// its own bar (D-87). Upload to S3 on a presigned URL, the presigned workspace read, a new key on
+// replace and the api's null after remove are checked as before.
 
 import {
   fixtureOwner,
@@ -196,9 +202,7 @@ await run("f3-s10", [
       expect(toS3[0].includes("X-Amz-Signature"), "the upload URL is not presigned");
       expect(toApi.length === 1, `${toApi.length} confirm calls reached the api`);
 
-      // AC7 — it shows up where the workspace is NAMED, which is the header on every
-      // screen behind a session, not the settings preview that would show it anyway.
-      await page.waitForSelector("[data-workspace-logo]", { timeout: 20000 });
+      // AC7's header check is retired (D-625: not in the members' app header).
       const first = await page.getAttribute("[data-logo-preview] img", "src");
       expect(first.includes(":9000/"), `the logo is served from ${first}`);
       const stored = (await readWorkspace(ownerToken, ws.uuid)).logo_url;
@@ -234,13 +238,7 @@ await run("f3-s10", [
         (await readWorkspace(ownerToken, ws.uuid)).logo_url === null,
         "the api still holds a logo after remove",
       );
-      // Gone from the header too, or "remove" removed it from one place only.
-      await page.waitForFunction(
-        () => !document.querySelector("[data-workspace-logo]"),
-        undefined,
-        { timeout: 20000 },
-      );
-      return "uploaded to S3 (presigned) · shown in the header · replaced with a new key · removed from both";
+      return "uploaded to S3 (presigned) · served presigned · replaced with a new key · removed";
     },
   },
 ]);

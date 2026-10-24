@@ -23,6 +23,12 @@
 //
 // Updated 2026-10-18 to today's screens (D-619): a write to a locked workspace (trial ended) is
 // refused with code "workspace_locked" and says the trial has ended (D-280), not a role refusal.
+//
+// Updated 2026-10-24 (D-752, D-277): the untrialled workspace is the owner's second, so (D-752) it is
+// made by a throwaway extra owner who seats the run's owner as admin; step 3 reads its map as that
+// real owner (UNTRIALLED_OWNER, printed by the setup pass and carried by f3-s2.sh), still 25 of 25.
+// The drive (drives/f3-s2-resolution.py) reads Plan.ESSENTIALS for legacy's collaborator plan and
+// expects Essentials to keep Billing (D-277 1 and 19).
 
 import {
   APP,
@@ -49,6 +55,8 @@ if (process.env.SETUP === "1") {
   const staff = await seatedMember(ownerToken, workspace.uuid, "takeoff", "s2-staff");
   console.log(`WORKSPACE=${workspace.uuid}`);
   console.log(`UNTRIALLED=${untrialled.uuid}`);
+  // D-752: the second workspace's owner is a throwaway extra owner; the run's owner is its admin.
+  console.log(`UNTRIALLED_OWNER=${untrialled.extra_owner?.email ?? owner.email}`);
   console.log(`OWNER=${owner.email}`);
   console.log(`STAFF=${staff.email}`);
   process.exit(0);
@@ -111,7 +119,9 @@ await run("f3-s2", [
       // D-18 stamps a null window when the resolved tier had no rule. Reading "we
       // never granted a trial" as "the trial ran out" would lock out every workspace
       // created during a geo outage, which is the fail-open rule inverted.
-      const map = (await capabilities(ownerToken, untrialledUuid)).capabilities;
+      // Read as the workspace's real owner (D-752: the extra owner who made it).
+      const untrialledOwnerToken = await apiLogin(process.env.UNTRIALLED_OWNER ?? process.env.OWNER, PASSWORD);
+      const map = (await capabilities(untrialledOwnerToken, untrialledUuid)).capabilities;
       const held = Object.values(map).filter(Boolean).length;
       expect(held === 25, `the owner of an untrialled workspace holds ${held} of 25`);
       return "a workspace with no trial window: 25 of 25";

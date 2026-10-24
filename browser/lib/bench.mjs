@@ -536,13 +536,13 @@ export async function trialLength(headers = {}) {
 }
 
 /** Create a workspace as this user. For fixtures that need a workspace of their own. */
-export async function createWorkspace(token, name) {
+export async function createWorkspace(token, name, { seatAsker = true } = {}) {
   const response = await fetch(await fromNode(`${API}/api/workspace`), {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: JSON.stringify({ name }),
   });
-  if (response.status === 409) return extraWorkspace(token, name);
+  if (response.status === 409) return extraWorkspace(token, name, seatAsker);
   if (!response.ok) throw new Error(`workspace: ${response.status} ${await response.text()}`);
   return response.json();
 }
@@ -557,7 +557,7 @@ export async function createWorkspace(token, name) {
  * grant: a granted workspace starts with no trial (D-752) and would read as locked.
  */
 let extraOwners = 0;
-async function extraWorkspace(token, name) {
+async function extraWorkspace(token, name, seatAsker = true) {
   const me = await (await fetch(await fromNode(`${API}/api/auth/me`), { headers: { authorization: `Bearer ${token}` } })).json();
   extraOwners += 1;
   const email = `fx.${FIXTURE}.ws${extraOwners}.${stamp()}@bench.intelcost.io`;
@@ -570,6 +570,8 @@ async function extraWorkspace(token, name) {
   });
   if (!made.ok) throw new Error(`workspace (extra owner): ${made.status} ${await made.text()}`);
   const workspace = await made.json();
+  // A fixture that acts in it only as its owner (billing, seats) leaves the asking account out.
+  if (!seatAsker) return { ...workspace, extra_owner: { email, token: ownerToken } };
   const invitation = await invite(ownerToken, workspace.uuid, me.email, "admin");
   const link = new URL(invitation.link).searchParams.get("token");
   const accepted = await apiAccept(token, link);

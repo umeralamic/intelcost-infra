@@ -18,6 +18,11 @@
 // the role select is found by its own label, "Role for <email>". Step 4 counts the shell's standing
 // badge as a second caller; Settings brings its own bar and draws no badge, so that step finds a
 // removed screen.
+//
+// Updated 2026-10-24 (D-87): step 4's second caller of usePermissions() is the settings frame's own
+// (Settings brings its own bar and draws no [data-standing] badge, D-87): its capability-gated tabs
+// (AI Credits, Billing, Trash) drawn for the owner stand in for the badge reading "Owner"; the one
+// shared request and the 225-cell matrix are checked as before.
 
 import {
   ownWorkspace,
@@ -182,22 +187,21 @@ await run("f3-s8", [
       requests.length = 0;
       await page.goto(`${APP}/settings/roles`);
       await page.waitForSelector("[data-capability]", { timeout: 20000 });
-      await page.waitForFunction(
-        () => (document.querySelector("[data-standing]")?.textContent?.trim().length ?? 0) > 0,
-        undefined,
-        { timeout: 20000 },
-      );
+      // The settings frame's own caller (D-87): its tab row draws the tabs gated on a capability
+      // only once it has the answer, and an owner holds every one of them.
+      const gated = ["AI Credits", "Billing", "Trash"];
+      for (const label of gated) {
+        await page.locator("nav a", { hasText: new RegExp(`^${label}$`) }).first().waitFor({ timeout: 20000 });
+      }
 
       // Both callers rendered, and the answer was fetched once, not twice.
-      const standing = (await page.textContent("[data-standing]")).trim();
-      expect(standing === "Owner", `the shell reads "${standing}"`);
       // Built-in columns only; a workspace with custom roles renders more (F3-S7).
       const cells = await page.$$eval("[data-capability][data-role]", (nodes) => nodes.length);
-      expect(cells === 225, `the matrix rendered ${cells} cells beside the shell`);
+      expect(cells === 225, `the matrix rendered ${cells} cells beside the frame`);
       expect(requests.length === 1, `${requests.length} capability requests for two callers`);
 
       // No console noise from the second mount, which is how the legacy collision showed.
-      return `2 callers, ${requests.length} request, shell "${standing}", matrix ${cells} cells`;
+      return `2 callers, ${requests.length} request, frame tabs ${gated.join("/")} drawn for the owner, matrix ${cells} cells`;
     },
   },
 ]);

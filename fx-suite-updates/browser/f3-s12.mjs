@@ -16,6 +16,14 @@
 //
 // Updated 2026-10-18 to today's screens (D-619): the settings tabs are two strips and Activity is in
 // the second (D-87): every nav is read.
+//
+// Updated 2026-10-24 (D-752): an account owns one workspace and joins others by invitation.
+// - Every workspace after the first is owned by a fresh fx. account that then acts in it, so the
+//   feed holds only the step's acts and the owner's own acts (last-owner refusal, transfer) are
+//   the owner's; the claims are unchanged.
+// - AC2's second workspace is the same reader's second one, owned by a throwaway that seats it as
+//   admin; the rows that seating writes are read first as the baseline, and the first
+//   workspace's act must add none there.
 
 import {
   fixtureOwner,
@@ -35,11 +43,33 @@ import {
   signInAs,
   transferOwnership,
   updateWorkspace,
+  apiRegister,
+  FIXTURE,
+  OWNER_FULL_NAME,
+  stamp,
 } from "./lib/bench.mjs";
 
-const SEED = (await fixtureOwner()).email;
-// This run's own owner: nothing of it lands in the seeded account.
-const ownerToken = (await fixtureOwner()).token;
+// The owner of the step running now: nothing of it lands in the seeded account. The first
+// workspace is the run's own fixture owner's; ownedWorkspace swaps in a new owner after that.
+let SEED = (await fixtureOwner()).email;
+let ownerToken = (await fixtureOwner()).token;
+let owned = 0;
+
+/**
+ * A workspace owned outright by the account that then acts in it. D-752: an account owns one
+ * workspace, and these steps need the owner's own feed (no seating rows) or the owner's own acts
+ * (last-owner refusal, transfer), so each workspace after the first gets a fresh fx. owner
+ * (purged with the run's workspaces).
+ */
+async function ownedWorkspace(name) {
+  owned += 1;
+  if (owned > 1) {
+    SEED = `fx.${FIXTURE}.own${owned}.${stamp()}@bench.intelcost.io`;
+    await apiRegister(SEED, "bench-password-1", OWNER_FULL_NAME);
+    ownerToken = await apiLogin(SEED, "bench-password-1");
+  }
+  return createWorkspace(ownerToken, name);
+}
 
 const actions = (feed) => feed.body.items.map((row) => row.action);
 const uuidOf = async (ws, email) =>
@@ -49,7 +79,7 @@ await run("f3-s12", [
   {
     title: "AC1 — every audited act writes exactly one row, with actor, target and both sides",
     run: async () => {
-      const ws = await createWorkspace(ownerToken, `S12 Feed ${Date.now()}`);
+      const ws = await ownedWorkspace(`S12 Feed ${Date.now()}`);
       const email = `s12-${Date.now()}@bench.intelcost.io`;
 
       // A workspace that has just been created has no feed at all.
@@ -109,7 +139,7 @@ await run("f3-s12", [
   {
     title: "AC5 — newest first, and paginated",
     run: async () => {
-      const ws = await createWorkspace(ownerToken, `S12 Page ${Date.now()}`);
+      const ws = await ownedWorkspace(`S12 Page ${Date.now()}`);
       for (let i = 0; i < 6; i += 1) {
         await updateWorkspace(ownerToken, ws.uuid, { license_number: `LIC-${i}` });
       }
@@ -144,7 +174,7 @@ await run("f3-s12", [
   {
     title: "AC3 — an act that fails writes no row, even though the audit call ran",
     run: async () => {
-      const ws = await createWorkspace(ownerToken, `S12 Rollback ${Date.now()}`);
+      const ws = await ownedWorkspace(`S12 Rollback ${Date.now()}`);
       const victim = await seatedMember(ownerToken, ws.uuid, "estimator", "s12-roll");
       const before = (await activity(ownerToken, ws.uuid)).body.total;
 
@@ -179,7 +209,7 @@ await run("f3-s12", [
   {
     title: "AC4 — the row outlives the actor being removed from the workspace",
     run: async () => {
-      const ws = await createWorkspace(ownerToken, `S12 Outlive ${Date.now()}`);
+      const ws = await ownedWorkspace(`S12 Outlive ${Date.now()}`);
       const admin = await seatedMember(ownerToken, ws.uuid, "admin", "s12-gone");
 
       // The admin does something worth recording, then leaves the workspace.
@@ -221,7 +251,7 @@ await run("f3-s12", [
     title: "F3-S9 AC8 — both ownership paths write an audit event",
     run: async () => {
       // Deferred from S9 because the audit log did not exist yet.
-      const direct = await createWorkspace(ownerToken, `S12 Own A ${Date.now()}`);
+      const direct = await ownedWorkspace(`S12 Own A ${Date.now()}`);
       const heir = await seatedMember(ownerToken, direct.uuid, "admin", "s12-own");
       await transferOwnership(
         ownerToken,
@@ -238,7 +268,7 @@ await run("f3-s12", [
         `before reads ${JSON.stringify(transferred.before)}`,
       );
 
-      const queued = await createWorkspace(ownerToken, `S12 Own B ${Date.now()}`);
+      const queued = await ownedWorkspace(`S12 Own B ${Date.now()}`);
       const email = `s12-queued-${Date.now()}@bench.intelcost.io`;
       await transferOwnership(ownerToken, queued.uuid, { email }, queued.name);
       const b = await activity(ownerToken, queued.uuid);
@@ -259,13 +289,23 @@ await run("f3-s12", [
   {
     title: "AC2 — workspace-scoped, and only with canViewWorkspaceActivity",
     run: async () => {
-      const mine = await createWorkspace(ownerToken, `S12 Scope A ${Date.now()}`);
+      const mine = await ownedWorkspace(`S12 Scope A ${Date.now()}`);
+      // D-752: the same account's second workspace is owned by a throwaway that seats it as
+      // admin, and that seating writes its own rows there. They are read as the baseline.
       const theirs = await createWorkspace(ownerToken, `S12 Scope B ${Date.now()}`);
+      const baseline = (await activity(ownerToken, theirs.uuid)).body.total;
       await updateWorkspace(ownerToken, mine.uuid, { license_number: "ONLY-HERE" });
 
       // Scoped: an act in one workspace does not appear in another.
       const other = await activity(ownerToken, theirs.uuid);
-      expect(other.body.total === 0, `the second workspace shows ${other.body.total} rows`);
+      expect(
+        other.body.total === baseline,
+        `the second workspace shows ${other.body.total - baseline} rows from the first`,
+      );
+      expect(
+        other.body.items.every((r) => r.after?.license_number !== "ONLY-HERE"),
+        "the first workspace's act is in the second's feed",
+      );
       const here = await activity(ownerToken, mine.uuid);
       expect(here.body.total === 1, `the first workspace shows ${here.body.total} rows`);
 
@@ -282,13 +322,13 @@ await run("f3-s12", [
       const admin = await seatedMember(ownerToken, mine.uuid, "admin", "s12-scope-admin");
       const allowed = await activity(admin.token, mine.uuid);
       expect(allowed.status === 200, `an admin got ${allowed.status}`);
-      return `1 row here, 0 there · estimator 403 · admin 200`;
+      return `1 row here, none of it there · estimator 403 · admin 200`;
     },
   },
   {
     title: "The screen: sentences rather than action names, and the gate says why",
     run: async ({ page }) => {
-      const ws = await createWorkspace(ownerToken, `S12 Screen ${Date.now()}`);
+      const ws = await ownedWorkspace(`S12 Screen ${Date.now()}`);
       const email = `s12-screen-${Date.now()}@bench.intelcost.io`;
       const created = await apiCall(ownerToken, "POST", `/api/workspace/${ws.uuid}/invitation`, {
         email,
@@ -333,7 +373,7 @@ await run("f3-s12", [
       // Its own step, because a step reuses one browser context: signing in as a second
       // person inside one step lands on /login already authenticated, and there is no
       // form there to fill.
-      const ws = await createWorkspace(ownerToken, `S12 Gate ${Date.now()}`);
+      const ws = await ownedWorkspace(`S12 Gate ${Date.now()}`);
       await updateWorkspace(ownerToken, ws.uuid, { license_number: "SOMETHING" });
       const seat = await seatedMember(ownerToken, ws.uuid, "estimator", "s12-gate");
 

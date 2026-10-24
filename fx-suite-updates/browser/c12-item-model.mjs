@@ -17,6 +17,8 @@
 //
 // Left for the founder's eye: the dialogs' wording and layout, the editor's feel at phone width on
 // a real phone (touch, the on-screen keyboard), the ^ operator and Excel export of sub-items.
+//
+// Updated 2026-10-24 (D-709): sub-item rows are drawn in the Sheets panel too; step 4 reads the Takeoff panel's.
 
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -148,7 +150,7 @@ await run("c12-item-model", [
       await subs(page).waitFor({ state: "detached" });
       const mesh = await waitFor(async () => (await kids(slab)).find((k) => k.name === "Mesh"), "Mesh saved", 10000);
       expect(preview === "1,050.00" && Math.abs(mesh.formula_qty - 1050) < 1e-9 && mesh.unit === "SF", `preview "${preview}", stored ${mesh.formula_qty} ${mesh.unit}`);
-      await page.locator(`[data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^1,050$/ }).waitFor({ timeout: 10000 });
+      await page.locator(`[data-quantity-panel] [data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^1,050$/ }).waitFor({ timeout: 10000 });
       return `preview ${preview}; stored ${mesh.formula_qty} ${mesh.unit}; the panel shows 1,050 under Slab`;
     },
   },

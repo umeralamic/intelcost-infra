@@ -6,6 +6,9 @@
 // Three moves of a count mark make three undo steps. Three Ctrl+Z pressed back to back, with no
 // wait between them, must take all three back: the mark ends where it began, and three writes are
 // sent. Before D-649 the second and third presses came while the first was saving and were dropped.
+//
+// Updated 2026-10-24 (D-694): the guest's renderer report is a session beacon like session, pass, presence and
+// visit, exempted as rv-rows exempts it; every other write still fails the step.
 
 import { APP, expect, run } from "./lib/bench.mjs";
 import { call, signInAt } from "./lib/realtime.mjs";
@@ -84,7 +87,7 @@ await run("n11-undo-queue", [
         const page = await guest.newPage();
         const writes = [];
         page.on("request", (q) => {
-          if (!["GET", "HEAD", "OPTIONS"].includes(q.method()) && /\/api\//.test(q.url()) && !/\/(session|pass|presence|visit)(\?|$)/.test(q.url())) writes.push(`${q.method()} ${q.url()}`);
+          if (!["GET", "HEAD", "OPTIONS"].includes(q.method()) && /\/api\//.test(q.url()) && !/\/(session|pass|presence|visit|renderer-report)(\?|$)/.test(q.url())) writes.push(`${q.method()} ${q.url()}`);
         });
         await page.goto(`${APP}/s/${link.token}`);
         await page.waitForURL(new RegExp(`/project/${r.project}/takeoff`), { timeout: 30000 });

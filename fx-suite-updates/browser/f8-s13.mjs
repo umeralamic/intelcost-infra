@@ -13,6 +13,13 @@
 // Updated 2026-10-18 to today's screens (D-619): the sheet's fit picture is drawn into a canvas, so
 // an open sheet is waited on by [data-canvas-scale], not img "Drawing sheet" (D-101); the measure
 // tools are in "Measure and annotation tools" (D-116); a row is `li[data-item-row] > [role=row]`.
+//
+// Updated 2026-10-24 (D-614, D-46): step 3's span is measured on the sender's clock, from the flood's
+// first draft frame sent to its last, not from B's receipts: B's clock compresses a backlog the api let
+// through over a longer time, so it under-measured the span (D-614: "the flood guard holds; the
+// receiving tab's clock under-measured the span"). The rule is unchanged: 10 at once, then 10 a second,
+// plus one for rounding (D-46). The sender is a fixture-local copy of lib/realtime.mjs rawSocket that
+// also records when each frame left.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
 import {
@@ -20,8 +27,8 @@ import {
   WINDOW_B,
   appSockets,
   call,
+  WS_URL,
   ensureWindowB,
-  rawSocket,
   readySocket,
   recordSockets,
   secondWindow,
@@ -203,7 +210,7 @@ await run("f8-s13", [
           tool: "lf",
           points: [[0.1, 0.1], [0.1 + i / 100, 0.2]],
         });
-        const flood = await rawSocket(
+        const flood = await floodSocket(
           page,
           [{ type: "auth", token, client_id: crypto.randomUUID() }, { type: "join", topic }, ...Array.from({ length: 40 }, (_, i) => frame(i))],
           3000,
@@ -216,9 +223,11 @@ await run("f8-s13", [
         }, "B to hear the flood's first burst", 5000);
         await quietFor(1500); // anything the api let through has arrived
         const all = (await drafts(b.page, "received")).filter((f) => f.at >= since && !f.done);
-        // The api's rule, over the time the flood actually took to arrive (a busy page
-        // stretches its 25 ms steps): 10 at once, then 10 a second, plus one for rounding.
-        const span = (all.at(-1).at - all[0].at) / 1000;
+        // The api's rule, over the time the flood actually took to send (a busy page
+        // stretches its 25 ms steps), on the sender's clock (D-614): 10 at once, then 10 a
+        // second, plus one for rounding.
+        const drafted = flood.sentAt.filter((_, i) => i >= 2); // the 40 draft frames, after auth and join
+        const span = (drafted.at(-1) - drafted[0]) / 1000;
         const allowed = Math.floor(10 + 10 * span) + 1;
         expect(all.length < 40, `B heard all 40: nothing was cut`);
         expect(all.length <= allowed, `B heard ${all.length} of 40 over ${span.toFixed(2)} s; the rule allows ${allowed}`);
@@ -276,3 +285,43 @@ await run("f8-s13", [
 ]).finally(async () => {
   for (const uuid of made) await removeItem(token, r, uuid).catch(() => {});
 });
+
+/**
+ * lib/realtime.mjs rawSocket, plus when each frame left (`sentAt`, the page's Date.now()), so the
+ * flood's span is read on the sender's clock (D-614). Opens the native socket, sends `frames`
+ * `gapMs` apart, and resolves after `waitMs` with everything it heard.
+ */
+async function floodSocket(page, frames, waitMs, gapMs, url = WS_URL) {
+  return page.evaluate(
+    ({ url, frames, waitMs, gapMs }) =>
+      new Promise((resolve) => {
+        const Native = window.__icNativeWebSocket ?? window.WebSocket;
+        const ws = new Native(url);
+        const heard = [];
+        const sentAt = [];
+        let done = false;
+        const finish = (result) => {
+          if (done) return;
+          done = true;
+          resolve({ ...result, heard, sentAt });
+        };
+        ws.onmessage = (e) => {
+          const frame = JSON.parse(e.data);
+          if (frame.type !== "pong") heard.push(frame);
+        };
+        ws.onclose = (e) => finish({ code: e.code, reason: e.reason, open: false });
+        ws.onopen = async () => {
+          for (const frame of frames) {
+            ws.send(JSON.stringify(frame));
+            sentAt.push(Date.now());
+            await new Promise((r) => setTimeout(r, gapMs));
+          }
+        };
+        setTimeout(() => {
+          finish({ open: true });
+          ws.close();
+        }, waitMs);
+      }),
+    { url, frames, waitMs, gapMs },
+  );
+}

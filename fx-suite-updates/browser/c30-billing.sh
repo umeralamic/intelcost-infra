@@ -17,6 +17,7 @@ pro=$(value PRO)
 ess=$(value ESS)
 capped=$(value CAPPED)
 staff=$(value STAFF)
+owners=$(value OWNERS)
 if [ -z "$owner" ] || [ -z "$expired" ] || [ -z "$pro" ] || [ -z "$ess" ] || [ -z "$capped" ] || [ -z "$staff" ]; then
   echo "FAIL  0. SETUP printed no OWNER, EXPIRED, PRO, ESS, CAPPED or STAFF"
   echo "$setup" | tail -5
@@ -29,5 +30,5 @@ docker compose exec -T postgres psql -U intelcost -d intelcost_fx -q \
   -c "update workspace set billing_tier = 3, trial_started_at = now(), trial_ends_at = now() + interval '5 days' where uuid = '$capped'" \
   -c "update \"user\" set is_platform_admin = true where email = '$staff'"
 docker compose --profile fx run --rm -e FX_OWNER="$owner" -e EXPIRED="$expired" -e PRO="$pro" -e ESS="$ess" \
-  -e CAPPED="$capped" -e STAFF="$staff" browser-fx node scripts/c30-billing.mjs 2>&1 | grep -v '^ *Container '
+  -e CAPPED="$capped" -e STAFF="$staff" -e OWNERS="$owners" browser-fx node scripts/c30-billing.mjs 2>&1 | grep -v '^ *Container '
 exit "${PIPESTATUS[0]}"
