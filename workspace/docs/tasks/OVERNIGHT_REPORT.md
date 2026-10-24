@@ -90,9 +90,58 @@ f5-s14, c15, f8-s15, f8-s16); f8-s4 switches workspace in the page (D-705) and f
 app; f8-s13 measures the flood on the sender's clock (D-614); proof-backlog builds its own world (it signed in as the
 founder's seeded account, which the guard refuses).
 
-**Not run (D-611, D-761):** f8-s5 and f4-s27 stop Redis and MinIO, which the live bench shares; f8-s2, f8-s3, f8-s8,
-f8-s12 and f5-s2 restart the bench's own api, api-b and worker by name; f5-s9 needs a seed flag that no longer exists;
-d27-uploads needs beat. Pointing the restart fixtures at the fx services is the next step for a truly whole run.
+**Not run in the first pass (D-611, D-761):** f8-s5 and f4-s27 stop Redis and MinIO, which the live bench shares;
+f8-s2, f8-s3, f8-s8, f8-s12 and f5-s2 restart the bench's own api, api-b and worker by name; f5-s9 needs a seed flag that
+no longer exists; d27-uploads needs beat. The restart fixtures were then pointed at the fx services (see "Final run").
+
+### Final run (2026-10-24, after every fix; `fx-suite/run-final.sh`, two at a time, built apps)
+
+**Totals: 142 fixtures run, all passing as they stand. 5 not run, each for a stated reason.**
+
+Counting each fixture by its last run: in the full run, a solo rerun (timing), or the fx dev servers (dev-only).
+
+| Set | Run | Passed in the full run | Then |
+|---|---|---|---|
+| Standing list (`regress.sh full`) | 102 | **92** | the other 10 pass: 6 on the dev servers, 3 solo, 1 after a fix (below) |
+| Added since the tag (D-636 on) | 29 | **28** | r1-raster-text is dev-only: 2/2 on the dev servers |
+| New tonight, c32–c38 | 7 | **7** | c32 5/5, c33 4/4, c34 7/7, c35 5/5, c36 6/6, c37 3/3, c38 5/5 |
+| Restart fixtures, now on the fx services (D-765 5) | 4 + 2 helpers | after their updates, all | f8-s2 3/3 and its outage 1/1, f8-s3 3/3, f8-s8 1/1, f8-s12 5/5 and its restart 1/1 |
+
+**The failures of the full run, each with its reason:**
+
+| Fixture | In the full run | Reason | Result |
+|---|---|---|---|
+| f4-s2, f3-s13, f7-a, f5-s3, f6-s4, f3-s1, r1-raster-text | failed steps import `/src/...` modules | **Can't run on the built apps**: dev-server only (D-619) | dev servers: f4-s2 6/6, f3-s13 5/5, f7-a 8/8, f5-s3 2/2, f6-s4 3/3, r1 2/2; f3-s1 steps 1–4 pass on the dev servers and step 5 on the built apps |
+| f6-a (step 8), f5-s15 (step 4) | 2.3 s and 1.9 s against a 1 s bound | **Timing**, with two fixtures at once | **passed on rerun** alone: 9/9, 4/4 |
+| f5-s18 (step 4) | Playwright lost a response body it was reading | **Timing / harness** | **passed on rerun**: 4/4 |
+| f5-big (steps 2, 5) | step 5: "2 reads of page 2's PDF" | **Real bug**: Auto Count's index downloaded the sheet's PDF a second time. Measured (D-765 7): 20–37 s for the bench's largest sheet (24 MB) | **fixed** (app 304c68b, the canvas's bytes are reused); 6/6 |
+| f8-s12 (step 3), after its D-81/D-98 update | "B's Properties opened editable while A holds the item" | **Real bug**: the action group's Properties ignored another person's hold; the held item's tips read "Being edited by …is editing…" | **fixed** (app 304c68b); 5/5 |
+| f8-s12-restart | once: A did not reconnect within 60 s | **Environment**: api-fx took about 57 s to restart | **passed on rerun** |
+
+**Not run, with reasons:**
+- **Stop shared services:** f8-s5 and f4-s27 stop Redis and MinIO, which the live bench shares. Listed for staging (D-765 5).
+- **f5-s2** stops the worker and drops its queue. Pointing it at worker-fx was not done tonight; it stays skipped.
+- **f5-s9** runs `seed.py --reset` with a flag the seed no longer takes.
+- **d27-uploads** needs the beat scheduler, which the fx stack does not run.
+
+**Updated to the founder's answers (D-765) and rerun, every one passing:**
+- **The trashed-project message (point 3):** f4-s15 3/3, f4-s20 3/3, f8-s16 4/4.
+- **Upload and New folder disabled with the reason (point 6):** f4-s17 10/10.
+- **The explicit "nothing from workspace 1 in workspace 2" check (point 4):** f3-s12 8/8.
+- **The held-item tips matched exactly (bug 2):** f8-s15 6/6.
+- **Rerun with no change:** c32 5/5 (the `own_fields` clean-up, D-765 1, changed 0 rows on the bench and 0 on fx), proof-backlog 13/13, f3-s10 4/4, f5-big 6/6.
+
+Overlays are committed in intelcost-infra (5204aca, 0c9bcbd).
+
+**App bugs the suite found tonight: 17, all fixed.** These are the 14 above plus three:
+- f5-big's second PDF read
+- f8-s12's editable Properties
+- the held-item tips
+
+**Ready for testers, from the test side: yes, with three caveats.**
+1. f8-s5 and f4-s27 (Redis and MinIO outages) are untested until a staging stack can stop its own.
+2. f5-s2, f5-s9 and d27-uploads are not run.
+3. The F35 cost-component changes built after this run (D-762, D-764 B0) change what Estimating shows, not its totals. Before a tester deploy, run the estimate fixtures on the new build again (f9-estimating, f9-exports, c14, c15, c16, c35, c38): their row text changed.
 
 **New fixtures** (`fx-suite-updates/browser/`, own throwaway accounts each; the brief's item 3):
 | Fixture | Covers | Result |
@@ -137,6 +186,11 @@ haul)" as one site spread:
    beside single runs (its end-of-run purge deletes every fx workspace).
 
 ## Questions for the founder
+
+**Answered 2026-10-24 and built (D-765).** Notes:
+- **1:** the clean-up drops entries equal to what the spread gives the machine (a typed value is written to the column too, so "equal to the stored value" would have dropped every typed one). It changed 0 rows on the bench.
+- **5:** the restart fixtures now run on the fx services (see "Final run").
+- **7:** the second read measured 20–37 s; the canvas's bytes are now reused.
 
 1. **Site machines saved before tonight's fix may hold `own_fields` that equal their stored count and work day**
    (api 9f1ec9e). They price the same today; at the next Apply tier such a machine keeps its old count. Should a

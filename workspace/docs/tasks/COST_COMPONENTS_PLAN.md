@@ -12,6 +12,29 @@ guest page), **D-763** (wastage, pricing rules) and **D-764** (parents, B0).
 - **Order of work:** B0, A1–A5, G. **B1 does not start until the founder has reviewed A**; the report at that point
   carries the bench counts (B0's and B4's).
 
+## Progress (2026-10-24): B0, A1–A5 and G built; stopped before B1 for the founder's review
+
+| Block | Commits | Checked |
+|---|---|---|
+| B0 | app c8ec299, api 605ae27, infra 3a0dbe3 | Bench count: **0 parents hold components** (0 automatic, 0 edited). Quantity table "parents: 2 rows". Throwaway: a parent with a person's component reads "Not counted" (line, Needs attention, "Incomplete: 1 parent has components not counted") |
+| A1 | app 0ea0d1b, infra 4e03af4 | HV undercut line 146.4 CCY: Unit Labor **$2.62**, Unit Equipment **$4.21**, Unit Material **$22.00**, Item **$4,220.12**. Parent Exterior Wall $9,063.59 ÷ 521.31 LF = $17.39 (export `=Q8/D8`). Project total **$994,208.69 before and after** (checked with A1 set aside) |
+| A2 | app a702d2f | HV undercut: crew "Crew (0.5 Foreman, 0.5 Grade checker, 4 Operators)" **3.49 MH**; machines **0.7 / 0.7 / 1.39 / 0.7 machine-hr**, "1 week rental + 6.1 hr overtime"; Takeoff panel the same |
+| A3 | app 92f8971 | HV undercut: four machines once each, $138.57 + $41.48 + $217.50 + $218.49 = **$616.04** = the line; total unchanged |
+| A4 | api 146f0ad (migration d766), app 20e5e76 | "Drywall screws \| Drywall fasteners" in the grid and panel; kept through Save as assembly (throwaway, removed after) |
+| A5 | app 6ab085c, infra 3e80018 | HV copy, every report's Summary equals its report: labour $278,501.32, material $183,285.35, equipment $487,069.36, subcontract $45,352.67, full $994,208.69; every innermost group equal under Classification then Scope and under Sheet then Classification; export TOTAL $278,501.32 with live SUMs; Show levels 1–6 |
+| G | api 8b1afc9, app f929fe2 | HV copy on a fallback link (made and revoked): the 15 lines it prices equal Estimating to the cent, the 34 priced with library or shared machines show no figure, with the reason; pricing off sends no money |
+
+**B4's bench count (D-763, read only): 21 saved lines carry wastage; 11 would move under rules 2** (11 with labour, 9 with per-unit equipment, 0 subcontract), in 2 projects of the workspace "Bench Construction": "zz switching" (9) and "Riverside Medical Center" (2). The HV copy: none.
+
+**Decisions taken in the build (for the founder's review):**
+1. **A tier crew has no name of its own,** so its row reads "Crew (makeup)". The plan's example, "Crew: Place and compact (…)", would need the api to stamp the activity's name on newly priced crews. That is not done; it is offered as a change.
+2. **Typed labour's Unit Labor Cost** reads Unit MH × Per Hour Wage, italic and not editable.
+3. **A shared machine's rental period beside its rows** is the machine's whole cover ("1 week rental"), not this line's share of it.
+4. **Material's To order** is the summed quantity, unrounded until B2's Round up to exists.
+5. **Show levels** goes as deep as the grouping does, six levels at most.
+6. **The guest fallback (G)** cannot read the equipment library (it has no session), so a line priced with library or shared machines shows "—" with the reason, never a different figure. The main share path already opens the full app and prices exactly as Estimating. A typed line on a host that draws shared machines without a component is also missing its share on the fallback.
+7. **A5's summaries split a component's hours across its crew rows by headcount, and its dollars by headcount × wage.** A crew row with no wage takes the headcount share.
+
 The model stays as it is:
 - A sub-item is a measured quantity in its pricing unit (SF, LF, CY).
 - Its cost components say how that quantity is bought and done: sheets, man-hours, machine time.
