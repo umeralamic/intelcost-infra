@@ -23068,8 +23068,10 @@ inherits the plan", which stopped on billing).
 
 - **Workspace and account settings** are wider: forms 1024 px (was 768), wide pages 1280 px (was 1152). The equipment
   library is a wide page.
-- **Library:** the size grid keeps at least 22 rem; the detail panel sits beside it from 1280 px and below it on a
-  narrower window (the three columns collapsed the size column to nothing on a 768 px page).
+- **Library:** the Size column of the size grid is at least 22 rem (352 px); the detail panel sits below the grid
+  at every width, since the 1,280 px page cannot hold the tree, a 22 rem Size column with its six rate columns and the
+  panel side by side. Measured at 1,366 and 1,920 px: Size 461 px, no horizontal scroll, panel 1,182 px below. (The
+  first version put 22 rem on the whole grid column; the Size column itself measured 117 px.)
 - **Earthwork production tiers:** machine and crew rows take the width left and wrap instead of running out of the
   card; a crew row that follows the project's rates shows "Project rate" (a foreman "Foreman rule") instead of 0.
 - **Line mapping:** a fixed label column and a select that fills the rest; one column on a narrow window.
