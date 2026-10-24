@@ -24,11 +24,7 @@ if (!root) throw new Error("usage: node fx-suite-patch.mjs <restored suite dir> 
 
 /** Fixtures not run on the fx stack, and why (D-611). */
 export const SKIPPED = {
-  "f8-s2": "stops and restarts the api",
-  "f8-s3": "recreates the api on 2-minute tokens",
   "f8-s5": "stops Redis, which the running bench shares",
-  "f8-s8": "restarts window B's api",
-  "f8-s12": "restarts the api",
   "f5-s2": "stops the worker and drops its queue",
   "f4-s27": "stops MinIO, which the running bench shares",
   "f5-s9": "runs today's seed.py --reset with a flag it no longer takes",
@@ -49,6 +45,11 @@ const SERVICES = [
   [/exec -T api /g, "exec -T api-fx "],
   [/-d intelcost\b(?!_)/g, "-d intelcost_fx"],
   [/redis-cli(?! -n)/g, "redis-cli -n 1"],
+  // The fixtures that stop, restart or recreate an api stop the fx stack's own (2026-10-24, D-761): never the
+  // bench's. f5-s2 (it reads beat) and the Redis and MinIO ones stay skipped above.
+  [/docker compose (stop|start|restart) api(?=[\s>])/g, "docker compose --profile fx $1 api-fx"],
+  [/docker compose up -d api(?=[\s>])/g, "docker compose --profile fx up -d --no-deps api-fx"],
+  [/docker compose --profile realtime restart api-b(?=[\s>])/g, "docker compose --profile fx restart api-fx-b"],
 ];
 
 const swap = (text, pairs) => pairs.reduce((t, [a, b]) => (typeof a === "string" ? t.split(a).join(b) : t.replace(a, b)), text);
@@ -98,6 +99,8 @@ patch(path.join(root, "regress.sh"), (t) => {
   s = s.replace(/seeded_check=\$\(drive_ws check "\$seeded_before"\)/, 'seeded_check="skipped on the fx stack (D-611)"');
   // The skipped fixtures, named in the run's output (once: `refresh` patches a patched suite again).
   const skip = Object.keys(SKIPPED).join(" | ");
+  // A patched suite's skip line is written again from SKIPPED (refresh), so a fixture taken off the list runs.
+  s = s.replace(/^ {6}[a-z0-9| -]+\) echo "SKIP \$name" >&2; continue ;;$/m, `      ${skip}) echo "SKIP $name" >&2; continue ;;`);
   if (!s.includes('echo "SKIP $name"')) s = s.replace("      f4-s12 | f5-demo | *-outage | *-restart) continue ;;", `      f4-s12 | f5-demo | *-outage | *-restart) continue ;;\n      ${skip}) echo "SKIP $name" >&2; continue ;;`);
   s = s.replace(/^d27-uploads\b.*$/m, "");
   s = s.replace('  echo d27-uploads   # D-27\'s sweep of abandoned uploads (a drive, no browser)', "  # d27-uploads: skipped on the fx stack (D-611)");
