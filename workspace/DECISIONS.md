@@ -23190,3 +23190,100 @@ night report.
 - **Not run on the fx stack (D-611, unchanged):** f8-s5 and f4-s27 (they stop Redis and MinIO, which the live bench
   shares), f5-s9 (a seed flag that no longer exists), d27-uploads (needs beat). The service-restart fixtures f8-s2,
   f8-s3, f8-s8, f8-s12 and f5-s2 still stop the bench's own services by name and stay skipped too.
+
+## D-762: Cost components shown in full: unit columns, component rows, one row per shared machine, Usage, summaries by report, the guest page on the shared engine (accepted 2026-10-24, the founder's answers to COST_COMPONENTS_PLAN.md)
+
+**Status:** accepted. Plan: [docs/tasks/COST_COMPONENTS_PLAN.md](docs/tasks/COST_COMPONENTS_PLAN.md), part (A) and the
+guest-page block. Display only: no total changes in any of it, the guest page aside, which moves to the figures
+Estimating already shows.
+
+- **Unit columns (A1).** A typed unit rate is an input and always wins; a type with no components keeps its typed rate.
+  A derived value (italic, read-only, "From components") fills a unit cell when that type's cost comes from components or
+  a shared machine, or on a parent with sub-items. New column **Unit Labor Cost** after Per Hour Wage (in the Labor
+  report). A derived unit × the quantity its type is priced on = its total (Q1): under today's arithmetic every type ÷
+  Total Qty. A parent divides by its own measured Qty in its own unit, "—" without one (Q2). Grid and export (live
+  formulas). The unit/lump equipment pair (D-89, D-238, D-690) is unchanged for typed values.
+- **Component rows in their own quantity and unit (A2).** Material in the unit it is sold in; labour named by its crew and
+  makeup ("Crew: Place and compact (0.5 Foreman, 4 Operators, 0.5 Laborer)"; a hand-typed crew lists its rows the same
+  way) with man-hours as its quantity (for labour this supersedes D-249's "components carried theirs": the qty formula's
+  value is no longer the labour row's Qty); equipment in machine-hours (library and shared) or its own basis
+  (hand-entered), the rental period as secondary text; subcontract its own quantity, else "LS".
+- **One row per shared machine (A3).** A host's component that names a shared machine and its "Shared — …" row merge into
+  one row with the machine-hours and the host's share; missing data once (refines D-93 and D-756). A host that uses a
+  shared machine without such a component keeps the "Shared — …" row.
+- **Usage (A4).** An optional label, 60 characters, shown "Name | Usage" everywhere, the export included (Q12); copied by
+  assemblies.
+- **Summaries in every report (A5; the founder's change to the plan).** Each report in the sidebar (Full estimate, Labor,
+  Material, Equipment, Subcontract) has two modes, **By line** (today) and **Summary**: Labor by crew then craft; Material
+  by item name + unit then Usage, with a **To order** column rounded on the summed quantity, its cost the sum of the
+  lines' costs so it ties to the estimate (Q5); Equipment by machine (machines, hours, days, rental, fuel, mob, total; a
+  shared machine once); Subcontract by subcontractor then scope; Full estimate by cost type then item. Group by
+  (Classification, Custom Folder, Scope, Subcontractor, Sheet) and the layer tabs are the outer level in both modes; a
+  second **then by** dropdown with the same choices, in both modes and the export. Show levels counts the then-by level;
+  Collapse components keeps working in By line. Each summary's total equals its report's total.
+- **The guest page on the shared engine (Q10).** Its own arithmetic (`GuestProject.tsx`) ignored components, the
+  multiplier, unit equipment, subcontract and shared machines; it moves onto `computeLineCost` with the components in the
+  share payload, as a block right after A and before B, since clients may see it. Pricing-off guests still see no money
+  (D-513).
+
+## D-763: Wastage is material's: per component, rounded to the purchase unit; labour, equipment and subcontract on the net quantity (accepted 2026-10-24; supersedes the arithmetic inherited through D-89)
+
+**Status:** accepted; part (B1, B2) of the plan. Moves money: saved lines get a notice and Update, never a silent change.
+
+- **Pricing rules 1 and 2.** `project.pricing_rules` (existing projects 1, new ones 2) and a line's own
+  `estimate_line_item.pricing_rules`. Rules 1 is today's arithmetic, kept for saved lines. A line on rules 1 whose rules-2
+  total differs keeps its old total and shows "Pricing rules changed: old → new · Update" (Q9); Needs attention lists it;
+  the project has **Update all**, which also serves D-718's library changes (Q7). A copied project keeps its source's
+  rules (Q8).
+- **Rules 2.** A material component has its own Wastage % (default: the line's, D-89's override else the unit default)
+  and **Round up to** (1 sheet, 1 box, 1 roll): component qty → + wastage → round up → × unit price. A lump-sum material
+  component takes no wastage by default (Q3). Labour, equipment and subcontract never take wastage: they price on the net
+  quantity × multiplier. A line with typed rates: its wastage applies to material only (Q11). Folder multipliers apply to
+  per-unit parts of every type, lump sums not, as today (Q4). Parents with sub-items have no wastage of their own. The
+  component rows and the export add up to the line total, no hidden scaling. When a line's material components have
+  different wastage, **Qty with Wastage reads "varies"**, its tip listing them (the founder's change).
+- **Supersedes:** D-89's inherited formula (every per-unit type × Qty with Wastage), D-631's fixture figures (Footing
+  110 LF, $66,000, which becomes $60,000 on rules 2), and D-266's burden carried through wastage for labour. D-513's "Qty
+  with Wastage is what gets ordered" holds, for material.
+
+## D-764: Parents with sub-items may carry their own cost components; Calculate's new parents first (accepted 2026-10-24; supersedes D-89, D-91's host rule, D-96 #5, D-243's host rules, D-249, D-405 and D-709 on this point)
+
+**Status:** accepted; blocks B0 (first, before A1) and B3 of the plan.
+
+- **B0, Earthwork Calculate turning a line into a parent** (`earthwork/lines.py`, the founder's change): the line's
+  automatic (tier) components are removed, their replacements built on the new sub-lines as on any recalculation. Edited
+  or hand-added components are never dropped and never silently uncounted: until B3 they are flagged on the line, in
+  Needs attention and in the bid's Incomplete count, "Components on a parent are not counted: move them to a sub-item". A
+  read-only bench count comes first, split automatic / edited.
+- **B3.** Parent total = Σ of its sub-items + its own components, by cost type; the parent's components show as their own
+  group above its sub-items and count in its derived unit costs (D-762); QTY is the parent's own quantity. A warning,
+  never a block, when the same type is on the parent and its sub-items. No typed unit rates on such parents; assembly
+  apply stops writing template rates onto a parent with children. Site Features, utility runs and structures still refuse
+  components (D-746); so do the stabilization parents (D-727, D-738; Q6). B0's flagged lines then count, with the
+  pricing-rules notice (D-763).
+
+## D-765: The overnight report's eight questions answered; two bugs from the restart fixtures (accepted 2026-10-24)
+
+**Status:** accepted (the founder's answers); built the same day.
+
+1. **Untyped site-machine values cleaned up.** Migration `d765a1b2c3d4` drops a site machine's `own_fields` entry that the
+   save before api 9f1ec9e recorded without anyone typing it. The question asked for entries "equal to the stored value",
+   but a typed value is written to the column too, so that test would drop every typed value. Taken instead: an entry
+   equal to **what the spread itself gives the machine** (its count at its position in the project's tier, the
+   activity's work day). Text fields compared correctly all along and are untouched. Bench: 0 rows changed; fx: 0.
+2. **Override quantity keeps its reason required,** in the dialog and on the api (D-761 confirmed).
+3. **A project in Trash, opened by its link or while open,** reads "This project was moved to Trash", with **Restore** for
+   a seat allowed to restore it, otherwise "Ask a workspace admin to restore it". This refines D-761 and D-622 for a
+   trashed project; a project that does not exist still reads "Project not found".
+4. **f3-s12 AC2** counts against a baseline, provided it still fails if any row made by the first workspace appears in the
+   second.
+5. **The restart fixtures run on the fx services** (f8-s2, f8-s3, f8-s8, f8-s12 and their helpers); f8-s5 and f4-s27 stay
+   listed for staging.
+6. **The load screen's tree shows Upload and New folder disabled with the reason** for a seat without the right, never
+   hidden.
+7. **The Auto Count index's second PDF read** is measured on the largest bench sheet first; reused from the canvas's bytes
+   only if it costs more than 0.5 s, else backlogged with the measurement.
+8. **The leftover workspace-logo code in `components/app-shell.tsx` is removed.**
+- **Found by f8-s12, fixed with these:** under One at a time, an item another person holds opened its Properties editable
+  from the action group (the row menu's was correctly disabled); the held item's tips read "Being edited by Fixture O. is
+  editing this item right now." (a reason passed where a name was expected).
