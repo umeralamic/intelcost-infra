@@ -24,6 +24,13 @@
 // - AC2's second workspace is the same reader's second one, owned by a throwaway that seats it as
 //   admin; the rows that seating writes are read first as the baseline, and the first
 //   workspace's act must add none there.
+//
+// Updated 2026-10-24 (D-765 point 4, "AC2 counts against a baseline, provided it still fails if any
+// row made by the first workspace appears in the second"): AC2 now asserts that condition explicitly,
+// besides the count: both feeds are read whole; no row id of the first workspace's feed is in the
+// second's; no row of the second is new since its baseline (by id, not only by count); and no row of
+// the second carries the first's act (its "ONLY-HERE" value, its uuid or its name in target, before
+// or after). The old `after.license_number` check is covered by the last.
 
 import {
   fixtureOwner,
@@ -293,7 +300,10 @@ await run("f3-s12", [
       // D-752: the same account's second workspace is owned by a throwaway that seats it as
       // admin, and that seating writes its own rows there. They are read as the baseline.
       const theirs = await createWorkspace(ownerToken, `S12 Scope B ${Date.now()}`);
-      const baseline = (await activity(ownerToken, theirs.uuid)).body.total;
+      const before = await activity(ownerToken, theirs.uuid);
+      const baseline = before.body.total;
+      expect(before.body.items.length === baseline, `the baseline is not read whole: ${before.body.items.length} of ${baseline}`);
+      const baselineIds = new Set(before.body.items.map((r) => r.uuid));
       await updateWorkspace(ownerToken, mine.uuid, { license_number: "ONLY-HERE" });
 
       // Scoped: an act in one workspace does not appear in another.
@@ -302,12 +312,21 @@ await run("f3-s12", [
         other.body.total === baseline,
         `the second workspace shows ${other.body.total - baseline} rows from the first`,
       );
-      expect(
-        other.body.items.every((r) => r.after?.license_number !== "ONLY-HERE"),
-        "the first workspace's act is in the second's feed",
-      );
+      expect(other.body.items.length === other.body.total, `the second feed is not read whole: ${other.body.items.length} of ${other.body.total}`);
       const here = await activity(ownerToken, mine.uuid);
       expect(here.body.total === 1, `the first workspace shows ${here.body.total} rows`);
+      // D-765 4: the baseline is allowed only because this still fails on any row the first
+      // workspace made appearing in the second, by its id or by what it carries.
+      const otherIds = new Set(other.body.items.map((r) => r.uuid));
+      const leaked = here.body.items.filter((r) => otherIds.has(r.uuid));
+      expect(leaked.length === 0, `rows of the first workspace in the second: ${leaked.map((r) => `${r.action} ${r.uuid}`).join(", ")}`);
+      const added = other.body.items.filter((r) => !baselineIds.has(r.uuid));
+      expect(added.length === 0, `rows new in the second workspace since its baseline: ${added.map((r) => `${r.action} ${r.uuid}`).join(", ")}`);
+      const carriesFirst = other.body.items.filter((r) => {
+        const text = JSON.stringify([r.target, r.before, r.after]);
+        return text.includes("ONLY-HERE") || text.includes(mine.uuid) || text.includes(mine.name);
+      });
+      expect(carriesFirst.length === 0, `the second workspace's feed carries the first's act: ${carriesFirst.map((r) => `${r.action} ${r.uuid}`).join(", ")}`);
 
       // An estimator does not hold canViewWorkspaceActivity: admin does, estimator
       // does not, and the feed is where a workspace's private business is written down.
@@ -322,7 +341,7 @@ await run("f3-s12", [
       const admin = await seatedMember(ownerToken, mine.uuid, "admin", "s12-scope-admin");
       const allowed = await activity(admin.token, mine.uuid);
       expect(allowed.status === 200, `an admin got ${allowed.status}`);
-      return `1 row here, none of it there · estimator 403 · admin 200`;
+      return `1 row here, none of it there (${baseline} baseline rows, same ids; no first-workspace id or value among them) · estimator 403 · admin 200`;
     },
   },
   {

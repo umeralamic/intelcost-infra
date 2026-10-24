@@ -26,6 +26,11 @@
 //   now (D-77), not a panel with [data-held-by]: "its properties are view-only" is read from the
 //   dialog B's selection opens (the action group's Properties), which must be read only.
 // - AC4, AC6: B's (tab 2's) Resume is the "Add a shape" whose state is read.
+//
+// Updated 2026-10-24 (D-765 points 4 and 5): AC3 now also asserts the read-only Properties gives the
+// reason in [data-held-by], exactly "<A> is editing this item right now."; that no held tip or menu
+// entry reads "Being edited by …" (the reason wrapped as a name, the bug D-765 fixed: the old
+// `includes(reason)` let it pass); and that B's Resume tip is the reason exactly.
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { A_NAME, APP_B, B_NAME, WINDOW_B, call, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
@@ -184,12 +189,18 @@ await run("f8-s12", [
           Resume: await resumeState(b.page, name),
         };
         const notDisabled = Object.entries(held).filter(([, s]) => !s.disabled || !s.text.includes(reason));
-        // Properties is a dialog (D-77): what B's selection opens must be read only.
+        // D-765 5: the reason is read as is, never wrapped as "Being edited by <reason>".
+        const wrapped = Object.entries(held).filter(([, s]) => /Being edited by/.test(s.text));
+        expect(wrapped.length === 0, `tips wrap the reason: ${JSON.stringify(wrapped)}`);
+        expect(held.Resume.text === reason, `B's Resume tip: "${held.Resume.text}"`);
+        // Properties is a dialog (D-77): what B's selection opens must be read only, with the
+        // reason in [data-held-by] (D-765 point 4).
         await row(b.page, name).click();
         await b.page.getByRole("button", { name: "Properties", exact: true }).click();
         const dialog = b.page.locator("[data-measurement-dialog]");
         await dialog.waitFor({ timeout: 5000 });
         const readOnly = (await dialog.getAttribute("data-read-only")) !== null;
+        const heldBy = ((await dialog.locator("[data-held-by]").first().textContent({ timeout: 2000 }).catch(() => null)) ?? "").trim();
         await b.page.keyboard.press("Escape");
         await dialog.waitFor({ state: "detached", timeout: 3000 }).catch(() => {});
 
@@ -201,7 +212,8 @@ await run("f8-s12", [
         expect(notDisabled.length === 0, `not held on B: ${JSON.stringify(notDisabled)}`);
         expect(took < 2000, `B was freed after ${took} ms`);
         expect(readOnly, `B's Properties opened editable while A holds the item (B was freed ${took} ms after Stop)`);
-        return `all ${Object.keys(held).length} actions disabled with "${reason}"; properties view-only; freed ${took} ms after Stop`;
+        expect(heldBy === reason, `B's Properties says why as "${heldBy}"`);
+        return `all ${Object.keys(held).length} actions disabled with "${reason}"; properties read only, "${heldBy}"; freed ${took} ms after Stop`;
       } finally {
         await setMode(token, workspace.uuid, "work_together");
         await b.context.close();

@@ -19,6 +19,12 @@
 //   it; a new folder is named in the "New folder" dialog). D-309: a new project has no
 //   seed folders, so step 3 no longer waits for "Plans"; it seeds one root file first, because the
 //   tree draws nothing but "No files yet" for a project with no files.
+//
+// Updated 2026-10-24 (D-765 point 3): AC5's B (an estimator, a member) no longer reads "Project not
+// found" when A trashes the project it has open: it reads "This project was moved to Trash"
+// ([data-in-trash] naming it) with "Ask a workspace admin to restore it." and no Restore (its seat has
+// no canRestoreDeletedItems), and no [data-not-found]. The not-found path is kept where it still
+// applies: once A purges it, B opening its link reads "Project not found".
 
 import { APP, apiCall, expect, fixtureOwner, quietFor, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, seedFile, tabStrip } from "./lib/f4.mjs";
@@ -104,7 +110,7 @@ await run("f8-s16", [
     },
   },
   {
-    title: "AC3, AC5: B on the project (its takeoff, D-315) follows A's edits, then reads \"Project not found\" when A trashes it",
+    title: "AC3, AC5: B on the project (its takeoff, D-315) follows A's edits, reads \"This project was moved to Trash\" when A trashes it, \"Project not found\" once purged (D-765 3)",
     run: async ({ page, context }) => {
       await recordSockets(context);
       const name = `F8-S16 Home ${Date.now() % 100000}`;
@@ -134,8 +140,22 @@ await run("f8-s16", [
         expect(patched.status === 200, `rename: ${patched.status} ${JSON.stringify(patched.body)}`);
         const edited = await timed(async () => ((await barName.first().textContent()) ?? "").trim() === renamed, "B's takeoff bar to show the new name");
         await apiCall(token, "DELETE", `${base}/${project.uuid}`);
-        const gone = await timed(async () => (await page.getByText("Project not found").count()) > 0, "B to read Project not found");
-        return `rename reached B's takeoff bar in ${edited} ms; trash turned it to "Project not found" in ${gone} ms`;
+        // D-765 3: B, a member, is told it is in Trash; an estimator may not restore, so no Restore.
+        const trash = page.locator(`[data-in-trash="${project.uuid}"]`);
+        const gone = await timed(
+          async () => (await trash.getByRole("heading", { name: "This project was moved to Trash" }).count()) > 0,
+          "B to read This project was moved to Trash",
+        );
+        await trash.getByText("Ask a workspace admin to restore it.").waitFor({ timeout: 5000 });
+        expect((await trash.getByRole("button", { name: "Restore" }).count()) === 0, "B (an estimator) is offered Restore");
+        expect((await page.locator("[data-not-found]").count()) === 0, "B read Project not found for a project in Trash");
+        // Purged, it no longer exists: its link reads "Project not found" for B (D-765 3, D-622).
+        const purged = await apiCall(token, "DELETE", `${base}/${project.uuid}/purge`);
+        expect(purged.status < 300, `purge: ${purged.status} ${JSON.stringify(purged.body)}`);
+        await page.goto(`${APP_B}/project/${project.uuid}`);
+        await page.locator("[data-not-found]").getByText("Project not found").waitFor({ timeout: 20000 });
+        expect((await page.locator("[data-in-trash]").count()) === 0, "a purged project read as in Trash");
+        return `rename reached B's takeoff bar in ${edited} ms; trash turned it to "This project was moved to Trash" (ask an admin, no Restore) in ${gone} ms; purged, its link reads "Project not found"`;
       } finally {
         await apiCall(token, "DELETE", `${base}/${project.uuid}/purge`);
       }

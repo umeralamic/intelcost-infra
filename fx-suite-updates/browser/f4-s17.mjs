@@ -38,6 +38,12 @@
 // Step 11 retired: S7 AC9, resume under "Unfinished uploads", was removed by D-315 C5
 //   (`UnfinishedUploads` deleted; an unfinished upload is "Upload unfinished" in the tree, with
 //   Discard upload).
+//
+// Updated 2026-10-24 (D-765 point 6, "the tree shows Upload and New folder disabled with the reason,
+// never hidden"): AC10's viewer now sees the tree toolbar ([data-tree-toolbar]); its New folder and
+// Upload are both disabled, each titled "Your role cannot upload documents or make folders.", the
+// same words shown under them in [data-upload-refusal], and no file input ([data-tree-upload]) is
+// drawn. It used to assert the toolbar absent.
 
 import { createHash } from "node:crypto";
 
@@ -304,8 +310,19 @@ await run("f4-s17", [
     run: async ({ page, context }) => {
       await openTree(page, viewer.email);
       await fileRow(page, "Geotech.docx").waitFor({ timeout: 20000 });
-      const toolbar = await tree(page).locator("[data-tree-toolbar]").count();
-      expect(toolbar === 0, "New folder and Upload offered to a viewer");
+      // D-765 6: the toolbar is shown to every seat; a viewer's New folder and Upload are disabled,
+      // with the reason in words, and there is no file input behind them.
+      const toolbar = tree(page).locator("[data-tree-toolbar]");
+      await toolbar.waitFor({ timeout: 10000 });
+      for (const label of ["New folder", "Upload"]) {
+        const button = toolbar.getByRole("button", { name: label, exact: true });
+        expect((await button.count()) === 1, `the viewer's toolbar has no ${label}`);
+        expect(await button.isDisabled(), `${label} is enabled for a viewer`);
+        expect((await button.getAttribute("title")) === "Your role cannot upload documents or make folders.", `${label}'s title: ${await button.getAttribute("title")}`);
+      }
+      const refusal = (await toolbar.locator("[data-upload-refusal]").innerText()).trim();
+      expect(refusal === "Your role cannot upload documents or make folders.", `refusal: "${refusal}"`);
+      expect((await page.locator("[data-tree-upload]").count()) === 0, "a file input is there for a viewer");
       const items = await menuOf(page, fileRow(page, "Geotech.docx"));
       expect(items.join() === "Download", `viewer's file menu: ${items.join()}`);
       const [tab] = await Promise.all([
@@ -318,7 +335,7 @@ await run("f4-s17", [
       const post = await apiCall(viewer.token, "POST", folderUrl, { name: "Nope" });
       expect(link.status === 200, `viewer download ${link.status}`);
       expect(post.status === 403, `viewer folder create ${post.status}`);
-      return `no toolbar · menu "${items.join()}" · download ${link.status} · create ${post.status}`;
+      return `New folder and Upload disabled, "${refusal}" · menu "${items.join()}" · download ${link.status} · create ${post.status}`;
     },
   },
   {

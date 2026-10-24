@@ -10,6 +10,12 @@
 //   words, the toast, the row leaving and the count are unchanged.
 // - AC3: "no bin" is now the estimator's row menu holding no Move to Trash; it used to count a button
 //   that no seat has any more, which passed whatever the gate did.
+//
+// Updated 2026-10-24 (D-765 point 3): AC1/AC2's trashed project, opened by its link, now reads "This
+// project was moved to Trash" ([data-in-trash] naming it) with Restore for the owner, and no longer
+// "Project not found". AC3 adds the estimator's side (no canRestoreDeletedItems): the same link reads
+// "Ask a workspace admin to restore it." with no Restore button. The not-found path for a stranger and
+// a made-up uuid is asserted in f4-s20.
 
 import { APP, apiCall, expect, run, seatedMember } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject, openDashboard, rowNames, tabStrip } from "./lib/f4.mjs";
@@ -44,9 +50,13 @@ await run("f4-s15", [
       expect(!names.includes("Doomed job") && names.includes("Survivor job"), `rows: ${names}`);
       expect(all(await tabStrip(page)) === before - 1, "All count did not drop");
       await page.goto(`${APP}/project/${doomed.uuid}`);
-      await page.getByRole("heading", { name: "Project not found" }).waitFor({ timeout: 15000 });
-      // Block E's words (F4-S20), where Block C's page showed the api's "No such project."
-      return `All ${before} → ${before - 1} · its page says "Project not found"`;
+      // D-765 3: its link now says it is in Trash, and the owner (who may restore) is offered Restore.
+      const trash = page.locator(`[data-in-trash="${doomed.uuid}"]`);
+      await trash.getByRole("heading", { name: "This project was moved to Trash" }).waitFor({ timeout: 15000 });
+      await trash.getByText("Restore it to open it again.").waitFor();
+      expect((await trash.getByRole("button", { name: "Restore" }).count()) === 1, "the owner is offered no Restore");
+      expect((await page.locator("[data-not-found]").count()) === 0, "the trashed project read Project not found");
+      return `All ${before} → ${before - 1} · its page says "This project was moved to Trash", with Restore`;
     },
   },
   {
@@ -69,7 +79,15 @@ await run("f4-s15", [
       const refused = await apiCall(estimator.token, "DELETE", `${base}/${survivor.uuid}`);
       expect(refused.status === 403, `estimator DELETE: ${refused.status}`);
       expect(refused.body?.detail === "Your role cannot change workspace settings.", `refusal: ${refused.body?.detail}`);
-      return "no bin · 403 in words";
+      // D-765 3: the trashed project's link, for a seat that may not restore it.
+      await page.keyboard.press("Escape");
+      await page.goto(`${APP}/project/${doomed.uuid}`);
+      const trash = page.locator(`[data-in-trash="${doomed.uuid}"]`);
+      await trash.getByRole("heading", { name: "This project was moved to Trash" }).waitFor({ timeout: 15000 });
+      await trash.getByText("Ask a workspace admin to restore it.").waitFor();
+      expect((await trash.getByRole("button", { name: "Restore" }).count()) === 0, "the estimator is offered Restore");
+      expect((await page.locator("[data-not-found]").count()) === 0, "the trashed project read Project not found");
+      return "no bin · 403 in words · the trashed link says ask an admin, no Restore";
     },
   },
 ]);

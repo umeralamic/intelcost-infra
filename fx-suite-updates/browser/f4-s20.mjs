@@ -16,10 +16,18 @@
 // the All projects dialog (D-314: `/projects` is Home with `?projects=open`), not a "Projects" page.
 // Step 3 retired: the project page's loading skeleton (`[data-project-loading]`) was removed with
 // ProjectHome by D-315 C5.
+//
+// Updated 2026-10-24 (D-765 point 3, "a project in Trash opened by its link"): AC3 split. A random
+// uuid still reads "Project not found" ([data-not-found]) with its way back. The trashed project,
+// opened by its owner (a member whose seat may restore), now reads "This project was moved to Trash"
+// ([data-in-trash] naming it, no [data-not-found]) with Restore and Back to Projects, and the api's
+// resolve answers that member `trashed: true`. Added: a stranger (no seat in the workspace) opening
+// the trashed project still reads "Project not found", and resolve gives them the same 404 as a
+// made-up uuid, so the Trash message tells an outsider nothing.
 
 import { randomUUID } from "node:crypto";
 
-import { APP, SEEDED, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, apiRegister, createWorkspace, enterWorkspace, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F4-S20 home");
@@ -57,19 +65,48 @@ await run("f4-s20", [
     },
   },
   {
-    title: "AC3 — a random uuid and a trashed project both read \"Project not found\", with a way back",
+    title: "AC3 — a random uuid reads \"Project not found\"; the trashed project reads \"This project was moved to Trash\" with Restore (D-765 3); both have a way back",
     run: async ({ page }) => {
       await signIn(page);
-      const seen = [];
-      for (const target of [randomUUID(), binned.uuid]) {
-        await page.goto(`${APP}/project/${target}`);
-        await page.getByRole("heading", { name: "Project not found" }).waitFor({ timeout: 15000 });
-        seen.push(await page.locator("[data-not-found]").innerText());
-      }
-      await page.getByRole("link", { name: "Back to Projects" }).click();
+      await page.goto(`${APP}/project/${randomUUID()}`);
+      await page.getByRole("heading", { name: "Project not found" }).waitFor({ timeout: 15000 });
+      const missing = await page.locator("[data-not-found]").innerText();
+      expect((await page.locator("[data-in-trash]").count()) === 0, "a made-up uuid read as in Trash");
+      expect((await page.locator("[data-not-found]").getByRole("link", { name: "Back to Projects" }).count()) === 1, "no way back from Project not found");
+
+      const resolved = await apiCall(token, "GET", `/api/resolve/project/${binned.uuid}`);
+      expect(resolved.status === 200 && resolved.body?.trashed === true && resolved.body?.project_uuid === binned.uuid,
+        `resolve for the owner: ${resolved.status} ${JSON.stringify(resolved.body)}`);
+      await page.goto(`${APP}/project/${binned.uuid}`);
+      const trash = page.locator(`[data-in-trash="${binned.uuid}"]`);
+      await trash.getByRole("heading", { name: "This project was moved to Trash" }).waitFor({ timeout: 15000 });
+      const trashText = await trash.innerText();
+      expect(/Restore it to open it again\./.test(trashText), `trash text: ${trashText}`);
+      expect((await trash.getByRole("button", { name: "Restore" }).count()) === 1, "the owner is offered no Restore");
+      expect(!/Ask a workspace admin/.test(trashText), "the owner is told to ask an admin");
+      expect((await page.locator("[data-not-found]").count()) === 0, "the trashed project read Project not found");
+      await trash.getByRole("link", { name: "Back to Projects" }).click();
       await page.getByRole("dialog", { name: "All projects" }).waitFor({ timeout: 15000 });
-      expect(!seen.some((text) => /Loading/.test(text)), "a spinner in the not-found state");
-      return `both not found · back to the All projects list · "${seen[0].replace(/\s+/g, " ").trim()}"`;
+      expect(![missing, trashText].some((text) => /Loading/.test(text)), "a spinner in the not-found or trash state");
+      return `random: "${missing.replace(/\s+/g, " ").trim()}" · trashed: "${trashText.replace(/\s+/g, " ").trim()}" · back to the All projects list`;
+    },
+  },
+  {
+    title: "AC3 — a stranger opening the trashed project still reads \"Project not found\", and resolve tells them nothing (D-765 3)",
+    run: async ({ page }) => {
+      const email = `f4s20-stranger-${Date.now()}@bench.intelcost.io`;
+      await apiRegister(email, SEEDED.password, "F4S20 Stranger");
+      const stranger = await apiLogin(email, SEEDED.password);
+      await createWorkspace(stranger, `F4S20 Stranger ${Date.now()}`);
+      const theirs = await apiCall(stranger, "GET", `/api/resolve/project/${binned.uuid}`);
+      const nothing = await apiCall(stranger, "GET", `/api/resolve/project/${randomUUID()}`);
+      expect(theirs.status === 404 && nothing.status === 404, `resolve: ${theirs.status}, ${nothing.status}`);
+      expect(JSON.stringify(theirs.body) === JSON.stringify(nothing.body), "the trashed project and none answer the stranger differently");
+      await signInAs(page, email, SEEDED.password);
+      await page.goto(`${APP}/project/${binned.uuid}`);
+      await page.locator("[data-not-found]").getByText("Project not found").waitFor({ timeout: 20000 });
+      expect((await page.locator("[data-in-trash]").count()) === 0, "a stranger was told the project is in Trash");
+      return `Project not found · resolve 404 "${theirs.body?.detail}", same as a made-up uuid`;
     },
   },
 ]);

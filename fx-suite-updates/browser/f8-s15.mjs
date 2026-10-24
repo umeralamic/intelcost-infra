@@ -23,6 +23,10 @@
 // - D-625: the logo is not in the members' header; step 3's logo and logo-removal halves are retired.
 // - D-81, D-72: "Add a shape" left the row menu; step 6 holds the item by A's row Resume and checks B's
 //   row Resume is disabled and says who has it.
+//
+// Updated 2026-10-24 (D-765 point 5): step 6's held Resume tip is asserted exactly, "<A> is editing
+// this item right now." (A_NAME, the reason as is); the old pattern also let "Being edited by …" pass,
+// which is the bug D-765 fixed.
 
 import {
   APP,
@@ -39,6 +43,7 @@ import {
   setRole,
 } from "./lib/bench.mjs";
 import {
+  A_NAME,
   APP_B,
   WINDOW_B,
   appSockets,
@@ -315,7 +320,8 @@ await run("f8-s15", [
         const resumeB = b.page.locator("[data-quantity-panel]").getByRole("button", { name: `Resume ${name}`, exact: true }).first();
         await waitFor(() => resumeB.isDisabled(), "B's Resume to be disabled under One at a time", 5000);
         const why = await resumeB.getAttribute("title");
-        expect(/is editing this item right now|Being edited by/.test(why ?? ""), `B's Resume says "${why}"`);
+        // D-765 5: the tip is the reason as is, never "Being edited by <reason>".
+        expect(why === `${A_NAME} is editing this item right now.`, `B's Resume says "${why}"`);
         return "B re-read the workspace on the event, and A's next hold made B's controls view-only";
       } finally {
         await b.context.close();
