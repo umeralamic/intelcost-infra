@@ -11,6 +11,11 @@
 // ([data-draw-modifiers], D-124) since the canvas bar went; a row is `li[data-item-row] > [role=row]`
 // with its name in [data-item-name] (D-77).
 // New folder is an inline name row now (D-171): the dialog that leaves the selection alone is Settings.
+//
+// Updated 2026-10-24 (D-712): with the run selected, a right-click on one of its points or edges opens the
+// item's full menu ("Item actions"), which leads with "Delete this point" on a point and "Insert point here" on
+// an edge; the canvas's own "Point" menu is only where the page passes no item menu. The refusal's words are
+// unchanged.
 
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -92,7 +97,7 @@ await run("f7-e", [
       const five = await waitFor(async () => { const p = await pointsOf(ids.pad); return p.length === before + 1 ? p : null; }, "a vertex inserted", 10000);
       const left = await at(page, 0.2, 0.4);
       await page.mouse.click(left.x, left.y, { button: "right" });
-      await page.getByRole("menu", { name: "Point" }).getByRole("menuitem", { name: "Insert point here" }).click();
+      await page.getByRole("menu", { name: "Item actions" }).getByRole("menuitem", { name: "Insert point here" }).click();
       const six = await waitFor(async () => { const p = await pointsOf(ids.pad); return p.length === before + 2 ? p : null; }, "a second vertex inserted", 10000);
       expect(five.some(([x, y]) => Math.abs(y - 0.2) < 1e-6 && Math.abs(x - 0.4) < 0.01), `inserted at ${JSON.stringify(five)}`);
       return `${before} → ${five.length} → ${six.length} points`;
@@ -106,12 +111,12 @@ await run("f7-e", [
       const before = (await pointsOf(ids.pad)).length;
       const corner = await at(page, 0.2, 0.6);
       await page.mouse.click(corner.x, corner.y, { button: "right" });
-      await page.getByRole("menu", { name: "Point" }).getByRole("menuitem", { name: "Delete this point" }).click();
+      await page.getByRole("menu", { name: "Item actions" }).getByRole("menuitem", { name: "Delete this point" }).click();
       await waitFor(async () => (await pointsOf(ids.pad)).length === before - 1, "a point deleted", 10000);
       await selectSection(page, 0.8, 0.75, ids.tri);
       const tip = await at(page, 0.8, 0.9);
       await page.mouse.click(tip.x, tip.y, { button: "right" });
-      await page.getByRole("menu", { name: "Point" }).getByRole("menuitem", { name: "Delete this point" }).click();
+      await page.getByRole("menu", { name: "Item actions" }).getByRole("menuitem", { name: "Delete this point" }).click();
       await page.getByText("Can't delete point").waitFor({ timeout: 5000 });
       const why = await page.getByText("A SF run needs at least 3 points. Delete the whole run instead.").count();
       const tri = await pointsOf(ids.tri);

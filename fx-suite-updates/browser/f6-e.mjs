@@ -11,6 +11,10 @@
 // double-click on its name renames it; a row's full menu is its ⋮ (D-149), with no Rename entry;
 // a tab takes hold of a count with Resume (keep placing markers), legacy's "Add a shape"; a
 // sub-item's figure and its unit are shown apart.
+//
+// Updated 2026-10-24 (D-709): a sub-item's rows are drawn under its item in both the Sheets panel and the
+// Takeoff panel, so every sub-item locator reads the Takeoff panel's ([data-quantity-panel]), as the item
+// rows already did. No figure or wait changed.
 
 import { APP, expect, run } from "./lib/bench.mjs";
 import { A_NAME, APP_B, WINDOW_B, call, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
@@ -148,7 +152,7 @@ await run("f6-e", [
         ]);
         expect(a.status === 200 && bb.status === 200, `A ${a.status} ${JSON.stringify(a.body)}, B ${bb.status} ${JSON.stringify(bb.body)}`);
         const stored = (await call(token, "GET", `${r.takeoff}/item/detail`)).body.find((i) => i.uuid === sub.uuid);
-        const shown = async (p) => ((await p.locator(`[data-sub-item="${sub.uuid}"] [data-sub-item-qty]`).textContent().catch(() => "")) ?? "").trim();
+        const shown = async (p) => ((await p.locator(`[data-quantity-panel] [data-sub-item="${sub.uuid}"] [data-sub-item-qty]`).textContent().catch(() => "")) ?? "").trim();
         await waitFor(async () => /^30(\.0+)?$/.test(await shown(page)) && /^30(\.0+)?$/.test(await shown(b.page)), "both windows to read 30", 10000);
         expect(Math.abs(stored.effective_quantity - 30) < 1e-9, `stored ${stored.effective_quantity}`);
         return `A's formula and B's depth both saved; stored ${stored.effective_quantity}; A reads "${await shown(page)}", B reads "${await shown(b.page)}"`;

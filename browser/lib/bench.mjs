@@ -542,8 +542,39 @@ export async function createWorkspace(token, name) {
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: JSON.stringify({ name }),
   });
+  if (response.status === 409) return extraWorkspace(token, name);
   if (!response.ok) throw new Error(`workspace: ${response.status} ${await response.text()}`);
   return response.json();
+}
+
+/**
+ * A further workspace for an account that already owns one (D-752: an account owns one
+ * workspace and joins others by invitation). It is made by a fresh throwaway owner
+ * (`fx.<fixture>.ws<n>.<stamp>`, purged with every fx account's workspaces at the end of a run),
+ * which seats the asking account as an admin through its invitation link, as a person joins a
+ * second workspace today. The asking account then sees, opens and manages it as before; only
+ * ownership (billing, transfer, deleting the workspace) stays with the extra owner. Not a platform
+ * grant: a granted workspace starts with no trial (D-752) and would read as locked.
+ */
+let extraOwners = 0;
+async function extraWorkspace(token, name) {
+  const me = await (await fetch(await fromNode(`${API}/api/auth/me`), { headers: { authorization: `Bearer ${token}` } })).json();
+  extraOwners += 1;
+  const email = `fx.${FIXTURE}.ws${extraOwners}.${stamp()}@bench.intelcost.io`;
+  await apiRegister(email, SEEDED.password, `Workspace owner ${extraOwners}`);
+  const ownerToken = await apiLogin(email, SEEDED.password);
+  const made = await fetch(await fromNode(`${API}/api/workspace`), {
+    method: "POST",
+    headers: { authorization: `Bearer ${ownerToken}`, "content-type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!made.ok) throw new Error(`workspace (extra owner): ${made.status} ${await made.text()}`);
+  const workspace = await made.json();
+  const invitation = await invite(ownerToken, workspace.uuid, me.email, "admin");
+  const link = new URL(invitation.link).searchParams.get("token");
+  const accepted = await apiAccept(token, link);
+  if (accepted.status !== 200) throw new Error(`seat in ${name}: ${accepted.status} ${JSON.stringify(accepted.body)}`);
+  return { ...workspace, extra_owner: { email, token: ownerToken } };
 }
 
 /** Ask for a password reset. Always 202, whatever the address. */

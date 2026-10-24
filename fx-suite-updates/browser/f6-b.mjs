@@ -16,6 +16,10 @@
 // confirm), and every row has its own Insert. The dialog's title is its name, not a heading,
 // and it ends with "Create N" when creating and "Save changes" when managing. Its preview shows
 // two decimals ("1,050.00"); the panel's figure drops trailing zeros ("1,050").
+//
+// Updated 2026-10-24 (D-709): a sub-item's rows are drawn under its item in both the Sheets panel and the
+// Takeoff panel, so every sub-item locator reads the Takeoff panel's ([data-quantity-panel]), as the item
+// rows already did. No figure or wait changed.
 
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -114,7 +118,7 @@ await run("f6-b", [
       const byName = Object.fromEntries(kids.map((k) => [k.name, k]));
       expect(byName.Mesh.formula_qty === 1050 && byName.Mesh.unit === "SF", `Mesh ${JSON.stringify(byName.Mesh)}`);
       expect(Math.abs(byName["Perimeter form"].formula_qty - 130) < 1e-9 && byName["Perimeter form"].unit === "LF", `Perimeter form ${byName["Perimeter form"].formula_qty}`);
-      await page.locator(`[data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^1\,050$/ }).waitFor({ timeout: 10000 });
+      await page.locator(`[data-quantity-panel] [data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^1\,050$/ }).waitFor({ timeout: 10000 });
       return `preview Mesh ${mesh}, Perimeter form ${perimeter}; stored 1050 SF and 130 LF; nested under Slab`;
     },
   },
@@ -139,7 +143,7 @@ await run("f6-b", [
       const nested = await apiCall(token, "PUT", `${takeoff(one)}/item/${mesh.uuid}/sub-items`, { sub_items: [{ name: "Deeper", formula_text: "PARENT", unit: "SF" }] });
       expect(nested.status === 409 && /cannot have sub-items/.test(JSON.stringify(nested.body)), `nested: ${nested.status} ${JSON.stringify(nested.body)}`);
       // The sub-item's row itself (it carries Edit and Delete buttons of its own now).
-      await page.locator(`[data-sub-item="${mesh.uuid}"]`).click({ button: "right" });
+      await page.locator(`[data-quantity-panel] [data-sub-item="${mesh.uuid}"]`).click({ button: "right" });
       await page.getByRole("menuitem").first().waitFor();
       const offered = await page.getByRole("menuitem").allTextContents();
       expect(!offered.some((t) => /sub-item/i.test(t)), `a sub-item's menu offers ${offered.join(", ")}`);
@@ -168,14 +172,14 @@ await run("f6-b", [
         await signInAt(bp, APP_B, owner.email, owner.password);
         await enterWorkspace(bp, workspace.uuid);
         await bp.goto(`${APP_B}/project/${one.uuid}/takeoff/${worlds[one.uuid].uuid}`);
-        await bp.locator(`[data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^1\,050$/ }).waitFor({ timeout: 20000 });
+        await bp.locator(`[data-quantity-panel] [data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^1\,050$/ }).waitFor({ timeout: 20000 });
         await joinedTopic(bp, `ws:${workspace.uuid}:project:${one.uuid}`);
         const parent = await detail(one, slab.uuid);
         const g = parent.geometries[0];
         const at = Date.now();
         const moved = await apiCall(token, "PATCH", `${takeoff(one)}/geometry/${g.uuid}`, { vertices_json: rect(0.1, 0.1, 80, 25), shape_meta: { closed: true }, geometry_version: g.geometry_version });
         expect(moved.status === 200, `move: ${moved.status} ${JSON.stringify(moved.body)}`);
-        await bp.locator(`[data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^2\,100$/ }).waitFor({ timeout: 10000 });
+        await bp.locator(`[data-quantity-panel] [data-sub-items="${slab.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^2\,100$/ }).waitFor({ timeout: 10000 });
         const ms = Date.now() - at;
         const reloaded = await bp.evaluate(() => performance.getEntriesByType("navigation").length > 1);
         const kids = await children(one, slab);
@@ -286,12 +290,12 @@ await run("f6-b", [
         await signInAt(bp, APP_B, owner.email, owner.password);
         await enterWorkspace(bp, workspace.uuid);
         await bp.goto(`${APP_B}/project/${two.uuid}/takeoff/${worlds[two.uuid].uuid}`);
-        await bp.locator(`[data-sub-items="${other.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^30$/ }).waitFor({ timeout: 20000 });
+        await bp.locator(`[data-quantity-panel] [data-sub-items="${other.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^30$/ }).waitFor({ timeout: 20000 });
         await joinedTopic(bp, `ws:${workspace.uuid}`);
         const at = Date.now();
         const changed = await apiCall(token, "PATCH", `${takeoff(one)}/variable/${variable.uuid}`, { default_value: 15 });
         expect(changed.status === 200, `default: ${changed.status}`);
-        await bp.locator(`[data-sub-items="${other.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^45$/ }).waitFor({ timeout: 10000 });
+        await bp.locator(`[data-quantity-panel] [data-sub-items="${other.uuid}"]`).locator("[data-sub-item-qty]").filter({ hasText: /^45$/ }).waitFor({ timeout: 10000 });
         const ms = Date.now() - at;
         const wall = (await children(one, slab)).find((k) => k.name === "Wall").formula_qty;
         expect(wall === 24, `project 1 keeps its own 12: Wall ${wall}`);
