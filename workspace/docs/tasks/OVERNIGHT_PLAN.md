@@ -40,7 +40,7 @@ for tonight.
 | 0 | Plan, report, archive of last night's | — | ☑ | (workspace) |
 | A | Data and api: migration, models, routes, bundle, joins, audit | — | ☑ | api 8cdabab |
 | B | Library page: On my list, bulk, header toggle, filter, starting list, bulk-off warning | A | ☑ | app 539084e |
-| C | Pickers: `suggest.ts`, Picker, MachineName, template editor, tier class list, Add to my equipment | A | ☐ | |
+| C | Pickers: `suggest.ts`, Picker, MachineName, template editor, tier class list, Add to my equipment | A | ☑ | app a71d085, infra 0753b3c |
 | D | Earthwork activities' Show in suggestions; Not in your equipment list; release banner line | A, C | ☐ | |
 | E | Close-out: FEATURES, SINCE_ARCHIVE, mirror, full gates and table, end-to-end smoke | A–D | ☐ | |
 | 2.1 | Restore the suite on the fx stack (setup, prod, check) | — | ☐ | |
