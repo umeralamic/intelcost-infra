@@ -347,6 +347,18 @@ export const COST_CASES = [
     ],
     expect: { labor: 880, material: 710, equipment: 333.34, all: 1923.34, laborMh: 22, line: 1923.34 },
   },
+  // --- Exports store values rounded (D-766 F0): money to cents, quantities and hours to 2 places, per-unit
+  // rates to 4, the TOTAL the sum of the stored cells. The HV copy's Building Pad Fill line, as the app
+  // computes it: 2,398.900895 CCY, 57.116687976190484 MH, 0.0238095… MH/CCY, $109.989…/hr, $6,282.2073938… labour.
+  {
+    id: "export-stored-values",
+    kind: "stored",
+    rows: [
+      { qty: 2398.900895, total_mh: 57.116687976190484, unit_mh: 0.02380952380952381, wage: 109.98900000000002, labor_cost: 6282.207393813216, unit_labor: 2.618785714285715 },
+      { qty: 0.004999, total_mh: 0, unit_mh: 0.00005, wage: 40, labor_cost: 0.005, unit_labor: 0.00005 },
+    ],
+    expect: { qty: 2398.9, total_mh: 57.12, unit_mh: 0.0238, wage: 109.99, labor_cost: 6282.21, unit_labor: 2.6188, qty2: 0, unit_mh2: 0.0001, labor_cost2: 0.01, total: 6282.22 },
+  },
   // Nothing to divide by: no figure, never a division by zero.
   { id: "units-no-quantity", kind: "units", quantity: 0, components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })], expect: { unitMaterial: null, unitLabor: null } },
 ];

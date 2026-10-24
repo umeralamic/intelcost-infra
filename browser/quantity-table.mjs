@@ -171,6 +171,16 @@ try {
         const whole = costing.computeLineCost({ quantity: c.quantity, unit: "SF", input: costing.EMPTY_COST_INPUT, unitWastage: new Map(), components: c.components.map((row) => comps.evaluateComponent(row, env)) });
         return removal.keepRates(c.keepKind, whole);
       }
+      if (c.kind === "stored") {
+        // D-766 F0: the numbers the workbook stores, not only their formats.
+        const KIND = { qty: "qty", total_mh: "qty", unit_mh: "rate", wage: "money", labor_cost: "money", unit_labor: "unitMoney" };
+        const keys = Object.keys(KIND);
+        const cols = keys.map((key) => ({ key, label: key, width: 60, kind: KIND[key] }));
+        const rows = c.rows.map((values, i) => ({ kind: "item", depth: 0, itemKey: String(i), parentKey: null, parent: false, context: false, unitEquipment: false, values, color: null }));
+        const ws = Object.values(workbook.buildWorkbook([{ name: "T", banner: null, rows }], cols, { formulas: false, grids: false, grouping: false }).Sheets)[0];
+        const at = (key, row) => ws[String.fromCharCode(65 + keys.indexOf(key)) + row]?.v;
+        return { qty: at("qty", 2), total_mh: at("total_mh", 2), unit_mh: at("unit_mh", 2), wage: at("wage", 2), labor_cost: at("labor_cost", 2), unit_labor: at("unit_labor", 2), qty2: at("qty", 3), unit_mh2: at("unit_mh", 3), labor_cost2: at("labor_cost", 3), total: at("labor_cost", 4) };
+      }
       if (c.kind === "workbook") {
         const keys = ["qty", "wastage", "qty_wastage", "multiplier", "total_qty", "unit_mh", "total_mh", "wage", "labor_cost", "unit_equipment", "equipment", "unit_material", "total_material", "subcontract", "item_cost"];
         const cols = keys.map((key) => ({ key, label: key, width: 60, kind: key === "wastage" ? "pct" : "money" }));
