@@ -15,6 +15,9 @@ the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245)
 `scaleundo`, the scale undo rows (D-642): the one mode that opens the database, for a temporary
 table of the calibration column's own type, never committed. With `roles`, the wage roles a
 determination lists (D-753 option C): its rows are here, it reads no stdin, and it prints one line.
+With `hidden`, an earthwork activity hidden from suggestions (D-759): on a temporary workspace made
+and rolled back in one transaction, every starter line role maps to the same activity, default
+production and tier with its activity hidden as shown; it reads no stdin and prints one line.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -416,7 +419,75 @@ def typed() -> int:
     return 1 if wrong else 0
 
 
+# Quantities a line of each role is priced at (the starter's ranges: small, mid and large jobs).
+HIDDEN_QTYS = (500.0, 10000.0, 250000.0)
+
+
+async def hidden() -> int:
+    """D-759: "Show in suggestions" off changes what is offered, never what prices. Resolves each
+    starter role's activity, default production and tier on a workspace made for the check, with
+    every activity shown and then hidden, inside one transaction that is rolled back."""
+    import uuid as uuid_module
+
+    from sqlalchemy import update
+
+    from app.database import SessionFactory
+    from app.features.auth.models import User
+    from app.features.equipment import production as ew
+    from app.features.equipment.models import EqCompanyActivity
+    from app.features.workspace.models import Workspace
+
+    async def resolve(session, ws_id: int, roles: list[str]) -> list[tuple]:
+        out = []
+        for role in roles:
+            act = await ew._activity_for_role(ws_id, session, 0, role)
+            if act is None:
+                out.append((role, None))
+                continue
+            tiers = await ew._tiers(session, act.id)
+            for q in HIDDEN_QTYS:
+                prod = await ew._default_production(session, act.id, q)
+                tier = ew.tier_for(tiers, prod) if prod is not None else None
+                out.append((role, act.name, q, prod, ew.tier_label(tier) if tier else None))
+        return out
+
+    async with SessionFactory() as session:
+        try:
+            stamp = uuid_module.uuid4().hex[:10]
+            user = User(email=f"qt.hidden.{stamp}@bench.invalid", password_hash="!", full_name="quantity table")
+            session.add(user)
+            await session.flush()
+            ws = Workspace(name="quantity table (rolled back)", slug=f"qt-hidden-{stamp}", owner_id=user.id)
+            session.add(ws)
+            await session.flush()
+            ws_id = ws.id
+            await ew.adopt_starter(ws_id, session)
+            st = await ew.starter(session)
+            roles = sorted({m["earthwork_role"] for m in (st["ew_line_map"] if st else [])})
+            shown = await resolve(session, ws_id, roles)
+            await session.execute(
+                update(EqCompanyActivity).where(EqCompanyActivity.workspace_id == ws_id).values(in_suggestions=False)
+            )
+            await session.flush()
+            session.expire_all()
+            hid = await resolve(session, ws_id, roles)
+        finally:
+            await session.rollback()
+    mapped = sum(1 for r in shown if r[1] is not None and r[2] == HIDDEN_QTYS[0])
+    wrong = [f"FAIL  hidden {a[0]}: shown {a[1:]}, hidden {b[1:]}" for a, b in zip(shown, hid, strict=True) if a != b]
+    if mapped == 0:
+        wrong.append("FAIL  hidden: no starter role mapped to an activity")
+    for w in wrong:
+        print(w)
+    print(f"hidden activities: {len(roles)} roles ({mapped} mapped) at {len(HIDDEN_QTYS)} quantities, {'priced the same' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["hidden"]:
+        import asyncio
+
+        sys.exit(asyncio.run(hidden()))
     if sys.argv[1:] == ["roles"]:
         sys.exit(roles())
     if sys.argv[1:] == ["typed"]:
