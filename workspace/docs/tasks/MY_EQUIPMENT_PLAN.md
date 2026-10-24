@@ -1,8 +1,7 @@
 # My equipment: plan (F34)
 
-**Status:** Accepted by the founder on 2026-10-23, with the recommended answer to all seven questions (D-759). Not
-built yet: it will start in an overnight run. Log nothing new before block A beyond D-759; record any change found
-while building as a later D-NN.
+**Status:** Accepted by the founder on 2026-10-23, with the recommended answer to all seven questions (D-759). Built
+overnight 2026-10-24 (blocks A to E, D-760), awaiting the founder's check: [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md). What the build decided is D-760.
 
 **Goal.** A workspace keeps a list of the machines it uses. Suggestions show those machines first, with the company's
 own values, and can be limited to them. The full library stays one click away, and hiding a machine never changes a

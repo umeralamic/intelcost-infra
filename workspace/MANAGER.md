@@ -1,7 +1,7 @@
 # IntelCost — Manager
 _**The project board.** Three sections — In Progress, Blocked, Planned — so a glance
 says which feature is under development right now._
-_Updated: 2026-10-22_
+_Updated: 2026-10-24_
 
 **Backlog:** [FEATURES.md](FEATURES.md) · **Rules of engagement:** [DECISIONS.md](DECISIONS.md) · **Parity checklist:** [docs/PARITY.md](docs/PARITY.md)
 
@@ -20,6 +20,7 @@ _Updated: 2026-10-22_
 
 | # | Type | Story (problem → solution) | Scope | Owner | Spec |
 |---|------|----------------------------|-------|-------|------|
+| F34 | Feature | An estimator's pickers offer all 628 library machines, most of which the company never runs. → My equipment: the workspace's own list comes first with its own values, "Show my equipment only" folds the rest into "Search the full library", and earthwork activities can be left out of suggestions; nothing that prices reads the list. **Built overnight 2026-10-24 (D-759, D-760), awaiting the founder's check: [OVERNIGHT_REPORT.md](docs/tasks/OVERNIGHT_REPORT.md).** | Be Fe | Umer | [MY_EQUIPMENT_PLAN.md](docs/tasks/MY_EQUIPMENT_PLAN.md) |
 | F33 | Feature | An Equipment cost component is a typed rate and a duration, with no basis for either: no rental periods, owned rates, fuel, mob/demob, production or location. → The Equipment Library: 628 size classes from the catalog with rental, owned and operated rates, fuel, transport and production, resolved national → workspace → project; a picker in the component; production drives the hours and the spread runs together (D-724); earthwork production tiers (D-727); the library page, imports and releases. **Planned and answered 2026-10-23 (D-718 to D-729); all 14 blocks built overnight 2026-10-23 (D-730 to D-743), awaiting the founder's review: [OVERNIGHT_REPORT.md](docs/tasks/OVERNIGHT_REPORT.md).** | Be Fe | Umer | [EQUIPMENT_LIBRARY_PLAN.md](docs/tasks/EQUIPMENT_LIBRARY_PLAN.md) |
 | F32 | Feature | Items, sub-items and cost components show in the order they were made (the Sheets panel by name), and none can be moved. → Drag a row before or after another: items within their folder, sub-items within their parent, cost rows within their host; one order in both panels (D-716). **Built 2026-10-23, smoke-tested; awaiting the founder's click check.** | both | Claude | [reorder_rows_tasks.md](docs/tasks/reorder_rows_tasks.md) |
 | F31 | Feature | A curved wall, curb or slab edge traced straight cannot be bent afterwards, and a run with an arc loses its point handles. → Arc points: insert one on an edge, convert a corner (menu or A), drag it to bend, untick to a corner or straighten; runs with arcs edited point by point with their arcs kept (D-713). **Built 2026-10-22, Blocks A to C, smoke-tested; awaiting the founder's click check.** | both | Claude | [arc_points_tasks.md](docs/tasks/arc_points_tasks.md) |

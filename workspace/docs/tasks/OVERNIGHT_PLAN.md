@@ -42,7 +42,7 @@ for tonight.
 | B | Library page: On my list, bulk, header toggle, filter, starting list, bulk-off warning | A | ☑ | app 539084e |
 | C | Pickers: `suggest.ts`, Picker, MachineName, template editor, tier class list, Add to my equipment | A | ☑ | app a71d085, infra 0753b3c |
 | D | Earthwork activities' Show in suggestions; Not in your equipment list; release banner line | A, C | ☑ | api bcf5e05, app 58f63f2, infra 17db4af |
-| E | Close-out: FEATURES, SINCE_ARCHIVE, mirror, full gates and table, end-to-end smoke | A–D | ☐ | |
+| E | Close-out: FEATURES, SINCE_ARCHIVE, mirror, full gates and table, end-to-end smoke | A–D | ☑ | (workspace) |
 | 2.1 | Restore the suite on the fx stack (setup, prod, check) | — | ☐ | |
 | 2.2 | Full run; classify every failure (a/b/c); fix | 2.1 | ☐ | |
 | 2.3 | New fixtures for what was built since the archive (list in the report) | 2.1 | ☐ | |
