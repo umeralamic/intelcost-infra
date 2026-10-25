@@ -151,6 +151,22 @@ try {
         const labor = sums.summarise("labor", [line]);
         return { labor: of("labor"), material: of("material"), equipment: of("equipment"), all: of("all"), laborMh: labor.filter((r) => r.depth === 0).reduce((s, r) => s + Number(r.values.mh ?? 0), 0), line: cost.itemCost };
       }
+      if (c.kind === "rules") {
+        // D-763: the line under rules 1 and 2; its component rows (each as the grid shows it) add up to it.
+        const evals = c.components.map((row) => comps.evaluateComponent(row, { parent: 0, qty: c.quantity }));
+        const at = (rules) => costing.computeLineCost({ quantity: c.quantity, unit: "SF", input: c.input, unitWastage: new Map(), multiplier: c.multiplier, components: evals, netQty: c.quantity, rules });
+        const r1 = at(1), r2 = at(2);
+        const m = c.multiplier ?? 1;
+        const rows = evals.reduce((t, e) => t + (e.kind === "material" ? costing.pricedMaterial(e, r2.wastagePct).total : e.total) * (e.mode === "unit" ? m : 1), 0);
+        return { r1labor: r1.laborCost, r1material: r1.totalMaterialCost, r1equipment: r1.equipmentCost, r2labor: r2.laborCost, r2mh: r2.totalManHours, r2material: r2.totalMaterialCost, r2equipment: r2.equipmentCost, r2item: r2.itemCost, r2totalQty: r2.totalQty, varies: r2.wastageVaries ?? "", rows };
+      }
+      if (c.kind === "parent") {
+        // D-764 B3: a parent = Σ its sub-items + its own components on its own quantity, no wastage of its own.
+        const one = (p) => costing.computeLineCost({ quantity: p.quantity, unit: "SF", input: p.input, unitWastage: new Map(), netQty: p.quantity, rules: 2 });
+        const children = costing.sumCosts(c.parts.map(one));
+        const own = costing.computeLineCost({ quantity: c.parentQty, unit: "LF", input: { ...costing.EMPTY_COST_INPUT, wastage_pct_override: 0 }, unitWastage: new Map(), components: c.own.map((row) => comps.evaluateComponent(row, { parent: c.parentQty, qty: c.parentQty })), netQty: c.parentQty, rules: 2 });
+        return { children: children.itemCost, own: own.itemCost, parent: costing.sumCosts([children, own]).itemCost };
+      }
       if (c.kind === "balance") {
         const out = sums.balancedRows(c.rows, ["total"]);
         const v = (k) => out.find((r) => r.key === k).values.total;
@@ -1702,7 +1718,8 @@ for (const [i, c] of COST_CASES.entries()) {
       for (const [k, v] of Object.entries(want)) if (!cent(got?.[k], v)) wrong.push(`${c.id}.${field}.${k}: ${got?.[k]}, expected ${v}`);
     } else if (want === null) {
       if (got !== null) wrong.push(`${c.id}.${field}: ${got}, expected null`);
-    } else if (typeof want === "boolean") {
+    } else if (typeof want === "boolean" || typeof want === "string") {
+      // A text figure (D-763's "varies" tip) is compared exactly, as a flag is.
       if (got !== want) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
     } else if (!cent(got, want)) wrong.push(`${c.id}.${field}: ${got}, expected ${want}`);
   }

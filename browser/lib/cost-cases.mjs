@@ -396,6 +396,73 @@ export const COST_CASES = [
     ],
     expect: { crafts: 100, first: 33.34, b: 0.01, c: 0, total: 100.01 },
   },
+  // --- Pricing rules 2 (D-763 B2): wastage is material's, by component; the rest on Qty × multiplier --------
+  // The drywall sub-item, 1,600 SF, line wastage 10 %: sheets QTY/32 = 50 + 10 % = 55, rounded up to 1 →
+  // 55 × $14 = $770; a crew of 2 at $40, 100 SF/hr: 16 hr × 2 = 32 MH on the NET 1,600 SF → $1,280. Item
+  // $2,050. Under rules 1 (the saved lines' arithmetic, unchanged) the labour rides the wastage: 17.6 hr ×
+  // 2 × $40 = $1,408, and the sheets 50 × 1.1 × $14 = $770.
+  {
+    id: "rules2-drywall",
+    kind: "rules",
+    quantity: 1600,
+    input: rates({ wastage_pct_override: 10 }),
+    components: [
+      component("material", { name: "Drywall 4x8", qty_formula: "QTY/32", unit: "EA", unit_price: 14, round_to: 1 }),
+      component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 40 }], production_rate: 100, production_basis: "units_per_hr" }),
+    ],
+    expect: { r1labor: 1408, r1material: 770, r2labor: 1280, r2mh: 32, r2material: 770, r2item: 2050, rows: 2050 },
+  },
+  // The same line × 2 (a folder multiplier): 55 sheets × 2 = 110 → $1,540; 64 MH → $2,560; the rows add
+  // up to the line's $4,100.
+  {
+    id: "rules2-drywall-x2",
+    kind: "rules",
+    quantity: 1600,
+    multiplier: 2,
+    input: rates({ wastage_pct_override: 10 }),
+    components: [
+      component("material", { name: "Drywall 4x8", qty_formula: "QTY/32", unit: "EA", unit_price: 14, round_to: 1 }),
+      component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 40 }], production_rate: 100, production_basis: "units_per_hr" }),
+    ],
+    expect: { r2labor: 2560, r2mh: 64, r2material: 1540, r2item: 4100, rows: 4100 },
+  },
+  // Rounding against the wastage: 1,000 SF / 32 = 31.25 sheets + 10 % = 34.375 → 35 sheets × $14 = $490.
+  // A lump allowance (1 LS $500) takes no wastage (Q3): $500, so material $990. Typed Unit Equipment $2/SF
+  // extends by the net 1,000 SF: $2,000 (rules 1: 1,100 SF → $2,200).
+  {
+    id: "rules2-round-lump-typed",
+    kind: "rules",
+    quantity: 1000,
+    input: rates({ wastage_pct_override: 10, unit_equipment_cost: 2 }),
+    components: [
+      component("material", { name: "Drywall 4x8", qty_formula: "QTY/32", unit: "EA", unit_price: 14, round_to: 1 }),
+      component("material", { name: "Allowance", pricing_mode: "lump", qty_formula: "1", unit: "LS", unit_price: 500 }),
+    ],
+    expect: { r2material: 990, r2equipment: 2000, r1equipment: 2200, rows: 990 },
+  },
+  // Wastage that differs by component reads "varies" (the founder's change): Board takes the line's 10 %,
+  // Screws their own 5 %; Total Qty is then the net Qty × multiplier, 100.
+  {
+    id: "rules2-varies",
+    kind: "rules",
+    quantity: 100,
+    input: rates({ wastage_pct_override: 10 }),
+    components: [
+      component("material", { name: "Board", unit_price: 3 }),
+      component("material", { name: "Screws", unit_price: 0.5, wastage_pct: 5 }),
+    ],
+    expect: { varies: "Board: 10% · Screws: 5%", r2totalQty: 100, r2material: 382.5 },
+  },
+  // A parent's own components (D-764 B3): sub-items $400 of material, the parent's own labour on its own
+  // 20 LF (2 Laborers at $40, 10 LF/hr: 2 hr × 2 = 4 MH, $160): the parent reads $560 under rules 2.
+  {
+    id: "rules2-parent-own",
+    kind: "parent",
+    parentQty: 20,
+    parts: [{ quantity: 100, input: rates({ unit_material_cost: 2 }) }, { quantity: 50, input: rates({ unit_material_cost: 4 }) }],
+    own: [component("labor", { crew: [{ role: "Laborer", count: 2, hourly_wage: 40 }], production_rate: 10, production_basis: "units_per_hr" })],
+    expect: { children: 400, own: 160, parent: 560 },
+  },
   // Nothing to divide by: no figure, never a division by zero.
   { id: "units-no-quantity", kind: "units", quantity: 0, components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })], expect: { unitMaterial: null, unitLabor: null } },
 ];
