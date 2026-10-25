@@ -23448,9 +23448,40 @@ each change follows a logged decision.
 
 **Status:** accepted (the founder asked for it on 2026-10-25).
 
-- **Shared equipment, Manage subcontractors… and Equipment settings…** are always shown as plain lines under
+- **Shared Equipment, Manage Subcontractors and Equipment Settings** are always shown as plain lines under
   the Needs attention line in the Estimating sidebar, under their own Setup heading, not tucked in a menu.
 - **Update all (n lines)…** goes with them, shown only when lines are waiting and the person may price, as
   before.
+- **Their look:** title case, no trailing ellipsis (Update All (n lines) too). Shared Equipment wears the
+  Equipment cost component's excavator and Manage Subcontractors the Subcontract component's handshake.
 - **The Setup button** next to Export is gone. A view-only estimate shows none of these lines, as it showed no
   Setup button.
+
+## D-778: Group by User, an always-on User filter, and the Lines group renamed Takeoff (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **Group by:** the menu's "Lines" group is now "Takeoff". **User** is its last entry: a heading for each person
+  who made a line (its Created by), alphabetically, with Unknown last.
+- **Filter › User** is always offered, not only when two or more people made lines. It lists everyone who
+  worked on the estimate's lines: who made one, and who last changed one. It keeps a line that person made or
+  last changed.
+- **A shared link without presence** shows neither: no User filter values and no Group by User, as it shows no
+  Created by or Modified by.
+
+## D-779: Group by heads the Estimating sidebar (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **The sidebar's order, top down:** Group by (with Show levels), Filter, Reports, Needs attention, Setup, and the
+  bid summary at the foot. The Hide the sidebar button moves up with Group by's heading.
+
+## D-780: The estimate table's scrollbar is thin and ruled (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **The table's scrollbars** are 8 px, with a rounded thumb and no arrows. A line runs down the vertical bar's left
+  side and along the horizontal bar's top, in the table outline's own colour and width (--est-frame,
+  --est-line-w), so the bar sits between two matching lines.
+- **One class,** `scrollbar-thin-ruled` in `index.css`, tokens only. Firefox, which has no track border, gets its
+  thin scrollbar.
