@@ -25,10 +25,7 @@ if (!root) throw new Error("usage: node fx-suite-patch.mjs <restored suite dir> 
 /** Fixtures not run on the fx stack, and why (D-611). */
 export const SKIPPED = {
   "f8-s5": "stops Redis, which the running bench shares",
-  "f5-s2": "stops the worker and drops its queue",
   "f4-s27": "stops MinIO, which the running bench shares",
-  "f5-s9": "runs today's seed.py --reset with a flag it no longer takes",
-  "d27-uploads": "needs the beat scheduler, which the fx stack does not run",
 };
 
 const ADDRESSES = [
@@ -50,6 +47,10 @@ const SERVICES = [
   [/docker compose (stop|start|restart) api(?=[\s>])/g, "docker compose --profile fx $1 api-fx"],
   [/docker compose up -d api(?=[\s>])/g, "docker compose --profile fx up -d --no-deps api-fx"],
   [/docker compose --profile realtime restart api-b(?=[\s>])/g, "docker compose --profile fx restart api-fx-b"],
+  // f5-s2 stops and starts the fx stack's worker, and f5-s2 and d27-uploads read the fx stack's beat (D-770);
+  // f5-s9's seed runs as it is (its flags are today's, D-770).
+  [/docker compose (stop|start) worker(?=[\s>])/g, "docker compose --profile fx $1 worker-fx"],
+  [/exec -T beat /g, "exec -T beat-fx "],
 ];
 
 const swap = (text, pairs) => pairs.reduce((t, [a, b]) => (typeof a === "string" ? t.split(a).join(b) : t.replace(a, b)), text);
@@ -102,8 +103,7 @@ patch(path.join(root, "regress.sh"), (t) => {
   // A patched suite's skip line is written again from SKIPPED (refresh), so a fixture taken off the list runs.
   s = s.replace(/^ {6}[a-z0-9| -]+\) echo "SKIP \$name" >&2; continue ;;$/m, `      ${skip}) echo "SKIP $name" >&2; continue ;;`);
   if (!s.includes('echo "SKIP $name"')) s = s.replace("      f4-s12 | f5-demo | *-outage | *-restart) continue ;;", `      f4-s12 | f5-demo | *-outage | *-restart) continue ;;\n      ${skip}) echo "SKIP $name" >&2; continue ;;`);
-  s = s.replace(/^d27-uploads\b.*$/m, "");
-  s = s.replace('  echo d27-uploads   # D-27\'s sweep of abandoned uploads (a drive, no browser)', "  # d27-uploads: skipped on the fx stack (D-611)");
+  // d27-uploads runs on the fx stack since D-770 (its beat is beat-fx).
   return s;
 });
 

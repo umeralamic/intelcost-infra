@@ -436,6 +436,18 @@ services:
       "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads,previews -n fx@%h"
       /srv/app
 
+  # The beat scheduler on the fx stack (D-770): its sweeps run on the fx database, Redis and bucket
+  # only, so d27-uploads and f5-s2 read its schedule; the bench's own beat stays the founder's call.
+  beat-fx:
+    extends: beat
+    profiles: ["fx"]
+    env_file: !override
+      - path: ../intelcost-app-fastapi/.env
+    environment: *fx-env
+    depends_on: !override
+      worker-fx:
+        condition: service_started
+
   app-fx:
     extends: app
     profiles: ["fx"]

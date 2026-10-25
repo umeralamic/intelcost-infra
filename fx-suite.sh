@@ -22,7 +22,7 @@
 set -u
 cd "$(dirname "$0")"
 TAG=fixtures-archive-2026-09-28
-FX_SERVICES="api-fx api-fx-b worker-fx app-fx app-fx-b stripe-fake-fx"
+FX_SERVICES="api-fx api-fx-b worker-fx beat-fx app-fx app-fx-b stripe-fake-fx"
 # The host gateway's address, which the api, the worker and the containerised browser all reach
 # MinIO at (Docker Desktop: host.docker.internal).
 host=$(docker compose exec -T api python -c "import socket; print(socket.gethostbyname('host.docker.internal'))" 2>/dev/null | tr -d '\r' | tail -1)
