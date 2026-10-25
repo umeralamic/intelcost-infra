@@ -23362,8 +23362,8 @@ Estimating already shows.
 **Status:** accepted (the founder's step 5: rerun the estimate fixtures on the new build). No assertion is weakened;
 each change follows a logged decision.
 
-- **D-766 F2, controls moved:** c14 opens Format from the table's toolbar. c32, c35 and c38 open Shared equipment
-  and Equipment settings from its Setup menu.
+- **D-766 F2, controls moved:** c14 opens Format from the table's toolbar. c32, c35, c36 and c38 open Shared
+  equipment and Equipment settings from its Setup menu (c36 added 2026-10-25).
 - **D-766 F2, Needs attention:** c15 opens its list and picks "Every line that needs attention", then "Show every
   line" (the toggle is gone).
 - **D-766 F0:** c15 drops the cost report's second money column ("Labor cost"); its own type's TOTAL is still
@@ -23372,3 +23372,74 @@ each change follows a logged decision.
   "Undercut excavation", "Undercut replacement". In Estimating each line takes its own row among rows of the same name.
 - **D-763:** f9-estimating's 10 % LF wastage step reads Footing's labour $60,000, not $66,000. A new project prices
   under rules 2, so labour runs on the net 100 LF × $600; Qty with Wastage still reads 110 LF.
+
+## D-772: Every total is the sum of the parts it shows (accepted 2026-10-25)
+
+**Status:** accepted (the founder's answer 1 to the run report).
+
+- **The bid:** the bid total is the sum of the rounded cost-type totals, everywhere: the screen, the export and the
+  bid summary. On the HV copy that is $994,208.70, the four reports added as they read.
+- **Every level adds up as shown:**
+  - each row's Item Cost is the sum of its shown types
+  - each group's and the TOTAL's figures are the sum of their rows
+  - each Cost components list's rows add up to their parent, and the list to its total
+  - the Full estimate list's TOTAL is its four sections added
+- **How:** the rows are balanced to whole cents together, by largest remainder, so each type's column still adds to
+  its own rounded total.
+  - **Side effect:** a line can read a cent apart from its own figure rounded alone. When the set of rows changes,
+    a cent can move from one line to another.
+  - **The export:** its stored values are the same cents.
+- **The guest page's fallback** prices under each line's pricing rules (D-763), with a parent's own components
+  (D-764 B3), as Estimating does. The share bundle carries the project's and each line's rules.
+
+## D-773: A person may rename a Calculate line (accepted 2026-10-25)
+
+**Status:** accepted (the founder's answer 2).
+
+- **The api:** accepts a name on a Calculate line, beside where it sits and how it looks (D-352).
+- **The Takeoff panel:** a double-click renames it in place, as any line.
+- **The next Calculate keeps the name (D-768):** a line whose name differs from the name Calculate last wrote
+  (`earthwork_name`) is left alone. A name set back to Calculate's own follows Calculate again.
+
+## D-774: Utility lines are named by the work, the run their Feature (accepted 2026-10-25)
+
+**Status:** accepted (the founder's answer 3). No money changes.
+
+- **Work names,** as D-768's earthwork lines: "Trench excavation, Clay", "Pipe bedding, #57 stone", "Pipe zone,
+  Sand", "Trench backfill, Native", "Trench protection, Sloped 1:1 8–10 ft", "Trench dewatering", "Rock excavation",
+  the structure lines likewise.
+  - The unit says bank, loose or compacted, so the name no longer does.
+- **Pipe lines:** keep their size and material as the name: `8" PVC SDR-35, 6–8 ft deep` (the depth range kept,
+  since the lines are split by it).
+- **The run is the Feature** (Sanitary Sewer, Storm…): the heading under Classification and the Feature column.
+- **Applied on the next Calculate;** a renamed line keeps its name (D-773).
+
+## D-775: Equipment › Cost components lists each equipment once (accepted 2026-10-25)
+
+**Status:** accepted (the founder's answer 6).
+
+- **One top row per equipment across the project:** a library class in any mode, shared or not, labelled by its
+  class; typed equipment by name, whatever its basis.
+- **Each row shows,** across the project, the total count, EH, days and cost.
+- **Under it:**
+  - each activity that uses it ("Place and compact")
+  - each shared spread ("Place and compact (shared spread)"), with any Unallocated part
+- **A shared equipment's count and days** count once, however many lines it spreads over.
+
+## D-776: Deleting an activity releases the lines it priced on their own (accepted 2026-10-25)
+
+**Status:** accepted (the founder's answer 7: fix what is a bug).
+
+- **The finding:** the HV copy's 14 lines flagged "Mob/demob counted more than once" were priced per line by TEST
+  activities that a fixture drive made on 2026-10-23 at 10:34 and deleted at 19:09.
+  - `delete_activity` dropped their site spreads but left the per-line spreads, which still named the deleted
+    activity, with the tier's machines and crew on every line.
+  - Each line billed its own rental and mob, and no activity now maps those roles.
+- **The fix:**
+  - `delete_activity` now releases every unedited line it priced on its own, in every project, as a retired line
+    is released.
+  - The next Calculate releases a line whose spread names an activity that no longer exists (`_release_orphan`).
+  - Migration d776 released the ones already there: 14 lines and 34 components on the bench, all on the
+    zz Equip HV copy fixture workspace.
+  - A line a person edited keeps its machines.
+- **The HV copy:** $994,208.70 → $943,321.78 (Labor −$1,485.86, Equipment −$49,401.06).

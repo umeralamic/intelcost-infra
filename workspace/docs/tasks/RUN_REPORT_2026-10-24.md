@@ -67,8 +67,7 @@ On each, man-hours fell to 0.536× and equipment to 0.787×. Every other line is
 - If you set A3 to 2,100 CCY/day on the copy, the figure is right and nothing is owed.
 - If you did not, someone used your account in that session.
 - Either way, the audit's $994,208.69 is this edit's figure, and every sidebar total in this report is checked against it.
-EOF
-echo ok
+
 ## 1. Reports and side panel (D-766, D-767): F0, F1, F2, F3
 
 ### F0 (app 7e015ce, infra bff6afe)
