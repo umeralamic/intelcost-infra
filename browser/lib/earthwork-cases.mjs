@@ -6,6 +6,8 @@
 //
 // A run is { item, label, kind: "contour" | "spot_elevation" | "boundary", surface, elevation,
 // points: [[x, y], …] } in fractions of the page, elevation in feet.
+// Updated 2026-10-24 (D-768): Calculate's lines are named by their work, never their feature ("Cut", "Fill",
+// "Strip topsoil (6\")"); the feature is the line's heading and Feature column. Every name expected below follows.
 
 import { readFileSync } from "node:fs";
 
@@ -869,7 +871,7 @@ export const EARTHWORK_CASES = [
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 100, fillCY: 300 }], stripAreas: [{ id: "s1", label: "S", depthFt: 0.5, areaSF: 1, volumeCY: 50 }], stripMeta: [{ id: "s1", name: "S", disposition: "reuse", reuseKind: "general" }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 } },
     expect: {
       roles: "strip:s1 strip_reuse_fill:s1 cut:remainder fill:remainder soil_import:__soil_import__",
-      "strip:s1:name": 'Strip Topsoil (6") — S (bank)',
+      "strip:s1:name": 'Strip topsoil (6")',
       "strip_reuse_fill:s1": 50,
       "soil_import:__soil_import__": 187.5,
       // D-177: the import's bank figure in brackets, 300 - 150 = 150 BCY; fill is compacted.
@@ -909,13 +911,13 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "undercut:pad undercut_reuse_fill:pad undercut_replace:pad prep:pad cut:remainder fill:remainder soil_import:__soil_import__",
       "undercut:pad": 10,
-      "undercut:pad:name": 'Undercut Excavation (24") — Pad (bank)',
+      "undercut:pad:name": 'Undercut excavation (24")',
       "undercut_reuse_fill:pad": 9,
       "undercut_reuse_fill:pad:unit": "CCY",
       "undercut_replace:pad": 10,
-      "undercut_replace:pad:name": "Undercut Replacement Fill: Select Fill — Pad (compacted in place)",
+      "undercut_replace:pad:name": "Undercut replacement fill, Select Fill",
       "prep:pad": 135,
-      "prep:pad:name": 'Prepare Subgrade (12", 2 lifts) — Pad',
+      "prep:pad:name": 'Prepare subgrade (12", 2 lifts)',
       "soil_import:__soil_import__": (201 / 0.9) * 1.25,
     },
   },
@@ -936,10 +938,10 @@ export const EARTHWORK_CASES = [
       "undercut:pad:unit": "BCM",
       "undercut_haul:pad": 12.5,
       "undercut_haul:pad:unit": "LCM",
-      "undercut:pad:name": "Undercut Excavation (15.2cm) — Pad (bank)",
+      "undercut:pad:name": "Undercut excavation (15.2cm)",
       "prep:pad": 9.290304,
       "prep:pad:unit": "M²",
-      "prep:pad:name": "Prepare Subgrade (15.2cm, 1 lift) — Pad",
+      "prep:pad:name": "Prepare subgrade (15.2cm, 1 lift)",
     },
   },
   // D-405 Soil Stabilization, by hand: 10,000 SF = 1,111.1 SY; tons = SF x ft x pcf x % / 2000.
@@ -965,7 +967,7 @@ export const EARTHWORK_CASES = [
       "stabilize:pad": 10000 / 9,
       "stabilize:pad:unit": "SY",
       // A count stored before D-406 reads as its thickness, depth / count: here the depth itself.
-      "stabilize:pad:name": `Pad — Soil Stabilization, ${c.agents.map(([a, p]) => `${a} ${p}%`).join(" + ")}, ${c.depth} in ${c.depth} lifts (1 lift)`,
+      "stabilize:pad:name": `Soil stabilization, ${c.agents.map(([a, p]) => `${a} ${p}%`).join(" + ")}, ${c.depth} in ${c.depth} lifts (1 lift)`,
       "stabilize_mix:pad": 10000 / 9,
       "stabilize_mix:pad:unit": "SY",
       "stabilize_mix:pad:name": "Mix and Compact",
@@ -1005,7 +1007,7 @@ export const EARTHWORK_CASES = [
     expect: {
       "stabilize:pad": 929.0304,
       "stabilize:pad:unit": "M²",
-      "stabilize:pad:name": "Pad — Soil Stabilization, Hydrated Lime 6%, 30.5cm in 30.5cm lifts (1 lift)",
+      "stabilize:pad:name": "Soil stabilization, Hydrated Lime 6%, 30.5cm in 30.5cm lifts (1 lift)",
       "stabilize_agent_1:pad": 29.93709642,
       "stabilize_agent_1:pad:unit": "TONNE",
       "stabilize_agent_1:pad:name": "Hydrated Lime (6% of dry wt @ 1,762 kg/m³)",
@@ -1029,9 +1031,9 @@ export const EARTHWORK_CASES = [
       roles: "prep:a prep:b cut:remainder fill:remainder",
       "prep:a": 135,
       "prep:a:unit": "SF",
-      "prep:a:name": 'Pad — Compacted Subgrade, 12"',
+      "prep:a:name": 'Compacted subgrade, 12"',
       "prep:b": 200,
-      "prep:b:name": 'Drive — Scarify, Moisture Condition & Compact, 6" in 6" lifts (1 lift)',
+      "prep:b:name": 'Scarify, moisture condition and compact, 6" in 6" lifts (1 lift)',
     },
   },
   // D-406 2, by hand: lifts = depth / thickness rounded up. 24 / 8 = 3; 20 / 8 = 2.5 → 3;
@@ -1053,13 +1055,13 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       "prep:a": 900,
-      "prep:a:name": 'Pad — Scarify, Moisture Condition & Compact, 24" in 8" lifts (3 lifts)',
-      "prep:b:name": 'Drive — Scarify, Moisture Condition & Compact, 20" in 8" lifts (3 lifts, 95% Std Proctor)',
-      "stabilize:c:name": 'Lot — Soil Stabilization, Hydrated Lime 6%, 12" in 12" lifts (1 lift)',
+      "prep:a:name": 'Scarify, moisture condition and compact, 24" in 8" lifts (3 lifts)',
+      "prep:b:name": 'Scarify, moisture condition and compact, 20" in 8" lifts (3 lifts, 95% Std Proctor)',
+      "stabilize:c:name": 'Soil stabilization, Hydrated Lime 6%, 12" in 12" lifts (1 lift)',
       "stabilize:c": 10000 / 9,
       "stabilize_agent_1:c": 33,
       // The founder's row: 2,288.39 SY = 20,595.54 SF; x 2 ft x 110 x 0.06 / 2000 = 135.93 TON.
-      "stabilize:d:name": 'Yard — Soil Stabilization, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
+      "stabilize:d:name": 'Soil stabilization, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
       "stabilize:d": 20595.540231 / 9,
       "stabilize_mix:d": 20595.540231 / 9,
       "stabilize_agent_1:d": (20595.540231 * 2 * 110 * 0.06) / 2000,
@@ -1090,7 +1092,7 @@ export const EARTHWORK_CASES = [
       "step:native": 10, "step:demand": 890, "step:net": 210, "step:export_bank": 210, "step:swell": 1.25, "step:export": 262.5,
       net: 210,
       "soil_export:__soil_export__": 262.5,
-      "prep:t2:name": 'T2 — Scarify, Moisture Condition & Compact, 8" in 4" lifts (2 lifts, 95% Std Proctor)',
+      "prep:t2:name": 'Scarify, moisture condition and compact, 8" in 4" lifts (2 lifts, 95% Std Proctor)',
     },
   },
   // Not suitable: all 500 BCY of cut leaves (x 1.3 = 650 LCY); fill 300 CCY x 1.2 = 360 BCY comes
@@ -1128,7 +1130,7 @@ export const EARTHWORK_CASES = [
       "undercut:pad": 20000 / 27,
       "undercut_haul:pad": (20000 / 27) * 1.25,
       "undercut_replace:pad": 20000 / 27,
-      "undercut_replace:pad:name": "Undercut Replacement Fill: Engineered Fill — Pad (compacted in place)",
+      "undercut_replace:pad:name": "Undercut replacement fill, Engineered Fill",
     },
   },
   // The same, imported with an 8" lift thickness: the lifts join the fill line's name.
@@ -1141,7 +1143,7 @@ export const EARTHWORK_CASES = [
       features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 10000, volumeCF: 20000, material: "Engineered Fill", disposition: "haul_off", native: null, liftFt: 8 / 12 }, prep: null }],
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
-    expect: { "undercut_replace:pad:name": 'Undercut Replacement Fill: Engineered Fill, 24" in 8" lifts (3 lifts) — Pad (compacted in place)' },
+    expect: { "undercut_replace:pad:name": 'Undercut replacement fill, Engineered Fill, 24" in 8" lifts (3 lifts)' },
   },
   // Native, moisture conditioned: one 740.74 CY line, no undercut export or import. Suitable,
   // cut 1,000: surplus = 1,000 - 740.74 x 0.10 = 925.926 BCY, exported x 1.25 = 1,157.41 LCY.
@@ -1158,7 +1160,7 @@ export const EARTHWORK_CASES = [
       roles: "undercut_native:pad cut:remainder fill:remainder soil_export:__soil_export__",
       "undercut_native:pad": 20000 / 27,
       "undercut_native:pad:unit": "CY",
-      "undercut_native:pad:name": 'Pad — Undercut & Recompact Native Soil, 24" in 8" lifts (3 lifts)',
+      "undercut_native:pad:name": 'Undercut and recompact native soil, 24" in 8" lifts (3 lifts)',
       "soil_export:__soil_export__": (1000 - (20000 / 27) * 0.1) * 1.25,
     },
   },
@@ -1192,7 +1194,7 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad cut:remainder fill:remainder",
       "undercut_stabilize:pad": 20000 / 27,
-      "undercut_stabilize:pad:name": 'Pad — Undercut & Stabilize Native Soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
+      "undercut_stabilize:pad:name": 'Undercut and stabilize native soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
       "undercut_stabilize_mix:pad": 20000 / 27,
       "undercut_stabilize_mix:pad:name": "Excavate & Recompact",
       "undercut_agent_1:pad": 66,
@@ -1214,7 +1216,7 @@ export const EARTHWORK_CASES = [
     expect: {
       "undercut_stabilize:pad": 20000 / 35.3146667,
       "undercut_stabilize:pad:unit": "M3",
-      "undercut_stabilize:pad:name": "Pad — Undercut & Stabilize Native Soil, Hydrated Lime 6%, 61cm in 30.5cm lifts (2 lifts)",
+      "undercut_stabilize:pad:name": "Undercut and stabilize native soil, Hydrated Lime 6%, 61cm in 30.5cm lifts (2 lifts)",
       "undercut_agent_1:pad": 66 * 0.90718474,
       "undercut_agent_1:pad:unit": "TONNE",
     },
@@ -1232,7 +1234,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      "stabilize:pad:name": 'Pad — Soil Stabilization, Hydrated Lime 40 lb/SY, 12" in 12" lifts (1 lift)',
+      "stabilize:pad:name": 'Soil stabilization, Hydrated Lime 40 lb/SY, 12" in 12" lifts (1 lift)',
       "stabilize_agent_1:pad": ((10000 / 9) * 40) / 2000,
       "stabilize_agent_1:pad:name": "Hydrated Lime (40 lb/SY)",
     },
@@ -1252,8 +1254,8 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       "prep:a": 500,
-      "prep:a:name": 'Pad — Compacted Subgrade, 12" (95% Std Proctor)',
-      "prep:b:name": 'Walk — Compacted Subgrade, 6" (100% Standard Proctor)',
+      "prep:a:name": 'Compacted subgrade, 12" (95% Std Proctor)',
+      "prep:b:name": 'Compacted subgrade, 6" (100% Standard Proctor)',
     },
   },
   // --- Block F (D-142): what the api writes, in Q32's order -------------------------------
@@ -1285,14 +1287,14 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "strip:s1 strip_stockpile:s1 strip:s2 strip_reuse_topsoil:s2 undercut:pad undercut_stockpile:pad undercut_replace:pad cut:park fill:park cut:remainder fill:remainder soil_export:__soil_export__ soil_import:__soil_import__",
       "strip_stockpile:s1": 125,
-      "strip_stockpile:s1:name": "Strip Topsoil — North → Stockpile on Site (loose)",
+      "strip_stockpile:s1:name": "Strip topsoil, stockpile on site",
       "strip_reuse_topsoil:s2": 40,
       "strip_reuse_topsoil:s2:unit": "BCY",
-      "strip:s2:name": 'Strip Topsoil (4") — Lawn (bank)',
+      "strip:s2:name": 'Strip topsoil (4")',
       "undercut_stockpile:pad": 12.5,
-      "undercut_replace:pad:name": "Undercut Replacement Fill: Crushed Stone #57 — Pad (compacted in place)",
-      "cut:park:name": "Parking Cut",
-      "fill:remainder:name": "Remaining Site Fill",
+      "undercut_replace:pad:name": "Undercut replacement fill, Crushed Stone #57",
+      "cut:park:name": "Cut",
+      "fill:remainder:name": "Fill",
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
       "soil_import:__soil_import__": 100,
