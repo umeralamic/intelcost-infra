@@ -386,12 +386,12 @@ export const UTILITY_CASES = [
     lines: true,
     expect: {
       lines: [
-        ["8\" PVC SDR-35 Pipe, 6–8 ft deep — Sanitary Sewer", "LF", 100, "utility_pipe", "site_utilities.sanitary"],
-        ["Trench Excavation, Clay (bank) — Sanitary Sewer", "BCY", 325.93, "utility_trench_excavation", "site_utilities.sanitary"],
-        ["Pipe Bedding, #57 stone (compacted) — Sanitary Sewer", "CCY", 6.48, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
-        ["Pipe Zone, Sand (compacted) — Sanitary Sewer", "CCY", 34.46, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
-        ["Trench Backfill, Native (compacted) — Sanitary Sewer", "CCY", 283.56, "utility_backfill", "site_utilities.sanitary"],
-        ["Trench Protection, Sloped 1:1 8–10 ft — Sanitary Sewer", "LF", 100, "trench_protection", "earthwork.trench_protection"],
+        ["8\" PVC SDR-35, 6–8 ft deep", "LF", 100, "utility_pipe", "site_utilities.sanitary"],
+        ["Trench excavation, Clay", "BCY", 325.93, "utility_trench_excavation", "site_utilities.sanitary"],
+        ["Pipe bedding, #57 stone", "CCY", 6.48, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
+        ["Pipe zone, Sand", "CCY", 34.46, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
+        ["Trench backfill, Native", "CCY", 283.56, "utility_backfill", "site_utilities.sanitary"],
+        ["Trench protection, Sloped 1:1 8–10 ft", "LF", 100, "trench_protection", "earthwork.trench_protection"],
       ],
     },
   },

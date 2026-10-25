@@ -396,6 +396,27 @@ export const COST_CASES = [
     ],
     expect: { crafts: 100, first: 33.34, b: 0.01, c: 0, total: 100.01 },
   },
+  // --- Every figure as shown (D-772): totals and their parts add up as they read ----------------------
+  // Three lines of $100 / 3 labour and one of $0.006 labour and $0.006 material. Each column balanced to its
+  // own rounded total: labour $100.006 → $100.01 (33.34 + 33.33 + 33.33 + 0.01), material $0.01; each row's
+  // Item Cost its shown types' sum (the last $0.02), and the whole $100.02 = $100.01 + $0.01, the rounded
+  // types added. Rounded once, the unrounded sum would read $100.01, a cent short of its parts.
+  {
+    id: "shown-adds-up",
+    kind: "shown",
+    rows: [{ laborCost: 100 / 3 }, { laborCost: 100 / 3 }, { laborCost: 100 / 3 }, { laborCost: 0.006, totalMaterialCost: 0.006 }],
+    expect: { items: "33.34,33.33,33.33,0.02", labor: 100.01, material: 0.01, whole: 100.02, roundedOnce: 100.01 },
+  },
+  // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
+  // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared
+  // machine of that class spread over lines A and B (2 units, 3 days each, $300 + $200, 10 + 5 EH): one row,
+  // "Excavator 20 t", 3 units (the shared machine's 2 once), 23 EH, 7 days, $1,500, its activity and its
+  // spread under it. A typed Loader at a day rate on A ($200) and an hour rate on B ($50): one row, $250.
+  {
+    id: "equipment-once",
+    kind: "equipment-once",
+    expect: { top: "Excavator 20 t|Loader", count: 3, eh: 23, days: 7, total: 1500, inner: "Place and compact|Shared excavator (shared spread)", loader: 250 },
+  },
   // --- Pricing rules 2 (D-763 B2): wastage is material's, by component; the rest on Qty × multiplier --------
   // The drywall sub-item, 1,600 SF, line wastage 10 %: sheets QTY/32 = 50 + 10 % = 55, rounded up to 1 →
   // 55 × $14 = $770; a crew of 2 at $40, 100 SF/hr: 16 hr × 2 = 32 MH on the NET 1,600 SF → $1,280. Item

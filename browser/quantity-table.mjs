@@ -151,6 +151,36 @@ try {
         const labor = sums.summarise("labor", [line]);
         return { labor: of("labor"), material: of("material"), equipment: of("equipment"), all: of("all"), laborMh: labor.filter((r) => r.depth === 0).reduce((s, r) => s + Number(r.values.mh ?? 0), 0), line: cost.itemCost };
       }
+      if (c.kind === "shown") {
+        // D-772: the rows balanced to whole cents together; each row's Item Cost its types', the whole theirs.
+        const rows = c.rows.map((r) => ({ ...costing.sumCosts([]), ...r, itemCost: (r.laborCost ?? 0) + (r.totalMaterialCost ?? 0) }));
+        const shown = costing.balancedCosts(rows);
+        const whole = costing.asShown(costing.sumCosts(shown));
+        const once = Math.round(rows.reduce((t, r) => t + r.itemCost, 0) * 100) / 100;
+        return { items: shown.map((r) => r.itemCost).join(","), labor: whole.laborCost, material: whole.totalMaterialCost, whole: whole.itemCost, roundedOnce: once };
+      }
+      if (c.kind === "equipment-once") {
+        // D-775: the same equipment once at the top, whatever line, activity, mode or shared spread uses it.
+        const cost = (equipmentCost) => ({ ...costing.sumCosts([]), equipmentCost, itemCost: equipmentCost });
+        const machine = { mode: "rental", units: 2, workDays: 3, hours: 15, rental: null, fuel: null, mob: null };
+        const lib = { kind: "equipment", name: "Place and compact: Excavator 20-25 t", eq_class_key: "EX-20T", eq_activity_key: "place", eq_mode: "rental" };
+        const libEval = { kind: "equipment", mode: "lump", total: 1000, qty: 1, library: { units: 1, hours: 8, workDays: 1, breakdown: { mode: "rental", units: 1, workDays: 1, fuel: null, mob: null, rental: null } } };
+        const hand = (basis, total) => ({ row: { kind: "equipment", name: "Loader", equip_basis: basis }, eval: { kind: "equipment", mode: "lump", total, duration: 1, qty: 1 } });
+        const share = (alloc, hours) => ({ resourceId: "r1", name: "Shared excavator", alloc, hours, machine, cover: null, classKey: "EX-20T", label: "Excavator 20 t" });
+        const line = (name, components, shares, equipment) => ({ name, unit: "CY", scope: "", subcontractor: "Unassigned", cost: cost(equipment), qty: 100, netQty: 100, share: 1, components, shares });
+        const lines = [
+          line("A", [{ row: lib, eval: libEval, label: "Excavator 20 t" }, hand("day", 200)], [share(300, 10)], 1500),
+          line("B", [hand("hr", 50)], [share(200, 5)], 250),
+        ];
+        const rows = sums.summarise("equipment", lines);
+        const top = rows.filter((r) => r.depth === 0);
+        const ex = top.find((r) => r.label === "Excavator 20 t");
+        const at = rows.indexOf(ex);
+        const inner = [];
+        for (let i = at + 1; i < rows.length && rows[i].depth > 0; i++) inner.push(rows[i].label);
+        const n = (v) => Math.round(Number(v ?? 0) * 100) / 100;
+        return { top: top.map((r) => r.label).join("|"), count: n(ex?.values.count), eh: n(ex?.values.eh), days: n(ex?.values.days), total: n(ex?.values.total), inner: inner.join("|"), loader: n(top.find((r) => r.label === "Loader")?.values.total) };
+      }
       if (c.kind === "rules") {
         // D-763: the line under rules 1 and 2; its component rows (each as the grid shows it) add up to it.
         const evals = c.components.map((row) => comps.evaluateComponent(row, { parent: 0, qty: c.quantity }));
