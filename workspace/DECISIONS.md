@@ -23443,3 +23443,14 @@ each change follows a logged decision.
     zz Equip HV copy fixture workspace.
   - A line a person edited keeps its machines.
 - **The HV copy:** $994,208.70 → $943,321.78 (Labor −$1,485.86, Equipment −$49,401.06).
+
+## D-777: Setup's items move to the Estimating sidebar, under Needs attention (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **Shared equipment, Manage subcontractors… and Equipment settings…** are always shown as plain lines under
+  the Needs attention line in the Estimating sidebar, under their own Setup heading, not tucked in a menu.
+- **Update all (n lines)…** goes with them, shown only when lines are waiting and the person may price, as
+  before.
+- **The Setup button** next to Export is gone. A view-only estimate shows none of these lines, as it showed no
+  Setup button.
