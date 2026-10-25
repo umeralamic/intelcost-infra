@@ -23287,3 +23287,88 @@ Estimating already shows.
 - **Found by f8-s12, fixed with these:** under One at a time, an item another person holds opened its Properties editable
   from the action group (the row menu's was correctly disabled); the held item's tips read "Being edited by Fixture O. is
   editing this item right now." (a reason passed where a name was expected).
+
+## D-766: Estimating reports: Group by gets "Cost components", Then by and the By line / Summary switch go; the side panel simplified (accepted 2026-10-24, the founder's answers to REPORTS_PANEL_PLAN.md; supersedes D-762 A5's modes and "then by")
+
+**Status:** accepted; option c of `docs/tasks/REPORTS_PANEL_PLAN.md`, with the founder's changes.
+
+- **Group by** is one select in two sections. **Lines:** Classification, Custom Folder, Scope, Subcontractor, Sheet.
+  **Cost components:** one entry. It always sums across the whole project. There is no "Within": narrowing is done with
+  the filters, and Cost components sums what the filters keep.
+- **What Cost components lists, per report:**
+  - **Labor:** crews, then crafts, in MH, with average wage and cost.
+  - **Material:** the material list by item name + unit, then Usage, in the units the components are sold in, with To
+    order and cost. A line with typed material rates and no components shows as its line (name + unit).
+  - **Equipment:** the equipment list (a library class and mode, typed equipment, each shared equipment once), in EH,
+    with count, days, rental, fuel, mob/demob and cost. A shared equipment's unspread cost is its "Unallocated" row
+    (REPORTS_PANEL_PLAN R9). Library equipment is labelled by its class, never by one line's component name (R10).
+  - **Subcontract:** by subcontractor, then scope.
+  - **Full estimate:** four sections, Labor, Material, Equipment and Subcontract, each opening to its report's list.
+  - **Quantities only:** items by name + unit, quantities summed.
+- **Subcontractor first:** wherever a report groups or totals by subcontractor, the headings are the subcontractors with
+  their scopes under them, never scopes first; in the grid, the Cost components lists and the export.
+- **Words:** "machine-hr" / "machine-hours" read **EH** (equipment hours), shown beside MH; "Machines" reads
+  **Equipment**, in rows, columns, lists, settings and exports.
+- **Show levels** shows only for a grouping with levels: Classification and Custom Folder as deep as their tree; Cost
+  components 1 (outer rows) or 2 (inner rows too).
+- **Saved views:** a stored Summary opens as Cost components; a stored Then by is dropped.
+- **Side panel:** Reports; Group by (Show levels only where it applies); Filter as "+ Add filter" with removable chips
+  (Subcontractor, User when more than one person made lines, Division, Scope, Sheet, Layer); one "Needs attention (n)"
+  line opening a list in categories (each filters the table; "Not in the last Calculate" keeps its Delete and Undo); Bid
+  summary at the foot with Incomplete as its first line. Columns, Format, Expand/Collapse components and a Setup menu
+  (Shared equipment, Manage subcontractors, Equipment settings) move to the table's toolbar; Layer tabs to an "All
+  layers" toggle on the tab strip.
+- **A filtered table says so:** the sidebar stays as project totals (D-126); the table shows "Filtered: $231,591.54 of
+  $278,501.32" with Clear, and the export banner names the filters.
+- **F0, held under any option:** an empty report says what it lacks ("No material cost in this estimate"); a filtered
+  report's export has one money column, its capitals consistent; **exports store money rounded to cents and hours and
+  quantities to 2 decimals, as values**, not only as formats.
+
+## D-767: A parent measured on several sheets shows once per sheet at that sheet's share, its sub-items scaled with it (accepted 2026-10-24; supersedes D-88 Q9)
+
+**Status:** accepted (the founder's answer to REPORTS_PANEL_PLAN.md Q5).
+
+- In every Sheet view (Group by Sheet, the Sheet filter, the export), a parent on two sheets is a row under each sheet with
+  that sheet's quantity; its sub-items follow it under each sheet, each scaled by the parent's share on that sheet
+  (quantity, hours and money). The sheets' totals add up to the parent's.
+- Sub-items measured on their own sheets keep their own split.
+
+## D-768: Calculate's lines are named by the work; the feature is its own field (accepted 2026-10-24)
+
+**Status:** accepted (the founder's direction).
+
+- A line Calculate makes is named by its work in its role's own wording ("Cut", "Fill", "Strip topsoil", "Undercut
+  excavation", "Undercut replacement fill", "Soil stabilization", …), never by its feature.
+- **The feature** becomes its own field: the heading under Classification as today, and a **Feature** column, shown by
+  default when the grouping is not Classification, in the grid and the export.
+- A line a person renamed keeps its name. Applied on the next Calculate; no money changes.
+
+## D-769: Tier crews named by their activity; a shared equipment's rental reads as shared (accepted 2026-10-24)
+
+**Status:** accepted (the founder's answers to the held items).
+
+- A crew a tier gives reads "Crew: <activity> (<makeup>)" (an api change for the crew name).
+- A shared equipment's component row reads its rental as shared: "1 week rental, shared by N lines".
+
+## D-770: Before testers: f5-s2, d27-uploads and f5-s9 (accepted 2026-10-24)
+
+**Status:** accepted (the founder's answers to the held items).
+
+- f5-s2 runs against worker-fx; the beat scheduler runs on the fx stack so d27-uploads can run; f5-s9 is updated to
+  today's seed or retired with its reason.
+
+## D-771: The estimate fixtures follow D-763, D-766 and D-768 (accepted 2026-10-24)
+
+**Status:** accepted (the founder's step 5: rerun the estimate fixtures on the new build). No assertion is weakened;
+each change follows a logged decision.
+
+- **D-766 F2, controls moved:** c14 opens Format from the table's toolbar. c32, c35 and c38 open Shared equipment
+  and Equipment settings from its Setup menu.
+- **D-766 F2, Needs attention:** c15 opens its list and picks "Every line that needs attention", then "Show every
+  line" (the toggle is gone).
+- **D-766 F0:** c15 drops the cost report's second money column ("Labor cost"); its own type's TOTAL is still
+  checked against the full estimate's.
+- **D-768:** c17 reads the lines by the work: "Strip topsoil (6\")", "Cut" (site and pad, summed as before),
+  "Undercut excavation", "Undercut replacement". In Estimating each line takes its own row among rows of the same name.
+- **D-763:** f9-estimating's 10 % LF wastage step reads Footing's labour $60,000, not $66,000. A new project prices
+  under rules 2, so labour runs on the net 100 LF × $600; Qty with Wastage still reads 110 LF.
