@@ -18,6 +18,7 @@
 //
 // Left for the founder's eye: the Earthwork production page's layout.
 
+// Shared equipment and Equipment settings open from the table toolbar's Setup menu (D-766 F2).
 import { APP, apiCall, expect, fixtureOwner, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { waitFor } from "./lib/realtime.mjs";
@@ -65,7 +66,7 @@ const machines = (a) => a.machines.map((m) => `${m.eq_class_key}×${m.units}`).j
 async function settingsRow(page) {
   await signIn(page);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
-  await page.getByRole("button", { name: /Equipment settings/ }).click();
+  await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /Equipment settings/ }).click(); })();
   const row = page.locator(`[data-site-activity="${A1}"]`);
   await row.waitFor({ timeout: 30000 });
   return row;
