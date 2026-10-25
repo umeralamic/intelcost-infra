@@ -42,7 +42,8 @@ async function open(page) {
 }
 
 async function formatPanel(page) {
-  await page.locator("aside[data-estimate-sidebar=open]").getByRole("button", { name: "Format", exact: true }).click();
+  // Format is on the table's toolbar since D-766 F2.
+  await page.locator("[data-table-tools]").getByRole("button", { name: "Format", exact: true }).click();
   const panel = page.locator("[data-format-panel]");
   await panel.waitFor();
   return panel;

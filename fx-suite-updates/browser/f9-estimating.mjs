@@ -212,7 +212,7 @@ await run("f9-estimating", [
     },
   },
   {
-    title: "wastage: 5 % on Slab alone gives 1,050 SF and $42,000, Paint stays 200; 10 % on every LF line gives Footing 110 LF and $66,000",
+    title: "wastage: 5 % on Slab alone gives 1,050 SF and $42,000, Paint stays 200; 10 % on every LF line gives Footing 110 LF, its labour $60,000 on the net 100 LF (D-763: a new project prices under rules 2, wastage on material only)",
     run: async ({ page }) => {
       await open(page);
       await page.locator(`button[data-wastage="Slab"]`).click();
@@ -232,11 +232,13 @@ await run("f9-estimating", [
       await dialog.getByRole("button", { name: "Apply", exact: true }).click();
       await dialog.waitFor({ state: "detached" });
       await settles(page, "Footing", "Qty with Wastage", 110);
-      await settles(page, "Footing", "Total Labor Cost", 66000);
+      // D-763 rules 2 (a new project's): labour runs on the net Qty × multiplier, 100 LF × $600; it rode the
+      // wastage under rules 1 ($66,000).
+      await settles(page, "Footing", "Total Labor Cost", 60000);
       await settles(page, "Slab", "Qty with Wastage", 1050);
       const stored = (await apiCall(token, "GET", `${estimate}/costs`)).body;
       expect(Number(stored.unit_wastage?.LF) === 10, `unit defaults ${JSON.stringify(stored.unit_wastage)}`);
-      return "Slab 1,050 SF, $42,000; Paint 200 SF; Footing 110 LF, $66,000; LF default 10 % stored";
+      return "Slab 1,050 SF, $42,000; Paint 200 SF; Footing 110 LF, labour $60,000; LF default 10 % stored";
     },
   },
   {

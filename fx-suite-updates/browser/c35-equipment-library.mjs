@@ -23,6 +23,7 @@
 //
 // Left for the founder's eye: the dialog's layout; the export's look in Excel.
 
+// Shared equipment and Equipment settings open from the table toolbar's Setup menu (D-766 F2).
 import { APP, apiCall, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { waitFor } from "./lib/realtime.mjs";
@@ -55,7 +56,7 @@ async function openEstimate(page) {
 
 /** Shared equipment's list: each machine's name and total as the dialog lists it. */
 async function sharedList(page) {
-  await page.getByRole("button", { name: /^Shared equipment$/ }).first().click();
+  await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /^Shared equipment$/ }).click(); })();
   const dialog = page.getByRole("dialog", { name: "Shared equipment" });
   await dialog.waitFor();
   await page.waitForTimeout(1500);

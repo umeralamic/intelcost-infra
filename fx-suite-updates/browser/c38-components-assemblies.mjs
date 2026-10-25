@@ -16,6 +16,7 @@
 //
 // Left for the founder's eye: the template editor's rows ("library EX-CRAWL-20T, shared: …").
 
+// Shared equipment and Equipment settings open from the table toolbar's Setup menu (D-766 F2).
 import { APP, apiCall, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { waitFor } from "./lib/realtime.mjs";
@@ -117,7 +118,7 @@ await run("c38-components-assemblies", [
       await signInAs(page, (await fixtureOwner()).email);
       await page.goto(`${APP}/project/${target.uuid}/takeoff/${w.target.sheet}?tab=estimating`);
       await page.getByText("TEST pad 2", { exact: true }).first().waitFor({ timeout: 30000 });
-      await page.getByRole("button", { name: /^Shared equipment$/ }).first().click();
+      await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /^Shared equipment$/ }).click(); })();
       const dialog = page.getByRole("dialog", { name: "Shared equipment" });
       await dialog.waitFor();
       await dialog.getByRole("button", { name: /New resource/ }).click();

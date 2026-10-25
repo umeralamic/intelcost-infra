@@ -19,6 +19,7 @@
 //
 // Left for the founder's eye: the words and layout of Equipment settings' Earthwork production row.
 
+// Shared equipment and Equipment settings open from the table toolbar's Setup menu (D-766 F2).
 import { APP, apiCall, expect, fixtureOwner, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { waitFor } from "./lib/realtime.mjs";
@@ -99,7 +100,7 @@ async function recalculate(page) {
 async function openSettings(page) {
   await signIn(page);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
-  await page.getByRole("button", { name: /Equipment settings/ }).click();
+  await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /Equipment settings/ }).click(); })();
   const row = page.locator('[data-site-activity="Excavate and load (on-site haul)"]');
   await row.waitFor({ timeout: 30000 });
   return row;
@@ -136,7 +137,7 @@ await run("c32-site-typed", [
       for (const [cls, label, value] of [["EX-CRAWL-30T", /^Week/, "7000"], ["ADT-30T", /^Day/, "900"]]) {
         // A fresh page for each machine: a save reselects its own resource when it settles.
         await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
-        await page.getByRole("button", { name: /^Shared equipment$/ }).first().click();
+        await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /^Shared equipment$/ }).click(); })();
         await dialog.waitFor();
         const r = named.find((x) => x.eq_class_key === cls);
         expect(r, `no shared machine of ${cls}: ${named.map((x) => x.name).join(", ")}`);

@@ -143,9 +143,8 @@ await run("c15-reports", [
         expect(Math.abs(side - full[id]) < 0.005, `${id} in the sidebar ${side}, the full estimate's ${columns[id]} ${full[id]}`);
         await report(page, id);
         await page.locator("[data-report-title]").filter({ hasText: "report" }).waitFor();
-        // A cost report names its Item Cost column after itself: "Labor cost", "Material cost"...
-        const own = `${id[0].toUpperCase()}${id.slice(1)} cost`;
-        await reads(() => total(page, own), full[id], `${id} report's TOTAL ${own}`);
+        // A cost report has one money column, its own type's (D-766 F0: the repeated "Labor cost" Item Cost
+        // column is gone).
         await reads(() => total(page, columns[id]), full[id], `${id} report's TOTAL ${columns[id]}`);
         seen.push(`${id} ${side}`);
       }
@@ -177,7 +176,7 @@ await run("c15-reports", [
     },
   },
   {
-    title: "Needs attention: the count reads 4, four rows carry the marker (Sub 1, Sub 2, Open 1, Open 2), and the toggle shows just those four",
+    title: "Needs attention: the count reads 4, four rows carry the marker (Sub 1, Sub 2, Open 1, Open 2), and its list's Every line shows just those four (D-766)",
     run: async ({ page }) => {
       await open(page);
       const button = page.locator("[data-needs-attention]");
@@ -187,17 +186,19 @@ await run("c15-reports", [
       const want = ["Open 1", "Open 2", "Sub 1", "Sub 2"];
       expect(count === marked.length && shownCount === count, `count ${count} (shows ${shownCount}), marked ${marked.length}: ${marked.join(", ")}`);
       expect(marked.join() === want.join(), `marked rows ${marked.join(", ")}, wanted ${want.join(", ")}`);
+      // D-766: the line opens its list in categories; "Every line that needs attention" shows just those lines.
       await button.click();
-      await page.locator("[data-needs-attention][aria-pressed=true]").waitFor();
+      await page.locator("[data-attention-list] [data-attention-cat=all]").click();
+      await page.locator("[data-attention-list]").waitFor({ state: "detached" });
       await waitFor(async () => ((await grid(page).locator("tr[data-estimate-row]").count()) === want.length ? true : null), "only the marked rows", 10000).catch(async () => {
-        throw new Error(`with the toggle on: ${await grid(page).locator("tr[data-estimate-row]").evaluateAll((rs) => rs.map((r) => r.dataset.estimateRow).join(", "))}`);
+        throw new Error(`with the list's Every line picked: ${await grid(page).locator("tr[data-estimate-row]").evaluateAll((rs) => rs.map((r) => r.dataset.estimateRow).join(", "))}`);
       });
       const shown = await grid(page).locator("tr[data-estimate-row]").evaluateAll((rs) => rs.map((r) => r.dataset.estimateRow).sort());
-      expect(shown.join() === want.join(), `with the toggle on: ${shown.join(", ")}`);
+      expect(shown.join() === want.join(), `with the list's Every line picked: ${shown.join(", ")}`);
       await button.click();
-      await page.locator("[data-needs-attention][aria-pressed=false]").waitFor();
+      await page.locator("[data-attention-list]").getByRole("button", { name: "Show every line" }).click();
       await row(page, "Labor 1").waitFor();
-      return `count ${count}; marked ${marked.join(", ")}; the toggle shows those four`;
+      return `count ${count}; marked ${marked.join(", ")}; Every line shows those four, Show every line the rest`;
     },
   },
   {

@@ -180,10 +180,12 @@ await run("c17-earthwork", [
       }, "the lines to settle", 15000, 1000);
       const listed = lines.map((l) => `${l.name} = ${q(l).toFixed(2)} ${l.unit}`);
       const find = (re) => lines.find((l) => re.test(l.name));
-      const strip = find(/^Strip Topsoil/);
-      const cuts = lines.filter((l) => / Cut$/.test(l.name));
-      const undercut = find(/^Undercut Excavation/);
-      const replacement = find(/^Undercut Replacement/);
+      // Named by the work since D-768 (the feature is its own field): "Strip topsoil (6\")", "Cut" on the site
+      // and on the pad, "Undercut excavation (12\")", "Undercut replacement fill, Engineered Fill".
+      const strip = find(/^Strip topsoil \(/);
+      const cuts = lines.filter((l) => l.name === "Cut");
+      const undercut = find(/^Undercut excavation/);
+      const replacement = find(/^Undercut replacement/);
       const exportLine = find(/^Soil Export/);
       expect(strip && near(q(strip), CY(500)), `strip line: ${listed.join(" · ")}`);
       expect(cuts.length > 0 && near(cuts.reduce((t, l) => t + q(l), 0), CY(550)), `cut lines: ${listed.join(" · ")}`);
@@ -200,18 +202,31 @@ await run("c17-earthwork", [
       await openSheet(page, project, c1, "estimating");
       await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
       const out = [];
+      // Two lines may share a name since D-768 (Cut on the site and on the pad): each line takes its own row of
+      // that name, the one carrying its quantity.
+      const taken = new Map();
       for (const l of lines) {
         const row = page.locator(`tr[data-estimate-row="${l.name.replace(/"/g, '\\"')}"]`);
         await row.first().waitFor({ timeout: 10000 }).catch(async () => {
           const shown = await page.locator("tr[data-estimate-row]").evaluateAll((rows) => rows.map((r) => r.getAttribute("data-estimate-row")));
           throw new Error(`no Estimating row for "${l.name}"; rows: ${shown.join(" | ")}`);
         });
-        const cells = await row.first().locator("td").allTextContents();
+        const used = taken.get(l.name) ?? new Set();
         const want = q(l).toFixed(2);
-        const has = cells.some((c) => near(num(c), q(l), 0.006));
-        expect(has, `"${l.name}" row: ${cells.map((c) => c.trim()).filter(Boolean).join(" | ")} (want ${want})`);
+        const seen = [];
+        let hit = -1;
+        for (let i = 0; i < (await row.count()) && hit < 0; i++) {
+          if (used.has(i)) continue;
+          const cells = await row.nth(i).locator("td").allTextContents();
+          seen.push(cells.map((c) => c.trim()).filter(Boolean).join(" | "));
+          if (cells.some((c) => near(num(c), q(l), 0.006))) hit = i;
+        }
+        expect(hit >= 0, `"${l.name}" rows: ${seen.join(" / ")} (want ${want})`);
+        used.add(hit);
+        taken.set(l.name, used);
         out.push(`${l.name} ${want}`);
       }
+      expect(out.length === lines.length, `${out.length} rows for ${lines.length} lines`);
       return `${out.length} rows: ${out.join(" · ")}`;
     },
   },
