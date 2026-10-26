@@ -23485,3 +23485,34 @@ each change follows a logged decision.
   --est-line-w), so the bar sits between two matching lines.
 - **One class,** `scrollbar-thin-ruled` in `index.css`, tokens only. Firefox, which has no track border, gets its
   thin scrollbar.
+
+## D-781: Estimating's search and tools sit next to its heading (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **Search, Columns, Format, Expand components and Export** follow the Estimating heading (and its report name
+  and Partial estimate chip) with the row's usual gap, not pushed to the far right.
+- **The Wage Calculator strip** under it (and its amber "Labor rates not set" form) is as wide as its text,
+  ending after Edit, not stretched across the page.
+
+## D-782: Every empty row in the estimate is a full row, with the column rules (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **Every blank row** in the grid (above a group heading, above a parent with sub-items when it is not the first
+  line under a heading, and between blocks) is an empty row as tall as a line, Format's line height, and ruled
+  as one.
+- **It draws a cell per column** with the vertical rules, so the column lines run through it unbroken.
+- **Format's "Empty row (px)"** is gone: the height follows the line height. A stored value is kept and unused.
+
+## D-783: The grouping's top headings stand out; the levels under them lighten (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **Whatever Group by is chosen,** each top-level heading sits between two thick (2 px) rules in the foreground
+  colour, above and below.
+- **The headings under it** keep their Format colour, a little lighter at each level: blended 15 % toward the
+  page background per level, at most 60 %. Tokens only, so dark mode lightens toward its own background.
+- **No other row has a thick rule:** a heading under a top one is ruled as a line (the line width, top and
+  bottom), in place of legacy's heavier group separator above it. Format's "Group header separator" toggle is
+  gone; a stored value is kept and unused.
