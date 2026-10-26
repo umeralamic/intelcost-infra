@@ -23516,3 +23516,44 @@ each change follows a logged decision.
 - **No other row has a thick rule:** a heading under a top one is ruled as a line (the line width, top and
   bottom), in place of legacy's heavier group separator above it. Format's "Group header separator" toggle is
   gone; a stored value is kept and unused.
+
+## D-784: No Feature column in the estimate (accepted 2026-10-25; supersedes D-768's Feature column)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **The Feature column is gone** under every grouping: not in the grid, not in Columns, not in the Excel
+  export. A Calculate's line still sits under its feature's own heading inside its group (D-474).
+- **The stored on/off choice** for it is no longer read.
+
+## D-785: Cost components are Show levels' last level; parents with components are bold (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **The Expand components button is gone** from the table's toolbar.
+- **Show levels is numbers only:** the headings' levels 1 to n, then n + 1 every line, then, on the full
+  estimate where any line has cost components, n + 2 every line with its cost components. The last number
+  shows everything, in place of All. A line's own chevron still opens just its components.
+- **The last number is picked by default** (everything shown, cost components open on every line) until the
+  person picks another; the picked number is bold on a light primary fill. The numbers sit on one row beside
+  the label, and the sidebar is 256 px wide (was 224) to fit them.
+- **In the Assembly column** a parent is bold (with Format's bold parent rows on): a line with sub-items, and
+  now a line with cost components under it.
+
+## D-786: Show Layers as a Tab in the sidebar; an empty row above a line with its components open (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **The table's All layers button is gone.** In its place, in the sidebar under Show levels and above Filter,
+  a "Show Layers as a Tab" checkbox, ticked by default: ticked, a tab per main layer; unticked, every layer in
+  one table. It shows only where there are layer tabs.
+- **A line with its cost components showing** gets an empty row above it, unless it is the first line under
+  its heading, as a parent with sub-items does (D-782).
+
+## D-787: Hints on the sidebar's lines; no Switch workspace in Open (accepted 2026-10-25)
+
+**Status:** accepted (the founder asked for it on 2026-10-25).
+
+- **Hover hints** on Show Layers as a Tab, Needs attention (how many lines and why, and that a click lists
+  them), Shared Equipment, Manage Subcontractors, Equipment Settings and Update All: each says what it does.
+- **The Open menu** no longer has Switch workspace. Switching workspace is the avatar menu's alone (D-705's
+  one switch).
