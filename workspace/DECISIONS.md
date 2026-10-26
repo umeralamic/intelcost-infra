@@ -23557,3 +23557,86 @@ each change follows a logged decision.
   them), Shared Equipment, Manage Subcontractors, Equipment Settings and Update All: each says what it does.
 - **The Open menu** no longer has Switch workspace. Switching workspace is the avatar menu's alone (D-705's
   one switch).
+
+## D-788: A colleague drawing shows one tag, the draft's (accepted 2026-10-26)
+
+**Status:** accepted (the founder asked for it on 2026-10-26).
+
+- **Problem:** with others' cursors and drawing both shown, a colleague marking a Linear, Area or Segment run
+  carried two name tags, one on the pointer and one on the run in progress.
+- **Decision:** a tab with an unfinished draft on the viewed sheet shows no pointer; it comes back the moment the
+  draft ends (finished, cancelled, or 5 s without a frame). Decided in the viewer's tab (`CursorLayer` reads the
+  drafts), keyed by tab, so the same person's other tab keeps its pointer. Nothing changes on the sender or the
+  api.
+- **Only where drafts show:** a viewer with "Show others drawing" off, or "Only mine", keeps seeing the pointer.
+  A guest, who sees no drafts, keeps every pointer.
+
+## D-789: Delete protection, each person's own setting (accepted 2026-10-26)
+
+**Status:** accepted (the founder asked for it, with changes, on 2026-10-26).
+
+**Context:** in Work together anyone who can edit takeoff can delete anyone's measurement, and one stray Delete
+takes a colleague's afternoon. Every item and shape already records who created it (`created_by_id`).
+
+**Options considered:**
+
+| Option | Pro | Con |
+|---|---|---|
+| A workspace-wide rule set by an admin | One place | The person whose work it is has no say |
+| Each person's own setting for what they marked (taken) | The owner decides; stored with the other collaboration prefs, no migration for the setting | The api must read the creator's prefs on every delete |
+| Soft delete with a bin | Recoverable | Undo already restores; does not prevent the accident |
+
+**Decision:** Settings › Collaboration (and the takeoff Settings dialog's Collaboration) gains **Who can delete
+what I marked**, stored on the person (`collaboration_prefs.delete_protection`, `delete_allowed`):
+
+- **Anyone** (default, today's behaviour).
+- **Only people I choose:** members picked from the workspace; anyone else is refused.
+- **No one without my approval:** a colleague's Delete becomes a **delete request** to the owner.
+
+**Rules:**
+
+- **A confirm under every option.** Deleting an item or shape someone else created first asks "Marked by
+  <name>. Delete?"; a bulk delete asks once, listing whose (names and counts).
+- **Ownership is the creator.** An item is its creator's; a shape is its own creator's (a shape with no creator
+  is its item's). The person's own work is never protected from themselves.
+- **The workspace Owner and Admins can always delete** (the "Restore deleted items" capability), so an
+  estimator who left cannot lock work forever.
+- **Mixed deletes delete what is allowed and skip the rest, said aloud.** A bulk delete, a layer with its
+  contents, an item holding someone else's protected shapes: the allowed part goes, the protected part stays (a
+  layer keeps itself if anything in it stayed), and the person is told which were skipped and whose, or which
+  became requests. Nothing partial happens silently.
+- **Enforced by the api, on the person's delete routes only** (item, bulk, shapes transaction, shape, layer with
+  contents). System changes (Calculate, earthwork recalculation, migrations, an approved request carried out)
+  never pass through it and are never blocked or turned into requests.
+- **Delete requests:** one per owner per delete, naming the items and shapes. The owner gets a notice in the bell
+  (and live, if signed in) with **Approve** and **Deny**; Approve deletes what still exists, Deny keeps it; the
+  requester is told either way. While pending, the item shows **"Delete requested by <name>"** to everyone. A
+  request unanswered for 7 days expires: the item stays and the requester is told.
+- **The app reads each item's and shape's creator** and the rule that applies to the viewer, to ask the confirm
+  and show a lock on protected rows; the api's answer is final either way.
+
+**Consequences:** new `takeoff_delete_request` table and `notification.ref_uuid`; notices gain three takeoff
+kinds. Expiry is swept when the requester or owner next reads their notices (beat stays the founder's call).
+
+## D-790: A scope per assignee (accepted 2026-10-26)
+
+**Status:** accepted (the founder asked for it, with changes, on 2026-10-26).
+
+**Context:** Assigned To (Edit Project, Share › Project Users) names people, in order, primary first, and says
+nothing about what each of them is taking off.
+
+**Decision:** each assignee may carry a **scope**: any mix of **Classification nodes**, **Scope values** and
+**Custom Folders** (the same lists as the reports' Group by), plus an optional **free-text note**.
+
+- **Stored** as rows under the assignee (`project_assignee_scope`: a classification node, a scope name, or a
+  custom folder) and a `note` on `project_assignee`; several per person. A deleted node or folder drops its
+  row. Duplicating a project still copies no assignees; share links still strip them.
+- **The note is a label only;** "Assigned to me" filters by the other three: an item matches when its
+  classification node is one of mine or under one, its classification's Scope name is one of mine, or its custom
+  folder is one of mine or under one.
+- **Shown** in Edit Project › Assigned To and Share › Project Users (chips per person, "+ Scope"), and on the
+  dashboard row as "Your scope: …" to the person assigned.
+- **"Assigned to me"** in the Takeoff Quantities panel (Folders and Classification views) and in Estimating.
+- **Notices:** a person given a scope, or whose scope is changed or removed, gets a notice in the bell.
+- **Who assigns:** unchanged (Create projects, D-26). The assignee save accepts `[{user_uuid, scopes, note}]`
+  and still the plain list of uuids.
