@@ -152,9 +152,9 @@ try {
         return { labor: of("labor"), material: of("material"), equipment: of("equipment"), all: of("all"), laborMh: labor.filter((r) => r.depth === 0).reduce((s, r) => s + Number(r.values.mh ?? 0), 0), line: cost.itemCost };
       }
       if (c.kind === "shown") {
-        // D-772: the rows balanced to whole cents together; each row's Item Cost its types', the whole theirs.
+        // D-797: each row rounded once, alone; each row's Item Cost its types', the whole the rows added.
         const rows = c.rows.map((r) => ({ ...costing.sumCosts([]), ...r, itemCost: (r.laborCost ?? 0) + (r.totalMaterialCost ?? 0) }));
-        const shown = costing.balancedCosts(rows);
+        const shown = rows.map(costing.asShown);
         const whole = costing.asShown(costing.sumCosts(shown));
         const once = Math.round(rows.reduce((t, r) => t + r.itemCost, 0) * 100) / 100;
         return { items: shown.map((r) => r.itemCost).join(","), labor: whole.laborCost, material: whole.totalMaterialCost, whole: whole.itemCost, roundedOnce: once };
@@ -197,10 +197,32 @@ try {
         const own = costing.computeLineCost({ quantity: c.parentQty, unit: "LF", input: { ...costing.EMPTY_COST_INPUT, wastage_pct_override: 0 }, unitWastage: new Map(), components: c.own.map((row) => comps.evaluateComponent(row, { parent: c.parentQty, qty: c.parentQty })), netQty: c.parentQty, rules: 2 });
         return { children: children.itemCost, own: own.itemCost, parent: costing.sumCosts([children, own]).itemCost };
       }
-      if (c.kind === "balance") {
-        const out = sums.balancedRows(c.rows, ["total"]);
-        const v = (k) => out.find((r) => r.key === k).values.total;
-        return { crafts: Math.round((v("a|1") + v("a|2") + v("a|3")) * 100) / 100, first: v("a|1"), b: v("b"), c: v("c"), total: Math.round(out.filter((r) => r.depth === 0).reduce((t, r) => t + r.values.total, 0) * 100) / 100 };
+      if (c.kind === "places") {
+        // D-797: the places a read-back rate shows.
+        return { bcy: costing.rateDecimals(7093.66 / 10000, 7093.66), sf: costing.rateDecimals(1000 / 400, 1000) };
+      }
+      if (c.kind === "cents") {
+        // D-797: the Labor list, each line's dollars split in cents within the line.
+        const zero = costing.sumCosts([]);
+        const crew = ["Laborer", "Operator", "Foreman"].map((role) => ({ role, count: 1, hourly_wage: 40 }));
+        const line = (name, laborCost, components) => ({ name, unit: "LS", scope: "", subcontractor: "Unassigned", cost: { ...zero, laborCost, itemCost: laborCost }, qty: 1, netQty: 1, share: 1, components, shares: [] });
+        const lines = [
+          line("Crewed", 100, [{ row: { kind: "labor", crew_name: "Crew A", crew }, eval: { kind: "labor", mode: "lump", total: 100, manHours: 2.5, qty: 1 } }]),
+          line("Typed 1", 0.005, []),
+          line("Typed 2", 0.005, []),
+        ];
+        const rows = sums.summarise("labor", lines);
+        const crewAt = rows.findIndex((r) => r.depth === 0 && r.label !== "Typed rates (no crew)");
+        const crafts = [];
+        for (let i = crewAt + 1; i < rows.length && rows[i].depth > 0; i++) crafts.push(rows[i]);
+        const r2 = (x) => Math.round(x * 100) / 100;
+        return {
+          crafts: r2(crafts.reduce((t, r) => t + r.values.total, 0)),
+          laborer: crafts.find((r) => r.label === "Laborer")?.values.total,
+          typed: rows.find((r) => r.depth === 0 && r.label === "Typed rates (no crew)")?.values.total,
+          total: r2(sums.summaryTotal(rows)),
+          lines: r2(lines.reduce((t, l) => t + costing.asShown(l.cost).laborCost, 0)),
+        };
       }
       if (c.kind === "components") {
         // D-766: each list over several lines, the same crew, material and equipment once, tied to the lines.

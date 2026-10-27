@@ -350,8 +350,8 @@ export const COST_CASES = [
   // --- Exports store values rounded (D-766 F0): money to cents, quantities and hours to 2 places, per-unit
   // rates to 4, the TOTAL the sum of the stored cells. The HV copy's Building Pad Fill line, as the app
   // computes it: 2,398.900895 CCY, 57.116687976190484 MH, 0.0238095… MH/CCY, $109.989…/hr, $6,282.2073938… labour.
-  // A second line of $0.005: the column balanced to its own total ($6,282.2124 → $6,282.21), the larger
-  // remainder keeping its cent, so the $0.005 line stores $0.00 and TOTAL is the screen's $6,282.21.
+  // A second line of $0.005: each line rounded once, alone (D-797), so it stores $0.01 and TOTAL is the sum of
+  // the stored lines, $6,282.22, as the screen's TOTAL reads.
   {
     id: "export-stored-values",
     kind: "stored",
@@ -359,7 +359,7 @@ export const COST_CASES = [
       { qty: 2398.900895, total_mh: 57.116687976190484, unit_mh: 0.02380952380952381, wage: 109.98900000000002, labor_cost: 6282.207393813216, unit_labor: 2.618785714285715 },
       { qty: 0.004999, total_mh: 0, unit_mh: 0.00005, wage: 40, labor_cost: 0.005, unit_labor: 0.00005 },
     ],
-    expect: { qty: 2398.9, total_mh: 57.12, unit_mh: 0.0238, wage: 109.99, labor_cost: 6282.21, unit_labor: 2.6188, qty2: 0, unit_mh2: 0.0001, labor_cost2: 0, total: 6282.21 },
+    expect: { qty: 2398.9, total_mh: 57.12, unit_mh: 0.0238, wage: 109.99, labor_cost: 6282.21, unit_labor: 2.6188, qty2: 0, unit_mh2: 0.0001, labor_cost2: 0.01, total: 6282.22 },
   },
   // --- Cost components sum across the project (D-766): the same crew, material and equipment once ---------
   // Two lines with the same crew (2 Laborers at $40, 20 SF/hr), material (Board $3/SF) and equipment
@@ -381,31 +381,31 @@ export const COST_CASES = [
     ],
     expect: { laborRows: 1, laborMh: 15, labor: 600, materialRows: 1, material: 450, materialQty: 150, equipmentRows: 1, equipment: 400, equipmentDays: 2, sections: 3, all: 1450, lines: 1450, quantityRows: 1, quantity: 150 },
   },
-  // The exported list in whole cents (D-766 F0): a crew of $100.00 over three crafts of $33.3333… stores
-  // $33.34 + $33.33 + $33.33 = $100.00, and two crews of $0.005 and $0.005 store $0.01 + $0.00 = $0.01.
+  // The list in whole cents, each line split within itself (D-797): a line whose crew of three crafts costs
+  // $100.00 stores $33.34 (Laborer, its first) + $33.33 + $33.33 = $100.00; two typed lines of $0.005 each round
+  // once alone to $0.01, so "Typed rates" is $0.02 and the list $100.02, the three lines as the grid shows them.
   {
     id: "components-cents",
-    kind: "balance",
-    rows: [
-      { key: "a", depth: 0, label: "Crew A", values: { total: 100 } },
-      { key: "a|1", depth: 1, label: "Laborer", values: { total: 100 / 3 } },
-      { key: "a|2", depth: 1, label: "Operator", values: { total: 100 / 3 } },
-      { key: "a|3", depth: 1, label: "Foreman", values: { total: 100 / 3 } },
-      { key: "b", depth: 0, label: "Crew B", values: { total: 0.005 } },
-      { key: "c", depth: 0, label: "Crew C", values: { total: 0.005 } },
-    ],
-    expect: { crafts: 100, first: 33.34, b: 0.01, c: 0, total: 100.01 },
+    kind: "cents",
+    expect: { crafts: 100, laborer: 33.34, typed: 0.02, total: 100.02, lines: 100.02 },
   },
-  // --- Every figure as shown (D-772): totals and their parts add up as they read ----------------------
-  // Three lines of $100 / 3 labour and one of $0.006 labour and $0.006 material. Each column balanced to its
-  // own rounded total: labour $100.006 → $100.01 (33.34 + 33.33 + 33.33 + 0.01), material $0.01; each row's
-  // Item Cost its shown types' sum (the last $0.02), and the whole $100.02 = $100.01 + $0.01, the rounded
-  // types added. Rounded once, the unrounded sum would read $100.01, a cent short of its parts.
+  // --- Bottom-up rounding (D-797, supersedes D-772's balancing): each line rounds once, the rest adds ------
+  // Three lines of $100 / 3 labour and one of $0.006 labour and $0.006 material. Each line's types round once
+  // from its own figures: 33.33, 33.33, 33.33, and $0.01 + $0.01 = $0.02. Labour is their sum, $100.00, material
+  // $0.01, the whole $100.01; no line takes a cent from another. (The unrounded sum, $100.012, also reads
+  // $100.01 here; it need not in general.)
   {
     id: "shown-adds-up",
     kind: "shown",
     rows: [{ laborCost: 100 / 3 }, { laborCost: 100 / 3 }, { laborCost: 100 / 3 }, { laborCost: 0.006, totalMaterialCost: 0.006 }],
-    expect: { items: "33.34,33.33,33.33,0.02", labor: 100.01, material: 0.01, whole: 100.02, roundedOnce: 100.01 },
+    expect: { items: "33.33,33.33,33.33,0.02", labor: 100, material: 0.01, whole: 100.01, roundedOnce: 100.01 },
+  },
+  // A rate read back from a component-priced amount (D-797): 10,000 BCY at $7,093.66 shows $0.709366, six
+  // places, since $0.7094 × 10,000 = $7,094.00; $1,000.00 over 400 SF shows $2.50, two.
+  {
+    id: "rate-places",
+    kind: "places",
+    expect: { bcy: 6, sf: 2 },
   },
   // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
   // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared
