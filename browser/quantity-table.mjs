@@ -117,6 +117,7 @@ try {
     const bid = await import("/src/lib/estimate/bidSummary.ts");
     const formula = await import("/src/lib/takeoff/subItems/formula.ts");
     const sums = await import("/src/lib/estimate/summaries.ts");
+    const nr = await import("/src/lib/estimate/noneReason.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
@@ -196,6 +197,16 @@ try {
         const children = costing.sumCosts(c.parts.map(one));
         const own = costing.computeLineCost({ quantity: c.parentQty, unit: "LF", input: { ...costing.EMPTY_COST_INPUT, wastage_pct_override: 0 }, unitWastage: new Map(), components: c.own.map((row) => comps.evaluateComponent(row, { parent: c.parentQty, qty: c.parentQty })), netQty: c.parentQty, rules: 2 });
         return { children: children.itemCost, own: own.itemCost, parent: costing.sumCosts([children, own]).itemCost };
+      }
+      if (c.kind === "norate") {
+        // D-800: the No rate rule and the line's note, by the reason its type has no activity.
+        const inc = { reason: "included", included_in: "a12" };
+        const hand = { reason: "by_hand", included_in: null };
+        const name = (u) => (u === "a12" ? "Pipe crew" : undefined);
+        return {
+          plain: nr.flaggedNoRate(0, null), included: nr.flaggedNoRate(0, inc), byHand: nr.flaggedNoRate(0.004, hand), pricedByHand: nr.flaggedNoRate(12.5, hand),
+          includedNote: nr.noneNote(inc, name), byHandNote: nr.noneNote(hand, name), plainNote: nr.noneNote(null, name),
+        };
       }
       if (c.kind === "places") {
         // D-797: the places a read-back rate shows.

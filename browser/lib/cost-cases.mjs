@@ -407,6 +407,15 @@ export const COST_CASES = [
     kind: "places",
     expect: { bcy: 6, sf: 2 },
   },
+  // --- A line type mapped to no activity, with a reason (D-800) --------------------------------------
+  // At $0 a line reads No rate, except one whose type is "Included in" another activity (the pipe crew's
+  // trench excavation in Pipe crew); "Price by hand" stays flagged until priced; a priced line never is.
+  // Its notes: "Included in Pipe crew", "Price by hand", none without a reason.
+  {
+    id: "norate-reason",
+    kind: "norate",
+    expect: { plain: true, included: false, byHand: true, pricedByHand: false, includedNote: "Included in Pipe crew", byHandNote: "Price by hand", plainNote: null },
+  },
   // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
   // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared
   // machine of that class spread over lines A and B (2 units, 3 days each, $300 + $200, 10 + 5 EH): one row,
