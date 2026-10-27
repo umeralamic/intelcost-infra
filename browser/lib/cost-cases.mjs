@@ -429,6 +429,17 @@ export const COST_CASES = [
     kind: "stitch-engine",
     expect: { turn: 0, miss: 0, chainC: 0.5, flagPct: -0.974, likely: "source", factor: 0.99026, count: 2, largest: "Pad", after: 980.1, printedOff: 1, ctrlX: 0.2, ctrlY: 0.5 },
   },
+  // --- Earthwork site choices (D-806), worked by hand, factors 1 -------------------------------------------
+  // One region, 1,000 BCY cut and 500 CCY fill; the cut 700 BCY of a suitable layer L1 and 300 BCY of a rock layer
+  // L2. As before (no choices): soil export 200 BCY, rock export 300, the cut "Cut". Rock re-used as fill and the
+  // surplus stockpiled: the surplus is 500 BCY on a "Surplus soil, stockpiled on site" line, no rock export; dozer
+  // push makes the cut line "Cut, dozer push" (role cut_push). "All suitable" with L2 unsuitable rather than rock:
+  // no unsuitable export, a 500 BCY soil export.
+  {
+    id: "site-choices",
+    kind: "site-choices",
+    expect: { before: "cut|soil_export:200|soil_export:300", after: "cut_push|soil_stockpile:500", allSuitable: "cut|soil_export:500" },
+  },
   // --- GPS Export for machines (D-805), worked by hand at 1"=60', international feet, flat ground at 100 ft ---------
   // Four points missing 0.3 ft each (0.005 in on paper, good), the fit taking +0.2 % of scale; typed elevations 102,
   // 102, 102, 102.2: the shift is +2.05 ft, the residuals -0.05, -0.05, -0.05, +0.15, inside half a 1 ft interval:

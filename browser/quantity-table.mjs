@@ -120,6 +120,7 @@ try {
     const nr = await import("/src/lib/estimate/noneReason.ts");
     const stitch = await import("/src/lib/takeoff/earthwork/stitch.ts");
     const machine = await import("/src/lib/takeoff/earthwork/export/machine.ts");
+    const earthLines = await import("/src/lib/takeoff/earthwork/lines.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
@@ -208,6 +209,20 @@ try {
         return {
           plain: nr.flaggedNoRate(0, null), included: nr.flaggedNoRate(0, inc), byHand: nr.flaggedNoRate(0.004, hand), pricedByHand: nr.flaggedNoRate(12.5, hand),
           includedNote: nr.noneNote(inc, name), byHandNote: nr.noneNote(hand, name), plainNote: nr.noneNote(null, name),
+        };
+      }
+      if (c.kind === "site-choices") {
+        // D-806: where each surplus goes, how cut reaches fill, and All suitable, on the lines engine.
+        const base = (kind, assumptions) => ({
+          units: "CY", regions: [{ id: null, label: "Site", cutCY: 1000, fillCY: 500 }], stripAreas: [], stripMeta: [], features: [],
+          assumptions: { suitable: true, fillType: "", swell: 1, shrink: 1, ...assumptions },
+          site: { layers: [{ regionId: null, layerId: "L1", name: "L1", bank: 700, shrink: 1, swell: 1, kind: "suitable" }, { regionId: null, layerId: "L2", name: "L2", bank: 300, shrink: 1, swell: 1, kind }] },
+        });
+        const words = (ls) => ls.filter((l) => /cut|soil_/.test(l.role) && l.role !== "rock_hard_dig").map((l) => (l.role.startsWith("soil_") ? `${l.role}:${Math.round(l.bankQuantity ?? l.quantity)}` : l.role)).join("|");
+        return {
+          before: words(earthLines.earthworkLines(base("rock", {}))),
+          after: words(earthLines.earthworkLines(base("rock", { choices: { surplus: { soil: "stockpile", "layer:L2": "reuse" }, method: "dozer", push_ft: 100, method_by_feature: {} } }))),
+          allSuitable: words(earthLines.earthworkLines(base("unsuitable", { allSuitable: true }))),
         };
       }
       if (c.kind === "machine") {

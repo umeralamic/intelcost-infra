@@ -329,3 +329,42 @@ allows it.
 | G8 | A "Building pad" tick on Site Features? | **Yes.** |
 
 The dialog's seven changes are accepted as written. **Built so far:** the three hours-table rows "Writers and readers", "Surfaces" and "Linework and points" (D-664 to D-666).
+
+## For machines (2026-10-27, D-805; SITE_AND_EARTHWORK_PLAN section C, the founder's tolerances)
+
+Built on F30 as it stood; nothing in the founder's projects changed.
+
+1. **Four control points or more, each with N, E and elevation.** The Coordinates panel has an Elevation column. With
+   fewer (or one without an elevation, or one off the existing ground), the dialog and every file say NOT FOR MACHINE
+   USE: the zip's and each file's name end `_NOT-FOR-MACHINE-USE`, the LandXML carries it as its warning, the README
+   heads with it.
+2. **Residuals:**
+   - **Horizontal, on paper:** the miss over the drawing's scale, good to 0.01 in, a warning to 0.02 in. The export
+     stops past that, naming the worst point.
+   - **Scale:** the fit may take up to 0.5 % (reported in the dialog and the README); past that it stops: "the
+     sheet's calibration is likely wrong".
+   - **Vertical:** a warning past half the contour interval (the existing ground's commonest contour step);
+     otherwise reported.
+   - The tolerances are editable in the dialog (Tolerances).
+3. **Property corners as the default controls:** a new point is labelled PC-1, PC-2…; it snaps to a takeoff corner as
+   before (D-680), a boundary vertex among them.
+4. **In the files:**
+   - The control points go in the points CSV (description `CONTROL PC-n`), or in a Control CSV of their own for
+     machine control, which writes no points CSV.
+   - In the DXF they go on a CONTROL layer: a 2 ft cross and the label.
+5. **Transform:**
+   - Horizontal: rotation and shift, the scale free only within the tolerance.
+   - Vertical: one shift, the control points' elevations against the existing ground under them, averaged, added to
+     every elevation written.
+6. **One coordinate system per project:** a second set of coordinates in other units, another system or another EPSG
+   is refused, naming the one it clashes with. Units, system and vertical datum go in the LandXML and DXF headers and
+   the README; the CSV keeps no header row (G5: field software reads one as a bad point), so the README names them for
+   it.
+7. **Reuse:**
+   - These are the same `sheet_georef` points Stitch sheets places a sheet by (D-804, "Control points") and F18
+     reads through its links.
+   - Reading the engineer's own DXF for coordinates, later: import its CONTROL or boundary entities, match them to
+     the plan's corners and fit to them. About one to two days; only where the DXF is drawn in real coordinates
+     (many are in a local origin).
+8. **Not covered:** coordinates taken through a link or a joined site (`through`) are exported as before, without
+   the machine check; the check is for a sheet's own points.

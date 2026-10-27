@@ -23861,3 +23861,63 @@ sum of the parts it shows" stands; its largest-remainder balancing across rows i
   The api recomputes every quantity, as any scale change; one Ctrl+Z step (D-642).
 - **Check a printed length (A7):** in the Scale menu and in the Stitch panel. Two clicks and the printed length
   give the % off; past 0.5 % it offers Recalibrate. The result feeds the Stitch scale check.
+
+## D-805: GPS Export for machines: four control points with elevations, residuals on paper, one vertical shift (accepted 2026-10-27)
+
+**Status:** accepted (SITE_AND_EARTHWORK_PLAN section C; the founder's answer 4). Details in `gps_export_PLAN.md`,
+"For machines".
+
+- **NOT FOR MACHINE USE** with fewer than four control points, each with N, E and elevation, in every file's name,
+  the LandXML's warning and the README.
+- **Tolerances (editable):**
+  - Horizontal: good to 0.01 in on paper, a warning to 0.02 in, the export stops past that, naming the worst point.
+  - Scale: the fit takes up to 0.5 %, reported; past that it stops ("the sheet's calibration is likely wrong").
+  - Vertical: a warning past half the contour interval.
+- **One vertical shift** from the control elevations against the existing ground, added to every elevation exported.
+- **Control points in the files:** in the CSV (`CONTROL PC-n`, a Control CSV for machine control) and on a CONTROL
+  layer in the DXF.
+- **Points:** new ones are labelled PC-n (property corners as the default controls); an Elevation column in
+  Coordinates (`z` on a point, no migration: the points are JSON).
+- **One coordinate system per project:** the api refuses a second unit, system or EPSG.
+- **Not covered:** coordinates taken through a link or site skip the check. The CSV keeps no header row (G5); the
+  README names its units and system.
+- The pure check is `lib/takeoff/earthwork/export/machine.ts`, with a quantity-table row.
+
+## D-806: Earthwork choices: suitability by soil layer, the import material, where each surplus goes, how cut reaches fill (accepted 2026-10-27)
+
+**Status:** accepted (SITE_AND_EARTHWORK_PLAN section B; the founder's answers 5 and 6).
+
+- **B1, native suitability:**
+  - With soil layers from bores: "Per soil layers (from bores)" by default, each layer's suitability in a line, and
+    "Edit soil layers".
+  - "All suitable" (a layer marked unsuitable is soil; rock still leaves unless re-used) and "None suitable" override.
+  - Without bores: Yes / No.
+  - `native_suitable` is text (`layers`, `all`, `none`; migration d806, value for value: true → `layers`, the old
+    Yes, false → `none`). The version key writes `layers` and `none` as it wrote true and false, so no result turned
+    stale.
+- **B2, the import material:** "Fill type required" is "Import material (if the site is short of fill)": needed only
+  when the last Calculate found an import, otherwise optional and greyed. The dialog says how it differs from a Site
+  Feature's undercut replacement fill.
+- **B3, where each surplus goes:**
+  - The surpluses: the net surplus cut, each rock or unsuitable soil layer, and undercut spoil. Each goes to Haul off
+    (the default), Stockpile on site, Re-use as fill, or Waste on site (spoil area).
+  - How each prices:
+    - Haul off: the Soil Export (or rock or unsuitable export) line, loose.
+    - Stockpile and Waste: their own lines (`soil_stockpile`, `soil_waste`) in bank, priced as load, on-site haul
+      and spread (A1), with no highway trucks or tipping.
+    - Re-use: no line; the material counts as fill in the balance.
+  - Stored in `earthwork_assumptions.site_choices` (JSON, migration d806, null on every existing row).
+- **B4, how cut reaches fill:**
+  - Excavator and trucks (A1, the default), Dozer push or Scraper; a Site Feature can take its own method.
+  - The cut line becomes "Cut, dozer push" (`cut_push`) or "Cut, scraper" (`cut_scraper`). Fill stays Place and
+    compact.
+  - Starter release 3 (migration d807, the national `eqlib` tables only):
+    - A14 Dozer push: the catalog's 100 ft push. A 200 or 300 ft push in the assumptions scales the production by
+      the catalog's rates (`_push_factor`).
+    - A15 Scraper: the catalog's 1,000 ft load-haul-dump.
+    - The line map for the four new roles.
+    - Both are drafts. A workspace takes them up when it next reads its earthwork production, as every release.
+  - **Departure:** no scraper class in the catalog has a rental rate, so a scraper line reads Missing data until a
+    company rate is typed.
+- **No new column for the per-feature method:** it is kept in `site_choices` (by the feature's uuid).
+- **Not changed:** with the defaults nothing moves. The HV copy recalculated with them is $943,321.80, as before.
