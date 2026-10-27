@@ -4,6 +4,7 @@ account's own workspace, reading the original and writing only to the copy's wor
     docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/copy-3d-test.py \
         fx.equip.202610230651@bench.intelcost.io 4abc4fb3-c834-491f-abe7-53a75c452937"
     docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/copy-3d-test.py --count"
+    (--source <project uuid> first copies another project the founder named, 2026-10-27)
 
 The copy is the app's own cross-workspace copier (`duplicate.duplicate` with `Into`, D-384): it reads
 every row of the project and its stored files, and inserts the rows under the target workspace and the
@@ -36,6 +37,8 @@ from app.features.project.models import Project
 from app.features.workspace.models import Workspace, WorkspaceMember
 
 SOURCE = "042c8817-4a65-47ba-95d8-686ecf986246"
+"""The project copied; `--source <uuid>` names another the founder asked for by name (2026-10-27:
+"10793 SBR" for Stitch sheets), read only like this one."""
 BENCH_CONSTRUCTION_TEST = "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9"
 
 COUNTED = (
@@ -99,6 +102,9 @@ def counts(session: Any) -> dict[str, Any]:
 
 
 def main(argv: list[str]) -> int:
+    global SOURCE
+    if argv[:1] == ["--source"]:
+        SOURCE, argv = argv[1], argv[2:]
     with SyncSessionFactory() as session:
         before = counts(session)
         print(json.dumps({"before": before}, indent=1))
