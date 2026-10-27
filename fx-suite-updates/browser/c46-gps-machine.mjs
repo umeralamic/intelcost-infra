@@ -67,6 +67,8 @@ await run("c46-gps-machine", [
       const saved = await setPoints(AT.slice(0, 3).map((p, i) => at(p, i)));
       expect(saved.status === 200, `coordinates: ${saved.status} ${JSON.stringify(saved.body)}`);
       await openGps(page);
+      // The +2 ft shift asks first even here (D-808): it goes into these files' elevations too.
+      if ((await page.locator("[data-gps-machine]").getAttribute("data-gps-machine")) === "confirm-shift") await page.locator("[data-gps-confirm-shift-yes]").click();
       const state = await page.locator("[data-gps-machine]").getAttribute("data-gps-machine");
       expect(state === "not-for-machine", `state ${state}`);
       const [download] = await Promise.all([page.waitForEvent("download"), page.locator("[data-gps-download]").click()]);
@@ -75,13 +77,18 @@ await run("c46-gps-machine", [
     },
   },
   {
-    title: "D-805: four points with elevations: ready, a +2 ft shift, a Control CSV and a CONTROL layer",
+    title: "D-805, D-808: four points with elevations: a +2 ft shift asks first, Download held; confirmed, ready",
     run: async ({ page }) => {
       const saved = await setPoints(AT.map((p, i) => at(p, i)));
       expect(saved.status === 200, `coordinates: ${saved.status}`);
       await openGps(page);
       const section = page.locator("[data-gps-machine]");
-      expect((await section.getAttribute("data-gps-machine")) === "ready", await section.innerText());
+      // Over the 0.5 ft that asks first (D-808): the question, and nothing downloads until it is answered.
+      expect((await section.getAttribute("data-gps-machine")) === "confirm-shift", await section.innerText());
+      expect(/Control elevations differ from the model by 2\.00 ft\. Different vertical datum or wrong elevations\?/.test(await section.innerText()), await section.innerText());
+      expect(await page.locator("[data-gps-download]").isDisabled(), "Download open before the shift was confirmed");
+      await page.locator("[data-gps-confirm-shift-yes]").click();
+      await page.waitForFunction(() => document.querySelector("[data-gps-machine]")?.getAttribute("data-gps-machine") === "ready", null, { timeout: 10000 });
       expect(/vertical shift \+2\.00 ft/.test(await section.innerText()), await section.innerText());
       const [download] = await Promise.all([page.waitForEvent("download"), page.locator("[data-gps-download]").click()]);
       const name = download.suggestedFilename();
