@@ -429,13 +429,16 @@ await run("f9-estimating", [
     },
   },
   {
-    title: "slow load (M3, D-690): on a cold open with the rates' read held 5 s, Paint's Unit Man Hours typed during the load keeps 0.25 after the late read lands, after a reload and in a second window",
+    title: "slow load (M3, D-690): on a cold open with the rates' read held until the typing is saved (D-796), Paint's Unit Man Hours typed during the load keeps 0.25 after the late read lands, after a reload and in a second window",
     run: async ({ page, context }) => {
       // The first read of the rates is answered by the api at once (the figures as they were before
-      // the save) and handed to the page only 5 s later: a slow connection, on an empty cache.
+      // the save) and handed to the page only after the typing is saved: a slow connection, on an empty cache.
       let held = 0;
       let landedAt = 0;
       let holdError = null;
+      /** Released by the fixture once the typing is saved (D-796): a 5 s timer could run out first under load. */
+      let release;
+      const released = new Promise((r) => (release = r));
       await page.route(/\/estimate\/costs(\?|$)/, async (route) => {
         if (route.request().method() !== "GET" || held > 0) return route.fallback();
         held += 1;
@@ -443,7 +446,7 @@ await run("f9-estimating", [
           // Fetched from here, over the compose network (the page's localhost is not this one's).
           const url = route.request().url();
           const response = await route.fetch({ url: serviceUrl(url) ?? url });
-          await new Promise((r) => setTimeout(r, 5000));
+          await released;
           await route.fulfill({ response });
         } catch (error) {
           holdError = String(error).slice(0, 200);
@@ -459,6 +462,7 @@ await run("f9-estimating", [
       await rate(page, "Unit Man Hours", "Paint", 0.25);
       await saved;
       const savedAt = Date.now();
+      release();
       // The held read lands after the save.
       await waitFor(async () => (landedAt ? true : null), "the held read to land", 15000);
       expect(!holdError, `the held read failed: ${holdError}`);

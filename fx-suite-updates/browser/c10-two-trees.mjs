@@ -202,6 +202,9 @@ await run("c10-two-trees", [
       await page.getByRole("group", { name: MEASURE_TOOLS }).getByRole("button", { name: "Linear", exact: true }).click();
       await form(page).waitFor({ timeout: 10000 });
       await openWbs(page);
+      // Counted once both show (D-796): the form opens before its filing fields render.
+      await form(page).locator("[data-wbs-folder]").waitFor({ timeout: 10000 });
+      await form(page).locator("[data-wbs-classification]").waitFor({ timeout: 10000 });
       const folderField = await form(page).locator("[data-wbs-folder]").count();
       const codeField = await form(page).locator("[data-wbs-classification]").count();
       const folderShown = ((await form(page).locator("[data-wbs-folder]").innerText()) ?? "").replace(/\s+/g, " ");
@@ -228,6 +231,8 @@ await run("c10-two-trees", [
       await page.getByRole("group", { name: MEASURE_TOOLS }).getByRole("button", { name: "Area", exact: true }).click();
       await form(page).waitFor({ timeout: 10000 });
       await openWbs(page);
+      await form(page).locator("[data-wbs-folder]").waitFor({ timeout: 10000 });
+      await form(page).locator("[data-wbs-classification]").waitFor({ timeout: 10000 });
       const both = [await form(page).locator("[data-wbs-folder]").count(), await form(page).locator("[data-wbs-classification]").count()];
       const picked = ((await form(page).locator("[data-wbs-classification] [data-picked-classification]").first().textContent().catch(() => "")) ?? "").trim();
       expect(both.join() === "1,1", `New Measurement fields: Folder ${both[0]}, Classification ${both[1]}`);
@@ -246,6 +251,8 @@ await run("c10-two-trees", [
     run: async ({ page }) => {
       await open(page, "?tab=estimating");
       const estRow = (name) => page.locator(`tr[data-estimate-row="${name}"]`).first();
+      // Every read landed (D-796), then the rows: no clock.
+      await page.locator("[data-estimating][data-estimate-ready]").waitFor({ timeout: 60000 });
       await estRow("Wall").waitFor({ timeout: 30000 });
       const show = page.getByRole("button", { name: "Show the sidebar", exact: true });
       if (await show.isVisible()) await show.click();
@@ -259,14 +266,14 @@ await run("c10-two-trees", [
       const byCode = await waitFor(async () => {
         const o = await order();
         return o.includes("Ceiling") && o.includes("Beam") ? o : null;
-      }, "every row in the grid", 15000);
+      }, "every row in the grid", 30000);
       const g = Object.fromEntries(["Wall", "Beam", "Paint", "Ceiling"].map((n) => [n, groupOf(byCode, n) ?? ""]));
       expect(/03/.test(g.Wall) && /09/.test(g.Paint) && g.Paint === g.Ceiling && !/03|09/.test(g.Beam), `by classification: ${byCode.join(" / ")}`);
       await groupBy("Custom Folder");
       const byFolder = await waitFor(async () => {
         const o = await order();
         return o.some((e) => /Structure/.test(e)) ? o : null;
-      }, "a Structure group", 15000);
+      }, "a Structure group", 30000);
       const f = Object.fromEntries(["Wall", "Beam", "Paint", "Ceiling"].map((n) => [n, groupOf(byFolder, n) ?? ""]));
       expect(/Structure/.test(f.Wall) && f.Wall === f.Beam && !/Structure/.test(f.Paint) && !/Structure/.test(f.Ceiling), `by folder: ${byFolder.join(" / ")}`);
       return `Classification: Wall "${g.Wall}", Beam "${g.Beam}", Paint and Ceiling "${g.Paint}"; Custom Folder: Wall and Beam "${f.Wall}", Paint "${f.Paint}"`;

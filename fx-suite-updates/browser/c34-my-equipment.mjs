@@ -31,17 +31,10 @@ async function machineTotal(page) {
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.sheet_uuid}?tab=estimating`);
   const row = page.getByRole("radiogroup", { name: "Reports" }).getByRole("radio").filter({ hasText: /^Equipment/ });
   await row.filter({ hasText: /\$[0-9]/ }).waitFor({ timeout: 30000 });
-  // The total moves while the estimate's reads land (a day's rent before the usage hours): the
-  // figure that holds for three seconds.
-  const read = async () => (await row.innerText()).replace(/\s+/g, " ").replace(/^Equipment\s*/, "");
-  let last = await read();
-  for (let held = 0; held < 3; ) {
-    await page.waitForTimeout(1000);
-    const now = await read();
-    held = now === last ? held + 1 : 0;
-    last = now;
-  }
-  return last;
+  // The total moves while the estimate's reads land (a day's rent before the usage hours): read
+  // it once every read is in (D-796).
+  await page.locator("[data-estimating][data-estimate-ready]").waitFor({ timeout: 60000 });
+  return (await row.innerText()).replace(/\s+/g, " ").replace(/^Equipment\s*/, "");
 }
 
 async function openLibrary(page, email = null) {
