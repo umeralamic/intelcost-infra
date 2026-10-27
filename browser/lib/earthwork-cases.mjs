@@ -1715,6 +1715,25 @@ function realShapeRows() {
       tinOnly: { surface: "EG", at: [0.8, 0.4] },
       expect: { egPoints: 185, egConstraints: 180, egZAt: 110 },
     },
+    // 5. D-821: a building pad with an FFE. The square x 0.2–0.6, y 0.2–0.6 (1,600 SF) on the flat
+    // pad (EG = FG = 100), FFE 102, 0.5 ft FFE to pad subgrade: inside it finished grade is 102 and
+    // subgrade 101.5, so Δz = 101.5 − 100 = +1.5: fill 1,600 × 1.5 = 2,400 CF, no cut. Without the
+    // FFE the contours' 100 less 0.5 ft cut 800 CF.
+    {
+      id: "real-shape-pad-ffe",
+      kind: "realshape",
+      side: 100,
+      items: [...spots("EG", 100), ...spots("FG", 100), boundary([[0, 0], [1, 0], [1, 1], [0, 1]]), { ...feature("pad", 0.5, [geo(D_SQUARE, { closed: true })]), building_pad: true, ffe_ft: 102 }],
+      expect: { "feature:pad:areaSF": 1600, cutCF: 0, fillCF: 2400 },
+    },
+    // 6. The same FFE on a feature not ticked Building pad is not read: 800 CF of cut, as before.
+    {
+      id: "real-shape-ffe-not-a-pad",
+      kind: "realshape",
+      side: 100,
+      items: [...spots("EG", 100), ...spots("FG", 100), boundary([[0, 0], [1, 0], [1, 1], [0, 1]]), { ...feature("slab", 0.5, [geo(D_SQUARE, { closed: true })]), building_pad: false, ffe_ft: 102 }],
+      expect: { "feature:slab:areaSF": 1600, cutCF: 800, fillCF: 0 },
+    },
   ];
 }
 

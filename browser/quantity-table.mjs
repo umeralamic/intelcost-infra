@@ -123,6 +123,7 @@ try {
     const landxml = await import("/src/lib/takeoff/earthwork/export/landxml.ts");
     const model = await import("/src/lib/takeoff/earthwork/export/model.ts");
     const setx = await import("/src/lib/takeoff/earthwork/export/exportSet.ts");
+    const surf = await import("/src/lib/takeoff/earthwork/export/surfaces.ts");
     const earthLines = await import("/src/lib/takeoff/earthwork/lines.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
@@ -227,6 +228,21 @@ try {
           after: words(earthLines.earthworkLines(base("rock", { choices: { surplus: { soil: "stockpile", "layer:L2": "reuse" }, method: "dozer", push_ft: 100, method_by_feature: {} } }))),
           allSuitable: words(earthLines.earthworkLines(base("unsuitable", { allSuitable: true }))),
         };
+      }
+      if (c.kind === "gps-ffe") {
+        // D-821: GPS Export's finished grade and subgrade with a pad's FFE. A 100 ft square at 100; the pad
+        // x 20–60, y 20–60 ft, FFE 102, 0.5 ft deep: finished 102 and subgrade 101.5 inside it past the 0.1 ft
+        // face, 100 outside.
+        const fg = [{ rings: [[[0, 0], [100, 0], [100, 100], [0, 100]]], z: () => 100 }];
+        const pad = { itemId: "pad", label: "pad", depthFt: 0.5, ffeFt: 102, polygons: [[{ x: 0.2, y: 0.2 }, { x: 0.6, y: 0.2 }, { x: 0.6, y: 0.6 }, { x: 0.2, y: 0.6 }]], undercutDepthFt: null, undercutOffsetFt: 0, undercutMaterial: null, undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
+        const at = (patches, x, y) => {
+          const inRing = (r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
+          const p = patches.find((q) => inRing(q.rings[0]) && !q.rings.slice(1).some(inRing));
+          return p ? Math.round(p.z(x, y) * 1000) / 1000 : null;
+        };
+        const finished = surf.finishedPatches(fg, [pad], 100, 100);
+        const sub = surf.subgradePatches(finished, [pad], 100, 100);
+        return { fgIn: at(finished, 40, 40), fgOut: at(finished, 80, 80), subIn: at(sub, 40, 40), subOut: at(sub, 80, 80) };
       }
       if (c.kind === "gps-d808") {
         // D-808: a fitted grid with no system named; DXF R12 transliterated; LandXML in real UTF-8 and read back.
