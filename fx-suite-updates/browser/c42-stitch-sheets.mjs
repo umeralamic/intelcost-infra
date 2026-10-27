@@ -85,7 +85,9 @@ await run("c42-stitch-sheets", [
       const group = page.locator("[data-site-group]");
       await group.waitFor({ timeout: 10000 });
       expect((await page.locator("[data-site-rows]").count()) === 0, "the old block above the search is back");
-      expect((await group.locator("[data-site-members] [data-in-site]").count()) === 1, "page 2 not under the anchor");
+      // The site holds its sheets (D-810): its row first, the anchor and page 2 under it.
+      expect((await group.locator(":scope > :first-child").getAttribute("data-site-open")) !== null, "the site row is not first");
+      expect((await group.locator("[data-site-members] > *").count()) === 2, "the anchor and page 2 not under the site");
       await page.locator("[data-site-open]").first().click();
       await page.waitForTimeout(0);
       expect((await page.locator("[data-view-error]").count()) === 0, "the site view failed");

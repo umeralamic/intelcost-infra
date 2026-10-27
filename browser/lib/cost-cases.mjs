@@ -448,7 +448,21 @@ export const COST_CASES = [
   {
     id: "machine-check",
     kind: "machine",
-    expect: { ready: true, shift: 2.05, last: 0.15, three: "3 control points: a machine needs 4 or more", worst: "PC-2", scaleStop: true, interval: 1, onTin: 100 },
+    expect: {
+      ready: true, shift: 2.05, last: 0.15, three: "3 control points: a machine needs 4 or more", worst: "PC-2", scaleStop: true, interval: 1, onTin: 100,
+      // D-808: +2.05 ft is over the 0.5 ft that asks first: asked, not ready, until confirmed; 1.7 ft lower (+0.35) is not asked.
+      asks: "Control elevations differ from the model by 2.05 ft. Different vertical datum or wrong elevations?", askedReady: false, confirmed: true, small: null, smallReady: true,
+    },
+  },
+  // --- GPS Export files (D-808) and the scale check on links already made (D-809) -------------------------------
+  // A fit with no system typed: "Local, fitted to 4 control points". The LandXML keeps the project's em dash and reads
+  // the surface's name back whole (its & and curly quotes too). DXF R12 text: the dash a hyphen, é an e, ± "+/-",
+  // ° " deg", × "x", ½ after a digit " 1/2", ² "2", the quotes plain. Two sheets at 1"=60.59' and 1"=60', a match line across the
+  // same places: the points imply -0.97 %, the 60.59' sheet likely off; the survey sheet at 1"=60' is not flagged.
+  {
+    id: "gps-d808",
+    kind: "gps-d808",
+    expect: { system: true, project: true, readBack: "Proposed grade – Café & “Pad”", dxf: 'C-200 - Cafe +/-2 deg x 3 1/2 m2 "A"', flags: "P3>P4:P3:-0.97" },
   },
   // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
   // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared

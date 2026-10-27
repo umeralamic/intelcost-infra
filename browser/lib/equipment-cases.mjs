@@ -37,6 +37,11 @@ export const EQUIPMENT_CASES = [
   { id: "eq-ex1-owned", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "hr", hours: 61.22049172298952, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 8153.05 } },
   { id: "eq-ex1-low-fuel", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 61.22049172298952, fuelLoad: "low", units: 1, includeMob: true }, expect: { fuel: 837.6 } },
   { id: "eq-ex1-location-0.99", kind: "machine", setting: { fuel_price_diesel: 6.276 }, location: 0.99, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 61.22049172298952, fuelLoad: "med", units: 1, includeMob: true }, expect: { equipment: 5795.46, locationLabel: "From the wage set: Equipment −1 %" } },
+  // D-811: a class with no rental rate prices at the catalog's owned rate (SC-631-34: $311.06/hr without fuel), 10 hr:
+  // $3,110.60 + fuel 9.06 gal/hr × 10 × $6.276 = $568.61, $3,679.21; read "owned rate (no rental in catalog)". SC-637-34
+  // has neither rate: Missing data, the rental rate named.
+  { id: "eq-owned-fallback", kind: "machine", ...DIESEL, input: { classKey: "SC-631-34", mode: "rental", period: "auto", hours: 10, fuelLoad: "med", units: 1, includeMob: false }, expect: { total: 3679.21, equipment: 3110.6, fuel: 568.61, missing: [], fallback: true } },
+  { id: "eq-no-rate-at-all", kind: "machine", ...DIESEL, input: { classKey: "SC-637-34", mode: "rental", period: "auto", hours: 10, fuelLoad: "med", units: 1, includeMob: false }, expect: { total: null, missing: ["rent_day"], fallback: false } },
   { id: "eq-ex2-lift", kind: "machine", ...DIESEL, input: { classKey: "AW-AB-RT-60", mode: "rental", period: "auto", hours: 64, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 3895.13, equipment: 2740, fuel: 755.13, mob: 400 } },
   { id: "eq-ex2-lift-owned", kind: "machine", ...DIESEL, input: { classKey: "AW-AB-RT-60", mode: "owned", period: "hr", hours: 64, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 4497.21 } },
   { id: "eq-ex2-electric-missing-fuel", kind: "machine", ...DIESEL, input: { classKey: "AW-AB-EL-60", mode: "rental", period: "auto", hours: 64, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, equipment: 2746, missing: ["fuel_gph_med"] } },
@@ -354,7 +359,7 @@ export async function runEquipment(page, eqlib) {
         }
         const lib = resolve.library(bundleFor(eqlib, c));
         const m = cost.machineCost(lib, { hoursPerDay: 8, ...c.input });
-        return { total: m.total, equipment: m.equipment, fuel: m.fuel?.cost ?? null, mob: m.mob?.total ?? null, missing: m.missing.map((x) => x.field), locationLabel: m.location.label };
+        return { total: m.total, equipment: m.equipment, fuel: m.fuel?.cost ?? null, mob: m.mob?.total ?? null, missing: m.missing.map((x) => x.field), locationLabel: m.location.label, fallback: m.ownedFallback };
       });
     },
     [EQUIPMENT_CASES, eqlib, bundleFor.toString()],

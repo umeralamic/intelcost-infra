@@ -23961,3 +23961,113 @@ since the archive, 3 at a time; failures rerun alone and classed timing or real;
   - f5-s11 step 2 (built apps): a cold open fetches the same fit image twice, 4 ms apart, before pdf.js. The canvas
     code is unchanged since 2026-10-22. Open for a look.
 - **No app or api code changed.**
+
+## D-808: GPS Export: a large vertical shift is confirmed, the fitted grid named, every file real UTF-8 (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fixes 1 to 3 of 2026-10-27, after D-805).
+
+- **Vertical shift (fix 1):**
+  - Above 0.5 ft (a tolerance in the dialog, "Shift that asks first (ft)"), the export stops and shows "Control
+    elevations differ from the model by X ft. Different vertical datum or wrong elevations?" with Confirm shift and
+    Cancel. Cancel closes the export.
+  - A confirmed shift holds for that shift only: points or elevations that change it ask again.
+  - The README records it ("Vertical shift +X ft confirmed by the person exporting, over the 0.5 ft that asks first").
+  - At or under the tolerance it is reported as before.
+- **LandXML CoordinateSystem (fix 2):** the system as typed. With none typed and a fit applied:
+  "Local, fitted to N control points" (N the points fitted, check points left out). "Plan coordinates" only when
+  no fit is applied.
+- **Encoding (fix 3):** LandXML, the CSV and the README are written as real UTF-8: a project name's em dash stays one.
+  DXF R12 stays ASCII and is transliterated: dashes, quotes and spaces as their plain forms, accented letters as
+  their base letters, ° as "deg", ± as "+/-", × as "x", ² and ³ as 2 and 3; anything else "?". File names in the zip
+  stay ASCII.
+
+## D-809: The scale check on joins and survey links already made (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 4 of 2026-10-27, after D-804).
+
+- The check D-804 runs on a join being made now also runs on every join and survey link already made: old match
+  lines (their pairs along the line), matching points, control points, and F18 links (their control points).
+- **Where it shows:**
+  - Stitch sheets lists each flagged one, for the open sheet's site and the survey links on the open sheet.
+  - A site's view shows them at its top as it opens, for its joins and every survey link on its sheets.
+  - Each flag gives the % off, the sheet likely off and why, and "Recalibrate <sheet> (±n %)", which asks first
+    (D-804).
+- **Printed-length checks:** a printed-length check made on a sheet is what names the sheet likely off (D-804's
+  order), so the flags are read again after one.
+- **The api:** the site read returns each join's stored pairs (`pairs`). No migration.
+
+## D-810: In the Sheets tree a site holds its sheets (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 5 of 2026-10-27, after D-803).
+
+- "Site · N sheets" stands where the anchor stood, and the anchor and the members sit indented under it, the anchor
+  first. A click on the site row opens the site, as before.
+
+## D-811: A machine with no rental rate prices at the catalog's owned rate (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 6 of 2026-10-27).
+
+- A rental machine whose class has no rental rate at all (no day, week or 4-week rate) prices at the catalog's owned
+  rate without fuel, × hours, then the location factor, fuel and mob as any machine. It reads "Rental, priced at the
+  owned rate (no rental in catalog)" on the line, and "Priced at the owned rate (no rental in catalog)" in the
+  component rows.
+- Missing data only when neither rate exists: "Rental rate (no owned rate either)".
+- A class with some rental rates but not the one a fixed period asks for stays as before (the period's rate
+  missing).
+- **The starter's scraper (A15) is on SC-637-34, which has neither rate.** SC-631-34 (the same 34 yd³ bowl, single
+  engine) has an owned rate. Moving A15 to it is a release 4 of the starter, which refreshes every workspace's
+  unedited A15 when it next reads its earthwork production, Intelcost Team's included. **Not shipped: waiting for
+  the founder's word.** The 4,000 BCY scraper price was worked on a throwaway with A15's machine changed there by hand.
+
+## D-812: A sheet's fit image is fetched once on a cold open (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 7 of 2026-10-27; f5-s11 step 2).
+
+- **Cause:** on a cold open the sheet's assets can land before the sheet list. With no page size yet the canvas
+  showed the fit image through an image element, which fetched the link, while the decode for the canvas fetched it
+  too: two requests 4 to 15 ms apart.
+- **Fix:** the image element shows the decode's own bytes through an object link (`fitObjectUrl`), so one request
+  feeds both. The image's own link is used only when those bytes cannot be had. The link is revoked when its bytes
+  leave the cache.
+
+## D-814: One release run covers every fixture, each in the mode it needs (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 9 of 2026-10-27, after D-807). Supersedes "a full run" in CLAUDE.md's
+"Proving work is done": the release run is the one before any deploy to testers and any promotion to `main`.
+
+- `./fx-suite.sh release` (from `intelcost-infra/`), one command:
+  1. Every fixture (the tag's standing ones and every one written since: 153 today) but the dev-server ones, on the
+     built apps, 3 at a time. Timings are the product's there.
+  2. The dev-server ones on the dev servers: f3-s1, f3-s13, f4-s2, f5-s3, f6-s4, f7-a and r1-raster-text, plus any
+     fixture that imports the app's own modules (`/src/...`) or drives `/dev/ui`, found by name.
+  3. Every failure of 1 and 2 again, alone, in its own mode.
+  4. One summary (`fx-suite/.regress/release-<time>/summary.txt`): each mode's line, passed alone (timing), failed
+     alone (looked at). It exits non-zero when anything failed alone.
+- Not run: the harness's own scripts, measurements and setups (load-probe, proof-backlog, rv-vol2-load,
+  walkthrough-setup), f4-s12's phases and the outage and restart phases (their runners'), and what the fx stack cannot
+  run (f8-s5, f4-s27).
+- `./fx-suite.sh dev` puts the dev servers back, as `prod` puts the built apps in.
+
+## D-813: Why realtime between two api processes went over 1.5 s, and what a loaded window needs (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 8 of 2026-10-27; f6-a step 8, failing since D-696).
+
+- **Measured** (f6-a step 8 now times each leg from window B's own records; built apps, fx stack):
+  - With B still loading (the fixture's old start): the change published +56 ms after the PATCH, reached B at
+    +505 ms; B's single-item read took 1,641 to 1,816 ms; the figure at 2.4 s. The same read alone on B's api:
+    44 to 86 ms.
+  - With B settled: published +51 to +57 ms, at B +4 to +5 ms later, the read 120 to 342 ms, the figure at 641, 956
+    and 978 ms (three runs). No task over 50 ms on B's main thread.
+- **Cause:** the fixture started as soon as "Roof" was listed, while B's page was still loading (the item stream,
+  the symbol index, the estimate and earthwork reads). The bench runs each api as one worker (uvicorn `--reload`),
+  so B's read and B's frame waited behind B's own page load on that one event loop. Not the commit (D-696's
+  suspicion): the commit and the publish take about 55 ms together.
+- **Fix:** f6-a step 8 waits for B to settle (no request for 500 ms) before the change: it measures realtime
+  between two windows, not a page still loading. It passes 9/9 three times.
+- **What a loaded window needs (not built; the founder's call):**
+  1. Each api run as several workers in deployment (the bench's single `--reload` worker is a dev setting). Sockets
+     already fan out through Redis per process, so nothing else changes.
+  2. The heaviest reads (the item stream, the symbol index) serialised off the event loop, so one person's page
+     load never holds another's frames: live cursors and drafts ride the same loop (the 450 ms frame delay above).
+  3. Optionally, the changed item's figures carried in the event, so a row paints without a read. That changes
+     D-13 (the event carries uuids, what is painted comes from the api).

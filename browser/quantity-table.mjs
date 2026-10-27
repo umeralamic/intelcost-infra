@@ -120,6 +120,9 @@ try {
     const nr = await import("/src/lib/estimate/noneReason.ts");
     const stitch = await import("/src/lib/takeoff/earthwork/stitch.ts");
     const machine = await import("/src/lib/takeoff/earthwork/export/machine.ts");
+    const landxml = await import("/src/lib/takeoff/earthwork/export/landxml.ts");
+    const model = await import("/src/lib/takeoff/earthwork/export/model.ts");
+    const setx = await import("/src/lib/takeoff/earthwork/export/exportSet.ts");
     const earthLines = await import("/src/lib/takeoff/earthwork/lines.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
@@ -225,18 +228,44 @@ try {
           allSuitable: words(earthLines.earthworkLines(base("unsuitable", { allSuitable: true }))),
         };
       }
+      if (c.kind === "gps-d808") {
+        // D-808: a fitted grid with no system named; DXF R12 transliterated; LandXML in real UTF-8 and read back.
+        // D-809: an old two-point match line between sheets calibrated 1 % apart is flagged; an F18 link's pairs too.
+        const tin = { name: "Proposed grade – Café & “Pad”", description: "d", points: [{ n: 0, e: 0, z: 1 }, { n: 0, e: 10, z: 1 }, { n: 10, e: 0, z: 1 }], faces: [[0, 1, 2]] };
+        const text = landxml.writeLandXml(tin, { units: "us-ft", coordinates: { system: setx.localSystem(4), verticalDatum: "" }, project: "Hidden Valley — Rebid", made: new Date(0) });
+        const a = { feetPerPt: 60.59 / 72, widthPt: 100, heightPt: 100 };
+        const b = { feetPerPt: 60 / 72, widthPt: 100, heightPt: 100 };
+        const flags = stitch.storedFlags(
+          [
+            { source: "P3", target: "P4", pairs: [{ source: [0.1, 0.5], target: [0.1, 0.5] }, { source: [0.9, 0.5], target: [0.9, 0.5] }] },
+            { source: "S", target: "P4", pairs: [{ source: [0.1, 0.5], target: [0.1, 0.5] }, { source: [0.9, 0.5], target: [0.9, 0.5] }] },
+          ],
+          (s) => (s === "P3" ? a : s === "S" ? b : b),
+        );
+        return {
+          system: /<CoordinateSystem name="Local, fitted to 4 control points"/.test(text),
+          project: text.includes('name="Hidden Valley — Rebid"'),
+          readBack: landxml.readLandXml(text).name,
+          dxf: model.ascii("C-200 – Café ±2° × 3½ m² “A”"),
+          flags: flags.map((f) => `${f.source}>${f.target}:${f.sheet}:${Math.round(f.pct * 100) / 100}`).join("|"),
+        };
+      }
       if (c.kind === "machine") {
         // D-805: the machine check on hand-worked cases.
         const ground = { points: [{ e: -1000, n: -1000, z: 100 }, { e: 1000, n: -1000, z: 100 }, { e: 0, n: 1000, z: 100 }], faces: [[0, 1, 2]] };
         const pts = [[0, 0, 102], [100, 0, 102], [100, -100, 102], [0, -100, 102.2]].map(([x, y, z], i) => ({ label: `PC-${i + 1}`, plan: { x, y }, n: y, e: x, z, residual: 0.3 }));
         const fit = { scale: 1.002, units: "intl-ft" };
-        const ok = machine.machineCheck(pts, fit, 60, ground, 1);
+        // The +2.05 ft shift is over the 0.5 ft that asks first (D-808): asked, then ready once confirmed.
+        const asked = machine.machineCheck(pts, fit, 60, ground, 1);
+        const ok = machine.machineCheck(pts, fit, 60, ground, 1, undefined, 2.05);
+        const small = machine.machineCheck(pts.map((p) => ({ ...p, z: p.z - 1.7 })), fit, 60, ground, 1);
         const three = machine.machineCheck(pts.slice(0, 3), fit, 60, ground, 1);
         const far = machine.machineCheck(pts.map((p, i) => (i === 1 ? { ...p, residual: 1.5 } : p)), fit, 60, ground, 1);
         const scaled = machine.machineCheck(pts, { scale: 1.006, units: "intl-ft" }, 60, ground, 1);
         const r = (v) => Math.round(v * 1e4) / 1e4;
         return {
           ready: ok.machine, shift: r(ok.shiftFt), last: r(ok.points[3].vertical),
+          asks: asked.confirmShift, askedReady: asked.machine, confirmed: ok.shiftConfirmed, small: small.confirmShift, smallReady: small.machine,
           three: three.notForMachine, worst: far.stop && far.worst, scaleStop: Boolean(scaled.stop && /calibration is likely wrong/.test(scaled.stop)),
           interval: machine.contourIntervalFt([98, 99, 100, 101, 103].map((elevation) => ({ kind: "contour", surface: "EG", elevation }))),
           onTin: machine.zOn(ground, 10, 10),

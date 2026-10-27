@@ -277,11 +277,20 @@ profile):
 
 ```bash
 ./fx-suite.sh setup     # restore the tag into ./fx-suite (git-ignored), lay ./fx-suite-updates over it, retarget it, start the fx services
+./fx-suite.sh release   # THE run before testers or main (D-814): every fixture in the mode it needs, failures again alone, one summary
 ./fx-suite.sh prod      # built apps in place of the dev servers (faster, steadier under load)
-./fx-suite.sh run full  # check the isolation (fails closed), warm both apps, run the whole suite
+./fx-suite.sh dev       # the dev servers back (fixtures that import the app's own modules or drive /dev/ui need them)
+./fx-suite.sh run full  # check the isolation (fails closed), warm both apps, run the tag's standing list in the current mode
 ./fx-suite.sh refresh   # after editing an updated fixture: lay today's helpers and ./fx-suite-updates again
 ./fx-suite.sh stop      # stop the fx services
 ```
+
+**One release run (D-814).** Neither the built apps nor the dev servers run the whole list: seven fixtures (f3-s1,
+f3-s13, f4-s2, f5-s3, f6-s4, f7-a, r1-raster-text) import the app's own modules, drive `/dev/ui` or its dev override, and
+the timing fixtures (f5-s11) need the built apps. `./fx-suite.sh release` runs every fixture (the tag's and every one
+written since, 153) on the built apps 3 at a time, then the seven on the dev servers, then each failure alone in its own
+mode, and writes one summary: passed alone is timing, failed alone is looked at. A new fixture that imports from `/src`
+or drives `/dev/ui` goes to the dev servers by itself.
 
 **Fixtures updated since the tag** live in `fx-suite-updates/` (tracked), as whole files over the
 tag's own, retargeted with it. They are the ones covering what F29 touched, updated to today's

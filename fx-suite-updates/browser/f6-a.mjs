@@ -291,16 +291,72 @@ await run("f6-a", [
         await bp.goto(`${APP_B}/project/${project.uuid}/takeoff/${sheet.uuid}`);
         await bp.locator("[data-quantity-panel]").getByText("Roof").first().waitFor({ timeout: 20000 });
         await joinedTopic(bp, `ws:${workspace.uuid}:project:${project.uuid}`);
+        // B settled first (D-813): "Roof" listed comes before the rest of B's page has loaded (the estimate, the
+        // earthwork reads, the item stream, the symbol index), and on one api worker the item's read queued behind
+        // them. This measures realtime between two windows, not a page still loading.
+        await bp.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
+        // B's main thread: every task over 50 ms from here on (the paint's share of the time).
+        await bp.evaluate(() => {
+          window.__icLong = [];
+          new PerformanceObserver((list) => {
+            for (const e of list.getEntries()) window.__icLong.push({ start: performance.timeOrigin + e.startTime, took: e.duration });
+          }).observe({ type: "longtask", buffered: false });
+        });
         const roof = (await items()).find((i) => i.name.startsWith("Roof"));
+        // Each leg timed (D-813): the PATCH's reply, the event's publish (its own stamp) and arrival at B, B's reads
+        // after it, and the figure on screen.
         const at = Date.now();
         const patched = await apiCall(token, "PATCH", `${takeoff}/item/${roof.uuid}`, { pitch_mode: "riseRun", pitch_entry: "12/12" });
+        const replied = Date.now();
         expect(patched.status === 200, `patch: ${patched.status}`);
         const want = patched.body.effective_quantity.toLocaleString("en-US", { maximumFractionDigits: 2 });
+        // Read afterwards from B's own records: its socket's frames (recordSockets) and its requests' timing, so a
+        // socket or a read already open before the PATCH is seen too.
+        let seen = null;
+        const timeline = async () => {
+          seen ??= await bp.evaluate((since) => {
+            const frames = (window.__icSockets ?? [])
+              .flatMap((s) => s.received)
+              .filter((f) => f.at >= since)
+              .map((f) => {
+                let j = null;
+                try {
+                  j = JSON.parse(f.data);
+                } catch {}
+                return { at: f.at, name: j?.name ?? j?.type ?? "?", published: j?.at ? Date.parse(j.at) : null };
+              });
+            const reads = performance
+              .getEntriesByType("resource")
+              .map((e) => ({ path: new URL(e.name).pathname, start: performance.timeOrigin + e.startTime, took: e.duration }))
+              .filter((r) => r.start >= since && r.path.startsWith("/api/"));
+            const long = (window.__icLong ?? []).filter((e) => e.start >= since);
+            return { frames, reads, long };
+          }, at);
+          const f = seen.frames.map((x) => `${x.name} published +${x.published ? x.published - at : "?"} at B +${x.at - at}`).join(", ") || "no frame";
+          const r = seen.reads.map((x) => `${x.path.split("/").slice(-2).join("/")} +${Math.round(x.start - at)} (${Math.round(x.took)} ms)`).join(", ") || "no read";
+          // The same read straight to window B's api, three times, afterwards: the server's own time with nothing beside it.
+          const direct = [];
+          for (let i = 0; i < 3; i++) {
+            const t0 = Date.now();
+            await fetch(`http://api-fx-b:8000/api${takeoff.replace(/^\/api/, "")}/item/${roof.uuid}`, { headers: { authorization: `Bearer ${token}` } });
+            direct.push(Date.now() - t0);
+          }
+          const l = seen.long.map((x) => `+${Math.round(x.start - at)} (${Math.round(x.took)} ms)`).join(", ") || "none";
+          return `PATCH replied +${replied - at} ms; frames: ${f}; reads: ${r}; B's long tasks: ${l}; the read alone on B's api: ${direct.join(", ")} ms`;
+        };
         // A row shows its figure and its unit apart: wait for the figure.
-        await bp.locator("[data-quantity-panel] [data-item-qty]").filter({ hasText: want }).first().waitFor({ timeout: 5000 });
+        await bp
+          .locator("[data-quantity-panel] [data-item-qty]")
+          .filter({ hasText: want })
+          .first()
+          .waitFor({ timeout: 5000 })
+          .catch(async () => {
+            throw new Error(`B never showed ${want}: ${await timeline()}`);
+          });
         const ms = Date.now() - at;
-        expect(ms < 1500, `B took ${ms} ms`);
-        return `12/12 → ${want} SF in B after ${ms} ms`;
+        const legs = await timeline();
+        expect(ms < 1500, `B took ${ms} ms: ${legs}`);
+        return `12/12 → ${want} SF in B after ${ms} ms (${legs})`;
       } finally {
         await b.close();
       }

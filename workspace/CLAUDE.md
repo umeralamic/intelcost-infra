@@ -166,9 +166,10 @@ fixtures, test suites or test scripts. After each block, in this order:
 
 Then commit and push the block on `umer-dev`, log its decisions, and tick its PARITY lines.
 Each report carries the running list of features changed since the tag
-([docs/tasks/SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md)). **A full run restored from
-the tag is required before any deploy to testers and before any promotion to `main`**
-(restore steps in `intelcost-infra/README.md`, "The fixture suite, archived").
+([docs/tasks/SINCE_ARCHIVE.md](docs/tasks/SINCE_ARCHIVE.md)). **A release run restored from
+the tag is required before any deploy to testers and before any promotion to `main`:**
+`./fx-suite.sh release` from `intelcost-infra/` (D-814: every fixture, each in the mode it needs, failures again alone,
+one summary; restore steps in `intelcost-infra/README.md`, "The fixture suite, archived").
 
 `api-b`, `app-b` and `app-prod` are stopped, not deleted; start them for a check that needs
 them.

@@ -17,6 +17,12 @@
 #                            and runs on intelcost_fx
 #   ./fx-suite.sh run [...]  check, then the suite's own regress.sh (its arguments: full, quick,
 #                            or fixture names); output in ./fx-suite/.regress
+#   ./fx-suite.sh release    every fixture, each in the mode it needs (D-814): the built apps 3 at a
+#                            time, then the dev-server fixtures, then each failure again alone in its
+#                            own mode; one summary in ./fx-suite/.regress/release-<time>/summary.txt.
+#                            The run before any deploy to testers and any promotion to main
+#   ./fx-suite.sh prod       the built apps in place of the dev servers, on the same ports
+#   ./fx-suite.sh dev        the dev servers back
 #   ./fx-suite.sh stop       stop the fx services (the database and the bucket stay)
 
 set -u
@@ -47,6 +53,35 @@ print(_client().meta.endpoint_url, settings.s3_bucket, settings.database_url.rsp
   done
   return $bad
 }
+
+# --- the release run (D-814) ---------------------------------------------------------
+# Fixtures that need the dev servers: they import the app's own modules (/src/...), drive the
+# component gallery at /dev/ui, or check the dev override. Any other fixture that imports from /src
+# or drives /dev/ui is found by name too, so a new one cannot be run in the wrong mode.
+DEV_FIXTURES="f3-s1 f3-s13 f4-s2 f5-s3 f6-s4 f7-a r1-raster-text"
+needs_dev() {
+  case " $DEV_FIXTURES " in *" $1 "*) return 0 ;; esac
+  local f="fx-suite/browser/$1.mjs"
+  [ -f "$f" ] && grep -qE "import\(\s*[\"'\`]/src/|/dev/ui" "$f"
+}
+# Every fixture: the tag's standing ones and every one written since. Not fixtures: the harness's
+# own (bench-code, bench-tidy), measurements and setups (load-probe, proof-backlog, rv-vol2-load,
+# walkthrough-setup), f4-s12's three phases and the outage and restart phases (their runners'), and
+# what the fx stack cannot run (fx-suite-patch.mjs, SKIPPED).
+release_list() {
+  local f name
+  for f in fx-suite/browser/*.mjs fx-suite/browser/*.sh; do
+    name=$(basename "$f"); name=${name%.mjs}; name=${name%.sh}
+    case "$name" in
+      bench-code | bench-tidy | load-probe | proof-backlog | rv-vol2-load | walkthrough-setup) continue ;;
+      f4-s12 | f5-demo | *-outage | *-restart | f8-s5 | f4-s27) continue ;;
+    esac
+    echo "$name"
+  done | sort -u
+}
+# The fixtures a run's summary line names as failed: "N of M failed: a b c".
+failed_in() { grep -h " failed: " "$@" | sed 's/.* failed: //' | tr ' ' '\n' | grep -v '^$' | sort -u; }
+tail_line() { grep -E "^(all [0-9]+ passed|[0-9]+ of [0-9]+ failed)" "$1" | tail -1; }
 
 case "${1:-}" in
   setup)
@@ -99,6 +134,57 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     # The fx apps built (the "fx-prod" profile) in place of the dev servers, on the same ports.
     docker compose --profile fx stop app-fx app-fx-b
     docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod
+    ;;
+  dev)
+    # The dev servers back in place of the built apps (D-814), once they serve the app's own modules.
+    docker compose --profile fx-prod stop app-fx-prod app-fx-b-prod
+    docker compose --profile fx up -d --no-deps app-fx app-fx-b
+    for _ in $(seq 1 120); do curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx && break; sleep 2; done
+    ;;
+  release)
+    # Every fixture, each in the mode it needs, in one command (D-814). The run before any deploy to
+    # testers and any promotion to main.
+    shift
+    [ -d fx-suite ] || { echo "Run ./fx-suite.sh setup first."; exit 1; }
+    "$0" refresh
+    out="fx-suite/.regress/release-$(date +%Y%m%d-%H%M)"
+    mkdir -p "$out"
+    mapfile -t all < <(release_list)
+    built=()
+    devs=()
+    for n in "${all[@]}"; do if needs_dev "$n"; then devs+=("$n"); else built+=("$n"); fi; done
+    echo "release: ${#built[@]} fixtures on the built apps, ${#devs[@]} on the dev servers (${devs[*]})" | tee "$out/summary.txt"
+    # 1. The built apps, 3 at a time: timings are the product's there (f5-s11, f5-s13).
+    "$0" prod >"$out/0-prod.log" 2>&1
+    "$0" run "${built[@]}" 2>&1 | tee "$out/1-built.log"
+    # 2. The dev servers: the fixtures that import the app's own modules, drive /dev/ui or its dev override.
+    "$0" dev >"$out/0-dev.log" 2>&1
+    "$0" run "${devs[@]}" 2>&1 | tee "$out/2-dev.log"
+    # 3. Every failure again, alone and in its own mode: passing alone is timing, failing alone is looked at.
+    mapfile -t again < <(failed_in "$out/1-built.log" "$out/2-dev.log")
+    alone_pass=()
+    alone_fail=()
+    for mode in dev prod; do
+      batch=()
+      for n in "${again[@]}"; do
+        if { [ "$mode" = dev ] && needs_dev "$n"; } || { [ "$mode" = prod ] && ! needs_dev "$n"; }; then batch+=("$n"); fi
+      done
+      [ ${#batch[@]} -eq 0 ] && continue
+      [ "$mode" = prod ] && "$0" prod >>"$out/0-prod.log" 2>&1
+      for n in "${batch[@]}"; do
+        if REGRESS_JOBS=1 "$0" run "$n" 2>&1 | tee -a "$out/3-alone.log" | grep -q "^all 1 passed"; then alone_pass+=("$n"); else alone_fail+=("$n"); fi
+      done
+    done
+    # The built apps stay up: the bench's usual mode for a run.
+    [ "$(docker compose ps -q app-fx-prod 2>/dev/null)" ] || "$0" prod >>"$out/0-prod.log" 2>&1
+    {
+      echo "built apps:   $(tail_line "$out/1-built.log")"
+      echo "dev servers:  $(tail_line "$out/2-dev.log")"
+      echo "alone, passed (timing): ${alone_pass[*]:-none}"
+      echo "alone, failed (look at): ${alone_fail[*]:-none}"
+      echo "logs: $out (one per fixture in fx-suite/.regress)"
+    } | tee -a "$out/summary.txt"
+    [ ${#alone_fail[@]} -eq 0 ]
     ;;
   stop) docker compose --profile fx --profile fx-prod stop $FX_SERVICES app-fx-prod app-fx-b-prod ;;
   *)
