@@ -23692,3 +23692,113 @@ nothing about what each of them is taking off.
   scope dialog.
 - **A person just added** has their "+ Assign scope" highlighted for a moment; the dialog does not open by itself.
 - New project (no project yet) shows the rows without a scope.
+
+## D-795: "Assigned to me" on a layer outside the scope points to the scope's layers (accepted 2026-10-27)
+
+**Status:** accepted (the founder asked for it on 2026-10-27). Extends D-790 and D-793.
+
+- **On a layer with nothing of the person's scope,** the Quantities panel shows "Your scope is on <layers>" and a
+  "Go to <layer>" button per layer, in place of an empty panel. The scope's layers are those holding an item in it,
+  and any layer picked in it, in the layer list's order.
+- **Turning "Assigned to me" on** where nothing of the scope is shown switches to the scope's first layer by itself.
+
+## D-796: Estimating says when its reads are in; the fixtures wait on it, never a clock (accepted 2026-10-27)
+
+**Status:** accepted (PLAN_D777 item 6, planned as D-782; the number had been taken).
+
+- **The signal:** Estimating's root (`[data-estimating]`) gets `data-estimate-ready` once every item is in (not the
+  first rows of a streamed read) and every read its figures stand on has landed: costs, cost components, equipment
+  (with the usage hours), columns, the classification systems, the earthwork results and sites where there are
+  any, variables, the saved rates, the library and spreads, the project and its packages. Measured on the HV copy:
+  a signal on the first three reads alone came 0.5 s before the Equipment figure settled; on all of them it came
+  with it, twice.
+- **f9-estimating, slow load:** the held rates read is released by the fixture once the typing is saved, not by
+  a 5 s timer that could run out first under load.
+- **c10:** the Folders and Classification steps wait for the New Measurement form's Folder and Classification
+  fields before counting them; the Estimating step waits for `data-estimate-ready`, then the rows.
+- **c34 `machineTotal`:** reads the Equipment total once `data-estimate-ready` is set, in place of "the figure
+  that holds 3 s".
+
+## D-797: Each line rounds once; everything above it adds the rounded lines (accepted 2026-10-27; supersedes D-772's balancing)
+
+**Status:** accepted (PLAN_D777 item 3, planned as D-779; the number had been taken). D-772's "every total is the
+sum of the parts it shows" stands; its largest-remainder balancing across rows is gone.
+
+- **A line:** labour, equipment, material and subcontract are each rounded to the cent once, from the line's own
+  figures; hours to two places. Item Cost is their sum. A line's figure never depends on another line.
+- **Above the line:** every parent, group, the grid's TOTAL, the sidebar's report figures, the bid's Direct cost and
+  the export's TOTAL are sums of the rounded lines (and each machine's unspread cost, a row of its own).
+- **Cost components lists (question E):** each line's rounded figure is split over that line's rows (crews,
+  crafts, materials, machines) in whole cents, by largest remainder within the line only; the rows then add. A
+  list ties to its report exactly. The plan's wording, "a type is the sum of its components each rounded once",
+  would have moved line money a cent at a time; the split keeps the line rounded once.
+- **Read-back unit rates (question B):** a rate read back from a component-priced amount shows the fewest places,
+  2 to 6, at which Qty × rate gives the amount shown (10,000 BCY at $7,093.66 shows $0.709366). The export keeps
+  4 places for unit prices.
+- **Sheet view (question D):** a parent split over sheets rounds once per sheet row; its Sheet TOTAL may differ
+  from the line view's by a cent. The bid total is the line view's.
+- **Removed:** `balancedCosts` (costing), `balancedRows` (summaries), `balancedLeaves` (workbook, now
+  `storedLeaves`).
+- **The HV copy:** Full estimate $943,321.78 → $943,321.80, Labor $277,015.46 → $277,015.48; Material
+  $183,285.35, Equipment $437,668.30 and Subcontract $45,352.67 unchanged.
+
+## D-798: A second machine of a class in a site spread says what it is (accepted 2026-10-27)
+
+**Status:** accepted (PLAN_D777 item 5, planned as D-781; question C's recommendation).
+
+- **The finding (read only):** rock excavation's 150-300/day tier lists Excavator 30-36 t twice: two pacing (breaking,
+  with the breakers) and one not (loading). A second row of the same class is correct; nothing to fix in count,
+  mob or total.
+- **The name:** the row that does not pace, beside one of its class that does, is "<activity>: <class>, not
+  pacing" in the shared machine's name and in Equipment › Cost components ("Rock excavation (break and load), not
+  pacing (shared spread)"), in place of "(2)". A name still taken gets "(n)" as before.
+- **Migration d798** renamed the two already there, name only: the HV copy's and the 3D test original's (Intelcost
+  Team). No money moved.
+- **Later:** an optional role on a tier machine ("loading", "breaking") set in the tier editor would read better.
+
+## D-799: An edited line keeps its machines as its own when its activity is deleted (accepted 2026-10-27)
+
+**Status:** accepted (PLAN_D777 item 4, planned as D-780). Completes D-776, which released the unedited lines.
+
+- **Its machines:** each machine of an edited line drawing on the deleted activity's site spread becomes the line's
+  own, at the spread's count of it, with its own rental and its own mob and demob, shown on the line
+  (`drop_site`, also when a tier's machines change).
+- **Its spread:** stops naming the activity (and its tier) and records the deleted activity's name
+  (`estimate_item_spread.deleted_activity`, migration d799). A later save that names an activity clears it.
+- **Needs attention:** a new category, "Activity deleted: check mob/demob", the line's reason naming the activity.
+- **The bench check (read only, at build):** no edited spread named a missing activity, and no line's machine drew
+  on a resource whose activity was gone.
+
+## D-800: A line type mapped to no activity says why: included in another, or priced by hand (accepted 2026-10-27)
+
+**Status:** accepted (PLAN_D777 item 1, planned as D-777; the number had been taken).
+
+- **The picker** (Equipment settings › Earthwork production, "Which activity prices each Calculate line"): an
+  activity, "No automatic pricing", "Included in <activity>" for each activity, or "Price by hand". The starter's
+  choice reads "Starter: …" with its reason.
+- **"Included in <activity>":** the line reads "Included in Pipe crew…" in Estimating's Item Cost (at $0) and on its
+  Takeoff row. It is not flagged No rate for labour or equipment; material components added by hand still count.
+- **"Price by hand":** the line reads "Price by hand" and stays flagged No rate until priced.
+- **Starter defaults** (`production.STARTER_NONE`, in code): Included in Pipe crew (A12) for the utility trench
+  excavation, bedding/pipe zone and backfill; Price by hand for dewatering, stabilize mix and undercut stabilize
+  mix. They apply only where the workspace (or project) has no mapping of its own for the role.
+- **Migration d800:** `eq_activity_line_map.none_reason` (`included` | `by_hand`) and `included_in_activity_id`
+  (SET NULL when that activity goes). The config read gives `starter_none`, `line_none`, `project_none` and
+  `effective_none`.
+- **The rule** is `lib/estimate/noneReason.ts` (`flaggedNoRate`, `noneNote`), with a quantity-table row.
+- **The HV copy** is left as it is; a person sets its reasons in Equipment settings.
+
+## D-801: Ask before a change takes pricing from lines (accepted 2026-10-27)
+
+**Status:** accepted (PLAN_D777 item 2, planned as D-778; question A).
+
+- **Deleting an activity** first shows "Deleting <activity> removes pricing from N lines. Delete?", with the lines
+  listed (project, line), when it prices any: on its own per line, or on its site spread, in every project.
+- **Setting a line type's mapping to none** (no automatic pricing, "Included in …", "Price by hand", or a starter
+  with none) while an activity prices it shows "Setting <type> to <choice> removes pricing from N lines. Change?".
+- **No lines, no question:** the change is made at once, as before.
+- **The api:** `GET …/earthwork-production/activities/{uuid}/impact` and `GET …/earthwork-production/line-map/{role}/impact`
+  (workspace, and a project's).
+- **The dollars (question A):** money is computed per open estimate in the browser, and both changes are made on
+  Settings › Equipment library, where no estimate is open. The prompt gives N lines and the list; "(this project
+  $X)" needs the same prompt offered from an open estimate, not built.

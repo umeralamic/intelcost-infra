@@ -1,6 +1,7 @@
 # Plan: the answers of 2026-10-25, second round (D-777 to D-782)
 
-Plan only. Nothing is built, migrated or run until "go".
+**Built 2026-10-27 as D-796..D-801** (the plan's D-777..D-782 had been taken by then): 6 → D-796, 3 → D-797, 5 → D-798,
+4 → D-799, 1 → D-800, 2 → D-801. Questions A–E answered by the recommendations; see each decision. Fixtures written, not run.
 
 ## Order
 1. **6, the fixture waits:** first, so every later rerun means something.
