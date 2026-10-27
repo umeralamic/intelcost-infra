@@ -248,6 +248,9 @@ try {
           readBack: landxml.readLandXml(text).name,
           dxf: model.ascii("C-200 – Café ±2° × 3½ m² “A”"),
           flags: flags.map((f) => `${f.source}>${f.target}:${f.sheet}:${Math.round(f.pct * 100) / 100}`).join("|"),
+          // D-815: one flag per sheet; the correction is the joins' mean, or the printed-length check's where one was made.
+          perSheet: stitch.sheetFlags(flags).sheets.map((s) => `${s.sheet}|${s.joins.map((j) => `${j.other}:${Math.round(j.pct * 100) / 100}`).join(",")}|${s.from}|${Math.round((s.factor - 1) * 1e4) / 100}`).join(";"),
+          printed: stitch.sheetFlags(flags, new Map([["P3", 0.61]])).sheets.map((s) => `${s.sheet}|${s.from}|${Math.round((s.factor - 1) * 1e4) / 100}`).join(";"),
         };
       }
       if (c.kind === "machine") {

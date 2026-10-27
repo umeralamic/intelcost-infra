@@ -462,7 +462,7 @@ export const COST_CASES = [
   {
     id: "gps-d808",
     kind: "gps-d808",
-    expect: { system: true, project: true, readBack: "Proposed grade – Café & “Pad”", dxf: 'C-200 - Cafe +/-2 deg x 3 1/2 m2 "A"', flags: "P3>P4:P3:-0.97" },
+    expect: { system: true, project: true, readBack: "Proposed grade – Café & “Pad”", dxf: 'C-200 - Cafe +/-2 deg x 3 1/2 m2 "A"', flags: "P3>P4:P3:-0.97", perSheet: "P3|P4:-0.97|joins|-0.97", printed: "P3|printed|-0.61" },
   },
   // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
   // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared
