@@ -118,6 +118,7 @@ try {
     const formula = await import("/src/lib/takeoff/subItems/formula.ts");
     const sums = await import("/src/lib/estimate/summaries.ts");
     const nr = await import("/src/lib/estimate/noneReason.ts");
+    const stitch = await import("/src/lib/takeoff/earthwork/stitch.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
@@ -206,6 +207,33 @@ try {
         return {
           plain: nr.flaggedNoRate(0, null), included: nr.flaggedNoRate(0, inc), byHand: nr.flaggedNoRate(0.004, hand), pricedByHand: nr.flaggedNoRate(12.5, hand),
           includedNote: nr.noneNote(inc, name), byHandNote: nr.noneNote(hand, name), plainNote: nr.noneNote(null, name),
+        };
+      }
+      if (c.kind === "stitch") {
+        // D-804: the Stitch engine on hand-worked cases.
+        const s = { feetPerPt: 1, widthPt: 100, heightPt: 100 };
+        const src = [{ x: 0.1, y: 0.1 }, { x: 0.5, y: 0.2 }, { x: 0.3, y: 0.7 }];
+        const tgt = src.map((p) => ({ x: p.x + 0.1, y: p.y }));
+        const j = stitch.fitPoints(src, s, tgt, s);
+        const chain = stitch.chainFit([{ source: "B", target: "A", missFt: 0.3 }, { source: "C", target: "B", missFt: 0.4 }], "A", ["A", "B", "C"]);
+        const a = { feetPerPt: 60.59 / 72, widthPt: 100, heightPt: 100 };
+        const b = { feetPerPt: 60 / 72, widthPt: 100, heightPt: 100 };
+        // The same ground printed at the same 1"=60': the same places on both pages, calibrated apart.
+        const pa = [{ x: 0.1, y: 0.1 }, { x: 0.6, y: 0.1 }, { x: 0.4, y: 0.6 }];
+        const pb = pa.map((p) => ({ ...p }));
+        const pairs = pa.map((p, i) => ({ source: p, target: pb[i] }));
+        const flag = stitch.scaleFlag(stitch.impliedScalePct(pairs, a, b), { feetPerPt: a.feetPerPt }, { feetPerPt: b.feetPerPt });
+        const impact = stitch.recalibrationImpact([{ name: "Curb", type: "linear", unit: "LF", quantity: 100 }, { name: "Pad", type: "area", unit: "SF", quantity: 1000 }, { name: "Posts", type: "count", unit: "EA", quantity: 5 }], 0.99);
+        const printed = stitch.printedCheck([{ x: 0, y: 0 }, { x: 0.505, y: 0 }], s, 50);
+        const ctrl = stitch.controlPairs([{ label: "PC-1", at: { x: 0.3, y: 0.3 }, n: 4950, e: 1020 }], s, { rotation: 0, scale: 1, e0: 1000, n0: 5000, units: "intl-ft" });
+        const r = (v, n = 5) => Math.round(v * 10 ** n) / 10 ** n;
+        return {
+          turn: j.ok ? r(j.join.fit.rotation, 6) : null, miss: j.ok ? r(j.join.missFt, 6) : null,
+          chainC: r(chain.get("C").chain, 6),
+          flagPct: flag ? r(flag.pct, 3) : null, likely: flag?.likely?.sheet ?? null, factor: flag?.likely ? r(flag.likely.factor) : null,
+          count: impact.count, largest: impact.largest?.name ?? null, after: impact.largest ? r(impact.largest.after, 4) : null,
+          printedOff: printed ? r(printed.offPct, 4) : null,
+          ctrlX: r(ctrl[0].target.x, 6), ctrlY: r(ctrl[0].target.y, 6),
         };
       }
       if (c.kind === "places") {

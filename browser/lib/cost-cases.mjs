@@ -416,6 +416,19 @@ export const COST_CASES = [
     kind: "norate",
     expect: { plain: true, included: false, byHand: true, pricedByHand: false, includedNote: "Included in Pipe crew", byHandNote: "Price by hand", plainNote: null },
   },
+  // --- Stitch sheets (D-804), worked by hand on 100 x 100 pt pages at 1 ft per pt ------------------------
+  // Matching points: three points shifted 10 ft right fit with no turn and no miss. A chain A–B 0.3 ft, B–C
+  // 0.4 ft: C's chain fit is 0.5 ft. The scale flag: a sheet at 1"=60.59' joined to one at 1"=60' over the
+  // same ground implies a scale 0.974 % off; the 60.59' sheet, 0.98 % from the printed 60', is the likely one,
+  // its factor 60/60.59. Recalibrating by 0.99: a 100 LF line to 99, a 1,000 SF area to 980.1, a count
+  // unchanged: two quantities, the largest the area. A printed 50 ft that measures 50.5 ft is +1 % off.
+  // Control points: a frame fitted with no turn at E 1000, N 5000 (international feet) puts N 4950,
+  // E 1020 at 20 ft right, 50 ft down: (0.2, 0.5) on the 100 ft page.
+  {
+    id: "stitch-engine",
+    kind: "stitch",
+    expect: { turn: 0, miss: 0, chainC: 0.5, flagPct: -0.974, likely: "source", factor: 0.99026, count: 2, largest: "Pad", after: 980.1, printedOff: 1, ctrlX: 0.2, ctrlY: 0.5 },
+  },
   // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
   // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared
   // machine of that class spread over lines A and B (2 units, 3 days each, $300 + $200, 10 + 5 EH): one row,
