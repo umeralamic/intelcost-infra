@@ -48,7 +48,7 @@ const gone = async (uuid) => (await apiCall(A, "GET", `${t}/item/${uuid}`)).stat
 /** Mail captured for an address by the bench's guard, by template (D-792). */
 const mailTo = async (address, template) => {
   const found = await (await fetch(`${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`)).json();
-  return (found.items ?? []).filter((m) => (m.Content.Headers["X-Intelcost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
+  return (found.items ?? []).filter((m) => (m.Content.Headers["X-IntelCost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
 };
 const reset = () => rule(A, { delete_protection: null, delete_allowed: null });
 

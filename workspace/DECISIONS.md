@@ -23663,3 +23663,32 @@ nothing about what each of them is taking off.
   `mail.queue` after the commit, with the same SMTP and the bench's mail guard (D-279), which captures it in
   MailHog. A new template, `takeoff_notice`, holds the words.
 - **In the app** nothing changes: the bell notice, and the live toast for a delete request.
+
+## D-793: The scope dialog makes folders and layers; layer picks narrow the rest (accepted 2026-10-27)
+
+**Status:** accepted (the founder asked for it on 2026-10-27). Extends D-790.
+
+- **Custom Folder tab:** "+ New folder" at the top of the list, and "Create folder '<text>'" when a search finds
+  nothing. It makes a real custom folder in the project, inside the folder picked under "Inside" (the last folder
+  ticked, by default; Top level otherwise), and ticks it for this person.
+- **A fourth tab, Layer:** the project's layers and sub-layers, with "+ New layer" and "Create layer '<text>'" the
+  same way (inside a picked layer as a sub-layer, or at the top). The new layer is made and ticked.
+- **Only people who can assign scope** (Create projects, D-26) see the create rows.
+- **The rule:** Classification, Scope and Custom Folder picks add together (any of them takes an item). Layer
+  picks narrow them: with layers and other picks, an item is in scope only on one of those layers (or a sub-layer
+  of one) and matching one of the other picks; layers alone take everything on those layers. A sub-item is its
+  parent's. One line under the tabs says so, with the person's own picks when they have both kinds.
+- **Named everywhere:** the rows, the dashboard's "Your scope", the notices and the emails list the layers, last.
+- **Stored** as a fourth kind, `layer`, on `project_assignee_scope` (`layer_id`, a deleted layer drops its row).
+
+## D-794: Assigned To is one row per person, with the scope in words (accepted 2026-10-27)
+
+**Status:** accepted (the founder asked for it on 2026-10-27). Replaces D-790's chips and crosshair.
+
+- **In Edit Project and Share › Project Users,** each assignee is a row: name, "Primary" on the first, the scope,
+  × at the far right. The crosshair icon is gone.
+- **No scope:** "+ Assign scope", a text button in the accent colour. **A scope:** "Scope: <picks, comma-separated,
+  layers last>", cut to "+N more" with every pick in its tooltip; a click on it, or its "Edit" link, opens the
+  scope dialog.
+- **A person just added** has their "+ Assign scope" highlighted for a moment; the dialog does not open by itself.
+- New project (no project yet) shows the rows without a scope.

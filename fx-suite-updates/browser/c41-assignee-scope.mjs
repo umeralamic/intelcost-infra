@@ -49,7 +49,7 @@ await count("C41 elsewhere", 0.4, {});
 /** Mail captured for an address by the bench's guard, by template (D-792). */
 const mailTo = async (address, template) => {
   const found = await (await fetch(`${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`)).json();
-  return (found.items ?? []).filter((m) => (m.Content.Headers["X-Intelcost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
+  return (found.items ?? []).filter((m) => (m.Content.Headers["X-IntelCost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
 };
 const assign = (scopes) => apiCall(A, "PUT", `${projectPath}/assignee`, { user_uuids: [aUuid, bUuid], ...(scopes ? { scopes } : {}) });
 const latestScopeNotice = async () => (await apiCall(B, "GET", "/api/notifications")).body.rows.find((n) => n.kind === "project.scope");
@@ -148,6 +148,81 @@ await run("c41-assignee-scope", [
         return ["assigned you a scope", "changed your scope", "removed your scope"].every((w) => got.some((s) => s.includes(w))) ? got : null;
       }, "the three scope mails", 15000);
       return `mailed: ${subjects.filter((s) => s.includes("scope")).slice(0, 3).join(" | ")}`;
+    },
+  },
+  {
+    title: "D-793 at the api: a layer pick saved and read back last; a layer of another project refused (422)",
+    run: async () => {
+      const layer = (await apiCall(A, "POST", `${t}/layer`, { name: "C41 Building 1" })).body;
+      const saved = await assign([{ user_uuid: bUuid, note: null, parts: [{ kind: "layer", layer_uuid: layer.uuid }, { kind: "classification", classification_uuid: division.uuid }] }]);
+      const parts = saved.body.assignee_scopes.find((x) => x.user_uuid === bUuid).parts;
+      expect(parts.at(-1).kind === "layer" && parts.at(-1).label === "C41 Building 1", `layers last: ${JSON.stringify(parts)}`);
+      const foreign = await assign([{ user_uuid: bUuid, note: null, parts: [{ kind: "layer", layer_uuid: crypto.randomUUID() }] }]);
+      expect(foreign.status === 422, `foreign layer: ${foreign.status}`);
+      const told = await latestScopeNotice();
+      expect(told?.title.includes("C41 Building 1"), `the notice names the layer: ${told?.title}`);
+      await assign([]);
+      return `parts ${parts.map((p) => p.label).join(", ")}; foreign 422; notice "${told.title}"`;
+    },
+  },
+  {
+    title: "D-793/D-794 on screen: a row per person with + Assign scope lit when added; the dialog makes a folder and a layer and ticks them; Classification + Layer shows only items matching both",
+    run: async ({ page, context, shot }) => {
+      await apiCall(A, "PUT", `${projectPath}/assignee`, { user_uuids: [aUuid], scopes: [] });
+      await signInAs(page, world.owner.email, world.owner.password, `/settings/account?edit=${r.project}`);
+      await page.locator(`[data-assignee-row="${world.owner.email}"]`).waitFor({ timeout: 20000 });
+      await page.locator("#edit-project-assignees").click();
+      await page.locator(`[data-assignee-option="${WINDOW_B.email}"] input`).check();
+      await page.locator("#edit-project-assignees").click();
+      const assignB = page.locator(`[data-assignee-scope-assign="${WINDOW_B.email}"]`);
+      expect(/ring-2/.test((await assignB.getAttribute("class")) ?? ""), "the new row's + Assign scope is not lit");
+      expect((await page.locator("[data-scope-dialog]").count()) === 0, "the dialog opened by itself");
+      await assignB.click();
+      const dialog = page.locator("[data-scope-dialog]");
+      await dialog.locator('[data-scope-tab="folder"]').click();
+      await dialog.locator('[data-scope-new="folder"]').click();
+      await dialog.locator("[data-scope-make-name]").fill("C41 Level 3");
+      await dialog.locator("[data-scope-make-create]").click();
+      await dialog.locator('[data-scope-option="C41 Level 3"]:checked').waitFor();
+      await dialog.locator('[data-scope-option="C41 Level 3"]').uncheck();
+      await dialog.locator('[data-scope-tab="layer"]').click();
+      await dialog.locator('input[type="search"]').fill("C41 Tower");
+      await dialog.locator("[data-scope-create-from-search]").click();
+      await dialog.locator("[data-scope-make-create]").click();
+      await dialog.locator('[data-scope-option="C41 Tower"]:checked').waitFor();
+      await dialog.locator('[data-scope-tab="classification"]').click();
+      await dialog.locator('input[type="search"]').fill(division.name);
+      await dialog.locator(`[data-scope-option="${division.code} ${division.name}"]`).first().check();
+      const rule = await dialog.locator("[data-scope-rule]").innerText();
+      expect(rule.includes("C41 Tower"), `rule line: ${rule}`);
+      await page.locator("[data-scope-save]").click();
+      const rowText = await page.locator(`[data-assignee-row="${WINDOW_B.email}"]`).innerText();
+      expect(rowText.includes("Scope:") && rowText.includes("Edit"), `row: ${rowText}`);
+      await page.getByRole("button", { name: /^Save( changes)?$/ }).last().click();
+      await waitFor(async () => ((await apiCall(A, "GET", projectPath)).body.assignee_scopes ?? []).some((x) => x.user_uuid === bUuid), "saved", 8000);
+      const tower = (await apiCall(A, "GET", `${t}/layer`)).body.find((l) => l.name === "C41 Tower");
+      await count("C41 both", 0.5, { classification_ref_id: second.uuid, layer_uuid: tower.uuid });
+      await count("C41 layer only", 0.55, { layer_uuid: tower.uuid });
+      const b = await secondWindow(context);
+      try {
+        await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
+        await openSheet(b.page, r, APP_B);
+        const panel = b.page.locator("[data-quantity-panel]");
+        await panel.getByRole("button", { name: /Base Bid/ }).click();
+        await b.page.getByRole("menuitem", { name: /C41 Tower/ }).first().click();
+        await panel.locator("[data-assigned-to-me]").click();
+        const names = await waitFor(async () => {
+          const now = (await panel.locator("li[data-item-row] [data-item-name]").allInnerTexts()).map((x) => x.trim()).filter((x) => x.startsWith("C41"));
+          return now.length === 1 ? now : null;
+        }, "only the item matching both", 8000);
+        expect(names[0] === "C41 both", `shown: ${names}`);
+        await b.page.screenshot({ path: shot.replace(".png", "-tower.png") });
+        await assign([]);
+        return `rule "${rule}"; row "${rowText.replace(/s+/g, " ")}"; shown ${names}`;
+      } finally {
+        await assign([]).catch(() => {});
+        await b.context.close();
+      }
     },
   },
 ]);
