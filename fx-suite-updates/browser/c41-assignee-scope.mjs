@@ -17,7 +17,7 @@
 // Written, not run (the founder, 2026-10-26: fixtures added to the archived suite, run with the next full
 // restore-from-tag run, hard rule 8).
 
-import { APP, apiCall, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, MAILHOG, apiCall, expect, run, signInAs } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { openSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
@@ -46,6 +46,11 @@ await count("C41 in node", 0.2, { classification_ref_id: second.uuid });
 await count("C41 in folder", 0.3, { folder_uuid: folder.uuid });
 await count("C41 elsewhere", 0.4, {});
 
+/** Mail captured for an address by the bench's guard, by template (D-792). */
+const mailTo = async (address, template) => {
+  const found = await (await fetch(`${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`)).json();
+  return (found.items ?? []).filter((m) => (m.Content.Headers["X-Intelcost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
+};
 const assign = (scopes) => apiCall(A, "PUT", `${projectPath}/assignee`, { user_uuids: [aUuid, bUuid], ...(scopes ? { scopes } : {}) });
 const latestScopeNotice = async () => (await apiCall(B, "GET", "/api/notifications")).body.rows.find((n) => n.kind === "project.scope");
 
@@ -130,6 +135,19 @@ await run("c41-assignee-scope", [
         await assign([]).catch(() => {});
         await b.context.close();
       }
+    },
+  },
+  {
+    title: "D-792: a scope given, changed and removed is mailed to the assignee (captured in MailHog on the bench)",
+    run: async () => {
+      await assign([{ user_uuid: bUuid, note: "C41 mail", parts: [{ kind: "folder", folder_uuid: folder.uuid }] }]);
+      await assign([{ user_uuid: bUuid, note: "C41 mail changed", parts: [] }]);
+      await assign([]);
+      const subjects = await waitFor(async () => {
+        const got = await mailTo(WINDOW_B.email, "takeoff_notice");
+        return ["assigned you a scope", "changed your scope", "removed your scope"].every((w) => got.some((s) => s.includes(w))) ? got : null;
+      }, "the three scope mails", 15000);
+      return `mailed: ${subjects.filter((s) => s.includes("scope")).slice(0, 3).join(" | ")}`;
     },
   },
 ]);

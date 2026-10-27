@@ -23640,3 +23640,26 @@ nothing about what each of them is taking off.
 - **Notices:** a person given a scope, or whose scope is changed or removed, gets a notice in the bell.
 - **Who assigns:** unchanged (Create projects, D-26). The assignee save accepts `[{user_uuid, scopes, note}]`
   and still the plain list of uuids.
+
+## D-791: A delete request past 7 days reads as expired everywhere, with no scheduler (accepted 2026-10-27)
+
+**Status:** accepted (the founder asked for it on 2026-10-27). Refines D-789's expiry.
+
+- **Every read treats a request older than 7 days as expired**, whether or not a sweep has marked it: the api's
+  delete rules and its answer routes, the item's "Delete requested by" badge (dropped in the browser the moment
+  the request turns 7 days old, without waiting for a refetch), and the bell.
+- **The bell says what became of a request:** the owner's notice shows "Request expired", "Approved" or "Kept"
+  in place of its buttons; the requester's shows "Request expired" next time they look.
+- **The clean-up stays:** reading notices, and now reading a project's delete rules, marks the lapsed requests
+  expired and tells each requester once. No scheduled job.
+
+## D-792: Delete requests and scope changes are also emailed (accepted 2026-10-27)
+
+**Status:** accepted (the founder asked for it on 2026-10-27). Amends D-789 and D-790 ("in the app only").
+
+- **Emailed:** a delete request, to the owner of the work; a scope given, changed or removed, to the assignee.
+  The approve, deny and expiry notices to a requester stay in the app only.
+- **One mail frame and one path:** the invitation mail's frame (heading, a button to the takeoff), sent through
+  `mail.queue` after the commit, with the same SMTP and the bench's mail guard (D-279), which captures it in
+  MailHog. A new template, `takeoff_notice`, holds the words.
+- **In the app** nothing changes: the bell notice, and the live toast for a delete request.

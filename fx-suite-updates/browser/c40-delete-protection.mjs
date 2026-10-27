@@ -18,7 +18,7 @@
 // Written, not run (the founder, 2026-10-26: fixtures added to the archived suite, run with the next full
 // restore-from-tag run, hard rule 8).
 
-import { APP, apiCall, expect, run, seatedMember, signInAs } from "./lib/bench.mjs";
+import { APP, MAILHOG, apiCall, expect, run, seatedMember, signInAs } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { openSheet, row } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
@@ -45,6 +45,11 @@ const area = (name, at, token = A) =>
     return res.body;
   });
 const gone = async (uuid) => (await apiCall(A, "GET", `${t}/item/${uuid}`)).status === 404;
+/** Mail captured for an address by the bench's guard, by template (D-792). */
+const mailTo = async (address, template) => {
+  const found = await (await fetch(`${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`)).json();
+  return (found.items ?? []).filter((m) => (m.Content.Headers["X-Intelcost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
+};
 const reset = () => rule(A, { delete_protection: null, delete_allowed: null });
 
 await run("c40-delete-protection", [
@@ -183,6 +188,38 @@ await run("c40-delete-protection", [
       expect(told.includes("expired") && !(await gone(old.uuid)), `expiry: "${told}"`);
       await reset();
       return `B told "${told}"; the item stays`;
+    },
+  },
+  {
+    title: "D-791: a request past 7 days reads expired before any sweep: the owner's bell shows no buttons and 'expired'; delete-rules lists it no more; the requester's bell says 'Request expired'",
+    run: async () => {
+      await rule(A, { delete_protection: "approve" });
+      const aged = await area("C40 aged", 0.6);
+      await apiCall(B, "DELETE", `${t}/item/${aged.uuid}`);
+      const { execSync } = await import("node:child_process");
+      execSync(
+        `docker compose exec -T postgres psql -U intelcost -d intelcost -c "UPDATE takeoff_delete_request SET created_at = now() - interval '8 days' WHERE targets::text LIKE '%${aged.uuid}%'"`,
+        { stdio: "pipe" },
+      );
+      const owner = (await apiCall(A, "GET", "/api/notifications")).body.rows.find((n) => n.kind === "takeoff.delete_request" && n.title.includes("C40 aged"));
+      expect(owner && owner.answer_at === null && owner.request_state === "expired", `owner's notice: ${JSON.stringify(owner)}`);
+      const rules = (await apiCall(B, "GET", `${t}/delete-rules`)).body;
+      expect(!rules.requests.some((q) => q.item_uuid === aged.uuid), "delete-rules still lists the aged request");
+      const told = (await apiCall(B, "GET", "/api/notifications")).body.rows.find((n) => n.kind === "takeoff.delete_decided" && n.title.includes("C40 aged"));
+      expect(told?.request_state === "expired" && !(await gone(aged.uuid)), `requester: ${JSON.stringify(told)}`);
+      await reset();
+      return `owner "${owner.request_state}", requester "${told.line}"`;
+    },
+  },
+  {
+    title: "D-792: a delete request is mailed to the owner in the invitation's frame (captured in MailHog on the bench)",
+    run: async () => {
+      await rule(A, { delete_protection: "approve" });
+      const mailed = await area("C40 mailed", 0.67);
+      await apiCall(B, "DELETE", `${t}/item/${mailed.uuid}`);
+      const subject = await waitFor(async () => (await mailTo(world.owner.email, "takeoff_notice")).find((s) => s.includes("asks to delete")), "the request mail", 15000);
+      await reset();
+      return `mailed: "${subject}"`;
     },
   },
 ]);
