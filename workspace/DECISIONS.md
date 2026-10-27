@@ -23802,3 +23802,62 @@ sum of the parts it shows" stands; its largest-remainder balancing across rows i
 - **The dollars (question A):** money is computed per open estimate in the browser, and both changes are made on
   Settings › Equipment library, where no estimate is open. The prompt gives N lines and the list; "(this project
   $X)" needs the same prompt offered from an open estimate, not built.
+
+## D-802: Takeoff Settings › Collaboration: order, Only mine turns the rest off, a toolbar chip, "Your account" (accepted 2026-10-27)
+
+**Status:** accepted (SITE_AND_EARTHWORK_PLAN section D).
+
+- **Order:** Others' work, Colour others by, Drawing in progress, Live drawing line, Cursors, Names.
+- **Others' work = Only mine:** every other Display choice is greyed with "Off while Others' work is Only mine"; their
+  stored values are kept and come back with All or Fade. Colleagues' cursors and live drawing were already hidden.
+- **Drawing in progress = Off** greys Live drawing line ("Off while Drawing in progress is Off").
+- **The toolbar chip:** while Only mine is on, "Hiding N colleagues' work" after the tools (N = colleagues pointing or
+  drawing on the sheet; "Hiding colleagues' work" when none); a click sets All.
+- **Where each is kept:** Warnings, Who can delete what I mark (enforced on the server) and Display are all on the
+  person's account (`user.collaboration_prefs`), each labelled "Your account". None is per project.
+
+## D-803: A site opens again, and shows once in the sheets tree (accepted 2026-10-27)
+
+**Status:** accepted (SITE_AND_EARTHWORK_PLAN A1, A2).
+
+- **The bug (A1), reproduced through the UI on a copy of a 3-sheet site:** clicking "Site: …, 3 sheets" blanked the
+  page. `polygon-clipping` threw "Unable to complete output ring" in `territories` (`lib/takeoff/earthwork/site.ts`)
+  where two members' regions met along nearly the same edge, and nothing caught it, so the whole page unmounted.
+  - Every clipping call in `site.ts` now goes through `clip`: as given, then with coordinates on a grid of a
+    ten-millionth, then a millionth, of the shapes' extent (on a 2,000 ft site 0.0002 ft and 0.002 ft).
+  - The site view sits in an error boundary (`components/ui/error-boundary.tsx`): a site that still cannot be drawn
+    says so with Close, and the page stays.
+- **One entry per site (A2):** on the anchor sheet's row, "Site · N sheets" with the site icon opens the joined drawing;
+  its other sheets sit indented under it with "in site", not in their folders too (unless a search hides the
+  anchor). The block above the search and its repeated list are gone; search is at the top.
+
+## D-804: Stitch sheets, one way to join sheets (accepted 2026-10-27)
+
+**Status:** accepted (SITE_AND_EARTHWORK_PLAN A3–A7 and E; the founder's answers 1–3 and the recalibration prompt).
+
+- **One entry:** "Stitch sheets" replaces "Match line" on the Earthwork row and the sheet's ⋮ (tooltip: "Join sheets
+  into one drawing using match lines, shared corners or survey control points."). The Earthwork row's "Linked EC" and
+  the sheet's "Linked EC…" are gone: F18's editor opens from Stitch sheets ("Lay a survey sheet over"), and the
+  sheet's survey links are listed there. The "Show Linked EC" toggle stays.
+- **Four ways:**
+  - Match line: as F19.
+  - Matching points: the same points clicked on both sheets in order, two or more (`fitPoints`).
+  - Control points: the sheet's own coordinates (F30's `sheet_georef`) against the site's (`site.georef`, else
+    the anchor's), placing it on the anchor's frame with no chain (`controlPairs`; the api builds the pairs
+    itself, `site._control_join`).
+  - Over: a survey sheet over this one, F18's editor.
+  - While points are picked, the founder's guidance reads in the panel.
+- **No migration:** joins and F18 links already share `sheet_registration`, and every join already stores its
+  point pairs (`pairs`), so the planned `site_member` column was not needed. A join by points or control points
+  keeps no match line (only a match line clips the sheets). Existing match-line joins and F18 links are read as
+  they are; nothing on the founder's projects changed.
+- **Fit:** each join shows its fit (RMS of the pairs; each point's miss from three); each site sheet shows its
+  join's fit and, two joins or more from the anchor, the chain's (root sum of squares, `chainFit`).
+- **Scale check (A5):** the scale the points imply is compared with both calibrations. Over 0.5 % it says so,
+  names the sheet likely off, and offers "Recalibrate <sheet> (±n %)". The sheet likely off is the one a printed
+  length found off, else the one further from a printed engineering scale (`offPrinted`), else none named.
+- **Recalibrating asks first** (A5, A7): "Recalibrating changes N quantities on this sheet (largest: <item>
+  <before> → <after>). Recalibrate?" (`recalibrationImpact`: lengths once, areas and volumes twice, counts not).
+  The api recomputes every quantity, as any scale change; one Ctrl+Z step (D-642).
+- **Check a printed length (A7):** in the Scale menu and in the Stitch panel. Two clicks and the printed length
+  give the % off; past 0.5 % it offers Recalibrate. The result feeds the Stitch scale check.
