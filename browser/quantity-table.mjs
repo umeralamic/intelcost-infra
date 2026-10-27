@@ -119,6 +119,7 @@ try {
     const sums = await import("/src/lib/estimate/summaries.ts");
     const nr = await import("/src/lib/estimate/noneReason.ts");
     const stitch = await import("/src/lib/takeoff/earthwork/stitch.ts");
+    const machine = await import("/src/lib/takeoff/earthwork/export/machine.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
@@ -209,7 +210,24 @@ try {
           includedNote: nr.noneNote(inc, name), byHandNote: nr.noneNote(hand, name), plainNote: nr.noneNote(null, name),
         };
       }
-      if (c.kind === "stitch") {
+      if (c.kind === "machine") {
+        // D-805: the machine check on hand-worked cases.
+        const ground = { points: [{ e: -1000, n: -1000, z: 100 }, { e: 1000, n: -1000, z: 100 }, { e: 0, n: 1000, z: 100 }], faces: [[0, 1, 2]] };
+        const pts = [[0, 0, 102], [100, 0, 102], [100, -100, 102], [0, -100, 102.2]].map(([x, y, z], i) => ({ label: `PC-${i + 1}`, plan: { x, y }, n: y, e: x, z, residual: 0.3 }));
+        const fit = { scale: 1.002, units: "intl-ft" };
+        const ok = machine.machineCheck(pts, fit, 60, ground, 1);
+        const three = machine.machineCheck(pts.slice(0, 3), fit, 60, ground, 1);
+        const far = machine.machineCheck(pts.map((p, i) => (i === 1 ? { ...p, residual: 1.5 } : p)), fit, 60, ground, 1);
+        const scaled = machine.machineCheck(pts, { scale: 1.006, units: "intl-ft" }, 60, ground, 1);
+        const r = (v) => Math.round(v * 1e4) / 1e4;
+        return {
+          ready: ok.machine, shift: r(ok.shiftFt), last: r(ok.points[3].vertical),
+          three: three.notForMachine, worst: far.stop && far.worst, scaleStop: Boolean(scaled.stop && /calibration is likely wrong/.test(scaled.stop)),
+          interval: machine.contourIntervalFt([98, 99, 100, 101, 103].map((elevation) => ({ kind: "contour", surface: "EG", elevation }))),
+          onTin: machine.zOn(ground, 10, 10),
+        };
+      }
+      if (c.kind === "stitch-engine") {
         // D-804: the Stitch engine on hand-worked cases.
         const s = { feetPerPt: 1, widthPt: 100, heightPt: 100 };
         const src = [{ x: 0.1, y: 0.1 }, { x: 0.5, y: 0.2 }, { x: 0.3, y: 0.7 }];

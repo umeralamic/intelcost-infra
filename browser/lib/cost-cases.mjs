@@ -426,8 +426,18 @@ export const COST_CASES = [
   // E 1020 at 20 ft right, 50 ft down: (0.2, 0.5) on the 100 ft page.
   {
     id: "stitch-engine",
-    kind: "stitch",
+    kind: "stitch-engine",
     expect: { turn: 0, miss: 0, chainC: 0.5, flagPct: -0.974, likely: "source", factor: 0.99026, count: 2, largest: "Pad", after: 980.1, printedOff: 1, ctrlX: 0.2, ctrlY: 0.5 },
+  },
+  // --- GPS Export for machines (D-805), worked by hand at 1"=60', international feet, flat ground at 100 ft ---------
+  // Four points missing 0.3 ft each (0.005 in on paper, good), the fit taking +0.2 % of scale; typed elevations 102,
+  // 102, 102, 102.2: the shift is +2.05 ft, the residuals -0.05, -0.05, -0.05, +0.15, inside half a 1 ft interval:
+  // ready. Three points: not for machine use. A point missing 1.5 ft (0.025 in) stops naming it; a fit taking
+  // 0.6 % of scale stops. The contours 98, 99, 100, 101, 103: the interval is 1 ft.
+  {
+    id: "machine-check",
+    kind: "machine",
+    expect: { ready: true, shift: 2.05, last: 0.15, three: "3 control points: a machine needs 4 or more", worst: "PC-2", scaleStop: true, interval: 1, onTin: 100 },
   },
   // --- Equipment › Cost components (D-775): one row per equipment across the project ---------------------
   // An excavator class priced on line A in "Place and compact" (1 unit, 8 EH, 1 day, $1,000) and as a shared
