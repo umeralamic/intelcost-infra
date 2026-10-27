@@ -56,7 +56,7 @@ async function openEstimate(page) {
 
 /** Shared equipment's list: each machine's name and total as the dialog lists it. */
 async function sharedList(page) {
-  await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /^Shared equipment$/ }).click(); })();
+  await page.locator('[data-setup-line="setup:shared"]').click(); // D-777: the sidebar's Setup
   const dialog = page.getByRole("dialog", { name: "Shared equipment" });
   await dialog.waitFor();
   await page.waitForTimeout(1500);
@@ -87,8 +87,8 @@ await run("c35-equipment-library", [
       await shared("CR-HYD-165T-OP", { name: "TEST assembled crane", eq_mode: "operated", eq_period: "hr" }, { "TEST A": 6, "TEST B": 4 });
       await shared("WT-4000", { name: "TEST water truck", eq_mode: "rental" }, { "TEST C": 24, "TEST D": 16 });
       const b = (await apiCall(token, "GET", `${lib}/bundle`)).body;
-      expect(b.classes.length === 628 && b.release === 2, `bundle: ${b.classes.length} classes, release ${b.release}`);
-      return `628 classes, release 2; ${Object.keys(res).length} shared machines`;
+      expect(b.classes.length === 628 && b.release === 3, `bundle: ${b.classes.length} classes, release ${b.release}`);
+      return `628 classes, release 3; ${Object.keys(res).length} shared machines`;
     },
   },
   {

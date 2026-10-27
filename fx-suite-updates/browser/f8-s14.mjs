@@ -83,7 +83,9 @@ await run("f8-s14", [
       await openPrefs(page, APP);
       const before = await shown(page);
       expect(JSON.stringify(before) === JSON.stringify(DEFAULTS), `a new person reads ${JSON.stringify(before)}`);
-      for (const [key, value] of Object.entries(CHANGED)) {
+      // The live line before Drawing in progress goes Off, which greys it (D-802).
+      const order = ["live_line", ...Object.keys(CHANGED).filter((k) => k !== "live_line")];
+      for (const [key, value] of order.map((k) => [k, CHANGED[k]])) {
         const saved = page.waitForResponse((res) => res.url().endsWith("/api/auth/me") && res.request().method() === "PATCH");
         await page.locator(`[data-pref="${key}"]`).getByRole("radio", { name: LABELS[key][String(value)], exact: true }).click();
         expect((await saved).status() === 200, `saving ${key} failed`);
@@ -127,7 +129,10 @@ await run("f8-s14", [
         await signInAt(page, APP, world.owner.email, world.owner.password);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await openSheet(page, r);
-        await openSheet(b.page, r, APP_B);
+        await openSheet(b.page, r, APP_B).catch(async (error) => {
+          await b.page.screenshot({ path: "/drive/scripts/shots/f8-s14-step4-b.png" }).catch(() => {});
+          throw new Error(`window B's sheet did not open (${b.page.url()}): ${error.message.split("\n")[0]}`);
+        });
         await onProjectTopic(page, r);
         await onProjectTopic(b.page, r);
         await armMeasure(page, "Linear");

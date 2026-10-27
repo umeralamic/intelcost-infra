@@ -17,7 +17,9 @@ const world = await riversideWorld();
 const token = world.token;
 const workspace = world.workspace;
 const tokenB = world.sara.token;
-const checked = (page) => page.$eval('[role="radio"][aria-checked="true"]', (el) => el.getAttribute("data-mode"));
+// The mode's own group: the page also holds "Who can delete what I mark" (D-789), a per-account choice.
+const MODE = '[role="radiogroup"][aria-label="Collaboration mode"]';
+const checked = (page) => page.$eval(`${MODE} [role="radio"][aria-checked="true"]`, (el) => el.getAttribute("data-mode"));
 
 await run("f8-s10", [
   {
@@ -42,7 +44,7 @@ await run("f8-s10", [
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password);
         await b.page.goto(`${APP_B}/settings/collaboration`);
         await joinedTopic(b.page, `ws:${workspace.uuid}`);
-        await b.page.locator('[role="radio"][aria-checked="true"]').waitFor({ timeout: 10000 });
+        await b.page.locator(`${MODE} [role="radio"][aria-checked="true"]`).waitFor({ timeout: 10000 });
         expect((await checked(b.page)) === "work_together", "B does not start on Work together");
 
         await page.goto(`${APP}/settings/collaboration`);
@@ -67,8 +69,8 @@ await run("f8-s10", [
       await page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), workspace.uuid);
       await signInAt(page, APP_B, WINDOW_B.email, WINDOW_B.password);
       await page.goto(`${APP_B}/settings/collaboration`);
-      await page.getByRole("radiogroup").waitFor();
-      const enabled = await page.locator('[role="radio"]:not([disabled])').count();
+      await page.locator(MODE).waitFor();
+      const enabled = await page.locator(`${MODE} [role="radio"]:not([disabled])`).count();
       const note = await page.getByRole("status").filter({ hasText: "You can read this" }).count();
       const refused = await call(tokenB, "PATCH", `/api/workspace/${workspace.uuid}`, { collaboration_mode: "one_at_a_time" });
       expect(enabled === 0, `${enabled} options are clickable for an estimator`);

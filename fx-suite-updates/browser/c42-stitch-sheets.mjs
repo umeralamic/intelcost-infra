@@ -35,13 +35,24 @@ async function stitchPanel(page) {
 async function stitchByPoints(page, other, here, there) {
   await page.locator('[data-stitch-way="points"]').click();
   await page.getByLabel("Sheet to stitch").selectOption({ label: other });
-  await page.waitForFunction(() => document.querySelectorAll('svg[role="presentation"]').length >= 2, null, { timeout: 20000 });
+  await page.waitForFunction(() => document.querySelectorAll('svg[role="presentation"]').length >= 2, null, { timeout: 20000 }).catch(async () => {
+    const select = page.getByLabel("Sheet to stitch");
+    const seen = {
+      chosen: await select.evaluate((s) => s.selectedOptions[0]?.textContent).catch(() => "no select"),
+      options: await select.locator("option").allInnerTexts().catch(() => []),
+      panes: await page.locator('svg[role="presentation"]').count(),
+      url: page.url(),
+    };
+    throw new Error(`no second pane after choosing ${other}: ${JSON.stringify(seen)}`);
+  });
   for (let k = 0; k < here.length; k++) {
     await clickAt(page, 0, ...here[k]);
     await clickAt(page, 1, ...there[k]);
   }
   await page.locator("[data-join-fit]").waitFor({ timeout: 10000 });
 }
+/** A sheet as the app names it: its title, or "Page n" while it has none (these pages have none). */
+const shown = (s) => s.sheet_name || `Page ${s.page_number}`;
 const sites = async () => (await apiCall(token, "GET", `${base}/${project.uuid}/site`)).body;
 const POINTS = [
   [0.2, 0.2],
@@ -65,7 +76,7 @@ await run("c42-stitch-sheets", [
     run: async ({ page }) => {
       await openSheet(page, project, sheets[0], "earthwork");
       await stitchPanel(page);
-      await stitchByPoints(page, "S-2", POINTS, POINTS);
+      await stitchByPoints(page, shown(sheets[1]), POINTS, POINTS);
       const fit = Number(await page.locator("[data-join-fit]").getAttribute("data-join-fit"));
       expect(fit < 0.1, `fit ${fit} ft`);
       expect((await page.locator("[data-join-scale-flag]").count()) === 0, "a scale flag on sheets at one scale");
@@ -86,12 +97,12 @@ await run("c42-stitch-sheets", [
     run: async ({ page }) => {
       await openSheet(page, project, sheets[1], "earthwork");
       await stitchPanel(page);
-      await stitchByPoints(page, "S-3", POINTS, POINTS);
+      await stitchByPoints(page, shown(sheets[2]), POINTS, POINTS);
       const flag = page.locator("[data-join-scale-flag]");
       await flag.waitFor({ timeout: 10000 });
       const pct = Math.abs(Number(await flag.getAttribute("data-join-scale-flag")));
       expect(pct > 0.9 && pct < 1.1, `flag ${pct} %`);
-      expect((await page.locator("[data-join-recalibrate]").getAttribute("data-join-recalibrate")) === "S-3", "the flag names another sheet");
+      expect((await page.locator("[data-join-recalibrate]").getAttribute("data-join-recalibrate")) === shown(sheets[2]), "the flag names another sheet");
       await page.locator("[data-join-recalibrate]").click();
       const ask = page.getByRole("dialog").filter({ hasText: /Recalibrating changes \d+ quantit/ });
       await ask.waitFor({ timeout: 10000 });
@@ -103,8 +114,12 @@ await run("c42-stitch-sheets", [
   {
     title: "D-804 A4: the chain: page 3 joined to page 2 joined to page 1 shows its chain fit",
     run: async ({ page }) => {
+      // Each step has a page of its own: page 3's points picked again, now at one scale, and joined.
+      await openSheet(page, project, sheets[1], "earthwork");
+      await stitchPanel(page);
+      await stitchByPoints(page, shown(sheets[2]), POINTS, POINTS);
       await page.locator("[data-stitch-join]").click();
-      const row = page.locator('[data-site-fit="S-3"]');
+      const row = page.locator(`[data-site-fit="${shown(sheets[2])}"]`);
       await row.waitFor({ timeout: 15000 });
       const text = await row.innerText();
       expect(/chain/.test(text), `no chain fit: ${text}`);

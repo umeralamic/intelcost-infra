@@ -17,7 +17,7 @@
 // Written, not run (the founder, 2026-10-26: fixtures added to the archived suite, run with the next full
 // restore-from-tag run, hard rule 8).
 
-import { APP, MAILHOG, apiCall, expect, run, signInAs } from "./lib/bench.mjs";
+import { APP, MAILHOG, apiCall, expect, run, serviceUrl, signInAs } from "./lib/bench.mjs";
 import { APP_B, WINDOW_B, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { openSheet } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
@@ -48,7 +48,9 @@ await count("C41 elsewhere", 0.4, {});
 
 /** Mail captured for an address by the bench's guard, by template (D-792). */
 const mailTo = async (address, template) => {
-  const found = await (await fetch(`${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`)).json();
+  // From the browser container MailHog is reached by its service name, not the published port.
+  const url = `${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`;
+  const found = await (await fetch(serviceUrl(url) ?? url)).json();
   return (found.items ?? []).filter((m) => (m.Content.Headers["X-IntelCost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
 };
 const assign = (scopes) => apiCall(A, "PUT", `${projectPath}/assignee`, { user_uuids: [aUuid, bUuid], ...(scopes ? { scopes } : {}) });
@@ -86,7 +88,8 @@ await run("c41-assignee-scope", [
       const b = await secondWindow(context);
       try {
         await signInAs(page, world.owner.email, world.owner.password, `/settings/account?edit=${r.project}`);
-        const edit = page.locator(`[data-assignee-scope-edit="${WINDOW_B.email}"]`);
+        // Step 1 ends with every scope removed: B's row offers "+ Assign scope" (Edit once a scope is set).
+        const edit = page.locator(`[data-assignee-scope-assign="${WINDOW_B.email}"], [data-assignee-scope-edit="${WINDOW_B.email}"]`).first();
         await edit.waitFor({ timeout: 20000 });
         await edit.click();
         const dialog = page.locator("[data-scope-dialog]");
@@ -100,6 +103,8 @@ await run("c41-assignee-scope", [
         await page.getByRole("button", { name: /^Save( changes)?$/ }).last().click();
         await waitFor(async () => ((await apiCall(A, "GET", projectPath)).body.assignee_scopes ?? []).length === 1, "the scope saved", 8000);
 
+        // In Riverside's workspace, not B's own: the scope is on Riverside's project.
+        await b.page.addInitScript((uuid) => localStorage.setItem("intelcost.workspace", uuid), r.workspace);
         await signInAt(b.page, APP_B, WINDOW_B.email, WINDOW_B.password, "/settings/account?projects=open");
         const mine = b.page.locator("[data-my-scope]").first();
         await mine.waitFor({ timeout: 15000 });

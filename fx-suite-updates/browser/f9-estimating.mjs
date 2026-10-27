@@ -258,7 +258,9 @@ await run("f9-estimating", [
       await dialog.waitFor({ state: "detached" });
       await settles(page, "Paint", "Total Material Cost", 400);
       expect((await page.locator(`[data-rate="Unit Material Cost for Paint"]`).count()) === 0, "Paint's material rate is still editable");
-      await page.getByRole("button", { name: "Show cost components" }).first().click();
+      // At the deepest level the components already show (D-784); otherwise the host's chevron opens them.
+      const show = page.getByRole("button", { name: "Show cost components" }).first();
+      if (await show.isVisible().catch(() => false)) await show.click();
       await page.locator(`tr[data-component-row="Paint gallons"]`).waitFor({ timeout: 5000 });
       const stored = (await apiCall(token, "GET", `${estimate}/components`)).body;
       return `preview "${preview}"; Paint $400 material from components; component row shown; api ${Array.isArray(stored) ? stored.length : "?"} component(s)`;

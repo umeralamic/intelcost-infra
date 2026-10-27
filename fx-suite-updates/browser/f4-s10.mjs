@@ -167,21 +167,20 @@ await run("f4-s10", [
       }
       const named = await page.getByRole("option", { name: /Bench admin/ }).count();
       expect(named === 2, `${named} Bench admin options`);
+      // One row per person since D-794 (the chips' names, then Primary and the scope): the name is the row's first line.
       const chips = dialog.getByRole("list", { name: "Assigned" });
+      const nameOf = (text) => text.split("\n")[0].trim();
       await page.locator(`[data-assignee-option="${admin.email}"] input`).check();
       // One of the name: no email yet, nothing to tell apart.
-      await chips.locator(`[data-assignee-chip="${admin.email}"]`).waitFor({ timeout: 10000 });
-      const alone = await chips.locator(`[data-assignee-chip="${admin.email}"]`).innerText();
-      expect(alone.trim() === "Bench admin", `a lone chip reads ${alone}`);
+      await chips.locator(`[data-assignee-row="${admin.email}"]`).waitFor({ timeout: 10000 });
+      const alone = nameOf(await chips.locator(`[data-assignee-row="${admin.email}"]`).innerText());
+      expect(alone === "Bench admin", `a lone row reads ${alone}`);
       await page.locator(`[data-assignee-option="${twin.email}"] input`).check();
-      await chips.locator(`[data-assignee-chip="${twin.email}"]`).waitFor({ timeout: 10000 });
-      const read = await chips.locator("[data-assignee-chip]").allInnerTexts();
-      expect(
-        read.map((t) => t.trim()).join(" | ") === `Bench admin (${admin.email}) | Bench admin (${twin.email})`,
-        `chips: ${read.join(" | ")}`,
-      );
+      await chips.locator(`[data-assignee-row="${twin.email}"]`).waitFor({ timeout: 10000 });
+      const read = (await chips.locator("[data-assignee-row]").allInnerTexts()).map(nameOf);
+      expect(read.join(" | ") === `Bench admin (${admin.email}) | Bench admin (${twin.email})`, `rows: ${read.join(" | ")}`);
       await dialog.getByRole("button", { name: `Remove Bench admin (${twin.email})` }).waitFor();
-      return `options show both emails · chips: ${read.map((t) => t.trim()).join(" | ")}`;
+      return `options show both emails · rows: ${read.join(" | ")}`;
     },
   },
 ]);

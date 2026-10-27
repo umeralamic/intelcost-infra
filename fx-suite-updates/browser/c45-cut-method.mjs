@@ -18,9 +18,9 @@ const { token, workspace, base } = await freshWorkspace("C45 Cut method");
 const project = await makeProject(token, base, { name: "Cut method" });
 const g = grading(token, base, project);
 let sheet;
-const lib = `/api/workspace/${workspace.uuid}/estimate/equipment-library`;
+const lib = `/api/workspace/${workspace.uuid}/equipment-library`;
 
-async function calculateWith(page, set) {
+async function calculateWith(page, set, ok) {
   await openSheet(page, project, sheet, "earthwork");
   await page.getByRole("button", { name: "Calculate", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: "Earthwork assumptions" });
@@ -29,12 +29,14 @@ async function calculateWith(page, set) {
   await dialog.getByRole("button", { name: "Calculate", exact: true }).click();
   await dialog.waitFor({ state: "detached" });
   await page.getByRole("dialog", { name: "Earthwork Volumes" }).locator("[data-volume-totals]").waitFor({ timeout: 60000 });
+  // The panel opens before the lines are saved: the last run's are still live until then.
+  let last = [];
   return waitFor(
     async () => {
-      const live = (await g.items()).filter((i) => i.earthwork_role && !i.earthwork_retired);
-      return live.length ? live : null;
+      last = (await g.items()).filter((i) => i.earthwork_role && !i.earthwork_retired);
+      return last.length && ok(last) ? last : null;
     },
-    "the calculated lines",
+    `the calculated lines (last: ${last.map((l) => l.earthwork_role).join(", ")})`,
     30000,
   );
 }
@@ -56,7 +58,8 @@ await run("c45-cut-method", [
   {
     title: "D-806 B4: dozer push for the project: Cut, dozer push",
     run: async ({ page }) => {
-      const lines = await calculateWith(page, async (d) => d.locator('[data-cut-method-choice="dozer"]').check());
+      const cuts = (ls) => ls.filter((l) => /^Cut/.test(l.name));
+      const lines = await calculateWith(page, async (d) => d.locator('[data-cut-method-choice="dozer"]').check(), (ls) => cuts(ls).length > 0 && cuts(ls).every((l) => l.earthwork_role === "cut_push"));
       const cut = lines.filter((l) => /^Cut/.test(l.name)).map((l) => `${l.name}:${l.earthwork_role}`);
       expect(cut.every((c) => c.endsWith(":cut_push")), cut.join(", "));
       return cut.join(", ");
@@ -68,7 +71,7 @@ await run("c45-cut-method", [
       const lines = await calculateWith(page, async (d) => {
         await d.getByText("A Site Feature's own method").click();
         await d.locator('[data-feature-method="Building Pad"] select').selectOption("scraper");
-      });
+      }, (ls) => ls.some((l) => l.earthwork_role === "cut_scraper"));
       const roles = new Set(lines.filter((l) => /^Cut/.test(l.name)).map((l) => l.earthwork_role));
       expect(roles.has("cut_scraper") && roles.has("cut_push"), [...roles].join(","));
       return [...roles].join(", ");

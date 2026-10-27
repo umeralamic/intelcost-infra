@@ -23921,3 +23921,43 @@ sum of the parts it shows" stands; its largest-remainder balancing across rows i
     company rate is typed.
 - **No new column for the per-feature method:** it is kept in `site_choices` (by the feature's uuid).
 - **Not changed:** with the defaults nothing moves. The HV copy recalculated with them is $943,321.80, as before.
+
+## D-807: The full fixture run of 2026-10-27, and the fixtures brought to today's screens (accepted 2026-10-27)
+
+**Status:** accepted (the founder's instruction of 2026-10-27: the full suite restored from the tag, every fixture written
+since the archive, 3 at a time; failures rerun alone and classed timing or real; real ones fixed).
+
+- **Runs** (logs in `intelcost-infra/morning-report-2026-10-27/fx-*.log`):
+  - `full` (f2–f8, p19, p20a, d37-links), 3 at a time on the built apps: 95 of 109 passed.
+  - Every fixture written since the archive (c03–c46, f9-estimating, f9-exports, n2, n3, n11, r1, r5, rv-rows,
+    m6-position), 3 at a time: 29 of 43 passed.
+  - The 28 failures rerun alone, then again after each fix.
+- **Built apps against dev servers:** `fx-suite.sh prod` serves no `/src` modules and no `/dev/ui`. Every fixture that
+  imports the app's own modules (f3-s1, f6-s4, f7-a, r1, f5-s3) or drives the gallery (f4-s2) or the dev override
+  (f3-s13) fails there and passes on the dev servers. f5-s11's timings need the built apps (on the dev servers its cold
+  open is 5 s). Neither set of apps runs the whole list. Not a code fault.
+- **Fixtures stale against decisions already made, brought to today's screens** (`fx-suite-updates/`):
+  - c32, c35, c36, c38: Setup's items are in the Estimating sidebar (D-777), not a toolbar menu.
+  - c35, c36: starter release 3 (D-806): 15 activities, 85 tiers, 69 defaults, the bundle's release 3.
+  - f9-estimating step 7: at the deepest level the components already show (D-784).
+  - f4-s10: one row per assignee (D-794), not chips.
+  - f8-s10: the Collaboration page has a second radio group (D-789); the mode's own group is read.
+  - f8-s14: the live line set before Drawing in progress goes Off, which greys it (D-802).
+- **Tonight's fixtures, corrected** (none was run before; hard rule 8):
+  - c42: sheets named as the app names them ("Page n"); step 4 opens its own page.
+  - c43: the short pad on a page of its own (beside the first it shares one surface).
+  - c44, c45: wait for this run's lines (the panel opens before the lines are saved).
+  - c45: the workspace equipment-library route.
+  - c46: suitability answered before Calculate; the control points at the pad's corners, on the existing ground.
+  - c40: the expiry steps' psql runs from a wrapper (`c40-delete-protection.sh`, `lib/host-sql.mjs`) on `intelcost_fx`;
+    the browser container has no docker. Mail is fetched by MailHog's service name (c40, c41). Each delete request is
+    answered by its own notice.
+  - c41: window B in Riverside's workspace; "+ Assign scope" when B has no scope yet.
+  - `lib/grading-world.mjs` `openSheet` signs in once per page, as `uploadAll` does.
+- **Timing, passing alone:** f5-big, f5-s6, f6-s4, n3-twenty-loads, f8-s16, c32, f4-s2 step 6, f8-s14 step 4 (window B on
+  the dev server).
+- **Not passing, not tonight's:**
+  - f6-a step 8: realtime between the two api processes over the 1.5 s budget. Known since D-696.
+  - f5-s11 step 2 (built apps): a cold open fetches the same fit image twice, 4 ms apart, before pdf.js. The canvas
+    code is unchanged since 2026-10-22. Open for a look.
+- **No app or api code changed.**

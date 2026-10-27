@@ -100,7 +100,7 @@ async function recalculate(page) {
 async function openSettings(page) {
   await signIn(page);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
-  await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /Equipment settings/ }).click(); })();
+  await page.locator('[data-setup-line="setup:equipment"]').click(); // D-777: the sidebar's Setup
   const row = page.locator('[data-site-activity="Excavate and load (on-site haul)"]');
   await row.waitFor({ timeout: 30000 });
   return row;
@@ -137,7 +137,7 @@ await run("c32-site-typed", [
       for (const [cls, label, value] of [["EX-CRAWL-30T", /^Week/, "7000"], ["ADT-30T", /^Day/, "900"]]) {
         // A fresh page for each machine: a save reselects its own resource when it settles.
         await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
-        await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /^Shared equipment$/ }).click(); })();
+        await page.locator('[data-setup-line="setup:shared"]').click(); // D-777: the sidebar's Setup
         await dialog.waitFor();
         const r = named.find((x) => x.eq_class_key === cls);
         expect(r, `no shared machine of ${cls}: ${named.map((x) => x.name).join(", ")}`);

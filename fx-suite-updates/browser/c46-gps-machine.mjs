@@ -23,12 +23,9 @@ const g = grading(token, base, project);
 let sheets;
 let scale;
 const georef = (sheet) => `${base}/${project.uuid}/earthwork/georef/sheet/${sheet.uuid}`;
-const AT = [
-  [0.15, 0.25],
-  [0.35, 0.25],
-  [0.35, 0.45],
-  [0.15, 0.45],
-];
+/** The control points' plan places: the pad's corners (set in setup), on the existing ground, which a point off
+ *  it cannot be checked against (D-805). */
+const AT = [];
 /** A point at its plan place: easting 1,000 + x ft, northing 5,000 - y ft (international feet). */
 const at = ([x, y], i, z = 102, off = 0) => ({ label: `PC-${i + 1}`, x, y, n: 5000 - y * scale.h * scale.f, e: 1000 + x * scale.w * scale.f + off, z });
 async function setPoints(points, units = "intl-ft") {
@@ -55,7 +52,10 @@ await run("c46-gps-machine", [
       const list = (await apiCall(token, "GET", `${base}/${project.uuid}/drawing/sheet`)).body;
       const s = (Array.isArray(list) ? list : list.items).find((x) => x.uuid === sheets[0].uuid);
       scale = { w: s.width_pt, h: s.height_pt, f: Number(cal.feet_per_norm) };
-      await flatPad(g, sheets[0]);
+      const pad = await flatPad(g, sheets[0]);
+      AT.push(...pad.box);
+      // Calculate needs the suitability answered, as before D-806.
+      await g.assume({ native_suitable: "all" });
       await openSheet(page, project, sheets[0], "earthwork");
       await calculate(page);
       return `scale ${scale.f} ft/pt`;

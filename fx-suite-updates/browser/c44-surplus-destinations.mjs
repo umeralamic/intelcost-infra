@@ -21,7 +21,7 @@ const project = await makeProject(token, base, { name: "Surplus" });
 const g = grading(token, base, project);
 let sheet;
 
-async function calculateWith(page, to) {
+async function calculateWith(page, to, ok) {
   await openSheet(page, project, sheet, "earthwork");
   await page.getByRole("button", { name: "Calculate", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: "Earthwork assumptions" });
@@ -30,13 +30,15 @@ async function calculateWith(page, to) {
   await dialog.getByRole("button", { name: "Calculate", exact: true }).click();
   await dialog.waitFor({ state: "detached" });
   await page.getByRole("dialog", { name: "Earthwork Volumes" }).locator("[data-volume-totals]").waitFor({ timeout: 60000 });
+  // The panel opens before the lines are saved: the last run's are still live until then.
+  let last = [];
   return waitFor(
     async () => {
       const items = await g.items();
-      const live = items.filter((i) => i.earthwork_role && !i.earthwork_retired);
-      return live.length ? live.map((i) => i.earthwork_role) : null;
+      last = items.filter((i) => i.earthwork_role && !i.earthwork_retired).map((i) => i.earthwork_role);
+      return last.length && ok(last) ? last : null;
     },
-    "the calculated lines",
+    `the lines for ${to} (last: ${last.join(", ")})`,
     30000,
   );
 }
@@ -59,8 +61,7 @@ await run("c44-surplus-destinations", [
   ].map(([to, ok]) => ({
     title: `D-806 B3: the surplus to ${to}`,
     run: async ({ page }) => {
-      const roles = await calculateWith(page, to);
-      expect(ok(roles), `lines for ${to}: ${roles.join(", ")}`);
+      const roles = await calculateWith(page, to, ok);
       const saved = (await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body.site_choices;
       expect(to === "haul_off" ? saved === null || !saved.surplus?.soil : saved?.surplus?.soil === to, `saved ${JSON.stringify(saved)}`);
       return roles.join(", ");

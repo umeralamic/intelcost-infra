@@ -3,7 +3,7 @@
 //
 //   ./fx-suite.sh run c36-earthwork-link
 //
-// The starter, as a new workspace takes it up (D-751's counts): 13 activities, 79 tiers, 63 default
+// The starter, as a new workspace takes it up (D-751's counts, release 3 of D-806): 15 activities, 85 tiers, 69 default
 // rows, every one priced as one site spread on a 10-hour day; the 19 optional machines ("Optional
 // (catalog gap)") inactive; the crew's Foreman rows marked foreman, Grade checker and Pipelayer
 // priced as their journeyman craft (D-753 option B, `rate_as`).
@@ -66,7 +66,7 @@ const machines = (a) => a.machines.map((m) => `${m.eq_class_key}×${m.units}`).j
 async function settingsRow(page) {
   await signIn(page);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
-  await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /Equipment settings/ }).click(); })();
+  await page.locator('[data-setup-line="setup:equipment"]').click(); // D-777: the sidebar's Setup
   const row = page.locator(`[data-site-activity="${A1}"]`);
   await row.waitFor({ timeout: 30000 });
   return row;
@@ -84,7 +84,7 @@ async function commit(page, row, label, value, settled) {
 
 await run("c36-earthwork-link", [
   {
-    title: "the starter a new workspace takes up (D-751): 13 activities, 79 tiers, 63 defaults, site spreads on a 10-hour day; 19 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
+    title: "the starter a new workspace takes up (D-751, D-806 release 3): 15 activities, 85 tiers, 69 defaults, site spreads on a 10-hour day; 19 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
     run: async ({ page }) => {
       const cfg = (await apiCall(token, "GET", `${wlib}/earthwork-production`)).body;
       const acts = cfg.activities.filter((a) => a.national_key);
@@ -94,9 +94,9 @@ await run("c36-earthwork-link", [
       const crew = tiers.flatMap((t) => t.crew);
       const foremen = crew.filter((c) => /^Foreman/i.test(c.role));
       const rated = crew.filter((c) => /^(Grade checker|Pipelayer)/i.test(c.role));
-      expect(acts.length === 13, `activities ${acts.length}`);
-      expect(tiers.length === 79, `tiers ${tiers.length}`);
-      expect(defaults === 63, `defaults ${defaults}`);
+      expect(acts.length === 15, `activities ${acts.length}`);
+      expect(tiers.length === 85, `tiers ${tiers.length}`);
+      expect(defaults === 69, `defaults ${defaults}`);
       expect(acts.every((a) => (a.price_as ?? "site") === "site" && a.hours_per_day === 10), `price_as / hours: ${acts.map((a) => `${a.national_key}:${a.price_as}/${a.hours_per_day}`).join(" ")}`);
       expect(optional === 19, `optional machines ${optional}`);
       expect(foremen.length > 0 && foremen.every((c) => c.foreman), `foreman rows ${foremen.length}, all marked ${foremen.every((c) => c.foreman)}`);
@@ -106,8 +106,8 @@ await run("c36-earthwork-link", [
       await page.getByRole("tab", { name: "Earthwork production" }).click();
       await page.locator("[data-activity]").first().waitFor({ timeout: 30000 });
       const badges = await page.locator("[data-starter]").count();
-      expect(badges === 13, `Starter badges on screen ${badges}`);
-      return `13 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 13 Starter badges`;
+      expect(badges === 15, `Starter badges on screen ${badges}`);
+      return `15 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 15 Starter badges`;
     },
   },
   {

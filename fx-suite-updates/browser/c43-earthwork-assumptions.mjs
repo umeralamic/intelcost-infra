@@ -17,9 +17,10 @@ const { token, workspace, base } = await freshWorkspace("C43 Earthwork assumptio
 const project = await makeProject(token, base, { name: "Assumptions" });
 const g = grading(token, base, project);
 let sheet;
+let short;
 
-async function openAssumptions(page) {
-  await openSheet(page, project, sheet, "earthwork");
+async function openAssumptions(page, on = sheet) {
+  await openSheet(page, project, on, "earthwork");
   await page.getByRole("button", { name: "Calculate", exact: true }).first().click();
   const dialog = page.getByRole("dialog", { name: "Earthwork assumptions" });
   await dialog.waitFor();
@@ -30,7 +31,7 @@ await run("c43-earthwork-assumptions", [
   {
     title: "setup: the flat pad; a true saved the old way",
     run: async ({ page }) => {
-      [sheet] = await gradingSheets(page, token, base, workspace, project, ["G-1"]);
+      [sheet, short] = await gradingSheets(page, token, base, workspace, project, ["G-1", "G-2"]);
       await flatPad(g, sheet);
       await g.assume({ native_suitable: true });
       const read = (await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body;
@@ -74,11 +75,12 @@ await run("c43-earthwork-assumptions", [
     title: "D-806 B2: a pad short of fill: after Calculate the import material reads needed",
     run: async ({ page }) => {
       await g.assume({ native_suitable: "all" });
-      const short = await flatPad(g, sheet, { eg: 99, fg: 100, x0: 0.5, y0: 0.5 });
-      expect(short.boundary, "a second pad");
-      await openSheet(page, project, sheet, "earthwork");
+      // On a page of its own: beside the first pad it shares one surface, its fill met by that pad's cut.
+      const pad = await flatPad(g, short, { eg: 99, fg: 100 });
+      expect(pad.boundary, "the short pad");
+      await openSheet(page, project, short, "earthwork");
       await calculate(page);
-      const dialog = await openAssumptions(page);
+      const dialog = await openAssumptions(page, short);
       expect((await dialog.locator("[data-import-material]").getAttribute("data-import-material")) === "needed", "the import material is not needed after an import");
       await page.keyboard.press("Escape");
       return "needed after an import";

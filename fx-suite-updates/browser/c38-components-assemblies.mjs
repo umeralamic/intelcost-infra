@@ -118,7 +118,7 @@ await run("c38-components-assemblies", [
       await signInAs(page, (await fixtureOwner()).email);
       await page.goto(`${APP}/project/${target.uuid}/takeoff/${w.target.sheet}?tab=estimating`);
       await page.getByText("TEST pad 2", { exact: true }).first().waitFor({ timeout: 30000 });
-      await (async () => { await page.getByRole("button", { name: "Setup", exact: true }).click(); await page.getByRole("menuitem", { name: /^Shared equipment$/ }).click(); })();
+      await page.locator('[data-setup-line="setup:shared"]').click(); // D-777: the sidebar's Setup
       const dialog = page.getByRole("dialog", { name: "Shared equipment" });
       await dialog.waitFor();
       await dialog.getByRole("button", { name: /New resource/ }).click();

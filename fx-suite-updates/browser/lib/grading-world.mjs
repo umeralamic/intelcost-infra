@@ -178,7 +178,9 @@ export async function duplicateProject(token, base, projectUuid, waitFor, timeou
  *  tool (the bar folds its last ones into "More earthwork tools" on a narrow window). */
 export async function openSheet(page, project, sheet, tab) {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await signInAs(page, (await fixtureOwner()).email);
+  // Signed in once per page, as uploadAll: the sign-in page sends a signed-in page on, leaving no form to fill.
+  const signedIn = page.url().startsWith(APP) && (await page.evaluate(() => localStorage.getItem("intelcost.session")).catch(() => null));
+  if (!signedIn) await signInAs(page, (await fixtureOwner()).email);
   await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=${tab}`);
   // Attached, not visible: the Estimating tab keeps the canvas mounted but hidden.
   await page.locator("[data-canvas-scale]").first().waitFor({ state: "attached", timeout: 30000 });

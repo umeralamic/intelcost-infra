@@ -13,12 +13,13 @@
 // - the screen: Settings › Collaboration saves the rule; B's row shows the shield; B's Delete asks "Marked by
 //   <A>. Delete?"; the request makes "Delete requested by <B>" on both windows' rows; A's bell Approve deletes it;
 //   B is told; Deny keeps it and B is told;
-// - expiry: a request backdated 8 days (drive, psql) lapses on A's next notice read, the item stays, B is told.
+// - expiry: a request backdated 8 days (psql through c40-delete-protection.sh, lib/host-sql.mjs) lapses on A's next notice read, the item stays, B is told.
 //
 // Written, not run (the founder, 2026-10-26: fixtures added to the archived suite, run with the next full
 // restore-from-tag run, hard rule 8).
 
-import { APP, MAILHOG, apiCall, expect, run, seatedMember, signInAs } from "./lib/bench.mjs";
+import { APP, MAILHOG, apiCall, expect, run, seatedMember, serviceUrl, signInAs } from "./lib/bench.mjs";
+import { hostSql } from "./lib/host-sql.mjs";
 import { APP_B, WINDOW_B, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { openSheet, row } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
@@ -47,7 +48,9 @@ const area = (name, at, token = A) =>
 const gone = async (uuid) => (await apiCall(A, "GET", `${t}/item/${uuid}`)).status === 404;
 /** Mail captured for an address by the bench's guard, by template (D-792). */
 const mailTo = async (address, template) => {
-  const found = await (await fetch(`${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`)).json();
+  // From the browser container MailHog is reached by its service name, not the published port.
+  const url = `${MAILHOG}/api/v2/search?kind=to&query=${encodeURIComponent(address)}&limit=50`;
+  const found = await (await fetch(serviceUrl(url) ?? url)).json();
   return (found.items ?? []).filter((m) => (m.Content.Headers["X-IntelCost-Template"] ?? []).includes(template)).map((m) => m.Content.Headers.Subject?.[0] ?? "");
 };
 const reset = () => rule(A, { delete_protection: null, delete_allowed: null });
@@ -154,10 +157,11 @@ await run("c40-delete-protection", [
         const actions = page.locator("[data-delete-request-actions]");
         await actions.first().waitFor();
         await page.screenshot({ path: shot.replace(".png", "-bell.png") });
-        // Newest first: "C40 keep" is denied, "C40 wall" approved.
-        await actions.nth(0).locator("[data-deny]").click();
-        await waitFor(async () => (await actions.count()) === 1, "the denied request's buttons to go", 5000);
-        await actions.nth(0).locator("[data-approve]").click();
+        // "C40 keep" denied, "C40 wall" approved, each by its own notice: step 2's request is still open in the bell.
+        const answer = (name) => page.locator("li").filter({ hasText: `“${name}”` }).locator("[data-delete-request-actions]");
+        await answer("C40 keep").locator("[data-deny]").click();
+        await waitFor(async () => (await answer("C40 keep").count()) === 0, "the denied request's buttons to go", 5000);
+        await answer("C40 wall").locator("[data-approve]").click();
         await waitFor(async () => (await row(b.page, "C40 wall").count()) === 0, "the approved item gone on B", 8000);
         expect(!(await gone(keep.uuid)), "the denied item went");
         const told = (await apiCall(B, "GET", "/api/notifications")).body.rows.slice(0, 2).map((n) => n.line);
@@ -177,12 +181,8 @@ await run("c40-delete-protection", [
       const old = await area("C40 old", 0.55);
       const asked = await apiCall(B, "DELETE", `${t}/item/${old.uuid}`);
       expect(asked.body.asked.length === 1, `ask: ${JSON.stringify(asked.body)}`);
-      // Backdated by a drive (psql in the api container): the fixture has no clock of its own to move.
-      const { execSync } = await import("node:child_process");
-      execSync(
-        `docker compose exec -T postgres psql -U intelcost -d intelcost -c "UPDATE takeoff_delete_request SET created_at = now() - interval '8 days' WHERE targets @> '[{\\"item\\": \\"${old.uuid}\\"}]'"`,
-        { stdio: "pipe" },
-      );
+      // Backdated on the fx database by the wrapper's psql: the fixture has no clock of its own to move.
+      await hostSql(`UPDATE takeoff_delete_request SET created_at = now() - interval '8 days' WHERE targets::text LIKE '%${old.uuid}%'`);
       await apiCall(A, "GET", "/api/notifications");
       const told = (await apiCall(B, "GET", "/api/notifications")).body.rows[0]?.line ?? "";
       expect(told.includes("expired") && !(await gone(old.uuid)), `expiry: "${told}"`);
@@ -196,11 +196,7 @@ await run("c40-delete-protection", [
       await rule(A, { delete_protection: "approve" });
       const aged = await area("C40 aged", 0.6);
       await apiCall(B, "DELETE", `${t}/item/${aged.uuid}`);
-      const { execSync } = await import("node:child_process");
-      execSync(
-        `docker compose exec -T postgres psql -U intelcost -d intelcost -c "UPDATE takeoff_delete_request SET created_at = now() - interval '8 days' WHERE targets::text LIKE '%${aged.uuid}%'"`,
-        { stdio: "pipe" },
-      );
+      await hostSql(`UPDATE takeoff_delete_request SET created_at = now() - interval '8 days' WHERE targets::text LIKE '%${aged.uuid}%'`);
       const owner = (await apiCall(A, "GET", "/api/notifications")).body.rows.find((n) => n.kind === "takeoff.delete_request" && n.title.includes("C40 aged"));
       expect(owner && owner.answer_at === null && owner.request_state === "expired", `owner's notice: ${JSON.stringify(owner)}`);
       const rules = (await apiCall(B, "GET", `${t}/delete-rules`)).body;
