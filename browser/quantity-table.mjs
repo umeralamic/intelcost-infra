@@ -124,6 +124,7 @@ try {
     const model = await import("/src/lib/takeoff/earthwork/export/model.ts");
     const setx = await import("/src/lib/takeoff/earthwork/export/exportSet.ts");
     const surf = await import("/src/lib/takeoff/earthwork/export/surfaces.ts");
+    const drw = await import("/src/lib/takeoff/earthwork/export/drawing.ts");
     const earthLines = await import("/src/lib/takeoff/earthwork/lines.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
@@ -227,6 +228,31 @@ try {
           before: words(earthLines.earthworkLines(base("rock", {}))),
           after: words(earthLines.earthworkLines(base("rock", { choices: { surplus: { soil: "stockpile", "layer:L2": "reuse" }, method: "dozer", push_ft: 100, method_by_feature: {} } }))),
           allSuitable: words(earthLines.earthworkLines(base("unsuitable", { allSuitable: true }))),
+        };
+      }
+      if (c.kind === "gps-drawing") {
+        // D-825: the drawing's own linework. A square page with its border at 0.02 and 0.98 (four lines) and a title
+        // block's line at x 0.85 the full height: the suggested box is inside the border (0.004 in) and left of the
+        // title block, x 0.024 to 0.846, y 0.024 to 0.976. Clipped to it: the border leaves, a line from x 0.5 to 0.9
+        // at y 0.5 ends at 0.846, the title block's line leaves; text at (0.4, 0.4) stays, at (0.9, 0.9) leaves.
+        const P = (x, y) => ({ x, y });
+        const piece = (pts, layer = null, closed = false) => ({ pts, closed, layer });
+        const sheet = {
+          pieces: [
+            piece([P(0.02, 0.02), P(0.98, 0.02), P(0.98, 0.98), P(0.02, 0.98)], "BORDER", true),
+            piece([P(0.85, 0.02), P(0.85, 0.98)], "BORDER"),
+            piece([P(0.5, 0.5), P(0.9, 0.5)], "C-ROAD"),
+          ],
+          texts: [{ str: "STA 1+00", at: P(0.4, 0.4), angleDeg: 0, sizePt: 8, layer: "C-ANNO" }, { str: "SHEET C-200", at: P(0.9, 0.9), angleDeg: 0, sizePt: 12, layer: null }],
+          layers: ["BORDER", "C-ANNO", "C-ROAD"], scan: false, cutShort: null,
+        };
+        const box = drw.suggestClipBox(sheet, 1);
+        const kept = drw.clipDrawing(sheet, box);
+        const r3 = (v) => Math.round(v * 1000) / 1000;
+        return {
+          box: [box.x0, box.y0, box.x1, box.y1].map(r3).join(","),
+          pieces: kept.pieces.length, road: kept.pieces.map((q) => `${q.layer}:${q.pts.map((p) => r3(p.x)).join("-")}`).join(";"),
+          texts: kept.texts.map((t) => t.str).join(","),
         };
       }
       if (c.kind === "gps-trench") {

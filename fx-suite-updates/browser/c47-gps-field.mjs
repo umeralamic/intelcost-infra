@@ -130,4 +130,26 @@ await run("c47-gps-field", [
       return `${zs.filter((z) => z !== 0).length} of ${zs.length} vertices off 0`;
     },
   },
+  {
+    title: "D-825: the drawing's own lines on the PDF's layers, inside a box kept on the sheet",
+    run: async ({ page }) => {
+      await openGps(page);
+      await page.waitForFunction(() => {
+        const d = document.querySelector("[data-gps-drawing]");
+        return d && d.getAttribute("data-gps-drawing") !== "reading";
+      }, null, { timeout: 120000 });
+      const state = await page.locator("[data-gps-drawing]").getAttribute("data-gps-drawing");
+      expect(state === "read", `drawing ${state}: ${await page.locator("[data-gps-drawing-status]").innerText()}`);
+      expect((await page.locator("[data-gps-clip-state]").getAttribute("data-gps-clip-state")) === "suggested", "a box kept before one was set");
+      await page.locator("[data-gps-clip-edit]").click();
+      await page.locator("[data-gps-clip-save]").click();
+      await page.waitForFunction(() => document.querySelector("[data-gps-clip-state]")?.getAttribute("data-gps-clip-state") === "kept", null, { timeout: 20000 });
+      const { files } = await download(page);
+      const dxf = files[Object.keys(files).find((n) => n.endsWith(".dxf"))];
+      const own = dxfPairs(dxf).filter(([c, v]) => c === "8" && !v.startsWith("IC-") && v !== "0");
+      expect(own.length > 0, "no line of the drawing's own in the DXF");
+      expect(/inside the box kept on the sheet/.test(files["README.txt"]), "README says nothing of the box");
+      return `${own.length} entities on ${[...new Set(own.map(([, v]) => v))].join(", ")}`;
+    },
+  },
 ]);
