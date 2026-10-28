@@ -249,7 +249,9 @@ await run("f5-s13", [
       // Opening page 5 queues its own neighbours (4, open already, and 6): only page 5's
       // own PDF must not be fetched again.
       const fives = splits.filter((s) => s.page === 5).length - fivesBefore;
-      expect(skipped === "1", "page 5 showed the fit image: it was not drawn ahead");
+      // Why, when it was not: the caches as the page holds them, and the prerenders by kind.
+      const caches = skipped === "1" ? "" : await page.evaluate(() => JSON.stringify({ ...window.__intelcostPdf?.(), perf: window.__intelcostPerf?.samples().filter((x) => x.label === "prerender").slice(-4) }));
+      expect(skipped === "1", `page 5 showed the fit image: it was not drawn ahead ${caches}`);
       expect(fits.length === fitsBefore, `page 5 fetched ${fits.length - fitsBefore} fit image(s)`);
       expect(fives === 0, `page 5's PDF fetched ${fives} more time(s)`);
       return `neighbours 3 and 5 fetched after the first paint (${neighbourSplits.map((s) => `+${s.at - painted} ms`).join(", ")}) · page 5: fit skipped, its PDF not fetched again, first pdf.js paint ${firstPaint} ms`;

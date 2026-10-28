@@ -24492,3 +24492,85 @@ product or the fixture.
   1 item crosses this join (Across 3/4 line)", saved, undone (0.43 ft again); Page 5's match line clicked from the
   other end on the right, "Points matched in reverse order on Page 5", turn 0.0°, cancelled. HV copy C-200 to C-100
   by two points the other way round: "Points matched in reverse order on C-100", turn −8.6°, not joined.
+
+## D-835: Sections in the app and the PDF: Fill, the palette, topsoil, trench dimensions, pipe labels, All sections, the header (accepted 2026-10-28)
+
+**Status:** accepted (the founder's section items 1 to 7 and 7a of 2026-10-28). Choices marked "decided in run, check".
+
+- **Fill:** the ground between proposed grade and existing ground (or the stripped surface, below) is its own band,
+  "Fill", #dcdcd7 with a diagonal hatch. Below existing ground the layers are the profile's at that station, so a
+  trench section and the profile it crosses show the same layers.
+- **Palette (tokens `--soil-*`, light and dark):** Layer 1 #e8b4b0, 2 #c9d4ad, 3 #dcc39b, 4 #b7c5d3; 5 and up
+  proposed: 5 lilac, 6 sage, 7 rose, 8 green-grey (`--soil-5`..`--soil-8`, then round again). Rock (hard dig,
+  weathered rock, bedrock) #a3a3a3 with dots. A colour the user picked wins, drawn at 0.45 so the lines stay
+  readable (decided in run, check); a layer still on its automatic pick takes the palette (decided in run, check:
+  the palette is for sections only; the plan keeps each layer's measurement colour). The PDF draws each band's
+  pattern (hatch, dots, dashes) clipped to it, light.
+- **Topsoil stripping:** checked for a double count first: none. The layers are split below the strip, the strip is
+  counted once on its own (HV: layers 11,588.13 CY = cut; strip 3,622 CY), and fill already rises with it (7,904 →
+  9,520 CY); quantity-table case `geo-1.2-gt08-strip-wins` covers topsoil plus strip. Nothing moved. Drawn: inside a
+  stripping area, "Topsoil (stripped N in)" in dark grey-brown with dashes under existing ground, its depth deep;
+  Fill starts at the stripped surface; where the top layer is itself topsoil it is one band (decided in run, check:
+  the strip band is drawn over the layer, so one band shows). A reuse strip is respread as a thin band under
+  finished grade. Trench sections draw the same bands.
+- **Trench sections:** first line "SS-1 · crosses A-A′ at 1+12 · run station 0+32.94", walls, width and depth on the
+  second. Dimensions on the right, outside the trench: cover just outside the wall (its bottom tick at the crown,
+  no extension line), depth further out, each label beside its line. Nothing in the trench but the pipe: the pipe's
+  diameter and invert are one line under the drawing (decided in run, check), the invert marked by a dot on the
+  pipe. "Dia 8"" with one space. Outside the walls the profile's colours; inside, bedding, zone and backfill keep
+  theirs, the backfill named "Backfill (native)" or "Backfill (select)" from the assembly's backfill source.
+- **Profile pipe labels:** labels that would collide step up or down in turn, each with a short leader to its pipe.
+- **All sections (PDF):** every section in the project, grouped by sheet, a site's sheets under the site. The page
+  visits each sheet with sections in turn, waits for its model, draws its sections offscreen and adds their pages to
+  one PDF, then comes back. A sheet whose model is not current (not calculated, or out of date) is left out and named
+  in a note on the last page (decided in run, check).
+- **Header (7a):** one row: the section select, length, New section, Draw again; "Export ▾" (Letter / 11×17, This
+  section (PDF), All sections (PDF, n), Print this section); "⋯" (Rename, Delete); Close at the right, always. Under
+  480 px the length is hidden and the buttons read "New" and "Redraw" (decided in run, check).
+- **Found in the smoke:** a strip's owned part can have a hole (a newer strip inside an older one), and the section
+  took a point in the hole as the older strip's: a strip owns a point by even-odd across its rings. Where strips of
+  different depths cross a line, the legend gives the range, "Topsoil (stripped 6 to 12 in)". A trench cut's Fill is
+  named above the topsoil drawn over its foot.
+- **Smoke (HV copy C-200):** A-A′ (topsoil all along: the copy strips within the boundary, and the model's ground ends
+  at it), so a 12 in Strip Area drawn across part of A-A′ for the check: the band deepens between 0+76 and 1+63 with
+  its edges at the strip's limits, Fill from the stripped surface, SS-1's cut "Topsoil (stripped 12 in)"; the strip
+  deleted and the copy recalculated (Strip topsoil (6") 3,583 BCY as before). SS-1, ST-1, ST-2 cuts; light and dark;
+  the header one row at 359 px and 589 px with Close inside; All sections (PDF, 2): 3 Letter pages in 21.6 s.
+  Grouping under a site and the note for a sheet left out were not exercised (no site in this project holds a
+  section).
+
+## D-836: The api comes back in seconds, not 98 (accepted 2026-10-28)
+
+**Status:** accepted (the founder's item 10 of 2026-10-28). Target under 15 s: met in part (below).
+
+- **Why 98 s:** PyMuPDF 2 imports its optional add-ons (`pymupdf.layout`, `pymupdf4llm`), which load onnxruntime:
+  ~11 s in each of the three processes; the code fingerprint was hashed before the app answered; alembic ran every
+  start; the bench's bind mount wrote no bytecode, so every start compiled every module; and uvicorn waited without
+  limit for open connections before a reload.
+- **Fixed:** the two add-ons are blocked in `app/__init__.py` (nothing uses them); the fingerprint is taken on a
+  thread at import (fork-safe: a forked child resets its lock and takes its own); the image compiles its bytecode;
+  `--timeout-graceful-shutdown 5`; `app.core.at_head` skips alembic when the database is at head; the bench keeps
+  bytecode in the container (`PYTHONPYCACHEPREFIX=/tmp/pyc`).
+- **Measured:** bench restart 98 to 103 s before, 36 to 50 s after; the deploy image with three processes 34 to 38 s
+  before, 22 to 28 s after (cold 42 → 37 s). The rest (~13 s) is importing about a hundred route modules on this
+  Docker Desktop VM; under 15 s is not met here. Measure on the deploy host before deciding more.
+
+## D-837: GPS Export: the grading limits whole and closed, finished grade's holes listed and filled where the model knows, fit points counted (accepted 2026-10-28)
+
+**Status:** accepted (the founder's items 8 and 9 of 2026-10-28). Choices marked "decided in run, check". Amends D-833's
+count.
+
+- **Machine count (amends D-833):** only fit points count toward the four; check points are extra: "3 of 4 fit
+  points (each needs N, E and elevation), + 1 check point", and under four NOT FOR MACHINE USE.
+- **Grading limits:** the DXF's `IC-BOUNDARY` (the boundary draped on finished grade, so only its pieces over the
+  surface: one open fragment where finished grade stopped short) is replaced by `IC-GRADING-LIMITS`: the boundary
+  every surface is clipped to, one closed polyline, each corner at finished grade where it reaches, else 0. No
+  separate IC-BOUNDARY: the work boundary is the clip boundary (decided in run, check).
+- **Holes:** finished grade's holes are the limits less the proposed mesh's outline (its edges only one triangle has,
+  chained into rings: exact and quick; a union of every triangle made polygon-clipping give up on HV C-200 and list
+  nothing). A building pad with an FFE fills its part flat at it; the rest is listed in the README, "Finished grade
+  covers X SF of the Y SF limits", then "Filled: …" and "No finished grade: N SF around N… E…: no proposed contour
+  or spot reaches it." A hole is not filled from existing grade (decided in run, check: that would be a guess).
+- **HV copy C-200:** finished grade covers 188,470 SF of 196,697 SF; the 8,227 SF missing is one pocket south-east of
+  the proposed building around bore B-3 (N 599614.2 E 2000704.5): the proposed contours ring it and none enters it, and
+  no spot or pad is in it, so the proposed TIN leaves it bare. No pad overlaps it, so nothing was filled.

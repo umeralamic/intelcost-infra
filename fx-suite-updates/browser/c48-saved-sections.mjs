@@ -133,7 +133,8 @@ await run("c48-saved-sections", [
       await waitName(page, "A-A′");
       await page.locator("[data-section-select]").selectOption({ label: "B-B′" });
       await waitName(page, "B-B′");
-      await page.locator("[data-section-rename]").click();
+      await page.locator("[data-section-more]").click();
+      await page.getByRole("menuitem", { name: /^Rename/ }).click();
       await page.getByLabel("Section name").fill("Pad X-X′");
       await page.keyboard.press("Enter");
       await waitName(page, "Pad X-X′");
@@ -188,8 +189,10 @@ await run("c48-saved-sections", [
       await waitName(vp, "A-A′");
       const options = await vp.locator("[data-section-select] option").allInnerTexts();
       expect(options.length === 3, `the viewer sees ${options}`);
-      expect((await vp.locator("[data-section-rename]").count()) === 0, "Rename offered to a viewer");
-      expect(await vp.locator("[data-section-delete]").isDisabled(), "Delete on for a viewer");
+      await vp.locator("[data-section-more]").click();
+      expect(await vp.getByRole("menuitem", { name: /^Rename/ }).isDisabled(), "Rename on for a viewer");
+      expect(await vp.getByRole("menuitem", { name: /^Delete/ }).isDisabled(), "Delete on for a viewer");
+      await vp.keyboard.press("Escape");
       const vt = await apiLogin(viewer.email, viewer.password);
       const create = await apiCall(vt, "POST", `${base}/${project.uuid}/earthwork/section`, { sheet_uuid: sheet.uuid, line: [[0.1, 0.1], [0.2, 0.1]] });
       const del = await apiCall(vt, "DELETE", `${base}/${project.uuid}/earthwork/section/${made.body.uuid}`);
@@ -225,7 +228,10 @@ await run("c48-saved-sections", [
       await openMarker(page, "A");
       await waitName(page, "A-A′");
       await page.locator('[data-section-pane="view"]').waitFor({ timeout: 120000 });
-      const [file] = await Promise.all([page.waitForEvent("download", { timeout: 60000 }), page.locator('[data-section-pdf="all"]').click()]);
+      const [file] = await Promise.all([page.waitForEvent("download", { timeout: 60000 }), (async () => {
+          await page.locator("[data-section-export]").click();
+          await page.getByRole("menuitem", { name: /^All sections/ }).click();
+        })()]);
       const pdf = readPdf(readFileSync(await file.path()));
       expect(pdf.pages >= 2, `${pdf.pages} pages for two sections`);
       expect(pdf.boxes.every(([w, h]) => Math.round(w) === 792 && Math.round(h) === 612), `paper ${JSON.stringify(pdf.boxes)}`);
