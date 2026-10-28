@@ -66,7 +66,13 @@ await run("c43-earthwork-assumptions", [
       await dialog.locator('[data-native-suitable="none"]').check();
       await dialog.getByRole("button", { name: "Calculate", exact: true }).click();
       await dialog.waitFor({ state: "detached" });
-      const read = (await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body;
+      // The dialog closes first and the assumptions are saved after it (as legacy saves on confirm): read
+      // until the save lands, not the instant the dialog goes.
+      let read = null;
+      for (const until = Date.now() + 10000; Date.now() < until; await new Promise((r) => setTimeout(r, 250))) {
+        read = (await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body;
+        if (read.native_suitable === "none") break;
+      }
       expect(read.native_suitable === "none", `saved ${read.native_suitable}`);
       return "layers chosen by default; none saved";
     },

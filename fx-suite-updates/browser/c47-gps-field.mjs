@@ -98,6 +98,8 @@ await run("c47-gps-field", [
   {
     title: "D-823: the zip: finished grade, 2D linework on IC- layers, Control.csv, the README's limits and help line",
     run: async ({ page }) => {
+      // Each step has a page of its own (lib/bench.mjs run): the dialog opened again here.
+      await openGps(page);
       const { name, files } = await download(page);
       expect(/_GPS-rover\.zip$/.test(name), name);
       const names = Object.keys(files);

@@ -139,7 +139,15 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     # The dev servers back in place of the built apps (D-814), once they serve the app's own modules.
     docker compose --profile fx-prod stop app-fx-prod app-fx-b-prod
     docker compose --profile fx up -d --no-deps app-fx app-fx-b
+    # Docker Desktop can start a container while the port the built app just let go of is still held,
+    # and then never publishes it (D-829): recreated once if 5176 or 5177 has no host binding.
+    for c in app-fx app-fx-b; do
+      [ "$(docker inspect "$(docker compose ps -q $c)" --format '{{len (index .NetworkSettings.Ports "5173/tcp")}}' 2>/dev/null)" = 0 ] \
+        && { sleep 3; docker compose --profile fx up -d --no-deps --force-recreate $c; }
+    done
     for _ in $(seq 1 120); do curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx && break; sleep 2; done
+    curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx \
+      || { echo "dev servers not serving on 5176/5177"; exit 1; }
     ;;
   release)
     # Every fixture, each in the mode it needs, in one command (D-814). The run before any deploy to

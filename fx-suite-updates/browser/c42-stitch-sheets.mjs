@@ -45,6 +45,20 @@ async function stitchByPoints(page, other, here, there) {
     };
     throw new Error(`no second pane after choosing ${other}: ${JSON.stringify(seen)}`);
   });
+  // A click lands to the pixel: at 204 ft across about 540 px a pixel spans 0.38 ft, more than the 0.1 ft
+  // limit. The same fractions give the same pixels only on panes of one width, so the clicks wait for both
+  // panes to settle at it (under load the second pane was still a pixel off, and the fit read 0.112 ft).
+  await page.waitForFunction(
+    () => {
+      const w = [...document.querySelectorAll('svg[role="presentation"]')].slice(0, 2).map((e) => Math.round(e.getBoundingClientRect().width));
+      const key = w.join("/");
+      const same = w.length === 2 && w[0] === w[1] && key === window.__c42Panes;
+      window.__c42Panes = key;
+      return same;
+    },
+    null,
+    { timeout: 20000, polling: 250 },
+  );
   for (let k = 0; k < here.length; k++) {
     await clickAt(page, 0, ...here[k]);
     await clickAt(page, 1, ...there[k]);
@@ -78,16 +92,21 @@ await run("c42-stitch-sheets", [
       await stitchPanel(page);
       await stitchByPoints(page, shown(sheets[1]), POINTS, POINTS);
       const fit = Number(await page.locator("[data-join-fit]").getAttribute("data-join-fit"));
-      expect(fit < 0.1, `fit ${fit} ft`);
+      // The panes' widths in screen pixels: a click lands to the pixel, so the fit's floor is the
+      // feet a pixel spans on the narrower pane.
+      const panes = [Math.round((await svg(page, 0).boundingBox()).width), Math.round((await svg(page, 1).boundingBox()).width)];
+      console.log(`c42 fit ${fit} ft, panes ${panes.join(" / ")} px wide`);
+      expect(fit < 0.1, `fit ${fit} ft, panes ${panes.join(" / ")} px wide`);
       expect((await page.locator("[data-join-scale-flag]").count()) === 0, "a scale flag on sheets at one scale");
       await page.locator("[data-stitch-join]").click();
       await waitFor(async () => ((await sites()).length === 1 ? true : null), "the site made", 15000);
       const group = page.locator("[data-site-group]");
       await group.waitFor({ timeout: 10000 });
       expect((await page.locator("[data-site-rows]").count()) === 0, "the old block above the search is back");
-      // The site holds its sheets (D-810): its row first, the anchor and page 2 under it.
-      expect((await group.locator(":scope > :first-child").getAttribute("data-site-open")) !== null, "the site row is not first");
-      expect((await group.locator("[data-site-members] > *").count()) === 2, "the anchor and page 2 not under the site");
+      // The site holds its sheets (D-810): its row, then the anchor and page 2 under it; nested in a folder its
+      // tree guide is drawn ahead of the row (D-816).
+      expect((await group.locator(":scope > [data-site-open] + [data-site-members]").count()) === 1, "the site row is not above its sheets");
+      expect((await group.locator("[data-site-members] > :not([aria-hidden])").count()) === 2, "the anchor and page 2 not under the site");
       await page.locator("[data-site-open]").first().click();
       await page.waitForTimeout(0);
       expect((await page.locator("[data-view-error]").count()) === 0, "the site view failed");

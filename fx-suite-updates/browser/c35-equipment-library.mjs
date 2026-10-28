@@ -87,8 +87,8 @@ await run("c35-equipment-library", [
       await shared("CR-HYD-165T-OP", { name: "TEST assembled crane", eq_mode: "operated", eq_period: "hr" }, { "TEST A": 6, "TEST B": 4 });
       await shared("WT-4000", { name: "TEST water truck", eq_mode: "rental" }, { "TEST C": 24, "TEST D": 16 });
       const b = (await apiCall(token, "GET", `${lib}/bundle`)).body;
-      expect(b.classes.length === 628 && b.release === 3, `bundle: ${b.classes.length} classes, release ${b.release}`);
-      return `628 classes, release 3; ${Object.keys(res).length} shared machines`;
+      expect(b.classes.length === 628 && b.release === 4, `bundle: ${b.classes.length} classes, release ${b.release}`);
+      return `628 classes, release 4 (D-818); ${Object.keys(res).length} shared machines`;
     },
   },
   {
