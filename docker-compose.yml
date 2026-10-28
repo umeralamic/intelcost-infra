@@ -97,6 +97,9 @@ services:
       <<: *mail-guard
       ENVIRONMENT: local
       DEBUG: "true"
+      # The bytecode written in the container, not beside the mounted code (D-836): a restart reads it again.
+      PYTHONDONTWRITEBYTECODE: ""
+      PYTHONPYCACHEPREFIX: /tmp/pyc
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real
@@ -147,9 +150,14 @@ services:
     # api image's own default. `--reload` allows one process only, so a change under app/ restarts
     # them all through watchfiles, which is PID 1 and stops uvicorn with SIGINT (a clean shutdown:
     # the sockets are told 1012, F8-S1 AC5).
+    #
+    # A restart was 98 s on the bench (D-836): alembic's environment imported every model at each start though the
+    # database was at head (about 23 s), the app's bytecode was compiled again by every process, and a stop waited on
+    # open sockets. Now alembic runs only when `app.core.at_head` says the database is behind, the bytecode is kept in
+    # the container (it survives a restart), and uvicorn gives connections 5 s to close.
     command: >
-      sh -c "alembic upgrade head &&
-             exec watchfiles --filter python --sigint-timeout 10 'uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers' /srv/app /srv/main.py"
+      sh -c "(python -m app.core.at_head || alembic upgrade head) &&
+             exec watchfiles --filter python --sigint-timeout 10 'uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5' /srv/app /srv/main.py"
     volumes:
       # The app is the api's top-level main.py; app/ is everything it mounts.
       - ../intelcost-app-fastapi/main.py:/srv/main.py
@@ -358,7 +366,7 @@ services:
   api-b:
     extends: api
     profiles: ["realtime"]
-    command: ["watchfiles", "--filter", "python", "--sigint-timeout", "10", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers", "/srv/app", "/srv/main.py"]
+    command: ["watchfiles", "--filter", "python", "--sigint-timeout", "10", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5", "/srv/app", "/srv/main.py"]
     ports: !override
       - "8010:8000"
 
@@ -425,7 +433,7 @@ services:
   api-fx-b:
     extends: api-fx
     profiles: ["fx"]
-    command: ["watchfiles", "--filter", "python", "--sigint-timeout", "10", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers", "/srv/app", "/srv/main.py"]
+    command: ["watchfiles", "--filter", "python", "--sigint-timeout", "10", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5", "/srv/app", "/srv/main.py"]
     ports: !override
       - "8030:8000"
 
