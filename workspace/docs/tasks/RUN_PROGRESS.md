@@ -50,7 +50,7 @@ The founder accepted D-828 to D-834 and queued items 24 to 35; then one `./fx-su
 | 30a | Section panel header (7a): Close top-right of the first row; one "Export ▾" menu (Letter / 11×17, This section PDF, All sections PDF, Print); Rename and Delete in a "⋯" menu at the end; one row at the usual widths; screenshots narrow and wide | done | done D-835: one row at 359 and 589 px, Close inside; c48 moved to the menus, 7/7 |
 | 31 | Coordinates: the 4-point count is fit points only; check points extra | done | done D-837: "3 of 4 fit points …, + 1 check point" |
 | 32 | GPS export: the real clip boundary, closed, on IC-GRADING-LIMITS; where the ~8,200 SF without finished grade is and why, holes in the README, filled where the model has an answer | done | done D-837: closed IC-GRADING-LIMITS (22 vertices); hole 8,227 SF around B-3 listed; holes from the mesh outline |
-| 33 | f8-s12 / f8-s8: api back after a restart in under 15 s | done | done in part D-836 (api 6058be9, infra 8f80065): 98 s → 36-50 s bench, 22-28 s deploy image; 15 s not met here |
-| 34 | f5-s13, f5-big, n3-twenty-loads: fix; upload and first-open times for the biggest set | queued | |
-| 35 | f5-s15 on the built apps with 3 api processes; fix if over 1 s | queued | |
+| 33 | f8-s12 / f8-s8: api back after a restart in under 15 s | done | done in part D-836 (api 6058be9, infra 8f80065): 98 s → 36-50 s bench, 22-28 s deploy image; 15 s not met here; then stop_signal SIGINT: stop 0.3 s, f8-s12 6/6 |
+| 34 | f5-s13, f5-big, n3-twenty-loads: fix; upload and first-open times for the biggest set | done | done D-838: alone on the built apps f5-big 6/6, n3 3/3, c42 5/5 (release failures were load); f5-s13 an app prerender bug (fit 0 before the canvas measured) fixed, 7/7 three times; biggest set: page 1 13.96 s after the Load, all 150 thumbnails 73.6 s |
+| 35 | f5-s15 on the built apps with 3 api processes; fix if over 1 s | done | done D-838: built apps, 3 processes: chip 255/545 ms, quantities 414/835 ms; no change |
 | R2 | `./fx-suite.sh release` (built and dev phases) | queued | |

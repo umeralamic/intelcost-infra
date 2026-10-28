@@ -79,6 +79,9 @@ services:
       #   docker compose exec api sh -lc "ruff check app alembic scripts && mypy app"
       # Production images build the last stage, `production`, which has neither.
       target: dev
+    # watchfiles is the container's first process and stops on SIGINT, not Docker's SIGTERM, which it
+    # sat out until the kill 10 s later on every restart (D-836): SIGINT stops uvicorn gracefully.
+    stop_signal: SIGINT
     # Storage and mail come from the api's own .env. Storage: S3_REGION, S3_BUCKET and the
     # AWS key pair; the api no longer takes an S3 endpoint, so MinIO cannot stand in for S3
     # and the bench uses the real bucket. Mail: the SMTP_* and MAIL_FROM* values of the SES

@@ -232,11 +232,25 @@ await run("f5-s13", [
         if (m) splits.push({ page: Number(m[1]), at: Date.now() });
         if (/\/fit\.webp/.test(r.url())) fits.push(r.url());
       });
+      // The counts are the page's since it loaded, earlier steps' prerenders too: this step's are counted from here.
+      const neighboursAt = await page.evaluate(() => window.__intelcostPdf?.().prerender.bySource.neighbour ?? 0);
       await open(page, arch[4]);
       await drawn(page, arch[4].uuid);
       const painted = Date.now();
-      // The neighbours in panel order are pages 3 and 5; the next one first.
-      await page.waitForFunction(() => (window.__intelcostPdf?.().prerender.bySource.neighbour ?? 0) >= 2, null, { timeout: 30000 });
+      // The neighbours in panel order are pages 3 and 5; the next one first. Drawn ahead means page 5's draw at its
+      // fit is done (its pin "<sheet>:<version>|<width>"): a neighbour whose size the page's sheet list does not have
+      // yet is first only opened ("|0.00"), and drawn when the list has it.
+      await page.waitForFunction(
+        ({ base, five }) => {
+          const p = window.__intelcostPdf?.().prerender;
+          return p != null && (p.bySource.neighbour ?? 0) >= base + 2 && p.done.some((pin) => pin.startsWith(`${five}:`) && !pin.endsWith("|0.00"));
+        },
+        { base: neighboursAt, five: arch[5].uuid },
+        { timeout: 30000 },
+      ).catch(async (error) => {
+        const state = await page.evaluate(() => JSON.stringify(window.__intelcostPdf?.().prerender));
+        throw new Error(`page 5 was not drawn ahead in 30 s (page 5 ${arch[5].uuid.slice(0, 8)}): ${state} · ${error.message.split("\n")[0]}`);
+      });
       const neighbourSplits = splits.filter((s) => s.page === 3 || s.page === 5);
       expect(neighbourSplits.length === 2, `neighbour split fetches: ${JSON.stringify(neighbourSplits)}`);
       const fitsBefore = fits.length;
@@ -251,7 +265,8 @@ await run("f5-s13", [
       const fives = splits.filter((s) => s.page === 5).length - fivesBefore;
       // Why, when it was not: the caches as the page holds them, and the prerenders by kind.
       const caches = skipped === "1" ? "" : await page.evaluate(() => JSON.stringify({ ...window.__intelcostPdf?.(), perf: window.__intelcostPerf?.samples().filter((x) => x.label === "prerender").slice(-4) }));
-      expect(skipped === "1", `page 5 showed the fit image: it was not drawn ahead ${caches}`);
+      const sizes = skipped === "1" ? "" : JSON.stringify(((await apiCall(token, "GET", `${drawing}/sheet`)).body ?? []).filter((s) => [3, 4, 5].some((n) => s.uuid === arch[n].uuid)).map((s) => `p${[3, 4, 5].find((n) => s.uuid === arch[n].uuid)} ${s.uuid.slice(0, 8)} ${s.width_pt}x${s.height_pt}`));
+      expect(skipped === "1", `page 5 showed the fit image: it was not drawn ahead; sheets ${sizes} ${caches}`);
       expect(fits.length === fitsBefore, `page 5 fetched ${fits.length - fitsBefore} fit image(s)`);
       expect(fives === 0, `page 5's PDF fetched ${fives} more time(s)`);
       return `neighbours 3 and 5 fetched after the first paint (${neighbourSplits.map((s) => `+${s.at - painted} ms`).join(", ")}) · page 5: fit skipped, its PDF not fetched again, first pdf.js paint ${firstPaint} ms`;

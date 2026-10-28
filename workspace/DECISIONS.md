@@ -24574,3 +24574,30 @@ count.
 - **HV copy C-200:** finished grade covers 188,470 SF of 196,697 SF; the 8,227 SF missing is one pocket south-east of
   the proposed building around bore B-3 (N 599614.2 E 2000704.5): the proposed contours ring it and none enters it, and
   no spot or pad is in it, so the proposed TIN leaves it bare. No pad overlaps it, so nothing was filled.
+
+**D-836, later the same day:** the api services stop on SIGINT (`stop_signal: SIGINT`): watchfiles, the container's
+first process, sat out Docker's SIGTERM until the kill 10 s later on every restart. Now uvicorn's graceful stop takes
+0.3 s. Measured again: api-fx answering 34 to 38 s after `docker compose restart` before, the stop then graceful; bench
+api 35 to 36 s. What is left on this machine: about 10 s of Docker Desktop's own stop and start, 4 s for `at_head`
+(1.9 s of it reading 258 migration files over the Windows bind mount) and about 16 s importing the app over the bind
+mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1.
+
+## D-838: The release's large-set and timing failures were load, not the app; f5-s13 waits for page 5's own draw (accepted 2026-10-28)
+
+**Status:** accepted (the founder's items 11 and 12 of 2026-10-28). Choices marked "decided in run, check".
+
+- **Alone on the built apps** (`./fx-suite.sh prod`): f5-big 6/6, n3-twenty-loads 3/3, c42 5/5. Their release
+  failures were three fixtures at a time on the dev servers (pages not loading in 30 s, the Load dialog not opening in
+  20 to 60 s); the release run already retries a failure alone in its own mode (D-814). Nothing changed in the app.
+- **The biggest set (f5-big, 519 MB, 150 pages):** page 1 drawn 13.96 s after the Load's answer while thumbnails stood
+  at 0 of 150; 150 tiles 1.15 s after focus; first thumbnail 53.0 s, all 150 by 73.6 s; a loaded page drawn by pdf.js
+  6.7 s after its Load's answer, from one 3.5 MB GET; the set itself never read by the browser.
+- **f5-s15, 3 api processes, built apps:** B's chip 255 and 545 ms, its quantities 414 and 835 ms after A's save (under
+  1 s, the api's save and recompute included). The first run after switching to the built apps read 1,022 / 3,422 ms
+  (cold); not reproduced. No change.
+- **f5-s13 step 6, an app bug and a fixture race.** On a fresh page load the neighbours were queued before the canvas
+  had measured itself: their fit came out 0, so the prerender only opened the PDF and warmed the fit image ("|0.00"),
+  and nothing queued the real draw, so the next sheet opened on its fit image. Now a job queued before the canvas is
+  measured takes the fit when it runs (the queue holds every job until the first sheet is on screen). The fixture's
+  wait counted the page's prerenders since it loaded, earlier steps' too; it now waits for page 5's own draw at its fit
+  (its pin), and on a timeout names what the queue holds.
