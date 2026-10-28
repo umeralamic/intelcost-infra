@@ -24071,3 +24071,251 @@ since the archive, 3 at a time; failures rerun alone and classed timing or real;
      load never holds another's frames: live cursors and drafts ride the same loop (the 450 ms frame delay above).
   3. Optionally, the changed item's figures carried in the event, so a row paints without a read. That changes
      D-13 (the event carries uuids, what is painted comes from the api).
+
+## D-815: One scale flag per sheet, its evidence listed, the printed length wins (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 1 of 2026-10-27 evening). Refines D-809.
+
+- The scale check on joins already made shows **one flag per sheet** likely off, not one per join: "Page 3 is
+  likely off scale", then each join naming it with the scale it implies for that sheet ("Join with Page 4: implies
+  −0.75 %"), then its printed-length check if one was made ("measured +0.61 % off"). One Recalibrate button.
+- **The correction:** the printed-length check's where one exists (the scale bar is the truth: a PDF plotted to
+  fit is not exactly its printed scale), else the mean of the joins'. The button says which.
+- A flag that names neither sheet stays a line of its own, with no button.
+- **The printed-length check is kept on the sheet** (`drawing_sheet.printed_check`: the two points and the printed
+  length; one nullable column, empty on every existing row). Its % off is worked out against the sheet's scale
+  now, so it survives a reload and reads ~0 after the sheet is recalibrated by it. Before, it lived only in the
+  page's memory. Decided in run, check: kept on the sheet rather than its calibration, because a scale undo to
+  "no scale" deletes the calibration row.
+- Engine: `stitch.sheetFlags`; quantity table rows in `gps-d808` (joins' mean −0.97 %; printed +0.61 % gives
+  −0.61 %).
+
+## D-816: The site's entry stands in its folder, in page order (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 2 of 2026-10-27 evening). Refines D-810.
+
+- "Site · N sheets" stands where the site's first sheet in page order stands, inside that sheet's folder, indented
+  as a sibling row; every sheet of the site (the anchor among them) in page order under it. The folder's count is
+  still every sheet beneath it.
+
+## D-817: "Show Linked EC" leaves the toolbar, into Stitch sheets (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 3 of 2026-10-27 evening). Refines D-297.
+
+- The greyed toolbar button is gone. Its choice (the linked sheets' existing contours over this sheet, a viewer's
+  own) is a checkbox in Stitch sheets' "Laid over" list, "Show their existing contours over this sheet", shown
+  where a survey link exists.
+
+## D-818: Equipment library release 4: the starter scraper on SC-631-34, A15 only (accepted 2026-10-27)
+
+**Status:** accepted (the founder approved release 4 on 2026-10-27 evening, after D-811).
+
+- A15 Scraper load-haul-dump's scraper moves from SC-637-34 (no rental and no owned rate) to SC-631-34 (same 34 yd3
+  bowl, an owned rate) on its three tiers. Migration `d818a1b2c3d4`, national tables only (1 release row, 1
+  activity row, 3 tier-machine rows).
+- **A release refreshes only the activities it changed:** a workspace's unedited starter row is retaken when its
+  release is older than that activity's own rows' release (before: any newer release retook every unedited row).
+- **Intelcost Team, checked row by row before and after:** A15 alone was rewritten (release 3 to 4, its three tiers
+  now SC-631-34, the D8 pusher unchanged); the other 14 activities identical, the same tier ids. Two other bench
+  workspaces hold an unedited A15 and take it up on their next read.
+
+## D-819: A site opens in the takeoff canvas under the main toolbar (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 5 of 2026-10-27 evening). Refines F19 Blocks C1 to F3 (D-231).
+
+- The joined drawing opens in the canvas area; the **main toolbar is its toolbar**. The site view's own tool row is
+  gone: a slim header keeps the site's name, Rotate and Back to sheet. Its result rows (Calculate's figures, Save to
+  estimate, Trace's lines and flags, the selection's Duplicate and Delete) stay above the drawing.
+- **Zoom reads in % as on a sheet** (the same cluster, bottom-right): 100 % is the anchor sheet at one pixel a point.
+  The cluster's Zoom window is not drawn on a site (a box zoom has no sheet to draw on); the wheel, +, −, Fit and the
+  zoom menu work.
+- **Working across the site:** Select (pick, move, vertex drag, Delete), Linear (Point to Point and Arc), Area,
+  Count, a new item's draft (its first piece makes the item, the rest join it) or Add shape to an item; Contour,
+  Spot Elev. (lands on the member under the click), Boundary; Site Features (drawn as an Area draft across the join);
+  **Bores** (a click places one on the member under it, drawn on the site, Undo removes it); Auto Trace and Adopt
+  labelled; Find Text; Snap, Snap PDF, Ortho (the page's toggles); Undo (the site's steps); Calculate, Report, 3D
+  VIEW; Stitch sheets opens on the site's anchor sheet (a join is drawn on two sheets). Rectangle and Ellipse modes
+  draw as Point to Point on a site.
+- **Not yet across a site, greyed with the reason on hover** (decided in run, check): Segment, Dimension and the
+  annotation tools (kept per sheet); Strip Area (its depth is kept per sheet with that sheet's features); Section
+  (reads one sheet's surfaces, bores and water; the site's surfaces exist only after the site's Calculate and are not
+  wired to it yet); Check Grades; the TIN and CUT & FILL overlays and Volumes (the site shows these in its 3D VIEW and
+  result row); Utilities and Structures (a run's profile and inverts belong to one sheet; across a match line it
+  needs a structure at the line); Coordinates and GPS Export (per sheet; a member's export carries the site's fit);
+  the Scale menu (each member keeps its own scale).
+- The match-line cut is unchanged; nothing else is clipped.
+
+## D-820: The site view's seam: paper under every sheet, drawings multiplied, clips overlapped (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 6 of 2026-10-27 evening).
+
+- **What it was** (10793 copy, Page 4/Page 5): not a fit gap and not pixel rounding. Page 5 is joined to Page 3 only,
+  so where Page 5 overlaps Page 4 no match line cuts either; Page 5 was drawn last with an opaque white page, and its
+  blank margin covered Page 4's drawing: a white band, thin at low zoom (about 120 px wide at 101 %).
+- **The fix, both causes at once:** every member's paper is drawn first, then every member's drawing over it with
+  multiply, so a blank margin never covers a neighbour's lines (the neighbour, in effect, drawn unclipped
+  underneath). Each clip also reaches 1.5 screen pixels past its match lines (recomputed per zoom), so the two sides
+  of a cut overlap instead of meeting on two anti-aliased edges. Paper stays white in both themes. No other
+  clipping; the match-line cut is unchanged.
+- Where two sheets overlap without a join, both drawings now show (Page 5's border line crosses Page 4 there): the
+  way to a clean edge is a match line between them in Stitch sheets.
+- **Checked** on the cut (Page 4 on Page 3), sampling the cut every half pixel for ink on both sides with a white
+  pixel on the line: none at 25, 50, 100, 200, 400 % and ~3,800 %, the moment the zoom lands (tiles loading) and
+  settled; none turned 90° at 50 and 200 %; none at 2x pixel density at 25, 100, 400 %. The only hits (2 to 4 at 200
+  and 400 %) sit inside the printed match line's halftone band, the scan's own texture.
+- Zoom on a site now stops at 4000 %, as on a sheet.
+
+## D-821: Site Features' depth label, and a building pad's FFE (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 7 of 2026-10-27 evening). Refines D-136 Q7 and D-673.
+
+- **How a pad's finished grade was set before:** from the proposed contours and spots only. "Building pad" was an
+  export label (GPS Export's PAD layer); Calculate never read it; there was no FFE.
+- **Labels:** "Proposed Grade to Subgrade Depth" is now **"Finished grade to subgrade depth"**, hint "Pavement or
+  slab section thickness". With **Building pad** ticked, **"Finish floor elevation (FFE)"** shows (ft, m in a metric
+  project) and the depth reads **"FFE to pad subgrade depth"**, hint "slab + base".
+- **The FFE is the pad's finished grade:** inside the footprint finished grade is flat at the FFE and subgrade is
+  FFE less the depth, in Calculate (the volume engine takes the FFE in place of the proposed surface inside the
+  pad's region) and in GPS Export (finished grade reaches the FFE across the same 0.1 ft face inside the edge as the
+  depth does; subgrade is taken below it; the PAD outline is written at the FFE). A blank FFE keeps today's
+  behaviour (the contours give it), decided in run, check: optional rather than required, so a pad drawn before
+  stays as it was. An FFE on a feature not ticked Building pad is not read.
+- Column `takeoff_item.ffe_ft` (nullable, empty on every existing row: migration `d821a1b2c3d4`).
+- **HV copy** (Building Pad, 14,806 SF, 1 ft deep): ticked Building pad and given FFE 704.00 (the contours' average
+  there was 703.99). Before: cut 11,588 BCY, fill 9,514 CCY, needs 4,688 BCY; the pad fill 2,399 CCY, its average
+  proposed grade 703.99. After: cut 11,588, fill 9,520 CCY, needs 4,694 BCY; the pad fill 2,404 CCY, its proposed
+  grade 704.00 flat. By hand (704.00 − 1.00 − 699.12 + 0.5 strip) × 14,806 / 27 = 2,402 CY. Left set on the copy.
+- Quantity table: `real-shape-pad-ffe` (FFE 102 on a flat 100 pad, 0.5 ft deep: fill 2,400 CF), `real-shape-ffe-not-a-pad`
+  (800 CF cut, as before), `gps-ffe` (finished 102 and subgrade 101.5 inside, 100 outside).
+
+## D-822: Realtime while a page loads: three api processes, the heavy reads off the event loop (accepted 2026-10-27)
+
+**Status:** accepted (the founder's fix 8 of 2026-10-27 evening). Builds what D-813 described; D-13 unchanged (the
+event carries uuids; figures still come from the api).
+
+- **Several api processes, in the repos:** the api image runs `uvicorn --workers ${API_PROCESSES}`, 3 by default
+  (`intelcost-app-fastapi/Dockerfile`), and the bench's api, api-b, api-fx and api-fx-b run the same count
+  (`docker-compose.yml`), under `watchfiles` (`--reload` allows one process only), so local matches deployment.
+  **Why 3:** the production box has 2 vCPUs and 4 GB; each process holds about 360 MB once the app is imported (PyMuPDF
+  is ~120 MB of it, imported at load by seven drawing modules: a lazy import would take it out, not done here), so
+  three take ~1.1 GB beside Postgres, Redis and the worker's two renders. Three let one window's page load and
+  another's live session fall on different processes most of the time; realtime already fans out through Redis per
+  process. Decided in run, check: 2 if the box's memory proves tight.
+- **The heaviest read, found and fixed:** Equipment settings' `earthwork-production` (read on every takeoff page
+  load) took 2.5 s on the HV copy, about 1,200 queries: every activity (15) re-read every earthwork line, its
+  activity, unit and division. Now one pass for all activities (`site_lines_for`, divisions cached by node): 164
+  queries, ~340 ms; the same lines for all 15 activities, checked one by one.
+- **Off the event loop:** the large answers (the equipment bundle, 751 KB; the earthwork production config; the
+  estimate's components, 427 KB; the item list's gzip; the classification tree's gzip) are encoded and compressed
+  on a worker thread (`http_cache.dumped`, `json_reply`), so a page load's serialisation no longer holds the loop
+  live cursors and drawing ride. The item list is already built by Postgres; the symbol index is a storage head and
+  a signed URL, already on a thread.
+- **Measured** (a tiny read every 40 ms from one window while another loads the HV copy): before p95 129 ms, max
+  1,220 ms; after p95 117 to 118 ms, max 645 to 680 ms; idle 18 to 25 ms.
+- **f6-a** step 8 now runs twice: B settled (999 ms) and B still loading, the PATCH sent as soon as "Roof" is listed
+  with 14 of B's reads still open (767 ms). Both under 1.5 s. On api processes just started, the first run's
+  settled case once took 2.35 s (each new process's first reads are slow); warm, both pass.
+
+## D-823: GPS Export phase 1: the rover preset leads, finished grade by default, surfaces cut to the limits (accepted 2026-10-27)
+
+**Status:** accepted (the founder approved `docs/tasks/gps_field_PLAN.md` on 2026-10-27 evening, phase 1: a, d, e, f
+and c's 2D and IC- layers). Revises D-805 and D-808's presets.
+
+- **"GPS rover (surface + linework)" leads** and the dialog opens on it (the remembered preset starts again, key v2).
+  It writes the proposed finished grade as LandXML, IntelCost's linework as one DXF, the control points in their own
+  CSV and the README. Machine control and CAD stay; **GPS stakeout stays separate** with its structures, bores and
+  spots (the founder's answer 5).
+- **Finished grade by default:** the rover and machine control tick Proposed finished grade only; Proposed subgrade
+  stays listed, unticked, "Optional: the field usually applies the section offsets itself." A feature's subgrade
+  ring is written only with the subgrade surface.
+- **Cut to the grading limits:** every surface was already cut to the work boundary at its edge (triangles split,
+  not dropped); the README now names it ("Clipped to the work boundary, 196,697 SF: no surface runs past it"), or
+  says nothing was cut when the sheet has no boundary.
+- **Linework 2D by default:** every line and label at elevation 0; "Linework in 3D (keep each line's elevation)"
+  keeps today's. Surfaces written as faces (CAD) keep their elevations. **IntelCost's layers are prefixed `IC-`**
+  (IC-BRK-FG, IC-FEATURE-EDGE, IC-PAD, IC-BOUNDARY, IC-UTIL-SAN-INV, IC-CONTROL, ...), so a crew turns them off
+  together.
+- **Control points only** for the rover, machine control and CAD; the dialog's points choices show for stakeout.
+- **Help text** under the presets and in the README: "Some field systems convert these files to their own formats
+  in their office software before they go to the rover or the machine." No product named (rule 9).
+- HV copy C-200: rover zip with finished grade (1,102 points; the pad's 131 points flat at FFE 704 + the confirmed
+  2.008 ft shift), the 2D linework (every elevation 0, 10 IC- layers), Control.csv (4 rows), README; the free-reader
+  check (`gps-check.sh`) passes. Quantity table row `gps-rover`.
+
+## D-824: GPS Export phase 2: a trench-bottom surface per utility system (accepted 2026-10-27)
+
+**Status:** accepted (gps_field_PLAN b, the founder's answers 1 and 2 of 2026-10-27 evening).
+
+- **One surface per utility system** (storm, sanitary, water, as the runs name them): a strip along each run at its
+  flow line, interpolated along the run from its inverts, level across; mitred at bends. "Storm trench bottom", one
+  LandXML each, and also 3D faces in the DXF on `IC-TRENCH-BOTTOM-<SYSTEM>` (STM, SAN, WTR). The rover writes them
+  by default; CAD has them as every surface; machine control does not.
+- **Width:** each run's own trench (bottom) width from the utility settings, as Calculate works it. A width typed
+  for a system in the export overrides it for that system's runs. **A run with no width and none typed: the
+  dialog names it, asks for a width and holds Download; the build refuses too. No silent default.**
+- **Bottom of bedding, per system:** the flow line less the pipe wall ((OD − ID)/2) and the bedding depth.
+- **Overlaps** (runs meeting at a structure): the lower run is kept and the higher cut where they overlap, so no
+  face lies over another. A structure's own pit is not drawn. Cut to the work boundary as every surface.
+- The README: "Trench bottoms: load behind the linework; they are the flow line (or the bottom of bedding where that
+  is chosen), not the finished trench."
+- HV copy C-200: storm (2 runs, each its own width, flow line) 248 points; sanitary (1 run, 3 ft, bottom of bedding)
+  416 points; the free-reader check passes. Quantity table row `gps-trench` (a 100 ft run at 2 ft: 4 points, 200 SF,
+  ends 1 ft apart; bedding 0.6 ft lower; 3 ft typed 300 SF; no width named, no surface; two runs crossing 396 SF).
+- Not in c47: the grading world has no utility runs; the quantity table carries the engine.
+
+## D-825: GPS Export phase 3: the drawing's own linework and text, its layers, a box per sheet (accepted 2026-10-27)
+
+**Status:** accepted (gps_field_PLAN c, the founder's answers 3 and 4 of 2026-10-27 evening).
+
+- **The whole drawing:** the registered sheet's own stroked lines and printed text, read as Auto Trace reads a sheet
+  (its own copy of the PDF, the same caps: 60,000 lines, 1.2 million points; past them the export says what was left
+  out). Each line and text on the PDF's own layer (its optional content group, by name); outside any layer, `PDF-0`.
+  At elevation 0, placed on the grid by the same fit as IntelCost's linework; text as tall as printed and turned
+  with the fit. IntelCost's own linework stays on its `IC-` layers. The rover and CAD write it by default ("The
+  drawing's own lines and text, on the PDF's layers"); machine control and stakeout do not.
+- **A box per sheet** (answer 4): the drawing kept; the border and the title block outside it are left out.
+  Suggested from the sheet's own lines until one is kept: the innermost long lines near the page's edges as the
+  border, a long line in the right 3 % to 30 % of the border (else near its bottom) as the title block's edge.
+  "Edit box…" in the dialog: drag to move, a corner to size, Suggest, **Keep for this sheet** or **Keep for every
+  sheet of this set** (the sheets of the same file). Kept on the sheet (`drawing_sheet.gps_clip`, nullable, empty
+  on every existing row: migration `d825a1b2c3d4`). Export only: nothing on the canvas or in the site view is
+  clipped by it.
+- **A scan or raster PDF** (fewer than 20 lines and one picture over 80 % of the page): "This sheet is a scan: only
+  the takeoff's own linework can be exported." The drawing's choice is greyed.
+- The README names the drawing's layers, its count, the box and whether it was suggested.
+- HV copy C-200: 16,700 lines and 241 of 266 texts inside the box (x 0.040 to 0.915, y 0.027 to 0.974), all on
+  `PDF-0` (this PDF has no layers); the DXF 10 MB; the free-reader check passes. Quantity table row `gps-drawing`;
+  c47 step 5.
+- Not built: the scan path was checked by its rule only (no raster sheet on the HV copy); the engineer's DXF import
+  (plan g) stays later.
+
+## D-826: Pipes at their true size in plan, 3D and the sections (accepted 2026-10-28)
+
+**Status:** accepted (the founder's item 9, added mid-run on 2026-10-27).
+
+- **Section A-A' (the Section tool):** each crossing pipe is a circle, never stretched, sized on the **horizontal**
+  scale (its outside diameter times the line's feet to pixels), stretched along the line by the crossing's angle
+  exactly as its trench is, so pipe and trench keep the trench section's proportion. The circle's bottom sits on the
+  invert. Before, it was sized on the exaggerated vertical scale and came out far wider than its trench. The label
+  keeps the invert; its tooltip adds the crown elevation and the cover to finished grade.
+- **Plan:** a utility run's line is drawn at its pipe's outside diameter at the current zoom (WebGL and SVG), at least
+  1.5 px. Before, every run was the markup's 2.75 px weight. A negative fixed width in the WebGL stroke carries the
+  true width in page widths; the shapes' cache is keyed on the pipe width (the utility data arrives after the items).
+- **3D:** the pipe's floor is 1.5 px (was 3 px); it is drawn at its true size above that.
+- **Trench sections:** already true size; floor 1.5 px kept.
+- HV copy C-200: ST-1 (10") and ST-2 (24") in section A-A' now 3.4 and 8.1 px across against their trenches (were
+  far wider); SS-1 in plan at 615 % 30 px wide, its true 0.875 ft. The 3D view was not seen (still loading on the dev
+  server); its change is the floor constant.
+
+## D-827: Trench sections carry their dimensions (accepted 2026-10-28)
+
+**Status:** accepted (the founder's item 10, added mid-run).
+
+- Beside the top width, bottom width and depth: the **bedding**, **pipe zone** and **backfill** heights stacked left of
+  the trench; the **pipe's diameter** across it, nominal and its outside diameter where they differ ("Ø 10" nominal ·
+  OD 10.5 in"); the **cover** from the top of the pipe straight up to finished grade (drawn dashed across the
+  section and named); the **invert** elevation with a leader. Each with ticks or a leader, 11 px words haloed over
+  the fills; the soil layers' names move to the right edge to leave room. Finished grade over the crossing is read
+  from the section's own stations.
+- HV copy ST-1 at 1+66.28: bedding 6.00 in, pipe zone 22.5 in, backfill 12.0 in, Ø 10" nominal · OD 10.5 in, cover
+  2.50 ft, invert 693.93; ST-2 bedding 6.00 in, pipe zone 36.8 in, cover 2.82 ft, invert 698.46.
