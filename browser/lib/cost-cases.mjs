@@ -459,6 +459,8 @@ export const COST_CASES = [
   // the surface's name back whole (its & and curly quotes too). DXF R12 text: the dash a hyphen, é an e, ± "+/-",
   // ° " deg", × "x", ½ after a digit " 1/2", ² "2", the quotes plain. Two sheets at 1"=60.59' and 1"=60', a match line across the
   // same places: the points imply -0.97 %, the 60.59' sheet likely off; the survey sheet at 1"=60' is not flagged.
+  // gps_field_PLAN phase 2 (D-824): trench-bottom surfaces, worked by hand above the handler.
+  { id: "gps-trench", kind: "gps-trench", expect: { points: 4, faces: 2, areaSF: 200, ends: "99/100", bedding: "98.4/99.4", typedSF: 300, noWidth: "A", noTin: true, crossSF: 396 } },
   // gps_field_PLAN phase 1 (D-823): the rover preset, finished grade by default, 2D linework on IC- layers, the limits.
   { id: "gps-rover", kind: "gps-rover", expect: { rover: "fg", machine: "fg", roverPoints: false, threeD: false, xmls: 1, layer: true, bareLayer: false, flatZ: true, deepZ: true, limits: true, help: true } },
   // D-821: a pad's FFE in GPS Export's surfaces (finished 102 and subgrade 101.5 inside, 100 outside).

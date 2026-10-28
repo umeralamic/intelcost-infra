@@ -229,6 +229,30 @@ try {
           allSuitable: words(earthLines.earthworkLines(base("unsuitable", { allSuitable: true }))),
         };
       }
+      if (c.kind === "gps-trench") {
+        // D-824: trench-bottom surfaces. A 100 ft page; run A along y = 50 ft from x 0 to 100, inverts 100 to 99, 2 ft
+        // wide: a 4-point strip of 200 SF, its ends 1 ft apart. Bottom of bedding (wall 0.1, bedding 0.5): 0.6 lower.
+        // A typed 3 ft: 300 SF. No width and none typed: named, no surface. Run B along x = 50 ft at 95 (lower),
+        // crossing A: B kept whole, A cut where they overlap (2 x 2 = 4 SF): 396 SF, no face over another.
+        const scale = { feetPerNorm: 100, widthPt: 1, heightPt: 1 };
+        const word = () => "STM";
+        const A = { name: "A", system: "Storm", points: [{ at: { x: 0, y: 0.5 }, invert: 100 }, { at: { x: 1, y: 0.5 }, invert: 99 }], widthFt: 2, wallFt: 0.1, beddingFt: 0.5 };
+        const B = { name: "B", system: "Storm", points: [{ at: { x: 0.5, y: 0 }, invert: 95 }, { at: { x: 0.5, y: 1 }, invert: 95 }], widthFt: 2, wallFt: 0.1, beddingFt: 0.5 };
+        const one = (runs, choices = {}) => surf.trenchBottoms(runs, choices, null, scale, word)[0];
+        const r3 = (v) => Math.round(v * 1000) / 1000;
+        const zEnds = (tin) => [...new Set(tin.points.map((p) => r3(p.z)))].sort((a, b) => a - b).join("/");
+        const flow = one([A]);
+        const bed = one([A], { STM: { widthFt: null, bedding: true } });
+        const typed = one([A], { STM: { widthFt: 3, bedding: false } });
+        const none = one([{ ...A, widthFt: null }]);
+        const cross = one([A, B]);
+        return {
+          points: flow.tin.points.length, faces: flow.tin.faces.length, areaSF: r3(surf.tinIntegral(flow.tin).areaSF), ends: zEnds(flow.tin),
+          bedding: zEnds(bed.tin), typedSF: r3(surf.tinIntegral(typed.tin).areaSF),
+          noWidth: none.noWidth.join(","), noTin: none.tin === null,
+          crossSF: r3(surf.tinIntegral(cross.tin).areaSF),
+        };
+      }
       if (c.kind === "gps-rover") {
         // gps_field_PLAN phase 1: the rover preset leads with finished grade only and control points only; machine
         // control takes finished grade only too; linework 2D (every elevation 0) on IC- layers; the README names the
