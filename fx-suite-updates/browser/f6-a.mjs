@@ -76,6 +76,88 @@ async function properties(page, name) {
   await form(page).waitFor();
 }
 
+/**
+ * S2 AC4 (D-813, D-822): a PATCH through window A's api reaches window B, on the other api process, and B shows the
+ * figure within 1.5 s. `settled`: B's page has finished loading first; otherwise the PATCH goes as soon as B lists
+ * "Roof" and its socket has joined, while the rest of B's page (the estimate, the earthwork reads, the item stream) is
+ * still loading: live updates must not queue behind a page load. Each leg is timed from B's own records.
+ */
+async function secondWindow(context, { settled }) {
+  const owner = await fixtureOwner();
+  const b = await context.browser().newContext();
+  await recordSockets(b);
+  try {
+    const bp = await b.newPage();
+    // B's api reads in flight, counted from the browser's own requests: the page load the PATCH lands in.
+    let open = 0;
+    const api = (r) => r.url().includes("/api/") && !r.url().includes("/realtime");
+    bp.on("request", (r) => api(r) && open++);
+    bp.on("requestfinished", (r) => api(r) && open--);
+    bp.on("requestfailed", (r) => api(r) && open--);
+    await signInAt(bp, APP_B, owner.email, owner.password);
+    await enterWorkspace(bp, workspace.uuid);
+    await bp.goto(`${APP_B}/project/${project.uuid}/takeoff/${sheet.uuid}`);
+    await bp.locator("[data-quantity-panel]").getByText("Roof").first().waitFor({ timeout: 20000 });
+    await joinedTopic(bp, `ws:${workspace.uuid}:project:${project.uuid}`);
+    if (settled) await bp.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
+    const loading = open;
+    // B's main thread: every task over 50 ms from here on (the paint's share of the time).
+    await bp.evaluate(() => {
+      window.__icLong = [];
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) window.__icLong.push({ start: performance.timeOrigin + e.startTime, took: e.duration });
+      }).observe({ type: "longtask", buffered: false });
+    });
+    const roof = (await items()).find((i) => i.name.startsWith("Roof"));
+    const entry = settled ? "12/12" : "9/12";
+    const at = Date.now();
+    const patched = await apiCall(token, "PATCH", `${takeoff}/item/${roof.uuid}`, { pitch_mode: "riseRun", pitch_entry: entry });
+    const replied = Date.now();
+    expect(patched.status === 200, `patch: ${patched.status}`);
+    const want = patched.body.effective_quantity.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    let seen = null;
+    const timeline = async () => {
+      seen ??= await bp.evaluate((since) => {
+        const frames = (window.__icSockets ?? [])
+          .flatMap((s) => s.received)
+          .filter((f) => f.at >= since)
+          .map((f) => {
+            let j = null;
+            try {
+              j = JSON.parse(f.data);
+            } catch {}
+            return { at: f.at, name: j?.name ?? j?.type ?? "?", published: j?.at ? Date.parse(j.at) : null };
+          });
+        const reads = performance
+          .getEntriesByType("resource")
+          .map((e) => ({ path: new URL(e.name).pathname, start: performance.timeOrigin + e.startTime, took: e.duration }))
+          .filter((r) => r.start >= since && r.path.startsWith("/api/"));
+        const long = (window.__icLong ?? []).filter((e) => e.start >= since);
+        return { frames, reads, long };
+      }, at);
+      const f = seen.frames.map((x) => `${x.name} published +${x.published ? x.published - at : "?"} at B +${x.at - at}`).join(", ") || "no frame";
+      const r = seen.reads.map((x) => `${x.path.split("/").slice(-2).join("/")} +${Math.round(x.start - at)} (${Math.round(x.took)} ms)`).join(", ") || "no read";
+      const l = seen.long.map((x) => `+${Math.round(x.start - at)} (${Math.round(x.took)} ms)`).join(", ") || "none";
+      return `PATCH replied +${replied - at} ms; frames: ${f}; reads: ${r}; B's long tasks: ${l}`;
+    };
+    // A row shows its figure and its unit apart: wait for the figure.
+    await bp
+      .locator("[data-quantity-panel] [data-item-qty]")
+      .filter({ hasText: want })
+      .first()
+      .waitFor({ timeout: 5000 })
+      .catch(async () => {
+        throw new Error(`B never showed ${want}: ${await timeline()}`);
+      });
+    const ms = Date.now() - at;
+    const legs = await timeline();
+    expect(ms < 1500, `B took ${ms} ms (${settled ? "settled" : `${loading} reads still loading`}): ${legs}`);
+    return `${entry} → ${want} SF in B after ${ms} ms, ${settled ? "B settled" : `B loading (${loading} reads open)`} (${legs})`;
+  } finally {
+    await b.close();
+  }
+}
+
 await run("f6-a", [
   {
     title: "setup: one landscape page at 1/8\" = 1'-0\"",
@@ -279,88 +361,12 @@ await run("f6-a", [
     },
   },
   {
-    title: "S2 AC4: the api's figure reaches a second window, on the other api process, within a second",
-    run: async ({ page, context }) => {
-      const owner = await fixtureOwner();
-      const b = await context.browser().newContext();
-      await recordSockets(b);
-      try {
-        const bp = await b.newPage();
-        await signInAt(bp, APP_B, owner.email, owner.password);
-        await enterWorkspace(bp, workspace.uuid);
-        await bp.goto(`${APP_B}/project/${project.uuid}/takeoff/${sheet.uuid}`);
-        await bp.locator("[data-quantity-panel]").getByText("Roof").first().waitFor({ timeout: 20000 });
-        await joinedTopic(bp, `ws:${workspace.uuid}:project:${project.uuid}`);
-        // B settled first (D-813): "Roof" listed comes before the rest of B's page has loaded (the estimate, the
-        // earthwork reads, the item stream, the symbol index), and on one api worker the item's read queued behind
-        // them. This measures realtime between two windows, not a page still loading.
-        await bp.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
-        // B's main thread: every task over 50 ms from here on (the paint's share of the time).
-        await bp.evaluate(() => {
-          window.__icLong = [];
-          new PerformanceObserver((list) => {
-            for (const e of list.getEntries()) window.__icLong.push({ start: performance.timeOrigin + e.startTime, took: e.duration });
-          }).observe({ type: "longtask", buffered: false });
-        });
-        const roof = (await items()).find((i) => i.name.startsWith("Roof"));
-        // Each leg timed (D-813): the PATCH's reply, the event's publish (its own stamp) and arrival at B, B's reads
-        // after it, and the figure on screen.
-        const at = Date.now();
-        const patched = await apiCall(token, "PATCH", `${takeoff}/item/${roof.uuid}`, { pitch_mode: "riseRun", pitch_entry: "12/12" });
-        const replied = Date.now();
-        expect(patched.status === 200, `patch: ${patched.status}`);
-        const want = patched.body.effective_quantity.toLocaleString("en-US", { maximumFractionDigits: 2 });
-        // Read afterwards from B's own records: its socket's frames (recordSockets) and its requests' timing, so a
-        // socket or a read already open before the PATCH is seen too.
-        let seen = null;
-        const timeline = async () => {
-          seen ??= await bp.evaluate((since) => {
-            const frames = (window.__icSockets ?? [])
-              .flatMap((s) => s.received)
-              .filter((f) => f.at >= since)
-              .map((f) => {
-                let j = null;
-                try {
-                  j = JSON.parse(f.data);
-                } catch {}
-                return { at: f.at, name: j?.name ?? j?.type ?? "?", published: j?.at ? Date.parse(j.at) : null };
-              });
-            const reads = performance
-              .getEntriesByType("resource")
-              .map((e) => ({ path: new URL(e.name).pathname, start: performance.timeOrigin + e.startTime, took: e.duration }))
-              .filter((r) => r.start >= since && r.path.startsWith("/api/"));
-            const long = (window.__icLong ?? []).filter((e) => e.start >= since);
-            return { frames, reads, long };
-          }, at);
-          const f = seen.frames.map((x) => `${x.name} published +${x.published ? x.published - at : "?"} at B +${x.at - at}`).join(", ") || "no frame";
-          const r = seen.reads.map((x) => `${x.path.split("/").slice(-2).join("/")} +${Math.round(x.start - at)} (${Math.round(x.took)} ms)`).join(", ") || "no read";
-          // The same read straight to window B's api, three times, afterwards: the server's own time with nothing beside it.
-          const direct = [];
-          for (let i = 0; i < 3; i++) {
-            const t0 = Date.now();
-            await fetch(`http://api-fx-b:8000/api${takeoff.replace(/^\/api/, "")}/item/${roof.uuid}`, { headers: { authorization: `Bearer ${token}` } });
-            direct.push(Date.now() - t0);
-          }
-          const l = seen.long.map((x) => `+${Math.round(x.start - at)} (${Math.round(x.took)} ms)`).join(", ") || "none";
-          return `PATCH replied +${replied - at} ms; frames: ${f}; reads: ${r}; B's long tasks: ${l}; the read alone on B's api: ${direct.join(", ")} ms`;
-        };
-        // A row shows its figure and its unit apart: wait for the figure.
-        await bp
-          .locator("[data-quantity-panel] [data-item-qty]")
-          .filter({ hasText: want })
-          .first()
-          .waitFor({ timeout: 5000 })
-          .catch(async () => {
-            throw new Error(`B never showed ${want}: ${await timeline()}`);
-          });
-        const ms = Date.now() - at;
-        const legs = await timeline();
-        expect(ms < 1500, `B took ${ms} ms: ${legs}`);
-        return `12/12 → ${want} SF in B after ${ms} ms (${legs})`;
-      } finally {
-        await b.close();
-      }
-    },
+    title: "S2 AC4: the api's figure reaches a second window, on the other api process, within a second (B settled)",
+    run: async ({ context }) => secondWindow(context, { settled: true }),
+  },
+  {
+    title: "S2 AC4, D-822: the same with window B still loading its page",
+    run: async ({ context }) => secondWindow(context, { settled: false }),
   },
   {
     title: "S3: + Depth twice gives Depth and Depth (2), d1 and d2; deleting d1 and adding again gives d3; a marker offers none; the item's own quantity never changes",

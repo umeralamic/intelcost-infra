@@ -3,8 +3,8 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prodlike.yml up -d --no-deps api   (prod-like)
 #   docker compose up -d --no-deps api                                                         (back to the bench's)
 #
-# No --reload (no file watcher), DEBUG off, and API_PROCESSES uvicorn processes (2 by default, the
-# count the open-speed plan asks of staging). Same port, database, Redis and storage as the bench's api,
+# No file watcher, DEBUG off, and API_PROCESSES uvicorn processes (3 by default, the api image's own
+# default since D-822; the bench's api runs the same count under a watcher). Same port, database, Redis and storage as the bench's api,
 # so app-prod (5175) and the dev app (5173) use it unchanged. Time against this, not the --reload api.
 services:
   api:
@@ -12,4 +12,4 @@ services:
       DEBUG: "false"
     command: >
       sh -c "alembic upgrade head &&
-             exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-2} --proxy-headers"
+             exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers"
