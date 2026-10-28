@@ -24319,3 +24319,176 @@ and c's 2D and IC- layers). Revises D-805 and D-808's presets.
   from the section's own stations.
 - HV copy ST-1 at 1+66.28: bedding 6.00 in, pipe zone 22.5 in, backfill 12.0 in, Ø 10" nominal · OD 10.5 in, cover
   2.50 ft, invert 693.93; ST-2 bedding 6.00 in, pipe zone 36.8 in, cover 2.82 ft, invert 698.46.
+
+## D-828: Trench section dimensions tidied (accepted 2026-10-28)
+
+**Status:** accepted (the founder's trench-section tidy-up of 2026-10-28). Refines D-827.
+
+- No diameter line inside the pipe; the Ø leader label stays (nominal and OD), led from the pipe's side.
+- **Depth:** a solid dimension with end ticks, like the left-side ones, from the trench top to the trench bottom, on
+  the right of the trench (was dashed through the trench).
+- **Cover:** off the trench centre, to the right of the depth dimension: a solid dimension with ticks from the
+  finished-grade line to the top of the pipe, with a short extension line from the pipe's crown.
+- **Top width:** over the higher of the trench top and finished grade, with extension lines up from the walls where
+  finished grade stands above the trench top, so nothing crosses it.
+- Dashed is kept only for reference lines (finished grade). A layer name with no clear corner in its band is left
+  off the drawing and named in the key.
+- HV copy C-200, section across ST-1, ST-2 and SS-1 at the panel's 443 px: ST-1 depth 3.38 ft and cover 2.00 ft on
+  the right, ST-2 depth 4.57 ft and cover 2.82 ft, top 5.00 ft above finished grade; nothing crosses the top width
+  or the layer names.
+
+## D-829: Release-run failures of 2026-10-27 (accepted 2026-10-28)
+
+**Status:** accepted (the founder's instructions on the release failures). Each finding below says whether it was the
+product or the fixture.
+
+- **f5-s18, a viewer through the site view (product, fixed).** The api already refused every site and shape write
+  for a viewer (EDIT_TAKEOFF on each route). The site view did not: a viewer could drag, delete, undo, adopt traced
+  lines, save or remove a site result, and the site's Calculate was on. `SiteView` takes `canEdit`: off, nothing is
+  drawn, moved, deleted, undone, adopted, calculated or saved, and a selection reads "View only: your role cannot
+  edit this project."; pan, zoom, select, find, Report and 3D VIEW stay. The site's Calculate stays as on a sheet
+  (off, with its reason). Checked as a viewer on the 10793 copy: tools and Calculate off, Delete, drag and Ctrl+Z
+  change nothing; hand-written shape delete, shape create, join and result removal all 403.
+- **c42, the join fit 0.112 ft over 0.1 ft (fixture; the limit kept).** Fixes 1 and 2 changed no fit math. A click
+  lands to the pixel and at 204 ft across a 540 px pane a pixel spans 0.38 ft: the same fractions on two panes of
+  one width give a fit of 0 ft (measured), and on panes a pixel apart about 0.1 ft. The limit was always under a
+  pixel; it passed only when the panes had settled to one width. The fixture now waits for both panes to settle at
+  one width before it clicks; 0.1 ft kept. Also stale on D-816 (the tree guide drawn ahead of the site row): fixed.
+- **c43, the import material not "needed" after an import (product, fixed).** Not fix 7: its FFE path runs only for
+  a building pad with an FFE, and the pad here has neither. The dialog read "import found" off the saved result
+  only, and opened before the save came back it said "optional". It reads the result the page shows, this
+  session's Calculate first. Step 3 read the assumptions the instant the dialog closed, before their save (the
+  dialog closes first, as legacy saves on confirm): it waits for the save.
+- **c35 (fixture):** the starter library is release 4 since D-818.
+- **c47 (fixture):** step 3 downloaded on a page of its own without opening the dialog.
+- **The dev-server phase (harness):** all seven refused on 5176: Docker Desktop recreated the dev app while the
+  built app still held the port and never published it. `fx-suite.sh dev` recreates once a container left without
+  a host binding, and stops if 5176/5177 do not serve.
+- **f8-s12, f8-s8 (bench):** the fx api took 98 s to answer after a restart (alembic 42 s, three processes importing
+  the app over the bind mount 42 s); the fixtures allow for about ten. Open: see RUN_PROGRESS R1.
+
+## D-830: Site Features dialog: the Building pad row spaced as a field (accepted 2026-10-28)
+
+**Status:** accepted (the founder's small UI fix of 2026-10-28).
+
+- The dialog's fields sat inside a read-only fieldset drawn as `display: contents`, so the dialog's spacing never
+  reached them and the Building pad row sat on the Name field's focus ring. The fieldset is a block that carries the
+  spacing itself: every field 16 px apart, the Building pad row among them (checked with Name focused).
+- The hint under it: "Flat at the finish floor elevation (FFE); edges go on the PAD layer in GPS Export."
+
+## D-831: Saved sections, their legend, gridlines, cut markers and PDF (accepted 2026-10-28)
+
+**Status:** accepted (the founder's section items 1 to 4 of 2026-10-28). Choices marked "decided in run, check".
+
+- **Legend:** a row of swatches replaces the sentence: Existing grade, Proposed grade, Water table (when there is
+  water), each soil layer by name and colour, Trench (when a run is crossed). "Hover for elevations. A run crossing
+  the line has its trench drawn square to it below." stays as a small help line.
+- **Lines, one set for sections and trench sections** (decided in run, check): Existing grade solid in the
+  foreground colour; Proposed grade dashed in the primary colour (the trench section's finished-grade line, named
+  "Proposed grade" there too); Proposed subgrade (the surface a trench is dug from) solid in the primary colour (was
+  solid black, the same as Existing grade in the section); Water table dashed blue.
+- **Axis:** light elevation gridlines, labelled: every 1 ft over up to 16 ft of range, every 2 ft up to 50 ft, every
+  5 ft past it (decided in run, check: past 50 ft 2 ft lines crowd); metres 0.5, 1, 2. Every other label when more
+  than 14 lines. Station ticks as before, with a tick mark.
+- **Saved sections:** a new table, `earthwork_section` (migration d831, a new table only): the sheet, the two ends
+  page-normalised, the name, an order. The profile is never stored; it is read again from the calculated surfaces,
+  so after Calculate every section is current. Named A-A′, B-B′… in order (the next free name), renameable (unique
+  per project). The header: the dropdown (a section on another sheet is named with its sheet and opens it), Rename,
+  "+ New section", "Draw again" (same name, same uuid), Delete. Shared with the project: each write publishes
+  `earthwork.section.changed`. Every route needs EDIT_TAKEOFF to write.
+- **Delete protection** (decided in run, check): a section follows its maker's rule: "yes" deletes; "no" is refused
+  naming the maker ("<name> protects their work: A-A′ stays."); "ask" is refused with "ask them", as the request
+  flow carries items and shapes only.
+- **A seat that cannot edit** (decided in run, check): sees and opens every saved section; may draw one of its own,
+  shown as "(not saved)" and never stored; Rename absent, Delete and Draw again off.
+- **Cut markers on the plan:** each saved section on the sheet as a dash-dot line, its ends named (A and A′, from
+  the name: "Pad X-X′" gives Pad X and Pad X′) and an arrow at each end pointing the way the section looks (A on the
+  left). A click on a marker opens its section. Shown with the sheet's markups (the Markups toggle hides them).
+- **PDF and Print:** this section, or "All" (every saved section on this sheet: the others need their own sheet's
+  Calculate, decided in run, check); US Letter or 11×17 landscape; vector (the pane's own figures walked into the
+  PDF's lines, paths, circles and words). Each page: the title line (project, sheet, section, stations, date); H and
+  V scales with the exaggeration ("V:H 7:1"); the legend; the profile; the trench sections of the runs crossed (2
+  across on Letter, 3 on 11×17, a continuation page when they do not fit legibly); "Derived from IntelCost takeoff"
+  and the page number on every page. Print opens the same PDF to the browser's print dialog.
+- HV copy C-200: A-A′ across ST-1, ST-2 and SS-1 (3 trench sections), B-B′ across the pad; switched, B-B′ renamed
+  P-P′, reloaded, opened from its marker; after Calculate both drawn again; "All" gave 3 Letter pages, vector (0
+  images), and 11×17 one page.
+
+## D-832: The site view's members change detail together; a shown raster is never freed (accepted 2026-10-28)
+
+**Status:** accepted (the founder's site view zoom glitches of 2026-10-28).
+
+- **Seen:** on the 10793 copy, zooming with the wheel across the Page 3/4 join, the members went back to their
+  blurry fit images mid-zoom and the heavy line no longer met at the cut (the fit images are a few pixels off the
+  true page at 200 % and over); then the rasters came back, not at once.
+- **Causes, in the code:** (1) the bitmap cache freed an evicted canvas (`width = 0`) even while a member showed
+  it, so with three members' rasters and the new renders over the budget a member dropped to its fit image beside a
+  sharp neighbour; (2) a failed render cleared the member to its fit image; (3) each member swapped its new raster
+  in on its own time.
+- **Fix:** the cache never evicts a canvas a member shows (members pin what they show, counted, and unpin what they
+  replace; over budget with every candidate pinned, eviction waits); a failed render keeps the image the member has;
+  a view's `RasterSwap` holds each member's finished raster (or "none" off screen) until every member has answered
+  for the newest view, then swaps all of them in one animation frame; a newer view drops the older one's batch.
+  Every member already shared the one stage transform; the seam's 1.5 px overlap (D-820) is unchanged.
+- **Measured:** after, across wheel zoom 17 % to 359 % and back, 0 animation frames in 419 with a freed raster on
+  screen, and every swap changed every member on screen in the same frame. The old code, run again fresh, did not
+  fall back either (its cache had room after a reload): the glitch was captured once, in a long session (frames
+  27 to 33 of the before capture), so the before/after is not a controlled repeat.
+
+## D-833: The Coordinates dialog: wider fields, a machine count, pasted rows, the scale limit, grid or surface (accepted 2026-10-28)
+
+**Status:** accepted (the founder's Coordinates dialog items 1 to 7 of 2026-10-28). Choices marked "decided in run, check".
+
+- **Fields:** the editor is 680 px wide; Label, Northing, Easting, Elev. in fields wide enough for a state-plane
+  value (2000604.4988 shows whole), spaced headers Label · Northing · Easting · Elev. · Check · Off by.
+- **Count:** "N of 4 points (each needs N, E and elevation)"; a point counts with all three and its place on the
+  plan, check points included (decided in run, check: a check point carries an elevation for the machine's shift
+  like any other). Under 4: "NOT FOR MACHINE USE".
+- "Miss" is "Off by"; Check's tooltip "Check point: held out of the fit, used to verify it".
+- **Paste points:** one line a point, label, northing, easting, elevation (or no elevation), separated by commas,
+  tabs or spaces; each a row reading "click on plan" until a click places it, rows placed in order (a row's own
+  "click on plan" places that one next); lines not read are counted. Up to ten rows, as before.
+- **Fit the scale:** "Scale taken +0.12 %, limit 0.5 %"; over GPS Export's 0.5 % (MACHINE_TOLERANCES) it is red,
+  says to check the calibration, and Save is refused.
+- **Grid / Surface (scale factor):** surface coordinates are converted to grid before the fit, grid = surface ×
+  factor about the origin (decided in run, check); the api stores the grid points with `coordinates` and
+  `surface_factor` (migration d833: two nullable columns on `sheet_georef`, no row's data changed; a site keeps them
+  in its georef JSON); reopened, the points show as typed. A factor is required for surface (between 0.9 and 1.1).
+  GPS Export's README says "Entered as surface coordinates and converted to grid before the fit: grid = surface x F";
+  each LandXML's Project description says so too (the points CSV has no header by design).
+- **System:** the placeholder "e.g. NAD83 / State Plane, zone (ftUS)"; the EPSG code under an "Advanced" fold.
+- HV copy C-200 (not saved): 5 rows pasted (comma, tab and space lines); PC-1 to PC-3 placed in order, PC-5 placed
+  by its own link and made a check (4 of 4, ±0.00 ft across 3 points, check PC-5 2.60 ft, scale taken +0.00 %); one
+  removed, 3 of 4 with NOT FOR MACHINE USE; surface with 0.99995, the fit's scale 0.999950. The coordinates as
+  stored, a surface README in an export: not run (the copy's coordinates were left as they were).
+
+## D-834: Stitch sheets: live picks, either order, Edit join, the move warning (accepted 2026-10-28)
+
+**Status:** accepted (the founder's Stitch sheets items 1 to 4 of 2026-10-28). Choices marked "decided in run, check".
+
+- **Live picks:** a match line is drawn as it is clicked on both sheets: from its last point to the cursor (dashed),
+  then 1 → 2 (→ 3…) solid, each point numbered, the primary colour on both. Matching points are numbered markers,
+  each pair its own colour on both sheets (the twelve collaborator colours in turn).
+- **Either order:** a match line was already fitted both ways round (`fitJoin`); two matching points now are too
+  (`fitPoints` forward and with the source reversed: the smaller miss, on a tie the smaller turn, so no half turn).
+  Kept reversed, the checks say "Points matched in reverse order on <sheet>" (the source sheet); two points go to
+  the api in the order kept. Three points or more keep their order (their order is the pairing).
+- **Edit join:** a pencil beside each joined sheet's bin (not the anchor's) opens "Edit join: <sheet> on <sheet>
+  (match line | matching points | control points)" with its stored points on both sheets: drag a point, click the
+  sheet to add one, Alt+click or right-click to take one out; the fit is live; Save / Cancel. Opened from either
+  of the join's two sheets (from a third, the pencil says which to open). A saved edit is undone from its toast
+  (the join as it was put back). Control-point joins open with the fit shown and their points edited in Coordinates
+  (decided in run, check: the control points are the sheet's coordinates, edited in one place).
+- **Move warning:** before an edit that moves the sheet 0.01 ft or more is saved: "This moves <sheet> by X ft. N
+  items cross this join (…): each piece is measured on its own sheet, so their quantities stay; their ends at the
+  join move apart by up to X ft." X is the largest move of the sheet's page corners, the join as it was against
+  as edited. Decided in run, check: the founder's wording said the quantities would update; they do not, since an
+  item drawn across a join is one piece per sheet, measured on that sheet's scale (checked: Across 3/4 line 87.23 LF
+  before, after the save and after the undo).
+- **Clicks while picking:** a survey link's ghost contours (their hover strokes) and the saved sections' markers
+  took the clicks meant for a join's points on a busy sheet (HV C-200): neither takes a click while a join, a link
+  or coordinates are picked.
+- 10793 copy: Page 4's join edited (a point moved 3 px at zoom), fit 0.43 → 0.79 ft, "This moves Page 4 by 5.56 ft.
+  1 item crosses this join (Across 3/4 line)", saved, undone (0.43 ft again); Page 5's match line clicked from the
+  other end on the right, "Points matched in reverse order on Page 5", turn 0.0°, cancelled. HV copy C-200 to C-100
+  by two points the other way round: "Points matched in reverse order on C-100", turn −8.6°, not joined.
