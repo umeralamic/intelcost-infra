@@ -229,6 +229,43 @@ try {
           allSuitable: words(earthLines.earthworkLines(base("unsuitable", { allSuitable: true }))),
         };
       }
+      if (c.kind === "gps-rover") {
+        // gps_field_PLAN phase 1: the rover preset leads with finished grade only and control points only; machine
+        // control takes finished grade only too; linework 2D (every elevation 0) on IC- layers; the README names the
+        // limits the surfaces are cut to and how the field converts the files.
+        const made = ["subgrade", "fg", "eg"];
+        const rover = setx.presetFor("rover", made);
+        const mc = setx.presetFor("machine-control", made);
+        const tin = { points: [{ n: 0, e: 0, z: 100 }, { n: 0, e: 10, z: 101 }, { n: -10, e: 0, z: 102 }], faces: [[0, 1, 2]] };
+        const surfaces = [{ key: "subgrade", name: "Proposed subgrade", detail: "", tin, why: null }, { key: "fg", name: "Proposed finished grade", detail: "", tin, why: null }];
+        const run = { kind: "contour", surface: "FG", elevation: 101, points: [{ x: 0, y: 0 }, { x: 0.1, y: 0 }] };
+        const build = (choices) =>
+          setx.buildExportSet({
+            project: "P", sheet: "S", scaleWords: "100 ft", made: new Date(0), calculatedAt: "now", surfaces,
+            linework: { scale: { feetPerNorm: 100, widthPt: 1, heightPt: 1 }, runs: [run], boundary: [{ x: 0, y: 0 }, { x: 0.1, y: 0 }, { x: 0.1, y: 0.1 }], features: [], pads: new Set(), contourStep: { stepFt: 1, majorEvery: 5 }, utilities: [], trenches: [], pits: [] },
+            points: [], metric: false, grid: null, choices, limits: { name: "work boundary", areaSF: 12345 },
+          });
+        const flat = build(rover);
+        const deep = build({ ...rover, linework: { ...rover.linework, threeD: true } });
+        const dxf = (set) => set.files.find((f) => f.name.endsWith(".dxf")).text;
+        // The DXF as group-code and value pairs: 8 is an entity's layer, 30 a vertex's elevation.
+        const pairs = (text) => {
+          const l = text.split(/\r?\n/);
+          const out = [];
+          for (let i = 0; i + 1 < l.length; i += 2) out.push([l[i].trim(), l[i + 1].trim()]);
+          return out;
+        };
+        const zs = (text) => pairs(text).filter(([code]) => code === "30").map(([, v]) => Number(v));
+        const onLayer = (text, name) => pairs(text).some(([code, v]) => code === "8" && v === name);
+        const readme = flat.files.find((f) => f.name === "README.txt").text;
+        return {
+          rover: rover.surfaces.join(","), machine: mc.surfaces.join(","), roverPoints: Object.values(rover.points).some(Boolean), threeD: rover.linework.threeD,
+          xmls: flat.files.filter((f) => f.name.endsWith(".xml")).length,
+          layer: onLayer(dxf(flat), "IC-BRK-FG"), bareLayer: onLayer(dxf(flat), "BRK-FG"),
+          flatZ: zs(dxf(flat)).every((z) => z === 0), deepZ: zs(dxf(deep)).filter((z) => z !== 0).length > 0,
+          limits: readme.includes("Clipped to the work boundary, 12,345 SF"), help: readme.includes(setx.FIELD_HELP),
+        };
+      }
       if (c.kind === "gps-ffe") {
         // D-821: GPS Export's finished grade and subgrade with a pad's FFE. A 100 ft square at 100; the pad
         // x 20–60, y 20–60 ft, FFE 102, 0.5 ft deep: finished 102 and subgrade 101.5 inside it past the 0.1 ft
