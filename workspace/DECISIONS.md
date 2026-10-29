@@ -24942,3 +24942,16 @@ numbers match), each new sheet matched by number, title and page similarity, ali
 the old sheet archived read-only, what changed flagged under each measurement, Compare in Overlay, the estimate's
 change record. 19 questions with recommended answers; about 15 days in 8 blocks, a first cut of 8. It builds on
 F21's draft (revision_sets_spec.md, 2026-10-11), which stands for the detail.
+
+## D-857: Material cost components for earthwork and utility lines: the plan, with its questions (plan only)
+
+**Status:** written for the founder (2026-10-29); nothing built, every project read only.
+[docs/tasks/MATERIALS_PLAN.md](docs/tasks/MATERIALS_PLAN.md): Calculate writes material components in the unit each is
+sold in (pipe in joints rounded per size across the project, a fittings allowance, joining, bedding and zone stone and
+imported backfill in tons, tracer and tape, foundation stone and geotextile below water, precast structure parts,
+borrow, tipping, aggregate base, stabilizers), priced project → workspace → IntelCost default × the wage set's
+material factor, never listed, each with its basis and date; recalculation keeps typed prices and the person's added,
+edited and deleted components (`auto_key`, `user_fields`, a dismissed tombstone); "Missing price", never $0. Found on
+the way: no material today by design (tiers hold machines and crew only); the 3D test copy (6467)'s excavator and
+loader lack only the project's diesel price (D-723). 22 questions with recommended answers; about 28 days in 11
+blocks, a first cut of 13.
