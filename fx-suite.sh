@@ -146,7 +146,8 @@ for (const app of ['http://localhost:5176', 'http://localhost:5177']) {
   await p.goto(app + '/login', { timeout: 300000 });
   await p.waitForSelector('#email', { timeout: 300000 });
   // The settings pages too: each compiles on its first visit, past a fixture's 20 s wait (f3-s1 in the release, D-850).
-  await p.evaluate(() => import('/src/pages/settings-pages.ts').then((m) => Promise.all(Object.values(m.settingsPages).map((load) => load()))));
+  // Dev servers only: the built apps serve no /src and have nothing to compile.
+  await p.evaluate(() => import('/src/pages/settings-pages.ts').then((m) => Promise.all(Object.values(m.settingsPages).map((load) => load())), () => null));
   console.log('warm ' + app + ' in ' + Math.round((Date.now() - t) / 1000) + ' s');
   await p.close();
 }
