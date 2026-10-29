@@ -108,13 +108,16 @@ await run("c47-gps-field", [
       const dxf = files[names.find((n) => n.endsWith(".dxf"))];
       const pairs = dxfPairs(dxf);
       const layers = [...new Set(pairs.filter(([c]) => c === "8").map(([, v]) => v))];
-      expect(layers.length > 0 && layers.every((l) => l.startsWith("IC-")), `layers: ${layers}`);
+      const readme = files["README.txt"];
+      // D-825: the rover also writes the drawing's own lines by default, on the PDF's layers, once the sheet is read
+      // (so whether they are here depends on the read finishing first). Every other layer is IntelCost's, on IC-.
+      const theirs = layers.filter((l) => !l.startsWith("IC-"));
+      expect(layers.some((l) => l.startsWith("IC-")) && theirs.every((l) => readme.includes(l)), `layers: ${layers}`);
       expect(layers.includes("IC-CONTROL"), `no IC-CONTROL: ${layers}`);
       const zs = pairs.filter(([c]) => c === "30").map(([, v]) => Number(v));
       expect(zs.length > 0 && zs.every((z) => z === 0), `elevations not 0: ${[...new Set(zs)].slice(0, 5)}`);
       const control = files[names.find((n) => /Control\.csv$/.test(n))] ?? "";
       expect(["PC-1", "PC-2", "PC-3", "PC-4"].every((p) => control.includes(p)), `control CSV: ${control.slice(0, 200)}`);
-      const readme = files["README.txt"];
       expect(/Clipped to the work boundary, 1,000 SF/.test(readme), `README limits: ${readme.match(/SURFACES[\s\S]{0,200}/)?.[0]}`);
       expect(/office software before they go to the rover or the machine/.test(readme), "README help line");
       return `${names.join(", ")}; layers ${layers.join(", ")}`;

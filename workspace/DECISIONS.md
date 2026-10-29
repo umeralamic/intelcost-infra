@@ -24515,9 +24515,10 @@ product or the fixture.
   finished grade. Trench sections draw the same bands.
 - **Trench sections:** first line "SS-1 · crosses A-A′ at 1+12 · run station 0+32.94", walls, width and depth on the
   second. Dimensions on the right, outside the trench: cover just outside the wall (its bottom tick at the crown,
-  no extension line), depth further out, each label beside its line. Nothing in the trench but the pipe: the pipe's
-  diameter and invert are one line under the drawing (decided in run, check), the invert marked by a dot on the
-  pipe. "Dia 8"" with one space. Outside the walls the profile's colours; inside, bedding, zone and backfill keep
+  no extension line), depth further out, each label beside its line. The pipe's diameter (nominal, OD) beside the
+  pipe, led from its side, and "Invert …" under it, led from a dot on the pipe: a one-line caption under the drawing
+  was tried and reverted at the founder's word; with no line now running from the top to the crown the words fit,
+  and the depth's line goes out past them. "Dia 8"" with one space. Outside the walls the profile's colours; inside, bedding, zone and backfill keep
   theirs, the backfill named "Backfill (native)" or "Backfill (select)" from the assembly's backfill source.
 - **Profile pipe labels:** labels that would collide step up or down in turn, each with a short leader to its pipe.
 - **All sections (PDF):** every section in the project, grouped by sheet, a site's sheets under the site. The page
@@ -24601,3 +24602,25 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
   measured takes the fit when it runs (the queue holds every job until the first sheet is on screen). The fixture's
   wait counted the page's prerenders since it loaded, earlier steps' too; it now waits for page 5's own draw at its fit
   (its pin), and on a timeout names what the queue holds.
+
+## D-839: The release run's retries wait for the mode they need, and say so when it never comes (accepted 2026-10-28)
+
+**Status:** accepted (found in the founder's last item of 2026-10-28, the release run). Decided in run, check.
+
+- **What happened.** Before retrying the built-app failures alone, the release switched back to the built apps.
+  That rebuild could not fetch the `dockerfile:1` syntax image from Docker Hub (a TLS handshake timeout), so the
+  built apps never started; the dev servers had already stopped, and all nine retries met a refused 5176 in their
+  first step. They were reported as "failed alone" without one having run.
+- **Now:** `./fx-suite.sh prod` tries the build once more after 20 s, and finishes only when 5176 and 5177 both
+  serve, exiting non-zero otherwise (as `dev` already did). The release's retry step switches to each mode it needs
+  and, if that mode will not come up, lists that batch as "alone, not run" in the summary instead of "failed".
+- The nine were then run alone on the built apps by hand; their results are in the run's report.
+- **Alone on the built apps:** c40-delete-protection 6/6, f2-s5 9/9, f3-s10 4/4, f5-big 6/6, f5-s15 4/4, f6-a 10/10.
+  Two fixture races fixed, nothing in the app:
+  - **c47 step 3** required every DXF layer to be `IC-`. Since D-825 the rover also writes the drawing's own lines
+    by default, once the sheet is read, so the step passed only while that read was still going at the download.
+    Now IntelCost's lines on `IC-`, and any other layer one the README names as the drawing's.
+  - **f5-s18** waited for the first capability answer and read its body after the takeoff page's navigation, which
+    can discard it. It now keeps the first answer whose body can be read.
+- **n3-twenty-loads:** one lapse of 14 s on one of 20 sheets in one run; 3/3 in the two runs after. Timing, as D-838.
+- **The nine again, after both fixes:** all pass alone; c47 5/5, f5-s18 4/4, n3 3/3 twice.

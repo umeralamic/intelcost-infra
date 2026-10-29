@@ -88,9 +88,19 @@ const tool = (page, label) => page.getByRole("group", { name: /^(Takeoff tools|M
 async function openAs(page, email, at) {
   await signInAs(page, email, PASSWORD);
   await enterWorkspace(page, at.workspace);
-  const answered = page.waitForResponse((r) => r.url().includes(`/workspace/${at.workspace}/capability`) && r.ok(), { timeout: 20000 });
+  // The first answer whose body is still there: one asked before the navigation (entering the workspace) can match
+  // and then lose its body to it ("No resource with given identifier").
+  let got;
+  const answered = new Promise((resolve, reject) => {
+    got = resolve;
+    setTimeout(() => reject(new Error("no capability answer in 20 s")), 20000);
+  });
+  const grab = (r) => {
+    if (r.url().includes(`/workspace/${at.workspace}/capability`) && r.ok()) r.json().then(got, () => {});
+  };
+  page.on("response", grab);
   await page.goto(`${APP}/project/${at.project}/takeoff/${at.sheet}`);
-  const caps = await (await answered).json();
+  const caps = await answered.finally(() => page.off("response", grab));
   await page.locator("[data-canvas-scale]").first().waitFor({ timeout: 20000 });
   await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
   return caps;

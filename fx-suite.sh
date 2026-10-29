@@ -133,7 +133,14 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
   prod)
     # The fx apps built (the "fx-prod" profile) in place of the dev servers, on the same ports.
     docker compose --profile fx stop app-fx app-fx-b
-    docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod
+    # A build that cannot reach Docker Hub (the dockerfile syntax image, a TLS timeout) is tried once more, and
+    # the switch is done only when both ports serve (D-839): nothing else is on them once the dev servers stop.
+    docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod \
+      || { sleep 20; docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod; } \
+      || { echo "built apps would not build or start"; exit 1; }
+    for _ in $(seq 1 60); do curl -sf -o /dev/null localhost:5176/ && curl -sf -o /dev/null localhost:5177/ && break; sleep 2; done
+    curl -sf -o /dev/null localhost:5176/ && curl -sf -o /dev/null localhost:5177/ \
+      || { echo "built apps not serving on 5176/5177"; exit 1; }
     ;;
   dev)
     # The dev servers back in place of the built apps (D-814), once they serve the app's own modules.
@@ -172,13 +179,15 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     mapfile -t again < <(failed_in "$out/1-built.log" "$out/2-dev.log")
     alone_pass=()
     alone_fail=()
+    not_run=()
     for mode in dev prod; do
       batch=()
       for n in "${again[@]}"; do
         if { [ "$mode" = dev ] && needs_dev "$n"; } || { [ "$mode" = prod ] && ! needs_dev "$n"; }; then batch+=("$n"); fi
       done
       [ ${#batch[@]} -eq 0 ] && continue
-      [ "$mode" = prod ] && "$0" prod >>"$out/0-prod.log" 2>&1
+      # A mode that will not come up runs none of its batch: those are reported as not run, not as failed (D-839).
+      if ! "$0" "$mode" >>"$out/0-$mode.log" 2>&1; then not_run+=("${batch[@]}"); continue; fi
       for n in "${batch[@]}"; do
         if REGRESS_JOBS=1 "$0" run "$n" 2>&1 | tee -a "$out/3-alone.log" | grep -q "^all 1 passed"; then alone_pass+=("$n"); else alone_fail+=("$n"); fi
       done
@@ -190,9 +199,10 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
       echo "dev servers:  $(tail_line "$out/2-dev.log")"
       echo "alone, passed (timing): ${alone_pass[*]:-none}"
       echo "alone, failed (look at): ${alone_fail[*]:-none}"
+      [ ${#not_run[@]} -gt 0 ] && echo "alone, not run (the mode would not come up, see 0-*.log): ${not_run[*]}"
       echo "logs: $out (one per fixture in fx-suite/.regress)"
     } | tee -a "$out/summary.txt"
-    [ ${#alone_fail[@]} -eq 0 ]
+    [ ${#alone_fail[@]} -eq 0 ] && [ ${#not_run[@]} -eq 0 ]
     ;;
   stop) docker compose --profile fx --profile fx-prod stop $FX_SERVICES app-fx-prod app-fx-b-prod ;;
   *)
