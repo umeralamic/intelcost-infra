@@ -143,15 +143,24 @@ await run("f5-big", [
       await section.locator('[data-page="1"]').getByRole("checkbox").check();
       await load(page, dialog);
       const t0 = Date.now();
+      // D-849: the page shown from its Choose pages thumbnail while it is prepared, or its canvas
+      // first, whichever comes; then its own pdf.js frame.
+      const seenAt = page
+        .waitForFunction(() => {
+          const img = document.querySelector("[data-sheet-preview] img");
+          return (img && img.complete && img.naturalWidth > 0) || document.querySelector("canvas[data-sheet-raster]");
+        }, null, { timeout: 60000 })
+        .then(() => Date.now() - t0, () => null);
       await page.locator('canvas[data-sheet-raster][data-raster-res="1"]').waitFor({ timeout: 60000 });
       const took = Date.now() - t0;
+      const shown = await seenAt;
       const files = await apiCall(token, "GET", `${project}/file`);
       const big = files.body.find((f) => f.file_name === "Big set.pdf");
       const pages = await apiCall(token, "GET", `${project}/file/${big.uuid}/pages`);
       expect(pages.body.status === "preparing" && pages.body.prepared < 150, `the thumbnails were done first (${pages.body.status}, ${pages.body.prepared} of 150): nothing was proved`);
       expect(took <= 20000, `the page took ${took} ms to draw with thumbnails being made`);
       nothingIdmTakes(seen);
-      return `page 1 drawn ${took} ms after the Load's answer, while thumbnails stood at ${pages.body.prepared} of 150`;
+      return `page 1 shown ${shown ?? "?"} ms and drawn ${took} ms after the Load's answer, while thumbnails stood at ${pages.body.prepared} of 150`;
     },
   },
   {

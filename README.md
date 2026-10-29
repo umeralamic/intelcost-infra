@@ -464,7 +464,7 @@ invitation and confirmation links from). The worker logs each one as
 ## Deploying the api without downtime (D-842)
 
 `deploy/` is what a deploy runs, and the only thing it runs: `compose.yml` (two api colours, blue and green, the
-worker and Caddy), `Caddyfile`, `rollout.sh`, and `.env.example` for the box's own `deploy/.env` (git-ignored). A
+workers split as the bench's, and Caddy), `Caddyfile`, `rollout.sh`, and `.env.example` for the box's own `deploy/.env` (git-ignored). A
 deploy is a `git pull` of this repo and the api's, then:
 
 ```bash
@@ -486,7 +486,7 @@ API_IMAGE=<registry>/intelcost-api:<tag> ./deploy/rollout.sh --pull     # or a b
    graceful: a request in flight finishes where it started, new ones go to the new colour.
 5. Leaves the old colour 15 s to finish what it had (`DRAIN_SECONDS`), then stops it. uvicorn stops on SIGTERM
    gracefully and closes WebSockets with 1012; the app reconnects at once, to the new colour.
-6. Restarts the worker on the new image. Celery's warm shutdown finishes a task in hand; queued tasks wait in Redis.
+6. Restarts the workers on the new image (general, pages, and Choose pages' thumbnails on their own, niced, D-849). Celery's warm shutdown finishes a task in hand; queued tasks wait in Redis.
 
 A first deploy on an empty box starts blue and Caddy. Postgres and Redis are never restarted by a deploy.
 

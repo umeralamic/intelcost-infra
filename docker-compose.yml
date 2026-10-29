@@ -440,7 +440,9 @@ services:
     ports: !override
       - "8030:8000"
 
-  # One worker for every queue, on the fx database, Redis and bucket.
+  # The fx stack's workers, on the fx database, Redis and bucket: every queue but Choose pages'
+  # thumbnails here, and those on worker-fx-previews, as the bench splits them (D-43, D-849: on one
+  # worker a Load's first page waited 13 s behind a 545 MB set's thumbnails and its measuring).
   worker-fx:
     extends: worker
     profiles: ["fx"]
@@ -449,7 +451,18 @@ services:
     environment: *fx-env
     command: >
       watchfiles --filter python --sigint-timeout 10
-      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads,previews -n fx@%h"
+      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads -n fx@%h"
+      /srv/app
+
+  worker-fx-previews:
+    extends: worker
+    profiles: ["fx"]
+    env_file: !override
+      - path: ../intelcost-app-fastapi/.env
+    environment: *fx-env
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n fx-previews@%h"
       /srv/app
 
   # The beat scheduler on the fx stack (D-770): its sweeps run on the fx database, Redis and bucket

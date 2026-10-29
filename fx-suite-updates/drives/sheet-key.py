@@ -36,13 +36,15 @@ from app.features.drawing.read_on_load import set_key
 OUT = pathlib.Path("/tmp/sheet-key")
 
 
-def fetch(workspace_uuid: str) -> None:
+def fetch(workspace_uuid: str, project: str = "", folder: str = str(OUT)) -> None:
+    """The workspace's sheets (only a project whose name holds `project`, when given) into `folder`."""
+    out = pathlib.Path(folder)
     from sqlalchemy import text
 
     from app.core import storage
     from app.database import SyncSessionFactory
 
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     with SyncSessionFactory() as session:
         rows = session.execute(
             text(
@@ -53,16 +55,16 @@ def fetch(workspace_uuid: str) -> None:
                 join project p on p.id = s.project_id
                 join workspace w on w.id = s.workspace_id
                 join drawing_file f on f.id = s.file_id
-                where w.uuid = :ws and s.source_key is not null
+                where w.uuid = :ws and s.source_key is not null and p.name like :project
                 order by p.name, s.folder_id nulls first, s.file_id, s.page_number
                 """
             ),
-            {"ws": workspace_uuid},
+            {"ws": workspace_uuid, "project": f"%{project}%"},
         ).all()
     manifest = []
     for uuid, project, page, sort, key, folder, file_id, pages, file_name, w, h, text_layer in rows:
         name = f"{uuid}.pdf"
-        (OUT / name).write_bytes(storage.get_bytes(key))
+        (out / name).write_bytes(storage.get_bytes(key))
         manifest.append(
             {
                 "sheet": str(uuid),
@@ -75,8 +77,8 @@ def fetch(workspace_uuid: str) -> None:
                 "text_layer": bool(text_layer),
             }
         )
-    (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1))
-    print(f"fetch: {len(manifest)} sheets into {OUT}")
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=1))
+    print(f"fetch: {len(manifest)} sheets into {out}")
 
 
 def _page(path: pathlib.Path) -> tuple[Any, Any, dict[str, Any], list[reading.Piece]]:
@@ -338,6 +340,41 @@ def _report(results: list[dict[str, Any]], set_times: dict[str, float]) -> None:
     print("json:" + json.dumps(results))
 
 
+def time_set(folder: str, workers: str = "4") -> None:
+    """A whole set read as on load, with no key: each page's text, name and scale (the AI's pages counted, not
+    asked), the time per sheet, and the set's time on `workers` page workers reading at once (the bench runs 4)."""
+    import multiprocessing
+    from concurrent.futures import ProcessPoolExecutor
+
+    root = pathlib.Path(folder)
+    manifest = json.loads((root / "manifest.json").read_text())
+    started = time.perf_counter()
+    # fork: a script read from stdin cannot be started again by forkserver, 3.14's default.
+    with ProcessPoolExecutor(int(workers), mp_context=multiprocessing.get_context("fork")) as pool:
+        times = list(pool.map(_time_one, [str(root / m["file"]) for m in manifest]))
+    wall = time.perf_counter() - started
+    secs = sorted(t for t, _ in times)
+    p95 = secs[min(len(secs) - 1, math.ceil(0.95 * len(secs)) - 1)]
+    ai = sum(1 for _, a in times if a)
+    print(
+        f"{len(secs)} sheets on {workers} workers: {wall:.1f} s for the set; per sheet median "
+        f"{statistics.median(secs):.3f} s, 95th {p95:.3f} s, longest {secs[-1]:.3f} s; {ai} would ask the AI"
+    )
+
+
+def _time_one(path: str) -> tuple[float, bool]:
+    t0 = time.perf_counter()
+    doc, page, page_text, pieces = _page(pathlib.Path(path))
+    w, h = page.rect.width or 1, page.rect.height or 1
+    ai = not pieces or not getattr(reading, "title_block_readable", lambda _p: True)(pieces)
+    if pieces:
+        spans = naming.spans(page, page_text)
+        naming.locate(spans, w, h)
+        reading.read_scale(pieces, lambda: reading.page_strokes(page), w, h)
+    doc.close()
+    return time.perf_counter() - t0, ai
+
+
 if __name__ == "__main__":
     mode, *rest = [a for a in sys.argv[1:] if not a.startswith("--")]
-    {"fetch": fetch, "dump": dump, "measure": measure}[mode](*rest)
+    {"fetch": fetch, "dump": dump, "measure": measure, "time": time_set}[mode](*rest)

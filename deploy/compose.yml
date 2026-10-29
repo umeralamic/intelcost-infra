@@ -46,18 +46,26 @@ services:
   api-green:
     <<: *api
 
-  worker:
+  # The workers, split as the bench's (D-43, D-849): the general queue; the loaded pages and their
+  # name and scale reads (PAGE_WORKERS, at most min(cores / 2, (RAM - reserve) / 700 MB)); Choose
+  # pages' thumbnails alone and niced, so a Load never waits behind a set's thumbnails.
+  worker: &worker
     image: ${API_IMAGE:-intelcost-api:latest}
     env_file:
       - path: .env
         required: false
-    # Every queue on one worker (the box has two vCPUs); the bench splits pages and previews onto their own.
-    command: ["celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=2", "-Q", "celery,prepare,reads,previews"]
+    command: ["celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=1", "-Q", "celery"]
     # Celery's warm shutdown: a task in hand finishes before the old worker goes (queued ones wait in Redis).
     stop_signal: SIGTERM
     stop_grace_period: 10m
     restart: unless-stopped
     networks: [app]
+  worker-pages:
+    <<: *worker
+    command: ["celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=${PAGE_WORKERS:-2}", "-Q", "prepare,reads", "-n", "pages@%h"]
+  worker-previews:
+    <<: *worker
+    command: ["nice", "-n", "19", "celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=1", "-Q", "previews", "-n", "previews@%h"]
 
   caddy:
     image: ${CADDY_IMAGE:-caddy:2.8.4-alpine}

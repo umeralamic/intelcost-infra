@@ -17,7 +17,7 @@
 #      back inside Caddy: the old colour is not stopped until Caddy itself names the new one
 #   5. the old colour left DRAIN_SECONDS to finish what it had, then stopped (SIGTERM: uvicorn finishes in-flight
 #      requests and closes sockets with 1012, and the app reconnects at once, to the new colour)
-#   6. the worker restarted on the new image (Celery's warm shutdown: a task in hand finishes; queued ones wait)
+#   6. the workers restarted on the new image (Celery's warm shutdown: a task in hand finishes; queued ones wait)
 #
 # A first deploy on an empty box starts blue. Postgres and Redis are never restarted here.
 
@@ -97,5 +97,5 @@ if [ "$next" != "$live" ]; then
 fi
 
 # 6. The worker on the new image.
-"${COMPOSE[@]}" up -d --no-deps --force-recreate worker
+"${COMPOSE[@]}" up -d --no-deps --force-recreate worker worker-pages worker-previews
 say "done, api-$next live"
