@@ -24811,5 +24811,19 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
   this link**: the worker alone needs about 11 s for it (13.5 MB of ranges in 152 requests, 4 to 6 s, then its fit
   image, thumbnail and one-page PDF made and uploaded). The page's preview is shown as soon as the sheet's assets
   are read, but in f5-big's Load the preview came with the page (shown 16.1 s, drawn 16.2 s): the 2 s re-ask is in
-  the app since that run, not yet measured. On a production link to the bucket (same region) the whole-file fetch
+  the app since that run. Measured in the release of 2026-10-29 03:32 (f5-big alone): page 1 **shown 6.6 s**
+  (its preview) and drawn 11.0 s after the Load's answer, thumbnails then at 1 of 150. On a production link to the bucket (same region) the whole-file fetch
   is seconds and the ranges are not taken.
+
+## D-850: The dev servers' warm-up compiles the settings pages too (decided in run, check)
+
+**Status:** decided in run, check (from the release of 2026-10-29 03:32, the founder's item 2).
+
+- **The release:** `./fx-suite.sh release`, both phases with retries, offline after `prepare` ("registry after
+  prepare: none reached"). Built apps 15 of 148 failed in the parallel group and dev servers 5 of 7; every one
+  passed alone but f3-s1. Wall clock 117 min built, 10 min dev.
+- **f3-s1** failed alone twice the same way: the members screen stayed on the settings frame's "Opening" past its
+  20 s wait. On a warm server it passed 5/5. The warm-up loaded only the sign-in page, and each settings page
+  compiles on its first visit; under the dev fixtures' parallel load that is past 20 s.
+- **Now:** the warm-up also imports every settings page (`settings-pages.ts`'s map). Cold dev servers: warm 89 s
+  and 93 s, then f3-s1 5/5. The fixture is unchanged: the app was never wrong.
