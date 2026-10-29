@@ -24946,7 +24946,7 @@ F21's draft (revision_sets_spec.md, 2026-10-11), which stands for the detail.
 ## D-857: Material cost components for earthwork and utility lines: the plan, with its questions (plan only)
 
 **Status:** written for the founder (2026-10-29); nothing built, every project read only.
-[docs/tasks/MATERIALS_PLAN.md](docs/tasks/MATERIALS_PLAN.md): Calculate writes material components in the unit each is
+`docs/tasks/MATERIALS_PLAN.md`, renamed [materials_tasks.md](docs/tasks/materials_tasks.md) with the answers (D-858 to D-862): Calculate writes material components in the unit each is
 sold in (pipe in joints rounded per size across the project, a fittings allowance, joining, bedding and zone stone and
 imported backfill in tons, tracer and tape, foundation stone and geotextile below water, precast structure parts,
 borrow, tipping, aggregate base, stabilizers), priced project → workspace → IntelCost default × the wage set's
@@ -24955,3 +24955,96 @@ edited and deleted components (`auto_key`, `user_fields`, a dismissed tombstone)
 the way: no material today by design (tiers hold machines and crew only); the 3D test copy (6467)'s excavator and
 loader lack only the project's diesel price (D-723). 22 questions with recommended answers; about 28 days in 11
 blocks, a first cut of 13.
+
+## D-858: Materials (F38): the founder's answers to Q1–Q22
+
+**Status:** Accepted (2026-10-29, the founder's answers to D-857's plan, renamed
+[docs/tasks/materials_tasks.md](docs/tasks/materials_tasks.md)).
+
+- **Placement and scope.** Material components sit on the existing lines (Q1). Kinds: sanitary, storm, water, fire
+  water and force main (Q19).
+- **Pipe.** Rounded across the project, spread by LF share (Q2; the unit is LF by D-859). Joint lengths as listed;
+  CMP unconfirmed until Contech's sheet is read (Q3). One length per family, editable per size (Q4).
+- **Waste, IntelCost's proposal (Q5):** pipe 2 % (RCP 1 %), stabilizer 3 %; bedding, zone and foundation stone
+  10 %; imported fill 5 %.
+- **Fittings allowance (Q6):** 5 % gravity, 20 % pressure, of pipe material cost; editable; a counted fitting is
+  never also in the %.
+- **Lube (Q7):** by joint from the manufacturers' chart; in the allowance until read and approved.
+- **Services (Q8):** M9, right after the first cut. Valves, hydrants and tees between runs are out; restraints and
+  thrust blocks are in (Q9, D-859).
+- **Fusion (Q10):** equipment, with cycle times only from the manufacturers' published fusion procedures.
+- **Rolls (Q11)** as listed, each a workspace setting. **Precast (Q12):** per VF by default, stocked heights the
+  option; cone 3 ft, base 4 ft, steps 12". **Borrow and tipping (Q13):** TON at 1.35 t/LCY; LCY and per load the
+  alternatives.
+- **Defaults (Q14, Q15):** never shown as a list. The first cut ships with empty defaults. M10 (the first IntelCost
+  price release) is required before any tester deploy.
+- **Recalculate (Q16):** equipment and labour move to `auto_key` / `user_fields` with material in M6.
+- **Missing price (Q17)** also covers hand-added material components. **Snapshot (Q18):** Update and Update all.
+  **Expired quotes (Q20):** keep pricing, flagged.
+- **Crews (Q21):** a pressure pipe crew and an HDPE fused crew, block P right after the first cut. Water and force
+  main stop pricing with the gravity crew (A12).
+- **Fuel (Q22):** a project with no fuel price is offered the workspace's in a notice; never filled silently.
+
+## D-859: Materials (F38): pipe at $/LF in full joints, the "Pressure pipe" group, restraints and encasement
+
+**Status:** Accepted (2026-10-29, the founder's Q23–Q25).
+
+- **Q23.** Pipe is priced per LF, the way suppliers quote it. The sold quantity is LF rounded up to full joints per
+  pipe key and size across the project, shown "518 LF = 37 JT"; the unit price is $/LF. The rounding is spread over
+  the lines by LF share (D-858 Q2).
+- **Q24.** Under gravity sewer the gravity families come first. Pressure pipe stays offered, in its own group
+  labelled "Pressure pipe".
+- **Q25.** Pressure pipe gets a restraint, or a thrust block (a project setting), per counted bend and per tee.
+  Ductile iron gets polyethylene encasement: run LF × (1 + overlap), the overlap a setting. Both are in M3/M4a, with
+  quantity table rows.
+
+## D-860: Materials (F38): source links on workspace and project prices
+
+**Status:** Accepted (2026-10-29, the founder's Q26).
+
+- **The links.** Every workspace and project price carries zero or more links: label, URL, the date checked. A link
+  can point to a supplier page, an online quote, or a quote file in Project files, opened from the link.
+- **Where they show.** On the component's price basis and in Settings › Material prices. A supplier sheet's URL
+  column imports as links.
+- **How they open.** In a new tab, http/https only (checked in the api and again in the app).
+- **IntelCost's defaults carry no link.** They show "IntelCost price · <quarter> · grade <B/C>" only (D-264,
+  rule 9 unchanged). Built in M7.
+
+## D-861: Materials (F38): IntelCost's quarterly price release
+
+**Status:** Accepted (2026-10-29, the founder's Q27).
+
+- **The page.** Developer › Material prices, platform admins only, never workspace owners.
+- **Load.** The quarter's set from CSV or Excel: key, price, unit, grade, date, with an internal source per row.
+- **Preview.** Keys added, changed and removed; the change by family; every move over ±15 % flagged for a second
+  look.
+- **Publish.** It makes a release named by quarter ("Q1 2027") with its audit row. The previous release stays
+  readable.
+- **After a release.**
+  - New projects price from the latest release.
+  - A saved component never moves by itself (D-858 Q18). Projects with components priced from the defaults show
+    "IntelCost prices updated to Q1 2027: Review" (old → new per component and the line totals), with Update and
+    Update all.
+  - Workspace and project prices are never touched.
+  - A default more than two quarters old reads "IntelCost price · Q2 2026 · may be stale" and goes in Needs
+    attention.
+- New block M11, after M10 (3 days).
+
+## D-862: Materials (F38): every structure type gets material
+
+**Status:** Accepted (2026-10-29, the founder's Q28).
+
+- **Scope.** The 13 types of the Structures tool: sanitary and storm manholes, catch basin, curb inlet, area drain,
+  junction box, headwall, cleanout, lift station, valve, meter and handhole vaults, custom.
+- **Catch basins and inlets** take the manhole depth logic: box or base with its sump, risers per VF beyond the
+  box, top slab, rings, frame and grate by inlet kind (grate, curb, combination; a new structure setting), a boot
+  per connected pipe, base stone, an optional hood or trap.
+- **Precast or cast-in-place**, per structure. Cast-in-place gives concrete CY, rebar (lb per CY, a setting) and
+  forms (SFCA) from the structure's dimensions.
+- **Whole structure.** Any type can be priced instead as a whole structure, the way precasters quote: one EA to a
+  stated depth plus a price per VF over it. Chosen per structure, with project and workspace defaults.
+- **No type is left without material.** A type with no parts rule yet (headwall, lift station) gets one "Whole
+  structure" component reading "Missing price".
+- **Not built here.** Types the tool lacks are open Q29, a later plan.
+- **Effect on the plan.** About 125 structure prices (≈ 495 in all); M4 split into M4a (pipe, 3 days) and M4b
+  (structures, 4.5 days).
