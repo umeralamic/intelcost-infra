@@ -108,7 +108,15 @@ exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed.
 
 - **Pull:** `git pull origin umer-dev`. Never pull onto `main`, and never merge
   `origin/main` down into the working branch without asking first.
-- **Push:** `git push origin umer-dev`. No other branch, in any repo.
+- **Push:** `git push origin umer-dev`. No other branch, in any repo. **Once or twice a day at most
+  (D-851):** commit each block locally as it finishes, and push the day's commits together, not after
+  every block.
+- **Merge the alembic versions before committing (D-851).** The migrations a session adds to
+  `intelcost-app-fastapi/alembic/versions/` that have not been pushed are folded into one file per
+  commit (one revision, `down_revision` the last pushed head, the upgrades and downgrades in order),
+  and `alembic heads` shows exactly one head. If two heads exist, fold them, or `alembic merge` when one
+  side is already pushed. A pushed revision is never rewritten. The bench database has run the
+  separate revisions: downgrade it to the pushed head first, then `upgrade head` on the merged file.
 - **Before any commit,** confirm the checked-out branch is `umer-dev`. If it is not,
   switch before committing, not after.
 - **Promoting `umer-dev` to `main` is a release.** It is a deliberate, separate act,

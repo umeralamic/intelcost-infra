@@ -24815,9 +24815,9 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
   (its preview) and drawn 11.0 s after the Load's answer, thumbnails then at 1 of 150. On a production link to the bucket (same region) the whole-file fetch
   is seconds and the ranges are not taken.
 
-## D-850: The dev servers' warm-up compiles the settings pages too (decided in run, check)
+## D-850: The dev servers' warm-up compiles the settings pages too (accepted 2026-10-29)
 
-**Status:** decided in run, check (from the release of 2026-10-29 03:32, the founder's item 2).
+**Status:** accepted 2026-10-29 (from the release of 2026-10-29 03:32, the founder's item 2).
 
 - **The release:** `./fx-suite.sh release`, both phases with retries, offline after `prepare` ("registry after
   prepare: none reached"). Built apps 15 of 148 failed in the parallel group and dev servers 5 of 7; every one
@@ -24827,3 +24827,16 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
   compiles on its first visit; under the dev fixtures' parallel load that is past 20 s.
 - **Now:** the warm-up also imports every settings page (`settings-pages.ts`'s map). Cold dev servers: warm 89 s
   and 93 s, then f3-s1 5/5. The fixture is unchanged: the app was never wrong.
+
+## D-851: Alembic migrations merged before a commit; pushes to umer-dev once or twice a day (accepted 2026-10-29)
+
+**Status:** accepted 2026-10-29 (the founder's instruction).
+
+- **Migrations:** the unpushed revisions a session adds to `alembic/versions/` are folded into one file before the
+  commit (one revision, `down_revision` the last pushed head, upgrades and downgrades in order), so the versions
+  folder grows by one file per commit, not one per change. `alembic heads` shows one head before every commit;
+  two heads are folded, or joined with `alembic merge` when one side is already pushed. A pushed revision is never
+  rewritten. The bench database is downgraded to the pushed head and upgraded again on the merged file.
+- **Pushes:** `git push origin umer-dev` once or twice a day at most. Blocks are still committed as they finish;
+  the day's commits go up together.
+- **Where:** `CLAUDE.md`, Git.
