@@ -54,3 +54,19 @@ The founder accepted D-828 to D-834 and queued items 24 to 35; then one `./fx-su
 | 34 | f5-s13, f5-big, n3-twenty-loads: fix; upload and first-open times for the biggest set | done | done D-838: alone on the built apps f5-big 6/6, n3 3/3, c42 5/5 (release failures were load); f5-s13 an app prerender bug (fit 0 before the canvas measured) fixed, 7/7 three times; biggest set: page 1 13.96 s after the Load, all 150 thumbnails 73.6 s |
 | 35 | f5-s15 on the built apps with 3 api processes; fix if over 1 s | done | done D-838: built apps, 3 processes: chip 255/545 ms, quantities 414/835 ms; no change |
 | R2 | `./fx-suite.sh release` (built and dev phases) | done | done D-839: release-20261028-1652: built 139/148, dev 4/7 (the 3 pass alone); the 9 built retries never ran (the switch back to the built apps failed on a Docker Hub TLS timeout), script fixed; the 9 alone by hand: all pass after two fixture races fixed (c47 step 3, f5-s18) |
+
+## Run of 2026-10-28 evening (after D-839)
+
+The founder accepted D-835 to D-839 and queued items 1 to 6. Decisions start at D-840. One report at the end.
+
+| # | Item | State | Notes |
+|---|---|---|---|
+| E1 | Closed proposed contour with nothing inside (the 8,227 SF pocket around B-3): does Calculate skip it today, the volume it would add; fill flat at the contour's elevation in Calculate and GPS Export, flagged in Needs attention and the README; HV totals before/after | done | D-840 (app c089a5e): the 8,227 SF was an edge strip, not a pocket; Calculate skipped it too (0 CY to add); closed empty contours flat + flagged (Calculate, Needs attention, GPS README); HV 11,588 / 9,520 / 4,694 before and after; HV's 699.00 loop flagged |
+| E2 | Release run with no network mid-run: every image and dependency pulled and built before it starts, base images pinned; then a clean `./fx-suite.sh release` | done (the release run itself last) | D-841 (app c30cc8a, api 0163ab1, infra 8599584): prepare first, then --no-build --pull never; bases pinned by digest; api constraints.txt + pip cache; the summary says "registry after prepare" |
+| E3 | Deploys without downtime: the new api container healthy before the old stops; infra README | done | D-842 (infra 8599584): deploy/ blue-green behind Caddy; bench-check 8,466 requests through two rollouts, 0 not ok; README section |
+| E4 | Large sets on the built apps (519 MB, 150 pages): first page < 5 s, loaded page switch < 2 s, thumbnails not blocking and starting < 10 s; where the time goes; before/after | done in part | D-845, D-849: thumbnails 52.7 s → 1.2 s; page 1 23.9 s → 10.4-16.2 s (5 s not met on this 5-8 MB/s link); switch 0.6-1.4 s; ranged page fixed for PyMuPDF 2.0; previews worker split (fx, deploy) |
+| E5 | All sections grouped under a site; the PDF note for a sheet left out; PDF attached | done | D-844 (app 2ede204): grouping under a site and the left-out note exercised; the note was only a toast (now a last page), heading fixed, file saved once; e5-all-sections-site.pdf |
+| E6 | AI sheet naming and scale on upload: answer key of 100+ sheets in the fx suite; measure; PDF text first, AI as fallback; main scale; scale bar check; Check scale / Check name; background batches; user's values kept; before/after | done | D-843, D-846, D-847 (api 72ba1d6, infra 8599584): 103-sheet key; number 81 → 91 %, title 52 → 88 %, scale applied right 45 → 50 %, applied wrong 0 → 0 %; the rest Check scale / Check name |
+| E7 | Count: elliptical mark before the real one (the founder, 2026-10-29) | done | D-848: the pending mark drawn as its symbol at its size, round; 16.5x11 → 10x10 on A101 |
+| E8 | Linear: no "break at this point" on a selected point | done | D-848: "Break line at this point" at a point, "Break line here" on an edge |
+| E9 | N while marking Linear or Area: commit and arm the same item for a new section | done | D-848: N is New Section; smoke: one item, three sections |

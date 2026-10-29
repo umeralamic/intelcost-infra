@@ -24495,7 +24495,7 @@ product or the fixture.
 
 ## D-835: Sections in the app and the PDF: Fill, the palette, topsoil, trench dimensions, pipe labels, All sections, the header (accepted 2026-10-28)
 
-**Status:** accepted (the founder's section items 1 to 7 and 7a of 2026-10-28). Choices marked "decided in run, check".
+**Status:** accepted by the founder, 2026-10-28 evening (the founder's section items 1 to 7 and 7a of 2026-10-28). Choices marked "decided in run, check".
 
 - **Fill:** the ground between proposed grade and existing ground (or the stripped surface, below) is its own band,
   "Fill", #dcdcd7 with a diagonal hatch. Below existing ground the layers are the profile's at that station, so a
@@ -24542,7 +24542,7 @@ product or the fixture.
 
 ## D-836: The api comes back in seconds, not 98 (accepted 2026-10-28)
 
-**Status:** accepted (the founder's item 10 of 2026-10-28). Target under 15 s: met in part (below).
+**Status:** accepted by the founder, 2026-10-28 evening (the founder's item 10 of 2026-10-28). Target under 15 s: met in part (below).
 
 - **Why 98 s:** PyMuPDF 2 imports its optional add-ons (`pymupdf.layout`, `pymupdf4llm`), which load onnxruntime:
   ~11 s in each of the three processes; the code fingerprint was hashed before the app answered; alembic ran every
@@ -24558,7 +24558,7 @@ product or the fixture.
 
 ## D-837: GPS Export: the grading limits whole and closed, finished grade's holes listed and filled where the model knows, fit points counted (accepted 2026-10-28)
 
-**Status:** accepted (the founder's items 8 and 9 of 2026-10-28). Choices marked "decided in run, check". Amends D-833's
+**Status:** accepted by the founder, 2026-10-28 evening, the unfilled pocket inside a closed contour reopened as D-840 (the founder's items 8 and 9 of 2026-10-28). Choices marked "decided in run, check". Amends D-833's
 count.
 
 - **Machine count (amends D-833):** only fit points count toward the four; check points are extra: "3 of 4 fit
@@ -24585,7 +24585,7 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
 
 ## D-838: The release's large-set and timing failures were load, not the app; f5-s13 waits for page 5's own draw (accepted 2026-10-28)
 
-**Status:** accepted (the founder's items 11 and 12 of 2026-10-28). Choices marked "decided in run, check".
+**Status:** accepted by the founder, 2026-10-28 evening (the founder's items 11 and 12 of 2026-10-28). Choices marked "decided in run, check".
 
 - **Alone on the built apps** (`./fx-suite.sh prod`): f5-big 6/6, n3-twenty-loads 3/3, c42 5/5. Their release
   failures were three fixtures at a time on the dev servers (pages not loading in 30 s, the Load dialog not opening in
@@ -24605,7 +24605,7 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
 
 ## D-839: The release run's retries wait for the mode they need, and say so when it never comes (accepted 2026-10-28)
 
-**Status:** accepted (found in the founder's last item of 2026-10-28, the release run). Decided in run, check.
+**Status:** accepted by the founder, 2026-10-28 evening (found in the founder's last item of 2026-10-28, the release run). Decided in run, check.
 
 - **What happened.** Before retrying the built-app failures alone, the release switched back to the built apps.
   That rebuild could not fetch the `dockerfile:1` syntax image from Docker Hub (a TLS handshake timeout), so the
@@ -24624,3 +24624,192 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
     can discard it. It now keeps the first answer whose body can be read.
 - **n3-twenty-loads:** one lapse of 14 s on one of 20 sheets in one run; 3/3 in the two runs after. Timing, as D-838.
 - **The nine again, after both fixes:** all pass alone; c47 5/5, f5-s18 4/4, n3 3/3 twice.
+
+## D-840: A closed proposed contour with nothing inside is flat at its elevation, and says so; D-837's pocket was a strip along the limits (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 1 of 2026-10-28 evening). Choices marked "decided in run, check".
+
+- **What D-837 called a pocket was not one.** The 8,227 SF without finished grade on the HV copy's C-200 is one strip
+  between the proposed TIN's hull (191,452 SF) and the work boundary (196,697 SF), all the way round; its box is the
+  limits' box. D-837 placed it by the strip's centroid, which falls inside the mesh near B-3, and so described a pocket
+  ringed by contours. The proposed mesh has a triangle there (703, 703, 702.77).
+- **Calculate skips the same strip today, and adds nothing for it:** coverage 93.9 %, "Proposed grade missing
+  5,422 SF" plus "Both missing 2,805 SF" = the same 8,227 SF, and the partial-coverage warning. A closed contour with
+  nothing inside was never skipped either: the Delaunay mesh fills it from the contour's own vertices, so it is flat
+  already. Volume it would add on HV: 0 CY.
+- **Now (takeoff-core, `tin/closed.ts`):** a proposed contour whose ends meet (a gap of at most 5 % of its length,
+  decided in run, check: 2 % missed a loop closed by hand) and that rings no other proposed point is closed with a
+  constraint edge, so it is flat inside at its elevation in Calculate, the 3D view and GPS Export alike, as a CAD
+  surface takes it. Existing ground keeps its contours as drawn (decided in run, check). A closing edge that would
+  cross another contour, or that the triangulation will not take, is left out and the surface is as drawn.
+- **Flagged:** "Flat inside a closed contour at <elev>; check the plans for a spot elevation." In Calculate's
+  warnings (stored with the result, with the regions it lies in), in **Needs attention** on the cut and fill lines of
+  those regions under its own category "Flat inside a closed contour" (decided in run, check: the region's lines, not
+  every line of the sheet), and in the GPS README under SURFACES.
+- **The README's holes** are placed by a point inside them now, and one that meets the limits reads "No finished
+  grade: N SF along the edge of the limits (one point of it N… E…): the proposed contours and spots stop short of the
+  limits there."
+- **HV copy C-200, before and after:** cut 11,588 BCY, fill 9,520 CCY, needs 4,694 BCY, both (engine 11,588.13 /
+  9,519.67). One real closed contour flagged: the proposed 699.00 west of the building, 40 vertices, 389 ft, its ends
+  12.3 ft apart, 1,273 SF inside, already flat. Smoke: a 703.50 loop drawn east of the building (UI, Contour tool),
+  Calculate: fill 9,632, flagged in the panel, Needs attention (4 lines: Heavy Duty Aggregate Pavement and the
+  remaining site, cut and fill), README; deleted, Calculate: back to 11,588 / 9,520 / 4,694.
+- **Found in the smoke:** a deleted contour's hover card stayed on screen ("#0 of 42"); it goes with its run now.
+
+## D-841: A release run builds and pulls everything first, then reaches no registry (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 2 of 2026-10-28 evening). Choices marked "decided in run, check".
+
+- **Why the last run lost its retries (D-839):** the switch back to the built apps ran `up --build`, and the build's
+  first line, `# syntax=docker/dockerfile:1`, makes BuildKit fetch that frontend image from Docker Hub on every
+  build. A TLS timeout there left nothing on 5176.
+- **`./fx-suite.sh prepare`:** builds every image a run uses (api-fx, api-fx-b, worker-fx, beat-fx, app-fx, app-fx-b,
+  app-fx-prod, app-fx-b-prod, browser-fx) from today's source and checks every other image a service names is here,
+  pulling a missing one. The only step of a release that may reach a registry; if it fails, nothing runs.
+- **Then offline:** the release sets `FX_OFFLINE`, and every compose call after `prepare` (the switches to the built
+  apps and back, the browser runs, window B's pair in regress.sh) takes `--no-build --pull never`. The summary ends
+  with "registry after prepare: none reached", read from the run's own logs, or the count of lines that did.
+- **Pinned:** each Dockerfile's base by digest beside its tag (node 24.15.0-slim, nginx 1.27-alpine, python
+  3.14-slim, Playwright v1.46.1-jammy), and no `# syntax=` line: Docker's own Dockerfile frontend reads them, cache
+  mounts included (decided in run, check). The api's dependencies at the running bench api's versions
+  (`constraints.txt`, its `pip freeze`: PyMuPDF 2.0 among them), installed before the source is copied and from a
+  pip cache kept between builds, so a source change no longer downloads every wheel again.
+- **Found on the way:** regress.sh started window B's dev server on every run, also while the built app held 5177
+  (it failed there quietly). It starts only when the built app is not up.
+
+## D-842: The api deploys without downtime: two colours behind Caddy, the new one healthy before the old one stops (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 3 of 2026-10-28 evening). Choices marked "decided in run, check".
+
+- **`intelcost-infra/deploy/`** is all a deploy runs: `compose.yml` (api-blue and api-green on one image, the worker,
+  Caddy), `Caddyfile`, `rollout.sh`, `.env.example` for the box's git-ignored `deploy/.env`. Postgres and Redis are
+  the box's or managed, never restarted by a deploy (D-08).
+- **rollout.sh:** builds or pulls the image; runs `alembic upgrade head` once in a one-off container while the old
+  colour serves (so a migration must suit the old code too: add, then remove a deploy later); starts the idle colour
+  and waits until Docker reports it healthy (its `/health` "status": "ok": database, Redis, bucket), else stops it
+  and fails with the live colour untouched; writes `live/upstream.caddy`, `caddy reload` (graceful) and reads the
+  colour back inside Caddy before going on; drains the old colour 15 s, stops it (SIGTERM, uvicorn finishes and
+  closes sockets with 1012); restarts the worker (Celery's warm shutdown).
+- **No active health check in Caddy** (decided in run, check): `/health` asks the bucket, too much to ask every few
+  seconds under load (a 3 s probe timed out and Caddy answered 503 with the api up). A colour goes live only after
+  Docker's check; Caddy retries a request for 10 s and leaves out a failing colour for 5 s.
+- **The live colour in a mounted folder,** not a mounted file: on Docker Desktop a rewritten single-file mount kept
+  its old content in the container, so Caddy reloaded onto the old colour and its stop gave 1,218 502s.
+- **Bench check (`deploy/bench-check.sh`):** its own compose project (`intelcost-deploytest`, localhost:8091) on the
+  bench's Postgres and Redis database 3, one request every 50 ms (`/openapi.json`, every twentieth `/health`)
+  through two rollouts: **8,466 requests, 0 not ok**; each new colour healthy in 34 to 62 s, the old drained 8 s.
+- In the infra README, "Deploying the api without downtime". The realtime note for Abdullah stands.
+
+## D-843: The sheet-name and scale answer key: 103 sheets labelled by eye, kept in the fx suite (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 6 of 2026-10-28 evening, first part).
+
+- **Sources:** throwaway copies in the bench's "zz Sheet key" workspace (owner fx.sections): the HV set (through the
+  Marketing Demo copy, 28 sheets), Hendrick Honda (26), Building A (39), 10793 SBR final plat (5 scans), Riverside
+  (7, two crops left out). The drives' guard refused Minmar, Miramar Cove and HV Spec Rebid (protected): never opened.
+  01-PLANS did not copy (a duplicate folder name in its source) and is not in the key.
+- **103 sheets:** civil 6, survey 1, plat 5, architectural 16, structural 18, mechanical 7, plumbing 6, electrical 39,
+  general 5; 11 scans; 64 with a main-drawing scale, 39 NTS; 5 labelled low confidence (which drawing is "main").
+  Each: number, title and main scale as printed, every scale on the sheet, notes.
+- `fx-suite-updates/sheet-key/key.json`; the PDFs fetched into `sheet-key/pdfs/` (git-ignored) by
+  `drives/sheet-key.py fetch`; `measure` runs the api's own readers a set at a time as the worker does, the AI for
+  what the worker sends to it (its own model, unmetered), and prints accuracy per field, time per sheet and set, AI
+  calls and cost, and every sheet still wrong.
+- **Key calls:** what is printed wins (Honda's page 12 prints "E2.2", kept); a plat's sheets print no title (counted
+  for number and scale only); the civil sheets' scales come from their graphic bars.
+
+## D-844: All sections names the sheets it left out on the PDF's last page (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 5 of 2026-10-28 evening).
+
+- Exercised on a throwaway copy of the HV copy: C-200 and C-100 joined as a site (matching points on the sheets'
+  borders, scale fitted: a site for the check, not a survey fit), A-A' on C-200 (calculated), B-B' on C-100 (not).
+- **Found:** D-835 said the left-out sheets are named on the last page; only a toast named them. Now a last page "Left
+  out of this PDF (n)", each sheet and why. The heading ran off the page and the site's "›" is not in the PDF's font
+  (the site and the sheet read as one name): the section on its own line, then "project > Site: … > sheet". In
+  development the file saved twice (save, toast and navigation inside a state updater): outside it now.
+- PDF: `morning-report-2026-10-29/e5-all-sections-site.pdf`.
+
+## D-845: A neighbour drawn ahead is the frame the canvas looks for (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 4 of 2026-10-28 evening, first part).
+
+- The prerender drew a neighbour once over (`|x1`) while the canvas asks at fit for four times over (D-104): the frame
+  drawn ahead never matched, and a switch to a loaded page drew it again (6.7 s on the 150-page set). It now draws at
+  the supersample the canvas will ask for, and `hasFullRaster` finds it.
+
+## D-846: A graphic scale is read from the page and proves the scale (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 6, "check the scale against a scale bar"). Decided in run, check.
+
+- Three or more numbers on one line from 0, rising in a straight line with their places, and "SCALE", "FEET" or
+  "FT" near them, or four or more in equal steps: their places give feet per point, snapped to the standard scale
+  within 6 %. On the key: all five civil bars (1" = 30', V-100 1" = 60'), no bar found anywhere else.
+- A bar alone is the scale ("verified", method "bar"); a printed scale it agrees with is proved by it; one it
+  disagrees with every printed scale is offered beside them and nothing is applied. Several bars that disagree prove
+  nothing.
+
+## D-847: Sheet names and scales on load: the AI only where the text fails, the main drawing's scale first (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 6). Choices marked "decided in run, check".
+
+- **A rotated scan's AI crop was its top right:** the view was turned through the derotation matrix although the
+  clip takes the page as shown; the AI read a detail's title ("A-101 First Floor Plan") as the sheet's. Fixed.
+- **A title block drawn as lines** (fewer than 6 pieces of text in its corner) is read by the AI as a scan's is,
+  its own printed scales kept. **A sheet whose text, read through its set's template, gives no name** (Honda: the
+  only title-sized text is the project's name, a set constant) asks the AI for its title block then, and only then.
+- **A scan's scale** is asked of the whole sheet (2,400 px) with a prompt for the main drawing's scale, not of the
+  title block's corner; it stays a suggestion (D-321). An AI "MO.01" is read as M0.01.
+- **Several printed scales:** the one a bar proves first, then one its dimensions prove, then the coarsest (a sheet's
+  details are drawn larger than its main drawing: 8 of the key's 9 such sheets). Applied only when a bar proves it;
+  otherwise the Sheets panel's flag says "Check scale" (D-322 stands: a lone printed scale no dimension proves is
+  not applied).
+
+## D-848: A count mark is drawn as itself before its save; a Linear's point breaks "at this point"; N is New Section (accepted 2026-10-29)
+
+**Status:** accepted (the founder's message of 2026-10-29 during the run). Choices marked "decided in run, check".
+
+- **Count:** a mark awaiting its save was a ring in page units (\`<circle data-pending-shape>\`, r over the page's
+  width): an ellipse on a page that is not square, then the real mark. Measured on HV A101 (stored turned 270): 16.5
+  by 11.0 px, then 10 by 10. Now drawn with its item's symbol at its size, round in screen px; a new item's first mark
+  at the draft's own size (a true-size count's first mark at its pixel size until the item is made). 10 by 10 before
+  and after the save.
+- **Break:** a Linear's point menu said "Break line here" at a point and on an edge alike; a contour's says "Break
+  contour at this point" and "Break contour here". A Linear now says "Break line at this point" at a point (in the
+  selected run's menu and the item's), "Break line here" on an edge. Offered, as before, at a point between a run's
+  ends, an open run without arcs (an end point is the end already).
+- **N:** with a Linear or Area run in hand, N commits it as a section of the same item and the tool stays armed for
+  the next (the draw menu's New Section). Before, N picked Count even mid-run. Between sections N does nothing; Count
+  stays on its button while a run is armed (decided in run, check). Smoke on the HV copy-copy: three sections of one
+  item, 3, 2 and 2 points, each ended by N.
+- **Found:** WebGL "bufferSubData: buffer overflow" warnings on a sheet with many count marks (84 on loading A101,
+  with or without this change): the shape layer's in-place update writes past a buffer. Not fixed: warnings only, the
+  marks draw; logged for a later pass.
+
+## D-849: Large sets: a Load first, thumbnails in seconds, the ranged page clean again (accepted 2026-10-29)
+
+**Status:** accepted (the founder's item 4 of 2026-10-28 evening). Measured on the built apps with f5-big (545 MB,
+150 pages) on this bench's link to the bucket, 4.5 to 8 MB/s. Choices marked "decided in run, check".
+
+- **Where the time went:** the whole set takes 70 to 120 s to download here. Thumbnails waited for all of it (52.7 s
+  to the first). The fx worker ran every queue on 3 slots, so a Load's first page waited 13 s behind the set's
+  thumbnails and measuring. And PyMuPDF 2.0 (D-841's pinned version, the bench's since its last rebuild) made the
+  ranged first page fall back to the whole file: its \`insert_pdf\` reads past the page into the sparse copy's holes
+  and MuPDF repairs the file, so the check refused every ranged page (page 1 from the whole file: 130 s).
+- **Now:** the ranged page's one-page PDF is written by pypdf from the ranged reader (it fetches what it copies, so
+  nothing comes from a hole) and prepared from that; Choose pages' thumbnails on a worker of their own (fx and the
+  deploy, as the bench already ran it, \`nice\`); the first 12 thumbnails from ranges while the whole set downloads,
+  only when the link would take over 10 s for it, pausing while a page of the set is being prepared for a Load;
+  a sheet still being prepared shows its page's Choose pages thumbnail under "Preparing the sheet" (\`preview_url\`
+  on its assets, asked again every 2 s until there is one); a neighbour drawn ahead is the frame the canvas asks for
+  (D-845).
+- **Before / after** (f5-big, built apps): page 1 drawn after the Load 23.9 s (13.96 s on 2026-10-28) → 10.4 to
+  16.2 s; first thumbnail 52.7 s → 1.2 s after the chooser opens (12 from ranges first); all 150 thumbnails 76.8 s →
+  72 to 90 s; a page just loaded drawn 9.25 s → 6.9 to 12.3 s; switching between loaded pages 0.6 to 1.4 s before
+  and after on the 113-page set (3.9 s once, to a sheet the queue had not drawn yet).
+- **Targets:** thumbnails starting within 10 s, met; switching under 2 s, met; first page under 5 s, **not met on
+  this link**: the worker alone needs about 11 s for it (13.5 MB of ranges in 152 requests, 4 to 6 s, then its fit
+  image, thumbnail and one-page PDF made and uploaded). The page's preview is shown as soon as the sheet's assets
+  are read, but in f5-big's Load the preview came with the page (shown 16.1 s, drawn 16.2 s): the 2 s re-ask is in
+  the app since that run, not yet measured. On a production link to the bucket (same region) the whole-file fetch
+  is seconds and the ranges are not taken.
