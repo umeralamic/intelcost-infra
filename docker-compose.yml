@@ -252,6 +252,18 @@ services:
       "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n previews@%h"
       /srv/app
 
+  # A sheet's image read for a scale its text did not print (D-852): Tesseract, seconds to a minute
+  # and more a sheet, on its own queue, one at a time and niced, so neither a Load (`prepare`,
+  # `reads`) nor Choose pages' thumbnails (`previews`) ever waits behind it. Production runs the
+  # same (deploy/compose.yml's worker-ocr).
+  worker-ocr:
+    extends:
+      service: worker
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q ocr -n ocr@%h"
+      /srv/app
+
   # The scheduler. It only enqueues: at 03:00 UTC it puts `purge_trashed_projects` on
   # the queue and the worker runs it (F4-S27). Production scheduling is Abdullah's
   # (D-11). Restarted on a code change like the worker, since the schedule is code.
@@ -463,6 +475,17 @@ services:
     command: >
       watchfiles --filter python --sigint-timeout 10
       "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n fx-previews@%h"
+      /srv/app
+
+  worker-fx-ocr:
+    extends: worker
+    profiles: ["fx"]
+    env_file: !override
+      - path: ../intelcost-app-fastapi/.env
+    environment: *fx-env
+    command: >
+      watchfiles --filter python --sigint-timeout 10
+      "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q ocr -n fx-ocr@%h"
       /srv/app
 
   # The beat scheduler on the fx stack (D-770): its sweeps run on the fx database, Redis and bucket

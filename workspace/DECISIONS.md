@@ -24840,3 +24840,105 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
 - **Pushes:** `git push origin umer-dev` once or twice a day at most. Blocks are still committed as they finish;
   the day's commits go up together.
 - **Where:** `CLAUDE.md`, Git.
+
+## D-852: Scale on load: paper size, dimensions that agree, a labelled bar, and the image read by OCR; 0 % applied wrong kept (decided in run, check)
+
+**Status:** decided in run, check (the founder's item 1 of 2026-10-29). Measured on the 103-sheet key (D-843).
+
+- **Paper size (a):** a page within 0.3 in of a standard full size (22 x 34, 24 x 36, 30 x 42, 36 x 48) or half size
+  (11 x 17, 12 x 18). A sheet's one printed scale that nothing on it proves or disproves is applied on a full-size
+  page (method "paper"); on a half-size page doubled (1" = 30' → 1" = 60'), "Half-size set" on the status line, the
+  toolbar and the row's chip, the printed scale named. Dimensions that measure the printed scale win (an 11 x 17 drawn
+  full size stays as printed); dimensions that measure twice it on a half-size page prove the same half-size set. A
+  full-size page whose text says it is a reduced print is not applied on its size. **No page of the key is half
+  size**: the rule is built and checked by reading, not by the key.
+- **Not the sheet's scale:** a sheet that marks more drawings "SCALE: NTS / NONE / NOT TO SCALE" than it prints its one
+  scale (S4.01: five NTS views, one 1" = 1'-0"; G101: two against one) is not applied on paper; an NTS on its own (an
+  abbreviations list, a key plan) marks no drawing. A scale printed with, or within 6 % of the page of, an all-zeros
+  sheet reference ("A00.00") is a symbol legend's sample and no scale at all (G0.01A).
+- **Printed dimensions (b):** a printed scale two or more of the sheet's dimensions measure (each a dimension string
+  beside a drawn dimension line, ticks at both ends, within 2 %) is proved, whatever the rest measure; the median of all
+  of them had read A101's 1/8" as 3 % off and A102's 3/16" as a conflict. Of several printed scales the coarsest is
+  applied when it is the only one the drawing proves (a detail's dimensions prove the detail's scale, and a sheet's
+  details are drawn larger than its main drawing: E101, A6.12A); two proved, none applied (S0.04).
+- **A scale bar alone (c):** a graphic scale already set the scale with no printed one (D-846); now also one drawn as a
+  single line with a tick at each end and labelled with its length ("100'-0" GRAPHIC SCALE"), at the ratio it
+  measures (S-101, S-102: 1" = 5.56').
+- **The image read as text (OCR):** a sheet whose text printed no scale, a scan or a view title drawn as lines, is read
+  by Tesseract (through PyMuPDF, 200 dpi) on a worker of its own (`ocr` queue: `worker-ocr` on the bench and the
+  deploy, `worker-fx-ocr` in fx, niced, one at a time), after the read is kept; the same rules on the text it reads.
+  Not for a sheet whose drawing's lettering is text already (250 or more pieces outside the title block). A scale it
+  applies is flagged "Check scale" ("scale read from the sheet's image"); never over a scale set meanwhile. Tesseract
+  is in the api image (15 MB).
+- **The AI's scale stays a suggestion (D-321):** asked again over four tiles at four times the resolution, gpt-5-nano
+  cut values short ("3/32"), named scales the sheet does not print ("1" = 20'" on a 3/32" plan, "1" = 40'" on an NTS
+  plat) and "NOT TO SCALE" on most sheets. Not applied.
+- **On the key, before → after** (text, AI and OCR, as the worker reads): scale applied and right 51 → 89 of 103 (50 →
+  86 %); applied wrong 0 → 0. Not applied (14): several printed and unproved, the coarsest suggested first (S101, M101,
+  E102, A6.11, A9.00, A9.10, S0.04); NTS views outnumber the scale (G101); a scan OCR reads two scales on (E0.10, the
+  right one suggested first); OCR reads none or misreads it (E2.3, M1.01A, P1.01, E200, plat sheet 4).
+- **Time:** the read itself on 4 workers, 103 sheets: 16.5 s, per sheet median 0.21 s, 95th 2.6 s. OCR on the 50
+  sheets it reads: median 28 s, 95th 82 s, 31 min for them all on one worker; a 150-page set with as many is an hour
+  or more of the OCR worker, never in a Load's way. The smoke: Honda's E1.0A loaded on the bench, OCR in 108 s, 3/32"
+  = 1'-0" applied, the row "Check scale".
+
+## D-853: A title on two lines read whole through the template; a small title found when the large type is the set's; a plat's "SHEET 2 OF 5" is 2 (decided in run, check)
+
+**Status:** decided in run, check (the founder's item 2 of 2026-10-29).
+
+- **S2.0x cut short** ("Typical Foundation" for TYPICAL FOUNDATION DETAILS, "Steel Details And", "Wind Pressures"): read
+  on its own each sheet had its whole title; read through its set's template, only the lines inside the template's
+  title region, formed from sheets whose titles fit on one line. Now the region's lines take the rest of their block
+  (lines of like size one under the other) with them.
+- **E0.x titled with the project's name:** Honda's electrical set prints its number at 37.4 pt, its title at 12.5 pt
+  (a third of it, under the 0.45 floor) and its project's name at 24.9 pt. Once the set's template makes the name a
+  constant, no large type is left; then the block of type at least 0.3 of the number's size nearest the number, within
+  three number heights of it, is the title (the whole block, a second line further off included). A set whose large
+  type is its own titles is read as before.
+- **The plat's numbers:** the AI's "SHEET 1 OF 5" or "2 OF 5" is sheet 1, 2; a field left blank ("FP-__", "FP-??") is
+  no number, and the title-block prompt says both.
+- **On the key** (text and AI): numbers 92 → 98 % (scans 55 → 100 %: every scan miss was the plat's), titles 85 → 96 %.
+  Still wrong: E0.x's P0.00 title (the AI reads none), E200's ("Lighting Plan / Sheet"), and S-101/S-102, synthetic
+  bench pages with no title block (their heading at the top left).
+
+## D-854: GPS Export fills edge strips with existing ground, on by default; Calculate unchanged (decided in run, check)
+
+**Status:** decided in run, check (the founder's item 3 of 2026-10-29).
+
+- **"Fill edge strips with existing ground (matches existing)"**, in GPS Export's Surfaces, ticked by default and shown
+  only when the sheet has such a strip, with its area. A hole in finished grade that runs along the limits' edge (the
+  proposed contours stop short of them, D-840) is filled from existing grade: no cut or fill there. Along the seam
+  with finished grade's own outline the strip takes finished grade's elevation, so the surface steps nowhere. The
+  subgrade is made from the filled finished grade too. Unticked, both are as before.
+- **Only where existing grade is:** a strip both surfaces stop short of stays bare, listed as before, at a point of its
+  own.
+- **README:** "Filled with existing grade (matches existing): N SF along the edge of the limits (one point of it N … E
+  …), where the proposed contours and spots stop short of them: no cut or fill there."
+- **Calculate is not touched:** the fill is GPS Export's (`fillHoles`' `ground`, `ExportSurface.bare` for the
+  unticked choice, `ExportChoices.fillEdges`).
+- **HV (the Rebid 3D test's copy, C-200):** of D-837's 8,227 SF strip, 5,422 SF has existing grade and is filled;
+  2,805 SF has neither surface and stays bare. Finished grade covers 193,892 SF of the 196,697 SF limits filled,
+  188,470 SF unticked; 1,339 points filled, 1,102 unticked. Both zips in the report folder.
+
+## D-855: ShapeGL uploads whole after a new GL setup; the bufferSubData warnings were writes into empty buffers (decided in run, check)
+
+**Status:** decided in run, check (the founder's item 4 of 2026-10-29).
+
+- **Cause:** not repeated uploads in a loop. The shapes' mesh effect writes a changed shape in place
+  (`bufferSubData`) when the last upload's layout is held. The layout outlived the GL setup it belonged to: React's
+  StrictMode runs the context effect twice in development (and a restored context does the same in production), the
+  second `setup` makes new, empty buffers, and the mesh effect, finding the layout unchanged, skipped the upload. Every
+  in-place write after went into a buffer of 0 bytes ("buffer overflow"), and the shapes mesh stayed empty until a full
+  rebuild.
+- **Now:** a new setup forgets the layout, so the next shapes are uploaded whole.
+- **Measured** on the Rebid 3D copy's C-200 (dev server): before, 33 in-place writes, 33 overflows, all into 0-byte
+  buffers; after, 33 writes, 0 overflows, no WebGL warning in the console.
+
+## D-856: Revised plan sets: the plan, with its questions (plan only)
+
+**Status:** written for the founder (item 5 of 2026-10-29); nothing built.
+[docs/tasks/REVISIONS_PLAN.md](docs/tasks/REVISIONS_PLAN.md): a revised upload recognised on Load (half or more of its
+numbers match), each new sheet matched by number, title and page similarity, aligned, its takeoff moved (not copied),
+the old sheet archived read-only, what changed flagged under each measurement, Compare in Overlay, the estimate's
+change record. 19 questions with recommended answers; about 15 days in 8 blocks, a first cut of 8. It builds on
+F21's draft (revision_sets_spec.md, 2026-10-11), which stands for the detail.

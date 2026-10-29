@@ -30,7 +30,7 @@
 set -u
 cd "$(dirname "$0")"
 TAG=fixtures-archive-2026-09-28
-FX_SERVICES="api-fx api-fx-b worker-fx worker-fx-previews beat-fx app-fx app-fx-b stripe-fake-fx"
+FX_SERVICES="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx app-fx app-fx-b stripe-fake-fx"
 # The host gateway's address, which the api, the worker and the containerised browser all reach
 # MinIO at (Docker Desktop: host.docker.internal).
 host=$(docker compose exec -T api python -c "import socket; print(socket.gethostbyname('host.docker.internal'))" 2>/dev/null | tr -d '\r' | tail -1)
@@ -85,7 +85,7 @@ release_list() {
 # pulls or resolves an image. Every compose call of the run's own takes these.
 OFFLINE_FLAGS=${FX_OFFLINE:+--no-build --pull never}
 # The fx and fx-prod services a release starts, builds and runs.
-BUILT="api-fx api-fx-b worker-fx worker-fx-previews beat-fx app-fx app-fx-b app-fx-prod app-fx-b-prod browser-fx"
+BUILT="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx app-fx app-fx-b app-fx-prod app-fx-b-prod browser-fx"
 # What a compose log says when it reached a registry or built: none of it may follow `prepare` in a release.
 REGISTRY_RE='load metadata for|resolve image config|Pulling|pulling from|Image .* (Building|Built)|failed to fetch|auth\.docker\.io'
 

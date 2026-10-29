@@ -66,6 +66,10 @@ services:
   worker-previews:
     <<: *worker
     command: ["nice", "-n", "19", "celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=1", "-Q", "previews", "-n", "previews@%h"]
+  # A sheet's image read for a scale its text did not print (D-852): Tesseract, slow, on its own queue and niced.
+  worker-ocr:
+    <<: *worker
+    command: ["nice", "-n", "19", "celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=1", "-Q", "ocr", "-n", "ocr@%h"]
 
   caddy:
     image: ${CADDY_IMAGE:-caddy:2.8.4-alpine}

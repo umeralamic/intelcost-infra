@@ -70,3 +70,16 @@ The founder accepted D-835 to D-839 and queued items 1 to 6. Decisions start at 
 | E7 | Count: elliptical mark before the real one (the founder, 2026-10-29) | done | D-848: the pending mark drawn as its symbol at its size, round; 16.5x11 → 10x10 on A101 |
 | E8 | Linear: no "break at this point" on a selected point | done | D-848: "Break line at this point" at a point, "Break line here" on an edge |
 | E9 | N while marking Linear or Area: commit and arm the same item for a new section | done | D-848: N is New Section; smoke: one item, three sections |
+
+## Run of 2026-10-29 (after D-850)
+
+The founder accepted D-840 to D-850 and queued items 1 to 6. Decisions start at D-852. One report at the end.
+
+| # | Item | State | Notes |
+|---|---|---|---|
+| G1 | Scale coverage, 0 % applied-and-wrong kept: paper size (full and half, half doubled, "Half-size set"), printed dimensions checked on vector sheets, a scale bar alone sets the scale; ≥ 75 % applied-and-right on the key | done | D-852: applied right 50 → 86 % (89/103), wrong 0 %; paper size (no half-size page on the key), NTS views and legend samples, 2+ agreeing dimensions, coarsest when proved, labelled bar, OCR on its own worker (Check scale); AI scale stays a suggestion |
+| G2 | Naming: E0.x titles as the project name, plat "SHEET 1 OF 5" as the number, S2.0x titles cut short; scanned numbers (55 %) | done | D-853: numbers 92 → 98 % (scans 55 → 100 %), titles 85 → 96 %; two-line titles whole, small titles under a constant name, SHEET n OF m |
+| G3 | GPS export: edge strips filled with existing ground (on by default, GPS only), README with the area; HV's 8,227 SF strip | done | D-854: on by default; HV Rebid copy C-200: 5,422 SF of the 8,227 SF strip filled (2,805 SF has no existing grade either), covered 188,470 → 193,892 SF; both zips in the report folder |
+| G4 | WebGL bufferSubData warnings (84 on one load): cause; fix if repeated uploads in a loop | done | D-855: not a loop: in-place writes into empty buffers after a second GL setup; 33 overflows → 0 |
+| G5 | Plan only: revised plan sets, docs/tasks/REVISIONS_PLAN.md with questions and recommended answers | done | D-856: docs/tasks/REVISIONS_PLAN.md, 19 questions with recommended answers |
+| G6 | Last: ./fx-suite.sh release once, clean; parallel-only failures per fixture; any needing a fix | queued | |

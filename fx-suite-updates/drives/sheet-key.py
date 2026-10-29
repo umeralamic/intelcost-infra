@@ -217,8 +217,10 @@ def measure(folder: str, key_path: str) -> None:
                 number, title, asked = _ai_scan(page, scale=not scales)
                 entry["number"], entry["title"] = number, title
                 proved = reading.auto(scales)
-                entry["scale"] = proved.feet_per_pt if proved else None
-                entry["scale_label"] = proved.label if proved else None
+                # What is applied: a half-size set's doubled scale (D-852).
+                entry["scale"] = (proved.apply_feet_per_pt or proved.feet_per_pt) if proved else None
+                entry["scale_label"] = (proved.apply_label or proved.label) if proved else None
+                entry["scale_how"] = (proved.method or "") + (" half" if proved.half_size else "") if proved else None
                 entry["suggested"] = [(x.label, x.feet_per_pt, x.status) for x in (scales or asked)]
             elif pieces:
                 spans = naming.spans(page, page_text)
@@ -229,14 +231,31 @@ def measure(folder: str, key_path: str) -> None:
                 entry["number"], entry["title"] = got
                 scales = reading.read_scale(pieces, lambda page=page: reading.page_strokes(page), w, h)
                 proved = reading.auto(scales)
-                entry["scale"] = proved.feet_per_pt if proved else None
-                entry["scale_label"] = proved.label if proved else None
+                # What is applied: a half-size set's doubled scale (D-852).
+                entry["scale"] = (proved.apply_feet_per_pt or proved.feet_per_pt) if proved else None
+                entry["scale_label"] = (proved.apply_label or proved.label) if proved else None
+                entry["scale_how"] = (proved.method or "") + (" half" if proved.half_size else "") if proved else None
                 entry["suggested"] = [(s.label, s.feet_per_pt, s.status) for s in scales]
             elif "--ai" in sys.argv:
                 number, title, scales = _ai_scan(page)
                 entry["number"], entry["title"] = number, title
                 entry["suggested"] = [(x.label, x.feet_per_pt, x.status) for x in scales]
-            entry["seconds"] = time.perf_counter() - t0
+            # As the OCR task (D-852): a sheet whose text printed no scale, and none applied, read from its
+            # image; its own time, as the worker spends it apart from the read.
+            text_scales = scales if pieces else []
+            rich = getattr(reading, "drawing_text_in_layer", lambda _p: False)(pieces)
+            if "--ocr" in sys.argv and entry["scale"] is None and not text_scales and not rich:
+                t1 = time.perf_counter()
+                ocr = reading.ocr_pieces(page)
+                read_ocr = reading.read_scale(ocr, lambda page=page: reading.page_strokes(page), w, h) if ocr else []
+                entry["ocr_seconds"] = time.perf_counter() - t1
+                proved = reading.auto(read_ocr)
+                if proved:
+                    entry["scale"] = proved.apply_feet_per_pt or proved.feet_per_pt
+                    entry["scale_label"] = proved.apply_label or proved.label
+                    entry["scale_how"] = "ocr " + (proved.method or "") + (" half" if proved.half_size else "")
+                entry["suggested"] = [(x.label, x.feet_per_pt, x.status) for x in read_ocr] + entry["suggested"]
+            entry["seconds"] = time.perf_counter() - t0 - entry.get("ocr_seconds", 0)
             entry["w"], entry["h"], entry["stem"] = w, h, stem
             read[k["sheet"]] = entry
             doc.close()
@@ -277,9 +296,10 @@ def measure(folder: str, key_path: str) -> None:
                     and want_scale is not None
                     and bool(e["suggested"])
                     and _same_scale(e["suggested"][0][1], want_scale),
-                    "got": {"number": e["number"], "title": e["title"], "scale": e.get("scale_label"), "suggested": [s[0] for s in e["suggested"]]},
+                    "got": {"number": e["number"], "title": e["title"], "scale": e.get("scale_label"), "how": e.get("scale_how"), "suggested": [s[0] for s in e["suggested"]]},
                     "want": {"number": k.get("number"), "title": k.get("title"), "scale": k.get("scale")},
                     "seconds": e["seconds"],
+                    "ocr_seconds": e.get("ocr_seconds"),
                 }
             )
     _report(results, set_times)
@@ -328,6 +348,10 @@ def _report(results: list[dict[str, Any]], set_times: dict[str, float]) -> None:
     print(f"title right    {pct(results, 'title_ok')}   text {pct(text, 'title_ok')}   scans {pct(scans, 'title_ok')}")
     print(f"scale applied right {pct(results, 'scale_ok')}; applied WRONG {pct(results, 'scale_wrong')}; not applied but first suggestion right {pct(results, 'suggested_ok')}")
     print(f"time per sheet: median {statistics.median(secs):.3f} s, 95th {p95:.3f} s, longest {secs[-1]:.3f} s")
+    ocr = sorted(r["ocr_seconds"] for r in results if r.get("ocr_seconds") is not None)
+    if ocr:
+        o95 = ocr[min(len(ocr) - 1, math.ceil(0.95 * len(ocr)) - 1)]
+        print(f"OCR on {len(ocr)} sheets (their text printed no scale): median {statistics.median(ocr):.1f} s, 95th {o95:.1f} s, all {sum(ocr):.0f} s")
     for s, t in sorted(set_times.items(), key=lambda x: -x[1]):
         print(f"  set {s}: {t:.2f} s")
     if AI["calls"]:
