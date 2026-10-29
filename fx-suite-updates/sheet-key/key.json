@@ -1,0 +1,1648 @@
+{
+ "about": "The sheet-name and scale answer key (D-843): each sheet's number, title and main drawing scale as printed, read from the sheet by eye. scale: the main drawing's, as printed; NTS when nothing on the sheet is drawn to scale. title null: the sheet prints none (a plat's sheets). Sheets from throwaway copies in the bench's 'zz Sheet key' workspace; drives/sheet-key.py fetches them.",
+ "made": "2026-10-29",
+ "left_out": [
+  {
+   "sheet": "1e929761-b74b-4034-87b0-d9bc18ec8bab",
+   "why": "a blank crop of a page, no title block"
+  },
+  {
+   "sheet": "2acbd0c2-1d55-4ee8-bc2e-2dd791353272",
+   "why": "a crop of the seed sheet's corner, no title block"
+  }
+ ],
+ "sheets": [
+  {
+   "sheet": "787872e6-933e-45a9-ae7a-bbd82df08e23",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "general",
+   "number": "G101",
+   "title": "CODE INFORMATION",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\"",
+    "NONE",
+    "NTS"
+   ],
+   "confidence": "low",
+   "notes": "Mostly drawing index, code notes, legend and tables. The only drawing to scale is A12 ACCESSIBLE RESTROOM CLEARANCES at 1/4\" = 1'-0\"; A7 ACCESSIBLE MOUNTING GUIDELINES is SCALE: NONE and 'SCALE: NTS' is the sample in the symbols legend. Chose 1/4\" as the only real scale; NTS is defensible because the sheet is mainly notes."
+  },
+  {
+   "sheet": "6df23cba-25f9-4e07-bf08-9904e29c8451",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 2,
+   "text_layer": true,
+   "discipline": "general",
+   "number": "G-001",
+   "title": "COVER SHEET",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Civil cover sheet. Title block SCALE: AS NOTED. The only scale is a graphic bar under the location map labelled SCALE IN MILES (0 1 2 3 4). The sheet index on this sheet calls the cover G-0.1, but the title block prints G-001."
+  },
+  {
+   "sheet": "67d0ddb0-cca5-44d7-9c9a-8e1c7ecc7fd2",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 3,
+   "text_layer": true,
+   "discipline": "survey",
+   "number": "V-100",
+   "title": "EXISTING CONDITIONS",
+   "scale": "1\" = 60'",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Title block SCALE: AS NOTED. No written scale; the plan has a graphic bar 0 30 60 90 (feet) with no '1 inch =' text. The bar is 1.5 in long on the 34x22 in page (PDF page 2448x1584 pt), so 1\" = 60'. A property-line length (582.04') checks against the bar."
+  },
+  {
+   "sheet": "cbbf893c-1c35-4656-abeb-2c3762f78732",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 4,
+   "text_layer": true,
+   "discipline": "civil",
+   "number": "C-001",
+   "title": "GENERAL NOTES & DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "N.T.S."
+   ],
+   "confidence": "high",
+   "notes": "General notes plus pavement, sidewalk and trench details, all marked N.T.S. Title block SCALE: AS NOTED."
+  },
+  {
+   "sheet": "d8640f26-09d2-4483-b17c-c99e1fced59e",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 5,
+   "text_layer": true,
+   "discipline": "civil",
+   "number": "C-100",
+   "title": "SITE LAYOUT PLAN",
+   "scale": "1\" = 30'",
+   "scales_on_sheet": [
+    "N.T.S."
+   ],
+   "confidence": "high",
+   "notes": "Title block SCALE: AS NOTED. The plan has only a graphic bar 0 15 30 45 (feet) with no '1 inch =' text. It measures 1.5 in on the 34x22 in page, so 1\" = 30'. This checks against the printed 300.0' dimension. The handicap parking detail is N.T.S. Title is printed on two lines, SITE LAYOUT / PLAN."
+  },
+  {
+   "sheet": "ec99e808-9289-4717-b646-3f2d5b435d98",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 6,
+   "text_layer": true,
+   "discipline": "civil",
+   "number": "C-200",
+   "title": "SITE GRADE PLAN",
+   "scale": "1\" = 30'",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Title block SCALE: AS NOTED. The graphic bar 0 15 30 45 (feet) has no '1 inch =' text. It is the same length as on C-100 (1.5 in on the 34x22 in page), so 1\" = 30'. The sheet index on G-001 calls it SITE GRADE PLAN and the index on G101 calls it SITE GRADING PLAN; the title block prints SITE GRADE PLAN."
+  },
+  {
+   "sheet": "829ba47c-7a1e-4ba5-9c9f-76a1979ce96c",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 7,
+   "text_layer": true,
+   "discipline": "civil",
+   "number": "C-300",
+   "title": "SITE UTILITY PLAN",
+   "scale": "1\" = 30'",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Title block SCALE: AS NOTED. The graphic bar 0 15 30 45 (feet) has no '1 inch =' text. It measures 1.5 in on the 34x22 in page, so 1\" = 30'."
+  },
+  {
+   "sheet": "10743fb5-2746-4516-8913-565c942672b4",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 8,
+   "text_layer": true,
+   "discipline": "civil",
+   "number": "C-900",
+   "title": "EROSION & SEDIMENT CONTROL PLAN",
+   "scale": "1\" = 30'",
+   "scales_on_sheet": [
+    "N.T.S."
+   ],
+   "confidence": "high",
+   "notes": "Title block SCALE: AS NOTED. The graphic bar 0 15 30 45 (feet) has no '1 inch =' text. It measures 1.5 in on the 34x22 in page, so 1\" = 30'. The temporary construction entrance detail is SCALE: N.T.S. Title is printed on three lines, EROSION & / SEDIMENT / CONTROL PLAN."
+  },
+  {
+   "sheet": "3726633e-8a48-4c0a-bdd9-302eaf6d3741",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 9,
+   "text_layer": true,
+   "discipline": "civil",
+   "number": "C-901",
+   "title": "EROSION & SEDIMENT CONTROL PLAN",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Notes only (SWPPP maintenance, general erosion notes, sequence of construction); there is no drawing. It has the same title as C-900. Title block SCALE: AS NOTED."
+  },
+  {
+   "sheet": "64d373f7-b819-49d2-a723-da477137e6e7",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 10,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S100",
+   "title": "GENERAL STRUCTURAL NOTES DETAIL SECTIONS",
+   "scale": "1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/2\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "General structural notes plus ten foundation and stair details, all at SCALE: 1/2\" = 1'-0\". Title is printed on two lines."
+  },
+  {
+   "sheet": "69588264-c395-49d3-bb7d-717921510d9a",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 11,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S101",
+   "title": "FOUNDATION PLAN & DETAILS",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\"",
+    "1/2\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "The main drawing is A10 FOUNDATION PLAN at 1/8\" = 1'-0\". A1 PIER DETAILS is at 1/2\" = 1'-0\"."
+  },
+  {
+   "sheet": "a03c7e5d-83f1-40c3-8b8a-f4a8ef5509c7",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 12,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "LS101",
+   "title": "LIFE SAFETY PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "A8 LIFE SAFETY PLAN."
+  },
+  {
+   "sheet": "0eb3b001-cb94-4596-bcd8-24dcd4785fd4",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 13,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A101",
+   "title": "OVER-ALL FLOOR PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "A8 OVER-ALL FLOOR PLAN. The drawing index calls this sheet BUILDING FLOOR PLAN, but the title block prints OVER-ALL FLOOR PLAN."
+  },
+  {
+   "sheet": "e5ffbb10-73fe-449e-b5e8-66b99a5e62e2",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 14,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A102",
+   "title": "DETAIL OFFICE FLOOR PLAN OFFICE REFLECTED CEILING PLAN",
+   "scale": "3/16\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Two plans, both at 3/16\" = 1'-0\": A6 DETAIL OFFICE FLOOR PLAN and E6 OFFICE REFLECTED CEILING PLAN. Title is printed on two lines."
+  },
+  {
+   "sheet": "2b25b47a-36c9-4555-ad5d-e311bc099aa1",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 15,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A201",
+   "title": "EXTERIOR ELEVATIONS",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Four elevations (north, east, west, south), all at 1/8\" = 1'-0\"."
+  },
+  {
+   "sheet": "92b2facd-7fbf-4cac-a8dc-ea50c91c8d42",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 16,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A301",
+   "title": "BUILDING SECTION UL U419 DETAIL",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "The main drawing is A8 BUILDING SECTION at 1/4\" = 1'-0\". The UL U419 wall assembly is an unscaled detail with text. Title is printed on two lines."
+  },
+  {
+   "sheet": "05681afe-ca4d-45a4-a013-22979d49cc74",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 17,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A302",
+   "title": "SECTION DETAILS",
+   "scale": "3/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Two detail sections, A5 and A9, both at 3/4\" = 1'-0\". The drawing index calls this sheet BUILDING SECTION & DETAILS."
+  },
+  {
+   "sheet": "361369ac-1463-4a25-87f3-cc21197f79d3",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 18,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A601",
+   "title": "ROOM FINISH SCHEDULE & NOTES DOOR SCHEDULE & NOTES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Schedules, notes and door-type elevations. No scale is printed anywhere. Title is printed on two lines."
+  },
+  {
+   "sheet": "b95a8cf1-e4b4-4ccf-a69b-28ab6415a85d",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 19,
+   "text_layer": true,
+   "discipline": "plumbing",
+   "number": "P101",
+   "title": "OVER-ALL FLOOR PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "The drawing is titled A6 OVER-ALL PLUMBING PLAN, but the title block's sheet title reads OVER-ALL FLOOR PLAN, which is the same as A101 and M101. The drawing index calls this sheet GENERAL PLUMBING NOTES, PLUMBING PLAN & FIXTURE SCHEDULE."
+  },
+  {
+   "sheet": "6701e169-6a01-4de2-95bf-7aeca72fb6f0",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 20,
+   "text_layer": true,
+   "discipline": "plumbing",
+   "number": "P102",
+   "title": "ISOMETRICS & DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NONE"
+   ],
+   "confidence": "high",
+   "notes": "All six drawings (isometrics and details) are SCALE: NONE."
+  },
+  {
+   "sheet": "7b749485-219b-4c55-9b62-7e448f6e48c0",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 21,
+   "text_layer": true,
+   "discipline": "plumbing",
+   "number": "P103",
+   "title": "NG SUPPLY PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "A8 NG SUPPLY PLAN. The drawing index calls this sheet NATURAL GAS PLAN."
+  },
+  {
+   "sheet": "c57690ba-8a89-4f6f-854f-cdc933d5a260",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 22,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M101",
+   "title": "OVER-ALL FLOOR PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\"",
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "The largest drawing is D8 OVER-ALL MECHANICAL PLAN at 1/8\" = 1'-0\". A8 OFFICE MECHANICAL PLAN is at 3/16\" = 1'-0\". The title block reads OVER-ALL FLOOR PLAN, and the drawing index calls the sheet MECHANICAL PLAN."
+  },
+  {
+   "sheet": "f72d8dc5-77d7-43e1-a6a3-dbbdaf4a6c60",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 23,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M102",
+   "title": "GENERAL MECHANICAL NOTES MECHANICAL SCHEDULES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Schedules and notes only. No scale is printed. Title is printed on two lines."
+  },
+  {
+   "sheet": "fbe9a806-8ad2-4e49-9cc8-d9bbd3b99407",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 24,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "ES101",
+   "title": "ELECTRICAL SITE PLAN",
+   "scale": "1\" = 40'-0\"",
+   "scales_on_sheet": [
+    "1\" = 40'-0\"",
+    "NONE"
+   ],
+   "confidence": "high",
+   "notes": "A8 ELECTRICAL SITE PLAN is at 1\" = 40'-0\". A2 LIGHT POLE DETAIL is SCALE: NONE."
+  },
+  {
+   "sheet": "a85ebf14-1d55-47a0-89cd-966657751c30",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 25,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E101",
+   "title": "ELECTRIC LIGHTING PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\"",
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "The largest drawing is E8 EXTERIOR & SHOP BAY LIGHTING PLAN at 1/8\" = 1'-0\". A8 OFFICE LIGHTING PLAN is at 3/16\" = 1'-0\"."
+  },
+  {
+   "sheet": "f830589c-c4a8-4ec3-ab43-d19b711c417e",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 26,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E102",
+   "title": "ELECTRIC POWER PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\"",
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "The largest drawing is E8 SHOP BAY POWER PLAN at 1/8\" = 1'-0\". A8 OFFICE POWER PLAN is at 3/16\" = 1'-0\"."
+  },
+  {
+   "sheet": "2255417d-a8f4-4f50-95e0-754562900f96",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 27,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E103",
+   "title": "PANEL SCHEDULES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Six panel schedules. No drawing and no scale."
+  },
+  {
+   "sheet": "dd2f4cdd-d1c3-40a7-8244-118f851cc28b",
+   "project": "Marketing Demo – Office Building",
+   "file_name": "Office Building Bid Set.pdf",
+   "page": 28,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E104",
+   "title": "RISER DIAGRAM FIXTURE SCHEDULE GENERAL ELECTRICAL NOTES",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NONE"
+   ],
+   "confidence": "high",
+   "notes": "A7 RISER DIAGRAM is SCALE: NONE; the rest is a fixture schedule and notes. Title is printed on three lines with no punctuation; the drawing index has RISER DIAGRAM, FIXTURE SCHEDULE & GENERAL ELECTRICAL NOTES."
+  },
+  {
+   "sheet": "02eea351-64ce-474c-b5b4-ae5c320b9e26",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.1",
+   "title": "ELECTRICAL SPECIFICATIONS",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Text-only specifications sheet with electrical drawing index; no scale printed."
+  },
+  {
+   "sheet": "6f5f057a-152e-4849-a02f-43a7022c731a",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 2,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.2",
+   "title": "ELECTRICAL SYMBOLS & NOTES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Symbol schedules, abbreviations, energy code form; no scale printed. Title printed on two lines."
+  },
+  {
+   "sheet": "6c5fd1a6-c109-4163-be9e-9f148f5b22e0",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 3,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.3",
+   "title": "LIGHTING FIXTURE SCHEDULES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Fixture schedules and lighting notes only; no scale printed."
+  },
+  {
+   "sheet": "3ba91591-0a02-4ab9-ad59-726cfe5aa778",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 4,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.4",
+   "title": "ELECTRICAL DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE",
+    "DIAGRAMMATIC"
+   ],
+   "confidence": "high",
+   "notes": "Details 1-11, all NOT TO SCALE or DIAGRAMMATIC."
+  },
+  {
+   "sheet": "a510d23b-9f9f-4c4f-aa39-7ca758fd0b91",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 5,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.5",
+   "title": "ELECTRICAL DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE",
+    "SCALE: NO SCALE",
+    "DIAGRAMMATIC"
+   ],
+   "confidence": "high",
+   "notes": "Details 1-13, all not to scale or diagrammatic."
+  },
+  {
+   "sheet": "7a01477e-8915-40e1-88cf-51d740b59374",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 6,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.6",
+   "title": "ELECTRICAL DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Details all NOT TO SCALE; detail 13 (building mounted sign connection) has a stray '10' where the scale line would be, not a real scale."
+  },
+  {
+   "sheet": "9ce375eb-49d2-402a-8c5d-e82f5abd3dec",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 7,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E0.7",
+   "title": "ELECTRICAL DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE",
+    "NTS",
+    "DIAGRAMMATIC"
+   ],
+   "confidence": "high",
+   "notes": "Details 1-8, all NTS or diagrammatic."
+  },
+  {
+   "sheet": "b035b0f3-e0da-484f-919e-609fb6487162",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 8,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.0A",
+   "title": "FIRST FLOOR DEMO PLAN - SALES - ELECTRICAL",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Single plan: SALES FIRST FLOOR DEMO PLAN - ELECTRICAL."
+  },
+  {
+   "sheet": "f2bce0cf-94da-4222-9b01-eb07d7ce432d",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 9,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.0B",
+   "title": "DEMO PLANS - SERVICE - ELECTRICAL",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Main drawing 1 SERVICE FIRST FLOOR DEMO PLAN; mezzanine and dumpster enclosure plans also 3/32\" = 1'-0\"."
+  },
+  {
+   "sheet": "2353444d-168c-4bc1-93e7-69aef4c3c34d",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 10,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.1A",
+   "title": "FIRST FLOOR PLAN - SALES - LIGHTING",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\"",
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Detail 2 (inverter circuit) is NOT TO SCALE."
+  },
+  {
+   "sheet": "c4797e8e-81a0-4629-aa78-8fa35f825ed4",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 11,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.1B",
+   "title": "FLOOR PLANS - SERVICE - LIGHTING",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\"",
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Hint text was missing the title and number; read from image. Three plans at 3/32\" = 1'-0\"; inverter detail NOT TO SCALE."
+  },
+  {
+   "sheet": "75e7c6b2-f7a0-4924-805e-3d614fb0fd39",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 12,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E2.2",
+   "title": "FIRST FLOOR PLAN - SALES - POWER",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Printed sheet number is E2.2 (in a smaller/shifted font than other sheets), but the drawing index on E0.1 and the set sequence say this sheet should be E1.2A. Duplicates the number of page 18 (SECOND FLOOR PLAN - POWER, also E2.2). Recorded as printed."
+  },
+  {
+   "sheet": "0befa308-7421-474e-9e8f-00d4ab948953",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 13,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.2B",
+   "title": "FLOOR PLANS - SERVICE - POWER",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Main drawing 1 SERVICE FIRST FLOOR PLAN - POWER; mezzanine and dumpster plans same scale. Sheet number overlaps the 'SHEET #' label."
+  },
+  {
+   "sheet": "ccf33b2a-d976-4c2e-bd34-c27aca978bb8",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 14,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.3A",
+   "title": "FIRST FLOOR PLAN - SALES - HVAC CONNECTIONS",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "c54bf4be-5b86-4b75-97f1-6c82528169a2",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 15,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E1.3B",
+   "title": "FLOOR PLANS - SERVICE - HVAC CONNECTIONS",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Hint text was missing the title and number; read from image. Title printed on two lines."
+  },
+  {
+   "sheet": "9ccebd51-a1fe-4e3d-a7da-404cd49d92ec",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 16,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E2.0",
+   "title": "SECOND FLOOR DEMO PLAN - ELECTRICAL",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "e717554c-edef-461a-a548-5fc99ea8b01b",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 17,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E2.1",
+   "title": "SECOND FLOOR PLAN - LIGHTING",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\"",
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Detail 2 (inverter circuit) NOT TO SCALE."
+  },
+  {
+   "sheet": "0a979c25-fe9b-440b-a8a9-583303b3b66f",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 18,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E2.2",
+   "title": "SECOND FLOOR PLAN - POWER",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Same printed number as page 12 (75e7c6b2); this one is the correct E2.2 per the drawing index."
+  },
+  {
+   "sheet": "86914c97-33a1-4d11-ba3a-e11c723bb5a1",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 19,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E2.3",
+   "title": "SECOND FLOOR PLAN - HVAC CONNECTIONS",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "6cbd6613-ff22-4a48-91b9-b236c7105e33",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 20,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E3.0A",
+   "title": "ROOF DEMO PLAN - SALES - ELECTRICAL",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "507e684e-c8f5-4053-8026-57b02dc335ea",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 21,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E3.0B",
+   "title": "ROOF DEMO PLAN - SERVICE - ELECTRICAL",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Title printed as 'ROOF DEMO PLAN - SERVICE' / '- ELECTRICAL' on two lines."
+  },
+  {
+   "sheet": "89d0442e-b90f-46b6-acfc-400902fadbc9",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 22,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E3.1A",
+   "title": "ROOF PLAN - SALES - HVAC CONNECTIONS",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "76ab80aa-229f-4707-8a19-7a4df0f6c94e",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 23,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E3.1B",
+   "title": "ROOF PLAN - SERVICE - HVAC CONNECTIONS",
+   "scale": "3/32\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/32\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "405fdab8-0c11-40f6-b779-73d40b868817",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 24,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E4.0",
+   "title": "SCHEDULES & RISERS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "DIAGRAMMATIC"
+   ],
+   "confidence": "high",
+   "notes": "Switchboard schedule, load summary and existing power riser diagram (DIAGRAMMATIC)."
+  },
+  {
+   "sheet": "22cda33b-c7ca-4b3e-9367-ddc4b9e17372",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 25,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E4.1",
+   "title": "PANEL SCHEDULES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Panel schedules H1-H5, HCW, HDM; no scale printed."
+  },
+  {
+   "sheet": "f8cc83a7-0178-4491-8fb1-8031cb85634e",
+   "project": "Hendrick Honda (10786)",
+   "file_name": "Electrical - Hendrick Honda Bradenton.pdf",
+   "page": 26,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E4.2",
+   "title": "PANEL SCHEDULES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Panel schedules L1, L1A, L2, L2A, L2B, L3, L3A, L3B; no scale printed."
+  },
+  {
+   "sheet": "79b96456-56c7-4c84-b73c-4a4ddbce12d5",
+   "project": "Building A",
+   "file_name": "A4.10.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A4.10",
+   "title": "BUILDING SECTION, EXTERIOR",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Three building sections (F9 longitudinal, A5, A12 transverse), all 1/4\". Title block has no scale field."
+  },
+  {
+   "sheet": "60764a02-a9e4-42c8-93a8-17e994c05636",
+   "project": "Building A",
+   "file_name": "A6.00.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A6.00",
+   "title": "WALL SECTIONS, EXTERIOR",
+   "scale": "1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/2\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Five wall sections (H2, H5, A2, A6, A11), all 1/2\"."
+  },
+  {
+   "sheet": "8acf03f2-c91a-4aaf-9d77-7d8ca82ebaae",
+   "project": "Building A",
+   "file_name": "A6.10.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A6.10",
+   "title": "SECTION DETAILS, EXTERIOR",
+   "scale": "1 1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1 1/2\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Seven section details, all 1 1/2\"."
+  },
+  {
+   "sheet": "c3067f2c-e69a-4611-ac0b-5901c93da99d",
+   "project": "Building A",
+   "file_name": "A6.11.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A6.11",
+   "title": "SECTION DETAILS, EXTERIOR",
+   "scale": "3\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3\" = 1'-0\"",
+    "6\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Same title as A6.10. Largest detail A14 (screen niche) and F4, A4, A9 at 3\"; only F9 restroom wall base at 6\"."
+  },
+  {
+   "sheet": "e1f9dbf4-910b-47ce-a6a3-0fc84ea19710",
+   "project": "Building A",
+   "file_name": "A6.12A.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A6.12A",
+   "title": "DETAILS- PERFORATED SCREEN",
+   "scale": "1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/2\" = 1'-0\"",
+    "1 1/2\" = 1'-0\"",
+    "1\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Title printed with a hyphen then space (\"DETAILS- PERFORATED\"). Largest drawing is C1 DECORATIVE METAL SCREEN ELEVATION at 1/2\" (A1 plan section also 1/2\"); bracket details at 1 1/2\", F16 elevation section at 1\"."
+  },
+  {
+   "sheet": "4e93cd16-165a-41d1-8c72-0e2a4af9bd04",
+   "project": "Building A",
+   "file_name": "A9.00.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A9.00",
+   "title": "WALL & ROOF ASSEMBLIES",
+   "scale": "3\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3\" = 1'-0\"",
+    "6\" = 1'-0\""
+   ],
+   "confidence": "low",
+   "notes": "Assembly-type sheet with no single main drawing: half the sheet is notes and tables. CA-01..CA-04, RA-01 and A8 CMU control joint are 3\"; L10 IWS1 stud wall, D1 EWS2 and A1 EWS1 stone tile are 6\" and are among the larger details. Chose 3\" because more of the drawings use it."
+  },
+  {
+   "sheet": "c95dd71a-975a-45f3-9367-223a1f64d28f",
+   "project": "Building A",
+   "file_name": "A9.10.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A9.10",
+   "title": "DOOR SCHEDULE AND TYPES",
+   "scale": "1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3\" = 1'-0\"",
+    "1/2\" = 1'-0\""
+   ],
+   "confidence": "low",
+   "notes": "Main content is the door schedule (not to scale). Door type elevations A13/A15 at 1/2\", which I took as the main drawing; head and jamb details J16/G16 at 3\" are about the same size."
+  },
+  {
+   "sheet": "00e8615a-7bf2-4fa0-b173-f281f1299110",
+   "project": "Building A",
+   "file_name": "A9.20.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A9.20",
+   "title": "PLUMBING FIXTURES",
+   "scale": "3/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "3/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Architectural mounting-height and ADA elevations (1, 3, 4, 7), all 3/8\", plus fixture and specialty equipment schedules."
+  },
+  {
+   "sheet": "5394a490-7617-4d18-8116-e5869e106faa",
+   "project": "Building A",
+   "file_name": "A9.30.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "architectural",
+   "number": "A9.30",
+   "title": "WINDOW ELEVATIONS",
+   "scale": "1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/2\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Window wall types WW01, WW03, WW04, all 1/2\", plus glazing schedule."
+  },
+  {
+   "sheet": "7420669a-ff42-45ea-86e7-c56d5313270b",
+   "project": "Building A",
+   "file_name": "G0.00A.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "general",
+   "number": "G0.00A",
+   "title": "COVER SHEET BUILDING A",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Cover with rendering, project title MIRAMAR COVE - VALET KIOSK BUILDING A and consultant list."
+  },
+  {
+   "sheet": "fb843e2f-1b70-4c65-ad0b-bf225845d37a",
+   "project": "Building A",
+   "file_name": "G0.01A.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "general",
+   "number": "G0.01A",
+   "title": "GENERAL INFORMATION & DRAWING INDEX BUILDING A",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Legends, symbols, abbreviations, drawing index, general notes. The only scale string (1/8\" = 1'-0\") is the sample text inside the drawing-title symbol legend, not a real drawing."
+  },
+  {
+   "sheet": "0cad54a7-b310-43b1-a3c3-3f7b1afaac51",
+   "project": "Building A",
+   "file_name": "G0.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "general",
+   "number": "G0.02",
+   "title": "CODE ANALYSIS",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "C1 MEANS OF EGRESS PLAN at 1/4\" is the only drawing; the rest is code tables."
+  },
+  {
+   "sheet": "dc58c8d8-b4df-44ff-93b3-04b93cb5df5f",
+   "project": "Building A",
+   "file_name": "E0.00.pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "electrical",
+   "number": "E0.00",
+   "title": "GENERAL NOTES, LEGENDS, AND SYMBOLS",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Scanned (no text layer); read from the page image. Abbreviations, symbols, notes, electrical sheet index. Right and bottom strip images do not show the title block (they show the top-left and middle of the sheet)."
+  },
+  {
+   "sheet": "e5cb6897-a00d-46bf-baa9-07bca7aa7da4",
+   "project": "Building A",
+   "file_name": "E0.01.pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "electrical",
+   "number": "E0.01",
+   "title": "ELECTRICAL SCHEDULES & DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NTS"
+   ],
+   "confidence": "high",
+   "notes": "Scanned; read from page image. All four details marked SCALE: NTS; lighting control matrix and occupancy sensor schedule."
+  },
+  {
+   "sheet": "d1e8ad86-ed8e-4a89-8670-929b686e4722",
+   "project": "Building A",
+   "file_name": "E0.02.pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "electrical",
+   "number": "E0.02",
+   "title": "ELECTRICAL SCHEDULES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Scanned; read from page image. Lighting fixture schedule and notes only."
+  },
+  {
+   "sheet": "50660399-35d5-43c5-a127-b468649b6f22",
+   "project": "Building A",
+   "file_name": "E0.10.pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "electrical",
+   "number": "E0.10",
+   "title": "ELECTRICAL SITE LOCATION PLAN 1",
+   "scale": "1\" = 20'-0\"",
+   "scales_on_sheet": [
+    "1\" = 20'-0\"",
+    "1\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Scanned; read from page and strip images. Main drawing 1 ELECTRICAL SITE LOCATION PLAN 1 at 1\" = 20'-0\". Riser diagram 2 is labelled Scale: 1\" = 1'-0\" (as printed, though a riser is effectively diagrammatic). Panel and feeder schedules."
+  },
+  {
+   "sheet": "de8a38bb-4aa4-49c8-9e1d-818fd81b08e2",
+   "project": "Building A",
+   "file_name": "E1.01.pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "electrical",
+   "number": "E1.01",
+   "title": "FLOOR PLAN - LEVEL 1 - ELECTRICAL",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Scanned; read from page image. Two plans (1 power, 2 reflected ceiling lighting), both 1/4\"."
+  },
+  {
+   "sheet": "71e00327-8d83-4dbc-a47d-90dc474aa7d9",
+   "project": "Building A",
+   "file_name": "M0.00.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M0.00",
+   "title": "GENERAL NOTES, LEGENDS, AND SYMBOLS",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Abbreviations, symbols, design conditions, sheet index. Project name in title block reads MIRAMAR COVE - VALET BUILDING A. Text hint held only the receipt stamp; right strip shows the top-left of the sheet, not the title block."
+  },
+  {
+   "sheet": "034e5bd4-9b1b-457f-ab3f-9c6a1781ab75",
+   "project": "Building A",
+   "file_name": "M0.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M0.01",
+   "title": "GENERAL NOTES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "HVAC general notes only."
+  },
+  {
+   "sheet": "0e73d853-5d70-4948-9270-d78982385bcc",
+   "project": "Building A",
+   "file_name": "M0.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M0.02",
+   "title": "DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NTS"
+   ],
+   "confidence": "high",
+   "notes": "Six mechanical details, each marked SCALE: NTS."
+  },
+  {
+   "sheet": "6dfcba75-dd2a-47f2-ab7e-5d7cd97842cb",
+   "project": "Building A",
+   "file_name": "M0.03.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M0.03",
+   "title": "SCHEDULES & COMCHECK",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Equipment schedules and energy compliance certificate only; no drawing to scale."
+  },
+  {
+   "sheet": "9ac64331-c337-4e78-8457-847a7ada22d8",
+   "project": "Building A",
+   "file_name": "M1.01A.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "mechanical",
+   "number": "M1.01A",
+   "title": "FLOOR PLAN - LEVEL 1 - MECHANICAL",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\"",
+    "1\" = 20'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Two views: 1 Floor Plan - Level 1 - Mechanical at 1/4\" = 1'-0\" (matches the sheet title, chosen as main) and 2 Mechanical Site Location Plan 1 - Building A at 1\" = 20'-0\", which covers a similar area on the sheet."
+  },
+  {
+   "sheet": "adb3245f-d6aa-441a-9105-f2da38992209",
+   "project": "Building A",
+   "file_name": "P0.00.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "plumbing",
+   "number": "P0.00",
+   "title": "GENERAL NOTES, LEGENDS, AND SYMBOLS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NTS"
+   ],
+   "confidence": "high",
+   "notes": "Notes, schedules, legends; all six details marked SCALE: NTS."
+  },
+  {
+   "sheet": "f9c0730d-3239-4c49-99ab-406101e13e5a",
+   "project": "Building A",
+   "file_name": "P1.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "plumbing",
+   "number": "P1.01",
+   "title": "FLOOR PLAN - LEVEL 1 - PLUMBING",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\"",
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Waste and vent isometric is NOT TO SCALE."
+  },
+  {
+   "sheet": "100a7dc6-83bd-4d31-9bef-c4b4337bcba9",
+   "project": "Building A",
+   "file_name": "P1.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "plumbing",
+   "number": "P1.02",
+   "title": "ROOF PLAN - PLUMBING",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "sheet": "47dc7f80-1065-49a6-8b22-2f3224cbfc0c",
+   "project": "Building A",
+   "file_name": "S0.00.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S0.00",
+   "title": "COVER SHEET",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Cover with sheet list and 3D view. \"A.S.\" in the title block is initials (principal-in-charge), not AS SHOWN."
+  },
+  {
+   "sheet": "8d9656c0-3df9-4ee3-90fb-e33ea8e65188",
+   "project": "Building A",
+   "file_name": "S0.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S0.01",
+   "title": "GENERAL NOTES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Notes and tables only."
+  },
+  {
+   "sheet": "61258207-c80f-4766-8340-e244e3010d56",
+   "project": "Building A",
+   "file_name": "S0.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S0.02",
+   "title": "GENERAL NOTES",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Notes only."
+  },
+  {
+   "sheet": "1260c4e0-c8b0-43ba-91c2-c84ddd923d18",
+   "project": "Building A",
+   "file_name": "S0.03.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S0.03",
+   "title": "PLAN NOTES AND LEGENDS",
+   "scale": "NTS",
+   "scales_on_sheet": [],
+   "confidence": "high",
+   "notes": "Abbreviations, notes, legends and two small typical sections with no printed scale."
+  },
+  {
+   "sheet": "2a87d0ee-a7f6-45f4-b6dc-89d02a6f1539",
+   "project": "Building A",
+   "file_name": "S0.04.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S0.04",
+   "title": "WIND PRESSURES ELEVATIONS",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\"",
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Four elevations (East, South, West, North) at 1/4\" = 1'-0\", the largest being North/South; 5 Roof Plan - Wind Pressures at 3/16\" = 1'-0\"."
+  },
+  {
+   "sheet": "0feeb111-7323-404a-a292-f11cb311e26b",
+   "project": "Building A",
+   "file_name": "S1.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S1.01",
+   "title": "FRAMING PLANS",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Roof Framing Plan and Level 1 Framing Plan, both 1/4\" = 1'-0\"."
+  },
+  {
+   "sheet": "c0c5b357-77af-4847-83af-1a3407a6f590",
+   "project": "Building A",
+   "file_name": "S2.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S2.01",
+   "title": "TYPICAL FOUNDATION DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Rebar development/lap splice schedules, SCALE: NOT TO SCALE."
+  },
+  {
+   "sheet": "682dc7b5-391d-4d34-902a-e84b80dcd88d",
+   "project": "Building A",
+   "file_name": "S2.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S2.02",
+   "title": "TYPICAL FOUNDATION DETAILS",
+   "scale": "1\" = 1'-0\"",
+   "scales_on_sheet": [
+    "NOT TO SCALE",
+    "1\" = 1'-0\""
+   ],
+   "confidence": "low",
+   "notes": "Detail sheet with no single main drawing: details 2, 3, 4, 7 at 1\" = 1'-0\" and details 1, 5, 6 NOT TO SCALE. Chose 1\" = 1'-0\" as the majority and the widest detail (4, slab on grade typical edge section); detail 6 (NTS) is of similar size."
+  },
+  {
+   "sheet": "43df3531-9aa6-49ba-ba4a-f7317ebd9024",
+   "project": "Building A",
+   "file_name": "S2.03.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S2.03",
+   "title": "TYPICAL FOUNDATION DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Four details, all SCALE: NOT TO SCALE."
+  },
+  {
+   "sheet": "65cd68a6-c84b-4f7e-9dd0-d54bf0f723e0",
+   "project": "Building A",
+   "file_name": "S3.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S3.01",
+   "title": "TYPICAL CONCRETE DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Details 1 and 2, both NOT TO SCALE."
+  },
+  {
+   "sheet": "e720b58b-b42e-46b2-90d3-e4e5d18be398",
+   "project": "Building A",
+   "file_name": "S3.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S3.02",
+   "title": "TYPICAL CONCRETE DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Six details, all NOT TO SCALE."
+  },
+  {
+   "sheet": "e3f1c8b5-7a4e-4dd2-b387-a9f238fa99ef",
+   "project": "Building A",
+   "file_name": "S4.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S4.01",
+   "title": "TYPICAL MASONRY DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE",
+    "1\" = 1'-0\""
+   ],
+   "confidence": "low",
+   "notes": "Detail sheet: details 1-5 NOT TO SCALE, detail 6 (Display Recess in CMU Wall) at 1\" = 1'-0\". No single main drawing; chose NTS as the majority."
+  },
+  {
+   "sheet": "88aa2f0a-c59b-4307-9363-a7dae4cf0af2",
+   "project": "Building A",
+   "file_name": "S4.02.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S4.02",
+   "title": "TYPICAL MASONRY DETAILS",
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "NOT TO SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Four details, all NOT TO SCALE."
+  },
+  {
+   "sheet": "daa9571b-f6cf-40d6-ab6b-7075393db222",
+   "project": "Building A",
+   "file_name": "S-5.01.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S-5.01",
+   "title": "STEEL DETAILS AND SCHEDULES",
+   "scale": "1 1/2\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1 1/2\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "One detail (Typical HSS Column Cap-Plate Connections) plus footing and CMU wall schedules. Number printed with a dash, unlike the other S sheets."
+  },
+  {
+   "sheet": "23c167e6-67a1-469d-8469-7e160c71c87c",
+   "project": "10793 SBR",
+   "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "plat",
+   "number": "1",
+   "title": null,
+   "scale": "NTS",
+   "scales_on_sheet": [
+    "N.T.S.",
+    "1\"=40'"
+   ],
+   "confidence": "high",
+   "notes": "Scanned plat cover sheet. Sheet number printed 'SHEET 1 OF 5' at bottom right. The title block has no separate sheet-title field: it prints only the plat name 'FINAL PLAT OF SADDLEBROOKE RANCH UNIT TWENTY TWO' (the project/subdivision name, also the big heading at top), so title is null. Content: notes, vicinity map and location map (both N.T.S.), zoning tables, typical lot layout details (SCALE: 1\"=40'), dedication, certifications, approvals. No main drawing to scale, so NTS. The -right/-bottom strip images for this scan do not show the page's right/bottom edges (they show the top-left and a middle column); the page image was used."
+  },
+  {
+   "sheet": "a32a3f49-e6ce-4a27-a68b-d11ead07c93b",
+   "project": "10793 SBR",
+   "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
+   "page": 2,
+   "text_layer": false,
+   "discipline": "plat",
+   "number": "2",
+   "title": null,
+   "scale": "1\"=100'",
+   "scales_on_sheet": [
+    "1\"=100'"
+   ],
+   "confidence": "high",
+   "notes": "Scanned plat. Sheet number printed 'SHEET 2 OF 5'. Title block carries only the plat name 'FINAL PLAT OF SADDLEBROOKE RANCH UNIT TWENTY TWO' (no sheet-title field), so title null; the drawing itself is headed 'KEY MAP' at top centre (overall lot layout with lot area tables). Graphic bar 100 50 0 100 with 'SCALE: 1\"=100'' under it."
+  },
+  {
+   "sheet": "575b94a6-df86-4edf-bbcc-4443dde2a64b",
+   "project": "10793 SBR",
+   "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
+   "page": 3,
+   "text_layer": false,
+   "discipline": "plat",
+   "number": "3",
+   "title": null,
+   "scale": "1\"=60'",
+   "scales_on_sheet": [
+    "1\"=60'"
+   ],
+   "confidence": "high",
+   "notes": "Scanned plat. Sheet number printed 'SHEET 3 OF 5'. Title block carries only the plat name 'FINAL PLAT OF SADDLEBROOKE RANCH UNIT TWENTY TWO' (no sheet-title field), so title null. Lot plat (lots 1-19, 107-123, Acadia Court, Oak Stone Way), matchline to sheet 4; curve and line tables. Graphic bar 60 30 0 60 with 'SCALE: 1\"=60''."
+  },
+  {
+   "sheet": "3fdb6e20-624a-4a66-8829-5076a328d871",
+   "project": "10793 SBR",
+   "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
+   "page": 4,
+   "text_layer": false,
+   "discipline": "plat",
+   "number": "4",
+   "title": null,
+   "scale": "1\"=60'",
+   "scales_on_sheet": [
+    "1\"=60'"
+   ],
+   "confidence": "high",
+   "notes": "Scanned plat. Sheet number printed 'SHEET 4 OF 5'. Title block carries only the plat name 'FINAL PLAT OF SADDLEBROOKE RANCH UNIT TWENTY TWO' (no sheet-title field), so title null. Lot plat (lots 20-34, 58-59, 93-106, Westridge Road, Middlebrooke Court), matchlines to sheets 3 and 5. Graphic bar 60 30 0 60 with 'SCALE: 1\"=60''."
+  },
+  {
+   "sheet": "db77d9ea-26aa-4060-a06c-48ded077bc80",
+   "project": "10793 SBR",
+   "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
+   "page": 5,
+   "text_layer": false,
+   "discipline": "plat",
+   "number": "5",
+   "title": null,
+   "scale": "1\"=60'",
+   "scales_on_sheet": [
+    "1\"=60'"
+   ],
+   "confidence": "high",
+   "notes": "Scanned plat. Sheet number printed 'SHEET 5 OF 5'. Title block carries only the plat name 'FINAL PLAT OF SADDLEBROOKE RANCH UNIT TWENTY TWO' (no sheet-title field), so title null. Lot plat (lots 35-57, 60-92, Skyview Lane, Northwood Road), matchline to sheet 4. Graphic bar 60 30 0 60 with 'SCALE: 1\"=60''."
+  },
+  {
+   "sheet": "140e4396-8811-4dd4-9712-f4b0ecb6de2d",
+   "project": "Riverside Medical Center",
+   "file_name": "E200-wbs-smoke.pdf",
+   "page": 1,
+   "text_layer": false,
+   "discipline": "electrical",
+   "number": "E200",
+   "title": "LIGHTING PLAN / SCHED'S / NOTES",
+   "scale": "1/4\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/4\" = 1'-0\"",
+    "NONE"
+   ],
+   "confidence": "high",
+   "notes": "Tenant fit-out sheet (space K1593A, Happy Valley Town Center). Main drawing '1 LIGHTING PLAN' SCALE: 1/4\" = 1'-0\"; '2 SWITCH BANK' and '3 WALL SCONCE DETAIL' are SCALE: NONE. Title block has no scale field. No text layer; read from image."
+  },
+  {
+   "sheet": "eec35acc-e02b-41b2-bb6f-3f35e291b153",
+   "project": "Riverside Medical Center",
+   "file_name": "Riverside — Structural.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S-101",
+   "title": "FOUNDATION PLAN",
+   "scale": "1\" = 5.56'",
+   "scales_on_sheet": [
+    "100'-0\" GRAPHIC SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Synthetic bench seed page, not a real drawing: no title block, only a heading 'S-101  FOUNDATION PLAN' at top left (number and title taken from that heading) and a rectangle. The only scale is a graphic bar labelled '100'-0\"  GRAPHIC SCALE' with no ratio text. The bar spans half the 36 in sheet width (18 in) for 100 ft, i.e. 1\" = 5.56' (confirmed in the seed script that generated the page); a non-standard ratio, so a namer that rounds to a standard scale will differ."
+  },
+  {
+   "sheet": "aa1f334b-11cc-4a91-a024-ee424eb69933",
+   "project": "Riverside Medical Center",
+   "file_name": "Riverside — Structural.pdf",
+   "page": 2,
+   "text_layer": true,
+   "discipline": "structural",
+   "number": "S-102",
+   "title": "FRAMING PLAN",
+   "scale": "1\" = 5.56'",
+   "scales_on_sheet": [
+    "100'-0\" GRAPHIC SCALE"
+   ],
+   "confidence": "high",
+   "notes": "Synthetic bench seed page 2, same layout as S-101: no title block, heading 'S-102  FRAMING PLAN' at top left, a rectangle, and a graphic bar '100'-0\"  GRAPHIC SCALE' spanning 18 in of a 36 in sheet = 1\" = 5.56' (no ratio text printed)."
+  },
+  {
+   "sheet": "0bcdaf74-ddc0-43fc-baec-b5501959ebe7",
+   "project": "Riverside Medical Center",
+   "file_name": "zz-e101.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E101",
+   "title": "ELECTRIC LIGHTING PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\"",
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Two plans on the sheet: 'E8 EXTERIOR & SHOP BAY LIGHTING PLAN' SCALE: 1/8\" = 1'-0\" (the larger, top drawing, taken as main) and 'A8 OFFICE LIGHTING PLAN' SCALE: 3/16\" = 1'-0\" (bottom). Title block has no scale field. The text-layer hint 'SCALE: 3/16\"' is the smaller office plan, not the main drawing. Hidden Valley Leasing Spec Building."
+  },
+  {
+   "sheet": "da52f38b-7745-43ef-b19b-14054bbe7a41",
+   "project": "Riverside Medical Center",
+   "file_name": "zz-e101.pdf",
+   "page": 1,
+   "text_layer": true,
+   "discipline": "electrical",
+   "number": "E101",
+   "title": "ELECTRIC LIGHTING PLAN",
+   "scale": "1/8\" = 1'-0\"",
+   "scales_on_sheet": [
+    "1/8\" = 1'-0\"",
+    "3/16\" = 1'-0\""
+   ],
+   "confidence": "high",
+   "notes": "Identical to sheet 0bcdaf74 (same file zz-e101.pdf uploaded twice, same image). Main drawing 'E8 EXTERIOR & SHOP BAY LIGHTING PLAN' SCALE: 1/8\" = 1'-0\"; 'A8 OFFICE LIGHTING PLAN' SCALE: 3/16\" = 1'-0\"."
+  }
+ ]
+}

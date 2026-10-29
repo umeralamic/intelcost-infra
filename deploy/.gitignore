@@ -1,0 +1,4 @@
+# Written on the box, never committed (D-842).
+.env
+live/
+load.log

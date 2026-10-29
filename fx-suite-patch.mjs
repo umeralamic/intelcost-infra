@@ -90,9 +90,14 @@ for (const name of PORT_FILES) {
 // The harness's own calls, by service name: the fx apis.
 patch(path.join(browser, "lib", "bench.mjs"), (t) => t.replace('"localhost:8020": "api:8000"', '"localhost:8020": "api-fx:8000"').replace('"localhost:8030": "api-b:8000"', '"localhost:8030": "api-fx-b:8000"'));
 
+const B_PAIR =
+  'docker compose --profile fx up -d --no-build --pull never --no-deps api-fx-b >/dev/null 2>&1; [ "$(docker compose ps -q app-fx-b-prod 2>/dev/null)" ] || docker compose --profile fx up -d --no-build --pull never --no-deps app-fx-b >/dev/null 2>&1';
 patch(path.join(root, "regress.sh"), (t) => {
   let s = swap(swap(t, ADDRESSES), SERVICES);
-  s = s.replace("docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1", "docker compose --profile fx up -d --no-deps api-fx-b app-fx-b >/dev/null 2>&1");
+  // Window B's pair, offline (D-841): the images are the setup's or prepare's; its dev server only while the built
+  // app is not on its port (it fails there, and was started into that failure on every built-app run).
+  s = s.replace("docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1", B_PAIR);
+  s = s.replace("docker compose --profile fx up -d --no-deps api-fx-b app-fx-b >/dev/null 2>&1", B_PAIR);
   s = s.replace("docker compose up -d worker-previews >/dev/null 2>&1", "true  # worker-fx serves every queue, previews included (D-611)");
   // The seeded account is the founder's on the running bench, and absent from the fx database.
   s = s.replace(/seeded_before=\$\(drive_ws snapshot[^\n]*\n/, "seeded_before=  # D-611: no seeded-account snapshot on the fx database\n");

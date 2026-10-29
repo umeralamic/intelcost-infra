@@ -21,6 +21,8 @@
 #                            time, then the dev-server fixtures, then each failure again alone in its
 #                            own mode; one summary in ./fx-suite/.regress/release-<time>/summary.txt.
 #                            The run before any deploy to testers and any promotion to main
+#   ./fx-suite.sh prepare    build every image a run uses and check every other is here (D-841): the
+#                            release does this first and then reaches no registry
 #   ./fx-suite.sh prod       the built apps in place of the dev servers, on the same ports
 #   ./fx-suite.sh dev        the dev servers back
 #   ./fx-suite.sh stop       stop the fx services (the database and the bucket stay)
@@ -79,6 +81,14 @@ release_list() {
     echo "$name"
   done | sort -u
 }
+# Offline (D-841): set by the release once `prepare` has built and checked every image, so nothing after it builds,
+# pulls or resolves an image. Every compose call of the run's own takes these.
+OFFLINE_FLAGS=${FX_OFFLINE:+--no-build --pull never}
+# The fx and fx-prod services a release starts, builds and runs.
+BUILT="api-fx api-fx-b worker-fx beat-fx app-fx app-fx-b app-fx-prod app-fx-b-prod browser-fx"
+# What a compose log says when it reached a registry or built: none of it may follow `prepare` in a release.
+REGISTRY_RE='load metadata for|resolve image config|Pulling|pulling from|Image .* (Building|Built)|failed to fetch|auth\.docker\.io'
+
 # The fixtures a run's summary line names as failed: "N of M failed: a b c".
 failed_in() { grep -h " failed: " "$@" | sed 's/.* failed: //' | tr ' ' '\n' | grep -v '^$' | sort -u; }
 tail_line() { grep -E "^(all [0-9]+ passed|[0-9]+ of [0-9]+ failed)" "$1" | tail -1; }
@@ -111,12 +121,23 @@ case "${1:-}" in
     [ -d fx-suite-updates ] && cp -r fx-suite-updates/. fx-suite/
     node fx-suite-patch.mjs fx-suite "$FX_S3_HOST"
     ;;
+  prepare)
+    # Every image the run uses, built from today's source or found here, before anything runs (D-841). The only step
+    # of a release that may reach a registry; it fails the release rather than letting a run start without them.
+    docker compose --profile fx --profile fx-prod build $BUILT || { echo "prepare: a build failed: nothing was run"; exit 1; }
+    missing=0
+    for img in $(docker compose --profile fx --profile fx-prod config --images 2>/dev/null | sort -u); do
+      docker image inspect "$img" >/dev/null 2>&1 || docker pull -q "$img" >/dev/null 2>&1 || { echo "prepare: missing $img"; missing=1; }
+    done
+    [ "$missing" -eq 0 ] || exit 1
+    echo "prepare: every image built or present"
+    ;;
   run)
     shift
     check || { echo "The fx stack is not isolated: nothing was run."; exit 1; }
     # Both fx apps' dev servers compile on their first page: loaded once here, so a fixture's 30 s
     # page load meets a warm server, as on the bench.
-    docker compose --profile fx run --rm browser-fx node --input-type=module -e "
+    docker compose --profile fx run --rm ${FX_OFFLINE:+--pull never} browser-fx node --input-type=module -e "
 import { openBrowser } from '/drive/scripts/lib/bench.mjs';
 const b = await openBrowser();
 for (const app of ['http://localhost:5176', 'http://localhost:5177']) {
@@ -133,11 +154,15 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
   prod)
     # The fx apps built (the "fx-prod" profile) in place of the dev servers, on the same ports.
     docker compose --profile fx stop app-fx app-fx-b
-    # A build that cannot reach Docker Hub (the dockerfile syntax image, a TLS timeout) is tried once more, and
-    # the switch is done only when both ports serve (D-839): nothing else is on them once the dev servers stop.
-    docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod \
-      || { sleep 20; docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod; } \
-      || { echo "built apps would not build or start"; exit 1; }
+    # Offline in a release (D-841): the images `prepare` built, started. Alone, built from today's source, a build
+    # that cannot reach a registry tried once more (D-839). Either way done only when both ports serve.
+    if [ -n "${FX_OFFLINE:-}" ]; then
+      docker compose --profile fx-prod up -d $OFFLINE_FLAGS --no-deps app-fx-prod app-fx-b-prod || { echo "built apps would not start"; exit 1; }
+    else
+      docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod \
+        || { sleep 20; docker compose --profile fx-prod up -d --build --no-deps app-fx-prod app-fx-b-prod; } \
+        || { echo "built apps would not build or start"; exit 1; }
+    fi
     for _ in $(seq 1 60); do curl -sf -o /dev/null localhost:5176/ && curl -sf -o /dev/null localhost:5177/ && break; sleep 2; done
     curl -sf -o /dev/null localhost:5176/ && curl -sf -o /dev/null localhost:5177/ \
       || { echo "built apps not serving on 5176/5177"; exit 1; }
@@ -145,12 +170,12 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
   dev)
     # The dev servers back in place of the built apps (D-814), once they serve the app's own modules.
     docker compose --profile fx-prod stop app-fx-prod app-fx-b-prod
-    docker compose --profile fx up -d --no-deps app-fx app-fx-b
+    docker compose --profile fx up -d $OFFLINE_FLAGS --no-deps app-fx app-fx-b
     # Docker Desktop can start a container while the port the built app just let go of is still held,
     # and then never publishes it (D-829): recreated once if 5176 or 5177 has no host binding.
     for c in app-fx app-fx-b; do
       [ "$(docker inspect "$(docker compose ps -q $c)" --format '{{len (index .NetworkSettings.Ports "5173/tcp")}}' 2>/dev/null)" = 0 ] \
-        && { sleep 3; docker compose --profile fx up -d --no-deps --force-recreate $c; }
+        && { sleep 3; docker compose --profile fx up -d $OFFLINE_FLAGS --no-deps --force-recreate $c; }
     done
     for _ in $(seq 1 120); do curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx && break; sleep 2; done
     curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx \
@@ -164,13 +189,17 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     "$0" refresh
     out="fx-suite/.regress/release-$(date +%Y%m%d-%H%M)"
     mkdir -p "$out"
+    # 0. Everything built and pulled first (D-841); from here on no step builds, pulls or resolves an image.
+    "$0" prepare 2>&1 | tee "$out/0-prepare.log" | tail -1
+    [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "release: prepare failed (see $out/0-prepare.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
+    export FX_OFFLINE=1
     mapfile -t all < <(release_list)
     built=()
     devs=()
     for n in "${all[@]}"; do if needs_dev "$n"; then devs+=("$n"); else built+=("$n"); fi; done
     echo "release: ${#built[@]} fixtures on the built apps, ${#devs[@]} on the dev servers (${devs[*]})" | tee "$out/summary.txt"
     # 1. The built apps, 3 at a time: timings are the product's there (f5-s11, f5-s13).
-    "$0" prod >"$out/0-prod.log" 2>&1
+    "$0" prod >"$out/0-prod.log" 2>&1 || { echo "release: the built apps would not start (see $out/0-prod.log): nothing was run" | tee -a "$out/summary.txt"; exit 1; }
     "$0" run "${built[@]}" 2>&1 | tee "$out/1-built.log"
     # 2. The dev servers: the fixtures that import the app's own modules, drive /dev/ui or its dev override.
     "$0" dev >"$out/0-dev.log" 2>&1
@@ -200,6 +229,9 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
       echo "alone, passed (timing): ${alone_pass[*]:-none}"
       echo "alone, failed (look at): ${alone_fail[*]:-none}"
       [ ${#not_run[@]} -gt 0 ] && echo "alone, not run (the mode would not come up, see 0-*.log): ${not_run[*]}"
+      # Nothing after `prepare` reached a registry or built (D-841): the run's own logs say so.
+      reached=$(cat "$out"/0-prod.log "$out"/0-dev.log "$out"/1-built.log "$out"/2-dev.log "$out"/3-alone.log 2>/dev/null | grep -cE "$REGISTRY_RE")
+      echo "registry after prepare: $([ "$reached" -eq 0 ] && echo "none reached" || echo "$reached lines, see the 0-*.log files")"
       echo "logs: $out (one per fixture in fx-suite/.regress)"
     } | tee -a "$out/summary.txt"
     [ ${#alone_fail[@]} -eq 0 ] && [ ${#not_run[@]} -eq 0 ]

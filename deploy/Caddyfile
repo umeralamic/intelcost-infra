@@ -1,0 +1,19 @@
+# api.intelcost.io in front of the live api colour (D-842). The colour is one line in live/upstream.caddy, written by
+# rollout.sh; `caddy reload` swaps it gracefully: requests in flight finish where they started, new ones go to the new
+# colour, and WebSockets on the old one stay up to 5 minutes or until that colour stops (1012, then they reconnect).
+# Realtime needs nothing else from Caddy (notes/2026-09-26_realtime_caddy_for_abdullah.md).
+#
+# No active health check here: a colour is sent traffic only once Docker reports it healthy (rollout.sh), and the api's
+# /health asks the database, Redis and the bucket, too much to ask every few seconds under load (the bench's check: a
+# 3 s probe timed out under it and Caddy answered 503 with the api up). A request that cannot reach the colour is
+# tried again for up to 10 s, and a colour that fails is left out for 5 s.
+{$API_SITE} {
+	reverse_proxy {
+		import /etc/caddy/live/upstream.caddy
+		lb_try_duration 10s
+		lb_try_interval 250ms
+		fail_duration 5s
+		max_fails 1
+		stream_close_delay 5m
+	}
+}

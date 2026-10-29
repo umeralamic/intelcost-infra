@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # The bench's browser (D-16).
 #
 # Chromium and its system libraries come from the official Playwright image, so
@@ -11,7 +9,10 @@
 # version — it resolved to v1.46.1 while npm installed 1.63.0, and the launch failed
 # telling us so.
 
-FROM mcr.microsoft.com/playwright:v1.46.1-jammy
+# Base images are pinned by digest and there is no "# syntax=" line (D-841): Docker's own Dockerfile frontend
+# reads this file (its cache mounts included), so a build with its bases already present reaches no registry. The
+# tag beside each digest says what it is; move both together.
+FROM mcr.microsoft.com/playwright:v1.46.1-jammy@sha256:02810c978d5396bf382ab6015c25ad6bed9e39f4a41c5b9c829e9fea439274e2
 
 WORKDIR /drive
 

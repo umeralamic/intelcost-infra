@@ -1,0 +1,84 @@
+# The api, its worker and Caddy as a deploy runs them (D-842): two api colours, blue and green, behind Caddy, so a
+# new api starts and passes its health check before the old one stops and no request is dropped on a deploy.
+#
+#   ./deploy/rollout.sh             build or pull the api image, migrate, start the idle colour, wait for it to be
+#                                    healthy, send Caddy to it, let the old colour drain, stop it
+#   docker compose -f deploy/compose.yml ps
+#
+# Everything a deploy needs is here and in deploy/.env (not in git: deploy/.env.example lists what it holds), so a
+# deploy pushes only what is in the repo. Postgres and Redis are the box's own (D-08) or managed; a deploy never
+# restarts them. Their addresses come from deploy/.env.
+
+name: intelcost
+
+x-api: &api
+  image: ${API_IMAGE:-intelcost-api:latest}
+  build:
+    context: ${API_SOURCE:-../../intelcost-app-fastapi}
+    target: production
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    # Migrations run once, by rollout.sh, before a colour starts: never by two colours at once.
+    API_PROCESSES: ${API_PROCESSES:-3}
+  # uvicorn is PID 1 in the production image (its CMD `exec`s it) and stops gracefully on SIGTERM: it stops
+  # accepting, finishes what it has (--timeout-graceful-shutdown 5) and closes sockets with 1012, which the app
+  # reconnects from at once.
+  stop_grace_period: 30s
+  restart: unless-stopped
+  healthcheck:
+    # Healthy is the api's own answer, every dependency included: "status": "ok" (database, Redis, storage).
+    test:
+      - CMD
+      - python
+      - -c
+      - "import json,sys,urllib.request; sys.exit(0 if json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)).get('status') == 'ok' else 1)"
+    interval: 2s
+    timeout: 4s
+    retries: 3
+    start_period: 120s
+  networks: [app]
+
+services:
+  api-blue:
+    <<: *api
+  api-green:
+    <<: *api
+
+  worker:
+    image: ${API_IMAGE:-intelcost-api:latest}
+    env_file:
+      - path: .env
+        required: false
+    # Every queue on one worker (the box has two vCPUs); the bench splits pages and previews onto their own.
+    command: ["celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=2", "-Q", "celery,prepare,reads,previews"]
+    # Celery's warm shutdown: a task in hand finishes before the old worker goes (queued ones wait in Redis).
+    stop_signal: SIGTERM
+    stop_grace_period: 10m
+    restart: unless-stopped
+    networks: [app]
+
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2.8.4-alpine}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    environment:
+      API_SITE: ${API_SITE:-api.intelcost.io}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # The live colour: one line, written by rollout.sh; Caddy reloads it gracefully. A folder, not the file: a
+      # file mounted on its own can keep its old content in the container after a rewrite (Docker Desktop).
+      - ./live:/etc/caddy/live:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+    networks: [app]
+
+networks:
+  app: {}
+
+volumes:
+  caddy-data: {}
+  caddy-config: {}

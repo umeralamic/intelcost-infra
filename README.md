@@ -461,6 +461,41 @@ captured in MailHog otherwise, links intact. Read captured mail at http://localh
 invitation and confirmation links from). The worker logs each one as
 `mail captured (guard): <subject> [<template>] to <address>`; a real send logs `mail sent`.
 
+## Deploying the api without downtime (D-842)
+
+`deploy/` is what a deploy runs, and the only thing it runs: `compose.yml` (two api colours, blue and green, the
+worker and Caddy), `Caddyfile`, `rollout.sh`, and `.env.example` for the box's own `deploy/.env` (git-ignored). A
+deploy is a `git pull` of this repo and the api's, then:
+
+```bash
+./deploy/rollout.sh                 # build the api image from ../intelcost-app-fastapi and roll it out
+API_IMAGE=<registry>/intelcost-api:<tag> ./deploy/rollout.sh --pull     # or a built image
+./deploy/rollout.sh --status        # the live colour, and each colour's health
+```
+
+**What rollout.sh does, each step waiting on the one before:**
+
+1. Builds (or pulls) the api image.
+2. Runs `alembic upgrade head` once, in a one-off container of the new image, while the old colour still serves.
+   **A migration must therefore suit the old code too:** add a column first and use it; remove the old one in a
+   later deploy.
+3. Starts the idle colour on the new image and waits until Docker reports it healthy: its own `/health` answers
+   `"status": "ok"`, which needs the database, Redis and the bucket. Not healthy within 180 s: it is stopped, the live
+   colour was never touched, and the deploy fails with the new colour's last log lines.
+4. Points Caddy at the new colour (`upstream.caddy`, one line, git-ignored) and runs `caddy reload`, which is
+   graceful: a request in flight finishes where it started, new ones go to the new colour.
+5. Leaves the old colour 15 s to finish what it had (`DRAIN_SECONDS`), then stops it. uvicorn stops on SIGTERM
+   gracefully and closes WebSockets with 1012; the app reconnects at once, to the new colour.
+6. Restarts the worker on the new image. Celery's warm shutdown finishes a task in hand; queued tasks wait in Redis.
+
+A first deploy on an empty box starts blue and Caddy. Postgres and Redis are never restarted by a deploy.
+
+**The bench's check:** `./deploy/bench-check.sh` runs the same stack as its own compose project
+(`intelcost-deploytest`, plain HTTP on localhost:8091, the bench's Postgres and Redis database 3), sends a request
+through Caddy every 50 ms to `/health` (the database, Redis and the bucket; a public route meets its own rate
+limit), rolls the api out twice under that
+load and counts every answer that is not a 200. Then it takes the project down.
+
 ## Known gaps
 
 - **The marketing site runs in dev mode only.** The `marketing` service is `next dev`.
