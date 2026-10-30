@@ -178,7 +178,7 @@ attention.
 | PVC, PVCO, dual wall, ductile iron | Joint lubricant | material | joints ÷ joints per container by size, **from the manufacturers' chart once read and approved (Q7)**. Until then it is in the allowance |
 | RCP | Gasket | material | 1 EA per joint (+ lube as above) |
 | CMP | Coupling band | material | 1 EA per joint |
-| HDPE IPS | Butt fusion machine | **equipment** | joints × cycle time ÷ 60 machine-hr. **Cycle times only from the manufacturers' published fusion procedures** (Q10). Fusion classes by size range come as an equipment library release (M8); the library has none today |
+| HDPE IPS | Butt fusion machine | **equipment** | joints × cycle time ÷ 60 Equipment Hours (EH). **Cycle times only from the manufacturers' published fusion procedures** (Q10). Fusion classes by size range come as an equipment library release (M8); the library has none today |
 | Pressure pipe, per counted bend and per tee | **Restraint** (default) or **thrust block**, a project setting | material | restraint: one set EA per fitting by size. Thrust block: concrete CY per block by size and angle from a project table, reading "Enter the block's CY" in Needs attention until it has a value; the founder names the agency standard before M4a (Q31, D-863) |
 | Ductile iron | **Polyethylene encasement** | material | run LF × (1 + overlap), the overlap a setting (default 10 %, IntelCost's proposal; AWWA C105 not read), sold in LF, rolls a setting |
 

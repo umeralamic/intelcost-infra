@@ -31,6 +31,20 @@ export const PROTECTED_PROJECTS = Object.freeze({
   "6ca7f34b-6ab2-4a29-874e-67d39d45b616": "10793 SBR",
   // The founder's copy of the shared copy (2026-10-30 overnight brief).
   "9e3b9d2d-8cf4-45db-8980-a519d7efdaf9": "Hidden Valley Rebid — 3D test (shared copy) (shared copy)",
+  // The rest of Bench Construction Test (workspace 69a35a11), all 17 projects guarded (D-881).
+  "48ee1ed1-151a-49f6-87d2-4c23dffda452": "Riverside Medical Center",
+  "4452f8f1-537b-4fa2-9ef3-6a4fec2062cd": "trdt",
+  "3ba916aa-bef6-469f-8456-d11e0772a500": "Lilly",
+  "c0144c30-a769-40f7-a516-3382561e8ec6": "multipart smoke",
+  "4a19fd97-c8bd-47ef-bd8a-41d4b7e17a0d": "wweedd",
+  "8af33201-a81d-488d-90f1-2317c12ef06c": "LLAADD",
+  "08ab6b4b-6a18-4fca-abad-15cd3bb15aa6": "Umer Check",
+  "25711190-6ef4-4190-8f64-91a882bb5820": "Test 3344",
+  "557a8c48-c48f-4c94-a031-f087c6c8e6d2": "Hendrick Honda (10786)",
+  "97d18924-fc37-4015-8f8d-d43c2ac794c7": "Test project",
+  "21c099b1-1a9a-49db-8b80-c6a3b9a0dcc8": "Test 3",
+  "dd3065bf-ec08-4f49-adcf-f268db833f7c": "Dania Pointe position test",
+  "7aba5c72-2be8-41bc-a177-517488dffaf5": "CCCP",
 });
 
 /** The founder's own workspaces that hold no bench project: never opened from here (D-601). */

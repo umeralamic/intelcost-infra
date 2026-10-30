@@ -25335,3 +25335,25 @@ blocks, a first cut of 13.
 - **Duplicate and Paste carry the costs:** each item's estimate line (rates, wastage), cost components and custom column
   values go with it, sub-items included. Duplicate left them out, against D-873's "everything remains the same". Make Site
   Feature still does not. Shared-machine usage does not copy.
+
+## D-881: A sub-item always shows under its parent, in every group-by and filter, and stays linked in the workbook
+
+**Status:** the founder's request, 2026-10-30.
+
+- **A filter that takes a parent away keeps it as a copy.** Search, a report filter, Assigned to me or a layer tab could drop a
+  parent while its sub-items stayed: no parent row, no Qty and Unit, no bold, and in the file no cell to link to. The sub-items now
+  get the parent's bold copy above them, with Qty and Unit (D-876), in every group-by and the export.
+- **Sheet group-by:** a sub-item scaled to a sheet's share read its formula against the whole item, missed its figure and went out as
+  a number. It is read at the sheet's share, so it links to its sheet's parent row.
+
+## D-881: The founder's answers to the 2026-10-30 overnight questions; Bench Construction Test guarded
+
+**Status:** the founder's answers, 2026-10-30 day session.
+
+- **Q1:** every project in Bench Construction Test (workspace 69a35a11, all 17) is on the three guard lists. The 3D test copy
+  keeps its one exception: read, and duplicated, never written.
+- **Q2:** m6-position and c42 stay as they are; the outbox's mail is fixed (D-882).
+- **Q3:** the GPS README reports the filled strip's own 227 SF steeper than 2:1; no second line.
+- **Q4:** replaced by D-883. Finding view titles without OCR is dropped.
+- **Q5:** the ghost contour stands as not reproduced; the run menu is fixed (D-884).
+- **Q6:** the water truck goes on (D-885). The founder checks the Fill production themselves.

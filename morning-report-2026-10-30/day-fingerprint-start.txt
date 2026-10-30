@@ -1,0 +1,77 @@
+guard check: 10 protected projects, 1 founder workspace, 2 founder accounts; the three lists agree
+  042c8817-4a65-47ba-95d8-686ecf986246  Hidden Valley Rebid — 3D test
+  9c348237-1ca6-42d0-bd8c-712d7cf915c1  HIdden Valley Spec
+  bd8fc5b0-34ca-4186-99f0-7278c43b4c1c  Hidden Valley Spec Building Rebid
+  51e474d2-b55b-40d2-ab46-09433ffc5add  Waxing City
+  09f1fc14-42f4-4140-9726-bcaf3056ea87  Minmar
+  90cb3a75-3553-4de0-aac4-1693c7d18d57  Miramar Cove Vault Buildings
+  c1770e62-715a-4d1d-8be5-aa2f23ecdeed  11
+  4df73dc7-901b-4933-b2bb-fafc327b01f0  Hidden Valley Rebid — 3D test (shared copy)
+  6ca7f34b-6ab2-4a29-874e-67d39d45b616  10793 SBR
+  9e3b9d2d-8cf4-45db-8980-a519d7efdaf9  Hidden Valley Rebid — 3D test (shared copy) (shared copy)
+
+project Hidden Valley Rebid — 3D test (042c8817-4a65-47ba-95d8-686ecf986246, id 6432), updated_at 2026-10-15 19:11:47.352317+00:00
+
+content tables (rows, latest change)
+drawing_file                               2  2026-10-07 13:51:01.923669+00:00
+drawing_folder                             2  2026-10-07 13:48:06.267613+00:00
+drawing_sheet                             29  2026-10-15 01:02:51.339265+00:00
+earthwork_assumptions                      1  2026-10-16 21:01:46.822169+00:00
+earthwork_bore                             4  2026-10-16 19:26:17.533485+00:00
+earthwork_bore_layer                      12  2026-10-16 19:26:17.525939+00:00
+earthwork_bore_water                       1  2026-10-16 19:26:17.534695+00:00
+earthwork_result                           1  2026-10-23 15:38:37.346049+00:00
+earthwork_review                           1  2026-10-15 00:33:06.400182+00:00
+earthwork_soil_layer                       3  2026-10-16 19:10:24.423035+00:00
+earthwork_strip_area                       2  2026-10-13 06:11:53.737594+00:00
+eq_override                                4  2026-10-23 15:41:31.827329+00:00
+estimate_line_item                         1  2026-10-13 17:18:26.163825+00:00
+project_craft_rate                        34  2026-10-13 17:16:59.645363+00:00
+project_crew_rate                        104  2026-10-13 17:16:59.695664+00:00
+project_file                               2  2026-10-07 13:49:26.321163+00:00
+project_file_page                         29  2026-10-07 13:49:26.090350+00:00
+project_folder                             4  2026-10-06 22:13:43.413102+00:00
+project_share_copy                         1  2026-10-17 15:18:25.671289+00:00
+project_share_link                         1  2026-10-17 15:18:16.654553+00:00
+project_wage_set                           1  2026-10-13 17:16:59.364290+00:00
+sheet_calibration                          5  2026-10-15 15:46:36.881931+00:00
+sheet_registration                         1  2026-10-07 21:40:57.546869+00:00
+takeoff_cost_component                     1  2026-10-13 17:18:26.174937+00:00
+takeoff_folder                            31  2026-10-17 06:25:54.428642+00:00
+takeoff_geometry                         198  2026-10-17 06:24:28.870345+00:00
+takeoff_item                             120  2026-10-23 15:38:38.429437+00:00
+takeoff_item_event                      2234  2026-10-17 06:23:57.124106+00:00
+takeoff_layer                              3  2026-10-06 22:13:43.417090+00:00
+utility_run                                3  2026-10-17 06:22:24.426702+00:00
+utility_structure                          3  2026-10-17 06:24:16.637064+00:00
+
+people's own activity (not in the digest)
+project_visit                              2  2026-10-23 17:23:47.416681+00:00
+work_session                             933  2026-10-23 17:23:47.388326+00:00
+
+stored results (md5 of the saved result, computed at)
+sheet C-200                          7c564bae6d9e0b6d8b1e200ec080b19a  2026-10-23 15:38:37.332315+00:00
+
+digest b8b0e2e5d05fc9ec
+
+other projects named like this one, and bench copies (not in the digest)
+ok   4df73dc7-901b-4933-b2bb-fafc327b01f0  "Hidden Valley Rebid — 3D test (shared copy)"  made 2026-10-17 15:18:24.284802+00:00, live
+FAIL 2ea406b7-53d9-4526-a2cf-86a69e287ed5  "Hidden Valley Rebid — 3D test (shared copy)"  made 2026-10-23 09:40:59.516484+00:00, live
+FAIL 026c10ab-5c02-427c-8e32-c5096e3a0d3d  "Hidden Valley Rebid — 3D test (shared copy)"  made 2026-10-28 08:00:39.138867+00:00, in Trash since 2026-10-28 08:01:51.577092+00:00
+ok   9e3b9d2d-8cf4-45db-8980-a519d7efdaf9  "Hidden Valley Rebid — 3D test (shared copy) (shared copy)"  made 2026-10-29 05:03:25.309267+00:00, live
+
+the guard's protected list (scripts/protected.py), and the founder's workspaces
+     042c8817-4a65-47ba-95d8-686ecf986246  Hidden Valley Rebid — 3D test
+     9c348237-1ca6-42d0-bd8c-712d7cf915c1  HIdden Valley Spec
+     bd8fc5b0-34ca-4186-99f0-7278c43b4c1c  Hidden Valley Spec Building Rebid
+     51e474d2-b55b-40d2-ab46-09433ffc5add  Waxing City
+     09f1fc14-42f4-4140-9726-bcaf3056ea87  Minmar
+     90cb3a75-3553-4de0-aac4-1693c7d18d57  Miramar Cove Vault Buildings
+     c1770e62-715a-4d1d-8be5-aa2f23ecdeed  11
+     4df73dc7-901b-4933-b2bb-fafc327b01f0  Hidden Valley Rebid — 3D test (shared copy)
+     6ca7f34b-6ab2-4a29-874e-67d39d45b616  10793 SBR
+     9e3b9d2d-8cf4-45db-8980-a519d7efdaf9  Hidden Valley Rebid — 3D test (shared copy) (shared copy)
+ok   90cb3a75-3553-4de0-aac4-1693c7d18d57  "Miramar Cove Vault Buildings"  in Intelcost Team (umeralam.q@gmail.com)
+ok   c1770e62-715a-4d1d-8be5-aa2f23ecdeed  "11"  in Intelcost Team (umeralam.q@gmail.com)
+ok   4df73dc7-901b-4933-b2bb-fafc327b01f0  "Hidden Valley Rebid — 3D test (shared copy)"  in Intelcost Team (umeralam.q@gmail.com)
+ok   6ca7f34b-6ab2-4a29-874e-67d39d45b616  "10793 SBR"  in Intelcost Team (umeralam.q@gmail.com)
