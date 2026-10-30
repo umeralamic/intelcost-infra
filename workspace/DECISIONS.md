@@ -25336,7 +25336,7 @@ blocks, a first cut of 13.
   values go with it, sub-items included. Duplicate left them out, against D-873's "everything remains the same". Make Site
   Feature still does not. Shared-machine usage does not copy.
 
-## D-882: A sub-item always shows under its parent, in every group-by and filter, and stays linked in the workbook
+## D-886: A sub-item always shows under its parent, in every group-by and filter, and stays linked in the workbook
 
 **Status:** the founder's request, 2026-10-30.
 
@@ -25387,7 +25387,7 @@ blocks, a first cut of 13.
 - **The OCR worker stays:** 39 of the 50 sheets it read on the key are vector sheets, and 16 of its 20 applied scales are theirs.
 - Sheets already loaded keep what they have.
 
-## D-883: Export to Excel defaults to No grouping
+## D-887: Export to Excel defaults to No grouping
 
 **Status:** the founder's request, 2026-10-30.
 
