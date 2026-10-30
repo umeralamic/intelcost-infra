@@ -118,7 +118,7 @@ group labelled **"Pressure pipe"** (Q24; today the two are one list).
 **What a bid is.** A bid is a main layer of the takeoff:
 - **Base Bid** is the default layer (`takeoff_layer.is_default`); an item with no layer is in it.
 - **Each alternate** is a top-level layer of its own.
-- **A sub-layer** rounds inside its main layer (`takeoff_layer.parent_id` walked to the top; open Q33).
+- **A sub-layer** rounds inside its main layer (`takeoff_layer.parent_id` walked to the top; Q33, D-868).
 - **A line moved to another layer** rounds with its new bid at the next pricing.
 
 **The price and the order:**
@@ -413,7 +413,7 @@ Assembly components gain `mat_key`, so assemblies price from the same resolution
 
 The key names below are the release's `mat_key`s.
 
-**Sheet 1: waterworks / utility pipe distributor (40 keys)**
+**Sheet 1: waterworks / utility pipe distributor (73 keys)**
 
 | Keys | Count |
 |---|---|
@@ -427,6 +427,9 @@ The key names below are the release's `mat_key`s.
 | Restraint set, DI, at 6, 8, 10, 12" (EA) | 4 |
 | Tracer wire (500 ft roll) | 1 |
 | Detectable warning tape (1,000 ft roll) | 1 |
+| Bends, C900, 11¼, 22½, 45 and 90° at 6, 8, 10, 12" (EA; Q34) | 16 |
+| Bends, DI, 11¼, 22½, 45 and 90° at 6, 8, 10, 12" (EA; Q34) | 16 |
+| Trench-bottom geotextile (500 SY roll; M4a writes it on every water stretch; Q34) | 1 |
 
 **Sheet 2: precast concrete producer (39 keys)**
 
@@ -453,11 +456,12 @@ The key names below are the release's `mat_key`s.
 | Curb inlet frame, grate and curb box (EA) | 1 |
 | Combination inlet frame, grate and curb box (EA) | 1 |
 
-**Sheet 4: quarry / aggregate supplier (3 keys)**
+**Sheet 4: quarry / aggregate supplier (4 keys)**
 
 | Keys | Count |
 |---|---|
 | #57 stone, delivered ($/TON; it has no haul line of its own) | 1 |
+| Zone sand, delivered ($/TON; the default pipe-zone material; Q34) | 1 |
 | Aggregate base, delivered ($/TON) | 1 |
 | Select borrow at the pit ($/TON; the haul is A8, equipment) | 1 |
 
@@ -468,17 +472,11 @@ The key names below are the release's `mat_key`s.
 | Tipping fee, clean soil ($/TON) | 1 |
 | Tipping fee, unsuitable material ($/TON) | 1 |
 
-**Total: 89 keys, not the ≈ 150 the brief expected.** The list follows the brief's scope exactly, with two
-additions it needs: DI encasement, and catch basin and curb inlet castings.
+**Total: 123 keys** (D-866, D-868):
+- the brief's 89, which include DI encasement and the inlet castings;
+- the 32 pressure bends, zone sand and trench-bottom geotextile (Q34).
 
-**What the core does not cover, and reads "Missing price":**
-- the pressure bends that M4a counts on every water and force main line;
-- the zone sand;
-- the wyes and taps of M9.
-
-**Open Q34** asks whether to add them. Recommended: bends 11¼, 22½, 45 and 90° at 6–12" for C900 and DI
-(32 keys, on sheet 1) and zone sand (1 key, sheet 4), which brings the core to **122 keys**. Wyes and taps
-wait for M9's release.
+**Outside the core, reading "Missing price":** the wyes and taps of M9, which wait for a later release.
 
 ### 3.5 IntelCost's quarterly price update (D-861 Q27)
 
@@ -638,9 +636,9 @@ api, and the money arithmetic stays in `lib/estimate/`.
 | **M5** | Site lines: borrow, tipping, aggregate base, stabilizers, geosynthetics | 1.5 |
 | **M6** | Recalculate: "Calculate now has …: Apply", Restore, "Price changed: Update / Update all", equipment and labour moved to `auto_key` / `user_fields` (Q16) | 2.5 |
 | **M8** | HDPE fusion: fusion classes as a library release, cycle times from the manufacturers' fusion procedures, hours from joints | 1.5 |
-| **M10** | The first IntelCost release: **the core set** (§3.4.1, 89 keys from five quote sheets, or 122 with Q34), loaded as release 1, normalised and checked, with a quantity table row priced at the core. **Required before any tester deploy** | 3 (3.5 with Q34) |
+| **M10** | The first IntelCost release: **the core set** (§3.4.1, 123 keys from five quote sheets), loaded as release 1, normalised and checked, with a quantity table row priced at the core. **Required before any tester deploy** | 3.5 |
 | **M11** | Developer › Material prices (Q27): load, preview with the ±15 % flags, publish by quarter, the per-project Review with old → new and Update all, stale defaults after two quarters. The rest of the 495 keys come through it | 3 |
-| | **Total** | **≈ 37–38** |
+| | **Total** | **≈ 37.5–38.5** |
 
 **Each block ends** with the gates, the quantity table, and one smoke test on a throwaway account, never
 on 6467 or another founder project.
@@ -687,18 +685,14 @@ on 6467 or another founder project.
 | C2 | Cleanout riser at its own diameter in the run's family; wye run size × cleanout size | D-865 |
 | C3 | M10 narrowed to a core set; the core, not all 495, required before testers | D-866 |
 | C4 | Block P first, then the first cut, then M9 and the rest | D-867 |
+| Q33 | A sub-layer rounds with its main layer | D-868 |
+| Q34 | The core adds the 32 pressure bends, zone sand and trench-bottom geotextile: 123 keys | D-868 |
 
 ---
 
-## 10. Open questions, each with the recommended answer
+## 10. Open questions
 
-33. **A sub-layer under a bid** (e.g. "Roof Option B" under an alternate): does it round with its main
-    layer or on its own? **Recommended: with its main layer,** as the export's tab per main layer already
-    groups it. A sub-layer that is a true alternate to its siblings is made a top-level layer instead.
-34. **The core release's gaps:** add pressure bends 11¼, 22½, 45 and 90° at 6–12" for C900 and DI (32
-    keys) and zone sand (1 key) to M10's core? **Recommended: yes (122 keys).** M4a counts bends on every
-    water and force main line, and sand is the default pipe-zone material, so without them a tester's
-    water line reads "Missing price" the day M4a ships.
+None open (2026-10-29).
 
 ## Risks
 

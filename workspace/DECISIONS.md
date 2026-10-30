@@ -25111,3 +25111,15 @@ blocks, a first cut of 13.
   2. the first cut (M0, M1, M2, M3, M7 without the import; 13.5 days);
   3. M9;
   4. M4a, M4b, M5, M6, M8, M7's import, M10, M11.
+
+## D-868: Materials (F38): sub-layers round with their main layer; the core release is 123 keys
+
+**Status:** Accepted (2026-10-29, the founder's Q33 and Q34).
+
+- **Q33.** A sub-layer rounds with its main layer (D-864).
+- **Q34.** M10's core set adds:
+  - the 32 pressure bends (11¼, 22½, 45 and 90° at 6–12", C900 and DI);
+  - zone sand;
+  - trench-bottom geotextile, which M4a writes on every water stretch.
+- **The new total:** 123 keys. Waterworks distributor 73, precast producer 39, castings 5, quarry 4, landfill 2.
+  M10 is 3.5 days; the plan is about 37.5–38.5 days.
