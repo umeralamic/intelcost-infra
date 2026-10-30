@@ -25048,3 +25048,66 @@ blocks, a first cut of 13.
 - **Not built here.** Types the tool lacks are open Q29, a later plan.
 - **Effect on the plan.** About 125 structure prices (≈ 495 in all); M4 split into M4a (pipe, 3 days) and M4b
   (structures, 4.5 days).
+
+## D-863: Materials (F38): the founder's answers to Q29–Q32
+
+**Status:** Accepted (2026-10-29).
+
+- **Q29.** Structure types the tool lacks are a later plan, flared end sections and drop manholes first. A drop is an
+  option on a manhole, not a type.
+- **Q30.** Pressure tees are detected (M4a) only for their restraint or thrust block. The tee fitting stays in the
+  20 % allowance.
+- **Q31.** Restraint stays the default. A thrust block reads "Enter the block's CY" in Needs attention until the
+  project table has a value. The founder names the agency standard before M4a.
+- **Q32.** Rebar for cast-in-place structures is 100 lb/CY, a setting, IntelCost's proposal. The founder checks it
+  before M4b.
+
+## D-864: Materials (F38): pipe rounds to full joints within each bid
+
+**Status:** Accepted (2026-10-29, the founder's C1; changes D-858 Q2 and D-859 Q23).
+
+- **The scope of rounding.** Pipe rounds up to full joints per pipe key and size **within each bid**, not across the
+  project. A bid is a main layer: Base Bid is the default layer, with an item that has no layer in it, and each
+  alternate is a top-level layer. The base bid and each alternate round separately.
+- **The spread.** The rounding LF is spread over that bid's lines by LF share. The row reads "141.6 of 518 LF
+  ordered in Base Bid (37 JT)".
+- **Storage.** `round_scope` is `bid`, and the quantity table has rows for the per-bid rounding.
+- **Sub-layers** round with their main layer (recommended, open Q33).
+
+## D-865: Materials (F38): a cleanout's riser and wye
+
+**Status:** Accepted (2026-10-29, the founder's C2).
+
+- **The riser.** It is priced at the cleanout's own diameter (`inside_dia_in`) in the run's pipe family, not at the
+  run's size.
+- **The wye.** It is run size × cleanout size (e.g. 8" × 6").
+
+## D-866: Materials (F38): M10 is a core release of about 90 keys
+
+**Status:** Accepted (2026-10-29, the founder's C3; narrows D-858 Q15).
+
+- **The core set's scope:**
+  - 8–24" gravity pipe (PVC D3034, RCP);
+  - 6–12" water and force main pipe (C900, DI);
+  - 48" and 60" manhole parts and whole manholes;
+  - standard catch basin and curb inlet parts;
+  - #57 stone, aggregate base, borrow and tipping;
+  - tracer wire and tape;
+  - restraint sets at 6–12".
+- **The keys.** Listed one by one in `materials_tasks.md` §3.4.1: 89 keys from five quote sheets (waterworks
+  distributor 40, precast producer 39, castings 5, quarry 3, landfill 2). That includes DI encasement and
+  the inlet castings, which the scope needs.
+- **Q34 (open)** recommends adding pressure bends at 6–12" and zone sand, for 122 keys.
+- **Outside the core.** Everything else reads "Missing price" until a later quarterly release.
+- **Before testers.** The core set, not all 495 keys, is what is required before any tester deploy. M10 is
+  re-estimated at 3 days (3.5 with Q34). The plan's total is about 37–38 days.
+
+## D-867: Materials (F38): block P first
+
+**Status:** Accepted (2026-10-29, the founder's C4).
+
+- **The order:**
+  1. Block P, the pressure and HDPE fused pipe crews (2 days);
+  2. the first cut (M0, M1, M2, M3, M7 without the import; 13.5 days);
+  3. M9;
+  4. M4a, M4b, M5, M6, M8, M7's import, M10, M11.

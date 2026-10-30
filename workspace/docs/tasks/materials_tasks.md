@@ -1,8 +1,8 @@
 # F38: Material cost components for earthwork and utility lines
 
-> **Answered 2026-10-29 by the founder (D-858 to D-862); nothing built yet.** Written as a plan the same day
-> (D-857, `MATERIALS_PLAN.md`), renamed here with the answers folded in. Every project was read only. The
-> answers are in §9; the questions still open are in §10.
+> **Answered 2026-10-29 by the founder (D-858 to D-862, then D-863 to D-867); nothing built yet.** Written as
+> a plan the same day (D-857, `MATERIALS_PLAN.md`), renamed here with the answers folded in. Every project was
+> read only. The answers are in §9; the questions still open are in §10.
 
 ## The problem
 
@@ -88,8 +88,8 @@ HDPE DR 11 at 0–6 and 6–8 ft (items 318265, 318266, 318272, 318273).
   - stone on `utility_bedding_pipe_zone`;
   - imported backfill on `utility_backfill`;
   - structure parts on the structure EA line.
-- **Rounding.** Pipe rounds per pipe key and size **across the project** (§2.3). Everything else rounds on
-  its own line (D-763's "Round up to").
+- **Rounding.** Pipe rounds per pipe key and size **within each bid** (§2.3; D-864). Everything else rounds
+  on its own line (D-763's "Round up to").
 - **Defaults are editable.** Every factor below is a default, editable per project (Utilities settings)
   and per workspace.
 - **Waste % (D-858 Q5)** is IntelCost's proposal, with no published source:
@@ -113,19 +113,27 @@ group labelled **"Pressure pipe"** (Q24; today the two are one list).
 | Water, fire water | PVC C900 DR 18, DR 14; PVCO C909 165, 235, 305; ductile iron C151 PC200–350; HDPE IPS DR 11, DR 17 |
 | Force main | C900; C909; ductile iron; HDPE IPS DR 11, DR 17 |
 
-### 2.3 Pipe: priced per LF, sold in full joints (D-858 Q2–Q4, D-859 Q23)
+### 2.3 Pipe: priced per LF, sold in full joints per bid (D-858 Q2–Q4, D-859 Q23, D-864 C1)
+
+**What a bid is.** A bid is a main layer of the takeoff:
+- **Base Bid** is the default layer (`takeoff_layer.is_default`); an item with no layer is in it.
+- **Each alternate** is a top-level layer of its own.
+- **A sub-layer** rounds inside its main layer (`takeoff_layer.parent_id` walked to the top; open Q33).
+- **A line moved to another layer** rounds with its new bid at the next pricing.
 
 **The price and the order:**
 - **The unit price is $/LF,** the way suppliers quote pipe.
-- **The sold quantity** is LF rounded up to full joints, per pipe key and size, over every line of the
-  project: ⌈Σ LF × (1 + waste) ÷ joint length⌉ × joint length.
+- **The sold quantity** is LF rounded up to full joints, per pipe key and size, **within each bid**,
+  over the lines of that bid only: ⌈Σ LF × (1 + waste) ÷ joint length⌉ × joint length.
+- **Separate rounding.** The base bid and each alternate round separately, so an alternate never borrows
+  the base bid's last joint.
 - **The display** is "518 LF = 37 JT".
 
 **How the lines carry it:**
 - Each line's component carries its own LF × (1 + waste).
-- The LF added by rounding up is spread over the lines by their share of LF, so the lines add up to the
-  LF ordered (Q2).
-- The row reads "141.6 of 518 LF ordered (37 JT)".
+- The LF added by rounding up is spread over **that bid's** lines by their share of LF, so each bid's
+  lines add up to the LF ordered for it (Q2).
+- The row reads **"141.6 of 518 LF ordered in Base Bid (37 JT)"**.
 
 **Joints per run for joining:** ⌈run LF ÷ joint length⌉.
 
@@ -151,7 +159,7 @@ attention.
 |---|---|---|
 | Bends, pressure pipe | each vertex not at a structure, deflection rounded to 11¼, 22½, 45 or 90° | bend EA by size and angle, plus its restraint or thrust block (§2.5) |
 | Bends, gravity pipe | the same vertices | none: "Bend between structures: check the drawing" |
-| Tees, pressure pipe | a pressure run ending on another pressure run, not at a structure (new detection, M4a) | the restraint or thrust block (§2.5). The tee fitting itself stays in the allowance (Q9; open Q30) |
+| Tees, pressure pipe | a pressure run ending on another pressure run, not at a structure (new detection, M4a) | the restraint or thrust block (§2.5). The tee fitting itself stays in the 20 % allowance (Q9, Q30; D-863) |
 | Pipe into a structure | the connected runs (`calculate.ts:327-439`) | boot or connector EA per pipe (§2.8) |
 | Services | **new: "Services" on a run** (M9; Q8): a count, or a click per service, with its size | gravity: wye EA; pressure: tap and saddle EA |
 | Valves, hydrants, tees between runs as fittings | — | out of this plan (Q9) |
@@ -171,7 +179,7 @@ attention.
 | RCP | Gasket | material | 1 EA per joint (+ lube as above) |
 | CMP | Coupling band | material | 1 EA per joint |
 | HDPE IPS | Butt fusion machine | **equipment** | joints × cycle time ÷ 60 machine-hr. **Cycle times only from the manufacturers' published fusion procedures** (Q10). Fusion classes by size range come as an equipment library release (M8); the library has none today |
-| Pressure pipe, per counted bend and per tee | **Restraint** (default) or **thrust block**, a project setting | material | restraint: one set EA per fitting by size. Thrust block: concrete CY per block by size and angle from a project table (open Q31) |
+| Pressure pipe, per counted bend and per tee | **Restraint** (default) or **thrust block**, a project setting | material | restraint: one set EA per fitting by size. Thrust block: concrete CY per block by size and angle from a project table, reading "Enter the block's CY" in Needs attention until it has a value; the founder names the agency standard before M4a (Q31, D-863) |
 | Ductile iron | **Polyethylene encasement** | material | run LF × (1 + overlap), the overlap a setting (default 10 %, IntelCost's proposal; AWWA C105 not read), sold in LF, rolls a setting |
 
 ### 2.6 Bedding and pipe-zone stone, and imported backfill
@@ -250,7 +258,7 @@ Read from `features/takeoff/earthwork/utilities/api.ts:74-105` and `runDefaults.
 | Catch basins, curb inlets, area drains | precast box or base with its sump EA (box height default 4 ft); riser VF beyond the box; top slab EA; adjustment rings EA; frame and grate EA by `inlet_kind` (grate, curb, combination); boot EA per connected pipe; base stone TON; hood/trap EA when ticked. The same depth logic as manholes |
 | Junction boxes | box EA; riser VF beyond the box; top slab EA; frame and cover EA; boot EA per pipe; base stone TON |
 | Valve, meter and handhole vaults | vault EA by inside L × W; riser VF beyond its height; top slab with hatch EA; boot EA per pipe; base stone TON |
-| Cleanouts | riser pipe LF (rim − invert) priced as the run's pipe at $/LF; wye EA at the run; cap or plug EA; frame and cover box EA |
+| Cleanouts (D-865 C2) | riser pipe LF (rim − invert) **at the cleanout's own diameter** (`inside_dia_in`, 6" default) **in the run's pipe family**, at that size's $/LF; wye EA **run size × cleanout size** (e.g. 8" × 6"); cap or plug EA; frame and cover box EA |
 | Headwalls | **no parts rule yet:** one "Whole structure" component (below) |
 | Lift stations | **no parts rule yet:** one "Whole structure" component (wet well only; pumps, controls and hatch-mounted equipment are out of this plan) |
 
@@ -291,7 +299,8 @@ structure" component reading "Missing price".
 - yard inlets distinct from area drains;
 - valves and hydrants (Q9).
 
-These are listed as open Q29 and not built in this plan.
+They are not built in this plan (Q29, D-863). A later plan takes them, flared end sections and drop manholes
+first. A drop is an option on a manhole, not a type.
 
 ### 2.9 Site lines
 
@@ -388,17 +397,88 @@ Assembly components gain `mat_key`, so assemblies price from the same resolution
 | **Structures, cast-in-place** (concrete CY, rebar lb, forms SFCA) | 3 |
 | **Structures, whole structure** (EA to the stated depth + VF over it, 13 types × about 2 sizes) | ~50 |
 | Aggregates, borrow, tipping, 7 stabilizers, tracer wire, tape, geotextile, geogrid | ~25 |
-| **Total** | **≈ 495** |
+| **Total, the full catalog** | **≈ 495** |
 
-**The starter set.**
+**The first release.**
 - **Q15:** the first cut ships with **empty defaults**: every unpriced material reads "Missing price".
-- **M10** builds the first release from the founder's dated quote sheets (one per family, one reference
-  market):
+- **M10 (D-866 C3)** publishes a **core set** of the founder's dated quote sheets (one reference market):
   - each quote is normalised by its market's material factor;
-  - the gaps are filled per family by $/LF against OD;
-  - a quoted price is graded B, a filled one C;
+  - every core key is quoted, never filled, and graded B;
   - the sources are kept internal.
-- **M10 is required before any tester deploy** (MANAGER.md, "Before any tester deploy").
+- **Everything outside the core** stays "Missing price" until a later quarterly release (M11).
+- **The core set, not all 495, is required before any tester deploy** (MANAGER.md, "Before any tester
+  deploy").
+
+#### 3.4.1 The core set: the exact keys, by the quote sheet each comes from
+
+The key names below are the release's `mat_key`s.
+
+**Sheet 1: waterworks / utility pipe distributor (40 keys)**
+
+| Keys | Count |
+|---|---|
+| PVC D3034 SDR-35 at 8, 10, 12, 15, 18, 21, 24" ($/LF) | 7 |
+| PVC D3034 SDR-26 at 8, 10, 12, 15, 18, 21, 24" ($/LF) | 7 |
+| PVC C900 DR 18 at 6, 8, 10, 12" ($/LF) | 4 |
+| PVC C900 DR 14 at 6, 8, 10, 12" ($/LF) | 4 |
+| Ductile iron C151 PC350 at 6, 8, 10, 12" ($/LF). The catalog has no other class at 6–12" | 4 |
+| Polyethylene encasement for DI at 6, 8, 10, 12" ($/LF). It is part of DI pipe (D-859 Q25), so without it every DI line reads "Missing price" | 4 |
+| Restraint set, C900, at 6, 8, 10, 12" (EA) | 4 |
+| Restraint set, DI, at 6, 8, 10, 12" (EA) | 4 |
+| Tracer wire (500 ft roll) | 1 |
+| Detectable warning tape (1,000 ft roll) | 1 |
+
+**Sheet 2: precast concrete producer (39 keys)**
+
+| Keys | Count |
+|---|---|
+| RCP C76 Wall B at 12, 15, 18, 21, 24" ($/LF). The catalog's RCP starts at 12" | 5 |
+| RCP C76 Wall C at 12, 15, 18, 21, 24" ($/LF) | 5 |
+| RCP gasket at 12, 15, 18, 21, 24" (EA per joint) | 5 |
+| Manhole parts at 48" and at 60": base with floor (EA), riser (VF), eccentric cone (EA), flat top (EA) | 8 |
+| Manhole adjustment rings (per inch of height) | 1 |
+| Manhole steps (EA) | 1 |
+| Manhole boots by pipe band: 8", 10–12", 15–18", 21–24" (EA) | 4 |
+| Whole manhole at 48" and at 60": EA to 6 ft, and each VF over 6 ft | 4 |
+| Catch basin, standard (4 × 4 ft box): box with sump (EA), riser (VF), top slab (EA) | 3 |
+| Curb inlet, standard (4 × 4 ft box): box with sump (EA), riser (VF), top slab (EA) | 3 |
+
+**Sheet 3: castings (frames, covers, grates) (5 keys)**
+
+| Keys | Count |
+|---|---|
+| Manhole frame and cover, sanitary (EA) | 1 |
+| Manhole frame and cover, storm (EA) | 1 |
+| Catch basin frame and grate (EA) | 1 |
+| Curb inlet frame, grate and curb box (EA) | 1 |
+| Combination inlet frame, grate and curb box (EA) | 1 |
+
+**Sheet 4: quarry / aggregate supplier (3 keys)**
+
+| Keys | Count |
+|---|---|
+| #57 stone, delivered ($/TON; it has no haul line of its own) | 1 |
+| Aggregate base, delivered ($/TON) | 1 |
+| Select borrow at the pit ($/TON; the haul is A8, equipment) | 1 |
+
+**Sheet 5: landfill / disposal site (2 keys)**
+
+| Keys | Count |
+|---|---|
+| Tipping fee, clean soil ($/TON) | 1 |
+| Tipping fee, unsuitable material ($/TON) | 1 |
+
+**Total: 89 keys, not the ≈ 150 the brief expected.** The list follows the brief's scope exactly, with two
+additions it needs: DI encasement, and catch basin and curb inlet castings.
+
+**What the core does not cover, and reads "Missing price":**
+- the pressure bends that M4a counts on every water and force main line;
+- the zone sand;
+- the wyes and taps of M9.
+
+**Open Q34** asks whether to add them. Recommended: bends 11¼, 22½, 45 and 90° at 6–12" for C900 and DI
+(32 keys, on sheet 1) and zone sand (1 key, sheet 4), which brings the core to **122 keys**. Wyes and taps
+wait for M9's release.
 
 ### 3.5 IntelCost's quarterly price update (D-861 Q27)
 
@@ -455,7 +535,8 @@ rows.
 - A material component row shows **sold quantity, sold unit and unit price**: "518 LF = 37 JT ×
   $18.40/LF", "128.4 TON × $38.50".
 - The takeoff quantity sits beside it in grey.
-- Pipe also shows its share of the project order.
+- Pipe also shows its share of its bid's order: "141.6 of 518 LF ordered in Base Bid (37 JT)" (D-864).
+- An alternate's layer tab and the export's tab per main layer each total that bid's own rounded order.
 
 **Where it feeds:**
 - **The material column:** through `pricedMaterial` (`costing.ts:243-248`).
@@ -510,7 +591,7 @@ lb/CY, and the thrust block table.
 | `user_fields` | JSONB list of the fields the person set |
 | `mat_key` | the material it prices from |
 | `sell_unit`, `sell_factor` | takeoff unit → sold unit |
-| `round_scope` | `line` or `project` |
+| `round_scope` | `line`, or `bid` (pipe: rounds with the lines of the same pipe key and size in its main layer, D-864) |
 | `price_source`, `price_basis`, `price_date`, `price_release`, `price_snapshot` | what priced it, and when |
 | `pct_of` | the allowance |
 
@@ -536,26 +617,30 @@ api, and the money arithmetic stays in `lib/estimate/`.
 
 ## 8. Blocks, with day estimates
 
-**The order:** the first cut, then P and M9 (both "right after the first cut"), then the rest.
+**The order (D-867 C4):**
+1. **P**, pressure and HDPE fused crews.
+2. **The first cut:** M0, M1, M2, M3, and M7 without the import.
+3. **M9**, services.
+4. **The rest:** M4a, M4b, M5, M6, M8, M7's import, M10 (the core release), M11.
 
 | Block | What | Days |
 |---|---|---|
-| **M0** | Answers logged; catalog fields (joint length and its confirmation, joining, metallic, gravity/pressure group and the "Pressure pipe" group in the picker, Q24); zone densities; structure settings fields; quantity table rows for LF-to-joints and tons | 1.5 |
+| **P** | **First.** Pressure pipe crews (Q21): starter activities "Pipe crew, pressure (PVC/DI)" and "Pipe crew, HDPE fused", their tiers, machines and crews as an earthwork starter release; the line map by utility kind and joining, so water and force main stop pricing with A12. A notice and Apply tier on saved lines | 2 |
+| **M0** | Answers logged; catalog fields (joint length and its confirmation, joining, metallic, gravity/pressure group and the "Pressure pipe" group in the picker, Q24); zone densities; structure settings fields; quantity table rows for LF to joints **per bid** (the base bid and an alternate rounding apart) and for tons | 1.5 |
 | **M1** | api: `matlib` releases, `mat_price`, `mat_price_link`, `mat_custom_item`, resolution with the material factor, one-key routes, permissions, audit | 2.5 |
-| **M2** | Component model: `auto_key`, `user_fields`, the dismissed tombstone, sold unit and factor, project rounding and spread, `pct_of`, "Missing price" for every material component (Q17), Needs attention, the bid summary's Incomplete | 3 |
+| **M2** | Component model: `auto_key`, `user_fields`, the dismissed tombstone, sold unit and factor, rounding and spread per bid (the item's main layer), `pct_of`, "Missing price" for every material component (Q17), Needs attention, the bid summary's Incomplete | 3 |
 | **M3** | Calculate writes materials: pipe at $/LF in full joints, fittings allowance, joining (no fusion), bedding, zone and imported backfill in tons, tracer, tape, DI encasement; every structure's "Whole structure" component (so no structure is left without material) | 4 |
 | **M7** | Settings › Material prices: workspace and project prices, basis and date, source links (http/https, project files), expiry flags. The import with the matching step is the last half day, and can follow the first cut | 3 |
-| **First cut** | **M0, M1, M2, M3, M7 without the import** | **13.5** |
-| **P** | Pressure pipe crews (Q21): starter activities "Pipe crew, pressure (PVC/DI)" and "Pipe crew, HDPE fused", their tiers, machines and crews as an earthwork starter release; the line map by utility kind and joining, so water and force main stop pricing with A12. A notice and Apply tier on saved lines | 2 |
+| **First cut** | **M0, M1, M2, M3, M7 without the import** (after P) | **13.5** |
 | **M9** | Services on a run (Q8): a count or clicks with their size; wye or tap and saddle components | 2 |
-| **M4a** | Pipe quantities in the engine: joints, pressure bends at vertices, the gravity bend flag, pressure tee detection, restraint sets or thrust blocks per bend and tee (Q25), foundation stone and geotextile in the water stretches; quantity table rows for each | 3 |
-| **M4b** | Structures (Q28): parts rules for manholes, inlets and catch basins (sump, risers per VF beyond the box, top slab, rings, frame and grate by inlet kind, boots, base stone, hood), junction boxes, vaults, cleanouts; cast-in-place concrete, rebar and forms; whole structure (EA to depth + VF over); the structure settings in the Structures box; quantity table rows | 4.5 |
+| **M4a** | Pipe quantities in the engine: joints, pressure bends at vertices, the gravity bend flag, pressure tee detection (for the restraint or thrust block only, D-863 Q30), restraint sets by default or thrust blocks reading "Enter the block's CY" until the project table has a value (Q31; the founder names the agency standard before M4a), foundation stone and geotextile in the water stretches; quantity table rows for each | 3 |
+| **M4b** | Structures (Q28): parts rules for manholes, inlets and catch basins (sump, risers per VF beyond the box, top slab, rings, frame and grate by inlet kind, boots, base stone, hood), junction boxes, vaults, cleanouts (the riser at the cleanout's own size, the wye run × cleanout, D-865); cast-in-place at 100 lb/CY rebar (Q32, checked by the founder before M4b); cast-in-place concrete, rebar and forms; whole structure (EA to depth + VF over); the structure settings in the Structures box; quantity table rows | 4.5 |
 | **M5** | Site lines: borrow, tipping, aggregate base, stabilizers, geosynthetics | 1.5 |
 | **M6** | Recalculate: "Calculate now has …: Apply", Restore, "Price changed: Update / Update all", equipment and labour moved to `auto_key` / `user_fields` (Q16) | 2.5 |
 | **M8** | HDPE fusion: fusion classes as a library release, cycle times from the manufacturers' fusion procedures, hours from joints | 1.5 |
-| **M10** | The first IntelCost release from the founder's quote sheets (≈ 495 keys, data work). **Required before any tester deploy** | 6–8 |
-| **M11** | Developer › Material prices (Q27): load, preview with the ±15 % flags, publish by quarter, the per-project Review with old → new and Update all, stale defaults after two quarters | 3 |
-| | **Total** | **≈ 41–43** |
+| **M10** | The first IntelCost release: **the core set** (§3.4.1, 89 keys from five quote sheets, or 122 with Q34), loaded as release 1, normalised and checked, with a quantity table row priced at the core. **Required before any tester deploy** | 3 (3.5 with Q34) |
+| **M11** | Developer › Material prices (Q27): load, preview with the ±15 % flags, publish by quarter, the per-project Review with old → new and Update all, stale defaults after two quarters. The rest of the 495 keys come through it | 3 |
+| | **Total** | **≈ 37–38** |
 
 **Each block ends** with the gates, the quantity table, and one smoke test on a throwaway account, never
 on 6467 or another founder project.
@@ -594,30 +679,32 @@ on 6467 or another founder project.
 | Q26 | Source links on workspace and project prices; none on IntelCost's | D-860 |
 | Q27 | Quarterly IntelCost release from Developer › Material prices; M11 | D-861 |
 | Q28 | Material for every structure type: parts, cast-in-place, or whole structure | D-862 |
+| Q29 | Missing structure types: a later plan; flared end sections and drop manholes first; a drop is an option on a manhole, not a type | D-863 |
+| Q30 | Pressure tees detected (M4a) only for their restraint or thrust block; the tee fitting stays in the 20 % allowance | D-863 |
+| Q31 | Restraint the default; a thrust block reads "Enter the block's CY" until the project table has a value; the founder names the agency standard before M4a | D-863 |
+| Q32 | Rebar 100 lb/CY, a setting, IntelCost's proposal; the founder checks it before M4b | D-863 |
+| C1 | Pipe rounds to full joints within each bid (base bid and each alternate apart), spread by LF share inside the bid | D-864 |
+| C2 | Cleanout riser at its own diameter in the run's family; wye run size × cleanout size | D-865 |
+| C3 | M10 narrowed to a core set; the core, not all 495, required before testers | D-866 |
+| C4 | Block P first, then the first cut, then M9 and the rest | D-867 |
 
 ---
 
 ## 10. Open questions, each with the recommended answer
 
-29. **Structure types the tool lacks** (§2.8.6): flared end sections, outlet control structures, drop
-    manholes, doghouse manholes, grease interceptors, oil/water separators, trench drains, detention
-    vaults, yard inlets, valves and hydrants. **Recommended:** a later plan. Flared end sections and drop
-    manholes come first: they are the most common on site bids, and a drop is a manhole option, not a
-    type.
-30. **Tees on pressure pipe.** Q25 restrains each tee, and Q9 leaves tees out as fittings.
-    **Recommended:** detect pressure tees (M4a) for their restraint or thrust block only; the tee fitting
-    stays in the 20 % allowance.
-31. **The thrust block table** (CY by size and bend angle). **Recommended:** a project table starting from
-    the agency standard the founder names. Until it has a value, a thrust block reads "Enter the block's
-    CY" in Needs attention, never 0.
-32. **Rebar for cast-in-place structures.** **Recommended:** 100 lb/CY as IntelCost's proposal, a
-    setting, checked against the founder's structural details before M4b.
+33. **A sub-layer under a bid** (e.g. "Roof Option B" under an alternate): does it round with its main
+    layer or on its own? **Recommended: with its main layer,** as the export's tab per main layer already
+    groups it. A sub-layer that is a true alternate to its siblings is made a top-level layer instead.
+34. **The core release's gaps:** add pressure bends 11¼, 22½, 45 and 90° at 6–12" for C900 and DI (32
+    keys) and zone sand (1 key) to M10's core? **Recommended: yes (122 keys).** M4a counts bends on every
+    water and force main line, and sand is the default pipe-zone material, so without them a tester's
+    water line reads "Missing price" the day M4a ships.
 
 ## Risks
 
 - **Prices date fast.** Hence the basis, the date, the links, expiry, the snapshot, the quarterly Review
   and the stale flag.
-- **Rounding across the project** puts a share of one line's order on another. The spread is by LF, and
-  the row says "of 518 LF ordered".
+- **Rounding within a bid** puts a share of one line's order on another line of the same bid. The spread
+  is by LF, and the row says "of 518 LF ordered in Base Bid". A bid never takes another bid's rounding.
 - **New quantities** (joints, bends, tees, structure parts, water stretches) each get a row in the
   shared quantity table before they price.
