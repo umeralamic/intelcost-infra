@@ -25336,7 +25336,7 @@ blocks, a first cut of 13.
   values go with it, sub-items included. Duplicate left them out, against D-873's "everything remains the same". Make Site
   Feature still does not. Shared-machine usage does not copy.
 
-## D-881: A sub-item always shows under its parent, in every group-by and filter, and stays linked in the workbook
+## D-882: A sub-item always shows under its parent, in every group-by and filter, and stays linked in the workbook
 
 **Status:** the founder's request, 2026-10-30.
 
