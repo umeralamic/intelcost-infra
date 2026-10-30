@@ -29,28 +29,30 @@ import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 import { EQUIPMENT_CASES, checkEquipment, runEquipment } from "./lib/equipment-cases.mjs";
 
 const HERE = "/drive/scripts";
+// This run's own folder (D-891), made by quantity-table.sh.
+const QT = `${HERE}/.${process.env.QT_RUN}`;
 if (process.env.GEN === "1") {
-  await writeFile(`${HERE}/.qt-cases.json`, JSON.stringify(CASES));
-  await writeFile(`${HERE}/.qt-register.json`, JSON.stringify(REG_ROWS));
-  await writeFile(`${HERE}/.qt-site.json`, JSON.stringify(SITE_JOIN_CASES));
-  await writeFile(`${HERE}/.qt-credits.json`, JSON.stringify(CREDIT_CASES));
-  await writeFile(`${HERE}/.qt-seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
-  await writeFile(`${HERE}/.qt-subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
-  await writeFile(`${HERE}/.qt-fxsystem.json`, JSON.stringify(FORMULA_SYSTEM_CASES));
+  await writeFile(`${QT}/cases.json`, JSON.stringify(CASES));
+  await writeFile(`${QT}/register.json`, JSON.stringify(REG_ROWS));
+  await writeFile(`${QT}/site.json`, JSON.stringify(SITE_JOIN_CASES));
+  await writeFile(`${QT}/credits.json`, JSON.stringify(CREDIT_CASES));
+  await writeFile(`${QT}/seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
+  await writeFile(`${QT}/subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
+  await writeFile(`${QT}/fxsystem.json`, JSON.stringify(FORMULA_SYSTEM_CASES));
   // D-642: each row carries its base row's shapes.
-  await writeFile(`${HERE}/.qt-scaleundo.json`, JSON.stringify(SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c }))));
+  await writeFile(`${QT}/scaleundo.json`, JSON.stringify(SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c }))));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
   process.exit(0);
 }
 
-const python = new Map(JSON.parse(await readFile(`${HERE}/.qt-python.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonCredits = new Map(JSON.parse(await readFile(`${HERE}/.qt-credits-py.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonReg = new Map(JSON.parse(await readFile(`${HERE}/.qt-register-py.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonSite = new Map(JSON.parse(await readFile(`${HERE}/.qt-site-py.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonSub = new Map(JSON.parse(await readFile(`${HERE}/.qt-subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonScale = new Map(JSON.parse(await readFile(`${HERE}/.qt-scaleundo-py.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonFx = new Map(JSON.parse(await readFile(`${HERE}/.qt-fxsystem-py.json`, "utf8")).map((r) => [r.id, r.value]));
-const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${HERE}/.qt-seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const python = new Map(JSON.parse(await readFile(`${QT}/python.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonCredits = new Map(JSON.parse(await readFile(`${QT}/credits-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonReg = new Map(JSON.parse(await readFile(`${QT}/register-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonSite = new Map(JSON.parse(await readFile(`${QT}/site-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonSub = new Map(JSON.parse(await readFile(`${QT}/subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonScale = new Map(JSON.parse(await readFile(`${QT}/scaleundo-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonFx = new Map(JSON.parse(await readFile(`${QT}/fxsystem-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${QT}/seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
 let costs;
@@ -105,7 +107,7 @@ try {
     });
   }, [SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c })), Object.fromEntries(pythonScale)]);
   // The equipment library rows (F33): the engine against the catalog and the hand-worked answers.
-  equipmentAnswers = await runEquipment(page, JSON.parse(await readFile(`${HERE}/.qt-eqlib.json`, "utf8")));
+  equipmentAnswers = await runEquipment(page, JSON.parse(await readFile(`${QT}/eqlib.json`, "utf8")));
   // The cost rows: F9's money through the app's own lib/estimate.
   costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");

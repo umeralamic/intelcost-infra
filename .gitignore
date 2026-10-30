@@ -11,3 +11,4 @@ workspace/.claude/scheduled_tasks.lock
 # The AI provider's real keys, loaded by the api (F14). Never commit.
 .env.ai
 fx-suite/
+browser/.qt-run.*

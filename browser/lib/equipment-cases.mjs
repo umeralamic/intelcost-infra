@@ -122,12 +122,14 @@ export const EQUIPMENT_CASES = [
   { id: "eq-751-line-10hr", kind: "host", ...DIESEL, qty: 10000, unit: "BCY", spread: { prod_per_day: 1000, prod_unit: "BCY", hours_per_day: 10 }, rows: [excavator({ eq_class_key: "EX-CRAWL-30T", eq_units: 1 }), operators(1)], expect: { equipment: 16471.70, crewHours: 100 } },
 
   // A hired operated machine's mob is in its hourly rate (D-756): DT-OP-3AXLE 100 hr × $106.14 = $10,614.00, never
-  // missing; five shared over 500 machine-hr, $53,070.00. A self-propelled BARE machine keeps the rule: WT-4000's
+  // missing; five shared over 500 machine-hr, $53,070.00. A self-propelled BARE machine keeps the rule: WT-2000's
   // mob is missing (its fuel burn too: the catalog has none), and a shared one flags every line it serves, never a silent $0.
+  // WT-4000 (D-892): 40 hr over 5 days is 1 week $3,067.00, fuel low 5.95 gal/hr × 40 hr × $6.276 = $1,493.69, mob none: $4,560.69.
+  { id: "eq-892-wt4000", kind: "machine", ...DIESEL, input: { classKey: "WT-4000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "low", units: 1, includeMob: true }, expect: { total: 4560.69, mob: 0, missing: [] } },
   { id: "eq-756-operated-no-mob", kind: "machine", setting: {}, input: { classKey: "DT-OP-3AXLE", mode: "operated", period: "hr", hours: 100, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 10614, mob: 0, missing: [] } },
-  { id: "eq-756-bare-self-propelled", kind: "machine", ...DIESEL, input: { classKey: "WT-4000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["fuel_gph_med", "mob"] } },
+  { id: "eq-756-bare-self-propelled", kind: "machine", ...DIESEL, input: { classKey: "WT-2000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["fuel_gph_med", "mob"] } },
   { id: "eq-756-shared-trucks", kind: "shared", setting: {}, resource: { name: "Haul off: DT-OP-3AXLE", eq_class_key: "DT-OP-3AXLE", eq_units: 5, eq_mode: "operated", eq_hours_per_day: 10 }, hosts: [{ id: "h1", machineHours: 300 }, { id: "h2", machineHours: 200 }], expect: { total: 53070, h1: 31842, h2: 21228, unallocated: 0, flagged: 0 } },
-  { id: "eq-756-shared-missing-flags", kind: "shared", ...DIESEL, resource: { name: "TEST water truck", eq_class_key: "WT-4000", eq_units: 1, eq_mode: "rental" }, hosts: [{ id: "h1", machineHours: 24 }, { id: "h2", machineHours: 16 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
+  { id: "eq-756-shared-missing-flags", kind: "shared", ...DIESEL, resource: { name: "TEST water truck", eq_class_key: "WT-2000", eq_units: 1, eq_mode: "rental" }, hosts: [{ id: "h1", machineHours: 24 }, { id: "h2", machineHours: 16 }], expect: { total: 0, flagged: 2, unflagged: 0 } },
   // An assembled crane is the exception (D-756): operated, crane-assembled, its mob/demob is a required quote.
   // CR-HYD-165T-OP 10 hr × $520 = $5,200.00; with a $6,000.00 quote, $11,200.00. Shared, it flags both its lines.
   { id: "eq-756-crane-quote-required", kind: "machine", setting: {}, input: { classKey: "CR-HYD-165T-OP", mode: "operated", period: "hr", hours: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["mob"] } },

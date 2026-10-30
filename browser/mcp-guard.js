@@ -38,7 +38,11 @@ async (page) => {
     "7aba5c72-2be8-41bc-a177-517488dffaf5": "CCCP",
   };
   // The founder's own workspaces that hold no bench project: never opened, reads too (D-601).
-  const FOUNDER_WORKSPACES = { "04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team (umeralam.q@gmail.com)" };
+  const FOUNDER_WORKSPACES = {
+    "04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team (umeralam.q@gmail.com)",
+    // All of Bench Construction Test, a project added later too (D-891).
+    "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9": "Bench Construction Test",
+  };
   // The founder's accounts: never signed in as (D-542, D-601).
   const FOUNDER_EMAILS = ["estimator@bench.intelcost.io", "umeralam.q@gmail.com"];
   const TEST_COPY = "042c8817-4a65-47ba-95d8-686ecf986246";

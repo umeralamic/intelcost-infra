@@ -16,7 +16,7 @@
 // - DT-OP-3AXLE operated, 100 hr on "TEST E": 100 × $106.14 = $10,614.00, mob in the hourly rate;
 // - CR-HYD-165T-OP operated, 6 + 4 hr on "TEST A" and "TEST B": missing its mob quote (both lines
 //   flagged); with a TEST quote of $6,000, 10 × $520 + $6,000 = $11,200.00;
-// - WT-4000 rental, 24 + 16 hr on "TEST C" and "TEST D": no fuel burn and no mob in the catalog,
+// - WT-2000 rental, 24 + 16 hr on "TEST C" and "TEST D": no fuel burn and no mob in the catalog,
 //   so both lines stay flagged.
 // The import: EX-CRAWL-20T with company values day $1,000 and week $3,000 (TEST), then a workbook
 // whose Day cell is empty, Week says "national" and 4 weeks is 9,000.
@@ -85,7 +85,7 @@ await run("c35-equipment-library", [
       await shared("EX-CRAWL-30T", { name: "TEST excavator 30T", eq_mode: "rental", eq_hours_per_day: 10 }, { "TEST E": 100 });
       await shared("DT-OP-3AXLE", { name: "TEST tri-axle operated", eq_mode: "operated", eq_period: "hr" }, { "TEST E": 100 });
       await shared("CR-HYD-165T-OP", { name: "TEST assembled crane", eq_mode: "operated", eq_period: "hr" }, { "TEST A": 6, "TEST B": 4 });
-      await shared("WT-4000", { name: "TEST water truck", eq_mode: "rental" }, { "TEST C": 24, "TEST D": 16 });
+      await shared("WT-2000", { name: "TEST water truck", eq_mode: "rental" }, { "TEST C": 24, "TEST D": 16 });
       const b = (await apiCall(token, "GET", `${lib}/bundle`)).body;
       expect(b.classes.length === 628 && b.release === 4, `bundle: ${b.classes.length} classes, release ${b.release}`);
       return `628 classes, release 4 (D-818); ${Object.keys(res).length} shared machines`;

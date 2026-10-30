@@ -16,8 +16,9 @@ The rules, as `lib/protected.mjs`'s:
     included): a statement whose text or parameters name a protected project other than the test copy,
     or a founder workspace, is refused, a read too (`openRefusal`). One naming the test copy is refused
     unless it is a read (`writeRefusal`).
-  - **Every project row loaded** through the models: a protected project other than the test copy stops
-    the drive the moment it is loaded, before the drive can use it or its id.
+  - **Every project row loaded** through the models: a protected project other than the test copy, or
+    any project in a founder workspace but the test copy, a new one included (D-891), stops the drive the
+    moment it is loaded, before the drive can use it or its id.
 A refusal ends the drive (`SystemExit`, exit code 1, which `except Exception` does not catch) and prints
 how many statements were sent before it; a refused statement is never sent.
 
@@ -27,7 +28,7 @@ project; reading it by uuid is refused, and a model load is refused, so neither 
 written. `scripts/project_fingerprint.py` is not a drive: it is the read-only fingerprint (D-542).
 
 For a proof without touching a protected project, `DRIVE_GUARD_EXTRA` (uuids, comma separated) adds
-projects to the list for one run; it can only add.
+projects to the list for one run, and `DRIVE_GUARD_WORKSPACE_EXTRA` workspaces; each can only add.
 """
 
 import os
@@ -45,6 +46,8 @@ for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUAR
 """uuid → name: every project no drive opens (the test copy is read only)."""
 
 FOUNDER_WORKSPACE_UUIDS: dict[str, str] = dict(FOUNDER_WORKSPACES)
+for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUARD_WORKSPACE_EXTRA", "").split(","))):
+    FOUNDER_WORKSPACE_UUIDS.setdefault(extra, "added for this run (DRIVE_GUARD_WORKSPACE_EXTRA)")
 
 _NEVER_OPENED = {u: n for u, n in PROTECTED.items() if u != TEST_COPY} | FOUNDER_WORKSPACE_UUIDS
 _READ = re.compile(r"^\s*(?:select|with|show|explain)\b", re.IGNORECASE)
@@ -94,9 +97,29 @@ def argv_refusal(argv: list[str]) -> str | None:
     return None
 
 
+def _founder_workspace_ids() -> dict[int, str]:
+    """Each founder workspace's row id, read once before the listener goes on: a project row carries
+    only that (D-891)."""
+    from sqlalchemy import bindparam, create_engine, text
+    from sqlalchemy.dialects.postgresql import UUID
+
+    from app.config import settings
+
+    engine = create_engine(settings.sync_database_url)
+    query = text("select id, uuid::text from workspace where uuid in :uuids").bindparams(
+        bindparam("uuids", expanding=True, type_=UUID(as_uuid=False))
+    )
+    with engine.connect() as connection:
+        rows = connection.execute(query, {"uuids": list(FOUNDER_WORKSPACE_UUIDS)}).all()
+    engine.dispose()
+    return {row[0]: FOUNDER_WORKSPACE_UUIDS[row[1]] for row in rows}
+
+
 def _install() -> None:
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
+
+    founder_ids = _founder_workspace_ids()
 
     def before(_conn: Any, _cursor: Any, statement: str, parameters: Any, _context: Any, _many: bool) -> None:
         global sent
@@ -114,6 +137,9 @@ def _install() -> None:
         uuid = str(project.uuid).lower()
         if uuid in _NEVER_OPENED:
             _refuse(f'a project row loaded is "{_NEVER_OPENED[uuid]}" ({uuid}), never opened from here (D-601)', "; the drive stopped as it loaded")
+
+        if uuid != TEST_COPY and project.workspace_id in founder_ids:
+            _refuse(f'a project row loaded ({uuid}) is in "{founder_ids[project.workspace_id]}", never opened from here (D-891)', "; the row was read, nothing else")
 
     event.listen(Project, "load", loaded)
 

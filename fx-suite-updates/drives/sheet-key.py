@@ -242,9 +242,9 @@ def measure(folder: str, key_path: str) -> None:
                 entry["scale_label"] = (proved.apply_label or proved.label) if proved else None
                 entry["scale_how"] = (proved.method or "") + (" half" if proved.half_size else "") if proved else None
                 entry["suggested"] = [(s.label, s.feet_per_pt, s.status) for s in scales]
-            elif "--ai" in sys.argv and "--scans-asked" in sys.argv:
-                # As a person's drag box on a scan; on Load a scan is not read (D-883).
-                number, title, scales = _ai_scan(page)
+            elif "--ai" in sys.argv:
+                # On Load a scan is read for its name only (D-891); as a person's drag box, its scale too.
+                number, title, scales = _ai_scan(page, scale="--scans-asked" in sys.argv)
                 entry["number"], entry["title"] = number, title
                 entry["ai_seconds"] = dict(AI["last"])
                 entry["suggested"] = [(x.label, x.feet_per_pt, x.status) for x in scales]

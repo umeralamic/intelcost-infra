@@ -50,6 +50,8 @@ export const PROTECTED_PROJECTS = Object.freeze({
 /** The founder's own workspaces that hold no bench project: never opened from here (D-601). */
 export const FOUNDER_WORKSPACES = Object.freeze({
   "04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team (umeralam.q@gmail.com)",
+  // All of Bench Construction Test, a project added later too (D-891).
+  "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9": "Bench Construction Test",
 });
 
 /** The 3D test copy: the one project that may be duplicated from here. */

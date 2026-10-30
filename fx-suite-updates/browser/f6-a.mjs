@@ -361,7 +361,7 @@ await run("f6-a", [
     },
   },
   {
-    title: "S2 AC4: the api's figure reaches a second window, on the other api process, within a second (B settled)",
+    title: "S2 AC4: the api's figure reaches a second window, on the other api process, within 1.5 s, Playwright's polling of up to 500 ms included (B settled)",
     run: async ({ context }) => secondWindow(context, { settled: true }),
   },
   {
