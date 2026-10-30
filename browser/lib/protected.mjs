@@ -28,6 +28,9 @@ export const PROTECTED_PROJECTS = Object.freeze({
   "90cb3a75-3553-4de0-aac4-1693c7d18d57": "Miramar Cove Vault Buildings",
   "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "11",
   "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
+  "6ca7f34b-6ab2-4a29-874e-67d39d45b616": "10793 SBR",
+  // The founder's copy of the shared copy (2026-10-30 overnight brief).
+  "9e3b9d2d-8cf4-45db-8980-a519d7efdaf9": "Hidden Valley Rebid — 3D test (shared copy) (shared copy)",
 });
 
 /** The founder's own workspaces that hold no bench project: never opened from here (D-601). */

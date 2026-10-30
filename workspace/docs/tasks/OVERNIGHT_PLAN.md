@@ -1,50 +1,27 @@
-# Night plan, 2026-10-24 (from 01:42 UTC, no end time): My equipment (F34), then the full fixture suite
+# Night plan, 2026-10-30 (00:10 UTC to 11:30 UTC): release failures, OCR, GPS export clean-up, earthwork fixes
 
-The founder's brief: (1) build "My equipment" from [MY_EQUIPMENT_PLAN.md](MY_EQUIPMENT_PLAN.md) (D-759, Q1–Q7 as
-recommended), blocks A to E; then (2) restore the fixture suite from tag `fixtures-archive-2026-09-28`, run it in full,
-classify every failure, add fixtures for what was built since the archive, and run the D-758 follow-up browser check.
-No end time: keep going until both parts are complete. The previous plan and report are archived as
-`docs/archive/OVERNIGHT_PLAN_2026-10-23.md` and `docs/archive/OVERNIGHT_REPORT_2026-10-23.md`. Results:
-[OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md), updated after every block. A restarted session continues from the first
-row below that is not ☑.
+The founder's brief of 2026-10-29 evening, seven steps worked in order. Report:
+`intelcost-infra/morning-report-2026-10-30/REPORT_2026-10-30.md`, updated after every step. Time read with
+`date -u` before every decision based on it; the final report is written from 11:30 UTC at the latest. The previous
+plan is archived as `docs/archive/OVERNIGHT_PLAN_2026-10-24.md`.
 
-**Every block (Part 1):**
-1. Any change found while building logged as a later D-NN first (D-759 covers the plan itself).
-2. The gates in the containers: app lint, typecheck, build; api ruff, mypy (and `alembic check` for A). No prettier;
-   no `from __future__ import annotations`.
-3. `./quantity-table.sh`, with its line reported.
-4. One Playwright MCP smoke on a throwaway account and workspace, with the block's by-hand check.
-5. Commit and push `umer-dev`; update `SINCE_ARCHIVE.md`; refresh the workspace mirror; update this file and the report.
+**Read only, every tool, browser and api-process script:** Hidden Valley Spec, Hidden Valley Spec Building Rebid
+(bd8fc5b0), Waxing City, Minmar, everything in Bench Construction Test, the 3D test copy's shared copy (6467) and its
+"(shared copy) (shared copy)" (6565, added to the three guard lists at the start). Real-data proofs on BENCH DUPs and
+throwaway accounts only, purged at the end. Fingerprint at the start and the end. Mail guard and drives guard on.
 
-**Part 2 standard (the brief):** every failure is one of (a) an app bug: fix the app, never the test; (b) outdated by a
-logged decision: update the test, citing the D-number; (c) retired: remove it, citing the retirement. Never weaken an
-assertion, skip a test or change an expected number without a D-number. After each fix: gates, quantity table, commit
-and push `umer-dev`.
+**Every step:** gates (app lint, typecheck, build; api ruff, mypy), `./quantity-table.sh`, one Playwright MCP smoke
+check; only the fixtures the step names; commit on `umer-dev` when finished (a named stash otherwise); push at the end.
+A decision needed from the founder: a numbered question in the report with the recommended answer, taken.
 
-**How Part 2 runs:** the suite lives only in `intelcost-infra` (the api and app tags carry no test files). It runs on
-the fx stack (D-611): `./fx-suite.sh setup`, `prod`, `run full`. Updated fixtures go in `fx-suite-updates/` (D-614,
-D-619); new ones there too, as `c<NN>-<slug>.mjs` (D-636). This brief is the founder's named exception to hard rule 8
-for tonight.
-
-**Rules for the night:**
-- Throwaway accounts and workspaces only. Never the founder's account (estimator@, umeralam.q@), the founder's
-  workspaces, "Hidden Valley Spec" or "Bench Construction Test" (and its 3D test project).
-- No invented rates; TEST data named "TEST …" and listed in the report.
-- Questions for the founder go in the report; the most reasonable reading is taken and recorded under "Decisions taken
-  overnight" with the alternative.
-- A block that fails after a solid attempt: `umer-dev` stays at the last good commit, the failure goes in the report,
-  the next independent block goes on, and the failed one is retried at the end.
-
-| # | Block | Depends on | Status | Commit |
-|---|---|---|---|---|
-| 0 | Plan, report, archive of last night's | — | ☑ | (workspace) |
-| A | Data and api: migration, models, routes, bundle, joins, audit | — | ☑ | api 8cdabab |
-| B | Library page: On my list, bulk, header toggle, filter, starting list, bulk-off warning | A | ☑ | app 539084e |
-| C | Pickers: `suggest.ts`, Picker, MachineName, template editor, tier class list, Add to my equipment | A | ☑ | app a71d085, infra 0753b3c |
-| D | Earthwork activities' Show in suggestions; Not in your equipment list; release banner line | A, C | ☑ | api bcf5e05, app 58f63f2, infra 17db4af |
-| E | Close-out: FEATURES, SINCE_ARCHIVE, mirror, full gates and table, end-to-end smoke | A–D | ☑ | (workspace) |
-| 2.1 | Restore the suite on the fx stack (setup, prod, check) | — | ☑ | (fx-suite, git-ignored) |
-| 2.2 | Full run; classify every failure (a/b/c); fix | 2.1 | ◐ standing list and the 29 newer run; every failure triaged (fx-suite/.triage/), fixed or updated; ledger fx-suite/.triage/ledger.md; next: dev-only group on fx dev apps, then the final full run | |
-| 2.3 | New fixtures for what was built since the archive (list in the report) | 2.1 | ☑ c32–c38 | infra |
-| 2.4 | D-758 follow-up browser check (Playwright, throwaway) | — | ☑ | c32 (infra 2ad06b9), fix api 9f1ec9e |
-| 2.5 | Final full run, report, clean-up | 2.2, 2.3 | ☐ | |
+| # | Step | State |
+|---|---|---|
+| 0 | Fingerprint at the start; guard lists gain 6565 and 10793 SBR | ☑ |
+| 1 | f6-a (3.25 s to a second window) and n3-twenty-loads (6.1 s image): find the slow stage, bisect, fix; each alone ×3 | ☐ |
+| 2 | The 12 parallel-only failures: cause each (data/account, starvation, app race); re-run those 12 in parallel; fix isolation; the 3 dev-server failures | ☐ |
+| 3 | OCR worker started by `release`, a scan's scale read in the run; regions first, whole sheet last; 50-sheet times before/after; 103-sheet key counts | ☐ |
+| 4 | GPS export: weld, slivers, winding, refuse a folded surface (a); PDF-0 linework (b); README coverage and steep area (c) | ☐ |
+| 5 | Deleted proposed contour still on hover/snap/selection; other earthwork shapes | ☐ |
+| 6 | Cut & Fill swell per material (a); sections PDF (b); copy-of-copy numbering (c) | ☐ |
+| 7 | Equipment cost build-up per EH, report only | ☐ |
+| F | Fingerprint at the end, purge DUPs and throwaways, push, final report | ☐ |

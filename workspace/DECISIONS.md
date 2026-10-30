@@ -25123,3 +25123,36 @@ blocks, a first cut of 13.
   - trench-bottom geotextile, which M4a writes on every water stretch.
 - **The new total:** 123 keys. Waterworks distributor 73, precast producer 39, castings 5, quarry 4, landfill 2.
   M10 is 3.5 days; the plan is about 37.5–38.5 days.
+
+## D-869: An api process is made ready before it serves; a settled refetch never throws away a read in flight
+
+**Status:** Accepted (overnight 2026-10-30, step 1: f6-a and n3-twenty-loads, failing alone in three releases).
+
+- **f6-a, where the 3.25 s went.** The change reached window B at +63 ms; B's three reads (the item, the item
+  list since, the symbol index) all sat on one api-fx-b process and came back together 2.8 s later, while
+  Postgres and the other apis answered. A watchdog on each api's event loop (`app/core/loop_watch.py`,
+  `LOOP_WATCH_MS`, set on the fx stack only) found the holder: **FastAPI builds a router's routes on the first
+  request matched against it** (every route's dependencies and validators, under a lock, on the event loop),
+  1.8 to 2.8 s per router per process, and **the S3 client is made on first use** (botocore lists its whole
+  service-data folder), 3.4 s. Since D-822 each api runs three processes, each cold on its own, so a window
+  could meet a cold router an hour after a start; D-822 already saw "the first run's settled case once took
+  2.35 s" on fresh processes. Bisect: the cost exists in FastAPI 0.141 (the September image) and 0.162 alike;
+  what changed is D-822 (api `e8ada35`, infra `4ebb847`), one process to three.
+- **Fix (api):** `app/core/warm.py`, run in the lifespan before the process accepts a connection: every route
+  built through FastAPI's own builders (503 routes), the S3 client made, the national equipment library read
+  (1.2 s on the loop at its first read), and the worker task modules the api imports where it queues a job
+  (13.6 s at the bench's first code check, 1.5 s at the first mail: Celery and every task module, found by the
+  same watchdog on the first run after the fix). About 5 to 6 s more per process start, none on a request. The walk goes
+  through `getattr`, so a FastAPI that builds eagerly makes it a no-op.
+- **What the fixture measures, unchanged:** the 1.5 s bound stays. Its figure is Playwright's detection time,
+  which polls at up to 500 ms: B's own panel changed at +312 to +595 ms in the runs that read 913 to 1,057 ms.
+- **n3, where the 6.1 s went.** The sheet was ready at 113.0 s and an assets answer carried its image at
+  114.2 s, but the canvas showed it at 119.1 s. A Load's events refetch the project's sheet assets about once a
+  second (`useSettledRefetch`), and `invalidateQueries` cancels a read already in flight; the assets call takes
+  no abort signal, so the network answered (60 asked, 60 answered) and React Query threw each answer away. On
+  n3's throttled network one read outlasted the gap between events, so the open sheet waited for a lull.
+- **Fix (app):** `useSettledRefetch` lets a read in flight land and asks again after it, rather than
+  cancelling it. Every settled refetch takes the same rule: an event never cancels a read on its way.
+- **Found on the way (worker):** `measure_file_pages` and `prepare_file_pages` deadlocked on one Load (the release of
+  10-29, 22:14:18 UTC; measure's page count lost): one wrote the file's row and then its page rows, the other the page
+  rows and then the file's row. Both take the file's row first now, and the early thumbnails too.

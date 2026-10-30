@@ -433,6 +433,8 @@ services:
       LOCKED_PROJECTS: "{}"
       # Its own Stripe fake (N10, D-660): a fixture may pay, and the webhook lands on the fx api.
       STRIPE_API_BASE: http://stripe-fake-fx:12111
+      # The event loop's watchdog (D-869): a loop held 500 ms logs where.
+      LOOP_WATCH_MS: "500"
     ports: !override
       - "8020:8000"
     # The archived suite's own drives, restored with it (./fx-suite.sh setup).
