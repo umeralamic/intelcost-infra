@@ -10,7 +10,7 @@
 // from A's action group, where the old mode's "Draw the extra shape." hint stood; the refusal's
 // words, the click on the sheet and "the item still has one shape" are unchanged.
 
-import { APP, SEEDED, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
+import { APP, SEEDED, apiCall, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
 import { A_NAME, APP_B, B_NAME, WINDOW_B, appSockets, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
 import { clickSheet, countItem, itemDetail, menuItem, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
@@ -46,6 +46,17 @@ await run("f8-s12-restart", [
         const before = (await appSockets(page)).length;
 
         console.log("PHASE restart-api");
+        // The api down and back before anything is timed (D-870): under load its start took 49 s (8 s closed, 41 s
+        // starting), past the waits below, which time the hold's hand-over, not the restart.
+        const alive = async () => {
+          try {
+            return (await apiCall(token, "GET", "/health")).status === 200;
+          } catch {
+            return false;
+          }
+        };
+        await waitFor(async () => !(await alive()), "the api to go down", 30000, 250);
+        await waitFor(alive, "the api to come back", 180000, 500);
         // A's socket closes with the api, and its hold goes with it.
         await waitFor(async () => (await tags(b.page, name)).length === 0, "B to see A's hold released", 30000, 200);
         await resume(b.page, name).click();

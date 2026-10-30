@@ -109,6 +109,9 @@ patch(path.join(root, "regress.sh"), (t) => {
   s = s.replace(/^ {6}[a-z0-9| -]+\) echo "SKIP \$name" >&2; continue ;;$/m, `      ${skip}) echo "SKIP $name" >&2; continue ;;`);
   if (!s.includes('echo "SKIP $name"')) s = s.replace("      f4-s12 | f5-demo | *-outage | *-restart) continue ;;", `      f4-s12 | f5-demo | *-outage | *-restart) continue ;;\n      ${skip}) echo "SKIP $name" >&2; continue ;;`);
   // d27-uploads runs on the fx stack since D-770 (its beat is beat-fx).
+  // The two 520 MB sets run one at a time (D-870): side by side they shared the api's memory and the worker's prepare
+  // queue, and f5-big's 10 s Load waited 29 s behind the other fixtures' prepares; neither failed alone.
+  s = s.replace(/^SERIAL=\((?![^)]*f5-big)([^)]*)\)$/m, "SERIAL=($1 f5-big f5-count)");
   return s;
 });
 
