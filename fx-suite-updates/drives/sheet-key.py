@@ -30,7 +30,7 @@ from typing import Any
 
 import pymupdf
 
-from app.features.drawing import naming, reading
+from app.features.drawing import naming, read_on_load, reading
 from app.features.drawing.read_on_load import set_key
 
 OUT = pathlib.Path("/tmp/sheet-key")
@@ -246,9 +246,21 @@ def measure(folder: str, key_path: str) -> None:
             rich = getattr(reading, "drawing_text_in_layer", lambda _p: False)(pieces)
             if "--ocr" in sys.argv and entry["scale"] is None and not text_scales and not rich:
                 t1 = time.perf_counter()
-                ocr = reading.ocr_pieces(page)
-                read_ocr = reading.read_scale(ocr, lambda page=page: reading.page_strokes(page), w, h) if ocr else []
+                ocr_read = getattr(read_on_load, "ocr_page", None) if "--ocr-as-worker" in sys.argv else None
+                if ocr_read is not None:
+                    # The worker's own OCR read (D-870: the title block and view titles first).
+                    ocr = []
+                    read_ocr = ocr_read(page)
+                else:
+                    ocr = reading.ocr_pieces(page)
+                    read_ocr = reading.read_scale(ocr, lambda page=page: reading.page_strokes(page), w, h) if ocr else []
                 entry["ocr_seconds"] = time.perf_counter() - t1
+                if "--dump-ocr" in sys.argv and ocr:
+                    # Every piece the whole-page OCR read, to try region rules without Tesseract again.
+                    (OUT / "ocr").mkdir(parents=True, exist_ok=True)
+                    (OUT / "ocr" / f"{k['sheet']}.json").write_text(
+                        json.dumps({"w": w, "h": h, "pieces": [[p.text, p.x, p.y, p.w, p.h] for p in ocr]})
+                    )
                 proved = reading.auto(read_ocr)
                 if proved:
                     entry["scale"] = proved.apply_feet_per_pt or proved.feet_per_pt

@@ -40,7 +40,8 @@ export COMPOSE_FILE="$PWD/docker-compose.yml"
 
 check() {
   local bad=0 svc out
-  for svc in api-fx worker-fx; do
+  # The OCR worker too (D-872): a scan's scale is read there, and a release must read one.
+  for svc in api-fx worker-fx worker-fx-ocr; do
     out=$(docker compose exec -T "$svc" python -c "
 from app.config import settings
 from app.core.storage import _client
@@ -196,6 +197,9 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     "$0" prepare 2>&1 | tee "$out/0-prepare.log" | tail -1
     [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "release: prepare failed (see $out/0-prepare.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     export FX_OFFLINE=1
+    # Every fx worker running, the OCR worker among them (D-872: before, only `setup` started it, and no scan's scale
+    # was read in a release).
+    docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr beat-fx >"$out/0-workers.log" 2>&1 \n      || { echo "release: the fx workers would not start (see $out/0-workers.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     mapfile -t all < <(release_list)
     built=()
     devs=()
