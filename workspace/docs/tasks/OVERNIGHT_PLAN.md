@@ -17,11 +17,11 @@ A decision needed from the founder: a numbered question in the report with the r
 | # | Step | State |
 |---|---|---|
 | 0 | Fingerprint at the start; guard lists gain 6565 and 10793 SBR | ☑ |
-| 1 | f6-a (3.25 s to a second window) and n3-twenty-loads (6.1 s image): find the slow stage, bisect, fix; each alone ×3 | ☐ |
-| 2 | The 12 parallel-only failures: cause each (data/account, starvation, app race); re-run those 12 in parallel; fix isolation; the 3 dev-server failures | ☐ |
-| 3 | OCR worker started by `release`, a scan's scale read in the run; regions first, whole sheet last; 50-sheet times before/after; 103-sheet key counts | ☐ |
-| 4 | GPS export: weld, slivers, winding, refuse a folded surface (a); PDF-0 linework (b); README coverage and steep area (c) | ☐ |
-| 5 | Deleted proposed contour still on hover/snap/selection; other earthwork shapes | ☐ |
-| 6 | Cut & Fill swell per material (a); sections PDF (b); copy-of-copy numbering (c) | ☐ |
-| 7 | Equipment cost build-up per EH, report only | ☐ |
-| F | Fingerprint at the end, purge DUPs and throwaways, push, final report | ☐ |
+| 1 | f6-a (3.25 s to a second window) and n3-twenty-loads (6.1 s image): find the slow stage, bisect, fix; each alone ×3 | ☑ D-869 |
+| 2 | The 12 parallel-only failures: cause each (data/account, starvation, app race); re-run those 12 in parallel; fix isolation; the 3 dev-server failures | ☑ D-870 (isolation) |
+| 3 | OCR worker started by `release`, a scan's scale read in the run; regions first, whole sheet last; 50-sheet times before/after; 103-sheet key counts | ☑ wiring, D-872; speed not reached (Q4) |
+| 4 | GPS export: weld, slivers, winding, refuse a folded surface (a); PDF-0 linework (b); README coverage and steep area (c) | ☑ D-870 |
+| 5 | Deleted proposed contour still on hover/snap/selection; other earthwork shapes | ☑ not reproduced (Q5) |
+| 6 | Cut & Fill swell per material (a); sections PDF (b); copy-of-copy numbering (c) | ☑ D-871 |
+| 7 | Equipment cost build-up per EH, report only | ☑ report only |
+| F | Fingerprint at the end, purge DUPs and throwaways, push, final report | ☑ |

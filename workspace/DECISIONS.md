@@ -25156,3 +25156,73 @@ blocks, a first cut of 13.
 - **Found on the way (worker):** `measure_file_pages` and `prepare_file_pages` deadlocked on one Load (the release of
   10-29, 22:14:18 UTC; measure's page count lost): one wrote the file's row and then its page rows, the other the page
   rows and then the file's row. Both take the file's row first now, and the early thumbnails too.
+
+## D-870: GPS Export writes a surface a rover reads as one: welded, no slivers, one winding, never folded; the drawing waited for; coverage and steep strip in the README
+
+**Status:** Accepted (overnight 2026-10-30, step 4: the founder's brief), with step 2's two isolation fixes.
+
+- **Every written surface is cleaned** (`cleanTin`, after `patchesToTin`): points closer than 0.01 ft welded into the
+  first of them; faces under 0.01 SF dropped; every face counter-clockwise in plan; points no face uses left out.
+  Then each edge is checked: two faces running an edge the same way, or three on one edge, lie over each other.
+- **A folded surface is not written:** the download stops with "<surface> folds over itself at N … E … and n more
+  faces: not written." (the files' own coordinates).
+- **The trench bottom's strip is one outline** (`runStrip`): a rectangle a stretch and a mitre at each bend, unioned,
+  the elevation at a point the nearest stretch's at its foot. A stretch shorter than its bend's mitre made its quad
+  cross itself: the HV copy's sanitary trench bottom folded at N 599644 E 2000436 (3 faces) in every export since
+  D-824, caught by the new check on the first run.
+- **Download waits for the sheet's drawing** while "The drawing's own lines and text" is ticked ("Reading the
+  drawing…" on the button). A Download sent before the PDF was read wrote no PDF layer and no README line, unsaid:
+  the 10-29 g3 exports (no PDF-0) against 10-28's e1 (16,700 lines, 241 texts). Not an option turned off; a race
+  since D-825. Under load the read took 49 s.
+- **README:** "Finished grade covers N SF of the N SF limits (98.6 %)." then "The volumes cover 93.9 % of the limits:
+  Calculate counts only where existing and finished grade both reach, while this surface also takes in what is filled
+  above." (the volume panel's coverage, floored as it shows it). A filled edge strip adds "Steeper than 2:1 in it: N SF,
+  mostly near N … E …" (the strip's own faces; the 25 ft square holding most of it).
+- **The fixture suite (step 2):** f5-big and f5-count (each a 520 MB set) run one at a time (`fx-suite-patch.mjs`'s
+  SERIAL); f8-s12's restart phase waits for the api to go down and come back before it times the hand-over.
+
+## D-871: Earthwork wording and the sections PDF: each material's own swell; round stations, the axis to the data, Cut hatched, topsoil stripped under Fill, the page's height; a copy of a copy numbered
+
+**Status:** Accepted (overnight 2026-10-30, step 6: the founder's brief).
+
+- **Cut & Fill's balance note** names each material's swell where it differs from the project's, read off the
+  lines themselves (loose over bank): "Swell 1.15 (loose / bank), Rock Export, Layer 3 1.35" and "× swell (soil
+  1.15; Rock Export, Layer 3 1.35)" in the formula. Before, "× 1.15" stood beside rock exported at 1.35 (6,013 BCY →
+  8,117 LCY).
+- **The section figure** (screen and PDF alike, the PDF being drawn from it): stations at round 50 ft (20 m), every
+  other one when more than 12, and the axis's end; the axis runs to the last station with a grade, not the line's
+  drawn length (4+13 where the lines ended near 3+88); headroom over the highest line (5 % of the range, at least
+  0.5 ft), so a hilltop at the axis's top is not drawn on the frame; **Cut** drawn and in the legend, from the
+  stripped surface down to finished grade, hatched the other way to Fill (`--soil-cut`, both themes); the topsoil
+  band only where nothing is filled over it (under Fill the Fill reaches the stripped surface, as the legend says).
+  A band drawn in two places (Topsoil at both cut ends, Cut the same) is drawn as two shapes: joined across the
+  gap, it drew a straight strip over the Fill (found checking the PDF).
+- **The sections PDF:** the profile keeps its width and is stretched up into the page's free height, at most 2.5
+  times; the scales line is written after, from the drawn sizes (before, it was worked from the width alone even
+  when the profile was drawn smaller). One sheet left out is a line on page 1 over its foot; two or more keep their
+  own page.
+- **A copy of a copy is numbered on:** "<name> (shared copy)" copied again is "<name> (shared copy 2)", then 3; the
+  same for "(copy)". A trailing label and number are read off the name before the next free number is found.
+
+## D-872: The release runs the OCR worker and reads a scan's scale; the region-first OCR measured slower and not shipped (decided in run, check)
+
+**Status:** decided in run, check (overnight 2026-10-30, step 3: the founder's brief).
+
+- **The release starts every fx worker,** the OCR worker among them, before it runs anything (before, only `setup`
+  started `worker-fx-ocr`), and `check` fails closed on it as on the api and the worker (MinIO, `intelcost_fx`,
+  MailHog only, the fx Stripe fake).
+- **n4-ocr-scale** (a fixture of the release): one sheet whose view titles are drawn as lines (the 103-sheet key's
+  E1.3A) is loaded with the Load screen's name and scale ticks; the OCR worker applies 3/32" = 1'-0" from its image,
+  flagged "Check scale" (20 s after the sheet was prepared, tonight).
+- **Region-first OCR, measured on the key's 50 OCR'd sheets** (whole-page read: median 21.5 s, 95th 97.8 s, 1,555 s in
+  all; applied right 89/103, wrong 0):
+  - 27 of the 50 print no scale at all, and on the rest the scale is under a view title in the body of the sheet
+    (e.g. 0.55, 0.63 of the page), not in the title block. Title block first, then the whole sheet when nothing is
+    found there: found on 6 of 50, median 27.2 s, 1,956 s in all (slower).
+  - Tesseract's time on these sheets is not the pixels: a 100 dpi read of the whole sheet, to find the view titles,
+    took 18.4 s against 21.3 s at 200 dpi (118 s against 213 s on E0.1); the regions it finds read in 0.8 to 4 s, but
+    the finding costs a whole read. Long lines erased first: 20 s of OCR, and the plat lost its scale.
+  - **Not shipped:** the worker keeps the whole-page read. A faster read needs the regions found without OCR (from the
+    image or the vector drawing) or more cores for Tesseract; the founder's call (the report's question 4).
+- `drives/sheet-key.py measure` gains `--dump-ocr` (every whole-page OCR piece saved, to try region rules without
+  Tesseract) and `--ocr-as-worker` (the worker's own `ocr_page`).
