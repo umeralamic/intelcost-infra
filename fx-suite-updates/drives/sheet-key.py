@@ -164,6 +164,7 @@ def _ai_scan(page: Any, scale: bool = True, name: bool = True) -> tuple[str | No
                         provider.Request(tool=tool, prompt=prompt, image_png=image, width=w, height=h, max_tokens=meter.OUTPUT_CAP[tool], json_reply=True),
                     )
                     AI["seconds"] += time.perf_counter() - t0
+                    AI["last"][tool] = time.perf_counter() - t0
                     AI["calls"] += 1
                     AI["tokens_in"] += reply.tokens_in
                     AI["tokens_out"] += reply.tokens_out
@@ -174,6 +175,7 @@ def _ai_scan(page: Any, scale: bool = True, name: bool = True) -> tuple[str | No
             await engine.dispose()
         return out
 
+    AI["last"] = {}
     got = asyncio.run(ask())
     found = read_on_load.ai_found(page.rect.width, page.rect.height, got)
     named = found.ai_naming
@@ -227,24 +229,31 @@ def measure(folder: str, key_path: str) -> None:
                 entry["spans"] = spans
                 # Read on its own (no template yet): read again through the template once one forms.
                 entry["own"] = not template["formed"]
+                tn = time.perf_counter()
                 got = _name_one(spans, template, w, h, stem)
+                entry["name_seconds"] = time.perf_counter() - tn
                 entry["number"], entry["title"] = got
+                tn = time.perf_counter()
                 scales = reading.read_scale(pieces, lambda page=page: reading.page_strokes(page), w, h)
+                entry["scale_seconds"] = time.perf_counter() - tn
                 proved = reading.auto(scales)
                 # What is applied: a half-size set's doubled scale (D-852).
                 entry["scale"] = (proved.apply_feet_per_pt or proved.feet_per_pt) if proved else None
                 entry["scale_label"] = (proved.apply_label or proved.label) if proved else None
                 entry["scale_how"] = (proved.method or "") + (" half" if proved.half_size else "") if proved else None
                 entry["suggested"] = [(s.label, s.feet_per_pt, s.status) for s in scales]
-            elif "--ai" in sys.argv:
+            elif "--ai" in sys.argv and "--scans-asked" in sys.argv:
+                # As a person's drag box on a scan; on Load a scan is not read (D-883).
                 number, title, scales = _ai_scan(page)
                 entry["number"], entry["title"] = number, title
+                entry["ai_seconds"] = dict(AI["last"])
                 entry["suggested"] = [(x.label, x.feet_per_pt, x.status) for x in scales]
             # As the OCR task (D-852): a sheet whose text printed no scale, and none applied, read from its
             # image; its own time, as the worker spends it apart from the read.
             text_scales = scales if pieces else []
             rich = getattr(reading, "drawing_text_in_layer", lambda _p: False)(pieces)
-            if "--ocr" in sys.argv and entry["scale"] is None and not text_scales and not rich:
+            scan_read = bool(pieces) or "--scans-asked" in sys.argv
+            if "--ocr" in sys.argv and scan_read and entry["scale"] is None and not text_scales and not rich:
                 t1 = time.perf_counter()
                 ocr_read = getattr(read_on_load, "ocr_page", None) if "--ocr-as-worker" in sys.argv else None
                 if ocr_read is not None:
@@ -312,6 +321,9 @@ def measure(folder: str, key_path: str) -> None:
                     "want": {"number": k.get("number"), "title": k.get("title"), "scale": k.get("scale")},
                     "seconds": e["seconds"],
                     "ocr_seconds": e.get("ocr_seconds"),
+                    "name_seconds": e.get("name_seconds"),
+                    "scale_seconds": e.get("scale_seconds"),
+                    "ai_seconds": e.get("ai_seconds"),
                 }
             )
     _report(results, set_times)

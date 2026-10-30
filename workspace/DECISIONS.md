@@ -25370,3 +25370,44 @@ blocks, a first cut of 13.
 - **Argon2 off the loop:** the same burst showed the hold was the password hash, 68 of 73 stacks, not the outbox. Registering,
   signing in, changing or resetting a password and a share link's key hash and verify in a thread. The hash's cost is unchanged.
 - **The mappers** are configured in the warm-up (D-869), not at a process's first query.
+
+## D-883: A scanned sheet is not named or scaled on Load; it loads as a sheet loaded by hand
+
+**Status:** the founder's rule (Q4 of 2026-10-30), replacing D-852 for scans. Measured on the 103-sheet key.
+
+- **The rule:** on a scan, automatic naming and automatic scaling each run only if they take no longer than a vector sheet's.
+  Measured: vector name 0.004 s and scale 0.034 s (median); a scan's AI name 1.65 s, AI scale 3.0 s, OCR scale 30 s. All slower, so
+  **both are skipped on Load:** no AI call, no OCR task, no credits spent. The sheet keeps its file name and has no scale.
+- **A scan** is a page with no text at all (`reading.page_pieces` empty). A page with text whose title block or scale is drawn as
+  lines is a vector sheet and reads as before, the AI and the OCR worker included.
+- **No marks:** a skipped sheet gets no `name_unread` and no scale suggestion, so no Check name, Check scale, Review flag or Needs
+  attention entry. A sheet we did read keeps today's marks.
+- **What a person asks for still runs:** the drag box, Scale All and Page Name / Sheet # All on a scan are that person's request,
+  not automatic, and read it as before.
+- **The OCR worker stays:** 39 of the 50 sheets it read on the key are vector sheets, and 16 of its 20 applied scales are theirs.
+- Sheets already loaded keep what they have.
+
+## D-883: Export to Excel defaults to No grouping
+
+**Status:** the founder's request, 2026-10-30.
+
+- A project with no export choice remembered starts on No grouping. A choice already remembered in that browser stands.
+
+## D-884: Item No.: a sub-item is its parent's number and a letter
+
+**Status:** the founder's request and choice, 2026-10-30.
+
+- Parents and separate lines count 1, 2, 3. A sub-item is its parent's number and a letter, in its order under the parent: 1a, 1b,
+  1c, then 2a, 2b (after z, aa). The number belongs to the item, so every group-by, filter and the export read the same one.
+- A parent's copy above its sub-items in another group shows the parent's number.
+
+## D-885: Qty and Qty with Wastage show as whole numbers, rounded up; prices stay exact
+
+**Status:** the founder's request and choice, 2026-10-30.
+
+- The Estimating table's Qty and Qty with Wastage show no decimals, rounded up from the two-place figure: 0.26 shows 1, 15.02 shows 16,
+  15.00 stays 15. A component's Qty too. Display only: Total Qty, man-hours and every price still read the exact quantity, and the
+  Qty popover shows how it was derived.
+- **In Excel,** number formats cannot round up, so the visible cells are `=ROUNDUP(ROUND(<exact>,2),0)` and two hidden columns at the far
+  right, "Exact Qty" and "Exact Qty with Wastage", hold the real figures. Sub-items and prices read those: a sub-item's exact
+  cell links to its parent's (D-249, D-876). Without formulas the file holds the rounded numbers. The Cost components lists keep decimals.
