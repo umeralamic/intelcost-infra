@@ -25314,3 +25314,24 @@ blocks, a first cut of 13.
   Escape** deletes every folder made in that dialog; **Save** keeps them, picked or not. A folder that already holds an
   item is never taken back.
 - Such a folder is no longer a Ctrl+Z step of its own. Folders made from the Takeoff panel are unchanged.
+
+## D-880: Copy and Paste of an item in the Takeoff panel; Duplicate and Paste carry the item's costs
+
+**Status:** the founder's request, 2026-10-30.
+
+- **Copy** on a parent's ⋮, under Duplicate (Linear, Segment, Area, Count; not earthwork, calculated or utility rows): nothing is
+  made, the item is held for this page. **Paste "<name>"** then shows on a right-click of a folder, a code, an item or the blank below
+  the tree, and stays until the page closes. Not offered on Rough Measurements or Earthwork Markups.
+- Paste asks "Do you want to copy the takeoff digitizer on sheet?": **Yes**, **No**, **Cancel**.
+  - **Yes:** the shapes are copied on the same sheets at the same places, so they sit on the originals.
+  - **No:** no shapes; the item and its sub-items keep the quantities they had, as manual quantities.
+  - **Cancel:** nothing is made, the Copy stays held.
+- Neither answer arms a tool or opens Properties. The copy has the same name and a new colour, is selected, and is one Ctrl+Z.
+- **Where it lands:** the copy takes the place it is pasted into and keeps everything else. In a folder (Folders view) it
+  takes that folder and keeps its classification. On a code (Classification view) it takes that code and keeps its folder; its
+  sub-items follow, except one with its own code. On the blank it is unfiled, or unclassified. Layer stays the original's.
+- **The warning:** when the place differs from the original's, the Paste dialog says so before anything is made: "Pasting here
+  updates the copy's classification to "X"", or folder. The original never changes. In the same place there is no warning.
+- **Duplicate and Paste carry the costs:** each item's estimate line (rates, wastage), cost components and custom column
+  values go with it, sub-items included. Duplicate left them out, against D-873's "everything remains the same". Make Site
+  Feature still does not. Shared-machine usage does not copy.
