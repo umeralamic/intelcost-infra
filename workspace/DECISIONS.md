@@ -25355,8 +25355,8 @@ blocks, a first cut of 13.
 - **Q2:** m6-position and c42 stay as they are; the outbox's mail is fixed (D-882).
 - **Q3:** the GPS README reports the filled strip's own 227 SF steeper than 2:1; no second line.
 - **Q4:** replaced by D-883. Finding view titles without OCR is dropped.
-- **Q5:** the ghost contour stands as not reproduced; the run menu is fixed (D-884).
-- **Q6:** the water truck goes on (D-885). The founder checks the Fill production themselves.
+- **Q5:** the ghost contour stands as not reproduced; the run menu is fixed (D-888).
+- **Q6:** the water truck goes on (D-889). The founder checks the Fill production themselves.
 
 ## D-882: Nothing a sign-up does holds the event loop
 
@@ -25411,3 +25411,11 @@ blocks, a first cut of 13.
 - **In Excel,** number formats cannot round up, so the visible cells are `=ROUNDUP(ROUND(<exact>,2),0)` and two hidden columns at the far
   right, "Exact Qty" and "Exact Qty with Wastage", hold the real figures. Sub-items and prices read those: a sub-item's exact
   cell links to its parent's (D-249, D-876). Without formulas the file holds the rounded numbers. The Cost components lists keep decimals.
+
+## D-888: A right-click menu stays open while a panel elsewhere scrolls
+
+**Status:** the founder's request (Q5 of 2026-10-30).
+
+- A scroll closes a menu only when the page moved, or the scrolled element holds the point the menu opened at. Selecting a run scrolls
+  its row into view in the Takeoff panel, late when a write has just re-rendered the list, and that closed the menu under the pointer.
+- A menu opened on the scrolled element itself still closes: it would be pinned to the wrong place.
