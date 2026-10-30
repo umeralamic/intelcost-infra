@@ -25357,3 +25357,16 @@ blocks, a first cut of 13.
 - **Q4:** replaced by D-883. Finding view titles without OCR is dropped.
 - **Q5:** the ghost contour stands as not reproduced; the run menu is fixed (D-884).
 - **Q6:** the water truck goes on (D-885). The founder checks the Fill production themselves.
+
+## D-882: Nothing a sign-up does holds the event loop
+
+**Status:** the founder's request (Q2 of 2026-10-30), widened by what the watchdog found.
+
+- **The outbox:** on the request path each after-commit effect runs in a thread, in order, so a Celery publish, an S3 delete or a
+  sync Redis call never holds a process. An effect that returns an awaitable bound to the loop, a realtime publish, says
+  `on_loop` and is awaited there. A worker's `drain` is unchanged.
+- **`celery_app.set_default()`:** `shared_task` finds its app per thread. Without this a thread found Celery's empty default and
+  every queued job failed on amqp://localhost.
+- **Argon2 off the loop:** the same burst showed the hold was the password hash, 68 of 73 stacks, not the outbox. Registering,
+  signing in, changing or resetting a password and a share link's key hash and verify in a thread. The hash's cost is unchanged.
+- **The mappers** are configured in the warm-up (D-869), not at a process's first query.
