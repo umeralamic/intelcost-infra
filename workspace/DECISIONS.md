@@ -25277,3 +25277,40 @@ blocks, a first cut of 13.
 - **Order:** a line's order is folder position, then item position, then the order the Takeoff panel lists items
   (the api's position, name), no longer created date. Footing 1 and its sub-items come before Footing 2 and its
   sub-items whichever was made first. The Estimating grid and Item No. follow, so the screen, the file and the panel agree.
+
+## D-876: A parent's copy above its sub-items in another group shows its Qty and Unit
+
+**Status:** the founder's request, 2026-10-30. Replaces D-249 a's "Context copies of a parent stay blank".
+
+- When sub-items sit in another group than their parent (a different classification), the bold copy of the parent above
+  them shows the parent's Qty and Unit, in the grid and the workbook. It stays out of every price, SUM and TOTAL.
+- In the workbook, a sub-item links to the Qty cell of its parent's row or copy nearest above it, a cell and never a
+  number (D-875 turned only the dimensions into figures). A parent's Qty cell keeps its full figure, shown to the format's
+  decimals: rounded, a non-whole parent missed its sub-items' figures and the check dropped the link. It is never priced.
+- The grid's parent name, Qty and Unit are bold, under the format's Bold parent rows (on by default). The file's parent
+  rows are already bold.
+
+## D-877: Cancel or Escape on a fresh Duplicate's Properties leaves no copy
+
+**Status:** the founder's request, 2026-10-30. Replaces D-873's "Save or Cancel both leave the copy and arm its tool".
+
+- **Cancel, Escape or ✕** on the Properties that Duplicate opens deletes the copy and its sub-items, leaves nothing
+  selected, arms no tool and adds no Ctrl+Z step. **Save** keeps it and arms its tool, and the copy's Ctrl+Z step is
+  recorded then. The copy still exists while Properties is open, so a colleague can see it for that moment.
+- A utility run's Duplicate opens its own box, which has no Cancel: its copy stands at once, as before.
+
+## D-878: No banner while resuming an item
+
+**Status:** the founder's request, 2026-10-30.
+
+- Resuming a Linear, Area or Segment item shows no "Draw the extra shape" line, so the canvas and panels do not move. The
+  action group already shows the session, and its Stop and Escape end it. "Drag a handle to move a vertex." stays.
+
+## D-879: A folder made in the item dialog goes with its Cancel
+
+**Status:** the founder's request, 2026-10-30.
+
+- "+ New folder" in the New Measurement or Properties dialog's WBS makes the folder at once, so it can be picked. **Cancel or
+  Escape** deletes every folder made in that dialog; **Save** keeps them, picked or not. A folder that already holds an
+  item is never taken back.
+- Such a folder is no longer a Ctrl+Z step of its own. Folders made from the Takeoff panel are unchanged.
