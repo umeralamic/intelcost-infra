@@ -25242,3 +25242,21 @@ blocks, a first cut of 13.
   its sub-items') behind. Make Site Feature and the bulk menu's Duplicate (D-169) still copy the shapes.
 - **Removed:** `DuplicateDialog` and its three choices (name, Keep current / Assign new, Include sub-items). A new
   classification is set in Properties.
+
+## D-874: In continuous marking N starts the same item's next session on every tool; Escape disengages at once
+
+**Status:** the founder's request, 2026-10-30.
+
+- **N (Linear, Segment, Area, Count):** the session in hand ends and the next starts on the same item, tool armed.
+  - A run with enough points is committed as a section (D-848). A run too short to keep (one point, or two on an Area)
+    is dropped, and the next click starts anew. This changes D-848's "N mid-run needs a run to commit"; the New Section
+    button does the same. "Add more points" keeps its seed point: there N still needs a run.
+  - **Count:** marks are saved as they are placed, so N has nothing to commit: it closes the session and the tool stays
+    on the item. Nothing visible changes, and Ctrl+Z still takes marks one at a time, across an N too.
+  - Between sections, with no point down, N still does nothing on the three drawn tools (D-848).
+- **Escape, Linear, Segment, Area, Count, Deduct:** one press does it all, replacing legacy's two steps (session, then
+  tool; D-80). A run that can be kept is committed, as before; a shorter one is dropped. The tool is put down, the
+  action group and status go, and nothing is left selected, box selection included. Enter is unchanged (ends the
+  session, tool stays armed).
+- **Not changed:** Earthwork tools and Dimension keep their own Escape.
+- The group's tips follow: Stop "Commit and stop — Esc", Discard without a key, New Section "— N".
