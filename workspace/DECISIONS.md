@@ -25419,3 +25419,11 @@ blocks, a first cut of 13.
 - A scroll closes a menu only when the page moved, or the scrolled element holds the point the menu opened at. Selecting a run scrolls
   its row into view in the Takeoff panel, late when a write has just re-rendered the list, and that closed the menu under the pointer.
 - A menu opened on the scrolled element itself still closes: it would be pinned to the wrong place.
+
+## D-889: The water truck on place-and-compact: held for its fuel figure
+
+**Status:** held, 2026-10-30. Not built. Nothing in the starter changed.
+
+- The founder's condition is a fuel figure from a manufacturer or rental-house spec, no guess. None was found for the WT-4000 (D-881 Q6); the day report has the search and
+  the choice to make.
+- WT-4000 stays optional on the tiers, and an optional machine is never priced (D-751).
