@@ -25260,3 +25260,20 @@ blocks, a first cut of 13.
   session, tool stays armed).
 - **Not changed:** Earthwork tools and Dimension keep their own Escape.
 - The group's tips follow: Stop "Commit and stop — Esc", Discard without a key, New Section "— N".
+
+## D-875: Assign scope on a new project; the workbook drops the Dimensions sheet, carries the grid's empty rows and the Takeoff panel's order
+
+**Status:** the founder's request, 2026-10-30.
+
+- **New project, Assigned To:** each person's row offers "+ Assign scope", as on a project that exists (replaces D-794's
+  "a new project has no folders to scope by yet"). The dialog offers **Classification and Scope**, which exist before
+  the project does; Custom Folder and Layer belong to a project, so they wait for Edit Project. The scopes are saved
+  right after the create; if that one write fails the project stands and a toast says so. Changing the classification
+  system on the form drops classification picks from the old system.
+- **No Dimensions sheet (replaces D-249 c):** the workbook has no Dimensions tab. A sub-item's Qty formula carries each
+  dimension's figure, `=J28*2.5*1.5/27`. The parent's Qty stays a cell link (D-249 b).
+- **Empty rows (replaces "display only, never exported"):** the file has the grid's empty rows, by the grid's rules: above
+  a heading, above a parent with sub-items, below a parent block, above a line with its components open.
+- **Order:** a line's order is folder position, then item position, then the order the Takeoff panel lists items
+  (the api's position, name), no longer created date. Footing 1 and its sub-items come before Footing 2 and its
+  sub-items whichever was made first. The Estimating grid and Item No. follow, so the screen, the file and the panel agree.
