@@ -25226,3 +25226,19 @@ blocks, a first cut of 13.
     image or the vector drawing) or more cores for Tesseract; the founder's call (the report's question 4).
 - `drives/sheet-key.py measure` gains `--dump-ocr` (every whole-page OCR piece saved, to try region rules without
   Tesseract) and `--ocr-as-worker` (the worker's own `ocr_page`).
+
+## D-873: Duplicate on an item's menu makes an empty copy and opens Properties; the Duplicate item dialog is gone
+
+**Status:** the founder's request, 2026-10-30.
+
+- **Duplicate** on a parent item's ⋮ (Linear, Area, Segment, Count and any other row that offers it) asks nothing.
+  The copy is made at once: the source's own name with no number (the founder, same day; replaces D-36's "(2)", "(3)"
+  here, and the Settings › Takeoffs switch for it is gone), a new colour, the same classification, folder, layer, dimensions,
+  settings and sub-items. It has **no shapes and no override, so quantity 0**.
+- **Properties opens on the copy**, for whatever the estimator wants to change. Save or Cancel both leave the copy and
+  arm its tool, so the next click marks it on the plans (a Segment copy keeps Segment, `draw_tool`). A manual quantity
+  typed there has nothing to draw (D-363), so that Save does not arm. Ctrl+Z takes the copy away, as before (D-635).
+- **The api:** `ItemDuplicate.include_geometry`, default true. False leaves the shapes and the overrides (the item's and
+  its sub-items') behind. Make Site Feature and the bulk menu's Duplicate (D-169) still copy the shapes.
+- **Removed:** `DuplicateDialog` and its three choices (name, Keep current / Assign new, Include sub-items). A new
+  classification is set in Properties.
