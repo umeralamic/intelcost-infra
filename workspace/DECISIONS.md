@@ -25408,9 +25408,9 @@ blocks, a first cut of 13.
 - The Estimating table's Qty and Qty with Wastage show no decimals, rounded up from the two-place figure: 0.26 shows 1, 15.02 shows 16,
   15.00 stays 15. A component's Qty too. Display only: Total Qty, man-hours and every price still read the exact quantity, and the
   Qty popover shows how it was derived.
-- **In Excel,** number formats cannot round up, so the visible cells are `=ROUNDUP(ROUND(<exact>,2),0)` and two hidden columns at the far
-  right, "Exact Qty" and "Exact Qty with Wastage", hold the real figures. Sub-items and prices read those: a sub-item's exact
-  cell links to its parent's (D-249, D-876). Without formulas the file holds the rounded numbers. The Cost components lists keep decimals.
+- **In Excel** the Qty and Qty with Wastage cells keep their figures and formulas, a sub-item's `=I26*2.5` on its parent's Qty cell with
+  the dimension as a figure, in a zero-decimal format (the founder, same day: no ROUNDUP, no hidden columns). Excel's format rounds to
+  nearest, so 15.02 shows 15 there and 16 on screen. The Cost components lists keep decimals.
 
 ## D-888: A right-click menu stays open while a panel elsewhere scrolls
 
@@ -25427,3 +25427,34 @@ blocks, a first cut of 13.
 - The founder's condition is a fuel figure from a manufacturer or rental-house spec, no guess. None was found for the WT-4000 (D-881 Q6); the day report has the search and
   the choice to make.
 - WT-4000 stays optional on the tiers, and an optional machine is never priced (D-751).
+
+## D-890: The exported estimate's header row is frozen
+
+**Status:** the founder's request, 2026-10-30.
+
+- Each estimate sheet of the workbook freezes its header row, and the logo row above it on the sheet that has one. Bid Summary and
+  Equipment basis do not. SheetJS's free edition drops a freeze, so the pane goes into the finished file (`lib/xlsxFreeze.ts`), as the logo does.
+
+## D-891: The founder's answers to the 2026-10-30 day session; two standing rules
+
+**Status:** the founder's answers, 2026-10-30.
+
+- **Standing rules, every session:** files are staged by name, never `git add -A` or `git add .`. A failed gate stops the commit: the commit is chained after the full gates with
+  `&&`, never `;`, and `npm run build` is one of them. One session per repo.
+- **Q1:** workspace 69a35a11 (Bench Construction Test) is a founder workspace on the three guard lists, so a project added to it later is refused too. The 3D test copy, which sits in
+  it, keeps its exception: its project uuid is read and duplicated, never written.
+- **Q2:** f6-a stays at 1.5 s, a detection bound: Playwright polls at up to 500 ms, so a figure carries that on top of the app's own time. The fixture's title and R10 say so.
+- **Q3:** OCR stays on vector sheets; D-883 covers scans only.
+- **Q4:** AI naming comes back on scans on Load (refines D-883); scale stays skipped on scans, with no marks on an unscaled scan.
+- **Q5:** the WT-4000's fuel is the USACE rule, grade C (D-889 lifted, D-892).
+- **Q6:** the seed's tiers stand: × 0.25 on tier 1, WT-8000-ADT above 3,000 CCY/day. Only the optional flag changes.
+- **Q7:** the quantity table runs in its own per-run folder.
+
+## D-892: The WT-4000 on place-and-compact, starter release 5
+
+**Status:** the founder's answers Q5 and Q6, 2026-10-30. Lifts D-889.
+
+- **Fuel:** 5.95 / 7.82 / 10.21 gal/hr, low / med / high, grade C: USACE EP 1110-1-8 (12 Aug 2021), Equations 2.4 and 2.5, pp. 19–20, diesel fuel factor = HPF × 0.34 lb/bhp-hr ÷
+  7 lb/gal = HPF × 0.0486 gal/bhp-hr, on a 350 HP rating (a Cummins L9 listing). Default load: low, wherever the machine has no load of its own.
+- **Starter:** the optional flag is cleared on its place-and-compact (A3) rows, the seed's tiers otherwise kept. Its driver follows it (D-724 rule 5). WT-4000 on fine grade stays optional.
+- **Mob:** confirmed none, it drives in: national, so no workspace has to enter it. A person's quote still wins.
