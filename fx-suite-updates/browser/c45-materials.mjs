@@ -14,7 +14,8 @@
 //   M4a (D-908): the restraint setting is kept; a thrust block with no CY asks for it in Needs attention.
 //   M6 (D-911): an edited quantity shows Calculate's, Apply takes it; a price moved is listed and Update takes it; a typed one is not;
 //      an edited component out of Calculate stays, marked; dismissed ones are counted and restored.
-//   M8 (D-912): a fusion machine is an equipment component that reads Missing price until priced, and takes a price per hour.
+//   D-914: a fused line rents its machine by pipe size, says what the rate leaves out, and is flagged when fusing sets the pace.
+//   D-915: a line Calculate alone wrote goes; one a person touched stays at 0; a line map moved to by hand takes the spread away.
 //   D-913: a supplier sheet: rows matched, one custom, one skipped, a URL becomes a link; nothing saved before Import.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
@@ -278,19 +279,51 @@ await run("c45-materials", [
     },
   },
   {
-    title: "M8 (D-912): a fusion machine is written as equipment, with no price until a company has one, and takes it",
+    title: "D-914: a fused line rents its machine by size, says what the rate leaves out, and is flagged when fusing sets the pace",
     run: async () => {
+      const lib = `/api/workspace/${workspace.uuid}/equipment-library`;
+      await apiCall(token, "GET", `${lib}/earthwork-production`);
+      const write = (nominal) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:force_main", role: "utility_pipe", crew: "fused", name: `${nominal}" HDPE DR 11`, quantity: 400, unit: "LF", variant: `hdpe_ips_dr11:${nominal}|1|0-6`, work_scope: "site_utilities.force_main", work_kind: null, utility: "force_main", folder: "utilities", materials: [], fusion: { cycle_min: 33.8, joint_ft: 40, nominal_in: Number(nominal) } }] });
+      const machine = async () => (await apiCall(token, "GET", `${base}/${project.uuid}/estimate/components`)).body.filter((c) => (c.eq_class_key ?? "").startsWith("FM-"));
+      const note = async () => (await g.items()).find((i) => i.earthwork_crew === "fused" || /HDPE/.test(i.name))?.earthwork_note ?? "";
+      const small = await write("8");
+      expect(small.status === 200, `write: ${small.status} ${JSON.stringify(small.body).slice(0, 200)}`);
+      let got = await machine();
+      expect(got.length === 1 && got[0].eq_class_key === "FM-TS-8" && got[0].kind === "equipment", JSON.stringify(got));
+      expect(/training technician and cleaning charges are not included/.test(await note()), await note());
+      expect(!/Fusing sets the pace/.test(await note()), await note());
+      await apiCall(token, "PUT", `${lib}/override`, { entity: "setting", entity_key: "fusion_setup_min_over_18", field: "value", value_num: 300 });
+      await write("24");
+      got = await machine();
+      expect(got.some((c) => c.eq_class_key === "FM-TS-24"), JSON.stringify(got));
+      expect(/Fusing sets the pace/.test(await note()), await note());
+      return "8 in on the T28, 24 in on the T630; the note; a setup of 300 min flags the pace";
+    },
+  },
+  {
+    title: "D-915: a line Calculate alone wrote goes when it leaves; one a person touched stays; a by hand map takes the spread's price away",
+    run: async () => {
+      const empty = { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null };
+      const line = (region_id, name) => ({ region_id, role: "cut", name, quantity: 500, unit: "BCY" });
+      const put = (lines) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: empty, lines });
+      await put([line("a", "Cut A"), line("b", "Cut B")]);
+      const named = async (n) => (await g.items()).find((i) => i.name === n);
       const comps = `${base}/${project.uuid}/estimate/components`;
-      const prices = `${base}/${project.uuid}/estimate/material-prices`;
-      const key = "fusion:8";
-      await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:force_main", role: "utility_pipe", name: '8" HDPE DR 11', quantity: 100, unit: "LF", variant: "hdpe", work_scope: "site_utilities.force_main", work_kind: null, utility: "force_main", folder: "utilities", materials: [{ key, mat_key: key, name: 'Butt fusion machine, to 8"', qty_formula: "ceil(QTY / 40) * 12.152 / 60", unit: "HR", wastage_pct: 0, sell_unit: "HR", kind: "equipment" }] }] });
-      const one = async () => (await apiCall(token, "GET", comps)).body.find((c) => c.auto_key === key);
-      const c = await one();
-      expect(c.kind === "equipment" && c.unit_price === null, JSON.stringify(c));
-      await apiCall(token, "POST", prices, { mat_key: key, unit_price: 60, sell_unit: "HR" });
-      const filled = (await apiCall(token, "POST", `${prices}/fill`, {})).body;
-      expect(filled.filled >= 1 && Number((await one()).unit_price) === 60, JSON.stringify(filled));
-      return "equipment, no price; $60/HR filled";
+      const b = await named("Cut B");
+      const made = await apiCall(token, "POST", `${comps}`, { item_uuid: b.uuid, kind: "material", name: "My own", pricing_mode: "unit", qty_formula: "1", unit: "EA", unit_price: 5 });
+      expect(made.status < 300, `component: ${made.status} ${JSON.stringify(made.body).slice(0, 160)}`);
+      await put([line("c", "Cut C")]);
+      expect(!(await named("Cut A")), "an automatic line stayed");
+      expect((await named("Cut B"))?.earthwork_retired === true, "a touched line went");
+      const plib = `${base}/${project.uuid}/estimate/equipment-library`;
+      const c = await named("Cut C");
+      const spread = async () => (await apiCall(token, "GET", comps)).body.filter((x) => x.eq_auto && (x.item_uuid === c.uuid || x.takeoff_item_uuid === c.uuid));
+      expect((await spread()).length > 0, "no spread to take away");
+      const off = await apiCall(token, "PUT", `${plib}/earthwork-production/line-map`, { role: "cut", activity_uuid: null, none_reason: "by_hand" });
+      expect(off.status === 200, `map: ${off.status} ${JSON.stringify(off.body).slice(0, 160)}`);
+      expect((await spread()).length === 0, "by hand kept the spread's machines");
+      await apiCall(token, "PUT", `${plib}/earthwork-production/line-map`, { role: "cut", clear: true });
+      return "automatic gone, touched kept at 0; by hand removes the machines and crew";
     },
   },
   {

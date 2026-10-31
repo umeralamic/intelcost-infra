@@ -18,7 +18,7 @@ const excavator = (fields = {}) => comp("ex", "equipment", { position: 0, eq_cla
 const operators = (count = 2, fields = {}) => comp("crew", "labor", { position: 1, crew: [{ role: "TEST Operator", count, hourly_wage: 50, for_equipment: "ex" }], production_rate: 12.5, production_basis: "units_per_hr", ...fields });
 
 export const EQUIPMENT_CASES = [
-  // Every class's mob and demob at the catalog's 50 miles, as the workbook cached them (628 rows).
+  // Every class's mob and demob at the catalog's 50 miles, as the workbook cached them (641 rows).
   { id: "eq-mob-catalog-628", kind: "mob-catalog" },
 
   // The work-day solver (D-724 rule 6, plan §3.4).
@@ -148,12 +148,12 @@ export const EQUIPMENT_CASES = [
   { id: "eq-756-shared-flag-catalog", kind: "shared-flag-catalog", ...DIESEL, expect: { unflagged: 0 } },
 
   // My equipment (F34, D-759): the list orders and filters what pickers offer, never a price. (1) A default
-  // workspace (empty list, show all) is offered every live class, 628, none under My equipment. (2) Mine-only with
+  // workspace (empty list, show all) is offered every live class, 641, none under My equipment. (2) Mine-only with
   // three on the list (one a custom machine) offers exactly those three first, and the full search still reaches
-  // all 628 national classes plus the custom one. (3) EX-CRAWL-30T on the starter's worked check prices $16,471.70
+  // all 641 national classes plus the custom one. (3) EX-CRAWL-30T on the starter's worked check prices $16,471.70
   // on the list, off it, and off it in mine-only mode.
-  { id: "eq-759-default-offers-all", kind: "suggest", setting: {}, expect: { mine: 0, offered: 628, folded: false } },
-  { id: "eq-759-mine-only", kind: "suggest", setting: {}, myEquipment: ["EX-CRAWL-30T", "ADT-30T", "U-TEST1"], mineOnly: true, custom: { classes: [{ equip_key: "U-TEST1", category: "Company equipment", type: "TEST Loader", size_class: "TEST 3 yd", pricing_kind: "duration", custom: true }], activities: [], production: [] }, expect: { mine: 3, mineKeys: ["ADT-30T", "EX-CRAWL-30T", "U-TEST1"], folded: true, full: 629, fullNational: 628 } },
+  { id: "eq-759-default-offers-all", kind: "suggest", setting: {}, expect: { mine: 0, offered: 641, folded: false } },
+  { id: "eq-759-mine-only", kind: "suggest", setting: {}, myEquipment: ["EX-CRAWL-30T", "ADT-30T", "U-TEST1"], mineOnly: true, custom: { classes: [{ equip_key: "U-TEST1", category: "Company equipment", type: "TEST Loader", size_class: "TEST 3 yd", pricing_kind: "duration", custom: true }], activities: [], production: [] }, expect: { mine: 3, mineKeys: ["ADT-30T", "EX-CRAWL-30T", "U-TEST1"], folded: true, full: 642, fullNational: 641 } },
   { id: "eq-759-on-list-prices", kind: "machine", ...DIESEL, myEquipment: ["EX-CRAWL-30T"], input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
   { id: "eq-759-off-list-prices", kind: "machine", ...DIESEL, myEquipment: ["ADT-30T"], input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
   { id: "eq-759-off-list-mine-only-prices", kind: "machine", ...DIESEL, myEquipment: ["ADT-30T"], mineOnly: true, input: { classKey: "EX-CRAWL-30T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 16471.70, fuel: 2824.20, mob: 3600 } },
@@ -387,7 +387,7 @@ export function checkEquipment(answers, wrong) {
     }
     if (c.kind === "host" && got.errors?.length && !c.expect.errors) wrong.push(c.id + ": " + got.errors.join("; "));
     if (c.kind === "mob-catalog") {
-      if (got.checked !== 628) wrong.push(`${c.id}: checked ${got.checked} classes, expected 628`);
+      if (got.checked !== 641) wrong.push(`${c.id}: checked ${got.checked} classes, expected 641`);
       for (const line of got.bad.slice(0, 10)) wrong.push(`${c.id}: ${line}`);
       if (got.bad.length > 10) wrong.push(`${c.id}: and ${got.bad.length - 10} more`);
       continue;

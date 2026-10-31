@@ -26,9 +26,9 @@ async function calculateWith(page, set, ok) {
   const dialog = page.getByRole("dialog", { name: "Earthwork assumptions" });
   await dialog.waitFor();
   await set(dialog);
-  await dialog.getByRole("button", { name: "Calculate", exact: true }).click();
+  // A method change on a saved result is Apply (D-899): no volumes to wait for.
+  await dialog.getByRole("button", { name: /^(Calculate|Apply)$/ }).click();
   await dialog.waitFor({ state: "detached" });
-  await page.getByRole("dialog", { name: "Earthwork Volumes" }).locator("[data-volume-totals]").waitFor({ timeout: 60000 });
   // The panel opens before the lines are saved: the last run's are still live until then.
   let last = [];
   return waitFor(

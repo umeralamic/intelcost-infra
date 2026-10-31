@@ -30,8 +30,8 @@ fi
 # The equipment library (F33): release 1's national rows are the catalog's, counted against the
 # converter's file (D-718), and dumped for the browser's equipment rows (lib/equipment-cases.mjs).
 EQ_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.eq_class)||' '||(select count(*) from eqlib.eq_activity)||' '||(select count(*) from eqlib.eq_production)||' '||(select count(*) from eqlib.eq_transport_class)||' '||(select count(*) from eqlib.eq_setting)||' '||(select count(*) from eqlib.eq_soil_conversion)||' '||(select count(*) from eqlib.eq_source)||' '||(select count(*) from eqlib.eq_class where rent_day = 0 or rent_week = 0 or rent_4wk = 0)")
-if [ "$EQ_COUNTS" != "628 104 592 9 33 4 157 0" ]; then
-  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 628 104 592 9 33 4 157 0"
+if [ "$EQ_COUNTS" != "641 104 592 9 36 4 157 0" ]; then
+  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 641 104 592 9 36 4 157 0"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts

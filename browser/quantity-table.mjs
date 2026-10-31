@@ -1372,7 +1372,7 @@ try {
         const out = {};
         const list = mats.lineMaterials(c.input, () => c.pcf ?? null, c.restraint) ?? [];
         out.keys = list.map((m) => m.key).join(" ");
-        for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
+        for (const m of list) Object.assign(out, { [`${m.key}:name`]: m.name, [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
         return out;
       }
       if (c.kind === "bends") {
@@ -1391,6 +1391,11 @@ try {
         out.keys = list.map((m) => m.key).join(" ");
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
         return out;
+      }
+      if (c.kind === "fusion-joints") {
+        const bands = [[8, 24, 48], [12, 12, 24], [24, 10, 16]];
+        const per = c.keys.map((k) => mats.fusionJointsPerDay(k));
+        return { ...Object.fromEntries(c.keys.map((k, i) => [k, Math.round(per[i] * 10) / 10])), inside: per.every((p, i) => p >= bands[i][1] && p <= bands[i][2]) };
       }
       if (c.kind === "material-match") {
         const known = match.knownMaterials();

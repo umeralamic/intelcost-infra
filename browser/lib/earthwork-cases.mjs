@@ -938,7 +938,8 @@ export const EARTHWORK_CASES = [
   // Exactly full joints buy none extra: 100 LF at 0 % on 20 ft.
   { id: "m0-exact-joint", kind: "pipe-order", input: [{ id: "a", bid: "base", matKey: "pipe:x:8", lf: 100, wastePct: 0, jointFt: 20 }], expect: { "a:sold": 100, "a:joints": 5 } },
   // 100 CCY of #57 at 111 pcf: 100 x 27 x 111 / 2000 = 149.85 TON, the plan's 1.50 t per CCY.
-  { id: "m0-tons", kind: "tons", input: { ccy: 100, pcf: 111 }, expect: { tons: 149.85 } },
+  { id: "m0-tons", kind: "tons", input: { ccy: 100, pcf: 108 }, expect: { tons: 145.8 } },
+  { id: "m0-tons-sand", kind: "tons", input: { ccy: 100, pcf: 110 }, expect: { tons: 148.5 } },
   // Blank density: no tons, sold by the CY.
   { id: "m0-no-tons", kind: "tons", input: { ccy: 100, pcf: null }, expect: { tons: null } },
   // --- F38 M3 (D-905): what a line buys ---
@@ -952,7 +953,9 @@ export const EARTHWORK_CASES = [
   { id: "m3-rcp", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "rcp_c76_wall_b:24|1|0-6", name: '24" RCP, 0-6 ft deep', utility: "storm" }, expect: { "pipe:rcp_c76_wall_b:24:waste": 1, "gasket:rcp:24:qty": "ceil(QTY / 8)" } },
   // Bedding at 111 pcf in tons with 10 %, by the CY with a blank density; native backfill buys nothing.
   { id: "m3-bedding-tons", kind: "line-materials", pcf: 111, input: { role: "utility_bedding_pipe_zone", unit: "CCY", variant: "bedding:#57 stone|imported", name: "Pipe bedding", utility: "sanitary" }, expect: { keys: "stone:_57_stone", "stone:_57_stone:unit": "TON", "stone:_57_stone:qty": "QTY * 27 * 111 / 2000", "stone:_57_stone:waste": 10 } },
-  { id: "m3-bedding-cy", kind: "line-materials", input: { role: "utility_bedding_pipe_zone", unit: "CCY", variant: "bedding:#57 stone|imported", name: "Pipe bedding", utility: "sanitary" }, expect: { "stone:_57_stone:unit": "CY" } },
+  { id: "m3-bedding-cy", kind: "line-materials", input: { role: "utility_bedding_pipe_zone", unit: "CCY", variant: "bedding:Pea gravel|imported", name: "Pipe bedding", utility: "sanitary" }, expect: { "stone:pea_gravel:unit": "CY" } },
+  // A saved blank on #57 or sand fills at the sourced density (D-915).
+  { id: "q8-blank-fills", kind: "line-materials", input: { role: "utility_bedding_pipe_zone", unit: "CCY", variant: "bedding:#57 stone|imported", name: "Pipe bedding", utility: "sanitary" }, expect: { "stone:_57_stone:unit": "TON", "stone:_57_stone:qty": "QTY * 27 * 108 / 2000" } },
   { id: "m3-native-backfill", kind: "line-materials", input: { role: "utility_backfill", unit: "CCY", variant: "Native|native", name: "Trench backfill", utility: "sanitary" }, expect: { keys: "" } },
   // Every structure: one Whole structure.
   { id: "m3-structure", kind: "line-materials", input: { role: "utility_structure", unit: "EA", variant: 'sanitary_manhole|48"|6-8', name: "Sanitary Manhole", utility: "sanitary" }, expect: { keys: 'struct:sanitary_manhole:48"' } },
@@ -971,16 +974,25 @@ export const EARTHWORK_CASES = [
   // Pressure: a bend and a restraint for each; one more restraint for the tee.
   { id: "m4a-restraint", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 45, count: 2 }], tees: 1 } }, expect: { "bend:pvc_c900:45:8:qty": "2", "restraint:pvc_c900:8:qty": "3" } },
   // Thrust blocks: a zero CY to type, one per angle and one for the tee.
-  { id: "m4a-thrust", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 1 }], tees: 1 } }, expect: { "thrust:90:8:qty": "0", "thrust:90:8:unit": "CY", "thrust:tee:8:unit": "CY" } },
+  { id: "m4a-thrust", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 1 }], tees: 1 } }, expect: { "thrust:90:8:qty": "0.59", "thrust:90:8:unit": "CY", "thrust:tee:8:unit": "CY", "thrust:tee:8:qty": "0.42" } },
+  // 12 in 90: T = 2 × 150 × 113.1 × sin 45 = 23,994 lb; × 1.5 ÷ 2,000 = 18 SF (12.0 at Sf 1.0, the research's table); × 2 ft ÷ 27.
+  { id: "q19-thrust-table", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:12|1|0-6", name: '12" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 2 }], tees: 0 } }, expect: { "thrust:90:12:qty": "2.66" } },
+  // A bend counted: the allowance is 10 %; none counted, 20 % (D-915).
+  { id: "q21-allowance-counted", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 45, count: 1 }], tees: 0 } }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 10 %" } },
+  { id: "q21-allowance-none", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" } },
+  // Valves and hydrants are counted, never in the % (D-915).
+  { id: "c-valves-hydrants", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", services: [{ count: 3, sizeIn: 8, kind: "valve" }, { count: 2, sizeIn: 6, kind: "hydrant" }] }, expect: { "valve:gate:8:qty": "3", "valve:box:qty": "3", "hydrant:assembly:qty": "2" } },
   // Gravity buys no bend.
   { id: "m4a-gravity-no-bend", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_d3034_sdr35:8|1|0-6", name: '8" SDR-35', utility: "sanitary", fittings: { bends: [{ angle: 45, count: 2 }], tees: 0 } }, expect: { keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 warning_tape" } },
   // 100 CCY of foundation at 111 pcf: 149.85 TON; 1,000 SY of geotextile is 2 rolls.
-  { id: "m4a-water", kind: "line-materials", pcf: 111, input: { role: "dewatering", unit: "LF", variant: "trench", name: "Trench dewatering", utility: "sanitary", water: { foundationCCY: 100, geotextileSY: 1000 } }, expect: { "stone:foundation:unit": "TON", "stone:foundation:qty": "149.85", "geotextile:trench:qty": "2" } },
+  { id: "m4a-water", kind: "line-materials", pcf: 108, input: { role: "dewatering", unit: "LF", variant: "trench", name: "Trench dewatering", utility: "sanitary", water: { foundationCCY: 100, geotextileSY: 1000 } }, expect: { "stone:foundation:unit": "TON", "stone:foundation:qty": "145.8", "geotextile:trench:qty": "2" } },
   // --- F38 M4b (D-909): structures by their parts ---
   // 48" manhole, 9.5 VF: base 4, cone 3; 2.5 left: 2 VF of riser and 6 in of rings; 8 steps; two 8" boots.
   { id: "m4b-manhole", kind: "structure-parts", input: { structureType: "sanitary_manhole", shape: "round", diaIn: 48, lengthFt: null, widthFt: null, wallIn: 5, baseSlabIn: 8, construction: "precast", pricing: "parts", inletKind: null, hood: false, top: null, riserMode: "per_vf", pipesIn: [8, 8], vf: 9.5 }, expect: { keys: "mh:base:48 mh:48:riser rings mh:cone:48 casting:mh_sanitary boot:8 mh:step", "mh:48:riser": 2, rings: 6, "boot:8": 2, "mh:step": 8 } },
-  // Under 5 ft: a flat top, 8 in; 4.5 less 4.667 leaves no riser.
-  { id: "m4b-flat-top", kind: "structure-parts", input: { structureType: "sanitary_manhole", shape: "round", diaIn: 48, lengthFt: null, widthFt: null, wallIn: 5, baseSlabIn: 8, construction: "precast", pricing: "parts", inletKind: null, hood: false, top: null, riserMode: "per_vf", pipesIn: [8, 8], vf: 4.5 }, expect: { keys: "mh:base:48 mh:flat:48 casting:mh_sanitary boot:8 mh:step" } },
+  // Under 7 ft a flat top, 8 in; under 6 ft a 2 ft base (D-915): 4.5 less 2.667 leaves 1 VF of riser and 10 in of rings.
+  { id: "m4b-flat-top", kind: "structure-parts", input: { structureType: "sanitary_manhole", shape: "round", diaIn: 48, lengthFt: null, widthFt: null, wallIn: 5, baseSlabIn: 8, construction: "precast", pricing: "parts", inletKind: null, hood: false, top: null, riserMode: "per_vf", pipesIn: [8, 8], vf: 4.5 }, expect: { keys: "mh:base:48 mh:48:riser rings mh:flat:48 casting:mh_sanitary boot:8 mh:step" } },
+  // 6.49 VF: flat top under 7 ft, the 4 ft base from 6 ft (D-915): no longer taller than the manhole.
+  { id: "q22-flat-under-7", kind: "structure-parts", input: { structureType: "sanitary_manhole", shape: "round", diaIn: 48, lengthFt: null, widthFt: null, wallIn: 5, baseSlabIn: 8, construction: "precast", pricing: "parts", inletKind: null, hood: false, top: null, riserMode: "per_vf", pipesIn: [8, 8], vf: 6.49 }, expect: { keys: "mh:base:48 mh:48:riser rings mh:flat:48 casting:mh_sanitary boot:8 mh:step" } },
   // Stocked heights: 16.5 less 7 is 9.5: 2 of 4 ft, 1 rest 1.5: no 3, no 2, 18 in of rings.
   { id: "m4b-stocked", kind: "structure-parts", input: { structureType: "sanitary_manhole", shape: "round", diaIn: 48, lengthFt: null, widthFt: null, wallIn: 5, baseSlabIn: 8, construction: "precast", pricing: "parts", inletKind: null, hood: false, top: null, riserMode: "per_vf", pipesIn: [8, 8], vf: 16.5, riserMode: "stocked" }, expect: { "mh:48:riser:4ft": 2, rings: 18 } },
   // Catch basin: box, 2 VF over its 4 ft, top slab, grate by default, a hood.
@@ -997,17 +1009,23 @@ export const EARTHWORK_CASES = [
   { id: "m5-tipping-clean", kind: "site-materials", input: { role: "soil_export", unit: "LCY", name: "Soil Export" }, expect: { keys: "tipping:clean" } },
   { id: "m5-tipping-unsuitable", kind: "site-materials", input: { role: "soil_export", unit: "LCY", variant: "rock:Layer 3", name: "Rock Export" }, expect: { keys: "tipping:unsuitable" } },
   { id: "m5-aggregate", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Crushed Aggregate" }, expect: { keys: "aggregate_base", "aggregate_base:qty": "QTY * 1.98", "aggregate_base:waste": 5 } },
-  { id: "m5-select-fill", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Select Fill" }, expect: { keys: "" } },
+  { id: "m5-select-fill", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Select Fill" }, expect: { keys: "select_fill", "select_fill:qty": "QTY * 1.62" } },
+  { id: "m5-engineered-fill", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Engineered Fill" }, expect: { keys: "engineered_fill", "engineered_fill:qty": "QTY * 1.62" } },
+  { id: "m5-compacted-soil", kind: "site-materials", input: { role: "replacement_fill", unit: "CCY", name: "Replacement fill", material: "Structural Fill" }, expect: { keys: "fill:structural_fill", "fill:structural_fill:qty": "QTY * 1.8" } },
+  { id: "m5-flowable", kind: "site-materials", input: { role: "replacement_fill", unit: "CCY", name: "Replacement fill", material: "Flowable Fill" }, expect: { keys: "" } },
   { id: "m5-agent", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Lime (5%, 110 pcf)" }, expect: { keys: "agent:lime", "agent:lime:waste": 3 } },
   { id: "m5-fabric", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "geogrid", name: "Geogrid, 10% overlap" }, expect: { keys: "geogrid:site", "geogrid:site:qty": "QTY / 500", "geogrid:site:unit": "ROLL" } },
   { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "borrow:qty": "QTY / 0.764554857984 * 1.35" } },
   // --- F38 M8 (D-912): fusion hours from joints: 15.5 min per inch of wall, 40 ft joints ---
   // 8" DR 11: wall 0.784 in (8.625 / 11): 12.152 min a joint.
-  { id: "m8-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "hdpe_ips_dr11:8|1|0-6", name: '8" HDPE DR 11', utility: "force_main" }, expect: { "fusion:8:qty": "ceil(QTY / 40) * 12.152 / 60", "fusion:8:unit": "HR" } },
+  // The machine is on A19's tiers, rented (D-914): the pipe line buys none, and carries its joint for the check.
+  { id: "m8-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "hdpe_ips_dr11:8|1|0-6", name: '8" HDPE DR 11', utility: "force_main" }, expect: { keys: "pipe:hdpe_ips_dr11:8 fit:pipe:hdpe_ips_dr11:8 tracer_wire warning_tape" } },
+  // Joints a 10-hour day inside McElroy's published ranges (D-914): 8 in 24–48, 12 in 12–24, 24 in 10–16.
+  { id: "q31-joints-per-day", kind: "fusion-joints", keys: ["hdpe_ips_dr11:8", "hdpe_ips_dr11:12", "hdpe_ips_dr11:24"], expect: { "hdpe_ips_dr11:8": 27.1, "hdpe_ips_dr11:12": 18.2, "hdpe_ips_dr11:24": 11.1, inside: true } },
   // A gasketed pipe buys no fusion.
   { id: "m8-no-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape" } },
   // --- F38 M7 (D-913): a supplier's names against the catalog; nothing near, no match ---
-  { id: "m7-match", kind: "material-match", names: ['8" PVC SDR-35 (ASTM D3034)', "#57 stone", "Unobtainium gasket kit"], expect: { '8" PVC SDR-35 (ASTM D3034)': "pipe:pvc_d3034_sdr35:8", "#57 stone": "stone:_57_stone", "Unobtainium gasket kit": null } },
+  { id: "m7-match", kind: "material-match", names: ['8" PVC SDR-35 (ASTM D3034)', "#57 stone", "Unobtainium gasket kit", "8 in PVC SDR35 (ASTM D3034)", "8-inch PVC SDR 35 (ASTM D3034)"], expect: { '8" PVC SDR-35 (ASTM D3034)': "pipe:pvc_d3034_sdr35:8", "#57 stone": "stone:_57_stone", "Unobtainium gasket kit": null, "8 in PVC SDR35 (ASTM D3034)": "pipe:pvc_d3034_sdr35:8", "8-inch PVC SDR 35 (ASTM D3034)": "pipe:pvc_d3034_sdr35:8" } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {

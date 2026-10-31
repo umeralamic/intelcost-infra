@@ -1,0 +1,16 @@
+class,model,source,url,date,state,day,week,month,includes,kind
+to 8,T28 TracStar,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-t28-tracstar,undated,CO area (303; serves 13 western states),200,1000,3300,pipe stands,rate card
+to 8,#28 Rolling,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-28-rolling,undated,CO area,150,700,2400,pipe stands (hydraulic; electricity required),rate card
+to 12,T412 TracStar,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-t412-tracstar,undated,CO area,275,1300,4400,pipe stands,rate card
+to 12,#412 Rolling,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-412-rolling,undated,CO area,225,1100,3800,pipe stands,rate card
+to 18,T618 TracStar,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-t618-tracstar,undated,CO area,375,1800,6200,pipe stands,rate card
+to 18,#618 Rolling,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-618-rolling,undated,CO area,325,1600,5000,pipe stands,rate card
+to 24,T630 TracStar,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-t630-tracstar,undated,CO area,700,3300,11000,not stated on fetch,rate card
+to 36,T900 TracStar,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-t900-tracstar,undated,CO area,900,4200,13000,pipe stands,rate card
+to 48,#1648 Rolling,The Fusion Company,https://www.jjfusioncompany.com/mcelroy-1648-rolling,undated,CO area,1200,5000,18000,pipe stands,rate card
+to 12,up to 12 in standard,Coastal Resource Group,https://www.coastalrgp.com/fusion-rental-equipment/,undated,TX,100-500,,,not stated,range
+over 12,larger machines,Coastal Resource Group,https://www.coastalrgp.com/fusion-rental-equipment/,undated,TX,1000+,,,not stated,range
+to 18?,mid-range hydraulic ~$45k,IMSCO,https://imsupplyco.com/mcelroy-fusion-machine-rent-vs-buy/,undated,LA,350-600,,,not stated,range
+small,Pit Bull 26 (2-6),Gas Poly (search snippet; table empty when fetched),https://gaspoly.com/fusion-machine-rental/,2021-12-17,unstated,260,1180,4200,list; shipping extra,rate card (snippet)
+small,Pit Bull 14 (1-4),Gas Poly (search snippet),https://gaspoly.com/fusion-machine-rental/,2021-12-17,unstated,120,540,1940,list; shipping extra,rate card (snippet)
+small,1-4 in,White River Conservation District,https://www.whiterivercd.com/pipe-fusion-machine,undated,unstated,50,,,agency equipment; not a rental house,agency

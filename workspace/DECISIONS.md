@@ -25677,3 +25677,31 @@ blocks, a first cut of 13.
 - **The matching step:** each row shows the material it matched by the words of its name, which a person confirms, changes, makes a custom material, or skips. Under half its words shared, it offers Custom material, never a silent match. No row is dropped silently; a row with no name has nothing to show and is left out.
 - **A URL column** becomes the row's link, dated today, http and https only.
 - **Matching reads the catalog's names only,** never IntelCost's prices (Q14).
+
+## D-914: F38: the fusion machine is rented, on A19's spread
+
+**Status:** the founder's answers Q30, Q31, Q32, 2026-10-31. Supersedes D-912's price per hour.
+
+- **A fused crew rents one machine** for the spread's days, priced by the rental solver, the size of the largest fused pipe on the spread. It is added by code, not a tier row, so every workspace's A19 gets it.
+- **Classes are equipment release 10.** TracStar to 8, 12, 18, 24 and 36 in; a Rolling 48 in with GEN-25; over 48 in Missing price. Rolling and Pit Bull rows are alternatives.
+- **Rates:** one published rate card, normalised by Denver's equipment factor (÷ 1.01), grade C. Fuel from engine hp by USACE's factor. Mob by the catalog's rule.
+- **Setup per joint** is a setting: 10 min to 8 in, 15 for 10–18 in, 20 over. Fusion hours are a check: the line is flagged when fusing would set the crew's pace.
+- **Size bands** are McElroy's model ranges. **The line says** training technician and cleaning charges are not included.
+
+## D-915: F38: the founder's answers to the 2026-10-31 report
+
+**Status:** the founder's, 2026-10-31.
+
+- **Q1:** a line left by Calculate with only automatic components goes; one a person touched stays at 0.
+- **Q3:** haul-road water stays, named the founder's provisional figure, its days × rate on the line.
+- **Q8:** #57 stone 108 pcf (FHWA-HRT-15-034), sand 110 pcf, the new-project default and the fill for a saved blank.
+- **Q11:** a line with its own material says Calculate's materials were not written.
+- **Q19:** a thrust block's CY comes from AWWA's formula at 150 psi test, 2,000 psf, safety 1.5, editable per project; a typed CY overrides. The 2 ft depth is IntelCost's proposal.
+- **Q20:** AWWA C600's joint deflection cited for "no bend under half of 11¼°".
+- **Q21:** a pressure line with counted bends or tees takes a 10 % allowance; 20 % only with none.
+- **Q22:** flat top under 7 VF; a 2 ft base under 6 VF.
+- **Q26, Q28:** 1.35 t/LCY stays a proposal. 1.98 t/CCY crushed aggregate base only; select and engineered imported fill 1.62; other compacted soil 1.80, the founder's figure.
+- **Q29:** a kept edit reads "Your edit, kept after the tier changed".
+- **Q33:** a sheet's names are normalised before matching.
+- **a:** a project line map moved to by hand removes the spread's price. **b:** trench lines on a pressure run name that run's crew. **c:** valves, boxes and hydrants are counted on the run, never in the %.
+- **e:** M10 supersedes D-866 C3: the research grades A–F load, shown as their grade.
