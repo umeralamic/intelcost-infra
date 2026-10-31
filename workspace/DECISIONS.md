@@ -25531,3 +25531,28 @@ blocks, a first cut of 13.
   lines stay as they are: they come from the runs, which the choices do not touch.
 - **Every result, not the open sheet.** The choices are the project's, so one change rebuilds the lines of every sheet and site with a result. Until now the stale flag on each sheet did that work.
 - **The dialog.** When only "How cut reaches fill" or a surplus changed, on a current result, its button reads Apply and no volumes are computed. Anything else is still a Calculate.
+
+## D-900: Fill priced by how it is delivered (fill plan Block 1), starter release 9
+
+**Status:** the founder's plan, Block 1, with D-893's answers, 2026-10-31. The brief's "release 6" is release 9: 6, 7 and 8 went to D-896, D-897 and D-898.
+
+- **Three fill spreads.** A3 Place and compact stays the trucks' spread. A16 "dozer push fill" and A17 "scraper fill" are new: A3's tiers, roller, water and crew, with one levelling dozer, D3 to tier 3, D5 on
+  tiers 4 to 6, D6 on 7, D8 on 8. GPS is an optional machine on tiers 4 to 8. **The dozer sizes off tier 4 are a proposal, and no ratio of levelling dozers to scrapers is published.**
+- **The line.** `fill_push` and `fill_scraper` map to A16 and A17; the push rate stays A14's. Until Block 2 splits it, a sheet's whole fill follows the project's method.
+- **Haul-road water.** D-893 Q5 applies a haul-road water truck only on scraper hauls of about 1,000 ft or more. It is its own line, "Haul-road water, scraper fill", on new activity A20: A3's water truck at A3's tiers,
+  which doubles the water without a second spread of A17. The haul length is typed in Calculate's window (`site_choices.scraper_haul_ft`) until Block 3 measures it. **Not published; the founder's figure comes later.**
+- **Existing projects.** A project on excavator and trucks, the default, moves nothing. A project already on dozer or scraper changes price at its next Apply or Calculate.
+- **A gap closed.** `cut_push` and `cut_scraper` had no work scope, CSI code or row in the report's Cut and fill table. They and the new roles now have all three.
+
+## D-901: Fill shares from the cut lines, import as trucks, a typed override (fill plan Block 2)
+
+**Status:** the founder's plan, Block 2, D-893 Q3, 2026-10-31.
+
+- **A share** is the compacted yards a method delivers over the fill: each region's soil cut, bank over its layer's shrink (the project's where it has none), by that region's method. Rock and unsuitable layers deliver
+  nothing unless re-used as fill or taken as suitable. With native soil not suitable, nothing is delivered.
+- **The rest is import, which comes by truck.** Excavator and trucks counts as trucks. When the cut exceeds the fill, the shares are scaled so they add to the fill.
+- **The lines.** Each region's fill splits by the shares into "Fill", "Fill, dozer push" and "Fill, scraper". The shares are the project's, one set for all regions. A region with no fill keeps its "Fill" line at 0.
+- **Typed override.** `site_choices.fill_shares` {push, scraper}, percent, in Calculate's window under "Edit shares"; the rest is trucks. Blank goes back to the computed shares.
+- **The haul-road water line** follows the scraper's share.
+- **One operation, one tier.** A3, A16 and A17 take their tier and default production from the whole fill together, not from their own share. Read alone, 53 % and 47 % of 9,514 CCY each dropped from 900 to 630 CCY/day, and the split priced
+  dearer than the plan's figure. A project with no split moves nothing. A company's own activity keeps its own total.

@@ -1,6 +1,6 @@
 # Fill by delivery, site-driven methods and undercuts: plan
 
-Dated 2026-10-30. Built so far: problems 1–3 (D-896), Block 4 (D-899). Decisions are not logged until the questions in section 12 are answered.
+Dated 2026-10-30. Built so far: problems 1–3 (D-896), Blocks 4, 1 and 2, the first cut (D-899, D-900, D-901). Decisions are not logged until the questions in section 12 are answered.
 
 **How the figures were taken.** The 3D test copy was read only and copied with `drives/copy-3d-test.py` into a throwaway workspace ("zz Fill
 Plan"; the original's row counts and latest update were equal before and after), since D-881 and D-891 put its workspace out of a browser's

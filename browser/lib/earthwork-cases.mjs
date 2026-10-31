@@ -923,6 +923,35 @@ export const EARTHWORK_CASES = [
     runs: pad(100, 100),
     expect: { "piece:R": 7500, "strip:R:areaSF": 7500, "strip:R:volumeCY": 3750 / 27, fillCY: 3750 / 27 },
   },
+  // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
+  // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
+  {
+    id: "d901-push-share",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 2000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "dozer", push_ft: 100, method_by_feature: {} } } },
+    expect: { roles: "cut_push:remainder fill_push:remainder fill:remainder soil_import:__soil_import__", "fill_push:remainder": 800, "fill:remainder": 1200 },
+  },
+  // More cut than fill: the whole fill by the scraper.
+  {
+    id: "d901-cut-past-fill",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 500 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "scraper", push_ft: 100, method_by_feature: {} } } },
+    expect: { roles: "cut_scraper:remainder fill_scraper:remainder soil_export:__soil_export__", "fill_scraper:remainder": 500 },
+  },
+  // A feature's own method: 500 BCY by dozer, 750 by scraper, fill 1,000: 40 % and 60 %, nothing by truck.
+  {
+    id: "d901-two-methods",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: "pad", label: "Pad", cutCY: 500, fillCY: 0 }, { id: null, label: "Remainder", cutCY: 750, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "scraper", push_ft: 100, method_by_feature: { pad: "dozer" }, fill_shares: null } } },
+    expect: { roles: "cut_push:pad fill:pad cut_scraper:remainder fill_push:remainder fill_scraper:remainder", "fill_push:remainder": 400, "fill_scraper:remainder": 600 },
+  },
+  // Typed: 25 % pushed whatever the cut says; the haul-road water follows the scraper's share at 1,000 ft.
+  {
+    id: "d901-typed",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, scraper_haul_ft: 1000, fill_shares: { push: 25, scraper: 50 } } } },
+    expect: { roles: "cut:remainder fill_push:remainder fill_scraper:remainder fill:remainder haul_road_water:haul-road soil_import:__soil_import__", "fill_push:remainder": 250, "fill_scraper:remainder": 500, "fill:remainder": 250, "haul_road_water:haul-road": 500 },
+  },
   // --- D-896: one haul on an over-excavation; rock re-used writes its line and joins the balance ---
   // 100 CY dug, 80 clay and 20 rock, all hauled off: every yard of the dig on A2, nothing on A1. Export (1,000 - 500) x 1.25 = 625.
   {
