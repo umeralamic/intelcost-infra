@@ -405,6 +405,10 @@ Assembly components gain `mat_key`, so assemblies price from the same resolution
   - each quote is normalised by its market's material factor;
   - every core key is quoted, never filled, and graded B;
   - the sources are kept internal.
+- **M10 starts from the price research** in `docs/reference/Materials research/` (829 national prices from 4,437 source points, as of September 2026, not loaded into any table). Its "Core set (M10)" sheet maps 109 of the 123 core keys.
+  - **The 14 gaps need the founder's quotes:** RCP gaskets, the 60" cone and whole 60" manhole, 15–24" boots, catch basin and curb inlet top slabs, the curb inlet box, the combination inlet casting.
+  - **To check against the founder's waterworks quote:** 8" C900 DR18 at $21.48 rests on one Louisiana bid and looks high against 2026 TX and RI bids of $15.50–17.60 with the DR not stated. The research's derived 8" DR14 ($27.15) and DR25 ($15.72) scale from it, so they move with it.
+  - **Decision needed:** the rule above says every core key is quoted and graded B, while the research is graded A–F from public bids. See section 10.
 - **Everything outside the core** stays "Missing price" until a later quarterly release (M11).
 - **The core set, not all 495, is required before any tester deploy** (MANAGER.md, "Before any tester
   deploy").
@@ -636,9 +640,9 @@ api, and the money arithmetic stays in `lib/estimate/`.
 | **M5** | Site lines: borrow, tipping, aggregate base, stabilizers, geosynthetics | 1.5 |
 | **M6** | Recalculate: "Calculate now has …: Apply", Restore, "Price changed: Update / Update all", equipment and labour moved to `auto_key` / `user_fields` (Q16) | 2.5 |
 | **M8** | HDPE fusion: fusion classes as a library release, cycle times from the manufacturers' fusion procedures, hours from joints | 1.5 |
-| **M10** | The first IntelCost release: **the core set** (§3.4.1, 123 keys from five quote sheets), loaded as release 1, normalised and checked, with a quantity table row priced at the core. **Required before any tester deploy** | 3.5 |
+| **M10** | The first IntelCost release: **the core set** (§3.4.1, 123 keys), starting from the price research (§3.4; 109 keys mapped, 14 from the founder's quotes), loaded as release 1, normalised and checked, with a quantity table row priced at the core. **Required before any tester deploy** | 2.5 |
 | **M11** | Developer › Material prices (Q27): load, preview with the ±15 % flags, publish by quarter, the per-project Review with old → new and Update all, stale defaults after two quarters. The rest of the 495 keys come through it | 3 |
-| | **Total** | **≈ 37.5–38.5** |
+| | **Total** | **≈ 36.5–37.5** |
 
 **Each block ends** with the gates, the quantity table, and one smoke test on a throwaway account, never
 on 6467 or another founder project.
@@ -692,7 +696,7 @@ on 6467 or another founder project.
 
 ## 10. Open questions
 
-None open (2026-10-29).
+- **M10's grade rule.** D-866 C3 has every core key quoted and graded B; the research is national bid data graded A–F. **Recommended:** keep each key's research grade on the price, use the founder's quote where one exists, and read C3's "quoted, never filled" as "never an F-grade fitted or derived figure in the core".
 
 ## Risks
 

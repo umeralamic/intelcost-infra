@@ -25492,3 +25492,12 @@ blocks, a first cut of 13.
 - **The override.** `takeoff_item.undercut_bottom`, per undercut: null is the rule, `existing` or `subgrade` match the geotech report ("Measured below" in Site Feature properties). `subgrade` is D-528's reading: d − Δz in fill. `existing` is d + Δz in cut. Both never below 0, exact over the prisms.
 - **Over-excavation.** A fixed depth follows the same rule and override. A layer or an elevation is its own bottom, unchanged.
 - **A stored result** reads out of date by its version key ("u2", D-470's way); nothing is written, nothing recalculates until a person runs Calculate.
+
+## D-896: Undercut pricing: the native dig, one haul, re-used spoil in the balance; starter release 6
+
+**Status:** the founder's Q19, problems 1–3 of the fill plan, 2026-10-31. Built. Problems 4–6 stay in Block 8.
+
+- **Native undercut:** a new line, `undercut_native_dig` ("Undercut excavation, native soil"), BCY on A2, beside `undercut_native` on A3. A stabilized native undercut stays by hand: its mix line has no activity.
+- **One haul:** `over_excavation` moves to A2 and is the dig that leaves, with its haul on the spoil's line (A7). New `over_excavation_onsite` on A1 is the dig that stays ("…, kept on site"). A layer splits by where its soil goes: unsuitable and rock by `undercut_spoil`, suitable by the feature's disposition, pro rata.
+- **Re-used spoil:** `undercut_spoil` = Re-use writes `undercut_reuse_fill` (CCY, no activity: the Fill line places it) and joins the balance with the strip and undercut soil re-used.
+- **Release 6:** the national line map only. No workspace's rows are written; a saved line prices by the new map at its next Calculate.

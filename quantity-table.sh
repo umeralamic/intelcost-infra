@@ -39,8 +39,8 @@ fi
 # open-ended defaults stay open), and every default
 # production inside one of its activity's tiers (the workbook's "Tier it lands in", inclusive ends).
 ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.ew_activity)||' '||(select count(*) from eqlib.ew_tier)||' '||(select count(*) from eqlib.ew_tier_machine)||' '||(select count(*) from eqlib.ew_tier_crew)||' '||(select count(*) from eqlib.ew_default)||' '||(select count(*) from eqlib.ew_line_map)||' '||(select count(*) from eqlib.ew_tier_machine where optional = 'Y')||' '||(select count(*) from eqlib.ew_tier where to_per_day is null)||' '||(select count(*) from eqlib.ew_default where qty_to is null)||' '||((select count(*) from eqlib.ew_tier where to_per_day = 0 or from_per_day = 0) + (select count(*) from eqlib.ew_tier_machine where units = 0) + (select count(*) from eqlib.ew_tier_crew where count = 0) + (select count(*) from eqlib.ew_default where prod_per_day = 0 or qty_to = 0))||' '||(select count(*) from eqlib.ew_default d where not exists (select 1 from eqlib.ew_tier t where t.activity_key = d.activity_key and t.tier_no = d.tier_no and d.prod_per_day >= t.from_per_day and (t.to_per_day is null or d.prod_per_day <= t.to_per_day)))")
-if [ "$ST_COUNTS" != "15 85 172 134 69 31 13 13 15 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 15 85 172 134 69 31 13 13 15 0 0"
+if [ "$ST_COUNTS" != "15 85 172 134 69 33 13 13 15 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 15 85 172 134 69 33 13 13 15 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(

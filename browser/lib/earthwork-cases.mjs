@@ -923,6 +923,58 @@ export const EARTHWORK_CASES = [
     runs: pad(100, 100),
     expect: { "piece:R": 7500, "strip:R:areaSF": 7500, "strip:R:volumeCY": 3750 / 27, fillCY: 3750 / 27 },
   },
+  // --- D-896: one haul on an over-excavation; rock re-used writes its line and joins the balance ---
+  // 100 CY dug, 80 clay and 20 rock, all hauled off: every yard of the dig on A2, nothing on A1. Export (1,000 - 500) x 1.25 = 625.
+  {
+    id: "d896-overex-all-leaves",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 500 }],
+      features: [{ itemId: "pad", label: "Pad", prep: null, undercut: { depthFt: 4, offsetFt: 0, areaSF: 1, volumeCF: 2700, material: "Select Fill", disposition: "haul_off", overex: { mode: "fixed", layer: null, elevationFt: null, slopeH: 0, dMaxFt: 4, uncoveredSF: 0, notes: [], byLayer: [{ layerId: "L1", name: "Clay", cf: 2160, unsuitable: false, rock: false }, { layerId: "L3", name: "Rock", cf: 540, unsuitable: false, rock: true }], stack: [{ material: "Select Fill", native: false, thicknessFt: null, cf: 2700 }] } } }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {} } },
+    },
+    expect: {
+      roles: "over_excavation:pad over_excavation:pad undercut_haul:pad undercut_haul:pad replacement_fill:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      "soil_export:__soil_export__": 625,
+    },
+  },
+  // The clay stockpiled, the rock hauled: 80 on A1 kept on site, 20 on A2.
+  {
+    id: "d896-overex-clay-stays",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 500 }],
+      features: [{ itemId: "pad", label: "Pad", prep: null, undercut: { depthFt: 4, offsetFt: 0, areaSF: 1, volumeCF: 2700, material: "Select Fill", disposition: "stockpile", overex: { mode: "fixed", layer: null, elevationFt: null, slopeH: 0, dMaxFt: 4, uncoveredSF: 0, notes: [], byLayer: [{ layerId: "L1", name: "Clay", cf: 2160, unsuitable: false, rock: false }, { layerId: "L3", name: "Rock", cf: 540, unsuitable: false, rock: true }], stack: [{ material: "Select Fill", native: false, thicknessFt: null, cf: 2700 }] } } }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {} } },
+    },
+    expect: {
+      roles: "over_excavation_onsite:pad over_excavation:pad undercut_stockpile:pad undercut_haul:pad replacement_fill:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      "over_excavation_onsite:pad": 80,
+      "over_excavation_onsite:pad:name": "Undercut excavation, Clay, kept on site",
+      "over_excavation:pad": 20,
+    },
+  },
+  // The 20 CY of rock re-used: its line, 20 CCY, and the balance takes it as cut: (1,020 - 500) x 1.25 = 650.
+  {
+    id: "d896-overex-rock-reused",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 500 }],
+      features: [{ itemId: "pad", label: "Pad", prep: null, undercut: { depthFt: 4, offsetFt: 0, areaSF: 1, volumeCF: 2700, material: "Select Fill", disposition: "haul_off", overex: { mode: "fixed", layer: null, elevationFt: null, slopeH: 0, dMaxFt: 4, uncoveredSF: 0, notes: [], byLayer: [{ layerId: "L1", name: "Clay", cf: 2160, unsuitable: false, rock: false }, { layerId: "L3", name: "Rock", cf: 540, unsuitable: false, rock: true }], stack: [{ material: "Select Fill", native: false, thicknessFt: null, cf: 2700 }] } } }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1, choices: { surplus: { undercut_spoil: "reuse" }, method: "excavator", push_ft: 100, method_by_feature: {} } },
+    },
+    expect: {
+      roles: "over_excavation:pad over_excavation_onsite:pad undercut_haul:pad undercut_reuse_fill:pad replacement_fill:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      "over_excavation:pad": 80,
+      "over_excavation_onsite:pad": 20,
+      "undercut_reuse_fill:pad": 20,
+      "undercut_reuse_fill:pad:unit": "CCY",
+      "soil_export:__soil_export__": 650,
+    },
+  },
   // --- The lines (legacy's buildDesired; Q9 the panel shows them, Q31 shrink, Q32 order) ---
   // Legacy's strip re-use rows (siteFeatures.test.ts), shrink 1: cut 100, fill 300, strip
   // 50 re-used: import (300 - 150) x 1.25 = 187.5; the re-use line 50 x 1 CCY.
@@ -1218,7 +1270,9 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut_native:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      "undercut_native_dig:pad": 20000 / 27,
+      "undercut_native_dig:pad:unit": "BCY",
       "undercut_native:pad": 20000 / 27,
       "undercut_native:pad:unit": "CY",
       "undercut_native:pad:name": 'Undercut and recompact native soil, 24" in 8" lifts (3 lifts)',
@@ -1236,7 +1290,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: false, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut_native:pad cut:remainder fill:remainder soil_import:__soil_import__",
+      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder fill:remainder soil_import:__soil_import__",
       "soil_import:__soil_import__": (20000 / 27) * 0.1 * 1.25,
     },
   },
