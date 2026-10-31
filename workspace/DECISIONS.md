@@ -25519,3 +25519,15 @@ blocks, a first cut of 13.
 - **Sources.** Production is published: WSDOT M 22-31.10 Appendix 6, water main 100–800, normal 300 LF/day (the catalog's UT-PIPE-WATER). **No published crew or spread for a water main was found**, so crew and machines are A12's tiers 1–3 unchanged, not invented. A19 adds one person who fuses, as one operator per machine (Underground Construction, Nov 2017, read in a search summary only: 7–9 fusions a day each on 30–36 in, which also covers 300 LF/day in 40 ft sticks). **No fusion machine in the catalog:** it comes with M8, so A19 prices none yet.
 - **The map.** A line keeps `utility_pipe`; `takeoff_item.earthwork_crew` picks the line map's `utility_pipe_pressure` or `utility_pipe_fused`. Water, fire water and force main only: HDPE IPS is fused, the rest pressure. Gravity kinds, gas and the dry utilities stay on A12.
 - **Saved lines.** A line already saved keeps its crew; `earthwork_crew_next` holds the new one, and A12's spread reads "N pipe lines have a crew of their own now: Apply tier". Apply moves them. A new line takes its crew at once.
+
+## D-899: How cut reaches fill re-prices the lines without a Calculate (fill plan Block 4)
+
+**Status:** the founder's plan, Block 4, 2026-10-31.
+
+- **The key.** `site_choices` leaves the version key: a change of method, push or surplus destination no longer marks a result stale.
+- **Nothing already saved turns stale.** A result saved before this carries its choices in its key. `earthwork_assumptions.choices_keyed` holds those choices, taken the first time they change, so that key
+  stays readable. Any new Calculate writes a key without them. The migration writes no row.
+- **The save path.** `PUT /result/{sheet}/lines` and `PUT /site/{site}/result/lines` rewrite only a saved result's lines, from the stored volumes. The result, its key and its time are not touched, and utility
+  lines stay as they are: they come from the runs, which the choices do not touch.
+- **Every result, not the open sheet.** The choices are the project's, so one change rebuilds the lines of every sheet and site with a result. Until now the stale flag on each sheet did that work.
+- **The dialog.** When only "How cut reaches fill" or a surplus changed, on a current result, its button reads Apply and no volumes are computed. Anything else is still a Calculate.
