@@ -199,7 +199,8 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     export FX_OFFLINE=1
     # Every fx worker running, the OCR worker among them (D-872: before, only `setup` started it, and no scan's scale
     # was read in a release).
-    docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr beat-fx >"$out/0-workers.log" 2>&1 \n      || { echo "release: the fx workers would not start (see $out/0-workers.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
+    docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr beat-fx >"$out/0-workers.log" 2>&1 \
+      || { echo "release: the fx workers would not start (see $out/0-workers.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     mapfile -t all < <(release_list)
     built=()
     devs=()

@@ -8,7 +8,7 @@
 // `PARENT * 1.05` reads 1,050; a variable {Wall Height} = 10 made in the sub-items dialog gives
 // `{Wall Height} * 2` = 20; Folder Properties x2 shows "x2" on the folder and on its item, the
 // stored multiplier 2; a count drawn on the Alternate layer files there and Base Bid's rows leave
-// the tree; Duplicate suggests "Slab (2)" and carries the sub-items; Properties files an item under
+// the tree; Duplicate makes an empty copy with the sub-items and opens Properties (D-873); Properties files an item under
 // DIV 03; the sub-items editor, opened at desktop width, stays on screen with its fields and its
 // Save in reach when the window narrows to 375 px (D-386).
 //
@@ -235,20 +235,20 @@ await run("c12-item-model", [
     },
   },
   {
-    title: "Duplicate: Slab's Duplicate suggests \"Slab (2)\" with \"Include sub-items (2)\"; the copy carries Mesh and Wall and reads 1,000 SF",
+    title: "Duplicate (D-873): Slab's Duplicate asks nothing: a copy of the same name with Mesh and Wall and quantity 0, Properties open on it",
     run: async ({ page }) => {
       await open(page);
       await more(page, "Slab", "Duplicate");
-      const dup = page.locator("[data-duplicate]");
-      await dup.waitFor();
-      const suggested = await dup.getByLabel("Duplicate name").inputValue();
-      const includes = (await dup.getByText(/Include sub-items/).first().textContent())?.trim();
-      await dup.getByRole("button", { name: "Duplicate" }).click();
-      const copy = await waitFor(() => byName("Slab (2)"), "Slab (2)", 10000);
+      await form(page).waitFor();
+      const named = await form(page).getByLabel("Name", { exact: true }).inputValue();
+      await form(page).getByRole("button", { name: "Save" }).click();
+      await form(page).waitFor({ state: "detached" });
+      const copy = await waitFor(async () => (await items()).find((i) => i.name === "Slab" && i.uuid !== slab.uuid && !i.parent_uuid), "the copy", 10000);
       const copyKids = (await kids(copy)).map((k) => k.name).sort();
-      expect(suggested === "Slab (2)", `suggested "${suggested}"`);
-      expect(copyKids.join() === "Mesh,Wall" && Math.abs(copy.effective_quantity - 1000) < 1e-6, `copy sub-items ${copyKids.join()}, ${copy.effective_quantity} SF`);
-      return `"${suggested}", "${includes}"; the copy has ${copyKids.join(" and ")}, ${copy.effective_quantity} SF`;
+      expect(named === "Slab", `the copy is named "${named}"`);
+      expect(copyKids.join() === "Mesh,Wall" && copy.effective_quantity === 0, `copy sub-items ${copyKids.join()}, ${copy.effective_quantity} SF`);
+      await page.keyboard.press("Escape");
+      return `"${named}"; the copy has ${copyKids.join(" and ")}, ${copy.effective_quantity} SF`;
     },
   },
   {

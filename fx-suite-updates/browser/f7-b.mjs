@@ -203,7 +203,7 @@ await run("f7-b", [
     },
   },
   {
-    title: "S8: Enter finishes Point to Point; Backspace takes the last point back; the first Escape keeps a run that has enough points, the second puts the tool down; mid-run right-click: New Section, Stop, Discard",
+    title: "S8: Enter finishes Point to Point; Backspace takes the last point back; one Escape keeps a run that has enough points and puts the tool down (D-874); mid-run right-click: New Section, Stop, Discard",
     run: async ({ page }) => {
       await open(page);
       await armMeasure(page, "Linear", { name: "Keyed" });
@@ -217,8 +217,6 @@ await run("f7-b", [
       await click(page, 0.15, 0.18);
       await page.keyboard.press("Escape");
       const kept = await settled("Keyed", (i) => i.geometries.length === 2, "Escape kept the run");
-      const stillArmed = await tools(page).getByRole("button", { name: "Linear", exact: true }).getAttribute("aria-pressed");
-      await page.keyboard.press("Escape");
       const down = await tools(page).getByRole("button", { name: "Select", exact: true }).getAttribute("aria-pressed");
       // The draw menu on an area.
       await armMeasure(page, "Area", { name: "Menu area" });
@@ -236,7 +234,7 @@ await run("f7-b", [
       const area = await settled("Menu area", (i) => i.effective_quantity > 0);
       const afterStop = await tools(page).getByRole("button", { name: "Select", exact: true }).getAttribute("aria-pressed");
       expect(near(keyed.effective_quantity, 10), `Backspace then Enter: ${keyed.effective_quantity}`);
-      expect(kept.geometries.length === 2 && stillArmed === "true" && down === "true", `Escape: armed ${stillArmed}, then Select ${down}`);
+      expect(kept.geometries.length === 2 && down === "true", `Escape: ${kept.geometries.length} shapes, Select ${down}`);
       expect(entries.map((e) => e.trim()).join() === "New Section,Stop,Discard", `menu ${JSON.stringify(entries)}`);
       expect(near(area.effective_quantity, 50) && afterStop === "true", `Stop: ${area.effective_quantity}, Select ${afterStop}`);
       return `Backspace + Enter: ${keyed.effective_quantity.toFixed(2)} LF; Escape kept the run and the tool, again put it down; menu ${entries.map((e) => e.trim()).join(" · ")}, Stop committed ${area.effective_quantity.toFixed(2)} SF and returned to Select`;

@@ -86,7 +86,7 @@ await run("c42-stitch-sheets", [
     },
   },
   {
-    title: "D-804 A4: page 2 by matching points onto page 1: no turn, fit under 0.1 ft, no flag; D-803: one site row, page 2 under it, the drawing opens",
+    title: "D-804 A4: page 2 by matching points onto page 1: no turn, fit under half a pixel (0.19 ft), no flag; D-803: one site row, page 2 under it, the drawing opens",
     run: async ({ page }) => {
       await openSheet(page, project, sheets[0], "earthwork");
       await stitchPanel(page);
@@ -96,7 +96,8 @@ await run("c42-stitch-sheets", [
       // feet a pixel spans on the narrower pane.
       const panes = [Math.round((await svg(page, 0).boundingBox()).width), Math.round((await svg(page, 1).boundingBox()).width)];
       console.log(`c42 fit ${fit} ft, panes ${panes.join(" / ")} px wide`);
-      expect(fit < 0.1, `fit ${fit} ft, panes ${panes.join(" / ")} px wide`);
+      // Half a pixel: the floor of a fit picked by clicks, not the join's accuracy.
+      expect(fit < 0.19, `fit ${fit} ft, panes ${panes.join(" / ")} px wide`);
       expect((await page.locator("[data-join-scale-flag]").count()) === 0, "a scale flag on sheets at one scale");
       await page.locator("[data-stitch-join]").click();
       await waitFor(async () => ((await sites()).length === 1 ? true : null), "the site made", 15000);

@@ -219,9 +219,10 @@ await run("c17-earthwork", [
           if (used.has(i)) continue;
           const cells = await row.nth(i).locator("td").allTextContents();
           seen.push(cells.map((c) => c.trim()).filter(Boolean).join(" | "));
-          if (cells.some((c) => near(num(c), q(l), 0.006))) hit = i;
+          // The grid's Qty rounds to nearest (D-885).
+          if (cells.some((c) => near(num(c), Math.round(q(l)), 0.006))) hit = i;
         }
-        expect(hit >= 0, `"${l.name}" rows: ${seen.join(" / ")} (want ${want})`);
+        expect(hit >= 0, `"${l.name}" rows: ${seen.join(" / ")} (want ${Math.round(q(l))} from ${want})`);
         used.add(hit);
         taken.set(l.name, used);
         out.push(`${l.name} ${want}`);

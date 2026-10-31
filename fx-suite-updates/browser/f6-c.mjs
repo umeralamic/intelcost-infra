@@ -277,7 +277,7 @@ await run("f6-c", [
     },
   },
   {
-    title: "S9 AC2, AC3: the item's ⋮ menu offers Properties, Duplicate, Create sub-item and Delete, and Move to layer only while there is more than one layer; Duplicate suggests \"Wall (2)\", then \"Wall (3)\", with its sub-items",
+    title: "S9 AC2, AC3: the item's ⋮ menu offers Properties, Duplicate, Create sub-item and Delete, and Move to layer only while there is more than one layer; Duplicate makes an empty copy of the same name with its sub-items and opens Properties, renamed here \"Wall (2)\" (D-873)",
     run: async ({ page }) => {
       const sub = await apiCall(token, "PUT", `${takeoff}/item/${made.Wall.uuid}/sub-items`, { sub_items: [{ name: "Plates", formula_text: "PARENT * 2", unit: "LF" }] });
       expect(sub.status === 200, `sub-items: ${sub.status}`);
@@ -288,21 +288,19 @@ await run("f6-c", [
       const oneLayer = (await layers()).length === 1;
       expect(offered.some((t) => t.startsWith("Properties")) && offered.includes("Duplicate") && offered.some((t) => /sub-item/i.test(t)) && offered.some((t) => /^Delete/.test(t)) && oneLayer && !offered.some((t) => t.startsWith("Move to layer")), `menu: ${offered.join(" | ")}; one layer ${oneLayer}`);
       await page.getByRole("menuitem", { name: "Duplicate" }).click();
-      const dup = page.locator("[data-duplicate]");
-      const suggested = await dup.getByLabel("Duplicate name").inputValue();
-      const includes = await dup.getByText("Include sub-items (1)").count();
-      await dup.getByRole("button", { name: "Duplicate" }).click();
+      const dialog = page.locator("[data-measurement-dialog]");
+      await dialog.waitFor();
+      const named = await dialog.getByLabel("Name", { exact: true }).inputValue();
+      await dialog.getByLabel("Name", { exact: true }).fill("Wall (2)");
+      await dialog.getByRole("button", { name: "Save" }).click();
+      await dialog.waitFor({ state: "detached" });
       const copy = await waitFor(() => byName("Wall (2)"), "Wall (2)", 10000);
-      // The next suggestion reads the names the panel lists: wait until it lists the copy.
       await row(page, "Wall (2)").waitFor({ timeout: 10000 });
-      await more(page, "Wall");
-      await page.getByRole("menuitem", { name: "Duplicate" }).click();
-      const second = await page.locator("[data-duplicate]").getByLabel("Duplicate name").inputValue();
-      await page.locator("[data-duplicate]").getByRole("button", { name: "Cancel" }).click();
+      await page.keyboard.press("Escape");
       const copyKids = (await items()).filter((i) => i.parent_uuid === copy.uuid).map((i) => i.name);
-      expect(suggested === "Wall (2)" && second === "Wall (3)" && includes === 1 && copyKids.join() === "Plates", `first "${suggested}", second "${second}", sub-items ${copyKids.join()}`);
-      expect(copy.color !== made.Wall.color && Math.abs(copy.effective_quantity - made.Wall.effective_quantity) < 1e-9, `copy colour ${copy.color}, qty ${copy.effective_quantity}`);
-      return `menu: ${offered.join(" · ")}; "${suggested}" then "${second}"; the copy has Plates, a new colour and the same 30 LF`;
+      expect(named === "Wall" && copyKids.join() === "Plates", `named "${named}", sub-items ${copyKids.join()}`);
+      expect(copy.color !== made.Wall.color && copy.effective_quantity === 0, `copy colour ${copy.color}, qty ${copy.effective_quantity}`);
+      return `menu: ${offered.join(" · ")}; "${named}"; the copy has Plates, a new colour and quantity 0`;
     },
   },
   {
