@@ -125,6 +125,8 @@ export const EQUIPMENT_CASES = [
   // missing; five shared over 500 machine-hr, $53,070.00. A self-propelled BARE machine keeps the rule: WT-2000's
   // mob is missing (its fuel burn too: the catalog has none), and a shared one flags every line it serves, never a silent $0.
   // WT-4000 (D-892): 40 hr over 5 days is 1 week $3,067.00, fuel low 5.95 gal/hr × 40 hr × $6.276 = $1,493.69, mob none: $4,560.69.
+  // On fine grade (D-894 Q4) at A11's tier 3, × 0.5: half of $4,560.688 = $2,280.34; its flag is off (the starter's optional count is 10).
+  { id: "eq-894-wt4000-fine-grade", kind: "machine", ...DIESEL, input: { classKey: "WT-4000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "low", units: 0.5, includeMob: true }, expect: { total: 2280.344, mob: 0, missing: [] } },
   { id: "eq-892-wt4000", kind: "machine", ...DIESEL, input: { classKey: "WT-4000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "low", units: 1, includeMob: true }, expect: { total: 4560.69, mob: 0, missing: [] } },
   { id: "eq-756-operated-no-mob", kind: "machine", setting: {}, input: { classKey: "DT-OP-3AXLE", mode: "operated", period: "hr", hours: 100, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 10614, mob: 0, missing: [] } },
   { id: "eq-756-bare-self-propelled", kind: "machine", ...DIESEL, input: { classKey: "WT-2000", mode: "rental", period: "auto", hours: 40, workDays: 5, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: null, missing: ["fuel_gph_med", "mob"] } },

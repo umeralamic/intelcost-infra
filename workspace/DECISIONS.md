@@ -25501,3 +25501,12 @@ blocks, a first cut of 13.
 - **One haul:** `over_excavation` moves to A2 and is the dig that leaves, with its haul on the spoil's line (A7). New `over_excavation_onsite` on A1 is the dig that stays ("…, kept on site"). A layer splits by where its soil goes: unsuitable and rock by `undercut_spoil`, suitable by the feature's disposition, pro rata.
 - **Re-used spoil:** `undercut_spoil` = Re-use writes `undercut_reuse_fill` (CCY, no activity: the Fill line places it) and joins the balance with the strip and undercut soil re-used.
 - **Release 6:** the national line map only. No workspace's rows are written; a saved line prices by the new map at its next Calculate.
+
+## D-897: Lone-sheet naming, a scan's number alone, the location term, the WT-4000 on fine grade; starter release 7
+
+**Status:** the founder's D-894 Q1–Q4, 2026-10-31. Built. Measured on the 103-sheet key.
+
+- **A scan with no title read on Load** keeps no mark and no name: the sheet reads its number alone ("E200"), never the file name. A title that is only a page count ("Sheet", "Sheet 2 of 5") counts as no title.
+- **Title near the number wins.** When the nearest large type is out of reach (3 number heights) or absent, small title type within reach is taken, constants or none. A written-out date ("August 10, 2016") is never title material: the key found it read as a title on nine sheets.
+- **Location factor:** its own term in the Shared Equipment note, so the note sums to its total.
+- **Release 7:** the WT-4000's optional flag cleared on A11's three tiers; A11 tagged, so unedited rows refresh on their next read.

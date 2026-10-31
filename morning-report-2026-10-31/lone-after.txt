@@ -1,0 +1,12 @@
+lone sheets with a title: 92, title right 81, no title 10
+BAD 'RISER DIAGRAM FIXTURE SCHEDULE GENERAL ELECT'   got 'E104' 'Riser Diagram Fixture Schedule'
+BAD 'GENERAL NOTES, LEGENDS, AND SYMBOLS'            got '' ''
+BAD 'GENERAL NOTES'                                  got '' ''
+BAD 'DETAILS'                                        got '' ''
+BAD 'SCHEDULES & COMCHECK'                           got '' ''
+BAD 'FLOOR PLAN - LEVEL 1 - MECHANICAL'              got '' ''
+BAD 'GENERAL NOTES, LEGENDS, AND SYMBOLS'            got '' ''
+BAD 'FLOOR PLAN - LEVEL 1 - PLUMBING'                got '' ''
+BAD 'ROOF PLAN - PLUMBING'                           got '' ''
+BAD 'FOUNDATION PLAN'                                got '' ''
+BAD 'FRAMING PLAN'                                   got '' ''
