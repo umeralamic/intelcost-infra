@@ -25659,3 +25659,12 @@ blocks, a first cut of 13.
 - **Restore:** Estimating › Setup has "Restore Calculate's components (n)"; they come back at the next Calculate.
 - **Price changed:** a component whose workspace or project price, or default, has moved reads "Price changed: Update"; the Material Prices window lists each, old to new, with Update and Update all. A typed price is not listed. Nothing moves by itself (Q18).
 - **Equipment and labour** from a tier now carry an `auto_key` (`eq:<class>:<i>`, `crew`) and `user_fields`. A tier swap leaves a person's edited machine or crew in place of the tier's and does not add a second. **A correction:** today a tier swap deletes every automatic component, so a person's edit to one is lost, against the `eq_auto` docstring. Saved rows have no `auto_key` and behave as before until their next tier write.
+
+## D-912: F38 M8: HDPE fusion hours from joints
+
+**Status:** the founder's plan, block M8 (Q10), 2026-10-31.
+
+- **A butt-fused pipe line carries a fusion machine:** an equipment component in hours, joints × cycle ÷ 60.
+- **The cycle is only what is published (Q10):** heat soak of at least 4.5 min per inch of wall (PPI) plus cooling of at least 11 min per inch of wall (ASTM F2620, as cited in Performance Pipe's PP 750-TN-05): 15.5 min per inch of wall, wall from the pipe catalog. **Read from search summaries; the documents were not opened.** They are minimums, and setup, facing and handling have no published figure, so **the hours are a floor**.
+- **By size band:** up to 8", up to 18", up to 36", each a key of its own. The bands are this block's choice, not published.
+- **Priced by the material price path, not an equipment library release:** the catalog has no fusion class, and no published rate exists to add one. So it reads Missing price until a company types a rate per HR. **This departs from the plan's "fusion classes as a library release".**

@@ -1001,6 +1001,11 @@ export const EARTHWORK_CASES = [
   { id: "m5-agent", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Lime (5%, 110 pcf)" }, expect: { keys: "agent:lime", "agent:lime:waste": 3 } },
   { id: "m5-fabric", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "geogrid", name: "Geogrid, 10% overlap" }, expect: { keys: "geogrid:site", "geogrid:site:qty": "QTY / 500", "geogrid:site:unit": "ROLL" } },
   { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "borrow:qty": "QTY / 0.764554857984 * 1.35" } },
+  // --- F38 M8 (D-912): fusion hours from joints: 15.5 min per inch of wall, 40 ft joints ---
+  // 8" DR 11: wall 0.784 in (8.625 / 11): 12.152 min a joint.
+  { id: "m8-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "hdpe_ips_dr11:8|1|0-6", name: '8" HDPE DR 11', utility: "force_main" }, expect: { "fusion:8:qty": "ceil(QTY / 40) * 12.152 / 60", "fusion:8:unit": "HR" } },
+  // A gasketed pipe buys no fusion.
+  { id: "m8-no-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape" } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {

@@ -14,6 +14,7 @@
 //   M4a (D-908): the restraint setting is kept; a thrust block with no CY asks for it in Needs attention.
 //   M6 (D-911): an edited quantity shows Calculate's, Apply takes it; a price moved is listed and Update takes it; a typed one is not;
 //      an edited component out of Calculate stays, marked; dismissed ones are counted and restored.
+//   M8 (D-912): a fusion machine is an equipment component that reads Missing price until priced, and takes a price per hour.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
@@ -273,6 +274,22 @@ await run("c45-materials", [
       c = await one();
       expect(c.auto_gone === true && c.name === "My stone", JSON.stringify(c));
       return "edit kept beside Calculate's, Apply took it; $10 stayed until Update; dismissed counted and restored; edited kept, marked";
+    },
+  },
+  {
+    title: "M8 (D-912): a fusion machine is written as equipment, with no price until a company has one, and takes it",
+    run: async () => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const prices = `${base}/${project.uuid}/estimate/material-prices`;
+      const key = "fusion:8";
+      await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:force_main", role: "utility_pipe", name: '8" HDPE DR 11', quantity: 100, unit: "LF", variant: "hdpe", work_scope: "site_utilities.force_main", work_kind: null, utility: "force_main", folder: "utilities", materials: [{ key, mat_key: key, name: 'Butt fusion machine, to 8"', qty_formula: "ceil(QTY / 40) * 12.152 / 60", unit: "HR", wastage_pct: 0, sell_unit: "HR", kind: "equipment" }] }] });
+      const one = async () => (await apiCall(token, "GET", comps)).body.find((c) => c.auto_key === key);
+      const c = await one();
+      expect(c.kind === "equipment" && c.unit_price === null, JSON.stringify(c));
+      await apiCall(token, "POST", prices, { mat_key: key, unit_price: 60, sell_unit: "HR" });
+      const filled = (await apiCall(token, "POST", `${prices}/fill`, {})).body;
+      expect(filled.filled >= 1 && Number((await one()).unit_price) === 60, JSON.stringify(filled));
+      return "equipment, no price; $60/HR filled";
     },
   },
 ]);
