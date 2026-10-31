@@ -25401,16 +25401,14 @@ blocks, a first cut of 13.
   1c, then 2a, 2b (after z, aa). The number belongs to the item, so every group-by, filter and the export read the same one.
 - A parent's copy above its sub-items in another group shows the parent's number.
 
-## D-885: Qty and Qty with Wastage show as whole numbers, rounded up; prices stay exact
+## D-885: Qty and Qty with Wastage show no decimals, rounded to nearest, in the grid and the workbook; prices stay exact
 
-**Status:** the founder's request and choice, 2026-10-30.
+**Status:** the founder's request and choices, 2026-10-30. First built rounding up; the founder then asked for no ROUNDUP and for the grid to match Excel.
 
-- The Estimating table's Qty and Qty with Wastage show no decimals, rounded up from the two-place figure: 0.26 shows 1, 15.02 shows 16,
-  15.00 stays 15. A component's Qty too. Display only: Total Qty, man-hours and every price still read the exact quantity, and the
-  Qty popover shows how it was derived.
-- **In Excel** the Qty and Qty with Wastage cells keep their figures and formulas, a sub-item's `=I26*2.5` on its parent's Qty cell with
-  the dimension as a figure, in a zero-decimal format (the founder, same day: no ROUNDUP, no hidden columns). Excel's format rounds to
-  nearest, so 15.02 shows 15 there and 16 on screen. The Cost components lists keep decimals.
+- The Estimating table's Qty and Qty with Wastage, and a component's Qty, show no decimals, rounded to nearest: 15.02 shows 15, 15.6 shows 16,
+  0.26 shows 0. Display only: Total Qty, man-hours and every price read the exact quantity.
+- **In Excel** the cells keep their figures and formulas, a sub-item's `=I26*2.5` on its parent's Qty cell with the dimension as a
+  figure, in a zero-decimal format. No ROUNDUP, no hidden columns. The Cost components lists keep decimals.
 
 ## D-888: A right-click menu stays open while a panel elsewhere scrolls
 
