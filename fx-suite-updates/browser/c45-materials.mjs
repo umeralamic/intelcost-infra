@@ -15,6 +15,7 @@
 //   M6 (D-911): an edited quantity shows Calculate's, Apply takes it; a price moved is listed and Update takes it; a typed one is not;
 //      an edited component out of Calculate stays, marked; dismissed ones are counted and restored.
 //   M8 (D-912): a fusion machine is an equipment component that reads Missing price until priced, and takes a price per hour.
+//   D-913: a supplier sheet: rows matched, one custom, one skipped, a URL becomes a link; nothing saved before Import.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
@@ -290,6 +291,33 @@ await run("c45-materials", [
       const filled = (await apiCall(token, "POST", `${prices}/fill`, {})).body;
       expect(filled.filled >= 1 && Number((await one()).unit_price) === 60, JSON.stringify(filled));
       return "equipment, no price; $60/HR filled";
+    },
+  },
+  {
+    title: "D-913: a supplier sheet: a matched row, a custom one, a skipped one; its URL a link; nothing saved before Import",
+    run: async ({ page }) => {
+      await openSheet(page, project, sheet, "estimating");
+      await page.goto(`${APP}/settings/material-prices`);
+      await page.locator("[data-material-prices]").waitFor({ timeout: 30000 });
+      const list = async () => (await apiCall(token, "GET", `/api/workspace/${workspace.uuid}/material-prices`)).body;
+      const before = (await list()).length;
+      await page.getByRole("button", { name: "Import a supplier sheet" }).click();
+      const csv = 'Material,Price,Unit,Supplier,URL\n"#57 stone",41.25,TON,Quarry Co,https://example.com/q\nUnobtainium kit,9,EA,Quarry Co,\nSkip me,1,EA,,\n';
+      await page.locator('input[type="file"]').setInputFiles({ name: "quote.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+      const rows = page.locator("[data-import-rows]");
+      await rows.waitFor({ timeout: 15000 });
+      expect((await rows.getByLabel("Material for #57 stone").inputValue()) === "stone:_57_stone", "#57 did not match");
+      expect((await rows.getByLabel("Material for Unobtainium kit").inputValue()) === "__custom__", "an unknown row matched");
+      await rows.getByLabel("Material for Skip me").selectOption("__skip__");
+      expect((await list()).length === before, "saved before Import");
+      await page.getByRole("button", { name: /^Import 2/ }).click();
+      await rows.waitFor({ state: "detached", timeout: 20000 });
+      const after = await list();
+      const stone = after.find((p) => p.mat_key === "stone:_57_stone");
+      expect(stone?.unit_price === 41.25 && stone.links[0]?.url === "https://example.com/q" && stone.supplier === "Quarry Co", JSON.stringify(stone));
+      expect(after.some((p) => p.mat_key.startsWith("custom:") && p.name === "Unobtainium kit"), "the custom row");
+      expect(!after.some((p) => p.name === "Skip me"), "the skipped row was saved");
+      return "#57 matched with its link; a custom material; a skipped row; nothing saved before Import";
     },
   },
 ]);

@@ -1058,6 +1058,7 @@ try {
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
+    const match = await import("/src/lib/estimate/materialMatch.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
@@ -1390,6 +1391,10 @@ try {
         out.keys = list.map((m) => m.key).join(" ");
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
         return out;
+      }
+      if (c.kind === "material-match") {
+        const known = match.knownMaterials();
+        return Object.fromEntries(c.names.map((n) => [n, match.suggestMaterial(n, known)?.matKey ?? null]));
       }
       if (c.kind === "tons") {
         return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };

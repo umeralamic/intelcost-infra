@@ -25668,3 +25668,12 @@ blocks, a first cut of 13.
 - **The cycle is only what is published (Q10):** heat soak of at least 4.5 min per inch of wall (PPI) plus cooling of at least 11 min per inch of wall (ASTM F2620, as cited in Performance Pipe's PP 750-TN-05): 15.5 min per inch of wall, wall from the pipe catalog. **Read from search summaries; the documents were not opened.** They are minimums, and setup, facing and handling have no published figure, so **the hours are a floor**.
 - **By size band:** up to 8", up to 18", up to 36", each a key of its own. The bands are this block's choice, not published.
 - **Priced by the material price path, not an equipment library release:** the catalog has no fusion class, and no published rate exists to add one. So it reads Missing price until a company types a rate per HR. **This departs from the plan's "fusion classes as a library release".**
+
+## D-913: F38 M7: the supplier import
+
+**Status:** the founder's plan, the last half day of M7, 2026-10-31.
+
+- **Settings › Material prices › Import a supplier sheet** reads an Excel or CSV sheet by its headers. Nothing is written until Import.
+- **The matching step:** each row shows the material it matched by the words of its name, which a person confirms, changes, makes a custom material, or skips. Under half its words shared, it offers Custom material, never a silent match. No row is dropped silently; a row with no name has nothing to show and is left out.
+- **A URL column** becomes the row's link, dated today, http and https only.
+- **Matching reads the catalog's names only,** never IntelCost's prices (Q14).

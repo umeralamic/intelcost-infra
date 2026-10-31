@@ -1006,6 +1006,8 @@ export const EARTHWORK_CASES = [
   { id: "m8-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "hdpe_ips_dr11:8|1|0-6", name: '8" HDPE DR 11', utility: "force_main" }, expect: { "fusion:8:qty": "ceil(QTY / 40) * 12.152 / 60", "fusion:8:unit": "HR" } },
   // A gasketed pipe buys no fusion.
   { id: "m8-no-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape" } },
+  // --- F38 M7 (D-913): a supplier's names against the catalog; nothing near, no match ---
+  { id: "m7-match", kind: "material-match", names: ['8" PVC SDR-35 (ASTM D3034)', "#57 stone", "Unobtainium gasket kit"], expect: { '8" PVC SDR-35 (ASTM D3034)': "pipe:pvc_d3034_sdr35:8", "#57 stone": "stone:_57_stone", "Unobtainium gasket kit": null } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {
