@@ -25626,3 +25626,17 @@ blocks, a first cut of 13.
 - **Restraint or thrust block:** a project setting in Utility settings. Restraint: one set EA per bend and tee, by size. Thrust block: one component per angle in CY, reading "Enter the block's CY" in Needs attention until a person types it. **No project table of block sizes:** the person types the CY on the component, and a Calculate keeps it.
 - **Water stretches.** Foundation stone, stretch LF × trench width × 12 in, in tons at #57's density with 10 % waste, and trench-bottom geotextile, stretch LF × (width + 2 ft) ÷ 9 × 1.10 SY, in 500 SY rolls, both on the run's Trench dewatering line. The 12 in, the overlap and the roll are IntelCost's proposals.
 - **Counted fittings are never also in the %:** the allowance's % does not change, since the plan sets it on the rest of the fittings. **Not reduced.**
+
+## D-909: F38 M4b: structures by their parts
+
+**Status:** the founder's plan, block M4b (Q28), 2026-10-31. The founder has not yet checked the 100 lb/CY rebar (Q32): it stands as the plan's proposal.
+
+- **Parts rules** for manholes, inlets and catch basins, junction boxes, vaults and cleanouts, as §2.8.3, in `lib/takeoff/earthwork/utilities/structureParts.ts`. Headwalls and lift stations stay one Whole structure, as does any structure whose rule cannot run.
+- **Risers** per VF by default, whole feet with the remainder in adjustment rings by the inch; or stocked heights of 4, 3 and 2 ft, largest first, the rest in rings.
+- **Flat top** when VF is under 5 ft, 8 in tall. A person's choice of cone or flat wins.
+- **Cast-in-place:** concrete from the base slab, the walls at mid-wall and an 8 in top slab; rebar at 100 lb/CY; forms on both faces of the wall over the structure's VF. **The outside face is always counted:** the setting that drops it where cast against earth is not built.
+- **Whole structure:** EA to 6 ft, plus "Extra depth" VF past it. The frame stays out of Whole: §2.8.5's tick for a quote that includes it is not built.
+- **Base stone stays on the structure's own base stone line** (M3), not among the parts, so it is never counted twice.
+- **On one line several structures add up:** a line is by type, size and depth range, so a part's quantity is the sum over its structures.
+- **The Structures box** sets construction, pricing, inlet kind, hood, top and riser mode.
+- **Parts is the default,** as §2.8.2 says, so structure lines written as one Whole structure in M3 become parts at their next Calculate. Nothing has shipped since M3.

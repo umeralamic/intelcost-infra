@@ -1058,6 +1058,7 @@ try {
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
+    const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
@@ -1375,6 +1376,13 @@ try {
       }
       if (c.kind === "bends") {
         return { bends: fit.pathBends(c.path, c.marks ?? []).map((b) => `${b.angle}x${b.count}`).join(" "), tees: [...fit.pressureTees(c.runs ?? [], c.marks ?? [])].map(([id, n]) => `${id}x${n}`).join(" ") };
+      }
+      if (c.kind === "structure-parts") {
+        const out = {};
+        const list = parts.structureParts(c.input);
+        out.keys = list.map((m) => m.key).join(" ");
+        for (const m of list) Object.assign(out, { [`${m.key}`]: m.qty, [`${m.key}:unit`]: m.unit });
+        return out;
       }
       if (c.kind === "tons") {
         return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };
