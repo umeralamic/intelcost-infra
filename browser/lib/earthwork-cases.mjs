@@ -956,6 +956,9 @@ export const EARTHWORK_CASES = [
   { id: "m3-native-backfill", kind: "line-materials", input: { role: "utility_backfill", unit: "CCY", variant: "Native|native", name: "Trench backfill", utility: "sanitary" }, expect: { keys: "" } },
   // Every structure: one Whole structure.
   { id: "m3-structure", kind: "line-materials", input: { role: "utility_structure", unit: "EA", variant: 'sanitary_manhole|48"|6-8', name: "Sanitary Manhole", utility: "sanitary" }, expect: { keys: 'struct:sanitary_manhole:48"' } },
+  // --- F38 M9 (D-907): services ---
+  { id: "m9-gravity-wye", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_d3034_sdr35:8|1|0-6", name: '8" PVC SDR-35', utility: "sanitary", services: [{ count: 12, sizeIn: 4 }] }, expect: { keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 warning_tape wye:pvc_d3034_sdr35:8x4", "wye:pvc_d3034_sdr35:8x4:qty": "12", "wye:pvc_d3034_sdr35:8x4:unit": "EA" } },
+  { id: "m9-pressure-tap", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", services: [{ count: 3, sizeIn: 1 }] }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape tap:pvc_c900_dr18:8x1", "tap:pvc_c900_dr18:8x1:qty": "3" } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {

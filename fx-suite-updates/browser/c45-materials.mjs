@@ -10,6 +10,7 @@
 //      restored, a line with a person's own material is left alone, a stale untouched one goes, the pipe rounds per bid.
 //   M7 (D-906): Settings › Material prices adds a price with a link; a bad link cannot be saved; Estimating's Setup offers what has no
 //      price, Add price fills it at once; an expired quote keeps pricing, flagged.
+//   M9 (D-907): a run keeps its services.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
@@ -191,6 +192,20 @@ await run("c45-materials", [
       await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
       await waitFor(async () => /Quote expired 2020-01-01: C45 stone/.test(await page.locator("body").innerHTML()), "the expired flag", 15000, 300);
       return "saved with its link, rel noopener; javascript refused; Add price filled $30 at once; expired flagged";
+    },
+  },
+  {
+    title: "M9 (D-907): a run's services are kept, and a count under 1 is refused",
+    run: async () => {
+      const fields = { utility_type: "sanitary", catalog_key: "pvc_d3034_sdr35:8", material: "PVC", pipe_class: "SDR-35", nominal_in: 8, od_in: 8.4, services: [{ count: 6, size_in: 4 }] };
+      const body = { name: "Run S", type: "lf", unit: "LF", sheet_uuid: sheet.uuid, is_utility: true, utility: fields, geometry: { geom_type: "lf", vertices_json: [[0.2, 0.2], [0.4, 0.2]], shape_meta: {}, client_id: crypto.randomUUID() } };
+      const made = await apiCall(token, "POST", `${takeoff}/item`, body);
+      expect(made.status === 201, `run: ${made.status} ${JSON.stringify(made.body).slice(0, 300)}`);
+      const read = (await apiCall(token, "GET", `${g.earthwork}/utilities`)).body.runs.find((r) => r.item_uuid === made.body.uuid);
+      expect(read.services.length === 1 && read.services[0].count === 6 && read.services[0].size_in === 4, JSON.stringify(read.services));
+      const refused = await apiCall(token, "PUT", `${g.earthwork}/utility-run/${made.body.uuid}`, { ...fields, services: [{ count: 0, size_in: 4 }] });
+      expect(refused.status === 422, `count 0: ${refused.status}`);
+      return "6 at 4 in kept; a count of 0 refused";
     },
   },
 ]);

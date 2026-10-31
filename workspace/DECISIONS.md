@@ -25607,3 +25607,12 @@ blocks, a first cut of 13.
 - **Links** open in a new tab with `rel="noopener noreferrer"`, http and https only, checked in the app too. The screen takes URLs. **A link to a file in Project files works in the api and has no picker yet.**
 - **Expired quotes** keep pricing and show "Quote expired" in Needs attention (Q20).
 - **Not built here:** the supplier import, left to the end of the queue as the brief allows.
+
+## D-907: F38 M9: Services on a run
+
+**Status:** the founder's plan, block M9 (D-858 Q8), 2026-10-31.
+
+- **A run carries `services`:** rows of a count and a size, in inches, under More options in the run's panel.
+- **What they buy:** on gravity pipe a wye EA by run size × service size; on pressure pipe a tap and saddle EA. On the run's first pipe line, since a run has one line per depth range. Same pipe and sizes add up across runs.
+- **By count only.** The plan offers a count or a click per service. **Clicks on the plan are not built:** a count prices the same, and a marked service needs a tool of its own.
+- **No default price:** wyes and taps are outside M10's core, so they read Missing price until a company prices them.
