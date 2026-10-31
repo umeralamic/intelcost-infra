@@ -1059,6 +1059,7 @@ try {
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
+        const { earthworkVersionKey } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
@@ -1391,6 +1392,11 @@ try {
         out.keys = list.map((m) => m.key).join(" ");
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
         return out;
+      }
+      if (c.kind === "held-key") {
+        const a = { native_suitable: true, fill_type: "Select Borrow", swell_factor: 1.3, shrink_factor: 1.1 };
+        const key = (x) => earthworkVersionKey([], { ...a, ...x });
+        return { method: key({ site_choices: { method: "dozer" } }) === key({ site_choices: { method: "scraper" } }), held: key({ keyed_choices: { method: "scraper" } }) === key({ site_choices: { method: "dozer" }, keyed_choices: { method: "scraper" } }), differs: key({ keyed_choices: { method: "scraper" } }) !== key({}) };
       }
       if (c.kind === "fusion-joints") {
         const bands = [[8, 24, 48], [12, 12, 24], [24, 10, 16]];
