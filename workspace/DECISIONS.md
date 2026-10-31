@@ -25510,3 +25510,12 @@ blocks, a first cut of 13.
 - **Title near the number wins.** When the nearest large type is out of reach (3 number heights) or absent, small title type within reach is taken, constants or none. A written-out date ("August 10, 2016") is never title material: the key found it read as a title on nine sheets.
 - **Location factor:** its own term in the Shared Equipment note, so the note sums to its total.
 - **Release 7:** the WT-4000's optional flag cleared on A11's three tiers; A11 tagged, so unedited rows refresh on their next read.
+
+## D-898: Pressure and HDPE fused pipe crews (block P), starter release 8
+
+**Status:** block P of F38 (D-858 Q21), 2026-10-31. Built. A draft: see the sources below.
+
+- **Activities:** A18 "Pipe crew, pressure (PVC/DI)", A19 "Pipe crew, HDPE fused". Tiers 100–249, 250–499, 500+ LF/day; defaults 100 LF/day under 250 LF, 300 above.
+- **Sources.** Production is published: WSDOT M 22-31.10 Appendix 6, water main 100–800, normal 300 LF/day (the catalog's UT-PIPE-WATER). **No published crew or spread for a water main was found**, so crew and machines are A12's tiers 1–3 unchanged, not invented. A19 adds one person who fuses, as one operator per machine (Underground Construction, Nov 2017, read in a search summary only: 7–9 fusions a day each on 30–36 in, which also covers 300 LF/day in 40 ft sticks). **No fusion machine in the catalog:** it comes with M8, so A19 prices none yet.
+- **The map.** A line keeps `utility_pipe`; `takeoff_item.earthwork_crew` picks the line map's `utility_pipe_pressure` or `utility_pipe_fused`. Water, fire water and force main only: HDPE IPS is fused, the rest pressure. Gravity kinds, gas and the dry utilities stay on A12.
+- **Saved lines.** A line already saved keeps its crew; `earthwork_crew_next` holds the new one, and A12's spread reads "N pipe lines have a crew of their own now: Apply tier". Apply moves them. A new line takes its crew at once.

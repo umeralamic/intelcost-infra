@@ -841,6 +841,12 @@ export const UTILITY_CASES = [
     shrink: 1.1,
     expect: { reusedBCY: 105, spoilBCY: 0, badBCY: 15, shortBCY: 5 },
   },
+  // D-898: a pipe line's crew by its kind and joining; the role stays utility_pipe.
+  { ...caseA(), id: "d898-crew-water-c900", lines: true, lineType: "water", lineKey: "pvc_c900_dr18:10", expect: { crew: "pressure" } },
+  { ...caseA(), id: "d898-crew-fire-ductile", lines: true, lineType: "fire_water", lineKey: "di_c151_pc350:8", expect: { crew: "pressure" } },
+  { ...caseA(), id: "d898-crew-force-hdpe", lines: true, lineType: "force_main", lineKey: "hdpe_ips_dr11:8", expect: { crew: "fused" } },
+  { ...caseA(), id: "d898-crew-sewer-gravity", lines: true, lineType: "sanitary", lineKey: "pvc_d3034_sdr35:8", expect: { crew: null } },
+  { ...caseA(), id: "d898-crew-gas-hdpe-gravity-crew", lines: true, lineType: "gas", lineKey: "hdpe_ips_dr11:4", expect: { crew: null } },
   {
     // O2 (D-599): benching can apply only where every soil passed is Type A, or Type B and cohesive.
     // Case (a) in clay, Type B, cohesive: benchable along all 100 LF.

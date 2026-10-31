@@ -1940,9 +1940,9 @@ try {
       if (c.lines) {
         const made = ln.utilityLines([
           {
-            type: "sanitary",
+            type: c.lineType ?? "sanitary",
             pipeLabel: '8" PVC SDR-35',
-            pipeKey: c.pipe,
+            pipeKey: c.lineKey ?? c.pipe,
             pipes: 1,
             q: r,
             swell: c.layers.map(() => 1.3),
@@ -1951,6 +1951,7 @@ try {
           },
         ]);
         out.lines = made.map((l) => [l.name, l.unit, r2(l.quantity), l.role, l.workScope]);
+        out.crew = made.find((l) => l.role === "utility_pipe")?.crew ?? null;
       }
       return out;
     });

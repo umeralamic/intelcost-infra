@@ -627,7 +627,7 @@ api, and the money arithmetic stays in `lib/estimate/`.
 
 | Block | What | Days |
 |---|---|---|
-| **P** | **First.** Pressure pipe crews (Q21): starter activities "Pipe crew, pressure (PVC/DI)" and "Pipe crew, HDPE fused", their tiers, machines and crews as an earthwork starter release; the line map by utility kind and joining, so water and force main stop pricing with A12. A notice and Apply tier on saved lines | 2 |
+| **P** | **Built 2026-10-31 (D-898).** Pressure pipe crews (Q21): starter activities "Pipe crew, pressure (PVC/DI)" and "Pipe crew, HDPE fused", their tiers, machines and crews as an earthwork starter release; the line map by utility kind and joining, so water and force main stop pricing with A12. A notice and Apply tier on saved lines | 2 |
 | **M0** | Answers logged; catalog fields (joint length and its confirmation, joining, metallic, gravity/pressure group and the "Pressure pipe" group in the picker, Q24); zone densities; structure settings fields; quantity table rows for LF to joints **per bid** (the base bid and an alternate rounding apart) and for tons | 1.5 |
 | **M1** | api: `matlib` releases, `mat_price`, `mat_price_link`, `mat_custom_item`, resolution with the material factor, one-key routes, permissions, audit | 2.5 |
 | **M2** | Component model: `auto_key`, `user_fields`, the dismissed tombstone, sold unit and factor, rounding and spread per bid (the item's main layer), `pct_of`, "Missing price" for every material component (Q17), Needs attention, the bid summary's Incomplete | 3 |
