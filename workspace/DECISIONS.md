@@ -25565,3 +25565,25 @@ blocks, a first cut of 13.
 - **The picker.** Under gravity sewer, pressure pipe sits in its own "Pressure pipe" group (Q24).
 - **Densities.** New settings start at 111 pcf for #57 stone and sand. **A blank stays blank**: a project saved before this has blank densities, so its stone is sold by the CY until a person types one (§2.6).
 - **Structure settings.** `construction`, `pricing`, `inlet_kind`, `hood`, `top`, `riser_mode` are stored per structure with the plan's defaults. No screen writes them until M4b.
+
+## D-903: F38 M1: price tables, links and the material location factor
+
+**Status:** the founder's plan, block M1, 2026-10-31.
+
+- **`matlib`** holds IntelCost's releases, keys and defaults (`release`, `mat_item`, `mat_default`, `release_audit`). **Empty at this block (D-858 Q15).** A default's internal source stays there and leaves on no route.
+- **`mat_price`** holds one price per key at each level, workspace or project, with `mat_price_link` and `mat_custom_item`.
+- **Resolution (§3.1):** the project's, else the workspace's, else the default × (1 + `material_amf`), which is 1.00 with no wage set or ZIP. Workspace and project prices take no location factor.
+- **Defaults are never listed (Q14):** a route answers one key. The workspace and project lists hold only their own prices.
+- **Links** are http or https, checked in the api; a file link must be in Project files.
+- **Who.** Workspace prices: the workspace-library capability. Project prices: the estimate-pricing gate. Each write leaves an audit row.
+
+## D-904: F38 M2: the component model, rounding per bid, "Missing price"
+
+**Status:** the founder's plan, block M2, 2026-10-31.
+
+- **Stored on a component:** `auto_key`, `user_fields`, `mat_key`, `sell_unit`, `sell_factor`, `round_scope`, `price_source`, `price_basis`, `price_date`, `price_release`, `price_snapshot`, `pct_of` (§7).
+- **`user_fields`:** a person's save on a component Calculate wrote lists the fields it changed. A typed price makes its `price_source` "typed".
+- **Deleted, not recreated:** deleting a component that has an `auto_key` leaves a `takeoff_component_dismissed` row. `POST /components/restore` clears an item's.
+- **Rounding per bid** is worked in the browser on every pricing (`lib/estimate/bidOrder.ts`), so a line moved to another layer rounds with its new bid. A sub-layer rounds with its main layer.
+- **"Missing price":** a material component with no price, a hand-added one too (Q17), reads "Missing price" and is never $0. A typed 0 is a price. The line and the bid read Incomplete, and Needs attention has "Materials without a price".
+- **This changes what existing projects show:** a hand-added material left with no price now marks its line and bid Incomplete. Its dollars do not move: it counted $0 and still adds nothing.
