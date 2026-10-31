@@ -25616,3 +25616,13 @@ blocks, a first cut of 13.
 - **What they buy:** on gravity pipe a wye EA by run size × service size; on pressure pipe a tap and saddle EA. On the run's first pipe line, since a run has one line per depth range. Same pipe and sizes add up across runs.
 - **By count only.** The plan offers a count or a click per service. **Clicks on the plan are not built:** a count prices the same, and a marked service needs a tool of its own.
 - **No default price:** wyes and taps are outside M10's core, so they read Missing price until a company prices them.
+
+## D-908: F38 M4a: pipe quantities: bends, tees, restraint, foundation stone
+
+**Status:** the founder's plan, block M4a, 2026-10-31. The founder has not yet named the agency standard for thrust blocks (Q31): restraint stays the default and a thrust block reads "Enter the block's CY".
+
+- **Bends.** Each vertex of a run not at a structure gives a deflection, rounded to 11¼, 22½, 45 or 90°. **Under half of 11¼° is no bend:** a person's slight kink in a drawn line is not a fitting. Pressure pipe buys a bend EA by size and angle. Gravity pipe buys none and the run says "Bend between structures: check the drawing".
+- **Tees.** A pressure run ending on another pressure run, not at a structure, within 1 ft, counts one tee on the run it meets, for its restraint only. The tee fitting stays in the 20 % allowance (Q30).
+- **Restraint or thrust block:** a project setting in Utility settings. Restraint: one set EA per bend and tee, by size. Thrust block: one component per angle in CY, reading "Enter the block's CY" in Needs attention until a person types it. **No project table of block sizes:** the person types the CY on the component, and a Calculate keeps it.
+- **Water stretches.** Foundation stone, stretch LF × trench width × 12 in, in tons at #57's density with 10 % waste, and trench-bottom geotextile, stretch LF × (width + 2 ft) ÷ 9 × 1.10 SY, in 500 SY rolls, both on the run's Trench dewatering line. The 12 in, the overlap and the roll are IntelCost's proposals.
+- **Counted fittings are never also in the %:** the allowance's % does not change, since the plan sets it on the rest of the fittings. **Not reduced.**

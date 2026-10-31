@@ -959,6 +959,23 @@ export const EARTHWORK_CASES = [
   // --- F38 M9 (D-907): services ---
   { id: "m9-gravity-wye", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_d3034_sdr35:8|1|0-6", name: '8" PVC SDR-35', utility: "sanitary", services: [{ count: 12, sizeIn: 4 }] }, expect: { keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 warning_tape wye:pvc_d3034_sdr35:8x4", "wye:pvc_d3034_sdr35:8x4:qty": "12", "wye:pvc_d3034_sdr35:8x4:unit": "EA" } },
   { id: "m9-pressure-tap", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", services: [{ count: 3, sizeIn: 1 }] }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape tap:pvc_c900_dr18:8x1", "tap:pvc_c900_dr18:8x1:qty": "3" } },
+  // --- F38 M4a (D-908): bends, tees, restraint, the water stretches ---
+  // A right angle, then 45: one of each; a 3 degree kink is no bend.
+  { id: "m4a-bends", kind: "bends", path: [[0, 0], [100, 0], [100, 100], [170, 170], [270, 275.3]], expect: { bends: "45x1 90x1" } },
+  // A vertex inside a structure is not a fitting.
+  { id: "m4a-bend-at-structure", kind: "bends", path: [[0, 0], [100, 0], [100, 100]], marks: [{ x: 100, y: 0, r: 4 }], expect: { bends: "" } },
+  // A run ending on another: one tee on the run met; end to end, none; at a structure, none.
+  { id: "m4a-tee", kind: "bends", path: [], runs: [{ id: "main", path: [[0, 0], [200, 0]] }, { id: "branch", path: [[100, 0.5], [100, 80]] }], expect: { tees: "mainx1" } },
+  { id: "m4a-end-to-end", kind: "bends", path: [], runs: [{ id: "a", path: [[0, 0], [100, 0]] }, { id: "b", path: [[100, 0], [200, 0]] }], expect: { tees: "" } },
+  { id: "m4a-tee-at-structure", kind: "bends", path: [], marks: [{ x: 100, y: 0, r: 5 }], runs: [{ id: "main", path: [[0, 0], [200, 0]] }, { id: "branch", path: [[100, 0.5], [100, 80]] }], expect: { tees: "" } },
+  // Pressure: a bend and a restraint for each; one more restraint for the tee.
+  { id: "m4a-restraint", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 45, count: 2 }], tees: 1 } }, expect: { "bend:pvc_c900:45:8:qty": "2", "restraint:pvc_c900:8:qty": "3" } },
+  // Thrust blocks: a zero CY to type, one per angle and one for the tee.
+  { id: "m4a-thrust", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 1 }], tees: 1 } }, expect: { "thrust:90:8:qty": "0", "thrust:90:8:unit": "CY", "thrust:tee:8:unit": "CY" } },
+  // Gravity buys no bend.
+  { id: "m4a-gravity-no-bend", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_d3034_sdr35:8|1|0-6", name: '8" SDR-35', utility: "sanitary", fittings: { bends: [{ angle: 45, count: 2 }], tees: 0 } }, expect: { keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 warning_tape" } },
+  // 100 CCY of foundation at 111 pcf: 149.85 TON; 1,000 SY of geotextile is 2 rolls.
+  { id: "m4a-water", kind: "line-materials", pcf: 111, input: { role: "dewatering", unit: "LF", variant: "trench", name: "Trench dewatering", utility: "sanitary", water: { foundationCCY: 100, geotextileSY: 1000 } }, expect: { "stone:foundation:unit": "TON", "stone:foundation:qty": "149.85", "geotextile:trench:qty": "2" } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {

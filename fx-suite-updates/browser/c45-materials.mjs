@@ -11,6 +11,7 @@
 //   M7 (D-906): Settings › Material prices adds a price with a link; a bad link cannot be saved; Estimating's Setup offers what has no
 //      price, Add price fills it at once; an expired quote keeps pricing, flagged.
 //   M9 (D-907): a run keeps its services.
+//   M4a (D-908): the restraint setting is kept; a thrust block with no CY asks for it in Needs attention.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
@@ -148,6 +149,9 @@ await run("c45-materials", [
       await save([line("b", [])]);
       const after = await auto();
       expect(!after.some((c) => c.item_uuid === first.find((x) => x.auto_key.startsWith("pipe:") && x.item_uuid !== a.item_uuid)?.item_uuid), "an untouched component stayed");
+      // Out of the Calculate, a line buys nothing: its untouched materials go, a person's stay (D-908).
+      expect(!after.some((c) => c.item_uuid === a.item_uuid && c.auto_key.startsWith("pipe:")), "a retired line kept its pipe");
+      expect(after.some((c) => c.item_uuid === a.item_uuid && c.auto_key === "warning_tape"), "a retired line lost a person's edit");
       return "3 written, 210 LF = 15 JT in one bid; typed kept; dismissed stayed gone, then restored; a person's line left alone; a stale one gone";
     },
   },
@@ -206,6 +210,27 @@ await run("c45-materials", [
       const refused = await apiCall(token, "PUT", `${g.earthwork}/utility-run/${made.body.uuid}`, { ...fields, services: [{ count: 0, size_in: 4 }] });
       expect(refused.status === 422, `count 0: ${refused.status}`);
       return "6 at 4 in kept; a count of 0 refused";
+    },
+  },
+  {
+    title: "M4a (D-908): the restraint setting is kept; a thrust block with no CY reads Enter the block's CY; a typed one does not",
+    run: async ({ page }) => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const settings = (await apiCall(token, "GET", `${g.earthwork}/utilities`)).body.settings ?? {};
+      const put = await apiCall(token, "PUT", `${g.earthwork}/utilities/settings`, { ...settings, restraint: "thrust" });
+      expect(put.status === 200 && put.body.settings.restraint === "thrust", `settings: ${put.status} ${JSON.stringify(put.body).slice(0, 200)}`);
+      const key = "thrust:90:8";
+      await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:water", role: "utility_pipe", name: '8" C900', quantity: 100, unit: "LF", variant: "c900", work_scope: "site_utilities.water", work_kind: null, utility: "water", folder: "utilities", materials: [{ key, mat_key: key, name: "Thrust block, 90°", qty_formula: "0", unit: "CY", wastage_pct: 0, sell_unit: "CY" }] }] });
+      await openSheet(page, project, sheet, "estimating");
+      await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
+      const asks = async () => /Enter the block's CY: Thrust block/.test(await page.locator("body").innerHTML());
+      expect(await asks(), "no ask for the block's CY");
+      const c = (await apiCall(token, "GET", comps)).body.find((x) => x.auto_key === key);
+      await apiCall(token, "PUT", `${comps}/${c.uuid}`, { kind: "material", name: c.name, qty_formula: "1.5", unit: "CY", pricing_mode: "unit", unit_price: 200 });
+      await page.reload();
+      await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
+      await page.waitForFunction(() => !document.documentElement.innerHTML.includes("Enter the block"), null, { timeout: 15000 });
+      return "thrust kept; asked; a typed 1.5 CY clears it";
     },
   },
 ]);

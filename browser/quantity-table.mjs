@@ -1058,6 +1058,7 @@ try {
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
+    const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
@@ -1367,10 +1368,13 @@ try {
       }
       if (c.kind === "line-materials") {
         const out = {};
-        const list = mats.lineMaterials(c.input, () => c.pcf ?? null) ?? [];
+        const list = mats.lineMaterials(c.input, () => c.pcf ?? null, c.restraint) ?? [];
         out.keys = list.map((m) => m.key).join(" ");
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
         return out;
+      }
+      if (c.kind === "bends") {
+        return { bends: fit.pathBends(c.path, c.marks ?? []).map((b) => `${b.angle}x${b.count}`).join(" "), tees: [...fit.pressureTees(c.runs ?? [], c.marks ?? [])].map(([id, n]) => `${id}x${n}`).join(" ") };
       }
       if (c.kind === "tons") {
         return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };
