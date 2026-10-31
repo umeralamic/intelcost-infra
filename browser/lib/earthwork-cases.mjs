@@ -1007,7 +1007,10 @@ export const EARTHWORK_CASES = [
   // --- F38 M5 (D-910): what a site line buys ---
   { id: "m5-borrow", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import" }, expect: { keys: "borrow", "borrow:qty": "QTY * 1.35", "borrow:unit": "TON" } },
   { id: "m5-tipping-clean", kind: "site-materials", input: { role: "soil_export", unit: "LCY", name: "Soil Export" }, expect: { keys: "tipping:clean" } },
-  { id: "m5-tipping-unsuitable", kind: "site-materials", input: { role: "soil_export", unit: "LCY", variant: "rock:Layer 3", name: "Rock Export" }, expect: { keys: "tipping:unsuitable" } },
+  { id: "m5-tipping-unsuitable", kind: "site-materials", input: { role: "soil_export", unit: "LCY", variant: "unsuitable:Layer 2", name: "Unsuitable Export" }, expect: { keys: "tipping:unsuitable" } },
+  // Rock is inert: the clean fee (D-916).
+  { id: "m10-spoils-rock", kind: "site-materials", input: { role: "spoils_export", unit: "LCY", name: "Utility spoils export, rock (107.90 BCY)" }, expect: { keys: "tipping:clean" } },
+  { id: "m10-rock-clean", kind: "site-materials", input: { role: "soil_export", unit: "LCY", variant: "rock:Layer 3", name: "Rock Export" }, expect: { keys: "tipping:clean" } },
   { id: "m5-aggregate", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Crushed Aggregate" }, expect: { keys: "aggregate_base", "aggregate_base:qty": "QTY * 1.98", "aggregate_base:waste": 5 } },
   { id: "m5-select-fill", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Select Fill" }, expect: { keys: "select_fill", "select_fill:qty": "QTY * 1.62" } },
   { id: "m5-engineered-fill", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Engineered Fill" }, expect: { keys: "engineered_fill", "engineered_fill:qty": "QTY * 1.62" } },

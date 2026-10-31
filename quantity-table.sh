@@ -34,6 +34,12 @@ if [ "$EQ_COUNTS" != "641 104 592 9 36 4 157 0" ]; then
   echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 641 104 592 9 36 4 157 0"
   exit 1
 fi
+# The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out.
+MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select string_agg(g, ' ' order by g) from (select grade||count(*) g from matlib.mat_default d join matlib.release r on r.id=d.release_id where r.title='Q4 2026' group by grade) x")
+if [ "$MAT_COUNTS" != "A121 B57 C67 D9 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A121 B57 C67 D9 F46"
+  exit 1
+fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
 # as the workbook's and release 3's files, a blank never loaded as 0 (the 13 open-ended tiers and the 15
 # open-ended defaults stay open), and every default

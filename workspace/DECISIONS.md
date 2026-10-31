@@ -25705,3 +25705,12 @@ blocks, a first cut of 13.
 - **Q33:** a sheet's names are normalised before matching.
 - **a:** a project line map moved to by hand removes the spread's price. **b:** trench lines on a pressure run name that run's crew. **c:** valves, boxes and hydrants are counted on the run, never in the %.
 - **e:** M10 supersedes D-866 C3: the research grades A–F load, shown as their grade.
+
+## D-916: F38 M10: the first IntelCost price release, Q4 2026
+
+**Status:** the founder's, 2026-10-31. Supersedes D-866 C3.
+
+- **The figures.** Each research point is normalised to national by its location's material factor (county, else city, else the state's mean), then the median of the source medians per key, over the points the workbook itself kept. Fitted and derived keys (grade F) have no points, and keep the research's figure.
+- **Grades** A to F load and show on the component. Sources stay in `source_internal`; the release is "Q4 2026".
+- **The 14 core gaps** have no row and read Missing price.
+- **Rock takes the clean tipping fee.** Rock is inert; the unsuitable fee is a C&D proxy. Unsuitable soil keeps it.

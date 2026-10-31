@@ -14,6 +14,7 @@
 //   M4a (D-908): the restraint setting is kept; a thrust block with no CY asks for it in Needs attention.
 //   M6 (D-911): an edited quantity shows Calculate's, Apply takes it; a price moved is listed and Update takes it; a typed one is not;
 //      an edited component out of Calculate stays, marked; dismissed ones are counted and restored.
+//   M10 (D-916): a key in Q4 2026 reads its price, release and grade; a core gap reads Missing price.
 //   D-914: a fused line rents its machine by pipe size, says what the rate leaves out, and is flagged when fusing sets the pace.
 //   D-915: a line Calculate alone wrote goes; one a person touched stays at 0; a line map moved to by hand takes the spread away.
 //   D-913: a supplier sheet: rows matched, one custom, one skipped, a URL becomes a link; nothing saved before Import.
@@ -125,7 +126,8 @@ await run("c45-materials", [
       const auto = async (name) => (await apiCall(token, "GET", comps)).body.filter((c) => c.kind === "material" && c.auto_key && (!name || c.name === name));
       await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
       const first = await auto();
-      expect(first.length === 3 && first.every((c) => c.unit_price === null), `${first.length} written`);
+      // Priced from Q4 2026 (M10), its basis and grade shown, never its source.
+      expect(first.length === 3 && first.every((c) => c.price_source === "intelcost" && /^IntelCost price · Q4 2026 · grade [A-F]$/.test(c.price_basis) && !JSON.stringify(c).includes("source_internal")), JSON.stringify(first[0]));
       // Two lines of 100 LF in one bid: 204 LF, 15 joints of 14 ft.
       await openSheet(page, project, sheet, "estimating");
       await page.waitForFunction(() => /of 210 LF ordered in .* \(15 JT\)/.test(document.body.innerText), null, { timeout: 30000 });
@@ -276,6 +278,20 @@ await run("c45-materials", [
       c = await one();
       expect(c.auto_gone === true && c.name === "My stone", JSON.stringify(c));
       return "edit kept beside Calculate's, Apply took it; $10 stayed until Update; dismissed counted and restored; edited kept, marked";
+    },
+  },
+  {
+    title: "M10 (D-916): a key of the release is priced by grade; a core gap has no price",
+    run: async () => {
+      const prices = `${base}/${project.uuid}/estimate/material-prices`;
+      const one = async (key) => (await apiCall(token, "GET", `${prices}/resolve?mat_key=${encodeURIComponent(key)}`)).body;
+      const stone = await one("stone:_57_stone");
+      expect(stone.source === "intelcost" && stone.release === "Q4 2026" && stone.grade === "A" && stone.unit_price > 30, JSON.stringify(stone));
+      const fitted = await one("pipe:hdpe_ips_dr11:8");
+      expect(fitted.grade === "F" && fitted.unit_price > 0, JSON.stringify(fitted));
+      const gap = await one("mh:cone:60");
+      expect(gap.source === "none" && gap.unit_price === null, JSON.stringify(gap));
+      return `#57 $${stone.unit_price}, grade A; HDPE grade F; the 60 in cone none`;
     },
   },
   {

@@ -696,7 +696,7 @@ on 6467 or another founder project.
 
 ## 10. Open questions
 
-- **M10's grade rule.** D-866 C3 has every core key quoted and graded B; the research is national bid data graded A–F. **Recommended:** keep each key's research grade on the price, use the founder's quote where one exists, and read C3's "quoted, never filled" as "never an F-grade fitted or derived figure in the core".
+- None: M10's grade rule is settled by D-916.
 
 ## Risks
 
