@@ -87,7 +87,8 @@ await run("c43-earthwork-assumptions", [
       await openSheet(page, project, short, "earthwork");
       await calculate(page);
       const dialog = await openAssumptions(page, short);
-      expect((await dialog.locator("[data-import-material]").getAttribute("data-import-material")) === "needed", "the import material is not needed after an import");
+      // The saved result arrives after the dialog opens: wait on what it shows, under load too.
+      await dialog.locator('[data-import-material="needed"]').waitFor({ timeout: 20000 }).catch(() => expect(false, "the import material is not needed after an import"));
       await page.keyboard.press("Escape");
       return "needed after an import";
     },
