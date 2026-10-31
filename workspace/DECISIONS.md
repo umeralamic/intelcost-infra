@@ -25640,3 +25640,12 @@ blocks, a first cut of 13.
 - **On one line several structures add up:** a line is by type, size and depth range, so a part's quantity is the sum over its structures.
 - **The Structures box** sets construction, pricing, inlet kind, hood, top and riser mode.
 - **Parts is the default,** as §2.8.2 says, so structure lines written as one Whole structure in M3 become parts at their next Calculate. Nothing has shipped since M3.
+
+## D-910: F38 M5: site lines buy their materials
+
+**Status:** the founder's plan, block M5, 2026-10-31.
+
+- **Soil Import** buys borrow at the pit, LCY × 1.35 t/LCY in tons. **Soil Export** pays a tipping fee at the same factor: clean soil, or unsuitable for unsuitable soil and rock. **Aggregate replacement fill** buys aggregate base, CCY × 1.98 t, 5 % waste. **Stabilizer agents** buy the agent, tons, 3 % waste. **Geotextile and geogrid** buy the fabric in 500 SY rolls.
+- **Sold in tons only.** Q13's LCY and per-load alternatives are not built. Metric lines convert to the same tons.
+- **Trucking stays equipment** (A7, A8). Utility spoils export pays its tipping too: it is the same fee.
+- **Prices on existing projects do not move:** each reads Missing price until a price exists, as M3's do, and a line with a typed material rate is left alone.

@@ -1384,6 +1384,13 @@ try {
         for (const m of list) Object.assign(out, { [`${m.key}`]: m.qty, [`${m.key}:unit`]: m.unit });
         return out;
       }
+      if (c.kind === "site-materials") {
+        const out = {};
+        const list = mats.siteMaterials(c.input) ?? [];
+        out.keys = list.map((m) => m.key).join(" ");
+        for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
+        return out;
+      }
       if (c.kind === "tons") {
         return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };
       }
