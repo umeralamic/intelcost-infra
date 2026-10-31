@@ -814,3 +814,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-10-31 | D-908 F38 M4a: bends, tees, restraint or thrust, foundation stone and geotextile; retired lines lose Calculate's materials | app `utilities/fittings.ts`, `materials.ts`, `calculate.ts`, api `materials/line_sync.py`; fixture c45-materials, rows m4a |
 | 2026-10-31 | D-909 F38 M4b: structures by parts, cast in place, whole with extra depth, the Structures box's settings | app `utilities/structureParts.ts`, `StructurePanel.tsx`; rows m4b |
 | 2026-10-31 | D-910 F38 M5: borrow, tipping, aggregate base, agents, fabric on site lines | app `utilities/materials.ts`, `linesFor.ts`; rows m5 |
+| 2026-10-31 | D-911 F38 M6: Calculate now has, No longer in Calculate, Restore, Price changed, Update all; tier components carry auto_key | app `features/material-prices/`, `EstimatingView.tsx`, api `materials/line_sync.py`, `equipment/production.py`, migration `d911`; fixture c45-materials |

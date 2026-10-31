@@ -25649,3 +25649,13 @@ blocks, a first cut of 13.
 - **Sold in tons only.** Q13's LCY and per-load alternatives are not built. Metric lines convert to the same tons.
 - **Trucking stays equipment** (A7, A8). Utility spoils export pays its tipping too: it is the same fee.
 - **Prices on existing projects do not move:** each reads Missing price until a price exists, as M3's do, and a line with a typed material rate is left alone.
+
+## D-911: F38 M6: Recalculate keeps what a person did, and says what moved
+
+**Status:** the founder's plan, block M6 (Q16), 2026-10-31.
+
+- **An edited quantity:** the row shows "Calculate now has <formula>: Apply". Apply takes Calculate's and drops the edit.
+- **No longer produced, edited:** kept, reading "No longer in Calculate".
+- **Restore:** Estimating › Setup has "Restore Calculate's components (n)"; they come back at the next Calculate.
+- **Price changed:** a component whose workspace or project price, or default, has moved reads "Price changed: Update"; the Material Prices window lists each, old to new, with Update and Update all. A typed price is not listed. Nothing moves by itself (Q18).
+- **Equipment and labour** from a tier now carry an `auto_key` (`eq:<class>:<i>`, `crew`) and `user_fields`. A tier swap leaves a person's edited machine or crew in place of the tier's and does not add a second. **A correction:** today a tier swap deletes every automatic component, so a person's edit to one is lost, against the `eq_auto` docstring. Saved rows have no `auto_key` and behave as before until their next tier write.

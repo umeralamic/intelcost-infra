@@ -12,6 +12,8 @@
 //      price, Add price fills it at once; an expired quote keeps pricing, flagged.
 //   M9 (D-907): a run keeps its services.
 //   M4a (D-908): the restraint setting is kept; a thrust block with no CY asks for it in Needs attention.
+//   M6 (D-911): an edited quantity shows Calculate's, Apply takes it; a price moved is listed and Update takes it; a typed one is not;
+//      an edited component out of Calculate stays, marked; dismissed ones are counted and restored.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
@@ -117,7 +119,7 @@ await run("c45-materials", [
         const r = await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines });
         expect(r.status === 200, `save: ${r.status} ${JSON.stringify(r.body).slice(0, 300)}`);
       };
-      const auto = async (name) => (await apiCall(token, "GET", comps)).body.filter((c) => c.auto_key && (!name || c.name === name));
+      const auto = async (name) => (await apiCall(token, "GET", comps)).body.filter((c) => c.kind === "material" && c.auto_key && (!name || c.name === name));
       await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
       const first = await auto();
       expect(first.length === 3 && first.every((c) => c.unit_price === null), `${first.length} written`);
@@ -231,6 +233,46 @@ await run("c45-materials", [
       await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
       await page.waitForFunction(() => !document.documentElement.innerHTML.includes("Enter the block"), null, { timeout: 15000 });
       return "thrust kept; asked; a typed 1.5 CY clears it";
+    },
+  },
+  {
+    title: "M6 (D-911): Calculate's quantity beside an edit, Apply; a moved price listed, Update; a dismissed component counted and restored; an edited one out of Calculate marked",
+    run: async () => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const prices = `${base}/${project.uuid}/estimate/material-prices`;
+      const key = "stone:m6";
+      const material = (qty) => ({ key, mat_key: key, name: "M6 stone", qty_formula: qty, unit: "TON", wastage_pct: 0, sell_unit: "TON" });
+      const line = (qty) => ({ region_id: "util:storm", role: "utility_bedding_pipe_zone", name: "Pipe bedding, M6", quantity: 10, unit: "CCY", variant: "bedding:M6|imported", work_scope: "site_utilities.storm", work_kind: null, utility: "storm", folder: "utilities", materials: qty ? [material(qty)] : [] });
+      const save = (lines) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines });
+      const one = async () => (await apiCall(token, "GET", comps)).body.find((c) => c.auto_key === key);
+      await apiCall(token, "POST", prices, { mat_key: key, unit_price: 10, sell_unit: "TON" });
+      await save([line("QTY")]);
+      let c = await one();
+      expect(Number(c.unit_price) === 10, JSON.stringify(c));
+      await apiCall(token, "PUT", `${comps}/${c.uuid}`, { kind: "material", name: c.name, qty_formula: "99", unit: "TON", pricing_mode: "unit", unit_price: 10 });
+      await save([line("QTY * 2")]);
+      c = await one();
+      expect(c.qty_formula === "99" && c.auto_qty === "QTY * 2", `edit ${c.qty_formula}, Calculate ${c.auto_qty}`);
+      await apiCall(token, "POST", `${comps}/${c.uuid}/take-calculate`);
+      c = await one();
+      expect(c.qty_formula === "QTY * 2" && c.auto_qty === null, "Apply did not take Calculate's");
+      await apiCall(token, "POST", prices, { mat_key: key, unit_price: 12, sell_unit: "TON" });
+      expect(Number((await one()).unit_price) === 10, "a saved price moved by itself");
+      const changes = (await apiCall(token, "GET", `${prices}/changes`)).body;
+      expect(changes.length === 1 && changes[0].was === 10 && changes[0].now === 12, JSON.stringify(changes));
+      await apiCall(token, "POST", `${prices}/update`, { uuids: null });
+      expect(Number((await one()).unit_price) === 12, "Update did not take the price");
+      await apiCall(token, "POST", `${comps}/${(await one()).uuid}/remove`, { choice: "clear" });
+      expect((await apiCall(token, "GET", `${comps}/dismissed`)).body >= 1, "not counted");
+      await apiCall(token, "POST", `${comps}/restore`, {});
+      expect((await apiCall(token, "GET", `${comps}/dismissed`)).body === 0, "not restored");
+      await save([line("QTY * 2")]);
+      c = await one();
+      await apiCall(token, "PUT", `${comps}/${c.uuid}`, { kind: "material", name: "My stone", qty_formula: c.qty_formula, unit: "TON", pricing_mode: "unit", unit_price: 12 });
+      await save([line(null)]);
+      c = await one();
+      expect(c.auto_gone === true && c.name === "My stone", JSON.stringify(c));
+      return "edit kept beside Calculate's, Apply took it; $10 stayed until Update; dismissed counted and restored; edited kept, marked";
     },
   },
 ]);
