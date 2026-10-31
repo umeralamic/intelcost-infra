@@ -1,6 +1,6 @@
 # F38: Material cost components for earthwork and utility lines
 
-> **Answered 2026-10-29 by the founder (D-858 to D-862, then D-863 to D-867); nothing built yet.** Written as
+> **Answered 2026-10-29 by the founder (D-858 to D-862, then D-863 to D-867). Built: P, M0, M1, M2, M3, M7 without the import (D-898, D-902 to D-906).** Written as
 > a plan the same day (D-857, `MATERIALS_PLAN.md`), renamed here with the answers folded in. Every project was
 > read only. The answers are in §9; the questions still open are in §10.
 

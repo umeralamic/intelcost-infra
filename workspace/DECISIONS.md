@@ -25597,3 +25597,13 @@ blocks, a first cut of 13.
 - **A price, once written, moves only when a person updates it** (Q18). §4 says a recalculation re-resolves a resolved price and §3.2 says nothing moves it by itself; the snapshot wins, because Update comes in M6. A component still without a price takes one at the next Calculate.
 - **The allowance** has no price of its own: it is worked in the browser as a percent of the line's pipe, and reads Missing price while the pipe does.
 - **Apply on How cut reaches fill** rewrites grading lines only, so it writes no materials.
+
+## D-906: F38 M7: the Material prices page, without the supplier import
+
+**Status:** the founder's plan, block M7, 2026-10-31.
+
+- **Settings › Project Setup › Material prices** lists the workspace's own prices with their quote, dates and source links. **Estimating › Setup › Material Prices** lists the estimate's own, and the materials it still has no price for, each with Add price.
+- **A price saved takes effect at once** on components still without one (`POST .../material-prices/fill`). A component that already has a price keeps it until Update (Q18, M6).
+- **Links** open in a new tab with `rel="noopener noreferrer"`, http and https only, checked in the app too. The screen takes URLs. **A link to a file in Project files works in the api and has no picker yet.**
+- **Expired quotes** keep pricing and show "Quote expired" in Needs attention (Q20).
+- **Not built here:** the supplier import, left to the end of the queue as the brief allows.

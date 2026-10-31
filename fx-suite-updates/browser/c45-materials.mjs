@@ -8,10 +8,12 @@
 //      factor's words; a link is http or https; a default is never listed.
 //   M3 (D-905): a saved line's materials are written; a person's price and fields are kept, a dismissed one stays gone until
 //      restored, a line with a person's own material is left alone, a stale untouched one goes, the pipe rounds per bid.
+//   M7 (D-906): Settings › Material prices adds a price with a link; a bad link cannot be saved; Estimating's Setup offers what has no
+//      price, Add price fills it at once; an expired quote keeps pricing, flagged.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
-import { apiCall, expect, run } from "./lib/bench.mjs";
+import { APP, apiCall, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { grading, gradingSheets, openSheet } from "./lib/grading-world.mjs";
 import { hostSql } from "./lib/host-sql.mjs";
@@ -146,6 +148,49 @@ await run("c45-materials", [
       const after = await auto();
       expect(!after.some((c) => c.item_uuid === first.find((x) => x.auto_key.startsWith("pipe:") && x.item_uuid !== a.item_uuid)?.item_uuid), "an untouched component stayed");
       return "3 written, 210 LF = 15 JT in one bid; typed kept; dismissed stayed gone, then restored; a person's line left alone; a stale one gone";
+    },
+  },
+  {
+    title: "M7 (D-906): the page saves a price and its link; a bad link is refused; Estimating offers what has no price and Add price fills it at once; an expired quote keeps pricing, flagged",
+    run: async ({ page }) => {
+      await openSheet(page, project, sheet, "estimating");
+      await page.goto(`${APP}/settings/material-prices`);
+      await page.locator("[data-material-prices]").waitFor({ timeout: 30000 });
+      await page.getByRole("button", { name: "Add a price" }).click();
+      const form = page.locator("[data-price-form]");
+      await form.getByLabel("Material", { exact: true }).fill("Page stone");
+      await form.getByLabel("Price", { exact: true }).fill("41.5");
+      await form.getByLabel("Sold per").fill("TON");
+      await form.getByRole("button", { name: "Add a link" }).click();
+      await form.getByLabel("Link label").fill("Quote");
+      await form.getByLabel("Link URL").fill("javascript:alert(1)");
+      const save = page.getByRole("button", { name: "Save", exact: true });
+      expect(await save.isDisabled(), "a javascript link can be saved");
+      await form.getByLabel("Link URL").fill("https://example.com/quote");
+      await save.click();
+      const link = page.locator('[data-price-row="page_stone"] [data-price-link]');
+      await link.waitFor({ timeout: 15000 });
+      expect((await link.getAttribute("rel")) === "noopener noreferrer" && (await link.getAttribute("target")) === "_blank", "the link's rel or target");
+      // Step 3 left the last pipe line's components; a fresh Missing material on a fresh line.
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const key = "stone:c45";
+      await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:storm", role: "utility_bedding_pipe_zone", name: "Pipe bedding, C45", quantity: 10, unit: "CCY", variant: "bedding:C45|imported", work_scope: "site_utilities.storm", work_kind: null, utility: "storm", folder: "utilities", materials: [{ key, mat_key: key, name: "C45 stone", qty_formula: "QTY * 1.5", unit: "TON", wastage_pct: 10, sell_unit: "TON" }] }] });
+      await openSheet(page, project, sheet, "estimating");
+      await page.locator("[data-estimate-sidebar]").getByText("Material Prices").click();
+      const missing = page.locator("[data-prices-missing]");
+      await missing.getByText("C45 stone").waitFor({ timeout: 15000 });
+      await missing.locator("li", { hasText: "C45 stone" }).getByRole("button", { name: "Add price" }).click();
+      await page.locator("[data-price-form]").getByLabel("Price", { exact: true }).fill("30");
+      await page.locator("[data-price-form]").getByLabel("Valid to").fill("2020-01-01");
+      await page.getByRole("button", { name: "Save", exact: true }).click();
+      const priced = async () => (await apiCall(token, "GET", comps)).body.find((c) => c.auto_key === key);
+      const { waitFor } = await import("./lib/realtime.mjs");
+      await waitFor(async () => Number((await priced())?.unit_price) === 30, "the price to fill", 15000, 300);
+      await page.keyboard.press("Escape");
+      await page.reload();
+      await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
+      await waitFor(async () => /Quote expired 2020-01-01: C45 stone/.test(await page.locator("body").innerHTML()), "the expired flag", 15000, 300);
+      return "saved with its link, rel noopener; javascript refused; Add price filled $30 at once; expired flagged";
     },
   },
 ]);
