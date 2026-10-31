@@ -1057,6 +1057,7 @@ try {
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
+    const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
@@ -1358,6 +1359,14 @@ try {
           out.pick = c.pick.map(([x, y, rad]) => (idx.pick({ x, y }, rad) ? "hit" : "miss")).join(" ");
         }
         return out;
+      }
+      if (c.kind === "pipe-order") {
+        const out = {};
+        for (const l of mats.orderByBid(c.input)) Object.assign(out, { [`${l.id}:sold`]: l.soldLF, [`${l.id}:order`]: l.orderLF, [`${l.id}:joints`]: l.orderJoints });
+        return out;
+      }
+      if (c.kind === "tons") {
+        return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };
       }
       if (c.kind === "lines") {
         const lines = ln.earthworkLines(c.input);

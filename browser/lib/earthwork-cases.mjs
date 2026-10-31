@@ -923,6 +923,24 @@ export const EARTHWORK_CASES = [
     runs: pad(100, 100),
     expect: { "piece:R": 7500, "strip:R:areaSF": 7500, "strip:R:volumeCY": 3750 / 27, fillCY: 3750 / 27 },
   },
+  // --- F38 M0 (D-902): pipe in full joints within each bid; tons from CCY ---
+  // 100 + 400 LF at 2 %: 510 LF, 37 joints of 14 ft = 518 LF, the 8 LF spread 1 : 4. The alternate rounds alone: 10.2 LF, 1 joint.
+  {
+    id: "m0-joints-per-bid",
+    kind: "pipe-order",
+    input: [
+      { id: "a", bid: "base", matKey: "pipe:pvc:8", lf: 100, wastePct: 2, jointFt: 14 },
+      { id: "b", bid: "base", matKey: "pipe:pvc:8", lf: 400, wastePct: 2, jointFt: 14 },
+      { id: "c", bid: "alt 1", matKey: "pipe:pvc:8", lf: 10, wastePct: 2, jointFt: 14 },
+    ],
+    expect: { "a:sold": 103.6, "b:sold": 414.4, "a:order": 518, "a:joints": 37, "c:sold": 14, "c:joints": 1 },
+  },
+  // Exactly full joints buy none extra: 100 LF at 0 % on 20 ft.
+  { id: "m0-exact-joint", kind: "pipe-order", input: [{ id: "a", bid: "base", matKey: "pipe:x:8", lf: 100, wastePct: 0, jointFt: 20 }], expect: { "a:sold": 100, "a:joints": 5 } },
+  // 100 CCY of #57 at 111 pcf: 100 x 27 x 111 / 2000 = 149.85 TON, the plan's 1.50 t per CCY.
+  { id: "m0-tons", kind: "tons", input: { ccy: 100, pcf: 111 }, expect: { tons: 149.85 } },
+  // Blank density: no tons, sold by the CY.
+  { id: "m0-no-tons", kind: "tons", input: { ccy: 100, pcf: null }, expect: { tons: null } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {

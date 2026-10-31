@@ -25556,3 +25556,12 @@ blocks, a first cut of 13.
 - **The haul-road water line** follows the scraper's share.
 - **One operation, one tier.** A3, A16 and A17 take their tier and default production from the whole fill together, not from their own share. Read alone, 53 % and 47 % of 9,514 CCY each dropped from 900 to 630 CCY/day, and the split priced
   dearer than the plan's figure. A project with no split moves nothing. A company's own activity keeps its own total.
+
+## D-902: F38 M0: pipe specs, densities and structure settings
+
+**Status:** the founder's plan, block M0, 2026-10-31.
+
+- **Pipe specs** live by family in `lib/takeoff/earthwork/utilities/materials.ts`: joint length, joining, waste, metallic, gravity or pressure, as §2.3. `orderByBid` rounds to full joints per pipe key and size within each bid.
+- **The picker.** Under gravity sewer, pressure pipe sits in its own "Pressure pipe" group (Q24).
+- **Densities.** New settings start at 111 pcf for #57 stone and sand. **A blank stays blank**: a project saved before this has blank densities, so its stone is sold by the CY until a person types one (§2.6).
+- **Structure settings.** `construction`, `pricing`, `inlet_kind`, `hood`, `top`, `riser_mode` are stored per structure with the plan's defaults. No screen writes them until M4b.
