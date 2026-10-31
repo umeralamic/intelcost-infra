@@ -367,3 +367,32 @@ Each has a recommended answer.
 19. **The six problems in section 8.** Fix them in Block 8, each with its own decision? **Yes.** Problem 2 changes prices on existing projects.
 20. **Existing projects.** Do these apply on their next Calculate, with the change shown? **Yes,** as D-806's "with the defaults nothing moves" cannot hold once fill follows delivery: Auto is new-project only, and an existing project keeps its method until a person chooses.
 21. **Default.** Auto for new projects? **Yes,** as you asked, never applied without a confirm.
+
+## 13. The founder's answers (2026-10-31, D-893)
+
+Where an answer differs from an earlier section, the answer wins.
+
+| Q | Answer |
+|---|---|
+| 1, 3, 4, 8, 9, 10, 12, 13, 17, 18, 20, 21 | Yes, as recommended |
+| 2 | Three activities: A3 trucks, A16 push fill, A17 scraper fill |
+| 5 | Yes as a start, marked unpublished. A haul-road water truck applies only on scraper hauls of about 1,000 ft or more. The founder's figure comes later |
+| 6 | CPH 49, editable per workspace |
+| 7 | **No.** Haul grade runs between the cut's volume centroid and the fill's volume centroid, at mid-depth of each, not on existing ground |
+| 11 | Flag when more than 10 % of a pocket is steeper than 33 % (3:1). Both are workspace settings |
+| 14 | **No.** See the rule below |
+| 15 | 2 ft and 3 ft. Shallow-and-wide also needs at least 20 ft width and 5,000 SF, else excavator. All workspace settings |
+| 16 | A draft activity with a reclaimer (check the catalog), plus a "subcontract" option |
+| 19 | Problems 1–3 now, 4–6 in Block 8 |
+
+**The Q14 rule (D-895, built).** An undercut's bottom is the lower of the stripped existing grade and the proposed subgrade, minus the undercut depth: in fill areas the geotech's
+"below existing grade", in cut areas "below subgrade". A per-undercut override, "below existing" or "below subgrade", matches the geotech report. The 4 ft Building Pad reads about its
+full footprint, not 146 BCY. This replaces D-528's rule 1, the "existing ground only" lines of section 8, and the 146 BCY in sections 8, 9 and 10.
+
+**Section 5's grades** were taken on existing ground; under Q7 they will be re-measured between centroids in Block 3.
+
+**Order.** Problems 1–3 now. Then blocks 4, 1, 2 as the first cut. Then 3, 5, 6, 7, 8, 9, 10.
+
+**First cut, re-estimated: 6.5 days.** Block 4 is 2 days, Block 1 is 2.5, Block 2 is 2. Block 1 grows half a day because the scraper's haul-road water truck needs a haul length, typed until
+Block 3 measures it. **The whole plan stays about 25 days:** moving problems 1–3 out of Block 8 takes a day off it (now 3), and Q15's width and area settings and Q7's mid-depth centroids add
+half a day each to Blocks 6 and 3.

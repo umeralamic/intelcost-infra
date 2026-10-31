@@ -1422,7 +1422,7 @@ try {
         // Q13 (D-528): a feature's undercut against the graded prisms, and flat as before.
         if (c.undercut) {
           const u = c.undercut;
-          const feat = { itemId: u.id, label: u.id, depthFt: u.depthFt ?? 0, polygons: [pts(u.polygon)], undercutDepthFt: u.undercutFt, undercutOffsetFt: 0, undercutMaterial: "Select Fill", undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
+          const feat = { itemId: u.id, label: u.id, depthFt: u.depthFt ?? 0, polygons: [pts(u.polygon)], undercutDepthFt: u.undercutFt, undercutBottom: u.from ?? null, undercutOffsetFt: 0, undercutMaterial: "Select Fill", undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
           const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
           const [onSurfaces] = sf.computeFeatureExtras([feat], c.boundary ? pts(c.boundary) : null, scale, r.prisms);
           const [flat] = sf.computeFeatureExtras([feat], c.boundary ? pts(c.boundary) : null, scale);

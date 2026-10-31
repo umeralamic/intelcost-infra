@@ -25456,3 +25456,39 @@ blocks, a first cut of 13.
   7 lb/gal = HPF × 0.0486 gal/bhp-hr, on a 350 HP rating (a Cummins L9 listing). Default load: low, wherever the machine has no load of its own.
 - **Starter:** the optional flag is cleared on its place-and-compact (A3) rows, the seed's tiers otherwise kept. Its driver follows it (D-724 rule 5). WT-4000 on fine grade stays optional.
 - **Mob:** confirmed none, it drives in: national, so no workspace has to enter it. A person's quote still wins.
+
+## D-893: The founder's answers to the fill plan; the order of work
+
+**Status:** the founder's answers, 2026-10-31, to `docs/tasks/FILL_BY_DELIVERY_PLAN.md` section 12. The plan's section 13 carries them in full.
+
+- **Yes as recommended:** Q1, Q3, Q4, Q8, Q9, Q10, Q12, Q13, Q17, Q18, Q20, Q21.
+- **Q2:** three activities: A3 trucks, A16 push fill, A17 scraper fill.
+- **Q5:** double the water truck on scraper fill as a start, marked unpublished. A haul-road water truck applies only on scraper hauls of about 1,000 ft or more. The founder gives a figure later.
+- **Q6:** CPH 49, editable per workspace.
+- **Q7, no:** haul grade is measured between the cut's volume centroid and the fill's volume centroid, at mid-depth of each, not on existing ground.
+- **Q11:** flag when more than 10 % of a pocket is steeper than 33 % (3:1). Both are workspace settings, the founder's judgement.
+- **Q14, no:** see D-895.
+- **Q15:** 2 ft and 3 ft. Shallow-and-wide also needs at least 20 ft width and 5,000 SF, else excavator. All workspace settings, the founder's judgement.
+- **Q16:** a draft activity with a reclaimer (check the catalog for the class), plus a "subcontract" option.
+- **Q19:** problems 1–3 are built now, 4–6 in Block 8.
+- **Order:** problems 1–3, then blocks 4, 1, 2 as the first cut, then 3, 5, 6, 7, 8, 9, 10.
+
+## D-894: The founder's answers to the short session of 2026-10-30
+
+**Status:** the founder's answers, 2026-10-31.
+
+- **Q1:** a scan read on Load keeps no mark, but a sheet whose title was not read shows the sheet number alone as its name ("E200"), never the scan's file name.
+- **Q2:** fix lone-sheet naming: title type near the number over larger type far from it, measured on the 103-sheet key before and after, applied wrong stays 0, any revision note, stamp or seal read as a title reported.
+- **Q3:** the location factor shows as its own term in the Shared Equipment note.
+- **Q4:** the WT-4000's optional flag is cleared on fine grade (A11), next starter release.
+- **Q5:** the `host.ts` string stays.
+- **Q6:** the founder settles the other session.
+
+## D-895: An undercut's bottom is the lower of stripped existing grade and subgrade, less its depth
+
+**Status:** the founder's answer to Q14 (fill plan), 2026-10-31. Replaces D-528's rule 1. Built.
+
+- **The rule.** Bottom = the lower of the stripped existing grade and the proposed subgrade, minus the undercut depth: in fill areas the geotech's "below existing grade", in cut areas "below subgrade". So the dug depth is d at every point, and the 4 ft Building Pad reads its full footprint.
+- **The override.** `takeoff_item.undercut_bottom`, per undercut: null is the rule, `existing` or `subgrade` match the geotech report ("Measured below" in Site Feature properties). `subgrade` is D-528's reading: d − Δz in fill. `existing` is d + Δz in cut. Both never below 0, exact over the prisms.
+- **Over-excavation.** A fixed depth follows the same rule and override. A layer or an elevation is its own bottom, unchanged.
+- **A stored result** reads out of date by its version key ("u2", D-470's way); nothing is written, nothing recalculates until a person runs Calculate.

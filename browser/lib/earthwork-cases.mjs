@@ -382,7 +382,7 @@ export const EARTHWORK_CASES = [
     bores: [{ id: "GT-05 B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
     expect: { "GT-05 B-1": 41.5 },
   },
-  // --- Q13 (D-526 Block 0.5, D-528): an undercut counts existing ground only -------------
+  // --- Q13 (D-528), now the "below subgrade" override (D-895): existing ground only ---------
   // A 100 x 70 ft pad (7,000 SF) on a 100 x 100 ft site, undercut 6.5 ft below the subgrade.
   // Fill area: EG 100, FG 102, so the subgrade is 2.0 ft above existing ground. Dug: 6.5 - 2.0 =
   // 4.5 ft, 7,000 x 4.5 = 31,500 CF = 1,166.67 CY; flat, as before: 7,000 x 6.5 = 1,685.19 CY.
@@ -392,7 +392,7 @@ export const EARTHWORK_CASES = [
     side: 100,
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
-    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
     expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
   },
   // Cut area: EG 102, FG 100, the subgrade below existing ground: unchanged, 1,685.19 CY.
@@ -402,7 +402,7 @@ export const EARTHWORK_CASES = [
     side: 100,
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
-    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
     expect: { ok: true, "undercut:CY": 45500 / 27, "undercutFlat:CY": 45500 / 27 },
   },
   // Both in one pad: EG 100, FG rising 99 to 103 west to east, so dz = 4x - 1 (x across, 0 to 1).
@@ -414,7 +414,7 @@ export const EARTHWORK_CASES = [
     side: 100,
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
-    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
     expect: { ok: true, "undercut:CY": 37625 / 27, "undercutFlat:CY": 45500 / 27 },
   },
   // The pad's own 0.5 ft section: FG 102.5 less 0.5 = a subgrade at 102, 2.0 ft above EG 100:
@@ -426,8 +426,69 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102.5, 102.5, 102.5, 102.5])],
     roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] }],
-    undercut: { id: "pad", depthFt: 0.5, undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    undercut: { id: "pad", depthFt: 0.5, undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
     expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+  },
+  // --- D-895: an undercut's bottom is the lower of stripped existing grade and subgrade, less d ---
+  // The same 7,000 SF pad, 6.5 ft. In fill (EG 100, FG 102) the bottom is 93.5, below existing: 45,500 CF.
+  {
+    id: "d895-lower-in-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
+    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 45500 / 27 },
+  },
+  // In cut (EG 102, FG 100) the bottom is 93.5, below subgrade: 45,500 CF.
+  {
+    id: "d895-lower-in-cut",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
+    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 45500 / 27 },
+  },
+  // Cut and fill in one pad, dz = 4x - 1: 6.5 ft all over, 45,500 CF.
+  {
+    id: "d895-lower-cut-and-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
+    undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 45500 / 27 },
+  },
+  // The override "below existing", in cut: EG 102 less 6.5 is 95.5; the 2.0 ft down to the subgrade is cut, so 4.5 ft is undercut: 31,500 CF.
+  {
+    id: "d895-existing-in-cut",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
+    undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 31500 / 27 },
+  },
+  // The override "below existing", in fill: from existing ground, the full 6.5 ft.
+  {
+    id: "d895-existing-in-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
+    undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 45500 / 27 },
+  },
+  // The override "below existing", dz = 4x - 1: d + min(dz, 0); the cut side x < 0.25 loses 0.125 ft of mean depth: 6.375 ft over 7,000 SF = 44,625 CF.
+  {
+    id: "d895-existing-cut-and-fill",
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
+    undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
+    expect: { ok: true, "undercut:CY": 44625 / 27 },
   },
   // --- F26 R-1: the grading report's statistics (D-430), on planes worked by hand -------
   // 100 x 100 ft, EG flat at 100; FG a plane rising 2 ft west to east: all fill, height 0 to 2,

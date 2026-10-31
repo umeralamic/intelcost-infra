@@ -627,7 +627,34 @@ export const UTILITY_CASES = [
     kind: "overex",
     prisms: SQUARE(100, 102, 2),
     outline: [[[0, 0], [100, 0], [100, 70], [0, 70]]],
+    bottom: { kind: "fixed", depthFt: 6.5, from: "subgrade" },
+    expect: { totalCY: 1166.67 },
+  },
+  {
+    // D-895, the rule: the same fill area, bottom below existing ground: 7,000 × 6.5 = 45,500 CF = 1,685.19 CY.
+    id: "d895-overex-lower-in-fill",
+    kind: "overex",
+    prisms: SQUARE(100, 102, 2),
+    outline: [[[0, 0], [100, 0], [100, 70], [0, 70]]],
     bottom: { kind: "fixed", depthFt: 6.5 },
+    expect: { totalCY: 1685.19 },
+  },
+  {
+    // D-895, a cut area, ground 2.0 ft above the subgrade: below subgrade, all of it, 1,685.19 CY.
+    id: "d895-overex-lower-in-cut",
+    kind: "overex",
+    prisms: SQUARE(102, 100, -2),
+    outline: [[[0, 0], [100, 0], [100, 70], [0, 70]]],
+    bottom: { kind: "fixed", depthFt: 6.5 },
+    expect: { totalCY: 1685.19 },
+  },
+  {
+    // The override "below existing" in that cut: 4.5 ft, 1,166.67 CY.
+    id: "d895-overex-existing-in-cut",
+    kind: "overex",
+    prisms: SQUARE(102, 100, -2),
+    outline: [[[0, 0], [100, 0], [100, 70], [0, 70]]],
+    bottom: { kind: "fixed", depthFt: 6.5, from: "existing" },
     expect: { totalCY: 1166.67 },
   },
   {
@@ -641,8 +668,21 @@ export const UTILITY_CASES = [
     extendFt: 5,
     layers: 2,
     bottoms: [[{ poly: BIG, a: 0.5, b: 0, c: 0 }]],
-    bottom: { kind: "fixed", depthFt: 6.5 },
+    bottom: { kind: "fixed", depthFt: 6.5, from: "subgrade" },
     expect: { totalCY: 1555.56, byLayerCY: [0, 1555.56] },
+  },
+  {
+    // D-895: the same strip under the rule. The stripped grade is the lower surface, so 6.5 ft below it,
+    // 45,500 CF = 1,685.19 CY, none of it topsoil.
+    id: "d895-overex-strip-first",
+    kind: "overex",
+    prisms: SQUARE(100, 100, 0.5),
+    outline: [[[50, 50], [140, 50], [140, 110], [50, 110]]],
+    extendFt: 5,
+    layers: 2,
+    bottoms: [[{ poly: BIG, a: 0.5, b: 0, c: 0 }]],
+    bottom: { kind: "fixed", depthFt: 6.5 },
+    expect: { totalCY: 1685.19, byLayerCY: [0, 1685.19] },
   },
   {
     // Down to elevation 95.00 under ground rising 0.02 ft/ft (100.00 at x = 0), no grading, 50 × 50 ft:
