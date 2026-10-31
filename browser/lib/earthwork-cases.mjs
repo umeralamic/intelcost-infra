@@ -941,6 +941,21 @@ export const EARTHWORK_CASES = [
   { id: "m0-tons", kind: "tons", input: { ccy: 100, pcf: 111 }, expect: { tons: 149.85 } },
   // Blank density: no tons, sold by the CY.
   { id: "m0-no-tons", kind: "tons", input: { ccy: 100, pcf: null }, expect: { tons: null } },
+  // --- F38 M3 (D-905): what a line buys ---
+  // 8" SDR-35 sanitary: the pipe, 5 % allowance, tape; no tracer on gravity.
+  { id: "m3-gravity-pipe", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_d3034_sdr35:8|1|0-6", name: '8" PVC SDR-35, 0-6 ft deep', utility: "sanitary" }, expect: { keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 warning_tape", "pipe:pvc_d3034_sdr35:8:waste": 2, "warning_tape:unit": "ROLL" } },
+  // C900 water: 20 % allowance, tracer and tape.
+  { id: "m3-pressure-pipe", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" PVC C900 DR 18, 0-6 ft deep', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape", "tracer_wire:qty": "QTY * 1.1 / 500" } },
+  // Ductile iron: metal, so no tracer and no tape; encasement.
+  { id: "m3-di", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "di_c151_pc350:8|1|0-6", name: '8" DI, 0-6 ft deep', utility: "water" }, expect: { keys: "pipe:di_c151_pc350:8 fit:pipe:di_c151_pc350:8 encasement:di:8", "encasement:di:8:qty": "QTY * 1.1" } },
+  // RCP storm: a gasket per joint, 1 % waste.
+  { id: "m3-rcp", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "rcp_c76_wall_b:24|1|0-6", name: '24" RCP, 0-6 ft deep', utility: "storm" }, expect: { "pipe:rcp_c76_wall_b:24:waste": 1, "gasket:rcp:24:qty": "ceil(QTY / 8)" } },
+  // Bedding at 111 pcf in tons with 10 %, by the CY with a blank density; native backfill buys nothing.
+  { id: "m3-bedding-tons", kind: "line-materials", pcf: 111, input: { role: "utility_bedding_pipe_zone", unit: "CCY", variant: "bedding:#57 stone|imported", name: "Pipe bedding", utility: "sanitary" }, expect: { keys: "stone:_57_stone", "stone:_57_stone:unit": "TON", "stone:_57_stone:qty": "QTY * 27 * 111 / 2000", "stone:_57_stone:waste": 10 } },
+  { id: "m3-bedding-cy", kind: "line-materials", input: { role: "utility_bedding_pipe_zone", unit: "CCY", variant: "bedding:#57 stone|imported", name: "Pipe bedding", utility: "sanitary" }, expect: { "stone:_57_stone:unit": "CY" } },
+  { id: "m3-native-backfill", kind: "line-materials", input: { role: "utility_backfill", unit: "CCY", variant: "Native|native", name: "Trench backfill", utility: "sanitary" }, expect: { keys: "" } },
+  // Every structure: one Whole structure.
+  { id: "m3-structure", kind: "line-materials", input: { role: "utility_structure", unit: "EA", variant: 'sanitary_manhole|48"|6-8', name: "Sanitary Manhole", utility: "sanitary" }, expect: { keys: 'struct:sanitary_manhole:48"' } },
   // --- D-901: the fill's shares: soil cut over its shrink, by method, the rest by truck ---
   // 1,000 BCY pushed / 1.25 = 800 CCY of 2,000: 40 %, the other 1,200 by truck.
   {

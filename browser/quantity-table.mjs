@@ -1365,6 +1365,13 @@ try {
         for (const l of mats.orderByBid(c.input)) Object.assign(out, { [`${l.id}:sold`]: l.soldLF, [`${l.id}:order`]: l.orderLF, [`${l.id}:joints`]: l.orderJoints });
         return out;
       }
+      if (c.kind === "line-materials") {
+        const out = {};
+        const list = mats.lineMaterials(c.input, () => c.pcf ?? null) ?? [];
+        out.keys = list.map((m) => m.key).join(" ");
+        for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
+        return out;
+      }
       if (c.kind === "tons") {
         return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };
       }

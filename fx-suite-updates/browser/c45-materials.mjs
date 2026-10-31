@@ -6,6 +6,8 @@
 //   M0 (D-902): a structure takes the settings' defaults, keeps what is saved, and refuses a value outside them.
 //   M1 (D-903): a key with no price reads none; the workspace's, then the project's, win; a default takes the location
 //      factor's words; a link is http or https; a default is never listed.
+//   M3 (D-905): a saved line's materials are written; a person's price and fields are kept, a dismissed one stays gone until
+//      restored, a line with a person's own material is left alone, a stale untouched one goes, the pipe rounds per bid.
 //   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
 //      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
 
@@ -98,6 +100,52 @@ await run("c45-materials", [
       await page.waitForFunction(() => !document.body.innerText.includes("Missing price"), null, { timeout: 15000 });
       const deleted = await apiCall(token, "DELETE", `${comps}/${made.body.uuid}`);
       return `Missing price and the bid's count; a typed 0 clears both; delete ${deleted.status}`;
+    },
+  },
+  {
+    title: "M3 (D-905): Calculate's materials: written, a person's fields kept, a dismissed one not written again until restored, a person's own line left alone",
+    run: async ({ page }) => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const line = (variant, materials) => ({ region_id: "util:sanitary", role: "utility_pipe", name: `8" PVC SDR-35, ${variant}`, quantity: 100, unit: "LF", variant, work_scope: "site_utilities.sanitary", work_kind: null, utility: "sanitary", folder: "utilities", materials });
+      const pipe = (key = "pipe:pvc_d3034_sdr35:8") => ({ key, mat_key: key, name: '8" PVC SDR-35', qty_formula: "QTY", unit: "LF", wastage_pct: 2, round_to: 14, round_scope: "bid", sell_unit: "LF" });
+      const tape = { key: "warning_tape", mat_key: "warning_tape", name: "Detectable warning tape", qty_formula: "QTY * 1.05 / 1000", unit: "ROLL", wastage_pct: 0, round_to: 1, round_scope: "line", sell_unit: "ROLL" };
+      const save = async (lines) => {
+        const r = await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines });
+        expect(r.status === 200, `save: ${r.status} ${JSON.stringify(r.body).slice(0, 300)}`);
+      };
+      const auto = async (name) => (await apiCall(token, "GET", comps)).body.filter((c) => c.auto_key && (!name || c.name === name));
+      await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
+      const first = await auto();
+      expect(first.length === 3 && first.every((c) => c.unit_price === null), `${first.length} written`);
+      // Two lines of 100 LF in one bid: 204 LF, 15 joints of 14 ft.
+      await openSheet(page, project, sheet, "estimating");
+      await page.waitForFunction(() => /of 210 LF ordered in .* \(15 JT\)/.test(document.body.innerText), null, { timeout: 30000 });
+      const body = (c, extra) => ({ kind: "material", name: c.name, qty_formula: c.qty_formula, unit: c.unit, pricing_mode: "unit", unit_price: c.unit_price, wastage_pct: c.wastage_pct, round_to: c.round_to, ...extra });
+      const edited = first.find((c) => c.key !== "x" && c.auto_key === "warning_tape");
+      const put = await apiCall(token, "PUT", `${comps}/${edited.uuid}`, body(edited, { unit_price: 9, name: "Tape, our spec" }));
+      expect(put.status === 200, `edit: ${put.status}`);
+      const dropped = first.filter((c) => c.auto_key !== "warning_tape")[1];
+      const gone = await apiCall(token, "POST", `${comps}/${dropped.uuid}/remove`, { choice: "clear" });
+      expect(gone.status === 200, `remove: ${gone.status} ${JSON.stringify(gone.body)}`);
+      await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
+      const again = await auto();
+      const kept = again.find((c) => c.auto_key === "warning_tape");
+      expect(kept.name === "Tape, our spec" && Number(kept.unit_price) === 9 && kept.price_source === "typed" && kept.user_fields.includes("unit_price"), JSON.stringify(kept));
+      expect(again.filter((c) => c.auto_key.startsWith("pipe:")).length === 1, `dismissed came back: ${again.length}`);
+      const restored = await apiCall(token, "POST", `${comps}/restore`, { item_uuid: dropped.item_uuid });
+      expect(restored.status === 200, `restore: ${restored.status}`);
+      await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
+      expect((await auto()).filter((c) => c.auto_key.startsWith("pipe:")).length === 2, "not restored");
+      // A person's own material on a line: Calculate leaves it alone, and a new key is not written there.
+      const a = (await auto()).find((c) => c.auto_key === "warning_tape");
+      await apiCall(token, "POST", comps, { kind: "material", name: "Own pipe", qty_formula: "QTY", unit: "LF", pricing_mode: "unit", unit_price: 5, item_uuid: a.item_uuid });
+      await save([line("a", [pipe(), tape, { ...tape, key: "extra", mat_key: "extra", name: "Extra" }]), line("b", [pipe()])]);
+      expect((await auto("Extra")).length === 0, "written over a person's material");
+      // No longer produced: untouched goes.
+      await save([line("b", [])]);
+      const after = await auto();
+      expect(!after.some((c) => c.item_uuid === first.find((x) => x.auto_key.startsWith("pipe:") && x.item_uuid !== a.item_uuid)?.item_uuid), "an untouched component stayed");
+      return "3 written, 210 LF = 15 JT in one bid; typed kept; dismissed stayed gone, then restored; a person's line left alone; a stale one gone";
     },
   },
 ]);

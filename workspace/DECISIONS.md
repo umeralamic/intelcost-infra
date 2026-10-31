@@ -25587,3 +25587,13 @@ blocks, a first cut of 13.
 - **Rounding per bid** is worked in the browser on every pricing (`lib/estimate/bidOrder.ts`), so a line moved to another layer rounds with its new bid. A sub-layer rounds with its main layer.
 - **"Missing price":** a material component with no price, a hand-added one too (Q17), reads "Missing price" and is never $0. A typed 0 is a price. The line and the bid read Incomplete, and Needs attention has "Materials without a price".
 - **This changes what existing projects show:** a hand-added material left with no price now marks its line and bid Incomplete. Its dollars do not move: it counted $0 and still adds nothing.
+
+## D-905: F38 M3: Calculate writes materials, and "Whole structure" on every structure
+
+**Status:** the founder's plan, block M3, 2026-10-31.
+
+- **What it writes.** Pipe at $/LF in full joints per bid; the fittings allowance, 5 % gravity, 20 % pressure, of the line's pipe; RCP gaskets and CMP bands per joint; bedding, zone and imported backfill in tons, by the CY with a blank density; tracer wire on non-metallic pressure pipe in 500 ft rolls; warning tape on non-metallic pipe in 1,000 ft rolls; polyethylene encasement on ductile iron; "Whole structure" EA on every structure line. Sanitary, storm, water, fire water and force main only (Q19).
+- **A line a person already priced is left alone.** A line with a typed material rate or a hand-added material component gets no Calculate materials. So no existing typed price is overridden or counted twice. Those lines take materials only once the typed price is cleared.
+- **A price, once written, moves only when a person updates it** (Q18). §4 says a recalculation re-resolves a resolved price and §3.2 says nothing moves it by itself; the snapshot wins, because Update comes in M6. A component still without a price takes one at the next Calculate.
+- **The allowance** has no price of its own: it is worked in the browser as a percent of the line's pipe, and reads Missing price while the pipe does.
+- **Apply on How cut reaches fill** rewrites grading lines only, so it writes no materials.
