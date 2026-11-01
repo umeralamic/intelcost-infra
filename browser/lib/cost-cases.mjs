@@ -276,34 +276,46 @@ export const COST_CASES = [
 
   // --- The bid summary (F9b, D-128): compounding, tax on material first -------------------
   // Direct $100,000, material $40,000; tax 8 %: 40,000 × 0.08 = $3,200 → $103,200; overhead
-  // 10 % = $10,320 → $113,520; profit 10 % = $11,352 → $124,872; bond 1 % = $1,248.72;
-  // Bid total $126,120.72.
+  // 10 % = $10,320 → $113,520; profit 10 % = $11,352 → $124,872; bond 1 % on the full price,
+  // $124,872 ÷ 0.99 = $126,133.33, so $1,261.33 (D-933).
   {
     id: "bid-compounding",
     kind: "bid",
     totals: { directCost: 100000, materialCost: 40000 },
     rates: { taxPct: 8, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] },
-    expect: { tax: 3200, overhead: 10320, profit: 11352, bond: 1248.72, total: 126120.72 },
+    expect: { tax: 3200, overhead: 10320, profit: 11352, bond: 1261.33, total: 126133.33 },
   },
   // Every line to the cent as it is made. Direct $12,345.67, material $5,432.10: tax 8.25 %
   // = 448.14825 → $448.15, $12,793.82; overhead 12 % = 1,535.2584 → $1,535.26, $14,329.08;
   // contingency 2.5 % = 358.227 → $358.23, $14,687.31; profit 10 % = 1,468.731 → $1,468.73,
-  // $16,156.04; bond 1.5 % = 242.3406 → $242.34; Bid total $16,398.38.
+  // $16,156.04; bond 1.5 %: $16,156.04 ÷ 0.985 = $16,402.07, so $246.03 (D-933).
   {
     id: "bid-cents-and-extra",
     kind: "bid",
     totals: { directCost: 12345.67, materialCost: 5432.1 },
     rates: { taxPct: 8.25, overheadPct: 12, profitPct: 10, bondPct: 1.5, extra: [{ name: "Contingency", pct: 2.5 }] },
-    expect: { tax: 448.15, overhead: 1535.26, "extra:0": 358.23, profit: 1468.73, bond: 242.34, total: 16398.38 },
+    expect: { tax: 448.15, overhead: 1535.26, "extra:0": 358.23, profit: 1468.73, bond: 246.03, total: 16402.07 },
+  },
+  // D-933. The founder's bond: $100,000 ÷ 0.985.
+  { id: "d933-bond", kind: "bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 0, bondPct: 1.5, extra: [] }, expect: { bond: 1522.84, total: 101522.84 } },
+  // Margin 10 %: $100,000 × 10 ÷ 90 = $11,111.11; the price is $111,111.11, of which 10 % is profit.
+  { id: "d933-margin", kind: "bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 10, profitMode: "margin", bondPct: 0, extra: [] }, expect: { profit: 11111.11, total: 111111.11 } },
+  // Material only: 10 % of the $40,000 material; fixed $2,500; a discount of 5 % of labor $30,000.
+  { id: "d933-ticks-fixed-discount", kind: "bid", totals: { directCost: 100000, materialCost: 40000, laborCost: 30000, equipmentCost: 20000, subcontractCost: 10000 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [{ name: "Material handling", pct: 10, ticks: ["material"] }, { name: "Permit", pct: 0, amount: 2500 }, { name: "Discount", pct: -5, ticks: ["labor"] }] }, expect: { "extra:0": 4000, "extra:1": 2500, "extra:2": -1500, total: 105000 } },
+  // Tax on material and equipment, 8 % of $60,000; exempt, none.
+  { id: "d933-tax-ticks", kind: "bid", totals: { directCost: 100000, materialCost: 40000, equipmentCost: 20000 }, rates: { taxPct: 8, taxTicks: ["material", "equipment"], overheadPct: 0, profitPct: 0, bondPct: 0, extra: [] }, expect: { tax: 4800, total: 104800 } },
+  { id: "d933-exempt", kind: "bid", totals: { directCost: 100000, materialCost: 40000 }, rates: { taxPct: 8, taxExempt: true, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [] }, expect: { tax: 0, total: 100000 } },
+  // An older "Direct labor only" and an older all-costs line keep their dollars.
+  { id: "d933-old-markups", kind: "bid", totals: { directCost: 100000, materialCost: 0, laborCost: 30000 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [{ name: "Burden", pct: 10, base: "labor" }, { name: "Contingency", pct: 5, base: "direct" }] }, expect: { "extra:0": 3000, "extra:1": 5150, total: 108150 },
   },
   // The export's Bid Summary sheet: tax is ROUND(material × rate) in C4, overhead is taken
-  // on the running subtotal (D4), and the Bid total carries the first case's $126,120.72.
+  // on the running subtotal (D4), and the Bid total carries the first case's $126,133.33.
   {
     id: "bid-workbook-sheet",
     kind: "bidsheet",
     totals: { directCost: 100000, materialCost: 40000 },
     rates: { taxPct: 8, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] },
-    expect: { taxOnMaterial: true, overheadOnSubtotal: true, total: 126120.72 },
+    expect: { taxOnMaterial: true, overheadOnSubtotal: true, total: 126133.33 },
   },
 
   // --- Unit figures read back from the totals (D-762 A1): a unit × its quantity = its total ---------

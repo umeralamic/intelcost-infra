@@ -1,10 +1,10 @@
 // C16's last line, the founder's click check of the bid summary (F9b, D-128): "the export's Bid
-// Summary sheet recalculates in Excel". f9-estimating checks the panel's $126,120.72 and
+// Summary sheet recalculates in Excel". f9-estimating checks the panel's $126,133.33 and
 // f9-exports the sheet's value; this checks the sheet carries live formulas, not typed numbers:
 // each markup's amount is ROUND(base × its rate cell, 2) and each subtotal the one above plus it,
 // down to the Bid total. The formulas are worked here, by a small evaluator, from the sheet's own
-// input cells: they give back the cached $126,120.72, and with the tax rate cell changed from 8 %
-// to 10 % they give $127,098.40, as Excel would on recalculating.
+// input cells: they give back the cached $126,133.33, and with the tax rate cell changed from 8 %
+// to 10 % they give $127,111.11, as Excel would on recalculating.
 //
 //   node fx-run-locked.mjs c16-bid-formulas
 //
@@ -119,14 +119,14 @@ await run("c16-bid-formulas", [
     },
   },
   {
-    title: "export With formulas: the Bid Summary sheet's amounts, subtotals and Bid total are formulas over its rate cells, and its cached total is $126,120.72",
+    title: "export With formulas: the Bid Summary sheet's amounts, subtotals and Bid total are formulas over its rate cells, and its cached total is $126,133.33",
     run: async ({ page }) => {
       await signInAs(page, (await fixtureOwner()).email);
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating`);
       await page.locator(`tr[data-estimate-row="Slab"]`).waitFor({ timeout: 30000 });
       const show = page.getByRole("button", { name: "Show the sidebar", exact: true });
       if (await show.isVisible()) await show.click();
-      await page.locator("[data-bid-summary] [data-bid-total] dd").filter({ hasText: "126,120.72" }).waitFor({ timeout: 15000 });
+      await page.locator("[data-bid-summary] [data-bid-total] dd").filter({ hasText: "126,133.33" }).waitFor({ timeout: 15000 });
       await page.getByRole("button", { name: "Export", exact: true }).first().click();
       const dialog = page.getByRole("dialog", { name: "Export to Excel" });
       await dialog.waitFor();
@@ -147,7 +147,7 @@ await run("c16-bid-formulas", [
       const missing = [];
       for (const name of ["Sales tax", "Overhead", "Profit", "Bond"]) {
         const r = lines[name];
-        if (!/ROUND\(.*\*B\d+,\s*2\)/.test(formulaOf(`C${r}`) ?? "")) missing.push(`C${r} (${name} amount) "${formulaOf(`C${r}`)}"`);
+        if (!/ROUND\(.*[*/].*B\d+.*,\s*2\)/.test(formulaOf(`C${r}`) ?? "")) missing.push(`C${r} (${name} amount) "${formulaOf(`C${r}`)}"`);
         if (!formulaOf(`D${r}`)) missing.push(`D${r} (${name} subtotal)`);
         expect(bid.cells[`B${r}`] && !formulaOf(`B${r}`), `B${r} (${name} rate) is not a plain value`);
       }
@@ -155,26 +155,26 @@ await run("c16-bid-formulas", [
       if (!formulaOf(total)) missing.push(`${total} (Bid total)`);
       expect(missing.length === 0, `cells with no formula: ${missing.join("; ")}`);
       const cached = Number(bid.cells[total].value);
-      expect(Math.abs(cached - 126120.72) < 0.005, `cached Bid total ${cached}`);
+      expect(Math.abs(cached - 126133.33) < 0.005, `cached Bid total ${cached}`);
       bid.lines = lines;
       bid.total = total;
       return `tax C${lines["Sales tax"]} = ${formulaOf(`C${lines["Sales tax"]}`)}; total ${total} = ${formulaOf(total)}; cached ${cached}`;
     },
   },
   {
-    title: "recalculation: worked from the sheet's own cells the formulas give $126,120.72; with the tax rate cell at 10 % they give $127,098.40",
+    title: "recalculation: worked from the sheet's own cells the formulas give $126,133.33; with the tax rate cell at 10 % they give $127,111.11",
     run: async () => {
       expect(bid?.cells, "the export step did not leave the sheet");
       const cells = JSON.parse(JSON.stringify(bid.cells));
       const book = evaluator(cells);
       const worked = Math.round(book.value(bid.total) * 100) / 100;
-      expect(Math.abs(worked - 126120.72) < 0.005, `the formulas work out to ${worked}`);
+      expect(Math.abs(worked - 126133.33) < 0.005, `the formulas work out to ${worked}`);
       const taxRate = `B${bid.lines["Sales tax"]}`;
       const was = cells[taxRate].value;
       cells[taxRate] = { value: "0.1", formula: null };
       const again = evaluator(cells);
       const changed = Math.round(again.value(bid.total) * 100) / 100;
-      expect(Math.abs(changed - 127098.4) < 0.005, `with tax at 10 % the formulas give ${changed}`);
+      expect(Math.abs(changed - 127111.11) < 0.005, `with tax at 10 % the formulas give ${changed}`);
       return `worked ${worked}; tax rate ${taxRate} ${was} → 0.1 gives ${changed}`;
     },
   },

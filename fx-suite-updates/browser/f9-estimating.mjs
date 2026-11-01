@@ -12,7 +12,7 @@
 // Priced in the grid: Slab's material $40 / SF ($40,000) and Footing's 6 MH / LF at $100 / hr
 // ($60,000), so the direct cost is $100,000 with $40,000 of material: C16's inputs. With tax 8 %
 // on material, overhead 10 %, profit 10 % and bond 1 %, each on the running subtotal:
-//   100,000 + 3,200 = 103,200; + 10,320 = 113,520; + 11,352 = 124,872; + 1,248.72 = 126,120.72.
+//   100,000 + 3,200 = 103,200; + 10,320 = 113,520; + 11,352 = 124,872; + 1,261.33 (bond on the full price, D-933) = 126,133.33.
 
 import { APP, apiCall, expect, fixtureOwner, run, serviceUrl, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -192,7 +192,7 @@ await run("f9-estimating", [
     },
   },
   {
-    title: "bid summary, C16: direct $100,000, material $40,000, tax 8 %, overhead 10 %, profit 10 %, bond 1 % reads $126,120.72",
+    title: "bid summary, C16: direct $100,000, material $40,000, tax 8 %, overhead 10 %, profit 10 %, bond 1 % reads $126,133.33",
     run: async ({ page }) => {
       const put = await apiCall(token, "PUT", `${estimate}/bid`, { tax_pct: 8, overhead_pct: 10, profit_pct: 10, bond_pct: 1, extra: [] });
       expect(put.status === 200, `bid: ${put.status} ${JSON.stringify(put.body)}`);
@@ -202,12 +202,12 @@ await run("f9-estimating", [
       const amount = async (key) => num(await summary.locator(`[data-bid-line="${key}"] dd`).textContent());
       const total = await waitFor(async () => {
         const t = (await summary.locator("[data-bid-total] dd").textContent())?.trim() ?? "";
-        return num(t) === 126120.72 ? t : null;
+        return num(t) === 126133.33 ? t : null;
       }, "bid total", 15000).catch(async () => {
         throw new Error(`bid total "${await summary.locator("[data-bid-total] dd").textContent()}"; ${await summary.textContent()}`);
       });
       const lines = { direct: await amount("direct"), tax: await amount("tax"), overhead: await amount("overhead"), profit: await amount("profit"), bond: await amount("bond") };
-      expect(lines.direct === 100000 && lines.tax === 3200 && lines.overhead === 10320 && lines.profit === 11352 && lines.bond === 1248.72, `lines ${JSON.stringify(lines)}`);
+      expect(lines.direct === 100000 && lines.tax === 3200 && lines.overhead === 10320 && lines.profit === 11352 && lines.bond === 1261.33, `lines ${JSON.stringify(lines)}`);
       return `direct ${lines.direct}, tax ${lines.tax}, overhead ${lines.overhead}, profit ${lines.profit}, bond ${lines.bond}; Bid total ${total}`;
     },
   },

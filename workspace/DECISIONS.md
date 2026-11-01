@@ -25839,3 +25839,25 @@ blocks, a first cut of 13.
 
 - **As Stitch:** pick the sheet, it opens beside this one in Split view, the same points are placed on each, with Stitch's keys. Two pairs or more fit the second sheet onto the first with Stitch's own fit, the scale free, the fit shown in feet.
 - **Compare sheets** is the dialog's first choice: the current sheet red, the overlay green, on clean paper, with an opacity slider and a swap. Standard and Comparative stay.
+
+## D-932: Equipment and buying for the size of the job
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **Equipment scale** on the project, Compact, Standard or Heavy, from the project type: Residential is Compact, the others Standard. Editable on the project and in Equipment settings. Heavy prices as Standard today.
+- **Compact is ten activities in release 14,** a line's role mapped to its small version. No scraper: a scraper line is pushed by the D3. Production is the catalog's rate for the machine that paces it, or the base activity's lowest default where it has none, named in the activity. A rock line has no compact machine and stays. Tandem dumps are the catalog's operated 3-axle truck. Compaction is the skid-steer roller: the 48 in has no rental rate and the 66 in no fuel figure.
+- **Compact buys soil and stone by the loose CY.** A $/TON converts by the material's t/LCY, so both units rest on one price and a line's material dollars do not change. A person's price keeps its unit. No small-order premium, minimum load or delivery charge: unsourced.
+- **Nothing moves until Apply.** `equipment_scale_applied` prices the project; null is Standard, so every existing project stays. A person's machine, crew or material is kept (D-911).
+- **The suggestions on a Compact job** never name a scraper; over 5,000 CY of cut plus fill, the founder's provisional figure, Results suggests Standard. Nothing moves.
+
+## D-933: The bid summary: filled defaults, ticks, margin, the bond
+
+**Status:** the founder's instruction, 2026-11-01. The Wage Calculator's data holds no sales tax rate, so the ZIP's combined rate has nothing behind it: the state's rate stands in, labelled.
+
+- **Sales tax** fills from the project's state, Tax Foundation's rates of January 1, 2026, shown "6.25 % · Texas, state rate only (average with local 8.2 %)", following the location until typed. A saved rate from before stays typed. **Tax exempt** zeroes it, off by default.
+- **A new workspace** starts on overhead 10 % and profit 10 %, labelled IntelCost's starting figures, bond 1.5 % on Public projects and 0 on others, contingency empty: the founder's provisional figures. A project at all zeros is offered Use workspace defaults. Nothing moves on a saved bid by itself.
+- **Each markup and the tax tick the costs they apply to:** Labor, Material, Equipment, Subcontract, Other. All five is the running subtotal, Labor alone is direct labor, so older markups keep their dollars. A markup is a % or a fixed $, and a negative % says "This lowers the price".
+- **Profit** is a markup or a margin, with the other figure shown.
+- **The bond is on the full price:** subtotal ÷ (1 − bond %), not subtotal × (1 + bond %).
+- **The form:** an error shows after a field is left, not while typing.
+- **Open, not built:** a tiered bond schedule, per-markup direct cost or running subtotal, a separate subcontract markup, escalation per year to mid-construction.

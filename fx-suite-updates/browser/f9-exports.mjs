@@ -7,7 +7,7 @@
 // The world: one throwaway workspace and project, one landscape page (1224 × 792 pt) at 1/6 ft per
 // point. Slab 40 × 25 ft = 1,000 SF at $40 / SF material ($40,000); Footing 100 LF at 6 MH / LF and
 // $100 / hr ($60,000). The bid rates are C16's (8 / 10 / 10 / 1 %, no extra), so the workbook's Bid
-// Summary sheet ends at $126,120.72. The earthwork: existing grade spots at EL 100.0, proposed at
+// Summary sheet ends at $126,133.33. The earthwork: existing grade spots at EL 100.0, proposed at
 // 99.0, around a 40 × 25 ft work boundary: 1,000 SF × 1 ft = 37.04 CY of cut, no fill. The workspace
 // has no logo, so neither workbook carries a picture (D-625).
 //
@@ -127,11 +127,11 @@ await run("f9-exports", [
     },
   },
   {
-    title: "estimate Excel, member: every column, values; Slab $40,000 and Footing $60,000 in it, a Bid Summary sheet at $126,120.72, no picture",
+    title: "estimate Excel, member: every column, values; Slab $40,000 and Footing $60,000 in it, a Bid Summary sheet at $126,133.33, no picture",
     run: async ({ page }) => {
       await signedIn(page, "estimating");
       await page.locator(`tr[data-estimate-row="Slab"]`).waitFor({ timeout: 30000 });
-      await page.locator("[data-bid-summary] [data-bid-total] dd").filter({ hasText: "126,120.72" }).waitFor({ timeout: 15000 });
+      await page.locator("[data-bid-summary] [data-bid-total] dd").filter({ hasText: "126,133.33" }).waitFor({ timeout: 15000 });
       const { name, book } = await exportEstimate(page, ["All columns", "All rows", "Without formulas"]);
       expect(/^Exports one - Estimate V\d+ - \d{4}-\d{2}-\d{2}\.xlsx$/.test(name), `file name "${name}"`);
       const sheets = book.sheets.map((s) => s.name);
@@ -144,9 +144,9 @@ await run("f9-exports", [
       const bid = book.sheets.find((s) => s.name === "Bid Summary");
       expect(bid, `no Bid Summary sheet in ${sheets.join(", ")}`);
       const flat = bid.rows.flat().filter((c) => c !== undefined && c !== "");
-      expect(flat.some((c) => Math.abs(num(c) - 126120.72) < 0.005), `Bid Summary: ${JSON.stringify(bid.rows)}`);
+      expect(flat.some((c) => Math.abs(num(c) - 126133.33) < 0.005), `Bid Summary: ${JSON.stringify(bid.rows)}`);
       expect(book.media.length === 0, `pictures with no logo: ${book.media.join(", ")}`);
-      return `"${name}"; sheets ${sheets.join(", ")}; ${head.length} columns; Slab $40,000, Footing $60,000; Bid Summary $126,120.72; no picture`;
+      return `"${name}"; sheets ${sheets.join(", ")}; ${head.length} columns; Slab $40,000, Footing $60,000; Bid Summary $126,133.33; no picture`;
     },
   },
   {

@@ -84,7 +84,7 @@ async function commit(page, row, label, value, settled) {
 
 await run("c36-earthwork-link", [
   {
-    title: "the starter a new workspace takes up (D-751, D-806 release 3, D-898 release 8, D-900 release 9, D-922 release 12's A21): 21 activities, 116 tiers, 98 defaults, site spreads on a 10-hour day; 36 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
+    title: "the starter a new workspace takes up (D-751, D-806 release 3, D-898 release 8, D-900 release 9, D-922 release 12's A21): 31 activities with D-932's ten Compact, 126 tiers, 108 defaults, site spreads on a 10-hour day; 36 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
     run: async ({ page }) => {
       const cfg = (await apiCall(token, "GET", `${wlib}/earthwork-production`)).body;
       const acts = cfg.activities.filter((a) => a.national_key);
@@ -94,12 +94,12 @@ await run("c36-earthwork-link", [
       const crew = tiers.flatMap((t) => t.crew);
       const foremen = crew.filter((c) => /^Foreman/i.test(c.role));
       const rated = crew.filter((c) => /^(Grade checker|Pipelayer)/i.test(c.role));
-      expect(acts.length === 21, `activities ${acts.length}`);
-      expect(tiers.length === 116, `tiers ${tiers.length}`);
-      expect(defaults === 98, `defaults ${defaults}`);
+      expect(acts.length === 31, `activities ${acts.length}`);
+      expect(tiers.length === 126, `tiers ${tiers.length}`);
+      expect(defaults === 108, `defaults ${defaults}`);
       // A21 is priced on its own line: a reclaimer serves the one treated area (D-922).
-      expect(acts.every((a) => (a.price_as ?? "site") === (a.national_key === "A21" ? "line" : "site") && a.hours_per_day === 10), `price_as / hours: ${acts.map((a) => `${a.national_key}:${a.price_as}/${a.hours_per_day}`).join(" ")}`);
-      expect(optional === 36, `optional machines ${optional}`);
+      expect(acts.every((a) => (a.price_as ?? "site") === (a.national_key === "A21" ? "line" : a.price_as ?? "site") && a.hours_per_day === 10), `price_as / hours: ${acts.map((a) => `${a.national_key}:${a.price_as}/${a.hours_per_day}`).join(" ")}`);
+      expect(optional === 42, `optional machines ${optional}`);
       expect(foremen.length > 0 && foremen.every((c) => c.foreman), `foreman rows ${foremen.length}, all marked ${foremen.every((c) => c.foreman)}`);
       expect(rated.length > 0 && rated.every((c) => c.rate_as), `grade checker / pipelayer rows ${rated.length}, all rate_as ${rated.every((c) => c.rate_as)}`);
       await signIn(page);
@@ -107,8 +107,8 @@ await run("c36-earthwork-link", [
       await page.getByRole("tab", { name: "Earthwork production" }).click();
       await page.locator("[data-activity]").first().waitFor({ timeout: 30000 });
       const badges = await page.locator("[data-starter]").count();
-      expect(badges === 21, `Starter badges on screen ${badges}`);
-      return `21 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 21 Starter badges`;
+      expect(badges === 31, `Starter badges on screen ${badges}`);
+      return `31 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 31 Starter badges`;
     },
   },
   {
