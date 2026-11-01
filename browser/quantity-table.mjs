@@ -1061,6 +1061,7 @@ try {
     const match = await import("/src/lib/estimate/materialMatch.ts");
     const { siteFigures } = await import("/src/lib/takeoff/earthwork/volume/pockets.ts");
     const suggest = await import("/src/lib/takeoff/earthwork/suggest.ts");
+    const assemblyGroups = await import("/src/lib/estimate/assemblyGroups.ts");
         const { earthworkVersionKey } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
@@ -1407,6 +1408,13 @@ try {
         return { pockets: f.pockets.length, cy: Math.round(a.cy * 10) / 10, avg: a.avgFt, deepest: a.deepestFt, dist: Math.round(f.hauls[0].distanceFt * 10) / 10, grade: Math.round(f.hauls[0].gradePct * 100) / 100, slope: Math.round(b.slopeMedianPct * 10) / 10, steep: Math.round(b.steepSharePct) };
       }
       if (c.kind === "suggest-dig") return { dig: suggest.suggestDig(c.input).dig };
+      if (c.kind === "assembly-group") {
+        const of = (uuid) => c.items.find((i) => i.uuid === uuid);
+        const line = (i) => ({ itemUuid: i.uuid, name: i.name, qty: i.effective_quantity, unit: i.unit, parentUuid: null, hasSubItems: false });
+        const lines = c.items.map(line);
+        const driver = assemblyGroups.groupDriver(lines, of);
+        return { group: assemblyGroups.assemblyOf(lines[0], of, c.items)?.name ?? "none", driver: driver ? `${driver.qty} ${driver.unit}` : "none" };
+      }
       if (c.kind === "suggest") {
         const pockets = c.pockets.map((p, i) => ({ id: `cut-${i + 1}`, kind: "cut", cy: p.cy, areaSF: 1000, avgFt: 5, deepestFt: 9, at: { x: 0, y: 0, z: 0 }, slopeMedianPct: 5, slopeTop10Pct: 9, steepSharePct: p.steep ?? 0, layers: p.rock ? [{ name: "Soil", rock: false, bcy: p.cy - p.rock }, { name: "Layer 3", rock: true, bcy: p.rock }] : undefined, cells: [`${i}`] }));
         const figures = { pockets, hauls: c.pockets.map((p, i) => ({ cut: `cut-${i + 1}`, fill: "fill-1", distanceFt: p.ft, gradePct: -2 })), steepPct: 33 };

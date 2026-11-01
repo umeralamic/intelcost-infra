@@ -831,3 +831,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-11-01 | D-927 materials fill themselves; Calculate to add materials | api `materials/line_sync.py`, `materials/routes.py`, `estimate/routes.py`, migration d927; app `EstimatingView.tsx`, `lib/estimate/noneReason.ts`; c47 |
 | 2026-11-01 | D-928 fuel from the location, percent settings | api `equipment/fuel.py`, `service.py`, `national.py`, migration d928, seed `eia_weekly`; app `EquipmentSettingsDialog.tsx`, `LibraryValue.tsx`, `resolve.ts`; c48 |
 | 2026-11-01 | D-929 stitch keys: Enter, Done, Backspace, Esc, counter | app `features/takeoff/split/usePairKeys.tsx`, `site/useSiteJoin.tsx`, `EarthworkToolbar.tsx`; c42 |
+| 2026-11-01 | D-930 Group by Assembly | app `lib/estimate/assemblyGroups.ts`, `lines.ts`, `EstimatingView.tsx`; api `assembly/routes.py`, migration d930; rows d930; c38 |

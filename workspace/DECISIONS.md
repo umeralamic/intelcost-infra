@@ -25823,3 +25823,12 @@ blocks, a first cut of 13.
 - **Enter, or Done on the toolbar,** stitches with the pairs placed so far, at least 2; with fewer, "Place at least 2 matching pairs". A point still waiting for its partner is not a pair.
 - **Backspace** removes the last point. **Esc** drops an unpaired point first; a second Esc leaves without stitching, asking "Discard n pairs?" if any are placed. The counter reads "3 pairs: Enter to stitch".
 - One hook, `usePairKeys`, so Overlay's keys are the same.
+
+## D-930: Group by Assembly
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **Listed above Scope.** A group's row shows its driving quantity and unit cost; its total is the sum of its lines, and the grand total equals every other grouping.
+- **A utility system is the row, not a run.** Calculate adds a system's lines across its runs (trench excavation is one line per system and layer), so a run has no lines of its own; the row names the system's pipes and is driven by their LF.
+- **An earthwork feature, Stripping and Site balance** are the Estimating headings the lines already have, driven by cut and fill in CY, or the largest line.
+- **An applied assembly** groups by name: `takeoff_item.applied_assembly`, written from today. An item with sub-items is its own row. Anything else: No assembly.

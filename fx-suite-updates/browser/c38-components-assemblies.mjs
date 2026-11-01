@@ -79,6 +79,10 @@ await run("c38-components-assemblies", [
       expect(made?.eq_class_key === "WL-MINI-07Y", `target machine ${JSON.stringify(made)}`);
       const eq = (await components(target)).find((c) => c.kind === "equipment" && c.item_uuid === w.target["TEST pad 2"].uuid);
       expect(eq?.eq_class_key === "EX-CRAWL-20T", `target component ${JSON.stringify(eq)?.slice(0, 200)}`);
+      // D-930: the item remembers it, for Group by › Assembly.
+      const held = (await apiCall(token, "GET", `${ws}/project/${target.uuid}/takeoff/item?limit=200`)).body;
+      const mine = (Array.isArray(held) ? held : held.items).find((i) => i.uuid === w.target["TEST pad 2"].uuid);
+      expect(mine?.applied_assembly === assembly.name, `applied_assembly ${mine?.applied_assembly}, expected ${assembly.name}`);
       return `copied ${applied.body.components_copied}; made ${applied.body.equipment_created.join(", ")} (${made.eq_class_key}); component ${eq.eq_class_key}; warnings ${JSON.stringify(applied.body.warnings)}`;
     },
   },
