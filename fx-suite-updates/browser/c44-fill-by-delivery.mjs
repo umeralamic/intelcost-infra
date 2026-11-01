@@ -113,7 +113,7 @@ await run("c44-fill-by-delivery", [
       await applyMethod(page, "scraper", 900);
       await waitFor(async () => (await fillNames(three)).join() === "Fill, scraper", "the scraper's fill, no water line", 20000, 500).catch(async (e) => { throw new Error(`${e.message}: ${(await fillNames(three)).join(" | ")}`); });
       await applyMethod(page, "scraper", 1200);
-      await waitFor(async () => (await fillNames(three)).join() === "Fill, scraper,Haul-road water, scraper fill", "the water line", 20000, 500).catch(async (e) => { throw new Error(`${e.message}: ${(await fillNames(three)).join(" | ")}`); });
+      await waitFor(async () => (await fillNames(three)).join() === "Fill, scraper,Haul-road water, scraper fill (founder's provisional figure)", "the water line", 20000, 500).catch(async (e) => { throw new Error(`${e.message}: ${(await fillNames(three)).join(" | ")}`); });
       await applyMethod(page, "excavator");
       await waitFor(async () => (await fillNames(three)).join() === "Fill", "the trucks' fill", 20000, 500);
       return "Fill, scraper; with the water line at 1,200 ft; Fill on excavator and trucks";

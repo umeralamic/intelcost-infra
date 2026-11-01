@@ -822,3 +822,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-11-01 | D-916 F38 M10: the Q4 2026 price release; rock at the clean tipping fee | api `materials/seed/q4_2026.csv`, migration d916; app `utilities/materials.ts`; fixture c45-materials, rows m10, quantity-table counts |
 | 2026-11-01 | D-917 F38 M11: Developer › Material prices, the release Review, stale defaults | api `materials/releases.py`, app `pages/PlatformMaterialPrices.tsx`, `lib/estimate/materialRelease.ts`; fixture c47-material-release |
 | 2026-11-01 | D-918 fill plan Block 3: site figures | app `lib/takeoff/earthwork/volume/pockets.ts`, `useVolumes.tsx`, `SiteView.tsx`; fixture c44-fill-by-delivery, row d918-pockets |
+| 2026-11-01 | D-919 fill plan Block 5: push and scraper production from the site, tier from the unslowed rate; equipment release 11 | api `equipment/production.py`, migration d919; app `CalculateDialog.tsx`; fixture c45-cut-method |

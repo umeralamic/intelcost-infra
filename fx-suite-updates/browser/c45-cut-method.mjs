@@ -8,6 +8,7 @@
 //   2. Dozer push for the project: the cut line is "Cut, dozer push" (role cut_push), priced by A14.
 //   3. Scraper for the Site Feature only: its region's cut is "Cut, scraper" (cut_scraper), the rest dozer push.
 //   4. A 200 ft push prices the cut above the 100 ft one (the catalog's 200 ft rate, about half).
+//   5. From the site is kept, and with no fill there is no haul to read (D-919). The DUP proves a read haul.
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -75,6 +76,19 @@ await run("c45-cut-method", [
       const roles = new Set(lines.filter((l) => /^Cut/.test(l.name)).map((l) => l.earthwork_role));
       expect(roles.has("cut_scraper") && roles.has("cut_push"), [...roles].join(","));
       return [...roles].join(", ");
+    },
+  },
+  {
+    title: "D-919: From the site is kept; a pad with no fill has no haul to read, so the line stays at the catalog's 100 ft",
+    run: async ({ page }) => {
+      const lines = await calculateWith(page, async (d) => {
+        await d.locator('[data-cut-method-choice="dozer"]').check();
+        await d.getByLabel("Average push").selectOption("0");
+      }, (ls) => ls.some((l) => l.earthwork_role === "cut_push"));
+      await waitFor(async () => (await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body.site_choices?.push_ft === 0, "From the site saved", 20000, 300);
+      const line = lines.find((l) => l.earthwork_role === "cut_push");
+      expect(!line.earthwork_note, line.earthwork_note);
+      return "push_ft 0 kept; no note with no haul";
     },
   },
 ]);

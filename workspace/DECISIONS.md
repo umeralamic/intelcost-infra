@@ -25731,3 +25731,12 @@ blocks, a first cut of 13.
 - **Pockets.** Connected cut and fill, each with volume, plan area, average and deepest depth, volume centroid at mid-depth, and the existing ground's median slope, top 10 % and share over 33 %. Under 5 CY a pocket is a sliver and is left out.
 - **Hauls** run from each cut pocket to the nearest fill of at least 10 % of the fill, centroid to centroid at mid-depth (Q7). Negative is downhill.
 - **Rock by pocket:** each cut pocket's own prisms split by layer. Figures sit in the stored result, outside the version key.
+
+## D-919: Fill plan Block 5: production from the site
+
+**Status:** the founder's plan, with D-893's answers, 2026-11-01.
+
+- **Dozer push:** between the catalog's 100, 200 and 300 ft rates, held at the ends, times CPH 49's grade table, read off its chart and editable per workspace. "From the site" reads the distance and grade from the figures, weighted by each pocket's soil; a typed push takes no grade.
+- **The tier comes from the unslowed rate** (Q12): a longer push cannot pick a smaller, cheaper tier.
+- **Scraper:** travel time only, by the catalog's own cycle, speeds eased by effective grade. The catalog's scraper speeds are blank, so until a company sets them the line reads the catalog's 1,000 ft level haul and says so.
+- **The line says what it read.** Trucks on site are unchanged: no distance enters A1.
