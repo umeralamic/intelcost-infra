@@ -25,6 +25,7 @@ const TAPE = "warning_tape";
 const NEW = "fx:new_material";
 let sheet;
 let was;
+let calculate;
 
 const clean = async () => {
   for (const table of ["release_audit", "mat_default"]) await hostSql(`DELETE FROM matlib.${table} WHERE release_id IN (SELECT id FROM matlib.release WHERE title IN ('Q1 2027','Q4 2027'))`);
@@ -39,7 +40,8 @@ await run("c47-material-release", [
       await clean();
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["R-1"]);
       const m = (key, unit) => ({ key, mat_key: key, name: key, qty_formula: "QTY", unit, wastage_pct: 0, round_to: null, round_scope: "line", sell_unit: unit });
-      const put = await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:sanitary", role: "utility_bedding_pipe_zone", name: "Pipe bedding", quantity: 100, unit: "CCY", variant: "a", work_scope: "site_utilities.sanitary", work_kind: null, utility: "sanitary", folder: "utilities", materials: [m(STONE, "TON"), m(TAPE, "ROLL"), m(NEW, "EA")] }] });
+      calculate = () => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:sanitary", role: "utility_bedding_pipe_zone", name: "Pipe bedding", quantity: 100, unit: "CCY", variant: "a", work_scope: "site_utilities.sanitary", work_kind: null, utility: "sanitary", folder: "utilities", materials: [m(STONE, "TON"), m(TAPE, "ROLL"), m(NEW, "EA")] }] });
+      const put = await calculate();
       expect(put.status === 200, `save: ${put.status} ${JSON.stringify(put.body).slice(0, 200)}`);
       const list = (await apiCall(token, "GET", comps)).body;
       was = Object.fromEntries(list.filter((c) => c.mat_key).map((c) => [c.mat_key, Number(c.unit_price)]));
@@ -103,6 +105,21 @@ await run("c47-material-release", [
       await openSheet(page, project, sheet, "estimating");
       await waitFor(async () => /may be stale/.test(await page.locator("body").innerHTML()), "the stale flag", 30000, 500);
       return "reads may be stale";
+    },
+  },
+  {
+    title: "Q11: a line with its own material says Calculate's are not written, and they stand",
+    run: async () => {
+      const line = (await g.items()).find((i) => i.name === "Pipe bedding");
+      const mine = await apiCall(token, "POST", comps, { takeoff_item_uuid: line.uuid, item_uuid: line.uuid, kind: "material", name: "My own stone", pricing_mode: "unit", unit_price: 12, qty_formula: "QTY", unit: "CY" });
+      expect(mine.status === 201, `component ${mine.status} ${JSON.stringify(mine.body).slice(0, 200)}`);
+      const before = (await apiCall(token, "GET", comps)).body.filter((c) => c.mat_key).length;
+      expect((await calculate()).status === 200, "Calculate again");
+      const after = await g.items();
+      const note = after.find((i) => i.name === "Pipe bedding")?.earthwork_note ?? "";
+      expect(/this line has its own material/.test(note), `note "${note}"`);
+      expect((await apiCall(token, "GET", comps)).body.filter((c) => c.mat_key).length === before, "Calculate's materials changed");
+      return note;
     },
   },
   {

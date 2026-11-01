@@ -1062,6 +1062,7 @@ try {
     const { siteFigures } = await import("/src/lib/takeoff/earthwork/volume/pockets.ts");
     const suggest = await import("/src/lib/takeoff/earthwork/suggest.ts");
     const assemblyGroups = await import("/src/lib/estimate/assemblyGroups.ts");
+    const noneReason = await import("/src/lib/estimate/noneReason.ts");
         const { earthworkVersionKey } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
@@ -1408,6 +1409,10 @@ try {
         return { pockets: f.pockets.length, cy: Math.round(a.cy * 10) / 10, avg: a.avgFt, deepest: a.deepestFt, dist: Math.round(f.hauls[0].distanceFt * 10) / 10, grade: Math.round(f.hauls[0].gradePct * 100) / 100, slope: Math.round(b.slopeMedianPct * 10) / 10, steep: Math.round(b.steepSharePct) };
       }
       if (c.kind === "suggest-dig") return { dig: suggest.suggestDig(c.input).dig };
+      if (c.kind === "crew-none") {
+        const none = noneReason.crewNone({ reason: "included", included_in: "gravity" }, c.line, c.items, [{ uuid: "gravity", national_key: "A12" }, { uuid: "pressure", national_key: "A18" }, { uuid: "fused", national_key: "A19" }]);
+        return { included: none?.included_in ?? "none" };
+      }
       if (c.kind === "assembly-group") {
         const of = (uuid) => c.items.find((i) => i.uuid === uuid);
         const line = (i) => ({ itemUuid: i.uuid, name: i.name, qty: i.effective_quantity, unit: i.unit, parentUuid: null, hasSubItems: false });

@@ -25861,3 +25861,20 @@ blocks, a first cut of 13.
 - **The bond is on the full price:** subtotal ÷ (1 − bond %), not subtotal × (1 + bond %).
 - **The form:** an error shows after a field is left, not while typing.
 - **Open, not built:** a tiered bond schedule, per-markup direct cost or running subtotal, a separate subcontract markup, escalation per year to mid-construction.
+
+## D-934: Section C: structures not priced, the re-use note
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **A structure that writes no line** shows in Needs attention, and the bid reads Incomplete, "n structures not priced", while any remain.
+- **A site that both exports and imports** gets a note in Results with what the tipping and the borrow cost at their material prices; a note only, nothing moves, hauls left out.
+
+## D-935: The saved queue's answers
+
+**Status:** the founder, 2026-11-01. Recorded in `pending_umer.md` and the markup plan.
+
+- **R6:** every guest gets live data changes. `allow_presence` controls only whether people and cursors show.
+- **R9:** the fx production builds are the suite's default: `setup` ends on them, and the dev servers start only when asked or when a fixture needs them.
+- **R10:** f6-a's bound stays, and it runs on its own in the suite.
+- **R4:** 150 to 200 ms for a selection at 20,000 is acceptable.
+- **M1 to M4** as the plan's section 6: defaults per person, on the account.
