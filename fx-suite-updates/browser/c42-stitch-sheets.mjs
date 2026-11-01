@@ -86,6 +86,40 @@ await run("c42-stitch-sheets", [
     },
   },
   {
+    title: "D-929: placing points: Enter under 2 pairs says so; the counter; Backspace; Esc drops an unpaired point; a second Esc asks, then leaves",
+    run: async ({ page }) => {
+      await openSheet(page, project, sheets[0], "earthwork");
+      await stitchPanel(page);
+      await page.locator('[data-stitch-way="points"]').click();
+      await page.getByLabel("Sheet to stitch").selectOption({ label: shown(sheets[1]) });
+      await page.waitForFunction(() => document.querySelectorAll('svg[role="presentation"]').length >= 2, null, { timeout: 20000 });
+      const counts = () => page.locator("[data-join-points]").innerText();
+      const pairs = () => page.locator("[data-join-pairs]").innerText();
+      await clickAt(page, 0, ...POINTS[0]);
+      await clickAt(page, 1, ...POINTS[0]);
+      expect((await pairs()) === "1 pair", await pairs());
+      await page.keyboard.press("Enter");
+      await page.getByText("Place at least 2 matching pairs").first().waitFor({ timeout: 5000 });
+      await clickAt(page, 0, ...POINTS[1]);
+      await waitFor(async () => /Left 2 . right 1/.test(await counts()) || null, "the unpaired point", 5000, 100);
+      await page.keyboard.press("Backspace");
+      await waitFor(async () => /Left 1 . right 1/.test(await counts()) || null, "Backspace took the last point", 5000, 100);
+      await clickAt(page, 0, ...POINTS[1]);
+      await clickAt(page, 1, ...POINTS[1]);
+      await waitFor(async () => (await pairs()) === "2 pairs: Enter to stitch" || null, "the counter", 5000, 100);
+      await clickAt(page, 0, ...POINTS[2]);
+      await page.keyboard.press("Escape");
+      await waitFor(async () => /Left 2 . right 2/.test(await counts()) || null, "Esc dropped the unpaired point", 5000, 100);
+      await page.keyboard.press("Escape");
+      const ask = page.getByRole("dialog", { name: "Discard 2 pairs?" });
+      await ask.waitFor({ timeout: 5000 });
+      await ask.getByRole("button", { name: "Discard" }).click();
+      await page.locator("[data-join-panel]").waitFor({ state: "detached", timeout: 5000 });
+      expect((await sites()).length === 0, "a site was made");
+      return "says so under 2, counter, Backspace, both Escapes";
+    },
+  },
+  {
     title: "D-804 A4: page 2 by matching points onto page 1: no turn, fit under half a pixel (0.19 ft), no flag; D-803: one site row, page 2 under it, the drawing opens",
     run: async ({ page }) => {
       await openSheet(page, project, sheets[0], "earthwork");
@@ -99,7 +133,7 @@ await run("c42-stitch-sheets", [
       // Half a pixel: the floor of a fit picked by clicks, not the join's accuracy.
       expect(fit < 0.19, `fit ${fit} ft, panes ${panes.join(" / ")} px wide`);
       expect((await page.locator("[data-join-scale-flag]").count()) === 0, "a scale flag on sheets at one scale");
-      await page.locator("[data-stitch-join]").click();
+      await page.keyboard.press("Enter");
       await waitFor(async () => ((await sites()).length === 1 ? true : null), "the site made", 15000);
       const group = page.locator("[data-site-group]");
       await group.waitFor({ timeout: 10000 });

@@ -25815,3 +25815,11 @@ blocks, a first cut of 13.
 - **"Use region price"** offers the series over a typed value. The region picker reads the same weekly table, propane included.
 - **Propane** is EIA's residential price, excluding taxes, October to March; out of season the last published week stands, with its date.
 - **Stored 0 to 1, shown as a percent:** job efficiency, the load factors and the compressor fuel fractions. Multipliers stay ×.
+
+## D-929: Finishing a stitch from the keyboard
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **Enter, or Done on the toolbar,** stitches with the pairs placed so far, at least 2; with fewer, "Place at least 2 matching pairs". A point still waiting for its partner is not a pair.
+- **Backspace** removes the last point. **Esc** drops an unpaired point first; a second Esc leaves without stitching, asking "Discard n pairs?" if any are placed. The counter reads "3 pairs: Enter to stitch".
+- One hook, `usePairKeys`, so Overlay's keys are the same.
