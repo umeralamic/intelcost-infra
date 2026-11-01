@@ -25897,3 +25897,7 @@ blocks, a first cut of 13.
 ## D-938: Group by Assembly: a parent and what is under it
 
 Replaces D-930's grouping by system (the founder's answer to Q69). A utility run and a structure are each a parent; a run's structures are not under it. Calculate keeps the line list and also stores `ownLines` on each run and structure: the same engine (`utilityLines`, `structureLines`) called on that one run or structure, so every line type (pipe LF, trench excavation, protection, bedding, pipe zone, backfill; a structure's EA, VF, excavation, stone, backfill) is the engine's own figure, none a share of length. A system line's money goes to its owners by those quantities, and `keepCents` brings the rows back to the line's cents, so the total is the same in every grouping. Any other item is its own parent; an earthwork heading is a parent by its cut and fill. Export and import together, or mixed units, show a total only. A result from before `ownLines` keeps the system as one row until the next Calculate. The item read now returns `earthwork_variant`. The applied-assembly grouping of D-930 is dropped; the column stays.
+
+## D-939: Assembly rows in the report's order; the panel holds eight levels
+
+Founder, 2026-11-01. Group by Assembly lists the site features first in the grading report's order, then the runs, the structures, the other items and No assembly, so the features read together rather than alphabetically among 35 rows. The Estimating side panel is `w-72` with a tighter Show levels row, so all eight levels sit on one line.
