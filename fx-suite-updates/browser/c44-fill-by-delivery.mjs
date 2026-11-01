@@ -10,6 +10,7 @@
 //   4. Fill follows its delivery (D-900): A16 and A17, and the haul-road water line only from 1,000 ft.
 //   5. A typed share splits a page's fill (D-901), the lines add to it, and blank goes back to the cut lines.
 //   6. The Calculate keeps the site's figures (D-918).
+//   7. The Results panel suggests by pocket and applies nothing until Confirm (D-920, D-921).
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -151,6 +152,24 @@ await run("c44-fill-by-delivery", [
       const cut = stored.pockets.find((p) => p.kind === "cut");
       expect(cut.cy > 0 && cut.areaSF > 0 && cut.deepestFt > 0 && cut.avgFt > 0 && cut.slopeMedianPct >= 0, JSON.stringify(cut));
       return `${Math.round(cut.cy)} CY, ${Math.round(cut.areaSF)} SF, ${cut.avgFt.toFixed(2)} ft`;
+    },
+  },
+  {
+    title: "D-920, D-921: the Results panel suggests by pocket, applies nothing, and a Confirm moves the lines and no volume",
+    run: async ({ page }) => {
+      await apiCall(token, "PUT", `${g.earthwork}/assumptions`, { ...(await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body, swell_factor: 1.17 });
+      await openSheet(page, project, one, "earthwork");
+      await calculate(page);
+      const rows = page.locator("[data-method-rows]");
+      await rows.waitFor({ timeout: 30000 });
+      expect(/Suggested, not applied/.test(await rows.innerText()), await rows.innerText());
+      await waitFor(async () => (await storedLines(g, one, waitFor)).some((l) => /^Cut/.test(l.name)), "the lines", 20000, 500);
+      const row = rows.locator("[data-method-row$=':soil']").first();
+      await row.locator("select").selectOption("scraper");
+      await row.getByRole("button", { name: "Confirm" }).click();
+      await waitFor(async () => (await storedLines(g, one, waitFor)).some((l) => l.name === "Cut, scraper" && l.effective_quantity > 0), "the scraper's cut line", 20000, 500);
+      await rows.getByText("Your choices applied").waitFor({ timeout: 15000 });
+      return "suggested, not applied; Confirm moved the cut to the scraper";
     },
   },
 ]);

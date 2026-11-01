@@ -1027,6 +1027,9 @@ export const EARTHWORK_CASES = [
   { id: "q31-joints-per-day", kind: "fusion-joints", keys: ["hdpe_ips_dr11:8", "hdpe_ips_dr11:12", "hdpe_ips_dr11:24"], expect: { "hdpe_ips_dr11:8": 27.1, "hdpe_ips_dr11:12": 18.2, "hdpe_ips_dr11:24": 11.1, inside: true } },
   // A gasketed pipe buys no fusion.
   { id: "m8-no-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape" } },
+  // Suggestions (D-920): 180 ft pushes, 800 ft scrapes, 4,000 ft trucks; rock is excavator whatever is above it; a steep pocket is noted.
+  // A choice of scraper on the second pocket (its cell "1") of 100 and 300 CY soil, the first keeping dozer: 25 % dozer, 75 % scraper.
+  { id: "d920-suggest", kind: "suggest", pockets: [{ cy: 100, ft: 180 }, { cy: 300, ft: 800, steep: 12 }, { cy: 500, ft: 4000, rock: 200 }], expect: { methods: "cut-1:soil:dozer cut-2:soil:scraper cut-3:soil:excavator cut-3:rock:excavator", notes: 1, shares: '{"dozer":0.14285714285714285,"scraper":0.42857142857142855,"excavator":0.42857142857142855}' } },
   // Site figures (D-918): a 100 × 100 ft cut 10 ft deep, its fill 300 ft east, 5 ft down at the centroids (105 to 95): -3.33 %.
   // A second cut on ground at 40 % reads 40 % and all steep; a 1 ft sliver of 3.7 CY is no pocket.
   { id: "d918-pockets", kind: "site-figures", expect: { pockets: 3, cy: 3703.7, avg: 10, deepest: 10, dist: 300, grade: -3.33, slope: 40, steep: 100 } },

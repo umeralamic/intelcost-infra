@@ -1060,6 +1060,7 @@ try {
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
     const { siteFigures } = await import("/src/lib/takeoff/earthwork/volume/pockets.ts");
+    const suggest = await import("/src/lib/takeoff/earthwork/suggest.ts");
         const { earthworkVersionKey } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
@@ -1404,6 +1405,12 @@ try {
         const { figures: f } = siteFigures(prisms, { widthPt: 1000, heightPt: 1000, feetPerNorm: 1 });
         const [a, b] = f.pockets.filter((p) => p.kind === "cut");
         return { pockets: f.pockets.length, cy: Math.round(a.cy * 10) / 10, avg: a.avgFt, deepest: a.deepestFt, dist: Math.round(f.hauls[0].distanceFt * 10) / 10, grade: Math.round(f.hauls[0].gradePct * 100) / 100, slope: Math.round(b.slopeMedianPct * 10) / 10, steep: Math.round(b.steepSharePct) };
+      }
+      if (c.kind === "suggest") {
+        const pockets = c.pockets.map((p, i) => ({ id: `cut-${i + 1}`, kind: "cut", cy: p.cy, areaSF: 1000, avgFt: 5, deepestFt: 9, at: { x: 0, y: 0, z: 0 }, slopeMedianPct: 5, slopeTop10Pct: 9, steepSharePct: p.steep ?? 0, layers: p.rock ? [{ name: "Soil", rock: false, bcy: p.cy - p.rock }, { name: "Layer 3", rock: true, bcy: p.rock }] : undefined, cells: [`${i}`] }));
+        const figures = { pockets, hauls: c.pockets.map((p, i) => ({ cut: `cut-${i + 1}`, fill: "fill-1", distanceFt: p.ft, gradePct: -2 })), steepPct: 33 };
+        const s = suggest.suggestMethods(figures);
+        return { methods: s.rows.map((r) => `${r.pocket}:${r.band}:${r.method}`).join(" "), notes: s.notes.length, shares: JSON.stringify(suggest.pocketShares(figures, { a: { method: "scraper", cy: 100, cells: ["1"] } })) };
       }
       if (c.kind === "held-key") {
         const a = { native_suitable: true, fill_type: "Select Borrow", swell_factor: 1.3, shrink_factor: 1.1 };

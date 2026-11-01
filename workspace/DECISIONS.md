@@ -25740,3 +25740,19 @@ blocks, a first cut of 13.
 - **The tier comes from the unslowed rate** (Q12): a longer push cannot pick a smaller, cheaper tier.
 - **Scraper:** travel time only, by the catalog's own cycle, speeds eased by effective grade. The catalog's scraper speeds are blank, so until a company sets them the line reads the catalog's 1,000 ft level haul and says so.
 - **The line says what it read.** Trucks on site are unchanged: no distance enters A1.
+
+## D-920: Fill plan Block 6: suggestions by pocket and band
+
+**Status:** the founder's plan, with D-893's answers, 2026-11-01.
+
+- **The rule.** Soil: a push to 300 ft, a scraper to 3,000 ft, trucks beyond, each a workspace setting. Rock is excavator and break, whatever is above it; ripping stays a person's choice. Depth enters the words, never the rule. No published economic limit exists.
+- **Steep sides** add a note when over 10 % of a pocket is steeper than 33 %. No production factor: none is published.
+- **A person's method per pocket** splits each region's soil by share, and the fill's shares follow.
+
+## D-921: Fill plan Block 7: the Results rows
+
+**Status:** the founder's plan, 2026-11-01.
+
+- **Auto** is new-project only. Suggested rows apply nothing until a person confirms; that re-prices the lines, and no volume moves.
+- **A choice stays by footprint,** more than half of the pocket's 25 ft cells, and says when its pocket moved. A result from before this block reads "Calculate again to choose by area".
+- **Choosing by pocket reads the push from the site.**
