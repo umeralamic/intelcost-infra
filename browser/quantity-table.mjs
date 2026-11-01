@@ -1415,10 +1415,11 @@ try {
       }
       if (c.kind === "assembly-group") {
         const of = (uuid) => c.items.find((i) => i.uuid === uuid);
-        const line = (i) => ({ itemUuid: i.uuid, name: i.name, qty: i.effective_quantity, unit: i.unit, parentUuid: null, hasSubItems: false });
-        const lines = c.items.map(line);
-        const driver = assemblyGroups.groupDriver(lines, of);
-        return { group: assemblyGroups.assemblyOf(lines[0], of, c.items)?.name ?? "none", driver: driver ? `${driver.qty} ${driver.unit}` : "none" };
+        const line = (i) => ({ key: i.uuid, itemUuid: i.uuid, name: i.name, qty: i.effective_quantity, unit: i.unit, parentUuid: null, hasSubItems: false });
+        const rows = assemblyGroups.expandToOwners(c.items.map(line), c.owners ?? [], of);
+        const groups = new Map();
+        for (const r of rows) { const g = assemblyGroups.assemblyOf(r, of); groups.set(g.name, [...(groups.get(g.name) ?? []), r]); }
+        return Object.fromEntries([...groups].map(([name, ls]) => { const d = assemblyGroups.groupDriver(ls, of); return [name, d ? `${Number(d.qty.toFixed(4))} ${d.unit}${d.vf ? ` ${d.vf} VF` : ""}` : "total only"]; }));
       }
       if (c.kind === "suggest") {
         const pockets = c.pockets.map((p, i) => ({ id: `cut-${i + 1}`, kind: "cut", cy: p.cy, areaSF: 1000, avgFt: 5, deepestFt: 9, at: { x: 0, y: 0, z: 0 }, slopeMedianPct: 5, slopeTop10Pct: 9, steepSharePct: p.steep ?? 0, layers: p.rock ? [{ name: "Soil", rock: false, bcy: p.cy - p.rock }, { name: "Layer 3", rock: true, bcy: p.rock }] : undefined, cells: [`${i}`] }));

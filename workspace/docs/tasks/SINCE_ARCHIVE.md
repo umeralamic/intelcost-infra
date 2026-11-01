@@ -838,3 +838,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-11-01 | D-934 structures not priced, re-use note; rows b-trench, c47 Q11 step | app `EstimatingView.tsx`, `VolumePanel.tsx`, `useVolumes.tsx` |
 | 2026-11-01 | D-935, D-936 the saved queue's answers, guests get live data, stale guard, f6-a alone, built apps default | api `realtime/service.py`, `connection.py`; app `core/realtime/provider.tsx`, `ProjectTakeoff.tsx`; infra `fx-suite.sh`, `fx-suite-patch.mjs`; c06 |
 | 2026-11-01 | D-937 markup Properties Blocks 2 to 5 | app `features/takeoff/markup/*`, `Toolbar.tsx`, `printSheets.ts`; api `markup/styles.py`, `auth/schemas.py` |
+| 2026-11-01 | D-938 Group by Assembly by run and structure | app `lib/estimate/assemblyGroups.ts`, `costing.ts`, `EstimatingView.tsx`, `utilities/calculate.ts`; api `takeoff/{routes,schemas}.py` |

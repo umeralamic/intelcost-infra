@@ -49,7 +49,13 @@ FOUNDER_WORKSPACE_UUIDS: dict[str, str] = dict(FOUNDER_WORKSPACES)
 for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUARD_WORKSPACE_EXTRA", "").split(","))):
     FOUNDER_WORKSPACE_UUIDS.setdefault(extra, "added for this run (DRIVE_GUARD_WORKSPACE_EXTRA)")
 
-_NEVER_OPENED = {u: n for u, n in PROTECTED.items() if u != TEST_COPY} | FOUNDER_WORKSPACE_UUIDS
+COPY_ONLY = "4df73dc7-901b-4933-b2bb-fafc327b01f0"
+"""The founder's shared copy, the source of new proofs (2026-11-01): read by the copier alone, for one
+copy, named as `copy-3d-test.py --source`. Every other drive, and every write, is refused as before."""
+_COPYING = os.path.basename(sys.argv[0]) == "copy-3d-test.py" and sys.argv[1:3] == ["--source", COPY_ONLY]
+_READ_ONLY = {TEST_COPY, COPY_ONLY} if _COPYING else {TEST_COPY}
+
+_NEVER_OPENED = {u: n for u, n in PROTECTED.items() if u not in _READ_ONLY} | FOUNDER_WORKSPACE_UUIDS
 _READ = re.compile(r"^\s*(?:select|with|show|explain)\b", re.IGNORECASE)
 _WRITE_IN_READ = re.compile(r"\b(?:insert|update|delete|merge|truncate)\b", re.IGNORECASE)
 
@@ -80,8 +86,9 @@ def statement_refusal(statement: str, parameters: Any) -> str | None:
     for uuid, name in _NEVER_OPENED.items():
         if uuid in text:
             return f'the statement names "{name}" ({uuid}), never opened from here (D-601)'
-    if TEST_COPY in text and not (_READ.match(statement) and not _WRITE_IN_READ.search(statement)):
-        return f'a write names "{PROTECTED[TEST_COPY]}" ({TEST_COPY}), which drives never write to (D-542)'
+    for uuid in _READ_ONLY:
+        if uuid in text and not (_READ.match(statement) and not _WRITE_IN_READ.search(statement)):
+            return f'a write names "{PROTECTED[uuid]}" ({uuid}), which drives never write to (D-542)'
     return None
 
 
@@ -138,7 +145,7 @@ def _install() -> None:
         if uuid in _NEVER_OPENED:
             _refuse(f'a project row loaded is "{_NEVER_OPENED[uuid]}" ({uuid}), never opened from here (D-601)', "; the drive stopped as it loaded")
 
-        if uuid != TEST_COPY and project.workspace_id in founder_ids:
+        if uuid not in _READ_ONLY and project.workspace_id in founder_ids:
             _refuse(f'a project row loaded ({uuid}) is in "{founder_ids[project.workspace_id]}", never opened from here (D-891)', "; the row was read, nothing else")
 
     event.listen(Project, "load", loaded)
