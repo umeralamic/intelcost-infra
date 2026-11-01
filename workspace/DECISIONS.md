@@ -25884,3 +25884,12 @@ blocks, a first cut of 13.
 **Status:** the founder's instruction, 2026-11-01.
 
 - **The stale mark is never written while the item list is incomplete,** the streamed read or any partial read: `ready` holds it, on a sheet and on a site.
+
+## D-937: Markup Properties, Blocks 2 to 5
+
+**Status:** the founder's M1 to M4, 2026-11-01.
+
+- **Block 2:** a caret on every markup tool opens the panel on the tool's defaults, with "Changes apply to the next markup you draw and are remembered." Defaults are on the account (`takeoff_prefs.markup_styles`), the browser's key the offline fallback; a browser's move to the account at the first sign-in. A read-only seat sees the fields greyed, with the tip.
+- **Block 3:** one undo step per change; another tab's change reaches the open panel.
+- **Block 4:** the callout's font: Arial, Times New Roman, Courier New, printing as the same families. The api checks `style` per kind on write, leniently: unknown keys and wrong types are dropped, and nothing already stored is refused on read.
+- **Block 5:** Shift+click adds to a selection; the panel edits the fields they share in one change and one undo step, and a mixed value says so.
