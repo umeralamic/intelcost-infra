@@ -25832,3 +25832,10 @@ blocks, a first cut of 13.
 - **A utility system is the row, not a run.** Calculate adds a system's lines across its runs (trench excavation is one line per system and layer), so a run has no lines of its own; the row names the system's pipes and is driven by their LF.
 - **An earthwork feature, Stripping and Site balance** are the Estimating headings the lines already have, driven by cut and fill in CY, or the largest line.
 - **An applied assembly** groups by name: `takeoff_item.applied_assembly`, written from today. An item with sub-items is its own row. Anything else: No assembly.
+
+## D-931: Overlay by matching points
+
+**Status:** the founder's instruction, 2026-11-01. Replaces D-195's four clicks; Skip alignment and the nudges stay.
+
+- **As Stitch:** pick the sheet, it opens beside this one in Split view, the same points are placed on each, with Stitch's keys. Two pairs or more fit the second sheet onto the first with Stitch's own fit, the scale free, the fit shown in feet.
+- **Compare sheets** is the dialog's first choice: the current sheet red, the overlay green, on clean paper, with an opacity slider and a swap. Standard and Comparative stay.

@@ -832,3 +832,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-11-01 | D-928 fuel from the location, percent settings | api `equipment/fuel.py`, `service.py`, `national.py`, migration d928, seed `eia_weekly`; app `EquipmentSettingsDialog.tsx`, `LibraryValue.tsx`, `resolve.ts`; c48 |
 | 2026-11-01 | D-929 stitch keys: Enter, Done, Backspace, Esc, counter | app `features/takeoff/split/usePairKeys.tsx`, `site/useSiteJoin.tsx`, `EarthworkToolbar.tsx`; c42 |
 | 2026-11-01 | D-930 Group by Assembly | app `lib/estimate/assemblyGroups.ts`, `lines.ts`, `EstimatingView.tsx`; api `assembly/routes.py`, migration d930; rows d930; c38 |
+| 2026-11-01 | D-931 overlay by matching points, compare view | app `features/takeoff/overlay/useOverlayMatch.tsx`, `OverlayCompareBar.tsx`, `OverlayLayer.tsx`, `OverlayDialog.tsx`, `lib/takeoff/overlay/matchFit.ts`, `ProjectTakeoff.tsx`; api `earthwork/schemas.py`; c49 |
