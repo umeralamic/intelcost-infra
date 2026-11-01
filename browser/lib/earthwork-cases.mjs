@@ -1027,6 +1027,20 @@ export const EARTHWORK_CASES = [
   { id: "q31-joints-per-day", kind: "fusion-joints", keys: ["hdpe_ips_dr11:8", "hdpe_ips_dr11:12", "hdpe_ips_dr11:24"], expect: { "hdpe_ips_dr11:8": 27.1, "hdpe_ips_dr11:12": 18.2, "hdpe_ips_dr11:24": 11.1, inside: true } },
   // A gasketed pipe buys no fusion.
   { id: "m8-no-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape" } },
+  // Undercut methods (D-922): 100 BCY, swell 1.25. Dozer and a haul: the dig, the load, the haul, the refill.
+  { id: "d922-dozer-haul", kind: "lines", input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }], features: [{ itemId: "pad", undercut: { volumeCF: 2700, depthFt: 1.5, areaSF: 1800, material: "Select Fill", disposition: "haul_off" } }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, undercuts: { pad: { dig: "dozer", goes: "haul_off" } } } } }, expect: { "undercut_push:pad": 100, "undercut_load:pad": 125, "undercut_haul:pad": 125, "undercut_replace:pad": 100 } },
+  // Treated in place: no dig, no spoil, no refill; 1,800 SF is 200 SY.
+  { id: "d922-in-place", kind: "lines", input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }], features: [{ itemId: "pad", undercut: { volumeCF: 2700, depthFt: 1.5, areaSF: 1800, material: "Select Fill", disposition: "haul_off" } }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, undercuts: { pad: { goes: "in_place" } } } } }, expect: { "treat_in_place:pad": 200, "undercut:pad": undefined, "undercut_replace:pad": undefined } },
+  // Problem 4: the surplus chosen for undercut spoil reaches a simple undercut.
+  { id: "d922-problem-4", kind: "lines", input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }], features: [{ itemId: "pad", undercut: { volumeCF: 2700, depthFt: 1.5, areaSF: 1800, material: "Select Fill", disposition: "haul_off" } }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: { undercut_spoil: "waste" }, method: "excavator", push_ft: 100, method_by_feature: {}, undercuts: null } } }, expect: { "undercut:pad": 100, "soil_waste:pad": 100, "undercut_haul:pad": undefined } },
+  { id: "d922-dig-shallow", kind: "suggest-dig", input: { depthFt: 1.5, areaSF: 20432, widthFt: 143 }, expect: { dig: "dozer" } },
+  { id: "d922-dig-deep", kind: "suggest-dig", input: { depthFt: 4, areaSF: 14831, widthFt: 121 }, expect: { dig: "excavator" } },
+  { id: "d922-dig-between", kind: "suggest-dig", input: { depthFt: 2.5, areaSF: 14831, widthFt: 121 }, expect: { dig: null } },
+  { id: "d922-dig-confined", kind: "suggest-dig", input: { depthFt: 1.5, areaSF: 900, widthFt: 15 }, expect: { dig: "excavator" } },
+  // The bottom of the hole (D-923): 1,800 SF is 200 SY; geotextile with 10 % overlap, 220; prep keeps the feature's other 1,200 SF.
+  { id: "d923-bottom", kind: "lines", input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }], features: [{ itemId: "pad", undercut: { volumeCF: 2700, depthFt: 1.5, areaSF: 1800, material: "Select Fill", disposition: "haul_off", belowWater: true }, prep: { areaSF: 3000, depthFt: 0.5 } }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, undercuts: { pad: { proofRoll: true, geotextile: true } } } } }, expect: { "proof_roll:pad": 200, "geosynthetics:pad": 220, "dewatering:pad": 1, "prep:pad": 1200 } },
+  { id: "d923-prep-whole-under", kind: "lines", input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }], features: [{ itemId: "pad", undercut: { volumeCF: 2700, depthFt: 1.5, areaSF: 1800, material: "Select Fill", disposition: "haul_off" }, prep: { areaSF: 1800, depthFt: 0.5 } }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, undercuts: null } } }, expect: { "prep:pad": undefined } },
+  { id: "d923-in-place-is-prep", kind: "lines", input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }], features: [{ itemId: "pad", undercut: { volumeCF: 2700, depthFt: 1.5, areaSF: 1800, material: "Select Fill", disposition: "haul_off" }, prep: { areaSF: 3000, depthFt: 0.5 } }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, undercuts: { pad: { goes: "in_place" } } } } }, expect: { "prep:pad": undefined, "treat_in_place:pad": 200 } },
   // Suggestions (D-920): 180 ft pushes, 800 ft scrapes, 4,000 ft trucks; rock is excavator whatever is above it; a steep pocket is noted.
   // A choice of scraper on the second pocket (its cell "1") of 100 and 300 CY soil, the first keeping dozer: 25 % dozer, 75 % scraper.
   { id: "d920-suggest", kind: "suggest", pockets: [{ cy: 100, ft: 180 }, { cy: 300, ft: 800, steep: 12 }, { cy: 500, ft: 4000, rock: 200 }], expect: { methods: "cut-1:soil:dozer cut-2:soil:scraper cut-3:soil:excavator cut-3:rock:excavator", notes: 1, shares: '{"dozer":0.14285714285714285,"scraper":0.42857142857142855,"excavator":0.42857142857142855}' } },
@@ -1168,7 +1182,7 @@ export const EARTHWORK_CASES = [
     input: {
       units: "CY",
       regions: [{ id: null, label: "Remainder", cutCY: 100, fillCY: 300 }],
-      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 135, volumeCF: 270, material: "Select Fill", disposition: "reuse" }, prep: { depthFt: 1, lifts: 2, areaSF: 135 } }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 0, volumeCF: 270, material: "Select Fill", disposition: "reuse" }, prep: { depthFt: 1, lifts: 2, areaSF: 135 } }],
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 / 0.9 },
     },
     expect: {
@@ -1192,7 +1206,7 @@ export const EARTHWORK_CASES = [
     input: {
       units: "m3",
       regions: [{ id: null, label: "Remainder", cutCY: 0, fillCY: 0 }],
-      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 0.5, offsetFt: 0, areaSF: 706.293334, volumeCF: 353.146667, material: "Engineered Fill", disposition: "haul_off" }, prep: { depthFt: 0.5, lifts: 1, areaSF: 100 } }],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 0.5, offsetFt: 0, areaSF: 0, volumeCF: 353.146667, material: "Engineered Fill", disposition: "haul_off" }, prep: { depthFt: 0.5, lifts: 1, areaSF: 100 } }],
       assumptions: null,
     },
     expect: {

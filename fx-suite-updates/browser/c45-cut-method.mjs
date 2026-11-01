@@ -8,6 +8,7 @@
 //   2. Dozer push for the project: the cut line is "Cut, dozer push" (role cut_push), priced by A14.
 //   3. Scraper for the Site Feature only: its region's cut is "Cut, scraper" (cut_scraper), the rest dozer push.
 //   4. A 200 ft push prices the cut above the 100 ft one (the catalog's 200 ft rate, about half).
+//   6. An undercut's row (D-922, D-923).
 //   5. From the site is kept, and with no fill there is no haul to read (D-919). The DUP proves a read haul.
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
@@ -89,6 +90,31 @@ await run("c45-cut-method", [
       const line = lines.find((l) => l.earthwork_role === "cut_push");
       expect(!line.earthwork_note, line.earthwork_note);
       return "push_ft 0 kept; no note with no haul";
+    },
+  },
+  {
+    title: "D-922, D-923: an undercut's row: Treat in place drops the dig and the refill; a proof roll and geotextile add lines; Confirm moves no volume",
+    run: async ({ page }) => {
+      await openSheet(page, project, sheet, "earthwork");
+      await page.getByRole("button", { name: "Calculate", exact: true }).first().click();
+      const d = page.getByRole("dialog", { name: "Earthwork assumptions" });
+      await d.waitFor();
+      await d.getByLabel("Swell factor").fill("1.31");
+      await d.getByRole("button", { name: "Calculate", exact: true }).click();
+      await d.waitFor({ state: "detached" });
+      const rows = page.locator("[data-undercut-rows]");
+      await rows.waitFor({ timeout: 60000 });
+      await waitFor(async () => (await g.items()).some((i) => i.earthwork_role === "undercut_replace"), "the undercut's lines", 30000, 500);
+      await rows.getByLabel("Proof roll, Building Pad").check();
+      await rows.getByLabel("Geotextile, Building Pad").check();
+      await rows.locator("tr", { hasText: "Building Pad" }).getByRole("button", { name: "Confirm" }).click();
+      await waitFor(async () => (await g.items()).some((i) => i.earthwork_role === "proof_roll" && !i.earthwork_retired), "the proof roll", 30000, 500);
+      await rows.getByLabel("Goes, Building Pad").selectOption("in_place");
+      await rows.locator("tr", { hasText: "Building Pad" }).getByRole("button", { name: "Confirm" }).click();
+      await waitFor(async () => (await g.items()).some((i) => i.earthwork_role === "treat_in_place" && !i.earthwork_retired), "treat in place", 30000, 500);
+      const left = (await g.items()).filter((i) => !i.earthwork_retired).map((i) => i.earthwork_role);
+      expect(!left.includes("undercut_replace") && !left.includes("undercut") && !left.includes("proof_roll"), left.join());
+      return "proof roll, geotextile, then treat in place with no dig or refill";
     },
   },
 ]);

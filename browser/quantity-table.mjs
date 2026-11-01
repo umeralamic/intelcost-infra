@@ -1406,6 +1406,7 @@ try {
         const [a, b] = f.pockets.filter((p) => p.kind === "cut");
         return { pockets: f.pockets.length, cy: Math.round(a.cy * 10) / 10, avg: a.avgFt, deepest: a.deepestFt, dist: Math.round(f.hauls[0].distanceFt * 10) / 10, grade: Math.round(f.hauls[0].gradePct * 100) / 100, slope: Math.round(b.slopeMedianPct * 10) / 10, steep: Math.round(b.steepSharePct) };
       }
+      if (c.kind === "suggest-dig") return { dig: suggest.suggestDig(c.input).dig };
       if (c.kind === "suggest") {
         const pockets = c.pockets.map((p, i) => ({ id: `cut-${i + 1}`, kind: "cut", cy: p.cy, areaSF: 1000, avgFt: 5, deepestFt: 9, at: { x: 0, y: 0, z: 0 }, slopeMedianPct: 5, slopeTop10Pct: 9, steepSharePct: p.steep ?? 0, layers: p.rock ? [{ name: "Soil", rock: false, bcy: p.cy - p.rock }, { name: "Layer 3", rock: true, bcy: p.rock }] : undefined, cells: [`${i}`] }));
         const figures = { pockets, hauls: c.pockets.map((p, i) => ({ cut: `cut-${i + 1}`, fill: "fill-1", distanceFt: p.ft, gradePct: -2 })), steepPct: 33 };

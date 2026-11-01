@@ -25756,3 +25756,26 @@ blocks, a first cut of 13.
 - **Auto** is new-project only. Suggested rows apply nothing until a person confirms; that re-prices the lines, and no volume moves.
 - **A choice stays by footprint,** more than half of the pocket's 25 ft cells, and says when its pocket moved. A result from before this block reads "Calculate again to choose by area".
 - **Choosing by pocket reads the push from the site.**
+
+## D-922: Fill plan Block 8: undercut methods and dispositions
+
+**Status:** the founder's plan, with D-893's answers, 2026-11-01.
+
+- **The dig.** Shallow to 2 ft and at least 20 ft wide and 5,000 SF: dozer. From 3 ft, or confined: excavator. Between: a person's. Width is area's square root until a shape gives better. All settings.
+- **Where it goes:** treated and put back, hauled off, spoiled on site, reused, or treated in place. In place writes no dig, spoil or refill; A21 is the draft activity, the catalog reclaimer at 2,495 SY/day, and mapping it by hand is the subcontract option.
+- **A pushed pile that leaves is loaded** on A6. Roles `undercut_push`, `undercut_scraper`, `undercut_load`, `treat_in_place`, release 12.
+- **Problems 4 to 6.** A surplus chosen for undercut spoil reaches a simple undercut. The dialog keeps every sheet's feature methods. Site Calculate passes the soil, so an undercut to a layer resolves there.
+
+## D-923: Fill plan Block 9: the bottom of an undercut
+
+**Status:** the founder's plan, 2026-11-01.
+
+- **Prep stands apart from an undercut.** Where an undercut is on a feature, prep counts only the rest of the feature; treated in place, that is the prep.
+- **A person's ticks** add a proof roll, priced by hand, and geotextile on the undercut's own area with a 10 % overlap.
+- **Dewatering** adds a line, priced by hand, where the undercut's bottom is under the bores' design water.
+
+## D-924: Fill plan Block 10: report, export and metric
+
+**Status:** the founder's plan, 2026-11-01.
+
+- **The workbook gains a Methods sheet.** The Results rows read the result's own system: the figures stay stored in CY and feet.
