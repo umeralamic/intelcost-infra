@@ -123,4 +123,29 @@ await run("c06-copied-earthwork", [
       return `${copied.length} calculated lines in Estimating, no flag`;
     },
   },
+  {
+    title: "D-936: a project opened mid-stream marks no line; a real change after the read still does",
+    run: async ({ page }) => {
+      const marked = [];
+      page.on("request", (r) => {
+        if (r.method() === "POST" && /\/earthwork\/.*stale/.test(r.url())) marked.push(r.url());
+      });
+      // The items read held open: the list is not complete while the sheet loads.
+      await page.route("**/takeoff/item**", async (route) => {
+        await new Promise((done) => setTimeout(done, 6000));
+        await route.fallback();
+      });
+      await openSheet(page, project, sheet, "earthwork");
+      expect(marked.length === 0, `marked mid-stream: ${marked.join()}`);
+      await page.unroute("**/takeoff/item**");
+      await page.waitForTimeout(0);
+      await waitFor(async () => ((await page.locator("li[data-item-row]").count()) > 0 ? true : null), "the list complete", 30000, 250);
+      await new Promise((done) => setTimeout(done, 3000));
+      expect(marked.length === 0, `marked on an unchanged sheet: ${marked.join()}`);
+      await g.spots(sheet, "FG", [[0.5, 0.5, 101]]);
+      await openSheet(page, project, sheet, "earthwork");
+      await waitFor(async () => (marked.length > 0 ? true : null), "a real change marks", 30000, 250);
+      return "none mid-stream or unchanged; marked after a real change";
+    },
+  },
 ]);

@@ -122,6 +122,8 @@ case "${1:-}" in
     docker compose --profile fx build browser-fx >/dev/null
     for _ in $(seq 1 90); do curl -sf localhost:8020/health >/dev/null && curl -sf localhost:8030/health >/dev/null && break; sleep 2; done
     check
+    # The built apps are the suite's default (D-935); `./fx-suite.sh dev` when a run needs the dev servers.
+    "$0" prod
     ;;
   check) check ;;
   refresh)

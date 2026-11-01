@@ -25878,3 +25878,9 @@ blocks, a first cut of 13.
 - **R10:** f6-a's bound stays, and it runs on its own in the suite.
 - **R4:** 150 to 200 ms for a selection at 20,000 is acceptable.
 - **M1 to M4** as the plan's section 6: defaults per person, on the account.
+
+## D-936: The stale mark waits for the whole list
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **The stale mark is never written while the item list is incomplete,** the streamed read or any partial read: `ready` holds it, on a sheet and on a site.

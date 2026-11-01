@@ -112,6 +112,8 @@ patch(path.join(root, "regress.sh"), (t) => {
   // The two 520 MB sets run one at a time (D-870): side by side they shared the api's memory and the worker's prepare
   // queue, and f5-big's 10 s Load waited 29 s behind the other fixtures' prepares; neither failed alone.
   s = s.replace(/^SERIAL=\((?![^)]*f5-big)([^)]*)\)$/m, "SERIAL=($1 f5-big f5-count)");
+  // R10 (D-935): f6-a measures a 1 s bound, so never beside another fixture.
+  s = s.replace(/^SERIAL=\((?![^)]*f6-a)([^)]*)\)$/m, "SERIAL=($1 f6-a)");
   return s;
 });
 

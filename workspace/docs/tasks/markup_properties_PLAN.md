@@ -75,7 +75,9 @@ them; with the tool caret on a read-only seat the fields show greyed with the ti
 | 5 | Several markups selected: the fields they share (M2) | 3 |
 | | **Total** | **about 15 h** |
 
-## 6. Questions for Umer (unanswered since 2026-10-17)
+## 6. Questions for Umer (answered 2026-11-01, D-935)
+
+M1 floating, as recommended. M2 one at a time first, shared fields in Block 5. M3 the three fonts, shown as Arial, Times New Roman and Courier New. **M4 changed:** per person, saved to the account, so defaults follow the estimator across devices; per-browser only as an offline fallback; no workspace-wide standard now.
 
 | # | Question | Recommendation (Block 1 follows it) |
 |---|---|---|
