@@ -25806,3 +25806,12 @@ blocks, a first cut of 13.
 
 - **A component without a price takes one the moment one exists,** with no Calculate or Update: there is no saved price to protect. A saved workspace price reaches every project waiting on the key; a project price reaches its project; a published release is taken at the project's next read, so a release writes across no project. A price a person blanked, and a person's own component, are left alone.
 - **A utility or site line Calculate has not written since materials exist reads "Calculate to add materials",** on the line and in Needs attention. `takeoff_item.earthwork_materials_at` records the last write.
+
+## D-928: Equipment settings: fuel from the location, efficiency as a percent
+
+**Status:** the founder's instruction, 2026-11-01. Replaces D-723's empty field where a project has a series; a price is still never invented.
+
+- **A fuel field nobody typed reads EIA's weekly retail price** by the most specific series that covers the project: the state, else the PADD region (the sub-region on the East Coast, West Coast less California in the West), else the US average, with the week and the series under the field. Nothing is written, so it follows the location on create, on a change and on open, and a typed value is never overwritten.
+- **"Use region price"** offers the series over a typed value. The region picker reads the same weekly table, propane included.
+- **Propane** is EIA's residential price, excluding taxes, October to March; out of season the last published week stands, with its date.
+- **Stored 0 to 1, shown as a percent:** job efficiency, the load factors and the compressor fuel fractions. Multipliers stay ×.
