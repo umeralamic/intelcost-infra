@@ -25723,3 +25723,11 @@ blocks, a first cut of 13.
 - **Saved components never move by themselves.** The estimate reads "IntelCost prices updated to <release>: Review", old to new with each line's total, Update and Update all. Company prices are never touched.
 - **Stale:** a default more than two quarters behind the latest reads "may be stale" in Needs attention.
 - **A key left out** of a new set keeps its last price.
+
+## D-918: Fill plan Block 3: site figures, stored with the result
+
+**Status:** the founder's plan, with D-893's answers, 2026-11-01.
+
+- **Pockets.** Connected cut and fill, each with volume, plan area, average and deepest depth, volume centroid at mid-depth, and the existing ground's median slope, top 10 % and share over 33 %. Under 5 CY a pocket is a sliver and is left out.
+- **Hauls** run from each cut pocket to the nearest fill of at least 10 % of the fill, centroid to centroid at mid-depth (Q7). Negative is downhill.
+- **Rock by pocket:** each cut pocket's own prisms split by layer. Figures sit in the stored result, outside the version key.

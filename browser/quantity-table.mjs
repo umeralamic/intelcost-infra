@@ -1059,6 +1059,7 @@ try {
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
+    const { siteFigures } = await import("/src/lib/takeoff/earthwork/volume/pockets.ts");
         const { earthworkVersionKey } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
@@ -1392,6 +1393,17 @@ try {
         out.keys = list.map((m) => m.key).join(" ");
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
         return out;
+      }
+      if (c.kind === "site-figures") {
+        const square = (x0, y0, size, eg, dz) => {
+          const n = (x, y) => ({ x: x / 1000, y: y / 1000 });
+          const tri = (p, q, r) => ({ a: n(...p), b: n(...q), c: n(...r), dzA: dz, dzB: dz, dzC: dz, egA: eg(...p), egB: eg(...q), egC: eg(...r), fgA: eg(...p) + dz, fgB: eg(...q) + dz, fgC: eg(...r) + dz, areaSF: (size * size) / 2, volumeCF: ((size * size) / 2) * dz, regionId: null });
+          return [tri([x0, y0], [x0 + size, y0], [x0, y0 + size]), tri([x0 + size, y0], [x0 + size, y0 + size], [x0, y0 + size])];
+        };
+        const prisms = [...square(0, 0, 100, () => 110, -10), ...square(300, 0, 100, () => 90, 10), ...square(0, 500, 100, (x) => 100 + 0.4 * x, -5), ...square(800, 800, 10, () => 100, -1)];
+        const { figures: f } = siteFigures(prisms, { widthPt: 1000, heightPt: 1000, feetPerNorm: 1 });
+        const [a, b] = f.pockets.filter((p) => p.kind === "cut");
+        return { pockets: f.pockets.length, cy: Math.round(a.cy * 10) / 10, avg: a.avgFt, deepest: a.deepestFt, dist: Math.round(f.hauls[0].distanceFt * 10) / 10, grade: Math.round(f.hauls[0].gradePct * 100) / 100, slope: Math.round(b.slopeMedianPct * 10) / 10, steep: Math.round(b.steepSharePct) };
       }
       if (c.kind === "held-key") {
         const a = { native_suitable: true, fill_type: "Select Borrow", swell_factor: 1.3, shrink_factor: 1.1 };

@@ -9,6 +9,7 @@
 //   3. Changing a factor as well is a Calculate again.
 //   4. Fill follows its delivery (D-900): A16 and A17, and the haul-road water line only from 1,000 ft.
 //   5. A typed share splits a page's fill (D-901), the lines add to it, and blank goes back to the cut lines.
+//   6. The Calculate keeps the site's figures (D-918).
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -139,6 +140,17 @@ await run("c44-fill-by-delivery", [
       await dialog.waitFor({ state: "detached" });
       await waitFor(async () => (await all()).map((l) => l.name).join() === "Fill", "the trucks' fill alone", 20000, 500);
       return `${whole.toFixed(2)} CCY, 40 % pushed; back to the cut lines`;
+    },
+  },
+  {
+    title: "D-918: the Calculate keeps the site's figures: a pocket's volume, area and depth",
+    run: async () => {
+      const all = (await apiCall(token, "GET", `${g.earthwork}/result`)).body;
+      const stored = all.map((r) => r.result?.figures).find((f) => f?.pockets.some((p) => p.kind === "cut"));
+      expect(stored, "no figures stored");
+      const cut = stored.pockets.find((p) => p.kind === "cut");
+      expect(cut.cy > 0 && cut.areaSF > 0 && cut.deepestFt > 0 && cut.avgFt > 0 && cut.slopeMedianPct >= 0, JSON.stringify(cut));
+      return `${Math.round(cut.cy)} CY, ${Math.round(cut.areaSF)} SF, ${cut.avgFt.toFixed(2)} ft`;
     },
   },
 ]);

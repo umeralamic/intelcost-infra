@@ -1027,6 +1027,9 @@ export const EARTHWORK_CASES = [
   { id: "q31-joints-per-day", kind: "fusion-joints", keys: ["hdpe_ips_dr11:8", "hdpe_ips_dr11:12", "hdpe_ips_dr11:24"], expect: { "hdpe_ips_dr11:8": 27.1, "hdpe_ips_dr11:12": 18.2, "hdpe_ips_dr11:24": 11.1, inside: true } },
   // A gasketed pipe buys no fusion.
   { id: "m8-no-fusion", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape" } },
+  // Site figures (D-918): a 100 × 100 ft cut 10 ft deep, its fill 300 ft east, 5 ft down at the centroids (105 to 95): -3.33 %.
+  // A second cut on ground at 40 % reads 40 % and all steep; a 1 ft sliver of 3.7 CY is no pocket.
+  { id: "d918-pockets", kind: "site-figures", expect: { pockets: 3, cy: 3703.7, avg: 10, deepest: 10, dist: 300, grade: -3.33, slope: 40, steep: 100 } },
   // D-899: the method is out of the key; a result saved with choices keeps them as its held key, whatever the method is now.
   { id: "d899-held-key", kind: "held-key", expect: { method: true, held: true, differs: true } },
   // Every structure type's parts (M4b): 6 VF, 2 ft of riser over a 4 ft box.
