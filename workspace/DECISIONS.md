@@ -25714,3 +25714,12 @@ blocks, a first cut of 13.
 - **Grades** A to F load and show on the component. Sources stay in `source_internal`; the release is "Q4 2026".
 - **The 14 core gaps** have no row and read Missing price.
 - **Rock takes the clean tipping fee.** Rock is inert; the unsuitable fee is a C&D proxy. Unsuitable soil keeps it.
+
+## D-917: F38 M11: IntelCost's quarterly price releases
+
+**Status:** the founder's plan, §3.5, 2026-10-31.
+
+- **Developer › Material prices,** platform admins only: load, preview with every price over ±15 % flagged, a tick per flag, Publish. A quarter publishes once. Sources are never served.
+- **Saved components never move by themselves.** The estimate reads "IntelCost prices updated to <release>: Review", old to new with each line's total, Update and Update all. Company prices are never touched.
+- **Stale:** a default more than two quarters behind the latest reads "may be stale" in Needs attention.
+- **A key left out** of a new set keeps its last price.
