@@ -839,3 +839,6 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-11-01 | D-935, D-936 the saved queue's answers, guests get live data, stale guard, f6-a alone, built apps default | api `realtime/service.py`, `connection.py`; app `core/realtime/provider.tsx`, `ProjectTakeoff.tsx`; infra `fx-suite.sh`, `fx-suite-patch.mjs`; c06 |
 | 2026-11-01 | D-937 markup Properties Blocks 2 to 5 | app `features/takeoff/markup/*`, `Toolbar.tsx`, `printSheets.ts`; api `markup/styles.py`, `auth/schemas.py` |
 | 2026-11-01 | D-938 Group by Assembly by run and structure | app `lib/estimate/assemblyGroups.ts`, `costing.ts`, `EstimatingView.tsx`, `utilities/calculate.ts`; api `takeoff/{routes,schemas}.py` |
+| 2026-11-01 | D-933 bond correction: subtotal ÷ (1 − bond %); every saved bid with a bond moves at its next open (Q81) | api `estimate/bid.py` |
+| 2026-11-01 | D-940 price answers: off-road diesel, EIA refresh, push by swell, Compact 8 t, gravity pipe, 1.35 t/LCY | api `equipment/*`, `materials/loose.py`, `worker/tasks/fuel.py`, d934; app `equipment/{cost,resolve}.ts`, `utilities/materials.ts` |
+| 2026-11-01 | D-941 sales tax state plus average local | api `estimate/{sales_tax,bid}.py` |

@@ -99,6 +99,7 @@ services:
     environment:
       <<: *mail-guard
       ENVIRONMENT: local
+      # EIA_API_KEY comes through the env_file above (D-940): an entry here would blank it.
       DEBUG: "true"
       # The bytecode written in the container, not beside the mounted code (D-836): a restart reads it again.
       PYTHONDONTWRITEBYTECODE: ""
@@ -202,6 +203,7 @@ services:
     environment:
       <<: *mail-guard
       ENVIRONMENT: local
+      # EIA_API_KEY comes through the env_file above (D-940): an entry here would blank it.
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real

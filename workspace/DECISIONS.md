@@ -25901,3 +25901,18 @@ Replaces D-930's grouping by system (the founder's answer to Q69). A utility run
 ## D-939: Assembly rows in the report's order; the panel holds eight levels
 
 Founder, 2026-11-01. Group by Assembly lists the site features first in the grading report's order, then the runs, the structures, the other items and No assembly, so the features read together rather than alphabetically among 35 rows. The Estimating side panel is `w-72` with a tighter Show levels row, so all eight levels sit on one line.
+
+## D-940: The founder's answers on price (Q61, Q64, Q65, Q75, Q77, Q78, Compact cut and load)
+
+- **Q61:** Structural Fill takes engineered fill's key, labelled "priced as engineered fill". Fly ash stays Missing. **The release has no engineered fill price**, so it stays Missing: see Q88.
+- **Q64:** the weekly refresh reads `EIA_API_KEY` from the api's and worker's environment, through the git-ignored `intelcost-infra/.env.ai`, not an `environment:` entry, which would blank it. No key: nothing happens and the snapshot stands. httpx's URL log is silenced, because the key is in the URL.
+- **Q65:** `fuel_price_diesel` is off-road diesel: EIA's on-highway price less the federal 24.4 ¢ and the state's excise (FHWA MF-121T, 2023 reporting period, created July 2024). `fuel_price_diesel_road` keeps on-highway for On-road dump trucks and On-highway water trucks. Each field says its basis.
+- **Q75:** aggregate base and rock 1.35 t/LCY: Caterpillar's earthwork volumes table, crushed stone about 2,700 lb/yd³ loose. It was read in Caterpillar's published article, not the handbook itself. Rock's tipping tons use it; soil's stay 1.28.
+- **Q77:** the dozer push's loose-yard rate reads as bank yards through the activity soil's loose-to-bank factor, Standard and Compact alike.
+- **Q78:** Compact gravity pipe (A12C) takes A12's lowest default, 100 LF/day. A18C and A19C keep the catalog's 300.
+- **Compact cut and load:** A1C and A2C load with EX-MIDI-8T, EW-CUTLOAD, 444 BCY/day. Minis stay for trenching and tight access. Migration d934 changes national rows; a workspace's adopted rows do not move.
+
+## D-941: Sales tax: state plus average local; the ZIP file stays out; the bond correction
+
+- **Q82:** the bid summary reads the state rate plus the state's average local rate (Tax Foundation, January 1, 2026), and says so. The founder's ZIP file (`docs/reference/Sales Tax.xlsx`) is not loaded: the publisher's terms for it could not be read, and its rates date from 2024. **Open:** keeping rates current, e.g. the Streamlined Sales Tax states' free rate and boundary files.
+- **Q81:** no note on projects. The bond correction (subtotal ÷ (1 − bond %), D-933) is recorded in `docs/tasks/SINCE_ARCHIVE.md`, the running list of changes; the app has no change log of its own.
