@@ -25799,3 +25799,10 @@ blocks, a first cut of 13.
 - **Q36:** the 2 ft base stays priced as the 4 ft, and the component says so.
 - **Q47:** scraper average speeds, workspace settings marked the founder's provisional figures: to 1,500 ft 8 mph loaded and 12 empty, longer 12 and 18. A company's typed haul speeds still win.
 - **Q49:** open: trucks on site take no haul distance.
+
+## D-927: A material without a price fills itself
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **A component without a price takes one the moment one exists,** with no Calculate or Update: there is no saved price to protect. A saved workspace price reaches every project waiting on the key; a project price reaches its project; a published release is taken at the project's next read, so a release writes across no project. A price a person blanked, and a person's own component, are left alone.
+- **A utility or site line Calculate has not written since materials exist reads "Calculate to add materials",** on the line and in Needs attention. `takeoff_item.earthwork_materials_at` records the last write.

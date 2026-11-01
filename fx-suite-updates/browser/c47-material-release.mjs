@@ -5,7 +5,7 @@
 // The world: one throwaway project with a line priced from Q4 2026, its owner made platform staff in the database step.
 //   1. Developer › Material prices loads a sheet: the preview lists added and changed, by family, and flags over ±15 %;
 //      Publish stays off until each flag is ticked; a release is published once.
-//   2. Q1 2027 published: a saved component does not move; the estimate reads "IntelCost prices updated to Q1 2027: Review",
+//   2. Q1 2027 published: a saved component does not move; one without a price takes the new key's at the next read (D-927); the estimate reads "IntelCost prices updated to Q1 2027: Review",
 //      with old and new and each line's total before and after; Update takes one, the rest stay.
 //   3. A release more than two quarters on: a Q4 2026 price reads may be stale in Needs attention.
 // The test releases are deleted at the end: the fx database is shared.
@@ -22,6 +22,7 @@ const g = grading(token, base, project);
 const comps = `${base}/${project.uuid}/estimate/components`;
 const STONE = "stone:_57_stone";
 const TAPE = "warning_tape";
+const NEW = "fx:new_material";
 let sheet;
 let was;
 
@@ -38,11 +39,11 @@ await run("c47-material-release", [
       await clean();
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["R-1"]);
       const m = (key, unit) => ({ key, mat_key: key, name: key, qty_formula: "QTY", unit, wastage_pct: 0, round_to: null, round_scope: "line", sell_unit: unit });
-      const put = await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:sanitary", role: "utility_bedding_pipe_zone", name: "Pipe bedding", quantity: 100, unit: "CCY", variant: "a", work_scope: "site_utilities.sanitary", work_kind: null, utility: "sanitary", folder: "utilities", materials: [m(STONE, "TON"), m(TAPE, "ROLL")] }] });
+      const put = await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:sanitary", role: "utility_bedding_pipe_zone", name: "Pipe bedding", quantity: 100, unit: "CCY", variant: "a", work_scope: "site_utilities.sanitary", work_kind: null, utility: "sanitary", folder: "utilities", materials: [m(STONE, "TON"), m(TAPE, "ROLL"), m(NEW, "EA")] }] });
       expect(put.status === 200, `save: ${put.status} ${JSON.stringify(put.body).slice(0, 200)}`);
       const list = (await apiCall(token, "GET", comps)).body;
       was = Object.fromEntries(list.filter((c) => c.mat_key).map((c) => [c.mat_key, Number(c.unit_price)]));
-      expect(was[STONE] > 0 && was[TAPE] > 0, JSON.stringify(was));
+      expect(was[STONE] > 0 && was[TAPE] > 0 && list.find((c) => c.mat_key === NEW)?.unit_price == null, JSON.stringify(was));
       await hostSql(`UPDATE "user" SET is_platform_admin = true WHERE email = '${(await fixtureOwner()).email}'`);
       return `#57 $${was[STONE]}`;
     },
@@ -74,10 +75,12 @@ await run("c47-material-release", [
     },
   },
   {
-    title: "Q1 2027: nothing moved; Review lists old and new with the line's totals; Update takes one",
+    title: "Q1 2027: nothing saved moved, a component without a price took it; Review lists old and new with the line's totals; Update takes one",
     run: async ({ page }) => {
       const now = async () => Object.fromEntries((await apiCall(token, "GET", comps)).body.filter((c) => c.mat_key).map((c) => [c.mat_key, Number(c.unit_price)]));
       expect((await now())[STONE] === was[STONE], "a saved price moved");
+      // D-927: no saved price to protect: the key the release added is priced at the next read, no Calculate.
+      expect((await now())[NEW] > 0, "a component without a price did not take the release's");
       await openSheet(page, project, sheet, "estimating");
       const banner = page.locator("[data-release-review]");
       await banner.waitFor({ timeout: 30000 });
