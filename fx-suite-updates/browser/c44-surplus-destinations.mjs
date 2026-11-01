@@ -27,9 +27,12 @@ async function calculateWith(page, to, ok) {
   const dialog = page.getByRole("dialog", { name: "Earthwork assumptions" });
   await dialog.waitFor();
   await dialog.locator('[data-surplus-row="soil"] select').selectOption(to);
-  await dialog.getByRole("button", { name: "Calculate", exact: true }).click();
+  // A change of choices alone reads Apply and writes the lines from the stored result (D-899); the first run calculates.
+  const apply = dialog.getByRole("button", { name: "Apply", exact: true });
+  const applied = await apply.isVisible();
+  await (applied ? apply : dialog.getByRole("button", { name: "Calculate", exact: true })).click();
   await dialog.waitFor({ state: "detached" });
-  await page.getByRole("dialog", { name: "Earthwork Volumes" }).locator("[data-volume-totals]").waitFor({ timeout: 60000 });
+  if (!applied) await page.getByRole("dialog", { name: "Earthwork Volumes" }).locator("[data-volume-totals]").waitFor({ timeout: 60000 });
   // The panel opens before the lines are saved: the last run's are still live until then.
   let last = [];
   return waitFor(

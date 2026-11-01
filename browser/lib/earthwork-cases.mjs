@@ -976,6 +976,8 @@ export const EARTHWORK_CASES = [
   // Thrust blocks: a zero CY to type, one per angle and one for the tee.
   { id: "m4a-thrust", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 1 }], tees: 1 } }, expect: { "thrust:90:8:qty": "0.59", "thrust:90:8:unit": "CY", "thrust:tee:8:unit": "CY", "thrust:tee:8:qty": "0.42" } },
   // 12 in 90: T = 2 × 150 × 113.1 × sin 45 = 23,994 lb; × 1.5 ÷ 2,000 = 18 SF (12.0 at Sf 1.0, the research's table); × 2 ft ÷ 27.
+  // D-926: a 16 in block is 3 ft deep: 12" is 2 ft. 22.5° at 16 in: 2 x 150 x 201.06 x sin 11.25° = 11,767 lb; x 1.5 / 2,000 = 8.83 SF; x 3 / 27 = 0.98.
+  { id: "d926-thrust-depth", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:16|1|0-6", name: "16 in water", utility: "water", fittings: { bends: [{ angle: 22.5, count: 1 }], tees: 0 } }, expect: { "thrust:22.5:16:qty": "0.98" } },
   { id: "q19-thrust-table", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:12|1|0-6", name: '12" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 2 }], tees: 0 } }, expect: { "thrust:90:12:qty": "2.66" } },
   // A bend counted: the allowance is 10 %; none counted, 20 % (D-915).
   { id: "q21-allowance-counted", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 45, count: 1 }], tees: 0 } }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 10 %" } },
@@ -1005,7 +1007,7 @@ export const EARTHWORK_CASES = [
   // Cast in place, a 4 x 4 box, 6 VF, 6 in wall, 12 in slab: footprint 5 x 5 = 25 SF. Base 25, walls at mid-wall 18 x 0.5 x 6 = 54, top 25 x 8/12 = 16.67: 95.67 CF = 3.543 CY; rebar 354.3 lb; forms (16 + 20) x 6 = 216 SFCA.
   { id: "m4b-cast", kind: "structure-parts", input: { structureType: "sanitary_manhole", shape: "round", diaIn: 48, lengthFt: null, widthFt: null, wallIn: 5, baseSlabIn: 8, construction: "precast", pricing: "parts", inletKind: null, hood: false, top: null, riserMode: "per_vf", pipesIn: [8, 8], structureType: "junction_box", shape: "rect", diaIn: null, lengthFt: 4, widthFt: 4, wallIn: 6, baseSlabIn: 12, construction: "cast_in_place", vf: 6, pipesIn: [] }, expect: { "cip:concrete": 3.5432098765432097, "cip:rebar": 354.320987654321, "cip:forms": 216 } },
   // --- F38 M5 (D-910): what a site line buys ---
-  { id: "m5-borrow", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import" }, expect: { keys: "borrow", "borrow:qty": "QTY * 1.35", "borrow:unit": "TON" } },
+  { id: "m5-borrow", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import" }, expect: { keys: "borrow", "borrow:qty": "QTY * 1.28", "borrow:unit": "TON" } },
   { id: "m5-tipping-clean", kind: "site-materials", input: { role: "soil_export", unit: "LCY", name: "Soil Export" }, expect: { keys: "tipping:clean" } },
   { id: "m5-tipping-unsuitable", kind: "site-materials", input: { role: "soil_export", unit: "LCY", variant: "unsuitable:Layer 2", name: "Unsuitable Export" }, expect: { keys: "tipping:unsuitable" } },
   // Rock is inert: the clean fee (D-916).
@@ -1018,7 +1020,7 @@ export const EARTHWORK_CASES = [
   { id: "m5-flowable", kind: "site-materials", input: { role: "replacement_fill", unit: "CCY", name: "Replacement fill", material: "Flowable Fill" }, expect: { keys: "" } },
   { id: "m5-agent", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Lime (5%, 110 pcf)" }, expect: { keys: "agent:lime", "agent:lime:waste": 3 } },
   { id: "m5-fabric", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "geogrid", name: "Geogrid, 10% overlap" }, expect: { keys: "geogrid:site", "geogrid:site:qty": "QTY / 500", "geogrid:site:unit": "ROLL" } },
-  { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "borrow:qty": "QTY / 0.764554857984 * 1.35" } },
+  { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "borrow:qty": "QTY / 0.764554857984 * 1.28" } },
   // --- F38 M8 (D-912): fusion hours from joints: 15.5 min per inch of wall, 40 ft joints ---
   // 8" DR 11: wall 0.784 in (8.625 / 11): 12.152 min a joint.
   // The machine is on A19's tiers, rented (D-914): the pipe line buys none, and carries its joint for the check.

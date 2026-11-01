@@ -162,6 +162,9 @@ services:
       sh -c "(python -m app.core.at_head || alembic upgrade head) &&
              exec watchfiles --filter python --sigint-timeout 10 'uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5' /srv/app /srv/main.py"
     volumes:
+      # The bytecode kept across a recreate as well as a restart (D-925): each fresh /tmp/pyc compiled the
+      # app and its libraries again in each of three workers.
+      - api-pyc:/tmp/pyc
       # The app is the api's top-level main.py; app/ is everything it mounts.
       - ../intelcost-app-fastapi/main.py:/srv/main.py
       - ../intelcost-app-fastapi/app:/srv/app
@@ -445,6 +448,7 @@ services:
       - ../intelcost-app-fastapi/pyproject.toml:/srv/pyproject.toml:ro
       - ../intelcost-app-fastapi/scripts:/srv/scripts
       - ./fx-suite/drives:/srv/drives:ro
+      - api-pyc:/tmp/pyc
 
   # Window B's api for the realtime fixtures, on the fx database; it runs no migrations.
   api-fx-b:
@@ -684,6 +688,7 @@ services:
 # Dependency and build caches only, never data. `down -v` drops them with everything
 # else, and the next start reinstalls.
 volumes:
+  api-pyc:
   worker-work:
   marketing-node-modules:
   marketing-next:

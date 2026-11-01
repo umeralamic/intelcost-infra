@@ -1,0 +1,24 @@
+bench-up run=1 container_ms=14785 health_ms=71647 ok=1 vm_available_mib=5071
+bench-up run=2 container_ms=17792 health_ms=81191 ok=1 vm_available_mib=5087
+bench-up run=3 container_ms=16316 health_ms=70176 ok=1 vm_available_mib=4953
+idle run=1 container_ms=4909 health_ms=31840 ok=1 vm_available_mib=12783
+idle run=2 container_ms=1396 health_ms=31647 ok=1 vm_available_mib=12671
+idle run=3 container_ms=1385 health_ms=28299 ok=1 vm_available_mib=12680
+bench-up-cold run=1 container_ms=17067 health_ms=67198 ok=1 vm_available_mib=5664
+real recreate of api-fx: 73 s
+bench-up-before-volume run=1 container_ms=6904 health_ms=69585 ok=1 vm_available_mib=5672
+bench-up-before-volume run=2 container_ms=15723 health_ms=74679 ok=1 vm_available_mib=5724
+bench-up-before-volume run=3 container_ms=17000 health_ms=73008 ok=1 vm_available_mib=5721
+bench-up-before-volume run=1 container_ms=19005 health_ms=75602 ok=1 vm_available_mib=5881
+bench-up-before-volume run=2 container_ms=18343 health_ms=76168 ok=1 vm_available_mib=5828
+bench-up-before-volume run=3 container_ms=17444 health_ms=74772 ok=1 vm_available_mib=5907
+real recreate before volume: 86 s
+bench-up-warm run=1 container_ms=13867 health_ms=40685 ok=1 vm_available_mib=6385
+bench-up-warm run=2 container_ms=24162 health_ms=50916 ok=1 vm_available_mib=6328
+bench-up-warm run=3 container_ms=6657 health_ms=33337 ok=1 vm_available_mib=6316
+real recreate warm: 58 s
+load-warm run=1 container_ms=20270 health_ms=74097 ok=1 vm_available_mib=4730
+load-warm run=2 container_ms=21505 health_ms=66584 ok=1 vm_available_mib=4619
+load-cold run=1 container_ms=15998 health_ms=158951 ok=1 vm_available_mib=4618
+load-cold run=2 container_ms=17280 health_ms=150340 ok=1 vm_available_mib=3883
+load-warm run=1 container_ms=17385 health_ms=83633 ok=1 vm_available_mib=4694

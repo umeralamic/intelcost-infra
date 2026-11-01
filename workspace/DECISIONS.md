@@ -25779,3 +25779,23 @@ blocks, a first cut of 13.
 **Status:** the founder's plan, 2026-11-01.
 
 - **The workbook gains a Methods sheet.** The Results rows read the result's own system: the figures stay stored in CY and feet.
+
+## D-925: The api under a release's load
+
+**Status:** the founder's instruction, 2026-11-01.
+
+- **Every run keeps the stack's evidence** (`fx-capture.sh`): each api, worker and app log, Docker's events, /health changes, memory every 25 fixtures, in the run's own folder.
+- **Bytecode survives a recreate:** a named volume `api-pyc` at `/tmp/pyc`. A recreate was 150 to 159 s under load, 67 to 84 s with it.
+- **f8-s3's limit is 120 s**, raised because the idle start is fine and the limit left no margin under load.
+- **No statement of every row on the loop.** The classification seed compiles one row; Stripe's client is built at start.
+
+## D-926: The founder's answers to the 2026-11-01 report
+
+**Status:** the founder, 2026-11-01.
+
+- **Q26:** imported soil sold by the ton takes 1.28 t/LCY (Caterpillar Performance Handbook, earth dry packed, 2,550 lb/LCY), not 1.35.
+- **Sand 110 pcf** is the founder's provisional figure: no source found.
+- **Q34:** thrust block depth behind the bearing face 2 ft up to 12 in, 3 ft for 14 to 24 in, editable, the founder's provisional figures. Kept in the project's thrust table under `depth:small` and `depth:large`.
+- **Q36:** the 2 ft base stays priced as the 4 ft, and the component says so.
+- **Q47:** scraper average speeds, workspace settings marked the founder's provisional figures: to 1,500 ft 8 mph loaded and 12 empty, longer 12 and 18. A company's typed haul speeds still win.
+- **Q49:** open: trucks on site take no haul distance.

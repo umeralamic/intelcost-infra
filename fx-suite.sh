@@ -94,6 +94,14 @@ REGISTRY_RE='load metadata for|resolve image config|Pulling|pulling from|Image .
 failed_in() { grep -h " failed: " "$@" | sed 's/.* failed: //' | tr ' ' '\n' | grep -v '^$' | sort -u; }
 tail_line() { grep -E "^(all [0-9]+ passed|[0-9]+ of [0-9]+ failed)" "$1" | tail -1; }
 
+# The stack's logs, events, health and memory kept in the run's own folder (fx-capture.sh). A release
+# starts it once; a `run` inside a release finds it running.
+capture() {
+  [ -n "${FX_CAPTURE_DIR:-}" ] && return 0
+  export FX_CAPTURE_DIR=$1
+  ./fx-capture.sh "$FX_CAPTURE_DIR" "$$" >/dev/null 2>&1 &
+}
+
 case "${1:-}" in
   setup)
     rm -rf fx-suite && mkdir fx-suite
@@ -136,6 +144,7 @@ case "${1:-}" in
   run)
     shift
     check || { echo "The fx stack is not isolated: nothing was run."; exit 1; }
+    capture "fx-suite/.regress/capture-$(date +%Y%m%d-%H%M%S)"
     # Both fx apps' dev servers compile on their first page: loaded once here, so a fixture's 30 s
     # page load meets a warm server, as on the bench.
     docker compose --profile fx run --rm ${FX_OFFLINE:+--pull never} browser-fx node --input-type=module -e "
@@ -193,6 +202,7 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     "$0" refresh
     out="fx-suite/.regress/release-$(date +%Y%m%d-%H%M)"
     mkdir -p "$out"
+    capture "$out/capture"
     # 0. Everything built and pulled first (D-841); from here on no step builds, pulls or resolves an image.
     "$0" prepare 2>&1 | tee "$out/0-prepare.log" | tail -1
     [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "release: prepare failed (see $out/0-prepare.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
