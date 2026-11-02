@@ -1,0 +1,32 @@
+=== f8-s5 03:53:47
+exit 0
+end 03:56:41
+PASS  1. AC1: one committed change reaches both windows, on two api processes, once each
+1/1 passed
+PASS  AC2: a publish registered on a transaction that fails never arrives; a committed one does
+1/1 passed
+PASS  1. AC3: Redis stops for 10 s: nothing crashes, sockets stay open, writes still succeed, and the next event after it returns reaches both windows
+1/1 passed
+/intelcost-bench-redis-1 running healthy
+/intelcost-bench-minio-1 running healthy
+PONG
+=== f4-s27 03:56:43
+exit 0
+end 04:00:41
+      PASS  1. S26 AC2 — aged 31 days: "at the next daily purge"; aged 5 days: "in 25 days"
+      1/1 passed
+PASS  4. AC3: a dry run deletes nothing and logs dry_run
+      ran   dry run: {'retried': 0, 'retry_failed': 0, 'purged': 0, 'purge_failed': 0, 'would_purge': 1, 'files_cleared': 0, 'files_failed': 0}
+PASS  5. AC2: storage down: rows gone, failure logged
+      ran   purge: {'retried': 0, 'retry_failed': 0, 'purged': 1, 'purge_failed': 1, 'would_purge': 0, 'files_cleared': 0, 'files_failed': 0}
+PASS  6. AC2: the failure left the objects in place
+PASS  7. AC1/AC2: storage back, run again: pass 1 clears it, 0 failed
+      ran   purge: {'retried': 1, 'retry_failed': 0, 'purged': 0, 'purge_failed': 0, 'would_purge': 0, 'files_cleared': 0, 'files_failed': 0}
+PASS  8. after: Trash tab and Activity
+      PASS  1. Old trash is off the Trash tab, Recent trash stays, and Activity names the nightly job
+      1/1 passed
+PASS  9. AC4: beat is up with the purge on its schedule
+9/9 passed
+/intelcost-bench-redis-1 running healthy
+/intelcost-bench-minio-1 running healthy
+PONG

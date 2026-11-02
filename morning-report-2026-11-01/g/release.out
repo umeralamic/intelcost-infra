@@ -1,0 +1,235 @@
+fx-suite patch: 10 files retargeted at the fx stack; 2 fixtures skipped
+  skip f8-s5: stops Redis, which the running bench shares
+  skip f4-s27: stops MinIO, which the running bench shares
+prepare: every image built or present
+release: 157 fixtures on the built apps, 7 on the dev servers (f3-s1 f3-s13 f4-s2 f5-s3 f6-s4 f7-a r1-raster-text)
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 1 s
+warm http://localhost:5177 in 1 s
+157 fixtures (named): 145 in parallel, 3 at a time; then 12 one at a time
+
+r5-drags        196s  10/10 passed
+f8-s13          234s  5/5 passed
+c48-saved-sections  166s  7/7 passed
+c44-fill-by-delivery  279s  7/7 passed
+c32-site-typed  183s  5/5 passed
+c46-gps-machine  118s  5/5 passed
+f4-s7           235s  7/7 passed
+c12-item-model  171s  10/10 passed
+c45-cut-method  154s  5/5 passed
+f4-s17          163s  10/10 passed
+m6-position    1208s  4/5 passed
+                    FAIL  2. L (POS-L landscape 36x24): references exact at every zoom to 30×, with markup top 0.22 and right 0.15 past the page; line and count stored alike at Fit and the deepest zoom
+                          TimeoutError: locator.waitFor: Timeout 10000ms exceeded. / Call log: / - waiting for locator('[data-measurement-dialog="create"]') to be detached /  [after 212.7s]
+c17-earthwork   138s  8/8 passed
+f6-c            157s  10/10 passed
+f8-s14          157s  4/4 passed
+f6-b            153s  9/9 passed
+rv-rows         255s  8/8 passed
+f7-b            143s  7/7 passed
+f5-s14          137s  6/6 passed
+f7-c             89s  5/5 passed
+c42-stitch-sheets  108s  6/6 passed
+f7-g             62s  4/4 passed
+f5-s18          140s  4/4 passed
+f5-s6           118s  6/6 passed
+f4-dialogs      138s  8/8 passed
+c14-format       88s  4/4 passed
+c30-billing     154s  7/7 passed
+c15-reports     127s  5/5 passed
+f4-s5           120s  7/7 passed
+f5-s16           99s  6/6 passed
+c45-materials   177s  12/12 passed
+p20a            113s  8/8 passed
+c39-one-tag-while-drawing  129s  4/4 passed
+n3-twenty-loads 1837s  2/3 passed
+                    FAIL  1. 20 uploads and Loads in a row on a slow network, a reload mid-prepare: each open sheet shows its image within 5 s of the worker, never "could not be prepared"
+                          TimeoutError: locator.waitFor: Timeout 60000ms exceeded. / Call log: / - waiting for locator('[data-sheet-row="d5677437-6b41-4588-8af1-b40568fa1eb0"]') to be visible /  [after 168.4s]
+f8-s15          116s  6/6 passed
+f7-i            111s  5/5 passed
+c21-time        155s  6/6 passed
+f6-d            137s  9/9 passed
+c34-my-equipment  112s  7/7 passed
+f7-h            161s  8/8 passed
+f9-estimating   216s  12/12 passed
+c20-forum       224s  4/5 passed
+                    FAIL  1. post: A's New Post in Q&A with a PNG image and an MP4 video, published; the post shows both and the api holds two media
+                          posted with the image only (1 media): the video (0 bytes, video/mp4;codecs=vp9) was not inserted; the page said: This video can't be played in the browser. Re-export as MP4 (H.264 video + AAC audio). [after 82.8s]
+c35-equipment-library   86s  5/5 passed
+f3-s7           102s  6/6 passed
+f5-s9           110s  2/2 passed
+p19             128s  2/2 passed
+c05-calculated-lines  126s  7/7 passed
+f7-e            130s  7/7 passed
+c22-takeoff-first  151s  5/5 passed
+f3-s6           100s  8/8 passed
+c10-two-trees   154s  6/6 passed
+f6-e            156s  3/3 passed
+c40-delete-protection  119s  6/6 passed
+f4-s4           134s  9/9 passed
+c36-earthwork-link  152s  6/6 passed
+c47-gps-field   153s  5/5 passed
+f5-s13          114s  7/7 passed
+c41-assignee-scope  135s  5/5 passed
+c47-material-release  155s  6/6 passed
+f4-s10          122s  5/5 passed
+f8-s6           105s  1/1 passed
+f8-s9           121s  5/5 passed
+c43-earthwork-assumptions  117s  4/4 passed
+f4-s3           114s  11/11 passed
+f5-s7            79s  3/3 passed
+c11-rotate      108s  5/5 passed
+f4-s18           90s  4/4 passed
+c03-duplicate   113s  5/5 passed
+f4-s26          113s  8/8 passed
+f5-s4           104s  5/5 passed
+c31-wage        168s  6/6 passed
+f5-s12           84s  4/4 passed
+c46-proofs      117s  4/4 passed
+f5-s5            82s  5/5 passed
+f4-s21          103s  5/5 passed
+f5-d51           88s  5/5 passed
+f8-s16          133s  4/4 passed
+c06-copied-earthwork  142s  6/6 passed
+c13-canvas-tools  142s  5/5 passed
+f4-s11           99s  5/5 passed
+f3-s3            71s  3/3 passed
+f5-s8            88s  4/4 passed
+f3-s2            67s  5/5 passed
+f5-s10           91s  5/5 passed
+f8-s11           75s  4/4 passed
+f7-d             77s  4/4 passed
+n4-ocr-scale     83s  2/2 passed
+f9-exports      120s  4/4 passed
+c44-surplus-destinations  120s  5/5 passed
+n11-undo-queue   77s  2/2 passed
+f4-s14           66s  4/4 passed
+f3-s4            78s  4/4 passed
+f4-s24           90s  6/6 passed
+f4-s9            79s  5/5 passed
+f5-sheet-items  114s  5/5 passed
+d37-links        82s  6/6 passed
+f7-j             83s  3/3 passed
+f8-s7            81s  3/3 passed
+c28-double-click   86s  3/3 passed
+f7-f             88s  3/3 passed
+n2-tick-before-sizes   65s  3/3 passed
+c37-wage-roles   43s  3/3 passed
+f3-s9            69s  7/7 passed
+c38-components-assemblies   92s  5/5 passed
+c19-auto-count   71s  3/3 passed
+f2-s14           65s  4/4 passed
+f4-s23           67s  4/4 passed
+f5-scale-button   88s  4/4 passed
+f4-s16           65s  1/1 passed
+f2-s5            65s  9/9 passed
+f4-s19           88s  2/2 passed
+f4-s6            61s  3/3 passed
+c51-bid-defaults   38s  3/3 passed
+c33-invitations   55s  4/4 passed
+f2-s1b           65s  5/5 passed
+f3-s5            65s  5/5 passed
+f4-s1            68s  9/9 passed
+f2-s10           57s  6/6 passed
+c23-folders-on-load   59s  3/3 passed
+f2-s6            40s  6/6 passed
+f5-s1            67s  7/7 passed
+f3-s11           65s  4/4 passed
+f2-s4b           67s  6/6 passed
+f4-s20           62s  3/3 passed
+f3-s8            63s  4/4 passed
+f8-s10           65s  3/3 passed
+f8-s4            61s  4/4 passed
+c16-bid-formulas   57s  3/3 passed
+f3-s10           61s  4/4 passed
+f2-s9            50s  6/6 passed
+f4-s8            49s  3/3 passed
+c49-overlay-match   70s  1/1 passed
+f4-s15           68s  3/3 passed
+f2-close         48s  7/7 passed
+f7-k             67s  2/2 passed
+f2-s12           39s  5/5 passed
+f3-s12           56s  8/8 passed
+f2-s13           58s  5/5 passed
+f2-s7            59s  4/4 passed
+c50-equipment-scale   41s  3/3 passed
+f8-s1            59s  4/4 passed
+d27-uploads      28s  2/2 passed
+f2-s8            50s  6/6 passed
+f2-s2            57s  5/5 passed
+f2-s3            47s  4/4 passed
+c48-fuel-location   46s  4/4 passed
+
+--- one at a time: they stop or restart a service ---
+f5-big          338s  5/6 passed
+                    FAIL  1. D-43: a Load while the set's thumbnails are still being made is not held behind them: the page is drawn in about 10 s
+                          the page took 26119 ms to draw with thumbnails being made [after 39.8s]
+f5-count        114s  1/1 passed
+f5-s11          129s  6/6 passed
+f5-s15           60s  3/4 passed
+                    FAIL  4. AC3: B, on the same sheet, sees the new scale chip and the recomputed quantities within a second, no reload (sheet.calibration.changed)
+                          chip after 330 ms, quantities after 10455 ms [after 16.2s]
+f5-s19           90s  3/4 passed
+                    FAIL  3. 2: A draws a run slowly; B watches it grow tagged with A's short name, then sees it as a saved shape the moment A finishes
+                          after A finished: tag gone 197 ms, saved row 1091 ms [after 20.8s]
+f5-s2           219s  4/4 passed
+f6-a            104s  9/10 passed
+                    FAIL  8. S2 AC4: the api's figure reaches a second window, on the other api process, within 1.5 s, Playwright's polling of up to 500 ms included (B settled)
+                          B took 1511 ms (settled): PATCH replied +140 ms; frames: takeoff.item.changed published +133 at B +141, pong published +? at B +687; reads: item/8165035c-1939-470f-9a5e-74d5d686c9e4 +144 (476 ms), detail/compact +298 (342 ms), detail/compact +681 (157 ms), sheet/items +686 (80 ms); B's long tasks: +932 (56 ms), +1003 (72 ms) [after 8.0s]
+f8-s12          180s  1/1 passed
+f8-s18           94s  3/3 passed
+f8-s2           198s  1/1 passed
+f8-s3           397s  3/3 passed
+f8-s8            74s  1/1 passed
+fx-cleanup     purged 166 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 135m53s (parallel group 101m32s, 3 at a time)
+7 of 157 failed: m6-position n3-twenty-loads c20-forum f5-big f5-s15 f5-s19 f6-a 
+Full output: ./.regress/
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 69 s
+warm http://localhost:5177 in 67 s
+7 fixtures (named): 7 in parallel, 3 at a time; then 0 one at a time
+
+f4-s2           271s  6/6 passed
+f3-s13          271s  5/5 passed
+f5-s3            67s  
+f7-a            414s  5/8 passed
+                    FAIL  6. S1 AC1, AC2: 2 px beside a hairline run selects it, 30 px away does not; inside a square selects it, and so does 3 px outside its edge
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.3s]
+                    --
+                    FAIL  7. S1 AC3: a count mark selects from 10 px off its centre (legacy's 14 px floor) at zoom 1 and zoom 2; 25 px off does not
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.1s]
+                    --
+                    FAIL  8. S3: a viewer sees every measure tool and the item menu's edit entries disabled with the reason; select still works; a hand-written shapes transaction is refused 403
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.0s]
+f3-s1           211s  2/5 passed
+                    FAIL  1. AC1 — nine roles and twenty-five capabilities, the same ones on both sides
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  2. AC2 — all 225 cells: the api's resolved map equals the app's, for every role
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  5. The running app survives the widened enum: the members screen offers nine roles
+                          TimeoutError: page.waitForSelector: Timeout 20000ms exceeded. / Call log: / - waiting for locator('#invite-role') to be visible /  [after 48.9s]
+f6-s4            71s  3/3 passed
+r1-raster-text  182s  1/2 passed
+                    FAIL  1. thin CAD stroke text (0.65 pt strokes): every zoom and pixel ratio within 4 of the reference, no filter
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login", waiting until "load" /  [after 30.0s]
+fx-cleanup     purged 5 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 8m46s (parallel group 8m46s, 3 at a time)
+4 of 7 failed: f5-s3 f7-a f3-s1 r1-raster-text 
+Full output: ./.regress/
+built apps:   7 of 157 failed: m6-position n3-twenty-loads c20-forum f5-big f5-s15 f5-s19 f6-a 
+dev servers:  4 of 7 failed: f5-s3 f7-a f3-s1 r1-raster-text 
+alone, passed (timing): f3-s1 f5-s3 f7-a r1-raster-text c20-forum f5-big f5-s15 f5-s19 f6-a m6-position n3-twenty-loads
+alone, failed (look at): none
+registry after prepare: none reached
+logs: fx-suite/.regress/release-20261101-1808 (one per fixture in fx-suite/.regress)
