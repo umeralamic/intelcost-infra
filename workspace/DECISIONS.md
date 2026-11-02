@@ -25990,3 +25990,22 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 
 - **The three levels stand as built** (D-911, D-744, D-751): a line's production, people and machines, kept through Calculate and tier changes; the project's Equipment settings production per activity; the workspace Equipment library, whose company crews new projects take. A company's own crew is an activity with no starter key: people, machines, a production and its unit (now with LB and ACRE), mapped to any line type at workspace or project level.
 - **Defaults read "IntelCost starting crew"** with no key or source shown; an edited one reads "IntelCost starting crew, changed" and a later release leaves it as it is.
+
+## D-950: Production by job size (starter release 17), the work day and the half-day minimum
+
+**Status:** the founder's queue block 8c, 2026-11-02; choices taken as recommended, recorded as numbered questions.
+
+- **The tier file's figures are per 10-hour day** (`prod_basis_hours = 10`) and the activity no longer fixes its hours: a spread's production is the figure × the project's hours per work day ÷ 10, so an 8-hour project gets 8 hours' production and more days; its hours stay, and rented machines follow the days. The tier is read at the unscaled figure.
+- **What picks the default:** pipe crews (A18, A19, A28, A32) by each run's own length (the line's average run length); structure crews by the project's count (A27 manholes 1 = 0.5/day, 2-5 = 1, 6+ = 2; A61 small boxes 1, 3, 6), a structure deeper than 12 ft at two-thirds; the spread's days are the sum of its lines' own. Area and line items by the spread's quantity.
+- **Each default carries its label:** founder's crew sheet, published production, or founder's provisional figure; sources stay internal.
+- **Not changed:** the earthwork starter's activities (fine grade A11 among them); concrete pavement (the file is in SY of slab, the crews in CY); valve and hydrant (no crew of their own yet).
+- **A crew line is charged at least half the work day per spread,** shown on the line as "Minimum half day" and not flagged; machines keep the rental's one-day minimum.
+
+## D-951: Clearing and grubbing, its own Area feature type
+
+**Status:** the founder's queue block 8b, 2026-11-02; figures are the founder's provisional ones.
+
+- **Density** Not set, None, Light, Medium or Heavy per clearing area; None writes nothing; while a Strip area exists and no choice is made, Needs attention reads "Clearing and grubbing: not set. Choose None if the site needs no clearing."
+- **The acre rate covers brush, undergrowth and grubbing only;** trees are priced per EA by size: estimated at 1 per 200 SF with a 60/30/10 mix (editable, the count typed over), or counted with Tree removal Count features, which turns the estimate off.
+- **Grub depth 12 in; disposal** chip or mulch on site (in the crews), burn where allowed (by hand), or haul off (the earthwork trucks, the C&D tipping fee by the TON).
+- **Crews A55 to A60** (release 15), production by acre (release 17's tiers for heavy). Group by Assembly: Clearing, Trees, Disposal, with $/acre.
