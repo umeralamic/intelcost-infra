@@ -25920,3 +25920,13 @@ Founder, 2026-11-01. Group by Assembly lists the site features first in the grad
 ## D-942: The loop watch names the caller
 
 SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. With the watch on, a `do_orm_execute` hook records each statement's caller from the greenlet's parent, and its mapper, and a stall logs them. It never stringifies a statement: doing so compiles it and broke bulk inserts. `asyncio`'s task list and `gc` do not see the running work from the watcher's thread on Python 3.14. Off unless `LOOP_WATCH_MS` is set.
+
+## D-943: The founder's answers to the last report; paving and fill prices added to Q4 2026
+
+**Status:** the founder's answers, 2026-11-01; mapping and held figures taken as recommended, recorded as numbered questions.
+
+- **Q87, Q90 to Q94:** the taken answers stand. Q93: the founder fixes their own item.
+- **Q88:** `select_fill` at $50.76/TON is withdrawn: one 2022 source, and its $32.00 row was a picked-up price keyed as delivered. The research's picked-up price takes the key, named "Select fill, at the pit". Engineered fill, structural fill and every 36 in structure part stay Missing for supplier quotes. The fill research loads only where the release has no price or the new grade is better; the release's 48 in parts stay.
+- **Q89:** no licence; state plus average local stays. Open: ZIP-level rates from the Streamlined Sales Tax states' free rate and boundary files.
+- **An addition (M11):** Developer › Material prices can add new keys to the latest release. It refuses a set that would change any price, and audits as "added".
+- **Paving and flatwork:** 154 keys added, by D-916's method. The asphalt binder index is reference only and is not loaded. Keys whose raw points differ from the workbook's count, or that moved over 25 % by the method, keep the workbook's national figure.
