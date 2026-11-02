@@ -25970,3 +25970,23 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **Proof roll** is priced by A34 (the sheet's tandem trucks), no longer by hand.
 - **New activities with no line of their own yet** (selectable on any line): water fittings, services, bore pit, pressure testing, castings, sewer services, rock in trench, roof drains, dress-out, scarify, foundation prep, stone base, flatwork, paving (A47 to A54), clearing and trees (A55 to A60, provisional).
 - **Release mechanics:** unedited workspace starter rows take it at their next adoption (D-751); a company's edited row never does.
+
+## D-948: Site Features: Area, Line and Count, with sections and By others
+
+**Status:** the founder's queue block 5 (and the paving crews of block 3), 2026-11-02; choices taken as recommended, recorded as numbered questions.
+
+- **Mode** Area, Line or Count, chosen before drawing and fixed once the shape exists. A Line is a linear item, a Count a count item; neither changes grading or needs a depth.
+- **An Area's section:** layers top to bottom, each with thickness, material and Priced or By others; no default thickness. The layers' total sits beside "Finished grade to subgrade depth" with "Use the section's depth"; short of it, the dialog reads "Layers total X; the section is Y. Add the missing layer as By others, or grading will be Z high." and Save still works.
+- **Lines in their crew's unit,** materials by factor: asphalt by the TON (145 pcf), concrete by the CY (light under 7 in, heavy 7 in and over), sidewalk by the SF buying CY, aggregate by the SY buying TON (140 pcf). Reinforcement by area: bar LF per direction = area × 12 ÷ spacing × mats, laps per stock length, waste; mesh SF with its lap; fiber lb/CY; thickened edge on the perimeter; dowels and tie bars across their joints.
+- **Surface prep** (fine grade subgrade, proof roll, fine grade base, geotextile and geogrid with overlap) lives in the section; Option 2's geosynthetics move there when a section exists.
+- **Curb footprint:** each Line feature's length inside or on the edge of an Area × its footprint width comes off the Area, on by default.
+- **Line:** profile per type with editable dimensions giving CY per LF; machine or hand (forms both faces); mix and waste; base; bars with laps; joints (contraction 10 ft, expansion 100 ft); excavation; backfill behind; subgrade compaction. **Count:** built in place (dimensions per EA) or bought and installed (a bollard's footing). A count type with no crew reads "Crew needed: enter a production".
+- **By others:** the line keeps its quantity, shows "By others" and carries no cost: no crew, no materials, no share of a site spread, never flagged No rate.
+- **Starter release 16** maps the section lines to release 15's crews (asphalt A47, concrete A50/A51, sidewalk A40, aggregate A39, fine grade A11, mesh A52, rebar A53, curb A43/A44, forms A46, backfill A45, ADA ramp A42); a curb's and a count's own parts are included in their crew.
+
+## D-949: Crews at three levels read "IntelCost starting crew"
+
+**Status:** the founder's queue block 4, 2026-11-02.
+
+- **The three levels stand as built** (D-911, D-744, D-751): a line's production, people and machines, kept through Calculate and tier changes; the project's Equipment settings production per activity; the workspace Equipment library, whose company crews new projects take. A company's own crew is an activity with no starter key: people, machines, a production and its unit (now with LB and ACRE), mapped to any line type at workspace or project level.
+- **Defaults read "IntelCost starting crew"** with no key or source shown; an edited one reads "IntelCost starting crew, changed" and a later release leaves it as it is.

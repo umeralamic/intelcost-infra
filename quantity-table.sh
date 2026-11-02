@@ -47,8 +47,9 @@ fi
 # production inside one of its activity's tiers (the workbook's "Tier it lands in", inclusive ends).
 ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.ew_activity)||' '||(select count(*) from eqlib.ew_tier)||' '||(select count(*) from eqlib.ew_tier_machine)||' '||(select count(*) from eqlib.ew_tier_crew)||' '||(select count(*) from eqlib.ew_default)||' '||(select count(*) from eqlib.ew_line_map)||' '||(select count(*) from eqlib.ew_tier_machine where optional = 'Y')||' '||(select count(*) from eqlib.ew_tier where to_per_day is null)||' '||(select count(*) from eqlib.ew_default where qty_to is null)||' '||((select count(*) from eqlib.ew_tier where to_per_day = 0 or from_per_day = 0) + (select count(*) from eqlib.ew_tier_machine where units = 0) + (select count(*) from eqlib.ew_tier_crew where count = 0) + (select count(*) from eqlib.ew_default where prod_per_day = 0 or qty_to = 0))||' '||(select count(*) from eqlib.ew_default d where not exists (select 1 from eqlib.ew_tier t where t.activity_key = d.activity_key and t.tier_no = d.tier_no and d.prod_per_day >= t.from_per_day and (t.to_per_day is null or d.prod_per_day <= t.to_per_day)))")
 # Release 15 (D-947): the founder's crew sheet, paving and clearing crews; A18 and A19 replaced.
-if [ "$ST_COUNTS" != "70 168 426 280 151 52 30 68 70 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 70 168 426 280 151 52 30 68 70 0 0"
+# Release 16 (D-948): a Site Feature section's 14 line types mapped to their crews.
+if [ "$ST_COUNTS" != "70 168 426 280 151 66 30 68 70 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 70 168 426 280 151 66 30 68 70 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(
