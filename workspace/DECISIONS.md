@@ -25951,3 +25951,22 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **The medians** are D-916's generator run again, unchanged otherwise: re-run without the move it reproduces the seed byte for byte.
 - **A correction (M11)** goes to the latest release and changes only prices already in it, each flag ticked. Prices change in place; the audit row ("corrected") keeps every key's before and after. Saved components move only through the estimate's Review.
 - **`select_fill`** stays at Q88's picked-up price (D-943). A delivered key left with no point keeps its last price.
+
+## D-946: Q95's warm-up: the held callers run once before the api serves
+
+**Status:** the founder's Q95 (D-944), 2026-11-02.
+
+- **At startup,** after the routes and the equipment library, each api process opens its pool's connections together and runs the callers G's release held most (`get_project`, the classification usage, the token's user lookup, project scopes, trial caps, the workspace list, shifts, a sheet) once against ids that match nothing. Reads only; `/health` answers after it. About 0.7 s a process.
+- **`WARM_CALLERS=false`** turns it off, only to measure a cold start without it in step 9.
+
+## D-947: Starter release 15: the founder's crew sheet, paving and clearing crews
+
+**Status:** the founder's queue blocks 2, 3 and 8b, 2026-11-02; mappings taken as recommended, recorded as numbered questions.
+
+- **People, machines and production from the sheet; no rate from it.** Machines price from the catalog, people from the Wage Calculator. A machine the sheet runs with no operator of its own carries `crew_runs`: it adds no operator row, so the crew is the sheet's people.
+- **Water main** (A18, A19): under 250 LF 80 LF/day, 250 LF and over 500 LF/day; foreman, 2 laborers, 2 pipelayers, the excavator's operator; 30 t excavator, 2 yd loader, trench roller, plate, pickup. A19 keeps one more person to fuse (D-898).
+- **Gravity runs take their own crews:** storm (A32: 120, 200, 250 LF/day) and sanitary (A28: main only 200 LF/day, the two-hoe 250 LF/day tier). Other gravity kinds keep A12.
+- **Every structure is set by the structure crew** (A27, the sheet's "Storm – per Each", 1 EA/day); its vertical feet, excavation, stone and backfill are included in it, no longer "Included in Pipe crew".
+- **Proof roll** is priced by A34 (the sheet's tandem trucks), no longer by hand.
+- **New activities with no line of their own yet** (selectable on any line): water fittings, services, bore pit, pressure testing, castings, sewer services, rock in trench, roof drains, dress-out, scarify, foundation prep, stone base, flatwork, paving (A47 to A54), clearing and trees (A55 to A60, provisional).
+- **Release mechanics:** unedited workspace starter rows take it at their next adoption (D-751); a company's edited row never does.

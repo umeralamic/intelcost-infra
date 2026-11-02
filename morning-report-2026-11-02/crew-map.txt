@@ -1,0 +1,41 @@
+Water Line - Length = 250- / 250+ -> A18 Pipe crew, pressure (PVC/DI) (excavate, lay, backfill) -> EX-CRAWL-30T, WL-COMPACT-2Y, CP-TRENCH-ROLLER, CP-PLATE-REV, TRK-PU-8808
+Water Line - Length = 250- / 250+ -> A19 Pipe crew, HDPE fused (excavate, fuse, lay, backfill) -> EX-CRAWL-30T, WL-COMPACT-2Y, CP-TRENCH-ROLLER, CP-PLATE-REV, TRK-PU-8808
+Water Line - Per Each -> A22 Water fittings, per each -> EX-CRAWL-30T, WL-COMPACT-2Y, CP-TRENCH-ROLLER, CP-PLATE-REV, TRK-PU-8808
+Water Service -> A23 Water service -> BH-STD-14FT, CP-TRENCH-ROLLER, CP-PLATE-REV, TRK-PU-8808
+Bore Pit - 416 -> A24 Bore pit -> EX-CRAWL-30T, CP-TRENCH-ROLLER, TRK-PU-8808
+Testing Crew -> A25 Pressure testing -> TRK-PU-8808
+Castings -> A26 Castings adjusted -> BH-STD-14FT, TRK-PU-8808
+Storm - per Each -> A27 Structure setting (storm crew, per each) -> EX-CRAWL-30T, WL-COMPACT-2Y, CP-TRENCH-ROLLER, CP-PLATE-REV, CP-SD-84-SM, TRK-PU-8808
+Sewer Line 2Excavat- Main Only / Sewer Line - 2 Hoes - Length -> A28 Pipe crew, sewer main (excavate, lay, backfill) -> EX-CRAWL-30T, WL-COMPACT-2Y, CP-TRENCH-ROLLER, CP-PLATE-REV, CP-SD-84-SM, DZ-CRAWL-D4, TRK-PU-8808, EX-CRAWL-20T, CP-SD-66-SM
+Sewer Line - Services Only -> A29 Sewer service, per each -> EX-CRAWL-30T, CP-TRENCH-ROLLER, CP-PLATE-REV, TRK-PU-8808
+Sewer Line - Trench Rock Truck -> A30 Rock in trench, by truck -> ADT-30T
+Sewer Line - Trench Rock Dozer -> A31 Rock in trench, by dozer -> DZ-CRAWL-D6
+Storm - Length - Slow / Fast / 2 Hoe -> A32 Pipe crew, storm (excavate, lay, backfill) -> EX-CRAWL-30T, WL-COMPACT-2Y, CP-TRENCH-ROLLER, CP-PLATE-REV, CP-SD-66-SM, TRK-PU-8808, EX-CRAWL-20T
+Roof Drainage -> A33 Roof drains -> BH-STD-14FT, CP-TRENCH-ROLLER
+Tandem Truck -> A34 Proof roll -> DT-OP-3AXLE
+Dressout Crew -> A35 Dress-out -> DZ-CRAWL-D6, TRK-PU-8808
+Farm Tractor -> A36 Scarify / tilling -> 
+Foundation Prep -> A37 Foundation prep -> CP-PLATE-REV
+Stone Crew -> A38 Stone base, hauled in -> BH-STD-14FT, GR-12FT-140, CP-SD-84-SM, WT-4000
+Stone Crew Onsite -> A39 Stone base, on site -> BH-STD-14FT, GR-12FT-140, CP-SD-84-SM, WT-4000
+Sidewalk - Hand -> A40 Sidewalk, by hand -> TRK-PU-8808, SS-WHEEL-LARGE, CP-PLATE-REV
+Sidewalk - Rework -> A41 Sidewalk rework -> TRK-PU-8808, SS-WHEEL-LARGE, CP-PLATE-REV, AT-BRK-MINI, DT-OP-3AXLE
+HCR -> A42 ADA ramp -> TRK-PU-8808, SS-WHEEL-LARGE, CP-PLATE-REV
+Curb - Machine -> A43 Curb, by machine -> TRK-PU-8808, CP-PLATE-REV, CN-CURB-MACHINE
+Curb - Hand -> A44 Curb, by hand -> TRK-PU-8808, SS-WHEEL-LARGE, CP-PLATE-REV
+Backfill Curb-SW -> A45 Backfill behind curb -> TRK-PU-8808, EX-CRAWL-17T, SS-WHEEL-LARGE
+Build Forms -> A46 Build forms -> CP-PLATE-REV, CN-SAW-WB-14, BH-STD-14FT, TRK-PU-8808
+founder's figures -> A47 Asphalt paving -> PV-PAVER-AP555, CP-TANDEM-67, SS-WHEEL-LARGE, PV-BROOM-SSL, TRK-PU-8808
+founder's figures -> A48 Tack or prime coat -> PV-DIST-2000
+founder's figures -> A49 Milling, 2 in -> PV-MILL-PM622, PV-SWEEPER-TRUCK
+founder's figures -> A50 Concrete pavement, light duty (5-6 in) -> SS-WHEEL-LARGE, CN-SCREED-VIB-10, CN-SAW-EARLY, TRK-PU-8808
+founder's figures -> A51 Concrete pavement, heavy duty (7-8 in) -> SS-WHEEL-LARGE, CN-SCREED-VIB-10, CN-SAW-EARLY, TRK-PU-8808
+founder's figures -> A52 Wire mesh, placed -> 
+founder's figures -> A53 Rebar, placed -> 
+founder's figures -> A54 Joint sawing -> CN-SAW-EARLY
+founder's provisional figure -> A55 Clearing and grubbing, light -> DZ-CRAWL-D6
+founder's provisional figure -> A56 Clearing and grubbing, medium -> DZ-CRAWL-D6, EX-CRAWL-30T, AT-THUMB-30T, LC-CHIP-8201
+founder's provisional figure -> A57 Clearing and grubbing, heavy -> DZ-CRAWL-D8, EX-CRAWL-30T, AT-THUMB-30T, LC-GRIND-8621, DT-OP-3AXLE
+founder's provisional figure -> A58 Tree removal, 6-12 in -> EX-CRAWL-30T, AT-THUMB-30T
+founder's provisional figure -> A59 Tree removal, 12-24 in -> EX-CRAWL-30T, AT-THUMB-30T
+founder's provisional figure -> A60 Tree removal, over 24 in -> EX-CRAWL-30T, AT-THUMB-30T
