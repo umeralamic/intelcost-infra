@@ -192,6 +192,9 @@ services:
   worker:
     build:
       context: ../intelcost-app-fastapi
+    # watchfiles gives celery 10 s to stop warm (--sigint-timeout 10), the same as compose's own
+    # default; a stop that took the whole 10 s was killed, exit 137 (f5-s2 in the release, D-944).
+    stop_grace_period: 30s
     # Storage and mail from the api's .env, as on the api above. This is the process that
     # sends mail: through the SES relay to the allowlist, to MailHog otherwise (D-279).
     # The AI keys too, as the api's: a scanned sheet's name and scale are read here, as it

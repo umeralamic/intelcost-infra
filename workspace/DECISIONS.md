@@ -25930,3 +25930,24 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **Q89:** no licence; state plus average local stays. Open: ZIP-level rates from the Streamlined Sales Tax states' free rate and boundary files.
 - **An addition (M11):** Developer › Material prices can add new keys to the latest release. It refuses a set that would change any price, and audits as "added".
 - **Paving and flatwork:** 154 keys added, by D-916's method. The asphalt binder index is reference only and is not loaded. Keys whose raw points differ from the workbook's count, or that moved over 25 % by the method, keep the workbook's national figure.
+
+## D-944: The founder's answers on Q95 to Q100
+
+**Status:** the founder's, 2026-11-02.
+
+- **Q98:** the source changed after E0's copy: the founder edited 4df73dc7's site features about 21:00 to 21:50 UTC on 2026-11-01. Confirm it read-only from the project's own history, and keep comparing within the new DUP.
+- **Q99:** every point whose price text says picked up, pickup, FOB, at pit, at plant or at quarry, but is keyed delivered, moves to the FOB key, across every source in the release data. The medians are re-run and published as a correction through M11, with Review showing the moves. Each key that moves is reported, aggregate base and #57 stone first.
+- **Q100:** as loaded.
+- **Q95:** warm the top callers in `g/held-callers.txt` at api startup, before `/health` reports ready. Measure loop holds and the first sign-in, project-open and Estimating times after a cold start, before and after, in step 9's release.
+- **Q96:** accepted for G. Find what started the bench api during the release and stop it before step 9.
+- **Q97:** in step 9, take allocation snapshots of api-fx at the start, at 75 and at 150 fixtures; report the biggest growth by file and line; fix it if the cause is clear and safe.
+- **Also:** find why worker-fx exited 137 at 02:09:56 (which fixture, kill or memory) and why worker-fx-previews exited 1 before the run. Fix if clear.
+
+## D-945: Q99's correction: picked-up points moved to their FOB keys, published in place
+
+**Status:** the founder's Q99 (D-944), 2026-11-02; the reading of "price text" and the mechanism taken as recommended, recorded as Q102 to Q104.
+
+- **Which points move.** A point moves when its own recorded price is the picked-up, plant or pit figure: 9 of the 100 delivered-keyed points whose text names a pickup basis. The other 91 are delivered prices that mention a pickup figure beside them ("FOB destination", "FOB + delivery", a separate pickup column) and stay. A moved point's state joins its FOB key's kept states, so the workbook's point selection does not drop it.
+- **The medians** are D-916's generator run again, unchanged otherwise: re-run without the move it reproduces the seed byte for byte.
+- **A correction (M11)** goes to the latest release and changes only prices already in it, each flag ticked. Prices change in place; the audit row ("corrected") keeps every key's before and after. Saved components move only through the estimate's Review.
+- **`select_fill`** stays at Q88's picked-up price (D-943). A delivered key left with no point keeps its last price.

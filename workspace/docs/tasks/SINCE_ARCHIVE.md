@@ -842,3 +842,4 @@ Restore steps: `intelcost-infra/README.md`, "The fixture suite, archived".
 | 2026-11-01 | D-933 bond correction: subtotal ÷ (1 − bond %); every saved bid with a bond moves at its next open (Q81) | api `estimate/bid.py` |
 | 2026-11-01 | D-940 price answers: off-road diesel, EIA refresh, push by swell, Compact 8 t, gravity pipe, 1.35 t/LCY | api `equipment/*`, `materials/loose.py`, `worker/tasks/fuel.py`, d934; app `equipment/{cost,resolve}.ts`, `utilities/materials.ts` |
 | 2026-11-01 | D-941 sales tax state plus average local | api `estimate/{sales_tax,bid}.py` |
+| 2026-11-02 | D-944 worker stop grace 30 s; D-945 Q99: picked-up points moved to FOB keys, Q4 2026 corrected through M11's new correction mode; Review's Update all closes | api `materials/releases.py`, migration d945; app `PlatformMaterialPrices.tsx`, `material-prices/api.ts`, `EstimatingView.tsx`; infra `docker-compose.yml` |

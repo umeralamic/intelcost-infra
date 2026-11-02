@@ -1,0 +1,7 @@
+mat_key,name,family,unit_price,sell_unit,grade,source
+"stone:_57_stone","#57 stone, delivered",aggregate,37.12,TON,A,"stone_57__delivered; 19 sources; Q99 picked-up points moved to FOB"
+"aggregate_base","Aggregate base, delivered",aggregate,26.77,TON,A,"agg_base__delivered; 21 sources; Q99 picked-up points moved to FOB"
+"borrow","Select borrow at the pit",aggregate,25.57,TON,C,"select_fill__fob; 2 sources; Q99 picked-up points moved to FOB"
+"stone:foundation","Foundation stone",aggregate,37.12,TON,A,"stone_57__delivered; 19 sources; Q99 picked-up points moved to FOB"
+"hma:hma_surface_unspec:delivered","Hot lay asphaltic concrete Type C (S5)",HMA,101.24,TON,B,"hma_surface_unspec__delivered; 1 sources; Q99 at-plant points moved to FOB"
+"hma:hma_surface_unspec:fob","HMA surface, TDOT 411 Grading D",HMA,90.55,TON,A,"hma_surface_unspec__fob; 15 sources; Q99 at-plant points moved to FOB"
