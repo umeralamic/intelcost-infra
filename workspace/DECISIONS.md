@@ -26009,3 +26009,10 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **The acre rate covers brush, undergrowth and grubbing only;** trees are priced per EA by size: estimated at 1 per 200 SF with a 60/30/10 mix (editable, the count typed over), or counted with Tree removal Count features, which turns the estimate off.
 - **Grub depth 12 in; disposal** chip or mulch on site (in the crews), burn where allowed (by hand), or haul off (the earthwork trucks, the C&D tipping fee by the TON).
 - **Crews A55 to A60** (release 15), production by acre (release 17's tiers for heavy). Group by Assembly: Clearing, Trees, Disposal, with $/acre.
+
+## D-952: Step 9's instruments: allocation snapshots, the warm-up switch, the bench loop watch
+
+**Status:** the founder's Q95 and Q97 (D-944), 2026-11-02.
+
+- **`/health/memory`** returns a process's traced total and, against its first call, the 25 lines that grew most by file and line, with its pid. It answers only while the process traces allocations (`PYTHONTRACEMALLOC`, set on `api-fx` by `FX_TRACEMALLOC=1`); otherwise 404.
+- **The bench api** takes `WARM_CALLERS` and `LOOP_WATCH_MS` from the shell, defaults unchanged (warm, no watch), so a cold start is measured with and without the warm-up.

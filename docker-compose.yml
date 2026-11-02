@@ -104,6 +104,11 @@ services:
       # The bytecode written in the container, not beside the mounted code (D-836): a restart reads it again.
       PYTHONDONTWRITEBYTECODE: ""
       PYTHONPYCACHEPREFIX: /tmp/pyc
+      # Q95 (D-946): `WARM_CALLERS=false docker compose up -d api` measures a cold start without
+      # the warm-up; unset, it warms.
+      WARM_CALLERS: ${WARM_CALLERS:-true}
+      # The loop watch on demand (D-869), off unless set: Q95's cold starts count their holds.
+      LOOP_WATCH_MS: ${LOOP_WATCH_MS:-0}
       DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: bench-only-secret-not-for-anything-real
@@ -443,6 +448,8 @@ services:
       STRIPE_API_BASE: http://stripe-fake-fx:12111
       # The event loop's watchdog (D-869): a loop held 500 ms logs where.
       LOOP_WATCH_MS: "500"
+      # Q97 (D-952): `FX_TRACEMALLOC=1` traces allocations for /health/memory; empty, off.
+      PYTHONTRACEMALLOC: ${FX_TRACEMALLOC:-}
     ports: !override
       - "8020:8000"
     # The archived suite's own drives, restored with it (./fx-suite.sh setup).
