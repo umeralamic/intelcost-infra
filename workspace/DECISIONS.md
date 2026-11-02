@@ -25916,3 +25916,7 @@ Founder, 2026-11-01. Group by Assembly lists the site features first in the grad
 
 - **Q82:** the bid summary reads the state rate plus the state's average local rate (Tax Foundation, January 1, 2026), and says so. The founder's ZIP file (`docs/reference/Sales Tax.xlsx`) is not loaded: the publisher's terms for it could not be read, and its rates date from 2024. **Open:** keeping rates current, e.g. the Streamlined Sales Tax states' free rate and boundary files.
 - **Q81:** no note on projects. The bond correction (subtotal ÷ (1 − bond %), D-933) is recorded in `docs/tasks/SINCE_ARCHIVE.md`, the running list of changes; the app has no change log of its own.
+
+## D-942: The loop watch names the caller
+
+SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. With the watch on, a `do_orm_execute` hook records each statement's caller from the greenlet's parent, and its mapper, and a stall logs them. It never stringifies a statement: doing so compiles it and broke bulk inserts. `asyncio`'s task list and `gc` do not see the running work from the watcher's thread on Python 3.14. Off unless `LOOP_WATCH_MS` is set.

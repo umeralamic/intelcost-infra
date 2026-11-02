@@ -5,7 +5,7 @@
 // The world: a new workspace and its projects.
 //   1. A new workspace starts on overhead 10, profit 10, each marked IntelCost's starting figure; no contingency.
 //   2. The bond follows the project's type: 1.5 on a Public project, 0 on a private one.
-//   3. The tax follows the location, "state rate only", until it is typed; a typed rate survives a move.
+//   3. The tax follows the location, state plus average local (D-941), until it is typed; a typed rate survives a move.
 //   4. A project at all zeros is offered the workspace's defaults; a saved bid does not move by itself.
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
@@ -30,10 +30,10 @@ await run("c51-bid-defaults", [
     },
   },
   {
-    title: "the tax follows the location, labelled state rate only, and a typed rate stays",
+    title: "the tax follows the location, labelled state plus average local, and a typed rate stays",
     run: async () => {
       let a = await bid(shop);
-      expect(Number(a.tax_pct) === 6.25 && /Texas, state rate only/.test(a.tax_note ?? ""), JSON.stringify(a));
+      expect(Number(a.tax_pct) === 8.2 && /Texas, state 6.25 % plus the state.s average local rate/.test(a.tax_note ?? ""), JSON.stringify(a));
       await apiCall(token, "PATCH", `${base}/${shop.uuid}`, { state: "Oregon" });
       a = await bid(shop);
       expect(Number(a.tax_pct) === 0, `Oregon ${a.tax_pct}`);
@@ -41,7 +41,7 @@ await run("c51-bid-defaults", [
       await apiCall(token, "PATCH", `${base}/${shop.uuid}`, { state: "TX" });
       a = await bid(shop);
       expect(Number(a.tax_pct) === 7 && a.sources.tax === "project", JSON.stringify(a));
-      return "Texas 6.25, Oregon 0, typed 7 kept";
+      return "Texas 8.20, Oregon 0, typed 7 kept";
     },
   },
   {
