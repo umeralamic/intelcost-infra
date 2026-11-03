@@ -473,6 +473,8 @@ services:
   # The fx stack's workers, on the fx database, Redis and bucket: every queue but Choose pages'
   # thumbnails here, and those on worker-fx-previews, as the bench splits them (D-43, D-849: on one
   # worker a Load's first page waited 13 s behind a 545 MB set's thumbnails and its measuring).
+  # A release runs the fx workers' celery without watchfiles (FX_WATCH=0, Q122, D-967): they need no reload there, and
+  # a watcher that died of ENOMEM mid-release took its worker with it. Any other time they reload on a save as before.
   worker-fx:
     extends: worker
     profiles: ["fx"]
@@ -484,9 +486,8 @@ services:
       api-fx:
         condition: service_started
     command: >
-      watchfiles --filter python --sigint-timeout 10
-      "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads -n fx@%h"
-      /srv/app
+      sh -c 'c="celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads -n fx@%h";
+      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
 
   worker-fx-previews:
     extends: worker
@@ -498,9 +499,8 @@ services:
       api-fx:
         condition: service_started
     command: >
-      watchfiles --filter python --sigint-timeout 10
-      "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n fx-previews@%h"
-      /srv/app
+      sh -c 'c="nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n fx-previews@%h";
+      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
 
   worker-fx-ocr:
     extends: worker
@@ -512,9 +512,8 @@ services:
       api-fx:
         condition: service_started
     command: >
-      watchfiles --filter python --sigint-timeout 10
-      "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q ocr -n fx-ocr@%h"
-      /srv/app
+      sh -c 'c="nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q ocr -n fx-ocr@%h";
+      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
 
   # The beat scheduler on the fx stack (D-770): its sweeps run on the fx database, Redis and bucket
   # only, so d27-uploads and f5-s2 read its schedule; the bench's own beat stays the founder's call.

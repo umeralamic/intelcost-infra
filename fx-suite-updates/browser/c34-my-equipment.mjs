@@ -200,7 +200,8 @@ await run("c34-my-equipment", [
       await page.locator(`[data-line-map="undercut"] option`).filter({ hasText: "(not in suggestions)" }).waitFor({ state: "attached", timeout: 15000 });
       const own = await page.locator('[data-line-map="undercut"] select option').evaluateAll((els) => els.map((e) => e.textContent));
       const cut = await page.locator('[data-line-map="cut"] select option').evaluateAll((els) => els.map((e) => e.textContent));
-      expect(own[0] === `Starter: ${a2.name} (not in suggestions)`, `undercut: ${own[0]}`);
+      // The starter's label since D-949 (Q120, D-967).
+      expect(own[0] === `IntelCost starting crew: ${a2.name} (not in suggestions)`, `undercut: ${own[0]}`);
       expect(!cut.some((t) => t.includes(a2.name) && !t.includes("(Compact)")), `cut offers ${a2.name}`);
       const total = await machineTotal(page);
       expect(total === priced, `Equipment was ${priced}, now ${total}`);

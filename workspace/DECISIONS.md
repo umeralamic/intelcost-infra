@@ -26193,3 +26193,13 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **Northings and eastings:** a link places the sheet by its control points' coordinates. Pending review: a link, not a field beside every clicked point.
 - **Old stitches:** a join made by match line or control points opens again in its own way, unchanged. A match-line join shows the tick, ticked and greyed.
 - **Three pairs or more:** the checks show each point's residual and the scale the points imply against the two calibrations. Over 0.5 % it turns amber and says they disagree (the existing 0.5 % threshold).
+
+## D-967: Closing items (C1: Q104, Q110, Q120, Q122)
+
+**Status:** the founder's queue of 2026-11-03, C1. Judgment calls pending founder review are marked.
+
+- **Q104:** `hma:hma_base_unspec:delivered` dropped from Q4 2026 (migration d965). Nothing on the bench named it: no cost component, workspace price or custom item. The downgrade puts it back at $68.51. The quantity table's Q4 grade count is C232.
+- **Q110:** each asphalt and aggregate layer has its own compacted density (pcf). Left empty, it is the IntelCost estimate, 145 for hot mix and 140 for aggregate, labelled "IntelCost estimate (no published rate)". No saved price moves.
+- **Q120:** c36 asserts the starter at release 25: 96 activities, 195 tiers, 212 defaults, 30 optional machines; A21, A58 and A59 priced on their own lines; no activity with its own day. c34 asserts the label "IntelCost starting crew: …" (D-949). The fixtures are changed in `fx-suite-updates/` only, which `refresh` installs. Hard rule 8 is otherwise kept: the founder's queue asked for this one.
+- **Q122:** a release runs the fx workers' celery without watchfiles (`FX_WATCH=0` in compose, inherited by every compose call of the release). Before each phase and each rerun alone, it starts a dead fx worker again and says so in `0-workers.log`, instead of letting `check` refuse the phase. The workers watch again once the release is over.
+- **B7 (Overlay a sheet with linked markups):** not built, as the queue allowed. The spec is `docs/tasks/overlay_sheet_b7_tasks.md`. Pending review.

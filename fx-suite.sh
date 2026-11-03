@@ -90,6 +90,17 @@ BUILT="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx app-fx
 # What a compose log says when it reached a registry or built: none of it may follow `prepare` in a release.
 REGISTRY_RE='load metadata for|resolve image config|Pulling|pulling from|Image .* (Building|Built)|failed to fetch|auth\.docker\.io'
 
+# An fx worker that died mid-release is started again before the next phase (Q122, D-967), not left to make
+# `check` refuse the phase. Each one revived is said in the phase's log.
+revive() {
+  local svc
+  for svc in worker-fx worker-fx-previews worker-fx-ocr; do
+    [ -n "$(docker compose ps -q --status running "$svc" 2>/dev/null)" ] && continue
+    echo "release: $svc was not running: started again"
+    docker compose --profile fx up -d --no-build --pull never --no-deps "$svc" >/dev/null 2>&1 || echo "release: $svc would not start"
+  done
+}
+
 # The fixtures a run's summary line names as failed: "N of M failed: a b c".
 failed_in() { grep -h " failed: " "$@" | sed 's/.* failed: //' | tr ' ' '\n' | grep -v '^$' | sort -u; }
 tail_line() { grep -E "^(all [0-9]+ passed|[0-9]+ of [0-9]+ failed)" "$1" | tail -1; }
@@ -209,6 +220,8 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     "$0" prepare 2>&1 | tee "$out/0-prepare.log" | tail -1
     [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "release: prepare failed (see $out/0-prepare.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     export FX_OFFLINE=1
+    # The fx workers without watchfiles for the run (Q122, D-967): every compose call of the release inherits it.
+    export FX_WATCH=0
     # Every fx worker running, the OCR worker among them (D-872: before, only `setup` started it, and no scan's scale
     # was read in a release).
     docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr beat-fx >"$out/0-workers.log" 2>&1 \
@@ -220,9 +233,11 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     echo "release: ${#built[@]} fixtures on the built apps, ${#devs[@]} on the dev servers (${devs[*]})" | tee "$out/summary.txt"
     # 1. The built apps, 3 at a time: timings are the product's there (f5-s11, f5-s13).
     "$0" prod >"$out/0-prod.log" 2>&1 || { echo "release: the built apps would not start (see $out/0-prod.log): nothing was run" | tee -a "$out/summary.txt"; exit 1; }
+    revive | tee -a "$out/0-workers.log"
     "$0" run "${built[@]}" 2>&1 | tee "$out/1-built.log"
     # 2. The dev servers: the fixtures that import the app's own modules, drive /dev/ui or its dev override.
     "$0" dev >"$out/0-dev.log" 2>&1
+    revive | tee -a "$out/0-workers.log"
     "$0" run "${devs[@]}" 2>&1 | tee "$out/2-dev.log"
     # 3. Every failure again, alone and in its own mode: passing alone is timing, failing alone is looked at.
     mapfile -t again < <(failed_in "$out/1-built.log" "$out/2-dev.log")
@@ -238,11 +253,14 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
       # A mode that will not come up runs none of its batch: those are reported as not run, not as failed (D-839).
       if ! "$0" "$mode" >>"$out/0-$mode.log" 2>&1; then not_run+=("${batch[@]}"); continue; fi
       for n in "${batch[@]}"; do
+        revive >>"$out/0-workers.log"
         if REGRESS_JOBS=1 "$0" run "$n" 2>&1 | tee -a "$out/3-alone.log" | grep -q "^all 1 passed"; then alone_pass+=("$n"); else alone_fail+=("$n"); fi
       done
     done
     # The built apps stay up: the bench's usual mode for a run.
     [ "$(docker compose ps -q app-fx-prod 2>/dev/null)" ] || "$0" prod >>"$out/0-prod.log" 2>&1
+    # The fx workers watch again once the run is over.
+    FX_WATCH=1 docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr >>"$out/0-workers.log" 2>&1
     {
       echo "built apps:   $(tail_line "$out/1-built.log")"
       echo "dev servers:  $(tail_line "$out/2-dev.log")"
