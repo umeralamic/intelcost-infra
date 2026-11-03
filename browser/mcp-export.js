@@ -7,6 +7,15 @@ async (page) => {
   const m = page.url().match(/\/project\/([0-9a-f-]{36})/);
   await page.goto(`http://localhost:5173/project/${m[1]}/takeoff?tab=estimating`);
   await page.waitForFunction(() => /Bid total/.test(document.body.innerText), null, { timeout: 180000 });
+  // Every line priced first: the summary the same three times running, three seconds apart.
+  await page.waitForTimeout(5000);
+  let last = "";
+  for (let i = 0, same = 0; i < 40 && same < 2; i++) {
+    const now = await page.locator("body").innerText();
+    same = now === last ? same + 1 : 0;
+    last = now;
+    await page.waitForTimeout(3000);
+  }
   const open = page.getByRole("dialog", { name: /Export to Excel/ });
   if (!(await open.isVisible().catch(() => false))) await page.getByRole("button", { name: "Export", exact: true }).first().click();
   await open.waitFor();

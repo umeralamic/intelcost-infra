@@ -37,8 +37,9 @@ fi
 # The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out;
 # with the paving, flatwork and fill addition (D-943): 162 more, A56 B35 C71.
 MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select string_agg(g, ' ' order by g) from (select grade||count(*) g from matlib.mat_default d join matlib.release r on r.id=d.release_id where r.title='Q4 2026' group by grade) x")
-if [ "$MAT_COUNTS" != "A177 B92 C138 D9 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A177 B92 C138 D9 F46"
+# B4 (D-964): 156 fence, erosion control and site keys added.
+if [ "$MAT_COUNTS" != "A182 B136 C233 D21 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A182 B136 C233 D21 F46"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -53,8 +54,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # Release 21 (D-957): A62, proof roll by a pneumatic roller.
 # Release 22 (D-958): clearing by class; trees and stumps by diameter; debris grinding and burning (A63).
 # Release 24 (D-962): valves (A64) and hydrants (A65) set by the water crew.
-if [ "$ST_COUNTS" != "75 174 425 284 189 71 30 73 75 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 75 174 425 284 189 71 30 73 75 0 0"
+# Release 25 (D-964): crews for fence, erosion control and site items (A66 to A86).
+if [ "$ST_COUNTS" != "96 195 458 309 212 94 30 94 96 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 96 195 458 309 212 94 30 94 96 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(

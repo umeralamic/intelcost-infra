@@ -26131,3 +26131,43 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **Crews:** A64 (valves) and A65 (hydrants): the water crew's excavator (EX-CRAWL-30T) and its operator, a pipe layer and a laborer. Roles `count_valve` and `count_hydrant` mapped to them; the valve box line (`count_valve_box`) is included in A64.
 - **Production** from the tier file, per 10-hour day: valves 4, hydrants 2.5. These are 8-hour published rates × 1.25, scaled by the project's work day.
 - **Pending review:** the 8 in gate valve as the default size.
+
+## D-963: The Site Features dialog one size wider (B1); a Line's inputs by type, its profile an outline (B2)
+
+**Status:** the founder's queue of 2026-11-03, B1 and B2. Spec: `docs/tasks/site_features_b2_outline_profiles_tasks.md`. Judgment calls pending founder review are marked.
+
+- **B1:** the dialog goes from `lg` to `xl` (672 to 768 px), and stays full width on a narrow screen. Pending review: at 1920 px it already measured 672 px, wider than the queue's 575, so the founder's screenshot came from a narrower window.
+- **B2, inputs:**
+  - Curbs: total height, reveal, top width, base width, back batter.
+  - Curb and gutter: the curb's five plus gutter width, lip and edge thickness.
+  - Valley gutter: width, edge thickness, dish depth.
+  - Sidewalk strip and mow strip: width × thickness.
+  - Custom: an area in SF and a formed face height, or a table of corner points with its area shown.
+  - The profile is drawn from its outline.
+- **B2, quantities** (analytic):
+  - Concrete is the outline's area (shoelace) × length.
+  - Forms (by hand only): both faces of a curb's height plus a gutter's edge, a strip's thickness, a valley's edge, or a custom shape's formed face.
+  - Excavation and base take the outline's width and depth.
+- **Saved features** read as the same rectangles (`shapeFromLegacy`). Proved on the DUP: every line the same to the cent. Pending review: a saved sidewalk strip or valley gutter now digs to its thickness, where it dug nothing before (its excavation used the curb height, 0).
+- **New types:** Concrete mow strip (6 × 4 in) and Concrete swale / flume (48 in, 6 in edge, 3 in dish), in the Concrete profile family (B3).
+
+## D-964: Fence, erosion control and site items (B3); their prices and crews (B4)
+
+**Status:** the founder's queue of 2026-11-03, B3 and B4. Judgment calls pending founder review are marked; every IntelCost estimate is listed in the report.
+
+- **Line family first:**
+  - Concrete profile: the curb types, mow strip, swale/flume.
+  - Fence: chain link by height, gauge and finish; wood privacy; ornamental aluminum; split rail; orange safety; tree protection; temporary chain link on the term rental.
+  - Erosion control: silt fence (standard, wire-backed, super), wattles 9 and 12 in, compost sock 8 and 12 in.
+  - Other: W-beam guardrail, trench drain, landscape edging, 4 in striping in paint or thermoplastic.
+- **Counts:** fence gate, sign on a post, inlet protection (curb, drop), rock check dam, concrete washout, pavement symbol (arrow, accessible, word), transformer pad, dumpster pad.
+- **Areas:** construction entrance (6 in #57 stone on woven fabric), erosion control blanket, striping crosshatch.
+- **Built from keys:** chain link is fabric, a line post every 10 ft, a terminal post at each end and each bend over 20°, top rail, 7 ga tension wire, tension bars and bands, brace bands, rail ends, caps, ties and post concrete. An item's parts are one materials line, each part at its quantity per unit (`siteParts`). The crew prices the item's own line, and the parts are included in its crew.
+- **IntelCost estimates:** post footings (10 × 36 in line, 12 × 42 in terminal), T-posts every 8 ft, 1 × 6 pickets at 5.5 in, rails 2 or 3 a bay, panels every 6 ft, stakes every 4 or 10 ft, guardrail posts every 6 ft 3 in, 8 bolts a splice, paint 300 LF a gallon with 6 lb of beads, thermoplastic 0.31 lb per LF, 2 TON of stone a check dam, a 20 SY washout liner, 10 % blanket laps and 1.5 staples a SY, crosshatch at 24 in.
+- **Prices (B4):** the workbook's 149 keys and 7 gap items, as `site:<key>`, published as an Addition to Q4 2026 (618 keys), with migration d963 for a fresh database. Each key has the better of two passes: higher grade, then more sources, then the newer date. The research pass's price won on 16 keys.
+- **Left out:** the guardrail end terminal (only a furnished-and-installed price was found) and the 18 in compost sock (no price found).
+- **Temporary chain link:** priced on the term key ($7.09/LF, delivery, setting up and removal in), so no crew.
+- **Crews, release 25 (A66 to A86):** by the rule for every production figure.
+  - Published: silt fence 1,036.5 a day; orange and tree fence 1,250 (range wire fence 1,000 per 8 h × 1.25); chain link 400 / 750 / 1,500 by job size; wattles and socks 1,000; paint striping 11,944.5; symbols 30; signs 30; check dams 23.7.
+  - IntelCost estimates: wood 200, ornamental 250, split rail 400, blanket 2,000 SY, guardrail 300, trench drain 60, edging 500, gates 4, inlet protection 20, washout 2, wheel stops 40 (now a crew, no longer by hand), construction entrance 2.
+  - Pending review: the portable auger, post driver and walk-behind striper have no catalog rate, so their lines show it in Needs attention.

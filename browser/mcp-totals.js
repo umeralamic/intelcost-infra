@@ -7,14 +7,17 @@ async (page) => {
   // Always a fresh load: a page left open keeps the equipment it read before a Calculate.
   await page.goto(`http://localhost:5173/project/${m[1]}/takeoff?tab=estimating`);
   await page.waitForFunction(() => /Bid total/.test(document.body.innerText), null, { timeout: 180000 });
-  // Settled: the same text twice, two seconds apart.
+  // Settled: the same text three times running, three seconds apart, after the page has had five seconds
+  // (new lines are priced in waves: two equal reads once came before them).
+  await page.waitForTimeout(5000);
   let last = "";
-  for (let i = 0; i < 30; i++) {
+  let same = 0;
+  for (let i = 0; i < 40 && same < 2; i++) {
     const now = await page.locator("body").innerText();
     const sum = now.slice(0, now.search(/\nEstimate\n/));
-    if (sum === last) break;
+    same = sum === last ? same + 1 : 0;
     last = sum;
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
   }
   const grab = (label) => {
     const r = new RegExp(`${label}[^\\n]*\\n(\\$[\\d,.]+|—)`).exec(last);
