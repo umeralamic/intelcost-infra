@@ -94,7 +94,8 @@ REGISTRY_RE='load metadata for|resolve image config|Pulling|pulling from|Image .
 # `check` refuse the phase. Each one revived is said in the phase's log.
 revive() {
   local svc
-  for svc in worker-fx worker-fx-previews worker-fx-ocr; do
+  # The fx apis too (D-969): api-fx's watchfiles died of ENOMEM twice in one release and took uvicorn with it.
+  for svc in api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr; do
     [ -n "$(docker compose ps -q --status running "$svc" 2>/dev/null)" ] && continue
     echo "release: $svc was not running: started again"
     docker compose --profile fx up -d --no-build --pull never --no-deps "$svc" >/dev/null 2>&1 || echo "release: $svc would not start"
@@ -102,7 +103,9 @@ revive() {
 }
 
 # The fixtures a run's summary line names as failed: "N of M failed: a b c".
-failed_in() { grep -h " failed: " "$@" | sed 's/.* failed: //' | tr ' ' '\n' | grep -v '^$' | sort -u; }
+# Only the summary line itself (D-969): a fixture's error text ("GET … failed after 3180 ms: fetch failed") once
+# added "3180", "GET" and a url to the reruns.
+failed_in() { grep -hE "^[0-9]+ of [0-9]+ failed: " "$@" | sed 's/.* failed: //' | tr ' ' '\n' | grep -v '^$' | sort -u; }
 tail_line() { grep -E "^(all [0-9]+ passed|[0-9]+ of [0-9]+ failed)" "$1" | tail -1; }
 
 # The stack's logs, events, health and memory kept in the run's own folder (fx-capture.sh). A release
@@ -220,6 +223,10 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     "$0" prepare 2>&1 | tee "$out/0-prepare.log" | tail -1
     [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "release: prepare failed (see $out/0-prepare.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     export FX_OFFLINE=1
+    # The fx database at the code's head before anything runs (D-968): api-fx reloads new code on a save but migrates
+    # only when it starts, and a release once ran a day's code on yesterday's schema (every new column a 500).
+    docker compose exec -T api-fx sh -c "cd /srv && alembic upgrade head" >"$out/0-migrate.log" 2>&1 \
+      || { echo "release: the fx database would not upgrade (see $out/0-migrate.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     # The fx workers without watchfiles for the run (Q122, D-967): every compose call of the release inherits it.
     export FX_WATCH=0
     # Every fx worker running, the OCR worker among them (D-872: before, only `setup` started it, and no scan's scale
