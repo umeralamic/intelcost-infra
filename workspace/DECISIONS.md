@@ -26023,3 +26023,17 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 
 - **What started the bench api:** `worker-fx`, `worker-fx-previews` and `worker-fx-ocr` extend `worker`, and inherited its `depends_on: api`. So f5-s2's `docker compose --profile fx start worker-fx` (the end of its worker-outage step) also started the bench api: the Q96 watcher logged it at 00:56:44 during f5-s2, with only the suite's processes running.
 - **The change:** the three fx workers get `depends_on: !override` naming `api-fx`, as `beat-fx`, `app-fx` and `app-fx-b` already override theirs. Nothing on the fx stack starts a bench service any more.
+
+## D-954: Starter release 18, the research-checked tier file (A1)
+
+**Status:** the founder's queue of 2026-11-03, A1. Judgment calls pending founder review are marked.
+
+- **Loaded:** `production_tiers_2026-11b.csv` in place of release 17's file, for A1, A5, A11, A18, A19, A23, A27, A28, A32, A34, A38, A40, A43, A44, A47, A48, A49, A55, A56 (now with its own production, 2 ac/day), A57 and A61. Every figure per 10-hour day, scaled by the project's work day as D-950. Valves and hydrants wait for their own crews (A9). Export A7 stays on the truck-cycle method.
+- **Bounds:** the file's quantity bounds replace the old ones. The crew for each default is the tier covering its production, so each new default takes the crew of the old tier that covered most of its range.
+- **Labels:** "published production" for the file's published, CTR, DOT and derived rows; "IntelCost estimate (no published rate)" where the file says so. "Founder's" leaves every label: no figure in this file came from the founder.
+- **Pending founder review:**
+  - A starter bound is stored as the file's bound minus 1, because a workspace copy adds 1 (exclusive upper bound). Release 17 stored 1.9999 acre, which the copies read as 2.9999 and overlapped the next tier; this repairs it.
+  - Fine grade (A11) now takes the file's tiers (15,000 / 30,000 / 45,000 SF a day by job size). Block 8c had left it out as an earthwork activity with tiers; the new rule says the tier file wins.
+  - Formed concrete pavement stays out: the file is in SY of slab and the crews (A50, A51) are in CY. A2 compares them by thickness.
+  - The Compact twins (A1C, A11C) keep their single figure: they are the small-machine crew, not covered by the file.
+  - Water service at 4.4 a day lowers A23's lowest crew tier to 4.4.
