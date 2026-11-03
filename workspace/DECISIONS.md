@@ -26106,3 +26106,10 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **A5d check:** a cleared area with no strip in the same or an overlapping Site Prep area marks its acre line (`clearing:nostrip`). Needs attention, "Clearing and grubbing to check": "Cleared with no topsoil strip in this or an overlapping Site Prep area…".
 - **Retired:** "Clearing and grubbing: not set" on the strip lines (D-951). Site Prep puts both ticks in one dialog.
 - **Surface Prep → Subgrade Prep** in the Site Feature dialog, the Group by Assembly heading and the section lines' heading (the export reads the same heading). Label only. Pending review: the heading "Subgrade preparation" (fine grade, proof roll) sits next to it.
+
+## D-960: Borrow is common borrow at the pit (A6); every earthwork activity on the project's work day (A7, Q118)
+
+**Status:** the founder's queue of 2026-11-03, A6 and A7 (Q118). Judgment calls pending founder review are marked.
+
+- **A6:** imported soil buys `fill:common_borrow:fob` ("Common borrow at the pit"), not `borrow`, whose one-source figure was a select fill's. The fill plan's borrow-against-haul price reads the same key. On the DUP it resolves to $9.28/TON: the release's $9.47 × 0.98 location factor. The queue quoted $8.63; that figure was not found (pending review). `borrow` stays in the release, unused by the app.
+- **A7, starter release 23:** the 47 activities still fixed at a 10-hour day are the 31 earthwork activities, their Compact versions and release 15's other crews. Each now states its figures per 10-hour day (`prod_basis_hours = 10`) and works the project's day (D-950). On an 8-hour day its production is 0.8 of the figure and its spread runs 8 hours.
