@@ -26037,3 +26037,30 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   - Formed concrete pavement stays out: the file is in SY of slab and the crews (A50, A51) are in CY. A2 compares them by thickness.
   - The Compact twins (A1C, A11C) keep their single figure: they are the small-machine crew, not covered by the file.
   - Water service at 4.4 a day lowers A23's lowest crew tier to 4.4.
+
+## D-955: Starter release 19, the crew sheet's other activities checked (A2)
+
+**Status:** the founder's queue of 2026-11-03, A2, under its rule that the crew sheet is not a source of truth. Judgment calls pending founder review are marked.
+
+- **Rule applied** to release 15's crew-sheet activities the tier file does not cover. The research file's published typical is the median of the matching points, a source scaled ×1.25 only where it states an 8-hour day. More than 30 % from the sheet, measured against the published figure, with no stated reason: the published figure. Within 30 %: the sheet's, labelled published. Nothing published: the sheet's, labelled "crew sheet, no published rate".
+- **Published figure used:**
+  - A26 castings: 1 → 5 a day (7 points).
+  - A29 sewer service: 1 → 4.38 (pending review: the only point is a water service connection).
+  - A50 concrete pavement, light duty: 80 → 57.3 CY (pending review: formed and hand-pour points only, 343.5 SY/day converted at 6 in).
+  - A51 heavy duty: 100 → 76.3 CY (8 in). A51 is 31 % off, just over the line.
+- **Sheet kept, supported:** A33 roof drains (200 against 225), A39 stone base on site (2,500 against 3,439, 27 %).
+- **Crew sheet, no published rate:** A22, A24, A25, A30, A31, A35, A36, A37, A41, A42 (published only per SY of ramp), A45, A46, A52, A53, A54.
+- **Replaced elsewhere:** A56 medium clearing takes the tier file (release 18). Tree removal A58 to A60 is replaced by per-tree pricing in A5.
+
+## D-956: Starter release 20, an operator for every ride-on machine (A3, the founder's Q106)
+
+**Status:** the founder's answer to Q106, 2026-11-03. Judgment calls pending founder review are marked.
+
+- **Rule:** one operator for each ride-on or self-propelled machine and a driver for every truck; laborers run hand-guided equipment. Sources: the research file's operator_rule rows.
+- **Changed:** `crew_runs` comes off 37 ride-on machine rows in 26 crew tiers (loaders, rollers, dozers, graders, backhoes, skid steers, the curb machine, the sewer crew's second excavator). Each now gets its own operator row: 35.5 operators added.
+- **Kept:** `crew_runs` on hand-guided equipment a crew laborer runs (plate, trench roller, saws, screed, chipper), and on a skid steer's own attachments (A41's breaker, A47's broom), which cannot run at the same time as the skid steer's bucket.
+- **Pending founder review:**
+  - The pickup stays on `crew_runs`: the foreman drives it. Removing it would add a driver to 30 crews.
+  - A22 and A23 get a second laborer: each had one for a trench roller and a plate run together.
+  - An operated truck (the tandem in proof roll) carries its driver in its rate and gets no extra row.
+  - Two operator_rule rows (Ohio, Minnesota) put the walk-behind trench roller and the towable chipper under an operating engineer. The founder's rule puts them with laborers, and the founder's rule is followed.
