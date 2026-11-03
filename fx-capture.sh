@@ -8,6 +8,7 @@
 #   events.log      Docker's container events (die, oom, restart, start, destroy)
 #   health.log      each api's /health, one line per change, with how long it was down
 #   memory.tsv      every container's memory at the start, after every 25 fixtures and at the end
+#   rss.tsv         at the same moments, each api and worker process's RSS and command line
 #
 # It stops when the run's pid is gone, and stops only the followers it started.
 
@@ -35,6 +36,14 @@ sample() {
     | sed "s/^$PREFIX//; s/^/$at\t$1\t/" >>"$dir/memory.tsv"
   docker exec "${PREFIX}postgres-1" sh -c "grep -E '^(MemAvailable|SwapFree)' /proc/meminfo" 2>/dev/null \
     | awk -v at="$at" -v n="$1" '{printf "%s\t%s\tvm-%s\t%d MiB\n", at, n, $1, $2/1024}' >>"$dir/memory.tsv"
+  # Each api and worker process's own RSS (Q121, D-967): read from /proc, no tracing.
+  local svc
+  for svc in api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr; do
+    docker exec "${PREFIX}${svc}-1" sh -c 'for p in /proc/[0-9]*; do
+        r=$(awk "/^VmRSS/{print \$2}" $p/status 2>/dev/null); [ -n "$r" ] || continue
+        c=$(tr "\0" " " <$p/cmdline 2>/dev/null | cut -c1-80); printf "%s\t%d MiB\t%s\n" "${p#/proc/}" $((r / 1024)) "$c"
+      done' 2>/dev/null | awk -v at="$at" -v n="$1" -v s="$svc" '{printf "%s\t%s\t%s\t%s\n", at, n, s, $0}' >>"$dir/rss.tsv"
+  done
 }
 
 finish() {
