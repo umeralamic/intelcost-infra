@@ -26171,3 +26171,15 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   - Published: silt fence 1,036.5 a day; orange and tree fence 1,250 (range wire fence 1,000 per 8 h × 1.25); chain link 400 / 750 / 1,500 by job size; wattles and socks 1,000; paint striping 11,944.5; symbols 30; signs 30; check dams 23.7.
   - IntelCost estimates: wood 200, ornamental 250, split rail 400, blanket 2,000 SY, guardrail 300, trench drain 60, edging 500, gates 4, inlet protection 20, washout 2, wheel stops 40 (now a crew, no longer by hand), construction entrance 2.
   - Pending review: the portable auger, post driver and walk-behind striper have no catalog rate, so their lines show it in Needs attention.
+
+## D-965: Count shapes, round piers and pole bases (B5)
+
+**Status:** the founder's queue of 2026-11-03, B5. Judgment calls pending founder review are marked.
+
+- **Shapes:** a built-in-place Count is a rectangular pad (as before), a round pad (Dia × thickness), a round pier (Dia × depth) or a pier with a pad. A round volume is π·Dia²/4 × depth.
+- **Pier steel:** vertical bars (count and size, the shaft's depth less 6 in) and hoops (size and spacing, around a cage at 3 in cover with a foot of lap). It is one bar line, each size its own part, and the anchor bolts are a count (no release key, so priced by hand).
+- **Starting sizes:**
+  - Light pole base: Indiana DOT standard light foundation (E 807-LTFD-05, with E 807-LTST-02): a 36 in shaft 8 ft deep, 8 #5 verticals, #4 hoops at 18 in, 1 in × 52 in anchor bolts. The bolt count, 4, is not lettered on the drawing: IntelCost estimate.
+  - Flag pole base (new type): no standard found, so an IntelCost estimate of 24 in × 6 ft, 6 #5 verticals, #3 hoops at 12 in, on a sleeve with no bolts. Pending review.
+  - Concrete starts at ready mix 3,000 psi.
+- **Not from the plans:** a pole base's starting size reads "Size not from plans: confirm" in the dialog and in Needs attention until the estimator edits a size.
