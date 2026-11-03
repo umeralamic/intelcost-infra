@@ -51,8 +51,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # Release 17 (D-950): production by job size; A61 the small-box structure crew; the clearing haul.
 # Release 18 (D-954): the research-checked tier file; A11 and A56 take its tiers, 172 defaults.
 # Release 21 (D-957): A62, proof roll by a pneumatic roller.
-if [ "$ST_COUNTS" != "72 170 433 282 174 68 30 70 72 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 72 170 433 282 174 68 30 70 72 0 0"
+# Release 22 (D-958): clearing by class; trees and stumps by diameter; debris grinding and burning (A63).
+if [ "$ST_COUNTS" != "73 172 423 280 187 69 30 71 73 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 73 172 423 280 187 69 30 71 73 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(

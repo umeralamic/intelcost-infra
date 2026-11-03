@@ -26074,3 +26074,21 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **Production** from the tier file: 10,000 SY/day under 10,000 SY, 20,000 above.
 - **Visits:** a minimum per activity (`min_visits`, 2 for A34 and A62: the building pad, then the paving areas). A project changes it in Equipment settings › Earthwork production, Visits. Each visit takes at least half a work day: when the spread's days by production are fewer than visits ÷ 2, the lines' production is lowered until they reach it. The cost is the larger of the two, and the note says "N visits, each at least half a work day: priced as N/2 days".
 - **Labels:** "founder's crew sheet" reads "crew sheet" in the starter's notes and tier sources. "Founder's provisional figure" reads "IntelCost estimate (no published rate)". The founder's own paving figures (block 3) keep "founder's figures".
+
+## D-958: Clearing reworked, starter release 22 (A5 a to f, the founder's Q116)
+
+**Status:** the founder's answer to Q116, 2026-11-03. Judgment calls pending founder review are marked.
+
+- **Area clearing** by the acre at its class: light (trees 12 in or less, brush) 3.5 ac/day; medium (12-18 in) 2; heavy (over 18 in) 0.75, 1.0, 1.25 by size (release 18). Crew: a heavy dozer (D8 class) and its operator, one laborer with a chainsaw. Grubbing is in the figures. The trees inside the area are in the acre rate: the count from 1 per 200 SF is shown in the line's name, not priced.
+- **Debris** from `clearing_defaults_2026-11.csv`: 25, 80 and 110 green tons per acre by class; 4, 6 or 5 CY per ton for hardwood, softwood or mixed (mixed the default, per area).
+- **Disposal**, one per area:
+  - "Grind and leave on site" (the default, stored as `chip`): A60, a tub grinder at 200 CY of debris an hour and its operator, fed by a loader and its operator. The tub grinder (LC-GRIND-8621, up to 40 t/hr) has no catalog rate: its line shows it in Needs attention, and no rate is invented.
+  - "Haul off": the debris CY on the earthwork trucks (A7), and the debris tons at the C&D fee (`tipping:unsuitable`). The release has no green-waste fee.
+  - "Burn where allowed": A63, two laborers, labor only, at 200 CY an hour (pending review: the only figure is the same source's "burning or chipping/grinding"; labelled IntelCost estimate). Needs attention: "Clearing debris burned: confirm the burn permit."
+- **Grubbed soil** is not hauled or tipped: it stays in the topsoil strip. The 12 in grub depth and its haul are gone.
+- **Individual trees** (a Tree removal Count) by diameter, its stump ground by default:
+  - A58 "Tree removal, by diameter": man-hours per tree (city tree crews), crew of 2 to 12.5 in, 3 above. Per 10-hour day: 31.75, 10.93, 7.61, 5.57, 3.50, 2.31, 1.55 trees.
+  - A59 "Stump grinding, by diameter": a self-propelled stump grinder (LC-STUMP-23, no catalog rate) and the laborer who runs it, 10 h over man-hours per stump: 10.31, 7.35, 5.29, 3.64, 2.92, 2.20, 1.01.
+  - Both `tier_by = size`, priced per line, from the line's diameter (`earthwork_size_in`). Labelled with their source's caveat: slow for open-site trees.
+- **Retired:** the three tree bands' roles (`trees_small`, `_medium`, `_large`) leave the line map. A line written before reads "priced by hand" until the next Calculate.
+- **Pending founder review:** the chainsaw has no catalog class; WL-COMPACT-2Y feeds the grinder.
