@@ -26183,3 +26183,13 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   - Flag pole base (new type): no standard found, so an IntelCost estimate of 24 in × 6 ft, 6 #5 verticals, #3 hoops at 12 in, on a sleeve with no bolts. Pending review.
   - Concrete starts at ready mix 3,000 psi.
 - **Not from the plans:** a pole base's starting size reads "Size not from plans: confirm" in the dialog and in Needs attention until the estimator edits a size.
+
+## D-966: Stitch by matching points; the match line a tick, coordinates a link (B6)
+
+**Status:** the founder's queue of 2026-11-03, B6. Judgment calls pending founder review are marked.
+
+- **One way to click:** a new stitch offers two ways, "Matching points" and "Overlay a sheet" (renamed from "Lay a survey sheet over"). It starts on Matching points.
+- **Match line:** a tick under Matching points, "Points 1 and 2 are on the match line: trim the sheets there", fits on the match line and trims there. It keeps the points already clicked.
+- **Northings and eastings:** a link places the sheet by its control points' coordinates. Pending review: a link, not a field beside every clicked point.
+- **Old stitches:** a join made by match line or control points opens again in its own way, unchanged. A match-line join shows the tick, ticked and greyed.
+- **Three pairs or more:** the checks show each point's residual and the scale the points imply against the two calibrations. Over 0.5 % it turns amber and says they disagree (the existing 0.5 % threshold).
