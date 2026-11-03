@@ -26016,3 +26016,10 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 
 - **`/health/memory`** returns a process's traced total and, against its first call, the 25 lines that grew most by file and line, with its pid. It answers only while the process traces allocations (`PYTHONTRACEMALLOC`, set on `api-fx` by `FX_TRACEMALLOC=1`); otherwise 404.
 - **The bench api** takes `WARM_CALLERS` and `LOOP_WATCH_MS` from the shell, defaults unchanged (warm, no watch), so a cold start is measured with and without the warm-up.
+
+## D-953: The fx workers depend on the fx api, not the bench api (Q96)
+
+**Status:** found in step 9's release, 2026-11-03; the founder's Q96 (D-944).
+
+- **What started the bench api:** `worker-fx`, `worker-fx-previews` and `worker-fx-ocr` extend `worker`, and inherited its `depends_on: api`. So f5-s2's `docker compose --profile fx start worker-fx` (the end of its worker-outage step) also started the bench api: the Q96 watcher logged it at 00:56:44 during f5-s2, with only the suite's processes running.
+- **The change:** the three fx workers get `depends_on: !override` naming `api-fx`, as `beat-fx`, `app-fx` and `app-fx-b` already override theirs. Nothing on the fx stack starts a bench service any more.

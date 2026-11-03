@@ -1,0 +1,55 @@
+start 2026-11-02T22:46:14Z
+q96 watcher pid 309001
+ Container intelcost-bench-worker-pages-1 Stopping 
+ Container intelcost-bench-worker-ocr-1 Stopping 
+ Container intelcost-bench-worker-1 Stopping 
+ Container intelcost-bench-app-1 Stopping 
+ Container intelcost-bench-app-1 Stopped 
+ Container intelcost-bench-worker-pages-1 Stopped 
+ Container intelcost-bench-worker-1 Stopped 
+ Container intelcost-bench-worker-ocr-1 Stopped 
+ Container intelcost-bench-api-1 Stopping 
+ Container intelcost-bench-api-1 Stopped 
+bench stopped 2026-11-02T22:46:47Z
+2026-11-02T23:06:44Z bench app stopped again (started by the founder at 23:03:19 to check)
+2026-11-02T23:21:13Z Q97 sampler stopped: 8 snapshot calls to api-fx-b timed out at 120 s each; snapshots would stall window B
+release rc=1 2026-11-03T01:31:33Z
+=== f8-s5 01:31:33
+f8-s5 rc=0
+--- after f8-s5 01:33:37
+redis PONG
+minio healthy
+api 8020 ok after 1 s
+api 8030 ok after 0 s
+=== f4-s27 01:33:40
+f4-s27 rc=0
+--- after f4-s27 01:39:45
+redis PONG
+minio healthy
+api 8020 ok after 0 s
+api 8030 ok after 1 s
+done 2026-11-03T01:39:47Z
+rest start 2026-11-03T01:43:53Z
+ Container intelcost-bench-api-1 Stopping 
+ Container intelcost-bench-api-1 Stopped 
+workers up rc=0 01:44:11
+dev up rc=0 01:44:55
+dev servers: 3 of 7 failed: f7-a f5-s3 f3-s1 
+alone pass f7-a
+alone pass f5-s3
+alone pass f3-s1
+prod up rc=0 02:24:15
+alone pass rv-rows 02:30:24
+alone FAIL c44-fill-by-delivery 02:37:02
+alone pass f9-estimating 02:41:34
+alone FAIL c45-cut-method 02:46:04
+alone FAIL c36-earthwork-link 02:51:06
+alone pass c41-assignee-scope 02:54:24
+alone pass f8-s16 02:57:58
+alone FAIL c34-my-equipment 03:01:45
+alone pass f3-s6 03:05:25
+alone pass f5-big 03:14:00
+alone FAIL f5-s15 03:17:27
+alone pass f5-s2 03:24:56
+alone FAIL f8-s8 03:29:37
+rest done 2026-11-03T03:29:37Z

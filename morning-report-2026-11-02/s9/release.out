@@ -1,0 +1,240 @@
+fx-suite patch: 10 files retargeted at the fx stack; 2 fixtures skipped
+  skip f8-s5: stops Redis, which the running bench shares
+  skip f4-s27: stops MinIO, which the running bench shares
+prepare: every image built or present
+release: 157 fixtures on the built apps, 7 on the dev servers (f3-s1 f3-s13 f4-s2 f5-s3 f6-s4 f7-a r1-raster-text)
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 1 s
+warm http://localhost:5177 in 1 s
+157 fixtures (named): 145 in parallel, 3 at a time; then 12 one at a time
+
+rv-rows         355s  0/8 passed
+                    FAIL  1. setup: one page at 1/6 ft per point; folders F1 to F4; 400 Linear items, 100 a folder
+                          POST /api/workspace/91b671b0-2169-4d5e-9506-13003015646e/project/017fcbe8-d9f2-404a-bb36-a09ba1f0ed0f/takeoff/item failed after 5862 ms: fetch failed | caused by SocketError: other side closed (UND_ERR_SOCKET) [after 56.5s]
+                    --
+                    FAIL  2. the panel lists all 400 but draws fewer than 100; scrolled to the end, it draws RV-400
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('[data-quantity-panel]').locator('li[data-item-row] > [role=row]').filter({ has: getByText('RV-001', { exact: true }) }).first() to be visible /  [after 48.5s]
+                    --
+                    FAIL  3. a mark clicked on the canvas brings its row, far down and not drawn, into view, selected
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('[data-quantity-panel]').locator('li[data-item-row] > [role=row]').filter({ has: getByText('RV-001', { exact: true }) }).first() to be visible /  [after 36.8s]
+                    --
+                    FAIL  4. Shift picks a range across rows not drawn: RV-001 to RV-400 picks 400
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('[data-quantity-panel]').locator('li[data-item-row] > [role=row]').filter({ has: getByText('RV-001', { exact: true }) }).first() to be visible /  [after 38.3s]
+                    --
+                    FAIL  5. a row held at the list's top edge scrolls it until F1 shows; the drop files RV-400 in F1
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('[data-quantity-panel]').locator('li[data-item-row] > [role=row]').filter({ has: getByText('RV-001', { exact: true }) }).first() to be visible /  [after 40.6s]
+                    --
+                    FAIL  6. Tab moves focus through the rows and keeps it in the panel; Ctrl+F in the panel focuses Search items
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('[data-quantity-panel]').locator('li[data-item-row] > [role=row]').filter({ has: getByText('RV-001', { exact: true }) }).first() to be visible /  [after 36.7s]
+                    --
+                    FAIL  7. Estimating lists every line and draws fewer than 100; scrolled to the end it draws RV-400; print draws every line; Ctrl+F focuses Search
+                          the body holds 9 rows [after 10.7s]
+                    --
+                    FAIL  8. a guest sees the view-only tip on greyed row controls, also on rows drawn after a scroll; Ctrl+Z and Ctrl+Y send nothing
+                          RV-399 never drawn at the foot of the list [after 33.0s]
+c44-fill-by-delivery  356s  5/7 passed
+                    FAIL  2. D-899: the method alone reads Apply; every sheet's lines change, no volume, key or time moves, neither page reads stale
+                          timed out after 20s waiting for both pages' lines to change [after 28.8s]
+                    --
+                    FAIL  7. D-920, D-921: the Results panel suggests by pocket, applies nothing, and a Confirm moves the lines and no volume
+                          timed out after 20s waiting for the scraper's cut line [after 37.8s]
+f4-s7           279s  7/7 passed
+f8-s13          301s  5/5 passed
+f9-estimating   266s  11/12 passed
+                    FAIL  12. slow load (M3, D-690): on a cold open with the rates' read held until the typing is saved (D-796), Paint's Unit Man Hours typed during the load keeps 0.25 after the late read lands, after a reload and in a second window
+                          Paint's Unit Man Hours after the late read: 0, 0.25, 0.25, 0.25, 0.25 [after 13.8s]
+r5-drags        294s  10/10 passed
+c32-site-typed  295s  5/5 passed
+n3-twenty-loads  379s  3/3 passed
+c12-item-model  227s  10/10 passed
+m6-position    1554s  5/5 passed
+c45-materials   341s  12/12 passed
+c31-wage        169s  6/6 passed
+c48-saved-sections  200s  7/7 passed
+f4-s17          264s  10/10 passed
+f7-h            172s  8/8 passed
+f6-c            253s  10/10 passed
+f6-e            190s  3/3 passed
+f8-s14          244s  4/4 passed
+c21-time        172s  6/6 passed
+c47-material-release  153s  6/6 passed
+c10-two-trees   117s  6/6 passed
+c30-billing     188s  7/7 passed
+c47-gps-field   151s  5/5 passed
+c45-cut-method  207s  4/5 passed
+                    FAIL  2. D-806 B4: dozer push for the project: Cut, dozer push
+                          timed out after 30s waiting for the calculated lines (last: ) [after 42.8s]
+c36-earthwork-link  174s  5/6 passed
+                    FAIL  1. the starter a new workspace takes up (D-751, D-806 release 3, D-898 release 8, D-900 release 9, D-922 release 12's A21): 31 activities with D-932's ten Compact, 126 tiers, 108 defaults, site spreads on a 10-hour day; 36 optional machines; Foreman, Grade checker and Pipelayer rows as D-753
+                          activities 71 [after 1.5s]
+f6-b            177s  9/9 passed
+c22-takeoff-first  177s  5/5 passed
+f7-b            171s  7/7 passed
+c06-copied-earthwork  190s  6/6 passed
+c13-canvas-tools  169s  5/5 passed
+f5-s18          196s  4/4 passed
+c17-earthwork   208s  8/8 passed
+f4-dialogs      192s  8/8 passed
+c41-assignee-scope  173s  4/5 passed
+                    FAIL  2. D-790 on screen: Edit Project's Scope dialog; Your scope on B's dashboard; Assigned to me in both panel views and Estimating
+                          timed out after 8s waiting for Estimating filtered [after 48.6s]
+f5-s14          207s  6/6 passed
+f6-d            195s  9/9 passed
+f8-s16          131s  3/4 passed
+                    FAIL  2. AC3, AC5: B on the project (its takeoff, D-315) follows A's edits, reads "This project was moved to Trash" when A trashes it, "Project not found" once purged (D-765 3)
+                          B to read This project was moved to Trash took 3473 ms [after 20.6s]
+f4-s4           154s  9/9 passed
+f7-e            152s  7/7 passed
+c15-reports     157s  5/5 passed
+c39-one-tag-while-drawing  199s  4/4 passed
+p19             180s  2/2 passed
+f4-s10          125s  5/5 passed
+f8-s9           142s  5/5 passed
+c05-calculated-lines  166s  7/7 passed
+f9-exports      108s  4/4 passed
+c44-surplus-destinations  150s  5/5 passed
+f4-s5           131s  7/7 passed
+c46-gps-machine  124s  5/5 passed
+c40-delete-protection  126s  6/6 passed
+f5-s6           151s  6/6 passed
+c43-earthwork-assumptions  117s  4/4 passed
+c46-proofs      116s  4/4 passed
+f8-s15          149s  6/6 passed
+f4-s3           123s  11/11 passed
+f5-s13          124s  7/7 passed
+f5-sheet-items  112s  5/5 passed
+c03-duplicate    91s  5/5 passed
+f4-s26           96s  8/8 passed
+p20a            132s  8/8 passed
+f7-i            133s  5/5 passed
+c34-my-equipment  140s  6/7 passed
+                    FAIL  7. an earthwork activity off "Show in suggestions": its own line role reads "(not in suggestions)", no other role offers it; the shared machine still prices the same
+                          undercut: IntelCost starting crew: Excavate and load (direct to haul-off trucks) (not in suggestions) [after 13.6s]
+f5-s9           131s  2/2 passed
+c11-rotate      102s  5/5 passed
+c42-stitch-sheets  122s  6/6 passed
+f5-s4            84s  5/5 passed
+f8-s6           107s  1/1 passed
+f4-s21           70s  5/5 passed
+f3-s7            96s  6/6 passed
+f4-s11           90s  5/5 passed
+f3-s6            96s  6/8 passed
+                    FAIL  6. D-25 in the browser — a locked cell is not a button, and says why
+                          0 cells are clickable, not 22 [after 3.9s]
+                    --
+                    FAIL  7. AC2 — an edited cell says so on the screen, and Reset puts it back
+                          the edited cell reads "Your role cannot change member roles." [after 4.3s]
+c38-components-assemblies   89s  5/5 passed
+f5-s16           90s  6/6 passed
+c20-forum       117s  5/5 passed
+f4-s18           79s  4/4 passed
+f5-s10           98s  5/5 passed
+f4-s24          101s  6/6 passed
+c14-format       92s  4/4 passed
+f7-c            110s  5/5 passed
+f4-s19           82s  2/2 passed
+f5-d51           81s  5/5 passed
+f5-s8            81s  4/4 passed
+f5-scale-button   79s  4/4 passed
+f7-f             82s  3/3 passed
+c28-double-click   82s  3/3 passed
+c35-equipment-library   84s  5/5 passed
+f7-j             78s  3/3 passed
+f5-s12           78s  4/4 passed
+n4-ocr-scale    126s  2/2 passed
+d37-links        70s  6/6 passed
+f5-s5            89s  5/5 passed
+f8-s7            90s  3/3 passed
+f5-s7            70s  3/3 passed
+f4-s9           107s  5/5 passed
+f3-s4            74s  4/4 passed
+f7-d             92s  4/4 passed
+n11-undo-queue   78s  2/2 passed
+f8-s11           70s  4/4 passed
+c19-auto-count   50s  3/3 passed
+f3-s3            69s  3/3 passed
+f3-s9            55s  7/7 passed
+c49-overlay-match   56s  1/1 passed
+f4-s1            81s  9/9 passed
+f2-s4b           65s  6/6 passed
+f4-s15           65s  3/3 passed
+f5-s1            49s  7/7 passed
+f3-s2            70s  5/5 passed
+f4-s23           49s  4/4 passed
+f2-s14           57s  4/4 passed
+f7-k             71s  2/2 passed
+f4-s14           75s  4/4 passed
+f2-s1b           43s  5/5 passed
+f3-s11           47s  4/4 passed
+f2-s5            52s  9/9 passed
+f3-s5            55s  5/5 passed
+f4-s16           36s  1/1 passed
+f8-s10           57s  3/3 passed
+n2-tick-before-sizes   52s  3/3 passed
+f3-s8            64s  4/4 passed
+f4-s20           42s  3/3 passed
+f4-s6            45s  3/3 passed
+f3-s10           47s  4/4 passed
+f7-g             76s  4/4 passed
+f8-s4            51s  4/4 passed
+c23-folders-on-load   50s  3/3 passed
+f2-s7            55s  4/4 passed
+f2-s13           57s  5/5 passed
+f8-s1            58s  4/4 passed
+c16-bid-formulas   58s  3/3 passed
+f2-s2            43s  5/5 passed
+f2-s10           53s  6/6 passed
+f3-s12           54s  8/8 passed
+c33-invitations   44s  4/4 passed
+f2-s8            35s  6/6 passed
+f2-s9            48s  6/6 passed
+f4-s8            48s  3/3 passed
+f2-close         50s  7/7 passed
+f2-s3            42s  4/4 passed
+c48-fuel-location   30s  4/4 passed
+c37-wage-roles   38s  3/3 passed
+c50-equipment-scale   22s  3/3 passed
+f2-s6            39s  6/6 passed
+f2-s12           39s  5/5 passed
+c51-bid-defaults   29s  3/3 passed
+d27-uploads      21s  2/2 passed
+
+--- one at a time: they stop or restart a service ---
+f5-big          344s  5/6 passed
+                    FAIL  1. D-43: a Load while the set's thumbnails are still being made is not held behind them: the page is drawn in about 10 s
+                          the page took 22143 ms to draw with thumbnails being made [after 30.8s]
+f5-count        119s  1/1 passed
+f5-s11           94s  6/6 passed
+f5-s15           79s  3/4 passed
+                    FAIL  4. AC3: B, on the same sheet, sees the new scale chip and the recomputed quantities within a second, no reload (sheet.calibration.changed)
+                          chip after 946 ms, quantities after 2100 ms [after 7.8s]
+f5-s19           88s  4/4 passed
+f5-s2           287s  3/4 passed
+                    FAIL  3. AC2: a window with the sheet open hears drawing.source.changed and shows the prepared page, with no reload
+                          TimeoutError: locator.waitFor: Timeout 90000ms exceeded. / Call log: / - waiting for locator('[data-sheet-image="fit"]').first() to be visible /  [after 123.5s]
+f6-a            119s  10/10 passed
+f8-s12          223s  1/1 passed
+f8-s18           81s  3/3 passed
+f8-s2           183s  1/1 passed
+f8-s3           548s  3/3 passed
+f8-s8            86s  0/1 passed
+                    FAIL  1. AC1, AC2, AC3: api-b restarts while changes land elsewhere; B's reconnect refetches both, and no event from the gap arrives
+                          timed out after 60s waiting for B to reconnect [after 72.1s]
+fx-cleanup     purged 169 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 143m51s (parallel group 104m41s, 3 at a time)
+13 of 157 failed: rv-rows c44-fill-by-delivery f9-estimating c45-cut-method c36-earthwork-link c41-assignee-scope f8-s16 c34-my-equipment f3-s6 f5-big f5-s15 f5-s2 f8-s8 
+Full output: ./.regress/
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+FAIL worker-fx-ocr:  (want http://192.168.65.254:9000 intelcost-fx intelcost_fx '' mailhog http://stripe-fake-fx:12111)
+The fx stack is not isolated: nothing was run.
+built apps:   13 of 157 failed: rv-rows c44-fill-by-delivery f9-estimating c45-cut-method c36-earthwork-link c41-assignee-scope f8-s16 c34-my-equipment f3-s6 f5-big f5-s15 f5-s2 f8-s8 
+dev servers:  
+alone, passed (timing): none
+alone, failed (look at): c34-my-equipment c36-earthwork-link c41-assignee-scope c44-fill-by-delivery c45-cut-method f3-s6 f5-big f5-s15 f5-s2 f8-s16 f8-s8 f9-estimating rv-rows
+registry after prepare: none reached
+logs: fx-suite/.regress/release-20261102-1647 (one per fixture in fx-suite/.regress)

@@ -479,6 +479,10 @@ services:
     env_file: !override
       - path: ../intelcost-app-fastapi/.env
     environment: *fx-env
+    # Not `worker`'s bench api: f5-s2's `start worker-fx` started the bench api with it (Q96, D-953).
+    depends_on: !override
+      api-fx:
+        condition: service_started
     command: >
       watchfiles --filter python --sigint-timeout 10
       "celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads -n fx@%h"
@@ -490,6 +494,9 @@ services:
     env_file: !override
       - path: ../intelcost-app-fastapi/.env
     environment: *fx-env
+    depends_on: !override
+      api-fx:
+        condition: service_started
     command: >
       watchfiles --filter python --sigint-timeout 10
       "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n fx-previews@%h"
@@ -501,6 +508,9 @@ services:
     env_file: !override
       - path: ../intelcost-app-fastapi/.env
     environment: *fx-env
+    depends_on: !override
+      api-fx:
+        condition: service_started
     command: >
       watchfiles --filter python --sigint-timeout 10
       "nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q ocr -n fx-ocr@%h"

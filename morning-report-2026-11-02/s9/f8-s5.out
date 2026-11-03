@@ -1,0 +1,18 @@
+
+=== f8-s5 ===
+PASS  1. AC1: one committed change reaches both windows, on two api processes, once each
+      A (api :8020) and B (api-b :8030) each got workspace.settings.updated once; both headers read "Riverside 1793669499244 (F8-S5 24367)"
+      shot: /drive/scripts/shots/f8-s5-step1.png
+
+1/1 passed
+
+=== f8-s5 AC2 (drive) ===
+PASS  AC2: a publish registered on a transaction that fails never arrives; a committed one does
+1/1 passed
+
+=== f8-s5-outage ===
+PASS  1. AC3: Redis stops for 10 s: nothing crashes, sockets stay open, writes still succeed, and the next event after it returns reaches both windows
+      write during the outage: 200; both sockets stayed open; after Redis returned both headers read "Riverside 1793669571038 (F8-S5 2.15772)" (events flowing 3.3 s after /health said ok, try 2)
+      shot: /drive/scripts/shots/f8-s5-outage-step1.png
+
+1/1 passed
