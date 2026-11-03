@@ -26064,3 +26064,13 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   - A22 and A23 get a second laborer: each had one for a trench roller and a plate run together.
   - An operated truck (the tandem in proof roll) carries its driver in its rate and gets no extra row.
   - Two operator_rule rows (Ohio, Minnesota) put the walk-behind trench roller and the towable chipper under an operating engineer. The founder's rule puts them with laborers, and the founder's rule is followed.
+
+## D-957: Starter release 21, proof roll by one machine with visits (A4, the founder's Q108)
+
+**Status:** the founder's answer to Q108, 2026-11-03. Judgment calls pending founder review are marked.
+
+- **A34 proof roll:** one loaded tandem dump truck (46,000 lb), its driver in the operated rate. No other trucks.
+- **The roller instead:** A62, "Proof roll, pneumatic roller", one CP-PNEU-82 and its operator. The estimator picks it by mapping proof roll to it in Line types (workspace or project); the truck stays the default. CP-PNEU-82 (heavy, ballasted to about 59,500 lb) is the catalog's only class in the 25 to 50 t range (pending review).
+- **Production** from the tier file: 10,000 SY/day under 10,000 SY, 20,000 above.
+- **Visits:** a minimum per activity (`min_visits`, 2 for A34 and A62: the building pad, then the paving areas). A project changes it in Equipment settings › Earthwork production, Visits. Each visit takes at least half a work day: when the spread's days by production are fewer than visits ÷ 2, the lines' production is lowered until they reach it. The cost is the larger of the two, and the note says "N visits, each at least half a work day: priced as N/2 days".
+- **Labels:** "founder's crew sheet" reads "crew sheet" in the starter's notes and tier sources. "Founder's provisional figure" reads "IntelCost estimate (no published rate)". The founder's own paving figures (block 3) keep "founder's figures".
