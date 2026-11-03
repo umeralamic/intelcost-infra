@@ -26113,3 +26113,12 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 
 - **A6:** imported soil buys `fill:common_borrow:fob` ("Common borrow at the pit"), not `borrow`, whose one-source figure was a select fill's. The fill plan's borrow-against-haul price reads the same key. On the DUP it resolves to $9.28/TON: the release's $9.47 × 0.98 location factor. The queue quoted $8.63; that figure was not found (pending review). `borrow` stays in the release, unused by the app.
 - **A7, starter release 23:** the 47 activities still fixed at a 10-hour day are the 31 earthwork activities, their Compact versions and release 15's other crews. Each now states its figures per 10-hour day (`prod_basis_hours = 10`) and works the project's day (D-950). On an 8-hour day its production is 0.8 of the figure and its spread runs 8 hours.
+
+## D-961: Overtime, on by default (A8, the founder's Q119)
+
+**Status:** the founder's answer to Q119, 2026-11-03.
+
+- **The rule** (federal FLSA): hours over 40 a week at 1.5 times. The week is the project's work day times its days per week, default 5. On by default.
+- **Daily option, per wage set:** also over 8 hours a day, for states with daily overtime (California, Alaska, Nevada, Colorado). Off by default. With both on, the larger overtime counts.
+- **Where it lives:** `project_wage_set.overtime`, `overtime_daily` and `days_per_week`, set in the Wage Calculator beside the foreman premium, carried to the next set. A project with no saved set reads the defaults.
+- **The premium:** the crews' straight-time labor × ½ × (overtime hours ÷ week's hours). It is its own Bid summary line after Direct cost, "Overtime premium (labor)": overhead, profit and bond are taken on it, and a markup on labor counts it. Direct cost stays at straight time. Machines keep their rental rules.
