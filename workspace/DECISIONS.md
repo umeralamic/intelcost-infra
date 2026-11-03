@@ -26122,3 +26122,12 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **Daily option, per wage set:** also over 8 hours a day, for states with daily overtime (California, Alaska, Nevada, Colorado). Off by default. With both on, the larger overtime counts.
 - **Where it lives:** `project_wage_set.overtime`, `overtime_daily` and `days_per_week`, set in the Wage Calculator beside the foreman premium, carried to the next set. A project with no saved set reads the defaults.
 - **The premium:** the crews' straight-time labor × ½ × (overtime hours ÷ week's hours). It is its own Bid summary line after Direct cost, "Overtime premium (labor)": overhead, profit and bond are taken on it, and a markup on labor counts it. Direct cost stays at straight time. Machines keep their rental rules.
+
+## D-962: Valves and hydrants set by the water crew, starter release 24 (A9, the founder's Q114)
+
+**Status:** the founder's answer to Q114, 2026-11-03. Judgment calls pending founder review are marked.
+
+- **Count types:** "Valve" and "Fire hydrant", bought and installed. A valve starts on the release's 8 in gate valve (`valve:gate:8`), with a valve box line (`valve:box`). A hydrant starts on the hydrant assembly (`hydrant:assembly`). The estimator picks another material in the dialog.
+- **Crews:** A64 (valves) and A65 (hydrants): the water crew's excavator (EX-CRAWL-30T) and its operator, a pipe layer and a laborer. Roles `count_valve` and `count_hydrant` mapped to them; the valve box line (`count_valve_box`) is included in A64.
+- **Production** from the tier file, per 10-hour day: valves 4, hydrants 2.5. These are 8-hour published rates × 1.25, scaled by the project's work day.
+- **Pending review:** the 8 in gate valve as the default size.
