@@ -26092,3 +26092,17 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   - Both `tier_by = size`, priced per line, from the line's diameter (`earthwork_size_in`). Labelled with their source's caveat: slow for open-site trees.
 - **Retired:** the three tree bands' roles (`trees_small`, `_medium`, `_large`) leave the line map. A line written before reads "priced by hand" until the next Calculate.
 - **Pending founder review:** the chainsaw has no catalog class; WL-COMPACT-2Y feeds the grinder.
+
+## D-959: Site Prep, clearing with the topsoil strip; Surface Prep renamed Subgrade Prep
+
+**Status:** the founder's two additions to the queue of 2026-11-03. Judgment calls pending founder review are marked.
+
+- **Site Prep:** the Stripping tool is renamed Site Prep (button, dialog, menu, Estimating heading). Each area has two ticks, one or both:
+  - "Clear and grub": the class, wood and disposal of D-958. The trees per SF and their estimated count are shown, not priced.
+  - "Strip topsoil": the depth and where the soil goes, as before.
+  - Columns `earthwork_strip_area.strip_topsoil` (default on) and `clearing` (JSON). An area that only clears keeps a depth that nothing reads.
+- **Clearing pieces:** each cleared area takes its outline as a strip does (features, boundary, remaining site or drawn). The newest wins an overlap, so no acre is cleared twice, and clearing never takes from a strip. It is not clipped to the work boundary: clearing reaches past the grading limits, and a Site Feature never was clipped either.
+- **Migration:** each clearing Site Feature becomes a drawn Site Prep area under the feature's own uuid, so its estimate lines carry on, with its class and settings unchanged; then the feature is deleted. Clearing leaves the Site Features dialog. On the bench only the DUP had one. The downgrade cannot draw a deleted feature again: it drops the clearing-only areas (pending review).
+- **A5d check:** a cleared area with no strip in the same or an overlapping Site Prep area marks its acre line (`clearing:nostrip`). Needs attention, "Clearing and grubbing to check": "Cleared with no topsoil strip in this or an overlapping Site Prep area…".
+- **Retired:** "Clearing and grubbing: not set" on the strip lines (D-951). Site Prep puts both ticks in one dialog.
+- **Surface Prep → Subgrade Prep** in the Site Feature dialog, the Group by Assembly heading and the section lines' heading (the export reads the same heading). Label only. Pending review: the heading "Subgrade preparation" (fine grade, proof roll) sits next to it.
