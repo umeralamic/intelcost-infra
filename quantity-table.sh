@@ -29,9 +29,10 @@ fi
 
 # The equipment library (F33): release 1's national rows are the catalog's, counted against the
 # converter's file (D-718), and dumped for the browser's equipment rows (lib/equipment-cases.mjs).
+# D-988: one source more, Washington DES rental contract 22823.
 EQ_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.eq_class)||' '||(select count(*) from eqlib.eq_activity)||' '||(select count(*) from eqlib.eq_production)||' '||(select count(*) from eqlib.eq_transport_class)||' '||(select count(*) from eqlib.eq_setting)||' '||(select count(*) from eqlib.eq_soil_conversion)||' '||(select count(*) from eqlib.eq_source)||' '||(select count(*) from eqlib.eq_class where rent_day = 0 or rent_week = 0 or rent_4wk = 0)")
-if [ "$EQ_COUNTS" != "641 104 592 9 57 4 157 0" ]; then
-  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 641 104 592 9 57 4 157 0"
+if [ "$EQ_COUNTS" != "641 104 592 9 57 4 158 0" ]; then
+  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 641 104 592 9 57 4 158 0"
   exit 1
 fi
 # The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out;
@@ -63,8 +64,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # grader, and 7 roles mapped (the four, early-entry sawing, scarifying, the stabilized layer's compaction).
 # Release 29 (D-984, D-985): A91 to A93 (patching, crack sealing, sweeping), tack and prime rows and milling and its
 # haul mapped (7 roles).
-if [ "$ST_COUNTS" != "103 204 472 321 219 108 30 101 103 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 103 204 472 321 219 108 30 101 103 0 0"
+# Release 30 (D-987, D-989): A94 (construction layout, own crew), hydrant and valve assemblies and layout mapped.
+if [ "$ST_COUNTS" != "104 205 473 323 220 111 30 102 104 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 473 323 220 111 30 102 104 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(

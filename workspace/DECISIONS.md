@@ -26506,3 +26506,48 @@ required").
   34 71 13) has no node in the tree: it files under 32.10 Site Furnishings & Specialties. Topsoil respread stays in its
   Calculate scope (Topsoil Strip), not Landscaping.
 - On the DUP the export's total is the same to the cent before and after; only the grouping moved.
+
+## D-987: Structures by system; hydrant and valve assemblies (step 13)
+
+**Status:** the founder's queue of 2026-11-04, step 13; figures pending founder review.
+
+- The system comes first and its own types follow (storm, sanitary, water, fire water, force main, gas / electric /
+  telecom, subdrain, other, as the queue lists them); the type resets when the system changes. Types with no price
+  read "no price": grate inlet, flared end section, outlet control structure, drop manhole, grease interceptor,
+  oil-water separator, PRV vault, backflow preventer, air release valve, PIV, FDC, utility manhole / vault.
+- A fire hydrant assembly (barrel, bury, nozzles, break-away, lead size and LF, valve, tee, restraint, drain stone) and
+  a valve with its box (size, gate or butterfly, box) are assemblies: parts from the release keys, set by A65 and A64,
+  no pit of their own. Three restraint sets a lead, a 0.5 CY thrust block and 1 ton of drain stone are IntelCost
+  estimates; the tee and a butterfly valve have no key ("no price").
+- A gas, electric or telecom structure is made By others (its structure line kept, not priced); a tick changes it.
+- Hydrants and valves leave Site Features Count for new features; one saved before keeps its type and price (none on the
+  bench). A saved structure whose type is not its system's is kept and flagged (none on the bench).
+
+## D-988: Rental rates from a public contract (step 17, second half)
+
+**Status:** the founder's queue of 2026-11-04, step 17.
+
+- Loaded where the catalog had none, from Washington DES statewide rental contract 22823 (current to 2030): stump
+  grinders, one-man augers (gas and hydraulic), the handheld post driver. New York OGS 23182 (expired) only confirms.
+- The catalog has no chainsaw class; no public rate was found for a tub grinder, a walk-behind striper or a reclaimer.
+
+## D-989: Construction layout (step 14)
+
+**Status:** the founder's queue of 2026-11-04, step 14; figures pending founder review.
+
+- Layout was priced nowhere before. It is now the project's choice in the Calculate assumptions: By others (a noted
+  exclusion line), Surveyor allowance (the bid's other-cost row, 1.14 % of the direct cost or a lump sum; 1.14 % is the
+  median of 72 DOT contracts with a staking lump sum, WSDOT, FHWA EFL and INDOT) or Own crew (party chief, rodman and a
+  GPS rover, A94: hours by feature under each feature: 0.0005 h/SF of pavement, 0.01 h/LF of a line, 0.008 h/LF of pipe,
+  0.5 h a structure, 4 h a pad, 0.25 h a count item, 2 h an acre of mass grading; IntelCost estimates; machine GPS grade
+  control a quarter of the grading and pavement stakes, after FHWA-HIF-13-054's "as much as 75 %").
+- Field Engineering (01.09.01) classifies it. A project saved before has none until chosen. Not built: new projects
+  defaulting to the allowance (Q162).
+
+## D-990: Union operators option (step 15, Q124)
+
+**Status:** the founder's answer to Q124.
+
+- On the project's wage set, off by default: "Union: operating engineers run walk-behind rollers and chippers". On, each
+  trench roller and brush chipper takes an Equipment Operator row at the next Calculate; off, it goes. On the DUP, +6,507.59
+  of labor on the sewer runs, back to the cent when off.
