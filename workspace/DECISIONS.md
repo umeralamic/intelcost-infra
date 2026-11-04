@@ -26297,3 +26297,47 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   attention.
 - **Saved lines keep their prices** (D-927): a component priced before keeps its price until a person takes the new one.
   The DUP's proof drew the three fences again.
+
+## D-974: Subgrade Prep, one block (queue 2026-11-04, step 5, Q132)
+
+**Status:** the founder's queue of 2026-11-04, step 5. Judgment calls pending founder review are marked. The first report,
+what each option priced before with its code, is `morning-report-2026-11-04/s5-subgrade-prep-before.md`.
+
+- **One block, "Subgrade Prep":** Method None / Compact in place / Scarify, moisture condition and compact / Stabilize,
+  then Compaction, then the section's "Fine grade subgrade" and "Proof roll" ticks. "Option 2: Prepare subgrade" is gone as
+  a block of its own; its fields are the method's. Every line of it reads under the one heading "Subgrade Prep" (Q132).
+- **The roller once:** a compaction with "Fine grade subgrade" on is one line, "Fine grade and compact subgrade, ...":
+  the section writes no fine grade line of its own. Both were A11's crew on the same SF.
+- **Depth by method:** Compact in place, "Compaction depth (top of subgrade)": blank is surface compaction only (rolling, no
+  lifts) and the line says so; within one lift it is rolling passes; deeper than one lift it is taken out and put back in
+  lifts (A2's dig in BCY, A3's place and compact in CY) and the top rolled. Scarify, "Scarify depth", typically 6 to 8 in.
+  Stabilize, "Treatment depth", with the additive, its rate (% of dry weight or lb/SY) and the soil's dry weight as before;
+  no agent is no price.
+- **The lift:** 8 in, the most common state DOT embankment lift (a 2017 survey of state specifications for NCDOT; most
+  states 8 in loose, five states 6 to 12 in compacted). A typed lift is kept for a compaction deeper than it.
+- **Fine grade base** is each aggregate layer's own tick, under that layer's heading. A section saved with "Fine grade
+  base" reads as its top aggregate layer ticked (one pass on the base the paving sits on), and saves that way.
+- **Option 1** reads "Undercut unsuitable soil (allowance)". Its area is still compacted once: the compaction leaves out
+  the undercut's area (D-923), and treated in place it is the prep.
+- **Saved features:** no stored field moves; the block reads them. Prices move only where a double count went (DUP: three
+  lines, -8,409.80 with the A11 tier that their removal lowered).
+- **Pending founder review:**
+  - Compaction % changes nothing priced: no source opened ties roller passes to standard or modified Proctor (Ohio's
+    method spec, 8 passes on a test strip, is per job). Scarify and compaction within one lift price the same A11 pass.
+  - The undercut as "area % or SF" of the feature, and a partial undercut, are not built (Q).
+  - Geogrid and geotextile stay in the block until step 6 makes them layers.
+
+## D-975: The throwaway account purge, drives/purge-bench-accounts.py (queue 2026-11-04, step 16, Q149)
+
+**Status:** the founder's answer to Q149.
+
+- **Dry run by default**; `--purge` deletes. It lists every account it would delete, one line each, with the workspaces it
+  owns, and every account it refuses.
+- **Only throwaway patterns:** `fx.<name>.<12 or 13 digit stamp>@bench.intelcost.io` (a session's or a fixture's own) and
+  `<tag>-<role>-<13 digit stamp>@bench.intelcost.io` (a seat a fixture made). Nothing else is read for deletion.
+- **Refused:** an account on the fingerprint's founder list (scripts/protected.py), one owning a workspace that holds a
+  protected project, one owning or seated in a founder workspace, and one owning or seated in a workspace the founder
+  keeps for tests (`KEEP_WORKSPACES`: the Stitch test project "zz Stitch 10793 copy 2", 2026-10-28).
+- **How:** an account's own workspaces and its user row in one transaction (the workspace rows cascade); its workspaces'
+  objects in storage after the commit. An account other rows still name is KEPT and printed with the reason, never forced.
+- **Run for real** only after the dry-run list is in the report and every row matches a throwaway pattern (the founder).

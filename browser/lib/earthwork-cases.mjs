@@ -1307,7 +1307,8 @@ export const EARTHWORK_CASES = [
     },
   },
   // The other two methods stay one SF line each (D-405 7), named as D-406 3 has them:
-  // Compacted Subgrade carries no lifts; a count stored before D-406 reads as depth / count.
+  // Compacted Subgrade carries no lifts; a count stored before D-406 reads as depth / count. D-974: deeper than one
+  // 8 in lift it is taken out and put back in lifts (135 SF x 1 ft = 5 BCY, 5 CY), the top rolled.
   {
     id: "lines-prep-methods",
     kind: "lines",
@@ -1321,10 +1322,12 @@ export const EARTHWORK_CASES = [
       assumptions: null,
     },
     expect: {
-      roles: "prep:a prep:b cut:remainder fill:remainder",
+      roles: "undercut_native_dig:a undercut_native:a prep:a prep:b cut:remainder fill:remainder",
+      "undercut_native_dig:a": 5,
+      "undercut_native:a": 5,
       "prep:a": 135,
       "prep:a:unit": "SF",
-      "prep:a:name": 'Compacted subgrade, 12"',
+      "prep:a:name": "Compact subgrade, top surface",
       "prep:b": 200,
       "prep:b:name": 'Scarify, moisture condition and compact, 6" in 6" lifts (1 lift)',
     },
@@ -1534,7 +1537,7 @@ export const EARTHWORK_CASES = [
       "stabilize_agent_1:pad:name": "Hydrated Lime (40 lb/SY)",
     },
   },
-  // D-406 3: Compacted Subgrade with a compaction spec, and one typed.
+  // D-406 3: Compacted Subgrade with a compaction spec, and one typed. D-974: the 12 in one in lifts, its top line named so.
   {
     id: "lines-compacted-proctor",
     kind: "lines",
@@ -1549,7 +1552,7 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       "prep:a": 500,
-      "prep:a:name": 'Compacted subgrade, 12" (95% Std Proctor)',
+      "prep:a:name": "Compact subgrade, top surface (95% Std Proctor)",
       "prep:b:name": 'Compacted subgrade, 6" (100% Standard Proctor)',
     },
   },
