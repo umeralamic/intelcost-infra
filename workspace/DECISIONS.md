@@ -26378,3 +26378,19 @@ what each option priced before with its code, is `morning-report-2026-11-04/s5-s
   (12 / spacing), each way, shown "approximate". Priced at the nearest priced preset's $/lb, labelled IntelCost estimate.
 - **Pending founder review:** the 8/8 sheet's 0.9095/SF looks 2 to 3 times the distributor prices found (0.27 to 0.41);
   the research kept it, as the keep rule does.
+
+## D-978: Published spacings in place of IntelCost estimates (queue 2026-11-04, step 17, Q135; part)
+
+**Status:** the founder's queue of 2026-11-04, step 17, the spacings half (Q135). Rental rates (Q129) are not loaded.
+
+- **Published, now used:** chain-link post footings, a line post 10 in x 36 in and an end or corner post 12 in x 48 in for 6 ft
+  fabric (a city specification after ASTM F567; the terminal was 12 x 42 in); paint for a 4 in line, 330 LF a gallon at 15 mil
+  (Ohio DOT Item 642, 16 gallons a mile; was 300) and glass beads 8 lb a gallon (was 6); a 6 ft wood privacy fence, posts every
+  4 ft and three rails (a city fence code; was 8 ft and two); blanket staples 1.5 a SY, the published minimum (FHWA FP-03).
+- **Confirmed as they were:** chain-link line posts every 10 ft, guardrail posts at 6 ft 3 in.
+- **Kept as IntelCost estimates (nothing published opened):** orange and tree fence T-posts every 8 ft (one drawing shows 8 ft,
+  unconfirmed; another city 6 ft), thermoplastic at 90 mil (Ohio publishes 125 mil only: 0.443 lb/LF), check dam stone, washout
+  liner, crosshatch spacing in a lot, an 8 ft wood fence, blanket laps.
+- **Rental rates (Q129):** found on two statewide rental contracts (chainsaw, stump grinder, post-hole augers, skid-steer post
+  driver, early-entry and walk-behind saws, sweepers); not loaded into the catalog in this queue. Not found: tub grinder,
+  walk-behind paint striper, handheld hydraulic post driver.
