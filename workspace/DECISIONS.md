@@ -26222,3 +26222,51 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
 - **The bug:** a new workspace's first page asks for the equipment library several times at once. Each request copied the starter, and the second copy met `uq_eq_company_activity_national` with a 500 (15 times in the release; c37, c45 and c47 failed on it and passed alone). Release 25's 96-activity starter, against 31 before, made the copy slow enough to overlap.
 - **The fix:** `adopt_starter` takes a transaction-scoped advisory lock per workspace before it reads what the workspace holds. A second request waits, then finds the first's rows. Proved on the bench: a throwaway account's fresh workspace, six parallel first requests, all 200 with 96 activities, 96 rows and 96 distinct keys, no violation.
 - **Harness:** `failed_in` reads only "N of M failed: …" lines (a fixture's error text had added `3180`, `GET` and a url to the alone reruns). `revive` also starts a dead api-fx or api-fx-b: api-fx's watchfiles died of ENOMEM at 16:43 and 18:29 UTC and took uvicorn with it, with no restart policy. The first time it was down 4 minutes and 16 fixtures crashed in that window; the second time it was started again by a watchdog during the run. Pending review: whether the fx apis should also run without watchfiles in a release, like the workers (Q122).
+
+## D-970: A cleanout on a drawn run is set by the run's pipe crew (queue 2026-11-04, step 1)
+
+**Status:** the founder's queue of 2026-11-04, step 1. Judgment calls pending founder review are marked.
+
+- **On a run:** a cleanout at a run's end (the runs that end within its outside plus a foot) or within a foot of a
+  run's path. It writes one line, "Cleanout on the run, <size> (pipe crew)", variant `cleanout_run|<size>|<run system>`:
+  its parts (riser, wye, cap, box) and the run's pipe crew's added time, 1 hour a cleanout. No structure excavation,
+  base stone, backfill, spoils or pit cut into the run's trench: its riser sits in the run's trench.
+- **Priced:** in the run's gravity crew's site spread (A28 sewer, A32 storm, A12 otherwise), with no length of its own,
+  so the tier follows the pipe; its machines are the spread's shared machines (no rental or mob of its own) and it
+  takes the half-day crew floor off (`ON_RUN_NOTE`). With no classification of its own it takes its crew's pipe lines'
+  division.
+- **Standalone** (no run near): the small-box crew (A61) as before.
+- **Pending founder review:** the added time, 1 hour of the full pipe crew a cleanout, is an IntelCost estimate (no
+  published rate: none found in DOT contract-time tables or FHWA). A cleanout's run is the first run found, by its
+  system, not the cleanout's own system (the DUP's three storm cleanouts sit on sanitary runs and are priced by the
+  sewer crew).
+
+## D-971: Starter release 26, the short-run pipe crew (queue 2026-11-04, step 2)
+
+**Status:** the founder's queue of 2026-11-04, step 2. Judgment calls pending founder review are marked.
+
+- **A28 (sewer) and A32 (storm)** gain a tier 0 for the shortest band (A28 production under 200 LF a day, A32 under 120,
+  the rates of their under-150 LF runs): a 30-36 t excavator and a 2 yd loader with their operators, a trench roller the
+  laborer runs, a pipe layer and a laborer. No second excavator, dozer, single-drum roller or pickup. The trench box stays
+  its own line (A13). The old tier 1 starts at the next band.
+- **The tier follows the runs** for a run-paced activity (`tier_by = run`, D-950): the runs' own lengths' rates at the
+  file's figures before the work day, weighted by days, not the activity's total length. Before this, the DUP's 809 LF of
+  short sewer runs took the 150-999 LF tier (two excavators) from the total.
+- **Water (A18, A19) and A12** already run one excavator in their shortest tier: unchanged.
+- **Pending founder review:** the short crew has no foreman (the founder's list names none; Q123's foreman drives the
+  pickup, and the list has no pickup). The excavator class is the old tier's (30-36 t), not a smaller one.
+
+## D-972: One shared clearing spread; one half-day minimum a site spread, not a line (queue 2026-11-04, step 3)
+
+**Status:** the founder's queue of 2026-11-04, step 3. Judgment calls pending founder review are marked.
+
+- **Clearing light, medium and heavy (A55, A56, A57) are one site spread** for every Site Prep clearing area of the
+  project: one set of shared machines (the D8), homed on the first of them the workspace has, so one mobilization and
+  one rental; each line at its own class's production and its own class's crew name, its share by its hours.
+- **The half-day minimum is the spread's, not each line's.** A line whose machines are a site spread's shared machines
+  has no crew floor of its own in the browser; the api lowers the spread's production so its days reach half a day
+  ("One half-day minimum for the spread: priced as half a day"). A line priced on its own keeps its half-day floor.
+- **Pending founder review:** the second rule moves every small line of any site spread, not only clearing (on the DUP:
+  labor on 12 lines of paving, base, fine grade, cut and fill and one sewer line, -7,081.50 direct). The founder's step 3
+  says "one half-day minimum for the dozer across all clearing areas", and a floor a line in a shared spread is the
+  same double count; it is applied everywhere. Say so if it should stay to clearing.
