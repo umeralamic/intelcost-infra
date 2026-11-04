@@ -1,0 +1,51 @@
+DUP e7115d1e "BENCH DUP 2026-11-04 02:00 — delete me" in throwaway workspace "zz Queue 1104" (c8eee870), owner fx.equip.202611040159; copied by drives/copy-3d-test.py --source 4df73dc7 (source counts equal before and after).
+The source had changed since 11-03 (latest updated_at 2026-11-04 00:18 UTC, the founder's own work), so today's baseline is not 11-03's.
+baseline (Calculate C-200, fresh load, settled): direct 798,136.43 labor 188,303.91 material 282,037.85 equipment 327,794.67 bid 1,037,933.19 attention 65 (dup-baseline.xlsx)
+
+Step 1 cleanout breakdown, before (3 EA "Cleanout 2.5 x 2.5 ft, 0-6 ft", storm, on sanitary runs; 15,790.79 = 5,263.60/EA):
+  crew A61 small box (1 Foreman, 4 Laborers, 3 Operators) 80 MH x 47.20 = 3,775.60 (one 10-hour crew-day for the three)
+  machines, 2 days rental each, 10 EH: excavator 30-36 t 6,694.38, wheel loader 2-2.5 yd 2,407.35, single-drum roller 84 in 2,663.74; trench roller, plate, pickup unpriced (missing data) = 11,765.48
+  materials 249.71: riser 6 in 7 LF 43.50, box 3 x 68.74 = 206.21, cap and wye no price
+  structure excavation, stone, backfill: the lines "Structure excavation 414 BCY", "base stone 6 CCY 364.26", "backfill 392 CCY" included the three pits (excavation and backfill unpriced on this DUP)
+Step 1 after (D-970): "Cleanout on the run, 2.5 x 2.5 ft (pipe crew)" 3 EA: A28 sewer crew (1 Pipelayer, 1 Laborer, 2 Operators) 3 x 1 h = 12 MH x 46.21 = 554.46; machines share the run's rental (3 EH each, no own rental); materials 249.71 => 804.17 (268.06/EA). Structure excavation 414 -> 345 BCY, base stone 6 -> 4 CCY (364.26 -> 221.21), backfill 392 -> 328 CCY.
+Step 2 (D-971, release 26): A28 0-149 LF band, short-run tier (excavator 30-36 t + loader with operators, trench roller run by the laborer, pipe layer, laborer):
+  12" HDPE 0-6 ft 440 LF: 67,985.00 (154.51/LF) -> 35,828.55 (81.43/LF)
+  12" HDPE 6-8 ft 91 LF: 14,140.79 (155.39/LF) -> 7,472.86 (82.12/LF)
+  8" HDPE 0-6 ft 244 LF: 33,249.94 (136.27/LF) -> 15,413.47 (63.17/LF)
+  8" HDPE 6-8 ft 34 LF: 4,981.46 (146.51/LF) -> 2,296.59 (67.55/LF)
+after 1+2: direct 723,860.05 labor 157,754.29 material 282,063.29 equipment 284,042.47 bid 946,695.30 attention 65 (dup-after-1-2.xlsx was read one Calculate before the floor fix: cleanout crew 16 MH there)
+
+Step 3 (D-972): two clearing-only Site Prep areas drawn for the proof through the api (light 0.77 ac, heavy 3.03 ac; debris ground; trees counted elsewhere, so in the acre rate only). Before = the step-3 code switched off on the same areas.
+  before: direct 755,734.86 labor 162,225.65 material 282,063.29 equipment 311,445.92 bid 985,851.16 att 68 (dup-before-3.xlsx)
+  after:  direct 740,387.90 labor 154,606.99 material 282,063.29 equipment 303,717.62 bid 966,998.56 att 68 (dup-after-3.xlsx)
+  light 0.77 ac: 8,213.78 (10,667.25 $/ac: D8 1 day rental 7,844.14 + crew floored 8 MH 369.64) -> 1,377.68 (1,789.19 $/ac: D8 share 1,173.66 + crew 4.42 MH 204.02)
+  heavy 3.03 ac: 19,959.55 (6,587.31 $/ac: D8 own 1-week rental 17,160.37 + crew 60.58 MH 2,799.18) -> 18,901.73 (6,238.19 $/ac: D8 share of one shared rental 16,102.55)
+  light debris grind 3.86... 96.59 CY: 554.02 (crew floored 8 MH) -> 182.48
+  the spread-level half-day floor (no per-line floor in a site spread) also moved, labor only: surface course 1.75 in 1,774.44 -> 1,597.21; building pad fine grade subgrade and base 1,388.52 -> 415.09 each; base 6 in 1,282.88 -> 767.02; sidewalk cut 272.02 -> 43.57, fill 712.58 -> 152.18, fine grade x2 1,388.52 -> 201.11, base 4 in 1,282.88 -> 371.63; cut 63 BCY 272.02 -> 27.51; 8" HDPE 6-8 ft 739.28 -> 617.16
+  clearing lines: 31,874.81 -> 23,609.35 (-8,265.46); the floor elsewhere -7,081.50
+
+Step 4 (D-973): three fences drawn for the proof through the item api on C-200: silt fence standard 306 LF, orange fence 204 LF, chain link 6 ft 9 ga galv 219 LF (one corner).
+  before: direct 746,759.93 labor 156,298.33 material 286,743.98 equipment 303,717.62 bid 975,780.07 att 71 (dup-before-4.xlsx)
+  after (d972; the three fences deleted and drawn again, because a saved component keeps its price, D-927): direct 747,439.86 labor 157,197.88 material 286,524.36 equipment 303,717.62 bid 976,570.57 att 71 (dup-after-4.xlsx)
+  chain link 219 LF: crew 899.54 (400 LF/day) + materials 3,960.65 = 4,860.19 (22.19/LF) -> crew 1,799.09 (200 LF/day x 0.8 day = 160, 1.37 days, 2 visits do not bind) + 3,960.65 = 5,759.74 (26.30/LF)
+  orange fence 204 LF: 316.72 + 492.13 (27 T-posts at 13.71) = 808.85 (3.96/LF) -> 316.72 + 272.51 (T-posts 5.58 = 5.69 x 0.98) = 589.23 (2.89/LF)
+  silt fence 306 LF: 475.08 + 227.91 = 702.99 (2.30/LF) -> unchanged (the standard fabric key was already the workbook's)
+  installed reference (workbook, no OH and profit; medians): silt fence 3.715 (20 points), orange 3.00 (16), chain link 6 ft 51.50 (16)
+
+Step 5 (D-974): first report in s5-subgrade-prep-before.md.
+  saved features, before (dup-after-4) and after (dup-after-5): direct 747,439.86 -> 739,030.06 (-8,409.80); labor 157,197.88 -> 152,870.27; equipment 303,717.62 -> 299,635.43; material unchanged; bid 976,570.57 -> 966,239.75
+  removed (double counts): Standard Duty Asphalt "Fine grade subgrade" 3,604.20 (its compaction now "Fine grade and compact subgrade, 6 in"); Heavy Duty Asphalt "Fine grade subgrade" 3,604.25; Heavy Duty Aggregate Pavement's second "Fine grade aggregate" 7,891.32 (two aggregate layers, each fine graded: now its top layer only)
+  then every A11 line re-priced through the site spread: the duplicates had pushed its total over 200,000 SF (45,000 SF/day tier 4); without them 30,000 SF/day. e.g. aggregate pavement fine grade subgrade 44,736 SF 7,891.32 -> 9,490.57; asphalt compaction 3,604.22 -> 4,334.63; building pad 949.20 -> 1,141.57; sidewalk 459.88 -> 553.11
+  one area, Standard Duty Asphalt 20,432 SF (2,270.2 SY), fine graded and proof rolled, 95% standard Proctor:
+    blank (surface rolling): 4,334.63 = 1.9093 $/SY
+    6 in (one lift, rolling): 4,334.63 = 1.9093 $/SY
+    12 in (out and back in 2 x 8 in lifts, plus the top): remove 757 BCY 3,275.10 + replace 757 CY 7,016.05 + top 4,334.63 = 14,625.78 = 6.4425 $/SY
+    scarify 8 in: 4,334.63 = 1.9093 $/SY
+    (s5-compact-blank.xlsx, s5-compact-6.xlsx, s5-compact-12.xlsx, s5-scarify-8.xlsx; the feature restored to 6 in after)
+
+Steps 6-8 (D-976, D-977): d973 adds 20 keys. DUP before (dup-after-5) and after (dup-after-678):
+  direct 739,030.06 -> 745,109.84; material 286,524.36 -> 292,604.14 (+6,079.78); labor and equipment unchanged; bid 966,239.75 -> 974,947.40
+  every move is a saved aggregate layer on aggregate_base, its density default 140 -> 148.1 pcf (Ohio DOT CMS 304.07, 4,000 lb/CY compacted in place), material x 1.0579:
+    Aggregate base 4 in 290 SY 1,595.93 -> 1,688.27; base 6 in 2,270 SY 18,761.12 -> 19,846.58; base 6 in 598 SY 4,940.92 -> 5,226.79; base 8 in 2,270 SY 25,015.12 -> 26,462.43; aggregate 2 in 4,971 SY 13,692.35 -> 14,484.55; aggregate 6 in 4,971 SY 41,077.04 -> 43,453.64
+  mesh lines renamed only ("Wire mesh 6x6 W1.4xW1.4 (10/10 ga), 15 % lap"), same price
+  no saved layer uses #57 stone (100 pcf estimate now, 140 before) on this DUP
