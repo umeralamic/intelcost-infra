@@ -26486,3 +26486,23 @@ required").
   IntelCost estimate); crack sealing (LF, or LF per SY at 0.3, IntelCost estimate; hot-pour at 0.295 lb/LF, FHWA's
   middle; A92 at 17,500 LF a day, Michigan DOT's average); sweep and clean (A93, self-propelled broom, 20,000 SY a day,
   IntelCost estimate). Starter release 29.
+
+## D-986: Classification by trade (step 12)
+
+**Status:** the founder's queue of 2026-11-04, step 12; the node choices pending founder review.
+
+- A Site Feature's section line is classified by its own line type, not its feature: one sidewalk splits into Site
+  Concrete, Earthwork (its base) and Joint Sealing. Group by Assembly still keeps each feature together.
+- Each line carries its trade's work scope; the workspace's work scopes (Settings > Work scopes) map each scope to a
+  node, so the whole map is editable there. New scopes: Earthwork — Aggregate Base, Earthwork — Site Clearing, Erosion
+  Control, Asphalt Paving, Site Concrete, Pavement Markings, Fencing, Temporary Facilities, Signage, Guardrail,
+  Landscaping, Site Utilities — Site Items, Field Engineering. A layer may name its own trade in the feature; a
+  geosynthetic layer follows the layer above.
+- The tree is the app's own numbering (csi-default-v1), not MasterFormat's; each trade maps to the node of the same
+  meaning: aggregate base and subbase 31.05.04 (Earthwork, as the founder set), asphalt 32.03 (tack and prime
+  32.03.04), overlay work 32.01, site concrete 32.04 (sidewalks .04, paving .05, curbs .06, joint sealing .12, ramps
+  .10), wheel stops 32.06.02, markings 32.06.01, fencing 32.08, temporary fence 01.05.01, signage 32.10.06,
+  landscaping 32.12, trench drain 33.05, valves and hydrants 33.01, field engineering 01.09.01. Guardrail (MasterFormat
+  34 71 13) has no node in the tree: it files under 32.10 Site Furnishings & Specialties. Topsoil respread stays in its
+  Calculate scope (Topsoil Strip), not Landscaping.
+- On the DUP the export's total is the same to the cent before and after; only the grouping moved.

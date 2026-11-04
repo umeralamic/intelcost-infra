@@ -1,0 +1,13 @@
+DIV 31 — Earthwork > Excavation & Backfill	193798.27
+DIV 31 — Earthwork > Grading	48892.13
+DIV 31 — Earthwork > Shoring & Excavation Support	1428.65
+DIV 31 — Earthwork > Site Clearing	13193.03
+DIV 31 — Earthwork > Subgrade Preparation	210527.20
+DIV 32 — Exterior Improvements > Asphalt Paving	111071.06
+DIV 32 — Exterior Improvements > Concrete Paving & Flatwork	69599.72
+DIV 32 — Exterior Improvements > Paving Maintenance & Repair	16705.24
+DIV 33 — Utilities > Sanitary Sewer	60889.35
+DIV 33 — Utilities > Storm Drainage	33537.83
+DIV 33 — Utilities > Utility Trenching & Restoration	13201.92
+— > —	774470.38
+TOTAL	1547314.78
