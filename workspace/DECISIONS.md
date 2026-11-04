@@ -26458,3 +26458,31 @@ required").
   by the reclaimer (A21 at TxDOT's 2,495 SY a day; the reclaimer has no rental rate: Needs attention) and compaction of
   the mixed layer (A11).
 - On the DUP, one 20,432 SF area at 6 in: compact in place $1.9093/SY < scarify $4.0687/SY < stabilize $8.7197/SY.
+
+## D-984: Asphalt sections: mixes by aggregate size, binder grades, tack and prime rows (step 10)
+
+**Status:** the founder's queue of 2026-11-04, step 10; figures marked pending founder review.
+
+- Layer names offered: Surface course, Intermediate (binder) course, Base course; any number of lifts. The asphalt types now
+  start Surface course, Tack coat, Intermediate (binder) course, Aggregate base.
+- Mixes by aggregate size, not by course: 4.75 (thin levelling), 9.5, 12.5, 19, 25 and 37.5 mm, each with help naming its
+  usual course and state names. A lift under three times its aggregate size warns (TxDOT).
+- Binder grade per layer, PG 64-22 by default; another grade adds its premium per ton of binder on 5.5 % binder in the
+  mix (IntelCost estimate). Only PG 76-22 has a premium (D-976); PG 58-28, 64-28 and 70-22 read "no price".
+- A tack coat row between every pair of asphalt lifts (and under the bottom lift on existing pavement): emulsion SS-1h,
+  CSS-1h or trackless; surface; residual rate at the middle of FHWA's range (0.03 new, 0.055 existing, 0.06 milled,
+  0.04 concrete); residue 0.60; gallons applied = residual ÷ residue; Priced, Conditional (noted, not priced) or By
+  others. A prime coat row is optional (MC-30 0.35 or emulsion 0.2 gal/SY, the middle of TxDOT's ranges). Both price
+  with A48. Saved sections keep their mixes and price as before.
+
+## D-985: Overlay on existing pavement (step 11)
+
+**Status:** the founder's queue of 2026-11-04, step 11; figures marked pending founder review.
+
+- An Area section "Sits on" Subgrade (new pavement), the default, or Existing pavement (overlay). On existing pavement
+  Subgrade Prep, the undercut and the depth hide, and the feature is no grading region: no cut, fill or prep line.
+- Its work, each a tick: milling (A49 by its published tiers; millings hauled, A7, at 130 pcf, FHWA-RD-97-148's middle,
+  or kept; a RAP credit noted to enter by hand); full-depth patching (% of the area or SF, depth, mix; A91, 300 SY a day,
+  IntelCost estimate); crack sealing (LF, or LF per SY at 0.3, IntelCost estimate; hot-pour at 0.295 lb/LF, FHWA's
+  middle; A92 at 17,500 LF a day, Michigan DOT's average); sweep and clean (A93, self-propelled broom, 20,000 SY a day,
+  IntelCost estimate). Starter release 29.
