@@ -1,0 +1,22 @@
+DUP 52561b15 "BENCH DUP 2026-11-04 06:43 — delete me" in throwaway workspace "zz Quantity table" (34be6ba5), owner fx.equip.202611040642; copied by drives/copy-3d-test.py --source 4df73dc7 (source counts equal before and after).
+baseline (Calculate C-200, settled, code at umer-dev 628ff02/337fc95 + d974 column): direct 714,448.53 labor 146,345.18 material 288,143.07 equipment 279,960.28 bid 936,373.05 attention 65
+
+Q152 (D-981): two Site Prep clearing areas drawn for the proof through the Site Prep dialog: heavy 0.502828 ac (haul off), light 0.100256 ac (grind on site, 12.53 CY).
+  with both: direct 731,956.76 (crew minimum off = D-972) -> 732,300.88 (per-class crew minimum, D-981); labor 147,492.04 -> 147,836.16 (+344.12); equipment 291,848.66 both; bid 958,792.24 -> 959,214.96
+  light A55 (crew Laborer 1 + the dozer's operator): prod 2.8 ac/day, 0.0358 day; crew at its own half day (crew prod 0.2 ac/day); machines keep the group's share (group days 0.874, no group floor)
+  heavy A57: 0.838 day, over the half day: unchanged. Grind A60 12.53 CY: its own spread at 25.06 CY/day = half a day (sync_site floor).
+
+Release 28 and the new code on the saved DUP (Calculate, no feature changed): direct 732,300.88 bid 959,214.96, unchanged (no saved feature has joints, scarify or stabilize).
+
+Step 9 (D-982): the founder's two details put on the DUP's own features through the item api (as the dialog saves): Concrete Sidewalk 2,607.13 SF, 4 in, 6x6 W1.4xW1.4 (already), walk, control 6 ft tooled 3/8 in, expansion 30 ft sealed hot-pour; Heavy Duty Concrete Pavement 5,381.03 SF, 8 in, mesh changed to custom 6x6 W4.7xW4.7, both ways, control 10 ft sawn early-entry 1/8 in, expansion 30 ft sealed hot-pour. Proof strip drawn through the dialog: "Proof walk strip 5 ft", Line, Sidewalk strip 60 x 4 in, control 6 ft tooled 3/8 in, its end moved to 521.426761 LF (= 2,607.133812 SF / 5 ft) through the geometry api.
+  after: direct 739,200.44 labor 151,663.93 material 295,115.13 equipment 292,421.38 bid 968,199.89 attention 75 (s9-joints-after.xlsx); of it the proof strip's own lines 3,430.89 (strip by machine 3,226.99, joints 203.90); on the two features +3,468.67 (joints 1,631.93, the HD mesh to W4.7 and the spreads it shares)
+  Sidewalk (2,607.13 SF): control tooled 434.52 LF 0.00 (in finishing, A40); expansion 86.90 LF filler 1/2 x 4 in 44.29; seal 86.90 LF 159.61 (crew 1.31 MH 51.69, compressor share 93.46, backer rod 8.52, hot-pour 10.82 lb 5.94) => joints 203.90 = 0.0782 $/SF
+  HD concrete (5,381.03 SF): control sawn early-entry 1,076.21 LF 284.05 (7.17 MH; the saw's fuel is missing in the catalog: Needs attention); expansion 358.74 LF filler 1/2 x 8 in 485.15; seal 358.74 LF 658.83 => joints 1,428.03 = 0.2654 $/SF
+  Line vs Area: the strip's control 434.52 LF 0.00, expansion 86.90 LF 44.29, seal 86.90 LF 159.61: the same LF and price as the Area's to the cent.
+  Joint sealing (A88, 1,450 LF a day derived from FHWA-RD-99-146) has a 185 CFM compressor, so its lines share one spread and one half-day minimum (first run without it: each seal line took its own 8 MH).
+
+Q155 (D-983): Standard Duty Asphalt Pavement, 20,432.28 SF (2,270.25 SY), 6 in, set by the item api (prep_method), each Calculated and exported:
+  compact in place (one lift, fine graded): Fine grade and compact subgrade 4,334.63 = 1.9093 $/SY (s9-joints-after.xlsx)
+  scarify, moisture condition and compact: Scarify subgrade 3,511.98 (grader 140 share 3,169.37, operator 342.61; 31,500 SF/day = Arizona DOT 3,500 SY) + Moisture condition 1,390.25 (water truck 1,197.61, driver 178.72, water 4.05 MGAL 13.92 at 1.78 gal/SY = 110 pcf x 3 % x 0.5 ft x 9 / 8.33) + compaction 4,334.63 = 9,236.86 = 4.0687 $/SY (q155-scarify-6.xlsx)
+  stabilize, lime 5 % of dry weight: Lime 28.09 t 12,021.16 + Spread the agent 316.77 (8 MH, half-day minimum) + Mix in place (reclaimer, A21 2,495 SY/day = TxDOT lime treat medium) 3,960.51 (crew and water truck; the reclaimer has no rental rate: MISSING) + Compact the stabilized layer 3,497.56 = 19,796.00 = 8.7197 $/SY (q155-stabilize-6.xlsx)
+  compact 1.9093 < scarify 4.0687 < stabilize 8.7197 $/SY. The feature put back to compact 6 in afterwards.

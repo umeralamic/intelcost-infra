@@ -26413,3 +26413,48 @@ required").
 - The purge's real run took "zz MyEq project" with its throwaway owner, and the table's `parents` check failed on it.
 - Made again by the copier into workspace "zz Quantity table" (`34be6ba5`), which `KEEP_WORKSPACES` in
   `drives/purge-bench-accounts.py` now keeps with its owner. The table passes again.
+
+## D-981: A clearing class's crew keeps its own half-day minimum in the shared clearing spread (Q152)
+
+**Status:** the founder's answer to Q152 (2026-11-04).
+
+- The lines whose labor moved under D-972 were checked by activity and crew. Every moved line but one class of clearing
+  sits in one activity's site spread with one crew (A11 fine grade, A39 stone base, A47 paving, A14 and A16 dozer cut
+  and fill, A28 sewer, A60 grinding): one crew, one minimum, as D-972 has it. Kept.
+- The clearing group (A55, A56, A57) shares its machines but each class has its own crew. Each class's crew now has its
+  own half-day minimum (`crew_prod_per_day` on the line's spread, the browser's crew hours from it); the shared machines
+  keep one minimum for the group.
+- On the DUP: light clearing 0.10 ac, crew 0.57 MH ($26.47) to 8.02 MH ($370.59); the shared dozer unchanged.
+
+## D-982: Joints in concrete sections, one component for Areas and Lines (step 9)
+
+**Status:** the founder's queue of 2026-11-04, step 9; the defaults and figures below pending founder review.
+
+- Control joints (also called contraction joints), expansion joints (also called isolation joints) and construction
+  joints, on an Area's concrete layer and on a Line's sidewalk or mow strip, with one editor. An Area lays them across
+  only (walk) or both ways (slab); a strip's run across its width (LF = length ÷ spacing × width), so a 5 ft strip and
+  the same Area as a walk give the same LF and price.
+- Depth unset: a quarter of the slab (ACI 330R, ACPA). Defaults are the founder's details: a walk, tooled every 6 ft,
+  3/8 in; a pavement, sawn early-entry every 10 ft, 1/8 in; expansion every 30 ft, sealed hot-pour. Saved features have
+  none (no price moves); a curb keeps its count of joints.
+- Pricing: tooled joints and expansion filler are in the concrete crew's work (A40); early-entry sawing A54 (crew sheet,
+  no published rate for new slabs); conventional sawing A87 at 350 LF a day (Arizona DOT 2018); sealing A88 at 1,450 LF a
+  day, derived from FHWA-RD-99-146 Table 12, with a 185 CFM compressor for the blast-clean step (one shared spread).
+- Sealant per LF: hot-pour as deep as wide at specific gravity 1.15, silicone half as deep as wide and never under
+  1/4 in, each on a backer rod: shape factors and the gravity are IntelCost estimates. Filler: the 1/2 in fiber key by
+  slab depth (4, 6 or 8 in).
+- Starter release 28.
+
+## D-983: Scarify and stabilize carry their own work (Q155)
+
+**Status:** the founder's answer to Q155 (2026-11-04); figures pending founder review.
+
+- Scarify adds a scarifying pass (A36, now a 12 ft motor grader with its scarifier, 31,500 SF a day = Arizona DOT's
+  3,500 SY grade-roadway rate, the closest published item; the crew sheet's 1,000 SY differed by more than 30 %) and
+  moisture conditioning (A89, water truck, 72,000 SF a day: IntelCost estimate, no output published), with water by
+  US Army FM 5-434 (dry pcf × % added × depth × 9 ÷ 8.33 gal/SY) at 3 % added (IntelCost estimate) and $3.51 per 1,000
+  gal (median of four public hydrant-meter rates), on top of the compaction pass.
+- Stabilize adds spreading the agent (A90, 150 tons a day: IntelCost estimate; no spreader truck in the catalog), mixing
+  by the reclaimer (A21 at TxDOT's 2,495 SY a day; the reclaimer has no rental rate: Needs attention) and compaction of
+  the mixed layer (A11).
+- On the DUP, one 20,432 SF area at 6 in: compact in place $1.9093/SY < scarify $4.0687/SY < stabilize $8.7197/SY.

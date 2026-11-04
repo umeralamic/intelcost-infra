@@ -1239,7 +1239,8 @@ export const EARTHWORK_CASES = [
   },
   // D-405 Soil Stabilization, by hand: 10,000 SF = 1,111.1 SY; tons = SF x ft x pcf x % / 2000.
   // 10,000 x 1 x 110 x 0.06 / 2000 = 33.0; at 8 % 44.0; 16" (4/3 ft) at 6 % 44.0;
-  // a blend 3 % + 10 % = 16.5 + 55.0. The parent and Mix and Compact both read the SY.
+  // a blend 3 % + 10 % = 16.5 + 55.0. The parent and the mix read the SY. D-983 (Q155): the agents' tons spread
+  // ahead of the mixer (one line, their sum) and the mixed layer compacted (the SF).
   ...[
     { id: "lines-stabilize-lime-6", depthFt: 1, agents: [["Hydrated Lime", 6]], tons: [33], depth: '12"' },
     { id: "lines-stabilize-lime-8", depthFt: 1, agents: [["Hydrated Lime", 8]], tons: [44], depth: '12"' },
@@ -1256,14 +1257,18 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: ["stabilize:pad", "stabilize_mix:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder", "fill:remainder"].join(" "),
+      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder", "fill:remainder"].join(" "),
       "stabilize:pad": 10000 / 9,
       "stabilize:pad:unit": "SY",
       // A count stored before D-406 reads as its thickness, depth / count: here the depth itself.
       "stabilize:pad:name": `Soil stabilization, ${c.agents.map(([a, p]) => `${a} ${p}%`).join(" + ")}, ${c.depth} in ${c.depth} lifts (1 lift)`,
       "stabilize_mix:pad": 10000 / 9,
       "stabilize_mix:pad:unit": "SY",
-      "stabilize_mix:pad:name": "Mix and Compact",
+      "stabilize_mix:pad:name": "Mix in place (reclaimer)",
+      "stabilize_spread:pad": c.tons.reduce((a, b) => a + b, 0),
+      "stabilize_spread:pad:unit": "TON",
+      "stabilize_compact:pad": 10000,
+      "stabilize_compact:pad:unit": "SF",
       ...Object.fromEntries(
         c.agents.flatMap(([a, p], k) => [
           [`stabilize_agent_${k + 1}:pad`, c.tons[k]],
@@ -1322,7 +1327,12 @@ export const EARTHWORK_CASES = [
       assumptions: null,
     },
     expect: {
-      roles: "undercut_native_dig:a undercut_native:a prep:a prep:b cut:remainder fill:remainder",
+      // D-983 (Q155): a scarify's own pass and its water (110 pcf x 3 % x 0.5 ft x 9 / 8.33 = 1.78 gal/SY).
+      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b cut:remainder fill:remainder",
+      "prep_scarify:b": 200,
+      "prep_scarify:b:unit": "SF",
+      "prep_moisture:b": 200,
+      "prep_moisture:b:name": 'Moisture condition subgrade, 6" (water truck; +3 % moisture, 1.78 gal/SY)',
       "undercut_native_dig:a": 5,
       "undercut_native:a": 5,
       "prep:a": 135,
