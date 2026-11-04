@@ -26341,3 +26341,40 @@ what each option priced before with its code, is `morning-report-2026-11-04/s5-s
 - **How:** an account's own workspaces and its user row in one transaction (the workspace rows cascade); its workspaces'
   objects in storage after the commit. An account other rows still name is KEPT and printed with the reason, never forced.
 - **Run for real** only after the dry-run list is in the report and every row matches a throwaway pattern (the founder).
+
+## D-976: Geosynthetic layers and aggregates by name, each with its own density (queue 2026-11-04, steps 6 and 7)
+
+**Status:** the founder's queue of 2026-11-04, steps 6 and 7. Judgment calls pending founder review are marked.
+
+- **Geosynthetic layer** (a layer kind): Geotextile woven (separation/stabilization), nonwoven 6 oz, nonwoven 8 oz,
+  Biaxial geogrid light (Type 1), heavy (Type 2), Triaxial geogrid, Other (enter price). No thickness (the depth check
+  ignores it), overlap % (default 10), Priced / By others, its place in the layer order. Its line, SY with the overlap,
+  sits under its layer's heading; its classification follows the layer above it (step 12). Geogrid and geotextile left
+  Subgrade Prep: a section saved with them opens with them as bottom layers. A feature with no section keeps the old pair.
+- **Prices:** woven and nonwoven 8 oz the release's keys; nonwoven 6 oz 0.68/SY (C, a 2021 county supply bid: old);
+  biaxial Type 1 1.26 (D, online x0.50); Type 2 1.36 (C, a 2024 road commission supply bid); **triaxial: no price**.
+- **Aggregates by general name, grouped:** Dense-graded (dense-graded aggregate base (crusher run) with the help "also
+  called GAB, ABC, DGA, road base, 304/411-type"; recycled concrete base; pit run / bank run gravel; screenings),
+  Open-graded clean washed stone (#3, #4, #57, #67, #8/#89, pea gravel), Sand (fill, bedding), Other (enter price).
+- **Keys:** the release had only `aggregate_base` and `stone:_57_stone`; the founder's names map to them, so every saved
+  layer keeps its key. The rest load from the national research's delivered prices (agg:<name>:delivered, grade A to C).
+- **Density by material, pcf:** published: dense-graded base 148.1 (Ohio DOT CMS 304.07, 4,000 lb/CY in place), recycled
+  concrete 125.9 (Ohio DOT CMS 411, 3,400 lb/CY), fill and bedding sand 118.5 (WisDOT granular backfill, 1.5 to 1.7 t/CY).
+  IntelCost estimates (no published rate found): #3, #4, #57, #67, #8 and pea gravel 100, screenings 120, pit run 135. A
+  typed density still wins.
+- **Pending founder review:** the dense-graded default moves every saved aggregate_base layer's material +5.79 % (DUP: six
+  lines, +6,079.78); #57 saved layers move down (140 to 100), none on the DUP.
+
+## D-977: Wire mesh presets and a custom size (queue 2026-11-04, step 8)
+
+**Status:** the founder's queue of 2026-11-04, step 8.
+
+- **Presets by plain name** (no key in the dropdown), weight per 100 SF from the Navy construction manual's Table 7-4 and
+  the maker's data: 6x6 W1.4 (10/10 ga) 21 lb, W2.1 (8/8) 29, W2.9 (6/6) 42, W4.0 (4/4) 58, W5.5 (2/2) 80; 4x4 W1.4 31,
+  W2.1 43, W2.9 62, W4.0 86. Roll or sheet where the size comes both ways; no roll above W2.9. Then "Custom size".
+- **Keys:** 10/10 is `wwf_6x6_w14w14`, the 8/8 sheet `wwf_6x6_w21w21` (relabelled W2.1); new: 6x6 W2.9 0.393/SF, 6x6 W4.0
+  0.500, 4x4 W4.0 0.917 (distributor lists, B). **No price:** 6x6 W5.5, 4x4 W1.4, W2.1, W2.9.
+- **Custom size:** spacing each way (in) and wire each way, W or D number. Weight per SF = wire number x 0.034 lb/ft x
+  (12 / spacing), each way, shown "approximate". Priced at the nearest priced preset's $/lb, labelled IntelCost estimate.
+- **Pending founder review:** the 8/8 sheet's 0.9095/SF looks 2 to 3 times the distributor prices found (0.27 to 0.41);
+  the research kept it, as the keep rule does.
