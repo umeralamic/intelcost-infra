@@ -38,8 +38,9 @@ fi
 # with the paving, flatwork and fill addition (D-943): 162 more, A56 B35 C71.
 MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select string_agg(g, ' ' order by g) from (select grade||count(*) g from matlib.mat_default d join matlib.release r on r.id=d.release_id where r.title='Q4 2026' group by grade) x")
 # B4 (D-964): 156 fence, erosion control and site keys added.
-if [ "$MAT_COUNTS" != "A182 B136 C232 D21 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A182 B136 C232 D21 F46"
+# D-973: online retail at x0.50 and grade D, the keep rule again (9 keys B to C or D), one commercial gate (D).
+if [ "$MAT_COUNTS" != "A182 B127 C235 D28 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A182 B127 C235 D28 F46"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts

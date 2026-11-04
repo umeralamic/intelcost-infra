@@ -26270,3 +26270,30 @@ SQLAlchemy's sync work runs in a greenlet whose stack stops at the greenlet. Wit
   labor on 12 lines of paving, base, fine grade, cut and fill and one sewer line, -7,081.50 direct). The founder's step 3
   says "one half-day minimum for the dozer across all clearing areas", and a floor a line in a shared spread is the
   same double count; it is applied everywhere. Say so if it should stay to clearing.
+
+## D-973: Price rules: online retail at half and grade D, the keep rule again; T-post, gates, chain link (queue 2026-11-04, step 4)
+
+**Status:** the founder's queue of 2026-11-04, step 4 (Q136, Q137, Q138). Judgment calls pending founder review are marked.
+
+- **Online retail:** a price from an online retailer's single-unit listing (Zoro and its like) is retail: x0.50 and grade
+  D. The keep rule ran again over the 17 keys whose only source was one: a single-unit online price never beats a list or
+  bid source on the same key. On a full tie (grade, sources, date) the workbook stays.
+  - Back to the workbook: geotextile woven 0.94 (C), wattle 9 in 4.30 (C), plastic wheel stop 64.00 (C), straw/coconut
+    blanket 1.04 (D), wire-backed silt fence 1.12 (D).
+  - Halved, grade D (no other source): super silt fence 3.30, tree protection fabric 0.765, walk gate 4 x 4 74.00, double
+    drive gate 10 x 6 164.00.
+  - Already the workbook's: chain link fabric and top rail, two blankets, orange fence, silt fence standard, wattle 12 in,
+    rubber wheel stop.
+- **steel_t_post:** 5.69 each (grade B), a farm and fence distributor's list (6 ft, 1.25 lb/ft, the 50+ price), in place of
+  13.99. **Pending founder review:** the founder said "the workbook's 3.94 until a bid or distributor source is found"; this
+  source posts quantity breaks to the trade, so it was taken as a distributor. If it counts as online retail, the key goes
+  to 3.94 (D).
+- **Gates:** the two online gate keys read "residential grade". New Count options: "Commercial walk gate, 4 x 6 ft
+  (Schedule 40 frame)" at 397.50 (one online listing, x0.50, D), and "Commercial double drive gate, 12 x 6 ft (Schedule 40
+  frame)" with no key: "no price" until a source states its frame.
+- **Chain link (A68), release 27:** jobs under 1,000 LF at 200 LF a day (the WisDOT median, a published production), in
+  two visits (posts set in concrete, the fabric after cure), each at least half a work day. The mid and large tiers stay.
+- **Temporary chain link** keeps its term key; its lines read "Temporary fence: confirm a local rental quote" in Needs
+  attention.
+- **Saved lines keep their prices** (D-927): a component priced before keeps its price until a person takes the new one.
+  The DUP's proof drew the three fences again.
