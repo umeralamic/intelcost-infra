@@ -26394,3 +26394,22 @@ what each option priced before with its code, is `morning-report-2026-11-04/s5-s
 - **Rental rates (Q129):** found on two statewide rental contracts (chainsaw, stump grinder, post-hole augers, skid-steer post
   driver, early-entry and walk-behind saws, sweepers); not loaded into the catalog in this queue. Not found: tub grinder,
   walk-behind paint striper, handheld hydraulic post driver.
+
+## D-979: A moved dialog takes its width from its size, not from the place kept on the device (2026-11-04)
+
+**Status:** the founder's request of 2026-11-04 ("increase the width of site features dialogue box, so no scroll bar is
+required").
+
+- A movable dialog kept the width it had the first time it was dragged (`keepWidth`), so Site Features, moved while it was
+  ~500 px, stayed at that width after D-963 put it up to 768 px, and its undercut rows scrolled sideways.
+- A moved dialog's width is now its size's width (`SIZE_WIDTH` in `dialog.tsx`, the same as its max-width class), capped by
+  the window; only its place is kept. `keepWidth` is gone from `usePanelDrag`; `keepSize` (resizable panels) is unchanged.
+- The body still scrolls up and down when the content is taller than the window.
+
+## D-980: The quantity table's throwaway project made again and kept by the account purge (2026-11-04)
+
+**Status:** found by the quantity table after the account purge of 2026-11-04 (Q149); pending founder review.
+
+- The purge's real run took "zz MyEq project" with its throwaway owner, and the table's `parents` check failed on it.
+- Made again by the copier into workspace "zz Quantity table" (`34be6ba5`), which `KEEP_WORKSPACES` in
+  `drives/purge-bench-accounts.py` now keeps with its owner. The table passes again.

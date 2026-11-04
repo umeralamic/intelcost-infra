@@ -47,6 +47,9 @@ FOUNDER_WORKSPACES = set(guard.FOUNDER_WORKSPACE_UUIDS)
 KEEP_WORKSPACES = {
     # The Stitch sheets and site view test project, "zz Stitch 10793 copy 2" (the founder, 2026-10-28).
     "67577761-76f2-48de-be7b-05b2bd0a113c",
+    # The quantity table's "zz MyEq project" (drives/quantity-table.py `parents`), made again on
+    # 2026-11-04 after the first purge took it with its throwaway owner (D-980).
+    "34be6ba5-ddfd-4d5d-ba4d-03a0aaf1b5a0",
 }
 
 
