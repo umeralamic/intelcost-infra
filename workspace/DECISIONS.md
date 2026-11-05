@@ -26655,3 +26655,19 @@ required").
 - Judgment calls (pending review): a state EP splits takes the region most of it is in: Illinois, Kentucky and
   Michigan Region 2; Iowa and Missouri Region 5. A state EP does not list (a territory other than Puerto Rico)
   uses Region 7 with the notice.
+
+## D-998: Structures priced whole at installed public bid prices; tub grinder and spreader truck (queue 2026-11-07 step 5, Q181, Q183)
+
+**Status:** the founder's queue of 2026-11-07, step 5.
+
+- Grate inlet, flared end sections (by the pipe that ends at them), PRV vault, backflow preventer (2, 4, 6 in) and air
+  release valve (1, 2 in) are priced whole at furnished-and-installed public bid prices, where two or more bids agree
+  (FES 18-36 in; the rest as listed in the report), "installed (public bids)" with the grade. Their line has no crew of
+  ours (`utility_structure_installed`, by hand) and, a judgment call pending review, no pit either: an installed bid
+  price holds the dig, the base stone and the backfill, so a pit would buy the stone twice.
+- Outlet control structure, grease interceptor, drop manhole, oil-water separator and FES 12 and 15 in take the same
+  whole line with "enter price" and the figure found as a reference in the part's name (Needs attention, Materials
+  without a price). PIV and FDC stay assemblies; electric and telecom vaults are unchanged (no price found).
+- Equipment release 34: the tub grinder's owned rate is FEMA's 2025 schedule less its fuel ($79.23/hr, labelled);
+  "Spread stabilizing agent" (A90) gains a spreader truck, the catalog's nearest class (tri-axle dump truck,
+  operated), labelled IntelCost estimate.

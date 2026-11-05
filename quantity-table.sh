@@ -42,8 +42,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-973: online retail at x0.50 and grade D, the keep rule again (9 keys B to C or D), one commercial gate (D).
 # D-976: 20 section keys (aggregates by name, geosynthetics, mesh, 8 in filler, two mixes, a binder premium).
 # D-983: hydrant water for moisture conditioning (C).
-if [ "$MAT_COUNTS" != "A188 B135 C241 D29 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A188 B135 C241 D29 F46"
+# D-998: 11 structures at installed public bid prices (A4 B7).
+if [ "$MAT_COUNTS" != "A192 B142 C241 D29 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A192 B142 C241 D29 F46"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -65,8 +66,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # Release 29 (D-984, D-985): A91 to A93 (patching, crack sealing, sweeping), tack and prime rows and milling and its
 # haul mapped (7 roles).
 # Release 30 (D-987, D-989): A94 (construction layout, own crew), hydrant and valve assemblies and layout mapped.
-if [ "$ST_COUNTS" != "104 205 473 323 220 111 30 102 104 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 473 323 220 111 30 102 104 0 0"
+# Release 34 (D-998): A90's spreader truck (a tri-axle dump truck, operated).
+if [ "$ST_COUNTS" != "104 205 474 323 220 111 30 102 104 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 474 323 220 111 30 102 104 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(
