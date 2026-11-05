@@ -26610,3 +26610,31 @@ required").
 - A machine keeps the values it was priced with until "Library rates changed: Update" (D-718); a new spread takes them.
 - Soil Stabilization takes "Subcontract $/SY", blank by default. Filled, one line "Soil stabilization by subcontract"
   in SY replaces the self-performed lines and the agent, priced as a subcontract at that rate.
+
+## D-995: The copier keeps a site spread's machines on the viewer's activity (queue 2026-11-07 step 1, Q173)
+
+**Status:** the founder's queue of 2026-11-07, step 1.
+
+- A copy into another workspace (the copier, Save to my workspace; D-384) moved every site spread machine off its
+  activity, so in a workspace whose tree existed it priced as "Unallocated" beside the spread Calculate made again.
+- Now each site machine moves to the viewer's own activity with the same national key (else the same name) and keeps
+  the values it was priced with (D-718): the copy's first Calculate keeps it and prices as the source did. A machine
+  whose activity the viewer lacks stays behind (the lines naming it are cleared) and Calculate makes the spread from the
+  viewer's activity.
+- Judgment call (pending review): the queue said "drop them and let Calculate remake them". Remade machines take the
+  current release's rates (release 31), so the first Calculate could not equal the source's bid; carrying them across
+  does, and still drops a machine with nothing to carry it to.
+- A copy within the workspace (Duplicate project) always kept them bound; unchanged.
+
+## D-996: Update All takes shared machines; road vehicles drive to site (queue 2026-11-07 step 2, Q174, Q175)
+
+**Status:** the founder's queue of 2026-11-07, step 2, and the answer to Q175.
+
+- "Update All" lists and updates every shared machine whose library values moved since it was priced (site spreads'
+  too), beside the lines: "Update All (16 lines, 7 shared machines)". Its confirmation shows each machine's total,
+  old → new. A machine keeps the values a person typed on it (`own`, `own_fields`) and its activity.
+- Q175: a road vehicle drives to site and has no mob/demob haul. Release 32 moves 69 catalog classes from
+  "self-propelled" to "drives-in" (D-892): pickups, flatbeds, tractors, dump, water, mixer, boom-pump, bucket, vacuum,
+  sweeper, striper and attenuator trucks, digger derricks, boom trucks, truck-mounted augers and Gradalls. Judgment
+  call (pending review): cranes keep their haul and the assembled crane's quote (D-756); towed trailers, the 550 gal
+  distributor and the crawler sewer camera keep "self-propelled".
