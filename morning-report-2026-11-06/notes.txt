@@ -1,0 +1,50 @@
+Queue of 2026-11-05 (REPORT_2026-11-06), working notes.
+
+Step 1 B7, DUP 2e939c3c (BENCH DUP 2026-11-04 23:28), workspace zz B7 proof, fx.equip.202611042327
+- Baseline after Calculate C-200: CUT 11,630 BCY FILL 9,613 CCY; direct 714,448.53 bid 936,373.05 attention 65
+- Proof feature made on C-300 (api from the page; drawing an area by MCP clicks was not tried): "B7 proof asphalt (drawn on C-300)", standard duty asphalt section, 605.88 SF.
+- C-300 Calculate before the link: C-300 has no surfaces; its Calculate shows no volumes and writes no line. The feature was priced nowhere.
+- Link C-300 -> C-200 edited in the Stitch sheets panel (UI): "Bring its markups" ticked, Save link. Toast: "C-200's Calculate now reads its existing grade and its markups, counted here."
+- C-200 draws it: one linked shape, dashed, its title "B7 proof asphalt (drawn on C-300) · C-300 - Site Utility Plan (open it there)". Screenshot looked at.
+- Calculate C-200 with the link: CUT 11,630 FILL 9,596 CCY (was 9,613): its depth reached the grading.
+- Its lines: 8 rows, every one on C-200, none on C-300: prep 605.88 SF, fine grade 605.88 SF, proof roll 67.32 SY, aggregate 67.32 SY, base course 7.32 TON, surface course 6.41 TON, fill push 25.46 CCY, cut push 0.
+- Totals with the link: direct 720,528.09 (+6,079.56), labor 146,603.96, material 290,227.04, equipment 283,697.09, bid 944,266.05, attention 68.
+- The item's own 7 priced lines in the export (b7-linked.xlsx): 2,573.91. The rest of the +6,079.56 moves with it (spreads, the grading's own lines).
+- Markups unticked, Calculate C-200: FILL 9,613 again; direct 714,448.53, bid 936,373.05, attention 65: exactly the baseline.
+- Ticked again, C-300 deleted (api): the link stays, source null, "C-300 - Site Utility Plan". Estimating, Needs attention: "Overlay broken: re-pick the points. C-300 - Site Utility Plan (deleted) on C-200 - Site Grade Plan  Remove". Remove: the row goes.
+- Replaced sheet: there is no replace / revision flow in the app (a revised set loads as new sheets). Nothing to carry the link to; reported as a question.
+
+DUP 2: bd461da6 (BENCH DUP 2026-11-04 23:58), same workspace.
+- First Calculate read direct 781,814.61 (equipment 347,326.36): 45 "Unallocated" machine rows. Cause: the copier makes each copied site machine a plain shared machine (duplicate.py, D-744 rule) and homes it on the viewer's node of the same code; this workspace's tree existed by then (it did not when DUP 1 was copied), so they priced as Unallocated beside the new spread's own. Not from today's changes. The 46 rows with no site activity deleted by SQL on this throwaway copy only: direct 714,448.53, bid 936,373.05 = baseline. Question for the founder (copier).
+Step 3, classification (base course scope): old node 31.05.04 vs new 32.13, a Calculate after each mapping change:
+- Subgrade Preparation 210,527.20 -> 51,581.03; Aggregate Base (Div 32) 0 -> 158,946.17; every other group equal; export sum 714,448.53 both (s3-group-by-classification.txt).
+- Without a Calculate after the mapping change the machines stay homed on the old division and 28,066.79 reads as unallocated until the next Calculate (seen once).
+
+Step 2, valves and hydrants (DUP 2). Proof items made by the page's api: run "8in HDPE (2)" (e58cd952) made water, 8in PVC C900 DR18, 22.28 LF; FH-ON and V-ON on it, FH-OFF and V-OFF far off it (default specs: hydrant 6in valve 20 LF lead; valve 8in gate with box).
+- First Calculate: the off-run pair read "No division: priced on its own" (no node for a hydrant or valve structure: the cause of yesterday's full excavator day each). Added CSI defaults water/fire water hydrant -> 33.01.03 Fire Hydrants, valve_box (and fire water PIV) -> 33.01.04 Valves & Boxes, in the d977 migration for every workspace with the scope (Bench Construction Test, F5 Block A demo, Intelcost Team, zz B7 proof, zz Quantity table, zz Sheet key).
+- First run of the on-run rate read 2.0 / 3.2 a day (default production after the site factor); changed to the file's rate before the site slows it: 2.5 / 4.0.
+- After (s2-valves-hydrants.xlsx):
+  FH-ON, A18 water main crew, 2.5 a day = 3.2 crew-hours, 22.4 MH: labor 1,039.17, equipment 3,156.01, material 4,461.63, total 8,656.81
+  V-ON, A18, 4 a day = 2.0 crew-hours, 14 MH: labor 649.48, equipment 1,972.50, material 1,591.23, total 4,213.21
+  FH-OFF, shared A64/A65 spread, 2.0 a day = 4 h, 12 MH: labor 528.00, equipment 3,192.87, material 4,461.63, total 8,182.50
+  V-OFF, same spread, 3.2 a day = 2.5 h, 7.5 MH: labor 330.00, equipment 1,995.55, material 1,591.23, total 3,916.78
+  The shared spread's days 1/2.0 + 1/3.2 = 0.81: no minimum. The A18 spread here is only the 22 LF main, at its half-day minimum, so each machine-hour carries a day's rental over about four hours: on a longer main the on-run share falls.
+- Before (REPORT_2026-11-05): hydrant 10,109.33, valve 7,197.71 (each alone).
+
+Step 4, equipment fuel and rates (release 31, d978 folded into the commit's migration). DUP 2 with step 2's proof items.
+- Before (s4-before.xlsx): direct 740,069.95, labor 148,573.68, material 299,727.32, equipment 291,768.95, bid 970,208.02, attention 69.
+- Loaded: fuel for 203 classes (151 from an EP item, 52 derived; AW-AB-EL-60 dropped: EP item diesel, class hybrid), 5 owned hourly rates (EP Region VII), 3 contract rentals (WA DES 22823), the chainsaw class. SC-631-34 already had an owned rate (311.06): kept.
+- Machines keep the values they were priced with until updated (D-718). "Update All (24 lines)" took the lines' new values, totals unchanged: the shared site machines keep their snapshot. The throwaway copy's site machines were cleared (SQL) and remade by a Calculate, as a new project gets them.
+- After (s4-after.xlsx): direct 759,239.17 (+19,169.22), equipment 310,938.17, bid 993,755.99, attention 65.
+- Every machine whose equipment was $0 before (s4-equipment-changes.txt): trench roller 0 -> 7,297.73 (fuel 648.59); tandem roller 0 -> 6,266.64 (548.32); reversible plate 0 -> 3,880.61 (342.23); early-entry saw 0 -> 950.26 (54.27); vibratory screed 0 -> 773.98 (6.69); 1-ton crew pickup 0 -> 0, fuel 2,643.38 now, still "MISSING: Mob/demob (self-propelled: enter a quote)".
+- Stabilize, Standard Duty Asphalt 20,432.28 SF = 2,270.25 SY, lime 5 %, 6 in, self-performed (s4-stabilize-self.xlsx): 25,684.98 = 11.3138 $/SY (was 8.7197): lime 12,021.16, spread 316.77, mix in place 9,849.49 (reclaimer at EP's owned rate 139.59/hr + fuel, 9.1 EH = 5,888.99; was missing), compact 3,497.56.
+- Subcontract $/SY, a test figure 9.00 (s4-stabilize-sub.xlsx): one line "Soil stabilization by subcontract, Lime 5%, 6", $9.00/SY", 2,270.25 SY, subcontract 20,432.28; no self-performed line and no lime bought. Fixes on the way: price_source is 12 characters ("typed"); a subcontract prices from sub_calc unit_rate.
+
+Step 5, joints with the founder's details (DUP 2; sidewalk 2,607 SF 4 in, heavy-duty concrete 8 in; set by the item api; each Calculated and exported):
+- Default (T/4 depth, s5-joints-default.xlsx) and the details (s5-joints-details.xlsx) price the same to the cent; only the names change:
+  Sidewalk: control, tooled, 3/8 in x 1-1/2 in deep (default 1 in), 6 ft OC: 434.52 LF, no cost line of its own (tooled with the finish); expansion 1/2 in fiber filler x 4 in, sealed, 30 ft OC: 86.90 LF, 44.29; seal expansion joints, hot-pour: 86.90 LF, 187.91 (labor 61.76, equipment 111.69, material 14.46).
+  Heavy duty: control, sawn early-entry, 3/8 in x 1-1/2 in deep (default 1/8 in x 2 in), 10 ft OC: 1,076.21 LF, 871.74 (labor 284.05, equipment 587.69); expansion 1/2 in x 8 in, sealed, 30 ft OC: 358.74 LF, 485.15; seal expansion joints: 358.74 LF, 775.67.
+  The saw and tooling are priced per LF whatever the depth and width, so the details' figures move no dollar.
+- Headline: joints on both features, direct 775,502.18 -> 779,622.08 (+4,119.90; the joint lines 2,364.76, the rest their crews' spreads); bid 1,013,733.90 -> 1,021,367.91.
+Headline on DUP 2 by state: baseline 714,448.53 / 936,373.05; with step 2's proof items 740,069.95 / 970,208.02; step 4 release 31 759,239.17 / 993,755.99; stabilize self-performed 777,257.32 / 1,018,339.98; by subcontract (test 9.00) 775,502.18 / 1,013,733.90; joints 779,622.08 / 1,021,367.91.
+Smokes: Site Features dialog, Stabilize shows "Subcontract $/SY"; Count custom shows Classification (default Site Concrete), none on a bollard. Q162: a new project's assumptions read layout allowance 1.14 %.

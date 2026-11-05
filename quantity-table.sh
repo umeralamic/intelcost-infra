@@ -31,8 +31,8 @@ fi
 # converter's file (D-718), and dumped for the browser's equipment rows (lib/equipment-cases.mjs).
 # D-988: one source more, Washington DES rental contract 22823.
 EQ_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.eq_class)||' '||(select count(*) from eqlib.eq_activity)||' '||(select count(*) from eqlib.eq_production)||' '||(select count(*) from eqlib.eq_transport_class)||' '||(select count(*) from eqlib.eq_setting)||' '||(select count(*) from eqlib.eq_soil_conversion)||' '||(select count(*) from eqlib.eq_source)||' '||(select count(*) from eqlib.eq_class where rent_day = 0 or rent_week = 0 or rent_4wk = 0)")
-if [ "$EQ_COUNTS" != "641 104 592 9 57 4 158 0" ]; then
-  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 641 104 592 9 57 4 158 0"
+if [ "$EQ_COUNTS" != "642 104 592 9 57 4 159 0" ]; then
+  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 57 4 159 0"
   exit 1
 fi
 # The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out;

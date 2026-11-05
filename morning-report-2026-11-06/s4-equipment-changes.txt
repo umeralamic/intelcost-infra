@@ -1,0 +1,6 @@
+Shared machine | CP-TRENCH-ROLLER | 0.00 -> 7297.73 | fuel 0.00 -> 648.59 | MISSING: Fuel gal/hr -> -
+Shared machine | CP-TANDEM-67 | 0.00 -> 6266.64 | fuel 0.00 -> 548.32 | MISSING: Fuel gal/hr -> -
+Shared machine | CP-PLATE-REV | 0.00 -> 3880.61 | fuel 0.00 -> 342.23 | MISSING: Fuel gal/hr -> -
+Shared machine | CN-SAW-EARLY | 0.00 -> 950.26 | fuel 0.00 -> 54.27 | MISSING: Fuel gal/hr -> -
+Shared machine | CN-SCREED-VIB-10 | 0.00 -> 773.98 | fuel 0.00 -> 6.69 | MISSING: Fuel gal/hr -> -
+Shared machine | TRK-PU-8808 | 0.00 -> 0.00 | fuel 0.00 -> 2643.38 | MISSING: Rental rate (no owned rate eith -> MISSING: Mob/demob (self-propelled: ente

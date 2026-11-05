@@ -26551,3 +26551,62 @@ required").
 - On the project's wage set, off by default: "Union: operating engineers run walk-behind rollers and chippers". On, each
   trench roller and brush chipper takes an Equipment Operator row at the next Calculate; off, it goes. On the DUP, +6,507.59
   of labor on the sewer runs, back to the cent when off.
+
+## D-991: Overlay a sheet with its markups (B7, queue 2026-11-05 step 1)
+
+**Status:** the founder's queue of 2026-11-05, step 1 (spec `docs/tasks/overlay_sheet_b7_tasks.md`).
+
+- A sheet link (Stitch sheets) takes "Bring its markups" beside "Read its existing grade". With it, the source's markups
+  draw on the target through the fit, dashed in their item colours, read only, each named with its sheet; a click opens
+  it on its own sheet. Any calibrated sheet can be the source.
+- Counted once: the target's Calculate reads the source's Site Features (mapped at draw time, nothing stored changes),
+  utility runs and structures; the source sheet leaves them out. Lines its own sheet wrote for a feature before go when
+  the target writes it (a priced one stays at 0). The founder's proof replaces the spec's "the host's totals do not
+  change": the feature's earthwork reaches the grading sheet.
+- The link keeps both pages' sizes and the source's name. A source deleted, or a page of another size, reads "Overlay
+  broken: re-pick the points" in Estimating's Needs attention (Remove for a deleted one); the features count on their own
+  sheet meanwhile. The app has no replace / revision flow: a revised sheet loads as a new sheet, so there is nothing yet
+  to carry the link to (question).
+- An overlay alone (no EG, no markups) no longer makes its source skip its utility runs.
+
+## D-992: Classification fixes (queue 2026-11-05 step 3, Q168, bollards, custom Count)
+
+**Status:** the founder's answers of 2026-11-05.
+
+- Aggregate base and subbase keep the Earthwork trade and group under their own heading: node 32.13 "Aggregate Base"
+  (the app's tree has no 32.11 base courses node under that name; 32.11 is Irrigation), sub Sitework.
+- Guardrail: node 34.06 "Guardrail" (MasterFormat 34 71 13), its scope mapped there.
+- Bollards: scope "Site Furnishings" (32.10, a bollard to 32.10.05). A custom Count item takes the trade picked in its
+  Classification select, Site Concrete by default.
+- Existing workspaces gain both nodes; a default mapping still on the old node moves (d977). Proof: export sum equal to
+  the cent; Subgrade Preparation 210,527.20 -> 51,581.03, Aggregate Base 158,946.17.
+- Q162: a project that has never saved its earthwork choices reads the surveyor allowance as its layout. Q171: the
+  Building pad tick decides a pad for layout; the section type only when it is off.
+
+## D-993: Valves and hydrants on a run (queue 2026-11-05 step 2, Q167)
+
+**Status:** the founder's answer to Q167.
+
+- A hydrant or valve whose mark lies on a drawn water or fire water run (within 5 ft; a hydrant within its lead plus
+  5 ft) is set by that run's crew (A18 pressure, A19 fused) during the run: its crew-day share at the tier file's rate
+  for one (hydrant 2.5 a day, valve 4), its parts, no crew-day, minimum or machine day of its own.
+- Off a run, valves and hydrants share one water-crew spread for the project (A64, A65): one mobilization, one half-day
+  minimum for crew and machines together, cost split by hours.
+- A hydrant, valve or PIV structure had no classification node, so it was priced alone with a full machine day:
+  CSI defaults 33.01.03 Fire Hydrants and 33.01.04 Valves & Boxes, added to every workspace by d977.
+
+## D-994: Equipment fuel and rates; stabilization by subcontract (queue 2026-11-05 step 4, Q165, Q166)
+
+**Status:** the founder's queue of 2026-11-05, step 4.
+
+- Release 31: fuel gal/hr (average and severe) for the 203 catalog classes USACE EP 1110-1-8 (Pamphlet Year 2022,
+  Region VII) covers, 151 from an EP item and 52 derived (the hp FEMA's 2025 schedule gives, at EP's fuel factor for
+  the category); each labelled with its source. 85 classes stay without fuel (listed in the report); the electric/hybrid
+  boom lift kept none (EP's nearest is a diesel machine).
+- Rates: public rental contracts first (WA DES 22823: street sweeper truck, GPS base and rover, 1-ton crew pickup, an
+  18 in chainsaw); EP's hourly cost without fuel or operator where no contract lists the class (stabilizer/reclaimer
+  139.59, curb machine 95.68, distributor 74.90, walk-behind striper 1.99), as the catalog's owned rate (D-811). New
+  class: chainsaw (LC-CHAINSAW-18). Not found: tub grinder (only FEMA), lime/cement spreader truck.
+- A machine keeps the values it was priced with until "Library rates changed: Update" (D-718); a new spread takes them.
+- Soil Stabilization takes "Subcontract $/SY", blank by default. Filled, one line "Soil stabilization by subcontract"
+  in SY replaces the self-performed lines and the agent, priced as a subcontract at that rate.

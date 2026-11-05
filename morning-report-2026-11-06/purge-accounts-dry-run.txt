@@ -1,0 +1,62 @@
+would delete  fx.equip.202611042224@bench.intelcost.io  workspaces 1: zz Structure width
+would delete  fx.equip.202611042327@bench.intelcost.io  workspaces 1: zz B7 proof
+REFUSED  fx.equip.202611040642@bench.intelcost.io  in a workspace the founder keeps for tests
+REFUSED  fx.sections.202610281746@bench.intelcost.io  owns a workspace holding a protected project
+REFUSED  fx.stitch.202610280759@bench.intelcost.io  in a workspace the founder keeps for tests
+REFUSED  fx.viewer.202610280759@bench.intelcost.io  in a workspace the founder keeps for tests
+REFUSED  s6-disabled-qa_pricing-1790294898761@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s6-disabled-qa_pricing-1790295001455@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s6-disabled-qa_pricing-1790296502572@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s6-disabled-qa_pricing-1790337731877@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s6-disabled-qa_pricing-1790412119075@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s6-disabled-qa_pricing-1790426399612@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790295731364@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790295759687@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790295805626@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790295893825@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790296513401@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790337742490@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-held-viewer-1790412154024@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790295615658@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790295694783@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790295729822@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790295757996@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790295804046@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790295892237@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790296511573@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790337740710@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-rev-viewer-1790412148156@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-screen-viewer-1790295765932@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-screen-viewer-1790295813617@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-screen-viewer-1790295902259@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-screen-viewer-1790296521247@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-screen-viewer-1790337748834@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-screen-viewer-1790412163624@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790295730599@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790295758778@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790295804835@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790295893050@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790296512554@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790337741601@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s7-usurp-viewer-1790412152839@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790296078381@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790296151982@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790296222564@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790296298149@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790296417446@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790337759316@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790412183892@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790412624358@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790412756772@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790413051275@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-mid-admin-1790425815530@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790296302865@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790296422519@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790337764715@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790412222684@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790412634886@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790412795425@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790413061773@bench.intelcost.io  in one of the founder's workspaces
+REFUSED  s8-self-admin-1790425829708@bench.intelcost.io  in one of the founder's workspaces
+accounts matching a throwaway pattern: 60; to delete 2; refused 58
+dry run: nothing deleted (--purge deletes)

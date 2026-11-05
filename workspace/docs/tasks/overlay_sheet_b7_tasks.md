@@ -1,7 +1,7 @@
 # Overlay a sheet with linked markups (B7): tasks
 
-**State:** specced, not built. The queue of 2026-11-03 allowed B7 to be left unfinished so that the closing
-release (Part C) could run. Pending founder review: this spec.
+**State:** built 2026-11-05 (D-991) except item 5's "the link follows a replaced sheet": the app has no replace / revision
+flow yet (a revised sheet loads as a new sheet). A deleted source or a page of another size reads "Overlay broken".
 
 ## The estimator's need
 
