@@ -26638,3 +26638,20 @@ required").
   sweeper, striper and attenuator trucks, digger derricks, boom trucks, truck-mounted augers and Gradalls. Judgment
   call (pending review): cranes keep their haul and the assembled crane's quote (D-756); towed trailers, the 550 gal
   distributor and the crawler sewer camera keep "self-propelled".
+
+## D-997: Equipment rates by EP 1110-1-8 region, from the project's state (queue 2026-11-07 step 3)
+
+**Status:** the founder's queue of 2026-11-07, step 3.
+
+- The four catalog classes whose owned rate is EP 1110-1-8's (D-994: the stabilizer/reclaimer, curb machine,
+  2,000 gal distributor, walk-behind striper) take their region's figure from EP's 2022 schedule, all 12 regions
+  (`eqlib.eq_class_region`, release 33). Every other rate is a rental contract's or FEMA's and has no region.
+- The region is EP's map (pamphlet of 12 Aug 2021, Appendix A, A.3; `eqlib.eq_state_region`): the project's state,
+  else the workspace's new "Default state" (General settings), else Region 7 (West) and Needs attention reads
+  "Set the project state for equipment rates" (opens Edit Project).
+- The bundle, a class's detail and a site spread's snapshot all read the region; a machine already priced keeps its
+  snapshot until Update All (D-718, D-996). Fuel stays the state's weekly series (D-940); the workspace's default
+  state also picks the fuel series where the project has none.
+- Judgment calls (pending review): a state EP splits takes the region most of it is in: Illinois, Kentucky and
+  Michigan Region 2; Iowa and Missouri Region 5. A state EP does not list (a territory other than Puerto Rico)
+  uses Region 7 with the notice.
