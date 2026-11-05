@@ -24,10 +24,16 @@ async (page) => {
   await page.goto(`${APP}/login?next=${encodeURIComponent("/settings/account")}`);
   await page.waitForFunction(() => location.pathname === "/settings/account" || Boolean(document.querySelector("#email")), null, { timeout: 30000 });
   if (new URL(page.url()).pathname !== "/settings/account") {
-    await page.fill("#email", email);
-    await page.fill("#password", password);
-    await page.keyboard.press("Enter");
-    await page.waitForURL((url) => url.pathname === "/settings/account", { timeout: 30000 });
+    // A failed fill's error quotes the value it typed: the password never leaves this block in one
+    // (2026-11-05, a timeout printed it).
+    try {
+      await page.fill("#email", email);
+      await page.fill("#password", password);
+      await page.keyboard.press("Enter");
+      await page.waitForURL((url) => url.pathname === "/settings/account", { timeout: 30000 });
+    } catch (error) {
+      throw new Error(`sign-in failed: ${String(error?.message ?? error).split(password).join("***").split("\n")[0]}`);
+    }
   }
   const workspaces = await page.evaluate(async (api) => {
     const { accessToken } = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");

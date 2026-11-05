@@ -26671,3 +26671,54 @@ required").
 - Equipment release 34: the tub grinder's owned rate is FEMA's 2025 schedule less its fuel ($79.23/hr, labelled);
   "Spread stabilizing agent" (A90) gains a spreader truck, the catalog's nearest class (tri-axle dump truck,
   operated), labelled IntelCost estimate.
+
+## D-999: Site Features dialog simpler: section details behind a tick, Undercut and replace, fills and fabrics (queue 2026-11-07 step 6)
+
+**Status:** the founder's queue of 2026-11-07, step 6.
+
+- "Finished grade to subgrade depth" is the main input; Section, Sits on and the layers sit behind "Add section
+  details" (off by default, on for a saved feature with a section). With Building pad ticked, the details start on
+  the Building pad section. Unticked, the feature saves no section.
+- "Undercut and replace" (it always prices). Measured below: Finished grade, Subgrade, Existing grade, the lower of
+  existing and subgrade. Finished grade is subgrade with the depth less the section's depth.
+- Replacement fills: Clay liner, Clean stone #57, Fill sand, Pit run / bank run gravel, Recycled concrete, each on
+  its release key; "Native soil — bentonite amended" with a bentonite % (a stabilized native whose agent is
+  Bentonite, $237/ton, grade C). Judgment calls (pending review): clay bought loose at 1.2 CY per CCY placed;
+  pit run at 1.8 t/CCY.
+- Fabrics leave Subgrade Prep: a section's Geosynthetic layer (with "Geosynthetic clay liner (GCL)", no price) or a
+  fabric row on the bottom of an undercut, priced over the undercut's area with 10 % overlap. A geosynthetic layer
+  buys its own key by the SY. No saved feature had a tick to migrate.
+- An Area graded by the proposed contours with no proposed surface under it reads "No proposed grade under <name>"
+  in Needs attention.
+
+## D-1000: Section layers, one aligned row each; Sits on, By others and joint LF fixes (queue 2026-11-07 step 7)
+
+**Status:** the founder's queue of 2026-11-07, step 7. No pricing change: every saved section prices the same.
+
+- "Sits on" shows only for the asphalt and concrete pavement sections and goes back to "Subgrade" whenever the
+  section changes.
+- A layer set to By others makes everything inside it By others: its reinforcement, joints, dowels and thickened edge,
+  whose options grey out; joints now follow their layer (the reinforcement, dowels and edge already did). No saved
+  slab was By others with its joints priced, so no saved price moves. Building pad's "Slab by others" starts with
+  joints off.
+- A joint's LF box shows the computed figure as its placeholder ("200 LF"), the slab's area known.
+- Each layer is one aligned row: move handle (drag, or arrow keys), name, type, thickness ("from plan" when empty),
+  material with its key choice inline (mix and binder for asphalt, Fine grade for aggregate, emulsion and the applied
+  rate for tack, product and rate for prime), Priced / By others, "⋯", delete. "⋯" holds the rarely changed
+  settings: density, classification ("By its line type"), a tack's surface, residual rate and residue.
+- A slab's options collapse into one line under it ("Mesh … · Control 10 ft sawn · Expansion 30 ft sealed · Edit");
+  Edit opens the panel as before. The section's header shows "Total __ in" beside "Use the section's depth".
+
+## D-1001: Tees, material only; binder premiums (queue 2026-11-07 step 8, Q181, Q182)
+
+**Status:** the founder's queue of 2026-11-07, step 8.
+
+- The release had no MJ fitting priced by the pound and no tee. Ductile iron MJ compact tees (AWWA C153), 6x6 to
+  12x12 with the reducing sizes between, load at the median of two public waterworks supply awards (Dec 2023 and
+  Dec 2024, standard accessories), grade B. A C900 main takes the same DI MJ tee, as its bends already do. A water
+  main's tees and a hydrant's tee on the main buy them; the restraint stays its own line. C110 full-body and PVC tees:
+  no price.
+- Binder premiums: PG 76-22 stays as loaded (D-976; a state's same-month index this session agrees, +$147.67 per ton
+  of binder). PG 58-28, 64-28 and 70-22: no public bid tab lists the same mix in two of those grades, and the indexes
+  that list them blocked access: they stay "no price". Found but not a grade the app offers: PG 70-28 (+$10.00/ton of
+  mix in place) and PG 76-28 (+$14.50), Oklahoma DOT 2024 contracts.

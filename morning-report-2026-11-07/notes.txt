@@ -1,0 +1,92 @@
+Queue of 2026-11-07 (REPORT_2026-11-07), working notes.
+
+Account purge (approved list): DELETE fx.equip.202611042224 (zz Structure width), fx.equip.202611042327 (zz B7 proof); 2 accounts, 2 workspaces; 58 refused. purge-accounts.txt.
+Session throwaway: fx.equip.202611050418, workspace "zz Queue 1107" (59bfca33).
+
+Step 1, copier (Q173, D-995).
+- Cause: duplicate.py _across (into another workspace) set every site machine's eq_site_activity_id to null; in a workspace whose tree exists they homed on the viewer's node and priced as Unallocated beside the new spread.
+- Fix: a site machine moves to the viewer's activity with the same national key (else name), keeping its snapshot (D-718); with no match it stays behind (components naming it are cleared) and Calculate remakes it.
+- DUP A 23564609 (BENCH DUP 2026-11-05 04:19): empty workspace, no tree: machines dropped by the class match (as before). Before Calculate direct 785,961.71 bid 1,024,221.72 (each line priced its machine alone). After Calculate C-200: direct 732,041.10, bid 957,984.21 (machines remade at release 31), 45 site machines all bound.
+- DUP B bace578e (BENCH DUP 2026-11-05 04:24), same workspace, tree and 104 activities existing (the Q173 case): 45 machines, 45 bound to the target's activities; snapshots md5 = the source's (40a51855...).
+  As copied: direct 714,882.15 labor 146,345.18 material 288,143.07 equipment 280,393.90 bid 936,905.72 attention 72.
+  First Calculate C-200 (CUT 11,630 FILL 9,613): direct 714,882.15 bid 936,905.72 attention 64. Equal to the cent. No "Unallocated" on the page.
+- Source 4df73dc7 cannot be opened (guard: founder workspace). Its stored machine rows equal the copy's (md5); line rows copied as is. Last session's DUP baseline 936,373.05 was read on remade release-30 machines; today's copy keeps the source's own snapshots.
+- User-facing Duplicate project (same workspace, UI right-click > Duplicate project) on DUP B -> DUP C 23a22855 (04:28): 45/45 machines bound, same snapshots; before 936,905.72, first Calculate 936,905.72, attention 64. Same-workspace path never nulled the activity (unchanged). "Save to my workspace" (share-copy) runs the same _across code as the copier.
+
+Step 2, Update All with shared machines (Q174, D-996), DUP B (snapshots of releases 2-27, made before release 31).
+- Before the change "Update All" did not show (0 lines moved). With it: "Update All (14 shared machines)". List (total old -> new):
+  Load and haul off: dump truck 3-axle operated 31,757.95 (same); Haul off: dump truck 34,271.64 (same);
+  Structure setting: trench roller - -> 2,234.70; plate compactor - -> 1,354.50; pickup - (mob missing);
+  Proof roll: dump truck 849.12 (same); Sidewalk: pickup -; plate - -> 1,618.32;
+  Asphalt paving: tandem roller - -> 6,266.64; pickup -; Concrete HD: screed - -> 773.98; early-entry saw - -> 950.26; pickup -;
+  Pipe crew sewer: trench roller - -> 3,765.52.
+- Totals: direct 714,882.15 -> 731,846.07 (+16,963.92 = the list's sum); bid 936,905.72 -> 957,744.64; attention 64 -> 60. Exports s2-before.xlsx, s2-after.xlsx.
+- DB: 14 machines now release 31, all 45 still bound to their activity; Update All gone. A Calculate after: 731,846.07 (held).
+- Copy A (spread remade at release 31) reads 732,041.10: 195.03 above; copy B keeps the source's tiers and typed values.
+Q175 (release 32, 69 classes drive in): Update All (16 lines, 7 shared machines); lines: no money change (transport text only);
+  machines: the 4 pickups - -> 1,512.53 / 1,927.42 / 852.98 / 1,053.12; dump trucks unchanged (operated).
+  Direct 731,846.07 -> 737,192.12 (+5,346.05 = the 4 pickups); bid 964,311.88; attention 68 -> 54.
+Quantity table: eq-756-bare-self-propelled moved to PV-DIST-550 (no rate, no haul), shared-missing-flags too; new eq-996-drives-in WT-2000 $2,861.60 mob 0. 0 FAIL.
+
+Step 4, valve and hydrant breakdown (report only), DUP C 23a22855 (BENCH DUP 2026-11-05 04:28), proof items made by the page's api as last session (run 8" HDPE (2) 8aa36a2c made water, PVC C900 8 in, 22.28 LF; FH-ON, V-ON on it; FH-OFF, V-OFF off it). First try without is_utility made plain counts (no structure, no lines): deleted and made again with is_utility.
+Off-run spread "Valve set (water crew, per each)" (A64/A65): ONE machine, Hydraulic excavator 30-36 t:
+  Rental 1 day $1,424.00 (6.5 EH = 0.81 work day, the 1-day minimum) + location x0.99 -$14.24 + fuel $178.66 + mob/demob $3,600.00 = $5,188.42.
+  Shares by usage: hydrant 4 h 61.54% $3,192.87; valve 2.5 h 38.46% $1,995.55. Same as last session to the cent.
+On-run: the pressure pipe crew spread (A18), 9.2 EH (main 4 h, hydrant 3.2 h, valve 2 h), each machine 2-day rental (1.15 work days):
+  Excavator 30-36 t: 2 days $2,848.00 - 28.48 + fuel 252.89 + mob 3,600.00 = 6,672.41; valve 21.74% = 1,450.43
+  Wheel loader 2-2.5 yd: 1,350.00 - 13.50 + 65.19 + 1,000.00 = 2,401.69; valve 522.07
+  Trench roller: 596.00 - 5.96 + 49.45 + 1,000.00 = 1,639.49; valve 356.39
+  Plate compactor: 480.00 - 4.80 + 32.59 + 400.00 = 907.79; valve 197.33
+  Pickup 1-ton crew: 534.00 - 5.34 + 187.14 + mob none = 715.80; valve 155.60
+  Valve on run equipment now 2,681.82. Last session's 1,972.50 = excavator 1,450.43 + loader 522.07 exactly (roller, plate, pickup priced $0 then: no rate / mob missing).
+
+Step 3, equipment region by state (D-997, release 33, migration d979). Research: research-ep-regions.md (EP 1110-1-8 2022, all 12 regions, Appendix A.3 map).
+- Classes that differ by region: the four whose owned rate is EP's (D-994): PV-STABILIZER-WR2400 (EP S40CA004), CN-CURB-MACHINE (C45GO013), PV-DIST-2000 (A25XX002), PV-STRIPE-8440 (L25JE003). Region 1-12 totals excl. fuel in the research file; R7 139.59/95.68/74.90/1.99, R8 130.92/89.38/70.24/1.85, R6 116.26/78.45/61.74/1.55 (lowest of the 48 states: R11 PR 110.68).
+- Fuel burn (gal/hr) does not change by region; fuel price stays the state's weekly series. Every other class's rate is a rental contract or FEMA figure, not EP's: no region.
+- DUP B (no state): Needs attention line "Set the project state for equipment rates" shows (Region 7 used); click opens Edit Project. Totals unchanged 737,192.12 / 964,311.88: DUP B uses none of the four classes, so its equipment total is the same in every region (302,703.87).
+- Region proof on DUP C (separate): Standard Duty Asphalt set to stabilize, lime 5%, 6 in (api), Calculate C-200; no state, Update All (16 lines, 14 machines: releases 31-33 not yet taken): direct 783,752.79, equipment 322,289.59.
+  State WA (Region 8): fuel only (WA diesel series): equipment 321,302.61 (-986.98), direct 782,765.81. Update All (1 line): "Mix in place (reclaimer)" equipment 8,300.75 -> 8,222.65 (-78.10 = (139.59-130.92) x 9.0 hr). Equipment 321,224.51, direct 782,687.71, bid 1,025,010.81.
+- Split states take the region most of the state is in: IL, KY, MI -> 2; IA, MO -> 5 (judgment call).
+
+Step 5, priced structures (D-998, d980; equipment release 34).
+- Loaded (installed, public bids; 2+ bids), material release Q4 2026, family structure, EA: grate inlet 4,300.00 A; FES 18" 1,276.52 A, 24" 1,594.70 B, 30" 2,055.85 B, 36" 2,292.00 A; PRV vault 43,233.00 B; backflow 2" 4,200 B, 4" 24,500 B, 6" 26,000 B; ARV 1" 7,000 A, 2" 9,500 B. Sources in research-prices.md of 2026-11-06.
+- Enter price with a reference (Needs attention, Materials without a price, the part's name): FES 12" ($730, 1 bid), FES 15" ($2,000, 1 bid), outlet control ($26,000, 1 bid), grease interceptor ($8,500, city's stated average), drop manhole ($18,000; the queue lists it with these), oil-water separator (none; nearest $9,500). PIV, FDC (assemblies) and electric/telecom vaults unchanged: no price found.
+- Tub grinder LC-GRIND-8621: FEMA 2025 8621 $165.82/hr with fuel, less 17.89 gal/hr x $4.84 = $79.23/hr owned (labelled). Spreader truck: A90 tier 1 gains DT-OP-3AXLE (tri-axle dump, operated, $106.14/hr), tier source labelled IntelCost estimate.
+- DUP B (no such structures): Calculate after the change 737,192.12 / 964,311.88, unchanged.
+- Proof items on DUP C (state WA), made by the page's api, Calculate C-200: one line each, variant installed|type|size, material only, no labor or equipment component:
+  Grate inlet 4,214.00 (4,300 x 0.98, the project's material location factor); PRV vault 42,368.34; backflow 4" 24,010.00; ARV 1" 6,860.00;
+  FES at the 12" HDPE run's start: "enter price (reference $730 installed, one public bid (2023))" Missing price; outlet control: "enter price (reference $26,000 ...)" Missing price.
+  Direct 782,687.71 -> 860,140.05 (+77,452.34 = the four, all material); labor 149,714.72 and equipment 321,224.51 unchanged; bid 1,135,940.63. Export s5-installed-structures.xlsx; screenshot s5-installed-lines.png.
+- Seen: the new storm/water types read "Not classified in CSI MasterFormat" (no structure node mapping for them): question.
+- First Calculate try opened DUP B's sheet id on DUP C (wrong __calcSheet): redone on DUP C's C-200.
+
+Step 6, Site Features dialog simpler (D-999, d981).
+- Dialog: "Finished grade to subgrade depth" stays the main input; "Add section details" tick (off by default; on for a saved feature with a section, or with a saved geosynthetic tick); Section, Sits on, layers, deduct and "Use the section's depth" behind it; unticked saves no section. Building pad + details starts the section on "Building pad" (UI: ticked both, Section type = building_pad).
+- Undercut renamed "Undercut and replace" (no "(allowance)"). Measured below: Finished grade (e.g. a pond bottom replaced with a clay liner), Subgrade, Existing grade (stripped), The lower of existing and subgrade. Finished grade = subgrade with depth less the section depth (engine mapping); api accepts "finished".
+- Fills added: Clay liner (fill:clay, CY x1.2 loose per CCY, IntelCost estimate), Clean stone #57 (stone:_57_stone, 108 pcf), Fill sand (agg:sand_fill:delivered, 110 pcf), Pit run / bank run gravel (agg:pit_run_gravel:delivered, 1.8 t/CCY), Recycled concrete (agg:rca:delivered, 1.98 t/CCY). Native soil - bentonite amended: a stabilized native with Bentonite at the % typed (agent:bentonite, loaded $237/ton C).
+- Fabrics: out of Subgrade Prep. Section Geosynthetic layer list gains "Geosynthetic clay liner (GCL)" (site:gcl, no price). "+ Layer under it" offers fabrics "on the bottom" (row's fabric key, no thickness): one geosynthetics line, the undercut's area x1.1, priced by its own key.
+- Saved ticks to migrate: 0. Every stored prep_geosynthetics on the bench is [] (25) or null (32): no feature has a tick, so nothing moves and no data migration is needed. The dialog still opens any such tick as a Geosynthetic layer (a section of its own when it has none).
+- Geosynthetics with a section key now buy that key by the SY (they bought generic geotextile rolls before); 0 saved section geosynthetic layers on the bench.
+- "No proposed grade under <name>": volume warning no_proposed_grade for an Area (no FFE) with under 1 SF over the proposed TIN's hull; Needs attention category "No proposed grade under an Area", on the Area's lines.
+- Replacement list, price today (Q4 2026, before location): Engineered Fill -> engineered_fill NO PRICE; Select Fill 21.91/TON C; Crushed Stone / Aggregate Base 26.77/TON A; Structural Fill -> priced as engineered fill: NO PRICE; Flowable Fill buys no material line (NOT_BOUGHT, question); Clay liner 8.51/CY C; #57 37.12/TON A; Fill sand 13.15/TON A; Pit run 12.38/TON C; RCA 29.10/TON A; native compacted: no material; native stabilized: lime 423.90, cement 144.87/TON B; bentonite 237.00/TON C (new); fabrics: geotextile woven 0.94, nonwoven 6 oz 0.68, 8 oz 1.44, geogrid T1 1.26, T2 1.36 /SY; triaxial geogrid and GCL no price.
+- Research: research-fill-materials.md (bentonite C; GCL installed $0.95/SF reference only, no material price).
+- Proof, DUP B: Calculate after the change 737,192.12 / 964,311.88: no saved price moved.
+- Proof, DUP C pond (api, C-200): four trial spots to find a cut (A/B/C/first spot in fill: 0-1.5 CY, an undercut counts below existing only, D-895); kept spot D, 605.88 SF, depth 0, undercut 12 in below finished grade, geotextile nonwoven 8 oz on the bottom + clay liner: Undercut excavation 22.44 BCY, haul 25.81 LCY, clay liner 22.44 CCY (fill:clay @8.34 = 8.51 x 0.98), geotextile 74.05 SY (@1.41). DUP C direct 860,140.05 -> 860,818.70 (+678.65: material +338.41, labor +113.61, equipment +226.63). Export s6-pond.xlsx; dialog screenshot s6-dialog-pond.png.
+- api: _row dropped the fabric key (first save refused); fixed to keep it.
+
+Step 7, section layout and bugs (D-1000), UI only on DUP B.
+- Before screenshots (step 6 state): s7-before-asphalt.png, s7-before-concrete.png, s7-before-building-pad.png (Building Pad with Building pad + details ticked, unsaved).
+- After: s7-after-asphalt.png ("⋯" open on layer 1: density 145 pcf, classification), s7-after-concrete.png (summary "Mesh 6x6 W1.4xW1.4 (10/10 ga) · No joints · Edit"), s7-after-concrete-edit.png, s7-after-building-pad.png.
+- Checks (UI): asphalt Sits on shown; header "Total 9.75 in"; concrete control-joint LF placeholder "1,076 LF" (last session's HD control 1,076.21 LF); building pad: no Sits on, slab by others starts with No joints, its panel greyed (fieldset disabled).
+- Saved Standard Duty Asphalt and Heavy Duty Concrete through the new dialog (no edits), Calculate: 737,192.12 / 964,311.88 unchanged.
+- Engine: joints follow their slab's By others (reinforcement, dowels, edge already did). Bench: 10 saved concrete layers, 0 By others with joints: no saved price moves.
+- Depth warning "Layers total 14 in; the section is 14 in ... 0 in high" (a depth stored in feet) silenced under 0.005 in.
+- Dialog widened xl -> 2xl so a layer row fits on one line; a material's help moved to its tooltip.
+
+Step 8, tees and binder premiums (D-1001, d982). Research: research-tees-binders.md.
+- Release had no MJ fitting by the pound and no tee key. Loaded tee:ductile_iron and tee:pvc_c900 (C900 takes DI MJ, as its bends: bend:pvc_c900 = bend:ductile_iron price) 6x6 207, 8x6 244, 8x8 284, 10x6 311, 10x8 353, 10x10 399, 12x6 379, 12x8 426, 12x10 534, 12x12 534 (B: median of two water authority awards, material only, standard accessories).
+- A main's tees now buy tee:<family>:<n>x<n> (fittingMaterials); the hydrant assembly's "Tee on the main" (tee:ductile_iron:8x6) had no price before.
+- DUP C (no Calculate needed, priced on load): both hydrants' tee 239.12 (244 x 0.98); direct 860,818.70 -> 861,296.94 (+478.24 = 2 tees), attention 58 -> 56. DUP C's 22 LF main has no tee: the main-tee line is code only, not seen on a copy. Export s8-tees.xlsx.
+- DUP B Calculate: 737,192.12 / 964,311.88 unchanged.
+- Binders: no new premium loaded. PG 76-22 already 142.60/ton binder (D-976); MDOT index this session +147.67 agrees. PG 58-28, 64-28, 70-22 no price (no same-contract pair; indexes blocked). Found, not offered grades: PG 70-28 +10.00/ton mix (7 pairs, OK DOT 2024), PG 76-28 +14.50 (2 pairs).
+- Quantity table: Q4 2026 B142 -> B162 (20 tee keys). 0 FAIL.
