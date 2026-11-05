@@ -102,8 +102,10 @@ await run("c46-proofs", [
       await put([fill("fill", 4000), fill("fill_push", 4000)]);
       const cfg = await site();
       const [truck, push] = [tierOf(cfg, "A3"), tierOf(cfg, "A16")];
-      expect(alone[0] === 630, `alone: ${JSON.stringify(alone)}`);
-      expect(truck[0] === 900 && push[0] === 900, `together: ${JSON.stringify([truck, push])}`);
+      // Q145 (D-1014): every activity on the project's 8-hour day (D-960), so the tier file's 630 and 900 a 10-hour
+      // day read 504 and 720.
+      expect(alone[0] === 504, `alone: ${JSON.stringify(alone)}`);
+      expect(truck[0] === 720 && push[0] === 720, `together: ${JSON.stringify([truck, push])}`);
       return `4,000 CCY alone ${alone[0]} CCY/day; split ${truck[0]} and ${push[0]}, the tier of 8,000`;
     },
   },

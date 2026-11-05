@@ -68,7 +68,7 @@ await run("c17-earthwork", [
     },
   },
   {
-    title: "the inputs in the Takeoff panel: contours, spots, the boundary and the Site Feature, each with its summary; the strip drawn on the sheet; Site Features and Stripping in the toolbar",
+    title: "the inputs in the Takeoff panel: contours, spots, the boundary and the Site Feature, each with its summary; the strip drawn on the sheet; Site Features and Site Prep in the toolbar",
     run: async ({ page }) => {
       await openSheet(page, project, c1, "earthwork");
       const want = [
@@ -91,11 +91,12 @@ await run("c17-earthwork", [
       const fq = await text(feature.locator("[data-item-qty]"));
       seen.push(`${world.feature.name} ${fq}`);
       await page.locator(`[data-strip-layer] [data-strip-area="${world.strip.uuid}"]`).waitFor({ state: "attached", timeout: 15000 });
-      for (const t of ["Site Features —", "Stripping —"]) {
+      // Q145 (D-1014): "Stripping" is "Site Prep" since D-959.
+      for (const t of ["Site Features —", "Site Prep —"]) {
         const b = page.locator(`button[title^="${t}"]`);
         expect((await b.count()) > 0, `no "${t.replace(" —", "")}" button in the earthwork bar`);
       }
-      return `${seen.join(" · ")}; the strip drawn; Site Features and Stripping in the bar`;
+      return `${seen.join(" · ")}; the strip drawn; Site Features and Site Prep in the bar`;
     },
   },
   {

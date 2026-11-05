@@ -1,0 +1,365 @@
+fx-suite patch: 10 files retargeted at the fx stack; 2 fixtures skipped
+  skip f8-s5: stops Redis, which the running bench shares
+  skip f4-s27: stops MinIO, which the running bench shares
+prepare: every image built or present
+release: 157 fixtures on the built apps, 7 on the dev servers (f3-s1 f3-s13 f4-s2 f5-s3 f6-s4 f7-a r1-raster-text)
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 1 s
+warm http://localhost:5177 in 1 s
+157 fixtures (named): 145 in parallel, 3 at a time; then 12 one at a time
+
+c36-earthwork-link  311s  6/6 passed
+c32-site-typed  341s  5/5 passed
+f9-estimating   445s  0/12 passed
+                    FAIL  1. setup: one page at 1/6 ft per point; Slab 1,000 SF and Footing 100 LF in DIV 03 / Structure, Paint 200 SF in DIV 09 / Finishes
+                          POST /api/workspace/e1ca076e-a169-4df6-9c06-6d3867e6a0e5/project/67ba338c-45a9-4acd-9b72-2c5262c96923/takeoff/folder failed after 5709 ms: fetch failed | caused by SocketError: other side closed (UND_ERR_SOCKET) [after 33.3s]
+                    --
+                    FAIL  2. grid: one row per item with its quantity and unit; nothing priced, every Item Cost and the TOTAL row read $0
+                          TimeoutError: page.waitForURL: Timeout 20000ms exceeded. / =========================== logs =========================== / waiting for navigation until "load" / ============================================================ [after 21.7s]
+                    --
+                    FAIL  3. grouping: Classification puts Slab and Footing under DIV 03 and Paint under DIV 09; Custom Folder under Structure and Finishes; a group folds
+                          TimeoutError: page.waitForURL: Timeout 20000ms exceeded. / =========================== logs =========================== / waiting for navigation until "load" / ============================================================ [after 21.3s]
+                    --
+                    FAIL  4. pricing: Slab Unit Material Cost 40 gives $40,000; Footing 6 MH / LF at $100 / hr gives 600 MH and $60,000; TOTAL $100,000; the api holds the rates
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 34.9s]
+                    --
+                    FAIL  5. bid summary, C16: direct $100,000, material $40,000, tax 8 %, overhead 10 %, profit 10 %, bond 1 % reads $126,133.33
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 33.0s]
+                    --
+                    FAIL  6. wastage: 5 % on Slab alone gives 1,050 SF and $42,000, Paint stays 200; 10 % on every LF line gives Footing 110 LF, its labour $60,000 on the net 100 LF (D-763: a new project prices under rules 2, wastage on material only)
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 33.4s]
+                    --
+                    FAIL  7. cost components: a Material component on Paint at $2 × QTY gives $400, and Paint's material rate reads From components
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 32.6s]
+                    --
+                    FAIL  8. Set values: Subcontract $500 on Slab and Footing in one step; Ctrl+Z takes both back, Ctrl+Y puts both back
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 33.3s]
+                    --
+                    FAIL  9. undo a rate: Slab material 40 to 45 shows $47,250; Ctrl+Z gives back 40 and $42,000
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 33.2s]
+                    --
+                    FAIL  10. undo wastage (D-633): 20 % on Paint alone, Ctrl+Z back to 200 SF, Ctrl+Y 240; 8 % on every SF line, Ctrl+Z puts back Slab's own 5 % and Paint's 200
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 32.4s]
+                    --
+                    FAIL  11. undo cost components (D-633): an edit ($2 → $3), an add (Primer $1) and a delete (Clear rates) each come back with Ctrl+Z and go again with Ctrl+Y
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 32.6s]
+                    --
+                    FAIL  12. slow load (M3, D-690): on a cold open with the rates' read held until the typing is saved (D-796), Paint's Unit Man Hours typed during the load keeps 0.25 after the late read lands, after a reload and in a second window
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for locator('tr[data-estimate-row="Slab"]').first() to be visible /  [after 33.1s]
+m6-position     859s  2/5 passed
+                    FAIL  2. L (POS-L landscape 36x24): references exact at every zoom to 30×, with markup top 0.22 and right 0.15 past the page; line and count stored alike at Fit and the deepest zoom
+                          TimeoutError: page.waitForFunction: Timeout 15000ms exceeded. [after 345.6s]
+                    --
+                    FAIL  3. P (POS-P portrait 24x36): references exact at every zoom to 30×, with markup bottom 0.22 and left 0.15 past the page; line and count stored alike at Fit and the deepest zoom
+                          TimeoutError: page.waitForURL: Timeout 20000ms exceeded. / =========================== logs =========================== / waiting for navigation until "load" / ============================================================ [after 22.7s]
+                    --
+                    FAIL  4. R (POS-R landscape as Rotate 90): references exact at every zoom to 30×, with markup top 0.22 and right 0.15 past the page; line and count stored alike at Fit and the deepest zoom
+                          TimeoutError: page.waitForURL: Timeout 20000ms exceeded. / =========================== logs =========================== / waiting for navigation until "load" / ============================================================ [after 21.5s]
+f8-s13          343s  5/5 passed
+c45-materials   441s  12/12 passed
+f4-s7           312s  7/7 passed
+c44-fill-by-delivery  384s  4/7 passed
+                    FAIL  2. D-899: the method alone reads Apply; every sheet's lines change, no volume, key or time moves, neither page reads stale
+                          timed out after 20s waiting for both pages' lines to change [after 39.5s]
+                    --
+                    FAIL  4. D-900: the fill follows its delivery; a scraper haul of 1,000 ft or more adds the haul-road water, a shorter one does not
+                          timed out after 20s waiting for the scraper's fill, no water line: Fill [after 43.9s]
+                    --
+                    FAIL  5. D-901: a typed 40 % splits the fill into two lines that add to it; From the cut lines goes back
+                          TimeoutError: locator.fill: Timeout 30000ms exceeded. / Call log: / - waiting for getByRole('dialog', { name: 'Earthwork assumptions' }).getByLabel('Dozer push share') / -   locator resolved to <input min="0" max="100" value="0" type="number" placeholder="0" autocomplete="off" aria-label="Dozer push share" class="flex rounded-md border border-input bg-background px-3 py-2 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-7 w-16 text-xs"/> / -   fill("40") / - attempting fill action / -   waiting for element to be visible, enabled and editable / -   element is not visible / - retrying fill action, attempt #1 / -   waiting for element to be visible, enabled and editable / -   element is not visible / - retrying fill action, attempt #2  [after 47.1s]
+r5-drags        420s  10/10 passed
+rv-rows         476s  7/8 passed
+                    FAIL  5. a row held at the list's top edge scrolls it until F1 shows; the drop files RV-400 in F1
+                          F1's header never came into view while held at the edge [after 58.1s]
+c13-canvas-tools  214s  5/5 passed
+n3-twenty-loads 1841s  0/3 passed
+                    FAIL  1. 20 uploads and Loads in a row on a slow network, a reload mid-prepare: each open sheet shows its image within 5 s of the worker, never "could not be prepared"
+                          GET /api/workspace/b92f2e75-b5f7-4429-8011-f800b304eec1/project/c601fd0c-42b0-4982-84e5-22b10370c47d/drawing/sheet failed after 187 ms: fetch failed | caused by read ECONNRESET (ECONNRESET) [after 77.6s]
+                    --
+                    FAIL  2. Every one of the 20 sheets, opened from the Sheets panel: its image within 5 s, never the error
+                          TimeoutError: page.waitForURL: Timeout 20000ms exceeded. / =========================== logs =========================== / waiting for navigation until "load" / ============================================================ [after 21.4s]
+                    --
+                    FAIL  3. The rule itself: a sheet the api has failed shows the error and its reason; a ready sheet whose image is not signed yet shows Preparing and signs again, never the error
+                          TimeoutError: page.waitForURL: Timeout 20000ms exceeded. / =========================== logs =========================== / waiting for navigation until "load" / ============================================================ [after 21.3s]
+c17-earthwork   342s  6/8 passed
+                    FAIL  3. Calculate C-1: Cut 20 BCY, Fill 0; Net in words; one elevation warning naming the EG spot; the stored figures match the hand-worked ones
+                          timed out after 30s waiting for the stored result [after 46.3s]
+                    --
+                    FAIL  8. C-2, uncovered: Calculate says Coverage 50.0 % of the boundary, proposed grade missing 500 SF, cut 19 BCY; the shading is on the sheet, off and on again with its tick
+                          timed out after 30s waiting for the stored result [after 60.0s]
+f7-h            284s  8/8 passed
+c05-calculated-lines  285s  7/7 passed
+c31-wage        213s  6/6 passed
+f4-s5           235s  7/7 passed
+c44-surplus-destinations  294s  4/5 passed
+                    FAIL  2. D-806 B3: the surplus to haul_off
+                          timed out after 30s waiting for the lines for haul_off (last: ) [after 57.3s]
+f8-s9           178s  5/5 passed
+c06-copied-earthwork  206s  2/6 passed
+                    FAIL  2. Calculate the original in the Earthwork tab: the api holds its result and lines, none stale
+                          timed out after 30s waiting for the stored result and its calculated lines [after 52.6s]
+                    --
+                    FAIL  3. Duplicate project (the api's job): the copy has the same calculated lines, none stale, and a stored result for its sheet
+                          copy's results: 0 [after 6.1s]
+                    --
+                    FAIL  4. the copy's grading sheet, Earthwork tab: no "Needs recalculating" anywhere, Calculate's dot reads ready, the grading report is not out of date
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 3.9s]
+                    --
+                    FAIL  5. the copy's Estimating tab: every calculated line listed, none flagged "Needs recalculating"
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 4.6s]
+f5-s6           255s  6/6 passed
+c20-forum       222s  5/5 passed
+c47-gps-field   229s  5/5 passed
+c34-my-equipment  267s  6/7 passed
+                    FAIL  1. setup: a project with a shared EX-CRAWL-20T on a count item; a TEST diesel price; the list empty, every class offered
+                          bundle: 642 classes, list 0, mine_only false [after 6.7s]
+f8-s15          207s  6/6 passed
+f5-s9           206s  not all passed
+                    FAIL  2. AC2: the seed
+                              with map_httpcore_exceptions():
+c15-reports     227s  5/5 passed
+c10-two-trees   227s  6/6 passed
+c30-billing     233s  7/7 passed
+f7-i            202s  5/5 passed
+c41-assignee-scope  211s  5/5 passed
+c12-item-model  319s  9/10 passed
+                    FAIL  10. phone width: Manage sub-items opened, the window narrowed to 375 px: the editor stays on screen, a formula can be typed, and Save changes is in reach
+                          at 375 px the sub-items editor runs off screen: x 305, width 246.96002197265625 [after 41.8s]
+p20a            256s  8/8 passed
+c11-rotate      221s  5/5 passed
+c46-proofs      214s  4/4 passed
+f5-s13          237s  7/7 passed
+c40-delete-protection  199s  6/6 passed
+f7-b            272s  7/7 passed
+f4-s4           195s  9/9 passed
+f4-s17          317s  10/10 passed
+c22-takeoff-first  210s  5/5 passed
+c46-gps-machine  214s  5/5 passed
+f5-s16          206s  6/6 passed
+f5-s18          260s  4/4 passed
+c45-cut-method  302s  2/5 passed
+                    FAIL  2. D-806 B4: dozer push for the project: Cut, dozer push
+                          timed out after 30s waiting for the calculated lines (last: ) [after 54.4s]
+                    --
+                    FAIL  3. D-806 B4: the Site Feature by scraper, the rest by dozer push
+                          timed out after 30s waiting for the calculated lines (last: ) [after 54.1s]
+                    --
+                    FAIL  5. D-922, D-923: an undercut's row: Treat in place drops the dig and the refill; a proof roll and geotextile add lines; Confirm moves no volume
+                          timed out after 30s waiting for the proof roll [after 59.0s]
+f9-exports      221s  3/4 passed
+                    FAIL  3. grading report Excel: Calculate, open the report, Excel; the workbook names the project and sheet and carries 37.04 CY of cut
+                          TimeoutError: page.waitForEvent: Timeout 60000ms exceeded while waiting for event "download" / =========================== logs =========================== / waiting for event "download" / ============================================================ [after 85.1s]
+f4-s3           202s  10/11 passed
+                    FAIL  3. AC3 — a closed "Lost, price" reporting as Lost; a project put on it reports lost
+                          TimeoutError: locator.waitFor: Timeout 10000ms exceeded. / Call log: / - waiting for locator('li[data-status="c_lost_price"]').filter({ hasText: '1 project' }) to be visible /  [after 20.1s]
+c42-stitch-sheets  279s  6/6 passed
+f8-s14          402s  4/4 passed
+c39-one-tag-while-drawing  369s  4/4 passed
+f4-s24          214s  6/6 passed
+f5-s4           183s  5/5 passed
+f5-sheet-items  211s  5/5 passed
+c35-equipment-library  188s  3/5 passed
+                    FAIL  1. setup: a TEST diesel price, five count items in division 31, four shared library machines with usage hours
+                          bundle: 642 classes, release 34 [after 10.4s]
+                    --
+                    FAIL  3. a shared machine short of data flags every line it serves: the assembled crane (no mob quote) on TEST A and B, the water truck (no fuel burn, no mob) on TEST C and D
+                          timed out after 20s waiting for TEST C flagged [after 34.3s]
+f5-s5           206s  5/5 passed
+f7-e            262s  7/7 passed
+f7-c            195s  5/5 passed
+c21-time        232s  6/6 passed
+f7-d            186s  4/4 passed
+f8-s6           185s  1/1 passed
+c43-earthwork-assumptions  197s  4/4 passed
+f3-s6           217s  8/8 passed
+f5-s14          254s  6/6 passed
+c47-material-release  221s  6/6 passed
+f3-s7           190s  6/6 passed
+c48-saved-sections  290s  7/7 passed
+f4-s11          167s  5/5 passed
+n11-undo-queue  194s  2/2 passed
+c03-duplicate   196s  5/5 passed
+f6-c            355s  9/10 passed
+                    FAIL  7. S8 AC2, AC4: on Alternate, a new count files under Alternate and the tree shows Alternate's items only; Base Bid's shapes leave the sheet until its eye is on, kept after a reload
+                          TimeoutError: locator.waitFor: Timeout 20000ms exceeded. / Call log: / - waiting for locator('[data-canvas-scale]') to be visible /  [after 43.4s]
+p19             235s  2/2 passed
+f5-s8           165s  4/4 passed
+f6-b            262s  9/9 passed
+f4-s1           116s  9/9 passed
+d37-links       144s  6/6 passed
+f4-s21          174s  5/5 passed
+f4-s18          114s  4/4 passed
+c38-components-assemblies  156s  5/5 passed
+f6-d            239s  8/9 passed
+                    FAIL  2. S13: a new workspace finds legacy's trees seeded on first read (CSI 1,835 with F12's two earthwork nodes, UniFormat 635, NRM 1 401, NRM 2 361, CESMM 254), and reading again never doubles them
+                          {"csi":1837,"uniformat":635,"nrm1":401,"nrm2":361,"cesmm":254} [after 6.0s]
+f4-dialogs      275s  8/8 passed
+f4-s26          176s  8/8 passed
+c14-format      183s  4/4 passed
+f5-s7           131s  3/3 passed
+n4-ocr-scale    189s  2/2 passed
+f5-scale-button  139s  4/4 passed
+f5-d51          163s  5/5 passed
+f8-s11          121s  4/4 passed
+f4-s10          194s  5/5 passed
+f3-s3            90s  3/3 passed
+f5-s10          163s  4/5 passed
+                    FAIL  2. AC1: on a dpr-2 display the settled picture is a pdf.js raster at 100%, 400%, 2000% and 4000%; a hairline stays one to two device pixels wide at 4000%
+                          TimeoutError: page.waitForFunction: Timeout 5000ms exceeded. [after 21.9s]
+f4-s9           147s  5/5 passed
+f5-s12          197s  4/4 passed
+f7-j            131s  3/3 passed
+f8-s10          147s  3/3 passed
+f8-s7           146s  3/3 passed
+f3-s4           170s  4/4 passed
+f6-e            209s  3/3 passed
+f4-s14          137s  4/4 passed
+f2-s13           81s  5/5 passed
+f3-s2            80s  5/5 passed
+f4-s15           84s  3/3 passed
+f4-s19           92s  2/2 passed
+c28-double-click  108s  3/3 passed
+f7-f            125s  3/3 passed
+f4-s23           96s  4/4 passed
+f2-s5            97s  9/9 passed
+n2-tick-before-sizes   99s  3/3 passed
+c19-auto-count  119s  3/3 passed
+f2-close        103s  7/7 passed
+f5-s1            81s  7/7 passed
+c23-folders-on-load   73s  3/3 passed
+f3-s12           80s  8/8 passed
+f3-s9            76s  7/7 passed
+c16-bid-formulas   84s  3/3 passed
+c49-overlay-match   93s  0/1 passed
+                    FAIL  1. two pages: opened beside it, one pair refused; three pairs fit the scale and turn; Enter saves; the compare view, opacity and Swap
+                          stored {"a":1,"b":0,"c":0,"d":1,"e":0,"f":0} [after 35.7s]
+c33-invitations   76s  4/4 passed
+f8-s1            78s  4/4 passed
+f7-k             99s  2/2 passed
+f8-s16          138s  3/4 passed
+                    FAIL  3. AC6, AC8: folder create, rename, upload and delete reach B's file browser; A's own act shows once, its echo suppressed
+                          B's folder to list the upload took 2164 ms [after 32.0s]
+f2-s7            79s  4/4 passed
+c37-wage-roles   80s  3/3 passed
+f2-s4b           81s  6/6 passed
+f3-s10           82s  4/4 passed
+f3-s5            84s  5/5 passed
+f8-s4            65s  4/4 passed
+f3-s11           84s  4/4 passed
+f2-s1b           71s  5/5 passed
+f4-s16           90s  1/1 passed
+f7-g            111s  4/4 passed
+f2-s6            59s  6/6 passed
+f2-s8            61s  6/6 passed
+f4-s20           79s  3/3 passed
+f2-s12           63s  5/5 passed
+f3-s8            68s  4/4 passed
+f4-s6            69s  3/3 passed
+f2-s14           69s  4/4 passed
+f2-s9            69s  6/6 passed
+f2-s10           73s  6/6 passed
+f4-s8            84s  3/3 passed
+f2-s2            57s  5/5 passed
+c50-equipment-scale   61s  3/3 passed
+c51-bid-defaults   46s  3/3 passed
+d27-uploads      37s  2/2 passed
+c48-fuel-location   44s  4/4 passed
+f2-s3            43s  4/4 passed
+
+--- one at a time: they stop or restart a service ---
+f5-big          475s  5/6 passed
+                    FAIL  1. D-43: a Load while the set's thumbnails are still being made is not held behind them: the page is drawn in about 10 s
+                          the page took 24149 ms to draw with thumbnails being made [after 39.2s]
+f5-count        187s  1/1 passed
+f5-s11          140s  6/6 passed
+f5-s15           70s  3/4 passed
+                    FAIL  4. AC3: B, on the same sheet, sees the new scale chip and the recomputed quantities within a second, no reload (sheet.calibration.changed)
+                          chip after 1075 ms, quantities after 3432 ms [after 12.7s]
+f5-s19          118s  3/4 passed
+                    FAIL  3. 2: A draws a run slowly; B watches it grow tagged with A's short name, then sees it as a saved shape the moment A finishes
+                          after A finished: tag gone 165 ms, saved row 1217 ms [after 27.8s]
+f5-s2           252s  4/4 passed
+f6-a            159s  9/10 passed
+                    FAIL  9. S2 AC4, D-822: the same with window B still loading its page
+                          B took 1522 ms (1 reads still loading): PATCH replied +147 ms; frames: takeoff.item.changed published +138 at B +296, pong published +? at B +397; reads: item/e3c094c8-7b79-4fba-b64f-ca4851b4cdd2 +308 (205 ms), symbol-index/symbols-1-t2 +446 (152 ms), detail/compact +453 (290 ms), detail/compact +762 (265 ms), sheet/items +771 (106 ms); B's long tasks: +59 (193 ms), +526 (73 ms), +906 (68 ms), +1074 (51 ms), +1145 (100 ms) [after 11.6s]
+f8-s12          342s  1/1 passed
+f8-s18          127s  3/3 passed
+f8-s2           298s  1/1 passed
+f8-s3           462s  3/3 passed
+f8-s8           111s  1/1 passed
+fx-cleanup     purged 167 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 208m01s (parallel group 160m21s, 3 at a time)
+24 of 157 failed: f9-estimating m6-position c44-fill-by-delivery rv-rows n3-twenty-loads c17-earthwork c44-surplus-destinations c06-copied-earthwork c34-my-equipment f5-s9 c12-item-model c45-cut-method f9-exports f4-s3 c35-equipment-library f6-c f6-d f5-s10 c49-overlay-match f8-s16 f5-big f5-s15 f5-s19 f6-a 
+Full output: ./.regress/
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 270 s
+warm http://localhost:5177 in 280 s
+7 fixtures (named): 7 in parallel, 3 at a time; then 0 one at a time
+
+r1-raster-text  241s  2/2 passed
+f4-s2           309s  5/6 passed
+                    FAIL  6. AC4 — New project opens the dialog, holds a blank name back, creates, toasts and lands on it
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.0s]
+f5-s3            90s  
+f3-s13          482s  2/5 passed
+                    FAIL  3. AC3 the other way — the flag on with the capability denied still shows nothing
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/settings/roles", waiting until "load" /  [after 58.6s]
+                    --
+                    FAIL  4. AC2 — loading reads false: nothing opens while the answer is in flight
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/settings/roles", waiting until "load" /  [after 59.7s]
+                    --
+                    FAIL  5. AC4 — the dev override forces ON only, and warns every time
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/settings/roles", waiting until "load" /  [after 60.3s]
+f3-s1           192s  2/5 passed
+                    FAIL  1. AC1 — nine roles and twenty-five capabilities, the same ones on both sides
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  3. AC3 — every key present in every map; a capability nothing grants is false
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  5. The running app survives the widened enum: the members screen offers nine roles
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login", waiting until "load" /  [after 30.0s]
+f7-a            286s  0/8 passed
+                    FAIL  1. setup: one square page at 0.1 ft per point, a viewer seat
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/settings", waiting until "load" /  [after 61.4s]
+                    --
+                    FAIL  2. S2 AC3: the shared table: the browser's engine and the api's agree on every row; every worked answer is right; crossing deducts clip once on the api
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  3. S2 AC1, AC2: an Area circle of radius 10 ft reads 314.16 SF, and still does after a reload; a Linear 10 × 20 ft rectangle 60.00 LF; a Linear circle 10 ft across 31.42 LF
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 0.0s]
+                    --
+                    FAIL  4. S2: a deduct through the shapes transaction: an 80 × 40 ft area less a 10 ft-radius hole is 2,885.84 SF, shown live; deleting the section takes its deduct
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 0.0s]
+                    --
+                    FAIL  5. S2 AC4: a transaction with one stale version changes nothing and names who changed the shape
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 0.0s]
+                    --
+                    FAIL  6. S1 AC1, AC2: 2 px beside a hairline run selects it, 30 px away does not; inside a square selects it, and so does 3 px outside its edge
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 0.0s]
+                    --
+                    FAIL  7. S1 AC3: a count mark selects from 10 px off its centre (legacy's 14 px floor) at zoom 1 and zoom 2; 25 px off does not
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 0.0s]
+                    --
+                    FAIL  8. S3: a viewer sees every measure tool and the item menu's edit entries disabled with the reason; select still works; a hand-written shapes transaction is refused 403
+                          TypeError: Cannot read properties of undefined (reading 'uuid') [after 48.7s]
+f6-s4           144s  3/3 passed
+fx-cleanup     purged 5 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 10m30s (parallel group 10m30s, 3 at a time)
+5 of 7 failed: f4-s2 f5-s3 f3-s13 f3-s1 f7-a 
+Full output: ./.regress/
+built apps:   24 of 157 failed: f9-estimating m6-position c44-fill-by-delivery rv-rows n3-twenty-loads c17-earthwork c44-surplus-destinations c06-copied-earthwork c34-my-equipment f5-s9 c12-item-model c45-cut-method f9-exports f4-s3 c35-equipment-library f6-c f6-d f5-s10 c49-overlay-match f8-s16 f5-big f5-s15 f5-s19 f6-a 
+dev servers:  5 of 7 failed: f4-s2 f5-s3 f3-s13 f3-s1 f7-a 
+alone, passed (timing): f3-s1 f3-s13 c12-item-model c17-earthwork c44-surplus-destinations c49-overlay-match f4-s3 f5-s10 f5-s9 f6-c f8-s16 f9-estimating f9-exports m6-position
+alone, failed (look at): f4-s2 f5-s3 f7-a c06-copied-earthwork c34-my-equipment c35-equipment-library c44-fill-by-delivery c45-cut-method f5-big f5-s15 f5-s19 f6-a f6-d n3-twenty-loads rv-rows
+registry after prepare: none reached
+logs: fx-suite/.regress/release-20261105-0823 (one per fixture in fx-suite/.regress)
+release exit 1

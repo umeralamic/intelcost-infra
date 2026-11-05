@@ -125,6 +125,11 @@ async def purge(go: list[tuple[User, list[Workspace]]]) -> tuple[int, int, list[
 
 async def main() -> None:
     go, refused = await plan()
+    # `--only <email>` (2026-11-05): just the accounts the founder approved by name, never the rest.
+    only = {sys.argv[i + 1] for i, a in enumerate(sys.argv[:-1]) if a == "--only"}
+    if only:
+        go = [(u, owned) for u, owned in go if u.email in only]
+        refused = [(e, why) for e, why in refused if e in only]
     for u, owned in go:
         verb = "DELETE" if "--purge" in sys.argv else "would delete"
         names = ", ".join(w.name for w in owned) or "-"

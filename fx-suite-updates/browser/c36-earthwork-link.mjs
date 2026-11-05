@@ -8,13 +8,14 @@
 // (catalog gap)") inactive; the crew's Foreman rows marked foreman, Grade checker and Pipelayer
 // priced as their journeyman craft (D-753 option B, `rate_as`).
 //
-// The link, on the c32 pad (150 × 90 ft, EG 100, FG 82: 9,000 BCY of cut; A1 at 1,000 BCY/day, tier
-// 900–1,399: EX-CRAWL-30T × 1 + ADT-30T × 2), in Estimating › Equipment settings:
-// - production typed 1,500/day → tier 1,400–2,199's machines (ADT-30T × 3);
-// - the trucks back to 2 → the spread matches tier 900–1,399 exactly → its production for this
-//   quantity, 1,000/day ("Production set to 1,000 BCY/day: the spread matches the 900–1,399 tier.");
-// - the pacing excavator to 2 → no tier matches → production scales, 1,000 × 2 = 2,000/day;
-// - Apply tier → the default 1,000/day and tier 900–1,399's machines, not edited.
+// The link, on the c32 pad (150 × 90 ft, EG 100, FG 82: 9,000 BCY of cut), in Estimating › Equipment settings.
+// Updated 2026-11-05 (Q145, D-1014): release 18's tier file (D-954) gives A1 1,200 BCY a day on the project's 8-hour
+// day (1,500 on the tiers' 10-hour day, D-960), the 1,400–2,199 tier: EX-CRAWL-30T × 1 + ADT-30T × 3.
+// - production typed 800/day (1,000 on the 10-hour day) → tier 900–1,399's machines (ADT-30T × 2);
+// - the trucks back to 3 → the spread matches its default tier exactly → that tier's production for this
+//   quantity, 1,200/day ("Production set to 1,200 BCY/day: the spread matches the … tier.");
+// - the pacing excavator to 2 → no tier matches → production scales, 1,200 × 2 = 2,400/day;
+// - Apply tier → the default 1,200/day and its tier's machines, not edited.
 //
 // Left for the founder's eye: the Earthwork production page's layout.
 
@@ -84,7 +85,7 @@ async function commit(page, row, label, value, settled) {
 
 await run("c36-earthwork-link", [
   {
-    title: "the starter a new workspace takes up (D-751; release 25 since Q120, D-967): 96 activities, 195 tiers, 212 defaults; A21, A58 and A59 priced on their own line (D-922, D-958); every activity on the project's work day (D-960); 30 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
+    title: "the starter a new workspace takes up (D-751; release 34 since Q145, D-1014): 104 activities, 205 tiers, 220 defaults; A21, A58 and A59 priced on their own line (D-922, D-958); every activity on the project's work day (D-960); 30 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
     run: async ({ page }) => {
       const cfg = (await apiCall(token, "GET", `${wlib}/earthwork-production`)).body;
       const acts = cfg.activities.filter((a) => a.national_key);
@@ -94,9 +95,9 @@ await run("c36-earthwork-link", [
       const crew = tiers.flatMap((t) => t.crew);
       const foremen = crew.filter((c) => /^Foreman/i.test(c.role));
       const rated = crew.filter((c) => /^(Grade checker|Pipelayer)/i.test(c.role));
-      expect(acts.length === 96, `activities ${acts.length}`);
-      expect(tiers.length === 195, `tiers ${tiers.length}`);
-      expect(defaults === 212, `defaults ${defaults}`);
+      expect(acts.length === 104, `activities ${acts.length}`);
+      expect(tiers.length === 205, `tiers ${tiers.length}`);
+      expect(defaults === 220, `defaults ${defaults}`);
       // A21 (a reclaimer serves the one treated area, D-922) and the trees and stumps by diameter (D-958) are priced
       // on their own lines; no activity carries its own day: each follows the project's (D-960).
       const lines = ["A21", "A58", "A59"];
@@ -109,12 +110,12 @@ await run("c36-earthwork-link", [
       await page.getByRole("tab", { name: "Earthwork production" }).click();
       await page.locator("[data-activity]").first().waitFor({ timeout: 30000 });
       const badges = await page.locator("[data-starter]").count();
-      expect(badges === 96, `Starter badges on screen ${badges}`);
-      return `96 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 96 Starter badges`;
+      expect(badges === 104, `Starter badges on screen ${badges}`);
+      return `104 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 104 Starter badges`;
     },
   },
   {
-    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,000/day in tier 900–1,399 (EX-CRAWL-30T × 1 + ADT-30T × 2)",
+    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,200/day in tier 1,400–2,199 (EX-CRAWL-30T × 1 + ADT-30T × 3)",
     run: async ({ page }) => {
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["C-1"]);
       await g.boundary(sheet, rect(X0, Y0, 150, 90));
@@ -130,50 +131,50 @@ await run("c36-earthwork-link", [
         const s = await site();
         return s?.machines.length ? s : null;
       }, "A1's site spread", 60000, 1000);
-      expect(a.prod_per_day === 1000 && machines(a) === "EX-CRAWL-30T×1 + ADT-30T×2", `A1 ${a.prod_per_day}/day: ${machines(a)}`);
+      expect(a.prod_per_day === 1200 && machines(a) === "EX-CRAWL-30T×1 + ADT-30T×3", `A1 ${a.prod_per_day}/day: ${machines(a)}`);
       return `A1 ${a.total_qty} BCY, ${a.prod_per_day}/day, tier ${a.tier_label}: ${machines(a)}`;
     },
   },
   {
-    title: "production typed 1,500/day takes tier 1,400–2,199's machines (ADT-30T × 3), the spread edited",
+    title: "production typed 800/day takes tier 900–1,399's machines (ADT-30T × 2), the spread edited",
     run: async ({ page }) => {
       const row = await settingsRow(page);
-      const a = await commit(page, row, `${A1} production per work day`, 1500, (s) => s.prod_per_day === 1500 && s.machines.some((m) => m.eq_class_key === "ADT-30T" && m.units === 3));
-      expect(machines(a) === "EX-CRAWL-30T×1 + ADT-30T×3" && a.user_edited, `${machines(a)}, edited ${a.user_edited}`);
+      const a = await commit(page, row, `${A1} production per work day`, 800, (s) => s.prod_per_day === 800 && s.machines.some((m) => m.eq_class_key === "ADT-30T" && m.units === 2));
+      expect(machines(a) === "EX-CRAWL-30T×1 + ADT-30T×2" && a.user_edited, `${machines(a)}, edited ${a.user_edited}`);
       return `tier ${a.tier_label}: ${machines(a)}; edited`;
     },
   },
   {
-    title: "the trucks back to 2: the spread matches tier 900–1,399 exactly, so production is that tier's for 9,000 BCY, 1,000/day, and the note says so",
+    title: "the trucks back to 3: the spread matches its default tier exactly, so production is that tier's for 9,000 BCY, 1,200/day, and the note says so",
     run: async ({ page }) => {
       const row = await settingsRow(page);
       const truck = (await site()).machines.find((m) => m.eq_class_key === "ADT-30T");
-      const a = await commit(page, row, `${truck.name} count`, 2, (s) => s.prod_per_day === 1000);
-      expect(a.note === "Production set to 1,000 BCY/day: the spread matches the 900–1,399 tier.", `note: ${a.note}`);
+      const a = await commit(page, row, `${truck.name} count`, 3, (s) => s.prod_per_day === 1200);
+      expect(/^Production set to 1,200 BCY\/day: the spread matches the .+ tier\.$/.test(a.note ?? ""), `note: ${a.note}`);
       return `${a.prod_per_day}/day; note "${a.note}"`;
     },
   },
   {
-    title: "the pacing excavator to 2: no tier matches, so production scales with it, 1,000 × 2 = 2,000/day",
+    title: "the pacing excavator to 2: no tier matches, so production scales with it, 1,200 × 2 = 2,400/day",
     run: async ({ page }) => {
       const row = await settingsRow(page);
       const ex = (await site()).machines.find((m) => m.paces);
       expect(ex?.eq_class_key === "EX-CRAWL-30T", `pacing machine ${JSON.stringify(ex)}`);
-      const a = await commit(page, row, `${ex.name} count`, 2, (s) => s.prod_per_day === 2000);
-      expect(/^Production updated to 2,000 BCY\/day \(2 .* instead of 1\)\.$/.test(a.note ?? ""), `note: ${a.note}`);
+      const a = await commit(page, row, `${ex.name} count`, 2, (s) => s.prod_per_day === 2400);
+      expect(/^Production updated to 2,400 BCY\/day \(2 .* instead of 1\)\.$/.test(a.note ?? ""), `note: ${a.note}`);
       return `${a.prod_per_day}/day; ${machines(a)}; note "${a.note}"`;
     },
   },
   {
-    title: "Apply tier puts the default 1,000/day and tier 900–1,399's machines back, not edited",
+    title: "Apply tier puts the default 1,200/day and tier 1,400–2,199's machines back, not edited",
     run: async ({ page }) => {
       const row = await settingsRow(page);
       await row.locator("[data-site-apply-tier]").click();
       const a = await waitFor(async () => {
         const s = await site();
-        return s.prod_per_day === 1000 && !s.user_edited ? s : null;
+        return s.prod_per_day === 1200 && !s.user_edited ? s : null;
       }, "Apply tier", 30000, 500);
-      expect(machines(a) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines ${machines(a)}`);
+      expect(machines(a) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a)}`);
       return `${a.prod_per_day}/day, tier ${a.tier_label}: ${machines(a)}, edited ${a.user_edited}`;
     },
   },

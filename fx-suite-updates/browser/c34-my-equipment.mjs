@@ -65,8 +65,9 @@ await run("c34-my-equipment", [
       const used = await apiCall(token, "PUT", `${estimate}/equipment-usage`, [{ resource_uuid: resource, item_uuid: item.uuid, usage_hours_override: 40 }]);
       expect(used.status === 200, `usage: ${used.status} ${JSON.stringify(used.body)}`);
       const b = await bundle();
-      expect(b.classes.length === 641 && b.my_equipment.length === 0 && b.mine_only === false, `bundle: ${b.classes.length} classes, list ${b.my_equipment.length}, mine_only ${b.mine_only}`);
-      return `sheet ${sheet.sheet_uuid.slice(0, 8)}, item ${item.uuid.slice(0, 8)}, resource ${resource.slice(0, 8)}; 628 classes, list empty, show all`;
+      // 642 since release 34 (D-998) added the tub grinder's class.
+      expect(b.classes.length === 642 && b.my_equipment.length === 0 && b.mine_only === false, `bundle: ${b.classes.length} classes, list ${b.my_equipment.length}, mine_only ${b.mine_only}`);
+      return `sheet ${sheet.sheet_uuid.slice(0, 8)}, item ${item.uuid.slice(0, 8)}, resource ${resource.slice(0, 8)}; 642 classes, list empty, show all`;
     },
   },
   {

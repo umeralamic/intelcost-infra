@@ -9,7 +9,7 @@
 // Window B is the same owner on :5174.
 //
 // Updated 2026-10-17 to today's screens (D-614): CSI seeds 1,835 nodes (F12's 31.04.07 and
-// 31.04.08, D-142); a division's identifier is its Number and refusals say "classification",
+// 31.04.08, D-142), 1,837 since D-992's 32.13 Aggregate Base and 34.06 Guardrail; a division's identifier is its Number and refusals say "classification",
 // never "code" (D-338); New Measurement's WBS holds an optional Folder and Classification, with no
 // Preset Classification mode (D-336, D-337), and an item files in the classification tree by its
 // class folder; there is no archive: a classification some item uses is refused until "Move items
@@ -74,13 +74,13 @@ await run("f6-d", [
     },
   },
   {
-    title: "S13: a new workspace finds legacy's trees seeded on first read (CSI 1,835 with F12's two earthwork nodes, UniFormat 635, NRM 1 401, NRM 2 361, CESMM 254), and reading again never doubles them",
+    title: "S13: a new workspace finds legacy's trees seeded on first read (CSI 1,837 with F12's two earthwork nodes and D-992's two headings, UniFormat 635, NRM 1 401, NRM 2 361, CESMM 254), and reading again never doubles them",
     run: async () => {
       const counts = {};
       for (const system of ["csi", "uniformat", "nrm1", "nrm2", "cesmm"]) counts[system] = (await nodes(system)).length;
       const again = (await nodes("csi")).length;
-      expect(counts.csi === 1835 && counts.uniformat === 635 && counts.nrm1 === 401 && counts.nrm2 === 361 && counts.cesmm === 254, JSON.stringify(counts));
-      expect(again === 1835, `csi read twice: ${again}`);
+      expect(counts.csi === 1837 && counts.uniformat === 635 && counts.nrm1 === 401 && counts.nrm2 === 361 && counts.cesmm === 254, JSON.stringify(counts));
+      expect(again === 1837, `csi read twice: ${again}`);
       const earthwork = (await nodes("csi")).filter((n) => ["31.04.07", "31.04.08"].includes(n.code)).length;
       expect(earthwork === 2, `F12's earthwork nodes: ${earthwork}`);
       const concrete = await byCode("csi", "03");

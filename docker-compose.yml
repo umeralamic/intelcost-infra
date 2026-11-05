@@ -420,9 +420,15 @@ services:
   #   - mail goes to MailHog only: no allowlist and no relay;
   #   - no AI keys, so the fake provider; Stripe stays the fake.
   # ./fx-suite.sh sets it up, runs the suite and stops it; see the README.
+  # A release runs the fx apis' uvicorn without watchfiles too (FX_WATCH=0, Q142, D-1011): the watcher's own ENOMEM
+  # killed api-fx twice on 2026-11-03. Any other time they reload on a save as before.
   api-fx:
     extends: api
     profiles: ["fx"]
+    command: >
+      sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5";
+      (python -m app.core.at_head || alembic upgrade head) || exit 1;
+      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     env_file: !override
       - path: ../intelcost-app-fastapi/.env
     environment: &fx-env
@@ -466,7 +472,9 @@ services:
   api-fx-b:
     extends: api-fx
     profiles: ["fx"]
-    command: ["watchfiles", "--filter", "python", "--sigint-timeout", "10", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5", "/srv/app", "/srv/main.py"]
+    command: >
+      sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5";
+      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     ports: !override
       - "8030:8000"
 

@@ -26722,3 +26722,128 @@ required").
   of binder). PG 58-28, 64-28 and 70-22: no public bid tab lists the same mix in two of those grades, and the indexes
   that list them blocked access: they stay "no price". Found but not a grade the app offers: PG 70-28 (+$10.00/ton of
   mix in place) and PG 76-28 (+$14.50), Oklahoma DOT 2024 contracts.
+
+## D-1002: The founder's answers to Q186-Q203; the depth warning both ways (queue 2026-11-08, Part 1 step 1)
+
+**Status:** the founder's queue of 2026-11-08.
+
+- **Accepted as recommended:** Q186 (the copier keeps site machines on the target's activity, D-995), Q187
+  (936,905.72 is the source's bid), Q189 (the drives-in list), Q190 (split states by majority region), Q191 (the
+  workspace's Default state picks the fuel series), Q194 (tub grinder $79.23/hr owned), Q195 (spreader truck as the
+  tri-axle), Q200 (no fabric under stabilized or bentonite-amended native for now). Confirmed: Q192 (no pit lines
+  under an installed price), Q201 (C900 takes the DI MJ tee). Q203: purge approved.
+- **The depth warning** shows only when the layers' total and the depth differ, either way, by a hundredth of an inch
+  or more. Thicker layers than the depth now warn too ("Set the depth to the layers' total, or grading will be X in
+  low"); equal totals show nothing. The dialog's Total adds the same layers the warning does (a tack or prime row has
+  no thickness).
+
+## D-1003: A saved asphalt section gains its tack rows on open, Conditional (queue 2026-11-08, Part 1 step 2)
+
+- Every new asphalt section already has a tack row between each pair of lifts (D-984). A section saved before tack
+  existed opens with one between each pair, and under the bottom lift on existing pavement, each **Conditional (not
+  priced, noted)**, so no saved price moves: saving adds a $0 noted line. The estimator sets it to Priced.
+
+## D-1004: Clay liner and pit run bought by the project's own swell and shrink (Q196)
+
+- No separate factors. Loose CY bought = compacted CY x the project's shrink (bank per compacted, as printed, D-177)
+  x swell (loose per bank). Clay liner is sold by the CY at that; pit run by the ton at loose earth's 1.28 t/LCY
+  (D-926). The undercut's replacement lines carry the factor; the old 1.2 (clay) and 1.8 t/CCY (pit run) are gone.
+
+## D-1005: A liner fills its whole thickness wherever it lies (Q197)
+
+- An undercut "measured below finished grade" (D-999) is a liner: its rows place their whole thickness over the
+  area, in cut or in fill. The dig stays what lies below existing ground (D-895). What of the liner lies above existing
+  ground takes the site's fill's place: the site's fill (the Fill lines and the balance) is reduced by that volume,
+  from the feature's own region first, else from each region in proportion to its fill. Analytic: the displaced volume
+  is the flat stack less the exact dig. The feature's key gains "liner", so its result is worked again.
+
+## D-1006: One mob/demob per machine per project (Q188)
+
+- Of the project's shared spreads with a machine of one class, the spread with the most machine-hours brings it; every
+  other spread with that class uses it and mobilizes only machines beyond the count already on site. The machine's line
+  reads "mob/demob none: on site with <spread>: <machine>". Update All prices the same way. A typed mob quote still
+  counts as that machine's mob. Machines on a single line (not shared) are unchanged.
+- This applies across the whole project, not only to valve and hydrant spreads: on the 3D test copy it removes
+  $15,700 of repeated mobs (dozers, rollers, the grader, a backhoe, skid steers, the storm crew's machines).
+
+## D-1007: Flowable fill buys CLSM; engineered and structural fill priced as granular borrow (Q198)
+
+- Flowable fill buys its CY at `flowable:flowable_fill_clsm` (no swell or shrink), 5 % waste.
+- `engineered_fill`, $13.13/ton at the pit, grade A: the bid names (engineered fill, structural fill, select borrow,
+  granular borrow) researched by the usual method; usable public material figures were found only as granular borrow
+  (two city annual bids and a town quote, 12 figures). Engineered fill itself found only retail (grade D, $5.00), so
+  it follows the granular borrow figure. Structural Fill already priced as engineered fill (D-940).
+
+## D-1008: GCL priced furnished and installed, a subcontract's line (Q199)
+
+- A geosynthetic clay liner, as a section layer or under an undercut, prices at `site:gcl:installed`, $0.95/SF, grade
+  A (12 public landfill bids), labelled "installed (public bids)", with no crew of ours (`geosynthetics_installed`,
+  by hand, no production).
+
+## D-1009: PG 70-28 and PG 76-28 (Q202)
+
+- The two grades join the binder list. Premiums per ton of binder at 5.5 % of the mix: $181.82 and $263.64, the state
+  DOT's +$10.00 and +$14.50 per ton of mix (2024 same-contract pairs), grade B.
+
+## D-1010: The priced-whole structures mapped in CSI (Q193)
+
+- Grate inlet: 33.05.02.02 Inlets; flared end: 33.05.02.04 Headwalls & Endwalls; outlet control: 33.05.02 Structures;
+  PRV vault, backflow and air release valve (water and fire water): 33.01.04 Valves & Boxes. New workspaces get them
+  with their defaults; a workspace made before gains each at its next Calculate where it has no mapping of its own
+  (no migration writes to an existing workspace).
+
+## D-1011: The fx apis run without watchfiles in a release (Q142)
+
+- `api-fx` and `api-fx-b` take the workers' switch (Q122, D-967): with `FX_WATCH=0` each `exec`s uvicorn directly
+  (api-fx after its migration check); otherwise watchfiles reloads them on a save as before. `./fx-suite.sh release`
+  makes both apis again with `FX_WATCH=0` beside the workers, and with `FX_WATCH=1` when the run is over.
+
+## D-1012: The Docker VM's inotify limits stay as they are (Q144)
+
+- Read 2026-11-05 in Docker Desktop's WSL 2 VM (kernel 6.18): `max_user_watches` 1,048,576, `max_user_instances`
+  8,192, `max_queued_events` 16,384. They were not what ran out on 2026-11-03: the api's watchfiles held no inotify
+  descriptor at all (it walks the bind-mounted tree, directory handles only), and a full inotify limit is ENOSPC, not
+  the ENOMEM seen. Raising them needs a `.wslconfig` kernel command line and a restart of Docker Desktop, which stops
+  the dev stack the queue forbids stopping: not done. D-1011 removes the watcher from a release, which is the failure
+  that mattered. Noted in `intelcost-infra/README.md`. **Pending founder review** (Q204).
+
+## D-1013: The release's warm-up loads the gallery and the takeoff page (Q147)
+
+- The dev servers compile a page's module graph on its first visit. The warm-up loaded /login and the settings pages
+  only, so f4-s2 (`/dev/ui`), f7-a (a takeoff sheet) and f5-s3 met a cold server under load and timed out at 30 s on
+  "load". The warm-up now also imports `DevUiGallery.tsx` and `ProjectTakeoff.tsx` in the page.
+
+## D-1014: Fixtures updated for the changes made on purpose; typed production on the tier file's day (Q145)
+
+- c32, c36, c46 and c17 in `fx-suite-updates/` (as Q120's):
+  - **c32 and c36:** A1 is 1,200 a day on the project's 8-hour day (1,500 on the tier file's 10-hour day) with
+    EX-CRAWL-30T × 1 + ADT-30T × 3 (release 18, D-954; D-960). c36's link steps move to that tier: 800/day typed,
+    the trucks back to 3, the excavator to 2 (2,400/day), Apply tier.
+  - **c36's starter counts:** 104 activities, 205 tiers, 220 default rows, 30 optional machines.
+  - **c46:** 504 and 720 a day (630 and 900 × 8/10).
+  - **c17:** "Site Prep" for "Stripping" (D-959).
+- **A product bug found on the way, fixed:** a production typed in Equipment settings picked its tier with the
+  project's 8-hour figure against the file's 10-hour bounds (800 typed took the 600-899 tier, which is 750-1,119 on an
+  8-hour day). It is now divided by the work-day factor first, and an exact machine match compares the default the
+  same way.
+
+## D-1015: A project's earthwork review row is made once (fx run of 2026-11-05)
+
+- Two first saves of a project's earthwork review (PATCH /earthwork/review) at once both found no row and both
+  inserted one: the second broke `earthwork_review_project_id_key`, a 500 (the same race as D-969's starter copy,
+  another table). The row is now inserted with ON CONFLICT DO NOTHING and then locked for update.
+  Proved: 6 parallel first saves on each of 3 new projects, all 200.
+
+## D-1016: A sheet's earthwork result row is made once (release of 2026-11-05)
+
+- Two first saves of a sheet's Calculate (PUT /earthwork/result/{sheet}) at once both found no row and both
+  inserted one: the second broke `earthwork_result_sheet_id_key`, a 500 that lost that save's lines (c06 and c45
+  waited for lines that never landed). The row is now inserted with ON CONFLICT DO NOTHING and then locked for
+  update, as D-1015's review row.
+
+## D-1017: Fixtures updated for this week's catalog changes (release of 2026-11-05, as Q120)
+
+- **c34, c35:** 642 equipment classes since release 34 added the tub grinder's class (D-998).
+- **c35 step 3:** the water truck WT-2000 is no longer short of data: releases 31 and 32 gave it a fuel burn and
+  made it a road vehicle that drives in with no mob (D-995, D-996). Only the crane's lines (TEST A, B) are flagged.
+- **f6-d:** a new workspace's CSI tree seeds 1,837 nodes since D-992's 32.13 Aggregate Base and 34.06 Guardrail.

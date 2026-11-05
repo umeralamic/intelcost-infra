@@ -9,9 +9,10 @@
 // The world: one throwaway project, one page at 1/6 ft per point (lib/grading-world.mjs). A 150 × 90
 // ft boundary (13,500 SF) inside a ring of spots 20 ft out, EG 100 everywhere; FG on the same ring:
 //   - FG 82: cut 18 ft = 9,000 BCY → the starter's A1 (cut, "Excavate and load (on-site haul)")
-//     default 1,000 BCY/day → tier 900–1,399: EX-CRAWL-30T × 1 + ADT-30T × 2;
-//   - FG 55: 45 ft = 22,500 BCY → 1,500/day → tier 1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T × 3
-//     (both classes stay);
+//     default 1,200 BCY/day on the project's 8-hour day (1,500 on the tiers' 10-hour day; release 18's tier file,
+//     D-954, and D-960; updated 2026-11-05, Q145, D-1014) → tier 1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T × 3;
+//   - FG 55: 45 ft = 22,500 BCY → 1,600/day (2,000 on the 10-hour day) → the same tier: Apply tier offered, its
+//     machines the same (both classes stay);
 //   - FG 10: 90 ft = 45,000 BCY → 2,500/day → tier 2,200–3,199: EX-CRAWL-50T × 1 + ADT-30T × 3
 //     (the excavator's class leaves).
 // The typed values (TEST, never a rate anyone quoted): the excavator's week $7,000, the truck's day
@@ -108,7 +109,7 @@ async function openSettings(page) {
 
 await run("c32-site-typed", [
   {
-    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is tier 900–1,399 with EX-CRAWL-30T × 1 + ADT-30T × 2",
+    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,200/day in tier 1,400–2,199 with EX-CRAWL-30T × 1 + ADT-30T × 3",
     run: async ({ page }) => {
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["C-1"]);
       await g.boundary(sheet, rect(X0, Y0, 150, 90));
@@ -123,8 +124,8 @@ await run("c32-site-typed", [
         return s.lines > 0 && s.machines.length > 0 ? s : null;
       }, "A1's site spread", 60000, 1000);
       expect(Math.round(a1.total_qty) === 9000, `A1 total ${a1.total_qty}, expected 9,000`);
-      expect(a1.prod_per_day === 1000, `production ${a1.prod_per_day}, expected 1,000`);
-      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines ${machines(a1)}`);
+      expect(a1.prod_per_day === 1200, `production ${a1.prod_per_day}, expected 1,200`);
+      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a1)}`);
       return `cut line "${cut.name}"; A1 ${a1.total_qty} BCY, ${a1.prod_per_day}/day, tier ${a1.tier_label}: ${machines(a1)}; edited ${a1.user_edited}`;
     },
   },
@@ -161,7 +162,7 @@ await run("c32-site-typed", [
     },
   },
   {
-    title: "recalculated at FG 55 (22,500 BCY): the tier stays 900–1,399, \"Apply tier\" shows, both typed rates kept",
+    title: "recalculated at FG 55 (22,500 BCY): the spread stays as it was, \"Apply tier\" shows, both typed rates kept",
     run: async ({ page }) => {
       await setFg(55);
       await recalculate(page);
@@ -169,8 +170,8 @@ await run("c32-site-typed", [
         const s = await site();
         return Math.round(s.total_qty) === 22500 ? s : null;
       }, "A1 at 22,500 BCY", 60000, 1000);
-      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines moved: ${machines(a1)}`);
-      expect(/Apply tier$/.test(a1.note ?? ""), `note: ${a1.note}`);
+      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines moved: ${machines(a1)}`);
+      // Q145 (D-1014): the default moves within the same tier here, so no note names it; Apply tier is still offered.
       const row = await openSettings(page);
       const seen = (await row.innerText()).replace(/\s+/g, " ");
       expect(await row.getByRole("button", { name: "Apply tier" }).first().isVisible(), `no Apply tier on screen: ${seen}`);
@@ -188,7 +189,7 @@ await run("c32-site-typed", [
       await page.getByText("Tier applied").first().waitFor({ timeout: 30000 });
       const a1 = await site();
       expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a1)}`);
-      expect(a1.prod_per_day === 1500, `production ${a1.prod_per_day}`);
+      expect(a1.prod_per_day === 1600, `production ${a1.prod_per_day}`);
       expect(!/were not used/.test(a1.note ?? ""), `a notice: ${a1.note}`);
       const rs = await resources();
       const ex = rs.find((r) => r.eq_class_key === "EX-CRAWL-30T");

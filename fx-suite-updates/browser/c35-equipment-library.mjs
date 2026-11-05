@@ -16,8 +16,8 @@
 // - DT-OP-3AXLE operated, 100 hr on "TEST E": 100 × $106.14 = $10,614.00, mob in the hourly rate;
 // - CR-HYD-165T-OP operated, 6 + 4 hr on "TEST A" and "TEST B": missing its mob quote (both lines
 //   flagged); with a TEST quote of $6,000, 10 × $520 + $6,000 = $11,200.00;
-// - WT-2000 rental, 24 + 16 hr on "TEST C" and "TEST D": no fuel burn and no mob in the catalog,
-//   so both lines stay flagged.
+// - WT-2000 rental, 24 + 16 hr on "TEST C" and "TEST D": since releases 31 and 32 (D-995, D-996)
+//   it has a fuel burn and drives to site with no mob, so neither line is flagged.
 // The import: EX-CRAWL-20T with company values day $1,000 and week $3,000 (TEST), then a workbook
 // whose Day cell is empty, Week says "national" and 4 weeks is 9,000.
 //
@@ -87,8 +87,9 @@ await run("c35-equipment-library", [
       await shared("CR-HYD-165T-OP", { name: "TEST assembled crane", eq_mode: "operated", eq_period: "hr" }, { "TEST A": 6, "TEST B": 4 });
       await shared("WT-2000", { name: "TEST water truck", eq_mode: "rental" }, { "TEST C": 24, "TEST D": 16 });
       const b = (await apiCall(token, "GET", `${lib}/bundle`)).body;
-      expect(b.classes.length === 641 && b.release >= 10, `bundle: ${b.classes.length} classes, release ${b.release}`);
-      return `641 classes, release ${b.release}; ${Object.keys(res).length} shared machines`;
+      // 642 since release 34 (D-998) added the tub grinder's class.
+      expect(b.classes.length === 642 && b.release >= 10, `bundle: ${b.classes.length} classes, release ${b.release}`);
+      return `642 classes, release ${b.release}; ${Object.keys(res).length} shared machines`;
     },
   },
   {
@@ -110,19 +111,21 @@ await run("c35-equipment-library", [
     },
   },
   {
-    title: "a shared machine short of data flags every line it serves: the assembled crane (no mob quote) on TEST A and B, the water truck (no fuel burn, no mob) on TEST C and D",
+    title: "a shared machine short of data flags every line it serves: the assembled crane (no mob quote) on TEST A and B; the water truck (fuel burn and drives in since D-995, D-996) flags neither TEST C nor D",
     run: async ({ page }) => {
       await openEstimate(page);
       const out = [];
-      for (const name of ["TEST A", "TEST B", "TEST C", "TEST D"]) {
+      for (const name of ["TEST A", "TEST B"]) {
         const t = await waitFor(async () => {
           const s = await rowText(page, name);
           return /Missing data/.test(s) ? s : null;
         }, `${name} flagged`, 20000, 500);
         out.push(`${name}: ${t.slice(0, 60)}`);
       }
-      const e = await rowText(page, "TEST E");
-      expect(!/Missing data/.test(e), `TEST E flagged: ${e}`);
+      for (const name of ["TEST C", "TEST D", "TEST E"]) {
+        const s = await rowText(page, name);
+        expect(!/Missing data/.test(s), `${name} flagged: ${s}`);
+      }
       return out.join(" | ");
     },
   },

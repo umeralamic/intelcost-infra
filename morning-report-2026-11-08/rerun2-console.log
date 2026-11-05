@@ -1,0 +1,67 @@
+ Container intelcost-bench-api-fx-1 Recreate 
+ Container intelcost-bench-api-fx-b-1 Recreate 
+ Container intelcost-bench-api-fx-1 Recreated 
+ Container intelcost-bench-worker-fx-1 Recreate 
+ Container intelcost-bench-worker-fx-previews-1 Recreate 
+ Container intelcost-bench-worker-fx-ocr-1 Recreate 
+ Container intelcost-bench-api-fx-b-1 Recreated 
+ Container intelcost-bench-worker-fx-1 Recreated 
+ Container intelcost-bench-worker-fx-ocr-1 Recreated 
+ Container intelcost-bench-worker-fx-previews-1 Recreated 
+ Container intelcost-bench-api-fx-1 Starting 
+ Container intelcost-bench-api-fx-b-1 Starting 
+ Container intelcost-bench-api-fx-1 Started 
+ Container intelcost-bench-worker-fx-1 Starting 
+ Container intelcost-bench-worker-fx-previews-1 Starting 
+ Container intelcost-bench-worker-fx-ocr-1 Starting 
+ Container intelcost-bench-api-fx-b-1 Started 
+ Container intelcost-bench-worker-fx-1 Started 
+ Container intelcost-bench-worker-fx-previews-1 Started 
+ Container intelcost-bench-worker-fx-ocr-1 Started 
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 2 s
+warm http://localhost:5177 in 2 s
+5 fixtures (named): 5 in parallel, 3 at a time; then 0 one at a time
+
+c45-cut-method  298s  2/5 passed
+                    FAIL  2. D-806 B4: dozer push for the project: Cut, dozer push
+                          timed out after 30s waiting for the calculated lines (last: ) [after 50.0s]
+                    --
+                    FAIL  3. D-806 B4: the Site Feature by scraper, the rest by dozer push
+                          timed out after 30s waiting for the calculated lines (last: ) [after 50.6s]
+                    --
+                    FAIL  5. D-922, D-923: an undercut's row: Treat in place drops the dig and the refill; a proof roll and geotextile add lines; Confirm moves no volume
+                          timed out after 30s waiting for the proof roll [after 50.3s]
+c44-fill-by-delivery  360s  1/7 passed
+                    FAIL  1. setup: two pages calculated, each with a Cut line
+                          timed out after 30s waiting for the stored result and its calculated lines [after 109.5s]
+                    --
+                    FAIL  2. D-899: the method alone reads Apply; every sheet's lines change, no volume, key or time moves, neither page reads stale
+                          TimeoutError: locator.waitFor: Timeout 30000ms exceeded. / Call log: / - waiting for getByRole('dialog', { name: 'Earthwork assumptions' }).locator('[data-lines-only]') to be visible /  [after 49.6s]
+                    --
+                    FAIL  3. D-899: a factor changed with the method is a Calculate again
+                          saved undefined [after 19.1s]
+                    --
+                    FAIL  4. D-900: the fill follows its delivery; a scraper haul of 1,000 ft or more adds the haul-road water, a shorter one does not
+                          TimeoutError: locator.click: Timeout 30000ms exceeded. / Call log: / - waiting for getByRole('dialog', { name: 'Earthwork assumptions' }).locator('[data-fill-shares] summary') /  [after 51.2s]
+                    --
+                    FAIL  5. D-901: a typed 40 % splits the fill into two lines that add to it; From the cut lines goes back
+                          timed out after 30s waiting for the stored result and its calculated lines [after 30.3s]
+                    --
+                    FAIL  7. D-920, D-921: the Results panel suggests by pocket, applies nothing, and a Confirm moves the lines and no volume
+                          timed out after 20s waiting for the scraper's cut line [after 46.9s]
+rv-rows         436s  7/8 passed
+                    FAIL  5. a row held at the list's top edge scrolls it until F1 shows; the drop files RV-400 in F1
+                          F1's header never came into view while held at the edge [after 47.8s]
+f6-d            200s  9/9 passed
+c06-copied-earthwork  174s  6/6 passed
+fx-cleanup     purged 5 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 8m58s (parallel group 8m58s, 3 at a time)
+3 of 5 failed: c45-cut-method c44-fill-by-delivery rv-rows 
+Full output: ./.regress/
+rerun exit 1
+0

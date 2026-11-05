@@ -174,6 +174,9 @@ for (const app of ['http://localhost:5176', 'http://localhost:5177']) {
   // The settings pages too: each compiles on its first visit, past a fixture's 20 s wait (f3-s1 in the release, D-850).
   // Dev servers only: the built apps serve no /src and have nothing to compile.
   await p.evaluate(() => import('/src/pages/settings-pages.ts').then((m) => Promise.all(Object.values(m.settingsPages).map((load) => load())), () => null));
+  // The gallery and the takeoff page too (Q147, D-1013): f4-s2's /dev/ui and f7-a's sheet timed out at 30 s on a cold
+  // dev server, waiting for 'load' while their module graphs compiled.
+  await p.evaluate(() => Promise.all(['/src/pages/DevUiGallery.tsx', '/src/pages/ProjectTakeoff.tsx'].map((u) => import(u).catch(() => null))));
   console.log('warm ' + app + ' in ' + Math.round((Date.now() - t) / 1000) + ' s');
   await p.close();
 }
@@ -227,11 +230,12 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     # only when it starts, and a release once ran a day's code on yesterday's schema (every new column a 500).
     docker compose exec -T api-fx sh -c "cd /srv && alembic upgrade head" >"$out/0-migrate.log" 2>&1 \
       || { echo "release: the fx database would not upgrade (see $out/0-migrate.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
-    # The fx workers without watchfiles for the run (Q122, D-967): every compose call of the release inherits it.
+    # The fx workers and apis without watchfiles for the run (Q122, D-967; the apis Q142, D-1011): every compose call
+    # of the release inherits it.
     export FX_WATCH=0
     # Every fx worker running, the OCR worker among them (D-872: before, only `setup` started it, and no scan's scale
-    # was read in a release).
-    docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr beat-fx >"$out/0-workers.log" 2>&1 \
+    # was read in a release); both fx apis made again without their watcher.
+    docker compose --profile fx up -d --no-build --pull never --no-deps api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx >"$out/0-workers.log" 2>&1 \
       || { echo "release: the fx workers would not start (see $out/0-workers.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
     mapfile -t all < <(release_list)
     built=()
@@ -266,8 +270,8 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     done
     # The built apps stay up: the bench's usual mode for a run.
     [ "$(docker compose ps -q app-fx-prod 2>/dev/null)" ] || "$0" prod >>"$out/0-prod.log" 2>&1
-    # The fx workers watch again once the run is over.
-    FX_WATCH=1 docker compose --profile fx up -d --no-build --pull never --no-deps worker-fx worker-fx-previews worker-fx-ocr >>"$out/0-workers.log" 2>&1
+    # The fx workers and apis watch again once the run is over.
+    FX_WATCH=1 docker compose --profile fx up -d --no-build --pull never --no-deps api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr >>"$out/0-workers.log" 2>&1
     {
       echo "built apps:   $(tail_line "$out/1-built.log")"
       echo "dev servers:  $(tail_line "$out/2-dev.log")"

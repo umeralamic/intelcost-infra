@@ -292,6 +292,15 @@ written since, 153) on the built apps 3 at a time, then the seven on the dev ser
 mode, and writes one summary: passed alone is timing, failed alone is looked at. A new fixture that imports from `/src`
 or drives `/dev/ui` goes to the dev servers by itself.
 
+**No file watcher in a release (Q122, Q142, D-967, D-1011).** `release` exports `FX_WATCH=0` and makes `api-fx`,
+`api-fx-b` and the fx workers again with it: each `exec`s its uvicorn or celery directly, with no `watchfiles`
+around it (whose own "Cannot allocate memory" killed api-fx twice on 2026-11-03). They watch again when the run is
+over. **The Docker VM's inotify limits (Q144, D-1012):** `fs.inotify.max_user_watches` 1,048,576,
+`max_user_instances` 8,192, `max_queued_events` 16,384 (Docker Desktop's WSL 2 VM, kernel 6.18, read 2026-11-05 from a
+container's `/proc/sys/fs/inotify`). They are not what runs out: the api's watcher held no inotify descriptor at all
+(it walks the bind-mounted tree), and a full limit is ENOSPC, not ENOMEM. They were left as they are; raising them is
+a `.wslconfig` `kernelCommandLine` (`sysctl.fs.inotify.max_user_watches=...`) and a restart of Docker Desktop.
+
 **Fixtures updated since the tag** live in `fx-suite-updates/` (tracked), as whole files over the
 tag's own, retargeted with it. They are the ones covering what F29 touched, updated to today's
 screens on the founder's word (D-614): f6-a to f6-e. Every other fixture is still the tag's.

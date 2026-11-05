@@ -1,0 +1,16 @@
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 1 s
+warm http://localhost:5177 in 1 s
+1 fixtures (named): 1 in parallel, 3 at a time; then 0 one at a time
+
+c45-cut-method  202s  4/5 passed
+                    FAIL  5. D-922, D-923: an undercut's row: Treat in place drops the dig and the refill; a proof roll and geotextile add lines; Confirm moves no volume
+                          timed out after 30s waiting for the proof roll [after 43.3s]
+fx-cleanup     purged 1 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 3m24s (parallel group 3m24s, 3 at a time)
+1 of 1 failed: c45-cut-method 
+Full output: ./.regress/
