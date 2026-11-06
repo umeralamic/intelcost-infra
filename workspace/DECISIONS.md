@@ -26924,3 +26924,15 @@ cut and fill, on the canvas, in a printed sheet and in the grading report's plan
 3. Only where prisms are, so it stays inside the boundary as the prisms do.
 
 Calculate, its prisms and every quantity are untouched; the quantity table proves it.
+
+## D-1023: McCabe and 11146 - Valmont protected (real bids)
+
+**Status:** Accepted (2026-11-06, Umer: "Real bids must never be touched by a run").
+
+- Added to the protected list in all three copies (`scripts/protected.py`, `browser/lib/protected.mjs`,
+  `browser/mcp-guard.js`): McCabe (24e4a96c) and 11146 - Valmont (d0b0305d). The guard check reads 25 projects, the
+  three lists agreeing; the fingerprint marks both `ok`.
+- Every project in Intelcost Team, the founder's own workspace, is now on the list (six: Miramar Cove Vault Buildings,
+  11, the 3D test's shared copy, 10793 SBR, McCabe, 11146 - Valmont). A new one there is a FAIL in the fingerprint
+  until it is added (D-601's rule, unchanged).
+- Investigation of a real bid runs only on a throwaway copy made by the copier, never by signing in as the founder.
