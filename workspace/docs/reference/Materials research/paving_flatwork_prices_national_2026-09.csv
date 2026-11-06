@@ -1,0 +1,156 @@
+key,item,unit,national_avg_2026_09,low,high,grade,n_sources,states
+asphalt_binder_pg6422_index,Asphalt binder price index PG 64-22,TON,656.5,445.0,807.5,A,8,AL CO FL GA ID IN LA MD MS NC OR PA TN VA
+backer_rod,Backer rod 0.375 in (sold by the foot),LF,0.1,0.05,2.0,C,1,TX
+cold_patch,Cold mix patch,TON,127.77,82.27,202.59,A,10,AZ IN MN MS OK TX
+cold_patch_hp,High performance cold mix patch,TON,150.83,144.13,234.05,A,3,OK TX
+crack_sealant_hotpour_fiber,"Crafco Fiber Asphalt Sealant 540 or equal, full TL",LB,0.57,0.56,0.58,C,1,WV
+crack_sealant_hotpour_other,Crafco Parking Lot Sealant Type 2 (#34200) or equal,LB,0.57,0.57,0.57,C,1,NJ
+curing_compound_c309,"ChemMasters Safe-Cure 2000 White curing compound, 55 gal",GAL,13.28,6.27,15.11,A,4,OH TX
+dowel_smooth_epoxy_075x18,"Dowel bar #6 (3/4 in) x 18 in, epoxy coated",EA,5.45,4.4,6.51,B,2,MN OH
+dowel_smooth_epoxy_125x18,Epoxy-coated steel dowel 1-1/4 in x 18 in smooth,EA,12.61,12.61,12.61,C,1,OH
+dowel_smooth_epoxy_1x18,"Dowel bar #8 (1 in) x 18 in, epoxy coated",EA,6.77,6.58,6.97,B,2,MN OH
+dowel_smooth_plain_1x18,Plain uncoated steel dowel 1 in x 18 in smooth,EA,6.59,5.51,7.68,B,2,OH TX
+emulsion_tack_css1,Cationic emulsified asphalt CSS-1,TON,806.9,679.09,1017.16,B,4,WA
+emulsion_tack_css1h,CSS-1H emulsion,GAL,3.1,2.53,3.83,A,7,MS TX
+emulsion_tack_css1h_diluted,CSS-1H diluted 50% (CSS-1HD50) tack/fog,TON,375.07,328.53,465.42,B,2,MN WA
+emulsion_tack_ss1,SS-1 & EA-4 (index),GAL,3.0,2.62,3.39,A,5,MS TN
+emulsion_tack_ss1h,Emulsified oil SS-1H,GAL,2.74,2.58,2.96,B,2,KS OH
+emulsion_tack_trackless,Non-tracking tack NT-SRE (CBC-1H),GAL,3.27,2.96,3.79,A,3,OH TN TX
+emulsion_tack_unspec,Tack coat (grade not stated),GAL,7.4,3.56,11.54,B,2,NY TN
+expansion_joint_fiber_half_4,Expansion joint filler 4 in wide,LF,0.52,0.2,1.0,A,6,KY MD NY TX
+expansion_joint_fiber_half_6,Expansion joint filler 6 in wide,LF,0.75,0.25,1.5,A,5,KY NY TX
+expansion_joint_foam_half_4,Nomaflex 1/2 x 4 in x 10 ft,LF,0.4,0.4,0.4,C,1,TX
+expansion_joint_foam_half_6,Nomaflex polypropylene joint filler 1/2 x 6 in x 5 ft,LF,0.66,0.66,0.66,C,1,OH
+fiber_macro_synthetic,Fibrous concrete reinforcement (added to ready-mix),LB,9.5,9.0,14.0,C,1,KY
+flowable_fill_cdf,"Controlled density fill, 4 CY and over load",CY,138.94,134.91,142.97,C,1,IA
+flowable_fill_cdf_small_load,"Controlled density fill, under 4 CY load",CY,214.45,193.31,235.6,C,1,IA
+flowable_fill_clsm,Controlled Low Strength Material (NYSDOT 204.01),CY,146.42,123.7,202.37,A,9,GA LA NY OK TX
+flowable_fill_excavatable,"Excavatable flowable fill 50-100 PSI, delivered",CY,140.33,107.39,146.99,A,3,GA KY
+flowable_fill_lsm,ODOT 613 Low Strength Mortar Backfill,CY,120.1,107.68,132.52,B,2,OH
+flowable_fill_structural,"Structural flowable fill min 250 PSI, delivered",CY,136.44,112.4,152.11,B,2,KY
+form_lumber_2x10,2x10 x 8 ft lumber,LF,1.81,1.18,2.16,A,4,NY TX
+form_lumber_2x4,2x4 x 8 ft lumber,LF,0.69,0.51,0.84,A,4,NY TX
+form_lumber_2x6,2x6 x 8 ft lumber,LF,1.13,0.82,1.25,B,3,NY
+form_lumber_2x8,2x8 x 8 ft lumber,LF,1.32,1.1,1.61,A,4,NY TX
+form_release_oil,"Quick Release Clear low odor, 55 gal",GAL,14.15,9.09,24.69,A,4,OH TX
+form_stake_steel,"""P stakes""",EA,4.11,1.1,9.38,A,3,MN TX
+form_stake_wood,"Wood forming stake 2x2x18 in, bundle of 25",EA,0.57,0.33,1.13,C,1,TX
+hma_base_19mm__delivered,"Asphalt concrete MAG Spec 710 3/4 in, delivered",TON,128.13,125.94,130.32,C,1,AZ
+hma_base_19mm__fob,HMA 19.0 mm uncertified,TON,73.9,44.68,113.89,A,8,AL AZ IN KS MD NY
+hma_base_25mm__fob,HMA 25 mm binder (NYSDOT 402.25),TON,72.63,60.83,84.32,A,4,AL NY
+hma_base_unspec__basis_unstated,Hot mix hot lay Type B (S4),TON,70.61,70.5,70.71,C,1,OK
+hma_base_unspec__delivered,Hot lay asphaltic concrete Type B (S4),TON,67.83,64.6,71.06,C,1,OK
+hma_base_unspec__fob,"HMA base-binder, TDOT 307 Grading BM",TON,81.39,61.37,108.36,A,11,MS NY OH OK TN
+hma_surface_12_5mm__delivered,Superpave SP-12.5,TON,114.28,96.89,133.6,B,2,AZ FL
+hma_surface_12_5mm__fob,HMA 12.5 mm uncertified,TON,78.71,64.51,117.18,A,10,AL AZ MD MI NY WA
+hma_surface_9_5mm__delivered,Superpave SP-9.5,TON,99.86,98.51,101.2,C,1,FL
+hma_surface_9_5mm__fob,HMA 9.5 mm uncertified,TON,78.57,45.69,94.73,A,11,IL IN KS MD MI NY WA
+hma_surface_unspec__basis_unstated,Hot mix hot lay Type C (S5 surface),TON,73.3,72.07,74.54,C,1,OK
+hma_surface_unspec__delivered,Hot lay asphaltic concrete Type C (S5),TON,86.16,68.9,103.37,B,2,OK TX
+hma_surface_unspec__fob,"HMA surface, TDOT 411 Grading D",TON,89.92,68.56,119.3,A,14,AL IN MI MS NY OH OK TN TX
+hma_unspec__delivered,Hot mix / hot lay (type not specified),TON,104.86,95.99,135.3,B,3,TX
+hma_unspec__fob,Hot mix contractors mix,TON,92.29,63.5,128.37,A,9,GA MN MS TX WA
+joint_sealant_hotpour_d6690,"Crafco RoadSaver 221 or equal, 1/2 truckload",LB,0.56,0.53,0.59,C,1,WV
+joint_sealant_pu_sl,"Sikaflex-2c SL self-leveling sealant (polyurethane, not silicone) 29 oz",GAL,66.74,47.23,97.32,A,4,NC NY TX
+joint_sealant_silicone_sl,"Sikasil 728 SL self-leveling silicone, 4.5 gal pail",GAL,78.6,51.7,102.18,B,3,NC
+poly_6mil,6 mil black poly 20 x 100 ft,SF,0.04,0.03,0.04,B,2,OH TX
+poly_vapor_10mil,10 mil black poly construction film 20 x 100 ft,SF,0.05,0.05,0.05,C,1,TX
+prime_emulsified,Asphalt emulsion prime AEP-M,GAL,3.58,2.08,4.31,A,8,MS NY TX
+prime_mc30,MC-30 cutback road oil (prime),GAL,4.2,3.38,5.35,B,2,TX
+readymix_1800_class_r,"Class R (1,800 psi) Portland cement concrete, Zone 1",CY,158.64,155.57,161.71,C,1,LA
+readymix_2000,"Portland cement concrete 2000 PSI, delivered, load over 3 CY",CY,167.18,164.12,170.24,C,1,NY
+readymix_2500,"2500 PSI Portland cement Class B, transit mixed & delivered",CY,166.3,142.44,198.27,A,4,KY NY
+readymix_3000,"Concrete for Structures, Class A (NYSDOT 555.0105), base 3000 psi",CY,166.14,141.77,247.34,A,16,GA IL LA NY OH OK TN
+readymix_3000_fiber,"Class M (3,000 psi) concrete with fiber added, Zone 1",CY,180.74,170.92,187.48,B,2,GA LA
+readymix_3000_pea_gravel,"3,000 psi concrete with pea gravel",CY,159.43,159.43,159.43,C,1,GA
+readymix_3500,"Concrete for Structures, Class A, 3500 psi (base + strength adder)",CY,168.5,145.77,210.01,A,13,GA KY NY OH OK TN
+readymix_4000,"Concrete for Structures, Class A, 4000 psi (base + strength adder)",CY,174.72,147.76,221.53,A,15,IL KY NY OH OK TN
+readymix_4000_fiber,"4000 PSI 7-bag mix with 1.5 lb [fiber, truncated] (GDOTAAASC-FB)",CY,216.71,170.67,251.64,B,2,GA NY
+readymix_4000_heated,"4,000 lb coarse mix, heated concrete",CY,185.72,171.44,197.97,C,1,NY
+readymix_4000_ms,4000 PSI/MS/AE (ODOT MS-type high early),CY,178.39,178.39,178.39,C,1,OH
+readymix_4500,"Concrete for Structures, Class A, 4500 psi (base + strength adder)",CY,164.12,149.76,228.56,A,5,NY OH OK
+readymix_5000,"Concrete for Structures, Class A, 5000 psi (base + strength adder)",CY,183.33,165.31,233.06,A,7,IL NY TN
+readymix_5000_heated,"5,000 lb fine mix, heated concrete",CY,190.32,177.56,203.07,C,1,NY
+readymix_6sack,"6 sack mix, weekday delivery",CY,153.94,148.74,159.15,C,1,MI
+readymix_7sack,"7 sack mix, weekday delivery",CY,160.19,154.99,165.39,C,1,MI
+readymix_accelerator,1% calcium chloride added,CY,4.5,3.0,7.5,A,4,GA KY OK
+readymix_accelerator_2pct,2% calcium chloride added,CY,7.5,6.0,10.0,A,3,GA KY
+readymix_accelerator_cacl_bag,Calcium chloride accelerant,EA,30.0,30.0,30.0,C,1,OH
+readymix_accelerator_nca,NCA (non-chloride accelerator),CY,9.0,4.25,14.0,A,4,GA OH OK
+readymix_adder_3500_over_3000,Strength upcharge 3500 psi over 3000 psi base,CY,9.0,5.62,23.33,C,1,NY
+readymix_adder_4000_over_3000,Strength upcharge 4000 psi over 3000 psi base,CY,12.37,11.25,34.86,C,1,NY
+readymix_adder_4500_over_3000,Strength upcharge 4500 psi over 3000 psi base,CY,16.87,15.74,41.89,C,1,NY
+readymix_adder_5000_over_3000,Strength upcharge 5000 psi over 3000 psi base,CY,22.49,19.12,46.39,C,1,NY
+readymix_adder_per_500psi,Each additional 500 PSI,CY,4.6,4.09,5.1,B,2,OK
+readymix_after_hours,After-hours supply/delivery (PLNTNO10),EA,1875.0,1875.0,1875.0,C,1,GA
+readymix_class_a,"Class A Concrete Mix, delivered",CY,158.55,145.35,174.0,A,7,GA OK TX
+readymix_class_a_ae,Class A AE (PS-30517) air-entrained,CY,163.46,152.92,174.0,B,2,OK
+readymix_class_aa,Type AA,CY,168.06,158.02,178.1,B,2,OK
+readymix_class_c,Type C,CY,170.16,147.82,175.29,A,4,OK TX
+readymix_class_d,"Concrete for Structures, Class D (NYSDOT 555.10)",CY,169.8,168.68,194.54,C,1,NY
+readymix_class_hp,"Concrete for Structures, Class HP (NYSDOT 555.09)",CY,218.16,179.93,241.77,C,1,NY
+readymix_conveyor_truck,Conveyor truck delivery (if needed),HR,367.94,306.61,383.27,C,1,NY
+readymix_curb_mix,"Curb mix standard 3/8 in rock, delivered",CY,168.91,148.99,186.29,A,6,GA OK TX
+readymix_curb_mix_pickup,"Curb mix standard 3/8 in rock, picked up at plant",CY,145.93,145.93,145.93,C,1,TX
+readymix_delivery_fee,Delivery fee per load,LOAD,127.56,127.56,127.56,C,1,TN
+readymix_environmental_fee_cy,Environmental fee,CY,3.0,3.0,3.0,C,1,OH
+readymix_extra_stop,Each additional delivery stop,EA,102.05,102.05,102.05,C,1,NY
+readymix_fiber_addon,"Fiber add-on (difference, with-fiber minus without-fiber)",CY,8.38,6.0,12.75,A,6,LA NY OH OK WV
+readymix_fiber_addon_lb,Fibrous reinforcement 3/4 in fiber at 1.5 lb/CY (priced per LB),LB,9.5,7.0,14.0,A,3,GA KY
+readymix_fiber_macro_addon,Macro synthetic industrial fiber 3 lb/cu yd,CY,24.0,24.0,24.0,C,1,OH
+readymix_flex_550,550 Flex Concrete (flexural mix),CY,174.0,174.0,174.0,C,1,OK
+readymix_flyash_unavailable_addon,Mix cost increase if fly ash unavailable,CY,6.17,6.17,6.17,C,1,TN
+readymix_fuel_surcharge,Environmental fee per truck,LOAD,27.5,20.0,75.0,A,6,NY OH TN
+readymix_highearly,High Early Strength Concrete (PS-50705HE),CY,167.47,162.27,180.14,A,3,MI OK
+readymix_highearly_3500,"High early strength (3500 PSI, Class M, 24 hr set), transit mixed & delivered",CY,184.17,173.62,193.09,B,2,KY
+readymix_highearly_5000,8 bag high early mix 5000 PSI (GDOT24HRSC),CY,209.22,171.7,249.81,B,2,GA
+readymix_highearly_5000_fiber,5000 PSI 8-bag high early mix with fiber (GDOT24HRSC-FB3),CY,268.18,268.18,268.18,C,1,GA
+readymix_highearly_addon,Accelerated set high early (add-on),CY,13.28,12.28,14.27,B,2,OK
+readymix_iadot_m4,"Class M-4 PCC, 4 CY and over load",CY,173.68,169.15,179.21,C,1,IA
+readymix_iadot_m4_small_load,"Class M-4 PCC, under 4 CY load",CY,248.68,220.49,279.9,C,1,IA
+readymix_ice,Ice (per 40 lb),EA,17.88,15.29,20.47,B,2,OK
+readymix_nysdot_class_a,Class A (1-2.5-3.4),CY,217.65,177.84,260.62,B,2,NY
+readymix_nysdot_class_c,Class C (1-2.5-3.45),CY,216.06,211.93,220.19,C,1,NY
+readymix_nysdot_class_f,Class F (1-2-2.8),CY,220.22,215.14,225.29,C,1,NY
+readymix_nysdot_class_h,NYSDOT Class H for Structures,CY,229.96,182.95,269.82,C,1,NY
+readymix_odot_class_c,ODOT 499 Class C ready-mix concrete,CY,161.42,159.39,165.06,B,3,OH
+readymix_odot_class_fs,ODOT 499 Class FS ready-mix concrete,CY,207.27,207.27,207.27,C,1,OH
+readymix_odot_class_ms,ODOT 499 Class MS ready-mix concrete,CY,184.62,184.62,184.62,C,1,OH
+readymix_odot_class_qc2,"ODOT Class ""QC2"" concrete, truck load",CY,168.02,159.39,176.65,C,1,OH
+readymix_odot_class_s,ODOT 499 Class S ready-mix concrete,CY,175.93,175.93,175.93,C,1,OH
+readymix_off_hours,Off-hour delivery (outside 7am-3pm Mon-Fri),LOAD,89.33,76.45,102.2,B,2,OH
+readymix_overtime_per_ea,Overtime fee after 3-hour truck period (OT75),EA,93.75,93.75,93.75,C,1,GA
+readymix_paving_mix,"Ready mix concrete paving mix, 4 CY and over load",CY,157.06,155.05,159.08,C,1,IA
+readymix_paving_mix_small_load,"Ready mix concrete paving mix, under 4 CY load",CY,232.58,205.39,259.76,C,1,IA
+readymix_pea_gravel_addon,"3/8"" rock upcharge",CY,7.15,6.14,8.16,B,2,OK
+readymix_retarder,Water-reducing set retarder,CY,8.62,7.0,10.25,B,2,OH WV
+readymix_road_mix,ODOT 499 Road Mix* ready-mix concrete,CY,117.54,117.54,117.54,C,1,OH
+readymix_saturday_premium,Saturday delivery premium (6 sack: Saturday minus weekday),CY,34.75,7.0,75.0,B,2,MI OH
+readymix_short_load_fee,"Short load fee (flat, per load) below minimum load",LOAD,138.75,40.0,375.0,A,10,GA IL MI NY OH OK
+readymix_short_load_premium_cy,"Small-load premium, Class M-4 under 4 CY vs 4 CY+",CY,50.0,50.0,50.0,C,1,IA
+readymix_sidewalk_mix,"Ready mix concrete sidewalk mix, 4 CY and over load",CY,156.06,153.04,159.08,C,1,IA
+readymix_sidewalk_mix_small_load,"Ready mix concrete sidewalk mix, under 4 CY load",CY,231.57,203.38,259.76,C,1,IA
+readymix_standby_per_hr,"Waiting time, per 1/4 hour beyond 4-hour free time",HR,287.5,100.0,600.0,A,4,NY OK TX
+readymix_standby_per_min,Penalty charge per truck minute (standby/waiting),MIN,2.5,2.25,3.0,A,3,IL OH WV
+readymix_superplasticizer,Super plasticizer,CY,9.59,9.59,9.59,C,1,WV
+readymix_txdot_class_s,Class S concrete (TxDOT bridge slab class),CY,164.83,155.44,169.11,B,2,TX
+readymix_unspec,Portland cement concrete (class/strength not stated in award memo),CY,190.25,190.25,190.25,C,1,NY
+readymix_water_reducer,Water reducer,CY,10.41,10.41,10.41,C,1,WV
+readymix_winter_heat,Hot water added,CY,5.75,4.0,15.0,A,10,KY MI NY OH OK WV
+readymix_winter_heat_gal,Hot water (winter operation),GAL,12.0,12.0,12.0,C,1,OH
+readymix_wvdoh_class_dc,"WVDOH Class DC concrete, 5 CY & over load, Princeton plant",CY,263.61,261.97,265.25,C,1,WV
+readymix_wvdoh_class_dc_small_load,"WVDOH Class DC concrete, 2-2.99 CY load, Princeton plant",CY,428.02,344.17,511.87,C,1,WV
+rebar_3__lb,Rebar #3 Grade 60,LB,1.22,0.55,2.43,A,4,NY OH TX
+rebar_3__lf,Rebar #3 Grade 60,LF,0.46,0.21,0.91,A,4,NY OH TX
+rebar_4__lb,Rebar #4 Grade 60,LB,0.82,0.52,1.6,A,9,MD NY OH OK TX
+rebar_4__lf,Rebar #4 Grade 60,LF,0.54,0.35,1.07,A,9,MD NY OH OK TX
+rebar_5__lb,Rebar #5 Grade 60,LB,0.8,0.44,1.67,A,10,MD NY OH OK TX
+rebar_5__lf,Rebar #5 Grade 60,LF,0.84,0.46,1.75,A,10,MD NY OH OK TX
+rebar_6__lb,Rebar #6 Grade 60,LB,0.77,0.52,1.43,A,9,MD NY OH OK TX
+rebar_6__lf,Rebar #6 Grade 60,LF,1.15,0.79,2.15,A,9,MD NY OH OK TX
+rebar_chair,Polylok dual rebar chair 1-1/2 - 2 in,EA,0.51,0.06,1.05,A,3,OH TX
+stake_rebar_18,Steel rebar stake 18 in with clips,EA,1.16,0.91,1.41,C,1,OH
+tiebar_4x18_epoxy,#4 tie bar 18 in epoxy coated,EA,1.64,1.64,1.64,C,1,MN
+wwf_6x6_roll_unspec,"Wire roll 750 SF, gauge not stated",SF,0.47,0.47,0.47,C,1,NY
+wwf_6x6_w14w14,"Welded wire mesh roll 6x6 W1.4/W1.4 10 ga, 5 x 150 ft",SF,0.23,0.23,0.3,A,3,MD TX
+wwf_6x6_w21w21,"Wire mesh sheet 5x10 ft, 8 gauge, 6 in squares",SF,0.94,0.78,1.12,B,2,NY

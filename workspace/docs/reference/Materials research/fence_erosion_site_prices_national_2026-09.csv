@@ -1,0 +1,150 @@
+key,item,unit,national_avg_2026_09,low,high,grade,n_sources,states
+alum_fence_panel_4ft,Aluminum fence section 48 in tall x 6 ft long,EA,124.93,111.05,138.81,C,1,GA
+alum_fence_post,Aluminum post 2 in sq x .06 in,EA,34.98,31.09,38.87,C,1,GA
+chainlink_alum_tie,"#13 aluminum tie, galvanized",EA,0.3,0.3,0.3,C,1,OK
+chainlink_barbed_wire_3strand,3 strand barbed wire with support arms,LF,2.5,2.5,2.5,C,1,GA
+chainlink_barbed_wire_roll,"Barbed wire class 3, 12-1/2 ga 4 pt, 1,320 ft roll",LF,0.12,0.12,0.12,C,1,GA
+chainlink_brace_band,Brace band,EA,1.39,1.39,1.39,C,1,GA
+chainlink_dome_cap,Dome cap,EA,3.54,2.63,4.44,B,2,GA
+chainlink_fabric_11ga_galv_4ft,"4 ft 11 ga 2 in mesh fabric, galvanized",LF,2.36,2.36,2.36,C,1,OK
+chainlink_fabric_11ga_galv_5ft,"5 ft 11 ga 2 in mesh fabric, galvanized",LF,2.95,2.95,2.95,C,1,OK
+chainlink_fabric_11ga_galv_6ft,Everbilt 6 ft x 50 ft 11.5 ga galvanized chain link fabric,LF,1.5,1.5,1.5,D,1,US-online
+chainlink_fabric_6ga_galv_4ft,"Chain link fabric 6 ga galvanized, 4 ft tall",LF,6.94,6.94,6.94,C,1,GA
+chainlink_fabric_6ga_galv_5ft,"Chain link fabric 6 ga galvanized, 5 ft tall",LF,7.81,7.81,7.81,C,1,GA
+chainlink_fabric_6ga_galv_6ft,"Chain link fabric 6 ga galvanized, 6 ft tall",LF,9.27,9.27,9.27,C,1,GA
+chainlink_fabric_6ga_galv_8ft,"Chain link fabric 6 ga galvanized, 8 ft tall",LF,11.62,11.62,11.62,C,1,GA
+chainlink_fabric_6ga_vinyl_4ft,"Chain link fabric 6 ga vinyl coated, 4 ft tall",LF,7.22,7.22,7.22,C,1,GA
+chainlink_fabric_6ga_vinyl_6ft,"Chain link fabric 6 ga vinyl coated, 6 ft tall",LF,10.55,10.55,10.55,C,1,GA
+chainlink_fabric_6ga_vinyl_8ft,"Chain link fabric 6 ga vinyl coated, 8 ft tall",LF,13.33,13.33,13.33,C,1,GA
+chainlink_fabric_9ga_galv_4ft,"Chain link fabric 9 ga galvanized, 4 ft tall",LF,4.72,4.72,4.72,C,1,GA
+chainlink_fabric_9ga_galv_5ft,"Chain link fabric 9 ga galvanized, 5 ft tall",LF,5.59,5.59,5.59,C,1,GA
+chainlink_fabric_9ga_galv_6ft,"Chain link fabric 9 ga galvanized, 6 ft tall",LF,6.85,6.64,7.05,B,2,GA
+chainlink_fabric_9ga_galv_8ft,"Chain link fabric 9 ga galvanized, 8 ft tall",LF,9.12,8.85,9.39,B,2,GA
+chainlink_fabric_9ga_vinyl_black_4ft,"Chain link fabric 9 ga vinyl coated, 4 ft tall",LF,5.0,5.0,5.0,C,1,GA
+chainlink_fabric_9ga_vinyl_black_5ft,Fencer Wire 5 ft x 50 ft black vinyl coated galvanized 9 ga chain link fabric (LV9-B5X50M2F38),LF,2.75,2.75,2.75,D,1,US-online
+chainlink_fabric_9ga_vinyl_black_6ft,"Chain link fabric 9 ga vinyl coated, 6 ft tall",LF,8.33,8.33,8.33,C,1,GA
+chainlink_fabric_9ga_vinyl_black_8ft,"Chain link fabric 9 ga vinyl coated, 8 ft tall",LF,11.11,11.11,11.11,C,1,GA
+chainlink_line_post_black,"Line post 2 in OD x 7 ft Sch 40, galv powder coated black",EA,70.65,49.23,98.46,C,1,OK
+chainlink_line_post_galv,"Line post galvanized, ""4'"" (fence height or post length not stated)",EA,49.68,19.71,82.55,B,2,GA
+chainlink_line_post_vinyl,"Line post vinyl coated, ""4'""",EA,37.76,27.76,63.3,C,1,GA
+chainlink_loop_cap,Loop cap,EA,3.33,3.33,3.33,C,1,GA
+chainlink_rail_end,Rail end,EA,3.14,2.78,3.51,B,2,GA
+chainlink_tension_band,Tension band,EA,1.39,1.39,1.39,C,1,GA
+chainlink_tension_bar,"Tension bar 3/16 x 3/4 x 72 in, galvanized",EA,3.94,3.94,3.94,C,1,OK
+chainlink_tension_wire_7ga,Tension wire 7 ga galvanized,LF,0.28,0.28,0.28,C,1,GA
+chainlink_tension_wire_7ga_vinyl,"Tension wire 7 ga, vinyl section",LF,0.56,0.56,0.56,C,1,GA
+chainlink_terminal_post_black,"Terminal post 2-3/8 in OD x 7 ft Sch 40, galv powder coated black",EA,107.08,66.95,143.76,C,1,OK
+chainlink_terminal_post_galv,"Terminal post galvanized, ""4'""",EA,95.53,34.43,205.8,B,2,GA
+chainlink_terminal_post_vinyl,"Terminal post vinyl coated, ""4'""",EA,107.72,47.75,111.05,C,1,GA
+chainlink_top_rail_black_158,"Top rail 1-5/8 in OD Sch 40, galv powder coated black",LF,5.1,5.1,5.1,C,1,OK
+chainlink_top_rail_galv_158,Top rail / tube frame 1-5/8 in galvanized,LF,3.01,2.33,3.69,B,2,GA
+chainlink_top_rail_vinyl_158,"Top rail 1-5/8 in welded tube frame, vinyl section",LF,3.33,3.33,3.33,C,1,GA
+chainlink_truss_rod,"Truss rod 3/8 in x 11 ft, galvanized",EA,6.6,6.6,6.6,C,1,OK
+compost_sock_12,Filtrexx Original SiltSoxx compost filter sock 12 in x 110 ft with 11 stakes,LF,2.45,2.45,2.45,C,1,OH
+compost_sock_8,Filtrexx Original SiltSoxx compost filter sock 8 in x 200 ft with 20 stakes,LF,1.4,1.4,1.4,C,1,OH
+constr_entrance_kit,"UltraTech site entrance kit 12.5 x 50 ft, 200 lb woven geotextile with pins (Model 8700)",SY,1.36,1.36,1.36,C,1,CO
+ecb_coir_double,Coconut double net 8 x 112.5 ft (100 SY),SY,0.74,0.74,0.74,D,1,US-online
+ecb_excelsior,"Erosion mat, Excelsior Curlex - materials not installed",SY,1.36,0.75,1.98,B,2,NC TX
+ecb_straw_double,Straw double net blanket 8 ft x 112.5 ft (100 SY),SY,0.46,0.4,0.55,B,2,NC
+ecb_straw_double_bio,EMI S2-BN biodegradable straw double net 8 x 112.5 ft (100 SY),SY,1.03,0.94,1.11,C,1,NC
+ecb_straw_single,Erosion mat (straw) with staples - materials not installed,SY,0.94,0.42,1.44,B,2,NC TX
+ecb_straw_single_bio,EMI S1-BN biodegradable straw single net 8 x 112.5 ft (100 SY),SY,0.79,0.73,0.85,C,1,NC
+ecb_strawcoco_double_bio,70% straw / 30% coconut double net biodegradable 8 x 112.5 ft (100 SY),SY,1.04,1.04,1.04,D,1,US-online
+edging_aluminum_4in,"Permaloc Cleanline aluminum edging 1/8 x 4 in x 16 ft mill, box of 15 (240 LF)",LF,3.2,2.77,3.63,D,1,US-online
+edging_plastic_hdpe,Terrace Board HDPE landscape edging 6 in x 30 ft,LF,0.23,0.23,0.23,D,1,MO
+edging_steel_14ga_4in,"Colmet 14 ga x 4 in x 8 ft black steel edging, attached stake, 5-pack (40 LF)",LF,4.78,4.78,4.78,D,1,US-online
+edging_steel_galv_8in,Vodaland galvanized steel edging 8 in x 3.3 ft piece with 3 nails,LF,10.15,10.15,10.15,D,1,MO
+gate_chainlink_single_4x3,"Single gate 4 ft high x 3 ft wide with hardware (column A, galv)",EA,123.08,123.08,123.08,C,1,OK
+gate_chainlink_single_5x3,"Single gate 5 ft high x 3 ft wide with hardware (column A, galv)",EA,132.92,132.92,132.92,C,1,OK
+gate_chainlink_single_6x10,"Single gate 6 ft high x 10 ft wide with hardware (column A, galv)",EA,344.62,344.62,344.62,C,1,OK
+gate_chainlink_single_8x16,"Single gate 8 ft high x 16 ft wide with hardware (column A, galv)",EA,787.7,787.7,787.7,C,1,OK
+gate_chainlink_swing_16ft,"Chain link swing gate 16 ft wide x 5 ft high, Sch 40 galvanized",EA,3012.35,2853.8,3329.44,C,1,OH
+gate_chainlink_swing_24ft,"Chain link swing gate 24 ft wide x 5 ft high, Sch 40 galvanized",EA,4597.79,4439.25,5073.43,C,1,OH
+gate_field_12ft,"Galvanized/powder coated field gate 12 ft x 40-50 in, tube frame, hinge and hardware",EA,222.1,222.1,222.1,C,1,GA
+gate_hinge_chainlink,Gate hinge,EA,13.33,13.33,13.33,C,1,GA
+gate_post_4in_galv,"Gate post 4 in OD x 10 ft 6 in Sch 40, galvanized",EA,147.69,147.69,147.69,C,1,OK
+geotextile_nonwoven_8oz,Mirafi 180N nonwoven geotextile 12.5 x 360 ft,SY,1.44,1.44,1.44,C,1,ME
+geotextile_woven_constr_entrance,Mirafi 600X woven geotextile 12.5 x 300 ft,SY,0.94,0.93,1.12,C,1,ME
+glass_beads_type1,Glass beads (drop-on) for traffic paint,LB,0.69,0.44,1.4,A,4,HI NY TN
+guardrail_block_polymer,Polymer offset block 6 x 8 x 14 in,EA,7.72,7.72,8.07,C,1,MI
+guardrail_end_shoe,"End shoe, terminal end (W-beam)",EA,74.24,71.27,77.21,C,1,MI
+guardrail_post_bolt,Post bolt 5/8 x 10 in,EA,3.56,3.56,3.83,C,1,MI
+guardrail_post_steel_6ft,"Steel line post, I-beam 4 x 6 in x 6 ft",EA,67.89,61.77,70.09,C,1,MI
+guardrail_splice_bolt,Splice bolt 5/8 x 1.25 in,EA,0.71,0.58,0.94,C,1,MI
+guardrail_terminal_fleat350_rail,FLEAT 350 W-beam guardrail (terminal rail element),EA,261.34,231.64,280.01,C,1,MI
+guardrail_wbeam_12ga,"Steel beam element guardrail (W-beam) straight run 12 ft 6 in, galvanized",LF,8.55,8.49,8.79,C,1,MI
+guardrail_wbeam_curved,W-beam guardrail curved (20-50 ft radius) 12 ft 6 in,LF,12.35,11.54,15.68,C,1,MI
+inlet_bag_curb,Dandy Curb Bag curb inlet protection system (all sizes 24x24 to 48x24) 24-48 in,EA,161.19,148.12,174.26,C,1,US-online
+inlet_bag_drop,Dandy Sack drop inlet protection bag 24x24 in,EA,140.31,113.59,172.9,C,1,US-online
+inlet_filter_curb,"UltraTech curb inlet filter, fits 22-36 in curb inlets (Item 15448)",EA,126.0,126.0,126.0,C,1,US-online
+orange_safety_fence_4ft,Orange safety fence HDPE 4 ft x 100 ft roll,LF,0.61,0.21,0.83,B,3,NC US-online
+paint_traffic_wb_unspec,"Traffic paint, bulk tote (color/type not stated)",GAL,14.0,10.75,14.35,C,1,TN
+paint_traffic_wb_white,"Waterborne traffic paint, white, bulk tote",GAL,10.89,9.59,15.13,B,2,NY TN
+paint_traffic_wb_yellow,"Waterborne traffic paint, yellow, bulk tote",GAL,12.01,10.82,15.19,B,2,NY TN
+post_concrete_bag_50lb,Quikrete Fast-Setting concrete mix 50 lb bag,EA,6.0,2.75,7.5,D,3,CA CT TN
+post_concrete_cy,Concrete (for posts),CY,183.24,183.24,183.24,C,1,OK
+preformed_ada_symbol,Preformed thermoplastic handicap symbol white on blue with white border 36 x 36 in (2-pack),EA,149.15,60.23,523.85,B,3,HI US-online
+preformed_ada_symbol_white,PPG reflective white preformed thermoplastic handicapped symbol 39 x 38 in (white only),EA,93.8,93.8,93.8,C,1,US-online
+preformed_arrow_elongated_12ft,PPG/Ennis-Flint PreMark PennDOT elongated turn arrow 12 ft x 3 ft,EA,377.88,377.88,377.88,C,1,PA
+preformed_arrow_single,"Preformed thermoplastic right white arrow, 125 mil",EA,163.15,111.69,254.51,B,2,HI TX
+preformed_line_24in_3ft,"Preformed thermoplastic 24 in x 3 ft white line, 125 mil",EA,68.41,65.45,81.83,C,1,TX
+preformed_rr_xing,Preformed thermoplastic railroad crossing symbol,EA,236.84,196.24,241.38,C,1,TX
+preformed_sealer_5gal,"PreMark sealer (primer), 5 gal bucket",EA,132.34,132.34,132.34,C,1,TX
+preformed_word_only,"Preformed thermoplastic word ONLY, 125 mil",EA,102.51,98.07,130.03,C,1,TX
+sign_ada_parking_12x18,"R7-8 handicap reserved parking sign 12 x 18 in, 0.080 aluminum, 3M HIP",EA,27.5,24.0,33.0,B,2,PA US-online
+sign_blank_stop_30,Aluminum sign blank 30 in octagon 0.080,EA,56.57,56.57,56.57,C,1,HI
+sign_post_sq_anchor,Anchor post 2-1/4 x 2-1/4 in x 3 ft 12 ga,EA,19.34,19.08,19.6,B,2,HI PA
+sign_post_sq_tube_2in_12ga,Square tube sign post 2 x 2 in 12 ga x 9 ft,LF,4.67,3.8,6.91,B,2,HI PA
+sign_post_uchannel_1lb_galv,"U-channel galvanized steel post 7 ft, 1.12 lb/ft",LF,2.0,2.0,2.0,C,1,TX
+sign_post_uchannel_2lb_galv,"2 lb/ft galvanized U-channel post, 12 ft (supply line)",LF,5.5,5.0,6.29,B,3,GA US-online
+sign_post_uchannel_3lb_galv,"U-channel sign post 3 lb/ft, galvanized",LF,4.29,3.7,5.62,B,2,MI
+sign_post_uchannel_3lb_green,"U-channel sign post 3 lb/ft, green enamel",LF,3.22,2.81,5.09,B,2,MI
+sign_post_uchannel_6ft,U-channel post 2 in x 6 ft '1.12 LBS',EA,39.27,39.27,39.27,C,1,HI
+sign_post_uchannel_base,Galvanized U-channel 3 ft breakaway base,EA,21.5,21.5,21.5,C,1,PA
+sign_post_uchannel_galv,Galvanized U-channel sign post 10 ft,LF,5.32,5.29,5.35,C,1,PA
+sign_post_uchannel_green,Green U-channel sign post 12 ft,LF,3.62,3.62,3.62,C,1,PA
+sign_stop_30,"STOP sign R1-1 30 x 30 in, finished, high-intensity prismatic",EA,47.97,26.75,112.78,A,4,GA HI MI
+sign_stop_30_face,"STOP sign face 30 x 30 in, 3M DG3 sheeting, pre-cut corners",EA,21.46,21.37,21.56,C,1,TX
+silt_fence_standard,"Silt fence 36 in x 100 ft roll, woven poly, DOT spec, wood stakes every 10 ft",LF,0.76,0.72,0.79,B,2,US-online
+silt_fence_wire_backed,"Wire backed silt fence 36 in x 100 ft, 100 GSM, 2x4 in wire mesh",LF,1.12,1.06,1.18,D,1,US-online
+sod_staple_6,Sod staples 6 in,EA,0.05,0.05,0.05,C,1,NC
+split_rail_post,"4 ft rail fence, 4x4 treated round fence post",EA,19.48,19.48,19.48,C,1,OK
+split_rail_rail,"4 ft rail fence, 4x4 doweled treated rail",EA,19.48,19.48,19.48,C,1,OK
+steel_t_post,Steel T-post (for wire-backed silt fence),EA,3.94,3.94,3.94,D,1,US-online
+temp_chainlink_panel_buy,"Temporary construction panel 12 ft W x 6 ft H, galvanized, 11-1/2 ga fabric, 1-3/8 in frame (SKU 090T126)",EA,138.87,96.0,235.88,B,2,TX US-online
+temp_chainlink_rental_lf_month,"Temporary fence rental, min 144 LF, with parts and tools (screen $0)",LF-MO,2.77,0.55,5.0,B,2,TX WA
+temp_chainlink_rental_lf_term,"8 ft temporary fence rental, term up to 1 year, incl. one-time delivery/installation and pick-up/removal",LF,7.09,7.09,7.09,C,1,NC
+temp_fence_clamp,Saddle clamp galvanized 1-3/8 (#CL-SC-133),EA,1.91,1.91,1.91,C,1,US-online
+temp_fence_gate_rental,8 x 12 temporary fence gate rental (term up to 1 yr),EA,415.0,415.0,415.0,C,1,NC
+temp_fence_install_fee,"Temporary fence installation, one-time fee",EA,500.0,500.0,500.0,C,1,TX
+temp_fence_removal_fee,"Temporary fence removal, one-time fee",EA,500.0,500.0,500.0,C,1,TX
+temp_fence_sandbag,Sand bag with tie (#SANDBAG),EA,0.95,0.95,0.95,C,1,US-online
+temp_fence_stand,"Panel stand, chain link temp fence (#S-TEMP)",EA,36.81,14.97,58.65,B,2,US-online
+thermo_black,"Black thermoplastic marking material, 50 lb bags",LB,0.98,0.8,1.16,C,1,TX
+thermo_white,"White thermoplastic, hydrocarbon resin",LB,0.94,0.6,1.54,A,3,HI MS TX
+thermo_yellow,"Yellow thermoplastic, hydrocarbon resin",LB,0.99,0.57,1.43,B,2,HI MS
+trench_drain_4_pkg_plastic,"Vodaland 4 in channel ductile cast iron slotted package, 1 m",LF,28.48,28.48,28.48,D,1,MO
+trench_drain_6_pkg_plastic,"Vodaland 6 in PRO channel package Class D, 1 m",LF,51.82,51.82,51.82,D,1,MO
+trench_drain_concrete_4_pkg,Vodaland 4 in fiber-reinforced concrete channel 1 m (3.3 ft),LF,40.61,40.61,40.61,D,1,MO
+trench_drain_grate_di_4,"ACO K100 slotted ductile iron grate 0.5 m, Class E",LF,38.16,38.16,38.16,C,1,OH
+trench_drain_polymer_4_channel,"ACO KlassikDrain K100 channel 1 m (39.37 in), 4 in internal width, galvanized edge rail - channel only",LF,25.44,25.44,25.44,D,1,US-online
+trench_drain_polymer_8_pkg,Vodaland 8 in polymer concrete E class channel 1 m,LF,71.82,71.82,71.82,D,1,MO
+trm_12oz,Permanent turf reinforcement mat 12 oz - materials not installed,SY,7.83,7.83,7.83,C,1,TX
+wattle_excelsior_12,Sediment control log (excelsior) 12 in dia - materials not installed,LF,7.8,7.8,7.8,C,1,TX
+wattle_excelsior_9,Sediment control log (excelsior) 9 in dia - materials not installed,LF,4.9,4.9,4.9,C,1,TX
+wattle_straw_12,Sediment control log (straw) 12 in dia - materials not installed,LF,4.4,2.5,6.3,B,2,NC TX
+wattle_straw_9,Sediment control log (straw) 9 in dia - materials not installed,LF,4.3,4.3,4.3,C,1,TX
+wheel_stop_anchor_kit,Uline H-2397 concrete installation kit for parking stop,EA,17.0,17.0,17.0,C,1,US-online
+wheel_stop_concrete_6ft,6 ft half-round concrete car stop (vendor First Texas Precast),EA,39.28,39.28,39.28,C,1,TX
+wheel_stop_plastic_6ft,Uline H-2309 recycled plastic parking stop 6 ft (72x6x3 in),EA,64.0,58.0,70.0,C,1,US-online
+wheel_stop_rubber_6ft,"Uline H-4608 rubber parking stop 6 ft (72x6x4 in, 34 lb), hardware sold separately",EA,64.25,52.0,70.0,B,2,US-online
+wood_picket_cedar_1x4_6ft,"6 ft privacy fence, 1x4 cedar picket",EA,2.56,2.56,2.56,C,1,OK
+wood_picket_cedar_1x4_8ft,"8 ft privacy fence, 1x4 cedar picket",EA,5.64,5.64,5.64,C,1,OK
+wood_picket_cedar_1x6_6ft,1x6 No.2 cedar board 6 ft,EA,10.9,10.9,10.9,C,1,GA
+wood_picket_cedar_1x6_8ft,1x6 No.2 cedar board 8 ft,EA,10.9,10.9,10.9,C,1,GA
+wood_picket_pt_1x6_6ft,1x6 PT pine board 6 ft,EA,7.63,7.63,7.63,C,1,GA
+wood_picket_pt_1x6_8ft,1x6 PT pine board 8 ft,EA,8.72,8.72,8.72,C,1,GA
+wood_post_4x4_pt,4x4 PT pine post 8 ft 6 in,EA,14.98,13.07,18.52,C,1,GA
+wood_rail_2x4_pt,2x4 PT pine rail 8 ft,EA,9.26,7.63,10.9,C,1,GA
+wood_stake_24,Wood stake 1.5 in x 24 in,EA,0.72,0.72,0.72,C,1,NC
+woven_wire_fabric_4ft,11 ga galvanized woven wire fabric 4 ft tall,LF,2.22,2.22,2.22,C,1,GA

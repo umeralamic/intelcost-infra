@@ -422,11 +422,13 @@ services:
   # ./fx-suite.sh sets it up, runs the suite and stops it; see the README.
   # A release runs the fx apis' uvicorn without watchfiles too (FX_WATCH=0, Q142, D-1011): the watcher's own ENOMEM
   # killed api-fx twice on 2026-11-03. Any other time they reload on a save as before.
+  # A worker's health check waits 30 s, not uvicorn's 5 (Q208): under the release's load a worker whose loop was held
+  # a few seconds was killed with its requests in flight (7 times in the run of 2026-11-05).
   api-fx:
     extends: api
     profiles: ["fx"]
     command: >
-      sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5";
+      sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5 --timeout-worker-healthcheck 30";
       (python -m app.core.at_head || alembic upgrade head) || exit 1;
       if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     env_file: !override
@@ -473,7 +475,7 @@ services:
     extends: api-fx
     profiles: ["fx"]
     command: >
-      sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5";
+      sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5 --timeout-worker-healthcheck 30";
       if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     ports: !override
       - "8030:8000"

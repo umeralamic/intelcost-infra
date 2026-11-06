@@ -172,8 +172,9 @@ await run("rv-rows", [
       await page.mouse.move(a.x + 60, a.y + a.height / 2 - 10, { steps: 4 });
       const header = panel(page).locator("li[data-folder-group='F1'] > [data-folder-header]");
       const t0 = Date.now();
-      // Held in the edge band: each move is a drag-over, and each one scrolls the list.
-      for (let i = 0; Date.now() - t0 < 30000; i += 1) {
+      // Held in the edge band: each move is a drag-over, and each one scrolls the list (D-646, up to 24 px a step).
+      // From RV-400 to F1 is about 8,000 px: 26 s alone on the bench (2026-11-09), longer under load (Q209), so 60 s.
+      for (let i = 0; Date.now() - t0 < 60000; i += 1) {
         await page.mouse.move(a.x + 60 + (i % 2), frame.y + 6);
         if ((await header.count()) > 0 && (await scroller(page).evaluate((el) => el.scrollTop)) === 0) break;
         await page.waitForTimeout(40);

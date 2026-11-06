@@ -1,0 +1,14 @@
+key,item,unit,national_avg_2026_09,low,high,grade,n_sources,states,basis_note
+bank_run_gravel,"Gravel, Pit Run",TON,10.0,4.0,22.0,A,3,MN NY TX,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+clay_fill,CLAY (GENERAL USE) (Material Only),CY,8.5,6.0,11.0,C,1,LA,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+common_borrow__delivered,"Landfill Cover (low organic screened fill, 3/4 in minus)",TON,14.54,12.21,18.11,B,2,MA,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+common_borrow__fob,"Landfill Cover (low organic screened fill, 3/4 in minus)",TON,8.63,5.52,10.66,B,2,MA,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+inlet_box_24x24,Pre-Cast Concrete Catch Basin 24 in x 24 in x 24 in (ID x ID x depth),EA,237.5,225.0,250.0,C,1,NY,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+inlet_box_30x30,Pre-Cast Concrete Catch Basin 30 in x 30 in x 30 in (ID x ID x depth),EA,275.0,275.0,275.0,C,1,NY,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+mh_base_48,"Base, Slab Concrete SM, 48 in x 10 in x 6 in (as written)",EA,267.51,267.51,267.51,C,1,MN,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+mh_flat_top_48,"Manhole Top W/Offset Hole, 48 in",EA,364.79,364.79,364.79,C,1,MN,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+mh_riser_48_vf,Riser Pipes (48 in dia per vertical foot),VF,204.48,204.48,204.48,C,1,GA,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+mh_whole_48,Precast Concrete Manholes (48 in) (0-6 ft deep),EA,1976.04,1976.04,1976.04,C,1,GA,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+sand_fill__basis_unstated,PUMP SAND (Material Only),CY,5.35,5.34,5.35,C,1,LA,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+sand_fill__fob,State Certified Class II Backfill Sand,TON,16.71,9.54,17.62,A,3,AR MI,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill
+select_fill__fob,MAG 702 Spec Select Material Type A,TON,22.5,22.5,22.5,C,1,AZ,FOB = picked up at pit/plant; delivered adds about $5-10/ton on fill

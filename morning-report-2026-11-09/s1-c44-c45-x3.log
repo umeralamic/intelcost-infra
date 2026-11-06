@@ -1,0 +1,7 @@
+[1] c45-cut-method  137s  5/5 passed
+[1] c44-fill-by-delivery  285s  7/7 passed
+[2] c45-cut-method  148s  5/5 passed
+[2] c44-fill-by-delivery  271s  7/7 passed
+[3] c45-cut-method  146s  5/5 passed
+[3] c44-fill-by-delivery  262s  7/7 passed
+proof exit

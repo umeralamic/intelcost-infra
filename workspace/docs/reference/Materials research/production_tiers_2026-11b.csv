@@ -1,0 +1,63 @@
+activity,unit,tier,quantity_from,quantity_to,production_per_10h_day,basis,source_note
+Cut to fill (A1),CY bank,1,0,1000,400,published,"NCDOT small urban 100-500/day; INDOT common excavation small areas 490-540 per 8 h; WisDOT truck excavation median 600; CTR quantity model ~490-600 at 1,000 CY. Crew sheet 1,000 is above every published small-job rate; old starter 250 below most"
+Cut to fill (A1),CY bank,2,1000,3000,700,published,"CTR 0-4416-1 crew-day models: excavation 488 at 1,000 CY to 1,201 at 3,000; embankment 603 to 943"
+Cut to fill (A1),CY bank,3,3000,8000,1100,published; matches the crew sheet,"CTR 943-1,838 at 3,000-8,000 CY; Montana street excavation median 978; crew sheet 1,086-1,229"
+Cut to fill (A1),CY bank,4,8000,20000,1500,published; matches the crew sheet,"CTR 1,246-2,432 at 8,000-20,000 CY; crew sheet 1,229-1,571; old starter 1,000 too slow"
+Cut to fill (A1),CY bank,5,20000,42000,2000,published; matches the crew sheet,"CTR 1,529-2,914 (extrapolated); INDOT embankment 2,170-2,600 per 8 h; Oklahoma borrow 1,535 per 8 h; crew sheet 1,571-2,150"
+Cut to fill (A1),CY bank,6,42000,84000,2500,published,"WSDOT roadway excavation 1,500-2,000 typical per 8 h; KY embankment average 4,000; old starter 2,500; crew sheet 2,275-3,400"
+Cut to fill (A1),CY bank,7,84000,126000,5000,published,"INDOT large borrow 2,500-8,000; NCDOT grading 2,000-6,000; old starter 5,000; crew sheet 5,275-6,400"
+Cut to fill (A1),CY bank,8,126000,,8000,published; matches the crew sheet,"NCDOT major projects 6,000-8,000; old starter 8,000; crew sheet 8,200-9,350"
+Respread stockpile / topsoil (A5),CY,1,0,2000,400,published,Montana topsoil salvage-and-place Q1 306/day; ADOT topsoil placement 350/day
+Respread stockpile / topsoil (A5),CY,2,2000,6000,800,published,"between Montana Q1 306 and median 1,267"
+Respread stockpile / topsoil (A5),CY,3,6000,12000,1250,published,"Montana median 1,267/day"
+Respread stockpile / topsoil (A5),CY,4,12000,,2500,published,"Montana Q3 3,071/day; crew sheet backhoe 3,425-4,575 is above the published Q3"
+Asphalt paving,TON,1,0,500,300,CTR,"TxDOT/CTR 0-4416-1 HMA model -1198+278 lnQ: 310 t/day at 227 t, 530 at 500 t"
+Asphalt paving,TON,2,500,3000,600,CTR,"CTR model: 722 at 1,000 t; NCDOT small urban 200-500 t/day; ADOT urban 1,000-1,500"
+Asphalt paving,TON,3,3000,,1000,CTR,"CTR model: 1,028 at 3,000 t, 1,213 at 5,840 t; DOT median 1,000 t/day (12 states)"
+"Milling, 2 in",SY,1,0,2000,2000,DOT,"IDOT D5 urban milling 2,000-10,000 SY/day (low end)"
+"Milling, 2 in",SY,2,2000,15000,3500,DOT,"INDOT urban 2,860 SY per 8-hr day, x1.25 to 10 h"
+"Milling, 2 in",SY,3,15000,,10000,DOT,"DOT median 9,000 SY/day (8 states); IDOT rural 30,000-45,000 is highway scale"
+Tack or prime coat,SY,1,0,,15000,published,"TxDOT prime 1,000-8,000 gal/day: 1,000 gal at 0.05 gal/SY tack = 20,000 SY; ADOT prime 8-20 t/day. Kept below the low end"
+"Concrete pavement, formed (SY of slab)",SY,1,0,500,150,CTR,CTR conventional-form PCC -610+139 lnQ: 134 SY at 211 SY
+"Concrete pavement, formed (SY of slab)",SY,2,500,3000,350,CTR,"CTR: 350 SY at 1,000 SY"
+"Concrete pavement, formed (SY of slab)",SY,3,3000,,550,CTR,"CTR: 554 SY at 4,320 SY (top of the model range)"
+"Sidewalk, by hand",SF,1,0,1000,400,IntelCost estimate (no published rate),below ADOT 500-600 SF/day for small pours
+"Sidewalk, by hand",SF,2,1000,5000,550,published; matches the crew sheet,ADOT 500-600 SF/day; MoDOT median 523; crew sheet 500
+"Sidewalk, by hand",SF,3,5000,,1100,published,"Montana median 131 SY (1,179 SF); TxDOT median 132 SY (1,188 SF); WisDOT median 1,700 SF"
+"Curb and gutter, machine",LF,1,0,1000,600,CTR,"CTR curb -4621+803 lnQ: 926 LF at 1,000 LF; below 1,000 LF extrapolated, kept conservative"
+"Curb and gutter, machine",LF,2,1000,4000,1200,published; matches the crew sheet,"founder 1,200 LF/day; CTR 1,040 at 1,150 LF to 2,040 at 4,000 LF"
+"Curb and gutter, machine",LF,3,4000,,2000,CTR,"CTR 2,134 LF at 4,500 LF; WSDOT 1,500-3,000 LF/day"
+"Curb, by hand",LF,1,0,300,150,published,under 300 LF: NCDOT small urban 100-300 LF/day; Montana Q1 137
+"Curb, by hand",LF,2,300,,300,published,ADOT manual forming 300 LF/day (low end); KY lower 300; TxDOT low 288; Montana median 261. Crew sheet 100 is the NCDOT small-urban low end
+"Aggregate base, placed",TON,1,0,300,250,published,NCDOT small urban 200-500 t/day; Montana Q1 132 CY (~250 t); Oklahoma min 160 CY. Crew sheet 100 t is below every published low
+"Aggregate base, placed",TON,2,300,3000,450,DOT,NCDOT small urban 200-500 t/day (midpoint x1.25); INDOT urban 270 t per 8 h
+"Aggregate base, placed",TON,3,3000,,1000,DOT,DOT median 840 t/day (7 states) x1.25
+Fine grade subgrade,SF,1,0,20000,15000,IntelCost estimate (no published rate),half the medium tier for small areas
+Fine grade subgrade,SF,2,20000,200000,30000,published; matches the crew sheet,"founder 30,000 SF/day; ADOT 3,000-4,000 SY/day"
+Fine grade subgrade,SF,3,200000,,45000,DOT,"ADOT 4,000 SY (36,000 SF) per day x1.25"
+Proof roll,SY,1,0,10000,10000,published (derived),"small or irregular areas (pads, parking bays): short lanes and turns. Half of the Ohio DOT project rate of 2,000 SY/hour; Ohio DOT pre-bid set 3 hours for small areas and a bidder reported 8. One loaded tandem truck (46,000 lb) or 25-50 t pneumatic roller, one driver. Each visit takes at least the project half-day minimum"
+Proof roll,SY,2,10000,,20000,published,"large open areas: Ohio DOT project calculation 2,000 SY/hour; NCDOT 3 roller-hours per mile of 24 ft pavement (about 4,690 SY/hour, highway, long straight runs). Replaces the crew sheet five trucks at 1,000 SY/day"
+Storm pipe,LF of run,1,0,150,80,CTR,CTR RCP -137.38+43.48 lnQ (Q = run length): 80 LF/day at 150 LF
+Storm pipe,LF of run,2,150,500,120,published; matches the crew sheet,founder slow 120 LF/day; CTR 133 at 500 LF
+Storm pipe,LF of run,3,500,2000,200,published; matches the crew sheet,"founder fast 200 LF/day; CTR 163 at 1,000, 193 at 2,000"
+Storm pipe,LF of run,4,2000,,250,published; matches the crew sheet,"founder two-hoe 250 LF/day; CTR 205 at 2,600 LF"
+"Sanitary pipe, main",LF of run,1,0,150,80,CTR,same run-length curve as storm (CTR RCP)
+"Sanitary pipe, main",LF of run,2,150,1000,200,published; matches the crew sheet,founder main only 200 LF/day; WSDOT 200-400 per 8 h
+"Sanitary pipe, main",LF of run,3,1000,,300,DOT,WSDOT 200-400 LF per 8 h (midpoint)
+Water main,LF of run,1,0,250,100,published,"under 250 LF: WSDOT low 100 LF per 8 h, unscaled for short runs; crew sheet 80 is below the published low"
+Water main,LF of run,2,250,5000,375,published,WSDOT typical 300 LF per 8 h x1.25; Michigan 300 LF/day to 16 in. Crew sheet 500 is above both
+Water main,LF of run,3,5000,,800,DOT,"WSDOT high 800 LF per 8 h, kept unscaled"
+Water service,EA,1,0,,4.4,published,WSDOT service connection 3.5 per 8 h x1.25. Crew sheet 10/day has no published support
+Valve,EA,1,0,,4,DOT,WSDOT installing valves 3 per 8 h x1.25
+Hydrant assembly,EA,1,0,,2.5,DOT,WSDOT hydrant assembly 2 per 8 h x1.25
+Manhole / structure,EA,1,1,1,0.5,DOT,ADOT: a single manhole takes 2 days
+Manhole / structure,EA,2,2,5,1,published; matches the crew sheet,founder storm per-each 1 EA/day; WSDOT 1-1.5/day
+Manhole / structure,EA,3,6,,2,DOT,ADOT: 6 or more average about 2 per day
+"Catch basin / inlet, small box",EA,1,1,1,1,DOT,ADOT catch basin 1 per day (single)
+"Catch basin / inlet, small box",EA,2,2,5,3,IntelCost estimate (no published rate),between ADOT single 1/day and WSDOT 6.25/day
+"Catch basin / inlet, small box",EA,3,6,,6,DOT,WSDOT catch basin type 1: 5 per 8 h x1.25
+"Clearing and grubbing, heavy (wooded)",ACRE,1,0,2,0.75,published,ADOT urban 0.5 ac/day; NCDOT small urban 0.25-1
+"Clearing and grubbing, heavy (wooded)",ACRE,2,2,10,1.0,published,"FM 5-434 Table 2-1 heavy dozer, trees over 18 in: 8 h/ac +25% grubbing = 10 h/ac; WSDOT west 1 ac per 8 h; ADOT rural 1.0"
+"Clearing and grubbing, heavy (wooded)",ACRE,3,10,,1.25,published,WSDOT west x1.25; NCDOT major 1-10 ac/day
+"Clearing and grubbing, medium (trees 12-18 in)",ACRE,1,0,,2.0,published,FM 5-434 heavy dozer 3 h/ac +25% = 3.75 h/ac (2.7 ac/10 h); between DOT light and heavy rates
+"Clearing and grubbing, light",ACRE,1,0,,3.5,published,"FM 5-434 heavy dozer, trees 12 in or less: 1.5 h/ac +25% = 1.9 h/ac (5.3 ac/10 h, felling and pushing); WSDOT east 3 per 8 h; KY and TxDOT median 3"

@@ -1,0 +1,255 @@
+fx-suite patch: 10 files retargeted at the fx stack; 2 fixtures skipped
+  skip f8-s5: stops Redis, which the running bench shares
+  skip f4-s27: stops MinIO, which the running bench shares
+prepare: every image built or present
+release: 157 fixtures on the built apps, 7 on the dev servers (f3-s1 f3-s13 f4-s2 f5-s3 f6-s4 f7-a r1-raster-text)
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 1 s
+warm http://localhost:5177 in 1 s
+157 fixtures (named): 145 in parallel, 2 at a time; then 12 one at a time
+
+n3-twenty-loads  355s  3/3 passed
+c45-materials   309s  12/12 passed
+r5-drags        322s  10/10 passed
+f8-s14          276s  4/4 passed
+c39-one-tag-while-drawing  229s  4/4 passed
+m6-position    1760s  5/5 passed
+f8-s13          362s  5/5 passed
+c32-site-typed  295s  5/5 passed
+f4-s17          253s  10/10 passed
+f4-s7           281s  7/7 passed
+c36-earthwork-link  279s  6/6 passed
+c48-saved-sections  276s  7/7 passed
+rv-rows         451s  8/8 passed
+c05-calculated-lines  176s  7/7 passed
+f7-h            202s  8/8 passed
+c42-stitch-sheets  182s  6/6 passed
+f4-dialogs      206s  8/8 passed
+f7-b            204s  7/7 passed
+c34-my-equipment  202s  7/7 passed
+f6-b            214s  9/9 passed
+c44-fill-by-delivery  381s  6/7 passed
+                    FAIL  7. D-920, D-921: the Results panel suggests by pocket, applies nothing, and a Confirm moves the lines and no volume
+                          timed out after 20s waiting for the scraper's cut line [after 41.6s]
+f7-e            159s  7/7 passed
+f5-s18          197s  4/4 passed
+p20a            195s  8/8 passed
+f5-s6           195s  6/6 passed
+f5-s14          210s  6/6 passed
+f5-s13          191s  7/7 passed
+f4-s5           167s  7/7 passed
+p19             185s  2/2 passed
+c30-billing     177s  7/7 passed
+c21-time        194s  6/6 passed
+c47-gps-field   186s  5/5 passed
+c10-two-trees   202s  6/6 passed
+c15-reports     178s  5/5 passed
+c17-earthwork   231s  8/8 passed
+c20-forum       183s  5/5 passed
+c11-rotate      157s  5/5 passed
+c47-material-release  185s  6/6 passed
+f3-s6           133s  8/8 passed
+f9-estimating   256s  11/12 passed
+                    FAIL  12. slow load (M3, D-690): on a cold open with the rates' read held until the typing is saved (D-796), Paint's Unit Man Hours typed during the load keeps 0.25 after the late read lands, after a reload and in a second window
+                          Paint's Unit Man Hours after the late read: 0, 0.25, 0.25, 0.25, 0.25 [after 15.0s]
+c13-canvas-tools  175s  5/5 passed
+c46-gps-machine  173s  5/5 passed
+c46-proofs      137s  4/4 passed
+f4-s24          139s  6/6 passed
+c31-wage        193s  6/6 passed
+c41-assignee-scope  156s  5/5 passed
+f5-sheet-items  141s  5/5 passed
+c22-takeoff-first  185s  5/5 passed
+f6-e            161s  3/3 passed
+f8-s15          160s  6/6 passed
+f5-s16          163s  6/6 passed
+f5-s5           139s  5/5 passed
+f7-i            165s  5/5 passed
+f6-c            224s  10/10 passed
+f6-d            172s  9/9 passed
+c40-delete-protection  135s  6/6 passed
+f5-s12          119s  4/4 passed
+c43-earthwork-assumptions  143s  4/4 passed
+c03-duplicate   110s  5/5 passed
+f4-s4           153s  9/9 passed
+f7-c            124s  5/5 passed
+f4-s10          139s  5/5 passed
+n11-undo-queue  100s  2/2 passed
+n4-ocr-scale    106s  2/2 passed
+f3-s7           151s  6/6 passed
+f7-d            156s  4/4 passed
+c12-item-model  244s  10/10 passed
+f8-s6           146s  1/1 passed
+c14-format      118s  4/4 passed
+f5-s4           153s  5/5 passed
+f8-s9           167s  5/5 passed
+f4-s26          147s  8/8 passed
+c06-copied-earthwork  184s  6/6 passed
+f4-s21          140s  5/5 passed
+f3-s4            98s  4/4 passed
+f4-s11          127s  5/5 passed
+f5-s8           125s  4/4 passed
+f5-d51          118s  5/5 passed
+c38-components-assemblies  115s  5/5 passed
+f4-s9           112s  5/5 passed
+f8-s10           97s  3/3 passed
+f8-s7           108s  3/3 passed
+c45-cut-method  191s  5/5 passed
+d37-links       115s  6/6 passed
+f5-scale-button  118s  4/4 passed
+c44-surplus-destinations  172s  5/5 passed
+f4-s14           98s  4/4 passed
+f8-s16          136s  4/4 passed
+f5-s7            82s  3/3 passed
+f7-j            115s  3/3 passed
+f5-s9           146s  2/2 passed
+f7-f             86s  3/3 passed
+f8-s11           97s  4/4 passed
+f9-exports      147s  4/4 passed
+c19-auto-count   81s  3/3 passed
+f4-s1            98s  9/9 passed
+f4-s18           99s  4/4 passed
+f7-g             97s  4/4 passed
+f5-s10          149s  5/5 passed
+c28-double-click  114s  3/3 passed
+c35-equipment-library  121s  5/5 passed
+f4-s3           138s  11/11 passed
+f2-close         78s  7/7 passed
+f7-k             80s  2/2 passed
+n2-tick-before-sizes  103s  3/3 passed
+f2-s5            90s  9/9 passed
+f4-s23           89s  4/4 passed
+f4-s19           91s  2/2 passed
+f3-s3            73s  3/3 passed
+f4-s16           57s  1/1 passed
+c16-bid-formulas   78s  3/3 passed
+f3-s11           88s  4/4 passed
+f3-s5            86s  5/5 passed
+f4-s15           82s  3/3 passed
+f4-s8            71s  3/3 passed
+f3-s10           85s  4/4 passed
+c49-overlay-match   79s  1/1 passed
+f2-s13           77s  5/5 passed
+f2-s4b           91s  6/6 passed
+f5-s1            76s  7/7 passed
+c37-wage-roles   71s  3/3 passed
+f3-s12          100s  8/8 passed
+f3-s2            95s  5/5 passed
+f2-s7            79s  4/4 passed
+f4-s20           79s  3/3 passed
+f8-s1            82s  4/4 passed
+c33-invitations   83s  4/4 passed
+f3-s9            84s  7/7 passed
+c23-folders-on-load   92s  3/3 passed
+f2-s10           63s  6/6 passed
+f2-s1b           86s  5/5 passed
+f2-s14           85s  4/4 passed
+f2-s9            82s  6/6 passed
+f4-s6            83s  3/3 passed
+f3-s8            84s  4/4 passed
+f8-s4            83s  4/4 passed
+f2-s12           81s  5/5 passed
+c50-equipment-scale   57s  3/3 passed
+f2-s8            58s  6/6 passed
+f2-s6            84s  6/6 passed
+f2-s2            66s  5/5 passed
+c51-bid-defaults   69s  3/3 passed
+c48-fuel-location   68s  4/4 passed
+f2-s3            74s  4/4 passed
+d27-uploads      48s  2/2 passed
+
+--- one at a time: they stop or restart a service ---
+f5-big          540s  5/6 passed
+                    FAIL  1. D-43: a Load while the set's thumbnails are still being made is not held behind them: the page is drawn in about 10 s
+                          the page took 24285 ms to draw with thumbnails being made [after 38.7s]
+f5-count        204s  1/1 passed
+f5-s11          146s  6/6 passed
+f5-s15           77s  3/4 passed
+                    FAIL  4. AC3: B, on the same sheet, sees the new scale chip and the recomputed quantities within a second, no reload (sheet.calibration.changed)
+                          chip after 1214 ms, quantities after 1788 ms [after 11.0s]
+f5-s19          133s  3/4 passed
+                    FAIL  3. 2: A draws a run slowly; B watches it grow tagged with A's short name, then sees it as a saved shape the moment A finishes
+                          after A finished: tag gone 173 ms, saved row 1306 ms [after 30.3s]
+f5-s2           321s  4/4 passed
+f6-a            181s  8/10 passed
+                    FAIL  8. S2 AC4: the api's figure reaches a second window, on the other api process, within 1.5 s, Playwright's polling of up to 500 ms included (B settled)
+                          B took 1625 ms (settled): PATCH replied +182 ms; frames: takeoff.item.changed published +165 at B +399; reads: item/69d1bb35-abc8-4e12-a857-7950eb613555 +414 (587 ms), detail/compact +555 (438 ms), detail/compact +1006 (290 ms), sheet/items +1013 (128 ms); B's long tasks: +89 (270 ms), +1148 (61 ms), +1401 (68 ms) [after 13.6s]
+                    --
+                    FAIL  9. S2 AC4, D-822: the same with window B still loading its page
+                          B took 1594 ms (2 reads still loading): PATCH replied +383 ms; frames: takeoff.item.changed published +361 at B +623; reads: item/69d1bb35-abc8-4e12-a857-7950eb613555 +639 (139 ms), detail/compact +831 (209 ms), detail/compact +1052 (221 ms), sheet/items +1056 (117 ms); B's long tasks: +45 (104 ms), +173 (57 ms), +251 (334 ms), +1177 (57 ms), +1274 (131 ms), +1418 (119 ms) [after 14.7s]
+f8-s12          307s  1/1 passed
+f8-s18          120s  2/3 passed
+                    FAIL  2. AC2: an edited shape and a deleted shape each show in the other window within a second
+                          delete reached B after 1200 ms [after 24.2s]
+f8-s2           268s  1/1 passed
+f8-s3           470s  3/3 passed
+f8-s8           122s  1/1 passed
+fx-cleanup     purged 166 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 241m42s (parallel group 191m14s, 2 at a time)
+7 of 157 failed: c44-fill-by-delivery f9-estimating f5-big f5-s15 f5-s19 f6-a f8-s18 
+Full output: ./.regress/
+ok   api-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+ok   worker-fx-ocr: storage http://192.168.65.254:9000/intelcost-fx, database intelcost_fx, mail to MailHog only, Stripe the fx fake
+warm http://localhost:5176 in 305 s
+warm http://localhost:5177 in 316 s
+7 fixtures (named): 7 in parallel, 2 at a time; then 0 one at a time
+
+f4-s2           309s  5/6 passed
+                    FAIL  6. AC4 — New project opens the dialog, holds a blank name back, creates, toasts and lands on it
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.0s]
+f7-a            545s  3/8 passed
+                    FAIL  3. S2 AC1, AC2: an Area circle of radius 10 ft reads 314.16 SF, and still does after a reload; a Linear 10 × 20 ft rectangle 60.00 LF; a Linear circle 10 ft across 31.42 LF
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/project/164a276f-91a7-4b8d-b366-cedac5870c42/takeoff/0691303e-acc1-4ef4-a63d-dc7d2506a778", waiting until "load" /  [after 85.6s]
+                    --
+                    FAIL  4. S2: a deduct through the shapes transaction: an 80 × 40 ft area less a 10 ft-radius hole is 2,885.84 SF, shown live; deleting the section takes its deduct
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/settings", waiting until "load" /  [after 60.9s]
+                    --
+                    FAIL  6. S1 AC1, AC2: 2 px beside a hairline run selects it, 30 px away does not; inside a square selects it, and so does 3 px outside its edge
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.4s]
+                    --
+                    FAIL  7. S1 AC3: a count mark selects from 10 px off its centre (legacy's 14 px floor) at zoom 1 and zoom 2; 25 px off does not
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.3s]
+                    --
+                    FAIL  8. S3: a viewer sees every measure tool and the item menu's edit entries disabled with the reason; select still works; a hand-written shapes transaction is refused 403
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/settings", waiting until "load" /  [after 58.7s]
+f5-s3            65s  
+f3-s13          303s  1/5 passed
+                    FAIL  2. AC3 — capability without the flag shows nothing, and says which reason it is
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 31.3s]
+                    --
+                    FAIL  3. AC3 the other way — the flag on with the capability denied still shows nothing
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 31.3s]
+                    --
+                    FAIL  4. AC2 — loading reads false: nothing opens while the answer is in flight
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  5. AC4 — the dev override forces ON only, and warns every time
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login?next=%2Fsettings%2Faccount", waiting until "load" /  [after 31.1s]
+r1-raster-text  137s  0/2 passed
+                    FAIL  1. thin CAD stroke text (0.65 pt strokes): every zoom and pixel ratio within 4 of the reference, no filter
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login", waiting until "load" /  [after 30.0s]
+                    --
+                    FAIL  2. dense spec text (Helvetica 5.7 pt): every zoom and pixel ratio within 4 of the reference, no filter
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/login", waiting until "load" /  [after 30.0s]
+f3-s1           243s  4/5 passed
+                    FAIL  1. AC1 — nine roles and twenty-five capabilities, the same ones on both sides
+                          TimeoutError: page.goto: Timeout 30000ms exceeded. / Call log: / - navigating to "http://localhost:5176/", waiting until "load" /  [after 30.0s]
+f6-s4           124s  3/3 passed
+fx-cleanup     purged 5 workspaces owned by fixture accounts
+seeded-ws      skipped on the fx stack (D-611)
+
+wall clock 14m40s (parallel group 14m40s, 2 at a time)
+6 of 7 failed: f4-s2 f7-a f5-s3 f3-s13 r1-raster-text f3-s1 
+Full output: ./.regress/
+built apps:   7 of 157 failed: c44-fill-by-delivery f9-estimating f5-big f5-s15 f5-s19 f6-a f8-s18 
+dev servers:  6 of 7 failed: f4-s2 f7-a f5-s3 f3-s13 r1-raster-text f3-s1 
+alone, passed (timing): f3-s1 f3-s13 f5-s3 r1-raster-text c44-fill-by-delivery f8-s18 f9-estimating
+alone, failed (look at): f4-s2 f7-a f5-big f5-s15 f5-s19 f6-a
+registry after prepare: none reached
+logs: fx-suite/.regress/release-20261105-2210 (one per fixture in fx-suite/.regress)
+release exit 1

@@ -1,0 +1,3 @@
+DELETE  fx.equip.202611051118@bench.intelcost.io  workspaces 1: zz Queue 1108
+accounts matching a throwaway pattern: 1; to delete 1; refused 0
+deleted 1 accounts and 1 workspaces; kept 0

@@ -1,0 +1,22 @@
+item,class,value,unit,basis,source_note
+clearing debris,"light (trees 12 in or less, brush)",25,green tons per acre,published,"USDA FS NE-113 Maryland biomass, sapling and seedling stands 26.3 green t/ac"
+clearing debris,medium (trees 12-18 in),80,green tons per acre,published,"USDA FS NE-113 Maryland, poletimber stands 81.6 green t/ac"
+clearing debris,heavy (trees over 18 in),110,green tons per acre,published,US EPA 2020 NEI Section 34 Table 34-3: hardwood 99 t/ac including below-ground mass; USDA FS Maryland sawtimber 125.5
+debris volume,hardwood,4,CY per ton,published,FEMA 329: hardwoods 1 ton = 4 CY
+debris volume,softwood,6,CY per ton,published,FEMA 329: softwoods 1 ton = 6 CY
+debris volume,mixed (default),5,CY per ton,IntelCost estimate,midpoint of FEMA hardwood and softwood
+debris grinding,tub grinder,200,CY of debris per hour,published (grade C),Green Infrastructure Center storm planning: burning or chipping/grinding 200 CY/hour
+individual tree removal,0-6.5 in,0.63,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+individual tree removal,6.6-12.5 in,1.83,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+individual tree removal,12.6-18.5 in,3.94,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+individual tree removal,18.6-24.5 in,5.39,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+individual tree removal,24.6-30.5 in,8.58,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+individual tree removal,30.6-36.5 in,12.98,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+individual tree removal,36.6-42.5 in,19.3,man-hours per tree,published,"O'Brien et al., J. Arboriculture 18(6) 1992, Table 2, mean of four seasons; city crews with bucket truck, crew 2 to 12.5 in, 3 above; slow for open-site trees"
+stump grinding,4.5-6.6 in,0.97,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"
+stump grinding,6.6-12.5 in,1.36,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"
+stump grinding,12.6-18.5 in,1.89,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"
+stump grinding,18.6-24.5 in,2.75,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"
+stump grinding,24.6-30.5 in,3.42,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"
+stump grinding,30.6-36.5 in,4.55,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"
+stump grinding,36.6-42.5 in,9.9,man-hours per stump,published,"O'Brien et al. 1992 Table 4, mean of legible seasons; stump cutter"

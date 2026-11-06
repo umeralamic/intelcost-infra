@@ -242,7 +242,9 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     devs=()
     for n in "${all[@]}"; do if needs_dev "$n"; then devs+=("$n"); else built+=("$n"); fi; done
     echo "release: ${#built[@]} fixtures on the built apps, ${#devs[@]} on the dev servers (${devs[*]})" | tee "$out/summary.txt"
-    # 1. The built apps, 3 at a time: timings are the product's there (f5-s11, f5-s13).
+    # 1. The built apps, 2 at a time (Q208: at 3, with the dev stack up, the host ran at load 16 and the api's workers
+    # were killed under it): timings are the product's there (f5-s11, f5-s13).
+    export REGRESS_JOBS="${REGRESS_JOBS:-2}"
     "$0" prod >"$out/0-prod.log" 2>&1 || { echo "release: the built apps would not start (see $out/0-prod.log): nothing was run" | tee -a "$out/summary.txt"; exit 1; }
     revive | tee -a "$out/0-workers.log"
     "$0" run "${built[@]}" 2>&1 | tee "$out/1-built.log"

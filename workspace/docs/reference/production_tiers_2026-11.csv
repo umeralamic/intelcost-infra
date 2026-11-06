@@ -1,0 +1,50 @@
+activity,unit,tier,quantity_from,quantity_to,production_per_10h_day,basis,source_note
+Asphalt paving,TON,1,0,500,300,CTR,"TxDOT/CTR 0-4416-1 HMA model -1198+278 lnQ: 310 t/day at 227 t, 530 at 500 t"
+Asphalt paving,TON,2,500,3000,600,CTR,"CTR model: 722 at 1,000 t; NCDOT small urban 200-500 t/day; ADOT urban 1,000-1,500"
+Asphalt paving,TON,3,3000,,1000,CTR,"CTR model: 1,028 at 3,000 t, 1,213 at 5,840 t; DOT median 1,000 t/day (12 states)"
+"Milling, 2 in",SY,1,0,2000,2000,DOT,"IDOT D5 urban milling 2,000-10,000 SY/day (low end)"
+"Milling, 2 in",SY,2,2000,15000,3500,DOT,"INDOT urban 2,860 SY per 8-hr day, x1.25 to 10 h"
+"Milling, 2 in",SY,3,15000,,10000,DOT,"DOT median 9,000 SY/day (8 states); IDOT rural 30,000-45,000 is highway scale"
+Tack or prime coat,SY,1,0,,15000,founder's provisional figure (no published rate),Only ADOT prime 8-20 tons/day found; one tier
+"Concrete pavement, formed (SY of slab)",SY,1,0,500,150,CTR,CTR conventional-form PCC -610+139 lnQ: 134 SY at 211 SY
+"Concrete pavement, formed (SY of slab)",SY,2,500,3000,350,CTR,"CTR: 350 SY at 1,000 SY"
+"Concrete pavement, formed (SY of slab)",SY,3,3000,,550,CTR,"CTR: 554 SY at 4,320 SY (top of the model range)"
+"Sidewalk, by hand",SF,1,0,1000,400,founder's provisional figure (no published rate),small jobs below the founder figure; ADOT 500-600 SF/day
+"Sidewalk, by hand",SF,2,1000,5000,500,founder's crew sheet,founder 500 SF/day; ADOT 500-600 SF/day; WI/AZ/MO median 550
+"Sidewalk, by hand",SF,3,5000,,800,DOT,"sidewalk SF high median 821 (AZ, MO, WI)"
+"Curb and gutter, machine",LF,1,0,1000,600,CTR,"CTR curb -4621+803 lnQ: 926 LF at 1,000 LF; below 1,000 LF extrapolated, kept conservative"
+"Curb and gutter, machine",LF,2,1000,4000,1200,founder's crew sheet,"founder 1,200 LF/day; CTR 1,040 at 1,150 LF to 2,040 at 4,000 LF"
+"Curb and gutter, machine",LF,3,4000,,2000,CTR,"CTR 2,134 LF at 4,500 LF; WSDOT 1,500-3,000 LF/day"
+"Curb, by hand",LF,1,0,,100,founder's crew sheet,founder 100 LF/day. Note: ADOT gives 300 LF/day for manual forming (low end of its curb row)
+"Aggregate base, placed",TON,1,0,300,100,founder's crew sheet,founder's hauled-in stone crew 100 t/day (small crew)
+"Aggregate base, placed",TON,2,300,3000,450,DOT,NCDOT small urban 200-500 t/day (midpoint x1.25); INDOT urban 270 t per 8 h
+"Aggregate base, placed",TON,3,3000,,1000,DOT,DOT median 840 t/day (7 states) x1.25
+Fine grade subgrade,SF,1,0,20000,15000,founder's provisional figure (no published rate),half the founder figure for small areas
+Fine grade subgrade,SF,2,20000,200000,30000,founder's crew sheet,"founder 30,000 SF/day; ADOT 3,000-4,000 SY/day"
+Fine grade subgrade,SF,3,200000,,45000,DOT,"ADOT 4,000 SY (36,000 SF) per day x1.25"
+Proof roll,SY,1,0,2000,1000,founder's crew sheet,"founder 1,000 SY/day base; no published DOT rate found"
+Proof roll,SY,2,2000,20000,5000,founder's provisional figure (no published rate),"interpolated, no source"
+Proof roll,SY,3,20000,,20000,founder's crew sheet,"founder's sheet tops at 22,000 SY/day"
+Storm pipe,LF of run,1,0,150,80,CTR,CTR RCP -137.38+43.48 lnQ (Q = run length): 80 LF/day at 150 LF
+Storm pipe,LF of run,2,150,500,120,founder's crew sheet,founder slow 120 LF/day; CTR 133 at 500 LF
+Storm pipe,LF of run,3,500,2000,200,founder's crew sheet,"founder fast 200 LF/day; CTR 163 at 1,000, 193 at 2,000"
+Storm pipe,LF of run,4,2000,,250,founder's crew sheet,"founder two-hoe 250 LF/day; CTR 205 at 2,600 LF"
+"Sanitary pipe, main",LF of run,1,0,150,80,CTR,same run-length curve as storm (CTR RCP)
+"Sanitary pipe, main",LF of run,2,150,1000,200,founder's crew sheet,founder main only 200 LF/day; WSDOT 200-400 per 8 h
+"Sanitary pipe, main",LF of run,3,1000,,300,DOT,WSDOT 200-400 LF per 8 h (midpoint)
+Water main,LF of run,1,0,250,80,founder's crew sheet,founder under 250 LF: 80 LF/day
+Water main,LF of run,2,250,5000,500,founder's crew sheet,founder 250 LF and over: 500 LF/day; WSDOT 300 typical per 8 h (375 per 10 h)
+Water main,LF of run,3,5000,,800,DOT,"WSDOT high 800 LF per 8 h, kept unscaled"
+Water service,EA,1,0,,10,founder's crew sheet,"founder 10 EA/day (short services, backhoe). Note: WSDOT 3.5 per 8 h (4.4 per 10 h) for service connections"
+Valve,EA,1,0,,4,DOT,WSDOT installing valves 3 per 8 h x1.25
+Hydrant assembly,EA,1,0,,2.5,DOT,WSDOT hydrant assembly 2 per 8 h x1.25
+Manhole / structure,EA,1,1,1,0.5,DOT,ADOT: a single manhole takes 2 days
+Manhole / structure,EA,2,2,5,1,founder's crew sheet,founder storm per-each 1 EA/day; WSDOT 1-1.5/day
+Manhole / structure,EA,3,6,,2,DOT,ADOT: 6 or more average about 2 per day
+"Catch basin / inlet, small box",EA,1,1,1,1,DOT,ADOT catch basin 1 per day (single)
+"Catch basin / inlet, small box",EA,2,2,5,3,founder's provisional figure (no published rate),between ADOT single and WSDOT
+"Catch basin / inlet, small box",EA,3,6,,6,DOT,WSDOT catch basin type 1: 5 per 8 h x1.25
+"Clearing and grubbing, heavy (wooded)",ACRE,1,0,2,0.75,founder's provisional figure (no published rate),ADOT urban 0.5 ac/day
+"Clearing and grubbing, heavy (wooded)",ACRE,2,2,10,1.0,DOT,WSDOT west (wooded) 1 ac per 8 h; ADOT rural 1.0
+"Clearing and grubbing, heavy (wooded)",ACRE,3,10,,1.25,DOT,WSDOT west x1.25; NCDOT major projects 1-10 ac/day
+"Clearing and grubbing, light",ACRE,1,0,,3,DOT,WSDOT east (sparse) 3 ac per 8 h

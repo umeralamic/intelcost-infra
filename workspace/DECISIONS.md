@@ -26847,3 +26847,43 @@ required").
 - **c35 step 3:** the water truck WT-2000 is no longer short of data: releases 31 and 32 gave it a fuel burn and
   made it a road vehicle that drives in with no mob (D-995, D-996). Only the crane's lines (TEST A, B) are flagged.
 - **f6-d:** a new workspace's CSI tree seeds 1,837 nodes since D-992's 32.13 Aggregate Base and 34.06 Guardrail.
+
+## D-1018: Site spreads read the project's lines in one pass (Q205, queue of 2026-11-09)
+
+- **The "missing save" was a slow one.** Confirm (an undercut's row, a method row) and Apply do send
+  `PUT …/result/{sheet}/lines` at once. The api took 22 to 43 s to answer it alone, and longer while a Calculate's
+  save ran beside it. Both hold the project's row and the starter's advisory lock, so the second waited for the
+  first. c45 step 5 and c44 timed out at 30 s and read it as "no save".
+- **The cause:** `sync_sites` priced each site-spread activity with `sync_site`, and each read every line of the
+  project again (`site_lines`: each line's activity by role, its unit, its division: several queries a line). D-822's
+  `site_lines_for` reads them for every activity in one pass, but `sync_sites` never used it. The starter grew from
+  71 to 104 activities this month, so the cost grew with it.
+- **The fix:** `sync_sites` reads every site-spread activity's lines once, with `site_lines_for`, and hands each to
+  `sync_site`. Pricing a spread writes only its spread rows, never what the pass reads, so one read serves all.
+- **Measured:** the captured lines save replayed in-process went from 22.4 s to 4.5 s warm. The quantity table
+  (61 cost rows, 81 equipment rows) is unchanged.
+
+## D-1019: One mob/demob per machine class per trade (Q210, supersedes D-1006's per project)
+
+- A line's trade is its work scope's name up to " — " ("Earthwork — Grading" and "Earthwork — Aggregate Base" are
+  Earthwork; "Site Utilities — Sanitary Sewer" is Site Utilities; "Asphalt Paving", "Site Concrete" as they are),
+  else, for a line with no work scope, its division's name. Not the classification's level 2 ("Grading", "Sanitary
+  Sewer"): that split one trade's spreads apart (the first build did, and the storm crew stopped sharing the sewer
+  crew's excavator).
+- A shared machine's trade is its lines' trade with the most hours.
+- Within one trade, the spread with the most hours of a class brings that machine, and another spread of the same
+  trade uses it, mobilizing only the machines beyond it (D-1006's rule, now per trade). A spread of another trade
+  mobilizes its own.
+- The Shared equipment view records each machine's trade, so the mobs can be listed by trade and class.
+
+## D-1020: Pond and Reservoir Liners (Q211)
+
+- A work scope of its own, "Pond and Reservoir Liners" (`site.pond_liners`), maps to the CSI heading 33.06.06 under
+  Stormwater Management. That heading is the app's own number for MasterFormat 33 47 13; the tree already had it as
+  "Pond Liners", so no second node is made.
+- The template names it "Pond and Reservoir Liners" for new workspaces. A tree made before keeps "Pond Liners", and
+  its default mapping matches either name. No migration renames a founder's node (Q212).
+- Filed there: a GCL line (a section layer or an undercut's fabric, `site:gcl`) and a clay liner fill (an undercut's
+  replacement, an over-excavation row, a section layer: by `fill:clay` or the name).
+- The scope and its mapping are made the first time a workspace's lines are written after this (as D-1010).
+- No price moves: only the lines' classification changes.
