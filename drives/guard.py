@@ -49,11 +49,16 @@ FOUNDER_WORKSPACE_UUIDS: dict[str, str] = dict(FOUNDER_WORKSPACES)
 for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUARD_WORKSPACE_EXTRA", "").split(","))):
     FOUNDER_WORKSPACE_UUIDS.setdefault(extra, "added for this run (DRIVE_GUARD_WORKSPACE_EXTRA)")
 
-COPY_ONLY = "4df73dc7-901b-4933-b2bb-fafc327b01f0"
-"""The founder's shared copy, the source of new proofs (2026-11-01): read by the copier alone, for one
-copy, named as `copy-3d-test.py --source`. Every other drive, and every write, is refused as before."""
-_COPYING = os.path.basename(sys.argv[0]) == "copy-3d-test.py" and sys.argv[1:3] == ["--source", COPY_ONLY]
-_READ_ONLY = {TEST_COPY, COPY_ONLY} if _COPYING else {TEST_COPY}
+COPY_SOURCES: dict[str, str] = {
+    # The founder's shared copy, the source of new proofs (2026-11-01).
+    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
+    # McCabe, a real bid: copied for the pricing investigation only (2026-11-06, D-1024).
+    "24e4a96c-2f62-4490-8705-8bde97add9a5": "McCabe",
+}
+"""Projects the copier alone may read, for one copy, named as `copy-3d-test.py --source <uuid>`.
+Every other drive, and every write, is refused as before."""
+_COPYING = os.path.basename(sys.argv[0]) == "copy-3d-test.py" and len(sys.argv) > 2 and sys.argv[1] == "--source" and sys.argv[2] in COPY_SOURCES
+_READ_ONLY = {TEST_COPY, sys.argv[2]} if _COPYING else {TEST_COPY}
 
 _NEVER_OPENED = {u: n for u, n in PROTECTED.items() if u not in _READ_ONLY} | FOUNDER_WORKSPACE_UUIDS
 _READ = re.compile(r"^\s*(?:select|with|show|explain)\b", re.IGNORECASE)

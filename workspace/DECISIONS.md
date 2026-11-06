@@ -26936,3 +26936,15 @@ Calculate, its prisms and every quantity are untouched; the quantity table prove
   11, the 3D test's shared copy, 10793 SBR, McCabe, 11146 - Valmont). A new one there is a FAIL in the fingerprint
   until it is added (D-601's rule, unchanged).
 - Investigation of a real bid runs only on a throwaway copy made by the copier, never by signing in as the founder.
+
+## D-1024: The copier may read McCabe, for its pricing investigation only
+
+**Status:** Accepted (2026-11-06, Umer: "Investigate on a throwaway copy of McCabe only (original protected and
+read-only)").
+
+- The drives' guard (`drives/guard.py`) let the copier read one protected project, 4df73dc7, named as
+  `copy-3d-test.py --source`. That exception is now a list, `COPY_SOURCES`: 4df73dc7 and McCabe (24e4a96c). Read by the
+  copier alone, for one copy; every other drive, every write, and every browser request naming McCabe are refused as
+  before (the MCP guard never opens it).
+- The copy (eac07f4e, "BENCH DUP 2026-11-06 16:03 — delete me") lives in a throwaway's workspace and is purged with
+  the other DUPs.
