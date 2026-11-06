@@ -26882,8 +26882,45 @@ required").
   Stormwater Management. That heading is the app's own number for MasterFormat 33 47 13; the tree already had it as
   "Pond Liners", so no second node is made.
 - The template names it "Pond and Reservoir Liners" for new workspaces. A tree made before keeps "Pond Liners", and
-  its default mapping matches either name. No migration renames a founder's node (Q212).
+  its default mapping matches either name. No migration renames a founder's node (Q214).
 - Filed there: a GCL line (a section layer or an undercut's fabric, `site:gcl`) and a clay liner fill (an undercut's
   replacement, an over-excavation row, a section layer: by `fill:clay` or the name).
 - The scope and its mapping are made the first time a workspace's lines are written after this (as D-1010).
 - No price moves: only the lines' classification changes.
+
+## D-1021: Nothing of the takeoff shows or acts under Estimating or Community
+
+**Status:** Accepted (2026-11-06, Umer; a contour's hover card seen on the Estimating tab).
+
+The takeoff stays mounted under Estimating and Community, hidden (so a tab switch reloads nothing). What it draws
+into the page's body, outside that hidden view, stayed on screen: the earthwork hover card ("Proposed Grade, Contour
+· #1 of 28"), and any floating panel, menu or popover left open. Its window-wide keys still acted on it.
+
+1. **Panels that hold state are hidden and come back as they were:** Coordinates, utility Run and Structure, Bores,
+   Grade Check, Registration, Site Join, Auto Count, Earthwork Volumes, Markup and Dimension Properties, and every
+   other floating panel of the takeoff. Their contents, place and typing are kept.
+2. **Transient overlays close and are not restored:** right-click menus, the elevation and overlay-row popovers, the
+   item colour palette, hover cards (the earthwork hover is cleared, so it cannot return at a stale place).
+3. **No takeoff key acts while the view is hidden:** Delete, Backspace, Ctrl+Z/Y, Enter, Escape, N, the tool keys,
+   the pairing, nudge and site view keys. Escape too, so a panel is still open when the person comes back.
+4. **Dimension Properties never leaves its project:** it closes when the page moves to another project (the page is
+   reused across projects). The dashboard and settings unmount the page, so it cannot show there.
+5. **Fixture `r6-hidden-view`** proves it (an exception to hard rule 8 at Umer's request, as before).
+
+## D-1022: The 2D cut and fill view drawn smooth, no triangles (D-453 for cut and fill)
+
+**Status:** Accepted (2026-11-06, Umer: "it should show color variance only, no triangles … smooth dark or light
+color as per cut and fill"). Display only.
+
+The CUT & FILL layer drew each prism flat at its mean depth, as a translucent path: every triangle showed, by its own
+shade and by the seam where two translucent paths meet. D-453 had made the grade views smooth; this does the same for
+cut and fill, on the canvas, in a printed sheet and in the grading report's plan:
+
+1. **No triangle edges.** The depth at each pixel is blended across each prism from its three corners (`dzA`, `dzB`,
+   `dzC`, barycentric at the pixel centres) and drawn as one image: no paths, so no seams.
+2. **Shaded as before:** the one ramp every key reads (`shade("cutfill")`, D-462), on the shared range
+   (`cutFillRange`, D-454 2): cut red, fill blue, light near zero and darker as the depth nears the deepest, at the
+   same opacities (cut 0.65, fill 0.55). A pixel at zero depth stays clear.
+3. Only where prisms are, so it stays inside the boundary as the prisms do.
+
+Calculate, its prisms and every quantity are untouched; the quantity table proves it.

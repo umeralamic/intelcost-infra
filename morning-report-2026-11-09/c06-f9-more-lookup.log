@@ -1,0 +1,21 @@
+PASS  1. setup: the grading sheet (boundary, spots, contours, Site Feature, Strip Area), the assumptions saved
+PASS  2. Calculate the original in the Earthwork tab: the api holds its result and lines, none stale
+      10 lines: Strip topsoil (6") · Strip topsoil, haul off · Undercut excavation (12") · Undercut spoil, haul off · Undercut replacement fill, Engineered Fill · Cut · Fill · Cut · Fill · Soil Export (20 BCY)
+PASS  3. Duplicate project (the api's job): the copy has the same calculated lines, none stale, and a stored result for its sheet
+      copy 8e47f400-a214-44eb-a886-e7ab7e2fc482: 10 lines, none stale; result for sheet 05b3ed99-aa11-436e-bf7d-3e45c560d60c, 3 key aliases
+PASS  4. the copy's grading sheet, Earthwork tab: no "Needs recalculating" anywhere, Calculate's dot reads ready, the grading report is not out of date
+      no "Needs recalculating" ({"rowMarks":0,"text":0,"flags":0}); Calculate dot "ready"; the report opens without an out-of-date note
+PASS  5. the copy's Estimating tab: every calculated line listed, none flagged "Needs recalculating"
+      10 calculated lines in Estimating, no flag
+PASS  6. D-936: a project opened mid-stream marks no line; a real change after the read still does
+      none mid-stream or unchanged; marked after a real change
+6/6 passed
+PASS  1. setup: Slab $40,000 material and Footing $60,000 labor, C16's bid rates, EG spots at 100 and FG at 99 around a 40 × 25 ft boundary, a share link with pricing off
+      Slab 1000.0000000040003 SF, Footing 100.00000000019998 LF; spots 5 + 5; share link, pricing off
+PASS  2. estimate Excel, member: every column, values; Slab $40,000 and Footing $60,000 in it, a Bid Summary sheet at $126,133.33, no picture
+      "Exports one - Estimate V1 - 2026-11-06.xlsx"; sheets Base Bid, Bid Summary; 27 columns; Slab $40,000, Footing $60,000; Bid Summary $126,133.33; no picture
+PASS  3. grading report Excel: Calculate, open the report, Excel; the workbook names the project and sheet and carries 37.04 CY of cut
+      "Grading Report, Exports one.xlsx"; sheets Summary, By feature, Strip, Balance, Lines, Methods, Inputs; cut 37.04 CY in it; no picture
+PASS  4. guest export, pricing off: the link opens the project; Estimating says pricing is not shown; Export with every column drops all eleven money columns and the Bid Summary
+      "Exports one - Estimate V1 - 2026-11-06.xlsx"; Item No. | Takeoff Ref. | Details Ref. | Classification | SCOPE | Sub-scope | Level 4 | Assembly | Qty | Unit | Color | Wastage | Qty with Wastage | Comments; no money column, no Bid Summary (sheets Base Bid
+4/4 passed

@@ -164,7 +164,8 @@ await run("f9-exports", [
       const toggle = page.locator("[data-grading-report-toggle]");
       if (await toggle.isVisible()) await toggle.click();
       else {
-        await page.getByRole("button", { name: "More earthwork tools" }).click();
+        // The trigger reads "More"; "More earthwork tools" names the menu it opens.
+        await page.locator('[data-earthwork-toolbar] button[aria-haspopup="menu"]').filter({ hasText: "More" }).first().click();
         await page.getByRole("menuitem", { name: "Grading report" }).click();
       }
       const excel = page.locator("[data-report-excel]");
