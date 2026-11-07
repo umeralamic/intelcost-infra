@@ -128,6 +128,9 @@ try {
     const surf = await import("/src/lib/takeoff/earthwork/export/surfaces.ts");
     const drw = await import("/src/lib/takeoff/earthwork/export/drawing.ts");
     const earthLines = await import("/src/lib/takeoff/earthwork/lines.ts");
+    const dispo = await import("/src/lib/takeoff/earthwork/disposal.ts");
+    const haulMod = await import("/src/lib/estimate/equipment/haul.ts");
+    const siteMats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     return cases.map((c) => {
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
@@ -487,6 +490,32 @@ try {
         const ws = Object.values(workbook.buildWorkbook([{ name: "T", banner: null, rows }], cols, { formulas: true, grids: false, grouping: false }).Sheets)[0];
         const at = (key, row) => ws[String.fromCharCode(65 + keys.indexOf(key)) + row];
         return { typedMaterialFormula: Boolean(at("total_material", 2)?.f), typedItemCostFormula: Boolean(at("item_cost", 2)?.f), lumpMaterialFormula: Boolean(at("total_material", 3)?.f), lumpItemCostFormula: Boolean(at("item_cost", 3)?.f), lumpMaterialValue: at("total_material", 3)?.v };
+      }
+      if (c.kind === "disposal") {
+        // D-1035: dump sites, the cheapest pick, the flag and the haul cycle, through the app's own modules.
+        const [d, h, m] = [dispo, haulMod, siteMats];
+        const a = c.args;
+        if (c.run === "fee") {
+          const per = d.feePerLcy(a.fee, a.unit, a.material, a.payload);
+          return { perLcy: per, total: per == null ? null : per * a.lcy };
+        }
+        if (c.run === "haul") {
+          const r = h.haulCycle(a.qty, a.inputs);
+          return r ? { trucks: r.trucks, loads: r.loads, cycleMin: r.cycleMin, hours: r.hours, truckHours: r.trucks * r.hours, basis: r.basis } : { trucks: null };
+        }
+        if (c.run === "cheapest") {
+          const costs = d.siteCosts(a.sites, a.material, a.lcy, a.haul, a.truckRate);
+          const pick = d.chooseSite(costs, a.picked ?? null);
+          return { chosen: pick.chosen?.site.id ?? null, by: pick.by, runnerUp: pick.runnerUp?.site.id ?? null, chosenTotal: pick.chosen?.total ?? null, runnerTotal: pick.runnerUp?.total ?? null, chosenTrucks: pick.chosen?.haul?.trucks ?? null, perDollar: d.perDollarLcy(a.lcy, a.taxRate ?? 0, a.taxed ?? false) };
+        }
+        if (c.run === "flag") return { flagged: d.checkDumpFee(a) };
+        if (c.run === "role") {
+          const [fee] = m.siteMaterials({ role: a.role, unit: a.unit, variant: a.variant, name: a.name, matFactor: a.matFactor }) ?? [];
+          if (!fee) return { matKey: null };
+          const e = comps.evaluateComponent({ ...c.row, qty_formula: fee.qty, unit_price: a.price }, { parent: 0, qty: a.lcy });
+          return { matKey: fee.matKey, kind: fee.kind ?? "material", unit: fee.unit, tons: e.qty, total: e.total };
+        }
+        return {};
       }
       if (c.kind === "env") {
         const ctx = { items: envItems, scales: envs.sheetScales([envSheet]), vars: new Map(c.vars) };

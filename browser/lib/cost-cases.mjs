@@ -563,4 +563,47 @@ export const COST_CASES = [
   },
   // Nothing to divide by: no figure, never a division by zero.
   { id: "units-no-quantity", kind: "units", quantity: 0, components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })], expect: { unitMaterial: null, unitLabor: null } },
+  // --- Dump sites and the haul cycle (D-1035, PRICING_FIX_PLAN items 1 and 3) ----------------------------------
+  // Tipping by fee unit, a truck payload of 16 LCY, 800 LCY: by the load $120 / 16 = $7.50/LCY, $6,000; by the LCY
+  // $4.00, $3,200; by the ton $10 x 1.28 t/LCY (clean soil) = $12.80/LCY, $10,240; free $0; a site that pays us
+  // $2/ton for rock, -$2 x 1.35 = -$2.70/LCY, -$2,160 (a negative line).
+  { id: "dump-fee-load", kind: "disposal", run: "fee", args: { fee: 120, unit: "load", material: "clean_soil", payload: 16, lcy: 800 }, expect: { perLcy: 7.5, total: 6000 } },
+  { id: "dump-fee-lcy", kind: "disposal", run: "fee", args: { fee: 4, unit: "lcy", material: "clean_soil", payload: 16, lcy: 800 }, expect: { perLcy: 4, total: 3200 } },
+  { id: "dump-fee-ton", kind: "disposal", run: "fee", args: { fee: 10, unit: "ton", material: "clean_soil", payload: 16, lcy: 800 }, expect: { perLcy: 12.8, total: 10240 } },
+  { id: "dump-fee-free", kind: "disposal", run: "fee", args: { fee: null, unit: "free", material: "clean_soil", payload: 16, lcy: 800 }, expect: { perLcy: 0, total: 0 } },
+  { id: "dump-fee-pays-us", kind: "disposal", run: "fee", args: { fee: -2, unit: "ton", material: "rock", payload: 16, lcy: 800 }, expect: { perLcy: -2.7, total: -2160 } },
+  // The haul cycle, 2,000 LCY, 16 LCY a truck, 35 mph loaded and empty, 5 min dump, the loader at 120 LCY/hr: load
+  // 16 x 60 / 120 = 8 min; loads 2,000 / 16 = 125.
+  //  5 mi: 5 x 60 / 35 x 2 = 17.142857; cycle 8 + 5 + 17.142857 = 30.142857 min; trucks ceil(30.142857 / 8 = 3.77) = 4;
+  //        hours max(125 x 30.142857 / 4 = 941.96, 125 x 8 = 1,000) min = 16.666667 h; truck-hours 66.666667.
+  // 15 mi: 51.428571 travel; cycle 64.428571; trucks ceil(8.05) = 9; hours max(894.84, 1,000) = 16.666667; 150.
+  // 50 mi: 171.428571 travel; cycle 184.428571; trucks ceil(23.05) = 24; hours max(960.57, 1,000) = 16.666667; 400.
+  // The loader paces: distance buys trucks, not hours. With no loader rate, the 7-minute setting at 5 mi: cycle
+  // 29.142857, trucks ceil(4.16) = 5, hours max(125 x 29.142857 / 5 = 728.57, 125 x 7 = 875) = 14.583333.
+  { id: "haul-5mi", kind: "disposal", run: "haul", args: { qty: 2000, inputs: { distanceMi: 5, payloadLcy: 16, loadedMph: 35, emptyMph: 35, dumpMin: 5, loadMin: 7, loaderLcyPerHr: 120 } }, expect: { trucks: 4, loads: 125, cycleMin: 30.142857, hours: 16.666667, truckHours: 66.666667, basis: "4 trucks, 0.5 h cycle (5 mi at 35/35 mph, 8 min load, 5 min dump), 125 loads" } },
+  { id: "haul-15mi", kind: "disposal", run: "haul", args: { qty: 2000, inputs: { distanceMi: 15, payloadLcy: 16, loadedMph: 35, emptyMph: 35, dumpMin: 5, loadMin: 7, loaderLcyPerHr: 120 } }, expect: { trucks: 9, loads: 125, cycleMin: 64.428571, hours: 16.666667, truckHours: 150, basis: "9 trucks, 1.1 h cycle (15 mi at 35/35 mph, 8 min load, 5 min dump), 125 loads" } },
+  { id: "haul-50mi", kind: "disposal", run: "haul", args: { qty: 2000, inputs: { distanceMi: 50, payloadLcy: 16, loadedMph: 35, emptyMph: 35, dumpMin: 5, loadMin: 7, loaderLcyPerHr: 120 } }, expect: { trucks: 24, loads: 125, cycleMin: 184.428571, hours: 16.666667, truckHours: 400, basis: "24 trucks, 3.1 h cycle (50 mi at 35/35 mph, 8 min load, 5 min dump), 125 loads" } },
+  { id: "haul-no-loader", kind: "disposal", run: "haul", args: { qty: 2000, inputs: { distanceMi: 5, payloadLcy: 16, loadedMph: 35, emptyMph: 35, dumpMin: 5, loadMin: 7, loaderLcyPerHr: null } }, expect: { trucks: 5, loads: 125, cycleMin: 29.142857, hours: 14.583333 } },
+  // The cheapest site (Q-P3), clean soil, 2,000 LCY, the cycle above, trucks at $100/hr. Near: $8/LCY at 5 mi, fee
+  // $16,000 + 4 x 16.666667 x $100 = $6,666.67, total $22,666.67. Far: $3/LCY at 15 mi, $6,000 + 9 x 16.666667 x
+  // $100 = $15,000, total $21,000. Far is cheaper, Near the runner-up; picked by hand, Near and Far swap. Each $1/LCY
+  // moves the bid by 2,000 x (1 + 8.25 %) = $2,165 with Disposal ticked for tax, $2,000 without.
+  { id: "dump-cheapest", kind: "disposal", run: "cheapest", args: { material: "clean_soil", lcy: 2000, truckRate: 100, taxRate: 0.0825, taxed: true, haul: { payloadLcy: 16, loadedMph: 35, emptyMph: 35, dumpMin: 5, loadMin: 7, loaderLcyPerHr: 120 }, sites: [{ id: "near", name: "Near", materials: ["clean_soil"], fee: 8, feeUnit: "lcy", distanceMi: 5 }, { id: "far", name: "Far", materials: ["clean_soil"], fee: 3, feeUnit: "lcy", distanceMi: 15 }] }, expect: { chosen: "far", by: "cheapest", runnerUp: "near", chosenTotal: 21000, runnerTotal: 22666.67, chosenTrucks: 9, perDollar: 2165 } },
+  { id: "dump-picked", kind: "disposal", run: "cheapest", args: { material: "clean_soil", lcy: 2000, truckRate: 100, picked: "near", haul: { payloadLcy: 16, loadedMph: 35, emptyMph: 35, dumpMin: 5, loadMin: 7, loaderLcyPerHr: 120 }, sites: [{ id: "near", name: "Near", materials: ["clean_soil"], fee: 8, feeUnit: "lcy", distanceMi: 5 }, { id: "far", name: "Far", materials: ["clean_soil"], fee: 3, feeUnit: "lcy", distanceMi: 15 }] }, expect: { chosen: "near", by: "you", runnerUp: "far", chosenTotal: 22666.67, runnerTotal: 21000, chosenTrucks: 4, perDollar: 2000 } },
+  // "Check dump fee" (Q-P2): over 500 LCY or $10,000 of fee, whichever is lower, on the fallback and unconfirmed.
+  // 600 LCY at $3,000: the LCY arm. 400 LCY at $12,000: the fee arm. 400 LCY at $9,000: under both. Confirmed, or
+  // on a site: never.
+  { id: "dump-flag-lcy", kind: "disposal", run: "flag", args: { lcy: 600, fee: 3000, onFallback: true, confirmed: false }, expect: { flagged: true } },
+  { id: "dump-flag-fee", kind: "disposal", run: "flag", args: { lcy: 400, fee: 12000, onFallback: true, confirmed: false }, expect: { flagged: true } },
+  { id: "dump-flag-under", kind: "disposal", run: "flag", args: { lcy: 400, fee: 9000, onFallback: true, confirmed: false }, expect: { flagged: false } },
+  { id: "dump-flag-confirmed", kind: "disposal", run: "flag", args: { lcy: 600, fee: 3000, onFallback: true, confirmed: true }, expect: { flagged: false } },
+  { id: "dump-flag-site", kind: "disposal", run: "flag", args: { lcy: 600, fee: 3000, onFallback: false, confirmed: false }, expect: { flagged: false } },
+  // Every disposal role pays a fee. Topsoil haul-off, 1,000 LCY x 0.80 t/LCY = 800 t at the fallback $40.75/t =
+  // $32,600. Undercut haul-off (unsuitable soil), 500 LCY x 1.28 = 640 t at $58.08/t = $37,171.20. Rock export,
+  // 100 LCY x 1.35 = 135 t at $14.23 = $1,921.05. Clearing debris at its wood's 0.30 t/CY, 200 CY = 60 t at
+  // $72.83 = $4,369.80.
+  { id: "dump-role-topsoil", kind: "disposal", run: "role", row: component("disposal", {}), args: { role: "strip_haul", unit: "LCY", name: "Strip topsoil, haul off", lcy: 1000, price: 40.75 }, expect: { matKey: "disposal:topsoil", kind: "disposal", unit: "TON", tons: 800, total: 32600 } },
+  { id: "dump-role-undercut", kind: "disposal", run: "role", row: component("disposal", {}), args: { role: "undercut_haul", unit: "LCY", variant: "unsuitable", name: "Undercut spoil, unsuitable and rock, haul off", lcy: 500, price: 58.08 }, expect: { matKey: "disposal:unsuitable_soil", kind: "disposal", unit: "TON", tons: 640, total: 37171.2 } },
+  { id: "dump-role-rock", kind: "disposal", run: "role", row: component("disposal", {}), args: { role: "soil_export", unit: "LCY", variant: "rock:Layer 2", name: "Rock Export, Layer 2", lcy: 100, price: 14.23 }, expect: { matKey: "disposal:rock", kind: "disposal", unit: "TON", tons: 135, total: 1921.05 } },
+  { id: "dump-role-clearing", kind: "disposal", run: "role", row: component("disposal", {}), args: { role: "clearing_haul", unit: "LCY", variant: "clearing", name: "Clearing debris, haul off", matFactor: 0.3, lcy: 200, price: 72.83 }, expect: { matKey: "disposal:vegetation", kind: "disposal", unit: "TON", tons: 60, total: 4369.8 } },
 ];

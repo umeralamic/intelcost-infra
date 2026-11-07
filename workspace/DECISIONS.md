@@ -27112,3 +27112,24 @@ Q-P3 "lowest total (fee + trucking), runner-up shown").
 - Trucks off site run on a haul cycle (load, dump, loaded and empty miles at sourced speeds and payload); the haul
   distance is the site's, else the project's own setting, split from the mob distance; "Haul distance not set"
   flags a haul line over the threshold. A site that pays us makes a negative line, carried to every total.
+
+## D-1036: The wage core as built (W9, W12, W1, W7, W2; D-1032)
+
+**Status:** Accepted (2026-11-06, run mode: the builder's three calls taken as recommended).
+
+- **W9:** refdata `ref_eci`, `ref_oews`, `ref_state_min_wage` (47 states + US, DOL table 2026-11-05), `ref_craft_soc`
+  (73 crafts), `ref_county_cbsa` (Census 2023), `ref_bls_load` (migration d985a7e9c1b2). `scripts/bls_load.py` and
+  POST `/api/platform/bls/refresh` (platform admin; the "BLS data" card on Platform › Material prices) load them;
+  pricing reads only the tables (`app/wagecalc/market.py`), with "BLS data as of <date>" in the breakdown.
+- **W12:** ECI construction wages, interpolated by quarter, carried past the latest at its 12-month change; the
+  midpoint setting is on the wage set (api only for now).
+- **W1:** `table_for()` is kept; `rate_table_for()` prices each commercial craft of an open-shop private commercial
+  project from its residential counterpart by name, so saved crews and lines keep following their rates. A craft
+  with no counterpart (tile finisher) keeps today's commercial rate.
+- **W7:** a WD foreman line, else the crew's top craft × (1 + premium), premium crew → set → company → 10 %; BLS
+  47-1011 shown as a reference only.
+- **W2:** your own rates never raised; "Below location-adjusted rate", "Below state minimum wage", "Add your [craft]
+  rate".
+- Saved sets keep their rules (`project_wage_set.wage_rules` null = the old ones) until recalculated; nullable columns
+  on `project_wage_set` and `project_craft_rate`, no rows written. The truck driver's burdened rate is the engine's
+  (42.83 in Harris), not the plan's ratio figure (44.88).

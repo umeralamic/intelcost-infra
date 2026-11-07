@@ -1,85 +1,45 @@
-# Run progress (started 2026-10-27, after D-814)
+# Run progress (2026-11-06/07, run mode)
 
-The founder's message of 2026-10-27 evening: fixes 1 to 8, then GPS field plan phases 1 to 3, then one
-`./fx-suite.sh release`. One report at the end. Decisions start at D-815.
+Updated after each item. Benchmark A's figures are only in `test-data-local/benchmark-a/` (D-1025).
 
-| # | Item | State | Notes |
-|---|---|---|---|
-| 1 | Stitch scale flags: one per sheet, evidence listed, printed check wins | done | D-815. app 94e9c50, api 1f4cd69 (column drawing_sheet.printed_check), infra f17db37. Smoke: site view on 10793 copy shows one flag for Page 3, both joins, printed +0.61 % kept across reload, Recalibrate −0.61 % from the printed length. |
-| 2 | Sheets tree: site inside its folder, page order, folder count | done | D-816. Site row inside the folder at Page 3's place, members under it, count 5. |
-| 3 | Remove the greyed "Show Linked EC" button | done | D-817. Button gone; checkbox 'Show their existing contours over this sheet' in Stitch sheets' Laid over list, checked on the HV copy's C-200 (V-100 link). |
-| 4 | Release 4: starter A15 to SC-631-34 | done | D-818. Migration d818a1b2c3d4 (national only). Intelcost Team: A15 alone rewritten (release 3 to 4, SC-631-34); 14 others identical. |
-| 5 | Site view in the main canvas and toolbar | done | D-819, app aba4707. Smoke on 10793 copy: main Earthwork/Takeoff toolbars drive the site; Spot Elev. on Page 4, Linear new item 631.84 LF on Pages 4+3, Site Feature across the join, Bore B-1 on Page 5, each undone from the toolbar; Calculate reaches the site's calc; zoom 19 %; greyed list with reasons in D-819. Two empty test items (ZZ site run / paving D-819) left in the copy. |
-| 6 | Site view seam strip | done | D-820, app 1af1032. Cause: Page 5's blank margin opaque over Page 4 (no match line between them), not a fit gap. Fix: paper layer + multiply + 1.5 px clip overlap. Pixel check on the cut: 0 seams at 25/50/100/200/400/~3800 %, loading and settled, rotated, 2x DPR. Before/after: d820-seam-before-a.png, d820-seam-after-a.png, d820-seam-after-hidpi-400.png. |
-| 7 | Site Features labels, building pad FFE | done | D-821; app 5ad745b, api a904f5a (takeoff_item.ffe_ft), infra fd5200c. Before: pad grade from contours only. HV copy pad FFE 704.00: totals cut 11,588 / fill 9,514 to 9,520 / needs 4,688 to 4,694; pad fill 2,399 to 2,404 (hand 2,402). Ava's temporary seat 5644 on zz Equip HV copy, removed at the end. |
-| 8 | Realtime while a page loads: workers, reads off the loop, f6-a loading case | done | D-822; api e8ada35, infra 4ebb847. 3 api processes (Dockerfile + bench, watchfiles). earthwork-production 2.5 s to ~0.34 s (one pass); bundle, components, config, item-list gzip off the loop. Probe while another window loads: max 1,220 to ~650 ms. f6-a 3 runs: settled 999/1,013 ms, loading 767/785 ms (one cold-start run failed settled at 2.35 s). |
-| 9 | Pipes at true size: section A-A' (circle on horizontal scale, bottom at invert, tooltip crown and cover), plan 2D, 3D, trench sections (real diameter, 1-2 px minimum) | done | D-826, app b4bd955. Section A-A' circles on the horizontal scale (ST-1 3.4 px, ST-2 8.1 px; were far wider), bottom at invert, tooltip crown + cover; plan SS-1 30 px at 615 % (true 0.875 ft); 3D floor 1.5 px (not seen: 3D loading on dev). Before/after: i9-before-section-AA.png, i9-after-section-AA.png, i9-after-plan-true-size.png. |
-| 10 | Trench sections: dimensions for bedding, pipe zone, backfill, diameter (nominal, OD), cover, invert | done | D-827, app b4bd955. ST-1 trench: bedding 6.00 in, zone 22.5 in, backfill 12.0 in, Ø 10" nominal · OD 10.5 in, cover 2.50 ft, invert 693.93. Before/after: i9-before-trench-ST-1.png, i10-after-trench-ST-1.png. |
-| G1 | GPS phase 1: finished grade default, surfaces clipped, rover preset | done | D-823; app ecae6c5, infra 2fb8874 + c47. HV copy rover zip G1_C-200-Site-Grade-Plan_GPS-rover.zip: FG LandXML (pad flat at FFE+shift), 2D DXF on IC- layers, Control.csv, README limits 196,697 SF + help; gps-check passed. |
-| G2 | GPS phase 2: trench-bottom surfaces | done | D-824; app 4c05d47. HV copy zip G2_C-200-Site-Grade-Plan_GPS-rover.zip: Storm (flow line) and Sanitary (bottom of bedding) trench-bottom LandXML + IC-TRENCH-BOTTOM faces; gps-check passed. |
-| G3 | GPS phase 3: full PDF linework, clip box | done | D-825; app 9f2ee8c, api a4fc108 (drawing_sheet.gps_clip), infra de1cce5. HV copy zip G3_C-200-Site-Grade-Plan_GPS-rover.zip: 16,700 PDF lines + 241 texts on PDF-0 inside the kept box, IC- layers, trench bottoms; gps-check passed. |
-| R | `./fx-suite.sh release` | done | 2026-10-27 22:15 to 2026-10-28 05:24. Built apps: 11 of 147 failed (c43, f5-big, n3-twenty-loads, f5-s13, f5-s18, c42, c35, c47, f5-s15, f8-s12, f8-s8); f5-s18 passed alone. Dev servers: 7 of 7 failed, every page refused on 5176: Docker Desktop recreated app-fx while the built app still held the port and never published it (D-829: fx-suite.sh dev now recreates once without a host binding and stops if 5176/5177 do not serve). Re-run: f3-s1, f6-s4, r1-raster-text pass; f3-s13, f4-s2, f7-a, f5-s3 timed out on cold dev pages three at a time, re-run one at a time. |
-| R1 | Release failures: f5-s18 viewer through the site view (UI and server), c42 join fit 0.112 > 0.1, c43 import "needed", f5-s15 B's quantities 1.6 s, c47 step 3, the rest re-run alone | done (f5-s15, f8-s12, f8-s8, f5-s13, f5-big, n3 open) | D-829. f5-s18: the api refused every viewer write already; the site view did not stop them (drag, delete, undo, adopt, save/remove result, Calculate on): fixed, checked as a viewer on the 10793 copy (UI off, api 403 on shape delete/create, join, result removal). c42: fixture, limit kept (a pixel spans 0.38 ft; panes of one width fit 0 ft; waits for the panes to settle) + D-816 selectors; 5/5 twice. c43: product fix (import read off the shown result) + fixture waits for the assumptions' save; 4/4. c35: release 4; c47: step 3 opens its dialog. Dev-server phase: harness (5176 never published), fx-suite.sh fixed; re-run one at a time f3-s1, f6-s4, r1-raster-text, f7-a, f5-s3 pass; f3-s13, f4-s2 one step each timed out on a cold dev page. Open: f5-s15 (B 0.9-2.4 s, 1 vs 3 api processes not decisive on the dev server), f8-s12/f8-s8 (fx api 98 s to restart), f5-s13 prerender, f5-big, n3. |
-| 11 | Trench section dimensions tidy-up: no line through the pipe, depth solid with ticks on the right, cover outside it with a crown extension, dashed only for finished grade | done | D-828; ST-1, ST-2 after shots item11-trench-ST-*.png; top width moved above finished grade too. |
-| 12 | Site Features dialog: Building pad row spacing under the Name field's focus ring; new hint | done | D-830; the fieldset was display: contents, so no field was spaced; 16 px now; item12-site-features-name-focused.png. |
-| 13 | Section legend as a swatch row, one line style for sections and trench sections | done | D-831; Existing solid foreground, Proposed dashed primary, Proposed subgrade solid primary, Water dashed blue (decided in run, check). |
-| 14 | Section axis: elevation gridlines every 1 or 2 ft, labelled | done | D-831; 1 ft to 16 ft range, 2 ft to 50, 5 ft past (decided in run, check). |
-| 15 | Saved sections: A-A', B-B'… stored with the project, switch, rename, draw again, delete, cut markers on the plan, shared, delete protection; new table only | done | D-831; migration d831 (a new table only) run on the bench and fx databases; api 616415d, app 95f061f; smoke on the HV copy: A-A', B-B' (renamed P-P'), reload, marker opens, re-Calculate. |
-| 16 | Download PDF and Print: one or all sections, Letter and 11×17 landscape, vector | done | D-831; 'All' on C-200: 3 Letter pages, vector; A-A' 11x17 one page; both PDFs in the report folder. Print opens the same PDF (not clicked in the MCP browser). |
-| 17 | Fixtures for 11–16; run them and every fixture touching sections, trench sections or the site view | done | c48-saved-sections 7/7 (realtime to a colleague 375 ms; viewer read only, api 403/403; protection refusal names the owner; 2-page vector PDF); with it c42 5/5 and r5-drags 10/10, the fixtures touching the site view; no other fixture opens sections or trench sections. |
-| 18 | Stitch sheets: live numbered lines and markers on both sheets while picking (match line), coloured numbered pairs (matching points) | done | D-834; live match line to the cursor and numbered pair-coloured points on both sheets; item18-live-line.png, item18-19-points-reversed.png. |
-| 19 | Stitch sheets: point order tried both ways for match line and 2-point joins; "Points matched in reverse order on <sheet>" | done | D-834; two points now tried both ways (a match line already was); 'Points matched in reverse order on Page 5' (turn 0.0°) and 'on C-100' (two points, turn −8.6°); not saved. |
-| 20 | Stitch sheets: Edit join (pencil by the bin): points on both sheets, drag/add/remove, live fit, Save/Cancel, undoable; all three join kinds | done | D-834; pencil, drag/add/remove, live fit, Save/Cancel, toast Undo; Page 4's join 0.43 → 0.79 ft saved and undone; control-point joins show their fit and are edited in Coordinates (decided in run, check). |
-| 21 | Stitch sheets: before saving a moving edit, "This moves <sheet> by X ft. N items cross this join…" with the items; report what happens to items across a moved join | done | D-834; 'This moves Page 4 by 5.56 ft. 1 item crosses this join (Across 3/4 line)…'; quantities do not change when a join moves (87.23 LF before, after, after undo), so the wording says so instead of 'will update' (decided in run, check). Also fixed: ghost contours and section markers took a pick's clicks on HV C-200. |
-| 22 | Site view zoom glitches: fresh copy of 10793 SBR (Intelcost Team, read-only) into a new throwaway workspace as the stitch test project; frame-by-frame capture of wheel and +/- zoom across Page 3/4 and 4/5; fix at the cause (one transform per frame for every member, detail levels swapped together, no gap at the cut); before/after frame strip | done | D-832; fresh copy 'zz Stitch 10793 copy 2' (fx.stitch.202610280759, original counts equal before and after); causes: shown canvas freed by the cache, failed render cleared, members swapped one at a time; fixed all three; frames in item22-*.png. A stray HV copy made by a misplaced --source was deleted from the throwaway workspace. |
-| 23 | Coordinates dialog: full-width N/E/Elev. fields, spaced headers; "N of 4 points" counter with NOT FOR MACHINE USE under 4; Miss → Off by, Check tooltip; Paste points (label, N, E, elev.; then click each on the plan); fitted scale shown and refused over 0.5 %; Grid / Surface with a factor (README and headers); generic System placeholder, EPSG under Advanced | done | D-833; migration d833 (two nullable columns, no data) run on the bench and fx databases; smoke on HV C-200 not saved: 5 pasted, 4 placed with a check, 3 of 4 NOT FOR MACHINE USE, surface ×0.99995; item23-*.png. Not seen in an export yet: the README/LandXML surface line. |
+**Checks before the run:** `E:\Intelcost\docs` is inside a git repo: **no**. But `intelcost-infra/workspace/docs/` mirrors
+it: the two new reference workbooks (`Mohave_AZ_all_crafts_labor_comparison.xlsx`, `DE MAIN SOURCE FILE r&d arizona.xlsx`)
+are git-ignored there and never copied (infra 25f1c3f). Older reference files in the mirror were committed before.
 
-## Run of 2026-10-28 (after D-834)
+## Done
+- PRICING_FIX_PLAN redacted, pushed (D-1025). WAGE_PLAN written, pushed; approved 2026-11-06 (D-1032).
+- BLS client and key setup, pushed (api 8b7dcfc, infra 25f1c3f; D-1030, D-1031).
+- Pricing item 9, internal workspaces (D-1026): api 07fb129, app be562ea. Smoke: a throwaway workspace marked internal
+  showed no trial; unmarked, "Trial, 14 days left" again. No Comp (not needed).
+- Pricing item 0, copy keeps site machines and spreads (D-1027): api 0d85a21, infra 4701da6. Benchmark A's fresh copy
+  bids the original's figure (local log).
+- Pricing item 8, Benchmark A comparison (D-1028): infra 4701da6. Quantity table: 344 rows passed, "Benchmark A: 8
+  lines, right".
+- Pricing item 5, disposal cost kind (D-1029): api 50cebf1, app daeb65d. Smoke on the Benchmark A copy: tax on tipping
+  gone, line costs unchanged; bid −4.7 % (see Needs Umer).
+- Mohave check (D-1032), local `test-data-local/wage/mohave-check.md`: of the founder's 70 INPUT lines, 31 match a
+  current Mohave WD line (21 Building AZ20260043, 10 Highway AZ20260046 and Heavy AZ20260058, 4 Heavy Dams
+  AZ20260006, some in several), 24 match none, 15 are blank.
+- C3 report date (D-1033) and Q215 warm-up (D-1034): infra 0ffd00a. Q217: 2 throwaways and their 2 workspaces purged.
 
-The founder accepted D-828 to D-834 and queued items 24 to 35; then one `./fx-suite.sh release`. Decisions start at D-835.
+## In progress
+- Wage core (D-1032, D-1036): built, api gates pass, wages mode 11 rows right; smoke on the Benchmark A copy: the wage
+  page shows the Source column (laborer 38.38, operator 52.43, truck 42.83), saved; Benchmark A labor **-35.3 %** (expected
+  -30 % to -38 %). Commit waits for the quantity table (the pricing builder shares 3 files).
+- Pricing items 1 + 3, dump sites and haul cycle (D-1035): a second builder at work.
+- Q212 drag auto-scroll speed-up (D-1034): built (`QuantityPanel.tsx`), waits for the app gates after the builders.
 
-| # | Item | State | Notes |
-|---|---|---|---|
-| 24 | Trench sections: fill between proposed grade and existing ground as its own "Fill" band; layers below existing match the profile at the station | done | done D-835 (app 7457c73): Fill band from the stripped surface; layers below match the profile |
-| 25 | Trench section headers: "SS-1 · crosses A-A′ at 1+12 · run station 0+32.94"; walls, width, depth on a second line | done | done D-835: two-line head; smoke SS-1/ST-1/ST-2 |
-| 26 | Profile pipe labels: colliding labels stepped up/down with a short leader | done | done D-835: stepped labels with leaders |
-| 27 | Trench dimensions on the right outside the walls: cover by the wall, depth further out; nothing inside; no crown extension; depth label beside its line; "Dia 8"" single space | done | done D-835: cover then depth outside the wall; pipe words beside the pipe with leaders again (the founder's revert of the caption, app 7acb4db) |
-| 28 | Layer palette: Fill hatched, Layers 1-4 new defaults, 5+ proposed, rock dotted grey; PDF patterns; outside walls the profile's colours, inside bedding/zone/backfill (native/select); user colour wins; light and dark | done | done D-835: `--soil-*` tokens light and dark, patterns in the PDF, Backfill (native)/(select), user colour at 0.45 |
-| 29 | Topsoil stripping: check for double counts with bore layers; fix; draw "Topsoil (stripped N in)" under existing in the stripping area (and in trench sections), respread band | done | done D-835: no double count (layers 11,588.13 CY = cut; strip 3,622 CY once); band drawn; smoke found and fixed strip holes (even-odd) |
-| 30 | "All sections" PDF: every section in the project, grouped by sheet, sites under the site | done | done D-835: All sections (PDF, 2) on HV copy, 3 pages; site grouping not exercised |
-| 30a | Section panel header (7a): Close top-right of the first row; one "Export ▾" menu (Letter / 11×17, This section PDF, All sections PDF, Print); Rename and Delete in a "⋯" menu at the end; one row at the usual widths; screenshots narrow and wide | done | done D-835: one row at 359 and 589 px, Close inside; c48 moved to the menus, 7/7 |
-| 31 | Coordinates: the 4-point count is fit points only; check points extra | done | done D-837: "3 of 4 fit points …, + 1 check point" |
-| 32 | GPS export: the real clip boundary, closed, on IC-GRADING-LIMITS; where the ~8,200 SF without finished grade is and why, holes in the README, filled where the model has an answer | done | done D-837: closed IC-GRADING-LIMITS (22 vertices); hole 8,227 SF around B-3 listed; holes from the mesh outline |
-| 33 | f8-s12 / f8-s8: api back after a restart in under 15 s | done | done in part D-836 (api 6058be9, infra 8f80065): 98 s → 36-50 s bench, 22-28 s deploy image; 15 s not met here; then stop_signal SIGINT: stop 0.3 s, f8-s12 6/6 |
-| 34 | f5-s13, f5-big, n3-twenty-loads: fix; upload and first-open times for the biggest set | done | done D-838: alone on the built apps f5-big 6/6, n3 3/3, c42 5/5 (release failures were load); f5-s13 an app prerender bug (fit 0 before the canvas measured) fixed, 7/7 three times; biggest set: page 1 13.96 s after the Load, all 150 thumbnails 73.6 s |
-| 35 | f5-s15 on the built apps with 3 api processes; fix if over 1 s | done | done D-838: built apps, 3 processes: chip 255/545 ms, quantities 414/835 ms; no change |
-| R2 | `./fx-suite.sh release` (built and dev phases) | done | done D-839: release-20261028-1652: built 139/148, dev 4/7 (the 3 pass alone); the 9 built retries never ran (the switch back to the built apps failed on a Docker Hub TLS timeout), script fixed; the 9 alone by hand: all pass after two fixture races fixed (c47 step 3, f5-s18) |
+## Next
+1. Wage core: verify, Benchmark A labor before/after (expected −30 % to −38 %), commit.
+2. Pricing items 1+3 verify and commit; then 2, 7, 6.
+3. C items left: f5-big first page, earthwork save speed.
+4. Wage rest: W3 + W13, W4, W6, W10, W11, W5; W8 when the filings are in.
+5. Release run.
 
-## Run of 2026-10-28 evening (after D-839)
-
-The founder accepted D-835 to D-839 and queued items 1 to 6. Decisions start at D-840. One report at the end.
-
-| # | Item | State | Notes |
-|---|---|---|---|
-| E1 | Closed proposed contour with nothing inside (the 8,227 SF pocket around B-3): does Calculate skip it today, the volume it would add; fill flat at the contour's elevation in Calculate and GPS Export, flagged in Needs attention and the README; HV totals before/after | done | D-840 (app c089a5e): the 8,227 SF was an edge strip, not a pocket; Calculate skipped it too (0 CY to add); closed empty contours flat + flagged (Calculate, Needs attention, GPS README); HV 11,588 / 9,520 / 4,694 before and after; HV's 699.00 loop flagged |
-| E2 | Release run with no network mid-run: every image and dependency pulled and built before it starts, base images pinned; then a clean `./fx-suite.sh release` | done | D-841 (app c30cc8a, api 0163ab1, infra 8599584): prepare first, then --no-build --pull never; bases pinned by digest; api constraints.txt + pip cache. Release 2026-10-29 03:32: registry after prepare none reached; built 15/148 and dev 5/7 failed in parallel, all passed alone but f3-s1 (cold settings compile; warm-up fixed, D-850, then 5/5) |
-| E3 | Deploys without downtime: the new api container healthy before the old stops; infra README | done | D-842 (infra 8599584): deploy/ blue-green behind Caddy; bench-check 8,466 requests through two rollouts, 0 not ok; README section |
-| E4 | Large sets on the built apps (519 MB, 150 pages): first page < 5 s, loaded page switch < 2 s, thumbnails not blocking and starting < 10 s; where the time goes; before/after | done in part | D-845, D-849: thumbnails 52.7 s → 1.2 s; page 1 23.9 s → 10.4-16.2 s (5 s not met on this 5-8 MB/s link); switch 0.6-1.4 s; release: page 1 shown 6.6 s (preview), drawn 11.0 s; ranged page fixed for PyMuPDF 2.0; previews worker split (fx, deploy) |
-| E5 | All sections grouped under a site; the PDF note for a sheet left out; PDF attached | done | D-844 (app 2ede204): grouping under a site and the left-out note exercised; the note was only a toast (now a last page), heading fixed, file saved once; e5-all-sections-site.pdf |
-| E6 | AI sheet naming and scale on upload: answer key of 100+ sheets in the fx suite; measure; PDF text first, AI as fallback; main scale; scale bar check; Check scale / Check name; background batches; user's values kept; before/after | done | D-843, D-846, D-847 (api 72ba1d6, infra 8599584): 103-sheet key; number 81 → 91 %, title 52 → 88 %, scale applied right 45 → 50 %, applied wrong 0 → 0 %; the rest Check scale / Check name |
-| E7 | Count: elliptical mark before the real one (the founder, 2026-10-29) | done | D-848: the pending mark drawn as its symbol at its size, round; 16.5x11 → 10x10 on A101 |
-| E8 | Linear: no "break at this point" on a selected point | done | D-848: "Break line at this point" at a point, "Break line here" on an edge |
-| E9 | N while marking Linear or Area: commit and arm the same item for a new section | done | D-848: N is New Section; smoke: one item, three sections |
-
-## Run of 2026-10-29 (after D-850)
-
-The founder accepted D-840 to D-850 and queued items 1 to 6. Decisions start at D-852. One report at the end.
-
-| # | Item | State | Notes |
-|---|---|---|---|
-| G1 | Scale coverage, 0 % applied-and-wrong kept: paper size (full and half, half doubled, "Half-size set"), printed dimensions checked on vector sheets, a scale bar alone sets the scale; ≥ 75 % applied-and-right on the key | done | D-852: applied right 50 → 86 % (89/103), wrong 0 %; paper size (no half-size page on the key), NTS views and legend samples, 2+ agreeing dimensions, coarsest when proved, labelled bar, OCR on its own worker (Check scale); AI scale stays a suggestion |
-| G2 | Naming: E0.x titles as the project name, plat "SHEET 1 OF 5" as the number, S2.0x titles cut short; scanned numbers (55 %) | done | D-853: numbers 92 → 98 % (scans 55 → 100 %), titles 85 → 96 %; two-line titles whole, small titles under a constant name, SHEET n OF m |
-| G3 | GPS export: edge strips filled with existing ground (on by default, GPS only), README with the area; HV's 8,227 SF strip | done | D-854: on by default; HV Rebid copy C-200: 5,422 SF of the 8,227 SF strip filled (2,805 SF has no existing grade either), covered 188,470 → 193,892 SF; both zips in the report folder |
-| G4 | WebGL bufferSubData warnings (84 on one load): cause; fix if repeated uploads in a loop | done | D-855: not a loop: in-place writes into empty buffers after a second GL setup; 33 overflows → 0 |
-| G5 | Plan only: revised plan sets, docs/tasks/REVISIONS_PLAN.md with questions and recommended answers | done | D-856: docs/tasks/REVISIONS_PLAN.md, 19 questions with recommended answers |
-| G6 | Last: ./fx-suite.sh release once, clean; parallel-only failures per fixture; any needing a fix | done | release-20261029-1329 (13:29–17:39): built 137/148 and dev 4/7 in the parallel pass; 12 failed only in parallel and passed alone (f3-s1 f5-s3 f7-a c40-delete-protection c42-stitch-sheets f4-s4 f5-big f5-count f8-s12 f8-s16 f9-estimating m6-position); 2 failed alone too, both timing budgets that failed alone in earlier releases (f6-a AC4: second window 3.25 s against 1 s, also 10-28; n3-twenty-loads: one sheet's image 6.1 s after ready against 5 s, also 10-27 and 10-28): these two need a fix, not a retry. Registry after prepare: none reached. worker-fx-ocr is built but `release` does not start it (only `setup` does), so no OCR ran during the run. Warm-up now skips the settings import on the built apps (it printed a harmless fetch error per fixture). |
+## Needs Umer
+- Item 5 on Benchmark A: bid −4.7 %; the plan's range (−0.3 % to −4.6 %) assumed item 1 first. All of it is the tax on
+  tipping; nothing to fix.
+- Mohave: the founder's lines mix the Building WD (laborer 16.00, excavator 24.97, roller 23.62) with heavy/highway
+  operator lines; on-road and off-road trucks sit on the Bulldozer line (35.56 + 18.12); 24 lines match no current
+  Mohave WD (for example dozer 31.96 + 13.52, grade checker, pipelayer 28.85 + 7.09: likely older mods or another
+  county). Rules unchanged, as asked.

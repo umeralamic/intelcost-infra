@@ -31,8 +31,9 @@ fi
 # converter's file (D-718), and dumped for the browser's equipment rows (lib/equipment-cases.mjs).
 # D-988: one source more, Washington DES rental contract 22823.
 EQ_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.eq_class)||' '||(select count(*) from eqlib.eq_activity)||' '||(select count(*) from eqlib.eq_production)||' '||(select count(*) from eqlib.eq_transport_class)||' '||(select count(*) from eqlib.eq_setting)||' '||(select count(*) from eqlib.eq_soil_conversion)||' '||(select count(*) from eqlib.eq_source)||' '||(select count(*) from eqlib.eq_class where rent_day = 0 or rent_week = 0 or rent_4wk = 0)")
-if [ "$EQ_COUNTS" != "642 104 592 9 57 4 159 0" ]; then
-  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 57 4 159 0"
+# D-1035: 6 haul-cycle settings in release 35 (haul distance, payload, dump and load minutes, loaded and empty speed).
+if [ "$EQ_COUNTS" != "642 104 592 9 63 4 159 0" ]; then
+  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 63 4 159 0"
   exit 1
 fi
 # The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out;
@@ -46,8 +47,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-999: bentonite as an undercut amendment (C).
 # D-1001: MJ compact tees 6-12 in, DI and C900 (B20).
 # D-1007..D-1009: engineered fill and GCL installed (A2), PG 70-28 and PG 76-28 premiums (B2).
-if [ "$MAT_COUNTS" != "A194 B164 C242 D29 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B164 C242 D29 F46"
+# D-1035: 8 disposal fallback fees by material type (C).
+if [ "$MAT_COUNTS" != "A194 B164 C250 D29 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B164 C250 D29 F46"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -95,6 +97,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py fx
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py scaleundo" <$QT/scaleundo.json >$QT/scaleundo-py.json || { echo "FAIL  the api did not store the scale undo rows"; exit 1; }
 # The wage roles a determination lists (D-753 option C): the api's wage engine against the hand-worked rows.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py roles" </dev/null || { echo "FAIL  wage roles (above)"; exit 1; }
+# The wage core (D-1032): Harris County open shop (W1), its foremen (W7) and the ECI escalation (W12).
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py wages" </dev/null || { echo "FAIL  wages (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py typed" </dev/null || { echo "FAIL  site typed values (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
