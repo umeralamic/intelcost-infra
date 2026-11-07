@@ -15,6 +15,8 @@ the sub-item formula rows through `sub_items.py` and `formula.py` (D-244, D-245)
 `scaleundo`, the scale undo rows (D-642): the one mode that opens the database, for a temporary
 table of the calibration column's own type, never committed. With `roles`, the wage roles a
 determination lists (D-753 option C): its rows are here, it reads no stdin, and it prints one line.
+With `wages`, the wage core (D-1032: W1 open shop, W7 foreman, W12 escalation) on Harris County TX,
+read from the bench's loaded BLS tables (it reads the database, never writes); one line, as `roles`.
 With `hidden`, an earthwork activity hidden from suggestions (D-759): on a temporary workspace made
 and rolled back in one transaction, every starter line role maps to the same activity, default
 production and tier with its activity hidden as shown; it reads no stdin and prints one line.
@@ -390,6 +392,76 @@ def roles() -> int:
     return 1 if wrong else 0
 
 
+# The wage core (WAGE_PLAN W1, W7, W12; D-1032), Harris County TX (ZIP 77002, county 48201, labour
+# F = +17.771 %), open shop, private commercial, burdened, company defaults, bid date 2026-11-06, on the
+# bench's loaded BLS tables (ECI CIU2022300000000I to 2026 Q3, OEWS May 2025). By hand: ECI Dec 2025
+# 171.488 (2026-01-01 is 1/31 month into Q1: 171.4924), Sep 2026 175.430 carried 37 days at the 12-month
+# 3.0 % = 175.9635: the National Estimator table +2.61 %; May 2025 = Q1 + 2/3 (Q2 - Q1) = 168.0367:
+# OEWS +4.72 %. Base = max(residential base x (1 + min(0, F)) x 1.0261, OEWS p75 Houston x 1.0472, TX
+# 7.25): laborer 25.94 -> 26.62, operator 37.21 -> 38.18, truck p75 30.97 -> 32.43 (residential 28.82),
+# carpenter 32.08 -> 32.92, plumber 37.64 -> 38.62, painter 33.09 -> 33.95. Burdened = the burden engine
+# on that base, not below the residential burdened rate x 1.0261: the floor wins for all but the truck
+# (laborer 37.40 -> 38.38, operator 51.09 -> 52.42, carpenter 45.88 -> 47.08, plumber 51.49 -> 52.83,
+# painter 45.39 -> 46.57); the truck's engine figure 32.43 + benefits 12 % 3.89 + taxes 2.78 + WC
+# 8.49 % 2.75 + GL 3 % 0.97 = 42.83 (the plan's 44.88 used the residential ratio 38.87 / 28.09 instead).
+# Foreman (W7): crew top x 1.10, operator crew 52.42 -> 57.66, laborer crew 38.38 -> 42.22; a crew's
+# own 15 % on the operator crew 60.28.
+WAGE_CASES = [
+    {"id": "wage-laborer", "craft": "CC-16", "expect": {"base": 26.62, "burdened": 38.38, "rule": "residential_base"}},
+    {"id": "wage-operator", "craft": "CC-11", "expect": {"base": 38.18, "burdened": 52.42, "rule": "residential_base"}},
+    {"id": "wage-truck", "craft": "CC-31", "expect": {"base": 32.43, "burdened": 42.83, "rule": "oews_p75"}},
+    {"id": "wage-carpenter", "craft": "CC-05", "expect": {"base": 32.92, "burdened": 47.08, "rule": "residential_base"}},
+    {"id": "wage-plumber", "craft": "CC-25", "expect": {"base": 38.62, "burdened": 52.83, "rule": "residential_base"}},
+    {"id": "wage-painter", "craft": "CC-20", "expect": {"base": 33.95, "burdened": 46.57, "rule": "residential_base"}},
+]
+WAGE_ESCALATION = {"ne_pct": 2.61, "oews_pct": 4.72}
+WAGE_FOREMEN = [
+    {"id": "foreman-operator-crew", "crew": ["CC-11", "CC-16"], "premium": None, "expect": 57.66},
+    {"id": "foreman-laborer-crew", "crew": ["CC-16"], "premium": None, "expect": 42.22},
+    {"id": "foreman-own-premium", "crew": ["CC-11", "CC-16"], "premium": 0.15, "expect": 60.28},
+]
+
+
+def wages() -> int:
+    from datetime import date
+    from decimal import Decimal
+
+    from app.features.wage_calculator.labor import ForemanContext, price_foremen
+    from app.wagecalc.data import RefData
+    from app.wagecalc.market import load_market, month_end
+    from app.wagecalc.rates import build_rate_set
+
+    ref, market = RefData(), load_market()
+    bid = date(2026, 11, 6)
+    wrong = []
+    esc = {
+        "ne_pct": market.escalate(market.editions[ref.edition_id], bid).pct,
+        "oews_pct": market.escalate(month_end(date(2025, 5, 1)), bid).pct,
+    }
+    for k, want in WAGE_ESCALATION.items():
+        if round(esc[k] * 100) != round(want * 100):
+            wrong.append(f"FAIL  wage-escalation.{k}: {esc[k]:.4f}, expected {want}")
+    rs = build_rate_set(ref, project_type="commercial", zip5="77002", county_fips="48201", wage_determination="open_shop",
+                        pricing_basis="burdened", market=market, bid_date=bid, edition_date=market.editions[ref.edition_id])
+    for c in WAGE_CASES:
+        got = rs["crafts"][c["craft"]]
+        for k, want in c["expect"].items():
+            if (got.get(k) != want) if isinstance(want, str) else round(got[k] * 100) != round(want * 100):
+                wrong.append(f"FAIL  {c['id']}.{k}: {got.get(k)}, expected {want}")
+    for c in WAGE_FOREMEN:
+        crew = [{"craft_code": code, "count": 1, "hourly_wage": rs["crafts"][code]["rate"]} for code in c["crew"]]
+        crew.append({"foreman": True, "count": 1, "rate_source": "wage_set", **({"foreman_premium": c["premium"]} if c["premium"] is not None else {})})
+        context = ForemanContext(premium=Decimal("0.10"), laborer=Decimal(str(rs["crafts"]["CC-16"]["rate"])), determination=None)
+        got = (price_foremen(crew, context) or [])[-1]["hourly_wage"]
+        if round(got * 100) != round(c["expect"] * 100):
+            wrong.append(f"FAIL  {c['id']}: {got}, expected {c['expect']}")
+    for w in wrong:
+        print(w)
+    rows = len(WAGE_CASES) + len(WAGE_FOREMEN) + len(WAGE_ESCALATION)
+    print(f"wages: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 # Typed values on a site machine across Apply tier (D-758 follow-up): A1's spread was EX-CRAWL-30T +
 # ADT-30T with a typed week $7,000 on the excavator and day $900 + work day 9 on the truck.
 TYPED_EX = {"own": {"rent_week": 7000}}
@@ -544,6 +616,8 @@ def main() -> None:
         sys.exit(asyncio.run(hidden()))
     if sys.argv[1:] == ["roles"]:
         sys.exit(roles())
+    if sys.argv[1:] == ["wages"]:
+        sys.exit(wages())
     if sys.argv[1:] == ["typed"]:
         sys.exit(typed())
     cases = json.load(sys.stdin)
