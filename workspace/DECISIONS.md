@@ -27342,3 +27342,10 @@ Q-P3 "lowest total (fee + trucking), runner-up shown").
 - Items 14-18 of the message are D-1043's (applied there). Screenshots for the final report: Houston open shop (payable
   and burdened), Houston prevailing and union, a Mohave prevailing page, the setup cards (empty, loaded, disabled), the
   tab row at the top and scrolled.
+
+## D-1048: The wage review compact in width (amends D-1047 item 9)
+
+**Status:** Accepted (2026-11-07, Umer: "this is too wide, make it compact in width").
+
+- The tab row (with Advanced and Save rates to project at its right), the craft table and the crew table share one
+  compact width (`max-w-3xl`) instead of the page's; a breakdown's amounts sit beside their labels, not at the far edge.
