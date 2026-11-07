@@ -86,10 +86,9 @@ if [ "$ST_COUNTS" != "105 216 502 334 226 112 30 103 105 0 0" ]; then
   echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 216 502 334 226 112 30 103 105 0 0"
   exit 1
 fi
-# No equipment maker named in the catalog's sources (D-1043 item 5): release 1's eq_source.csv and eqlib.eq_source;
-# every other seed file held at its count today (browser/lib/maker-baseline.json).
-docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select coalesce(json_agg(s), '[]') from (select source_id, title, publisher, edition, supports from eqlib.eq_source) s" >$QT/eq_source.json
-node browser/lib/maker-gate.mjs ../intelcost-app-fastapi "$QT/eq_source.json" || exit 1
+# No software competitor named in the three repos' tracked text files or the workspace files (hard rule 9, D-328,
+# D-342). D-1050: equipment maker and model names are allowed, so D-1043 item 5's seed maker-name gate is gone.
+node browser/lib/competitor-gate.mjs .. || exit 1
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(
   'classes', (select json_agg(c order by c.seq) from eqlib.eq_class c),
   'production', (select json_agg(p order by p.seq) from eqlib.eq_production p),

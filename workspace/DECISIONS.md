@@ -27375,3 +27375,20 @@ Software competitor names stay banned everywhere").
 
 - This run's fx bring-up also recreated the bench's worker-pages, worker-previews and worker-ocr. The rule joins the
   run rules (CLAUDE.md), and the fx bring-up refuses to touch a bench service (fx-suite.sh's guard).
+
+## D-1052: The wage page's leftovers (amends D-1047)
+
+**Status:** Accepted (2026-11-07, Umer: "Wage page leftovers").
+
+- A prevailing row's note shows only "WD minimum $X" (no repeat of the source or the pill's text); the "Conformed to …"
+  filter chips are one "Conformed N" chip (each row's breakdown keeps its classification); the WD card's how-to is
+  hidden once a WD is loaded; Advanced settings and Crew settings say "national open-shop" / "national union scale" and
+  the project's own type, never "Residential" or "Commercial & Public".
+
+## D-1053: f5-big stays on the fx isolation check; the first page is measured on AWS staging
+
+**Status:** Accepted (2026-11-07, Umer: "keep the fx isolation check as it is").
+
+- The fx workers keep reaching MinIO through the host gateway (the isolation check unchanged); the bench's f5-big
+  first-page figure (16-19 s after D-1046) is reported as gateway-limited. Abdullah measures the first page and the
+  thumbnails on AWS staging (FEATURES Planned). The 240 s thumbnail wait stays.

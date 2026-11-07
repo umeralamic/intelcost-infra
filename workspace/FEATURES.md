@@ -94,6 +94,7 @@ _Updated: 2026-10-02_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
+| f5-big on AWS staging (Abdullah) | Measure a big upload's first page and its thumbnails on AWS staging: the bench's figure (16-19 s, D-1046) is limited by Docker Desktop's storage gateway, which production does not have (D-1053) | api | Planned (2026-11-07): for Abdullah |
 | Several WDs per project | Several wage determinations on one project, chosen per activity (building and heavy on one site job); today one governs (D-1032) | both | Planned (2026-11-06) |
 | apply_scale single pass | The scale apply runs its double pass once (Q213) | app | Planned (2026-11-06): left as it is, logged |
 | Realtime speed | Realtime updates faster under load; the bounds stay (Q216), not a tester blocker | both | Planned (2026-11-06) |
