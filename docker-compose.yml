@@ -181,6 +181,8 @@ services:
       # Scripts are run from in here, because a host without Python cannot run them
       # from outside: docker compose exec api python scripts/<name>.py
       - ../intelcost-app-fastapi/scripts:/srv/scripts
+      # BLS files, read when BLS_API_KEY is empty (D-1030, D-1031): the untracked local data, read only.
+      - ../test-data-local:/test-data-local:ro
       # Bench drives that are not browser drives: a rule the api enforces with no
       # route to reach it yet. Bench-owned, so they live here and not in the api repo.
       - ./drives:/srv/drives:ro
@@ -229,6 +231,8 @@ services:
       /srv/app
     volumes:
       - ../intelcost-app-fastapi/app:/srv/app
+      # BLS files, read when BLS_API_KEY is empty (D-1030, D-1031), as on the api.
+      - ../test-data-local:/test-data-local:ro
       # A drawing's source between its prepare slices, and a prepared page until the read
       # pool below reads it (D-324): shared, so neither is fetched back from storage.
       - worker-work:/tmp/intelcost-work

@@ -26962,3 +26962,86 @@ read-only)").
   name, and "name withheld" for one not on the list, so a fingerprint report never carries a real bid's name.
 - Redacted in place: PRICING_FIX_PLAN.md, D-1023/D-1024, the guard lists, the 2026-11-08/09 fingerprints and
   report. Earlier commit messages and history still name the job; a pushed commit is not rewritten.
+
+## D-1026: Internal workspaces: never a trial, never view-only (PRICING_FIX_PLAN item 9, Q-P8)
+
+**Status:** Accepted (2026-11-06, Umer: "Comp today, the internal flag in the build").
+
+- `workspace.is_internal` (migration d984a1b2c3d4), set by platform admin on Billing tiers › Overrides ("Mark
+  internal" on a found workspace; an "Internal workspaces" list with "Not internal").
+- Honoured by every reader of the trial window: `WorkspaceContext.trial_ends_at` (none) and `view_only_reason`
+  (none, a lock included), the AI first allowance, the trial caps, the wage calculator's trial gate, and the
+  every-minute trial-ended task. Removing the comp of an internal workspace is refused.
+- The migration's data step sets it on Intelcost Team alone (04df326a), listed before it ran; nothing else of that
+  workspace is read or written. Comp (Professional, no end) is granted on it as well, through the platform page.
+
+## D-1027: A copy into another workspace keeps its spreads and their mob (PRICING_FIX_PLAN item 0, Q-P1)
+
+**Status:** Accepted (2026-11-06, Umer: Q-P1, "fix the copier so a copy carries every line's mob setting").
+
+- The gap between Benchmark A's original and its copy was mobilization. The copy into another workspace
+  (`project/duplicate.py`, D-384, D-744) dropped each site machine whose activity the target workspace lacked, its
+  `mob_demob` with it, and left every `estimate_item_spread.company_activity_id` naming the source workspace's row.
+- Now the copy first gives the target workspace its starter activities (`production.adopt_starter`, on an engine of
+  its own, outside any event loop), so site machines and their mob find their match; and each spread moves to the
+  target's activity of the same national key (else name), or stays behind for Calculate to remake.
+- The same code serves the bench copier and a shared link's "Save to my workspace".
+
+## D-1028: Benchmark A's figures checked from local expectations (PRICING_FIX_PLAN item 8)
+
+**Status:** Accepted (2026-11-06, Umer: the plan's item 8, with D-1025's rule that its figures stay out of every repo).
+
+- `intelcost-infra/browser/pricing-diff.mjs` reads Estimating exports (mcp-export.js) with the app's own xlsx reader:
+  `--expect` makes an export the expectation, `--check` compares an export to it line by line and kind by kind
+  (labor, equipment, material, disposal, subcontract, line cost) and the bid total, to the cent, and a plain run
+  writes the before/after line report. It refuses every path outside `test-data-local/`.
+- The quantity table prints the last check's line, "Benchmark A: 8 lines, right (checked …)", or "skipped (no local
+  expectations)" on a machine without the folder; no figure reaches its output.
+- The benchmark copy is the fixed copier's (D-1027) fresh copy, 0096824a "zz Benchmark A (bench copy, keep)" (the DUP
+  purge keeps it; its throwaway fx.equip.202611070208 is kept too) in a throwaway workspace, not the
+  kept quantity-table workspace: the copier copies only into a throwaway's own workspace. Its expectation after item
+  0 equals the original's bid.
+- Each item's build re-exports the copy, writes the item's report there, checks the effect against the plan's range
+  and, when it lands inside, makes that export the new expectation.
+
+## D-1029: Disposal is its own cost kind, untaxed by default (PRICING_FIX_PLAN item 5, Q-P5)
+
+**Status:** Accepted (2026-11-06, Umer: "Q-P5: disposal as its own cost kind. Yes.").
+
+- A cost component may be `kind: "disposal"`: priced by its key from the materials library like a material
+  (`line_sync._bought`), filed as disposal. It rolls up per line as subcontract does (`disposalCost`,
+  `unitDisposalCost`), into Item Cost, every total, the reports (a Disposal report and section) and the export's
+  "Total Disposal Cost" column. No typed line rate and no column: a line has disposal only from components, so the
+  last-of-kind keep/restore/clear choice never asks for it.
+- The Bid Summary's tax ticks gain Disposal, not in the default (`["material"]`): tipping is untaxed unless ticked.
+  The export's tax base line names what it taxes. A markup saved with every tick reads as every tick, Disposal
+  included.
+- The earthwork lines write their tipping (soil, unsuitable, rock, clearing debris) as disposal (`siteMaterials()`);
+  a saved tipping component written as material becomes disposal on its line's next Calculate.
+
+## D-1030: The BLS key: api settings only, bulk files without it
+
+**Status:** Accepted (2026-11-06, Umer: "Put it only in intelcost-app-fastapi/.env as BLS_API_KEY … with no key, fall
+back to the bulk file in test-data-local and warn once").
+
+- `BLS_API_KEY` (`settings.bls_api_key`, a secret) lives only in `intelcost-app-fastapi/.env` (gitignored) and on
+  the deploy's api, worker and beat services (`docs/DEPLOY_SETTINGS.md`); `.env.example` carries it empty. It goes in
+  the v2 API's request body, never a URL, a log or a report.
+- `app/wagecalc/bls.py`: series by id; with no key, the BLS bulk files (`*.data.*`) in `BLS_BULK_DIR`
+  (`/test-data-local/bls`, the untracked local folder mounted read only into the bench api), one warning per process.
+- `scripts/bls_check.py`: one ECI call (CIU2022300000000I), printing "BLS key works" or why not, no figure.
+- The wage plan's W9 loader (not approved yet) reads through it.
+
+## D-1031: The bench BLS key lives in intelcost-infra/.env.ai; empty means no key
+
+**Status:** Accepted (2026-11-06, Umer: "BLS_API_KEY is now filled in E:\Intelcost\intelcost-infra\.env.ai (that is
+where the app reads keys, not intelcost-app-fastapi\.env) … With no key, fall back to the bulk file in
+test-data-local and warn once"). Supersedes D-1030's location and folder; the rest of D-1030 stands.
+
+- On the bench `BLS_API_KEY` lives in `intelcost-infra/.env.ai` (git-ignored; never printed, logged, copied or
+  committed), loaded into the api and worker with the AI and EIA keys. `intelcost-infra/.env.ai.example` lists that
+  file's names, empty. A change needs `docker compose up -d --force-recreate api worker`; a restart keeps old values.
+- An empty `BLS_API_KEY=` counts as no key (`bls.has_key()`), not as a blank key sent to BLS.
+- No key: `BLS_BULK_DIR`, default `/test-data-local/wage/raw`, read as bulk downloads (`*.data.*`) and saved v2
+  answers (`*.json` with `REQUEST_SUCCEEDED`; the folder's other sources' saves are skipped), one warning per
+  process. `test-data-local` is mounted read only into the worker as well as the api.
