@@ -166,6 +166,24 @@ export const EQUIPMENT_CASES = [
   { id: "eq-spread-10hr", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 100, workDays: 10, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { total: 20324.46 } },
   { id: "eq-spread-500", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 11841.56 } },
   { id: "eq-spread-3-machines", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 53.333333333333336, workDays: 6.666666666666667, hoursPerDay: 8, fuelLoad: "med", units: 3, includeMob: true }, expect: { total: 21112.56 } },
+
+  // --- Clearing by class (D-1039, release 37): heavy and medium differ from light in machines and crew ----------
+  // Each class's tier as the starter holds it: its dozers, its other machines, the laborers, and the operators the
+  // starter adds (one per machine whose class an operating engineer runs, none for a saw the crew runs or an
+  // attachment). Its machines' rental for one 5-day week (40 hr at 8 hr/day), diesel $6.276, gasoline $4.00, no mob.
+  // By hand: the large dozer, week $12,092 (5 days at $4,170 = $20,850) + 8.59 gal/hr × 40 × $6.276 = $2,156.43:
+  // $14,248.43 (light: that alone).
+  // Medium: + 20-25 t excavator week $2,927 + 2.78 × 40 × $6.276 = $697.89 ($3,624.89), its box grapple week $975 (no
+  // fuel), 2 chainsaws at week $224 = $448 + 0.25 × 40 × 2 × $4.00 = $80 ($528): $14,248.43 + $3,624.89 + $975 + $528 =
+  // $19,376.32 (19,376.3248).
+  // Heavy: + 30-36 t excavator week $4,019 + 4.5 × 40 × $6.276 = $1,129.68 ($5,148.68), its thumb week $701, 3
+  // chainsaws $672 + 0.25 × 40 × 3 × $4.00 = $120 ($792): $14,248.43 + $5,148.68 + $701 + $792 = $20,890.11 (20,890.1136).
+  { id: "clearing-light-spread", kind: "starter-spread", activity: "A55", setting: { fuel_price_diesel: 6.276, fuel_price_gasoline: 4 }, input: { hours: 40, workDays: 5, hoursPerDay: 8 }, expect: { dozers: 1, others: "", laborers: 1, operators: 1, rental: 14248.43, missing: [] } },
+  { id: "clearing-medium-spread", kind: "starter-spread", activity: "A56", setting: { fuel_price_diesel: 6.276, fuel_price_gasoline: 4 }, input: { hours: 40, workDays: 5, hoursPerDay: 8 }, expect: { dozers: 1, others: "AT-GRAPPLE-20T×1 EX-CRAWL-20T×1 LC-CHAINSAW-18×2 (crew runs)", laborers: 2, operators: 2, rental: 19376.32, missing: [] } },
+  { id: "clearing-heavy-spread", kind: "starter-spread", activity: "A57", setting: { fuel_price_diesel: 6.276, fuel_price_gasoline: 4 }, input: { hours: 40, workDays: 5, hoursPerDay: 8 }, expect: { dozers: 1, others: "AT-THUMB-30T×1 EX-CRAWL-30T×1 LC-CHAINSAW-18×3 (crew runs)", laborers: 3, operators: 2, rental: 20890.11, missing: [] } },
+  // Debris haul-off with a loader (D-1039): clearing_haul maps to A6, a haul activity (the D-1035 cycle runs A6, A7,
+  // A8), whose first tier (the 0-499 LCY band's) loads its trucks with a 3 yd wheel loader; A7 had trucks only.
+  { id: "clearing-haul-loader", kind: "starter-role", role: "clearing_haul", tier: 1, expect: { activity: "A6", haul: true, loaders: "WL-SMALL-3Y×1", trucks: 2 } },
 ];
 
 /** The bundle the api would send, from the dumped national rows and a case's overrides. */
@@ -356,6 +374,43 @@ export async function runEquipment(page, eqlib) {
             }
           }
           return { missing, unflagged, bad };
+        }
+        if (c.kind === "starter-spread" || c.kind === "starter-role") {
+          // A starter tier as release rows hold it (D-1039): its machines, its crew, and the operators the starter adds.
+          const key = c.kind === "starter-role" ? (eqlib.line_map ?? []).find((m) => m.earthwork_role === c.role)?.activity_key ?? null : c.activity;
+          const ofKey = (rows) => (rows ?? []).filter((r) => r.activity_key === key);
+          const tierNo = c.tier ?? Math.min(...ofKey(eqlib.starter_machines).map((m) => m.tier_no));
+          const machines = ofKey(eqlib.starter_machines).filter((m) => m.tier_no === tierNo);
+          const crew = ofKey(eqlib.starter_crew).filter((r) => r.tier_no === tierNo);
+          const word = (m) => `${m.equip_key}×${Number(m.units)}${m.crew_runs === "Y" ? " (crew runs)" : ""}`;
+          if (c.kind === "starter-role") {
+            return {
+              activity: key,
+              haul: ["A6", "A7", "A8"].includes(key),
+              loaders: machines.filter((m) => m.equip_key.startsWith("WL-")).map(word).sort().join(" "),
+              trucks: machines.filter((m) => m.equip_key.startsWith("DT-")).reduce((t, m) => t + Number(m.units), 0),
+            };
+          }
+          const classes = new Map(eqlib.classes.map((x) => [x.equip_key, x]));
+          const operators = machines
+            .filter((m) => m.crew_runs !== "Y" && classes.get(m.equip_key)?.default_mode !== "operated" && /operating engineer/i.test(classes.get(m.equip_key)?.operator_craft_label ?? ""))
+            .reduce((t, m) => t + Number(m.units), 0);
+          const lib = resolve.library(bundleFor(eqlib, c));
+          let rental = 0;
+          const missing = [];
+          for (const m of machines) {
+            const r = cost.machineCost(lib, { classKey: m.equip_key, mode: "rental", period: "auto", fuelLoad: "med", units: Number(m.units), includeMob: false, ...c.input });
+            if (r.total == null) missing.push(m.equip_key + ": " + r.missing.map((x) => x.field).join(","));
+            else rental += r.total;
+          }
+          return {
+            dozers: machines.filter((m) => m.equip_key.startsWith("DZ-")).reduce((t, m) => t + Number(m.units), 0),
+            others: machines.filter((m) => !m.equip_key.startsWith("DZ-")).map(word).sort().join(" "),
+            laborers: crew.filter((r) => /^laborer/i.test(r.role)).reduce((t, r) => t + Number(r.count), 0),
+            operators,
+            rental,
+            missing,
+          };
         }
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {

@@ -1112,11 +1112,18 @@ try {
     const gs = await import("/src/lib/takeoff/earthwork/geotech/slopeRule.ts");
     const gp = await import("/src/features/takeoff/earthwork/geotech/placed.ts");
     const sk = await import("/src/features/takeoff/earthwork/site/siteKey.ts");
+    const ss = await import("/src/lib/takeoff/earthwork/siteSection.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
     return cases.map((c) => {
+      if (c.kind === "clearing-suggest") {
+        // D-1039: the class the trees per acre suggest, over the one chosen.
+        const section = { mode: "area", kind: "clearing", mix: { small: 60, medium: 30, large: 10 }, treesCounted: false, grubDepthIn: 12, disposal: "chip", ...c.section };
+        const s = ss.suggestedClearing(section, c.areaSf);
+        return { density: s?.density ?? null, treesPerAcre: s?.treesPerAcre ?? null };
+      }
       if (c.kind === "tin") {
         const runs = runsOf(c.runs);
         const labels = labelsOf(c.runs);

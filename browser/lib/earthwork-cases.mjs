@@ -2023,6 +2023,20 @@ export const EARTHWORK_CASES = [
   // Δz = (FG − depth) − (EG − strip). Hand answers in cubic feet / 27.
   ...synthRows(),
   ...realShapeRows(),
+
+  // --- Clearing class suggested by the trees per acre (D-1039) -------------------------------------------------
+  // Medium from 400 trees an acre, heavy over 600 (the tree-density bands); shown only when heavier than the class
+  // chosen, never for None. By hand: 1 ac (43,560 SF) at 1 tree per 200 SF = 217.8, 218 trees: under 400, nothing.
+  // 1 per 80 SF = 544.5, 545 trees an acre: medium over light, nothing over medium. 600 typed on 1 ac: medium (600 is
+  // not over 600). 650 typed on 1 ac: heavy. 1,250 typed on 2 ac (87,120 SF) = 625 an acre: heavy over medium.
+  // 700 an acre with None chosen: nothing (the estimator said the site needs no clearing).
+  { id: "clearing-suggest-default-light", kind: "clearing-suggest", section: { density: "light", treesPerSf: 200, treeCount: null }, areaSf: 43560, expect: { density: null, treesPerAcre: null } },
+  { id: "clearing-suggest-medium", kind: "clearing-suggest", section: { density: "light", treesPerSf: 80, treeCount: null }, areaSf: 43560, expect: { density: "medium", treesPerAcre: 545 } },
+  { id: "clearing-suggest-medium-chosen", kind: "clearing-suggest", section: { density: "medium", treesPerSf: 80, treeCount: null }, areaSf: 43560, expect: { density: null, treesPerAcre: null } },
+  { id: "clearing-suggest-600-medium", kind: "clearing-suggest", section: { density: "light", treesPerSf: 200, treeCount: 600 }, areaSf: 43560, expect: { density: "medium", treesPerAcre: 600 } },
+  { id: "clearing-suggest-heavy", kind: "clearing-suggest", section: { density: "light", treesPerSf: 200, treeCount: 650 }, areaSf: 43560, expect: { density: "heavy", treesPerAcre: 650 } },
+  { id: "clearing-suggest-heavy-2ac", kind: "clearing-suggest", section: { density: "medium", treesPerSf: 200, treeCount: 1250 }, areaSf: 87120, expect: { density: "heavy", treesPerAcre: 625 } },
+  { id: "clearing-suggest-none", kind: "clearing-suggest", section: { density: "none", treesPerSf: 200, treeCount: 700 }, areaSf: 43560, expect: { density: null, treesPerAcre: null } },
 ];
 
 /**

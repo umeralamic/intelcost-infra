@@ -73,8 +73,10 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # Release 30 (D-987, D-989): A94 (construction layout, own crew), hydrant and valve assemblies and layout mapped.
 # Release 34 (D-998): A90's spreader truck (a tri-axle dump truck, operated).
 # Release 36 (D-1037): the cut that leaves the site, cut_export → A2, one line-map row.
-if [ "$ST_COUNTS" != "104 205 474 323 220 112 30 102 104 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 474 323 220 112 30 102 104 0 0"
+# Release 37 (D-1039): A56's and A57's excavator, its grapple or thumb and the chainsaws (6 machines); their
+# laborers raised to 2 and 3 in place (no crew row added); clearing_haul remapped to A6 in place (no line-map row).
+if [ "$ST_COUNTS" != "104 205 480 323 220 112 30 102 104 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 480 323 220 112 30 102 104 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(
@@ -83,7 +85,10 @@ docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select js
   'activities', (select json_agg(a order by a.seq) from eqlib.eq_activity a),
   'transport', (select json_agg(t order by t.seq) from eqlib.eq_transport_class t),
   'settings', (select json_agg(s order by s.seq) from eqlib.eq_setting s),
-  'soils', (select json_agg(s order by s.seq) from eqlib.eq_soil_conversion s))" >$QT/eqlib.json
+  'soils', (select json_agg(s order by s.seq) from eqlib.eq_soil_conversion s),
+  'starter_machines', (select json_agg(m order by m.seq) from eqlib.ew_tier_machine m),
+  'starter_crew', (select json_agg(c order by c.seq) from eqlib.ew_tier_crew c),
+  'line_map', (select json_agg(l order by l.seq) from eqlib.ew_line_map l))" >$QT/eqlib.json
 
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" -e GEN=1 browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 [ -s $QT/cases.json ] || { echo "FAIL  GEN wrote no cases"; exit 1; }
@@ -114,7 +119,7 @@ STATUS="${PIPESTATUS[0]}"
 # every repo (D-1025). Its line names no figure; a wrong check fails the table.
 BENCH_A=../test-data-local/benchmark-a/last-check.json
 if [ -f "$BENCH_A" ]; then
-  node -e 'const c = require(process.argv[1]); console.log(`Benchmark A: ${c.lines} lines, ${c.wrong.length ? "WRONG (" + c.wrong.length + " figures)" : "right"} (checked ${c.checked_at.slice(0, 16)}Z)`); process.exit(c.wrong.length ? 1 : 0)' "$(cd "$(dirname "$BENCH_A")" && pwd)/last-check.json" || STATUS=1
+  node -e 'const c = require(process.argv[1]); console.log(`Benchmark A: ${c.lines} lines, ${c.wrong.length ? "WRONG (" + c.wrong.length + " figures)" : "right"} (checked ${c.checked_at.slice(0, 16)}Z)`); process.exit(c.wrong.length ? 1 : 0)' "$(cd "$(dirname "$BENCH_A")" && (pwd -W 2>/dev/null || pwd))/last-check.json" || STATUS=1
 else
   echo "Benchmark A: skipped (no local expectations)"
 fi
