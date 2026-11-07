@@ -27205,3 +27205,17 @@ Q-P3 "lowest total (fee + trucking), runner-up shown").
   (only the rental minimum and the mob are waived). Thresholds: A3 50 CCY, A4 100 BCY, A7 50 LCY (release 38,
   migration d991b4e8c2a7, chained after the union agreements' d991b4e8a3c5). A workspace that edited those
   activities keeps no threshold.
+
+## D-1042: The earthwork line save under 1 s warm (C2)
+
+**Status:** Accepted (2026-11-07, Umer: "Target under 1 s; profile what's left and fix").
+
+- Measured in-process on the Benchmark A copy (9 lines, rolled back each run): 4.16 s median warm, 1,263 statements;
+  now 0.76 s, 160 statements. The rows written are byte-identical (four tables dumped and compared after each change).
+- `app/features/equipment/memo.py`: a cache for one save (starter, activities, line maps, settings, tiers and defaults,
+  custom classes, project activity rows, divisions, line lists), cleared when the starter take-up writes the library;
+  `national.load` reads once per save. `sync_sites` skips an activity with no lines, no machines and no group;
+  `pace_cut_export` and the own-spread check read in one statement each; `resolve` and `seed_added_structures` batch.
+- Left: about 60 live reads and writes per save (each priced line's spread and components, site machines, dump sites,
+  classification chains); the reprice passes run as before (merging them could change what the small-quantity plan
+  reads mid-save).
