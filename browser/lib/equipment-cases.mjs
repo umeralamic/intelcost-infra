@@ -181,9 +181,15 @@ export const EQUIPMENT_CASES = [
   { id: "clearing-light-spread", kind: "starter-spread", activity: "A55", setting: { fuel_price_diesel: 6.276, fuel_price_gasoline: 4 }, input: { hours: 40, workDays: 5, hoursPerDay: 8 }, expect: { dozers: 1, others: "", laborers: 1, operators: 1, rental: 14248.43, missing: [] } },
   { id: "clearing-medium-spread", kind: "starter-spread", activity: "A56", setting: { fuel_price_diesel: 6.276, fuel_price_gasoline: 4 }, input: { hours: 40, workDays: 5, hoursPerDay: 8 }, expect: { dozers: 1, others: "AT-GRAPPLE-20T×1 EX-CRAWL-20T×1 LC-CHAINSAW-18×2 (crew runs)", laborers: 2, operators: 2, rental: 19376.32, missing: [] } },
   { id: "clearing-heavy-spread", kind: "starter-spread", activity: "A57", setting: { fuel_price_diesel: 6.276, fuel_price_gasoline: 4 }, input: { hours: 40, workDays: 5, hoursPerDay: 8 }, expect: { dozers: 1, others: "AT-THUMB-30T×1 EX-CRAWL-30T×1 LC-CHAINSAW-18×3 (crew runs)", laborers: 3, operators: 2, rental: 20890.11, missing: [] } },
-  // Debris haul-off with a loader (D-1039): clearing_haul maps to A6, a haul activity (the D-1035 cycle runs A6, A7,
-  // A8), whose first tier (the 0-499 LCY band's) loads its trucks with a 3 yd wheel loader; A7 had trucks only.
-  { id: "clearing-haul-loader", kind: "starter-role", role: "clearing_haul", tier: 1, expect: { activity: "A6", haul: true, loaders: "WL-SMALL-3Y×1", trucks: 2 } },
+  // Debris haul-off with a loader (D-1039), without the spotter (D-1043, release 39): clearing_haul maps to A95 "Load
+  // and haul off debris (from piles)", a haul activity (the D-1035 cycle runs A6, A7, A8 and A95) copied from A6: its
+  // first tier (the 0-499 LCY band's) loads 2 trucks with a 3 yd wheel loader, the foreman's 0.25 share, no spotter
+  // (A6's tier 1 has a 0.5 spotter). Topsoil haul-off keeps A6 as it is: the same loader and trucks, the foreman's 0.25
+  // and the 0.5 spotter.
+  { id: "clearing-haul-loader", kind: "starter-role", role: "clearing_haul", tier: 1, expect: { activity: "A95", haul: true, loaders: "WL-SMALL-3Y×1", trucks: 2, foremen: 0.25, spotters: 0 } },
+  { id: "strip-haul-keeps-a6", kind: "starter-role", role: "strip_haul", tier: 1, expect: { activity: "A6", haul: true, loaders: "WL-SMALL-3Y×1", trucks: 2, foremen: 0.25, spotters: 0.5 } },
+  // Its top tier (2,521 LCY/day and up) as A6's: the 4.5 yd loader, 22 trucks, the foreman's 0.5 share, no spotter.
+  { id: "clearing-haul-top-tier", kind: "starter-role", role: "clearing_haul", tier: 11, expect: { activity: "A95", loaders: "WL-MED-45Y×1", trucks: 22, foremen: 0.5, spotters: 0 } },
 
   // --- Small quantities on machines already on site (D-1040, release 38; the api's choice is `onsite` above) -----
   // A machine on site lends a small line its hours at its hourly rate (`period: "site"`): no period, no minimum, no
@@ -402,7 +408,10 @@ export async function runEquipment(page, eqlib) {
           if (c.kind === "starter-role") {
             return {
               activity: key,
-              haul: ["A6", "A7", "A8"].includes(key),
+              // The api's HAUL_ACTIVITIES (D-1035; A95 the debris's load and haul off, D-1043).
+              haul: ["A6", "A7", "A8", "A95"].includes(key),
+              foremen: crew.filter((r) => /^foreman/i.test(r.role)).reduce((t, r) => t + Number(r.count), 0),
+              spotters: crew.filter((r) => /spotter/i.test(r.role)).reduce((t, r) => t + Number(r.count), 0),
               loaders: machines.filter((m) => m.equip_key.startsWith("WL-")).map(word).sort().join(" "),
               trucks: machines.filter((m) => m.equip_key.startsWith("DT-")).reduce((t, m) => t + Number(m.units), 0),
             };

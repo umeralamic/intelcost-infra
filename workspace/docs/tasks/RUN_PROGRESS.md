@@ -35,15 +35,34 @@ are git-ignored there and never copied (infra 25f1c3f). Older reference files in
 - Quantity table: 344 rows passed, 295 earthwork rows, prevailing 12 rows, 81 cost rows, wages 11 rows, "Benchmark A: 9 lines, right".
 
 ## In progress
-- Item 6 small quantities on site (D-1040): a builder at work.
-- W10 one wage basis, W11 saved sets, W5 union (D-1041): a second builder at work.
+- Wage pages D-1047 (rule labels, breakdowns that add up, insurance, words, strip, layout, setup cards, open shop
+  without the union-scale table, helper gate): a builder at work.
+- D-1043 answers (fallback fees, dump queue and speeds, debris crew without spotter, catalog sources without maker
+  names and the seed gate, release notes): a second builder at work.
 
 ## Next
-2. C items left: f5-big first page, earthwork save speed (timing runs wait for the builders: source edits reload).
-3. Wage rest: W10 UI, W11 migration, W5 union; W8 when the filings are in `test-data-local`.
-4. Release run.
+1. Benchmark A rerun after D-1043 (haul and debris crew changes), the wage smokes and the screenshots.
+2. W8 workers' comp by state: waits for the TX/AZ filings in `test-data-local` (Q-W6); not built.
+3. Release run: full gates, quantity table, smoke of the wage page and the pricing items on copies.
+
+**Reference files committed earlier** in intelcost-infra/workspace/docs/reference (21, names only): Crew_Assemley_DE_LLC
+- V12 SOURCE FILE.xlsx; Materials research/ (IntelCost_fence_erosion_site_prices_2026-11.xlsx,
+IntelCost_material_prices_2026-10.xlsx, IntelCost_paving_flatwork_prices_2026-11.xlsx, README.md,
+clearing_defaults_2026-11.csv, fence_erosion_site_prices_national_2026-09.csv, fill_structures_2026-11.csv,
+fill_structures_2026-11_points.csv, fusion_rental_README.md, fusion_rental_points.csv,
+material_prices_national_2026-09.csv, paving_flatwork_prices_national_2026-09.csv,
+production_research_points_2026-11b.csv, production_tiers_2026-11b.csv); Sales Tax.xlsx; equipment/ (Construction
+equipment catalog and rates.md, IntelCost Earthwork Production Starter.xlsx, IntelCost Equipment Catalog.xlsx);
+production_research_points.csv; production_tiers_2026-11.csv. Scanned for the founder's project and client names, job
+numbers and bid totals: none is a client file. Two hits were public data: Sales Tax.xlsx names cities in a public rate
+table (Riverside, Miramar…), and the material prices file cites public bid tabulations and their suppliers.
 
 ## Needs Umer
+- f5-big: pointing the fx workers at minio:9000 directly would remove the bench-only gateway stall but changes the
+  fx isolation check and the ranged first page f5-big exercises: your call. f5-big step 2 (150 thumbnails in 240 s) still
+  fails in some runs (545 MB at 2.2-3.8 MB/s is about 200 s alone).
+- During the f5-big runs the fx bring-up also recreated the bench's worker-pages, worker-previews and worker-ocr; they
+  are up. postgres, redis, minio and the bench api, app and worker were not touched.
 - Item 7 on Benchmark A: +1.30 %, above the plan's +0.4 % to +1.1 %: the heavy line now carries an excavator with a
   thumb, three chainsaws and three laborers, and the debris haul-off a loader crew (with its foreman share and spotter).
   The crew make-up is provisional (grade C, no public crew figure found): it needs your review. Trees-per-acre bands

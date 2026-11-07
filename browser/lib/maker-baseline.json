@@ -1,0 +1,9 @@
+{
+  "comment": "D-1043 item 5: the founder approved rewording only the catalog's sources (release_1/eq_source.csv, which must hold none). Every other seed file under app/features/*/seed is held at its count of maker-name mentions on 2026-11-07, so none is added; lower a count when a file loses mentions. Read by maker-gate.mjs.",
+  "files": {
+    "equipment/seed/release_1/eq_activity.csv": 1,
+    "equipment/seed/release_1/eq_class.csv": 193,
+    "equipment/seed/release_1/eq_production.csv": 42,
+    "equipment/seed/release_1/eq_reference.csv": 1
+  }
+}

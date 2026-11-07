@@ -509,6 +509,11 @@ try {
           return { chosen: pick.chosen?.site.id ?? null, by: pick.by, runnerUp: pick.runnerUp?.site.id ?? null, chosenTotal: pick.chosen?.total ?? null, runnerTotal: pick.runnerUp?.total ?? null, chosenTrucks: pick.chosen?.haul?.trucks ?? null, perDollar: d.perDollarLcy(a.lcy, a.taxRate ?? 0, a.taxed ?? false) };
         }
         if (c.run === "flag") return { flagged: d.checkDumpFee(a) };
+        if (c.run === "fallback") {
+          // D-1043: the app's fallback range by material, its midpoint the release's price.
+          const [low, high] = d.FALLBACK_PER_TON[a.material];
+          return { low, high, mid: (low + high) / 2 };
+        }
         if (c.run === "role") {
           const [fee] = m.siteMaterials({ role: a.role, unit: a.unit, variant: a.variant, name: a.name, matFactor: a.matFactor }) ?? [];
           if (!fee) return { matKey: null };

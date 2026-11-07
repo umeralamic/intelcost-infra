@@ -27219,3 +27219,126 @@ Q-P3 "lowest total (fee + trucking), runner-up shown").
 - Left: about 60 live reads and writes per save (each priced line's spread and components, site machines, dump sites,
   classification chains); the reprice passes run as before (merging them could change what the small-quantity plan
   reads mid-save).
+
+## D-1043: Answers to the run's "Needs Umer" (2026-11-07)
+
+**Status:** Accepted (2026-11-07, Umer: "Answers to Needs Umer (apply in the current run, log each in DECISIONS.md)").
+
+1. **Mohave lines:** noted; the rules stay as they are.
+2. **Fallback dump fees** (still grade C, still "Check dump fee"): topsoil = the clean-soil fallback rate (not
+   $40.75/t); unsuitable soil = 1.5 × clean soil (not the C&D proxy); vegetation $45/t; contaminated $74.25/t, rock,
+   rubble and mixed C&D unchanged. The tons per LCY for rubble (1.20) and mixed C&D (0.50) stay, logged as unsourced, to
+   source later.
+3. **Haul cycle:** a "dump queue / scale" setting, default 8 min per load, added to each cycle; speeds 30 mph loaded
+   and 40 mph empty (settings, sourced as D-1035's DOT example, grade C). The max(truck cycle, loader time) rule stays.
+4. **Heavy clearing:** approved as built (excavator with thumb, 3 chainsaws, 3 laborers, the debris loader crew and its
+   foreman share), without the spotter on the debris loader crew.
+5. **Maker names in the catalog's sources:** `eq_source.csv`'s 18 maker names reworded to generic source names (e.g.
+   "manufacturer performance handbook, 2019 ed.") as a catalog release with no price or value change; a gate fails on a
+   maker name in the seeds. Other seed files still carry maker names (class names, notes, references; about 250
+   mentions): the gate holds each at its count today so none is added, and they are listed for the founder.
+6. **Items 2 and 5:** accepted as they are.
+7. **Saved bids:** tipping becomes disposal on a line's next Calculate; said in the release notes.
+8. **The reference files committed earlier** in `intelcost-infra/workspace/docs/reference/`: listed in the final report
+   with whether any is a client file; nothing deleted.
+
+## D-1044: The wage page's words and breakdown (W10)
+
+**Status:** Accepted (2026-11-07, Umer: "Wage page wording and breakdown (apply inside W10, now)").
+
+1. **No "residential" on a commercial project.** Source labels: "Local market (<metro> metro)" for OEWS; "National
+   open-shop rate" when the residential-table minimum is the rate; "Raised to national minimum" when it beat the market
+   figure; "National prevailing minimum" for the commercial-table floor; "Wage determination", "Conformed to X", "Not
+   covered: conformance request needed", "Union agreement", "Your rate", "Foreman rule" stay. The Source column names the
+   rule that set the final rate.
+2. **Breakdown in plain words,** e.g. "National open-shop rate (2026 national average). Location factor +17.8 % not
+   applied: it can only lower this minimum. Escalated +2.62 % to 7 Nov 2026 (construction wage index)." and "Raised to
+   the national open-shop minimum". Page note: "Open shop: local market wages (BLS, <metro> metro), never below the
+   national open-shop rate. Escalated to <date>." Data line: "Market data: BLS, May 2025 survey, updated <date>". The
+   formula text only in a developer tooltip or the docs.
+3. **Every breakdown adds up to its rate:** a minimum that raises it adds "Raised to national minimum +$X.XX"; a gate
+   checks parts = rate ± $0.01 for every craft in the quantity table.
+4. **Insurance:** shown at about 1 % of base where the plan says GL 3 %: found and fixed or explained (below, as built).
+5. **Status strip:** the project's own type ("Commercial", not "Commercial & Public"); on open shop "Labor +17.8 %
+   (market rates already local; not applied to the national minimum)".
+- The W10 smoke covers these; screenshots of a Houston open-shop page and a Mohave prevailing page for the final report.
+
+## D-1045: The wage review's layout; open shop never reads the commercial table; helpers under their trade (W10)
+
+**Status:** Accepted (2026-11-07, Umer: "Wage review page layout and two fixes (apply inside W10, now)").
+
+1. **Actions:** "Save rates to project" (primary) and "Advanced" (secondary) at the right end of the Craft rates / Crew
+   rates tab row, which stays put while the table scrolls; "← Back to setup" a link at the top, above the status strip;
+   leaving with unsaved edits asks "Save changes?"; no bottom button row.
+2. **Table width:** the page's width; Source and Note on one line where they fit; no empty Note column.
+3. **Open shop never reads the commercial table:** a craft missing from the national open-shop (residential) table
+   takes the local market OEWS for its own SOC (tile finisher: 47-3011, helpers of tile and marble setters), else a fixed
+   helper ratio to its trade, labelled. (Tile finisher read "Commercial table" at $32.26, above tile setter $30.89.)
+4. **Gate:** a helper or tender is never paid more than its trade (tile finisher ≤ tile setter, bricklayer tender ≤
+   bricklayer, carpenter, electrician and pipe trades helpers ≤ their trades), on every basis and project type, in the
+   quantity table.
+- Screenshots of the new tab row (top and scrolled) in the final report.
+
+## D-1046: f5-big's first page: the page's files stored side by side; the big download stands aside (C1)
+
+**Status:** Accepted (2026-11-07, Umer: "find what competes again and fix; report before/after").
+
+- Before: drawn 35.0 s and 34.9 s after the Load (prepare_sheet 25-27 s). After: 19.1 s and 16.0 s (12-14 s), on the
+  built fx apps, f5-big alone. D-849's 11 s is not reached.
+- The cause is not the thumbnails' queue (they run on `previews`, nice 19, concurrency 1, as D-849 left them): the fx
+  workers write to MinIO through Docker Desktop's host gateway (192.168.65.254), where a 50 KB PUT stalls 1.2-2.6 s at
+  times (0.03 s straight to `minio:9000`), and a page stored its three files one after another (9 s of 11).
+- `app/worker/tasks/prepare.py`: a page's three files stored side by side, timed in the log; the thumbnail task's
+  whole-file download in 8 MB ranges, standing aside between them while a page of that set is prepared for a Load (at
+  most 120 s); `measure_file_pages` stands aside the same way. `app/core/storage.py`: `get_range()`.
+- Left for the founder: pointing the fx workers at `minio:9000` would remove the gateway hop (a bench-only cost: the
+  production workers write to S3 directly) but changes fx-suite.sh's isolation check and stops f5-big exercising the
+  ranged first page. f5-big's step 2 (all 150 thumbnails within 240 s) still fails in some runs: 545 MB at 2.2-3.8 MB/s
+  is about 200 s on its own.
+
+## D-1047: The wage pages' rule, breakdown, words and layout (W10/W3; replaces D-1044 and D-1045)
+
+**Status:** Accepted (2026-11-07, Umer: "Wage pages: decisions and fixes … this message replaces it").
+
+1. **Prevailing rule, kept as today's:** prevailing (federal and state/local) = the higher of the WD (base + fringe)
+   and national union scale × (1 + F), the same figure as union with no agreement; the paycheck base never under the WD
+   base. Union with no agreement: national union scale × (1 + F) with the W6 banner. A loaded agreement uses its rates;
+   on prevailing, max(agreement, WD). Label "Raised to national union scale"; each raised line's note shows the WD
+   minimum. ("National union scale" is the national table D-1036 called commercial.)
+2. **Breakdowns add up,** on both bases: payable = base, fringe (plan / cash), raise, total; burdened = base, fringe,
+   benefits, payroll taxes, workers' comp, insurance, raise, total. A minimum that raises it adds "Raised to <minimum>
+   +$X.XX". National union-scale rates show their parts (no "Published rate: no breakdown available"). Gate: parts =
+   rate ± $0.01 for every craft in the quantity table.
+3. **Insurance** (1 % of base shown, the plan says GL 3 %): found and fixed or explained; every burden component listed
+   with whether and where the user can edit it.
+4. **Words:** never "residential", "commercial" or "commercial table" on screen. Labels: "Local market (<metro>
+   metro)", "National open-shop rate", "Raised to national minimum", "Raised to national union scale", "National union
+   scale", "Wage determination", "Conformed to X", "Not covered: conformance request needed", "Union agreement", "Your
+   rate", "Foreman rule". Source names the rule that set the final rate.
+5. **Notes** name the real floor; "WD minimum" is base + fringe on payable, the WD burdened on burdened.
+6. **Plain-word breakdown text** (formula text only in a developer tooltip or the docs): e.g. "National open-shop rate
+   (2026 national average). Location factor +17.8 % not applied: it can only lower this minimum. Escalated +2.62 % to 7
+   Nov 2026 (construction wage index)." Open-shop note "Open shop: local market wages (BLS, <metro> metro), never below
+   the national open-shop rate. Escalated to <date>." Data line "Market data: BLS, May 2025 survey, updated <date>".
+7. **Status strip:** the project's own type ("Commercial"); open shop "Labor +17.8 % (market rates already local; not
+   applied to the national minimum)". State/local prevailing with a federal WD: allowed, noted "Using a federal WD for
+   a state/local job: check the owner's wage schedule", strip "Prevailing, state/local (federal WD <number>)".
+8. **"Raised to minimum"** pill amber or neutral, not red; WD classification names in sentence case, the full WD text
+   on hover.
+9. **Layout:** "Save rates to project" (primary) and "Advanced" at the right of the Craft rates / Crew rates tab row,
+   sticky while scrolling; "← Back to setup" at the top; unsaved edits ask "Save changes?"; no bottom button row; the
+   table uses the page width.
+10. **WD card:** type, number, mod and date ("Building · TX20260253 mod 1 · <date>"), the bid-documents mod check, a green
+    "Loaded" pill, the how-to hidden once loaded, "+ Add another WD" (the user picks the governing one).
+11. **Union agreement card:** on Prevailing and Union (off for open shop); on prevailing "Union contractor? Load your
+    agreement: each craft uses the higher of the agreement and the WD."; disabled text at 4.5:1 contrast; the "operating
+    engineers run walk-behind rollers and chippers" checkbox moves here from Overtime.
+12. **Your pay rates card:** open shop "Used as entered; we flag any below the local rate or the minimum wage.";
+    prevailing "Used where they're above the WD; anything below a WD minimum is raised to it." (max(WD, your rate));
+    "Download CSV template".
+13. **Open shop never reads the union-scale table:** a craft missing from the national open-shop table takes OEWS for its
+    own SOC (tile finisher 47-3011), else a fixed helper ratio to its trade, labelled. Gate: a helper or tender never
+    above its trade, on every basis and project type.
+- Items 14-18 of the message are D-1043's (applied there). Screenshots for the final report: Houston open shop (payable
+  and burdened), Houston prevailing and union, a Mohave prevailing page, the setup cards (empty, loaded, disabled), the
+  tab row at the top and scrolled.

@@ -32,8 +32,9 @@ fi
 # D-988: one source more, Washington DES rental contract 22823.
 EQ_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.eq_class)||' '||(select count(*) from eqlib.eq_activity)||' '||(select count(*) from eqlib.eq_production)||' '||(select count(*) from eqlib.eq_transport_class)||' '||(select count(*) from eqlib.eq_setting)||' '||(select count(*) from eqlib.eq_soil_conversion)||' '||(select count(*) from eqlib.eq_source)||' '||(select count(*) from eqlib.eq_class where rent_day = 0 or rent_week = 0 or rent_4wk = 0)")
 # D-1035: 6 haul-cycle settings in release 35 (haul distance, payload, dump and load minutes, loaded and empty speed).
-if [ "$EQ_COUNTS" != "642 104 592 9 63 4 159 0" ]; then
-  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 63 4 159 0"
+# D-1043, release 39: the dump queue / scale minutes per load, one setting more (63 + 1 = 64); the speeds move in place.
+if [ "$EQ_COUNTS" != "642 104 592 9 64 4 159 0" ]; then
+  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 64 4 159 0"
   exit 1
 fi
 # The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out;
@@ -48,6 +49,7 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1001: MJ compact tees 6-12 in, DI and C900 (B20).
 # D-1007..D-1009: engineered fill and GCL installed (A2), PG 70-28 and PG 76-28 premiums (B2).
 # D-1035: 8 disposal fallback fees by material type (C).
+# D-1043: topsoil, unsuitable soil and vegetation corrected in place (still C): counts unchanged.
 if [ "$MAT_COUNTS" != "A194 B164 C250 D29 F46" ]; then
   echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B164 C250 D29 F46"
   exit 1
@@ -76,10 +78,18 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # Release 37 (D-1039): A56's and A57's excavator, its grapple or thumb and the chainsaws (6 machines); their
 # laborers raised to 2 and 3 in place (no crew row added); clearing_haul remapped to A6 in place (no line-map row).
 # Release 38 (D-1040): a small-quantity threshold on A3, A4 and A7 in place (a column, no row added): counts unchanged.
-if [ "$ST_COUNTS" != "104 205 480 323 220 112 30 102 104 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 480 323 220 112 30 102 104 0 0"
+# Release 39 (D-1043): A95, the clearing debris's load and haul off, A6's 11 tiers, 22 machines, 6 defaults and its
+# 11 foreman rows without the 11 spotter rows: activities 104 + 1 = 105, tiers 205 + 11 = 216, machines 480 + 22 = 502,
+# crew 323 + 11 = 334, defaults 220 + 6 = 226; A6's open top tier and open top band copied, open tiers 102 + 1 = 103,
+# open defaults 104 + 1 = 105; clearing_haul remapped to A95 in place (line-map 112).
+if [ "$ST_COUNTS" != "105 216 502 334 226 112 30 103 105 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 216 502 334 226 112 30 103 105 0 0"
   exit 1
 fi
+# No equipment maker named in the catalog's sources (D-1043 item 5): release 1's eq_source.csv and eqlib.eq_source;
+# every other seed file held at its count today (browser/lib/maker-baseline.json).
+docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select coalesce(json_agg(s), '[]') from (select source_id, title, publisher, edition, supports from eqlib.eq_source) s" >$QT/eq_source.json
+node browser/lib/maker-gate.mjs ../intelcost-app-fastapi "$QT/eq_source.json" || exit 1
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(
   'classes', (select json_agg(c order by c.seq) from eqlib.eq_class c),
   'production', (select json_agg(p order by p.seq) from eqlib.eq_production p),
