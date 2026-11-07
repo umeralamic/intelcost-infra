@@ -34,16 +34,21 @@ are git-ignored there and never copied (infra 25f1c3f). Older reference files in
   +1.1 %: see Needs Umer); running bid **40.6 %** of the item-0 bid.
 - Quantity table: 344 rows passed, 295 earthwork rows, prevailing 12 rows, 81 cost rows, wages 11 rows, "Benchmark A: 9 lines, right".
 
-## In progress
-- Wage pages D-1047 (rule labels, breakdowns that add up, insurance, words, strip, layout, setup cards, open shop
-  without the union-scale table, helper gate): a builder at work.
-- D-1043 answers (fallback fees, dump queue and speeds, debris crew without spotter, catalog sources without maker
-  names and the seed gate, release notes): a second builder at work.
+## Done at the end of the run (2026-11-07)
+- **D-1043** (fees, dump queue 8 min, 30/40 mph, debris crew on A95 without spotter, catalog sources, maker gate,
+  release notes): api d038d9e, app f184b24, infra 444961d. Benchmark A **+3.68 %** (soil export trucks +18 % on the
+  queue and slower speeds); running bid **44.0 %** of the item-0 bid.
+- **D-1047** wage pages (rule labels, breakdowns that add up, words, strip, layout, cards, open shop off the union-scale
+  table, helper gate): api ca40319, app 8f02555, infra b867bcf. Smokes on throwaway Houston (open shop, prevailing,
+  union) and Kingman projects passed; screenshots in `test-data-local/screenshots-2026-11-07/` (11). Found and fixed:
+  duplicate WD titles gave duplicate option keys.
+- Release run (as defined): full app lint (0 errors, 4 known warnings), typecheck and build, api ruff and mypy, quantity
+  table 344 rows passed with 86 cost rows, wages 16, prevailing 27, union 15, on site 11 and the maker gate; DUPs
+  purged (2); fingerprint unchanged (b8b0e2e5d05fc9ec).
 
-## Next
-1. Benchmark A rerun after D-1043 (haul and debris crew changes), the wage smokes and the screenshots.
-2. W8 workers' comp by state: waits for the TX/AZ filings in `test-data-local` (Q-W6); not built.
-3. Release run: full gates, quantity table, smoke of the wage page and the pricing items on copies.
+## Not done
+- W8 workers' comp by state: waits for the TX/AZ filings in `test-data-local` (Q-W6).
+- The fx-suite release run (`./fx-suite.sh release`, required before testers or main): not run in this session.
 
 **Reference files committed earlier** in intelcost-infra/workspace/docs/reference (21, names only): Crew_Assemley_DE_LLC
 - V12 SOURCE FILE.xlsx; Materials research/ (IntelCost_fence_erosion_site_prices_2026-11.xlsx,
@@ -58,6 +63,12 @@ numbers and bid totals: none is a client file. Two hits were public data: Sales 
 table (Riverside, Miramar…), and the material prices file cites public bid tabulations and their suppliers.
 
 ## Needs Umer
+- Catalog source ids and URLs still contain maker words (e.g. ids like "DEERE-135P", maker web addresses): the ids
+  are keys other rows reference; the names are reworded. The other seed files hold 237 maker mentions (eq_class 193,
+  eq_production 42, eq_activity 1, eq_reference 1), held at that count by the new gate.
+- AdvancedSettings and CrewSettings still label tables "Residential" / "Commercial & Public" (outside the wage review).
+- One workspace's company settings set general liability to 1 % (the "1 %" seen); the engine charges the default 3 %
+  elsewhere.
 - f5-big: pointing the fx workers at minio:9000 directly would remove the bench-only gateway stall but changes the
   fx isolation check and the ranged first page f5-big exercises: your call. f5-big step 2 (150 thumbnails in 240 s) still
   fails in some runs (545 MB at 2.2-3.8 MB/s is about 200 s alone).
