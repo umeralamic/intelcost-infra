@@ -17,6 +17,8 @@ table of the calibration column's own type, never committed. With `roles`, the w
 determination lists (D-753 option C): its rows are here, it reads no stdin, and it prints one line.
 With `wages`, the wage core (D-1032: W1 open shop, W7 foreman, W12 escalation) on Harris County TX,
 read from the bench's loaded BLS tables (it reads the database, never writes); one line, as `roles`.
+With `prevailing`, prevailing wage by classification (D-1038: W3 subtypes and the operator that follows
+its machine, W4 not covered, W7 foreman) on Mohave County AZ's Highway WD; one line, as `wages`.
 With `hidden`, an earthwork activity hidden from suggestions (D-759): on a temporary workspace made
 and rolled back in one transaction, every starter line role maps to the same activity, default
 production and tier with its activity hidden as shown; it reads no stdin and prints one line.
@@ -462,6 +464,112 @@ def wages() -> int:
     return 1 if wrong else 0
 
 
+# Prevailing wage by classification (WAGE_PLAN W3, W4, W7; D-1038), Mohave County AZ (ZIP 85360, county
+# 04015, labour F = -19.587 %), Davis-Bacon, public, burdened, company defaults, on Highway WD AZ20260046
+# mod 1 (SAM.gov, 2026-05-18; its lines below as the parser reads them). Engine burden on base: Social
+# Security 6.2 % + Medicare 1.45 %, FUTA 0.6 % on the first $7,000 and AZ SUTA 2.0 % on the first $8,000 (a
+# year of 2,000 hours: 0.021 + 0.08 = $0.101/hr), workers' comp per craft (laborer 14.50 %, operator and
+# truck 8.49 %, carpenter 5.04 %), insurance 3 %; fringe untaxed. By hand:
+#   dozer 35.56 + 18.12 + taxes 2.8213 + WC 3.0190 + GL 1.0668 = 60.59 (WD; over 55.08);
+#   motor grader 36.64 + 18.12 + 2.9040 + 3.1107 + 1.0992 = 61.87 (WD);
+#   carpenter (excludes formwork) 35.89 + 14.98 + 2.8466 + 1.8089 + 1.0767 = 56.60 (WD; over 52.80);
+#   laborer 22.35 + 0.60 -> 28.67, excavator 31.27 + 6.90 -> 44.26, dump truck 25.78 + 0.69 -> 31.51: each
+#   raised to the commercial rate x (1 + F), 41.28, 55.08, 46.60; plumber not listed (licensed, never
+#   conformed): not covered, 60.66 = commercial x (1 + F); foreman = crew top (grader 61.87) x 1.10 = 68.06.
+# The plan's 61.41, 62.73, 57.43 and 69.00 took FUTA and SUTA on the whole base (2.6 % uncapped): the engine
+# caps them at their wage bases, $0.82 to $0.94 less. Paychecks: dozer 35.56 + 18.12 = 53.68 (over
+# commercial base 49.51 x 0.80413 = 39.81), laborer 22.95 raised to commercial 38.04 x 0.80413 = 30.59.
+MOHAVE_46 = [
+    ("CARPENTER, EXCLUDES FORMWORK CONCRETE", 35.89, 14.98),
+    ("POWER EQUIPMENT OPERATOR: BULLDOZER", 35.56, 18.12),
+    ("POWER EQUIPMENT OPERATOR: BOBCAT/SKID STEER/SKID LOADER", 32.29, 18.12),
+    ("POWER EQUIPMENT OPERATOR: MOTOR GRADER/BLADE", 36.64, 18.12),
+    ("LABORER: GRADE SETTER", 29.91, 9.26),
+    ("LABORER: PIPELAYER", 30.88, 9.26),
+    ("CARPENTER: FORMWORK CONCRETE", 31.98, 9.26),
+    ("TRUCK DRIVER: WATER", 30.88, 9.26),
+    ("TRUCK DRIVER: DUMP", 25.78, 0.69),
+    ("POWER EQUIPMENT OPERATOR: LOADER/FRONT END LOADER", 30.15, 0.81),
+    ("POWER EQUIPMENT OPERATOR: EXCAVATOR/TRACKHOE", 31.27, 6.90),
+    ("PAINTER: PAVEMENT MARKING", 24.60, 6.34),
+    ("LABORER: GENERAL", 22.35, 0.60),
+    ("ELECTRICIAN", 29.00, 7.58),
+]
+PREVAILING_CASES = [
+    {"id": "pw-laborer", "craft": "CC-16", "expect": {"rate": 41.28, "payable": 30.59, "rule": "raised_to_minimum"}},
+    {"id": "pw-excavator", "craft": "CC-11", "expect": {"rate": 55.08, "rule": "raised_to_minimum"}},
+    {"id": "pw-dozer", "craft": "CC-11", "subtype": "dozer", "expect": {"rate": 60.59, "payable": 53.68, "rule": "wd"}},
+    {"id": "pw-motor-grader", "craft": "CC-11", "subtype": "motor_grader", "expect": {"rate": 61.87, "rule": "wd"}},
+    {"id": "pw-dump-truck", "craft": "CC-31", "expect": {"rate": 46.60, "rule": "raised_to_minimum"}},
+    {"id": "pw-carpenter", "craft": "CC-05", "expect": {"rate": 56.60, "rule": "wd"}},
+    {"id": "pw-plumber", "craft": "CC-25", "expect": {"rate": 60.66, "rule": "not_covered"}},
+]
+PREVAILING_CREW = [
+    # An operator row follows its machine (D-724 rule 5): the machine's subtype prices it (W3).
+    {"id": "pw-crew-dozer", "machine": "DZ-CRAWL-D6", "craft": "CC-11", "expect": 60.59},
+    {"id": "pw-crew-grader", "machine": "GR-14FT-160", "craft": "CC-11", "expect": 61.87},
+    {"id": "pw-crew-excavator", "machine": "EX-CRAWL-30T", "craft": "CC-11", "expect": 55.08},
+]
+PREVAILING_FOREMAN = 68.06
+
+
+def prevailing() -> int:
+    from datetime import date
+    from decimal import Decimal
+
+    from app.features.wage_calculator.labor import ForemanContext, price_foremen
+    from app.wagecalc.data import RefData
+    from app.wagecalc.market import load_market
+    from app.wagecalc.rates import build_rate_set
+    from app.wagecalc.wd.mapping import machine_subtype, map_groups, map_wd
+
+    ref, market = RefData(), load_market()
+    lines = [{"classification": t, "base": b, "fringe": f} for t, b, f in MOHAVE_46]
+    mapped, _ = map_wd(lines)
+    entries, labels = {}, {}
+    for name, m in mapped.items():
+        try:
+            code = ref.craft_code("commercial", name)
+        except KeyError:
+            continue
+        entries[code] = (m["base"], m["fringe"] or 0.0, 0.0)
+        labels[code] = m["classification"]
+    found, _ = map_groups(lines)
+    groups: dict = {}
+    for (name, key), g in found.items():
+        groups.setdefault(ref.craft_code("commercial", name), {})[key] = (g["classification"], (g["base"], g["fringe"] or 0.0, 0.0))
+    rs = build_rate_set(ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="prevailing_federal",
+                        pricing_basis="burdened", basis="wage_data", entries=entries, market=market, bid_date=date(2026, 11, 6),
+                        edition_date=market.editions[ref.edition_id], labels=labels, groups=groups)
+    wrong = []
+    if round(rs["location"]["labor"] * 100000) != -19587:
+        wrong.append(f"FAIL  pw-labor-factor: {rs['location']['labor']}, expected -0.19587")
+    for c in PREVAILING_CASES:
+        got = rs["subtypes"][c["craft"]][c["subtype"]] if c.get("subtype") else rs["crafts"][c["craft"]]
+        for k, want in c["expect"].items():
+            if (got.get(k) != want) if isinstance(want, str) else round(got[k] * 100) != round(want * 100):
+                wrong.append(f"FAIL  {c['id']}.{k}: {got.get(k)}, expected {want}")
+    subtypes = {code: {k: Decimal(str(v["rate"])) for k, v in subs.items()} for code, subs in rs["subtypes"].items()}
+    machines = {f"m{i}": machine_subtype(c["machine"]) or "" for i, c in enumerate(PREVAILING_CREW)}
+    crew = [{"role": "Operator: Equipment Operator", "craft_code": c["craft"], "count": 1, "rate_source": "wage_set",
+             "hourly_wage": rs["crafts"][c["craft"]]["rate"], "for_equipment": f"m{i}"} for i, c in enumerate(PREVAILING_CREW)]
+    crew.append({"role": "Laborer", "craft_code": "CC-16", "count": 1, "rate_source": "wage_set", "hourly_wage": rs["crafts"]["CC-16"]["rate"]})
+    crew.append({"role": "Foreman", "foreman": True, "count": 0.5, "rate_source": "wage_set"})
+    context = ForemanContext(premium=Decimal("0.10"), laborer=Decimal(str(rs["crafts"]["CC-16"]["rate"])), determination=None,
+                             subtypes=subtypes, machines=machines)
+    priced = price_foremen(crew, context) or []
+    for i, c in enumerate(PREVAILING_CREW):
+        if round(priced[i]["hourly_wage"] * 100) != round(c["expect"] * 100):
+            wrong.append(f"FAIL  {c['id']}: {priced[i]['hourly_wage']}, expected {c['expect']}")
+    if round(priced[-1]["hourly_wage"] * 100) != round(PREVAILING_FOREMAN * 100):
+        wrong.append(f"FAIL  pw-foreman: {priced[-1]['hourly_wage']}, expected {PREVAILING_FOREMAN}")
+    for w in wrong:
+        print(w)
+    rows = 1 + len(PREVAILING_CASES) + len(PREVAILING_CREW) + 1
+    print(f"prevailing: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 # Typed values on a site machine across Apply tier (D-758 follow-up): A1's spread was EX-CRAWL-30T +
 # ADT-30T with a typed week $7,000 on the excavator and day $900 + work day 9 on the truck.
 TYPED_EX = {"own": {"rent_week": 7000}}
@@ -618,6 +726,8 @@ def main() -> None:
         sys.exit(roles())
     if sys.argv[1:] == ["wages"]:
         sys.exit(wages())
+    if sys.argv[1:] == ["prevailing"]:
+        sys.exit(prevailing())
     if sys.argv[1:] == ["typed"]:
         sys.exit(typed())
     cases = json.load(sys.stdin)
