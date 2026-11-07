@@ -428,6 +428,50 @@ WAGE_FOREMEN = [
 ]
 
 
+# D-1047 items 2 and 13, for every craft (and subtype) each wage mode prices, on both bases: (a) the
+# breakdown's parts add to the rate within $0.01, with no "Unexplained difference" line (a raise to a
+# minimum is its own named line); (b) a helper or tender is never paid more than its trade.
+WAGE_HELPERS = [
+    ("CC-36", "CC-35", "tile finisher <= tile setter"),
+    ("CC-04", "CC-03", "bricklayer tender <= bricklayer"),
+    ("CC-34", "CC-05", "carpenter helper <= carpenter"),
+    ("CC-32", "CC-09", "electrician helper <= electrician"),
+    ("CC-33", "CC-25", "pipe trades helper <= plumber"),
+    ("CC-33", "CC-22", "pipe trades helper <= pipefitter"),
+]
+
+
+def wage_gates(ref, name: str, build) -> tuple[int, list[str]]:
+    """`build(pricing_basis)` returns a rate set; one parts row and one helpers row per basis."""
+    from app.wagecalc.rates import UNEXPLAINED, breakdown
+
+    rows, wrong = 0, []
+    for basis in ("burdened", "direct"):
+        rs = build(basis)
+        direct, lf = basis == "direct", rs["location"]["labor"]
+        items = [(code, code, v) for code, v in rs["crafts"].items()]
+        items += [(f"{code}:{key}", code, v) for code, subs in rs["subtypes"].items() for key, v in subs.items()]
+        for label, code, v in items:
+            parts = breakdown(ref, code, v, direct, lf)
+            total = sum(part["amount"] for part in parts)
+            if abs(total - v["rate"]) > 0.0101 or any(part["label"] == UNEXPLAINED for part in parts):
+                shown = "; ".join(f"{part['label']} {part['amount']:.2f}" for part in parts)
+                wrong.append(f"FAIL  {name}-parts-{basis}.{label}: {total:.2f} ({shown}), rate {v['rate']:.2f}")
+        for helper, trade, said in WAGE_HELPERS:
+            h, t = rs["crafts"][helper]["rate"], rs["crafts"][trade]["rate"]
+            if h > t + 0.005:
+                wrong.append(f"FAIL  {name}-helper-{basis}: {said}: {h:.2f} > {t:.2f}")
+        rows += 2
+    return rows, wrong
+
+
+# The tile finisher on an open shop (D-1047 item 13): no national open-shop rate, so its own SOC's local
+# market figure, BLS 47-3011 (helpers of tile and marble setters); Houston has no metro row, so Texas p75
+# $21.35 x OEWS escalation 1.0472 = $22.36, through the burden engine, no national floor (it read the
+# union-scale table's $32.26 before, above the tile setter's $30.89 base).
+WAGE_TILE_FINISHER = {"base": 22.36, "rule": "oews_p75", "source": "Local market (Texas):"}
+
+
 def wages() -> int:
     from datetime import date
     from decimal import Decimal
@@ -461,9 +505,17 @@ def wages() -> int:
         got = (price_foremen(crew, context) or [])[-1]["hourly_wage"]
         if round(got * 100) != round(c["expect"] * 100):
             wrong.append(f"FAIL  {c['id']}: {got}, expected {c['expect']}")
+    tile = rs["crafts"]["CC-36"]
+    if round(tile["base"] * 100) != round(WAGE_TILE_FINISHER["base"] * 100) or tile["rule"] != WAGE_TILE_FINISHER["rule"] \
+            or not (tile.get("source") or [""])[0].startswith(WAGE_TILE_FINISHER["source"]):
+        wrong.append(f"FAIL  wage-tile-finisher: {tile['base']} {tile['rule']} {(tile.get('source') or [''])[0]!r}, expected {WAGE_TILE_FINISHER}")
+    gate_rows, gate_wrong = wage_gates(ref, "wages", lambda basis: build_rate_set(
+        ref, project_type="commercial", zip5="77002", county_fips="48201", wage_determination="open_shop",
+        pricing_basis=basis, market=market, bid_date=bid, edition_date=market.editions[ref.edition_id]))
+    wrong += gate_wrong
     for w in wrong:
         print(w)
-    rows = len(WAGE_CASES) + len(WAGE_FOREMEN) + len(WAGE_ESCALATION)
+    rows = len(WAGE_CASES) + len(WAGE_FOREMEN) + len(WAGE_ESCALATION) + 1 + gate_rows
     print(f"wages: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
@@ -515,6 +567,19 @@ PREVAILING_CREW = [
     {"id": "pw-crew-excavator", "machine": "EX-CRAWL-30T", "craft": "CC-11", "expect": 55.08},
 ]
 PREVAILING_FOREMAN = 68.06
+# A union agreement loaded on the Mohave prevailing job (D-1047 item 1), the higher of the agreement and
+# the WD line, the WD alone (never raised to national union scale: the agreement is the contractor's
+# scale). Carpenter 40.00 + plan 15.00 -> 61.38 (the union mode's figure) over the WD's 56.60: the
+# agreement. Laborer 25.00 + cash 8.00 -> 40.00 over the WD general laborer 22.35 + 0.60 (28.67
+# unraised): the agreement, under the 41.28 national union scale it replaces. Electrician 25.00 + plan
+# 5.00: 25.00 + 5.00 + taxes 1.9125 + 0.101 = 2.0135 + WC + GL 0.75 under the WD's 29.00 + 7.58 line
+# (licensed, listed): the WD line, not raised, rule "wd".
+PREVAILING_AGREEMENT = {"CC-05": (40.00, 15.00, 0.0), "CC-16": (25.00, 0.0, 8.00), "CC-09": (25.00, 5.00, 0.0)}
+PREVAILING_AGREEMENT_CASES = [
+    {"id": "pw-agreement-carpenter", "craft": "CC-05", "expect": {"rate": 61.38, "rule": "union_agreement"}},
+    {"id": "pw-agreement-laborer", "craft": "CC-16", "expect": {"rate": 40.00, "rule": "union_agreement"}},
+    {"id": "pw-agreement-electrician", "craft": "CC-09", "expect": {"rule": "wd"}},
+]
 
 
 def prevailing() -> int:
@@ -542,9 +607,13 @@ def prevailing() -> int:
     groups: dict = {}
     for (name, key), g in found.items():
         groups.setdefault(ref.craft_code("commercial", name), {})[key] = (g["classification"], (g["base"], g["fringe"] or 0.0, 0.0))
-    rs = build_rate_set(ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="prevailing_federal",
-                        pricing_basis="burdened", basis="wage_data", entries=entries, market=market, bid_date=date(2026, 11, 6),
-                        edition_date=market.editions[ref.edition_id], labels=labels, groups=groups)
+    def build(basis: str, data: str = "wage_data", agreement: dict | None = None):
+        return build_rate_set(ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="prevailing_federal",
+                              pricing_basis=basis, basis=data, entries=entries if data == "wage_data" else None, market=market,
+                              bid_date=date(2026, 11, 6), edition_date=market.editions[ref.edition_id], labels=labels, groups=groups,
+                              agreement="Test agreement" if agreement else None, agreement_entries=agreement)
+
+    rs = build("burdened")
     wrong = []
     if round(rs["location"]["labor"] * 100000) != -19587:
         wrong.append(f"FAIL  pw-labor-factor: {rs['location']['labor']}, expected -0.19587")
@@ -567,9 +636,22 @@ def prevailing() -> int:
             wrong.append(f"FAIL  {c['id']}: {priced[i]['hourly_wage']}, expected {c['expect']}")
     if round(priced[-1]["hourly_wage"] * 100) != round(PREVAILING_FOREMAN * 100):
         wrong.append(f"FAIL  pw-foreman: {priced[-1]['hourly_wage']}, expected {PREVAILING_FOREMAN}")
+    # A union agreement on prevailing (D-1047 item 1): each craft it lists at max(agreement, WD line).
+    both = build("burdened", agreement=PREVAILING_AGREEMENT)
+    for c in PREVAILING_AGREEMENT_CASES:
+        got = both["crafts"][c["craft"]]
+        for k, want in c["expect"].items():
+            if (got.get(k) != want) if isinstance(want, str) else round(got[k] * 100) != round(want * 100):
+                wrong.append(f"FAIL  {c['id']}.{k}: {got.get(k)}, expected {want}")
+    gate_rows = 0
+    for name, data, agreement in (("prevailing", "wage_data", None), ("prevailing-no-wd", "national_average", None),
+                                  ("prevailing-agreement", "wage_data", PREVAILING_AGREEMENT)):
+        n, w = wage_gates(ref, name, lambda basis, d=data, a=agreement: build(basis, d, a))
+        gate_rows += n
+        wrong += w
     for w in wrong:
         print(w)
-    rows = 1 + len(PREVAILING_CASES) + len(PREVAILING_CREW) + 1
+    rows = 1 + len(PREVAILING_CASES) + len(PREVAILING_CREW) + 1 + len(PREVAILING_AGREEMENT_CASES) + gate_rows
     print(f"prevailing: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
@@ -623,9 +705,17 @@ def union() -> int:
     first = (sets["cash"]["crafts"]["CC-05"].get("source") or [""])[0]
     if not first.startswith("Union agreement Test agreement cash:"):
         wrong.append(f"FAIL  un-source-line: {first!r}, expected it to name the agreement")
+    gate_rows = 0
+    for name, data in (("union", "wage_data"), ("union-no-agreement", "national_average")):
+        n, w = wage_gates(ref, name, lambda basis, d=data: build_rate_set(
+            ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="union_cba", pricing_basis=basis,
+            basis=d, entries=UNION_CASH if d == "wage_data" else None, market=market, bid_date=date(2026, 11, 6),
+            edition_date=market.editions[ref.edition_id], agreement="Test agreement cash"))
+        gate_rows += n
+        wrong += w
     for w in wrong:
         print(w)
-    rows = len(UNION_CASES) + 1
+    rows = len(UNION_CASES) + 1 + gate_rows
     print(f"union: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
