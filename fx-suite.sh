@@ -31,6 +31,22 @@ set -u
 cd "$(dirname "$0")"
 TAG=fixtures-archive-2026-09-28
 FX_SERVICES="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx app-fx app-fx-b stripe-fake-fx"
+# A run never restarts or recreates a service outside its task (D-1051): the bench's own containers
+# (the default profile: postgres, redis, minio, api, app, worker, worker-pages, worker-previews,
+# worker-ocr, beat, ...) are recorded when this script starts and must be the same ones when it ends.
+# Bring the fx stack up with `./fx-suite.sh up`, never a bare `docker compose --profile fx up -d`,
+# which recreates bench services too.
+BENCH_BEFORE=$(docker compose ps --format '{{.Service}}={{.ID}}' 2>/dev/null | grep -v -- '-fx' | sort | tr '\n' ' ')
+bench_check() {
+  local status=$? after
+  after=$(docker compose ps --format '{{.Service}}={{.ID}}' 2>/dev/null | grep -v -- '-fx' | sort | tr '\n' ' ')
+  if [ -n "$BENCH_BEFORE" ] && [ "$after" != "$BENCH_BEFORE" ]; then
+    echo "FAIL  a bench service was restarted or recreated during this run (D-1051): $(docker compose ps --format '{{.Service}} {{.Status}}' | tr '\n' ';')"
+    exit 1
+  fi
+  exit "$status"
+}
+trap bench_check EXIT
 # The host gateway's address, which the api, the worker and the containerised browser all reach
 # MinIO at (Docker Desktop: host.docker.internal).
 host=$(docker compose exec -T api python -c "import socket; print(socket.gethostbyname('host.docker.internal'))" 2>/dev/null | tr -d '\r' | tail -1)
@@ -140,6 +156,14 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
 }
 
 case "${1:-}" in
+  up)
+    # The fx stack only, without its watchers when FX_WATCH=0 (D-1051): --no-deps, the bench's own
+    # services are never recreated; the exit trap fails the command if one was.
+    # The apps already in use stay: the built ones (`prod`) hold the dev servers' ports.
+    svc=$FX_SERVICES
+    [ "$(docker compose ps -q app-fx-prod 2>/dev/null)" ] && svc=$(echo "$FX_SERVICES" | tr ' ' '\n' | grep -v '^app-fx' | tr '\n' ' ')
+    docker compose --profile fx up -d --no-deps $svc
+    ;;
   setup)
     rm -rf fx-suite && mkdir fx-suite
     git archive "$TAG" browser drives regress.sh | tar -x -C fx-suite

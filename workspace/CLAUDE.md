@@ -99,6 +99,11 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    one and rewrites whole files (on 2026-10-11 it turned nine edited files into 14,000 changed lines).
    App formatting is eslint only: `npm run lint` (and `npx eslint --fix <files>` for its fixable
    rules). The api formats with `ruff format`.
+11. **A run never restarts or recreates services outside its task (D-1051).** Bring the fx stack up with
+   `./fx-suite.sh up` (fx services only, `--no-deps`), never a bare `docker compose --profile fx up -d`,
+   which recreates the bench's own services too. `fx-suite.sh` records the bench's containers when it
+   starts and fails on exit if any was restarted or recreated. Restarting the bench api because it is
+   stuck is the exception: say so in the report.
 
 ## Git
 

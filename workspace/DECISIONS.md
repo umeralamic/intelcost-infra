@@ -27349,3 +27349,29 @@ Q-P3 "lowest total (fee + trucking), runner-up shown").
 
 - The tab row (with Advanced and Save rates to project at its right), the craft table and the crew table share one
   compact width (`max-w-3xl`) instead of the page's; a breakdown's amounts sit beside their labels, not at the far edge.
+
+## D-1049: The whole wage page compact; settings never drawn twice
+
+**Status:** Accepted (2026-11-07, Umer: "also its width"; "the workspace settings headers coming two times").
+
+- The wage calculator, every step, is one compact width (`max-w-3xl`), the review included (extends D-1048).
+- Settings showed its frame (logo bar, "Workspace settings", tabs) twice after many hot reloads: a page imported a
+  second copy of `settings-layout.tsx`, whose frame-width context it then did not see, and drew its own frame. A fresh
+  load drew one. The context now lives in `settings-embedded.ts` beside `SettingsEmbedded`, a module hot reloads leave
+  alone, so a page always sees the frame it is in. A built app was never affected.
+
+## D-1050: Equipment maker and model names are allowed; software competitors stay banned
+
+**Status:** Accepted (2026-11-07, Umer: "equipment maker and model names are allowed in the catalog, seeds and app.
+Software competitor names stay banned everywhere").
+
+- Supersedes D-1043 item 5's gate: the seed maker-name gate is removed; a gate on software competitor names stays (or
+  is added). D-1043's generic rewording of the catalog's sources is reverted only where it lost information (a
+  handbook's name and edition, a model's maker); otherwise the text stays.
+
+## D-1051: A run never restarts or recreates services outside its task
+
+**Status:** Accepted (2026-11-07, Umer: "a run never restarts or recreates services outside its task").
+
+- This run's fx bring-up also recreated the bench's worker-pages, worker-previews and worker-ocr. The rule joins the
+  run rules (CLAUDE.md), and the fx bring-up refuses to touch a bench service (fx-suite.sh's guard).
