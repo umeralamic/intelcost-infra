@@ -184,6 +184,22 @@ export const EQUIPMENT_CASES = [
   // Debris haul-off with a loader (D-1039): clearing_haul maps to A6, a haul activity (the D-1035 cycle runs A6, A7,
   // A8), whose first tier (the 0-499 LCY band's) loads its trucks with a 3 yd wheel loader; A7 had trucks only.
   { id: "clearing-haul-loader", kind: "starter-role", role: "clearing_haul", tier: 1, expect: { activity: "A6", haul: true, loaders: "WL-SMALL-3Y×1", trucks: 2 } },
+
+  // --- Small quantities on machines already on site (D-1040, release 38; the api's choice is `onsite` above) -----
+  // A machine on site lends a small line its hours at its hourly rate (`period: "site"`): no period, no minimum, no
+  // mob. The 20-25 t excavator, 0.4 hr: day $1,040 ÷ 8 = $130/hr × 0.4 = $52.00 + fuel 2.78 gal/hr × 0.4 × $6.276 =
+  // $6.98 (6.978912): $58.98, mob none (asked for, still none). Today's tier on the same 0.4 hr bills a day, $1,040 +
+  // $6.98 + its mob $1,100 = $2,146.98. An operated road dump truck on site, 1.5 hr: $106.14 × 1.5 = $159.21.
+  { id: "onsite-machine-rental", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "site", hours: 0.4, workDays: 0.05, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 58.98, equipment: 52, fuel: 6.98, mob: null } },
+  { id: "onsite-machine-tier-today", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 0.4, workDays: 0.05, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 2146.98, equipment: 1040, mob: 1100 } },
+  { id: "onsite-machine-operated", kind: "machine", setting: {}, input: { classKey: "DT-OP-3AXLE", mode: "operated", period: "site", hours: 1.5, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 159.21, equipment: 159.21, mob: null } },
+  // A 20 CCY fill line at 400 CCY/day (0.05 day, 0.4 hr at 8 hr/day), by machines on site: the excavator $58.98 and
+  // the 84 in roller (day $700 ÷ 8 = $87.50 × 0.4 = $35.00 + 2.91 × 0.4 × $6.276 = $7.31, 7.305264) = $101.28
+  // (101.284176); the crew at the api's half-day for the small lines (crew production 20 ÷ 0.5 = 40 CCY/day): 0.4 ×
+  // 400 ÷ 40 = 4 hr × ($50 + $50 + $40) = $560, "Minimum half day". Today's tier on the same line (the excavator
+  // alone, a day and its mob): $2,146.98; its crew at its own half-day floor, 4 hr × ($50 + $40) = $360.
+  { id: "onsite-host-small-fill", kind: "host", ...DIESEL, qty: 20, unit: "CCY", spread: { prod_per_day: 400, prod_unit: "CCY", crew_prod_per_day: 40, note: "By machines on site: Cut to fill: excavator, Subgrade: roller" }, rows: [comp("ex", "equipment", { eq_class_key: "EX-CRAWL-20T", eq_mode: "rental", eq_period: "site", eq_units: 1, eq_fuel_load: "med", eq_include_mob: false }), comp("roller", "equipment", { position: 1, eq_class_key: "CP-SD-84-SM", eq_mode: "rental", eq_period: "site", eq_units: 1, eq_fuel_load: "med", eq_include_mob: false }), comp("crew", "labor", { position: 2, crew: [{ role: "TEST Operator", count: 1, hourly_wage: 50, for_equipment: "ex" }, { role: "TEST Operator", count: 1, hourly_wage: 50, for_equipment: "roller" }, { role: "TEST Laborer", count: 1, hourly_wage: 40 }], production_rate: 12.5, production_basis: "units_per_hr" })], expect: { equipment: 101.28, crewHours: 4, labor: 560, warning: "Minimum half day" } },
+  { id: "onsite-host-small-fill-tier", kind: "host", ...DIESEL, qty: 20, unit: "CCY", spread: { prod_per_day: 400, prod_unit: "CCY" }, rows: [comp("ex", "equipment", { eq_class_key: "EX-CRAWL-20T", eq_mode: "rental", eq_period: "auto", eq_units: 1, eq_fuel_load: "med", eq_include_mob: true }), comp("crew", "labor", { position: 1, crew: [{ role: "TEST Operator", count: 1, hourly_wage: 50, for_equipment: "ex" }, { role: "TEST Laborer", count: 1, hourly_wage: 40 }], production_rate: 12.5, production_basis: "units_per_hr" })], expect: { equipment: 2146.98, crewHours: 4, labor: 360, warning: "Minimum half day" } },
 ];
 
 /** The bundle the api would send, from the dumped national rows and a case's overrides. */

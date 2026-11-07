@@ -19,9 +19,13 @@ With `wages`, the wage core (D-1032: W1 open shop, W7 foreman, W12 escalation) o
 read from the bench's loaded BLS tables (it reads the database, never writes); one line, as `roles`.
 With `prevailing`, prevailing wage by classification (D-1038: W3 subtypes and the operator that follows
 its machine, W4 not covered, W7 foreman) on Mohave County AZ's Highway WD; one line, as `wages`.
+With `union`, union agreements (D-1041: W5, an agreement's craft through the burden engine, cash fringe
+taxed and plan fringe not, a craft not in it at commercial x (1 + F)) in Mohave County AZ; one line.
 With `hidden`, an earthwork activity hidden from suggestions (D-759): on a temporary workspace made
 and rolled back in one transaction, every starter line role maps to the same activity, default
 production and tier with its activity hidden as shown; it reads no stdin and prints one line.
+With `onsite`, small quantities on machines already on site (D-1040) through `equipment/on_site.py`:
+under and over the threshold, with and without a machine able to do the work; pure, one line.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -570,6 +574,62 @@ def prevailing() -> int:
     return 1 if wrong else 0
 
 
+# Union agreements (WAGE_PLAN W5; D-1041), Mohave County AZ (ZIP 85360, county 04015, labour F = -19.587 %),
+# public, union, burdened, company defaults. An agreement's craft goes through the burden engine as a WD line
+# (plan fringe untaxed, cash fringe a taxable wage) and is not raised to a market rate; a craft the agreement
+# lacks is the commercial rate x (1 + F). Engine burden on base: Social Security 6.2 % + Medicare 1.45 % on
+# the taxable wage (base + cash fringe), FUTA 0.6 % of $7,000 and AZ SUTA 2.0 % of $8,000 over 2,000 hours
+# ($0.021 + $0.08 = $0.101/hr), workers' comp on base (carpenter 5.04 %, operator 8.49 %, laborer 14.50 %),
+# insurance 3 % of base. By hand:
+#   carpenter 40.00 + plan 15.00: taxes 2.48 + 0.58 + 0.101 = 3.161, WC 2.016, GL 1.20 -> 61.38;
+#   operator 38.00 + plan 20.00: taxes 2.356 + 0.551 + 0.101 = 3.008, WC 3.2262, GL 1.14 -> 65.37;
+#   laborer 25.00 + cash 8.00: taxable 33.00, taxes 2.046 + 0.4785 + 0.101 = 2.6255, WC 3.625, GL 0.75 -> 40.00
+#   (under the commercial 41.28: the agreement's own figure, not raised);
+#   laborer 25.00 + plan 8.00 (a second agreement): taxable 25.00, taxes 1.55 + 0.3625 + 0.101 = 2.0135 -> 39.39,
+#   0.61 under the cash case: 7.65 % of the $8.00 fringe;
+#   plumber and dump truck driver, not in the agreement: commercial x (1 + F), 60.66 and 46.60.
+UNION_CASH = {"CC-05": (40.00, 15.00, 0.0), "CC-11": (38.00, 20.00, 0.0), "CC-16": (25.00, 0.0, 8.00)}
+UNION_PLAN = {"CC-16": (25.00, 8.00, 0.0)}
+UNION_CASES = [
+    {"id": "un-carpenter", "set": "cash", "craft": "CC-05", "expect": {"rate": 61.38, "taxes": 3.16, "rule": "union_agreement"}},
+    {"id": "un-operator", "set": "cash", "craft": "CC-11", "expect": {"rate": 65.37, "rule": "union_agreement"}},
+    {"id": "un-laborer-cash-fringe", "set": "cash", "craft": "CC-16", "expect": {"rate": 40.00, "taxes": 2.63, "rule": "union_agreement"}},
+    {"id": "un-laborer-plan-fringe", "set": "plan", "craft": "CC-16", "expect": {"rate": 39.39, "taxes": 2.01, "rule": "union_agreement"}},
+    {"id": "un-plumber-not-in", "set": "cash", "craft": "CC-25", "expect": {"rate": 60.66, "rule": "not_in_agreement"}},
+    {"id": "un-dump-truck-not-in", "set": "cash", "craft": "CC-31", "expect": {"rate": 46.60, "rule": "not_in_agreement"}},
+]
+
+
+def union() -> int:
+    from datetime import date
+
+    from app.wagecalc.data import RefData
+    from app.wagecalc.market import load_market
+    from app.wagecalc.rates import build_rate_set
+
+    ref, market = RefData(), load_market()
+    sets = {
+        key: build_rate_set(ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="union_cba",
+                            pricing_basis="burdened", basis="wage_data", entries=entries, market=market, bid_date=date(2026, 11, 6),
+                            edition_date=market.editions[ref.edition_id], agreement=f"Test agreement {key}")
+        for key, entries in (("cash", UNION_CASH), ("plan", UNION_PLAN))
+    }
+    wrong = []
+    for c in UNION_CASES:
+        got = sets[c["set"]]["crafts"][c["craft"]]
+        for k, want in c["expect"].items():
+            if (got.get(k) != want) if isinstance(want, str) else round(got[k] * 100) != round(want * 100):
+                wrong.append(f"FAIL  {c['id']}.{k}: {got.get(k)}, expected {want}")
+    first = (sets["cash"]["crafts"]["CC-05"].get("source") or [""])[0]
+    if not first.startswith("Union agreement Test agreement cash:"):
+        wrong.append(f"FAIL  un-source-line: {first!r}, expected it to name the agreement")
+    for w in wrong:
+        print(w)
+    rows = len(UNION_CASES) + 1
+    print(f"union: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 # Typed values on a site machine across Apply tier (D-758 follow-up): A1's spread was EX-CRAWL-30T +
 # ADT-30T with a typed week $7,000 on the excavator and day $900 + work day 9 on the truck.
 TYPED_EX = {"own": {"rent_week": 7000}}
@@ -596,6 +656,80 @@ def typed() -> int:
     for w in wrong:
         print(w)
     print(f"site typed values: {len(TYPED_CASES)} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
+# Small quantities on machines already on site (D-1040, release 38): the api's `equipment/on_site.py`.
+# The starter's first tiers, as release rows hold them: place and compact (A3, threshold 50 CCY) a small crawler
+# dozer that paces, a single-drum roller and a quarter water truck; strip topsoil (A4, 100 BCY) one crawler dozer;
+# haul off (A7, 50 LCY) two operated on-road dump trucks. A needed family is the dozer-or-excavator, the roller,
+# or the machine's own type; the water truck is support, never needed and never priced on site.
+_DOZER = {"eq_class_key": "QT-DOZER-SM", "units": 1, "paces": True, "category": "Earthwork", "type": "Crawler dozer"}
+_ROLLER = {"eq_class_key": "QT-ROLLER", "units": 1, "category": "Compaction", "type": "Single-drum vibratory roller"}
+_WATER = {"eq_class_key": "QT-WATER", "units": 0.25, "category": "Hauling", "type": "Water truck / tank"}
+_TRUCKS = {"eq_class_key": "QT-TRUCK", "units": 2, "paces": True, "category": "Hauling", "type": "On-road dump truck"}
+FILL_TIER = [_DOZER, _ROLLER, _WATER]
+STRIP_TIER = [_DOZER]
+EXPORT_TIER = [_TRUCKS]
+
+
+def _on(key: str, category: str, type_: str, name: str, mode: str = "rental") -> dict:
+    return {"eq_class_key": key, "eq_mode": mode, "name": name, "category": category, "type": type_}
+
+
+SITE_EXCAVATOR = _on("QT-EX-20T", "Earthwork", "Hydraulic excavator", "Cut to fill: excavator")
+SITE_DOZER = _on("QT-DOZER-MD", "Earthwork", "Crawler dozer", "Strip topsoil: dozer")
+SITE_ROLLER = _on("QT-ROLLER-84", "Compaction", "Single-drum vibratory roller", "Subgrade: roller")
+SITE_TRENCH_ROLLER = _on("QT-TRENCH", "Compaction", "Trench roller", "Storm: trench roller")
+SITE_TRUCK = _on("QT-TRUCK-OP", "Hauling", "On-road dump truck", "Import: dump trucks", "operated")
+SITE_ADT = _on("QT-ADT", "Hauling", "Articulated dump truck (ADT)", "Cut to fill: ADT")
+ON_SITE_CASES = [
+    # 20 CCY of fill, under 50, an excavator and a roller on other lines: the excavator stands in for the dozer
+    # (one family), the roller for the roller, the water truck is left out. Basis "By machines on site: …".
+    {"id": "onsite-fill-under-with", "qty": 20, "threshold": 50, "tier": FILL_TIER, "site": [SITE_EXCAVATOR, SITE_ROLLER],
+     "expect": {"keys": ["QT-EX-20T", "QT-ROLLER-84", None], "modes": ["rental", "rental", None], "note": "By machines on site: Cut to fill: excavator, Subgrade: roller"}},
+    # At the threshold is not under it, and over it: today's tier.
+    {"id": "onsite-fill-at-threshold", "qty": 50, "threshold": 50, "tier": FILL_TIER, "site": [SITE_EXCAVATOR, SITE_ROLLER], "expect": {"keys": None}},
+    {"id": "onsite-fill-over-with", "qty": 400, "threshold": 50, "tier": FILL_TIER, "site": [SITE_EXCAVATOR, SITE_ROLLER], "expect": {"keys": None}},
+    # No soil roller on site: "a roller if any" (D-1040), the excavator alone, the roller left out.
+    {"id": "onsite-fill-under-no-roller", "qty": 20, "threshold": 50, "tier": FILL_TIER, "site": [SITE_EXCAVATOR], "expect": {"keys": ["QT-EX-20T", None, None]}},
+    # A walk-behind trench roller is not a soil roller: the excavator alone as well.
+    {"id": "onsite-fill-under-trench-roller", "qty": 20, "threshold": 50, "tier": FILL_TIER, "site": [SITE_EXCAVATOR, SITE_TRENCH_ROLLER], "expect": {"keys": ["QT-EX-20T", None, None]}},
+    # Under, nothing on site: today's tier.
+    {"id": "onsite-fill-under-without", "qty": 20, "threshold": 50, "tier": FILL_TIER, "site": [], "expect": {"keys": None}},
+    # 80 BCY of strip, under 100, a dozer on site: that dozer. 150 BCY: today's tier.
+    {"id": "onsite-strip-under-with", "qty": 80, "threshold": 100, "tier": STRIP_TIER, "site": [SITE_DOZER],
+     "expect": {"keys": ["QT-DOZER-MD"], "modes": ["rental"], "note": "By machines on site: Strip topsoil: dozer"}},
+    {"id": "onsite-strip-over-with", "qty": 150, "threshold": 100, "tier": STRIP_TIER, "site": [SITE_DOZER], "expect": {"keys": None}},
+    # 30 LCY of export, under 50, operated dump trucks on the import: those trucks, operated, at the tier's count
+    # (the haul cycle sets it). Only an ADT on site (off-road, not a road truck): today's tier.
+    {"id": "onsite-export-under-with", "qty": 30, "threshold": 50, "tier": EXPORT_TIER, "site": [SITE_ADT, SITE_TRUCK],
+     "expect": {"keys": ["QT-TRUCK-OP"], "modes": ["operated"], "units": [2.0], "note": "By machines on site: Import: dump trucks"}},
+    {"id": "onsite-export-under-adt-only", "qty": 30, "threshold": 50, "tier": EXPORT_TIER, "site": [SITE_ADT], "expect": {"keys": None}},
+    # An activity with no threshold (every other one): off, whatever is on site.
+    {"id": "onsite-no-threshold", "qty": 5, "threshold": None, "tier": STRIP_TIER, "site": [SITE_DOZER], "expect": {"keys": None}},
+]
+
+
+def onsite() -> int:
+    from app.features.equipment import on_site
+
+    wrong = []
+    for c in ON_SITE_CASES:
+        site = [on_site.SiteMachine(m["eq_class_key"], m["eq_mode"], m["name"], on_site.family(m["category"], m["type"])) for m in c["site"]]
+        got_plan = on_site.plan(c["qty"], c["threshold"], c["tier"], site)
+        got = {
+            "keys": None if got_plan is None else [p["eq_class_key"] if p else None for p in got_plan],
+            "modes": None if got_plan is None else [p["eq_mode"] if p else None for p in got_plan],
+            "units": None if got_plan is None else [p["units"] for p in got_plan if p],
+            "note": None if got_plan is None else on_site.note([p["name"] for p in got_plan if p]),
+        }
+        for k, want in c["expect"].items():
+            if got[k] != want:
+                wrong.append(f"FAIL  {c['id']}.{k}: {got[k]!r}, expected {want!r}")
+    for w in wrong:
+        print(w)
+    print(f"machines on site: {len(ON_SITE_CASES)} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 
@@ -728,8 +862,12 @@ def main() -> None:
         sys.exit(wages())
     if sys.argv[1:] == ["prevailing"]:
         sys.exit(prevailing())
+    if sys.argv[1:] == ["union"]:
+        sys.exit(union())
     if sys.argv[1:] == ["typed"]:
         sys.exit(typed())
+    if sys.argv[1:] == ["onsite"]:
+        sys.exit(onsite())
     cases = json.load(sys.stdin)
     if sys.argv[1:] == ["scaleundo"]:
         import asyncio

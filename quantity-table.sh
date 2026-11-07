@@ -75,6 +75,7 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # Release 36 (D-1037): the cut that leaves the site, cut_export → A2, one line-map row.
 # Release 37 (D-1039): A56's and A57's excavator, its grapple or thumb and the chainsaws (6 machines); their
 # laborers raised to 2 and 3 in place (no crew row added); clearing_haul remapped to A6 in place (no line-map row).
+# Release 38 (D-1040): a small-quantity threshold on A3, A4 and A7 in place (a column, no row added): counts unchanged.
 if [ "$ST_COUNTS" != "104 205 480 323 220 112 30 102 104 0 0" ]; then
   echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 480 323 220 112 30 102 104 0 0"
   exit 1
@@ -107,8 +108,12 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py ro
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py wages" </dev/null || { echo "FAIL  wages (above)"; exit 1; }
 # Prevailing wage by classification (D-1038): Mohave Highway WD, operators by machine, a licensed trade not covered, the foreman.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prevailing" </dev/null || { echo "FAIL  prevailing (above)"; exit 1; }
+# Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py typed" </dev/null || { echo "FAIL  site typed values (above)"; exit 1; }
+# Small quantities on machines already on site (D-1040, release 38): under and over the threshold, with and without a machine.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py onsite" </dev/null || { echo "FAIL  machines on site (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.
