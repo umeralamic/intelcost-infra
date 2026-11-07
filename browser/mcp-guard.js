@@ -37,8 +37,8 @@ async (page) => {
     "dd3065bf-ec08-4f49-adcf-f268db833f7c": "Dania Pointe position test",
     "7aba5c72-2be8-41bc-a177-517488dffaf5": "CCCP",
     // Real bids in Intelcost Team (2026-11-06, the founder: "Real bids must never be touched by a run").
-    "24e4a96c-2f62-4490-8705-8bde97add9a5": "McCabe",
-    "d0b0305d-f74c-4203-961d-195ba8bf554e": "11146 - Valmont",
+    "24e4a96c-2f62-4490-8705-8bde97add9a5": "Benchmark A source (real bid)",
+    "d0b0305d-f74c-4203-961d-195ba8bf554e": "Real bid B",
   };
   // The founder's own workspaces that hold no bench project: never opened, reads too (D-601).
   const FOUNDER_WORKSPACES = {

@@ -52,8 +52,8 @@ for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUAR
 COPY_SOURCES: dict[str, str] = {
     # The founder's shared copy, the source of new proofs (2026-11-01).
     "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
-    # McCabe, a real bid: copied for the pricing investigation only (2026-11-06, D-1024).
-    "24e4a96c-2f62-4490-8705-8bde97add9a5": "McCabe",
+    # Benchmark A source, a real bid: copied for the pricing investigation only (2026-11-06, D-1024).
+    "24e4a96c-2f62-4490-8705-8bde97add9a5": "Benchmark A source (real bid)",
 }
 """Projects the copier alone may read, for one copy, named as `copy-3d-test.py --source <uuid>`.
 Every other drive, and every write, is refused as before."""

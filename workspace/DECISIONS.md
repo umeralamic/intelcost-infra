@@ -26925,26 +26925,40 @@ cut and fill, on the canvas, in a printed sheet and in the grading report's plan
 
 Calculate, its prisms and every quantity are untouched; the quantity table proves it.
 
-## D-1023: McCabe and 11146 - Valmont protected (real bids)
+## D-1023: Benchmark A source and Real bid B protected (real bids)
 
 **Status:** Accepted (2026-11-06, Umer: "Real bids must never be touched by a run").
 
 - Added to the protected list in all three copies (`scripts/protected.py`, `browser/lib/protected.mjs`,
-  `browser/mcp-guard.js`): McCabe (24e4a96c) and 11146 - Valmont (d0b0305d). The guard check reads 25 projects, the
+  `browser/mcp-guard.js`): Benchmark A source (24e4a96c) and Real bid B (d0b0305d). The guard check reads 25 projects, the
   three lists agreeing; the fingerprint marks both `ok`.
 - Every project in Intelcost Team, the founder's own workspace, is now on the list (six: Miramar Cove Vault Buildings,
-  11, the 3D test's shared copy, 10793 SBR, McCabe, 11146 - Valmont). A new one there is a FAIL in the fingerprint
+  11, the 3D test's shared copy, 10793 SBR, Benchmark A source, Real bid B). A new one there is a FAIL in the fingerprint
   until it is added (D-601's rule, unchanged).
 - Investigation of a real bid runs only on a throwaway copy made by the copier, never by signing in as the founder.
 
-## D-1024: The copier may read McCabe, for its pricing investigation only
+## D-1024: The copier may read Benchmark A source, for its pricing investigation only
 
-**Status:** Accepted (2026-11-06, Umer: "Investigate on a throwaway copy of McCabe only (original protected and
+**Status:** Accepted (2026-11-06, Umer: "Investigate on a throwaway copy of Benchmark A source only (original protected and
 read-only)").
 
 - The drives' guard (`drives/guard.py`) let the copier read one protected project, 4df73dc7, named as
-  `copy-3d-test.py --source`. That exception is now a list, `COPY_SOURCES`: 4df73dc7 and McCabe (24e4a96c). Read by the
-  copier alone, for one copy; every other drive, every write, and every browser request naming McCabe are refused as
+  `copy-3d-test.py --source`. That exception is now a list, `COPY_SOURCES`: 4df73dc7 and Benchmark A source (24e4a96c). Read by the
+  copier alone, for one copy; every other drive, every write, and every browser request naming Benchmark A source are refused as
   before (the MCP guard never opens it).
 - The copy (eac07f4e, "BENCH DUP 2026-11-06 16:03 — delete me") lives in a throwaway's workspace and is purged with
   the other DUPs.
+
+## D-1025: No client name or bid figure in any repo; the job is "Benchmark A"
+
+**Status:** Accepted (2026-11-06, Umer: "no client names or bid figures in any repo").
+
+- The real bid investigated in D-1023/D-1024 is "Benchmark A (copy of a real bid)" in every doc, fixture and
+  commit; the other real bid is "Real bid B". The protected lists' labels say so (the uuids are the key, unchanged).
+- Benchmark A's dollar figures, quantities, exports and before/after reports live only in `test-data-local/` at the
+  workspace root: outside every repo and outside the `intelcost-infra/workspace/` mirror. Docs give effects as a
+  share of its bid.
+- `scripts/project_fingerprint.py` prints the protected list's label for the founder's projects, never the project's
+  name, and "name withheld" for one not on the list, so a fingerprint report never carries a real bid's name.
+- Redacted in place: PRICING_FIX_PLAN.md, D-1023/D-1024, the guard lists, the 2026-11-08/09 fingerprints and
+  report. Earlier commit messages and history still name the job; a pushed commit is not rewritten.
