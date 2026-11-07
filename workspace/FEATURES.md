@@ -94,6 +94,9 @@ _Updated: 2026-10-02_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
+| Several WDs per project | Several wage determinations on one project, chosen per activity (building and heavy on one site job); today one governs (D-1032) | both | Planned (2026-11-06) |
+| apply_scale single pass | The scale apply runs its double pass once (Q213) | app | Planned (2026-11-06): left as it is, logged |
+| Realtime speed | Realtime updates faster under load; the bounds stay (Q216), not a tester blocker | both | Planned (2026-11-06) |
 | F30 engineer's DXF | GPS Export from the engineer's DXF: its linework in site coordinates placed on the PDF by matching points, its points or a chosen layer as the control points (sized 1.5 to 2 weeks in [gps_field_PLAN.md](docs/archive/gps_field_PLAN.md) g) | both | Planned: the rest of the field plan was built 2026-10-27 (D-823 to D-825) |
 | D-708 follow-up | Sheet drawing in a worker: Fit and below at ×4 at every dpr without freezing the page | app | Parked 2026-10-22, plan approved in principle, waiting for Umer's go: [sheet_worker_tasks.md](docs/tasks/sheet_worker_tasks.md) |
 | P-20 | Sheet page acts: ~~New Blank Page, New Page From Clipboard~~ (built in round 3 from the Sheets panel's + menu, D-97), Duplicate page, the sheet stepper, open another project from takeoff, the panel layout per user | both | After F7. Split from F7 by D-39 Q4 (F5 had handed them on, D-36 Q7); Crop as New Page stays in F7; Rotate pages is P-20a. Auto-Name stays with the AI tools (P-13) |

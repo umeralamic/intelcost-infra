@@ -27045,3 +27045,70 @@ test-data-local and warn once"). Supersedes D-1030's location and folder; the re
 - No key: `BLS_BULK_DIR`, default `/test-data-local/wage/raw`, read as bulk downloads (`*.data.*`) and saved v2
   answers (`*.json` with `REQUEST_SUCCEEDED`; the folder's other sources' saves are skipped), one warning per
   process. `test-data-local` is mounted read only into the worker as well as the api.
+
+## D-1032: The wage plan approved, with its answers and changes (WAGE_PLAN W1-W13)
+
+**Status:** Accepted (2026-11-06, Umer: "WAGE_PLAN.md: approved with these answers and changes").
+
+- **Answers:** Q-W1 (b), residential × (1 + min(0, F)). Q-W2 75th percentile. Q-W3 the fixed subtype list. Q-W5 past the
+  latest ECI quarter, the latest 12-month change, shown. Q-W6 W1-W7 now; W8 when the TX/AZ filings are in
+  `test-data-local`. Q-W7 a platform-admin refresh button and a banner.
+- **Q-W4 changed:** a licensed trade (plumber, electrician, pipefitter, sheet metal worker, sprinkler fitter, elevator
+  constructor) is never conformed to a laborer or operator line: "Not covered: conformance request needed", priced at
+  commercial × (1 + F), flagged. A non-licensed craft may conform to a related line (lather → carpenter), labelled.
+- **W7 changed:** foreman = a WD foreman line if listed; else the crew's top craft × (1 + premium), premium set per crew
+  (crew → set → company → 10 %). BLS 47-1011 shows in the breakdown as a reference, never a floor.
+- **Runtime reads only tables (correcting D-1031):** the app never reads `test-data-local` at runtime (it does not exist
+  in production). The loader reads the BLS API or files and writes `refdata.ref_eci`, `ref_oews`,
+  `ref_state_min_wage` (and the crosswalks); pricing reads only those tables. With no key and no new data, pricing uses
+  the latest rows already loaded, and the breakdown says "BLS data as of <date>". `test-data-local` is a bench-only
+  input folder for the loader. Production loads the OEWS bulk file; the API is for ECI and spot lookups.
+- **One governing WD per project** for now, picked by the user and named on the status strip. Task logged: several WDs
+  per project, chosen per activity (building and heavy on one site job).
+- **W13 WD lookup** (planned in W10, built with W3): on Prevailing with a location, every current SAM.gov WD for the
+  county (Building, Heavy, Highway, Residential: number, mod, date) through `sam.gov/api/prod/wdol/v1/wd/{WD}/{mod}`;
+  the user ticks the WDs named in the bid documents and types "Mod in bid documents" (warned when it differs from
+  SAM.gov's current mod); several may be loaded, one governs. On any failure: "SAM.gov lookup unavailable, upload the
+  WD". Cached by number + mod. A state prevailing-wage job: "State schedule: upload or enter it".
+- No Comp on Intelcost Team (the flag is enough). Pushed commit history stays as it is.
+
+## D-1033: Report folders are named from the clock (C3)
+
+**Status:** Accepted (2026-11-06, Umer: "The report file is dated 2026-11-09 but the run was 6 Nov … Check the date
+source for report names and fix").
+
+- No script named the folders: the session named them from the queue's label ("Queue 2026-11-08" and the next), which
+  ran ahead of the calendar. morning-report-2026-11-07 and -08 hold runs of 5 November (to the 6th), -09 the run of 6
+  November; each now carries a RUN_DATE.md saying so (renaming them would break the references to them).
+- `intelcost-infra/report-dir.sh` prints and makes the folder from the host's clock (`morning-report-<yyyy-mm-dd>`),
+  or for a given start time; a run started in the evening keeps the date it started on. Every report folder comes
+  from it.
+
+## D-1034: Q212, Q215, Q217 (the earlier queue's answers)
+
+**Status:** Accepted (2026-11-06, Umer: "Q212 yes, accelerate the held-drag auto-scroll the longer it's held. Q215 yes:
+add Home and warm before the release's dev-server phase too. Q217 yes, purge both.").
+
+- **Q212:** the Takeoff list's drag edge-scroll step grows by one step's worth a second held in the edge band, up to
+  six times (`QuantityPanel.tsx`, `DRAG_HELD_MAX`); leaving the band starts again. D-646's nearer-is-faster stays.
+- **Q215:** fx-suite.sh's warm-up is one function, `warm_apps`, with Home added beside the settings pages, the gallery
+  and the takeoff page; `run` calls it as before, and `dev` calls it once the dev servers serve, so a release's dev
+  phase starts warm.
+- **Q217:** fx.equip.202611060305 and fx.equip.202611061445 purged with `purge-bench-accounts.py --only` (one flag
+  each): 2 accounts, 2 workspaces, nothing else.
+- Q213 and Q216 are logged in FEATURES Planned; several WDs per project too (D-1032).
+
+## D-1035: Dump sites and the haul cycle (PRICING_FIX_PLAN items 1 and 3, together)
+
+**Status:** Accepted (2026-11-06, Umer: the plan's items 1 and 3; Q-P2 "500 LCY or $10k of fee, whichever is lower";
+Q-P3 "lowest total (fee + trucking), runner-up shown").
+
+- Material types (fixed list, tons per LCY each) and on-site options; `dump_site` per workspace (materials, fee and
+  unit: load, LCY, ton, free, pays us; distance, hours) and `project_dump_site` (the project's pick and distance).
+- Each disposal line takes the lowest total (fee + trucks at that distance), the runner-up shown, and "each $1/LCY
+  changes this bid by $X". Topsoil haul-off and undercut haul-off gain their fees.
+- With no site: the library's fallback by material and region, a range, grade C; over 500 LCY or $10,000 of fee
+  (whichever is lower) the line is flagged "Check dump fee" until a site is chosen or the fee confirmed.
+- Trucks off site run on a haul cycle (load, dump, loaded and empty miles at sourced speeds and payload); the haul
+  distance is the site's, else the project's own setting, split from the mob distance; "Haul distance not set"
+  flags a haul line over the threshold. A site that pays us makes a negative line, carried to every total.

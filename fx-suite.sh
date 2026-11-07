@@ -116,6 +116,29 @@ capture() {
   ./fx-capture.sh "$FX_CAPTURE_DIR" "$$" >/dev/null 2>&1 &
 }
 
+# Both fx apps' pages compiled once, so a fixture's first load meets a warm server (D-850, D-1013,
+# D-1034): called by `run` and when `dev` brings the dev servers back, before a release's dev phase.
+warm_apps() {
+  docker compose --profile fx run --rm ${FX_OFFLINE:+--pull never} browser-fx node --input-type=module -e "
+import { openBrowser } from '/drive/scripts/lib/bench.mjs';
+const b = await openBrowser();
+for (const app of ['http://localhost:5176', 'http://localhost:5177']) {
+  const p = await b.newPage();
+  const t = Date.now();
+  await p.goto(app + '/login', { timeout: 300000 });
+  await p.waitForSelector('#email', { timeout: 300000 });
+  // The settings pages too: each compiles on its first visit, past a fixture's 20 s wait (f3-s1 in the release, D-850).
+  // Dev servers only: the built apps serve no /src and have nothing to compile.
+  await p.evaluate(() => import('/src/pages/settings-pages.ts').then((m) => Promise.all(Object.values(m.settingsPages).map((load) => load())), () => null));
+  // Home, the gallery and the takeoff page too (Q147, D-1013; Home Q215, D-1034): f4-s2's /dev/ui and f7-a's sheet timed out at 30 s on a cold
+  // dev server, waiting for 'load' while their module graphs compiled.
+  await p.evaluate(() => Promise.all(['/src/pages/Home.tsx', '/src/pages/DevUiGallery.tsx', '/src/pages/ProjectTakeoff.tsx'].map((u) => import(u).catch(() => null))));
+  console.log('warm ' + app + ' in ' + Math.round((Date.now() - t) / 1000) + ' s');
+  await p.close();
+}
+await b.close();" 2>&1 | grep -E '^warm|Error'
+}
+
 case "${1:-}" in
   setup)
     rm -rf fx-suite && mkdir fx-suite
@@ -161,26 +184,7 @@ case "${1:-}" in
     shift
     check || { echo "The fx stack is not isolated: nothing was run."; exit 1; }
     capture "fx-suite/.regress/capture-$(date +%Y%m%d-%H%M%S)"
-    # Both fx apps' dev servers compile on their first page: loaded once here, so a fixture's 30 s
-    # page load meets a warm server, as on the bench.
-    docker compose --profile fx run --rm ${FX_OFFLINE:+--pull never} browser-fx node --input-type=module -e "
-import { openBrowser } from '/drive/scripts/lib/bench.mjs';
-const b = await openBrowser();
-for (const app of ['http://localhost:5176', 'http://localhost:5177']) {
-  const p = await b.newPage();
-  const t = Date.now();
-  await p.goto(app + '/login', { timeout: 300000 });
-  await p.waitForSelector('#email', { timeout: 300000 });
-  // The settings pages too: each compiles on its first visit, past a fixture's 20 s wait (f3-s1 in the release, D-850).
-  // Dev servers only: the built apps serve no /src and have nothing to compile.
-  await p.evaluate(() => import('/src/pages/settings-pages.ts').then((m) => Promise.all(Object.values(m.settingsPages).map((load) => load())), () => null));
-  // The gallery and the takeoff page too (Q147, D-1013): f4-s2's /dev/ui and f7-a's sheet timed out at 30 s on a cold
-  // dev server, waiting for 'load' while their module graphs compiled.
-  await p.evaluate(() => Promise.all(['/src/pages/DevUiGallery.tsx', '/src/pages/ProjectTakeoff.tsx'].map((u) => import(u).catch(() => null))));
-  console.log('warm ' + app + ' in ' + Math.round((Date.now() - t) / 1000) + ' s');
-  await p.close();
-}
-await b.close();" 2>&1 | grep -E '^warm|Error'
+    warm_apps
     (cd fx-suite && ./regress.sh "$@")
     ;;
   prod)
@@ -212,6 +216,7 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
     for _ in $(seq 1 120); do curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx && break; sleep 2; done
     curl -sf -o /dev/null localhost:5176/src/main.tsx && curl -sf -o /dev/null localhost:5177/src/main.tsx \
       || { echo "dev servers not serving on 5176/5177"; exit 1; }
+    warm_apps
     ;;
   release)
     # Every fixture, each in the mode it needs, in one command (D-814). The run before any deploy to
