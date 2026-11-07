@@ -27133,3 +27133,75 @@ Q-P3 "lowest total (fee + trucking), runner-up shown").
 - Saved sets keep their rules (`project_wage_set.wage_rules` null = the old ones) until recalculated; nullable columns
   on `project_wage_set` and `project_craft_rate`, no rows written. The truck driver's burdened rate is the engine's
   (42.83 in Harris), not the plan's ratio figure (44.88).
+
+## D-1037: Cut to export loaded straight into trucks, paced to them (PRICING_FIX_PLAN item 2)
+
+**Status:** Accepted (2026-11-06, Umer: the plan's item 2).
+
+- Each region's cut splits by where it goes: the share that leaves the site is a new role `cut_export`, priced on A2
+  "Excavate and load (direct to haul-off trucks)" (no ADTs); only cut to fill or stockpile stays `cut` (A1).
+- The loader on a `cut_export` line is paced to its region's `soil_export` trucks: its machine hours are the trucks'
+  days × hours; the basis says so. A saved remap of `cut` keeps working (the remap wins).
+
+## D-1038: Prevailing wage by classification, the SAM.gov lookup, conformance, nothing loaded (W3, W13, W4, W6)
+
+**Status:** Accepted (2026-11-06, Umer: WAGE_PLAN with D-1032's changes).
+
+- **W3:** every app craft maps to its own WD classification: operators by machine and trucks by type (a fixed subtype
+  list, Q-W3), laborers by group; burdened = WD base + fringe through the engine (plan fringe untaxed), not below
+  commercial × (1 + F); the paycheck never under the WD base; a WD line under the state minimum flagged and floored.
+- **W13:** on Prevailing with a location, the county's current SAM.gov WDs (Building, Heavy, Highway, Residential)
+  listed with number, mod and date; the user ticks those in the bid documents, types "Mod in bid documents" (warned
+  when it differs), picks the governing one; cached by number + mod; any failure: "SAM.gov lookup unavailable, upload
+  the WD". A state prevailing-wage job: "State schedule: upload or enter it".
+- **W4:** a craft missing from the WD conforms to a related non-licensed line at 1.0×, labelled; a licensed trade
+  (plumber, electrician, pipefitter, sheet metal worker, sprinkler fitter, elevator constructor) never conforms:
+  "Not covered: conformance request needed", priced at commercial × (1 + F), flagged.
+- **W6:** prevailing or union with nothing loaded: commercial × (1 + F), the banner and "No WD loaded" on the strip.
+
+## D-1039: Clearing: heavier tiers for heavy, a loader for the debris (PRICING_FIX_PLAN item 7)
+
+**Status:** Accepted (2026-11-06, Umer: the plan's item 7).
+
+- A56 and A57 (clearing and grubbing, medium and heavy) gain heavier tiers than A55: an excavator with a thumb or
+  grapple, chainsaw labor, more laborers (a release; sourced and graded where a public crew figure is found).
+- Debris haul-off maps to a load-and-haul activity (a wheel loader or an excavator with a grapple, and the trucks), so
+  the loader is costed; on site, the chip and burn options stay (D-1035's on-site list).
+- The trees counted per acre suggest the class (heavy over a set density); the estimator confirms.
+- **As built (2026-11-07):** the county list comes from SAM.gov's own search (`sam.gov/api/prod/sgs/v1/search/?index=dbra`,
+  undocumented), the documents from `wdol/v1/wd/{WD}/{mod}`, cached in `wd_sam_document` (migration d989c3a7e5b1).
+  Mohave lists Building AZ20260043, Heavy AZ20260006 and AZ20260058, Highway AZ20260046, Residential AZ20260003. The
+  engine caps FUTA at $7,000 and AZ SUTA at $8,000 of wages, so WD-won lines run $0.82-0.94 under the plan's figures
+  (dozer 60.59, motor grader 61.87, carpenter 56.60, foreman 68.06): the engine's are the expectations. Electrician
+  helper and pipe trades helper join the licensed list. The WD parser now drops "in <State>." from the counties line
+  (the smoke found a false "covers Mohave County in Arizona. but your project is in Mohave County").
+
+## D-1040: Small quantities on machines already on site (PRICING_FIX_PLAN item 6)
+
+**Status:** Accepted (2026-11-06, Umer: the plan's item 6; Q-P6, the small fill's mob is on the original).
+
+- Below an activity's small-quantity threshold (library values: fill 50 CCY, strip 100 BCY, export 50 LCY, others as
+  sourced), when another line of the project (any trade) has a machine able to do the work, the line prices its crew
+  plus that machine's own hours at its hourly rate, with no rental minimum and no mob, marked "by machines on site";
+  else today's tier and minimum.
+
+## D-1041: The wage page as one basis; saved sets migrated; union agreements (W10, W11, W5)
+
+**Status:** Accepted (2026-11-06, Umer: WAGE_PLAN W10, W11, W5 with D-1032).
+
+- **W10:** "Location-adjusted rates · Always on", then "Refine with your wage data (optional)": Wage determination
+  (D-1038's SAM.gov list, upload, paste, by hand; listed / conformed / not covered counts, Review lines, Replace,
+  Remove), Union agreement, Your pay rates (enter, import CSV). Calculate reads "Calculate with location-adjusted
+  rates" when nothing is loaded; Source column chips with counts; the strip names the sources.
+- **W11:** saved sets keep their stored rates; "Update rates" applies the new rules with a before/after per craft;
+  "Location-Adjusted Rates" sets open as they are, "My wage data" sets as location-adjusted plus their data. No
+  migration changes the founder workspace's data.
+- **W5:** union agreements per workspace (name, local, effective dates, craft → base, plan fringe, cash fringe), CSV
+  or by hand; crafts it lacks price at commercial × (1 + F); today's hand-typed union rows become "Entered rates".
+- **As built (2026-11-07, D-1040):** `app/features/equipment/on_site.py` decides what can stand in (a dozer or an
+  excavator for each other, a soil roller or tamping compactor, else the machine's own type; water trucks and
+  attachments are support, dropped on site). A "site" billing period bills a rental's hours at day ÷ 8 (else week ÷
+  40, 4-week ÷ 160), no minimum, no mob, fuel kept. The crew keeps one half-day minimum shared by the small lines
+  (only the rental minimum and the mob are waived). Thresholds: A3 50 CCY, A4 100 BCY, A7 50 LCY (release 38,
+  migration d991b4e8c2a7, chained after the union agreements' d991b4e8a3c5). A workspace that edited those
+  activities keeps no threshold.
