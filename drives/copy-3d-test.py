@@ -24,6 +24,7 @@ import guard  # noqa: F401  (first: the protected projects refused before any re
 import asyncio
 import json
 import sys
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select, text
@@ -93,6 +94,21 @@ def counts(session: Any) -> dict[str, Any]:
         {"p": pid},
     ).scalar_one()
     out["takeoff_item (of which sub-items)"] = subs
+    # Mob a copy must carry (D-1027): the components' own and the site machines'.
+    out["mob"] = [
+        str(v)
+        for v in session.execute(
+            text(
+                "SELECT count(*) FILTER (WHERE c.eq_include_mob), sum(coalesce(c.mob_demob, 0)), "
+                "(SELECT count(*) FROM project_equipment_resource r WHERE r.project_id = :p), "
+                "(SELECT sum(coalesce(r.mob_demob, 0)) FROM project_equipment_resource r "
+                "WHERE r.project_id = :p), "
+                "(SELECT count(*) FROM estimate_item_spread s WHERE s.project_id = :p) "
+                "FROM takeoff_cost_component c WHERE c.project_id = :p"
+            ),
+            {"p": pid},
+        ).one()
+    ]
     project_updated = session.execute(
         text("SELECT updated_at::text FROM project WHERE id = :p"), {"p": pid}
     ).scalar_one()
@@ -155,11 +171,34 @@ def main(argv: list[str]) -> int:
             progress,
             into=duplicate.Into(workspace_id=target_id, name=name, include_pricing=True),
         )
+        # Renamed the moment it is made (A4, D-544): the source's name never stays on a copy.
+        project.name = f"BENCH DUP {datetime.now(UTC):%Y-%m-%d %H:%M} — delete me"
+        session.commit()
         print(json.dumps({"copy": {"uuid": str(project.uuid), "name": project.name, "workspace": target_uuid}}))
+        copy_id = project.id
     with SyncSessionFactory() as session:
         after = counts(session)
         print(json.dumps({"after": after, "equal": after == before}, indent=1))
-        return 0 if after == before else 2
+        if after != before:
+            return 2
+        # The copy carries the source's site machines and spreads, each on the target's own
+        # activity (D-1027): a copy that drops one loses its mob.
+        machines, spreads, foreign = session.execute(
+            text(
+                "SELECT (SELECT count(*) FROM project_equipment_resource WHERE project_id = :p), "
+                "(SELECT count(*) FROM estimate_item_spread WHERE project_id = :p), "
+                "(SELECT count(*) FROM estimate_item_spread s JOIN eq_company_activity a "
+                "ON a.id = s.company_activity_id WHERE s.project_id = :p AND a.workspace_id <> :w)"
+            ),
+            {"p": copy_id, "w": target_id},
+        ).one()
+        want = (int(before["mob"][2]), int(before["mob"][4]))
+        ok = (machines, spreads) == want and foreign == 0
+        print(
+            f"copy check: {machines}/{want[0]} site machines, {spreads}/{want[1]} spreads, "
+            f"{foreign} naming another workspace: {'right' if ok else 'WRONG'}"
+        )
+        return 0 if ok else 3
 
 
 if __name__ == "__main__":

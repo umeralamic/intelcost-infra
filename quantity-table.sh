@@ -102,4 +102,13 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hi
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py parents" </dev/null || { echo "FAIL  parents (above)"; exit 1; }
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
-exit "${PIPESTATUS[0]}"
+STATUS="${PIPESTATUS[0]}"
+# Benchmark A (D-1028): the last check of its copy's export against the local expectations, outside
+# every repo (D-1025). Its line names no figure; a wrong check fails the table.
+BENCH_A=../test-data-local/benchmark-a/last-check.json
+if [ -f "$BENCH_A" ]; then
+  node -e 'const c = require(process.argv[1]); console.log(`Benchmark A: ${c.lines} lines, ${c.wrong.length ? "WRONG (" + c.wrong.length + " figures)" : "right"} (checked ${c.checked_at.slice(0, 16)}Z)`); process.exit(c.wrong.length ? 1 : 0)' "$(cd "$(dirname "$BENCH_A")" && pwd)/last-check.json" || STATUS=1
+else
+  echo "Benchmark A: skipped (no local expectations)"
+fi
+exit "$STATUS"

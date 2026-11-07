@@ -26973,7 +26973,7 @@ read-only)").
   (none, a lock included), the AI first allowance, the trial caps, the wage calculator's trial gate, and the
   every-minute trial-ended task. Removing the comp of an internal workspace is refused.
 - The migration's data step sets it on Intelcost Team alone (04df326a), listed before it ran; nothing else of that
-  workspace is read or written. Comp (Professional, no end) is granted on it as well, through the platform page.
+  workspace is read or written. No Comp: the flag is enough (Umer, 2026-11-06).
 
 ## D-1027: A copy into another workspace keeps its spreads and their mob (PRICING_FIX_PLAN item 0, Q-P1)
 
