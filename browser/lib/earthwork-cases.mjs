@@ -1088,12 +1088,13 @@ export const EARTHWORK_CASES = [
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 2000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "dozer", push_ft: 100, method_by_feature: {} } } },
     expect: { roles: "cut_push:remainder fill_push:remainder fill:remainder soil_import:__soil_import__", "fill_push:remainder": 800, "fill:remainder": 1200 },
   },
-  // More cut than fill: the whole fill by the scraper.
+  // More cut than fill: the whole fill by the scraper. D-1037: the fill needs 500 x 1.25 = 625 BCY, scraped; the other
+  // 375 BCY leaves, loaded straight into the haul-off trucks.
   {
     id: "d901-cut-past-fill",
     kind: "lines",
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 500 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "scraper", push_ft: 100, method_by_feature: {} } } },
-    expect: { roles: "cut_scraper:remainder fill_scraper:remainder soil_export:__soil_export__", "fill_scraper:remainder": 500 },
+    expect: { roles: "cut_export:remainder cut_scraper:remainder fill_scraper:remainder soil_export:__soil_export__", "fill_scraper:remainder": 500, "cut_export:remainder": 375, "cut_scraper:remainder": 625 },
   },
   // A feature's own method: 500 BCY by dozer, 750 by scraper, fill 1,000: 40 % and 60 %, nothing by truck.
   {
@@ -1121,8 +1122,11 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {} } },
     },
     expect: {
-      roles: "over_excavation:pad over_excavation:pad undercut_haul:pad undercut_haul:pad replacement_fill:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      // D-1037: the 500 BCY of surplus leaves from the cut, the other 500 goes to fill.
+      roles: "over_excavation:pad over_excavation:pad undercut_haul:pad undercut_haul:pad replacement_fill:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
       "soil_export:__soil_export__": 625,
+      "cut_export:remainder": 500,
+      "cut:remainder": 500,
     },
   },
   // The clay stockpiled, the rock hauled: 80 on A1 kept on site, 20 on A2.
@@ -1136,7 +1140,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {} } },
     },
     expect: {
-      roles: "over_excavation_onsite:pad over_excavation:pad undercut_stockpile:pad undercut_haul:pad replacement_fill:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      roles: "over_excavation_onsite:pad over_excavation:pad undercut_stockpile:pad undercut_haul:pad replacement_fill:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
       "over_excavation_onsite:pad": 80,
       "over_excavation_onsite:pad:name": "Undercut excavation, Clay, kept on site",
       "over_excavation:pad": 20,
@@ -1153,7 +1157,10 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1, choices: { surplus: { undercut_spoil: "reuse" }, method: "excavator", push_ft: 100, method_by_feature: {} } },
     },
     expect: {
-      roles: "over_excavation:pad over_excavation_onsite:pad undercut_haul:pad undercut_reuse_fill:pad replacement_fill:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      // D-1037: 520 BCY leaves, all of it from the cut (1,000 BCY; the rock fills too): 520 to export, 480 to fill.
+      roles: "over_excavation:pad over_excavation_onsite:pad undercut_haul:pad undercut_reuse_fill:pad replacement_fill:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
+      "cut_export:remainder": 520,
+      "cut:remainder": 480,
       "over_excavation:pad": 80,
       "over_excavation_onsite:pad": 20,
       "undercut_reuse_fill:pad": 20,
@@ -1469,7 +1476,10 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder fill:remainder soil_export:__soil_export__",
+      // D-1037: the 74.07 BCY the native undercut is short stays as cut; the rest, 925.93 BCY, leaves.
+      roles: "undercut_native_dig:pad undercut_native:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
+      "cut_export:remainder": 1000 - (20000 / 27) * 0.1,
+      "cut:remainder": (20000 / 27) * 0.1,
       "undercut_native_dig:pad": 20000 / 27,
       "undercut_native_dig:pad:unit": "BCY",
       "undercut_native:pad": 20000 / 27,
@@ -1599,7 +1609,10 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: false, fillType: "Select Borrow", swell: 1.25, shrink: 1 },
     },
     expect: {
-      roles: "strip:s1 strip_stockpile:s1 strip:s2 strip_reuse_topsoil:s2 undercut:pad undercut_stockpile:pad undercut_replace:pad cut:park fill:park cut:remainder fill:remainder soil_export:__soil_export__ soil_import:__soil_import__",
+      // D-1037: not suitable, all the cut leaves, each region's straight into the trucks: no "Cut" line.
+      roles: "strip:s1 strip_stockpile:s1 strip:s2 strip_reuse_topsoil:s2 undercut:pad undercut_stockpile:pad undercut_replace:pad cut_export:park fill:park cut_export:remainder fill:remainder soil_export:__soil_export__ soil_import:__soil_import__",
+      "cut_export:park": 60,
+      "cut_export:remainder": 40,
       "strip_stockpile:s1": 125,
       "strip_stockpile:s1:name": "Strip topsoil, stockpile on site",
       "strip_reuse_topsoil:s2": 40,
@@ -1607,7 +1620,7 @@ export const EARTHWORK_CASES = [
       "strip:s2:name": 'Strip topsoil (4")',
       "undercut_stockpile:pad": 12.5,
       "undercut_replace:pad:name": "Undercut replacement fill, Crushed Stone #57",
-      "cut:park:name": "Cut",
+      "cut_export:park:name": "Cut to export",
       "fill:remainder:name": "Fill",
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
@@ -1624,8 +1637,10 @@ export const EARTHWORK_CASES = [
     kind: "lines",
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 14263, fillCY: 8727 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.15, shrink: 1.1 } },
     expect: {
-      roles: "cut:remainder fill:remainder soil_export:__soil_export__",
-      "cut:remainder": 14263,
+      // D-1037: the 4,663.3 BCY surplus is cut loaded straight into the trucks; the 9,599.7 the fill needs stays "Cut".
+      roles: "cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
+      "cut_export:remainder": 4663.3,
+      "cut:remainder": 9599.7,
       "cut:remainder:unit": "BCY",
       "fill:remainder": 8727,
       "fill:remainder:unit": "CCY",
@@ -1657,6 +1672,57 @@ export const EARTHWORK_CASES = [
       "soil_export:__soil_export__": 3000.48,
       "soil_export:__soil_export__:unit": "LCM",
       "soil_export:__soil_export__:name": "Soil Export (2,500 BCM)",
+    },
+  },
+  // --- D-1037: the cut split by where it goes, cut to export loaded straight into the haul-off trucks (A2, no ADTs) ---
+  // All export: cut 1,200 BCY, no fill: the whole cut leaves, one "Cut to export" line of 1,200 BCY and no "Cut"; the
+  // trucks carry 1,200 x 1.25 = 1,500 LCY. Priced, A2's excavator hours equal the A7 trucks' days x hours (the api's
+  // pacing, not read here).
+  {
+    id: "d1037-all-export",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1200, fillCY: 0 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
+    expect: {
+      roles: "cut_export:remainder fill:remainder soil_export:__soil_export__",
+      "cut_export:remainder": 1200,
+      "cut_export:remainder:unit": "BCY",
+      "cut_export:remainder:name": "Cut to export",
+      "cut:remainder": undefined,
+      "soil_export:__soil_export__": 1500,
+    },
+  },
+  // Balanced: cut 1,100 BCY, fill 1,000 CCY x 1.10 = 1,100 BCY: nothing leaves, no "Cut to export".
+  {
+    id: "d1037-balanced",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1100, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
+    expect: { roles: "cut:remainder fill:remainder", "cut:remainder": 1100, "cut_export:remainder": undefined },
+  },
+  // Mixed, shrink 1: Pad cut 600 fill 0, Park cut 300 fill 0, Remainder cut 100 fill 600. Cut 1,000, fill 600: 400 BCY
+  // leaves (x 1.25 = 500 LCY), from the regions with a surplus over their own fill, by volume, Pad 600 and Park 300:
+  // Pad 400 x 600 / 900 = 266.667, Park 400 x 300 / 900 = 133.333. The rest is cut to fill: Pad 333.333, Park
+  // 166.667, Remainder 100 (it has no surplus).
+  {
+    id: "d1037-mixed",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [
+        { id: "pad", label: "Pad", cutCY: 600, fillCY: 0 },
+        { id: "park", label: "Park", cutCY: 300, fillCY: 0 },
+        { id: null, label: "Remainder", cutCY: 100, fillCY: 600 },
+      ],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 },
+    },
+    expect: {
+      roles: "cut_export:pad cut:pad fill:pad cut_export:park cut:park fill:park cut:remainder fill:remainder soil_export:__soil_export__",
+      "cut_export:pad": 800 / 3,
+      "cut:pad": 1000 / 3,
+      "cut_export:park": 400 / 3,
+      "cut:park": 500 / 3,
+      "cut:remainder": 100,
+      "soil_export:__soil_export__": 500,
+      "soil_export:__soil_export__:name": "Soil Export (400 BCY)",
     },
   },
   // --- Block G, Auto Trace (D-143): legacy's stitch.test.ts cases, page 1000 x 1000 pt, ---

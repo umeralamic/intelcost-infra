@@ -72,8 +72,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # haul mapped (7 roles).
 # Release 30 (D-987, D-989): A94 (construction layout, own crew), hydrant and valve assemblies and layout mapped.
 # Release 34 (D-998): A90's spreader truck (a tri-axle dump truck, operated).
-if [ "$ST_COUNTS" != "104 205 474 323 220 111 30 102 104 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 474 323 220 111 30 102 104 0 0"
+# Release 36 (D-1037): the cut that leaves the site, cut_export → A2, one line-map row.
+if [ "$ST_COUNTS" != "104 205 474 323 220 112 30 102 104 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 104 205 474 323 220 112 30 102 104 0 0"
   exit 1
 fi
 docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select json_build_object(
@@ -99,6 +100,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py sc
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py roles" </dev/null || { echo "FAIL  wage roles (above)"; exit 1; }
 # The wage core (D-1032): Harris County open shop (W1), its foremen (W7) and the ECI escalation (W12).
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py wages" </dev/null || { echo "FAIL  wages (above)"; exit 1; }
+# Prevailing wage by classification (D-1038): Mohave Highway WD, operators by machine, a licensed trade not covered, the foreman.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prevailing" </dev/null || { echo "FAIL  prevailing (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py typed" </dev/null || { echo "FAIL  site typed values (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.

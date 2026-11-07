@@ -446,11 +446,12 @@ export const COST_CASES = [
   // L2. As before (no choices): soil export 200 BCY, rock export 300, the cut "Cut". Rock re-used as fill and the
   // surplus stockpiled: the surplus is 500 BCY on a "Surplus soil, stockpiled on site" line, no rock export; dozer
   // push makes the cut line "Cut, dozer push" (role cut_push). "All suitable" with L2 unsuitable rather than rock:
-  // no unsuitable export, a 500 BCY soil export.
+  // no unsuitable export, a 500 BCY soil export. D-1037: the cut that leaves is its own line ahead of the cut: before,
+  // 200 of the 700 BCY of soil "Cut to export" and 500 "Cut"; All suitable, 500 and 500; stockpiled, none leaves.
   {
     id: "site-choices",
     kind: "site-choices",
-    expect: { before: "cut|soil_export:200|soil_export:300", after: "cut_push|soil_stockpile:500", allSuitable: "cut|soil_export:500" },
+    expect: { before: "cut_export|cut|soil_export:200|soil_export:300", after: "cut_push|soil_stockpile:500", allSuitable: "cut_export|cut|soil_export:500" },
   },
   // --- GPS Export for machines (D-805), worked by hand at 1"=60', international feet, flat ground at 100 ft ---------
   // Four points missing 0.3 ft each (0.005 in on paper, good), the fit taking +0.2 % of scale; typed elevations 102,
