@@ -27732,3 +27732,49 @@ guard stays on; purge the copy at the end", items 0a–0d, 1 and 5).
 - **Effect.** Benchmark A: Calculate rerun, the estimate unchanged (no liner; its fill is met from its cut). Real bid
   B's copy, recalculated in the same workspace before and after: the bid up about 17 % with 0a–0c (the undercut's
   haul and the clay liner now priced), about 22 % with the method followed as chosen (excavator and trucks).
+
+## D-1070: Takeoff panel without its header row, a folder's multiplier by its name, components a step further in, Fill lines named by region, Sheets 260 px
+
+**Status:** Accepted (2026-11-08, Umer: panels items 7–10).
+
+- **No header row.** The Takeoff panel's sticky "Name · Qty · Unit" row (D-1064) is gone; the quantity and unit keep
+  their fixed right-aligned columns.
+- **A folder's multiplier.** "×2" stands by the folder's name in Folders as in Classification; an item's note line no
+  longer repeats the chain its view's folder rows show (Folders: the folder chain; Classification: the classification
+  chain). A multiplier from the other view's chain, or a layer's, is still said under the item.
+- **Cost components** (machines, crews, materials) sit 8 px further in than a sub-item, with a 10 px icon; item and
+  sub-item names keep their width.
+- **Fill lines by region.** When two or more regions take fill, each "Fill", "Fill, dozer push" and "Fill, scraper"
+  line says whose ("Fill, Remainder"), as export lines do (D-1068 d). Quantity table: one name changed
+  (lines-block-f-order, Parking and Remainder both take fill); 344 rows right.
+- **Sheets panel** opens at 260 px (was 280) for a person who never dragged it; still 140–520, still kept per person.
+- **No client names in code:** two comments (`drawing/naming.py`, `drawing/reading.py`) named a client's electrical
+  set; now "an electrical set". DECISIONS (D-852, D-853 and the D-8xx read-on-load entries) and the protected list's
+  label in `browser/lib/protected.mjs` (a file the guard check reads) still carry it; left for Umer.
+
+## D-1071: A pipe crew's excavator by the pipe's size and the trench's depth
+
+**Status:** Accepted (2026-11-08, Umer: pricing item 3, "build it … user can change it").
+
+- **Why.** A pipe crew's tier is picked by its runs' length (D-950, D-971); the starter's storm and sewer crews (A32,
+  A28) carry a 30–36 t excavator from their first tier, so 50 LF of 24" pipe 0–6 ft deep got a 30–36 t machine.
+- **The rule.** For the starter's pipe crews (A12, A18, A19, A28, A32) the crew's pacing excavator follows its
+  largest pipe and deepest trench (the top of the line's depth band), the first row that holds:
+
+  | Pipe up to | Trench up to | Excavator |
+  |---|---|---|
+  | 24 in | 6 ft | 20–25 t (EX-CRAWL-20T) |
+  | 36 in | 10 ft | 30–36 t (EX-CRAWL-30T) |
+  | larger or deeper | | the tier's own |
+
+  A line whose depth band is unknown keeps the tier's. Only the pacing excavator moves; a second excavator, the
+  loader and the compaction stay the tier's. Production is unchanged (still the run's).
+- **Changeable.** The four limits are library settings (`pipe_small_max_in`, `pipe_small_max_ft`, `pipe_mid_max_in`,
+  `pipe_mid_max_ft`) with IntelCost's values 24, 6, 36, 10: a company changes them in Equipment library › Settings, a
+  project in Estimating › Equipment settings. A backhoe stays the Compact scale's (A12C), not a row here.
+- **Where.** The site spread's machine (`_ensure_site`) takes the sized class; each line in the spread prices the
+  site's machine in that place (`swap_in_tier`), so the line and the spread agree. A spread whose class changes is
+  made again, as a tier change always was.
+- **Smoke.** The Real bid B copy's storm line (24" RCP, 0–6 ft) after Calculate: 20–25 t excavator on the spread and
+  on the line (was 30–36 t).
+- **Benchmark A:** Calculate rerun, the estimate unchanged.

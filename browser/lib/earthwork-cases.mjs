@@ -1621,7 +1621,7 @@ export const EARTHWORK_CASES = [
       "undercut_stockpile:pad": 12.5,
       "undercut_replace:pad:name": "Undercut replacement fill, Crushed Stone #57",
       "cut_export:park:name": "Cut to export, Parking",
-      "fill:remainder:name": "Fill",
+      "fill:remainder:name": "Fill, Remainder",
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
       "soil_import:__soil_import__": 100,
