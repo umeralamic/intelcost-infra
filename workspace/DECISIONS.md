@@ -27947,3 +27947,29 @@ panels, like report").
 - **Effect.** Real bid B's copy, from $252,757.91 to $208,524.72 (−17.5 %): Soil Export's trucks −33 %, the haul-off
   loader −32 %, the undercut's spoil haul −18 %. Benchmark A: from $683,895.12 to $650,863.11 (−4.8 %): Soil Export
   −$19,024, Cut to export −$11,344, Strip topsoil haul-off −$2,664. Quantity table: 344 rows right.
+
+## D-1080: A utility run's trench by one section: Auto protection for the run, the pipe zone over the bottom's width, joint prices, no tape on concrete pipe
+
+**Status:** Accepted (2026-11-08, Umer: B3–B8; run mode, D-1076).
+
+- **One method a run (B3, B8d).** Auto is decided once for the run by its deepest point: under 5 ft, vertical walls and
+  no protection (OSHA 1926.652(a)(1)); from 5 ft, a slope on an open site, a trench box where the width is limited
+  ("Limited width / in street"). The run's notes say why ("Protection: sloped walls for the whole run (Auto: deepest
+  6.0 ft, 5 ft or more, open site)"). A segment or a chosen method still overrides. Before, Auto chose station by
+  station, so Real bid B's ST-1 was split, 25.84 LF vertical with a box and 23.90 LF sloped.
+- **No protection line for vertical walls (B7a).** Vertical walls are under 5 ft; only a box makes "Trench protection"
+  (D-1068 a kept vertical).
+- **The pipe zone over the bottom's width (B4).** Bedding stays as it was; the pipe zone is the trench bottom's width ×
+  its height (bedding to 12 in over the crown) less the pipe; what a sloped or benched trench is wider by there is
+  native backfill. The 3D section draws the same. ST-1: sand 39.19 to 18.28 CCY.
+- **Spoil (B5)** already is the dig less native backfill × the soil's shrink (D-595); Real bid B's shrink 1.00 gives
+  79.11 − 27.09 = 52.02 BCY, its soil layer's 1.10 gives 49.31. No change.
+- **Joints (B6).** Detectable warning tape is off for concrete (tongue-and-groove) pipe; non-metallic pipe keeps it.
+  RCP gaskets (12–72 in) and CMP coupling bands (12–72 in) get library prices: estimates, grade D, said so in their
+  source (RCP: butyl mastic at about $3 a foot round the joint, $1.05 an inch of diameter, 24 in $25.20; CMP: $3.20 an
+  inch, 24 in $76.80); no public per-joint price was found. Migration d994a7c1e2b5, national rows only.
+- **The slope field (B8a)** read "Slope % … ft"; with Slope chosen its unit is "%".
+- **Quantity table.** 16 rows changed, each by B4 and checked: in every sloped or benched case the zone falls by what
+  the backfill gains (util-2a: zone 34.46 to 17.46, backfill 283.56 to 300.56, the dig unchanged); the 3D cut's zone is
+  the bottom width × the zone height (util-613: 9.69 to 5.1 SF); util-2m's spoils go to 0 (the larger native backfill
+  takes the whole dig); the library's grade-D count 29 to 54. Then 344 rows right.

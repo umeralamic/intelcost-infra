@@ -118,8 +118,8 @@ export const UTILITY_CASES = [
       widthText: "Width 36 in — bucket",
       excavationCY: 325.93,
       beddingCY: 6.48,
-      zoneCY: 34.46,
-      backfillCY: 283.56,
+      zoneCY: 17.46,
+      backfillCY: 300.56,
       pipeLF: [{ range: "6–8 ft", lf: 100 }],
       protectionLF: [{ method: "sloped", slope: 1, range: "8–10 ft", lf: 100 }],
       maxTopWidthFt: 19,
@@ -230,11 +230,11 @@ export const UTILITY_CASES = [
     ],
     expect: { overlaps: [["B", "A", 112.04, 0, 0, 3025]], afterCY: [325.93, 213.89], widths: [3, 3] },
   },
-  { id: "util-613-cut-sloped", ...caseA(), trenchCut: [50], expect: { cut: [[19, 3, 8, 1.75, 9.69, 76.56, 0.85, 0.35]], cutZoneGap: 0 } },
+  { id: "util-613-cut-sloped", ...caseA(), trenchCut: [50], expect: { cut: [[19, 3, 8, 1.75, 5.1, 81.15, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-613-cut-box", ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6" }), trenchCut: [50], expect: { cut: [[6, 6, 8, 3, 10.2, 34.8, 0.85, 0.35]], cutZoneGap: 0 } },
   { id: "util-613-cut-benched", ...caseA({ protection: "benched" }), trenchCut: [50], expect: { cut: [[11, 3, 8, 1.5, 5.1, 49.4, 0.85, 0.35]], cutZoneGap: 0 } },
-  { id: "util-613-cut-deepening", ...caseA({ depth: [6, 10] }), trenchCut: [10, 90], expect: { cut: [[15.8, 3, 6.4, 1.75, 9.69, 48.72, 0.85, 0.35], [22.2, 3, 9.6, 1.75, 9.69, 109.52, 0.85, 0.35]], cutZoneGap: 0 } },
-  { id: "util-2a2-bucket-24-pipe-governs", ...caseA({ bucket: 24 }), expect: { widthText: "Width 32.4 in — pipe width", excavationCY: 317.04, beddingCY: 5.93, zoneCY: 32.57, backfillCY: 277.11, maxTopWidthFt: 18.7 } },
+  { id: "util-613-cut-deepening", ...caseA({ depth: [6, 10] }), trenchCut: [10, 90], expect: { cut: [[15.8, 3, 6.4, 1.75, 5.1, 53.31, 0.85, 0.35], [22.2, 3, 9.6, 1.75, 5.1, 114.11, 0.85, 0.35]], cutZoneGap: 0 } },
+  { id: "util-2a2-bucket-24-pipe-governs", ...caseA({ bucket: 24 }), expect: { widthText: "Width 32.4 in — pipe width", excavationCY: 317.04, beddingCY: 5.93, zoneCY: 15.57, backfillCY: 294.11, maxTopWidthFt: 18.7 } },
   {
     id: "util-2b-box-from-list",
     ...caseA({ protection: "box", boxes: [BOX_6x8], boxRef: "b6" }),
@@ -256,7 +256,7 @@ export const UTILITY_CASES = [
   {
     id: "util-2d-sand-benching-refused",
     ...caseA({ protection: "benched", layers: [{ ...SAND_C, depth: null }] }),
-    expect: { hasFlag: "Benching isn't allowed in this soil.", excavationCY: 444.44, beddingCY: 6.94, zoneCY: 42.96, backfillCY: 393.11, maxTopWidthFt: 27 },
+    expect: { hasFlag: "Benching isn't allowed in this soil.", excavationCY: 444.44, beddingCY: 6.94, zoneCY: 17.46, backfillCY: 418.61, maxTopWidthFt: 27 },
   },
   {
     id: "util-2p-spec-max-30",
@@ -272,11 +272,11 @@ export const UTILITY_CASES = [
     expect: { dewateringLF: 50, dewatering: [[50, 100]], hasFlag: "Box forced: the bottom is below the design water in granular soil.", boxLF: 50 },
   },
   { id: "util-2e2-dewatering-full", ...caseA({ water: [7, 7] }), expect: { dewateringLF: 100 } },
-  { id: "util-2f-clay-over-sand", ...caseA({ layers: [{ ...CLAY_B, depth: 3 }, { ...SAND_C, depth: null }] }), expect: { excavationCY: 444.44, beddingCY: 6.94, zoneCY: 42.96, backfillCY: 393.11 } },
+  { id: "util-2f-clay-over-sand", ...caseA({ layers: [{ ...CLAY_B, depth: 3 }, { ...SAND_C, depth: null }] }), expect: { excavationCY: 444.44, beddingCY: 6.94, zoneCY: 17.46, backfillCY: 418.61 } },
   {
     id: "util-2g-slope-template",
     ...caseA({ rule: TEMPLATE }),
-    expect: { excavationCY: 207.41, beddingCY: 6.02, zoneCY: 25.96, backfillCY: 174, maxTopWidthFt: 11, hasNote: "Steeper than federal OSHA — confirm with the geotech report and your state's rules." },
+    expect: { excavationCY: 207.41, beddingCY: 6.02, zoneCY: 17.46, backfillCY: 182.5, maxTopWidthFt: 11, hasNote: "Steeper than federal OSHA — confirm with the geotech report and your state's rules." },
   },
   {
     // GT-08 TP-1 (p.23, p.12): silty clay fill to 1.0 ft, GM gravel below; design water 4.20 ft.
@@ -354,7 +354,7 @@ export const UTILITY_CASES = [
     ...caseA({ length: 200, invertDepth: [6, 10], depth: null }),
     expect: { pipeLF: [{ range: "6–8 ft", lf: 100 }, { range: "8–10 ft", lf: 100 }] },
   },
-  { id: "util-2m-spoils", ...caseA(), expect: { nativeBankCY: 311.91, spoilsSuitableCY: 14.01 } },
+  { id: "util-2m-spoils", ...caseA(), expect: { nativeBankCY: 325.93, spoilsSuitableCY: 0 } },
   {
     // U-UT28's metric ranges (D-580): invert depth 7.48 ft = 2.28 m and trench depth 8.00 ft = 2.44 m
     // both fall in 2–2.5 m.
@@ -371,11 +371,11 @@ export const UTILITY_CASES = [
     expect: {
       excavationCY: 312.22,
       materialsCY: [
-        ["backfill", "Clay", "native", 104.83],
-        ["backfill", "Native", "native", 170.13],
+        ["backfill", "Clay", "native", 109.11],
+        ["backfill", "Native", "native", 180.33],
         ["bedding", "#57 stone", "imported", 3.89],
-        ["zone", "Clay", "native", 11.27],
-        ["zone", "Sand", "imported", 20.68],
+        ["zone", "Clay", "native", 6.99],
+        ["zone", "Sand", "imported", 10.48],
       ],
     },
   },
@@ -389,8 +389,8 @@ export const UTILITY_CASES = [
         ["8\" PVC SDR-35, 6–8 ft deep", "LF", 100, "utility_pipe", "site_utilities.sanitary"],
         ["Trench excavation, Clay", "BCY", 325.93, "utility_trench_excavation", "site_utilities.sanitary"],
         ["Pipe bedding, #57 stone", "CCY", 6.48, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
-        ["Pipe zone, Sand", "CCY", 34.46, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
-        ["Trench backfill, Native", "CCY", 283.56, "utility_backfill", "site_utilities.sanitary"],
+        ["Pipe zone, Sand", "CCY", 17.46, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
+        ["Trench backfill, Native", "CCY", 300.56, "utility_backfill", "site_utilities.sanitary"],
         // D-1068 a: a sloped trench is its own protection: no line (it was "Trench protection, Sloped 1:1 8–10 ft", 100 LF).
       ],
     },
