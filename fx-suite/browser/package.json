@@ -1,0 +1,9 @@
+{
+  "name": "intelcost-bench-browser",
+  "private": true,
+  "type": "module",
+  "description": "The bench's browser driver (D-16). Fixtures for driving acceptance steps, not a test suite.",
+  "dependencies": {
+    "playwright": "1.46.1"
+  }
+}

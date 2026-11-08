@@ -58,15 +58,16 @@ await run("c37-wage-roles", [
     },
   },
   {
-    title: "My wage data, Upload file: AR20260046 is read with LABORER: PIPELAYER and COMMON OR GENERAL; Calculate and Save rates to project",
+    title: "Wage determination, Look up or upload: AR20260046 is read with LABORER: PIPELAYER and COMMON OR GENERAL; Calculate and Save rates to project",
     run: async ({ page }) => {
       await openCalculator(page);
       await page.getByRole("button", { name: "Continue", exact: true }).click();
-      await page.getByRole("radiogroup", { name: "Wage basis" }).getByRole("radio").filter({ hasText: "My wage data" }).click();
-      await page.getByRole("button", { name: "Next", exact: true }).click();
-      const data = page.getByRole("region", { name: "Wage data" });
+      // W10 (D-1041): a Davis-Bacon project's WD loads on the Wage determination card, its panel below.
+      const basis = page.getByRole("region", { name: "Wage basis" });
+      await basis.locator('[data-wage-card="wd"]').getByRole("button", { name: "Look up or upload", exact: true }).click();
+      const data = page.getByRole("region", { name: "Wage determination" });
       await data.waitFor();
-      await data.getByRole("tab", { name: "Upload file" }).click();
+      await data.getByRole("tab", { name: "Look up or upload" }).click();
       const [response] = await Promise.all([
         page.waitForResponse((r) => r.url().endsWith(`/project/${project.uuid}/wage-calculator/wd`) && r.request().method() === "POST", { timeout: 60000 }),
         data.getByLabel("Wage determination file").setInputFiles({ name: "ar46.txt", mimeType: "text/plain", buffer: AR46 }),
@@ -81,10 +82,11 @@ await run("c37-wage-roles", [
         const ask = data.locator(`[data-msg="${id}"]`);
         if (await ask.isVisible().catch(() => false)) await ask.getByRole("button").filter({ hasNotText: "Upload another" }).first().click();
       }
-      // The data step goes on to review with Continue ("Continue anyway" when it asks about unmatched rows).
-      await data.getByRole("button", { name: /^Continue( anyway)?$/ }).last().click();
-      const anyway = data.getByRole("button", { name: "Continue anyway" });
-      if (await anyway.isVisible().catch(() => false)) await anyway.click();
+      // The mapping up, "Use these rates" hands the card its WD; the card reads Loaded, then Calculate.
+      await data.locator("table[data-mapping] tr[data-map-row]").first().waitFor({ timeout: 10000 });
+      await data.getByRole("button", { name: "Use these rates", exact: true }).click();
+      await basis.locator('[data-wage-card="wd"][data-loaded]').waitFor({ timeout: 10000 });
+      await basis.getByRole("button", { name: "Calculate", exact: true }).click();
       await page.locator("[data-craft-table] tr[data-craft]").first().waitFor({ timeout: 30000 });
       await page.getByRole("button", { name: "Save rates to project", exact: true }).click();
       const confirm = page.getByRole("dialog").filter({ hasText: /labor rates\?/ });

@@ -53,13 +53,16 @@ async function setInfo(page, label, option) {
   await row.getByText(option, { exact: true }).waitFor({ timeout: 10000 });
 }
 
-/** Continue, the basis card, Calculate: the review's craft table up. */
-async function calculate(page, card = "Location-Adjusted Rates") {
+/** Calculate on the wage basis (W10, D-1041): "Calculate with location-adjusted rates" when no wage
+ *  data is loaded, "Calculate" when some is (your rates included). */
+const calculateButton = (basis) => basis.getByRole("button", { name: /^Calculate( with location-adjusted rates)?$/ });
+
+/** Continue, the wage basis (location-adjusted rates, always on), Calculate: the review's craft table up. */
+async function calculate(page) {
   await page.getByRole("button", { name: "Continue", exact: true }).click();
-  const basis = page.getByRole("radiogroup", { name: "Wage basis" });
+  const basis = page.getByRole("region", { name: "Wage basis" });
   await basis.waitFor();
-  await basis.getByRole("radio").filter({ hasText: card }).click();
-  await page.getByRole("button", { name: "Calculate", exact: true }).click();
+  await calculateButton(basis).click();
   await page.locator("[data-craft-table] tr[data-craft]").first().waitFor({ timeout: 30000 });
 }
 
@@ -93,14 +96,17 @@ await run("c31-wage", [
     },
   },
   {
-    title: "(1) Location-Adjusted Rates (once National Average) preselected, Calculate shows the craft rates, Save stores the set",
+    title: "(1) Location-adjusted rates (once National Average) always on, Calculate shows the craft rates, Save stores the set",
     run: async ({ page }) => {
       await openCalculator(page);
       await page.getByRole("button", { name: "Continue", exact: true }).click();
-      const card = page.getByRole("radiogroup", { name: "Wage basis" }).getByRole("radio").filter({ hasText: "Location-Adjusted Rates" });
-      await card.waitFor();
-      expect((await card.getAttribute("aria-checked")) === "true", "Location-Adjusted Rates is not preselected");
-      await page.getByRole("button", { name: "Calculate", exact: true }).click();
+      // W10 (D-1041): no basis to pick; location-adjusted rates are always on, and Calculate says so.
+      const basis = page.getByRole("region", { name: "Wage basis" });
+      const always = basis.locator("[data-always-on]");
+      await always.waitFor();
+      const note = ((await always.textContent()) ?? "").trim();
+      expect(/^Location-adjusted rates · Always on/.test(note), `always-on note: "${note}"`);
+      await basis.getByRole("button", { name: "Calculate with location-adjusted rates", exact: true }).click();
       await page.locator("[data-craft-table] tr[data-craft]").first().waitFor({ timeout: 30000 });
       const crafts = await page.locator("[data-craft-table] tr[data-craft]").count();
       const header = ((await page.locator("[data-review-header]").textContent()) ?? "").trim();
@@ -135,16 +141,19 @@ await run("c31-wage", [
     },
   },
   {
-    title: "(4) My wage data, Upload file: tx115.txt is read by the rules as TX20260115 with 26 classifications, no credit prompt; 20 of its 21 crafts Matched in the Commercial & Public table, Tile Setter among them",
+    title: "(4) Wage determination, Look up or upload: tx115.txt is read by the rules as TX20260115 with 26 classifications, no credit prompt; 20 of its 21 crafts Matched in the Commercial & Public table, Tile Setter among them",
     run: async ({ page }) => {
       await openCalculator(page);
+      // W10 (D-1041, D-1047 item 10): a WD loads on its card, which is on for a prevailing project only. The
+      // project goes prevailing for this step and back to its own wage type after it.
+      const before = (await apiCall(token, "GET", `${wage}/context`)).body?.wage_determination?.value ?? null;
+      await setInfo(page, "Wage determination", "Prevailing Wage, Federal (Davis-Bacon)");
       await page.getByRole("button", { name: "Continue", exact: true }).click();
-      const basis = page.getByRole("radiogroup", { name: "Wage basis" });
-      await basis.getByRole("radio").filter({ hasText: "My wage data" }).click();
-      await page.getByRole("button", { name: "Next", exact: true }).click();
-      const data = page.getByRole("region", { name: "Wage data" });
+      const basis = page.getByRole("region", { name: "Wage basis" });
+      await basis.locator('[data-wage-card="wd"]').getByRole("button", { name: "Look up or upload", exact: true }).click();
+      const data = page.getByRole("region", { name: "Wage determination" });
       await data.waitFor();
-      await data.getByRole("tab", { name: "Upload file" }).click();
+      await data.getByRole("tab", { name: "Look up or upload" }).click();
       const [response] = await Promise.all([
         page.waitForResponse((r) => r.url().endsWith(`/project/${project.uuid}/wage-calculator/wd`) && r.request().method() === "POST", { timeout: 60000 }),
         data.getByLabel("Wage determination file").setInputFiles({ name: "tx115.txt", mimeType: "text/plain", buffer: TX115 }),
@@ -166,11 +175,16 @@ await run("c31-wage", [
       // Spec test 6 (D-669): the rules map 21 crafts; a Commercial & Public project's table holds 20 of them since
       // Tile Setter joined it, shown Matched. Bricklayer Helper is not a Commercial & Public craft: its classification
       // (LABORER: MASON TENDER - BRICK) is matched as Bricklayer Tender, the table's name for the same worker.
-      expect(matched === 20 && parse.mapping.length === 20, `${matched} rows Matched, ${parse.mapping.length} crafts in the table (20 expected)`);
+      // W4 (D-1038): the mapping also carries the crafts the WD does not list, conformed to a related line
+      // (`conformed: true`, shown "Conformed to …"); the 20 are the crafts the WD lists itself.
+      const own = parse.mapping.filter((m) => !m.conformed);
+      expect(matched === 20 && own.length === 20, `${matched} rows Matched, ${own.length} crafts in the table from the WD's own lines (20 expected), ${parse.mapping.length - own.length} conformed`);
       expect(parse.mapping.some((m) => m.craft_name === "Tile Setter" && m.classification === "TILE SETTER"), "Tile Setter not matched to TILE SETTER");
       expect(!parse.unmatched.some((u) => u.classification === "TILE SETTER"), "TILE SETTER still under the other classifications");
       expect(!parse.mapping.some((m) => m.craft_name === "Bricklayer Helper"), "Bricklayer Helper in the Commercial & Public mapping");
-      return `${parse.header.wd_number}: ${count} classifications by the rules, no credit prompt; ${matched} crafts matched, ${parse.unmatched.length} other classifications`;
+      const back = await apiCall(token, "PATCH", `${base}/${project.uuid}`, { wage_determination: before });
+      expect(back.status === 200, `wage type back to ${before}: ${back.status}`);
+      return `${parse.header.wd_number}: ${count} classifications by the rules, no credit prompt; ${matched} crafts matched, ${parse.mapping.length - own.length} conformed, ${parse.unmatched.length} other classifications`;
     },
   },
   {

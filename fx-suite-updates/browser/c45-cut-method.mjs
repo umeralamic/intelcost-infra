@@ -38,9 +38,12 @@ async function calculateWith(page, set, ok) {
       last = (await g.items()).filter((i) => i.earthwork_role && !i.earthwork_retired);
       return last.length && ok(last) ? last : null;
     },
-    `the calculated lines (last: ${last.map((l) => l.earthwork_role).join(", ")})`,
+    "the calculated lines",
     30000,
-  );
+  ).catch((error) => {
+    // The roles last read, named when the wait fails (the label is written before any read).
+    throw new Error(`${error.message} (last: ${last.map((l) => `${l.name}:${l.earthwork_role}`).join(", ")})`);
+  });
 }
 
 await run("c45-cut-method", [
@@ -49,7 +52,9 @@ await run("c45-cut-method", [
     run: async ({ page }) => {
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["G-1"]);
       await richPad(g, sheet);
-      await g.assume({ native_suitable: "layers" });
+      // D-1037: the pad has no fill, so a hauled-off surplus is all "Cut to export" (A2), which no method moves; re-used
+      // as fill, the cut stays on the method's line.
+      await g.assume({ native_suitable: "layers", site_choices: { surplus: { soil: "reuse" } } });
       const cfg = (await apiCall(token, "GET", `${lib}/earthwork-production`)).body;
       const keys = cfg.activities.map((a) => a.national_key);
       expect(keys.includes("A14") && keys.includes("A15"), `starter keys ${keys.join(",")}`);

@@ -184,8 +184,12 @@ await run("c17-earthwork", [
       // Named by the work since D-768 (the feature is its own field): "Strip topsoil (6\")", "Cut" on the site
       // and on the pad, "Undercut excavation (12\")", "Undercut replacement fill, Engineered Fill".
       const strip = find(/^Strip topsoil \(/);
-      const cuts = lines.filter((l) => l.name === "Cut");
+      // Since D-1037 the cut that leaves the site is its own line, "Cut to export"; only cut to fill stays "Cut".
+      // With no fill here all 550 CF leaves: the two names together carry it once.
+      const cuts = lines.filter((l) => l.name === "Cut" || l.name === "Cut to export");
+      const exported = lines.filter((l) => l.name === "Cut to export").reduce((t, l) => t + q(l), 0);
       const undercut = find(/^Undercut excavation/);
+      const spoil = find(/^Undercut spoil, haul off/);
       const replacement = find(/^Undercut replacement/);
       const exportLine = find(/^Soil Export/);
       expect(strip && near(q(strip), CY(500)), `strip line: ${listed.join(" · ")}`);
@@ -193,6 +197,9 @@ await run("c17-earthwork", [
       expect(undercut && near(q(undercut), CY(100)), `undercut line: ${listed.join(" · ")}`);
       expect(replacement, `no undercut replacement line: ${listed.join(" · ")}`);
       expect(exportLine, `no soil export line: ${listed.join(" · ")}`);
+      // The export hauls the exported cut and nothing else: its LCY over the exported BCY is the soil's swell, the
+      // same as the undercut spoil's own haul (the undercut is not hauled a second time in the export).
+      expect(spoil && exported > 0 && near(q(exportLine) / exported, q(spoil) / q(undercut)), `export ${q(exportLine).toFixed(2)} LCY for ${exported.toFixed(2)} BCY exported: ${listed.join(" · ")}`);
       expect(lines.every((l) => !l.is_stale), "a fresh line is stale");
       return listed.join(" · ");
     },

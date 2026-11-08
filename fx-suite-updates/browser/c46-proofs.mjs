@@ -51,8 +51,10 @@ await run("c46-proofs", [
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating&pane=wage`);
       await page.locator("[data-wage-calculator]").waitFor({ timeout: 30000 });
       await page.getByRole("button", { name: "Continue", exact: true }).click();
-      await page.getByRole("radiogroup", { name: "Wage basis" }).getByRole("radio").filter({ hasText: "Location-Adjusted Rates" }).waitFor();
-      await page.getByRole("button", { name: "Calculate", exact: true }).click();
+      // W10 (D-1041): location-adjusted rates always on; with nothing loaded Calculate says so.
+      const basis = page.getByRole("region", { name: "Wage basis" });
+      await basis.locator("[data-always-on]").waitFor();
+      await basis.getByRole("button", { name: "Calculate with location-adjusted rates", exact: true }).click();
       await page.locator("[data-craft-table] tr[data-craft]").first().waitFor({ timeout: 30000 });
       await page.getByRole("button", { name: "Save rates to project", exact: true }).click();
       const confirm = page.getByRole("dialog").filter({ hasText: /labor rates\?/ });

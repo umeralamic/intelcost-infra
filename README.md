@@ -301,6 +301,12 @@ container's `/proc/sys/fs/inotify`). They are not what runs out: the api's watch
 (it walks the bind-mounted tree), and a full limit is ENOSPC, not ENOMEM. They were left as they are; raising them is
 a `.wslconfig` `kernelCommandLine` (`sysctl.fs.inotify.max_user_watches=...`) and a restart of Docker Desktop.
 
+**The runnable suite is tracked too (D-1057):** `fx-suite/` as the 2026-11-07 release ran it (the tag, the updates
+and the retargeting laid over it), without its run output (`.regress/`), screenshots, `node_modules/`, the sheet key
+(real drawings) or any PDF. A fixture edited there is copied into `fx-suite-updates/` as well, or `setup`/`refresh`
+lays the older copy back over it. **Paused (D-1057):** no `fx-suite.sh` run on this laptop until the founder says so;
+the suite moves to the test laptop.
+
 **Fixtures updated since the tag** live in `fx-suite-updates/` (tracked), as whole files over the
 tag's own, retargeted with it. They are the ones covering what F29 touched, updated to today's
 screens on the founder's word (D-614): f6-a to f6-e. Every other fixture is still the tag's.

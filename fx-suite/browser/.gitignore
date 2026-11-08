@@ -1,0 +1,3 @@
+# Screenshots are written during a pass and deleted after it is reported.
+shots/
+node_modules/

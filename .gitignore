@@ -10,7 +10,13 @@ workspace/.claude/scheduled_tasks.lock
 .env.legacy
 # The AI provider's real keys, loaded by the api (F14). Never commit.
 .env.ai
-fx-suite/
+# The fixture suite is tracked (D-1057); its run output, screenshots and the sheet key's real drawings are not.
+fx-suite/.regress/
+fx-suite/.regress.lock
+fx-suite/sheet-key/
+fx-suite/**/node_modules/
+fx-suite/**/shots/
+fx-suite/**/*.pdf
 browser/.qt-run.*
 
 # Founder reference workbooks with job figures (2026-11-06): never in the mirror or a commit.

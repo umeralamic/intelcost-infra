@@ -8,7 +8,8 @@
 // (catalog gap)") inactive; the crew's Foreman rows marked foreman, Grade checker and Pipelayer
 // priced as their journeyman craft (D-753 option B, `rate_as`).
 //
-// The link, on the c32 pad (150 × 90 ft, EG 100, FG 82: 9,000 BCY of cut), in Estimating › Equipment settings.
+// The link, on the c32 pad (150 × 90 ft, EG 100, FG 82: 9,000 BCY of cut, the surplus re-used as fill so it stays on
+// A1, D-1037), in Estimating › Equipment settings.
 // Updated 2026-11-05 (Q145, D-1014): release 18's tier file (D-954) gives A1 1,200 BCY a day on the project's 8-hour
 // day (1,500 on the tiers' 10-hour day, D-960), the 1,400–2,199 tier: EX-CRAWL-30T × 1 + ADT-30T × 3.
 // - production typed 800/day (1,000 on the 10-hour day) → tier 900–1,399's machines (ADT-30T × 2);
@@ -85,7 +86,7 @@ async function commit(page, row, label, value, settled) {
 
 await run("c36-earthwork-link", [
   {
-    title: "the starter a new workspace takes up (D-751; release 34 since Q145, D-1014): 104 activities, 205 tiers, 220 defaults; A21, A58 and A59 priced on their own line (D-922, D-958); every activity on the project's work day (D-960); 30 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
+    title: "the starter a new workspace takes up (D-751; release 39 since D-1043, A95 debris load and haul): 105 activities, 216 tiers, 226 defaults; A21, A58 and A59 priced on their own line (D-922, D-958); every activity on the project's work day (D-960); 30 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
     run: async ({ page }) => {
       const cfg = (await apiCall(token, "GET", `${wlib}/earthwork-production`)).body;
       const acts = cfg.activities.filter((a) => a.national_key);
@@ -95,9 +96,9 @@ await run("c36-earthwork-link", [
       const crew = tiers.flatMap((t) => t.crew);
       const foremen = crew.filter((c) => /^Foreman/i.test(c.role));
       const rated = crew.filter((c) => /^(Grade checker|Pipelayer)/i.test(c.role));
-      expect(acts.length === 104, `activities ${acts.length}`);
-      expect(tiers.length === 205, `tiers ${tiers.length}`);
-      expect(defaults === 220, `defaults ${defaults}`);
+      expect(acts.length === 105, `activities ${acts.length}`);
+      expect(tiers.length === 216, `tiers ${tiers.length}`);
+      expect(defaults === 226, `defaults ${defaults}`);
       // A21 (a reclaimer serves the one treated area, D-922) and the trees and stumps by diameter (D-958) are priced
       // on their own lines; no activity carries its own day: each follows the project's (D-960).
       const lines = ["A21", "A58", "A59"];
@@ -110,8 +111,8 @@ await run("c36-earthwork-link", [
       await page.getByRole("tab", { name: "Earthwork production" }).click();
       await page.locator("[data-activity]").first().waitFor({ timeout: 30000 });
       const badges = await page.locator("[data-starter]").count();
-      expect(badges === 104, `Starter badges on screen ${badges}`);
-      return `104 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 104 Starter badges`;
+      expect(badges === 105, `Starter badges on screen ${badges}`);
+      return `105 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 105 Starter badges`;
     },
   },
   {
@@ -121,7 +122,8 @@ await run("c36-earthwork-link", [
       await g.boundary(sheet, rect(X0, Y0, 150, 90));
       await g.spots(sheet, "EG", [...ring, middle].map(([x, y]) => [x, y, 100]));
       await g.spots(sheet, "FG", [...ring, middle].map(([x, y]) => [x, y, 82]));
-      await g.assume();
+      // D-1037: re-used as fill, the surplus stays on A1 (hauled off, it is cut to export on A2).
+      await g.assume({ site_choices: { surplus: { soil: "reuse" } } });
       await signIn(page);
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=earthwork`);
       await page.locator("[data-canvas-scale]").first().waitFor({ state: "attached", timeout: 30000 });

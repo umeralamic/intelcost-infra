@@ -7,7 +7,8 @@
 //   ./fx-suite.sh run c32-site-typed
 //
 // The world: one throwaway project, one page at 1/6 ft per point (lib/grading-world.mjs). A 150 × 90
-// ft boundary (13,500 SF) inside a ring of spots 20 ft out, EG 100 everywhere; FG on the same ring:
+// ft boundary (13,500 SF) inside a ring of spots 20 ft out, EG 100 everywhere; the surplus re-used as fill, so the
+// whole cut stays on A1 (D-1037: a hauled-off surplus would be "Cut to export" on A2); FG on the same ring:
 //   - FG 82: cut 18 ft = 9,000 BCY → the starter's A1 (cut, "Excavate and load (on-site haul)")
 //     default 1,200 BCY/day on the project's 8-hour day (1,500 on the tiers' 10-hour day; release 18's tier file,
 //     D-954, and D-960; updated 2026-11-05, Q145, D-1014) → tier 1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T × 3;
@@ -115,14 +116,20 @@ await run("c32-site-typed", [
       await g.boundary(sheet, rect(X0, Y0, 150, 90));
       await g.spots(sheet, "EG", [...ring, middle].map(([x, y]) => [x, y, 100]));
       await setFg(82);
-      await g.assume();
+      // D-1037: a surplus hauled off is cut to export (A2); re-used as fill, it stays on A1 and writes no line of its
+      // own (stockpile or waste would add a second A1 line of the same 9,000 BCY).
+      await g.assume({ site_choices: { surplus: { soil: "reuse" } } });
       const lines = await recalculate(page);
       const cut = lines.find((l) => /cut/i.test(l.name) && !/undercut|strip/i.test(l.name));
       expect(cut, `no cut line among ${lines.map((l) => l.name).join(", ")}`);
       const a1 = await waitFor(async () => {
         const s = await site();
         return s.lines > 0 && s.machines.length > 0 ? s : null;
-      }, "A1's site spread", 60000, 1000);
+      }, "A1's site spread", 60000, 1000).catch(async (error) => {
+        const saved = (await apiCall(token, "GET", `${g.earthwork}/assumptions`)).body.site_choices;
+        const now = (await g.items()).filter((i) => i.source_type === "earthwork_computed" && !i.earthwork_retired);
+        throw new Error(`${error.message}; saved choices ${JSON.stringify(saved)}; lines ${now.map((l) => `${l.name}:${l.earthwork_role}:${Math.round(l.effective_quantity ?? 0)}`).join(", ")}`);
+      });
       expect(Math.round(a1.total_qty) === 9000, `A1 total ${a1.total_qty}, expected 9,000`);
       expect(a1.prod_per_day === 1200, `production ${a1.prod_per_day}, expected 1,200`);
       expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a1)}`);

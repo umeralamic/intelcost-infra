@@ -1,0 +1,372 @@
+// C45, material components (F38, docs/tasks/materials_tasks.md).
+//
+//   ./fx-suite.sh run named c45-materials
+//
+// The world: one throwaway project, one page, one structure.
+//   M0 (D-902): a structure takes the settings' defaults, keeps what is saved, and refuses a value outside them.
+//   M1 (D-903): a key with no price reads none; the workspace's, then the project's, win; a default takes the location
+//      factor's words; a link is http or https; a default is never listed.
+//   M3 (D-905): a saved line's materials are written; a person's price and fields are kept, a dismissed one stays gone until
+//      restored, a line with a person's own material is left alone, a stale untouched one goes, the pipe rounds per bid.
+//   M7 (D-906): Settings › Material prices adds a price with a link; a bad link cannot be saved; Estimating's Setup offers what has no
+//      price, Add price fills it at once; an expired quote keeps pricing, flagged.
+//   M9 (D-907): a run keeps its services.
+//   M4a (D-908): the restraint setting is kept; a thrust block with no CY asks for it in Needs attention.
+//   M6 (D-911): an edited quantity shows Calculate's, Apply takes it; a price moved is listed and Update takes it; a typed one is not;
+//      an edited component out of Calculate stays, marked; dismissed ones are counted and restored.
+//   M10 (D-916): a key in Q4 2026 reads its price, release and grade; a core gap reads Missing price.
+//   D-914: a fused line rents its machine by pipe size, says what the rate leaves out, and is flagged when fusing sets the pace.
+//   D-915: a line Calculate alone wrote goes; one a person touched stays at 0; a line map moved to by hand takes the spread away.
+//   D-913: a supplier sheet: rows matched, one custom, one skipped, a URL becomes a link; nothing saved before Import.
+//   M2 (D-904): a hand-added material with no price reads Missing price, in the row, Needs attention and the bid; a typed 0 does not;
+//      user_fields follows a person's save on a Calculate component; a dismissed one stays dismissed until restored.
+
+import { APP, apiCall, expect, run } from "./lib/bench.mjs";
+import { freshWorkspace, makeProject } from "./lib/f4.mjs";
+import { grading, gradingSheets, openSheet } from "./lib/grading-world.mjs";
+import { hostSql } from "./lib/host-sql.mjs";
+
+const { token, workspace, base } = await freshWorkspace("C45 Materials");
+const project = await makeProject(token, base, { name: "Materials" });
+const g = grading(token, base, project);
+const takeoff = `${base}/${project.uuid}/takeoff`;
+let sheet;
+let structure;
+
+const STRUCTURE = { structure_type: "catch_basin", utility_type: "storm", shape: "rect", inside_dia_in: null, inside_l_ft: 4, inside_w_ft: 4, wall_in: 6, base_slab_in: 6, base_stone_in: 6, overdig_ft: 2, protection: "auto", start_surface: "proposed" };
+const read = async () => (await apiCall(token, "GET", `${g.earthwork}/utilities`)).body.structures.find((s) => s.item_uuid === structure.uuid);
+
+await run("c45-materials", [
+  {
+    title: "M0 (D-902): a structure's settings start at the plan's defaults, keep what is saved, and refuse what they do not offer",
+    run: async ({ page }) => {
+      [sheet] = await gradingSheets(page, token, base, workspace, project, ["U-1"]);
+      const made = await apiCall(token, "POST", `${takeoff}/item`, { name: "CB-1", type: "count", unit: "EA", sheet_uuid: sheet.uuid, is_utility: true, structure: STRUCTURE, geometry: { geom_type: "count", vertices_json: [[0.5, 0.5]], shape_meta: {}, client_id: crypto.randomUUID() } });
+      expect(made.status === 201, `item: ${made.status} ${JSON.stringify(made.body)}`);
+      structure = made.body;
+      const fresh = await read();
+      expect(fresh.construction === "precast" && fresh.pricing === "parts" && fresh.hood === false && fresh.riser_mode === "per_vf" && fresh.top === null, JSON.stringify(fresh));
+      await apiCall(token, "PUT", `${g.earthwork}/utility-structure/${structure.uuid}`, { ...STRUCTURE, pricing: "whole", inlet_kind: "combination", hood: true });
+      const saved = await read();
+      expect(saved.pricing === "whole" && saved.inlet_kind === "combination" && saved.hood === true, JSON.stringify(saved));
+      const refused = await apiCall(token, "PUT", `${g.earthwork}/utility-structure/${structure.uuid}`, { ...STRUCTURE, top: "dome" });
+      expect(refused.status === 422, `dome: ${refused.status}`);
+      return "precast, parts, per VF; whole, combination, hood kept; a dome refused";
+    },
+  },
+  {
+    title: "M1 (D-903): no price, the default, the workspace's, the project's, in that order; a bad link refused; defaults never listed",
+    run: async () => {
+      const key = `fx:c45:${Date.now()}`;
+      const wsPrices = `/api/workspace/${workspace.uuid}/material-prices`;
+      const prPrices = `${base}/${project.uuid}/estimate/material-prices`;
+      const resolve = async () => (await apiCall(token, "GET", `${prPrices}/resolve?mat_key=${encodeURIComponent(key)}`)).body;
+      const none = await resolve();
+      expect(none.source === "none" && none.unit_price === null, JSON.stringify(none));
+      const release = (await hostSql("INSERT INTO matlib.release (title, released_on) VALUES ('Fixture', current_date) RETURNING id")).match(/\d+/)[0];
+      try {
+        await hostSql(`INSERT INTO matlib.mat_default (release_id, mat_key, unit_price, sell_unit, grade, source_internal) VALUES (${release}, '${key}', 10, 'LF', 'B', 'INTERNAL NOTE')`);
+        const fallback = await resolve();
+        expect(fallback.source === "intelcost" && fallback.unit_price === 10 && fallback.location === "No location: national" && !JSON.stringify(fallback).includes("INTERNAL"), JSON.stringify(fallback));
+        const listed = (await apiCall(token, "GET", wsPrices)).body;
+        expect(listed.length === 0, "a default was listed");
+        const bad = await apiCall(token, "POST", wsPrices, { mat_key: key, unit_price: 12, sell_unit: "LF", links: [{ label: "x", url: "javascript:alert(1)" }] });
+        expect(bad.status === 422, `javascript link: ${bad.status}`);
+        const good = await apiCall(token, "POST", wsPrices, { mat_key: key, unit_price: 12, sell_unit: "LF", supplier: "Fixture Supply", valid_until: "2020-01-01", links: [{ label: "Page", url: "https://example.com/p", checked_on: "2026-10-31" }] });
+        expect(good.status === 201 && good.body.expired === true && good.body.links.length === 1, JSON.stringify(good));
+        const ws = await resolve();
+        expect(ws.source === "workspace" && ws.unit_price === 12 && ws.expired === true && ws.links[0].url === "https://example.com/p", JSON.stringify(ws));
+        const own = await apiCall(token, "POST", prPrices, { mat_key: key, unit_price: 0, sell_unit: "LF" });
+        expect(own.status === 201, JSON.stringify(own));
+        const pr = await resolve();
+        expect(pr.source === "project" && pr.unit_price === 0, JSON.stringify(pr));
+        return "none, $10 default, $12 workspace (expired, flagged), a project's typed 0 is a price";
+      } finally {
+        await hostSql(`DELETE FROM matlib.mat_default WHERE release_id = ${release}`);
+        await hostSql(`DELETE FROM matlib.release WHERE id = ${release}`);
+      }
+    },
+  },
+  {
+    title: "M2 (D-904): a material with no price reads Missing price and the bid Incomplete; a typed 0 does not",
+    run: async ({ page }) => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const body = { kind: "material", name: "Riser", qty_formula: "QTY", unit: "EA", pricing_mode: "unit", unit_price: null };
+      const host = await apiCall(token, "POST", `${takeoff}/item`, { name: "Hydrant", type: "count", unit: "EA", sheet_uuid: sheet.uuid, geometry: { geom_type: "count", vertices_json: [[0.4, 0.5]], shape_meta: {}, client_id: crypto.randomUUID() } });
+      expect(host.status === 201, `item: ${host.status}`);
+      const made = await apiCall(token, "POST", comps, { ...body, item_uuid: host.body.uuid });
+      expect(made.status === 201, `component: ${made.status} ${JSON.stringify(made.body)}`);
+      await openSheet(page, project, sheet, "estimating");
+      const row = page.locator('tr[data-estimate-row="Hydrant"]').first();
+      await row.waitFor({ timeout: 30000 });
+      await row.locator("[data-cost-flag]", { hasText: "Missing price" }).waitFor({ timeout: 15000 });
+      const said = await page.locator("body").innerHTML();
+      expect(/1 material without a price/.test(said), "the bid does not say 1 material without a price");
+      const typed = await apiCall(token, "PUT", `${comps}/${made.body.uuid}`, { ...body, unit_price: 0 });
+      expect(typed.status === 200, `typed 0: ${typed.status}`);
+      await page.reload();
+      await row.waitFor({ timeout: 30000 });
+      await page.locator("tr[data-estimate-row]").first().waitFor();
+      await page.waitForFunction(() => !document.body.innerText.includes("Missing price"), null, { timeout: 15000 });
+      const deleted = await apiCall(token, "DELETE", `${comps}/${made.body.uuid}`);
+      return `Missing price and the bid's count; a typed 0 clears both; delete ${deleted.status}`;
+    },
+  },
+  {
+    title: "M3 (D-905): Calculate's materials: written, a person's fields kept, a dismissed one not written again until restored, a person's own line left alone",
+    run: async ({ page }) => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const line = (variant, materials) => ({ region_id: "util:sanitary", role: "utility_pipe", name: `8" PVC SDR-35, ${variant}`, quantity: 100, unit: "LF", variant, work_scope: "site_utilities.sanitary", work_kind: null, utility: "sanitary", folder: "utilities", materials });
+      const pipe = (key = "pipe:pvc_d3034_sdr35:8") => ({ key, mat_key: key, name: '8" PVC SDR-35', qty_formula: "QTY", unit: "LF", wastage_pct: 2, round_to: 14, round_scope: "bid", sell_unit: "LF" });
+      const tape = { key: "warning_tape", mat_key: "warning_tape", name: "Detectable warning tape", qty_formula: "QTY * 1.05 / 1000", unit: "ROLL", wastage_pct: 0, round_to: 1, round_scope: "line", sell_unit: "ROLL" };
+      const save = async (lines) => {
+        const r = await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines });
+        expect(r.status === 200, `save: ${r.status} ${JSON.stringify(r.body).slice(0, 300)}`);
+      };
+      const auto = async (name) => (await apiCall(token, "GET", comps)).body.filter((c) => c.kind === "material" && c.auto_key && (!name || c.name === name));
+      await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
+      const first = await auto();
+      // Priced from Q4 2026 (M10), its basis and grade shown, never its source.
+      expect(first.length === 3 && first.every((c) => c.price_source === "intelcost" && /^IntelCost price · Q4 2026 · grade [A-F]$/.test(c.price_basis) && !JSON.stringify(c).includes("source_internal")), JSON.stringify(first[0]));
+      // Two lines of 100 LF in one bid: 204 LF, 15 joints of 14 ft.
+      await openSheet(page, project, sheet, "estimating");
+      await page.waitForFunction(() => /of 210 LF ordered in .* \(15 JT\)/.test(document.body.innerText), null, { timeout: 30000 });
+      const body = (c, extra) => ({ kind: "material", name: c.name, qty_formula: c.qty_formula, unit: c.unit, pricing_mode: "unit", unit_price: c.unit_price, wastage_pct: c.wastage_pct, round_to: c.round_to, ...extra });
+      const edited = first.find((c) => c.key !== "x" && c.auto_key === "warning_tape");
+      const put = await apiCall(token, "PUT", `${comps}/${edited.uuid}`, body(edited, { unit_price: 9, name: "Tape, our spec" }));
+      expect(put.status === 200, `edit: ${put.status}`);
+      const dropped = first.filter((c) => c.auto_key !== "warning_tape")[1];
+      const gone = await apiCall(token, "POST", `${comps}/${dropped.uuid}/remove`, { choice: "clear" });
+      expect(gone.status === 200, `remove: ${gone.status} ${JSON.stringify(gone.body)}`);
+      await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
+      const again = await auto();
+      const kept = again.find((c) => c.auto_key === "warning_tape");
+      expect(kept.name === "Tape, our spec" && Number(kept.unit_price) === 9 && kept.price_source === "typed" && kept.user_fields.includes("unit_price"), JSON.stringify(kept));
+      expect(again.filter((c) => c.auto_key.startsWith("pipe:")).length === 1, `dismissed came back: ${again.length}`);
+      const restored = await apiCall(token, "POST", `${comps}/restore`, { item_uuid: dropped.item_uuid });
+      expect(restored.status === 200, `restore: ${restored.status}`);
+      await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
+      expect((await auto()).filter((c) => c.auto_key.startsWith("pipe:")).length === 2, "not restored");
+      // A person's own material on a line: Calculate leaves it alone, and a new key is not written there.
+      const a = (await auto()).find((c) => c.auto_key === "warning_tape");
+      await apiCall(token, "POST", comps, { kind: "material", name: "Own pipe", qty_formula: "QTY", unit: "LF", pricing_mode: "unit", unit_price: 5, item_uuid: a.item_uuid });
+      await save([line("a", [pipe(), tape, { ...tape, key: "extra", mat_key: "extra", name: "Extra" }]), line("b", [pipe()])]);
+      expect((await auto("Extra")).length === 0, "written over a person's material");
+      // No longer produced: untouched goes.
+      await save([line("b", [])]);
+      const after = await auto();
+      expect(!after.some((c) => c.item_uuid === first.find((x) => x.auto_key.startsWith("pipe:") && x.item_uuid !== a.item_uuid)?.item_uuid), "an untouched component stayed");
+      // Out of the Calculate, a line buys nothing: its untouched materials go, a person's stay (D-908).
+      expect(!after.some((c) => c.item_uuid === a.item_uuid && c.auto_key.startsWith("pipe:")), "a retired line kept its pipe");
+      expect(after.some((c) => c.item_uuid === a.item_uuid && c.auto_key === "warning_tape"), "a retired line lost a person's edit");
+      return "3 written, 210 LF = 15 JT in one bid; typed kept; dismissed stayed gone, then restored; a person's line left alone; a stale one gone";
+    },
+  },
+  {
+    title: "M7 (D-906): the page saves a price and its link; a bad link is refused; Estimating offers what has no price and Add price fills it at once; an expired quote keeps pricing, flagged",
+    run: async ({ page }) => {
+      await openSheet(page, project, sheet, "estimating");
+      await page.goto(`${APP}/settings/material-prices`);
+      await page.locator("[data-material-prices]").waitFor({ timeout: 30000 });
+      await page.getByRole("button", { name: "Add a price" }).click();
+      const form = page.locator("[data-price-form]");
+      await form.getByLabel("Material", { exact: true }).fill("Page stone");
+      await form.getByLabel("Price", { exact: true }).fill("41.5");
+      await form.getByLabel("Sold per").fill("TON");
+      await form.getByRole("button", { name: "Add a link" }).click();
+      await form.getByLabel("Link label").fill("Quote");
+      await form.getByLabel("Link URL").fill("javascript:alert(1)");
+      const save = page.getByRole("button", { name: "Save", exact: true });
+      expect(await save.isDisabled(), "a javascript link can be saved");
+      await form.getByLabel("Link URL").fill("https://example.com/quote");
+      await save.click();
+      const link = page.locator('[data-price-row="page_stone"] [data-price-link]');
+      await link.waitFor({ timeout: 15000 });
+      expect((await link.getAttribute("rel")) === "noopener noreferrer" && (await link.getAttribute("target")) === "_blank", "the link's rel or target");
+      // Step 3 left the last pipe line's components; a fresh Missing material on a fresh line.
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const key = "stone:c45";
+      await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:storm", role: "utility_bedding_pipe_zone", name: "Pipe bedding, C45", quantity: 10, unit: "CCY", variant: "bedding:C45|imported", work_scope: "site_utilities.storm", work_kind: null, utility: "storm", folder: "utilities", materials: [{ key, mat_key: key, name: "C45 stone", qty_formula: "QTY * 1.5", unit: "TON", wastage_pct: 10, sell_unit: "TON" }] }] });
+      await openSheet(page, project, sheet, "estimating");
+      await page.locator("[data-estimate-sidebar]").getByText("Material Prices").click();
+      const missing = page.locator("[data-prices-missing]");
+      await missing.getByText("C45 stone").waitFor({ timeout: 15000 });
+      await missing.locator("li", { hasText: "C45 stone" }).getByRole("button", { name: "Add price" }).click();
+      await page.locator("[data-price-form]").getByLabel("Price", { exact: true }).fill("30");
+      await page.locator("[data-price-form]").getByLabel("Valid to").fill("2020-01-01");
+      await page.getByRole("button", { name: "Save", exact: true }).click();
+      const priced = async () => (await apiCall(token, "GET", comps)).body.find((c) => c.auto_key === key);
+      const { waitFor } = await import("./lib/realtime.mjs");
+      await waitFor(async () => Number((await priced())?.unit_price) === 30, "the price to fill", 15000, 300);
+      await page.keyboard.press("Escape");
+      await page.reload();
+      await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
+      await waitFor(async () => /Quote expired 2020-01-01: C45 stone/.test(await page.locator("body").innerHTML()), "the expired flag", 15000, 300);
+      return "saved with its link, rel noopener; javascript refused; Add price filled $30 at once; expired flagged";
+    },
+  },
+  {
+    title: "M9 (D-907): a run's services are kept, and a count under 1 is refused",
+    run: async () => {
+      const fields = { utility_type: "sanitary", catalog_key: "pvc_d3034_sdr35:8", material: "PVC", pipe_class: "SDR-35", nominal_in: 8, od_in: 8.4, services: [{ count: 6, size_in: 4 }] };
+      const body = { name: "Run S", type: "lf", unit: "LF", sheet_uuid: sheet.uuid, is_utility: true, utility: fields, geometry: { geom_type: "lf", vertices_json: [[0.2, 0.2], [0.4, 0.2]], shape_meta: {}, client_id: crypto.randomUUID() } };
+      const made = await apiCall(token, "POST", `${takeoff}/item`, body);
+      expect(made.status === 201, `run: ${made.status} ${JSON.stringify(made.body).slice(0, 300)}`);
+      const read = (await apiCall(token, "GET", `${g.earthwork}/utilities`)).body.runs.find((r) => r.item_uuid === made.body.uuid);
+      expect(read.services.length === 1 && read.services[0].count === 6 && read.services[0].size_in === 4, JSON.stringify(read.services));
+      const refused = await apiCall(token, "PUT", `${g.earthwork}/utility-run/${made.body.uuid}`, { ...fields, services: [{ count: 0, size_in: 4 }] });
+      expect(refused.status === 422, `count 0: ${refused.status}`);
+      return "6 at 4 in kept; a count of 0 refused";
+    },
+  },
+  {
+    title: "M4a (D-908): the restraint setting is kept; a thrust block with no CY reads Enter the block's CY; a typed one does not",
+    run: async ({ page }) => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const settings = (await apiCall(token, "GET", `${g.earthwork}/utilities`)).body.settings ?? {};
+      const put = await apiCall(token, "PUT", `${g.earthwork}/utilities/settings`, { ...settings, restraint: "thrust" });
+      expect(put.status === 200 && put.body.settings.restraint === "thrust", `settings: ${put.status} ${JSON.stringify(put.body).slice(0, 200)}`);
+      const key = "thrust:90:8";
+      await apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:water", role: "utility_pipe", name: '8" C900', quantity: 100, unit: "LF", variant: "c900", work_scope: "site_utilities.water", work_kind: null, utility: "water", folder: "utilities", materials: [{ key, mat_key: key, name: "Thrust block, 90°", qty_formula: "0", unit: "CY", wastage_pct: 0, sell_unit: "CY" }] }] });
+      await openSheet(page, project, sheet, "estimating");
+      await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
+      const asks = async () => /Enter the block's CY: Thrust block/.test(await page.locator("body").innerHTML());
+      expect(await asks(), "no ask for the block's CY");
+      const c = (await apiCall(token, "GET", comps)).body.find((x) => x.auto_key === key);
+      await apiCall(token, "PUT", `${comps}/${c.uuid}`, { kind: "material", name: c.name, qty_formula: "1.5", unit: "CY", pricing_mode: "unit", unit_price: 200 });
+      await page.reload();
+      await page.locator("tr[data-estimate-row]").first().waitFor({ timeout: 30000 });
+      await page.waitForFunction(() => !document.documentElement.innerHTML.includes("Enter the block"), null, { timeout: 15000 });
+      return "thrust kept; asked; a typed 1.5 CY clears it";
+    },
+  },
+  {
+    title: "M6 (D-911): Calculate's quantity beside an edit, Apply; a moved price listed, Update; a dismissed component counted and restored; an edited one out of Calculate marked",
+    run: async () => {
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const prices = `${base}/${project.uuid}/estimate/material-prices`;
+      const key = "stone:m6";
+      const material = (qty) => ({ key, mat_key: key, name: "M6 stone", qty_formula: qty, unit: "TON", wastage_pct: 0, sell_unit: "TON" });
+      const line = (qty) => ({ region_id: "util:storm", role: "utility_bedding_pipe_zone", name: "Pipe bedding, M6", quantity: 10, unit: "CCY", variant: "bedding:M6|imported", work_scope: "site_utilities.storm", work_kind: null, utility: "storm", folder: "utilities", materials: qty ? [material(qty)] : [] });
+      const save = (lines) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines });
+      const one = async () => (await apiCall(token, "GET", comps)).body.find((c) => c.auto_key === key);
+      await apiCall(token, "POST", prices, { mat_key: key, unit_price: 10, sell_unit: "TON" });
+      await save([line("QTY")]);
+      let c = await one();
+      expect(Number(c.unit_price) === 10, JSON.stringify(c));
+      await apiCall(token, "PUT", `${comps}/${c.uuid}`, { kind: "material", name: c.name, qty_formula: "99", unit: "TON", pricing_mode: "unit", unit_price: 10 });
+      await save([line("QTY * 2")]);
+      c = await one();
+      expect(c.qty_formula === "99" && c.auto_qty === "QTY * 2", `edit ${c.qty_formula}, Calculate ${c.auto_qty}`);
+      await apiCall(token, "POST", `${comps}/${c.uuid}/take-calculate`);
+      c = await one();
+      expect(c.qty_formula === "QTY * 2" && c.auto_qty === null, "Apply did not take Calculate's");
+      await apiCall(token, "POST", prices, { mat_key: key, unit_price: 12, sell_unit: "TON" });
+      expect(Number((await one()).unit_price) === 10, "a saved price moved by itself");
+      const changes = (await apiCall(token, "GET", `${prices}/changes`)).body;
+      expect(changes.length === 1 && changes[0].was === 10 && changes[0].now === 12, JSON.stringify(changes));
+      await apiCall(token, "POST", `${prices}/update`, { uuids: null });
+      expect(Number((await one()).unit_price) === 12, "Update did not take the price");
+      await apiCall(token, "POST", `${comps}/${(await one()).uuid}/remove`, { choice: "clear" });
+      expect((await apiCall(token, "GET", `${comps}/dismissed`)).body >= 1, "not counted");
+      await apiCall(token, "POST", `${comps}/restore`, {});
+      expect((await apiCall(token, "GET", `${comps}/dismissed`)).body === 0, "not restored");
+      await save([line("QTY * 2")]);
+      c = await one();
+      await apiCall(token, "PUT", `${comps}/${c.uuid}`, { kind: "material", name: "My stone", qty_formula: c.qty_formula, unit: "TON", pricing_mode: "unit", unit_price: 12 });
+      await save([line(null)]);
+      c = await one();
+      expect(c.auto_gone === true && c.name === "My stone", JSON.stringify(c));
+      return "edit kept beside Calculate's, Apply took it; $10 stayed until Update; dismissed counted and restored; edited kept, marked";
+    },
+  },
+  {
+    title: "M10 (D-916): a key of the release is priced by grade; a core gap has no price",
+    run: async () => {
+      const prices = `${base}/${project.uuid}/estimate/material-prices`;
+      const one = async (key) => (await apiCall(token, "GET", `${prices}/resolve?mat_key=${encodeURIComponent(key)}`)).body;
+      const stone = await one("stone:_57_stone");
+      expect(stone.source === "intelcost" && stone.release === "Q4 2026" && stone.grade === "A" && stone.unit_price > 30, JSON.stringify(stone));
+      const fitted = await one("pipe:hdpe_ips_dr11:8");
+      expect(fitted.grade === "F" && fitted.unit_price > 0, JSON.stringify(fitted));
+      const gap = await one("mh:cone:60");
+      expect(gap.source === "none" && gap.unit_price === null, JSON.stringify(gap));
+      return `#57 $${stone.unit_price}, grade A; HDPE grade F; the 60 in cone none`;
+    },
+  },
+  {
+    title: "D-914: a fused line rents its machine by size, says what the rate leaves out, and is flagged when fusing sets the pace",
+    run: async () => {
+      const lib = `/api/workspace/${workspace.uuid}/equipment-library`;
+      await apiCall(token, "GET", `${lib}/earthwork-production`);
+      const write = (nominal) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null }, lines: [{ region_id: "util:force_main", role: "utility_pipe", crew: "fused", name: `${nominal}" HDPE DR 11`, quantity: 400, unit: "LF", variant: `hdpe_ips_dr11:${nominal}|1|0-6`, work_scope: "site_utilities.force_main", work_kind: null, utility: "force_main", folder: "utilities", materials: [], fusion: { cycle_min: 33.8, joint_ft: 40, nominal_in: Number(nominal) } }] });
+      const machine = async () => (await apiCall(token, "GET", `${base}/${project.uuid}/estimate/components`)).body.filter((c) => (c.eq_class_key ?? "").startsWith("FM-"));
+      const note = async () => (await g.items()).find((i) => i.earthwork_crew === "fused" || /HDPE/.test(i.name))?.earthwork_note ?? "";
+      const small = await write("8");
+      expect(small.status === 200, `write: ${small.status} ${JSON.stringify(small.body).slice(0, 200)}`);
+      let got = await machine();
+      expect(got.length === 1 && got[0].eq_class_key === "FM-TS-8" && got[0].kind === "equipment", JSON.stringify(got));
+      expect(/training technician and cleaning charges are not included/.test(await note()), await note());
+      expect(!/Fusing sets the pace/.test(await note()), await note());
+      await apiCall(token, "PUT", `${lib}/override`, { entity: "setting", entity_key: "fusion_setup_min_over_18", field: "value", value_num: 300 });
+      await write("24");
+      got = await machine();
+      expect(got.some((c) => c.eq_class_key === "FM-TS-24"), JSON.stringify(got));
+      expect(/Fusing sets the pace/.test(await note()), await note());
+      return "8 in on the T28, 24 in on the T630; the note; a setup of 300 min flags the pace";
+    },
+  },
+  {
+    title: "D-915: a line Calculate alone wrote goes when it leaves; one a person touched stays; a by hand map takes the spread's price away",
+    run: async () => {
+      const empty = { ok: true, units: "CY", cutCY: 0, fillCY: 0, netCY: 0, regions: [], coverage: 1, warnings: [], strip: null };
+      const line = (region_id, name) => ({ region_id, role: "cut", name, quantity: 500, unit: "BCY" });
+      const put = (lines) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: empty, lines });
+      await put([line("a", "Cut A"), line("b", "Cut B")]);
+      const named = async (n) => (await g.items()).find((i) => i.name === n);
+      const comps = `${base}/${project.uuid}/estimate/components`;
+      const b = await named("Cut B");
+      const made = await apiCall(token, "POST", `${comps}`, { item_uuid: b.uuid, kind: "material", name: "My own", pricing_mode: "unit", qty_formula: "1", unit: "EA", unit_price: 5 });
+      expect(made.status < 300, `component: ${made.status} ${JSON.stringify(made.body).slice(0, 160)}`);
+      await put([line("c", "Cut C")]);
+      expect(!(await named("Cut A")), "an automatic line stayed");
+      expect((await named("Cut B"))?.earthwork_retired === true, "a touched line went");
+      const plib = `${base}/${project.uuid}/estimate/equipment-library`;
+      const c = await named("Cut C");
+      const spread = async () => (await apiCall(token, "GET", comps)).body.filter((x) => x.eq_auto && (x.item_uuid === c.uuid || x.takeoff_item_uuid === c.uuid));
+      expect((await spread()).length > 0, "no spread to take away");
+      const off = await apiCall(token, "PUT", `${plib}/earthwork-production/line-map`, { role: "cut", activity_uuid: null, none_reason: "by_hand" });
+      expect(off.status === 200, `map: ${off.status} ${JSON.stringify(off.body).slice(0, 160)}`);
+      expect((await spread()).length === 0, "by hand kept the spread's machines");
+      await apiCall(token, "PUT", `${plib}/earthwork-production/line-map`, { role: "cut", clear: true });
+      return "automatic gone, touched kept at 0; by hand removes the machines and crew";
+    },
+  },
+  {
+    title: "D-913: a supplier sheet: a matched row, a custom one, a skipped one; its URL a link; nothing saved before Import",
+    run: async ({ page }) => {
+      await openSheet(page, project, sheet, "estimating");
+      await page.goto(`${APP}/settings/material-prices`);
+      await page.locator("[data-material-prices]").waitFor({ timeout: 30000 });
+      const list = async () => (await apiCall(token, "GET", `/api/workspace/${workspace.uuid}/material-prices`)).body;
+      const before = (await list()).length;
+      await page.getByRole("button", { name: "Import a supplier sheet" }).click();
+      const csv = 'Material,Price,Unit,Supplier,URL\n"#57 stone",41.25,TON,Quarry Co,https://example.com/q\nUnobtainium kit,9,EA,Quarry Co,\nSkip me,1,EA,,\n';
+      await page.locator('input[type="file"]').setInputFiles({ name: "quote.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+      const rows = page.locator("[data-import-rows]");
+      await rows.waitFor({ timeout: 15000 });
+      expect((await rows.getByLabel("Material for #57 stone").inputValue()) === "stone:_57_stone", "#57 did not match");
+      expect((await rows.getByLabel("Material for Unobtainium kit").inputValue()) === "__custom__", "an unknown row matched");
+      await rows.getByLabel("Material for Skip me").selectOption("__skip__");
+      expect((await list()).length === before, "saved before Import");
+      await page.getByRole("button", { name: /^Import 2/ }).click();
+      await rows.waitFor({ state: "detached", timeout: 20000 });
+      const after = await list();
+      const stone = after.find((p) => p.mat_key === "stone:_57_stone");
+      expect(stone?.unit_price === 41.25 && stone.links[0]?.url === "https://example.com/q" && stone.supplier === "Quarry Co", JSON.stringify(stone));
+      expect(after.some((p) => p.mat_key.startsWith("custom:") && p.name === "Unobtainium kit"), "the custom row");
+      expect(!after.some((p) => p.name === "Skip me"), "the skipped row was saved");
+      return "#57 matched with its link; a custom material; a skipped row; nothing saved before Import";
+    },
+  },
+]);

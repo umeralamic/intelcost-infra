@@ -55,7 +55,9 @@ await run("c44-fill-by-delivery", [
       await flatPad(g, one);
       await flatPad(g, two);
       await flatPad(g, three, { eg: 99, fg: 100 });
-      await g.assume({ native_suitable: "all" });
+      // D-1037: the surplus re-used as fill, so no cut leaves the site ("Cut to export" is priced on A2 whatever the
+      // method); the whole cut stays on the method's line.
+      await g.assume({ native_suitable: "all", site_choices: { surplus: { soil: "reuse" } } });
       for (const sheet of [one, two, three]) {
         await openSheet(page, project, sheet, "earthwork");
         await calculate(page);

@@ -470,6 +470,10 @@ await run("f9-estimating", [
       expect(!holdError, `the held read failed: ${holdError}`);
       expect(landedAt > savedAt, `the held read landed before the save (${landedAt} ≤ ${savedAt}): nothing was tested`);
       const shown = async (p) => num(await p.locator(`[data-rate="Unit Man Hours for Paint"]`).textContent());
+      // Settled first: every read the figures stand on landed (D-796) and the cell out of its loading mark, which
+      // stands in for a figure before the rates load (D-1054); a 0 is never shown for it.
+      await page.locator("[data-estimate-ready]").waitFor({ timeout: 30000 });
+      await page.locator(`[data-rate="Unit Man Hours for Paint"]:not([data-rate-loading])`).waitFor({ timeout: 15000 });
       // Read again and again after it: nothing may move the cell off 0.25 once the late read is in.
       const reads = [];
       await waitFor(async () => {

@@ -8,7 +8,7 @@
 // **Run it whenever the canvas or the zoom changes** (`SheetCanvas.tsx`, `lib/takeoff/pdf/*`,
 // `lib/takeoff/rotation.ts`, `useViewport.ts`, the page worker's sizes): it is the check for the two
 // old faults it is named after. A landscape sheet whose markup ran 0.22 of the page past its bottom
-// (the ZHO Dania Pointe case) and one whose markup ran 0.15 past its right edge (the G101 case, whose
+// (a landscape set's case) and one whose markup ran 0.15 past its right edge (the G101 case, whose
 // lengths were stored 31 % long when the canvas grew to take the markup in).
 //
 // The world: one throwaway workspace and project ("BENCH DUP … — delete me", gone with the fixture's
