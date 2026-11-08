@@ -27778,3 +27778,57 @@ guard stays on; purge the copy at the end", items 0a–0d, 1 and 5).
 - **Smoke.** The Real bid B copy's storm line (24" RCP, 0–6 ft) after Calculate: 20–25 t excavator on the spread and
   on the line (was 30–36 t).
 - **Benchmark A:** Calculate rerun, the estimate unchanged.
+
+## D-1072: One project location, set from the project or the Wage Calculator
+
+**Status:** Accepted (2026-11-08, Umer: location item 6). Built in part; what is not is below.
+
+- **One location.** The project's address (city, state, ZIP, county, country) is the one location: the wage
+  calculator's area, the equipment rates' region (D-997, by the state) and the suggested sales tax (D-933, by the
+  state) already read it.
+- **Setup** in Estimating: "Set the project state for equipment rates" is gone. Always one line: "Project location:
+  <city, state> · Edit" (the country alone when there is no city or state), or "Set project location" with none; it
+  opens the project's edit dialog.
+- **Wage Calculator → project.** Its ZIP sets the project's ZIP, county, city, state and country (United States);
+  before, only the ZIP and county. When the project already has a different location it asks first: "This changes
+  the project's location from <old> to <new>. It also sets the equipment rates' region and the sales tax. [Change
+  project location] [Cancel]".
+- **Project → wage set.** Saving the project with a new city, state, ZIP or country, when a wage set is saved, says
+  "Project saved. Its wage set is for the old location." with "Update wage set" (opens the Wage Calculator). Nothing
+  is changed by itself.
+- **Outside the US** (a country other than the United States): the Wage Calculator says "The Wage Calculator covers
+  US projects only. This project is in <country>: type the crew rates in Estimating."
+- **Not built:**
+  - a non-US location setting equipment rates and tax: the equipment regions and the sales-tax table are by US state
+    only, so a non-US project prices on Region 7 (West) with no suggested tax, as before. It needs a country's
+    factor and tax rate, not in the catalog.
+  - dump-site distances from the location: each site's distance is typed (D-1044); working it out needs a geocoder,
+    which the bench has none of.
+- **Smoke** (throwaway projects): the ZIP 77003 in the Wage Calculator asked first, then set Houston, TX, 77003,
+  United States; Setup read "Project location: Houston, TX · Edit"; a new ZIP on a project with a wage set offered
+  "Update wage set"; country Canada showed the US-only note (put back after).
+
+## D-1073: Loading production and equipment scale, measured; proposals waiting for Umer
+
+**Status:** Proposed (2026-11-08, pricing items 2 and 4). Nothing in the library or the scale logic changed.
+
+- **Loading production (item 2).** The workspace's tiers are the starter's, unedited. The day's production by
+  quantity bracket drives the hours; the catalog's own load rate for the tier's machine (FM 5-434 Ch. 8 and the KSU
+  CE419 Peurifoy method, a 50-minute hour, grade C) is 3 to 5 times higher: the 3,000–7,999 BCY bracket of
+  "Excavate and load, haul-off" (A2) is 700 BCY a day on a 30–36 t excavator whose catalog rate is 249–311 BCY an
+  hour. Proposed: each bracket at least the catalog's low rate × 10 h × 0.4 (truck exchange and waiting, an
+  allowance to approve): A2 3,000–7,999 at 1,000 BCY/day (900–1,200 asked), A2 0–2,999 at 400–520, A2 20,000–41,999 at
+  1,630; A1's small brackets at 520; the loader's haul-off (A6) 0–9,999 LCY at 420, 700 and 955. The table, with its
+  sources and the effect on Real bid B's copy, is in `test-data-local/real-bid-b/` (not in a repo). Not built yet:
+  the hover with the tier's day rate and source on a loading line, and "Loader slower than its trucks".
+- **Equipment scale (item 4).**
+  - Compact swaps 13 starter activities for their Compact twins (A1, A2, A3, A6, A11–A19 → one tier each: an 8 t
+    excavator with one tri-axle, a compact track loader, a skid-steer roller, a backhoe pipe crew) and sells soil and
+    stone by LCY not tons (D-932). Heavy changes nothing: it prices exactly as Standard (Benchmark A copy: Standard
+    and Heavy both the same estimate).
+  - Benchmark A's copy: Compact about 10 % under Standard, its on-site Cut line about 90 % under (one 8 t excavator
+    and one truck for over 30,000 BCY): not a sensible pick at that size. Real bid B's copy: Compact about 21 %
+    under. Compact then Standard came back $28 off on Real bid B's copy (not exactly where it started).
+  - Proposed: the default by size when no one chose, Compact under 5,000 CY of cut and fill (the D-932 limit),
+    Standard over it; Compact over 5,000 CY asks to be confirmed; Heavy either gets its own tiers (the next tier
+    up, larger machines) or leaves the choices until it does.
