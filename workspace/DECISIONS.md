@@ -27539,3 +27539,20 @@ the calls below assumed and noted).
 - **Now:** the fit image's fetch gives up after 12 s, and the image element then fetches it itself. pdf.js waits for
   the fit image for 1.5 s at most. While neither picture is on the page, it reads "Loading sheet…" with a spinner.
 - **The shape layer** is hidden on a sheet with no shapes, so nothing of it can stand over the page.
+
+## D-1063: A clearing area's trees follow its class; a typed count that is another class's is flagged
+
+**Status:** Accepted (2026-11-08, Umer: "Clearing and grubbing, heavy (3.18 ac; about 693 trees)" is 218 trees an acre,
+under the heavy band; run mode).
+
+- **The cause:** the class is the estimator's pick and prices the acre (D-951). The trees in the line's name came from
+  one spacing for every class, D-951's provisional 1 tree per 200 SF, about 218 an acre, which is light. The band was
+  never compared to the total count, and the trees were never priced (they are in the acre rate).
+- **Now:** an area with no spacing typed takes its class's own: light 200 SF (about 218 an acre), medium 87 SF (about
+  500), heavy 62 SF (about 700), each inside D-1039's bands. A stored 200 is the old default and reads as not typed
+  (assumed: a deliberate 200 on a medium or heavy area is rare; typing 200.5 keeps it). New areas store no spacing.
+- **The hint works both ways:** a typed count or spacing whose trees per acre are another class's, lighter or
+  heavier, reads "About N trees per acre: <class> suggested … Confirm the class, or the trees." The Site Prep dialog
+  now knows its area, so it shows the estimate and the hint too (it showed neither before).
+- **Benchmark A:** "Clearing and grubbing, heavy (3.18 ac; about 2236 trees, in the acre rate)"; 3.18 ACRE, the debris
+  (350.08 TON, 1,400.32 LCY) and every crew hour unchanged. No dollar moves.
