@@ -27619,3 +27619,26 @@ check what those sheets' scales really are"; run mode).
   a firm (never one a person typed). Names already read are flagged, not rewritten.
 - **Needs Umer (not run):** the founder's own project keeps its scales and names until he re-runs Scale All and Page
   Name All there (or asks me to): the sheets auto-read at a "1:n" are 12 times too small.
+
+## D-1067: Panels and layout: labelled tabs, one-row status line, dark scrollbars, the Sheets panel's rows
+
+**Status:** Accepted (2026-11-08, Umer: item 6 of the panel fixes, and "no divider lines anywhere in the Sheets panel;
+an open sheet's markup rows keep the dotted guide and get a very light background tint … hover and selected
+highlights show the current row"; run mode).
+
+- **Hidden panels (#6):** a panel put away leaves a labelled tab on its edge ("Sheets", "Takeoff"), 24 px wide and
+  fully on screen; open, the thin tab stays clear of the separator (D-1064).
+- **Status line (#8):** one row at any width; below 1024 px the toggles scroll sideways and read "Ortho", "Snap"…
+  (their colour and pressed state say on or off), never wrapping onto a second line.
+- **Dark scrollbars (#7):** the page's colour scheme follows the theme, so native scrollbars and form controls are dark
+  in dark mode.
+- **Bookmarks | Snippets:** with neither, the section folds to its tabs and one line ("Bookmark a page or take a
+  Snapshot to keep it here.", the how-to on hover), and the sheet list takes the height; the split handle comes back
+  with the first bookmark or snippet.
+- **The layer picker** reads "Bid package" before its value, its hover says what it does.
+- **Assemblies:** an empty My Assemblies offers "Browse Starter Pack" (the bench workspace's Starter Pack is empty:
+  data, not code).
+- **The Sheets panel's rows:** no divider lines; an open sheet's markup rows, sub-items and components sit on a light
+  tint (`muted` at 40 %, light and dark) with the dotted guide; hover and selection still mark the row. Their figure
+  columns are narrower there (60 and 32 px) so names keep room. A Site Prep row is laid out as an item's: a glyph, the
+  name, its strip depth in the figure column, its colour dot at the right.
