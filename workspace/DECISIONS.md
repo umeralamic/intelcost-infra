@@ -27580,3 +27580,18 @@ width per user. Fix the Sheets panel drag (#5)", and the tree-width note; run mo
   there is no server store for UI layout; a shared machine keeps each person's own).
 - **#5:** the hide-panel tab sat over the separator's grab band at mid-height, so a drag there grabbed the tab. While
   a panel is open its tab now sits 7 px clear of the separator.
+
+## D-1065: The panels' text at a readable size, units explained on hover
+
+**Status:** Accepted (2026-11-08, Umer: "Text (#9): components ≥ 11 px, items ≥ 12 px, rows ≈ 22 px; quantities plain;
+explain the '—' column on hover or drop it; EH / MH explained on hover"; run mode).
+
+- **Sizes:** item rows 22 px with 12 px names and figures; sub-items 22 px at 11 px; components (machines, crews)
+  20 px at 11 px; notes under a name 11 px; sheet rows 22 px (from 16) at 12 px. Settings › Text's defaults move to
+  sheet, folder and item 12 px and sub-item 11 px, and those are the least it takes (a stored smaller size reads as the
+  least; the sliders start there).
+- **Plain figures:** an earthwork markup's count is a figure in the quantity column and its word ("spots", "contours",
+  "region") the unit, no italics (D-1064's columns).
+- **The "—" column** was a cost component's money; D-1064 moved it into the row's hover text.
+- **Units on hover:** EH "Equipment hours: the machine's running hours", MH "Man-hours: labour hours, crew size ×
+  hours", BCY, LCY, CCY, CY, SF, SY, LF, EA, TON, LS, HR and ACRE in words, on every row's unit and the column header.
