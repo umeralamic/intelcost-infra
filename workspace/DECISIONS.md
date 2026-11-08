@@ -27392,3 +27392,20 @@ Software competitor names stay banned everywhere").
 - The fx workers keep reaching MinIO through the host gateway (the isolation check unchanged); the bench's f5-big
   first-page figure (16-19 s after D-1046) is reported as gateway-limited. Abdullah measures the first page and the
   thumbnails on AWS staging (FEATURES Planned). The 240 s thumbnail wait stays.
+
+## D-1054: The release run's failures: a rate before the rates load, expected values only with proof
+
+**Status:** Accepted (2026-11-07, Umer: "never update an expected figure without proof … If a user can see 0 before the
+value loads, show a loading state instead of 0").
+
+- **A rate before the rates load** (f9 step 12, intermittent since 2026-11-05): on a cold open a rate typed before the
+  rates' first read lands had no cached rates to land in, so the cell showed 0 until a later read. The cell now reads
+  "…" (`data-rate-loading`) until the rates load, a figure typed meanwhile shows as typed, and the read that loads them
+  carries it (D-690's ledger). The fixture waits for `data-estimate-ready` and the cell out of loading, then reads 0.25
+  five times; no timeout was raised.
+- **c17 step 6:** the cut lines are "Cut" or, since D-1037, "Cut to export"; the total stays the hand-worked 550 CF =
+  20.37 BCY (16.67 site + 3.70 pad, no fill, so all of it leaves). Added: the soil export's LCY over the exported BCY
+  equals the undercut spoil's swell (25.46 / 20.37 = 1.25 = 4.63 / 3.70), so the undercut is hauled once, on its own line.
+- **Expected values change only with a decision and a hand check,** listed old/new in the run's report.
+- **A bench service that dies during a run** (worker-pages, the file watcher out of memory at 16:53 on 2026-11-07) is
+  caught by D-1051's guard; it is started again (`docker compose start`, the same container) and reported.
