@@ -27526,3 +27526,16 @@ the calls below assumed and noted).
   outward slope (D-584) is not drawn (the bottom keeps the edge plus offset); a fabric in the stack (D-999) is not
   drawn (it has no thickness). Where features overlap, the newest owns the point, as Calculate's own (Q6).
 - A picture's samples only (the section reads no quantity; hard rule 3 untouched).
+
+## D-1062: A sheet never stays blank while its picture is slow
+
+**Status:** Accepted (2026-11-08, Umer: "Blank sheet (#1) … fix the cause"; run mode).
+
+- **The cause:** on the bench, S3 answers slowly and sometimes not at all (`net::ERR_TIMED_OUT` on a sheet's PDF, 4 to
+  7 s before a fit image's first byte). The fit image's fetch had no limit, and pdf.js waited for the fit image before
+  its first draw (round 5, item 1), so a stalled fetch left the page white with nothing saying why. The WebGL shape
+  layer was not the cause: it clears to transparent. It looked like the cause in the review because hiding it made the
+  browser repaint.
+- **Now:** the fit image's fetch gives up after 12 s, and the image element then fetches it itself. pdf.js waits for
+  the fit image for 1.5 s at most. While neither picture is on the page, it reads "Loading sheet…" with a spinner.
+- **The shape layer** is hidden on a sheet with no shapes, so nothing of it can stand over the page.
