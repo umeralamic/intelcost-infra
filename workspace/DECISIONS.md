@@ -27875,3 +27875,75 @@ panels, like report").
   "Real bid A/B"; existing entries are left as they are.
 - **Dump-site distances (A6)** from the project's location are a Planned row in FEATURES: the US Census geocoder,
   straight line × 1.3, labelled an estimate until routing exists. Not started.
+
+## D-1077: An undercut is measured below its section; the soil's shrink beside the project's; a liner's material chosen
+
+**Status:** Accepted (2026-11-08, Umer: A3, A4, A4b; run mode, D-1076).
+
+- **The reference (A4b).** An undercut's depth, a liner's included, is measured below the bottom of the feature's own
+  section: section + undercut is the dig below finished grade. D-999 took the section off a liner's depth ("measured
+  below finished grade"); that subtraction is gone, and with it D-1069's band of a liner inside the section (a liner
+  now lies wholly below its section). The dialog's choice reads "The section's bottom, a liner"; under it, "Undercut 24 in
+  below the 0 in section = 24 in below finished grade", and when the two are equal, "Section and undercut are both
+  24 in: is the section meant to be the liner?". Every liner's result is worked again (its key gains "liner3").
+  - Proved on Real bid B's copy (Liner, 13,756 SF, 2 ft liner): section 0, the undercut 1,019 BCY, nothing more under
+    the liner (2 ft); section 1 ft, the Liner region also cuts 510 BCY more (3 ft); section 2 ft, 1,019 BCY more, and
+    the warning (4 ft).
+  - Saved features the old subtraction applied to: one, on a throwaway smoke project ("Section undercut smoke",
+    Pond clay liner, section 0.5 ft, undercut 2.5 ft). Not changed.
+- **Shrink (A3).** Real bid B's project shrink is 1.00 (none); its one soil layer says shrink 1.10, swell 1.30. With no
+  bores there is no cut by layer, so the balance, and the cut held back for fill (fill CCY × shrink, D-1069), use the
+  project's. The Calculate dialog now says so beside the factors ("Your soil layer … is shrink 1.10, swell 1.30; this
+  project uses 1.00 and 1.25") with "Use the soil's". Taken on the copy: the cut held for 154.97 CCY is 170.46 BCY
+  (154.97 × 1.10), was 154.97.
+- **A liner's material (A4).** "Clay liner, place and compact" buys the library's "Clay fill, material only" (fill:clay,
+  $8.51/CY national, grade C, one source; $8.40 at Houston), loose at shrink × swell per CCY with 5 % waste. Each
+  liner now has "Liner material: Import (tested clay) / Site soil (if tested suitable)", Import by default
+  (`undercuts[feature].linerSource`, api schema, no migration). Site soil buys nothing (the line sends no materials, so
+  what it bought goes) and its compacted yards × shrink come out of the site's cut in the balance. Real bid B's copy:
+  Import, the liner line $28,751.77 ($12,855.16 of clay), bid $251,220.72; Site soil, the line $15,896.61, 1,121 BCY
+  less exported, bid $209,604.72. The clay price is low for a tested low-permeability liner: flagged in the run's report.
+- **Sheets panel rows:** a row's hover buttons sat at the Takeoff panel's columns (162 px from the right) and covered
+  the name in the narrower Sheets column, catching its right-click; under a sheet they sit at its own columns (142 px).
+
+## D-1078: Site access replaces the equipment scale; a scale switch keeps each price
+
+**Status:** Accepted (2026-11-08, Umer: A2).
+
+- "Equipment scale: Compact / Standard / Heavy" is now "Site access: Normal / Tight (compact machines)", Normal by
+  default for every project (Residential no longer starts Compact). The quantity tiers keep choosing machine size.
+  Heavy is gone: it never changed a price (D-1073); a project saved on it reads and prices as Normal. Stored values are
+  unchanged (`standard`, `compact`), so no migration.
+- Tight on more than 5,000 CY of cut and fill (the project's Calculates) asks first in Equipment settings: "This project
+  has 34,353 CY of cut and fill. Compact machines are for tight sites up to about 5,000 CY … Use Tight anyway?".
+- **The round trip.** Switching re-priced each soil and stone material at the library's price of the day, so a project
+  priced earlier came back on new prices (Real bid B's copy: #57 stone and sand 1.3 % lower, $28.35 off). A switch now
+  converts the component's own price by the tons-per-loose-CY factor and keeps its ton price to come back to exactly;
+  a newer price waits for Update. Real bid B's copy: $252,757.91, Tight $205,649.91, Normal again $252,757.91, every
+  total column equal.
+
+## D-1079: Loading at the field rate on the project's work day; the rate and its source on hover; loader slower than its trucks
+
+**Status:** Accepted (2026-11-08, Umer: A1, the D-1073 proposals with the work day's hours).
+
+- **The rule.** A loading activity's day production is at least its field rate: the catalog's low rate for the tier's
+  pacing machine × the project's work-day hours (Equipment settings; the library's 8 h when none) × 0.4, the
+  truck-exchange allowance (truck exchange, spotting, waiting: an assumption, grade C). It applies to the starter's
+  Excavate and load, on-site (A1) and haul-off (A2), and Load and haul off from stockpile (A6), in the pricing
+  (`field_floor` in `_default_production`), so the starter, Intelcost Team and every workspace take it on their next
+  Calculate; the tier files' rows are not rewritten (the bracket rate still prices where it is the higher). The trucks
+  of "Haul off, loaded by excavator" (A7) load at the haul-off excavator's field rate for the same bank (× 1.25 swell):
+  their pace was the haul's own bracket rate, which is what loaded a 30–36 t excavator at 56 BCY an hour.
+  - At 8 h: a 30–36 t excavator (catalog low 249 BCY/hr) 796 BCY/day; 20–25 t 418; 45–55 t 1,308; the 3 CY wheel loader
+    (239 LCY/hr) 763 LCY/day. D-1073's figures were at 10 h.
+- **On hover.** Each loading line's crew carries its production and where it comes from: "Production 796 BCY/day: the
+  field rate … catalog low 249 BCY/hr (FM 5-434 Ch. 8, KSU CE419 …, grade C) x 8 h work day x 0.4 truck-exchange
+  allowance (an assumption); the tier file's 560 for this quantity is lower", or "the tier file's day production for
+  3,000 to 10,000 LCY (starter)", or "paced to the haul-off trucks (40.7 h); the loader alone: 796 BCY/day". The
+  Takeoff panel's hover shows a crew's notes under its title.
+- **Loader slower than its trucks.** A haul-off loader is paced to its trucks (D-1037); when the loader alone loads
+  less than that pace, it keeps its own and says so: "Loader slower than its trucks: it loads N BCY/day, the trucks
+  would take M; priced at the loader's", on the line's spread and its crew.
+- **Effect.** Real bid B's copy, from $252,757.91 to $208,524.72 (−17.5 %): Soil Export's trucks −33 %, the haul-off
+  loader −32 %, the undercut's spoil haul −18 %. Benchmark A: from $683,895.12 to $650,863.11 (−4.8 %): Soil Export
+  −$19,024, Cut to export −$11,344, Strip topsoil haul-off −$2,664. Quantity table: 344 rows right.
