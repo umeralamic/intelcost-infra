@@ -27832,3 +27832,16 @@ guard stays on; purge the copy at the end", items 0a–0d, 1 and 5).
   - Proposed: the default by size when no one chose, Compact under 5,000 CY of cut and fill (the D-932 limit),
     Standard over it; Compact over 5,000 CY asks to be confirmed; Heavy either gets its own tiers (the next tier
     up, larger machines) or leaves the choices until it does.
+
+## D-1074: The Earthwork Volumes panel fits its width
+
+**Status:** Accepted (2026-11-08, Umer: "check at different widths, fix its ui when width is decreased").
+
+- The panel resizes from 260 px; its Methods and Undercuts tables (six and eight columns, with selects) were about
+  630 px wide, so below that the panel scrolled sideways and cut the tables off. Each is now a block per row: the
+  area's name with its figures on one line ("2.5 ft · 120 SF · 8 BCY", "Soil · 21 BCY"), then its choices (Method; Dig
+  and Goes, with Confirm), then the suggestion, the refill with Proof roll and Geotextile, and the water table, each
+  wrapping as the width needs. Labels and data attributes are unchanged.
+- "Undercut reused on site — <feature>" squeezed its name to one letter a line at 260 px; its figure now drops to its
+  own line instead.
+- Checked at 260, 340, 520 and 900 px, light and dark: no sideways scroll, no squeezed text.
