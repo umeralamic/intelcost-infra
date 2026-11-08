@@ -27489,3 +27489,21 @@ user-facing label, note and breakdown").
 - Left in place: the tracked report files in intelcost-infra; `SITE_AND_EARTHWORK_PLAN.md` (a plan "nothing is built
   until approved"); images no container uses but scripts build from or run (the bench browser, the app gates image,
   python, node, emsdk, playwright); `E:\Intelcost\fixtures` (geotech inputs) and `research`.
+
+## D-1060: MinIO emptied of everything no live project uses; deleted projects archived first
+
+**Status:** Accepted (2026-11-07, Umer: "MinIO cleanup approved").
+
+- MinIO is used only by the fx stack (`intelcost-fx`); the bench stores in S3 since D-259, and every key the bench
+  database references (4,756) is in the bucket. Deleted from `intelcost-local`: the six folders of projects with no
+  database row (`ffc60967`, 44.2 GB of a deleted big set in "F5 Block A demo 15:16", and five under 0.2 MB) and the
+  MinIO copy of "zz switching"; every object in `intelcost-fx` (the bucket kept). 4,420 objects.
+- Archived, then deleted: the five deleted protected projects (Test 3344, LLAADD, wweedd, multipart smoke, the Bench
+  Construction Test Riverside copy) and the deleted Intelcost Team project `614cbc5b`, 1,316 objects, 792 MB, to
+  `E:\Intelcost\archive\minio-2026-11-07\` (one zip and one manifest per project: key, bytes, MD5, content type).
+  Each object's MD5 was checked against MinIO as it was read, each staged file against the manifest, each zip entry
+  against its file.
+- Kept: the four live projects' files (470 MB, the 8.3 MB no row references among them), the container and its volume.
+  MinIO 45.75 GB -> 0.48 GB; Docker's volumes 49.78 GB -> 2.36 GB.
+- S3 (`umer-local-intelcost1`, 2.87 GB): 264 objects (0.24 GB) no row references, all under `takeoff/`, across 33
+  projects; no `ffc60967` copy. Reported, nothing deleted.
