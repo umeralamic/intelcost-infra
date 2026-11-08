@@ -27595,3 +27595,27 @@ explain the '—' column on hover or drop it; EH / MH explained on hover"; run m
 - **The "—" column** was a cost component's money; D-1064 moved it into the row's hover text.
 - **Units on hover:** EH "Equipment hours: the machine's running hours", MH "Man-hours: labour hours, crew size ×
   hours", BCY, LCY, CCY, CY, SF, SY, LF, EA, TON, LS, HR and ACRE in words, on every row's unit and the column header.
+
+## D-1066: Scales in the drawing's own words; a "1:n" on a set in feet is 1" = n'; the reader keeps counts and firms out of names
+
+**Status:** Accepted (2026-11-08, Umer: "scale badges in the drawing's own convention … same wording in the status
+bar, fixed right column, never cut off. Full sheet name on hover. Names: flag duplicate sheet numbers and odd names …
+fix the reader so 'of C28' / 'Of Sheets' text isn't put into names", and "C09 shows 1" = 40' while C05–C11 show 1:40 —
+check what those sheets' scales really are"; run mode).
+
+- **What those sheets really are:** their title blocks print "SCALE: 1:40" (C07 "1:50"); C09 prints "1:40" too and was
+  set by hand at 1" = 40'. On a US civil set in feet, "1:40" is the engineer's shorthand for 1" = 40'. The reader took
+  it as a true ratio (1" = 3'-4"), 12 times too small, and applied it.
+- **The reader now:** on a page whose notes speak feet (FEET, FT, SQ FT, CFS, ELEV, 6'-0") and not metres, a "1:n" at
+  an engineer's division (5, 10, 20, 30, 40, 50, 60, 80, 100, 200, 300, 400, 500, 1000) is 1" = n'. The label stays
+  as printed ("1:40"): each sheet in its own convention. A cover with few notes (no feet words) keeps the true ratio.
+- **Wording:** one formatter for the sheet chip and the status line: an engineer's scale `1" = 60'` (it was
+  "1inch=60ft" on the chip and "1 inch = 60 ft" in the status line), a ratio `1:40`, an architect's `1/4" = 1'-0"`.
+  The chip sits in a fixed right column (80 px), never cut off; the name is cut instead, its full text on hover.
+- **Names:** a title-block count or caption is never a title ("Sheet Number C03 Of 13", "3 of 13", "Of Sheets",
+  "Sheet No. C03"), nor a firm's name ("…, Inc.", LLC, Ltd., Corp., PLLC, LLP); "C2 OF C28" reads as C2. The reader
+  then takes the next title block, or leaves the name for a look.
+- **Flags:** "Check name" also marks a sheet number another sheet carries, and a stored name that looks like a count or
+  a firm (never one a person typed). Names already read are flagged, not rewritten.
+- **Needs Umer (not run):** the founder's own project keeps its scales and names until he re-runs Scale All and Page
+  Name All there (or asks me to): the sheets auto-read at a "1:n" are 12 times too small.
