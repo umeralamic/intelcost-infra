@@ -1065,7 +1065,7 @@ export const EARTHWORK_CASES = [
   { id: "d938-mixed-total-only", kind: "assembly-group", items: [{ uuid: "a", name: "Export", unit: "LCY", effective_quantity: 900, earthwork_role: "soil_export", earthwork_region_id: "balance" }, { uuid: "b", name: "Import", unit: "LCY", effective_quantity: 100, earthwork_role: "soil_import", earthwork_region_id: "balance" }], expect: { Export: "900 LCY", Import: "100 LCY" } },
   // Suggestions (D-920): 180 ft pushes, 800 ft scrapes, 4,000 ft trucks; rock is excavator whatever is above it; a steep pocket is noted.
   // A choice of scraper on the second pocket (its cell "1") of 100 and 300 CY soil, the first keeping dozer: 25 % dozer, 75 % scraper.
-  { id: "d920-suggest", kind: "suggest", pockets: [{ cy: 100, ft: 180 }, { cy: 300, ft: 800, steep: 12 }, { cy: 500, ft: 4000, rock: 200 }], expect: { methods: "cut-1:soil:dozer cut-2:soil:scraper cut-3:soil:excavator cut-3:rock:excavator", notes: 1, shares: '{"dozer":0.14285714285714285,"scraper":0.42857142857142855,"excavator":0.42857142857142855}' } },
+  { id: "d920-suggest", kind: "suggest", pockets: [{ cy: 100, ft: 180 }, { cy: 300, ft: 800, steep: 12 }, { cy: 500, ft: 4000, rock: 200 }], expect: { methods: "cut-1:soil:dozer cut-2:soil:scraper cut-3:soil:excavator cut-3:rock:excavator", notes: 1, shares: '{"excavator":0.5714285714285714,"scraper":0.42857142857142855}' } },
   // Site figures (D-918): a 100 × 100 ft cut 10 ft deep, its fill 300 ft east, 5 ft down at the centroids (105 to 95): -3.33 %.
   // A second cut on ground at 40 % reads 40 % and all steep; a 1 ft sliver of 3.7 CY is no pocket.
   { id: "d918-pockets", kind: "site-figures", expect: { pockets: 3, cy: 3703.7, avg: 10, deepest: 10, dist: 300, grade: -3.33, slope: 40, steep: 100 } },
@@ -1142,7 +1142,7 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "over_excavation_onsite:pad over_excavation:pad undercut_stockpile:pad undercut_haul:pad replacement_fill:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
       "over_excavation_onsite:pad": 80,
-      "over_excavation_onsite:pad:name": "Undercut excavation, Clay, kept on site",
+      "over_excavation_onsite:pad:name": "Undercut excavation, Pad, Clay, kept on site",
       "over_excavation:pad": 20,
     },
   },
@@ -1217,7 +1217,7 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "undercut:pad undercut_reuse_fill:pad undercut_replace:pad prep:pad cut:remainder fill:remainder soil_import:__soil_import__",
       "undercut:pad": 10,
-      "undercut:pad:name": 'Undercut excavation (24")',
+      "undercut:pad:name": 'Undercut excavation, Pad (24")',
       "undercut_reuse_fill:pad": 9,
       "undercut_reuse_fill:pad:unit": "CCY",
       "undercut_replace:pad": 10,
@@ -1239,12 +1239,12 @@ export const EARTHWORK_CASES = [
       assumptions: null,
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut:remainder",
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad",
       "undercut:pad": 10,
       "undercut:pad:unit": "BCM",
       "undercut_haul:pad": 12.5,
       "undercut_haul:pad:unit": "LCM",
-      "undercut:pad:name": "Undercut excavation (15.2cm)",
+      "undercut:pad:name": "Undercut excavation, Pad (15.2cm)",
       "prep:pad": 9.290304,
       "prep:pad:unit": "M²",
       "prep:pad:name": "Prepare subgrade (15.2cm, 1 lift)",
@@ -1270,7 +1270,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder"].join(" "),
+      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`)].join(" "),
       "stabilize:pad": 10000 / 9,
       "stabilize:pad:unit": "SY",
       // A count stored before D-406 reads as its thickness, depth / count: here the depth itself.
@@ -1341,7 +1341,7 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       // D-983 (Q155): a scarify's own pass and its water (110 pcf x 3 % x 0.5 ft x 9 / 8.33 = 1.78 gal/SY).
-      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b cut:remainder",
+      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b",
       "prep_scarify:b": 200,
       "prep_scarify:b:unit": "SF",
       "prep_moisture:b": 200,
@@ -1445,7 +1445,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad cut:remainder",
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad",
       "undercut:pad": 20000 / 27,
       "undercut_haul:pad": (20000 / 27) * 1.25,
       "undercut_replace:pad": 20000 / 27,
@@ -1499,7 +1499,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: false, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder soil_import:__soil_import__",
+      roles: "undercut_native_dig:pad undercut_native:pad soil_import:__soil_import__",
       "soil_import:__soil_import__": (20000 / 27) * 0.1 * 1.25,
     },
   },
@@ -1516,7 +1516,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad cut:remainder",
+      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad",
       "undercut_stabilize:pad": 20000 / 27,
       "undercut_stabilize:pad:name": 'Undercut and stabilize native soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
       "undercut_stabilize_mix:pad": 20000 / 27,
@@ -1697,6 +1697,45 @@ export const EARTHWORK_CASES = [
     kind: "lines",
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1100, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
     expect: { roles: "cut:remainder fill:remainder", "cut:remainder": 1100, "cut_export:remainder": undefined },
+  },
+  // --- D-1069 c: the fill's cut is held back before any cut leaves ---
+  // Cut 1,000 BCY, fill 200 CCY at shrink 1.00, the trenches' suitable spoils 50 BCY. The site exports 1,000 + 50 - 200
+  // = 850 BCY (1,062.5 LCY). The cut held for the fill is 200 x 1.00 = 200 BCY; the spoils do not take its place, so
+  // 800 BCY of cut leaves and 200 stays for the fill (before: 850 left and 150 stayed, the spoils filling the rest).
+  {
+    id: "d1069-hold-back",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 200 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 }, site: { utilitySpoils: 50 } },
+    expect: { roles: "cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__", "cut_export:remainder": 800, "cut:remainder": 200, "fill:remainder": 200, "soil_export:__soil_export__": 1062.5 },
+  },
+  // --- D-1069 a, b: a liner measured below finished grade, 2 ft thick on a 2 ft section, all in cut ---
+  // Pad 2,700 SF: its region cuts 300 BCY to subgrade, of which the liner's band is 2,700 x 2 / 27 = 200 BCY (inCutCF
+  // 5,400). The undercut line is 200 BCY, its spoil hauled off 200 x 1.25 = 250 LCY; the cut to grade left is
+  // 300 - 200 = 100 BCY, exported (125 LCY). The clay is placed at its whole thickness, 200 CCY. The liner sits on the
+  // subgrade, so the subgrade under it is still prepared: 2,700 SF.
+  {
+    id: "d1069-liner",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [
+        { id: "pad", label: "Pad", cutCY: 300, fillCY: 0 },
+        { id: null, label: "Remainder", cutCY: 0, fillCY: 0 },
+      ],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 2700, volumeCF: 5400, material: "Clay liner (compacted, low-permeability)", disposition: "haul_off", replaceCF: 5400, displacedCF: 0, inCutCF: 5400, onSubgrade: true }, prep: { depthFt: 0.5, lifts: null, areaSF: 2700 } }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 },
+    },
+    expect: {
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut_export:pad soil_export:__soil_export__",
+      "undercut:pad": 200,
+      "undercut:pad:name": 'Undercut excavation, Pad (24")',
+      "undercut_haul:pad": 250,
+      "undercut_replace:pad": 200,
+      "undercut_replace:pad:name": 'Clay liner, place and compact, 24"',
+      "prep:pad": 2700,
+      "cut_export:pad": 100,
+      "soil_export:__soil_export__": 125,
+    },
   },
   // Mixed, shrink 1: Pad cut 600 fill 0, Park cut 300 fill 0, Remainder cut 100 fill 600. Cut 1,000, fill 600: 400 BCY
   // leaves (x 1.25 = 500 LCY), from the regions with a surplus over their own fill, by volume, Pad 600 and Park 300:

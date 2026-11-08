@@ -27680,3 +27680,55 @@ changed yet (below).
 - **f (traced):** A12 (the gravity pipe crew) picks its tier by the run's length (0–249 LF → tier 1, a 20 t excavator
   in the starter library); the screenshot's 30–36 t comes from the workspace's own library. Choosing by pipe size and
   depth is a library change, not yet made.
+
+## D-1069: Real bid B on a copy: a liner is its own undercut and its own placing line, the fill's cut is held back before export, a method by area is said to win, Auto kept
+
+**Status:** Accepted (2026-11-08, Umer: "copy Real bid B into a throwaway workspace; read only on the original, the
+guard stays on; purge the copy at the end", items 0a–0d, 1 and 5).
+
+- **The copy.** The drives' guard's `COPY_SOURCES` gains Real bid B (d0b0305d), read by the copier alone for one copy
+  (as D-1024). The copy (e508941b, "BENCH DUP 2026-11-08 16:27 — delete me") lives in a throwaway's workspace; the
+  original's row counts and latest `updated_at` were equal before and after. It is purged with the other DUPs.
+- **Why there was no liner line and no undercut line (0a, 0b).** The liner is an undercut "measured below finished
+  grade" (D-999) as deep as the feature's own section (2 ft on a 2 ft section). D-999 turns that into a depth below
+  the subgrade of 2 − 2 = 0, so the feature had no undercut at all: no undercut line, no replacement, and the whole
+  dig to subgrade stayed in the region's "Cut to export".
+- **A liner now** (`siteFeatures.ts`, `undercut.ts`, `lines.ts`):
+  - is an undercut by its whole thickness (`linerFt`), even where none of it lies below the subgrade;
+  - its dig is the band it occupies below existing ground: inside the section (`sectionBandCF`, exact over the
+    feature's own prisms: ∫ clamp(−Δz − lo, 0, hi − lo)) plus any dig below the subgrade as before. The band inside
+    the section (`inCutCF`) is taken off its region's cut and its layers (`lineRegions`, `lineLayers`), so it is
+    dug once, on "Undercut excavation, <feature> (<depth>)", footprint × depth where all of it is in cut; the region's
+    "Cut to export" is the cut to grade;
+  - its spoil follows "Undercut spoil, unsuitable and rock" as every simple undercut does (D-922);
+  - is placed at its whole thickness on its own line, "<material>, place and compact, <depth> in <lift> lifts", the
+    material without its note in brackets ("Clay liner, place and compact"), from the material set on the feature;
+  - takes the fill's place only below the subgrade over existing ground (the fill reaches only the subgrade);
+    D-1005's "whole thickness less the dig" overstated that where the liner is the section;
+  - sitting on the subgrade (none of it below), keeps its feature's subgrade prep: the subgrade under the liner is
+    still prepared (D-923's "prep stands apart from an undercut" applies where the undercut digs below it);
+  - joins the feature key ("liner2" and its thickness), so every liner's result is worked again.
+- **The volumes panel** says "Of the cut, N BCY is undercut (<feature>), on its own line; to grade M BCY", and the
+  region breakdown reads "C <to grade> + undercut <dig> · F <fill>".
+- **The fill's cut is held back (0c).** Before any cut leaves, the cut held for the fill is its compacted yards ×
+  shrink (as printed, D-177), less only soil marked re-usable (strip or undercut). The trenches' and structures'
+  suitable spoils no longer take its place: what the export carries beyond the cut's surplus is theirs. Before, the
+  export took the spoils' share out of the cut held for the fill (Real bid B: the cut that stayed was about two
+  thirds of the fill's need).
+- **No line at 0.** A region with no cut that stays makes no "Cut" line (as D-1068 c for Fill).
+- **The method (0d).** The two cut pockets carried "Dozer push" chosen in the Methods table; a choice by area wins
+  over the project's "Excavator and trucks". Now:
+  - the Calculate dialog says so where they differ ("2 areas you set in the Results' Methods table (dozer push) win
+    over this choice") with "Use <method> for every area", which clears the choices by area;
+  - a pocket no one chose follows the project's method, never the suggestion (before: once any pocket was chosen,
+    every other took its suggestion).
+- **Auto (item 5).** `site_choices.method_auto` (api schema, no migration): "Auto: suggest from the site" is kept with
+  the other choices. A project or sheet never asked starts on Auto; a saved project keeps the method it saved (no
+  `method_auto`: not Auto), so nothing changes silently.
+- **Quantity table.** Rows changed by this decision, each checked: three undercut names gain the feature
+  (`Undercut excavation, Pad (24")`, `(15.2cm)`, `Pad, Clay, kept on site`); d920's shares (the unchosen pocket by
+  the project's excavator, not its suggested dozer); nine roles lists lose a `cut:remainder` at 0 (their regions have
+  no cut). New rows: d1069-hold-back and d1069-liner, worked by hand. Then 344 rows right.
+- **Effect.** Benchmark A: Calculate rerun, the estimate unchanged (no liner; its fill is met from its cut). Real bid
+  B's copy, recalculated in the same workspace before and after: the bid up about 17 % with 0a–0c (the undercut's
+  haul and the clay liner now priced), about 22 % with the method followed as chosen (excavator and trucks).
