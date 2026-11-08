@@ -392,9 +392,19 @@ def roles() -> int:
         for k, want in c["expect"].items():
             if round(got[k] * 100) != round(want * 100):
                 wrong.append(f"FAIL  {c['id']}.{k}: {got[k]}, expected {want}")
+    # D-1056: the pipelayer as the WD's Laborer group (W3) prices as D-753's role, max(WD $17.00,
+    # $37.26 x 12.56 / 12.50) = $37.44; the Laborer's own line stays $37.26.
+    from app.wagecalc.rates import prevailing_rate
+
+    s = Settings(public_policy="higher_of")
+    grouped = prevailing_rate(ref, "CC-16", (12.56, 1.19, 0.0), -0.27431, "AR", "prevailing_federal", False, s, 7.25, "LABORER: PIPELAYER", ratio=12.56 / 12.50)
+    own = prevailing_rate(ref, "CC-16", (12.50, 1.18, 0.0), -0.27431, "AR", "prevailing_federal", False, s, 7.25, "LABORER: COMMON OR GENERAL")
+    for rid, got_rate, want in (("role-group-pipelayer", grouped["rate"], 37.44), ("role-group-laborer", own["rate"], 37.26)):
+        if round(got_rate * 100) != round(want * 100):
+            wrong.append(f"FAIL  {rid}: {got_rate}, expected {want}")
     for w in wrong:
         print(w)
-    print(f"wage roles: {len(ROLE_CASES)} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"wage roles: {len(ROLE_CASES) + 2} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 

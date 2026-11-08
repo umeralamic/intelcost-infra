@@ -27409,3 +27409,64 @@ value loads, show a loading state instead of 0").
 - **Expected values change only with a decision and a hand check,** listed old/new in the run's report.
 - **A bench service that dies during a run** (worker-pages, the file watcher out of memory at 16:53 on 2026-11-07) is
   caught by D-1051's guard; it is started again (`docker compose start`, the same container) and reported.
+
+## D-1055: Only the main bench and marketing run; the fx stack and leftovers stopped, restart "no"
+
+**Status:** Accepted (2026-11-07, Umer: "keep running only the main bench and marketing … This is my instruction, so the
+D-1051 guard allows it").
+
+- Running: postgres, redis, minio, api, app, worker, worker-pages, worker-previews, worker-ocr, beat, mailhog,
+  stripe-fake, marketing. Stopped, not removed, restart policy "no" (`docker update --restart=no`), images and volumes
+  kept: api-fx, api-fx-b, worker-fx, worker-fx-previews, worker-fx-ocr, beat-fx, app-fx-prod, app-fx-b-prod,
+  stripe-fake-fx, app-fx, app-fx-b, browser-fx, app-prod, app-b, api-b.
+- No main-bench service depends on a stopped one (compose `depends_on`: api on postgres, redis, minio; app and the
+  workers on api; beat on worker). Container memory 9.26 GiB (22 running) before, 4.54 GiB (13) after.
+- A bare `docker compose up -d` would bring a profile-less leftover back with compose's own restart policy: start the
+  main bench by service name. The fx stack stays off until the fixture suite resumes on the test laptop (D-1057).
+
+## D-1057: The fixture suite tracked in intelcost-infra; paused until the test laptop
+
+**Status:** Accepted (2026-11-07, Umer: "Stop all fixture-suite work now … Put the fixture suite under version control").
+
+- `fx-suite/` is tracked in intelcost-infra (258 text files), with today's 9 fixture fixes (c17, c31, c32, c36, c37,
+  c44, c45, c46, f9, D-1054), also copied into `fx-suite-updates/` so `setup`/`refresh` keep them. Not tracked: run
+  output (`.regress/`), screenshots, `node_modules/`, `sheet-key/` (real drawings and their key) and every PDF.
+- Checked before the commit: no real key value from `.env`, `.env.ai` or the api's `.env`; the only passwords are the
+  bench seed's documented `bench-password-1` (already in the api's `scripts/seed.py`) and fixture-made throwaways; no
+  bid figure. The founder's project names in `browser/lib/protected.mjs` (refusal messages only; the guard matches by
+  uuid) and four comments became neutral labels ("Founder project 1" …, "the founder's earthwork benchmark").
+- No `fx-suite.sh` run (release or alone) on this laptop until the founder says so; release to testers or main stays
+  blocked until the release passes on the test laptop.
+- Still tracked from before, outside this commit, for the founder's call (git history keeps them either way):
+  founder project names in intelcost-infra `bench/autocount/` (README, manifest), `browser/lib/` (protected,
+  earthwork-, excel- and explain-cases), `browser/mcp-guard.js`, `browser/quantity-table.mjs`, `drives/guard.py`,
+  `drives/copy-3d-test.py`, `fx-suite-updates/sheet-key/key.json`; in the api `scripts/protected.py`,
+  `app/features/ai/trial.py`, `app/features/drawing/reading.py`. (The wage seed's county and ZIP lists name public
+  places, not clients.)
+
+## D-1056: A role priced from another craft's rate keeps D-753's WD ratio on prevailing
+
+**Status:** Accepted (2026-11-07, Umer: "D-753's ratio applies on top of D-1047 … → $37.44").
+
+- A craft priced from another craft's rate = max(its WD line, the other craft's minimum x the WD ratio). Applies to the
+  roles priced that way: the pipelayer (from the Laborer) and the grade checker (from the Equipment Operator), whether
+  priced by D-753's role path (`role_rate`) or as the WD's W3 group of the craft (`prevailing_rate(..., ratio=)`,
+  `ROLE_GROUPS` in `app/wagecalc/rates.py`); the group's union-scale floor (burdened and paycheck) is scaled by the
+  role's WD base over the craft's, and its breakdown says so. Other W3 groups (operators by machine, trucks by type,
+  laborer groups) are the craft's own lines: unchanged.
+- Hand check (AR20260046, F = -27.431 %): pipelayer WD $12.56 + $1.19 burdens to $17.00; Laborer union scale $37.26;
+  $37.26 x 12.56 / 12.50 = $37.44 = max($17.00, $37.44). The Laborer's own line stays $37.26. The quantity table keeps
+  $37.44 (`role-c-pipelayer`) and adds the group path (`role-group-pipelayer` $37.44, `role-group-laborer` $37.26).
+- Saved wage sets keep their stored rates until "Update rates" (D-1041 W11); no migration.
+
+## D-1058: The cost book's name stays out of the product, in internal docs and source only
+
+**Status:** Accepted (2026-11-07, Umer: "Cost book: not in the competitor gate. Remove the cost book's name from every
+user-facing label, note and breakdown").
+
+- Not in the competitor gate. On screen, in notes, breakdowns and exports the table is "national open-shop rate" or
+  "national union scale" (D-1047 item 4).
+- Where it was (2026-11-07): no user-facing place. Searched the app, the api (messages, breakdown lines, exports),
+  every seed and migration, the marketing site and the bench database: none. Internal only, kept: the api's
+  `app/wagecalc/market.py:118` (a docstring), intelcost-infra `drives/quantity-table.py:415` (a comment),
+  `docs/tasks/WAGE_PLAN.md:85, 236` and its mirror.

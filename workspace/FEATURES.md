@@ -95,6 +95,9 @@ _Updated: 2026-10-02_
 | # | Feature | Repo | Note |
 |---|---------|------|------|
 | f5-big on AWS staging (Abdullah) | Measure a big upload's first page and its thumbnails on AWS staging: the bench's figure (16-19 s, D-1046) is limited by Docker Desktop's storage gateway, which production does not have (D-1053) | api | Planned (2026-11-07): for Abdullah |
+| Dev-server fixtures on the built apps (test laptop) | f3-s1, f4-s2 and f7-a fail only on page loads from the fx dev server (5176 not reaching "load" in 30 s), never on what they assert: run them on the built apps like the other 158 (D-1057) | infra | Planned (2026-11-07): on the test laptop |
+| Second-window update under 1.5 s (test laptop) | f5-s19 and f6-a see a change in a second window after 1.6-2.4 s against 1.5 s budgets: profile the publish, the frame and the reads behind it on a laptop running the fx stack alone (D-1057) | infra, api, app | Planned (2026-11-07): on the test laptop |
+| Second-laptop setup guide and scripts | The test laptop's setup: Docker/WSL memory, the repos, the bench and the fx stack from intelcost-infra (`fx-suite/` tracked since D-1057), the sheet key and drawings copied by hand (never in git), the first release run (D-1057) | infra | Planned (2026-11-07): when the laptop is ready |
 | Several WDs per project | Several wage determinations on one project, chosen per activity (building and heavy on one site job); today one governs (D-1032) | both | Planned (2026-11-06) |
 | apply_scale single pass | The scale apply runs its double pass once (Q213) | app | Planned (2026-11-06): left as it is, logged |
 | Realtime speed | Realtime updates faster under load; the bounds stay (Q216), not a tester blocker | both | Planned (2026-11-06) |

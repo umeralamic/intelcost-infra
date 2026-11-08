@@ -48,8 +48,8 @@ are git-ignored there and never copied (infra 25f1c3f). Older reference files in
 
 ## Not done
 - W8 workers' comp by state: waits for the TX/AZ filings in `test-data-local` (Q-W6).
-- The fx-suite release run: run 2026-11-07 08:20-17:19, **not passed** (see "Release run" below). Nothing goes to
-  testers or main.
+- **Fixture suite paused: release to testers / main is blocked until it passes on the test laptop** (D-1057). The
+  release run of 2026-11-07 08:20-17:19 did not pass (below); no fx-suite run on this laptop until the founder says so.
 
 ## Release run (2026-11-07, D-1054)
 - 165 fixtures (158 built, 7 dev). 21 failed in the run; 6 passed alone; 15 failed alone. Since then:
@@ -59,11 +59,17 @@ are git-ignored there and never copied (infra 25f1c3f). Older reference files in
   worlds re-use the surplus soil as fill, so A1 keeps its cut under D-1037; c36's starter 104/205/220 -> 105/216/226,
   D-1043 release 39, A95 = A6's 11 tiers and 6 defaults); c31-wage 6/6 and c46-proofs 4/4 (D-1041's cards; c31's mapped
   count kept at 20, the 11 "Conformed to" rows of D-1038 W4 counted apart); m6-position 5/5 alone.
-- **Still failing:** c37-wage-roles step 3 (Pipelayer $37.26, expects $37.44: Needs Umer); f5-big step 1 (first page
-  23.1 s, gateway-limited, D-1053); f5-s19 and f6-a (second-window latency 1.6-2.4 s against 1.5 s budgets; failed alone
-  in both 2026-11-05 runs too); f3-s1, f4-s2, f7-a on the dev servers (every failed step is a `page.goto` not reaching
-  "load" in 30 s on 5176; f4-s2 and f7-a failed alone in every release since 2026-11-03).
-- The fixtures are git-ignored (the archived suite): their edits are on disk only.
+- **The 7 still failing:**
+  - c37-wage-roles step 3: Pipelayer $37.26 where $37.44 is expected; decided by D-1056 ($37.44), to be fixed in the
+    api and re-checked on the test laptop.
+  - f5-big step 1: first page 23.1 s with thumbnails being made, against about 10 s; gateway-limited on the bench
+    (D-1053), measured on AWS staging by Abdullah.
+  - f5-s19 step 3 and f6-a step 8/9: a second window sees the change in 1.6-2.4 s against 1.5 s budgets (failed alone in
+    both 2026-11-05 runs too); to profile on the test laptop.
+  - f3-s1, f4-s2, f7-a (dev servers): every failed step is a `page.goto` not reaching "load" in 30 s on the fx dev server
+    (5176), never an assertion; f4-s2 and f7-a failed alone in every release since 2026-11-03. To move to the built apps
+    on the test laptop.
+- The suite is tracked in intelcost-infra since D-1057 (infra ee9b4f4), today's 9 fixes with it.
 - D-1051's guard fired at the end: the bench's worker-pages died at 16:53 (its file watcher out of memory, ENOMEM),
   not restarted by the run; started again (the same container) at 17:20.
 
@@ -80,13 +86,6 @@ numbers and bid totals: none is a client file. Two hits were public data: Sales 
 table (Riverside, Miramar…), and the material prices file cites public bid tabulations and their suppliers.
 
 ## Needs Umer
-- **Pipelayer on prevailing (c37 step 3):** D-753 prices a role at the laborer market × the WD base ratio ($37.26 ×
-  12.56 ÷ 12.50 = $37.44); D-1047 item 1 with D-1038 W3 prices the pipelayer line at max(WD $17.00 burdened, national
-  union scale $37.26) = $37.26, and the api applies the second after the first. Which rule wins? The quantity table
-  still asserts $37.44 for the role on its own.
-- **Dev-server and latency fixtures:** f3-s1, f4-s2, f7-a time out loading pages from the fx dev server, and f5-s19 /
-  f6-a miss 1.5 s realtime budgets, with the bench and the fx stack sharing one 15.5 GB Docker VM. Options: run the
-  release with the bench's own app/marketing/workers stopped, or give the VM more memory; no timeout raised.
 - Catalog source ids and URLs still contain maker words (e.g. ids like "DEERE-135P", maker web addresses): the ids
   are keys other rows reference; the names are reworded. The other seed files hold 237 maker mentions (eq_class 193,
   eq_production 42, eq_activity 1, eq_reference 1), held at that count by the new gate.
