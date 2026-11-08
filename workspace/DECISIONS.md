@@ -27556,3 +27556,27 @@ under the heavy band; run mode).
   now knows its area, so it shows the estimate and the hint too (it showed neither before).
 - **Benchmark A:** "Clearing and grubbing, heavy (3.18 ac; about 2236 trees, in the acre rate)"; 3.18 ACRE, the debris
   (350.08 TON, 1,400.32 LCY) and every crew hour unchanged. No dollar moves.
+
+## D-1064: The Takeoff panel's columns, its width in pixels, and each panel's width kept per person
+
+**Status:** Accepted (2026-11-08, Umer: "Takeoff rows (#2–4, #13) … Both panels get pixel limits … remember each panel's
+width per user. Fix the Sheets panel drag (#5)", and the tree-width note; run mode).
+
+- **Columns:** every row (item, sub-item, cost component) has the same flag slot, quantity (76 px, right-aligned,
+  tabular) and unit (36 px) columns, under a sticky header (Name · Qty · Unit). The name takes the rest and is the only
+  thing cut; its full text is on hover. A ⚠ (needs recalculating, a sub-item's formula error) or a hidden item's eye
+  sits in the flag slot, so no figure moves.
+- **Notes on their own line:** "Included in Pipe crew", "Not in last Calculate", "Delete requested by", a multiplier
+  and who is working on the item sit on a second line under the name, never beside it.
+- **Hover buttons:** the eye and ⋮ (a sub-item's $, edit and delete) show on hover over the end of the name, left of
+  the figures; only the colour dot keeps a column. That gives the name at least 20 characters at 1280 px in a
+  five-level Classification.
+- **Components** (machines, crews) sit one small step (22 px) under their item, not a full level; a level is 12 px; the
+  dotted guides are fainter (28 % from 45 %).
+- **A cost row's money** moves to its hover text ("Equipment, $1,234.56" or "not priced yet"). Its own quantity and
+  unit take the item's columns. That retires the unlabelled "—" column.
+- **Widths in px:** Takeoff 320 to 760 (default 400), never leaving the canvas under 360; Sheets 140 to 520 (default
+  280). It was a share of the row down to 160 px. Each is kept in this browser under the signed-in user's id (assumed:
+  there is no server store for UI layout; a shared machine keeps each person's own).
+- **#5:** the hide-panel tab sat over the separator's grab band at mid-height, so a drag there grabbed the tab. While
+  a panel is open its tab now sits 7 px clear of the separator.
