@@ -174,7 +174,7 @@ for their short and lower-case forms:
   - commit `intelcost-app-react bfaad75` (body names the reference viewer's product)
 - **"zz" prefixes that are not a product name** (smoke names prefixed zz, "zzz"/"zzq" no-match searches,
   a pandas variable): `docs/tasks/SINCE_ARCHIVE.md:20, 100, 104, 156, 183, 185, 249, 277, 279,
-  280`, `docs/tasks/takeoff_first_tasks.md:81`, `docs/tasks/ZOOM_GLITCH_STATUS.md:75, 76`
+  280`, `docs/tasks/takeoff_first_tasks.md:81`, `docs/archive/ZOOM_GLITCH_STATUS.md:75, 76`
   (`zz-e101.pdf` uploads and `zz run` markups), `intelcost-app-fastapi/docs/wage-calculator/
   validate_seed.py:31, 32`, `intelcost-infra/.regress/f5-s13.log:12`,
   `intelcost-infra/.regress/full-f5-close/f5-s13.log:12`.

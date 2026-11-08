@@ -2,7 +2,7 @@
 
 **Status:** adopted 2026-10-06 (D-277). Blocks A to G built (D-278, D-280 to D-284 record the calls Blocks B to G made; D-279 the bench's mail guard). The founder's answers to the draft's
 sixteen questions are recorded in D-277 and applied below; the draft
-([F16_SPEC_DRAFT.md](F16_SPEC_DRAFT.md)) is kept for its history.
+([F16_SPEC_DRAFT.md](../archive/F16_SPEC_DRAFT.md)) is kept for its history.
 
 **Sources.** Live legacy (`intelcost/` on `UmeralamDEV`): `supabase/functions/create-checkout-session`,
 `stripe-webhook`, `create-topup-checkout`, `trial-gate`; `src/lib/billing/*`;

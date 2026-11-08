@@ -3971,7 +3971,7 @@ are calls made in the founder's absence, in legacy's favour.
   Settings › Toolbar, legacy's default), Show/Hide Legend in the region menu before Zoom to
   Fit, and Settings › Takeoffs "Legend on by default". Highlight, Note, Snapshot, Dock,
   cloud, callout, arrow and the Collaborator tab wait; the starting spec stays
-  `docs/tasks/drafts/markup_print_tasks.DRAFT.md`.
+  `docs/archive/drafts/markup_print_tasks.DRAFT.md`.
 - **C10 F9b** is a draft spec with questions: `docs/tasks/drafts/f9b_bid_total_tasks.DRAFT.md`.
   Legacy's live Estimating has no markups or bid total; its retired estimate compounded
   contingency, GC overhead, GC profit, a permit lump sum, bond and insurance on the direct
@@ -3983,7 +3983,7 @@ The founder: after a wheel zoom the sheet visibly moved and glitched when the sh
 redraw replaced the stretched frame (2026-09-29). Measured on the bench, DOM on every
 animation frame plus a CDP screencast of every painted frame, three gestures (fit →
 2.4×, → 5.2× windowed, → 3.3× out), at device pixel ratios 1 and 1.25; status and
-numbers in `docs/tasks/ZOOM_GLITCH_STATUS.md`. Legacy (live) was measured the same way and
+numbers in `docs/archive/ZOOM_GLITCH_STATUS.md`. Legacy (live) was measured the same way and
 is not invisible either: its markups stay a blurred, thickened bitmap until a later
 redraw. Beyond legacy on purpose.
 
@@ -4274,7 +4274,7 @@ link is built on the app's own origin (legacy used `APP_URL` for non-localhost h
 **Date:** 2026-09-30
 **Status:** accepted 2026-09-30 (founder review) (overnight task 4)
 **Area:** Takeoff, Backend, Frontend
-**Adopts:** `docs/tasks/drafts/markup_print_tasks.DRAFT.md`, its questions answered in
+**Adopts:** `docs/archive/drafts/markup_print_tasks.DRAFT.md`, its questions answered in
 legacy's favour
 
 **The draft's questions, in legacy's favour:**
@@ -4374,7 +4374,7 @@ border. Legacy's is a popover bar with the same fields.
 **Status:** accepted 2026-09-30 (founder review) (overnight task 5)
 **Area:** Takeoff, Api, Frontend
 
-The draft `docs/tasks/drafts/assemblies_tasks.DRAFT.md` is adopted, and its open questions
+The draft `docs/archive/drafts/assemblies_tasks.DRAFT.md` is adopted, and its open questions
 are answered in legacy's favour. From legacy's `AssembliesPanel`, `SaveAsAssemblyDialog` and
 `ItemRowShared`:
 
@@ -4815,7 +4815,7 @@ on one frame:
 
 The reference viewer at 29% on the founder's monitor reads 4.19% dark, 133.6 ink, 5.7% fringe and 22.9 edge. The
 side-by-side image was deleted on 2026-10-11 (it showed the other product, D-328); ours alone is
-`docs/tasks/ours-notes-29.webp`.
+`docs/archive/ours-notes-29.webp`.
 
 **Trade-offs.**
 - Greys darker than 40 turn black, and greys lighter than 235 turn white. A very light
@@ -8297,7 +8297,7 @@ forum, everything posted visible to all users.
 **Status:** decided (the founder, in session); A9 to A25 are my recommendations, accepted
 **Area:** F14 AI tools and credits; F17 migration
 
-The founder reviewed [ai_credits_research.md](docs/tasks/drafts/ai_credits_research.md).
+The founder reviewed [ai_credits_research.md](docs/archive/drafts/ai_credits_research.md).
 The spec is adopted as [ai_tools_tasks.md](docs/tasks/ai_tools_tasks.md). Scope stays
 D-235: the active tools only.
 
@@ -10202,7 +10202,7 @@ or a re-split carried that `shape_meta` onto pieces it did not describe.
 **Amended** 2026-10-06 by the founder's next brief: Q3, Q6 and Q8 corrected, point 25 added, points
 18, 20 and 24 updated (marked "Amended").
 
-The founder answered the sixteen questions of `docs/tasks/F16_SPEC_DRAFT.md`. The spec is adopted
+The founder answered the sixteen questions of `docs/archive/F16_SPEC_DRAFT.md`. The spec is adopted
 as [F16_SPEC.md](docs/tasks/F16_SPEC.md); the draft stays, pointing to it.
 
 **Plan names**
@@ -12862,7 +12862,7 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
      - the 17 rows changed in `crop_box` only;
      - A4.00 still reads 241.70 LF and 1,335.22 SF;
      - its 5 shapes' coordinates and the six scales are unchanged.
-   - **Lists:** `docs/tasks/minmar_cropbox_before.csv` and `minmar_cropbox_after.csv`.
+   - **Lists:** `docs/archive/minmar_cropbox_before.csv` and `minmar_cropbox_after.csv`.
 
 ## D-356: On Essentials, a refusal the plan causes says the plan, not the role
 
@@ -20645,7 +20645,7 @@ D-646).
 
 ## D-652: The item read written straight from columns, large JSON gzipped, two api processes for timing (open speed, step 1, night run 2026-10-20)
 
-**Status:** taken overnight, as `docs/tasks/open_speed_PLAN.md` with Umer's answers (O1 to O5, 2026-10-20), Umer to
+**Status:** taken overnight, as `docs/archive/open_speed_PLAN.md` with Umer's answers (O1 to O5, 2026-10-20), Umer to
 confirm.
 
 - **`GET …/takeoff/item/detail` (the sheet's read and the project's)** is built by `takeoff/detail_json.py` from column
@@ -20685,7 +20685,7 @@ new order is the order shapes were made, so it no longer changes with the databa
 
 ## D-653: The open's start-up and read order: fonts served by the app, the takeoff code fetched at once, the Sheets panel's lists after the open's read (open speed, step 2, night run 2026-10-20)
 
-**Status:** taken overnight, as `docs/tasks/open_speed_PLAN.md` (O4 and step D), Umer to confirm.
+**Status:** taken overnight, as `docs/archive/open_speed_PLAN.md` (O4 and step D), Umer to confirm.
 
 - **Fonts (O4):**
   - Inter, Archivo and JetBrains Mono, Latin and Latin Extended, are served from the app (`public/fonts`, 244 KB in six
@@ -20755,7 +20755,7 @@ new order is the order shapes were made, so it no longer changes with the databa
 
 ## D-654: The sheet's shapes drawn once and kept, the selection one path, the zoom without a redraw on a heavy sheet (canvas speed, step A, night run 2026-10-20)
 
-**Status:** taken overnight, as `docs/tasks/canvas_speed_PLAN.md` step A with Umer's answers (C1 to C5, 2026-10-20),
+**Status:** taken overnight, as `docs/archive/canvas_speed_PLAN.md` step A with Umer's answers (C1 to C5, 2026-10-20),
 Umer to confirm.
 
 - **Each shape is its own memoised component** (`MeasuredShape.tsx`). It redraws only when its own geometry, its
@@ -20792,7 +20792,7 @@ Umer to confirm.
 
 ## D-656: Shapes found by where they are, and the shape layer built once per change of what it shows (canvas speed, step B, night run 2026-10-20)
 
-**Status:** taken overnight, as `docs/tasks/canvas_speed_PLAN.md` step B with Umer's answers (2026-10-20), Umer to
+**Status:** taken overnight, as `docs/archive/canvas_speed_PLAN.md` step B with Umer's answers (2026-10-20), Umer to
 confirm.
 
 - **A grid over the sheet's shapes** (`lib/takeoff/engine/shapeIndex.ts`): each shape's bounds in every cell (a
@@ -20842,7 +20842,7 @@ confirm.
 
 ## D-657: The sheet's measured shapes drawn with WebGL, drawn once and moved for a pan; SVG paints them only without it (canvas speed, step C)
 
-**Status:** built as `docs/tasks/canvas_speed_PLAN.md` step C with Umer's answers (C1 WebGL with an SVG fallback,
+**Status:** built as `docs/archive/canvas_speed_PLAN.md` step C with Umer's answers (C1 WebGL with an SVG fallback,
 C2, C3, C4 as the floor), 2026-10-20.
 
 **What draws the shapes now:**
@@ -20928,7 +20928,7 @@ during the drag (312.53) is the saved length (312.53 LF).
 
 ## D-658: The open's item reads built by Postgres and sent compact, every field kept; the canvas's first draw made lighter (open speed, step A)
 
-**Status:** taken during the run of 2026-10-20 as `docs/tasks/open_speed_PLAN.md` step A (O1), changed in one way.
+**Status:** taken during the run of 2026-10-20 as `docs/archive/open_speed_PLAN.md` step A (O1), changed in one way.
 **Confirmed by Umer, 2026-10-20 (A2): as built, every field kept. No lean read with an editor gate.**
 
 **The change from the plan:** the plan's lean read dropped fields (the panel's ~25, the canvas's ~12) and read the
@@ -23290,7 +23290,7 @@ Estimating already shows.
 
 ## D-766: Estimating reports: Group by gets "Cost components", Then by and the By line / Summary switch go; the side panel simplified (accepted 2026-10-24, the founder's answers to REPORTS_PANEL_PLAN.md; supersedes D-762 A5's modes and "then by")
 
-**Status:** accepted; option c of `docs/tasks/REPORTS_PANEL_PLAN.md`, with the founder's changes.
+**Status:** accepted; option c of `docs/archive/REPORTS_PANEL_PLAN.md`, with the founder's changes.
 
 - **Group by** is one select in two sections. **Lines:** Classification, Custom Folder, Scope, Subcontractor, Sheet.
   **Cost components:** one entry. It always sums across the whole project. There is no "Within": narrowing is done with

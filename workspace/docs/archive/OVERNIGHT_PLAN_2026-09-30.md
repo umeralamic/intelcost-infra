@@ -58,14 +58,14 @@ TASKS, in order:
 3. PUBLIC SHARE LINKS, as legacy: the link in the Share dialog, the api
    for share links, and the guest view.
 4. MARKUP TOOLS AND THE COLLABORATOR TAB, as legacy, one tool at a time,
-   from docs/tasks/drafts/markup_print_tasks.DRAFT.md (adopt it, log its
+   from docs/archive/drafts/markup_print_tasks.DRAFT.md (adopt it, log its
    open questions in legacy's favour): Highlight, Note, Snapshot, Dock,
    cloud, callout, arrow and any other markup legacy has, then the
    Collaborator tab.
 
 KEEP GOING (in order):
 5. F10: assemblies, Starter Pack and Library, from
-   docs/tasks/drafts/assemblies_tasks.DRAFT.md (adopt it, log its open
+   docs/archive/drafts/assemblies_tasks.DRAFT.md (adopt it, log its open
    questions in legacy's favour), block by block.
 6. The rest of F11: Print, Find Text, Snippets, item history, and any
    other part of the markup spec not built in task 4.

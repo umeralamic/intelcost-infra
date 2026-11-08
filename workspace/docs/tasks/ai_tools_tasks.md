@@ -4,7 +4,7 @@
 > - **Scope (D-235):** only the AI tools live legacy shows today: the region menu's Page Name,
 >   Sheet # and Scale (each with ALL), Ask AI and Extract Schedule; Auto-Name Sheets; the credit
 >   screens. Retired AI features are out.
-> - **Research and the metering design:** [ai_credits_research.md](drafts/ai_credits_research.md).
+> - **Research and the metering design:** [ai_credits_research.md](../archive/drafts/ai_credits_research.md).
 > - **Built from** legacy's source on `UmeralamDEV`, its plans and live legacy (screens only:
 >   every legacy AI call spends real credits).
 
