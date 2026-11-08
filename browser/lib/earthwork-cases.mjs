@@ -1101,7 +1101,7 @@ export const EARTHWORK_CASES = [
     id: "d901-two-methods",
     kind: "lines",
     input: { units: "CY", regions: [{ id: "pad", label: "Pad", cutCY: 500, fillCY: 0 }, { id: null, label: "Remainder", cutCY: 750, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "scraper", push_ft: 100, method_by_feature: { pad: "dozer" }, fill_shares: null } } },
-    expect: { roles: "cut_push:pad fill:pad cut_scraper:remainder fill_push:remainder fill_scraper:remainder", "fill_push:remainder": 400, "fill_scraper:remainder": 600 },
+    expect: { roles: "cut_push:pad cut_scraper:remainder fill_push:remainder fill_scraper:remainder", "fill_push:remainder": 400, "fill_scraper:remainder": 600 },
   },
   // Typed: 25 % pushed whatever the cut says; the haul-road water follows the scraper's share at 1,000 ft.
   {
@@ -1239,7 +1239,7 @@ export const EARTHWORK_CASES = [
       assumptions: null,
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut:remainder fill:remainder",
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut:remainder",
       "undercut:pad": 10,
       "undercut:pad:unit": "BCM",
       "undercut_haul:pad": 12.5,
@@ -1270,7 +1270,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder", "fill:remainder"].join(" "),
+      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder"].join(" "),
       "stabilize:pad": 10000 / 9,
       "stabilize:pad:unit": "SY",
       // A count stored before D-406 reads as its thickness, depth / count: here the depth itself.
@@ -1341,7 +1341,7 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       // D-983 (Q155): a scarify's own pass and its water (110 pcf x 3 % x 0.5 ft x 9 / 8.33 = 1.78 gal/SY).
-      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b cut:remainder fill:remainder",
+      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b cut:remainder",
       "prep_scarify:b": 200,
       "prep_scarify:b:unit": "SF",
       "prep_moisture:b": 200,
@@ -1445,7 +1445,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad cut:remainder fill:remainder",
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad cut:remainder",
       "undercut:pad": 20000 / 27,
       "undercut_haul:pad": (20000 / 27) * 1.25,
       "undercut_replace:pad": 20000 / 27,
@@ -1477,7 +1477,7 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       // D-1037: the 74.07 BCY the native undercut is short stays as cut; the rest, 925.93 BCY, leaves.
-      roles: "undercut_native_dig:pad undercut_native:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
+      roles: "undercut_native_dig:pad undercut_native:pad cut_export:remainder cut:remainder soil_export:__soil_export__",
       "cut_export:remainder": 1000 - (20000 / 27) * 0.1,
       "cut:remainder": (20000 / 27) * 0.1,
       "undercut_native_dig:pad": 20000 / 27,
@@ -1499,7 +1499,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: false, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder fill:remainder soil_import:__soil_import__",
+      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder soil_import:__soil_import__",
       "soil_import:__soil_import__": (20000 / 27) * 0.1 * 1.25,
     },
   },
@@ -1516,7 +1516,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad cut:remainder fill:remainder",
+      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad cut:remainder",
       "undercut_stabilize:pad": 20000 / 27,
       "undercut_stabilize:pad:name": 'Undercut and stabilize native soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
       "undercut_stabilize_mix:pad": 20000 / 27,
@@ -1620,7 +1620,7 @@ export const EARTHWORK_CASES = [
       "strip:s2:name": 'Strip topsoil (4")',
       "undercut_stockpile:pad": 12.5,
       "undercut_replace:pad:name": "Undercut replacement fill, Crushed Stone #57",
-      "cut_export:park:name": "Cut to export",
+      "cut_export:park:name": "Cut to export, Parking",
       "fill:remainder:name": "Fill",
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
@@ -1662,13 +1662,13 @@ export const EARTHWORK_CASES = [
     },
   },
   // Metric, thousands separated: cut 2,500.4 BCM, no fill, swell 1.2: export 3,000.48 LCM,
-  // named "(2,500 BCM)"; the fill line in CCM.
+  // named "(2,500 BCM)"; no fill, so no Fill line at 0 (D-1068 c).
   {
     id: "lines-metric-export-name",
     kind: "lines",
     input: { units: "m3", regions: [{ id: null, label: "Remainder", cutCY: 2500.4, fillCY: 0 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.2, shrink: 1 } },
     expect: {
-      "fill:remainder:unit": "CCM",
+      "fill:remainder": undefined,
       "soil_export:__soil_export__": 3000.48,
       "soil_export:__soil_export__:unit": "LCM",
       "soil_export:__soil_export__:name": "Soil Export (2,500 BCM)",
@@ -1683,7 +1683,7 @@ export const EARTHWORK_CASES = [
     kind: "lines",
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1200, fillCY: 0 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
     expect: {
-      roles: "cut_export:remainder fill:remainder soil_export:__soil_export__",
+      roles: "cut_export:remainder soil_export:__soil_export__",
       "cut_export:remainder": 1200,
       "cut_export:remainder:unit": "BCY",
       "cut_export:remainder:name": "Cut to export",
@@ -1715,7 +1715,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 },
     },
     expect: {
-      roles: "cut_export:pad cut:pad fill:pad cut_export:park cut:park fill:park cut:remainder fill:remainder soil_export:__soil_export__",
+      roles: "cut_export:pad cut:pad cut_export:park cut:park cut:remainder fill:remainder soil_export:__soil_export__",
       "cut_export:pad": 800 / 3,
       "cut:pad": 1000 / 3,
       "cut_export:park": 400 / 3,

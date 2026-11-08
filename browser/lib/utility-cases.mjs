@@ -391,7 +391,7 @@ export const UTILITY_CASES = [
         ["Pipe bedding, #57 stone", "CCY", 6.48, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
         ["Pipe zone, Sand", "CCY", 34.46, "utility_bedding_pipe_zone", "site_utilities.sanitary"],
         ["Trench backfill, Native", "CCY", 283.56, "utility_backfill", "site_utilities.sanitary"],
-        ["Trench protection, Sloped 1:1 8–10 ft", "LF", 100, "trench_protection", "earthwork.trench_protection"],
+        // D-1068 a: a sloped trench is its own protection: no line (it was "Trench protection, Sloped 1:1 8–10 ft", 100 LF).
       ],
     },
   },
