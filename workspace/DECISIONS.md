@@ -27642,3 +27642,41 @@ highlights show the current row"; run mode).
   tint (`muted` at 40 %, light and dark) with the dotted guide; hover and selection still mark the row. Their figure
   columns are narrower there (60 and 32 px) so names keep room. A Site Prep row is laid out as an item's: a glyph, the
   name, its strip depth in the figure column, its colour dot at the right.
+
+## D-1068: Pricing checks from the founder's screenshots: sloped trenches carry no box, no Fill at 0, exports named by source, ⚠ only where a person acts
+
+**Status:** Accepted (2026-11-08, Umer: pricing checks a–g; run mode). a, c, d and g built; b, e and f traced, not
+changed yet (below).
+
+- **a. Trench protection:** a sloped or benched trench is its own protection; its wider dig is already in its
+  excavation. Only a box or vertical walls make a "Trench protection" line (A13, the box with the crew). On the
+  throwaway 3D copy's C-200 the Sloped 1:1, Sloped 1½:1 and Benched 1:1 lines (10.06, 29.94, 40 LF) are gone; the
+  Vertical lines (549.37, 383.05 LF) stay.
+- **c. No line at 0:** a region with no fill makes no "Fill" line; the volumes panel's export line says "No imported
+  fill needed" when nothing is imported. (Old lines at 0 show "Not in last Calculate" until deleted.)
+- **d. Names by source:** when two or more regions export, each line is "Cut to export, <region>" (the site's
+  remainder or a pad's); one exporting region keeps "Cut to export".
+- **g. ⚠:** a row's mark only where that row needs its own act, with the reason on hover: a measured item on a sheet
+  with no scale ("Set the sheet's scale"), a sub-item's formula error ("Edit the sub-item"). Earthwork lines out of
+  date after a drawing change were marked one by one (90 on the 3D copy); they are now one banner over the Takeoff
+  panel, "N earthwork lines are out of date … [Calculate]". What marked a row before: (1) a sheet's earthwork drawing
+  changed since its Calculate (every line of the sheet), (2) a site's member sheet changed or left (every site line),
+  (3) no scale on a measured item's sheet, (4) a sub-item formula error.
+- **Quantity table:** 16 rows changed, each by this decision and checked by hand: 13 roles lists lose only a
+  `fill:<region>` whose region has no fill (the old rule made the line when the trucks' share was over 0 OR the region
+  had no fill, the new one when both are true, so only 0-quantity lines leave); "Cut to export, Parking" (d); the
+  metric case's fill line at 0 gone (c); util case (a)'s "Trench protection, Sloped 1:1 8–10 ft" 100 LF gone (a).
+  Then 344 rows right. Benchmark A: Calculate rerun, estimate $683,895.12 before and after (one exporting region,
+  fill present): no change.
+- **b (traced):** a region's own fill takes its cut first (fill CCY × shrink in bank) and only the surplus is
+  exported, but the site's export (`cutExportShares`) can exceed the regions' surpluses when other soil on the site
+  (re-used undercut or strip soil) supplies part of the fill; the difference then comes out of the cut held for fill.
+  In the screenshot 4,981.84 BCY left (= Soil Export 4,982) and 102.95 BCY stayed for 154.97 CCY of fill. Whether that
+  is right depends on the project's re-used supplies; its project is protected (D-601), so it waits for a copy Umer
+  allows, or for him to open the Volumes report there.
+- **e (traced):** trucks are already sized ⌈cycle ÷ load⌉; the loader there loads 56 BCY an hour (about 70 LCY, a
+  12-minute load per 14 LCY truck), well under a 30–36 t excavator's. The fix is the production rate for that
+  activity, then showing the truck count on the line and letting it be edited.
+- **f (traced):** A12 (the gravity pipe crew) picks its tier by the run's length (0–249 LF → tier 1, a 20 t excavator
+  in the starter library); the screenshot's 30–36 t comes from the workspace's own library. Choosing by pipe size and
+  depth is a library change, not yet made.
