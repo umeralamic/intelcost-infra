@@ -27507,3 +27507,22 @@ user-facing label, note and breakdown").
   MinIO 45.75 GB -> 0.48 GB; Docker's volumes 49.78 GB -> 2.36 GB.
 - S3 (`umer-local-intelcost1`, 2.87 GB): 264 objects (0.24 GB) no row references, all under `takeoff/`, across 33
   projects; no `ffc60967` copy. Reported, nothing deleted.
+
+## D-1061: Sections draw each Site Feature's subgrade, undercut and replacement fill
+
+**Status:** Accepted (2026-11-08, Umer: "sections with undercut and replacement fill … section don't show it"; run mode,
+the calls below assumed and noted).
+
+- **What is drawn:** under each Site Feature the line crosses, the subgrade (finished grade less the section depth; a
+  building pad's FFE less it, D-821) as a dashed line, and the undercut from its top to its bottom filled with its
+  replacement, bottom up as the fill stack is (D-584): imported fill by its material's name, native soil recompacted,
+  native soil stabilized (with its agents), a liner measured below finished grade filling its whole thickness
+  (D-1005). Each replacement its own token and pattern, named in the legend; the hover readout gives the subgrade and
+  the undercut's bottom. The PDF draws the same bands (it reads the figure).
+- **The undercut's edges follow D-895:** top the lower of the stripped existing grade and the subgrade; bottom by its
+  rule: a fixed depth below that top, or below the subgrade or the stripped existing grade as set (never above the
+  top); a bottom by elevation or by soil layer (D-585) at that elevation or the layer's bottom.
+- **Assumed:** the offset (`undercut_offset_ft`) widens the undercut that far past the feature's edge on the line; an
+  outward slope (D-584) is not drawn (the bottom keeps the edge plus offset); a fabric in the stack (D-999) is not
+  drawn (it has no thickness). Where features overlap, the newest owns the point, as Calculate's own (Q6).
+- A picture's samples only (the section reads no quantity; hard rule 3 untouched).
