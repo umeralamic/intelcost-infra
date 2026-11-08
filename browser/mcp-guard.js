@@ -10,41 +10,41 @@ async (page) => {
   // The MCP's sandbox cannot import, so the rule is written out here; it is lib/protected.mjs's,
   // and the guard check compares the two lists.
   const PROTECTED = {
-    "042c8817-4a65-47ba-95d8-686ecf986246": "Hidden Valley Rebid — 3D test",
-    "9c348237-1ca6-42d0-bd8c-712d7cf915c1": "HIdden Valley Spec",
-    "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "Hidden Valley Spec Building Rebid",
-    "51e474d2-b55b-40d2-ab46-09433ffc5add": "Waxing City",
-    "09f1fc14-42f4-4140-9726-bcaf3056ea87": "Minmar",
+    "042c8817-4a65-47ba-95d8-686ecf986246": "P01 (3D test copy)",
+    "9c348237-1ca6-42d0-bd8c-712d7cf915c1": "P02",
+    "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "P03",
+    "51e474d2-b55b-40d2-ab46-09433ffc5add": "P04",
+    "09f1fc14-42f4-4140-9726-bcaf3056ea87": "P05",
     // umeralam.q@gmail.com's workspace, Intelcost Team, found by owner (2026-10-17, D-601).
-    "90cb3a75-3553-4de0-aac4-1693c7d18d57": "Miramar Cove Vault Buildings",
-    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "11",
-    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "Hidden Valley Rebid — 3D test (shared copy)",
-    "6ca7f34b-6ab2-4a29-874e-67d39d45b616": "10793 SBR",
+    "90cb3a75-3553-4de0-aac4-1693c7d18d57": "P06",
+    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "P07",
+    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "P08 (3D test, shared copy)",
+    "6ca7f34b-6ab2-4a29-874e-67d39d45b616": "P09",
     // The founder's copy of the shared copy (2026-10-30 overnight brief).
-    "9e3b9d2d-8cf4-45db-8980-a519d7efdaf9": "Hidden Valley Rebid — 3D test (shared copy) (shared copy)",
+    "9e3b9d2d-8cf4-45db-8980-a519d7efdaf9": "P10 (3D test, shared copy)",
     // The rest of Bench Construction Test (workspace 69a35a11), all 17 projects guarded (D-881).
-    "48ee1ed1-151a-49f6-87d2-4c23dffda452": "Riverside Medical Center",
-    "4452f8f1-537b-4fa2-9ef3-6a4fec2062cd": "trdt",
-    "3ba916aa-bef6-469f-8456-d11e0772a500": "Lilly",
-    "c0144c30-a769-40f7-a516-3382561e8ec6": "multipart smoke",
-    "4a19fd97-c8bd-47ef-bd8a-41d4b7e17a0d": "wweedd",
-    "8af33201-a81d-488d-90f1-2317c12ef06c": "LLAADD",
-    "08ab6b4b-6a18-4fca-abad-15cd3bb15aa6": "Umer Check",
-    "25711190-6ef4-4190-8f64-91a882bb5820": "Test 3344",
-    "557a8c48-c48f-4c94-a031-f087c6c8e6d2": "Hendrick Honda (10786)",
-    "97d18924-fc37-4015-8f8d-d43c2ac794c7": "Test project",
-    "21c099b1-1a9a-49db-8b80-c6a3b9a0dcc8": "Test 3",
-    "dd3065bf-ec08-4f49-adcf-f268db833f7c": "Dania Pointe position test",
-    "7aba5c72-2be8-41bc-a177-517488dffaf5": "CCCP",
+    "48ee1ed1-151a-49f6-87d2-4c23dffda452": "P11",
+    "4452f8f1-537b-4fa2-9ef3-6a4fec2062cd": "P12",
+    "3ba916aa-bef6-469f-8456-d11e0772a500": "P13",
+    "c0144c30-a769-40f7-a516-3382561e8ec6": "P14",
+    "4a19fd97-c8bd-47ef-bd8a-41d4b7e17a0d": "P15",
+    "8af33201-a81d-488d-90f1-2317c12ef06c": "P16",
+    "08ab6b4b-6a18-4fca-abad-15cd3bb15aa6": "P17",
+    "25711190-6ef4-4190-8f64-91a882bb5820": "P18",
+    "557a8c48-c48f-4c94-a031-f087c6c8e6d2": "P19",
+    "97d18924-fc37-4015-8f8d-d43c2ac794c7": "P20",
+    "21c099b1-1a9a-49db-8b80-c6a3b9a0dcc8": "P21",
+    "dd3065bf-ec08-4f49-adcf-f268db833f7c": "P22",
+    "7aba5c72-2be8-41bc-a177-517488dffaf5": "P23",
     // Real bids in Intelcost Team (2026-11-06, the founder: "Real bids must never be touched by a run").
-    "24e4a96c-2f62-4490-8705-8bde97add9a5": "Benchmark A source (real bid)",
+    "24e4a96c-2f62-4490-8705-8bde97add9a5": "Real bid A",
     "d0b0305d-f74c-4203-961d-195ba8bf554e": "Real bid B",
   };
   // The founder's own workspaces that hold no bench project: never opened, reads too (D-601).
   const FOUNDER_WORKSPACES = {
-    "04df326a-6dba-41df-ac98-095bf841f910": "Intelcost Team (umeralam.q@gmail.com)",
+    "04df326a-6dba-41df-ac98-095bf841f910": "W01 (founder workspace)",
     // All of Bench Construction Test, a project added later too (D-891).
-    "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9": "Bench Construction Test",
+    "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9": "W02 (bench seed)",
   };
   // The founder's accounts: never signed in as (D-542, D-601).
   const FOUNDER_EMAILS = ["estimator@bench.intelcost.io", "umeralam.q@gmail.com"];

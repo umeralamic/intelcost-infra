@@ -94,6 +94,7 @@ _Updated: 2026-10-02_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
+| Dump-site distances from the project location | Each dump site's distance worked out from the project's location (D-1072): the address geocoded through the US Census geocoder (free, no key), straight-line distance × 1.3, labelled "estimate (straight line × 1.3)" until road routing exists; a typed distance still wins (D-1076) | api, app | Planned (2026-11-08): logged, not started |
 | f5-big on AWS staging (Abdullah) | Measure a big upload's first page and its thumbnails on AWS staging: the bench's figure (16-19 s, D-1046) is limited by Docker Desktop's storage gateway, which production does not have (D-1053) | api | Planned (2026-11-07): for Abdullah |
 | Dev-server fixtures on the built apps (test laptop) | f3-s1, f4-s2 and f7-a fail only on page loads from the fx dev server (5176 not reaching "load" in 30 s), never on what they assert: run them on the built apps like the other 158 (D-1057) | infra | Planned (2026-11-07): on the test laptop |
 | Second-window update under 1.5 s (test laptop) | f5-s19 and f6-a see a change in a second window after 1.6-2.4 s against 1.5 s budgets: profile the publish, the frame and the reads behind it on a laptop running the fx stack alone (D-1057) | infra, api, app | Planned (2026-11-07): on the test laptop |

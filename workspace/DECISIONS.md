@@ -27845,3 +27845,33 @@ guard stays on; purge the copy at the end", items 0a–0d, 1 and 5).
 - "Undercut reused on site — <feature>" squeezed its name to one letter a line at 260 px; its figure now drops to its
   own line instead.
 - Checked at 260, 340, 520 and 900 px, light and dark: no sideways scroll, no squeezed text.
+
+## D-1075: The panels' edge tabs ride the panels' own edges
+
+**Status:** Accepted (2026-11-08, Umer: "it should be attached to panels … not shift if anything is opened next to
+panels, like report").
+
+- The Sheets and Takeoff tabs were placed on the canvas's edges, 7 px in (D-1064 kept them off the separator's grab
+  band). With the Report (or anything else) open between the canvas and a panel, the tab sat on that pane's edge, away
+  from its panel.
+- They now sit in the row above the canvas, each at its panel's own width plus the separator's pixel: flush on the
+  panel whatever opens beside it; at the screen's edge when its panel is put away; on the panel's edge when it opens
+  over the canvas (compact). The tab covers 64 px of the separator's grab band; the rest of the separator still drags.
+- Checked at 1920 with the Report open and closed (tab to panel 1 px, the separator), both panels put away, and 1000 px.
+
+## D-1076: Run mode for the 2026-11-08 evening run; the guard lists by id; dump-site distances logged
+
+**Status:** Accepted (2026-11-08, Umer: "Run mode … all projects are test projects … log it").
+
+- **Run mode.** No stopping to ask: each open question takes the recommended answer, logged here. Pricing, library and
+  production data in every workspace, Intelcost Team included, may change; each change is listed in the run's report.
+  The guard that stops a run editing or deleting a project's drawings, takeoffs and markups stays. The copier keeps
+  reading Real bid B (D-1069) for this run only; every copy is purged at the end and the permission removed (logged
+  then).
+- **The guard lists by id (A5).** `browser/lib/protected.mjs`, `scripts/protected.py`, `browser/mcp-guard.js` and
+  `drives/guard.py`'s copy sources label each project P01–P25 (the 3D test copy and its shared copies say so),
+  "Real bid A" and "Real bid B", and each workspace W01–W02 (founder workspace, bench seed): no project, client or
+  job name. The uuids are unchanged; `guard-check.mjs` still finds the three lists equal. New entries here say
+  "Real bid A/B"; existing entries are left as they are.
+- **Dump-site distances (A6)** from the project's location are a Planned row in FEATURES: the US Census geocoder,
+  straight line × 1.3, labelled an estimate until routing exists. Not started.
