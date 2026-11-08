@@ -164,6 +164,11 @@ Then bring the stack up and drive the changed screen in a real browser, exercisi
 its loading, empty, error and unauthorized states. Delete every screenshot and
 scratch artifact afterwards. Leave nothing stray.
 
+**Retention (D-1059).** Report folders, fixture-run output and screenshots older than 7 days move to
+`E:\Intelcost\archive\<YYYY-MM>\` (one verified zip per category) at the start of each run: `report-dir.sh` runs
+`archive-old.sh`. Archived, never deleted; a tracked file, test-data-local's inputs, docs/reference, a `.env` and
+anything a script reads stay where they are.
+
 **Development speed mode (D-68, D-70, hard rule 8).** The fixture suite is archived at tag
 `fixtures-archive-2026-09-28` and deleted from the tree. Do not write, run or maintain
 fixtures, test suites or test scripts. After each block, in this order:
@@ -173,9 +178,13 @@ fixtures, test suites or test scripts. After each block, in this order:
    is not a test suite: it checks the two engines against each other and against the
    hand-worked answers, in seconds. Report its line; a mismatch is fixed before moving on.
 3. **One smoke test through the Playwright MCP:** sign in with a throwaway account (never
-   the seeded account), open the screen changed in the session and drive the new
-   behaviour. Report it in one line: what it drove, and whether it passed. A failure is
+   the seeded account), open a throwaway copy of each screen the change touches and drive the new
+   behaviour. Report it in one line, with a screenshot or two: what it drove, and whether it passed. A failure is
    fixed before moving on. Wait on what the page shows, never on a clock.
+
+**The fixture suite is paused (D-1057):** no `fx-suite.sh` run on this laptop (release or alone) until the founder
+says so; it moves to the test laptop, and release to testers or main stays blocked until it passes there. Only the
+main bench and marketing run here (D-1055); the fx stack is stopped with restart "no".
 
 Then commit and push the block on `umer-dev`, log its decisions, and tick its PARITY lines.
 Each report carries the running list of features changed since the tag

@@ -27470,3 +27470,22 @@ user-facing label, note and breakdown").
   every seed and migration, the marketing site and the bench database: none. Internal only, kept: the api's
   `app/wagecalc/market.py:118` (a docstring), intelcost-infra `drives/quantity-table.py:415` (a comment),
   `docs/tasks/WAGE_PLAN.md:85, 236` and its mirror.
+
+## D-1059: Run output archived after 7 days; the cleanup of 2026-11-07
+
+**Status:** Accepted (2026-11-07, Umer: "CLEANUP (archive, never delete my files)").
+
+- **Retention:** `intelcost-infra/archive-old.sh`, run by `report-dir.sh` at the start of each run, moves report
+  folders (`morning-report-<date>` at the workspace root, and intelcost-infra's untracked files), fx-suite run folders
+  (`.regress/release-*`, `capture-*`) and `test-data-local/screenshots-<date>` older than 7 days to
+  `E:\Intelcost\archive\<YYYY-MM>\`, one zip per category (screenshots, logs, reports, test-results), each file at
+  its path relative to `E:\Intelcost`, with a manifest. `archive-zip.mjs` (Node's zlib, UTF-8 names) reads every
+  entry back and compares it with its file before the file is removed; Windows' tar was not used (it reads a list in
+  the ANSI code page and failed on names with dashes and primes).
+- **2026-11-07:** 1,181 files out of the workspace (409 MB of report folders, 1,133 files; 48 files of October
+  fixture-run output) into `archive/2026-10/` (about 380 MB zipped). Three finished plans (DAY_PLAN, the 2026-10-15
+  parity check, PLAN_D777) moved from docs/tasks to docs/archive (mirror by `git mv`). Docker: the build cache (25.5
+  GB) and one dangling image pruned; no volume, container or used image touched.
+- Left in place: the tracked report files in intelcost-infra; `SITE_AND_EARTHWORK_PLAN.md` (a plan "nothing is built
+  until approved"); images no container uses but scripts build from or run (the bench browser, the app gates image,
+  python, node, emsdk, playwright); `E:\Intelcost\fixtures` (geotech inputs) and `research`.

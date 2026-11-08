@@ -7,6 +7,8 @@
 #   ./report-dir.sh 2026-11-06T22:10   # the folder for a run that started then (a resumed run)
 set -eu
 cd "$(dirname "$0")"
+# Retention first (D-1059): run output older than 7 days to E:\Intelcost\archive\; a failure never stops the run.
+./archive-old.sh >&2 || echo "archive-old failed: nothing was archived this time" >&2
 if [ $# -gt 0 ]; then day=$(date -d "$1" +%F); else day=$(date +%F); fi
 mkdir -p "morning-report-$day"
 echo "morning-report-$day"
