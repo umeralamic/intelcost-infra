@@ -28193,3 +28193,49 @@ panels, like report").
   $52,440.29 to $46,035.55); the Real bid B copy with imported clay $227,461.15 to $224,068.07 (labor $14,636.15 to
   $12,205.48; measured on a second copy at the same clay price, since toggling the liner re-creates the clay line at the
   library's price), with site soil $175,290.39 to $171,613.28 (labor $16,310.67 to $13,676.53); ST-1 $163.8 to $160.0 a LF.
+
+## D-1089: W14 fixes: the ten-year survey, machines at the class level plus a premium, one rate per craft, the helper on its journeyman's line, the project's work type, plain words, crew rows
+
+**Status:** Accepted (2026-11-09, Umer: "W14 fixes" 1-8, founder decisions; run mode).
+
+1. **Rule c stays as written** (D-1087's pending item): the blend toward the national open-shop base applies whatever sets
+   the local figure. Houston bricklayer 31.61 / 39.83 / 46.60 payable; laborer 24.64 / 28.09 / 32.02.
+2. **Splits:** a machine, truck type or laborer group is never under its class level (the craft's rate). Its premium over
+   the level is the most recent survey pair within ten years, from the county's Heavy WD, else its Highway WD, whatever
+   the project's work (the subtype's line over the craft's), capped at +25 % and never negative; with none, the company
+   default (`split_premiums`, Advanced settings data; excavator operator +21.5 %, all others 0 %). Houston (Heavy
+   TX20260031's lines are 1988): every machine at the level, the excavator +21.5 % (open shop $48.99 burdened on a
+   $40.35 level; the founder's $48.26 was on a $39.72 level). Mohave: the excavator from Highway AZ20260046's 2024
+   survey (SUAZ2023-023), 0 %.
+3. **A helper conformed to its journeyman's line** keeps that rate (Davis-Bacon) on prevailing and union, labelled
+   "Helper not on WD: paid as journeyman".
+4. **Project "Work type"** (`project.work_type`: Building, Site & civil, Roads, Residential, Mixed), in the project form at
+   creation and in Project info, pre-filled from the takeoff while unset; the WD ranking reads it (Site & civil with
+   utility lines prefers a water and sewer scope; Mixed reads the takeoff).
+5. **A WD survey line is read only when its survey is ten years old or newer at the bid;** older lines are ignored (BLS
+   alone). Houston's Building WD survey is 2014 and its Heavy WD's 1988: both are ignored. Before, the survey had set the
+   local figure for the floor layer, lather, painter, roofer, sheet metal worker, tile setter and bricklayer tender; after,
+   floor layer $42.06 to $36.26, lather $41.97 to $36.92, painter $38.31 to $37.63, sheet metal $44.33 to $40.28 burdened
+   (the others unchanged: the minimum and the blend set them either way).
+6. **One rate per craft:** the crane under Equipment Operator is the Crane Operator craft's rate (Houston $51.67 open
+   shop burdened on both; it was $45.19 against $50.85 on the founder's page).
+7. **Plain words:** the Source column's labels are "Local market", "Local market, raised to company minimum", "Wage
+   determination", "Your rate", "Union rate", "Prevailing" (and the helper's); a breakdown keeps its cost lines and one
+   sentence ("Houston market rate for bricklayers, updated to Nov 2026." / "Raised to the company minimum, $22.00."),
+   the full calculation under a closed "How this was calculated"; the strip and the review header read "<County, ST> ·
+   <Project type> · <Wage type> · <Basis>" (the location-adjustment text is gone; the WD read is on the strip's hover);
+   the notes box is one line ("Local market rates for <metro>, updated <date>."); the foreman's supervisor reference is
+   under Crew rates, "How a foreman is priced".
+8. **Crew rates:** no "Uses / Show" column; each crew row expands with each craft's count, rate and line total, any
+   foreman share as its own line, the crew-hour total and $ per man-hour, then "Used in" (the crew's scope tags); a
+   craft's name opens its row in Craft rates.
+- **Rules 6:** the fixes price by the same code as rules 5, so a set saved by 5 is offered "Update rates" with its before
+  and after. Migration d999c6e3a4b8 (`project.work_type`, `workspace_burden_profile.split_premiums`).
+- **Effect against the W14 figures** (Update rates on throwaway copies, wages only): Benchmark A $645,241.21 to
+  $645,561.64 (labor $39,479.56 to $39,799.99); the Real bid A copy $848,847.87 to $849,200.24 (labor $46,035.55 to
+  $46,387.92); the Real bid B copy with site soil $171,613.28 to $171,855.16 (labor $13,676.53 to $13,849.80), with
+  imported clay $224,068.07 to $224,290.42 (labor $12,205.48 to $12,364.76); ST-1 $160.0 to $160.25 a LF. The crafts' own
+  rates did not move; the machine-following operator rows did (the 1988 ratios had put the dozer and loader under the
+  level).
+- **Copies:** Real bid B and Real bid A copied again for the measurements (the copier's Real bid B permission back for
+  them only), both purged (logs 0328e6e9, f4f46c74, storage failures 0), the permission removed again (refusal checked).

@@ -519,6 +519,16 @@ def wages() -> int:
         got = w["crafts"]["CC-16"]
         if round(got["payable"] * 100) != round(want[0] * 100) or got["rule"] != want[1]:
             wrong.append(f"FAIL  w14-laborer-{wd_type}: {got['payable']} {got['rule']}, expected {want[0]} {want[1]}")
+        # D-1089: no survey here, so the excavator is the operator's level x 1.215 (the company default) and every
+        # other machine at the level; the crane is the Crane Operator craft's rate.
+        subs, op = w["subtypes"]["CC-11"], w["crafts"]["CC-11"]
+        if wd_type == "open_shop" and round(subs["excavator"]["base"] * 100) != round(op["base_exact"] * 1.215 * 100):
+            wrong.append(f"FAIL  w14-excavator-{wd_type}: base {subs['excavator']['base']}, expected {op['base_exact']:.4f} x 1.215")
+        if subs["dozer"]["payable"] != op["payable"]:
+            wrong.append(f"FAIL  w14-dozer-{wd_type}: {subs['dozer']['payable']}, expected the level {op['payable']}")
+        crane = w["crafts"][ref.craft_code("commercial", "Crane Operator")]
+        if subs["crane"]["payable"] != crane["payable"]:
+            wrong.append(f"FAIL  w14-crane-{wd_type}: {subs['crane']['payable']}, expected the Crane Operator's {crane['payable']}")
     for c in WAGE_CASES:
         got = rs["crafts"][c["craft"]]
         for k, want in c["expect"].items():
