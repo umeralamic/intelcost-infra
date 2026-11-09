@@ -27973,3 +27973,28 @@ panels, like report").
   the backfill gains (util-2a: zone 34.46 to 17.46, backfill 283.56 to 300.56, the dig unchanged); the 3D cut's zone is
   the bottom width × the zone height (util-613: 9.69 to 5.1 SF); util-2m's spoils go to 0 (the larger native backfill
   takes the whole dig); the library's grade-D count 29 to 54. Then 344 rows right.
+
+## D-1081: A pipe crew borrows the earthwork's machines on site when one sub does both
+
+**Status:** Accepted (2026-11-08, Umer: B1, B2, B2b; run mode, D-1076). Built in part (below).
+
+- **What ST-1's machines held (B1).** Real bid B's storm run (24" RCP, 49.74 LF, 0–6 ft) was priced on the storm
+  crew's own spread: an excavator (30–36 t, then 20–25 t by D-1071) at $1,040–1,424 a day, a 2–2.5 yd wheel loader at
+  $675, a trench roller at $298, each a rental with a one-day minimum for about half a day's work, and each mobilized
+  in and out from its transport class's minimum ($550, $500, $500 each way); plus fuel. Of the line's $5,274.65 of
+  equipment about $3,100 was the six trips and about $2,013 the day minimums. (The trench box went with D-1080.)
+- **Utilities by (B2b).** A library setting, "Utilities by the earthwork's sub (1) or a separate one (0)"
+  (`utilities_with_earthwork`), 1 by default, a company's or a project's in Equipment settings; 0 or confirmed none:
+  separate. With the earthwork's sub, a pipe crew's spread takes the earthwork's machines already on the project in
+  place of its own of a fitting kind: an excavator by one at least its size up to 36–45 t (never 45 t or more on pipe),
+  a wheel loader by any, a dozer by any. Each such machine is named "… (Shared with earthwork)" and priced on site
+  (`eq_period` "site", D-1040): its hours at its hourly rate, no minimum, no mob. The trench roller, the plate and the
+  rest stay the crew's own, mobilized once for the spread (B2: one spread for all the crew's runs, rented for their
+  combined hours, as before).
+- **Real bid B's copy:** the storm crew on the earthwork's 30–36 t excavator and 3 yd loader; ST-1's equipment
+  $5,274.65 to $3,298.83; ST-1 about $8,770 with its stone and sand (about $176/LF, from about $307 before Part B).
+- **Not built:** the separate-sub case's "If the earthwork sub did utilities: −$X" (it needs the line priced both ways);
+  the default from the subcontractors as assigned (the setting starts at the earthwork's sub); different pipe crews
+  (storm, sanitary, water) sharing one machine with each other; the run's share shown on hover. Proposed, not made:
+  the trench roller (3,200 lb) towed by the crew's pickup ("pickup-towed", $200 each way) in place of a tilt trailer
+  ($500), about $600 a run with its own roller.
