@@ -28008,3 +28008,29 @@ panels, like report").
   written: its row counts and latest `updated_at` were equal before and after each copy.
 - `drives/guard.py`'s `COPY_SOURCES` no longer lists Real bid B: `copy-3d-test.py --source d0b0305d…` is refused again
   (checked). Benchmark A source and the 3D test's shared copy stay as D-1024 left them.
+
+## D-1083: Run of 2026-11-09; clay for a liner at a delivered Houston price, liner testing; small equipment rides with the crew
+
+**Status:** Accepted (2026-11-09, Umer: F1–F3; run mode as D-1076). The copier reads Real bid B for this run only
+(`COPY_SOURCES`, removed at its end).
+
+- **F1.** Every Real bid B total is reported with its liner material (Import or Site soil).
+- **F2, clay.** `fill:clay` ("Clay fill, material only", $8.51/CY, grade C, one source: a select-fill price without
+  delivery) is "Clay, low-permeability, delivered", $24.00/CY, grade C. Sources (Houston, 2026): clay-based select fill
+  $8–15/CY plus $50–200 a load delivered (borrow-pit.com); clay dirt delivered $20–35/CY (homeguide.com, national);
+  fill dirt delivered $36/CY (mulchmound.com); pond-liner clay $49.25/CY out of state, not used. Migration d995b3e7c4a1.
+- **F2, testing.** A clay liner gets "Liner testing (permeability and field density): N density + M permeability
+  tests", LS, on by default ("Liner testing" tick per liner): field density 5 an acre a lift, at least 2 (Indiana IDEM
+  clay liner CQA guidance, CQA plans), ASTM D6938 nuclear at $37 a test (public lab fee schedules, $32–37, grade B);
+  hydraulic conductivity 1 an acre a lift, at least 1 (IDEM; Texas asks 1 per 100,000 SF a 6 in lift), ASTM D5084
+  flexible wall at $420 a test (EBA Engineering 2025; $195–580 elsewhere; grade B). Lifts by the liner's lift
+  thickness, 6 in when none.
+- **F2 on Real bid B's copy (Import):** the liner line $26.63/CCY to $46.70/CCY (clay $11.03 to $31.10 a CCY at
+  1.25 loose with 5 % waste); with testing ($1,463.28, 6 + 3 tests) $48.14/CCY.
+- **F3, small equipment** (walk-behind trench roller, plate compactors, rammer, the 4×7 and 6×6 aluminium trench
+  boxes) rides with the crew: rented, it is priced at its day rate ÷ 8 an hour for its hours, with no delivery trips
+  and no day minimum, and says so ("Rides with the crew: …"). Steel boxes, road plates and shoring go by flatbed as
+  before. ST-1's equipment $3,298.83 to $2,232.53; the run (pipe line, bedding, zone) $8,853.10 ($178.0/LF) to
+  $7,786.80 ($156.5/LF).
+- **Quantity table:** the library's grade-B count 164 to 166; d1069-liner gains its testing line (2,700 SF, 4 lifts:
+  8 + 4 tests). 344 rows right.

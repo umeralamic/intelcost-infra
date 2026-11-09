@@ -1726,7 +1726,10 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 },
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut_export:pad soil_export:__soil_export__",
+      // D-1083: a clay liner is tested: 2,700 SF is 0.06 acre, at least 2 density and 1 permeability tests a lift, 24 in
+      // in 6 in lifts (none given) is 4 lifts: 8 + 4.
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad liner_testing:pad prep:pad cut_export:pad soil_export:__soil_export__",
+      "liner_testing:pad:name": "Liner testing (permeability and field density): 8 density + 4 permeability tests",
       "undercut:pad": 200,
       "undercut:pad:name": 'Undercut excavation, Pad (24")',
       "undercut_haul:pad": 250,
