@@ -53,8 +53,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1080: 13 RCP gaskets and 12 CMP coupling bands, estimates (D).
 # D-1083: two liner tests (B); clay for a liner repriced in place (still C).
 # D-1084: cement-stabilized sand for paved trench backfill (C).
-if [ "$MAT_COUNTS" != "A194 B166 C251 D54 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B166 C251 D54 F46"
+# D-1085 (B9b): 169 pipe keys the sweep found missing (13 B, 130 C, 26 D) and 18 in PVC sewer D to C.
+if [ "$MAT_COUNTS" != "A194 B179 C382 D79 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B179 C382 D79 F46"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -85,8 +86,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # 11 foreman rows without the 11 spotter rows: activities 104 + 1 = 105, tiers 205 + 11 = 216, machines 480 + 22 = 502,
 # crew 323 + 11 = 334, defaults 220 + 6 = 226; A6's open top tier and open top band copied, open tiers 102 + 1 = 103,
 # open defaults 104 + 1 = 105; clearing_haul remapped to A95 in place (line-map 112).
-if [ "$ST_COUNTS" != "105 216 502 334 226 112 30 103 105 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 216 502 334 226 112 30 103 105 0 0"
+# D-1085 (release 41): the short-run crew's foreman on A28 and A32, crew 334 + 2 = 336.
+if [ "$ST_COUNTS" != "105 216 502 336 226 112 30 103 105 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 216 502 336 226 112 30 103 105 0 0"
   exit 1
 fi
 # No software competitor named in the three repos' tracked text files or the workspace files (hard rule 9, D-328,

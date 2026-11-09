@@ -28069,3 +28069,67 @@ panels, like report").
 - **Quantity table:** grade C 250 to 251; two rows worked by hand: util-1084-paved-cap (case a, the top foot 66.67 CY
   off the backfill, 233.89) and util-1084-type-a-short-term (Type A at ½:1, 8 ft: 207.41 CY, 11 ft top). 99 utility rows.
 - The bench api stopped twice on a reload ("Address already in use") during this run and was restarted.
+
+## D-1085: B9, the utility pricing sweep: pipe pace by size and depth, a 40 t past the 30-36 t row, the short-run foreman, 169 missing pipe prices, A32's measured production; the market sample
+
+**Status:** Accepted (2026-11-09, Umer: B9 a-c; run mode).
+
+- **B9a, the sweep.** Every catalog type × material × size × trench depth 4, 6.5, 10, 14 ft × run 50, 300, 1,000 LF ×
+  open / paved × Type B / Type C, priced with the utilities by the earthwork sub and by a separate one: 31,704 cases
+  (Houston open shop, the throwaway workspace's crews, the copy's equipment bundle and wages, the Q4 2026 prices).
+  Quantities, lines and materials through the app's own modules; crews and machines read as the api reads them. Rule
+  flags 22,080 before, 1,148 after. Workbooks: test-data-local/b9-sweep/ (before, after, the market sample).
+  - Bedding, zone, backfill, excavation and spoil per LF agree with the cross-section within 5 % in every case (the
+    zone over the trench bottom's width, D-1080). Protection follows the depth rule in every case. No zero lines.
+  - **Fixed, the pace.** A pipe crew's production ignored the pipe and the trench. Now a pipe line of 30 in and over
+    lays at 0.68 of its crew's rate (TxDOT research report 0-4416-1: measured RCP crews 94.92 LF a crew day for 48-72
+    in against 138.67 for 18-42 in; the state's typical rates halve at 30 in), and a band from 12 ft deep at two-thirds
+    (the structures' rule, the founder's 8c). A12's lines take it too (it had no per-line production).
+  - **Fixed, the excavator.** Past D-1071's 30-36 t row (36 in, 10 ft) the crew kept its tier's own excavator, a 20-25 t
+    on some tiers: now a 40 t. The sweep's "machine shrinks with size or depth" went 428 to 0.
+  - **Fixed, the short-run crew's foreman** (D-971's pending item): A28 and A32 tier 0 gain one (OSHA 1926.651(k): a
+    competent person inspects an open trench daily). Release 41; every company's copy (Intelcost Team, zz Quantity
+    table, zz McCabe plan 1106, zz Benchmark A copy 1107 and 1107b).
+  - **Explained, not changed:** 4 in ductile iron dearer per foot than 6 in (7 sources), 21 in CMP than 24 in and 42 in
+    12/14 ga than 48 in (the corrugation changes), 10 in dual wall than 12 in (one source): odd-size premiums. A paved
+    run's larger pipe can cost less per foot where its price step is small (it displaces imported cement-stabilized
+    sand). With the earthwork sub, A32 and A28 rise 1-5 % from 50 to 300 LF and A12 under 1 % from 300 to 1,000 LF:
+    the longer run's crew carries more compaction kit.
+- **B9b, materials by type.** Missing: PVCO C909 (every size), ductile iron PC 200/250/300 at 14-24 in, CMP 8, 10 and 18
+  ga and 90-96 in, RCP 33 and 66-96 in with gaskets and bands, PVC sewer 27-48 in, HDPE IPS 14 and 22 in, copper K and
+  L, and no material at all for gas, electric and telecom runs. Added 169 keys (13 B, 130 C, 26 D) with sources kept
+  internal (app/features/materials/seed/d1085_pipe_prices.json): CMP from a 2025 Texas county bid ×1.22 to the
+  library's basis (its 16 ga rows over the same tab); RCP Wall C at Wall B's price; HDPE by the library's own OD²
+  series; RCP gaskets and CMP bands along the library's own per-inch series; copper from online retail halved (D);
+  conduit from distributor listings. 18 in PVC sewer $19.39 (one source, D) to $40.15 (C). Still missing: 4 in dual
+  wall (no source). Gas PE (`gas:pe_sdr11:<n>`, priced as the library's IPS DR 11) and PVC conduit join the
+  material lines; copper and conduit join the pipe families (supersedes D-858 Q19). Plastic gas main takes tracer wire
+  (49 CFR 192.321(e)).
+- **B9c, the market sample** (300 LF, Type B, open site, ×1.32: the Real bid B copy's 10 % overhead and 20 % profit, no
+  tax; against the medians of 16 Houston-area MUD, levee district and city bid tabs, 2025-01 to 2026-03, and TxDOT
+  statewide figures where none). Every item is outside +25 %, the engine high:
+  - storm RCP 18/24/36/48 in +65 to +98 % (TxDOT statewide +47 to +65 %); HDPE 24 in +27 to +32 % (one tab);
+    sanitary PVC 8 and 12 in +144 to +172 %; water C900 8 in +99 %, 12 in +52 %; force main 6 in +69 to +98 %; 2 in
+    conduit +320 % (a TxDOT single conduit at 18-24 in cover against our 4 ft trench, not like for like).
+  - Why: (1) the materials alone (national prices, RCP 24 in $57.46 from 13 sources) come near the MUD tabs' installed
+    price (subdivision work in volume, pipe bought from the plant); (2) the crews at 150-1,000 LF carry two excavators,
+    a dozer, a large roller and a pickup (A28's 200-250 tier: $41/LF of machines and $26/LF of labour on 8 in sewer
+    with the earthwork sub), where TxDOT's measured standard resource is a crew of 4-5 and one backhoe; (3) the
+    separate-sub case mobilizes for one run.
+  - **Applied, sourced:** A32's 150-499 LF band 120 to 173 LF a 10 h day (TxDOT 0-4416-1's measured 138.67 a standard
+    crew day of 8 h; excavation, bedding, laying and backfill; the tier stays). Storm RCP at 300 LF fell 10-16 %
+    (24 in at 6.5 ft $203.35 to $176.21 a LF on the bid basis).
+  - **Pending founder review:** the pipe crews' kits at 150 LF and over (the founder's crew sheets, D-947, D-971) against
+    TxDOT's standard resource; A28's production at 150-999 LF. Not changed without a like-for-like source.
+- Migration d997a4c1e2f6. The bench api stopped on a reload during this run and was restarted.
+
+## D-1086: The 2026-11-09 run ended: the copy purged, the copier's read of Real bid B removed
+
+**Status:** Accepted (2026-11-09, Umer: "purge and remove the permission at the end").
+
+- The throwaway copy of Real bid B (846fb680, in zz Benchmark A copy 1107b) purged with purge-bench-dups.py (log
+  5263b31a, storage failures 0). Real bid B is out of `drives/guard.py` COPY_SOURCES; the copier refuses it again
+  (checked). The kept Benchmark A copy (0096824a) stays.
+- The measurements, taken on the copy before the purge with Calculate (D-1083 to D-1085 applied): the copy's total with
+  imported clay $229,026.69 (run start $195,345.33), with site soil $175,290.39 (run start $174,068.20); ST-1 24 in RCP,
+  49.74 LF, $8,145.35, $163.8 a LF (run start $178.0). Benchmark A $650,863.11, unchanged (it has no utility lines).
