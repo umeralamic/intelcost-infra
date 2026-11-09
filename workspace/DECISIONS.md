@@ -27998,3 +27998,13 @@ panels, like report").
   (storm, sanitary, water) sharing one machine with each other; the run's share shown on hover. Proposed, not made:
   the trench roller (3,200 lb) towed by the crew's pickup ("pickup-towed", $200 each way) in place of a tilt trailer
   ($500), about $600 a run with its own roller.
+
+## D-1082: The 2026-11-08 runs ended: copies purged, the copier's read of Real bid B removed
+
+**Status:** Accepted (2026-11-08, Umer: "purge every copy at the end, then remove that permission (log it)").
+
+- Every copy of Real bid B made in the runs (e508941b, 403722e4) and the Benchmark A copy for the scale check
+  (b9a855e1) are purged (`purge-bench-dups.py --purge`: 0 refused, 0 storage failures). The original was never
+  written: its row counts and latest `updated_at` were equal before and after each copy.
+- `drives/guard.py`'s `COPY_SOURCES` no longer lists Real bid B: `copy-3d-test.py --source d0b0305d…` is refused again
+  (checked). Benchmark A source and the 3D test's shared copy stay as D-1024 left them.
