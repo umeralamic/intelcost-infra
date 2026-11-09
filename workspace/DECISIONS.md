@@ -28180,3 +28180,16 @@ panels, like report").
   written blends. Pending founder review.
 - **Pending founder review:** a helper conformed to its trade's WD line (W4, 1.0x) is paid the journeyman's union line
   on prevailing and union (Houston carpenter helper $48.36); a project field for the work type.
+
+## D-1088: The W14 run ended: three copies purged, the copier's read of Real bid B removed
+
+**Status:** Accepted (2026-11-09, Umer: "purge every copy at the end and remove that permission").
+
+- Purged with purge-bench-dups.py, storage failures 0: the Real bid B copies 26d8f5da (logs 6c4403a4) and f6d3754c
+  (1baeafb6), the Real bid A copy 03b1c353 (501f0a1a). Real bid B is out of `drives/guard.py` COPY_SOURCES; the copier
+  refuses it again (checked). The kept Benchmark A copy (0096824a) stays, now on rules 5.
+- W14's effect, wages only (each copy's saved open-shop inputs by rules 5, "Update rates" on the copies only): Benchmark
+  A $650,863.11 to $645,241.21 (labor $45,101.46 to $39,479.56); the Real bid A copy $855,252.61 to $848,847.87 (labor
+  $52,440.29 to $46,035.55); the Real bid B copy with imported clay $227,461.15 to $224,068.07 (labor $14,636.15 to
+  $12,205.48; measured on a second copy at the same clay price, since toggling the liner re-creates the clay line at the
+  library's price), with site soil $175,290.39 to $171,613.28 (labor $16,310.67 to $13,676.53); ST-1 $163.8 to $160.0 a LF.
