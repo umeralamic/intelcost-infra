@@ -28239,3 +28239,36 @@ panels, like report").
   level).
 - **Copies:** Real bid B and Real bid A copied again for the measurements (the copier's Real bid B permission back for
   them only), both purged (logs 0328e6e9, f4f46c74, storage failures 0), the permission removed again (refusal checked).
+
+## D-1090: Wage checks: the pipelayer's own BLS figure, the WD truck driver's general line, a footnote's weekly benefit; two Real bid A copies compared
+
+Accepted 2026-11-09 (run mode: the recommended answer taken).
+
+1. **Pipelayer open shop.** The pipelayer's local figure is BLS OEWS 47-2151 (Pipelayers), then the company minimum and
+   the blend with the national rate, never under the laborer's level (`market.SUBTYPE_SOCS`; the BLS loader adds the SOC).
+   On prevailing, the WD's laborer-group ratio is never under that open-shop figure. OEWS 47-2151 loaded for the bench's
+   metros, states and national. Houston (77002, direct/burdened): open shop $24.64/$34.05 (laborer level) to
+   $25.34/$35.02 (median $21.71); prevailing and union unchanged ($30.91/$38.82, $35.24/$44.24). Mohave (86401): open shop
+   $22.00/$30.38 to $31.59/$43.58 (Arizona median $30.16; the Lake Havasu metro has no 47-2151 row); prevailing $26.29 to
+   $36.01/$44.91; union $36.01/$44.90.
+2. **WD truck driver.** On NY20260050 the truck driver priced at $32.00 + $0.00 from "TRUCK DRIVERS:: DUMP TRUCK ONLY"
+   (TEAM0449-007; the WD prints 0.00 for it): the general line, TEAM0449-004, lost on its county name. A line limited
+   by ONLY now loses two steps of priority, and for operators, truck drivers and laborers a line headed by the craft
+   itself ranks first (an electrician's "GROUND MAN TRUCK DRIVER" is not the truck driver's line). The heading patterns
+   read plurals ("TRUCK DRIVERS", "LABORERS", "OPERATORS").
+3. **A footnote's weekly benefit.** TEAM0449-004's fringe column ($15.09) leaves out "HEALTH AND WELFARE $438.61 PER WEEK";
+   the parser adds a weekly health, welfare, pension, annuity or benefit amount at 40 h (+$10.97, fringe $26.06) and says
+   so on the line. Buffalo truck driver: $73.24 payable / $82.65 burdened on prevailing and union. Every other
+   NY20260050 line and all 120 NY20260003 lines carry their fringe; NY20260003 has no weekly footnote.
+4. **The two Real bid A copies (Benchmark A $645,561.64, a fresh copy of the source $849,200.24).** Same location,
+   project and wage type, site access (standard), takeoff quantities, crews, production and, after Update rates, the same
+   wages. Two settings differ, no bug: (a) **disposal fees:** Benchmark A's workspace has example dump sites (clean fill
+   $2.50/LCY, topsoil $6.50/LCY, green waste $27.50/t, 15 mi); the source's workspace has none, so the library's grade C
+   fees price (clean soil and topsoil $5.73/t, vegetation $44.43/t): disposal $137,818.80 against $344,967.35, almost all
+   the soil export (54,955 t); (b) **haul distance:** the source carries a project setting of 10 mi; at 10 mi the fleet
+   sizing picks fewer trucks (export 12 for 15, topsoil 5 for 8), so the trucks pace the loading and the excavator and crew
+   run longer: equipment $467,942.85 against $457,844.97, labor $39,799.99 against $46,387.92. The clearing line's tree
+   count in its name (2236 against 693) prices nothing. Which prices the job correctly turns on the real dump site and
+   its distance, project inputs; the library fallback is the shipped default, the example sites are not sourced.
+- Quantity table: the Houston open-shop pipelayer $25.32 by hand (direct, 77002, 2026-11-06), the truck line choice and
+  the weekly fringe.

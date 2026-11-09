@@ -440,6 +440,18 @@ W14_LABORER = {
     "prevailing_federal": (28.08, "w14_prevailing"),
     "union_cba": (32.01, "w14_union"),
 }
+# D-1090: the pipelayer's open shop from its own BLS occupation, 47-2151 (Pipelayers). By hand: Houston metro median
+# 21.71 x 1.0472 = 22.73 (over the $22.00 minimum); national 31.3471, gap 37.9 %, weight 1/3 - 0.0790 x 0.0833 / 0.2
+# = 0.3004; base 22.734 + 8.613 x 0.3004 = 25.32 (the laborer's level is 24.63).
+W14_PIPELAYER = 25.32
+# D-1090: the WD truck driver is the Teamsters' general line, over a "DUMP TRUCK ONLY" line and over another craft's
+# truck-driver line; a footnote's weekly benefit ($438.61 a week) adds to the fringe at 40 h: 15.09 + 10.97 = 26.06.
+WD_TRUCK_LINES = [
+    {"classification": "ELECTRICIAN: GROUND MAN TRUCK DRIVER", "base": 40.10, "fringe": 20.00},
+    {"classification": "TRUCK DRIVERS:: DUMP TRUCK ONLY", "base": 32.00, "fringe": 0.0},
+    {"classification": "TRUCK DRIVERS:: INCLUDES DUMP TRUCK, TRACTOR TRAILER (ERIE COUNTY)", "base": 47.18, "fringe": 15.09},
+]
+WD_WEEKLY = ("HEALTH AND WELFARE $438.61 PER WEEK", 15.09, 26.06)
 WAGE_FOREMEN = [
     {"id": "foreman-operator-crew", "crew": ["CC-11", "CC-16"], "premium": None, "expect": 57.66},
     {"id": "foreman-laborer-crew", "crew": ["CC-16"], "premium": None, "expect": 42.22},
@@ -529,6 +541,18 @@ def wages() -> int:
         crane = w["crafts"][ref.craft_code("commercial", "Crane Operator")]
         if subs["crane"]["payable"] != crane["payable"]:
             wrong.append(f"FAIL  w14-crane-{wd_type}: {subs['crane']['payable']}, expected the Crane Operator's {crane['payable']}")
+        pipe = w["subtypes"]["CC-16"]["pipelayer"]
+        if wd_type == "open_shop" and round(pipe["payable"] * 100) != round(W14_PIPELAYER * 100):
+            wrong.append(f"FAIL  w14-pipelayer-{wd_type}: {pipe['payable']}, expected {W14_PIPELAYER} (BLS 47-2151)")
+    from app.wagecalc.wd.mapping import TRUCK, map_wd
+    from app.wagecalc.wd.parser import WEEKLY_RE
+
+    truck = map_wd(WD_TRUCK_LINES)[0][TRUCK]
+    if truck["base"] != 47.18:
+        wrong.append(f"FAIL  wd-truck-line: {truck['classification']} {truck['base']}, expected the general line 47.18")
+    weekly = sum(float(x) for x in WEEKLY_RE.findall(WD_WEEKLY[0]))
+    if round(WD_WEEKLY[1] + weekly / 40, 2) != WD_WEEKLY[2]:
+        wrong.append(f"FAIL  wd-weekly-fringe: {WD_WEEKLY[1]} + {weekly}/40, expected {WD_WEEKLY[2]}")
     for c in WAGE_CASES:
         got = rs["crafts"][c["craft"]]
         for k, want in c["expect"].items():
@@ -551,7 +575,7 @@ def wages() -> int:
     wrong += gate_wrong
     for w in wrong:
         print(w)
-    rows = len(WAGE_CASES) + len(WAGE_FOREMEN) + len(WAGE_ESCALATION) + 1 + gate_rows
+    rows = len(WAGE_CASES) + len(WAGE_FOREMEN) + len(WAGE_ESCALATION) + 1 + 3 + gate_rows
     print(f"wages: {rows} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
