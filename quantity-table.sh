@@ -52,8 +52,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1043: topsoil, unsuitable soil and vegetation corrected in place (still C): counts unchanged.
 # D-1080: 13 RCP gaskets and 12 CMP coupling bands, estimates (D).
 # D-1083: two liner tests (B); clay for a liner repriced in place (still C).
-if [ "$MAT_COUNTS" != "A194 B166 C250 D54 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B166 C250 D54 F46"
+# D-1084: cement-stabilized sand for paved trench backfill (C).
+if [ "$MAT_COUNTS" != "A194 B166 C251 D54 F46" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B166 C251 D54 F46"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts

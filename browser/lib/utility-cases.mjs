@@ -355,6 +355,12 @@ export const UTILITY_CASES = [
     expect: { pipeLF: [{ range: "6–8 ft", lf: 100 }, { range: "8–10 ft", lf: 100 }] },
   },
   { id: "util-2m-spoils", ...caseA(), expect: { nativeBankCY: 325.93, spoilsSuitableCY: 0 } },
+  // D-1084 (B8c): under pavement the backfill stops 12 in below the surface. Case (a), 8 ft deep at 1:1 on a 3 ft bottom:
+  // the top foot is (17 + 19) / 2 × 1 = 18 SF a foot, 1,800 CF over 100 LF = 66.67 CY off the backfill, 300.56 − 66.67.
+  { id: "util-1084-paved-cap", ...caseA({ pavedCapIn: 12 }), expect: { excavationCY: 325.93, zoneCY: 17.46, backfillCY: 233.89 } },
+  // D-1084 (B7b): Type A short-term ½:1 to 12 ft. Case (a) in Type A soil (¾:1 without it), 8 ft deep: top width
+  // 3 + 2 × 0.5 × 8 = 11 ft; the dig (3 + 11) / 2 × 8 = 56 SF a foot, 5,600 CF = 207.41 CY.
+  { id: "util-1084-type-a-short-term", ...caseA({ layers: [{ ...CLAY_B, osha: "A", depth: null }], rule: { mode: "osha", rows: [], source: "", typeAShortTerm: true } }), expect: { excavationCY: 207.41, maxTopWidthFt: 11 } },
   {
     // U-UT28's metric ranges (D-580): invert depth 7.48 ft = 2.28 m and trench depth 8.00 ft = 2.44 m
     // both fall in 2–2.5 m.

@@ -1974,6 +1974,7 @@ try {
         materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
         segments: c.segments ?? [],
         restoration: null,
+        ...(c.pavedCapIn ? { pavedCapIn: c.pavedCapIn } : {}),
       };
       if (c.kind === "pits-run") {
         const pitOf = (pt) => {

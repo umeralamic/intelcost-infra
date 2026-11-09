@@ -28034,3 +28034,38 @@ panels, like report").
   $7,786.80 ($156.5/LF).
 - **Quantity table:** the library's grade-B count 164 to 166; d1069-liner gains its testing line (2,700 SF, 4 lifts:
   8 + 4 tests). 344 rows right.
+
+## D-1084: Part B finished: a run's equipment share, the separate-sub hint, Utilities by from the subs, crews sharing; Type A short-term; trench walls said; per-run bedding and zone; paved backfill
+
+**Status:** Accepted (2026-11-09, Umer: B1/B2, B7b, B7c, B8b, B8c; run mode).
+
+- **B1/B2.**
+  - Each line of a pipe crew's spread says its share on its machines' hover: "This run's share: N % (h of the crew's
+    h); mobilized once for all the crew's runs", or "Shared with earthwork: this run's h at its hourly rate; no mob,
+    no minimum". The Takeoff panel shows a machine's notes under its title, as a crew's (D-1079).
+  - With a separate utility sub the crew says what the earthwork sub would save: "If the earthwork sub did
+    utilities: about −$X for this crew (… lent by the earthwork: no trips, hours only)", X = each lendable machine's
+    rental days and trips less the earthwork machine's hourly cost for the crew's hours (an estimate: no fuel, no
+    location factor). Real bid B's copy: about −$2,067; the priced difference is $1,975.82.
+  - "Utilities by", when no one set it, follows the subcontractors as assigned: the project's utility lines and
+    earthwork lines, each by its classification node's nearest packaged ancestor (the project's override first), one
+    sub or none between them: the same; else separate.
+  - Pipe crews of one sub share with each other: a crew may borrow an earlier crew's own machine (the crew priced
+    first brings it) as it borrows the earthwork's, small machines included.
+- **B7b.** Bores › Slope rule: "Type A short-term ½:1 (12 ft deep or less, open 24 hours or less)", off by default
+  (OSHA Appendix B, Table B-1, note 3). On, wherever Type A governs and federal OSHA sets the slope, ½:1 to 12 ft. The
+  rule may be federal OSHA with the option (`mode: "osha"`), or the report's table with it.
+- **B7c.** The run and structure panels say "Trench walls: federal OSHA, Type B 1:1 (from Bores)" (the softest layer's
+  type; C with no bores) with Edit (opens Bores). A run or structure overrides by its Protection as before. Not built: a
+  per-run soil type override (a new column).
+- **B8b.** A run's own bedding and pipe-zone material (Bank sand, Cement-stabilized sand, Stone #57, Native), the
+  project's utility settings when not chosen. Not built: a company-wide default (the project's utility settings are
+  the default; a workspace one needs its storage).
+- **B8c.** Under pavement (asphalt or concrete restoration, or "Limited width / in street") the trench backfill is
+  cement-stabilized sand, stopping 12 in below the surface; the restoration line holds the rest. Sod is unpaved:
+  native. Cement-stabilized sand, 1.5 sack, $37/ton delivered, grade C (estimate: sand $25–35/ton, hellogravel.com
+  2026; $3.25 a half-sack of cement, Fort Bend County 2025 contract, Heidelberg Materials; 1.5 sacks a CY as City of
+  Houston 02317), 120 pcf. Migration d996c8f2a5b3. Not built: a company setting for the paved backfill.
+- **Quantity table:** grade C 250 to 251; two rows worked by hand: util-1084-paved-cap (case a, the top foot 66.67 CY
+  off the backfill, 233.89) and util-1084-type-a-short-term (Type A at ½:1, 8 ft: 207.41 CY, 11 ft top). 99 utility rows.
+- The bench api stopped twice on a reload ("Address already in use") during this run and was restarted.
