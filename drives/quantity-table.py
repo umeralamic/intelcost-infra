@@ -431,6 +431,15 @@ WAGE_CASES = [
     {"id": "wage-painter", "craft": "CC-20", "expect": {"base": 33.95, "burdened": 46.57, "rule": "residential_base"}},
 ]
 WAGE_ESCALATION = {"ne_pct": 2.61, "oews_pct": 4.72}
+# W14 (D-1087), the same place and date, direct, no WD lines (BLS alone), company defaults. By hand: the national
+# open-shop laborer 25.94 x 1.17771 x 1.0261 = 31.3471; local BLS 19.88 x 1.0472 = 20.82, under the $22.00 minimum:
+# 22.00; gap 42.49 %, weight 1/3 - 0.1249 x 0.0833 / 0.2 = 0.2813; base 22 + 9.3471 x 0.2813 = 24.63. Prevailing, no
+# WD line: 24.6294 x 1.14 = 28.08. Union, nothing entered: 28.0775 x 1.14 = 32.01 (cap 38.04 x 1.17771 = 44.80).
+W14_LABORER = {
+    "open_shop": (24.63, "w14_open_shop"),
+    "prevailing_federal": (28.08, "w14_prevailing"),
+    "union_cba": (32.01, "w14_union"),
+}
 WAGE_FOREMEN = [
     {"id": "foreman-operator-crew", "crew": ["CC-11", "CC-16"], "premium": None, "expect": 57.66},
     {"id": "foreman-laborer-crew", "crew": ["CC-16"], "premium": None, "expect": 42.22},
@@ -501,8 +510,15 @@ def wages() -> int:
     for k, want in WAGE_ESCALATION.items():
         if round(esc[k] * 100) != round(want * 100):
             wrong.append(f"FAIL  wage-escalation.{k}: {esc[k]:.4f}, expected {want}")
+    # The W1 rows price by rules 4, the rules a set saved before W14 keeps (D-1087).
     rs = build_rate_set(ref, project_type="commercial", zip5="77002", county_fips="48201", wage_determination="open_shop",
-                        pricing_basis="burdened", market=market, bid_date=bid, edition_date=market.editions[ref.edition_id])
+                        pricing_basis="burdened", market=market, bid_date=bid, edition_date=market.editions[ref.edition_id], rules=4)
+    for wd_type, want in W14_LABORER.items():
+        w = build_rate_set(ref, project_type="commercial", zip5="77002", county_fips="48201", wage_determination=wd_type,
+                           pricing_basis="direct", market=market, bid_date=bid, edition_date=market.editions[ref.edition_id])
+        got = w["crafts"]["CC-16"]
+        if round(got["payable"] * 100) != round(want[0] * 100) or got["rule"] != want[1]:
+            wrong.append(f"FAIL  w14-laborer-{wd_type}: {got['payable']} {got['rule']}, expected {want[0]} {want[1]}")
     for c in WAGE_CASES:
         got = rs["crafts"][c["craft"]]
         for k, want in c["expect"].items():
@@ -621,7 +637,8 @@ def prevailing() -> int:
         return build_rate_set(ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="prevailing_federal",
                               pricing_basis=basis, basis=data, entries=entries if data == "wage_data" else None, market=market,
                               bid_date=date(2026, 11, 6), edition_date=market.editions[ref.edition_id], labels=labels, groups=groups,
-                              agreement="Test agreement" if agreement else None, agreement_entries=agreement)
+                              agreement="Test agreement" if agreement else None, agreement_entries=agreement,
+                              rules=4 if data == "wage_data" else 5)  # D-1038 / D-1047 rows: rules 4 (D-1087)
 
     rs = build("burdened")
     wrong = []
@@ -703,7 +720,7 @@ def union() -> int:
     sets = {
         key: build_rate_set(ref, project_type="public", zip5="85360", county_fips="04015", wage_determination="union_cba",
                             pricing_basis="burdened", basis="wage_data", entries=entries, market=market, bid_date=date(2026, 11, 6),
-                            edition_date=market.editions[ref.edition_id], agreement=f"Test agreement {key}")
+                            edition_date=market.editions[ref.edition_id], agreement=f"Test agreement {key}", rules=4)
         for key, entries in (("cash", UNION_CASH), ("plan", UNION_PLAN))
     }
     wrong = []

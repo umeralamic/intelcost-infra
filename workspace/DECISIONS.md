@@ -28133,3 +28133,50 @@ panels, like report").
 - The measurements, taken on the copy before the purge with Calculate (D-1083 to D-1085 applied): the copy's total with
   imported clay $229,026.69 (run start $195,345.33), with site soil $175,290.39 (run start $174,068.20); ST-1 24 in RCP,
   49.74 LF, $8,145.35, $163.8 a LF (run start $178.0). Benchmark A $650,863.11, unchanged (it has no utility lines).
+
+## D-1087: W14, local wage rates: WD survey lines and BLS, company minimums, a blend with the national rate; prevailing and union premiums; two wage cards
+
+**Status:** Accepted (2026-11-09, Umer: W14 a-i, founder decisions; run mode).
+
+- **Open shop (a-c).** A craft's local figure is the higher of its WD survey line (an "SU" identifier, never a union-coded
+  or UAVG line) escalated by ECI from the survey date to the bid date, and its BLS OEWS median (metro, else state)
+  escalated; no survey line, BLS alone. Under the company minimum (laborers, helpers and tenders $22.00, other crafts
+  $25.00 in 2026, escalated each year by ECI, never under the state minimum wage) it is the minimum. When the national
+  open-shop rate (residential base x (1 + F), the full factor, escalated) is higher, the base moves toward it by a
+  weight of 50 % up to a 10 % gap, 33.3 % at 30 %, 25 % from 50 %, linear between (non-decreasing in the national
+  figure). Replaces the W1 minimum rule (and its burdened floor) for open shop. Rules 5 (`app/wagecalc/w14.py`,
+  `rates.build_w14`).
+- **Splits (d):** operators by machine, drivers by truck and laborer groups take the craft's local figure times the
+  survey lines' ratio (subtype line over the craft's). Houston's 2014 survey puts the dozer at 1.63x the backhoe line
+  (22.75 / 13.94), so a Building-WD dozer operator prices at $49.85 open shop: the rule as written, flagged here.
+- **Your rates (e):** used as entered on open shop, flagged under the W14 rate, the company minimum (not an apprentice)
+  or the state minimum; W14 fills the crafts without one (the median-index fill is not used by rules 5).
+- **Prevailing (f):** payable = max(WD base raised to the minimum + WD fringe, open-shop payable x (1 + 14 % laborers'
+  group / 26 % others), your rate); the WD fringe as written, base = payable - fringe, never under the WD base. A WD line
+  with a union identifier (a local's code or UAVG) is the rate as it is. Ratio crafts (pipelayer) keep the WD ratio on
+  top; the foreman rule unchanged. **Union:** your rates as written (flagged under the minimum); none, the craft's
+  governing WD line when union-coded; none, prevailing x (1 + 14 % / 17 %), capped at national union scale x (1 + F),
+  with "Enter your agreement rates in Your pay rates". Replaces "higher of WD and national union scale" (D-1047 item 1).
+  The premiums and minimums are company settings (Advanced settings; `workspace_burden_profile`, migration d998b5d2f3a7).
+- **Mapping fixes found on the way:** a WD line limited to some work ("ELECTRICIAN (ALARM INSTALLATION ONLY)") ranks
+  after the craft's general line (`mapping.ONLY`); the union path reads the craft's governing line, never another union
+  line of the craft (a crane line is not every operator's).
+- **The WD (i):** every wage type reads the county's SAM.gov WDs (cached by number and mod): ranked (covers the county
+  and not a special-projects-only scope; type matching the work; narrowest area; latest date and mod; scope naming the
+  work), the best pre-checked with its reason; another, or another mod, is loaded; unticking all is "No WD selected".
+  The project's work is read from its takeoff (utility lines: utilities; earthwork: site; else building; residential by
+  type): no project field names it yet. SAM.gov unreachable: BLS alone (open shop), said so. The set records the WD it
+  read (`project_wage_set.wd_used`), named on the status strip.
+- **Cards (i):** "Wage Determination" and "Your pay rates" on every wage type; the Union agreement card is gone. Saved
+  union agreements are the company rate sets (the same store, renamed on screen; usable on any wage type): none was
+  saved in any workspace, so none moved. "Save as company rate set" opens the rate-set form (name, dates, crafts). The
+  operating-engineers check is on Your pay rates on union jobs.
+- **Data:** OEWS loaded for Austin, Buffalo, New York and New York State; ECI from 2013 (a survey older than the index
+  escalates from its first quarter, said so in the breakdown).
+- **Saved sets (h)** keep their rates; "Update rates" applies rules 5 with a before and after per craft.
+- **Checked against the targets (Houston, Building WD):** laborer 24.64 / 28.09 / 32.02 payable (targets 24.6 / 28 / 32).
+  Bricklayer 31.61 / 39.83 / 46.60 against 28.5 / 36 / 42: its local figure is BLS $28.41 (the target's 28.5), and rule c
+  adds 30.3 % of the gap to the national $38.98 (32.19 x 1.180 x 1.0263). The targets imply no blend for it; the rule as
+  written blends. Pending founder review.
+- **Pending founder review:** a helper conformed to its trade's WD line (W4, 1.0x) is paid the journeyman's union line
+  on prevailing and union (Houston carpenter helper $48.36); a project field for the work type.
