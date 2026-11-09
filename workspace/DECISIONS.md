@@ -28343,3 +28343,95 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
   2953d53c) and three Real bid B copies for D-1091's measurements (ce52b0b6, af81f0a8, 16c986dc; logs 06ed7e36, c9a02422,
   a4806b5b). Real bid B is out of `drives/guard.py` COPY_SOURCES again; the copier refuses it (checked). The kept
   Benchmark A copy (0096824a) stays.
+
+## D-1093: An off-site haul's trucks always follow its cycle
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- The rule was already right: trucks = ceil(cycle / load), hours = max(loads x cycle / trucks, loads x load), so the
+  loader is never idle at any distance (checked at 5, 10, 15 and 20 mi: the cut to export 210.1 h at each). But a haul
+  spread marked edited (a typed value on any of its machines) skipped the cycle: its trucks and production stayed as an
+  earlier pricing left them, the job truck-paced. Now the trucks are always sized by the cycle at the spread's pace; an
+  edited spread keeps its own production and a typed truck count.
+- Real bid A copy, Houston fallback fees (D-1094): 10 mi 12 trucks, 210.1 h, labor $39,799.99, total $463,934.53; 15 mi
+  15 trucks, 210.1 h, labor $39,799.99, total $537,999.41. The same loading pace; only the trucks and their cost move.
+
+## D-1094: Regional dump-fee fallbacks: the Houston area's clean soil, rubble and mixed C&D
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- `matlib.mat_region_default` (key, CBSA): a library price sourced in a metro, used for a project in it (the wage set's
+  county to its CBSA) over the national, with no location factor; the line says "Houston area". "Check dump fee" stays
+  on every fallback. Houston (CBSA 26420), two or more agreeing sources each (internal): clean soil $0/t (fill sites
+  take clean, tested fill free; a landfill $25-30/t), concrete and asphalt rubble $0/t (two recycling yards' posted
+  terms), mixed C&D $34.17/t (two posted Type IV rates, $16 and $14.50-15 a CY at 0.45 t). Topsoil, unsuitable soil and
+  vegetation stay national: no two convertible Houston sources (topsoil is stockpiled and resold; muck is bundled into
+  embankment; green-waste yards post no commercial rate). Migration da02d3e4f5a6.
+- Real bid A copy with the Houston fallback: $463,934.53 at 10 mi (was $849,200.24 with the national $5.73/t on 54,955
+  t of clean soil and the stale truck state, D-1090). A $0 fee shows as "—" on its line.
+
+## D-1095: A metro with no BLS row for an occupation scales the state's by its construction ratio
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- The state's figure times the metro's ratio to the state: the median, over construction occupations (SOC 47-) with a
+  figure in both, of metro over state, in the same survey (three or more needed, else the raw state). The source line
+  says so ("no metro figure: Arizona median $30.16 x 0.888").
+- Mohave pipelayer (building WD): open shop $31.59 / $43.58 to $28.05 / $38.71 (Lake Havasu x 0.888 = $26.78 local);
+  prevailing $36.01 to $31.98. Every state fallback (37 craft-metro pairs): Austin x 1.042 (10: brickmason, cement
+  mason, roofer, drywall, floor layer, tile, helpers and others), Buffalo x 0.932 (7), Houston x 1.007 to 1.013 (3: the
+  tile finisher among them, $22.36 to $22.51), Lake Havasu x 0.888 (17, the pipelayer among them).
+
+## D-1096: Water and sewer pipe from utility supply bids; HDPE 24 in on four more Houston tabs
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- 76 keys corrected in Q4 2026 (audited, old kept for the downgrade), replacing list / 1.10: C900 DR18 6, 8, 12 in from
+  a Kansas city's waterworks supply bids (A; 8 in $14.53 to $17.39); C909 from a Michigan city's 2023 supply bid (B, class
+  taken as 235); ductile iron from a Massachusetts city's 2025 bid (Class 52, B) and a Kentucky utility's 2026 bid; SDR-26
+  8 and 12 in from an Oklahoma city's 2024 bid (A); DR14 and the other C909 classes by ratio (C). No Texas utility
+  publishes a current line price (the only Texas tab is 2020). Grades now A171 B167 C430 D80 F32. Migration da03e4f5a6b7.
+- Contract prices sit at or above list, so water rises: at 1,000 LF C900 8 in +31 to +43 % over bid / 1.15, 12 in +13
+  (in band) to +30 %, force main 6 in +37 to +48 %. The pipe is now about $19 of the 8 in's $33.64 a LF of materials;
+  the rest is imported #57 bedding and a sand zone, which the Houston districts' details do not use for water lines.
+  Proposed, not done: water and force main runs default to sand embedment.
+- HDPE 24 in: four more Houston district tabs (2024-2026, 35-381 LF), five points, median about $94: at 300 LF the engine
+  is -1 % against bid / 1.15 (just under the band), at 1,000 LF -17 %. Where both are bid, HDPE is $12-24 a LF under RCP.
+
+## D-1097: Site condition: Open site or Urban reconstruction, per run and per project
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- A run's own (Run panel, "Site condition": Project default / Open site / Urban reconstruction) over the project's
+  library setting `pipe_site_urban` (0 open, 1 urban; default open). Urban lays pipe at 0.55 of the crew's rate: TxDOT
+  0-4416-1's measured RCP crews, 75 LF a day on runs across the road against 136 along it. An urban run is a pipe line of
+  its own ("..., urban reconstruction (0.55x pace, TxDOT 0-4416-1)"); `utility_run.site_condition`, migration
+  da04f5a6b7c8. ST-1 set urban on a copy: 28.42 to 51.68 MH, $6,894.58 to $10,064.60.
+- The reconstruction bids with Urban (not retuned): Maricopa -12 to -65 %, Tampa -11 % (RCP 18), Ohio -8 to -68 %, all
+  still under bid / 1.15 (open site -28 to -78 %). The pace alone does not explain them: they also carry traffic,
+  existing-utility conflicts, bypass pumping and short reaches. Polk FL's annual culvert contract is open-site work
+  (urban takes it out of band).
+
+## D-1098: The short-run pipe crew's skid steer rides with the crew; the Real bid B change after D-1091 explained
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- Every line of Real bid B whose dollars moved with D-1091 (one copy on the kits before release 42, tiers neutral, RCP at
+  its old price, against one on the current): only ST-1 and its bedding and zone lines. ST-1 $7,036.73 to $7,911.78:
+  equipment +$1,403 (the skid steer's day rental with mob $1,501.50 and the pickup $396.85, where the old kit borrowed
+  the earthwork loader $712.32), labor -$97, material -$431 (RCP $56.73 to $49.41: bulk $41.17 x 1.20 Small). Pipe
+  bedding #57 and pipe zone sand +$190 by the Small tier and short loads. The clay liner is not tiered; no earthwork line
+  moved. Direct +$1,065, bid +$1,459.
+- Fixed: the skid steer (SS-WHEEL-LARGE) rides with the crew (hourly, no delivery or day minimum), as the plate and
+  roller do: $1,501.50 to $459.86; Real bid B with site soil back to $171,494.70 against $171,489.43 before D-1091.
+- Totals now (fresh copies, Update rates, Calculate, Update all): ST-1 $6,894.58, $138.62 a LF; Real bid B with site
+  soil $173,301.35, with imported clay $225,736.61 (Update rates moves 36 crafts on these copies, D-1095 among them);
+  Benchmark A $645,561.64 (unchanged); Real bid A copy $463,934.53 at 10 mi, $537,999.41 at 15 mi (D-1093, D-1094).
+
+## D-1099: The D-1093..D-1098 run ended: four copies purged, the copier's read of Real bid B removed
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- Purged with purge-bench-dups.py, storage failures 0: the Real bid A copy (27086838, log 61118c34) and three Real bid B
+  copies (bc8fc84c, 6345cce5, 2e4df2d6; logs f76198ac, 3fbcea13, 81ccbded). Real bid B is out of COPY_SOURCES again (refusal checked). The throwaway workspace's
+  example dump sites were set aside for the fallback measurement and restored.

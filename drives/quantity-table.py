@@ -500,7 +500,9 @@ def wage_gates(ref, name: str, build) -> tuple[int, list[str]]:
 # market figure, BLS 47-3011 (helpers of tile and marble setters); Houston has no metro row, so Texas p75
 # $21.35 x OEWS escalation 1.0472 = $22.36, through the burden engine, no national floor (it read the
 # union-scale table's $32.26 before, above the tile setter's $30.89 base).
-WAGE_TILE_FINISHER = {"base": 22.36, "rule": "oews_p75", "source": "Local market (Texas):"}
+# D-1095: Houston has no metro row for 47-3011: Texas p75 $21.35 x Houston's construction ratio to Texas at p75 (1.007) =
+# $21.50 x 1.0472 = $22.51, labelled as the metro's.
+WAGE_TILE_FINISHER = {"base": 22.51, "rule": "oews_p75", "source": "Local market (Houston metro):"}
 
 
 def wages() -> int:
@@ -1043,13 +1045,42 @@ def orders() -> int:
         got = tiers.line_qty(text, qty)
         if (got is None) != (want is None) or (got is not None and want is not None and round(got, 6) != want):
             wrong.append(f"FAIL  order-qty-{text}: {got}, expected {want}")
+    # D-1097: the site condition. Urban at 0.55 (TxDOT 0-4416-1, 75 / 136 LF a day); a run's own over the project's;
+    # 36 in RCP at 12-14 ft urban: 0.68 x 0.55 x 2/3 = 0.249333.
+    from app.features.equipment.production import pipe_pace
+
+    for variant, default, want in (
+        ("rcp_c76_wall_b:24|1|0-6 ft|urban", False, 0.55),
+        ("rcp_c76_wall_b:24|1|0-6 ft|open", True, 1.0),
+        ("rcp_c76_wall_b:24|1|0-6 ft", True, 0.55),
+        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.249333),
+    ):
+        got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant), default), 6)
+        if got != want:
+            wrong.append(f"FAIL  site-condition-{variant}-{default}: {got}, expected {want}")
+    # D-1095: a metro with no row for an occupation scales the state's by its construction ratio: Lake Havasu's
+    # pipelayer, Arizona median 30.16 x 0.888 = 26.78 (the median of the metro's 47- occupations over the state's).
+    from app.wagecalc.market import load_market
+
+    lh = load_market().oews_for("47-2151", "04015", None, "median")
+    if lh is None or round(lh.value, 2) != 26.78 or not (lh.scaled_from or "").startswith("Arizona median $30.16 x 0.888"):
+        wrong.append(f"FAIL  metro-scaled-pipelayer: {lh and lh.value} {lh and lh.scaled_from}, expected 26.78 from Arizona x 0.888")
+    # D-1094: the Houston area's dump fees, clean soil and rubble $0, mixed C&D $34.17 a ton; others national.
+    from sqlalchemy import text as sql
+
+    from app.database import sync_engine
+
+    with sync_engine.connect() as conn:
+        got_fees = dict(conn.execute(sql("SELECT mat_key, unit_price FROM matlib.mat_region_default WHERE cbsa = '26420'")).all())
+    if {k: float(v) for k, v in got_fees.items()} != {"disposal:clean_soil": 0.0, "disposal:rubble": 0.0, "disposal:mixed_cd": 34.17}:
+        wrong.append(f"FAIL  houston-dump-fees: {got_fees}")
     for size, want in ((8, "CP-PLATE-REV"), (18, "CP-PLATE-REV"), (24, "CP-TRENCH-ROLLER"), (48, "CP-TRENCH-ROLLER")):
         got = sized_compactor([SimpleNamespace(earthwork_variant=f"rcp_c76_wall_b:{size}|1|6-8 ft")])
         if got != want:
             wrong.append(f"FAIL  compactor-{size}: {got}, expected {want}")
     for w in wrong:
         print(w)
-    print(f"order sizes: {len(ORDER_TIERS) + len(ORDER_TYPES) + 8} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"order sizes: {len(ORDER_TIERS) + len(ORDER_TYPES) + 14} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 
