@@ -28435,3 +28435,73 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
 - Purged with purge-bench-dups.py, storage failures 0: the Real bid A copy (27086838, log 61118c34) and three Real bid B
   copies (bc8fc84c, 6345cce5, 2e4df2d6; logs f76198ac, 3fbcea13, 81ccbded). Real bid B is out of COPY_SOURCES again (refusal checked). The throwaway workspace's
   example dump sites were set aside for the fallback measurement and restored.
+
+## D-1100: Water, fire water and force main default to sand embedment
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- A water, fire water or force main run with no bedding or zone of its own takes bank sand for both, no #57 stone
+  (`embedmentDefault`, `lib/takeoff/earthwork/utilities/materials.ts`; `runMaterials` in `calculate.ts`). The run's
+  own choice wins; then the project's Utility settings ("Water, fire water, force main": sand embedment, or the bedding
+  and zone above); then the company's library setting `pressure_embedment_project` (0 sand, the default; 1 the
+  project's bedding and zone), sent with the utilities read as `company_embedment`. Storm and sanitary on rigid pipe
+  keep their defaults. The run panel names the default and why ("default (Bank sand, pressure pipe: sand embedment)").
+- Houston tabs, open shop, tab medians as the last report: C900 8" +76 % to +68 % at 300 LF, +43 % to +37 % at 1,000 LF;
+  C900 12" +55 % to +51 %, +30 % to +26 %; force main 6" +87 % to +77 %, +48 % to +41 % (all against bid / 1.15).
+  Materials fall about $2.0 to $2.5/LF. All still above the band: the rest is pipe price and crew.
+
+## D-1101: Flexible gravity pipe takes #57 stone through the pipe zone (ASTM D2321)
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- Storm and sanitary runs on flexible pipe (PVC sewer D3034 and F679, HDPE dual wall and IPS, CMP) take #57 stone,
+  Class I, through the pipe zone by default: the haunch to the springline and to the crown is Class I, as ASTM D2321
+  recommends for flexible pipe; the bedding stays the project's (#57 stone). Rigid RCP keeps the project's zone. Gas,
+  electric and telecom keep the project's. The project's "Flexible gravity pipe" setting and the company's
+  `flexible_embedment_project` give the project's zone back.
+- Checked, no change: compaction is priced through the pipe crew's plate or trench roller (D-1091 sizing); the joints
+  are priced: dual-wall HDPE and PVC sewer have an integral bell and gasket in the pipe price, CMP its coupling band
+  per joint, RCP its gasket per joint; fittings ride the 5 % gravity allowance.
+- HDPE 24" against the five Houston tabs (median of medians, open shop): 300 LF from 0 % (under the band) to +16 %
+  (over); 1,000 LF from -16 % (under) to +1 % (in the band). PVC sewer moves too: 8" at
+  1,000 LF -7 % (under) to +6 % (in); 12" -4 % to +8 % (in); at 300 LF both from +11 % (in) to +22-23 % (over).
+- The quantity table's utility rows gain 11 embedment rows (110 utility rows).
+
+## D-1102: A disposal fee priced at $0 reads "$0.00 (free fill site)", never "—"
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- `fmtDisposal` (`lib/estimate/costing.ts`): a disposal line or fee row whose amount is zero with a priced fee of $0
+  shows "$0.00 (<dump site's name>)" from its price basis, else "$0.00 (free fill site)". An unpriced fee stays "—".
+  "Check dump fee" is unchanged. Smoke: the Real bid A copy's Soil Export line on the Houston fallback shows
+  "$0.00 (free fill site)".
+
+## D-1103: Bid comparisons against public tabs are priced prevailing, escalated by ECI
+
+**Status:** Accepted (2026-11-09, run mode). Standing rule for every comparison from now on.
+
+- Every comparison against a public bid tab (DOT, county, city, MUD) prices labor in prevailing mode under the tab
+  county's WD of the matching construction type (Heavy for water and sewer lines, Highway for a DOT item), the one in
+  effect at the bid date (the year's WD, the last modification published by the bid month; SAM.gov keeps the earlier
+  years' numbers), else the current one, noted. Each tab's median bidder; the report gives the tab count, the bidder
+  count and the low-high spread; bid prices escalate to the comparison date by the ECI construction wage index the
+  wage core loads (past the latest quarter, at its 12-month rate), noted.
+- Houston, 2026-11-09: WDs in effect were TX20240031 mod 2, TX20250031 mods 0-2, TX20260031 mod 0 (Harris), TX20250054
+  mods 0-1 (Fort Bend), TX20250063 mod 1 (Montgomery), TX20260062 mod 0 (Galveston); the TxDOT statewide rows on Harris's
+  current Highway WD TX20260299 mod 1 (no bid date). Their Heavy rates are 2005 survey rates far below the market, so
+  the engine's prevailing crew is the market's with the WD's floor and comes out 1-3 % over open shop (+$0.58 to
+  +$1.95/LF). ECI factors 1.021 to 1.074. The items' positions are in the run's report; none of the tabs' figures is
+  kept in a repo.
+
+## D-1104: The D-1100..D-1103 run ended: three copies purged, Real bid B out of the copier; urban add-ons logged
+
+**Status:** Accepted (2026-11-09, run mode).
+
+- Logged, not built: optional urban add-on lines for Urban reconstruction runs (traffic control per day, an
+  existing-utility conflict allowance, bypass pumping, pavement restoration), each sourced (FEATURES.md, Planned).
+- End totals on fresh copies (Update rates, Calculate, Update all): ST-1 $6,894.58; Real bid B site soil $173,301.35,
+  imported clay $225,736.61; Benchmark A $645,561.64; Real bid A at 10 mi on the Houston fallback $463,934.53. None moved.
+- Purged with purge-bench-dups.py, storage failures 0: two Real bid B copies (2eb9ff06, 78d8b0dc; logs 78cb0059,
+  a8a2ac05) and the Real bid A copy (60801252, log e2c859f8). Real bid B is out of COPY_SOURCES again (refusal
+  checked). The throwaway workspace's example dump sites were set aside for the fallback measurement and restored.
+  SAM.gov's earlier WDs read for D-1103 are cached in `wd_sam_document`, as any lookup caches them.

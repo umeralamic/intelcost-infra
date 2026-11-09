@@ -219,6 +219,20 @@ export const UTILITY_CASES = [
   // cut). The last run, 12 in PVC SDR-35 storm with 3 ft of cover, was dug from existing grade; the new run
   // takes its type, pipe and size but digs from proposed subgrade: its trench bottom is 98.00 - 3 (cover)
   // - 12.50 / 12 (the pipe's OD, 1.042 ft) - 6 / 12 (bedding) = 93.46, not 95.46 from existing grade.
+  // D-1100: water, fire water and force main on bank sand, bedding and zone, no stone; the project's or the company's
+  // "bedding and zone above" gives the project's back. D-1101: flexible gravity pipe (PVC sewer, HDPE, CMP) with #57
+  // stone through the zone (ASTM D2321 Class I to the crown); rigid RCP the project's.
+  { id: "util-1100-water-sand", kind: "embedment", type: "water", catalogKey: "pvc_c900_dr18:8", expect: { bedding: "Sand", zone: "Sand" } },
+  { id: "util-1100-force-main-sand", kind: "embedment", type: "force_main", catalogKey: "pvc_c900_dr18:6", expect: { bedding: "Sand", zone: "Sand" } },
+  { id: "util-1100-fire-di-sand", kind: "embedment", type: "fire_water", catalogKey: "di_c151_pc350:8", expect: { bedding: "Sand", zone: "Sand" } },
+  { id: "util-1100-project-choice", kind: "embedment", type: "water", catalogKey: "pvc_c900_dr18:8", settings: { pressureEmbedment: "project" }, expect: { bedding: "project's", zone: "project's" } },
+  { id: "util-1100-company-choice", kind: "embedment", type: "water", catalogKey: "pvc_c900_dr18:8", settings: { companyEmbedment: { pressure: "project", flexible: "stone" } }, expect: { bedding: "project's", zone: "project's" } },
+  { id: "util-1101-hdpe-stone", kind: "embedment", type: "storm", catalogKey: "hdpe_f2648_dual_wall:24", expect: { bedding: "project's", zone: "#57 stone" } },
+  { id: "util-1101-pvc-sewer-stone", kind: "embedment", type: "sanitary", catalogKey: "pvc_d3034_sdr26:8", expect: { bedding: "project's", zone: "#57 stone" } },
+  { id: "util-1101-cmp-stone", kind: "embedment", type: "storm", catalogKey: "cmp_16ga:24", expect: { bedding: "project's", zone: "#57 stone" } },
+  { id: "util-1101-gas-pe-project", kind: "embedment", type: "gas", catalogKey: "hdpe_ips_dr11:4", expect: { bedding: "project's", zone: "project's" } },
+  { id: "util-1101-rcp-project", kind: "embedment", type: "storm", catalogKey: "rcp_c76_wall_b:24", expect: { bedding: "project's", zone: "project's" } },
+  { id: "util-1101-flexible-project", kind: "embedment", type: "storm", catalogKey: "hdpe_f2648_dual_wall:24", settings: { flexibleEmbedment: "project", companyEmbedment: { pressure: "sand", flexible: "stone" } }, expect: { bedding: "project's", zone: "project's" } },
   { id: "util-628-new-run-from-proposed", kind: "newrun", type: "storm", catalogKey: "pvc_d3034_sdr35:12", nominalIn: 12, coverFt: 3, beddingIn: 6, groundFt: { existing: 100, proposed: 98 },
     expect: { lastFrom: "existing", newFrom: "proposed", newGroundFt: 98, newTrenchBottomFt: 93.46, carried: "storm pvc_d3034_sdr35:12 12" } },
   {

@@ -94,6 +94,7 @@ _Updated: 2026-10-02_
 
 | # | Feature | Repo | Note |
 |---|---------|------|------|
+| Urban reconstruction add-on lines | Optional lines an Urban reconstruction run (D-1097) can add, each priced from a named source and labelled with it: traffic control per working day, an existing-utility conflict allowance, bypass pumping (sewer), and pavement restoration where the run has none. Off by default; each its own line so the estimator can drop it. Sourced first (two sources each, graded), then built (D-1104) | api, app | Planned (2026-11-09): logged, not started |
 | Dump-site distances from the project location | Each dump site's distance worked out from the project's location (D-1072): the address geocoded through the US Census geocoder (free, no key), straight-line distance × 1.3, labelled "estimate (straight line × 1.3)" until road routing exists; a typed distance still wins (D-1076) | api, app | Planned (2026-11-08): logged, not started |
 | f5-big on AWS staging (Abdullah) | Measure a big upload's first page and its thumbnails on AWS staging: the bench's figure (16-19 s, D-1046) is limited by Docker Desktop's storage gateway, which production does not have (D-1053) | api | Planned (2026-11-07): for Abdullah |
 | Dev-server fixtures on the built apps (test laptop) | f3-s1, f4-s2 and f7-a fail only on page loads from the fx dev server (5176 not reaching "load" in 30 s), never on what they assert: run them on the built apps like the other 158 (D-1057) | infra | Planned (2026-11-07): on the test laptop |

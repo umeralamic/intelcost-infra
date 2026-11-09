@@ -1691,6 +1691,7 @@ try {
     const cr = await import("/src/lib/takeoff/earthwork/utilities/continueRun.ts");
     const ov = await import("/src/lib/takeoff/earthwork/utilities/overlaps.ts");
     const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
+    const um = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -1762,6 +1763,11 @@ try {
           afterCY: after,
           widths: worked.map(({ q: qq }) => r2(qq.widthFt)),
         };
+      }
+      // D-1100, D-1101: a run's default bedding and zone by its type and pipe, the project's and the company's over it.
+      if (c.kind === "embedment") {
+        const d = um.embedmentDefault(c.type, c.catalogKey, c.settings ?? {});
+        return { bedding: d?.bedding ? um.ZONE_CHOICES[d.bedding].name : "project's", zone: d?.zone ? um.ZONE_CHOICES[d.zone].name : "project's" };
       }
       if (c.kind === "newrun") {
         // D-628: a run drawn from existing grade, then a new run from the box: its "Trench from"
