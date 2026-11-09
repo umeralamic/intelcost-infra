@@ -28272,3 +28272,74 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
    its distance, project inputs; the library fallback is the shipped default, the example sites are not sourced.
 - Quantity table: the Houston open-shop pipelayer $25.32 by hand (direct, 77002, 2026-11-06), the truck line choice and
   the weekly fringe.
+
+## D-1091: Utility pricing round 2: bulk material bases with order-size tiers, pipe crew kits by run length (release 42), a 13-15 t excavator row, a compactor by the trench; calibration report
+
+**Status:** Accepted (2026-11-09, run mode: the recommended answer taken).
+
+1. **Order-size tiers (materials).** IntelCost's library price is now the bulk price. The project's total of a material
+   (every live line's quantity of the key, with waste) picks Bulk (x1.00), Standard or Small; a Small order of aggregate
+   bills a short last load up to the least billed load, and of ready-mix pays a short-load fee a CY under a minimum.
+   Types and defaults (company settings, Settings > Material prices > Order size; an empty field is the default):
+   concrete and iron pipe Bulk from 600 LF, Standard from 160 LF, x1.10 / x1.20; plastic pipe and conduit 2,000 / 400 LF,
+   x1.10 / x1.20; aggregate, sand and CSS 1,000 / 100 t, x1.05 / x1.10, a 22 t truck, a load billed at no less than
+   10 t; ready-mix and flowable fill 200 / 20 CY, x1.05 / x1.10, a 10 CY truck, $40 a CY under 6 CY. Sources: list
+   prices run 7-14 % over supply contracts (HDPE, 2026: the Standard factor); the ready-mix short load from a county
+   contract (Missouri, 2025); the rest are labelled assumptions (no published order-size break was found). A company's
+   or an estimate's own price is never tiered. The base stays on the component (`price_snapshot.base_unit_price`): a
+   Calculate moves the tier with the quantities, the base moves only on Update (Q18); Update compares base with base. The
+   line shows its tier in the price basis ("Small order (50 LF) x 1.20"), a pipe line beside its joints ordered.
+   Table `mat_tier_setting`; `materials/tiers.py`; routes GET/PUT `/material-prices/tiers`.
+2. **Bulk bases.** 110 pipe keys corrected in Q4 2026 (audited, the old prices kept for the downgrade): RCP Class III
+   from two county annual supply contracts (Texas 2024, Mississippi 2025; 24 in $57.46 to $41.70), Wall C at Wall B's;
+   HDPE dual wall from a county annual contract (2026, three bidders within 3 %); PVC SDR-26/35, C900 DR18 and ductile
+   iron PC350 from a distributor's list price / 1.10 (grade D; no public supply contract found), DR14 by DR18's ratio;
+   unsourced sizes by their sourced neighbours' ratio (grade C). Aggregates unchanged (the sources found are pit prices
+   in other regions). Grades now A166 B166 C430 D86 F32. Migration da00b1c2d3e4.
+3. **Pipe crew kits, starter release 42** (A12, A18, A19, A28, A32; every workspace's unedited copy at its next library
+   read, all were unedited). Each tier: one excavator sized by the pipe and the trench, a skid steer (short run, run by
+   the crew) or a 1-2 yd compact loader, a compactor, a pickup; foreman, pipelayer, one or two laborers and the
+   machines' operators (TxDOT 0-4416-1's standard resource: 4-5 and one backhoe). Tiers 1-119 / 120-249 / 250+ LF a day.
+   Production by run length (bands to 99, 249, 499, 999, 2,499 LF and over) from TxDOT 0-4416-1's measured model,
+   PR = -126.22 + 103.558 log10(run LF) (RCP, n 50, 22 projects), x1.25 to the 10 h day: storm x1.0 (70, 130, 170, 210,
+   255, 285), sanitary x1.2 (85-340), pressure and other x1.6 (115-455; WSDOT's normal water main 300 an 8 h day). The
+   old kits are in `eq_change` (release 42) and in the seed for the downgrade (migration da01c2d3e4f5).
+4. **Sizing.** A 13-15 t row: pipe to 12 in and a trench to 10 ft; the 20-25 t to 24 in and 14 ft (was 6 ft); the
+   30-36 t to 48 in and 16 ft (was 36 in, 10 ft); past them a 40 t (assumptions by the classes' reach and lift). The
+   crew's compactor by the pipe: a reversible plate under 24 in, a trench roller from 24 in.
+5. **Calibration (Houston, open site, Type B, direct cost against the MUD bids' medians; band bid / 1.15 to bid).**
+   Before: storm RCP +34 to +69 %, sanitary +105 to +127 %, water C900 +31 to +75 %, force main +63 to +69 %, HDPE 24
+   in +8 to +11 %. After, at 1,000 LF (subdivision sections): in band RCP 24 (+15 %), RCP 36 (+3 %), sanitary 8 in at
+   6.5 ft (+2 %), sanitary 12 in at 10 ft (+13 %), water C900 12 in (+13 %); just under RCP 18 (-6 %), RCP 48 (-2 %),
+   sanitary 8 in at 10 ft (-11 %); over water C900 8 in (+31 %) and force main 6 in (+37 %), both on material (C900's
+   base is a list price, grade D); HDPE 24 in -21 % (one tab). At 300 LF: RCP 18 and 48 in, sanitary 8 in at 10 ft in
+   band; the rest over by Small-order pricing. Not tuned further.
+6. **Other markets, not retuned** (the same rows through the location factors and each market's own open-shop crew):
+   a Florida county's annual drainage contract lands (RCP 24 +12 %, 36 +5 %, in band; RCP 18 +17 %); city and county
+   reconstruction work in Maricopa AZ, Tampa FL and Ohio bids 35-79 % above the engine. Only greenfield work fits: the
+   base has no urban condition (existing utilities, traffic, short reaches, bypass pumping). TxDOT 0-4416-1 measured
+   crossings at 75 against 136 LF a day and hard access 28 LF a day lower: proposed as a site-condition factor, not done.
+7. **Prevailing (Texas Gov't Code ch. 2258, the Heavy WD).** The crew-hour rises 11-12 %, $1.00-1.50 a LF: no item
+   crosses the band. Labour is 10-20 % of direct at 1,000 LF; the items under the band would need labour at about 1.5x
+   open shop (a premium near +50 %, against 14 % / 26 %); the items over it are over on material, no premium helps.
+8. **B9a sweep after:** rule flags 3,124 to 844: "$/LF rises with run length" 486 to 0, "falls as depth rises" 978 to
+   0, "machine shrinks" 892 to 0; "falls as size rises" 672 to 748, D-1085's explained odd sizes (DI 4 in, CMP
+   corrugations, HDPE 10 in) and paved 50 LF runs where a larger pipe displaces cement-stabilized sand.
+9. **Measured on throwaway copies** (Calculate, Update all on the copy): Real bid B with site soil $171,855.16 (D-1089)
+   to $172,948.76, with imported clay $224,290.42 to $226,923.99; ST-1 $160.25 to $159.07 a LF (its run is 50 LF: Small
+   order x1.20 on a bulk base). Benchmark A $645,561.64 and the Real bid A copy $849,200.24, unchanged (no utility lines,
+   no library materials). The Real bid B rise outside ST-1 is in its earthwork lines and was not isolated.
+- Found and fixed in the run: the api's formula engine has no QTY (a material's quantity formula is the browser's
+  grammar): `tiers.line_qty` reads QTY, numbers, + - * /, ceil, floor, round, min, max; and `/tiers` sat behind
+  `/{price_uuid}`. Tried and reverted: the short-run skid steer borrowing an earthwork loader (dearer on Real bid B).
+- Quantity table: the order sizes (20 rows by hand) and the starter counts (machines 483, crew 345, defaults 240). The
+  bench api was restarted once to load the change.
+
+## D-1092: The utility pricing round 2 run ended: four copies purged, the copier's read of Real bid B removed
+
+**Status:** Accepted (2026-11-09, Umer: "purge and remove the permission at the end").
+
+- Purged with purge-bench-dups.py, storage failures 0: the Real bid A copy for the D-1090 comparison (ae50e46a, log
+  2953d53c) and three Real bid B copies for D-1091's measurements (ce52b0b6, af81f0a8, 16c986dc; logs 06ed7e36, c9a02422,
+  a4806b5b). Real bid B is out of `drives/guard.py` COPY_SOURCES again; the copier refuses it (checked). The kept
+  Benchmark A copy (0096824a) stays.

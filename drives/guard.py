@@ -57,7 +57,7 @@ COPY_SOURCES: dict[str, str] = {
     # Real bid B was here for the 2026-11-08 runs (D-1069, D-1076); removed when they ended (D-1082);
     # back for the 2026-11-09 run (D-1083) and removed at its end (D-1086); back for the W14 run
     # (D-1087) and removed at its end (D-1088); back for the W14 fixes' measurements (D-1089) and
-    # removed at their end.
+    # removed at their end; back for the utility pricing round 2 (D-1091) and removed at its end (D-1092).
 }
 """Projects the copier alone may read, for one copy, named as `copy-3d-test.py --source <uuid>`.
 Every other drive, and every write, is refused as before."""

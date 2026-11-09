@@ -54,8 +54,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1083: two liner tests (B); clay for a liner repriced in place (still C).
 # D-1084: cement-stabilized sand for paved trench backfill (C).
 # D-1085 (B9b): 169 pipe keys the sweep found missing (13 B, 130 C, 26 D) and 18 in PVC sewer D to C.
-if [ "$MAT_COUNTS" != "A194 B179 C382 D79 F46" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A194 B179 C382 D79 F46"
+# D-1091: 110 pipe keys to their bulk base (supply contracts A and B, list prices / 1.10 D, the rest C).
+if [ "$MAT_COUNTS" != "A166 B166 C430 D86 F32" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A166 B166 C430 D86 F32"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -87,8 +88,10 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # crew 323 + 11 = 334, defaults 220 + 6 = 226; A6's open top tier and open top band copied, open tiers 102 + 1 = 103,
 # open defaults 104 + 1 = 105; clearing_haul remapped to A95 in place (line-map 112).
 # D-1085 (release 41): the short-run crew's foreman on A28 and A32, crew 334 + 2 = 336.
-if [ "$ST_COUNTS" != "105 216 502 336 226 112 30 103 105 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 216 502 336 226 112 30 103 105 0 0"
+# D-1091 (release 42): the pipe crews A12, A18, A19, A28 and A32 replaced, 15 tiers for 15: machines 502 - 79 + 60 = 483
+# (none optional: 30 - 8 = 22), crew 336 - 39 + 48 = 345, defaults 226 - 16 + 30 = 240 (six run-length bands each).
+if [ "$ST_COUNTS" != "105 216 483 345 240 112 22 103 105 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 216 483 345 240 112 22 103 105 0 0"
   exit 1
 fi
 # No software competitor named in the three repos' tracked text files or the workspace files (hard rule 9, D-328,
@@ -120,6 +123,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py sc
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py roles" </dev/null || { echo "FAIL  wage roles (above)"; exit 1; }
 # The wage core (D-1032): Harris County open shop (W1), its foremen (W7) and the ECI escalation (W12).
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py wages" </dev/null || { echo "FAIL  wages (above)"; exit 1; }
+# D-1091: order-size tiers and the pipe crew's compactor, by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py orders" </dev/null || { echo "FAIL  order sizes (above)"; exit 1; }
 # Prevailing wage by classification (D-1038): Mohave Highway WD, operators by machine, a licensed trade not covered, the foreman.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prevailing" </dev/null || { echo "FAIL  prevailing (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.

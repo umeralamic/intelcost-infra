@@ -998,7 +998,64 @@ async def parents() -> int:
     return 1 if wrong else 0
 
 
+# D-1091: order-size tiers on the defaults, by hand. RCP 24 in at its bulk base $41.70: 120 LF Small x1.20 = 50.04;
+# 300 LF Standard x1.10 = 45.87; 800 LF Bulk 41.70. #57 stone $37.12: 6 t Small, one load short of the 10 t least
+# load, x1.10 x 10 / 6 = 68.05; 30 t, two loads, the last 8 t billed at 10, x1.10 x 32 / 30 = 43.55. Concrete
+# $163.46: 13 CY Small, two trucks, the last 3 CY short of 6, x1.10 + 3 x $40 / 13 = 189.04; 25 CY Standard x1.05 =
+# 171.63. The compactor: a plate under 24 in, a trench roller from 24 in. Types: RCP rigid, PVC plastic, #57
+# aggregate, cast-in-place concrete; a clay liner none.
+ORDER_TIERS = [
+    ("pipe:rcp_c76_wall_b:24", 41.70, 120, 50.04, "Small"),
+    ("pipe:rcp_c76_wall_b:24", 41.70, 300, 45.87, "Standard"),
+    ("pipe:rcp_c76_wall_b:24", 41.70, 800, 41.70, "Bulk"),
+    ("stone:_57_stone", 37.12, 6, 68.05, "Small"),
+    ("stone:_57_stone", 37.12, 30, 43.55, "Small"),
+    ("cip:concrete", 163.46, 13, 189.04, "Small"),
+    ("cip:concrete", 163.46, 25, 171.63, "Standard"),
+]
+ORDER_TYPES = {
+    "pipe:rcp_c76_wall_b:24": "pipe_rigid",
+    "pipe:pvc_d3034_sdr26:8": "pipe_plastic",
+    "stone:_57_stone": "aggregate",
+    "cip:concrete": "concrete",
+    "fill:clay": None,
+}
+
+
+def orders() -> int:
+    from types import SimpleNamespace
+
+    from app.features.equipment.production import sized_compactor
+    from app.features.materials import tiers
+
+    wrong = []
+    for key, base, total, want, name in ORDER_TIERS:
+        kind = tiers.type_of(key)
+        t = tiers.tier_for(kind or "", total)
+        got = round(base * t.multiplier + t.add, 2)
+        if got != want or t.name != name:
+            wrong.append(f"FAIL  order-{key}-{total}: {got} {t.name}, expected {want} {name}")
+    for key, kind in ORDER_TYPES.items():
+        if tiers.type_of(key) != kind:
+            wrong.append(f"FAIL  order-type-{key}: {tiers.type_of(key)}, expected {kind}")
+    # The quantity formulas Calculate writes, read for the project total (QTY, ceil; nothing else runs).
+    for text, qty, want in (("QTY", 49.74, 49.74), ("ceil(QTY / 8)", 49.74, 7.0), ("QTY * 27 * 108 / 2000", 2.0, 2.916), ("__import__(1)", 1.0, None)):
+        got = tiers.line_qty(text, qty)
+        if (got is None) != (want is None) or (got is not None and want is not None and round(got, 6) != want):
+            wrong.append(f"FAIL  order-qty-{text}: {got}, expected {want}")
+    for size, want in ((8, "CP-PLATE-REV"), (18, "CP-PLATE-REV"), (24, "CP-TRENCH-ROLLER"), (48, "CP-TRENCH-ROLLER")):
+        got = sized_compactor([SimpleNamespace(earthwork_variant=f"rcp_c76_wall_b:{size}|1|6-8 ft")])
+        if got != want:
+            wrong.append(f"FAIL  compactor-{size}: {got}, expected {want}")
+    for w in wrong:
+        print(w)
+    print(f"order sizes: {len(ORDER_TIERS) + len(ORDER_TYPES) + 8} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["orders"]:
+        sys.exit(orders())
     if sys.argv[1:] == ["parents"]:
         import asyncio
 
