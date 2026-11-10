@@ -28960,3 +28960,67 @@ more than the needed machine's own).
   soil a sheet sends to another priced on its Cut line at `areaDistanceFt` (6b): the excavator's on-site haul has no
   distance in production today (its trucks are the kit's), so this needs a haul cycle for the on-site trucks, its own
   production change.
+
+## D-1132: Only fill that takes native soil joins the balance: a fill type naming an import keeps its import
+
+**Status:** Accepted (2026-11-10, founder's rule). On one sheet as in a job (F39).
+
+- The project's fill type is the material the fill is made of. When it names an import (Select Borrow, select fill,
+  sand, clay, stone, gravel), native cut fills none of it: all cut leaves and all fill is imported, unless the
+  estimator ticks "Native soil meets <fill type>" in Calculate (site choice `native_meets_fill`). Engineered and
+  structural fill take the site's suitable soil as before. A Site Feature's replacement fill and an imported liner were
+  already their own purchase.
+- The single-sheet balance did not follow it: McCabe's C16 filled its 3 CCY of fill from its cut with Select Borrow as
+  the fill type. Fixed in the one place the line inputs are made (`nativeFills`, `linesFor.ts`; the site view reads it
+  too). Projects with Select Borrow on the bench: McCabe, the Hidden Valley 3D test and its copies, Hidden Valley Spec
+  Building Rebid, Marketing Demo, zz MyEq project; Valmont and Benchmark A are Engineered Fill (no change).
+- McCabe: C16's export and C12's select-borrow import both remain in the job.
+- Quantity table: Select Borrow, two sheets, no offset (A exports 1,250 LCY, B imports 825 LCY); Engineered Fill offsets
+  (340 BCY / 425 LCY exported, no import); Select Borrow with native soil meeting it offsets; one sheet, Select Borrow,
+  no offset (1,250 LCY out, 412.5 LCY in).
+
+## D-1133: F39 wired: per-member settings, the job write, Calculate re-striking the job, Calculate job, the stale badge
+
+**Status:** Accepted (2026-11-10, run mode). Built, gated and smoked on a McCabe copy.
+
+- Per member: `job_choice` on `earthwork_result` and `earthwork_site_result` (null, "separate", "include"; migration
+  `da0ed5e6f708`), `PUT .../earthwork/result/{sheet}/job` and `PUT .../site/{site}/result/job`. A result row reads
+  `stale` (its lines show stale, Q10). "Separate job" by each member under the sheets panel; "include" waits for a
+  registered boundary kept with a result (none is today, so every member's overlap stays unchecked, D-1131).
+- The job write: `PUT .../earthwork/job/lines`, every member's grading lines in one transaction (`keep_utilities`, so
+  sections, clearing, layout and utilities stay, D-1114); a member whose lines were stale is marked stale again after
+  it (the job uses its last result, the bid still says so). The balance lines are written as `grading` on the anchor:
+  every write strikes the whole job, so no rebuild of one sheet can leave them behind (the spec's `builder="job"` was
+  not needed).
+- Calculate of one sheet (`useVolumes`): the job struck with this result and the others' stored ones (`jobBalance.ts`
+  `jobRows`, `planJob`), this sheet's share saved with its result, the others' in the job write. A site's save, a
+  choice change (`rebuildLines`) and Separate job strike the job too. A stale member is named in a toast.
+- Calculate job (6e): by the members under the sheets panel, and in Estimating as a notice shown only while a member is
+  stale ("C13 changed since its last Calculate: the job balance uses its last result. Calculate job"). It queues the
+  stale sheets (session storage) and opens each in Takeoff, where its Calculate runs by itself, then the next; none
+  stale, it strikes the job from the stored results. Export asks while a member is stale: "C13 changed since its last
+  Calculate — Calculate job first?" (Cancel, Export as it is, Calculate job). The job's Soil Export and Import carry
+  "Needs recalculating" while a member is stale.
+- Found on the copy: one item drawn on two sheets (McCabe's access drive, region 9b7d049d on C12 and C13) gave both
+  members the same region id, and C12's 4,180 CCY of fill was written on C13's line. Fixed in `jobLineInputs`: an id an
+  earlier member already brought is `<id>@<key>` on the later one, and comes back to its own id on its own sheet.
+- Quantity table: `job-shared-region-id` (A cuts 1,000 BCY and B fills 600 CCY under one id: 340 / 660 / 600, 425 LCY
+  out) and `job-stale-calculate-job` (6e: B edited 600 to 800 CCY, A calculated alone: B named stale, the job prices B's
+  600; Calculate job: 880 BCY to B, 120 out, 150 LCY; a second Calculate job writes the same lines).
+- McCabe copy (C12, C13, C16; Select Borrow, D-1132): C16's 34,349.8 BCY all exported and C12-C13's 8,064.9 BCY of
+  select borrow imported, both on the job's lines on C12 (34,464.8 BCY out, 43,081 LCY). C13's subgrade 6 to 8 in made
+  it stale; Calculate job calculated it alone (its cut to export 111.4 to 158.2 BCY; the job 34,511.5 BCY out); a second
+  Calculate job changed no line. C16 marked Separate job: its own 34,349.8 BCY out and 2.9 BCY in, the job's C12-C13
+  161.7 out and 8,061.8 in; unmarked, back to the job's lines exactly.
+
+## D-1134: F39 follow-ups: the haul between areas, the on-site excavator haul, registered boundaries
+
+**Status:** Proposed follow-up (2026-11-10). Not built.
+
+- 6b: soil sent from one member's cut to another's fill is priced as on-site cut and fill with no distance between the
+  areas. `areaDistanceFt` is built (D-1131), but nothing reads it yet.
+- The excavator's on-site haul has no distance in production: its trucks are part of the kit, with no cycle. A haul
+  cycle for the on-site trucks, at the pocket-to-pocket distance within a sheet and `areaDistanceFt` between members, is
+  one production change, and 6b waits for it.
+- A registered boundary kept with each result, so the overlap check (D-1131) can run on the job; until then every
+  member is in, its overlap unchecked.

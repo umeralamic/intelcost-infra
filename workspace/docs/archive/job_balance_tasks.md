@@ -1,6 +1,6 @@
 # F39: One earthwork balance per job, across sheets
 
-Status: planned, decisions taken (D-1126). Not built.
+Status: built (D-1131, D-1132, D-1133); 6b and the on-site haul are follow-ups (D-1134).
 
 ## Problem
 
