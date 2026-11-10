@@ -29139,3 +29139,33 @@ read-back to the places Qty x rate needs is no longer shown.
   96 h, $5,252.51, $58.81; roller 133.2 of 160 h, $8,294.27, $62.26; water truck (0.5 unit) 44.7 EH, $5,687.94. Rates
   W25 and C25 (2025-2026), grade A for the dozers and roller, B for the GPS kit and water truck. For the founder's
   review; no rate or production changed.
+
+## D-1141: Gravity pipe pace by each line's depth, from the Houston bid tabs (grade D)
+
+**Status:** Accepted (2026-11-10, founder's item 3 and A). `production.py` `gravity_depth_pace`; the fit is
+`intelcost-infra/bidtabs/depth-fit.mjs`, reading the tabs from docs/reference (no bid figure in a repo).
+
+- Source: the LJA tabs price sanitary sewer by depth band (8 in SDR 26 at 0-8, 8-12, 12-16 ft ... 24-28 ft). From the
+  median bidder, the pipe material (the library's 8 in SDR 26, $10.87 x 0.987, the same at every depth) backed out;
+  ln(installed cost without pipe) = a + 0.0267 max(0, d - 8) + 0.10438 max(0, d - 20), d the band's middle, a free
+  per contract and size. Factor x1.000 to 8 ft, x1.083 at 11, x1.272 at 17, x1.791 at 22, x3.03 at 26; held past 26.
+- Fit on 1680-8215, 2535-2318, 2659-2152, 4683-6203A, 0386-3118A (11 band pairs, mean error 9.8 %, worst 24.4 %);
+  checked on 0386-5140D, 2370-4106, 3301-2405B, 2022-2115 (5 pairs, mean 6.6 %, worst 13.7 %; 2959-1402 has no
+  banded sanitary). The check's band was +/-10 %: it does not hold (some bidders price the bands nearly flat, one
+  contract past 20 ft), so grade D, not B. Storm tabs are "all depths": storm takes the sanitary factors, so labelled.
+- A gravity line's pace is 1 / the factor of its band's middle, replacing two-thirds from 12 ft (the structures keep
+  theirs). Water and force mains keep D-1105's own size and depth tables. Quantity table rows by band.
+
+## D-1144: Trench support by depth; a PE's design past 20 ft; dewatering left as it is
+
+**Status:** Accepted (2026-11-10, founder's B).
+
+- The trench box line by its band: an 8 ft steel box to 8 ft, then a 4 ft stacker each 4 ft ("8 ft box + 2 x 4 ft
+  stackers"), the stack taken to 20 ft (stated rated depth, grade D: an engineer's tabulated data governs past it). The
+  box (A13) moves at its pipe line's depth pace, and each stacker adds its rent: box days x (1 + 0.731 a stacker), the
+  4-week ratio of TB-STACK-4x24 to TB-STL-8x24 (W25 2025, grade B). Slide rail stays D-1128's no-box-fits choice.
+- Past 20 ft: "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft", one a run, `service:
+  pe_shoring_design` at $5,000 (stated, grade D, the middle of $2,500-$10,000), flagged in Estimating's Needs attention
+  until the engineer's quote replaces it. Migration `da10e7f8091a`.
+- Dewatering on deep sewer is priced only where the bores put the water table above the trench bottom (D-908); with
+  no bores, none. Logged as a follow-up, not built: a stated dewatering allowance by depth where no bore says.
