@@ -1000,6 +1000,67 @@ async def parents() -> int:
     return 1 if wrong else 0
 
 
+async def rebuild() -> int:
+    """D-1110: one Calculate settles the bid. A Calculate's full line set, then the rebuild a choice applied in the
+    results panel writes (the grading's lines alone, D-899), must leave every line the Calculate wrote live: the
+    construction layout, a tree removal Count's tree and stump, a section's clearing, a utility run. Before D-1110
+    the rebuild retired the layout and the trees and the next Calculate wrote them again, so the bid moved on the
+    second Calculate ($1,514.66 on Real bid B with site soil). On the throwaway "zz MyEq project", rolled back."""
+    from sqlalchemy import select
+
+    from app.database import SessionFactory
+    from app.features.drawing.models import DrawingSheet
+    from app.features.earthwork import lines as earthwork_lines
+    from app.features.earthwork.schemas import LineWrite
+    from app.features.project.models import Project
+    from app.features.takeoff.models import TakeoffItem
+
+    def line(region: str, role: str, name: str, qty: float, unit: str, **more: object) -> LineWrite:
+        return LineWrite(region_id=region, role=role, name=name, quantity=qty, unit=unit, **more)
+
+    grading = [line("qt:grade", "cut", "Cut", 1200.0, "BCY"), line("qt:grade", "fill", "Fill", 800.0, "CCY")]
+    others = [
+        line("layout:site", "layout_staking", "Construction layout, own crew: mass grading", 2.4, "HR", variant="own_crew"),
+        line("layout:utilities", "layout_staking", "Construction layout, own crew: 50 LF of pipe", 0.4, "HR", variant="own_crew"),
+        line("qt:trees", "tree_removal", "Tree removal, 12 in", 3.0, "EA", variant="count", size_in=12.0),
+        line("qt:trees", "stump_removal", "Stump removal, 12 in", 3.0, "EA", variant="count", size_in=12.0),
+        line("qt:clear", "clearing_haul", "Clearing debris, haul off", 40.0, "LCY", variant="clearing"),
+        line("util:storm", "utility_pipe", '24" RCP Wall B, 0-6 ft deep', 50.0, "LF", variant="rcp_c76_wall_b:24|1|0-6 ft", utility="storm", folder="utilities", run_lf=50.0),
+    ]
+    wrong: list[str] = []
+    async with SessionFactory() as session:
+        try:
+            project = await session.scalar(select(Project).where(Project.name == "zz MyEq project"))
+            sheet = await session.scalar(select(DrawingSheet).where(DrawingSheet.project_id == project.id)) if project else None
+            if project is None or sheet is None:
+                print("FAIL  rebuild: the throwaway project zz MyEq project (or its sheet) is missing")
+                return 1
+
+            async def live() -> set[tuple[str | None, str | None, str]]:
+                rows = await session.scalars(
+                    select(TakeoffItem).where(TakeoffItem.project_id == project.id, TakeoffItem.sheet_id == sheet.id, TakeoffItem.earthwork_role.is_not(None), TakeoffItem.earthwork_retired.is_(False))
+                )
+                return {(r.earthwork_role, r.earthwork_variant, r.name) for r in rows}
+
+            common = dict(project=project, sheet_id=sheet.id, layer_id=None, user_id=project.created_by_id)
+            await earthwork_lines.write_lines(project.workspace_id, session, lines=[*grading, *others], **common)
+            await session.flush()
+            calculated = await live()
+            await earthwork_lines.write_lines(project.workspace_id, session, lines=grading, keep_utilities=True, **common)
+            await session.flush()
+            rebuilt = await live()
+            if rebuilt != calculated:
+                wrong.append(f"FAIL  rebuild-keeps: lost {sorted(map(str, calculated - rebuilt))}, gained {sorted(map(str, rebuilt - calculated))}")
+            if len(calculated) < len(grading) + len(others):
+                wrong.append(f"FAIL  rebuild-calculate: {len(calculated)} lines written, expected {len(grading) + len(others)}")
+        finally:
+            await session.rollback()
+    for w in wrong:
+        print(w)
+    print(f"rebuild: {len(others)} kept lines, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 # D-1091: order-size tiers on the defaults, by hand. RCP 24 in at its bulk base $41.70: 120 LF Small x1.20 = 50.04;
 # 300 LF Standard x1.10 = 45.87; 800 LF Bulk 41.70. #57 stone $37.12: 6 t Small, one load short of the 10 t least
 # load, x1.10 x 10 / 6 = 68.05; 30 t, two loads, the last 8 t billed at 10, x1.10 x 32 / 30 = 43.55. Concrete
@@ -1081,8 +1142,12 @@ def orders() -> int:
     with rows_engine.connect() as conn:
         prod = [float(v) for (v,) in conn.execute(sql_text("SELECT prod_per_day FROM eqlib.ew_default WHERE activity_key = 'A18' ORDER BY qty_from")).all()]
         short = sorted(k for (k,) in conn.execute(sql_text("SELECT equip_key FROM eqlib.ew_tier_machine WHERE activity_key = 'A18' AND tier_no = 0")).all())
+        # D-1112 (release 44): the basis graded as its sources are; VDOT from a wiki copy and ADOT's storm rule at C.
+        basis = {b for (b,) in conn.execute(sql_text("SELECT DISTINCT basis FROM eqlib.ew_default WHERE activity_key IN ('A18', 'A19')")).all()}
     if prod != [180.0, 280.0, 340.0, 380.0, 400.0, 420.0] or short != ["BH-STD-14FT", "CP-PLATE-REV", "TRK-PU-8808"]:
         wrong.append(f"FAIL  release-43-a18: {prod} {short}, expected 180-420 LF a day and a backhoe loader's short-run kit")
+    if basis != {"D-1112: WSDOT B; VDOT wiki copy C; ADOT storm C, run length"}:
+        wrong.append(f"FAIL  release-44-basis: {basis}")
     # D-1095: a metro with no row for an occupation scales the state's by its construction ratio: Lake Havasu's
     # pipelayer, Arizona median 30.16 x 0.888 = 26.78 (the median of the metro's 47- occupations over the state's).
     from app.wagecalc.market import load_market
@@ -1120,6 +1185,10 @@ def main() -> None:
         import asyncio
 
         sys.exit(asyncio.run(hidden()))
+    if sys.argv[1:] == ["rebuild"]:
+        import asyncio
+
+        sys.exit(asyncio.run(rebuild()))
     if sys.argv[1:] == ["roles"]:
         sys.exit(roles())
     if sys.argv[1:] == ["wages"]:

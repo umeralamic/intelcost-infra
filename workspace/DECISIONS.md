@@ -28575,3 +28575,62 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
 - Purged with purge-bench-dups.py, storage failures 0: two Real bid B copies (4ff57379, aeaa490b; logs 032d0810,
   e648f121) and the Real bid A copy (469a8570, log adf8af57). Real bid B is out of COPY_SOURCES again (refusal
   checked); the throwaway workspace's example dump sites were set aside for the Real bid A measurement and restored.
+
+## D-1110: One Calculate settles the bid: a choice applied in the results panel keeps every line Calculate wrote
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- The cause of "the second Calculate moves the bid" (D-1109) was not Update rates nor a cached rate: a choice applied in
+  the results panel or the Calculate dialog's Apply (an undercut's liner, a method, proof roll: `applyChoices`, D-899)
+  rebuilds the sheet's lines from the stored volumes with the grading's lines alone, and the api's keep list for that
+  rebuild (utility, section and fine-grade rows) missed the construction layout lines (D-989) and a tree removal
+  Count's tree and stump lines (D-958). They were retired, with the layout's GPS base and rover and its crew, and the
+  next Calculate wrote them again. On Real bid B with site soil: labor $285.71 and equipment $799.33 short, $1,514.66
+  on the bid.
+- `REBUILD_KEEPS` (`earthwork/lines.py`): a rebuild keeps layout_staking, layout_allowance, tree_removal,
+  stump_removal and prep_fine_grade. A layout choice change still calculates in full (D-989).
+- Proof on a Real bid B copy: liner to imported clay $227,395.12, then Calculate $227,395.12; liner to site soil
+  $174,959.85, then Calculate $174,959.85 (before Update all). Fresh copies, Update rates and one Calculate: site soil
+  $173,301.45, imported clay $225,736.71, the settled figures.
+- Checked, no second Calculate needed: a wage set or location change (the wage set saved at Austin 78701:
+  $175,225.07 before and after Calculate); a dump-site distance change ($175,225.07 both; it did not reach this
+  project's disposal, so this one is not proven by it).
+- The quantity table's new `rebuild` row: on the throwaway "zz MyEq project", rolled back, a Calculate's full line set
+  then the panel's rebuild leaves all six kept lines live; with the old keep list it fails (both layout lines, the
+  tree and the stump lost), checked.
+
+## D-1111: Ductile iron PC 350 4 in from a utility supply bid
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- `pipe:di_c151_pc350:4` $41.51 (C, a ratio, D-1096) to $38.91 (A): Louisville Water Company bid 26-59, opened
+  2026-07-01, 4 in ductile iron, 700 LF, five bids $38.91-$39.90 (read from the award PDF). Migration da06b7c8d9e0.
+- It stays above the 6 in ($29.48, Leominster, B): a 4 in priced over the 6 in is the market's, a low-volume size
+  (Milwaukee bid 21478, 2026: 4 in over 6 in, from a search extract, the PDF refused). The sweep's size-order check
+  keeps its 288 flags, all the ductile iron 4 to 6 in step, now a sourced price, not a seed error.
+
+## D-1112: The pressure crews' sources graded as they are: starter release 44
+
+**Status:** Accepted (2026-11-10, run mode). Corrects D-1105's grades.
+
+- VDOT's base rates were read from a third-party wiki page (averaged from five states and a cost book): C, not B.
+  ADOT's per-run lead and lag is a storm drain rule: C for water. Michigan DOT was read from search extracts: unverified.
+  WSDOT stays B. The rates themselves are unchanged.
+- Release 44 (migration da07c8d9e0f1, seed `d1112_pressure_labels.json`; the downgrade restores release 43): A18 and
+  A19's production basis "D-1112: WSDOT B; VDOT wiki copy C; ADOT storm C, run length", tier sources saying no agency
+  states a water crew. The code's notes on `PRESSURE_SIZE_PACE` say the same.
+- Shown in the app: a pressure crew's hover now carries its production and source, and each line's pace with its
+  grades ("Pace x1.00 for its size and depth: size from WSDOT's water main rate (B), VDOT's read from a third-party
+  wiki copy (C) and Michigan DOT's (unverified ...); depth IntelCost's proposal (D)"). Before, a pipe crew showed no
+  source.
+
+## D-1113: The D-1110..D-1112 run ended
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- End totals after one Calculate (fresh copies; Update rates, Calculate, Update all): ST-1 $6,894.65; Real bid B site
+  soil $173,301.45, imported clay $225,736.71; Benchmark A $645,561.64; Real bid A at 10 mi on the Houston fallback
+  $463,934.53. ST-1 and Real bid B moved $0.07 and $0.10 from D-1109's: Update rates escalates wages to today, a day on.
+- Purged with purge-bench-dups.py, storage failures 0: three Real bid B copies (8e16c838, 1222112a, 4adef70f; logs
+  e8f52235, 1a88b41a, c166db35) and the Real bid A copy (0e418e31, log 8a3ad5c0). Real bid B out of COPY_SOURCES again
+  (refusal checked); the throwaway workspace's example dump sites set aside for Real bid A and restored.

@@ -56,8 +56,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1085 (B9b): 169 pipe keys the sweep found missing (13 B, 130 C, 26 D) and 18 in PVC sewer D to C.
 # D-1091: 110 pipe keys to their bulk base (supply contracts A and B, list prices / 1.10 D, the rest C).
 # D-1096: 76 water and sewer keys from utility supply bids (A5, B6; the list-price D rows gone), the rest C.
-if [ "$MAT_COUNTS" != "A171 B167 C430 D80 F32" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B167 C430 D80 F32"
+# D-1111: ductile iron PC 350 4 in from Louisville Water's supply bid, C to A.
+if [ "$MAT_COUNTS" != "A172 B167 C429 D80 F32" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A172 B167 C429 D80 F32"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -140,6 +141,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py on
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py parents" </dev/null || { echo "FAIL  parents (above)"; exit 1; }
+# One Calculate settles the bid (D-1110): a choice applied in the results panel keeps every line the Calculate wrote.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py rebuild" </dev/null || { echo "FAIL  rebuild (above)"; exit 1; }
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 STATUS="${PIPESTATUS[0]}"
 # Benchmark A (D-1028): the last check of its copy's export against the local expectations, outside
