@@ -905,7 +905,7 @@ def _m(uuid, act, kind, weight, hours, rates, need=None, pipe=False, may_pool=Tr
 
 _HOST50 = _m("EX-50T", 1, "hydraulic excavator", 106000.0, 210.08, _EX50)
 POOL_CASES = [
-    # McCabe's 3 BCY cut: a 20-25 t excavator, 0.06 h, onto the 45-55 t loading the export (same 27 days booked).
+    # Real bid A's 3 BCY cut: a 20-25 t excavator, 0.06 h, onto the 45-55 t loading the export (same 27 days booked).
     {"id": "pool-small-cut-onto-big", "machines": [_HOST50, _m("EX-20T", 2, "hydraulic excavator", 55000.0, 0.06, _EX20)],
      "expect": {"EX-20T": "EX-50T"}},
     # A pipe crew's 20 t excavator never onto the 45-55 t (over the 36-45 t cap), even when one sub does both.
