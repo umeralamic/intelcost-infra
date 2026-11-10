@@ -29112,3 +29112,30 @@ read-back to the places Qty x rate needs is no longer shown.
 - Real bid A copy, Calculate job under D-1136: Soil Import, Select Borrow gone; C16's cut fills C12-C13 (7,986.9 BCY
   excavated, 37.3 pushed); Soil Export 26,446.8 BCY (33,058.5 LCY), was 34,511.5 BCY under D-1132. Direct cost
   $967,036.84 to $780,727.97 (D-1139 tax 8.25 %: bid total $979,626.78 to $788,036.36).
+
+## D-1143: Real bid A's totals traced (measurement; nothing changed)
+
+**Status:** Measured (2026-11-10, founder's C, L and M), on a fresh throwaway copy (each step a line write of its own).
+
+- From D-1131's $783,100.89 to the earlier copy's $966,340.51, exactly: the source's lines now, copied (already struck
+  as a job, priced at the founder's free fill site) $771,541.71 (-$11,559.18, the source changed since); rebuilt in
+  the throwaway workspace, each sheet alone, $1,015,693.57 (+$244,151.86: its example dump sites at 15 mi, clean fill
+  $2.50 a LCY and topsoil $6.50, and the trucks to them, export +$174,494.35 and topsoil +$20,659.62; hydrated lime now
+  priced +$56,635.40, D-1135; select fill instead of common borrow on the import -$6,186.87, D-1135); D-1132 alone
+  +$1,095.52; the job under D-1132 -$0.05; less the lime and plus the common borrow (the copy was read before D-1135)
+  $966,340.51. The engine's own changes (D-1132, F39) moved it $1,095.47; the throwaway workspace's dump sites moved
+  it about $195,000.
+- K on the same copy, job under D-1132 to job under D-1136: -$236,734.01: Soil Import removed -$182,955.85; Soil
+  Export trucking -$79,355.06 and disposal -$25,203.80 (34,465 to 26,400 BCY); Cut to export -$14,400.05; the
+  on-site move added +$65,236.28; pool and rounding the rest. The earlier copy's $967,036.84 to $780,727.99 is this less
+  the lime it had not yet priced; $780,727.97 was read after the D-1142 pocket fix.
+- The on-site move, C16 to C12-C13, 8,009 BCY at $8.12 a BCY: loading $1.16 (the 45-55 t excavator, pooled with the
+  export's, 53.6 h added), haul $5.55 (30 t articulated trucks, 160 EH), crew $1.40 (4 operators). Spreading and
+  compacting is the C12 fill lines', priced before and after; the 8,009 BCY left Cut to export, so nothing is counted
+  twice. The haul has no distance in production (D-1134).
+- The fill spread (A3, 720 CCY a day: "kept in step with A1, 0.90 CCY per BCY", A1's 800 BCY a day; 90 CCY an hour
+  at 8 h): below its own tier's 850-1,300 CCY a day. D6 146.2 h (with strip topsoil pooled) of a 4-week booking
+  (160 h), $20,583.79, $140.76 an hour; D5 89.3 h of 160 (44 % idle), $14,553.82, $162.96 an hour; GPS kit 89.3 of
+  96 h, $5,252.51, $58.81; roller 133.2 of 160 h, $8,294.27, $62.26; water truck (0.5 unit) 44.7 EH, $5,687.94. Rates
+  W25 and C25 (2025-2026), grade A for the dozers and roller, B for the GPS kit and water truck. For the founder's
+  review; no rate or production changed.
