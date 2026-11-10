@@ -26,6 +26,7 @@ and rolled back in one transaction, every starter line role maps to the same act
 production and tier with its activity hidden as shown; it reads no stdin and prints one line.
 With `onsite`, small quantities on machines already on site (D-1040) through `equipment/on_site.py`:
 under and over the threshold, with and without a machine able to do the work; pure, one line.
+With `pool`, one equipment pool per job (D-1115) through `equipment/pool.py` and the leftover hour; pure, one line.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -886,6 +887,105 @@ def onsite() -> int:
     return 1 if wrong else 0
 
 
+# One equipment pool per job (D-1115): the api's `equipment/pool.py` and `production._leftover`. Machines by kind,
+# operating weight (lb), spread hours and rates; a needed machine pools into a host of its kind, equal or larger,
+# suitable (a pipe crew's excavator at most the 36-45 t class, earthwork only when one sub does both) and no dearer
+# than on its own. The 45-55 t rates are the release's (day 2,250, week 5,600, 4-week 14,000, mob 3,300).
+_EX50 = {"day": 2250.0, "week": 5600.0, "four_week": 14000.0, "owned": 174.5, "gph": 8.02, "mob": 3300.0}
+_EX20 = {"day": 950.0, "week": 2800.0, "four_week": 7000.0, "owned": 80.0, "gph": 4.5, "mob": 1100.0}
+_D5 = {"day": 1300.0, "week": 4210.0, "four_week": 11000.0, "owned": 110.0, "gph": 5.0, "mob": 1200.0}
+_D8 = {"day": 3200.0, "week": 9600.0, "four_week": 26000.0, "owned": 250.0, "gph": 12.0, "mob": 2600.0}
+_PIPE_CAP = 90000.0
+
+
+def _m(uuid, act, kind, weight, hours, rates, need=None, pipe=False, may_pool=True):  # type: ignore[no-untyped-def]
+    return {"uuid": uuid, "act": act, "kind": kind, "weight": weight, "hours": hours, "rates": rates,
+            "need": need or uuid, "pipe": pipe, "may_pool": may_pool}
+
+
+_HOST50 = _m("EX-50T", 1, "hydraulic excavator", 106000.0, 210.08, _EX50)
+POOL_CASES = [
+    # McCabe's 3 BCY cut: a 20-25 t excavator, 0.06 h, onto the 45-55 t loading the export (same 27 days booked).
+    {"id": "pool-small-cut-onto-big", "machines": [_HOST50, _m("EX-20T", 2, "hydraulic excavator", 55000.0, 0.06, _EX20)],
+     "expect": {"EX-20T": "EX-50T"}},
+    # A pipe crew's 20 t excavator never onto the 45-55 t (over the 36-45 t cap), even when one sub does both.
+    {"id": "pool-pipe-over-cap", "machines": [_HOST50, _m("PIPE-20T", 3, "hydraulic excavator", 55000.0, 7.0, _EX20, pipe=True)],
+     "with_earthwork": True, "expect": {}},
+    # Under the cap: onto the earthwork's 30-36 t when one sub does both; its own machine when not.
+    {"id": "pool-pipe-under-cap-one-sub", "machines": [_m("EX-30T", 1, "hydraulic excavator", 75000.0, 40.0, _EX20), _m("PIPE-20T", 3, "hydraulic excavator", 55000.0, 7.0, _EX20, pipe=True)],
+     "with_earthwork": True, "expect": {"PIPE-20T": "EX-30T"}},
+    {"id": "pool-pipe-two-subs", "machines": [_m("EX-30T", 1, "hydraulic excavator", 75000.0, 40.0, _EX20), _m("PIPE-20T", 3, "hydraulic excavator", 55000.0, 7.0, _EX20, pipe=True)],
+     "with_earthwork": False, "expect": {}},
+    # The biggest of a kind is planned first: the D5 on the job hosts the D3's 30 h, never the other way round
+    # (a smaller host is refused by `fits`, the row after the plan rows).
+    {"id": "pool-smaller-onto-larger", "machines": [_m("D3", 1, "crawler dozer", 22000.0, 30.0, _D5), _m("D5", 2, "crawler dozer", 40000.0, 3.0, _D5)],
+     "expect": {"D3": "D5"}},
+    # Another kind never: a roller is not a dozer.
+    {"id": "pool-other-kind", "machines": [_m("D8", 1, "crawler dozer", 80000.0, 100.0, _D8), _m("RL", 2, "single-drum vibratory roller", 20000.0, 3.0, _D5)],
+     "expect": {}},
+    # Not a pooled kind (a truck's fleet follows its cycle, D-1093): never planned.
+    {"id": "pool-truck-not-pooled", "machines": [_m("ADT-1", 1, None, 50000.0, 100.0, _D8), _m("ADT-2", 2, None, 50000.0, 4.0, _D8)],
+     "expect": {}},
+    # The cost guard: a D5's 30 h onto a D8 booked for exactly 4 weeks costs a week of the D8 (9,600) and its fuel,
+    # dearer than the D5's own week, fuel and delivery (4,210 + 1,200 + fuel): its own machine.
+    {"id": "pool-cost-guard", "machines": [_m("D8", 1, "crawler dozer", 80000.0, 160.0, _D8), _m("D5", 2, "crawler dozer", 40000.0, 30.0, _D5)],
+     "fuel": 3.5, "expect": {}},
+    # The same D5 onto a D8 with room in its booking (150 h of 160): pooled.
+    {"id": "pool-room-in-booking", "machines": [_m("D8", 1, "crawler dozer", 80000.0, 150.0, _D8), _m("D5", 2, "crawler dozer", 40000.0, 8.0, _D5)],
+     "fuel": 3.5, "expect": {"D5": "D8"}},
+    # The clearing's shared spread (D-972) is a host only.
+    {"id": "pool-clearing-host-only", "machines": [_HOST50, _m("CLR-20T", 4, "hydraulic excavator", 55000.0, 6.0, _EX20, may_pool=False)],
+     "expect": {}},
+    # The same line twice on one spread is never its own host; two spreads of one class: the one with more hours hosts.
+    {"id": "pool-same-class-more-hours", "machines": [_m("A", 1, "crawler dozer", 40000.0, 5.0, _D5, need="DZ-D5"), _m("B", 2, "crawler dozer", 40000.0, 36.0, _D5, need="DZ-D5")],
+     "expect": {"A": "B"}},
+]
+# The cheapest days, weeks and 4-weeks covering the hours (8 h days, 5-day weeks, 20-day 4-weeks), on the 45-55 t.
+POOL_RENTALS = [(0.0, 0.0), (0.06, 2250.0), (8.0, 2250.0), (8.01, 4500.0), (40.0, 5600.0), (48.0, 7850.0),
+                (160.0, 14000.0), (210.08, 24100.0), (210.14, 24100.0)]
+# The leftover hour (D-1115 item 3): a pooled pacing machine and the spread's work under an hour at its production.
+POOL_LEFTOVERS = [
+    {"id": "leftover-3bcy", "qty": 3.0, "prod": 4000.0, "pooled": [0], "expect": True},
+    {"id": "leftover-1000bcy", "qty": 1000.0, "prod": 4000.0, "pooled": [0], "expect": False},
+    {"id": "leftover-not-pooled", "qty": 3.0, "prod": 4000.0, "pooled": [], "expect": False},
+    {"id": "leftover-only-a-truck-pooled", "qty": 3.0, "prod": 4000.0, "pooled": [1], "expect": False},
+]
+
+
+def pooled() -> int:
+    from app.features.equipment import pool, production
+
+    wrong = []
+    for c in POOL_CASES:
+        ms = [pool.Machine(uuid=m["uuid"], activity_id=m["act"], position=0, need_key=m["need"], kind=m["kind"],
+                           weight=m["weight"], hours=m["hours"], pipe=m["pipe"], mode="rental",
+                           rates=pool.Rates(**m["rates"]), may_pool=m["may_pool"]) for m in c["machines"]]
+        got = pool.plan(ms, _PIPE_CAP, c.get("with_earthwork", True), c.get("fuel", 0.0)).host
+        if got != c["expect"]:
+            wrong.append(f"FAIL  {c['id']}: {got!r}, expected {c['expect']!r}")
+    small = pool.Machine(uuid="D3", activity_id=1, position=0, need_key="D3", kind="crawler dozer", weight=22000.0,
+                         hours=30.0, pipe=False, mode="rental", rates=pool.Rates(**_D5))
+    big = pool.Machine(uuid="D5", activity_id=2, position=0, need_key="D5", kind="crawler dozer", weight=40000.0,
+                       hours=3.0, pipe=False, mode="rental", rates=pool.Rates(**_D5))
+    if pool.fits(big, small, _PIPE_CAP, True):
+        wrong.append("FAIL  pool-fits-smaller-host: a D3 hosts a D5's work")
+    for hours, want in POOL_RENTALS:
+        got_r = pool.rental(hours, pool.Rates(**{k: _EX50[k] for k in ("day", "week", "four_week")}))
+        if got_r is None or abs(got_r - want) > 0.005:
+            wrong.append(f"FAIL  pool-rental-{hours}h: {got_r!r}, expected {want!r}")
+    tier = SimpleNamespace(machines=[{"paces": True}, {"paces": False}])
+    act = SimpleNamespace(hours_per_day=8)
+    for c in POOL_LEFTOVERS:
+        got_l = production._leftover(act, tier, [(None, c["qty"], None)], {i: None for i in c["pooled"]}, c["prod"])  # type: ignore[arg-type]
+        if got_l != c["expect"]:
+            wrong.append(f"FAIL  {c['id']}: {got_l!r}, expected {c['expect']!r}")
+    for w in wrong:
+        print(w)
+    n = len(POOL_CASES) + 1 + len(POOL_RENTALS) + len(POOL_LEFTOVERS)
+    print(f"equipment pool: {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 # Quantities a line of each role is priced at (the starter's ranges: small, mid and large jobs).
 HIDDEN_QTYS = (500.0, 10000.0, 250000.0)
 
@@ -1001,11 +1101,14 @@ async def parents() -> int:
 
 
 async def rebuild() -> int:
-    """D-1110: one Calculate settles the bid. A Calculate's full line set, then the rebuild a choice applied in the
-    results panel writes (the grading's lines alone, D-899), must leave every line the Calculate wrote live: the
-    construction layout, a tree removal Count's tree and stump, a section's clearing, a utility run. Before D-1110
-    the rebuild retired the layout and the trees and the next Calculate wrote them again, so the bid moved on the
-    second Calculate ($1,514.66 on Real bid B with site soil). On the throwaway "zz MyEq project", rolled back."""
+    """D-1110, D-1114: one Calculate settles the bid. The rebuild a choice applied in the results panel writes (the
+    grading's lines alone, D-899) deletes only the lines the grading built (D-1114: each line carries its builder).
+    For every choice that rebuilds (each method, both liner materials, proof roll, undercut), a Calculate's full line
+    set, then the rebuild to another choice, must equal a full Calculate of that choice line for line. The lines
+    other builders wrote (the construction layout, a tree removal Count's tree and stump, a section's clearing, a
+    utility run) and a line no builder tagged must stay live. Before D-1110 the rebuild retired the layout and the
+    trees ($1,514.66 on Real bid B with site soil); before D-1114 an allow-list kept the roles it named and retired an
+    untagged line. On the throwaway "zz MyEq project", rolled back."""
     from sqlalchemy import select
 
     from app.database import SessionFactory
@@ -1018,16 +1121,33 @@ async def rebuild() -> int:
     def line(region: str, role: str, name: str, qty: float, unit: str, **more: object) -> LineWrite:
         return LineWrite(region_id=region, role=role, name=name, quantity=qty, unit=unit, **more)
 
-    grading = [line("qt:grade", "cut", "Cut", 1200.0, "BCY"), line("qt:grade", "fill", "Fill", 800.0, "CCY")]
+    def grade(*rows: tuple[str, ...] | tuple[str, str, float, str, str]) -> list[LineWrite]:
+        return [line("qt:grade", r[0], r[1], r[2], r[3], variant=r[4] if len(r) > 4 else None, builder="grading") for r in rows]
+
+    excavator = (("cut", "Cut", 1200.0, "BCY"), ("fill", "Fill", 800.0, "CCY"), ("cut_export", "Cut to export", 400.0, "BCY"))
+    choices = {
+        "method-excavator": grade(*excavator),
+        "method-dozer-push": grade(("cut_push", "Cut, dozer push", 1200.0, "BCY"), ("fill_push", "Fill, dozer push", 800.0, "CCY"), ("cut_export", "Cut to export", 400.0, "BCY")),
+        "method-scraper": grade(("cut_scraper", "Cut, scraper", 1200.0, "BCY"), ("fill_scraper", "Fill, scraper", 800.0, "CCY"), ("cut_export", "Cut to export", 400.0, "BCY")),
+        "liner-site": grade(*excavator, ("replacement_fill", "Clay liner, site soil", 1019.0, "CCY", "liner:site"), ("liner_testing", "Liner testing", 1.0, "LS")),
+        "liner-import": grade(*excavator, ("replacement_fill", "Clay liner, imported", 1019.0, "CCY", "liner:import"), ("soil_import", "Import clay", 1100.0, "LCY"), ("liner_testing", "Liner testing", 1.0, "LS")),
+        "proof-roll": grade(*excavator, ("proof_roll", "Proof roll", 2.0, "ACRE")),
+        "undercut": grade(*excavator, ("undercut_haul", "Undercut, haul off", 90.0, "BCY"), ("undercut_replace", "Undercut, replace", 90.0, "CCY")),
+    }
     others = [
-        line("layout:site", "layout_staking", "Construction layout, own crew: mass grading", 2.4, "HR", variant="own_crew"),
-        line("layout:utilities", "layout_staking", "Construction layout, own crew: 50 LF of pipe", 0.4, "HR", variant="own_crew"),
-        line("qt:trees", "tree_removal", "Tree removal, 12 in", 3.0, "EA", variant="count", size_in=12.0),
-        line("qt:trees", "stump_removal", "Stump removal, 12 in", 3.0, "EA", variant="count", size_in=12.0),
-        line("qt:clear", "clearing_haul", "Clearing debris, haul off", 40.0, "LCY", variant="clearing"),
-        line("util:storm", "utility_pipe", '24" RCP Wall B, 0-6 ft deep', 50.0, "LF", variant="rcp_c76_wall_b:24|1|0-6 ft", utility="storm", folder="utilities", run_lf=50.0),
+        line("layout:site", "layout_staking", "Construction layout, own crew: mass grading", 2.4, "HR", variant="own_crew", builder="layout"),
+        line("layout:utilities", "layout_staking", "Construction layout, own crew: 50 LF of pipe", 0.4, "HR", variant="own_crew", builder="layout"),
+        line("qt:trees", "tree_removal", "Tree removal, 12 in", 3.0, "EA", variant="count", size_in=12.0, builder="section"),
+        line("qt:trees", "stump_removal", "Stump removal, 12 in", 3.0, "EA", variant="count", size_in=12.0, builder="section"),
+        line("qt:clear", "clearing_haul", "Clearing debris, haul off", 40.0, "LCY", variant="clearing", builder="clearing"),
+        line("util:storm", "utility_pipe", '24" RCP Wall B, 0-6 ft deep', 50.0, "LF", variant="rcp_c76_wall_b:24|1|0-6 ft", utility="storm", folder="utilities", run_lf=50.0, builder="utilities"),
+        # A water main: D-1110's keep list left pressure and fused pipe off, so a rebuild retired it.
+        line("util:water", "utility_pipe_pressure", '8" DI PC 350, 4 ft cover', 120.0, "LF", variant="di_c151_pc350:8|1|0-6 ft", utility="water", folder="utilities", run_lf=120.0, builder="utilities"),
+        # A line no builder tagged (a line written before D-1114, here a site feature's silt fence): not the grading's.
+        line("qt:other", "line_silt_fence", "Silt fence, no builder tagged", 300.0, "LF"),
     ]
     wrong: list[str] = []
+    rows = 0
     async with SessionFactory() as session:
         try:
             project = await session.scalar(select(Project).where(Project.name == "zz MyEq project"))
@@ -1035,29 +1155,51 @@ async def rebuild() -> int:
             if project is None or sheet is None:
                 print("FAIL  rebuild: the throwaway project zz MyEq project (or its sheet) is missing")
                 return 1
+            pid, sid, wid = project.id, sheet.id, project.workspace_id
 
-            async def live() -> set[tuple[str | None, str | None, str]]:
-                rows = await session.scalars(
-                    select(TakeoffItem).where(TakeoffItem.project_id == project.id, TakeoffItem.sheet_id == sheet.id, TakeoffItem.earthwork_role.is_not(None), TakeoffItem.earthwork_retired.is_(False))
+            async def live() -> set[tuple[str | None, str | None, str, float]]:
+                found = await session.scalars(
+                    select(TakeoffItem).where(TakeoffItem.project_id == pid, TakeoffItem.sheet_id == sid, TakeoffItem.earthwork_role.is_not(None), TakeoffItem.earthwork_retired.is_(False))
                 )
-                return {(r.earthwork_role, r.earthwork_variant, r.name) for r in rows}
+                return {(r.earthwork_role, r.earthwork_variant, r.name, round(float(r.calculated_quantity or 0), 4)) for r in found}
 
-            common = dict(project=project, sheet_id=sheet.id, layer_id=None, user_id=project.created_by_id)
-            await earthwork_lines.write_lines(project.workspace_id, session, lines=[*grading, *others], **common)
-            await session.flush()
-            calculated = await live()
-            await earthwork_lines.write_lines(project.workspace_id, session, lines=grading, keep_utilities=True, **common)
-            await session.flush()
-            rebuilt = await live()
-            if rebuilt != calculated:
-                wrong.append(f"FAIL  rebuild-keeps: lost {sorted(map(str, calculated - rebuilt))}, gained {sorted(map(str, rebuilt - calculated))}")
-            if len(calculated) < len(grading) + len(others):
-                wrong.append(f"FAIL  rebuild-calculate: {len(calculated)} lines written, expected {len(grading) + len(others)}")
+            uid = project.created_by_id
+
+            async def calculate(lines: list[LineWrite], keep: bool = False) -> None:
+                await earthwork_lines.write_lines(wid, session, project=project, sheet_id=sid, layer_id=None, user_id=uid, lines=lines, keep_utilities=keep)
+                await session.flush()
+
+            async def undo(nested) -> None:  # type: ignore[no-untyped-def]
+                await nested.rollback()
+                await session.refresh(project)
+
+            # Each choice's full Calculate, once, in a savepoint rolled back.
+            full: dict[str, set[tuple[str | None, str | None, str, float]]] = {}
+            for name, grading in choices.items():
+                nested = await session.begin_nested()
+                await calculate([*grading, *others])
+                full[name] = await live()
+                await undo(nested)
+                if len(full[name]) != len(grading) + len(others):
+                    wrong.append(f"FAIL  rebuild-calculate-{name}: {len(full[name])} lines written, expected {len(grading) + len(others)}")
+            # The base choice's Calculate, then the rebuild to each other choice and back, one after another (a write
+            # here is about 30 s): each rebuild equals the full Calculate of the choice it rebuilt to.
+            base = next(iter(choices))
+            nested = await session.begin_nested()
+            await calculate([*choices[base], *others])
+            for other in list(choices)[1:]:
+                for end in (other, base):
+                    await calculate(choices[end], keep=True)
+                    rebuilt = await live()
+                    rows += 1
+                    if rebuilt != full[end]:
+                        wrong.append(f"FAIL  rebuild-to-{end} (via {other}): lost {sorted(map(str, full[end] - rebuilt))}, kept {sorted(map(str, rebuilt - full[end]))}")
+            await undo(nested)
         finally:
             await session.rollback()
     for w in wrong:
         print(w)
-    print(f"rebuild: {len(others)} kept lines, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"rebuild: {len(choices)} choices, {rows} rebuilds against a full Calculate, {len(others)} other lines, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 
@@ -1201,6 +1343,8 @@ def main() -> None:
         sys.exit(typed())
     if sys.argv[1:] == ["onsite"]:
         sys.exit(onsite())
+    if sys.argv[1:] == ["pool"]:
+        sys.exit(pooled())
     cases = json.load(sys.stdin)
     if sys.argv[1:] == ["scaleundo"]:
         import asyncio

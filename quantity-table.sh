@@ -137,6 +137,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py un
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py typed" </dev/null || { echo "FAIL  site typed values (above)"; exit 1; }
 # Small quantities on machines already on site (D-1040, release 38): under and over the threshold, with and without a machine.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py onsite" </dev/null || { echo "FAIL  machines on site (above)"; exit 1; }
+# One equipment pool per job (D-1115): kind, size, the pipe cap, one sub, the cost guard, hosts only, rental periods, the leftover hour.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py pool" </dev/null || { echo "FAIL  equipment pool (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.
