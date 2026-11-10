@@ -28750,3 +28750,105 @@ one-sub rule and D-1040's machines-on-site lines, now pooled.
   / 400 BCY export grading job on a throwaway copy, the job saves $6.61-9.79/LF of pipe at 300 LF and $2.02-3.41/LF at
   1,000 LF. The item alone prices the same with the pool on or off (checked: water C900 8 in 1,000 LF, RCP 24 in 300 LF).
   The figures are in the run's report; no tab figure is kept in a repo.
+
+## D-1119: Ductile iron 12 in rebased by each source's own order size; the sizes and classes priced from it follow
+
+**Status:** Accepted (2026-11-10, run mode). Migration da0ba2b3c4d5 (Q4 2026 release; the downgrade restores every
+figure, checked).
+
+- The 12 in PC350 base ($61.09, D-1096) was the mean of two bids read as bulk: City of Leominster MA, Ductile Pipe &
+  Related Equipment FY2026, June 2025, Class 52, $68.68, low of 4, 3,000 LF; Louisville Water KY Bid 26-59, July
+  2026, class not stated, $53.49, low of 5, 260 LF. By D-1091's tiers (rigid pipe Bulk from 600 LF, Standard 160-599 LF
+  x1.10, Small x1.20) Leominster is a Bulk order, its price the base as bid; Louisville's is a Standard order, backed
+  out to $48.63. New base: the mean, $58.66 (grade B).
+- The other sizes on those sources: 4 in (Louisville, 700 LF, Bulk) $38.91, 6 in (Leominster, 3,000 LF) $29.48, 8 in
+  (Leominster, 3,000 LF) $41.59: each already a bulk base, unchanged. The sizes priced by the 12 in's bulk-to-library
+  ratio move with it: 10 in $49.63 to $48.69 (8 and 12 in ratios, now 1.107), 14 in $79.82 to $76.64, 16 in $98.72 to
+  $94.79, 18 in $115.98 to $111.37, 20 in $135.67 to $130.28, 24 in $181.54 to $174.32, 30 in $297.91 to $286.06, 36 in
+  $407.68 to $391.47 (ratio 1.099 to 1.055).
+- Found: the lighter classes (D-1085) were each a share of an older PC350 anchor (q4_2026.csv), so after D-1096 PC300
+  priced above PC350 at 14-24 in (14 in $80.94 against $79.82). Each keeps its D-1085 share, now of the PC350 as it
+  stands: PC300 14-24 in $74.46, $89.87, $105.90, $124.22, $163.55; PC250 $70.09, $84.93, $97.67, $115.09, $152.75; PC200
+  24 in $138.31. Every size orders PC200 < PC250 < PC300 < PC350.
+- The 12 in against Louisville's own tab: $58.66 is 9.7 % over its low ($53.49) and 9.3 % over the second ($53.66); at
+  that tab's 260 LF the Standard tier prices $64.53. What is left is Leominster's Class 52 a year earlier.
+
+## D-1120: The size-order flags by material and step; the seed errors fixed, the rest a trench's geometry
+
+**Status:** Accepted (2026-11-10, run mode). Migration da0cb3c4d5e6 (Q4 2026 release; the downgrade restores them).
+
+- D-1116's 460 were the whole sweep's 844 flags less D-1111's 384 on ductile iron: 96 "missing price" (HDPE dual wall
+  4 in has no price) and 364 "$/LF falls as size rises". On today's data the sweep (35,532 rows) has 96 missing and
+  254 size-order flags; every one is in the material, none in labor or machines.
+- Seed errors, fixed (grade C, the old figure in the source): CMP 14 ga 42 in $91.19 above the 48 in $75.70 (40
+  flags) and CMP 12 ga 42 in $115.33 above the 48 in $105.56 (38): national averages over different agencies at each
+  size; at one gauge and corrugation a foot of 42 in has less steel than a foot of 48 in (AASHTO M36), so each is now
+  between its sourced 36 and 48 in by diameter, $69.93 and $93.47. HDPE dual wall 10 in $7.25 and 8 in $4.94 above or
+  near the 12 in $6.77 (72 flags): the 8 and 10 in came from one 2025 Texas tab, the 12 in from an annual term (grade
+  A); now between the 6 in and the 12 in by diameter, $4.10 and $5.43.
+- Not seed errors, listed (each the pipe dearer, the purchased backfill less): under paving the cement-stabilized sand
+  fills the box's width less the pipe, so in one box a larger pipe buys less of it: HDPE 30 to 36 in (8), CMP 16 and 18 ga
+  36 to 42 in (8), CMP 12 ga 60 to 66 in (12), conduit 3/4 to 1 in (16); at 4 ft a CMP 18 in's zone reaches the paving
+  cap and buys none (8, 15 to 18 in). CMP 90 to 96 in (52): no box in the list fits a 96 in pipe (10 ft inside the
+  largest), so its trench is drawn at the pipe's width, narrower than the 90 in's box: a gap in the box list, logged, not
+  fixed. HDPE dual wall 4 in has no price (96): no sourced figure; listed.
+- After the fixes the sweep has 116 size-order flags (from 254), all of the two kinds above: 64 the purchased backfill
+  in one box width (the HDPE 8 to 10 in and CMP 14 ga 36 to 42 in steps now among them, their pipe rising) and 52 the
+  96 in CMP's missing box. Plus the 96 missing-price flags.
+- No other size step is excused; D-1111's ductile iron 4 to 6 in stays the one exception.
+
+## D-1121: The pool's borrow-or-own weighing on the machine's hover; the pool weighs fuel at the price the line pays
+
+**Status:** Accepted (2026-11-10, run mode). Keeps D-1115's rule (a bigger machine is borrowed only when that costs no
+more than the needed machine's own).
+
+- Each machine the pool found a suitable host for carries the weighing on its snapshot (`pool_choice`): the host, the
+  hours added, borrowing's rental extension past the host's booking and its fuel, and its own machine's rental (or
+  owned hours), fuel and delivery and pickup, and which won. The Estimating row's hover: "Borrowed $0.87 (0.06 h added:
+  rental extension $0.00, fuel $0.87) against its own machine $2,140.87 (rental $1,040.00, fuel $0.87, delivery and
+  pickup $1,100.00)", or "Own machine $… against borrowing <host> $…". Figures as the pool priced them: catalog rental
+  periods, regional owned rates, no location factor.
+- Found and fixed: the pool weighed fuel only at a typed fuel price; a project on the EIA week's price (no price typed)
+  weighed no fuel. It now reads the price the line pays: typed, else the EIA off-road price for the project's state.
+- Quantity table `pool`: two new rows, the cost guard's and the room-in-booking case's weighing by hand (27 rows).
+
+## D-1122: Hours under one show two decimals; production one decimal
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- A component's EH or MH under one shows two decimals in Estimating (0.06 EH, not 0); the shared machine's label and
+  the pool's hover the same ("0.06 EH", one decimal from one hour: "17.6 EH").
+- A production per day shows one decimal: the spread panel's field and capacity, the company spreads' field, the line
+  notes ("Production 141.2 LF/day", the pace, the loader and field-rate notes), the production-updated notes. The
+  figure a field shows, typed back, changes nothing (the stored value keeps its digits).
+
+## D-1123: A cheaper dump site than the bid uses is said in Estimating; only the button reprices
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Each material's dump-site state says which site its disposal lines are priced at now (`priced_uuid`,
+  `priced_name`, read from the fee components' basis; none on the library's fallback; a site deleted since keeps its
+  name). When today's pick differs, Estimating shows a notice under the wage strip: "Clean soil: bid uses Clean fill
+  site (example); zz Test clean fill (D-1123) is now $132,985.77 cheaper", or "bid uses the library's fallback fee;
+  <site> is now the cheapest site", with "Price again with today's sites". Nothing is priced without the button.
+- Checked on a Real bid A copy: its fees on the library's fallback (as its source has them) showed the notice for
+  clean soil, topsoil and vegetation, the bid $483,739.65; the button priced the example sites ($665,623.81) and the
+  notice went. A cheaper clean-soil site added ($2.00/LCY, 8 mi) brought it back with the saving, the bid unchanged;
+  the site was removed after.
+
+## D-1124: The D-1118..D-1123 run ended
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- ST-1 (Real bid B, 24 in RCP Wall B, 50 LF) is one line measured at two steps. On a fresh copy, pool off: Calculate
+  $7,964.80; Update rates (wages $42.11 to $42.97/MH) $7,989.31, the last report's "before"; Update all (the copy's stored
+  RCP price, $68.08/LF at Small x1.20, to the Q4 2026 library's $49.41) $6,891.32, D-1113's $6,894.65 less $3.33 (not
+  traced). Pool on, one Calculate: $5,628.69 (its 30-36 t excavator pooled, 7.1 h added).
+- End totals, pool on, one Calculate (fresh copies; Update rates; Update all): Real bid B site soil $162,613.82, ST-1
+  $5,628.69; imported clay $218,188.10, ST-1 $6,797.72 (both as D-1117). Real bid A at 10 mi on the fallback (sites set
+  aside, hauls repriced) $484,485.83, and with the example sites priced by the notice's button (Benchmark A) $666,369.99:
+  the founder's Real bid A changed after D-1117's copy (a "Compact subgrade, surface compaction only" line, created
+  2026-11-10 04:26 UTC, $26,003.26 on the copy), so these are not comparable with D-1117's $449,759.08 and $631,292.75.
+- Purged with purge-bench-dups.py, storage failures 0: 7a29b31e, ea660354, daa5a279, 323fabd3, 740e1701, d035d152 (logs
+  3b62d2a9, 74a7f296, ba4adb84, e913983d, e90d366c, e4fc5566). Real bid B out of COPY_SOURCES again (refusal checked);
+  the throwaway workspace's example dump sites set aside for the 10 mi figure and restored; the test dump site removed.
