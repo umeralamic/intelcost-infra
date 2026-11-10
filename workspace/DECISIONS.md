@@ -28875,3 +28875,59 @@ more than the needed machine's own).
   job". Soil moved between sheets is priced as ordinary on-site cut to fill (the giving sheet's Cut, the receiving
   sheet's Fill), no haul line between areas. The job's Soil Export and Import lines sit on its first sheet, naming
   every member.
+
+## D-1127: Real bid A's rise after D-1117 is the owner's edits; the engine moved it $0
+
+**Status:** Accepted (2026-11-10, run mode). Measurement.
+
+- Against D-1117's copy (the source as it stood before 04:00 UTC), the 10:19 copy's lines, pool on, after Update
+  rates and Update all: new lines the owner added (the Compact subgrade line $26,003.26, created 04:26 UTC; the
+  erosion control blanket $5,366.19 and staples $297.44, 04:26), the site grown (clearing 3.18 to 3.29 ac and its
+  trees, strip 2,567 to 2,656 BCY and its haul off, a second layout line for the access drive: +$3,133.31), and the
+  pool's sharing with the new lines' machines (Cut to export -$65.73, Fill 3 CCY -$17.99): owner edits. Lines of the
+  last run not read at their final rates leave $39 unexplained (rates cents).
+- The engine between D-1117 and the measurement: only D-1121 could move Real bid A (it has no pipe, so D-1119, D-1120
+  do not apply); its pool planned both ways on one copy gave the same 11 pooled machines and hosts: $0.
+- The owner kept editing after the measurement (a stitched site C12-C13 with lime stabilization, slab, import of
+  8,036 BCY select borrow, 11:42-13:51 UTC); today's source is $783,100.89 as stored.
+
+## D-1128: No trench box in the list fits the pipe: a slide rail to 24 ft, sloped walls deeper, the line flagged
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- A run that takes a box (limited width, or a box chosen) where the project's list has boxes but none wide enough
+  (a 96 in pipe: the largest is 10 ft inside) was drawn at the pipe's own width, narrower than the 90 in's box. Now: to
+  24 ft deep a slide-rail system (4-post systems run to about that depth), its panels 6 in a side outside the pipe's
+  width, priced as the box line; deeper, sloped walls. The line says which ("No trench box in the list fits this
+  pipe: slide rail assumed …", "… deeper than a slide rail's 24 ft: sloped walls …").
+  `lib/takeoff/earthwork/utilities/quantities.ts` (`boxNoFit`), `trench.ts`, `calculate.ts`.
+- The sweep's 52 CMP 90 to 96 in flags cleared (the 96 in trench 11.18 ft, the 90 in's box 10.67 ft).
+
+## D-1129: HDPE dual wall 4 in from a supply bid; 6, 8, 10 in by that bid's size ratios; D-1120's HDPE call corrected
+
+**Status:** Accepted (2026-11-10, run mode). Migration da0dc4d5e6f7 (the downgrade restores D-1120's figures).
+
+- Source: City of Tulsa OK TAC 1196A, Corrugated PP & HDPE Pipe and Fittings, bid 2023-05-25, ADS N-12 ST IB, 100 ft
+  each, four bidders. 4 in $1.94, $2.23, $2.00, $2.01, median $2.005; 100 ft of plastic pipe is a Small order
+  (under 400 LF, x1.20, D-1091): base $1.67, grade B (one tab, four bids, 2023). The 96 missing-price flags cleared.
+- The same tab prices its 10 in above its 12 in ($9.77-$11.48 against $8.08-$9.16) with the same bidders: a 10 in
+  above a 12 in is the market's, not a seed error. D-1120 had set the 10 in to $5.43 and the 8 in to $4.10 between the
+  6 and 12 in; now each of 6, 8 and 10 in is the 12 in base ($6.77, grade A) times this tab's ratio to its own 12 in:
+  $3.06, $5.47, $7.99 (grade C). The HDPE 8 to 10 in and 10 to 12 in size-order flags (80) are listed as the market's.
+
+## D-1130: Bid tabs rebuilt as whole contracts (measurement, nothing recalibrated); the size-order flags left
+
+**Status:** Accepted (2026-11-10, run mode). Measurement only; figures in docs/reference (outside git).
+
+- 19 Houston LJA contracts in the comparison set; none has a mobilization or move-in item (it is in each unit price).
+  Utilities on each: water, sanitary and storm on 15, paving on 11 (each tab's own). Quantities read on 63 of 91
+  comparison items; 9 tabs' text is scrambled (quantities only where its pages agree).
+- 10 contracts rebuilt as one throwaway estimate each (every mapped pipe item at its bid quantity, the pool on within
+  the contract, nothing else on the job): pipe totals against each tab's median bidder (prevailing labour at the tab's
+  bid-date WD, ECI to today) from -16 % to +11 %; by item, storm RCP median +15 % (46 items), sanitary PVC -12 % (33),
+  water C900 -3 % (27), DI -11 % (3), HDPE storm +29 % (3).
+- Found: a pipe crew's site spread prices every line of its activity at one production, so an 8 in sewer at 26 ft
+  prices as at 6.5 ft (-40 % on the deep tab items, over on the shallow ones). Not changed (measurement item).
+- The size-order check compares each row's total installed cost per LF (material, labour, machines). After D-1128
+  and D-1129: 136 flags, all "$/LF falls as size rises" and all in the material: 80 HDPE 8 to 10 to 12 in (market,
+  D-1129) and 56 the purchased backfill in one box width (D-1120). No missing prices.
