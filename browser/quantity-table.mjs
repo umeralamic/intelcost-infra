@@ -1092,6 +1092,8 @@ try {
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const job = await import("/src/lib/takeoff/earthwork/job.ts");
+    const linesFor = await import("/src/features/takeoff/earthwork/linesFor.ts");
+    const jobBalance = await import("/src/features/takeoff/earthwork/jobBalance.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
     const { siteFigures } = await import("/src/lib/takeoff/earthwork/volume/pockets.ts");
@@ -1493,7 +1495,9 @@ try {
           return { members: r.members.join(" "), anchor: r.anchor, leftOut: r.leftOut.map((o) => job.overlapText(o)).join(" | "), unchecked: r.unchecked.join(" "), separate: r.separate.join(" ") };
         }
         if (c.between) return { distanceFt: Math.round(job.areaDistanceFt(c.between[0], c.between[1]) * 1e6) / 1e6 };
-        const r = job.jobLines(c.members);
+        // D-1132: a row with the project's assumptions takes "native cut fills the fill" from them, as Calculate does.
+        const members = c.assume ? c.members.map((m) => ({ ...m, inputs: { ...m.inputs, assumptions: { ...m.inputs.assumptions, suitable: linesFor.nativeFills(c.assume), choices: c.assume.site_choices } } })) : c.members;
+        const r = job.jobLines(members);
         const out = {};
         for (const [k, ls] of r.byMember) for (const l of ls) out[`${k}:${l.role}:${l.regionId}`] = Math.round(l.quantity * 1e6) / 1e6;
         for (const l of r.job) out[`job:${l.role}:${l.variant ?? ""}`] = Math.round(l.quantity * 1e6) / 1e6;
@@ -1502,6 +1506,26 @@ try {
           const today = ln.earthworkLines(c.members[0].inputs).map(key).sort();
           out.same = JSON.stringify(today) === JSON.stringify([...r.byMember.get(c.members[0].key), ...r.job].map(key).sort());
         }
+        return out;
+      }
+      // 6e (D-1133): Calculate of one sheet strikes the job from the others' stored results, a stale one named; Calculate
+      // job calculates it and settles the bid; a second changes nothing. The app's own planJob, on stored results.
+      if (c.kind === "jobstale") {
+        const stored = (key, cut, fill) => ({ ok: true, units: "CY", cutCY: cut, fillCY: fill, netCY: cut - fill, regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], coverage: 1, warnings: [], strip: null });
+        const row = (key, result, stale) => ({ key, kind: "sheet", label: key, result, choice: null, stale });
+        const A = stored("A", c.a.cut, c.a.fill);
+        const steps = [
+          [row("A", A, false), row("B", stored("B", 0, c.b.before), true)],
+          [row("A", A, false), row("B", stored("B", 0, c.b.after), false)],
+          [row("A", A, false), row("B", stored("B", 0, c.b.after), false)],
+        ];
+        const plans = steps.map((rows) => jobBalance.planJob(rows, c.assume));
+        const out = {};
+        plans.slice(0, 2).forEach((p, i) => {
+          out[`${i + 1}:stale`] = p.stale.map((r) => r.label).join(" ");
+          for (const [k, ls] of p.lines) for (const l of ls) out[`${i + 1}:${k}:${l.role}:${l.region_id}`] = Math.round(l.quantity * 1e6) / 1e6;
+        });
+        out["3:same"] = JSON.stringify([...plans[1].lines]) === JSON.stringify([...plans[2].lines]);
         return out;
       }
       if (c.kind === "lines") {

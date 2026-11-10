@@ -54,6 +54,36 @@ export const JOB_CASES = [
   { id: "job-overlap-unregistered", kind: "job", places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: null }], expect: { members: "c3 c4", leftOut: "", unchecked: "c4" } },
   // Anchor (D-1131 c): the first member marked Separate job, the job's lines go to the next.
   { id: "job-anchor-moves", kind: "job", places: [{ key: "c1", label: "C-1", boundary: null, separate: true }, { key: "c2", label: "C-2", boundary: null }, { key: "c3", label: "C-3", boundary: null }], expect: { members: "c2 c3", anchor: "c2", separate: "c1" } },
+  // D-1132: only fill that takes native soil joins the balance. A exports 1,000 BCY of native cut; B has 600 CCY of fill.
+  // The project's fill Select Borrow (an import): no offset, A exports 1,250 LCY and B imports 660 BCY, 825 LCY.
+  // Engineered Fill: offsets as the spec's first row. Select Borrow with "native soil meets it": offsets too.
+  { id: "job-select-borrow-no-offset", kind: "job", assume: { native_suitable: "layers", fill_type: "Select Borrow", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null }, members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 1000, "A:cut:padA": undefined, "B:fill:padB": 600, "job:soil_export:": 1250, "job:soil_import:": 825 } },
+  { id: "job-general-fill-offsets", kind: "job", assume: { native_suitable: "layers", fill_type: "Engineered Fill", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null }, members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "job:soil_export:": 425, "job:soil_import:": undefined } },
+  { id: "job-select-borrow-native-meets", kind: "job", assume: { native_suitable: "layers", fill_type: "Select Borrow", swell_factor: 1.25, shrink_factor: 1.1, site_choices: { native_meets_fill: true } }, members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "job:soil_export:": 425, "job:soil_import:": undefined } },
+  // One sheet follows the same rule (D-1132): 1,000 BCY cut, 300 CCY fill, Select Borrow: all cut leaves, all fill in.
+  { id: "sheet-select-borrow-no-offset", kind: "job", assume: { native_suitable: "layers", fill_type: "Select Borrow", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null }, members: [jobSheet("A", 1000, 300)], expect: { "A:cut_export:padA": 1000, "job:soil_export:": 1250, "job:soil_import:": 412.5 } },
+  // 6e (D-1133): B's drawing edited (fill 600 -> 800 CCY), A calculated alone: B is named stale and the job prices B's
+  // last result (660 BCY of A's cut to B, 340 exported, 425 LCY). Calculate job: B calculated, the job settles (880 to
+  // B, 120 BCY out, 150 LCY). A second Calculate job writes the same lines.
+  {
+    id: "job-stale-calculate-job",
+    kind: "jobstale",
+    assume: { native_suitable: "layers", fill_type: "Engineered Fill", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null },
+    a: { cut: 1000, fill: 0 },
+    b: { before: 600, after: 800 },
+    expect: { "1:stale": "B", "1:A:cut_export:padA": 340, "1:A:soil_export:__soil_export__": 425, "1:B:fill:padB": 600, "2:stale": "", "2:A:cut:padA": 880, "2:A:cut_export:padA": 120, "2:A:soil_export:__soil_export__": 150, "2:B:fill:padB": 800, "3:same": true },
+  },
+  // One item drawn on two sheets (D-1133): its region on A cuts 1,000 BCY, on B fills 600 CCY; each sheet keeps its own
+  // share under the item's id, as two regions would.
+  {
+    id: "job-shared-region-id",
+    kind: "job",
+    members: [
+      { key: "A", label: "A", inputs: { units: "CY", regions: [{ id: "padX", label: "Pad X", cutCY: 1000, fillCY: 0 }], assumptions: JOB_A } },
+      { key: "B", label: "B", inputs: { units: "CY", regions: [{ id: "padX", label: "Pad X", cutCY: 0, fillCY: 600 }], assumptions: JOB_A } },
+    ],
+    expect: { "A:cut_export:padX": 340, "A:cut:padX": 660, "B:fill:padX": 600, "B:cut:padX": undefined, "job:soil_export:": 425 },
+  },
   // Distance between areas (D-1131 b): two 100 ft boundaries 2,000 ft apart, centroid to centroid.
   { id: "job-distance-2000ft", kind: "job", between: [SQ(0, 0), SQ(2000, 0)], expect: { distanceFt: 2000 } },
 ];
