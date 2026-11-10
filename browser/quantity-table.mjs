@@ -1692,6 +1692,7 @@ try {
     const ov = await import("/src/lib/takeoff/earthwork/utilities/overlaps.ts");
     const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
     const um = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
+    const utr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -1768,6 +1769,11 @@ try {
       if (c.kind === "embedment") {
         const d = um.embedmentDefault(c.type, c.catalogKey, c.settings ?? {});
         return { bedding: d?.bedding ? um.ZONE_CHOICES[d.bedding].name : "project's", zone: d?.zone ? um.ZONE_CHOICES[d.zone].name : "project's" };
+      }
+      // D-1106: a pressure main's own section and its default cover when no depth is typed.
+      if (c.kind === "pressure-section") {
+        const sec = utr.sectionFor(c.type, { sideClearanceIn: 12, minWidthIn: 24, ...(c.settings ?? {}) });
+        return { section: [sec.sideClearanceIn, sec.minWidthIn], cover: utr.defaultCoverFt(c.type, c.settings ?? {}), vertical: rd.defaultRun(c.type).vertical };
       }
       if (c.kind === "newrun") {
         // D-628: a run drawn from existing grade, then a new run from the box: its "Trench from"

@@ -1055,9 +1055,34 @@ def orders() -> int:
         ("rcp_c76_wall_b:24|1|0-6 ft", True, 0.55),
         ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.249333),
     ):
-        got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant), default), 6)
+        got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant, earthwork_crew=None), default), 6)
         if got != want:
             wrong.append(f"FAIL  site-condition-{variant}-{default}: {got}, expected {want}")
+    # D-1105: a pressure main's pace by its own size and depth tables, never the storm drain's. 8 in PVC at 0-6 ft the
+    # crew's rate; 12 in at 6-8 ft 0.97 x 0.85; ductile iron 12 in 0.34 (Michigan DOT, VDOT); 24 in 0.19; 30 in PVC
+    # 0.53 (no 0.68 large-pipe pace); 8 in at 12-14 ft urban 0.55 x 0.55; fused 8 in at 8-10 ft 0.7.
+    for variant, crew, want in (
+        ("pvc_c900_dr18:8|1|0-6 ft", "pressure", 1.0),
+        ("pvc_c900_dr18:12|1|6-8 ft", "pressure", 0.8245),
+        ("di_c151_pc350:12|1|0-6 ft", "pressure", 0.34),
+        ("di_c151_pc350:24|1|0-6 ft", "pressure", 0.19),
+        ("pvc_c900_dr18:30|1|0-6 ft", "pressure", 0.53),
+        ("pvc_c900_dr18:8|1|12-14 ft|urban", "pressure", 0.3025),
+        ("hdpe_ips_dr11:8|1|8-10 ft", "fused", 0.7),
+    ):
+        got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant, earthwork_crew=crew), False), 6)
+        if got != want:
+            wrong.append(f"FAIL  pressure-pace-{variant}: {got}, expected {want}")
+    # D-1105: release 43's pressure kits: A18's production by run length (10 h day) and its short-run backhoe.
+    from sqlalchemy import text as sql_text
+
+    from app.database import sync_engine as rows_engine
+
+    with rows_engine.connect() as conn:
+        prod = [float(v) for (v,) in conn.execute(sql_text("SELECT prod_per_day FROM eqlib.ew_default WHERE activity_key = 'A18' ORDER BY qty_from")).all()]
+        short = sorted(k for (k,) in conn.execute(sql_text("SELECT equip_key FROM eqlib.ew_tier_machine WHERE activity_key = 'A18' AND tier_no = 0")).all())
+    if prod != [180.0, 280.0, 340.0, 380.0, 400.0, 420.0] or short != ["BH-STD-14FT", "CP-PLATE-REV", "TRK-PU-8808"]:
+        wrong.append(f"FAIL  release-43-a18: {prod} {short}, expected 180-420 LF a day and a backhoe loader's short-run kit")
     # D-1095: a metro with no row for an occupation scales the state's by its construction ratio: Lake Havasu's
     # pipelayer, Arizona median 30.16 x 0.888 = 26.78 (the median of the metro's 47- occupations over the state's).
     from app.wagecalc.market import load_market

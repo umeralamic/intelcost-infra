@@ -60,6 +60,7 @@ COPY_SOURCES: dict[str, str] = {
     # removed at their end; back for the utility pricing round 2 (D-1091) and removed at its end (D-1092).
     # Back for the D-1093..D-1098 run's measurements and removed at its end (D-1099).
     # Back for the D-1100..D-1104 run's end totals and removed at its end (D-1104).
+    # Back for the D-1105..D-1108 run's end totals and removed at its end (D-1109).
 }
 """Projects the copier alone may read, for one copy, named as `copy-3d-test.py --source <uuid>`.
 Every other drive, and every write, is refused as before."""

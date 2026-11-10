@@ -233,6 +233,15 @@ export const UTILITY_CASES = [
   { id: "util-1101-gas-pe-project", kind: "embedment", type: "gas", catalogKey: "hdpe_ips_dr11:4", expect: { bedding: "project's", zone: "project's" } },
   { id: "util-1101-rcp-project", kind: "embedment", type: "storm", catalogKey: "rcp_c76_wall_b:24", expect: { bedding: "project's", zone: "project's" } },
   { id: "util-1101-flexible-project", kind: "embedment", type: "storm", catalogKey: "hdpe_f2648_dual_wall:24", settings: { flexibleEmbedment: "project", companyEmbedment: { pressure: "sand", flexible: "stone" } }, expect: { bedding: "project's", zone: "project's" } },
+  // D-1108: PVC sewer keeps #57 stone; the project's "cement-stabilized sand" (a local spec) takes it for bedding and zone.
+  { id: "util-1108-pvc-sewer-css", kind: "embedment", type: "sanitary", catalogKey: "pvc_d3034_sdr26:8", settings: { flexibleEmbedment: "css" }, expect: { bedding: "Cement-stabilized sand", zone: "Cement-stabilized sand" } },
+  { id: "util-1108-company-css", kind: "embedment", type: "sanitary", catalogKey: "pvc_d3034_sdr26:8", settings: { companyEmbedment: { pressure: "sand", flexible: "css" } }, expect: { bedding: "Cement-stabilized sand", zone: "Cement-stabilized sand" } },
+  // D-1106: water, fire water and force main dig 6 in a side and 18 in at least (OD + 12 in), lie at 4 ft cover with no
+  // depth typed (the company's over it) and start by their cover; storm keeps 12 in and 24 in and starts by its inverts.
+  { id: "util-1106-water-section", kind: "pressure-section", type: "water", expect: { section: [6, 18], cover: 4, vertical: "cover" } },
+  { id: "util-1106-force-main-company-cover", kind: "pressure-section", type: "force_main", settings: { companyPressureCoverFt: 5 }, expect: { section: [6, 18], cover: 5, vertical: "cover" } },
+  { id: "util-1106-fire-project-trench", kind: "pressure-section", type: "fire_water", settings: { pressureSideClearanceIn: 9, pressureMinWidthIn: 24 }, expect: { section: [9, 24], cover: 4, vertical: "cover" } },
+  { id: "util-1106-storm-keeps", kind: "pressure-section", type: "storm", expect: { section: [12, 24], cover: null, vertical: "inverts" } },
   { id: "util-628-new-run-from-proposed", kind: "newrun", type: "storm", catalogKey: "pvc_d3034_sdr35:12", nominalIn: 12, coverFt: 3, beddingIn: 6, groundFt: { existing: 100, proposed: 98 },
     expect: { lastFrom: "existing", newFrom: "proposed", newGroundFt: 98, newTrenchBottomFt: 93.46, carried: "storm pvc_d3034_sdr35:12 12" } },
   {

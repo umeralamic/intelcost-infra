@@ -28505,3 +28505,73 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
   a8a2ac05) and the Real bid A copy (60801252, log e2c859f8). Real bid B is out of COPY_SOURCES again (refusal
   checked). The throwaway workspace's example dump sites were set aside for the fallback measurement and restored.
   SAM.gov's earlier WDs read for D-1103 are cached in `wd_sam_document`, as any lookup caches them.
+
+## D-1105: The pressure crews (A18, A19) on their own kits and production: starter release 43
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Before: water, fire water and force main ran on release 42's pipe-crew pattern, the storm drain's: a 20 t excavator
+  (sized to 13-15 t for small pipe), a skid steer on short runs and a 1-2 yd loader beyond, a plate and a pickup; foreman,
+  pipelayer, one then two laborers and the machines' operators; 115-455 LF a 10 h day, TxDOT 0-4416-1's RCP model x 1.6.
+- Release 43 (migration da05a6b7c8d9, seed `equipment/seed/d1105_pressure_kits.json`; the downgrade restores release
+  42's rows, checked): a backhoe loader (BH-STD-14FT) under 200 LF a day, a 13-15 t excavator from 200; a lead
+  (foreman), a pipelayer, one laborer then two, the machine's operator; a plate and a pickup riding with the crew; A19
+  keeps its fuser. One machine digs, beds and backfills: no loader. A pacing backhoe gives way to the sized excavator past
+  the 13-15 t row (larger pipe or a deeper trench).
+- Production, 8 in PVC at 4-5 ft cover, long run: 320 LF an 8 h day (VDOT base rates, 12 in PVC 320 in a 4-5 ft trench;
+  WSDOT M 22-31 App. 6 water main 100-800, normal 300; both B), 400 on the crews' 10 h day; by run length after VDOT's
+  quantity factor (small 0.75, medium 0.88, large 1.0) and ADOT's per-run lead and lag (B): 180, 280, 340, 380, 400 and
+  420 LF a 10 h day for under 100, 100-249, 250-499, 500-999, 1,000-2,499 and 2,500+ LF (the last 1.05, IntelCost D).
+- By size (`pressure_pace`, separate from the storm drain's 0.68 large-pipe pace): plastic 1.06 to 6 in, 1.0 8 in, 0.98
+  10, 0.97 12 (VDOT, WSDOT), 0.75 16, 0.62 20, 0.53 beyond (Michigan DOT's gradient, B); ductile iron 0.63, 0.52, 0.43,
+  0.34, 0.27, 0.22, 0.19 (Michigan DOT's mechanical-joint water main 200 / 110 / 60 LF a day at 6 / 12 / 24 in, VDOT
+  12 in DI 105; B). By the trench band's deep end: to 6 ft 1.0, to 8 ft 0.85, to 12 ft 0.7, beyond 0.55 (IntelCost's
+  proposal, D: the agencies only say depth slows the work). Urban 0.55 on top (D-1097).
+- No agency publishes a pressure crew, a depth table or an 8 in row; HDPE fused takes the PVC table and the fusion check
+  (D-914). The sweep (every pressure size, depth and length): $/LF never rises with run length. The ductile iron 4 in
+  price is above the 6 in (a seed error of D-1096), the one size-order flag, before and after.
+
+## D-1106: A pressure main's own trench and its default cover
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Water, fire water and force main dig 6 in each side of the pipe and 18 in at least (a typical utility spec's OD + 12 in,
+  C), where gravity sewer keeps 12 in and 24 in: 8 in C900 a 24 in bucket for 36 in. The project's Utility settings can
+  set its own ("Pressure main trench"). `sectionFor` in `lib/takeoff/earthwork/utilities/trench.ts`, used by Calculate and
+  the run panel's width.
+- A pressure run with no depth typed lies at the company's cover, library setting `pressure_cover_ft` (default 4 ft), and
+  says so ("No depth typed: laid at 4 ft cover (Library settings)"); a new pressure run starts by its cover with the
+  default as the field's hint. 8 in at 4 ft cover is a 5.25 ft trench: sloped 1:1 in Type B (OSHA from 5 ft), no box.
+- Checked: a water run takes no trench box unless limited width or the box is chosen; no wide bucket (above); no stone
+  (D-1100).
+
+## D-1107: Houston water and force main, prevailing, after D-1105 and D-1106
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Against the Houston tabs as D-1103 prices them (prevailing, bid-date WDs, ECI to today), at 4 ft cover: at 1,000 LF
+  C900 8", C900 12" and force main 6" are in the band (0 %, -2 %, -3 % against the bid); at 300 LF they stay 13-16 % over
+  the bid. Labor, equipment and embedment each fell; the pipe is now most of each item (about 60-85 % of the direct
+  cost), and at 300 LF its small-order tier. The figures are in the run's report; no tab figure is kept in a repo.
+
+## D-1108: PVC sewer keeps #57 stone; a local spec's cement-stabilized sand by setting
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Sanitary and storm flexible pipe keep #57 stone through the zone (ASTM D2321, D-1101). The project's "Flexible gravity
+  pipe" setting and the company's `flexible_embedment_project` gain a third choice, cement-stabilized sand for bedding and
+  zone (2), for a local spec that requires it (Houston 02317 style).
+
+## D-1109: The D-1105..D-1108 run ended
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- End totals on fresh copies (Update rates, Calculate, Update all, Calculate): ST-1 $6,894.58; Real bid B site soil
+  $173,301.35, imported clay $225,736.61; Benchmark A $645,561.64; Real bid A at 10 mi on the Houston fallback
+  $463,934.53. None moved (none of them has a pressure run).
+- Found, not fixed: on a fresh copy, the first Calculate after Update rates left Real bid B (site soil) $1,514.66 short
+  (labor $285.71, equipment $799.33, with their markups); a second Calculate settles it. The ductile iron PC350 4 in price
+  ($41.51) is above the 6 in ($29.48), a D-1096 seed error.
+- Purged with purge-bench-dups.py, storage failures 0: two Real bid B copies (4ff57379, aeaa490b; logs 032d0810,
+  e648f121) and the Real bid A copy (469a8570, log adf8af57). Real bid B is out of COPY_SOURCES again (refusal
+  checked); the throwaway workspace's example dump sites were set aside for the Real bid A measurement and restored.
