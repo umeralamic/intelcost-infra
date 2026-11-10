@@ -28731,3 +28731,22 @@ one-sub rule and D-1040's machines-on-site lines, now pooled.
 - Purged with purge-bench-dups.py, storage failures 0: 35efad4c, 0ceb981a, b782d3ff, adfdb9f5, 5b0cc82c (logs
   774af822, cbd661fe, a867b7ef, 5b0dc480, 5f68bcb6). Real bid B out of COPY_SOURCES again (refusal checked); the
   throwaway workspace's example dump sites restored.
+
+## D-1118: "Share equipment across the job" on the estimate; bid-tab comparisons price each item alone, pool off, its own machines
+
+**Status:** Accepted (2026-11-10, run mode). Amends D-1103.
+
+- The job's equipment pool (D-1115, setting `equipment_pool`) is a switch in the estimate's Equipment settings, "Share
+  equipment across the job", on by default, with its source (library, company, this estimate), a revert, and one line:
+  bid-tab comparisons need it off, since a tab's unit price carries that bidder's own machines and mobilization. A change
+  applies at the next Calculate (said under the switch). The company default stays on Settings › Equipment library.
+- Every comparison against a public bid tab (D-1103) prices the item alone, the pool off, each machine its own rental
+  and delivery (like for like). Found: the D-1091..D-1107 comparisons priced the pipe crew's big machines on the
+  earlier same-sub rule (the site's machine, no delivery of its own). With the pool off that rule still applies on a job
+  with earthwork, so the pool off alone is not like for like; the item alone is.
+- Rerun, Houston tabs as D-1103 prices them: on the earlier basis every delta is unchanged (figures within $0.01-0.03/LF,
+  no percentage moved). On the like-for-like basis the 300 LF items rise $6-13/LF (the own delivery spread over a short
+  run); at 1,000 LF they move -$1.45 to +$1.14/LF. For information, with the pool on beside a 1,200 BCY cut / 800 CCY fill
+  / 400 BCY export grading job on a throwaway copy, the job saves $6.61-9.79/LF of pipe at 300 LF and $2.02-3.41/LF at
+  1,000 LF. The item alone prices the same with the pool on or off (checked: water C900 8 in 1,000 LF, RCP 24 in 300 LF).
+  The figures are in the run's report; no tab figure is kept in a repo.
