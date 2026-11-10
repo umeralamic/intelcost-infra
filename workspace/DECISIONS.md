@@ -28089,7 +28089,7 @@ panels, like report").
     on some tiers: now a 40 t. The sweep's "machine shrinks with size or depth" went 428 to 0.
   - **Fixed, the short-run crew's foreman** (D-971's pending item): A28 and A32 tier 0 gain one (OSHA 1926.651(k): a
     competent person inspects an open trench daily). Release 41; every company's copy (Intelcost Team, zz Quantity
-    table, zz McCabe plan 1106, zz Benchmark A copy 1107 and 1107b).
+    table, zz Real bid A plan 1106, zz Benchmark A copy 1107 and 1107b).
   - **Explained, not changed:** 4 in ductile iron dearer per foot than 6 in (7 sources), 21 in CMP than 24 in and 42 in
     12/14 ga than 48 in (the corrugation changes), 10 in dual wall than 12 in (one source): odd-size premiums. A paved
     run's larger pipe can cost less per foot where its price step is small (it displaces imported cement-stabilized
@@ -28936,8 +28936,8 @@ more than the needed machine's own).
 
 **Status:** Accepted (2026-11-10, run mode). Engine built and in the quantity table; wiring not yet built.
 
-- Read only first: of the bench's projects, one has more than one graded member without a stitch: Real bid A
-  (McCabe): sheet C16 (the original grading, 34,347 BCY to export) and the stitched site C12-C13 (the owner's work of
+- Read only first: of the bench's projects, one has more than one graded member without a stitch: Real bid A:
+  sheet C16 (the original grading, 34,347 BCY to export) and the stitched site C12-C13 (the owner's work of
   2026-11-10: warehouse pad, access drive, lime-stabilized subgrade, 8,036 BCY of select borrow imported). Its total as
   stored: $783,100.89. No sheet of it is registered in real coordinates, so its overlap is not checked (6a).
 - Engine (`lib/takeoff/earthwork/job.ts`, data in, data out): `jobLines` strikes one balance over every member's
@@ -28970,18 +28970,18 @@ more than the needed machine's own).
   estimator ticks "Native soil meets <fill type>" in Calculate (site choice `native_meets_fill`). Engineered and
   structural fill take the site's suitable soil as before. A Site Feature's replacement fill and an imported liner were
   already their own purchase.
-- The single-sheet balance did not follow it: McCabe's C16 filled its 3 CCY of fill from its cut with Select Borrow as
+- The single-sheet balance did not follow it: Real bid A's C16 filled its 3 CCY of fill from its cut with Select Borrow as
   the fill type. Fixed in the one place the line inputs are made (`nativeFills`, `linesFor.ts`; the site view reads it
-  too). Projects with Select Borrow on the bench: McCabe, the Hidden Valley 3D test and its copies, Hidden Valley Spec
-  Building Rebid, Marketing Demo, zz MyEq project; Valmont and Benchmark A are Engineered Fill (no change).
-- McCabe: C16's export and C12's select-borrow import both remain in the job.
+  too). Projects with Select Borrow on the bench: Real bid A, the Hidden Valley 3D test and its copies, Hidden Valley Spec
+  Building Rebid, Marketing Demo, zz MyEq project; Real bid B and Benchmark A are Engineered Fill (no change).
+- Real bid A: C16's export and C12's select-borrow import both remain in the job.
 - Quantity table: Select Borrow, two sheets, no offset (A exports 1,250 LCY, B imports 825 LCY); Engineered Fill offsets
   (340 BCY / 425 LCY exported, no import); Select Borrow with native soil meeting it offsets; one sheet, Select Borrow,
   no offset (1,250 LCY out, 412.5 LCY in).
 
 ## D-1133: F39 wired: per-member settings, the job write, Calculate re-striking the job, Calculate job, the stale badge
 
-**Status:** Accepted (2026-11-10, run mode). Built, gated and smoked on a McCabe copy.
+**Status:** Accepted (2026-11-10, run mode). Built, gated and smoked on a Real bid A copy.
 
 - Per member: `job_choice` on `earthwork_result` and `earthwork_site_result` (null, "separate", "include"; migration
   `da0ed5e6f708`), `PUT .../earthwork/result/{sheet}/job` and `PUT .../site/{site}/result/job`. A result row reads
@@ -29001,13 +29001,13 @@ more than the needed machine's own).
   stale, it strikes the job from the stored results. Export asks while a member is stale: "C13 changed since its last
   Calculate — Calculate job first?" (Cancel, Export as it is, Calculate job). The job's Soil Export and Import carry
   "Needs recalculating" while a member is stale.
-- Found on the copy: one item drawn on two sheets (McCabe's access drive, region 9b7d049d on C12 and C13) gave both
+- Found on the copy: one item drawn on two sheets (Real bid A's access drive, region 9b7d049d on C12 and C13) gave both
   members the same region id, and C12's 4,180 CCY of fill was written on C13's line. Fixed in `jobLineInputs`: an id an
   earlier member already brought is `<id>@<key>` on the later one, and comes back to its own id on its own sheet.
 - Quantity table: `job-shared-region-id` (A cuts 1,000 BCY and B fills 600 CCY under one id: 340 / 660 / 600, 425 LCY
   out) and `job-stale-calculate-job` (6e: B edited 600 to 800 CCY, A calculated alone: B named stale, the job prices B's
   600; Calculate job: 880 BCY to B, 120 out, 150 LCY; a second Calculate job writes the same lines).
-- McCabe copy (C12, C13, C16; Select Borrow, D-1132): C16's 34,349.8 BCY all exported and C12-C13's 8,064.9 BCY of
+- Real bid A copy (C12, C13, C16; Select Borrow, D-1132): C16's 34,349.8 BCY all exported and C12-C13's 8,064.9 BCY of
   select borrow imported, both on the job's lines on C12 (34,464.8 BCY out, 43,081 LCY). C13's subgrade 6 to 8 in made
   it stale; Calculate job calculated it alone (its cut to export 111.4 to 158.2 BCY; the job 34,511.5 BCY out); a second
   Calculate job changed no line. C16 marked Separate job: its own 34,349.8 BCY out and 2.9 BCY in, the job's C12-C13
