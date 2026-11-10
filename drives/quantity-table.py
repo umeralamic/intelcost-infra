@@ -940,6 +940,15 @@ POOL_CASES = [
     {"id": "pool-same-class-more-hours", "machines": [_m("A", 1, "crawler dozer", 40000.0, 5.0, _D5, need="DZ-D5"), _m("B", 2, "crawler dozer", 40000.0, 36.0, _D5, need="DZ-D5")],
      "expect": {"A": "B"}},
 ]
+# D-1121: the borrow-or-own weighing each machine with a suitable host carries, by hand. The cost guard: the D8's 160 h
+# are 20 days, one 4-week (26,000); with the D5's 30 h, 190 h are 24 days, a 4-week and a week (35,600): extension
+# 9,600, fuel 12 x 3.5 x 30 = 1,260, borrow 10,860. The D5's own: 30 h are 4 days, a week (4,210), fuel 5 x 3.5 x 30
+# = 525, delivery and pickup 1,200: 5,935, its own machine. Room in the booking: 150 h and 158 h are 19 and 20 days,
+# both the 4-week (26,000): extension 0, fuel 12 x 3.5 x 8 = 336; its own a day (1,300), fuel 140, 1,200: 2,640.
+POOL_CHOICES = [
+    ("pool-cost-guard", "D5", {"host": "D8", "extension": 9600.0, "borrow_fuel": 1260.0, "rental": 4210.0, "own_fuel": 525.0, "mob": 1200.0, "borrowed": False}),
+    ("pool-room-in-booking", "D5", {"host": "D8", "extension": 0.0, "borrow_fuel": 336.0, "rental": 1300.0, "own_fuel": 140.0, "mob": 1200.0, "borrowed": True}),
+]
 # The cheapest days, weeks and 4-weeks covering the hours (8 h days, 5-day weeks, 20-day 4-weeks), on the 45-55 t.
 POOL_RENTALS = [(0.0, 0.0), (0.06, 2250.0), (8.0, 2250.0), (8.01, 4500.0), (40.0, 5600.0), (48.0, 7850.0),
                 (160.0, 14000.0), (210.08, 24100.0), (210.14, 24100.0)]
@@ -956,13 +965,20 @@ def pooled() -> int:
     from app.features.equipment import pool, production
 
     wrong = []
+    plans = {}
     for c in POOL_CASES:
         ms = [pool.Machine(uuid=m["uuid"], activity_id=m["act"], position=0, need_key=m["need"], kind=m["kind"],
                            weight=m["weight"], hours=m["hours"], pipe=m["pipe"], mode="rental",
                            rates=pool.Rates(**m["rates"]), may_pool=m["may_pool"]) for m in c["machines"]]
-        got = pool.plan(ms, _PIPE_CAP, c.get("with_earthwork", True), c.get("fuel", 0.0)).host
+        plans[c["id"]] = pool.plan(ms, _PIPE_CAP, c.get("with_earthwork", True), c.get("fuel", 0.0))
+        got = plans[c["id"]].host
         if got != c["expect"]:
             wrong.append(f"FAIL  {c['id']}: {got!r}, expected {c['expect']!r}")
+    for case, uuid, want_c in POOL_CHOICES:
+        ch = plans[case].choice.get(uuid)
+        got_c = None if ch is None else {k: getattr(ch, k) for k in want_c}
+        if got_c is None or any(abs(got_c[k] - v) > 0.005 if isinstance(v, float) else got_c[k] != v for k, v in want_c.items()):
+            wrong.append(f"FAIL  {case}-choice: {got_c!r}, expected {want_c!r}")
     small = pool.Machine(uuid="D3", activity_id=1, position=0, need_key="D3", kind="crawler dozer", weight=22000.0,
                          hours=30.0, pipe=False, mode="rental", rates=pool.Rates(**_D5))
     big = pool.Machine(uuid="D5", activity_id=2, position=0, need_key="D5", kind="crawler dozer", weight=40000.0,
@@ -981,7 +997,7 @@ def pooled() -> int:
             wrong.append(f"FAIL  {c['id']}: {got_l!r}, expected {c['expect']!r}")
     for w in wrong:
         print(w)
-    n = len(POOL_CASES) + 1 + len(POOL_RENTALS) + len(POOL_LEFTOVERS)
+    n = len(POOL_CASES) + len(POOL_CHOICES) + 1 + len(POOL_RENTALS) + len(POOL_LEFTOVERS)
     print(f"equipment pool: {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
