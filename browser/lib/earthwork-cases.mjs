@@ -54,14 +54,15 @@ export const JOB_CASES = [
   { id: "job-overlap-unregistered", kind: "job", places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: null }], expect: { members: "c3 c4", leftOut: "", unchecked: "c4" } },
   // Anchor (D-1131 c): the first member marked Separate job, the job's lines go to the next.
   { id: "job-anchor-moves", kind: "job", places: [{ key: "c1", label: "C-1", boundary: null, separate: true }, { key: "c2", label: "C-2", boundary: null }, { key: "c3", label: "C-3", boundary: null }], expect: { members: "c2 c3", anchor: "c2", separate: "c1" } },
-  // D-1132: only fill that takes native soil joins the balance. A exports 1,000 BCY of native cut; B has 600 CCY of fill.
-  // The project's fill Select Borrow (an import): no offset, A exports 1,250 LCY and B imports 660 BCY, 825 LCY.
-  // Engineered Fill: offsets as the spec's first row. Select Borrow with "native soil meets it": offsets too.
-  { id: "job-select-borrow-no-offset", kind: "job", assume: { native_suitable: "layers", fill_type: "Select Borrow", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null }, members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 1000, "A:cut:padA": undefined, "B:fill:padB": 600, "job:soil_export:": 1250, "job:soil_import:": 825 } },
-  { id: "job-general-fill-offsets", kind: "job", assume: { native_suitable: "layers", fill_type: "Engineered Fill", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null }, members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "job:soil_export:": 425, "job:soil_import:": undefined } },
-  { id: "job-select-borrow-native-meets", kind: "job", assume: { native_suitable: "layers", fill_type: "Select Borrow", swell_factor: 1.25, shrink_factor: 1.1, site_choices: { native_meets_fill: true } }, members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "job:soil_export:": 425, "job:soil_import:": undefined } },
-  // One sheet follows the same rule (D-1132): 1,000 BCY cut, 300 CCY fill, Select Borrow: all cut leaves, all fill in.
-  { id: "sheet-select-borrow-no-offset", kind: "job", assume: { native_suitable: "layers", fill_type: "Select Borrow", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null }, members: [jobSheet("A", 1000, 300)], expect: { "A:cut_export:padA": 1000, "job:soil_export:": 1250, "job:soil_import:": 412.5 } },
+  // D-1136 (D-1132 reverted): the import material is only the shortfall after cut fills fill. Native Yes: A's 34,000 BCY
+  // surplus fills B's 8,000 at shrink 1.0, 26,000 BCY (32,500 LCY) out, no import. B's region ticked Specified import:
+  // B buys its own 8,000 BCY (10,000 LCY) of select borrow on B, A exports all 34,000. Native No: all out, all in.
+  { id: "job-native-yes-offsets", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: null}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut:padA": 8000, "A:cut_export:padA": 26000, "B:fill:padB": 8000, "job:soil_export:": 32500, "job:soil_import:": undefined } },
+  { id: "job-specified-import", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: {specified_import: {padB: "Select Borrow"}}}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut_export:padA": 34000, "A:cut:padA": undefined, "B:fill:padB": 8000, "B:soil_import:padB": 10000, "job:soil_export:": 42500, "job:soil_import:": undefined } },
+  { id: "job-native-no", kind: "job", assume: {native_suitable: "none",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: null}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut_export:padA": 34000, "job:soil_export:": 42500, "job:soil_import:": 10000 } },
+  // One sheet, Select Borrow named as the import, native Yes: its cut fills its fill (1,000 BCY cut, 300 CCY fill at 1.1:
+  // 670 BCY, 837.5 LCY out, no import).
+  { id: "sheet-select-borrow-offsets", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1.1,site_choices: null}, members: [jobSheet("A", 1000, 300)], expect: { "A:cut_export:padA": 670, "job:soil_export:": 837.5, "job:soil_import:": undefined } },
   // 6e (D-1133): B's drawing edited (fill 600 -> 800 CCY), A calculated alone: B is named stale and the job prices B's
   // last result (660 BCY of A's cut to B, 340 exported, 425 LCY). Calculate job: B calculated, the job settles (880 to
   // B, 120 BCY out, 150 LCY). A second Calculate job writes the same lines.
@@ -72,6 +73,33 @@ export const JOB_CASES = [
     a: { cut: 1000, fill: 0 },
     b: { before: 600, after: 800 },
     expect: { "1:stale": "B", "1:A:cut_export:padA": 340, "1:A:soil_export:__soil_export__": 425, "1:B:fill:padB": 600, "2:stale": "", "2:A:cut:padA": 880, "2:A:cut_export:padA": 120, "2:A:soil_export:__soil_export__": 150, "2:B:fill:padB": 800, "3:same": true },
+  },
+  // D-1137: a stitched site (A and B, no site result) is one member; marked Separate job, its sheets still balance
+  // together: A's 1,000 BCY cut fills B's 300 CCY (330 BCY at 1.1), 670 out (837.5 LCY on A); C, alone in the job,
+  // imports its 600 CCY (660 BCY, 825 LCY).
+  {
+    id: "job-site-separate-together",
+    kind: "jobsite",
+    assume: { native_suitable: "layers", fill_type: "Engineered Fill", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null },
+    rows: [{ key: "A", cut: 1000, fill: 0, site: true }, { key: "B", cut: 0, fill: 300, site: true }, { key: "C", cut: 0, fill: 600 }],
+    expect: { views: "Site A–B|C", "A:cut:padA": 330, "A:cut_export:padA": 670, "A:soil_export:__soil_export__": 837.5, "C:soil_import:__soil_import__": 825, "B:soil_import:__soil_import__": undefined, "B:soil_export:__soil_export__": undefined },
+  },
+  // D-1142: a pocket id ("cut-1") is each sheet's own. B's 10 BCY pocket chosen dozer push must not push A's 1,000 BCY
+  // pocket of the same id: the dozer's share is B's 10 of the job's 1,010 BCY (before, every pocket "cut-1" was dozer).
+  {
+    id: "job-pocket-ids-per-sheet",
+    kind: "job",
+    members: ["A", "B"].map((key) => ({
+      key,
+      label: key,
+      inputs: {
+        units: "CY",
+        regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: key === "A" ? 1000 : 10, fillCY: key === "A" ? 0 : 600 }],
+        assumptions: { ...JOB_A, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, pocket_methods: { "cut-1": { method: "dozer", cells: ["5,5"], cy: 10 } } } },
+        figures: { pockets: [{ id: "cut-1", kind: "cut", cy: key === "A" ? 1000 : 10, areaSF: key === "A" ? 9000 : 90, avgFt: 3, deepestFt: 4, at: { x: 0, y: 0, z: 0 }, cells: key === "A" ? ["1,1", "1,2", "1,3"] : ["5,5"] }], hauls: [], steepPct: 0 },
+      },
+    })),
+    expect: { "A:cut:padA": 643.564356, "A:cut_push:padA": 6.435644, "A:cut_export:padA": 350, "B:fill:padB": 594.059406, "job:soil_export:": 437.5 },
   },
   // One item drawn on two sheets (D-1133): its region on A cuts 1,000 BCY, on B fills 600 CCY; each sheet keeps its own
   // share under the item's id, as two regions would.
@@ -1089,6 +1117,13 @@ export const EARTHWORK_CASES = [
   { id: "d1004-pit-run", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Pit run gravel", matFactor: 1.4375 }, expect: { keys: "agg:pit_run_gravel:delivered", "agg:pit_run_gravel:delivered:qty": "QTY * 1.84" } },
   // D-1008 (Q199): a GCL is priced furnished and installed, by the SF.
   { id: "d1008-gcl", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "layer:1|installed", name: "Geosynthetic clay liner (GCL), 10 % overlap, installed (public bids)", matKey: "site:gcl" }, expect: { keys: "site:gcl:installed", "site:gcl:installed:qty": "QTY * 9", "site:gcl:installed:unit": "SF" } },
+  // D-1135: a Soil Import buys the material its fill type names (at the pit, the line's own trucks haul it);
+  // hydrated lime and portland cement are the library's agent:lime and agent:cement.
+  { id: "m5-import-select", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Select Borrow (8,065 BCY)" }, expect: { keys: "fill:select:fob", "fill:select:fob:qty": "QTY", "fill:select:fob:unit": "CY" } },
+  { id: "m5-import-sand", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Sand (100 BCY)" }, expect: { keys: "fill:sand:fob", "fill:sand:fob:qty": "QTY * 1.28", "fill:sand:fob:unit": "TON" } },
+  { id: "m5-import-engineered", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Engineered Fill (100 BCY)" }, expect: { keys: "fill:common_borrow:fob" } },
+  { id: "m5-agent-hydrated", kind: "site-materials", input: { role: "undercut_agent_1", unit: "TON", name: "Hydrated Lime (6% of dry wt @ 110 pcf)" }, expect: { keys: "agent:lime" } },
+  { id: "m5-agent-cement", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Portland Cement (5%, 110 pcf)" }, expect: { keys: "agent:cement" } },
   { id: "m5-agent", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Lime (5%, 110 pcf)" }, expect: { keys: "agent:lime", "agent:lime:waste": 3 } },
   { id: "m5-fabric", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "geogrid", name: "Geogrid, 10% overlap" }, expect: { keys: "geogrid:site", "geogrid:site:qty": "QTY / 500", "geogrid:site:unit": "ROLL" } },
   { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "fill:common_borrow:fob:qty": "QTY / 0.764554857984 * 1.28" } },

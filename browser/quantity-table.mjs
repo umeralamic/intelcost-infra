@@ -1495,8 +1495,8 @@ try {
           return { members: r.members.join(" "), anchor: r.anchor, leftOut: r.leftOut.map((o) => job.overlapText(o)).join(" | "), unchecked: r.unchecked.join(" "), separate: r.separate.join(" ") };
         }
         if (c.between) return { distanceFt: Math.round(job.areaDistanceFt(c.between[0], c.between[1]) * 1e6) / 1e6 };
-        // D-1132: a row with the project's assumptions takes "native cut fills the fill" from them, as Calculate does.
-        const members = c.assume ? c.members.map((m) => ({ ...m, inputs: { ...m.inputs, assumptions: { ...m.inputs.assumptions, suitable: linesFor.nativeFills(c.assume), choices: c.assume.site_choices } } })) : c.members;
+        // D-1136: a row with the project's assumptions takes them as Calculate does: native Yes or No, the choices, the factors.
+        const members = c.assume ? c.members.map((m) => ({ ...m, inputs: { ...m.inputs, assumptions: { ...m.inputs.assumptions, suitable: linesFor.nativeFills(c.assume), choices: c.assume.site_choices, fillType: c.assume.fill_type, swell: c.assume.swell_factor, shrink: c.assume.shrink_factor } } })) : c.members;
         const r = job.jobLines(members);
         const out = {};
         for (const [k, ls] of r.byMember) for (const l of ls) out[`${k}:${l.role}:${l.regionId}`] = Math.round(l.quantity * 1e6) / 1e6;
@@ -1526,6 +1526,16 @@ try {
           for (const [k, ls] of p.lines) for (const l of ls) out[`${i + 1}:${k}:${l.role}:${l.region_id}`] = Math.round(l.quantity * 1e6) / 1e6;
         });
         out["3:same"] = JSON.stringify([...plans[1].lines]) === JSON.stringify([...plans[2].lines]);
+        return out;
+      }
+      // D-1137: a stitched site's sheets are one member and, marked separate, balance together.
+      if (c.kind === "jobsite") {
+        const stored = (key, cut, fill) => ({ ok: true, units: "CY", cutCY: cut, fillCY: fill, netCY: cut - fill, regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], coverage: 1, warnings: [], strip: null });
+        const site = { key: "S", label: `Site ${c.rows.filter((r) => r.site).map((r) => r.key).join("–")}` };
+        const rows = c.rows.map((r) => ({ key: r.key, kind: "sheet", label: r.key, result: stored(r.key, r.cut, r.fill), choice: r.site ? "separate" : null, stale: false, ...(r.site ? { site } : {}) }));
+        const plan = jobBalance.planJob(rows, c.assume);
+        const out = { views: jobBalance.memberViews(rows).map((v) => v.label).join("|") };
+        for (const [k, ls] of plan.lines) for (const l of ls) out[`${k}:${l.role}:${l.region_id}`] = Math.round(l.quantity * 1e6) / 1e6;
         return out;
       }
       if (c.kind === "lines") {
