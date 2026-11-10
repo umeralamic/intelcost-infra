@@ -62,6 +62,7 @@ COPY_SOURCES: dict[str, str] = {
     # Back for the D-1100..D-1104 run's end totals and removed at its end (D-1104).
     # Back for the D-1105..D-1108 run's end totals and removed at its end (D-1109).
     # Back for the D-1110..D-1112 run (the two-Calculate bug, end totals) and removed at its end (D-1113).
+    # Back for the D-1114..D-1116 run (the equipment pool, its sweep and end totals) and removed at its end (D-1117).
 }
 """Projects the copier alone may read, for one copy, named as `copy-3d-test.py --source <uuid>`.
 Every other drive, and every write, is refused as before."""

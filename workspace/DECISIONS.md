@@ -28634,3 +28634,100 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
 - Purged with purge-bench-dups.py, storage failures 0: three Real bid B copies (8e16c838, 1222112a, 4adef70f; logs
   e8f52235, 1a88b41a, c166db35) and the Real bid A copy (0e418e31, log 8a3ad5c0). Real bid B out of COPY_SOURCES again
   (refusal checked); the throwaway workspace's example dump sites set aside for Real bid A and restored.
+
+## D-1114: A rebuild deletes only the lines the grading built (ownership, not an allow-list)
+
+**Status:** Accepted (2026-11-10, run mode). Replaces D-1110's `REBUILD_KEEPS`.
+
+- Each earthwork line carries the builder that wrote it: `takeoff_item.earthwork_builder` (grading, utilities, section,
+  clearing, layout; migration da08d9e0f1a2 backfills by role: on the bench grading 305, layout 4, section 48, utilities
+  121). The app tags every `LineWrite` (`toWrite(lines, builder)`); `LineWrite.builder` is optional, so an older client's
+  line is untagged.
+- The panel's rebuild (`keep_utilities`, D-899) retires only lines whose builder is `grading`; every other line,
+  untagged included, survives. A rebuild's own lines are stamped `grading`. Before, the rebuild retired every line not
+  in an allow-list of roles (D-1110), so a role added later and left off the list moved the bid on the second Calculate.
+- The quantity table's `rebuild` row: seven panel choices (excavator, dozer push and scraper methods; liner site soil
+  and imported; proof roll; undercut), each one's full Calculate; then from the base choice's Calculate, the rebuild to
+  each other choice and back (12 rebuilds), each equal to that choice's full Calculate line for line, with the
+  layout, tree, stump, clearing, storm and water main lines and one untagged line (a silt fence) live: all right. Run
+  against the previous `lines.py` (D-1110's allow-list), 12 of 12 wrong: every rebuild lost the untagged silt fence
+  and the water main. The allow-list never named `utility_pipe_pressure` or `utility_pipe_fused`, so before D-1114 a
+  panel choice on a job with a water main or force main retired those lines until the next Calculate (the same
+  second-Calculate drift D-1110 fixed for the layout and trees).
+
+## D-1115: One equipment pool per job
+
+**Status:** Accepted (2026-11-10, run mode). Replaces D-1081's borrowing for site spreads; keeps D-1081/D-1084's
+one-sub rule and D-1040's machines-on-site lines, now pooled.
+
+- The bug: on a Real bid A copy at 10 mi, "Cut" 3 BCY (on-site haul) priced its own 20-25 t excavator (1-day rental
+  $2,199.44) and two ADTs ($11,158.40: each a 1-day rental of $1,882, lowboy-permitted delivery and pickup $1,800 each,
+  4 h fuel, location factor), crew 0.5 foreman + 3 operators, $13,974.11 ($4,547/BCY), while the group's "Cut to
+  export" had a 45-55 t excavator on the job for 4 weeks + 1 week. The two ADTs were A1's fixed tier kit, not D-1093's
+  fleet rule (that rule sizes trucks for off-site hauls only).
+- After every Calculate the site spreads' machines are planned together (`equipment/pool.py`, `production._job_pool`):
+  a needed machine pools into a machine of the same kind on the job, equal or larger by operating weight (the same
+  class always), from another spread, when that costs no more than the needed machine alone (rental, fuel, delivery).
+  The pooled line's machine: period `pool`, the host's uuid (`project_equipment_resource.eq_pool_host_uuid`, migration
+  da09e0f1a2b3), its hours at the host's fuel (an owned host at its owned rate; a rental's wear is in its rent); the
+  host's rental extended only when the job's hours pass its booking, at the cheapest days/weeks/4-weeks, split over the
+  pooled lines by hours (`sharedEquipment.ts`); no delivery, day minimum or crew minimum of its own.
+- The cost guard is D-1115's reading of "suitable"; the founder may veto it: keeping a larger machine another period can
+  cost more than bringing the right one (a D5's 30 h onto a D8 booked exactly 4 weeks). Without it, the first sweep
+  priced a D5 pooled onto a D8 above the D5 on its own.
+- Pooled kinds: excavators, dozers, loaders, backhoes, skid steers, graders, soil rollers. Not pooled: trucks (each
+  haul's fleet follows its cycle, D-1093), operated services, crew trailer machines (D-1083), support, fusion machines.
+- Size limit: a pipe crew's excavator only from one of at most the 36-45 t class (`PIPE_EXCAVATOR_CAP`, D-1081's
+  list): a 45 t and larger machine's narrowest buckets run wider than a utility trench and its weight at the trench's
+  edge is the surcharge a narrow trench's walls are not cut for. Pipe crews pool with the earthwork only when one sub
+  does both (D-1081, D-1084).
+- Hosts only: the clearing group's shared spread (D-972) prices its own machines.
+- Small leftovers: when a spread's pacing machine is pooled and its work is under 1 h at its production
+  (`LEFTOVER_HOURS`), that machine alone does it (a swing or a dozer push), no trucks, roller or water truck.
+- "Separate machine (parallel work or a later visit)": the per-line switch (default off, the spread panel's own-spread
+  checkbox) keeps a line out of the pool with its own machine and delivery. Each pooled machine says on its line
+  "Pooled with <host>: <h> h added".
+- Setting `equipment_pool` (1, default; 0 restores D-1081's borrowing and D-1040's crew minimum): the before/after.
+- A host line can rise: before, a smaller line's own machine carried the delivery under D-1006; now the host carries its
+  own one delivery (the section undercut smoke's A2 lines, $443.10 to $883.05), the job total falls.
+- Sweep, pool off then on, one Calculate each: Real bid A at 10 mi $463,356.96 to $449,193.74 (Cut $13,974.11 to $6.68,
+  Fill $230.68 to $34.89); Benchmark A $645,466.37 to $631,292.75; Real bid B site soil $174,915.03 to $164,272.23,
+  imported clay $227,356.09 to $219,846.50; a Hidden Valley shared copy $1,056,615.42 to $1,015,330.57; the section
+  undercut smoke $22,782.76 to $7,911.06. Lines over 5x their activity's unit cost: three before (each project's 3 BCY
+  Cut), none after.
+- Quantity table: `pool` section, 25 rows (kinds, sizes, the pipe cap, one sub, the cost guard, room in a booking,
+  hosts only, rental periods, the leftover hour).
+
+## D-1116: Ductile iron 4 in: its tier, its class, and the size-order rule's one exception
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Louisville 26-59's 700 LF of 4 in is a Bulk order (rigid pipe Bulk from 600 LF, D-1091): $38.91 is stored as the
+  bulk base, as it should be; nothing backed out. Migration da0af1a2b3c4 adds to its source "Pressure class not
+  stated; 4-inch DI's lowest manufactured class is 350 (AWWA C151)" and the tier.
+- The engine's DI PC 350 12 in is $61.09 (B, the mean of Leominster 2025 $68.68 and Louisville 26-59 $53.49). The same
+  bid's 12 in (260 LF, five bids): low $53.49, then $53.66 twice. The engine is $7.43 (13.8 %) over $53.66 and $7.60
+  (14.2 %) over the low, and a 260 LF order prices Standard (x1.10, $67.20), 25 % over. Not changed here: the Louisville
+  figure is a Standard-size order averaged in as a bulk base; the fix (back it out to $48.63 and re-mean) is queued.
+- The sweep's size-order check allows one step only: ductile iron 4 in to 6 in (D-1111). On the last saved sweep
+  (31,704 rows, 844 flags) it clears 384 flags (96 each for water, fire water, force main and sanitary, entry
+  di_c151_pc350) and nothing else: 460 left, none on ductile iron.
+
+## D-1117: The D-1114..D-1116 run ended
+
+**Status:** Accepted (2026-11-10, run mode).
+
+- Dump-site path on a Real bid A copy: the distance to the clean fill site changed 15 to 10 mi in the project's Dump
+  sites panel repriced the hauls on its own ($449,665.64, the 10 mi fallback, to $564,381.36); one Calculate
+  $564,381.36, a second $564,381.36. A cheaper clean-soil site added in Settings (8 mi, $2.00/LCY; removed after):
+  the panel named it cheapest at once, the bid moved only on "Price again with today's sites" ($498,308.35); one
+  Calculate $498,308.35, a second $498,308.35. Settled both ways.
+- The pressure crew's note on a line (D-1112) is in the crew component's notes: inline on the takeoff panel's crew
+  row, its whole text on that row's hover, and in the component's Notes. A pooled machine's hover now carries
+  "Pooled with <host>: <h> h added" with its basis (the name column cut it short).
+- End totals, pool on, one Calculate each: ST-1 $5,628.69 (site soil) and $6,797.72 (imported clay); Real bid B site
+  soil $162,613.82, imported clay $218,188.10 (after Update all); Benchmark A $631,292.75; Real bid A at 10 mi on the
+  fallback $449,759.08.
+- Purged with purge-bench-dups.py, storage failures 0: 35efad4c, 0ceb981a, b782d3ff, adfdb9f5, 5b0cc82c (logs
+  774af822, cbd661fe, a867b7ef, 5b0dc480, 5f68bcb6). Real bid B out of COPY_SOURCES again (refusal checked); the
+  throwaway workspace's example dump sites restored.
