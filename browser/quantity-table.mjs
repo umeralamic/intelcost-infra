@@ -1091,6 +1091,7 @@ try {
     const bal = await import("/src/lib/takeoff/earthwork/balance.ts");
     const sf = await import("/src/lib/takeoff/earthwork/siteFeatures.ts");
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
+    const job = await import("/src/lib/takeoff/earthwork/job.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
     const { siteFigures } = await import("/src/lib/takeoff/earthwork/volume/pockets.ts");
@@ -1484,6 +1485,24 @@ try {
       }
       if (c.kind === "tons") {
         return { tons: mats.tonsOf(c.input.ccy, c.input.pcf) };
+      }
+      // F39 (D-1126, D-1131): the job's balance over its members, its membership and the distance between areas.
+      if (c.kind === "job") {
+        if (c.places) {
+          const r = job.jobMembership(c.places, new Set(c.included ?? []));
+          return { members: r.members.join(" "), anchor: r.anchor, leftOut: r.leftOut.map((o) => job.overlapText(o)).join(" | "), unchecked: r.unchecked.join(" "), separate: r.separate.join(" ") };
+        }
+        if (c.between) return { distanceFt: Math.round(job.areaDistanceFt(c.between[0], c.between[1]) * 1e6) / 1e6 };
+        const r = job.jobLines(c.members);
+        const out = {};
+        for (const [k, ls] of r.byMember) for (const l of ls) out[`${k}:${l.role}:${l.regionId}`] = Math.round(l.quantity * 1e6) / 1e6;
+        for (const l of r.job) out[`job:${l.role}:${l.variant ?? ""}`] = Math.round(l.quantity * 1e6) / 1e6;
+        if (c.same) {
+          const key = (l) => JSON.stringify(l);
+          const today = ln.earthworkLines(c.members[0].inputs).map(key).sort();
+          out.same = JSON.stringify(today) === JSON.stringify([...r.byMember.get(c.members[0].key), ...r.job].map(key).sort());
+        }
+        return out;
       }
       if (c.kind === "lines") {
         const lines = ln.earthworkLines(c.input);

@@ -28,6 +28,36 @@ const corners = (surface, z) =>
 /** Legacy's flat pad: EG and FG flat at the corners, the boundary the unit square. */
 const pad = (eg, fg, withBoundary = true) => [...corners("EG", [eg, eg, eg, eg]), ...corners("FG", [fg, fg, fg, fg]), ...(withBoundary ? [b(UNIT)] : [])];
 
+// F39 (D-1126, D-1131): one balance per job, by hand. Shrink 1.10, swell 1.25, native soil suitable. A has 1,000 BCY
+// of cut and no fill; B 600 CCY of fill and no cut: B's fill takes 600 x 1.10 = 660 BCY of A's cut, the rest, 340 BCY,
+// leaves as 340 x 1.25 = 425 LCY, no import. Both short (A 100 BCY cut, 300 CCY fill; B 200 CCY fill): one import of
+// 500 x 1.10 - 100 = 450 BCY, 562.5 LCY. A with a muck layer (200 BCY at swell 1.30, unsuitable): it always leaves
+// (260 LCY); the clay (800 BCY) yields 800 / 1.10 = 727.27 CCY against B's 600: 127.27 x 1.10 = 140 BCY, 175 LCY;
+// A's Cut to export carries both, 340 BCY.
+const JOB_A = { suitable: true, fillType: "Select Borrow", swell: 1.25, shrink: 1.1, choices: null };
+const jobSheet = (key, cut, fill, site) => ({ key, label: key, inputs: { units: "CY", regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], assumptions: JOB_A, ...(site ? { site } : {}) } });
+const SQ = (x, y, s = 100) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
+export const JOB_CASES = [
+  { id: "job-two-sheets", kind: "job", members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "B:fill:padB": 600, "job:soil_export:": 425, "job:soil_import:": undefined } },
+  { id: "job-both-short", kind: "job", members: [jobSheet("A", 100, 300), jobSheet("B", 0, 200)], expect: { "A:cut:padA": 100, "A:fill:padA": 300, "B:fill:padB": 200, "job:soil_import:": 562.5, "job:soil_export:": undefined } },
+  {
+    id: "job-unsuitable-layer",
+    kind: "job",
+    members: [jobSheet("A", 1000, 0, { layers: [{ regionId: "padA", layerId: "L1", name: "Clay", bank: 800, shrink: 1.1, swell: 1.25, kind: "suitable" }, { regionId: "padA", layerId: "L2", name: "Muck", bank: 200, shrink: 1.1, swell: 1.3, kind: "unsuitable" }] }), jobSheet("B", 0, 600)],
+    expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "B:fill:padB": 600, "job:soil_export:": 175, "job:soil_export:unsuitable:Muck": 260 },
+  },
+  // One member (a sheet marked Separate job, or a project of one sheet): its lines exactly as today's.
+  { id: "job-one-member-as-today", kind: "job", same: true, members: [jobSheet("A", 1000, 0)], expect: { same: true } },
+  // Overlap (D-1131): C-4 covers 62 % of C-3 (squares 100 ft, 38 ft apart): left out; included, in; not registered, in.
+  { id: "job-overlap-left-out", kind: "job", places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: SQ(38, 0) }], expect: { members: "c3", leftOut: "C-4 overlaps C-3 by 62%: left out of the job balance — include it or mark Separate job", unchecked: "" } },
+  { id: "job-overlap-included", kind: "job", included: ["c4"], places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: SQ(38, 0) }], expect: { members: "c3 c4", leftOut: "" } },
+  { id: "job-overlap-unregistered", kind: "job", places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: null }], expect: { members: "c3 c4", leftOut: "", unchecked: "c4" } },
+  // Anchor (D-1131 c): the first member marked Separate job, the job's lines go to the next.
+  { id: "job-anchor-moves", kind: "job", places: [{ key: "c1", label: "C-1", boundary: null, separate: true }, { key: "c2", label: "C-2", boundary: null }, { key: "c3", label: "C-3", boundary: null }], expect: { members: "c2 c3", anchor: "c2", separate: "c1" } },
+  // Distance between areas (D-1131 b): two 100 ft boundaries 2,000 ft apart, centroid to centroid.
+  { id: "job-distance-2000ft", kind: "job", between: [SQ(0, 0), SQ(2000, 0)], expect: { distanceFt: 2000 } },
+];
+
 export const EARTHWORK_CASES = [
   // --- Block B: the TIN (legacy's tin.test.ts) -----------------------------------------
   {
@@ -2079,6 +2109,7 @@ export const EARTHWORK_CASES = [
   { id: "clearing-suggest-heavy", kind: "clearing-suggest", section: { density: "light", treesPerSf: 200, treeCount: 650 }, areaSf: 43560, expect: { density: "heavy", treesPerAcre: 650 } },
   { id: "clearing-suggest-heavy-2ac", kind: "clearing-suggest", section: { density: "medium", treesPerSf: 200, treeCount: 1250 }, areaSf: 87120, expect: { density: "heavy", treesPerAcre: 625 } },
   { id: "clearing-suggest-none", kind: "clearing-suggest", section: { density: "none", treesPerSf: 200, treeCount: 700 }, areaSf: 43560, expect: { density: null, treesPerAcre: null } },
+  ...JOB_CASES,
 ];
 
 /**

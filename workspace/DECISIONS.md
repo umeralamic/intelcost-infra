@@ -28931,3 +28931,32 @@ more than the needed machine's own).
 - The size-order check compares each row's total installed cost per LF (material, labour, machines). After D-1128
   and D-1129: 136 flags, all "$/LF falls as size rises" and all in the material: 80 HDPE 8 to 10 to 12 in (market,
   D-1129) and 56 the purchased backfill in one box width (D-1120). No missing prices.
+
+## D-1131: F39 job balance: the engine, membership by overlap, the distance between areas; built so far
+
+**Status:** Accepted (2026-11-10, run mode). Engine built and in the quantity table; wiring not yet built.
+
+- Read only first: of the bench's projects, one has more than one graded member without a stitch: Real bid A
+  (McCabe): sheet C16 (the original grading, 34,347 BCY to export) and the stitched site C12-C13 (the owner's work of
+  2026-11-10: warehouse pad, access drive, lime-stabilized subgrade, 8,036 BCY of select borrow imported). Its total as
+  stored: $783,100.89. No sheet of it is registered in real coordinates, so its overlap is not checked (6a).
+- Engine (`lib/takeoff/earthwork/job.ts`, data in, data out): `jobLines` strikes one balance over every member's
+  stored inputs (`earthworkLines` over the combined input: each member's remainder renamed `remainder@<key>`, a member
+  with no layers counted as one suitable layer at the project's factors when another has layers), each line back to its
+  member by its ids, the balance lines (Soil Export, Soil Import) the job's for its anchor; one member: today's lines
+  exactly. `jobMembership`: a member marked Separate job is out; one overlapping an earlier member (page order) by more
+  than 10 % of the smaller boundary is left out unless included ("C-4 overlaps C-3 by 62%: left out of the job balance —
+  include it or mark Separate job"); one with no registered boundary is in, "overlap not checked"; the anchor is the
+  first member in (it moves when the first is marked separate or deleted). Overlap is exact: each boundary cut into
+  triangles, every pair intersected. `areaDistanceFt`: centroid to centroid in registered coordinates, null when either
+  is unregistered.
+- Quantity table `job` rows (9), by hand: two sheets (660 BCY of A's cut fills B's 600 CCY, 340 BCY / 425 LCY
+  exported, no import), both short (one import, 562.5 LCY), an unsuitable layer (260 LCY always leaves from A, the clay's
+  surplus 175 LCY), one member as today, overlap left out / included / unregistered, anchor moves, 2,000 ft apart.
+- To build (the wiring; not in this run): the `separate` and `include` settings per member (one migration); the api's
+  job write (every member's grading lines and the anchor's job lines, `builder="job"`, one transaction); Calculate of
+  one sheet re-striking the job from the others' stored results; "Calculate job" (only stale members, then the
+  balance) as an Estimating notice and by the members in the sheets panel, the stale badge, the export ask (6e); the
+  soil a sheet sends to another priced on its Cut line at `areaDistanceFt` (6b): the excavator's on-site haul has no
+  distance in production today (its trucks are the kit's), so this needs a haul cycle for the on-site trucks, its own
+  production change.
