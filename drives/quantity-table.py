@@ -1265,18 +1265,32 @@ def orders() -> int:
         if (got is None) != (want is None) or (got is not None and want is not None and round(got, 6) != want):
             wrong.append(f"FAIL  order-qty-{text}: {got}, expected {want}")
     # D-1097: the site condition. Urban at 0.55 (TxDOT 0-4416-1, 75 / 136 LF a day); a run's own over the project's;
-    # 36 in RCP at 12-14 ft urban: 0.68 x 0.55 x 2/3 = 0.249333.
+    # 36 in RCP at 12-14 ft urban: 0.68 x 0.55 x the Houston tabs' depth pace at 13 ft (D-1141) = 0.32726.
     from app.features.equipment.production import pipe_pace
 
     for variant, default, want in (
         ("rcp_c76_wall_b:24|1|0-6 ft|urban", False, 0.55),
         ("rcp_c76_wall_b:24|1|0-6 ft|open", True, 1.0),
         ("rcp_c76_wall_b:24|1|0-6 ft", True, 0.55),
-        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.249333),
+        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.32726),
+        # D-1141: a gravity line's pace by its band's middle; the deepest band the tabs price holds past 26 ft.
+        ("pvc_d3034_sdr26:8|1|0-6 ft", False, 1.0),
+        ("pvc_d3034_sdr26:8|1|10-12 ft", False, 0.923024),
+        ("pvc_d3034_sdr26:8|1|16-18 ft", False, 0.786392),
+        ("pvc_d3034_sdr26:8|1|20-22 ft", False, 0.636685),
+        ("pvc_d3034_sdr26:8|1|24-26 ft", False, 0.376891),
+        ("pvc_d3034_sdr26:8|1|26+ ft", False, 0.330589),
     ):
         got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant, earthwork_crew=None), default), 6)
         if got != want:
             wrong.append(f"FAIL  site-condition-{variant}-{default}: {got}, expected {want}")
+    # D-1144: a trench box's 4 ft stackers by its band's deep end: none to 8 ft, then one each 4 ft.
+    from app.features.equipment.production import support_stackers
+
+    for variant, want in (("box|0|6-8 ft", 0), ("box|0|8-10 ft", 1), ("box|0|12-14 ft", 2), ("box|0|18-20 ft", 3), ("box|0|22-24 ft", 4)):
+        got = support_stackers(SimpleNamespace(earthwork_variant=variant))
+        if got != want:
+            wrong.append(f"FAIL  trench-stackers-{variant}: {got}, expected {want}")
     # D-1105: a pressure main's pace by its own size and depth tables, never the storm drain's. 8 in PVC at 0-6 ft the
     # crew's rate; 12 in at 6-8 ft 0.97 x 0.85; ductile iron 12 in 0.34 (Michigan DOT, VDOT); 24 in 0.19; 30 in PVC
     # 0.53 (no 0.68 large-pipe pace); 8 in at 12-14 ft urban 0.55 x 0.55; fused 8 in at 8-10 ft 0.7.

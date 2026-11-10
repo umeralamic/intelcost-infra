@@ -1124,6 +1124,8 @@ export const EARTHWORK_CASES = [
   { id: "m5-import-engineered", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Engineered Fill (100 BCY)" }, expect: { keys: "fill:common_borrow:fob" } },
   { id: "m5-agent-hydrated", kind: "site-materials", input: { role: "undercut_agent_1", unit: "TON", name: "Hydrated Lime (6% of dry wt @ 110 pcf)" }, expect: { keys: "agent:lime" } },
   { id: "m5-agent-cement", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Portland Cement (5%, 110 pcf)" }, expect: { keys: "agent:cement" } },
+  // D-1144: past 20 ft a PE's design of the protective system, one a run, at its stated price.
+  { id: "m5-pe-design", kind: "line-materials", input: { role: "trench_pe_design", unit: "EA", variant: "pe_design", name: "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft", utility: "sanitary" }, expect: { "service:pe_shoring_design:unit": "EA", "service:pe_shoring_design:qty": "QTY" } },
   { id: "m5-agent", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Lime (5%, 110 pcf)" }, expect: { keys: "agent:lime", "agent:lime:waste": 3 } },
   { id: "m5-fabric", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "geogrid", name: "Geogrid, 10% overlap" }, expect: { keys: "geogrid:site", "geogrid:site:qty": "QTY / 500", "geogrid:site:unit": "ROLL" } },
   { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "fill:common_borrow:fob:qty": "QTY / 0.764554857984 * 1.28" } },
