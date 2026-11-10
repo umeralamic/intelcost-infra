@@ -29024,3 +29024,91 @@ more than the needed machine's own).
   one production change, and 6b waits for it.
 - A registered boundary kept with each result, so the overlap check (D-1131) can run on the job; until then every
   member is in, its overlap unchecked.
+
+## D-1135: Every import buys what its fill type names; HDPE 4-10 in at the Tulsa tab escalated, 42 in sourced; lime priced
+
+**Status:** Accepted (2026-11-10, founder's E, I and item 5). Migration `da0fe6f70819`.
+
+- A Soil Import bought "Common borrow at the pit" whatever the fill type. Now by the fill type its name carries: select
+  (or clay) fill at the pit, `fill:select:fob`, $11.50 a CY loose, grade C (Houston, Borrow Pit's published range for
+  clay-based select fill, $8-15 a CY before delivery, the midpoint; the import's own trucks haul it); sand
+  `fill:sand:fob` (A); stone or gravel bank-run gravel (A); engineered, structural or common fill common borrow as
+  before. The library's `select_fill` ($21.91 a TON, one source, not stated as Houston) is left for section layers.
+- "1 material without a price" on Real bid A was Hydrated Lime (18 TON, C13's undercut and stabilize): the line asked
+  for `agent:hydrated_lime` and the library prices it as `agent:lime` ($423.90 a TON delivered, B, two sources). Hydrated
+  lime and portland cement now read `agent:lime` and `agent:cement`.
+- HDPE dual wall: the Tulsa tab (TAC 1196A, 2023-05-25, four bids, 100 ft each, a Small order backed out) escalated by
+  the BLS PPI for plastics pipe and fittings (PCU326122326122, 487.721 May 2023 to 455.493 Sep 2026, x0.934): 4 in
+  $1.56, 6 in $3.04, 8 in $5.43, 10 in $7.94, all grade B (the tab's own 12 in comes to $6.73 against the library's
+  grade A $6.77). Before: 6 in $2.76 (C, D-1091) then $3.06 (C, D-1129); 8 in $4.94 (C, D-1091), $4.10 (C, D-1120),
+  $5.47 (C, D-1129); 10 in $7.25 (C), $5.43 (C), $7.99 (C). None of them was above grade C, so no higher-grade source
+  was replaced and none is restored; each is now B. The 10 in above the 12 in is single-source (one small-order tab),
+  not a market pattern (D-1129's wording corrected).
+- HDPE 42 in: $43.89, grade C: the library's 36 in ($35.23, Lauderdale County MS annual term 2026-01, A) x 1.246, the
+  36 to 42 in step of the same county's corrugated pipe bids (Bid 4000, 2025-02, four bidders; its HDPE line stops at
+  36 in, the step is its HP polypropylene line's). It was $48.88 (C, D-1091's ratio, no source of its own).
+
+## D-1136: D-1132 reverted; a fill region can be a "Specified import"
+
+**Status:** Accepted (2026-11-10, founder's K; supersedes D-1132).
+
+- The import material is only what is bought when the job (or a Separate job) is short after cut fills fill; it never
+  stops native cut filling. "Is native soil suitable for fill?" Yes: every fill takes native cut first, on one sheet
+  and across the job; No: all cut exported and all fill imported. The "Native soil meets" box is gone (it was never
+  kept by the api: `SiteChoices` had no field for it).
+- Per fill region, default off: "Specified import — doesn't take native cut" (results panel, Fill), with its material
+  (blank: the project's import material). Site choice `specified_import` {region id: material}. Its fill is out of the
+  balance and gets its own line on its own sheet, "Soil Import — <material>, <region>, specified", at the shrink and
+  the swell; its material by D-1135.
+- Quantity table: native Yes, A 34,000 BCY over, B 8,000 short at shrink 1.0: 26,000 BCY (32,500 LCY) out, no import;
+  B's region a specified import: A exports all 34,000 (42,500 LCY), B imports 10,000 LCY; native No: 42,500 out,
+  10,000 in; one sheet, Select Borrow named, native Yes: it offsets (670 BCY, 837.5 LCY out).
+
+## D-1137: A stitched site is one job member
+
+**Status:** Accepted (2026-11-10, founder's G, the spec's reading).
+
+- The sheets of a stitched site with no site result of their own are one member, "Site C12–C13", one Separate job box
+  for all of them; marked separate, they balance together, the balance lines on the site's first sheet. Quantity
+  table: A and B a site, C alone; the site separate: A's 1,000 BCY fills B's 300 CCY (330 BCY), 670 out (837.5 LCY on
+  A); C imports its 825 LCY.
+
+## D-1138: Unit costs shown at 2 decimals, 4 below $1
+
+**Status:** Accepted (2026-11-10, founder's J). Estimating's grid only; every stored figure keeps its places, and D-797's
+read-back to the places Qty x rate needs is no longer shown.
+
+## D-1139: Sales tax at the city's rate where the table has it, with its source on the Bid summary
+
+**Status:** Accepted (2026-11-10, founder's H).
+
+- `estimate/city_sales_tax.csv`: Houston 8.25 % (state 6.25, city 1.00, Houston MTA 1.00) and La Porte 8.25 % (state
+  6.25, local 2.00; ZIP 77571), from the Texas Comptroller's local rates. The project's city, else its ZIP's (the wage
+  calculator's ZIP table); any other city the state figure as before (Tax Foundation, Texas 8.20 %). The note is on
+  the sidebar's Bid summary under Sales tax.
+- Real bid A's address is ZIP 77571, La Porte (not the city of Houston): 8.25 % either way.
+
+## D-1140: A pooled machine's rental, extension and delivery spread over its users by hours
+
+**Status:** Accepted (2026-11-10, founder's F).
+
+- In a pool group (a host and the machines pooled onto it), the host's total less its own fuel and wear, plus the
+  rental extension, is the group's: each machine of the group (the host too) takes it by its hours over the group's,
+  and keeps its own fuel and wear (`sharedEquipment.ts`). The group's cents are what its machines carried before, the
+  new totals rounded to them by the largest remainder, so the job's total does not move by a cent.
+- Real bid A copy (after D-1136): direct $780,727.99 before and after. Each C12 fill line's equipment $6.50 to $5.43 a
+  CCY (Fill, Remainder, C12: 2,003 CCY, $10,880.08 equipment, $7.41 a CCY in all); borrowers now carry the D6's
+  rental: Fill, dozer push, Warehouse pad, C12 $0.70 to $5.75 a CCY; Strip topsoil (6 in), C12 $0.38 to $2.01 a BCY;
+  Aggregate base, 6 in $0.69 to $1.63 a SY.
+
+## D-1142: A pocket's id is its sheet's own in a job
+
+**Status:** Accepted (2026-11-10, found on the Real bid A copy).
+
+- Pocket ids ("cut-1") repeat on every sheet, and a pocket's method kept on the project is read by id. In the job,
+  C13's 114 CY "cut-1" chosen dozer push made C16's 34,000 BCY "cut-1" dozer push too: all 8,024 BCY of cut sent to
+  C12-C13's fill was priced as a dozer push between sheets. In a job of several each pocket (and haul) carries its
+  member's key; the dozer's share is now C13's own pocket's. Quantity table `job-pocket-ids-per-sheet`.
+- Real bid A copy, Calculate job under D-1136: Soil Import, Select Borrow gone; C16's cut fills C12-C13 (7,986.9 BCY
+  excavated, 37.3 pushed); Soil Export 26,446.8 BCY (33,058.5 LCY), was 34,511.5 BCY under D-1132. Direct cost
+  $967,036.84 to $780,727.97 (D-1139 tax 8.25 %: bid total $979,626.78 to $788,036.36).
