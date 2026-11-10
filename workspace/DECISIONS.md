@@ -28863,3 +28863,15 @@ more than the needed machine's own).
   (a saved view lists the columns it hides); a cost report leaves it out with the total.
 - "Item Cost" is "Total Item Cost" in the grid, the export, the pricing-change table and the shared link. A cost
   report keeps its own heading ("Labor cost" …). `browser/pricing-diff.mjs` reads the export by the new header.
+
+## D-1126: One earthwork balance per job, across sheets (F39), planned
+
+**Status:** Accepted (2026-11-10, founder's choices). Not built; spec `docs/tasks/job_balance_tasks.md`.
+
+- Today a sheet's Calculate strikes its own soil balance, so two sheets of one project that are not stitched price
+  as two jobs: one exports its surplus while the other imports. Boundaries on one sheet and stitched sites already
+  share one balance.
+- Every grading sheet of a project balances together by default; a sheet or stitched site can be marked "Separate
+  job". Soil moved between sheets is priced as ordinary on-site cut to fill (the giving sheet's Cut, the receiving
+  sheet's Fill), no haul line between areas. The job's Soil Export and Import lines sit on its first sheet, naming
+  every member.
