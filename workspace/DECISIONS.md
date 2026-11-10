@@ -28852,3 +28852,14 @@ more than the needed machine's own).
 - Purged with purge-bench-dups.py, storage failures 0: 7a29b31e, ea660354, daa5a279, 323fabd3, 740e1701, d035d152 (logs
   3b62d2a9, 74a7f296, ba4adb84, e913983d, e90d366c, e4fc5566). Real bid B out of COPY_SOURCES again (refusal checked);
   the throwaway workspace's example dump sites set aside for the 10 mi figure and restored; the test dump site removed.
+
+## D-1125: Estimating's "Unit Item Cost" column; "Item Cost" is "Total Item Cost"
+
+**Status:** Accepted (2026-11-10, founder's request).
+
+- A new column, "Unit Item Cost", beside the total: the whole line per unit, Total Item Cost ÷ Total Qty (a parent's
+  ÷ its own Qty), read back like the other unit figures (italic, never typed), shown in the project's units and in the
+  export as a per-unit figure. Blank on a context row, a zero line and a line supplied by others. It shows for everyone
+  (a saved view lists the columns it hides); a cost report leaves it out with the total.
+- "Item Cost" is "Total Item Cost" in the grid, the export, the pricing-change table and the shared link. A cost
+  report keeps its own heading ("Labor cost" …). `browser/pricing-diff.mjs` reads the export by the new header.

@@ -22,7 +22,8 @@ const KINDS = [
   ["material", "Total Material Cost"],
   ["disposal", "Total Disposal Cost"],
   ["subcontract", "Subcontract"],
-  ["line", "Item Cost"],
+  // D-1125: the export's header is "Total Item Cost" (before, "Item Cost").
+  ["line", "Total Item Cost"],
 ];
 
 const local = (p) => {
