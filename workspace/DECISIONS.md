@@ -29585,3 +29585,14 @@ engine key v10 (a sheet's), v9 (a site's).
   line feature beside a layered Area (19 layered Areas, 0 line features), so no saved figure changes.
 - Quantity table: 100 x 100 ft paving with 100 LF of 2.5 ft curb and gutter: inside 9,750 SF; on the edge 9,875 SF
   (was 9,750); unticked 10,000 SF; striping inside 10,000 SF. The behind-engine row moves to v11 (v10 now behind).
+
+## D-1164: The Offset contour dialog sketches which side + goes
+
+**Status:** Accepted (2026-11-11, founder's item 4). `OffsetContourDialog.tsx` (`OffsetSketch`).
+
+- Under the distance, a small sketch in true proportion: the contour solid, a dot at its start and an arrow along its
+  longest segment (which way it was drawn), a "+" on the side a positive distance goes (its right as drawn; out of a
+  closed one) and a "−" opposite, and the offset dashed where it will land, trimmed at the boundary as placed. Typing a
+  negative distance moves the dashed copy to the "−" side. Nothing else changes; no quantity.
+- Trace's greyed state checked on a raster-only sheet (a PNG uploaded into the throwaway copy): the Contour dialog
+  greys "Trace one vector contour at a time" with "(This sheet has no vector lines)"; Draw stays.
