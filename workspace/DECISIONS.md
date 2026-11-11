@@ -29473,3 +29473,54 @@ sheet's), v8 (a site's).
 - Quantity table: 100 LCY buys 128 TON common fill, 100 CY select fill, 120 TON fill sand, 152 TON of a custom soil
   at 1.9 t/CY (shrink 1.0, swell 1.25); "Engineered" and "Structural Fill" read as Select fill, flagged; a 200 x 100 ft
   boundary with a 100 x 100 ft feature: covered graded inside it, "50%" warned graded everywhere.
+
+## D-1160: A liner treated in place takes no fill's place; fill sand at the national pit price; soil weights rechecked
+
+**Status:** Accepted (2026-11-11, founder's review of Y). `siteFeatures.ts`, `importFill.ts`; migration da16f7081920;
+engine key v10 (a sheet's), v9 (a site's).
+
+- Found: Real bid A's access drive is undercut "measured from the section's bottom, a liner" (D-1005) and treated in
+  place, 6 in lime-stabilized. As a liner it placed its whole thickness, 68,671 SF x 0.5 ft = 34,336 CF; below existing
+  ground it dug 1,413 CF (the drive is mostly in fill); the difference, 32,923 CF = 1,219 CY (`displacedCF`), was
+  taken off the drive's fill (`lineRegions`), as though the liner filled it. A treatment in place adds no soil: it
+  treats what is there, fill included. D-1159's report blamed the sloped sides (D-1149); wrong: they apply only past
+  4 ft and this undercut is 0.5 ft.
+- Now a liner displaces fill only when it places material (a clay liner, a placed fill); one treated in place
+  (stabilized or compacted) displaces nothing. An undercut's replacement only refills its own excavation.
+- The drive's balance (one region, C12): fill to subgrade 4,179.73 CCY; undercut dug below existing 52.33 CY; treated
+  in place 1,271.69 CY (68,671 SF x 0.5 ft, on its own stabilize lines); displaced, before 1,219.35 CY, now 0; the fill
+  the lines and the import carry, before 2,960.38 CCY, now 4,179.73.
+- Quantity table: a 100 x 100 ft pad in 2 ft of fill with a 0.5 ft section and a 0.5 ft "liner" below it, all above
+  existing ground: lime-stabilized in place, nothing displaced and the fill line keeps 555.56 CY (it had been 370.37);
+  a clay liner still displaces 185.19 CY.
+- Fill sand: the retail yard's price is not a pit price. Houston now takes the national pit median $16.87/TON (grade
+  A, three public bids FOB plant) x Houston's material location factor 0.98737 (every Houston ZIP's material
+  adjustment, -1.263 %): $16.66/TON, grade B (a national figure moved, not a Houston one). The retail yard's $29.99 a CY
+  picked up ($20.97/TON at 1.43 t/LCY) is kept in the note as the ceiling.
+- Weights rechecked against Caterpillar's tables and the project's 110 pcf dry unit weight:
+  - Common fill 1.28 t/LCY (earth dry packed, 2,550 lb), 1.60 t/CY compacted (3,200 lb bank, 118.5 pcf: 110 pcf dry
+    at 8 %): unchanged.
+  - Select fill 1.35 t/LCY (sand and clay, 2,700 lb); compacted 1.66 t/CY (110 pcf dry at 12 %, 123 pcf), was 2.03
+    (the table's 4,050 lb, 150 pcf, a wet heavily rolled mix, not a clay fill).
+  - Fill sand 1.43 t/LCY (sand damp, as a pit loads it, 2,850 lb), was 1.20 (dry); 1.60 t/CY compacted (3,200 lb
+    bank), was 1.35.
+  Where they price: the loose weight turns a TON-sold soil's loose CY into tons (common fill, fill sand: 100 LCY of
+  sand is now 143 TON, was 120); select fill is sold by the loose CY, so neither of its weights prices it; the
+  compacted weight is named on the line and prices only a custom soil sold by the ton. Lines that change: every import
+  line's name (its weights); a Fill sand import's tons (none on the bench yet).
+- The job balance on the Real bid A copy (C12, C13, C16; all fill native, no specified import): it imported 6,075 BCY
+  because the copy's C12 and C13 carried "Separate job" (job choice "separate", copied from the original as it stood
+  when copied; the original carries none now). Unticked, the job strikes C16's surplus into C12's and C13's fill:
+  import 0; export 34,457 to 28,369 BCY (all cut 34,583.60 less all fill 6,214.74). Found with it: Calculate job reused a
+  member's stored result even when an older engine had worked it out (C13's v8 still held its liner's displaced
+  fill). A member behind the engine (`behindEngine`, its key's version under `ENGINE_VERSION`) is now stale: Calculate
+  job calculates it first. Real bid A copy direct cost after Calculate job: $600,936.30 (bid $608,244.76 with 8.25 %
+  sales tax on material).
+- "Specified import — Select Borrow" ticked on the original's Warehouse pad (2026-11-10, about 20:58 CT): no code sets a
+  specified import (only its checkbox writes it; the panel shows it ticked when the site choices hold the region, the
+  project's fill type as its placeholder). No project holds one today, nor did any line ever price one. The original's
+  next Calculate from the dialog (03:01 and 03:15 UTC) wrote the choices without it (the D-1159 bug), so it was saved,
+  then dropped; what ticked it is not in the database. Off by default everywhere.
+- A stabilized undercut mostly in placed fill (under half of it dug below existing ground) is named for the subgrade
+  the fill makes: "Lime-stabilize subgrade, Hydrated Lime 6%, 6 in ..." (lime alone), "Stabilize subgrade, ..." (any
+  other agent); in native ground it stays "Undercut and stabilize native soil, ...".

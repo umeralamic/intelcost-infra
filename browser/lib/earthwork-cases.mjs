@@ -110,7 +110,7 @@ export const JOB_CASES = [
     expect: { pieces: 1, closed: true, withoutCutCY: 370.37, withCutCY: 533.33, bermCutCY: 162.96, outsideWithoutSF: 4400, outsideWithSF: 0 },
   },
   // D-1159: what 100 LCY of each import soil buys at the pit (shrink 1.0, swell 1.25): common fill by the ton at 1.28
-  // t/LCY, select fill by the CY, fill sand by the ton at 1.20 t/LCY, a custom soil at 1.9 t a compacted CY over shrink
+  // t/LCY, select fill by the CY, fill sand by the ton at 1.43 t/LCY (damp, D-1160), a custom soil at 1.9 t a compacted CY over shrink
   // x swell (152 TON); an older project's "Engineered Fill" reads as Select fill, flagged, and "Select Borrow" plainly.
   {
     id: "import-fill-materials",
@@ -127,7 +127,7 @@ export const JOB_CASES = [
     expect: {
       common: "Common fill | fill:common_borrow:fob | 128 TON",
       select: "Select fill | fill:select:fob | 100 CY",
-      sand: "Fill sand | fill:sand:fob | 120 TON",
+      sand: "Fill sand | fill:sand:fob | 143 TON",
       engineered: "Select fill (spec term) | fill:select:fob | 100 CY",
       structural: "Select fill (spec term) | fill:select:fob | 100 CY",
       borrow: "Select fill | fill:select:fob | 100 CY",
@@ -564,6 +564,33 @@ export const EARTHWORK_CASES = [
     bores: [{ id: "GT-05 B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
     expect: { "GT-05 B-1": 41.5 },
   },
+  // --- D-1160: a job member an older engine worked out is stale (Calculate job calculates it first) ----------------
+  // The engine is v10 a sheet's, v9 a site's: a v8 or v9 sheet is behind, "u2" or not; v10 is current; a site's v9 is
+  // current, its v8 behind; an empty or unreadable key is not behind.
+  {
+    id: "d1160-behind-engine",
+    kind: "behind-engine",
+    cases: [["v8u2:abc", "sheet"], ["v9:abc", "sheet"], ["v10u2:abc", "sheet"], ["v10:abc", "sheet"], ["v9:abc", "site"], ["v8:abc", "site"], ["", "sheet"], ["x:abc", "sheet"]],
+    expect: { engine: "10/9", "sheet:v8u2:abc": true, "sheet:v9:abc": true, "sheet:v10u2:abc": false, "sheet:v10:abc": false, "site:v9:abc": false, "site:v8:abc": true, "sheet:": false, "sheet:x:abc": false },
+  },
+  // --- D-1160: an undercut measured from the section's bottom (a liner), on a pad in fill -------------------------
+  // A 100 x 100 ft pad with a 0.5 ft section, EG 100, FG 102: the region fills 10,000 x 1.5 = 15,000 CF = 555.56 CY.
+  // Its 0.5 ft below the section lies wholly above existing ground (subgrade 101.5, bottom 101.0): nothing is dug.
+  // Lime-stabilized in place, it adds no soil: nothing displaced, the fill line (and the import) keeps 555.56 CY; it
+  // had taken 10,000 x 0.5 = 185.19 CY off. A clay liner still places its 185.19 CY in the fill's place: 370.37 left.
+  ...[
+    ["d1160-stabilized-in-place-in-fill", { native: "stabilized" }, 0, 15000 / 27],
+    ["d1160-clay-liner-in-fill", { material: "Clay liner (compacted, low-permeability)" }, 5000 / 27, 10000 / 27],
+  ].map(([id, extra, displaced, lineFill]) => ({
+    id,
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: UNIT }],
+    undercut: { id: "pad", depthFt: 0.5, undercutFt: 0.5, liner: true, polygon: UNIT, ...extra },
+    expect: { ok: true, "region:pad:fillCY": 15000 / 27, "undercut:displacedCY": displaced, "lineFill:CY": lineFill },
+  })),
   // --- Q13 (D-528), now the "below subgrade" override (D-895): existing ground only ---------
   // A 100 x 70 ft pad (7,000 SF) on a 100 x 100 ft site, undercut 6.5 ft below the subgrade.
   // Fill area: EG 100, FG 102, so the subgrade is 2.0 ft above existing ground. Dug: 6.5 - 2.0 =
@@ -1430,7 +1457,7 @@ export const EARTHWORK_CASES = [
       "strip_reuse_fill:s1": 50,
       "soil_import:__soil_import__": 187.5,
       // D-177: the import's bank figure in brackets, 300 - 150 = 150 BCY; fill is compacted.
-      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY compacted (spec term — confirm the material) (150 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 1.66 t/CY compacted (spec term — confirm the material) (150 BCY)",
       "soil_import:__soil_import__:unit": "LCY",
       "cut:remainder:unit": "BCY",
       "fill:remainder:unit": "CCY",
@@ -1874,7 +1901,7 @@ export const EARTHWORK_CASES = [
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
       "soil_import:__soil_import__": 100,
-      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY compacted (80 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 1.66 t/CY compacted (80 BCY)",
     },
   },
   // --- D-177: the factors as printed; each line in its true unit; the bank figure named ---
@@ -1907,7 +1934,7 @@ export const EARTHWORK_CASES = [
     expect: {
       "soil_import:__soil_import__": 287.5,
       "soil_import:__soil_import__:unit": "LCY",
-      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY compacted (spec term — confirm the material) (230 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 1.66 t/CY compacted (spec term — confirm the material) (230 BCY)",
     },
   },
   // Metric, thousands separated: cut 2,500.4 BCM, no fill, swell 1.2: export 3,000.48 LCM,

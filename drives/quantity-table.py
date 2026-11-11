@@ -1336,8 +1336,8 @@ def orders() -> int:
         got_fees = dict(conn.execute(sql("SELECT mat_key, unit_price FROM matlib.mat_region_default WHERE cbsa = '26420'")).all())
     if {k: float(v) for k, v in got_fees.items() if k.startswith("disposal:")} != {"disposal:clean_soil": 0.0, "disposal:rubble": 0.0, "disposal:mixed_cd": 34.17}:
         wrong.append(f"FAIL  houston-dump-fees: {got_fees}")
-    # D-1159: the Houston area's import soils at the pit: common fill $6.25/TON, select fill $11.50/CY, fill sand $24.99/TON.
-    if {k: float(v) for k, v in got_fees.items() if k.startswith("fill:")} != {"fill:common_borrow:fob": 6.25, "fill:select:fob": 11.5, "fill:sand:fob": 24.99}:
+    # D-1159: the Houston area's import soils at the pit: common fill $6.25/TON, select fill $11.50/CY, fill sand $16.66/TON (national x 0.98737, D-1160).
+    if {k: float(v) for k, v in got_fees.items() if k.startswith("fill:")} != {"fill:common_borrow:fob": 6.25, "fill:select:fob": 11.5, "fill:sand:fob": 16.66}:
         wrong.append(f"FAIL  houston-import-fills: {got_fees}")
     for size, want in ((8, "CP-PLATE-REV"), (18, "CP-PLATE-REV"), (24, "CP-TRENCH-ROLLER"), (48, "CP-TRENCH-ROLLER")):
         got = sized_compactor([SimpleNamespace(earthwork_variant=f"rcp_c76_wall_b:{size}|1|6-8 ft")])

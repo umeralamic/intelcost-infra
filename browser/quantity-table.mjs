@@ -1105,7 +1105,7 @@ try {
     const suggest = await import("/src/lib/takeoff/earthwork/suggest.ts");
     const assemblyGroups = await import("/src/lib/estimate/assemblyGroups.ts");
     const noneReason = await import("/src/lib/estimate/noneReason.ts");
-        const { earthworkVersionKey } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
+        const { earthworkVersionKey, behindEngine, ENGINE_VERSION } = await import("/src/lib/takeoff/earthwork/versionKey.ts");
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
@@ -1576,6 +1576,10 @@ try {
           outsideWithSF: outside([...c.runs, ...added]),
         };
       }
+      // D-1160: a job member an older engine worked out is stale, so Calculate job calculates it before striking.
+      if (c.kind === "behind-engine") {
+        return { engine: `${ENGINE_VERSION.sheet}/${ENGINE_VERSION.site}`, ...Object.fromEntries(c.cases.map(([key, basis]) => [`${basis}:${key}`, behindEngine(key, basis)])) };
+      }
       // D-1159: what an import line buys for 100 LCY of each soil, and the soil an older name reads as.
       if (c.kind === "import-fill") {
         const out = {};
@@ -1702,12 +1706,18 @@ try {
         // Q13 (D-528): a feature's undercut against the graded prisms, and flat as before.
         if (c.undercut) {
           const u = c.undercut;
-          const feat = { itemId: u.id, label: u.id, depthFt: u.depthFt ?? 0, polygons: [pts(u.polygon)], undercutDepthFt: u.undercutFt, undercutBottom: u.from ?? null, undercutOffsetFt: 0, undercutMaterial: "Select Fill", undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
+          // D-1160: measured from the section's bottom, a liner; treated in place when `native` is given.
+          const feat = { itemId: u.id, label: u.id, depthFt: u.depthFt ?? 0, polygons: [pts(u.polygon)], undercutDepthFt: u.undercutFt, undercutBottom: u.liner ? "subgrade" : (u.from ?? null), ...(u.liner ? { undercutLiner: true, linerFt: u.undercutFt } : {}), ...(u.native ? { undercutNative: u.native, undercutLiftFt: u.undercutFt } : {}), undercutOffsetFt: 0, undercutMaterial: u.material ?? "Select Fill", undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
           const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
           const [onSurfaces] = sf.computeFeatureExtras([feat], c.boundary ? pts(c.boundary) : null, scale, r.prisms);
           const [flat] = sf.computeFeatureExtras([feat], c.boundary ? pts(c.boundary) : null, scale);
           out["undercut:CY"] = onSurfaces.undercut.volumeCF / 27;
           out["undercutFlat:CY"] = flat.undercut.volumeCF / 27;
+          if (u.liner) {
+            // What the liner takes of its region's fill, and the fill the lines (and so the import) are left with.
+            out["undercut:displacedCY"] = (onSurfaces.undercut.displacedCF ?? 0) / 27;
+            out["lineFill:CY"] = ln.lineRegions({ units: "CY", regions: r.regions, features: [onSurfaces], assumptions: null }).find((g) => g.id === u.id)?.fillCY ?? null;
+          }
         }
         for (const g of r.regions) {
           out[`region:${g.id ?? "remainder"}:cutCY`] = g.cutCY;
