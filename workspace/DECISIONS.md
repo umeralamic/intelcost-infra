@@ -29409,3 +29409,26 @@ push 0 BCY") is not written; its spread's hours go to the lines that do the work
   hold none, and "Reading the sheet's lines…" until then.
 - Smoke (C16, C14 copies): the toolbar two buttons shorter; Trace on Proposed and Draw each armed and put down by Esc;
   the Boundary dialog on C14 (no features, no proposed grade) with both "from" choices greyed and Enter arming Draw.
+
+## D-1158: The volume engine never drops a piece it cannot clip
+
+**Status:** Accepted (2026-11-11, founder's order item 1). `lib/takeoff/earthwork/volume/clip.ts`; engine key v9 (a
+sheet's), v8 (a site's).
+
+- Found with T: a proposed contour whose corner lay 0.1 ft past the boundary lost that corner's whole triangle (600 SF,
+  22.22 CY on the pond). The clipper threw on the piece ("Unable to complete output ring") and the engine's
+  `catch { continue; }` dropped it. The same silent drop sat in the feature and strip splits (a failed difference
+  emptied the rest of the piece).
+- Now every clip in the per-piece loop goes through `safeClip`: plain, then snapped to 1e-12, 1e-10 and 1e-8 of the
+  page (as X's tie-in clipper, D-1152). A boundary clip that still fails is cut exactly by the piece's own edges (each
+  overlay piece is convex: Sutherland-Hodgman, the piece as the window). A feature or strip split that still fails
+  leaves the piece whole outside that feature or strip, counted, and says so ("clip_unresolved"); both parts are taken
+  together or not at all.
+- Quantity table: the pond with its 120 ft contour drawn one corner 0.01 ft and 0.1 ft past the boundary: 533.33 CY
+  both (it had been 511.11 at 0.1 ft).
+- Every bench result with kept inputs rebuilt (22): none changes from this. The ones that differ were worked out by an
+  earlier engine (v7) or under v8 before the edge slopes landed: Real bid A C12 and C13 (and their copies) moved by
+  their edge slope alone (C12 fill +519.01 CCY; C13 +0.41 cut, +0.72 fill), the D-1061 undercut smoke and the older
+  copies by D-1147 to D-1152. The key moves to v9 so those v8 results read out of date ("features").
+- Found with it: the kept inputs (D-549) had left out "Grade only inside features" (D-1151), so a rebuild of a result
+  calculated with it set by hand would not match; kept now.

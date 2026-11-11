@@ -109,6 +109,17 @@ export const JOB_CASES = [
     offset: { run: 4, ft: 10, elevation: 9 },
     expect: { pieces: 1, closed: true, withoutCutCY: 370.37, withCutCY: 533.33, bermCutCY: 162.96, outsideWithoutSF: 4400, outsideWithSF: 0 },
   },
+  // D-1158: a proposed point just outside the boundary keeps its triangle. The pond above with its 120 ft contour at
+  // 9.00 drawn by hand, one corner 0.01 ft (and 0.1 ft) past the boundary: 14,400 SF x 1.0 / 27 = 533.33 CY either way.
+  // At 0.1 ft the clipper threw on that corner's piece and the engine had dropped it (511.11 CY, 600 SF short).
+  ...[0.01, 0.1].map((ft) => ({
+    id: `volume-point-${ft}-ft-outside-boundary`,
+    kind: "volume",
+    side: 1000,
+    boundary: [[0.09, 0.09], [0.21, 0.09], [0.21, 0.21], [0.09, 0.21]],
+    runs: [s("eg1", "EG", "EG", 10, 0, 0), s("eg2", "EG", "EG", 10, 0.4, 0), s("eg3", "EG", "EG", 10, 0.4, 0.4), s("eg4", "EG", "EG", 10, 0, 0.4), c("pond", "Pond HB", "FG", 9, [[0.1, 0.1], [0.2, 0.1], [0.2, 0.2], [0.1, 0.2], [0.1, 0.1]]), c("berm", "Berm", "FG", 9, [[0.21, 0.09], [0.21, 0.21], [0.09, 0.21], [0.09, 0.09 - ft / 1000], [0.21, 0.09]])],
+    expect: { ok: true, cutCY: 14400 / 27, fillCY: 0 },
+  })),
   // D-1154: the slope typed as 4 H:V or as 25 % is one slope: the pad 2.5 ft up gives four wedges 100 x 10 x 2.5 / 2
   // (5,000 CF) and four corners 10 x 10 x 2.5 / 3 (333.33), 5,333.33 either way. The drive +1 to -1 with 3:1 in fill and
   // 2:1 in cut: each long edge's section H h^2 / 2 over its half, H x 100 / 6, so fill 2 x 50 = 100 and cut 2 x 33.33 =
