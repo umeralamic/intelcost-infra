@@ -109,6 +109,43 @@ export const JOB_CASES = [
     offset: { run: 4, ft: 10, elevation: 9 },
     expect: { pieces: 1, closed: true, withoutCutCY: 370.37, withCutCY: 533.33, bermCutCY: 162.96, outsideWithoutSF: 4400, outsideWithSF: 0 },
   },
+  // D-1159: what 100 LCY of each import soil buys at the pit (shrink 1.0, swell 1.25): common fill by the ton at 1.28
+  // t/LCY, select fill by the CY, fill sand by the ton at 1.20 t/LCY, a custom soil at 1.9 t a compacted CY over shrink
+  // x swell (152 TON); an older project's "Engineered Fill" reads as Select fill, flagged, and "Select Borrow" plainly.
+  {
+    id: "import-fill-materials",
+    kind: "import-fill",
+    cases: [
+      ["common", "Common fill"],
+      ["select", "Select fill"],
+      ["sand", "Fill sand"],
+      ["engineered", "Engineered Fill"],
+      ["structural", "Structural Fill"],
+      ["borrow", "Select Borrow"],
+      ["custom", "zz Caliche", { name: "zz Caliche", unit: "TON", price: 14.25, tons_per_ccy: 1.9, mat_key: "custom:x" }],
+    ],
+    expect: {
+      common: "Common fill | fill:common_borrow:fob | 128 TON",
+      select: "Select fill | fill:select:fob | 100 CY",
+      sand: "Fill sand | fill:sand:fob | 120 TON",
+      engineered: "Select fill (spec term) | fill:select:fob | 100 CY",
+      structural: "Select fill (spec term) | fill:select:fob | 100 CY",
+      borrow: "Select fill | fill:select:fob | 100 CY",
+      custom: "zz Caliche | custom | 152 TON",
+    },
+  },
+  // D-1159: a 200 x 100 ft boundary, a 100 x 100 ft feature graded by its own spots, existing everywhere. Graded only
+  // inside the features, the other half is proposed as existing and counts as covered; graded everywhere, the proposed
+  // grade reaches half the boundary and says so.
+  {
+    id: "coverage-inside-features",
+    kind: "coverage-inside",
+    side: 100,
+    boundary: [[0, 0], [2, 0], [2, 1], [0, 1]],
+    runs: [s("eg1", "EG", "EG", 10, 0, 0), s("eg2", "EG", "EG", 10, 2, 0), s("eg3", "EG", "EG", 10, 2, 1), s("eg4", "EG", "EG", 10, 0, 1), s("fg1", "FG", "FG", 10.5, 0, 0), s("fg2", "FG", "FG", 10.5, 1, 0), s("fg3", "FG", "FG", 10.5, 1, 1), s("fg4", "FG", "FG", 10.5, 0, 1)],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0, polygon: [[0, 0], [1, 0], [1, 1], [0, 1]] }],
+    expect: { inside: "covered", everywhere: "50% warned" },
+  },
   // D-1158: a proposed point just outside the boundary keeps its triangle. The pond above with its 120 ft contour at
   // 9.00 drawn by hand, one corner 0.01 ft (and 0.1 ft) past the boundary: 14,400 SF x 1.0 / 27 = 533.33 CY either way.
   // At 0.1 ft the clipper threw on that corner's piece and the engine had dropped it (511.11 CY, 600 SF short).
@@ -1393,7 +1430,7 @@ export const EARTHWORK_CASES = [
       "strip_reuse_fill:s1": 50,
       "soil_import:__soil_import__": 187.5,
       // D-177: the import's bank figure in brackets, 300 - 150 = 150 BCY; fill is compacted.
-      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill (150 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY compacted (spec term — confirm the material) (150 BCY)",
       "soil_import:__soil_import__:unit": "LCY",
       "cut:remainder:unit": "BCY",
       "fill:remainder:unit": "CCY",
@@ -1837,7 +1874,7 @@ export const EARTHWORK_CASES = [
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
       "soil_import:__soil_import__": 100,
-      "soil_import:__soil_import__:name": "Soil Import — Select Borrow (80 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY compacted (80 BCY)",
     },
   },
   // --- D-177: the factors as printed; each line in its true unit; the bank figure named ---
@@ -1870,7 +1907,7 @@ export const EARTHWORK_CASES = [
     expect: {
       "soil_import:__soil_import__": 287.5,
       "soil_import:__soil_import__:unit": "LCY",
-      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill (230 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY compacted (spec term — confirm the material) (230 BCY)",
     },
   },
   // Metric, thousands separated: cut 2,500.4 BCM, no fill, swell 1.2: export 3,000.48 LCM,

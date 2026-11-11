@@ -29432,3 +29432,44 @@ sheet's), v8 (a site's).
   copies by D-1147 to D-1152. The key moves to v9 so those v8 results read out of date ("features").
 - Found with it: the kept inputs (D-549) had left out "Grade only inside features" (D-1151), so a rebuild of a result
   calculated with it set by hand would not match; kept now.
+
+## D-1159: One list of import soils; ground outside the features counts as covered
+
+**Status:** Accepted (2026-11-11, founder's Y). `lib/takeoff/earthwork/importFill.ts`, `ImportFillField.tsx`; api
+`SiteChoices.import_custom`, migration da15e6f70819 (Houston prices).
+
+- One list for the project's import and each Site Feature's specified import (a dropdown, the project's soil first;
+  no free text): Common fill (general borrow), Select fill (low-PI clay), Fill sand (bank sand), Custom (name, price
+  per ton or loose CY, unit weight compacted). Each is bought at the pit, the import's own trucks hauling it (D-1135),
+  under its library key; the line names it with its weights ("Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY
+  compacted") and the dialog shows its price on the project.
+- Weights, Caterpillar's earthwork volume tables: common fill 1.28 t/LCY loose, 1.60 compacted (earth dry packed,
+  bank); select fill 1.35 and 2.03 (sand and clay); fill sand 1.20 and 1.35 (sand dry, bank).
+- Houston prices at the pit (regional rows, 26420), each in its key's unit:
+  - Common fill $6.25/TON, grade D: no Houston pit price is published; $8 a loose CY judged below select fill's range,
+    at 1.28 t/LCY. (National $9.47/TON, B.)
+  - Select fill $11.50/CY, grade C: a Houston borrow pit's published $8-15 a CY clay-based, the midpoint.
+  - Fill sand $24.99/TON, grade C: a Houston yard's $29.99 a CY picked up, at 1.20 t/LCY; a retail ceiling. (National
+    $16.87/TON, A.)
+  No Houston public bid prices these at the pit (Harris, Fort Bend, Montgomery, Brazoria, Galveston, Waller, Chambers,
+  Liberty searched). Fort Bend County's annual earthen materials tabs (B25-041, B26-048, field sand) could not be read
+  automatically; they are the first source to read by hand.
+- Custom: the soil becomes a workspace custom material priced on the project at what was typed; bought by the ton at
+  its compacted weight over shrink x swell (a loose CY is shrink x swell compacted CY, D-177), or by the loose CY.
+- "Engineered Fill" and "Structural Fill" are specification terms, not materials: gone from the list. A project that
+  saved one reads it as Select fill with "Spec term — confirm the material" until a soil is picked; nothing is written
+  to it until then (read-time mapping, no data migration). New projects default to Select fill. The undercut
+  replacement fills (a separate list) are unchanged.
+- Coverage: with "Grade only inside features" on, the ground outside them is proposed as existing, so it counts as
+  covered, and the uncovered pieces are kept to the features' ground. Real bid A C12 (copy) had warned "72%"; now no
+  warning (every feature's ground has both surfaces).
+- Found with it: the Calculate dialog wrote the site choices without "Grade only inside features" (D-1151) and the
+  specified imports (D-1136), so a Calculate there dropped them; kept now, with the custom soil.
+- Real bid A C12 (copy), before: "Soil Import — Select Borrow (5,567 BCY)", 6,958.93 LCY, select fill at the pit
+  (fill:select:fob), coverage warning 72 %. After: "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 2.03 t/CY
+  compacted (4,855 BCY)", 6,069.28 LCY, the same key at $11.50/CY, no coverage warning. The quantity moved with the
+  engine (v9: the edge slope, 519 CCY, and the undercut's sloped sides placing 1,219 CCY of the drive's fill as
+  stabilized native), not with the list.
+- Quantity table: 100 LCY buys 128 TON common fill, 100 CY select fill, 120 TON fill sand, 152 TON of a custom soil
+  at 1.9 t/CY (shrink 1.0, swell 1.25); "Engineered" and "Structural Fill" read as Select fill, flagged; a 200 x 100 ft
+  boundary with a 100 x 100 ft feature: covered graded inside it, "50%" warned graded everywhere.

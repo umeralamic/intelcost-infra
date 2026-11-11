@@ -1097,6 +1097,7 @@ try {
     const tieIn = await import("/src/lib/takeoff/earthwork/volume/tieIn.ts");
     const slope = await import("/src/lib/takeoff/earthwork/slope.ts");
     const oc = await import("/src/lib/takeoff/earthwork/offsetContour.ts");
+    const imf = await import("/src/lib/takeoff/earthwork/importFill.ts");
     const jobBalance = await import("/src/features/takeoff/earthwork/jobBalance.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
@@ -1574,6 +1575,36 @@ try {
           outsideWithoutSF: outside(c.runs),
           outsideWithSF: outside([...c.runs, ...added]),
         };
+      }
+      // D-1159: what an import line buys for 100 LCY of each soil, and the soil an older name reads as.
+      if (c.kind === "import-fill") {
+        const out = {};
+        for (const [label, fillType, custom] of c.cases) {
+          const r = imf.importFillOf(fillType, custom ? imf.customFill(custom) : null);
+          const lines = ln.earthworkLines({ units: "CY", regions: [{ id: "pad", label: "Pad", cutCY: 0, fillCY: 100 / 1.25 }], assumptions: { suitable: true, fillType, swell: 1.25, shrink: 1, importCustom: custom ? imf.customFill(custom) : null } });
+          const imp = lines.find((l) => l.role === "soil_import");
+          const m = imp ? mats.siteMaterials({ role: imp.role, unit: imp.unit, variant: imp.variant, name: imp.name, matKey: imp.matKey, matFactor: imp.matFactor, matUnit: imp.matUnit })?.[0] : null;
+          const qty = m ? imp.quantity * (Number(m.qty.split("*")[1]) || 1) : null;
+          out[label] = `${r.custom ? r.custom.name : r.fill?.name}${r.specTerm ? " (spec term)" : ""} | ${m?.matKey.replace(/^custom:.*/, "custom") ?? "none"} | ${qty == null ? "" : Math.round(qty * 100) / 100} ${m?.unit ?? ""}`;
+        }
+        return out;
+      }
+      // D-1159: graded only inside the features, the ground outside them counts as covered.
+      if (c.kind === "coverage-inside") {
+        const runs = runsOf(c.runs);
+        const labels = labelsOf(c.runs);
+        const pts = (poly) => poly.map(([x, y]) => ({ x, y }));
+        const out = {};
+        for (const inside of [true, false]) {
+          const r = vol.computeVolumes(
+            { eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary: pts(c.boundary), calibration: { feetPerNorm: c.side, widthPt: 1, heightPt: 1 }, units: "CY", roleAreas: c.roleAreas.map((a) => ({ ...a, polygon: pts(a.polygon) })), ...(inside ? { gradeOnlyInsideFeatures: true } : {}) },
+            runs,
+            labels,
+          );
+          const w = r.ok === true ? r.warnings.find((x) => x.code === "partial_coverage") : null;
+          out[inside ? "inside" : "everywhere"] = w ? `${Math.round(w.ratio * 100)}% warned` : "covered";
+        }
+        return out;
       }
       // D-1152: the edge slope from each feature's edge to flat existing ground at 100.00 (feet on a 1,000 ft page).
       if (c.kind === "edge-slope") {
