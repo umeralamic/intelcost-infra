@@ -1145,6 +1145,9 @@ try {
     const gp = await import("/src/features/takeoff/earthwork/geotech/placed.ts");
     const sk = await import("/src/features/takeoff/earthwork/site/siteKey.ts");
     const ss = await import("/src/lib/takeoff/earthwork/siteSection.ts");
+    const secf = await import("/src/lib/takeoff/earthwork/sectionFeatures.ts");
+    const defs = await import("/src/features/takeoff/earthwork/siteSectionDefaults.ts");
+    const sitems = await import("/src/lib/takeoff/earthwork/siteItems.ts");
     const xy = (poly) => poly.map(([x, y]) => ({ x, y }));
     const ptsText = (pts) => pts.map((p) => `${+p.x.toFixed(6)},${+p.y.toFixed(6)}`).join(" ");
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
@@ -1596,6 +1599,16 @@ try {
         };
       }
       // D-1160: a job member an older engine worked out is stale, so Calculate job calculates it before striking.
+      // D-1163 (AB): an Area's area after its line features, as Calculate's section lines take it.
+      if (c.kind === "line-deduct") {
+        const scale = { widthPt: 1000, heightPt: 1000, feetPerNorm: 0.2 };
+        const y = c.at === "edge" ? 0.75 : 0.5;
+        const paving = { uuid: "P", type: "sf", is_site_feature: true, site_section: { ...defs.defaultArea("asphalt_light"), layers: [], deductLines: c.deduct }, geometries: [{ sheet_uuid: "s", vertices_json: [[0.25, 0.25], [0.75, 0.25], [0.75, 0.75], [0.25, 0.75]], shape_meta: null }] };
+        const curb = defs.defaultLine("curb_gutter");
+        const line = { uuid: "L", type: "lf", is_site_feature: true, site_section: c.line === "curb" ? curb : sitems.defaultLineItem("striping"), geometries: [{ sheet_uuid: "s", vertices_json: [[0.25, y], [0.75, y]], shape_meta: null }] };
+        const f = secf.sheetSectionFeatures([paving, line], "s", scale).find((x) => x.itemId === "P");
+        return { footprintFt: ss.curbFootprintFt(curb), areaSf: Math.round(f.areaSf * 100) / 100 };
+      }
       if (c.kind === "behind-engine") {
         return { engine: `${ENGINE_VERSION.sheet}/${ENGINE_VERSION.site}`, ...Object.fromEntries(c.cases.map(([key, basis]) => [`${basis}:${key}`, behindEngine(key, basis)])) };
       }

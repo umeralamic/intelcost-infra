@@ -564,14 +564,22 @@ export const EARTHWORK_CASES = [
     bores: [{ id: "GT-05 B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
     expect: { "GT-05 B-1": 41.5 },
   },
+  // --- D-1163 (AB): an Area's layers lose a line feature's footprint where it lies inside --------------------------
+  // A 100 x 100 ft paving (10,000 SF) on a 200 x 200 ft page; 100 LF of curb and gutter, 2.5 ft across (6 in curb +
+  // 24 in pan). Inside: 100 x 2.5 = 250 SF off, 9,750. On the edge: the band centred on the line, half inside, 125 SF
+  // off, 9,875 (it had been 9,750). Unticked: 10,000. Striping inside: a line item takes nothing off, 10,000.
+  { id: "ab-curb-inside", kind: "line-deduct", line: "curb", at: "inside", deduct: true, expect: { footprintFt: 2.5, areaSf: 9750 } },
+  { id: "ab-curb-on-edge", kind: "line-deduct", line: "curb", at: "edge", deduct: true, expect: { footprintFt: 2.5, areaSf: 9875 } },
+  { id: "ab-curb-unticked", kind: "line-deduct", line: "curb", at: "inside", deduct: false, expect: { footprintFt: 2.5, areaSf: 10000 } },
+  { id: "ab-striping-inside", kind: "line-deduct", line: "striping", at: "inside", deduct: true, expect: { footprintFt: 2.5, areaSf: 10000 } },
   // --- D-1160: a job member an older engine worked out is stale (Calculate job calculates it first) ----------------
-  // The engine is v10 a sheet's and a site's (D-1161): a v8 or v9 sheet is behind, "u2" or not; v10 is current; a
-  // site's v9 and v8 are behind; an empty or unreadable key is not behind.
+  // The engine is v11 a sheet's and a site's (D-1163): a v8, v9 or v10 sheet is behind, "u2" or not; v11 is current;
+  // a site's v9 and v8 are behind; an empty or unreadable key is not behind.
   {
     id: "d1160-behind-engine",
     kind: "behind-engine",
-    cases: [["v8u2:abc", "sheet"], ["v9:abc", "sheet"], ["v10u2:abc", "sheet"], ["v10:abc", "sheet"], ["v9:abc", "site"], ["v8:abc", "site"], ["", "sheet"], ["x:abc", "sheet"]],
-    expect: { engine: "10/10", "sheet:v8u2:abc": true, "sheet:v9:abc": true, "sheet:v10u2:abc": false, "sheet:v10:abc": false, "site:v9:abc": true, "site:v8:abc": true, "sheet:": false, "sheet:x:abc": false },
+    cases: [["v8u2:abc", "sheet"], ["v9:abc", "sheet"], ["v10u2:abc", "sheet"], ["v10:abc", "sheet"], ["v11u2:abc", "sheet"], ["v11:abc", "sheet"], ["v9:abc", "site"], ["v8:abc", "site"], ["", "sheet"], ["x:abc", "sheet"]],
+    expect: { engine: "11/11", "sheet:v8u2:abc": true, "sheet:v9:abc": true, "sheet:v10u2:abc": true, "sheet:v10:abc": true, "sheet:v11u2:abc": false, "sheet:v11:abc": false, "site:v9:abc": true, "site:v8:abc": true, "sheet:": false, "sheet:x:abc": false },
   },
   // --- D-1160: an undercut measured from the section's bottom (a liner), on a pad in fill -------------------------
   // A 100 x 100 ft pad with a 0.5 ft section, EG 100, FG 102: the region fills 10,000 x 1.5 = 15,000 CF = 555.56 CY.

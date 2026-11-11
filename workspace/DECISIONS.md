@@ -29565,3 +29565,23 @@ engine key v10 (a sheet's), v9 (a site's).
   puts it, before the join is confirmed: a wrong pick shows as a drawing that does not line up. It is drawn past this
   page's edge as far as the pane shows, takes no clicks, and goes when the join is saved or cancelled. Nothing is saved
   by it; no quantity changes.
+
+## D-1163: An Area's line features: the footprint inside, by default, with plain words
+
+**Status:** Accepted (2026-11-11, founder's AB). `sectionFeatures.ts` (`footprintInsideSf`), `SiteFeatureDialog.tsx`,
+`versionKey.ts` (engine v11, a sheet's and a site's).
+
+- The tick reads "Subtract curbs and other line features from this area (so their footprint isn't counted twice)", with
+  a one-line example under it. It is on by default for every Area with a section, and each feature can untick it.
+- What it changes: the Area's own section lines only, its layers (slab, asphalt, base, tack), fine grade, proof roll,
+  geotextile and layout staking. It does not change Subgrade Prep's or the undercut's footprint, nor cut and fill: those
+  come from the feature outlines in the volume engine, and a curb's own concrete, base and excavation are its own lines.
+- The footprint is a band the line's width (its profile's widest extent) centred on the drawn line, flat at its ends and
+  round at its bends, clipped to the Area. A line wholly inside takes length x width; a line drawn on the Area's edge
+  takes only the half of its width inside (it had taken the whole width); a line outside takes nothing.
+- Line items (striping, fences, silt fence and the rest) never subtract; a clearing Area and an Area site item never
+  subtract (D-951, as before).
+- Engine v11: a result saved before is marked behind, so a job recalculates it first. No bench project has a concrete
+  line feature beside a layered Area (19 layered Areas, 0 line features), so no saved figure changes.
+- Quantity table: 100 x 100 ft paving with 100 LF of 2.5 ft curb and gutter: inside 9,750 SF; on the edge 9,875 SF
+  (was 9,750); unticked 10,000 SF; striping inside 10,000 SF. The behind-engine row moves to v11 (v10 now behind).
