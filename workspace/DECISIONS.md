@@ -29236,3 +29236,40 @@ read-back to the places Qty x rate needs is no longer shown.
 
 **Status:** Accepted (2026-11-10, founder's O). A grading line of yards under half a yard (it shows as 0: "Cut, dozer
 push 0 BCY") is not written; its spread's hours go to the lines that do the work (`toWrite`).
+
+## D-1149: Undercut: sloped sides past 4 ft, the edge at the depth, a liner only under a section, stabilizing the whole layer
+
+**Status:** Accepted (2026-11-10, founder's P). Migration `da12b3c4d5e6`.
+
+- Kept: the four "measured below" choices, "The lower of existing and subgrade" the default. Checked, already so: the
+  volume is only what lies below both the proposed subgrade and the stripped existing grade (`undercutVolumeCF`
+  clamps the band in placed fill for "Subgrade" and the band above subgrade in deep cut for "Existing"), so no placed
+  fill and no cut soil counted twice.
+- "The section's bottom, a liner" is offered only where the feature has a section.
+- Extend beyond edge: "or equal to the undercut depth, whichever is greater" (`undercut_offset_at_depth`).
+- Deeper than 4 ft the sides slope 1:1 (stated, grade D: OSHA's Type B soil): the wedge round the edge, perimeter x
+  depth x depth / 2, is dug and replaced too.
+- Replacement: "Native soil, recompacted (in the job balance)" (its dig re-placed, the shrink's shortfall from the
+  job's soil) or an imported material, bought on its own replacement line (as a Specified import): the list as it was,
+  the native choice renamed.
+- Stabilized native soil (D-1146's S4): the stabilize and Excavate & Recompact lines take the whole treated layer,
+  area x depth, as its agent is priced, in cut and in fill alike: Real bid A's C12, 22.72 CY to 1,271.7 CY.
+- Quantity table: the edge at the depth (196 SF, 392 CF), sloped sides (5 ft: 1,000 CF; 4 ft: 400 CF). Valmont's and
+  the undercut smoke project's before and after are taken with the end of the run's totals.
+
+## D-1150: Boundary from the Site Features or the proposed grade, offset in or out
+
+**Status:** Accepted (2026-11-10, founder's Q). `lib/takeoff/earthwork/boundaryFrom.ts`, `BoundaryFromDialog.tsx`.
+
+- Draw stays the Boundary tool's way. "Boundary from…" by the Site Features button makes one from what is on the sheet;
+  a boundary only (no stripping or Site Prep on it), replacing the sheet's own after the usual question.
+- From selected features: the ticked features' outlines united, every gap of up to 2 ft closed (each grown 1 ft,
+  united, shrunk back 1 ft, the outlines themselves kept). Farther apart: "One boundary (includes the ground between)",
+  their convex hull, or "Separate boundaries"; a sheet holds one work boundary, so the first is placed and the others
+  go on sheets of their own (Duplicate sheet), said so.
+- Extent of proposed grade: the convex hull of the proposed grade's points.
+- Offset (ft, + out, - in), with "X SF added outside the proposed grade: not in cut/fill".
+- Not built: "Pick a line on the sheet" (a closed vector polyline). The PDF's vector segments are on hand (Snap PDF),
+  but thinned to 24 a 12 pt cell, and the canvas has no one-click pick mode yet; follow-up.
+- Quantity table: touching (one boundary, 20,000 SF), 1 ft gap (closed, 20,100 SF), 200 ft apart (two pieces; one over
+  both 40,000 SF); offset 5 ft out 12,100 SF with 2,100 SF outside the grade, 5 ft in 8,100 SF.
