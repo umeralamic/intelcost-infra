@@ -74,6 +74,12 @@ export const JOB_CASES = [
     b: { before: 600, after: 800 },
     expect: { "1:stale": "B", "1:A:cut_export:padA": 340, "1:A:soil_export:__soil_export__": 425, "1:B:fill:padB": 600, "2:stale": "", "2:A:cut:padA": 880, "2:A:cut_export:padA": 120, "2:A:soil_export:__soil_export__": 150, "2:B:fill:padB": 800, "3:same": true },
   },
+  // D-1150: a boundary from the picked features (100 x 100 ft each, 1,000 x 1,000 ft page): touching, one boundary of
+  // 20,000 SF; 1 ft apart, the gap closed (20,100 SF); 200 ft apart, two pieces, or one over both and the ground between
+  // (40,000 SF). Offset 5 ft out: 12,100 SF, 2,100 SF outside the grade; 5 ft in: 8,100 SF.
+  { id: "boundary-touching", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.1, 0, 0.1, 0.1]], offsetFt: 5, expect: { pieces: 1, areaSF: "20000", joinedSF: 20000, offsetSF: 12100, outsideSF: 2100 } },
+  { id: "boundary-1ft-gap", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.101, 0, 0.1, 0.1]], offsetFt: -5, expect: { pieces: 1, areaSF: "20100", joinedSF: 20100, offsetSF: 8100 } },
+  { id: "boundary-200ft-apart", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.3, 0, 0.1, 0.1]], expect: { pieces: 2, areaSF: "10000 10000", joinedSF: 40000 } },
   // D-1137: a stitched site (A and B, no site result) is one member; marked Separate job, its sheets still balance
   // together: A's 1,000 BCY cut fills B's 300 CCY (330 BCY at 1.1), 670 out (837.5 LCY on A); C, alone in the job,
   // imports its 600 CCY (660 BCY, 825 LCY).
@@ -115,6 +121,10 @@ export const JOB_CASES = [
   // Distance between areas (D-1131 b): two 100 ft boundaries 2,000 ft apart, centroid to centroid.
   { id: "job-distance-2000ft", kind: "job", between: [SQ(0, 0), SQ(2000, 0)], expect: { distanceFt: 2000 } },
 ];
+
+/** D-1149: a 100 x 70 ft undercut 6.5 ft deep has sloped sides past 4 ft: the wedge round its 340 ft edge,
+ *  340 x 6.5 x 6.5 / 2 = 7,182.5 CF, is dug too. The Q13 and D-895 rows test the clamp; this is added to each. */
+const UC_SIDES_CY = (340 * 6.5 * 6.5) / 2 / 27;
 
 export const EARTHWORK_CASES = [
   // --- Block B: the TIN (legacy's tin.test.ts) -----------------------------------------
@@ -481,7 +491,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
     undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 31500 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // Cut area: EG 102, FG 100, the subgrade below existing ground: unchanged, 1,685.19 CY.
   {
@@ -491,7 +501,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
     undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // Both in one pad: EG 100, FG rising 99 to 103 west to east, so dz = 4x - 1 (x across, 0 to 1).
   // Fill east of x = 0.25; the mean of max(0, dz) over x is the integral of 4x - 1 from 0.25 to 1 =
@@ -503,7 +513,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
     undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 37625 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 37625 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // The pad's own 0.5 ft section: FG 102.5 less 0.5 = a subgrade at 102, 2.0 ft above EG 100:
   // the fill-area answer again, 1,166.67 CY.
@@ -515,7 +525,7 @@ export const EARTHWORK_CASES = [
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102.5, 102.5, 102.5, 102.5])],
     roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] }],
     undercut: { id: "pad", depthFt: 0.5, undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 31500 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // --- D-895: an undercut's bottom is the lower of stripped existing grade and subgrade, less d ---
   // The same 7,000 SF pad, 6.5 ft. In fill (EG 100, FG 102) the bottom is 93.5, below existing: 45,500 CF.
@@ -526,7 +536,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
     undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // In cut (EG 102, FG 100) the bottom is 93.5, below subgrade: 45,500 CF.
   {
@@ -536,7 +546,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
     undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // Cut and fill in one pad, dz = 4x - 1: 6.5 ft all over, 45,500 CF.
   {
@@ -546,7 +556,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
     undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // The override "below existing", in cut: EG 102 less 6.5 is 95.5; the 2.0 ft down to the subgrade is cut, so 4.5 ft is undercut: 31,500 CF.
   {
@@ -556,7 +566,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
     undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 31500 / 27 },
+    expect: { ok: true, "undercut:CY": 31500 / 27 + UC_SIDES_CY},
   },
   // The override "below existing", in fill: from existing ground, the full 6.5 ft.
   {
@@ -566,7 +576,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
     undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // The override "below existing", dz = 4x - 1: d + min(dz, 0); the cut side x < 0.25 loses 0.125 ft of mean depth: 6.375 ft over 7,000 SF = 44,625 CF.
   {
@@ -576,7 +586,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
     undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 44625 / 27 },
+    expect: { ok: true, "undercut:CY": 44625 / 27 + UC_SIDES_CY},
   },
   // --- F26 R-1: the grading report's statistics (D-430), on planes worked by hand -------
   // 100 x 100 ft, EG flat at 100; FG a plane rising 2 ft west to east: all fill, height 0 to 2,
@@ -955,6 +965,27 @@ export const EARTHWORK_CASES = [
       { uuid: "B", name: "Asphalt", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
     ],
     expect: { order: "B,A", roleAreas: "B,A", "B:prepSF": 100, "A:prepSF": 50 },
+  },
+  // D-1149: "equal to the undercut depth, whichever is greater": a 10 x 10 ft square, undercut 2 ft, offset 0 ticked
+  // at depth: 2 ft beyond the edge, 14 x 14 = 196 SF (square corners), 392 CF.
+  {
+    id: "sf-undercut-offset-at-depth",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [{ uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 2, undercut_offset_ft: 0, undercut_offset_at_depth: true, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] }],
+    expect: { order: "A", "A:undercutSF": 196, "A:undercutCF": 392 },
+  },
+  // D-1149: deeper than 4 ft the sides slope 1:1: a 10 x 10 ft square undercut 5 ft digs 500 CF plus the wedge round its
+  // 40 ft edge, 40 x 5 x 5 / 2 = 500 CF: 1,000 CF; at 4 ft, vertical sides, 400 CF.
+  {
+    id: "sf-undercut-sloped-sides",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 5, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] },
+      { uuid: "B", name: "B", created_at: "2026-09-30T09:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 4, undercut_fill_material: "Select Fill", polygons: [[[0.5, 0.5], [0.6, 0.5], [0.6, 0.6], [0.5, 0.6]]] },
+    ],
+    expect: { order: "A,B", "A:undercutSF": 100, "A:undercutCF": 1000, "B:undercutCF": 400 },
   },
   // D-471: the older undercut's offset fringe outside its own outline stays its own. A 10 x 10 ft
   // square A, undercut 1 ft, offset 1 ft: 12 x 12 = 144 SF (square corners). A newer grading-only

@@ -1093,6 +1093,7 @@ try {
     const ln = await import("/src/lib/takeoff/earthwork/lines.ts");
     const job = await import("/src/lib/takeoff/earthwork/job.ts");
     const linesFor = await import("/src/features/takeoff/earthwork/linesFor.ts");
+    const boundaryFrom = await import("/src/lib/takeoff/earthwork/boundaryFrom.ts");
     const jobBalance = await import("/src/features/takeoff/earthwork/jobBalance.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
@@ -1529,6 +1530,19 @@ try {
         return out;
       }
       // D-1137: a stitched site's sheets are one member and, marked separate, balance together.
+      // D-1150: a boundary from the picked features, gaps of 2 ft closed; offset in or out; what lies outside the grade.
+      if (c.kind === "boundary-from") {
+        const sq = ([x, y, w, h]) => [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }];
+        const sf = (ring) => Math.round(Math.abs(ring.reduce((t, p, k) => t + p.x * ring[(k + 1) % ring.length].y - ring[(k + 1) % ring.length].x * p.y, 0) / 2) * c.scale.widthPt * c.scale.heightPt * c.scale.feetPerNorm ** 2 * 100) / 100;
+        const r = boundaryFrom.boundaryFromFeatures(c.features.map(sq), c.scale);
+        const out = { pieces: r.pieces.length, areaSF: r.pieces.map(sf).join(" "), joinedSF: sf(r.joined) };
+        if (c.offsetFt !== undefined) {
+          const o = boundaryFrom.offsetBoundary(sq(c.features[0]), c.offsetFt, c.scale);
+          out.offsetSF = sf(o);
+          out.outsideSF = Math.round(boundaryFrom.outsideProposedSF(o, sq(c.features[0]), c.scale) * 100) / 100;
+        }
+        return out;
+      }
       if (c.kind === "jobsite") {
         const stored = (key, cut, fill) => ({ ok: true, units: "CY", cutCY: cut, fillCY: fill, netCY: cut - fill, regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], coverage: 1, warnings: [], strip: null });
         const site = { key: "S", label: `Site ${c.rows.filter((r) => r.site).map((r) => r.key).join("–")}` };
