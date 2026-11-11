@@ -33,8 +33,8 @@ fi
 EQ_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select (select count(*) from eqlib.eq_class)||' '||(select count(*) from eqlib.eq_activity)||' '||(select count(*) from eqlib.eq_production)||' '||(select count(*) from eqlib.eq_transport_class)||' '||(select count(*) from eqlib.eq_setting)||' '||(select count(*) from eqlib.eq_soil_conversion)||' '||(select count(*) from eqlib.eq_source)||' '||(select count(*) from eqlib.eq_class where rent_day = 0 or rent_week = 0 or rent_4wk = 0)")
 # D-1035: 6 haul-cycle settings in release 35 (haul distance, payload, dump and load minutes, loaded and empty speed).
 # D-1043, release 39: the dump queue / scale minutes per load, one setting more (63 + 1 = 64); the speeds move in place.
-if [ "$EQ_COUNTS" != "642 104 592 9 64 4 159 0" ]; then
-  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 64 4 159 0"
+if [ "$EQ_COUNTS" != "642 104 592 9 65 4 159 0" ]; then
+  echo "FAIL  eqlib release 1 counts (classes activities production transport settings soils sources zero-rents): $EQ_COUNTS, expected 642 104 592 9 65 4 159 0"
   exit 1
 fi
 # The first material release (M10, D-916): its keys by grade, the core set priced, its 14 gaps left out;

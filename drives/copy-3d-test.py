@@ -173,6 +173,54 @@ def main(argv: list[str]) -> int:
         )
         # Renamed the moment it is made (A4, D-544): the source's name never stays on a copy.
         project.name = f"BENCH DUP {datetime.now(UTC):%Y-%m-%d %H:%M} — delete me"
+        # S1 (D-1145): the copy keeps its source's dump-site setup. The sites the source could be priced at (its
+        # assigned ones, or every site of its workspace when it is not held to them) are copied into the throwaway
+        # workspace as test sites and assigned to the copy, and only they price it: a source with none prices at
+        # the library's fallback, as the source does, never at the throwaway workspace's example sites.
+        from app.features.disposal.models import DumpSite, ProjectDumpSite
+
+        src = session.get(Project, source_id)
+        assigned = {
+            r.dump_site_id: r
+            for r in session.scalars(select(ProjectDumpSite).where(ProjectDumpSite.project_id == source_id))
+        }
+        candidates = session.scalars(
+            select(DumpSite).where(
+                DumpSite.id.in_(list(assigned))
+                if src is not None and src.dump_sites_assigned_only
+                else DumpSite.workspace_id == (src.workspace_id if src is not None else -1)
+            )
+        ).all()
+        project.dump_sites_assigned_only = True
+        for site in candidates:
+            name = f"{site.name} (test, from the source)"
+            mine = session.scalar(select(DumpSite).where(DumpSite.workspace_id == target_id, DumpSite.name == name))
+            if mine is None:
+                mine = DumpSite(
+                    workspace_id=target_id,
+                    name=name,
+                    materials=list(site.materials or []),
+                    fee=site.fee,
+                    fee_unit=site.fee_unit,
+                    distance_mi=site.distance_mi,
+                    address=site.address,
+                    hours=site.hours,
+                    notes=site.notes,
+                    created_by_id=actor_id,
+                )
+                session.add(mine)
+                session.flush()
+            own = assigned.get(site.id)
+            session.add(
+                ProjectDumpSite(
+                    workspace_id=target_id,
+                    project_id=project.id,
+                    dump_site_id=mine.id,
+                    distance_mi=own.distance_mi if own is not None else None,
+                    chosen_for=list(own.chosen_for or []) if own is not None else [],
+                )
+            )
+        print(json.dumps({"dump_sites": {"copied": len(candidates), "assigned_only": True}}))
         session.commit()
         print(json.dumps({"copy": {"uuid": str(project.uuid), "name": project.name, "workspace": target_uuid}}))
         copy_id = project.id

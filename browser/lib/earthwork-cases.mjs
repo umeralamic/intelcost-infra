@@ -889,7 +889,8 @@ export const EARTHWORK_CASES = [
       { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
       { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
     ],
-    expect: { order: "B,A", roleAreas: "", "B:undercutSF": 100, "A:undercutSF": 50, "B:undercutCF": 100, "A:undercutCF": 50 },
+    // D-1147: a feature of depth 0 owns its area too: both are role areas.
+    expect: { order: "B,A", roleAreas: "B,A", "B:undercutSF": 100, "A:undercutSF": 50, "B:undercutCF": 100, "A:undercutCF": 50 },
   },
   // Prep on the same two, the boundary x in [0, 0.12]: B clipped to 0.05..0.12 = 7 x 10 =
   // 70 SF; A is 0..0.1 less B's 0.05..0.1 = 50 SF.
@@ -917,7 +918,43 @@ export const EARTHWORK_CASES = [
       { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
       { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
     ],
-    expect: { order: "B,A", roleAreas: "B", "A:undercutSF": 50, "A:undercutCF": 50, "A:prepSF": 50 },
+    expect: { order: "B,A", roleAreas: "B,A", "A:undercutSF": 50, "A:undercutCF": 50, "A:prepSF": 50 },
+  },
+  // D-1147: laid on top. A pond (depth 0, Subgrade Prep) and a newer erosion control blanket over its east half: the
+  // blanket is no earthwork feature, takes none of the pond's prep (100 SF stays) and is no role area; the pond owns
+  // its own area. Before, the newer blanket took 50 SF of the pond's prep (C16's slope ring).
+  {
+    id: "sf-overlay-erosion-ring",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "P", name: "Pond", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "E", name: "Erosion Control", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, prep_depth_ft: 1, prep_lifts: 1, site_section: { mode: "area", kind: "site_item", item: "erosion_blanket", byOthers: false }, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "P", roleAreas: "P", "P:prepSF": 100, "E:prepSF": undefined },
+  },
+  // Asphalt (0.5 ft) and a newer striping crosshatch over part of it: the crosshatch takes nothing; the asphalt keeps
+  // its whole area and prep.
+  {
+    id: "sf-overlay-striping-on-asphalt",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "Asphalt", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "S", name: "Striping", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, site_section: { mode: "area", kind: "site_item", item: "crosshatch", byOthers: false }, polygons: [[[0.02, 0.02], [0.06, 0.02], [0.06, 0.06], [0.02, 0.06]]] },
+    ],
+    expect: { order: "A", roleAreas: "A", "A:prepSF": 100 },
+  },
+  // Two sections overlapping (both own their area): the newer takes the overlap, as before.
+  {
+    id: "sf-two-sections-newer-takes",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "Concrete", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "B", name: "Asphalt", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "B,A", roleAreas: "B,A", "B:prepSF": 100, "A:prepSF": 50 },
   },
   // D-471: the older undercut's offset fringe outside its own outline stays its own. A 10 x 10 ft
   // square A, undercut 1 ft, offset 1 ft: 12 x 12 = 144 SF (square corners). A newer grading-only
@@ -931,10 +968,10 @@ export const EARTHWORK_CASES = [
       { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_offset_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] },
       { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, polygons: [[[0.12, 0.02], [0.22, 0.02], [0.22, 0.12], [0.12, 0.12]]] },
     ],
-    expect: { order: "B,A", roleAreas: "B", "A:undercutSF": 144, "A:undercutCF": 144 },
+    expect: { order: "B,A", roleAreas: "B,A", "A:undercutSF": 144, "A:undercutCF": 144 },
   },
-  // Q7: depth comes only from Site Features; a plain area with a depth, a feature at depth
-  // 0 (no section) and a line give grading nothing. Same times: ties by uuid, last first.
+  // Q7: depth comes only from Site Features; a plain area with a depth and a line give grading nothing. D-1147: a
+  // feature at depth 0 (a Zone) owns its area, so it is a role area too. Same times: ties by uuid, last first.
   {
     id: "sf-depth-only-from-features",
     kind: "features",
@@ -944,7 +981,7 @@ export const EARTHWORK_CASES = [
       { uuid: "flat", name: "Lawn", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, polygons: [[[0, 0], [1, 0], [1, 1]]] },
       { uuid: "line", name: "L", type: "lf", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 1, polygons: [[[0, 0], [1, 0], [1, 1]]] },
     ],
-    expect: { order: "flat,copy", roleAreas: "copy" },
+    expect: { order: "flat,copy", roleAreas: "flat,copy" },
   },
   // Remaining Site: the unit square at 100 ft less [0, 0.25] x [0, 1] = 7500 SF.
   { id: "sf-remaining-site", kind: "remaining", boundary: [[0, 0], [1, 0], [1, 1], [0, 1]], excluded: [[[0, 0], [0.25, 0], [0.25, 1], [0, 1]]], scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 }, expect: { areaSF: 7500 } },
