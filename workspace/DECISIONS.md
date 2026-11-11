@@ -29319,3 +29319,22 @@ push 0 BCY") is not written; its spread's hours go to the lines that do the work
 - Real bid A C12 (copy): fill 5,678.4 to 6,197.4 CCY, the Access Drive's edge slope 519.0 CCY, flagged 4.1 ft past the
   boundary; the Warehouse pad lies inside the drive, every edge shared, none. A contoured proposed grade has the choice
   off, so nothing moves.
+
+## D-1153: A commit that adds a client or project name is blocked
+
+**Status:** Accepted (2026-11-10, founder's follow-up). `.githooks/` in the app, the api and infra.
+
+- Each repo's `.githooks/pre-commit` and `commit-msg` run `.githooks/client-names.sh`: whole words, any case, in the
+  lines the commit adds, the files it adds or renames, and its message. Lines already in the tree are not checked, so
+  older names do not block an unrelated edit; editing a line that carries one does.
+- The names live outside git and outside the workspace mirror, one per line, in the file `INTELCOST_DENYLIST` names
+  (here `E:\Intelcost\.private\client-denylist.txt`, set as a user environment variable). Unset or missing: the
+  check is skipped with a warning.
+- Seeded with the real project names on the bench so far (client names, real project names, their job numbers).
+  Several already sit in older scripts and fixtures; left as they are, history is not rewritten.
+- `core.hooksPath` is local git config: a fresh clone runs `git config core.hooksPath .githooks` once.
+- Tried in each repo: a staged file with a name is refused (HEAD unchanged), a commit message with one is refused, a
+  clean file passes, no denylist warns and passes.
+- With it: two pushed migrations (d985a7e9c1b2, da09e0f1a2b3) reformatted by ruff format alone (the AST is the same),
+  a commit of their own, so `ruff format --check` passes clean. The daylight lines (D-1152) are solid amber over a dark
+  edge, above the cut and fill (tokens `--earthwork-daylight`, `--earthwork-daylight-halo`).
