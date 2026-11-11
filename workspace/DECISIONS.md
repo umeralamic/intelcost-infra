@@ -29356,3 +29356,56 @@ push 0 BCY") is not written; its spread's hours go to the lines that do the work
   `json_build_array(VARIADIC ARRAY[to_json(...), ...])`, the same text (compared on 31 rows), with no limit.
 - Quantity table: 4 H:V and 25 % give the same 5,333.33 CF (pad 2.5 ft up: wedges 5,000, corners 333.33); a drive
   from 1 ft above to 1 ft below at 3:1 in fill and 2:1 in cut: fill 100.00 CF, cut 66.67 CF.
+
+## D-1155: Offset… on a contour
+
+**Status:** Accepted (2026-11-11, founder's T). `lib/takeoff/earthwork/offsetContour.ts`, `OffsetContourDialog.tsx`.
+
+- An action on a contour, not a toolbar button: its right-click menu has "Offset…" (distance ± ft; elevation the
+  contour's own or typed). The Properties dialog is the container's (every contour of a surface), so the right-click is
+  where one contour's actions are. Placed as contours of the same surface, one per piece, each undone as itself.
+- A parallel copy: each segment moved the distance, corners mitered (bevelled past four times the distance). A closed
+  contour (ends within 0.5 ft) goes out for + and in for -; an open one to its right as drawn on the sheet for +. Cut
+  where it crosses or touches itself (a ring keeps the part turning its own way; an inset wider than the contour leaves
+  nothing), and trimmed at the work boundary (a piece on the boundary itself kept).
+- A contour drawn in pieces: the picked one and every contour of its surface and elevation touching it end to end
+  (within 1 ft) are followed as one line, the dialog says how many. C16's top of bank at 9.00 is two such chains (8
+  and 5 pieces), with gaps of about 18 and 60 ft between them.
+- Jitter out first: a traced contour steps back on itself by hundredths of a foot. Offset as drawn, each step became a
+  spike or a 0.07 ft jog that the proposed TIN read as a point on its own line, and Calculate refused the sheet
+  ("Arrangement invariant (b)"). The contour and its offset are simplified within 0.1 ft, steps under 0.25 ft dropped,
+  and the result snapped to 1e-12 of the page (a corner offset onto the boundary came back 2e-17 past it).
+- Quantity table: a square pond's contour (100 x 100 ft) at 9.00 on flat existing at 10.00, the boundary 10 ft out.
+  Without the offset contour the pond alone, 370.37 CY, and 4,400 SF outside the proposed grade ("not in cut/fill");
+  offset 10 ft out at 9.00 (one closed contour, 120 x 120): the berm cuts 4,400 x 1.0 / 27 = 162.96 CY, 533.33 in all.
+- Real bid A C16 (copy): before 34,349.81 CY cut; boundary 10 ft out 34,421.83 (coverage 86 %: 23,183 SF added outside
+  the proposed grade; the grade already reached past the old boundary in places, so +72.02); both offset chains 10 ft
+  out at 9.00: 34,460.50, the berm's cut 38.67 CY more, coverage 87 % (the bank's two gaps stay uncovered).
+- Found, follow-up: a proposed vertex 2e-17 outside the boundary makes Calculate drop that corner's whole triangle
+  (600 SF on the pond row before the snap). Snapped here; the volume engine itself is unchanged and should snap too.
+
+## D-1156: One Boundary button
+
+**Status:** Accepted (2026-11-11, founder's U). `BoundaryFromDialog.tsx`, `OffsetBoundaryDialog.tsx`.
+
+- The "Boundary from…" toolbar button is gone. Boundary opens one dialog: Draw (preselected), From selected features,
+  Extent of proposed grade. Its button reads "Start drawing" or "Place boundary"; Enter confirms. A choice the sheet
+  cannot use is greyed with its reason ("Draw a Site Feature first"; "Add proposed contours or spots first"). The
+  offset shows for the "from" choices only. Pressed while drawing, Boundary puts the tool down.
+- The boundary's right-click has "Offset…" (out + or in -, corners mitered, replacing it), with "X SF added outside the
+  proposed grade: not in cut/fill".
+- "Pick a line on the sheet" stays deferred, as D-1150: the sheet's vector segments are on hand (Snap PDF) but thinned,
+  and the canvas has no one-click pick of a closed polyline; Trace's line reading is the base for it, and "Trace all
+  contours" (planned) needs the same pick by style.
+
+## D-1157: One Contour button
+
+**Status:** Accepted (2026-11-11, founder's V). `ContourDialog.tsx`; `useAutoTrace` gains `vectorLines`.
+
+- Contour and Trace are one button: it opens a dialog with the mode (Draw, or Trace one vector contour at a time),
+  Existing or Proposed, and the interval; Enter starts. The tool stays in that mode until Esc; pressed while on, it
+  puts it down. The Trace button is gone. No "Trace all" in the app (planned, plans only).
+- Trace is greyed "This sheet has no vector lines" when the sheet's lines, read 1.2 s after the Earthwork tab opens,
+  hold none, and "Reading the sheet's lines…" until then.
+- Smoke (C16, C14 copies): the toolbar two buttons shorter; Trace on Proposed and Draw each armed and put down by Esc;
+  the Boundary dialog on C14 (no features, no proposed grade) with both "from" choices greyed and Enter arming Draw.

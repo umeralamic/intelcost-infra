@@ -96,6 +96,19 @@ export const JOB_CASES = [
   { id: "edge-slope-past-boundary", kind: "edge-slope", features: [{ ring: [[2, 0], [102, 0], [102, 100], [2, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[0, -500], [1000, -500], [1000, 1000], [0, 1000]], expect: { fillCF: 3376.19, cutCF: 0, pastFt: "5.5" } },
   { id: "edge-slope-edge-crossing", kind: "edge-slope", features: [{ ring: [[0, 0], [200, 0], [200, 20], [0, 20]], z: [101, 99, 99, 101] }], boundary: [[0, -50], [200, -50], [200, 70], [0, 70]], expect: { fillCF: 100, cutCF: 100, pastFt: "" } },
   { id: "edge-slope-two-pads-5ft", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }, { ring: [[105, 0], [205, 0], [205, 100], [105, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-50, 0], [255, 0], [255, 100], [-50, 100]], expect: { fillCF: 2916.67, cutCF: 0, pastFt: "" } },
+  // D-1155: a square pond's contour (100 x 100 ft) at 9.00 on flat existing at 10.00, the boundary 10 ft outside it.
+  // Without an offset contour the pond's cut alone, 10,000 / 27 = 370.37 CY, and the 4,400 SF ring between it and the
+  // boundary lies outside the proposed grade ("not in cut/fill"). Offset 10 ft out at 9.00 (corners mitered, 120 x 120,
+  // one closed contour inside the boundary): the berm cuts 4,400 x 1.0 / 27 = 162.96 CY, 533.33 in all, nothing outside.
+  {
+    id: "offset-contour-pond-berm",
+    kind: "offset-contour",
+    side: 1000,
+    runs: [s("eg1", "EG", "EG", 10, 0, 0), s("eg2", "EG", "EG", 10, 0.4, 0), s("eg3", "EG", "EG", 10, 0.4, 0.4), s("eg4", "EG", "EG", 10, 0, 0.4), c("pond", "Pond HB", "FG", 9, [[0.1, 0.1], [0.2, 0.1], [0.2, 0.2], [0.1, 0.2], [0.1, 0.1]])],
+    boundary: [[0.09, 0.09], [0.21, 0.09], [0.21, 0.21], [0.09, 0.21]],
+    offset: { run: 4, ft: 10, elevation: 9 },
+    expect: { pieces: 1, closed: true, withoutCutCY: 370.37, withCutCY: 533.33, bermCutCY: 162.96, outsideWithoutSF: 4400, outsideWithSF: 0 },
+  },
   // D-1154: the slope typed as 4 H:V or as 25 % is one slope: the pad 2.5 ft up gives four wedges 100 x 10 x 2.5 / 2
   // (5,000 CF) and four corners 10 x 10 x 2.5 / 3 (333.33), 5,333.33 either way. The drive +1 to -1 with 3:1 in fill and
   // 2:1 in cut: each long edge's section H h^2 / 2 over its half, H x 100 / 6, so fill 2 x 50 = 100 and cut 2 x 33.33 =

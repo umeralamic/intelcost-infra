@@ -1096,6 +1096,7 @@ try {
     const boundaryFrom = await import("/src/lib/takeoff/earthwork/boundaryFrom.ts");
     const tieIn = await import("/src/lib/takeoff/earthwork/volume/tieIn.ts");
     const slope = await import("/src/lib/takeoff/earthwork/slope.ts");
+    const oc = await import("/src/lib/takeoff/earthwork/offsetContour.ts");
     const jobBalance = await import("/src/features/takeoff/earthwork/jobBalance.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
@@ -1544,6 +1545,35 @@ try {
           out.outsideSF = Math.round(boundaryFrom.outsideProposedSF(o, sq(c.features[0]), c.scale) * 100) / 100;
         }
         return out;
+      }
+      // D-1155: a contour offset (trimmed at the boundary) and the volumes with and without it; what the boundary holds
+      // outside the proposed grade ("not in cut/fill").
+      if (c.kind === "offset-contour") {
+        const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
+        const pts = (poly) => poly.map(([x, y]) => ({ x, y }));
+        const boundary = pts(c.boundary);
+        const base = c.runs[c.offset.run];
+        const pieces = oc.offsetContour(pts(base.points), c.offset.ft, scale, boundary);
+        const added = pieces.map((p, i) => ({ item: `offset${i}`, kind: "contour", surface: base.surface, elevation: c.offset.elevation ?? base.elevation, points: p.map((q) => [q.x, q.y]) }));
+        const volumeOf = (list) => {
+          const runs = runsOf(list);
+          const labels = labelsOf(list);
+          const r = vol.computeVolumes({ eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: scale, units: "CY" }, runs, labels);
+          return r.ok === true ? { cutCY: Math.round(r.cutCY * 100) / 100, fillCY: Math.round(r.fillCY * 100) / 100 } : { ok: r.ok };
+        };
+        const fgPoints = (list) => list.filter((r) => r.surface === "FG").flatMap((r) => pts(r.points));
+        const outside = (list) => Math.round(boundaryFrom.outsideProposedSF(boundary, boundaryFrom.proposedExtent(fgPoints(list)), scale) * 100) / 100;
+        const without = volumeOf(c.runs);
+        const withIt = volumeOf([...c.runs, ...added]);
+        return {
+          pieces: pieces.length,
+          closed: pieces.every((p) => p[0] === p[p.length - 1]),
+          withoutCutCY: without.cutCY,
+          withCutCY: withIt.cutCY,
+          bermCutCY: Math.round((withIt.cutCY - without.cutCY) * 100) / 100,
+          outsideWithoutSF: outside(c.runs),
+          outsideWithSF: outside([...c.runs, ...added]),
+        };
       }
       // D-1152: the edge slope from each feature's edge to flat existing ground at 100.00 (feet on a 1,000 ft page).
       if (c.kind === "edge-slope") {
