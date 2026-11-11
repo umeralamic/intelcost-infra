@@ -29551,3 +29551,17 @@ engine key v10 (a sheet's), v9 (a site's).
   their own parts, as before. Quantity table: two 50 x 100 ft sheets, each with a 45 x 90 ft boundary at the shared edge: the
   strip covers 8,100 SF (it had covered 4,050).
 - Found, not done: a site's line names carry the site's name twice ("<site>: Fill, Proposed ..., <site>").
+
+## D-1162: Stitch point picking: numbered markers only, and a faint aligned preview
+
+**Status:** Accepted (2026-11-11, founder's AA). `site/JoinPicks.tsx`, `site/JoinPreview.tsx` (new), `site/useSiteJoin.tsx`
+(`preview`), `pages/ProjectTakeoff.tsx`.
+
+- The picks show numbered markers only: no line from point to point, none from the last point to the cursor (they hid
+  the drawing under the picks). Each pair has its own number and colour, the same on both sheets (the collaborator
+  colours in turn), so pair 2 on the left is visibly pair 2 on the right. The same markers serve the lay-over match and
+  the reference pane.
+- While picking, as soon as the points give a fit, the other sheet is drawn faintly (35 %) over this one where that fit
+  puts it, before the join is confirmed: a wrong pick shows as a drawing that does not line up. It is drawn past this
+  page's edge as far as the pane shows, takes no clicks, and goes when the join is saved or cancelled. Nothing is saved
+  by it; no quantity changes.
