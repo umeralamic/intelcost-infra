@@ -29169,3 +29169,70 @@ read-back to the places Qty x rate needs is no longer shown.
   until the engineer's quote replaces it. Migration `da10e7f8091a`.
 - Dewatering on deep sewer is priced only where the bores put the water table above the trench bottom (D-908); with
   no bores, none. Logged as a follow-up, not built: a stated dewatering allowance by depth where no bore says.
+
+## D-1145: A throwaway copy keeps its source's dump-site setup
+
+**Status:** Accepted (2026-11-10, founder's S1). Migration `da11f8091a2b`; `drives/copy-3d-test.py`.
+
+- `project.dump_sites_assigned_only`: on, only the project's assigned dump sites price its disposal (none assigned:
+  the library's fallback). The copier copies the sites the source could be priced at (its assigned ones, or every site
+  of its workspace when it is not held to them) into the throwaway workspace as "<name> (test, from the source)",
+  assigns them to the copy as the source has them, and turns it on. The founder's workspace has no dump sites: a copy
+  of Real bid A now prices at the fallback (free fill site, IntelCost topsoil price), as the source does, never at the
+  throwaway workspace's example sites (15 mi, $2.50 and $6.50 a LCY).
+- Real bid A re-taken on a fresh copy: the source's lines are already D-1136's (the founder calculated it since: Soil
+  Export 26,400 BCY, no import, lime priced): $626,164.31 as copied, and the job struck again under K $626,164.31, to the
+  cent. Against the throwaway workspace's sites (D-1143's $780,055.03): export disposal $82,498.70, export trucking to
+  15 mi $51,430.02, topsoil $20,659.62, the pool's spread -$697.62.
+
+## D-1146: On-site haul distance; the articulated trucks follow their cycle; the fill kit is right
+
+**Status:** Accepted (2026-11-10, founder's S2 and S3). Migration `da12a1b2c3d4`.
+
+- S2, measured, not changed: the fill spread's 720 CCY a day is the tier file's 900 per 10 h day (A3's hours per day)
+  on the project's 8 h work day (`_default_production`); 90 CCY an hour either way, inside the 850-1,300 tier (per
+  10 h day) whose kit it gets. Picking the kit from 720 against tiers counted in 10 h days would mix the two days. The
+  D5's idle 44 % is its 4-week minimum (11.2 work days; 4 weeks $11,461 is cheaper than 2 weeks + 2 days $11,528).
+- S3: "On-site haul distance, one way" (Equipment settings, `onsite_haul_ft`; 1,000 ft unless set, stated, grade D:
+  the middle of the 300-1,500 ft a cut usually travels to a fill on one site). The on-site haul's (A1) articulated
+  trucks follow the cycle as the off-site trucks do (D-1035): loaded at the excavator's own pace, haul and return at
+  the library's ADT speeds (blank: 8 mph loaded, 12 empty, stated), 1 min dump, 0.5 min queue, the truck's heaped load
+  from the catalog (30 t: 23.3 LCY); a typed count stays. Each machine's operators follow its count. Like the other
+  settings it applies on the next Calculate or Update all.
+- C16 to C12-C13, 8,009 BCY, excavator-bound at 300, 800 and 1,500 ft alike (one load 7.46 min; two trucks cover a
+  cycle to 14.9 min, a third from about 2,520 ft): 2 trucks, 107 EH, $29,655.66, $3.70 a BCY (was 3 trucks fixed by the
+  tier, 160 EH, $44,483.50, $5.55); crew 3 operators; the Cut line $8.12 to $6.00 a BCY; the copy $626,164.31 to
+  $609,153.18. Not built yet: the per-line distance on Cut lines and the per-member distance between unregistered
+  sheets (the job default serves both).
+- S4, lime (measured): by area x depth x the project's 110 pcf dry x 6 %: C12 68,669.8 SF x 0.5 ft = 113.31 TON, C13
+  10,950.4 SF x 0.5 ft = 18.07 TON; 131.38 TON at $431.10 (`agent:lime` $423.90 a TON delivered, grade B, two
+  sources, at the location factor) = $56,635.40. The mixing line ("Undercut and stabilize", Excavate & Recompact) is
+  priced on the volume dug below existing grade, 22.72 CY on C12 of the 1,271.7 CY treated (most of the drive is in
+  fill): underpriced; fixed with P (D-1149).
+
+## D-1147: Overlays laid on top; every Zone and Section owns its area
+
+**Status:** Accepted (2026-11-10, founder's N).
+
+- Laid on top: an erosion control blanket, a striping crosshatch and a construction entrance (temporary: laid on top by
+  default, "Laid on top (temporary)" unticked when it replaces the ground under it), and as before an overlay of
+  existing pavement (D-985). They never take or give area: no cut, fill, Subgrade Prep or undercut of their own, no
+  role area, and no other feature's lines change; their own quantity is their whole area, overlays of one type that
+  overlap counted once (`isLaidOnTop`, `sheetSectionFeatures`). The dialog hides depth, Building pad, Undercut and
+  Subgrade Prep for them and says "Laid on top: doesn't take area from other features"; a prep or undercut set on one
+  before is no longer read, so its lines leave at the next Calculate.
+- Every other Site Feature (a Section or a Zone, depth 0 included) owns its area: its own cut and fill lines, the
+  Remaining site only what lies outside them; the newest takes overlaps, as today. Totals do not move (a depth of 0
+  grades to finished grade either way).
+- Real bid A's C16: the newer Erosion Control (depth 0, an erosion blanket) took 36,064 SF of the Pond's Subgrade Prep
+  (its slope ring); now it takes none and the Pond shows its own cut and fill. The sweep of the bench's projects: only
+  Real bid A has items laid on top (that blanket and C12's construction entrance, on no paving); no project has a
+  striping crosshatch, so none took area from paving. Not built: the blanket's quantity as surface area on slopes
+  (plan area today); logged.
+- Quantity table: the pond and its erosion ring, asphalt and a crosshatch, two sections overlapping; three earlier
+  rows now list the depth-0 feature as a role area.
+
+## D-1148: No zero lines after Calculate
+
+**Status:** Accepted (2026-11-10, founder's O). A grading line of yards under half a yard (it shows as 0: "Cut, dozer
+push 0 BCY") is not written; its spread's hours go to the lines that do the work (`toWrite`).
