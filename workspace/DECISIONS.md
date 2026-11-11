@@ -29596,3 +29596,28 @@ engine key v10 (a sheet's), v9 (a site's).
   negative distance moves the dashed copy to the "−" side. Nothing else changes; no quantity.
 - Trace's greyed state checked on a raster-only sheet (a PNG uploaded into the throwaway copy): the Contour dialog
   greys "Trace one vector contour at a time" with "(This sheet has no vector lines)"; Draw stays.
+
+## D-1165: The bid-tab rebuild as a harness; the 10 contracts again, sanitary by depth band
+
+**Status:** Accepted (2026-11-11, founder's backlog). `intelcost-infra/bidtabs/contract-runner.js` (through the Playwright
+MCP) and `bidtabs/rebuild-report.mjs`; the contracts, the results and the table stay in docs/reference (no bid figure in
+a repo). Measurement only: no price or pace changed.
+
+- Runner: each contract in a throwaway project of its own (one blank sheet, the bench's open-shop Harris wage set, pool
+  on, so the pool works within the contract), every pipe item at its bid quantity as Calculate writes utility lines;
+  each item's unit price is its own lines at the unit cost each has in the contract's estimate. The Estimating table is
+  read by its column names and scrolled (it draws only the rows on screen). Report: labour at the tab's bid-date
+  prevailing rates, the tab's median escalated by ECI (D-1103).
+- In band: bid / 1.15 <= ours <= bid, our direct cost from 13 % under the escalated median to level with it (a bid
+  carries about 15 % over direct cost).
+- Labour by depth: the Estimating view shows each line of a pipe group the group's labour per LF (one crew row a group),
+  so the lines of a group read alike though the engine paces each by its band (D-1141). The report shares a group's
+  labour back by each line's own factor; its machines stay spread evenly. Logged as a follow-up: the Estimating view
+  could carry each line's own crew hours.
+- Result against the run before D-1141 (LF-weighted gap, items in band): sanitary deeper than 20 ft -36 % to -17 %
+  (0 to 1 of 7); sanitary 14-20 ft -7 % to -9 %; 8-14 ft -15 % to -16 %; under 8 ft -10 % to -12 %; all sanitary -15 %
+  to -14 % (14 to 12 of 33). Storm RCP +11 % to +12 % (11 of 46 in band, 34 over). Water PVC -9 % to -19 % (7 to 5 of
+  27): water moved though nothing aimed at it changed in this run; to be traced. All 112 items -1 % to -3 %. One size
+  still has no catalog entry (42 in dual-wall HDPE).
+- Found: a stored earthwork result without its regions (a hand-written one) blanks the takeoff page (useVolumes reads
+  them unguarded). Not reachable from the app's own saves; logged, not fixed.
