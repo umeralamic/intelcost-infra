@@ -29254,7 +29254,7 @@ push 0 BCY") is not written; its spread's hours go to the lines that do the work
   the native choice renamed.
 - Stabilized native soil (D-1146's S4): the stabilize and Excavate & Recompact lines take the whole treated layer,
   area x depth, as its agent is priced, in cut and in fill alike: Real bid A's C12, 22.72 CY to 1,271.7 CY.
-- Quantity table: the edge at the depth (196 SF, 392 CF), sloped sides (5 ft: 1,000 CF; 4 ft: 400 CF). Valmont's and
+- Quantity table: the edge at the depth (196 SF, 392 CF), sloped sides (5 ft: 1,000 CF; 4 ft: 400 CF). Real bid B's and
   the undercut smoke project's before and after are taken with the end of the run's totals.
 
 ## D-1150: Boundary from the Site Features or the proposed grade, offset in or out
@@ -29273,3 +29273,49 @@ push 0 BCY") is not written; its spread's hours go to the lines that do the work
   but thinned to 24 a 12 pt cell, and the canvas has no one-click pick mode yet; follow-up.
 - Quantity table: touching (one boundary, 20,000 SF), 1 ft gap (closed, 20,100 SF), 200 ft apart (two pieces; one over
   both 40,000 SF); offset 5 ft out 12,100 SF with 2,100 SF outside the grade, 5 ft in 8,100 SF.
+
+## D-1151: A spot grade grades only inside the drawn features
+
+**Status:** Accepted (2026-11-10, founder's R). Engine key v8 (a sheet's), v7 (a site's).
+
+- Measured first, on a fresh Real bid A copy (its C12 proposed grade is spots only; existing ground from the linked
+  survey reaches past the paving): the Remainder outside both pavings (26,467 SF) counted 2,358.6 CCY of fill (2.4 ft
+  on average), the spots' triangles bridging ground the plan does not grade. C12: Access Drive 4,179.7 CCY, Warehouse
+  pad 1,498.7, Remainder 2,358.6 (the construction entrance's ground among it since D-1147).
+- "Grade only inside features" (Calculate, site choice `grade_inside_features`): outside the drawn features the
+  proposed grade is the existing ground, so the Remainder counts no cut or fill. Unset, on when the proposed grade is
+  spots only, off with contours. Turned off on a spot grade, proposed triangles with an edge over 250 ft (stated, grade
+  D: spots on paving sit 25-100 ft apart) or a corner outside the boundary are dropped instead; with it on, every
+  triangle is kept, since a feature's own spots can lie farther apart (the Access Drive's: dropping them lost 1,799 CCY
+  inside it, so not done there). The cut and fill map remains the view of where it was counted.
+- After, the same copy: Access Drive 4,179.7 CCY, Warehouse pad 1,498.7, Remainder 0: C12's fill 8,037.0 to 5,678.4
+  CCY. Contour-graded projects do not move (the choice is off for them, nothing dropped).
+- Found with it: the volume engine still took only role areas deeper than 0, so D-1147's depth-0 Zones (the Pond)
+  stayed in the Remainder; they own their area now. The panel says why an older result is out of date: "calculated
+  before every feature owned its own area and a spot grade stopped at the features".
+- Logged as a follow-up: the tie-in slope from a feature's edge to existing ground (today the edge drops straight to
+  existing).
+
+## D-1152: Each feature's edge slopes to existing ground
+
+**Status:** Accepted (2026-11-10, founder's X). `lib/takeoff/earthwork/volume/tieIn.ts`; engine key v8 with D-1151.
+
+- With "Grade only inside features" on (D-1151), every edge of a Section or Zone whose proposed grade differs from
+  existing slopes to it at the feature's "Edge slope to existing" (H:V, Site Feature dialog, 3:1 when none is typed,
+  stated, grade D; the plan's own governs) out to the daylight line, corners included (the hip at a convex corner).
+  That wedge is the feature's own "Edge slope, <feature>" share, in cut or fill.
+- Each facet runs through its own edge's proposed elevations; an edge that crosses existing is split where they meet,
+  fill on the raised part, cut on the sunken. Overlaps (an inside corner, two features close together) count once: fill
+  facets as their upper envelope, cut as their lower. Overlaid exactly on the existing TIN's triangles (rule 3).
+- No tie-in on an edge shared with another feature (its ground 0.5 ft out is that feature's), nor where proposed
+  contours cover the ground past the edge. Clipped at the boundary, flagged "<feature>: edge slope runs past the
+  boundary by X ft".
+- CUT & FILL draws the daylight lines dashed.
+- Found with it: the clipper threw on vertices 1e-14 apart (a hip lying along an existing triangle's edge) and the piece
+  was dropped silently, losing a quarter of a corner; coordinates are snapped to 1e-6 ft first, 1e-4 on a retry.
+- Quantity table (flat existing at 100.00): square pad 2.5 ft up 3,937.5 CF (frustum: wedges 3,750 + hips 187.5), the
+  same 2.5 ft down in cut; L-shaped pad 3,937.5; pad and drive sharing an edge 4,312.5; pad 2 ft inside the boundary
+  3,376.19, flagged 5.5 ft; drive edge +1 to -1, 100 CF fill and 100 CF cut; two pads 5 ft apart 2,916.67.
+- Real bid A C12 (copy): fill 5,678.4 to 6,197.4 CCY, the Access Drive's edge slope 519.0 CCY, flagged 4.1 ft past the
+  boundary; the Warehouse pad lies inside the drive, every edge shared, none. A contoured proposed grade has the choice
+  off, so nothing moves.

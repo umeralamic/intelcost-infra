@@ -1094,6 +1094,7 @@ try {
     const job = await import("/src/lib/takeoff/earthwork/job.ts");
     const linesFor = await import("/src/features/takeoff/earthwork/linesFor.ts");
     const boundaryFrom = await import("/src/lib/takeoff/earthwork/boundaryFrom.ts");
+    const tieIn = await import("/src/lib/takeoff/earthwork/volume/tieIn.ts");
     const jobBalance = await import("/src/features/takeoff/earthwork/jobBalance.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
@@ -1542,6 +1543,23 @@ try {
           out.outsideSF = Math.round(boundaryFrom.outsideProposedSF(o, sq(c.features[0]), c.scale) * 100) / 100;
         }
         return out;
+      }
+      // D-1152: the edge slope from each feature's edge to flat existing ground at 100.00 (feet on a 1,000 ft page).
+      if (c.kind === "edge-slope") {
+        const n = ([x, y]) => ({ x: x / 1000, y: y / 1000 });
+        const mesh = (pts, z, tris) => ({ points: Float64Array.from(pts.flatMap(([x, y]) => [x, y])), elevations: Float64Array.from(z), triangles: Uint32Array.from(tris), hull: Uint32Array.from([0]) });
+        const eg = mesh([[-1, -1], [2, -1], [2, 2], [-1, 2]], [100, 100, 100, 100], [0, 1, 2, 0, 2, 3]);
+        const pts = [], z = [], tris = [];
+        for (const f of c.features) {
+          const b = pts.length;
+          f.ring.forEach((p, i) => { pts.push([p[0] / 1000, p[1] / 1000]); z.push(f.z[i]); });
+          for (let i = 1; i < f.ring.length - 1; i++) tris.push(b, b + i, b + i + 1);
+        }
+        const features = c.features.map((f, i) => ({ itemId: `F${i}`, label: `F${i}`, rings: [f.ring.map(n)], slopeH: 3 }));
+        const r = tieIn.tieInVolumes({ features, fg: mesh(pts, z, tris), eg, boundary: c.boundary.map(n), featuresMP: c.features.map((f) => [f.ring.map(([x, y]) => [x / 1000, y / 1000])]), cal: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, fgHasContours: false });
+        let fillCF = 0, cutCF = 0;
+        for (const v of r.byFeature.values()) { fillCF += v.fillCF; cutCF += v.cutCF; }
+        return { fillCF: Math.round(fillCF * 100) / 100, cutCF: Math.round(cutCF * 100) / 100, pastFt: r.past.map((p) => Math.round(p.feet * 100) / 100).join(" ") };
       }
       if (c.kind === "jobsite") {
         const stored = (key, cut, fill) => ({ ok: true, units: "CY", cutCY: cut, fillCY: fill, netCY: cut - fill, regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], coverage: 1, warnings: [], strip: null });

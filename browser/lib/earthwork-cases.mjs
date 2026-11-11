@@ -80,6 +80,22 @@ export const JOB_CASES = [
   { id: "boundary-touching", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.1, 0, 0.1, 0.1]], offsetFt: 5, expect: { pieces: 1, areaSF: "20000", joinedSF: 20000, offsetSF: 12100, outsideSF: 2100 } },
   { id: "boundary-1ft-gap", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.101, 0, 0.1, 0.1]], offsetFt: -5, expect: { pieces: 1, areaSF: "20100", joinedSF: 20100, offsetSF: 8100 } },
   { id: "boundary-200ft-apart", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.3, 0, 0.1, 0.1]], expect: { pieces: 2, areaSF: "10000 10000", joinedSF: 40000 } },
+  // D-1152: the edge slope at 3:1 to flat existing at 100.00. A 100 x 100 pad 2.5 ft up: four wedges 100 x 7.5 x 2.5 / 2
+  // (3,750 CF) and four hip corners 7.5 x 7.5 x 2.5 / 3 (187.5 CF), 3,937.5 CF; 2.5 ft down the same in cut. An L of
+  // the same 2.5 ft: the inside corner's overlap counted once, the same 3,937.5. A 20 ft drive sharing the pad's east
+  // edge: no slope on that edge, 120 x 100 outer, 4,312.5. Pad 2 ft inside the boundary: its west slope clipped at 2 ft
+  // (100 x (2.5 x 2 - 2^2 / 6) = 433.33, the other three 2,812.5, two corners 93.75, the two clipped ones 36.61),
+  // 3,376.19, flagged 7.5 - 2 = 5.5 ft past. A drive 200 x 20, +1 at its west end to -1 at its east, the boundary on its
+  // ends: each long edge's section 3 h^2 / 2 with h = 1 - x / 100, 50 CF over the raised half, so 100 CF fill and 100 CF
+  // cut. Two pads 5 ft apart inside a boundary flush with their north and south edges: the facing slopes overlap,
+  // counted once, 2,916.67.
+  { id: "edge-slope-square-pad", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 3937.5, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-cut-pad", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [97.5, 97.5, 97.5, 97.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 0, cutCF: 3937.5, pastFt: "" } },
+  { id: "edge-slope-l-pad", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 50], [50, 50], [50, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5, 102.5, 102.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 3937.5, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-shared-edge", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }, { ring: [[100, 0], [120, 0], [120, 100], [100, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 4312.5, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-past-boundary", kind: "edge-slope", features: [{ ring: [[2, 0], [102, 0], [102, 100], [2, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[0, -500], [1000, -500], [1000, 1000], [0, 1000]], expect: { fillCF: 3376.19, cutCF: 0, pastFt: "5.5" } },
+  { id: "edge-slope-edge-crossing", kind: "edge-slope", features: [{ ring: [[0, 0], [200, 0], [200, 20], [0, 20]], z: [101, 99, 99, 101] }], boundary: [[0, -50], [200, -50], [200, 70], [0, 70]], expect: { fillCF: 100, cutCF: 100, pastFt: "" } },
+  { id: "edge-slope-two-pads-5ft", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }, { ring: [[105, 0], [205, 0], [205, 100], [105, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-50, 0], [255, 0], [255, 100], [-50, 100]], expect: { fillCF: 2916.67, cutCF: 0, pastFt: "" } },
   // D-1137: a stitched site (A and B, no site result) is one member; marked Separate job, its sheets still balance
   // together: A's 1,000 BCY cut fills B's 300 CCY (330 BCY at 1.1), 670 out (837.5 LCY on A); C, alone in the job,
   // imports its 600 CCY (660 BCY, 825 LCY).
