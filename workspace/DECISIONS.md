@@ -29338,3 +29338,21 @@ push 0 BCY") is not written; its spread's hours go to the lines that do the work
 - With it: two pushed migrations (d985a7e9c1b2, da09e0f1a2b3) reformatted by ruff format alone (the AST is the same),
   a commit of their own, so `ruff format --check` passes clean. The daylight lines (D-1152) are solid amber over a dark
   edge, above the cut and fill (tokens `--earthwork-daylight`, `--earthwork-daylight-halo`).
+
+## D-1154: The edge slope typed as H:V or %, and its own slope in cut
+
+**Status:** Accepted (2026-11-11, founder's AC). `lib/takeoff/earthwork/slope.ts`, `EdgeSlopeField.tsx`; api column
+`takeoff_item.edge_slope_cut_h` (migration da14d5e6f708).
+
+- The Site Feature dialog's "Edge slope to existing" takes H:V or %, the other form shown below it ("3:1 = 33.3 %").
+  One value is stored, H:V; the unit only changes how it is shown and typed, so switching it never changes the slope
+  (it converts from the stored value, never from the rounded text).
+- "Different slope in cut", off by default: on, the fill and cut slopes are set apart (each H:V or %), and the edge
+  slope uses the cut one on its facets and corners in cut. Off, one slope for both, as before; the column is null.
+- The name field's placeholder reads "e.g. Building Pad", so it no longer looks like a value while the dialog asks
+  for a name.
+- Found with it: the item list's compact read built each row with one json_build_array call, and the new column made
+  it 101 arguments, past Postgres's 100: the takeoff failed to load. The row is now
+  `json_build_array(VARIADIC ARRAY[to_json(...), ...])`, the same text (compared on 31 rows), with no limit.
+- Quantity table: 4 H:V and 25 % give the same 5,333.33 CF (pad 2.5 ft up: wedges 5,000, corners 333.33); a drive
+  from 1 ft above to 1 ft below at 3:1 in fill and 2:1 in cut: fill 100.00 CF, cut 66.67 CF.

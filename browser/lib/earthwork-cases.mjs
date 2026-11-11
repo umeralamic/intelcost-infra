@@ -96,6 +96,13 @@ export const JOB_CASES = [
   { id: "edge-slope-past-boundary", kind: "edge-slope", features: [{ ring: [[2, 0], [102, 0], [102, 100], [2, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[0, -500], [1000, -500], [1000, 1000], [0, 1000]], expect: { fillCF: 3376.19, cutCF: 0, pastFt: "5.5" } },
   { id: "edge-slope-edge-crossing", kind: "edge-slope", features: [{ ring: [[0, 0], [200, 0], [200, 20], [0, 20]], z: [101, 99, 99, 101] }], boundary: [[0, -50], [200, -50], [200, 70], [0, 70]], expect: { fillCF: 100, cutCF: 100, pastFt: "" } },
   { id: "edge-slope-two-pads-5ft", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }, { ring: [[105, 0], [205, 0], [205, 100], [105, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-50, 0], [255, 0], [255, 100], [-50, 100]], expect: { fillCF: 2916.67, cutCF: 0, pastFt: "" } },
+  // D-1154: the slope typed as 4 H:V or as 25 % is one slope: the pad 2.5 ft up gives four wedges 100 x 10 x 2.5 / 2
+  // (5,000 CF) and four corners 10 x 10 x 2.5 / 3 (333.33), 5,333.33 either way. The drive +1 to -1 with 3:1 in fill and
+  // 2:1 in cut: each long edge's section H h^2 / 2 over its half, H x 100 / 6, so fill 2 x 50 = 100 and cut 2 x 33.33 =
+  // 66.67.
+  { id: "edge-slope-4-to-1", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5], slope: ["4", "hv"] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 5333.33, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-25-pct", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5], slope: ["25", "pct"] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 5333.33, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-cut-2-fill-3", kind: "edge-slope", features: [{ ring: [[0, 0], [200, 0], [200, 20], [0, 20]], z: [101, 99, 99, 101], slope: ["3", "hv"], cutSlope: ["2", "hv"] }], boundary: [[0, -50], [200, -50], [200, 70], [0, 70]], expect: { fillCF: 100, cutCF: 66.67, pastFt: "" } },
   // D-1137: a stitched site (A and B, no site result) is one member; marked Separate job, its sheets still balance
   // together: A's 1,000 BCY cut fills B's 300 CCY (330 BCY at 1.1), 670 out (837.5 LCY on A); C, alone in the job,
   // imports its 600 CCY (660 BCY, 825 LCY).

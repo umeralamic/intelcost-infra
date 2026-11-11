@@ -1095,6 +1095,7 @@ try {
     const linesFor = await import("/src/features/takeoff/earthwork/linesFor.ts");
     const boundaryFrom = await import("/src/lib/takeoff/earthwork/boundaryFrom.ts");
     const tieIn = await import("/src/lib/takeoff/earthwork/volume/tieIn.ts");
+    const slope = await import("/src/lib/takeoff/earthwork/slope.ts");
     const jobBalance = await import("/src/features/takeoff/earthwork/jobBalance.ts");
     const mats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const match = await import("/src/lib/estimate/materialMatch.ts");
@@ -1555,7 +1556,14 @@ try {
           f.ring.forEach((p, i) => { pts.push([p[0] / 1000, p[1] / 1000]); z.push(f.z[i]); });
           for (let i = 1; i < f.ring.length - 1; i++) tris.push(b, b + i, b + i + 1);
         }
-        const features = c.features.map((f, i) => ({ itemId: `F${i}`, label: `F${i}`, rings: [f.ring.map(n)], slopeH: 3 }));
+        // D-1154: a slope as typed, [text, "hv" | "pct"], read by the dialog's own conversion.
+        const features = c.features.map((f, i) => ({
+          itemId: `F${i}`,
+          label: `F${i}`,
+          rings: [f.ring.map(n)],
+          slopeH: f.slope ? slope.slopeHFrom(...f.slope) : 3,
+          cutSlopeH: f.cutSlope ? slope.slopeHFrom(...f.cutSlope) : null,
+        }));
         const r = tieIn.tieInVolumes({ features, fg: mesh(pts, z, tris), eg, boundary: c.boundary.map(n), featuresMP: c.features.map((f) => [f.ring.map(([x, y]) => [x / 1000, y / 1000])]), cal: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, fgHasContours: false });
         let fillCF = 0, cutCF = 0;
         for (const v of r.byFeature.values()) { fillCF += v.fillCF; cutCF += v.cutCF; }
