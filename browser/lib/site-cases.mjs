@@ -90,6 +90,16 @@ export const SITE_JOIN_CASES = [
  *  first row's fit). Points in the site frame are ground feet. */
 export const SITE_SHAPE_CASES = [
   {
+    // D-1161: two 50 x 100 ft sheets side by side; A's boundary 45 x 90 ft at its east edge, B's 45 x 90 ft at its west
+    // edge: the site's boundary is the two united, 90 x 90 = 8,100 SF. A "within boundary" strip on A strips all of it
+    // (it had stripped A's half, 4,050 SF). With a strip on each sheet, each keeps its own part (site-strip-across-join).
+    id: "site-strip-within-boundary",
+    kind: "strip-site-boundary",
+    boundaryA: [[0.05, 0.05], [0.5, 0.05], [0.5, 0.95], [0.05, 0.95]],
+    boundaryB: [[0, 0.05], [0.45, 0.05], [0.45, 0.95], [0, 0.95]],
+    expect: { boundarySF: 8100, stripSF: 8100 },
+  },
+  {
     // A keeps the west of its line (x < 0.36 of its page), B the east of its own.
     id: "site-visible-regions",
     kind: "region",

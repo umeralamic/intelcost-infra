@@ -565,13 +565,13 @@ export const EARTHWORK_CASES = [
     expect: { "GT-05 B-1": 41.5 },
   },
   // --- D-1160: a job member an older engine worked out is stale (Calculate job calculates it first) ----------------
-  // The engine is v10 a sheet's, v9 a site's: a v8 or v9 sheet is behind, "u2" or not; v10 is current; a site's v9 is
-  // current, its v8 behind; an empty or unreadable key is not behind.
+  // The engine is v10 a sheet's and a site's (D-1161): a v8 or v9 sheet is behind, "u2" or not; v10 is current; a
+  // site's v9 and v8 are behind; an empty or unreadable key is not behind.
   {
     id: "d1160-behind-engine",
     kind: "behind-engine",
     cases: [["v8u2:abc", "sheet"], ["v9:abc", "sheet"], ["v10u2:abc", "sheet"], ["v10:abc", "sheet"], ["v9:abc", "site"], ["v8:abc", "site"], ["", "sheet"], ["x:abc", "sheet"]],
-    expect: { engine: "10/9", "sheet:v8u2:abc": true, "sheet:v9:abc": true, "sheet:v10u2:abc": false, "sheet:v10:abc": false, "site:v9:abc": false, "site:v8:abc": true, "sheet:": false, "sheet:x:abc": false },
+    expect: { engine: "10/10", "sheet:v8u2:abc": true, "sheet:v9:abc": true, "sheet:v10u2:abc": false, "sheet:v10:abc": false, "site:v9:abc": true, "site:v8:abc": true, "sheet:": false, "sheet:x:abc": false },
   },
   // --- D-1160: an undercut measured from the section's bottom (a liner), on a pad in fill -------------------------
   // A 100 x 100 ft pad with a 0.5 ft section, EG 100, FG 102: the region fills 10,000 x 1.5 = 15,000 CF = 555.56 CY.

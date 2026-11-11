@@ -29524,3 +29524,30 @@ engine key v10 (a sheet's), v9 (a site's).
 - A stabilized undercut mostly in placed fill (under half of it dug below existing ground) is named for the subgrade
   the fill makes: "Lime-stabilize subgrade, Hydrated Lime 6%, 6 in ..." (lime alone), "Stabilize subgrade, ..." (any
   other agent); in native ground it stays "Undercut and stabilize native soil, ...".
+
+## D-1161: The stitched site view: saved on Calculate, graded as its sheets, drawn as measured
+
+**Status:** Accepted (2026-11-11, founder's Z). `site/SiteView.tsx`, `site/siteDrape.ts`, `model.ts` (`buildSiteModel`),
+`site.ts` (`siteExtras`); engine key v10 a site's too.
+
+- Arcs: the site's calculation keeps them (the outlines it takes are the takeoff's, arcs bent in, D-470): on Real bid A's
+  C12-C13 the Access Drive is 68,741.15 SF in the site against 68,740.68 SF on its own sheets (the 0.47 SF is the site's
+  0.001 ft snap; with the arcs straightened it would be 94,147.42 SF). Only the drawing had straightened them: the site
+  view now draws every shape from the same outline (the drive 673 points).
+- The work boundary is drawn as a dashed outline, no fill.
+- The result bar keeps the figures and the warnings; its Save to estimate, 3D VIEW and Report are gone. The toolbar's
+  own act on the site: Calculate, 3D VIEW, Report as before, and EXIST. GRADE, PROP. GRADE and CUT & FILL open the
+  site's 3D VIEW on that surface (they were greyed).
+- A site's Calculate saves to the estimate as a sheet's does, and the job is struck again with it.
+- The site grades as its sheets do: "Grade only inside features" (D-1151) and each feature's edge slope (D-1152) now
+  reach the site's Calculate (they were sheet-only, so a spot-graded site counted its whole Remainder: Real bid A's
+  C12-C13 site 8,460 CCY of fill, now 6,368, against 6,211 for its sheets alone; the rest is the edge slope, clipped by
+  the site's united boundary rather than C12's own: 651.57 CCY against 519.01 + 0.72). Its job (with C16) still
+  imports nothing: export 28,101 BCY.
+- 3D VIEW of a site lays every member's drawing under its surfaces (it had none): each page placed as the site places
+  it and clipped to its region, in one image over the site frame (Drape the sheet).
+- Site Prep "within boundary" on a member strips the site's boundary (the members' boundaries united) wherever no
+  other member strips its own with one of its own, not that sheet's part alone; two members each with one keep
+  their own parts, as before. Quantity table: two 50 x 100 ft sheets, each with a 45 x 90 ft boundary at the shared edge: the
+  strip covers 8,100 SF (it had covered 4,050).
+- Found, not done: a site's line names carry the site's name twice ("<site>: Fill, Proposed ..., <site>").

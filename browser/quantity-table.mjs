@@ -865,6 +865,25 @@ try {
     const six = (v) => +v.toFixed(6);
     const shape = shapes.map((c) => {
       if (c.kind === "region") return { aArea: Math.abs(st.area(A.region)), bArea: Math.abs(st.area(B.region)) };
+      // D-1161: a "within boundary" strip on one member strips the site's whole boundary (both members' united).
+      if (c.kind === "strip-site-boundary") {
+        const scale = { feetPerPt: 1, widthPt: 100, heightPt: 100 };
+        const half = [pt([0, 0]), pt([0.5, 0]), pt([0.5, 1]), pt([0, 1])];
+        const members = [
+          { sheet: "A", scale, placement: { rotation: 0, scale: 1, tx: 0, ty: 0 }, region: half, sortOrder: 0 },
+          { sheet: "B", scale, placement: { rotation: 0, scale: 1, tx: 50, ty: 0 }, region: half, sortOrder: 1 },
+        ];
+        const geo = (uuid, sheet, v) => ({ uuid, sheet_uuid: sheet, vertices_json: v, shape_meta: { kind: "boundary", closed: true }, role: "add", geometry_version: 1 });
+        const items = [
+          { uuid: "bA", type: "boundary", name: "Work Boundary", created_at: "", is_site_feature: false, geometries: [geo("gA", "A", c.boundaryA)] },
+          { uuid: "bB", type: "boundary", name: "Work Boundary", created_at: "", is_site_feature: false, geometries: [geo("gB", "B", c.boundaryB)] },
+        ];
+        const surface = st.siteRuns(members, new Map(members.map((m) => [m.sheet, sf.sheetRuns(items, m.sheet)])));
+        const strip = { uuid: "s1", sheet_uuid: "A", name: "Site Prep", depth_ft: 0.5, source: "boundary", feature_uuids: [], vertices_json: null, disposition: "haul_off", reuse_kind: null, created_at: "2026-01-01" };
+        const sfOf = (r) => (Math.abs(r.reduce((t, p, k) => t + p.x * r[(k + 1) % r.length].y - r[(k + 1) % r.length].x * p.y, 0)) / 2) * surface.page.widthPt * surface.page.heightPt;
+        const ex = st.siteExtras(members, items, [strip], surface);
+        return { boundarySF: Math.round(sfOf(surface.runs.find((r) => r.kind === "boundary").points)), stripSF: Math.round(ex.strips[0].polygons.reduce((t, r) => t + sfOf(r), 0)) };
+      }
       if (c.kind === "split") {
         const ps = st.splitAtJoins(c.run.map(pt), members);
         const ls = ps.map((p) => lenFt(p.points, members[p.member]));
