@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# The protected projects' fingerprint (D-542): taken at the start and the end of every run and
-# reported, in place of the one result's md5. For the 3D test copy by default: every table holding
-# its rows (row count, latest change), every stored earthwork result's md5 (sheets and sites), and
-# one digest over them. The guard check runs first: the three copies of the protected list agree
-# (browser/guard-check.mjs, D-601). People's own activity in it (last open sheet, work sessions) is listed
-# apart, out of the digest. Read only (scripts/project_fingerprint.py, one read-only transaction).
+# The founder's projects' fingerprint (D-542): taken at the start and the end of every run, and the
+# two "founder digest" lines compared. Every project on the guard list, each with its own digest (every
+# table holding its rows: row count, latest change; every stored earthwork result's md5), and every
+# project in the founder's own workspaces checked against the list. The guard check runs first (every
+# reader of the guard list holds the same list, browser/guard-check.mjs). Read only
+# (drives/project_fingerprint.py, one read-only transaction). The list is the one file outside git that
+# INTELCOST_GUARD_LIST names; the api container reads it at the path the compose file mounts.
 #
-#   ./fingerprint.sh                                  (the 3D test copy)
-#   ./fingerprint.sh <project uuid> [--since <ISO>]   (another project; rows changed since then)
+#   ./fingerprint.sh                                  (every protected project: the run's start and end)
+#   ./fingerprint.sh <project uuid> [--since <ISO>]   (one project; rows changed since then)
 
 set -u
 cd "$(dirname "$0")"
-project="${1:-042c8817-4a65-47ba-95d8-686ecf986246}"
-[ $# -gt 0 ] && shift
-node browser/guard-check.mjs || echo "FAIL the guard's lists differ"
+node browser/guard-check.mjs || echo "FAIL the guard check"
 echo
-docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python scripts/project_fingerprint.py $project $*"
+if [ $# -eq 0 ]; then set -- --founder; fi
+MSYS_NO_PATHCONV=1 docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/project_fingerprint.py $*"

@@ -9,7 +9,7 @@ refuses. `--purge` deletes them. An account goes only when its email matches a t
   - a seat a fixture made, `<tag>-<role>-<13 digit stamp>@bench.intelcost.io`.
 
 Anything else is never touched (window-b, walkthrough, the seeded account, a person's). A matching
-account is still REFUSED when it is on the fingerprint's founder list (scripts/protected.py), owns
+account is still REFUSED when it is on the guard list's founder accounts (guard_list.py), owns
 a workspace holding a protected project, sits in one of the founder's own workspaces, or owns or sits in
 a workspace the founder keeps for tests (KEEP_WORKSPACES).
 
@@ -36,7 +36,7 @@ from app.database import SessionFactory
 from app.features.auth.models import User
 from app.features.project.models import Project
 from app.features.workspace.models import Workspace, WorkspaceMember
-from protected import FOUNDER_EMAILS  # scripts/protected.py, the fingerprint's list
+from guard_list import FOUNDER_EMAILS, KEEP_WORKSPACES as _KEEP  # the one guard list (INTELCOST_GUARD_LIST)
 
 THROWAWAY = (
     re.compile(r"^fx\.[a-z0-9-]+(?:\.[a-z0-9-]+)*\.\d{12,13}@bench\.intelcost\.io$"),
@@ -44,13 +44,9 @@ THROWAWAY = (
 )
 PROTECTED = set(guard.PROTECTED)
 FOUNDER_WORKSPACES = set(guard.FOUNDER_WORKSPACE_UUIDS)
-KEEP_WORKSPACES = {
-    # The Stitch sheets and site view test project, "zz Stitch 10793 copy 2" (the founder, 2026-10-28).
-    "67577761-76f2-48de-be7b-05b2bd0a113c",
-    # The quantity table's "zz MyEq project" (drives/quantity-table.py `parents`), made again on
-    # 2026-11-04 after the first purge took it with its throwaway owner (D-980).
-    "34be6ba5-ddfd-4d5d-ba4d-03a0aaf1b5a0",
-}
+# The bench test workspaces kept with their throwaway owner (the Stitch test project, 2026-10-28; the
+# quantity table's project, D-980): the guard list's `keep_workspaces`.
+KEEP_WORKSPACES = set(_KEEP)
 
 
 def throwaway(email: str) -> bool:

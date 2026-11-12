@@ -6,8 +6,9 @@ Imported first by every drive, before anything from `app`:
     import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
 
 A script fed on stdin (`python - < x.py`) puts the folder on its path first:
-`sys.path.insert(0, "/srv/drives")`. The list is the api scripts' own (`scripts/protected.py`), which
-`browser/guard-check.mjs` holds equal to `lib/protected.mjs` and `mcp-guard.js`.
+`sys.path.insert(0, "/srv/drives")`. The list is the one file outside git that `INTELCOST_GUARD_LIST`
+names, loaded by `guard_list.py` (fails closed); `lib/protected.mjs` and `mcp-guard.js` read the same file,
+and `browser/guard-check.mjs` checks that every reader holds the same list.
 
 The rules, as `lib/protected.mjs`'s:
   - **On the command line** (at import, before the database is loaded): a protected project other than
@@ -25,7 +26,7 @@ how many statements were sent before it; a refused statement is never sent.
 **Not caught:** a statement naming a protected project only by its integer id, or a Core listing
 (`text("select … from project")`) that returns its row. A drive learns that id only by reading the
 project; reading it by uuid is refused, and a model load is refused, so neither is how a drive is
-written. `scripts/project_fingerprint.py` is not a drive: it is the read-only fingerprint (D-542).
+written. `drives/project_fingerprint.py` is not a drive: it is the read-only fingerprint (D-542).
 
 For a proof without touching a protected project, `DRIVE_GUARD_EXTRA` (uuids, comma separated) adds
 projects to the list for one run, and `DRIVE_GUARD_WORKSPACE_EXTRA` workspaces; each can only add.
@@ -37,8 +38,8 @@ import sys
 import uuid as uuid_module
 from typing import Any
 
-sys.path.insert(0, "/srv/scripts")
-from protected import FOUNDER_EMAILS, FOUNDER_WORKSPACES, PROTECTED_PROJECTS, TEST_COPY  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from guard_list import COPY_SOURCES, FOUNDER_EMAILS, FOUNDER_WORKSPACES, PROTECTED_PROJECTS, TEST_COPY  # noqa: E402
 
 PROTECTED: dict[str, str] = dict(PROTECTED_PROJECTS)
 for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUARD_EXTRA", "").split(","))):
@@ -49,24 +50,9 @@ FOUNDER_WORKSPACE_UUIDS: dict[str, str] = dict(FOUNDER_WORKSPACES)
 for extra in filter(None, (u.strip().lower() for u in os.environ.get("DRIVE_GUARD_WORKSPACE_EXTRA", "").split(","))):
     FOUNDER_WORKSPACE_UUIDS.setdefault(extra, "added for this run (DRIVE_GUARD_WORKSPACE_EXTRA)")
 
-COPY_SOURCES: dict[str, str] = {
-    # The founder's shared copy, the source of new proofs (2026-11-01).
-    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "P08 (3D test, shared copy)",
-    # Benchmark A source, a real bid: copied for the pricing investigation only (2026-11-06, D-1024).
-    "24e4a96c-2f62-4490-8705-8bde97add9a5": "Real bid A",
-    # Real bid B was here for the 2026-11-08 runs (D-1069, D-1076); removed when they ended (D-1082);
-    # back for the 2026-11-09 run (D-1083) and removed at its end (D-1086); back for the W14 run
-    # (D-1087) and removed at its end (D-1088); back for the W14 fixes' measurements (D-1089) and
-    # removed at their end; back for the utility pricing round 2 (D-1091) and removed at its end (D-1092).
-    # Back for the D-1093..D-1098 run's measurements and removed at its end (D-1099).
-    # Back for the D-1100..D-1104 run's end totals and removed at its end (D-1104).
-    # Back for the D-1105..D-1108 run's end totals and removed at its end (D-1109).
-    # Back for the D-1110..D-1112 run (the two-Calculate bug, end totals) and removed at its end (D-1113).
-    # Back for the D-1114..D-1116 run (the equipment pool, its sweep and end totals) and removed at its end (D-1117).
-    # Back for the D-1118..D-1123 run's ST-1 check and end totals and removed at its end (D-1124).
-}
-"""Projects the copier alone may read, for one copy, named as `copy-3d-test.py --source <uuid>`.
-Every other drive, and every write, is refused as before."""
+# COPY_SOURCES (from the guard list): projects the copier alone may read, for one copy, named as
+# `copy-3d-test.py --source <uuid>`. Every other drive, and every write, is refused as before. A source
+# is added to the list's `copy_sources` for one run and taken out at its end (D-1082 and after).
 _COPYING = os.path.basename(sys.argv[0]) == "copy-3d-test.py" and len(sys.argv) > 2 and sys.argv[1] == "--source" and sys.argv[2] in COPY_SOURCES
 _READ_ONLY = {TEST_COPY, sys.argv[2]} if _COPYING else {TEST_COPY}
 

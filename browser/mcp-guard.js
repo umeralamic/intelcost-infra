@@ -7,48 +7,23 @@ async (page) => {
   // A copy a page starts (Duplicate project, Save to my workspace) is renamed the moment it is made,
   // "BENCH DUP <yyyy-mm-dd hh:mm> — delete me" in UTC (A4, D-544); `page.context().__copies` holds
   // each job's renamed copy. Returns each context's refusals so far.
-  // The MCP's sandbox cannot import, so the rule is written out here; it is lib/protected.mjs's,
-  // and the guard check compares the two lists.
-  const PROTECTED = {
-    "042c8817-4a65-47ba-95d8-686ecf986246": "P01 (3D test copy)",
-    "9c348237-1ca6-42d0-bd8c-712d7cf915c1": "P02",
-    "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "P03",
-    "51e474d2-b55b-40d2-ab46-09433ffc5add": "P04",
-    "09f1fc14-42f4-4140-9726-bcaf3056ea87": "P05",
-    // umeralam.q@gmail.com's workspace, Intelcost Team, found by owner (2026-10-17, D-601).
-    "90cb3a75-3553-4de0-aac4-1693c7d18d57": "P06",
-    "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "P07",
-    "4df73dc7-901b-4933-b2bb-fafc327b01f0": "P08 (3D test, shared copy)",
-    "6ca7f34b-6ab2-4a29-874e-67d39d45b616": "P09",
-    // The founder's copy of the shared copy (2026-10-30 overnight brief).
-    "9e3b9d2d-8cf4-45db-8980-a519d7efdaf9": "P10 (3D test, shared copy)",
-    // The rest of Bench Construction Test (workspace 69a35a11), all 17 projects guarded (D-881).
-    "48ee1ed1-151a-49f6-87d2-4c23dffda452": "P11",
-    "4452f8f1-537b-4fa2-9ef3-6a4fec2062cd": "P12",
-    "3ba916aa-bef6-469f-8456-d11e0772a500": "P13",
-    "c0144c30-a769-40f7-a516-3382561e8ec6": "P14",
-    "4a19fd97-c8bd-47ef-bd8a-41d4b7e17a0d": "P15",
-    "8af33201-a81d-488d-90f1-2317c12ef06c": "P16",
-    "08ab6b4b-6a18-4fca-abad-15cd3bb15aa6": "P17",
-    "25711190-6ef4-4190-8f64-91a882bb5820": "P18",
-    "557a8c48-c48f-4c94-a031-f087c6c8e6d2": "P19",
-    "97d18924-fc37-4015-8f8d-d43c2ac794c7": "P20",
-    "21c099b1-1a9a-49db-8b80-c6a3b9a0dcc8": "P21",
-    "dd3065bf-ec08-4f49-adcf-f268db833f7c": "P22",
-    "7aba5c72-2be8-41bc-a177-517488dffaf5": "P23",
-    // Real bids in Intelcost Team (2026-11-06, the founder: "Real bids must never be touched by a run").
-    "24e4a96c-2f62-4490-8705-8bde97add9a5": "Real bid A",
-    "d0b0305d-f74c-4203-961d-195ba8bf554e": "Real bid B",
-  };
-  // The founder's own workspaces that hold no bench project: never opened, reads too (D-601).
-  const FOUNDER_WORKSPACES = {
-    "04df326a-6dba-41df-ac98-095bf841f910": "W01 (founder workspace)",
-    // All of Bench Construction Test, a project added later too (D-891).
-    "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9": "W02 (bench seed)",
-  };
+  // The MCP's sandbox cannot import or read a file, so the list comes from the one file outside git
+  // that INTELCOST_GUARD_LIST names, served on 127.0.0.1 by `node browser/bench-session-serve.mjs`
+  // (start it first; it reads and checks the file on every request). No list, no guard: this throws,
+  // and mcp-signin.js refuses to sign in without a guarded context. The rule is lib/protected.mjs's.
+  const answer = await page.context().request.get("http://127.0.0.1:5199/guard-list").catch(() => null);
+  if (!answer || !answer.ok()) throw new Error("No guard list: start `node browser/bench-session-serve.mjs` in intelcost-infra first, with INTELCOST_GUARD_LIST set (D-542).");
+  const LIST = await answer.json();
+  const lowerKeys = (o) => Object.fromEntries(Object.entries(o ?? {}).map(([k, v]) => [k.toLowerCase(), v]));
+  const PROTECTED = lowerKeys(LIST.protected_projects);
+  // The founder's own workspaces: never opened, reads too (D-601, D-891).
+  const FOUNDER_WORKSPACES = lowerKeys(LIST.founder_workspaces);
   // The founder's accounts: never signed in as (D-542, D-601).
-  const FOUNDER_EMAILS = ["estimator@bench.intelcost.io", "umeralam.q@gmail.com"];
-  const TEST_COPY = "042c8817-4a65-47ba-95d8-686ecf986246";
+  const FOUNDER_EMAILS = [...new Set([LIST.seeded_email, ...(LIST.founder_emails ?? [])].map((e) => String(e).toLowerCase()))];
+  const TEST_COPY = String(LIST.test_copy).toLowerCase();
+  if (!Object.keys(PROTECTED).length || !Object.keys(FOUNDER_WORKSPACES).length || !FOUNDER_EMAILS.length || !PROTECTED[TEST_COPY]) {
+    throw new Error("The guard list served is incomplete: no guard (D-542).");
+  }
   const SHARE_COPY = /\/api\/workspace\/[^/]+\/share-copy\/?(?:[?#]|$)/;
   const COPY_START = /\/api\/workspace\/([^/]+)\/(?:project\/[^/]+\/duplicate|share-copy)\/?(?:[?#]|$)/;
   const refusal = (method, url, body, allowed) => {
@@ -145,5 +120,5 @@ async (page) => {
     browser.__protected = true;
   }
   const contexts = browser ? browser.contexts() : [page.context()];
-  return contexts.map((c, i) => ({ context: i, guarded: Boolean(c.__protectedRefusals), refused: c.__protectedRefusals }));
+  return { list: LIST.digest, protected: Object.keys(PROTECTED).length, contexts: contexts.map((c, i) => ({ context: i, guarded: Boolean(c.__protectedRefusals), refused: c.__protectedRefusals })) };
 }

@@ -45,7 +45,7 @@ FIXTURE_PROJECT = re.compile(rf"^({'|'.join(re.escape(p) for p in PROJECT_PREFIX
 FIXTURE_SEAT = re.compile(r"^[a-z0-9]+-[a-z_]+-\d{13}@bench\.intelcost\.io$")
 SARA = "window-b@bench.intelcost.io"
 FOUNDER = set(guard.FOUNDER_EMAILS)
-# The guard's protected projects (scripts/protected.py, as lib/protected.mjs): never touched.
+# The guard's protected projects (the one guard list, guard_list.py): never touched.
 PROTECTED = set(guard.PROTECTED)
 
 

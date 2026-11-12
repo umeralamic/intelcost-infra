@@ -30722,3 +30722,30 @@ changes not saved, one person, one session). `features/takeoff/api.ts`.
   step too. Each step now says its own:
   - Project info: "Name the project to continue. Everything else can be filled in later."
   - Add files: "Optional: you can add files later."
+
+## D-1228: The guard's protected list is one file outside git; the fingerprint covers every founder project
+
+**Status:** Built 2026-11-12 (the founder: "rebuild the guard and fingerprint in intelcost-infra, not the api"). The
+staging merge deleted the api's `scripts/protected.py` and `scripts/project_fingerprint.py` on purpose; the drives'
+guard could no longer import its list and `fingerprint.sh` could no longer run.
+
+- **The list** (founder accounts, founder workspaces, protected projects, the test copy, the copier's sources, the
+  account purge's kept workspaces) is one JSON file outside every repository, named by the user environment variable
+  `INTELCOST_GUARD_LIST` (as `INTELCOST_DENYLIST` names the client-name denylist), rebuilt from the last commit that
+  had `scripts/protected.py`. Labels only (P01…, Real bid A), never a project's name.
+- **Its readers, no copies:**
+  - `drives/guard_list.py` loads it for the drives' guard, `project_fingerprint.py`, the purges, the tidy and the
+    copier. The compose file mounts it read only into the api at `/run/intelcost/guard-list.json`.
+  - `browser/lib/protected.mjs` loads it for the bench helpers.
+  - `browser/mcp-guard.js` fetches it from `bench-session-serve.mjs` (`GET /guard-list`, 127.0.0.1 only): the
+    MCP sandbox cannot read a file.
+  - Every reader fails closed: no variable, no file or a malformed list stops it before any request or statement.
+- **The guard check** (`browser/guard-check.mjs`) now compares the readers, not copies: the Node, api and served
+  digests must agree, the list must sit outside git, and no guard file may name a listed id or founder account.
+- **The fingerprint** (`drives/project_fingerprint.py`, `./fingerprint.sh`) defaults to `--founder`: every listed
+  project's own digest, one founder digest over them, and every project in the founder's own workspaces checked
+  against the list. A run compares the founder digest at its start and end.
+- **Found at the first run:** one project made in the founder's workspace on 2026-11-12 was not on the list; added as
+  P24 (adding only protects more). P11–P18 (Bench Construction Test, D-881) are not on the bench, with no audit
+  entry; kept on the list and reported.
+- Nothing returns to the api's `scripts/`.

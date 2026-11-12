@@ -17,48 +17,66 @@
 // Save to my workspace) is followed to its end and renamed at once, "BENCH DUP <yyyy-mm-dd hh:mm>
 // — delete me" (UTC), so no bench copy looks like the project it was made from (A4, D-544).
 
-/** uuid → name, as the projects are named on the bench. */
-export const PROTECTED_PROJECTS = Object.freeze({
-  "042c8817-4a65-47ba-95d8-686ecf986246": "P01 (3D test copy)",
-  "9c348237-1ca6-42d0-bd8c-712d7cf915c1": "P02",
-  "bd8fc5b0-34ca-4186-99f0-7278c43b4c1c": "P03",
-  "51e474d2-b55b-40d2-ab46-09433ffc5add": "P04",
-  "09f1fc14-42f4-4140-9726-bcaf3056ea87": "P05",
-  // umeralam.q@gmail.com's workspace, Intelcost Team, found by owner (2026-10-17, D-601).
-  "90cb3a75-3553-4de0-aac4-1693c7d18d57": "P06",
-  "c1770e62-715a-4d1d-8be5-aa2f23ecdeed": "P07",
-  "4df73dc7-901b-4933-b2bb-fafc327b01f0": "P08 (3D test, shared copy)",
-  "6ca7f34b-6ab2-4a29-874e-67d39d45b616": "P09",
-  // The founder's copy of the shared copy (2026-10-30 overnight brief).
-  "9e3b9d2d-8cf4-45db-8980-a519d7efdaf9": "P10 (3D test, shared copy)",
-  // The rest of Bench Construction Test (workspace 69a35a11), all 17 projects guarded (D-881).
-  "48ee1ed1-151a-49f6-87d2-4c23dffda452": "P11",
-  "4452f8f1-537b-4fa2-9ef3-6a4fec2062cd": "P12",
-  "3ba916aa-bef6-469f-8456-d11e0772a500": "P13",
-  "c0144c30-a769-40f7-a516-3382561e8ec6": "P14",
-  "4a19fd97-c8bd-47ef-bd8a-41d4b7e17a0d": "P15",
-  "8af33201-a81d-488d-90f1-2317c12ef06c": "P16",
-  "08ab6b4b-6a18-4fca-abad-15cd3bb15aa6": "P17",
-  "25711190-6ef4-4190-8f64-91a882bb5820": "P18",
-  "557a8c48-c48f-4c94-a031-f087c6c8e6d2": "P19",
-  "97d18924-fc37-4015-8f8d-d43c2ac794c7": "P20",
-  "21c099b1-1a9a-49db-8b80-c6a3b9a0dcc8": "P21",
-  "dd3065bf-ec08-4f49-adcf-f268db833f7c": "P22",
-  "7aba5c72-2be8-41bc-a177-517488dffaf5": "P23",
-  // Real bids in Intelcost Team (2026-11-06, the founder: "Real bids must never be touched by a run").
-  "24e4a96c-2f62-4490-8705-8bde97add9a5": "Real bid A",
-  "d0b0305d-f74c-4203-961d-195ba8bf554e": "Real bid B",
-});
+// The list itself is the one file outside git that INTELCOST_GUARD_LIST names (drives/guard_list.py
+// documents its keys). Every guard reads that file; none holds a copy. Fails closed: an unset
+// variable, a missing file or a malformed list throws on import, before any request is made.
 
-/** The founder's own workspaces that hold no bench project: never opened from here (D-601). */
-export const FOUNDER_WORKSPACES = Object.freeze({
-  "04df326a-6dba-41df-ac98-095bf841f910": "W01 (founder workspace)",
-  // All of Bench Construction Test, a project added later too (D-891).
-  "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9": "W02 (bench seed)",
-});
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/** The guard list, read and checked; throws when it cannot be trusted. */
+export function loadGuardList(file = process.env.INTELCOST_GUARD_LIST) {
+  const stop = (why) => {
+    throw new Error(`REFUSED by the guard list (fail closed): ${why}`);
+  };
+  if (!file) stop("INTELCOST_GUARD_LIST is not set");
+  let data;
+  try {
+    data = JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    stop(`the list cannot be read (${error.code ?? error.message})`);
+  }
+  for (const key of ["protected_projects", "founder_workspaces", "copy_sources", "keep_workspaces"]) {
+    const table = data[key];
+    if (!table || typeof table !== "object" || Array.isArray(table)) stop(`${key} is missing`);
+    if ((key === "protected_projects" || key === "founder_workspaces") && !Object.keys(table).length) stop(`${key} is empty`);
+    if (Object.keys(table).some((u) => !UUID.test(u))) stop(`${key} holds a malformed uuid`);
+  }
+  if (!Array.isArray(data.founder_emails) || !data.founder_emails.length || !data.founder_emails.every((e) => typeof e === "string" && e.includes("@"))) stop("founder_emails is missing or malformed");
+  for (const key of ["test_copy", "founder_owner", "seeded_email"]) if (typeof data[key] !== "string" || !data[key]) stop(`${key} is missing`);
+  if (!(data.test_copy in data.protected_projects)) stop("the test copy is not on the protected list");
+  if (Object.keys(data.copy_sources).some((u) => !(u in data.protected_projects))) stop("a copy source is not on the protected list");
+  return data;
+}
+
+/** The list's digest, computed exactly as drives/guard_list.py's `digest()`: the guard check compares them. */
+export function guardListDigest(data) {
+  const lower = (o) => Object.keys(o).map((k) => k.toLowerCase()).sort();
+  const canonical = {
+    copy_sources: lower(data.copy_sources),
+    founder_emails: data.founder_emails.map((e) => e.toLowerCase()).sort(),
+    founder_workspaces: lower(data.founder_workspaces),
+    protected_projects: lower(data.protected_projects),
+    test_copy: data.test_copy.toLowerCase(),
+  };
+  return createHash("sha256").update(JSON.stringify(canonical)).digest("hex").slice(0, 16);
+}
+
+const LIST = loadGuardList();
+
+/** The list's digest, the same in every reader. */
+export const GUARD_LIST_DIGEST = guardListDigest(LIST);
+
+/** uuid → label (P01, Real bid A…), never a project's name. */
+export const PROTECTED_PROJECTS = Object.freeze(Object.fromEntries(Object.entries(LIST.protected_projects).map(([k, v]) => [k.toLowerCase(), v])));
+
+/** The founder's own workspaces that hold no bench project: never opened from here (D-601, D-891). */
+export const FOUNDER_WORKSPACES = Object.freeze(Object.fromEntries(Object.entries(LIST.founder_workspaces).map(([k, v]) => [k.toLowerCase(), v])));
 
 /** The 3D test copy: the one project that may be duplicated from here. */
-export const TEST_COPY = "042c8817-4a65-47ba-95d8-686ecf986246";
+export const TEST_COPY = LIST.test_copy.toLowerCase();
 
 const READS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -93,10 +111,10 @@ const allowedTokens = new Set();
 
 /** The seeded account: the founder's, never signed in from a browser (CLAUDE.md). Its password is
  *  his alone (D-601); the api's own scripts act for it in its process, for a purge. */
-export const SEEDED_EMAIL = "estimator@bench.intelcost.io";
+export const SEEDED_EMAIL = LIST.seeded_email.toLowerCase();
 
 /** The founder's accounts: never signed in as from a browser or a script (D-542, D-601). */
-export const FOUNDER_EMAILS = Object.freeze([SEEDED_EMAIL, "umeralam.q@gmail.com"]);
+export const FOUNDER_EMAILS = Object.freeze([...new Set([SEEDED_EMAIL, ...LIST.founder_emails.map((e) => e.toLowerCase())])]);
 
 /** Why a request is refused for its account, or null: a sign-in as one of the founder's. */
 export function signInRefusal(method, url, body = "") {

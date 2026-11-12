@@ -43,10 +43,10 @@ from app.features.auth.models import User
 from app.features.project.models import Project
 from app.features.workspace.models import Workspace, WorkspaceMember
 
-# The protected projects, shared with the api's bench scripts (scripts/protected.py, D-542).
+# The protected projects, from the one guard list (guard_list.py, D-542).
 PROTECTED_UUIDS = set(guard.PROTECTED)
 
-SEEDED = "estimator@bench.intelcost.io"
+from guard_list import SEEDED_EMAIL as SEEDED  # noqa: E402  (the seeded account, from the guard list)
 KEEP_SLUG = "bench-construction"
 KEEP_NAMES = (re.compile(r"^F5 Block A demo \d\d:\d\d$"),)
 FIXTURE_MADE = (

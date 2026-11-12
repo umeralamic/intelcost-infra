@@ -2,7 +2,7 @@
 account's own workspace, reading the original and writing only to the copy's workspace.
 
     docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/copy-3d-test.py \
-        fx.equip.202610230651@bench.intelcost.io 4abc4fb3-c834-491f-abe7-53a75c452937"
+        fx.equip.<stamp>@bench.intelcost.io <its own workspace uuid>"
     docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/copy-3d-test.py --count"
     (--source <project uuid> first copies another project the founder named, 2026-10-27)
 
@@ -37,10 +37,12 @@ from app.features.project import service as project_service
 from app.features.project.models import Project
 from app.features.workspace.models import Workspace, WorkspaceMember
 
-SOURCE = "042c8817-4a65-47ba-95d8-686ecf986246"
-"""The project copied; `--source <uuid>` names another the founder asked for by name (2026-10-27:
-"10793 SBR" for Stitch sheets), read only like this one."""
-BENCH_CONSTRUCTION_TEST = "69a35a11-ad9f-4a93-8f97-7f3f89f7d6b9"
+SOURCE = guard.TEST_COPY
+"""The project copied (the guard list's test copy); `--source <uuid>` names another the founder asked
+for by name (2026-10-27, for Stitch sheets), read only like this one, if it is on the list's
+`copy_sources`."""
+FOUNDER_WORKSPACES = set(guard.FOUNDER_WORKSPACE_UUIDS)
+"""Never a copy's target: Bench Construction Test and the founder's own (the guard list)."""
 
 COUNTED = (
     "drawing_sheet",
@@ -130,8 +132,8 @@ def main(argv: list[str]) -> int:
         if not email.startswith("fx.") or not email.endswith("@bench.intelcost.io"):
             print("copy-3d-test: refused, the actor must be an fx. throwaway account", file=sys.stderr)
             return 1
-        if target_uuid == BENCH_CONSTRUCTION_TEST:
-            print("copy-3d-test: refused, never into Bench Construction Test", file=sys.stderr)
+        if target_uuid.strip().lower() in FOUNDER_WORKSPACES:
+            print("copy-3d-test: refused, never into Bench Construction Test or a founder workspace", file=sys.stderr)
             return 1
         actor = session.scalar(select(User).where(User.email == email))
         target = session.scalar(select(Workspace).where(Workspace.uuid == target_uuid))

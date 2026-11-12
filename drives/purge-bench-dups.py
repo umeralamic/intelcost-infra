@@ -35,7 +35,7 @@ from app.worker.tasks.storage import clear_purged
 
 NAME = re.compile(r"^BENCH DUP \d{4}-\d{2}-\d{2} \d{2}:\d{2} — delete me$")
 
-# The guard's protected projects (scripts/protected.py, as lib/protected.mjs): never purged.
+# The guard's protected projects (the one guard list, guard_list.py): never purged.
 PROTECTED = guard.PROTECTED
 # The founder's own workspace (Intelcost Team): nothing in it is ever purged from here.
 FOUNDER_WORKSPACES = guard.FOUNDER_WORKSPACE_UUIDS
