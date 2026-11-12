@@ -1338,20 +1338,22 @@ try {
         const runs = sx.sheetRuns(items, "s");
         const labels = new Map(items.map((i) => [i.uuid, i.name]));
         const r1 = (v) => Math.round(v * 10) / 10;
+        // The page's scale goes to every triangulation as it goes to the volumes (D-1206 C: the TC/G pair rule measures
+        // with it), as Calculate passes it.
+        const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
         if (c.tinOnly) {
-          const t = tin.runTinForSurface(runs, c.tinOnly.surface, labels);
+          const t = tin.runTinForSurface(runs, c.tinOnly.surface, labels, scale);
           if (t.ok !== true) return { ok: t.ok, message: t.error?.message };
           const m = t.mesh;
           let z = null;
           for (let k = 0; k < m.points.length / 2; k++) if (Math.hypot(m.points[2 * k] - c.tinOnly.at[0], m.points[2 * k + 1] - c.tinOnly.at[1]) < 1e-9) z = m.elevations[k];
           return { egPoints: m.points.length / 2, egConstraints: m.constraints.length, egZAt: z };
         }
-        const scale = { feetPerNorm: c.side, widthPt: 1, heightPt: 1 };
         const feats = sf.sheetFeatures(items, "s");
         const bnd = runs.find((r) => r.kind === "boundary");
         const boundary = bnd ? bnd.points : null;
         const r = vol.computeVolumes(
-          { eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: scale, units: "CY", roleAreas: sf.roleAreasOf(feats) },
+          { eg: tin.runTinForSurface(runs, "EG", labels, scale), fg: tin.runTinForSurface(runs, "FG", labels, scale), boundary, calibration: scale, units: "CY", roleAreas: sf.roleAreasOf(feats) },
           runs,
           labels,
         );

@@ -30421,3 +30421,34 @@ WD documents in docs/reference (outside git); no tab figure in a repo.
   Calculator, beside the rate set's summary; it saves the set again from its own inputs escalated to the project's bid
   date, else today (`bid_date=project.bid_due_date or date.today()`), and shows each craft's before and after first.
   The D-1167 screenshot is back in the report folder (`item2-pricing/`).
+
+---
+
+## D-1212: F41 built: the entry chip, the Contour and Spot Elev. dialogs, TC spots at pavement level
+
+**Status:** Built 2026-11-12 (D-1206 Parts A, B, C; spec `docs/tasks/contour_spot_entry_tasks.md`), awaiting the
+founder's check. App only; no migration (a spot's `shape_meta` gains `label` and `curb_in`).
+
+- **A, the chip.** The Sitework row's surface toggle and interval stepper are gone. While Contour or Spot Elev. is on,
+  a chip on the sheet (top left) reads "Existing · next 100 · −2 ft"; E / P switch the surface, + / − the direction,
+  a digit starts typing the next elevation (Enter keeps it, Esc drops it); a click opens its editor. While the tool is
+  on, + and − are the chip's, not the zoom's (the founder's keys; the wheel still zooms). A next typed on the chip or
+  as the Contour dialog's First elevation is used once and wins over a printed label nearby; after it, last ±
+  interval as before. The Contour dialog adds First elevation (blank: asked) and Direction, and "ft" by Interval.
+- **B, the Spot Elev. dialog.** Surface; Input: Type each value, or Pick the label on the drawing (the elevation text
+  under the click on a vector sheet, placed with no popover; greyed "This sheet has no vector text" on a scan); a
+  proposed spot's label type (TP, FG, G, TC, FFE) and, for TC, its curb height (default 6 in). A picked label's own
+  prefix or suffix wins ("TC 12.30", "FG=101.25", "12.30 TP", or a word printed beside the value).
+- **C, TC spots.** A spot keeps its printed value as `elevation`; a TC spot is used at printed − curb ("TC 12.30" at
+  6 in is used at 11.80) in every view (`sheetRuns`), labelled "TC 12.30 → 11.80 ft". A G spot of the same surface
+  within 3 ft of a TC spot is the same curb: the G is used and the TC left out of the TIN and the volumes
+  (`pairedTcSpots`, measured with the calibration's scale, which now rides on the TIN frame); the TC reads "TC 12.30
+  (G used)". Editing a typed spot's elevation edits its printed value.
+- **Checks.** Quantity table: 4 new rows (354 earthwork rows): four TC 12.30 corners at 6 in fill 8,000 CF over EG
+  11.00 on a 10,000 SF square (13,000 at face value), at 8 in 6,333.3; with a G 11.70 spot 2 ft from each, 7,000 CF;
+  4 ft away, the TC kept at 11.80. Smoke on a throwaway: dialog 100 / down / 2 gives "Existing · next 100 · −2 ft";
+  P, +, typing 50 give "Proposed · next 50 · +2 ft"; the contour pre-fills 50, the next reads 52; the chip hides on
+  Esc; Pick greyed on a scan; a TC spot typed 12.30 reads "TC 12.30 → 11.80 ft" after a reload; a G spot placed
+  beside it turns it to "(G used)". Screenshots in `intelcost-infra/morning-report-2026-11-12/item3-entry/`.
+- **Found while building:** the first quantity-table run caught the TIN collecting without the frame (an edit that
+  had not applied); fixed before the commit.

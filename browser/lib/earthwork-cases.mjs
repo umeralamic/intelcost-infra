@@ -2349,6 +2349,7 @@ export const EARTHWORK_CASES = [
   // Δz = (FG − depth) − (EG − strip). Hand answers in cubic feet / 27.
   ...synthRows(),
   ...realShapeRows(),
+  ...tcSpotRows(),
 
   // --- Clearing class suggested by the trees per acre (D-1039) -------------------------------------------------
   // Medium from 400 trees an acre, heavy over 600 (the tree-density bands); shown only when heavier than the class
@@ -2546,4 +2547,35 @@ function synthRows() {
   rows.push({ id: "synth-check-ridge", kind: "elevcheck", contours: [100, 101, 102, 101, 100], expect: { flags: "", interval: 1 } });
   rows.push({ id: "synth-check-index-contours", kind: "elevcheck", contours: [100, 105, 110, 115, 120], expect: { flags: "", interval: 5 } });
   return rows;
+}
+
+/**
+ * D-1206 C: TC (top of curb) spots, as stored (`shape_meta.label`, `curb_in`), through the app's own sheetRuns, TIN and
+ * computeVolumes. The unit page at 100 ft a side (10,000 SF), the boundary the unit square, EG flat at 11.00 from four
+ * corner spots. By hand:
+ *   A. Four TC spots printed 12.30 at the corners, the 6 in curb: each used at 12.30 - 0.50 = 11.80, FG flat at 11.80;
+ *      fill 10,000 x 0.80 = 8,000 CF, no cut. Read at face value it was 13,000.
+ *   B. The same at an 8 in curb: 12.30 - 8 / 12 = 11.6333; fill 10,000 x 0.6333 = 6,333.3 CF.
+ *   C. Each TC with a G spot printed 11.70 2 ft from it (diagonally outward, 0.02 / sqrt 2 on each axis): the same
+ *      curb, so the G spots are used and the TCs left out; FG flat at 11.70 over the boundary; fill 7,000 CF. Kept, the
+ *      TCs would put 11.80 at the corners.
+ *   D. The G spots 4 ft away: no pair, the TC kept at the corner at its used 11.80 (the proposed TIN's value there).
+ */
+function tcSpotRows() {
+  const geo = (vertices_json, shape_meta) => ({ sheet_uuid: "s", vertices_json, shape_meta, role: "add" });
+  const CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+  const eg = CORNERS.map(([x, y], i) => ({ uuid: `EG${i}`, type: "spot_elevation", name: "EG spots", geometries: [geo([[x, y]], { kind: "spot", surface: "EG", elevation: 11 })] }));
+  const tc = (curb) => ({ uuid: "TC", type: "spot_elevation", name: "TC spots", geometries: CORNERS.map(([x, y]) => geo([[x, y]], { kind: "spot", surface: "FG", elevation: 12.3, label: "TC", curb_in: curb })) });
+  // A G spot `ft` from each corner, diagonally outward (away from the square's centre).
+  const g = (ft) => {
+    const d = ft / 100 / Math.SQRT2;
+    return { uuid: "G", type: "spot_elevation", name: "G spots", geometries: CORNERS.map(([x, y]) => geo([[x === 0 ? -d : 1 + d, y === 0 ? -d : 1 + d]], { kind: "spot", surface: "FG", elevation: 11.7, label: "G", curb_in: 6 })) };
+  };
+  const boundary = { uuid: "b", type: "boundary", name: "Work Boundary", geometries: [geo(CORNERS, { kind: "boundary", closed: true })] };
+  return [
+    { id: "tc-spot-pavement", kind: "realshape", side: 100, items: [...eg, tc(6), boundary], expect: { cutCF: 0, fillCF: 8000 } },
+    { id: "tc-spot-curb-8in", kind: "realshape", side: 100, items: [...eg, tc(8), boundary], expect: { cutCF: 0, fillCF: 6333.3 } },
+    { id: "tc-g-pair-uses-g", kind: "realshape", side: 100, items: [...eg, tc(6), g(2), boundary], expect: { cutCF: 0, fillCF: 7000 } },
+    { id: "tc-g-apart-keeps-tc", kind: "realshape", side: 100, items: [...eg, tc(6), g(4), boundary], tinOnly: { surface: "FG", at: [0, 0] }, expect: { egZAt: 11.8 } },
+  ];
 }
