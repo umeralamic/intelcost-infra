@@ -1269,30 +1269,51 @@ def orders() -> int:
     # 1 / exp(0.02733 x 5)) = 0.326231.
     from app.features.equipment.production import pipe_pace
 
-    for variant, default, want in (
-        ("rcp_c76_wall_b:24|1|0-6 ft|urban", False, 0.55),
-        ("rcp_c76_wall_b:24|1|0-6 ft|open", True, 1.0),
-        ("rcp_c76_wall_b:24|1|0-6 ft", True, 0.55),
-        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.326231),
-        # D-1141 (refitted, D-1211: b 0.02733, c 0.10573): a gravity line's pace by its band's middle,
-        # 1 / exp(b max(0, d - 8) + c max(0, d - 20)); the deepest band the tabs price holds past 26 ft.
-        ("pvc_d3034_sdr26:8|1|0-6 ft", False, 1.0),
-        ("pvc_d3034_sdr26:8|1|10-12 ft", False, 0.921281),
-        ("pvc_d3034_sdr26:8|1|16-18 ft", False, 0.781946),
-        ("pvc_d3034_sdr26:8|1|20-22 ft", False, 0.63064),
-        ("pvc_d3034_sdr26:8|1|24-26 ft", False, 0.370367),
-        ("pvc_d3034_sdr26:8|1|26+ ft", False, 0.324224),
+    for variant, default, own, want in (
+        ("rcp_c76_wall_b:24|1|0-6 ft|urban", False, None, 0.55),
+        ("rcp_c76_wall_b:24|1|0-6 ft|open", True, None, 1.0),
+        ("rcp_c76_wall_b:24|1|0-6 ft", True, None, 0.55),
+        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, None, 0.326231),
+        # D-1141 (refitted, D-1211: b 0.02733, c 0.10573): a line written before D-1229 (no depth of its own) by its
+        # band's middle, 1 / exp(b max(0, d - 8) + c max(0, d - 20)); the deepest band the tabs price holds past 26 ft.
+        ("pvc_d3034_sdr26:8|1|0-6 ft", False, None, 1.0),
+        ("pvc_d3034_sdr26:8|1|10-12 ft", False, None, 0.921281),
+        ("pvc_d3034_sdr26:8|1|16-18 ft", False, None, 0.781946),
+        ("pvc_d3034_sdr26:8|1|20-22 ft", False, None, 0.63064),
+        ("pvc_d3034_sdr26:8|1|24-26 ft", False, None, 0.370367),
+        ("pvc_d3034_sdr26:8|1|26+ ft", False, None, 0.324224),
+        # D-1229: a line at its own depth, whatever its band says. Three runs in the old open band "16+ ft" (which
+        # read 18 ft for all three): 18 ft 1 / exp(0.02733 x 10) = 0.760864; 22 ft 1 / exp(0.02733 x 14 + 0.10573 x 2)
+        # = 1 / exp(0.59408) = 0.552070; 26 ft 1 / exp(0.02733 x 18 + 0.10573 x 6) = 1 / exp(1.12632) = 0.324224.
+        ("pvc_d3034_sdr26:8|1|16+ ft", False, 18.0, 0.760864),
+        ("pvc_d3034_sdr26:8|1|16+ ft", False, 22.0, 0.55207),
+        ("pvc_d3034_sdr26:8|1|16+ ft", False, 26.0, 0.324224),
+        # The same 22 ft run named by the new 2 ft labels: the label does not move the price.
+        ("pvc_d3034_sdr26:8|1|22-24 ft", False, 22.0, 0.55207),
     ):
-        got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant, earthwork_crew=None), default), 6)
+        item = SimpleNamespace(earthwork_variant=variant, earthwork_crew=None, earthwork_depth_ft=own, earthwork_depth_max_ft=own)
+        got = round(pipe_pace(item, default), 6)
         if got != want:
-            wrong.append(f"FAIL  site-condition-{variant}-{default}: {got}, expected {want}")
-    # D-1144: a trench box's 4 ft stackers by its band's deep end: none to 8 ft, then one each 4 ft.
+            wrong.append(f"FAIL  site-condition-{variant}-{default}-{own}: {got}, expected {want}")
+    # D-1144: a trench box's 4 ft stackers: none to 8 ft, then one each 4 ft. A line written before D-1229 by its band's
+    # deep end; since, by its trench's own deepest point (18 ft: 3; 22 ft: 4; 26 ft: 5, each in the old "16+ ft" band,
+    # which gave none).
     from app.features.equipment.production import support_stackers
 
-    for variant, want in (("box|0|6-8 ft", 0), ("box|0|8-10 ft", 1), ("box|0|12-14 ft", 2), ("box|0|18-20 ft", 3), ("box|0|22-24 ft", 4)):
-        got = support_stackers(SimpleNamespace(earthwork_variant=variant))
+    for variant, deepest, want in (
+        ("box|0|6-8 ft", None, 0),
+        ("box|0|8-10 ft", None, 1),
+        ("box|0|12-14 ft", None, 2),
+        ("box|0|18-20 ft", None, 3),
+        ("box|0|22-24 ft", None, 4),
+        ("box|0|16+ ft", 18.0, 3),
+        ("box|0|16+ ft", 22.0, 4),
+        ("box|0|16+ ft", 26.0, 5),
+        ("box|0|6-8 ft", 7.5, 0),
+    ):
+        got = support_stackers(SimpleNamespace(earthwork_variant=variant, earthwork_depth_ft=deepest, earthwork_depth_max_ft=deepest))
         if got != want:
-            wrong.append(f"FAIL  trench-stackers-{variant}: {got}, expected {want}")
+            wrong.append(f"FAIL  trench-stackers-{variant}-{deepest}: {got}, expected {want}")
     # D-1105: a pressure main's pace by its own size and depth tables, never the storm drain's. 8 in PVC at 0-6 ft the
     # crew's rate; 12 in at 6-8 ft 0.97 x 0.85; ductile iron 12 in 0.34 (Michigan DOT, VDOT); 24 in 0.19; 30 in PVC
     # 0.53 (no 0.68 large-pipe pace); 8 in at 12-14 ft urban 0.55 x 0.55; fused 8 in at 8-10 ft 0.7.

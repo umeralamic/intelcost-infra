@@ -30749,3 +30749,22 @@ guard could no longer import its list and `fingerprint.sh` could no longer run.
   P24 (adding only protects more). P11–P18 (Bench Construction Test, D-881) are not on the bench, with no audit
   entry; kept on the list and reported.
 - Nothing returns to the api's `scripts/`.
+
+## D-1229: Every gravity run priced at its own depth; the depth ranges are labels only, to 30 ft in 2 ft steps
+
+**Status:** Accepted (2026-11-12, the founder's item 4, "deep gravity pipe (approved)"), answering D-1211's finding: past
+16 ft every gravity line was one "16+ ft" line, paced at 18 ft and with no stackers.
+
+- **The run's own depth on each line.** Calculate's pieces add, to each pipe band, the LF-weighted mean of the pipe's
+  depth and its deepest point, and to each trench protection band the same of the trench's height. A line carries them
+  as `depth_ft` and `depth_max_ft` (the api's `takeoff_item.earthwork_depth_ft`, `earthwork_depth_max_ft`; one
+  migration, nullable). The variant, and so the line's identity across Calculates, is unchanged.
+- **Priced by them, never by the band:** a gravity pipe line's pace (D-1141's factor at the line's mean depth, held past
+  26 ft as before); the trench box line's pace at its trench's mean height and its stackers by its deepest point (a 4 ft
+  stacker each 4 ft past the 8 ft box, D-1144, as its band's deep end gave before); the PE-design line when the deepest
+  point passes 20 ft; the pipe crew's excavator by the deepest trench (D-1071). A line written before this (no depth)
+  keeps the band's reading.
+- **The ranges are labels:** the default list runs to 30 ft in 2 ft steps (0–6, 6–8 … 28–30, 30+). A project's own list
+  stays and only names its lines. Water and force mains keep D-1105's tables by their band's deep end; structures keep
+  theirs.
+- Lines of existing projects get the new names and prices at their next Calculate (the founder: fine).
