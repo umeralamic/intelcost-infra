@@ -1333,6 +1333,15 @@ try {
         }
         return out;
       }
+      if (c.kind === "curbline") {
+        // D-1216: a curb line's lines through the app's own lineLines; a material's quantity is the line's × its factor.
+        const out = {};
+        for (const l of ss.lineLines(c.section, c.lengthLf)) {
+          out[`${l.role}:qty`] = l.quantity;
+          if (l.matFactor) Object.assign(out, { [`${l.role}:matQty`]: l.quantity * l.matFactor, [`${l.role}:matUnit`]: l.matUnit ?? l.unit });
+        }
+        return out;
+      }
       if (c.kind === "spotpick") {
         // D-1206 B: Spot Elev.'s Pick, the label read under a click, through the app's own reader.
         const got = lab.spotLabelAt(c.at, c.labels.map((l) => ({ angle: 0, ...l })));
@@ -1348,7 +1357,8 @@ try {
       if (c.kind === "realshape") {
         // D-470: shapes as stored, through the app's own readers and Calculate.
         const items = c.items.map((it) => ({ created_at: "", is_site_feature: false, ...it, geometries: it.geometries.map((g, k) => ({ uuid: `${it.uuid}-${k}`, geometry_version: 1, ...g })) }));
-        const runs = sx.sheetRuns(items, "s");
+        // The page's scale to sheetRuns as Calculate passes it: a TC spot's curb found on the sheet (D-1214).
+        const runs = sx.sheetRuns(items, "s", { feetPerNorm: c.side, widthPt: 1, heightPt: 1 });
         const labels = new Map(items.map((i) => [i.uuid, i.name]));
         const r1 = (v) => Math.round(v * 10) / 10;
         // The page's scale goes to every triangulation as it goes to the volumes (D-1206 C: the TC/G pair rule measures

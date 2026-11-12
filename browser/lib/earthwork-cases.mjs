@@ -2352,6 +2352,8 @@ export const EARTHWORK_CASES = [
   ...tcSpotRows(),
   ...labelCheckRows(),
   ...spotPickRows(),
+  ...curbSourceRows(),
+  ...curbLineRows(),
 
   // --- Clearing class suggested by the trees per acre (D-1039) -------------------------------------------------
   // Medium from 400 trees an acre, heavy over 600 (the tree-density bands); shown only when heavier than the class
@@ -2616,5 +2618,64 @@ function spotPickRows() {
     { id: "spot-pick-plain", kind: "spotpick", at: { x: 802, y: 856 }, labels: [L("8.9", 802, 856, 12)], expect: { value: 8.9, label: "none" } },
     { id: "spot-pick-word-apart", kind: "spotpick", at: { x: 520, y: 400 }, labels: [L("TC", 500, 400, 10), L("12.30", 520, 400, 20)], expect: { value: 12.3, label: "TC" } },
     { id: "spot-pick-blank", kind: "spotpick", at: { x: 900, y: 900 }, labels: [L("TP 12.80", 828, 667)], expect: { value: -1 } },
+  ];
+}
+
+/**
+ * D-1214: a TC spot's curb found on the sheet, through the app's own sheetRuns (scale passed as Calculate passes it).
+ * The unit page at 100 ft a side. Each row reads the proposed TIN at the lone TC spot, its used elevation:
+ *   1. A TC 13.35 / G 13.00 pair at (0.2, 0.2), one curb of 0.35 ft = 4.2 in; a lone TC 13.00 at (0.5, 0.5), 42.4 ft
+ *      away (within 100): 13.00 - 0.35 = 12.65.
+ *   2. The pair at (0, 0) and the lone TC at (0.9, 0.9), 127.3 ft away (beyond 100); a curb and gutter line along
+ *      y = 0.9 under the spot, Reveal 6 in: 13.00 - 0.50 = 12.50.
+ *   3. As 2 with a 4 in x 12 in curb, Reveal 4 in: 13.00 - 4 / 12 = 12.6667.
+ *   4. A lone TC 13.00 with no pair and no curb line: the 6 in default, 12.50.
+ * Plain proposed spots at 12.00 make each surface.
+ */
+function curbSourceRows() {
+  const geo = (vertices_json, shape_meta) => ({ sheet_uuid: "s", vertices_json, shape_meta, role: "add" });
+  const spot = (x, y, elevation, label) => geo([[x, y]], { kind: "spot", surface: "FG", elevation, ...(label ? { label } : {}) });
+  const tcs = (...g) => ({ uuid: "TC", type: "spot_elevation", name: "TC spots", geometries: g });
+  const gsp = (...g) => ({ uuid: "G", type: "spot_elevation", name: "G spots", geometries: g });
+  const plain = (...pts) => ({ uuid: "FG", type: "spot_elevation", name: "Proposed spots", geometries: pts.map(([x, y]) => spot(x, y, 12)) });
+  const curbLine = (revealIn, name) => ({ uuid: `curb${revealIn}`, type: "lf", name, is_site_feature: true, site_section: { mode: "line", type: "curb_gutter", shape: { kind: "curb_gutter", heightIn: 18, revealIn, topWidthIn: 6, baseWidthIn: 6, backBatterIn: 0, gutterWidthIn: 24, lipIn: 6, edgeIn: 6 } }, geometries: [geo([[0.6, 0.9], [1, 0.9]], null)] });
+  return [
+    { id: "curb-from-pair-42ft", kind: "realshape", side: 100, items: [tcs(spot(0.2, 0.2, 13.35, "TC"), spot(0.5, 0.5, 13, "TC")), gsp(spot(0.2, 0.2, 13, "G")), plain([0.9, 0.1], [0.1, 0.9])], tinOnly: { surface: "FG", at: [0.5, 0.5] }, expect: { egZAt: 12.65 } },
+    { id: "curb-from-line-6in-reveal", kind: "realshape", side: 100, items: [tcs(spot(0, 0, 13.35, "TC"), spot(0.9, 0.9, 13, "TC")), gsp(spot(0, 0, 13, "G")), plain([0.9, 0.1], [0.1, 0.9]), curbLine(6, '6" C&G')], tinOnly: { surface: "FG", at: [0.9, 0.9] }, expect: { egZAt: 12.5 } },
+    { id: "curb-from-line-4in-reveal", kind: "realshape", side: 100, items: [tcs(spot(0, 0, 13.35, "TC"), spot(0.9, 0.9, 13, "TC")), gsp(spot(0, 0, 13, "G")), plain([0.9, 0.1], [0.1, 0.9]), curbLine(4, '4" x 12" curb')], tinOnly: { surface: "FG", at: [0.9, 0.9] }, expect: { egZAt: 13 - 4 / 12 } },
+    { id: "curb-default-6in", kind: "realshape", side: 100, items: [tcs(spot(0.5, 0.5, 13, "TC")), plain([0.9, 0.1], [0.1, 0.9], [0.1, 0.1])], tinOnly: { surface: "FG", at: [0.5, 0.5] }, expect: { egZAt: 12.5 } },
+  ];
+}
+
+/**
+ * D-1216: a curb line's backfill and base, by hand. 100 LF of 6 in curb and gutter, 16 in total (the founder's detail:
+ * a 6 in curb over a 10 in gutter), section 6 in + 24 in wide: concrete 6 x 16 + 24 x 10 = 336 sq in = 0.08642 CY/LF,
+ * x 100 x 1.05 waste = 9.0741 CY.
+ *   Backfill behind curb, 12 in of fill sand (interim rule: width x the curb's total height): 1 ft x 16/12 ft = 1.3333
+ *   CF/LF, 100 LF = 133.33 CF = 4.9383 CY; fill sand sold by the ton at Soil Import's 1.43 t a loose CY: 7.0617 TON.
+ *   Base, cement-stabilized sand 30 in x 4 in: 2.5 x 0.3333 x 100 = 83.333 CF = 3.0864 CY x 1.62 t/CY (120 pcf) = 5.0
+ *   TON. The same base as dense-graded aggregate at 140 pcf (1.89 t/CY): 5.8333 TON.
+ *   Native soil behind the curb buys nothing: no material on the line.
+ */
+function curbLineRows() {
+  const section = (base, backfill) => ({
+    mode: "line",
+    type: "curb_gutter",
+    profile: { curbWidthIn: 6, curbHeightIn: 16, gutterWidthIn: 24, gutterDepthIn: 10 },
+    shape: { kind: "curb_gutter", heightIn: 16, revealIn: 6, topWidthIn: 6, baseWidthIn: 6, backBatterIn: 0, gutterWidthIn: 24, lipIn: 10, edgeIn: 10 },
+    method: "machine",
+    matKey: null,
+    wastePct: 5,
+    concrete: { byOthers: false },
+    base: { matKey: base, widthIn: 30, depthIn: 4, byOthers: false },
+    bars: null,
+    joints: { contractionFt: 0, expansionFt: 0, sealant: false, byOthers: false },
+    excavation: false,
+    backfill: { widthIn: 12, matKey: backfill, byOthers: false },
+    compaction: false,
+  });
+  return [
+    { id: "curb-backfill-fill-sand-css-base", kind: "curbline", lengthLf: 100, section: section("stone:cement_stabilized_sand", "fill:sand:fob"), expect: { "curb_concrete:qty": (336 / 144 / 27) * 100 * 1.05, "curb_backfill:qty": 100, "curb_backfill:matQty": (100 * (16 / 12)) / 27 * 1.43, "curb_backfill:matUnit": "TON", "curb_base:qty": (2.5 * (4 / 12) * 100) / 27 * 1.62 } },
+    { id: "curb-base-aggregate-140pcf", kind: "curbline", lengthLf: 100, section: section("aggregate_base", "soil:native"), expect: { "curb_base:qty": (2.5 * (4 / 12) * 100) / 27 * ((140 * 27) / 2000) } },
   ];
 }

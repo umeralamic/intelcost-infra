@@ -30480,3 +30480,80 @@ founder's check. App only; no migration (a spot's `shape_meta` gains `label` and
   the contour is drawn flagged with the note "Label says 98" and Check Grades lists it under "Contours whose printed
   label says otherwise". Quantity table: first elevation 100 typed with "98" printed 10 pt off the line, the contour
   stays at 100, flagged, label 98; "100" beside it, no flag; "98" 60 pt away, no flag; "98.25" (a spot's) no flag.
+
+---
+
+## D-1214: A TC spot's curb height from the drawing
+
+**Status:** Built 2026-11-12 (the founder's follow-up A: "local, not one default"; the drawings carry 6 in curb and
+gutter, 6 in curb and 4 in x 12 in curb on one project). `lib/takeoff/earthwork/surfaces.ts` (`resolveCurbs`,
+`sheetRuns(items, sheet, scale)`), `EarthworkLayer.tsx`, `SpotDialog.tsx`, `useEarthwork.tsx`, `useVolumes.tsx`,
+`ProjectTakeoff.tsx`.
+
+- Each TC spot's curb, in order:
+  1. a curb typed on the spot;
+  2. the nearest TC/G pair (a TC and a G within 3 ft, one curb) within 100 ft, its TC − G (kept from 0 to 18 in);
+  3. the curb line (a Site Feature Line, curb or curb and gutter) within 5 ft of the spot, its Reveal;
+  4. 6 in.
+- The spot's label says which: "TC 13.00 → 12.65 ft (4.2 in, from pair 42 ft away)", "(6 in, from 6" C&G reveal)",
+  "(6 in default)", "(8 in, typed)".
+- The Spot Elev. dialog's curb height is blank by default ("Auto") and only a typed number overrides.
+- It needs the sheet's scale. The sheet view, Calculate, Check Grades and the label check pass it; a stitched site
+  passes each member's (D-1216).
+- Quantity table: four rows.
+  - A 0.35 ft pair 42 ft from a lone TC 13.00 → 12.65.
+  - A lone TC beyond 100 ft from any pair, on a 6 in reveal curb line → 12.50; on a 4 in reveal line → 12.6667.
+  - A lone TC with nothing near → 12.50.
+
+## D-1215: Curb lines: Reveal defaults, the name from the type, backfill soils, CSS under the curb
+
+**Status:** Built 2026-11-12 (follow-up B1, B2, 2a, 2b). `siteSectionDefaults.ts`, `SiteFeatureDialog.tsx`,
+`SiteSectionFields.tsx`, `lib/takeoff/earthwork/siteSection.ts`.
+
+- **B1, Reveal by type** (the face above the pavement or gutter; it had been the total height on three types):
+
+  | Type | Before | Now |
+  |---|---|---|
+  | Barrier curb | 18 in | 6 in |
+  | Mountable (rolled) curb | 10 in | 4 in |
+  | Curb and gutter | 12 in | 6 in |
+  | Ribbon / header curb | 12 in | 0 (flush) |
+
+  Total heights: barrier 18 in, mountable 10 in, ribbon 12 in; curb and gutter 16 in (D-1216). Reveal does not change
+  a section's concrete; it sets the drawn flow line and the curb a TC spot takes (D-1214).
+- **B2:** a Line's Name follows its Type ("Barrier curb") until one is typed; Lines show no "e.g. Building Pad"
+  placeholder.
+- **2a, Backfill behind curb is soil:**
+  - Native soil is the default. It comes from the job's cut through the job balance, so nothing is bought; the line
+    is place and compact only.
+  - Then Topsoil (no library price yet: it shows as missing until one is entered), Select fill, Common fill and Fill
+    sand, by Soil Import's keys (D-1159), and Other.
+  - Stone only under "Stone (drainage)".
+- **2b:** a curb's Base list adds cement-stabilized sand (the library's 1.5 sack, `stone:cement_stabilized_sand`,
+  D-1084). I found no sacks-per-ton choice in Y's pricing, so the sack rate is the library's 1.5.
+
+## D-1216: Curb backfill by volume (interim), CSS at its own weight, curb and gutter 16 in, TC curbs on stitched sites
+
+**Status:** Built 2026-11-12 (the founder's note before the end of the run). `lib/takeoff/earthwork/siteSection.ts`,
+`lines.ts`, `utilities/materials.ts`, `siteSectionDefaults.ts`, `site/siteKey.ts`.
+
+- **Backfill behind curb, interim rule:**
+  - Until now the line was LF and a chosen material was bought as that many LF, even when priced by the ton or CY.
+  - Now a LF holds width × the curb's total height of backfill. The material is bought in its own unit: tons by its
+    loose weight (Soil Import's 1.43 t/LCY for fill sand, 1.28 common fill, select fill by the CY, stone at 108 pcf),
+    else CY.
+  - The line stays LF, so its crew prices as before. It reads "Backfill behind curb, 12 in × 16 in (interim: width ×
+    curb height, 4.94 CY)".
+  - Native soil stays place and compact only.
+  - The rule the plan proposes (`docs/tasks/curb_line_plan.md` §6) replaces it.
+- **Base of cement-stabilized sand** weighs its own 120 pcf (1.62 t/CY), not an aggregate's 140.
+- **Curb and gutter's default** is the founder's detail: 16 in total, a 6 in curb (reveal) over a 10 in gutter (lip
+  10 in, edge 10 in). Its concrete is 336 sq in, 0.0864 CY/LF; it was 252 sq in, 0.0648 CY/LF at 18 in with a 6 in
+  gutter. New lines only: a saved line keeps its own shape.
+- **Stitched sites:** the site's surface reads each member sheet's runs on that member's scale, so a TC spot's pair and
+  curb-line rules (D-1214) work across a site, as on a single sheet.
+- **Quantity table**, by hand, for 100 LF of that curb and gutter:
+  - Concrete: 9.0741 CY with 5 % waste.
+  - 12 in of fill sand behind it: 4.9383 CY = 7.0617 TON.
+  - A 30 × 4 in CSS base: 3.0864 CY = 5.00 TON.
+  - The same base of aggregate: 5.8333 TON.
