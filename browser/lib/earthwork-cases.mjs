@@ -2350,6 +2350,8 @@ export const EARTHWORK_CASES = [
   ...synthRows(),
   ...realShapeRows(),
   ...tcSpotRows(),
+  ...labelCheckRows(),
+  ...spotPickRows(),
 
   // --- Clearing class suggested by the trees per acre (D-1039) -------------------------------------------------
   // Medium from 400 trees an acre, heavy over 600 (the tree-density bands); shown only when heavier than the class
@@ -2577,5 +2579,42 @@ function tcSpotRows() {
     { id: "tc-spot-curb-8in", kind: "realshape", side: 100, items: [...eg, tc(8), boundary], expect: { cutCF: 0, fillCF: 6333.3 } },
     { id: "tc-g-pair-uses-g", kind: "realshape", side: 100, items: [...eg, tc(6), g(2), boundary], expect: { cutCF: 0, fillCF: 7000 } },
     { id: "tc-g-apart-keeps-tc", kind: "realshape", side: 100, items: [...eg, tc(6), g(4), boundary], tinOnly: { surface: "FG", at: [0, 0] }, expect: { egZAt: 11.8 } },
+  ];
+}
+
+/**
+ * D-1213: a typed contour against the printed label beside it. A contour drawn along y = 100 pt from x 100 to 500 pt,
+ * its First elevation typed as 100 (the typed value wins); a label "98" printed 10 pt off the line (within the
+ * pre-fill's 36 pt reach): the contour stays at 100 and is flagged, label 98. A label "100" beside it: no flag. A label
+ * "98" 60 pt away (out of reach): no flag. Two decimals ("98.25") are a spot's, never a contour's: no flag.
+ */
+function labelCheckRows() {
+  const line = [{ x: 100, y: 100 }, { x: 500, y: 100 }];
+  const contour = { geometry: "c100", elevation: 100, points: line };
+  return [
+    { id: "label-check-typed-100-label-98", kind: "labelcheck", contours: [contour], labels: [{ str: "98", c: { x: 300, y: 110 } }], expect: { flagged: 1, "c100:label": 98, "c100:elevation": 100 } },
+    { id: "label-check-agrees", kind: "labelcheck", contours: [contour], labels: [{ str: "100", c: { x: 300, y: 110 } }], expect: { flagged: 0 } },
+    { id: "label-check-out-of-reach", kind: "labelcheck", contours: [contour], labels: [{ str: "98", c: { x: 300, y: 160 } }], expect: { flagged: 0 } },
+    { id: "label-check-spot-value-ignored", kind: "labelcheck", contours: [contour], labels: [{ str: "98.25", c: { x: 300, y: 110 } }], expect: { flagged: 0 } },
+  ];
+}
+
+/**
+ * D-1206 B: Pick reads the elevation printed under a click, with its type (C12's callouts, sheet points): "TC 13.10"
+ * printed over "G 12.60" (10 pt apart, 8 pt high, 30 pt wide). A click on the TC reads TC 13.10, and both spots of the
+ * callout go to its middle (843, 867) so the TC/G pair rule finds them; a click on the G reads G 12.60, same middle.
+ * "TP 12.80" alone: TP, no callout. "8.9": a plain value, no type. "12.30" with "TC" printed apart beside it: TC 12.30.
+ * Blank paper 60 pt away: nothing.
+ */
+function spotPickRows() {
+  const L = (str, x, y, w = 30) => ({ str, c: { x, y }, w, h: 8 });
+  const callout = [L("TC 13.10", 844, 862), L("G 12.60", 842, 872)];
+  return [
+    { id: "spot-pick-tc-callout", kind: "spotpick", at: { x: 845, y: 861 }, labels: callout, expect: { value: 13.1, label: "TC", anchorX: 843, anchorY: 867 } },
+    { id: "spot-pick-g-callout", kind: "spotpick", at: { x: 841, y: 873 }, labels: callout, expect: { value: 12.6, label: "G", anchorX: 843, anchorY: 867 } },
+    { id: "spot-pick-tp", kind: "spotpick", at: { x: 828, y: 667 }, labels: [L("TP 12.80", 828, 667)], expect: { value: 12.8, label: "TP", anchorX: -1 } },
+    { id: "spot-pick-plain", kind: "spotpick", at: { x: 802, y: 856 }, labels: [L("8.9", 802, 856, 12)], expect: { value: 8.9, label: "none" } },
+    { id: "spot-pick-word-apart", kind: "spotpick", at: { x: 520, y: 400 }, labels: [L("TC", 500, 400, 10), L("12.30", 520, 400, 20)], expect: { value: 12.3, label: "TC" } },
+    { id: "spot-pick-blank", kind: "spotpick", at: { x: 900, y: 900 }, labels: [L("TP 12.80", 828, 667)], expect: { value: -1 } },
   ];
 }

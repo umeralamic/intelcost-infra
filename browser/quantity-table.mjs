@@ -1137,6 +1137,7 @@ try {
     const rg = await import("/src/lib/takeoff/earthwork/register.ts");
     const ec = await import("/src/lib/takeoff/earthwork/elevationCheck.ts");
     const sx = await import("/src/lib/takeoff/earthwork/surfaces.ts");
+    const lab = await import("/src/lib/takeoff/earthwork/trace/labels.ts");
     const gw = await import("/src/lib/takeoff/earthwork/geotech/water.ts");
     const gf = await import("/src/lib/takeoff/earthwork/geotech/field.ts");
     const gm = await import("/src/lib/takeoff/earthwork/geotech/model.ts");
@@ -1330,6 +1331,18 @@ try {
             if (x.prep) out[`${x.itemId}:prepSF`] = x.prep.areaSF;
           }
         }
+        return out;
+      }
+      if (c.kind === "spotpick") {
+        // D-1206 B: Spot Elev.'s Pick, the label read under a click, through the app's own reader.
+        const got = lab.spotLabelAt(c.at, c.labels.map((l) => ({ angle: 0, ...l })));
+        return got ? { value: got.value, label: got.label ?? "none", anchorX: got.anchor ? got.anchor.x : -1, anchorY: got.anchor ? got.anchor.y : -1 } : { value: -1 };
+      }
+      if (c.kind === "labelcheck") {
+        // D-1213: a typed contour against the printed label beside it, through the app's own check.
+        const found = lab.contourLabelMismatches(c.contours, c.labels.map((l) => ({ angle: 0, w: 12, h: 8, ...l })));
+        const out = { flagged: found.length };
+        for (const f of found) Object.assign(out, { [`${f.geometry}:label`]: f.label, [`${f.geometry}:elevation`]: f.elevation });
         return out;
       }
       if (c.kind === "realshape") {

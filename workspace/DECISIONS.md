@@ -30452,3 +30452,31 @@ founder's check. App only; no migration (a spot's `shape_meta` gains `label` and
   beside it turns it to "(G used)". Screenshots in `intelcost-infra/morning-report-2026-11-12/item3-entry/`.
 - **Found while building:** the first quantity-table run caught the TIN collecting without the frame (an edit that
   had not applied); fixed before the commit.
+
+---
+
+## D-1213: Pick tested on Real bid A's C12 (three fixes); a typed contour flagged where its printed label disagrees
+
+**Status:** Built 2026-11-12 (the founder's notes before closing the run). App: `trace/readSheet.ts`,
+`lib/takeoff/earthwork/trace/labels.ts` (`spotLabelAt`'s callout anchor, `contourLabelMismatches`),
+`useEarthwork.tsx`, `GradeCheckPanel.tsx`, `ProjectTakeoff.tsx`. Quantity table: 4 label-check and 6 Pick rows.
+
+- **Pick on a throwaway copy of Real bid A, sheet C12** (1" = 60', 796 text runs: 775 elevations, 68 typed callouts such
+  as "TC 13.10" printed over "G 12.60"). Three faults found and fixed:
+  1. The sheet's printed labels were read only while Contour was armed: Pick under Spot Elev. never had text. Now read
+     on the Sitework tab (Trace reads the same sheet, so it is a cache hit) and while either tool is on.
+  2. Trace's reader keeps pure numbers only, so "TC 13.10" and a "TC" set apart were dropped before Pick saw them.
+     The reader now keeps spot words and prefixed values apart (`spotTexts`); Trace still reads numbers only.
+  3. A callout's TC and G lines are about 10 pt apart on paper, 8.4 ft at 1" = 60': spots placed on the two labels
+     never came within D-1206's 3 ft. A picked TC or G with its partner printed within two text heights, as one
+     callout, now goes to the callout's middle, so both spots of one curb sit on one point and the pair rule applies.
+  While the sheet is still being read, a pick says "Still reading the sheet's text" rather than "no text".
+- **Picked on C12 (Pick, Proposed, no label type chosen, so each label's own prefix decides):** TC 13.10 → TC, used
+  12.60; G 12.60 → G; TC 13.25 → used 12.75; G 12.75 → G; TC 12.00 (alone) → used 11.50; TP 12.80 → TP 12.80; plain
+  8.9 → untyped 8.9. The callout "TC 13.10 / G 12.60" picked after the fix: both spots at (750.1, 805.1) pt, the TC
+  left out of the grade, the G used. On C12 every callout's TC is its G + 0.50, so the converted TC and its G agree.
+- **Typed wins, flagged where a label disagrees.** A contour's elevation stays what was typed (D-1212). Where the
+  printed label the contour pre-fill reads (a whole or one-decimal number within 36 pt of the line) says otherwise,
+  the contour is drawn flagged with the note "Label says 98" and Check Grades lists it under "Contours whose printed
+  label says otherwise". Quantity table: first elevation 100 typed with "98" printed 10 pt off the line, the contour
+  stays at 100, flagged, label 98; "100" beside it, no flag; "98" 60 pt away, no flag; "98.25" (a spot's) no flag.
