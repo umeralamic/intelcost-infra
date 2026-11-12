@@ -24,6 +24,7 @@ import { EXCEL_CASES, cellsOf } from "./lib/excel-cases.mjs";
 import { EXPLAIN_CASES } from "./lib/explain-cases.mjs";
 import { CLOSE_CASES, COMPONENT_SYSTEM_CASES, CONSTANT_CASES, DIMENSION_TOOL_CASES, DISPLAY_CASES, ENTRY_CASES, EXCEL_METRIC_CASES, EXPLAIN_METRIC_CASES, FORMULA_SYSTEM_CASES, MANUAL_CASES, NAME_CASES, PICK_CASES, PINNED_CASES } from "./lib/metric-cases.mjs";
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
+import { OVERLAY_CASES, OVERLAY_MASK_CASES, OVERLAY_NUMBER_CASES, OVERLAY_PAINT_CASES, checkOverlay, runOverlay } from "./lib/overlay-cases.mjs";
 import { PEN_CASES } from "./lib/pen-cases.mjs";
 import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 import { EQUIPMENT_CASES, checkEquipment, runEquipment } from "./lib/equipment-cases.mjs";
@@ -61,6 +62,7 @@ let earth;
 let reg;
 let site;
 let ac;
+let overlay;
 let util;
 let subs;
 let xl;
@@ -798,6 +800,8 @@ try {
     });
     return { vector, pipeline };
   }, [AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES]);
+  // Overlay's Highlight changes (overlay plan §3.1): lib/takeoff/overlay/difference.ts on hand-drawn rasters.
+  overlay = await page.evaluate(runOverlay, [OVERLAY_MASK_CASES, OVERLAY_PAINT_CASES, OVERLAY_NUMBER_CASES]);
   // F18's registration rows: lib/takeoff/earthwork/register.ts (D-188).
   reg = await page.evaluate(async (cases) => {
     const r = await import("/src/lib/takeoff/earthwork/register.ts");
@@ -2399,6 +2403,9 @@ for (const [list, results] of [[AUTOCOUNT_CASES, ac.vector], [AUTOCOUNT_PIPELINE
   }
 }
 
+// Overlay rows (overlay plan §3.1): the masks, the paint and the tolerance against the hand-worked answer.
+checkOverlay(overlay, close, wrong);
+
 // Earthwork rows: each named field against the hand-worked answer (numbers to 1e-9).
 const same = (got, want) =>
   typeof want === "number" ? typeof got === "number" && close(got, want) : JSON.stringify(got) === JSON.stringify(want);
@@ -2583,5 +2590,5 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); ${EQUIPMENT_CASES.length} equipment rows right (628 classes' mob and demob and 965 production formula cells equal to the workbook's); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${OVERLAY_CASES.length} overlay difference rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); ${EQUIPMENT_CASES.length} equipment rows right (628 classes' mob and demob and 965 production formula cells equal to the workbook's); passed`,
 );
