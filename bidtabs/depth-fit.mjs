@@ -2,6 +2,11 @@
 // from docs/reference (outside git), the pipe material from the bench's library, passed in.
 //
 //   node bidtabs/depth-fit.mjs "<path to contracts.json>" <8 in SDR 26 material $/LF after the location factor>
+//   node bidtabs/depth-fit.mjs "<contracts.json>,<contracts-ocr.json>" --results "<contract-results.json>"
+//
+// With --results (D-1211, the refit on app-built items): each item's pipe material is the one the app priced for it,
+// its pipe line's material a LF in that contract's run (contract-runner.js's byRole.utility_pipe), so every size and
+// pipe the tabs band is fitted, not only 8 in SDR 26, and the OCR'd tabs' bands join the check half.
 //
 // Each banded sanitary line's median less its pipe material (the same at every depth) is its installed cost without
 // pipe; within a contract, size and pipe, its ratio from band to band is what depth costs. Model: ln N = a(contract,
@@ -10,19 +15,29 @@
 
 import { readFileSync } from "node:fs";
 
-const [, , path, matArg] = process.argv;
-const MAT = { "pvc_d3034_sdr26:8": Number(matArg) };
+const [, , path, matArg, resultsPath] = process.argv;
+const byResults = matArg === "--results";
+const MAT = byResults ? {} : { "pvc_d3034_sdr26:8": Number(matArg) };
+// Each contract's app-built pipe material a LF, by pipe: its items of one pipe share the contract's order tier.
+const appMat = new Map();
+if (byResults) {
+  for (const c of JSON.parse(readFileSync(resultsPath, "utf8")))
+    for (const [type, entry, nominal, , , , , , , , , byRole] of c.items) {
+      const m = byRole?.utility_pipe?.[2];
+      if (type === "sanitary" && m != null) appMat.set(`${c.key}|${entry}:${nominal}`, m);
+    }
+}
 const FIT = new Set(["1680-8215", "2535-2318", "2659-2152", "4683-6203A", "0386-3118A"]);
 const BAND = /(\d+)\s*'?\s*-\s*(\d+)\s*'?\s*(CUT|DEPTH)/i;
 
-const contracts = JSON.parse(readFileSync(path, "utf8"));
+const contracts = path.split(",").flatMap((p) => JSON.parse(readFileSync(p, "utf8")));
 const points = [];
 for (const k of contracts) {
   const seen = new Set();
   for (const i of k.items) {
     if (i.type !== "sanitary" || i.median == null) continue;
     const m = i.desc.match(BAND);
-    const mat = MAT[`${i.entry}:${i.nominal}`];
+    const mat = byResults ? appMat.get(`${k.key}|${i.entry}:${i.nominal}`) : MAT[`${i.entry}:${i.nominal}`];
     if (!m || mat === undefined) continue;
     const mid = (Number(m[1]) + Number(m[2])) / 2;
     const key = `${i.entry}:${i.nominal}:${mid}`;

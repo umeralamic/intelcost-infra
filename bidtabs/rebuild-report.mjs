@@ -22,7 +22,7 @@ const cmp = new Map(JSON.parse(readFileSync(cmpPath, "utf8")).map((c) => [c.key,
 // D-1141's factor and the line's band: the runner lays a gravity line's invert ~0.6 ft above the tab's depth, so its
 // trench lies in the 2 ft range below it (6.5 ft reads 0-6, 10 reads 8-10, 26 reads 24-26).
 const RANGES = [0, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
-const [B, C] = [0.0267, 0.10438];
+const [B, C] = [0.02733, 0.10573];
 const bandMid = (d) => {
   const t = d - 0.6;
   let i = RANGES.findIndex((r, k) => t >= r && t < (RANGES[k + 1] ?? Infinity));
@@ -94,6 +94,23 @@ const kinds = [
 for (const [label, f] of kinds) console.log(line(label, priced.filter(f)));
 console.log(line("All", priced));
 console.log("\nIn band: bid / 1.15 <= ours <= bid (13 % under the escalated median to level with it).");
+// The run-length split (D-1168): an item's own LF as its run; the pipe's order tier from the contract's total of that
+// pipe (D-1091, D-1211), so a short item of a size the contract buys much of prices at that size's tier.
+console.log("\nBy run length (an item's LF):");
+for (const [label, f] of [
+  ["Storm RCP", (r) => r.type === "storm" && r.entry.startsWith("rcp")],
+  ["Sanitary", (r) => r.type === "sanitary"],
+  ["Water PVC", (r) => r.type === "water" && r.entry.startsWith("pvc")],
+]) {
+  console.log(line(`${label} < 250 LF`, priced.filter((r) => f(r) && r.qty < 250)));
+  console.log(line(`${label} >= 250 LF`, priced.filter((r) => f(r) && r.qty >= 250)));
+}
+if (results.some((c) => c.ocr)) {
+  console.log("\nThe tabs read by OCR alone, and the rest:");
+  const ocrKeys = new Set(results.filter((c) => c.ocr).map((c) => c.key));
+  console.log(line("OCR tabs", priced.filter((r) => ocrKeys.has(r.key))));
+  console.log(line("Parsed tabs", priced.filter((r) => !ocrKeys.has(r.key))));
+}
 console.log("\nSanitary items:");
 for (const r of priced.filter((x) => x.type === "sanitary")) {
   console.log(`  ${r.key.padEnd(11)} ${String(r.nominal).padStart(2)}" ${r.entry.padEnd(16)} ${String(r.depth).padStart(4)} ft  ${depthBand(r.depth).padEnd(8)} ${String(r.qty).padStart(5)} LF  ${String(r.pct).padStart(4)} %  ${r.band}`);

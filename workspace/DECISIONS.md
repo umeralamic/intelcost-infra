@@ -30340,3 +30340,84 @@ cut and fill).
   place the earthwork glyph shows (item rows, panels) alike.
 
 **Where:** app `features/takeoff/components/ActionGlyphs.tsx` (`TypeGlyph`, earthwork).
+
+---
+
+## D-1210: F40's untested items driven; a printed dimension's length fixed; a typed tip fee says so
+
+**Status:** Accepted (2026-11-12, the founder's run, items 1 and 2a).
+
+- **Driven on throwaway accounts, all passing after one fix:** a viewer seat sees a sheet's dimension, its drag and
+  Delete change nothing stored, and the api refuses its create (403); a second user's new, stretched and deleted
+  dimension shows on the first user's open sheet within 0.3 s, no reload; the print renderer (`renderSheetForPrint`,
+  rendered to a PDF without the browser's Print) draws the dimension where it is; a Standard Overlay shows in split
+  view's Reference pane as in the main view (tint, opacity, alignment).
+- **Fixed:** a printed dimension read 0'-1" for a 50'-10 1/16" one. Print's `feetPerPt` is the sheet's scale over its
+  page width (the takeoff's convention there), the label reads feet per PDF point as the canvas hands it; the width
+  goes back on in `drawDimensions`.
+- **A typed tip fee says so.** Real bid A's $10/TON clean-soil disposal fee is the founder's own, typed on the
+  project's Soil Export line (`price_source` typed), not a code default; it stays. Its label carried the library's
+  words from before it was typed ("IntelCost price · Houston area · Q4 2026 · grade C"). A disposal fee typed on a
+  project now reads "Tip fee $10/TON (set on this project)" in Estimating and its workbook; stored data unchanged. A
+  project with no fee or dump site prices at D-1145's fallback as before.
+
+**Where:** app `features/takeoff/print/printSheets.ts`, `lib/estimate/componentDisplay.ts`; evidence in
+`intelcost-infra/morning-report-2026-11-12/item1-f40/`.
+
+---
+
+## D-1211: The bid-tab harness builds through the app's defaults (parity check); D-1141 refitted; the OCR'd tabs priced
+
+**Status:** Accepted (2026-11-12, the founder's run, items 2d to 2g and the notes on them). Every earlier harness
+result (D-1103, D-1165, D-1167, D-1168) is superseded by this one. `intelcost-infra/bidtabs/contract-runner.js`,
+`ocr-contracts.mjs`, `depth-fit.mjs`, `rebuild-report.mjs`; `intelcost-app-fastapi/app/features/equipment/
+production.py` (`GRAVITY_DEPTH`); `intelcost-infra/drives/quantity-table.py` (the pace rows). Results, ratios and the
+WD documents in docs/reference (outside git); no tab figure in a repo.
+
+- **2d, the order tier: no change.** A pipe's tier already comes from the estimate's total of that material:
+  `tiers.totals` sums each `mat_key` (`pipe:<kind and class>:<size>`, with waste) over the project's live lines. On the
+  bench two 12 in HDPE lines of 439 and 91 LF both read "Standard order (541 LF)"; in 0386-5140D the two 42 in RCP items
+  (147 and 81 LF) both price at Standard on the contract's 233 LF, not Small. The harness prices each contract as one
+  estimate, so it was already the job total. A short item still often prices Small because it is usually a size the
+  contract buys little of. Per the founder, a gap is judged at the contract total; short and long runs are not tuned
+  apart.
+- **2e, the parity check.** The runner now builds every item twice: its own way, and through Calculate's own
+  `calculateUtilities` from the app's default run for that pipe (`defaultRun`, the catalogue's material and class,
+  inverts typed, a pressure main at the company's cover, the same clay as one logged bore, the project's utility
+  settings). The lines (role, name, unit, quantity, materials) must match or the contract is not priced. Found and
+  fixed: the pipe line's name (the harness wrote `8" pvc_c900_dr18`, the app `8" PVC C900 DR 18`), a pressure main's
+  depth rounded to 0.01 ft (2,784 against 2,788 BCY on 1,975 LF of 8 in), and the depth ranges (the harness's own list
+  to 30 ft against the project's: the app default ends at "16+ ft"). After: 17 contracts, 165 items, identical.
+- **Found by the parity check, for the founder (not changed):** with the default ranges every gravity line past 16 ft
+  is one "16+ ft" line, paced at 18 ft (`gravity_depth_pace` reads an open band as its low + 2) and with no trench-box
+  stackers (`support_stackers` reads no deep end). A 22 or 26 ft sewer is priced as an 18 ft one: on the tabs,
+  sanitary past 20 ft goes from -9 % to -38 % LF-weighted once the harness uses the app's ranges. Options: default
+  ranges on to 30 ft, or the open band priced at its runs' own depth. Either renames or reprices lines on existing
+  projects at their next Calculate, so it waits for the founder.
+- **D-1141 refitted on app-built items:** each banded sanitary item's median less the pipe material the app priced for
+  it (its contract's tier), every banded size and pipe, the OCR'd tabs in the check half. b 0.02670 to 0.02733, c
+  0.10438 to 0.10573: x1.085 at 11 ft (was 1.08), 1.279 at 17 (1.27), 1.811 at 22 (1.79), 3.084 at 26 (3.03). Fit 11
+  band pairs, mean 10.1 %; check 14 pairs (was 4), mean 8.4 %, worst 19.1 % (was 6.6 %, 13.7 %): grade D stands.
+  Applied in `GRAVITY_DEPTH`; the quantity table's six pace rows worked again by hand from the new constants.
+- **2f, the OCR'd tabs as contracts:** `ocr-contracts.mjs` classifies a row as `contracts.json` does (checked first:
+  113 of its 113 items classify as they were) and keeps the OCR-checked rows: 7 contracts, 52 items (the 56 filled, less
+  3 service leads and a casing). Each tab's labour ratio from the WD in effect at its bid date (D-1103), the wage core's
+  rates for that county and month, read against SAM.gov's own modification tables: TX20250031 mods 1 and 2 (Harris,
+  2025-03 to 2025-12; 4013-2501 opened 2025-12-17, after mod 2 of 12-12), TX20260031 mod 0 (Harris, 2026-03),
+  TX20240031 mod 2 (Harris, listed 2024-11; its scrambled header shows 2025-01-16, under TX20250031 mod 0 with the same
+  crew rates, so only its ECI differs: 1.074 against 1.068), TX20250054 mod 0 (Fort Bend, 2025-01). None was assumed
+  and none excluded. The ratio is the crew's prevailing cost over the bench's Harris open shop, as before (the 10 parsed
+  contracts' ratios recompute exactly). Not priced: a 20 LF 15 in C900 item (no catalogue size) and, as before, 42 in
+  HDPE.
+- **The table again (17 contracts, app-built, refitted; labour at each tab's bid-date prevailing rates, the median
+  escalated by ECI):** by contract, the total -13 %, the median contract -11 %, 8 in band, 2 over, 7 under (D-1168's 10:
+  -7 %, -6 %, 5 in, 3 over, 2 under). The same 10 contracts now -8 % in total (0386-3118A +12 % to 0 %, its deep lines).
+  By item, LF-weighted: water PVC -16 % (42 items), sanitary -19 % (under 8 ft -11 %, 8-14 ft -17 %, 14-20 ft -22 %,
+  past 20 ft -38 %), storm RCP -7 % (62), all 163 items -13 %; the OCR'd tabs -18 %, the parsed ones -8 %. Run length
+  (an item's LF): storm RCP under 250 LF +8 %, 250 and over -9 %; water PVC +10 % and -17 %; sanitary -25 % and -19 %.
+- **2a to 2c, 2g** (no code beyond D-1210): the $10/TON is a typed price on Real bid A's soil export disposal component
+  (`price_source` typed), labelled "Tip fee $10/TON (set on this project)"; the fallback stays D-1145. C12, C13 (and
+  C16) on Real bid A have no job choice: members, not Separate job. Update rates was never removed: Estimating › Wage
+  Calculator, beside the rate set's summary; it saves the set again from its own inputs escalated to the project's bid
+  date, else today (`bid_date=project.bid_due_date or date.today()`), and shows each craft's before and after first.
+  The D-1167 screenshot is back in the report folder (`item2-pricing/`).

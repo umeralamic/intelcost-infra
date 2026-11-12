@@ -1265,21 +1265,23 @@ def orders() -> int:
         if (got is None) != (want is None) or (got is not None and want is not None and round(got, 6) != want):
             wrong.append(f"FAIL  order-qty-{text}: {got}, expected {want}")
     # D-1097: the site condition. Urban at 0.55 (TxDOT 0-4416-1, 75 / 136 LF a day); a run's own over the project's;
-    # 36 in RCP at 12-14 ft urban: 0.68 x 0.55 x the Houston tabs' depth pace at 13 ft (D-1141) = 0.32726.
+    # 36 in RCP at 12-14 ft urban: 0.68 x 0.55 x the Houston tabs' depth pace at 13 ft (D-1141, refitted by D-1211:
+    # 1 / exp(0.02733 x 5)) = 0.326231.
     from app.features.equipment.production import pipe_pace
 
     for variant, default, want in (
         ("rcp_c76_wall_b:24|1|0-6 ft|urban", False, 0.55),
         ("rcp_c76_wall_b:24|1|0-6 ft|open", True, 1.0),
         ("rcp_c76_wall_b:24|1|0-6 ft", True, 0.55),
-        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.32726),
-        # D-1141: a gravity line's pace by its band's middle; the deepest band the tabs price holds past 26 ft.
+        ("rcp_c76_wall_b:36|1|12-14 ft|urban", False, 0.326231),
+        # D-1141 (refitted, D-1211: b 0.02733, c 0.10573): a gravity line's pace by its band's middle,
+        # 1 / exp(b max(0, d - 8) + c max(0, d - 20)); the deepest band the tabs price holds past 26 ft.
         ("pvc_d3034_sdr26:8|1|0-6 ft", False, 1.0),
-        ("pvc_d3034_sdr26:8|1|10-12 ft", False, 0.923024),
-        ("pvc_d3034_sdr26:8|1|16-18 ft", False, 0.786392),
-        ("pvc_d3034_sdr26:8|1|20-22 ft", False, 0.636685),
-        ("pvc_d3034_sdr26:8|1|24-26 ft", False, 0.376891),
-        ("pvc_d3034_sdr26:8|1|26+ ft", False, 0.330589),
+        ("pvc_d3034_sdr26:8|1|10-12 ft", False, 0.921281),
+        ("pvc_d3034_sdr26:8|1|16-18 ft", False, 0.781946),
+        ("pvc_d3034_sdr26:8|1|20-22 ft", False, 0.63064),
+        ("pvc_d3034_sdr26:8|1|24-26 ft", False, 0.370367),
+        ("pvc_d3034_sdr26:8|1|26+ ft", False, 0.324224),
     ):
         got = round(pipe_pace(SimpleNamespace(earthwork_variant=variant, earthwork_crew=None), default), 6)
         if got != want:
