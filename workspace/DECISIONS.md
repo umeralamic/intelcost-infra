@@ -29786,3 +29786,429 @@ that sheet, not summary as it shows in takeoff panel"). Brings D-767's rule (Est
   whole line's).
 
 **Where:** app `features/takeoff/components/ItemRow.tsx` (`subQuantity`), `features/takeoff/sheets/SheetsPanel.tsx`.
+
+---
+
+## D-1172: Under a sheet, cost rows at the sheet's share; sub-item and cost rows on the sheet's columns; Resume names the sheet in view
+
+**Status:** Accepted (2026-11-11, the founder: "yes to all three", after D-1170 and D-1171).
+
+- **Cost rows at the sheet's share.** Under a sheet in the Sheets panel, a cost row's own figure (man-hours,
+  machine-hours, the unit it is sold in) and its money on hover are scaled by the same share as its host: the parent's
+  share there for the parent's and its sub-items' rows, a sub-item's own split when it has shapes of its own (D-767,
+  D-1171). Under every sheet they add up to the Takeoff panel's. The Takeoff panel is unchanged.
+- **The sheet's columns.** Under a sheet, sub-item rows and cost rows take the narrower quantity and unit columns the
+  item row there already has (D-1067), so a sub-item's name gets the room and the figures line up under the item's.
+- **Resume names the sheet in view.** On a Sheets panel row under a sheet that is not the one in view, Resume's tip
+  reads "continues measuring … on <sheet> (the sheet in view)", the sheet as the panel labels it (D-1170). Under the
+  sheet in view and in the Takeoff panel it still reads "on this sheet".
+
+**Where:** app `features/takeoff/components/ItemRow.tsx` (`costScale`, `resumeOn`, `tight`),
+`features/takeoff/sheets/SheetsPanel.tsx`.
+
+---
+
+## D-1173: Multipliers by the item's name, in both panels; a parent with sub-items carries the fill
+
+**Status:** Accepted (2026-11-11, the founder's request). Moves the multiplier out of D-1064's notes line.
+
+- **By the name.** The Takeoff panel's item multiplier (D-336, the chain this view's folder rows do not already show,
+  D-1070: the classification's under Folders, the folder's under Classification) sits on the item's own row, right
+  after its name, not on a second line. The other notes (people, delete requested, retired) keep their line.
+- **The Sheets panel shows it too.** Its item rows had none. Under a sheet an item shows its whole multiplier, folder
+  times classification (times its layer's, when one multiplies), as one figure ("×6"), each part and where it comes
+  from on hover. That is the figure Estimating extends the sheet's quantity by.
+- **The fill is the parent's.** A sub-item row had a light fill and its parent none, so the sub-items read louder than
+  the item. Now every item row has the same light fill, with or without sub-items or cost rows, and its sub-item and
+  cost rows are plain, in both panels; under a sheet it replaces D-1067's tint. The fill is well under its folder's
+  row (the folder at 40 %, the item at 10 % of the panel's accent), so the folder still reads above it (the founder,
+  the same day, after a first cut at 20 % on parents with sub-items only).
+- **Sub-item rows a step lighter in tone,** as cost rows are: their name and figure in the muted text colour, so the
+  parent reads first (a colour set in Settings for sub-items still wins).
+- **The multiplier sits right after the name,** the gap after it, so it reads with the name and not with the
+  quantity; when the row is short of room the name is cut first.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`, `features/takeoff/sheets/SheetsPanel.tsx`,
+`pages/ProjectTakeoff.tsx` (`sheetMultiplierOf`).
+
+---
+
+## D-1174: A row's hover buttons at its right edge, More actions the last
+
+**Status:** Accepted (2026-11-11, the founder: "show the 3 dots menu at most right … also the other three buttons on sub
+items"). Moves D-1064's hover buttons from over the end of the name to the row's right edge.
+
+- On hover an item row shows its buttons at its right edge, over the colour dot and the unit: the colour dot (kept in
+  reach, as the buttons cover it), the eye, then More actions (⋮) the last. A sub-item row's $, edit and delete sit
+  the same way at its right edge. Both panels, a parent, a sub-item and a calculated parent with cost components alike.
+- The quantity is never covered; the name is no longer covered either.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx` (`HOVER_ACTIONS`).
+
+---
+
+## D-1175: A sheet's eye hides every markup on it; items are shown again on it one by one
+
+**Status:** Accepted (2026-11-11, the founder: "in sheets panel, left of the 3 dots menu show eye for hiding all
+markups on that sheet … user can show items in that sheet which they want, later, others remain hidden").
+
+- **The eye.** A sheet row in the Sheets panel has an eye left of its ⋮, on hover. Off, it hides every markup on that
+  sheet: the items' shapes, the annotations, earthwork runs, strips, sections and linked shapes. While it is off the
+  row shows the crossed eye all the time, so the sheet says it. On again, everything shows.
+- **Items one by one.** With a sheet's eye off, an item's eye under that sheet in the Sheets panel shows that item on
+  that sheet alone; the others stay hidden, and the item is not touched on any other sheet. Turning the sheet's eye on
+  again lets those go. Elsewhere an item's eye works as it did (D-73): the Takeoff panel's hides the item everywhere.
+- **View only, kept in this browser,** as an item's hide is (D-73): nothing is written, nobody else's view changes,
+  the quantities are unchanged. Print prints each sheet as it is shown.
+- The toolbar's Markups still hides everything on every sheet, over this.
+
+**Where:** app `pages/ProjectTakeoff.tsx` (`hiddenSheets`, `toggleSheetHidden`, `toggleItemOnSheet`, `markupsOn`),
+`features/takeoff/sheets/SheetsPanel.tsx`.
+
+---
+
+## D-1176: A double-click on an item's name opens Properties; on a sub-item, Manage sub-items
+
+**Status:** Accepted (2026-11-11, the founder). Replaces D-706's rename in place on the name for every item but a
+Calculate's line.
+
+- A double-click on an item's name opens its Properties, as a double-click anywhere else on the row does, in both
+  panels; the item is renamed in Properties' Name field. A Calculate's line, which has no Properties, still renames
+  in place (D-773).
+- A double-click on a sub-item row opens Manage sub-items, as its pencil does. View-only, it does nothing.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx` (`renamesInPlace`, `SubItemRow`).
+
+---
+
+## D-1177: A row's last column is as wide as its hover buttons, so they never cover the quantity or the unit
+
+**Status:** Accepted (2026-11-11, the founder: "move qty and unit (little more to the left) so these are not hidden by
+3 dot menus or other buttons"). Follows D-1174.
+
+- Every row in both panels (an item, a sub-item, a cost row, a strip area) ends in one column 52 px wide, the width of
+  its hover buttons (the dot, the eye and ⋮; a sub-item's $, edit and delete). The quantity and the unit sit left of it,
+  so on hover the buttons cover only that column. The colour dot sits where the hover group draws its own.
+- The columns still line up from an item to its sub-items and cost rows; the name gives up the room.
+
+**Where:** app `features/takeoff/components/rowColumns.ts` (`ACTION_COL`), `ItemRow.tsx`, `earthwork/useStripAreas.tsx`.
+
+---
+
+## D-1178: The unit column fits its units, the colour dot right after it
+
+**Status:** Accepted (2026-11-11, the founder: "why the space between the unit and color circle … tighten it").
+Follows D-1177.
+
+- The unit column is 28 px in both panels (it was 36 px, 32 px under a sheet), wide enough for LCY, BCY or TON at the
+  panel's 11 px; a longer unit (ACRE) is cut, its words on hover. Units stay left-aligned under each other.
+- The colour dot sits at the very start of D-1177's last column, right after the unit, not 4 px in. The hover buttons
+  still cover only that column, so they never cover the quantity or the unit; on hover the group's own dot sits a few
+  pixels right of the row's.
+
+**Where:** app `features/takeoff/components/rowColumns.ts` (`UNIT_COL`, `UNIT_COL_TIGHT`, `ACTION_COL`).
+
+---
+
+## D-1179: The Resume glyph keeps the toolbar's colours; one colour dot on hover
+
+**Status:** Accepted (2026-11-11, the founder: "resume button icons should not change color, they should remain as
+the color of them in toolbar"; "color circle show two times when I hover").
+
+- **The glyph.** An item row's Resume glyph (Linear, Segment, Area, Count, the excavator) is drawn as the toolbar
+  draws that tool: the text colour with its own accent, never the item's colour; the item's colour is its dot. On a
+  selected row it sits on a light chip, so it reads on the selection.
+- **One dot.** On hover the row's dot hides and the hover group's dot stands exactly where it was (2 px into D-1177's
+  column); the group is the column's width, the eye and ⋮ at its end. Before, the group's dot sat a few pixels right
+  of the row's, and both showed.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1180: The unit right up to the dot; an item's unit as dark as its figure
+
+**Status:** Accepted (2026-11-11, the founder: "tighten the space between unit and color circle … same in sheets
+panel"; "why is the parent item's unit not dark as the qty or description, fix it"). Tightens D-1178.
+
+- The unit column is 24 px in both panels, no left padding: CCY and TON, the widest units in use, are 23.5 px at the
+  panel's 11 px Inter (2-letter units 13 to 16 px; ACRE, 29 px, is cut, its words on hover). D-1177's last column takes
+  back the row's 4 px gap before it, so the dot sits right after the unit: about 12 px after EA, 2 px after CCY.
+- An item row's unit is the text colour, as its quantity and name are (it was muted). An earthwork input's summary
+  (its count and its word, "3 contours") is the text colour too (the founder, the same day); sub-item and cost rows
+  keep their lighter tone (D-1173).
+
+**Where:** app `features/takeoff/components/rowColumns.ts`, `ItemRow.tsx`.
+
+---
+
+## D-1181: A row's figure and unit at its name's size
+
+**Status:** Accepted (2026-11-11, the founder: "why the quantity and unit of sub-items or cost components font size is
+not same as the description, fix it … in sheets panel and takeoff panel both").
+
+- The names follow Settings › Text (an item 12 px, a sub-item 11 px by default, up to 16), but the figures and units
+  were fixed in code (an item's unit 11 px against a 12 px name), so a size set in Settings grew the names and not the
+  numbers. Now an item row's quantity and unit take the item size, and a sub-item row's and a cost row's name, figure
+  and unit take the sub-item size, in both panels.
+- The unit column (D-1180) is sized from the same settings: 2.15 em of the larger of the two sizes, so CCY or TON fits
+  at any size and every row's columns still line up.
+
+**Where:** app `features/takeoff/components/rowColumns.ts` (`unitColWidth`), `ItemRow.tsx`.
+
+---
+
+## D-1182: The side panels' scrollbars thin, their arrows kept
+
+**Status:** Accepted (2026-11-11, the founder: "decrease the width of the scroll bars on both sheets panel and takeoff
+panel, and other panels (assemblies, bookmarks, snippets) … keep the arrows").
+
+- The Sheets, Takeoff, Assemblies and Bookmarks | Snippets lists scroll on the browser's own thin bar
+  (`scrollbar-width: thin`, class `scrollbar-panel`): about half the width, the arrows kept (a styled
+  `::-webkit-scrollbar` would drop them), the thumb in the panel's muted tone on a clear track.
+
+**Where:** app `index.css`, `SheetsPanel.tsx`, `QuantityPanel.tsx`, `BookmarksPanel.tsx`, `AssembliesPanel.tsx`.
+
+---
+
+## D-1183: The Sheets panel is 320 px at the least, as the Takeoff panel
+
+**Status:** Accepted (2026-11-11, the founder). Replaces D-97's 140 px and D-1070's 260 px default.
+
+- The Sheets panel lists the same item rows and columns as the Takeoff panel (D-1067 onward), and they broke under
+  320 px (a name cut to a letter, the colour dot off the row). Its least and its default are 320 px, as D-1064 set the
+  Takeoff panel's; a width saved narrower opens at 320. The canvas keeps its 360 px. The compact layout is unchanged.
+
+**Where:** app `pages/ProjectTakeoff.tsx` (`LEFT_MIN_PX`, `LEFT_DEFAULT_PX`).
+
+---
+
+## D-1184: A row's note line ends where its name does
+
+**Status:** Accepted (2026-11-11, the founder: a calculated line's "Included in Pipe crew, sewer main …" ran to the
+panel's edge).
+
+- An item's note line (included in a crew, delete requested, not in the last Calculate, who is on it) is cut before
+  the flag, quantity, unit and dot columns, where the name is cut, not at the panel's edge, in both panels; its full
+  words on hover as before.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1185: The multiplier is never cut
+
+**Status:** Accepted (2026-11-11, the founder: "multiplier should not show dots, it should show the multiplier number
+on min width"). Amends D-1173.
+
+- The multiplier by an item's name shows whole at any width ("×6", never "×.."); the name is cut before it. With both
+  panels 320 px at the least (D-1183), the row always has its room.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1186: Under a sheet, the items' dotted rail drops straight from the sheet's chevron
+
+**Status:** Accepted (2026-11-11, the founder: "fix the tree line under sheets … it should sit under the arrow of the
+sheet").
+
+- A sheet's item list starts 4 px in (it was 10), so the items' rail, 2 px into the list, runs under the centre of
+  the sheet's chevron (6 px into the row) rather than 6 px right of it. Nested sheets alike: the list sits in its
+  sheet's own box.
+
+**Where:** app `features/takeoff/sheets/SheetsPanel.tsx`.
+
+---
+
+## D-1187: The split view's reference sheet list scrolls
+
+**Status:** Accepted (2026-11-11, the founder: "reference sheet list does not have scroll when there are more
+sheets").
+
+- The Reference pane's sheet picker listed every sheet in one column that ran off the bottom of the page. Its sheets
+  now scroll inside the menu (the menu's `scrolls` run, as a long workspace list does, D-705), about nine at a time.
+
+**Where:** app `features/takeoff/split/ReferencePane.tsx`.
+
+---
+
+## D-1188: A hidden item shows one eye, by its ⋮
+
+**Status:** Accepted (2026-11-11, the founder: "why are there two hidden eye buttons on the parent item? there should
+only be one, the one with the 3-dot menu").
+
+- A hidden item's crossed eye left the flag column (before the quantity). It sits by the colour dot, exactly where the
+  hover group's eye stands, and gives way to it on hover, so there is one eye by ⋮ at all times; a click on it shows
+  the item, as before. A sheet's own eye on its row (D-1175) is unchanged.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1189: The figure column is as wide as its figure; an empty flag takes no room
+
+**Status:** Accepted (2026-11-11, the founder: "for items, sub-items or cost components, can we show a little more
+text before the dots? use the empty space between the qty and the description, for all panels").
+
+- The quantity column was a fixed 76 px (60 under a sheet), sized for the longest figure, so "768" left a gap the
+  name could not use. It is now as wide as its figure. The unit and the last column right of it are fixed (D-1177,
+  D-1181), so the figures' right edges still line up row to row; the name takes every pixel up to its own figure.
+- The flag column (a sheet with no scale, a formula error) takes no room while it is empty; it was 14 px and two gaps
+  on every row.
+- An item's note line (D-1184) ends clear of a typical figure, the unit and the last column.
+
+**Where:** app `features/takeoff/components/rowColumns.ts` (`QTY_COL`, `QTY_COL_TIGHT`, `FLAG_COL`), `ItemRow.tsx`.
+
+---
+
+## D-1190: Split view says its keys while Stitch or Overlay take points there
+
+**Status:** Accepted (2026-11-11, the founder: "in split view, why does clicking draw this dotted line, and there is no
+way (Esc, Enter) to undo").
+
+- The dashed line is Stitch sheets' match line (D-834): while it is open with its other sheet in split view, a click
+  on that sheet adds a point. Its keys already exist (D-929): Backspace takes out the last point, Esc drops an unpaired
+  point and then leaves (asking first when pairs are placed), Enter finishes; Overlay a sheet alike. Nothing on the pane
+  said so: its header read "Click a control point". It now reads "Click to add a point · Backspace undo · Esc stop ·
+  Enter finish" while those keys are live, the full words on hover.
+- Not yet reproduced: a case where those keys did nothing. Open with the founder.
+
+**Where:** app `features/takeoff/split/ReferencePane.tsx`.
+
+---
+
+## D-1191: A click with Pan only pans
+
+**Status:** Accepted (2026-11-11, the founder: "in split view, why does clicking on sheets start drawing a dotted line").
+
+- Reproduced: split view, nothing else open, four clicks on the reference sheet drew four points and a dashed run under
+  a header reading "View-only". The canvas's click handled Select, Dimension and Count and let every other tool fall
+  through to "add a point to the run in hand"; Pan, which the reference pane always uses, fell through too. The pane's
+  keys are off (it is view-only), so Esc could not drop it. The main sheet did the same with Pan picked.
+- A click with Pan now does nothing; a press and drag still pans. D-1190's header words stand for Stitch and Overlay.
+
+**Where:** app `features/takeoff/components/SheetCanvas.tsx` (`handleClick`).
+
+---
+
+## D-1192: 12 px between a cut name and its figure
+
+**Status:** Accepted (2026-11-11, the founder: "add a little space between qty and the dots; the dots can appear two
+to three letters before where they show now"). Follows D-1189.
+
+- On an item, sub-item and cost row, in every panel, the name keeps 12 px clear before its figure (after its
+  multiplier, when it has one), so a cut name's "…" ends two or three letters short of the figure rather than against
+  it. A name that fits is unchanged.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1193: A sheet row gives its name the room
+
+**Status:** Accepted (2026-11-11, the founder: "sheets panel, sheet names: show more of the name before the dots, and
+decrease the size of the scale text and bar, tighter markup number on sheets with a scale").
+
+- The scale or flag slot is as wide as its chip; it was a fixed 80 px on every row, a chip or not.
+- The eye and ⋮ sit over the row's end on hover, as an item row's buttons (D-1174); invisible, they still took about
+  36 px of every row. A sheet with its markups hidden keeps its crossed eye in view (D-1175), the hover group covering
+  it in its place.
+- The scale chip (10 px, medium weight), the "Check name" flag and the markup count are tighter: less padding, a
+  smaller icon.
+
+**Where:** app `features/takeoff/sheets/SheetsPanel.tsx` (`SheetRow`).
+
+---
+
+## D-1194: A row's figure and unit in its name's font
+
+**Status:** Accepted (2026-11-11, the founder: "why are the qty and unit of parent items and auto-calculated items more
+than the text of the description"). Completes D-1181.
+
+- Measured at the defaults, an item's name, quantity and unit are all 12 px Inter at the same weight. The figures took
+  Settings › Text's size (D-1181) but not its font, so a font chosen there changed the names and left the figures in
+  Inter. They now take the same font as the name, on item, sub-item and cost rows, in both panels.
+- At one size and font, digits and capitals ("2,596.05 BCY") still stand taller than a lower-case name; that is the
+  font's, not a size.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1195: An item's note line carries its fill
+
+**Status:** Accepted (2026-11-11, the founder: "give auto-created parent items, with cost components or not, the same
+fill as parent items created by the user").
+
+- Every item row, made by a person or by Calculate, already carries the same fill (D-1173). A Calculate's line
+  usually has a note line under it ("Included in Pipe crew, sewer main …"), and that line was white, so the line read
+  as half filled. The note line now carries the item's fill, in both panels. Its sub-item and cost rows stay plain.
+- Checked against the code only: no Calculate's line was drawn in the browser for this (it needs an earthwork
+  Calculate on a project with crews). To check on the founder's next look.
+
+**Where:** app `features/takeoff/components/ItemRow.tsx`.
+
+---
+
+## D-1196: Dimensions are saved with the sheet; split view draws what the main view draws
+
+**Status:** Accepted (2026-11-11, the founder: "dimensions are not temporary, they should be deleted only if the user
+deletes them, and they should show in split view as well"; the three questions answered as proposed). Replaces round
+3 B11's "a dimension is a check, never saved" (legacy's). To be specced in `docs/tasks/dimensions_split_tasks.md` and
+built after the D-1172..D-1195 commit.
+
+- **Saved.** A dimension belongs to its sheet and stays until someone deletes it: through a reload, a sheet switch and
+  another session. Placing, moving, stretching and deleting one are written by the api (a new table, its endpoints and
+  migration) and are undo and redo steps, as a markup's.
+- **Seen by everyone on the project**, as markups are; **moved or deleted by anyone who can edit takeoff**.
+- **Printed** with the sheet when its markups are printed.
+- **Split view draws what the main view draws.** The Reference pane drew every item as a plain takeoff shape: contours
+  as thick lines and boundaries as filled areas in their item colours (the founder's C-200 screenshot), and no overlays
+  or dimensions. It draws earthwork inputs through the Earthwork layer as the main view does (its colours, widths and
+  grade fills), the sheet's overlays at their colour and opacity, its annotations and its saved dimensions; it stays
+  view-only.
+
+---
+
+## D-1197: Nested sheets step in 12 px a level
+
+**Status:** Accepted (2026-11-11, the founder, as proposed). To build after the D-1172..D-1195 commit.
+
+- In the Sheets panel a sheet under a folder steps in 12 px a level (it was 16), as the Takeoff panel's tree, so a
+  sheet two folders deep keeps 8 px more of its name. The folder rails and stubs move with it.
+
+---
+
+## D-1198: ACRE reads AC in the panels
+
+**Status:** Accepted (2026-11-11, the founder, as proposed). To build after the D-1172..D-1195 commit.
+
+- The panels' unit column (24 px at 11 px, D-1180, D-1181) cut ACRE. In the Sheets and Takeoff panels it reads "AC",
+  "Acres" on hover; Estimating, exports and the stored unit are unchanged.
+
+---
+
+## D-1199: Resuming a hidden item shows it again
+
+**Status:** Accepted (2026-11-11, the founder, as proposed). To build after the D-1172..D-1195 commit.
+
+- Resume on an item hidden by its eye (D-73), or not shown on a sheet whose eye is off (D-1175), shows it again
+  first, everywhere or on that sheet, so the marks it takes are seen as they go down. A toast says it was shown.
+
+---
+
+## D-1200: Markup tools get the action bar; their toolbar style buttons go; a new note is Fixed 12
+
+**Status:** Accepted (2026-11-12, the founder, as proposed). To build after the D-1172..D-1195 commit.
+
+- **The toolbar's sliders buttons go.** D-937's Block 2 put one beside Highlight, Cloud, Callout, Arrow and Note (the
+  tool's defaults panel); they crowded the toolbar. Each tool is one button again (Highlight and Note keep their
+  colour caret, D-109).
+- **The action bar for markup tools.** With a markup tool armed, the action bar shows as for the measuring tools
+  (it was theirs and Dimension's only, D-166): **Properties** opens the tool's defaults panel (D-937, unchanged:
+  the next markup, remembered on the account), **Stop** puts the tool down as Esc does, and the status line says
+  how that tool draws.
+- **A new note is Fixed, 12 px, fixed size on screen.** Auto-fit, the default, scaled the text to the box, and while
+  typing it read as large letters with a scrollbar. New notes take Fixed / 12 / Fixed size; fill, text colour and
+  opacity are unchanged. Notes already drawn keep their own style until changed in their Properties.
