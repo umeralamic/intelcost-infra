@@ -30328,3 +30328,15 @@ cut and fill).
   layer; not checkable this way, nothing to suggest a TC.
 - **Fill change if converted:** none to convert.
 - **So the order is D-1206's second:** dimensions and split view (D-1196) next, then A, B and C as one block.
+
+---
+
+## D-1209: The excavator glyph fills its box
+
+**Status:** Accepted (2026-11-12, the founder: "does the earthwork icon size match the others? it feels small").
+
+- Same 12 px box as the other tools' glyphs, but the excavator was drawn 18 by 11 of the box's 24, so it read smaller.
+  It is scaled 1.25 about its centre to fill the box as Linear, Area and Count do; its lines keep their weight. Every
+  place the earthwork glyph shows (item rows, panels) alike.
+
+**Where:** app `features/takeoff/components/ActionGlyphs.tsx` (`TypeGlyph`, earthwork).

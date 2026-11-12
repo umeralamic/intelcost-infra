@@ -53,6 +53,7 @@ _Updated: 2026-10-02_
 
 | # | Feature | Repo | Flow | Spec |
 |---|---------|------|------|------|
+| F40 | Saved dimensions (a markup kind: kept with the sheet, seen by the project, undo, print) and split view drawing what the main view draws (earthwork inputs, overlays, dimensions) | both | D-1196 | [dimensions_split_tasks.md](docs/tasks/dimensions_split_tasks.md) |
 | F38 | Materials: Calculate writes material components on earthwork and utility lines in the unit each is sold in (pipe $/LF in full joints, allowance, joining, restraints, stone in tons, structures by parts or whole), priced project → workspace (with source links) → IntelCost's quarterly release × the material factor, "Missing price" never $0, recalculation keeping what the person set; pressure and fused pipe crews | both | D-857 to D-868; answered, nothing built; block P first | [materials_tasks.md](docs/tasks/materials_tasks.md) |
 | F37 | A scope per assignee: classification nodes, scope values, custom folders and a note per person; "Your scope" on the dashboard; "Assigned to me" in the Quantities panel and Estimating; notices on change | both | D-790 | [assignee_scope_tasks.md](docs/tasks/assignee_scope_tasks.md) |
 | F36 | Delete protection: each person's rule for what they marked (anyone, chosen people, approval), enforced by the api, "Marked by" confirm, mixed deletes skip and say so, delete requests from the bell | both | D-789 | [delete_protection_tasks.md](docs/tasks/delete_protection_tasks.md) |
