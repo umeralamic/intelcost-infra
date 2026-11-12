@@ -30557,3 +30557,150 @@ gutter, 6 in curb and 4 in x 12 in curb on one project). `lib/takeoff/earthwork/
   - 12 in of fill sand behind it: 4.9383 CY = 7.0617 TON.
   - A 30 × 4 in CSS base: 3.0864 CY = 5.00 TON.
   - The same base of aggregate: 5.8333 TON.
+
+## D-1217: The measurement dialog keeps the last WBS, moves, and makes its item on Create; a count's picked marks
+
+**Status:** Built 2026-11-12 (the founder's notes). `MeasurementDialog.tsx`, `components/ui/dialog.tsx`,
+`ActionGroup.tsx`, `SheetCanvas.tsx`, `MeasuredShape.tsx`, `shapeLooks.ts`, `selectionStore.ts`, `ProjectTakeoff.tsx`;
+api `features/drawing/service.py` (`sheet_items`).
+
+- **Folder and Classification are no longer labelled "(optional)"** in the dialog of every measuring tool (Linear,
+  Segment, Area, Count), and the two labels are bold. They stay optional (D-336).
+- **A new item starts from the last one's folder and classification.** An estimator files run after run in the same
+  folder and division. Kept per project in this browser (`takeoff-last-filing-v1`). A click on a group in the Takeoff
+  panel is a newer choice and wins until the next item is named. A rough measurement leaves the last filing standing.
+  A folder or code deleted since then drops out. Assemblies used on the sheet and Extract Schedule land there too:
+  they read the same "where a new item lands".
+- **The dialog moves by its title** (D-593's `movable`, kept on this device), and the drawing behind it is not
+  darkened (`Dialog backdrop={false}`). It stays modal.
+- **No name and quantity chip in the action group.** Buttons only, on every variant.
+- **Create makes the item at once**, with its WBS, dimensions and sub-items and nothing drawn. It is listed in the
+  Takeoff and Sheets panels straight away. If nothing is marked, it stays at zero for Resume. The first shape joins
+  it. If the make fails, the first shape makes the item as before. The api's `sheet_items` lists such an item under its
+  home sheet at 0: a hand-drawn Linear, Area or Count top-level item with no shape, no manual quantity, not
+  calculated, not earthwork, not a utility.
+- **A count's picked marks.** A click on a mark selects the whole item, as before, with its marks in blue. The clicked
+  mark is outlined light green (`--markup-picked`). Shift+click on another mark of the selected count adds it in
+  green, or takes it out. The Delete key and the action group's Delete take only the green marks, never their
+  siblings. With no mark picked (the item chosen from a panel), Delete takes every mark on this sheet, as F7-S17 did.
+
+## D-1218: An overlay row's Delete at the row's right end
+
+**Status:** Built 2026-11-12 (the founder's note). `sheets/OverlaySubRows.tsx`.
+
+- In the Sheets panel, an overlay sub-row's Delete moves to the right end of the row's last column, after the colour dot
+  and the eye, where a sub-item row keeps its Delete. It shows on hover, muted, and turns red under the pointer. Its
+  place is kept while hidden, so nothing moves.
+- Re-align stays on hover after the name.
+
+## D-1219: The measurement dialog's header on a filled band; shorter section bands; no "Name" label
+
+**Status:** Built 2026-11-12 (the founder's note). `components/ui/dialog.tsx` (`banded`), `section-styles.ts`,
+`MeasurementDialog.tsx`.
+
+- **The title sits on the section headers' fill** (`bg-section-header`), with a rule under it. The grip, the title
+  (16 px) and the close × are centred on one line. Only the measurement dialog uses `banded` so far.
+- **Section bands are 4 px shorter** (`py-1` from `py-1.5`). This applies to every `SECTION_HEADER` (the measurement
+  and Share dialogs) and to the dialog's WBS and Sub-items toggles.
+- **No "Name" label above the name field.** The title already says what it is.
+
+## D-1220: New project asks what Edit Project asks, less Trade Scope; banded project dialogs; a dialog shadow
+
+**Status:** Built 2026-11-12 (the founder's note). `NewProjectDialog.tsx`, `ProjectFieldsForm.tsx`, `dialog.tsx`,
+`confirm-dialog.tsx`, `prompt-dialog.tsx`, `index.css`.
+
+- **New project no longer asks Trade Scope.** Edit Project still sets it.
+- **New project asks what Edit Project asks:**
+  - Currency and Measurement system. Each reads "Workspace default" and is sent only when picked.
+  - Scope of Work and Project Notes, the same editor as Edit's (`ProjectTextField`).
+  - Status is not asked. A new project starts Bidding, and a custom status is chosen by `status_key`, an update-only
+    field.
+  - The api needs no change: Create and Update share `ProjectFields`.
+- **New project and Edit Project take the banded header** (D-1219).
+- **Dialogs carry a shadow on every edge** (`--shadow-dialog`): Dialog, ConfirmDialog and PromptDialog. A dialog
+  without a dimmed backdrop (the measurement dialog) takes the stronger `--shadow-floating`, as Manage sub-items does.
+
+## D-1221: Floating panels filled and shadowed; Stitch sheets wider, never scrolling sideways
+
+**Status:** Built 2026-11-12 (the founder's note). `components/ui/floating-panel.tsx`, `earthwork/site/useSiteJoin.tsx`,
+`CoordinatesPanel.tsx`, `RegistrationPanel.tsx`.
+
+- **Every floating panel** (Stitch sheets, Coordinates, Registration and the rest on `FloatingPanel`) has its header
+  on the section headers' fill and the floating shadow on every edge, as the dialogs (D-1219, D-1220).
+- **Stitch sheets is 440 px wide** (from 360) and its body never scrolls sideways. "Pick the control points for …"
+  wraps a long sheet name instead of widening the panel.
+
+## D-1222: Settings shown live, kept on Save, put back on Cancel; Settings and Share banded, movable, undimmed
+
+**Status:** Built 2026-11-12 (the founder's note). `settings/settings.ts` (`previewSettings`, `readSavedSettings`),
+`TakeoffSettingsDialog.tsx`, `share/ShareDialog.tsx`.
+
+- **Takeoff Settings preview live.** While the dialog is open, every screen in this tab reads the draft
+  (`previewSettings`): text sizes, decimals, the cursor, the toolbar and the rest change as they are set.
+  - Save writes the draft.
+  - Cancel, ×, Escape and "Close without saving?" drop it, and the saved settings come back.
+  - The preview is never stored, so another tab and the next load read the saved settings.
+  - A section that saves at once (Collaboration, Contours and spots, the project's Trace and Utility settings) is
+    unchanged.
+- **Settings and Share** take the banded header (D-1219), move by their title (kept on this device), and leave the
+  screen behind undimmed, with the floating shadow (D-1220).
+
+## D-1223: A banded dialog's description under its band; the close × black and bold
+
+**Status:** Built 2026-11-12 (the founder's notes). `components/ui/dialog.tsx`, `floating-panel.tsx`, and the panels'
+own closes: `SubItemsDialog.tsx`, `MarkupPropertiesPanel.tsx`, `DimensionPropertiesPanel.tsx`, `AutoCountPanel.tsx`,
+`VolumePanel.tsx`, `FindTextPanel.tsx`, `EmptyHome.tsx`.
+
+- **The band holds the title alone** (D-1219). A banded dialog's description (Settings, New project) sits under the
+  band, in the body's colours.
+- **The close × is black and bold** (`text-foreground`, stroke 3) on every dialog, floating panel and dialog-like
+  panel. Split panes, the uploads tray and the on-sheet legend keep theirs.
+
+## D-1224: A shared app link previews "Takeoff and Estimating Cloud"
+
+**Status:** Built 2026-11-12 (the founder's note). `intelcost-app-react/index.html`.
+
+- The app's page description was "Construction takeoff and estimating in the browser.", the wording from the app
+  shell's first scaffold, which link previews read.
+- It is now "Takeoff and Estimating Cloud". `og:title` (IntelCost), `og:description` and `og:type` are set, so a
+  preview reads them rather than guessing.
+- The app stays `noindex`.
+
+## D-1225: A tab's own quick edits of one shape are never refused as stale
+
+**Status:** Built 2026-11-12 (a user's report: "Abdullah Q. just changed this shape, showing their version", 11
+changes not saved, one person, one session). `features/takeoff/api.ts`.
+
+- **Cause.** A shape write puts its answer in the cache, then the lists are read again.
+  - A read that left before a later write landed could come back after it, putting the older version back.
+  - The next edit sent that version, and the api refused it as stale (D-32), naming whoever made the newer write: the
+    same person.
+  - A second edit sent while the first was in flight did the same.
+- **Fix, at the one place every shape write passes** (`updateGeometry`, `applyShapes`):
+  - Writes to a shape go one after another in the tab.
+  - A write carrying a version older than one the tab wrote itself is sent with the tab's own.
+  - Never past it: a colleague's newer write is still refused, naming them.
+  - `addGeometry` and the shape writes record what they wrote.
+- The api is unchanged. The stale-write rule stands as D-32 has it.
+
+## D-1226: Panel rows sized by their text; Cost Components text of its own; a filled Settings rail tab
+
+**Status:** Built 2026-11-12 (the founder's notes). `settings/settings.ts`, `TakeoffSettingsDialog.tsx`,
+`components/rowColumns.ts` (`rowHeightPx`, `glyphPx`, `glyphButtonPx`), `ItemRow.tsx`, `SheetsPanel.tsx`,
+`QuantityPanel.tsx`.
+
+- **Settings rail.** The section open is filled (`bg-primary/10`, primary text), not only marked by its edge.
+- **Panel text: Cost Components.** A style of its own under Sub-item, for the cost rows under an item or sub-item.
+  They read the sub-item's before.
+- **Sizes.**
+  - Sub-item and Cost Components go down to 9 px; sheets, folders and items stay at 12 px at the least (D-1065).
+  - Defaults: sub-item 10 px (was 11), cost components 9 px.
+  - A size someone has saved stands.
+- **Rows fit their text.**
+  - Item, sub-item and sheet rows are about 1.5 × the size + 4 px tall: 22 px at 12 px, as before; 28 px at 16 px.
+  - Cost rows are 2 px under that.
+  - The Resume button and its type glyph follow the item size (16 px round 12 px at the default).
+  - A sub-item's ↳ and a cost row's icon follow their sizes but never go under 10 px.
+  - Folder icons follow the folder size in both panels.
+- **The Takeoff panel's folder rows now read Settings' Folder text**, as Settings says they do; they had kept the
+  panel's own 11 px.
