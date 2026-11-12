@@ -29749,3 +29749,40 @@ role); the table in docs/reference (`storm-breakdown-2026-11-11.txt`, outside gi
   workspace's), 73673621, 41a1695a (the bid-tab rebuild, renamed to the DUP pattern first), 51ed836d, 85589b2c,
   730c38b2, ae34838b, 48e46b67 (logs 6a847860, fdfd4756, d1530f6c, 791ccdaf, 87383c66, ee8ec070, f5941804, 915498e6,
   1cb949e5, 4a95c105). Real bid B and the smoke project back out of COPY_SOURCES (Real bid B's refusal checked).
+
+---
+
+## D-1170: Resume from the Sheets panel arms the item on the sheet in view
+
+**Status:** Accepted (2026-11-11, the founder: "user can resume the same item and mark it on any sheet", in the
+Takeoff panel and the Sheets panel both). Extends D-256 point 1 to the Sheets panel.
+
+- The Sheets panel lists each item under every sheet it is drawn on. Its Resume on a row under another sheet opened
+  that sheet and armed nothing, so an item could only be resumed from the Sheets panel on its own sheet. Now Resume
+  arms the item on the sheet in view, whichever sheet's row it was picked from, exactly as the Takeoff panel's Resume
+  does: Count, Linear, Segment (D-257) and Area alike, and the marks join the item on this sheet.
+- An earthwork input (contour, spot, boundary) still opens its row's sheet: its Resume continues a run, which lives
+  on that sheet.
+- Checked before the change on a throwaway project: the Takeoff panel already resumed all four types on another
+  sheet and kept the item armed across a sheet switch; only the Sheets panel path was broken.
+
+**Where:** app `pages/ProjectTakeoff.tsx` (the Sheets panel's `onResume`).
+
+---
+
+## D-1171: Under a sheet in the Sheets panel, a sub-item shows that sheet's share
+
+**Status:** Accepted (2026-11-11, the founder: "in sheets panel the subitems should show the quantity of the item from
+that sheet, not summary as it shows in takeoff panel"). Brings D-767's rule (Estimating's Sheet view) to the Sheets panel.
+
+- The Sheets panel lists a parent under each sheet it is drawn on, with that sheet's quantity, but its sub-items read
+  the item's whole quantity under every sheet (a pier counted 4 on A201 and 2 on E101 showed 4,608 CY of concrete under
+  both). Now each sub-item reads its parent's share on that sheet: the parent's quantity there over its quantity summed
+  across the sheets it is on, times the sub-item's own quantity. The sheets' figures add up to the Takeoff panel's.
+- A parent with nothing measured (a total of 0) puts the whole sub-item on the first sheet that lists it, as Estimating.
+- A sub-item with shapes of its own keeps its own split (D-767): its figure on that sheet, and it is not listed under a
+  sheet it is not drawn on.
+- The Takeoff panel is unchanged: the whole quantity. Cost rows under a sub-item are unchanged (their money is the
+  whole line's).
+
+**Where:** app `features/takeoff/components/ItemRow.tsx` (`subQuantity`), `features/takeoff/sheets/SheetsPanel.tsx`.
