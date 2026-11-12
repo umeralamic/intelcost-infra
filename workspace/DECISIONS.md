@@ -30173,7 +30173,12 @@ built after the D-1172..D-1195 commit.
 
 ## D-1197: Nested sheets step in 12 px a level
 
-**Status:** Accepted (2026-11-11, the founder, as proposed). To build after the D-1172..D-1195 commit.
+**Status:** Withdrawn (2026-11-12, at build): measured, the step is already 12 px. A folder's chevron sits 10 px into
+its row (the row's 4 px padding and the chevron's centre), a nested sheet's 6 px into its own; the sheet's 16 px margin
+makes up the difference, so each level's chevron is 12 px in from its parent's, as the Takeoff panel's tree and the
+subfolders (12 px). A smaller margin would set sheets off the subfolders and gain nothing. Nothing built.
+
+Was: Accepted (2026-11-11, the founder, as proposed).
 
 - In the Sheets panel a sheet under a folder steps in 12 px a level (it was 16), as the Takeoff panel's tree, so a
   sheet two folders deep keeps 8 px more of its name. The folder rails and stubs move with it.
@@ -30212,3 +30217,95 @@ built after the D-1172..D-1195 commit.
 - **A new note is Fixed, 12 px, fixed size on screen.** Auto-fit, the default, scaled the text to the box, and while
   typing it read as large letters with a scrollbar. New notes take Fixed / 12 / Fixed size; fill, text colour and
   opacity are unchanged. Notes already drawn keep their own style until changed in their Properties.
+
+---
+
+## D-1201: The Annotations tab goes; its tools are on the Takeoff tab
+
+**Status:** Accepted (2026-11-12, the founder: "remove the annotations tab, and move the tools in takeoff").
+
+- The Annotations tab (id `collaborator`, D-109) only switched the Takeoff toolbar to its markup row. It is gone.
+  The Takeoff toolbar carries every markup tool: Snapshot, Dock, Highlight, Cloud, Callout, Arrow, Note; Cloud,
+  Callout and Arrow fold into More with the others when the bar is short of room.
+- A link to `?tab=collaborator` opens the Takeoff tab. The Essentials plan keeps its markup-only toolbar (it cannot
+  measure), now on the Takeoff tab; the marketing link code `collaborator` still means Essentials (it names a plan).
+
+---
+
+## D-1202: The Earthwork tab reads Sitework
+
+**Status:** Accepted (2026-11-12, the founder, option (a)).
+
+- The tab's name only. Its link (`?tab=earthwork`), the panels' headings, Estimating's group, messages, settings and
+  exports keep "Earthwork".
+
+---
+
+## D-1203: An overlay row is laid out as an item row
+
+**Status:** Accepted (2026-11-11, the founder: "why does the overlay color dot show in a different place"; built
+2026-11-12).
+
+- An overlay's row under its sheet kept legacy's layout (D-239): the colour dot first. It now reads as an item row:
+  "overlay" (and "cmp"), its opacity, then D-1177's last column with the colour dot where an item's dot is and the eye
+  where an item's eye is, so the dots line up down the panel. The dot is an item's size (10 px). Re-align and Delete
+  show on hover only and take the name's room, so nothing to their right moves.
+
+**Where:** app `features/takeoff/sheets/OverlaySubRows.tsx`.
+
+---
+
+## D-1204: A cost row shows in the Takeoff panel as it is added
+
+**Status:** Accepted (2026-11-12; the founder's "cost rows in the Takeoff panel", as proposed: confirm the cause, fix).
+
+- Reproduced: a cost added to a sub-item showed under its sheet in the Sheets panel at once, and in the Takeoff panel
+  only after a reload. Each panel row drew its cost rows through the panel's handler ref, which is refreshed after the
+  panel's draw, so the row redrawn for the new cost read the previous list. A row now draws the cost rows it was
+  handed (its own `costs`, worked out in the same draw).
+
+**Where:** app `features/takeoff/components/QuantityPanel.tsx` (`PanelItem`).
+
+---
+
+## D-1205: A selected markup's actions are in the action bar; its floating chip goes
+
+**Status:** Accepted (2026-11-12, the founder: "why does selecting an existing note, cloud, arrow or highlight not show
+the status bar … go", the chip removed as proposed). To build after the D-1197..D-1204 commit.
+
+- A selected markup (highlight, note, cloud, callout, arrow, dock, snapshot) shows the action bar, as a selected
+  takeoff item does: **Properties** (its panel, D-704), **Colour** (the swatches), **Delete** (its confirm), and for a
+  dock **Dock properties**. The markup layer reports its selection to the page and takes the bar's commands.
+- The chip drawn above a selected markup (Colour, Properties, Delete) goes: one place for a selection's actions, and
+  nothing over the drawing.
+
+---
+
+## D-1206: Contour and spot entry: toolbar chip, dialogs, TC spots; the order of the work
+
+**Status:** Accepted (2026-11-12, the founder's brief). To be specced in a task file before Part C's code (it moves
+cut and fill).
+
+- **A. Toolbar and chip.** The Proposed/Existing toggle and the +/− interval stepper leave the toolbar. While Contour or
+  Spot Elev. is active, a chip on the sheet reads e.g. "Existing · next 12.0 · +1 ft": E/P switch the surface, +/−
+  the direction, typing a number sets the next elevation, a click on the chip changes it; hidden when the tool is
+  off. The Contour dialog adds First elevation (blank asks on the first contour) and Direction (up/down), and shows
+  "ft" by Interval.
+- **B. Spot Elev. dialog,** like Contour's, the tool on until Esc: Surface (Existing / Proposed); Input (type each
+  value, or pick the label on the drawing: the elevation text under the click on a vector sheet, greyed with "This
+  sheet has no vector text" otherwise); Label type for a proposed spot (TP / FG / G / TC / FFE).
+- **C. TC spots.** A TC (top of curb) spot is taken at pavement level, its curb height below (default 6 in,
+  editable); a picked label's prefix is read ("TC 12.30" → 11.80 at 6 in). The spot keeps its label and shows the
+  value used. Where a G spot lies within 3 ft of a TC spot (the same curb), the G spot is used and the TC is not
+  converted (no duplicate point). Quantity-table rows: a paving area with TC spots at 12.30 and a 6 in curb gives a
+  surface at 11.80; a TC/G pair uses the G.
+- **D. Report only.** Proposed spots on the test projects whose TC-prefixed value is used as pavement level (Real bid
+  A's C12 "TC 12.30" among them), and the fill change if converted. No founder data changes (D-232 stands).
+- **Order.** The D-1197..D-1204 commit and D-1205 first, then D. If D finds TC values used as pavement: C, then
+  dimensions and split view (D-1196), then A and B. If none: D-1196 first, then A, B and C as one block.
+
+---
+
+## D-1207: Site Features before Boundary on the Sitework toolbar
+
+**Status:** Accepted (2026-11-12, the founder). Built with D-1205.
