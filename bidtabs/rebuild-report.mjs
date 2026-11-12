@@ -8,14 +8,14 @@
 // In band: bid / 1.15 <= ours <= bid, i.e. our direct cost from 13 % under the escalated median to level with it (a bid
 // carries about 15 % over its direct cost, so a direct cost in band is a bid at or a little over the median).
 //
-// Labour by depth: the Estimating view carries one crew row per pipe group and shows each line the group's labour per
-// LF, so every line of a group reads the same. The engine's hours are the lines' own (D-1141: each line at its band's
-// pace); here a group's labour is shared back by each line's own depth factor, LF x factor. Its machines stay spread
-// evenly (they follow the same pace, so a deep line's figure here is a little low and a shallow one's a little high).
+// Labour by line: since D-1167 each pipe line in Estimating carries its own crew and machine hours at its own pace
+// (size, depth band, run length), the crew's total unchanged, so each item's unit price is read as the app shows it.
+// (D-1165's report shared a group's labour back by depth here; with --share it still does, for a run made before.)
 
 import { readFileSync } from "node:fs";
 
-const [, , resultsPath, cmpPath] = process.argv;
+const [, , resultsPath, cmpPath, flag] = process.argv;
+const share = flag === "--share";
 const results = JSON.parse(readFileSync(resultsPath, "utf8"));
 const cmp = new Map(JSON.parse(readFileSync(cmpPath, "utf8")).map((c) => [c.key, c]));
 
@@ -44,7 +44,7 @@ for (const c of results) {
   const eci = k?.eci ?? 1;
   const items = c.items.map(([type, entry, nominal, depth, qty, median, ours, lab]) => ({ type, entry, nominal, depth, qty, median, ours, lab }));
   // Each gravity group's labour shared back by depth (a group: the contract's lines of one type).
-  for (const type of ["sanitary", "storm"]) {
+  for (const type of share ? ["sanitary", "storm"] : []) {
     const g = items.filter((i) => i.type === type && i.ours != null && i.depth != null);
     const total = g.reduce((t, i) => t + i.lab * i.qty, 0);
     const weight = g.reduce((t, i) => t + i.qty * factor(i.depth), 0);

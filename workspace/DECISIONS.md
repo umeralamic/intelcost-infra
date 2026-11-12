@@ -29621,3 +29621,100 @@ a repo). Measurement only: no price or pace changed.
   still has no catalog entry (42 in dual-wall HDPE).
 - Found: a stored earthwork result without its regions (a hand-written one) blanks the takeoff page (useVolumes reads
   them unguarded). Not reachable from the app's own saves; logged, not fixed.
+
+## D-1166: A copy remaps a Site Prep area's features; Real bid A since K, measured
+
+**Status:** Accepted (2026-11-11, founder's item 1a). `intelcost-app-fastapi/app/features/project/duplicate.py`.
+
+- Found: the project copier rewrote each copied row's uuid inside strings, JSON and single uuid columns, but not inside
+  an array column. A Site Prep area drawn from features (`earthwork_strip_area.feature_uuids`, `uuid[]`) kept the
+  source's takeoff item uuids, so a copy's Calculate found none of its features and dropped that sheet's whole Site
+  Prep with no warning. On every Real bid A copy since the copier began, C12's Site Prep (clearing, debris, strip
+  topsoil, its haul-off: about $37,800) was missing once the copy recalculated; the copy's stored results (from the
+  original) still held it, so a copy read right but Calculated low. D-1160's $600,936.30 was read on such a copy.
+- Now an array value goes through the same rewrite (a list of strings or numbers is left as it is unless it names a
+  copied row). Checked on a fresh copy of the original: its Site Prep names the copy's own Access Drive, and the
+  original's row counts and last update are unchanged. Copies made before keep the source's uuids: on the throwaway K
+  copy the area was pointed at the copy's own three features by hand.
+- K to today, measured on a fresh copy of K's copy (each step a Calculate or a read, exports diffed line by line, every
+  step reconciles to the cent):
+  - K, as read on 2026-11-10: $780,727.99.
+  - K's lines at today's prices (no Calculate): $780,055.03 (-$672.96: pool and rate rounding; material unchanged).
+  - Calculate job under today's engine, the same drawings and the same example dump sites: $773,252.11 (-$6,802.92):
+    the Remainder's fill and cut gone, spot grades grading only inside the features (D-1151), and C16's Remainder now the
+    Pond's (D-1147), -$14,852.77 together; the drive's fill back from D-1160's displaced fill, +$9,126.37; edge slopes
+    (D-1152) +$3,834.47; the construction entrance laid on top (D-1147), -$3,085.12; the on-site move 8,008.65 to 7,400.47
+    BCY, -$8,853.25; Soil export 26,400 to 26,998 BCY, +$7,789.78; Site Prep -$1,103.55 (C12's area 71,728 to 68,678
+    SF); finish lines +$353.30; lime renamed "Lime-stabilize subgrade" (D-1160), +$0.85; the rest +$3.95. Import 0
+    before and after.
+  - The original as it stands today (a fresh copy, Calculate job): $1,086,474.90 (+$313,222.79), from the founder's own
+    edits since K's copy, not the engine. It has no dump site, so its export takes the library's fallback (clean soil
+    disposal at IntelCost's Houston price, $10.00 a TON, grade C, 45,354.3 TON), where K's copy priced at the throwaway
+    workspace's example site ($2.50 a LCY at 15 mi; D-1145 says why a copy no longer does): Soil export
+    28,346 BCY, $677,331.12 (+$327,181.45: disposal +$369,174.77, trucking -$42,131.30). Lime 7 % at 8 in, +$31,471.96.
+    The Warehouse pad is gone (its fill, base and fine grade), -$53,163.21. C16's clearing debris is hauled off,
+    +$33,313.62. Topsoil haul-off at the default fees, with C13's own Site Prep, -$15,861.44. Fill -$5,689.19, cut
+    -$5,107.70, compact and proof roll +$1,404.15, the rest -$326.85. Its bid total, with the 20 % overhead and 20 %
+    profit now set on it, is $1,575,790.36.
+
+## D-1167: Each pipe line its own crew hours; water's drop was the harness; an unreadable result says so
+
+**Status:** Accepted (2026-11-11, founder's items 2, 3 and 4). `intelcost-app-fastapi/app/features/equipment/
+production.py` (`_line_rates`, `_own_productions`); `intelcost-app-react/src/features/takeoff/earthwork/api.ts`
+(`readableResult`), `useVolumes.tsx`; `intelcost-infra/bidtabs/contract-runner.js`, `rebuild-report.mjs`.
+
+- Water PVC -9 % to -19 % (D-1165), traced on 1680-8215: not the pool. Water alone, and the whole contract, pool on and
+  off, price water the same to the cent (8 in: labour $5.33, machines $4.34, material $23.66 a LF); water's pace is
+  the pressure crew's (D-1105), which D-1141 does not touch. The cause was the harness: it named a water main's
+  embedment "Bank sand", whose key (`stone:bank_sand`) has no price, so its bedding and pipe zone read "Missing price"
+  and $0 (about $4.70 a LF). The app's own default writes "Sand" (`stone:sand`, $18.65/TON, grade B), so a real
+  Calculate prices it; a zone material typed by hand that matches no price shows "Missing price", as it should. The
+  runner now takes the app's own default names (`ZONE_CHOICES`). With the sand priced, 8 in water is $38.38 a LF
+  against $38.30 on 11-10. No water price changed.
+- Per-line crew hours: a pipe crew's site spread (and the trench box's) had one production for the whole group (the
+  total over the sum of its lines' days at their own pace), so every line read the group's average. Now each line
+  gets its own production, its rate (size, depth band by D-1141, run length by D-1091, urban) scaled so the lines'
+  days add up to the spread's: the spread's hours and cost are unchanged and each line's unit price carries its own
+  hours. The machines' share notes read the same hours. Checked on 1680-8215, the same estimate priced before and after:
+  direct cost $378,591.38 both, labour $48,348.99, material $272,387.93, equipment $57,854.46 both; one cent moved
+  between the sanitary and storm subtotals. Quantity table passed with it.
+- The depth-band table again (D-1165's 10 contracts, per-line hours, sand priced; the report no longer shares labour
+  back, `--share` keeps the old way): LF-weighted against the escalated median, water PVC -8 % (5 of 27 in band, 13
+  over), ductile iron -6 %; sanitary -14 % (12 of 33): under 8 ft -13 %, 8-14 ft -18 %, 14-20 ft -10 %, deeper than 20
+  ft -9 % (2 of 7 in band, 4 over); storm RCP +11 % (6 of 46 in band, 38 over); storm HDPE +24 %; all 112 items -1 %.
+  The short runs now carry their own crew hours (a 16 LF run of 36 in RCP $44.58 a LF of labour against 24 in at
+  1,315 LF $8.32), which moves storm's in-band count down though its LF-weighted gap barely moves.
+- A saved result the page cannot read (no totals, regions or warnings: written by hand or an old client) blanked the
+  takeoff page (`useVolumes` read its warnings). It now shows in the results panel: "This sheet's saved result can't
+  be read: it is missing its totals, regions or warnings. Calculate again to replace it." The rest of the page and
+  Estimating work as usual.
+
+## D-1168: Storm RCP broken down (measurement; no price changed); the harness on the app's own embedment
+
+**Status:** Measured (2026-11-11, founder's backlog). `intelcost-infra/bidtabs/contract-runner.js` (each item's lines by
+role); the table in docs/reference (`storm-breakdown-2026-11-11.txt`, outside git).
+
+- Found first: the harness gave every gravity line #57 stone through the pipe zone. That is flexible pipe's default
+  (D-1101); rigid RCP takes the project's, #57 stone bedding and a sand zone, so the harness over-specified RCP by about
+  $13.40 a LF at 24 in. It now takes the app's own `embedmentDefault` over the project's defaults, as a Calculate does.
+  Sanitary (flexible) and water (sand) price as before to the cent.
+- The table again (labour at each tab's bid-date prevailing rates, the median escalated by ECI): storm RCP -2 %
+  LF-weighted (was +12 %), 13 of 46 items in band, 5 under, 28 over (median item +8 %); all 112 items -7 %; water PVC
+  -9 %, sanitary -14 % (unchanged).
+- Storm RCP by component, LF-weighted a LF, all 46 items (24,664 LF): ours $111.37 against the escalated median
+  $113.41 (its direct-cost equivalent at 15 % over, $98.62): pipe material $62.91, embedment $21.33, labour $13.45,
+  machines $13.68, trench support $0 (the tabs' storm items read as 6.5 ft, under the box's 8 ft band; no line). By
+  size: 24 in (16,002 LF, 65 %) -5 %; 30 in +9 %; 36 in +5 %; 42 in +2 %; 48 in -10 %; the single 12, 54 and 60 in
+  items -25 %, +24 %, -25 %.
+- What carries the rest: run length. Runs of 250 LF and more (23 items, 22,100 LF) -4 %; under 250 LF (23 items, 2,564
+  LF) +8 %, and 17 of the 28 items over are short runs. On a short run labour and machines are $56.22 a LF against
+  $22.41 on a long one: the crews' production by run length (D-1091: TxDOT 0-4416-1's measured RCP model, PR = -126.22
+  + 103.558 log10 run LF, 70 LF a day under 100 LF against 285 past 2,500), the short-run crew and the machines' least
+  rental shared over few hours. And the pipe: on a short run its material is 1.23 times the bulk price with its gasket
+  (the Small and Standard order tiers, x1.20 and x1.10 under 160 and 600 LF, and whole joints ordered), against 1.06 on a
+  long one; the tier factors for concrete pipe are labelled assumptions (D-1091: no published order-size break found).
+  The pipe's bulk price is itself sourced (24 in $41.70, grade B; 30 in $58.20, grade A: two county annual supply
+  contracts); embedment #57 stone $37.12/TON (grade A, 19 sources) and sand $18.65/TON (grade B).
+- For the founder's review, not changed: whether a bid tab's short storm item carries the crew's short-run production
+  and the order tier in full, or whether bidders spread them over the contract's longer runs (one crew, one mobilization,
+  one pipe order for the job). Only the per-item split differs between the two; a contract's total does not.
