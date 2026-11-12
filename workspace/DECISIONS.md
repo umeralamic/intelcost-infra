@@ -30787,3 +30787,28 @@ guard could no longer import its list and `fingerprint.sh` could no longer run.
   was left.
 - Found: the kept Stitch test workspace's trial ended on 2026-11-11, so the Stitch test project is
   view-only now; not changed (the founder's to say whether it should be internal too).
+
+## D-1231: Overlay, first slice: one flow, "As drawn" or "Highlight changes"
+
+**Status:** Built 2026-11-12 (the founder's item 9, `docs/tasks/overlay_plan.md` tasks 1–7, 10, 11, without zoom rows).
+App `03b0294` (`lib/takeoff/overlay/difference.ts`, `features/takeoff/overlay/*`), api `ff5c3f8` (`OverlaySettings`
+keeps `view`, `fade`, `tolerance_in` in the overlay's JSONB, no migration), infra `aba198a` (18 quantity-table rows).
+
+- **The flow:** Overlay (More) → 1. the other sheet → 2. "Already lined up" (page on page, or the pair's saved
+  alignment) or "Match points" (split view; the default when the two differ in size or name) → 3. "As drawn" or
+  "Highlight changes". The open sheet is the old one, the overlaid sheet the new one; no Swap.
+- **The difference** (a Web Worker; on the page when none): ink is luminance below 204/255 on white; the tolerance is
+  on paper (default 0.01 in, at least 1 px at the fit image, an exact distance up to r + 0.5 px, so a diagonal 1 px
+  step is not flagged), shown in ft at the sheet's scale. Pure blue added, red removed, black unchanged, three tokens.
+  Fade unchanged is a straight ramp, black (0) to mid-grey (0.5) to hidden (1). Highlight changes paints opaque paper
+  over the page, as the old Compare did.
+- **The bar:** the view switch without re-aligning, the legend with its tooltip, Fade (Highlight) or Opacity (As drawn),
+  the tolerance, the fit's residual after Match points ("Fit N", red and "Match points" over the tolerance), Line up
+  again. While nudging after Match points the overlay is drawn As drawn until Enter. A viewer's view switch is also
+  kept in their browser.
+- **Old rows:** Compare and Comparative open as Highlight changes, Standard as As drawn (`mode` is still written so
+  every seat agrees). The multiply, the masks and the 50 % Compare opacity are gone.
+- **Not built:** zoom recompute (task 9; at fit-to-page a thin coloured line reads near black, the fit image is 2048 px),
+  the title-block residual (task 8), automatic matching, Swap.
+- **Smoke** (throwaway, a revision pair and a different sheet): passed after one reload. Two overlays on one sheet: the
+  bar serves the first visible one; the second is reached by hiding the first.
