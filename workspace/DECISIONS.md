@@ -29718,3 +29718,34 @@ role); the table in docs/reference (`storm-breakdown-2026-11-11.txt`, outside gi
 - For the founder's review, not changed: whether a bid tab's short storm item carries the crew's short-run production
   and the order tier in full, or whether bidders spread them over the contract's longer runs (one crew, one mobilization,
   one pipe order for the job). Only the per-item split differs between the two; a contract's total does not.
+
+## D-1169: The D-1158..D-1168 run ended: end totals, the 9 tabs read, the copies purged
+
+**Status:** Accepted (2026-11-11, run mode).
+
+- Real bid B (the contour-graded project), a fresh copy, pool on, Calculate, Update all (the clean-soil fee and the 24 in
+  RCP's Q4 price), Calculate again: the volumes are D-1124's to four decimals (cut 4,065.8634 BCY, fill 154.9667 CCY;
+  only the split moved: the liner owns its area, D-1147). Imported clay liner $133,422.46, site soil $99,371.77 (each
+  settled on a second Calculate); D-1124's $218,188.10 and $162,613.82. Most of the drop is D-1145: a copy keeps its
+  source's dump-site setup, and the founder's Real bid B has none, so its clean soil goes to the fallback's free fill
+  site ($0.00 a TON, was $5.73) at the fallback's haul. ST-1 (24 in RCP, 50 LF) $7,061.40 imported clay and $6,731.29
+  site soil, against $6,797.72 and $5,628.69: its excavator, pooled with the export loader, now carries its share of
+  that machine's rental by hours (D-1140, after D-1124: $1,632.06 for 7.1 h), about the whole rise (not isolated).
+  Wages not escalated ("Update rates" not found in today's Estimating; the line still reads $42.11/MH).
+- Real bid A: the founder's project changed since K (D-1166), so no figure compares; a fresh copy with Calculate job
+  reads $1,086,474.90 direct (bid $1,575,790.36 with its 20 % overhead and profit). Benchmark A not taken.
+- "zz Section undercut smoke (D-1061)", a fresh copy, before (as stored) $6,537.13 and after Calculate $6,299.14
+  (-$237.99): its undercut, clay liner, stabilized and replacement lines are unchanged in quantity; the edge slopes
+  (D-1152) are new (Cut 12.84 to 1.18 BCY, Fill 12.84 to an edge-slope fill of 2.05 CCY, cut to export split to the
+  edge slope). Labour reads "—" before and after (the copy has no wage set).
+- The 9 scrambled tabs read by OCR (each page rendered by the api's pymupdf and read by the OCR worker's tesseract,
+  through stdin and stdout, nothing written in a container): a row kept only when every bidder's unit cost times the
+  quantity gives its printed total. Of the 61 pipe items the parse had left without a quantity or prices, 50 filled
+  from OCR and 6 recovered by hand (a quantity misread, each checked against every total); 5 left: three HDPE rows on
+  2835-2102 too garbled to check, a service-lead item (EA) and a bore-and-jack item (outside the pipe comparison).
+  0474-5750P had no pipe items parsed (2 now); E144-0540 has none on its pages. The filled tabs and the OCR rows are in
+  docs/reference (`tabs-ocr-filled-2026-11-11.json`, `ocr-pipes-2026-11-11.json`); not yet rebuilt as contracts.
+- Purged with purge-bench-dups.py, storage failures 0, a dry run after finds 0: 3515dc71, 62a0d6d9, 5c4e1c10 (the old
+  workspace's), 73673621, 41a1695a (the bid-tab rebuild, renamed to the DUP pattern first), 51ed836d, 85589b2c,
+  730c38b2, ae34838b, 48e46b67 (logs 6a847860, fdfd4756, d1530f6c, 791ccdaf, 87383c66, ee8ec070, f5941804, 915498e6,
+  1cb949e5, 4a95c105). Real bid B and the smoke project back out of COPY_SOURCES (Real bid B's refusal checked).
