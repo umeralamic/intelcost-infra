@@ -43,6 +43,8 @@ for by name (2026-10-27, for Stitch sheets), read only like this one, if it is o
 `copy_sources`."""
 FOUNDER_WORKSPACES = set(guard.FOUNDER_WORKSPACE_UUIDS)
 """Never a copy's target: Bench Construction Test and the founder's own (the guard list)."""
+BENCH_MEMBERS = frozenset({"window-b@bench.intelcost.io", "walkthrough@bench.intelcost.io"}) - set(guard.FOUNDER_EMAILS)
+"""The bench's test members (bench-session.py's MEMBERS): an actor for a permanent test project in its own workspace."""
 
 COUNTED = (
     "drawing_sheet",
@@ -129,8 +131,11 @@ def main(argv: list[str]) -> int:
         if argv[:1] == ["--count"]:
             return 0
         email, target_uuid = argv[0], argv[1]
-        if not email.startswith("fx.") or not email.endswith("@bench.intelcost.io"):
-            print("copy-3d-test: refused, the actor must be an fx. throwaway account", file=sys.stderr)
+        # An fx. throwaway, or a bench test member for a permanent test project in its own workspace (Benchmark A,
+        # 2026-11-12): never the founder's accounts (the guard refuses them on the command line too).
+        member_ok = email in BENCH_MEMBERS
+        if not member_ok and (not email.startswith("fx.") or not email.endswith("@bench.intelcost.io")):
+            print("copy-3d-test: refused, the actor must be an fx. throwaway account or a bench test member", file=sys.stderr)
             return 1
         if target_uuid.strip().lower() in FOUNDER_WORKSPACES:
             print("copy-3d-test: refused, never into Bench Construction Test or a founder workspace", file=sys.stderr)

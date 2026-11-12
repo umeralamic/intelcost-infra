@@ -42,7 +42,7 @@ The same "Undercut and replace" section the area features have (P), on a Line:
 | Choice | What is dug |
 |---|---|
 | **Full** | Today's: footprint × (section depth + Base) |
-| **Only below the paving section** | Only the part of the curb and its base deeper than the paving section beside it. Example: 6 in C&G, 18 in deep below TC, against an asphalt section 10 in deep below the pavement: the 2 in below the section, and the base below that. |
+| **Only below the paving section** | Only the part of the curb and its base deeper than the paving section beside it. Example: the default curb and gutter (D-1216), 16 in deep below TC, a 6 in curb over a 10 in gutter, against an asphalt section 10 in deep below the pavement: the curb's bottom is level with the section's, so only the 4 in base below it is dug. |
 | **Off** | Nothing |
 
 **Default:** "Only below the paving section" when the line lies on or inside a paving feature (its footprint within
@@ -65,16 +65,18 @@ nothing (D-1215).
 
 ## 5. Hand-worked quantity-table rows
 
-The page is 100 ft a side. 6 in curb and gutter: 18 in deep, footprint 30 in (2.5 ft), reveal 6 in, Base 4 in at
-2.5 ft.
+The page is 100 ft a side. The default curb and gutter (D-1216, the founder's detail): 16 in deep, a 6 in curb (the
+reveal) over a 10 in gutter, footprint 30 in (2.5 ft), Base 4 in at 2.5 ft. Rows B and E reworked for it on
+2026-11-12 (they were worked at 18 in deep with a 6 in gutter); A, C, D and F do not depend on the depth.
 
 | Row | Setup | Expected |
 |---|---|---|
 | **A. Undercut beside asphalt** | 100 LF of curb beside a 100 × 30 ft asphalt feature, Undercut 8 in, 12 in beyond the back | Undercut 100 × (2.5 + 1) × 0.667 = 233.3 CF = 8.64 CY |
-| **B. Excavation, only below the section** | Asphalt section 10 in below the pavement; the curb bottom is 18 − 6 = 12 in below the pavement (gutter level), so 2 in plus the 4 in Base | 100 × 2.5 × 6 / 12 = 125 CF = 4.63 CY (Full: 100 × 2.5 × 22 / 12 = 458.3 CF = 16.98 CY) |
+| **B. Excavation, only below the section** | Asphalt section 10 in below the pavement; the curb bottom is 16 − 6 = 10 in below the pavement (gutter level), level with the section, so only the 4 in Base | 100 × 2.5 × 4 / 12 = 83.3 CF = 3.09 CY (Full: 100 × 2.5 × (16 + 4) / 12 = 416.7 CF = 15.43 CY) |
+| **B2. The same against a thinner section** | Asphalt section 6 in below the pavement: 10 − 6 = 4 in of curb below it, plus the 4 in Base | 100 × 2.5 × 8 / 12 = 166.7 CF = 6.17 CY |
 | **C. Curb ending mid-edge** | 60 LF of curb along the 100 ft edge | Undercut 60 × 3.5 × 0.667 = 140 CF; the paving deducts only the 60 ft footprint (D-1163); the paving's own undercut covers the other 40 ft, and nothing is counted twice |
 | **D. Backfill, outside grading** | 100 LF, 12 in wide, reveal 6 in | 100 × 1 × 0.5 = 50 CF = 1.85 CY |
-| **E. Backfill, inside grading** | 100 LF, a 6 in over-dig, back height 18 in | 100 × 0.5 × 1.5 = 75 CF = 2.78 CY, and the earthwork's fill behind the curb is not counted again |
+| **E. Backfill, inside grading** | 100 LF, a 6 in over-dig, back height 16 in (bottom to top of curb, the proposed grade behind it at TC) | 100 × 0.5 × 16 / 12 = 66.7 CF = 2.47 CY, and the earthwork's fill behind the curb is not counted again |
 | **F. Overlap** | A curb undercut overlapping a newer pad's undercut | The pad takes the overlap; the curb keeps the rest |
 
 ## Estimate, hours of my own work, by task
@@ -88,8 +90,13 @@ The page is 100 ft a side. 6 in curb and gutter: 18 in deep, footprint 30 in (2.
 | 5 | Default excavation by the line lying on or inside a paving feature (footprint within its outline or on its edge) | 1.5 |
 | 6 | Backfill behind curb by volume: outside grading width × reveal; inside grading the forms' over-dig × back height; the graded-area test | 2 |
 | 7 | Backfill bought in its own unit (done for the interim rule in D-1216; carried to the new rule) | 0.5 |
-| 8 | Quantity-table rows A–F (hand-worked above) | 2 |
+| 8 | Quantity-table rows A–F and B2 (hand-worked above, at the 16 in default) | 2 |
 | 9 | Gates, smoke on a throwaway copy | 1 |
 | | **Total** | **about 13.5 hours** |
 
 (CSS weighed at its own density in Base was done in D-1216, so it leaves the estimate.)
+
+**Reworked 2026-11-12 for the 16 in default (D-1216):** the hours stand at about 13.5. Rows B and E change their
+answers, not their work; B2 is added because, at 16 in, B against a 10 in section digs only the Base and no longer
+shows the part of the curb below the section. Task 4's default ("Only below the paving section" beside paving) now
+removes most of a curb's excavation on a typical 10 in asphalt section: 3.09 CY a 100 LF against Full's 15.43.

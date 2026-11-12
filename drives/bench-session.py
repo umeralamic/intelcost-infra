@@ -29,7 +29,8 @@ from app.features.auth.models import User
 from app.features.auth.service import issue_tokens
 
 MEMBERS = {"window-b@bench.intelcost.io", "walkthrough@bench.intelcost.io"}
-FOUNDER = {"estimator@bench.intelcost.io", "umeralam.q@gmail.com"}
+FOUNDER = set(guard.FOUNDER_EMAILS)
+"""The founder's accounts, from the one guard list (D-1228): never a session made here."""
 
 
 async def main(email: str) -> int:

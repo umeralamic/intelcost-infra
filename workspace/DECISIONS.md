@@ -30768,3 +30768,22 @@ guard could no longer import its list and `fingerprint.sh` could no longer run.
   stays and only names its lines. Water and force mains keep D-1105's tables by their band's deep end; structures keep
   theirs.
 - Lines of existing projects get the new names and prices at their next Calculate (the founder: fine).
+
+## D-1230: Benchmark A's source is a permanent test project; the four older throwaways purged
+
+**Status:** Done 2026-11-12 (the founder's item 8).
+
+- **The source:** "Benchmark A (test project)" in window-b@'s own workspace "Benchmark A (test)", copied by
+  `drives/copy-3d-test.py` from the 11-07 bench copy in "zz Benchmark A copy 1107b" (counts equal before and after,
+  9 lines). Its id lives only in the private guard list (`test_projects`), and the project's own log.
+- **Never on a trial:** window-b@'s trial ended on 2026-10-09, so a workspace it makes is view-only at once. The
+  workspace is marked internal (D-1026) by a platform admin call, made from this run's throwaway with the bench's
+  temporary admin flag (D-233), the flag taken off again at once.
+- **The copier** takes a bench test member (window-b@, walkthrough@) as its actor for a permanent test project in that
+  member's own workspace, as well as an `fx.` throwaway. `bench-session.py` reads the founder's accounts from the guard
+  list (D-1228), its last inline copy.
+- **Purged** with `purge-bench-accounts.py --purge --only …`: the four throwaway accounts of 11-06 to 11-11 and their
+  workspaces (the old Benchmark A copy with them). One more matching account made today at 15:59, not by this run,
+  was left.
+- Found: the kept Stitch test workspace's trial ended on 2026-11-11, so the Stitch test project is
+  view-only now; not changed (the founder's to say whether it should be internal too).
