@@ -30309,3 +30309,22 @@ cut and fill).
 ## D-1207: Site Features before Boundary on the Sitework toolbar
 
 **Status:** Accepted (2026-11-12, the founder). Built with D-1205.
+
+---
+
+## D-1208: D-1206's Part D: no proposed spot takes a TC value as pavement level
+
+**Status:** Report (2026-11-12, read only: the bench database's spots and each sheet's PDF text, no data changed).
+
+- **Real bid A, C12 (33 proposed spots, 26 TC labels):** each spot beside a TC label carries that label's G value, TC
+  less 0.50 (a 6 in curb): TC 11.10 → 10.60, 11.50 → 11.00, 12.00 → 11.50, 12.40 → 11.90, 12.95 → 12.45,
+  13.10 → 12.60, 13.45 → 12.95; the others sit on G labels of their own value. The takeoff used pavement level already,
+  as D-1206's TC/G rule does.
+- **"TC 12.30" on C12** reads "EX. TC 12.30+/- G 11.80+/-", an existing curb with its G beside it; no spot stands on
+  it (the nearest is an existing-ground spot at 9.7, 6 % of the sheet away).
+- **Real bid A, C13 (14, 3 TC labels):** the spots beside them carry G values (TC 10.80 → 10.30 and 10.40,
+  11.35 → 10.85).
+- **The 3D test project's C-200 and its copies, the marketing demo, a smoke project:** no TC or G text on their sheets' text
+  layer; not checkable this way, nothing to suggest a TC.
+- **Fill change if converted:** none to convert.
+- **So the order is D-1206's second:** dimensions and split view (D-1196) next, then A, B and C as one block.
