@@ -30704,3 +30704,21 @@ changes not saved, one person, one session). `features/takeoff/api.ts`.
   - Folder icons follow the folder size in both panels.
 - **The Takeoff panel's folder rows now read Settings' Folder text**, as Settings says they do; they had kept the
   panel's own 11 px.
+
+## D-1227: Every dialog banded, movable and undimmed by default; New project's step lines
+
+**Status:** Built 2026-11-12 (the founder: "yes, default for every"). `components/ui/dialog.tsx`,
+`confirm-dialog.tsx`, `prompt-dialog.tsx`, `EmptyHome.tsx`, `NewProjectDialog.tsx`.
+
+- **Dialog** defaults to `banded`, no darkened backdrop, and movable.
+  - Its place is kept on this device under its title, unless `movable` names a key.
+  - `banded={false}`, `backdrop` or `movable={false}` opt out; none does yet.
+  - A side sheet (`side`) keeps its own layout.
+- **ConfirmDialog and PromptDialog** take the same banded title they are moved by (one place each on this device), no
+  darkening and the floating shadow.
+  - A press on the backdrop itself cancels, as Dialog's, so a drag ending outside the panel is not a cancel.
+- **The empty home's "Drop your drawings" card** no longer dims the takeoff behind it, and takes the floating shadow.
+- **New project's description** ("Project info first, files next…") was the whole dialog's and showed on the files
+  step too. Each step now says its own:
+  - Project info: "Name the project to continue. Everything else can be filled in later."
+  - Add files: "Optional: you can add files later."
