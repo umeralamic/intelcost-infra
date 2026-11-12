@@ -71,6 +71,8 @@ const GUARD_FILES = [
   "drives/purge-bench-dups.py",
   "drives/bench-tidy.py",
   "drives/bench-workspaces.py",
+  "drives/bench-session.py",
+  "drives/copy-3d-test.py",
   "fingerprint.sh",
 ];
 const needles = [...Object.keys(PROTECTED_PROJECTS), ...Object.keys(FOUNDER_WORKSPACES), ...FOUNDER_EMAILS];
