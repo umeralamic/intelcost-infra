@@ -31230,3 +31230,42 @@ reading, stated here); the migration renaming existing folders waits for the fou
   it, and the third landed mid-reload, which left only `watchfiles` running; a `touch` of a watched file at 16:30:34
   brought it back. The workers reloaded 16:25:08 to 16:26:43 and 16:30:39 to 16:31:17. Rule 12 now says to confirm
   the api answers after an api save.
+
+## D-1256 — The sheet icon reads as a drawing sheet with its title block
+
+**Status:** decided (the founder, 2026-11-13); refines D-1240's sheet icon
+
+- A sheet row's icon is a landscape sheet with a title-block strip at its right edge (the divider at about four fifths
+  of the width, not the middle), drawn with sharp, square corners and joins, nothing rounded. Same size and colours as
+  D-1240/D-1241's icon.
+
+## D-1257 — A selected item row in the Sheets panel is tinted across the full width
+
+**Status:** decided (the founder, 2026-11-13)
+
+- As in the Takeoff panel, a selected item row's pale blue tint (D-1247) runs from the panel's left edge to its right,
+  not from the row's indent: the Sheets panel nests its rows with margins (folders, sites, a sheet's item list), so the
+  tint reaches out by the same insets as the row's full-width line (D-1236) and the list clips it at its edge. It sits
+  under the row's content; the tree's dotted guides in the indent are under it on that row.
+- **The sheet row too** (the founder, same day): the open sheet's pale accent fill (a selected sheet's, and the grey
+  hover) runs the panel's full width, and its 3 px accent bar sits at the panel's left edge, however deep the sheet
+  is nested. The row measures how far in it sits once laid out (`--row-left`); its fill and bar reach back by it.
+
+## D-1258 — Wrap-up of 2026-11-13: guard list trimmed, the day pushed, a tester candidate tagged
+
+**Status:** done (the founder, 2026-11-13)
+
+- **P11 to P18 off the guard list** (the private file, D-1228): none of the eight exists in the bench database any
+  more, so nothing loses its protection; 18 projects stay protected. The file was rewritten in place (the containers
+  mount it as a single file) after a private backup; every reader holds the same list.
+- **The four migrations folded** into `d1246b7f2a40` (revises `db1229a0c1d2`), proved on an empty scratch Postgres
+  apart from the bench: clean, reversible, and identical in schema and row counts (197 tables) to the four files. The
+  bench was already at that id: nothing run or stamped on it.
+- **A Postgres restart during the proof (17:43:44 to 17:43:57 UTC):** creating a second scratch database on the
+  bench's own server, the postmaster saw an "untracked child process" exit with code 2 and restarted every connection
+  (crash recovery, nothing lost). 22 of the founder's page reads failed in that window, no write. The proof moved to a
+  temporary Postgres container of the same image, removed afterwards. Scratch databases for a proof go on a separate
+  server from now on, never the bench's.
+- **Pushed on umer-dev** (app, api, infra) and tagged `tester-candidate-2026-11-13` in each. Not a release to testers:
+  the fixture suite has to pass on the test laptop first (D-1057). The tester note is `docs/RELEASE_NOTES.md`'s
+  2026-11-13 entry.
