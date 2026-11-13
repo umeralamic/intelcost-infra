@@ -31050,3 +31050,118 @@ reading, stated here); the migration renaming existing folders waits for the fou
 
 **Where:** app `pages/ProjectTakeoff.tsx` (`resumeItem`, the utility resume), `earthwork/useEarthwork.tsx`
 (`resumeItem`), `earthwork/utilities/useUtilities.tsx` (`resumeElsewhere`, `countMore` on any sheet).
+
+## D-1244 — D-1239's and D-1242's migrations run on the bench (2026-11-13)
+
+**Status:** done, the founder's yes (2026-11-13)
+
+- Proved first on a scratch copy of the bench database: upgrade, downgrade both, upgrade again, `alembic check` clean;
+  d1242's downgrade puts every "Grading Inputs" back to "Earthwork Markups", d1239's leaves the creation order (by
+  design). Then run on the bench: `alembic check` clean.
+- **Founder projects, compared row by row before and after** (every table with a `project_id`, 18 protected projects
+  in the database, 10,132 rows): the only content change is `takeoff_folder.name` "Earthwork Markups" → "Grading Inputs"
+  in 8 (P01, P02, P03, P05, P08, P10, Real bid A, Real bid B); no founder project's layer order changed (the one row
+  renumbered is a test project's). The founder digest is the same before and after (616a788605d59963). A work session
+  in Real bid A moved meanwhile: someone's own activity, not content.
+- Folded into one file with the session's other migrations at push time (D-851).
+
+## D-1245 — Utilities take a CSI Division 33 code from their system
+
+**Status:** decided (the founder, 2026-11-13)
+
+- A utility run or structure without a code takes one from its system, so the Classification view files it there,
+  not under Unclassified. **The code is the workspace tree's own Division 33 node**, found by its code: no bench
+  workspace carries MasterFormat's "33 10 00" numbers, every seeded tree has its 33.0x nodes, so water and fire water →
+  33.01 Water Utilities; sanitary and force main → 33.03 Sanitary Sewer; storm and subdrain → 33.05 Storm Drainage; gas →
+  33.07 Gas Distribution; electric → 33.08 Electrical; telecom → 33.09 Communications; other → none. A tree without the
+  node leaves the item unclassified. A structure takes its run's code (the run it follows, D-1242). The user can change
+  it; a code set by hand is never replaced.
+- Existing utility items with no code take theirs: test projects directly; the founder's by migration (row-by-row
+  compare before and after: only `classification_ref_id` on utility items changes). The count changed is reported.
+
+## D-1246 — A run continued on another sheet is named and linked as a continuation
+
+**Status:** decided (the founder, 2026-11-13); a single run with sections on several sheets is planned, not built
+
+- Resume on another sheet (D-1243) names the new run after the original with its sheet, "SS-1 · C11", and links it to
+  SS-1 (`utility_run.continues_run_id`). The panel shows it as a continuation of SS-1 ("Continues SS-1").
+- **Estimating needs no grouping change:** drawn runs are inputs and never reach Estimating; Calculate's priced lines
+  already aggregate the pipe across runs on a sheet (and carry the sheet when it repeats, D-1248). A grouping by
+  original run belongs to the multi-sheet plan.
+- **The link survives a settings save:** it is set when the run is made; a later save changes it only when it sends
+  the field (found in the smoke: a save without it cleared the link).
+- Plan for one run with sections on several sheets: `docs/tasks/multi_sheet_runs_plan.md` (no code).
+
+## D-1247 — Utility Inputs apart from the priced utility lines; selected rows a pale blue tint
+
+**Status:** decided (the founder, 2026-11-13)
+
+- **"Utility Inputs" › Sanitary / Storm / Water / Fire / Gas / Dry utilities** holds the drawn runs and structures,
+  filed by type at creation (structures follow their run), as F43 filed them under "Utilities". **"Utilities" › the
+  same systems** holds only Calculate's priced lines, in order of pipe size, then depth band. Manual moves and renames
+  are respected (folders found by their marker, D-1242). The order reads each line's size and its depth band's first
+  number, across sheets: the engine writes bands with an en dash ("0–6 ft"), which the first build missed (every line
+  fell to the engine's order); found in the smoke and fixed.
+- **Panel order:** Grading Inputs and Utility Inputs first, then the priced folders.
+- **Existing projects:** test projects get the move directly. The founder's projects are not moved by migration: a
+  one-click, undoable "Move inputs to Utility Inputs" (a panel banner and the Utilities folder's right-click) that the
+  founder runs.
+- **A selected item row** stays blue (the open sheet is orange) but as a pale blue tint with bold dark text, not the
+  solid bright fill; the colour dot, quantity and unit stay readable, in light and dark theme.
+
+## D-1248 — Earthwork lines that repeat per sheet or site carry it in their name
+
+**Status:** decided (the founder, 2026-11-13)
+
+- A Calculate line made once per sheet or site (strip topsoil, its haul off, construction layout, clearing debris and
+  the like) names its sheet or site, as a work boundary does: "Strip topsoil (6") – C16", "… – Site C12–C13". Project-wide
+  lines keep their names. The founder's projects take the names at their next Calculate (no migration).
+- **Utility priced lines too** (the founder, same day): when the same pipe (one line name today: type, size, material
+  and class, depth band) is on more than one sheet or site, each line carries its own, "6" PVC SDR-26, 0–6 ft deep –
+  C10" / "– C11"; a pipe on one sheet only keeps its plain name.
+
+## D-1249 — Right-click hints and long-press; the Resume green unchanged
+
+**Status:** decided (the founder, 2026-11-13)
+
+- The Resume glyph's hover stays D-1237's Chlorophyll Green #4aff00, black glyph (a darker #2f9e00 was tried and
+  withdrawn the same day: the founder, no change).
+- A row whose actions are its right-click (D-1238) says so on hover ("Right-click for options"), and a long press on
+  touch opens the same menu. A sub-item's tooltip also says a double-click opens Manage sub-items.
+- Panel text stays Times New Roman by default for everyone (D-1236).
+
+## D-1250 — Utility items carry a description from their own settings
+
+**Status:** decided (the founder, 2026-11-13)
+
+- After each utility run's and structure's name, in muted text, a description built from its own settings and its
+  sheet: a gravity run `6" PVC SDR-26 · C10`; a pressure run `8" PVC C900 DR18 · C11`; a manhole
+  `48" round MH · rim 9.00 · C10`; a cleanout, inlet or valve its size and type · sheet.
+- It follows the settings as they change and is never part of the name (not editable, not stored as the name). The
+  same description shows in the Resume picker and anywhere an item is chosen; cut with "…" in a narrow panel, the
+  whole on hover.
+- **Where it shows:** every item row (Sheets and Takeoff panels, both views), the row's hover text and its Resume
+  tooltip ("SS-1 — 8" PVC SDR-35 · C16"), the Utilities and Structures boxes' lists, and Site view's "Draw into which
+  item?". The page builds it once from the utility data and hands it down; it follows a save without a reload.
+- **The sheet** is the sheet the run or structure was drawn on, by its number, else its name. Rim only when one is set.
+
+## D-1251 — D-1245's and D-1246's migrations run on the bench (2026-11-13)
+
+**Status:** done (the founder's batch, 2026-11-13)
+
+- d1245a3c9e11 (utility codes) and d1246b7f2a40 (`utility_run.continues_run_id`) proved first on a scratch copy:
+  upgrade, downgrade both (d1245 clears exactly the codes it set, recorded in `migration_marks`), upgrade again,
+  `alembic check` clean. Then run on the bench: `alembic check` clean.
+- **Founder projects, compared row by row before and after** (18 protected projects in the database): the migration's
+  only content change is `takeoff_item.classification_ref_id` on 39 utility items: P01 6, P08 13, P10 6, Real bid A 13,
+  Real bid B 1. Two of the 41 counted at the dry run were deleted by their owner in between.
+- **Meanwhile, Real bid A gained six utility runs** (with their folders, geometry and events), created by a founder
+  account in the second after the upgrade: drawings that had been refused while the code expected the new column
+  (D-1246's column was live before its migration) and landed once it existed. Their owner's own work: left untouched.
+  The founder digest moved with it (334004d06dc718fd before, cd41dc9427856a26 after); it had already moved since
+  D-1244 by the same owner's own work in Real bid A, including **"Move inputs to Utility Inputs" run from the panel at
+  12:49** (D-1247: 13 inputs moved, the priced lines left in Utilities). Neither this session nor its helpers touched
+  Real bid A.
+- **Test projects moved by `drives/move-utility-inputs.py --apply`:** 12 runs and 11 structures in 3 projects. The
+  founder's left for the one-click: P01 6, P08 13, P10 6, Real bid B 1.
+- Folded into one file with the session's other migrations at push time (D-851).
