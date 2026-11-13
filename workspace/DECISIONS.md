@@ -31165,3 +31165,25 @@ reading, stated here); the migration renaming existing folders waits for the fou
 - **Test projects moved by `drives/move-utility-inputs.py --apply`:** 12 runs and 11 structures in 3 projects. The
   founder's left for the one-click: P01 6, P08 13, P10 6, Real bid B 1.
 - Folded into one file with the session's other migrations at push time (D-851).
+
+## D-1252 — Migration before code on the bench; no restart while the founder works; failure windows reported
+
+**Status:** decided (the founder, 2026-11-13); standing (CLAUDE.md hard rule 12)
+
+- **The order:** write the migration → run it on the bench (fingerprint and row-by-row compare before and after,
+  as D-1244) → only then save the code that needs it. Code that reads a column the bench database does not have yet
+  never reaches the bench api or app. Where the order cannot be kept (a helper building model and migration together,
+  a long build), develop against a separate app and api instance on their own ports and a scratch database, never the
+  bench the founder uses.
+- **Before restarting or changing anything the founder's browser uses** (the app dev server, the api, the workers, a
+  migration, an api source save that reloads it): `./founder-active.sh` from `intelcost-infra/` (the api log's last
+  10 minutes, founder workspaces and protected projects by label). Active (exit 1) or unknown (exit 2): say so, and
+  wait or ask. A subagent's brief carries the same rule.
+- **Every report names each window in which the founder's saves could fail**, with its start and end (UTC): an api
+  or worker reload, a code-before-migration gap, a stopped service.
+- **Why (2026-11-13):** D-1246's model gained `continues_run_id` at 12:17:20 UTC, but its migration ran at 13:27:11.
+  In between, every read of utility runs failed with a 500. In Real bid A, the founder's utility data failed to load
+  59 times (12:31:20 to 13:23:04) and their run saves failed 71 times (12:51:57 to 13:26:42). Six landed at once when
+  the column arrived (four of them one ~100 LF line on C15, drawn four times). Separately, helpers' and this session's
+  api source saves took the api fully down nine times that day, among them 12:17:29 to 12:31:01 (13½ minutes), all
+  while the founder was working in Real bid A.
