@@ -28,3 +28,5 @@ workspace/docs/reference/DE MAIN SOURCE FILE*
 morning-report-*/
 morning-report-*.zip
 morning-report-*/**/*.log
+# A named company's crew-costing workbook (its wage, burden and equipment rates): on disk, never in git (D-1259).
+workspace/docs/reference/Crew_Assemley_DE_LLC*

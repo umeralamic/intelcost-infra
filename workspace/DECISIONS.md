@@ -31285,3 +31285,8 @@ reading, stated here); the migration renaming existing folders waits for the fou
   explicitly allowed: a line in `.githooks/commit-allow` (a reviewed exception: today the seven reference workbooks
   under `workspace/docs/reference`), or once with `INTELCOST_ALLOW_COMMIT="<path>"`. A deletion is never refused.
   `morning-report-*/` is also in `.gitignore`.
+- **Follow-up, same day (the founder):** the three report files naming that test copy are untracked too (on disk). Of
+  the seven allow-listed reference workbooks, six hold public or library figures and stay allowed; the seventh, a
+  named company's crew-costing workbook (its labor wages and burden, equipment rates, own fleet), holds no client or
+  project name in its cells but is that company's own cost data: off the allow-list, untracked, kept on disk and
+  ignored, as its sibling source file already was.

@@ -2,8 +2,8 @@
 # reviewed exception; add one in its own commit, saying why.
 #
 # The workspace's reference workbooks, tracked before D-1259, mirrored from the workspace (they hold public or
-# library figures, not a bid). Remove a line to stop that file being updated in git.
-workspace/docs/reference/Crew_Assemley_DE_LLC - V12 SOURCE FILE.xlsx
+# library figures, not a bid). Remove a line to stop that file being updated in git. The crew workbook of a named
+# company ("Crew_Assemley_DE_LLC") is not here: its own crew and labor costs, untracked (D-1259).
 workspace/docs/reference/Materials research/IntelCost_fence_erosion_site_prices_2026-11.xlsx
 workspace/docs/reference/Materials research/IntelCost_material_prices_2026-10.xlsx
 workspace/docs/reference/Materials research/IntelCost_paving_flatwork_prices_2026-11.xlsx
