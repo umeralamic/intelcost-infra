@@ -31102,7 +31102,8 @@ reading, stated here); the migration renaming existing folders waits for the fou
   are respected (folders found by their marker, D-1242). The order reads each line's size and its depth band's first
   number, across sheets: the engine writes bands with an en dash ("0–6 ft"), which the first build missed (every line
   fell to the engine's order); found in the smoke and fixed.
-- **Panel order:** Grading Inputs and Utility Inputs first, then the priced folders.
+- **Panel order:** Grading Inputs and Utility Inputs first, then the priced folders. *Superseded by D-1253: both
+  at the very bottom, Grading Inputs last.*
 - **Existing projects:** test projects get the move directly. The founder's projects are not moved by migration: a
   one-click, undoable "Move inputs to Utility Inputs" (a panel banner and the Utilities folder's right-click) that the
   founder runs.
@@ -31172,9 +31173,7 @@ reading, stated here); the migration renaming existing folders waits for the fou
 
 - **The order:** write the migration → run it on the bench (fingerprint and row-by-row compare before and after,
   as D-1244) → only then save the code that needs it. Code that reads a column the bench database does not have yet
-  never reaches the bench api or app. Where the order cannot be kept (a helper building model and migration together,
-  a long build), develop against a separate app and api instance on their own ports and a scratch database, never the
-  bench the founder uses.
+  never reaches the bench api or app. (A separate dev instance for when the order cannot be kept: withdrawn by D-1254.)
 - **Before restarting or changing anything the founder's browser uses** (the app dev server, the api, the workers, a
   migration, an api source save that reloads it): `./founder-active.sh` from `intelcost-infra/` (the api log's last
   10 minutes, founder workspaces and protected projects by label). Active (exit 1) or unknown (exit 2): say so, and
@@ -31187,3 +31186,24 @@ reading, stated here); the migration renaming existing folders waits for the fou
   the column arrived (four of them one ~100 LF line on C15, drawn four times). Separately, helpers' and this session's
   api source saves took the api fully down nine times that day, among them 12:17:29 to 12:31:01 (13½ minutes), all
   while the founder was working in Real bid A.
+
+## D-1253 — Inputs at the bottom of both views; a Utility Inputs group in Classification
+
+**Status:** decided (the founder, 2026-11-13); supersedes D-1247's panel order
+
+- **Order, Folders and Classification alike:** the priced folders and codes first (Classification: then
+  Unclassified), then Rough Measurements, then **Utility Inputs**, and **Grading Inputs at the very bottom**.
+- **Classification shows a Utility Inputs group** above Grading Inputs, holding the drawn runs and structures with
+  its system folders (Sanitary, Storm, Water…), as the Folders view does. Their Division 33 codes stay on them
+  (D-1245: exports and Estimating read them); the DIV 33 code groups in the panel then hold only Calculate's priced
+  lines. A drawn item a person placed in a classification folder by hand stays where they put it.
+
+## D-1254 — No separate dev instance; the two cheap parts of D-1252 kept
+
+**Status:** decided (the founder, 2026-11-13); withdraws D-1252's separate-instance clause
+
+- Work stays on the bench, as before: no worktree, no extra ports. The founder does no live takeoff while a session
+  is working.
+- Kept from D-1252: **migration before the code that needs it** (run on the bench with the before/after compare);
+  and **`./founder-active.sh` before saving api or app source** (a save reloads what the founder uses): if the
+  founder is active, say so and wait instead of saving.

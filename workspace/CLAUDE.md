@@ -104,14 +104,14 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    which recreates the bench's own services too. `fx-suite.sh` records the bench's containers when it
    starts and fails on exit if any was restarted or recreated. Restarting the bench api because it is
    stuck is the exception: say so in the report.
-12. **The founder's bench is never broken under them (D-1252).**
+12. **The founder's bench is never broken under them (D-1252, D-1254).** Work stays on the bench (no separate
+   instance), with these habits:
    - **Migration before code:** write the migration, run it on the bench (fingerprint and before/after compare),
-     and only then save the code that needs it. If that order can't be kept, develop on a separate app and api
-     instance (its own ports, a scratch database), never the bench the founder uses. A subagent's brief says so.
-   - **Look before a restart:** before restarting or changing anything the founder's browser uses (app dev
-     server, api, workers, a migration, an api source save, which reloads it), run `./founder-active.sh` from
-     `intelcost-infra/` (founder activity in the api log's last 10 minutes). Active or unknown: say so, and wait
-     or ask.
+     and only then save the code that needs it. The bench api runs `alembic upgrade head` when it starts, so code
+     carrying an unrun migration must not reach it first.
+   - **Look before saving:** before saving api or app source (a save reloads what the founder's browser uses), or
+     restarting a service, run `./founder-active.sh` from `intelcost-infra/` (founder activity in the api log's
+     last 10 minutes). Active or unknown: tell the founder and wait instead of saving.
    - **Report the windows:** every report names each window in which the founder's saves could fail (a reload, a
      code-before-migration gap, a stopped service), with its start and end times in UTC.
 
