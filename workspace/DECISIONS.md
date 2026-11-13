@@ -31290,3 +31290,64 @@ reading, stated here); the migration renaming existing folders waits for the fou
   named company's crew-costing workbook (its labor wages and burden, equipment rates, own fleet), holds no client or
   project name in its cells but is that company's own cost data: off the allow-list, untracked, kept on disk and
   ignored, as its sibling source file already was.
+
+## D-1260 — Utility types by group, each with its defaults; the pipe catalog widened and priced
+
+**Status:** decided (the founder's brief, 2026-11-13, night run part 1); built unattended, awaiting the founder's check.
+Spec: `docs/tasks/utility_types_tasks.md` (F44).
+
+- **Thirty-one types in six groups** in the run's Type dropdown (optgroups): Gravity (Sanitary sewer main, Sanitary
+  service (lateral), Storm sewer main, Storm lead (inlet to main), Roof drain leader, Culvert, Subdrain / underdrain,
+  Foundation drain, Grease waste); Pressure (Water main, Water service, Fire line / fire service, Hydrant lead, Force
+  main (sanitary), Storm force main, Irrigation, Reclaimed water, Chilled / hot water, Fuel / oil); Gas (Gas main, Gas
+  service); Dry (conduit) (Electric primary, Electric secondary, Site lighting, Telecom / fiber, Traffic signal, Low
+  voltage / security); Crossings (Casing / sleeve (bore), Concrete encasement); Other. A structure's System list is
+  the same grouped list.
+- **Today's ten keys stay the keys of their group's main type** (the mapping is a relabel): sanitary → Sanitary sewer
+  main, storm → Storm sewer main, water → Water main, fire_water → Fire line / fire service, force_main → Force main
+  (sanitary), gas → Gas main, electric → Electric primary, telecom → Telecom / fiber, subdrain → Subdrain / underdrain,
+  other → Other. The new types take new keys of 16 characters or fewer (`sanitary_service`, `storm_force_main`,
+  `elec_secondary`…), so `utility_run.utility_type` and `utility_structure.utility_type` (String(16)) need no widening
+  and **no founder row changes: no type migration is written** (the one change the brief allowed is not needed). Every
+  existing run reads and prices as before.
+- **Each type has a base** (one of today's ten) that everything already keyed by type keeps reading: Calculate's region
+  `util:<base>`, its work scope `site_utilities.<base>`, the pipe crews, the pressure rules (narrow trench, company
+  cover, sand embedment, fittings and thrust), structure types by system and the 3D colour. The specific type sets the
+  new run's defaults, its pipe list, its add-ons, its connection, its production, its Utility Inputs folder and its
+  Division 33 code.
+- **Defaults, editable per run** (stored in the run's `section`, no schema change): pipe and size; Vertical (gravity by
+  inverts; pressure, gas, dry and crossings by cover) and a default cover where the type has its own (gas main 3 ft,
+  gas service 2 ft, 49 CFR 192.327/192.361 and common utility specs; electric primary 3 ft; secondary, site lighting,
+  low voltage 1.5 ft, NEC 300.5 Table 300.5 column 3; telecom and traffic signal 2 ft; irrigation 1.5 ft; chilled
+  water and fuel 3 ft; casing 4 ft; water-group types keep the company's pressure cover, D-1106); embedment by the base's
+  rule (D-1100, D-1101); **production**: services and short leads (sanitary service, storm lead, roof drain leader,
+  grease waste, water service, hydrant lead, gas service) make pipe lines of their own (`|short` in the variant), so
+  their crew's tier follows their own short run length (D-971) and is never averaged with a main's; **connection at the
+  main**: a water or gas service a tap (`tap:water:<n>`, `tap:gas:<n>`), a sanitary lateral a wye (`wye:sewer:<n>`), a
+  storm lead, roof leader or grease waste a tie-in to the structure (`tiein:structure:<n>`), one per run; **add-ons**:
+  tracer wire (plastic water, fire, force main, reclaimed, gas), detectable warning tape (gas, dry utilities, and the
+  plastic water and sewer pipe D-1080 already taped), pressure test and disinfection (water main, water service, fire
+  line, hydrant lead), pressure test (force mains, irrigation, reclaimed, chilled, fuel, gas), TV inspection (sanitary
+  main), pull string and mandrel (every conduit type). A run drawn before this keeps what it bought (tracer and tape by
+  D-1080's rule, nothing new) until someone ticks an add-on.
+- **Conduit runs:** conduits per trench is the run's Pipes; an optional **concrete encasement (duct bank)** with its own
+  section, width × height: the trench at least that wide (concrete placed against the walls), the concrete in CY
+  (W × H − n·π·OD²/4 per LF, on the pipe line, ready-mix 3000) and the pipe zone reduced by it.
+- **Crossings:** Casing / sleeve (bore) and any run set to "Bored (no trench)" make their pipe line only (no trench,
+  bedding, backfill, protection or spoils). Concrete encasement is drawn over the stretch of a pipe already taken off:
+  it buys the encasement only (no pipe, no trench).
+- **Folders and codes follow the type:** Utility Inputs › Sanitary, Storm, Water, Fire, Gas, Dry utilities as before,
+  plus Reclaimed water, Irrigation, Fuel / oil, Chilled / hot water and Crossings (appended to the folder order). A new
+  type's code is the seeded tree's most specific node, else its system node: water service 33.01.02, hydrant lead
+  33.01.03, sanitary service 33.03.02, storm lead 33.05.01, culvert 33.05.03, roof drain 33.05.05, foundation drain
+  33.05.06, gas service 33.07.02, electric secondary 33.08.02, site lighting 26.08.07, traffic signal 34.02,
+  irrigation 32.11.01, chilled / hot water 33.10.01, casing 33.11.04, encasement 33.11; grease waste, storm force main,
+  reclaimed, fuel, low voltage their system's. Today's ten keep D-1245's.
+- **The catalog gains** PVC Sch 40 DWV (ASTM D2665), PVC Sch 40 and 80 pressure (D1785), PVC D2241 SDR 21 and 26,
+  PVC C905 DR 18 and 25 (14–48 in), PE CTS tubing SDR 9 (D2737), gas PE IPS SDR 11 and CTS (D2513), steel Sch 40 (A53 /
+  API 5L), HDPE conduit SDR 11 (F2160), steel casing 0.250 / 0.375 / 0.500 wall, polypropylene dual wall (storm F2881,
+  sanitary F2764), vitrified clay (C700), perforated single-wall HDPE (M252) and PVC D2729 perforated. IPS families carry
+  IPS ODs (4 in 4.500, 6 in 6.625). Each value carries its source and mark, as D-526/D-568.
+- **Prices:** every new key priced in the Q4 2026 release by migration (grades A–D, sources in the seed file
+  `d1260_utility_type_prices.json`); a key already priced is never overwritten. Tiered as other pipe by its key
+  (D-1091). Founder projects reprice only at their next Calculate.

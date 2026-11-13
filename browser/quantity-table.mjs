@@ -1918,6 +1918,7 @@ try {
     const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
     const um = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const utr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
+    const ty = await import("/src/lib/takeoff/earthwork/utilities/types.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -1999,6 +2000,56 @@ try {
       if (c.kind === "pressure-section") {
         const sec = utr.sectionFor(c.type, { sideClearanceIn: 12, minWidthIn: 24, ...(c.settings ?? {}) });
         return { section: [sec.sideClearanceIn, sec.minWidthIn], cover: utr.defaultCoverFt(c.type, c.settings ?? {}), vertical: rd.defaultRun(c.type).vertical };
+      }
+      // D-1260 (F44): a type's defaults, then its run through the lines and their materials as Calculate hands them on
+      // (base for the region, the run's own add-ons, connection, production, install and encasement).
+      if (c.kind === "type-lines") {
+        const def = rd.defaultRun(c.type);
+        const run = { ...def, ...(c.run ?? {}), section: { ...(def.section ?? {}), ...(c.section ?? {}) } };
+        const pipe = cat.resolvePipe(run.catalog_key);
+        const o = ty.runOptions(c.type, run.section, pipe.od);
+        const n = Math.max(1, Math.round(run.pipes));
+        const encCy = o.encasement ? ty.encasementCyPerLf(o.encasement.widthIn, o.encasement.heightIn, n, pipe.od) : 0;
+        const qq = { pipeLF: [{ range: "0–6 ft", lf: c.lf * n, depthFt: 4, maxDepthFt: 4 }], byLayer: [{ name: "Clay", cf: 100, rock: false, unsuitable: false }], byMaterial: [], beddingCF: 10, zoneCF: 20, backfillCF: 70, protectionLF: [], dewateringLF: 0, rockLF: 0, restorationSF: 0, widthFt: 2 };
+        const made = ln.utilityLines([
+          {
+            type: ty.baseOf(c.type),
+            pipeLabel: c.label,
+            pipeKey: run.catalog_key,
+            pipes: n,
+            q: qq,
+            swell: [1.2],
+            materials: { bedding: { name: "#57 stone", source: "imported" }, zone: { name: "Sand", source: "imported" }, backfill: { name: "Native", source: "native" } },
+            restoration: null,
+            services: [],
+            short: o.production === "short",
+            install: o.install,
+            encasement: o.encasement,
+            pipeOptions: { addons: o.addons, buyPipe: o.install !== "none", encasementCy: encCy > 0 ? encCy / n : null, crossing: ty.typeDef(c.type).group === "crossing" },
+            connection: o.connection ? { kind: o.connection, sizeIn: run.nominal_in } : null,
+          },
+        ]);
+        const pl = made.find((l) => l.role === "utility_pipe");
+        const list = (pl && um.lineMaterials(pl, () => null)) ?? [];
+        const out = {
+          group: ty.typeDef(c.type).group,
+          base: ty.baseOf(c.type),
+          pipe: run.catalog_key,
+          vertical: run.vertical,
+          cover: run.cover_ft,
+          addons: (o.addons ?? []).join(" "),
+          connection: o.connection,
+          production: o.production,
+          install: o.install,
+          roles: made.map((l) => l.role).join(" "),
+          variant: pl?.variant ?? null,
+          name: pl?.name ?? null,
+          lf: pl?.quantity ?? null,
+          keys: list.map((m) => m.key).join(" "),
+          encCyPerLf: encCy,
+        };
+        for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:name`]: m.name });
+        return out;
       }
       if (c.kind === "newrun") {
         // D-628: a run drawn from existing grade, then a new run from the box: its "Trench from"
