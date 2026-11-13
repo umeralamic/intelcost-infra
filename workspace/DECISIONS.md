@@ -31015,3 +31015,38 @@ the migration renumbering existing projects waits for the founder's yes (it touc
 
 **Where:** app `components/{rowColumns.ts,QuantityPanel.tsx}`, `sheets/SheetsPanel.tsx`, `assembly/AssembliesPanel.tsx`,
 `settings/settings.ts`.
+
+## D-1242 — Grading Inputs; utility runs and structures filed by system; per-sheet earthwork items named with their sheet (F43)
+
+**Status:** decided (the founder, 2026-11-13, "Grading Inputs" the founder's correction of "Earthwork Model"; the mapping of the six systems and the no-refiling rule are the session's
+reading, stated here); the migration renaming existing folders waits for the founder's yes
+
+- **"Earthwork Markups" is "Grading Inputs"**: it holds the inputs Calculate reads (boundaries, grades, features, site
+  prep), not priced themselves; every place the old name appears changes (auto-filing, labels, tooltips, docs). New projects make it so; existing ones by a migration renaming a folder still named
+  exactly "Earthwork Markups" (a renamed one is the user's).
+- **New utility runs and structures file into "Utilities" › <system>** at creation, when no folder was chosen: sanitary
+  and force main → Sanitary; storm and subdrain → Storm; water → Water; fire water → Fire; gas → Gas; electric and
+  telecom → Dry utilities; other → "Utilities". A structure follows the run it is attached to, else its own type.
+- **"File utilities by system"** moves only the utility runs and structures in Unclassified, says what moved, one undo.
+- **Per-sheet earthwork items made from now on carry their sheet:** "Work Boundary – C12" (number, else name).
+- **Never fights the user:** filed once (at creation, or when asked); a moved item is never moved back; a renamed or moved
+  system folder keeps being used (found by a marker, not its name).
+
+**Spec:** [utility_filing_tasks.md](docs/tasks/utility_filing_tasks.md).
+
+## D-1243 — Resume works on any sheet; only the scale stops it
+
+**Status:** decided (the founder, in session, 2026-11-13)
+
+- **Any sheet:** Resume on an item drawn on another sheet starts the same thing on this one. An ordinary item measures
+  on (as before); a utility run starts a new section of the same pipe (its type, size and material), its start invert
+  the previous section's end invert; a structure (manhole, cleanout) places more of the same; an earthwork input arms
+  its tool on the same surface, starting on this sheet's surface or stitched site. On its own sheet a run still
+  continues from its end.
+- **Only the scale stops it:** no scale here → "Set scale first" (it opens the calibration), not a flat refusal; a
+  count needs none. A scale ten times or more from the item's own sheet's (a 1" = 1'-0" detail against a 1" = 40'
+  plan) → "This sheet is a detail — continue?", with Continue. Feet and metres never stop it: quantities are in feet from
+  the sheet's scale and sum in the item's own unit. A run's settings and an earthwork surface are never a reason.
+
+**Where:** app `pages/ProjectTakeoff.tsx` (`resumeItem`, the utility resume), `earthwork/useEarthwork.tsx`
+(`resumeItem`), `earthwork/utilities/useUtilities.tsx` (`resumeElsewhere`, `countMore` on any sheet).
