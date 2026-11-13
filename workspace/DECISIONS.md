@@ -31386,3 +31386,42 @@ Spec: `docs/tasks/water_restraint_tasks.md` (F45).
   all items −8.9 % → −7.2 %, water PVC −11.3 % → −3.5 % (the 21 restrained items −19.2 % → −4.2 %, in band 2 → 5),
   sanitary and storm unchanged; the contracts' total +$183,454 (restraint material +$186,062, the restrained items'
   own lines' labour and equipment −$2,459).
+
+## D-1262 — Overlay's Highlight changes worked again for the view: the visible area from both PDFs at screen resolution
+
+**Status:** decided (the founder's brief, 2026-11-13, night run part 3: `docs/tasks/overlay_plan.md` task 9); built
+unattended, awaiting the founder's check. Logged after the build, in the same session (it should have come first).
+
+- **What:** at fit and zoomed in, once the view rests, the part of the base sheet on screen is drawn again from both
+  sheets' PDFs (the overlay through the matrix the fit picture already uses), the difference worked out for that area
+  in the same worker, and painted over the fit picture in its place. The fit picture (D-1231) stays under it and shows
+  alone until the sharp one is ready, and wherever the sharp area does not reach.
+- **When:** 300 ms after the last pan or zoom, never while a button is held (the canvas reports its moves to the
+  overlay without drawing itself again), and only once the page box on screen is its laid-out size two frames running
+  (a zoom held at its last frame is not a view at rest). A new matrix or tolerance drops the sharp picture at once; a
+  new Fade repaints the kept difference in the worker, with no new render.
+- **The tolerance holds its paper distance:** the area is worked at the screen's device px per point, rounded up to a
+  bucket (2^(1/4) steps), and as many whole times finer as one pixel per tolerance needs (within 10 %): 0.01 in wants
+  1.389 px/pt. The radius is the tolerance × 72 × that scale, at least 1 px (1.71 px at 2.378 px/pt; 3.42 px at 0.02 in).
+- **Painted down with changes kept:** worked finer than the screen, each screen pixel is a block; a block holding added
+  or removed ink takes that colour at its darkest changed coverage (added where both are as dark), any other block the
+  average. A thin changed line therefore stays pure blue or red at fit instead of averaging into the paper and the
+  black beside it.
+- **Cache by view:** keyed by the pair (sheets and versions, sizes, matrix, tolerance), the bucket and the area. A view
+  inside an area already worked at the same bucket (within one output pixel) reuses it: a short pan, or a return to
+  fit or to 100 %. Up to 8 results within 96 MB on the page; the worker keeps 3 differences for repaints.
+- **Memory:** the area is what is seen plus 12 % each side, kept on the page; at most 8 million pixels are worked at
+  once (the factor comes down first, then the resolution); the two renders are drawn one after the other and their
+  canvases freed at once; the worker holds one distance field at a time (same result, half the peak).
+- **Off the main thread where it was:** the difference and its paint in the existing worker (OffscreenCanvas, page
+  fallback as before); the PDFs drawn by pdf.js on the page in its slices, as the sheet itself is. No new dependency.
+  Pure part in `lib/takeoff/overlay/zoomView.ts` and `difference.ts` (hard rule 2).
+- **Shared quantity table:** six `overlay-zoom-*` rows worked by hand (the plan zoomed in, at fit under the cap, not
+  worth it; the region transform shifted and turned; the paint-down block).
+- **Smoke (throwaway copy of the 3D test project, E101 over E102, 2592 × 1728 pt, Already lined up, 0.01 in):** at fit
+  the whole sheet painted 917 × 611 from 5.0 MP worked 3× (1.06 px/pt, radius 1 px) in 3.2–6.6 s (the longer when the
+  overlay's PDF is first opened); at 100 % 0.87 MP at 2.378 px/pt (radius 1.71 px) in 0.54–0.61 s, 1.73 MP at a
+  pixel ratio of 1.25 in 0.86 s; a short pan and a return to fit or 100 % reused the cache; nothing started while a
+  drag was held, 0.85 s after release; the page's JS heap held at about 1 GB across jobs.
+- **Not built:** a turned sheet was not driven in the smoke (the area is found through the turn, `footprintRectToPage`);
+  the title-block residual (task 8) is still open.

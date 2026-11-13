@@ -1,7 +1,7 @@
 # Overlay: one flow, "As drawn" or "Highlight changes" (PLAN ONLY, revised after the founder's review)
 
 > Written 2026-11-12 (the run's item 4) and revised the same day after the founder's review (follow-up C). Nothing here
-> is built. On approval it becomes the next D-NN and an `F` row.
+> is built. On approval it becomes the next D-NN and an `F` row. (Since built: §5, D-1231 and D-1262; the row is F46.)
 >
 > **Approved in the review:**
 > - the real difference;
@@ -156,7 +156,7 @@ gets its own plan later. D-856's REVISIONS_PLAN stands as its starting point.
 | 6 | Paint the result image and place it with today's matrix; Fade unchanged applied in the paint | 1 | yes |
 | 7 | Tolerance on paper: the default 0.01 in, the bar's value in ft at the sheet's scale | 0.5 | yes |
 | 8 | Residual for "Already lined up": the fit's residual; title-block corner marks from the vector text; "Match points" offered over the tolerance | 2 | no (the slice shows the fit residual only, after Match points) |
-| 9 | Zoom recompute: render the visible part of each sheet from its PDF at screen resolution, rework the difference for the visible area, cache by view | 4 | no |
+| 9 | Zoom recompute: render the visible part of each sheet from its PDF at screen resolution, rework the difference for the visible area, cache by view | 4 | no. **Done 2026-11-14 (D-1262)**, see below |
 | 10 | Remove the old multiply, masks and the 50 % Compare opacity | 0.5 | yes |
 | 11 | Checks: hand-worked masks (a line added, removed, offset within and beyond the tolerance) as quantity-table rows; gates; smoke | 2 | yes (1.5 h without the zoom rows) |
 | | **Total** | **about 17.5 hours** | |
@@ -165,3 +165,15 @@ gets its own plan later. D-856's REVISIONS_PLAN stands as its starting point.
 10 and 11 without its zoom rows = 1.5 + 1.5 + 1.5 + 1.5 + 1.5 + 1 + 0.5 + 0.5 + 1.5 = **about 11 hours**. At high zoom
 the result is the fit image's (2048 px across), as today's overlay is; tasks 8 and 9 follow as the second slice (about
 6.5 hours).
+
+## 5. Built
+
+- **First slice** (tasks 1–7, 10, 11 without the zoom rows): D-1231, 2026-11-12.
+- **Task 9, zoom recompute:** D-1262, 2026-11-14 (night run part 3). Once the view rests (300 ms after a pan or zoom,
+  never mid-drag), the visible area plus 12 % is drawn from both PDFs at the screen's resolution bucket, finer by a
+  whole factor where one pixel per tolerance needs it (cap 8 MP), the difference worked in the existing worker and
+  painted down with changed ink kept in full colour; cached by pair, bucket and area. App
+  `lib/takeoff/overlay/{zoomView,difference}.ts`, `features/takeoff/overlay/{useSharpDifference,OverlayLayer,
+  differenceJob,useOverlayDifference}.ts(x)`, `SheetCanvas.tsx` (`subscribeView`), `ProjectTakeoff.tsx`,
+  `ReferencePane.tsx`; infra six `overlay-zoom-*` quantity-table rows (task 11's zoom rows).
+- **Still open:** task 8 (the title-block residual for "Already lined up").

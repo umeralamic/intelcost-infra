@@ -83,6 +83,27 @@ export const OVERLAY_NUMBER_CASES = [
     size: { w: 1000, h: 500 },
     expect: { value: 5 },
   },
+  // Zoom recompute (task 9, D-1262): lib/takeoff/overlay/zoomView.ts. Answers as "x,y,outW,outH,factor,radiusPx".
+  // Zoomed in: 400 × 300 pt seen at (1000, 500) of a 2592 × 1728 pt sheet, 2 device px per pt (the bucket 2^(4/4) = 2),
+  // 0.01 in. The 12 % margin: 952..1448 by 464..836 (496 × 372 pt), 992 × 744 px; one px per 0.01 in wants 1.389 px/pt,
+  // under 2, so factor 1; the tolerance 0.01 × 72 × 2 = 1.44 px.
+  { id: "overlay-zoom-plan-in", kind: "zoomPlan", visible: { x: 1000, y: 500, w: 400, h: 300 }, pagePt: { w: 2592, h: 1728 }, screen: 2, inches: 0.01, coarse: 2048 / 2592, expect: { value: "952,464,992,744,1,1.44" } },
+  // At fit: the whole sheet at 0.3 px/pt, bucket 2^(-6/4) = 0.35355. 917 × 611 px whole; 1.389 / 0.35355 × 0.9 = 3.54,
+  // factor 4 = 8,964,592 px over the 8 M cap, so 3 (5,042,583). Kept on the page: 916 × 610 (floor 2592 × 0.35355 =
+  // 916.4). Worked at 1.0607 px/pt, 0.01 in is 0.76 px: the floor of 1 px.
+  { id: "overlay-zoom-plan-fit", kind: "zoomPlan", visible: { x: 0, y: 0, w: 2592, h: 1728 }, pagePt: { w: 2592, h: 1728 }, screen: 0.3, inches: 0.01, coarse: 2048 / 2592, expect: { value: "0,0,916,610,3,1" } },
+  // No sharper than the fit image: 0.25 px/pt (bucket 0.25) at 0.25 in wants 0.056 px/pt, factor 1; 0.25 ≤ 0.79 × 1.1.
+  { id: "overlay-zoom-plan-none", kind: "zoomPlan", visible: { x: 0, y: 0, w: 2592, h: 1728 }, pagePt: { w: 2592, h: 1728 }, screen: 0.25, inches: 0.25, coarse: 2048 / 2592, expect: { value: "none" } },
+  // The overlay's PDF into the area: matrix a shift (10, 20), the area at (100, 50) at 2 px/pt: 2 × (10 − 100) = −180,
+  // 2 × (20 − 50) = −60.
+  { id: "overlay-zoom-transform-shift", kind: "regionTransform", rect: { x: 100, y: 50, w: 10, h: 10 }, scale: 2, ptPerUnit: 1, matrix: { a: 1, b: 0, c: 0, d: 1, e: 10, f: 20 }, expect: { value: "2,0,0,2,-180,-60" } },
+  // A quarter turn and 0.5 pt per viewport unit: M after K is (0, 0.5, −0.5, 0, 500, 0); then the area: (0, 1, −1, 0,
+  // 2 × (500 − 100), 2 × (0 − 50)).
+  { id: "overlay-zoom-transform-turn", kind: "regionTransform", rect: { x: 100, y: 50, w: 10, h: 10 }, scale: 2, ptPerUnit: 0.5, matrix: { a: 0, b: 1, c: -1, d: 0, e: 500, f: 0 }, expect: { value: "0,1,-1,0,800,-100" } },
+  // Painted down 2 × 2 to 1 px: a block holding one added pixel (new ink only at (0, 0), 2 px from the old ink at
+  // (2, 0)) is pure blue, the change kept in full colour; a block of two unchanged black pixels and two of paper is
+  // their average, 127.5 → 128 grey.
+  { id: "overlay-zoom-paint-down", kind: "paintDown", w: 4, h: 2, old: [{ px: [[2, 0], [3, 0]] }], next: [{ px: [[0, 0], [2, 0], [3, 0]] }], radiusPx: 1, factor: 2, expect: { value: "0,0,255|128,128,128" } },
 ];
 
 export const OVERLAY_CASES = [...OVERLAY_MASK_CASES, ...OVERLAY_PAINT_CASES, ...OVERLAY_NUMBER_CASES];
@@ -91,6 +112,7 @@ export const OVERLAY_CASES = [...OVERLAY_MASK_CASES, ...OVERLAY_PAINT_CASES, ...
 export async function runOverlay([masks, paints, numbers]) {
   const d = await import("/src/lib/takeoff/overlay/difference.ts");
   const mf = await import("/src/lib/takeoff/overlay/matchFit.ts");
+  const zv = await import("/src/lib/takeoff/overlay/zoomView.ts");
   const raster = (w, h, marks) => {
     const data = new Uint8ClampedArray(w * h * 4).fill(255);
     for (const m of marks) {
@@ -121,6 +143,19 @@ export async function runOverlay([masks, paints, numbers]) {
       if (c.kind === "px") return { value: d.toleranceRadiusPx(c.inches, c.rasterPx, c.pagePt) };
       if (c.kind === "transform") return { value: d.imageTransform(c.matrix, c.base, c.over).map((v) => Math.round(v * 1e9) / 1e9).join(",") };
       if (c.kind === "residual") return { value: mf.placementResidualPt(c.pairs, c.matrix, c.size, c.size) };
+      const r4 = (v) => Math.round(v * 1e4) / 1e4;
+      if (c.kind === "zoomPlan") {
+        const p = zv.planSharp({ visible: c.visible, pagePt: c.pagePt, screenPxPerPt: c.screen, toleranceIn: c.inches, coarsePxPerPt: c.coarse });
+        return { value: p ? [r4(p.rect.x), r4(p.rect.y), p.outWidth, p.outHeight, p.factor, r4(p.radiusPx)].join(",") : "none" };
+      }
+      if (c.kind === "regionTransform") return { value: zv.regionTransform(c.rect, c.scale, c.ptPerUnit, c.matrix).map((v) => r4(v) + 0).join(",") };
+      if (c.kind === "paintDown") {
+        const diff = d.differenceOf(raster(c.w, c.h, c.old), raster(c.w, c.h, c.next), c.radiusPx);
+        const rgba = d.paintChangesDown(diff, colours, 0, c.factor);
+        const out = [];
+        for (let i = 0; i < rgba.length; i += 4) out.push(`${rgba[i]},${rgba[i + 1]},${rgba[i + 2]}`);
+        return { value: out.join("|") };
+      }
       return { error: c.kind };
     }),
   };
