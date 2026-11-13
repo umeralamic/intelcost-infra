@@ -1243,6 +1243,157 @@ ORDER_TYPES = {
 }
 
 
+def _raised(make, cause: BaseException | None = None) -> BaseException:  # type: ignore[no-untyped-def]
+    """An error as a library raises it: with its cause chained, as `raise ... from` leaves it."""
+    try:
+        if cause is None:
+            raise make()
+        try:
+            raise cause
+        except BaseException as inner:
+            raise make() from inner
+    except BaseException as exc:
+        return exc
+
+
+def _dns_error() -> BaseException:
+    """What C16 hit on 2026-11-13: botocore's endpoint error over a DNS failure."""
+    import socket
+
+    from botocore.exceptions import EndpointConnectionError
+
+    return _raised(lambda: EndpointConnectionError(endpoint_url="https://bench-bucket.s3.us-east-2.amazonaws.com/takeoff/x"), socket.gaierror(-2, "Name or service not known"))
+
+
+def prepare() -> int:
+    """D-1255: sheet preparation tries a passing network or storage error again after 30 s, 2 min
+    and 5 min, and fails a real one at once. Rows: the classifier over each kind of error, while
+    fetching the drawing and while storing the page; then one page through the real
+    `prepare_sheet` task, its first store failing on a DNS error, back to "Preparing", then
+    prepared. That page is a one-page drawing made for the row on the throwaway project "zz MyEq
+    project", removed afterwards with its objects in storage."""
+    from botocore.exceptions import ClientError, ReadTimeoutError
+    from celery.exceptions import SoftTimeLimitExceeded
+    import pymupdf
+    from sqlalchemy import select
+
+    from app.core import storage
+    from app.database import SyncSessionFactory
+    from app.features.drawing.models import DrawingFile, DrawingSheet, RenderStatus
+    from app.features.project.models import Project
+    from app.features.workspace.models import Workspace
+    from app.worker.tasks import prepare as prep
+
+    def s3(code: str, status: int) -> BaseException:
+        return _raised(lambda: ClientError({"Error": {"Code": code, "Message": code}, "ResponseMetadata": {"HTTPStatusCode": status}}, "PutObject"))
+
+    def unreadable() -> BaseException:
+        try:
+            pymupdf.open(stream=b"this is not a drawing", filetype="pdf")
+        except Exception as exc:
+            return exc
+        raise AssertionError("pymupdf opened a non-PDF")
+
+    wrong: list[str] = []
+    # (row, error, retries so far, while fetching the drawing, expected wait or None: fail now)
+    rows = [
+        ("DNS failure, first try", _dns_error(), 0, False, 30),
+        ("DNS failure, second try", _dns_error(), 1, False, 120),
+        ("DNS failure, third try", _dns_error(), 2, False, 300),
+        ("DNS failure, out of tries", _dns_error(), 3, False, None),
+        ("DNS failure fetching the drawing", _dns_error(), 0, True, 30),
+        ("read timeout", _raised(lambda: ReadTimeoutError(endpoint_url="https://bench-bucket/x")), 0, False, 30),
+        ("connection reset", _raised(lambda: ConnectionResetError(104, "Connection reset by peer")), 1, False, 120),
+        ("S3 503 ServiceUnavailable", s3("ServiceUnavailable", 503), 0, False, 30),
+        ("S3 503 SlowDown", s3("SlowDown", 503), 0, False, 30),
+        ("S3 500 InternalError", s3("InternalError", 500), 2, False, 300),
+        ("S3 403 AccessDenied", s3("AccessDenied", 403), 0, False, None),
+        ("S3 403 fetching the drawing", s3("AccessDenied", 403), 0, True, None),
+        ("unreadable PDF", unreadable(), 0, True, None),
+        ("the page's time limit", _raised(SoftTimeLimitExceeded), 0, False, None),
+        ("not in storage yet, fetching", s3("NoSuchKey", 404), 0, True, 30),
+        ("not in storage, storing the page", s3("NoSuchKey", 404), 0, False, None),
+        ("source still being fetched elsewhere", _raised(lambda: prep.SourceBusyError("busy")), 1, True, 120),
+    ]
+    for name, exc, retries, fetching, expected in rows:
+        got = prep.retry_after(exc, retries, fetching=fetching)
+        if got != expected:
+            wrong.append(f"FAIL  prepare-retry {name}: {got}, expected {expected}")
+
+    # One page through the real task: the first store fails on DNS, the retry prepares it.
+    failures: list[str] = []
+    waits: list[int | None] = []
+    between: list[str] = []
+    real_put, real_after, real_one = storage.put_bytes, prep.retry_after, prep._prepare_one
+
+    def flaky_put(key: str, body: bytes, content_type: str) -> None:
+        if not failures:
+            failures.append(key)
+            raise _dns_error()
+        real_put(key, body, content_type)
+
+    def recording(exc: BaseException, retries: int, *, fetching: bool = False) -> int | None:
+        wait = real_after(exc, retries, fetching=fetching)
+        waits.append(wait)
+        return wait
+
+    def watched(task, sheet_id: int, first: bool = False) -> str:  # type: ignore[no-untyped-def]
+        with SyncSessionFactory() as look:
+            between.append(look.scalar(select(DrawingSheet.render_status).where(DrawingSheet.id == sheet_id)).value)
+        return real_one(task, sheet_id, first)
+
+    with SyncSessionFactory() as session:
+        project = session.scalar(select(Project).where(Project.name == "zz MyEq project"))
+        if project is None:
+            print("FAIL  prepare: the throwaway project zz MyEq project is missing")
+            return 1
+        ws_uuid = session.scalar(select(Workspace.uuid).where(Workspace.id == project.workspace_id))
+        document = pymupdf.open()
+        document.new_page(width=1728, height=1152)
+        pdf = document.tobytes()
+        drawing = DrawingFile(workspace_id=project.workspace_id, project_id=project.id, created_by_id=project.created_by_id, display_name="qt prepare retry", page_count=1, content_type="application/pdf", byte_size=len(pdf))
+        session.add(drawing)
+        session.flush()
+        source_key = storage.build_key("takeoff", ws_uuid, project.uuid, "source", f"{drawing.uuid}.pdf")
+        drawing.storage_key = source_key
+        # tile_version 0: a first preparation, so nothing of an earlier version is queued for clearing.
+        sheet = DrawingSheet(workspace_id=project.workspace_id, project_id=project.id, file_id=drawing.id, page_number=1, sheet_name="qt prepare retry", render_status=RenderStatus.PENDING, tile_version=0)
+        session.add(sheet)
+        session.commit()
+        sheet_id, sheet_uuid, file_uuid, project_uuid = sheet.id, sheet.uuid, drawing.uuid, project.uuid
+        try:
+            real_put(source_key, pdf, "application/pdf")
+            storage.put_bytes, prep.retry_after, prep._prepare_one = flaky_put, recording, watched
+            try:
+                result = prep.prepare_sheet.apply(args=[sheet_id])
+                # Run eagerly, Celery tries a retried task again at once (the wait is the worker's);
+                # if it hands the retry back instead, it is run here.
+                if result.state == "RETRY":
+                    result = prep.prepare_sheet.apply(args=[sheet_id], retries=1)
+            finally:
+                storage.put_bytes, prep.retry_after, prep._prepare_one = real_put, real_after, real_one
+            session.expire_all()
+            done = session.get(DrawingSheet, sheet_id)
+            got = (len(failures), waits, between, result.result, done.render_status.value, done.render_error)
+            expected = (1, [30], ["pending", "pending"], "ready", "ready", None)
+            if got != expected:
+                wrong.append(f"FAIL  prepare-retry one DNS failure then success: {got}, expected {expected} (failures, waits, status before each try, task, sheet, error)")
+        finally:
+            for row in (session.get(DrawingSheet, sheet_id), session.get(DrawingFile, drawing.id)):
+                if row is not None:
+                    session.delete(row)
+                    session.flush()
+            session.commit()
+            for key in (source_key, prep.sheet_source_key(ws_uuid, project_uuid, file_uuid, 1)):
+                storage.delete_object(key)
+            storage.delete_prefix(storage.build_key("takeoff", ws_uuid, project_uuid, str(sheet_uuid)) + "/", workspace_uuid=ws_uuid, project_uuid=project_uuid)
+            prep._source_path(SimpleNamespace(uuid=file_uuid)).unlink(missing_ok=True)
+    for w in wrong:
+        print(w)
+    print(f"prepare retry: {len(rows) + 1} rows (17 errors classified, one page failed once on DNS then prepared), {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def orders() -> int:
     from types import SimpleNamespace
 
@@ -1375,6 +1526,8 @@ def orders() -> int:
 def main() -> None:
     if sys.argv[1:] == ["orders"]:
         sys.exit(orders())
+    if sys.argv[1:] == ["prepare"]:
+        sys.exit(prepare())
     if sys.argv[1:] == ["parents"]:
         import asyncio
 

@@ -31207,3 +31207,26 @@ reading, stated here); the migration renaming existing folders waits for the fou
 - Kept from D-1252: **migration before the code that needs it** (run on the bench with the before/after compare);
   and **`./founder-active.sh` before saving api or app source** (a save reloads what the founder uses): if the
   founder is active, say so and wait instead of saving.
+
+## D-1255 — Sheet preparation retries a passing network or storage error before it fails
+
+**Status:** decided (the founder, 2026-11-13)
+
+- **A passing error is retried with back-off: 30 s, 2 min, 5 min**, the sheet "Preparing" in between (render status
+  back to pending), and only then "Couldn't prepare this page". Passing: a DNS failure, a connect or read timeout, a
+  connection reset or closed, an S3 5xx or its throttling (SlowDown, ServiceUnavailable, InternalError,
+  RequestTimeout). Both steps of a page: fetching the drawing's file and storing the prepared page (the step that
+  failed C16 on 2026-11-13 at 14:59, a DNS failure, with no retry at all).
+- **A real error fails at once:** an unreadable or damaged PDF, a permission refusal (403 and the like), the page's
+  time limit. The file not in storage yet (404) keeps its retry, as before: an upload may still be landing.
+- **The shared quantity table carries rows for it** (`drives/quantity-table.py prepare`): the classifier over each
+  kind of error, and one page through the real task with its first store failing on a DNS error, then prepared.
+- **Built and checked (2026-11-13):** `storage.transient` and `storage.not_found` (the classifier, the cause chain
+  walked), `prepare.retry_after` (both steps of a page); the quantity table's `prepare` rows: 17 errors classified
+  and one page through the real task (first store fails on DNS, back to pending, prepared on the retry). C16 of the
+  test project prepared again (the project rebuilt, the first went with its throwaway's purge): 576 LF runs, Calculate's
+  lines written.
+- **A failure window of this change:** the api was down 16:25:10 to 16:31:24 UTC. Three saves in a row each reloaded
+  it, and the third landed mid-reload, which left only `watchfiles` running; a `touch` of a watched file at 16:30:34
+  brought it back. The workers reloaded 16:25:08 to 16:26:43 and 16:30:39 to 16:31:17. Rule 12 now says to confirm
+  the api answers after an api save.

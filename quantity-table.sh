@@ -147,6 +147,13 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hi
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py parents" </dev/null || { echo "FAIL  parents (above)"; exit 1; }
 # One Calculate settles the bid (D-1110): a choice applied in the results panel keeps every line the Calculate wrote.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py rebuild" </dev/null || { echo "FAIL  rebuild (above)"; exit 1; }
+# Sheet preparation retries a passing error (D-1255): each kind of error classified, and one page whose first store
+# fails on DNS prepared by the retry (a one-page drawing on zz MyEq project, removed afterwards).
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prepare" </dev/null >$QT/prepare.txt 2>&1
+PREPARE=$?
+# The task's own warning on the injected DNS failure is expected; every other line is shown.
+grep -v "hit a passing error, again in" $QT/prepare.txt
+[ "$PREPARE" -eq 0 ] || { echo "FAIL  prepare retry (above)"; exit 1; }
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 STATUS="${PIPESTATUS[0]}"
 # Benchmark A (D-1028): the last check of its copy's export against the local expectations, outside

@@ -112,6 +112,10 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    - **Look before saving:** before saving api or app source (a save reloads what the founder's browser uses), or
      restarting a service, run `./founder-active.sh` from `intelcost-infra/` (founder activity in the api log's
      last 10 minutes). Active or unknown: tell the founder and wait instead of saving.
+   - **Check it came back:** after an api source save, confirm the api answers again
+     (`curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs` gives 200). A save that lands while the
+     api is still reloading can leave it down with only `watchfiles` running (2026-11-13, 16:26 to 16:31 UTC).
+     `touch` a watched file under `app/` to bring it back, and report the window.
    - **Report the windows:** every report names each window in which the founder's saves could fail (a reload, a
      code-before-migration gap, a stopped service), with its start and end times in UTC.
 

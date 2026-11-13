@@ -29,9 +29,9 @@ const guard = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
 const minutes = process.argv[2];
 const workspaces = new Set(Object.keys(guard.founder_workspaces ?? {}));
 const projects = guard.protected_projects ?? {};
-// An open tab writes on its own: the work-session heartbeat each minute and a project visit. Those say a tab is
-// open, not that the founder is editing; any other write is an edit.
-const heartbeat = (path) => /\/work-session\/|\/visit$/.test(path);
+// An open tab writes on its own: a work session opened (POST) and its heartbeat each minute (PATCH), and a project
+// visit. Those say a tab is open, not that the founder is editing; any other write is an edit.
+const heartbeat = (path) => /\/work-session(\/|$)|\/visit$/.test(path);
 const seen = new Map();
 for (const line of fs.readFileSync(0, "utf8").split("\n")) {
   const m = line.match(/(\d{4}-\d\d-\d\dT[\d:]+)\S* .*"(GET|POST|PUT|PATCH|DELETE) (\/api\/workspace\/([0-9a-f-]{36})(?:\/project\/([0-9a-f-]{36}))?[^ ?]*)/);
