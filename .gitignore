@@ -22,3 +22,9 @@ browser/.qt-run.*
 # Founder reference workbooks with job figures (2026-11-06): never in the mirror or a commit.
 workspace/docs/reference/Mohave_AZ_all_crafts_labor_comparison.xlsx
 workspace/docs/reference/DE MAIN SOURCE FILE*
+
+# Morning reports, their zips and logs stay on disk, out of git (2026-11-13). Ignoring does not untrack what is already
+# tracked (morning-report-2026-10-30 to -11-09): that stays as it is until the founder decides.
+morning-report-*/
+morning-report-*.zip
+morning-report-*/**/*.log
