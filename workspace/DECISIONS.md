@@ -30870,3 +30870,30 @@ empty-codes option)
 `core/api/types.ts`, `use-collaboration-prefs.ts`, `QuantityPanel.tsx`, `wbsTree.ts`, `SheetsPanel.tsx`,
 `collaborationChoices.ts`, `TakeoffSettingsDialog.tsx`, the canvas's shape and markup layers. Spec
 [others_work_view_tasks.md](docs/tasks/others_work_view_tasks.md).
+
+## D-1234 — The api refuses shape points that are not [x, y] pairs; the takeoff page survives one that is stored
+
+**Status:** decided (the founder, 2026-11-13, F42 answer 1)
+
+- **Refused, on every write path:** a shape's `vertices_json` must be a non-empty list of `[x, y]` pairs of finite
+  numbers. Anything else (an `{x, y}` object, a third value, a string, `NaN` or `Infinity`, which Python's JSON reader
+  accepts) is a **400** with `code: "shape_points"`, the field, and which point is wrong, e.g. "Point 0 is {"x": 0.1,
+  "y": 0.2}: a shape's points must be [x, y] pairs of finite numbers." One type (`app/core/shape_points.py`) on every
+  schema that takes points: a shape's create, update and the shapes transaction (an item's create, bulk, duplicate and
+  site features take the same create), and earthwork's own points. Every other validation error stays 422.
+- **Read side:** a stored shape whose points cannot be read is left out of the takeoff page's drawing and its
+  quantities' formula environment, and the page says "This shape's saved data can't be read…" naming the item, instead
+  of going blank.
+- **Stored data checked** (2026-11-13, read only, every project including the founder's): 2,198 shapes, every point a
+  pair of numbers, none empty or not a list. Nothing to change.
+
+## D-1235 — One stamp for every throwaway account; the purge drive takes any stamp length
+
+**Status:** decided (the founder, 2026-11-13, F42 answer 2)
+
+- **One format:** a session's throwaway account is `fx.<name>.<YYYYMMDDHHMMSS UTC>@bench.intelcost.io`, 14 digits, so
+  two made in one minute differ (`browser/mcp-throwaway-signin.js`; anything a session makes by hand the same).
+- **The purge drive** (`drives/purge-bench-accounts.py`) matches a session's `fx.` account with any stamp length; the
+  guard list is still checked first and the fixture-seat pattern is unchanged. Widened, a full purge would also take
+  five old 4-digit accounts (`fx.d18.1011`, `fx.home2–4.1010`, `fx.review1.1010`) and yesterday's "fx WBS smoke"
+  account; only the two the founder named went (`--only`).

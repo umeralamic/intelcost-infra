@@ -10,7 +10,8 @@ async (page) => {
   const context = page.context();
   if (!context.__protectedRefusals) throw new Error("Run mcp-guard.js first (D-542).");
   if (!context.__fx) {
-    const stamp = new Date().toISOString().replace(/\D/g, "").slice(0, 12);
+    // The one stamp of every throwaway (D-1235): YYYYMMDDHHMMSS in UTC, so two made in one minute differ.
+    const stamp = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
     const bytes = new Uint8Array(18);
     globalThis.crypto.getRandomValues(bytes);
     const password = "Fx-" + Buffer.from(bytes).toString("base64url");

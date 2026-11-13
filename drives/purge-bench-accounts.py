@@ -5,7 +5,8 @@
 A dry run by default: it prints every account it would delete, one line each, and the ones it
 refuses. `--purge` deletes them. An account goes only when its email matches a throwaway pattern:
 
-  - a session's or a fixture's own account, `fx.<name>.<12 or 13 digit stamp>@bench.intelcost.io`;
+  - a session's or a fixture's own account, `fx.<name>.<digits>@bench.intelcost.io`, any stamp length (D-1235;
+    a session's are made `fx.<name>.<YYYYMMDDHHMMSS UTC>`);
   - a seat a fixture made, `<tag>-<role>-<13 digit stamp>@bench.intelcost.io`.
 
 Anything else is never touched (window-b, walkthrough, the seeded account, a person's). A matching
@@ -39,7 +40,9 @@ from app.features.workspace.models import Workspace, WorkspaceMember
 from guard_list import FOUNDER_EMAILS, KEEP_WORKSPACES as _KEEP  # the one guard list (INTELCOST_GUARD_LIST)
 
 THROWAWAY = (
-    re.compile(r"^fx\.[a-z0-9-]+(?:\.[a-z0-9-]+)*\.\d{12,13}@bench\.intelcost\.io$"),
+    # A session's own throwaway, any stamp length (the founder, 2026-11-13, D-1235): CC's accounts were made with
+    # 12 and 14 digits before one format (YYYYMMDDHHMMSS, UTC) was set. Still refused when on the guard list.
+    re.compile(r"^fx\.[a-z0-9-]+(?:\.[a-z0-9-]+)*\.\d+@bench\.intelcost\.io$"),
     re.compile(r"^[a-z0-9]+(?:-[a-z0-9_]+)+-\d{13}@bench\.intelcost\.io$"),
 )
 PROTECTED = set(guard.PROTECTED)

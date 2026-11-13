@@ -34,3 +34,15 @@ Settings › Collaboration now also hides or fades colleagues' saved markings on
 Gates; quantity table; smoke with two throwaway accounts in one workspace: each draws an item, a folder, a sub-item,
 a cost row and a markup; the other sees them, unticks Show all (panels empty of them, plans unchanged), sets Only mine
 (plans empty of them), Fade others (faded), and both back to the defaults.
+
+## Results (2026-11-13)
+
+- **Smoke** (two throwaway accounts, one workspace): passed; screenshots in
+  `intelcost-infra/morning-report-2026-11-13/f42/`.
+- **Display only** (the founder's F42 answer 4): one two-user project (A: slab 3,317.76 SF at $6.50, curb sub $2,500; B:
+  footing 2,764.8 SF at $9.25, wall 144 LF at $12 with A's shape on it, ties sub-item, a $1,800 sub on A's slab, a cloud).
+  In five states (box ticked/unticked × plans All, Only mine, Fade others, and unticked + Only mine) Estimating read
+  direct cost $53,167.84, material $48,867.84, bid total $64,333.08, and the bid summary the same five lines (overhead
+  10 % $5,316.78, profit 10 % $5,848.46, tax and bond 0); the five Excel exports (all columns, all rows, all layers in
+  one tab, without formulas) are identical in all 382 cells, Bid Summary sheet included, B's items in every one.
+  Files in `intelcost-infra/morning-report-2026-11-13/f42/proof/`.
