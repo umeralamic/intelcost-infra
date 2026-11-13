@@ -31351,3 +31351,38 @@ Spec: `docs/tasks/utility_types_tasks.md` (F44).
 - **Prices:** every new key priced in the Q4 2026 release by migration (grades A–D, sources in the seed file
   `d1260_utility_type_prices.json`); a key already priced is never overwritten. Tiered as other pipe by its key
   (D-1091). Founder projects reprice only at their next Calculate.
+
+## D-1261 — Restrained joints on water, fire and force-main runs, one bell restraint per 20 ft joint
+
+**Status:** decided (the founder's brief, 2026-11-13, night run part 2); built unattended, awaiting the founder's check.
+Spec: `docs/tasks/water_restraint_tasks.md` (F45).
+
+- **The option:** a run whose base is water, fire water or force main (D-1260: the water main, water service, hydrant
+  lead, irrigation, reclaimed, chilled water, fire line, force main and storm force main types) has **Restrained
+  joints**: Off (the default), Whole line, or Part of the line at a %. Stored in the run's `section` as
+  `restrained_pct` (absent or null off, 100 whole), no schema change; a run drawn before is off and unchanged.
+- **The count:** one set per 20 ft joint, the founder's figure for every family (ductile iron's own laying length is 18
+  ft, D-858; not used here): sets = pipes × ⌈run LF × pct ÷ 100 ÷ 20⌉, per run, summed over a line's runs.
+- **Only pipe with a bell to restrain:** C900, C909 and C905 (cast-iron OD) on `restraint_joint:pvc_c900:<n>`, ductile
+  iron on `restraint_joint:ductile_iron:<n>`, D2241 (IPS OD) on `restraint_joint:pvc_ips:<n>`. Fused HDPE, PE CTS,
+  copper, solvent-welded Schedule pipe and welded steel buy none; the option is greyed with the reason.
+- **Its own line:** a restrained run's pipe line is apart from the unrestrained ones (`|rj:<pct>` in the variant),
+  named "…, restrained joints" or "…, restrained joints 40 %", so the harnesses price on that stretch. Material only:
+  no crew time is added for the harnesses (an open question).
+- **Priced from the library, a key of its own:** the existing `restraint:<family>:<n>` keys are MJ restraint kits for
+  fittings (D-866, D-908); a push-on bell joint takes a bell restraint harness, which costs more (the same maker lists
+  8 in at $236.52 for the bell restraint against $178.21 for the MJ kit). New keys in Q4 2026 by migration
+  (`d1261_restraint_joint_prices.json`, never over a priced key): one maker's domestic price book of Feb 2026 (Series
+  1390-C, PVC and DI with DI OD; 1390-S, PVC with IPS OD), list × 0.573, the median ratio of the library's own A and B
+  MJ kits (C900 6–16, DI 4–16) to the same book's Series 1300-C list. Grade C; DI 18–24 grade D (the maker recommends
+  1390-C on DI to 16 in). C900 42 and 48 in and IPS under 4 in are "price on application" there and stay unpriced.
+- **Shared quantity table:** `restraint` rows worked by hand (whole, a %, ductile iron, fused HDPE, off, sanitary).
+- **Bid tabs (D-1211's harness):** the 16 contracts (0218-3074 out as plant piping), restraint off then on for the 22
+  items whose description names restrained joints, each whole line (none gives a % or a length; 0386-3118A's four say
+  "where necessary"). Figures in docs/reference and the morning report, not in a repo.
+- **Built and measured (2026-11-14):** migration `d1261b3e7a52` on the bench (founder digest `08497dbdfe517baa` before
+  and after, row compare unchanged); smoke on a throwaway (a 257.91 LF 8 in C900 water main, Whole line: 13 sets at
+  $135.53, grade C, in Estimating). Bid tabs, 16 contracts at prevailing against the escalated median, LF-weighted:
+  all items −8.9 % → −7.2 %, water PVC −11.3 % → −3.5 % (the 21 restrained items −19.2 % → −4.2 %, in band 2 → 5),
+  sanitary and storm unchanged; the contracts' total +$183,454 (restraint material +$186,062, the restrained items'
+  own lines' labour and equipment −$2,459).

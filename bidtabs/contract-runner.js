@@ -6,7 +6,9 @@ async (page) => {
   // signed-in throwaway account, in a project of its own (one blank sheet, the project's wage set saved); no bid figure
   // lives here: the contract comes in through the context.
   //
-  //   page.context().__ct = { workspace, project, sheet, pool?: 0 | 1 (default 1), contract: { key, items: [{ type, entry, nominal, depth, qty, median }] } }
+  //   page.context().__ct = { workspace, project, sheet, pool?: 0 | 1 (default 1), contract: { key, items: [{ type, entry, nominal, depth, qty, median, restrainedPct? }] } }
+  // Each item is built as a new run of its type (D-1260: the type's add-ons); `restrainedPct` (D-1261) restrains its
+  // joints, 100 the whole line.
   //   result pushed to page.context().__res: { key, missing, direct, items: [..., ours, labPerLF, unmatched] }
   // With `list` in place of `contract`, each in turn (one call; keep a call under the MCP's 30 minutes: ~2 min each).
   const ct = page.context().__ct;
@@ -28,6 +30,11 @@ async (page) => {
       const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
       const mt = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
       const calc = await import("/src/features/takeoff/earthwork/utilities/calculate.ts");
+      const ty = await import("/src/lib/takeoff/earthwork/utilities/types.ts");
+      const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
+      // A run's own options as a new run of its type stores them (D-1260: its add-ons), and D-1261's restrained joints
+      // where the item names them (`restrainedPct`, the harness's input; absent off).
+      const sectionOf = (it) => ({ ...(rd.defaultRun(it.type).section ?? {}), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}) });
       await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "equipment_pool", field: "value", value_num: pool, value_text: null }) });
       // The project's utility settings, as Calculate reads them: the depth ranges a line is named and paced by come from
       // here (the app's default 0-6, 6-8 ... 14-16, 16+), never a list of the harness's own (D-1211).
@@ -67,14 +74,35 @@ async (page) => {
         // The line's name as the app writes it ("8\" PVC C900 DR 18"), so the harness's lines are the app's (D-1211).
         const named = cat.catalogPick(pipeKey);
         const pipeLabel = `${it.nominal}" ${named?.entry.material || "Pipe"}${named?.entry.pipeClass ? ` ${named.entry.pipeClass}` : ""}`.replace(/ Pipe$/, "");
-        forLines.push({ type: it.type, pipeLabel, pipeKey, pipes: 1, q: r, swell: [1.3], materials: { ...emb, backfill: { name: "Native", source: "native" } }, restoration: null, siteCondition: null, services: [], bends: [], tees: 0 });
+        // As Calculate hands a run on (D-1260, D-1261): its production, install, add-ons and restrained joints.
+        const o = ty.runOptions(it.type, sectionOf(it), p.od);
+        const runLf = r.pipeLF.reduce((t, b) => t + b.lf, 0);
+        forLines.push({
+          type: it.type,
+          pipeLabel,
+          pipeKey,
+          pipes: 1,
+          q: r,
+          swell: [1.3],
+          materials: { ...emb, backfill: { name: "Native", source: "native" } },
+          restoration: null,
+          siteCondition: null,
+          services: [],
+          bends: [],
+          tees: 0,
+          short: o.production === "short",
+          install: o.install,
+          encasement: o.encasement,
+          pipeOptions: { addons: o.addons, buyPipe: o.install !== "none", encasementCy: null, crossing: ty.typeDef(it.type).group === "crossing" },
+          connection: o.connection ? { kind: o.connection, sizeIn: Number(it.nominal) } : null,
+          restrained: mt.restrainedJoints(pipeKey, o.restrainedPct, runLf, 1),
+        });
       }
       // The parity check (D-1211): each item built again as the app builds it, a run with the app's defaults for the
       // pipe picked (`defaultRun`, the catalogue's material and class, inverts typed for a gravity line, a pressure main
       // at the company's cover), the same clay logged at one bore, worked out by Calculate's own `calculateUtilities` on
       // the project's utility settings. The two must give the same lines, names, quantities and materials; any
       // difference is returned and the contract is not priced.
-      const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
       const clay = { uuid: "parity-clay", name: "Clay", soil_group: "clay", uscs: "CH", osha_type: "B", unsuitable: false, reuse_backfill: true, shrink_factor: 1.1, swell_factor: 1.3, interpolate: "depth", position: 0, used_by: ["B-1"] };
       const geo = { data: { water_buffer_ft: 0, slope_rule: null, layers: [clay], bores: [] }, model: { bottoms: [], points: [], clamps: [], water: null, notes: [], logged: [true] }, placed: [{ bore: { caving_observed: false, cave_in_depth_ft: null }, at: [0.5, 0.5], ground: 100, from: null }] };
       const sig = (lines) =>
@@ -88,7 +116,7 @@ async (page) => {
         const pick = cat.catalogPick(f.pipeKey);
         const pressure = ["water", "fire_water", "force_main"].includes(it.type);
         const inv = inverts[i];
-        const run = { ...rd.defaultRun(it.type), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
+        const run = { ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
         const item = { uuid: `parity-item-${i}`, name: f.pipeLabel, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[0.25, 0.5], [0.75, 0.5]], shape_meta: null }] };
         const app = calc.calculateUtilities({ runs: [run], items: [item], sheetUuid: S, settings, geo, frame: { widthPt: 1000, heightPt: 1000, feetPerNorm: (2 * it.qty) / 1000 }, eg: null, fg: null, features: [], projectShrink: 1.1, projectSwell: 1.3 });
         const ours = sig(ln.utilityLines([f]).map((l) => ({ ...l, materials: mt.lineMaterials(l, () => null, "restraint", {}) })));

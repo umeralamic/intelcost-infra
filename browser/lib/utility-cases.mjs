@@ -1054,6 +1054,96 @@ export const UTILITY_CASES = [
     lf: 50,
     expect: { group: "other", base: "other", pipe: "pvc_d3034_sdr35:8", vertical: "inverts", addons: "", keys: "" },
   },
+  // --- D-1261 (F45): restrained joints on water, fire and force-main runs, one bell restraint per 20 ft joint:
+  // sets = pipes x ceil(run LF x pct / 100 / 20), on the library's key by family and size, the run a line of its own.
+  {
+    // A 200 LF 8 in C900 water main, the whole line: ceil(200 / 20) = 10 sets of restraint_joint:pvc_c900:8.
+    id: "util-1261-water-whole",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    section: { restrained_pct: 100 },
+    expect: {
+      restrainedPct: 100,
+      restrainedJoints: 10,
+      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|rj:100",
+      name: '8" PVC C900 DR 18, 0–6 ft deep, restrained joints',
+      lf: 200,
+      keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect restraint_joint:pvc_c900:8",
+      "restraint_joint:pvc_c900:8:qty": "10",
+      "restraint_joint:pvc_c900:8:unit": "EA",
+      "restraint_joint:pvc_c900:8:name": 'Bell joint restraint, 8" (a set per 20 ft joint)',
+    },
+  },
+  {
+    // The same main at 35 %: 70 LF restrained, ceil(70 / 20) = ceil(3.5) = 4 sets.
+    id: "util-1261-water-35pct",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    section: { restrained_pct: 35 },
+    expect: {
+      restrainedPct: 35,
+      restrainedJoints: 4,
+      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|rj:35",
+      name: '8" PVC C900 DR 18, 0–6 ft deep, restrained joints 35 %',
+      "restraint_joint:pvc_c900:8:qty": "4",
+    },
+  },
+  {
+    // A 6 in ductile iron fire line of 95 LF, whole: ceil(95 / 20) = ceil(4.75) = 5 sets of restraint_joint:ductile_iron:6.
+    id: "util-1261-fire-di-whole",
+    kind: "type-lines",
+    type: "fire_water",
+    label: '6" Ductile Iron PC 350',
+    lf: 95,
+    run: { catalog_key: "di_c151_pc350:6", nominal_in: 6 },
+    section: { restrained_pct: 100 },
+    expect: { restrainedPct: 100, restrainedJoints: 5, "restraint_joint:ductile_iron:6:qty": "5", "restraint_joint:ductile_iron:6:unit": "EA" },
+  },
+  {
+    // Irrigation (base water) in 4 in D2241 SDR 21, 90 LF at 50 %: 45 LF, ceil(2.25) = 3 sets on the IPS restraint.
+    id: "util-1261-irrigation-d2241-half",
+    kind: "type-lines",
+    type: "irrigation",
+    label: '4" PVC SDR 21',
+    lf: 90,
+    run: { catalog_key: "pvc_d2241_sdr21:4", nominal_in: 4 },
+    section: { restrained_pct: 50 },
+    expect: { restrainedPct: 50, restrainedJoints: 3, variant: "pvc_d2241_sdr21:4|1|0–6 ft||a:pressure_test|rj:50", "restraint_joint:pvc_ips:4:qty": "3" },
+  },
+  {
+    // A fused HDPE force main, whole line asked: fused joints have no bell to restrain, so no sets and no line of its own.
+    id: "util-1261-force-hdpe-none",
+    kind: "type-lines",
+    type: "force_main",
+    label: '8" HDPE DR 11',
+    lf: 200,
+    run: { catalog_key: "hdpe_ips_dr11:8", nominal_in: 8 },
+    section: { restrained_pct: 100 },
+    expect: { restrainedPct: 100, restrainedJoints: 0, variant: "hdpe_ips_dr11:8|1|0–6 ft||a:pressure_test+tape+tracer" },
+  },
+  {
+    // Off, the default: a water main buys no restraint and keeps D-1260's line.
+    id: "util-1261-water-off",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    expect: { restrainedPct: 0, restrainedJoints: 0, variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer", keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect" },
+  },
+  {
+    // A sanitary main is never offered it: a stored 100 reads as off.
+    id: "util-1261-sanitary-never",
+    kind: "type-lines",
+    type: "sanitary",
+    label: '8" PVC SDR-35',
+    lf: 100,
+    section: { restrained_pct: 100 },
+    expect: { restrainedPct: 0, restrainedJoints: 0, variant: "pvc_d3034_sdr35:8|1|0–6 ft||a:cctv+tape" },
+  },
   // 6 in Sch 40 DWV against 6 in SDR-35: IPS OD 6.625, wall 0.280, ID 6.065 (S18), 30.625 in of pipe width at 12 in a
   // side; the sewer pipe's OD 6.275, wall 0.180, ID 5.893 (S1), 30.275 in.
   { id: "util-1260-dwv-6", kind: "catalog", pick: "pvc_dwv_sch40:6", expect: { od: 6.625, wall: 0.28, id: 6.065, odMark: "standard", pipeWidthIn: 30.625 } },

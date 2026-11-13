@@ -2027,6 +2027,8 @@ try {
             encasement: o.encasement,
             pipeOptions: { addons: o.addons, buyPipe: o.install !== "none", encasementCy: encCy > 0 ? encCy / n : null, crossing: ty.typeDef(c.type).group === "crossing" },
             connection: o.connection ? { kind: o.connection, sizeIn: run.nominal_in } : null,
+            // D-1261: restrained joints, as Calculate hands them on (the run's LF a pipe).
+            restrained: um.restrainedJoints(run.catalog_key, o.restrainedPct, c.lf, n),
           },
         ]);
         const pl = made.find((l) => l.role === "utility_pipe");
@@ -2047,6 +2049,8 @@ try {
           lf: pl?.quantity ?? null,
           keys: list.map((m) => m.key).join(" "),
           encCyPerLf: encCy,
+          restrainedPct: o.restrainedPct,
+          restrainedJoints: pl?.restrainedJoints ?? 0,
         };
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:name`]: m.name });
         return out;

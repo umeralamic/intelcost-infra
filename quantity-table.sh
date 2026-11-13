@@ -60,8 +60,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1120: CMP 14 ga 42 in between its sourced neighbours, A to C (CMP 12 ga 42 in and HDPE 8, 10 in stay C).
 # D-1129: HDPE dual wall 4 in from the City of Tulsa supply bid (B, a new key).
 # D-1260: 174 utility type keys (new pipe families, add-ons, taps, wyes and tie-ins): B20 C102 D52.
-if [ "$MAT_COUNTS" != "A171 B191 C530 D133 F32" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B191 C530 D133 F32"
+# D-1261: 27 bell-joint restraint keys (C900 / C909 / C905 4-36, DI 4-24, IPS 4-12): C24 D3.
+if [ "$MAT_COUNTS" != "A171 B191 C554 D136 F32" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B191 C554 D136 F32"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
