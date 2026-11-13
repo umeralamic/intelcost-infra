@@ -30812,3 +30812,61 @@ keeps `view`, `fade`, `tolerance_in` in the overlay's JSONB, no migration), infr
   the title-block residual (task 8), automatic matching, Swap.
 - **Smoke** (throwaway, a revision pair and a different sheet): passed after one reload. Two overlays on one sheet: the
   bar serves the first visible one; the second is reached by hiding the first.
+
+## D-1232 — Dimensions hold their screen size at every zoom, and the label runs along the line
+
+**Status:** decided (the founder, in session, 2026-11-13, with a picture of how an estimator expects a dimension to
+read at full zoom on a 1/32" = 1' plan); supersedes D-254 point 1
+
+- **Held to the drawing, capped at a zoom.** A constant screen size reads larger against the drawing as the sheet is
+  zoomed out, so a dimension shrinks with the drawing below a full zoom and holds its set screen px at and above it,
+  never growing. The full zooms are the zoom readout's (100% = 170 CSS px per sheet inch, so the same at any canvas
+  size): the line, the heads and the ticks at **280%**, the text and its gap off the line at **170%** (the founder's
+  two screenshots, 2026-11-13). Floors keep a far zoomed-out dimension a mark: 0.35 px line, 1 px heads, 2 px text.
+  "Scale with zoom" keeps its text growing with the zoom; its line and heads take the cap. Print draws every size as set
+  at its page size.
+- **The label runs along the line.** It is turned to the dimension's angle on screen and never reads upside down: a
+  horizontal dimension reads left to right, a vertical one bottom to top, a sloped one along its slope. A turned sheet
+  turns it with the line, still upright.
+- **Above, inside, below** are taken in the label's own frame: Above sits the text off the line on its upper side
+  (a vertical dimension's left), Below on the other side, Inside on the line. Above and Below clear the heads' reach
+  (a tick's half length, an arrow's half width) plus a gap, so a label longer than a short dimension never covers its
+  ends (the founder, 2026-11-13: zoomed out, the label hid the heads).
+- **No box.** The text is drawn without a border, on a paper halo so it reads over the drawing; Inside keeps a paper
+  backing so the line does not run through it. A selected dimension cases its label in `--markup-selected`.
+- Picking the label tests the turned box. Print draws the same shape at its page size.
+
+**Where:** app `lib/takeoff/engine/dimension.ts` (`dimensionShape` gains the turn and the label's angle; `dimensionTaper`
+removed), `features/takeoff/dimension/{DimensionLayer.tsx,dimensionHit.ts}`, `features/takeoff/print/printSheets.ts`.
+
+## D-1233 — Others' work: "Show all" in the panels, and "Only mine" hides others' markings on the plans (F42)
+
+**Status:** decided (the founder, in session, 2026-11-13; the two choices answered: extend Others' work, drop the
+empty-codes option)
+
+- **The panels' "Show all"** (Takeoff panel, both Folders and Classification) shows or hides other estimators' work in
+  the Takeoff and Sheets panels: folders, classification groups, items, sub-items and cost components. Ticked by
+  default. It is the person's own choice on their account (`collaboration_prefs.others_in_panels`, default true), also
+  set in Takeoff Settings › Collaboration as "Others' work in the panels: Show / Hide (your account)". It hides nothing
+  on the plans and changes no quantity, estimate line or export.
+- **Mine, in the panels:** an item I made or drew a shape of; a sub-item I made (its parent stays as its holder); a
+  folder I made or one holding anything shown; a cost component I made, or one nobody typed (Calculate's, the
+  library's), which follows its item. Classification groups are built from the items shown. Sheets always show; the
+  items under a sheet follow the rule.
+- **Others' work (All / Only mine / Fade others) now reaches the plans:** Only mine also hides colleagues' saved shapes
+  and their annotations (markups, saved dimensions); Fade others draws them at 40 %. All (the default) shows everything.
+  A hidden shape cannot be picked. A shape or markup with no known author is shown. This was cursors and live drawing
+  only (D-33, D-802).
+- **Dropped:** the old "Show all" that listed every classification code, empty ones too; Classification shows the codes
+  holding items shown.
+- **The api** gives the author's uuid on an item (`created_by_uuid`, and `drawn_by_me` when the caller drew any of its
+  shapes), a sheet's item rows, a folder, a cost component and a markup.
+- **Wording: "others", never "colleague"** (the founder, same session). Takeoff Settings › Collaboration reads "Others'
+  work on the plans" and "Others' work in the panels"; every user-facing "colleague" became others, someone else or
+  another person. The toolbar chip under Only mine reads "Only your work" ("Only your work · N hidden" while N others
+  are on the sheet), its tooltip saying what is hidden, that the panels are not, and where to change it.
+
+**Where:** api `auth/schemas.py`, `takeoff/{schemas,routes,detail_json}.py`, the cost component and markup reads; app
+`core/api/types.ts`, `use-collaboration-prefs.ts`, `QuantityPanel.tsx`, `wbsTree.ts`, `SheetsPanel.tsx`,
+`collaborationChoices.ts`, `TakeoffSettingsDialog.tsx`, the canvas's shape and markup layers. Spec
+[others_work_view_tasks.md](docs/tasks/others_work_view_tasks.md).
