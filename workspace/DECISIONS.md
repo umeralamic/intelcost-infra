@@ -31269,3 +31269,19 @@ reading, stated here); the migration renaming existing folders waits for the fou
 - **Pushed on umer-dev** (app, api, infra) and tagged `tester-candidate-2026-11-13` in each. Not a release to testers:
   the fixture suite has to pass on the test laptop first (D-1057). The tester note is `docs/RELEASE_NOTES.md`'s
   2026-11-13 entry.
+
+## D-1259 — Morning reports out of git; a pre-commit rule against spreadsheets, images and PDFs
+
+**Status:** done (the founder, 2026-11-13); no history rewrite (the founder)
+
+- **Untracked, kept on disk** (`git rm --cached`; 94 files in infra's tracked morning reports of 2026-10-30 to
+  -11-09): the founder fingerprint and key files and the materials diagnosis (every founder project by its real name),
+  the 59 Excel exports (full bids of copies of a founder project), the two screenshots showing a project's sheets,
+  client and location or a bid summary, and the reports and notes with project names or bid totals. What git already
+  holds of them stays in its history: not rewritten. 85 report files stay tracked; three of them name a stitch test
+  copy whose name carries a real job number, left for the founder.
+- **The rule:** infra's pre-commit (`.githooks/binary-files.sh`, beside D-1153's client-names check) refuses a commit
+  that adds or changes a .xlsx, .png, .jpg, .jpeg or .pdf, or anything under `morning-report-*/`, unless it is
+  explicitly allowed: a line in `.githooks/commit-allow` (a reviewed exception: today the seven reference workbooks
+  under `workspace/docs/reference`), or once with `INTELCOST_ALLOW_COMMIT="<path>"`. A deletion is never refused.
+  `morning-report-*/` is also in `.gitignore`.

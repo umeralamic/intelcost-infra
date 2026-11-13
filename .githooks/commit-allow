@@ -1,0 +1,12 @@
+# Paths the binary-files check (D-1259) lets a commit add or change: one shell glob per line. Each line is an explicit,
+# reviewed exception; add one in its own commit, saying why.
+#
+# The workspace's reference workbooks, tracked before D-1259, mirrored from the workspace (they hold public or
+# library figures, not a bid). Remove a line to stop that file being updated in git.
+workspace/docs/reference/Crew_Assemley_DE_LLC - V12 SOURCE FILE.xlsx
+workspace/docs/reference/Materials research/IntelCost_fence_erosion_site_prices_2026-11.xlsx
+workspace/docs/reference/Materials research/IntelCost_material_prices_2026-10.xlsx
+workspace/docs/reference/Materials research/IntelCost_paving_flatwork_prices_2026-11.xlsx
+workspace/docs/reference/Sales Tax.xlsx
+workspace/docs/reference/equipment/IntelCost Earthwork Production Starter.xlsx
+workspace/docs/reference/equipment/IntelCost Equipment Catalog.xlsx

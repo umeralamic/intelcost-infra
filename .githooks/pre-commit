@@ -1,2 +1,5 @@
 #!/bin/sh
-exec sh "$(git rev-parse --show-toplevel)/.githooks/client-names.sh"
+root="$(git rev-parse --show-toplevel)"
+# D-1259: no spreadsheet, image, PDF or morning report unless explicitly allowed.
+sh "$root/.githooks/binary-files.sh" || exit 1
+exec sh "$root/.githooks/client-names.sh"

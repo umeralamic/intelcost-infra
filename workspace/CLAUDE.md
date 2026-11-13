@@ -140,6 +140,9 @@ exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed.
   switch before committing, not after.
 - **Promoting `umer-dev` to `main` is a release.** It is a deliberate, separate act,
   never part of finishing a task.
+- **No reports, exports or screenshots in git (D-1259).** infra's pre-commit refuses any .xlsx, .png, .jpg, .jpeg or
+  .pdf, and anything under `morning-report-*/`, unless `.githooks/commit-allow` lists it (a reviewed exception) or
+  the commit runs with `INTELCOST_ALLOW_COMMIT="<path>"` once. Morning reports stay on disk, out of git.
 - **The workspace files are versioned in `intelcost-infra/workspace/`.** The four files
   at the workspace root, `docs/` and `.claude/` (the rule 7 hook) live outside every
   repo, so git protects none of them. `intelcost-infra/workspace/` is an exact mirror of all three (the four files, `docs/` and `.claude/`) and is the versioned copy; the
