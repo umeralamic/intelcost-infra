@@ -150,10 +150,13 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py pa
 # One Calculate settles the bid (D-1110): a choice applied in the results panel keeps every line the Calculate wrote.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py rebuild" </dev/null || { echo "FAIL  rebuild (above)"; exit 1; }
 # Sheet preparation retries a passing error (D-1255): each kind of error classified, and one page whose first store
-# fails on DNS prepared by the retry (a one-page drawing on zz MyEq project, removed afterwards).
+# fails on DNS prepared by the retry (a one-page drawing on zz MyEq project, removed afterwards). A timeout is tried
+# once more with twice the limits (D-1263): classified, then five more pages through the real task (a timeout then
+# prepared; twice, failed; while fetching; a refusal failed at once; a timeout then DNS, 30 s as before).
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prepare" </dev/null >$QT/prepare.txt 2>&1
 PREPARE=$?
-# The task's own warning on the injected DNS failure is expected; every other line is shown.
+# The task's own warnings on the injected errors are expected (the rows silence its log since D-1263; the filter
+# stays for an older drive); every other line is shown.
 grep -v "hit a passing error, again in" $QT/prepare.txt
 [ "$PREPARE" -eq 0 ] || { echo "FAIL  prepare retry (above)"; exit 1; }
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '

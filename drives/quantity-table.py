@@ -1272,8 +1272,11 @@ def prepare() -> int:
     `prepare_sheet` task, its first store failing on a DNS error, back to "Preparing", then
     prepared. That page is a one-page drawing made for the row on the throwaway project "zz MyEq
     project", removed afterwards with its objects in storage."""
+    from collections.abc import Callable
+    from typing import Any
+
     from botocore.exceptions import ClientError, ReadTimeoutError
-    from celery.exceptions import SoftTimeLimitExceeded
+    from celery.exceptions import Retry, SoftTimeLimitExceeded
     import pymupdf
     from sqlalchemy import select
 
@@ -1320,27 +1323,27 @@ def prepare() -> int:
         if got != expected:
             wrong.append(f"FAIL  prepare-retry {name}: {got}, expected {expected}")
 
-    # One page through the real task: the first store fails on DNS, the retry prepares it.
-    failures: list[str] = []
-    waits: list[int | None] = []
-    between: list[str] = []
+    # D-1263: a timeout is tried once more with twice the time; nothing else is, and a run that had twice the time is not.
+    wrapped = RuntimeError("Director error: <class 'celery.exceptions.SoftTimeLimitExceeded'>: SoftTimeLimitExceeded()")
+    slower = [
+        ("the time limit, first run", _raised(SoftTimeLimitExceeded), False, True),
+        ("the time limit inside MuPDF, first run", wrapped, False, True),
+        ("the time limit, the run with twice the time", _raised(SoftTimeLimitExceeded), True, False),
+        ("DNS failure", _dns_error(), False, False),
+        ("S3 403 AccessDenied", s3("AccessDenied", 403), False, False),
+        ("unreadable PDF", unreadable(), False, False),
+    ]
+    for name, exc, slow, expected_again in slower:
+        got_again = prep.again_slower(exc, slow)
+        if got_again != expected_again:
+            wrong.append(f"FAIL  prepare-timeout {name}: {got_again}, expected {expected_again}")
+    if prep.SLOW_LIMITS != (3000, 3600):
+        wrong.append(f"FAIL  prepare-timeout twice the limits: {prep.SLOW_LIMITS}, expected (3000, 3600)")
+
+    # Pages through the real task, each a one-page drawing on zz MyEq project, removed afterwards. Each row names
+    # what fails on which try (1-based): the page's making (`make`), its store (`put`) or its file's fetch (`fetch`).
     real_put, real_after, real_one = storage.put_bytes, prep.retry_after, prep._prepare_one
-
-    def flaky_put(key: str, body: bytes, content_type: str) -> None:
-        if not failures:
-            failures.append(key)
-            raise _dns_error()
-        real_put(key, body, content_type)
-
-    def recording(exc: BaseException, retries: int, *, fetching: bool = False) -> int | None:
-        wait = real_after(exc, retries, fetching=fetching)
-        waits.append(wait)
-        return wait
-
-    def watched(task, sheet_id: int, first: bool = False) -> str:  # type: ignore[no-untyped-def]
-        with SyncSessionFactory() as look:
-            between.append(look.scalar(select(DrawingSheet.render_status).where(DrawingSheet.id == sheet_id)).value)
-        return real_one(task, sheet_id, first)
+    real_make, real_kept = prep._make_page, prep._kept_source
 
     with SyncSessionFactory() as session:
         project = session.scalar(select(Project).where(Project.name == "zz MyEq project"))
@@ -1351,46 +1354,117 @@ def prepare() -> int:
         document = pymupdf.open()
         document.new_page(width=1728, height=1152)
         pdf = document.tobytes()
-        drawing = DrawingFile(workspace_id=project.workspace_id, project_id=project.id, created_by_id=project.created_by_id, display_name="qt prepare retry", page_count=1, content_type="application/pdf", byte_size=len(pdf))
-        session.add(drawing)
-        session.flush()
-        source_key = storage.build_key("takeoff", ws_uuid, project.uuid, "source", f"{drawing.uuid}.pdf")
-        drawing.storage_key = source_key
-        # tile_version 0: a first preparation, so nothing of an earlier version is queued for clearing.
-        sheet = DrawingSheet(workspace_id=project.workspace_id, project_id=project.id, file_id=drawing.id, page_number=1, sheet_name="qt prepare retry", render_status=RenderStatus.PENDING, tile_version=0)
-        session.add(sheet)
-        session.commit()
-        sheet_id, sheet_uuid, file_uuid, project_uuid = sheet.id, sheet.uuid, drawing.uuid, project.uuid
-        try:
-            real_put(source_key, pdf, "application/pdf")
-            storage.put_bytes, prep.retry_after, prep._prepare_one = flaky_put, recording, watched
-            try:
-                result = prep.prepare_sheet.apply(args=[sheet_id])
-                # Run eagerly, Celery tries a retried task again at once (the wait is the worker's);
-                # if it hands the retry back instead, it is run here.
-                if result.state == "RETRY":
-                    result = prep.prepare_sheet.apply(args=[sheet_id], retries=1)
-            finally:
-                storage.put_bytes, prep.retry_after, prep._prepare_one = real_put, real_after, real_one
-            session.expire_all()
-            done = session.get(DrawingSheet, sheet_id)
-            got = (len(failures), waits, between, result.result, done.render_status.value, done.render_error)
-            expected = (1, [30], ["pending", "pending"], "ready", "ready", None)
-            if got != expected:
-                wrong.append(f"FAIL  prepare-retry one DNS failure then success: {got}, expected {expected} (failures, waits, status before each try, task, sheet, error)")
-        finally:
-            for row in (session.get(DrawingSheet, sheet_id), session.get(DrawingFile, drawing.id)):
-                if row is not None:
-                    session.delete(row)
-                    session.flush()
+
+        def page_through(faults: dict[str, dict[int, Callable[[], BaseException]]]) -> tuple[Any, ...]:
+            """One page through `prepare_sheet`, the faults injected by try; returns (tries, the waits D-1255
+            gave, status before each try, each try's slow, the retries sent as (slow, soft, hard, countdown),
+            the task's result, the sheet's status, its error)."""
+            tries: list[int] = [0]
+            waits: list[int | None] = []
+            between: list[str] = []
+            slows: list[bool] = []
+            sent: list[tuple[Any, ...]] = []
+
+            def fault(step: str) -> None:
+                make = faults.get(step, {}).get(tries[0])
+                if make is not None:
+                    raise make()
+
+            def flaky_put(key: str, body: bytes, content_type: str) -> None:
+                fault("put")
+                real_put(key, body, content_type)
+
+            def flaky_make(document: Any, index: int) -> Any:
+                fault("make")
+                return real_make(document, index)
+
+            def flaky_kept(*args: Any) -> str:
+                fault("fetch")
+                return real_kept(*args)
+
+            def recording(exc: BaseException, retries: int, *, fetching: bool = False) -> int | None:
+                wait = real_after(exc, retries, fetching=fetching)
+                waits.append(wait)
+                return wait
+
+            def watched(task, sheet_id: int, first: bool = False, slow: bool = False) -> str:  # type: ignore[no-untyped-def]
+                tries[0] += 1
+                slows.append(slow)
+                with SyncSessionFactory() as look:
+                    between.append(look.scalar(select(DrawingSheet.render_status).where(DrawingSheet.id == sheet_id)).value)
+                try:
+                    return real_one(task, sheet_id, first, slow)
+                except Retry as retry:
+                    sent.append((retry.sig.kwargs.get("slow", False), retry.sig.options.get("soft_time_limit"), retry.sig.options.get("time_limit"), retry.sig.options.get("countdown")))
+                    raise
+
+            drawing = DrawingFile(workspace_id=project.workspace_id, project_id=project.id, created_by_id=project.created_by_id, display_name="qt prepare retry", page_count=1, content_type="application/pdf", byte_size=len(pdf))
+            session.add(drawing)
+            session.flush()
+            source_key = storage.build_key("takeoff", ws_uuid, project.uuid, "source", f"{drawing.uuid}.pdf")
+            drawing.storage_key = source_key
+            # tile_version 0: a first preparation, so nothing of an earlier version is queued for clearing.
+            sheet = DrawingSheet(workspace_id=project.workspace_id, project_id=project.id, file_id=drawing.id, page_number=1, sheet_name="qt prepare retry", render_status=RenderStatus.PENDING, tile_version=0)
+            session.add(sheet)
             session.commit()
-            for key in (source_key, prep.sheet_source_key(ws_uuid, project_uuid, file_uuid, 1)):
-                storage.delete_object(key)
-            storage.delete_prefix(storage.build_key("takeoff", ws_uuid, project_uuid, str(sheet_uuid)) + "/", workspace_uuid=ws_uuid, project_uuid=project_uuid)
-            prep._source_path(SimpleNamespace(uuid=file_uuid)).unlink(missing_ok=True)
+            sheet_id, sheet_uuid, file_uuid, project_uuid = sheet.id, sheet.uuid, drawing.uuid, project.uuid
+            # The task's own log lines on the injected errors are expected; the rows say what happened.
+            prep.logger.disabled = True
+            try:
+                real_put(source_key, pdf, "application/pdf")
+                storage.put_bytes, prep.retry_after, prep._prepare_one = flaky_put, recording, watched
+                prep._make_page, prep._kept_source = flaky_make, flaky_kept
+                try:
+                    result = prep.prepare_sheet.apply(args=[sheet_id])
+                    # Run eagerly, Celery tries a retried task again at once (the wait is the worker's);
+                    # if it hands the retry back instead, it is run here.
+                    if result.state == "RETRY":
+                        result = prep.prepare_sheet.apply(args=[sheet_id], retries=1)
+                finally:
+                    storage.put_bytes, prep.retry_after, prep._prepare_one = real_put, real_after, real_one
+                    prep._make_page, prep._kept_source = real_make, real_kept
+                session.expire_all()
+                done = session.get(DrawingSheet, sheet_id)
+                return (tries[0], waits, between, slows, sent, result.result, done.render_status.value, done.render_error)
+            finally:
+                prep.logger.disabled = False
+                for row in (session.get(DrawingSheet, sheet_id), session.get(DrawingFile, drawing.id)):
+                    if row is not None:
+                        session.delete(row)
+                        session.flush()
+                session.commit()
+                for key in (source_key, prep.sheet_source_key(ws_uuid, project_uuid, file_uuid, 1)):
+                    storage.delete_object(key)
+                storage.delete_prefix(storage.build_key("takeoff", ws_uuid, project_uuid, str(sheet_uuid)) + "/", workspace_uuid=ws_uuid, project_uuid=project_uuid)
+                prep._source_path(SimpleNamespace(uuid=file_uuid)).unlink(missing_ok=True)
+
+        timeout = lambda: SoftTimeLimitExceeded()  # noqa: E731
+        twice = (True, 3000, 3600, 10)
+        pages = [
+            # D-1255: the first store fails on DNS, the retry 30 s on prepares it.
+            # Its retry carries the configured limits (1500 s soft, 1800 s hard), as every message does.
+            ("one DNS failure then success", {"put": {1: _dns_error}}, (2, [30], ["pending", "pending"], [False, False], [(False, 1500, 1800, 30)], "ready", "ready", None)),
+            # D-1263: the page's making stops at the time limit; the retry, with twice the limits, prepares it.
+            ("a timeout then prepared with twice the time", {"make": {1: timeout}}, (2, [], ["pending", "pending"], [False, True], [twice], "ready", "ready", None)),
+            # The second stop is not retried: the back-off is asked and says fail (None).
+            ("a timeout twice: failed", {"make": {1: timeout, 2: timeout}}, (2, [None], ["pending", "pending"], [False, True], [twice], "failed", "failed", prep.TOO_LONG)),
+            ("a timeout fetching the drawing then prepared", {"fetch": {1: timeout}}, (2, [], ["pending", "pending"], [False, True], [twice], "ready", "ready", None)),
+            # A real error fails at once: no timeout retry, no wait.
+            ("a refusal storing the page: failed at once", {"put": {1: lambda: s3("AccessDenied", 403)}}, (1, [None], ["pending"], [False], [], "failed", "failed", prep.NOT_PREPARED)),
+            # The back-off is the timeout's apart: a DNS failure on the run with twice the time still waits 30 s, and its
+            # retry keeps `slow` and twice the limits.
+            ("a timeout, then DNS on the run with twice the time", {"make": {1: timeout}, "put": {2: _dns_error}}, (3, [30], ["pending", "pending", "pending"], [False, True, True], [twice, (True, 3000, 3600, 30)], "ready", "ready", None)),
+        ]
+        for name, faults, expected_page in pages:
+            got_page = page_through(faults)
+            if got_page != expected_page:
+                wrong.append(f"FAIL  prepare-retry {name}: {got_page}, expected {expected_page} (tries, waits, status before each try, slow each try, retries sent, task, sheet, error)")
+    if not prep.TOO_LONG.startswith(prep.NOT_PREPARED):
+        wrong.append(f"FAIL  prepare-timeout the message: {prep.TOO_LONG!r} does not begin {prep.NOT_PREPARED!r}")
     for w in wrong:
         print(w)
-    print(f"prepare retry: {len(rows) + 1} rows (17 errors classified, one page failed once on DNS then prepared), {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    total = len(rows) + len(slower) + 1 + len(pages) + 1
+    print(f"prepare retry: {total} rows ({len(rows)} errors classified for the back-off, {len(slower)} for the timeout's retry, its limits, {len(pages)} pages through the real task, the message), {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 

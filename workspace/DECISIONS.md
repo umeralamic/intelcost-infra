@@ -31351,6 +31351,16 @@ Spec: `docs/tasks/utility_types_tasks.md` (F44).
 - **Prices:** every new key priced in the Q4 2026 release by migration (grades A–D, sources in the seed file
   `d1260_utility_type_prices.json`); a key already priced is never overwritten. Tiered as other pipe by its key
   (D-1091). Founder projects reprice only at their next Calculate.
+- **Follow-up (2026-11-14, night run part 4): tees and the bend flag read the base by name.** Calculate's tees and its
+  "Bend between structures: check the drawing" flag tested `utility_type` against water, fire_water and force_main
+  directly. They already saw the base (Calculate rewrites each run's `utility_type` to `baseOf` before either test,
+  so a water service or a hydrant lead got its tees and no flag); the tests now say so through one predicate in the
+  pure library, `fittings.buysFittings(type)` (the base in water, fire_water, force_main), so they hold if that rewrite
+  ever moves. No quantity changes. A base key is its own base, so a run stored before D-1260 reads as it did. No other
+  direct base-key test of `utility_type` was found in `calculate.ts`, `lines.ts` or `materials.ts` (`lines.ts`'s
+  `pipeCrew` and `materials.ts`'s tests already call `baseOf`; `calculate.ts`'s hydrant-crew test `PRESSURE_RUN` reads
+  the rewritten run, so the base). Quantity-table rows `util-1260-fitted-*` (a hydrant lead's bend not flagged, a
+  water service's tee on the main, a storm lead's bend flagged, a base-key water main unchanged).
 
 ## D-1261 — Restrained joints on water, fire and force-main runs, one bell restraint per 20 ft joint
 
@@ -31425,3 +31435,36 @@ unattended, awaiting the founder's check. Logged after the build, in the same se
   drag was held, 0.85 s after release; the page's JS heap held at about 1 GB across jobs.
 - **Not built:** a turned sheet was not driven in the smoke (the area is found through the turn, `footprintRectToPage`);
   the title-block residual (task 8) is still open.
+
+## D-1263 — A page stopped by its time limit is tried once more with twice the time; a second stop fails it
+
+**Status:** decided (the founder's brief, 2026-11-13, night run part 4: "A page that times out gets one retry with
+double the time limit before 'Couldn't prepare this page'; other real errors still fail at once. Quantity-table
+row."); logged before the build, built unattended, awaiting the founder's check. Refines D-1255, which counted the time
+limit a real error. Spec: `docs/tasks/prepare_timeout_tasks.md` (F47).
+
+- **"Times out" is the page task's soft time limit.** Sheet preparation has no per-page render limit of its own; the
+  page task runs under Celery's `task_soft_time_limit` 1500 s and `task_time_limit` 1800 s (`celery_app.py`). A stop
+  by the soft limit, in either step of the page (fetching the drawing's file, or making and storing the page, MuPDF's
+  wrapped form included), is the timeout. The hard kill leaves no code to retry; the sweep re-sends that page as before.
+- **One retry, twice the limits:** `prepare_sheet` takes `slow` (default False); a timeout on a run without it is
+  retried after 10 s with `slow=True`, `soft_time_limit` 3000 s and `time_limit` 3600 s on the message (twice the
+  configured ones). The page reads "Preparing" in between. A timeout on the `slow` run fails with "Couldn't prepare
+  this page. It took too long, even with twice the time." (was "This page took too long to prepare."; a timeout while
+  fetching the file read "Couldn't open this file" and now reads the same).
+- **Apart from D-1255's back-off:** the timeout's retry is not one of the three waits. The waits are indexed by
+  `retries - slow`, so a passing error after a timeout still waits 30 s, 2 min, 5 min, and `max_retries` is
+  `len(RETRY_AFTER) + 1`. A passing error's retry keeps the run's `slow` (Celery carries a run's kwargs) and its
+  doubled limits, which the retry sends itself (`_limits`), not left to Celery's carrying them over.
+- **Real errors fail at once, unchanged:** an unreadable PDF, a refusal, an object missing while storing. Passing
+  errors and the file not yet in storage while fetching keep D-1255's back-off.
+- **Shared quantity table** (`drives/quantity-table.py prepare`): `again_slower` over each kind of error; real-task
+  rows on throwaway one-page drawings: a timeout then prepared at twice the limits, a timeout twice (failed with the
+  message), a timeout fetching the drawing then prepared, a refusal failed at once with no retry, a timeout then a
+  DNS failure on the doubled run (30 s, then prepared).
+- **Built and checked (2026-11-13, 23:14 to 23:55 UTC):** no migration (head `d1261b3e7a52`). Quantity table: "prepare
+  retry: 31 rows ... all right", the whole table passed (exit 0, no FAIL). Smoke on a throwaway (a synthetic
+  one-page plan, Load, prepared by the new task code, then the D-1260 follow-up's hydrant lead). A real timeout was
+  not forced on the bench (it would need a source edit of the limit). Bench windows: two api saves, the api down
+  23:14:19 to 23:15:03 and 23:18:56 to 23:19:36 UTC; the workers and beat reloaded by their own watchers 23:14:22 to
+  23:14:55 and 23:18:57 to 23:19:29 UTC; no service restarted by hand.

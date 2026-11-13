@@ -1054,6 +1054,17 @@ export const UTILITY_CASES = [
     lf: 50,
     expect: { group: "other", base: "other", pipe: "pvc_d3034_sdr35:8", vertical: "inverts", addons: "", keys: "" },
   },
+  // --- D-1260 follow-up (night run part 4): tees and bends by the run's base (`buysFittings`). A hydrant lead or a
+  // water service is water: its bend is a fitting, not "Bend between structures"; a storm lead's bend is flagged. A
+  // base key is its own base, so a run stored before D-1260 reads as it did.
+  // A 6 in hydrant lead, 20 ft then a right angle 15 ft to the hydrant: one 90, not flagged.
+  { id: "util-1260-fitted-hydrant-lead-bend", kind: "fitted", type: "hydrant_lead", path: [[0, 0], [20, 0], [20, 15]], expect: { base: "water", fitted: true, bends: "90x1", flagged: false } },
+  // A water service ending on a water main between structures: the main's tee.
+  { id: "util-1260-fitted-water-service-tee", kind: "fitted", type: "water_service", runs: [{ id: "main", type: "water", path: [[0, 0], [200, 0]] }, { id: "service", type: "water_service", path: [[100, 0.5], [100, 60]] }], expect: { base: "water", fitted: true, tees: "mainx1" } },
+  // A storm lead with the same right angle: no fitting bought, the bend flagged for a person to read.
+  { id: "util-1260-fitted-storm-lead-flagged", kind: "fitted", type: "storm_lead", path: [[0, 0], [20, 0], [20, 15]], expect: { base: "storm", fitted: false, bends: "90x1", flagged: true } },
+  // A water main stored with the base key, as before D-1260: unchanged.
+  { id: "util-1260-fitted-water-base-key", kind: "fitted", type: "water", path: [[0, 0], [20, 0], [20, 15]], expect: { base: "water", fitted: true, bends: "90x1", flagged: false } },
   // --- D-1261 (F45): restrained joints on water, fire and force-main runs, one bell restraint per 20 ft joint:
   // sets = pipes x ceil(run LF x pct / 100 / 20), on the library's key by family and size, the run a line of its own.
   {

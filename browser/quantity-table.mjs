@@ -1919,6 +1919,7 @@ try {
     const um = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const utr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
     const ty = await import("/src/lib/takeoff/earthwork/utilities/types.ts");
+    const fitg = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2000,6 +2001,20 @@ try {
       if (c.kind === "pressure-section") {
         const sec = utr.sectionFor(c.type, { sideClearanceIn: 12, minWidthIn: 24, ...(c.settings ?? {}) });
         return { section: [sec.sideClearanceIn, sec.minWidthIn], cover: utr.defaultCoverFt(c.type, c.settings ?? {}), vertical: rd.defaultRun(c.type).vertical };
+      }
+      // D-1260 follow-up (night run part 4): a run's tees and bends read by its base, as Calculate's two tests
+      // (`buysFittings`): tees among the fitted runs; a bend between structures flagged on any other run.
+      if (c.kind === "fitted") {
+        const fitted = fitg.buysFittings(c.type);
+        const bends = fitg.pathBends(c.path ?? [], c.marks ?? []);
+        const tees = fitg.pressureTees((c.runs ?? []).filter((r) => fitg.buysFittings(r.type)), c.marks ?? []);
+        return {
+          base: ty.baseOf(c.type),
+          fitted,
+          bends: bends.map((b) => `${b.angle}x${b.count}`).join(" "),
+          flagged: bends.length > 0 && !fitted,
+          tees: [...tees].map(([id, n]) => `${id}x${n}`).join(" "),
+        };
       }
       // D-1260 (F44): a type's defaults, then its run through the lines and their materials as Calculate hands them on
       // (base for the region, the run's own add-ons, connection, production, install and encasement).
