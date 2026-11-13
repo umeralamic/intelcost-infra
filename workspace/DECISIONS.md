@@ -30897,3 +30897,121 @@ empty-codes option)
   guard list is still checked first and the fixture-seat pattern is unchanged. Widened, a full purge would also take
   five old 4-digit accounts (`fx.d18.1011`, `fx.home2–4.1010`, `fx.review1.1010`) and yesterday's "fx WBS smoke"
   account; only the two the founder named went (`--only`).
+
+## D-1236 — Panel text: Times New Roman at 14, 13 and 12 px; sub-item rows fitted to their text; full-width row lines
+
+**Status:** decided (the founder, in session, 2026-11-13, with pictures of Settings › Panel text and the panels; the
+sizes settled over several messages, the last stated here)
+
+- **The defaults:** every Panel text row in Times New Roman (`'Times New Roman', serif`): Sheet name, Folder, Takeoff
+  item and Bookmarks | Snippets 12 px, Sub-item and Cost Components 11 px (the founder's last word, D-1241). The floors of D-1065 and D-1226 stay
+  (12 px for sheets, folders and items, 9 for sub-items and cost rows); a stored size that does not read takes the
+  default. Colour unchanged (the theme's).
+- **No "System default" for the panels:** the six Panel text rows offer the named fonts only; a browser that saved
+  "System default" for one reads Times New Roman. The hover panel's text keeps "System default", its default.
+- **Cost component rows as light as sub-items:** their name in the muted foreground, as a sub-item's, unless Panel
+  text sets a colour.
+- **Sub-item rows fitted to their text** in the Takeoff, Sheets and Assemblies panels: 1.25 lines and 3 px (12 px text:
+  18 px, where an item row is 22), never under the ↳ button. The Assemblies panel's sub-rows take Panel text's Sub-item
+  font and size, passed by the page.
+- **Full-width row lines in the Sheets panel,** as the Takeoff panel's: every folder, sheet, item, notes, sub-item and
+  cost row has its line, from the panel's left edge to its right (a span under the row, since the tree rail owns the
+  row's pseudo-elements; the list clips it). Under a thumbnail, inside the thumbnail's card. Item rows had none (D-1067).
+  The line is a border, not a 1 px fill: borders snap to whole device pixels, so every line is one pixel at any zoom or
+  display scale (a fill at the list's fractional offset was smeared over two pixels at 125 % and some lines read thick).
+- **Sheets panel folder rows filled as the Takeoff panel's** (`bg-sidebar-accent/40`, `/70` under the pointer), no
+  longer rounded.
+
+**Where:** app `features/takeoff/settings/{settings.ts,TakeoffSettingsDialog.tsx}`,
+`features/takeoff/components/{ItemRow.tsx,rowColumns.ts}`, `features/takeoff/sheets/SheetsPanel.tsx`,
+`features/assembly/AssembliesPanel.tsx`, `pages/ProjectTakeoff.tsx`.
+
+## D-1237 — The Resume glyph turns Chlorophyll Green under the pointer
+
+**Status:** decided (the founder, in session, 2026-11-13, with a swatch: Chlorophyll Green, #4aff00)
+
+- A row's Resume button (its type glyph, in the Takeoff and Sheets panels) fills with Chlorophyll Green while the pointer
+  is on it, whatever the tool (Linear, Segment, Area, Count, the earthwork inputs), selected or not; its glyph black on
+  it. A Resume that cannot be used (locked, held, drawing off) does not light.
+- Two tokens, one value in both themes: `--resume-hover` (102.6 100% 50%, exactly #4aff00) and `--resume-hover-foreground` (black).
+
+**Where:** app `src/index.css`, `features/takeoff/components/ItemRow.tsx`.
+
+## D-1238 — Rows lose their ⋮ to the right-click; a bigger Resume; the overlay bar on the canvas; red close ×; "Search…"
+
+**Status:** decided (the founder, in session, 2026-11-13, in several messages with pictures)
+
+- **No ⋮ on a row** in the Sheets, Takeoff or Assemblies panel (items, folders, sheets, assemblies and their folders):
+  each row's menu is its right-click. An item's right-click is now its whole menu, with the short menu's own entries
+  (paste, Site Feature, Convert to rough measurement or Classify, Change classification) before the deletes. A
+  sub-item's adds "Edit sub-items…" (its row's pencil). A cost row's right-click (new) offers Edit… and Delete…, the
+  editor's own (Delete asks its keep-or-restore question, with undo). The Sheets panel's header ⋮ (panel options)
+  stays.
+- **A sub-item's $ and pencil go** from its hover buttons (Add cost component and Edit are its right-click's; a
+  double-click still opens Manage sub-items); its delete stays.
+- **The last column narrows** from 52 to 32 px on every row (the dot and the eye, the eye right by the dot; a
+  sub-item's delete), so the quantity and unit move right and line up on items, sub-items and cost rows in every panel.
+- **The Resume button fills its row:** the row's height less 2 px (22 px in a 24 px row at 13 px text), its glyph the
+  button less 4 px.
+- **The overlay's strips on the canvas:** the alignment's instructions, Match points' prompt and the view bar float in
+  one card at the top of the canvas, over the drawing; opening one no longer pushes the panels and the canvas down.
+- **The close × of every dialog and floating panel** fills BU Scarlet (#CC0000) under the pointer, the × white, and is
+  2 px larger (16 → 18, 14 → 16). Tokens `--close-hover` and `--close-hover-foreground`; the × carries `ic-close-x`
+  and one rule paints its button.
+- **"Search…"** is the Sheets and Takeoff panels' search placeholder: each searches everything in its panel.
+
+**Where:** app `components/{ItemRow.tsx,rowColumns.ts,QuantityPanel.tsx,TakeoffBackdrop.tsx}`,
+`sheets/SheetsPanel.tsx`, `assembly/AssembliesPanel.tsx`, `estimate/useComponentEditor.tsx`, `pages/ProjectTakeoff.tsx`,
+`index.css`, the nine closes (`ui/{dialog,floating-panel}.tsx` and the panels').
+
+## D-1239 — Layers keep the order they were made in; the estimator moves them up or down, and drags Estimating's tabs
+
+**Status:** decided (the founder, in session, 2026-11-13: "first created stays first by default, but user can change it");
+the migration renumbering existing projects waits for the founder's yes (it touches every project's layers)
+
+- **One order, everywhere:** a project's layers list by `position`, then when they were made, never by name. The Takeoff
+  panel's Bid package list, Estimating's layer tabs and its "every layer in one table" headings all read it.
+- **A new layer goes last** among its siblings (same project, same parent). Existing projects are renumbered once in
+  creation order by migration `d1239a7c4e10` (data only; on the bench a dry run changes 1 of 160 rows across 53
+  projects); the order they showed before was alphabetical by accident.
+- **Moving:** Move up / Move down chevrons on each row of the Bid package list, and a tab dragged onto another in
+  Estimating. A sub-layer moves only among its siblings. Whoever may edit layers may reorder; everyone else sees the order.
+- **One write:** `PUT …/takeoff/layer/order` `{parent_uuid, layer_uuids}` numbers that parent's layers 0..n-1. Every
+  sibling, each once, or 409 (a list from before someone else's change is refused, not half applied); a layer outside
+  the project is 404. A new layer's parent from another project is now refused (404).
+
+**Where:** api `features/takeoff/{service.py,routes.py,schemas.py}`, `alembic/versions/d1239a7c4e10_…`; app
+`features/takeoff/hooks/useLayerOrder.ts`, `features/takeoff/items/LayerControl.tsx`, `features/takeoff/api.ts`,
+`features/estimate/EstimatingView.tsx`, `core/api/types.ts`.
+
+## D-1240 — Menus show a greyed entry's reason under it; folders lose Change colour; the open sheet a tinted row
+
+**Status:** decided (the founder, in session, 2026-11-13, with pictures)
+
+- **A greyed menu entry's reason on its own line under the label** (10 px, up to 15 rem wide), never beside it: a long
+  reason wrapped into a column and pushed the label off its line (a classification folder's Rename and Delete).
+- **A folder's right-click has no "Change colour"** (custom folders and classification folders).
+- **The Sheets panel's open sheet:** the whole row a pale tint of the accent (`--row-open`), its name bold and dark, a
+  3 px accent bar on its left edge; under the pointer a deeper tint (`--row-open-hover`). Any other row a light neutral
+  grey under the pointer (`--row-hover`), not orange. The solid black pill is gone. Opaque tokens in both themes, so the
+  hover buttons cover what is under them; badges and the eye read on every state. The Takeoff panel's selected item
+  keeps its blue fill (it was never the black pill).
+- **A sheet icon before each sheet's name** (`PanelLeft`, a step under the name's size); the name starts just after it
+  (35 px in at the defaults), not pushed further right.
+
+**Where:** app `components/ui/context-menu.tsx`, `pages/ProjectTakeoff.tsx`, `features/takeoff/sheets/SheetsPanel.tsx`,
+`index.css`.
+
+## D-1241 — Folder and sheet icons fill their rows; Panel text back to 12 and 11 px
+
+**Status:** decided (the founder, in session, 2026-11-13)
+
+- **Icons fill their row** as the Resume glyph does, in every panel: a folder's icon (Sheets and Takeoff panels) and a
+  sheet's are the row's height less 6 px (16 px in a 22 px row at 12 px text), and the folder rows take a fixed height
+  from their text (`rowHeightPx`) so the larger icon does not make them taller. The Assemblies panel's folder icons,
+  on its fixed 11 px rows, are 16 px.
+- **Panel text defaults** (supersedes D-1236's sizes; the font stays Times New Roman): Sheet name, Folder, Takeoff item
+  and Bookmarks | Snippets 12 px; Sub-item and Cost Components 11 px.
+
+**Where:** app `components/{rowColumns.ts,QuantityPanel.tsx}`, `sheets/SheetsPanel.tsx`, `assembly/AssembliesPanel.tsx`,
+`settings/settings.ts`.
