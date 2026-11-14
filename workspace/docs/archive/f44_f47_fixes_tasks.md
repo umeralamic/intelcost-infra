@@ -19,9 +19,9 @@ on the estimate line, a smoke with labour loaded, the bid tabs rerun, and F44, F
    bends (each pipe turns), the connection at the main (each pipe meets it), restraint sets (pipes × joints), the
    encasement (one a trench). The line's name says the trench length when it carries more than one pipe.
    Quantity-table rows that evaluate the **estimate line** (each material's sold quantity, as Estimating prices it).
-2. **Fittings allowance, run by run.** A run with counted fittings (bends, tees, valves, hydrants) takes no allowance,
-   a restrained run none on its restrained share; the line's allowance is its base % over the LF of runs with nothing
-   counted ("Fittings allowance, 0 % (fittings counted on this line)", or "… 20 % on 95 % of the line (fittings counted
+2. **Fittings allowance, run by run.** A run with counted fittings (bends, tees, valves, hydrants) takes no allowance;
+   restraint sets, taps and connections never count (the founder's correction, 2026-11-15: a restrained run keeps its
+   allowance); the line's allowance is its base % over the LF of runs with nothing counted ("Fittings allowance, 0 % (fittings counted on this line)", or "… 20 % on 95 % of the line (fittings counted
    on the rest)"); the user can raise it. Rows: a hydrant lead with a bend, a restrained main, a shared line of a
    restrained and a plain run, a 20 % restrained run, a plain main (20 % kept), a gravity main (5 % kept).
 3. **Restraint (D-1265 11, 12, 13, 16).**

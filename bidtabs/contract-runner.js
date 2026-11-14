@@ -8,7 +8,9 @@ async (page) => {
   //
   //   page.context().__ct = { workspace, project, sheet, pool?: 0 | 1 (default 1), contract: { key, items: [{ type, entry, nominal, depth, qty, median, restrainedPct? }] } }
   // Each item is built as a new run of its type (D-1260: the type's add-ons); `restrainedPct` (D-1261) restrains its
-  // joints, 100 the whole line.
+  // joints, 100 the whole line. `allowance: false` (D-1267 addendum) takes the item's pipe off its line's fittings
+  // allowance (its contract pays fittings separately and its description does not include them); the parity check runs
+  // on the engine as it stands, the switch is applied to the lines written.
   //   result pushed to page.context().__res: { key, missing, direct, items: [..., ours, labPerLF, unmatched] }
   // With `list` in place of `contract`, each in turn (one call; keep a call under the MCP's 30 minutes: ~2 min each).
   const ct = page.context().__ct;
@@ -127,7 +129,17 @@ async (page) => {
       });
       if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, ownLines: [], parity };
       const all = forLines.filter(Boolean);
-      const lines = ln.utilityLines(all).map((l) => ({ ...l, materials: mt.lineMaterials(l, () => null, "restraint", {}) }));
+      // D-1267 addendum: each pipe line's allowance LF is the sum of its items' own, an item switched off giving none.
+      const keyOf = (l) => `${l.regionId}|${l.role}|${l.variant}`;
+      const allowed = new Map();
+      forLines.forEach((f, i) => {
+        if (!f) return;
+        for (const l of ln.utilityLines([f])) if (l.role === "utility_pipe") allowed.set(keyOf(l), (allowed.get(keyOf(l)) ?? 0) + (contract.items[i].allowance === false ? 0 : (l.allowanceLf ?? l.quantity)));
+      });
+      const lines = ln
+        .utilityLines(all)
+        .map((l) => (l.role === "utility_pipe" && allowed.has(keyOf(l)) ? { ...l, allowanceLf: allowed.get(keyOf(l)) } : l))
+        .map((l) => ({ ...l, materials: mt.lineMaterials(l, () => null, "restraint", {}) }));
       // A zero Calculate result holds the lines (the sheet has no drawing).
       const result = { ok: true, cutCY: 0, fillCY: 0, netCY: 0, units: "CY", prisms: [], boundarySF: 0, coveredSF: 0, warnings: [], strip: null, regions: [] };
       const put = await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/result/${S}`, { method: "PUT", headers: h, body: JSON.stringify({ version_key: `bidtab:${contract.key}`, result, lines: calc.lineWrites(lines) }) });

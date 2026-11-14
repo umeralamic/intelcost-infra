@@ -1264,9 +1264,29 @@ export const UTILITY_CASES = [
       workScope: "site_utilities.water",
       utility: "water",
       "restraint_joint:pvc_c900:8:sold": 10,
-      "fit:pipe:pvc_c900_dr18:8:pct": 0,
-      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 0 % (fittings counted on this line)",
+      // D-1267 correction: restraint sets are never counted fittings: the allowance stays 20 %.
+      "fit:pipe:pvc_c900_dr18:8:pct": 20,
+      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %",
     },
+  },
+  {
+    // A water main of 200 LF restrained at 35 % (through the lines): 4 sets (ceil(70 / 20)), the allowance kept at 20 %.
+    id: "util-1267-restrained-35-allowance-kept",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    section: { restrained_pct: 35 },
+    expect: { "restraint_joint:pvc_c900:8:qty": "4", "fit:pipe:pvc_c900_dr18:8:pct": 20, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" },
+  },
+  {
+    // A water service's tap at the main is a connection, never a counted fitting: 1 in PE CTS, 60 LF, the allowance 20 %.
+    id: "util-1267-tap-not-counted",
+    kind: "type-lines",
+    type: "water_service",
+    label: '1" PE CTS SDR 9',
+    lf: 60,
+    expect: { "tap:water:1:qty": "1", "fit:pipe:pe_cts_sdr9:1:pct": 20, "fit:pipe:pe_cts_sdr9:1:name": "Fittings allowance, 20 %" },
   },
   {
     // A plain water main keeps its 20 %; a sanitary main its 5 % (nothing counted).

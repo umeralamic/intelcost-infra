@@ -31615,7 +31615,26 @@ F44, F45 and F47 moved to Live (D-1265 22). Spec: `docs/archive/f44_f47_fixes_ta
   hydrant lead under "Valves and Hydrants for Water Utility Service"; the duct bank under "Electrical Underground Ducts,
   Ductbanks, and Manholes", named "4 pipes x 589.37 LF". Bid tabs (16 contracts, prevailing, add-ons on, 0386-3118A's
   four at 20 %): all items −7.2 % → −8.2 %, $9,643,322 → $9,538,776 (−$104,546; the fittings rule about −$98,900);
-  against the 2026-11-12 table +$274,172. Figures in docs/reference, not in a repo.
+  against the 2026-11-12 table +$274,172. Figures in docs/reference, not in a repo. *Superseded by the correction
+  below: that run's allowance rule was wrong.*
+- **Correction (2026-11-15, the founder):** only bends, tees, valves and hydrants count as fittings for the allowance;
+  restraint sets, taps, wyes, tie-ins and connections never do. The first build counted a restrained run's sets (its
+  restrained share took no allowance), which on the bid tabs, where no item had a counted bend, tee or valve, took
+  about $98,900 of allowance off the 22 restrained items. Fixed in `lines.ts` (a run's allowance share is 0 only when
+  its fittings are counted) and `materials.ts` (`counted` is the fittings alone). The bid-tab harness also follows each
+  contract's own pay items (D-1267 addendum): the allowance is off on a contract's water pipe items when the contract
+  pays fittings separately (fittings by the ton or by the each: bends, tees, plugs, caps, reducers, crosses, sleeves),
+  on when the item's description includes its fittings ("includes fittings", "includes restrained joint fittings"),
+  which wins, or when the contract pays none; valve, hydrant, flushing-valve, tapping-sleeve, blow-off, service and
+  connection pay items do not count as fittings paid separately. Passed per item into the engine input by the harness
+  (the line's `allowanceLf`), no app code.
+- **Corrected bid tabs (2026-11-15, about 07:45–08:40 UTC; pipe LF items only, D-1268's prices in):** all 162 items −7.2 %
+  (2026-11-14) → −8.2 % (the wrong rule) → **−7.4 %**; all 16 $9,643,322 → $9,538,776 → **$9,615,394**; the 21 restrained
+  PVC items −4.2 % → −13.1 % → −6.9 %. Against the 2026-11-12 table +$350,791. By the pay items 160 items keep the
+  allowance and 4 do not (0386-3118A's four restrained water items, its contract paying "ductile iron waterline
+  fittings" by the ton, their descriptions not including fittings); seven other contracts pay fittings by the ton but
+  their water items include them. Parity 0 differences on all 16. Smoke (throwaway, labour on): the restrained 8 in C900
+  line 16 sets, "Fittings allowance, 20 %", crew 49.63 MH, labour $2,044.22.
 
 ## D-1268 — Price library corrections: D2241 below C900, pull string, tracer wire, minimum charges, the storm main's pipe, tape on pressure
 
