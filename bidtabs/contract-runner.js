@@ -47,7 +47,16 @@ async (page) => {
       const forLines = [];
       const inverts = [];
       const missing = [];
+      // An item the input marks `unpriceable` (D-1271: a pay item with no catalog family, a box culvert) is skipped and
+      // listed, never priced as something it is not; any other field an input item carries (`mapping`, `depthNote`,
+      // `tabItem`, `medianAll`, ...) is a note the runner does not read.
+      const unpriceable = [];
       for (const it of contract.items) {
+        if (it.unpriceable) {
+          unpriceable.push(`${it.entry}:${it.nominal} ${it.qty} LF (${it.unpriceable})`);
+          forLines.push(null);
+          continue;
+        }
         const pipeKey = `${it.entry}:${it.nominal}`;
         const p = cat.resolvePipe(pipeKey);
         if (!p || p.od == null) {
@@ -127,7 +136,7 @@ async (page) => {
         const b = JSON.stringify(theirs);
         if (a !== b) parity.push({ item: i, pipe: f.pipeKey, type: it.type, depth: it.depth, qty: it.qty, harness: ours, app: theirs, skipped: app?.stored?.skipped ?? null });
       });
-      if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, ownLines: [], parity };
+      if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, unpriceable, ownLines: [], parity };
       const all = forLines.filter(Boolean);
       // D-1267 addendum: each pipe line's allowance LF is the sum of its items' own, an item switched off giving none.
       const keyOf = (l) => `${l.regionId}|${l.role}|${l.variant}`;
@@ -145,7 +154,7 @@ async (page) => {
       const put = await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/result/${S}`, { method: "PUT", headers: h, body: JSON.stringify({ version_key: `bidtab:${contract.key}`, result, lines: calc.lineWrites(lines) }) });
       // Each item's own lines: the engine run on that item alone (D-938's own lines).
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
-      return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, ownLines, parity };
+      return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity };
     },
     { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly) },
   );
@@ -261,8 +270,8 @@ async (page) => {
     direct += total;
     return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, byRole, unmatched };
   });
-  const res = { key: contract.key, missing: own.missing, bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items };
+  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items };
   (page.context().__res ??= []).push(res);
-  return { key: res.key, rows: res.rows, missing: res.missing, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
+  return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }
 }
