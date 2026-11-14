@@ -297,7 +297,11 @@ async (page) => {
       if (!tr.querySelector('input[type="checkbox"]') || cells.length < 10) continue;
       if (!type && !crossingRead) continue;
       const num = (v) => (v && /\$|^[\d,.]+$/.test(v) ? Number(v.replace(/[$,]/g, "")) : 0);
-      rows.push({ type: type ?? "?", no: cells[at.no], name: cells[at.name], qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]) });
+      // A line outside the MasterFormat map shows its scope before its name ("Site Utilities — Water · Not classified
+      // in CSI MasterFormat Map scope… Bore pit (jacking) 12 × 32 ft, …"): the name is what follows the last "… ".
+      const nameCell = cells[at.name] ?? "";
+      const cut = crossingRead ? nameCell.lastIndexOf("… ") : -1;
+      rows.push({ type: type ?? "?", no: cells[at.no], name: cut >= 0 ? nameCell.slice(cut + 2).trim() : nameCell, qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]) });
     }
     const b = document.body.innerText.split("\n");
     return { bid: b[b.indexOf("Bid total") + 1], at, rows, type };
