@@ -31795,3 +31795,87 @@ trench)" pricing and D-1265 5's open point (a bore is never priced by the gravit
   rule; the 80 LF jack and bore on 600 LF with its bore pit; the pit by the bore sub; a CSS receiving pit; the same cased
   open cut; a 300 LF 6 in HDPE HDD; CLSM on a sand zone and on a native zone; a sleeve keeping an earlier kind; a
   standalone sleeve with its pit); grade counts A171 B188 C594 D181 F32; the starter's line map 113 roles.
+
+## D-1270 — Overlay and sheet preparation: a coarse first pass at fit, the timeout message, a page killed at the hard limit retried once, `prepare_sheet` by uuid
+
+**Status:** decided (the founder's brief, 2026-11-14 night run, Part 4; the founder's "D-1269", renumbered by D-1265's
+note; D-1265 17–20); logged before the build. Specs: `docs/tasks/overlay_plan.md` task 12 (F46),
+`docs/tasks/prepare_sweep_tasks.md` (F47). F46 stays In Progress until overlay task 8 is done.
+
+- **Overlay at fit, a coarse first pass in ≤ 1.5 s, then sharper.** Measured cold (a fresh tab, the browser cache off)
+  from the overlay's mount: the first picture took 4.1–7.2 s, because it waited for the other sheet's 2048 px fit
+  image (126–304 KB, 0.3–2.2 s on the bench's storage link) and then worked a 2.8 MP difference (about 3 s). Now three
+  passes, each over the last: **1. coarse:** the two sheets' 512 px thumbnails (20–35 KB each, already made for the
+  Sheets panel, drawn as the page shows like the fit image), fetched side by side and worked at that size (the
+  tolerance at least 1 px there); **2. the fit picture** (D-1231) as before; **3. sharp** for the view (D-1262), started
+  as soon as the coarse picture is up, not after the fit picture. A pass never replaces a sharper one. The sharp job
+  no longer starts again when the fit picture lands. Reported: the worst first picture and the time to sharp, per
+  sheet, over five cold loads of three pairs (one turned 90° in the view).
+- **The timeout message** is "Couldn't prepare this page. Try again, or split the PDF." (was "…It took too long, even
+  with twice the time."): the sheet's `render_error` after its run with twice the time stops or is killed (the Load
+  progress view, the sheet's own failed view, the Sheets panel's tooltip show the api's text), and Choose pages when
+  its thumbnails stop the same way.
+- **A page killed at the hard limit is retried once at twice the limits.** Celery 5.7 calls a task's `on_failure` with
+  `TimeLimitExceeded` in the worker's main process when it kills a child at the hard limit (`Request.on_timeout`).
+  `prepare_sheet` and `prepare_file_pages` take a base class whose `on_failure` sends one small task,
+  `prepare_killed` / `file_pages_killed`, on the default queue: the killed run's page (or file) and whether it had
+  twice the time. **Remembered in the page's `sheet_render_job` row** (the table D-14 made for this and never used; no
+  migration): `state` running while a run holds the page, `started_at`, `attempts` the times the page was killed at
+  the hard limit, `last_error` what killed it; done, failed or queued when the run ends. A run without twice the time
+  killed: the page back to "Preparing", sent again after the lease lapses (130 s) with `slow` and 3000/3600 s. A run
+  with twice the time killed (the D-1263 retry or this one): failed with the message, the row `poisoned`. The pages a
+  killed Load head carried (`then`) are sent on. **The sweep:** `prepare_drawing_file` (what the sweep and Retry send)
+  sends a page whose row has a kill with twice the time; a row still `running` past its run's hard limit and the
+  lease (the kill note lost) counts as killed. **Choose pages' thumbnails, the same rule:** a stop at the soft limit
+  (in the fetch or in a page, which was caught per page and ran on to the hard kill) or a kill at the hard limit
+  sends the job once more with twice the limits (`pages_status` "slow", served as "preparing"; a made thumbnail is
+  kept, so it goes on where it stopped); a second stop leaves "too_long", served as "failed" with the message
+  (`error` on the pages' answers). The sweep sends a stale "slow" job with twice the limits.
+- **`prepare_sheet` takes the sheet's uuid** (api rule 6; D-1265 20), and so do `start_prepare` and the `then` list.
+  An integer id is still accepted for one release, looked up, with a warning "prepare_sheet: sheet id N sent as an
+  integer; send its uuid (D-1270, accepted until the next release)".
+- **Shared quantity table** (`drives/quantity-table.py prepare`): the message; the hook sends the kill note only for
+  `TimeLimitExceeded`; a page killed once is sent again with twice the limits after 130 s, killed twice fails with the
+  message (row poisoned); the sweep's `prepare_drawing_file` sends a killed page with twice the limits; a dead running
+  row past its limit counts as killed; the thumbnails' soft stop and kill, once and twice; `prepare_sheet` by uuid
+  and by an old integer id (the warning logged).
+- **Found while measuring, built the same night:** the thumbnails' pass first ran in the worker, and on a cold page
+  the worker's script was fetched 1.7 s after the worker was made (it queues behind the page's own loads), so the
+  coarse pass is worked on the page (175k px), the worker is started at the overlay's mount for the fit images, and
+  the thumbnails are fetched at high priority as soon as the takeoff knows the pair (`usePrefetchOverlayThumbs`). The
+  coarse pass's 1 px is about 0.07 in on paper, so it shows more ink unchanged than the sharp one; the bar says
+  "Finding changes…" until the fit images' picture is in.
+- **Built and measured (2026-11-15 night run Part 4; bench clock 2026-11-14 11:10–13:30 UTC):** no migration (head
+  `d1269b4f2e80`). Cold loads (a fresh tab, the cache off), from the overlay's mount, five each of E101/E102,
+  C-100/C-200 and A101/A102 with A101 turned 90°: the first picture 4.07–7.22 s before (median 5.66), 0.80–1.86 s
+  after (median 1.21; 13 of 15 within 1.5 s, the worst 1.86 s on the turned sheet: **the target is not met on the
+  worst**); sharp worst 19.9 s before, 18.2 s after (`morning-report-2026-11-15/part4/readings-2026-11-15.txt`).
+  Real kills at the hard limit on the bench's own workers (throwaway pages and files, messages sent with a 1 s hard
+  limit): a page killed once was prepared by its retry 130 s later; killed with twice the time it failed with the
+  message (row poisoned); thumbnails killed once went "slow" and then ready, killed with twice the time "too_long",
+  and Choose pages showed the message. On the way, a soft stop at 1 s on the real worker took D-1263's retry with
+  twice the time, the first real proof of D-1263 on the bench.
+
+## D-1271 — Why we bid low: an analysis of the bid-tab gap, no engine or price change (2026-11-14 night run, Part 5)
+
+Logged before the work (the founder's D-1270; numbers shifted by one, D-1265).
+
+- **Analysis only.** Nothing changes in the engine, the api or the price library. The bid-tab harness
+  (`intelcost-infra/bidtabs/`) may gain scripts to price and compare more items; results go to `docs/reference/`.
+- **Decompose the gap item by item** for the five worst contracts (2379-0006, 0074-4012D, 1680-8215, 2835-2102,
+  2535-2318) and for every sanitary and storm item across the 16 contracts. Each item, ours against the tab, is split into
+  labour / equipment / material / add-ons, with depth, pipe size, LF and production rate.
+- **Group the causes:**
+  - production too fast;
+  - depth not driving cost;
+  - missing items (manhole drops, tie-ins, dewatering, trench safety, surface restoration, bores/casings);
+  - material low;
+  - the tab including scope we don't carry.
+- **Tiny items:** 0074-4012D, 14 LF at $260/LF (+131 %), and 2379-0006, 16 LF at $230/LF (+42 %). Are the
+  small-quantity minimums too high?
+- **The founder's additions (2026-11-14):**
+  - Price the 145 non-LF pay items with our library and compare them as their own group: gate valves, hydrants and
+    flushing valves, tapping sleeves, wet connections, DI fittings by the ton. List any we can't price yet, and give
+    what share of each contract's tab total they are.
+  - Report the gap three ways: pipe LF items only, non-LF items only, all items.
+- **Output:** a ranked list of the top causes with their $ impact, and a proposal for the next night run.

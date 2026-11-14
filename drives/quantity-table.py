@@ -1355,7 +1355,7 @@ def prepare() -> int:
         document.new_page(width=1728, height=1152)
         pdf = document.tobytes()
 
-        def page_through(faults: dict[str, dict[int, Callable[[], BaseException]]]) -> tuple[Any, ...]:
+        def page_through(faults: dict[str, dict[int, Callable[[], BaseException]]], by_id: bool = False) -> tuple[Any, ...]:
             """One page through `prepare_sheet`, the faults injected by try; returns (tries, the waits D-1255
             gave, status before each try, each try's slow, the retries sent as (slow, soft, hard, countdown),
             the task's result, the sheet's status, its error)."""
@@ -1415,11 +1415,13 @@ def prepare() -> int:
                 storage.put_bytes, prep.retry_after, prep._prepare_one = flaky_put, recording, watched
                 prep._make_page, prep._kept_source = flaky_make, flaky_kept
                 try:
-                    result = prep.prepare_sheet.apply(args=[sheet_id])
+                    # D-1270: the page by its uuid; an old integer id is still accepted for one release.
+                    named: Any = sheet_id if by_id else str(sheet_uuid)
+                    result = prep.prepare_sheet.apply(args=[named])
                     # Run eagerly, Celery tries a retried task again at once (the wait is the worker's);
                     # if it hands the retry back instead, it is run here.
                     if result.state == "RETRY":
-                        result = prep.prepare_sheet.apply(args=[sheet_id], retries=1)
+                        result = prep.prepare_sheet.apply(args=[named], retries=1)
                 finally:
                     storage.put_bytes, prep.retry_after, prep._prepare_one = real_put, real_after, real_one
                     prep._make_page, prep._kept_source = real_make, real_kept
@@ -1455,17 +1457,226 @@ def prepare() -> int:
             # retry keeps `slow` and twice the limits.
             ("a timeout, then DNS on the run with twice the time", {"make": {1: timeout}, "put": {2: _dns_error}}, (3, [30], ["pending", "pending", "pending"], [False, True, True], [twice, (True, 3000, 3600, 30)], "ready", "ready", None)),
         ]
+        # D-1270: the old integer id still prepares the page (with a deprecation warning, checked below).
+        pages.append(("one DNS failure then success, named by its old integer id", {"put": {1: _dns_error}}, (2, [30], ["pending", "pending"], [False, False], [(False, 1500, 1800, 30)], "ready", "ready", None)))
         for name, faults, expected_page in pages:
-            got_page = page_through(faults)
+            got_page = page_through(faults, by_id=name.endswith("integer id"))
             if got_page != expected_page:
                 wrong.append(f"FAIL  prepare-retry {name}: {got_page}, expected {expected_page} (tries, waits, status before each try, slow each try, retries sent, task, sheet, error)")
     if not prep.TOO_LONG.startswith(prep.NOT_PREPARED):
         wrong.append(f"FAIL  prepare-timeout the message: {prep.TOO_LONG!r} does not begin {prep.NOT_PREPARED!r}")
+    # D-1270: the founder's words, exactly.
+    if prep.TOO_LONG != "Couldn't prepare this page. Try again, or split the PDF.":
+        wrong.append(f"FAIL  prepare-timeout the message: {prep.TOO_LONG!r}")
+    killed_rows, killed_wrong = prepare_killed(pdf)
+    wrong += killed_wrong
     for w in wrong:
         print(w)
-    total = len(rows) + len(slower) + 1 + len(pages) + 1
-    print(f"prepare retry: {total} rows ({len(rows)} errors classified for the back-off, {len(slower)} for the timeout's retry, its limits, {len(pages)} pages through the real task, the message), {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    total = len(rows) + len(slower) + 1 + len(pages) + 2 + killed_rows
+    print(f"prepare retry: {total} rows ({len(rows)} errors classified for the back-off, {len(slower)} for the timeout's retry, its limits, {len(pages)} pages through the real task, the message twice, {killed_rows} for a kill at the hard limit, D-1270), {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
+
+
+def prepare_killed(pdf: bytes) -> tuple[int, list[str]]:
+    """D-1270: a page, or Choose pages' thumbnails, killed at the hard limit, which no code in the run can catch.
+    Rows: the hook (`on_failure` in the worker's main process) sends its note only for `TimeLimitExceeded`; a page
+    killed once is back to "Preparing" and sent again in 130 s with twice the limits, its job row noting the kill;
+    the sweep's `prepare_drawing_file` sends that page with twice the limits and the others as a Load; killed with
+    twice the time it fails with the message, its row poisoned; a row still running past its run's hard limit and
+    the lease counts as killed; `prepare_sheet`'s page by uuid, an old integer id with a warning; Choose pages'
+    thumbnails killed once ("slow", again with twice the limits) and twice ("too_long", failed with the message), and
+    stopped at the soft limit inside a page, once and again. On zz MyEq project, removed afterwards; nothing is sent
+    to a worker (each send is recorded instead)."""
+    import logging
+    from datetime import UTC, datetime, timedelta
+    from typing import Any
+
+    from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
+    from sqlalchemy import delete, select
+
+    from app.core import storage
+    from app.database import SyncSessionFactory
+    from app.features.drawing.models import DrawingFile, DrawingSheet, RenderJobState, RenderStatus, SheetRenderJob
+    from app.features.project.models import PAGES_SLOW, PAGES_TOO_LONG, Project, ProjectFile, ProjectFilePage, pages_shown
+    from app.features.workspace.models import Workspace
+    from app.worker.tasks import prepare as prep
+
+    wrong: list[str] = []
+    count = [0]
+
+    def check(name: str, got: Any, want: Any) -> None:
+        count[0] += 1
+        if got != want:
+            wrong.append(f"FAIL  prepare-kill {name}: {got!r}, expected {want!r}")
+
+    sent: list[tuple[str, Any, Any, dict[str, Any]]] = []
+
+    def recorder(kind: str):  # type: ignore[no-untyped-def]
+        def record(args: Any = (), kwargs: Any = None, **options: Any) -> None:
+            kept = {k: v for k, v in options.items() if k in ("countdown", "soft_time_limit", "time_limit", "priority")}
+            sent.append((kind, tuple(args), dict(kwargs or {}), kept))
+
+        return record
+
+    tasks = {"note": prep.prepare_killed, "pages note": prep.file_pages_killed, "page": prep.prepare_sheet, "pages": prep.prepare_file_pages}
+    for kind, task in tasks.items():
+        task.apply_async = recorder(kind)
+    real_webp = prep._webp
+    try:
+        # 1. The hook, as Celery calls it in the main process: a hard kill only.
+        prep.prepare_sheet.on_failure(TimeLimitExceeded(1800.0), "qt", ("u-1", None), {}, None)
+        check("the hook on a kill", sent, [("note", ("u-1", False, None), {}, {})])
+        sent.clear()
+        prep.prepare_sheet.on_failure(TimeLimitExceeded(3600.0), "qt", ("u-2", ["u-3"]), {"slow": True}, None)
+        check("the hook on a kill with twice the time, a Load head's pages carried", sent, [("note", ("u-2", True, ["u-3"]), {}, {})])
+        sent.clear()
+        prep.prepare_sheet.on_failure(SoftTimeLimitExceeded(), "qt", ("u-4", None), {}, None)
+        prep.prepare_sheet.on_failure(RuntimeError("an error"), "qt", ("u-5", None), {}, None)
+        check("the hook on a soft stop or an error: no note", sent, [])
+        prep.prepare_file_pages.on_failure(TimeLimitExceeded(1800.0), "qt", ("f-1", "w-1"), {"slow": True}, None)
+        check("the thumbnails' hook on a kill", sent, [("pages note", ("f-1", "w-1", True), {}, {})])
+        sent.clear()
+
+        twice = {"countdown": 130, "soft_time_limit": 3000, "time_limit": 3600}
+        with SyncSessionFactory() as session:
+            project = session.scalar(select(Project).where(Project.name == "zz MyEq project"))
+            if project is None:
+                return count[0], ["FAIL  prepare-kill: the throwaway project zz MyEq project is missing"]
+            ws_uuid = session.scalar(select(Workspace.uuid).where(Workspace.id == project.workspace_id))
+            drawing = DrawingFile(workspace_id=project.workspace_id, project_id=project.id, created_by_id=project.created_by_id, display_name="qt prepare kill", page_count=6, content_type="application/pdf", byte_size=len(pdf))
+            session.add(drawing)
+            session.flush()
+            made = {}
+            for n, name in enumerate("ABCDEF", start=1):
+                # A is being prepared, B waits; C to F are ready until a row of theirs is made to run.
+                status = {"A": RenderStatus.RENDERING, "B": RenderStatus.PENDING}.get(name, RenderStatus.READY)
+                made[name] = DrawingSheet(workspace_id=project.workspace_id, project_id=project.id, file_id=drawing.id, page_number=n, sheet_name=f"qt prepare kill {name}", render_status=status, tile_version=0)
+                session.add(made[name])
+            session.commit()
+            ids = {name: (sheet.id, str(sheet.uuid)) for name, sheet in made.items()}
+            file_uuid = str(drawing.uuid)
+            pkey = storage.build_key("takeoff", ws_uuid, project.uuid, "qt", f"pages-kill-{file_uuid}.pdf")
+            pfile = ProjectFile(workspace_id=project.workspace_id, project_id=project.id, file_name="qt pages kill.pdf", storage_key=pkey, content_type="application/pdf", byte_size=len(pdf), part_size=len(pdf), uploaded_at=datetime.now(UTC), pages_status="preparing", pages_touched_at=datetime.now(UTC))
+            session.add(pfile)
+            session.commit()
+            pfile_id, pfile_uuid, project_uuid = pfile.id, str(pfile.uuid), project.uuid
+        try:
+
+            def job(name: str) -> tuple[Any, ...]:
+                with SyncSessionFactory() as look:
+                    row = look.scalar(select(SheetRenderJob).where(SheetRenderJob.sheet_id == ids[name][0]).order_by(SheetRenderJob.id.desc()).limit(1))
+                    sheet = look.get(DrawingSheet, ids[name][0])
+                    return (sheet.render_status.value, sheet.render_error, row.state.value if row else None, row.attempts if row else None)
+
+            def running(name: str, seconds: int, attempts: int) -> None:
+                with SyncSessionFactory() as write:
+                    sheet = write.get(DrawingSheet, ids[name][0])
+                    sheet.render_status = RenderStatus.RENDERING
+                    row = prep._job(write, sheet)
+                    row.state, row.started_at, row.attempts = RenderJobState.RUNNING, datetime.now(UTC) - timedelta(seconds=seconds), attempts
+                    write.commit()
+
+            # 2. Page A, killed once at the hard limit without twice the time.
+            running("A", 1801, 0)
+            check("killed once: the note's answer", prep._killed(ids["A"][1], False), "again")
+            check("killed once: back to Preparing, the row noting the kill", job("A"), ("pending", None, "queued", 1))
+            check("killed once: sent again in 130 s with twice the limits", sent, [("page", (ids["A"][1], None), {"slow": True}, twice)])
+            sent.clear()
+            # 3. The sweep's send (and Retry's): A with twice the limits, B (never killed) as a Load.
+            check("the sweep's prepare_drawing_file: pages sent", prep.prepare_drawing_file(file_uuid, str(ws_uuid)), 2)
+            want = [("page", (ids["B"][1], []), {}, {"priority": prep.FIRST_PRIORITY}), ("page", (ids["A"][1], None), {"slow": True}, twice)]
+            check("the sweep's prepare_drawing_file: B as a Load, A with twice the limits", sent, want)
+            sent.clear()
+            # 4. A killed again, with twice the time: failed with the message.
+            running("A", 3601, 1)
+            check("killed with twice the time: the note's answer", prep._killed(ids["A"][1], True), "failed")
+            check("killed with twice the time: failed with the message, the row poisoned", job("A"), ("failed", prep.TOO_LONG, "poisoned", 2))
+            check("killed with twice the time: nothing sent", sent, [])
+            # 5. Dead runs the sweep notes itself (the note lost): past the run's hard limit and the lease.
+            running("C", 1800 + 120 + 5, 0)
+            running("D", 1000, 0)
+            running("E", 2000, 1)
+            running("F", 3600 + 120 + 5, 1)
+            ours = {uuid: name for name, (_, uuid) in ids.items()}
+            dead = sorted((ours[u], slow) for u, slow in prep._dead_runs(datetime.now(UTC)) if u in ours)
+            check("dead runs: C past 1800 + 120 s, F with twice the time past 3600 + 120 s; D and E in time", dead, [("C", False), ("F", True)])
+            with SyncSessionFactory() as write:
+                # Out of the real sweep's sight at once.
+                write.execute(delete(SheetRenderJob).where(SheetRenderJob.sheet_id.in_([ids[n][0] for n in "CDEF"])))
+                write.commit()
+            # 6. The page by its uuid; an old integer id with a warning.
+            heard: list[str] = []
+
+            class Heard(logging.Handler):
+                def emit(self, record: logging.LogRecord) -> None:
+                    heard.append(record.getMessage())
+
+            handler = Heard()
+            prep.logger.addHandler(handler)
+            try:
+                with SyncSessionFactory() as look:
+                    check("prepare_sheet by uuid", prep._sheet_id(look, ids["B"][1]), ids["B"][0])
+                    check("prepare_sheet by uuid: no warning", heard, [])
+                    check("prepare_sheet by an old integer id", prep._sheet_id(look, ids["B"][0]), ids["B"][0])
+                    told = [h.split(";")[-1].strip() for h in heard]
+                    check("prepare_sheet by an old integer id: the deprecation warning", told, ["send its uuid (D-1270, accepted until the next release)"])
+                    check("prepare_sheet by something else", prep._sheet_id(look, "not a sheet"), None)
+            finally:
+                prep.logger.removeHandler(handler)
+
+            # 7. Choose pages' thumbnails killed: once "slow" and again with twice the limits; twice "too_long".
+            def pages_status() -> str | None:
+                with SyncSessionFactory() as look:
+                    return look.get(ProjectFile, pfile_id).pages_status
+
+            check("thumbnails killed once: the note's answer", prep.file_pages_killed(pfile_uuid, str(ws_uuid), False), "again")
+            check("thumbnails killed once: slow, shown as preparing", (pages_status(), pages_shown(pages_status())), (PAGES_SLOW, ("preparing", None)))
+            want_pages = [("pages", (pfile_uuid, str(ws_uuid)), {"slow": True}, {"countdown": 10, "soft_time_limit": 3000, "time_limit": 3600})]
+            check("thumbnails killed once: sent again with twice the limits", sent, want_pages)
+            sent.clear()
+            check("thumbnails killed twice: the note's answer", prep.file_pages_killed(pfile_uuid, str(ws_uuid), True), "failed")
+            check("thumbnails killed twice: too_long, shown as failed with the message", (pages_status(), pages_shown(pages_status())), (PAGES_TOO_LONG, ("failed", prep.TOO_LONG)))
+            check("thumbnails killed twice: nothing sent", sent, [])
+            # 8. Stopped at the soft limit inside a page (once caught as that page's error and run on to the kill):
+            # once more with twice the limits, then failed. Each try's status is read as its first thumbnail is made.
+            with SyncSessionFactory() as write:
+                write.get(ProjectFile, pfile_id).pages_status = "preparing"
+                write.commit()
+            storage.put_bytes(pkey, pdf, "application/pdf")
+            seen: list[str | None] = []
+
+            def stopping(page: Any, zoom: float, quality: int = prep.WEBP_QUALITY) -> bytes:
+                seen.append(pages_status())
+                raise SoftTimeLimitExceeded()
+
+            prep._webp = stopping
+            prep.logger.disabled = True
+            try:
+                first = prep.prepare_file_pages.apply(args=[pfile_uuid, str(ws_uuid)])
+                if first.state == "RETRY":
+                    prep.prepare_file_pages.apply(args=[pfile_uuid, str(ws_uuid)], kwargs={"slow": True}, retries=1)
+            finally:
+                prep._webp = real_webp
+                prep.logger.disabled = False
+            check("thumbnails stopped inside a page: each try's status", seen, ["preparing", PAGES_SLOW])
+            check("thumbnails stopped inside a page, twice: too_long", pages_status(), PAGES_TOO_LONG)
+            check("pages shown: none yet, ready", (pages_shown(None), pages_shown("ready")), (("preparing", None), ("ready", None)))
+        finally:
+            with SyncSessionFactory() as clean:
+                sheet_ids = [sheet_id for sheet_id, _ in ids.values()]
+                clean.execute(delete(SheetRenderJob).where(SheetRenderJob.sheet_id.in_(sheet_ids)))
+                clean.execute(delete(DrawingSheet).where(DrawingSheet.id.in_(sheet_ids)))
+                clean.execute(delete(DrawingFile).where(DrawingFile.uuid == file_uuid))
+                clean.execute(delete(ProjectFilePage).where(ProjectFilePage.project_file_id == pfile_id))
+                clean.execute(delete(ProjectFile).where(ProjectFile.id == pfile_id))
+                clean.commit()
+            storage.delete_object(pkey)
+            storage.delete_prefix(storage.build_key("takeoff", ws_uuid, project_uuid, "previews", pfile_uuid) + "/", workspace_uuid=ws_uuid, project_uuid=project_uuid)
+    finally:
+        for task in tasks.values():
+            del task.apply_async
+        prep._webp = real_webp
+    return count[0], wrong
 
 
 def orders() -> int:

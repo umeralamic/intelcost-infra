@@ -163,6 +163,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py re
 # fails on DNS prepared by the retry (a one-page drawing on zz MyEq project, removed afterwards). A timeout is tried
 # once more with twice the limits (D-1263): classified, then five more pages through the real task (a timeout then
 # prepared; twice, failed; while fetching; a refusal failed at once; a timeout then DNS, 30 s as before).
+# D-1270: the page by its uuid (an old integer id with a warning); the message; a kill at the hard limit (the hook,
+# killed once and again, the sweep's send, a dead running row) and Choose pages' thumbnails killed or stopped, once and twice.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prepare" </dev/null >$QT/prepare.txt 2>&1
 PREPARE=$?
 # The task's own warnings on the injected errors are expected (the rows silence its log since D-1263; the filter

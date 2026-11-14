@@ -176,4 +176,27 @@ the result is the fit image's (2048 px across), as today's overlay is; tasks 8 a
   `lib/takeoff/overlay/{zoomView,difference}.ts`, `features/takeoff/overlay/{useSharpDifference,OverlayLayer,
   differenceJob,useOverlayDifference}.ts(x)`, `SheetCanvas.tsx` (`subscribeView`), `ProjectTakeoff.tsx`,
   `ReferencePane.tsx`; infra six `overlay-zoom-*` quantity-table rows (task 11's zoom rows).
+- **Task 12, a coarse first pass at fit (D-1270, the founder's brief 2026-11-14 night run Part 4):** see below.
 - **Still open:** task 8 (the title-block residual for "Already lined up").
+
+## 6. Task 12: a coarse first pass in ≤ 1.5 s, then sharper (D-1270)
+
+**Problem.** On a cold load the first Highlight changes picture took 4.1–7.2 s from the overlay's mount (five cold
+loads each of E101/E102, C-100/C-200 and A101/A102 turned 90°): it waited for the other sheet's 2048 px fit image
+(126–304 KB, slow on the bench's storage link) and a 2.8 MP difference (about 3 s in the worker). The sharp picture
+(D-1262) waited for that first picture, then started again when it landed.
+
+| # | Task | Where |
+|---|---|---|
+| 12a | The coarse pass: both sheets' 512 px thumbnails fetched side by side (a cache of their own, apart from the fit images'), worked at that size, the tolerance at least 1 px; shown at once | app `overlay/useOverlayDifference.ts` (`useOverlayDifference`, `thumbImage`), `OverlayLayer.tsx`, `ProjectTakeoff.tsx`, `ReferencePane.tsx` (`thumbUrl`) |
+| 12b | The fit picture over it as before; a pass never replaces a sharper one | `useOverlayDifference.ts` |
+| 12c | The sharp pass starts once any picture is up and is not started again when a finer one lands | `useSharpDifference.ts` (settle deps), `OverlayLayer.tsx` |
+| 12d | `overlay:coarse` and `overlay:fit` perf samples, the canvases' `data-overlay-pass` | `useOverlayDifference.ts`, `OverlayLayer.tsx` |
+| 12e | Readings before and after: five cold loads (a fresh tab, cache off) per pair, three pairs, one turned; min / median / worst first picture and time to sharp | `morning-report-2026-11-15/part4/readings-2026-11-15.txt` |
+| 12f | Smoke: the coarse pass and the sharp result, the turned sheet | MCP |
+
+**Built 2026-11-15 (night run Part 4).** The coarse pass is worked on the page (in the worker its script queued 1.7 s
+behind the cold page's loads) and the thumbnails are prefetched by the takeoff (`usePrefetchOverlayThumbs`). Cold,
+from the mount: first picture 4.07–7.22 s before, 0.80–1.86 s after (median 1.21 s, 13 of 15 within 1.5 s; the worst,
+on the turned sheet, is not); sharp worst 19.9 s before, 18.2 s after. The coarse pass's 1 px is about 0.07 in on
+paper, so it reads more ink as unchanged than the sharp pass does.
