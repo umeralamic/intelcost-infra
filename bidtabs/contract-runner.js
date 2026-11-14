@@ -268,7 +268,7 @@ async (page) => {
   // The table draws only the rows on screen: scroll it from the top part of a screen at a time, reading each step, and
   // keep every line row once (by its item number and assembly). A group's heading may be above the screen: the type
   // read last carries into the next step.
-  const READ = (carried) => {
+  const READ = ({ carried, crossingRead }) => {
     // The utility groups' headings ("Sanitary Sewer(3)", "Storm Drainage(5)", "Water(4)", ...): the first word names the type.
     const TYPES = [
       [/^Storm/, "storm"],
@@ -292,9 +292,12 @@ async (page) => {
         continue;
       }
       const cells = [...tr.querySelectorAll("td")].map((c) => c.innerText.trim());
-      if (!type || !tr.querySelector('input[type="checkbox"]') || cells.length < 10) continue;
+      // D-1277: a crossing's pit lines (the pit, its shoring, backstop and pump) file outside the utility groups
+      // ("Not classified", D-1269): kept as type "?" and found by name when the item's own type finds none.
+      if (!tr.querySelector('input[type="checkbox"]') || cells.length < 10) continue;
+      if (!type && !crossingRead) continue;
       const num = (v) => (v && /\$|^[\d,.]+$/.test(v) ? Number(v.replace(/[$,]/g, "")) : 0);
-      rows.push({ type, no: cells[at.no], name: cells[at.name], qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]) });
+      rows.push({ type: type ?? "?", no: cells[at.no], name: cells[at.name], qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]) });
     }
     const b = document.body.innerText.split("\n");
     return { bid: b[b.indexOf("Bid total") + 1], at, rows, type };
@@ -310,7 +313,7 @@ async (page) => {
   let carried = null;
   let est = null;
   for (let step = 0; step < 400; step++) {
-    est = await page.evaluate(READ, carried);
+    est = await page.evaluate(READ, { carried, crossingRead: Boolean(own.crossing) });
     carried = est.type;
     for (const r of est.rows) seen.set(`${r.no}|${r.type}|${r.name}`, r);
     const moved = await scroller.evaluate((el) => {
@@ -363,7 +366,7 @@ async (page) => {
     // Each of the item's own lines by its role (pipe, bedding and zone, backfill, trench support, ...), per LF.
     const byRole = {};
     for (const l of mine) {
-      const u = unit.get(`${l.type}|${l.name}`);
+      const u = unit.get(`${l.type}|${l.name}`) ?? (own.crossing ? unit.get(`?|${l.name}`) : undefined);
       if (!u || !(u.qty > 0)) {
         if (l.qty > 0) unmatched.push(l.name);
         continue;
@@ -382,7 +385,7 @@ async (page) => {
     // ones, which take the item's share by quantity), its components, and Calculate's notes on the run and its pits.
     const lines = own.crossing
       ? mine.map((l) => {
-          const u = unit.get(`${l.type}|${l.name}`);
+          const u = unit.get(`${l.type}|${l.name}`) ?? unit.get(`?|${l.name}`);
           const k = u && u.qty > 0 ? l.qty / u.qty : 0;
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
