@@ -31970,6 +31970,38 @@ Logged before the work (Part 1). Harness only; no Estimating or engine change. T
 - Run once on harness commit 290e1ce, 2026-11-14 16:06–16:25 UTC, bench app 0481cfd / api 959182b, throwaway
   fx.equip.20261114160524 (purged).
 
+**The founder's answers to Part 1's questions (2026-11-14, during the night run):**
+1. **Material goes into Part 2 tonight** (D-1274; analysis only, no price change). For each item, our material is
+   split into three parts:
+   - **(i) unit price against the evidence:** Houston and Texas supply bids and awards, the 2026 Texas county supply
+     bid, and the library's own source and grade;
+   - **(ii) quantity drivers:** bedding and embedment volumes today against Part 6's presets (including "C605 T4,
+     house: 12 in over crown"), trench width, the fittings allowance, waste, the order tier and the location factor;
+   - **(iii) add-ons:** restraint, tracer, tape and the minimums.
+
+   The report says how much of the gap each of (i), (ii) and (iii) explains, by kind and size. The labour and
+   equipment split stays as scoped.
+2. **The 12-month window stays for tuning.** History is reported alongside, unweighted.
+3. **The 25 partly read rows** (1104-6117, 4013-2501 and others) are re-read at a higher resolution. Any row still
+   unclear is listed for the founder to check by hand. Part 1's table is rerun once if they change.
+4. **The equipment pool stays on**, per contract.
+5. **The 15 % band is dropped.** Reports show:
+   - our overlay bid against the low and the median, and our rank;
+   - the fitted multiplier to the lows and to the medians.
+
+   Healthy is **1.20–1.35 to the medians** (direct ≈ 75–83 % of the median). The overlay's 1.165 is its own result,
+   not a target.
+
+**Re-read (2026-11-14, night run 2026-11-15 → 16):** the 25 partly read tab rows re-read word by word
+(`bidtabs/tab-rows-reread.py`, PyMuPDF word boxes, each unit price paired with its printed total; `tab-prices.mjs` reads
+a figure split after its point whole), harness commit b1b6902. All 25 recovered, none left unclear. Scored again offline
+on the same runner results (our prices unchanged): recent ± low +23.8 % → +26.4 %, ± median +14.9 % → +15.1 %, direct
+vs median −1.3 % → −1.2 %; multiplier to the lows recent 0.905 → 0.895 (without the added items 0.907 → 0.898), history
+1.019 → 1.009 (1.032 → 1.021); to the medians recent 0.997 → 0.997 (1.006 → 1.007), history 1.137 → 1.137 (1.177 →
+1.177). Ranks moved on four contracts; 2379-0006 is no longer low with the added items (2nd of 3, +0.9 %). Sanitary
+long runs recent: bid +11.5 % over the item medians, none under its low: still not low. The 15 % band is gone from the
+report; it states the healthy range 1.20–1.35 to the medians.
+
 ## D-1274 — Overpricing analysis: water and 15–36" storm labour and equipment against the recent tabs
 
 Logged before the work (Part 2). Analysis only. The part adds its findings here.
@@ -32036,3 +32068,22 @@ awaiting the founder's review.
 
 **Depends on D-1275** (Part 3's per-type minimum cover and bedding), which was not yet filled when the plan was
 written. Five open questions are in the plan, §7.
+
+**The founder's answers to §7 (2026-11-14, during the night run):**
+1. **Pressure default.** C600/C605 Type 4 bedding, max(OD/8, 4 in), with the embedment to **12 in over the crown**
+   as the house standard: "C605 T4, house: 12 in over crown". Pure Type 4 (embedment to the top of the pipe) is
+   offered as a preset.
+2. **30 TAC §217.54** applies automatically on Texas jobs to sanitary mains and public laterals. It is labelled on the
+   run and can be overridden per run. Private building sewers follow the plumbing code.
+3. **Compaction:** words on the line only, for now.
+4. **Bell lengths** 0.5 / 0.75 / 1.0 ft, grade D, accepted until the maker tables, with the amber warning.
+5. **Encasement** is against the trench walls by default (the trench width is the encasement width). "Formed", with
+   formwork, is an option.
+
+**The build plan:** three nights, in phases. Not on the night of 2026-11-15.
+
+| Night | Tasks | What it delivers |
+|---|---|---|
+| 1 | 1–4 | The engine and presets, proven on the 26 hand rows; no visible change |
+| 2 | 5, 6, 9 | The section wired into Calculate and its lines, the project setting, the Estimating view |
+| 3 | 7, 8, 10 | The run panel's Section block, the live picture, gates and smoke |

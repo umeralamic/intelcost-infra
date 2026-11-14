@@ -11,7 +11,10 @@
     "labour": "prevailing",
     "labourNote": "Labour at the tab's bid-date prevailing rates: the run's open-shop labour x the contract's labour ratio (D-1103, unchanged).",
     "salesTaxOnMaterialPct": 0,
-    "salesTaxNote": "MUD water, sewer and drainage tabs: no sales tax on material. The comparison carries none."
+    "salesTaxNote": "MUD water, sewer and drainage tabs: no sales tax on material. The comparison carries none.",
+    "tabPrices": "tab-prices-2026-11-16.json",
+    "tabRowsReread": "tab-rows-reread-2026-11-16.json",
+    "tabNote": "Every bidder's unit price on each pay item: tab-prices.mjs (the text layer; a figure split after its decimal point read whole), with the rows tab-rows-reread.py re-read word by word put in place where it recovered every bidder, each unit price paired with its total."
   },
   "excludeFromTuning": [
     {
@@ -66,8 +69,11 @@
   },
   "calibration": {
     "method": "least squares on the log ratio, one point per contract: ln k = mean over contracts of ln(target / our direct); the $-weighted ratio (sum target / sum direct) beside it",
-    "expected": 1.3,
-    "directHighBelow": 1.1,
+    "healthyToMedian": [
+      1.2,
+      1.35
+    ],
+    "healthyNote": "Healthy is a multiplier on our direct of 1.20-1.35 to the medians (direct about 75-83 % of the median). The overlay's bid / direct is its own result, not a target. There is no band.",
     "founderExpectation": "A market-level direct sits about 23-25 % below the median bid."
   },
   "sanitaryLongRunLf": 1000
