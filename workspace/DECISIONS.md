@@ -32042,6 +32042,67 @@ Logged before the work (Part 4). The part adds what it built here.
 
 Logged before the work (Part 5). The part adds its results here.
 
+**Status:** done as a harness run (night run 2026-11-15 → 16, Part 5). **Pre-Part-4 prices, provisional**: by the
+founder's ruling, the crossing prices that count come from the one rerun after Part 4 (D-1276), on a stable bench and
+one harness commit. No Estimating, engine or library change.
+
+**Harness:**
+- `intelcost-infra/bidtabs/contract-runner.js`:
+  - a contract whose items carry a `crossing` (D-1269's `section.crossing`) is built by the app's own
+    `calculateUtilities`: one run per item, its Bore pit and Receiving pit linked by `spec.run`, and the item's
+    `pits.bySub` and `backfill`;
+  - the contract's lines must equal the sum of the items' own, keyed by region, role and variant;
+  - each line's components are read from `/estimate/components`;
+  - the pits' lines, filed "Not classified", are read by name.
+- `bidtabs/crossings-report.mjs`:
+  - `ct` builds the runner's list from the input: per tab, plus `~pits` and `~plain` sensitivities;
+  - `score` compares as bid on D-1273's basis. The carrier pipe's material comes out where the tab excludes it, and a
+    crossing is split between a tab's casing and bore items.
+- Commits bf4a951, d762098, cc9c152. Run once on **cc9c152**, 2026-11-14 **17:36:48–17:52:23 UTC**, bench app 0481cfd
+  / api 959182b, throwaway fx.equip.20261114164536 (purged).
+- Two earlier passes are void and none of their figures is used:
+  - bf4a951, 16:54–17:09: missed the pit lines;
+  - d762098, 17:10–17:21: signed out mid-run, during Part 3's 17:16–17:25 reload.
+- Inputs, results and tables are in `docs/reference/Bid tabs Houston 2026-11/crossings-*-d1277.*` and
+  `contract-results-2026-11-16-d1277.json` (outside git).
+
+**A.4 finding:**
+- Seven of the eight bore, auger and trenchless items on the tabs name the bore pits; the eighth ("additional cost for
+  auger construction") names nothing.
+- Casing is inside the item on two, paid as its own item on one, and unnamed on five.
+- Spacers and end seals are named only on the three casing items. No item names grout; one includes the carrier.
+- The library key's sources are the same engineer's MUD tabulations, read from search extracts, so they cannot be
+  checked line by line here. Their template, as on these tabs, puts the pits in the bore item. So the key very
+  probably includes the pits, and **"Pits by bore sub" should default ON (Part 4)**.
+
+**Choices set per item (pre-Part-4):**
+- Casing is sub-furnished on every jack and bore. The two open-cut casings (tabs with no bore item) are always our
+  material.
+- Pits by bore sub is ON where the tab's item names the pits, and OFF and priced on the one that does not.
+- Carriers: water and force main at 4 ft cover, restrained in the casing. Sanitary at its tab's band. A 36 in RCP with
+  a typed 48 in casing, since the rule finds none for its 50.25 in bell.
+
+**Result (recent tabs; history in brackets):**
+- Our direct is +81 % (+198 %) over the bidders' median for the group.
+- Our bid is +104 % over the median and +209 % over the low (+244 % and +290 %).
+- Last or next to last on all 8 tabs.
+
+**Why:**
+- the bore subcontract key ($177/LF at a 16 in casing) sits above three of the four recent bore-item medians, which
+  include the pits;
+- the sub-furnished casing at $1.00/lb on top;
+- grade D spacers and seals;
+- the pull-in crew's minimum on each short crossing.
+
+Where pits are priced, the 2-day excavator and 40 MH crew per pit add about $25–30k a crossing. A.4's shared-pool rule
+in Part 4 targets that.
+
+The open-cut casing items priced as the cased run less a plain run are +19 % and +3 % over the median, which is near
+the market.
+
+**Open:** the key's curve against these tabs, the spacer and seal prices, and whether a short crossing's pull-in
+should ride the run's crew without a minimum. All three wait for the post-Part-4 rerun.
+
 ## D-1278 — Pipe section layers and a live trench picture: the plan (no code)
 
 Logged before the work (Part 6). Plan only, built after the founder's review. The part adds its summary here.
