@@ -64,8 +64,11 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1267: 10 C909 MJ restraint keys (4-24): C7 D3.
 # D-1268: D2241 SDR 21 4, 6, 8 in B to C (repriced by weight from C900 DR 18), pull string D to C, three minimum-charge
 # keys (C): B191 - 3 = 188, C561 + 3 + 1 + 3 = 568, D139 - 1 = 138.
-if [ "$MAT_COUNTS" != "A171 B188 C568 D138 F32" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C568 D138 F32"
+# D-1269: 69 crossing keys: casing walls 13 (C), jack and bore 12 (C10 D2), HDD 13 + its pits 2 (D), spacers 10 (D),
+# end seals 12 (D), annulus grout (D), backstops 2 (D), pump a day (C), trench box a pit-week (C), slide rail (D), sheet
+# piling (C): C568 + 26 = 594, D138 + 43 = 181; the 19 casing keys repriced at $1.00/lb stay C.
+if [ "$MAT_COUNTS" != "A171 B188 C594 D181 F32" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C594 D181 F32"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -101,8 +104,9 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # (none optional: 30 - 8 = 22), crew 336 - 39 + 48 = 345, defaults 226 - 16 + 30 = 240 (six run-length bands each).
 # D-1105 (release 43): the pressure crews A18 and A19 on two tiers each for three: tiers 216 - 2 = 214, machines
 # 483 - 24 + 12 = 471, crew 345 - 21 + 14 = 338 (A19 keeps its fuser); defaults six bands each, 240.
-if [ "$ST_COUNTS" != "105 214 471 338 240 112 22 103 105 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 214 471 338 240 112 22 103 105 0 0"
+# D-1269: a bore or receiving pit's own line on A24 "Bore pit" (`utility_structure_pit`): line map 112 + 1 = 113.
+if [ "$ST_COUNTS" != "105 214 471 338 240 113 22 103 105 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 214 471 338 240 113 22 103 105 0 0"
   exit 1
 fi
 # No software competitor named in the three repos' tracked text files or the workspace files (hard rule 9, D-328,

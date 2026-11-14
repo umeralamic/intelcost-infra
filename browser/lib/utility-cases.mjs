@@ -1435,4 +1435,212 @@ export const UTILITY_CASES = [
     run: { pipes: 4, pipe_gap_in: 3 },
     expect: { "addon:pull_string:qty": "QTY", "addon:pull_string:sold": 400, "warning_tape:sold": 1 },
   },
+  // --- D-1269 (F48): encasement, casing and trenchless crossings. Each run on a level profile (ground 100.00 ft, cover
+  // 4 ft, Type B clay, a 6 ft box), its trench through the real engine, the crossing's stretch blended in by its share.
+  // The spacer rule: one within 2 ft of each end and one every 8 ft, read additively, 2 + ceil(LF / 8): 8 LF 2 + 1 = 3;
+  // 80 LF 2 + 10 = 12 (a placement reading, ends at 2 and 78 ft and 76 ft between at 8 ft, gives 11: the founder's
+  // 12 is the additive reading); 81 LF 2 + 11 = 13; 600 LF 2 + 75 = 77.
+  { id: "util-1269-spacer-rule", kind: "spacers", lfs: [8, 80, 81, 600], expect: { counts: "8:3 80:12 81:13 600:77" } },
+  {
+    // 600 LF of 8 in C900 DR 18 with an 80 LF jack and bore. Casing: bell 9.05 x 1.20 = 10.86, + 4 = 14.86 in; 14 in x
+    // 0.250 has ID 13.50 (short); 16 in x 0.375 ID 15.25: 16 in x 0.375 (16-24 in wall 0.375). On the stretch's line
+    // (80 LF): the carrier 80 x 1.02 = 81.6 -> 5 joints of 20 ft = 100 LF; tracer 80 x 1.1 / 500 -> 1 roll; test and
+    // disinfection 80 LF; restraint ceil(80 / 20) = 4 sets (pressure pipe, restrained by default in the casing); the
+    // casing 80 LF (20 ft lengths, 80 even); spacers 2 + ceil(80 / 8) = 12; 2 end seals; the bore subcontract 80 LF. No
+    // fittings allowance and no tape in the casing. Trench 600 -> 520 LF (-80), excavation and spoils x 520 / 600.
+    // Its bore pit: the carrier's centre at 96 - 9.05 / 24 ft, the casing's bottom 16 / 24 ft below, the pit 1.5 ft
+    // below that: depth 4 + 9.05 / 24 + 16 / 24 + 1.5 = 6.54375 ft (a trench box, to 8 ft); 12 x 32 = 384 SF: dug
+    // 384 x 6.54375 = 2,512.80 CF = 93.07 BCY; pad 384 x 0.5 = 192 CF = 7.11 CCY; backfill 2,320.80 CF = 85.96 CCY;
+    // pump days ceil(80 / 40) + 1 = 3.
+    id: "util-1269-jack-bore-80-of-600",
+    kind: "trenchless",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 600,
+    section: { crossing: { kind: "jack_bore", lf: 80 } },
+    pit: { type: "bore_pit" },
+    expect: {
+      kind: "jack_bore",
+      lf: 80,
+      casing: '16" x 0.375',
+      casingKey: "steel_casing_375:16",
+      bellIn: 10.86,
+      casingIdIn: 15.25,
+      casedLf: 80,
+      casedCrew: "pressure",
+      openLf: 520,
+      casedKeys: "pipe:pvc_c900_dr18:8 tracer_wire addon:test_disinfect restraint_joint:pvc_c900:8 casing:steel_casing_375:16 casing:spacer:8 casing:end_seal:16 bore:jack_bore:16",
+      "cased:pipe:pvc_c900_dr18:8": 100,
+      "cased:tracer_wire": 1,
+      "cased:addon:test_disinfect": 80,
+      "cased:restraint_joint:pvc_c900:8": 4,
+      "cased:casing:steel_casing_375:16": 80,
+      "cased:casing:spacer:8": 12,
+      "cased:casing:end_seal:16": 2,
+      "cased:bore:jack_bore:16": 80,
+      "cased:bore:jack_bore:16:kind": "subcontract",
+      restraintCased: 4,
+      restraintOpen: 0,
+      trenchLfBefore: 600,
+      trenchLf: 520,
+      excavationRatio: 0.866667,
+      spoilsRatio: 0.866667,
+      pitDepthFt: 6.5438,
+      pitShoring: "box",
+      pitExcavationBCY: 93.07,
+      pitPadCCY: 7.11,
+      pitBackfillCCY: 85.96,
+      pitLines: "pit|bore|12x32|6.54|own=1 pit:bore:Clay=93.07 pit_shoring|box|bore=1 pit_pad:bore|imported=7.11 pit_backstop|small=1 pit_pump|bore=3 pit:bore:native|native=85.96",
+      pitBuys: "pit_shoring:trench_box_week stone:_57_stone pit:backstop:small rent:pump_3in_day",
+      pitBySubNames: false,
+    },
+  },
+  {
+    // The same pit by the bore sub: every line kept at its quantity, $0, nothing bought, each named "(by the bore sub)".
+    id: "util-1269-pits-by-sub",
+    kind: "trenchless",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 600,
+    section: { crossing: { kind: "jack_bore", lf: 80 } },
+    pit: { type: "bore_pit", bySub: true },
+    expect: {
+      pitLines: "pit|bore|12x32|6.54|sub=1 pit:bore:Clay=93.07 pit_shoring|box|bore=1 pit_pad:bore|imported=7.11 pit_backstop|small=1 pit_pump|bore=3 pit:bore:native|native=85.96",
+      pitBuys: "",
+      pitBySubNames: true,
+    },
+  },
+  {
+    // Its receiving pit, 10 x 10, backfilled with CSS: dug 100 x 6.54375 = 654.375 CF = 24.24 BCY, pad 50 CF = 1.85
+    // CCY, CSS 604.375 CF = 22.38 CCY; every yard dug hauled off loose: 654.375 x 1.2 / 27 = 29.08 LCY; no backstop.
+    id: "util-1269-receiving-pit-css",
+    kind: "trenchless",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 600,
+    section: { crossing: { kind: "jack_bore", lf: 80 } },
+    pit: { type: "receiving_pit", backfill: "css" },
+    expect: {
+      pitExcavationBCY: 24.24,
+      pitPadCCY: 1.85,
+      pitBackfillCCY: 22.38,
+      pitLines: "pit|receiving|10x10|6.54|own=1 pit:receiving:Clay=24.24 pit_shoring|box|receiving=1 pit_pad:receiving|imported=1.85 pit_pump|receiving=3 pit:receiving:css|imported=22.38 pit_haul:receiving=29.08",
+      pitBuys: "pit_shoring:trench_box_week stone:_57_stone rent:pump_3in_day stone:cement_stabilized_sand disposal:clean_soil",
+    },
+  },
+  {
+    // The same run cased open cut: the same casing, spacers and seals; no bore subcontract and no pits; the tape kept
+    // (dug); the whole run trenched (600 LF). In this row's 6 ft box the width is the box's either way (the casing needs
+    // 16 + 2 x 12 = 40 in, under 72 in), but the casing's bottom is (16 - 9.05) / 2 = 3.475 in below the carrier's: the
+    // trench 0.289583 ft deeper over 80 LF of a 5.254167 ft trench (4 ft cover + 9.05 / 12 + 0.5 ft bedding):
+    // excavation x 1 + (80 / 600) x (0.289583 / 5.254167) = 1.007349.
+    id: "util-1269-cased-open-80-of-600",
+    kind: "trenchless",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 600,
+    section: { crossing: { kind: "cased_open", lf: 80 } },
+    expect: {
+      kind: "cased_open",
+      casing: '16" x 0.375',
+      casedLf: 80,
+      openLf: 520,
+      casedKeys: "pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect restraint_joint:pvc_c900:8 casing:steel_casing_375:16 casing:spacer:8 casing:end_seal:16",
+      "cased:casing:spacer:8": 12,
+      "cased:casing:end_seal:16": 2,
+      trenchLf: 600,
+      wider: true,
+      excavationRatio: 1.007349,
+    },
+  },
+  {
+    // A 300 LF 6 in HDPE DR 11 water line by HDD: no trench at all; the carrier 300 x 1.02 = 306 -> 8 x 40 ft = 320 LF;
+    // tracer 300 x 1.1 / 500 = 0.66 -> 1; test 300 LF; the HDD subcontract 300 LF at the 6 in rate; the entry and exit
+    // pits one lump sum (to 12 in); no crew of ours, no restraint (fused), no allowance, no tape.
+    id: "util-1269-hdd-300-hdpe-6",
+    kind: "trenchless",
+    type: "water",
+    label: '6" HDPE DR 11',
+    lf: 300,
+    run: { catalog_key: "hdpe_ips_dr11:6", nominal_in: 6 },
+    section: { crossing: { kind: "hdd" } },
+    expect: {
+      kind: "hdd",
+      flags: "",
+      casedLf: 300,
+      casedCrew: "none",
+      openLf: 0,
+      casedKeys: "pipe:hdpe_ips_dr11:6 tracer_wire addon:test_disinfect hdd:sub:6 hdd:pits:small",
+      "cased:pipe:hdpe_ips_dr11:6": 320,
+      "cased:hdd:sub:6": 300,
+      "cased:hdd:pits:small": 1,
+      trenchLf: 0,
+      excavationRatio: 0,
+      spoilsCY: 0,
+    },
+  },
+  {
+    // A 200 LF 12 in C900 water main in CLSM (bedding and zone, sand by default): the bedding and zone lines go (0 CY),
+    // the CLSM bought is their CY + 5 %; a sand zone is imported, so the spoils balance does not move.
+    id: "util-1269-clsm-12-sand-zone",
+    kind: "trenchless",
+    type: "water",
+    label: '12" PVC C900 DR 18',
+    lf: 200,
+    run: { catalog_key: "pvc_c900_dr18:12", nominal_in: 12 },
+    section: { crossing: { kind: "clsm" } },
+    expect: { kind: "clsm", beddingCY: 0, zoneCY: 0, clsmCheck: 1, spoilsRatio: 1, trenchLf: 200 },
+  },
+  {
+    // The same with a native pipe zone (D-1265 7): the CLSM takes the native zone's place, so the trench's native need
+    // falls by the zone x the clay's shrink 1.1 and its spoils to the balance rise by as much: delta / zone = 1.1.
+    id: "util-1269-clsm-12-native-zone",
+    kind: "trenchless",
+    type: "water",
+    label: '12" PVC C900 DR 18',
+    lf: 200,
+    run: { catalog_key: "pvc_c900_dr18:12", nominal_in: 12 },
+    section: { crossing: { kind: "clsm" } },
+    zoneNative: true,
+    expect: { zoneCY: 0, spoilsDeltaOverZone: 1.1 },
+  },
+  {
+    // A run changed to the Casing / sleeve type keeps the encasement its section had as another type: a sleeve is its
+    // own jack and bore over its whole length, whatever kind and length it kept (the smoke's finding, fixed).
+    id: "util-1269-sleeve-ignores-kept-kind",
+    kind: "trenchless",
+    type: "casing",
+    label: '16" Steel Casing 0.375 wall',
+    lf: 60,
+    section: { crossing: { kind: "concrete", lf: 30 } },
+    expect: { kind: "sleeve", lf: 60, casing: '16" x 0.375', casedKeys: "pipe:steel_casing_375:16 bore:jack_bore:16" },
+  },
+  {
+    // A standalone sleeve (the Casing / sleeve type), 60 LF of 16 in x 0.375: its own pipe is the casing, 60 x 1.02 =
+    // 61.2 -> 4 x 20 ft = 80 LF; the bore subcontract 60 LF; no spacers or seals (no carrier), no trench, no crew. Its
+    // bore pit: the casing's outside bottom at 100 - 4 - 16 / 12 ft, the pit 1.5 ft below: 6.8333 ft deep; 384 x
+    // 6.83333 = 2,624 CF = 97.19 BCY, backfill 2,432 CF = 90.07 CCY; pump days ceil(60 / 40) + 1 = 3.
+    id: "util-1269-sleeve-60-with-pits",
+    kind: "trenchless",
+    type: "casing",
+    label: '16" Steel Casing 0.375 wall',
+    lf: 60,
+    pit: { type: "bore_pit" },
+    expect: {
+      kind: "sleeve",
+      casing: '16" x 0.375',
+      casedLf: 60,
+      casedCrew: "none",
+      openLf: 0,
+      casedKeys: "pipe:steel_casing_375:16 bore:jack_bore:16",
+      "cased:pipe:steel_casing_375:16": 80,
+      "cased:bore:jack_bore:16": 60,
+      trenchLf: 0,
+      pitDepthFt: 6.8333,
+      pitShoring: "box",
+      pitExcavationBCY: 97.19,
+      pitBackfillCCY: 90.07,
+      pitLines: "pit|bore|12x32|6.83|own=1 pit:bore:Clay=97.19 pit_shoring|box|bore=1 pit_pad:bore|imported=7.11 pit_backstop|small=1 pit_pump|bore=3 pit:bore:native|native=90.07",
+    },
+  },
 ];

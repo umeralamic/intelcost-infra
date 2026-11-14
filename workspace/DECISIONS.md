@@ -31713,3 +31713,85 @@ note); logged before the build; built. Spec: `docs/archive/price_library_d1268_t
   showed "TV inspection (CCTV), minimum charge" $974.66 ($1,184.84 less $210.18 by the foot, 106.44 LF) and "Pressure
   test and disinfection, minimum charge (Water)" $1,215.04 ($1,481.06 less $266.02, 119.74 LF), both re-priced by
   Update all when the wage set moved from ZIP 10005 to 77002.
+
+## D-1269 — Encasement, casing and trenchless crossings on a run; Bore pit and Receiving pit structures
+
+**Status:** decided (the founder's brief, 2026-11-14 night run, Part 3, F48; the founder's "D-1268", renumbered by
+D-1265's note); logged before the build. Spec: `docs/tasks/f48_crossings_tasks.md`. Supersedes D-1260's "Bored (no
+trench)" pricing and D-1265 5's open point (a bore is never priced by the gravity pipe crew).
+
+- **Encasement / casing, a run option over the whole run or a length in LF** (`section.crossing`, no schema change):
+  None; Concrete encasement; Flowable fill / CLSM; Steel casing, jack & bore; Steel casing, open cut; HDD. The stretch
+  is its own pipe line (`|ce:`, `|clsm`, `|jb:`, `|oc:`, `|hdd` in the variant after the site slot), its LF the length
+  × pipes; the rest of the run keeps its line. A length reads as the run's average section: the trench quantities
+  over it are the run's × length ÷ run length (no station is given). PE encasement for DI stays an add-on.
+- **Concrete encasement:** OD + 12 in square by default (6 in all round; several pipes: their width + 12), editable;
+  ready-mix 3000 by the CY at 5 % waste on the stretch's line (W × H − n·π·OD²/4); the pipe zone over the stretch less
+  that concrete, as D-1260's duct bank. **CLSM:** the bedding and pipe zone over the stretch placed in flowable fill
+  (the library's `flowable:flowable_fill_clsm`, by the CY, 5 % waste), their own material lines less by it.
+  **The spoils balance takes either (D-1265 7):** concrete or CLSM placed where native bedding or zone would have gone
+  takes that native out of the trench's backfill: its native share falls and the spoils to the balance rise, worked
+  again through the trench's own native split (`nativeSplit`); an imported zone moves nothing in the balance.
+- **Jack & bore:** the casing ID at least the carrier's bell OD + 4 in, the next standard casing (8, 10, 12, 14, 16,
+  18, 20, 24, 30, 36, 42, 48 in; IPS OD to 12 in), the wall by diameter (to 14 in 0.250, 16–24 in 0.375, 26–36 in
+  0.500, 42 in and up 0.625), "AREMA (railroad)" one step heavier (to 0.750); the casing size can be typed over.
+  Bell OD: gasketed PVC 1.20 × OD, ductile iron push-on 1.25 × OD, fused HDPE and welded steel the OD (IntelCost's
+  factors, grade D). Example: 8 in C900 DR 18, OD 9.05, bell 10.86 + 4 = 14.86 in; 14 in × 0.250 has ID 13.50 (short),
+  16 in × 0.375 ID 15.25: casing 16 in × 0.375. On the stretch's line: the bore subcontract $/LF by casing size
+  (machine, jacking and casing install; a subcontract component priced from the library), the casing (its own line,
+  owner-furnished: a material; sub-furnished: a subcontract at the same key), spacers 2 + ⌈LF ÷ 8⌉ a carrier (one
+  within 2 ft of each end and one every 8 ft, read additively: 80 LF → 2 + 10 = 12), 2 end seals a casing, optional
+  annulus grout by the CY (π/4 (casing ID² − carrier OD²) a LF), the carrier pipe (no fittings allowance and no
+  warning tape in the casing), the carrier's joints restrained by default on pressure pipe with a bell (a set a joint
+  over the stretch, never fewer than the run's own restrained share), and the carrier pull-in labour: the run's pipe
+  crew at a pull-in rate (8 in 500, 10 in 450, 12 in 400, 16 in 300, larger 200 LF a crew-day, grade C), which
+  replaces its trench rate on that line. No trench, bedding, zone, backfill, protection, dewatering or restoration over the bored LF, and that LF
+  comes out of the spoils balance, the reduction said on the run ("Jack and bore 80.00 LF: no trench; spoils to the
+  balance −x BCY"). **A Bore pit and a Receiving pit** are made with it, linked to the run (`spec.run`), deletable.
+- **Steel casing, open cut:** the same casing size and its spacers and seals; the trench over the stretch sized to the
+  casing OD; no subcontract, no pits; the pipe crew lays it.
+- **HDD:** the carrier HDPE DR 11 or fusible PVC (another pipe is flagged), an optional HDPE DR 11 casing (the first
+  size with ID ≥ 1.5 × the carrier OD), the HDD subcontract $/LF by carrier size, entry and exit pits a lump sum a
+  crossing (to 12 in, and 14–24 in); no trench and no crew of ours (the sub pulls back).
+- **Bore pit (12 × 32 ft) and Receiving pit (10 × 10 ft),** new structure types on every system: dug to the casing
+  invert + 1.5 ft (the casing's outside bottom, the carrier centred in it) at the pit's station on its run, in BCY by
+  layer with vertical shored sides; shoring by depth: a trench box to 8 ft, a slide rail to 20 ft, sheet piling past;
+  a 6 in #57 stone pad; a backstop (thrust wall) on the bore pit only; sump pump days (bore days at 40 LF a day + 1,
+  editable); backfill native (its spoils to the balance as any pit's) or cement-stabilized sand (all of its dig hauled
+  off, a haul-off line with its disposal fee); the excavation crew A24 "Bore pit" a pit a day (national line map,
+  `utility_structure_pit`); its own icon (hollow square for the bore pit, hollow triangle for the receiving pit).
+  **Pits by bore sub** makes every pit line $0 "by the bore sub" (kept, nothing bought, no crew, no spoils).
+  **Needs attention:** a jack & bore crossing with no pit linked.
+- **The Casing / sleeve (bore) type** is the standalone form: its pipe is the casing; the bore subcontract by its size,
+  the casing its own line, the same pits and rules; no spacers or seals (no carrier). A run of any other type stored
+  with "Bored (no trench)" reads as jack & bore over the whole run.
+- **Old electric runs (D-1265 3):** a run of the `electric` key stored before D-1260 (no add-ons in its section) says
+  "Electric run made before the types: verify primary or secondary" in its panel and under Needs attention.
+- **Prices:** new keys in the Q4 2026 release by migration, each with its grade and source (`d1269_crossing_prices.json`);
+  steel casing corrected from $0.90 to $1.00 a lb (the 19 priced keys moved, each old value logged); a key priced
+  otherwise is never overwritten.
+- **Found in the smoke and fixed before the commit:** a wholly drilled or bored run took the path's bends and a
+  restraint set onto its stretch (a drill's curve is the pipe's own): a jack and bore, an HDD or a sleeve buys no bend
+  or tee; an encasement's or CLSM stretch kept a 0 % fittings allowance (it keeps the run's); a run changed to the
+  Casing / sleeve type kept its earlier encasement kind (a sleeve is always its own jack and bore, over its whole
+  length); the open-cut casing's trench used the carrier's invert (now the casing's: the carrier centred in it).
+- **Built and measured (2026-11-15, night run Part 3; bench clock 2026-11-14 09:34–10:45 UTC):** migration
+  `d1269b4f2e80` (revises `d1268a7c3e51`, left unfolded for the night's fold): 69 keys added (C26 D43), 19 casing keys
+  moved $0.90 → $1.00/lb (grade C kept), one `release_audit` row, `utility_structure_pit` on A24 in the national line
+  map (equipment release 44, no new release). Proved on a separate Postgres: from empty, `upgrade head` gives the
+  bench's schema but for the 31 CHECK constraints the baseline prints in an equivalent form and the `\restrict` tokens
+  (no DDL); two bench copies up, down, up: down equals the restored library row for row (mat_default, mat_item,
+  release_audit without id and time, mat_region_default, ew_line_map), up equals up again, the copies identical, 159
+  rows new or changed; `alembic check` clean, one head. Bench run 09:34:45–09:35:01 UTC; founder digest
+  `b4c963cdf83e7d84` before, after and at the end. Smoke with labour on (Harris County open shop, burdened, 77002,
+  TX20260031 mod 1 Heavy) on a throwaway copy of the 3D test project: an 80 LF jack and bore on a 589 LF 8 in C900
+  main (casing 16 x 0.375, 12 spacers, 2 seals, 4 restraint sets, the bore subcontract $174.76/LF, the carrier
+  7.40 MH at the pull-in rate, trench 509 LF, spoils −5.71 BCY), its two pits made with it (crew A24 40 MH a pit,
+  trench box, pad, backstop, 3 pump days; by the bore sub every line $0; a CSS receiving pit with its haul-off), the
+  same cased open cut, a 113 LF 6 in HDPE HDD (the sub $34.56/LF, $35 x the material location factor 0.98737, and the pits lump sum; no crew), CLSM and concrete over
+  100 LF of a 24 in storm main, a 310 LF sleeve with "no pit" under Needs attention until its pits were made, and an
+  old electric run's "verify primary or secondary".
+- **Quantity table:** exit 0, no FAIL (344 rows, 175 utility rows): nine `util-1269-*` rows worked by hand (the spacer
+  rule; the 80 LF jack and bore on 600 LF with its bore pit; the pit by the bore sub; a CSS receiving pit; the same cased
+  open cut; a 300 LF 6 in HDPE HDD; CLSM on a sand zone and on a native zone; a sleeve keeping an earlier kind; a
+  standalone sleeve with its pit); grade counts A171 B188 C594 D181 F32; the starter's line map 113 roles.

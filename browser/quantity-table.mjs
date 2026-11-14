@@ -1924,6 +1924,8 @@ try {
     // waste, its purchase unit; pipe in whole joints within its bid).
     const ecm = await import("/src/lib/estimate/components.ts");
     const ecost = await import("/src/lib/estimate/costing.ts");
+    // D-1269: encasement, casing and trenchless crossings, and their pits.
+    const xr = await import("/src/lib/takeoff/earthwork/utilities/crossings.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2026,6 +2028,152 @@ try {
       if (c.kind === "offers") {
         const entry = cat.CATALOG.find((e) => e.key === c.entry);
         return { offered: Boolean(entry && ty.typeOffersEntry(c.type, entry)) };
+      }
+      // D-1269: the spacer rule on its own.
+      if (c.kind === "spacers") return { counts: c.lfs.map((lf) => `${lf}:${xr.spacerCount(lf)}`).join(" ") };
+      // D-1269: a run with a crossing, worked as Calculate works it: a level 100 ft-ground profile at the run's cover in
+      // Type B clay with no bores, its trench through the real engine, the crossing's stretch blended in, its lines and
+      // their materials as the estimate prices them (each material's sold quantity on its line's QTY).
+      if (c.kind === "trenchless") {
+        const def = rd.defaultRun(c.type);
+        const run = { ...def, ...(c.run ?? {}), section: { ...(def.section ?? {}), ...(c.section ?? {}) } };
+        const pipe = cat.resolvePipe(run.catalog_key);
+        const n = Math.max(1, Math.round(run.pipes));
+        const o = ty.runOptions(c.type, run.section, pipe.od);
+        const L = c.lf;
+        const invert = 100 - (c.coverFt ?? 4) - pipe.od / 12 + (pipe.od - pipe.id) / 24;
+        const knot = (s) => ({ s, G: 100, invert, bottoms: [-1e6], water: null, caving: false, caveInFt: null });
+        const layers = [{ layerId: null, ...CLAY }];
+        const zoneSource = c.zoneNative ? "native" : "imported";
+        const input = (odIn, idIn) => ({
+          knots: [knot(0), knot(L)],
+          layers,
+          noBores: false,
+          pipe: { odIn, idIn, pipes: n, gapIn: run.pipe_gap_in ?? 0 },
+          section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+          bucket: "auto",
+          box: tr.boxFor(tr.pipeWidthFt(odIn, n, run.pipe_gap_in ?? 0, 12, 24), [BOX], { boxRef: "b6", boxOutsideFt: null }),
+          specMaxIn: null,
+          protection: "box",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          materials: { bedding: "imported", zone: zoneSource, backfill: "native" },
+          materialNames: { bedding: "#57 stone", zone: c.zoneNative ? "Native" : "Sand", backfill: "Native" },
+          segments: [],
+          restoration: null,
+        });
+        const plain = q.runQuantities(input(pipe.od, pipe.id));
+        const cross = xr.resolveCrossing(c.type, run.section, L, { catalogKey: run.catalog_key, odIn: pipe.od, idIn: pipe.id, pipes: n });
+        let qq = plain;
+        if (cross) {
+          let v;
+          if (!cross.dug) v = xr.noTrench(plain);
+          else if (cross.kind === "cased_open") {
+            // The carrier centred in its casing: the casing's invert its ID / 2 below the carrier's centre.
+            const lower = (pipe.id - cross.casing.idIn) / 24;
+            const vi = input(cross.casing.odIn, cross.casing.idIn);
+            v = q.runQuantities({ ...vi, knots: vi.knots.map((k) => ({ ...k, invert: k.invert + lower })) });
+          }
+          else if (cross.kind === "concrete") v = xr.displaceZones(plain, layers, { zoneCF: (Math.max(0, cross.enc.widthIn * cross.enc.heightIn - n * ((Math.PI * pipe.od ** 2) / 4)) / 144 / 27) * 27 * L });
+          else v = xr.displaceZones(plain, layers, { all: true });
+          qq = xr.blendQuantities(plain, v, cross.f);
+        }
+        const jointFt = um.restraintJointFt(run.catalog_key);
+        const inCasing = cross ? (cross.restrain ? cross.lf : 0) : 0;
+        const made = ln.utilityLines([
+          {
+            type: ty.baseOf(c.type),
+            kind: c.type,
+            id: "run-0001-crossing",
+            pipeLabel: c.label,
+            pipeKey: run.catalog_key,
+            pipes: n,
+            q: qq,
+            swell: [1.2],
+            materials: { bedding: { name: "#57 stone", source: "imported" }, zone: { name: c.zoneNative ? "Native" : "Sand", source: zoneSource }, backfill: { name: "Native", source: "native" } },
+            restoration: null,
+            install: o.install,
+            short: o.production === "short",
+            pipeOptions: { addons: o.addons, buyPipe: o.install !== "none", encasementCy: null, crossing: ty.typeDef(c.type).group === "crossing" },
+            connection: null,
+            restrained: um.restrainedJoints(run.catalog_key, 100, Math.max(0, (L * o.restrainedPct) / 100 - inCasing), n),
+            ...(cross
+              ? {
+                  crossing: {
+                    kind: cross.kind,
+                    f: cross.f,
+                    tag: cross.tag,
+                    words: cross.words,
+                    materials: xr.crossingMaterials(cross, { odIn: pipe.od, nominalIn: run.nominal_in, pipes: n, zoneCyPerLf: (plain.beddingCF + plain.zoneCF) / n / L / 27 }),
+                    restrainedSets: xr.casedRestraintSets(inCasing, jointFt, n),
+                    crew: cross.kind !== "hdd" && cross.kind !== "sleeve",
+                  },
+                }
+              : {}),
+          },
+        ]);
+        const pipeLines = made.filter((l) => l.role === "utility_pipe");
+        const cased = pipeLines.find((l) => l.crossing);
+        const open = pipeLines.filter((l) => !l.crossing);
+        const sold = (line) => {
+          const out = {};
+          for (const m of um.lineMaterials(line, () => null) ?? []) {
+            const v = ecm.evalQtyFormula(m.qty, { parent: 0, qty: line.quantity }).value;
+            const s = m.roundScope === "bid" && m.roundTo ? um.orderByBid([{ id: "x", bid: "Base Bid", matKey: m.matKey, lf: v, wastePct: m.wastePct, jointFt: m.roundTo }])[0].soldLF : ecost.pricedMaterial({ kind: "material", mode: "unit", qty: v, total: v, unitPrice: 1, wastagePct: m.wastePct, roundTo: m.roundTo }, 0).qty;
+            out[m.key] = Math.round(s * 10000) / 10000;
+            if (m.kind) out[`${m.key}:kind`] = m.kind;
+          }
+          return out;
+        };
+        const casedSold = cased ? sold(cased) : {};
+        const out = {
+          kind: cross?.kind ?? "none",
+          lf: cross ? r2(cross.lf) : 0,
+          casing: cross?.casing?.text ?? null,
+          casingKey: cross?.casing?.catalogKey ?? null,
+          bellIn: cross?.casing?.bellIn != null ? r2(cross.casing.bellIn) : null,
+          casingIdIn: cross?.casing ? r2(cross.casing.idIn) : null,
+          flags: (cross?.flags ?? []).join(" | "),
+          casedLf: cased ? r2(cased.quantity) : 0,
+          casedCrew: cased ? (cased.crew ?? "none") : null,
+          openLf: r2(open.reduce((t, l) => t + l.quantity, 0)),
+          casedKeys: Object.keys(casedSold).filter((k) => !k.endsWith(":kind")).join(" "),
+          trenchLfBefore: r2(plain.protectionLF.reduce((t, p) => t + p.lf, 0)),
+          trenchLf: r2(qq.protectionLF.reduce((t, p) => t + p.lf, 0)),
+          excavationRatio: Math.round((qq.excavationCF / plain.excavationCF) * 1e6) / 1e6,
+          beddingCY: r2(qq.beddingCF / 27),
+          zoneCY: r2(qq.zoneCF / 27),
+          spoilsBeforeCY: r2(plain.spoils.suitableCF / 27),
+          spoilsCY: r2(qq.spoils.suitableCF / 27),
+          restraintCased: cased?.restrainedJoints ?? 0,
+          restraintOpen: open.reduce((t, l) => t + (l.restrainedJoints ?? 0), 0),
+          // The spoils to the balance against the run with no crossing; a stretch's own change over the zone it took.
+          spoilsRatio: plain.spoils.suitableCF > 0 ? Math.round((qq.spoils.suitableCF / plain.spoils.suitableCF) * 1e6) / 1e6 : null,
+          spoilsDeltaOverZone: plain.zoneCF > 0 ? Math.round(((qq.spoils.suitableCF - plain.spoils.suitableCF) / plain.zoneCF) * 1e6) / 1e6 : null,
+          wider: qq.excavationCF > plain.excavationCF + 1e-9,
+          // CLSM bought over its stretch: the bedding and zone it fills (CY), 5 % waste.
+          clsmCheck: casedSold["clsm:encasement"] != null ? Math.round((casedSold["clsm:encasement"] / (((plain.beddingCF + plain.zoneCF) / 27) * cross.f * 1.05)) * 1e4) / 1e4 : null,
+        };
+        for (const [k, v] of Object.entries(casedSold)) out[`cased:${k}`] = v;
+        if (c.pit) {
+          // Its pit at the run's own invert (level): dug to the casing's outside bottom + 1.5 ft below it.
+          const bottom = xr.casingBottom(invert, pipe.id, cross.casing, cross.kind === "sleeve") - xr.PIT_BELOW_CASING_FT;
+          const size = xr.PIT_SIZE[c.pit.type];
+          const dig = xr.pitDig(size.lengthFt, size.widthFt, 100 - bottom, [{ z0: -1e6, z1: 1e6 }]);
+          const parts = xr.pitLineParts({ pit: c.pit.type, casingIn: cross.casing.sizeIn, dig, layers: [{ name: "Clay", rock: false, unsuitable: false, swell: 1.2 }], pumpDays: c.pit.pumpDays ?? xr.pumpDaysFor(cross.lf), backfill: c.pit.backfill ?? "native", bySub: Boolean(c.pit.bySub), swell: 1.2 });
+          Object.assign(out, {
+            pitDepthFt: Math.round(dig.h * 1e4) / 1e4,
+            pitShoring: dig.shoring,
+            pitExcavationBCY: r2(dig.excavationCF / 27),
+            pitPadCCY: r2(dig.padCF / 27),
+            pitBackfillCCY: r2(dig.backfillCF / 27),
+            pitLines: parts.map((l) => `${l.variant}=${r2(l.quantity)}`).join(" "),
+            pitBuys: parts.flatMap((l) => l.materials.map((m) => m.key)).join(" "),
+            pitBySubNames: parts.every((l) => l.name.endsWith("(by the bore sub)")),
+          });
+        }
+        return out;
       }
       if (c.kind === "restraint-mh") return { mh: c.sizes.map((n) => `${n}:${um.restraintMh(n)}`).join(" "), jointFt: c.keys.map((k) => `${k}:${um.restraintJointFt(k)}`).join(" ") };
       if (c.kind === "type-lines") {
