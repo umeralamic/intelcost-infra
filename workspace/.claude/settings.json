@@ -89,6 +89,18 @@
             "statusMessage": "Checking D-592 (no credential reads)"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/founder-gate.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking D-1266 (founder gate: a fresh quiet before an app/api save or a bench migration)"
+          }
+        ]
       }
     ]
   }

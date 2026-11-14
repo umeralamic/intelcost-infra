@@ -10,18 +10,33 @@
 #
 # Exit 0: quiet. Exit 1: the founder is active (say so, and wait or ask). Exit 2: it could not tell (no
 # guard list, no api log): treat it as active.
+#
+# The gate's stamp (D-1266): a quiet answer over at least the default 10 minutes writes the UTC epoch to
+# the stamp file (E:\Intelcost\.private\founder-quiet.stamp, outside git; INTELCOST_FOUNDER_STAMP overrides
+# it); any other answer removes it. The PreToolUse hook .claude/hooks/founder-gate.sh refuses an app or api
+# source save, or a bench migration, unless that stamp is at most 120 s old.
 
 set -u
 cd "$(dirname "$0")"
 minutes="${1:-10}"
+stamp="${INTELCOST_FOUNDER_STAMP:-$(cd .. && pwd)/.private/founder-quiet.stamp}"
+finish() {
+  if [ "$1" -eq 0 ] && [ "$minutes" -ge 10 ] 2>/dev/null; then
+    mkdir -p "$(dirname "$stamp")" 2>/dev/null
+    date -u +%s >"$stamp" 2>/dev/null
+  else
+    rm -f "$stamp" 2>/dev/null
+  fi
+  exit "$1"
+}
 list="${INTELCOST_GUARD_LIST:-}"
 if [ -z "$list" ] || [ ! -f "$list" ]; then
   echo "founder-active: INTELCOST_GUARD_LIST is not set or not found; treat the founder as active"
-  exit 2
+  finish 2
 fi
 log="$(docker compose logs api --since "${minutes}m" --timestamps 2>/dev/null)" || {
   echo "founder-active: no api log; treat the founder as active"
-  exit 2
+  finish 2
 }
 printf '%s\n' "$log" | node -e '
 const fs = require("fs");
@@ -58,3 +73,4 @@ for (const [label, s] of editing) console.log(`founder-active: ACTIVE ${label}: 
 console.log("Tell the founder and wait instead of saving or restarting (D-1252, D-1254).");
 process.exit(1);
 ' "$list" "$minutes"
+finish $?

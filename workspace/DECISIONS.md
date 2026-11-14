@@ -31525,3 +31525,46 @@ D-1269 Part 3 (F48), D-1270 Part 4, D-1271 Part 5.
 20. **`prepare_sheet` takes the sheet's uuid** (api rule 6). (D-1270.)
 21. **The refused PATCH naming P06:** investigated in D-1266, nothing changed on P06.
 22. **F44–F47 are accepted only once D-1267 (Part 1) passes;** they stay in Working until then.
+
+## D-1266 — founder-active is a hard gate: no app or api save and no bench migration without a fresh "quiet"
+
+**Status:** decided (the founder, 2026-11-14: Part 0 of the night run)
+
+- **founder-active.sh writes a stamp.** On "quiet" (exit 0) over a window of at least the default 10 minutes it
+  writes the UTC epoch to `E:\Intelcost\.private\founder-quiet.stamp` (outside git; `INTELCOST_FOUNDER_STAMP`
+  overrides the path). On active (1) or unknown (2), or a quiet over a shorter window, it removes the stamp. Its
+  output and exit codes are unchanged.
+- **A PreToolUse hook, `.claude/hooks/founder-gate.sh`,** refuses (exit 2, reason on stderr, as the rule 7 and D-592
+  hooks do) unless the stamp exists and is at most 120 s old:
+  - **Edit, Write, MultiEdit, NotebookEdit** on app or api source: `intelcost-app-react/` `src/`, `public/`,
+    `index.html`, `package.json`, the vite, tailwind, postcss and ts configs; `intelcost-app-fastapi/` `app/`,
+    `main.py`, `alembic/`.
+  - **Bash and PowerShell writes into the same paths** through a redirect (`>`, `>>`), `tee`, `cp`/`mv` (the last
+    argument), `Set-Content`, `Out-File`, `Add-Content`, `Copy-Item`, `Move-Item`: a heredoc rewrite is a save too.
+    A relative target is read against the command's last `cd`, else the session's cwd.
+  - **A bench migration:** `alembic upgrade`, `downgrade` or `stamp` run in a container (`docker exec`, `docker
+    compose exec` or `run`) or at a command's start, unless the service or container is an fx one, the run is
+    offline (`--sql`), or a `DATABASE_URL` override names a database that is not the bench's (the bench is
+    `intelcost` on `postgres:5432` or `localhost`/`127.0.0.1`/`host.docker.internal:5433`). A proof against a
+    scratch Postgres stays allowed.
+  - Workspace docs, infra, the scratchpad, test data, a scratch worktree outside the repos and every read are not
+    gated.
+  - Git commands that rewrite the app or api working tree (checkout, switch, pull, merge, rebase, restore, revert,
+    cherry-pick, apply, am, clean, stash but list/show, reset --hard) are gated too: the dev server and the api
+    reload on them as on a save. Each refusal is appended to `.private/founder-gate.log`.
+- **Proved (2026-11-14, 03:14 to 03:16 UTC):** live in the running session, a Write to
+  `intelcost-app-react/public/__gate_probe.txt` (03:14:01) and to `src/__gate_probe.ts` (03:14:04) were refused
+  ("stamp missing"); nothing was written and the app tree stayed clean. Fed to the hook directly: with no stamp, a
+  stamp 200 s old, and after an unknown answer removed it, the Write, a `docker compose exec api alembic upgrade
+  head`, a host `poetry run alembic downgrade -1`, a bench `DATABASE_URL` override, a heredoc into `src/`, a `git
+  pull` in the app and a PowerShell `Set-Content` into `app/` exit 2; a scratch-Postgres override, an fx container,
+  `--sql`, a grep naming alembic, a read, a merge in a scratch worktree and a DECISIONS edit exit 0. After a real
+  quiet (03:15:35) the same Write and migration exit 0. No migration was run.
+- **The refused PATCH naming P06 (D-1265 21):** the D-1228 build sent it on purpose, 2026-11-12 21:33:31 UTC, a
+  `fetch` PATCH `{name: "guard proof"}` from the MCP page to prove the rebuilt MCP guard; the guard aborted it ("Failed
+  to fetch"). The refusal list lives as long as the MCP browser's context, so every later reconnect reported it. No
+  request naming P06 reached the api in its whole log (since 2026-11-12 21:28 UTC); the founder's tab was on P08 then,
+  and Real bid A first appears at 2026-11-13 08:46 UTC. Nothing changed on P06.
+- **origin/main (app PR #10, api PR #13), dry run only:** both parents of each merge commit are already in umer-dev,
+  and main's tree equals the staging tip's. Merging origin/main into umer-dev: no conflict, no file changed, in both
+  repos. Not merged.
