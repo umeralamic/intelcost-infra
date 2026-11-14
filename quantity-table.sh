@@ -105,8 +105,10 @@ ST_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At -
 # D-1105 (release 43): the pressure crews A18 and A19 on two tiers each for three: tiers 216 - 2 = 214, machines
 # 483 - 24 + 12 = 471, crew 345 - 21 + 14 = 338 (A19 keeps its fuser); defaults six bands each, 240.
 # D-1269: a bore or receiving pit's own line on A24 "Bore pit" (`utility_structure_pit`): line map 112 + 1 = 113.
-if [ "$ST_COUNTS" != "105 214 471 338 240 113 22 103 105 0 0" ]; then
-  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 105 214 471 338 240 113 22 103 105 0 0"
+# D-1275 (release 45): A96, the large storm RCP crew (48 in and up), one open tier, 4 machines, 3 crew rows, six
+# run-length bands (one open), `utility_pipe_storm_large` mapped: 106 215 475 341 246 114, open tiers 104, defaults 106.
+if [ "$ST_COUNTS" != "106 215 475 341 246 114 22 104 106 0 0" ]; then
+  echo "FAIL  earthwork starter (activities tiers machines crew defaults line-map optional open-tiers open-defaults zeros outside-tier): $ST_COUNTS, expected 106 215 475 341 246 114 22 104 106 0 0"
   exit 1
 fi
 # No software competitor named in the three repos' tracked text files or the workspace files (hard rule 9, D-328,

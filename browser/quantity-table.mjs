@@ -1926,6 +1926,8 @@ try {
     const ecost = await import("/src/lib/estimate/costing.ts");
     // D-1269: encasement, casing and trenchless crossings, and their pits.
     const xr = await import("/src/lib/takeoff/earthwork/utilities/crossings.ts");
+    // D-1275: the cover over the crown against the type's minimum.
+    const cv = await import("/src/lib/takeoff/earthwork/utilities/cover.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2002,6 +2004,34 @@ try {
       if (c.kind === "embedment") {
         const d = um.embedmentDefault(c.type, c.catalogKey, c.settings ?? {});
         return { bedding: d?.bedding ? um.ZONE_CHOICES[d.bedding].name : "project's", zone: d?.zone ? um.ZONE_CHOICES[d.zone].name : "project's" };
+      }
+      // D-1275: the depth rule and the cover over the crown, a 100 ft run at a flat G = 100 through the profile builder
+      // and the engine; the trench at mid-run read from the piece the quantities worked.
+      if (c.kind === "depth-rule") {
+        const p = cat.resolvePipe(c.pipe);
+        const G = 100;
+        const bed = c.beddingIn ?? 6;
+        const vertical = c.cover != null ? { mode: "cover", coverFt: c.cover } : { mode: "inverts", start: c.invertDepth != null ? G - c.invertDepth : G - c.trench + (p.od - p.id) / 24 + bed / 12, end: c.invertDepth != null ? G - c.invertDepth : G - c.trench + (p.od - p.id) / 24 + bed / 12 };
+        const prof = bp.runProfile({ path: [[0, 0], [100, 0]], eg: null, fg: null, features: [], startSurface: "proposed", ends: [G, G], vertical, odIn: p.od, idIn: p.id, bottoms: [], water: null, bores: [] });
+        const r = q.runQuantities({
+          knots: prof.knots,
+          layers: [{ layerId: null, name: "Clay", group: "clay", uscs: "CH", osha: "B", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1.1 }],
+          noBores: false,
+          pipe: { odIn: p.od, idIn: p.id, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: c.pressure ? 6 : 12, minWidthIn: c.pressure ? 18 : 24, beddingIn: bed, zoneAboveCrownIn: 12 },
+          bucket: "auto",
+          box: null,
+          specMaxIn: null,
+          protection: "auto",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: utr.DEFAULT_UTILITY_SETTINGS.depthRangesFt,
+          materials: { bedding: "imported", zone: "imported", backfill: "native" },
+          restoration: null,
+        });
+        const r4 = (v) => Math.round(v * 1e4) / 1e4;
+        const least = cv.leastCover(prof.knots, p.od, p.id);
+        return { trenchFt: r4(q.trenchAt(r.shape[0], 50).h), widthFt: r4(r.widthFt), coverFt: least ? r4(least.ft) : null, flags: cv.coverFlags(c.type, prof.knots, p.od, p.id, c.company ?? null) };
       }
       // D-1106: a pressure main's own section and its default cover when no depth is typed.
       if (c.kind === "pressure-section") {

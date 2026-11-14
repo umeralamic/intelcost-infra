@@ -1643,4 +1643,51 @@ export const UTILITY_CASES = [
       pitLines: "pit|bore|12x32|6.83|own=1 pit:bore:Clay=97.19 pit_shoring|box|bore=1 pit_pad:bore|imported=7.11 pit_backstop|small=1 pit_pump|bore=3 pit:bore:native|native=90.07",
     },
   },
+  // D-1275 (docs/tasks/large_rcp_tasks.md §2, §3, §6): the depth rule and the cover over the crown. A 100 ft run at a
+  // flat G = 100, Type B clay, 6 in bedding unless the row says, 12 in a side and 24 in at least (pressure 6 and 18).
+  // `cover` lays it at a cover (the invert (OD + ID)/2 under G − cover); `invertDepth` types the invert; `trench` types
+  // the trench (invert = G − trench + wall + bedding, as the bid-tab harness lays one). trench and width ft to 1e-4.
+  // Large RCP at storm's 2 ft minimum: 2 + OD + 0.5. 48 in Wall B OD 58: 7.3333, width (58 + 24)/12 = 6.8333.
+  { id: "util-1275-rcp48-cover2", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:48", cover: 2, expect: { trenchFt: 7.3333, widthFt: 6.8333, coverFt: 2, flags: [] } },
+  // 60 in OD 72: 2 + 6 + 0.5 = 8.5; width 96/12 = 8.
+  { id: "util-1275-rcp60-cover2", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:60", cover: 2, expect: { trenchFt: 8.5, widthFt: 8, coverFt: 2, flags: [] } },
+  // 72 in OD 86: 2 + 7.1667 + 0.5 = 9.6667; width 110/12 = 9.1667.
+  { id: "util-1275-rcp72-cover2", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:72", cover: 2, expect: { trenchFt: 9.6667, widthFt: 9.1667, coverFt: 2, flags: [] } },
+  // Gravity: (G − invert) + bottom wall + bedding. 48 in Wall B, invert 8 ft down: 8 + 5/12 + 0.5 = 8.9167; cover
+  // 8 − (58 + 48)/24 = 3.5833.
+  { id: "util-1275-gravity-wall-b", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:48", invertDepth: 8, expect: { trenchFt: 8.9167, coverFt: 3.5833, flags: [] } },
+  // Wall C (5.75 in, OD 59.5): 8 + 5.75/12 + 0.5 = 8.9792; width (59.5 + 24)/12 = 6.9583.
+  { id: "util-1275-gravity-wall-c", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_c:48", invertDepth: 8, expect: { trenchFt: 8.9792, widthFt: 6.9583, flags: [] } },
+  // No bedding: 8 + 5/12 + 0 = 8.4167.
+  { id: "util-1275-gravity-no-bedding", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:48", invertDepth: 8, beddingIn: 0, expect: { trenchFt: 8.4167, flags: [] } },
+  // Pressure: cover + OD + bedding. 8 in C900 DR 18 (OD 9.05) at 4 ft, bedding 0: 4 + 9.05/12 = 4.7542; width the
+  // 24 in bucket over 9.05 + 12 = 21.05 in: 2.0; cover 4 = the company's 4 ft, no flag.
+  { id: "util-1275-pressure-no-bedding", kind: "depth-rule", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, beddingIn: 0, pressure: true, expect: { trenchFt: 4.7542, widthFt: 2, coverFt: 4, flags: [] } },
+  // The same with 6 in bedding: 4 + 0.7542 + 0.5 = 5.2542.
+  { id: "util-1275-pressure-bedding", kind: "depth-rule", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, pressure: true, expect: { trenchFt: 5.2542, flags: [] } },
+  // The cover warning. 48 in RCP in a 6.5 ft trench: 6.5 − 0.5 − 4.8333 = 1.1667 under storm's 2 ft.
+  {
+    id: "util-1275-cover-under-min",
+    kind: "depth-rule",
+    type: "storm",
+    pipe: "rcp_c76_wall_b:48",
+    trench: 6.5,
+    expect: { trenchFt: 6.5, coverFt: 1.1667, flags: ["Cover over the crown 1.17 ft at its shallowest, under the 2 ft minimum for Storm sewer main (Houston-area drainage criteria: 24 in, C)."] },
+  },
+  // 72 in RCP in a 6.5 ft trench (the bug): 6.5 − 0.5 − 7.1667 = −1.1667, the crown above the ground.
+  {
+    id: "util-1275-crown-above-ground",
+    kind: "depth-rule",
+    type: "storm",
+    pipe: "rcp_c76_wall_b:72",
+    trench: 6.5,
+    expect: { coverFt: -1.1667, flags: ["Cover over the crown -1.17 ft at its shallowest: the pipe's crown is above the ground. Check the inverts or the grade."] },
+  },
+  // Water at 3 ft against the company's 4 ft (D-1106).
+  { id: "util-1275-water-under-company", kind: "depth-rule", type: "water", pipe: "pvc_c900_dr18:8", cover: 3, pressure: true, expect: { coverFt: 3, flags: ["Cover over the crown 3.00 ft at its shallowest, under the 4 ft minimum for Water main (the company's pressure cover (D-1106))."] } },
+  // The company's cover at 3 ft: the same run is not flagged.
+  { id: "util-1275-water-company-3", kind: "depth-rule", type: "water", pipe: "pvc_c900_dr18:8", cover: 3, pressure: true, company: 3, expect: { coverFt: 3, flags: [] } },
+  // Gas main at 2 ft: 49 CFR 192.327(b)'s 24 in, not flagged; at 1.5 ft flagged.
+  { id: "util-1275-gas-2ft", kind: "depth-rule", type: "gas", pipe: "pe_gas_sdr11:4", cover: 2, pressure: true, expect: { coverFt: 2, flags: [] } },
+  { id: "util-1275-gas-18in", kind: "depth-rule", type: "gas", pipe: "pe_gas_sdr11:4", cover: 1.5, pressure: true, expect: { coverFt: 1.5, flags: ["Cover over the crown 1.50 ft at its shallowest, under the 2 ft minimum for Gas main (49 CFR 192.327(b): 24 in, A)."] } },
 ];

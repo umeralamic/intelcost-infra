@@ -206,6 +206,7 @@ async (page) => {
           .map((l) => ({ role: l.role, name: l.name, unit: l.unit, qty: Math.round(l.quantity * 1000) / 1000, mats: (l.materials ?? []).map((m) => `${m.key}=${m.qty} ${m.unit}`).join("; ") }))
           .sort((a, b) => `${a.role}|${a.name}`.localeCompare(`${b.role}|${b.name}`));
       const parity = [];
+      const coverFlags = [];
       contract.items.forEach((it, i) => {
         const f = forLines[i];
         if (!f) return;
@@ -220,8 +221,10 @@ async (page) => {
         const a = JSON.stringify(ours);
         const b = JSON.stringify(theirs);
         if (a !== b) parity.push({ item: i, pipe: f.pipeKey, type: it.type, depth: it.depth, qty: it.qty, harness: ours, app: theirs, skipped: app?.stored?.skipped ?? null });
+        // D-1275: Calculate's cover flags on the item (its crown above the ground, or under its type's minimum cover).
+        for (const run of app?.stored?.runs ?? []) for (const fl of run.flags ?? []) if (fl.startsWith("Cover over the crown")) coverFlags.push(`${f.pipeKey} ${it.depth} ft: ${fl}`);
       });
-      if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, unpriceable, ownLines: [], parity };
+      if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, unpriceable, ownLines: [], parity, coverFlags };
       const all = forLines.filter(Boolean);
       // D-1267 addendum: each pipe line's allowance LF is the sum of its items' own, an item switched off giving none.
       const keyOf = (l) => `${l.regionId}|${l.role}|${l.variant}`;
@@ -239,7 +242,7 @@ async (page) => {
       const put = await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/result/${S}`, { method: "PUT", headers: h, body: JSON.stringify({ version_key: `bidtab:${contract.key}`, result, lines: calc.lineWrites(lines) }) });
       // Each item's own lines: the engine run on that item alone (D-938's own lines).
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
-      return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity };
+      return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags };
     },
     { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly) },
   );
@@ -398,7 +401,7 @@ async (page) => {
       : undefined;
     return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
-  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
+  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }
