@@ -32099,6 +32099,25 @@ Logged before the work (Part 3). Spec first, then build. The part adds its rules
    **Reporting rule, from now on:** every kind's gap is reported as the multiplier to the medians, not as
    "% vs median".
 
+**The answers built (P3b, 2026-11-14 UTC):**
+- **Anchor at 60 in** (migration `d1275b60c3e9`, revises d1276a4b7c20, release 46): A96's bands put TxDOT's 94.92 LF
+  an 8 h crew day at 60 in in the band that holds the measurement (250-499 LF): 94.92 × 10 / 8 = 118.65 on the 10 h
+  basis, the others in A32's run-length proportion (× 118.65 / 170): 48.86, 90.73, 118.65, 146.57, 177.97, 198.91.
+  Each line × (60 / D)^0.547 (`production.py:large_rcp_step`, `LARGE_RCP_ANCHOR_IN`): 48 in 1.1298, 60 in 1.0000,
+  72 in 0.9051; at 250-499 LF 134.05, 118.65 and 107.39 LF a 10 h day (0.3730, 0.4214, 0.4656 MH/LF). Not fitted to a tab.
+  Proved on foldproof5 (from empty the bench schema, CHECK prints only; on a bench copy 10 rows in, 8 out, down gives
+  the copy back, up again the same); bench 21:20:44-21:21:01 UTC, digest unchanged. The file was reformatted (two
+  `sa.text` calls on one line, the same SQL) at 21:24:09 after the bench ran it.
+- **Working day:** 0-4416-1 measures "crew work days" with a half-day rule (a day is whole when under 2 h is lost,
+  half up to 5 h) and never states the hours: 8 h kept, as D-1085 read it; A96's note says "day length grade C".
+- **Minimum covers editable:** library settings `storm_min_cover_ft` (2) and `sanitary_min_cover_ft` (3), a
+  company's in Equipment library › Settings and a project's in Estimating › Equipment settings; served with the
+  utilities (`utility_routes.py`, `CompanyEmbedment`) and read by `cover.ts:minCoverFt` (a value other than the
+  default names "Library settings" as the source).
+- **Expected 48"+ multipliers** (computed from the crew pass, A96 lines' labour and equipment ÷ 1.1516, no harness
+  run): to the medians 1.121 → about 1.15 (LF-weighted log; $-weighted 1.140 → 1.170), to the lows 1.014 → about
+  1.04 ($ 1.040 → 1.068). The 48"+ table reruns in the next harness pass.
+
 ## D-1276 — The answers in D-1272, items 3 to 10, built
 
 Logged before the work (Part 4). The part adds what it built here.

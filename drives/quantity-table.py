@@ -1817,25 +1817,31 @@ def orders() -> int:
         got = line_role(item)  # type: ignore[arg-type]
         if got != want:
             wrong.append(f"FAIL  large-rcp-role-{variant}-{region}: {got}, expected {want}")
-    # A96's step with size, (48 / D)^k with k = ln(138.67 / 94.92) / ln(60 / 30) = 0.546872 (TxDOT 0-4416-1's two group
-    # means), in place of D-1085's flat 0.68; on A32 the 0.68 as before. Open site, 6-8 ft (no depth pace).
-    for size, large, want in ((48, True, 1.0), (60, True, 0.885121), (72, True, 0.801126), (72, False, 0.68)):
+    # A96's step with size, (60 / D)^k with k = ln(138.67 / 94.92) / ln(60 / 30) = 0.546872 (TxDOT 0-4416-1's two group
+    # means), anchored at 60 in (the founder's answer, release 46), in place of D-1085's flat 0.68; on A32 the 0.68 as
+    # before. Open site, 6-8 ft (no depth pace). 48 in (60/48)^k = 1.129789, 72 in (60/72)^k = 0.905103.
+    for size, large, want in ((48, True, 1.129789), (60, True, 1.0), (72, True, 0.905103), (72, False, 0.68)):
         item = SimpleNamespace(earthwork_variant=f"rcp_c76_wall_b:{size}|1|6-8 ft", earthwork_crew=None, earthwork_depth_ft=None, earthwork_depth_max_ft=None)
         got = round(pipe_pace(item, False, large), 6)
         if got != want:
             wrong.append(f"FAIL  large-rcp-pace-{size}-{large}: {got}, expected {want}")
-    # Release 45's A96: A32's run-length bands x 94.92 / 138.67 (0.684503): 70, 130, 170, 210, 255, 285 ->
-    # 47.9, 89.0, 116.4, 143.7, 174.5, 195.1 LF a 10 h day; its kit and crew (TxDOT 464-2's standard resource). MH per
-    # LF at 250-499 LF, 5 people (3 + 2 operators) x 10 h / (116.4 x the step): 48 in 0.4296, 60 in 0.4853, 72 in 0.5362.
+    # Release 46's A96: 94.92 LF an 8 h crew day at 60 in, 250-499 LF, on the 10 h basis 118.65, the other bands in A32's
+    # proportion (x 118.65 / 170): 70, 130, 170, 210, 255, 285 -> 48.86, 90.73, 118.65, 146.57, 177.97, 198.91 LF a 10 h
+    # day; its kit and crew (TxDOT 464-2's standard resource). MH per LF at 250-499 LF, 5 people (3 + 2 operators) x 10 h
+    # / (118.65 x the step): 48 in 134.049 LF 0.3730, 60 in 118.65 LF 0.4214, 72 in 107.39 LF 0.4656.
     with rows_engine.connect() as conn:
         a96 = [float(v) for (v,) in conn.execute(sql_text("SELECT prod_per_day FROM eqlib.ew_default WHERE activity_key = 'A96' ORDER BY qty_from")).all()]
         kit = [k for (k,) in conn.execute(sql_text("SELECT equip_key FROM eqlib.ew_tier_machine WHERE activity_key = 'A96' ORDER BY seq")).all()]
         crew = [(r, float(n)) for r, n in conn.execute(sql_text("SELECT role, count FROM eqlib.ew_tier_crew WHERE activity_key = 'A96' ORDER BY seq")).all()]
         mapped = conn.execute(sql_text("SELECT activity_key FROM eqlib.ew_line_map WHERE earthwork_role = 'utility_pipe_storm_large'")).scalar()
-    if a96 != [47.9, 89.0, 116.4, 143.7, 174.5, 195.1] or kit != ["EX-CRAWL-50T", "WL-COMPACT-2Y", "CP-PLATE-REV", "TRK-PU-8808"] or crew != [("Foreman", 1.0), ("Pipelayer", 1.0), ("Laborer", 1.0)] or mapped != "A96":
-        wrong.append(f"FAIL  release-45-a96: {a96} {kit} {crew} {mapped}")
+        # The crew note says the day length is read, not stated (TxDOT 0-4416-1 gives no hours): grade C.
+        note = conn.execute(sql_text("SELECT notes FROM eqlib.ew_activity WHERE activity_key = 'A96'")).scalar() or ""
+    if "day length grade C" not in note or "(60 / D)^0.547" not in note:
+        wrong.append(f"FAIL  release-46-a96-note: {note[:120]}")
+    if a96 != [48.86, 90.73, 118.65, 146.57, 177.97, 198.91] or kit != ["EX-CRAWL-50T", "WL-COMPACT-2Y", "CP-PLATE-REV", "TRK-PU-8808"] or crew != [("Foreman", 1.0), ("Pipelayer", 1.0), ("Laborer", 1.0)] or mapped != "A96":
+        wrong.append(f"FAIL  release-46-a96: {a96} {kit} {crew} {mapped}")
     people = sum(n for _, n in crew) + 2
-    for size, want_prod, want_mh in ((48, 116.4, 0.4296), (60, 103.028, 0.4853), (72, 93.251, 0.5362)):
+    for size, want_prod, want_mh in ((48, 134.049, 0.373), (60, 118.65, 0.4214), (72, 107.39, 0.4656)):
         item = SimpleNamespace(earthwork_variant=f"rcp_c76_wall_b:{size}|1|6-8 ft", earthwork_crew=None, earthwork_depth_ft=None, earthwork_depth_max_ft=None)
         prod = round((a96[2] if a96 else 0.0) * pipe_pace(item, False, True), 3)
         mh = round(people * 10 / prod, 4) if prod else None
@@ -1843,7 +1849,7 @@ def orders() -> int:
             wrong.append(f"FAIL  large-rcp-production-{size}: {prod} LF/day {mh} MH/LF, expected {want_prod} {want_mh}")
     for w in wrong:
         print(w)
-    print(f"order sizes: {len(ORDER_TIERS) + len(ORDER_TYPES) + 27} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"order sizes: {len(ORDER_TIERS) + len(ORDER_TYPES) + 28} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 

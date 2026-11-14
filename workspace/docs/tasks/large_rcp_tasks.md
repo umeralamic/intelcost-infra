@@ -169,6 +169,17 @@ item medians −18.6 % → −17.3 % (input fix alone) → −12.3 % (with A96);
   `GRAVITY_CREW` reads the region only).
 - A crane in place of the excavator: the company's edit, not offered as a choice.
 
+## 9. The founder's answers built (P3b)
+
+- **Anchor at 60 in:** rate(D) = 94.92 × (60 / D)^0.547 LF an 8 h crew day in the 250-499 LF band (118.65 on the 10 h
+  basis); A96's bands 48.86, 90.73, 118.65, 146.57, 177.97, 198.91 (A32's proportion), release 46, migration
+  `d1275b60c3e9`. 48 in 134.05, 60 in 118.65, 72 in 107.39 LF a 10 h day; 0.3730, 0.4214, 0.4656 MH/LF.
+- **Day length:** not stated in 0-4416-1 (a half-day rule only): 8 h, grade C, in A96's note.
+- **Minimum covers:** `storm_min_cover_ft` 2 and `sanitary_min_cover_ft` 3 are library settings (company and project),
+  read by the cover flags.
+- **Unchanged:** pressure bedding 6 in; no production work on 60-72 in; no harness run (the next pass reruns the
+  48"+ table).
+
 ## Open questions
 
 1. DI/PVC pressure bedding: keep the project's 6 in until Part 6, or 0 now (every water run 0.5 ft shallower)?

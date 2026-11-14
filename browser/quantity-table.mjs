@@ -2033,7 +2033,7 @@ try {
         });
         const r4 = (v) => Math.round(v * 1e4) / 1e4;
         const least = cv.leastCover(prof.knots, p.od, p.id);
-        return { trenchFt: r4(q.trenchAt(r.shape[0], 50).h), widthFt: r4(r.widthFt), coverFt: least ? r4(least.ft) : null, flags: cv.coverFlags(c.type, prof.knots, p.od, p.id, c.company ?? null) };
+        return { trenchFt: r4(q.trenchAt(r.shape[0], 50).h), widthFt: r4(r.widthFt), coverFt: least ? r4(least.ft) : null, flags: cv.coverFlags(c.type, prof.knots, p.od, p.id, c.company ?? null, c.mins ?? null) };
       }
       // D-1106: a pressure main's own section and its default cover when no depth is typed.
       if (c.kind === "pressure-section") {

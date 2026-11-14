@@ -1694,6 +1694,13 @@ export const UTILITY_CASES = [
   { id: "util-1275-water-company-3", kind: "depth-rule", type: "water", pipe: "pvc_c900_dr18:8", cover: 3, pressure: true, company: 3, expect: { coverFt: 3, flags: [] } },
   // Gas main at 2 ft: 49 CFR 192.327(b)'s 24 in, not flagged; at 1.5 ft flagged.
   { id: "util-1275-gas-2ft", kind: "depth-rule", type: "gas", pipe: "pe_gas_sdr11:4", cover: 2, pressure: true, expect: { coverFt: 2, flags: [] } },
+  // The storm and sanitary minimums are library settings (D-1275, the founder's answers): 2 and 3 ft unless set.
+  // 24 in RCP Wall B (OD 30, ID 24) at 1.5 ft cover: under storm's 2 ft by default; not flagged with the setting at 1 ft.
+  { id: "util-1275-storm-default-2ft", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:24", cover: 1.5, expect: { coverFt: 1.5, flags: ["Cover over the crown 1.50 ft at its shallowest, under the 2 ft minimum for Storm sewer main (Houston-area drainage criteria: 24 in, C)."] } },
+  { id: "util-1275-storm-setting-1ft", kind: "depth-rule", type: "storm", pipe: "rcp_c76_wall_b:24", cover: 1.5, mins: { storm: 1, sanitary: 3 }, expect: { coverFt: 1.5, flags: [] } },
+  // 8 in SDR 35 at 2.5 ft: under sanitary's 3 ft by default; the setting at 4 ft flags it against 4 ft, its source named.
+  { id: "util-1275-sanitary-default-3ft", kind: "depth-rule", type: "sanitary", pipe: "pvc_d3034_sdr35:8", cover: 2.5, expect: { coverFt: 2.5, flags: ["Cover over the crown 2.50 ft at its shallowest, under the 3 ft minimum for Sanitary sewer main (common practice, C)."] } },
+  { id: "util-1275-sanitary-setting-4ft", kind: "depth-rule", type: "sanitary", pipe: "pvc_d3034_sdr35:8", cover: 2.5, mins: { sanitary: 4 }, expect: { coverFt: 2.5, flags: ["Cover over the crown 2.50 ft at its shallowest, under the 4 ft minimum for Sanitary sewer main (Library settings)."] } },
   { id: "util-1275-gas-18in", kind: "depth-rule", type: "gas", pipe: "pe_gas_sdr11:4", cover: 1.5, pressure: true, expect: { coverFt: 1.5, flags: ["Cover over the crown 1.50 ft at its shallowest, under the 2 ft minimum for Gas main (49 CFR 192.327(b): 24 in, A)."] } },
   // --- D-1276 (Part 4a, night run 2026-11-15): the founder's pricing and engine answers (D-1272 4-10, D-1277 2, 3, 5).
   // A new crossing's defaults: a jack and bore's casing sub-furnished, its pits (and a pit placed alone) by the bore sub;
