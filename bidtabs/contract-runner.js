@@ -46,6 +46,89 @@ async (page) => {
       const util = await (await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/utilities`, { headers: h })).json();
       const settings = ua.settingsOf(util.settings ?? null, util.company_embedment);
       const CLAY_B = { layerId: null, name: "Clay", group: "clay", uscs: "CH", osha: "B", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1.1, depth: null };
+      // D-1277: a contract of crossings (each item a run with a `crossing`, D-1269's `section.crossing`) is built by the
+      // app's own Calculate, which works a crossing's stretch, its casing and its pits; there is no harness copy of it
+      // to check, so no parity step. Each item is a run of its own on a blank sheet, the runs far apart (no overlap, no
+      // tee); a jack and bore gets its Bore pit and Receiving pit at the run's two ends, linked to it (`spec.run`), with
+      // the item's `pits` choice (`bySub`, `backfill`). The contract's lines are Calculate's over all of them; each
+      // item's own lines are Calculate's over that item alone, and the two must add up line by line (`interaction`).
+      //   item: { type, entry, nominal, depth (gravity), qty (the run's LF), restrainedPct?, crossing: {kind, lf?, casing_in?,
+      //           casing_by?, grout?, restrain?, arema?, hdd_casing?}, pits?: { bySub, backfill? } }
+      if (contract.items.some((it) => it.crossing)) {
+        const n = contract.items.length;
+        const maxLf = Math.max(...contract.items.map((it) => it.qty));
+        const Fft = Math.max(4 * maxLf, 100 * (n + 1));
+        const frame = { widthPt: 1000, heightPt: 1000, feetPerNorm: Fft / 1000 };
+        const clayX = { uuid: "x-clay", name: "Clay", soil_group: "clay", uscs: "CH", osha_type: "B", unsuitable: false, reuse_backfill: true, shrink_factor: 1.1, swell_factor: 1.3, interpolate: "depth", position: 0, used_by: ["B-1"] };
+        const geoX = { data: { water_buffer_ft: 0, slope_rule: null, layers: [clayX], bores: [] }, model: { bottoms: [], points: [], clamps: [], water: null, notes: [], logged: [true] }, placed: [{ bore: { caving_observed: false, cave_in_depth_ft: null }, at: [0.5, 0.02], ground: 100, from: null }] };
+        const missingX = [];
+        const parts = contract.items.map((it, i) => {
+          const pipeKey = `${it.entry}:${it.nominal}`;
+          const p = cat.resolvePipe(pipeKey);
+          const pick = cat.catalogPick(pipeKey);
+          if (!p || p.od == null || !pick) {
+            missingX.push(pipeKey);
+            return null;
+          }
+          const pressure = ["water", "fire_water", "force_main"].includes(it.type);
+          const id = p.id ?? p.od - 2 * (p.wall ?? 0);
+          const inv = 100 - (it.depth ?? 0) + (p.od - id) / 2 / 12 + 0.5;
+          const y = (i + 1) / (n + 1);
+          const x0 = 0.05;
+          const x1 = x0 + it.qty / Fft;
+          const itemUuid = `x-item-${i}`;
+          const base = rd.defaultRun(it.type);
+          const run = { ...base, section: { ...(base.section ?? {}), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
+          const items = [{ uuid: itemUuid, name: `X${i + 1} ${it.nominal}" ${pick.entry.material}`, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[x0, y], [x1, y]], shape_meta: null }] }];
+          const structures = [];
+          if (it.crossing.kind === "jack_bore" && it.pits) {
+            for (const [type, x] of [["bore_pit", x0], ["receiving_pit", x1]]) {
+              const sUuid = `x-${type}-${i}`;
+              items.push({ uuid: sUuid, name: `X${i + 1} ${type === "bore_pit" ? "BP" : "RP"}`, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[x, y]], shape_meta: null }] });
+              structures.push({ ...rd.defaultStructure(type, it.type), spec: { bySub: Boolean(it.pits.bySub), backfill: it.pits.backfill === "css" ? "css" : "native", pumpDays: null, run: itemUuid }, uuid: sUuid, item_uuid: sUuid, sheet_uuid: S });
+            }
+          }
+          return { run, items, structures };
+        });
+        const calcOf = (ps) => calc.calculateUtilities({ runs: ps.map((x) => x.run), items: ps.flatMap((x) => x.items), structures: ps.flatMap((x) => x.structures), sheetUuid: S, settings, geo: geoX, frame, eg: null, fg: null, features: [], projectShrink: 1.1, projectSwell: 1.3 });
+        const ownX = [];
+        const notes = [];
+        parts.forEach((x, i) => {
+          if (!x) {
+            ownX.push(null);
+            notes.push(null);
+            return;
+          }
+          const one = calcOf([x]);
+          const type = contract.items[i].type;
+          ownX.push((one?.lines ?? []).map((l) => ({ type, name: l.name, regionId: l.regionId, role: l.role, variant: l.variant, qty: l.quantity, unit: l.unit })));
+          const r0 = one?.stored?.runs?.[0];
+          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })) });
+        });
+        const allX = calcOf(parts.filter(Boolean));
+        const linesX = allX?.lines ?? [];
+        // The contract's lines against the sum of the items' own, line by line: any difference is an interaction
+        // between the runs (an overlap, a tee, a shared pit) and is returned.
+        // A line is keyed by its region, role and variant, as the api keys it (its name may differ: two pits' pump
+        // lines share a variant and the contract's line takes the first one's "6 days"); each own line takes the
+        // contract line's name, so the table finds it, and keeps its own as `ownName`.
+        const lk = (l) => `${l.regionId}|${l.role}|${l.variant}`;
+        const sumOwn = new Map();
+        for (const own of ownX) for (const l of own ?? []) sumOwn.set(lk(l), (sumOwn.get(lk(l)) ?? 0) + l.qty);
+        const nameAt = new Map(linesX.map((l) => [lk(l), l.name]));
+        for (const own of ownX) for (const l of own ?? []) if (nameAt.has(lk(l)) && nameAt.get(lk(l)) !== l.name) Object.assign(l, { ownName: l.name, name: nameAt.get(lk(l)) });
+        const interaction = [];
+        for (const l of linesX) {
+          const k = lk(l);
+          if (Math.abs((sumOwn.get(k) ?? 0) - l.quantity) > 1e-6) interaction.push(`${l.name}: ${l.quantity} vs own ${sumOwn.get(k) ?? 0}`);
+          sumOwn.delete(k);
+        }
+        for (const [k, v] of sumOwn) if (Math.abs(v) > 1e-9) interaction.push(`${k}: own ${v}, not in the contract's lines`);
+        if (interaction.length > 0 || parityOnly) return { put: 0, putText: "", missing: missingX, unpriceable: [], ownLines: ownX, parity: [], interaction, notes };
+        const result = { ok: true, cutCY: 0, fillCY: 0, netCY: 0, units: "CY", prisms: [], boundarySF: 0, coveredSF: 0, warnings: [], strip: null, regions: [] };
+        const put = await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/result/${S}`, { method: "PUT", headers: h, body: JSON.stringify({ version_key: `bidtab:${contract.key}`, result, lines: calc.lineWrites(linesX) }) });
+        return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing: missingX, unpriceable: [], ownLines: ownX, parity: [], interaction: [], notes, crossing: true };
+      }
       const forLines = [];
       const inverts = [];
       const missing = [];
@@ -161,6 +244,9 @@ async (page) => {
     { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly) },
   );
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
+  if (own.interaction?.length > 0) return { key: contract.key, interaction: own.interaction.slice(0, 5), notes: own.notes };
+  // A dry check of a crossing contract (`parityOnly`): its own lines and notes, nothing written.
+  if (own.put === 0 && own.notes) return { key: contract.key, dry: true, missing: own.missing, notes: own.notes, ownLines: own.ownLines };
   // Not priced when the harness and the app build an item differently (D-1211), or when only the check was asked for.
   if (own.parity.length > 0 || own.put === 0) {
     (page.context().__parity ??= []).push({ key: contract.key, parity: own.parity });
@@ -236,6 +322,26 @@ async (page) => {
     await page.waitForTimeout(300);
   }
   const rows = [...seen.values()];
+  // D-1277: a crossing contract's lines with their components (the pipe, the casing, the spacers, the seals, the bore
+  // subcontract, the pits' parts, the crew), as the api holds them, by line name: the report takes the carrier pipe out
+  // where the tab's item excludes it, and splits a crossing between a tab's casing and bore items.
+  let comps = null;
+  if (own.crossing) {
+    comps = await page.evaluate(
+      async ({ W, P, API }) => {
+        const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
+        const h = { authorization: `Bearer ${s.accessToken}` };
+        const items = await (await fetch(`${API}/api/workspace/${W}/project/${P}/takeoff/item`, { headers: h })).json();
+        const list = await (await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/components`, { headers: h })).json();
+        const nameOf = new Map((Array.isArray(items) ? items : []).map((i) => [i.uuid, i.name]));
+        const pick = (c) => ({ kind: c.kind, name: c.name, sub_calc: c.sub_calc ?? null, mat_key: c.mat_key ?? null, auto_key: c.auto_key ?? null, qty_formula: c.qty_formula, unit: c.unit, pricing_mode: c.pricing_mode, unit_price: c.unit_price == null ? null : Number(c.unit_price), unit_rate: c.unit_rate == null ? null : Number(c.unit_rate), wastage_pct: c.wastage_pct == null ? null : Number(c.wastage_pct), round_to: c.round_to == null ? null : Number(c.round_to), total: c.total == null ? null : Number(c.total) });
+        const by = {};
+        for (const c of Array.isArray(list) ? list : []) (by[nameOf.get(c.item_uuid) ?? c.item_uuid] ??= []).push(pick(c));
+        return { lines: by, items: Array.isArray(items) ? items.length : String(items).slice(0, 200), components: Array.isArray(list) ? list.length : String(list).slice(0, 200) };
+      },
+      { W: ct.workspace, P: ct.project, API },
+    );
+  }
 
   const unit = new Map();
   for (const r of rows) {
@@ -272,9 +378,18 @@ async (page) => {
       for (const k of ["lab", "eq", "mat", "disp", "sub", "total"]) r[k] += (l.qty * u[k]) / u.qty / it.qty;
     }
     direct += total;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched };
+    // D-1277: each own line's Estimating columns in full (a crossing's lines are its own, bar the contract's shared
+    // ones, which take the item's share by quantity), its components, and Calculate's notes on the run and its pits.
+    const lines = own.crossing
+      ? mine.map((l) => {
+          const u = unit.get(`${l.type}|${l.name}`);
+          const k = u && u.qty > 0 ? l.qty / u.qty : 0;
+          return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
+        })
+      : undefined;
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
-  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items };
+  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }
