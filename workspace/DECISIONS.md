@@ -31879,3 +31879,123 @@ Logged before the work (the founder's D-1270; numbers shifted by one, D-1265).
     what share of each contract's tab total they are.
   - Report the gap three ways: pipe LF items only, non-LF items only, all items.
 - **Output:** a ranked list of the top causes with their $ impact, and a proposal for the next night run.
+
+## D-1272 — The founder's answers to the 2026-11-15 report's open questions (night run 2026-11-15 → 16)
+
+Logged before the build. Each answer is built under the part named.
+
+1. **D-1103 basis revised:** Part 1, D-1273.
+2. **Large RCP crew:** Part 3, D-1275.
+3. **MasterFormat move** of the founder's 45 inputs, 16 lines and the workspace's ten base scopes:
+   - A preview → apply action with undo, like D-1247. The founder runs it in daylight.
+   - Codes and folders only; totals identical to the cent.
+   - Built in Part 4, D-1276.
+4. **Pits** (Part 4):
+   - Check whether the tab bore items the library price came from included pits (and casing). If they did, "Pits by bore sub" defaults ON and the run says so; if not, pits stay priced.
+   - Pits use the job's equipment pool: one excavator shared across the pits and the job, with no per-pit 2-day minimum when a suitable machine is already on the job.
+   - Casing defaults to sub-furnished.
+5. **Minimum charges** (Part 4):
+   - Kind subcontract, so no material sales tax.
+   - Pressure test once per system, like test & disinfection.
+   - The founder's flat figures, without the location factor.
+6. **Duct bank pace** (Part 4):
+   - Trench work (excavation, backfill) on trench LF.
+   - Conduit laying on conduit LF at a duct-bank rate: 0.01–0.02 MH/LF per extra conduit, plus spacer sets every 5 ft. Not 4 × trench.
+7. **Founder gate** (Part 4):
+   - Keep the 120 s window, the one stamp and the git gating.
+   - Add npm install and docker cp to the rule text (no hook).
+   - Move `fx-suite/browser/lib/protected.mjs`'s ids to `.private/` (D-1228) and untrack them.
+8. **Restraint MH outside the table:** 14" 0.5, 18" 0.75, 30–36" 1.0 accepted. C909 uses the C900 MJ restraint keys (the same CIOD); the 0.573 ratio keys are dropped (Part 4).
+9. **PE CTS water services:** no MJ bends or restraints; compression couplings, corp stop and curb stop only (Part 4).
+10. **Small things** (Part 4):
+    - Tracer and tape round up to whole rolls per project.
+    - The bell-OD factors stay, marked grade D (maker table later).
+    - Spacers by placement: one within 2 ft of each end + one per 8 ft between.
+    - Pit lines under 33 05 07.23.
+    - Overlay: the thumbnails are sent with the sheet list; the coarse pass's extra "unchanged" ink is acceptable; a Retry button in Choose pages for "too long".
+    - Purge the older fx. accounts (2026-10-11 to 11-04) the quantity table doesn't use, dry run first.
+11. **2959-1402's two temporary low-water-crossing culverts:** listed, and excluded from tuning (temporary; their removal is not modelled). Part 1.
+
+**Numbering for the night:**
+
+| Part | Decision |
+|---|---|
+| Part 1, parse and the D-1103 revision | D-1273 |
+| Part 2, overpricing analysis | D-1274 |
+| Part 3, large RCP and trench depth | D-1275 |
+| Part 4, the answers above | D-1276 |
+| Part 5, crossing items | D-1277 |
+| Part 6, the section-layers plan | D-1278 |
+
+No feature moves to Live without the founder's confirmation in the morning. The brief, verbatim: `intelcost-infra/morning-report-2026-11-16/BRIEF.md`.
+
+## D-1273 — The bid-tab basis, revised (D-1103): no escalation, recent tabs as bid with every bidder, a bid overlay over our direct cost
+
+Logged before the work (Part 1). Harness only; no Estimating or engine change. The part adds its results here.
+
+## D-1274 — Overpricing analysis: water and 15–36" storm labour and equipment against the recent tabs
+
+Logged before the work (Part 2). Analysis only. The part adds its findings here.
+
+## D-1275 — Large RCP 48" and up: a heavy crew and production; trench depth from the invert, the wall and the bedding
+
+Logged before the work (Part 3). Spec first, then build. The part adds its rules here.
+
+## D-1276 — The answers in D-1272, items 3 to 10, built
+
+Logged before the work (Part 4). The part adds what it built here.
+
+## D-1277 — The 11 crossing pay items, priced with D-1269 as their own group
+
+Logged before the work (Part 5). The part adds its results here.
+
+## D-1278 — Pipe section layers and a live trench picture: the plan (no code)
+
+Logged before the work (Part 6). Plan only, built after the founder's review. The part adds its summary here.
+
+**The plan:** [pipe_section_layers_tasks.md](docs/tasks/pipe_section_layers_tasks.md). The mock-up of the trench
+picture is `intelcost-infra/morning-report-2026-11-16/part6/trench-picture-mockup.svg`. Nothing is built. Planned,
+awaiting the founder's review.
+
+1. **Audit.** Today's section is three zones (`section.ts:zones`) cut from one project-wide bedding (6 in) and one
+   pipe-zone top (12 in over the crown) for every pipe. The trench width is OD + 2 × clearance (`trench.ts:sectionFor`),
+   and the volumes take the barrel circle only, never the bell. The depth already works as Part 3 asks:
+   - gravity: invert + wall + bedding;
+   - pressure: cover + OD + bedding.
+
+   Where the standards differ (C600/C605 Types 1–5, D2321, C1479 Types 1–4, Classes A/B/C, 30 TAC §217.54, NEC 300.5,
+   D2774, Houston CSS, CLSM, cradle and encasement):
+   - pressure embedment stops at the top of the pipe (C600/C605 T4–T5), not 12 in over it;
+   - RCP bedding is OD/24 ≥ 3 in, in a trench OD + 2·OD/6 wide;
+   - D2321's width is max(OD + 16, 1.25·OD + 12) with 6 in over the crown, and Texas gravity sewer takes 12 in over
+     the crown with 6 in under the bell;
+   - there is no haunch layer, foundation layer, rock bedding or compaction;
+   - dry runs buy bedding no code asks for.
+2. **Layers, bottom up, each optional**, each with a material, a thickness rule and a compaction: foundation, bedding,
+   haunch, embedment top, initial band, final backfill to subgrade, surface. Width rules (OD + clearance, D2321,
+   ACPA OD/6, bell OD + 6 in) under the bucket and box rule. Walls unchanged. Volumes from geometry, less the barrel
+   and the bell (bell OD and length grade D).
+3. **Presets** (25) per standard, a default per type and pipe family:
+   - DI pressure: C600 Type 4;
+   - PVC pressure: C605 Type 4;
+   - flexible sanitary: D2321, with 30 TAC §217.54 in Texas;
+   - RCP: C1479 Type 2;
+   - flexible storm: D2321;
+   - gas and PE: D2774;
+   - conduit: NEC;
+   - Houston CSS and the project's own embedment where D-1108/D-1100 choose them.
+
+   Kept in the run's `section.layers` JSON. Absent means `legacy`, today's code path, so every existing run keeps its
+   quantities to the cent. New runs store `preset: "auto"`. No migration; one pydantic field for the project's
+   presets by type. Line identities are unchanged.
+4. **The live trench picture** in the run panel and read-only from Estimating:
+   - to scale; Average, Deepest or Shallowest;
+   - layers hatched by material;
+   - the dimensions;
+   - the cover warning in red, from D-1275's minimums;
+   - per-layer CY/LF and run CY from the same `runQuantities`.
+5. **26 hand-worked quantity-table rows**, one per preset plus the legacy equality row and the mock-up's case.
+   **Estimate 64 h** over 10 tasks, the engine and its rows first.
+
+**Depends on D-1275** (Part 3's per-type minimum cover and bedding), which was not yet filled when the plan was
+written. Five open questions are in the plan, §7.
