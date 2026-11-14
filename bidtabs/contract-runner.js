@@ -11,7 +11,9 @@ async (page) => {
   // joints, 100 the whole line. `allowance: false` (D-1267 addendum) takes the item's pipe off its line's fittings
   // allowance (its contract pays fittings separately and its description does not include them); the parity check runs
   // on the engine as it stands, the switch is applied to the lines written.
-  //   result pushed to page.context().__res: { key, missing, direct, items: [..., ours, labPerLF, unmatched] }
+  //   result pushed to page.context().__res: { key, missing, direct, items: [..., ours, labPerLF, eqPerLF, matPerLF, dispPerLF,
+  //   subPerLF, byRole, unmatched] }. Each item's labour, equipment, material, disposal and subcontract are the Estimating
+  //   table's own columns of its lines (D-1273: the bid overlay marks each up apart), never a split worked out here.
   // With `list` in place of `contract`, each in turn (one call; keep a call under the MCP's 30 minutes: ~2 min each).
   const ct = page.context().__ct;
   const out = [];
@@ -192,7 +194,7 @@ async (page) => {
     const heads = [...document.querySelectorAll("thead tr")].pop();
     const names = heads ? [...heads.querySelectorAll("th")].map((c) => c.innerText.replace(/\s+/g, " ").trim().toUpperCase()) : [];
     const col = (name) => names.indexOf(name);
-    const at = { no: col("ITEM NO."), name: col("ASSEMBLY"), qty: col("QTY"), lab: col("TOTAL LABOR COST"), eq: col("TOTAL EQUIPMENT"), mat: col("TOTAL MATERIAL COST"), disp: col("TOTAL DISPOSAL COST"), total: col("TOTAL ITEM COST") };
+    const at = { no: col("ITEM NO."), name: col("ASSEMBLY"), qty: col("QTY"), lab: col("TOTAL LABOR COST"), eq: col("TOTAL EQUIPMENT"), mat: col("TOTAL MATERIAL COST"), disp: col("TOTAL DISPOSAL COST"), sub: col("SUBCONTRACT"), total: col("TOTAL ITEM COST") };
     let type = carried;
     const rows = [];
     for (const tr of document.querySelectorAll("tbody tr")) {
@@ -206,7 +208,7 @@ async (page) => {
       const cells = [...tr.querySelectorAll("td")].map((c) => c.innerText.trim());
       if (!type || !tr.querySelector('input[type="checkbox"]') || cells.length < 10) continue;
       const num = (v) => (v && /\$|^[\d,.]+$/.test(v) ? Number(v.replace(/[$,]/g, "")) : 0);
-      rows.push({ type, no: cells[at.no], name: cells[at.name], qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), total: num(cells[at.total]) });
+      rows.push({ type, no: cells[at.no], name: cells[at.name], qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]) });
     }
     const b = document.body.innerText.split("\n");
     return { bid: b[b.indexOf("Bid total") + 1], at, rows, type };
@@ -238,8 +240,8 @@ async (page) => {
   const unit = new Map();
   for (const r of rows) {
     const k = `${r.type}|${r.name}`;
-    const u = unit.get(k) ?? { qty: 0, total: 0, lab: 0, eq: 0, mat: 0, disp: 0 };
-    unit.set(k, { qty: u.qty + r.qty, total: u.total + r.total, lab: u.lab + r.lab, eq: u.eq + r.eq, mat: u.mat + r.mat, disp: u.disp + r.disp });
+    const u = unit.get(k) ?? { qty: 0, total: 0, lab: 0, eq: 0, mat: 0, disp: 0, sub: 0 };
+    unit.set(k, { qty: u.qty + r.qty, total: u.total + r.total, lab: u.lab + r.lab, eq: u.eq + r.eq, mat: u.mat + r.mat, disp: u.disp + r.disp, sub: u.sub + r.sub });
   }
   let direct = 0;
   const items = contract.items.map((it, i) => {
@@ -250,6 +252,7 @@ async (page) => {
     let eq = 0;
     let mat = 0;
     let disp = 0;
+    let sub = 0;
     const unmatched = [];
     // Each of the item's own lines by its role (pipe, bedding and zone, backfill, trench support, ...), per LF.
     const byRole = {};
@@ -264,11 +267,12 @@ async (page) => {
       eq += (l.qty * u.eq) / u.qty;
       mat += (l.qty * u.mat) / u.qty;
       disp += (l.qty * u.disp) / u.qty;
-      const r = (byRole[l.role] ??= { lab: 0, eq: 0, mat: 0, disp: 0, total: 0 });
-      for (const k of ["lab", "eq", "mat", "disp", "total"]) r[k] += (l.qty * u[k]) / u.qty / it.qty;
+      sub += (l.qty * u.sub) / u.qty;
+      const r = (byRole[l.role] ??= { lab: 0, eq: 0, mat: 0, disp: 0, sub: 0, total: 0 });
+      for (const k of ["lab", "eq", "mat", "disp", "sub", "total"]) r[k] += (l.qty * u[k]) / u.qty / it.qty;
     }
     direct += total;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, byRole, unmatched };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched };
   });
   const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items };
   (page.context().__res ??= []).push(res);
