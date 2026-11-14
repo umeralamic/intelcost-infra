@@ -958,7 +958,8 @@ export const UTILITY_CASES = [
       variant: "pe_cts_sdr9:1|1|0–6 ft||short|t:water_service|a:tape+test_disinfect+tracer",
       name: '1" PE CTS SDR 9, 0–6 ft deep, short run',
       lf: 60,
-      keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1",
+      // D-1276 (D-1272 9): a PE CTS service's curb stop too (60 LF, one coil: no coupling).
+      keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1",
       "tap:water:1:qty": "1",
       "tap:water:1:unit": "EA",
       "tap:water:1:name": 'Service tap at the main (saddle and corporation stop), 1"',
@@ -1006,7 +1007,8 @@ export const UTILITY_CASES = [
       // D-1267: the trench's length in the name of a line of several pipes.
       name: '4" PVC Conduit Sch 40, 4 pipes x 100 LF, 0–6 ft deep, encased 30 x 12 in',
       lf: 400,
-      keys: "pipe:conduit_sch40:4 fit:pipe:conduit_sch40:4 warning_tape concrete:encasement addon:pull_string",
+      // D-1276 (D-1272 6): a duct bank's spacer sets every 5 ft (util-1276-duct-bank-100-spacers).
+      keys: "pipe:conduit_sch40:4 fit:pipe:conduit_sch40:4 warning_tape duct_spacer:4 concrete:encasement addon:pull_string",
       "concrete:encasement:qty": "QTY * 0.019058",
       "concrete:encasement:unit": "CY",
       "addon:pull_string:qty": "QTY",
@@ -1280,13 +1282,14 @@ export const UTILITY_CASES = [
     expect: { "restraint_joint:pvc_c900:8:qty": "4", "fit:pipe:pvc_c900_dr18:8:pct": 20, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" },
   },
   {
-    // A water service's tap at the main is a connection, never a counted fitting: 1 in PE CTS, 60 LF, the allowance 20 %.
+    // A water service's tap at the main is a connection, never a counted fitting: 1 in PE CTS, 60 LF. D-1276 (D-1272 9):
+    // a PE CTS service buys its couplings, corporation stop and curb stop only, so its allowance is 0 % (was 20 %).
     id: "util-1267-tap-not-counted",
     kind: "type-lines",
     type: "water_service",
     label: '1" PE CTS SDR 9',
     lf: 60,
-    expect: { "tap:water:1:qty": "1", "fit:pipe:pe_cts_sdr9:1:pct": 20, "fit:pipe:pe_cts_sdr9:1:name": "Fittings allowance, 20 %" },
+    expect: { "tap:water:1:qty": "1", "fit:pipe:pe_cts_sdr9:1:pct": 0, "fit:pipe:pe_cts_sdr9:1:name": "Fittings allowance, 0 % (PE CTS service: couplings, corporation stop and curb stop counted)" },
   },
   {
     // A plain water main keeps its 20 %; a sanitary main its 5 % (nothing counted).
@@ -1306,7 +1309,8 @@ export const UTILITY_CASES = [
     expect: { "fit:pipe:pvc_d3034_sdr35:8:pct": 5, "fit:pipe:pvc_d3034_sdr35:8:name": "Fittings allowance, 5 %", workScope: "site_utilities.sanitary" },
   },
   {
-    // A C909 main with a 45: the C900 (DI MJ) bend key; its MJ restraint on C909's own key (D-1265 16).
+    // A C909 main with a 45: the C900 (DI MJ) bend key; D-1276 (D-1272 8): its MJ restraint on C900's key too (the same
+    // CIOD; C909's own 0.573-ratio keys removed; was "restraint:pvco_c909:8").
     id: "util-1267-c909-bend-restraint",
     kind: "type-lines",
     type: "water",
@@ -1314,7 +1318,7 @@ export const UTILITY_CASES = [
     lf: 120,
     run: { catalog_key: "pvco_c909_235:8", nominal_in: 8 },
     bends: [{ angle: 45, count: 1 }],
-    expect: { "bend:pvc_c900:45:8:qty": "1", "restraint:pvco_c909:8:qty": "1" },
+    expect: { "bend:pvc_c900:45:8:qty": "1", "restraint:pvc_c900:8:qty": "1" },
   },
   {
     // D-1265 (1): a water main stored before F44 (no add-ons in its section) buys D-1080's tracer and tape only.
@@ -1437,16 +1441,17 @@ export const UTILITY_CASES = [
   },
   // --- D-1269 (F48): encasement, casing and trenchless crossings. Each run on a level profile (ground 100.00 ft, cover
   // 4 ft, Type B clay, a 6 ft box), its trench through the real engine, the crossing's stretch blended in by its share.
-  // The spacer rule: one within 2 ft of each end and one every 8 ft, read additively, 2 + ceil(LF / 8): 8 LF 2 + 1 = 3;
-  // 80 LF 2 + 10 = 12 (a placement reading, ends at 2 and 78 ft and 76 ft between at 8 ft, gives 11: the founder's
-  // 12 is the additive reading); 81 LF 2 + 11 = 13; 600 LF 2 + 75 = 77.
-  { id: "util-1269-spacer-rule", kind: "spacers", lfs: [8, 80, 81, 600], expect: { counts: "8:3 80:12 81:13 600:77" } },
+  // The spacer rule, D-1276 (D-1272 10) by placement: one within 2 ft of each end and one every 8 ft between, so no gap
+  // over 8 ft: 1 + ceil((LF - 4) / 8). 8 LF: ends at 2 and 6 ft, 1 + 1 = 2; 80 LF: ends at 2 and 78 ft, 76 ft between in
+  // 8 ft steps, 1 + ceil(9.5) = 11 (was 12, D-1269's additive 2 + ceil(LF / 8)); 81 LF 1 + ceil(9.625) = 11 (was 13);
+  // 600 LF 1 + ceil(74.5) = 76 (was 77); 3 LF one spacer.
+  { id: "util-1269-spacer-rule", kind: "spacers", lfs: [3, 8, 80, 81, 600], expect: { counts: "3:1 8:2 80:11 81:11 600:76" } },
   {
     // 600 LF of 8 in C900 DR 18 with an 80 LF jack and bore. Casing: bell 9.05 x 1.20 = 10.86, + 4 = 14.86 in; 14 in x
     // 0.250 has ID 13.50 (short); 16 in x 0.375 ID 15.25: 16 in x 0.375 (16-24 in wall 0.375). On the stretch's line
     // (80 LF): the carrier 80 x 1.02 = 81.6 -> 5 joints of 20 ft = 100 LF; tracer 80 x 1.1 / 500 -> 1 roll; test and
     // disinfection 80 LF; restraint ceil(80 / 20) = 4 sets (pressure pipe, restrained by default in the casing); the
-    // casing 80 LF (20 ft lengths, 80 even); spacers 2 + ceil(80 / 8) = 12; 2 end seals; the bore subcontract 80 LF. No
+    // casing 80 LF (20 ft lengths, 80 even); spacers 1 + ceil((80 - 4) / 8) = 11 (D-1276; was 12); 2 end seals; the bore subcontract 80 LF. No
     // fittings allowance and no tape in the casing. Trench 600 -> 520 LF (-80), excavation and spoils x 520 / 600.
     // Its bore pit: the carrier's centre at 96 - 9.05 / 24 ft, the casing's bottom 16 / 24 ft below, the pit 1.5 ft
     // below that: depth 4 + 9.05 / 24 + 16 / 24 + 1.5 = 6.54375 ft (a trench box, to 8 ft); 12 x 32 = 384 SF: dug
@@ -1475,7 +1480,7 @@ export const UTILITY_CASES = [
       "cased:addon:test_disinfect": 80,
       "cased:restraint_joint:pvc_c900:8": 4,
       "cased:casing:steel_casing_375:16": 80,
-      "cased:casing:spacer:8": 12,
+      "cased:casing:spacer:8": 11,
       "cased:casing:end_seal:16": 2,
       "cased:bore:jack_bore:16": 80,
       "cased:bore:jack_bore:16:kind": "subcontract",
@@ -1546,7 +1551,7 @@ export const UTILITY_CASES = [
       casedLf: 80,
       openLf: 520,
       casedKeys: "pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect restraint_joint:pvc_c900:8 casing:steel_casing_375:16 casing:spacer:8 casing:end_seal:16",
-      "cased:casing:spacer:8": 12,
+      "cased:casing:spacer:8": 11,
       "cased:casing:end_seal:16": 2,
       trenchLf: 600,
       wider: true,
@@ -1690,4 +1695,88 @@ export const UTILITY_CASES = [
   // Gas main at 2 ft: 49 CFR 192.327(b)'s 24 in, not flagged; at 1.5 ft flagged.
   { id: "util-1275-gas-2ft", kind: "depth-rule", type: "gas", pipe: "pe_gas_sdr11:4", cover: 2, pressure: true, expect: { coverFt: 2, flags: [] } },
   { id: "util-1275-gas-18in", kind: "depth-rule", type: "gas", pipe: "pe_gas_sdr11:4", cover: 1.5, pressure: true, expect: { coverFt: 1.5, flags: ["Cover over the crown 1.50 ft at its shallowest, under the 2 ft minimum for Gas main (49 CFR 192.327(b): 24 in, A)."] } },
+  // --- D-1276 (Part 4a, night run 2026-11-15): the founder's pricing and engine answers (D-1272 4-10, D-1277 2, 3, 5).
+  // A new crossing's defaults: a jack and bore's casing sub-furnished, its pits (and a pit placed alone) by the bore sub;
+  // a run stored before keeps what it has (no casing_by: owner-furnished; a stored choice kept); a new sleeve's casing
+  // sub-furnished.
+  {
+    id: "util-1276-crossing-defaults",
+    kind: "crossing-defaults",
+    expect: { pitBySub: true, newJackBore: "sub", keptOwner: "owner", storedBefore: "owner", sleeveCasingBy: "sub", pitsText: "Pits by the bore sub: the bore price includes them", bellGrade: "grade D, maker table later" },
+  },
+  {
+    // A new 60 LF sleeve, 16 in x 0.375, its casing sub-furnished: its own pipe line the bore sub's (a subcontract at the
+    // same key), 60 x 1.02 = 61.2 -> 80 LF in 20 ft lengths, as before; the bore 60 LF.
+    id: "util-1276-sleeve-casing-sub",
+    kind: "trenchless",
+    type: "casing",
+    label: '16" Steel Casing 0.375 wall',
+    lf: 60,
+    expect: { kind: "sleeve", casedKeys: "pipe:steel_casing_375:16 bore:jack_bore:16", "cased:pipe:steel_casing_375:16": 80, "cased:pipe:steel_casing_375:16:kind": "subcontract", "cased:bore:jack_bore:16": 60 },
+  },
+  {
+    // A.8: a C909 main restrained at the bends: C900's MJ key (no pvco_c909 key left in the list).
+    id: "util-1276-c909-on-c900-keys",
+    kind: "type-lines",
+    type: "water",
+    label: '12" PVCO C909 Class 235',
+    lf: 200,
+    run: { catalog_key: "pvco_c909_235:12", nominal_in: 12 },
+    bends: [{ angle: 90, count: 2 }],
+    tees: 1,
+    expect: { "bend:pvc_c900:90:12:qty": "2", "tee:pvc_c900:12x12:qty": "1", "restraint:pvc_c900:12:qty": "3", keys: "pipe:pvco_c909_235:12 fit:pipe:pvco_c909_235:12 tracer_wire warning_tape addon:test_disinfect bend:pvc_c900:90:12 tee:pvc_c900:12x12 restraint:pvc_c900:12" },
+  },
+  {
+    // A.9: a 60 LF 1 in PE CTS water service with a 90 on its path: no MJ bend or restraint; its tap at the main (the
+    // saddle and corporation stop), a curb stop, no coupling (60 LF on one 100 ft coil: ceil(0.6) - 1 = 0); allowance 0 %.
+    id: "util-1276-pe-cts-service-60",
+    kind: "type-lines",
+    type: "water_service",
+    label: '1" PE CTS SDR 9',
+    lf: 60,
+    bends: [{ angle: 90, count: 1 }],
+    expect: { keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1", "curb_stop:cts:1:qty": "1", "fit:pipe:pe_cts_sdr9:1:pct": 0 },
+  },
+  {
+    // A 150 LF one: two coils, one compression coupling (ceil(1.5) - 1 = 1).
+    id: "util-1276-pe-cts-service-150",
+    kind: "type-lines",
+    type: "water_service",
+    label: '1" PE CTS SDR 9',
+    lf: 150,
+    expect: { keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1 coupling:cts_compression:1", "coupling:cts_compression:1:qty": "1", "curb_stop:cts:1:qty": "1" },
+  },
+  {
+    // A.6: the duct bank's spacer sets every 5 ft of trench, one at each end, a spacer a conduit: 100 LF of trench x 4
+    // conduits (400 LF on the line) 4 x (ceil(400 / 4 / 5) + 1) = 4 x 21 = 84 spacers.
+    id: "util-1276-duct-bank-100-spacers",
+    kind: "type-lines",
+    type: "electric",
+    label: '4" PVC Conduit Sch 40',
+    lf: 100,
+    run: { pipes: 4, pipe_gap_in: 3 },
+    expect: { lf: 400, "duct_spacer:4:qty": "4 * (ceil(QTY / 4 / 5) + 1)", "duct_spacer:4:sold": 84 },
+  },
+  {
+    // 400 LF of trench (1,600 on the line): 4 x (80 + 1) = 324 spacers.
+    id: "util-1276-duct-bank-400-spacers",
+    kind: "type-lines",
+    type: "electric",
+    label: '4" PVC Conduit Sch 40',
+    lf: 400,
+    run: { pipes: 4, pipe_gap_in: 3 },
+    expect: { lf: 1600, "duct_spacer:4:sold": 324 },
+  },
+  {
+    // A.10: tracer and tape rounded once over the project. Two water mains, 200 and 250 LF: tracer 200 x 1.1 / 500 = 0.44
+    // and 0.55 rolls, 0.99 -> 1 roll for the project (2 before, one a line), the 0.01 added spread by share: 0.4444 and
+    // 0.5556; tape 200 x 1.05 / 1000 = 0.21 and 0.2625, 0.4725 -> 1 roll (2 before): 0.4444 and 0.5556.
+    id: "util-1276-project-rolls",
+    kind: "project-rolls",
+    lines: [
+      { qty: 200, materials: [{ key: "tracer_wire", qty: "QTY * 1.1 / 500" }, { key: "warning_tape", qty: "QTY * 1.05 / 1000" }] },
+      { qty: 250, materials: [{ key: "tracer_wire", qty: "QTY * 1.1 / 500" }, { key: "warning_tape", qty: "QTY * 1.05 / 1000" }] },
+    ],
+    expect: { tracer_wire: "0.4444 + 0.5556 = 1", warning_tape: "0.4444 + 0.5556 = 1", "tracer_wire:note": "0.44 of 1 ROLL for the project (whole rolls, rounded once)" },
+  },
 ];

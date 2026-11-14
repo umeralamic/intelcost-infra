@@ -67,8 +67,11 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1269: 69 crossing keys: casing walls 13 (C), jack and bore 12 (C10 D2), HDD 13 + its pits 2 (D), spacers 10 (D),
 # end seals 12 (D), annulus grout (D), backstops 2 (D), pump a day (C), trench box a pit-week (C), slide rail (D), sheet
 # piling (C): C568 + 26 = 594, D138 + 43 = 181; the 19 casing keys repriced at $1.00/lb stay C.
-if [ "$MAT_COUNTS" != "A171 B188 C594 D181 F32" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C594 D181 F32"
+# D-1276: the 10 C909 MJ restraint keys removed (C7 D3); casing spacers 4-16 in D to C (7) and 18-24 in repriced D (3); end
+# seals 8-30 in D to C (9) and 36-48 in repriced D (3); 15 keys added: curb stops and CTS couplings C8 D2, duct bank spacers
+# C2 D3: C594 - 7 + 7 + 9 + 8 + 2 = 613, D181 - 3 - 7 - 9 + 2 + 3 = 167.
+if [ "$MAT_COUNTS" != "A171 B188 C613 D167 F32" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C613 D167 F32"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -145,6 +148,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py or
 # D-1268: the corrected prices (tracer, pull string, the three minimums, D2241 below C900 at its weight ratio), the line
 # cost at them, and the minimum charges' top-up per estimate (short and long runs, two sheets, per system).
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prices" </dev/null || { echo "FAIL  price corrections (above)"; exit 1; }
+# D-1276 (Part 4a): the minimums a subcontract at the flat figure, the pits on the job's pool, the duct bank's pace, the
+# carrier pull-in on its run's crew or alone, each by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py answers" </dev/null || { echo "FAIL  Part 4a answers (above)"; exit 1; }
 # Prevailing wage by classification (D-1038): Mohave Highway WD, operators by machine, a licensed trade not covered, the foreman.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prevailing" </dev/null || { echo "FAIL  prevailing (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.

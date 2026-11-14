@@ -1,0 +1,27 @@
+# D-1276 — the founder's answers in D-1272, built (night run 2026-11-15 → 16, Part 4)
+
+Part 4a (this file's first half): D-1272 items 4, 5, 6, 8, 9, 10 (its first four bullets) and D-1277's answers 2, 3
+and 5. Part 4b: items 3, 7 and the rest of 10 (the MasterFormat move, the founder gate text, the overlay thumbnails and
+Retry, the fx purge). Built unattended; awaiting the founder's check. Nothing moves to Live without it.
+
+## Part 4a
+
+| # | Answer | Built | Where |
+|---|---|---|---|
+| A.4 | Casing sub-furnished by default | A new jack and bore stores `casing_by: "sub"`; a new Casing / sleeve run too, its own pipe (the casing) then the bore sub's (a subcontract at the same key). A run stored before keeps what it has (absent reads owner-furnished, as it did). | app `crossings.ts` (`withNewDefaults`, `NEW_CASING_BY`), `types.ts` (`newRunSection`), `materials.ts` (`lineMaterials`, the sleeve), `RunPanel.tsx` |
+| A.4, D-1277 5 | Pits by bore sub ON where the bore sub's price is used | The pits made with a jack and bore or a sleeve, and a pit placed alone, start by the bore sub; the run says "Pits by the bore sub: the bore price includes them" (panel and run notes); turned off on the pit, our crew prices them. A pit stored before keeps its own. | app `crossings.ts` (`NEW_PITS_BY_SUB`, `PITS_BY_SUB_TEXT`), `useUtilities.tsx`, `runDefaults.ts`, `RunPanel.tsx`, `calculate.ts` |
+| A.4 | Priced pits on the job's pool | The Bore pit crew (A24) is the utility sub's: its excavator pools with the pipe crews' (`pool.fits`, pipe cap 40 t) and is sized by the deepest pit on the pipe crew's rows (13-15 t to 10 ft, 20-25 t to 14 ft, 30-36 t to 16 ft, else 40 t). Suitable = a hydraulic excavator already on the job of that class or larger, at most 40 t, and no dearer to extend than the pit's own rental (D-1115). Pooled: no rental, delivery or day minimum of its own. | api `production.py` (`PIT_CREW`, `pit_depth`, `pit_class`, `_ensure_site`, `_job_pool`) |
+| A.5 | Minimum charges | A subcontract (no material sales tax), the pressure test one a system, IntelCost's minimum at the founder's flat figure (the location factor taken out; a workspace's own price as it is). Update compares the flat figure. | api `minimums.py` (`KIND`, `flat`, `is_min`, `ADD_ONS`), `line_sync.py` (`price_changes`, `apply_changes`) |
+| A.6 | Duct bank pace | A dry utility's conduit line of 2+ conduits: the crew at its trench pace on the trench LF (line rate × n), the added conduits 0.015 MH/LF each on the crew (machines unchanged, "Duct bank:" note); spacer sets every 5 ft of trench, one at each end, a spacer a conduit (`duct_spacer:<n>`). | api `production.py` (`duct_conduits`, `duct_rate`, `duct_extra_mh`, `DUCT_MH_PER_LF`); app `materials.ts` (`isDuctBank`), `host.ts` (`DUCT_NOTE`) |
+| A.8 | Restraint MH and C909 | 14 in 0.5, 18 in 0.75, 30-36 in 1.0 accepted (already built, comment marked). C909's bends, tees and MJ restraint on C900's keys; the 10 `restraint:pvco_c909:*` keys removed by the migration. | app `materials.ts` (`fittingMaterials`, `restraintMh`) |
+| A.9 | PE CTS water services | No MJ bend, tee or restraint; the tap at the main (saddle and corporation stop), a curb stop a pipe, a compression coupling where a 100 ft coil meets the next; the fittings allowance 0 %. | app `materials.ts` (`isCtsService`, `ctsCouplings`, `serviceMaterials`, `pipeMaterials`), `lines.ts` |
+| A.10 | Tracer and tape whole rolls a project | `roundScope: "project"`: Estimating rounds each key once over the project and spreads the round-up over the lines by their share (as a bid's last joint is): the lines add up to whole rolls, each line's note "0.32 of 2 ROLL for the project". | app `materials.ts`, `lib/estimate/bidOrder.ts` (`withBidOrder`, `orderNote`); api `earthwork/schemas.py` (`round_scope`) |
+| A.10 | Bell-OD factors | Kept, said on the run and its notes as grade D, "maker table later". | app `crossings.ts` (`BELL_GRADE`), `RunPanel.tsx`, `calculate.ts` |
+| A.10 | Spacers by placement | 1 + ⌈(LF − 4) ÷ 8⌉ a carrier (one within 2 ft of each end, no gap over 8 ft); 80 LF → 11. | app `crossings.ts` (`spacerCount`, `crossingMaterials`) |
+| A.10 | Pit lines under 33 05 07.23 | Node "33 05 07.23 Utility Augering" added; every pit line but its rock and haul-off carries the pit's kind and maps there on the ten base scopes (a mapping of the workspace's own kept). | api `masterformat.py` (`PIT_CODE`), `work_scopes.py` (`seed_pit_codes`); app `lines.ts` (`structureLines`) |
+| D-1277 2 | Spacers and seals | The tab bore items do not name spacers or seals (only the three casing items do), so bored crossings keep them; the grade D estimates replaced by makers' list prices (grade C, cited; sizes with no list stay D), old → new in the migration. | migration `d1276a4b7c20`, seed `d1276_price_answers.json` |
+| D-1277 3 | Pull-in on the run's crew | A carrier's pull-in rides its run's own pipe crew with no minimum of its own; a run that is all crossing takes half a crew day at least; a standalone sleeve has no pull-in. | api `production.py` (`crossing_alone`, `pull_in_floor`, `_line_rates`) |
+
+Quantity-table rows: `util-1276-*` (browser), `answers` (drives/quantity-table.py), changed `util-1269-spacer-rule`,
+`util-1269-jack-bore-80-of-600`, `util-1269-cased-open-80-of-600`, `util-1267-c909-bend-restraint`,
+`util-1267-tap-not-counted`, `minimum-1268-pressure-short`, grade counts.

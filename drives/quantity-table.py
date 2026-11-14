@@ -1945,14 +1945,17 @@ def prices() -> int:
             " disinfection, minimum charge (Water) | Minimum $1,500.00 a system a mobilization, less $337.50 by the foot (150.00"
             " LF on 1 line)",
         ),
-        # Pressure test, one an estimate across systems: 1,000 LF x $1.00 met; 300 LF ($300) + 150 LF ($150) short $300.
+        # Pressure test: 1,000 LF x $1.00 met. D-1276 (D-1272 5): one a system now, like test and disinfection (was one an
+        # estimate: 300 + 150 LF, $450, one line $300.00): water 300 LF ($300) short $450.00, fire 150 LF ($150) short
+        # $600.00, each its own line.
         ("pressure-met", [part(5, "pressure_test", "water", 1000, 1.0)], mins, ""),
         (
             "pressure-short",
             [part(5, "pressure_test", "water", 300, 1.0), part(6, "pressure_test", "fire", 150, 1.0)],
             mins,
-            "pressure_test 300.00 Pressure test, minimum charge | Minimum $750.00 a mobilization, less $450.00 by the foot (450.00"
-            " LF on 2 lines)",
+            "pressure_test|fire 600.00 Pressure test, minimum charge (Fire) | Minimum $750.00 a system a mobilization, less $150.00"
+            " by the foot (150.00 LF on 1 line); pressure_test|water 450.00 Pressure test, minimum charge (Water) | Minimum"
+            " $750.00 a system a mobilization, less $300.00 by the foot (300.00 LF on 1 line)",
         ),
         # No minimum priced: no line.
         ("unpriced", [part(11, "test_disinfect", "water", 150, 2.25)], {"test_disinfect": None}, ""),
@@ -1966,7 +1969,103 @@ def prices() -> int:
     return 1 if wrong else 0
 
 
+def answers() -> int:
+    """D-1276 (Part 4a of the 2026-11-15 night run): the founder's pricing and engine answers, each worked by hand.
+
+    - The minimum charges: a subcontract, at the founder's flat figure (the location factor out), the pressure test a
+      system (the per-system row is `prices`' `minimum-1268-pressure-short`).
+    - The pits on the job's pool: the pit's excavator by its depth, borrowed from the pipe crew's (no 2-day rental of
+      its own); the same pit before (a host of its own).
+    - The duct bank's pace: the trench at the crew's pace on its trench LF, the added conduits at 0.015 MH/LF.
+    - The pull-in: on its run's crew with no minimum; a crossing priced alone at half a crew day; a standalone sleeve the
+      bore sub's alone.
+    """
+    from app.features.equipment import pool, production
+    from app.features.materials import minimums
+    from app.features.materials.schemas import Resolved
+
+    wrong: list[str] = []
+    n = 0
+
+    def check(rid: str, got: object, want: object) -> None:
+        nonlocal n
+        n += 1
+        ok = abs(got - want) < 0.005 if isinstance(want, float) and isinstance(got, int | float) else got == want
+        if not ok:
+            wrong.append(f"FAIL  answer-1276-{rid}: {got!r}, expected {want!r}")
+
+    # --- A.5 minimums: a subcontract; the flat figure. The library's $1,500 at Houston's material factor 0.98737 is
+    # $1,481.055 resolved: flat takes it back to $1,500.00; a workspace's own $1,400 stays $1,400.
+    check("minimum-kind", minimums.KIND, "subcontract")
+    lib = Resolved(mat_key="addon_min:test_disinfect", unit_price=round(1500 * 0.98737, 4), sell_unit="EA", source="intelcost", factor=0.98737, location="Location factor, ZIP 77002")
+    check("minimum-flat", minimums.flat(lib).unit_price, 1500.0)
+    check("minimum-flat-says", minimums.flat(lib).location, minimums.FLAT)
+    own = Resolved(mat_key="addon_min:test_disinfect", unit_price=1400.0, sell_unit="EA", source="workspace")
+    check("minimum-own-kept", minimums.flat(own).unit_price, 1400.0)
+    check("minimum-pressure-a-system", minimums.ADD_ONS["addon:pressure_test"][2], True)
+    check("minimum-cctv-an-estimate", minimums.ADD_ONS["addon:cctv"][2], False)
+
+    # --- A.4 pits on the pool. The pit's class by its depth on the pipe crew's rows (13-15 t to 10 ft, 20-25 t to 14 ft,
+    # 30-36 t to 16 ft, past them 40 t): the 80 LF jack and bore's 6.54 ft pit (util-1269-jack-bore-80-of-600) a 13-15 t.
+    rows = [("EX-CRAWL-13T", 10.0), ("EX-CRAWL-20T", 14.0), ("EX-CRAWL-30T", 16.0)]
+    for depth, want in ((6.54, "EX-CRAWL-13T"), (12.0, "EX-CRAWL-20T"), (15.5, "EX-CRAWL-30T"), (18.0, "EX-CRAWL-40T")):
+        check(f"pit-class-{depth:g}", production.pit_class(depth, rows)[0], want)
+    # Two pits, a pit a crew-day of 8 h: the 13-15 t 16 h. The water main's crew (A18) on its 20-25 t booked 40 h (5 days,
+    # a week $2,800). Borrowed: 56 h = 7 days, a week and 2 days $4,700, extension $1,900, its fuel 4.5 gph x $3.50 x 16 h
+    # = $252.00: $2,152.00. Its own: 2 days $1,400 (under the week's $2,100), fuel 3.5 x 3.50 x 16 = $196.00, delivery and
+    # pickup $1,100: $2,696.00. The pits take the pipe crew's machine: no 2-day rental and no delivery of their own.
+    ex20 = pool.Rates(day=950.0, week=2800.0, four_week=7000.0, owned=80.0, gph=4.5, mob=1100.0)
+    ex13 = pool.Rates(day=700.0, week=2100.0, four_week=5600.0, owned=60.0, gph=3.5, mob=1100.0)
+
+    def plan(pit_pipe: bool) -> pool.Plan:
+        ms = [
+            pool.Machine(uuid="PIPE-20T", activity_id=18, position=0, need_key="EX-CRAWL-20T", kind="hydraulic excavator", weight=48500.0, hours=40.0, pipe=True, rates=ex20),
+            pool.Machine(uuid="PIT-13T", activity_id=24, position=0, need_key="EX-CRAWL-13T", kind="hydraulic excavator", weight=30400.0, hours=16.0, pipe=pit_pipe, rates=ex13),
+        ]
+        return pool.plan(ms, 83100.0, False, 3.5)
+
+    now = plan(True)
+    check("pit-pooled", now.host, {"PIT-13T": "PIPE-20T"})
+    ch = now.choice.get("PIT-13T")
+    check("pit-pooled-borrow", round(ch.borrow, 2) if ch else None, 2152.0)
+    check("pit-pooled-own", round(ch.own, 2) if ch else None, 2696.0)
+    # Before D-1276 the Bore pit crew was not a pipe crew: with no one sub doing the earthwork too, no host fitted.
+    check("pit-before-own-machine", plan(False).host, {})
+
+    # --- A.6 the duct bank's pace: 4 x 4 in conduit, the line's LF a conduit's (util-1267-duct-bank-100lf-line).
+    duct = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:electric", earthwork_variant="conduit_sch40:4|4|0–6 ft||a:pull_string+tape", earthwork_crew=None)
+    check("duct-conduits", production.duct_conduits(duct), 4)
+    water = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:water", earthwork_variant="pe_cts_sdr9:1|2|0–6 ft||short|t:water_service", earthwork_crew=None)
+    check("duct-not-a-water-service", production.duct_conduits(water), None)
+    # The crew's trench pace R a day on the trench, 4R on the line's conduit LF: at R = 500 LF a day, 100 LF of trench
+    # (400 LF of conduit) 400 / 2,000 = 0.2 day (was 400 / 500 = 0.8, 4 x the trench); the 3 added conduits 0.015 x 3 x
+    # 100 = 4.50 MH. 400 LF of trench (1,600 LF of conduit): 0.8 day (was 3.2), 0.015 x 3 x 400 = 18.00 MH.
+    for trench, days, mh in ((100.0, 0.2, 4.5), (400.0, 0.8, 18.0)):
+        conduit = 4 * trench
+        check(f"duct-{trench:g}-days", round(conduit / production.duct_rate(500.0, 4), 4), days)
+        check(f"duct-{trench:g}-mh", round(production.duct_extra_mh(4, conduit), 4), mh)
+
+    # --- Part 5 answer 3, the pull-in: 80 LF of 8 in C900 at 500 LF a crew-day. On a 600 LF run (its open 520 LF laid by
+    # the same crew): 80 / 500 = 0.16 day, no minimum. A run that is all crossing (80 of 80 LF): half a day, 160 LF a day.
+    jb = "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|jb:16|x:abcd1234"
+    check("pull-in-on-run", production.crossing_alone(jb, 80.0, 600.0), False)
+    check("pull-in-on-run-days", round(80.0 / production.pull_in_floor(500.0, 80.0, False), 4), 0.16)
+    check("pull-in-alone", production.crossing_alone(jb, 80.0, 80.0), True)
+    check("pull-in-alone-days", round(80.0 / production.pull_in_floor(500.0, 80.0, True), 4), 0.5)
+    # A standalone sleeve: no carrier, no pull-in, no crew of ours (the bore sub's line).
+    sleeve = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:other", earthwork_variant="steel_casing_375:16|1|0–6 ft||t:casing|sleeve:16|x:abcd1234", earthwork_crew=None)
+    check("sleeve-trenchless", production.line_role(sleeve), "utility_pipe_trenchless")
+    check("sleeve-no-pull-in", production.pull_in(sleeve), None)
+
+    for w in wrong:
+        print(w)
+    print(f"Part 4a answers (D-1276): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["answers"]:
+        sys.exit(answers())
     if sys.argv[1:] == ["prices"]:
         sys.exit(prices())
     if sys.argv[1:] == ["orders"]:

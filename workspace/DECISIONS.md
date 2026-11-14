@@ -32085,9 +32085,106 @@ Logged before the work (Part 3). Spec first, then build. The part adds its rules
   60 and 72 in still 23–28 % under. All recent tabs: k to the medians 0.997 → 0.996 → 0.990, to the lows 0.895 → 0.894
   → 0.889; low on none.
 
+**The founder's answers to Part 3's questions (2026-11-14, during the night run):**
+1. **Pressure bedding stays at 6 in until Part 6 is built.** The house preset will then be C605 T4: max(OD/8, 4 in),
+   not 0.
+2. **The anchor moves to 60 in.** 94.92 LF/day is anchored at 60 in, the middle of the 48–72 in group, with the step
+   (48/D)^0.547 around it. The 48"+ table is rerun once in the next harness pass, not now.
+3. **Minimum covers:** storm 2 ft and sanitary 3 ft stay as grade C defaults, editable in settings.
+4. **The working day:** read 0-4416-1's definition of a working day. If it isn't stated, keep 8 h and grade the day
+   length C in the crew note.
+5. **No further production work on 60–72 in.** On the D-1273 basis their multiplier (~1.30–1.39) is within the
+   healthy 1.20–1.35+ range. Revisit only after Part 6.
+
+   **Reporting rule, from now on:** every kind's gap is reported as the multiplier to the medians, not as
+   "% vs median".
+
 ## D-1276 — The answers in D-1272, items 3 to 10, built
 
 Logged before the work (Part 4). The part adds what it built here.
+
+### Part 4a: items 4, 5, 6, 8, 9 and 10 (its first four), and D-1277's answers 2, 3 and 5
+
+**Status:** built unattended (night run 2026-11-15 → 16, Part 4a); awaiting the founder's check. Spec:
+[answers_d1276_tasks.md](docs/tasks/answers_d1276_tasks.md). Migration `d1276a4b7c20` (revises `d1275c4a9e31`, not
+folded).
+
+- **Casing sub-furnished (A.4).** A jack and bore picked on a run now stores `casing_by: "sub"` (`crossings.ts:
+  withNewDefaults`); a new Casing / sleeve run starts the same (`types.ts:newRunSection`), its own pipe (the casing) then
+  the bore sub's, a subcontract at the same key (`materials.ts:lineMaterials`). A run stored before keeps what it has:
+  an absent `casing_by` still reads owner-furnished, and a stored choice stays.
+- **Pits by bore sub ON where the bore sub's price is used (A.4, D-1277 5).** The pits made with a jack and bore or a
+  sleeve, and a pit placed alone, start by the bore sub (`NEW_PITS_BY_SUB`, `useUtilities.tsx`, `runDefaults.ts`). The
+  run says "Pits by the bore sub: the bore price includes them" in its panel and its notes; turned off on the pit, its
+  lines are our crew's. Part 5's reading (7 of the 8 tab bore items name the pits) is the basis.
+- **Priced pits on the job's pool (A.4).** The Bore pit crew A24 is the utility sub's, so its excavator pools with the
+  pipe crews' (`production.py:_job_pool`, `PIT_CREW`). Its class is set by its deepest pit on the pipe crew's rows
+  (`pit_class`: 13-15 t to 10 ft, 20-25 t to 14 ft, 30-36 t to 16 ft, else 40 t; the D-1071 library settings).
+  **Suitable** = a hydraulic excavator already on the job of that class or larger by operating weight, at most the pipe
+  cap (40 t), whose added hours cost no more than the pit's own rental, fuel and delivery (`pool.fits`, D-1115). Pooled,
+  the pits take no rental, delivery or day minimum of their own. Example (row `answer-1276-pit-pooled`): two 6.54 ft
+  pits (16 h) on a water crew's 20-25 t booked 40 h: extension $1,900 + fuel $252 = $2,152 against $2,696 alone.
+- **Minimum charges (A.5).** A subcontract (`minimums.KIND`, so no material sales tax), the pressure test one a system
+  as test and disinfection, IntelCost's minimum at the founder's flat figure (`minimums.flat`: the location factor taken
+  back out; a workspace's or project's own price as it is). `line_sync.price_changes` compares the flat figure, so
+  Update all no longer sees a move. A minimum line written before as material turns subcontract at the next pass.
+- **Duct bank pace (A.6).** A dry utility's conduit line of two or more conduits (`production.py:duct_conduits`): the
+  crew works the trench at its own pace on the trench LF (`duct_rate`: the line's rate × n, so 400 LF of conduit in 100
+  LF of trench is 0.2 day at 500 LF/day, was 0.8); the added conduits at **0.015 MH/LF each** past the first
+  (`DUCT_MH_PER_LF`, the middle of the founder's 0.01-0.02, grade C), on the crew as restraint sets are (machines
+  unchanged, note "Duct bank:", read by `host.ts:DUCT_NOTE`); spacer sets every 5 ft of trench, one at each end, a
+  spacer a conduit (`materials.ts:isDuctBank`, `duct_spacer:<n>`, 100 LF x 4 → 84).
+- **Restraint (A.8).** 14 in 0.5, 18 in 0.75, 30-36 in 1.0 MH a set: already built, marked accepted. C909's MJ
+  restraint now on C900's keys (`fittingMaterials`), as its bends and tees were; the ten `restraint:pvco_c909:4-24` keys
+  removed by the migration (old prices in the seed and the audit row). C909 at 14 and 18 in has no C900 restraint key:
+  it shows "Missing price" (open question).
+- **PE CTS water services (A.9).** No MJ bend, tee or restraint (`fittingMaterials` returns none for `pe_cts`); the
+  tap at the main is the corporation stop (with its saddle), plus a curb stop a pipe and a compression coupling where one
+  100 ft coil meets the next (`ctsCouplings`, ⌈LF ÷ 100⌉ − 1 a pipe; the coil length IntelCost's reading, grade D); the
+  fittings allowance 0 % ("couplings, corporation stop and curb stop counted").
+- **Whole rolls a project (A.10).** Tracer and tape carry `roundScope: "project"`: Estimating rounds each key once over
+  the project (`bidOrder.ts:withBidOrder`) and spreads the round-up over the lines by their share, as a bid's last joint
+  is, so the lines add up to whole rolls; each line reads "0.32 of 2 ROLL for the project (whole rolls, rounded once)".
+  A reader that does not know the scope still rounds each line up (the old figure), never under.
+- **Bell-OD factors (A.10)** stay: the run panel and the run's notes say "(1.20 x OD, grade D, maker table later)".
+- **Spacers by placement (A.10).** 1 + ⌈(LF − 4) ÷ 8⌉ a carrier: one within 2 ft of each end and no gap over 8 ft.
+  80 LF: ends at 2 and 78 ft, 76 ft between in 8 ft steps, 11 (was 12).
+- **Pit lines under 33 05 07.23 (A.10).** The node "33 05 07.23 Utility Augering" is added under 33 05 07; every pit
+  line but its rock and haul-off carries the pit's kind (`lines.ts:structureLines`) and maps there on the ten base
+  scopes (`work_scopes.py:seed_pit_codes`), where the workspace has no mapping of its own.
+- **Spacers and seals on bored crossings (D-1277 2).** The tab bore descriptions do not name spacers or seals (only the
+  three casing items do), so bored crossings keep them, at makers' list prices in place of the grade D estimates:
+  casing spacers from Cascade's price list (CCSPL HDPE, the runner the rule's casing needs), 4-16 in C, 18-24 in D
+  (carried from its 16 in by OD); end seals from the Model C pull-on list shown by a distributor, 8-30 in C, 36-48 in D
+  (the 24-32 in slope carried on). New: curb stops and CTS couplings (Ford's Feb 2026 books × 0.74, a distributor's web
+  price over list; cross-check the library's 1 in tap), duct bank spacers (distributors' web prices). Every old → new in
+  the seed and the audit row. Open-cut casing keeps its spacers and seals as our material.
+- **The pull-in (D-1277 3).** A carrier's pull-in rides its run's own pipe crew with no minimum of its own when the run
+  has pipe that crew lays (the spread's one half-day minimum, as any line); a run that is all crossing takes half a crew
+  day at least (`crossing_alone`, `pull_in_floor` in `_line_rates`); a standalone sleeve has no pull-in (the bore sub's
+  line, `utility_pipe_trenchless`). The line's note says which.
+- **Built and measured (bench clock 2026-11-14, UTC).** Migration `d1276a4b7c20`: 10 keys removed, 22 repriced, 15
+  added, one `release_audit` row; grade counts A171 B188 C594 D181 → A171 B188 C613 D167 F32. Proved on a separate
+  Postgres (foldproof4): from empty `upgrade head` gives the bench's schema (only the 31 known CHECK prints differ),
+  `alembic check` clean; two restored bench copies up give the same 97 changed library lines, down equals the copy
+  before row for row, up again equals up; one head. Bench run 19:47:02–19:47:28; the bench after equals the proof's up
+  (0 lines); founder digest `b4c963cdf83e7d84` before, after and at the end. Code saved after it: app 19:50–19:52 and
+  20:08:47–20:08:50, api 20:08:46 (api answering 200 again by 20:10:04). Gates: app lint (0 errors), typecheck, build;
+  api ruff, format, mypy (286 files), `alembic check`, one head. Quantity table exit 0, no FAIL: 344 rows, 197 utility
+  rows; new `util-1276-*` (crossing defaults, sleeve sub-furnished, C909 on C900 keys, PE CTS 60 and 150 LF, duct bank
+  spacers 100 and 400 LF, whole rolls a project) and `answers` (26 rows: minimums, pits on the pool, duct pace, pull-in);
+  changed: `util-1269-spacer-rule` (80 LF 12 → 11), the 80 LF jack and bore and cased open cut (spacers 12 → 11),
+  `util-1267-c909-bend-restraint` (C900 key), `util-1267-tap-not-counted` (PE CTS 20 % → 0 %),
+  `util-1260-water-service-tap` (+ curb stop), `util-1260-dry-duct-bank-encased` (+ spacers),
+  `minimum-1268-pressure-short` (one a system: water $450, fire $600, was one $300), the grade counts.
+  Smoke with labour on a throwaway copy of the 3D test project (Harris County, public, open shop, burdened, 77002,
+  TX20260031 mod 1 Heavy): an 80 LF jack and bore on a 589 LF 8 in C900 force main (casing 16 x 0.375 sub-furnished,
+  "bell 10.08 (1.20 x OD, grade D, maker table later)", 11 spacers, seals at $196.55, its two pits by the bore sub at $0
+  filed under Utility Augering, "Pits by the bore sub: the bore price includes them" on the run); a 4 x 4 in duct bank
+  on 310.26 LF (256 spacers; crew 59.37 MH against 7.6 machine hours, the added conduits' 13.96 MH); a 113 LF 1 in PE
+  CTS service (tap, curb stop, one coupling, 0 % allowance, no bend); the minimum lines as subcontract ("Pressure test
+  and disinfection, minimum charge (Water)" $1,249.43 = $1,500 flat less $250.57; "Pressure test, minimum charge
+  (Sanitary)" $168.06 = $750 less $581.94); tracer "0.32 of 2 ROLL for the project". Purged.
 
 ## D-1277 — The 11 crossing pay items, priced with D-1269 as their own group
 

@@ -1928,6 +1928,8 @@ try {
     const xr = await import("/src/lib/takeoff/earthwork/utilities/crossings.ts");
     // D-1275: the cover over the crown against the type's minimum.
     const cv = await import("/src/lib/takeoff/earthwork/utilities/cover.ts");
+    // D-1276: tracer and tape in whole rolls once over the project (Estimating's withBidOrder).
+    const bo = await import("/src/lib/estimate/bidOrder.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2138,6 +2140,7 @@ try {
                     materials: xr.crossingMaterials(cross, { odIn: pipe.od, nominalIn: run.nominal_in, pipes: n, zoneCyPerLf: (plain.beddingCF + plain.zoneCF) / n / L / 27 }),
                     restrainedSets: xr.casedRestraintSets(inCasing, jointFt, n),
                     crew: cross.kind !== "hdd" && cross.kind !== "sleeve",
+                    casingBy: cross.casingBy,
                   },
                 }
               : {}),
@@ -2204,6 +2207,34 @@ try {
           });
         }
         return out;
+      }
+      // D-1276 (D-1272 10): tracer and tape rounded once over the project, each line its share of the whole rolls.
+      if (c.kind === "project-rolls") {
+        const rows = c.lines.flatMap((l, i) => l.materials.map((m) => ({ uuid: `${m.key}-${i}`, takeoff_item_id: `line-${i}`, kind: "material", mat_key: m.key, auto_key: m.key, qty_formula: m.qty, unit: "ROLL", wastage_pct: 0, round_to: 1, round_scope: "project", pct_of: null, unit_price: 1 })));
+        const done = bo.withBidOrder(rows, (id) => c.lines[Number(id.split("-")[1])].qty, () => "Base Bid");
+        const out = {};
+        for (const key of new Set(rows.map((r) => r.mat_key))) {
+          const mine = done.filter((r) => r.mat_key === key);
+          const shares = mine.map((r) => Math.round(Number(r.qty_formula) * 1e4) / 1e4);
+          out[key] = `${shares.join(" + ")} = ${Math.round(shares.reduce((t, v) => t + v, 0) * 1e4) / 1e4}`;
+          out[`${key}:note`] = mine[0]?.bid_order ? bo.orderNote(mine[0].bid_order) : null;
+        }
+        return out;
+      }
+      // D-1276 (D-1272 4, D-1277 5): what a new crossing stores, and a run stored before keeping its own.
+      if (c.kind === "crossing-defaults") {
+        const pit = rd.defaultStructure("bore_pit", "water");
+        const sleeve = rd.defaultRun("casing");
+        const oldRun = xr.resolveCrossing("water", { crossing: { kind: "jack_bore" } }, 80, { catalogKey: "pvc_c900_dr18:8", odIn: 9.05, idIn: 8.15, pipes: 1 });
+        return {
+          pitBySub: pit.spec.bySub,
+          newJackBore: xr.withNewDefaults({}, { kind: "jack_bore" }).casing_by,
+          keptOwner: xr.withNewDefaults({ casing_by: "owner" }, { kind: "jack_bore" }).casing_by,
+          storedBefore: oldRun.casingBy,
+          sleeveCasingBy: sleeve.section.crossing?.casing_by ?? null,
+          pitsText: xr.PITS_BY_SUB_TEXT,
+          bellGrade: xr.BELL_GRADE,
+        };
       }
       if (c.kind === "restraint-mh") return { mh: c.sizes.map((n) => `${n}:${um.restraintMh(n)}`).join(" "), jointFt: c.keys.map((k) => `${k}:${um.restraintJointFt(k)}`).join(" ") };
       if (c.kind === "type-lines") {
