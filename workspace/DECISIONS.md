@@ -31468,3 +31468,60 @@ limit a real error. Spec: `docs/tasks/prepare_timeout_tasks.md` (F47).
   not forced on the bench (it would need a source edit of the limit). Bench windows: two api saves, the api down
   23:14:19 to 23:15:03 and 23:18:56 to 23:19:36 UTC; the workers and beat reloaded by their own watchers 23:14:22 to
   23:14:55 and 23:18:57 to 23:19:29 UTC; no service restarted by hand.
+
+## D-1264 — The Utilities and Structures boxes: the picked row in the brand orange, and picking selects
+
+**Status:** decided (the founder, 2026-11-14)
+
+- **The picked row stands out:** in the Utilities and Structures boxes the run or structure being edited (and
+  "+ New run" / "+ New structure" when it is the one picked) is filled in the brand orange at 12 % (18 % under the
+  pointer), with a 3 px orange bar at the list's left edge, as the takeoff panel marks a pick. Tokens only
+  (`--primary`), no hex.
+- **The list is wider:** the runs list 208 px (was 160) and the box 728 px (was 680), so a run's length keeps its
+  unit on the same line ("Sanitary sewer main · 113.83 LF"); the structures list 176 px (was 144).
+- **Picking a row selects the item,** as a Sheets-panel row does: on the plan, in the Sheets panel and the Takeoff
+  panel. A run or structure on another sheet than the one in view (a linked sheet's, listed "(from …)") opens that
+  sheet, on Sitework still, with the item selected and the box open on it. `useUtilities` takes `onSelect(item,
+  sheet)`; the page selects and navigates. "+ New run" selects nothing.
+- **Its shape too** (the founder, same night): the item's first shape on that sheet is selected with it, as a click
+  on the plan selects it, so a run shows its move handle (and its chip on hover) and a structure its picked mark.
+  Delete then deletes that section, as after a click.
+- **Checked (2026-11-14, about 02:15 to 02:30 UTC):** a throwaway copy of the 3D test project. On C-200: ST-1 picked
+  in the runs box, MH-2 in the structures box, each selected in the Sheets panel and the status bar. A run drawn on
+  V-100 (C-200's existing-grade source) picked from C-200's box opened V-100 on Sitework with it selected.
+
+## D-1265 — The founder's answers to the 2026-11-14 night run's 22 open questions
+
+**Status:** decided (the founder, 2026-11-14). Numbered from D-1265 because D-1264 went to the Utilities box's pick
+(the founder, 2026-11-14 night); the night run's own entries follow: D-1266 Part 0, D-1267 Part 1, D-1268 Part 2,
+D-1269 Part 3 (F48), D-1270 Part 4, D-1271 Part 5.
+
+1. **Relabel accepted** (D-1260): no new keys, no migration on the 36 runs and 28 structures. A run made before F44
+   gets no D-1260 default add-ons on a reprice: it has add-ons only once the user turns them on. A new run gets its
+   type's defaults. (Part 1.)
+2. **Each type its own scope, folder and MasterFormat code.** 33 01 is operation and maintenance, so "Water Main
+   33.01.01" is wrong. Water main 33 14 16; water service 33 14 17; valves and hydrants 33 14 19 (the hydrant lead is
+   part of the hydrant assembly); the fire line in its own folder (21 11 00, or 33 14 labelled "Fire"), never mixed
+   with domestic water. The other types mapped the same way, the mapping listed in the report. (Part 1.)
+3. **Old `electric` runs** show a "verify primary or secondary" flag; nothing is guessed. (Part 3d.)
+4. **The new cover defaults** (gas, electric, telecom by cover) are accepted.
+5. **Bores** are superseded by D-1269: a bore is an encasement / casing option on a run (over a length) with Bore
+   pit and Receiving pit structures, never priced by the gravity pipe crew.
+6. **Warning tape** on by default for pressure types (water, fire, force main, reclaimed), off for gravity sewer
+   and storm; the user can override. (Part 2.)
+7. **The spoils balance** takes the encasement's pipe-zone reduction. (Part 3.)
+8. **Price corrections** in D-1268. 9. Clay's 5 ft and PP's 13 ft joints stay flagged "unconfirmed".
+10. **Pipe lists widened:** Schedule 80 on any pressure type at 12 in and under; PP sanitary on the sanitary main and
+    the sanitary service. (Part 1.)
+11. **Restraint gets labour.** (Part 1.)
+12. **A joint's length is its family's catalog laying length;** ductile iron 18 ft by default. (Part 1.)
+13. **Restrained sets are counted on the shared pipe line,** never a line of their own (D-1261's own line moved a
+    51 LF item +$11.5/LF by crew pace alone). (Part 1.)
+14. **0386-3118A** was +29 % before restraint: restraint is not tuned to it; its four "where necessary" items take
+    20 %, noted in the report.
+15. **The bid-tab harness keeps the add-ons on,** with one line giving the delta against the 2026-11-12 table.
+16. **C909 MJ restraint keys** added. (Part 1.)
+17–19. **Overlay at fit, the timeout message, the sweep and the thumbnails:** D-1270.
+20. **`prepare_sheet` takes the sheet's uuid** (api rule 6). (D-1270.)
+21. **The refused PATCH naming P06:** investigated in D-1266, nothing changed on P06.
+22. **F44–F47 are accepted only once D-1267 (Part 1) passes;** they stay in Working until then.
