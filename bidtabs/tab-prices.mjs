@@ -23,7 +23,9 @@ const items = JSON.parse(readFileSync(`${dir}/tab-items-2026-11-12.json`, "utf8"
 const keys = JSON.parse(readFileSync(`${dir}/contracts-16-d1267b-2026-11-15.json`, "utf8")).map((c) => c.key);
 
 const UNIT_QTY = /\b(LF|EA|TON|VF|SY|CY|LS|AC|SF|MO|DAY)\s+([\d,]+(?:\.\d+)?)\b(?!\.\d{2}\b)/;
-const money = (s) => [...s.matchAll(/\$\s?([\d,]+\.\d{2})/g)].map((m) => Number(m[1].replace(/,/g, "")));
+// The text layer sometimes splits a figure after its decimal point ("$125.  00"): read as one figure (D-1273 re-read;
+// 1104-6117's fourth bidder was lost this way on every storm row).
+const money = (s) => [...s.matchAll(/\$\s?([\d,]+)\.\s*(\d{2})\b/g)].map((m) => Number(`${m[1].replace(/,/g, "")}.${m[2]}`));
 const pdfOf = (k) => [`${dir}/tabs-pdf/${k}.pdf`, `${dir}/${k}.pdf`].find(existsSync);
 const near = (a, b) => Math.abs(a - b) <= Math.max(0.011, 0.0005 * Math.abs(b));
 

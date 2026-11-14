@@ -22,7 +22,20 @@ const INPUT = "contracts-16-d1271-2026-11-15.json";
 const J = (f) => JSON.parse(readFileSync(`${dir}/${f}`, "utf8"));
 const cfg = JSON.parse(readFileSync(cfgPath, "utf8"));
 const inputs = J(INPUT);
-const tabPrices = new Map(J("tab-prices-2026-11-15.json").map((c) => [c.key, c]));
+// The tab's prices (the config names the read, D-1273 re-read), with the rows tab-rows-reread.py recovered put in place
+// of the text-layer read where every bidder's price was recovered.
+const tabPrices = new Map(J(cfg.basis.tabPrices ?? "tab-prices-2026-11-15.json").map((c) => [c.key, c]));
+const reread = cfg.basis.tabRowsReread ? J(cfg.basis.tabRowsReread) : [];
+const rereadUsed = [];
+for (const r of reread) {
+  const T = tabPrices.get(r.key);
+  const row = T?.items.find((x) => x.unit === "LF" && x.qty === r.qty && String(x.no) === String(r.itemNo));
+  if (!T || r.prices.length !== T.bidders || r.unpaired !== 0) continue;
+  // A row the item list never had (a later section of the tab) joins it as read.
+  if (!row) T.items.push({ no: r.itemNo, page: r.pages[0], unit: "LF", qty: r.qty, desc: r.rows[0].text, prices: r.prices, reread: true });
+  rereadUsed.push({ key: r.key, no: r.itemNo, qty: r.qty, before: row ? row.prices.length : 0, after: r.prices.length, pages: r.pages });
+  if (row) row.prices = r.prices;
+}
 const cmp = new Map(J("contract-cmp-all-2026-11-12.json").map((c) => [c.key, c]));
 
 const median = (a) => {
@@ -100,6 +113,7 @@ if (mode === "parse") {
   p(`# Parse of ${INPUT} (no pricing)`);
   p();
   p(`Newest tab bid ${ymOf(newest)}; the tuning set is tabs bid ${ymOf(cutoff)} or later (${cfg.basis.recentMonths} months); older tabs are history.`);
+  p(`Tab rows re-read word by word and put in place (tab-rows-reread.py): ${rereadUsed.length}.`);
   p();
   p("## By contract");
   table(["Contract", "Bid", "Set", "Items", "LF", "Tab $ as bid", "Tab $ old escalated", "Added items", "Rows read in part"], inputs.map((c) => {
@@ -228,6 +242,7 @@ const lrLine = (label, rs) => {
 
 // ---------- Tables ----------
 p(`Newest tab bid ${ymOf(newest)}; recent = bid ${ymOf(cutoff)} or later. Labour at each tab's bid-date prevailing rate (D-1103's ratio); no escalation; sales tax on material ${cfg.basis.salesTaxOnMaterialPct} %. Overlay from bid-overlay-d1273.json: L x ${(1 + pct(I.supervisionPctOfLabourAndEquipment) + pct(I.smallToolsPctOfLabour)).toFixed(2)} x ${(1 + pct(O.labourPct)).toFixed(2)}, E x ${(1 + pct(I.supervisionPctOfLabourAndEquipment)).toFixed(2)} x ${(1 + pct(O.equipmentPct)).toFixed(2)}, M and S x ${(1 + pct(O.materialPct)).toFixed(2)}, ÷ (1 − ${I.glInsurancePctOfBid} % − ${I.bondPctOfBid} % bond where the tab has no bond item).`);
+p(`Tab rows re-read word by word and put in place (tab-rows-reread.py): ${rereadUsed.length} (${rereadUsed.map((r) => `${r.key} #${r.no} ${r.qty} LF ${r.before}→${r.after}`).join("; ")}).`);
 p();
 p("### B1. Recent tabs (the tuning set), per contract, with the added items");
 table(HEAD, [...contractRows(withAdded.filter((c) => c.recent)), totalRow("Recent", withAdded.filter((c) => c.recent))]);
@@ -238,9 +253,10 @@ table(HEAD, [...contractRows(noAdded.filter((c) => c.recent)), totalRow("Recent"
 p("### B4. History tabs, without the added items");
 table(HEAD, [...contractRows(noAdded.filter((c) => !c.recent)), totalRow("History", noAdded.filter((c) => !c.recent))]);
 p("### B5. Calibration: the single multiplier on our direct cost");
-p(`${cfg.calibration.method}. Spread: the standard deviation of the per-contract log ratio. Expected about ${cfg.calibration.expected}; well under ${cfg.calibration.directHighBelow} means our direct is high.`);
+const [hLo, hHi] = cfg.calibration.healthyToMedian;
+p(`${cfg.calibration.method}. Spread: the standard deviation of the per-contract log ratio. Healthy is ${hLo.toFixed(2)}–${hHi.toFixed(2)} to the medians (our direct ${Math.round(100 / hHi)}–${Math.round(100 / hLo)} % of the median); under ${hLo.toFixed(2)} our direct is high. The overlay's bid ÷ direct is its own result, not a target.`);
 p();
-table(["Set", "Contracts", "k to the low (log LS)", "spread", "k to the low ($-weighted)", "k to the median (log LS)", "spread", "k to the median ($-weighted)", "Our overlay's bid ÷ direct", "Direct vs median (1/k − 1)"], calib.map((c) => [c.label, String(c.low.n), d3(c.low.k), d3(c.low.spread), d3(c.low.weighted), d3(c.median.k), d3(c.median.spread), d3(c.median.weighted), d3(c.overlay), pc(1 / c.median.k - 1)]));
+table(["Set", "Contracts", "k to the low (log LS)", "spread", "k to the low ($-weighted)", "k to the median (log LS)", "spread", "k to the median ($-weighted)", "Our overlay's bid ÷ direct", "Direct vs median (1/k − 1)", "k to the median healthy?"], calib.map((c) => [c.label, String(c.low.n), d3(c.low.k), d3(c.low.spread), d3(c.low.weighted), d3(c.median.k), d3(c.median.spread), d3(c.median.weighted), d3(c.overlay), pc(1 / c.median.k - 1), c.median.k < hLo ? "no: direct high" : c.median.k > hHi ? "no: direct low" : "yes"]));
 p("### B6. By kind, per item (LF-weighted, as bid, every bidder; recent and history apart)");
 {
   const rows = [];
