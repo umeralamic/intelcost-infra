@@ -1477,7 +1477,7 @@ try {
         const out = {};
         const list = mats.lineMaterials(c.input, () => c.pcf ?? null, c.restraint) ?? [];
         out.keys = list.map((m) => m.key).join(" ");
-        for (const m of list) Object.assign(out, { [`${m.key}:name`]: m.name, [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct });
+        for (const m of list) Object.assign(out, { [`${m.key}:name`]: m.name, [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:waste`]: m.wastePct, ...(m.pct != null ? { [`${m.key}:pct`]: m.pct } : {}) });
         return out;
       }
       if (c.kind === "bends") {
@@ -1920,6 +1920,10 @@ try {
     const utr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
     const ty = await import("/src/lib/takeoff/earthwork/utilities/types.ts");
     const fitg = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
+    // D-1267: the estimate line's sold quantities, as Estimating prices a material (its formula on the line's QTY, its
+    // waste, its purchase unit; pipe in whole joints within its bid).
+    const ecm = await import("/src/lib/estimate/components.ts");
+    const ecost = await import("/src/lib/estimate/costing.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2018,9 +2022,16 @@ try {
       }
       // D-1260 (F44): a type's defaults, then its run through the lines and their materials as Calculate hands them on
       // (base for the region, the run's own add-ons, connection, production, install and encasement).
+      // D-1267: Schedule 80 on every pressure type, PP sanitary on the sanitary service; the restraint's MH a set.
+      if (c.kind === "offers") {
+        const entry = cat.CATALOG.find((e) => e.key === c.entry);
+        return { offered: Boolean(entry && ty.typeOffersEntry(c.type, entry)) };
+      }
+      if (c.kind === "restraint-mh") return { mh: c.sizes.map((n) => `${n}:${um.restraintMh(n)}`).join(" "), jointFt: c.keys.map((k) => `${k}:${um.restraintJointFt(k)}`).join(" ") };
       if (c.kind === "type-lines") {
         const def = rd.defaultRun(c.type);
-        const run = { ...def, ...(c.run ?? {}), section: { ...(def.section ?? {}), ...(c.section ?? {}) } };
+        // `legacy`: a run stored before F44, its section without D-1260's add-ons.
+        const run = { ...def, ...(c.run ?? {}), section: c.legacy ? { ...(c.section ?? {}) } : { ...(def.section ?? {}), ...(c.section ?? {}) } };
         const pipe = cat.resolvePipe(run.catalog_key);
         const o = ty.runOptions(c.type, run.section, pipe.od);
         const n = Math.max(1, Math.round(run.pipes));
@@ -2029,6 +2040,8 @@ try {
         const made = ln.utilityLines([
           {
             type: ty.baseOf(c.type),
+            // D-1267: the run's own type, its pipe line's scope.
+            kind: c.type,
             pipeLabel: c.label,
             pipeKey: run.catalog_key,
             pipes: n,
@@ -2036,7 +2049,9 @@ try {
             swell: [1.2],
             materials: { bedding: { name: "#57 stone", source: "imported" }, zone: { name: "Sand", source: "imported" }, backfill: { name: "Native", source: "native" } },
             restoration: null,
-            services: [],
+            services: c.services ?? [],
+            bends: c.bends ?? [],
+            tees: c.tees ?? 0,
             short: o.production === "short",
             install: o.install,
             encasement: o.encasement,
@@ -2066,8 +2081,21 @@ try {
           encCyPerLf: encCy,
           restrainedPct: o.restrainedPct,
           restrainedJoints: pl?.restrainedJoints ?? 0,
+          workScope: pl?.workScope ?? null,
+          utility: pl?.utility ?? null,
         };
         for (const m of list) Object.assign(out, { [`${m.key}:qty`]: m.qty, [`${m.key}:unit`]: m.unit, [`${m.key}:name`]: m.name });
+        // D-1267: the estimate line, each material's sold quantity as Estimating prices it, on the line's QTY.
+        const QTY = pl?.quantity ?? 0;
+        for (const m of list) {
+          const v = ecm.evalQtyFormula(m.qty, { parent: 0, qty: QTY }).value;
+          const sold =
+            m.roundScope === "bid" && m.roundTo
+              ? um.orderByBid([{ id: "x", bid: "Base Bid", matKey: m.matKey, lf: v, wastePct: m.wastePct, jointFt: m.roundTo }])[0].soldLF
+              : ecost.pricedMaterial({ kind: "material", mode: "unit", qty: v, total: v, unitPrice: 1, wastagePct: m.wastePct, roundTo: m.roundTo }, 0).qty;
+          out[`${m.key}:sold`] = Math.round(sold * 10000) / 10000;
+          if (m.pct != null) out[`${m.key}:pct`] = m.pct;
+        }
         return out;
       }
       if (c.kind === "newrun") {

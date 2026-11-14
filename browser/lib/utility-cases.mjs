@@ -953,7 +953,8 @@ export const UTILITY_CASES = [
       cover: null,
       connection: "tap",
       production: "short",
-      variant: "pe_cts_sdr9:1|1|0–6 ft||short|a:tape+test_disinfect+tracer",
+      // D-1267: a type other than its base a line of its own (`t:`), its own scope.
+      variant: "pe_cts_sdr9:1|1|0–6 ft||short|t:water_service|a:tape+test_disinfect+tracer",
       name: '1" PE CTS SDR 9, 0–6 ft deep, short run',
       lf: 60,
       keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1",
@@ -1001,7 +1002,8 @@ export const UTILITY_CASES = [
       addons: "tape pull_string",
       encCyPerLf: 0.07623013085514575,
       variant: "conduit_sch40:4|4|0–6 ft||enc:30x12|a:pull_string+tape",
-      name: '4" PVC Conduit Sch 40, 4 pipes, 0–6 ft deep, encased 30 x 12 in',
+      // D-1267: the trench's length in the name of a line of several pipes.
+      name: '4" PVC Conduit Sch 40, 4 pipes x 100 LF, 0–6 ft deep, encased 30 x 12 in',
       lf: 400,
       keys: "pipe:conduit_sch40:4 fit:pipe:conduit_sch40:4 warning_tape concrete:encasement addon:pull_string",
       "concrete:encasement:qty": "QTY * 0.019058",
@@ -1024,7 +1026,7 @@ export const UTILITY_CASES = [
       cover: 4,
       install: "bore",
       roles: "utility_pipe",
-      variant: "steel_casing_375:16|1|0–6 ft||bore|a:none",
+      variant: "steel_casing_375:16|1|0–6 ft||bore|t:casing|a:none",
       keys: "pipe:steel_casing_375:16 fit:pipe:steel_casing_375:16",
     },
   },
@@ -1078,8 +1080,9 @@ export const UTILITY_CASES = [
     expect: {
       restrainedPct: 100,
       restrainedJoints: 10,
-      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|rj:100",
-      name: '8" PVC C900 DR 18, 0–6 ft deep, restrained joints',
+      // D-1267 (D-1265 13): the sets on the shared pipe line, no line of its own.
+      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer",
+      name: '8" PVC C900 DR 18, 0–6 ft deep',
       lf: 200,
       keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect restraint_joint:pvc_c900:8",
       "restraint_joint:pvc_c900:8:qty": "10",
@@ -1098,8 +1101,8 @@ export const UTILITY_CASES = [
     expect: {
       restrainedPct: 35,
       restrainedJoints: 4,
-      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|rj:35",
-      name: '8" PVC C900 DR 18, 0–6 ft deep, restrained joints 35 %',
+      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer",
+      name: '8" PVC C900 DR 18, 0–6 ft deep',
       "restraint_joint:pvc_c900:8:qty": "4",
     },
   },
@@ -1112,7 +1115,8 @@ export const UTILITY_CASES = [
     lf: 95,
     run: { catalog_key: "di_c151_pc350:6", nominal_in: 6 },
     section: { restrained_pct: 100 },
-    expect: { restrainedPct: 100, restrainedJoints: 5, "restraint_joint:ductile_iron:6:qty": "5", "restraint_joint:ductile_iron:6:unit": "EA" },
+    // D-1267 (D-1265 12): ductile iron at its own 18 ft joint: ceil(95 / 18) = ceil(5.28) = 6 (was 5 at 20 ft).
+    expect: { restrainedPct: 100, restrainedJoints: 6, "restraint_joint:ductile_iron:6:qty": "6", "restraint_joint:ductile_iron:6:unit": "EA", "restraint_joint:ductile_iron:6:name": 'Bell joint restraint, 6" (a set per 18 ft joint)' },
   },
   {
     // Irrigation (base water) in 4 in D2241 SDR 21, 90 LF at 50 %: 45 LF, ceil(2.25) = 3 sets on the IPS restraint.
@@ -1123,7 +1127,7 @@ export const UTILITY_CASES = [
     lf: 90,
     run: { catalog_key: "pvc_d2241_sdr21:4", nominal_in: 4 },
     section: { restrained_pct: 50 },
-    expect: { restrainedPct: 50, restrainedJoints: 3, variant: "pvc_d2241_sdr21:4|1|0–6 ft||a:pressure_test|rj:50", "restraint_joint:pvc_ips:4:qty": "3" },
+    expect: { restrainedPct: 50, restrainedJoints: 3, variant: "pvc_d2241_sdr21:4|1|0–6 ft||t:irrigation|a:pressure_test", "restraint_joint:pvc_ips:4:qty": "3" },
   },
   {
     // A fused HDPE force main, whole line asked: fused joints have no bell to restrain, so no sets and no line of its own.
@@ -1162,4 +1166,164 @@ export const UTILITY_CASES = [
   // IPS ODs for the Schedule families (4 in 4.500, 6 in 6.625) and the D2241 wall by its rule, OD / SDR: 4.5 / 21.
   { id: "util-1260-sch80-4", kind: "catalog", pick: "pvc_sch80:4", expect: { od: 4.5, wall: 0.337, id: 3.826 } },
   { id: "util-1260-d2241-sdr21-4", kind: "catalog", pick: "pvc_d2241_sdr21:4", expect: { od: 4.5, wall: 0.214, wallMark: "derived_sdr" } },
+  // --- D-1267: F44–F47 acceptance fixes. The ESTIMATE LINE: each material's sold quantity as Estimating prices it
+  // (`:sold`: its formula on the line's QTY, its waste, its purchase unit, pipe in whole joints in the bid).
+  {
+    // The part1 smoke's duct bank: 4 x 4 in Sch 40 conduit, 100 LF of trench, 30 x 12 in encased. The line carries
+    // 4 x 100 = 400 LF of conduit, named with its trench. Conduit 400 x 1.02 = 408 -> 41 joints of 10 ft = 410 LF;
+    // pull string 400 LF (a conduit's own); tape one a trench, 400 / 4 x 1.05 / 1000 = 0.105 -> 1 roll; concrete
+    // 400 x 0.019058 = 7.6232 CY (0.076230 a LF of trench x 100), x 1.05 waste = 8.0044.
+    id: "util-1267-duct-bank-100lf-line",
+    kind: "type-lines",
+    type: "electric",
+    label: '4" PVC Conduit Sch 40',
+    lf: 100,
+    run: { pipes: 4, pipe_gap_in: 3 },
+    section: { encasement: { width_in: 30, height_in: 12 } },
+    expect: {
+      lf: 400,
+      name: '4" PVC Conduit Sch 40, 4 pipes x 100 LF, 0–6 ft deep, encased 30 x 12 in',
+      "pipe:conduit_sch40:4:sold": 410,
+      "addon:pull_string:sold": 400,
+      "warning_tape:qty": "QTY / 4 * 1.05 / 1000",
+      "warning_tape:sold": 1,
+      "concrete:encasement:sold": 8.0044,
+    },
+  },
+  {
+    // The founder's reading, 400 LF of trench: 1600 LF of conduit. 1600 x 1.02 = 1632 -> 164 joints = 1640 LF; pull
+    // string 1600 LF; tape 1600 / 4 x 1.05 / 1000 = 0.42 -> 1 roll (2 before D-1267: 1.68 a pipe's LF); concrete
+    // 1600 x 0.019058 = 30.4928 CY (0.076230 x 400 = 30.49), x 1.05 = 32.0174 sold.
+    id: "util-1267-duct-bank-400lf-line",
+    kind: "type-lines",
+    type: "electric",
+    label: '4" PVC Conduit Sch 40',
+    lf: 400,
+    run: { pipes: 4, pipe_gap_in: 3 },
+    section: { encasement: { width_in: 30, height_in: 12 } },
+    expect: {
+      lf: 1600,
+      name: '4" PVC Conduit Sch 40, 4 pipes x 400 LF, 0–6 ft deep, encased 30 x 12 in',
+      "pipe:conduit_sch40:4:sold": 1640,
+      "addon:pull_string:sold": 1600,
+      "warning_tape:sold": 1,
+      "concrete:encasement:sold": 32.0174,
+      "fit:pipe:conduit_sch40:4:pct": 5,
+    },
+  },
+  {
+    // Two 1 in PE CTS services in one trench, 60 LF: a tap a pipe (2), tracer a pipe's own (120 x 1.1 / 500 = 0.264 ->
+    // 1 roll), tape one a trench (120 / 2 x 1.05 / 1000 = 0.063 -> 1); the water service's own scope.
+    id: "util-1267-water-service-two-pipes",
+    kind: "type-lines",
+    type: "water_service",
+    label: '1" PE CTS SDR 9',
+    lf: 60,
+    run: { pipes: 2, pipe_gap_in: 6 },
+    expect: {
+      lf: 120,
+      variant: "pe_cts_sdr9:1|2|0–6 ft||short|t:water_service|a:tape+test_disinfect+tracer",
+      workScope: "site_utilities.water_service",
+      utility: "water_service",
+      "tap:water:1:qty": "2",
+      "tracer_wire:sold": 1,
+      "warning_tape:qty": "QTY / 2 * 1.05 / 1000",
+      "addon:test_disinfect:sold": 120,
+    },
+  },
+  {
+    // The part4 hydrant lead: 6 in DI, a 90 bend counted, its MJ restraint set: the allowance 0 % (was 10 %).
+    id: "util-1267-hydrant-lead-bend-allowance",
+    kind: "type-lines",
+    type: "hydrant_lead",
+    label: '6" Ductile Iron PC 350',
+    lf: 35,
+    bends: [{ angle: 90, count: 1 }],
+    expect: {
+      workScope: "site_utilities.hydrant_lead",
+      "fit:pipe:di_c151_pc350:6:name": "Fittings allowance, 0 % (fittings counted on this line)",
+      "fit:pipe:di_c151_pc350:6:pct": 0,
+      "bend:ductile_iron:90:6:qty": "1",
+      "restraint:ductile_iron:6:qty": "1",
+    },
+  },
+  {
+    // The part2 restrained main, 8 in C900, 200 LF whole: the sets on the shared line (10 at 20 ft), the allowance 0 %.
+    id: "util-1267-restrained-c900-shared-allowance",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    section: { restrained_pct: 100 },
+    expect: {
+      variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer",
+      name: '8" PVC C900 DR 18, 0–6 ft deep',
+      workScope: "site_utilities.water",
+      utility: "water",
+      "restraint_joint:pvc_c900:8:sold": 10,
+      "fit:pipe:pvc_c900_dr18:8:pct": 0,
+      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 0 % (fittings counted on this line)",
+    },
+  },
+  {
+    // A plain water main keeps its 20 %; a sanitary main its 5 % (nothing counted).
+    id: "util-1267-water-main-allowance-kept",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    expect: { "fit:pipe:pvc_c900_dr18:8:pct": 20, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" },
+  },
+  {
+    id: "util-1267-sanitary-allowance-kept",
+    kind: "type-lines",
+    type: "sanitary",
+    label: '8" PVC SDR-35',
+    lf: 100,
+    expect: { "fit:pipe:pvc_d3034_sdr35:8:pct": 5, "fit:pipe:pvc_d3034_sdr35:8:name": "Fittings allowance, 5 %", workScope: "site_utilities.sanitary" },
+  },
+  {
+    // A C909 main with a 45: the C900 (DI MJ) bend key; its MJ restraint on C909's own key (D-1265 16).
+    id: "util-1267-c909-bend-restraint",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVCO C909 Class 235',
+    lf: 120,
+    run: { catalog_key: "pvco_c909_235:8", nominal_in: 8 },
+    bends: [{ angle: 45, count: 1 }],
+    expect: { "bend:pvc_c900:45:8:qty": "1", "restraint:pvco_c909:8:qty": "1" },
+  },
+  {
+    // D-1265 (1): a water main stored before F44 (no add-ons in its section) buys D-1080's tracer and tape only.
+    id: "util-1267-pre-f44-run-no-addons",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    legacy: true,
+    section: {},
+    expect: {
+      addons: "",
+      variant: "pvc_c900_dr18:8|1|0–6 ft",
+      keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape",
+    },
+  },
+  // D-1265 (10): Schedule 80 on every pressure type (12 in and under, the entry's sizes); PP sanitary on the service.
+  { id: "util-1267-sch80-water-service", kind: "offers", type: "water_service", entry: "pvc_sch80", expect: { offered: true } },
+  { id: "util-1267-sch80-hydrant-lead", kind: "offers", type: "hydrant_lead", entry: "pvc_sch80", expect: { offered: true } },
+  { id: "util-1267-sch80-fire-line", kind: "offers", type: "fire_water", entry: "pvc_sch80", expect: { offered: true } },
+  { id: "util-1267-sch40-hydrant-lead-not", kind: "offers", type: "hydrant_lead", entry: "pvc_sch40", expect: { offered: false } },
+  { id: "util-1267-sch80-sanitary-not", kind: "offers", type: "sanitary", entry: "pvc_sch80", expect: { offered: false } },
+  { id: "util-1267-pp-sanitary-service", kind: "offers", type: "sanitary_service", entry: "pp_sanitary", expect: { offered: true } },
+  // D-1265 (11, 12): the MH a set by size (14 with 16, 18 with 20–24, 30–36 at 1.0) and the joint by family.
+  {
+    id: "util-1267-restraint-mh-and-joint",
+    kind: "restraint-mh",
+    sizes: [4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 30, 36],
+    keys: ["pvc_c900_dr18:8", "di_c151_pc350:8", "pvco_c909_235:8", "pvc_c905_dr18:16", "pvc_d2241_sdr21:4", "hdpe_ips_dr11:8"],
+    expect: {
+      mh: "4:0.2 6:0.2 8:0.25 10:0.35 12:0.35 14:0.5 16:0.5 18:0.75 20:0.75 24:0.75 30:1 36:1",
+      jointFt: "pvc_c900_dr18:8:20 di_c151_pc350:8:18 pvco_c909_235:8:20 pvc_c905_dr18:16:20 pvc_d2241_sdr21:4:20 hdpe_ips_dr11:8:null",
+    },
+  },
 ];

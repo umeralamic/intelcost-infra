@@ -31568,3 +31568,51 @@ D-1269 Part 3 (F48), D-1270 Part 4, D-1271 Part 5.
 - **origin/main (app PR #10, api PR #13), dry run only:** both parents of each merge commit are already in umer-dev,
   and main's tree equals the staging tip's. Merging origin/main into umer-dev: no conflict, no file changed, in both
   repos. Not merged.
+
+## D-1267 — F44–F47 acceptance fixes: the duct bank's line, the fittings allowance, restraint on the shared line with labour, a MasterFormat code per type
+
+**Status:** decided (the founder's brief and D-1265, 2026-11-14 night run, Part 1); logged before the build; built,
+F44, F45 and F47 moved to Live (D-1265 22). Spec: `docs/archive/f44_f47_fixes_tasks.md`.
+
+- **Duct bank (F44):** the part1 smoke's E-1 was 100.00 LF of trench (its panel lists "E-1 Electric primary · 100.00
+  LF"), so its line's 400 LF is 4 conduits × 100 LF, and 410 LF of conduit, 400 LF of pull string and 7.62 CY (8 sold)
+  of encasement were right for it. What was wrong: the line read "4 pipes, … 400 LF", which reads as 400 LF of
+  trench, and three per-pipe slips. Now: a line of more than one pipe is named with its trench, "4" PVC Conduit Sch
+  40, 4 pipes x 100 LF, …"; warning tape is one a trench (QTY ÷ pipes); bends and the connection at the main
+  (tap, wye, tie-in) are one a pipe; tracer, the add-ons and restraint sets stay a pipe's own; the encasement stays
+  one a trench. Quantity-table rows evaluate the estimate line (each material's sold quantity).
+- **Fittings allowance:** it covers only what is not counted, run by run. A run with counted bends, tees, valves or
+  hydrants takes none; a restrained run none on its restrained share; the line's allowance is the base % (20 pressure,
+  5 gravity) over the LF of its runs with nothing counted: "Fittings allowance, 0 % (fittings counted on this line)"
+  when none is left, "Fittings allowance, 20 % on 95 % of the line (fittings counted on the rest)" when part is, which
+  the estimator can raise. Supersedes D-915's 10 %. (First built line by line; the bid tabs showed a restrained run on a
+  shared line taking every other run's allowance to 0, so it was made per run before the commit.)
+- **Restraint (D-1265 11–13, 16; refines D-1261):** sets on the run's shared pipe line (no `|rj:` line, no
+  "restrained joints" in the name); one set per joint of the family's catalog laying length (ductile iron 18 ft;
+  C900, C905, C909, D2241 20 ft); labour on the pipe crew, MH a set 4–6 in 0.2, 8 in 0.25, 10–12 in 0.35, 14–16 in
+  0.5, 18–24 in 0.75, 30–36 in 1.0 (14, 18 and 30–36 IntelCost's reading of the founder's table), worked as the crew's
+  own production on the line (machines unchanged) with a note; C909 MJ restraint keys `restraint:pvco_c909:4–24` by
+  migration (one maker's Feb 2026 domestic book, Series 1500 with accessories, list × 0.573, grade C, 18–24 grade D);
+  a C909 bend or tee takes the C900 (DI MJ) fitting key.
+- **D-1265 (1):** a run with no stored add-ons keeps D-1080's tracer and tape and nothing of D-1260's; checked by a row.
+- **D-1265 (2):** each type its own scope `site_utilities.<type>` on its pipe line (trench, bedding and backfill keep
+  the base's, whose codes do not differ) and a MasterFormat 2018 code (the spec's table); the nodes are added to a
+  workspace's CSI tree, under their division, when first needed (a new utility item or a Calculate needing a new
+  scope). A workspace made from now on maps the ten base scopes to MasterFormat too; an existing workspace keeps its
+  ten scopes' mappings and its items' codes until the founder moves them (listed in the report).
+- **D-1265 (10):** Schedule 80 PVC on every pressure type at 12 in and under; PP sanitary on the sanitary main and
+  service.
+- **The $2,152 (D-1261's rerun):** booked $186,062.37 = 935 sets × library price $188,214.30 − $2,377.15, the Houston
+  material location factor (ZIP 77002, material AMF −0.01263, × 0.98737) + $225.18, the tracer and tape rolls each line
+  rounds on its own when a restrained item left its shared line (1680-8215 +$149.48, 2370-4106 +$65.70, 3301-2405B DI
+  +$36.53, 1104-6117 −$26.53) + $0.04 of cents. Every item's remainder is under a cent.
+- **Built and measured (2026-11-15, 03:29 to about 06:00 UTC):** migration `d1267c909a15` (revises `d1261b3e7a52`): 10
+  keys `restraint:pvco_c909:4–24` (C7 D3), proved up/down/up on a separate Postgres with a bench copy (1084 → 1094 →
+  1084 → 1094, `alembic check` clean, one head), run on the bench 04:20:42–04:20:54 UTC; founder digest
+  `e6274ecff78ff54f` before and after, row compare "tables changed: none". Smoke with labour on a throwaway copy of the
+  3D test project (Harris open shop, burdened, 77002): a restrained 8 in C900 line 16 sets, 4 MH on the pipe crew
+  (+0.80 crew hr), filed "Water Utility Transmission and Distribution › Site Water Utility Distribution Piping"; the
+  hydrant lead under "Valves and Hydrants for Water Utility Service"; the duct bank under "Electrical Underground Ducts,
+  Ductbanks, and Manholes", named "4 pipes x 589.37 LF". Bid tabs (16 contracts, prevailing, add-ons on, 0386-3118A's
+  four at 20 %): all items −7.2 % → −8.2 %, $9,643,322 → $9,538,776 (−$104,546; the fittings rule about −$98,900);
+  against the 2026-11-12 table +$274,172. Figures in docs/reference, not in a repo.
