@@ -1,0 +1,74 @@
+{
+  "decision": "D-1273",
+  "note": "The bid-tab basis and the bid overlay over our direct cost (D-1273, revising D-1103). Every percentage is an input: intelcost-infra/bidtabs/basis-report.mjs reads this file and nothing in the script repeats a figure. No tab figure lives here.",
+  "basis": {
+    "escalation": "none",
+    "escalationNote": "Tabs are compared as bid. No ECI escalation (D-1103's escalation is withdrawn).",
+    "recentMonths": 12,
+    "recentNote": "The tuning set: tabs bid within this many months of the newest tab's bid month (bid month >= newest month - recentMonths). Older tabs are reported as history only.",
+    "bidders": "all",
+    "biddersNote": "Every bidder on the tab, each priced on the same pay items as ours.",
+    "labour": "prevailing",
+    "labourNote": "Labour at the tab's bid-date prevailing rates: the run's open-shop labour x the contract's labour ratio (D-1103, unchanged).",
+    "salesTaxOnMaterialPct": 0,
+    "salesTaxNote": "MUD water, sewer and drainage tabs: no sales tax on material. The comparison carries none."
+  },
+  "excludeFromTuning": [
+    {
+      "key": "2959-1402",
+      "match": {
+        "unit": "LF",
+        "qty": 160,
+        "descPattern": "LOW WATER CROSSING"
+      },
+      "pipe": "24 in RCP C76 Class III",
+      "why": "Temporary low-water-crossing culvert, removed at the end of construction: removal is not modelled (D-1272 item 11)."
+    },
+    {
+      "key": "2959-1402",
+      "match": {
+        "unit": "LF",
+        "qty": 200,
+        "descPattern": "LOW WATER CROSSING"
+      },
+      "pipe": "36 in RCP C76 Class III",
+      "why": "Temporary low-water-crossing culvert, removed at the end of construction: removal is not modelled (D-1272 item 11)."
+    }
+  ],
+  "overlay": {
+    "addNothingFor": [
+      "mobilization and demobilization",
+      "rental minimums",
+      "pickups",
+      "foremen",
+      "half-day minimums"
+    ],
+    "addNothingNote": "Already in our direct cost (the crews, the spreads and their minimums).",
+    "indirects": {
+      "supervisionPctOfLabourAndEquipment": 4,
+      "smallToolsPctOfLabour": 3,
+      "glInsurancePctOfBid": 1.5,
+      "bondPctOfBid": 1,
+      "bondOnlyWhenNoBondItem": true,
+      "bondItemPattern": "\\bBONDS?\\b",
+      "separatelyPaidItemsPct": 0,
+      "separatelyPaidNote": "Bonds, staking, SWPPP, silt fence, traffic control, dewatering and trench safety are paid as their own pay items where the tab lists them: no overlay is added for them on the pipe items."
+    },
+    "ohp": {
+      "labourPct": 25,
+      "equipmentPct": 20,
+      "materialPct": 8,
+      "subcontractPct": 8,
+      "disposalAs": "material",
+      "note": "One markup layer: Div 01 and OH&P inside the unit prices."
+    },
+    "formula": "L' = L x (1 + supervision + small tools); E' = E x (1 + supervision); bid = (L' x (1 + OH&P labour) + E' x (1 + OH&P equipment) + M x (1 + OH&P material) + S x (1 + OH&P subcontract)) / (1 - GL insurance - bond)"
+  },
+  "calibration": {
+    "method": "least squares on the log ratio, one point per contract: ln k = mean over contracts of ln(target / our direct); the $-weighted ratio (sum target / sum direct) beside it",
+    "expected": 1.3,
+    "directHighBelow": 1.1,
+    "founderExpectation": "A market-level direct sits about 23-25 % below the median bid."
+  },
+  "sanitaryLongRunLf": 1000
+}

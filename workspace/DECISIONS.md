@@ -28479,6 +28479,9 @@ Accepted 2026-11-09 (run mode: the recommended answer taken).
 ## D-1103: Bid comparisons against public tabs are priced prevailing, escalated by ECI
 
 **Status:** Accepted (2026-11-09, run mode). Standing rule for every comparison from now on.
+**Revised by D-1273 (night run 2026-11-15 → 16):** no ECI escalation (tabs as bid), every bidder, the tabs bid within 12 months of the
+newest as the tuning set (older ones history only), our direct cost compared through a bid overlay; prevailing labour
+at the bid-date WD stays.
 
 - Every comparison against a public bid tab (DOT, county, city, MUD) prices labor in prevailing mode under the tab
   county's WD of the matching construction type (Heavy for water and sewer lines, Highway for a DOT item), the one in
@@ -31932,6 +31935,40 @@ No feature moves to Live without the founder's confirmation in the morning. The 
 ## D-1273 — The bid-tab basis, revised (D-1103): no escalation, recent tabs as bid with every bidder, a bid overlay over our direct cost
 
 Logged before the work (Part 1). Harness only; no Estimating or engine change. The part adds its results here.
+
+**Status:** Done (night run 2026-11-15 → 16, Part 1); the basis stands for every bid-tab comparison from now on. Harness
+`intelcost-infra/bidtabs/contract-runner.js` (reads the Subcontract column) and `bidtabs/basis-report.mjs` (`parse`,
+`score`), commit 290e1ce; the overlay config `docs/reference/bid-overlay-d1273.json`; results and tables in
+`docs/reference/Bid tabs Houston 2026-11/why-we-bid-low-2026-11-16-basis.md` (outside git, no tab figure in a repo).
+
+- **Basis:** tabs as bid, no ECI escalation. The tuning set is the tabs bid within 12 months of the newest tab's bid
+  month (newest 2026-04, cut-off 2025-04): 10 recent contracts; the 6 bid 2024-11 to 2025-03 are history only. Every
+  bidder: each bidder's total is their unit price × quantity over the items we price (25 of 191 rows read in part give
+  every bidder the item's verified median). Labour stays at the bid-date prevailing rate (D-1103's ratio). MUD water,
+  sewer and drainage tabs: one markup layer, Div 01 and OH&P inside the unit prices, bonds, staking, SWPPP, silt fence,
+  traffic control, dewatering and trench safety paid separately where listed, **no sales tax on material**. Found: the
+  harness never carried sales tax (it sums the Estimating lines' Total Item Cost; sales tax is a Bid summary line,
+  app `bidSummary.ts` `computeBid`); now explicit at 0 % in the config.
+- **Overlay (config, every % an input):** nothing added for mob/demob, rental minimums, pickups, foremen, half-day
+  minimums. Supervision 4 % of (L+E), small tools 3 % of L, GL insurance 1.5 % of bid, bonds 1.0 % of bid only where
+  the tab has no bond item (four have one), separately paid items 0. OH&P labour 25 %, equipment 20 %, material and
+  subcontract 8 %. bid = (L×1.07×1.25 + E×1.04×1.20 + M×1.08 + S×1.08) ÷ (1 − insurance − bond). The L/E/M/S split
+  is each item's own lines' columns in the Estimating table (subcontract and disposal $0 on these items); bid ÷ direct
+  1.13–1.20 by mix, 1.165 overall.
+- **Kept out of tuning:** 2959-1402's two temporary low-water-crossing culverts (24 in RCP 160 LF, 36 in RCP 200 LF;
+  never in the input). Not priced: the 7 × 5 ft box culvert (no family), 42 in dual-wall HDPE 165 LF and 15 in C900
+  20 LF (no catalog size). 189 of 191 priceable items priced, the 27 added included; parity 0 differences.
+- **Headline (recent tabs, with the added items; without them in brackets):** our direct $8.04 M against the bidders'
+  medians $8.14 M, **−1.3 % (−2.4 %)**; our bid +14.9 % over the median, +23.8 % over the low; low on none of the 10,
+  last or next to last on 8. **Multiplier on direct that fits the low bids 0.905 (0.907), the medians 0.997 (1.006)**
+  (log least squares per contract; $-weighted 0.940 and 1.014). Expected ≈ 1.30: **our direct is high**, about 30 %
+  over a market-level direct (23–25 % under the median). History: k to the low 1.019 (1.032), to the median 1.137
+  (1.177); all 16: 0.946 and 1.047. Material is 73 % of our recent direct and 72 % of the recent median bid (Part 2,
+  D-1274).
+- **Sanitary long runs (≥ 1,000 LF):** recent 14 items, 24,983 LF: direct −6.3 % against the item medians, bid +11.7 %
+  over them, none under its low. **Not low on the new basis: the founder's hold on those rows stands.**
+- Run once on harness commit 290e1ce, 2026-11-14 16:06–16:25 UTC, bench app 0481cfd / api 959182b, throwaway
+  fx.equip.20261114160524 (purged).
 
 ## D-1274 — Overpricing analysis: water and 15–36" storm labour and equipment against the recent tabs
 
