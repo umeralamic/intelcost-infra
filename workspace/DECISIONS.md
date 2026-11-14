@@ -32006,6 +32006,30 @@ report; it states the healthy range 1.20–1.35 to the medians.
 
 Logged before the work (Part 2). Analysis only. The part adds its findings here.
 
+**Status:** Done (night run 2026-11-15 → 16, Part 2). Analysis only: no app, api, library, migration or bench change, no
+harness run. Proposals below await Part 6's build and a bid-tab rerun (the founder's rule). Report:
+`docs/reference/Bid tabs Houston 2026-11/why-we-bid-high-2026-11-16-overpricing.md` (outside git, with its items JSON/CSV,
+summary and `material-evidence-2026-11-16.json`). Scripts (infra): `bidtabs/engine-hook.mjs` (imports the app's pure
+section modules offline), `bidtabs/overpricing.mjs`, `bidtabs/overpricing-report.mjs`.
+
+- **Gap:** healthy direct = median ÷ 1.275 (the founder's 1.20–1.35). Recent tabs (Part 1 re-read): our direct $8.04 M
+  against a healthy $6.38 M, +25.9 %. Water and 15–36 in storm carry $1.19 M of the $1.65 M.
+- **Split of the $1.19 M:** (b) section under Part 6's defaults $462 k (39 %: RCP C1479 T2 $440 k; water "C605 T4 house,
+  12 in over crown" $18 k, pure T4 $124 k); material (i) price $194 k (16 %, C900 only: our RCP is $233 k *under* a Houston
+  plant's 2026 county supply price); (ii) order tier $65 k (5 %); (a) $295 k (25 %: the equipment spread above its rental
+  floor $192 k, the A2/A3 production proposals $103 k); unexplained $175 k (15 %, mostly 8 in C900: the tabs leave
+  ≈ $9.80/LF at the yard for the pipe against our $17.39). Labour and equipment do not move with the section in today's
+  engine ($0.00/LF under every preset).
+- **(a) found:** labour is a steady $2,060–2,122 a crew-day (open shop) for five on every crew, so crew size is not the cause;
+  the storm (A32) spread prices at ≈ $2,440 a crew-day whatever its length (fit $2,461/day + $341), about its machines'
+  day rates, against a 4-week floor of $1,450–1,504; water (A18) fits $1,161/day + $3,199 a spread against $939.
+- **Proposals, in order:** (1) build Part 6 and rerun (k to the medians 0.997 → 1.067 house / 1.080 pure T4); (2) A1:
+  check why the storm spread bills near day rates (−$192 k in scope, more on sanitary); (3) A2: RCP 30–36 in pace
+  0.68 → 0.85 (−$50 k); (4) A3: water runs ≥ 1,000 LF at 500 LF/day (−$53 k); no crew or minimum change. All levers:
+  k to the medians 1.165, our bid +0.5 % over the medians, still under the healthy 1.20.
+- **Open:** the Houston RCP section (C1479 T2 or sand to 12 in over the crown decides $356 k), a Texas C900 price, the RCP
+  gasket, water test/disinfection and the 20 % fittings allowance.
+
 ## D-1275 — Large RCP 48" and up: a heavy crew and production; trench depth from the invert, the wall and the bedding
 
 Logged before the work (Part 3). Spec first, then build. The part adds its rules here.
