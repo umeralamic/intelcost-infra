@@ -62,8 +62,10 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1260: 174 utility type keys (new pipe families, add-ons, taps, wyes and tie-ins): B20 C102 D52.
 # D-1261: 27 bell-joint restraint keys (C900 / C909 / C905 4-36, DI 4-24, IPS 4-12): C24 D3.
 # D-1267: 10 C909 MJ restraint keys (4-24): C7 D3.
-if [ "$MAT_COUNTS" != "A171 B191 C561 D139 F32" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B191 C561 D139 F32"
+# D-1268: D2241 SDR 21 4, 6, 8 in B to C (repriced by weight from C900 DR 18), pull string D to C, three minimum-charge
+# keys (C): B191 - 3 = 188, C561 + 3 + 1 + 3 = 568, D139 - 1 = 138.
+if [ "$MAT_COUNTS" != "A171 B188 C568 D138 F32" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C568 D138 F32"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -134,6 +136,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py ro
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py wages" </dev/null || { echo "FAIL  wages (above)"; exit 1; }
 # D-1091: order-size tiers and the pipe crew's compactor, by hand.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py orders" </dev/null || { echo "FAIL  order sizes (above)"; exit 1; }
+# D-1268: the corrected prices (tracer, pull string, the three minimums, D2241 below C900 at its weight ratio), the line
+# cost at them, and the minimum charges' top-up per estimate (short and long runs, two sheets, per system).
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prices" </dev/null || { echo "FAIL  price corrections (above)"; exit 1; }
 # Prevailing wage by classification (D-1038): Mohave Highway WD, operators by machine, a licensed trade not covered, the foreman.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prevailing" </dev/null || { echo "FAIL  prevailing (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.

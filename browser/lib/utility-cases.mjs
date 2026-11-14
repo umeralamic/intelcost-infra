@@ -893,7 +893,8 @@ export const UTILITY_CASES = [
   // materials, every figure worked by hand: one row a group, a duct bank of 4 encased conduits, a water service with
   // its tap, and 6 in Sch 40 DWV against 6 in SDR-35.
   {
-    // Gravity: a new sanitary main takes SDR-35 8 in by inverts, warning tape (D-1080) and TV inspection.
+    // Gravity: a new sanitary main takes SDR-35 8 in by inverts and TV inspection; D-1268: no warning tape on a
+    // gravity type's defaults (was "tape cctv", a:cctv+tape, and warning_tape among the keys).
     id: "util-1260-gravity-sanitary-main",
     kind: "type-lines",
     type: "sanitary",
@@ -905,14 +906,14 @@ export const UTILITY_CASES = [
       pipe: "pvc_d3034_sdr35:8",
       vertical: "inverts",
       cover: null,
-      addons: "tape cctv",
+      addons: "cctv",
       connection: null,
       production: "main",
       install: "trench",
       roles: "utility_pipe utility_trench_excavation utility_bedding_pipe_zone utility_bedding_pipe_zone utility_backfill",
-      variant: "pvc_d3034_sdr35:8|1|0–6 ft||a:cctv+tape",
+      variant: "pvc_d3034_sdr35:8|1|0–6 ft||a:cctv",
       lf: 100,
-      keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 warning_tape addon:cctv",
+      keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 addon:cctv",
       "addon:cctv:qty": "QTY",
       "addon:cctv:unit": "LF",
     },
@@ -1127,7 +1128,8 @@ export const UTILITY_CASES = [
     lf: 90,
     run: { catalog_key: "pvc_d2241_sdr21:4", nominal_in: 4 },
     section: { restrained_pct: 50 },
-    expect: { restrainedPct: 50, restrainedJoints: 3, variant: "pvc_d2241_sdr21:4|1|0–6 ft||t:irrigation|a:pressure_test", "restraint_joint:pvc_ips:4:qty": "3" },
+    // D-1268: irrigation is a pressure type, tape on by default (was a:pressure_test).
+    expect: { restrainedPct: 50, restrainedJoints: 3, variant: "pvc_d2241_sdr21:4|1|0–6 ft||t:irrigation|a:pressure_test+tape", "restraint_joint:pvc_ips:4:qty": "3" },
   },
   {
     // A fused HDPE force main, whole line asked: fused joints have no bell to restrain, so no sets and no line of its own.
@@ -1157,7 +1159,8 @@ export const UTILITY_CASES = [
     label: '8" PVC SDR-35',
     lf: 100,
     section: { restrained_pct: 100 },
-    expect: { restrainedPct: 0, restrainedJoints: 0, variant: "pvc_d3034_sdr35:8|1|0–6 ft||a:cctv+tape" },
+    // D-1268: no tape on a gravity type's defaults (was a:cctv+tape).
+    expect: { restrainedPct: 0, restrainedJoints: 0, variant: "pvc_d3034_sdr35:8|1|0–6 ft||a:cctv" },
   },
   // 6 in Sch 40 DWV against 6 in SDR-35: IPS OD 6.625, wall 0.280, ID 6.065 (S18), 30.625 in of pipe width at 12 in a
   // side; the sewer pipe's OD 6.275, wall 0.180, ID 5.893 (S1), 30.275 in.
@@ -1325,5 +1328,91 @@ export const UTILITY_CASES = [
       mh: "4:0.2 6:0.2 8:0.25 10:0.35 12:0.35 14:0.5 16:0.5 18:0.75 20:0.75 24:0.75 30:1 36:1",
       jointFt: "pvc_c900_dr18:8:20 di_c151_pc350:8:18 pvco_c909_235:8:20 pvc_c905_dr18:16:20 pvc_d2241_sdr21:4:20 hdpe_ips_dr11:8:null",
     },
+  },
+  // --- D-1268: price library corrections. A new storm main's pipe, warning tape on for pressure types and off for
+  // gravity (a new run's stored add-ons), the estimate line's sold quantities the new prices ride on (priced in
+  // drives/quantity-table.py prices).
+  {
+    // A new storm sewer main: 18 in RCP Class III (ASTM C76 Wall B), no tape. 100 LF x 1.01 waste = 101 -> 13 joints of
+    // 8 ft = 104 LF; a gasket a joint, ceil(100 / 8) = 13; the gravity allowance 5 %.
+    id: "util-1268-storm-main-default",
+    kind: "type-lines",
+    type: "storm",
+    label: '18" RCP Wall B',
+    lf: 100,
+    expect: {
+      pipe: "rcp_c76_wall_b:18",
+      vertical: "inverts",
+      addons: "",
+      variant: "rcp_c76_wall_b:18|1|0–6 ft||a:none",
+      keys: "pipe:rcp_c76_wall_b:18 fit:pipe:rcp_c76_wall_b:18 gasket:rcp:18",
+      "pipe:rcp_c76_wall_b:18:sold": 104,
+      "gasket:rcp:18:qty": "ceil(QTY / 8)",
+      "gasket:rcp:18:sold": 13,
+      "fit:pipe:rcp_c76_wall_b:18:pct": 5,
+    },
+  },
+  {
+    // The storm lead keeps HDPE dual wall 12 in, tied in at the structure; no tape now (gravity).
+    id: "util-1268-storm-lead-hdpe",
+    kind: "type-lines",
+    type: "storm_lead",
+    label: '12" HDPE Dual Wall',
+    lf: 40,
+    expect: { pipe: "hdpe_f2648_dual_wall:12", addons: "", connection: "tie_in", variant: "hdpe_f2648_dual_wall:12|1|0–6 ft||short|t:storm_lead|a:none" },
+  },
+  {
+    // A new water main, 200 LF: tape on (pressure). Tape 200 x 1.05 / 1000 = 0.21 -> 1 roll; tracer 200 x 1.1 / 500 =
+    // 0.44 -> 1 roll (priced $95.00 now); test and disinfection 200 LF by the foot.
+    id: "util-1268-water-tape-on",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    expect: {
+      addons: "tracer tape test_disinfect",
+      keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect",
+      "warning_tape:sold": 1,
+      "tracer_wire:sold": 1,
+      "addon:test_disinfect:sold": 200,
+    },
+  },
+  {
+    // A new sanitary main, 300 LF: tape off (gravity), CCTV by the foot 300 LF.
+    id: "util-1268-sanitary-tape-off",
+    kind: "type-lines",
+    type: "sanitary",
+    label: '8" PVC SDR-35',
+    lf: 300,
+    expect: { addons: "cctv", variant: "pvc_d3034_sdr35:8|1|0–6 ft||a:cctv", keys: "pipe:pvc_d3034_sdr35:8 fit:pipe:pvc_d3034_sdr35:8 addon:cctv", "addon:cctv:sold": 300 },
+  },
+  {
+    // A new sanitary service: no add-on at all now (tape was its only one); its wye at the main.
+    id: "util-1268-sanitary-service-tape-off",
+    kind: "type-lines",
+    type: "sanitary_service",
+    label: '6" PVC SDR-35',
+    lf: 35,
+    expect: { addons: "", connection: "wye", variant: "pvc_d3034_sdr35:6|1|0–6 ft||short|t:sanitary_service|a:none", keys: "pipe:pvc_d3034_sdr35:6 fit:pipe:pvc_d3034_sdr35:6 wye:sewer:6" },
+  },
+  {
+    // Irrigation and chilled water are pressure types: tape on now (they had none). 120 x 1.05 / 1000 -> 1 roll.
+    id: "util-1268-irrigation-tape-on",
+    kind: "type-lines",
+    type: "irrigation",
+    label: '2" PVC Sch 40',
+    lf: 120,
+    expect: { addons: "tape pressure_test", keys: "pipe:pvc_sch40:2 fit:pipe:pvc_sch40:2 warning_tape addon:pressure_test", "warning_tape:sold": 1, "addon:pressure_test:sold": 120 },
+  },
+  { id: "util-1268-chilled-tape-on", kind: "type-lines", type: "chilled_water", label: '6" HDPE DR 11', lf: 80, expect: { addons: "tape pressure_test" } },
+  {
+    // A duct bank, 4 x 4 in conduit over 100 LF of trench: pull string 400 LF sold (a conduit's own), at $0.08 now.
+    id: "util-1268-duct-bank-pull-string",
+    kind: "type-lines",
+    type: "electric",
+    label: '4" PVC Conduit Sch 40',
+    lf: 100,
+    run: { pipes: 4, pipe_gap_in: 3 },
+    expect: { "addon:pull_string:qty": "QTY", "addon:pull_string:sold": 400, "warning_tape:sold": 1 },
   },
 ];

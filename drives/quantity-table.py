@@ -1597,7 +1597,128 @@ def orders() -> int:
     return 1 if wrong else 0
 
 
+# D-1268: D2241 against C900 DR 18 at each shared size, by the wall area ratio (OD - t) t: new price and its ratio.
+D1268_D2241 = {
+    (21, 4): (3.71, 0.759),
+    (21, 6): (8.52, 0.796),
+    (21, 8): (13.66, 0.786),
+    (21, 10): (23.96, 0.81),
+    (21, 12): (31.86, 0.807),
+    (26, 4): (3.02, 0.618),
+    (26, 6): (6.96, 0.65),
+    (26, 8): (11.14, 0.641),
+    (26, 10): (19.52, 0.66),
+    (26, 12): (25.97, 0.657),
+}
+
+
+def prices() -> int:
+    """D-1268: the library's corrected prices (read only), the estimate line's cost at them, and the minimum
+    charges' top-up through `materials/minimums.py`, every figure worked by hand."""
+    from sqlalchemy import text as sql
+
+    from app.database import sync_engine
+    from app.features.materials import minimums
+
+    wrong: list[str] = []
+    with sync_engine.connect() as conn:
+        lib = {
+            k: (float(p), u, g)
+            for k, p, u, g in conn.execute(
+                sql(
+                    "SELECT d.mat_key, d.unit_price, d.sell_unit, d.grade FROM matlib.mat_default d"
+                    " JOIN matlib.release r ON r.id = d.release_id WHERE r.title = 'Q4 2026'"
+                )
+            ).all()
+        }
+    for key, want in (
+        ("tracer_wire", (95.0, "ROLL", "C")),
+        ("addon:pull_string", (0.08, "LF", "C")),
+        ("addon_min:test_disinfect", (1500.0, "EA", "C")),
+        ("addon_min:cctv", (1200.0, "EA", "C")),
+        ("addon_min:pressure_test", (750.0, "EA", "C")),
+    ):
+        if lib.get(key) != want:
+            wrong.append(f"FAIL  price-1268-{key}: {lib.get(key)}, expected {want}")
+    # D2241 below C900 DR 18 at every size both exist, at the ratio worked by weight.
+    for (sdr, n), (price, ratio) in D1268_D2241.items():
+        d = lib.get(f"pipe:pvc_d2241_sdr{sdr}:{n}")
+        c = lib.get(f"pipe:pvc_c900_dr18:{n}")
+        if d is None or c is None or d[0] != price or not d[0] < c[0] or round(d[0] / c[0], 3) != ratio:
+            wrong.append(f"FAIL  price-1268-d2241-sdr{sdr}-{n}: {d} vs C900 {c}, expected {price} ({ratio} of C900)")
+    # The estimate line at the new prices (national, no location factor): the duct bank's 400 LF of pull string
+    # (util-1268-duct-bank-pull-string) 400 x 0.08 = 32.00 (was 240.00); a 200 LF water main's one roll of tracer
+    # (util-1268-water-tape-on) 95.00 (was 117.48).
+    for name, got, want in (
+        ("duct-bank-pull-string", round(400 * lib["addon:pull_string"][0], 2), 32.0),
+        ("water-main-tracer", round(1 * lib["tracer_wire"][0], 2), 95.0),
+    ):
+        if got != want:
+            wrong.append(f"FAIL  price-1268-{name}: {got}, expected {want}")
+
+    # The minimum's top-up, per estimate (D-1268). Parts: (item id, key, system, name, LF, $).
+    def part(i: int, key: str, system: str, lf: float, rate: float) -> minimums.Part:
+        names = {"water": "Water", "fire": "Fire", "sanitary": "Sanitary"}
+        return minimums.Part(item_id=i, mat_key=f"addon:{key}", system=system, system_name=names[system], lf=lf, amount=lf * rate)
+
+    mins: dict[str, float | None] = {"test_disinfect": 1500.0, "cctv": 1200.0, "pressure_test": 750.0}
+
+    def show(tops: list[minimums.TopUp]) -> str:
+        return "; ".join(f"{t.variant} {t.amount:.2f} {t.name} | {t.basis}" for t in tops)
+
+    for rid, parts, minimum, want in (
+        # A short water main: 150 LF x $2.25 = $337.50 by the foot; the line $1,500 - $337.50 = $1,162.50.
+        (
+            "short-water-main",
+            [part(11, "test_disinfect", "water", 150, 2.25)],
+            mins,
+            "test_disinfect|water 1162.50 Pressure test and disinfection, minimum charge (Water) | Minimum $1,500.00 a system a"
+            " mobilization, less $337.50 by the foot (150.00 LF on 1 line)",
+        ),
+        # A long one: 800 LF x $2.25 = $1,800.00, over the minimum: no line.
+        ("long-water-main", [part(11, "test_disinfect", "water", 800, 2.25)], mins, ""),
+        # Per estimate: two sanitary lines on two sheets, 200 + 150 LF of CCTV x $2.00 = $700.00; one line $500.00.
+        (
+            "cctv-two-sheets",
+            [part(21, "cctv", "sanitary", 200, 2.0), part(34, "cctv", "sanitary", 150, 2.0)],
+            mins,
+            "cctv 500.00 TV inspection (CCTV), minimum charge | Minimum $1,200.00 a mobilization, less $700.00 by the foot (350.00"
+            " LF on 2 lines)",
+        ),
+        # Per system: water 150 LF ($337.50) and a fire line 100 LF ($225.00) each their own minimum.
+        (
+            "per-system",
+            [part(11, "test_disinfect", "water", 150, 2.25), part(12, "test_disinfect", "fire", 100, 2.25)],
+            mins,
+            "test_disinfect|fire 1275.00 Pressure test and disinfection, minimum charge (Fire) | Minimum $1,500.00 a system a"
+            " mobilization, less $225.00 by the foot (100.00 LF on 1 line); test_disinfect|water 1162.50 Pressure test and"
+            " disinfection, minimum charge (Water) | Minimum $1,500.00 a system a mobilization, less $337.50 by the foot (150.00"
+            " LF on 1 line)",
+        ),
+        # Pressure test, one an estimate across systems: 1,000 LF x $1.00 met; 300 LF ($300) + 150 LF ($150) short $300.
+        ("pressure-met", [part(5, "pressure_test", "water", 1000, 1.0)], mins, ""),
+        (
+            "pressure-short",
+            [part(5, "pressure_test", "water", 300, 1.0), part(6, "pressure_test", "fire", 150, 1.0)],
+            mins,
+            "pressure_test 300.00 Pressure test, minimum charge | Minimum $750.00 a mobilization, less $450.00 by the foot (450.00"
+            " LF on 2 lines)",
+        ),
+        # No minimum priced: no line.
+        ("unpriced", [part(11, "test_disinfect", "water", 150, 2.25)], {"test_disinfect": None}, ""),
+    ):
+        got = show(minimums.top_ups(parts, minimum))
+        if got != want:
+            wrong.append(f"FAIL  minimum-1268-{rid}: {got!r}, expected {want!r}")
+    for w in wrong:
+        print(w)
+    print(f"price corrections: {5 + len(D1268_D2241) + 2 + 7} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["prices"]:
+        sys.exit(prices())
     if sys.argv[1:] == ["orders"]:
         sys.exit(orders())
     if sys.argv[1:] == ["prepare"]:

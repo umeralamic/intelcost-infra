@@ -31616,3 +31616,81 @@ F44, F45 and F47 moved to Live (D-1265 22). Spec: `docs/archive/f44_f47_fixes_ta
   Ductbanks, and Manholes", named "4 pipes x 589.37 LF". Bid tabs (16 contracts, prevailing, add-ons on, 0386-3118A's
   four at 20 %): all items −7.2 % → −8.2 %, $9,643,322 → $9,538,776 (−$104,546; the fittings rule about −$98,900);
   against the 2026-11-12 table +$274,172. Figures in docs/reference, not in a repo.
+
+## D-1268 — Price library corrections: D2241 below C900, pull string, tracer wire, minimum charges, the storm main's pipe, tape on pressure
+
+**Status:** decided (the founder's brief, 2026-11-14 night run, Part 2; the founder's "D-1267", renumbered by D-1265's
+note); logged before the build; built. Spec: `docs/archive/price_library_d1268_tasks.md`.
+
+- **No price key is overwritten without its old value logged** here, in the migration's seed (each row's `old`) and in
+  `matlib.release_audit` (one `correction` row, every move was → now). The downgrade puts each old price, grade and
+  source back and removes the audit row and the new keys.
+- **D2241 below C900 DR 18 at every size both exist (4–12 in).** SDR 21 was above C900 DR 18 at 4, 6 and 8 in (ratio
+  1.006, 1.022, 1.100): its basis was retail listings ÷ 1.10, C900's utility supply bids. D2241 and C900 are the same
+  PVC compound, so pipe of both is priced by its weight: D2241 = C900 DR 18 at the same nominal × the wall area ratio,
+  (OD − t)·t with IPS OD and t = OD ÷ SDR (ASTM D2241) against cast-iron OD and the DR 18 wall (AWWA C900, the catalog's
+  figures). SDR 21: 0.758, 0.796, 0.785, 0.810, 0.807 at 4, 6, 8, 10, 12 in; SDR 26 by the same rule 0.618–0.660
+  (was SDR 21 × 0.82, the same 0.816 between the two). 3 in has no C900: 4 in's price × the 3-to-4 in weight ratio
+  0.607, as before. Grade C (derived). 1-1/2 and 2 in keep their listing prices (no C900 at those sizes).
+
+  | Key | Old $/LF | New $/LF | Grade | D2241 ÷ C900 DR 18 |
+  |---|---|---|---|---|
+  | pvc_d2241_sdr21:3 | 3.05 | 2.25 | C → C | (no C900) |
+  | pvc_d2241_sdr21:4 | 4.92 | 3.71 | B → C | 1.006 → 0.759 |
+  | pvc_d2241_sdr21:6 | 10.94 | 8.52 | B → C | 1.022 → 0.796 |
+  | pvc_d2241_sdr21:8 | 19.13 | 13.66 | B → C | 1.100 → 0.786 |
+  | pvc_d2241_sdr21:10 | 28.47 | 23.96 | C → C | 0.963 → 0.810 |
+  | pvc_d2241_sdr21:12 | 38.89 | 31.86 | C → C | 0.985 → 0.807 |
+  | pvc_d2241_sdr26:3 | 2.50 | 1.83 | C → C | (no C900) |
+  | pvc_d2241_sdr26:4 | 4.03 | 3.02 | C → C | 0.824 → 0.618 |
+  | pvc_d2241_sdr26:6 | 8.97 | 6.96 | C → C | 0.838 → 0.650 |
+  | pvc_d2241_sdr26:8 | 15.68 | 11.14 | C → C | 0.902 → 0.641 |
+  | pvc_d2241_sdr26:10 | 23.35 | 19.52 | C → C | 0.790 → 0.660 |
+  | pvc_d2241_sdr26:12 | 31.89 | 25.97 | C → C | 0.807 → 0.657 |
+
+  (`pipe:` prefix on every key; C900 DR 18 at 4, 6, 8, 10, 12 in: 4.89 C, 10.70 A, 17.39 A, 29.57 C, 39.50 A.)
+- **Pull string / mule tape** `addon:pull_string` $0.60 → $0.08 /LF, D → C (the founder's figure; mule tape is about
+  $0.03/LF, the rest the mandrel pass). **Tracer wire** `tracer_wire` (500 ft roll) $117.48 → $95.00, C → C (the
+  founder's figure).
+- **Minimum charges, their own estimate line, per estimate.** Today the three tests are priced only by the foot, a
+  material component of the pipe line (`addon:test_disinfect` $2.25, `addon:cctv` $2.00, `addon:pressure_test`
+  $1.00 /LF, on the line's LF). A short job never meets what a crew charges to come out. The reading taken: a
+  **top-up line**, so the job pays the greater of the foot price and the minimum, never both:
+  - Minimums, library keys by migration (grade C, the founder's figures): `addon_min:test_disinfect` $1,500 a system a
+    mobilization, `addon_min:cctv` $1,200 a mobilization, `addon_min:pressure_test` $750 a mobilization, each EA.
+    Resolved as every material (a workspace or project price over IntelCost's; the location factor applies).
+  - Per estimate, never per run or per sheet: Calculate writes lines sheet by sheet, so the api works the minimum over
+    the whole project after it writes a sheet's materials, and again when prices are filled or updated. By the foot =
+    the sum of that key's components (sold quantity × the component's own price) over the project's live lines (not
+    retired, superseded or by others). Test and disinfection per system (the run type's system: water main, service
+    and hydrant lead are Water; a fire line Fire; reclaimed its own); CCTV and pressure test one each per estimate.
+  - Minimum less by the foot above half a cent: one line, "Pressure test and disinfection, minimum charge (Water)",
+    1 EA, its one material component priced at the top-up, its basis saying both figures ("Minimum $1,500.00 a system a
+    mobilization, less $337.50 by the foot (150.00 LF on 1 line)"). Met or not needed: no line (kept at 0 if a person
+    put something on it, as D-529). Example: one 150 LF water main, test and disinfection 150 × $2.25 = $337.50; the
+    minimum line $1,162.50; a 800 LF main ($1,800.00) none.
+  - The line (role `utility_minimum`, region `util:<base>` of its first line, variant the add-on and system) sits on the
+    sheet of the group's first line by id, filed with that line (folder, code, scope). A sheet's Calculate and a site's
+    supersede never touch it; the minimum pass alone makes, moves, prices and removes it. A typed price on it stays.
+- **Storm sewer main's default pipe:** 12 in SDR-35 → 18 in RCP Class III (ASTM C76, Wall B; the library's
+  `rcp_c76_wall_b:18` is priced as Class III, $27.85 A). Only a new run picking the type; a stored run keeps its pipe,
+  and a new run started from the last run drawn keeps that run's pipe (D-615). The storm lead stays HDPE dual wall.
+- **Warning tape by group (D-1265 6):** on in the defaults of every pressure type (water main and service, fire line,
+  hydrant lead, force main, storm force main, irrigation, reclaimed, chilled / hot water, fuel / oil; irrigation and
+  chilled water gain it), off for every gravity type (sanitary main and service, storm main and lead, grease waste
+  lose it). Gas and the dry utilities keep theirs. A new run's add-ons are stored, so the user turns it on or off per
+  run; a stored run keeps what it has (a run drawn before F44 keeps D-1080's rule, D-1265 1).
+- **Built and measured (2026-11-14 UTC by the bench clock, night run Part 2):** migration `d1268a7c3e51` (revises
+  `d1267c909a15`, left unfolded for the night's fold): 14 keys moved, 3 added, one `release_audit` row. Proved on a
+  separate Postgres: from empty, `upgrade head` gives the bench's schema but for the 31 CHECK constraints the baseline
+  prints in an equivalent form (no DDL in this revision: d1267 vs d1268 schema identical); two bench copies, up, down,
+  up: down equals the restored library row for row, up equals up again, the two copies identical, `alembic check`
+  clean, one head. Bench run 06:32:41–06:32:56 UTC, founder digest `e6274ecff78ff54f` before and after. Quantity table
+  exit 0, no FAIL: `prices` 24 rows, nine `util-1268-*` type-lines rows, three rows moved by the tape change
+  (`util-1260-gravity-sanitary-main`, `util-1261-sanitary-never`, `util-1261-irrigation-d2241-half`), the grade counts
+  A171 B188 C568 D138 F32. Smoke with labour on a throwaway copy of the 3D test project (Harris County open shop,
+  burdened, 77002): a new storm main took 18" RCP Wall B, no tape; a water main tracer, tape and test; a sanitary main
+  CCTV, no tape; a 4-conduit duct bank pull string 401 LF at $0.0790 (×0.98737) = $31.67; after Calculate the estimate
+  showed "TV inspection (CCTV), minimum charge" $974.66 ($1,184.84 less $210.18 by the foot, 106.44 LF) and "Pressure
+  test and disinfection, minimum charge (Water)" $1,215.04 ($1,481.06 less $266.02, 119.74 LF), both re-priced by
+  Update all when the wage set moved from ZIP 10005 to 77002.
