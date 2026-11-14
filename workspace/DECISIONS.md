@@ -32034,6 +32034,57 @@ section modules offline), `bidtabs/overpricing.mjs`, `bidtabs/overpricing-report
 
 Logged before the work (Part 3). Spec first, then build. The part adds its rules here.
 
+**Status:** Built unattended (night run 2026-11-15 → 16, Part 3); awaiting the founder's check. Spec:
+[large_rcp_tasks.md](docs/tasks/large_rcp_tasks.md). Migration `d1275c4a9e31` (revises d1269b4f2e80, release 45).
+
+- **The 72 in pipe in a 6.5 ft trench: the cause** was the bid-tab inputs, not a default in the engine. The storm tab
+  items say "all depths" with no band, so `contracts-16-d1271-2026-11-15.json` gave every storm item `depth: 6.5`, and
+  the runner reads `depth` as the trench (invert = G − depth + wall + bedding). A 72 in RCP (OD 86 in) had its crown
+  1.17 ft above the ground; 60 in had 0 cover, 48 in 1.17 ft. The engine allowed it without a word:
+  `section.ts:zones` clips a trench shallower than its crown. No default or minimum depth in the engine ignores the OD
+  (gravity runs need typed inverts; a cover run lays its invert at G − cover − (OD + ID)/2).
+- **Fixed where it came from:** the inputs (`contracts-16-d1275-2026-11-15.json`, outside git): an "all depths" storm
+  RCP item's trench is max(6.5, 2 + OD + 0.5): storm's 2 ft minimum cover, its OD, 6 in bedding (42 in 6.75, 48 in 7.33,
+  54 in 7.92, 60 in 8.50, 72 in 9.67 ft; 23 items). **And in the engine:** `cover.ts:coverFlags`, called by
+  `calculate.ts:calculateUtilities`, flags the least cover over the crown (at a knot) when the crown is above the
+  ground, or under the type's minimum; the run panel shows it and Needs attention names it on the run's pipe line
+  (`cover.ts:attentionRunFlag` in `EstimatingView.tsx`). The harness returns Calculate's cover flags per item.
+- **Depth rules, verified, unchanged:** gravity = (G − invert) + bottom wall (OD − ID)/2 (the catalog's, per family
+  and size, RCP C76 Wall B/C) + bedding (`quantities.ts:runQuantities`, `drop`); pressure = cover + OD + bedding
+  (`breakpoints.ts:runProfile` then the same rule). Bedding 0 when none. The pipe zone sits inside the cover. No
+  bedding added for DI/PVC pressure (the project's 6 in stays until Part 6).
+- **Minimum cover by type** (`cover.ts:MIN_COVER`): water, fire water, hydrant lead, reclaimed, force mains: the
+  company's pressure cover (D-1106; 4 ft unless set; the state floor 24 in, 30 TAC §290.44(a)(4)); water service 2 ft
+  (30 TAC §290.44(a)(4), B); gas 2 ft (49 CFR 192.327(b), A); gas service 1 ft (49 CFR 192.361(a), A); electric
+  primary 1.5 ft (NEC Table 305.15(A), C); secondary, site lighting, low voltage, traffic signal 1.5 ft (NEC Table
+  300.5 col. 3, B); sanitary 3 ft (practice, C); sanitary service 2 ft (D); storm 2 ft (Houston-area drainage
+  criteria, C); storm lead and culvert 1 ft (C). Others: none, only the crown above the ground.
+- **The large-RCP crew A96** "Pipe crew, large storm RCP 48 in and up": storm RCP ≥ 48 in takes the role
+  `utility_pipe_storm_large` (`production.py:line_role`, `large_rcp`); a workspace without it falls back to the storm
+  crew (`_read_activity_for_role`). Kit from TxDOT 0-4416-1 item 464-2's standard resource ("one crew (4-5); one
+  back-hoe, one crane (or another back-hoe)", A): foreman, pipelayer, laborer; EX-CRAWL-50T (45-55 t, pacing, never
+  re-sized by D-1071: `_ensure_site`), WL-COMPACT-2Y, CP-PLATE-REV (sized to a trench roller), pickup. The 50 t is never
+  a pool borrower (pipe cap 40 t). A crane is the company's edit.
+- **Production:** A32's run-length bands × 94.92 / 138.67 (TxDOT's 48-72 in mean over 18-42 in): 47.9, 89.0, 116.4,
+  143.7, 174.5, 195.1 LF a 10 h day; each line × (48 / D)^0.54687 (`production.py:large_rcp_step`, in `pipe_pace` in
+  place of D-1085's flat 0.68): the gradient between TxDOT's two group means at their mid-sizes (30, 60 in), **grade C**,
+  anchored at 48 in. 250-499 LF: 48 in 116.40, 60 in 103.03, 72 in 93.25 LF/day; 0.4296, 0.4853, 0.5362 MH/LF (5
+  people). Not fitted to any tab.
+- **Proof:** a separate Postgres (foldproof3): from empty, `upgrade head` gives the bench's schema (only the 31 known
+  CHECK prints differ), `alembic check` clean; on a restored bench copy up adds 20 rows (release 45 and its rows),
+  down gives the eqlib tables back row for row, up again the same rows. Bench migrated 2026-11-14 17:16 UTC, digest
+  unchanged. The file as committed (rewrapped for lint at 17:21-17:24 after the bench ran it) proved again on a fresh
+  bench dump: down equals the bench before the migration, up equals the bench's rows, 0 lines different.
+- **Smoke** (throwaway, Harris County open shop): a 72 in RCP storm run at 1 ft cover: the run panel and Needs
+  attention read "Cover over the crown 1.00 ft at its shallowest, under the 2 ft minimum for Storm sewer main …"; the
+  line on A96 with the 45-55 t excavator, a trench roller, 0.54 MH/LF, 93.25 LF/10 h day (74.6 on the project's 8 h).
+- **Bid tabs** (harness commit 0de7b1c; results `docs/reference/Bid tabs Houston 2026-11/why-we-bid-low-2026-11-16-large-rcp.md`,
+  outside git), storm RCP 48 in and up, 13 items, direct against the item medians: before −18.6 %, the input depth
+  fix alone −17.3 % (+1.6 % of direct, nearly all material), with A96 −12.3 % (equipment). Bid against the medians
+  −7.3 % → −5.9 % → +0.5 %; k to the medians 1.201 → 1.185 → 1.121. 48 and 54 in now within 4 % of their medians;
+  60 and 72 in still 23–28 % under. All recent tabs: k to the medians 0.997 → 0.996 → 0.990, to the lows 0.895 → 0.894
+  → 0.889; low on none.
+
 ## D-1276 — The answers in D-1272, items 3 to 10, built
 
 Logged before the work (Part 4). The part adds what it built here.
@@ -32102,6 +32153,20 @@ the market.
 
 **Open:** the key's curve against these tabs, the spacer and seal prices, and whether a short crossing's pull-in
 should ride the run's crew without a minimum. All three wait for the post-Part-4 rerun.
+
+**The founder's answers (2026-11-14, during the night run):**
+1. **The bore sub curve is re-set after the rerun.** It is set per casing size, from the 8 tabs plus its current
+   sources, grade B (regional), with what it includes defined:
+   - pits: yes;
+   - casing: only where the tab doesn't pay it separately;
+   - spacers and seals: per item 2.
+2. **Spacers and end seals.** First check the tab bore descriptions. If they include spacers and seals, add nothing
+   for them on bored crossings. Otherwise use the makers' list prices (grade C) in place of the grade D estimates.
+3. **A crossing's carrier pull-in rides the run's own crew**, with no separate minimum, when the run has pipe laid by
+   that crew. A minimum applies only to a crossing priced alone. (Built in Part 4, D-1276.)
+4. **Casing-only items** are read as open cut, and compared as the cased run less the plain run.
+5. **"Pits by bore sub" defaults ON wherever the bore sub price is used** (T10 included), stated on the run. Pits are
+   priced by our crew only when the user turns it off. (Built in Part 4, D-1276.)
 
 ## D-1278 — Pipe section layers and a live trench picture: the plan (no code)
 
