@@ -10,7 +10,7 @@
 //   node browser/guard-check.mjs
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -74,9 +74,12 @@ const GUARD_FILES = [
   "drives/bench-session.py",
   "drives/copy-3d-test.py",
   "fingerprint.sh",
+  // Untracked since D-1276 (its ids moved to .private/): the fx suite's copy of lib/protected.mjs, when on disk.
+  "fx-suite/browser/lib/protected.mjs",
 ];
 const needles = [...Object.keys(PROTECTED_PROJECTS), ...Object.keys(FOUNDER_WORKSPACES), ...FOUNDER_EMAILS];
 for (const rel of GUARD_FILES) {
+  if (rel.startsWith("fx-suite/") && !existsSync(path.join(infra, rel))) continue;
   const text = readFileSync(path.join(infra, rel), "utf8").toLowerCase();
   const hits = needles.filter((n) => text.includes(n));
   if (hits.length) fail(`${rel} names ${hits.length} listed id(s) or founder account(s)`);

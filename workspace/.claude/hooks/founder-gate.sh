@@ -68,5 +68,7 @@ An app or api source save, or a bench migration, needs a "quiet" from founder-ac
 (the stamp is ${state}). From intelcost-infra/ run:
   INTELCOST_GUARD_LIST="E:/Intelcost/.private/guard-list.json" ./founder-active.sh
 Quiet (exit 0): retry within 2 minutes. Active or unknown: tell the founder and wait (D-1252, D-1254).
+The rule (not this hook) asks the same quiet before an npm install in the app and a docker cp into a bench
+container (D-1276).
 MSG
 exit 2

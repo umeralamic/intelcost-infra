@@ -32117,6 +32117,20 @@ Logged before the work (Part 3). Spec first, then build. The part adds its rules
 - **Expected 48"+ multipliers** (computed from the crew pass, A96 lines' labour and equipment ÷ 1.1516, no harness
   run): to the medians 1.121 → about 1.15 (LF-weighted log; $-weighted 1.140 → 1.170), to the lows 1.014 → about
   1.04 ($ 1.040 → 1.068). The 48"+ table reruns in the next harness pass.
+- **Founder's answer on the anchor's band (2026-11-14, ~21:55 UTC):** keep the run-length curve. Put 94.92 LF/day
+  (60 in) in the band that holds the typical run length of the 48–72 in jobs 0-4416-1 measured, if the study gives it.
+  If it doesn't, keep 250–499 LF and grade the choice C in A96's crew note. No tuning of 48"+ until Part 6 is built.
+- **The 500–999 move was proposed and then cancelled (founder, ~22:30 UTC).**
+  - The proposal came from the study's p. 33 mean of 533 LF a data point for 48–72 in.
+  - But an average of rates sits at a shorter run than the average run: on D-1091's storm formula, 138.67 LF/day
+    corresponds to ~360 LF.
+  - A96 stays anchored in 250–499 (release 46, d1275b60c3e9), with no migration.
+  - A32 stays as D-1091 set it: the study's run-length regression ×1.25, bands 70/130/170/210/255/285. The band
+    edges are the same for both crews.
+  - The crew note lives in the library (`eqlib.ew_activity.notes`, set by the migration), so the founder's note text
+    goes in the report instead: "Anchor band 250–499: per the D-1091 storm formula, the study's average rate
+    corresponds to ~360 LF; TxDOT 0-4416-1 gives no per-job run lengths for 48–72". 8 h day not stated in the study;
+    ×1.25 conversion graded C." It lands with the next library release that touches A96.
 
 ## D-1276 — The answers in D-1272, items 3 to 10, built
 
@@ -32204,6 +32218,87 @@ folded).
   CTS service (tap, curb stop, one coupling, 0 % allowance, no bend); the minimum lines as subcontract ("Pressure test
   and disinfection, minimum charge (Water)" $1,249.43 = $1,500 flat less $250.57; "Pressure test, minimum charge
   (Sanitary)" $168.06 = $750 less $581.94); tracer "0.32 of 2 ROLL for the project". Purged.
+
+### Part 4b: items 3, 7 and the rest of 10 (the MasterFormat move, the founder gate, the overlay, the purge)
+
+**Status:** built unattended (night run 2026-11-15 → 16, Part 4b); awaiting the founder's check. Spec:
+[answers_d1276_tasks.md](docs/tasks/answers_d1276_tasks.md). Migration `d1276b8e4f10` (revises `d1275b60c3e9`, not
+folded).
+
+- **Move to MasterFormat (A.3).** Settings › Classification gains a card: **Preview the move**, **Apply the move** (exactly
+  what was previewed, by its signature) and **Undo the last move**. Codes and folders only, per workspace:
+  - the ten base scopes' rows a workspace made now maps to MasterFormat (each type's pipe, water's and fire's hydrant
+    and valve rows; 14 rows over 9 scopes, "other" has none) are pointed at their section where the row is still on a
+    seeded node (a node of the person's own stays); the sections missing from the tree are added under their division;
+  - the Calculate lines those rows file (not placed by hand) are filed again, code and Classification folder;
+  - the drawn utility items still on a seeded Division 33 code take their type's section (as a new item does), a
+    structure by its run's type; each moved item's estimate line's copy of the code follows.
+- **Names only (the founder's follow-up).** The preview lists the item's name, where it is filed now and where it goes, by
+  name ("Gravity Main → Site Sanitary Sewerage Gravity Piping"); no code number in the card, the dialog, the toasts or
+  the undo's message. Checked in the smoke (the dialog's text holds no code; the one match was a project name's time).
+- **Totals to the cent.** A price reads a code three ways: its division (the shared machines' spread), the subcontractor
+  packaged on it or an ancestor (or the project's override), and the shared machines whose nodes cover it. The move
+  compares each priced item's three before and after. **Found:** the seeded tree packages "Sanitary Sewer", "Storm
+  Drainage"… (33.03, 33.05…) to the Utility sub, and the MasterFormat sections D-1267 adds under "33 Utilities" carry no
+  package, so a moved pipe line would have changed subcontractor (and with it the utility sub's pooled machines). The
+  move carries the package to the new section ("Sanitary Sewerage Piping: Utility", "Stormwater Conveyance: Utility")
+  where every item moving there had the same workspace package and nothing already under the section is priced;
+  anything else that would differ blocks the move and is listed. Every project's cost rows, rates and quantities are
+  hashed before and after in the same transaction and must be equal, and every priced item is read again at its new
+  node; a difference rolls it back.
+- **The undo** puts every value back as it was (an item changed since is left and counted), takes off the mapping rows
+  and packages it added and deletes the folders and nodes it added once nothing uses them. The latest move only, once.
+  Its record is `classification_move` (every value before and after).
+- **Where the founder's items are.** Read from the database, not changed: founder workspace W01 holds 33 of the 45
+  inputs and 10 of the 16 lines (P08 13 inputs 4 lines, Real bid A 19 and 5, Real bid B 1 and 1); P01 (in W02, the
+  bench seed) 6 and 3; P10 (in a test workspace an fx account owns) 6 and 3. Each workspace runs the move once.
+- **Crew suggestions (the founder's follow-up): no.** A line's crew is picked by its role, never its work scope:
+  `production.py:line_role` (the line's `earthwork_role`, its region "util:sanitary", its crew) feeds
+  `_activity_for_role` / `_read_activity_for_role` (the `EqActivityLineMap` row for that role); `work_scope_id` is not
+  read. Example: the throwaway's "10" PVC SDR-35, 0–6 ft deep" line is on "Pipe crew, sewer main" on the old place and
+  the new one (its estimate line unchanged to the cent). The code still reaches pricing through the division and the
+  subcontractor, which the move keeps (above).
+- **Proof on the founder's data, on a copy.** On a restored copy of the bench (foldproof7), never the bench: W01 preview
+  14 rows, 33 inputs, 10 lines, 2 packages carried, 39 sections to add, nothing blocked; applied (10 folders added,
+  totals the same), preview after 0, undone (kept 0, totals the same); W02 14, 6, 3 (no package needed); P10's 14, 6, 3,
+  2 packages. Every row of the seven touched tables after apply and undo equals the copy before (updated_at aside; the
+  three move records the only difference).
+- **Founder gate (A.7).** CLAUDE.md hard rule 12 now names `npm install` in the app and `docker cp` into a bench
+  container; the hook is unchanged but its message says the rule asks the same. `fx-suite/browser/lib/protected.mjs`
+  (the fixture suite's old copy, which still named 27 ids and a founder account) is untracked and ignored; on disk it
+  is today's guarded loader (reads `INTELCOST_GUARD_LIST`, fails closed), which `fx-suite.sh setup` copies there anyway.
+  Its ids are kept in `.private/fx-protected-ids.json`: 19 on the guard list, 8 on no bench database (the P11–P18 of
+  D-1228). The guard list is unchanged (digest `d562fd54027a21cd`, founder digest unchanged). The guard check also
+  reads the fx copy when on disk (15 guard files clean).
+- **Overlay thumbnails with the sheet list (A.10).** `GET …/asset` carries `thumbnail_data` (a data URL of the 512 px fit
+  thumbnail) for every sheet on either side of an overlay, at most 12 a project and 96 KB each, read once per api
+  process; the coarse pass decodes it with no request of its own (`drawing/service.py:overlay_thumbnails`). This is
+  the api handing image bytes over, which the api's rule 5 (presign, never proxy) keeps for files: the founder's
+  answer, for these few tens of KB.
+- **Retry in Choose pages (A.10).** `POST …/file/{file}/pages/retry` sends a file stopped twice (`too_long`) round
+  D-1270's cycle again; Choose pages shows **Retry** beside the message. Found: a one-page file's tile dropped D-1270's
+  message (it read "The file may be damaged."); it shows it now, with Retry.
+- **The fx purge (A.10).** Of the 12 fx accounts on the bench, the 8 made 2026-10-11 to 11-04 that nothing uses were
+  purged (dry run first, then `--only` each; one workspace with them); 4 kept (the stitch pair, the quantity table's
+  account, and the sheet-key account, refused: its workspace holds a protected project). None was named by an infra
+  script or browser file. The purge's pattern takes an older session's `fx.<name>[.<digits>].<letter>`.
+- **Built and measured (bench clock, UTC).** Migration proved on foldproof7: from empty `upgrade head` gives the old
+  head's schema plus `classification_move` only (bench vs empty: the 31 known CHECK prints), `alembic check` clean; a
+  restored bench copy up, `check` clean, down equals the copy before (whole-database dump, 0 lines), up again; one head.
+  Bench run 22:06:56–22:07:10; founder digest `b4c963cdf83e7d84` before, after and at the end. Code after it: api
+  22:22:03 (answering 200 at 22:22:54; one start interrupted by the second change) and 22:56:20 (200 at 22:57:08); app
+  22:24:12, 22:56:20 and 23:03:30. Gates: app lint (0 errors, 4 warnings not ours), typecheck, build; api ruff, format,
+  mypy (287 files), `alembic check`, one head. Quantity table exit 0, no FAIL:
+  344 rows, 201 utility rows (no row added: the move writes no quantity; the purge left its account and project).
+  Smoke on a throwaway copy of the 3D test project (Houston 77002, public, open shop, burdened, TX20260031 mod 1
+  Heavy): its sanitary and storm pipe rows mapped back to the seeded nodes in the Work scopes card (the founder's
+  state), the preview showed 2 rows, 6 drawn items, 3 lines and 2 packages by name (`p4b-masterformat-preview.png`);
+  applied (`p4b-masterformat-applied.png`), the estimate's total $940,909.25 and bid total $1,173,745.56 the same
+  before, after and after the undo; every row of the workspace after the undo equals before (0 lines). An overlay
+  (C-100 over C-200, Highlight changes) loaded fresh: the sheet list carried both thumbnails inline (about 25 and 34
+  KB), no thumbnail request (`p4b-overlay-inline-thumbs.png`). A one-page file marked too long (the throwaway's, no UI
+  can force it): its tile showed D-1270's message and Retry, which sent it round again to ready
+  (`p4b-choose-pages-retry.png`, `p4b-choose-pages-retried.png`). Purged.
 
 ## D-1277 — The 11 crossing pay items, priced with D-1269 as their own group
 

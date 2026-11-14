@@ -7,6 +7,7 @@ refuses. `--purge` deletes them. An account goes only when its email matches a t
 
   - a session's or a fixture's own account, `fx.<name>.<digits>@bench.intelcost.io`, any stamp length (D-1235;
     a session's are made `fx.<name>.<YYYYMMDDHHMMSS UTC>`);
+  - an older session's pair, a letter a seat, `fx.<name>[.<digits>].<letter>@bench.intelcost.io` (D-1276);
   - a seat a fixture made, `<tag>-<role>-<13 digit stamp>@bench.intelcost.io`.
 
 Anything else is never touched (window-b, walkthrough, the seeded account, a person's). A matching
@@ -43,6 +44,8 @@ THROWAWAY = (
     # A session's own throwaway, any stamp length (the founder, 2026-11-13, D-1235): CC's accounts were made with
     # 12 and 14 digits before one format (YYYYMMDDHHMMSS, UTC) was set. Still refused when on the guard list.
     re.compile(r"^fx\.[a-z0-9-]+(?:\.[a-z0-9-]+)*\.\d+@bench\.intelcost\.io$"),
+    # An older session's pair, a letter a seat (D-1276, D-1272 10): fx.day1011.a, fx.collab.202610262323.b.
+    re.compile(r"^fx\.[a-z0-9-]+(?:\.\d+)?\.[a-z]@bench\.intelcost\.io$"),
     re.compile(r"^[a-z0-9]+(?:-[a-z0-9_]+)+-\d{13}@bench\.intelcost\.io$"),
 )
 PROTECTED = set(guard.PROTECTED)

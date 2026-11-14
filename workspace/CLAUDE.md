@@ -111,7 +111,10 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
      carrying an unrun migration must not reach it first.
    - **Look before saving:** before saving api or app source (a save reloads what the founder's browser uses), or
      restarting a service, run `./founder-active.sh` from `intelcost-infra/` (founder activity in the api log's
-     last 10 minutes). Active or unknown: tell the founder and wait instead of saving.
+     last 10 minutes). Active or unknown: tell the founder and wait instead of saving. **The same before an
+     `npm install` in the app and a `docker cp` into a bench container** (D-1276, D-1272 7): an install reloads the
+     app's dev server (a new dependency may need its image rebuilt), and a copy into a running container can reach
+     what it serves. The hook does not catch these two; the rule does.
      **Enforced (D-1266):** a quiet answer writes `.private/founder-quiet.stamp`; a PreToolUse hook
      (`.claude/hooks/founder-gate.sh`) refuses an app or api source save (the edit tools, a shell write or a git
      checkout/pull/stash in those repos) and a bench `alembic upgrade`/`downgrade`/`stamp` unless that stamp is at most
