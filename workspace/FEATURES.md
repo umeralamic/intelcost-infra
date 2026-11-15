@@ -137,6 +137,7 @@ _Updated: 2026-10-02_
 | P-14 | Sharing and guest view, Reports, time tracking and shifts, Community | both | |
 | P-16 | Legacy cutover, no data migration | infra | **Decided: no migration (D-513, 2026-10-15, confirmed by Umer).** Legacy had testers only, so the new app starts fresh; F17 is dropped and is not a cutover blocker. Cutover is the deploy alone (Abdullah, D-11) |
 | P-17 | Project map and geocoder: Show Map on the project location, and resolve a US address to city, state, zip and county | both | Deferred out of F4 by D-28. Needs a provider decision (geocoding and map tiles) and a bench fake. Legacy's never returned coordinates |
+| P-35 | **Bug: opening or reloading a project sends a write.** Opening or reloading must send no write request. The sheet's "mark stale" POST may fire only when something actually changed since the stored Calculate, not on every mount | app | Founder, 2026-11-15 (D-1284). `features/takeoff/earthwork/useVolumes.tsx` (the mark-stale effect keeps its "already marked" set in a ref, so a remount re-sends `markStale`; the same pattern in `site/useSiteStale.ts`). The api's `mark_stale` changes no row on a repeat, but the POST still reaches the log as a write (the 17:41:43 Real bid A request). Next run: fix it if under 1 h, otherwise log it here with the estimate |
 
 ---
 
