@@ -1787,6 +1787,24 @@ export const UTILITY_CASES = [
     ],
     expect: { tracer_wire: "0.4444 + 0.5556 = 1", warning_tape: "0.4444 + 0.5556 = 1", "tracer_wire:note": "0.44 of 1 ROLL for the project (whole rolls, rounded once)" },
   },
+  {
+    // D-1279 (the late pass): geotextile in whole rolls once per project, shared across lines (tracer and tape's rule).
+    // Two dewatered stretches' trench-bottom geotextile, 20 and 10 SY (500 SY a roll): 0.04 and 0.02 roll, priced as is
+    // before (no whole roll), now 1 roll for the project, the 0.94 added spread by share: 0.6667 and 0.3333. Two site
+    // geotextile layers, 300 and 450 SY: 0.6 + 0.9 = 1.5 -> 2 rolls (one a line before), 0.8 and 1.2. A geogrid layer keeps
+    // its rolls a line: 300 SY, 0.6 -> 1.
+    id: "util-1279-geotextile-project-rolls",
+    kind: "geotextile-rolls",
+    lines: [{ sy: 20, qty: 100 }, { sy: 10, qty: 100 }, { site: "geotextile", qty: 300 }, { site: "geotextile", qty: 450 }, { site: "geogrid", qty: 300 }],
+    expect: {
+      "geotextile:trench": "0.6667 + 0.3333 = 1",
+      "geotextile:trench:scope": "project",
+      "geotextile:site": "0.8 + 1.2 = 2",
+      "geotextile:site:scope": "project",
+      "geogrid:site": "1 = 1",
+      "geogrid:site:scope": "line",
+    },
+  },
   // --- D-1279 (the founder's answers to the 2026-11-15 report's §10). Q4: the bore line says the pits are in its price.
   // Q11: a pit placed alone self-performed; one made with a jack and bore, or linked to a bored run (jack and bore,
   // sleeve, HDD) while placed, by the bore sub. Q8: two insert stiffeners a PE CTS service. Q10: a share of a project roll

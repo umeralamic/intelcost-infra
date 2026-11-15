@@ -2354,6 +2354,27 @@ try {
         }
         return out;
       }
+      // D-1279 (the late pass): geotextile in whole rolls once per project, shared across lines, as tracer and tape: the
+      // engine's own fabric lines (waterMaterials' trench-bottom geotextile, siteMaterials' site fabric) with their own
+      // round scope, through Estimating's withBidOrder. Geogrid keeps its rolls a line.
+      if (c.kind === "geotextile-rolls") {
+        const own = c.lines.map((l) =>
+          l.site
+            ? um.siteMaterials({ role: "geosynthetics", unit: "SY", variant: l.site, name: l.site, matKey: `${l.site}:site` })[0]
+            : um.waterMaterials({ foundationCCY: 0, geotextileSY: l.sy }, null).find((m) => m.key === "geotextile:trench"),
+        );
+        const rows = own.map((m, i) => ({ uuid: `row${i}`, takeoff_item_id: `line${i}`, kind: "material", mat_key: m.matKey, auto_key: m.key, qty_formula: m.qty, unit: m.unit, wastage_pct: m.wastePct, round_to: m.roundTo, round_scope: m.roundScope, pct_of: null, unit_price: 1 }));
+        const done = bo.withBidOrder(rows, (id) => c.lines[Number(id.slice(4))].qty ?? 0, () => "Base Bid");
+        const out = {};
+        for (const key of new Set(rows.map((r) => r.mat_key))) {
+          const mine = done.filter((r) => r.mat_key === key);
+          out[`${key}:scope`] = mine[0].round_scope;
+          // A project roll's share as Estimating holds it; a line's rolls as pricedMaterial rounds them.
+          const shares = mine.map((r) => (r.bid_order ? Math.round(Number(r.qty_formula) * 1e4) / 1e4 : ecost.pricedMaterial({ kind: "material", mode: "unit", qty: ecm.evalQtyFormula(r.qty_formula, { parent: 0, qty: c.lines[Number(r.takeoff_item_id.slice(4))].qty ?? 0 }).value, total: 0, unitPrice: 1, wastagePct: 0, roundTo: r.round_to }, 0).qty));
+          out[key] = `${shares.join(" + ")} = ${Math.round(shares.reduce((t, v) => t + v, 0) * 1e4) / 1e4}`;
+        }
+        return out;
+      }
       // D-1276 (D-1272 4, D-1277 5): what a new crossing stores, and a run stored before keeping its own.
       if (c.kind === "crossing-defaults") {
         const pit = rd.defaultStructure("bore_pit", "water");

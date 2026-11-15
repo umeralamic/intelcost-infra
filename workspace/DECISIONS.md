@@ -32811,6 +32811,63 @@ Live. No migration (head stays `d1279a3c5e71`). Commits: api 3c71b3e, app 9a9add
   without the minimum, `-10h` gone, and 8 `band-*` rows). Api reload window 09:01:49–09:02:52 UTC (one save of the five
   api files; workers back). Founder digest `b4c963cdf83e7d84` at 08:48 and 10:15 UTC.
 
+### Late pass 2: the founder's answers to the late-pass questions (Q22 cheaper of two, geotextile, fire line)
+
+**Status:** built 2026-11-15 (the founder's ~10:49 UTC answers, verbatim in `BRIEF-ANSWERS-§10.md`), awaiting the
+founder's check; nothing moved to Live. No migration (head stays `d1279a3c5e71`): every change is code or first seeding.
+Commits (local, not pushed): api, app, infra (below).
+
+- **Q22, the storm excavator: the cheaper of two options.** On the storm crew (A32; A96 untouched) the 5 crew-days are a
+  pre-filter only, now counted on the library's 10 h crew day (the crew's `prod_basis_hours`, 10; on an 8 h project day a
+  line's days count × 8 / 10, `production.py:BAND_DAY_HOURS`, `_ensure_site`). Where a band passes it, both options are
+  priced and the cheaper is used (`cheaper_of_two`; a tie, or a machine without a price, keeps one machine): (a) one
+  machine sized to the largest pipe for the whole spread, (b) the largest-pipe machine on the lines left plus a machine
+  per band. Each machine on its own hours at the pool's own pricing (`_excavator_option` → `pool.own_parts`: the
+  cheapest days, weeks and 4-weeks, so a short booking still pays its week where the week is cheaper; fuel at the
+  project's diesel, `_diesel_price`, now shared with `_job_pool`; catalog delivery and pickup). Both totals and the pick
+  ride on the pacing excavator's snapshot (`band_choice`, one of `BAND_KEYS`) and show in Shared equipment
+  (`EquipmentDialog.tsx`, `sharedEquipment.ts:bandChoiceText`: "Storm excavator: one machine for the spread $… against a
+  machine per band $… (2 machines: …): one machine, the cheaper"; names only). The pick is made before the job's pool;
+  the pool may still lend a band machine afterwards. The api's comparison leaves out the browser's location factor (×
+  0.998 on Houston); the smoke's one-machine figure was $15,051.48 in the api and $15,035.59 in the dialog.
+  - **On the 16 tabs (harness at infra d650e56, the runner now records `bandChoice`):** 12 tabs have a band past the
+    pre-filter; (a) one machine is cheaper on 11, (b) a machine per band only on 4013-2501 ($32,741 against $29,523).
+    4 tabs have no band past the 10 h pre-filter. Against the D-1279 final pass (bands at ≥ 5 crew-days of 8 h, always
+    taken): the storm crew's equipment −$6,833, and the tabs' direct −$15,251 (the band machines had also changed the
+    pool for the other crews: water −$1,347, sanitary −$4,246, storm 48 in+ −$2,666, force main −$159; all four are back on
+    the 00:18 rerun's figures). Against the 00:18 rerun (one machine everywhere): −$3,213, all of it 4013-2501's (b).
+    Storm k (log, LF-weighted, to the medians / lows): 48 in+ all 1.140 / 1.031 → 1.142 / 1.033, recent 1.140 / 1.031 →
+    1.143 / 1.034; 18–42 in all 0.999 / 0.877 → 0.997 / 0.875, recent 0.972 / 0.849 → 0.969 / 0.847. No multiplier moved
+    by more than 0.005, so the crossing pass was not run again (the founder's rule). All recent (log LS) 0.992 / 0.890 →
+    0.993 / 0.891. Outputs `contract-results-2026-11-16-d1279-late2-tabs.json`, `why-we-bid-low-2026-11-16-d1279-late2-*`
+    in docs/reference (outside git).
+- **Geotextile in whole rolls per project.** The trench-bottom geotextile (`materials.ts:waterMaterials`) and a site
+  geotextile layer's rolls (`siteMaterials`, Geotextile only; geogrid keeps its rolls a line) round as tracer and tape do:
+  `roundScope: "project"`, once over the project, each line its share of the whole rolls (`bidOrder.ts:withBidOrder`).
+  Existing lines take it at their next Calculate (`line_sync` writes `round_scope`). **$ effect:** the 3D test copy's two
+  dewatering stretches 0.04 + 0.02 roll ($46.08) → 0.72 + 0.28 of 1 roll ($761.50): direct +$715.43 ($940,918.74 →
+  $941,634.17), bid $1,173,757.22 → $1,174,708.58. No tab has a geotextile line (no dewatering in the runner's input): $0
+  on the tabs.
+- **The underground fire line on Utility.** The fire line stays filed under 21 11 00 in Division 21 (MasterFormat's
+  Facility Fire-Suppression Water-Service Piping, D-1267) but its section is seeded on the **Utility** subcontractor, not
+  Fire Protection (`classification/service.py:SEEDED_SECTION_SUBS`, first seeding only; 21 11 16's hydrants inherit it).
+  The seeded tree already had 21.02.04 (PIV) and 21.02.05 (Underground Fire Line) on Utility; Q21's Fire Protection was
+  the 21.02 folder's. Its pipe line was already the pressure crew's (A18, `line_role`), so it shares the water crew's
+  machines; on Utility it also counts as the utility sub's for "Utilities by" (`_same_sub`) where the job has earthwork.
+  Names only in the UI (the Subcontractor grouping shows "Utility" over the section's title). **$ effect:** none on the
+  tabs (no fire line); none on the smoke job (the fire line and the water main shared the 13–15 t excavator, "1 week
+  rental, shared by 2 lines"). No existing workspace is written; the bench's workspaces seeded since 09:01 under Q21 were
+  throwaways, all purged.
+- **Proof.** One api save of the two files 11:21:40–11:21:41 (reload to 200 at 11:22:44), a second of
+  `classification/service.py` (a docstring line over 100 characters) 11:27:06 (200 at 11:27:58); app files 11:21:41;
+  workers back. Gates: app lint 0 errors (4 warnings), typecheck, build; api ruff, format, mypy (287 files), `alembic
+  check`, one head. Quantity table 11:53:01–12:09:19 exit 0, no FAIL: answers 50 rows (new `band-10h-day`,
+  `band-48h-not-on-10h-day`, `band-50h-on-10h-day`, `band-week-minimum-kept`, `cheaper-a-*` (a wins: $10,380 against
+  $12,286), `cheaper-b-*` (b wins: $26,080 against $30,660), `cheaper-tie-one`, `cheaper-no-price-one`, `fire-line-sub`,
+  `fire-line-in-division-21`, `fire-line-water-crew`), 245 utility rows (new `util-1279-geotextile-project-rolls`: 0.6667
+  + 0.3333 = 1, 0.8 + 1.2 = 2, geogrid a line). Smoke on throwaway fx.equip.20261115113212 (purged 12:42:42). Founder
+  digest `b4c963cdf83e7d84` at 10:59 and 12:42 UTC.
+
 ## D-1280 — Pipe section layers, night 1 (tasks 1–4 of D-1278's plan): the engine and the presets, proven on the 26 hand rows
 
 **Status:** Accepted (2026-11-15, the founder's build plan in D-1278). Details below as built. Built unattended

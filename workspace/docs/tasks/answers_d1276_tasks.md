@@ -76,3 +76,18 @@ No migration. Details and figures in DECISIONS.md D-1279, "Late items".
 Quantity-table rows (`answers`): `pull-in-on-job-days` 0.16 (no minimum), `-10h` deleted, the others without the work
 day; new `band-own-20t`, `band-under-5-days`, `band-lines-add-up`, `band-main-past-every-line`,
 `band-unknown-depth-on-main`, `band-two-bands`, `band-threshold`, `band-storm-crew` (35 rows).
+
+### Late pass 2 (the founder's ~10:49 UTC answers to the late-pass questions), built 2026-11-15, awaiting the check
+
+No migration. Details and figures in DECISIONS.md D-1279, "Late pass 2".
+
+| Q | Answer | Built | $ effect | Where |
+|---|---|---|---|---|
+| Q22 | Price both storm excavator options, use the cheaper; 5 crew-days of 10 h a pre-filter only | (a) one machine for the spread and (b) a machine per band, each with its rental (week minimum kept), fuel and delivery; a tie or a missing price keeps one machine; both totals and the pick on the pacing excavator, shown in Shared equipment | 16 tabs: (a) on 11, (b) on 1 (4013-2501), 4 with no band. Storm crew equipment −$6,833 against the D-1279 final pass (−$3,213 against the 00:18 rerun); tabs' direct −$15,251 (the old bands' pool effects on the other crews gone). Storm k moved ≤ 0.003: no crossing rerun | api `production.py` (`BAND_DAY_HOURS`, `cheaper_of_two`, `ONE_MACHINE`, `PER_BAND`, `_excavator_option`, `_diesel_price`, `_ensure_site`, `BAND_KEYS`); app `sharedEquipment.ts` (`bandChoiceText`), `EquipmentDialog.tsx`; infra `bidtabs/contract-runner.js` (`bandChoice`) |
+| Geotextile | Whole rolls per project, shared across lines | Trench-bottom and site geotextile `roundScope: "project"` (geogrid stays a line) | 3D test copy +$715.43 direct (0.06 roll → 1 roll); tabs $0 | app `materials.ts` (`waterMaterials`, `siteMaterials`) |
+| Fire water | 21 11 00 stays in the tree under Division 21; the underground fire line on Utility, pooled with the water crew | `SEEDED_SECTION_SUBS["21 11 00"]` = Utility (first seeding only); the line was already the pressure crew's | $0 on the tabs and on the smoke job | api `classification/service.py` |
+
+Quantity-table rows: `answers` +15 (`band-10h-day`, `band-48h-not-on-10h-day`, `band-50h-on-10h-day`,
+`band-week-minimum-kept`, `cheaper-a-one-machine`, `-per-band`, `-picked`, `cheaper-b-*` ×3, `cheaper-tie-one`,
+`cheaper-no-price-one`, `fire-line-sub`, `fire-line-in-division-21`, `fire-line-water-crew`; 50 rows); utility
+`util-1279-geotextile-project-rolls` (245 rows).

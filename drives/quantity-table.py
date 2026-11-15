@@ -2081,6 +2081,54 @@ def answers() -> int:
     check("band-two-bands", production.excavator_bands([(1, T13, 5.0), (2, T20, 7.0), (3, T40, 1.0)], T40), (T40, {T13: [1], T20: [2]}))
     check("band-threshold", production.BAND_MIN_CREW_DAYS, 5.0)
     check("band-storm-crew", production.STORM_CREW, "A32")
+    # --- D-1279 (Q22, the late pass): the 5 crew-days are a pre-filter only, counted on the library's 10 h crew day (the
+    # crew's prod_basis_hours); on an 8 h project day a line's days count x 8 / 10. 6.0 days of 8 h (48 h) are 4.8 of
+    # 10 h: no candidate; 6.25 days (50 h) are 5.0: a candidate.
+    check("band-10h-day", production.BAND_DAY_HOURS, 10.0)
+    check("band-48h-not-on-10h-day", production.excavator_bands([(1, T20, 6.0 * 8 / 10), (2, T30, 3.0 * 8 / 10)], T30), (T30, {}))
+    check("band-50h-on-10h-day", production.excavator_bands([(1, T20, 6.25 * 8 / 10), (2, T30, 3.0 * 8 / 10)], T30), (T30, {T20: [1]}))
+    # Both options priced, each machine with its own rental at the cheapest days/weeks/4-weeks (8 h a day), fuel and
+    # delivery and pickup (pool.own_parts), diesel $3.50. A 30-36 t: day $1,200, week $3,600, 4-week $9,000, 6 gph,
+    # delivery and pickup $1,500. A 20-25 t: $950, $2,800, $7,000, 4.5 gph, $1,100.
+    ex30 = pool.Rates(day=1200.0, week=3600.0, four_week=9000.0, owned=95.0, gph=6.0, mob=1500.0)
+
+    def option(rates: pool.Rates, hours: float) -> float:
+        m = pool.Machine(uuid="x", activity_id=0, position=0, need_key="x", kind=None, weight=None, hours=hours, pipe=True, rates=rates)
+        parts = pool.own_parts(m, 3.5)
+        return round(sum(parts), 2) if parts else -1.0
+
+    # The week minimum stays: 4 days (32 h) on the 30-36 t bill a week, $3,600 (4 days $4,800), + fuel 6 x 3.50 x 32 = $672
+    # + $1,500 = $5,772.00.
+    check("band-week-minimum-kept", option(ex30, 32.0), 5772.0)
+    # (a) wins: 7 days of 24 in on a 20-25 t band, 3 days of 36 in. (a) one 30-36 t, 10 days (80 h): 2 weeks $7,200 + fuel
+    # 6 x 3.50 x 80 = $1,680 + $1,500 = $10,380.00. (b) the 30-36 t 3 days (24 h): $3,600 (3 days = a week) + $504 + $1,500
+    # = $5,604.00; the 20-25 t 7 days (56 h): a week and 2 days $4,700 + 4.5 x 3.50 x 56 = $882 + $1,100 = $6,682.00;
+    # $12,286.00. One machine, $1,906.00 cheaper: its own second delivery and the band's week make (b) dearer.
+    a1, b1 = option(ex30, 80.0), option(ex30, 24.0) + option(ex20, 56.0)
+    check("cheaper-a-one-machine", a1, 10380.0)
+    check("cheaper-a-per-band", round(b1, 2), 12286.0)
+    check("cheaper-a-picked", production.cheaper_of_two(a1, [option(ex30, 24.0), option(ex20, 56.0)]), production.ONE_MACHINE)
+    # (b) wins: 40 days of 24 in on the 20-25 t, 5 days of 36 in. (a) the 30-36 t 45 days (360 h): two 4-weeks and a week
+    # $21,600 + fuel 6 x 3.50 x 360 = $7,560 + $1,500 = $30,660.00. (b) the 30-36 t 5 days (40 h): a week $3,600 + $840 +
+    # $1,500 = $5,940.00; the 20-25 t 40 days (320 h): two 4-weeks $14,000 + 4.5 x 3.50 x 320 = $5,040 + $1,100 =
+    # $20,140.00; $26,080.00. A machine per band, $4,580.00 cheaper.
+    a2, b2 = option(ex30, 360.0), option(ex30, 40.0) + option(ex20, 320.0)
+    check("cheaper-b-one-machine", a2, 30660.0)
+    check("cheaper-b-per-band", round(b2, 2), 26080.0)
+    check("cheaper-b-picked", production.cheaper_of_two(a2, [option(ex30, 40.0), option(ex20, 320.0)]), production.PER_BAND)
+    # A tie keeps one machine; a machine of (b) with no price keeps one machine.
+    check("cheaper-tie-one", production.cheaper_of_two(100.0, [60.0, 40.0]), production.ONE_MACHINE)
+    check("cheaper-no-price-one", production.cheaper_of_two(100.0, [None, 10.0]), production.ONE_MACHINE)
+    # --- D-1279 (the late pass): the underground fire line. Its section 21 11 00 stays in Division 21 in the tree, seeded on
+    # the Utility subcontractor (Q21 had Fire Protection); its pipe line is the water crew's (the pressure crew's role).
+    from app.features.classification import masterformat
+    from app.features.classification import service as classification
+
+    check("fire-line-sub", classification.SEEDED_SECTION_SUBS["21 11 00"], "Utility")
+    check("fire-line-in-division-21", masterformat.TYPE_CODE["fire_water"], "21 11 00")
+    fire = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:fire_water", earthwork_variant="pvc_c900_dr18:8|1|0–6 ft", earthwork_crew="pressure")
+    main = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:water", earthwork_variant="pvc_c900_dr18:8|1|0–6 ft", earthwork_crew="pressure")
+    check("fire-line-water-crew", production.line_role(fire), production.line_role(main))
     # A standalone sleeve: no carrier, no pull-in, no crew of ours (the bore sub's line).
     sleeve = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:other", earthwork_variant="steel_casing_375:16|1|0–6 ft||t:casing|sleeve:16|x:abcd1234", earthwork_crew=None)
     check("sleeve-trenchless", production.line_role(sleeve), "utility_pipe_trenchless")
