@@ -1,8 +1,8 @@
 # Pipe section layers and the live trench picture: the plan (D-1278)
 
 **Status:** plan written 2026-11-16 (night run 2026-11-15 → 16, Part 6), reviewed by the founder (D-1278's answers and
-the three-night build plan). **Night 1 (D-1280): tasks 1–4 built, no visible change**: the engine and the presets are
-not wired into Calculate (night 2: tasks 5, 6, 9; night 3: tasks 7, 8, 10). The founder's brief is in
+the three-night build plan). **Night 1 (D-1280): tasks 1–4 built, no visible change. Night 2 (D-1282): tasks 5, 6, 9 built, uncommitted for an independent check**: new runs take their preset in Calculate, old runs keep the legacy
+path (night 3: tasks 7, 8, 10). The founder's brief is in
 `intelcost-infra/morning-report-2026-11-16/BRIEF.md`, Part 6, items 1–5.
 
 | # | Task | Status (D-1280) |
@@ -11,7 +11,10 @@ not wired into Calculate (night 2: tasks 5, 6, 9; night 3: tasks 7, 8, 10). The 
 | 2 | `sectionPresets.ts` | Built: 27 presets (the plan's 25 and the founder's two house presets, `c600_t4_house`, `c605_t4_house`), each with a source and grade; `defaultPreset` |
 | 3 | Engine | Built: `section.ts:layerAreas` (bands, barrel and bell by circle segments), `runQuantities`' `layered` input (every band top cut, per-layer sums `RunQuantities.layers`, `sectionCheck`, rock bedding, segment stacks); with no `layered` input, today's path unchanged |
 | 4 | Quantity-table rows | Built: the 26 hand rows (+ 3 more and a defaults row) as `section-layers` / `section-defaults` in `utility-cases.mjs`, all right |
-| 5–10 | | Night 2 and night 3 |
+| 5 | `calculate.ts` and `lines.ts` | Built (D-1282): `runLayered` (the stored stack by the run's own type, settings and state; null keeps today's path), width rule into `P`, crossings and encasement on the layered section, lines by role and variant (`foundation:` new), compaction in the line's `note` (api `earthwork_note`), `StoredRun.sections` (`sectionSummary.ts`), new runs store `layers: {v: 1, preset: "auto"}` |
+| 6 | `section_presets` | Built (D-1282): api pydantic field (no migration), `resolveStack` takes it for "auto", Utility settings "Section by type, new runs" |
+| 7, 8, 10 | | Night 3 |
+| 9 | Estimating | Built (D-1282): the run row's Section button, `RunSectionView.tsx` read-only from `StoredRun.sections` (a table now; task 8's picture plugs into its `picture` prop) |
 
 **For night 2, from the independent check of night 1 (D-1280), for the founder to rule on before they change:**
 - `defaultPreset` gives the house presets to gravity DI and C900 outside Texas; RCP, VCP and DI on the drain types

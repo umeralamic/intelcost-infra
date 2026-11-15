@@ -33006,3 +33006,87 @@ estimate and price is unchanged. Spec: [pipe_section_layers_tasks.md](docs/tasks
   `_job_pool`/`_leftover` (8), `_separate_sub_hint` (8), `note_fusion` (10 on a blank spread), the lost-tier fallback in
   `sync_site`, and labour overtime at the setting's day for spreads fixed at 10 h. None moves a price on an 8 h
   project. Not fixed; the founder's call.
+
+## D-1282 — Pipe section layers, night 2 (tasks 5, 6, 9 of D-1278's plan): the section wired into Calculate, the project's presets by type, Estimating's Section view
+
+**Status:** proposed, built unattended (run 2026-11-15 → 16, step 3), **left saved, gated and quantity-table-passing but
+uncommitted** in app, api and infra for an independent check. Logged under a new number (not "D-1280, Phase 2"):
+it is the first change that moves new runs' lines, and it carries readings of its own. Spec:
+[pipe_section_layers_tasks.md](docs/tasks/pipe_section_layers_tasks.md).
+
+- **Task 5, Calculate and lines (app).** `calculate.ts:runLayered` resolves a run's stored `section.layers` with its own
+  type (not its base: the defaults and 30 TAC read the type), its pipe, the project's settings and state, and its
+  materials (`runMaterials`); null keeps today's path (no `section.layers`: every run drawn before; or a stack that
+  resolves to `legacy`, e.g. a casing or D-1100's "project" pressure embedment). The geometry's width rule is the
+  pipe width (`P`, so `boxFor`/`boxNoFit` read it), at least a D-1260 encasement's width; `RunInput.layered` only when
+  layered (a legacy input is byte-identical). Crossings: a cased open cut re-resolves the stack on the casing (no bell),
+  a concrete crossing widens the layered bottom width; D-1260's encasement concrete comes out of the zone first, then
+  the final backfill (`lessFill`; legacy keeps `lessZone`). `lines.ts:utilityLines`: the foundation is its own line
+  `foundation:<name>|<source>` "Trench foundation, …" (`quantities.ts` byMaterial `foundation: true`, crossings' blend
+  keyed apart); haunch/embedment/initial on the zone line, final on the backfill line as before; **compaction as words on
+  the line's `note`** ("Bedding: ≈ 80 % Standard Proctor"), never in its identity; a legacy line has no note. Concrete and
+  CLSM layers buy D-1260's readymix 3000 and D-1269's flowable fill by the CY (`materials.ts:pouredLayer`, 5 % waste).
+  `StoredRun.sections` (`sectionSummary.ts`): Average (LF-weighted mean depth), Deepest, Shallowest, each with h, W,
+  top width, walls, layer heights, material, compaction and CY/LF from `layerAreas`; layered runs only. A layered run
+  notes "Section: <title> (<why>; <source>, grade <g>)" and the bell/30 TAC notes; its flags add the geometry's.
+  **New runs** store `layers: { v: 1, preset: "auto" }` (`types.ts:NEW_RUN_LAYERS` in `newRunSection`;
+  `runDefaults.ts:newRunFrom` stamps it after a legacy last run, keeps a last run's own stack); a continuation on
+  another sheet keeps the original's section (`useUtilities.resumeElsewhere`). The project's state is read into the
+  settings (`useUtilityData(…, project.state)`, never saved); `utilitiesKey` adds the state and the presets only when the
+  sheet has a layered run, so a sheet of old runs keeps its version key to the character. The profile pane's drop reads
+  the layered zb.
+- **Task 6, `section_presets` (api + app).** No migration (JSONB; confirmed: `earthwork_assumptions.utility_settings`).
+  api `utility_schemas.py:UtilitySettings.section_presets: dict[UtilityType, Literal[27 ids]]`; `schemas.py:LineWrite.note`
+  (≤ 500); `lines.py` writes it to `earthwork_note` only when sent; `line_sync.py` keeps it after the held words (a line
+  without a note: today's words exactly). App: `api.ts` maps it (read only when non-empty), `layers.ts:resolveStack` takes
+  the project's preset for an "auto" stack over the default (`projectPreset`, 30 TAC still laid over a Texas sanitary
+  main, `sectionPresets.ts:tacApplies`); `UtilitySettingsSection.tsx:SectionPresetRows`, a collapsed "Section by type, new
+  runs" list by group, each "Auto (by pipe)" or a preset, the hint naming the type's usual pipe's default.
+- **Task 9, Estimating (app).** Group by › Assembly: a run's row has a **Section** button (`EstimatingView.tsx`,
+  `storedRuns`) opening `RunSectionView.tsx` read-only: Average/Deepest/Shallowest, a table of the layers (from–to in,
+  material, compaction, CY/LF here, run CY), the paved cap, pipe + bell, excavation and the check line. **Night 3's
+  `TrenchSectionPicture` plugs into its `picture` prop**; until then the table is the view. A run drawn before: "Drawn
+  before the section layers …"; a layered result from before: "Calculate again to see the section".
+- **Readings taken (founder away):** compaction goes in the api's existing `earthwork_note` (the plan's "note"), which
+  needed the one `note` field on `LineWrite`; a legacy-resolving stack (casing, D-1100 "project") runs today's path, not
+  the layered engine; the Estimating view keeps no section for legacy runs (their stored results stay byte-identical); the
+  setting is per type, exact key (a water service is not covered by "water"); "legacy" is offered in the setting; a stack
+  the engine cannot read falls back to today's path with a flag (`SECTION_UNREAD`), phase 1's throw left as it was. The
+  phase-1 departures listed for the founder (D-1280) are unchanged.
+- **Proof (2026-11-15 UTC).** api gates: ruff, ruff format --check, mypy (287 files), alembic check, one head
+  d1279a3c5e71. App: lint 0 errors (the 4 known warnings), typecheck, build exit 0. Quantity table (one run, ~13:50–14:15):
+  exit 0, 0 FAIL, "344 rows, … 253 utility rows right …" (245 + 8 new `sect-lines-*`). Smoke on throwaway
+  fx.equip.20261115135750 (DUP A then DUP B of the 3D test project; Harris County, public, open shop, burdened, 77002,
+  Site & civil, TX20260031 mod 1 Heavy): DUP B with D-1282 and with HEAD's app put back gave the same lines digest
+  (9d4163ef…, 81 lines, notes included), the same stored utilities digest (cee4d19a…) and the same totals, direct
+  $941,645.26 / bid $1,174,722.20 (the brief's $941,634.17 / $1,174,708.58 differ by $11.09 under HEAD too: setup drift,
+  not this change). A new C900 8 water run drawn in the UI stored `layers {v:1, preset:"auto"}`, took C605 Type 4 house:
+  bedding 5.47, zone 25.11, backfill 340.05 CCY on 221.74 LF (0.0247 / 0.1132 CY/LF, the hand rows), compaction notes on the
+  lines in the database, direct $955,610.91 (+$13,965.65); old runs' lines unchanged (only the site's soil import moved,
+  5,417.48 → 5,484.76, the new trench's spoils). Utility setting water → C605 Type 4 saved and read back; the run's zone
+  8.69 CCY (0.0392 CY/LF). Estimating's Section button on W-P2 and on a legacy run. Screenshots
+  `morning-report-2026-11-17/part6/p2-*.png`. Purged 14:37:03. Digest b4c963cdf83e7d84 at start and end.
+- **Bench windows (UTC):** api reloads 13:26:43–13:28:21 and 13:29:34–13:30:37 (two saves per api file: the first
+  failed ruff E501); app (Vite) saves 13:31–13:50; HEAD's app put back 14:19:07, D-1282's restored 14:22:50.
+- **Independent check (fresh agent, plan and code only, 2026-11-15 ~14:45–15:10 UTC): pass with departures.** All 8
+  `section-lines` rows re-worked by hand from the plan and the standards: all match, none copied from code. Its own 8
+  `chk2-*` rows (foundation in sloped clay, a stored preset over the setting, TX sanitary with the setting at legacy, an
+  unknown preset id, TX gravity DI under 30 TAC, TX grease waste without 30 TAC, a clipped shallow run, a varying-depth
+  sloped run) all pass; quantity table exit 0, "344 rows … 261 utility rows right … passed", 0 FAIL. Pre-layer runs take
+  exactly today's path. Departures (wiring, not quantities on any row; none blocks the commit):
+  1. segment overrides (bedding, zone height, clearance, material) are ignored on layered runs (`calculate.ts:segmentsOf`), medium;
+  2. the run panel's bedding/zone material picks and the project's backfill choice are ignored on layered runs (the preset's
+     materials win; a pressure-embedment "stone" still gives sand) while the selects still show, medium;
+  3. a cased open cut re-resolves the casing with no family (`layeredFor` → `defaultPreset` sees null), so RCP storm gets
+     D2321 on the casing and DI sanitary D2321 instead of C600, low–medium;
+  4. concrete and CLSM layers are priced on bedding/backfill lines (their labour) rather than D-1260's encasement and
+     D-1269's CLSM lines as plan §3.3 says; material $ matches, low–medium;
+  5. the Section view's run totals ignore `lessFill`/`lessZone`/crossing blends (display only), low;
+  6. an "encasement" type run stores sections it does not need, low;
+  7. the `section-lines` drive rebuilds `RunInput` itself, so the encasement width override, `lessFill`, crossings,
+     `utilitiesKey`, the StoredRun assembly and segments are not row-checked.
+  Task 6: no migration needed, confirmed (JSONB); an unknown preset id makes the api reject the whole settings save (422);
+  the label "new runs" also moves every "auto" layered run at its next Calculate. Task 9: the Section button is only in
+  "By assembly" view. **Reading (main session, founder away):** commit on the matching rows; departures 1–3 go to phase 3's
+  task 7 (the run panel's Section select and Edit layers replace the silent controls, segments override per layer, the
+  casing takes the carrier's family); 4–7 and the checker's questions go to the report.

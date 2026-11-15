@@ -1931,6 +1931,9 @@ try {
     // D-1280: the layered pipe section and its presets.
     const lyr = await import("/src/lib/takeoff/earthwork/utilities/layers.ts");
     const spr = await import("/src/lib/takeoff/earthwork/utilities/sectionPresets.ts");
+    // D-1282: the layered section wired into Calculate (its stack, lines and kept sections) and new runs' layers.
+    const calc = await import("/src/features/takeoff/earthwork/utilities/calculate.ts");
+    const ssm = await import("/src/lib/takeoff/earthwork/utilities/sectionSummary.ts");
     // D-1276: tracer and tape in whole rolls once over the project (Estimating's withBidOrder).
     const bo = await import("/src/lib/estimate/bidOrder.ts");
     // D-1279 (Q10): a share's quantity column.
@@ -2114,6 +2117,90 @@ try {
           out.legacySandCYLF = r4((rl.beddingCF + rl.zoneCF) / 27 / rl.lengthFt);
           out.legacyExcavationCY = r2(rl.excavationCF / 27);
           out.legacyHFt = r4(q.trenchAt(rl.shape[0], 50).h);
+        }
+        return out;
+      }
+      // D-1282 (D-1278 tasks 5 and 6): a run as Calculate works it, 100 LF at a constant depth, G = 100: its stack from its
+      // stored `section` and the project's settings (`calculate.ts:runLayered`, its own type, `section_presets`, the
+      // state), its materials (`runMaterials`), the engine, the lines (`utilityLines`, as `lineWrites` sends them, the
+      // note included) and the sections it keeps (`sectionSummary`). A run stored before (no `section.layers`) is worked
+      // again on today's path alone and its lines compared field for field. `newRuns`: what a new run stores.
+      if (c.kind === "section-lines") {
+        if (c.newRuns) {
+          const legacyLast = { ...rd.defaultRun("sanitary"), section: { addons: ["cctv"] } };
+          const chosenLast = { ...rd.defaultRun("water"), section: { addons: [], layers: { v: 1, preset: "c605_t4" } } };
+          const L = (f) => JSON.stringify(f.section?.layers ?? null);
+          return {
+            afterLegacy: L(rd.newRunFrom(legacyLast)),
+            afterLegacyKeeps: JSON.stringify(rd.newRunFrom(legacyLast).section.addons),
+            afterChosen: L(rd.newRunFrom(chosenLast)),
+            fresh: L(rd.newRunFrom(null)),
+            byType: ["water", "sanitary", "storm", "electric", "casing"].map((t) => L(rd.defaultRun(t))).join(" "),
+          };
+        }
+        const p = cat.resolvePipe(c.pipe);
+        const od = p.od;
+        const id = c.idIn ?? p.id;
+        const G = 100;
+        const settings = { ...utr.utilitySettings(c.settings ?? null), ...(c.state ? { projectState: c.state } : {}) };
+        const def = rd.defaultRun(c.type);
+        const run = { ...def, catalog_key: c.pipe, pipes: 1, pipe_gap_in: 0, section: c.section !== undefined ? c.section : def.section, restoration: null, limited_width: false };
+        const mats = calc.runMaterials(run, settings);
+        const { layered, flag } = calc.runLayered(run, c.type, { od, id }, settings, mats);
+        const invert = c.cover != null ? G - c.cover - (od + id) / 24 : G - c.invertDepth;
+        const knots = [0, 100].map((s) => ({ s, G, invert, bottoms: [-1e6], water: null, caving: false, caveInFt: null }));
+        const r4c = (v) => Math.round(v * 1e4) / 1e4;
+        const soil = c.protection ? { layerId: null, ...CLAY } : { layerId: null, name: "Cemented, cut vertical", group: "cemented", uscs: null, osha: "rock", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1 };
+        const sec = utr.sectionFor(c.type, settings);
+        const base = {
+          knots,
+          layers: [soil],
+          noBores: false,
+          pipe: { odIn: od, idIn: id, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: sec.sideClearanceIn, minWidthIn: sec.minWidthIn, beddingIn: settings.beddingIn, zoneAboveCrownIn: settings.zoneAboveCrownIn },
+          bucket: "auto",
+          box: null,
+          specMaxIn: null,
+          protection: c.protection ?? "vertical",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: utr.DEFAULT_UTILITY_SETTINGS.depthRangesFt,
+          materials: { bedding: mats.bedding.source, zone: mats.zone.source, backfill: mats.backfill.source },
+          materialNames: { bedding: mats.bedding.name, zone: mats.zone.name, backfill: mats.backfill.name },
+          pavedCapIn: mats.pavedCapIn,
+          segments: [],
+          restoration: null,
+        };
+        const linesOf = (qq) =>
+          ln.utilityLines([{ type: ty.baseOf(c.type), kind: c.type, pipeLabel: "Pipe", pipeKey: c.pipe, pipes: 1, q: qq, swell: [1], materials: { bedding: mats.bedding, zone: mats.zone, backfill: mats.backfill }, restoration: null }]);
+        const fill = new Set(["utility_bedding_pipe_zone", "utility_backfill", "utility_trench_excavation"]);
+        const r = q.runQuantities({ ...base, ...(layered ? { layered } : {}) });
+        const made = linesOf(r).filter((l) => fill.has(l.role));
+        const writes = calc.lineWrites(made);
+        const out = {
+          preset: layered ? layered.stack.preset : "legacy",
+          title: layered ? layered.stack.title : "",
+          why: layered ? layered.stack.why : "",
+          flag,
+          lines: made.map((l) => `${l.role}|${l.variant}|${l.name}|${r2(l.quantity)}`),
+          noteLayers: made.filter((l) => l.note).map((l) => `${l.variant}=${l.note.split("; ").map((w) => w.split(": ")[0]).join("+")}`),
+          notes: made.filter((l) => l.note).map((l) => `${l.variant}=${l.note}`),
+          notesSent: writes.filter((w) => w.note).length,
+          keys: made
+            .filter((l) => l.role !== "utility_trench_excavation")
+            .map((l) => `${l.variant}=${(um.lineMaterials(l, () => null) ?? []).map((m) => `${m.key}>${m.matKey}:${m.unit}`).join(",")}`),
+        };
+        if (layered) {
+          const ss = ssm.sectionSummary(r.shape, layered, { idIn: id, capFt: mats.pavedCapIn / 12 });
+          out.sections = ss.sections.map((s) => s.which).join(" ");
+          out.avgH = ss.sections[0].h;
+          out.avgW = ss.sections[0].W;
+          out.sectionLayers = ss.sections[0].layers.map((l) => [l.key, l.cyPerLf]);
+          // The kept figures (4 places each) add to the excavation within their rounding.
+          out.sectionCheck = Math.abs(r4c(ss.sections[0].layers.reduce((a, l) => a + l.cyPerLf, 0) + ss.sections[0].surfaceCyPerLf + ss.sections[0].pipeCyPerLf + ss.sections[0].bellCyPerLf - ss.sections[0].excavationCyPerLf)) <= 5e-4;
+        } else {
+          // Today's path: no layered input went to the engine, and no line carries a note.
+          out.todayPath = !("layered" in base) && made.every((l) => l.note === undefined);
         }
         return out;
       }
