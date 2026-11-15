@@ -33201,3 +33201,56 @@ No api change, no migration (head d1279a3c5e71 unchanged).
      `previewSections` are not row-checked, and `todayPath` is a tautology, low–medium (coverage).
   Hard rules 2 and 4 hold (no hex/rgb/hsl literals; arbitrary `text-[11px]`-type values follow RunPanel's existing use).
   **Reading (main session, founder away):** commit on the matching rows; a–m and the checker's questions go to the report.
+
+### Item 4 (founder, 2026-11-15)
+
+The founder's message at ~17:35 UTC, item 4 (verbatim): "Old runs switched to new sections: keep the user's explicit
+bedding/zone picks; only defaults move to presets." This closes departure c of the independent check above. Built on top
+of the committed phase 3 (app 7212e07, infra eb0b962). Not a new number.
+
+- **What counts as explicit (reading, founder away):** the run stores the pick itself. The run panel's Bedding / zone
+  selects (`RunPanel.tsx`, shown on runs drawn before only) write `section.bedding_choice` / `section.zone_choice` only
+  when a material is picked, and remove the key when "default (…)" is picked. Nothing else writes them: not
+  `types.ts:newRunSection`, not the api, not a drive. The type and pipe default (`materials.ts:embedmentDefault`) is
+  worked out at Calculate (`calculate.ts:runMaterials`) and never stored. So a stored key is explicit and an absent key
+  is a default, with one exception the data cannot show: before D-1283, `runDefaults.ts:newRunFrom` copied the last
+  run's picks into a new run. Those copies are stored the same way, and the estimator saw them in the run's selects, so
+  they count as explicit. A pick equal to the default is still a pick and is kept.
+- **Built (app):** `layers.ts:legacyPicks` (the run's stored picks and the layers each one goes to in a stack: the
+  bedding pick to `bedding`, the zone pick to `haunch`, `embedment` and `initial` where the stack has them, which is
+  plan §3.3's pipe zone line; none for a stack that resolves to the project's own section, because today's path reads
+  the picks itself), `layers.ts:carryPicks` (a stack with those picks as its layers' material edits; thickness and top
+  rules stay the preset's) and `layers.ts:picksNotCarried` (for the note). All three are pure: data in, data out (hard
+  rule 2). `RunSectionBlock.tsx:toPreset` is used by Switch's preview, Switch's apply and a preset pick on a layered run
+  that still carries the picks. The picks stay stored, so a later preset pick, or the project's section, still has them;
+  Undo restores the section exactly as before. The switch box says what it keeps ("Keeps this run's zone pick (Bank
+  sand) as the haunch and embedment material; the rest takes the standard's materials", `data-run-switch-kept`), and its
+  table shows the kept material by line. The amber note now shows only for a pick the stack does not carry (edited since,
+  or no layer takes it). Its "Make it the layers' material" button shows only where a layer can take the pick; a pick
+  with no layer gets the note without the button ("the section has no layer for it"). A run that is not switched takes
+  today's path unchanged, and new runs are unchanged. Precedence stays: the run's explicit pick, then the preset. The
+  founder's next change (the project backfill setting) can go between them. No api change, no migration.
+- **Quantity-table rows (infra, `browser/lib/utility-cases.mjs`, `switchCarry` in `quantity-table.mjs` section-lines):**
+  worked by hand from the plan and the standards before the run; all four were right on the first run.
+  `p3b-switch-zone-pick-c605-t4` (C900 8 at 4 ft, zone #57: stores `edits.embedment.material = stone`; bedding sand 3.70
+  → 2.47, zone #57 11.34 → 3.92, backfill 22.22 → 29.63, excavation 38.92 → 37.69), `p3b-switch-bedding-pick-d2321` (SDR
+  35 8 at invert 8, bedding bank sand: bedding sand 5.56 → 3.08, zone #57 17.46 → 9.67, backfill 70.22 → 63.15,
+  excavation 94.67 → 77.35), `p3b-switch-no-pick` (no edits stored; the figures are p3-switch's), and
+  `p3b-switch-both-picks-c605-t5` (bedding #57 and zone CSS to C605 Type 5: bedding #57 2.47, haunch and embedment CSS
+  on one line 3.92, backfill 29.63, excavation 37.69).
+- **Proof (2026-11-15 UTC).** App: lint 0 errors (the 4 known warnings), typecheck exit 0, build exit 0. Quantity table
+  (one run, ~17:44–18:00): exit 0, 0 FAIL, "344 rows … 278 utility rows right … passed" (274 + 4). Smoke on throwaway
+  fx.equip.20261115175034 (a copy of the 3D test project; Harris County, TX 77002, open shop, burdened, set by a project
+  PATCH; the wage determination was not set because the check is quantities only). C-200's SS-1 (8 in HDPE dual wall
+  storm, drawn before): zone picked "Bank sand" (stored `{"zone_choice":"bank_sand"}`), then Switch to ASTM D2321. The
+  preview said it keeps the pick as the haunch and embedment material: excavation 44.68 → 36.45, bedding #57 5.94 → 4.16,
+  pipe zone Sand 19.11 → 10.66, backfill 17.84 → 19.82. Switch stored the preset with `haunch`/`embedment` material
+  `bank_sand`, titled "ASTM D2321, edited: haunch, embedment", with no amber note. After Calculate, the storm lines had
+  "Pipe zone, Sand 10.66" (SS-1's, equal to the preview). Undo gave back `{"zone_choice":"bank_sand"}` byte for byte, and
+  the run is legacy again. Screenshots `morning-report-2026-11-17/part6/p3b-*.png`. Purged 18:04:38 (dry run first).
+  Founder digest b4c963cdf83e7d84 at the start and the end.
+- **Bench windows (UTC):** app (Vite) saves 17:41:00–17:42:10 (two files). The founder gate said quiet at 17:40:56, but
+  the founder's next check at 17:52 showed a founder edit on Real bid A at 17:41:43, inside that window. A reload may have
+  reached the founder's open tab. No api save, no restart.
+- **Seen, not changed:** for about 150 ms after a Switch pick, the preview table shows the "Now" figures as "After" (+0.00)
+  until the debounced preview settles. This is phase 3 behaviour (`useLive`'s first settled value is the stored section).

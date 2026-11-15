@@ -2203,7 +2203,12 @@ try {
         // D-1283: "Switch from legacy" (the run panel): the same run with `switchTo` as its layers, the CY change by the line
         // each layer goes to (`sectionSummary.ts:switchChange`), and the lines after.
         if (c.switchTo) {
-          const toRun = { ...run, section: { ...(run.section ?? {}), layers: c.switchTo } };
+          // D-1283 item 4 (the founder, 2026-11-15): `switchCarry` stores what the run panel's Switch stores, the preset with
+          // the run's own bedding and zone picks carried as material edits (`layers.ts:carryPicks`); else `switchTo` as given.
+          const ctxS = { type: c.type, catalogKey: c.pipe, projectState: settings.projectState ?? null, settings };
+          const toLayers = c.switchCarry ? lyr.carryPicks(lyr.presetLayers(c.switchTo.preset, null), run.section ?? {}, ctxS) : c.switchTo;
+          out.switchLayers = JSON.stringify(toLayers);
+          const toRun = { ...run, section: { ...(run.section ?? {}), layers: toLayers } };
           const toL = calc.runLayered(toRun, c.type, { od, id }, settings, mats).layered;
           const r2q = q.runQuantities({ ...base, segments: calc.runSegments(toRun, c.type, { od, id }, settings, mats, toL), ...(toL ? { layered: toL } : {}) });
           out.switchPreset = toL ? toL.stack.preset : "legacy";

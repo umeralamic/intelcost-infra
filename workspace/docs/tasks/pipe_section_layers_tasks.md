@@ -259,8 +259,10 @@ section.layers?: {
   the founder's runs) keeps its quantities to the cent. That is the D-1260 pattern for `addons`.
 - **A new run writes `layers: { v: 1, preset: "auto" }`** in `types.ts:newRunSection`.
 - **"Switch to <standard>"** on an old run shows the CY change by layer before it applies, and it can be undone.
-- `bedding_choice` and `zone_choice` stay read for `legacy`, and are offered as the bedding and embedment
-  materials' edits for the others.
+- `bedding_choice` and `zone_choice` stay read for `legacy`. On Switch, or on a preset pick, they are carried as the
+  material edits of the bedding layer (the bedding pick) and of the haunch, embedment and initial (the zone pick). A
+  stored key is the estimator's explicit pick; an absent key is the default, which takes the preset's material
+  (D-1283 item 4, the founder, 2026-11-15).
 - **No database migration.** `section` is JSONB, and `utility_schemas.py` passes it as `dict[str, object]`.
 - **Project setting `section_presets: dict[type, PresetId]`.** This is the one schema touch: a field in the api's
   pydantic `UtilitySettingsWrite` (`utility_schemas.py`). It is still no migration, because `utility_settings` is

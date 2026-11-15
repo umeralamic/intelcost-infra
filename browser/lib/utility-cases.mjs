@@ -2502,6 +2502,126 @@ export const UTILITY_CASES = [
       sectionCheck: true,
     },
   },
+  // --- D-1283 item 4 (the founder, 2026-11-15): "Old runs switched to new sections: keep the user's explicit bedding/zone
+  // picks; only defaults move to presets." A pick is explicit when the run stores it (`section.bedding_choice` /
+  // `section.zone_choice`: the run panel writes the key only on a pick and drops it on "the project's default"). Switch
+  // carries the bedding pick onto the bedding layer and the zone pick onto the haunch, embedment and initial (plan §3.3's
+  // pipe zone line), as material edits; thickness and top rules stay the preset's, so every CY below is the plain
+  // preset's and only the line's material moves. `switchCarry`: the driver stores what Switch stores (`carryPicks`).
+  // Worked by hand from the plan and the standards (figures as the p3 rows above and chk3-1), before the run.
+  //
+  // (5a) C900 8 water at 4 ft drawn before, its zone picked #57 stone (bedding the D-1100 pressure default, sand), switched
+  //     to AWWA C605 Type 4: legacy bedding sand 3.70, zone #57 11.34, backfill 22.22, excavation 38.92 (as p3-switch);
+  //     after, bedding 4 in sand (the preset's: no pick) 0.666027 -> 2.47, embedment to the top 1.057992 -> 3.92 in #57
+  //     (the pick), final 29.63, excavation 37.69. Change -1.23 / -1.24 / -7.42 / +7.41.
+  {
+    id: "p3b-switch-zone-pick-c605-t4",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], zone_choice: "stone" },
+    switchTo: { v: 1, preset: "c605_t4" },
+    switchCarry: true,
+    expect: {
+      preset: "legacy",
+      todayPath: true,
+      switchLayers: '{"v":1,"preset":"c605_t4","edits":{"embedment":{"material":"stone"}}}',
+      switchPreset: "c605_t4",
+      switchRows: ["excavation|||38.92|37.69|-1.23", "bedding|Sand|Sand|3.7|2.47|-1.24", "zone|#57 stone|#57 stone|11.34|3.92|-7.42", "backfill|Native|Native|22.22|29.63|7.41"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|29.63",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|3.92",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
+  // (5b) SDR 35 8 sanitary, invert 8.00 ft, drawn before, its bedding picked bank sand (the zone the D-1101 flexible
+  //     default, #57), switched to ASTM D2321, walls vertical. Legacy: W 36 in, h 8 + 0.02 + 0.5 = 8.52; bedding 3 x 0.5 =
+  //     1.5 SF -> 5.56 sand; zone 3 x 1.7 - 0.384845 = 4.715155 -> 17.46 #57; backfill 3 x 8.52 - 1.5 - 5.1 = 18.96 ->
+  //     70.22; excavation 25.56 -> 94.67. D2321 (sect-d2321): W 30, h 8.353333; bedding 4 in 0.833333 - 0.000788 = 0.832546
+  //     -> 3.08 in sand (the pick); haunch 0.680341 + embedment 6 in over the crown 1.929554 = 2.609895 -> 9.67 in #57 (the
+  //     preset's: no zone pick); final 2.5 x 6.82 = 17.05 -> 63.15; excavation 20.883333 -> 77.35. Change -17.32 / -2.47 /
+  //     -7.80 / -7.07.
+  {
+    id: "p3b-switch-bedding-pick-d2321",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    section: { addons: [], bedding_choice: "bank_sand" },
+    switchTo: { v: 1, preset: "d2321" },
+    switchCarry: true,
+    expect: {
+      preset: "legacy",
+      todayPath: true,
+      switchLayers: '{"v":1,"preset":"d2321","edits":{"bedding":{"material":"bank_sand"}}}',
+      switchPreset: "d2321",
+      switchRows: ["excavation|||94.67|77.35|-17.32", "bedding|Sand|Sand|5.56|3.08|-2.47", "zone|#57 stone|#57 stone|17.46|9.67|-7.8", "backfill|Native|Native|70.22|63.15|-7.07"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|63.15",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.08",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|9.67",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|77.35",
+      ],
+    },
+  },
+  // (5c) No pick of the run's own: the switch stores the plain preset (no edits) and every material is the preset's, the
+  //     figures p3-switch-legacy-c605-t4's exactly.
+  {
+    id: "p3b-switch-no-pick",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [] },
+    switchTo: { v: 1, preset: "c605_t4" },
+    switchCarry: true,
+    expect: {
+      preset: "legacy",
+      todayPath: true,
+      switchLayers: '{"v":1,"preset":"c605_t4"}',
+      switchPreset: "c605_t4",
+      switchRows: ["excavation|||38.92|37.69|-1.23", "bedding|Sand|Sand|3.7|2.47|-1.24", "zone|Sand|Sand|11.34|3.92|-7.42", "backfill|Native|Native|22.22|29.63|7.41"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|29.63",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|3.92",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
+  // (5d) Both picks: C900 8 water at 4 ft drawn before, bedding #57 stone and zone cement-stabilized sand, switched to AWWA
+  //     C605 Type 5 (bedding 4 in, haunch to the centerline, embedment to the top: the zone pick goes on both). h 5.0875,
+  //     W 24. Bedding 0.666027 -> 2.47 #57; haunch 2 x 0.377083 - 0.223353 - (0.321631 - 0.025605 - 0.223353) x 0.025 =
+  //     0.528997, embedment the same 0.528997 (the bell's upper half less its segment above the crown), zone 1.057994 ->
+  //     3.92 CSS on one line; final 8.0 - 0.000640 -> 29.63; excavation 37.69. Legacy: bedding #57 3.70, zone CSS 11.34,
+  //     backfill 22.22, excavation 38.92.
+  {
+    id: "p3b-switch-both-picks-c605-t5",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], bedding_choice: "stone", zone_choice: "css" },
+    switchTo: { v: 1, preset: "c605_t5" },
+    switchCarry: true,
+    expect: {
+      preset: "legacy",
+      todayPath: true,
+      switchLayers: '{"v":1,"preset":"c605_t5","edits":{"bedding":{"material":"stone"},"haunch":{"material":"css"},"embedment":{"material":"css"}}}',
+      switchPreset: "c605_t5",
+      switchRows: ["excavation|||38.92|37.69|-1.23", "bedding|#57 stone|#57 stone|3.7|2.47|-1.24", "zone|Cement-stabilized sand|Cement-stabilized sand|11.34|3.92|-7.42", "backfill|Native|Native|22.22|29.63|7.41"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|29.63",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|2.47",
+        "utility_bedding_pipe_zone|zone:Cement-stabilized sand|imported|Pipe zone, Cement-stabilized sand|3.92",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
   // --- Independent check of D-1283 (chk3-*): worked by hand from the plan (§2, §3, §5) and the standards, not the code ---
   // Pipes: SDR 35 8 OD 8.40 ID 7.92 (wall 0.02 ft), bell 1.20 x = 10.08, 0.5 ft a 14 ft joint (share 0.035714); bell
   //   segment below/above the barrel (R 0.42, t 0.07) 0.022058 SF, so 0.000788 in the bedding; haunch net 0.680341, a 6 in
