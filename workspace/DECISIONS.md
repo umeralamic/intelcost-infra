@@ -32579,8 +32579,8 @@ Details per part below.
 
 ### Q14, Q18 and the founder-gate hook (the infra/workspace half)
 
-**Status:** built 2026-11-15 (night run), awaiting the founder's check. The hook is written and proved but not yet
-switched on (main's call: the app/api agent's `docker exec` reads must not be blocked mid-task).
+**Status:** built 2026-11-15 (night run), awaiting the founder's check. The hook was held back until the app/api
+agent finished (main's call: its `docker exec` reads must not be blocked mid-task), then switched on at 06:29 UTC.
 
 - **Q14, the 8 orphan protected ids** (`.private/fx-protected-ids.json`, `not_on_the_guard_list`). Read only, every
   database this laptop reaches: the one Postgres server (`intelcost-bench-postgres-1`), databases `intelcost` (the
@@ -32608,7 +32608,7 @@ switched on (main's call: the app/api agent's `docker exec` reads must not be bl
   - **The block list:** both strings were already in `.private/client-denylist.txt` (D-1153, read by each repo's
     `.githooks/client-names.sh` through `INTELCOST_DENYLIST`). Proved on a scratch file staged in infra: each
     string blocks (exit 1), a neutral line passes (exit 0); unstaged and deleted.
-- **The founder gate (close-out check 2), ready in `.claude/hooks/founder-gate.next.{sh,js}`.** It also gates
+- **The founder gate (close-out check 2), live in `.claude/hooks/founder-gate.{sh,js}`.** It also gates
   `docker [container] exec|cp` and `docker compose|docker-compose ... exec|cp` naming a bench app or api service
   (`api`, `app`, `worker*`: worker, worker-ocr, worker-pages, worker-previews, from `docker compose ps`) or its
   container `intelcost-bench-<service>-<n>`, including inside `sh -c "..."`. A copy counts when its destination is
@@ -32624,10 +32624,13 @@ switched on (main's call: the app/api agent's `docker exec` reads must not be bl
     19 decision cases: every exec/cp into api, app, worker, worker-pages, worker-previews (by service or container,
     `docker container`, `docker-compose`, inside `bash -lc "..."`) gated; a copy out, postgres, api-fx, `ps`,
     `logs`, a grep naming `docker exec` and a cp into a scratch Postgres container pass.
-  - **To switch it on** (main, once the app/api agent is done): move `founder-gate.next.sh` over `founder-gate.sh`
-    and `founder-gate.next.js` over `founder-gate.js` (settings.json already sends every Bash and PowerShell call
-    to it: no change there), update CLAUDE.md rule 12, mirror `.claude/` and rule 12 to `intelcost-infra/
-    workspace/`, commit.
+  - **Switched on (06:29 UTC, after a quiet at 06:29:10):** the `.next` pair moved over `founder-gate.sh` and
+    `founder-gate.js` (settings.json unchanged: it already sends every Bash and PowerShell call to the hook);
+    CLAUDE.md rule 12 says the hook now refuses these execs and copies. **Proved live:** with the stamp set 300 s
+    back, a real `docker cp <scratch> intelcost-bench-api-1:/tmp/q18-gate-probe.txt` was refused by the running
+    hook (06:29:52, "stamp 307 s old", logged); after founder-active's quiet (06:30:04) the same copy passed
+    (06:30:16), was read back and removed (06:30:19); the api answered 200 throughout. The hook reads only the call's
+    own text, so a script that runs execs inside (`./quantity-table.sh`) is not gated by it.
 
 ### Q3, Q4, Q6–Q13, Q16, Q17 (the app/api half)
 

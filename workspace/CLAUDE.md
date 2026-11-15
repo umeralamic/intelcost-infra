@@ -112,13 +112,15 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    - **Look before saving:** before saving api or app source (a save reloads what the founder's browser uses), or
      restarting a service, run `./founder-active.sh` from `intelcost-infra/` (founder activity in the api log's
      last 10 minutes). Active or unknown: tell the founder and wait instead of saving. **The same before an
-     `npm install` in the app and a `docker cp` into a bench container** (D-1276, D-1272 7): an install reloads the
-     app's dev server (a new dependency may need its image rebuilt), and a copy into a running container can reach
-     what it serves. The hook does not catch these two; the rule does.
-     **Enforced (D-1266):** a quiet answer writes `.private/founder-quiet.stamp`; a PreToolUse hook
+     `npm install` in the app and a `docker exec` or `docker cp` into a bench app or api container** (D-1276,
+     D-1272 7, D-1279): an install reloads the app's dev server (a new dependency may need its image rebuilt), and a
+     copy or command inside a running container can reach what it serves. The rule, not the hook, covers `npm install`.
+     **Enforced (D-1266, D-1279):** a quiet answer writes `.private/founder-quiet.stamp`; a PreToolUse hook
      (`.claude/hooks/founder-gate.sh`) refuses an app or api source save (the edit tools, a shell write or a git
-     checkout/pull/stash in those repos) and a bench `alembic upgrade`/`downgrade`/`stamp` unless that stamp is at most
-     120 s old. Run `INTELCOST_GUARD_LIST="E:/Intelcost/.private/guard-list.json" ./founder-active.sh` just before.
+     checkout/pull/stash in those repos), a bench `alembic upgrade`/`downgrade`/`stamp`, and a `docker [compose]
+     exec` or `cp` into the compose services `api`, `app` or `worker*` (or their `intelcost-bench-*` containers;
+     a copy into `/tmp` and a read-only exec such as the ruff/mypy gates included; fx services and a copy out pass)
+     unless that one stamp is at most 120 s old. Run `INTELCOST_GUARD_LIST="E:/Intelcost/.private/guard-list.json" ./founder-active.sh` just before.
    - **Check it came back:** after an api source save, confirm the api answers again
      (`curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs` gives 200). A save that lands while the
      api is still reloading can leave it down with only `watchfiles` running (2026-11-13, 16:26 to 16:31 UTC).

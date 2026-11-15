@@ -7,9 +7,11 @@
 # (E:\Intelcost\.private\founder-quiet.stamp, outside git; INTELCOST_FOUNDER_STAMP overrides it) and removes it
 # on active or unknown. This gate lets a gated call through only while the stamp is at most 120 s old.
 #
-# What is gated is decided by founder-gate.js beside this file: Edit/Write/MultiEdit/NotebookEdit on app or api
-# source, shell writes into the same paths, git commands that rewrite the app or api working tree, and a bench
-# migration. Workspace docs, infra, the scratchpad, test data and every read pass untouched.
+# What is gated is decided by founder-gate.js beside this file (the .js of this script's own name): Edit/Write/
+# MultiEdit/NotebookEdit on app or api source, shell writes into the same paths, git commands that rewrite the app
+# or api working tree, a bench migration, and (D-1279) a docker exec or docker cp into a bench app or api
+# container (compose services api, app, worker*; read-only execs such as the ruff/mypy gates included). Workspace
+# docs, infra, the scratchpad, test data, fx containers and every other read pass untouched.
 #
 # Reads the tool call as JSON on stdin and blocks (exit 2, reason on stderr), as the rule 7 and D-592 hooks do.
 # Each refusal is appended to .private/founder-gate.log.
@@ -23,20 +25,20 @@ max_age=120
 # Nothing names the app, the api or alembic: not gated (the common case, decided without starting node).
 shopt -s nocasematch
 case "$input" in
-  *intelcost-app-*|*alembic*) ;;
+  *intelcost-app-*|*alembic*|*docker*) ;;
   *) exit 0 ;;
 esac
 shopt -u nocasematch
 
 what=''
 if command -v node >/dev/null 2>&1; then
-  what=$(printf '%s' "$input" | node "$here/founder-gate.js" 2>/dev/null)
+  what=$(printf '%s' "$input" | node "$here/$(basename "$0" .sh).js" 2>/dev/null)
 else
   what='?'
 fi
 if [ "$what" = '?' ]; then
   # The call could not be read: a plain pattern check, which leans to refusing.
-  if printf '%s' "$input" | grep -Eiq 'intelcost-app-react[\\/]+(src|public)[\\/]|intelcost-app-react[\\/]+(index\.html|package\.json|vite\.config|tailwind\.config|postcss\.config|tsconfig)|intelcost-app-fastapi[\\/]+(app[\\/]|main\.py|alembic[\\/])|alembic[[:space:]]+(upgrade|downgrade|stamp)'; then
+  if printf '%s' "$input" | grep -Eiq 'intelcost-app-react[\\/]+(src|public)[\\/]|intelcost-app-react[\\/]+(index\.html|package\.json|vite\.config|tailwind\.config|postcss\.config|tsconfig)|intelcost-app-fastapi[\\/]+(app[\\/]|main\.py|alembic[\\/])|alembic[[:space:]]+(upgrade|downgrade|stamp)|docker(-compose|[[:space:]]+compose)?[^"]*[[:space:]](exec|cp)[[:space:]][^"]*(api|app|worker)'; then
     what='a gated path or a migration (the call could not be read exactly)'
   else
     what=''
@@ -64,11 +66,11 @@ printf '%s refused %s: %s (stamp %s)\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${tool
 
 cat >&2 <<MSG
 Blocked by D-1266 (founder gate, hard rule 12): ${what}.
-An app or api source save, or a bench migration, needs a "quiet" from founder-active at most ${max_age} s old
-(the stamp is ${state}). From intelcost-infra/ run:
+An app or api source save, a bench migration, or a docker exec / docker cp into an app or api container
+(D-1279) needs a "quiet" from founder-active at most ${max_age} s old (the stamp is ${state}). From
+intelcost-infra/ run:
   INTELCOST_GUARD_LIST="E:/Intelcost/.private/guard-list.json" ./founder-active.sh
 Quiet (exit 0): retry within 2 minutes. Active or unknown: tell the founder and wait (D-1252, D-1254).
-The rule (not this hook) asks the same quiet before an npm install in the app and a docker cp into a bench
-container (D-1276).
+The rule (not this hook) asks the same quiet before an npm install in the app (D-1276).
 MSG
 exit 2

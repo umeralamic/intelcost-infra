@@ -15,6 +15,11 @@
 //   - A bench migration: alembic upgrade/downgrade/stamp run in a container (docker exec, docker compose exec or
 //     run) or at a command's start, unless the container is an fx one, the run is offline (--sql), or every
 //     DATABASE_URL override names a database that is not the bench's.
+//   - (D-1279) docker exec and docker cp into a bench app or api container: `docker [container] exec|cp`,
+//     `docker compose|docker-compose ... exec|cp`, naming a compose service api, app or worker* (worker,
+//     worker-ocr, worker-pages, worker-previews) or its container intelcost-bench-<service>-<n>. A copy counts
+//     when its destination is the container (/tmp included); a copy out of one is a read and passes. Every exec
+//     counts, read-only ones too (the ruff/mypy gates): the agent runs founder-active first. fx services pass.
 
 const path = require("path").posix;
 
@@ -72,7 +77,7 @@ function decide(call) {
   }
   if (/^(Bash|PowerShell)$/.test(tool)) {
     const cmd = String(t.command ?? "");
-    return migration(cmd) || writes(cmd, cwd) || "";
+    return migration(cmd) || dockerInto(cmd) || writes(cmd, cwd) || "";
   }
   return "";
 }
@@ -118,6 +123,70 @@ function benchUrl(u) {
   if (m[3] !== "intelcost") return false;
   const hosts = ["postgres", "intelcost-infra-postgres-1", "localhost", "127.0.0.1", "::1", "host.docker.internal"];
   return hosts.includes(host) && ["", "5432", "5433"].includes(port);
+}
+
+// ---- docker exec / cp into an app or api container (D-1279) ---------------------------------------------
+
+// The bench's app and api services (compose names) and their containers; an fx one never matches.
+const SERVICE = /^(api|app|worker[\w-]*)$/;
+const CONTAINER = /^intelcost-bench-(api|app|worker[\w-]*)-\d+$/;
+const benchBox = (name) => {
+  const n = unquote(name).toLowerCase();
+  return !/fx/.test(n) && (SERVICE.test(n) || CONTAINER.test(n));
+};
+
+// Skip a run of options; `withValue` names the ones that take the next word. Returns the next index.
+function skipOpts(w, i, withValue) {
+  while (i < w.length && w[i].startsWith("-")) {
+    const a = w[i];
+    i += !a.includes("=") && withValue.test(a) ? 2 : 1;
+  }
+  return i;
+}
+
+function dockerInto(cmd) {
+  const DOCKER_OPTS = /^(-H|--host|--context|-c|--config|-l|--log-level|--tlscacert|--tlscert|--tlskey)$/;
+  const COMPOSE_OPTS =
+    /^(-f|--file|-p|--project-name|--profile|--env-file|--project-directory|--ansi|--progress|--parallel)$/;
+  const EXEC_OPTS = /^(-e|--env|--env-file|-w|--workdir|-u|--user|--index|--detach-keys)$/;
+  for (const line of stripHeredocs(cmd)) {
+    for (const seg of splitSegments(line)) {
+      // A command inside sh -c "..." or a subshell is read as its own words too.
+      const parts = [seg, ...[...seg.matchAll(/\b(?:ba)?sh\s+-l?c\s+(["'])([\s\S]*?)\1/g)].map((m) => m[2])];
+      for (const part of parts) {
+        for (const sub of splitSegments(part)) {
+          const w = words(sub.replace(/^[\s(`]+/, ""));
+          while (w.length && /^\w+=/.test(w[0])) w.shift();
+          if (!w.length) continue;
+          const head = w[0].toLowerCase().replace(/\.exe$/, "");
+          let i = 1;
+          let compose = false;
+          if (head === "docker-compose") compose = true;
+          else if (head === "docker") {
+            i = skipOpts(w, i, DOCKER_OPTS);
+            const s = (w[i] || "").toLowerCase();
+            if (s === "compose") {
+              compose = true;
+              i++;
+            } else if (s === "container") i++;
+          } else continue;
+          if (compose) i = skipOpts(w, i, COMPOSE_OPTS);
+          const verb = (w[i] || "").toLowerCase();
+          if (verb === "exec") {
+            const j = skipOpts(w, i + 1, EXEC_OPTS);
+            if (w[j] && benchBox(w[j])) return `a docker exec into ${unquote(w[j])} (an app or api container)`;
+          } else if (verb === "cp") {
+            const rest = w.slice(i + 1).filter((a) => !a.startsWith("-"));
+            const dest = rest[rest.length - 1] || "";
+            const m = dest.match(/^([^:/\\]+):/);
+            if (rest.length >= 2 && m && !/^[a-z]$/i.test(m[1]) && benchBox(m[1]))
+              return `a docker cp into ${dest} (an app or api container)`;
+          }
+        }
+      }
+    }
+  }
+  return "";
 }
 
 // ---- writes from a shell ---------------------------------------------------------------------------------
