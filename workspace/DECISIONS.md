@@ -32550,7 +32550,7 @@ written. Five open questions are in the plan, §7.
 Pricing and production
 - Q1: the bore curve stays at D-1269 grade C (the founder supplies sub sheets).
 - Q2: T7 stays as its share of T8's bore.
-- Q3: the half-crew-day pull-in floor applies only when the job has no other pipe work of that crew. Otherwise the pull-in rides the crew at its pace, with a 2 crew-hour minimum.
+- Q3: the half-crew-day pull-in floor applies only when the job has no other pipe work of that crew. Otherwise the pull-in rides the crew at its pace with no minimum (the founder's later answer, ~06:45 UTC, removed the 2 crew-hour minimum first built; "Late items" below).
 - Q4: the bore line says "pits included".
 - Q5: hold until Part 6.
 - Q6: investigate A1 and the gasket double count. Keep T&D $2.25 and the 20 % allowance at grade D, "founder to confirm".
@@ -32564,7 +32564,7 @@ Part 4a
 
 Part 4b
 - Q12: the seeded per-type MasterFormat utility sections carry the Utility subcontractor (new workspaces only).
-- Q13: the move preview shows the Estimating total.
+- Q13: the move preview shows the Estimating total. Superseded by the founder's later answer: no $ figure; "Totals unchanged (checked)" or "Totals would change: blocked" from the preview's own before/after hash check ("Late items" below; the shared Estimating total is its own backlog task, Q19).
 - Q14: check the orphan ids on staging and production, read only.
 - Q15: P10 stays.
 - Q16: inline thumbnails OK if small and sent with Cache-Control.
@@ -32747,6 +32747,69 @@ not folded).
   ST-1 turning it on and to ST-2 off; SS-1 as a 1 in PE CTS service with 2 stiffeners at $2.96; tracer "1 ROLL" and tape
   "0.12 ROLL" (`q10-roll-two-decimals.png`); the cover fields at 2 and 3 ft (`q17-cover-defaults.png`); estimate
   $958,126.83, bid $1,194,736.81. Screenshots in `morning-report-2026-11-16/answers/`. Purged.
+
+### Late items: Q3 changed, Q13, Q21, Q22, Q23 and the full crossing pass (Q24)
+
+**Status:** built 2026-11-15 (the founder's ~06:45 and ~07:00 UTC answers), awaiting the founder's check; nothing moved to
+Live. No migration (head stays `d1279a3c5e71`). Commits: api 3c71b3e, app 9a9add9, infra (quantity-table rows, mirror).
+
+- **Q3, the in-run pull-in: no minimum.** The earlier check stands (T4's +$537 was the 2 crew-hour minimum, +$670, less
+  Q9, −$133; T4's laterals pass the in-run test correctly, so the test is unchanged). `production.py:pull_in_floor(rate,
+  qty, alone)`: half a crew day at least only when `alone` (the crew has no other pipe work on the job,
+  `crew_lays_pipe` unchanged); otherwise the rate, the crew's pace, no minimum. `PULL_IN_MIN_CREW_HOURS` is gone;
+  `_line_rates` no longer reads the work day for it; `PULL_IN_RIDES_NOTE` "Pull-in on the job's own pipe crew at its
+  pace (no minimum of its own)". **$ effect:** T4 in its run 6,458.36 → **5,790.16** per EA (to the medians 0.387 →
+  **0.432**, to the lows 0.066 → **0.073**); 5,921.29 at the 00:18 rerun. Alone (reading A) unchanged at 8,812.19.
+  Smoke: an 80 LF jack and bore in a 665 LF 8 in sanitary run prices its pull-in at 7.68 MH (0.16 crew day of six,
+  1.28 h), where the minimum gave 12 MH.
+- **Q13, the move preview: no $ figure.** `masterformat_move.py`: the move's body is `_move` (plan, nodes, mappings,
+  items, lines, packages, `_verify`, the money hash before and after; `apply_move` adds only its record); the preview
+  runs `_move` in a savepoint and rolls it back (`_totals_check`): `totals_check` "unchanged", "would_change" (a listed
+  block, or the check failing), or none with nothing to move. `MasterformatProject` loses `total_before`/`total_after`
+  (schema `utility_schemas.py`). The card (`MasterformatMoveCard.tsx`) shows **"Totals unchanged (checked)"** or
+  **"Totals would change: blocked"** (apply off), names only, no code and no $. The Estimating-total hook stays its own
+  backlog task (Q19).
+- **Q21, seeding.** `classification/service.py:SEEDED_SECTION_SUBS`: at the first seeding only, besides the six utility
+  sections on Utility, 33 71 00 (primary duct banks, under it 33 71 19), 26 05 00 (secondary) and 26 56 00 (site
+  lighting) go to **Electrical**, 33 82 00 and 27 05 00 to **Low Voltage**, 21 11 00 (fire water) to **Fire
+  Protection**: the subs of the seeded folders those types filed under before D-1267 (33.08, 26.08, 33.09; 21.02 for
+  fire, per the answer; before D-1267 the fire water type filed under 33.01, Utility). No existing workspace is written.
+  Proved on a new throwaway workspace: the 16 MasterFormat section rows read Fire Protection, Electrical ×3, Low Voltage
+  ×2, Utility ×6, the rest none.
+- **Q22, the storm crew's excavator per band.** A band is one of the pipe crew's existing sizing classes
+  (`PIPE_EXCAVATORS`: the 13–15 t, 20–25 t, 30–36 t rows by pipe size and trench depth, past them the 40 t): the class a
+  line's own pipe and trench take alone (`sized_excavator` on that line). On the storm crew (A32; A96 keeps its 45–55 t)
+  a band other than the largest-pipe machine's with **at least 5 crew-days** (its lines' own days at the crew's pace,
+  `_line_rates` → `_own_productions`) gets an excavator of its own class; every other line stays on the largest-pipe
+  machine (the spread's sizing as before; when no line is left on it, the largest band's machine is the main one).
+  `production.py:excavator_bands` (pure), `STORM_CREW`, `BAND_MIN_CREW_DAYS`, `BAND_POSITION` (a band machine is a site
+  machine at position 100 + k, standing in for the pacing excavator on its lines: `band_of`, `line_site`,
+  `swap_in_tier`), the snapshot's `band_of` / `band_lines` / `band_share`, and the pool weighing each excavator's hours
+  by its share (`_job_pool`). The harness keeps the pool on; its setting now reads "Whole-job bid comparisons use the
+  pool" (`EquipmentSettingsDialog.tsx:PoolRow`, `equipment/service.py` label). **$ effect:** on the 16 storm spreads
+  +$3,620 equipment, +$3,642 direct (each tab ±$2.5 k: the band machine is cheaper an hour, but its own delivery and the
+  largest-pipe machine's week minimum come back); storm under 48 in k to the medians / lows recent 0.965 / 0.842 → 0.966
+  / 0.843, all 0.996 / 0.876 → 0.995 / 0.875. The planning note's −$120 k (per line, no threshold) is not reached. Smoke:
+  1,400 LF of 24 in RCP beside 300 LF of 36 in: the 24 in lines on their own 20–25 t (55 EH, $7,021.68), the 36 in on the
+  30–36 t (26 EH, a week, $8,318.55); the 3D test copy's storm spread (10 in and 24 in, each under 5 days) keeps one
+  machine and its total is unchanged ($940,918.74).
+- **Q23, ROLL.** The Estimating quantity column shows two decimals for any fractional ROLL quantity, whole ones whole
+  (`EstimatingView.tsx`, `shareQtyText` for share or ROLL). **Geotextile:** priced on its real quantity (0.04 ROLL ×
+  $761.51 = $33.31, 0.02 ROLL = $12.77 on the 3D test copy's trench dewatering), never on the rounded display (which
+  read "0"); not priced at $0 anywhere: no $ effect. Its per-line `roundTo: 1` is not applied in this pricing mode
+  (a fraction of a roll is priced, not a whole roll): a question for the founder.
+- **Q24, the full crossing pass**, one pass of 47 contracts on bidtabs unchanged since 8b1bcae (infra HEAD 89beaf0),
+  2026-11-15 **09:34:48–10:12:33 UTC** (37.7 min, worst case), bench app 9a9add9 / api 3c71b3e, throwaway
+  fx.equip.20261115090740 (purged 10:15:36). Parity 0, no interaction. Results `crossings-2026-11-16-d1279-final*` and
+  `why-we-bid-low-2026-11-16-d1279-final*` in docs/reference (outside git). **Final crossings (F), k to the medians /
+  lows:** recent 0.645 / 0.424 → **0.654 / 0.430**; history 0.540 / 0.476 → **0.549 / 0.484**; all 0.611 / 0.441 →
+  **0.620 / 0.448**; per item T1 0.400, T2 0.325, T3 0.946, T4 0.432, T5 1.038, T6 1.119, T7 0.584, T8 0.843, T9 0.575,
+  T10 0.652, T11 0.428. Storm 48 in+ 1.142 / 1.033 → 1.140 / 1.031; 18–42 in 0.995 / 0.874 → 0.999 / 0.877; all recent
+  0.992 / 0.891 → 0.992 / 0.890; every kind within ±0.006.
+- **Proof.** Gates: app lint, typecheck, build; api ruff, format, mypy (287 files), `alembic check`, one head
+  (`d1279a3c5e71`). Quantity table 09:23:02–09:41:13 UTC exit 0, no FAIL (344 rows; answers 35 rows: the pull-in rows
+  without the minimum, `-10h` gone, and 8 `band-*` rows). Api reload window 09:01:49–09:02:52 UTC (one save of the five
+  api files; workers back). Founder digest `b4c963cdf83e7d84` at 08:48 and 10:15 UTC.
 
 ## D-1280 — Pipe section layers, night 1 (tasks 1–4 of D-1278's plan): the engine and the presets, proven on the 26 hand rows
 

@@ -43,7 +43,7 @@ Built unattended 2026-11-15 (night run); awaiting the founder's check. Nothing m
 
 | Q | Answer | Built | Where |
 |---|---|---|---|
-| Q3 | Pull-in floor | Half a crew day only when the job has no other pipe work of that crew; otherwise at the crew's pace with a 2 crew-hour minimum. T4 in its run 5,921.29 → 6,458.36 per EA (to the medians 0.422 → 0.387, to the lows 0.072 → 0.066); alone 8,934.47 → 8,812.19 (spacers and seals, Q9) | api `production.py` (`crew_lays_pipe`, `pull_in_floor`, `PULL_IN_MIN_CREW_HOURS`, `_line_rates`, the note in `sync_site`) |
+| Q3 | Pull-in floor | **Changed by the founder's later answer (late pass, below): no in-run minimum.** As first built: half a crew day only when the job has no other pipe work of that crew; otherwise at the crew's pace with a 2 crew-hour minimum. T4 in its run 5,921.29 → 6,458.36 per EA (to the medians 0.422 → 0.387, to the lows 0.072 → 0.066); alone 8,934.47 → 8,812.19 (spacers and seals, Q9) | api `production.py` (`crew_lays_pipe`, `pull_in_floor`, `PULL_IN_MIN_CREW_HOURS`, `_line_rates`, the note in `sync_site`) |
 | Q4 | Bore line text | "… (subcontract: machine, jacking, casing install, pits included)" | app `crossings.ts` (`crossingMaterials`) |
 | Q6 | A1, the gasket, T&D, the allowance | A1 and the gasket: not defects (the excavator sized to the largest pipe; the gasket line is the joint's butyl mastic, the pipe rows carry none). T&D $2.25 and the 20 % allowance kept, grade D, "founder to confirm" | migration (notes), app `materials.ts` (`ALLOWANCE_PCT` comment) |
 | Q7 | C909 restraint at 14 and 18 in | `restraint:pvc_c900:14` and `:18` added (fitted as C900 4/20/24 in, grade F); C909 takes them | migration, seed `d1279_price_answers.json` |
@@ -52,10 +52,27 @@ Built unattended 2026-11-15 (night run); awaiting the founder's check. Nothing m
 | Q10 | Quantity column | a share of a project roll with two decimals when fractional | app `componentDisplay.ts` (`shareQtyText`), `EstimatingView.tsx` |
 | Q11 | Pit defaults | standalone self-performed; made with or linked (while placed) to a jack and bore, sleeve or HDD run by the sub; stored pits kept | app `crossings.ts` (`STANDALONE_PITS_BY_SUB`, `boredRun`), `runDefaults.ts`, `StructurePanel.tsx`, `useUtilities.tsx` |
 | Q12 | Seeded tree | a new workspace's MasterFormat utility sections packaged to Utility at the first seeding; no existing workspace written | api `classification/service.py` (`ensure_seeded`, `_seed_utility_sections`) |
-| Q13 | Move preview total | **not built**: Estimating's total lives inside `EstimatingView.tsx`; reusing it needs that pipeline lifted into a hook first (its own task) | — |
+| Q13 | Move preview total | **Changed by the founder's later answer (late pass, below):** no $ figure; the preview's own check. As first: not built (Estimating's total lives inside `EstimatingView.tsx`; its own task, FEATURES Planned) | — |
 | Q16 | Thumbnails | 10.8–36.7 KB (median 22.6 KB) under the 96 KB cap, 12 a project; `GET …/asset` now `Cache-Control: private, no-store`; note for Abdullah (presign on AWS) | api `drawing/routes.py` (`ASSET_CACHE_CONTROL`), `STATUS.md` |
 | Q17 | Cover defaults | the fields show their value; a built-in default shows where no value reaches the dialog | app `EquipmentSettingsDialog.tsx` (`Row.fallback`) |
 
 Quantity-table rows: new `util-1279-answers`, `util-1279-c909-14-on-c900-key`, `util-1279-c909-18-on-c900-key`; changed
 `util-1276-crossing-defaults` (pit false), `util-1276-pe-cts-service-60`, `-150`, `util-1260-water-service-tap`
 (stiffeners), the `answers` pull-in rows, the grade counts (A171 B188 C597 D188 F34).
+
+### Late pass (the founder's ~06:45 and ~07:00 UTC answers), built 2026-11-15, awaiting the check
+
+No migration. Details and figures in DECISIONS.md D-1279, "Late items".
+
+| Q | Answer | Built | Where |
+|---|---|---|---|
+| Q3 | No in-run pull-in minimum | Half a crew day only when the crew has no other pipe work; else the crew's pace, no minimum. T4 in its run 6,458.36 → 5,790.16 per EA (to the medians 0.387 → 0.432) | api `production.py` (`pull_in_floor(rate, qty, alone)`, `_line_rates`, `PULL_IN_RIDES_NOTE`) |
+| Q13 | Move preview, no $ | "Totals unchanged (checked)" / "Totals would change: blocked" from the move tried in a savepoint and rolled back | api `masterformat_move.py` (`_move`, `_totals_check`), `utility_schemas.py`; app `MasterformatMoveCard.tsx`, `classification/api.ts` |
+| Q21 | Dry and fire sections seeded | 33 71 00, 26 05 00, 26 56 00 on Electrical; 33 82 00, 27 05 00 on Low Voltage; 21 11 00 on Fire Protection (first seeding only) | api `classification/service.py` (`SEEDED_SECTION_SUBS`, `_seed_utility_sections`) |
+| Q22 | Storm excavator per band | A band (a sizing class) with ≥ 5 crew-days gets its own excavator; the rest on the largest-pipe machine. 16 storm spreads +$3,620 (±$2.5 k each); the pool text | api `production.py` (`excavator_bands`, `BAND_POSITION`, `line_site`, `band_of`, `_ensure_site`, `swap_in_tier`, `_job_pool`), `equipment/service.py`; app `EquipmentSettingsDialog.tsx` |
+| Q23 | ROLL decimals | Any fractional ROLL with two decimals; geotextile priced on its real fraction, never $0 | app `EstimatingView.tsx` |
+| Q24 | Full crossing pass | 47 contracts, 09:34:48–10:12:33 UTC; final crossings recent 0.654 / 0.430 | `docs/reference/Bid tabs Houston 2026-11/crossings-2026-11-16-d1279-final*` (outside git) |
+
+Quantity-table rows (`answers`): `pull-in-on-job-days` 0.16 (no minimum), `-10h` deleted, the others without the work
+day; new `band-own-20t`, `band-under-5-days`, `band-lines-add-up`, `band-main-past-every-line`,
+`band-unknown-depth-on-main`, `band-two-bands`, `band-threshold`, `band-storm-crew` (35 rows).

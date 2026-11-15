@@ -2052,19 +2052,35 @@ def answers() -> int:
         check(f"duct-{trench:g}-mh", round(production.duct_extra_mh(4, conduit), 4), mh)
 
     # --- D-1279 (Q3; was Part 5 answer 3), the pull-in: half a crew day at least only when the job has no other pipe work
-    # of that crew; else at the crew's pace with a 2 crew-hour minimum. 80 LF of 8 in C900 at 500 LF a crew-day:
-    # - the crew lays other pipe on the job (a 520 LF open stretch, or any other run): 80 / 500 = 0.16 day = 1.28 h at
-    #   8 h, under 2 h: 2 / 8 = 0.25 day (320 LF a day); at a 10 h day 0.2 day;
-    # - 200 LF: 0.4 day, over the 2 h, at its pace;
+    # of that crew; else at the crew's pace, no minimum (the founder's later answer removed the 2 crew-hour minimum).
+    # 80 LF of 8 in C900 at 500 LF a crew-day:
+    # - the crew lays other pipe on the job (a 520 LF open stretch, or any other run): 80 / 500 = 0.16 day, at its pace;
+    # - 200 LF: 200 / 500 = 0.4 day;
     # - no other pipe work of the crew (the crossing alone on the job): half a day, 160 LF a day.
     jb = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:water", earthwork_variant="pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|jb:16|x:abcd1234", earthwork_crew=None, earthwork_run_lf=80.0)
     open_pipe = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:water", earthwork_variant="pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer", earthwork_crew=None, earthwork_run_lf=520.0)
     check("pull-in-crew-lays-pipe", production.crew_lays_pipe([(jb, 80.0, None), (open_pipe, 520.0, None)]), True)
     check("pull-in-crew-alone", production.crew_lays_pipe([(jb, 80.0, None)]), False)
-    check("pull-in-on-job-days", round(80.0 / production.pull_in_floor(500.0, 80.0, False, 8.0), 4), 0.25)
-    check("pull-in-on-job-days-10h", round(80.0 / production.pull_in_floor(500.0, 80.0, False, 10.0), 4), 0.2)
-    check("pull-in-on-job-200lf-days", round(200.0 / production.pull_in_floor(500.0, 200.0, False, 8.0), 4), 0.4)
-    check("pull-in-alone-days", round(80.0 / production.pull_in_floor(500.0, 80.0, True, 8.0), 4), 0.5)
+    check("pull-in-on-job-days", round(80.0 / production.pull_in_floor(500.0, 80.0, False), 4), 0.16)
+    check("pull-in-on-job-200lf-days", round(200.0 / production.pull_in_floor(500.0, 200.0, False), 4), 0.4)
+    check("pull-in-alone-days", round(80.0 / production.pull_in_floor(500.0, 80.0, True), 4), 0.5)
+    # --- D-1279 (Q22): the storm crew's excavator by band (a sizing class: 13 t, 20 t, 30 t, past them 40 t). A band other
+    # than the main machine's with at least 5 crew-days on the job gets its own; the rest stay on the largest-pipe machine.
+    # - a 20 t band of 6.0 days beside a 30 t main: its own 20 t;
+    # - 4.9 days: stays on the 30 t;
+    # - two 20 t lines of 2.5 days each: 5.0 days together, its own;
+    # - the main machine sized past every line's own (one line's size, another's depth) and both bands at 6 days: the
+    #   larger band (30 t) is the main machine, the 20 t band its own;
+    # - a line of unknown depth (no class) stays on the main machine.
+    T13, T20, T30, T40 = "EX-CRAWL-13T", "EX-CRAWL-20T", "EX-CRAWL-30T", "EX-CRAWL-40T"
+    check("band-own-20t", production.excavator_bands([(1, T20, 6.0), (2, T30, 3.0)], T30), (T30, {T20: [1]}))
+    check("band-under-5-days", production.excavator_bands([(1, T20, 4.9), (2, T30, 3.0)], T30), (T30, {}))
+    check("band-lines-add-up", production.excavator_bands([(1, T20, 2.5), (3, T20, 2.5), (2, T30, 1.0)], T30), (T30, {T20: [1, 3]}))
+    check("band-main-past-every-line", production.excavator_bands([(1, T20, 6.0), (2, T30, 6.0)], T40), (T30, {T20: [1]}))
+    check("band-unknown-depth-on-main", production.excavator_bands([(1, None, 10.0), (2, T20, 6.0)], T30), (T30, {T20: [2]}))
+    check("band-two-bands", production.excavator_bands([(1, T13, 5.0), (2, T20, 7.0), (3, T40, 1.0)], T40), (T40, {T13: [1], T20: [2]}))
+    check("band-threshold", production.BAND_MIN_CREW_DAYS, 5.0)
+    check("band-storm-crew", production.STORM_CREW, "A32")
     # A standalone sleeve: no carrier, no pull-in, no crew of ours (the bore sub's line).
     sleeve = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:other", earthwork_variant="steel_casing_375:16|1|0–6 ft||t:casing|sleeve:16|x:abcd1234", earthwork_crew=None)
     check("sleeve-trenchless", production.line_role(sleeve), "utility_pipe_trenchless")
