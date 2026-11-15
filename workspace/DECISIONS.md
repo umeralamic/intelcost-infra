@@ -32815,7 +32815,7 @@ Live. No migration (head stays `d1279a3c5e71`). Commits: api 3c71b3e, app 9a9add
 
 **Status:** built 2026-11-15 (the founder's ~10:49 UTC answers, verbatim in `BRIEF-ANSWERS-§10.md`), awaiting the
 founder's check; nothing moved to Live. No migration (head stays `d1279a3c5e71`): every change is code or first seeding.
-Commits (local, not pushed): api, app, infra (below).
+Commits (local on umer-dev, not pushed): api cd9de6c, app 68205ea, infra d650e56 (the harness) and 6346287 (quantity-table rows, mirror).
 
 - **Q22, the storm excavator: the cheaper of two options.** On the storm crew (A32; A96 untouched) the 5 crew-days are a
   pre-filter only, now counted on the library's 10 h crew day (the crew's `prod_basis_hours`, 10; on an 8 h project day a
