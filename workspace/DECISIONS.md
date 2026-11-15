@@ -32379,6 +32379,96 @@ should ride the run's crew without a minimum. All three wait for the post-Part-4
 5. **"Pits by bore sub" defaults ON wherever the bore sub price is used** (T10 included), stated on the run. Pits are
    priced by our crew only when the user turns it off. (Built in Part 4, D-1276.)
 
+### Rerun after Part 4
+
+**Status:** done (night run 2026-11-15 → 16). **These are the crossing prices that count.** Harness only: no Estimating,
+engine, library or migration change.
+
+**Harness:**
+- Commit 8b1bcae (infra). `bidtabs/crossings-report.mjs` gains:
+  - `ct` builds `<key>~b` (each crossing's `post4` choices), `<key>~inrun` / `<key>~rest` (a jack and bore as a stretch
+    of a run with `inRun.restLf` of plain pipe, and that pipe alone), and a crossing's own `contract` with its `~plain`;
+  - a key prefix, so one runner list carries the 16 tabs too;
+  - `score` gives readings A, B and F as multipliers to the medians and the lows, beside an earlier run's json.
+- `bidtabs/kinds-report.mjs` (new): every kind, storm RCP 18–42 and 48+, and the 8 h vs 10 h sensitivity.
+- `contract-runner.js` is unchanged.
+
+**The run:**
+- One pass of 47 contracts (the 16 tabs, contracts-16-d1275, and 31 crossing contracts), queued in the page.
+  **2026-11-14 23:42:35 to 2026-11-15 00:18:05 UTC** (35.5 min, worst case).
+- Bench app 98ac302 / api db2c6a5, head d1276b8e4f10, no save during it.
+- Throwaway fx.equip.20261114233630 (Harris County, public, open shop, burdened, 77002, Site & civil, `wd_used`
+  "TX20260031 mod 1, Heavy"), purged 00:22:45.
+- Parity 0; no crossing interaction.
+- Results: `docs/reference/Bid tabs Houston 2026-11/crossings-2026-11-16-d1277-rerun.*` and
+  `why-we-bid-low-2026-11-16-rerun*` (outside git).
+
+**The readings:**
+- **A:** the dry run's explicit choices.
+- **B:** Part 4's defaults written out: `casing_by: "sub"` on every jack and bore, never deleted; pits by the bore sub
+  ON everywhere, T10 included. B differs from A only on 2835-2102.
+- **F (final):** B, with each jack and bore on its run's crew (answer 3: in a run with 500 LF of plain pipe, less that
+  pipe alone), and each casing-only item as open cut, the cased run less the plain run (answer 4: T5, T6, and T7 through
+  a 24 in open-cut casing of its own).
+
+**Final crossing prices, as multipliers** (median ÷ our direct; low ÷ our direct):
+- Recent group **0.645 to the medians, 0.424 to the lows** (dry run 0.553 / 0.364).
+- History 0.540 / 0.476 (dry run 0.336 / 0.296).
+- All 0.611 / 0.441 (dry run 0.467 / 0.337).
+- Low on no tab.
+- Per item, to the median: T1 0.394, T2 0.322, T3 0.939, T4 0.422, T5 0.995, T6 1.094, T7 0.564, T8 0.843, T9 0.569,
+  T10 0.645, T11 0.420. Healthy is 1.20–1.35: the crossings remain the group furthest from it.
+
+**What changed and why:**
+- Makers' list prices: spacers −69 to −72 %, seals +66 to +77 %, about −$1 k to −$2 k a cased crossing.
+- Pits on the pool: X9's priced pits went from $25.7 k to $15.8 k.
+- Pits by the bore sub ON on T10 (B): X9's pits go to $0; T10's k 0.328 → 0.569.
+- The pull-in:
+  - priced alone, a crossing now takes at least half a crew day, which raised X4's 30 LF lateral from $715 to $2,913;
+  - on its run, each pull-in falls to $0.2–1.1 k (F).
+- Open cut, cased less plain: T5 $53.99/LF (k 0.995), T6 $88.69 (1.094). T7 read as open cut is $148.89 (k 0.564),
+  worse than its share of the bore ($119.92).
+- **Still the cause:** the bore sub plus the sub-furnished casing, $236.61/LF at 16 in, are 83–94 % of each jack and
+  bore's final direct.
+
+**The 16 tabs in the same pass:**
+- **48 in and up:** k to the medians 1.142, to the lows 1.033 (recent 1.143 / 1.034). Part 3's crew pass was 1.121 /
+  1.014. The move is A96's 60 in anchor in 250–499 (release 46).
+- **18–42 in storm RCP:** 0.995 / 0.874, unchanged (recent 0.967 / 0.845).
+- **All recent:** 0.992 / 0.891 (Part 1 0.997 / 0.895; Part 3 0.990 / 0.889).
+- **Every kind:** within ±0.005 of Part 3's.
+- **8 h vs 10 h study day** (calculated): 48 in+ 1.142 / 1.033 → **1.092 / 0.988**; 18–42 in 0.995 / 0.874 →
+  **0.940 / 0.825**. The crew's labour and equipment × 1.25; an item at the half-day floor kept there (6 small 18–42 in
+  items); equipment linear (the high side).
+
+### Part 5b: the bore sub curve (answer 1)
+
+**Status:** not re-set. The curve stays at D-1269's, grade C. No migration, no code, no smoke (nothing to show).
+
+**Why:** grade B was not reached from sources the bench machine could get to. Found:
+- TxDOT's Bid Item Average Cost dashboard (24 months by district and code, the grade B source): unreachable (Tableau,
+  connection refused).
+- TxDOT's old 12-month average pages, from search extracts only: Houston 2019 "casing steel (16 in)" $165/LF; statewide
+  2012 "bore or jack pipe (steel) 24 in" $650/LF; statewide 2016 "steel casing (42 in) (bore)" $146/LF. Grade C–D,
+  dated, item scope not stated.
+- A third-party TxDOT Item 476 page: 36 in steel casing average bid $1,261.51/LF, undated (D).
+- One 2026 bid tab: a 16 in casing by horizontal bore with a 10 in HDPE carrier, $296/LF (D).
+- City lists: Garland refused the connection; Houston's master list has codes only.
+
+The curve is not fitted to the tabs. As a sanity check only: the 8 tab bore items, pits included, sit about 20–50 %
+under the key at 16 in, but they are one engineer's template.
+
+**Inclusions, defined** (proposed for the library note and line text; held with the price, a morning question):
+- included: the rig and its mobilization, jacking and spoil, installing the casing, and the bore and receiving pits
+  (pits by the bore sub ON wherever this price is used);
+- casing: its own line (sub-furnished by default, or ours; the tab's item where it pays it apart);
+- not included (ours): spacers and seals (answer 2), the carrier pull-in (our run's crew), annulus grout, dewatering,
+  traffic control and rock.
+
+**Missing for grade B:** TxDOT Item 476 steel-casing averages for the Houston district (from a machine that reaches the
+dashboard, or an open records request), or two to three Houston-area bore subs' price sheets by casing size, with what
+they include. **Post-re-set crossing prices = the final prices above**, since the curve is unchanged.
+
 ## D-1278 — Pipe section layers and a live trench picture: the plan (no code)
 
 Logged before the work (Part 6). Plan only, built after the founder's review. The part adds its summary here.
