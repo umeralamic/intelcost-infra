@@ -8,6 +8,9 @@
 #   ./founder-active.sh          (the last 10 minutes)
 #   ./founder-active.sh 30       (the last 30)
 #
+# Quiet (D-1284) means both: no founder edit in the window, and no founder request at all in the last 5
+# minutes except the open tab's own heartbeat. Run it before EACH save of a batch (the gate spends the stamp).
+#
 # Exit 0: quiet. Exit 1: the founder is active (say so, and wait or ask). Exit 2: it could not tell (no
 # guard list, no api log): treat it as active.
 #
@@ -47,6 +50,12 @@ const projects = guard.protected_projects ?? {};
 // An open tab writes on its own: a work session opened (POST) and its heartbeat each minute (PATCH), and a project
 // visit. Those say a tab is open, not that the founder is editing; any other write is an edit.
 const heartbeat = (path) => /\/work-session(\/|$)|\/visit$/.test(path);
+// D-1284: 5 minutes of quiet. Any founder request in the last 5 minutes other than the open tab own
+// heartbeat (PATCH work-session, once a minute) means the founder is there: reading, navigating, reloading.
+// An idle open tab sends only the heartbeat (checked 2026-11-15: 17:30–17:41, no GET).
+const QUIET_MIN = 5;
+const quietSince = Date.now() - QUIET_MIN * 60 * 1000;
+const tick = (method, path) => method === "PATCH" && /\/work-session(\/|$)/.test(path);
 const seen = new Map();
 for (const line of fs.readFileSync(0, "utf8").split("\n")) {
   const m = line.match(/(\d{4}-\d\d-\d\dT[\d:]+)\S* .*"(GET|POST|PUT|PATCH|DELETE) (\/api\/workspace\/([0-9a-f-]{36})(?:\/project\/([0-9a-f-]{36}))?[^ ?]*)/);
@@ -54,22 +63,25 @@ for (const line of fs.readFileSync(0, "utf8").split("\n")) {
   const [, at, method, path, ws, pj] = m;
   const label = pj && projects[pj] ? projects[pj] : workspaces.has(ws) ? "a founder workspace" : null;
   if (!label) continue;
-  const s = seen.get(label) ?? { n: 0, edits: 0, lastEdit: null, last: at };
+  const s = seen.get(label) ?? { n: 0, edits: 0, lastEdit: null, last: at, lastSeen: null };
   s.n += 1;
   if (method !== "GET" && !heartbeat(path)) {
     s.edits += 1;
     s.lastEdit = at;
   }
+  if (!tick(method, path) && Date.parse(`${at}Z`) >= quietSince) s.lastSeen = at;
   s.last = at;
   seen.set(label, s);
 }
 const editing = [...seen].filter(([, s]) => s.edits > 0);
-if (editing.length === 0) {
+const present = [...seen].filter(([, s]) => s.edits === 0 && s.lastSeen);
+if (editing.length === 0 && present.length === 0) {
   const open = [...seen].map(([label, s]) => `${label} (last ${s.last.slice(11, 19)} UTC)`).join(", ");
-  console.log(`founder-active: quiet (no founder edit in the last ${minutes} min)${open ? `; a tab is open: ${open}` : ""}`);
+  console.log(`founder-active: quiet (no founder edit in the last ${minutes} min, no founder request but the heartbeat in the last ${QUIET_MIN})${open ? `; a tab is open: ${open}` : ""}`);
   process.exit(0);
 }
 for (const [label, s] of editing) console.log(`founder-active: ACTIVE ${label}: ${s.edits} edits, the last ${s.lastEdit.slice(11, 19)} UTC (${s.n} requests)`);
+for (const [label, s] of present) console.log(`founder-active: ACTIVE ${label}: a request at ${s.lastSeen.slice(11, 19)} UTC, under ${QUIET_MIN} min of quiet`);
 console.log("Tell the founder and wait instead of saving or restarting (D-1252, D-1254).");
 process.exit(1);
 ' "$list" "$minutes"

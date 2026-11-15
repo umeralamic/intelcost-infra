@@ -33341,3 +33341,32 @@ departure.
   `*-2026-11-16-part6-{legacy,a,b}*` in docs/reference.
 - **Bench windows (UTC), the whole stage:** app (Vite) save 18:36:04 (the one batch). docker exec into api 20:52:09–20:52:35
   (the 3D test copy) and 21:01–21:02:13 (purge), each after a quiet gate. No api save, no migration, no restart.
+
+## D-1284 — The founder gate per save, after 5 minutes of quiet; why the digest held over the 17:41 "edit"; the founder's answers to REPORT_2026-11-17 §1 recorded
+
+**Status:** accepted (founder, 2026-11-15 ~21:40 UTC). Gate built the same evening; the §1 answers are the next run's
+work (verbatim in `intelcost-infra/morning-report-2026-11-17/answers/FOUNDER-ANSWERS-§1.md`).
+
+- **Per save (extends D-1266, D-1279):** `.claude/hooks/founder-gate.sh` spends the quiet stamp when it lets a gated
+  call through, so every save of a batch needs its own `founder-active.sh` quiet (still at most 120 s old). If the
+  founder becomes active mid-batch: stop, save nothing more, wait; finish the batch only once quiet again.
+- **5 minutes of quiet:** `founder-active.sh` is quiet only with no founder edit in the last 10 minutes (as before)
+  *and* no founder request at all in the last 5 except the open tab's heartbeat (PATCH work-session). An idle open tab
+  sends only the heartbeat (17:30–17:41 on 2026-11-15: no GET). Checked with a fake api log: a GET 2 min ago gives
+  ACTIVE and no stamp; heartbeats only give quiet and a stamp.
+- **The 17:41:43 "edit" on Real bid A was ours, not the founder's.** It was `POST …/earthwork/result/<sheet>/stale`,
+  followed at 17:41:44 by the project's `PUT …/visit`: the founder's open tab remounting after the item 4 app save
+  (17:41:00–17:42:10). `useVolumes.tsx`'s mark-stale effect keeps its "already marked" set in a ref, so a remount
+  sends it again. The api's `mark_stale` only flips lines still fresh; the sheet's 14 earthwork lines were already
+  stale (since 2026-11-13 12:40), so it changed **no row**. Read-only check: no takeoff_item, project row or
+  earthwork_result of Real bid A changed after 17:00. The digest (every content table's row count and latest change,
+  and every stored result's md5) therefore held at b4c963cdf83e7d84, correctly. No founder work was lost.
+  `founder-active.sh` still counts such a write as an edit (conservative: it cannot tell a remount from a hand edit).
+- **The §1 answers:** decisions 1–5 confirmed (C1479 Type 1 stays Cat I #57; water bedding 6 in bank sand; unticking
+  30 TAC is a hand pick; force mains stay out of 30 TAC). Next run: Q6 evidence table from the tabs' descriptions and
+  spec references before any default moves (storm RCP stays C1479 Type 2 meanwhile); the trench wall rule check
+  (report only); vertical walls only at depth ≤ 4.5 ft; the small items (geogrid whole rolls per project, harness
+  waiver 12 % with B3, sump pumps from the library trash pump, TxDOT day 8 h graded C, the ≈ 2 h basis fix and the 17
+  activities to the 10 h basis, band threshold 50 crew-hours, rename the preset-setting label, fix the +0.00 flash,
+  remove lone-before.txt from git, allow-list the real place names, a bug row for the Location editor county; Q9 and
+  Q28 to the backlog; Q14 and Q33 no action); then one harness pass with the chosen defaults.

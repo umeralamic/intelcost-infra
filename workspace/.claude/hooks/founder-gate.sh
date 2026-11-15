@@ -5,7 +5,8 @@
 # A save reloads what the founder's browser uses (the app dev server, the api, the workers), and a migration
 # changes the database under him. founder-active.sh writes the UTC epoch to the stamp file on a quiet answer
 # (E:\Intelcost\.private\founder-quiet.stamp, outside git; INTELCOST_FOUNDER_STAMP overrides it) and removes it
-# on active or unknown. This gate lets a gated call through only while the stamp is at most 120 s old.
+# on active or unknown. This gate lets a gated call through only while the stamp is at most 120 s old, and
+# spends it (D-1284): every gated call needs its own fresh quiet, so a batch re-checks before each save.
 #
 # What is gated is decided by founder-gate.js beside this file (the .js of this script's own name): Edit/Write/
 # MultiEdit/NotebookEdit on app or api source, shell writes into the same paths, git commands that rewrite the app
@@ -53,6 +54,9 @@ at=''
 if [ -n "$at" ]; then
   age=$((now - at))
   if [ "$age" -ge -5 ] && [ "$age" -le "$max_age" ]; then
+    # D-1284: one quiet, one save. The stamp is spent here, so the next save in a batch runs
+    # founder-active again, and stops the batch if the founder became active.
+    rm -f "$stamp" 2>/dev/null
     exit 0
   fi
   state="${age} s old"

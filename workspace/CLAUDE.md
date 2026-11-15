@@ -122,6 +122,12 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
      a copy into `/tmp` and a read-only exec such as the ruff/mypy gates included; fx services and a copy out pass),
      and a `docker compose run` of those services or a `docker run`/`create` of their `intelcost-bench-*` images
      (even `--rm ... true`; D-1279 Q27) unless that one stamp is at most 120 s old. Run `INTELCOST_GUARD_LIST="E:/Intelcost/.private/guard-list.json" ./founder-active.sh` just before.
+     **Per save, after 5 minutes of quiet (D-1284):** quiet means no founder edit in the last 10 minutes *and* no
+     founder request at all in the last 5 except the open tab's heartbeat. The hook spends the stamp on each gated
+     call, so **every save of a batch re-runs the check**. If the founder becomes active mid-batch, stop: save
+     nothing more, and wait for quiet to finish the batch (never leave it half-applied once the founder is quiet
+     again). A save's own reload can make the founder's open tab send requests (a remount, a stale mark), so the
+     next save in a batch can wait up to 5 minutes; plan batches as few, whole-file saves.
    - **Check it came back:** after an api source save, confirm the api answers again
      (`curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs` gives 200). A save that lands while the
      api is still reloading can leave it down with only `watchfiles` running (2026-11-13, 16:26 to 16:31 UTC).
