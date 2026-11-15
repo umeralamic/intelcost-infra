@@ -20,6 +20,9 @@
 //     worker-ocr, worker-pages, worker-previews) or its container intelcost-bench-<service>-<n>. A copy counts
 //     when its destination is the container (/tmp included); a copy out of one is a read and passes. Every exec
 //     counts, read-only ones too (the ruff/mypy gates): the agent runs founder-active first. fx services pass.
+//   - (D-1279 Q27) a new container of the same code: `docker compose|docker-compose ... run` of the service api,
+//     app or worker*, and `docker [container] run|create` of the image intelcost-bench-<api|app|worker*>[:tag]
+//     (it mounts the same source and reaches the same database and bucket), `--rm ... true` included.
 
 const path = require("path").posix;
 
@@ -134,6 +137,12 @@ const benchBox = (name) => {
   const n = unquote(name).toLowerCase();
   return !/fx/.test(n) && (SERVICE.test(n) || CONTAINER.test(n));
 };
+// Their images (D-1279 Q27), with an optional tag or digest.
+const IMAGE = /^(?:[\w.-]+\/)*intelcost-bench-(api|app|worker[\w-]*)(?:[:@][\w.:-]+)?$/;
+const benchImage = (name) => {
+  const n = unquote(name).toLowerCase();
+  return !/fx/.test(n) && IMAGE.test(n);
+};
 
 // Skip a run of options; `withValue` names the ones that take the next word. Returns the next index.
 function skipOpts(w, i, withValue) {
@@ -149,6 +158,11 @@ function dockerInto(cmd) {
   const COMPOSE_OPTS =
     /^(-f|--file|-p|--project-name|--profile|--env-file|--project-directory|--ansi|--progress|--parallel)$/;
   const EXEC_OPTS = /^(-e|--env|--env-file|-w|--workdir|-u|--user|--index|--detach-keys)$/;
+  // compose run's options that take a value, and docker run's / create's.
+  const CRUN_OPTS =
+    /^(-e|--env|--env-from-file|-l|--label|-p|--publish|-v|--volume|-w|--workdir|-u|--user|--name|--entrypoint|--cap-add|--cap-drop|--pull)$/;
+  const DRUN_OPTS =
+    /^(-e|--env|--env-file|-l|--label|--label-file|-p|--publish|-v|--volume|--mount|-w|--workdir|-u|--user|--name|--entrypoint|--network|--net|--network-alias|-h|--hostname|--add-host|--dns|-m|--memory|--memory-swap|--cpus|--cpu-shares|-c|--platform|--pull|--restart|--runtime|--shm-size|--ulimit|--log-driver|--log-opt|--device|--cap-add|--cap-drop|--security-opt|--tmpfs|--volumes-from|--link|--ipc|--pid|--uts|--userns|--stop-signal|--stop-timeout|--health-cmd|--health-interval|--health-retries|--health-timeout|--cidfile|--gpus|--expose|-a|--attach|--detach-keys|--group-add|--isolation|--mac-address|--ip|--ip6|--cgroupns|--cgroup-parent|--storage-opt|--sysctl|--oom-score-adj|--pids-limit|--blkio-weight|--kernel-memory|--memory-reservation|--cpuset-cpus|--cpuset-mems|--cpu-period|--cpu-quota|--annotation|--domainname|--init-path)$/;
   for (const line of stripHeredocs(cmd)) {
     for (const seg of splitSegments(line)) {
       // A command inside sh -c "..." or a subshell is read as its own words too.
@@ -181,6 +195,12 @@ function dockerInto(cmd) {
             const m = dest.match(/^([^:/\\]+):/);
             if (rest.length >= 2 && m && !/^[a-z]$/i.test(m[1]) && benchBox(m[1]))
               return `a docker cp into ${dest} (an app or api container)`;
+          } else if (verb === "run" && compose) {
+            const j = skipOpts(w, i + 1, CRUN_OPTS);
+            if (w[j] && benchBox(w[j])) return `a docker compose run of ${unquote(w[j])} (an app or api service)`;
+          } else if (verb === "run" || verb === "create") {
+            const j = skipOpts(w, i + 1, DRUN_OPTS);
+            if (w[j] && benchImage(w[j])) return `a docker ${verb} of ${unquote(w[j])} (an app or api image)`;
           }
         }
       }

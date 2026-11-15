@@ -1,8 +1,26 @@
 # Pipe section layers and the live trench picture: the plan (D-1278)
 
-**Status:** plan only, written 2026-11-16 (night run 2026-11-15 → 16, Part 6). **Nothing is built.** Building starts
-after the founder has reviewed it. The founder's brief is in `intelcost-infra/morning-report-2026-11-16/BRIEF.md`,
-Part 6, items 1–5.
+**Status:** plan written 2026-11-16 (night run 2026-11-15 → 16, Part 6), reviewed by the founder (D-1278's answers and
+the three-night build plan). **Night 1 (D-1280): tasks 1–4 built, no visible change**: the engine and the presets are
+not wired into Calculate (night 2: tasks 5, 6, 9; night 3: tasks 7, 8, 10). The founder's brief is in
+`intelcost-infra/morning-report-2026-11-16/BRIEF.md`, Part 6, items 1–5.
+
+| # | Task | Status (D-1280) |
+|---|---|---|
+| 1 | `layers.ts` | Built: layer keys, thickness, top, width and compaction rules; `readLayers`, `resolveStack` (absent → `legacy`), `bellOf`, `sectionGeometry` |
+| 2 | `sectionPresets.ts` | Built: 27 presets (the plan's 25 and the founder's two house presets, `c600_t4_house`, `c605_t4_house`), each with a source and grade; `defaultPreset` |
+| 3 | Engine | Built: `section.ts:layerAreas` (bands, barrel and bell by circle segments), `runQuantities`' `layered` input (every band top cut, per-layer sums `RunQuantities.layers`, `sectionCheck`, rock bedding, segment stacks); with no `layered` input, today's path unchanged |
+| 4 | Quantity-table rows | Built: the 26 hand rows (+ 3 more and a defaults row) as `section-layers` / `section-defaults` in `utility-cases.mjs`, all right |
+| 5–10 | | Night 2 and night 3 |
+
+**Reconciled with D-1275 before task 1 (D-1280):**
+- **Minimum covers** stay `cover.ts:MIN_COVER` / `minCoverFt` (storm 2 ft and sanitary 3 ft grade C, editable in the
+  library settings; pressure types the company's cover). The picture's red cover warning (task 8) and the mock-up row
+  read `cover.ts:coverFlags`; the section engine adds no cover rule of its own.
+- **Bedding:** the `legacy` preset keeps the project's bedding (6 in) and zone (12 in over the crown), so pressure
+  bedding stays 6 in until night 2 wires the section in. The house pressure preset is C600/C605 Type 4 bedding,
+  max(OD/8, 4 in), with the embedment to 12 in over the crown (D-1278 answer 1).
+- **Depth:** unchanged rule; the trench bottom is the invert less the wall, the foundation and the bedding.
 
 **Depends on D-1275 (Part 3, the same night).** Part 3 sets the trench depth: gravity is invert + bottom wall + bedding,
 and pressure is cover + OD + bedding. It also adds a cover warning by type. When this plan was written, D-1275's body

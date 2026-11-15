@@ -32631,6 +32631,23 @@ agent finished (main's call: its `docker exec` reads must not be blocked mid-tas
     hook (06:29:52, "stamp 307 s old", logged); after founder-active's quiet (06:30:04) the same copy passed
     (06:30:16), was read back and removed (06:30:19); the api answered 200 throughout. The hook reads only the call's
     own text, so a script that runs execs inside (`./quantity-table.sh`) is not gated by it.
+- **Q25 (the founder's answer to §11): the client-name hooks fail closed.** `.githooks/client-names.sh` (identical
+  in infra, app and api; run by pre-commit and commit-msg) refuses the commit when `INTELCOST_DENYLIST` is unset,
+  names a missing file or a file with no names, and says how to set it (the variable, `.private/client-denylist.txt`,
+  sent separately like the keys). A note says so in the app's and api's `STATUS.md` and infra's `README.md`, for
+  Abdullah. The marketing repo has no hooks (`core.hooksPath` unset), so nothing there changes. **Proved
+  (2026-11-15, 06:53 to 06:54 UTC, infra):** a staged neutral scratch file's commit with the variable unset was refused
+  (exit 1, the message above), with it naming a missing file refused (exit 1), with it set committed (exit 0); that
+  scratch commit was undone (`reset --soft HEAD~1`, unstaged, file deleted; HEAD back on 9580cce). The app's and
+  api's copies run directly: unset exit 1, set exit 0.
+- **Q27: `docker compose run` and `docker run` of the app and api are gated too.** The hook also refuses, on the
+  same stamp and 120 s, a `docker compose|docker-compose ... run` of api, app or worker* and a `docker [container]
+  run|create` of an `intelcost-bench-<api|app|worker*>[:tag]` image (they mount the same source and reach the same
+  database). The browser, postgres, fx and scratch-Postgres runs pass. 18 cases (8 new gated, the rest as before);
+  the 8 D-1266 cases unchanged. **Proved live:** with the stamp set 300 s back, `docker run --rm --entrypoint true
+  intelcost-bench-api` (06:56:51) and `docker compose run --rm --no-deps api true` (06:56:56) were refused and
+  logged; after a quiet (06:57:11) the `docker run` passed (06:57:20, exit 0, nothing left behind; the bench api
+  untouched, 200). The stamp left is that fresh one. CLAUDE.md rule 12 says so.
 
 ### Q3, Q4, Q6–Q13, Q16, Q17 (the app/api half)
 
@@ -32733,4 +32750,70 @@ not folded).
 
 ## D-1280 — Pipe section layers, night 1 (tasks 1–4 of D-1278's plan): the engine and the presets, proven on the 26 hand rows
 
-**Status:** Accepted (2026-11-15, the founder's build plan in D-1278). Details below as built.
+**Status:** Accepted (2026-11-15, the founder's build plan in D-1278). Details below as built. Built unattended
+(night run 2026-11-15 → 16, the build's night 1); **no visible change**: nothing is wired into Calculate, so every
+estimate and price is unchanged. Spec: [pipe_section_layers_tasks.md](docs/tasks/pipe_section_layers_tasks.md).
+
+- **Reconciled with D-1275 before task 1.** The minimum covers stay `cover.ts` (`MIN_COVER`, `minCoverFt`: storm 2 ft
+  and sanitary 3 ft grade C and editable in the library settings, pressure types the company's cover); the section
+  engine adds no cover rule, and the mock-up's row reads `cover.ts:coverFlags`. The `legacy` stack keeps the project's
+  bedding (6 in) and its zone 12 in over the crown, so pressure bedding stays 6 in until night 2 wires the section in.
+  The house pressure presets are Type 4 bedding, max(OD/8, 4 in), with the embedment to 12 in over the crown
+  (`c605_t4_house` "AWWA C605 Type 4, house: 12 in over crown", and `c600_t4_house` for ductile iron).
+- **Task 1, `layers.ts`** (app, pure). Layer keys bottom up (`LAYER_KEYS`: foundation, bedding, haunch, embedment,
+  initial, final, surface); the thickness rules (`none`, `fixed`, `od_fraction {den, minIn}`, `under_bell {clearIn}`,
+  `project`), the top rules (`springline`, `centerline`, `top_of_pipe`, `above_crown {in}`, `above_bottom {den}`,
+  `band {in}`, `project`), the width rules (`od_plus`, `d2321`, `acpa`, `bell_plus`, `project`, the largest wins, with
+  several pipes the rule's clearance at the outer pipes), compaction as words (`compactionText`; the founder's answer
+  3), the materials (the zone choices plus concrete, CLSM and select fill, sold by the CY where no density is known).
+  `readLayers` reads a run's stored `section.layers` (`v: 1`; anything else is legacy); `resolveStack` gives the stack:
+  absent → `legacy` (today's three zones, no bell), `"auto"` → `defaultPreset`, then the run's edits per layer (material,
+  thickness, top, compaction, off), its width rule and rock choice, and a title ("AWWA C605 Type 4, house: 12 in over
+  crown, edited: bedding"). `bellOf`: the bell's OD from `crossings.ts:bellOd`, its length 0.5 ft to 12 in, 0.75 ft for
+  14–30 in, 1.0 ft from 33 in (grade D, the founder's answer 4), once a joint (`materials.ts` joint length); fused,
+  welded, compression, solvent-weld and coupled pipe none. `sectionGeometry` works the stack's heights above the
+  trench bottom for one pipe (normal and, where the stack has a rock rule, on rock), the bottom width before the
+  bucket and the box, and the bell's share; a top under the layer below takes no thickness and says so. **30 TAC
+  §217.54** is laid over a stack (`tac217`): bedding at least 6 in under the bell, the highest embedment or initial
+  band at least 12 in over the crown (an embedment added when the stack has none), the width at least the bell + 6 in a
+  side; a run can turn it off (`section.layers.tac217: false`).
+- **Task 2, `sectionPresets.ts`** (app, pure). 27 presets (`PRESETS`): `legacy`; `c600_t1`–`t5`, `c605_t1`–`t5` (A
+  and B) and the two house presets (C); `d2321` (B) and `d2321_tx` (with 30 TAC, A); `c1479_t1`–`t4` (B; materials
+  IntelCost's pick among the categories each type allows, the compaction words by type); `class_b`, `class_c`,
+  `class_a_cradle` (C; the cradle is the bedding and the haunch to OD/4 above the pipe's bottom, both concrete); `nec`
+  (B); `d2774` (C); `houston_css` (C, CSS paved or not, as the plan's table); `clsm_full` (C); `encasement_6` (C,
+  against the walls, the founder's answer 5; a formed box stays D-1260's encasement line). Each carries its source and
+  grade. `defaultPreset(type, catalogKey, state, settings)`: pressure types DI `c600_t4_house`, PVC `c605_t4_house`, PE,
+  copper and CTS `d2774`, the project's own pressure embedment (D-1100 "project") `legacy`; sanitary, storm and drains
+  flexible `d2321`, **`d2321_tx` on a Texas sanitary main or public lateral** (a grease waste, a private building
+  sewer, stays `d2321`; the founder's answer 2), D-1108's "css" `houston_css` (with 30 TAC laid over in Texas), D-1101's
+  "project" `legacy`; RCP `c1479_t2`, clay `class_b`, rigid DI / PVC the house presets (30 TAC laid over in Texas);
+  gas, fuel and chilled water `d2774`; conduit `nec`; encasement `encasement_6`; casing and other `legacy`.
+- **Task 3, the engine** (app, pure). `section.ts:layerAreas`: each band's gross area over the bottom width (legacy's
+  bedding over the full width, as `zones`), less the barrel and the bell inside it by circle segments
+  (`segmentArea`, `circleBetween`), the final backfill the rest of the trench up to the paved cap, the cap the surface
+  layer; the bell below the trench bottom kept apart (a hand-dug bell hole, not counted); the loose middle strip
+  reported. `quantities.ts:runQuantities` takes `layered` (and a segment its own): the drop is the wall + foundation +
+  bedding, the width the rule's; every band top (and where the paved cap meets it) is a cut, so each piece stays
+  quadratic and the prismoidal rule exact; on an exported-rock bottom the rock rule's bedding and its own trench bottom
+  (both bottoms cut); per-layer sums by material (`RunQuantities.layers`) with the bedding, zone and backfill totals and
+  `byMaterial` (foundation with the bedding, haunch to initial with the zone, final as the backfill), the check
+  (`sectionCheck`: surface, pipe, bell, bell hole, middle strip and the gap, Σ layers + surface + pipe + bell −
+  excavation), the band heights on each `shape` piece, and two flags (a band above the surface or into the paved cap,
+  a box narrower inside than the rule: `trench.ts:boxFor` now returns the box's inside width). **With no `layered`
+  input every line of today's path runs as before** (the legacy rows below agree to 1e-9).
+- **Task 4, the quantity table** (infra). `browser/lib/utility-cases.mjs` rows `sect-*` (kind `section-layers`) and
+  `sect-defaults` (kind `section-defaults`), driven in `browser/quantity-table.mjs`: 100 LF at a constant depth, G =
+  100, walls vertical (a cemented layer the slope rule cuts vertical and that is not exported, the plan's "vertical
+  typed"; OSHA would slope soil from 5 ft), bucket Auto; each layer's CY/LF to 4 places and 100 LF CY to 0.01, the
+  width, the depth, the excavation and the gap (0). **The plan's 26 rows: 26 of 26 right**, with two notes: the SDR 35
+  rows (`sect-d2321`, `sect-d2321-tx`, `sect-houston-css`) type the plan's ID 7.92 in (the catalog's is 7.891, which
+  deepens the trench 0.0012 ft and moves the excavation and the final backfill a cent); and `sect-c1479-t4`'s bell hole
+  is 0.0445 SF/LF, not the row's printed 0.0441 (that is Type 1's bedding figure: with no bedding the whole segment
+  under the barrel lies below the bottom, as Class B's bedding takes it; 0.16 CY either way). `sect-legacy` is
+  util-2a's every field with the layers absent, and both legacy rows (case (a), and sloped 6–10 ft paved) give the same
+  excavation, bedding, zone, backfill, width, top width, native and imported and `byMaterial` to 1e-9 through the
+  layered engine on the legacy stack. Three rows more, worked by hand the same way: `sect-c605-t4-house` and
+  `sect-c600-t4-house` (bedding 0.0247, embedment 0.1132, final 0.2222 CY/LF; the house sand 0.1379 against legacy's
+  0.1504, −8 %), `sect-c1479-t2-rock` (bedding max(44/12, 6) = 6 in, 0.0909 CY/LF, excavation 200.62 CY). The utility
+  engine has one implementation (the app's); the api has none, so there is no second engine to compare.

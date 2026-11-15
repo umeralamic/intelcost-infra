@@ -10,7 +10,8 @@
 # What is gated is decided by founder-gate.js beside this file (the .js of this script's own name): Edit/Write/
 # MultiEdit/NotebookEdit on app or api source, shell writes into the same paths, git commands that rewrite the app
 # or api working tree, a bench migration, and (D-1279) a docker exec or docker cp into a bench app or api
-# container (compose services api, app, worker*; read-only execs such as the ruff/mypy gates included). Workspace
+# container (compose services api, app, worker*; read-only execs such as the ruff/mypy gates included), and (Q27) a
+# docker compose run of those services or a docker run/create of their intelcost-bench-* images. Workspace
 # docs, infra, the scratchpad, test data, fx containers and every other read pass untouched.
 #
 # Reads the tool call as JSON on stdin and blocks (exit 2, reason on stderr), as the rule 7 and D-592 hooks do.
@@ -38,7 +39,7 @@ else
 fi
 if [ "$what" = '?' ]; then
   # The call could not be read: a plain pattern check, which leans to refusing.
-  if printf '%s' "$input" | grep -Eiq 'intelcost-app-react[\\/]+(src|public)[\\/]|intelcost-app-react[\\/]+(index\.html|package\.json|vite\.config|tailwind\.config|postcss\.config|tsconfig)|intelcost-app-fastapi[\\/]+(app[\\/]|main\.py|alembic[\\/])|alembic[[:space:]]+(upgrade|downgrade|stamp)|docker(-compose|[[:space:]]+compose)?[^"]*[[:space:]](exec|cp)[[:space:]][^"]*(api|app|worker)'; then
+  if printf '%s' "$input" | grep -Eiq 'intelcost-app-react[\\/]+(src|public)[\\/]|intelcost-app-react[\\/]+(index\.html|package\.json|vite\.config|tailwind\.config|postcss\.config|tsconfig)|intelcost-app-fastapi[\\/]+(app[\\/]|main\.py|alembic[\\/])|alembic[[:space:]]+(upgrade|downgrade|stamp)|docker(-compose|[[:space:]]+compose)?[^"]*[[:space:]](exec|cp|run|create)[[:space:]][^"]*(api|app|worker)'; then
     what='a gated path or a migration (the call could not be read exactly)'
   else
     what=''
@@ -66,7 +67,7 @@ printf '%s refused %s: %s (stamp %s)\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${tool
 
 cat >&2 <<MSG
 Blocked by D-1266 (founder gate, hard rule 12): ${what}.
-An app or api source save, a bench migration, or a docker exec / docker cp into an app or api container
+An app or api source save, a bench migration, or a docker exec / cp / run into or of an app or api container
 (D-1279) needs a "quiet" from founder-active at most ${max_age} s old (the stamp is ${state}). From
 intelcost-infra/ run:
   INTELCOST_GUARD_LIST="E:/Intelcost/.private/guard-list.json" ./founder-active.sh

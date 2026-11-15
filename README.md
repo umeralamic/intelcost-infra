@@ -511,6 +511,14 @@ through Caddy every 50 ms to `/health` (the database, Redis and the bucket; a pu
 limit), rolls the api out twice under that
 load and counts every answer that is not a 200. Then it takes the project down.
 
+## Commits need the client-name block list (D-1279 Q25)
+
+`.githooks/client-names.sh` (pre-commit and commit-msg, as in the app and api repos; `git config core.hooksPath
+.githooks`) refuses every commit unless the user environment variable `INTELCOST_DENYLIST` names the block list, one
+name a line, kept outside git at the workspace's `.private/client-denylist.txt` (here
+`E:\Intelcost\.private\client-denylist.txt`). **Abdullah needs that file sent separately, like the keys,** and the
+variable set, or his commits here will be refused.
+
 ## Known gaps
 
 - **The marketing site runs in dev mode only.** The `marketing` service is `next dev`.
