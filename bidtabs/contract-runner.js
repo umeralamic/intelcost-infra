@@ -15,6 +15,11 @@ async (page) => {
   //   subPerLF, byRole, unmatched] }. Each item's labour, equipment, material, disposal and subcontract are the Estimating
   //   table's own columns of its lines (D-1273: the bid overlay marks each up apart), never a split worked out here.
   // With `list` in place of `contract`, each in turn (one call; keep a call under the MCP's 30 minutes: ~2 min each).
+  // Part 6 rerun (D-1283, the founder's rerun decisions of 2026-11-15; part6/DEPARTURES-AND-PRESETS.md §3): `section`, one
+  // mode for the pass: "legacy" (every run as drawn before the section layers: `layers` taken off the run's section on both
+  // paths), "a" (each type's own default, `auto`), "b" (the Houston section for water, force main, sanitary and storm
+  // through the project's settings, in the page only: never stored on a run, never written to the api). Absent: "legacy".
+  // The project's state is Texas in every mode (the throwaway is Harris County; 30 TAC on the Texas sanitary items).
   const ct = page.context().__ct;
   const out = [];
   for (const contract of ct.list ?? [ct.contract]) out.push(await priceOne(contract));
@@ -26,7 +31,7 @@ async (page) => {
   await page.goto(`http://localhost:5173/project/${P}/takeoff/${S}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(localStorage.getItem("intelcost.session")), null, { timeout: 60000 });
   const own = await page.evaluate(
-    async ({ W, P, S, API, contract, pool, parityOnly }) => {
+    async ({ W, P, S, API, contract, pool, parityOnly, mode }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
       const h = { authorization: `Bearer ${s.accessToken}`, "content-type": "application/json" };
       const cat = await import("/src/lib/takeoff/earthwork/utilities/catalog.ts");
@@ -38,13 +43,29 @@ async (page) => {
       const rd = await import("/src/features/takeoff/earthwork/utilities/runDefaults.ts");
       // A run's own options as a new run of its type stores them (D-1260: its add-ons), and D-1261's restrained joints
       // where the item names them (`restrainedPct`, the harness's input; absent off).
-      const sectionOf = (it) => ({ ...(rd.defaultRun(it.type).section ?? {}), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}) });
+      // Part 6 rerun: in "legacy" mode the run's section has no `layers` (a run drawn before), else the new run's own.
+      const noLayers = (sec) => {
+        if (mode !== "legacy" || !sec) return sec ?? {};
+        const { layers: _l, ...rest } = sec;
+        return rest;
+      };
+      const sectionOf = (it) => ({ ...noLayers(rd.defaultRun(it.type).section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}) });
       await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "equipment_pool", field: "value", value_num: pool, value_text: null }) });
       // The project's utility settings, as Calculate reads them: the depth ranges a line is named and paced by come from
       // here (the app's default 0-6, 6-8 ... 14-16, 16+), never a list of the harness's own (D-1211).
       const ua = await import("/src/features/takeoff/earthwork/utilities/api.ts");
       const util = await (await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/utilities`, { headers: h })).json();
       const settings = ua.settingsOf(util.settings ?? null, util.company_embedment);
+      // Part 6 rerun: the state Calculate reads from the project (never saved with the settings), and (b)'s presets.
+      settings.projectState = "TX";
+      if (mode === "b") settings.sectionPresets = { water: "houston_css", force_main: "houston_css", sanitary: "houston_css", storm: "houston_css" };
+      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null };
+      // Part 6 rerun: a run's trench per LF (CY/LF): excavation, the bedding and pipe zone bought (imported), the backfill
+      // (and the part of it bought), and the stack's title.
+      const perLf = (r, L, title) => {
+        const imp = (zones) => (r.byMaterial ?? []).filter((m) => zones.includes(m.zone) && m.source === "imported").reduce((t, m) => t + m.cf, 0);
+        return { excCYLF: r.excavationCF / 27 / L, impEmbCYLF: imp(["bedding", "zone", "foundation"]) / 27 / L, backfillCYLF: r.backfillCF / 27 / L, impBackfillCYLF: imp(["backfill"]) / 27 / L, title };
+      };
       const CLAY_B = { layerId: null, name: "Clay", group: "clay", uscs: "CH", osha: "B", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1.1, depth: null };
       // D-1277: a contract of crossings (each item a run with a `crossing`, D-1269's `section.crossing`) is built by the
       // app's own Calculate, which works a crossing's stretch, its casing and its pits; there is no harness copy of it
@@ -78,7 +99,7 @@ async (page) => {
           const x1 = x0 + it.qty / Fft;
           const itemUuid = `x-item-${i}`;
           const base = rd.defaultRun(it.type);
-          const run = { ...base, section: { ...(base.section ?? {}), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
+          const run = { ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
           const items = [{ uuid: itemUuid, name: `X${i + 1} ${it.nominal}" ${pick.entry.material}`, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[x0, y], [x1, y]], shape_meta: null }] }];
           const structures = [];
           if (it.crossing.kind === "jack_bore" && it.pits) {
@@ -103,7 +124,8 @@ async (page) => {
           const type = contract.items[i].type;
           ownX.push((one?.lines ?? []).map((l) => ({ type, name: l.name, regionId: l.regionId, role: l.role, variant: l.variant, qty: l.quantity, unit: l.unit })));
           const r0 = one?.stored?.runs?.[0];
-          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })) });
+          const sectionNote = (r0?.notes ?? []).find((n) => n.startsWith("Section: ")) ?? null;
+          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
         });
         const allX = calcOf(parts.filter(Boolean));
         const linesX = allX?.lines ?? [];
@@ -124,10 +146,10 @@ async (page) => {
           sumOwn.delete(k);
         }
         for (const [k, v] of sumOwn) if (Math.abs(v) > 1e-9) interaction.push(`${k}: own ${v}, not in the contract's lines`);
-        if (interaction.length > 0 || parityOnly) return { put: 0, putText: "", missing: missingX, unpriceable: [], ownLines: ownX, parity: [], interaction, notes };
+        if (interaction.length > 0 || parityOnly) return { put: 0, putText: "", missing: missingX, unpriceable: [], ownLines: ownX, parity: [], interaction, notes, ran };
         const result = { ok: true, cutCY: 0, fillCY: 0, netCY: 0, units: "CY", prisms: [], boundarySF: 0, coveredSF: 0, warnings: [], strip: null, regions: [] };
         const put = await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/result/${S}`, { method: "PUT", headers: h, body: JSON.stringify({ version_key: `bidtab:${contract.key}`, result, lines: calc.lineWrites(linesX) }) });
-        return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing: missingX, unpriceable: [], ownLines: ownX, parity: [], interaction: [], notes, crossing: true };
+        return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing: missingX, unpriceable: [], ownLines: ownX, parity: [], interaction: [], notes, crossing: true, ran };
       }
       const forLines = [];
       const inverts = [];
@@ -136,6 +158,7 @@ async (page) => {
       // listed, never priced as something it is not; any other field an input item carries (`mapping`, `depthNote`,
       // `tabItem`, `medianAll`, ...) is a note the runner does not read.
       const unpriceable = [];
+      const trace = [];
       for (const it of contract.items) {
         if (it.unpriceable) {
           unpriceable.push(`${it.entry}:${it.nominal} ${it.qty} LF (${it.unpriceable})`);
@@ -166,7 +189,13 @@ async (page) => {
         const L = it.qty;
         inverts[forLines.length] = 100 - depth + drop + 0.5;
         const knot = (i) => ({ s: i === 0 ? 0 : L, G: 100, invert: 100 - depth + drop + 0.5, bottoms: [-1e6], water: null, caving: false, caveInFt: null });
-        const r = q.runQuantities({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", box: null, specMaxIn: null, protection: "auto", limitedWidth: false, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: "native" }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: "Native" }, segments: [], restoration: null });
+        // Part 6 rerun: the app's layered section for the run as a new run of its type stores it (`calculate.ts:runLayered`,
+        // the project's settings and state); null in "legacy" mode (no `layers`), and the call is today's byte for byte. With
+        // it the engine takes the width and the bottom from the stack, the materials from its bands; the invert stays.
+        const stub = { section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: false, utility_type: it.type };
+        const { layered } = calc.runLayered(stub, it.type, { od: p.od, id }, settings, calc.runMaterials(stub, settings));
+        const r = q.runQuantities({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", box: null, specMaxIn: null, protection: "auto", limitedWidth: false, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: "native" }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: "Native" }, segments: [], restoration: null, ...(layered ? { layered } : {}) });
+        trace[forLines.length] = perLf(r, L, layered ? layered.stack.title : "legacy");
         // The line's name as the app writes it ("8\" PVC C900 DR 18"), so the harness's lines are the app's (D-1211).
         const named = cat.catalogPick(pipeKey);
         const pipeLabel = `${it.nominal}" ${named?.entry.material || "Pipe"}${named?.entry.pipeClass ? ` ${named.entry.pipeClass}` : ""}`.replace(/ Pipe$/, "");
@@ -207,6 +236,8 @@ async (page) => {
           .sort((a, b) => `${a.role}|${a.name}`.localeCompare(`${b.role}|${b.name}`));
       const parity = [];
       const coverFlags = [];
+      // Part 6 rerun: every run's own section flags from Calculate (30 TAC below the rule, a stack that could not be read).
+      const sectionFlags = [];
       contract.items.forEach((it, i) => {
         const f = forLines[i];
         if (!f) return;
@@ -223,8 +254,9 @@ async (page) => {
         if (a !== b) parity.push({ item: i, pipe: f.pipeKey, type: it.type, depth: it.depth, qty: it.qty, harness: ours, app: theirs, skipped: app?.stored?.skipped ?? null });
         // D-1275: Calculate's cover flags on the item (its crown above the ground, or under its type's minimum cover).
         for (const run of app?.stored?.runs ?? []) for (const fl of run.flags ?? []) if (fl.startsWith("Cover over the crown")) coverFlags.push(`${f.pipeKey} ${it.depth} ft: ${fl}`);
+        for (const run of app?.stored?.runs ?? []) for (const fl of run.flags ?? []) if (fl.startsWith("Below 30 TAC") || fl.startsWith("The run's section layers could not be read")) sectionFlags.push(`${f.pipeKey} ${it.depth} ft: ${fl}`);
       });
-      if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, unpriceable, ownLines: [], parity, coverFlags };
+      if (parity.length > 0 || parityOnly) return { put: 0, putText: "", missing, unpriceable, ownLines: [], parity, coverFlags, ran, trace };
       const all = forLines.filter(Boolean);
       // D-1267 addendum: each pipe line's allowance LF is the sum of its items' own, an item switched off giving none.
       const keyOf = (l) => `${l.regionId}|${l.role}|${l.variant}`;
@@ -242,9 +274,9 @@ async (page) => {
       const put = await fetch(`${API}/api/workspace/${W}/project/${P}/earthwork/result/${S}`, { method: "PUT", headers: h, body: JSON.stringify({ version_key: `bidtab:${contract.key}`, result, lines: calc.lineWrites(lines) }) });
       // Each item's own lines: the engine run on that item alone (D-938's own lines).
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
-      return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags };
+      return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags, ran, trace, sectionFlags };
     },
-    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly) },
+    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy" },
   );
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
   if (own.interaction?.length > 0) return { key: contract.key, interaction: own.interaction.slice(0, 5), notes: own.notes };
@@ -412,9 +444,9 @@ async (page) => {
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
       : undefined;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
-  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
+  const res = { key: contract.key, section: own.ran ?? null, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }
