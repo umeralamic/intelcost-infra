@@ -33254,3 +33254,90 @@ of the committed phase 3 (app 7212e07, infra eb0b962). Not a new number.
   reached the founder's open tab. No api save, no restart.
 - **Seen, not changed:** for about 150 ms after a Switch pick, the preview table shows the "Now" figures as "After" (+0.00)
   until the debounced preview settles. This is phase 3 behaviour (`useLive`'s first settled value is the stored section).
+
+### Rerun decisions (founder, 2026-11-15) — founder to confirm
+
+The founder's message of ~18:00 UTC (verbatim in `morning-report-2026-11-17/BRIEF.md`), applied before the bid-tab rerun,
+on top of item 4 (app 23eafe9). Not a new number. All five are **founder to confirm**. N4 keeps D-1168: it is not a new
+departure.
+
+1. **N2, Houston on unpaved runs.** `houston_css` is 6 in of bedding and the embedment to 12 in over the crown, then
+   **native backfill to the surface**. Under pavement the final backfill is cement-stabilized sand to the subgrade
+   (D-1084's cap, 12 in below the surface), as `FINAL`'s `pavedMaterial`. Before, the final layer was CSS paved or not
+   (DEPARTURES N2). Built: `sectionPresets.ts` (`houston`, `HOUSTON_FINAL`).
+2. **N4, C1479 Type 2's haunch is sand** (granular, Cat II/III), the RCP zone D-1168 set. Stone stays an Edit layers
+   option, not the default. Type 1 keeps #57 (Cat I); Types 3 and 4 native, as before. Built: `sectionPresets.ts:c1479`.
+3. **30 TAC §217.54, a picked section below it is kept and flagged.** On a Texas sanitary main or public lateral, a
+   section that does not take 30 TAC (a preset picked on the run, or 30 TAC unticked on the run) keeps its own figures,
+   with no override, and is flagged where it falls below the rule: the bedding under the barrel against 6 in under the
+   bell, the embedment's top against 12 in over the crown, and the bottom width against the bell + 6 in a side. The flag
+   starts "Below 30 TAC §217.54" (`sectionPresets.ts:TAC_BELOW_FLAG_PREFIX`), and Needs attention names it on the run's
+   pipe line (`cover.ts:attentionRunFlag`). "Auto" in Texas still lays 30 TAC automatically (D-1278 answer 2), as does a
+   project setting for the type (`layers.ts:projectPreset`). Built: `layers.ts:tacShortfall`, called in
+   `sectionGeometry`. **Reading (founder away):** an untick on the run counts as a hand pick (it is below the rule by
+   the estimator's choice). A preset whose geometry meets the rule anyway gets no flag.
+4. **The project's backfill setting on new layered runs.** A layered run's final backfill takes the project's backfill
+   (Utility settings). Precedence: the run's own layer edit (and item 4's kept picks, which reach the bedding and pipe zone
+   only) wins; then the project's backfill (the final backfill only); then the preset. A material the preset requires
+   is kept: its paved material under pavement (CSS to the subgrade), or a final that is not plain native (CLSM, Houston's
+   old CSS). Runs drawn before are unchanged (today's path reads the project's backfill already). Built:
+   `layers.ts:GeometryOptions.projectBackfill` and the final band in `heightsFor`; `calculate.ts:runLayered` passes
+   `settings.backfill`; the run panel's note now reads "Final backfill: the project's (…); under pavement this section
+   keeps its Cement-stabilized sand to the subgrade" (`RunSectionBlock.tsx`). This closes DEPARTURES P2-2's $ rule.
+5. **(b) water and force main: bank sand embedment to 12 in over the crown; CSS only under pavement.** **Reading
+   (founder away):** `houston_css` stays one id (the api's `section_presets` Literal and saved settings unchanged; no api
+   save) and resolves by the run's type (`sectionPresets.ts:presetFor`, used by `layers.ts:resolveStack`). Water and the
+   other pressure types (water service, hydrant lead, fire water, force main, storm force main, reclaimed, irrigation)
+   take "City of Houston, bank sand embedment (water, force main)": 6 in bank sand bedding (the Houston house thickness;
+   the water detail's bedding was not read, grade C), bank sand to 12 in over the crown, native to the surface, CSS to
+   the subgrade under pavement, the project's pressure width. Every other type takes "City of Houston, CSS bedding and
+   embedment": CSS 6 in and to 12 in over the crown, then native (CSS to the subgrade under pavement), the project's
+   gravity width. The select shows the id as "City of Houston standard section". D-1108's `flexibleEmbedment: "css"`
+   default (flexible sanitary and storm) takes the gravity variant, so it too backfills native off pavement now.
+
+- **Existing runs:** a run drawn before the layers takes today's path, so none moves by a cent (rows
+  `rerun-legacy-unchanged`, every legacy row; the QT's 290 utility rows). Layered runs (bench throwaways only) move where
+  they use Houston unpaved, C1479 T2, or a project backfill other than Native.
+- **Quantity-table rows (infra, `browser/lib/utility-cases.mjs`, `section-lines`; the drive now takes `limitedWidth` and
+  returns the section's flags `geoFlags` and the Needs-attention count `attention`), worked by hand from the plan's §5
+  and the standards before the run; all right on the first run.** 12 new: `rerun-houston-sanitary-unpaved` (SDR 35 8 at
+  invert 8: CSS bedding 5.55, CSS zone 17.44, native 70.22, excavation 94.67), `rerun-houston-water-unpaved` (C900 8 at 4
+  ft cover: sand bedding 3.70, sand zone 11.32, native 22.22, 38.92), `rerun-houston-water-paved` (CSS 14.81 to the
+  subgrade), `rerun-houston-force-main-setting` (the setting on an Auto force main in TX: rerun-2's figures, no flag),
+  `rerun-houston-sanitary-tx-setting` (30 TAC laid over Houston: bedding 6.33, zone 17.44, native 70.22, 95.44),
+  `rerun-c1479-t2-sand-haunch` (RCP 36 at 10 ft: #57 bedding 4.47, sand zone 13.82, 137.11, 195.99),
+  `rerun-tac-flag-picked-d2321` (TX, D2321 picked: 3.08 / 9.67 / 63.15 / 77.35 kept, the flag "Below 30 TAC §217.54:
+  bedding 4.00 in under the barrel, 6.84 in needed (6 in under the bell); embedment 6.00 in over the crown, 12 in
+  needed. …", attention 1), `rerun-tac-auto-no-flag` (Auto: d2321_tx, no flag), `rerun-project-backfill-honoured` (C605
+  T4 house with Select fill: backfill 22.22 Select fill), `rerun-css-under-pavement-over-setting` (in a street: CSS
+  14.81 over the setting), `rerun-edit-over-project-backfill` (a final edit to Native wins: Native 22.22),
+  `rerun-legacy-unchanged` (a run drawn before: today's path, the setting's Select fill as before). **2 existing rows
+  changed**, both because N4 moves C1479 T2's haunch material (the CY are unchanged): `p3-cased-carrier-preset` (the
+  casing's zone line `zone:#57 stone` 7.11 → `zone:Sand` 7.11) and `chk3-7-segment-zone-on-c1479` (the zone line
+  `zone:#57 stone` 29.9 → `zone:Sand` 29.9: the segment's added embedment takes the haunch's material). No other row moved.
+- **Proof (2026-11-15 UTC).** App: lint 0 errors (the 4 known warnings), typecheck and build exit 0. No api file, no
+  migration (head d1279a3c5e71). Quantity table (one run, 18:36:27–18:54:45): exit 0, 0 FAIL, "344 rows … 290 utility
+  rows right … passed" (278 + 12).
+- **Bench window (UTC):** app (Vite) save 18:36:04 (one batch of five files; the founder gate quiet at 18:35:44). No api
+  save, no restart.
+- **Smoke (Playwright MCP, 2026-11-15 20:52–21:02 UTC)** on throwaway fx.equip.20261115183935 (a copy of the 3D test
+  project, its project patched to Houston, TX 77002, Harris): C-200's SS-1 (8 in HDPE dual wall storm, drawn before) →
+  "City of Houston standard section": Switch's preview and the picture show CSS bedding 6 in (0.0555 CY/LF), CSS
+  embedment to 12 in over the crown (0.1785) and **Native** final backfill (0.1667), the section titled "City of Houston,
+  CSS bedding and embedment"; ST-1 (10 in SDR 35 sanitary, Texas) → ASTM D2321 picked by hand: after Calculate its stored
+  flags carry "Below 30 TAC §217.54: bedding 4.00 in under the barrel, 7.05 in needed (6 in under the bell); embedment
+  6.00 in over the crown, 12 in needed. …", and Estimating's Needs attention marks its pipe line with it. Pass.
+  Screenshots `morning-report-2026-11-17/part6/rerun-houston-unpaved-run.png`, `rerun-30tac-needs-attention.png`.
+  Purged 21:02:13 (dry run first). Founder digest b4c963cdf83e7d84 at the start (18:23) and the end (21:02).
+- **The bid-tab rerun (founder item 3), on harness infra d629cd6** (the runner's per-pass section mode, Texas state,
+  (b)'s presets in the page only, the runner's own runs layered through `calc.runLayered`, a per-item trench trace;
+  committed by name before any pass). Three passes over the last full pass's 47 contracts: legacy 18:59:59–19:41:59
+  (42.0 min), (a) 19:41:59–20:16:00 (34.0 min), (b) 20:16:00–20:50:02 (34.0 min), worst contract 98 s. Parity 0 on the
+  16 tabs in each mode, 30 TAC on 58 of 58 Texas sanitary items, no unread-section flag. The legacy pass equals the
+  late-pass-2 tabs to −$17.32. **All pipe items, k to the medians / lows: legacy 1.036 / 0.887, (a) 1.131 / 0.968, (b)
+  0.959 / 0.821**; storm RCP 18–42 in 0.996 → 1.173 (a) → 0.859 (b); sanitary 1.071 → 1.128 → 1.042; water 1.005 → 1.018 →
+  1.009. Direct: (a) −$914,574 (−8.4 %), (b) +$865,961 (+8.0 %). Crossings F all 0.620 / 0.448 → 0.620 / 0.447 both.
+  Tables, the per-LF trace and each decision's $ in `morning-report-2026-11-17/part6/RERUN.md` (outside git); data
+  `*-2026-11-16-part6-{legacy,a,b}*` in docs/reference.
+- **Bench windows (UTC), the whole stage:** app (Vite) save 18:36:04 (the one batch). docker exec into api 20:52:09–20:52:35
+  (the 3D test copy) and 21:01–21:02:13 (purge), each after a quiet gate. No api save, no migration, no restart.

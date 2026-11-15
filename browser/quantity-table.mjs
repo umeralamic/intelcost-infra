@@ -2144,7 +2144,7 @@ try {
         const G = 100;
         const settings = { ...utr.utilitySettings(c.settings ?? null), ...(c.state ? { projectState: c.state } : {}) };
         const def = rd.defaultRun(c.type);
-        const run = { ...def, catalog_key: c.pipe, pipes: 1, pipe_gap_in: 0, section: c.section !== undefined ? c.section : def.section, restoration: null, limited_width: false, segments: c.segments ?? [] };
+        const run = { ...def, catalog_key: c.pipe, pipes: 1, pipe_gap_in: 0, section: c.section !== undefined ? c.section : def.section, restoration: null, limited_width: Boolean(c.limitedWidth), segments: c.segments ?? [] };
         const mats = calc.runMaterials(run, settings);
         const { layered: carrierL, flag } = calc.runLayered(run, c.type, { od, id }, settings, mats);
         // D-1283: a cased open cut's casing (`casing`: its OD and ID, from the bell + 4 in rule) laid centred on the
@@ -2167,7 +2167,7 @@ try {
           box: null,
           specMaxIn: null,
           protection: c.protection ?? "vertical",
-          limitedWidth: false,
+          limitedWidth: Boolean(c.limitedWidth),
           rule: null,
           depthRangesFt: utr.DEFAULT_UTILITY_SETTINGS.depthRangesFt,
           materials: { bedding: mats.bedding.source, zone: mats.zone.source, backfill: mats.backfill.source },
@@ -2186,6 +2186,10 @@ try {
         const writes = calc.lineWrites(made);
         const out = {
           carrierPreset: carrierL ? carrierL.stack.preset : "legacy",
+          // The founder's rerun decisions (2026-11-15): the section's own flags (30 TAC below the rule), and how many of
+          // them Needs attention names.
+          geoFlags: layered ? layered.flags : [],
+          attention: (layered ? layered.flags : []).filter(cv.attentionRunFlag).length,
           linesSorted: made.map((l) => `${l.role}|${l.variant}|${l.name}|${r2(l.quantity)}`).sort(),
           bellCY: r.sectionCheck ? r2(r.sectionCheck.bellCF / 27) : 0,
           preset: layered ? layered.stack.preset : "legacy",

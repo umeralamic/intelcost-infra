@@ -3,7 +3,7 @@
 **Status:** plan written 2026-11-16 (night run 2026-11-15 → 16, Part 6), reviewed by the founder (D-1278's answers and
 the three-night build plan). **Night 1 (D-1280): tasks 1–4 built, no visible change. Night 2 (D-1282): tasks 5, 6, 9 built**: new runs take their preset in Calculate, old runs keep the legacy
 path. **Night 3 (D-1283): tasks 7, 8, 10 built, uncommitted for an independent check** (the run panel's Section block,
-Edit layers, Switch from legacy with undo, the live picture; phase 2's departures 1–3 closed). The founder's brief is in
+Edit layers, Switch from legacy with undo, the live picture; phase 2's departures 1–3 closed). **Then (D-1283, the founder's rerun decisions, 2026-11-15, founder to confirm):** Houston by type and native off pavement, C1479 Type 2's haunch sand, the 30 TAC flag on a picked section, the project's backfill on layered runs. The founder's brief is in
 `intelcost-infra/morning-report-2026-11-16/BRIEF.md`, Part 6, items 1–5.
 
 | # | Task | Status (D-1280) |
@@ -203,11 +203,11 @@ carries its source and grade, shown on the run.
 | `c605_t1` … `c605_t5` | as C600 | as C600 | as C600 | — | as C600 | `od_plus 6` (min 18) | as C600 |
 | `d2321` | 4 in, rock 6 in, middle third loose, Class I #57 | springline, #57 | 6 in over the crown, #57 | — | native / CSS | `d2321` | Class I consolidated (II 85 %, III 90 %, IVA 95 % SP, **C**) |
 | `d2321_tx` (30 TAC §217.54) | max(4 in, 6 in under the bell) | springline | **12 in over the crown** | — | native / CSS | max(`d2321`, `bell_plus 6`) | as D2321 |
-| `c1479_t1` … `c1479_t4` | max(OD/24, 3), rock max(OD/12, 6), middle OD/3 loose. T4: none (rock rule kept) | springline; haunch and lower side by type | — (overfill native) | — | native / CSS | `acpa` | by type, as in §1.1 |
+| `c1479_t1` … `c1479_t4` | max(OD/24, 3), rock max(OD/12, 6), middle OD/3 loose. T4: none (rock rule kept) | springline; haunch and lower side by type (T1 #57, T2 sand per D-1168 and the founder's N4, T3–T4 native) | — (overfill native) | — | native / CSS | `acpa` | by type, as in §1.1 |
 | `class_b` / `class_c` / `class_a_cradle` | max(OD/8, 4) granular / the same / concrete max(OD/4, 4) | springline / OD/6 / concrete to OD/4, then granular to the springline | — | select 12 in / 6 in / 12 in over the crown | native | `od_plus 12` | **C** |
 | `nec` | none | — | — | — | native, rock-free (300.5(F)). Option: sand 3 in under and over (**D**) | `od_plus 3`, min 12 in | — |
 | `d2774` | 4 in sand | — | 6 in over the crown, sand | — | native / CSS | `od_plus 6` (min 18) | **C** |
-| `houston_css` | 6 in CSS | — | 12 in over the crown, CSS | — | CSS / CSS to 12 in under the pavement | project's | per spec |
+| `houston_css` | 6 in CSS (water, force main and the other pressure types: bank sand; D-1283 rerun decisions) | — | 12 in over the crown, CSS (pressure: bank sand) | — | native / CSS to 12 in under the pavement (the founder's N2, 2026-11-15; was CSS / CSS) | project's | per spec |
 | `clsm_full` | none | — | — | — | CLSM to subgrade (cap kept) | `od_plus 6` | none |
 | `encasement_6` | 6 in concrete | — | concrete to 6 in over the crown, against the walls | — | native | `od_plus 6` | — |
 

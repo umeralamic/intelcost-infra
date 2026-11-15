@@ -2475,7 +2475,8 @@ export const UTILITY_CASES = [
   //     bell 23 Rinker), its casing by the rule bell + 4 = 27 in -> 30 in x 0.500 (ID 29.0, wall 26-36 in 0.500), laid
   //     open cut centred on the carrier (casing invert = carrier invert + (12 - 29) / 24), the carrier's invert 6.00 ft
   //     below G. The carrier's family (RCP) keeps ASTM C1479 Type 2 on the casing (not D2321), with no bell (steel). On OD
-  //     30: bedding max(30/24, 3) = 3 in; haunch to the springline 15 in in #57 (Cat I); overfill native; width ACPA 30 +
+  //     30: bedding max(30/24, 3) = 3 in; haunch to the springline 15 in in sand (Cat II, the founder's N4 of 2026-11-15,
+  //     keeping D-1168; it was #57 Cat I: the CY unchanged, the line's material moved); overfill native; width ACPA 30 +
   //     2 x 30/6 = 40 -> 42 in bucket. h = 6 + 0.708333 + 0.041667 + 0.25 = 7.0. Bedding 3.5 x 0.25 = 0.875 SF -> 3.24 CY;
   //     haunch 3.5 x 1.25 - pi x 1.25^2 / 2 = 1.920631 -> 7.11; final 3.5 x 5.5 - 2.454369 = 16.795631 -> 62.21;
   //     excavation 3.5 x 7 = 24.5 -> 90.74 (with the casing's 4.908739 SF, 18.18 CY).
@@ -2494,7 +2495,7 @@ export const UTILITY_CASES = [
       linesSorted: [
         "utility_backfill|Native|native|Trench backfill, Native|62.21",
         "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|3.24",
-        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|7.11",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|7.11",
         "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|90.74",
       ],
       avgH: 7,
@@ -2776,7 +2777,8 @@ export const UTILITY_CASES = [
     },
   },
   // chk3-7: a segment's zone above the crown on a stack with no embedment (C1479 Type 2, overfill native): RCP 36 Wall B
-  //   storm, invert 10, segment 0+00 to 0+50 zone 12 in over the crown -> an embedment of the haunch's #57 from the
+  //   storm, invert 10, segment 0+00 to 0+50 zone 12 in over the crown -> an embedment of the haunch's material (sand
+  //   since the founder's N4 of 2026-11-15, keeping D-1168; it was #57: the CY unchanged) from the
   //   springline to 12 in over the crown. Sect-c1479-t2 figures: bedding 1.205884, haunch 3.730720, overfill 37.019577,
   //   excavation 52.916667 SF. Segment embedment 5 x 2.833333 - 5.279621 - 0.200802 = 8.686244; its final 5 x 5.666667 =
   //   28.333333. Totals: bedding 4.47; zone (373.0720 + 434.3122) / 27 = 29.90; backfill (1850.98 + 1416.67) / 27 = 121.02;
@@ -2794,7 +2796,7 @@ export const UTILITY_CASES = [
       linesSorted: [
         "utility_backfill|Native|native|Trench backfill, Native|121.02",
         "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|4.47",
-        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|29.9",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|29.9",
         "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|195.99",
       ],
     },
@@ -2819,6 +2821,261 @@ export const UTILITY_CASES = [
         "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|79.54",
       ],
       sectionCheck: true,
+    },
+  },
+  // --- The founder's rerun decisions (2026-11-15, founder to confirm; D-1283 "Rerun decisions"), worked by hand from the
+  // plan's rows (§5) and the standards before the run. 100 LF, constant depth, vertical typed, the section-lines drive.
+  // rerun-1 (N2, unpaved): Houston on a gravity run is 6 in CSS bedding and CSS to 12 in over the crown, then native to
+  //   the surface. SDR 35 8 (ID 7.92), invert 8, not Texas: W project OD + 24 = 32.4 -> 36 in; h 8 + 0.02 + 0.5 = 8.52.
+  //   Bedding 3 x 0.5 - 0.0008 = 1.4992 -> 5.55; embedment 3 x 1.7 - 0.3848 - 0.0053 = 4.7099 -> 17.44; final native
+  //   3 x (8.52 - 0.5 - 1.7) = 18.96 -> 70.22 (sect-houston-css's 59.11 CSS + its 11.11 cap, now native to the surface);
+  //   excavation 3 x 8.52 = 25.56 -> 94.67.
+  {
+    id: "rerun-houston-sanitary-unpaved",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    section: { addons: [], layers: { v: 1, preset: "houston_css" } },
+    expect: {
+      preset: "houston_css",
+      title: "City of Houston, CSS bedding and embedment",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|70.22",
+        "utility_bedding_pipe_zone|bedding:Cement-stabilized sand|imported|Pipe bedding, Cement-stabilized sand|5.55",
+        "utility_bedding_pipe_zone|zone:Cement-stabilized sand|imported|Pipe zone, Cement-stabilized sand|17.44",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|94.67",
+      ],
+      sectionCheck: true,
+    },
+  },
+  // rerun-2 ((b) water): Houston on a water run is bank sand, 6 in bedding and to 12 in over the crown, native above. C900 8
+  //   DR 18 (OD 9.05, ID 8.044, bell 10.86, 0.5 ft a 20 ft joint) at 4.0 ft cover: W pressure OD + 12 = 21.05 -> 24 in;
+  //   h 4 + 0.7542 + 0.5 = 5.2542. The bell's part under the barrel (circle segment 0.0754 ft deep, 0.025604 SF x 0.025 =
+  //   0.00064) is in the bedding. Bedding 2 x 0.5 - 0.00064 = 0.99936 -> 3.70; embedment 2 x 1.754167 - 0.446707 -
+  //   (0.004914 - 0.00064) = 3.057352 -> 11.32; final 2 x 3.0 = 6.0 -> 22.22; excavation 2 x 5.2542 -> 38.92.
+  {
+    id: "rerun-houston-water-unpaved",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], layers: { v: 1, preset: "houston_css" } },
+    expect: {
+      preset: "houston_css",
+      title: "City of Houston, bank sand embedment (water, force main)",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.7",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
+      ],
+      sectionCheck: true,
+    },
+  },
+  // rerun-3 (N2 under pavement): the same water run in a street ("Limited width"): the final backfill is CSS from the
+  //   embedment's top to 12 in below the surface (the cap, D-1084): 2 x (5.2542 - 1 - 2.2542) = 4.0 -> 14.81; the rest as
+  //   rerun-2. (The sanitary paved case is sect-houston-css, unchanged: CSS 59.11 to the subgrade.)
+  {
+    id: "rerun-houston-water-paved",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    limitedWidth: true,
+    section: { addons: [], layers: { v: 1, preset: "houston_css" } },
+    expect: {
+      linesSorted: [
+        "utility_backfill|Cement-stabilized sand|imported|Trench backfill, Cement-stabilized sand|14.81",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.7",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
+      ],
+    },
+  },
+  // rerun-4 ((b) through the setting): force main with the project's section { force_main: houston_css } on an Auto run in
+  //   Texas: the pressure variant, the figures of rerun-2, no flag (force main is not 30 TAC's in the code).
+  {
+    id: "rerun-houston-force-main-setting",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    state: "TX",
+    settings: { sectionPresets: { force_main: "houston_css" } },
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      preset: "houston_css",
+      title: "City of Houston, bank sand embedment (water, force main)",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.7",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
+      ],
+      geoFlags: [],
+    },
+  },
+  // rerun-5 ((b) Texas sanitary through the setting): 30 TAC laid over Houston: bedding max(6, 6 + (10.08 - 8.4)/2) = 6.84
+  //   in; W max(36, 10.08 + 12) = 36 in; h 8 + 0.02 + 0.57 = 8.59. Bedding 3 x 0.57 - 0.0008 = 1.7092 -> 6.33; embedment
+  //   as rerun-1 17.44; final 3 x (8.59 - 0.57 - 1.7) = 18.96 -> 70.22; excavation 3 x 8.59 = 25.77 -> 95.44. No flag.
+  {
+    id: "rerun-houston-sanitary-tx-setting",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    state: "TX",
+    settings: { sectionPresets: { sanitary: "houston_css" } },
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      title: "City of Houston, CSS bedding and embedment, 30 TAC §217.54",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|70.22",
+        "utility_bedding_pipe_zone|bedding:Cement-stabilized sand|imported|Pipe bedding, Cement-stabilized sand|6.33",
+        "utility_bedding_pipe_zone|zone:Cement-stabilized sand|imported|Pipe zone, Cement-stabilized sand|17.44",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|95.44",
+      ],
+      geoFlags: [],
+      attention: 0,
+    },
+  },
+  // rerun-6 (N4, keeping D-1168): RCP 36 Wall B storm, Auto = C1479 Type 2, invert 10: sect-c1479-t2's CY (bedding 4.47,
+  //   haunch 13.82, overfill 137.11, excavation 195.99) with the haunch in sand (it was #57), the bedding #57.
+  {
+    id: "rerun-c1479-t2-sand-haunch",
+    kind: "section-lines",
+    type: "storm",
+    pipe: "rcp_c76_wall_b:36",
+    invertDepth: 10,
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      preset: "c1479_t2",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|137.11",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|4.47",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|13.82",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|195.99",
+      ],
+    },
+  },
+  // rerun-7 (30 TAC): a hand-picked D2321 on a Texas sanitary run is kept (sect-d2321's figures: bedding 3.08, haunch 2.52 +
+  //   embedment 7.15 = 9.67, final 63.15, excavation 77.35) and flagged for Needs attention: its 4 in bedding is under 6 +
+  //   (10.08 - 8.4)/2 = 6.84 in, its embedment 6 in over the crown under 12 in; its 30 in width is over 10.08 + 12.
+  {
+    id: "rerun-tac-flag-picked-d2321",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    state: "TX",
+    section: { addons: ["cctv"], layers: { v: 1, preset: "d2321" } },
+    expect: {
+      preset: "d2321",
+      title: "ASTM D2321",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|63.15",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|3.08",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|9.67",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|77.35",
+      ],
+      geoFlags: ["Below 30 TAC §217.54: bedding 4.00 in under the barrel, 6.84 in needed (6 in under the bell); embedment 6.00 in over the crown, 12 in needed. The section picked on this Texas sanitary run is kept as picked; tick 30 TAC §217.54 to raise it."],
+      attention: 1,
+    },
+  },
+  // rerun-8 (30 TAC, the control): the same run on Auto takes d2321_tx (5.27 / 14.30 / 58.52, 79.54) and no flag.
+  {
+    id: "rerun-tac-auto-no-flag",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    state: "TX",
+    section: { addons: ["cctv"], layers: { v: 1, preset: "auto" } },
+    expect: { preset: "d2321_tx", geoFlags: [], attention: 0 },
+  },
+  // rerun-9 (the project's backfill): a project backfill of Select fill (imported, 120 pcf) on an Auto C900 8 water run at 4
+  //   ft cover (C605 Type 4 house: bedding 4 in, h 5.0875, W 24 in): bedding 2 x 0.3333 - 0.00064 -> 2.47; zone 3.057352 ->
+  //   11.32; final 2 x (5.0875 - 2.0875) = 6.0 -> 22.22 in Select fill (not Native); excavation 2 x 5.0875 -> 37.69.
+  {
+    id: "rerun-project-backfill-honoured",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    settings: { backfill: { name: "Select fill", source: "imported", densityPcf: 120, compaction: null } },
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      preset: "c605_t4_house",
+      linesSorted: [
+        "utility_backfill|Select fill|imported|Trench backfill, Select fill|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
+  // rerun-10 (CSS required under pavement): the same run in a street: the preset's paved CSS wins over the setting, from
+  //   the embedment's top to 12 in below the surface: 2 x (4.0875 - 2.0875) = 4.0 -> 14.81 CSS.
+  {
+    id: "rerun-css-under-pavement-over-setting",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    limitedWidth: true,
+    settings: { backfill: { name: "Select fill", source: "imported", densityPcf: 120, compaction: null } },
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      linesSorted: [
+        "utility_backfill|Cement-stabilized sand|imported|Trench backfill, Cement-stabilized sand|14.81",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
+  // rerun-11 (the run's edit over the setting): rerun-9 with the final backfill edited to Native on the run: Native 22.22.
+  {
+    id: "rerun-edit-over-project-backfill",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    settings: { backfill: { name: "Select fill", source: "imported", densityPcf: 120, compaction: null } },
+    section: { addons: [], layers: { v: 1, preset: "auto", edits: { final: { material: "native" } } } },
+    expect: {
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
+  // rerun-12 (a run drawn before keeps today's path, the setting included): C900 8 water, no layers, project backfill Select
+  //   fill: today's section (bedding 6 in sand 3.70, zone 11.34, backfill 22.22 in the project's Select fill, 38.92).
+  {
+    id: "rerun-legacy-unchanged",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    settings: { backfill: { name: "Select fill", source: "imported", densityPcf: 120, compaction: null } },
+    section: { addons: [] },
+    expect: {
+      preset: "legacy",
+      linesSorted: [
+        "utility_backfill|Select fill|imported|Trench backfill, Select fill|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.7",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.34",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
+      ],
+      todayPath: true,
     },
   },
 ];
