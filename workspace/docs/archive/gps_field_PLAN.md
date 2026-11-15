@@ -6,8 +6,8 @@
 **Rule 9:** no maker or product names anywhere in this work: code, labels, help text, README, fixtures. Field
 software is "a rover", "a machine", "the field's office software".
 
-**Testing (h):** every GPS check runs on "Hidden Valley Rebid — 3D test (shared copy)" in the zz Equip HV copy
-workspace, through a throwaway seat that is removed afterwards. Never Hidden Valley Spec, never the original 3D test
+**Testing (h):** every GPS check runs on "3D test project (shared copy)" in the zz Equip HV copy
+workspace, through a throwaway seat that is removed afterwards. Never P02, never the original 3D test
 project. Fixtures build their own throwaway world.
 
 ---

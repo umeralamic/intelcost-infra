@@ -491,7 +491,7 @@ After every block:
 - one Playwright MCP smoke on a throwaway
 - commit and push `umer-dev`, then the mirror
 
-The HV checks run **read only** on the throwaway copy "zz Equip HV copy" (project "Hidden Valley Rebid — 3D test
+The HV checks run **read only** on the throwaway copy "zz Equip HV copy" (project "3D test project
 (shared copy)"), never on the original. The drywall example goes on a fresh throwaway project.
 
 | Block | Content | Checks | Estimate |

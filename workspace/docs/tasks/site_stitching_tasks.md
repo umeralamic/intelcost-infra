@@ -65,7 +65,7 @@ across the join, and one Calculate give one cut, one fill and one site balance.
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | Where the site lives in the Sheets panel | **A site row at the top** ("Site: Hidden Valley grading, 2 sheets") with its members under it. A member keeps its own row in its folder too, with a small "in site" chip. |
+| 1 | Where the site lives in the Sheets panel | **A site row at the top** ("Site: P02 grading, 2 sheets") with its members under it. A member keeps its own row in its folder too, with a small "in site" chip. |
 | 2 | Where the Match line tool sits | **Changed: both.** The Earthwork row, next to Boundary, **and** the sheet's ⋮ menu as **"Join to another sheet at match line…"**. |
 | 3 | A sheet in two sites | **No, one at most.** A join to a sheet already in another site offers to merge the two sites. |
 | 4 | Straight or bent match lines | **Any polyline,** matched by arc length. |
@@ -132,7 +132,7 @@ stored normalised to their own page (0..1).
 
 **The stitched canvas:**
 - **A new view, "Site",** next to the sheet view. **The Sheets panel (Q1)** lists each site as
-  a row at the top of the panel ("Site: Hidden Valley grading, 2 sheets") with its members
+  a row at the top of the panel ("Site: P02 grading, 2 sheets") with its members
   under it. A member keeps its own row in its folder too, with a small "in site" chip.
   Opening the site row opens the stitched canvas.
 - **Each member is a positioned layer:**

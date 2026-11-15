@@ -1435,7 +1435,7 @@ Nothing is a test suite.
 
 1. **The gates:** lint, typecheck and build in the app; ruff and mypy in the api.
 2. **The quantity table** with the block's new rows. A mismatch is fixed first.
-3. **The earthwork smoke:** Calculate on a **duplicate** of "Hidden Valley Rebid — 3D test" (deleted after the
+3. **The earthwork smoke:** Calculate on a **duplicate** of "3D test project" (deleted after the
    block), checked against the copy's figures.
 4. **The original copy:** C-200's md5 (`fab4d151…`) unchanged.
 5. **One Playwright smoke** on a throwaway account and the duplicate, with screenshots into the run's

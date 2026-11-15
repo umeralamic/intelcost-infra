@@ -52,7 +52,7 @@ without a price counts $0.00 without a word.
 
 ### 1.2 The 30–36 t excavator and the 1–1.25 yd wheel loader on 6467
 
-**The project.** 6467, "Hidden Valley Rebid — 3D test (shared copy)" (workspace 3104). It has 12" and 8"
+**The project.** 6467, "3D test project (shared copy)" (workspace 3104). It has 12" and 8"
 HDPE DR 11 at 0–6 and 6–8 ft (items 318265, 318266, 318272, 318273).
 
 **What is on those lines.**

@@ -5,12 +5,12 @@
 > acceptance check on C-200 is not met yet: the link is exact, C-200's FG inputs are short
 > (D-192). **The acceptance on C-200 is the founder's own test, by hand (D-232).** The draft
 > on closing the gap is parked as reference, nothing in it built:
-> [c200_acceptance_tasks.DRAFT.md](drafts/c200_acceptance_tasks.DRAFT.md). Hidden Valley
-> Spec's earthwork data is left exactly as it is unless the founder asks.
+> [c200_acceptance_tasks.DRAFT.md](drafts/c200_acceptance_tasks.DRAFT.md). P02's
+> earthwork data is left exactly as it is unless the founder asks.
 > - **Sources:**
 >   - legacy's source on `UmeralamDEV`: Overlay, `alignment.ts`, `sheet_overlays`, the
 >     earthwork Calculate path, "Paste on another sheet…", and its 295 plan files;
->   - D-144's finding on Hidden Valley's C-200 and page 3;
+>   - D-144's finding on P02's C-200 and page 3;
 >   - the shrink and units decision, D-177.
 > - **Not driven live:** legacy has no such feature to drive (below).
 > - **Written from the draft** `docs/tasks/drafts/eg_from_survey_tasks.DRAFT.md` (removed). The
@@ -21,7 +21,7 @@
 **The sheets are separate.** On real jobs the existing-grade survey and the grading plan are
 different sheets, at different scales, placements and often rotations. A topographic survey
 is often split over two or more sheets.
-- On Hidden Valley, **page 3** (the boundary and topographic survey) carries 47 labelled EG
+- On P02, **page 3** (the boundary and topographic survey) carries 47 labelled EG
   contours, 697 to 729.
 - **C-200** (the grading plan, 1" = 30') prints the same ground as 195 dashed EG lines with
   **no elevations** (D-144).
@@ -81,7 +81,7 @@ through its registration. Nothing is retyped, and the result stays per sheet (Q1
 | 9 | Who may link | **Anyone who may edit earthwork,** the same as Calculate. |
 | 10 | Share with F11's Overlay | **Yes:** Overlay will draw from these same registrations. |
 | 11 | Where the entry lives | **Both:** the Earthwork row and the sheet's ⋮ menu. |
-| 12 | Hidden Valley as the acceptance check | **Yes:** C-200 computed from page 3 against the engineer's 14,263 cut and 8,727 fill, **±5 % each**, recorded as a quantity-table row when built. |
+| 12 | P02 as the acceptance check | **Yes:** C-200 computed from page 3 against the engineer's 14,263 cut and 8,727 fill, **±5 % each**, recorded as a quantity-table row when built. |
 | 13 | Migrate legacy's `sheet_overlays` | **No.** |
 
 ## The flow
@@ -260,7 +260,7 @@ calibrations, and the source's EG runs.
 - the tie-in check proposing a known +2.00 ft from six tie-ins;
 - **the acceptance row (Q12):** C-200 computed from page 3 against the engineer's table,
   14,263 cut and 8,727 fill, **within ±5 % each.** It is recorded when Block B is built,
-  on the real Hidden Valley sheets.
+  on the real P02 sheets.
 
 ## What it does not do (v1)
 

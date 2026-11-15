@@ -10,8 +10,8 @@ quantity table; one Playwright MCP smoke on a throwaway account; after a product
 cover it (fx stack); commit and push on `umer-dev`; the workspace mirror refreshed. Unfinished work goes into a named
 stash, recorded in the report. Mail guard stays on.
 
-**Protected, never opened, read or written by any tool, browser or api-process script:** "Hidden Valley Spec",
-"Hidden Valley Spec Building Rebid" (bd8fc5b0), "Waxing City", Minmar (and the rest of the guard's list). The 3D test
+**Protected, never opened, read or written by any tool, browser or api-process script:** "P02",
+"P03" (bd8fc5b0), "P04", P05 (and the rest of the guard's list). The 3D test
 copy stays under the existing guard; the drives guard (D-667) on every api-process script; real-data proofs on BENCH
 DUPs only. The fingerprint is recorded at the start and the end.
 

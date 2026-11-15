@@ -10,8 +10,8 @@ quantity table; a Playwright MCP smoke in the browser on a throwaway account; th
 touched (fx stack); m6-position after any change to the canvas, zoom or selection; commit and push on `umer-dev`; the
 workspace mirror refreshed. Unfinished work goes into a named stash, recorded in the report. Mail guard stays on.
 
-**Protected, read only to every tool, browser and api-process script:** "Hidden Valley Spec", "Hidden Valley Spec
-Building Rebid" (bd8fc5b0), "Waxing City", Minmar, everything in "Bench Construction Test", and the rest of the
+**Protected, read only to every tool, browser and api-process script:** P02, P03
+(bd8fc5b0), "P04", P05, everything in "Bench Construction Test", and the rest of the
 guard's list. Drives guard (D-667) on. Real-data proofs on BENCH DUPs only, purged at the end. Fingerprint at the
 start: **21edb8ca37565ce5**.
 

@@ -1,6 +1,6 @@
 # Overnight report (2026-10-03, 01:28 to 03:15 UTC)
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec" in
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "P02" in
 "F5 Block A demo 15:16", as estimator@bench.intelcost.io (outside its earthwork).
 
 **All five tasks are done, and the run stopped there, as the plan says.** Each one passed:
@@ -8,7 +8,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 - the shared quantity table (325 rows, unchanged, passing every time);
 - a smoke check through the Playwright MCP.
 
-Each was committed and pushed on `umer-dev`, with the mirror refreshed. Hidden Valley Spec's
+Each was committed and pushed on `umer-dev`, with the mirror refreshed. P02's
 earthwork was not touched: the C-200 link row still reads as it did, `updated_at` 2026-10-01
 21:27.
 

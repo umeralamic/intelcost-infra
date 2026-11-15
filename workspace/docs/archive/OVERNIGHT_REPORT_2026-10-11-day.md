@@ -323,7 +323,7 @@ Workspace: D-352 to D-354, CLAUDE.md rule 10, SINCE_ARCHIVE rows (infra `b7b8dc1
 - **Fingerprint first**, read only: every copied table's rows hashed exactly and by content, the
   earthwork result (cut 11,483.74, fill 9,596.09 CY), the 27 items' quantities and the 17 lines' stale
   flags, the storage key list with sizes and ETags (118 objects).
-- **One copy**, made in the UI as Bench Estimator: "Hidden Valley Spec Building Rebid (copy)". Against
+- **One copy**, made in the UI as Bench Estimator: "P03 (copy)". Against
   the original: every one of the 40 tables the same rows by content, the earthwork result, sites (none),
   fill materials (none), equipment usage (none), the item quantities and the lines' stale flags equal;
   118 objects copied. Estimate: the project has no estimate lines.
@@ -440,7 +440,7 @@ media `[-1512, -1080, 1512, 1080]` stored as `[0, 0, 3024, 2160]`, now `[-1512, 
 | MIKE's workspace / Test | 17 | fixed |
 | Mike's workspace / Building B | 17 | fixed |
 | Bench Construction Test / Minmar | 17 | **reported only** *(call: your item 3 rule, nothing else written in that workspace)* |
-| Founder projects (Hidden Valley Spec, Rebid, Waxing City) | 0 | none affected |
+| Founder projects (P02, Rebid, P04) | 0 | none affected |
 
 **Images:** nothing renders from this column (sheet images come from MuPDF reading the PDF itself; the
 app ignores `crop_box`), so none needed re-preparing. A re-scan shows only Minmar's 17. The list as it

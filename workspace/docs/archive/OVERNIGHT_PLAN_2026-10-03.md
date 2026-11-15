@@ -9,8 +9,8 @@ most relevant, through D-237), docs/PARITY.md, docs/legacy_comparison.md,
 docs/tasks/SINCE_ARCHIVE.md, and the last overnight report in
 docs/archive/ for the differences left with reasons.
 Where things stand: F2 to F16a and F18 Blocks A and B are built; F19
-site stitching waits for another night (do not start it). Hidden Valley
-Spec's earthwork is the founder's own test: do not add, change or remove
+site stitching waits for another night (do not start it). P02's
+earthwork is the founder's own test: do not add, change or remove
 any of it.
 
 HARD RULES
@@ -31,7 +31,7 @@ HARD RULES
 - Clean up ONLY rows your own checks created. Never click Print in the
   MCP browser.
 
-TEST PROJECT: "Hidden Valley Spec" in "F5 Block A demo 15:16", as
+TEST PROJECT: "P02" in "F5 Block A demo 15:16", as
 estimator@bench.intelcost.io, outside its earthwork. Remove throwaway
 data after each check.
 

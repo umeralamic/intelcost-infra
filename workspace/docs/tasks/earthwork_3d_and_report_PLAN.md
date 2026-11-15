@@ -154,7 +154,7 @@ shrink/swell and Soil Export/Import, and CSI lines.
   estimate reports sidebar and `pages/Reports.tsx` (time report with an Excel download) are UI
   patterns.
 
-### 7. The Rebid project ("Hidden Valley Spec Building Rebid", Bench Construction Test)
+### 7. The Rebid project ("P03", Bench Construction Test)
 
 Read through the database in read-only transactions; nothing written.
 
@@ -342,8 +342,8 @@ Nothing was changed to make the numbers match.
 
 ### For testing later (not created yet)
 
-- Duplicate "Hidden Valley Spec Building Rebid" in Bench Construction Test as **"Hidden Valley
-  Rebid — 3D test"**. Use the app's project copy, with a throwaway-safe path and no founder
+- Duplicate "P03" in Bench Construction Test as **the 3D test
+  project (P01)**. Use the app's project copy, with a throwaway-safe path and no founder
   project touched.
 - On the copy only, add test features:
   - a stabilized Option 2 feature (lime at 6 %)

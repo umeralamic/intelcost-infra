@@ -235,7 +235,7 @@ the snapshot and the move.
 7. **Links.** `sheet_registration` rows naming the old sheet (survey links, joins, overlays laid
    by someone) are re-pointed to the new sheet, their matrix composed with the alignment, their
    EG result and any site result marked stale; `site_member` follows the sheet. Nothing is
-   recalculated. (On the bench, never on Hidden Valley Spec's earthwork sheets: D-232.)
+   recalculated. (On the bench, never on P02's earthwork sheets: D-232.)
 8. **Old sheet:** `is_current = false`, `superseded_by_sheet_id` set; it leaves the Sheets
    panel's tree and lives under its successor's history. Its file stays undeletable while a
    revision uses it (the existing file rule).
@@ -488,8 +488,8 @@ calculated and effective quantity before and after the upgrade, identical (as D-
   addenda on the bench (Q5); "Accept all on this sheet".
 - **Big sets:** 100+ sheets with thousands of shapes. Per-pair transactions in the worker; the
   diff in the page pool's cap (D-326 8).
-- **Earthwork links** re-pointed through a composed matrix: stale, never recomputed. Hidden
-  Valley Spec's earthwork is never used in a smoke (D-232).
+- **Earthwork links** re-pointed through a composed matrix: stale, never recomputed. P02's
+  earthwork is never used in a smoke (D-232).
 - **Storage:** every revision keeps its pages. Counted against the plan's storage as any file.
 
 ## Blocks

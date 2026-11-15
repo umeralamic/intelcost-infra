@@ -1,6 +1,6 @@
 # Overnight report (2026-10-01 20:18 to 2026-10-02 11:30 UTC)
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec" in
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "P02" in
 "F5 Block A demo 15:16", as estimator@bench.intelcost.io.
 
 ## Progress
@@ -22,7 +22,7 @@ Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec"
 ### Task 0: the test project's classification (20:18 to 20:40)
 
 **Not found as a recorded value; left as CSI.** Read-only search:
-- `project.classification_system` for Hidden Valley Spec is `csi` (updated 2026-09-30
+- `project.classification_system` for P02 is `csi` (updated 2026-09-30
   23:52).
 - `audit_log` has no project or classification actions (its 18 action kinds are
   workspace-level), and `takeoff_item_event` (80 rows for the project since 2026-09-30
@@ -95,7 +95,7 @@ update; say so. *(Kept as CSI; closed 2026-10-11, confirmed by Umer.)*
   - C-200's 10 adopted FG contours. Your 5 hand-drawn FG contours there are untouched.
 - **Removed:** the 58 FG spots, the boundary, the result and its three lines and two folders,
   and the assumptions put back to "never asked".
-- **Smoke (MCP, Hidden Valley):**
+- **Smoke (MCP, P02):**
   - added page 3, clicked four pairs, read the checks, confirmed;
   - "Existing grade: linked from Page 3" shown;
   - Calculate through the link;
@@ -154,7 +154,7 @@ budget, coarse to fine over a worker pool, progressive passes.
 ### Fallback: side by side with live legacy (from 00:48)
 
 Driven with throwaway scripts in the bench's browser, live legacy's "Bench comparison" beside
-Hidden Valley Spec. Fixed, most visible first:
+P02. Fixed, most visible first:
 
 | # | Difference | Fix | Decision |
 |---|---|---|---|
@@ -421,7 +421,7 @@ width (D-197).
   - the volume split losing cut and fill at a zero corner (D-191);
   - three matcher defects in Auto Count (D-193).
 - **The MCP browser hung for an hour** (above). Never click Print in it.
-- **Hidden Valley Spec has a live "Anyone with Link" share link.** Its row was created on
+- **P02 has a live "Anyone with Link" share link.** Its row was created on
   2026-10-01 at 02:37 UTC, during the previous overnight run, not tonight. It was left untouched;
   revoke it if it is not wanted. *(Kept as it is: Umer revokes it himself if needed, and no session
   ever touches it. closed 2026-10-11, confirmed by Umer.)*

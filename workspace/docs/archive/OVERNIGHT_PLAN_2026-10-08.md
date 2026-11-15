@@ -11,8 +11,8 @@ updated after each step. The last run's plan and report are archived as
   the next starts. At 11:30 UTC a step in progress is stashed as `overnight-<step>-unfinished`
   and listed in the report. No half-built commit.
 - Mail guard on (`MAIL_GUARD=true` on api, worker, beat; checked at the start).
-- Founder projects are read only: Hidden Valley Spec, Waxing City, Hidden Valley Spec Building
-  Rebid and every project in "Bench Construction Test". They are opened only to copy data out;
+- Founder projects are read only: P02, P04, P03
+  and every project in "Bench Construction Test". They are opened only to copy data out;
   all tests run on throwaway copies (the D-286 sheets: E101 and E200).
 - Only processes this run started are stopped, by PID. No AI credits spent.
 - Measurements of time and memory: host Chrome (the Playwright MCP, Chrome 155, Intel UHD 630,
@@ -39,7 +39,7 @@ commits still follows the brief's steps where they touch the same repo.
 
 ## Auto Count test bed
 
-- Throwaway workspace with copies of E101 (Hidden Valley Spec Building Rebid) and E200 (Waxing
+- Throwaway workspace with copies of E101 (P03) and E200 (Waxing
   City), the same sheets and samples as D-286: E101 office "A" (68), E101 "C" (24 + C/NL 2), E200
   hatched (12) and E200 empty (6).
 - Every test at 70 % (the default) and at 38 % (a leftover low setting), Vector and Image; plus a

@@ -266,7 +266,7 @@ were not opened; their latest change is from 2026-10-07 22:28 UTC.
      bucket (the production origin is still to add).
    - **The harness workaround:** last run's harness that fetched bucket files itself (for port
      5175) was never committed, so there was nothing in any repo to remove. The marketing
-     capture's `SHOTS_S3_MIRROR` is a different thing and stays: Hidden Valley Spec's sheet
+     capture's `SHOTS_S3_MIRROR` is a different thing and stays: P02's sheet
      objects are not in this bucket (checked: `object_size` is empty for its sources and fit
      images), so the mirror stands in for missing objects, not for CORS.
 
@@ -332,7 +332,7 @@ alt text: `earthwork-elevation-flag`, `earthwork-elevation-warnings`,
 three sections (catch elevation typos before they reach your numbers; compare to an engineer's
 table that leaves out stripping, without counting topsoil twice; see where the contours stop short
 of the boundary) and three FAQs; /solutions/civil-sitework mentions the elevation check. No
-accuracy, speed or volume claim, and no Hidden Valley.
+accuracy, speed or volume claim, and no P02.
 
 **Created** (workspace "F5 Block A demo 15:16"): the eight projects above, "Marketing Demo –
 Federal Building", "Marketing Demo – Site", and two demo members, Dana Mercer and Luis Ortega
@@ -351,7 +351,7 @@ The agent's gates passed (lint, typecheck, build with placeholders allowed, link
 ### The test bed (host Chrome)
 
 - Throwaway workspace "Overnight AC 1008" (account `fx.overnight.1791423387@bench.intelcost.io`):
-  project "AC E101 copy" (E101's one-page PDF from Hidden Valley Spec Building Rebid) and "AC
+  project "AC E101 copy" (E101's one-page PDF from P03) and "AC
   E200 copy" (Waxing City's only page), both copied out by reading their stored sheet sources;
   the founder projects were not opened in the app.
 - A throwaway harness (never committed) runs the app's own scan modules in the page and the

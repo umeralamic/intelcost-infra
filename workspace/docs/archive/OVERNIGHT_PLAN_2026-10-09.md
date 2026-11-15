@@ -4,7 +4,7 @@ The founder's brief, in order. Each block: gates (lint, typecheck, build; ruff, 
 check with the P-23 line), quantity table, one Playwright MCP smoke on a throwaway account,
 commit and push on `umer-dev`, then the report updated. Unfinished work goes to a named stash
 `overnight-<block>`. Mail guard on (checked: `MAIL_GUARD=true`, allowlist set). Founder
-projects (Hidden Valley Spec, Waxing City, Hidden Valley Spec Building Rebid) read only.
+projects (P02, P04, P03) read only.
 
 ## Pre-flight
 

@@ -1,6 +1,6 @@
 # Overnight report (2026-09-30 23:33 to 2026-10-01 11:00 UTC)
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec" in
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "P02" in
 "F5 Block A demo 15:16", as estimator@bench.intelcost.io.
 
 ## Progress

@@ -15,8 +15,8 @@ after every block. A restarted session continues from the first block below that
 5. Commit and push `umer-dev`; update `SINCE_ARCHIVE.md`; refresh the workspace mirror; update this file and the report.
 
 **Rules for the night:**
-- Never use "Hidden Valley Spec". Never sign in as the founder's account (estimator@, umeralam.q@).
-- **Follow-up of 2026-10-23 (D-729):** "Bench Construction Test" and its project "Hidden Valley Rebid — 3D test"
+- Never use "P02". Never sign in as the founder's account (estimator@, umeralam.q@).
+- **Follow-up of 2026-10-23 (D-729):** "Bench Construction Test" and its project "3D test project"
   (042c8817) are a read-only source.
   - Before Block 3.5 the project is copied into a new workspace of a throwaway account, by a one-off script that reads
     the source and writes only there. The original's row counts and latest `updated_at` are recorded before and after

@@ -3,14 +3,14 @@
 > **Parked, founder testing by hand (D-232, 2026-10-02).** The founder continues the earthwork
 > on C-200 by hand from what is there now and runs the test. This draft is kept as
 > reference only: nothing in it is to be built or drawn, and its questions stay unanswered.
-> Hidden Valley Spec's earthwork data is not to be added to, changed or removed unless the
+> P02's earthwork data is not to be added to, changed or removed unless the
 > founder asks.
 
 > **Draft, written 2026-10-02 at the founder's request. SPEC ONLY: nothing is built.** It
 > spans three features:
 > - **F12** (Auto Trace and Site Features): parts A and C;
 > - **F18** Block C (label transfer): part B;
-> - **the test data** on Hidden Valley Spec: part D.
+> - **the test data** on P02: part D.
 >
 > It closes when the acceptance row `regaccept-c200-from-page-3` meets D-188 Q12: C-200's cut
 > and fill within ±5 % of the engineer's.
@@ -237,7 +237,7 @@ table prices them. Q2 asks whether that is wanted now or later.
 - a pad at a flat FG with a 1 ft depth adding its area × 1 / 27 of cut;
 - a pavement in fill reducing the fill by its area × depth / 27.
 
-## Part D: the inputs on Hidden Valley, then the re-run
+## Part D: the inputs on P02, then the re-run
 
 1. **The boundary:**
    - C-900's **Limits of Disturbance**, traced on C-200 (or carried from C-900 through a link,
@@ -267,7 +267,7 @@ table prices them. Q2 asks whether that is wanted now or later.
 - **B. F18 Block C:** label transfer and "Use this sheet's own existing grade".
 - **C. Sections** (F12, Site Features): the project's section list, the dialog's picker, the
   layer lines (if Q2 says now).
-- **D. The run on Hidden Valley:** inputs drawn, Calculate both ways, the row re-pinned, the
+- **D. The run on P02:** inputs drawn, Calculate both ways, the row re-pinned, the
   report.
 
 The order is A, B and D's first pass (the size of the FG effect is measured before C), then C
@@ -306,7 +306,7 @@ and D's final pass.
    transferred labels (the engineer's linework). Report the link figure beside it as a check.
 9. **Printed spots (A4).** Should "Adopt N spots" be a tool? It is beyond legacy, which places
    spots by hand. *Recommend:* yes, it is how the overnight check needed 58 of them.
-10. **Writing on Hidden Valley Spec.** May the build leave its boundary, features and adopted
+10. **Writing on P02.** May the build leave its boundary, features and adopted
     lines on C-200 for your click check, as the overnight link was left? *Recommend:* yes,
     listed in the report, with everything else cleaned up.
 11. **Topsoil.** The engineer's table excludes stripped topsoil. *Recommend:* the acceptance

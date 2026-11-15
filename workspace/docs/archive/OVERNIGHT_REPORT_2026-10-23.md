@@ -55,11 +55,11 @@ Recorded in full in `EQUIPMENT_LIBRARY_PLAN.md` §1.8.
     lime 5.28 TON (`stabilize_agent_1/2`) as its sub-items.
   - Every one of these keeps its components across a recalculation (Coverage, below).
 
-## The test copy of "Hidden Valley Rebid — 3D test" (follow-up)
+## The test copy of "3D test project" (follow-up)
 
 - **Copied before Block 3.5** by `intelcost-infra/drives/copy-3d-test.py` (the app's own cross-workspace copier) into
-  "zz Equip HV copy", owned by the throwaway `fx.equip.202610230651@bench.intelcost.io`: project "Hidden Valley Rebid —
-  3D test (shared copy)", 129 stored files and 607 takeoff rows. Nothing was written to the original or its workspace;
+  "zz Equip HV copy", owned by the throwaway `fx.equip.202610230651@bench.intelcost.io`: project "3D test project
+  (shared copy)", 129 stored files and 607 takeoff rows. Nothing was written to the original or its workspace;
   the founder's account was never used.
 - **The original, before the copy → after the copy → at 10:58 UTC, after all of tonight's work on the copy:** drawing_sheet
   29, takeoff_item 121 (11 sub-items), takeoff_cost_component 1, estimate_line_item 1, earthwork_result 1, strip areas 2,
@@ -240,7 +240,7 @@ $85,005.33, material $183,285.35, equipment $485,977.96, subcontract $45,352.67)
 | 10 | TEST Cut 4.2 10,000 BCY | 10,000 BCY | Excavator 20-25 t company unit · Owned · 66.7 hr | $7,929.82 |
 **Second list (no component, or a component that prices to nothing):** empty.
 
-- **The original "Hidden Valley Rebid — 3D test"** at 13:07 UTC: the same counts and latest `updated_at` as before the
+- **The original "3D test project"** at 13:07 UTC: the same counts and latest `updated_at` as before the
   copy (drawing_sheet 29, takeoff_item 121 of which 11 sub-items, cost components 1, line items 1, results 1, strip 2,
   layers 3, bores 4, assumptions 1, runs 3, structures 3; 2026-10-20 03:47:47.511941+00).
 
@@ -432,7 +432,7 @@ as before).
 
 ### The original, today
 
-The founder's own account (estimator@, "Bench Estimator") worked in "Hidden Valley Rebid — 3D test" today, 15:16–16:07
+The founder's own account (estimator@, "Bench Estimator") worked in "3D test project" today, 15:16–16:07
 UTC: five equipment settings of the estimate and sub-item edits; its takeoff items are 120 now (121 at the night's end)
 and its latest `updated_at` 15:38:38. Nothing of this work wrote to it: every audit row and work session on it since
 14:00 UTC is Bench Estimator's, none the throwaway's, and its workspace has no earthwork activity, so the site spread

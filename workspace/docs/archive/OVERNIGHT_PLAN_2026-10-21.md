@@ -9,8 +9,8 @@ Export steps 4 to 7. Steps in order; what time does not reach is left for the ne
 quantity table; one Playwright MCP smoke on a throwaway account; commit and push on `umer-dev`; refresh the
 workspace mirror. Unfinished work goes into a named stash, recorded in the report. Mail guard stays on.
 
-**Protected, never opened, read or written by any tool, browser or api-process script:** "Hidden Valley Spec",
-"Hidden Valley Spec Building Rebid" (bd8fc5b0), "Waxing City", Minmar (and the rest of the guard's list). The 3D test
+**Protected, never opened, read or written by any tool, browser or api-process script:** "P02",
+"P03" (bd8fc5b0), "P04", P05 (and the rest of the guard's list). The 3D test
 copy stays under the existing guard; proofs with real data use BENCH DUPs only. The fingerprint is recorded at the
 start and the end.
 

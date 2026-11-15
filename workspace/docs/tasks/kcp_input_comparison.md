@@ -5,7 +5,7 @@ _Study only, 2026-10-13. Nothing in any project was changed. The reference file
 folder and never copied into a repo. Ours was read from the bench database in read-only
 transactions._
 
-**The question.** Our Calculate on "Hidden Valley Spec Building Rebid" (C-200) gives cut
+**The question.** Our Calculate on "P03" (C-200) gives cut
 11,483.74 CY and fill 9,596.09 CY after the strip. The reference report gives 11,689.54 and
 9,329.73. How much of that gap comes from different **inputs** (what was drawn and typed), and
 how much from a different **method** (how the surfaces and volumes are built)?
@@ -275,7 +275,7 @@ The harness lived in the session's scratch folder and is not kept. To redo it:
 
 The harness is now kept: `intelcost-app-react/tools/kcp-compare/compare.cjs`. It reads the .kcp in
 place (never extracted or copied), runs our own `buildModel` on inputs captured off one Calculate
-on "Hidden Valley Rebid — 3D test" (C-200), and checks R0 against the stored result first.
+on "3D test project" (C-200), and checks R0 against the stored result first.
 
 ```
 node tools/kcp-compare/compare.cjs --inputs <model-input.json> --stored <stored.json> --kcp <file.kcp>

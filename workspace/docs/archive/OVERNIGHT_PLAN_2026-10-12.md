@@ -7,7 +7,7 @@ as `docs/archive/OVERNIGHT_{PLAN,REPORT}_2026-10-11-day.md`.
 **Every step:** log its decision in DECISIONS.md first; gates (app lint, typecheck, build; api ruff,
 format, mypy, `alembic upgrade head`); the quantity table; one Playwright MCP smoke on the throwaway
 account (`estimator+1790627038@bench.intelcost.io`, project "zz switching"), never the seeded account,
-never the founder projects ("Hidden Valley Spec", "Waxing City", "Hidden Valley Spec Building Rebid"),
+never the founder projects ("P02", "P04", "P03"),
 which are read only. Commit and push on `umer-dev`, refresh the workspace mirror, update
 [OVERNIGHT_REPORT.md](OVERNIGHT_REPORT.md). Unfinished work goes into a named stash, recorded in the
 report. Mail guard stays on.

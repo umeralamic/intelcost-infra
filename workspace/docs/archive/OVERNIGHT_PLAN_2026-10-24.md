@@ -28,7 +28,7 @@ for tonight.
 
 **Rules for the night:**
 - Throwaway accounts and workspaces only. Never the founder's account (estimator@, umeralam.q@), the founder's
-  workspaces, "Hidden Valley Spec" or "Bench Construction Test" (and its 3D test project).
+  workspaces, "P02" or "Bench Construction Test" (and its 3D test project).
 - No invented rates; TEST data named "TEST …" and listed in the report.
 - Questions for the founder go in the report; the most reasonable reading is taken and recorded under "Decisions taken
   overnight" with the alternative.

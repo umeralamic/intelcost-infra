@@ -15,14 +15,14 @@ updated after each step. The last run's plan and report are in git
 - The mail guard (D-279) is on; check scripts and throwaway data are deleted afterwards.
 - Wording: Essentials and Professional; Essentials is "annotations and comments"; no tax or refund
   wording.
-- The founder's projects are read only (Hidden Valley Spec; Waxing City and Hidden Valley Spec
-  Building Rebid in Bench Construction Test). The Auto Count sheets are copied out of them into a
+- The founder's projects are read only (P02; P04 and P03
+  in Bench Construction Test). The Auto Count sheets are copied out of them into a
   throwaway workspace.
 - Unclear points: the option that matches DECISIONS.md and the specs, recorded in the report.
 
 ## Auto Count test bed
 
-- Throwaway workspace with copies of E101 (Hidden Valley Spec Building Rebid) and E200 (Waxing
+- Throwaway workspace with copies of E101 (P03) and E200 (Waxing
   City); ground truth from the sheets' own tags (68 office "A"; 24 "C" + 2 "C/NL"); E200's 12 hatched
   and 6 empty fixtures as last run. Sensitivity 70%.
 - A throwaway harness (not committed) runs the panel's own scan and result step in the bench's

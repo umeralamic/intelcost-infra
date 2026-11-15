@@ -27,7 +27,7 @@ HARD RULES
 - Clean up ONLY rows your own checks created; never delete other
   sessions' data or history.
 
-TEST PROJECT: "Hidden Valley Spec" in "F5 Block A demo 15:16", as
+TEST PROJECT: "P02" in "F5 Block A demo 15:16", as
 estimator@bench.intelcost.io. Remove throwaway markups after each check;
 touch no other project.
 
@@ -45,7 +45,7 @@ TASKS, in order:
    decision (two new nodes under 31.04, "Import Borrow" and
    "Export / Disposal"; haul-off lines to Export / Disposal) and legacy's
    hand-worked cases in the quantity table.
-2. Auto Trace on the real sheet: in Hidden Valley Spec, open
+2. Auto Trace on the real sheet: in P02, open
    "C-200 – Site Grade Plan" (scaled 1" = 30'), run Auto Trace for EG and
    FG contours, compare with live legacy on the same kind of sheet, and
    fix what differs. Then Calculate cut and fill on C-200 and record the
@@ -84,7 +84,7 @@ Ideas; and short click-only checks, most important first.
 Addition to tonight's plan, for tasks 1 and 2 (Auto Trace and C-200).
 Do not stop; fit it in and continue.
 
-C-200 – Site Grade Plan (Hidden Valley Spec, scaled 1" = 30') reading:
+C-200 – Site Grade Plan (P02, scaled 1" = 30') reading:
 - Dashed contours are EXISTING grade (EG); solid contours with elevation
   labels in small boxes (e.g. 702, 703) are PROPOSED grade (FG). Spot
   elevations like 704.00 (F/F elev. = 704.00) and 703.95 are FG spots.

@@ -4715,8 +4715,8 @@ layer per tab, All layers in one tab), each current entry marked.
 **Area:** Takeoff, Frontend
 **Amends:** D-106
 
-**Evidence.** The founder checked his real monitor (2560 × 1440 at 125%, a real GPU), on Hidden
-Valley Spec page 1 at 29%. It read "zoom 0.29046 ss 2 bitmap 1830 1485 device box 1830 1485
+**Evidence.** The founder checked his real monitor (2560 × 1440 at 125%, a real GPU), on P02
+page 1 at 29%. It read "zoom 0.29046 ss 2 bitmap 1830 1485 device box 1830 1485
 dpr 1.25". The bitmap and the device box match, so the sizing and the placement are exact
 (D-105). The softness comes from the × 2 supersample being halved (D-106).
 
@@ -4766,7 +4766,7 @@ monitor check; passed on his monitor, closed 2026-10-11, confirmed by Umer). **W
 **Amends:** D-118
 
 **Evidence.** The founder cropped the same notes block ("GENERAL STRUCTURAL NOTES", sheet
-c95b4606 of Hidden Valley Spec) at about 29% on the founder's monitor, in the reference viewer compared against and in ours after
+c95b4606 of P02) at about 29% on the founder's monitor, in the reference viewer compared against and in ours after
 D-118. The gap is contrast and stroke weight, not blur.
 
 | His crop | Mean lum | Dark % (<100) | Ink's mean lum | Grey fringe % (192–223) | Edge |
@@ -7068,7 +7068,7 @@ and Boundary points as Linear's.
   - the quantity table: 7 registration rows, equal on both engines and right; 7 F18
     earthwork rows (a turned sheet equal to one sheet, two sources merged, a datum offset,
     the tie-ins, the match score, the acceptance row);
-  - a smoke on Hidden Valley (below).
+  - a smoke on P02 (below).
 - **The acceptance check (Q12) is not met.** Page 3 was scaled 1" = 60' from its graphic scale
   and linked to C-200 by four points: distance 469.0 / 469.1 ft (0.0 %), rotation 114.6°,
   misses 0.02 to 0.05 ft, match 34 %. With C-200's adopted FG (15 contours and 58 spot
@@ -7125,7 +7125,7 @@ and Boundary points as Linear's.
   - With a dominant anchor, generic windows (which Auto drops, legacy's generic-path rule)
     are searched as drawn only. A turned search is then about 1.5× legacy's single
     orientation, not 8×.
-- **Measured on Hidden Valley's E102 (page 26, 10,079 strokes, every one on a PDF layer):**
+- **Measured on P02's E102 (page 26, 10,079 strokes, every one on a PDF layer):**
   - as drawn, 3.9 s, 1 match above the bar;
   - with turns and the mirror, 5.9 s, 5 above the bar (the boxed one and four turned 90°),
     a sixth turned 180° at 78 %.
@@ -7172,7 +7172,7 @@ and Boundary points as Linear's.
     below the bar; legacy's as-drawn search for comparison; NMS; auto-check; saturation;
     valley cut; settings);
   - a smoke on E102 (below).
-- **Smoke (MCP, Hidden Valley E102):** the region menu's Auto Count; the scan; Create through
+- **Smoke (MCP, P02 E102):** the region menu's Auto Count; the scan; Create through
   the dialog, which made 5; Add to the selected item, which made 10; Ctrl+Z gave 5, and Ctrl+Z
   again removed the item; the sensitivity and Overlap allowed were saved per person; Esc
   closed the panel. The settings were put back to the defaults, and no item was left.
@@ -7214,7 +7214,7 @@ and Boundary points as Linear's.
      only adds (legacy's merge), with "Pass k of N — results below are live" and "Extra
      orientations still running — they can only add matches." Stop keeps what has
      published: "Stopped early — n passes completed…".
-- **Measured (Q2's speed target), Hidden Valley E102:** a 2592 × 1728 pt vector sheet read as
+- **Measured (Q2's speed target), P02 E102:** a 2592 × 1728 pt vector sheet read as
   pixels, 6,480 × 4,320 px working raster, a 45 px template, 4 angles × 3 scales.
   - First results (the 0° pass) after **126 s**, 6 matches above the bar.
   - The whole page took **454 s**.
@@ -7280,7 +7280,7 @@ and Boundary points as Linear's.
 - **Proved:**
   - gates;
   - the quantity table unchanged;
-  - a smoke on Hidden Valley E102 with E101 laid over it: Standard tinted; four alignment
+  - a smoke on P02 E102 with E101 laid over it: Standard tinted; four alignment
     clicks; the toast; the nudges and Enter saved the matrix and the two pairs; Comparative
     drew additions and deletions with two masks; Delete removed the overlay-only row and
     left C-200's survey link.
@@ -7452,7 +7452,7 @@ Measured in both apps at 1440 × 900 (computed styles) and seen at 2048 × 1050.
 Driven at 1440 × 900: Linear picked in both apps, the dialog read.
 - **The default name:**
   - **The number** is legacy's `defaultNameForType`: every top-level item in the project
-    plus one ("LF 9" on Hidden Valley Spec, with its 8 items). Ours counted this sheet's
+    plus one ("LF 9" on P02, with its 8 items). Ours counted this sheet's
     items ("LF 2").
   - **The field:** legacy leaves it empty with the default as its placeholder, and only a
     name read off a box (D-199) is typed in (legacy's `prefillName`). Ours typed "LF 2" in
@@ -7680,7 +7680,7 @@ A Snapshot box was dragged in both apps at 1440 × 900 and the dialog read (canc
     project's snapshots already use, and one typed in joins it. The stored data is unchanged:
     `tag_type` other with `custom_tag_label`.
 - **Proved:** a snapshot saved through the dialog with "+ Add custom type…" "Smoke tag" was
-  stored as other / "Smoke tag", then deleted (bench browser, Hidden Valley Spec C-200).
+  stored as other / "Smoke tag", then deleted (bench browser, P02 C-200).
 - **Left:** the width, legacy's `max-w-[420px]` against our 448 px `md`.
 - **Where:** app `features/takeoff/markup/SnippetDialogs.tsx`, `pages/ProjectTakeoff.tsx`.
 
@@ -8011,7 +8011,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 **Area:** F7 sheet naming; Frontend
 
 - **Found:** "Name from page region…" opened from a sheet's ⋮, with no region drawn yet.
-  - Ours still read the text of every page in range (29 on Hidden Valley Spec): a row per page
+  - Ours still read the text of every page in range (29 on P02): a row per page
     and "Reading…" until each finished, all to find nothing.
   - Legacy reads nothing and says "Draw a sheet-number region to preview.", with "Apply to 0
     sheets".
@@ -8146,7 +8146,7 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
 
 ---
 
-## D-232 — The C-200 acceptance is the founder's own test; Hidden Valley's earthwork data is left as it is
+## D-232 — The C-200 acceptance is the founder's own test; P02's earthwork data is left as it is
 
 **Date:** 2026-10-02
 **Status:** decided (the founder, in session)
@@ -8160,7 +8160,8 @@ blocked for the run): Print Multiple Pages, Rotate Pages and Duplicate page.
   as reference, marked "parked, founder testing by hand". Its 11 questions stay unanswered,
   and its Blocks A to D are not built.
 - **The F12/F18 acceptance on C-200 is the founder's own test,** recorded on the board.
-- **Hidden Valley Spec's earthwork data is left exactly as it is,** now and in later sessions,
+- **P02's earthwork data is left exactly as it is** (P02: the founder project of that label on
+  the guard list, D-1228; the label replaced its name in D-1279), now and in later sessions,
   unless the founder asks:
   - page 3's EG contours and its scale;
   - the page 3 → C-200 link;
@@ -8546,7 +8547,7 @@ Legacy's source (`SheetTree.tsx`, the `sheetOverlays` block and its two pickers)
 - **Proved:**
   - gates;
   - the quantity table;
-  - a smoke on Hidden Valley Spec. E101 was laid over E102 through the api. The sub-row read
+  - a smoke on P02. E101 was laid over E102 through the api. The sub-row read
     "overlay 50%". 60 % was saved from the slider, the colour set to #00A3FF, hidden and shown
     again. Re-align showed "Click a point on the overlay (tinted)" and Esc ended it. Delete
     removed the row.
@@ -8582,7 +8583,7 @@ Legacy's `NameFromRegionDialog.tsx` (`RegionRow`) and `ProjectTakeoff.tsx`
 - **Proved:**
   - gates;
   - the quantity table;
-  - a smoke on Hidden Valley Spec E102: Name from page region from the sheet's menu read "Not
+  - a smoke on P02 E102: Name from page region from the sheet's menu read "Not
     set" and "Draw" twice; Draw closed it with the toast; a box over the title block brought it
     back with "E102 …" and "Redraw"; Cancel. No snippet was saved and no sheet was written.
 - **Where:** app `features/takeoff/sheets/NameFromRegionDialog.tsx`, `pages/ProjectTakeoff.tsx`.
@@ -8619,7 +8620,7 @@ workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
 - **Proved:**
   - gates;
   - the quantity table;
-  - a smoke. "+ Add custom type…" "Smoke type" on Hidden Valley Spec E102 was saved to the
+  - a smoke. "+ Add custom type…" "Smoke type" on P02 E102 was saved to the
     workspace on Add and picked. The snapshot was saved as other / "Smoke type". The same
     workspace's "Test 3" listed it under Custom. The snippet and the type were removed after.
 - **Where:**
@@ -8656,7 +8657,7 @@ workspace) and `SnippetDetailsDialog.tsx` read on `UmeralamDEV`.
 - **Proved:**
   - gates;
   - the quantity table;
-  - smokes on Hidden Valley Spec.
+  - smokes on P02.
 - **At 375 × 740:**
   - the canvas 327 px wide;
   - the left panel opened at 320 px with its tab beside it, and A101 picked from it closed it;
@@ -8730,7 +8731,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
   - the quantity table, with a new cost row through both halves: the api's copy maps a
     template's material and equipment components; at 120 LF (PARENT × 1.2 over 100 LF) the
     assembly's preview and the seeded sub-item both cost $2,214.00, by hand;
-  - a smoke on Hidden Valley Spec A101: a throwaway assembly's sub-item got a Material
+  - a smoke on P02 A101: a throwaway assembly's sub-item got a Material
     component (QTY × 1.1 at $2) through Costs…, previewing $220.00 at 100; Seed from… onto a
     throwaway 57.6 LF item made "Smoke rebar" 69.12 LF with the component, $152.06 in
     Estimating; both removed. Count → circle, + Dia 4, + Depth 5, Create sub-item, Insert
@@ -8782,7 +8783,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     (PARENT × 1.05 over 40 ft = 42; Linear × Width × Depth 40 × 3 × 2.5 = 11.1111 CY;
     {dim:d1} × 2 = 6 before drawing; Perimeter × Height 40 × 8 = 320; 3 marks × 2 = 6;
     "PARENT*" and "PARENT*FOO" refused);
-  - a smoke on Hidden Valley Spec A101. Linear "Smoke draft run", WBS DIV 33 › Sanitary
+  - a smoke on P02 A101. Linear "Smoke draft run", WBS DIV 33 › Sanitary
     Sewer, + Width 3, Create sub-item:
     - "PARENT * 1.05" read "—" with "Calculated once drawn", Create enabled, the row in
       Sanitary Sewer;
@@ -8854,7 +8855,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     (3 × 2.5 − 1.1467) / 27 = 27.6931 CY; 3 footings Dia 4 Depth 5 = 6.9813 CY (6.98); the
     labels of a run, a circle count, a square count and an area, each with its token. The
     formula rows agree to 1e-9 between the engines.
-  - a smoke on Hidden Valley Spec A101. Linear offered + Dia; two read "Dia" and
+  - a smoke on P02 A101. Linear offered + Dia; two read "Dia" and
     "Dia (2)"; "abc" showed the message, 14.5" and 1'-2.5" cleared it. Insert › Derived
     listed Volume 1 / 2 (Linear × π·Dia²/4 and Dia (2)) and Area 1 / 2 (π·Dia²/4). Area 1
     read 1.15 before drawing; Volume 1 @ CY read "—" with "Calculated once drawn". Drawn
@@ -8899,7 +8900,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
   - Visible labels are unchanged.
 - **Proved:**
   - gates; the quantity table unchanged;
-  - a smoke in the bench's Chromium on Hidden Valley Spec A101, counting the text fields
+  - a smoke in the bench's Chromium on P02 A101, counting the text fields
     without `autocomplete="off"`: the takeoff screen 0 of 2, LF 4's Properties 0 of 3
     (Name carrying `measurement-label`), the sub-items editor 0 of 4, Estimating 0 of 3.
   - **Not provable here:** the Google Wallet "Save ID card" prompt itself needs the
@@ -8942,7 +8943,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
   edit is discarded).
 - **Proved:**
   - gates; the quantity table unchanged;
-  - a smoke on Hidden Valley Spec A101 with a throwaway Linear item (Width 3 saved):
+  - a smoke on P02 A101 with a throwaway Linear item (Width 3 saved):
     - Properties › + Depth 2, then its own Create sub-item: Insert listed Volume (Linear ×
       Width × Depth), Area 2 (Linear × Depth) and Depth 2 FT. `{Depth} * 2` previewed
       4.00.
@@ -9063,7 +9064,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     The rows cover the Laterals Pipe zone (37.1226 → 57.8048 CY at 200 LF and Width 4),
     PARENT, the round footings (6.9813 → 11.6355 CY at 5), `-(2^2)`, `2^(3^2)`,
     PI × (Dia/2)^2, the typed trench (27.6931 CY) and the ROUND fallback.
-  - **The founder's proof:** Hidden Valley Spec exported from Estimating (all columns,
+  - **The founder's proof:** P02 exported from Estimating (all columns,
     rows and layers, with formulas), then opened and recalculated in an independent Excel
     engine (the Python `formulas` package, in a throwaway container):
     - HDPE 6"'s sub-items read `=J28*Dimensions!C9*…`, the 12" HDPE Pipe `=J21`.
@@ -9126,7 +9127,7 @@ legacy differences. Legacy read on `UmeralamDEV`: `TemplateComponentsSection.tsx
     - the round footings "3 × (π × 4² ÷ 4 × 5) ÷ 27" = "188.4956 ÷ 27" = 6.9813;
     - PARENT × 1.05 with no step;
     - a parent's "30 LF × 2 = 60 LF" with shares 75 % / 25 %.
-  - a smoke on Hidden Valley Spec's Estimating tab:
+  - a smoke on P02's Estimating tab:
     - **Laterals Pipe zone** (cell 37.12): Formula `{Volume 3 @ CY}-{Volume 5 @ CY}`, the
       values line and "= 38.3785 − 1.2559", "= 37.1226 CY". Reads: PARENT HDPE 6"
       172.7033 LF, Width 3 ft, Depth (pipe zone) 2 ft, Dia 0.5 ft, Volume 3 (Linear ×
@@ -9218,7 +9219,7 @@ One provider setting on the api made either a full outage.
 8. **Reasoning tokens are logged** on every call (`detail.reasoning_tokens`). They are
    already inside the output the provider bills.
 
-**The model test (2026-10-03, Hidden Valley Spec, 20 title blocks + 3 schedules each)**
+**The model test (2026-10-03, P02, 20 title blocks + 3 schedules each)**
 
 | Model | Numbers right | Names as stored | Naming per call | Naming time | Schedules right | All 23 calls |
 |---|---:|---:|---:|---:|---|---:|
@@ -9303,7 +9304,7 @@ sheet tools now read both from the query cache, refreshed before the run
 4. **Every non-AI naming path uses it:** Page Name and Sheet # from a box, their ALL sweeps,
    and the naming regions dialog.
 
-**Measured on Hidden Valley Spec's 20 test sheets** (the app's own pdf.js text, no AI,
+**Measured on P02's 20 test sheets** (the app's own pdf.js text, no AI,
 nothing written), against the AI's full titles:
 
 | Read | Match |
@@ -9319,7 +9320,7 @@ nothing written), against the AI's full titles:
   Control Plan**.
 - With the whole block, the old read added "S H E E T" to 12 names and took the caption on
   G-001.
-- **Hidden Valley's 8 short names were rewritten on the founder's word** (2026-10-03, names only,
+- **P02's 8 short names were rewritten on the founder's word** (2026-10-03, names only,
   through the api as window-b@ with the new read): G-001 Sheet NO. → Cover Sheet; V-100
   Existing → Existing Conditions; C-001 General → General Notes & Details; C-100 Site Layout →
   Site Layout Plan; C-200 Site Grade → Site Grade Plan; C-300 Site Utility → Site Utility
@@ -9503,7 +9504,7 @@ After 2d72790 the api has no S3 endpoint setting, so the bench's MinIO values we
   prod profile) are still refused, so a check against `app-prod` reads sheets only from 5173's
   origin. The overnight harness that fetched bucket files itself for 5175 was never committed,
   so nothing was left to remove; the marketing capture's `SHOTS_S3_MIRROR` stays, because it
-  stands in for Hidden Valley Spec's objects that are not in this bucket, not for CORS.
+  stands in for P02's objects that are not in this bucket, not for CORS.
 - **SES endpoint, open:** the Mail Manager endpoint in `.env` (`…fips.yxbq.mail-manager-smtp…:587`)
   refuses or drops connections from this network on 25, 465, 587, 2465, 2587 and 443. The
   standard SES SMTP endpoint (`email-smtp.us-east-2.amazonaws.com`) answers on 2587, but
@@ -10047,7 +10048,7 @@ triangulated in feet (its square frame).
    opened; a migration (`c4f1a9e2d7b3`) marks every sheet's own earthwork lines stale at
    once, so Estimating shows them stale before anyone opens the sheet. The next Calculate
    replaces the result. A site's key stays `v4` (`basis: "site"`): nothing about it changed.
-   Hidden Valley Spec is not touched (D-232): it shows stale and the founder recalculates it.
+   P02 is not touched (D-232): it shows stale and the founder recalculates it.
 3. **The quantity table.** One row's expected values move: `regaccept-c200-from-page-3`
    (page 3's EG through the link onto C-200, C-200's FG and boundary), cut 9,185 → 9,312,
    fill 7,706 → 8,072 CY, against the engineer's 14,263 / 8,727: −35.6 → −34.7 % and
@@ -10138,7 +10139,7 @@ and area were wrong. On the same isotropic basis as D-272:
    stored; it is measured as the true circle through its three points. Migration
    `d5a2b7e9c1f4` measures every item with an arc again the way `_measure` does; an item whose
    quantity moves by more than 0.5 % is marked stale, its sub-items too (the next measure of
-   the item clears it). On the bench: one, Hidden Valley Spec's "LF 7" (a Linear item, not its
+   the item clears it). On the bench: one, P02's "LF 7" (a Linear item, not its
    earthwork data), 35.684 → 38.942 LF, stale.
 4. **Turned and copied.** An arc stored true turns a quarter on any page as itself (its centre
    turned, a0 ± π/2) and is copied to another scale with rx·sx, ry·sy; a legacy arc keeps
@@ -10162,7 +10163,7 @@ and area were wrong. On the same isotropic basis as D-272:
    (`vertices_json`) are not changed. Since the circle and its ends are the ones already
    measured, no quantity moves: the migration computes each shape before and after and stops if
    any differs. Annotation arcs (sheet markups, no quantity) are left as they are. Idempotent.
-   On the bench: Hidden Valley Spec's "LF 7" (a Linear item, not its earthwork data), drawing
+   On the bench: P02's "LF 7" (a Linear item, not its earthwork data), drawing
    refitted, 38.941519 LF before and after.
 
 **Where:** app `lib/takeoff/engine/draw.ts` (`ArcFit`, `arcFrom3`, `circularArc`, `arc`,
@@ -10662,7 +10663,7 @@ marketing service).
 
 **Status:** (closed 2026-10-11, confirmed by Umer) decided in the overnight run (the founder's brief, 2026-10-07); each change kept only
 when no test lost accuracy and accuracy or time improved, measured on throwaway copies of E101
-(Hidden Valley Spec Building Rebid) and E200 (Waxing City)
+(P03) and E200 (P04)
 
 1. **Tags decide the fixture type (Vector, new).**
    - Text runs on one line that touch are one word, so the "A" of "P2A" is not a tag "A".
@@ -10713,7 +10714,7 @@ run on E200 tonight.
    plan editor (D-284) only takes the price id. No automatic Stripe price creation.
 3. **Auto Count tag suffix variants.** A run finds the sampled tag and its suffix variants (the
    tag plus a qualifier: "C", "C/NL", "C-EM"). All are checked, and each distinct tag becomes its
-   own takeoff item named by its tag, in the same folder ("C" 24 and "C/NL" 2 on Hidden Valley
+   own takeoff item named by its tag, in the same folder ("C" 24 and "C/NL" 2 on P02
    E101). A variant drawn slightly differently (half-shaded night lights) is accepted when its tag
    is the base tag plus a suffix and its shape matches the base symbol apart from shading. The
    result panel lists each tag with its count before the items are created.
@@ -11743,7 +11744,7 @@ a Load.
 Supersedes D-320 2 (the browser read), D-320 3's flags, and D-318 3's project-row tick.
 
 1. **The freeze, measured first.** The browser read each loaded sheet on the main thread. Seven
-   generated sheets: 7 long tasks of 51 to 83 ms. Seven real plans (Hidden Valley Rebid A101,
+   generated sheets: 7 long tasks of 51 to 83 ms. Seven real plans (3D test project A101,
    A102, A201, S101, M101, A601, E101, copied read-only): 41.1 s of main thread blocked in a
    202 s read window, three tasks of 18.3 s, 15.7 s and 6.7 s. The cause is the dimension
    check's stroke walk and its collinear merge, which compares every segment with every other.
@@ -11760,7 +11761,7 @@ Supersedes D-320 2 (the browser read), D-320 3's flags, and D-318 3's project-ro
    is the title nearest the number, grown over its own lines. Scale strings, dimensions, dates
    and one-letter grid bubbles are never name text. On the seven real plans this reads "Over-All
    Floor Plan", "Exterior Elevations", "Electric Lighting Plan" and so on. The app's reader joined
-   the whole title block corner ("Hidden Valley Leasing Spec Building Kerr Road …").
+   the whole title block corner (P03's project name and street).
    **A name given by hand is never overwritten:** a rename clears `read_name`, and the worker
    reads the flag fresh before it writes. **A scan** (no text) is read by the AI as the loader,
    through `ai.service.run`, so the plan, Run AI permission, credits, hold, charge and cache are
@@ -12396,9 +12397,9 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    cannot read the bucket's versions or lifecycle, so the bucket itself shows no delete history.
    - Throwaway workspace: Riverside Medical Center (rows of 2026-09-28/29) and zz switching (113
      sheets): every older object missing, in MinIO.
-   - Founder projects, read only: **Hidden Valley Spec Building Rebid** 29 sheets and **Waxing City**
+   - Founder projects, read only: **P03** 29 sheets and **P04**
      1 sheet, every file, page, picture and source present and decoded, and all 30 drawn in the
-     browser by a viewer seat; **HIdden Valley Spec** (the bench copy, spelled so, in "F5 Block A
+     browser by a viewer seat; **P02** (the bench copy, spelled so, in "F5 Block A
      demo 15:16", made 2026-09-29): all 29 sheets and both files missing from the bucket, present in
      MinIO.
 2. **The purge code could not reach another tenant, and now cannot by construction.**
@@ -12429,7 +12430,7 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
 2. **"Umer plans test" is not restored.** 46.3 GB of 47.8; not needed. The project (id 2545, uuid
    ffc60967-90b0-4458-b2c4-fb2bc1580c52, 625 sheets, workspace 939 "F5 Block A demo 15:16") was
    moved to Trash and purged through the api's own service functions; its objects stay in MinIO and
-   the tar. HIdden Valley Spec, in the same workspace, checked untouched (row, 29 sheets, 55 items,
+   the tar. P02, in the same workspace, checked untouched (row, 29 sheets, 55 items,
    92 geometries, 2 files, its earthwork result's fingerprint, 117 keys in MinIO).
 3. **Purge clear-out is durable whoever purges.** The log row is written in the purge's own
    transaction; the clear itself was dispatched after commit, at most once, and only by the request
@@ -12470,7 +12471,7 @@ Takeoff panel; D-59's node folders stay as the classification tree. Spec:
    MinIO). Copied 1,973 objects, 1.464 GB, none skipped, none failed, each MD5-checked, logged in
    `E:\bench-backups\restore-log-2026-10-10.csv` (2,598 planned before the purge took that project's
    625 page thumbnails with it). Every one of the 3,511 keys the database names is now in the bucket.
-   HIdden Valley Spec: 29 of 29 sheets decode, earthwork result fingerprint unchanged; Riverside 7 of
+   P02: 29 of 29 sheets decode, earthwork result fingerprint unchanged; Riverside 7 of
    7, zz switching 113 of 113, Test 3 63 of 63, Loaded from files 3 of 3 decode; Riverside's 7 and a
    spread of zz switching drawn in the browser.
 
@@ -12821,7 +12822,7 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
 1. **The bug:** an earthwork result's version key hashes row uuids (a Site Feature's item, a Strip
    Area and its features, a linked survey sheet). Duplicate project gives every row a new uuid, so
    the copy's stored key never matched its drawing: the first open of the copy marked every line
-   "Needs recalculating" (seen on Hidden Valley Spec Building Rebid (copy): all 17 lines), while
+   "Needs recalculating" (seen on P03 (copy): all 17 lines), while
    the original's stayed current.
 2. **The fix:** `earthwork_result.key_aliases` and `earthwork_site_result.key_aliases` (JSONB, null
    but on a copy). The copier writes, on each copied result, every Site Feature item, Strip Area
@@ -14038,7 +14039,7 @@ The plan's open questions, as the founder answered them: every default, and two 
 10. Our colours and words: the EG red, FG green and CUT & FILL purple tokens, plain labels.
 
 Order of work: the 3D blocks (3D-1 to 3D-7), then the report (R-1 to R-7); every block leaves
-Calculate's numbers identical, proved on "Hidden Valley Rebid — 3D test". Importing another
+Calculate's numbers identical, proved on "3D test project". Importing another
 program's project file comes after both, as a study first.
 
 ## D-423: One earthwork model, shared by Calculate, the grade layers and CUT & FILL (F26 3D-1)
@@ -14047,7 +14048,7 @@ program's project file comes after both, as a study first.
 
 1. **One builder.** `lib/takeoff/earthwork/model.ts` `buildModel` makes the EG and FG TINs and
    the volumes with exactly Calculate's calls; Calculate now goes through it. Its stored result
-   is unchanged bit for bit (proved on "Hidden Valley Rebid — 3D test": Calculate with the code
+   is unchanged bit for bit (proved on "3D test project": Calculate with the code
    before and after stores identical JSON, every field).
 2. **Kept.** The session keeps Calculate's model (both TINs and the prisms), not the prisms only.
 3. **Rebuilt only from unchanged inputs.** After a reload, when the live key equals the stored
@@ -15879,7 +15880,7 @@ tab's viewer pass, or asks for the password first. The guest session now carries
 `allow_save_copy`.
 
 Proved on the 3D test copy's link: sign up as a new throwaway from the guest's button: back on the
-link, "Saved to H3's workspace…", the copy "Hidden Valley Rebid — 3D test (shared copy)" opened;
+link, "Saved to H3's workspace…", the copy "3D test project (shared copy)" opened;
 log in as Sara W.: "Saved to Bench Construction Test…"; saving off: "The owner has not allowed
 saving a copy of this project." with View the shared project; link expired: "This share link has
 expired." Both copies, the throwaway's workspace and the save records removed after. Gates,
@@ -16320,7 +16321,7 @@ existing ground and the subgrade, which is fill.
 5. **Which results read out of date once.** Three stored results hold an undercut:
    - **the 3D test copy's C-200.** Its stored result and md5 (`fab4d151…`) are unchanged;
    - **the duplicate made for tonight's checks;**
-   - **Hidden Valley Spec Building Rebid's C-200.** It was computed by the v5 engine, so it already read out of
+   - **P03's C-200.** It was computed by the v5 engine, so it already read out of
      date (D-470), and nothing changes for it.
 
    No site result holds one.
@@ -16785,7 +16786,7 @@ predates tonight (step 1b).
 ## D-542: The audit of the 3D test copy, the guard against writing to protected projects, and its fingerprint (2026-10-16)
 
 **The question.** The founder's screenshots showed my test data (the T-site site, bore L-1, fixture layers and bores,
-"(copy 2)") under "Hidden Valley Rebid — 3D test (copy)", taken for the 3D test copy itself.
+"(copy 2)") under "3D test project (copy)", taken for the 3D test copy itself.
 
 **What the audit found.** Sources:
 - every table that holds the copy's rows, read by the new fingerprint script;
@@ -16798,8 +16799,8 @@ Findings:
    - **Since 22:00 UTC its content changed only in the founder's sessions:** 04:55–05:21 (four bores and their logs and
      water, four soil layers, the assumptions, two Calculates, two geotech settings saves) and from 11:58 (a Calculate at
      12:20, the assumptions, eight geotech settings saves).
-   - **What the screenshots showed was my duplicates,** each named "Hidden Valley Rebid — 3D test (copy…)"; the copy is
-     named "Hidden Valley Rebid — 3D test".
+   - **What the screenshots showed was my duplicates,** each named "3D test project (copy…)"; the copy is
+     named "3D test project".
    - **Which duplicate held what:**
      - the fixture layers and the 0–0.5 / 0.5–1 / 1–20 ft log were `e7e2be1b` "(copy)" and `dcc47eb8` "(copy) (copy)";
      - the fixture bores were `ed8ff9d1` "(copy 2)", purged at 05:39:34;
@@ -16819,8 +16820,8 @@ Findings:
    are left as they are and listed for the founder (pending_umer A1).
 
 **The guard** (`intelcost-infra/browser/lib/protected.mjs`, `browser/mcp-guard.js`, api `scripts/protected.py`).
-- **The protected projects:** the 3D test copy and the founder's four (HIdden Valley Spec, Hidden Valley Spec Building
-  Rebid, Waxing City, Minmar).
+- **The protected projects:** the 3D test copy and the founder's four (P02, P03,
+  P04, P05).
 - **Refused, before the request leaves:**
   - any request but GET, HEAD and OPTIONS whose path or body names one, except `POST …/project/<copy>/duplicate`;
   - every request to a share link the run did not make, a read too, since any guest request stamps the link;
@@ -18826,7 +18827,7 @@ The other mail to estimator@ is a forum reply notice and stays.
   Intelcost Team (`04df326a…`), holding:
   - Miramar Cove Vault Buildings `90cb3a75…`;
   - "11" `c1770e62…`;
-  - Hidden Valley Rebid — 3D test (shared copy) `4df73dc7…`, saved from his share link at 15:18 today.
+  - 3D test project (shared copy) `4df73dc7…`, saved from his share link at 15:18 today.
 - **The guard lists:** all three were added to every copy of the list (`scripts/protected.py`,
   `browser/lib/protected.mjs`, `browser/mcp-guard.js`), which now holds 8 projects. Intelcost Team itself is listed
   as a founder workspace.
@@ -21040,7 +21041,7 @@ test"). Umer to confirm.
 ## D-662: bench-tidy moved into the api's process; walkthrough-setup retired (T2)
 
 **Status:** taken during the run of 2026-10-20, changed from the answer in one way. **Confirmed by Umer, 2026-10-20
-(A4), once the tidy goes through the drives' guard: done the same night (D-667), a dry run naming Hidden Valley Spec
+(A4), once the tidy goes through the drives' guard: done the same night (D-667), a dry run naming P02
 refused with no statement sent.**
 
 - **Retired:** `browser/walkthrough-setup.mjs`, deleted.
@@ -21150,7 +21151,7 @@ in and data out (hard rule 2), under `lib/takeoff/earthwork/export/`.
 **Status:** decided by Umer, 2026-10-20 (A1: "drives/ scripts refuse the protected uuids exactly as lib/protected.mjs
 does, before any read or write"). Built in the night run of 2026-10-20 (Step 1).
 
-**Why:** `cmp_compact.py` read "Hidden Valley Spec Building Rebid" in the api's process on 2026-10-20 (A1). The browser's
+**Why:** `cmp_compact.py` read "P03" in the api's process on 2026-10-20 (A1). The browser's
 guard covers requests; nothing covered a script holding a database session.
 
 - **`intelcost-infra/drives/guard.py`,** imported first by all nine drives, before anything from `app`. Its list is the
@@ -21179,7 +21180,7 @@ guard covers requests; nothing covered a script holding a database session.
   database address unreachable the same refusal, nothing database-related imported (`-X importtime`), while a
   non-protected uuid tried to connect and failed; `crop-backfill.py` on BENCH DUP 7bb1fa52 ran (29 pages, 0
   differ); a read naming a listed project refused after 1 statement, this one not sent; a write naming the test copy
-  refused; `purge-bench-dups.py` stopped as a listed row loaded; `bench-tidy.py` naming Hidden Valley Spec or Minmar
+  refused; `purge-bench-dups.py` stopped as a listed row loaded; `bench-tidy.py` naming P02 or P05
   refused with 0 statements (A4), its plain dry run clean.
 
 ## D-668: GPS Export in plan coordinates says plan feet, never a survey foot; the files assembled by `exportSet.ts` (A7 part 1)
@@ -22444,11 +22445,11 @@ line, and can we do something else to show the selected workspace rather than or
 **Status:** Accepted (2026-10-23, Umer, the overnight brief and its follow-up).
 
 - **Order:** 1.1, 1.2, 2.1, 2.2, 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, P1, 5.1 (P1 moved to just before 5.1).
-- **Test copy:** "Hidden Valley Rebid — 3D test" in "Bench Construction Test" is a read-only source. Before Block 3.5 it
+- **Test copy:** "3D test project" in "Bench Construction Test" is a read-only source. Before Block 3.5 it
   is copied (sheets, contours, grades, site features, strip and undercut areas, earthwork settings, estimating items)
   into a new workspace of a throwaway account, by a one-off script that reads the source and writes only to the
   throwaway workspace; row counts and the latest `updated_at` of the original are recorded before and after and must
-  match. Nothing is written to the original or its workspace. "Hidden Valley Spec" stays off-limits.
+  match. Nothing is written to the original or its workspace. "P02" stays off-limits.
 - **Coverage:** on the copy, every item and sub-item with a quantity is priced (labour, library equipment, material,
   subcontract where realistic), with "TEST …" data where the library has none, Calculate run and rerun with every
   component surviving, and a coverage table in the night report.
@@ -24149,7 +24150,7 @@ since the archive, 3 at a time; failures rerun alone and classed timing or real;
 
 **Status:** accepted (the founder's fix 6 of 2026-10-27 evening).
 
-- **What it was** (10793 copy, Page 4/Page 5): not a fit gap and not pixel rounding. Page 5 is joined to Page 3 only,
+- **What it was** (stitch test project, Page 4/Page 5): not a fit gap and not pixel rounding. Page 5 is joined to Page 3 only,
   so where Page 5 overlaps Page 4 no match line cuts either; Page 5 was drawn last with an opaque white page, and its
   blank margin covered Page 4's drawing: a white band, thin at low zoom (about 120 px wide at 101 %).
 - **The fix, both causes at once:** every member's paper is drawn first, then every member's drawing over it with
@@ -24347,7 +24348,7 @@ product or the fixture.
   lines, save or remove a site result, and the site's Calculate was on. `SiteView` takes `canEdit`: off, nothing is
   drawn, moved, deleted, undone, adopted, calculated or saved, and a selection reads "View only: your role cannot
   edit this project."; pan, zoom, select, find, Report and 3D VIEW stay. The site's Calculate stays as on a sheet
-  (off, with its reason). Checked as a viewer on the 10793 copy: tools and Calculate off, Delete, drag and Ctrl+Z
+  (off, with its reason). Checked as a viewer on the stitch test project: tools and Calculate off, Delete, drag and Ctrl+Z
   change nothing; hand-written shape delete, shape create, join and result removal all 403.
 - **c42, the join fit 0.112 ft over 0.1 ft (fixture; the limit kept).** Fixes 1 and 2 changed no fit math. A click
   lands to the pixel and at 204 ft across a 540 px pane a pixel spans 0.38 ft: the same fractions on two panes of
@@ -24418,7 +24419,7 @@ product or the fixture.
 
 **Status:** accepted (the founder's site view zoom glitches of 2026-10-28).
 
-- **Seen:** on the 10793 copy, zooming with the wheel across the Page 3/4 join, the members went back to their
+- **Seen:** on the stitch test project, zooming with the wheel across the Page 3/4 join, the members went back to their
   blurry fit images mid-zoom and the heavy line no longer met at the cut (the fit images are a few pixels off the
   true page at 200 % and over); then the rasters came back, not at once.
 - **Causes, in the code:** (1) the bitmap cache freed an evicted canvas (`width = 0`) even while a member showed
@@ -24488,7 +24489,7 @@ product or the fixture.
 - **Clicks while picking:** a survey link's ghost contours (their hover strokes) and the saved sections' markers
   took the clicks meant for a join's points on a busy sheet (HV C-200): neither takes a click while a join, a link
   or coordinates are picked.
-- 10793 copy: Page 4's join edited (a point moved 3 px at zoom), fit 0.43 → 0.79 ft, "This moves Page 4 by 5.56 ft.
+- stitch test project: Page 4's join edited (a point moved 3 px at zoom), fit 0.43 → 0.79 ft, "This moves Page 4 by 5.56 ft.
   1 item crosses this join (Across 3/4 line)", saved, undone (0.43 ft again); Page 5's match line clicked from the
   other end on the right, "Points matched in reverse order on Page 5", turn 0.0°, cancelled. HV copy C-200 to C-100
   by two points the other way round: "Points matched in reverse order on C-100", turn −8.6°, not joined.
@@ -24705,7 +24706,7 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
 **Status:** accepted (the founder's item 6 of 2026-10-28 evening, first part).
 
 - **Sources:** throwaway copies in the bench's "zz Sheet key" workspace (owner fx.sections): the HV set (through the
-  Marketing Demo copy, 28 sheets), Hendrick Honda (26), Building A (39), 10793 SBR final plat (5 scans), Riverside
+  Marketing Demo copy, 28 sheets), P19 (26), Building A (39), P09 final plat (5 scans), Riverside
   (7, two crops left out). The drives' guard refused Minmar, Miramar Cove and HV Spec Rebid (protected): never opened.
   01-PLANS did not copy (a duplicate folder name in its source) and is not in the key.
 - **103 sheets:** civil 6, survey 1, plat 5, architectural 16, structural 18, mechanical 7, plumbing 6, electrical 39,
@@ -26337,7 +26338,7 @@ what each option priced before with its code, is `morning-report-2026-11-04/s5-s
   `<tag>-<role>-<13 digit stamp>@bench.intelcost.io` (a seat a fixture made). Nothing else is read for deletion.
 - **Refused:** an account on the fingerprint's founder list (scripts/protected.py), one owning a workspace that holds a
   protected project, one owning or seated in a founder workspace, and one owning or seated in a workspace the founder
-  keeps for tests (`KEEP_WORKSPACES`: the Stitch test project "zz Stitch 10793 copy 2", 2026-10-28).
+  keeps for tests (`KEEP_WORKSPACES`: the stitch test project, 2026-10-28).
 - **How:** an account's own workspaces and its user row in one transaction (the workspace rows cascade); its workspaces'
   objects in storage after the commit. An account other rows still name is KEPT and printed with the reason, never forced.
 - **Run for real** only after the dry-run list is in the report and every row matches a throwaway pattern (the founder).
@@ -26933,7 +26934,7 @@ Calculate, its prisms and every quantity are untouched; the quantity table prove
   `browser/mcp-guard.js`): Benchmark A source (24e4a96c) and Real bid B (d0b0305d). The guard check reads 25 projects, the
   three lists agreeing; the fingerprint marks both `ok`.
 - Every project in Intelcost Team, the founder's own workspace, is now on the list (six: Miramar Cove Vault Buildings,
-  11, the 3D test's shared copy, 10793 SBR, Benchmark A source, Real bid B). A new one there is a FAIL in the fingerprint
+  11, the 3D test's shared copy, P09, Benchmark A source, Real bid B). A new one there is a FAIL in the fingerprint
   until it is added (D-601's rule, unchanged).
 - Investigation of a real bid runs only on a throwaway copy made by the copier, never by signing in as the founder.
 
@@ -28695,7 +28696,7 @@ one-sub rule and D-1040's machines-on-site lines, now pooled.
   own one delivery (the section undercut smoke's A2 lines, $443.10 to $883.05), the job total falls.
 - Sweep, pool off then on, one Calculate each: Real bid A at 10 mi $463,356.96 to $449,193.74 (Cut $13,974.11 to $6.68,
   Fill $230.68 to $34.89); Benchmark A $645,466.37 to $631,292.75; Real bid B site soil $174,915.03 to $164,272.23,
-  imported clay $227,356.09 to $219,846.50; a Hidden Valley shared copy $1,056,615.42 to $1,015,330.57; the section
+  imported clay $227,356.09 to $219,846.50; a 3D test shared copy $1,056,615.42 to $1,015,330.57; the section
   undercut smoke $22,782.76 to $7,911.06. Lines over 5x their activity's unit cost: three before (each project's 3 BCY
   Cut), none after.
 - Quantity table: `pool` section, 25 rows (kinds, sizes, the pipe cap, one sub, the cost guard, room in a booking,
@@ -28975,8 +28976,8 @@ more than the needed machine's own).
   already their own purchase.
 - The single-sheet balance did not follow it: Real bid A's C16 filled its 3 CCY of fill from its cut with Select Borrow as
   the fill type. Fixed in the one place the line inputs are made (`nativeFills`, `linesFor.ts`; the site view reads it
-  too). Projects with Select Borrow on the bench: Real bid A, the Hidden Valley 3D test and its copies, Hidden Valley Spec
-  Building Rebid, Marketing Demo, zz MyEq project; Real bid B and Benchmark A are Engineered Fill (no change).
+  too). Projects with Select Borrow on the bench: Real bid A, the 3D test project and its copies, P03,
+  Marketing Demo, zz MyEq project; Real bid B and Benchmark A are Engineered Fill (no change).
 - Real bid A: C16's export and C12's select-borrow import both remain in the job.
 - Quantity table: Select Borrow, two sheets, no offset (A exports 1,250 LCY, B imports 825 LCY); Engineered Fill offsets
   (340 BCY / 425 LCY exported, no import); Select Borrow with native soil meeting it offsets; one sheet, Select Borrow,
@@ -32538,3 +32539,96 @@ written. Five open questions are in the plan, §7.
 | 1 | 1–4 | The engine and presets, proven on the 26 hand rows; no visible change |
 | 2 | 5, 6, 9 | The section wired into Calculate and its lines, the project setting, the Estimating view |
 | 3 | 7, 8, 10 | The run panel's Section block, the live picture, gates and smoke |
+
+## D-1279 — The founder's answers to the 2026-11-15 report's §10 (Q1–Q18) and the close-out checks, built
+
+**Status:** Accepted (2026-11-15, the founder's answers). Verbatim in
+`intelcost-infra/morning-report-2026-11-16/BRIEF-ANSWERS-§10.md`.
+
+**Summary of the answers:**
+
+Pricing and production
+- Q1: the bore curve stays at D-1269 grade C (the founder supplies sub sheets).
+- Q2: T7 stays as its share of T8's bore.
+- Q3: the half-crew-day pull-in floor applies only when the job has no other pipe work of that crew. Otherwise the pull-in rides the crew at its pace, with a 2 crew-hour minimum.
+- Q4: the bore line says "pits included".
+- Q5: hold until Part 6.
+- Q6: investigate A1 and the gasket double count. Keep T&D $2.25 and the 20 % allowance at grade D, "founder to confirm".
+
+Part 4a
+- Q7: C909 restraint at 14 and 18 in, mapped to the C900 keys of the same size.
+- Q8: two stainless insert stiffeners per PE CTS service (D, list × 0.74).
+- Q9: spacers and seals at list × 0.74, grade D.
+- Q10: two decimals for a fractional share.
+- Q11: only a pit linked to a jack & bore or HDD run starts by the bore sub.
+
+Part 4b
+- Q12: the seeded per-type MasterFormat utility sections carry the Utility subcontractor (new workspaces only).
+- Q13: the move preview shows the Estimating total.
+- Q14: check the orphan ids on staging and production, read only.
+- Q15: P10 stays.
+- Q16: inline thumbnails OK if small and sent with Cache-Control.
+- Q17: the cover fields show their defaults.
+- Q18: one cleanup commit for the client-name hits, plus a pre-commit block list in .private.
+
+Close-out checks
+- The fold was confirmed: there is one new file, and d1269b4f2e80's file is identical to origin.
+- The founder-gate hook also gates docker cp / docker exec / compose cp into the app or api containers.
+
+Details per part below.
+
+### Q14, Q18 and the founder-gate hook (the infra/workspace half)
+
+**Status:** built 2026-11-15 (night run), awaiting the founder's check. The hook is written and proved but not yet
+switched on (main's call: the app/api agent's `docker exec` reads must not be blocked mid-task).
+
+- **Q14, the 8 orphan protected ids** (`.private/fx-protected-ids.json`, `not_on_the_guard_list`). Read only, every
+  database this laptop reaches: the one Postgres server (`intelcost-bench-postgres-1`), databases `intelcost` (the
+  bench), `intelcost_fx` and `postgres`: 0 of the 8 on a `project` or `workspace` row (`postgres` has no such
+  tables). **Staging and production were not reached:** nothing on this laptop is configured for them (the api's
+  `.env` is a local `localhost` database; no ssh key, `.pgpass`, AWS config or environment variable; staging is
+  reached only through the GitHub Actions secrets of `deploy-staging.yml`, and there is no production workflow).
+  No one's personal credentials were used or asked for. So **no id is dropped**: all 8 stay, with a dated note in
+  the file, until someone with staging/production access (Abdullah's, for the founder to arrange) checks them.
+- **Q18, client names.** Every current-file hit of the two strings (case-blind) is reworded to the labels already on
+  the guard list (D-1228), resolved by the projects' uuids on the bench, read only: the earthwork project is
+  **P02**, the bid-set rebid **P03**, the 3D test copy **"the 3D test project"** (P01; its copies P08, P10), the
+  plat **P09**, and the stitch test project **"the stitch test project"** (as SINCE_ARCHIVE had it). D-232's
+  heading and its hands-off rule now read "P02's earthwork data", and the rule says P02 is the guard list's label,
+  so it still names the same project and data (page 3's EG and scale, the page 3 → C-200 link, C-200's contours).
+  - `browser/quantity-table.mjs` 345 and 357 were a LandXML round-trip test string, not a lookup: reworded to
+    "Site P02 — Rebid" (the em dash kept, so the UTF-8 check is the same).
+  - The marketing screenshot scripts did use the names at runtime (to swap them on screen): `scripts/screenshots/
+    lib.mjs:screenName(label)` now reads them from `.private/screen-names.json` through `INTELCOST_SCREEN_NAMES`,
+    failing closed (no variable, no file or no label stops the run); `renames()` builds the list when a capture
+    runs, so `og.mjs` (which imports only `REPO`) needs nothing.
+  - **Left, by rule:** two api docstrings (`app/features/ai/trial.py:9`, `app/features/drawing/reading.py:952`), api
+    source this half may not save; and two place names in the api's ZIP reference data (`data/wagecalc/
+    ref_zip.csv`, a Pennsylvania town and a California lake town), which are geography, not the client.
+  - **The block list:** both strings were already in `.private/client-denylist.txt` (D-1153, read by each repo's
+    `.githooks/client-names.sh` through `INTELCOST_DENYLIST`). Proved on a scratch file staged in infra: each
+    string blocks (exit 1), a neutral line passes (exit 0); unstaged and deleted.
+- **The founder gate (close-out check 2), ready in `.claude/hooks/founder-gate.next.{sh,js}`.** It also gates
+  `docker [container] exec|cp` and `docker compose|docker-compose ... exec|cp` naming a bench app or api service
+  (`api`, `app`, `worker*`: worker, worker-ocr, worker-pages, worker-previews, from `docker compose ps`) or its
+  container `intelcost-bench-<service>-<n>`, including inside `sh -c "..."`. A copy counts when its destination is
+  the container (`/tmp` included); a copy out is a read and passes. Every exec counts, read-only ones too (the
+  ruff/mypy gates, a scratch-Postgres alembic proof run in the api container): run founder-active first. fx
+  services, postgres and other containers pass. Same stamp, same 120 s. The other D-1266 cases decide exactly as
+  before (8 compared). The `.sh` now runs the `.js` of its own name, so the rename keeps the pair.
+  - **Proved (2026-11-15, 05:01 to 05:02 UTC), fed the hook's JSON for `docker cp <scratch> intelcost-bench-api-1:
+    /tmp/q18-gate-probe.txt`:** with the real stamp 1,856 s old, exit 2; with a scratch stamp 200 s old
+    (`INTELCOST_FOUNDER_STAMP`, epoch and mtime set back), exit 2; both refusals logged. The live hook let the same
+    call through (exit 0, as before). After a real quiet (05:01:51) exit 0; the copy was then made (05:02:04),
+    read back and removed from the container (05:02:21). The founder's stamp is the fresh one founder-active wrote.
+    19 decision cases: every exec/cp into api, app, worker, worker-pages, worker-previews (by service or container,
+    `docker container`, `docker-compose`, inside `bash -lc "..."`) gated; a copy out, postgres, api-fx, `ps`,
+    `logs`, a grep naming `docker exec` and a cp into a scratch Postgres container pass.
+  - **To switch it on** (main, once the app/api agent is done): move `founder-gate.next.sh` over `founder-gate.sh`
+    and `founder-gate.next.js` over `founder-gate.js` (settings.json already sends every Bash and PowerShell call
+    to it: no change there), update CLAUDE.md rule 12, mirror `.claude/` and rule 12 to `intelcost-infra/
+    workspace/`, commit.
+
+## D-1280 — Pipe section layers, night 1 (tasks 1–4 of D-1278's plan): the engine and the presets, proven on the 26 hand rows
+
+**Status:** Accepted (2026-11-15, the founder's build plan in D-1278). Details below as built.

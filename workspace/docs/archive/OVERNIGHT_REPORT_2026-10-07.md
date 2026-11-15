@@ -279,8 +279,8 @@ the api's existing message, unchanged by the brief ("server enforcement unchange
 
 ## How to test Image mode on your desktop (folded into the F13 click check; closed 2026-10-11, confirmed by Umer)
 
-1. Pull `umer-dev` in `intelcost-app-react` (or open the deployed bench), open Hidden Valley Spec
-   Building Rebid, sheet E101.
+1. Pull `umer-dev` in `intelcost-app-react` (or open the deployed bench), open P03,
+   sheet E101.
 2. Select (the arrow), drag a box tightly round one office fixture (detail A8), choose
    **Auto Count**, then set **Mode: Image** in the panel. Leave the sensitivity at 70 for the same
    numbers as here.

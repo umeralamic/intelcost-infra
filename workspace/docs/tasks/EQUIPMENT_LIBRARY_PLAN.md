@@ -604,7 +604,7 @@ catalog production). The spread variant with company production follows it.
 
 - **Pick:** `EX-CRAWL-20T`, "20-25 t (~48,500-62,800 lb)", activity `EW-CUTLOAD` "Bulk cut and load trucks (hydraulic
   excavator)".
-- **The quantity:** a Cut line of 10,000 BCY on a throwaway project. Never Hidden Valley Spec.
+- **The quantity:** a Cut line of 10,000 BCY on a throwaway project. Never P02.
 - **Project settings:** diesel $6.276 (entered), location factor 1.00, haul 50 mi, efficiency 0.83.
 
 | Step | Value | Source / grade |
@@ -886,8 +886,8 @@ change the data model for that. The only cost of doing it later is where the pag
    - no `from __future__ import annotations`.
 2. **`./quantity-table.sh`** from `intelcost-infra/`, with its line reported.
 3. **One Playwright MCP smoke test** on a throwaway account (never the seeded account) and a throwaway project. **Never
-   Hidden Valley Spec.** For the night of 2026-10-23 (D-729), "Bench Construction Test" and "Hidden Valley Rebid — 3D
-   test" are read-only sources. Block 3.5 and the coverage run use a copy of the 3D test in the throwaway account's own
+   P02.** For the night of 2026-10-23 (D-729), "Bench Construction Test" and the 3D test
+   project are read-only sources. Block 3.5 and the coverage run use a copy of the 3D test in the throwaway account's own
    workspace.
 4. Commit and push `umer-dev`, log the block's D-NN first, update `SINCE_ARCHIVE.md`, and refresh the workspace mirror.
 
@@ -1202,7 +1202,7 @@ give a usable library from the catalog with no page. Phase 4 gives control. Phas
 | R7 | **FEMA ⚠ values used without review.** | Shown with ⚠ and the catalog's flag text on every use (Q4) |
 | R8 | **Owned rates read as competitive costs** (the catalog calls them reimbursement ceilings). | Labelled "ceiling" or "proxy" everywhere. Owned is never the default where a rental rate exists |
 | R9 | **The location factor applied to the wrong part.** | Only to rental and owned ex-fuel (catalog Location sheet: "Do NOT apply the labor or total City Cost Index to equipment"). Never to fuel, the operator, mob, or an operated rate (an operated rate is a local quote). Outside 0.85–1.15 it warns, never clamps |
-| R10 | **Earthwork Calculate lines change** because a component reads their quantity. | Components only read the host's quantity. Nothing writes to earthwork. **Hidden Valley Spec is never used for any check** (D-232) |
+| R10 | **Earthwork Calculate lines change** because a component reads their quantity. | Components only read the host's quantity. Nothing writes to earthwork. **P02 is never used for any check** (D-232) |
 | R11 | **Assembly apply semantics change** for existing templates. | Templates without `eq_*` or links apply exactly as today. The link step runs only when links exist |
 | R12 | **Purity:** the engine imports React or calls the api. | The quantity table's purity grep covers `lib/estimate/equipment` |
 | R13 | **The upgrade leaves workspaces behind** (as the classification template did). | There is no copy to upgrade: national rows are read live, and only overrides are per workspace |

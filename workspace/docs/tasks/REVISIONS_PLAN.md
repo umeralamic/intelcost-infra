@@ -96,7 +96,7 @@ As the draft, in short:
   through the alignment only when the alignment's own scale agrees within 0.5 %, shown as "Carried from
   Rev 1", never over a scale the read proved (Q8).
 - **Links** (survey links, joins, overlays) are re-pointed through the alignment and marked stale;
-  nothing is recalculated. Never on Hidden Valley Spec's earthwork in a smoke (D-232).
+  nothing is recalculated. Never on P02's earthwork in a smoke (D-232).
 - **Overlay links with markups (B7, D-991; the founder's answer to Q172, 2026-11-07):** a link that brings
   a sheet's markups onto another follows the sheet that replaces either end. A replaced source re-points the
   link to the new sheet through the alignment (its points mapped, `sheet_registration.source_sheet_id` and

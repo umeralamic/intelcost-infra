@@ -36,7 +36,7 @@ HARD RULES
 - Clean up ONLY rows your own checks created; never delete other
   sessions' data or history.
 
-TEST PROJECT: "Hidden Valley Spec" in "F5 Block A demo 15:16", as
+TEST PROJECT: "P02" in "F5 Block A demo 15:16", as
 estimator@bench.intelcost.io. Remove throwaway markups after each check;
 touch no other project.
 
@@ -51,7 +51,7 @@ push per item or block.
 
 TASKS, in order:
 
-0. TEST PROJECT CLASSIFICATION. Hidden Valley Spec's classification
+0. TEST PROJECT CLASSIFICATION. P02's classification
    system became CSI during an earlier earthwork check, and its earlier
    value is unknown. Look for the earlier value in the audit log,
    history, or database (read-only first). If found, restore it and
@@ -154,7 +154,7 @@ TASKS, in order:
    persistence), then E (image matcher in workers, all 8 angles,
    measured time per page). Add quantity-table rows for the vector score
    on synthetic symbols, including the same symbol rotated 90, 180 and
-   270 degrees and mirrored, each found. Test on Hidden Valley Spec's
+   270 degrees and mirrored, each found. Test on P02's
    electrical sheets where repeated symbols exist.
 
 KEEP GOING (in order, only after task 4):

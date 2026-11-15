@@ -22,7 +22,7 @@ HARD RULES
 - Never touch main. Never force-push. Never run docker compose down -v.
 
 TEST PROJECT: for every smoke check, measurement and comparison on the
-bench, use the project "Hidden Valley Spec" in the workspace "F5 Block A
+bench, use the project "P02" in the workspace "F5 Block A
 demo 15:16", signed in as estimator@bench.intelcost.io. You may add,
 change and delete markups, sheets and settings in that project for
 testing; remove throwaway markups you add when each check is done, and

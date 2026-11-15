@@ -13,7 +13,7 @@ checks C, specs S.
 
 **Where to check, safely.** Use the bench app at http://localhost:5173 and sign in with a
 throwaway account (`fx.<name>.<stamp>@bench.intelcost.io`), never the seeded account. Never
-open Hidden Valley Spec, its Rebid, Waxing City or Minmar. Use these instead:
+open P02, its Rebid, P04 or P05. Use these instead:
 - **Riverside Medical Center** (the bench seed: priced items, cost components, wage sets);
 - **Marketing Demo – Site** (has an earthwork result, assumptions and a strip area);
 - **Test 3** (copies of the Vol1/Vol2 sets);
@@ -204,8 +204,8 @@ ok, E1 agreed (step 2a gets its own day run after you review the pipe catalog, P
 
 ## Audit of the 3D test copy, 2026-10-16 (D-542; morning-report-2026-10-16/AUDIT_2026-10-16.md)
 
-None of my test data was ever on the copy: what the screenshots showed was my duplicates, named "Hidden Valley Rebid —
-3D test (copy…)", all purged. Two kinds of my writes did reach it (A1, A2); my seven duplicate requests only read it.
+None of my test data was ever on the copy: what the screenshots showed was my duplicates, named "3D test project
+(copy…)", all purged. Two kinds of my writes did reach it (A1, A2); my seven duplicate requests only read it.
 
 **Answered 2026-10-16 (D-544), closed:** A1 leave them; A2 noted; A3 yours (the Share dialog); A4 yes, built: every
 bench copy is renamed "BENCH DUP <yyyy-mm-dd hh:mm> — delete me" the moment it is made, by the duplicate helper and the
@@ -418,7 +418,7 @@ nothing unless it recurs; T4 was Umer's Calculate; T5 built (D-657, D-658).
 
 | # | What | Where it stands | Your call |
 |---|---|---|---|
-| A1 | **A read of a protected project.** While proving the compact read equal to the old one, `cmp_compact.py` ran read-only in the api's process on "Hidden Valley Spec Building Rebid" (bd8fc5b0) as well as the DUPs and the 3D test copy. It printed only item counts, byte sizes and timings; it wrote nothing. The api-process drive is outside the browser guard. | Reported. No further reads of any protected project except the 3D test copy. | Decide whether drives get their own guard (recommended: `drives/` refuse the protected uuids as `lib/protected.mjs` does). |
+| A1 | **A read of a protected project.** While proving the compact read equal to the old one, `cmp_compact.py` ran read-only in the api's process on "P03" (bd8fc5b0) as well as the DUPs and the 3D test copy. It printed only item counts, byte sizes and timings; it wrote nothing. The api-process drive is outside the browser guard. | Reported. No further reads of any protected project except the 3D test copy. | Decide whether drives get their own guard (recommended: `drives/` refuse the protected uuids as `lib/protected.mjs` does). |
 | A2 | **D-658 changed the plan's lean read:** no field is dropped; the full item read is made fast instead (Postgres builds compact JSON), so Properties never saves a partial item. | Built. 5,000 items: 2.85 s (met). 20,000: about 6.8 s (target 6 s, not met). | Confirm, and say whether to build the lean read with a gate on the editors for the last second at 20,000. |
 | A3 | **T6: a click at 20,000 shapes selects in 0.43 to 0.86 s** (target 100 ms). The canvas's part is 60 to 70 ms; the rest is the takeoff page and the Takeoff panel answering a new selection. | Not changed. | Schedule a selection-path profile of ProjectTakeoff and the panel. |
 | A4 | **D-662 (T2) changed from the answer:** no session account can tidy (window-b is an Estimator, walkthrough a Takeoff seat, the owner estimator@ is never used), so the tidy runs in the api's process as `drives/bench-tidy.py`. | Built; dry run clean. | Confirm D-662. |

@@ -1,6 +1,6 @@
 # Overnight report (2026-09-30, 00:36 to 11:30 UTC)
 
-Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "Hidden Valley Spec" in
+Plan: [OVERNIGHT_PLAN.md](OVERNIGHT_PLAN.md). Test project: "P02" in
 "F5 Block A demo 15:16", as estimator@bench.intelcost.io (the founder's instruction for
 this run). Everything below was checked on the bench.
 
@@ -266,7 +266,7 @@ Everything below was driven side by side with live legacy's "Bench comparison" p
 Most important first.
 
 1. **29% crispness on your real monitor (DPR 1.25).**
-   - Open Hidden Valley Spec › Page 1. Zoom menu › 29%.
+   - Open P02 › Page 1. Zoom menu › 29%.
    - Is the small text as crisp as at 50%? If not, D-105 is still open for your GPU.
 2. **D-117.** Look at the api's `umer-dev` (Abdullah's staging merge) and decide the merge.
 3. **Resize the browser window at Fit.** The page should stay fitted, as legacy's does.
