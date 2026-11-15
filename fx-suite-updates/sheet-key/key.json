@@ -1482,7 +1482,7 @@
   },
   {
    "sheet": "23c167e6-67a1-469d-8469-7e160c71c87c",
-   "project": "10793 SBR",
+   "project": "P09",
    "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
    "page": 1,
    "text_layer": false,
@@ -1499,7 +1499,7 @@
   },
   {
    "sheet": "a32a3f49-e6ce-4a27-a68b-d11ead07c93b",
-   "project": "10793 SBR",
+   "project": "P09",
    "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
    "page": 2,
    "text_layer": false,
@@ -1515,7 +1515,7 @@
   },
   {
    "sheet": "575b94a6-df86-4edf-bbcc-4443dde2a64b",
-   "project": "10793 SBR",
+   "project": "P09",
    "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
    "page": 3,
    "text_layer": false,
@@ -1531,7 +1531,7 @@
   },
   {
    "sheet": "3fdb6e20-624a-4a66-8829-5076a328d871",
-   "project": "10793 SBR",
+   "project": "P09",
    "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
    "page": 4,
    "text_layer": false,
@@ -1547,7 +1547,7 @@
   },
   {
    "sheet": "db77d9ea-26aa-4060-a06c-48ded077bc80",
-   "project": "10793 SBR",
+   "project": "P09",
    "file_name": "SBR - Unit 22 Final Plat (bid set).pdf",
    "page": 5,
    "text_layer": false,
@@ -1625,7 +1625,7 @@
     "3/16\" = 1'-0\""
    ],
    "confidence": "high",
-   "notes": "Two plans on the sheet: 'E8 EXTERIOR & SHOP BAY LIGHTING PLAN' SCALE: 1/8\" = 1'-0\" (the larger, top drawing, taken as main) and 'A8 OFFICE LIGHTING PLAN' SCALE: 3/16\" = 1'-0\" (bottom). Title block has no scale field. The text-layer hint 'SCALE: 3/16\"' is the smaller office plan, not the main drawing. Hidden Valley Leasing Spec Building."
+   "notes": "Two plans on the sheet: 'E8 EXTERIOR & SHOP BAY LIGHTING PLAN' SCALE: 1/8\" = 1'-0\" (the larger, top drawing, taken as main) and 'A8 OFFICE LIGHTING PLAN' SCALE: 3/16\" = 1'-0\" (bottom). Title block has no scale field. The text-layer hint 'SCALE: 3/16\"' is the smaller office plan, not the main drawing. P03's bid set."
   },
   {
    "sheet": "da52f38b-7745-43ef-b19b-14054bbe7a41",

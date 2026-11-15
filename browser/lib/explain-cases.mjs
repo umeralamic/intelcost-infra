@@ -4,7 +4,7 @@
 
 const DIA = 14.5 / 12;
 export const EXPLAIN_CASES = [
-  // Hidden Valley's Laterals Pipe zone: 38.3785 − 1.2559 = 37.1226 CY.
+  // P02's Laterals Pipe zone: 38.3785 − 1.2559 = 37.1226 CY.
   {
     id: "explain-pipe-zone",
     formula: "{qty:LINEAR.d1.d4@CY}-{qty:LINEAR.CIRC_AREA.d6@CY}",

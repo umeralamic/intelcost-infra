@@ -1,4 +1,4 @@
-"""Bench only, the night of 2026-10-23 (D-729): copy "Hidden Valley Rebid — 3D test" into a throwaway
+"""Bench only, the night of 2026-10-23 (D-729): copy the 3D test project (P01) into a throwaway
 account's own workspace, reading the original and writing only to the copy's workspace.
 
     docker compose exec -T api sh -lc "cd /srv && PYTHONPATH=/srv python drives/copy-3d-test.py \

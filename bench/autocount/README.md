@@ -35,7 +35,7 @@ renderer processes' private bytes from the OS while it runs, as the overnight re
 
 ## The fixtures
 
-- `E101.sheet`: page 25 of the Hidden Valley Spec Building bid set (Electric Lighting Plan),
+- `E101.sheet`: page 25 of P03's bid set (Electric Lighting Plan),
   a read-only copy of the founder's sheet. `E200.sheet`: Waxing City's only page (E200,
   Lighting Plan / Schedules / Notes). PDFs, named `.sheet` and served as
   `application/vnd.intelcost.sheet`, as the app serves sheets (D-42): a download manager on the

@@ -12,5 +12,5 @@ No new packages (app or api).
 
 **Behaviour to know at promotion.** A stored earthwork result that has a Site Feature undercut reads out of date
 once (D-528, version prefix `v6u`/`v5u`). Nothing is written to it; the next Calculate replaces it. This is D-470's
-mechanism. On the bench it affects the 3D test copy's C-200 only (Hidden Valley Spec Building Rebid's result is
+mechanism. On the bench it affects the 3D test copy's C-200 only (P03's result is
 already a v5 result, out of date since D-470).

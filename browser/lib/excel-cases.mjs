@@ -10,7 +10,7 @@ const HDPE6_LINKS = { P: "J28", d1: "Dimensions!C9", d2: "Dimensions!C10", d3: "
 const cellsOf = (env, links) => Object.fromEntries([[links.P, env.parent], ...Object.entries(env.dims).filter(([k]) => links[k]).map(([k, v]) => [links[k], v])]);
 
 export const EXCEL_CASES = [
-  // Hidden Valley's Laterals Pipe zone: 172.70 × 3 × 2 / 27 − 172.70 × π·0.5²/4 / 27 = 37.1226 CY;
+  // P02's Laterals Pipe zone: 172.70 × 3 × 2 / 27 − 172.70 × π·0.5²/4 / 27 = 37.1226 CY;
   // with the parent at 200 LF and Width 4: 200 × 4 × 2 / 27 − 200 × π·0.25/4 / 27 = 57.8048.
   {
     id: "excel-pipe-zone-linked",

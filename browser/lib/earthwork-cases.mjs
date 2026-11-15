@@ -11,7 +11,7 @@
 
 import { readFileSync } from "node:fs";
 
-/** F18 acceptance inputs, snapshotted from Hidden Valley (page 3 and C-200). */
+/** F18 acceptance inputs, snapshotted from P02 (page 3 and C-200). */
 const C200 = JSON.parse(readFileSync(new URL("./c200-acceptance.json", import.meta.url), "utf8"));
 
 const c = (item, label, surface, elevation, points) => ({ item, label, kind: "contour", surface, elevation, points });
@@ -995,7 +995,7 @@ export const EARTHWORK_CASES = [
   { id: "bal-shrink-unsuitable-surplus", kind: "balance", input: { cut: 300, fill: 20, reuseBank: 50, suitable: false, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: (300 + 25 / 0.9) * 1.25, importLoose: null } },
   // suitable, C 100 F 90: 90 / 0.9 = 100 bank, exactly the cut: neither line (legacy, unshrunk, would export 12.5).
   { id: "bal-shrink-exact-balance", kind: "balance", input: { cut: 100, fill: 90, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: null, importLoose: null } },
-  // The C-200 engineer's table (Hidden Valley, the founder's benchmark, D-142, D-177), typed
+  // The C-200 engineer's table (P02, the founder's benchmark, D-142, D-177), typed
   // as printed: excavation 14,263 BCY, embankment 8,727 CCY, shrink 1.10, swell 1.15. The
   // embankment needs 8,727 x 1.10 = 9,599.7 BCY; the surplus is 14,263 - 9,599.7 = 4,663.3
   // BCY; it exports 4,663.3 x 1.15 = 5,362.795 LCY (5,363). The table's "net 6,803" subtracts
@@ -2275,7 +2275,7 @@ export const EARTHWORK_CASES = [
     ],
     expect: { ok: true, cutCY: 10000 / 24 / 27, fillCY: 250000 / 24 / 27 },
   },
-  // F18's acceptance on the real sheets (D-188 Q12): Hidden Valley's page 3 (1" = 60', 47
+  // F18's acceptance on the real sheets (D-188 Q12): P02's page 3 (1" = 60', 47
   // adopted EG contours) linked to C-200 (1" = 30') by four control points, C-200's FG as
   // adopted (15 contours, 58 spot grades) and its boundary, snapshotted 2026-10-01
   // (`c200-acceptance.json`). The engineer's table: 14,263 cut and 8,727 fill. This row pins

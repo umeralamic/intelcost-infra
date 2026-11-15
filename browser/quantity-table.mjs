@@ -342,7 +342,7 @@ try {
         // D-808: a fitted grid with no system named; DXF R12 transliterated; LandXML in real UTF-8 and read back.
         // D-809: an old two-point match line between sheets calibrated 1 % apart is flagged; an F18 link's pairs too.
         const tin = { name: "Proposed grade – Café & “Pad”", description: "d", points: [{ n: 0, e: 0, z: 1 }, { n: 0, e: 10, z: 1 }, { n: 10, e: 0, z: 1 }], faces: [[0, 1, 2]] };
-        const text = landxml.writeLandXml(tin, { units: "us-ft", coordinates: { system: setx.localSystem(4), verticalDatum: "" }, project: "Hidden Valley — Rebid", made: new Date(0) });
+        const text = landxml.writeLandXml(tin, { units: "us-ft", coordinates: { system: setx.localSystem(4), verticalDatum: "" }, project: "Site P02 — Rebid", made: new Date(0) });
         const a = { feetPerPt: 60.59 / 72, widthPt: 100, heightPt: 100 };
         const b = { feetPerPt: 60 / 72, widthPt: 100, heightPt: 100 };
         const flags = stitch.storedFlags(
@@ -354,7 +354,7 @@ try {
         );
         return {
           system: /<CoordinateSystem name="Local, fitted to 4 control points"/.test(text),
-          project: text.includes('name="Hidden Valley — Rebid"'),
+          project: text.includes('name="Site P02 — Rebid"'),
           readBack: landxml.readLandXml(text).name,
           dxf: model.ascii("C-200 – Café ±2° × 3½ m² “A”"),
           flags: flags.map((f) => `${f.source}>${f.target}:${f.sheet}:${Math.round(f.pct * 100) / 100}`).join("|"),

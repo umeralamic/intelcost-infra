@@ -30,10 +30,10 @@ I counted on the bench, read only. I can't reach staging or production; the quer
 
 | Bench, 2026-10-14 | Count |
 |---|---|
-| Projects with arcs in Site Features, boundaries or contours | **3**: Hidden Valley Rebid — 3D test, Hidden Valley Spec Building Rebid, Marketing Demo – Site |
+| Projects with arcs in Site Features, boundaries or contours | **3**: the 3D test project (P01), P03, Marketing Demo – Site |
 | Projects with subtract shapes in them | **0** |
 | ...all 3 hold a saved sheet result, so their numbers change at their next Calculate | 3 |
-| Saved sheet results in total, before the change (all show "Out of date") | **4**, one per project: the 3 above and HIdden Valley Spec (no arcs, so its numbers stay the same) |
+| Saved sheet results in total, before the change (all show "Out of date") | **4**, one per project: the 3 above and P02 (no arcs, so its numbers stay the same) |
 | Saved sheet results still out of date now (the 3D test copy was recalculated on 2026-10-14) | **3** |
 | Saved site results | 0 |
 
