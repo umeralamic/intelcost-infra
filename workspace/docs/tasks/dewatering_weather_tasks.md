@@ -195,6 +195,13 @@ methods: price by hand" and carry no quantities until A-later. Every equipment a
 line reads **"Quote needed"** (never $0, never a stand-in rate); the money in the bid is the pay line at the owner's
 figure (§4.5).
 
+**The sump pumps are the exception (the founder's answer, 2026-11-15, REPORT_2026-11-17 §1 Q17; D-1285):** a sump
+pump (rule 2's groundwater sump in clay, and §5's rain sumps) is **priced from the library's trash pump**
+(`PMP-TRASH-3`, its rental at the cheapest days / weeks / 4-weeks and its fuel, as `dw-sump-clay` and `rain-sump-q1`
+work it), not "Quote needed". Wellpoints, eductors and deep wells stay "Quote needed" in A-lean. Recorded here only:
+AL4 is the pure, unwired module, so tonight nothing prices it; the pricing is built when AL4 is wired (AL4/AT8), and
+`dw-sump-clay`'s $ cells become A-lean's then.
+
 ### 3.1 Inputs at a station
 
 - **H** = the water's height above the trench bottom (`StationSoil.waterZ`, already computed); H ≤ 0: no groundwater

@@ -1801,9 +1801,19 @@ export const UTILITY_CASES = [
       "geotextile:trench:scope": "project",
       "geotextile:site": "0.8 + 1.2 = 2",
       "geotextile:site:scope": "project",
+      // D-1285 Q11: geogrid in whole rolls per project too: one line of 300 SY is 0.6 of a 500 SY roll, 1 for the project.
       "geogrid:site": "1 = 1",
-      "geogrid:site:scope": "line",
+      "geogrid:site:scope": "project",
     },
+  },
+  // D-1285 Q11 (the founder's answer 5): geogrid rounds once over the project, as geotextile (D-1279) and tracer and tape
+  // (D-1276). Three site geogrid lines of 300, 450 and 150 SY in 500 SY rolls: 0.6 + 0.9 + 0.3 = 1.8 -> 2 whole rolls, each
+  // line its share x 2 / 1.8: 0.6667 + 1 + 0.3333 = 2 (per line before: 1 + 1 + 1 = 3 rolls).
+  {
+    id: "util-1285-geogrid-project-rolls",
+    kind: "geotextile-rolls",
+    lines: [{ site: "geogrid", qty: 300 }, { site: "geogrid", qty: 450 }, { site: "geogrid", qty: 150 }],
+    expect: { "geogrid:site": "0.6667 + 1 + 0.3333 = 2", "geogrid:site:scope": "project" },
   },
   // --- D-1279 (the founder's answers to the 2026-11-15 report's §10). Q4: the bore line says the pits are in its price.
   // Q11: a pit placed alone self-performed; one made with a jack and bore, or linked to a bored run (jack and bore,
@@ -3076,6 +3086,101 @@ export const UTILITY_CASES = [
         "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
       ],
       todayPath: true,
+    },
+  },
+  // --- D-1285 Q7 (the founder's answer 4, 2026-11-15): vertical walls only where the trench is 4.5 ft deep or less (a
+  // margin under OSHA 1926.652(a)(1)'s 5 ft); deeper, the normal rule (sloped on an open site, a box where the width is
+  // limited). Worked by hand before the change. 100 LF at G = 100, Type B clay with no bores (federal OSHA 1:1), the
+  // section-lines drive. C900 6 DR 18: OD 6.90 in (0.575 ft), ID 6.134. Auto = AWWA C605 Type 4 house: bedding max(OD/8
+  // = 0.8625, 4) = 4 in (0.333333 ft); W = OD + 2 x 6 = 18.90 in -> the 24 in bucket, W 2 ft. h = cover + 0.575 + 0.333333.
+  // Excavation = (W h + k h^2) x 100 / 27 (vertical: k 0).
+  // q7-1: the 6 in force main at 4 ft cover (the rerun's case): h = 4.908333, over 4.5: sloped 1:1:
+  //   2 x 4.908333 + 4.908333^2 = 9.816667 + 24.091736 = 33.908403 SF -> 125.59 CY (vertical before: 9.816667 -> 36.36).
+  {
+    id: "q7-force-main-6-at-4ft-sloped",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:6",
+    cover: 4,
+    protection: "auto",
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      preset: "c605_t4_house",
+      walls: "sloped 1",
+      excavationCY: 125.59,
+      autoNote: "Protection: sloped walls for the whole run (Auto: deepest 4.9 ft, over 4.5 ft, open site).",
+    },
+  },
+  // q7-2: a 4.4 ft trench (cover 4.4 - 0.575 - 0.333333 = 3.491667): vertical, 2 x 4.4 = 8.8 SF -> 32.59 CY.
+  {
+    id: "q7-trench-4.4-vertical",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:6",
+    cover: 4.4 - 6.9 / 12 - 4 / 12,
+    protection: "auto",
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      walls: "vertical",
+      excavationCY: 32.59,
+      autoNote: "Protection: vertical walls, none needed for the whole run (Auto: deepest 4.4 ft, 4.5 ft or less, a margin under OSHA 1926.652(a)(1)'s 5 ft).",
+    },
+  },
+  // q7-3: exactly 4.5 ft: still vertical, 2 x 4.5 = 9.0 SF -> 33.33 CY.
+  {
+    id: "q7-trench-4.5-vertical",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:6",
+    cover: 4.5 - 6.9 / 12 - 4 / 12,
+    protection: "auto",
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      walls: "vertical",
+      excavationCY: 33.33,
+      autoNote: "Protection: vertical walls, none needed for the whole run (Auto: deepest 4.5 ft, 4.5 ft or less, a margin under OSHA 1926.652(a)(1)'s 5 ft).",
+    },
+  },
+  // q7-4: 4.6 ft: sloped 1:1, 2 x 4.6 + 4.6^2 = 9.2 + 21.16 = 30.36 SF -> 112.44 CY (vertical before: 9.2 -> 34.07).
+  {
+    id: "q7-trench-4.6-sloped",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:6",
+    cover: 4.6 - 6.9 / 12 - 4 / 12,
+    protection: "auto",
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      walls: "sloped 1",
+      excavationCY: 112.44,
+      autoNote: "Protection: sloped walls for the whole run (Auto: deepest 4.6 ft, over 4.5 ft, open site).",
+    },
+  },
+  // q7-5: 4.6 ft with "Vertical" picked on the run: the rule holds for a pick too (vertical only to 4.5 ft), so sloped as
+  //   q7-4: 112.44 CY. (Reading, founder away: as a vertical pick from 5 ft already was.)
+  {
+    id: "q7-trench-4.6-vertical-pick-sloped",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:6",
+    cover: 4.6 - 6.9 / 12 - 4 / 12,
+    protection: "vertical",
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: { walls: "sloped 1", excavationCY: 112.44 },
+  },
+  // q7-6: 4.6 ft in a street ("Limited width"): over 4.5 ft, the normal rule's box (before: vertical under 5 ft).
+  {
+    id: "q7-trench-4.6-limited-box",
+    kind: "section-lines",
+    type: "force_main",
+    pipe: "pvc_c900_dr18:6",
+    cover: 4.6 - 6.9 / 12 - 4 / 12,
+    protection: "auto",
+    limitedWidth: true,
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    expect: {
+      walls: "box",
+      autoNote: "Protection: trench box for the whole run (Auto: deepest 4.6 ft, over 4.5 ft, limited width).",
     },
   },
 ];

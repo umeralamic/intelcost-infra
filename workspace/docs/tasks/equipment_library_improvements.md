@@ -68,7 +68,16 @@ dearer, except the location factor, whose sign is unknown until the quotes come 
    8 h day, against $397.50 a day at the library's 4-week rent.
 9. **The engine's crew day is 8 h, the library's production basis 10 h, and the two are converted, not mixed, on every
    priced path** (the basis check, `PLAN-REVISION.md` §4). Four side paths read a fixed 8 h or 10 h; none changes a
-   price on an 8 h project, which every bench estimate and the harness are.
+   price on an 8 h project, which every bench estimate and the harness are. **D-1285 (Q19, the founder, 2026-11-15):**
+   (a) the pool (`production.py:_job_pool`, `_leftover`, the storm bands' machine hours) and (d) the lost-tier fallback
+   in `sync_site` now read the project's day and the tier file's basis; (f) labour overtime follows a spread's own
+   hours a day (`overtime.ts:overtimeBySpread`); migration d1285c4a9e10 moved the 17 older company copies fixed at
+   10 h to the 10 h basis. (b) `_separate_sub_hint` and (c) `note_fusion` are words only and stay as they are.
+   **TxDOT 0-4416-1's crew day (Q18, the founder: keep it):** the storm, sanitary and pressure crews built on the study
+   take its crew day as **8 h** (× 1.25 to the 10 h basis), **graded C**. The record disagrees on why: D-1091 calls it "a
+   standard crew day of 8 h", D-1275 says the 8 h day is "not stated in the study". Both readings give the same
+   figures; the grade C stands for the doubt. If the study's day was 10 h, those crews are 25 % fast and storm L + E is
+   too cheap by `kinds-report.mjs` K3's figure.
 
 ---
 

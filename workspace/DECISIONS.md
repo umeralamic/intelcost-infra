@@ -33370,3 +33370,121 @@ work (verbatim in `intelcost-infra/morning-report-2026-11-17/answers/FOUNDER-ANS
   activities to the 10 h basis, band threshold 50 crew-hours, rename the preset-setting label, fix the +0.00 flash,
   remove lone-before.txt from git, allow-list the real place names, a bug row for the Location editor county; Q9 and
   Q28 to the backlog; Q14 and Q33 no action); then one harness pass with the chosen defaults.
+
+## D-1285 — Night run 2026-11-15 → 17, step 1: the founder's §1 answers built (Q7 ≤ 4.5 ft, the small items, the crew-day basis fix), the Q6 evidence and the wall-rule check (reports), the page-load write bug (P-35), Rerun 1
+
+**Status:** in progress (night run; brief `intelcost-infra/morning-report-2026-11-18/BRIEF.md`). The founder's answers:
+D-1284 and `morning-report-2026-11-17/answers/FOUNDER-ANSWERS-§1.md`. **Reading (founder away):** the Q6 evidence and its
+recommended defaults go to the report; no default moves tonight (storm RCP stays C1479 Type 2 with the sand haunch).
+
+### Migration d1285c4a9e10 (Q19): the 17 older company activities to the 10 h basis — rows listed before it ran on the bench
+
+Revises d1279a3c5e71. `eq_company_activity` rows with `hours_per_day` 10, no `prod_basis_hours`, a starter copy
+(`national_key` set) never edited (`national_edited` false) → `hours_per_day` NULL, `prod_basis_hours` 10, as D-950 /
+D-960 did for the newer copies; each move written to its workspace's `audit_log` (`equipment.activity_basis_moved`), which
+the downgrade reads back. `updated_at` untouched; no project, spread or resource row written. **No founder workspace:**
+the 17 rows are in two bench test workspaces owned by throwaway accounts: workspace 3451 (guard list: "bench test
+workspace, kept by the account purge", the stitch test project's): A1–A15, ids 944–958; workspace 3489 (a throwaway's,
+not on the guard list): A7C id 2914, A8C id 2915. Each 10.00 → NULL hours a day, NULL → 10.00 basis. No spread references
+them. Row list and proof: `intelcost-infra/morning-report-2026-11-18/step1/MIGRATION-ROWS.md` (scratch foldproof5: the
+empty upgrade equals the bench's schema but the 4 restrict lines and the 31 known CHECK prints; a restored copy down/up
+row for row).
+
+### Step 1 built (2026-11-15 22:15 → 2026-11-16, unattended; founder to confirm)
+
+- **Decisions 1–5 of D-1283 "Rerun decisions": confirmed by the founder (2026-11-15 ~21:40 UTC, D-1284).** The code
+  already does each, checked: C1479 Type 1's haunch #57, Cat I (`sectionPresets.ts:c1479`, `t === 1 ? "stone"`); water
+  and force main under Houston 6 in bank sand bedding (`sectionPresets.ts:houston("bank_sand")`, fixed 6 in); an
+  untick of 30 TAC on the run is a hand pick, flagged where below the rule (`layers.ts:tacShortfall`, called whenever the
+  stack does not take 30 TAC); force mains out of 30 TAC (`TAC_TYPES` = sanitary, sanitary service). No code change.
+- **Q7, vertical walls only to 4.5 ft.** `protection.ts:VERTICAL_MAX_FT` 4.5: `protectionAt`'s Auto cuts vertical only at
+  h ≤ 4.5 ft (deeper: a box where the width is limited, else sloped/benched by the rule), and a "Vertical" pick deeper
+  than 4.5 ft is sloped (it already was from 5 ft). `quantities.ts:runQuantities`' run-level Auto (by the deepest
+  point) the same, its note "4.5 ft or less, a margin under OSHA 1926.652(a)(1)'s 5 ft" / "over 4.5 ft, open site" /
+  "over 4.5 ft, limited width". A box or shoring is still forced only from 5 ft (`required`), and caving under 5 ft is
+  still a flag only. **Reading (founder away):** the rule is the excavation's, so a structure pit on Auto
+  (`structures.ts:pitQuantities` → `protectionAt`) follows it too, and a hand "Vertical" pick is held to it. The api
+  does not decide walls; the bid-tab harness and the quantity table call the app's engine, so both follow. Rows (hand-
+  worked first, all right on the first run): `q7-force-main-6-at-4ft-sloped` (C900 6 at 4 ft cover, C605 T4 house, h
+  4.908: sloped 1:1, 125.59 CY / 100 LF, was 36.36 vertical), `q7-trench-4.4-vertical` (32.59), `q7-trench-4.5-vertical`
+  (33.33), `q7-trench-4.6-sloped` (112.44), `q7-trench-4.6-vertical-pick-sloped` (112.44), `q7-trench-4.6-limited-box`.
+- **Q11, geogrid in whole rolls per project** (`materials.ts:siteMaterials`, `roundScope: "project"` for geogrid as for
+  geotextile since D-1279). Row `util-1285-geogrid-project-rolls` (300 + 450 + 150 SY in 500 SY rolls: 0.6667 + 1 +
+  0.3333 = 2 rolls; per line before 3); `util-1279-geotextile-project-rolls`' geogrid scope line → project.
+- **Q17** recorded in `dewatering_weather_tasks.md` §3 (sump pumps priced from the library's trash pump when AL4 is
+  wired; nothing priced tonight). **Q18** recorded in `equipment_library_improvements.md` (finding 9): TxDOT 0-4416-1's
+  crew day stays 8 h graded C; D-1091 ("a standard crew day of 8 h") and D-1275 ("not stated in the study") disagree on
+  why, not on the figure.
+- **Q20, the band threshold = 50 crew-hours: already so, no change.** Since D-1279's late pass 2,
+  `production.py:_ensure_site` counts each band's crew-days on the library's 10 h day (`× hours_per_work_day ÷
+  prod_basis_hours`, `BAND_DAY_HOURS` 10) against `BAND_MIN_CREW_DAYS` 5, i.e. 50 crew-hours; the quantity table's
+  `band-48h-not-on-10h-day` and `band-50h-on-10h-day` prove it. The brief's "40 crew-hours today" was the state before
+  late pass 2. $0.
+- **Q19, the crew-day basis fix (PLAN-REVISION §4.2).** (a) `production.py:_job_pool` reads the project's
+  `hours_per_work_day` for a spread whose activity fixes no day (was `WORK_DAY` 8); `_leftover` takes the day
+  (`work_day`, from `_ensure_site`); the storm bands' machine hours too (`day_h = act.hours_per_day or work_day`).
+  (d) `sync_site`'s lost-tier fallback picks the tier at the production ÷ `_work_day_factor` (as `set_production`).
+  (f) labour overtime at each spread's own hours a day: `overtime.ts:overtimeBySpread` (each line whose spread's
+  `hours_per_day` differs from the project's day at that day, the rest at the project's), used by
+  `EstimatingView.tsx`. (b) `_separate_sub_hint` and (c) `note_fusion` are words only and stay. **Found, left:**
+  `sync_site`'s default-path `tier_for(tiers, rate or prod)` falls back to the project-day production only where the
+  tier file has no rate for the quantity (then there are no tiers to pick either). **No $ change on an 8 h project:**
+  every expression is the old one when the project's day is 8 and no activity fixes another (after migration
+  d1285c4a9e10 none does); (d) can move a tier only on a user-edited spread whose tier id is gone. Proved on the smoke
+  copy (below) and by the quantity table. Hand rows `ot-*` (equipment-cases.mjs): 8 h project no spread day $0 (equal
+  to the one-day premium); $4,000 of $10,000 on 10 h spreads, 8 h project: $400 (was $0); a 10 h project with $3,000 on
+  an 8 h spread: $700 (was $1,000); daily overtime on a 10 h spread: $500; overtime off $0.
+- **Q29:** the setting reads "Section by type, every Auto run" and says a pick applies to every run whose section is
+  Auto, new and existing, at its next Calculate (`UtilitySettingsSection.tsx:SectionPresetRows`).
+- **Q30:** `RunSectionBlock.tsx:useLive(…, settledOnly)`: the Switch box's live re-run is null ("Working out the
+  change…") until the picked section has settled, so the run's own figures never show as "After" (+0.00).
+- **Q31:** `morning-report-2026-10-31/lone-before.txt` untracked in infra (`git rm --cached`; the file stays on disk,
+  inside the ignored folder).
+- **Q32:** the client-name check takes an allow file: `.githooks/client-names.sh` (identical in app, api and infra)
+  skips the added lines of a path listed in `.githooks/client-names-allow`; the api's lists `data/wagecalc/ref_zip.csv`
+  (two real place names) and `data/wagecalc/ref_amf_county.csv` (a number). Paths only, no name in any repo file.
+  Proved in infra on a scratch staged file: a listed word blocks (exit 1), allowed by path passes (0), a second
+  unlisted file with the word still blocks (1); scratch removed.
+- **Q34** FEATURES bug row P-36 (the Location editor does not update the county). **Q9** and **Q28** FEATURES 🗓 Planned
+  rows ("Q22 pool", "Section layer lines"). Q14, Q33: no action.
+- **P-35, no write on opening or reloading a project (estimate 40 min, built):** the mark-stale POST is sent only where
+  it would flip a line. `ProjectTakeoff.tsx:sheetFreshLines` (the open sheet has a Calculate line of its own, not a
+  site's, not yet stale, from the items loaded) → `useVolumes({freshLines})`, whose effect returns before the POST when
+  there is none (the api's `mark_stale` takes exactly those lines); `useSiteStale.ts` the same over the site's lines.
+  The `PUT …/visit` and the work-session POST/PATCH (tab activity) are the only other writes a plain open or reload
+  sends (api log, 23:07:29–23:08:52 and 23:22:55–23:25:01 UTC, the throwaway's workspace only).
+- **Proof (2026-11-15 UTC).** App: lint 0 errors (the 4 known warnings), typecheck and build exit 0. Api: ruff,
+  format, mypy (287 files), `alembic check`, one head d1285c4a9e10. Quantity table 23:22:32–23:35:08: exit 0, 0 FAIL,
+  "344 rows … 297 utility rows right … 97 equipment rows right … passed" (290 + 7 utility, 92 + 5 equipment; the only
+  existing row changed is the geogrid scope line of `util-1279-geotextile-project-rolls`). (A first run 23:02:57–23:16:10
+  stopped on `ot.overtimeBySpread is not a function`: the before/after swap below put HEAD's overtime.ts back while it
+  ran; rerun on the final files.) **Smoke** (Playwright MCP, throwaway fx.equip.20261115230317, workspace "fx step1
+  smoke", a copy of the 3D test project set to Houston TX 77002 Harris County, open shop, burdened, site & civil, TX20260031
+  mod 1 Heavy saved through the Wage Calculator): C-200 Calculated on D-1285, then on HEAD's `overtime.ts`,
+  `EstimatingView.tsx` and `production.py` (23:14:13–23:19:49), then on D-1285 again: **direct $951,427.23, bid
+  $1,169,151.26 all three times** (labour $126,827.42, material $179,557.33, equipment $430,798.21; the basis fix moves
+  no cent on an 8 h project); open + 2 reloads: only work-session and visit writes; SS-1 cover 2.50 → 3.45 ft: one PUT
+  of the run and **one** mark-stale POST; 2 reloads after it: none; Calculate: SS-1 4.7 ft deep, "Sloped 1½:1 … Protection:
+  sloped walls for the whole run (Auto: deepest 4.7 ft, over 4.5 ft, open site)" (was vertical under 5 ft); the
+  setting "Section by type, every Auto run" with its new text; Switch to ASTM D2321 on SS-1: "Working out the change…"
+  for the first ~1.1 s, then the rows (excavation 193.96 → 175.61), never a +0.00 row; cancelled. Geogrid rolls: no
+  geogrid on the copy, so the quantity-table row is the proof. Screenshots `morning-report-2026-11-18/step1/q7-ss1-4.7ft-sloped.png`,
+  `q29-section-label.png`, `q30-switch-preview-settled.png`. Founder digest b4c963cdf83e7d84 at 22:15 and after the
+  migration (22:39).
+- **Bench windows (UTC):** migration d1285c4a9e10 on the bench 22:38:45 (data only, two test workspaces); api save of
+  `production.py` 22:40:55 → 200 at 22:41:41 (worker ready 22:41:34, worker-pages 22:41:38); api hook files (no reload)
+  ~22:45; app (Vite) saves 22:49:48–22:52:59 (11 files + the hook); the before/after swap: app 23:14:13–23:14:30 and
+  23:18:35–23:18:50, api 23:14:44 → 200 at 23:15:33 and 23:19:06 → 200 at 23:19:49. Each save after its own quiet
+  founder gate. No restart.
+
+## D-1286 — Night run 2026-11-15 → 17, step 2: Plan B B7 rate dates and B6 diesel catch-up (no price effect)
+
+**Status:** in progress (night run). Spec: `docs/tasks/equipment_library_improvements.md` (B6, B7).
+
+## D-1287 — Night run 2026-11-15 → 17, step 3: Plan B B2 sales tax on equipment rental, B3 rental extras, B8 owned standby and ratios; independent check; Rerun 2
+
+**Status:** in progress (night run). Spec: `docs/tasks/equipment_library_improvements.md` (B2, B3, B8, §9).
+
+## D-1288 — Night run 2026-11-15 → 17, step 4: Plan A-lean AL4, the pure water and rain module (no wiring)
+
+**Status:** planned for the run's step 4, only if time remains before hour 27. Spec: `docs/tasks/dewatering_weather_tasks.md` (AL4).

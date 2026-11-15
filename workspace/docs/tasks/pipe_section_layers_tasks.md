@@ -465,6 +465,23 @@ were worked with a throwaway script outside the repos. The table above is the re
 5. **Encasement.** Concrete placed against the trench walls (a layer, the trench's width), or D-1260's formed
    W × H box with native backfill beside it?
 
+## 8. The founder's §1 answers, built 2026-11-15 (D-1285, night run step 1; founder to confirm)
+
+- **Rerun decisions 1–5 confirmed** (D-1283 "Rerun decisions"): no code change; checked in the code: C1479 Type 1's
+  haunch #57 (`sectionPresets.ts:c1479`), Houston pressure 6 in bank sand bedding (`houston("bank_sand")`), an untick a
+  hand pick (`layers.ts:tacShortfall`), force mains not in `TAC_TYPES`.
+- **Q7, walls:** vertical only where the trench is 4.5 ft deep or less (`protection.ts:VERTICAL_MAX_FT`, used by
+  `protectionAt`'s Auto and a "Vertical" pick, and by `quantities.ts:runQuantities`' run-level Auto and its note); deeper,
+  the normal rule (sloped on an open site, a box where the width is limited). A box or shoring is still forced from 5
+  ft only. A structure pit on Auto follows the same rule (`structures.ts:pitQuantities` calls `protectionAt`). Rows
+  `q7-*` (utility-cases.mjs).
+- **Q29:** the project's section setting reads "Section by type, every Auto run" and says it applies to every Auto run,
+  new and existing, at its next Calculate (`UtilitySettingsSection.tsx:SectionPresetRows`).
+- **Q30:** the Switch box no longer shows "+0.00" for 150 ms: its live re-run is null ("Working out the change…") until
+  the picked section has settled (`RunSectionBlock.tsx:useLive`, `settledOnly`).
+- **Q11 (materials):** geogrid in whole rolls per project, as geotextile (`materials.ts:siteMaterials`; row
+  `util-1285-geogrid-project-rolls`).
+
 ## Sources
 
 - [S1] DIPRA laying conditions (Types 1–5), as reprinted by McWane Ductile: https://www.mcwaneductile.com/upl/downloads/catalog/products/pipe-laying-conditions-9f4064dc.pdf

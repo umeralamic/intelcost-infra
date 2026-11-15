@@ -30,6 +30,22 @@ export const EQUIPMENT_CASES = [
   { id: "eq-solve-lift-8-days", kind: "solve", rates: [563, 1370, 2766], days: 8, hours: 64, expect: { cost: 2740, label: "2 weeks", alt: "one 4-week", altCost: 2766 } },
   { id: "eq-solve-blank-week", kind: "solve", rates: [1040, null, 7950], days: 8, hours: 64, expect: { cost: 7950, label: "one 4-week", skipped: ["wk"] } },
   { id: "eq-solve-no-rates", kind: "solve", rates: [null, null, null], days: 8, hours: 64, expect: { none: true } },
+
+  // D-1285 Q19 (f): labour overtime at each spread's own work day (`overtime.ts:overtimeBySpread`), worked by hand. The
+  // FLSA rule (D-961): over 40 h a week at time and a half, so the premium is labour x 0.5 x (overtime h / week h). 5 days.
+  // ot-1: an 8 h project, no spread of its own day: 8 x 5 = 40 h, no overtime: $0 (as `overtimePremium` alone).
+  { id: "ot-8h-project-no-spread-day", kind: "overtime", rule: { overtime: true, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [], expect: { premium: 0, same: true } },
+  // ot-2: an 8 h project with $4,000 of its $10,000 labour on spreads fixed at 10 h (the older copies): 50 h weeks, 10 h
+  //   over: 4,000 x 0.5 x 10 / 50 = $400; the other $6,000 at 8 h: $0. Before (f): $0.
+  { id: "ot-spread-10h-on-8h-project", kind: "overtime", rule: { overtime: true, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [{ hoursPerDay: 10, labor: 4000 }, { hoursPerDay: 8, labor: 1000 }], expect: { premium: 400, same: false } },
+  // ot-3: a 10 h project with $3,000 of $10,000 on an 8 h spread: 7,000 x 0.5 x 10 / 50 = $700; the 8 h spread $0. Before
+  //   (f): 10,000 x 0.1 = $1,000.
+  { id: "ot-spread-8h-on-10h-project", kind: "overtime", rule: { overtime: true, daily: false, daysPerWeek: 5 }, workDay: 10, labor: 10000, own: [{ hoursPerDay: 8, labor: 3000 }], expect: { premium: 700, same: false } },
+  // ot-4: daily overtime too (over 8 h a day), an 8 h project, $5,000 of $6,000 on a 10 h spread: max(50 - 40, 2 x 5) = 10 h
+  //   of 50: 5,000 x 0.5 x 0.2 = $500; the rest $0.
+  { id: "ot-daily-spread-10h", kind: "overtime", rule: { overtime: true, daily: true, daysPerWeek: 5 }, workDay: 8, labor: 6000, own: [{ hoursPerDay: 10, labor: 5000 }], expect: { premium: 500, same: false } },
+  // ot-5: overtime off: $0 whatever the spreads.
+  { id: "ot-off", kind: "overtime", rule: { overtime: false, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [{ hoursPerDay: 10, labor: 4000 }], expect: { premium: 0, same: true } },
   { id: "eq-solve-fixed-day", kind: "solve", rates: [1040, 2927, 7950], days: 7.6526, hours: 61.2205, fixed: "day", expect: { cost: 8320, label: "8 days" } },
 
   // One machine, the plan's worked examples (8-hr day, catalog path): plan §3.5, §3.6.
@@ -260,6 +276,7 @@ export async function runEquipment(page, eqlib) {
       const se = await import("/src/lib/estimate/sharedEquipment.ts");
       const match = await import("/src/lib/estimate/equipment/match.ts");
       const sug = await import("/src/lib/estimate/equipment/suggest.ts");
+      const ot = await import("/src/lib/estimate/overtime.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -436,6 +453,11 @@ export async function runEquipment(page, eqlib) {
             rental,
             missing,
           };
+        }
+        // D-1285 Q19 (f): the premium by spread, and whether it equals the one-day premium on the whole labour.
+        if (c.kind === "overtime") {
+          const premium = ot.overtimeBySpread(c.rule, c.workDay, c.labor, c.own);
+          return { premium, same: Math.abs(premium - ot.overtimePremium(c.rule, c.workDay, c.labor)) < 0.005 };
         }
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {

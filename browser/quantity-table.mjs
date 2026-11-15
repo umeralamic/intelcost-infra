@@ -2191,6 +2191,11 @@ try {
           geoFlags: layered ? layered.flags : [],
           attention: (layered ? layered.flags : []).filter(cv.attentionRunFlag).length,
           linesSorted: made.map((l) => `${l.role}|${l.variant}|${l.name}|${r2(l.quantity)}`).sort(),
+          // D-1285 Q7: the walls the run was cut with (each piece's method, and its slope where sloped), the excavation and
+          // Auto's note.
+          walls: [...new Set(r.pieces.map((p) => (p.method === "sloped" || p.method === "benched" ? `${p.method} ${p.slope}` : p.method)))].join(" "),
+          excavationCY: r2(r.excavationCF / 27),
+          autoNote: r.notes.find((n) => n.startsWith("Protection:")) ?? null,
           bellCY: r.sectionCheck ? r2(r.sectionCheck.bellCF / 27) : 0,
           preset: layered ? layered.stack.preset : "legacy",
           title: layered ? layered.stack.title : "",
