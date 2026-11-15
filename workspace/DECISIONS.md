@@ -32629,6 +32629,105 @@ switched on (main's call: the app/api agent's `docker exec` reads must not be bl
     to it: no change there), update CLAUDE.md rule 12, mirror `.claude/` and rule 12 to `intelcost-infra/
     workspace/`, commit.
 
+### Q3, Q4, Q6–Q13, Q16, Q17 (the app/api half)
+
+**Status:** built 2026-11-15 (night run), awaiting the founder's check; nothing moved to Live. Spec:
+[answers_d1276_tasks.md](docs/tasks/answers_d1276_tasks.md) § D-1279. Migration `d1279a3c5e71` (revises `d1276b8e4f10`,
+not folded).
+
+- **Q3, the pull-in floor.** Half a crew day only when the job has no other pipe work of that crew
+  (`production.py:crew_lays_pipe` over the crew's whole spread: a utility pipe line with a quantity that is not a
+  pull-in); otherwise the pull-in rides the crew at its own pace with a **2 crew-hour minimum** (2 h of the crew's work
+  day, `PULL_IN_MIN_CREW_HOURS`, `pull_in_floor(rate, qty, alone, day_hours)`, `_line_rates(..., lays_pipe)`). The
+  run-alone test `crossing_alone` is gone. Notes: "Pull-in on the job's own pipe crew at its pace (2 crew-hour
+  minimum)" / "No other pipe work for this crew on the job: the pull-in at a half-day minimum".
+  - **Harness, one pass on bidtabs at 8b1bcae (unchanged since; infra HEAD eaff77e),** 2026-11-15 06:04:23–06:06:42 UTC
+    (2.3 min, the whole pass): only T4's tab (2022-2115) re-run, its A contract and the in-run pair with the 500 LF host
+    run (`~inrun`, `~rest`), merged into the post-Part-4 rerun's results and scored by `crossings-report.mjs score`
+    (`docs/reference/Bid tabs Houston 2026-11/crossings-2026-11-16-d1279-x4*`, outside git). Bench app/api with D-1279
+    saved, head `d1279a3c5e71`; throwaway project fx.bidtab.20261115055010 (Harris County, public, open shop,
+    burdened, 77002, Site & civil, `wd_used` "TX20260031 mod 1, Heavy").
+  - **X4 / T4 (per EA, direct less the carrier; median $2,500, low $425.50):** alone (reading A) 8,934.47 → **8,812.19**
+    (to the medians 0.280 → 0.284, to the lows 0.048 → 0.048): the half day stays (no other pipe work), the pull-in
+    $2,913 → $2,929 (rate drift), spacers $188 → $139 and seals $341 → $253 (Q9). **In its run (F)** 5,921.29 →
+    **6,458.36** (to the medians 0.422 → **0.387**, to the lows 0.072 → **0.066**): the pull-in −$45 (noise) → **$625**,
+    the 2 crew-hour minimum (+$670); spacers $172 → $125, seals $312 → $227 (Q9, −$132). T3 in its run 252.58 →
+    249.74/LF (0.939 → 0.949; its pull-in is over 2 h, so only Q9 moves it).
+- **Q4.** The bore line reads "Jack and bore, <n>" casing (subcontract: machine, jacking, casing install, pits included)"
+  (`crossings.ts:crossingMaterials`). No price change.
+- **Q6, A1 (the storm spread near day rates): not a defect.** The period solver picks weeks and 4-weeks: each spread
+  machine is priced once over the spread's hours (`sharedEquipment.ts:computeSharedEquipment` →
+  `libraryResourceCost` → `cost.ts:machineCost` → `periods.ts:solveRental`). The ≈ $2,440 a crew-day comes from the
+  spread's excavator being sized to its largest pipe and deepest trench (`production.py:_ensure_site` →
+  `sized_excavator`, a 30–40 t where a contract has a 30–72 in line; `sized_compactor` a trench roller from 24 in), the
+  plate, roller and skid steer riding with the crew hourly at day ÷ 8 by design (`cost.ts`, the `site` branch), an 8 h
+  day (`hours_per_work_day` 8; A18/A28/A32/A96 `hours_per_day` null) and the mob. Recomputed on the 16 A32 spreads:
+  $618.8 k against the observed $637.5 k (−3 %); with the tier's 20 t and plate it would be $441 k. The analyst's
+  $1,450–1,504 floor used the tier rows, a 10 h day and 4-week ÷ 20 for crew-trailer machines and left out mob. $0
+  effect. Design questions left for the founder (one sized excavator for the whole spread; the harness runs with the
+  pool on).
+- **Q6, the gasket double count: not a double count.** The RCP pipe rows (`pipe:rcp_c76_wall_b:*`) are county
+  tongue-and-groove supply prices; no source names joint material. The `gasket:rcp:<n>` line
+  (`materials.ts:pipeMaterials`, ⌈LF ÷ 8⌉ a run) is the joint's butyl mastic (ASTM C990, D-1080, grade D, 1.05 × D a
+  joint) and the only place an RCP joint is priced; the 5 % gravity allowance covers fittings only. Its note now says so
+  and to drop it where a gasketed (C443) pipe price is used (migration, note only). $0 effect.
+- **Q6, T&D and the allowance.** `addon:test_disinfect` stays $2.25/LF grade D, its note ending "founder to confirm"
+  (migration); the 20 % pressure fittings allowance stays, its code comment saying grade D, founder to confirm
+  (`materials.ts:ALLOWANCE_PCT`).
+- **Q7.** No C900 restraint key existed at 14 or 18 in, so `restraint:pvc_c900:14` $258.56 and `:18` $375.63 are added,
+  fitted as the C900 4, 20 and 24 in keys are (5.1218 × D^1.486 on the 6–16 in kits, grade F, the same grade those
+  fitted keys carry). C909 at 14 and 18 in takes them (its MJ restraint already maps to C900's key of its size).
+- **Q8.** Two stainless insert stiffeners a PE CTS service (`materials.ts:CTS_STIFFENERS`, `serviceMaterials`,
+  `lines.ts`), keys `stiffener:cts:<n>` at Ford's list × 0.74, grade D: Ford Meter Box price book Section J
+  (February 2026, rev. May 2026), "Insert stiffeners, 50 series for polyethylene tubing" (solid 304 stainless):
+  INSERT-51 3/4 in $3.83, -52 1 in $4.06, -53-72 1-1/4 in $4.99, -54 1-1/2 in $5.58, -55 2 in $5.58. 100 ft coils and
+  0 % kept.
+- **Q9.** Casing spacers (4–24 in) and end seals (8–48 in) at list × 0.74, grade D (22 keys; the list prices in the
+  notes; old values in the seed and the audit row).
+- **Q10.** A share of a project roll shows two decimals when fractional ("0.12 ROLL"), whole when whole ("1 ROLL")
+  (`componentDisplay.ts:shareQtyText`, `ComponentQuantity.share`, `EstimatingView.tsx`).
+- **Q11.** A pit placed on its own starts self-performed (`crossings.ts:STANDALONE_PITS_BY_SUB`,
+  `runDefaults.ts:defaultStructure`); one made with a jack and bore stays by the bore sub (`useUtilities.tsx:makePits`);
+  a pit being placed and linked in the panel to a jack and bore, sleeve or HDD run starts by the sub, to any other run
+  or none self-performed (`crossings.ts:boredRun`, `StructurePanel.tsx:PitFields`). A stored pit keeps its choice.
+- **Q12.** A new workspace's CSI tree is seeded with the MasterFormat nodes, its per-type utility sections (33 05 00,
+  33 14 00, 33 31 00, 33 41 00, 33 42 00, 33 52 00) packaged to the seeded Utility subcontractor, as the Division 33
+  folders they stand for are (`classification/service.py:ensure_seeded`, `_seed_utility_sections`). Only at the first
+  seeding: no existing workspace is written (the move tool carries the package there).
+- **Q13, not built.** The Estimating total is computed inside `EstimatingView.tsx` (library pricing, shared machines,
+  bid order, rules, rounding) with no extract another screen can call; reusing it in the move card means lifting that
+  pipeline into a hook first, a change to the most-used screen that wants its own task and proof. The card still shows
+  the stored cost-component total, as before.
+- **Q16.** Inline thumbnails: at most 12 a project and 96 KB each (`drawing/service.py`); on the 3D test project's 29
+  sheets the 512 px thumbnails are 10.8–36.7 KB, median 22.6 KB (none over the cap). `GET …/drawing/asset` had no
+  Cache-Control; it now sends `Cache-Control: private, no-store` (`drawing/routes.py:ASSET_CACHE_CONTROL`: the answer
+  holds short-lived signed links; the app keeps it 30 min in memory and asks again after a page is prepared). Measured
+  headers: `cache-control: private, no-store`, `content-length: 46304`, `content-type: application/json`,
+  `x-server-time`. A note for Abdullah in the api's STATUS.md: presign the thumbnails on AWS.
+- **Q17.** The cover fields show their value: a setting with a built-in default shows it ("Default", grade badge) where
+  no library or company value reaches the dialog (`EquipmentSettingsDialog.tsx:Row.fallback`, from
+  `cover.ts:MIN_COVER`); on the bench the library serves 2 and 3 ft and the fields show them.
+- **Client names (Q18 leftovers in api source):** `ai/trial.py` and `drawing/reading.py` docstrings reworded to P02.
+- **Built and measured (bench clock 2026-11-15, UTC).** Migration proved on foldproof10: from empty, `upgrade head`
+  gives the bench's schema (the diff is the known CHECK prints only), `alembic check` clean, one head; on a restored
+  bench copy, up changes 58 library lines (42 repriced or re-noted, 7 keys added, 1 audit row), grades A171 B188 C613
+  D167 F32 → A171 B188 C597 D188 F34, down equals the copy row for row (0 lines), up again equals up (0 lines). Bench
+  run 05:14:44–05:15:04; the bench after equals the proof's up (0 lines); founder digest `b4c963cdf83e7d84` before and
+  after. Code saved after it: api 05:16:29 (reload 05:16:32–05:17:31, one start interrupted by the second batch of
+  changes), app 05:16:29–05:16:31; api docstrings 06:08:15 (reload 06:08:17–06:09:08). Gates: app lint, typecheck,
+  build; api ruff, format, mypy (287 files), `alembic check`, one head (`d1279a3c5e71`). Quantity table exit 0, no FAIL:
+  344 rows, 204 utility rows (new `util-1279-answers`, `util-1279-c909-14-on-c900-key`, `-18-`; changed
+  `util-1276-crossing-defaults` pit false, `util-1276-pe-cts-service-60/-150` and `util-1260-water-service-tap` the
+  stiffeners), answers 28 rows (the pull-in rows rewritten), grade counts.
+  Smoke on throwaway fx.equip.20261115052748 (a copy of the 3D test project in a new workspace; Harris County, public,
+  open shop, burdened, 77002, TX20260031 mod 1 Heavy): the new workspace's MasterFormat sections carry Utility and its
+  sewer lines pool with the job's excavator; ST-1 given an 80 LF jack and bore (589 LF sanitary run): its pits by the
+  bore sub, the bore line "pits included" (`q4-bore-pits-included.png`), spacers $35.80 and seals $156.37, the pull-in
+  2.0 crew-hours of the crew's 22 (12 MH for six); a standalone bore pit stored `bySub: false`, the panel's link to
+  ST-1 turning it on and to ST-2 off; SS-1 as a 1 in PE CTS service with 2 stiffeners at $2.96; tracer "1 ROLL" and tape
+  "0.12 ROLL" (`q10-roll-two-decimals.png`); the cover fields at 2 and 3 ft (`q17-cover-defaults.png`); estimate
+  $958,126.83, bid $1,194,736.81. Screenshots in `morning-report-2026-11-16/answers/`. Purged.
+
 ## D-1280 — Pipe section layers, night 1 (tasks 1–4 of D-1278's plan): the engine and the presets, proven on the 26 hand rows
 
 **Status:** Accepted (2026-11-15, the founder's build plan in D-1278). Details below as built.

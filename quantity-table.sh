@@ -70,8 +70,10 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # D-1276: the 10 C909 MJ restraint keys removed (C7 D3); casing spacers 4-16 in D to C (7) and 18-24 in repriced D (3); end
 # seals 8-30 in D to C (9) and 36-48 in repriced D (3); 15 keys added: curb stops and CTS couplings C8 D2, duct bank spacers
 # C2 D3: C594 - 7 + 7 + 9 + 8 + 2 = 613, D181 - 3 - 7 - 9 + 2 + 3 = 167.
-if [ "$MAT_COUNTS" != "A171 B188 C613 D167 F32" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C613 D167 F32"
+# D-1279: spacers and seals at list x 0.74, grade D (the 7 spacers and 9 seals at C go to D); 5 insert stiffeners (D);
+# C900 restraint 14 and 18 in (F): C613 - 16 = 597, D167 + 16 + 5 = 188, F32 + 2 = 34.
+if [ "$MAT_COUNTS" != "A171 B188 C597 D188 F34" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C597 D188 F34"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts

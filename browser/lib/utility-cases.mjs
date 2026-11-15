@@ -958,8 +958,8 @@ export const UTILITY_CASES = [
       variant: "pe_cts_sdr9:1|1|0–6 ft||short|t:water_service|a:tape+test_disinfect+tracer",
       name: '1" PE CTS SDR 9, 0–6 ft deep, short run',
       lf: 60,
-      // D-1276 (D-1272 9): a PE CTS service's curb stop too (60 LF, one coil: no coupling).
-      keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1",
+      // D-1276 (D-1272 9): a PE CTS service's curb stop too (60 LF, one coil: no coupling); D-1279 (Q8) its 2 stiffeners.
+      keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1 stiffener:cts:1",
       "tap:water:1:qty": "1",
       "tap:water:1:unit": "EA",
       "tap:water:1:name": 'Service tap at the main (saddle and corporation stop), 1"',
@@ -1709,7 +1709,8 @@ export const UTILITY_CASES = [
   {
     id: "util-1276-crossing-defaults",
     kind: "crossing-defaults",
-    expect: { pitBySub: true, newJackBore: "sub", keptOwner: "owner", storedBefore: "owner", sleeveCasingBy: "sub", pitsText: "Pits by the bore sub: the bore price includes them", bellGrade: "grade D, maker table later" },
+    // D-1279 (Q11): a pit placed alone now starts self-performed (pitBySub false); one made with a jack and bore by the sub.
+    expect: { pitBySub: false, newJackBore: "sub", keptOwner: "owner", storedBefore: "owner", sleeveCasingBy: "sub", pitsText: "Pits by the bore sub: the bore price includes them", bellGrade: "grade D, maker table later" },
   },
   {
     // A new 60 LF sleeve, 16 in x 0.375, its casing sub-furnished: its own pipe line the bore sub's (a subcontract at the
@@ -1742,7 +1743,7 @@ export const UTILITY_CASES = [
     label: '1" PE CTS SDR 9',
     lf: 60,
     bends: [{ angle: 90, count: 1 }],
-    expect: { keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1", "curb_stop:cts:1:qty": "1", "fit:pipe:pe_cts_sdr9:1:pct": 0 },
+    expect: { keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1 stiffener:cts:1", "curb_stop:cts:1:qty": "1", "stiffener:cts:1:qty": "2", "fit:pipe:pe_cts_sdr9:1:pct": 0 },
   },
   {
     // A 150 LF one: two coils, one compression coupling (ceil(1.5) - 1 = 1).
@@ -1751,7 +1752,7 @@ export const UTILITY_CASES = [
     type: "water_service",
     label: '1" PE CTS SDR 9',
     lf: 150,
-    expect: { keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1 coupling:cts_compression:1", "coupling:cts_compression:1:qty": "1", "curb_stop:cts:1:qty": "1" },
+    expect: { keys: "pipe:pe_cts_sdr9:1 fit:pipe:pe_cts_sdr9:1 tracer_wire warning_tape addon:test_disinfect tap:water:1 curb_stop:cts:1 coupling:cts_compression:1 stiffener:cts:1", "coupling:cts_compression:1:qty": "1", "curb_stop:cts:1:qty": "1", "stiffener:cts:1:qty": "2" },
   },
   {
     // A.6: the duct bank's spacer sets every 5 ft of trench, one at each end, a spacer a conduit: 100 LF of trench x 4
@@ -1785,5 +1786,43 @@ export const UTILITY_CASES = [
       { qty: 250, materials: [{ key: "tracer_wire", qty: "QTY * 1.1 / 500" }, { key: "warning_tape", qty: "QTY * 1.05 / 1000" }] },
     ],
     expect: { tracer_wire: "0.4444 + 0.5556 = 1", warning_tape: "0.4444 + 0.5556 = 1", "tracer_wire:note": "0.44 of 1 ROLL for the project (whole rolls, rounded once)" },
+  },
+  // --- D-1279 (the founder's answers to the 2026-11-15 report's §10). Q4: the bore line says the pits are in its price.
+  // Q11: a pit placed alone self-performed; one made with a jack and bore, or linked to a bored run (jack and bore,
+  // sleeve, HDD) while placed, by the bore sub. Q8: two insert stiffeners a PE CTS service. Q10: a share of a project roll
+  // with two decimals when fractional (0.3245 -> 0.32), whole when whole (2; 1.9999 -> 2), 12.5 -> 12.50.
+  // Q7: a 14 in C909 main restrained at two 90s takes C900's 14 in restraint key, added by migration d1279a3c5e71 (the
+  // fit of the C900 4, 20 and 24 in keys, grade F); 18 in the same.
+  {
+    id: "util-1279-c909-14-on-c900-key",
+    kind: "type-lines",
+    type: "water",
+    label: '14" PVCO C909 Class 235',
+    lf: 200,
+    run: { catalog_key: "pvco_c909_235:14", nominal_in: 14 },
+    bends: [{ angle: 90, count: 2 }],
+    expect: { "restraint:pvc_c900:14:qty": "2" },
+  },
+  {
+    id: "util-1279-c909-18-on-c900-key",
+    kind: "type-lines",
+    type: "water",
+    label: '18" PVCO C909 Class 235',
+    lf: 200,
+    run: { catalog_key: "pvco_c909_235:18", nominal_in: 18 },
+    bends: [{ angle: 90, count: 2 }],
+    expect: { "restraint:pvc_c900:18:qty": "2" },
+  },
+  {
+    id: "util-1279-answers",
+    kind: "answers-1279",
+    expect: {
+      boreName: 'Jack and bore, 16" casing (subcontract: machine, jacking, casing install, pits included)',
+      pitStandalone: false,
+      pitMadeWithBore: true,
+      bored: "jack_bore:true hdd:true cased_open:false concrete:false none:false casing:true legacy:true",
+      stiffeners: 2,
+      shares: "0.32 2 2 12.50",
+    },
   },
 ];

@@ -35,3 +35,27 @@ Quantity-table rows: `util-1276-*` (browser), `answers` (drives/quantity-table.p
 | A.10 | Overlay thumbnails with the sheet list | The sheet list (`GET …/asset`) carries `thumbnail_data`, a data URL of the 512 px fit thumbnail, for every sheet on either side of an overlay (at most 12 a project, 96 KB each; read once per api process, kept by storage key); the overlay's coarse pass decodes it with no request; every other sheet keeps its link. | api `drawing/service.py` (`overlay_thumbnails`), `drawing/routes.py` (`all_sheet_assets`), `drawing/schemas.py`; app `ProjectTakeoff.tsx`, `ReferencePane.tsx`, `core/api/types.ts` |
 | A.10 | Retry in Choose pages for "too long" | `POST …/file/{file}/pages/retry` sends a file whose thumbnails stopped twice (`too_long`) round D-1270's cycle again (made pages kept); Choose pages shows **Retry** beside the message, for a multi-page file and a one-page tile (the one-page tile now shows D-1270's message too, which it dropped). | api `project/service.py` (`retry_pages`), `project/routes.py` (`retry_file_pages`); app `PageChooser.tsx` (`Problem`), `use-file-pages.ts`, `LoadSheetsDialog.tsx`, `project/api.ts` |
 | A.10 | Purge the older fx accounts (2026-10-11 to 11-04) | Dry run then `--purge --only` each: 8 purged (5 of 10-11, one of 10-24, the collab pair of 10-26 with its workspace), 4 kept (the stitch pair, the quantity table's account, and the sheet-key account that owns a workspace holding a protected project). The purge's pattern now takes an older session's `fx.<name>[.<digits>].<letter>`. | infra `drives/purge-bench-accounts.py`; lists in `morning-report-2026-11-16/part4/p4b-purge-*.txt` |
+
+## D-1279 (the founder's answers to the 2026-11-15 report's §10, the app/api half)
+
+Built unattended 2026-11-15 (night run); awaiting the founder's check. Nothing moves to Live without it. Migration
+`d1279a3c5e71` (revises `d1276b8e4f10`). Details and figures in DECISIONS.md D-1279.
+
+| Q | Answer | Built | Where |
+|---|---|---|---|
+| Q3 | Pull-in floor | Half a crew day only when the job has no other pipe work of that crew; otherwise at the crew's pace with a 2 crew-hour minimum. T4 in its run 5,921.29 → 6,458.36 per EA (to the medians 0.422 → 0.387, to the lows 0.072 → 0.066); alone 8,934.47 → 8,812.19 (spacers and seals, Q9) | api `production.py` (`crew_lays_pipe`, `pull_in_floor`, `PULL_IN_MIN_CREW_HOURS`, `_line_rates`, the note in `sync_site`) |
+| Q4 | Bore line text | "… (subcontract: machine, jacking, casing install, pits included)" | app `crossings.ts` (`crossingMaterials`) |
+| Q6 | A1, the gasket, T&D, the allowance | A1 and the gasket: not defects (the excavator sized to the largest pipe; the gasket line is the joint's butyl mastic, the pipe rows carry none). T&D $2.25 and the 20 % allowance kept, grade D, "founder to confirm" | migration (notes), app `materials.ts` (`ALLOWANCE_PCT` comment) |
+| Q7 | C909 restraint at 14 and 18 in | `restraint:pvc_c900:14` and `:18` added (fitted as C900 4/20/24 in, grade F); C909 takes them | migration, seed `d1279_price_answers.json` |
+| Q8 | Insert stiffeners | 2 stainless a PE CTS service, `stiffener:cts:<n>`, Ford Section J list × 0.74, grade D | migration; app `materials.ts` (`CTS_STIFFENERS`, `serviceMaterials`), `lines.ts` |
+| Q9 | Spacers and seals | list × 0.74, grade D (22 keys) | migration |
+| Q10 | Quantity column | a share of a project roll with two decimals when fractional | app `componentDisplay.ts` (`shareQtyText`), `EstimatingView.tsx` |
+| Q11 | Pit defaults | standalone self-performed; made with or linked (while placed) to a jack and bore, sleeve or HDD run by the sub; stored pits kept | app `crossings.ts` (`STANDALONE_PITS_BY_SUB`, `boredRun`), `runDefaults.ts`, `StructurePanel.tsx`, `useUtilities.tsx` |
+| Q12 | Seeded tree | a new workspace's MasterFormat utility sections packaged to Utility at the first seeding; no existing workspace written | api `classification/service.py` (`ensure_seeded`, `_seed_utility_sections`) |
+| Q13 | Move preview total | **not built**: Estimating's total lives inside `EstimatingView.tsx`; reusing it needs that pipeline lifted into a hook first (its own task) | — |
+| Q16 | Thumbnails | 10.8–36.7 KB (median 22.6 KB) under the 96 KB cap, 12 a project; `GET …/asset` now `Cache-Control: private, no-store`; note for Abdullah (presign on AWS) | api `drawing/routes.py` (`ASSET_CACHE_CONTROL`), `STATUS.md` |
+| Q17 | Cover defaults | the fields show their value; a built-in default shows where no value reaches the dialog | app `EquipmentSettingsDialog.tsx` (`Row.fallback`) |
+
+Quantity-table rows: new `util-1279-answers`, `util-1279-c909-14-on-c900-key`, `util-1279-c909-18-on-c900-key`; changed
+`util-1276-crossing-defaults` (pit false), `util-1276-pe-cts-service-60`, `-150`, `util-1260-water-service-tap`
+(stiffeners), the `answers` pull-in rows, the grade counts (A171 B188 C597 D188 F34).

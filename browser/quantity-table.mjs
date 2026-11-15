@@ -1930,6 +1930,8 @@ try {
     const cv = await import("/src/lib/takeoff/earthwork/utilities/cover.ts");
     // D-1276: tracer and tape in whole rolls once over the project (Estimating's withBidOrder).
     const bo = await import("/src/lib/estimate/bidOrder.ts");
+    // D-1279 (Q10): a share's quantity column.
+    const cdisp = await import("/src/lib/estimate/componentDisplay.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2234,6 +2236,19 @@ try {
           sleeveCasingBy: sleeve.section.crossing?.casing_by ?? null,
           pitsText: xr.PITS_BY_SUB_TEXT,
           bellGrade: xr.BELL_GRADE,
+        };
+      }
+      // D-1279 (Q4, Q8, Q10, Q11): the bore line's words, who a new pit is by, the stiffeners a service, a share's decimals.
+      if (c.kind === "answers-1279") {
+        const run = xr.resolveCrossing("water", { crossing: { kind: "jack_bore", casing_by: "sub" } }, 80, { catalogKey: "pvc_c900_dr18:8", odIn: 9.05, idIn: 8.15, pipes: 1 });
+        const bore = xr.crossingMaterials(run, { odIn: 9.05, nominalIn: 8, pipes: 1 }).find((m) => m.key.startsWith("bore:"));
+        return {
+          boreName: bore?.name ?? null,
+          pitStandalone: rd.defaultStructure("bore_pit", "water").spec.bySub,
+          pitMadeWithBore: xr.NEW_PITS_BY_SUB,
+          bored: ["jack_bore", "hdd", "cased_open", "concrete", "none"].map((k) => `${k}:${xr.boredRun("water", { crossing: { kind: k } })}`).concat(`casing:${xr.boredRun("casing", null)}`, `legacy:${xr.boredRun("water", { install: "bore" })}`).join(" "),
+          stiffeners: um.CTS_STIFFENERS,
+          shares: [0.3245, 2, 1.9999, 12.5].map((v) => cdisp.shareQtyText(v)).join(" "),
         };
       }
       if (c.kind === "restraint-mh") return { mh: c.sizes.map((n) => `${n}:${um.restraintMh(n)}`).join(" "), jointFt: c.keys.map((k) => `${k}:${um.restraintJointFt(k)}`).join(" ") };

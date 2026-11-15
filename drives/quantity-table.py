@@ -2051,13 +2051,20 @@ def answers() -> int:
         check(f"duct-{trench:g}-days", round(conduit / production.duct_rate(500.0, 4), 4), days)
         check(f"duct-{trench:g}-mh", round(production.duct_extra_mh(4, conduit), 4), mh)
 
-    # --- Part 5 answer 3, the pull-in: 80 LF of 8 in C900 at 500 LF a crew-day. On a 600 LF run (its open 520 LF laid by
-    # the same crew): 80 / 500 = 0.16 day, no minimum. A run that is all crossing (80 of 80 LF): half a day, 160 LF a day.
-    jb = "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|jb:16|x:abcd1234"
-    check("pull-in-on-run", production.crossing_alone(jb, 80.0, 600.0), False)
-    check("pull-in-on-run-days", round(80.0 / production.pull_in_floor(500.0, 80.0, False), 4), 0.16)
-    check("pull-in-alone", production.crossing_alone(jb, 80.0, 80.0), True)
-    check("pull-in-alone-days", round(80.0 / production.pull_in_floor(500.0, 80.0, True), 4), 0.5)
+    # --- D-1279 (Q3; was Part 5 answer 3), the pull-in: half a crew day at least only when the job has no other pipe work
+    # of that crew; else at the crew's pace with a 2 crew-hour minimum. 80 LF of 8 in C900 at 500 LF a crew-day:
+    # - the crew lays other pipe on the job (a 520 LF open stretch, or any other run): 80 / 500 = 0.16 day = 1.28 h at
+    #   8 h, under 2 h: 2 / 8 = 0.25 day (320 LF a day); at a 10 h day 0.2 day;
+    # - 200 LF: 0.4 day, over the 2 h, at its pace;
+    # - no other pipe work of the crew (the crossing alone on the job): half a day, 160 LF a day.
+    jb = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:water", earthwork_variant="pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer|jb:16|x:abcd1234", earthwork_crew=None, earthwork_run_lf=80.0)
+    open_pipe = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:water", earthwork_variant="pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer", earthwork_crew=None, earthwork_run_lf=520.0)
+    check("pull-in-crew-lays-pipe", production.crew_lays_pipe([(jb, 80.0, None), (open_pipe, 520.0, None)]), True)
+    check("pull-in-crew-alone", production.crew_lays_pipe([(jb, 80.0, None)]), False)
+    check("pull-in-on-job-days", round(80.0 / production.pull_in_floor(500.0, 80.0, False, 8.0), 4), 0.25)
+    check("pull-in-on-job-days-10h", round(80.0 / production.pull_in_floor(500.0, 80.0, False, 10.0), 4), 0.2)
+    check("pull-in-on-job-200lf-days", round(200.0 / production.pull_in_floor(500.0, 200.0, False, 8.0), 4), 0.4)
+    check("pull-in-alone-days", round(80.0 / production.pull_in_floor(500.0, 80.0, True, 8.0), 4), 0.5)
     # A standalone sleeve: no carrier, no pull-in, no crew of ours (the bore sub's line).
     sleeve = SimpleNamespace(earthwork_role="utility_pipe", earthwork_region_id="util:other", earthwork_variant="steel_casing_375:16|1|0–6 ft||t:casing|sleeve:16|x:abcd1234", earthwork_crew=None)
     check("sleeve-trenchless", production.line_role(sleeve), "utility_pipe_trenchless")
