@@ -334,6 +334,19 @@ async (page) => {
     await page.waitForTimeout(300);
   }
   const rows = [...seen.values()];
+  // D-1279 (Q22, the late pass): the storm crew's two excavator options as the api priced them (`band_choice` on its
+  // pacing excavator: (a) one machine for the spread, (b) a machine per band) and the one used; none where no band
+  // passed the 5 crew-day pre-filter.
+  const bandChoice = await page.evaluate(
+    async ({ W, P, API }) => {
+      const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
+      const r = await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment`, { headers: { authorization: `Bearer ${s.accessToken}` } });
+      const j = r.ok ? await r.json() : [];
+      const list = Array.isArray(j) ? j : (j.resources ?? []);
+      return list.filter((x) => x.eq_snapshot?.band_choice).map((x) => ({ name: x.name, ...x.eq_snapshot.band_choice }));
+    },
+    { W: ct.workspace, P: ct.project, API },
+  );
   // D-1277: a crossing contract's lines with their components (the pipe, the casing, the spacers, the seals, the bore
   // subcontract, the pits' parts, the crew), as the api holds them, by line name: the report takes the carrier pipe out
   // where the tab's item excludes it, and splits a crossing between a tab's casing and bore items.
@@ -401,7 +414,7 @@ async (page) => {
       : undefined;
     return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
-  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
+  const res = { key: contract.key, missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }
