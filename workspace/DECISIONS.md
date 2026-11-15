@@ -12832,7 +12832,7 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
    the stored key, so the copy reads current; any real change still reads stale. The next Calculate
    stores the copy's own key and clears the aliases.
 
-## D-355: The crop-box backfill, a script with a dry run; Minmar's 17 pages fixed
+## D-355: The crop-box backfill, a script with a dry run; P05's 17 pages fixed
 
 **Status:** Accepted (2026-10-11, the founder's approval for exactly these 17 pages).
 
@@ -12852,8 +12852,8 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
      rotation also differs is reported and never written.
    - **Scope:** `--workspace`, `--project`, `--pages`, `--skip-workspace`, `--skip-project`.
 
-   Its dry run on Minmar reproduced `minmar_cropbox_before.csv` byte for byte.
-3. **Minmar (Bench Construction Test), the 17 pages:**
+   Its dry run on P05 reproduced `p05_cropbox_before.csv` byte for byte.
+3. **P05 (Bench Construction Test), the 17 pages:**
    - **Written:** `--project … --pages <the 17> --apply`, crop box only. The value is MuPDF's single-precision
      `[-1512.1199951171875, 0, 1512.1199951171875, 2160]`, as on the other 83, shown `[-1512.12 0 1512.12 2160]`.
      No re-prepare, no image, no bucket write.
@@ -12863,7 +12863,7 @@ Each test's misses share one row: symbols in a row sit at one phase of the strid
      - the 17 rows changed in `crop_box` only;
      - A4.00 still reads 241.70 LF and 1,335.22 SF;
      - its 5 shapes' coordinates and the six scales are unchanged.
-   - **Lists:** `docs/archive/minmar_cropbox_before.csv` and `minmar_cropbox_after.csv`.
+   - **Lists:** `docs/archive/p05_cropbox_before.csv` and `p05_cropbox_after.csv`.
 
 ## D-356: On Essentials, a refusal the plan causes says the plan, not the role
 
@@ -18825,7 +18825,7 @@ The other mail to estimator@ is a forum reply notice and stays.
 **The founder's own projects, found by owner:**
 - **How they were found:** every project in a workspace that umeralam.q@gmail.com owns. That is one workspace,
   Intelcost Team (`04df326a…`), holding:
-  - Miramar Cove Vault Buildings `90cb3a75…`;
+  - P06 `90cb3a75…`;
   - "11" `c1770e62…`;
   - 3D test project (shared copy) `4df73dc7…`, saved from his share link at 15:18 today.
 - **The guard lists:** all three were added to every copy of the list (`scripts/protected.py`,
@@ -21442,7 +21442,7 @@ set) and D-672 (coordinates).
 - **N3:** the selection is Umer's to move outside ProjectTakeoff as an external store, on the zoom store's pattern so
   the app has one approach (built as D-684).
 - **N4:** the bleed-on-Y position check runs only if the bench already has a landscape sheet with bleed on Y;
-  otherwise Umer uploads the ZHO Dania Pointe PDF.
+  otherwise Umer uploads P22's PDF.
 - **N5:** Umer provides a set with a printed control table. Until then GPS Export is proved on assumed coordinates
   only, and every GPS report and README says so.
 - **N6:** a press exactly on a takeoff vertex counts as a control-point pick on the Earthwork tab (D-680).
@@ -21634,7 +21634,7 @@ the same rows).
 - **M1:** the BENCH PRO workspace and its project are deleted, not protected.
 - **M4:** a lapsed Professional subscription gets its own sentence on the switch (D-688).
 - **M6:** the canvas position check runs on generated test sheets (four page layouts, every zoom step to 30×), not on
-  the Dania Pointe upload in Bench Construction Test, which stays untouched. **The generator and the check join the
+  P22's upload in Bench Construction Test, which stays untouched. **The generator and the check join the
   archived fixtures** on Umer's instruction, an explicit exception to hard rule 8's "no new fixtures", so they run
   whenever the canvas or zoom changes.
 - **M3:** late reads must never overwrite a cell being typed in or a value saved after the read was asked; fixed on its
@@ -21664,7 +21664,7 @@ the same rows).
 - **The sheets** (`fx-suite-updates/browser/lib/position-sheets.mjs`): one PDF, four pages, each a 5 × 5 grid of
   labelled hairline crosses at known fractions of the page as shown. L landscape 36 × 24 in; P portrait 24 × 36 in;
   R landscape stored as a portrait page with /Rotate 90; C landscape through a CropBox offset inside a larger MediaBox
-  (a red band outside the crop must never show). Made on the spot; the Dania Pointe upload in Bench Construction
+  (a red band outside the crop must never show). Made on the spot; P22's upload in Bench Construction
   Test is not used and stays untouched.
 - **The check** (`fx-suite-updates/browser/m6-position.mjs`, run on the fx stack, a throwaway "BENCH DUP … — delete
   me" project): on each sheet, (a) markup 0.22 past the top or bottom and (b) 0.15 past the left or right, a line
@@ -24707,7 +24707,7 @@ mount. f8-s12's restart step passes alone on the built apps (6/6), and f8-s8 1/1
 
 - **Sources:** throwaway copies in the bench's "zz Sheet key" workspace (owner fx.sections): the HV set (through the
   Marketing Demo copy, 28 sheets), P19 (26), Building A (39), P09 final plat (5 scans), Riverside
-  (7, two crops left out). The drives' guard refused Minmar, Miramar Cove and HV Spec Rebid (protected): never opened.
+  (7, two crops left out). The drives' guard refused P05, P06 and P03 (protected): never opened.
   01-PLANS did not copy (a duplicate folder name in its source) and is not in the key.
 - **103 sheets:** civil 6, survey 1, plat 5, architectural 16, structural 18, mechanical 7, plumbing 6, electrical 39,
   general 5; 11 scans; 64 with a main-drawing scale, 39 NTS; 5 labelled low confidence (which drawing is "main").
@@ -26933,7 +26933,7 @@ Calculate, its prisms and every quantity are untouched; the quantity table prove
 - Added to the protected list in all three copies (`scripts/protected.py`, `browser/lib/protected.mjs`,
   `browser/mcp-guard.js`): Benchmark A source (24e4a96c) and Real bid B (d0b0305d). The guard check reads 25 projects, the
   three lists agreeing; the fingerprint marks both `ok`.
-- Every project in Intelcost Team, the founder's own workspace, is now on the list (six: Miramar Cove Vault Buildings,
+- Every project in Intelcost Team, the founder's own workspace, is now on the list (six: P06,
   11, the 3D test's shared copy, P09, Benchmark A source, Real bid B). A new one there is a FAIL in the fingerprint
   until it is added (D-601's rule, unchanged).
 - Investigation of a real bid runs only on a throwaway copy made by the copier, never by signing in as the founder.
@@ -32868,6 +32868,23 @@ Commits (local on umer-dev, not pushed): api cd9de6c, app 68205ea, infra d650e56
   + 0.3333 = 1, 0.8 + 1.2 = 2, geogrid a line). Smoke on throwaway fx.equip.20261115113212 (purged 12:42:42). Founder
   digest `b4c963cdf83e7d84` at 10:59 and 12:42 UTC.
 
+### Q5 reworded (the 2026-11-16 report's §19 Q5, unattended run 2026-11-15)
+
+- **The founder's answer: the other block-list names reworded in current files, Q18's rule, no history rewrite.**
+  Every whole-word, case-blind hit of `.private/client-denylist.txt` in the tracked files of the four repos and in
+  the workspace files (the four root files, `docs/` without the bid-tab folder, `.claude/`) reworded to the guard
+  list's labels, resolved by the projects' uuids on the bench (read only): P04, P05, P06, P19, P22, P23, and
+  "another account's project" for one outside the guard list. Workspace: 31 lines in 10 files, plus the two
+  `docs/archive/*_cropbox_*.csv` lists renamed `p05_cropbox_before.csv` / `p05_cropbox_after.csv` (their 5 links
+  with them). Infra: 86 lines in 6 files, among them `fx-suite-updates/sheet-key/key.json`'s `project`, `file_name`
+  and `notes` (descriptive only: `drives/sheet-key.py measure` reads `sheet`, `number`, `title` and `scale`, and takes
+  the set and project from the fetched manifest, so nothing that reads the key changes) and the one tracked file in an
+  ignored report folder (`morning-report-2026-10-31/lone-before.txt`). App and marketing: none.
+- **Left, by rule:** the api's ZIP and county reference data (`data/wagecalc/ref_zip.csv`, two place names, as Q18
+  left them; `ref_amf_county.csv`, a numeric match inside a decimal). Geography and numbers, not the client; no api
+  file saved. Ignored files (the morning-report folders, `fx-suite/sheet-key/`, `sheet-key/pdfs/`) checked: all
+  ignored and untracked, left as they are.
+
 ## D-1280 — Pipe section layers, night 1 (tasks 1–4 of D-1278's plan): the engine and the presets, proven on the 26 hand rows
 
 **Status:** Accepted (2026-11-15, the founder's build plan in D-1278). Details below as built. Built unattended
@@ -32957,3 +32974,35 @@ estimate and price is unchanged. Spec: [pipe_section_layers_tasks.md](docs/tasks
   surface layer is the paved cap only; "box narrower" not flagged for a typed outside width; `readLayers`/`materialOf`
   throw on an unknown material; no "bedding + OD deeper than the trench" flag. Committed after the check (no new
   quantity-table run: the tree is the one the check's run used, plus doc edits).
+
+## D-1281 — Plans A and B revised (docs only, unattended run 2026-11-15 → 16, step 2)
+
+**Status:** proposed, awaiting the founder's check; nothing built. Specs revised in place:
+`docs/tasks/equipment_library_improvements.md`, `docs/tasks/dewatering_weather_tasks.md`; summary
+`intelcost-infra/morning-report-2026-11-17/plans/PLAN-REVISION.md`; quote sheet `plans/quote-sheet-metros.csv`
+(outside git).
+
+- **Plan B (56 h).** The equipment library stays the national average. Dealer quotes never become library rates or
+  region rows; they derive a metro **equipment location factor**: per class the median quote (4-week) ÷ the
+  library's national 4-week rate, the factor the median of those ratios over the tier 1–2 classes with a national
+  rate (the ratio of sums as a check), each class graded by its quote count (3+ A, 2 B, 1 C), the factor A/B/C/D by its
+  basket (≥ 15 / ≥ 10 / ≥ 5 classes; D not applied). It scales rentals, owned rates and mob, read after a wage set's
+  own factor. The quote sheet covers Houston, Atlanta, Chicago, Phoenix and Philadelphia. Mob: national transport
+  defaults × the factor; a local flat within 50 mi one way, line haul beyond at max(local flat, $/loaded mile ×
+  miles). B9 (spread sizing) is dropped; Q22's cheaper-of-two replaces it. Sales tax on rentals from a state table,
+  Texas first (34 TAC §3.294, no exempt-job exception), applied unless the state's own rule exempts the job type,
+  never by the project's exempt checkbox. Damage waiver a company setting, default 12 %, with "Own insurance (0 %)".
+  B3, B5, B6, B7, B8, B10 unchanged.
+- **Plan A: A-lean (26 h) and A-later (61 h).** A-lean: NOAA 1991–2020 normals with six Houston-area stations
+  seeded; rain lost days into durations, a drying day that is itself a rain day not counted twice (p = rain days ÷
+  days in the month), every library production source checked (none known to include weather days; the crew-sheet
+  activities open); "as directed" pay items as pay lines at the owner's quantity and price, our cost beside them as a
+  risk check; the sump and wellpoint rules and quantities only, prices "Quote needed". A-later: SDA, eductors, deep
+  wells, priced wellpoints, the full Site water panel. Defaults: drawdown 2 ft; the CGP covers discharge (flag only
+  suspected contamination); a full-time attendant while a groundwater system runs, a patrol setting; no labour pay
+  on lost days.
+- **Basis check (report only):** the engine's day is `hours_per_work_day` 8; the library's productions are per 10 h
+  and converted by `production.py:_work_day_factor` on every priced path. Side paths reading a fixed day:
+  `_job_pool`/`_leftover` (8), `_separate_sub_hint` (8), `note_fusion` (10 on a blank spread), the lost-tier fallback in
+  `sync_site`, and labour overtime at the setting's day for spreads fixed at 10 h. None moves a price on an 8 h
+  project. Not fixed; the founder's call.

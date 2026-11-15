@@ -25,7 +25,7 @@ one-line cause.
 | 3 | A7 part 1: the test zips' README says "plan feet"; every zip regenerated; round trip, free checker and LandXML schema re-run | commit, files |
 | 4 | A5: Commercial & Public crew table: Tile Setter and its helper or finisher, Bricklayer Helper's own row if warranted, rates by the gap fill's ratio method; spec test 6 back to 21; tx115 re-run, Matched count | commit, fixtures |
 | 5 | A6: `docs/tasks/calculate_exact_overlay_SPEC.md`, spec only, Calculate's engine untouched | doc commit |
-| 6 | A3: selection at 20,000 shapes: profile first (written into the report), then fix the biggest parts; 1k / 5k / 20k before and after; ZHO Dania Pointe Page 26 position case | commit if met or clearly improved, else stash `night-a3-selection`; fixtures |
+| 6 | A3: selection at 20,000 shapes: profile first (written into the report), then fix the biggest parts; 1k / 5k / 20k before and after; P22 Page 26 position case | commit if met or clearly improved, else stash `night-a3-selection`; fixtures |
 | 7 | GPS Export step 4: `sheet_georef` table and migration, routes with the server fit, the panel, units, system and datum, links and sites; proof on a BENCH DUP of C-200 with residuals | commit if verified, else stash `night-gps-step4` |
 | 8 | GPS Export step 5 (only if 7 is committed): the button, the dialog, the "Building pad" tick; utilities wired; end-to-end export and re-import | commit; fixtures |
 | 9 | GPS Export step 6 (only if 8 is committed): the fourth-monument check; test zips with real coordinates in `morning-report-2026-10-21/gps-test-files/` | commit, files |

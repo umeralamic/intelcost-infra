@@ -1,10 +1,25 @@
 # Dewatering and weather: the plan (no code)
 
-**Status:** plan written 2026-11-15 (the founder's planning brief, Plan A), research and writing only. No D-number yet:
-main logs one when the founder adopts it. Brief: `intelcost-infra/morning-report-2026-11-16/plans/BRIEF-PLANS.md`.
-Its companion is [equipment_library_improvements.md](equipment_library_improvements.md) (Plan B); the ranking of
-every item in both plans and the build order across nights are in §10 of that file. This plan's own tasks and order
-are in §9.
+**Status:** plan written 2026-11-15 (the founder's planning brief, Plan A), research and writing only. **Revised
+2026-11-15** (unattended run brief, step 2, `intelcost-infra/morning-report-2026-11-17/BRIEF.md`): split into
+**A-lean (26 h)** and **A-later (61 h)**, with the founder's defaults taken (below). No D-number yet: main logs one when
+the founder adopts it. Original brief: `intelcost-infra/morning-report-2026-11-16/plans/BRIEF-PLANS.md`. Its companion
+is [equipment_library_improvements.md](equipment_library_improvements.md) (Plan B); the ranking of every item in both
+plans and the build order across nights are in §10 of that file. This plan's own tasks and order are in §9; the
+summary for the founder is `intelcost-infra/morning-report-2026-11-17/plans/PLAN-REVISION.md`.
+
+**The split (the founder's brief, verbatim in substance):**
+
+| Half | What | Hours |
+|---|---|---:|
+| **A-lean** | AL1 NOAA normals with the six Houston-area stations seeded (§2.c); AL2 rain lost days into durations, a drying day that is itself a rain day not counted twice (§5.b), with every production source checked for weather days already inside its rates (§5.d); AL3 "as directed" pay items as pay lines at the owner's quantity and price with our cost beside as a risk check (§4.5); AL4 the sump and wellpoint rule and quantities only, prices "Quote needed" (§3–§4) | **26** |
+| **A-later** | NRCS SDA and the geocoder, eductors, deep wells, the priced wellpoint activities, the library release of the wellpoint gear, the full Site water panel, the harness dewatering check | **61** |
+
+**Defaults taken (the founder's answers to the first version's questions 1, 2, 4, 5):** drawdown **2 ft** below the
+bottom; the CGP covers the discharge, and only a site marked "suspected contamination" turns it into a by-hand line;
+a **full-time attendant** on every hour a groundwater system runs off the crew's day, with a project setting for
+**patrols** instead; **no labour pay on lost days** (open shop). Earthwork's drying days and pipe crews' rain-day-only
+rule stand, with the overlap rule added (§5.b).
 
 **Mock-up:** [site-water-mockup.svg](../../intelcost-infra/morning-report-2026-11-16/plans/site-water-mockup.svg).
 A PNG render sits beside it. It is not in git (D-1259).
@@ -132,6 +147,25 @@ layer and nothing else to the bore model.
 
   Hobby (USW00012918) runs a little wetter (days ≥ 0.10 in: 65.8 a year; June 7.2).
 
+- **The six stations A-lean seeds** (ids and names as NCEI's Access Data Service returned them on 2026-11-15, with
+  their days ≥ 0.50 in a year, A). The release carries each station's 12 months of the four data types above, its
+  latitude and longitude (from the same service's station metadata, read at build time):
+
+| Station id | NCEI name | Days ≥ 0.50 in, Jan–Dec | Year |
+|---|---|---|---:|
+| USW00012960 | HOUSTON INTERCONT AP, TX US | 2.6, 2.3, 2.1, 2.3, 2.8, 3.6, 2.3, 2.7, 2.6, 2.9, 2.3, 2.6 | 31.1 |
+| USW00012918 | HOUSTON HOBBY AP, TX US | 2.8, 1.8, 2.0, 2.5, 2.9, 3.5, 2.8, 2.7, 3.3, 2.9, 2.3, 2.7 | 32.2 |
+| USW00012977 | HOUSTON SUGARLAND MEM, TX US | 2.2, 1.9, 2.1, 2.0, 3.1, 2.6, 2.8, 3.2, 2.5, 3.0, 1.7, 1.8 | 28.9 |
+| USW00012975 | HOUSTON CLOVER FLD, TX US (Pearland) | 2.5, 1.6, 1.5, 2.0, 2.3, 2.8, 3.1, 2.9, 3.0, 2.9, 2.2, 2.5 | 29.3 |
+| USW00053902 | CONROE MONTGOMERY CO AP, TX US | 2.3, 1.9, 2.0, 2.0, 2.5, 2.8, 2.3, 1.7, 2.2, 2.6, 2.4, 2.5 | 27.2 |
+| USW00012923 | GALVESTON SCHOLES FLD, TX US | 2.2, 1.3, 1.6, 1.6, 1.7, 2.6, 2.7, 2.5, 3.5, 3.0, 2.1, 2.1 | 26.9 |
+
+  The first version's "Baytown" was not confirmed (no station id was found for it in this revision; Ellington,
+  USW00012906, returned no normals), so it is replaced by Clover Field, which covers the south-east side. **Station choice in A-lean:** the nearest of the six to the project's ZIP centroid
+  (a seeded ZIP centroid table for Texas ZIPs, Census ZCTA gazetteer, public), the person able to pick another; a
+  project outside the seeded area reads "No climate normals for this location (A-later)" and takes no lost days, said
+  in Needs attention, never a silent zero. Fetching other stations from the service is A-later.
+
 ### 2.d USGS groundwater levels: not used
 
 USGS and the subsidence districts measure the Chicot and Evangeline aquifers each winter; the 2024 water-level
@@ -147,13 +181,19 @@ nobody wires them in later by mistake.
 |---|---|---|---|
 | Key | none | none | US Census geocoder: none |
 | Caching | `site_water_source` row per project: the query, the answer JSON, `fetched_at`; refreshed only on request or when the location moves (the survey changes yearly at most) | the station's 12-month rows stored per station in `eqlib`-like reference table `wx_normals` (one fetch per station ever: normals are fixed until 2031) | geocode stored on the project |
-| Offline fallback | the last stored answer; none → "No soil survey: enter the water depth or a bore" and the method falls back to the project's typed design water | seed the Houston-area stations (IAH, HOU, Sugar Land, Conroe, Galveston, Baytown) in the release; elsewhere the last stored answer | ZIP centroid (Census ZCTA gazetteer, public, seeded) |
+| Offline fallback | the last stored answer; none → "No soil survey: enter the water depth or a bore" and the method falls back to the project's typed design water | the six Houston-area stations seeded in the release (IAH, Hobby, Sugar Land, Clover Field, Conroe, Galveston; §2.c); elsewhere the last stored answer (A-later) | ZIP centroid (Census ZCTA gazetteer, public, seeded) |
 | Down | the fetch is a Celery task with a 30 s timeout; the panel shows "Soil survey unreachable, retry" and nothing changes | same | same |
 | Cost | $0 (A) | $0 (A) | $0 (A) |
 
 No new key. Nothing goes in `.env.ai` for Plan A.
 
 ## 3. Method selection
+
+**A-lean scope:** rules 1, 2 (sump), 3, 5 and 6 (wellpoints, vacuum and one stage, the bench) are built with their
+quantities (§4.1–§4.3's sump); rows 4, 7 and 8 (eductors, a second stage, deep wells) return "Outside the built
+methods: price by hand" and carry no quantities until A-later. Every equipment and material price on a dewatering
+line reads **"Quote needed"** (never $0, never a stand-in rate); the money in the bid is the pay line at the owner's
+figure (§4.5).
 
 ### 3.1 Inputs at a station
 
@@ -211,7 +251,7 @@ All in a new pure module `lib/takeoff/earthwork/water/` (hard rule 2: data in, d
 | Jetting crew | points installed ÷ 60 a crew-day (jetting pump, 2 laborers, the excavator's time) | D until a dealer or crew figure |
 | Removal | points ÷ 120 a crew-day | D |
 | Discharge line | 300 ft per running pump (input), in 50 ft hose lengths (`HOSE-6IN`) | D |
-| Pump watch | calendar days × 24 − system work days × crew hours (the off-shift hours), one operator | A (Deer Park "on duty at all times"); the hours D |
+| Pump watch | **default, full-time attendant:** calendar days × 24 − system work days × crew hours (the off-shift hours), one operator. **Setting "Patrols":** calendar days × off-shift visits a day (default 2, D) × 1.0 h a visit (D) | A (Deer Park "on duty at all times"); the hours D |
 | Observation wells / piezometers | ⌈header LF per row ÷ 200⌉ + 1, re-used as the header moves | D (Galveston: "as directed") |
 | Filter bags | running pumps × ⌈calendar days ÷ 3⌉ | D |
 | Settling (frac) tank | one per discharge point when the bottom is SM/ML/SP-fine, for the system's calendar days | D |
@@ -244,6 +284,25 @@ All in a new pure module `lib/takeoff/earthwork/water/` (hard rule 2: data in, d
 MasterFormat **names only** in the UI ("Temporary Groundwater Control", "Surface Water Control"; no section number on
 screen), filed under the existing `earthwork.dewatering` work scope.
 
+### 4.5 "As directed" pay items (A-lean, AL3)
+
+The tabs pay dewatering as an owner's contingent item, almost always at one figure (§7). So the bid carries it as the
+owner wrote it, and our own model is a check on it, not its price.
+
+- **Pay line:** Estimating gains a line kind **"Pay item (as directed)"**: description, unit, the owner's quantity and
+  the owner's unit price, typed from the bid form (both required). Its total = quantity × price; it goes into the bid
+  total as written, outside markup (the owner fixed it), and carries no cost components of its own.
+- **Our cost beside it:** the line links to the project's dewatering lines (the runs' `dewatering` role) and shows, per
+  unit of the pay item: our priced part (attendant or patrol labour at the project's wage, fuel at the project's
+  diesel) and the count of parts still "Quote needed". Risk badge: **"Covered"** when our priced part ≤ 0.8 × the
+  owner's price and nothing is "Quote needed"; **"Check"** when it is between 0.8 and 1.0 × or parts are unpriced;
+  **"At risk"** above 1.0 × (D, the thresholds). Our LF below water against the owner's quantity is shown too
+  ("Our runs: 1,240 LF below water; the item: 2,000 LF").
+- **Not in the harness's multiplier:** the harness keeps the tab rows out (`bidtabs/gap-report.mjs` `NOT`), and the
+  pay line is out of our side the same way, so k does not move.
+- **Hand rows:** `pay-as-directed` (2,000 LF × $23.00 = **$46,000** in the bid, our attendant labour beside it) and
+  `pay-risk` (our priced part $26.40/LF against $23.00 → 1.148 × → "At risk"; illustrative inputs).
+
 ## 5. Rain
 
 ### 5.a Perched and surface water in open excavations
@@ -260,12 +319,20 @@ screen), filed under the existing `earthwork.dewatering` work scope.
 
 | Work | Lost working days per month | Basis |
 |---|---|---|
-| Earthwork in Houston clays (mass grading, ponds, subgrade) | (days ≥ 0.50 in × 2 + days ≥ 1.00 in × 1) × 5/7: the rain day, one drying day, one more after an inch | TxDOT: "a half-inch of rain could delay a project with a large amount of earthwork for three or more days" [S11] (**C**); the split 2 + 1 is D. The 5/7 counts weekday events only (D) |
-| Pipe crews (in a box, small open length) | days ≥ 0.50 in × 1 × 5/7 | D |
-| Concrete flatwork, paving | days ≥ 0.10 in × 1 × 5/7 | D (ALDOT used > 0.2 in [S12], C) |
+| Earthwork in Houston clays (mass grading, ponds, subgrade) | (R + Dry × (1 − p)) × 5/7, where R = days ≥ 0.50 in, Dry = R + days ≥ 1.00 in (one drying day after each half inch, one more after an inch), p = R ÷ days in the month | TxDOT: "a half-inch of rain could delay a project with a large amount of earthwork for three or more days" [S11] (**C**); the split is D. The 5/7 counts weekday events only (D) |
+| Pipe crews (in a box, small open length) | R × 5/7 (rain day only: no drying day, so no overlap) | D |
+| Concrete flatwork, paving | days ≥ 0.10 in × 5/7 | D (ALDOT used > 0.2 in [S12], C) |
 
-IAH gives ≈ 55.5 earthwork and ≈ 22.2 pipe working days lost a year (§6 rows). TxDOT plans on "16 to 17 working days"
-a month [S11], about 5 lost of ≈ 21.7 weekdays: the earthwork figure (4.6 a month) sits inside it.
+**A drying day that is itself a rain day is not counted twice.** The normals give counts, not the order of the days,
+so the overlap is taken as the chance that a drying day falls on another rain day of the month, p = R ÷ days in the
+month (independent days, D); that share of the drying days is already lost as a rain day and is dropped. June at IAH:
+R 3.6, Dry 5.6, p 0.120, so 4.93 drying days count, not 5.6. Rain clusters in Houston (fronts, tropical systems), so
+the true overlap is larger and the rule still overstates slightly; A-later can replace p with the station's own daily
+series (NCEI GHCN-Daily, the same service, no key), counting each drying day once on the real calendar.
+
+IAH gives ≈ **52.6** earthwork (was 55.5 before the overlap rule) and ≈ 22.2 pipe working days lost a year (§6 rows).
+TxDOT plans on "16 to 17 working days" a month [S11], about 5 lost of ≈ 21.7 weekdays: the earthwork figure (4.4 a
+month) sits inside it.
 
 ### 5.c How it flows
 
@@ -273,9 +340,45 @@ a month [S11], about 5 lost of ≈ 21.7 weekdays: the earthwork figure (4.6 a mo
 2. **Rented machines** bill the calendar: the spread's rental days = work days + lost days (the period solver as
    today, `periods.ts:solveRental`).
 3. **Owned machines** take a standby rate on lost days (Plan B §8: the library's `standby_rule`, today text only).
-4. **Labour**: no pay on a lost day (open shop), a show-up allowance setting (default 0 h, D).
-5. Groundwater pumps run through rain days (they are on the 24 h clock already); rain sumps add pump-days (5.a).
-6. Estimating shows "Weather: +6.6 lost days (June, IAH normals 1991–2020)" on each spread and a project total.
+4. **Labour: no pay on a lost day** (the founder's default, open shop): crew hours stay the production's; a show-up
+   allowance setting exists at 0 h (D).
+5. Groundwater pumps run through rain days (they are on the 24 h clock already); rain sumps add pump-days (5.a,
+   A-later with the priced pumps).
+6. Estimating shows "Weather: +6.1 lost days (June, IAH normals 1991–2020)" on each spread and a project total.
+7. **No double count with the production rates:** a lost day is added only to an activity whose production source
+   is per working day or per operating hour (§5.d). An activity marked `prod_includes_weather` (none today) takes none.
+
+### 5.d The production sources, checked for weather days already in their rates
+
+Every source the library's productions cite (bench `eqlib.eq_production.source_ids`, live rows; `eqlib.ew_default.basis`;
+and `docs/reference/production_research_points.csv`, 629 points, which built the tier file `production_tiers_2026-11.csv`),
+read only on 2026-11-15. "Per working day" = a day the work was done (an agency charges a weather day as a
+non-working day, so its rate excludes it). The question for each: does its rate already spread lost weather days
+over the days it counts?
+
+| Source (library id or file) | Rows | Rate basis | Weather days inside the rate? | Grade |
+|---|---:|---|---|---|
+| FM 5-434 Earthmoving Operations (FM5434, FM5434-8), US Army | 219 / 90 | per operating hour × an efficiency factor (the 50-minute hour) | **No**: the factor covers delays inside a worked hour, not lost days | C (the manual's method, read earlier for the catalog; the weather clause not re-read) |
+| KSU CE417/CE419 notes and tutorials (KSU-3, -4, -EQ, -T3, -T5, -T6, -T7) | 36–90 each | per hour, textbook cycle method with efficiency | No | C |
+| Caterpillar productivity pages and spec pages (CAT-FILL, CAT-WL, CAT-WL-PG, CAT-DOZ-PG, CAT-SCR-PG, CAT-MG, CAT-GR-PG, CAT-TRK-PG, CAT-EXC-PG, CAT-PM310, CAT-420) | 2–79 each | per hour, cycle method | No | C |
+| Other OEM and dealer spec sheets (DEERE-FLEET, DEERE-135P/-210P/-345P/-350P/-35G, KOM-PC360, VOLVO-ADT, ZIEGLER, ALLMACH-PC88, WN-BS60, WN-WP1550, ATE-PLATE, CARLETON-BKT) | 1–32 each | machine capacity per hour | No (capacities) | C |
+| Exam and secondary sheets (OEP, EduRev, USMC-PE, Stormwater, Construction Equipment trencher, AI-ROLL, RB-HMA, PSU-SP, FCP-CONC, RER-TROWEL, MST-GE441, GEOM, WYDOT-RIP, DRILLER-BP, GTI-VAC, ACI-S21, CLEANER-PB, VTT-CRANE) | 1–49 each | per hour or per operation | No | C |
+| FEMA Schedule of Equipment Rates 2025 (FEMA25) | 25 | an equipment cost rate, not a production | n/a | A |
+| TxDOT Construction Production Rates 2024 (TXDOT) | 80 + 21 points | per working day, for contract time | **No**: TxDOT counts contract time in working days and does not charge a day lost to weather, so its rates are per day worked | C (the agency's working-day practice; the rate table's own note not re-read) |
+| WisDOT FDM 19-10-30 production rate table (WISDOT) | 84 + 29 | per working day, for contract time | No (the FDM converts working days to calendar time separately) | C |
+| NCDOT Contract Time Guidelines (NCDOT) | 43 + 94 | "per working day" (as the research file records it) | No | B (the file's own words, "per working day") |
+| WSDOT M 22-31.10 App. 6 (WSDOT) | 56 + 65 | per 8 h working day | No | B (the file records the 8 h day) |
+| FHWA Central Federal Lands contract time / CPM guidelines (FHWA-CFL) | 13 + 1 | per working day (8 h) | No | C |
+| ADOT Production Rates Guidelines (in the research file) | 74 | "per working day" | No | B |
+| INDOT (Jiang & Wu; Memo 97-27), IDOT District 5, MoDOT EPG 237.8, KY-CTDS, ODOT / Oklahoma State, Illinois ICT 15-011, MDT / Iowa State and Jeong et al. (effective rates from daily work reports), FDOT utility relocation manual, Savage 1988 survey (research file) | 6–44 each | per working day or per day with work reported | No: the daily-report studies divide quantity by the days work was reported, so days rained out are not in the denominator | C |
+| CTR 0-4416-1, O'Connor et al. (TxDOT research; A32, A28, A18, A96's run-length models) | 34 + 11 + 6, and the D-1091 / D-1275 rows | per "standardized crew day" measured on the days the crews worked | **No** (measured on worked days) | C |
+| `ew_default.basis` "IntelCost estimate (no published rate)" (21 activities: A11, A40, A61, A63, A69–A71, A73–A76, A80, A81, A83–A85, A89–A91, A93, A94) and the research file's "founder's provisional figure" | 21 + 6 | an assumption | No assumption of weather either way | D |
+| `ew_default.basis` **"crew sheet, no published rate"** (14 activities: A22, A24, A25, A30, A31, A35, A37, A41, A42, A45, A46, A52–A54) and the tier file's "founder's crew sheet" rows | 14 + 15 | the founder's own crew sheets | **Unknown**: a contractor's sheet may be an average day over a season (weather inside) or a good day (outside) | **F: question 4** |
+
+**Result:** no library production source is known to include lost weather days; every one is per worked hour or per
+worked day. So A-lean adds the lost days to every activity's duration, except an activity the founder marks as
+weather-inclusive (the crew-sheet rows, question 4). The flag `prod_includes_weather` (default false) lives on the
+company activity and is shown on the crew's hover.
 
 ## 6. Hand-worked rows (quantity-table candidates)
 
@@ -296,12 +399,17 @@ $7,950 (A). The 6 in self-priming pump stands in for a wellpoint pump until quot
 | `dw-wp-bench` | Lift over 15 ft, sloped trench | bottom 16 ft, water 4 ft, SP, sloped walls | drawdown 18; lift 18 > 15 → rule 6; bench 18 − 15 + 1 = 4 ft; lift on the bench 14; point length first ≥ 14 + 5 = 21 ft | wellpoints on a 4.0 ft bench, 21 ft points; the bench's cut joins the run's excavation |
 | `dw-eductor` | Silt, deep, in a box | bottom 18 ft, water 6 ft, ML (k 2 × 10⁻⁴), box | lift 20 > 15, k in the silt band → rule 4 | eductors, flagged "price by hand (no rates)" |
 | `dw-deepwell-pond` | Pond in coarse sand | pond 300 × 200 ft, bottom 20 ft, water 6 ft, SW (k 10⁻²) | H 14; area 1.38 ac > 1 → rule 8; perimeter 2 × (300 + 200) = 1,000 ft; wells 1,000 ÷ 50 = 20; standby ⌈20/10⌉ = 2; well depth 20 + 2 + 10 = 32 ft | 20 deep wells at 32 ft + 2 standby pumps; drilling by hand |
-| `rain-june-ew` | June, earthwork | IAH June: ≥ 0.50 in 3.6, ≥ 1.00 in 2.0 | (3.6 × 2 + 2.0 × 1) × 5/7 = 9.2 × 0.7143 | **6.57** lost working days |
+| `rain-june-ew` | June, earthwork (overlap rule) | IAH June: ≥ 0.50 in 3.6, ≥ 1.00 in 2.0, 30 days | Dry 3.6 + 2.0 = 5.6; p 3.6/30 = 0.12; counted 5.6 × 0.88 = 4.928; (3.6 + 4.928) × 5/7 | **6.09** lost working days (6.0914; was 6.57 without the rule) |
 | `rain-june-pipe` | June, pipe crew | IAH June ≥ 0.50 in 3.6 | 3.6 × 5/7 | **2.57** days |
-| `rain-q1` | Jan–Mar window | ≥ 0.50: 2.6 + 2.3 + 2.1 = 7.0; ≥ 1.00: 1.2 + 0.8 + 1.2 = 3.2 | earthwork (14.0 + 3.2) × 5/7; pipe 7.0 × 5/7 | **12.29** earthwork, **5.00** pipe |
-| `rain-year` | A year at IAH | ≥ 0.50 31.1, ≥ 1.00 15.5 | earthwork (62.2 + 15.5) × 5/7; pipe 31.1 × 5/7 | **55.50**, **22.21** days |
+| `rain-q1` | Jan–Mar window | Jan R 2.6, ≥ 1 in 1.2, 31 d; Feb 2.3, 0.8, 28 d; Mar 2.1, 1.2, 31 d | Jan (2.6 + 3.8 × (1 − 2.6/31)) × 5/7 = 4.3438; Feb (2.3 + 3.1 × (1 − 2.3/28)) × 5/7 = 3.6753; Mar (2.1 + 3.3 × (1 − 2.1/31)) × 5/7 = 3.6975; pipe 7.0 × 5/7 | **11.72** earthwork (was 12.29), **5.00** pipe |
+| `rain-overlap` | A drying day on a rain day, one month | R 3.6 in 30 days | of 5.6 drying days, 5.6 × 0.12 = 0.672 fall on rain days and are dropped | 0.672 days not counted twice |
+| `rain-year` | A year at IAH | months as above | earthwork Σ 12 months; pipe 31.1 × 5/7 | **52.60** (was 55.50), **22.21** days |
 | `rain-sump-q1` | Rain sumps, Jan–Mar, 2 headings | ≥ 0.10 in: 5.7 + 4.9 + 4.8 = 15.4 | pump-days 15.4 × 2 × 2 = 61.6; hours × 8 = 492.8; fuel × 0.65 = 320.32 gal × 3.578 | 61.6 pump-days, 320.32 gal, $1,146.10 gasoline |
-| `rain-standby-ex20` | A rented 20 t excavator, 20 work days in June | lost 6.57 → 27 billed days (5-day basis) | 4-week + 1 week + 2 days = 7,950 + 2,927 + 2,080 = 12,957 (4-week + 2 weeks 13,804; two 4-weeks 15,900) | $12,957 against $7,950 dry: **+$5,007** |
+| `rain-standby-ex20` | A rented 20 t excavator, 20 work days in June | lost 6.09 → ⌈26.09⌉ = 27 billed days (5-day basis), unchanged by the overlap rule | 4-week + 1 week + 2 days = 7,950 + 2,927 + 2,080 = 12,957 (4-week + 2 weeks 13,804; two 4-weeks 15,900) | $12,957 against $7,950 dry: **+$5,007** |
+
+In A-lean the `dw-*` rows check quantities only (the $ in `dw-sump-clay` and `dw-wp-single-pumps` is A-later's, when
+the pumps are priced; A-lean shows those cells "Quote needed"); `dw-eductor` and `dw-deepwell-pond` check only the
+"price by hand" outcome. The two pay rows are in §4.5.
 
 Each row becomes a `dewatering` or `rain` kind in `intelcost-infra/browser/lib/` (new `water-cases.mjs`, the pure
 module imported as `utility-cases.mjs` does). The hand checks were worked with a throwaway script outside the repos;
@@ -354,55 +462,78 @@ ordering"). So each row is **F** until the estimator's quote sheet (Plan B §1) 
 | `TANK-FRAC-21K` | Frac / settling tank, 21,000 gal | day / 4-week + delivery | none | F |
 | `DW-PIEZO` | Observation well / piezometer, 1 in Sch 80 PVC (Galveston's) | each (material + 0.5 h install, D) | none | F |
 
-## 9. Tasks, hours and order
+## 9. Tasks, hours and order (revised: A-lean and A-later)
 
-| # | Task | Repo | Hours |
-|---|---|---|---|
-| A1 | Data model: `site_water` (project: method overrides, target below bottom, ahead/behind days, watch rule, discharge, window) in `earthwork_assumptions.utility_settings` JSONB (no migration) plus `earthwork_bore_layer.k_cm_s` and `site_water_source` cache table (one migration) | api | 6 |
-| A2 | Location: geocode the project address (Census geocoder, no key), ZIP centroid fallback (ZCTA gazetteer seed) | api | 5 |
-| A3 | NRCS SDA client (Celery task, 30 s, cache, the five fields and monthly wet depth, ksat by horizon) | api | 6 |
-| A4 | NOAA normals: station inventory seed, nearest station, ADS fetch, `wx_normals` table, Houston stations seeded | api | 6 |
-| A5 | Pure `water/` module: method rule, wellpoint / sump / eductor / deep-well quantities, rain lost days and sump days | app | 12 |
-| A6 | Quantity-table rows (§6, 15 rows) as `water-cases.mjs`; run, all PASS | infra | 4 |
-| A7 | Wire into `calculateUtilities` (per dewatering stretch) and earthwork Calculate (areas below water); lines by role and variant | app | 8 |
-| A8 | Production: activities "Dewatering, wellpoint system", "Dewatering, sump", "Rain sumps" (24 h clock, duration rentals, watch labour, jetting crew); the job's pool shares pumps across runs open at once | api | 10 |
-| A9 | Library release: §8 keys (F until quoted, flagged "Quote needed") and the existing pumps re-rated from quotes | api | 4 (+ the quotes) |
-| A10 | Rain into durations: lost days per activity, the spreads' rental days, owned standby (with Plan B B8), Estimating's weather note | app, api | 8 |
-| A11 | UI: project **Site water** panel (sources, design water, rain table, method overrides), the run panel's dewatering block, Needs attention ("Quote needed", "Soil survey below 6.5 ft") | app | 10 |
-| A12 | Harness: the dewatering check and the under-detection share (§7), report only | infra | 3 |
-| A13 | Gates, the quantity table, one MCP smoke (a throwaway with a bore at 5 ft in SP: the run turns wellpoints, lines priced or "Quote needed"; Site water fetched for a Houston ZIP), FEATURES/DECISIONS/SINCE_ARCHIVE, mirror | all | 5 |
-| | **Total** | | **87 h** (±30 %: the 24 h clock in the spread pricing and the quotes are the likeliest overruns) |
+The first version's A1–A13 (87 h) are kept as the record of the whole; the revision splits them. Every A-lean task
+is inside the first version's scope, cut down; the A-later rows are what is left of each.
 
-**Order:** A1 → A5 → A6 (prove the module on the hand rows before any wiring) → A2 → A3 → A4 → A7 → A8 → A10 → A9 →
-A11 → A12 → A13. Nights: (1) A1, A5, A6; (2) A2–A4, A7; (3) A8, A10; (4) A9 (after quotes), A11–A13.
+### 9.1 A-lean (26 h, ±25 %)
+
+| # | Task | From | Repo | Hours |
+|---|---|---|---|---:|
+| AL1 | NOAA normals: `wx_station` and `wx_normals` seeded with the six stations' 12 months × 4 data types (§2.c), the Texas ZIP centroid seed, nearest station on the project with a picker; the bore layer's `k_cm_s` in the same migration (one migration) | A4, A2 (ZIP part), A1 (column) | api | 4 |
+| AL2 | Rain into durations: a pure `water/rain.ts` (lost days per month by work class, the overlap rule, the window from the project's start and the activities' days), each activity's crew-days + its lost days, the spread's rental days follow (`periods.ts:solveRental` unchanged), no labour pay on lost days, `prod_includes_weather` on the company activity (default false), Estimating's weather note; owned standby only if Plan B's B8 is in | A10, A5 (rain part) | app, api | 7 |
+| AL3 | "As directed" pay lines (§4.5): the line kind, the owner's quantity and price, into the bid total outside markup, our priced part and "Quote needed" count beside it, the risk badge | new (the first version's question 3) | app, api | 4 |
+| AL4 | The sump and wellpoint rule and quantities: the pure `water/` module's rules 1, 2, 3, 5, 6 and the double row (eductor and deep-well rows answer "price by hand"), §4.1–§4.3's sump quantities, the attendant / patrol setting and the 2 ft default in `utility_settings` (JSONB, no migration); the runs' dewatering stretches show the method, its reason and the quantities, every price "Quote needed"; the §6 quantity rows and the rain and pay rows as `water-cases.mjs` | A5, A6, A7 (utilities only), A1 (settings) | app, infra | 9 |
+| AL5 | Gates, the quantity table, one MCP smoke on a throwaway (a Houston ZIP, a bore at 5 ft in SP: the run turns "Wellpoints, single row" with its quantities and "Quote needed"; a pay line at $23/LF with its badge; the spread's June weather note), docs, mirror | A13 | all | 2 |
+| | **A-lean total** | | | **26 h** |
+
+### 9.2 A-later (61 h, ±30 %)
+
+| # | Task | From | Repo | Hours |
+|---|---|---|---|---:|
+| AT1 | The `site_water_source` cache table and the rest of the Site water settings (window, discharge, overrides) | A1 | api | 4 |
+| AT2 | Geocode the project address (Census geocoder, no key) | A2 | api | 5 |
+| AT3 | NRCS Soil Data Access client (Celery, 30 s, cache; the five fields, monthly wet depth, ksat by horizon) | A3 | api | 6 |
+| AT4 | NOAA beyond the six: the station inventory, the Access Data Service fetch and cache; the daily series (GHCN-Daily) for the exact overlap | A4 | api | 3 |
+| AT5 | Eductors, deep wells, the second wellpoint stage, the pond / mass excavation ring | A5 | app | 5 |
+| AT6 | Their quantity rows | A6 | infra | 2 |
+| AT7 | Earthwork Calculate (areas below water); the job's pool sharing pumps across runs open at once | A7 | app | 5 |
+| AT8 | Priced activities: "Dewatering, wellpoint system", "Dewatering, sump", "Rain sumps" (24 h clock, 7-day pump weeks, duration rentals, attendant labour, jetting crew) | A8 | api | 10 |
+| AT9 | Library release: §8 keys from the quotes (the five metros' medians, Plan B §1.2) and the existing pumps | A9 | api | 4 |
+| AT10 | The full **Site water** panel (sources, design water, rain table, method overrides), the run panel's dewatering block, Needs attention | A11 | app | 10 |
+| AT11 | The harness's dewatering check and the under-detection share (§7), report only | A12 | infra | 3 |
+| AT12 | Gates, smoke, docs, mirror | A13 | all | 4 |
+| | **A-later total** | | | **61 h** |
+
+**Plan A in all: 87 h** (26 + 61), as before; the split moves no work out.
+
+**Order:** A-lean first, in one night after Plan B's correctness night (Plan B §10.3 night 3): AL4's pure module and
+rows can go a night earlier (no visible change), then AL1 → AL2 → AL3 → AL4's wiring → AL5. A-later after the wellpoint
+quotes: AT1 → AT2 → AT3 → AT4 → AT5 → AT6 → AT7 → AT9 → AT8 → AT10 → AT11 → AT12 (four nights).
 
 ## 10. Risks
 
-1. **The money is in the as-directed item, not in our cost model.** If the founder's bids price dewatering at the
-   owner's $20–25/LF, a precise wellpoint model changes only the bid's risk, not its total. Build the rain half and
-   the method/quantity half first; leave the price half until the quotes exist.
-2. **Soil survey depth.** SDA describes ≈ 6.5 ft; Houston trenches are 8–20 ft. Without a bore, the method below that
-   is a guess (graded D, said on the run).
-3. **Houston's 01578 unread.** The drawdown target and the standby rule come from neighbours' specs until it is read.
-4. **24 h pricing meets a 5-day solver.** `periods.ts` bills 5-day weeks; pumps rent by the 7-day week. A second
-   calendar basis in the solver touches every rental path: proven on rows first.
-5. **Rain makes us dearer on the harness** (≈ +$67 k on the recent tabs). It is right, and it will read as going
-   backwards.
-6. **Wellpoint quantities are rule-of-thumb** (500 ft per pump, 60 points a crew-day). Two dealer conversations
-   should replace them before any number is graded above D.
+1. **The money is in the as-directed item, not in our cost model.** A-lean puts the owner's figure in the bid (the pay
+   line) and our model beside it; the priced wellpoint model waits for the quotes (A-later).
+2. **Soil survey depth.** SDA describes ≈ 6.5 ft; Houston trenches are 8–20 ft. A-lean uses bores and typed water only;
+   with neither, the run says "No water data" and takes no method.
+3. **Houston's 01578 unread.** The 2 ft drawdown and the standby rule come from neighbours' specs until it is read.
+4. **24 h pricing meets a 5-day solver** (A-later's AT8). A-lean prices no pump, so the solver is untouched.
+5. **Rain makes us dearer on the harness** (≈ +$67 k on the recent tabs, pipe crews; the overlap rule changes only
+   earthwork). It is right, and it will read as going backwards: shown on its own rerun.
+6. **The overlap rule assumes independent days**; Houston rain clusters, so earthwork lost days are still slightly
+   high until AT4's daily series.
+7. **Crew-sheet productions** (14 activities) may already carry weather (§5.d): until the founder answers, they take
+   lost days like the rest.
+8. **Wellpoint quantities are rule-of-thumb** (500 ft per pump, 60 points a crew-day), graded D on every row.
 
 ## 11. Questions for the founder
 
-1. Houston 01578: can you send the City's current section (the Permitting Center blocks automated reads)? Until then:
-   draw down **2 ft** below the bottom (between Galveston's 6 in and Deer Park's 3 ft)?
-2. Discharge: assume the CGP covers it (no permit fee, a filter bag per pump, the daily report), and flag only sites
-   you mark as possibly contaminated?
-3. The as-directed item: should Estimating add the tab's dewatering quantity at the owner's price as its own line (a
-   "pay item" line, not a cost), so a bid total matches the tab, while our own cost sits on the runs?
-4. Rain rules: earthwork loses the rain day + 1 drying day after ≥ 0.5 in, + 1 more after ≥ 1 in; pipe crews lose
-   only the rain day. Acceptable as defaults? And no labour paid on a lost day (open shop)?
-5. Pump watch: a full-time operator on every off-shift hour (Deer Park's wording), or patrols (2 visits a night)?
-6. Wellpoint quotes: which dewatering firms or dealers should the estimator ask (besides the five in Plan B)?
+Answered by the brief (taken as defaults): drawdown 2 ft; CGP covers discharge, flag only suspected contamination; a
+full-time attendant with a patrol setting; no labour pay on lost days; the as-directed item as a pay line.
+
+1. **Pay line risk badge:** "Covered" at our priced part ≤ 0.8 × the owner's price, "At risk" above 1.0 ×: right
+   thresholds? And does the pay line sit outside markup (as the owner fixed it)?
+2. **Sump pumps in A-lean:** the 3 in trash pump has a library rate (out-of-state, A); may A-lean price sumps from it,
+   or keep every dewatering price "Quote needed" until the Houston factor (Plan B) exists?
+3. **Overlap rule:** independent days (p = rain days ÷ days in the month) until the daily series in A-later?
+4. **The founder's crew sheets** (14 activities, §5.d): average days over a season (weather inside, no lost days added)
+   or good days (lost days added)?
+5. **Patrols:** 2 off-shift visits a day of 1 h each as the patrol setting's default?
+6. Houston 01578: can you send the City's current section? (kept)
+7. Wellpoint quotes: which dewatering firms should the estimator ask (besides the rental dealer branches of the quote
+   sheet)? (kept)
 
 ## Sources
 

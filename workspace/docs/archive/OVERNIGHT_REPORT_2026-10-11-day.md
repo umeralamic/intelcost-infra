@@ -227,8 +227,8 @@ objects, the original's 29 untouched: **passed**.
 inside a transaction and rolled back, no objects copied, on the bench's richest non-founder
 projects. Marketing Demo – Site 231 rows (an earthwork result, assumptions, review and strip area),
 Riverside Medical Center 135 (cost components, wage sets with 68 craft and 208 crew rates), Marketing
-Demo – Office Building 358 (28 sheets, markups, a registration), Test 3 228, Minmar 358, Hendrick Honda
-66, Mirammar Cove 28 (a snippet): every table's count equal, no foreign key into the original, no
+Demo – Office Building 358 (28 sheets, markups, a registration), Test 3 228, P05 358, P19
+66, another account's project 28 (a snippet): every table's count equal, no foreign key into the original, no
 value naming the original: **no problems**. Then, in the throwaway project, an estimate custom
 column with a value and a shared equipment resource made through Estimating, and the dry run again:
 104 rows, no problems. 31 of the 40 tables exercised; these 9 hold no row anywhere on the bench, so
@@ -439,11 +439,11 @@ media `[-1512, -1080, 1512, 1080]` stored as `[0, 0, 3024, 2160]`, now `[-1512, 
 | MIKE's workspace / 01-PLANS | 35 | fixed |
 | MIKE's workspace / Test | 17 | fixed |
 | Mike's workspace / Building B | 17 | fixed |
-| Bench Construction Test / Minmar | 17 | **reported only** *(call: your item 3 rule, nothing else written in that workspace)* |
+| Bench Construction Test / P05 | 17 | **reported only** *(call: your item 3 rule, nothing else written in that workspace)* |
 | Founder projects (P02, Rebid, P04) | 0 | none affected |
 
 **Images:** nothing renders from this column (sheet images come from MuPDF reading the PDF itself; the
-app ignores `crop_box`), so none needed re-preparing. A re-scan shows only Minmar's 17. The list as it
+app ignores `crop_box`), so none needed re-preparing. A re-scan shows only P05's 17. The list as it
 was before is in `E:\bench-backups\crop-backfill-2026-10-11-before.json`. *(incident)* The first apply
 pass did not exclude that workspace. I stopped it, and its process, before it committed, and confirmed a
 row unchanged; the pass that ran excluded it.
@@ -473,7 +473,7 @@ row unchanged; the pass that ran excluded it.
 - **D-353:** the cost model (4 s plus 1 MB plus the page's share, 15 % or one page's), the thumbnail task timing the rate, and a
   one-page file always going whole.
 - **D-354:** the copy-stale fix, beyond the brief, because it made every copy's earthwork look stale.
-- **Backfill:** Minmar left as it is, being in the founder's workspace.
+- **Backfill:** P05 left as it is, being in the founder's workspace.
 
 ## For your click check
 
@@ -490,10 +490,10 @@ row unchanged; the pass that ran excluded it.
 - **The crop-box backfill** was a one-off on the bench data; production needs the same re-read if it holds
   pages measured between 2026-10-08 and the D-351 fix. *(superseded below: use `drives/crop-backfill.py`)*
 
-## Minmar's 17 crop boxes (D-355)
+## P05's 17 crop boxes (D-355)
 
 **Step 1, before the write:** the list is
-[minmar_cropbox_before.csv](minmar_cropbox_before.csv). Seven of the 17 pages have a set scale or
+[p05_cropbox_before.csv](p05_cropbox_before.csv). Seven of the 17 pages have a set scale or
 measurements:
 - six have a set scale: A1.01, A1.02B, A4.00, A4.01B, A9.20, A9.30;
 - A4.00 also has 5 shapes, LF 1 241.70 LF and SLAB 1,335.22 SF.
@@ -514,7 +514,7 @@ I stopped there and reported. You approved the 17 boxes.
 
 No code computes a position, quantity or scale from it, so the write went ahead.
 
-**The write:** `drives/crop-backfill.py --project <Minmar> --pages <the 17> --apply`, the crop box only. The
+**The write:** `drives/crop-backfill.py --project <P05> --pages <the 17> --apply`, the crop box only. The
 script's dry run first reproduced the before-list byte for byte. The value written is MuPDF's
 single-precision box, `[-1512.1199951171875, 0, 1512.1199951171875, 2160]`, shown as
 `[-1512.12 0 1512.12 2160]`. That is the same value the other 83 pages got and the one new uploads
@@ -531,7 +531,7 @@ snapshot taken before the write:
 - all six scales are unchanged.
 
 The after-list is
-[minmar_cropbox_after.csv](minmar_cropbox_after.csv). A dry run on Minmar now lists 0 pages.
+[p05_cropbox_after.csv](p05_cropbox_after.csv). A dry run on P05 now lists 0 pages.
 
 **For Abdullah, prod:** run the script from the api container. It lists only, by default:
 `python drives/crop-backfill.py > before.csv`, optionally scoped with `--workspace`, `--project` or `--pages`,
@@ -543,7 +543,7 @@ changes none of those.
 
 1. **The final, linted script against the before state.** One transaction set the 17 boxes back to the
    before-snapshot's stored values, then the script's dry run ran on that same session. Its output equals
-   `minmar_cropbox_before.csv` byte for byte (`diff` and `cmp`). Then the transaction was rolled back; the
+   `p05_cropbox_before.csv` byte for byte (`diff` and `cmp`). Then the transaction was rolled back; the
    17 rows still hold the corrected box. A dry run on the current state finds **0 pages**.
 2. **Where the two writers get the box:**
    - **`prepare.py:894`, the thumbnail task:** opens the whole file with MuPDF and stores MuPDF's
@@ -553,8 +553,8 @@ changes none of those.
      `page.cropbox`.
    - **One writer per row:** the measure runs first, and the thumbnail task skips pages already stored.
 
-   **Proof:** hard rule 8 forbids writing tests, so this was the re-prepare route, never Minmar or the
-   founder projects. A0.00B, the same drawing as Minmar's (media box `[-1512.12 -1080 1512.12 1080]`),
+   **Proof:** hard rule 8 forbids writing tests, so this was the re-prepare route, never P05 or the
+   founder projects. A0.00B, the same drawing as P05's (media box `[-1512.12 -1080 1512.12 1080]`),
    was uploaded to a throwaway account, `fx.cropcheck1011.a`. Its page row was then cleared and each
    writer run on its own:
 
@@ -564,7 +564,7 @@ changes none of those.
    | `measure_file_pages` alone | `[-1512.12 0 1512.12 2160]` |
    | `prepare_file_pages` (thumbnail task) alone | `[-1512.12 0 1512.12 2160]` |
    | `_ranged_sizes` / `_whole_sizes` (read) | `[-1512.12 0 1512.12 2160]` |
-   | the pre-D-351 formula, for reference | `[0 0 3024.24 2160]` (what Minmar held) |
+   | the pre-D-351 formula, for reference | `[0 0 3024.24 2160]` (what P05 held) |
 
    Every value is exactly MuPDF's `[-1512.1199951171875, 0, 1512.1199951171875, 2160]`. Neither writer
    can store the old value, so nothing needed fixing.

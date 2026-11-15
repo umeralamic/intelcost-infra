@@ -1,7 +1,7 @@
 // The raster text check's test sheet (D-708): one 36 × 24 in page holding the two kinds of text the
 // low-zoom fault was seen on. Made on the spot; never client data.
 //
-//   CAD   thin CAD stroke text: letters drawn as 0.65 pt strokes (the measured width on the CCCP notes),
+//   CAD   thin CAD stroke text: letters drawn as 0.65 pt strokes (the measured width on P23'snotes),
 //         7 pt high, the letters the fault turned into one another (S B G 8 6) among others
 //   SPEC  dense spec text: Helvetica 5.7 pt on a 6.8 pt leading (the A010.3 specifications' size)
 //
@@ -62,7 +62,7 @@ const CAD_AT = { x: 600, top: 400 }; // pt from the page's left and top
 const SPEC_AT = { x: 1400, top: 400 };
 const CAP = 7; // pt, a CAD letter's height
 const PITCH = 6.2; // pt from one CAD letter to the next
-// As dense as the CCCP general notes (ink 33 of 255 in a 100 × 40 pt area at 100%).
+// As dense as P23'sgeneral notes (ink 33 of 255 in a 100 × 40 pt area at 100%).
 const LEADING_CAD = 18;
 const SPEC_SIZE = 5.7;
 const LEADING_SPEC = 6.8;

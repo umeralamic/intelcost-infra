@@ -189,12 +189,12 @@ busy, an earlier quiet run gave A0.00B 11.4 → 5.7 before the last grouping spe
 | S0.04 | 15.3 | **8.8** |
 | A9.30 (mostly curves, never merged) | 4.9 | 4.0 |
 | Office Building p10 | 4.9 | 3.6 |
-| 14 Minmar sheets | — | 1.2–6× faster each (P1.02 4.7 → 0.76) |
+| 14 P05 sheets | — | 1.2–6× faster each (P1.02 4.7 → 0.76) |
 | Generated sheets | 0.007–0.042 | 0.005–0.024 |
 
 **Result comparison: identical.** Old against new, every field (names, scales, verified /
 unverified, proving dimension and witness, bands, every merged line), on 119 sheets: 103 prepared
-bench pages (Minmar 44, the Office Building marketing demo 28, Hendrick Honda 26, others 5; none of
+bench pages (P05 44, the Office Building marketing demo 28, P19 26, others 5; none of
 the founder's projects) and 16 generated sheets. *(call)* The D-321–D-326 test copies no longer
 existed anywhere, so the set was rebuilt by a generator: engineering (C-101 `1" = 30'`, C-102
 `1 IN = 50 FT`, C-103 band only), inch (A-121 `3/64"`, A-122 `1-1/2"`), metric (M-101 `1:100`, M-103

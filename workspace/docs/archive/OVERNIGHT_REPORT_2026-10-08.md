@@ -352,7 +352,7 @@ The agent's gates passed (lint, typecheck, build with placeholders allowed, link
 
 - Throwaway workspace "Overnight AC 1008" (account `fx.overnight.1791423387@bench.intelcost.io`):
   project "AC E101 copy" (E101's one-page PDF from P03) and "AC
-  E200 copy" (Waxing City's only page), both copied out by reading their stored sheet sources;
+  E200 copy" (P04's only page), both copied out by reading their stored sheet sources;
   the founder projects were not opened in the app.
 - A throwaway harness (never committed) runs the app's own scan modules in the page and the
   panel's result step, and scores every candidate against ground truth read from the sheets:
@@ -448,7 +448,7 @@ Vector, checked right / wrong, suggestions shown, missed, at every slider value:
 met; E200 12 / 0 and 6 / 0 met with the plan samples, and 12 / 0 with the schedule's A. One gap:
 from the schedule's A1 sample one of the six plan A1 fixtures is not found (no wrong one).
 
-**Waxing City (E200) Vector cold**, no stored index, fresh page: 5.1 s and 3.7 s for A1 (index
+**P04 (E200) Vector cold**, no stored index, fresh page: 5.1 s and 3.7 s for A1 (index
 build 3.4 s and 2.0 s in the worker), 12.2 s for A on the very first cold run of the session (the
 index worker's first load of pdf.js under the dev server, 9.0 s), 6.7 s on a second cold run
 (index 3.7 s). Warm: 1.1 s (A1) and 3.1 s (A). **Under 5 s: met warm and for A1 cold; A cold

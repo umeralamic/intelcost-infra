@@ -439,7 +439,7 @@ confirmed; A3 profiled and improved (D-671, target not met: N3 below); A5 built 
 | N1 | Bricklayer Helper on Commercial & Public | **Ok, closed:** kept as built; Bricklayer Tender is the bricklayer's helper on wage determinations. |
 | N2 | 09.04 Tile's default crew | **Go:** the tile crew becomes the default; Terrazzo Worker + Laborer only for terrazzo; tile scopes in every system checked (night run 2, Step 4). |
 | N3 | Selection at 20,000 shapes | **Go, Umer's (not Abdullah's):** the selection held outside ProjectTakeoff as an external store, the zoom store's pattern (night run 2, Step 7). |
-| N4 | ZHO Dania Pointe Page 26 | **Run only if the bench has a landscape sheet with bleed on Y** (night run 2, Step 8); otherwise Umer uploads the ZHO Dania Pointe PDF. |
+| N4 | P22 Page 26 | **Run only if the bench has a landscape sheet with bleed on Y** (night run 2, Step 8); otherwise Umer uploads P22's PDF. |
 | N5 | A set with a printed control table | **Umer provides one.** Until then GPS Export is proved on assumed coordinates only, said in every GPS report and README. |
 | N6 | A press exactly on a takeoff vertex | **Go:** it counts as a control-point pick (night run 2, Step 3). |
 | N7 | A duplicated project's copied Calculate | **A bug against C6:** the copy reads current on its first open (night run 2, Step 5). |
@@ -460,7 +460,7 @@ All answered by Umer on 2026-10-21 (day session, D-687).
 | M3 | **Estimating's first row** | **Go, in two parts:** late reads never overwrite a cell being typed in or a value saved after the read was asked (Step 5); then ship the hold and the 20,000-line render (Step 6). |
 | M4 | A **lapsed subscription** refusing the GPS Export switch | **Its own sentence:** "Your Professional plan has ended. Renew to turn this on." (Step 3). |
 | M5 | Per-sheet lists and classification re-reads | **Go:** live events re-read only the per-sheet lists that changed; a reconnect re-reads the classification only if it changed (Step 9). |
-| M6 | Bleed-on-Y check | **Not on Dania Pointe** (leave the Bench Construction Test upload untouched): generated test sheets in four page layouts, checked at every zoom step to 30×, and added to the fixtures (Step 4). |
+| M6 | Bleed-on-Y check | **Not on P22** (leave the Bench Construction Test upload untouched): generated test sheets in four page layouts, checked at every zoom step to 30×, and added to the fixtures (Step 4). |
 | M7 | A guest's out-of-date view | **Passed (Umer):** the guest saw the earthwork result as current after Calculate. **Closed.** |
 
 C-200's gap to the engineer's figures (−6.22 / −9.49 % after D-683): **checked by Umer and fine. No action. Closed.**

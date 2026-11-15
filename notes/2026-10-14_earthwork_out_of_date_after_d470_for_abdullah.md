@@ -37,7 +37,7 @@ I counted on the bench, read only. I can't reach staging or production; the quer
 | Saved sheet results still out of date now (the 3D test copy was recalculated on 2026-10-14) | **3** |
 | Saved site results | 0 |
 
-Minmar is the one other project with a curve: an ellipse or a rectangle drawn as a Site
+P05 is the one other project with a curve: an ellipse or a rectangle drawn as a Site
 Feature, no arcs. It has no saved result, so nothing shows "Out of date" there. A rectangle reads
 the same as before. An ellipse is now read every 1°, not every 5.6°, a change of at most 0.16 %
 of its area.

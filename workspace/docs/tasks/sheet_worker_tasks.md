@@ -7,7 +7,7 @@
 
 At and below Fit the sheet is drawn ×4 within 20 M px, else ×2 (D-708 left today's rule there). On
 text-heavy sheets, dpr 1.25 lands on ×2, which measures 4.2–5.2 against the reference on the r1-raster-text
-sheet (6.5–8.6 on the real CCCP notes); ×4 is within 4 at every dpr. The r1-raster-text fixture exempts Fit
+sheet (6.5–8.6 on P23's real notes); ×4 is within 4 at every dpr. The r1-raster-text fixture exempts Fit
 and below until this is fixed. ×4 on A010.3 takes about 5 s, and on the main thread that draw drops the page
 from 61 to 14 fps, with one stall of 1.8 s.
 

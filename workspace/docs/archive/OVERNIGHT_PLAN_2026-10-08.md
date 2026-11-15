@@ -28,7 +28,7 @@ updated after each step. The last run's plan and report are archived as
 | 1.2 | Assembly crews priced at the project's rates (crew makeup only; editor shows "priced at the project's rates"; existing assemblies counted) | api, app | gates, before/after numbers on a throwaway copy, D-entry |
 | 1.3 | D-292 allowance approved | workspace | marked |
 | 1.4 | Delete the "EW Typo Check" throwaway project | bench data | gone |
-| 3 | Auto Count Part 1, accuracy: slider opens at 70 every run; checked set from the run's own score gap (valley cut), lettering never checkable, sensitivity only widens suggestions; Waxing City vector < 5 s; Image memory < 500 MB on "C"; quick wins (Auto mode, Stop, Threads, Essentials wording) | app | the four tests in both modes at 38 % and 70 % on host Chrome, before and after; D-entry |
+| 3 | Auto Count Part 1, accuracy: slider opens at 70 every run; checked set from the run's own score gap (valley cut), lettering never checkable, sensitivity only widens suggestions; P04 vector < 5 s; Image memory < 500 MB on "C"; quick wins (Auto mode, Stop, Threads, Essentials wording) | app | the four tests in both modes at 38 % and 70 % on host Chrome, before and after; D-entry |
 | 2 | Marketing screenshots a to f + the new earthwork section | marketing, bench data | each shot captured (or why not), redacted, viewed |
 | 4 | auto-count-tag-variants shot; production build without ALLOW_PLACEHOLDERS + link check; SCREENSHOT_TODO; MARKETING_REPORT Pass 5 | marketing | build and links pass |
 | 5 | Auto Count Part 2, speed (a symmetry on outline, b OpenCV candidate stage, c WASM scorer, d WebGPU), each with identical results | app | only if time remains |

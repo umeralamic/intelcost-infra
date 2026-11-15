@@ -6,7 +6,7 @@ The founder's brief of 2026-10-29 evening, seven steps worked in order. Report:
 plan is archived as `docs/archive/OVERNIGHT_PLAN_2026-10-24.md`.
 
 **Read only, every tool, browser and api-process script:** P02, P03
-(bd8fc5b0), Waxing City, Minmar, everything in Bench Construction Test, the 3D test copy's shared copy (6467) and its
+(bd8fc5b0), P04, P05, everything in Bench Construction Test, the 3D test copy's shared copy (6467) and its
 "(shared copy) (shared copy)" (6565, added to the three guard lists at the start). Real-data proofs on BENCH DUPs and
 throwaway accounts only, purged at the end. Fingerprint at the start and the end. Mail guard and drives guard on.
 
