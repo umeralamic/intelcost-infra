@@ -13,6 +13,16 @@ not wired into Calculate (night 2: tasks 5, 6, 9; night 3: tasks 7, 8, 10). The 
 | 4 | Quantity-table rows | Built: the 26 hand rows (+ 3 more and a defaults row) as `section-layers` / `section-defaults` in `utility-cases.mjs`, all right |
 | 5–10 | | Night 2 and night 3 |
 
+**For night 2, from the independent check of night 1 (D-1280), for the founder to rule on before they change:**
+- `defaultPreset` gives the house presets to gravity DI and C900 outside Texas; RCP, VCP and DI on the drain types
+  (roof, sub- and foundation drains) take C1479 T2, Class B and the house preset, where §3.2 says D2321 for any drain;
+  casing gives `legacy`.
+- NEC's optional sand 3 in under and over (grade D) is not offered.
+- The surface layer is the paved cap only (no topsoil layer on an unpaved run).
+- "Box narrower than the width rule" is not flagged for a typed outside width (only a listed box has an inside width).
+- `readLayers` / `materialOf` throw on an unknown material name in a stored stack (should fall back and flag).
+- No "bedding + OD deeper than the trench" flag yet.
+
 **Reconciled with D-1275 before task 1 (D-1280):**
 - **Minimum covers** stay `cover.ts:MIN_COVER` / `minCoverFt` (storm 2 ft and sanitary 3 ft grade C, editable in the
   library settings; pressure types the company's cover). The picture's red cover warning (task 8) and the mock-up row
@@ -390,7 +400,7 @@ says "Calculate again to see the section".
 | `sect-c1479-t1` | RCP 36, invert 10.00 ft | 44 + 2·44/6 = 58.67 → 60 in | 10 + 0.3333 + 0.25 = 10.5833 | bedding max(44/24 = 1.83, 3) = 3 in · 1.25 − 0.0441 = 1.2059 → 0.0447 (4.47), of which middle 44/3 = 14.67 in loose: 0.3056 SF gross; haunch + lower side to springline 22 in · 9.1667 − 5.2796 − 0.1563 = 3.7307 → 0.1382 (13.82); overfill 102 in · 42.5 − 5.2796 − 0.2008 = 37.0196 → 1.3711 (137.11) | 5 × 10.5833 ÷ 27 × 100 = 195.99 |
 | `sect-c1479-t2` | as T1 | 60 in | 10.5833 | as T1; compaction words 90 % / 85 % Cat I | 195.99 |
 | `sect-c1479-t3` | as T1 | 60 in | 10.5833 | as T1; 85 % / 85 % | 195.99 |
-| `sect-c1479-t4` | RCP 36, no bedding | 60 in | 10.3333 | haunch + lower side native 22 in · 3.7307 → 0.1382 (13.82); overfill 37.0196 → 1.3711 (137.11). The bell's 0.0441 below the bottom, not counted | 191.36 |
+| `sect-c1479-t4` | RCP 36, no bedding | 60 in | 10.3333 | haunch + lower side native 22 in · 3.7307 → 0.1382 (13.82); overfill 102 in (10.3333 − 1.8333 = 8.5 ft) · 42.5 − 5.2796 − 0.2008 = 37.0196 → 1.3711 (137.11). The bell's 0.0445 below the bottom (the whole segment under the barrel; 0.0441 was Type 1's bedding figure), not counted (D-1280) | 191.36 |
 | `sect-class-b` | RCP 36, invert 10.00 ft | OD + 24 = 68 in | 10 + 0.3333 + 0.4583 = 10.7917 | bedding max(44/8 = 5.5, 4) = 5.5 in · 2.5972 − 0.0445 = 2.5528 → 0.0945 (9.45); haunch to springline 22 in · 10.3889 − 5.2796 − 0.1563 = 4.9529 → 0.1834 (18.34); initial 12 in over 34 in · 16.0556 − 5.2796 − 0.2008 = 10.5751 → 0.3917 (39.17); final 68 in · 32.1111 → 1.1893 (118.93) | 5.6667 × 10.7917 ÷ 27 × 100 = 226.49 |
 | `sect-class-c` | as B | 68 in | 10.7917 | bedding 5.5 in → 0.0945 (9.45); haunch to OD/6 = 7.33 in · 3.4630 − 1.1568 − 0.0704 = 2.2358 → 0.0828 (8.28); initial to 6 in over · 20.1481 − 9.4025 − 0.2867 = 10.4589 → 0.3874 (38.74); final 74 in · 34.9444 → 1.2942 (129.42) | 226.49 |
 | `sect-class-a` | as B, concrete cradle | 68 in | 10 + 0.3333 + 0.9167 = 11.25 | cradle max(44/4, 4) = 11 in under, to 11 in above the pipe bottom, 22 in · 10.3889 − 2.0643 − 0.1387 = 8.1858 → 0.3032 (30.32) concrete; haunch to springline 11 in · 5.1944 − 3.2153 − 0.0621 = 1.9171 → 0.0710 (7.10); initial 10.5751 → 0.3917 (39.17); final 1.1893 (118.93) | 236.11 |

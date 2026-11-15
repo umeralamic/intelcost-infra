@@ -1928,6 +1928,9 @@ try {
     const xr = await import("/src/lib/takeoff/earthwork/utilities/crossings.ts");
     // D-1275: the cover over the crown against the type's minimum.
     const cv = await import("/src/lib/takeoff/earthwork/utilities/cover.ts");
+    // D-1280: the layered pipe section and its presets.
+    const lyr = await import("/src/lib/takeoff/earthwork/utilities/layers.ts");
+    const spr = await import("/src/lib/takeoff/earthwork/utilities/sectionPresets.ts");
     // D-1276: tracer and tape in whole rolls once over the project (Estimating's withBidOrder).
     const bo = await import("/src/lib/estimate/bidOrder.ts");
     // D-1279 (Q10): a share's quantity column.
@@ -2005,6 +2008,134 @@ try {
         };
       }
       // D-1100, D-1101: a run's default bedding and zone by its type and pipe, the project's and the company's over it.
+      // D-1280 (D-1278 plan §5): the layered section on a 100 ft run at a constant depth, G = 100. The stack resolved
+      // from `section.layers` as a run stores it (absent: legacy), its geometry, and the engine; "sect-legacy" rows run
+      // today's code path and the layered engine on the legacy stack, which must agree to 1e-9.
+      if (c.kind === "section-layers") {
+        const p = cat.resolvePipe(c.pipe);
+        const od = p.od;
+        const id = c.idIn ?? p.id;
+        const G = 100;
+        const settings = utr.utilitySettings(null);
+        const ctx = { type: c.type, catalogKey: c.pipe, projectState: c.state ?? null, settings };
+        const paved = Boolean(c.paved);
+        const geoOf = (stored) => lyr.sectionGeometry(lyr.resolveStack(lyr.readLayers({ layers: stored }), ctx), { odIn: od, idIn: id, pipes: 1, gapIn: 0, catalogKey: c.pipe }, ctx, { paved, materials: { bedding: { name: "#57 stone", source: "imported", densityPcf: 108 }, zone: { name: "Sand", source: "imported", densityPcf: 110 }, backfill: { name: "Native", source: "native", densityPcf: null } } });
+        const geo = geoOf(c.preset ? { v: 1, preset: c.preset, ...(c.edits ? { edits: c.edits } : {}) } : undefined);
+        const wall = (od - id) / 24;
+        const depths = Array.isArray(c.depth) ? c.depth : [c.depth, c.depth];
+        const invertAt = (i, zb) => (c.cover != null ? G - c.cover - (od + id) / 24 : c.invertDepth != null ? G - c.invertDepth : G - depths[i] + wall + zb);
+        const knotsFor = (zb) => [0, 1].map((i) => ({ s: i * 100, G, invert: invertAt(i, zb), bottoms: [-1e6], water: null, caving: false, caveInFt: null }));
+        // The plan's "vertical typed" at any depth (OSHA slopes soil from 5 ft): a cemented layer the rule cuts vertical
+        // (stable rock) that is not exported, so the walls never change the arithmetic and no rock bedding applies. A
+        // "rock" row's bottom is exported bedrock (the rock rule). The legacy rows keep case (a)'s clay and walls.
+        const soil = c.rock
+          ? { layerId: null, name: "Bedrock", group: "bedrock", uscs: null, osha: "rock", unsuitable: false, reuseBackfill: false, alwaysExported: true, shrink: 1 }
+          : c.protection
+            ? { layerId: null, ...CLAY }
+            : { layerId: null, name: "Cemented, cut vertical", group: "cemented", uscs: null, osha: "rock", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1 };
+        const sec = utr.sectionFor(c.type, settings);
+        const base = (zb) => ({
+          knots: knotsFor(zb),
+          layers: [soil],
+          noBores: false,
+          pipe: { odIn: od, idIn: id, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: sec.sideClearanceIn, minWidthIn: sec.minWidthIn, beddingIn: settings.beddingIn, zoneAboveCrownIn: settings.zoneAboveCrownIn },
+          bucket: "auto",
+          box: null,
+          specMaxIn: null,
+          protection: c.protection ?? "vertical",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          materials: { bedding: "imported", zone: "imported", backfill: "native" },
+          materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
+          restoration: null,
+          ...(paved ? { pavedCapIn: 12 } : {}),
+        });
+        const r4 = (v) => Math.round(v * 1e4) / 1e4;
+        const closeTo = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+        if (!c.preset) {
+          // Legacy: today's path (no `layered`) and the layered engine on the legacy stack.
+          const today = q.runQuantities(base(settings.beddingIn / 12));
+          const layered = q.runQuantities({ ...base(geo.normal.zb), layered: geo });
+          const legacyEqual =
+            geo.stack.preset === "legacy" &&
+            ["excavationCF", "beddingCF", "zoneCF", "backfillCF", "widthFt", "maxTopWidthFt", "nativePlacedCF", "importedPlacedCF"].every((k) => closeTo(today[k], layered[k])) &&
+            today.byMaterial.length === layered.byMaterial.length &&
+            today.byMaterial.every((m, i) => m.zone === layered.byMaterial[i].zone && m.name === layered.byMaterial[i].name && m.source === layered.byMaterial[i].source && closeTo(m.cf, layered.byMaterial[i].cf)) &&
+            Math.abs(layered.sectionCheck.gapCF) < 1e-6;
+          return {
+            widthText: today.widthText,
+            excavationCY: r2(today.excavationCF / 27),
+            beddingCY: r2(today.beddingCF / 27),
+            zoneCY: r2(today.zoneCF / 27),
+            backfillCY: r2(today.backfillCF / 27),
+            pipeLF: today.pipeLF.map((x) => ({ range: x.range, lf: r2(x.lf) })),
+            protectionLF: today.protectionLF.map((x) => ({ method: x.method, slope: x.slope, range: x.range, lf: r2(x.lf) })),
+            maxTopWidthFt: r2(today.maxTopWidthFt),
+            invertStart: r4(base(settings.beddingIn / 12).knots[0].invert),
+            legacyEqual,
+          };
+        }
+        const input = { ...base(geo.normal.zb), layered: geo };
+        const r = q.runQuantities(input);
+        const L = r.lengthFt;
+        const order = ["foundation", "bedding", "haunch", "embedment", "initial", "final"];
+        const by = new Map();
+        for (const l of r.layers) by.set(l.key, (by.get(l.key) ?? 0) + l.cf);
+        const keys = order.filter((k) => by.has(k));
+        const sc = r.sectionCheck;
+        const rows = [...keys.map((k) => [k, by.get(k)]), ...(paved ? [["surface", sc.surfaceCF]] : [])];
+        const out = {
+          widthIn: r2(r.widthFt * 12),
+          hFt: r4(q.trenchAt(r.shape[0], 50).h),
+          layersCYLF: rows.map(([k, cf]) => [k, r4(cf / 27 / L)]),
+          layersCY: rows.map(([k, cf]) => [k, r2(cf / 27)]),
+          excavationCY: r2(r.excavationCF / 27),
+          excavationCYLF: r4(r.excavationCF / 27 / L),
+          gapCY: r2(sc.gapCF / 27),
+          bellCY: r2(sc.bellCF / 27),
+          bellBelowSF: r4(sc.bellBelowCF / L),
+          bellBelowCY: r2(sc.bellBelowCF / 27),
+          middleLooseCY: r2(sc.middleLooseCF / 27),
+          rockLF: r2(r.rockLF),
+          materials: r.layers.map((l) => [l.key, l.name, l.source]),
+          compaction: r.layers.map((l) => [l.key, l.compaction]),
+          cradleCYLF: r4(((by.get("bedding") ?? 0) + (by.get("haunch") ?? 0)) / 27 / L),
+          cradleCY: r2(((by.get("bedding") ?? 0) + (by.get("haunch") ?? 0)) / 27),
+          concreteCYLF: r4(r.layers.filter((l) => l.name === "Concrete").reduce((a, l) => a + l.cf, 0) / 27 / L),
+          coverBelowMin: cv.coverFlags(c.type, input.knots, od, id, null, null).some((f) => f.includes("under the")),
+          flags: r.flags,
+        };
+        if (c.legacyToo) {
+          // Today's section on the same pipe and cover: the project's 6 in bedding and zone to 12 in over the crown.
+          const geoL = geoOf(undefined);
+          const rl = q.runQuantities({ ...base(geoL.normal.zb), layered: geoL });
+          out.legacySandCYLF = r4((rl.beddingCF + rl.zoneCF) / 27 / rl.lengthFt);
+          out.legacyExcavationCY = r2(rl.excavationCF / 27);
+          out.legacyHFt = r4(q.trenchAt(rl.shape[0], 50).h);
+        }
+        return out;
+      }
+      // D-1280 (D-1278 plan §3.2): the default preset by type, pipe and state, with the founder's answers 1 and 2; the
+      // presets' count, each with a source and a grade; an absent stack is legacy; an edited auto stack's title.
+      if (c.kind === "section-defaults") {
+        const settings = utr.utilitySettings(null);
+        const ids = c.picks.map(([type, key, state, s]) => {
+          const d = spr.defaultPreset(type, key, state, { ...settings, ...s });
+          return `${d.id}${d.tac217 ? "+tac" : ""}`;
+        });
+        const all = Object.values(spr.PRESETS);
+        const absent = lyr.resolveStack(lyr.readLayers({}), { type: "sanitary", catalogKey: SDR35, projectState: null, settings });
+        const edited = lyr.resolveStack(lyr.readLayers({ layers: { v: 1, preset: "auto", edits: { bedding: { thickness: { kind: "fixed", in: 6 } } } } }), { type: "water", catalogKey: "pvc_c900_dr18:8", projectState: null, settings });
+        return {
+          ids: ids.join(" "),
+          presets: all.length,
+          sourced: all.filter((p) => p.source && p.grade).length,
+          legacyAbsent: `${absent.preset} ${absent.legacy}`,
+          autoTitle: edited.title,
+        };
+      }
       if (c.kind === "embedment") {
         const d = um.embedmentDefault(c.type, c.catalogKey, c.settings ?? {});
         return { bedding: d?.bedding ? um.ZONE_CHOICES[d.bedding].name : "project's", zone: d?.zone ? um.ZONE_CHOICES[d.zone].name : "project's" };

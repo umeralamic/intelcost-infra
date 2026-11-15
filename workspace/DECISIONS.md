@@ -32817,3 +32817,23 @@ estimate and price is unchanged. Spec: [pipe_section_layers_tasks.md](docs/tasks
   `sect-c600-t4-house` (bedding 0.0247, embedment 0.1132, final 0.2222 CY/LF; the house sand 0.1379 against legacy's
   0.1504, −8 %), `sect-c1479-t2-rock` (bedding max(44/12, 6) = 6 in, 0.0909 CY/LF, excavation 200.62 CY). The utility
   engine has one implementation (the app's); the api has none, so there is no second engine to compare.
+- **Proof (2026-11-15 UTC).** Gates: app lint (0 errors, the 4 known warnings), typecheck and build exit 0; no api file
+  changed, no migration. Quantity table 07:16:21–07:33:51 (no other run in it): exit 0, 0 FAIL, "344 rows, … 235 utility
+  rows right …". Smoke on a throwaway copy of the 3D test project (Harris County, public, open shop, burdened, 77002,
+  TX20260031 mod 1 Heavy): C-200 Calculated with D-1280's engine (07:15), with HEAD's engine put back (07:37) and with
+  D-1280's again (07:40): the stored utilities and result digests the same each time (cd1dde34f787d5c4,
+  c82c70055ea1afba), estimate $940,918.74 and bid $1,173,757.22 each time. Purged. Founder digest b4c963cdf83e7d84 at
+  the start and the end. App reload windows (Vite, no api): 06:53:34, 07:00:17, 07:34:24 (HEAD's three files put back
+  for the before), 07:38:43 (D-1280's restored). **Left uncommitted** in the app and infra trees for an independent check
+  (the founder's instruction, 07:2x UTC).
+- **Independent check (2026-11-15, a fresh agent from the plan and the code only): passed.** All 26 plan rows match by
+  hand; its 8 edge cases (9 rows, `chk-*` at the end of `utility-cases.mjs`) pass; its quantity table 07:53–08:10 UTC
+  exit 0 with the old rows unchanged (adds only); bid $1,173,757.22 identical with HEAD's three files swapped in. Plan
+  errors, both in `sect-c1479-t4`: the bell below the bottom is 0.0445, not 0.0441 (fixed in the plan), and the overfill
+  line's inch label (now written out: 102 in, 8.5 ft). Accepted differences: Class A's cradle split into bedding +
+  haunch; the SDR 35 rows at ID 7.92; key names (the plan's "initial" over the crown is the embedment for D2321).
+  Deviations for the founder to rule on (unchanged; listed in the plan for night 2): `defaultPreset` gives the house
+  presets for gravity DI/C900 outside Texas and for RCP/VCP/DI drains, casing → `legacy`; no NEC sand 3 in option; the
+  surface layer is the paved cap only; "box narrower" not flagged for a typed outside width; `readLayers`/`materialOf`
+  throw on an unknown material; no "bedding + OD deeper than the trench" flag. Committed after the check (no new
+  quantity-table run: the tree is the one the check's run used, plus doc edits).

@@ -1825,4 +1825,150 @@ export const UTILITY_CASES = [
       shares: "0.32 2 2 12.50",
     },
   },
+  // --- D-1280: pipe section layers, night 1 (D-1278 plan §5) ---------------------------------------------------------
+  // The layered engine (layers.ts, sectionPresets.ts, section.ts:layerAreas, runQuantities' `layered`) on the plan's 26
+  // hand-worked rows, a "section-layers" kind: 100 LF at a constant depth (G = 100), vertical walls typed, bucket Auto,
+  // Type B clay, unpaved unless stated. Volumes net of the barrel and the bell. `layersCYLF` is each layer's CY/LF to
+  // 4 places and `layersCY` its 100 LF CY to 0.01, bottom up (the paved cap last, as "surface"); `widthIn` the bottom
+  // width; `hFt` the trench depth; `gapCY` the excavation less every layer, the surface, the pipe and the bell (0).
+  // The plan's pipes: DI 8 PC 350 (OD 9.05, ID 8.55, bell 1.25 × OD, 0.5 ft a 18 ft joint), C900 8 DR 18 (9.05, 8.044,
+  // 1.20 ×, 0.5 / 20), SDR 35 8 (8.40, **7.92 as the plan's table**: the catalog's ID is 7.891, which moves the trench
+  // 0.0012 ft and two figures a cent, so the three SDR 35 rows type the plan's ID), RCP 36 Wall B (44, 36, Rinker's bell
+  // 50.25, 1.0 / 8), conduit 4 Sch 40 and PE 4 DR 11 (no bell: solvent-weld, fused).
+  {
+    // Section layers absent: today's code path, every field of util-2a (case (a)); and the layered engine on the legacy
+    // stack gives the same excavation, bedding, zone and backfill to 1e-9.
+    id: "sect-legacy",
+    kind: "section-layers",
+    type: "sanitary",
+    pipe: SDR35_8,
+    depth: 8,
+    protection: "auto",
+    preset: null,
+    expect: {
+      widthText: "Width 36 in — bucket",
+      excavationCY: 325.93,
+      beddingCY: 6.48,
+      zoneCY: 17.46,
+      backfillCY: 300.56,
+      pipeLF: [{ range: "6–8 ft", lf: 100 }],
+      protectionLF: [{ method: "sloped", slope: 1, range: "8–10 ft", lf: 100 }],
+      maxTopWidthFt: 19,
+      invertStart: 92.5212,
+      legacyEqual: true,
+    },
+  },
+  // The legacy equality again where it is hardest: sloped 1:1, 6 to 10 ft deep, paved (the cap, D-1084).
+  { id: "sect-legacy-sloped-paved", kind: "section-layers", type: "sanitary", pipe: SDR35_8, depth: [6, 10], protection: "sloped", paved: true, preset: null, expect: { legacyEqual: true } },
+  // AWWA C600, DI 8 PC 350 at 4.0 ft cover: the rule 9.05 + 12 = 21.05 in, the 24 in bucket.
+  { id: "sect-c600-t1", kind: "section-layers", type: "water", pipe: "di_c151_pc350:8", cover: 4, preset: "c600_t1", expect: { widthIn: 24, hFt: 4.7542, layersCYLF: [["final", 0.3354]], layersCY: [["final", 33.54]], excavationCY: 35.22, bellBelowSF: 0.001, gapCY: 0 } },
+  { id: "sect-c600-t2", kind: "section-layers", type: "water", pipe: "di_c151_pc350:8", cover: 4, preset: "c600_t2", expect: { widthIn: 24, hFt: 4.7542, layersCYLF: [["haunch", 0.0196], ["final", 0.3158]], layersCY: [["haunch", 1.96], ["final", 31.58]], excavationCY: 35.22, gapCY: 0 } },
+  { id: "sect-c600-t3", kind: "section-layers", type: "water", pipe: "di_c151_pc350:8", cover: 4, preset: "c600_t3", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.0391], ["final", 0.2963]], layersCY: [["bedding", 2.47], ["embedment", 3.91], ["final", 29.63]], excavationCY: 37.69, gapCY: 0, materials: [["bedding", "Native", "native"], ["embedment", "Native", "native"], ["final", "Native", "native"]] } },
+  { id: "sect-c600-t4", kind: "section-layers", type: "water", pipe: "di_c151_pc350:8", cover: 4, preset: "c600_t4", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.0391], ["final", 0.2963]], layersCY: [["bedding", 2.47], ["embedment", 3.91], ["final", 29.63]], excavationCY: 37.69, gapCY: 0, materials: [["bedding", "Sand", "imported"], ["embedment", "Sand", "imported"], ["final", "Native", "native"]], compaction: [["bedding", "≈ 80 % Standard Proctor"], ["embedment", "≈ 80 % Standard Proctor"], ["final", "Per the project's spec"]] } },
+  { id: "sect-c600-t5", kind: "section-layers", type: "water", pipe: "di_c151_pc350:8", cover: 4, preset: "c600_t5", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["haunch", 0.0196], ["embedment", 0.0196], ["final", 0.2963]], layersCY: [["bedding", 2.47], ["haunch", 1.96], ["embedment", 1.96], ["final", 29.63]], excavationCY: 37.69, gapCY: 0 } },
+  // AWWA C605, C900 8 DR 18 at 4.0 ft cover.
+  { id: "sect-c605-t1", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t1", expect: { widthIn: 24, hFt: 4.7542, layersCYLF: [["final", 0.3355]], layersCY: [["final", 33.55]], excavationCY: 35.22, gapCY: 0 } },
+  { id: "sect-c605-t2", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t2", expect: { widthIn: 24, hFt: 4.7542, layersCYLF: [["haunch", 0.0196], ["final", 0.3159]], layersCY: [["haunch", 1.96], ["final", 31.59]], excavationCY: 35.22, gapCY: 0 } },
+  { id: "sect-c605-t3", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t3", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.0392], ["final", 0.2963]], layersCY: [["bedding", 2.47], ["embedment", 3.92], ["final", 29.63]], excavationCY: 37.69, gapCY: 0 } },
+  // C605 T4 against today's legacy sand (bedding 6 in + zone 12 in over the crown): 0.1504 CY/LF in a 5.2542 ft trench.
+  { id: "sect-c605-t4", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t4", legacyToo: true, expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.0392], ["final", 0.2963]], layersCY: [["bedding", 2.47], ["embedment", 3.92], ["final", 29.63]], excavationCY: 37.69, gapCY: 0, legacySandCYLF: 0.1504, legacyExcavationCY: 38.92, legacyHFt: 5.2542 } },
+  { id: "sect-c605-t5", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t5", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["haunch", 0.0196], ["embedment", 0.0196], ["final", 0.2963]], layersCY: [["bedding", 2.47], ["haunch", 1.96], ["embedment", 1.96], ["final", 29.63]], excavationCY: 37.69, gapCY: 0 } },
+  // ASTM D2321, SDR 35 8 with its invert 8.00 ft below G: max(8.4 + 16, 1.25 × 8.4 + 12) = 24.4 in, the 30 in bucket.
+  { id: "sect-d2321", kind: "section-layers", type: "sanitary", pipe: SDR35_8, idIn: 7.92, invertDepth: 8, preset: "d2321", expect: { widthIn: 30, hFt: 8.3533, layersCYLF: [["bedding", 0.0308], ["haunch", 0.0252], ["embedment", 0.0715], ["final", 0.6315]], layersCY: [["bedding", 3.08], ["haunch", 2.52], ["embedment", 7.15], ["final", 63.15]], excavationCY: 77.35, gapCY: 0 } },
+  // 30 TAC §217.54: bedding 6 + (10.08 − 8.4)/2 = 6.84 in, the embedment to 12 in over the crown.
+  { id: "sect-d2321-tx", kind: "section-layers", type: "sanitary", pipe: SDR35_8, idIn: 7.92, invertDepth: 8, preset: "d2321_tx", expect: { widthIn: 30, hFt: 8.59, layersCYLF: [["bedding", 0.0527], ["haunch", 0.0252], ["embedment", 0.1178], ["final", 0.5852]], layersCY: [["bedding", 5.27], ["haunch", 2.52], ["embedment", 11.78], ["final", 58.52]], excavationCY: 79.54, gapCY: 0 } },
+  // ASTM C1479, RCP 36 Wall B, invert 10.00 ft: 44 + 2 × 44/6 = 58.67 in, the 60 in bucket; bedding max(44/24, 3) = 3 in,
+  // its loose middle 44/3 = 14.67 in wide (0.3056 SF gross, 1.13 CY).
+  { id: "sect-c1479-t1", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "c1479_t1", expect: { widthIn: 60, hFt: 10.5833, layersCYLF: [["bedding", 0.0447], ["haunch", 0.1382], ["final", 1.3711]], layersCY: [["bedding", 4.47], ["haunch", 13.82], ["final", 137.11]], excavationCY: 195.99, middleLooseCY: 1.13, gapCY: 0, compaction: [["bedding", "Middle third loose, the outer bedding compacted with the haunch"], ["haunch", "Haunch and outer bedding 95 % Cat I, 90 % Cat II, 100 % Cat III; lower side 90 % Cat I"], ["final", "Overfill native"]] } },
+  { id: "sect-c1479-t2", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "c1479_t2", expect: { widthIn: 60, hFt: 10.5833, layersCYLF: [["bedding", 0.0447], ["haunch", 0.1382], ["final", 1.3711]], layersCY: [["bedding", 4.47], ["haunch", 13.82], ["final", 137.11]], excavationCY: 195.99, gapCY: 0, compaction: [["bedding", "Middle third loose, the outer bedding compacted with the haunch"], ["haunch", "Haunch and outer bedding 90 % Cat I, 95 % Cat II, 100 % Cat III; lower side 85 % Cat I"], ["final", "Overfill native"]] } },
+  { id: "sect-c1479-t3", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "c1479_t3", expect: { widthIn: 60, hFt: 10.5833, layersCYLF: [["bedding", 0.0447], ["haunch", 0.1382], ["final", 1.3711]], layersCY: [["bedding", 4.47], ["haunch", 13.82], ["final", 137.11]], excavationCY: 195.99, gapCY: 0, compaction: [["bedding", "Middle third loose, the outer bedding compacted with the haunch"], ["haunch", "Haunch and outer bedding 85 % Cat I, 90 % Cat II, 95 % Cat III; lower side 85 % Cat I"], ["final", "Overfill native"]] } },
+  // Type 4, no bedding: the bell's part below the bottom is a hand-dug bell hole, not counted. With no bedding all of
+  // the bell's segment under the barrel is below the bottom, 0.0445 SF/LF (0.16 CY), as Class B's bedding takes it; the
+  // plan's row printed 0.0441, Type 1's bedding figure (the same segment less its 0.0004 under Type 1's 3 in).
+  { id: "sect-c1479-t4", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "c1479_t4", expect: { widthIn: 60, hFt: 10.3333, layersCYLF: [["haunch", 0.1382], ["final", 1.3711]], layersCY: [["haunch", 13.82], ["final", 137.11]], excavationCY: 191.36, bellBelowSF: 0.0445, bellBelowCY: 0.16, gapCY: 0, materials: [["haunch", "Native", "native"], ["final", "Native", "native"]] } },
+  // Bedding classes, RCP 36, invert 10.00 ft: OD + 24 = 68 in (wider than the largest bucket, so the pipe width).
+  { id: "sect-class-b", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "class_b", expect: { widthIn: 68, hFt: 10.7917, layersCYLF: [["bedding", 0.0945], ["haunch", 0.1834], ["initial", 0.3917], ["final", 1.1893]], layersCY: [["bedding", 9.45], ["haunch", 18.34], ["initial", 39.17], ["final", 118.93]], excavationCY: 226.49, gapCY: 0 } },
+  { id: "sect-class-c", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "class_c", expect: { widthIn: 68, hFt: 10.7917, layersCYLF: [["bedding", 0.0945], ["haunch", 0.0828], ["initial", 0.3874], ["final", 1.2942]], layersCY: [["bedding", 9.45], ["haunch", 8.28], ["initial", 38.74], ["final", 129.42]], excavationCY: 226.49, gapCY: 0 } },
+  // Class A: the cradle is the bedding (max(44/4, 4) = 11 in) and the haunch to 11 in above the pipe's bottom, both
+  // concrete: `cradleCYLF` is their sum.
+  { id: "sect-class-a", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, preset: "class_a_cradle", expect: { widthIn: 68, hFt: 11.25, cradleCYLF: 0.3032, cradleCY: 30.32, layersCYLF: [["bedding", 0.1907], ["haunch", 0.1124], ["embedment", 0.071], ["initial", 0.3917], ["final", 1.1893]], layersCY: [["bedding", 19.07], ["haunch", 11.24], ["embedment", 7.1], ["initial", 39.17], ["final", 118.93]], excavationCY: 236.11, gapCY: 0 } },
+  // NEC, 4 in Sch 40 conduit at 1.5 ft cover (column 3): 4.5 + 6 = 10.5 in, the 12 in minimum and bucket; no bell.
+  { id: "sect-nec-col3", kind: "section-layers", type: "elec_secondary", pipe: "conduit_sch40:4", cover: 1.5, preset: "nec", expect: { widthIn: 12, hFt: 1.875, layersCYLF: [["final", 0.0654]], layersCY: [["final", 6.54]], excavationCY: 6.94, bellCY: 0, gapCY: 0 } },
+  // ASTM D2774, PE 4 in DR 11 gas at 3.0 ft cover: 16.5 in, the 18 in minimum and bucket.
+  { id: "sect-d2774", kind: "section-layers", type: "gas", pipe: "pe_gas_sdr11:4", cover: 3, preset: "d2774", expect: { widthIn: 18, hFt: 3.7083, layersCYLF: [["bedding", 0.0185], ["embedment", 0.0445], ["final", 0.1389]], layersCY: [["bedding", 1.85], ["embedment", 4.45], ["final", 13.89]], excavationCY: 20.6, bellCY: 0, gapCY: 0 } },
+  // Houston CSS, SDR 35 8 at 8.00 ft, paved: the project's OD + 24 = 32.4 in, the 36 in bucket; CSS to 12 in under the
+  // pavement, the 12 in cap the restoration's.
+  { id: "sect-houston-css", kind: "section-layers", type: "sanitary", pipe: SDR35_8, idIn: 7.92, invertDepth: 8, paved: true, preset: "houston_css", expect: { widthIn: 36, hFt: 8.52, layersCYLF: [["bedding", 0.0555], ["embedment", 0.1744], ["final", 0.5911], ["surface", 0.1111]], layersCY: [["bedding", 5.55], ["embedment", 17.44], ["final", 59.11], ["surface", 11.11]], excavationCY: 94.67, gapCY: 0, materials: [["bedding", "Cement-stabilized sand", "imported"], ["embedment", "Cement-stabilized sand", "imported"], ["final", "Cement-stabilized sand", "imported"]] } },
+  // Full-trench CLSM, C900 8 at 4.0 ft cover, paved.
+  { id: "sect-clsm", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, paved: true, preset: "clsm_full", expect: { widthIn: 24, hFt: 4.7542, layersCYLF: [["final", 0.2614], ["surface", 0.0741]], layersCY: [["final", 26.14], ["surface", 7.41]], excavationCY: 35.22, gapCY: 0, materials: [["final", "CLSM (flowable fill)", "imported"]] } },
+  // Concrete encasement 6 in against the walls, 4 in conduit at 2.0 ft cover: 0.0723 CY/LF of concrete (D-1260's formed
+  // 16.5 × 16.5 box: 0.0659).
+  { id: "sect-encasement-6", kind: "section-layers", type: "encasement", pipe: "conduit_sch40:4", cover: 2, preset: "encasement_6", expect: { widthIn: 18, hFt: 2.875, layersCYLF: [["bedding", 0.0278], ["embedment", 0.0445], ["final", 0.0833]], layersCY: [["bedding", 2.78], ["embedment", 4.45], ["final", 8.33]], excavationCY: 15.97, concreteCYLF: 0.0723, gapCY: 0 } },
+  // The mock-up's case: C900 8 at 3.0 ft cover (under the water main's 4 ft, the company's pressure cover), C605 T4,
+  // paved; the check 0.0741 + 0.1481 + 0.0392 + 0.0247 + (0.4467 + 0.0049)/27 = 0.3028.
+  { id: "sect-mockup", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 3, paved: true, preset: "c605_t4", expect: { widthIn: 24, hFt: 4.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.0392], ["final", 0.1481], ["surface", 0.0741]], layersCY: [["bedding", 2.47], ["embedment", 3.92], ["final", 14.81], ["surface", 7.41]], excavationCY: 30.28, excavationCYLF: 0.3028, coverBelowMin: true, gapCY: 0 } },
+  // Beyond the plan's 26: the founder's house pressure preset (D-1278 answer 1), Type 4 bedding with the embedment to
+  // 12 in over the crown, worked by hand the same way: C900 8 and DI 8 at 4.0 ft cover; and C1479 T2 on a rock bottom,
+  // max(44/12, 6) = 6 in of bedding.
+  { id: "sect-c605-t4-house", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t4_house", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.1132], ["final", 0.2222]], layersCY: [["bedding", 2.47], ["embedment", 11.32], ["final", 22.22]], excavationCY: 37.69, gapCY: 0 } },
+  { id: "sect-c600-t4-house", kind: "section-layers", type: "water", pipe: "di_c151_pc350:8", cover: 4, preset: "c600_t4_house", expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.1132], ["final", 0.2222]], layersCY: [["bedding", 2.47], ["embedment", 11.32], ["final", 22.22]], excavationCY: 37.69, gapCY: 0 } },
+  { id: "sect-c1479-t2-rock", kind: "section-layers", type: "storm", pipe: "rcp_c76_wall_b:36", invertDepth: 10, rock: true, preset: "c1479_t2", expect: { widthIn: 60, hFt: 10.8333, layersCYLF: [["bedding", 0.0909], ["haunch", 0.1382], ["final", 1.3711]], layersCY: [["bedding", 9.09], ["haunch", 13.82], ["final", 137.11]], excavationCY: 200.62, rockLF: 100, gapCY: 0 } },
+  // The defaults by type and pipe (plan §3.2 with the founder's answers 1 and 2), and the presets' sources and grades.
+  {
+    id: "sect-defaults",
+    kind: "section-defaults",
+    picks: [
+      ["water", "pvc_c900_dr18:8", "TX", {}],
+      ["water", "di_c151_pc350:8", null, {}],
+      ["water_service", "pe_cts_sdr9:1", null, {}],
+      ["force_main", "pvc_c900_dr18:6", null, { pressureEmbedment: "project" }],
+      ["sanitary", "pvc_d3034_sdr35:8", null, {}],
+      ["sanitary", "pvc_d3034_sdr35:8", "TX", {}],
+      ["sanitary_service", "pvc_d3034_sdr35:6", "Texas", {}],
+      ["grease_waste", "pvc_dwv_sch40:6", "TX", {}],
+      ["sanitary", "vcp_c700:8", "TX", {}],
+      ["sanitary", "pvc_d3034_sdr35:8", "TX", { flexibleEmbedment: "css" }],
+      ["storm", "rcp_c76_wall_b:36", "TX", {}],
+      ["storm", "hdpe_f2648_dual_wall:24", null, {}],
+      ["roof_drain", "pvc_dwv_sch40:6", null, {}],
+      ["gas", "pe_gas_sdr11:4", null, {}],
+      ["electric", "conduit_sch40:4", null, {}],
+      ["encasement", "conduit_sch40:4", null, {}],
+      ["casing", "steel_casing_375:16", null, {}],
+    ],
+    expect: {
+      ids: "c605_t4_house c600_t4_house d2774 legacy d2321 d2321_tx d2321_tx d2321 class_b+tac houston_css+tac c1479_t2 d2321 d2321 d2774 nec encasement_6 legacy",
+      presets: 27,
+      sourced: 27,
+      legacyAbsent: "legacy true",
+      autoTitle: "AWWA C605 Type 4, house: 12 in over crown, edited: bedding",
+    },
+  },
+  // --- independent check (founder, D-1280): eight edge cases worked by hand by the checker, not by the builder --------
+  // Same row format and harness as the section-layers rows above (100 LF, constant depth, vertical typed unless stated).
+  // (a) Rock foundation with undercut: D2321, SDR 35 8 (catalog ID 7.891), invert 8 ft, bedrock bottom (the rock rule's
+  //     6 in bedding) and a 12 in #57 foundation added by the run. h = 8 + 0.0212 + 1 + 0.5 = 9.5212; W 24.4 -> 30 in.
+  { id: "chk-rock-undercut", kind: "section-layers", type: "sanitary", pipe: SDR35_8, invertDepth: 8, rock: true, preset: "d2321", edits: { foundation: { thickness: { kind: "fixed", in: 12 }, material: "stone" } }, expect: { widthIn: 30, hFt: 9.5212, layersCYLF: [["foundation", 0.0926], ["bedding", 0.0463], ["haunch", 0.0252], ["embedment", 0.0715], ["final", 0.6316]], layersCY: [["foundation", 9.26], ["bedding", 4.63], ["haunch", 2.52], ["embedment", 7.15], ["final", 63.16]], excavationCY: 88.16, rockLF: 100, gapCY: 0 } },
+  // (b) Bell hole on large DI: DI 24 PC 350 (OD 25.8, bell 1.25 x = 32.25, 0.75 ft a 18 ft joint), C600 Type 1 at 5 ft
+  //     cover: no bedding, so the bell's 3.225 in below the barrel is a bell hole, 0.0123 SF/LF, not counted.
+  { id: "chk-di24-bellhole", kind: "section-layers", type: "water", pipe: "di_c151_pc350:24", cover: 5, preset: "c600_t1", expect: { widthIn: 42, hFt: 7.15, layersCYLF: [["final", 0.7897]], layersCY: [["final", 78.97]], excavationCY: 92.69, bellBelowSF: 0.0123, bellBelowCY: 0.05, gapCY: 0 } },
+  // (c) A wide trench at a manhole: the row format has no typed bucket or box, so the wide case is 1:1 sloped clay at a
+  //     10 ft deep end; the bands stay over the 30 in bottom width and every wedge goes to the final backfill
+  //     (total 2.5 x 10 + 10^2 = 125 SF; final 125 - 0.8333 - 0.875 - 2.125 = 121.1667 SF).
+  { id: "chk-wide-sloped", kind: "section-layers", type: "sanitary", pipe: SDR35_8, depth: 10, protection: "sloped", preset: "d2321", expect: { widthIn: 30, hFt: 10, layersCYLF: [["bedding", 0.0308], ["haunch", 0.0252], ["embedment", 0.0715], ["final", 4.4877]], layersCY: [["bedding", 3.08], ["haunch", 2.52], ["embedment", 7.15], ["final", 448.77]], excavationCY: 462.96, gapCY: 0 } },
+  // (d) 30 TAC §217.54 at 14 ft, by the default: a Texas sanitary main, "auto", SDR 35 12 (OD 12.5, ID 11.737, bell 15.0,
+  //     0.5 / 14): bedding 6 + (15 - 12.5)/2 = 7.25 in, the embedment 12 in over the crown, W max(28.5, 27.625, 27) -> 30.
+  { id: "chk-tac-14ft", kind: "section-layers", type: "sanitary", state: "TX", pipe: "pvc_d3034_sdr35:12", invertDepth: 14, preset: "auto", expect: { widthIn: 30, hFt: 14.636, layersCYLF: [["bedding", 0.0559], ["haunch", 0.0323], ["embedment", 0.1248], ["final", 1.1102]], layersCY: [["bedding", 5.59], ["haunch", 3.23], ["embedment", 12.48], ["final", 111.02]], excavationCY: 135.52, gapCY: 0 } },
+  // (e) C605 Type 4 and Type 5 on one pipe, C905 DR 18 36 in (OD 38.3, bell 1.2 x = 45.96, 1.0 ft a 20 ft joint), 4 ft
+  //     cover, W 50.3 -> 60 in. T4 bedding max(38.3/8, 4) = 4.7875 in, to the top; T5 4 in, haunch to the centerline.
+  { id: "chk-c605-t4-36", kind: "section-layers", type: "water", pipe: "pvc_c905_dr18:36", cover: 4, preset: "c605_t4", expect: { widthIn: 60, hFt: 7.5906, layersCYLF: [["bedding", 0.073], ["embedment", 0.2899], ["final", 0.7399]], layersCY: [["bedding", 7.3], ["embedment", 28.99], ["final", 73.99]], excavationCY: 140.57, gapCY: 0 } },
+  { id: "chk-c605-t5-36", kind: "section-layers", type: "water", pipe: "pvc_c905_dr18:36", cover: 4, preset: "c605_t5", expect: { widthIn: 60, hFt: 7.525, layersCYLF: [["bedding", 0.0609], ["haunch", 0.145], ["embedment", 0.145], ["final", 0.7399]], layersCY: [["bedding", 6.09], ["haunch", 14.5], ["embedment", 14.5], ["final", 73.99]], excavationCY: 139.35, gapCY: 0 } },
+  // (f) CLSM embedment: C605 T4 on C900 8 at 4 ft cover, the bedding and the embedment edited to CLSM, the embedment to
+  //     12 in over the crown.
+  { id: "chk-clsm-embedment", kind: "section-layers", type: "water", pipe: "pvc_c900_dr18:8", cover: 4, preset: "c605_t4", edits: { bedding: { material: "clsm" }, embedment: { material: "clsm", top: { kind: "above_crown", in: 12 } } }, expect: { widthIn: 24, hFt: 5.0875, layersCYLF: [["bedding", 0.0247], ["embedment", 0.1132], ["final", 0.2222]], layersCY: [["bedding", 2.47], ["embedment", 11.32], ["final", 22.22]], excavationCY: 37.69, gapCY: 0, materials: [["bedding", "CLSM (flowable fill)", "imported"], ["embedment", "CLSM (flowable fill)", "imported"], ["final", "Native", "native"]] } },
+  // (g) Encasement on a belled pipe: encasement_6 on C900 8 at 3 ft cover, W 21.05 -> 24 in; concrete (0.9994 + 2.0574)/27.
+  { id: "chk-encase-c900", kind: "section-layers", type: "encasement", pipe: "pvc_c900_dr18:8", cover: 3, preset: "encasement_6", expect: { widthIn: 24, hFt: 4.2542, layersCYLF: [["bedding", 0.037], ["embedment", 0.0762], ["final", 0.1852]], layersCY: [["bedding", 3.7], ["embedment", 7.62], ["final", 18.52]], excavationCY: 31.51, concreteCYLF: 0.1132, gapCY: 0 } },
+  // (h) A casing run, "auto": the type's default is legacy (no bell), steel casing 16 x 0.375 at 4 ft cover, the project's
+  //     16 + 24 = 40 -> 42 in, bedding 6 in, zone 12 in over the crown.
+  { id: "chk-casing-auto", kind: "section-layers", type: "casing", pipe: "steel_casing_375:16", cover: 4, preset: "auto", expect: { widthIn: 42, hFt: 5.8333, layersCYLF: [["bedding", 0.0648], ["embedment", 0.2508], ["final", 0.3889]], layersCY: [["bedding", 6.48], ["embedment", 25.08], ["final", 38.89]], excavationCY: 75.62, bellCY: 0, gapCY: 0 } },
 ];
