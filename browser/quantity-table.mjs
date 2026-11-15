@@ -2144,10 +2144,15 @@ try {
         const G = 100;
         const settings = { ...utr.utilitySettings(c.settings ?? null), ...(c.state ? { projectState: c.state } : {}) };
         const def = rd.defaultRun(c.type);
-        const run = { ...def, catalog_key: c.pipe, pipes: 1, pipe_gap_in: 0, section: c.section !== undefined ? c.section : def.section, restoration: null, limited_width: false };
+        const run = { ...def, catalog_key: c.pipe, pipes: 1, pipe_gap_in: 0, section: c.section !== undefined ? c.section : def.section, restoration: null, limited_width: false, segments: c.segments ?? [] };
         const mats = calc.runMaterials(run, settings);
-        const { layered, flag } = calc.runLayered(run, c.type, { od, id }, settings, mats);
-        const invert = c.cover != null ? G - c.cover - (od + id) / 24 : G - c.invertDepth;
+        const { layered: carrierL, flag } = calc.runLayered(run, c.type, { od, id }, settings, mats);
+        // D-1283: a cased open cut's casing (`casing`: its OD and ID, from the bell + 4 in rule) laid centred on the
+        // carrier (its invert the carrier's centre less the casing's ID / 2), its stack the carrier's preset with no bell
+        // (`calculate.ts:casingLayered`, as Calculate's crossing stretch takes it).
+        const casingL = c.casing ? calc.casingLayered(run, c.type, c.casing, settings, mats) : null;
+        const layered = c.casing ? casingL : carrierL;
+        const invert = (c.cover != null ? G - c.cover - (od + id) / 24 : G - c.invertDepth) + (c.casing ? (id - c.casing.idIn) / 24 : 0);
         const knots = [0, 100].map((s) => ({ s, G, invert, bottoms: [-1e6], water: null, caving: false, caveInFt: null }));
         const r4c = (v) => Math.round(v * 1e4) / 1e4;
         const soil = c.protection ? { layerId: null, ...CLAY } : { layerId: null, name: "Cemented, cut vertical", group: "cemented", uscs: null, osha: "rock", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1 };
@@ -2156,7 +2161,7 @@ try {
           knots,
           layers: [soil],
           noBores: false,
-          pipe: { odIn: od, idIn: id, pipes: 1, gapIn: 0 },
+          pipe: c.casing ? { odIn: c.casing.odIn, idIn: c.casing.idIn, pipes: 1, gapIn: 0 } : { odIn: od, idIn: id, pipes: 1, gapIn: 0 },
           section: { sideClearanceIn: sec.sideClearanceIn, minWidthIn: sec.minWidthIn, beddingIn: settings.beddingIn, zoneAboveCrownIn: settings.zoneAboveCrownIn },
           bucket: "auto",
           box: null,
@@ -2168,7 +2173,9 @@ try {
           materials: { bedding: mats.bedding.source, zone: mats.zone.source, backfill: mats.backfill.source },
           materialNames: { bedding: mats.bedding.name, zone: mats.zone.name, backfill: mats.backfill.name },
           pavedCapIn: mats.pavedCapIn,
-          segments: [],
+          // D-1283: a segment's overrides as Calculate reads them (`calculate.ts:runSegments`: per layer on a layered
+          // run, `segmentsOf` on a run drawn before); on a casing a segment keeps its protection only.
+          segments: c.casing ? [] : calc.runSegments(run, c.type, { od, id }, settings, mats, carrierL),
           restoration: null,
         };
         const linesOf = (qq) =>
@@ -2178,6 +2185,9 @@ try {
         const made = linesOf(r).filter((l) => fill.has(l.role));
         const writes = calc.lineWrites(made);
         const out = {
+          carrierPreset: carrierL ? carrierL.stack.preset : "legacy",
+          linesSorted: made.map((l) => `${l.role}|${l.variant}|${l.name}|${r2(l.quantity)}`).sort(),
+          bellCY: r.sectionCheck ? r2(r.sectionCheck.bellCF / 27) : 0,
           preset: layered ? layered.stack.preset : "legacy",
           title: layered ? layered.stack.title : "",
           why: layered ? layered.stack.why : "",
@@ -2190,8 +2200,18 @@ try {
             .filter((l) => l.role !== "utility_trench_excavation")
             .map((l) => `${l.variant}=${(um.lineMaterials(l, () => null) ?? []).map((m) => `${m.key}>${m.matKey}:${m.unit}`).join(",")}`),
         };
+        // D-1283: "Switch from legacy" (the run panel): the same run with `switchTo` as its layers, the CY change by the line
+        // each layer goes to (`sectionSummary.ts:switchChange`), and the lines after.
+        if (c.switchTo) {
+          const toRun = { ...run, section: { ...(run.section ?? {}), layers: c.switchTo } };
+          const toL = calc.runLayered(toRun, c.type, { od, id }, settings, mats).layered;
+          const r2q = q.runQuantities({ ...base, segments: calc.runSegments(toRun, c.type, { od, id }, settings, mats, toL), ...(toL ? { layered: toL } : {}) });
+          out.switchPreset = toL ? toL.stack.preset : "legacy";
+          out.switchRows = ssm.switchChange(r, r2q).map((w) => `${w.key}|${w.before}|${w.after}|${r2(w.beforeCY)}|${r2(w.afterCY)}|${r2(w.deltaCY)}`);
+          out.switchLines = linesOf(r2q).filter((l) => fill.has(l.role)).map((l) => `${l.role}|${l.variant}|${l.name}|${r2(l.quantity)}`).sort();
+        }
         if (layered) {
-          const ss = ssm.sectionSummary(r.shape, layered, { idIn: id, capFt: mats.pavedCapIn / 12 });
+          const ss = ssm.sectionSummary(r.shape, layered, { idIn: c.casing ? c.casing.idIn : id, capFt: mats.pavedCapIn / 12 });
           out.sections = ss.sections.map((s) => s.which).join(" ");
           out.avgH = ss.sections[0].h;
           out.avgW = ss.sections[0].W;

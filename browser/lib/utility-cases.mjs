@@ -2359,4 +2359,346 @@ export const UTILITY_CASES = [
   //   exact). Bands constant over the bottom width: bedding 3.08, haunch 2.52, embedment 7.15 (2.5 x 1.5333 = 3.8333 SF gross
   //   with the pipe and bell); final 85.3333 - 3.8333 = 81.5 SF -> 301.85 CY.
   { id: "chk2-8-varying-depth-sloped", kind: "section-layers", type: "sanitary", pipe: SDR35_8, depth: [6, 10], protection: "sloped", preset: "d2321", expect: { widthIn: 30, layersCY: [["bedding", 3.08], ["haunch", 2.52], ["embedment", 7.15], ["final", 301.85]], excavationCY: 316.05, gapCY: 0 } },
+  // --- D-1283 (D-1278 tasks 7 and 10, night 3): the run panel's section edits, as Calculate works them ----------------
+  // Worked by hand from the plan (§2.4, §3.1, §3.3, §5) and the standards, not from the code. 100 LF, constant depth,
+  // G = 100, walls vertical in a cemented layer, bucket Auto. C900 8 DR 18: OD 9.05 (0.754167 ft), ID 8.044, bell 1.20 x
+  // = 10.86 (0.905 ft), 0.5 ft a 20 ft joint (share 0.025); barrel pi x 0.754167^2 / 4 = 0.446707 SF; bell circle
+  // 0.643261 SF, its annulus 0.196554; the bell's segment below (and above) the barrel, height 0.075417 ft on r 0.4525:
+  // 0.4525^2 acos(0.833333) - 0.377083 sqrt(0.062564) = 0.025605 SF.
+  //
+  // (1) Switch from legacy (plan §3.3, "Switch to <standard>" shows the CY change by layer): a water run drawn before the
+  //     layers, C900 8 at 4 ft cover, the project's 6 in bedding and zone 12 in over the crown in sand (D-1100, pressure
+  //     sand), W 9.05 + 12 = 21.05 -> 24 in. Legacy: bedding 2 x 0.5 = 1.0 SF -> 3.70 CY; zone 2 x 1.754167 - 0.446707 =
+  //     3.061626 -> 11.34; backfill 2 x 3.0 = 6.0 -> 22.22; excavation 2 x 5.254167 -> 38.92. Switched to AWWA C605 Type 4
+  //     (the plan's sect-c605-t4): bedding 4 in 0.666667 - 0.025605 x 0.025 = 0.666027 -> 2.47; embedment to the top
+  //     1.508333 - 0.446707 - (0.643261 - 2 x 0.025605 - 0.446707) x 0.025 = 1.057992 -> 3.92; final 8.0 - 0.000640 ->
+  //     29.63; excavation 2 x 5.0875 -> 37.69. Change by line: bedding -1.2369 -> -1.24, zone -7.4209 -> -7.42, backfill
+  //     +7.4050 -> +7.41, excavation -1.2346 -> -1.23 (the plan's -58 % sand: 0.1504 -> 0.0639 CY/LF).
+  {
+    id: "p3-switch-legacy-c605-t4",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [] },
+    switchTo: { v: 1, preset: "c605_t4" },
+    expect: {
+      preset: "legacy",
+      switchPreset: "c605_t4",
+      switchRows: ["excavation|||38.92|37.69|-1.23", "bedding|Sand|Sand|3.7|2.47|-1.24", "zone|Sand|Sand|11.34|3.92|-7.42", "backfill|Native|Native|22.22|29.63|7.41"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|29.63",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|3.92",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+      todayPath: true,
+    },
+  },
+  // (2) A layer edit (Edit layers: material, thickness, top, compaction): a new C900 8 water run at 4 ft cover, "auto"
+  //     (C605 Type 4 house), its bedding edited to 6 in #57 stone at 95 % Standard Proctor and its embedment to 6 in over
+  //     the crown. h 4 + 0.754167 + 0.5 = 5.254167; bedding 2 x 0.5 = 1.0 less the bell below the barrel 0.025605 x
+  //     0.025 = 0.999360 -> 3.70 CY; embedment 0.5 to 1.754167, 2 x 1.254167 = 2.508333 - 0.446707 - (0.196554 - 0.025605)
+  //     x 0.025 = 2.057352 -> 7.62; final 2 x 3.5 = 7.0 -> 25.93; excavation 10.508333 -> 38.92. The bedding's line is its
+  //     edited stone, the embedment keeps the preset's sand; compaction words on the notes only.
+  {
+    id: "p3-layer-edit",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], layers: { v: 1, preset: "auto", edits: { bedding: { material: "stone", thickness: { kind: "fixed", in: 6 }, compaction: { pct: 95, test: "SP" } }, embedment: { top: { kind: "above_crown", in: 6 } } } } },
+    expect: {
+      preset: "c605_t4_house",
+      title: "AWWA C605 Type 4, house: 12 in over crown, edited: bedding, embedment",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|25.93",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|3.7",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|7.62",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
+      ],
+      notes: ["bedding:#57 stone|imported=Bedding: 95 % Standard Proctor", "zone:Sand|imported=Embedment: ≈ 80 % Standard Proctor", "Native|native=Final backfill: Per the project's spec"],
+      sectionCheck: true,
+    },
+  },
+  // (3) A segment override on a layered run (departure 1 of D-1282's check): the same new C900 8 water run, "auto" (C605
+  //     Type 4 house), a segment 0+00 to 0+40 with its bedding 6 in and its zone in #57 stone. In the segment: bedding
+  //     0.999360 -> 0.037013 CY/LF; embedment 0.5 to 2.254167 ft (12 in over the crown kept), 2 x 1.754167 - 0.446707 -
+  //     0.004274 = 3.057352 -> 0.113235 in #57 stone; final 2 x 3.0 -> 0.222222; excavation 2 x 5.254167 -> 0.389198. Past
+  //     it (60 LF) the preset: bedding 0.666027 -> 0.024668, embedment 3.057352 -> 0.113235 in sand, final 0.222222,
+  //     excavation 10.175 -> 0.376852. Totals: bedding 1.48053 + 1.48006 = 2.96; zone #57 40 x 0.113235 = 4.53, sand 60 x
+  //     = 6.79; backfill 22.22; excavation 15.56790 + 22.61111 = 38.18.
+  {
+    id: "p3-segment-layered",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    segments: [{ from_ft: 0, to_ft: 40, overrides: { note: "", bedding_in: 6, zone: { name: "#57 stone", source: "imported" } } }],
+    expect: {
+      preset: "c605_t4_house",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.96",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|4.53",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|6.79",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.18",
+      ],
+    },
+  },
+  // (3b) The same segment on a run drawn before (legacy): today's path, unchanged (bedding 9 in in the segment). Segment
+  //     bedding 2 x 0.75 = 1.5 -> 0.055556, zone 3.061626 -> 0.113394 in #57 stone, backfill 0.222222, excavation 2 x
+  //     5.504167 -> 0.407716; past it 0.037037 / 0.113394 sand / 0.222222 / 0.389198. Totals: bedding 2.22222 + 2.22222 =
+  //     4.44; zone #57 4.53574 -> 4.54, sand 6.80361 -> 6.8; backfill 22.22; excavation 16.30864 + 23.35185 = 39.66.
+  {
+    id: "p3-segment-legacy",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [] },
+    segments: [{ from_ft: 0, to_ft: 40, overrides: { note: "", bedding_in: 9, zone: { name: "#57 stone", source: "imported" } } }],
+    expect: {
+      preset: "legacy",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|22.22",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|4.44",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|4.54",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|6.8",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|39.66",
+      ],
+      todayPath: true,
+    },
+  },
+  // (4) A cased open cut takes the carrier's preset (departure 3 of D-1282's check): RCP 12 Wall B storm (OD 16, ID 12,
+  //     bell 23 Rinker), its casing by the rule bell + 4 = 27 in -> 30 in x 0.500 (ID 29.0, wall 26-36 in 0.500), laid
+  //     open cut centred on the carrier (casing invert = carrier invert + (12 - 29) / 24), the carrier's invert 6.00 ft
+  //     below G. The carrier's family (RCP) keeps ASTM C1479 Type 2 on the casing (not D2321), with no bell (steel). On OD
+  //     30: bedding max(30/24, 3) = 3 in; haunch to the springline 15 in in #57 (Cat I); overfill native; width ACPA 30 +
+  //     2 x 30/6 = 40 -> 42 in bucket. h = 6 + 0.708333 + 0.041667 + 0.25 = 7.0. Bedding 3.5 x 0.25 = 0.875 SF -> 3.24 CY;
+  //     haunch 3.5 x 1.25 - pi x 1.25^2 / 2 = 1.920631 -> 7.11; final 3.5 x 5.5 - 2.454369 = 16.795631 -> 62.21;
+  //     excavation 3.5 x 7 = 24.5 -> 90.74 (with the casing's 4.908739 SF, 18.18 CY).
+  {
+    id: "p3-cased-carrier-preset",
+    kind: "section-lines",
+    type: "storm",
+    pipe: "rcp_c76_wall_b:12",
+    invertDepth: 6,
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    casing: { odIn: 30, idIn: 29 },
+    expect: {
+      carrierPreset: "c1479_t2",
+      preset: "c1479_t2",
+      bellCY: 0,
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|62.21",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|3.24",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|7.11",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|90.74",
+      ],
+      avgH: 7,
+      avgW: 3.5,
+      sectionCheck: true,
+    },
+  },
+  // --- Independent check of D-1283 (chk3-*): worked by hand from the plan (§2, §3, §5) and the standards, not the code ---
+  // Pipes: SDR 35 8 OD 8.40 ID 7.92 (wall 0.02 ft), bell 1.20 x = 10.08, 0.5 ft a 14 ft joint (share 0.035714); bell
+  //   segment below/above the barrel (R 0.42, t 0.07) 0.022058 SF, so 0.000788 in the bedding; haunch net 0.680341, a 6 in
+  //   over-crown embedment 1.929554, a 12 in one 3.179554. C900 8: as the p3 rows (bell share 0.025, segment 0.025605).
+  // chk3-1: Switch from legacy on a sloped clay run (Type B, 1:1 from the bottom: area = W h + h^2). Legacy SDR 35 sanitary,
+  //   invert 8: W 36, h 8.52, total 98.1504 SF (363.52); bedding full width 3 x 0.5 + 0.25 = 1.75 (6.48); zone 3 x 1.7 -
+  //   0.384845 = 4.715155 (17.46); backfill 98.1504 - 1.75 - 5.1 = 91.3004 (338.15). D2321: W 30, h 8.353333, total 20.883333
+  //   + 69.778178 = 90.661511 (335.78); bedding 0.832546 (3.08); zone 2.609895 (9.67); final 90.661511 - 2.5 x 1.533333 =
+  //   86.828178 (321.59). Change: -27.74 / -3.40 / -7.80 / -16.56.
+  {
+    id: "chk3-1-switch-sloped-clay",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    protection: "auto",
+    section: { addons: ["cctv"] },
+    switchTo: { v: 1, preset: "d2321" },
+    expect: {
+      preset: "legacy",
+      todayPath: true,
+      switchRows: ["excavation|||363.52|335.78|-27.74", "bedding|#57 stone|#57 stone|6.48|3.08|-3.4", "zone|#57 stone|#57 stone|17.46|9.67|-7.8", "backfill|Native|Native|338.15|321.59|-16.56"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|321.59",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|3.08",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|9.67",
+        "utility_trench_excavation|trench:Clay|Trench excavation, Clay|335.78",
+      ],
+    },
+  },
+  // chk3-2: a layer turned off (Edit layers, "on" unticked): C900 8 water, cover 4, auto (C605 T4 house), bedding off. The
+  //   pipe sits on the trench bottom: h 4.754167, W 24. Embedment 0 to 1.754167: 3.508333 - 0.446707 - (0.643261 - 0.025605
+  //   - 0.446707) x 0.025 = 3.057352 (11.32); the bell's segment below the bottom is the bell hole, not counted. Final 2 x 3
+  //   = 6 (22.22); excavation 9.508333 (35.22); bell in the trench 0.004274 SF (0.02 CY). No bedding line.
+  {
+    id: "chk3-2-bedding-off",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], layers: { v: 1, preset: "auto", edits: { bedding: { off: true } } } },
+    expect: {
+      preset: "c605_t4_house",
+      title: "AWWA C605 Type 4, house: 12 in over crown, edited: bedding",
+      bellCY: 0.02,
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|22.22",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|35.22",
+      ],
+      sectionCheck: true,
+    },
+  },
+  // chk3-3: a typed material (Edit layers, "Other, typed…"): C900 8 water, cover 4, C605 Type 4 chosen, its embedment in
+  //   "Pea gravel", imported. Figures as sect-c605-t4: bedding 2.47 sand, embedment 3.92 on its own zone line, final 29.63,
+  //   excavation 37.69.
+  {
+    id: "chk3-3-typed-material",
+    kind: "section-lines",
+    type: "water",
+    pipe: "pvc_c900_dr18:8",
+    cover: 4,
+    section: { addons: [], layers: { v: 1, preset: "c605_t4", edits: { embedment: { material: { name: "Pea gravel", source: "imported", density_pcf: 100 } } } } },
+    expect: {
+      preset: "c605_t4",
+      title: "AWWA C605 Type 4, edited: embedment",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|29.63",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|2.47",
+        "utility_bedding_pipe_zone|zone:Pea gravel|imported|Pipe zone, Pea gravel|3.92",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|37.69",
+      ],
+    },
+  },
+  // chk3-4: a segment override on a layered run that changes the bedding's thickness and material at once: SDR 35 8
+  //   sanitary, invert 8, D2321 (auto), segment 0+00 to 0+50 bedding 8 in of Sand. In it: bedding 2.5 x 0.666667 - 0.000788
+  //   = 1.665879 (50 LF: 3.08 Sand); zone 2.609895; final 6.82 x 2.5 = 17.05; excavation 2.5 x 8.686667 = 21.716667. Past it
+  //   D2321: bedding 0.832546 (50 LF: 1.54 #57), zone, final as above, excavation 20.883333. Totals: zone 9.67, backfill
+  //   63.15, excavation (1085.8333 + 1044.1667) / 27 = 78.89.
+  {
+    id: "chk3-4-segment-material-thickness",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    section: { addons: ["cctv"], layers: { v: 1, preset: "auto" } },
+    segments: [{ from_ft: 0, to_ft: 50, overrides: { note: "", bedding_in: 8, bedding: { name: "Sand", source: "imported" } } }],
+    expect: {
+      preset: "d2321",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|63.15",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|1.54",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.08",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|9.67",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|78.89",
+      ],
+    },
+  },
+  // chk3-5: Switch from legacy to Auto on a Texas sanitary main (30 TAC by default, the founder's answer 2). Legacy as
+  //   chk2-3: 5.56 / 17.46 / 70.22, excavation 94.67. D2321 + 30 TAC as sect-d2321-tx: bedding 6 + 0.84 = 6.84 in, 1.424212
+  //   (5.27); zone 0.680341 + 3.179554 = 3.859895 (14.30); final 6.32 x 2.5 = 15.8 (58.52); excavation 21.475 (79.54).
+  //   Change: -15.13 / -0.28 / -3.17 / -11.70.
+  {
+    id: "chk3-5-switch-tx-auto",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    state: "TX",
+    section: { addons: ["cctv"] },
+    switchTo: { v: 1, preset: "auto" },
+    expect: {
+      preset: "legacy",
+      todayPath: true,
+      switchRows: ["excavation|||94.67|79.54|-15.13", "bedding|#57 stone|#57 stone|5.56|5.27|-0.28", "zone|#57 stone|#57 stone|17.46|14.3|-3.17", "backfill|Native|Native|70.22|58.52|-11.7"],
+      switchLines: [
+        "utility_backfill|Native|native|Trench backfill, Native|58.52",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|5.27",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|14.3",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|79.54",
+      ],
+    },
+  },
+  // chk3-6: a cased open cut of gravity DI sanitary keeps the carrier's AWWA C600 (house) on its casing. DI 8 PC 350 bell
+  //   1.25 x 9.05 = 11.31 + 4 = 15.31 -> a 16 x 0.250 steel casing (ID 15.5), centred: its invert 8 + (15.5 - 8.55)/24 =
+  //   8.289583 below G; wall 0.020833; bedding max(16/8, 4) = 4 in; embedment to 12 in over the crown; width 16 + 12 = 28
+  //   -> 30 in. h 8.64375. Bedding 0.833333 (3.09); embedment 2.5 x 2.333333 - 1.396263 = 4.437070 (16.43); final 2.5 x
+  //   5.977083 = 14.942708 (55.34); excavation 21.609375 (80.03); no bell.
+  {
+    id: "chk3-6-cased-di-sanitary-c600",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: "di_c151_pc350:8",
+    idIn: 8.55,
+    invertDepth: 8,
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    casing: { odIn: 16, idIn: 15.5 },
+    expect: {
+      carrierPreset: "c600_t4_house",
+      preset: "c600_t4_house",
+      bellCY: 0,
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|55.34",
+        "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.09",
+        "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|16.43",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|80.03",
+      ],
+      sectionCheck: true,
+    },
+  },
+  // chk3-7: a segment's zone above the crown on a stack with no embedment (C1479 Type 2, overfill native): RCP 36 Wall B
+  //   storm, invert 10, segment 0+00 to 0+50 zone 12 in over the crown -> an embedment of the haunch's #57 from the
+  //   springline to 12 in over the crown. Sect-c1479-t2 figures: bedding 1.205884, haunch 3.730720, overfill 37.019577,
+  //   excavation 52.916667 SF. Segment embedment 5 x 2.833333 - 5.279621 - 0.200802 = 8.686244; its final 5 x 5.666667 =
+  //   28.333333. Totals: bedding 4.47; zone (373.0720 + 434.3122) / 27 = 29.90; backfill (1850.98 + 1416.67) / 27 = 121.02;
+  //   excavation 195.99 (no change: the depth is the bedding's).
+  {
+    id: "chk3-7-segment-zone-on-c1479",
+    kind: "section-lines",
+    type: "storm",
+    pipe: "rcp_c76_wall_b:36",
+    invertDepth: 10,
+    section: { addons: [], layers: { v: 1, preset: "auto" } },
+    segments: [{ from_ft: 0, to_ft: 50, overrides: { note: "", zone_above_crown_in: 12 } }],
+    expect: {
+      preset: "c1479_t2",
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|121.02",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|4.47",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|29.9",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|195.99",
+      ],
+    },
+  },
+  // chk3-8: Texas 30 TAC with Edit layers below its minimum: TX sanitary SDR 35 8, auto, bedding edited to 4 in and the
+  //   embedment to 6 in over the crown. 30 TAC is a floor: the bedding stays 6.84 in under the barrel (6 in under the bell)
+  //   and the embedment 12 in over the crown, so the figures are chk3-5's after: 5.27 / 14.30 / 58.52, excavation 79.54.
+  {
+    id: "chk3-8-tx-edit-below-min",
+    kind: "section-lines",
+    type: "sanitary",
+    pipe: SDR35_8,
+    idIn: 7.92,
+    invertDepth: 8,
+    state: "TX",
+    section: { addons: ["cctv"], layers: { v: 1, preset: "auto", edits: { bedding: { thickness: { kind: "fixed", in: 4 } }, embedment: { top: { kind: "above_crown", in: 6 } } } } },
+    expect: {
+      linesSorted: [
+        "utility_backfill|Native|native|Trench backfill, Native|58.52",
+        "utility_bedding_pipe_zone|bedding:#57 stone|imported|Pipe bedding, #57 stone|5.27",
+        "utility_bedding_pipe_zone|zone:#57 stone|imported|Pipe zone, #57 stone|14.3",
+        "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|79.54",
+      ],
+      sectionCheck: true,
+    },
+  },
 ];

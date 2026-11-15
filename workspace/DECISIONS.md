@@ -33090,3 +33090,114 @@ it is the first change that moves new runs' lines, and it carries readings of it
   "By assembly" view. **Reading (main session, founder away):** commit on the matching rows; departures 1–3 go to phase 3's
   task 7 (the run panel's Section select and Edit layers replace the silent controls, segments override per layer, the
   casing takes the carrier's family); 4–7 and the checker's questions go to the report.
+
+## D-1283 — Pipe section layers, night 3 (tasks 7, 8, 10 of D-1278's plan): the run panel's Section block, Edit layers, Switch from legacy, the live trench picture
+
+**Status:** proposed, built unattended (run 2026-11-15 → 16, step 4), **left saved, gated and quantity-table-passing but
+uncommitted** in app and infra for an independent check. Spec: [pipe_section_layers_tasks.md](docs/tasks/pipe_section_layers_tasks.md).
+No api change, no migration (head d1279a3c5e71 unchanged).
+
+- **Task 7, the run panel (app).** `RunSectionBlock.tsx` under the Pipe fields: the **Section select** ("Auto (<the
+  default>)" or one of the 27 presets, grouped); on a run drawn before the layers it reads "Project section (drawn before
+  the layers): switch to…", and a pick opens **Switch to <standard>**: the CY change by the line each layer goes to
+  (`sectionSummary.ts:switchChange`: excavation, foundation, bedding, pipe zone = haunch to initial, backfill, with the
+  materials' names), the new picture, then Switch or Cancel. **Undo** puts the section back exactly (a run that had none
+  gets none back), and every change is also one Ctrl+Z step (`useUtilities.saveRunFields`). On a layered run a preset pick
+  stores `{v: 1, preset}` (edits cleared, the run's 30 TAC and rock choices kept, `layers.ts:presetLayers`). **Edit
+  layers…** (`EditLayersDialog`): per layer (foundation to final) on/off, material (the layer materials or a typed one),
+  thickness rule (none, fixed, OD fraction ≥ least, under the bell) or top rule (springline, centerline, top of pipe, over
+  the crown, OD fraction above the bottom, band), compaction (% Standard/Modified Proctor, the words kinds), the preset's
+  rule shown beside each, Reset per layer and Reset all, its own live picture; Apply stores `edits`. A 30 TAC §217.54
+  checkbox where it applies.
+  - **Departure 1 closed (segments per layer):** `layers.ts:segmentLayers` reads a segment's bedding (fixed thickness),
+    zone above the crown (the highest of embedment/initial, an embedment added where the stack has none), side
+    clearance (`od_plus`) and materials (bedding; haunch, embedment, initial; final) over the run's own edits;
+    `calculate.ts:runSegments` gives the engine each such segment's own `layered` (a protection-only segment keeps the
+    run's); a run drawn before gets exactly `segmentsOf` (today's path). On a cased stretch a segment keeps its
+    protection only.
+  - **Departure 2 closed (no silent controls):** the Bedding / zone selects show on runs drawn before only; a layered run
+    sets materials by layer. **Reading (founder away; the plan is silent):** the run's explicit layer edit wins, else the
+    preset; the project's backfill and the embedment settings shape runs drawn before and the "Auto" default (D-1100
+    "project" → legacy, D-1108 "css" → Houston CSS), never a layered run's chosen layers. Where the project's backfill
+    differs from a layered final backfill the block says so; an old `bedding_choice`/`zone_choice` still stored on a
+    layered run is said, with "Make it the layers' material" (it becomes the edit). A new run drawn after a legacy run no
+    longer carries its old picks (`runDefaults.ts:newRunFrom`).
+  - **Departure 3 closed (casing preset):** `calculate.ts:casingLayered` resolves the stack with the carrier's catalog
+    key (its family picks the preset: RCP storm keeps C1479, DI keeps C600) and the casing's OD/ID with no bell.
+- **Task 8, the picture (app).** `TrenchSectionPicture.tsx`: to scale from `StoredSection`; walls by protection
+  (vertical, sloped from `from`, benched in steps, a box drawn heavy) in the protection's token; layers filled and
+  hatched by material (`sectionPicture.ts:lookOf`: foundation, stone, sand, CSS, native/select, concrete, CLSM; legacy's
+  bedding full width), the paved cap, the pipe at OD with the ID dashed and the bell dashed at its OD; labels with each
+  layer's thickness and material on the left; top and bottom width (with the run's `widthText`), depth, cover (red under
+  the type's minimum, `cover.ts:minCoverFt`), invert and trench-bottom elevations, the surface dashed; warnings
+  (`sectionPicture.ts:pictureWarnings`): red for the cover, a layer clipped or ending below the one under it, the bedding
+  and pipe deeper than the trench, a box narrower than the rule, wider than the spec; amber for the bell (grade D), the
+  bell hole not counted, stacked boxes. Tokens only: new `--trench-foundation`, `--trench-concrete`, `--trench-clsm` in
+  light and dark (`index.css`); no tailwind change, so no image rebuild. `LiveTrenchSection` carries the states: loading
+  (a skeleton), empty (the run's own skip message), error ("Couldn't draw this section", the run kept editable),
+  read-only, ready, and the stale chip ("Calculate to update the estimate: the picture is live, the lines are not"),
+  with `RunSectionView`'s Average / Deepest / Shallowest and table.
+  - **Live re-run:** `ProjectTakeoff.tsx:sectionPreview` runs `calculateUtilities` (every run on the sheet, the edited one
+    with the section shown, so overlaps and pits cut it as Calculate does), debounced 150 ms in the block. A run's edit
+    makes the result stale, so the grades come from `useVolumes`' new `liveSurfaces` (`wantSurfaces` while the run panel
+    is open: the two TINs as the drawing stands, the current result's when kept). A run drawn before is drawn too:
+    `calculateUtilities({previewSections: true})` builds its three zones as sections for the picture only (Calculate never
+    sets it; its stored result is unchanged).
+  - **Run CY as the lines carry them** (`sectionPicture.ts:linesLayers`; closes D-1282's departure 5 for the view):
+    each layer scaled by its line's total after overlaps, encasement and crossing blends; Estimating's view too, and its
+    excavation total. Estimating's Section dialog draws the picture read-only (`EstimatingView.tsx`).
+- **Readings taken (founder away):** the switch preview's "by layer" is by line (a legacy run has only three layers);
+  a preset pick on a layered run clears its edits (Undo brings them back); the live picture runs the whole sheet's runs
+  (fidelity over speed; the profile pane runs one); the error state is reachable only if the engine throws (no UI path
+  found), so it is code-reviewed, not screenshotted; the county of the throwaway was set by a project PATCH (the Location
+  editor's Save stays disabled on an unchanged ZIP).
+- **Quantity-table rows (infra, `browser/lib/utility-cases.mjs`, driven in `browser/quantity-table.mjs` `section-lines`
+  with `segments`, `casing`, `switchTo`, `linesSorted`):** five rows worked by hand from the plan and the standards
+  before the run, all right on the first run: `p3-switch-legacy-c605-t4` (C900 8 at 4 ft, legacy → C605 T4: bedding
+  3.70 → 2.47 (−1.24), zone 11.34 → 3.92 (−7.42), backfill 22.22 → 29.63 (+7.41), excavation 38.92 → 37.69 (−1.23)),
+  `p3-layer-edit` (C605 T4 house with bedding 6 in #57 at 95 % SP and embedment 6 in over the crown: 3.70 / 7.62 / 25.93,
+  excavation 38.92), `p3-segment-layered` (a 0–40 ft segment, bedding 6 in and zone #57 on the house preset: bedding 2.96,
+  zone #57 4.53 + sand 6.79, backfill 22.22, excavation 38.18), `p3-segment-legacy` (the same segment on a run drawn
+  before, today's path: 4.44 / 4.54 + 6.8 / 22.22 / 39.66), `p3-cased-carrier-preset` (RCP 12 storm cased open cut in a
+  30 × 0.500 casing: C1479 T2 on the casing, no bell, 42 in: 3.24 / 7.11 / 62.21, excavation 90.74).
+- **Proof (2026-11-15 UTC).** App: lint 0 errors (the 4 known warnings), typecheck and build exit 0. No api file, no
+  migration. Quantity table (one run, ~16:52–17:02): exit 0, 0 FAIL, "344 rows, … 266 utility rows right … passed"
+  (261 + 5). Smoke on throwaway fx.equip.20261115155347 (a copy of the 3D test project; Harris County (set by a project
+  PATCH), TX 77002, public, open shop, burdened, Site & civil, TX20260031 mod 1 Heavy): C-200 Calculated with D-1283
+  and with HEAD's app files put back (16:07:28–16:10:32): the same stored utilities digest 3686433e012f4e05, the same 21
+  utility lines (md5 d05116c7…), direct $1,041,521.70 / bid $1,298,106.01 both times (D-1282's $941,645.26 /
+  $1,174,722.20 were on another setup and the D-1279 late pass came since; the before/after on one copy is the proof).
+  Then in the UI: SS-1 made a C900 8 water run (legacy) → Switch to AWWA C605 Type 4: the preview's change by line
+  bedding −1.32, zone −7.94, backfill +7.93, excavation −1.32 CY on its ~107 LF (the row's per-LF figures), the picture
+  redrawn; Switch, Undo (the section back exactly), Switch again; Edit layers (bedding 6 in #57 at 95 % SP, embedment 6
+  in over the crown), live picture 0.0370 / 0.0763 CY/LF; ST-2 made RCP 36 Wall B → Auto (C1479 T2): haunch 0.1382,
+  bedding on rock 0.0909 CY/LF (the plan's rows); Calculate: the water lines bedding #57 3.58, zone Sand 7.10, backfill
+  13.04 and the storm RCP lines 27.04 / 42.87 / 773.32 with their compaction notes, the sanitary legacy lines unchanged
+  (33.25 / 109.66 / 88.17); Estimating's Section dialog read-only (only Average / Deepest / Shallowest), run CY equal to
+  the lines; light and dark; the empty state (no depth) and the loading state. Screenshots
+  `morning-report-2026-11-17/part6/p3-*.png`. Purged 16:44:51 (dry run first). Founder digest b4c963cdf83e7d84 at the
+  start and the end.
+- **Bench windows (UTC):** app (Vite) saves 15:28–15:52, 16:14–16:41; HEAD's app put back 16:07:28, D-1283's restored
+  16:10:32. No api save, no restart, no tailwind change.
+- **Independent check (fresh agent, plan and code only, 2026-11-15 ~17:10–18:00 UTC): pass with departures.** All 5
+  p3 rows re-worked by hand: all match, none copied from code. Its own 8 `chk3-*` rows (switch from legacy in sloped clay,
+  bedding off, a typed material, a segment changing material and thickness, Texas legacy → Auto under 30 TAC, a cased DI
+  sanitary taking C600, a segment adding embedment on C1479 T2, an edit below 30 TAC's floor) all pass; quantity table
+  exit 0, "344 rows … 274 utility rows right … passed", 0 FAIL. Phase 2's departures 1–3 are closed (segments per layer,
+  silent selects hidden with the amber note, the casing takes the carrier's family). Pre-layer runs take today's path.
+  Departures (none changes a line on an existing run):
+  a. the live re-run computes the whole sheet synchronously in render (`ProjectTakeoff.tsx:sectionPreview`, only the
+     section JSON debounced) where the plan says "that run alone": medium, performance only, $0;
+  b. the switch preview's CY change is by line (haunch, embedment and initial merged), low;
+  c. on Switch, a legacy run's bedding/zone picks are not carried over as layer edits (plan §3.3 implies they are); the
+     amber "Make it the layers' material" note offers it, low–medium (material $ if missed);
+  d. Undo is one level and lost when the panel closes, low; e. a segment's layered override is dropped on the casing
+     stretch, low; f. a segment cannot add a foundation or undercut, low; g. an edit below 30 TAC's floor is silently
+     raised (quantity right, no note), low;
+  h. the picture has its own Dim/Label/patterns rather than TrenchCutView's, low; i. several pipes drawn at 1.5·OD pitch
+     rather than `pipe_gap_in`, low; j. at a segment's station the picture names the run's materials, low (display);
+     k. Estimating's picture has no `coverMinFt`, low; l. read-only only sets a data attribute (no controls), acceptable;
+  m. the section-lines drive still rebuilds `RunInput`, so the casing rerun, `widenFor`, `sectionPreview` and
+     `previewSections` are not row-checked, and `todayPath` is a tautology, low–medium (coverage).
+  Hard rules 2 and 4 hold (no hex/rgb/hsl literals; arbitrary `text-[11px]`-type values follow RunPanel's existing use).
+  **Reading (main session, founder away):** commit on the matching rows; a–m and the checker's questions go to the report.

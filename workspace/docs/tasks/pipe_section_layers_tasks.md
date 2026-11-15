@@ -1,8 +1,9 @@
 # Pipe section layers and the live trench picture: the plan (D-1278)
 
 **Status:** plan written 2026-11-16 (night run 2026-11-15 → 16, Part 6), reviewed by the founder (D-1278's answers and
-the three-night build plan). **Night 1 (D-1280): tasks 1–4 built, no visible change. Night 2 (D-1282): tasks 5, 6, 9 built, uncommitted for an independent check**: new runs take their preset in Calculate, old runs keep the legacy
-path (night 3: tasks 7, 8, 10). The founder's brief is in
+the three-night build plan). **Night 1 (D-1280): tasks 1–4 built, no visible change. Night 2 (D-1282): tasks 5, 6, 9 built**: new runs take their preset in Calculate, old runs keep the legacy
+path. **Night 3 (D-1283): tasks 7, 8, 10 built, uncommitted for an independent check** (the run panel's Section block,
+Edit layers, Switch from legacy with undo, the live picture; phase 2's departures 1–3 closed). The founder's brief is in
 `intelcost-infra/morning-report-2026-11-16/BRIEF.md`, Part 6, items 1–5.
 
 | # | Task | Status (D-1280) |
@@ -13,8 +14,10 @@ path (night 3: tasks 7, 8, 10). The founder's brief is in
 | 4 | Quantity-table rows | Built: the 26 hand rows (+ 3 more and a defaults row) as `section-layers` / `section-defaults` in `utility-cases.mjs`, all right |
 | 5 | `calculate.ts` and `lines.ts` | Built (D-1282): `runLayered` (the stored stack by the run's own type, settings and state; null keeps today's path), width rule into `P`, crossings and encasement on the layered section, lines by role and variant (`foundation:` new), compaction in the line's `note` (api `earthwork_note`), `StoredRun.sections` (`sectionSummary.ts`), new runs store `layers: {v: 1, preset: "auto"}` |
 | 6 | `section_presets` | Built (D-1282): api pydantic field (no migration), `resolveStack` takes it for "auto", Utility settings "Section by type, new runs" |
-| 7, 8, 10 | | Night 3 |
-| 9 | Estimating | Built (D-1282): the run row's Section button, `RunSectionView.tsx` read-only from `StoredRun.sections` (a table now; task 8's picture plugs into its `picture` prop) |
+| 7 | Run panel | Built (D-1283), uncommitted for an independent check: `RunSectionBlock.tsx` (the Section select; "Switch to …" on a run drawn before with the CY change by line, `sectionSummary.ts:switchChange`, the new picture, Switch, exact Undo; Edit layers: material, thickness or top, compaction, on/off, live picture; 30 TAC on/off); the Bedding / zone picks hidden on layered runs; segments per layer (`layers.ts:segmentLayers`, `calculate.ts:runSegments`); a cased open cut on the carrier's preset (`calculate.ts:casingLayered`) |
+| 8 | Picture | Built (D-1283): `TrenchSectionPicture.tsx` (to scale, walls by protection, pipe/ID/bell, hatched layers, dimensions, warnings; `LiveTrenchSection` with loading, empty, error, read-only, ready and the stale chip), tokens `--trench-foundation`, `--trench-concrete`, `--trench-clsm` (light and dark, `index.css`; no tailwind change); the run panel's live re-run (`ProjectTakeoff.tsx:sectionPreview`, debounced 150 ms) and Estimating's `picture` |
+| 10 | Gates, QT, smoke, docs | Done (D-1283): 5 new hand rows `p3-*`; smoke on a throwaway |
+| 9 | Estimating | Built (D-1282): the run row's Section button, `RunSectionView.tsx` read-only from `StoredRun.sections`; D-1283: the picture plugged into its `picture` prop, run CY as the lines carry them |
 
 **For night 2, from the independent check of night 1 (D-1280), for the founder to rule on before they change:**
 - `defaultPreset` gives the house presets to gravity DI and C900 outside Texas; RCP, VCP and DI on the drain types
