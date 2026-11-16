@@ -1,0 +1,10 @@
+{
+  "decision": "D-1291",
+  "note": "Step 3 (R43), pass (a2): the plan’s defaults, boxed and paved (each marked run the app’s Limited width / in street: Auto boxes it and the preset’s paved final backfill, CSS, runs to 12 in below the surface). a2 − a1 is the paved backfill’s $ per kind. The context contract-runner.js takes, merged into page.context().__ct with the throwaway’s workspace, project and sheet and the marked contract list (street-marking.mjs’s output, in docs/reference). Every run limited width as its item is marked (street or subdivision work unless its tab text says otherwise; R42’s three RCP items outside pavement stay open). The D-1284 rules kept: pool on, rental tax at Houston’s 8.25 %, damage waiver 12 % (Q13), walls vertical only to 4.5 ft (Q7, in the app). A CSS price the harness set on the project is taken off. No tab figure lives here.",
+  "section": "a",
+  "pool": 1,
+  "rentalTaxPct": 8.25,
+  "waiverPct": 12,
+  "limitedWidth": "items",
+  "paved": true
+}

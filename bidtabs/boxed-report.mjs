@@ -11,6 +11,15 @@
 //       and the one the trench runs are picked from (the pick reads only each item's pipe, size, depth and LF, so it
 //       picks the same runs as Part 6's T1 whenever the items are the same 189).
 //
+//   options: --paved=<paved label>,<unpaved label> (R43: the paved backfill's $ per kind, e.g. a2 − a1);
+//            --materialTaxPct=<n> (the overlay's salesTaxOnMaterialPct, 0 on the MUD tabs: bid-overlay-d1287.json).
+//
+// "Without the new material picks" (R44): each pass's k again with the 8 keys D-1289's migration d1289e5b3c40 repriced
+// (D-1290's picks) back at their old prices, from each item's material $ by key (the runner's `matByKeyPerLF`, its
+// lines' material split as their components split it): the key's $ × old ÷ new, linear in the price, the waste, order
+// tier and rounding carried as the pass ran. No other pass is run for it. The CSS row (also repriced by d1289e5b3c40)
+// is not one of the 8: (b′) is its sensitivity.
+//
 // k to the median = Σ median × qty ÷ Σ our direct × qty (k to the low the same with the low), $-weighted; storm RCP
 // groups also as the LF-weighted log mean in brackets (D-1275). Healthy is 1.15–1.30 to the medians, centre 1.22
 // (D-1295): our direct excludes supervision, small tools, insurance and bond, so k carries those as well as overhead
@@ -18,7 +27,21 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 
-const [outPath, ...specs] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+const opt = (k) => argv.find((a) => a.startsWith(`--${k}=`))?.split("=").slice(1).join("=");
+const [outPath, ...specs] = argv.filter((a) => !a.startsWith("--"));
+const MAT_TAX = Number(opt("materialTaxPct") ?? 0) / 100;
+// D-1289's migration d1289e5b3c40 (D-1290, MATERIAL-PICKS-FINAL §5): the 8 keys repriced, national $/LF old → new.
+const PICKS = {
+  "pipe:rcp_c76_wall_b:24": [41.7, 45.49],
+  "pipe:rcp_c76_wall_b:30": [58.2, 63.57],
+  "pipe:rcp_c76_wall_b:36": [79.23, 91.49],
+  "pipe:rcp_c76_wall_b:42": [100.3, 105.85],
+  "pipe:rcp_c76_wall_b:48": [130.8, 145.68],
+  "pipe:rcp_c76_wall_b:54": [159.22, 171.82],
+  "pipe:pvc_c900_dr14:12": [50.85, 43.36],
+  "pipe:pvc_c900_dr14:8": [21.54, 20.24],
+};
 const passes = specs.map((s) => {
   const at = s.indexOf("=");
   const [itemsPath, resultsPath] = s.slice(at + 1).split(",");
@@ -26,6 +49,22 @@ const passes = specs.map((s) => {
   return { label: s.slice(0, at), items: JSON.parse(readFileSync(itemsPath, "utf8")).filter((i) => i.priced && !i.excluded), results };
 });
 const BAND = [1.15, 1.3];
+// R44: each priced item's direct with the 8 picks reverted (null where its result carries no split by key).
+for (const x of passes) {
+  let missing = 0;
+  x.picksDelta = 0;
+  x.itemsOld = x.items.map((i) => {
+    const r = x.results.get(i.key)?.items?.[i.i];
+    if (!r?.matByKeyPerLF) {
+      missing++;
+      return { ...i, direct: i.direct };
+    }
+    const back = Object.entries(PICKS).reduce((t, [k, [o, n]]) => t + (r.matByKeyPerLF[k] ?? 0) * (1 - o / n), 0) * (1 + MAT_TAX);
+    x.picksDelta += back * i.qty;
+    return { ...i, direct: i.direct - back };
+  });
+  x.picksMissing = missing;
+}
 
 const rcp = (i) => i.type === "storm" && /^rcp_/.test(i.entry);
 const KINDS = [
@@ -91,6 +130,43 @@ for (const x of passes) {
   p(`- In the healthy band, ${x.label}: ${hits.length ? hits.join("; ") : "none"}.`);
 }
 p();
+
+// K1b: the same without the new material picks.
+p("## K1b. Multipliers per kind without the new material picks (the 8 keys D-1289 repriced, back at their old prices; R44)");
+const k1b = [];
+for (const [sn, sf] of SETS)
+  for (const [kn, kf] of KINDS) {
+    const a = passes.map((x) => agg(x.itemsOld.filter((i) => sf(i) && kf(i))));
+    if (a.every((x) => x.n === 0)) continue;
+    const br = /RCP|other/.test(kn);
+    const n0 = a.find((x) => x.n > 0);
+    k1b.push([sn, kn, `${n0.n} / ${Math.round(n0.lf).toLocaleString("en-US")}`, ...a.flatMap((x) => [d3(x.kMed) + (br ? ` (${d3(x.logMed)})` : ""), d3(x.kLow) + (br ? ` (${d3(x.logLow)})` : "")])]);
+  }
+table(["Set", "Kind / group", "Items / LF", ...passes.flatMap((x) => [`${x.label} k med`, `${x.label} k low`])], k1b);
+for (const x of passes) p(`- ${x.label}: the picks add ${sgn(x.picksDelta)} to our direct on the priced items${x.picksMissing ? ` (${x.picksMissing} items carry no split by key: read as they ran)` : ""}.`);
+p();
+
+// P1: the paved backfill's $ per kind (R43).
+const pavedOpt = opt("paved")?.split(",");
+if (pavedOpt) {
+  const [pl, ul] = pavedOpt;
+  const PV = passes.find((x) => x.label === pl);
+  const UP = passes.find((x) => x.label === ul);
+  if (!PV || !UP) throw new Error(`--paved: no pass ${!PV ? pl : ul}`);
+  p(`## P1. The paved backfill's $ per kind: ${pl} − ${ul} (our direct, and its labour, equipment, material, subcontract)`);
+  const sumBy = (list, f) => list.reduce((t, i) => t + f(i) * i.qty, 0);
+  const rows = [];
+  for (const [sn, sf] of SETS)
+    for (const [kn, kf] of KINDS) {
+      const a = UP.items.filter((i) => sf(i) && kf(i));
+      const b = PV.items.filter((i) => sf(i) && kf(i));
+      if (!a.length) continue;
+      const d = (f) => sumBy(b, f) - sumBy(a, f);
+      const da = sumBy(a, (i) => i.direct);
+      rows.push([sn, kn, usd(da), usd(sumBy(b, (i) => i.direct)), `${sgn(d((i) => i.direct))} (${da ? ((d((i) => i.direct) / da) * 100).toFixed(1) : "–"} %)`, sgn(d((i) => i.L)), sgn(d((i) => i.E)), sgn(d((i) => i.M)), sgn(d((i) => i.S))]);
+    }
+  table(["Set", "Kind", `${ul} direct`, `${pl} direct`, "Paved backfill $", "of it labour", "equipment", "material", "subcontract"], rows);
+}
 
 // K2: our direct cost and its change against the first pass.
 p(`## K2. Our direct cost ($, the pipe items priced), and each pass against ${base.label}`);

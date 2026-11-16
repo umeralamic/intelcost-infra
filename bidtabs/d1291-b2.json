@@ -1,12 +1,18 @@
 {
   "decision": "D-1291",
-  "note": "Step 3 of the night run from 2026-11-16, pass (b′): pass (b) with the cement-stabilized sand priced at $19.75/TON national (R17: the 15 tabs' median extra-CSS price, $32.00/CY in place, at the app's 120 pcf, 1.62 t/CY), a sensitivity only (the founder, 07:56 UTC). Set as the throwaway project's own price for stone:cement_stabilized_sand (national x the location factor the library price takes there, so it compares with (b)'s library price like for like), never the library; the runner takes it off again in any later pass. A project price takes no order tier: each contract's CSS tons and the tier the library price took in (b) are reported (contract result `css`). Everything else as pass (b). No tab figure lives here.",
+  "note": "Step 3, pass (b′): pass (b) with the cement-stabilized sand at $19.75/TON local (R41: the 15 tabs’ median extra-CSS price, $32.00/CY in place at the app’s 120 pcf, 1.62 t/CY; Houston prices, so local; $20.00 national at the 0.98737 factor), a sensitivity only. Set as the throwaway project’s own price for stone:cement_stabilized_sand as it is (a project price takes no location factor), never the library; any later pass takes it off. A project price takes no order tier: each contract’s CSS tons and the tier the library price took in (b) are reported (contract result `css’). Everything else as pass (b). No tab figure lives here.",
   "section": "b",
   "pool": 1,
   "rentalTaxPct": 8.25,
   "waiverPct": 12,
   "limitedWidth": "items",
+  "paved": true,
   "jurisdiction": "harris_county",
   "requireStep1": true,
-  "cssPrice": { "matKey": "stone:cement_stabilized_sand", "unitPrice": 19.75, "basis": "national", "sellUnit": "TON" }
+  "cssPrice": {
+    "matKey": "stone:cement_stabilized_sand",
+    "unitPrice": 19.75,
+    "basis": "local",
+    "sellUnit": "TON"
+  }
 }

@@ -1,9 +1,0 @@
-{
-  "decision": "D-1291",
-  "note": "Step 3 of the night run from 2026-11-16, pass (a): the boxed basis (option c, R11) on the plan's defaults. The context contract-runner.js takes, merged into page.context().__ct with the throwaway's workspace, project and sheet and the marked contract list (street-marking.mjs's output, in docs/reference). Section mode a (each type's own default, Auto), every run limited width as its item is marked (street or subdivision work unless its tab text says otherwise), so Auto boxes it over 4.5 ft and the run is paved; the D-1284 rules kept: the pool on, the rental tax at Houston's 8.25 %, the damage waiver 12 % (Q13), walls vertical only to 4.5 ft (Q7, in the app). No CSS price of the harness's on the project (one left by (b′) is taken off). No tab figure lives here.",
-  "section": "a",
-  "pool": 1,
-  "rentalTaxPct": 8.25,
-  "waiverPct": 12,
-  "limitedWidth": "items"
-}

@@ -25,6 +25,13 @@ async (page) => {
   // paths), "a" (each type's own default, `auto`), "b" (the Houston section for water, force main, sanitary and storm
   // through the project's settings, in the page only: never stored on a run, never written to the api). Absent: "legacy".
   // The project's state is Texas in every mode (the throwaway is Harris County; 30 TAC on the Texas sanitary items).
+  // D-1291 R43 (the founder, 12:40 UTC): "boxed walls" and "paved" are set apart. `paved` (default true): a marked run
+  // is the app's "Limited width / in street" (boxed by Auto and paved, as below); with `paved: false` it stays unpaved
+  // (limited_width off, so `runMaterials` keeps the open-site materials) and takes the run's own "Box" pick
+  // (`run.protection`, `protection.ts:protectionAt`) wherever Auto on a limited-width run would box it (deeper than
+  // 4.5 ft; a shallower run stays on Auto, vertical, as it would limited), so its walls are the paved pass's. A crossing
+  // run unpaved takes the Box pick outright. Each item's material $ is split by key (the api's components, by line name;
+  // `matByKeyPerLF`), so the report can revert a key's price without another pass.
   // D-1291 (the boxed basis, option (c); R11): `limitedWidth` = "items" marks each item's run limited width as its input
   // says (`it.limitedWidth`, a boolean every item must carry, with `it.limitedWhy`; street-marking.mjs writes both), true
   // marks every run, absent none (as before). A limited-width run is the app's "Limited width / in street": Auto boxes it
@@ -48,7 +55,7 @@ async (page) => {
   await page.goto(`http://localhost:5173/project/${P}/takeoff/${S}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(localStorage.getItem("intelcost.session")), null, { timeout: 60000 });
   const own = await page.evaluate(
-    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, jurisdiction, requireStep1, cssPrice }) => {
+    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, paved, jurisdiction, requireStep1, cssPrice }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
       const h = { authorization: `Bearer ${s.accessToken}`, "content-type": "application/json" };
       const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
@@ -81,7 +88,7 @@ async (page) => {
       if (mode === "b") settings.sectionPresets = { water: "houston_css", force_main: "houston_css", sanitary: "houston_css", storm: "houston_css" };
       // D-1291: the jurisdiction the Houston preset follows (Q2), in the page only; what the api holds is recorded beside it.
       if (jurisdiction) settings.jurisdiction = jurisdiction;
-      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, boxes: (settings.boxes ?? []).length };
+      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length };
       // D-1291 (R11): a run's limited-width mark. In "items" mode every item carries its own (street-marking.mjs); one
       // without is refused, never guessed.
       const unmarked = limitedMode === "items" ? contract.items.filter((it) => typeof it.limitedWidth !== "boolean").map((it) => `${it.entry}:${it.nominal} ${it.qty} LF`) : [];
@@ -146,12 +153,12 @@ async (page) => {
       // Part 6 rerun: a run's trench per LF (CY/LF): excavation, the bedding and pipe zone bought (imported), the backfill
       // (and the part of it bought), and the stack's title.
       // D-1291: and the walls the run took (each piece's method, by LF), its limited-width mark, the backfill bought by name.
-      const perLf = (r, L, title, limited = false) => {
+      const perLf = (r, L, title, limited = false, pavedRun = false, protection = "auto") => {
         const imp = (zones) => (r.byMaterial ?? []).filter((m) => zones.includes(m.zone) && m.source === "imported").reduce((t, m) => t + m.cf, 0);
         const walls = {};
         for (const pc of r.pieces ?? []) walls[pc.method] = (walls[pc.method] ?? 0) + (pc.s1 - pc.s0);
         const bought = [...new Set((r.byMaterial ?? []).filter((m) => m.zone === "backfill" && m.source === "imported").map((m) => m.name))].join(", ");
-        return { excCYLF: r.excavationCF / 27 / L, impEmbCYLF: imp(["bedding", "zone", "foundation"]) / 27 / L, backfillCYLF: r.backfillCF / 27 / L, impBackfillCYLF: imp(["backfill"]) / 27 / L, title, limited, walls: Object.keys(walls).length > 0 ? walls : null, backfillBought: bought || null };
+        return { excCYLF: r.excavationCF / 27 / L, impEmbCYLF: imp(["bedding", "zone", "foundation"]) / 27 / L, backfillCYLF: r.backfillCF / 27 / L, impBackfillCYLF: imp(["backfill"]) / 27 / L, title, limited, paved: pavedRun, protection, walls: Object.keys(walls).length > 0 ? walls : null, backfillBought: bought || null };
       };
       const CLAY_B = { layerId: null, name: "Clay", group: "clay", uscs: "CH", osha: "B", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1.1, depth: null };
       // D-1277: a contract of crossings (each item a run with a `crossing`, D-1269's `section.crossing`) is built by the
@@ -186,7 +193,7 @@ async (page) => {
           const x1 = x0 + it.qty / Fft;
           const itemUuid = `x-item-${i}`;
           const base = rd.defaultRun(it.type);
-          const run = { ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
+          const run = { ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it) && paved, ...(limitedOf(it) && !paved ? { protection: "box" } : {}), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
           const items = [{ uuid: itemUuid, name: `X${i + 1} ${it.nominal}" ${pick.entry.material}`, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[x0, y], [x1, y]], shape_meta: null }] }];
           const structures = [];
           if (it.crossing.kind === "jack_bore" && it.pits) {
@@ -212,7 +219,7 @@ async (page) => {
           ownX.push((one?.lines ?? []).map((l) => ({ type, name: l.name, regionId: l.regionId, role: l.role, variant: l.variant, qty: l.quantity, unit: l.unit })));
           const r0 = one?.stored?.runs?.[0];
           const sectionNote = (r0?.notes ?? []).find((n) => n.startsWith("Section: ")) ?? null;
-          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote, limitedOf(contract.items[i])), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
+          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote, limitedOf(contract.items[i]), limitedOf(contract.items[i]) && paved, limitedOf(contract.items[i]) && !paved ? "box" : "auto"), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
         });
         const allX = calcOf(parts.filter(Boolean));
         const linesX = allX?.lines ?? [];
@@ -246,6 +253,7 @@ async (page) => {
       // `tabItem`, `medianAll`, ...) is a note the runner does not read.
       const unpriceable = [];
       const trace = [];
+      const protOf = [];
       for (const it of contract.items) {
         if (it.unpriceable) {
           unpriceable.push(`${it.entry}:${it.nominal} ${it.qty} LF (${it.unpriceable})`);
@@ -283,17 +291,22 @@ async (page) => {
         // paved material (or the project's paved CSS) to the cap, and the box the project's for the bottom width. An
         // unmarked run is built byte for byte as before.
         const lw = limitedOf(it);
-        const stub = { section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: lw, utility_type: it.type };
+        const pv = lw && paved;
+        const stub = { section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: pv, utility_type: it.type };
         const runMats = calc.runMaterials(stub, settings);
         const { layered } = calc.runLayered(stub, it.type, { od: p.od, id }, settings, runMats);
-        const bf = lw ? { name: runMats.backfill.name, source: runMats.backfill.source } : { name: "Native", source: "native" };
+        const bf = pv ? { name: runMats.backfill.name, source: runMats.backfill.source } : { name: "Native", source: "native" };
         const boxed = lw ? (() => {
           const Pw = layered ? layered.pipeWidthFt : tr.pipeWidthFt(p.od, 1, 0, sec.sideClearanceIn, sec.minWidthIn);
           const box = tr.boxFor(Pw, settings.boxes ?? [], { boxRef: null, boxOutsideFt: null });
           return { box, boxNoFit: (settings.boxes ?? []).length > 0 && box === null, pavedCapIn: runMats.pavedCapIn };
         })() : { box: null };
-        const r = q.runQuantities({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", ...boxed, specMaxIn: null, protection: "auto", limitedWidth: lw, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: bf.source }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: bf.name }, segments: [], restoration: null, ...(layered ? { layered } : {}) });
-        trace[forLines.length] = perLf(r, L, layered ? layered.stack.title : "legacy", lw);
+        const input = (protection, limitedWidth) => ({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", ...boxed, specMaxIn: null, protection, limitedWidth, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: bf.source }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: bf.name }, segments: [], restoration: null, ...(layered ? { layered } : {}) });
+        // R43: boxed and unpaved, the run's own Box pick where Auto would box it limited width (its walls only are read).
+        const prot = lw && !paved && q.runQuantities(input("auto", true)).pieces.some((pc) => pc.method === "box") ? "box" : "auto";
+        protOf[forLines.length] = prot;
+        const r = q.runQuantities(input(prot, pv));
+        trace[forLines.length] = perLf(r, L, layered ? layered.stack.title : "legacy", lw, pv, prot);
         // The line's name as the app writes it ("8\" PVC C900 DR 18"), so the harness's lines are the app's (D-1211).
         const named = cat.catalogPick(pipeKey);
         const pipeLabel = `${it.nominal}" ${named?.entry.material || "Pipe"}${named?.entry.pipeClass ? ` ${named.entry.pipeClass}` : ""}`.replace(/ Pipe$/, "");
@@ -342,7 +355,7 @@ async (page) => {
         const pick = cat.catalogPick(f.pipeKey);
         const pressure = ["water", "fire_water", "force_main"].includes(it.type);
         const inv = inverts[i];
-        const run = { ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it), uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
+        const run = { ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it) && paved, protection: protOf[i] ?? "auto", uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
         const item = { uuid: `parity-item-${i}`, name: f.pipeLabel, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[0.25, 0.5], [0.75, 0.5]], shape_meta: null }] };
         const app = calc.calculateUtilities({ runs: [run], items: [item], sheetUuid: S, settings, geo, frame: { widthPt: 1000, heightPt: 1000, feetPerNorm: (2 * it.qty) / 1000 }, eg: null, fg: null, features: [], projectShrink: 1.1, projectSwell: 1.3 });
         const ours = sig(ln.utilityLines([f]).map((l) => ({ ...l, materials: mt.lineMaterials(l, () => null, "restraint", {}) })));
@@ -374,7 +387,7 @@ async (page) => {
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
       return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags, ran, trace, sectionFlags };
     },
-    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null },
+    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, paved: ct.paved ?? true, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null },
   );
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
   // D-1291: refused before any line was written: an item with no limited-width mark, or (pass b) step 1's app part not
@@ -485,15 +498,25 @@ async (page) => {
   );
   // D-1291: the contract's cement-stabilized sand as the api priced it: tons (each component's total ÷ its unit price),
   // $, the unit prices and order tiers it took, and their source (the library, or the harness's project price in b′).
-  const css = await page.evaluate(
+  const { css, matByName } = await page.evaluate(
     async ({ W, P, API, key }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
-      const r = await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/components`, { headers: { authorization: `Bearer ${s.accessToken}` } });
+      const hh = { authorization: `Bearer ${s.accessToken}` };
+      const r = await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/components`, { headers: hh });
       const list = r.ok ? await r.json() : [];
+      // R44: each line's material $ by key (its material components' totals), by the line's name.
+      const items = await (await fetch(`${API}/api/workspace/${W}/project/${P}/takeoff/item`, { headers: hh })).json();
+      const nameOf = new Map((Array.isArray(items) ? items : []).map((i) => [i.uuid, i.name]));
+      const byName = {};
+      for (const c of Array.isArray(list) ? list : []) {
+        if (c.kind !== "material" || c.total == null) continue;
+        const m = (byName[nameOf.get(c.item_uuid) ?? c.item_uuid] ??= {});
+        m[c.mat_key ?? "(no key)"] = (m[c.mat_key ?? "(no key)"] ?? 0) + Number(c.total);
+      }
       const mine = (Array.isArray(list) ? list : []).filter((c) => c.kind === "material" && c.mat_key === key && c.unit_price != null && Number(c.unit_price) > 0);
       const tons = mine.reduce((t, c) => t + (c.total == null ? 0 : Number(c.total) / Number(c.unit_price)), 0);
       const total = mine.reduce((t, c) => t + (c.total == null ? 0 : Number(c.total)), 0);
-      return { key, components: mine.length, tons, total, unitPrices: [...new Set(mine.map((c) => Number(c.unit_price)))], bases: [...new Set(mine.map((c) => c.price_snapshot?.base_unit_price ?? null))], tiers: [...new Set(mine.map((c) => c.price_snapshot?.tier ?? null))], sources: [...new Set(mine.map((c) => c.price_source ?? null))] };
+      return { matByName: byName, css: { key, components: mine.length, tons, total, unitPrices: [...new Set(mine.map((c) => Number(c.unit_price)))], bases: [...new Set(mine.map((c) => c.price_snapshot?.base_unit_price ?? null))], tiers: [...new Set(mine.map((c) => c.price_snapshot?.tier ?? null))], sources: [...new Set(mine.map((c) => c.price_source ?? null))] } };
     },
     { W: ct.workspace, P: ct.project, API, key: ct.cssPrice?.matKey ?? "stone:cement_stabilized_sand" },
   );
@@ -544,6 +567,7 @@ async (page) => {
     const unmatched = [];
     // Each of the item's own lines by its role (pipe, bedding and zone, backfill, trench support, ...), per LF.
     const byRole = {};
+    const matByKey = {};
     for (const l of mine) {
       const u = unit.get(`${l.type}|${l.name}`) ?? (own.crossing ? unit.get(`?|${l.name}`) : undefined);
       if (!u || !(u.qty > 0)) {
@@ -554,6 +578,10 @@ async (page) => {
       lab += (l.qty * u.lab) / u.qty;
       eq += (l.qty * u.eq) / u.qty;
       mat += (l.qty * u.mat) / u.qty;
+      // R44: the line's material share split as its components split it by key.
+      const split = matByName?.[l.name];
+      const splitTotal = split ? Object.values(split).reduce((t, v) => t + v, 0) : 0;
+      if (splitTotal > 0) for (const [k, v] of Object.entries(split)) matByKey[k] = (matByKey[k] ?? 0) + (((l.qty * u.mat) / u.qty) * v) / splitTotal / it.qty;
       disp += (l.qty * u.disp) / u.qty;
       sub += (l.qty * u.sub) / u.qty;
       tx += (l.qty * u.tx) / u.qty;
@@ -573,7 +601,7 @@ async (page) => {
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
       : undefined;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, matByKeyPerLF: matByKey, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
   const res = { key: contract.key, rentalTaxPct: ct.rentalTaxPct ?? 0, waiverPct: ct.waiverPct ?? null, section: own.ran ?? null, css, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
