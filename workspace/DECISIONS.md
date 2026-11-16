@@ -33932,10 +33932,23 @@ answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
   backfill too (e.g. 8 in water 0.148 CY/LF, 8 in sewer at 14 ft 1.000 CY/LF), and its excavation falls with the box
   (8 in water 1.336 → 0.377 CY/LF). Founder to confirm that (a) should carry the paved backfill (the app's meaning of
   "in street"), or whether only the walls should box.
-- **Passes:** `d1291-a.json` (mode a), `d1291-b.json` (mode b, Houston preset on water, force main, sanitary, storm,
-  jurisdiction `harris_county`, `requireStep1`), `d1291-b2.json` ((b) with `cssPrice` $19.75/TON national × the
-  library's location factor, set as the throwaway project's own price for `stone:cement_stabilized_sand`, never the
-  library; any later pass takes it off). All keep the D-1284 rules: pool on, rental tax 8.25 %, waiver 12 %, Q7's 4.5 ft.
+- **R43 (founder 12:40 UTC; supersedes the single (a) above): boxed walls and paved are set apart.** The app does let
+  a run be boxed and unpaved: the run's own protection pick "Box" (`run.protection`, `protection.ts:protectionAt`) with
+  `limited_width` off and no restoration (`calculate.ts:runMaterials` paves only on `limited_width` or an asphalt /
+  concrete restoration). Auto boxes only a limited-width run, which is always paved, so the harness's unpaved runs take
+  the Box pick wherever Auto would box them limited width (deeper than 4.5 ft; every marked tab run is), so their walls
+  equal the paved pass's (checked offline: excavation identical on all 189 items); a crossing run unpaved takes the Box
+  pick outright. No app change needed.
+- **Passes (one harness commit):** `d1291-a1.json` (plan defaults, boxed, unpaved), `d1291-a2.json` (plan defaults,
+  boxed, paved; a2 − a1 is the paved backfill's $ per kind), `d1291-b.json` (Houston preset on water, force main,
+  sanitary, storm, jurisdiction `harris_county`, boxed and paved per R45, R42's three open and unpaved, `requireStep1`),
+  `d1291-b2.json` ((b) with `cssPrice` **$19.75/TON local** (R41; $20.00 national), the throwaway project's own price for
+  `stone:cement_stabilized_sand` as it is, never the library; any later pass takes it off). All keep the D-1284 rules:
+  pool on, rental tax 8.25 %, waiver 12 %, Q7's 4.5 ft. Offline parity 0 on the 47 contracts for a1, a2 and b.
+- **Without the new material picks (R44):** the runner splits each item's material $ by key (the api's components by
+  line name, `matByKeyPerLF`); `boxed-report.mjs` reverts the 8 keys d1289e5b3c40 repriced (RCP 24–54 in, C900 DR 14
+  12 and 8 in) to their old prices from it (linear; waste, tier and rounding as the pass ran) and gives k per kind again
+  (K1b), and `--paved=a2,a1` gives the paved backfill's $ per kind (P1).
 - **Step 1 check (`step1Probe`, pass (b) only):** Q2 a paved 24 in RCP keeps CSS to the subgrade and a 60 in one does not
   (Harris County); Q4 paved 8 in water's final backfill is not CSS; Q5 paved 24 in HDPE storm has flowable fill, unpaved
   CSS. Until all three hold the runner prices nothing and says what it found (today: all three NOT YET).
