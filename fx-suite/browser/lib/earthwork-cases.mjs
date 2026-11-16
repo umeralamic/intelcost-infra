@@ -11,7 +11,7 @@
 
 import { readFileSync } from "node:fs";
 
-/** F18 acceptance inputs, snapshotted from the founder's earthwork benchmark (page 3 and C-200). */
+/** F18 acceptance inputs, snapshotted from P02 (page 3 and C-200). */
 const C200 = JSON.parse(readFileSync(new URL("./c200-acceptance.json", import.meta.url), "utf8"));
 
 const c = (item, label, surface, elevation, points) => ({ item, label, kind: "contour", surface, elevation, points });
@@ -27,6 +27,188 @@ const corners = (surface, z) =>
   [[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => s(`${surface.toLowerCase()}${i + 1}`, `${surface.toLowerCase()}${i + 1}`, surface, z[i], x, y));
 /** Legacy's flat pad: EG and FG flat at the corners, the boundary the unit square. */
 const pad = (eg, fg, withBoundary = true) => [...corners("EG", [eg, eg, eg, eg]), ...corners("FG", [fg, fg, fg, fg]), ...(withBoundary ? [b(UNIT)] : [])];
+
+// F39 (D-1126, D-1131): one balance per job, by hand. Shrink 1.10, swell 1.25, native soil suitable. A has 1,000 BCY
+// of cut and no fill; B 600 CCY of fill and no cut: B's fill takes 600 x 1.10 = 660 BCY of A's cut, the rest, 340 BCY,
+// leaves as 340 x 1.25 = 425 LCY, no import. Both short (A 100 BCY cut, 300 CCY fill; B 200 CCY fill): one import of
+// 500 x 1.10 - 100 = 450 BCY, 562.5 LCY. A with a muck layer (200 BCY at swell 1.30, unsuitable): it always leaves
+// (260 LCY); the clay (800 BCY) yields 800 / 1.10 = 727.27 CCY against B's 600: 127.27 x 1.10 = 140 BCY, 175 LCY;
+// A's Cut to export carries both, 340 BCY.
+const JOB_A = { suitable: true, fillType: "Select Borrow", swell: 1.25, shrink: 1.1, choices: null };
+const jobSheet = (key, cut, fill, site) => ({ key, label: key, inputs: { units: "CY", regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], assumptions: JOB_A, ...(site ? { site } : {}) } });
+const SQ = (x, y, s = 100) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
+export const JOB_CASES = [
+  { id: "job-two-sheets", kind: "job", members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "B:fill:padB": 600, "job:soil_export:": 425, "job:soil_import:": undefined } },
+  { id: "job-both-short", kind: "job", members: [jobSheet("A", 100, 300), jobSheet("B", 0, 200)], expect: { "A:cut:padA": 100, "A:fill:padA": 300, "B:fill:padB": 200, "job:soil_import:": 562.5, "job:soil_export:": undefined } },
+  {
+    id: "job-unsuitable-layer",
+    kind: "job",
+    members: [jobSheet("A", 1000, 0, { layers: [{ regionId: "padA", layerId: "L1", name: "Clay", bank: 800, shrink: 1.1, swell: 1.25, kind: "suitable" }, { regionId: "padA", layerId: "L2", name: "Muck", bank: 200, shrink: 1.1, swell: 1.3, kind: "unsuitable" }] }), jobSheet("B", 0, 600)],
+    expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "B:fill:padB": 600, "job:soil_export:": 175, "job:soil_export:unsuitable:Muck": 260 },
+  },
+  // One member (a sheet marked Separate job, or a project of one sheet): its lines exactly as today's.
+  { id: "job-one-member-as-today", kind: "job", same: true, members: [jobSheet("A", 1000, 0)], expect: { same: true } },
+  // Overlap (D-1131): C-4 covers 62 % of C-3 (squares 100 ft, 38 ft apart): left out; included, in; not registered, in.
+  { id: "job-overlap-left-out", kind: "job", places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: SQ(38, 0) }], expect: { members: "c3", leftOut: "C-4 overlaps C-3 by 62%: left out of the job balance — include it or mark Separate job", unchecked: "" } },
+  { id: "job-overlap-included", kind: "job", included: ["c4"], places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: SQ(38, 0) }], expect: { members: "c3 c4", leftOut: "" } },
+  { id: "job-overlap-unregistered", kind: "job", places: [{ key: "c3", label: "C-3", boundary: SQ(0, 0) }, { key: "c4", label: "C-4", boundary: null }], expect: { members: "c3 c4", leftOut: "", unchecked: "c4" } },
+  // Anchor (D-1131 c): the first member marked Separate job, the job's lines go to the next.
+  { id: "job-anchor-moves", kind: "job", places: [{ key: "c1", label: "C-1", boundary: null, separate: true }, { key: "c2", label: "C-2", boundary: null }, { key: "c3", label: "C-3", boundary: null }], expect: { members: "c2 c3", anchor: "c2", separate: "c1" } },
+  // D-1136 (D-1132 reverted): the import material is only the shortfall after cut fills fill. Native Yes: A's 34,000 BCY
+  // surplus fills B's 8,000 at shrink 1.0, 26,000 BCY (32,500 LCY) out, no import. B's region ticked Specified import:
+  // B buys its own 8,000 BCY (10,000 LCY) of select borrow on B, A exports all 34,000. Native No: all out, all in.
+  { id: "job-native-yes-offsets", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: null}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut:padA": 8000, "A:cut_export:padA": 26000, "B:fill:padB": 8000, "job:soil_export:": 32500, "job:soil_import:": undefined } },
+  { id: "job-specified-import", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: {specified_import: {padB: "Select Borrow"}}}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut_export:padA": 34000, "A:cut:padA": undefined, "B:fill:padB": 8000, "B:soil_import:padB": 10000, "job:soil_export:": 42500, "job:soil_import:": undefined } },
+  { id: "job-native-no", kind: "job", assume: {native_suitable: "none",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: null}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut_export:padA": 34000, "job:soil_export:": 42500, "job:soil_import:": 10000 } },
+  // One sheet, Select Borrow named as the import, native Yes: its cut fills its fill (1,000 BCY cut, 300 CCY fill at 1.1:
+  // 670 BCY, 837.5 LCY out, no import).
+  { id: "sheet-select-borrow-offsets", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1.1,site_choices: null}, members: [jobSheet("A", 1000, 300)], expect: { "A:cut_export:padA": 670, "job:soil_export:": 837.5, "job:soil_import:": undefined } },
+  // 6e (D-1133): B's drawing edited (fill 600 -> 800 CCY), A calculated alone: B is named stale and the job prices B's
+  // last result (660 BCY of A's cut to B, 340 exported, 425 LCY). Calculate job: B calculated, the job settles (880 to
+  // B, 120 BCY out, 150 LCY). A second Calculate job writes the same lines.
+  {
+    id: "job-stale-calculate-job",
+    kind: "jobstale",
+    assume: { native_suitable: "layers", fill_type: "Engineered Fill", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null },
+    a: { cut: 1000, fill: 0 },
+    b: { before: 600, after: 800 },
+    expect: { "1:stale": "B", "1:A:cut_export:padA": 340, "1:A:soil_export:__soil_export__": 425, "1:B:fill:padB": 600, "2:stale": "", "2:A:cut:padA": 880, "2:A:cut_export:padA": 120, "2:A:soil_export:__soil_export__": 150, "2:B:fill:padB": 800, "3:same": true },
+  },
+  // D-1150: a boundary from the picked features (100 x 100 ft each, 1,000 x 1,000 ft page): touching, one boundary of
+  // 20,000 SF; 1 ft apart, the gap closed (20,100 SF); 200 ft apart, two pieces, or one over both and the ground between
+  // (40,000 SF). Offset 5 ft out: 12,100 SF, 2,100 SF outside the grade; 5 ft in: 8,100 SF.
+  { id: "boundary-touching", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.1, 0, 0.1, 0.1]], offsetFt: 5, expect: { pieces: 1, areaSF: "20000", joinedSF: 20000, offsetSF: 12100, outsideSF: 2100 } },
+  { id: "boundary-1ft-gap", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.101, 0, 0.1, 0.1]], offsetFt: -5, expect: { pieces: 1, areaSF: "20100", joinedSF: 20100, offsetSF: 8100 } },
+  { id: "boundary-200ft-apart", kind: "boundary-from", scale: { feetPerNorm: 1, widthPt: 1000, heightPt: 1000 }, features: [[0, 0, 0.1, 0.1], [0.3, 0, 0.1, 0.1]], expect: { pieces: 2, areaSF: "10000 10000", joinedSF: 40000 } },
+  // D-1152: the edge slope at 3:1 to flat existing at 100.00. A 100 x 100 pad 2.5 ft up: four wedges 100 x 7.5 x 2.5 / 2
+  // (3,750 CF) and four hip corners 7.5 x 7.5 x 2.5 / 3 (187.5 CF), 3,937.5 CF; 2.5 ft down the same in cut. An L of
+  // the same 2.5 ft: the inside corner's overlap counted once, the same 3,937.5. A 20 ft drive sharing the pad's east
+  // edge: no slope on that edge, 120 x 100 outer, 4,312.5. Pad 2 ft inside the boundary: its west slope clipped at 2 ft
+  // (100 x (2.5 x 2 - 2^2 / 6) = 433.33, the other three 2,812.5, two corners 93.75, the two clipped ones 36.61),
+  // 3,376.19, flagged 7.5 - 2 = 5.5 ft past. A drive 200 x 20, +1 at its west end to -1 at its east, the boundary on its
+  // ends: each long edge's section 3 h^2 / 2 with h = 1 - x / 100, 50 CF over the raised half, so 100 CF fill and 100 CF
+  // cut. Two pads 5 ft apart inside a boundary flush with their north and south edges: the facing slopes overlap,
+  // counted once, 2,916.67.
+  { id: "edge-slope-square-pad", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 3937.5, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-cut-pad", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [97.5, 97.5, 97.5, 97.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 0, cutCF: 3937.5, pastFt: "" } },
+  { id: "edge-slope-l-pad", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 50], [50, 50], [50, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5, 102.5, 102.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 3937.5, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-shared-edge", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }, { ring: [[100, 0], [120, 0], [120, 100], [100, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 4312.5, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-past-boundary", kind: "edge-slope", features: [{ ring: [[2, 0], [102, 0], [102, 100], [2, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[0, -500], [1000, -500], [1000, 1000], [0, 1000]], expect: { fillCF: 3376.19, cutCF: 0, pastFt: "5.5" } },
+  { id: "edge-slope-edge-crossing", kind: "edge-slope", features: [{ ring: [[0, 0], [200, 0], [200, 20], [0, 20]], z: [101, 99, 99, 101] }], boundary: [[0, -50], [200, -50], [200, 70], [0, 70]], expect: { fillCF: 100, cutCF: 100, pastFt: "" } },
+  { id: "edge-slope-two-pads-5ft", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5] }, { ring: [[105, 0], [205, 0], [205, 100], [105, 100]], z: [102.5, 102.5, 102.5, 102.5] }], boundary: [[-50, 0], [255, 0], [255, 100], [-50, 100]], expect: { fillCF: 2916.67, cutCF: 0, pastFt: "" } },
+  // D-1155: a square pond's contour (100 x 100 ft) at 9.00 on flat existing at 10.00, the boundary 10 ft outside it.
+  // Without an offset contour the pond's cut alone, 10,000 / 27 = 370.37 CY, and the 4,400 SF ring between it and the
+  // boundary lies outside the proposed grade ("not in cut/fill"). Offset 10 ft out at 9.00 (corners mitered, 120 x 120,
+  // one closed contour inside the boundary): the berm cuts 4,400 x 1.0 / 27 = 162.96 CY, 533.33 in all, nothing outside.
+  {
+    id: "offset-contour-pond-berm",
+    kind: "offset-contour",
+    side: 1000,
+    runs: [s("eg1", "EG", "EG", 10, 0, 0), s("eg2", "EG", "EG", 10, 0.4, 0), s("eg3", "EG", "EG", 10, 0.4, 0.4), s("eg4", "EG", "EG", 10, 0, 0.4), c("pond", "Pond HB", "FG", 9, [[0.1, 0.1], [0.2, 0.1], [0.2, 0.2], [0.1, 0.2], [0.1, 0.1]])],
+    boundary: [[0.09, 0.09], [0.21, 0.09], [0.21, 0.21], [0.09, 0.21]],
+    offset: { run: 4, ft: 10, elevation: 9 },
+    expect: { pieces: 1, closed: true, withoutCutCY: 370.37, withCutCY: 533.33, bermCutCY: 162.96, outsideWithoutSF: 4400, outsideWithSF: 0 },
+  },
+  // D-1159: what 100 LCY of each import soil buys at the pit (shrink 1.0, swell 1.25): common fill by the ton at 1.28
+  // t/LCY, select fill by the CY, fill sand by the ton at 1.43 t/LCY (damp, D-1160), a custom soil at 1.9 t a compacted CY over shrink
+  // x swell (152 TON); an older project's "Engineered Fill" reads as Select fill, flagged, and "Select Borrow" plainly.
+  {
+    id: "import-fill-materials",
+    kind: "import-fill",
+    cases: [
+      ["common", "Common fill"],
+      ["select", "Select fill"],
+      ["sand", "Fill sand"],
+      ["engineered", "Engineered Fill"],
+      ["structural", "Structural Fill"],
+      ["borrow", "Select Borrow"],
+      ["custom", "zz Caliche", { name: "zz Caliche", unit: "TON", price: 14.25, tons_per_ccy: 1.9, mat_key: "custom:x" }],
+    ],
+    expect: {
+      common: "Common fill | fill:common_borrow:fob | 128 TON",
+      select: "Select fill | fill:select:fob | 100 CY",
+      sand: "Fill sand | fill:sand:fob | 143 TON",
+      engineered: "Select fill (spec term) | fill:select:fob | 100 CY",
+      structural: "Select fill (spec term) | fill:select:fob | 100 CY",
+      borrow: "Select fill | fill:select:fob | 100 CY",
+      custom: "zz Caliche | custom | 152 TON",
+    },
+  },
+  // D-1159: a 200 x 100 ft boundary, a 100 x 100 ft feature graded by its own spots, existing everywhere. Graded only
+  // inside the features, the other half is proposed as existing and counts as covered; graded everywhere, the proposed
+  // grade reaches half the boundary and says so.
+  {
+    id: "coverage-inside-features",
+    kind: "coverage-inside",
+    side: 100,
+    boundary: [[0, 0], [2, 0], [2, 1], [0, 1]],
+    runs: [s("eg1", "EG", "EG", 10, 0, 0), s("eg2", "EG", "EG", 10, 2, 0), s("eg3", "EG", "EG", 10, 2, 1), s("eg4", "EG", "EG", 10, 0, 1), s("fg1", "FG", "FG", 10.5, 0, 0), s("fg2", "FG", "FG", 10.5, 1, 0), s("fg3", "FG", "FG", 10.5, 1, 1), s("fg4", "FG", "FG", 10.5, 0, 1)],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0, polygon: [[0, 0], [1, 0], [1, 1], [0, 1]] }],
+    expect: { inside: "covered", everywhere: "50% warned" },
+  },
+  // D-1158: a proposed point just outside the boundary keeps its triangle. The pond above with its 120 ft contour at
+  // 9.00 drawn by hand, one corner 0.01 ft (and 0.1 ft) past the boundary: 14,400 SF x 1.0 / 27 = 533.33 CY either way.
+  // At 0.1 ft the clipper threw on that corner's piece and the engine had dropped it (511.11 CY, 600 SF short).
+  ...[0.01, 0.1].map((ft) => ({
+    id: `volume-point-${ft}-ft-outside-boundary`,
+    kind: "volume",
+    side: 1000,
+    boundary: [[0.09, 0.09], [0.21, 0.09], [0.21, 0.21], [0.09, 0.21]],
+    runs: [s("eg1", "EG", "EG", 10, 0, 0), s("eg2", "EG", "EG", 10, 0.4, 0), s("eg3", "EG", "EG", 10, 0.4, 0.4), s("eg4", "EG", "EG", 10, 0, 0.4), c("pond", "Pond HB", "FG", 9, [[0.1, 0.1], [0.2, 0.1], [0.2, 0.2], [0.1, 0.2], [0.1, 0.1]]), c("berm", "Berm", "FG", 9, [[0.21, 0.09], [0.21, 0.21], [0.09, 0.21], [0.09, 0.09 - ft / 1000], [0.21, 0.09]])],
+    expect: { ok: true, cutCY: 14400 / 27, fillCY: 0 },
+  })),
+  // D-1154: the slope typed as 4 H:V or as 25 % is one slope: the pad 2.5 ft up gives four wedges 100 x 10 x 2.5 / 2
+  // (5,000 CF) and four corners 10 x 10 x 2.5 / 3 (333.33), 5,333.33 either way. The drive +1 to -1 with 3:1 in fill and
+  // 2:1 in cut: each long edge's section H h^2 / 2 over its half, H x 100 / 6, so fill 2 x 50 = 100 and cut 2 x 33.33 =
+  // 66.67.
+  { id: "edge-slope-4-to-1", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5], slope: ["4", "hv"] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 5333.33, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-25-pct", kind: "edge-slope", features: [{ ring: [[0, 0], [100, 0], [100, 100], [0, 100]], z: [102.5, 102.5, 102.5, 102.5], slope: ["25", "pct"] }], boundary: [[-500, -500], [1000, -500], [1000, 1000], [-500, 1000]], expect: { fillCF: 5333.33, cutCF: 0, pastFt: "" } },
+  { id: "edge-slope-cut-2-fill-3", kind: "edge-slope", features: [{ ring: [[0, 0], [200, 0], [200, 20], [0, 20]], z: [101, 99, 99, 101], slope: ["3", "hv"], cutSlope: ["2", "hv"] }], boundary: [[0, -50], [200, -50], [200, 70], [0, 70]], expect: { fillCF: 100, cutCF: 66.67, pastFt: "" } },
+  // D-1137: a stitched site (A and B, no site result) is one member; marked Separate job, its sheets still balance
+  // together: A's 1,000 BCY cut fills B's 300 CCY (330 BCY at 1.1), 670 out (837.5 LCY on A); C, alone in the job,
+  // imports its 600 CCY (660 BCY, 825 LCY).
+  {
+    id: "job-site-separate-together",
+    kind: "jobsite",
+    assume: { native_suitable: "layers", fill_type: "Engineered Fill", swell_factor: 1.25, shrink_factor: 1.1, site_choices: null },
+    rows: [{ key: "A", cut: 1000, fill: 0, site: true }, { key: "B", cut: 0, fill: 300, site: true }, { key: "C", cut: 0, fill: 600 }],
+    expect: { views: "Site A–B|C", "A:cut:padA": 330, "A:cut_export:padA": 670, "A:soil_export:__soil_export__": 837.5, "C:soil_import:__soil_import__": 825, "B:soil_import:__soil_import__": undefined, "B:soil_export:__soil_export__": undefined },
+  },
+  // D-1142: a pocket id ("cut-1") is each sheet's own. B's 10 BCY pocket chosen dozer push must not push A's 1,000 BCY
+  // pocket of the same id: the dozer's share is B's 10 of the job's 1,010 BCY (before, every pocket "cut-1" was dozer).
+  {
+    id: "job-pocket-ids-per-sheet",
+    kind: "job",
+    members: ["A", "B"].map((key) => ({
+      key,
+      label: key,
+      inputs: {
+        units: "CY",
+        regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: key === "A" ? 1000 : 10, fillCY: key === "A" ? 0 : 600 }],
+        assumptions: { ...JOB_A, choices: { surplus: {}, method: "excavator", push_ft: 100, method_by_feature: {}, pocket_methods: { "cut-1": { method: "dozer", cells: ["5,5"], cy: 10 } } } },
+        figures: { pockets: [{ id: "cut-1", kind: "cut", cy: key === "A" ? 1000 : 10, areaSF: key === "A" ? 9000 : 90, avgFt: 3, deepestFt: 4, at: { x: 0, y: 0, z: 0 }, cells: key === "A" ? ["1,1", "1,2", "1,3"] : ["5,5"] }], hauls: [], steepPct: 0 },
+      },
+    })),
+    expect: { "A:cut:padA": 643.564356, "A:cut_push:padA": 6.435644, "A:cut_export:padA": 350, "B:fill:padB": 594.059406, "job:soil_export:": 437.5 },
+  },
+  // One item drawn on two sheets (D-1133): its region on A cuts 1,000 BCY, on B fills 600 CCY; each sheet keeps its own
+  // share under the item's id, as two regions would.
+  {
+    id: "job-shared-region-id",
+    kind: "job",
+    members: [
+      { key: "A", label: "A", inputs: { units: "CY", regions: [{ id: "padX", label: "Pad X", cutCY: 1000, fillCY: 0 }], assumptions: JOB_A } },
+      { key: "B", label: "B", inputs: { units: "CY", regions: [{ id: "padX", label: "Pad X", cutCY: 0, fillCY: 600 }], assumptions: JOB_A } },
+    ],
+    expect: { "A:cut_export:padX": 340, "A:cut:padX": 660, "B:fill:padX": 600, "B:cut:padX": undefined, "job:soil_export:": 425 },
+  },
+  // Distance between areas (D-1131 b): two 100 ft boundaries 2,000 ft apart, centroid to centroid.
+  { id: "job-distance-2000ft", kind: "job", between: [SQ(0, 0), SQ(2000, 0)], expect: { distanceFt: 2000 } },
+];
+
+/** D-1149: a 100 x 70 ft undercut 6.5 ft deep has sloped sides past 4 ft: the wedge round its 340 ft edge,
+ *  340 x 6.5 x 6.5 / 2 = 7,182.5 CF, is dug too. The Q13 and D-895 rows test the clamp; this is added to each. */
+const UC_SIDES_CY = (340 * 6.5 * 6.5) / 2 / 27;
 
 export const EARTHWORK_CASES = [
   // --- Block B: the TIN (legacy's tin.test.ts) -----------------------------------------
@@ -382,6 +564,41 @@ export const EARTHWORK_CASES = [
     bores: [{ id: "GT-05 B-1", total: 41.5, readings: [{ kind: "at_completion", depth_ft: null }] }],
     expect: { "GT-05 B-1": 41.5 },
   },
+  // --- D-1163 (AB): an Area's layers lose a line feature's footprint where it lies inside --------------------------
+  // A 100 x 100 ft paving (10,000 SF) on a 200 x 200 ft page; 100 LF of curb and gutter, 2.5 ft across (6 in curb +
+  // 24 in pan). Inside: 100 x 2.5 = 250 SF off, 9,750. On the edge: the band centred on the line, half inside, 125 SF
+  // off, 9,875 (it had been 9,750). Unticked: 10,000. Striping inside: a line item takes nothing off, 10,000.
+  { id: "ab-curb-inside", kind: "line-deduct", line: "curb", at: "inside", deduct: true, expect: { footprintFt: 2.5, areaSf: 9750 } },
+  { id: "ab-curb-on-edge", kind: "line-deduct", line: "curb", at: "edge", deduct: true, expect: { footprintFt: 2.5, areaSf: 9875 } },
+  { id: "ab-curb-unticked", kind: "line-deduct", line: "curb", at: "inside", deduct: false, expect: { footprintFt: 2.5, areaSf: 10000 } },
+  { id: "ab-striping-inside", kind: "line-deduct", line: "striping", at: "inside", deduct: true, expect: { footprintFt: 2.5, areaSf: 10000 } },
+  // --- D-1160: a job member an older engine worked out is stale (Calculate job calculates it first) ----------------
+  // The engine is v11 a sheet's and a site's (D-1163): a v8, v9 or v10 sheet is behind, "u2" or not; v11 is current;
+  // a site's v9 and v8 are behind; an empty or unreadable key is not behind.
+  {
+    id: "d1160-behind-engine",
+    kind: "behind-engine",
+    cases: [["v8u2:abc", "sheet"], ["v9:abc", "sheet"], ["v10u2:abc", "sheet"], ["v10:abc", "sheet"], ["v11u2:abc", "sheet"], ["v11:abc", "sheet"], ["v9:abc", "site"], ["v8:abc", "site"], ["", "sheet"], ["x:abc", "sheet"]],
+    expect: { engine: "11/11", "sheet:v8u2:abc": true, "sheet:v9:abc": true, "sheet:v10u2:abc": true, "sheet:v10:abc": true, "sheet:v11u2:abc": false, "sheet:v11:abc": false, "site:v9:abc": true, "site:v8:abc": true, "sheet:": false, "sheet:x:abc": false },
+  },
+  // --- D-1160: an undercut measured from the section's bottom (a liner), on a pad in fill -------------------------
+  // A 100 x 100 ft pad with a 0.5 ft section, EG 100, FG 102: the region fills 10,000 x 1.5 = 15,000 CF = 555.56 CY.
+  // Its 0.5 ft below the section lies wholly above existing ground (subgrade 101.5, bottom 101.0): nothing is dug.
+  // Lime-stabilized in place, it adds no soil: nothing displaced, the fill line (and the import) keeps 555.56 CY; it
+  // had taken 10,000 x 0.5 = 185.19 CY off. A clay liner still places its 185.19 CY in the fill's place: 370.37 left.
+  ...[
+    ["d1160-stabilized-in-place-in-fill", { native: "stabilized" }, 0, 15000 / 27],
+    ["d1160-clay-liner-in-fill", { material: "Clay liner (compacted, low-permeability)" }, 5000 / 27, 10000 / 27],
+  ].map(([id, extra, displaced, lineFill]) => ({
+    id,
+    kind: "volume",
+    side: 100,
+    boundary: UNIT,
+    runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
+    roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: UNIT }],
+    undercut: { id: "pad", depthFt: 0.5, undercutFt: 0.5, liner: true, polygon: UNIT, ...extra },
+    expect: { ok: true, "region:pad:fillCY": 15000 / 27, "undercut:displacedCY": displaced, "lineFill:CY": lineFill },
+  })),
   // --- Q13 (D-528), now the "below subgrade" override (D-895): existing ground only ---------
   // A 100 x 70 ft pad (7,000 SF) on a 100 x 100 ft site, undercut 6.5 ft below the subgrade.
   // Fill area: EG 100, FG 102, so the subgrade is 2.0 ft above existing ground. Dug: 6.5 - 2.0 =
@@ -393,7 +610,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
     undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 31500 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // Cut area: EG 102, FG 100, the subgrade below existing ground: unchanged, 1,685.19 CY.
   {
@@ -403,7 +620,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
     undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // Both in one pad: EG 100, FG rising 99 to 103 west to east, so dz = 4x - 1 (x across, 0 to 1).
   // Fill east of x = 0.25; the mean of max(0, dz) over x is the integral of 4x - 1 from 0.25 to 1 =
@@ -415,7 +632,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
     undercut: { id: "pad", undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 37625 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 37625 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // The pad's own 0.5 ft section: FG 102.5 less 0.5 = a subgrade at 102, 2.0 ft above EG 100:
   // the fill-area answer again, 1,166.67 CY.
@@ -427,7 +644,7 @@ export const EARTHWORK_CASES = [
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102.5, 102.5, 102.5, 102.5])],
     roleAreas: [{ itemId: "pad", label: "Pad", depthFt: 0.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] }],
     undercut: { id: "pad", depthFt: 0.5, undercutFt: 6.5, from: "subgrade", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 31500 / 27, "undercutFlat:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 31500 / 27 + UC_SIDES_CY, "undercutFlat:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // --- D-895: an undercut's bottom is the lower of stripped existing grade and subgrade, less d ---
   // The same 7,000 SF pad, 6.5 ft. In fill (EG 100, FG 102) the bottom is 93.5, below existing: 45,500 CF.
@@ -438,7 +655,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
     undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // In cut (EG 102, FG 100) the bottom is 93.5, below subgrade: 45,500 CF.
   {
@@ -448,7 +665,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
     undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // Cut and fill in one pad, dz = 4x - 1: 6.5 ft all over, 45,500 CF.
   {
@@ -458,7 +675,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
     undercut: { id: "pad", undercutFt: 6.5, polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // The override "below existing", in cut: EG 102 less 6.5 is 95.5; the 2.0 ft down to the subgrade is cut, so 4.5 ft is undercut: 31,500 CF.
   {
@@ -468,7 +685,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [102, 102, 102, 102]), ...corners("FG", [100, 100, 100, 100])],
     undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 31500 / 27 },
+    expect: { ok: true, "undercut:CY": 31500 / 27 + UC_SIDES_CY},
   },
   // The override "below existing", in fill: from existing ground, the full 6.5 ft.
   {
@@ -478,7 +695,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [102, 102, 102, 102])],
     undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 45500 / 27 },
+    expect: { ok: true, "undercut:CY": 45500 / 27 + UC_SIDES_CY},
   },
   // The override "below existing", dz = 4x - 1: d + min(dz, 0); the cut side x < 0.25 loses 0.125 ft of mean depth: 6.375 ft over 7,000 SF = 44,625 CF.
   {
@@ -488,7 +705,7 @@ export const EARTHWORK_CASES = [
     boundary: UNIT,
     runs: [...corners("EG", [100, 100, 100, 100]), ...corners("FG", [99, 103, 103, 99])],
     undercut: { id: "pad", undercutFt: 6.5, from: "existing", polygon: [[0, 0], [1, 0], [1, 0.7], [0, 0.7]] },
-    expect: { ok: true, "undercut:CY": 44625 / 27 },
+    expect: { ok: true, "undercut:CY": 44625 / 27 + UC_SIDES_CY},
   },
   // --- F26 R-1: the grading report's statistics (D-430), on planes worked by hand -------
   // 100 x 100 ft, EG flat at 100; FG a plane rising 2 ft west to east: all fill, height 0 to 2,
@@ -778,7 +995,7 @@ export const EARTHWORK_CASES = [
   { id: "bal-shrink-unsuitable-surplus", kind: "balance", input: { cut: 300, fill: 20, reuseBank: 50, suitable: false, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: (300 + 25 / 0.9) * 1.25, importLoose: null } },
   // suitable, C 100 F 90: 90 / 0.9 = 100 bank, exactly the cut: neither line (legacy, unshrunk, would export 12.5).
   { id: "bal-shrink-exact-balance", kind: "balance", input: { cut: 100, fill: 90, reuseBank: 0, suitable: true, swell: 1.25, shrink: 1 / 0.9 }, expect: { exportLoose: null, importLoose: null } },
-  // The C-200 engineer's table (the founder's earthwork benchmark, D-142, D-177), typed
+  // The C-200 engineer's table (P02, the founder's benchmark, D-142, D-177), typed
   // as printed: excavation 14,263 BCY, embankment 8,727 CCY, shrink 1.10, swell 1.15. The
   // embankment needs 8,727 x 1.10 = 9,599.7 BCY; the surplus is 14,263 - 9,599.7 = 4,663.3
   // BCY; it exports 4,663.3 x 1.15 = 5,362.795 LCY (5,363). The table's "net 6,803" subtracts
@@ -801,7 +1018,8 @@ export const EARTHWORK_CASES = [
       { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
       { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
     ],
-    expect: { order: "B,A", roleAreas: "", "B:undercutSF": 100, "A:undercutSF": 50, "B:undercutCF": 100, "A:undercutCF": 50 },
+    // D-1147: a feature of depth 0 owns its area too: both are role areas.
+    expect: { order: "B,A", roleAreas: "B,A", "B:undercutSF": 100, "A:undercutSF": 50, "B:undercutCF": 100, "A:undercutCF": 50 },
   },
   // Prep on the same two, the boundary x in [0, 0.12]: B clipped to 0.05..0.12 = 7 x 10 =
   // 70 SF; A is 0..0.1 less B's 0.05..0.1 = 50 SF.
@@ -829,7 +1047,64 @@ export const EARTHWORK_CASES = [
       { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_fill_material: "Select Fill", prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
       { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
     ],
-    expect: { order: "B,A", roleAreas: "B", "A:undercutSF": 50, "A:undercutCF": 50, "A:prepSF": 50 },
+    expect: { order: "B,A", roleAreas: "B,A", "A:undercutSF": 50, "A:undercutCF": 50, "A:prepSF": 50 },
+  },
+  // D-1147: laid on top. A pond (depth 0, Subgrade Prep) and a newer erosion control blanket over its east half: the
+  // blanket is no earthwork feature, takes none of the pond's prep (100 SF stays) and is no role area; the pond owns
+  // its own area. Before, the newer blanket took 50 SF of the pond's prep (C16's slope ring).
+  {
+    id: "sf-overlay-erosion-ring",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "P", name: "Pond", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "E", name: "Erosion Control", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, prep_depth_ft: 1, prep_lifts: 1, site_section: { mode: "area", kind: "site_item", item: "erosion_blanket", byOthers: false }, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "P", roleAreas: "P", "P:prepSF": 100, "E:prepSF": undefined },
+  },
+  // Asphalt (0.5 ft) and a newer striping crosshatch over part of it: the crosshatch takes nothing; the asphalt keeps
+  // its whole area and prep.
+  {
+    id: "sf-overlay-striping-on-asphalt",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "Asphalt", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "S", name: "Striping", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0, site_section: { mode: "area", kind: "site_item", item: "crosshatch", byOthers: false }, polygons: [[[0.02, 0.02], [0.06, 0.02], [0.06, 0.06], [0.02, 0.06]]] },
+    ],
+    expect: { order: "A", roleAreas: "A", "A:prepSF": 100 },
+  },
+  // Two sections overlapping (both own their area): the newer takes the overlap, as before.
+  {
+    id: "sf-two-sections-newer-takes",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "Concrete", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0, 0], [0.1, 0], [0.1, 0.1], [0, 0.1]]] },
+      { uuid: "B", name: "Asphalt", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, prep_depth_ft: 1, prep_lifts: 1, polygons: [[[0.05, 0], [0.15, 0], [0.15, 0.1], [0.05, 0.1]]] },
+    ],
+    expect: { order: "B,A", roleAreas: "B,A", "B:prepSF": 100, "A:prepSF": 50 },
+  },
+  // D-1149: "equal to the undercut depth, whichever is greater": a 10 x 10 ft square, undercut 2 ft, offset 0 ticked
+  // at depth: 2 ft beyond the edge, 14 x 14 = 196 SF (square corners), 392 CF.
+  {
+    id: "sf-undercut-offset-at-depth",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [{ uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 2, undercut_offset_ft: 0, undercut_offset_at_depth: true, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] }],
+    expect: { order: "A", "A:undercutSF": 196, "A:undercutCF": 392 },
+  },
+  // D-1149: deeper than 4 ft the sides slope 1:1: a 10 x 10 ft square undercut 5 ft digs 500 CF plus the wedge round its
+  // 40 ft edge, 40 x 5 x 5 / 2 = 500 CF: 1,000 CF; at 4 ft, vertical sides, 400 CF.
+  {
+    id: "sf-undercut-sloped-sides",
+    kind: "features",
+    scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 },
+    items: [
+      { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 5, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] },
+      { uuid: "B", name: "B", created_at: "2026-09-30T09:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 4, undercut_fill_material: "Select Fill", polygons: [[[0.5, 0.5], [0.6, 0.5], [0.6, 0.6], [0.5, 0.6]]] },
+    ],
+    expect: { order: "A,B", "A:undercutSF": 100, "A:undercutCF": 1000, "B:undercutCF": 400 },
   },
   // D-471: the older undercut's offset fringe outside its own outline stays its own. A 10 x 10 ft
   // square A, undercut 1 ft, offset 1 ft: 12 x 12 = 144 SF (square corners). A newer grading-only
@@ -843,10 +1118,10 @@ export const EARTHWORK_CASES = [
       { uuid: "A", name: "A", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, undercut_depth_ft: 1, undercut_offset_ft: 1, undercut_fill_material: "Select Fill", polygons: [[[0.02, 0.02], [0.12, 0.02], [0.12, 0.12], [0.02, 0.12]]] },
       { uuid: "B", name: "B", created_at: "2026-09-30T11:00:00Z", is_site_feature: true, role_depth_ft: 0.5, polygons: [[[0.12, 0.02], [0.22, 0.02], [0.22, 0.12], [0.12, 0.12]]] },
     ],
-    expect: { order: "B,A", roleAreas: "B", "A:undercutSF": 144, "A:undercutCF": 144 },
+    expect: { order: "B,A", roleAreas: "B,A", "A:undercutSF": 144, "A:undercutCF": 144 },
   },
-  // Q7: depth comes only from Site Features; a plain area with a depth, a feature at depth
-  // 0 (no section) and a line give grading nothing. Same times: ties by uuid, last first.
+  // Q7: depth comes only from Site Features; a plain area with a depth and a line give grading nothing. D-1147: a
+  // feature at depth 0 (a Zone) owns its area, so it is a role area too. Same times: ties by uuid, last first.
   {
     id: "sf-depth-only-from-features",
     kind: "features",
@@ -856,7 +1131,7 @@ export const EARTHWORK_CASES = [
       { uuid: "flat", name: "Lawn", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 0, polygons: [[[0, 0], [1, 0], [1, 1]]] },
       { uuid: "line", name: "L", type: "lf", created_at: "2026-09-30T10:00:00Z", is_site_feature: true, role_depth_ft: 1, polygons: [[[0, 0], [1, 0], [1, 1]]] },
     ],
-    expect: { order: "flat,copy", roleAreas: "copy" },
+    expect: { order: "flat,copy", roleAreas: "flat,copy" },
   },
   // Remaining Site: the unit square at 100 ft less [0, 0.25] x [0, 1] = 7500 SF.
   { id: "sf-remaining-site", kind: "remaining", boundary: [[0, 0], [1, 0], [1, 1], [0, 1]], excluded: [[[0, 0], [0.25, 0], [0.25, 1], [0, 1]]], scale: { feetPerNorm: 1, widthPt: 100, heightPt: 100 }, expect: { areaSF: 7500 } },
@@ -979,8 +1254,14 @@ export const EARTHWORK_CASES = [
   // D-926: a 16 in block is 3 ft deep: 12" is 2 ft. 22.5° at 16 in: 2 x 150 x 201.06 x sin 11.25° = 11,767 lb; x 1.5 / 2,000 = 8.83 SF; x 3 / 27 = 0.98.
   { id: "d926-thrust-depth", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:16|1|0-6", name: "16 in water", utility: "water", fittings: { bends: [{ angle: 22.5, count: 1 }], tees: 0 } }, expect: { "thrust:22.5:16:qty": "0.98" } },
   { id: "q19-thrust-table", kind: "line-materials", restraint: "thrust", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:12|1|0-6", name: '12" C900', utility: "water", fittings: { bends: [{ angle: 90, count: 2 }], tees: 0 } }, expect: { "thrust:90:12:qty": "2.66" } },
-  // A bend counted: the allowance is 10 %; none counted, 20 % (D-915).
-  { id: "q21-allowance-counted", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 45, count: 1 }], tees: 0 } }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 10 %" } },
+  // A bend counted: the allowance is 0 %, said in its name (D-1267; was 10 %, D-915); none counted, 20 %.
+  { id: "q21-allowance-counted", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", fittings: { bends: [{ angle: 45, count: 1 }], tees: 0 } }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 0 % (fittings counted on this line)" } },
+  // D-1267: the allowance per run on a shared line: a 51 LF run with a counted 45 beside a 1022 LF plain one, 1073 LF in
+  // all; the allowance covers the plain run's 1022 LF: 20 x 1022 / 1073 = 19.0494 % of the line's pipe (95 % of the line).
+  { id: "d1267-allowance-per-run", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", quantity: 1073, allowanceLf: 1022, fittings: { bends: [{ angle: 45, count: 1 }], tees: 0 } }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 % on 95 % of the line (fittings counted on the rest)", "fit:pipe:pvc_c900_dr18:8:pct": 19.0494, "bend:pvc_c900:45:8:qty": "1" } },
+  // D-1267 correction (the founder): restraint sets are never counted fittings: 14 sets on a 1340 LF line, no bend, tee
+  // or valve: the allowance stays 20 %.
+  { id: "d1267-restraint-not-counted", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", quantity: 1340, restrainedJoints: 14 }, expect: { "fit:pipe:pvc_c900_dr18:8:pct": 20, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %", "restraint_joint:pvc_c900:8:qty": "14" } },
   { id: "q21-allowance-none", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water" }, expect: { "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" } },
   // Valves and hydrants are counted, never in the % (D-915).
   { id: "c-valves-hydrants", kind: "line-materials", input: { role: "utility_pipe", unit: "LF", variant: "pvc_c900_dr18:8|1|0-6", name: '8" C900', utility: "water", services: [{ count: 3, sizeIn: 8, kind: "valve" }, { count: 2, sizeIn: 6, kind: "hydrant" }] }, expect: { "valve:gate:8:qty": "3", "valve:box:qty": "3", "hydrant:assembly:qty": "2" } },
@@ -1029,6 +1310,15 @@ export const EARTHWORK_CASES = [
   { id: "d1004-pit-run", kind: "site-materials", input: { role: "undercut_replace", unit: "CCY", name: "Undercut replacement fill", material: "Pit run gravel", matFactor: 1.4375 }, expect: { keys: "agg:pit_run_gravel:delivered", "agg:pit_run_gravel:delivered:qty": "QTY * 1.84" } },
   // D-1008 (Q199): a GCL is priced furnished and installed, by the SF.
   { id: "d1008-gcl", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "layer:1|installed", name: "Geosynthetic clay liner (GCL), 10 % overlap, installed (public bids)", matKey: "site:gcl" }, expect: { keys: "site:gcl:installed", "site:gcl:installed:qty": "QTY * 9", "site:gcl:installed:unit": "SF" } },
+  // D-1135: a Soil Import buys the material its fill type names (at the pit, the line's own trucks haul it);
+  // hydrated lime and portland cement are the library's agent:lime and agent:cement.
+  { id: "m5-import-select", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Select Borrow (8,065 BCY)" }, expect: { keys: "fill:select:fob", "fill:select:fob:qty": "QTY", "fill:select:fob:unit": "CY" } },
+  { id: "m5-import-sand", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Sand (100 BCY)" }, expect: { keys: "fill:sand:fob", "fill:sand:fob:qty": "QTY * 1.28", "fill:sand:fob:unit": "TON" } },
+  { id: "m5-import-engineered", kind: "site-materials", input: { role: "soil_import", unit: "LCY", name: "Soil Import — Engineered Fill (100 BCY)" }, expect: { keys: "fill:common_borrow:fob" } },
+  { id: "m5-agent-hydrated", kind: "site-materials", input: { role: "undercut_agent_1", unit: "TON", name: "Hydrated Lime (6% of dry wt @ 110 pcf)" }, expect: { keys: "agent:lime" } },
+  { id: "m5-agent-cement", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Portland Cement (5%, 110 pcf)" }, expect: { keys: "agent:cement" } },
+  // D-1144: past 20 ft a PE's design of the protective system, one a run, at its stated price.
+  { id: "m5-pe-design", kind: "line-materials", input: { role: "trench_pe_design", unit: "EA", variant: "pe_design", name: "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft", utility: "sanitary" }, expect: { "service:pe_shoring_design:unit": "EA", "service:pe_shoring_design:qty": "QTY" } },
   { id: "m5-agent", kind: "site-materials", input: { role: "stabilize_agent_1", unit: "TON", name: "Lime (5%, 110 pcf)" }, expect: { keys: "agent:lime", "agent:lime:waste": 3 } },
   { id: "m5-fabric", kind: "site-materials", input: { role: "geosynthetics", unit: "SY", variant: "geogrid", name: "Geogrid, 10% overlap" }, expect: { keys: "geogrid:site", "geogrid:site:qty": "QTY / 500", "geogrid:site:unit": "ROLL" } },
   { id: "m5-metric", kind: "site-materials", input: { role: "soil_import", unit: "LCM", name: "Soil Import" }, expect: { "fill:common_borrow:fob:qty": "QTY / 0.764554857984 * 1.28" } },
@@ -1065,7 +1355,7 @@ export const EARTHWORK_CASES = [
   { id: "d938-mixed-total-only", kind: "assembly-group", items: [{ uuid: "a", name: "Export", unit: "LCY", effective_quantity: 900, earthwork_role: "soil_export", earthwork_region_id: "balance" }, { uuid: "b", name: "Import", unit: "LCY", effective_quantity: 100, earthwork_role: "soil_import", earthwork_region_id: "balance" }], expect: { Export: "900 LCY", Import: "100 LCY" } },
   // Suggestions (D-920): 180 ft pushes, 800 ft scrapes, 4,000 ft trucks; rock is excavator whatever is above it; a steep pocket is noted.
   // A choice of scraper on the second pocket (its cell "1") of 100 and 300 CY soil, the first keeping dozer: 25 % dozer, 75 % scraper.
-  { id: "d920-suggest", kind: "suggest", pockets: [{ cy: 100, ft: 180 }, { cy: 300, ft: 800, steep: 12 }, { cy: 500, ft: 4000, rock: 200 }], expect: { methods: "cut-1:soil:dozer cut-2:soil:scraper cut-3:soil:excavator cut-3:rock:excavator", notes: 1, shares: '{"dozer":0.14285714285714285,"scraper":0.42857142857142855,"excavator":0.42857142857142855}' } },
+  { id: "d920-suggest", kind: "suggest", pockets: [{ cy: 100, ft: 180 }, { cy: 300, ft: 800, steep: 12 }, { cy: 500, ft: 4000, rock: 200 }], expect: { methods: "cut-1:soil:dozer cut-2:soil:scraper cut-3:soil:excavator cut-3:rock:excavator", notes: 1, shares: '{"excavator":0.5714285714285714,"scraper":0.42857142857142855}' } },
   // Site figures (D-918): a 100 × 100 ft cut 10 ft deep, its fill 300 ft east, 5 ft down at the centroids (105 to 95): -3.33 %.
   // A second cut on ground at 40 % reads 40 % and all steep; a 1 ft sliver of 3.7 CY is no pocket.
   { id: "d918-pockets", kind: "site-figures", expect: { pockets: 3, cy: 3703.7, avg: 10, deepest: 10, dist: 300, grade: -3.33, slope: 40, steep: 100 } },
@@ -1101,7 +1391,7 @@ export const EARTHWORK_CASES = [
     id: "d901-two-methods",
     kind: "lines",
     input: { units: "CY", regions: [{ id: "pad", label: "Pad", cutCY: 500, fillCY: 0 }, { id: null, label: "Remainder", cutCY: 750, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.25, choices: { surplus: {}, method: "scraper", push_ft: 100, method_by_feature: { pad: "dozer" }, fill_shares: null } } },
-    expect: { roles: "cut_push:pad fill:pad cut_scraper:remainder fill_push:remainder fill_scraper:remainder", "fill_push:remainder": 400, "fill_scraper:remainder": 600 },
+    expect: { roles: "cut_push:pad cut_scraper:remainder fill_push:remainder fill_scraper:remainder", "fill_push:remainder": 400, "fill_scraper:remainder": 600 },
   },
   // Typed: 25 % pushed whatever the cut says; the haul-road water follows the scraper's share at 1,000 ft.
   {
@@ -1142,7 +1432,7 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "over_excavation_onsite:pad over_excavation:pad undercut_stockpile:pad undercut_haul:pad replacement_fill:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
       "over_excavation_onsite:pad": 80,
-      "over_excavation_onsite:pad:name": "Undercut excavation, Clay, kept on site",
+      "over_excavation_onsite:pad:name": "Undercut excavation, Pad, Clay, kept on site",
       "over_excavation:pad": 20,
     },
   },
@@ -1181,7 +1471,7 @@ export const EARTHWORK_CASES = [
       "strip_reuse_fill:s1": 50,
       "soil_import:__soil_import__": 187.5,
       // D-177: the import's bank figure in brackets, 300 - 150 = 150 BCY; fill is compacted.
-      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill (150 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 1.66 t/CY compacted (spec term — confirm the material) (150 BCY)",
       "soil_import:__soil_import__:unit": "LCY",
       "cut:remainder:unit": "BCY",
       "fill:remainder:unit": "CCY",
@@ -1217,7 +1507,7 @@ export const EARTHWORK_CASES = [
     expect: {
       roles: "undercut:pad undercut_reuse_fill:pad undercut_replace:pad prep:pad cut:remainder fill:remainder soil_import:__soil_import__",
       "undercut:pad": 10,
-      "undercut:pad:name": 'Undercut excavation (24")',
+      "undercut:pad:name": 'Undercut excavation, Pad (24")',
       "undercut_reuse_fill:pad": 9,
       "undercut_reuse_fill:pad:unit": "CCY",
       "undercut_replace:pad": 10,
@@ -1239,12 +1529,12 @@ export const EARTHWORK_CASES = [
       assumptions: null,
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad cut:remainder fill:remainder",
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad prep:pad",
       "undercut:pad": 10,
       "undercut:pad:unit": "BCM",
       "undercut_haul:pad": 12.5,
       "undercut_haul:pad:unit": "LCM",
-      "undercut:pad:name": "Undercut excavation (15.2cm)",
+      "undercut:pad:name": "Undercut excavation, Pad (15.2cm)",
       "prep:pad": 9.290304,
       "prep:pad:unit": "M²",
       "prep:pad:name": "Prepare subgrade (15.2cm, 1 lift)",
@@ -1270,7 +1560,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`), "cut:remainder", "fill:remainder"].join(" "),
+      roles: ["stabilize:pad", "stabilize_mix:pad", "stabilize_spread:pad", "stabilize_compact:pad", ...c.agents.map((_, k) => `stabilize_agent_${k + 1}:pad`)].join(" "),
       "stabilize:pad": 10000 / 9,
       "stabilize:pad:unit": "SY",
       // A count stored before D-406 reads as its thickness, depth / count: here the depth itself.
@@ -1341,7 +1631,7 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       // D-983 (Q155): a scarify's own pass and its water (110 pcf x 3 % x 0.5 ft x 9 / 8.33 = 1.78 gal/SY).
-      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b cut:remainder fill:remainder",
+      roles: "undercut_native_dig:a undercut_native:a prep:a prep_scarify:b prep_moisture:b prep:b",
       "prep_scarify:b": 200,
       "prep_scarify:b:unit": "SF",
       "prep_moisture:b": 200,
@@ -1445,7 +1735,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut:pad undercut_haul:pad undercut_replace:pad cut:remainder fill:remainder",
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad",
       "undercut:pad": 20000 / 27,
       "undercut_haul:pad": (20000 / 27) * 1.25,
       "undercut_replace:pad": 20000 / 27,
@@ -1477,7 +1767,7 @@ export const EARTHWORK_CASES = [
     },
     expect: {
       // D-1037: the 74.07 BCY the native undercut is short stays as cut; the rest, 925.93 BCY, leaves.
-      roles: "undercut_native_dig:pad undercut_native:pad cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__",
+      roles: "undercut_native_dig:pad undercut_native:pad cut_export:remainder cut:remainder soil_export:__soil_export__",
       "cut_export:remainder": 1000 - (20000 / 27) * 0.1,
       "cut:remainder": (20000 / 27) * 0.1,
       "undercut_native_dig:pad": 20000 / 27,
@@ -1499,7 +1789,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: false, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 },
     },
     expect: {
-      roles: "undercut_native_dig:pad undercut_native:pad cut:remainder fill:remainder soil_import:__soil_import__",
+      roles: "undercut_native_dig:pad undercut_native:pad soil_import:__soil_import__",
       "soil_import:__soil_import__": (20000 / 27) * 0.1 * 1.25,
     },
   },
@@ -1516,7 +1806,7 @@ export const EARTHWORK_CASES = [
       soilDryPcf: 110,
     },
     expect: {
-      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad cut:remainder fill:remainder",
+      roles: "undercut_stabilize:pad undercut_stabilize_mix:pad undercut_agent_1:pad",
       "undercut_stabilize:pad": 20000 / 27,
       "undercut_stabilize:pad:name": 'Undercut and stabilize native soil, Hydrated Lime 6%, 24" in 12" lifts (2 lifts)',
       "undercut_stabilize_mix:pad": 20000 / 27,
@@ -1620,12 +1910,12 @@ export const EARTHWORK_CASES = [
       "strip:s2:name": 'Strip topsoil (4")',
       "undercut_stockpile:pad": 12.5,
       "undercut_replace:pad:name": "Undercut replacement fill, Crushed Stone #57",
-      "cut_export:park:name": "Cut to export",
-      "fill:remainder:name": "Fill",
+      "cut_export:park:name": "Cut to export, Parking",
+      "fill:remainder:name": "Fill, Remainder",
       "soil_export:__soil_export__": 125,
       "soil_export:__soil_export__:name": "Soil Export (100 BCY)",
       "soil_import:__soil_import__": 100,
-      "soil_import:__soil_import__:name": "Soil Import — Select Borrow (80 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 1.66 t/CY compacted (80 BCY)",
     },
   },
   // --- D-177: the factors as printed; each line in its true unit; the bank figure named ---
@@ -1658,17 +1948,17 @@ export const EARTHWORK_CASES = [
     expect: {
       "soil_import:__soil_import__": 287.5,
       "soil_import:__soil_import__:unit": "LCY",
-      "soil_import:__soil_import__:name": "Soil Import — Engineered Fill (230 BCY)",
+      "soil_import:__soil_import__:name": "Soil Import — Select fill (low-PI clay), 1.35 t/LCY loose, 1.66 t/CY compacted (spec term — confirm the material) (230 BCY)",
     },
   },
   // Metric, thousands separated: cut 2,500.4 BCM, no fill, swell 1.2: export 3,000.48 LCM,
-  // named "(2,500 BCM)"; the fill line in CCM.
+  // named "(2,500 BCM)"; no fill, so no Fill line at 0 (D-1068 c).
   {
     id: "lines-metric-export-name",
     kind: "lines",
     input: { units: "m3", regions: [{ id: null, label: "Remainder", cutCY: 2500.4, fillCY: 0 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.2, shrink: 1 } },
     expect: {
-      "fill:remainder:unit": "CCM",
+      "fill:remainder": undefined,
       "soil_export:__soil_export__": 3000.48,
       "soil_export:__soil_export__:unit": "LCM",
       "soil_export:__soil_export__:name": "Soil Export (2,500 BCM)",
@@ -1683,7 +1973,7 @@ export const EARTHWORK_CASES = [
     kind: "lines",
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1200, fillCY: 0 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
     expect: {
-      roles: "cut_export:remainder fill:remainder soil_export:__soil_export__",
+      roles: "cut_export:remainder soil_export:__soil_export__",
       "cut_export:remainder": 1200,
       "cut_export:remainder:unit": "BCY",
       "cut_export:remainder:name": "Cut to export",
@@ -1697,6 +1987,48 @@ export const EARTHWORK_CASES = [
     kind: "lines",
     input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1100, fillCY: 1000 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1.1 } },
     expect: { roles: "cut:remainder fill:remainder", "cut:remainder": 1100, "cut_export:remainder": undefined },
+  },
+  // --- D-1069 c: the fill's cut is held back before any cut leaves ---
+  // Cut 1,000 BCY, fill 200 CCY at shrink 1.00, the trenches' suitable spoils 50 BCY. The site exports 1,000 + 50 - 200
+  // = 850 BCY (1,062.5 LCY). The cut held for the fill is 200 x 1.00 = 200 BCY; the spoils do not take its place, so
+  // 800 BCY of cut leaves and 200 stays for the fill (before: 850 left and 150 stayed, the spoils filling the rest).
+  {
+    id: "d1069-hold-back",
+    kind: "lines",
+    input: { units: "CY", regions: [{ id: null, label: "Remainder", cutCY: 1000, fillCY: 200 }], assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 }, site: { utilitySpoils: 50 } },
+    expect: { roles: "cut_export:remainder cut:remainder fill:remainder soil_export:__soil_export__", "cut_export:remainder": 800, "cut:remainder": 200, "fill:remainder": 200, "soil_export:__soil_export__": 1062.5 },
+  },
+  // --- D-1069 a, b: a liner measured below finished grade, 2 ft thick on a 2 ft section, all in cut ---
+  // Pad 2,700 SF: its region cuts 300 BCY to subgrade, of which the liner's band is 2,700 x 2 / 27 = 200 BCY (inCutCF
+  // 5,400). The undercut line is 200 BCY, its spoil hauled off 200 x 1.25 = 250 LCY; the cut to grade left is
+  // 300 - 200 = 100 BCY, exported (125 LCY). The clay is placed at its whole thickness, 200 CCY. The liner sits on the
+  // subgrade, so the subgrade under it is still prepared: 2,700 SF.
+  {
+    id: "d1069-liner",
+    kind: "lines",
+    input: {
+      units: "CY",
+      regions: [
+        { id: "pad", label: "Pad", cutCY: 300, fillCY: 0 },
+        { id: null, label: "Remainder", cutCY: 0, fillCY: 0 },
+      ],
+      features: [{ itemId: "pad", label: "Pad", undercut: { depthFt: 2, offsetFt: 0, areaSF: 2700, volumeCF: 5400, material: "Clay liner (compacted, low-permeability)", disposition: "haul_off", replaceCF: 5400, displacedCF: 0, inCutCF: 5400, onSubgrade: true }, prep: { depthFt: 0.5, lifts: null, areaSF: 2700 } }],
+      assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 },
+    },
+    expect: {
+      // D-1083: a clay liner is tested: 2,700 SF is 0.06 acre, at least 2 density and 1 permeability tests a lift, 24 in
+      // in 6 in lifts (none given) is 4 lifts: 8 + 4.
+      roles: "undercut:pad undercut_haul:pad undercut_replace:pad liner_testing:pad prep:pad cut_export:pad soil_export:__soil_export__",
+      "liner_testing:pad:name": "Liner testing (permeability and field density): 8 density + 4 permeability tests",
+      "undercut:pad": 200,
+      "undercut:pad:name": 'Undercut excavation, Pad (24")',
+      "undercut_haul:pad": 250,
+      "undercut_replace:pad": 200,
+      "undercut_replace:pad:name": 'Clay liner, place and compact, 24"',
+      "prep:pad": 2700,
+      "cut_export:pad": 100,
+      "soil_export:__soil_export__": 125,
+    },
   },
   // Mixed, shrink 1: Pad cut 600 fill 0, Park cut 300 fill 0, Remainder cut 100 fill 600. Cut 1,000, fill 600: 400 BCY
   // leaves (x 1.25 = 500 LCY), from the regions with a surplus over their own fill, by volume, Pad 600 and Park 300:
@@ -1715,7 +2047,7 @@ export const EARTHWORK_CASES = [
       assumptions: { suitable: true, fillType: "Engineered Fill", swell: 1.25, shrink: 1 },
     },
     expect: {
-      roles: "cut_export:pad cut:pad fill:pad cut_export:park cut:park fill:park cut:remainder fill:remainder soil_export:__soil_export__",
+      roles: "cut_export:pad cut:pad cut_export:park cut:park cut:remainder fill:remainder soil_export:__soil_export__",
       "cut_export:pad": 800 / 3,
       "cut:pad": 1000 / 3,
       "cut_export:park": 400 / 3,
@@ -1943,7 +2275,7 @@ export const EARTHWORK_CASES = [
     ],
     expect: { ok: true, cutCY: 10000 / 24 / 27, fillCY: 250000 / 24 / 27 },
   },
-  // F18's acceptance on the real sheets (D-188 Q12): the benchmark's page 3 (1" = 60', 47
+  // F18's acceptance on the real sheets (D-188 Q12): P02's page 3 (1" = 60', 47
   // adopted EG contours) linked to C-200 (1" = 30') by four control points, C-200's FG as
   // adopted (15 contours, 58 spot grades) and its boundary, snapshotted 2026-10-01
   // (`c200-acceptance.json`). The engineer's table: 14,263 cut and 8,727 fill. This row pins
@@ -2023,6 +2355,11 @@ export const EARTHWORK_CASES = [
   // Δz = (FG − depth) − (EG − strip). Hand answers in cubic feet / 27.
   ...synthRows(),
   ...realShapeRows(),
+  ...tcSpotRows(),
+  ...labelCheckRows(),
+  ...spotPickRows(),
+  ...curbSourceRows(),
+  ...curbLineRows(),
 
   // --- Clearing class suggested by the trees per acre (D-1039) -------------------------------------------------
   // Medium from 400 trees an acre, heavy over 600 (the tree-density bands); shown only when heavier than the class
@@ -2037,6 +2374,7 @@ export const EARTHWORK_CASES = [
   { id: "clearing-suggest-heavy", kind: "clearing-suggest", section: { density: "light", treesPerSf: 200, treeCount: 650 }, areaSf: 43560, expect: { density: "heavy", treesPerAcre: 650 } },
   { id: "clearing-suggest-heavy-2ac", kind: "clearing-suggest", section: { density: "medium", treesPerSf: 200, treeCount: 1250 }, areaSf: 87120, expect: { density: "heavy", treesPerAcre: 625 } },
   { id: "clearing-suggest-none", kind: "clearing-suggest", section: { density: "none", treesPerSf: 200, treeCount: 700 }, areaSf: 43560, expect: { density: null, treesPerAcre: null } },
+  ...JOB_CASES,
 ];
 
 /**
@@ -2219,4 +2557,131 @@ function synthRows() {
   rows.push({ id: "synth-check-ridge", kind: "elevcheck", contours: [100, 101, 102, 101, 100], expect: { flags: "", interval: 1 } });
   rows.push({ id: "synth-check-index-contours", kind: "elevcheck", contours: [100, 105, 110, 115, 120], expect: { flags: "", interval: 5 } });
   return rows;
+}
+
+/**
+ * D-1206 C: TC (top of curb) spots, as stored (`shape_meta.label`, `curb_in`), through the app's own sheetRuns, TIN and
+ * computeVolumes. The unit page at 100 ft a side (10,000 SF), the boundary the unit square, EG flat at 11.00 from four
+ * corner spots. By hand:
+ *   A. Four TC spots printed 12.30 at the corners, the 6 in curb: each used at 12.30 - 0.50 = 11.80, FG flat at 11.80;
+ *      fill 10,000 x 0.80 = 8,000 CF, no cut. Read at face value it was 13,000.
+ *   B. The same at an 8 in curb: 12.30 - 8 / 12 = 11.6333; fill 10,000 x 0.6333 = 6,333.3 CF.
+ *   C. Each TC with a G spot printed 11.70 2 ft from it (diagonally outward, 0.02 / sqrt 2 on each axis): the same
+ *      curb, so the G spots are used and the TCs left out; FG flat at 11.70 over the boundary; fill 7,000 CF. Kept, the
+ *      TCs would put 11.80 at the corners.
+ *   D. The G spots 4 ft away: no pair, the TC kept at the corner at its used 11.80 (the proposed TIN's value there).
+ */
+function tcSpotRows() {
+  const geo = (vertices_json, shape_meta) => ({ sheet_uuid: "s", vertices_json, shape_meta, role: "add" });
+  const CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+  const eg = CORNERS.map(([x, y], i) => ({ uuid: `EG${i}`, type: "spot_elevation", name: "EG spots", geometries: [geo([[x, y]], { kind: "spot", surface: "EG", elevation: 11 })] }));
+  const tc = (curb) => ({ uuid: "TC", type: "spot_elevation", name: "TC spots", geometries: CORNERS.map(([x, y]) => geo([[x, y]], { kind: "spot", surface: "FG", elevation: 12.3, label: "TC", curb_in: curb })) });
+  // A G spot `ft` from each corner, diagonally outward (away from the square's centre).
+  const g = (ft) => {
+    const d = ft / 100 / Math.SQRT2;
+    return { uuid: "G", type: "spot_elevation", name: "G spots", geometries: CORNERS.map(([x, y]) => geo([[x === 0 ? -d : 1 + d, y === 0 ? -d : 1 + d]], { kind: "spot", surface: "FG", elevation: 11.7, label: "G", curb_in: 6 })) };
+  };
+  const boundary = { uuid: "b", type: "boundary", name: "Work Boundary", geometries: [geo(CORNERS, { kind: "boundary", closed: true })] };
+  return [
+    { id: "tc-spot-pavement", kind: "realshape", side: 100, items: [...eg, tc(6), boundary], expect: { cutCF: 0, fillCF: 8000 } },
+    { id: "tc-spot-curb-8in", kind: "realshape", side: 100, items: [...eg, tc(8), boundary], expect: { cutCF: 0, fillCF: 6333.3 } },
+    { id: "tc-g-pair-uses-g", kind: "realshape", side: 100, items: [...eg, tc(6), g(2), boundary], expect: { cutCF: 0, fillCF: 7000 } },
+    { id: "tc-g-apart-keeps-tc", kind: "realshape", side: 100, items: [...eg, tc(6), g(4), boundary], tinOnly: { surface: "FG", at: [0, 0] }, expect: { egZAt: 11.8 } },
+  ];
+}
+
+/**
+ * D-1213: a typed contour against the printed label beside it. A contour drawn along y = 100 pt from x 100 to 500 pt,
+ * its First elevation typed as 100 (the typed value wins); a label "98" printed 10 pt off the line (within the
+ * pre-fill's 36 pt reach): the contour stays at 100 and is flagged, label 98. A label "100" beside it: no flag. A label
+ * "98" 60 pt away (out of reach): no flag. Two decimals ("98.25") are a spot's, never a contour's: no flag.
+ */
+function labelCheckRows() {
+  const line = [{ x: 100, y: 100 }, { x: 500, y: 100 }];
+  const contour = { geometry: "c100", elevation: 100, points: line };
+  return [
+    { id: "label-check-typed-100-label-98", kind: "labelcheck", contours: [contour], labels: [{ str: "98", c: { x: 300, y: 110 } }], expect: { flagged: 1, "c100:label": 98, "c100:elevation": 100 } },
+    { id: "label-check-agrees", kind: "labelcheck", contours: [contour], labels: [{ str: "100", c: { x: 300, y: 110 } }], expect: { flagged: 0 } },
+    { id: "label-check-out-of-reach", kind: "labelcheck", contours: [contour], labels: [{ str: "98", c: { x: 300, y: 160 } }], expect: { flagged: 0 } },
+    { id: "label-check-spot-value-ignored", kind: "labelcheck", contours: [contour], labels: [{ str: "98.25", c: { x: 300, y: 110 } }], expect: { flagged: 0 } },
+  ];
+}
+
+/**
+ * D-1206 B: Pick reads the elevation printed under a click, with its type (C12's callouts, sheet points): "TC 13.10"
+ * printed over "G 12.60" (10 pt apart, 8 pt high, 30 pt wide). A click on the TC reads TC 13.10, and both spots of the
+ * callout go to its middle (843, 867) so the TC/G pair rule finds them; a click on the G reads G 12.60, same middle.
+ * "TP 12.80" alone: TP, no callout. "8.9": a plain value, no type. "12.30" with "TC" printed apart beside it: TC 12.30.
+ * Blank paper 60 pt away: nothing.
+ */
+function spotPickRows() {
+  const L = (str, x, y, w = 30) => ({ str, c: { x, y }, w, h: 8 });
+  const callout = [L("TC 13.10", 844, 862), L("G 12.60", 842, 872)];
+  return [
+    { id: "spot-pick-tc-callout", kind: "spotpick", at: { x: 845, y: 861 }, labels: callout, expect: { value: 13.1, label: "TC", anchorX: 843, anchorY: 867 } },
+    { id: "spot-pick-g-callout", kind: "spotpick", at: { x: 841, y: 873 }, labels: callout, expect: { value: 12.6, label: "G", anchorX: 843, anchorY: 867 } },
+    { id: "spot-pick-tp", kind: "spotpick", at: { x: 828, y: 667 }, labels: [L("TP 12.80", 828, 667)], expect: { value: 12.8, label: "TP", anchorX: -1 } },
+    { id: "spot-pick-plain", kind: "spotpick", at: { x: 802, y: 856 }, labels: [L("8.9", 802, 856, 12)], expect: { value: 8.9, label: "none" } },
+    { id: "spot-pick-word-apart", kind: "spotpick", at: { x: 520, y: 400 }, labels: [L("TC", 500, 400, 10), L("12.30", 520, 400, 20)], expect: { value: 12.3, label: "TC" } },
+    { id: "spot-pick-blank", kind: "spotpick", at: { x: 900, y: 900 }, labels: [L("TP 12.80", 828, 667)], expect: { value: -1 } },
+  ];
+}
+
+/**
+ * D-1214: a TC spot's curb found on the sheet, through the app's own sheetRuns (scale passed as Calculate passes it).
+ * The unit page at 100 ft a side. Each row reads the proposed TIN at the lone TC spot, its used elevation:
+ *   1. A TC 13.35 / G 13.00 pair at (0.2, 0.2), one curb of 0.35 ft = 4.2 in; a lone TC 13.00 at (0.5, 0.5), 42.4 ft
+ *      away (within 100): 13.00 - 0.35 = 12.65.
+ *   2. The pair at (0, 0) and the lone TC at (0.9, 0.9), 127.3 ft away (beyond 100); a curb and gutter line along
+ *      y = 0.9 under the spot, Reveal 6 in: 13.00 - 0.50 = 12.50.
+ *   3. As 2 with a 4 in x 12 in curb, Reveal 4 in: 13.00 - 4 / 12 = 12.6667.
+ *   4. A lone TC 13.00 with no pair and no curb line: the 6 in default, 12.50.
+ * Plain proposed spots at 12.00 make each surface.
+ */
+function curbSourceRows() {
+  const geo = (vertices_json, shape_meta) => ({ sheet_uuid: "s", vertices_json, shape_meta, role: "add" });
+  const spot = (x, y, elevation, label) => geo([[x, y]], { kind: "spot", surface: "FG", elevation, ...(label ? { label } : {}) });
+  const tcs = (...g) => ({ uuid: "TC", type: "spot_elevation", name: "TC spots", geometries: g });
+  const gsp = (...g) => ({ uuid: "G", type: "spot_elevation", name: "G spots", geometries: g });
+  const plain = (...pts) => ({ uuid: "FG", type: "spot_elevation", name: "Proposed spots", geometries: pts.map(([x, y]) => spot(x, y, 12)) });
+  const curbLine = (revealIn, name) => ({ uuid: `curb${revealIn}`, type: "lf", name, is_site_feature: true, site_section: { mode: "line", type: "curb_gutter", shape: { kind: "curb_gutter", heightIn: 18, revealIn, topWidthIn: 6, baseWidthIn: 6, backBatterIn: 0, gutterWidthIn: 24, lipIn: 6, edgeIn: 6 } }, geometries: [geo([[0.6, 0.9], [1, 0.9]], null)] });
+  return [
+    { id: "curb-from-pair-42ft", kind: "realshape", side: 100, items: [tcs(spot(0.2, 0.2, 13.35, "TC"), spot(0.5, 0.5, 13, "TC")), gsp(spot(0.2, 0.2, 13, "G")), plain([0.9, 0.1], [0.1, 0.9])], tinOnly: { surface: "FG", at: [0.5, 0.5] }, expect: { egZAt: 12.65 } },
+    { id: "curb-from-line-6in-reveal", kind: "realshape", side: 100, items: [tcs(spot(0, 0, 13.35, "TC"), spot(0.9, 0.9, 13, "TC")), gsp(spot(0, 0, 13, "G")), plain([0.9, 0.1], [0.1, 0.9]), curbLine(6, '6" C&G')], tinOnly: { surface: "FG", at: [0.9, 0.9] }, expect: { egZAt: 12.5 } },
+    { id: "curb-from-line-4in-reveal", kind: "realshape", side: 100, items: [tcs(spot(0, 0, 13.35, "TC"), spot(0.9, 0.9, 13, "TC")), gsp(spot(0, 0, 13, "G")), plain([0.9, 0.1], [0.1, 0.9]), curbLine(4, '4" x 12" curb')], tinOnly: { surface: "FG", at: [0.9, 0.9] }, expect: { egZAt: 13 - 4 / 12 } },
+    { id: "curb-default-6in", kind: "realshape", side: 100, items: [tcs(spot(0.5, 0.5, 13, "TC")), plain([0.9, 0.1], [0.1, 0.9], [0.1, 0.1])], tinOnly: { surface: "FG", at: [0.5, 0.5] }, expect: { egZAt: 12.5 } },
+  ];
+}
+
+/**
+ * D-1216: a curb line's backfill and base, by hand. 100 LF of 6 in curb and gutter, 16 in total (the founder's detail:
+ * a 6 in curb over a 10 in gutter), section 6 in + 24 in wide: concrete 6 x 16 + 24 x 10 = 336 sq in = 0.08642 CY/LF,
+ * x 100 x 1.05 waste = 9.0741 CY.
+ *   Backfill behind curb, 12 in of fill sand (interim rule: width x the curb's total height): 1 ft x 16/12 ft = 1.3333
+ *   CF/LF, 100 LF = 133.33 CF = 4.9383 CY; fill sand sold by the ton at Soil Import's 1.43 t a loose CY: 7.0617 TON.
+ *   Base, cement-stabilized sand 30 in x 4 in: 2.5 x 0.3333 x 100 = 83.333 CF = 3.0864 CY x 1.62 t/CY (120 pcf) = 5.0
+ *   TON. The same base as dense-graded aggregate at 140 pcf (1.89 t/CY): 5.8333 TON.
+ *   Native soil behind the curb buys nothing: no material on the line.
+ */
+function curbLineRows() {
+  const section = (base, backfill) => ({
+    mode: "line",
+    type: "curb_gutter",
+    profile: { curbWidthIn: 6, curbHeightIn: 16, gutterWidthIn: 24, gutterDepthIn: 10 },
+    shape: { kind: "curb_gutter", heightIn: 16, revealIn: 6, topWidthIn: 6, baseWidthIn: 6, backBatterIn: 0, gutterWidthIn: 24, lipIn: 10, edgeIn: 10 },
+    method: "machine",
+    matKey: null,
+    wastePct: 5,
+    concrete: { byOthers: false },
+    base: { matKey: base, widthIn: 30, depthIn: 4, byOthers: false },
+    bars: null,
+    joints: { contractionFt: 0, expansionFt: 0, sealant: false, byOthers: false },
+    excavation: false,
+    backfill: { widthIn: 12, matKey: backfill, byOthers: false },
+    compaction: false,
+  });
+  return [
+    { id: "curb-backfill-fill-sand-css-base", kind: "curbline", lengthLf: 100, section: section("stone:cement_stabilized_sand", "fill:sand:fob"), expect: { "curb_concrete:qty": (336 / 144 / 27) * 100 * 1.05, "curb_backfill:qty": 100, "curb_backfill:matQty": (100 * (16 / 12)) / 27 * 1.43, "curb_backfill:matUnit": "TON", "curb_base:qty": (2.5 * (4 / 12) * 100) / 27 * 1.62 } },
+    { id: "curb-base-aggregate-140pcf", kind: "curbline", lengthLf: 100, section: section("aggregate_base", "soil:native"), expect: { "curb_base:qty": (2.5 * (4 / 12) * 100) / 27 * ((140 * 27) / 2000) } },
+  ];
 }

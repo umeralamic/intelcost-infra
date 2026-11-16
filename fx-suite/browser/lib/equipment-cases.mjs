@@ -30,6 +30,59 @@ export const EQUIPMENT_CASES = [
   { id: "eq-solve-lift-8-days", kind: "solve", rates: [563, 1370, 2766], days: 8, hours: 64, expect: { cost: 2740, label: "2 weeks", alt: "one 4-week", altCost: 2766 } },
   { id: "eq-solve-blank-week", kind: "solve", rates: [1040, null, 7950], days: 8, hours: 64, expect: { cost: 7950, label: "one 4-week", skipped: ["wk"] } },
   { id: "eq-solve-no-rates", kind: "solve", rates: [null, null, null], days: 8, hours: 64, expect: { none: true } },
+
+  // D-1285 Q19 (f): labour overtime at each spread's own work day (`overtime.ts:overtimeBySpread`), worked by hand. The
+  // FLSA rule (D-961): over 40 h a week at time and a half, so the premium is labour x 0.5 x (overtime h / week h). 5 days.
+  // ot-1: an 8 h project, no spread of its own day: 8 x 5 = 40 h, no overtime: $0 (as `overtimePremium` alone).
+  { id: "ot-8h-project-no-spread-day", kind: "overtime", rule: { overtime: true, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [], expect: { premium: 0, same: true } },
+  // ot-2: an 8 h project with $4,000 of its $10,000 labour on spreads fixed at 10 h (the older copies): 50 h weeks, 10 h
+  //   over: 4,000 x 0.5 x 10 / 50 = $400; the other $6,000 at 8 h: $0. Before (f): $0.
+  { id: "ot-spread-10h-on-8h-project", kind: "overtime", rule: { overtime: true, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [{ hoursPerDay: 10, labor: 4000 }, { hoursPerDay: 8, labor: 1000 }], expect: { premium: 400, same: false } },
+  // ot-3: a 10 h project with $3,000 of $10,000 on an 8 h spread: 7,000 x 0.5 x 10 / 50 = $700; the 8 h spread $0. Before
+  //   (f): 10,000 x 0.1 = $1,000.
+  { id: "ot-spread-8h-on-10h-project", kind: "overtime", rule: { overtime: true, daily: false, daysPerWeek: 5 }, workDay: 10, labor: 10000, own: [{ hoursPerDay: 8, labor: 3000 }], expect: { premium: 700, same: false } },
+  // ot-4: daily overtime too (over 8 h a day), an 8 h project, $5,000 of $6,000 on a 10 h spread: max(50 - 40, 2 x 5) = 10 h
+  //   of 50: 5,000 x 0.5 x 0.2 = $500; the rest $0.
+  { id: "ot-daily-spread-10h", kind: "overtime", rule: { overtime: true, daily: true, daysPerWeek: 5 }, workDay: 8, labor: 6000, own: [{ hoursPerDay: 10, labor: 5000 }], expect: { premium: 500, same: false } },
+  // ot-5: overtime off: $0 whatever the spreads.
+  { id: "ot-off", kind: "overtime", rule: { overtime: false, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [{ hoursPerDay: 10, labor: 4000 }], expect: { premium: 0, same: true } },
+
+  // D-1286 (B7): a library rate's age (`rateAge.ts`), amber past 12 calendar months, red past 24, worked by hand. Exactly
+  // 12 (or 24) months is not yet over; one day more is. Days: 2025-11-16 → 2026-11-16 is 365 (2026 not a leap year).
+  { id: "b7-age-12-months-exact", kind: "rate-age", asOf: "2025-11-16", today: "2026-11-16", expect: { level: "fresh", days: 365, months: 12 } },
+  { id: "b7-age-12-months-one-day-over", kind: "rate-age", asOf: "2025-11-15", today: "2026-11-16", expect: { level: "amber", days: 366, months: 12 } },
+  // 2024-11-16 → 2026-11-16: 365 + 365 = 730 days (no Feb 29 between).
+  { id: "b7-age-24-months-exact", kind: "rate-age", asOf: "2024-11-16", today: "2026-11-16", expect: { level: "amber", days: 730, months: 24 } },
+  { id: "b7-age-24-months-one-day-over", kind: "rate-age", asOf: "2024-11-15", today: "2026-11-16", expect: { level: "red", days: 731, months: 24 } },
+  // The plan's eq-stale row (§9) on 2026-11-15: Mar 1 2025 is 624 days (amber), Oct 1 2026 45 (fresh), Mar 14 2024 976 (red).
+  { id: "b7-eq-stale-mar-2025", kind: "rate-age", asOf: "2025-03-01", today: "2026-11-15", expect: { level: "amber", days: 624, months: 20 } },
+  { id: "b7-eq-stale-oct-2026", kind: "rate-age", asOf: "2026-10-01", today: "2026-11-15", expect: { level: "fresh", days: 45, months: 1 } },
+  { id: "b7-eq-stale-mar-2024", kind: "rate-age", asOf: "2024-03-14", today: "2026-11-15", expect: { level: "red", days: 976, months: 32 } },
+  // A Feb 29 as-of: 12 months on is Feb 28 2025 (the month's last day), so that day is not over; Mar 1 is.
+  { id: "b7-age-feb-29-exact", kind: "rate-age", asOf: "2024-02-29", today: "2025-02-28", expect: { level: "fresh", days: 365, months: 12 } },
+  { id: "b7-age-feb-29-one-day-over", kind: "rate-age", asOf: "2024-02-29", today: "2025-03-01", expect: { level: "amber", days: 366, months: 12 } },
+  { id: "b7-age-no-date", kind: "rate-age", asOf: null, today: "2026-11-16", expect: { none: true } },
+  // A class's date by its basis, from the bench's release (migration d1286b7c4f30): WT-4000 rented, rent_as_of 2025-03-01
+  // (`2025` on W25, Mar 2025): amber; AW-AB-RT-125 has no rental rate, so a rental prices owned (D-811): FEMA 2025,
+  // owned_as_of 2025-07-01, 503 days, amber; AW-AB-EL-30 (`3/2023-3/2024` on COSTARS, to Mar 14 2024): red;
+  // EX-CRAWL-20T rented (A26, read Oct 2026, 2026-10-01): fresh.
+  { id: "b7-class-wt-4000-rental", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2025-03-01", level: "amber" } },
+  // D-1289 (Q26): FEMA 2025 is the newest FEMA edition the library holds, so its owned rate reads fresh (was amber).
+  { id: "b7-class-owned-fallback", kind: "class-age", key: "AW-AB-RT-125", mode: "rental", today: "2026-11-16", expect: { basis: "owned", asOf: "2025-07-01", level: "fresh", days: 503, femaCurrent: 2025 } },
+  // D-1289 (Q26): a newer FEMA edition (2026) loaded beside it: the 2025 rate is aged by its date again, 503 days, amber.
+  { id: "q26-fema-newer-edition", kind: "class-age", key: "AW-AB-RT-125", mode: "rental", today: "2026-11-16", femaNewer: 2026, expect: { basis: "owned", asOf: "2025-07-01", level: "amber", days: 503, femaCurrent: null } },
+  { id: "b7-class-costars-red", kind: "class-age", key: "AW-AB-EL-30", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2024-03-14", level: "red" } },
+  { id: "b7-class-ex20-fresh", kind: "class-age", key: "EX-CRAWL-20T", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2026-10-01", level: "fresh" } },
+  // D-1289 (Q27): a rate the estimate entered is aged by its own entry date (WT-4000 with a project 4-week rate entered
+  //   today: fresh, the estimate's); entered 2025-06-01: 533 days, 17 months on 2026-11-16, amber. Was "no date, no badge".
+  { id: "b7-class-own-rate-no-badge", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", classOverride: { field: "rent_4wk", value: 8000 }, expect: { basis: "rent", asOf: "2026-11-16", level: "fresh", own: "project" } },
+  { id: "q27-own-rate-amber", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", classOverride: { field: "rent_4wk", value: 8000, at: "2025-06-01T00:00:00Z" }, expect: { basis: "rent", asOf: "2025-06-01", level: "amber", own: "project", days: 533 } },
+  // D-1289 (Q27): its own Needs attention block, not the library's: WT-4000's own rate (2025-06-01) in the own list and out
+  //   of the library list (which keeps PV-STABILIZER, EP 2022, red); EX-CRAWL-20T, fresh, in neither.
+  { id: "q27-own-block", kind: "stale-own-list", today: "2026-11-16", classOverride: { key: "WT-4000", field: "rent_4wk", value: 8000, at: "2025-06-01T00:00:00Z" }, uses: [{ key: "WT-4000", basis: "rent" }, { key: "PV-STABILIZER-WR2400", basis: "owned" }, { key: "EX-CRAWL-20T", basis: "rent" }], expect: { own: ["WT-4000|rent|2025-06-01|amber"], library: ["PV-STABILIZER-WR2400|owned|2022-12-01|red"] } },
+  // Needs attention lists each stale class once per basis, however many lines use it: WT-4000 rented on 24 lines, PV-STABILIZER
+  // owned (EP 2022, red) twice, EX-CRAWL-20T (fresh) on 5: two entries, red first.
+  { id: "b7-needs-attention-once", kind: "stale-list", today: "2026-11-16", uses: [...Array(24).fill({ key: "WT-4000", basis: "rent" }), { key: "PV-STABILIZER-WR2400", basis: "owned" }, { key: "PV-STABILIZER-WR2400", basis: "owned" }, ...Array(5).fill({ key: "EX-CRAWL-20T", basis: "rent" })], expect: { list: ["PV-STABILIZER-WR2400|owned|2022-12-01|red", "WT-4000|rent|2025-03-01|amber"] } },
   { id: "eq-solve-fixed-day", kind: "solve", rates: [1040, 2927, 7950], days: 7.6526, hours: 61.2205, fixed: "day", expect: { cost: 8320, label: "8 days" } },
 
   // One machine, the plan's worked examples (8-hr day, catalog path): plan §3.5, §3.6.
@@ -191,6 +244,107 @@ export const EQUIPMENT_CASES = [
   // Its top tier (2,521 LCY/day and up) as A6's: the 4.5 yd loader, 22 trucks, the foreman's 0.5 share, no spotter.
   { id: "clearing-haul-top-tier", kind: "starter-role", role: "clearing_haul", tier: 11, expect: { activity: "A95", loaders: "WL-MED-45Y×1", trucks: 22, foremen: 0.5, spotters: 0 } },
 
+  // --- D-1287 (Plan B B2, B3, B8): the rental's extras, the sales tax on equipment rental, the ratios, owned standby -------
+  // Worked by hand from docs/tasks/equipment_library_improvements.md §9 and 34 TAC §3.294 (read 2026-11-16). Common: the
+  // 20-25 t excavator EX-CRAWL-20T, day $1,040 / week $2,927 / 4-week $7,950, owned $97.76/hr without fuel (library, A);
+  // one 4-week rental is 160 hr over 20 work days at 8 hr; Houston 8.25 % (D-1139). The Texas rule as the bench's
+  // eqlib.eq_rental_tax_state row holds it (checked against the row by `quantity-table.py d1287`). The tax is the Bid
+  // summary's own line: the machines' taxable parts summed, then taxed and rounded to the cent once (bidSummary.ts
+  // `toCents`), so the §9 waiver row reads 8,904 x 0.0825 = 734.58, not 655.88 + 78.71 = 734.59 rounded per part.
+  // Each row sets the extras it needs (an estimate's own values, as the api's bundle would carry them); a row that sets
+  // none prices as before D-1287 (no setting in the hand-built bundle is read as off).
+  //
+  // eq-tax-rental: one 4-week rental, no waiver or fee: 7,950 x 0.0825 = 655.875 -> $655.88; taxable 7,950.
+  { id: "eq-tax-rental", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 7950, taxable: 7950, tax: 655.88, applies: true } },
+  // eq-tax-exempt-job: the same on a MUD's job (Public, New construction: an exempt owner, the project's Tax exempt on):
+  //   Texas lists no exempt job type, and the checkbox does not reach rentals (§3.294(e)): still $655.88; the material
+  //   tax line is $0 (exempt). Not $0.
+  { id: "eq-tax-exempt-job", kind: "rental", ...DIESEL, rule: "TX", jobType: "nonresidential_new", taxExempt: true, extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { taxable: 7950, tax: 655.88, materialTaxPct: 0, applies: true } },
+  // eq-tax-untabled: the same in Georgia before its row is read (grade F): $0, and Needs attention's words.
+  { id: "eq-tax-untabled", kind: "rental", ...DIESEL, rule: "GA", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { taxable: 0, tax: 0, applies: false, notLoaded: "Rental tax rule for GA not loaded: 0 %" } },
+  // eq-tax-owned: the machine owned, 160 hr: 160 x 97.76 = 15,641.60, no lease, no tax; the 12 % waiver is not taken on it.
+  { id: "eq-tax-owned", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 15641.6, waiver: 0, envFee: 0, taxable: 0, tax: 0 } },
+  // eq-tax-delivery: the dealer's delivery and pickup, $550 + $550 (a typed mob of $1,100): (d)(3), 1,100 x 0.0825 = $90.75;
+  //   the rental's own taxable 7,950 beside it (all taxed 9,050 x 0.0825 = 746.625 -> $746.63).
+  { id: "eq-tax-delivery", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 1 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, deliveryTax: 90.75, taxable: 9050, tax: 746.63 } },
+  // eq-tax-delivery-hauler: the same haul billed by a third-party carrier: not taxable, $0; the rental's 655.88 alone.
+  { id: "eq-tax-delivery-hauler", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, deliveryTax: 0, taxable: 7950, tax: 655.88, deliveredBy: "third_party" } },
+  // D-1289 (Q14): IntelCost's setting 2, delivery by the transport class. EX-CRAWL-20T is lowboy-legal (a hauler): its
+  //   $1,100 not taxed, as eq-tax-delivery-hauler. AW-1MAN-12 is delivered-by-supplier (the dealer): 20 work days on the
+  //   4-week $466 (electric, no fuel), a typed $300 delivery taxed: 466 + 300 = 766 x 0.0825 = 63.195 -> $63.20.
+  { id: "q14-class-lowboy-hauler", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 2 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, taxable: 7950, tax: 655.88, deliveredBy: "third_party" } },
+  { id: "q14-class-supplier-dealer", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 2 }, input: { classKey: "AW-1MAN-12", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 300 }, expect: { equipment: 466, delivery: 300, deliveryTax: 24.75, taxable: 766, tax: 63.2, deliveredBy: "dealer" } },
+  // D-1289 (Q14, the founder's correction, 2026-11-16 16:35): IntelCost's 3, delivery by ownership. EX-CRAWL-20T rented
+  //   (a lowboy class): the dealer's $1,100 delivery taxed, as eq-tax-delivery (9,050 x 0.0825 = 746.625 -> $746.63);
+  //   owned, 160 hr at 97.76 with the same $1,100 move: the company's own trucks or a hauler, nothing taxed.
+  { id: "q14-ownership-rented", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 3 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, taxable: 9050, tax: 746.63, deliveredBy: "dealer" } },
+  { id: "q14-ownership-owned", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 3 }, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, taxable: 0, tax: 0, deliveredBy: "own" } },
+  // D-1289 (Q12, the founder 2026-11-16 16:35): the exported lines' tax spread by largest remainder. Three equal shares of
+  //   $0.10: 3.33 cents each, floors 3 + 3 + 3, the cent left to the earliest: 0.04, 0.03, 0.03. Four lines (the waiver
+  //   row's 8,904, a dealer delivery's 1,100, none, the shared excavator's 2,333.07) at 8.25 %: the sheet's fold
+  //   toCents(12,337.07 x 0.0825 = 1,017.808275) = 1,017.81; parts 734.58, 90.75, 0, 192.478275 -> floors 734.58, 90.75,
+  //   0, 192.47, the cent left to the largest remainder (the last): 192.48; they add to 1,017.81 exactly.
+  { id: "q12-spread-ties", kind: "spread", shares: [1, 1, 1], total: 0.1, expect: { parts: [0.04, 0.03, 0.03], sum: 0.1 } },
+  { id: "q12-spread-lines", kind: "spread", shares: [8904, 1100, 0, 2333.07], total: 1017.81, expect: { parts: [734.58, 90.75, 0, 192.48], sum: 1017.81 } },
+  // D-1289 (Q14): the company's 1 (the dealer) over the class: the lowboy's $1,100 taxed again, as eq-tax-delivery.
+  { id: "q14-company-dealer-over-class", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 1 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, taxable: 9050, tax: 746.63, deliveredBy: "dealer" } },
+  // D-1289 (Q18): no project state, the company's (TX, the api's from: "workspace"): taxed as eq-tax-delivery-hauler, flagged;
+  //   no state anywhere: 0, and the flag asks for a default state.
+  { id: "q18-company-state", kind: "rental", ...DIESEL, rule: "TX", ruleFrom: "workspace", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { taxable: 7950, tax: 655.88, applies: true, companyState: "No state on the project: the company's state (TX) is used for the sales tax on equipment rental", notLoaded: null } },
+  { id: "q18-no-state", kind: "rental", ...DIESEL, rule: "none", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { tax: 0, applies: false, companyState: null, notLoaded: "No state on the project or the company: sales tax on equipment rental not charged. Set the company's default state (Settings › General), or the project's" } },
+  // D-1289 (Q12): the exported bid folds the tax into the line: the waiver row's taxable 8,904 x 0.0825 = 734.58 on the
+  //   line's equipment (withRentalTax), Direct cost up by the same 734.58, no line of its own, the Bid total unchanged.
+  { id: "q12-fold-into-unit-price", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { tax: 734.58, lineTaxDelta: 734.58, foldDirectDelta: 734.58, foldHasLine: false, foldTotalSame: true } },
+  // eq-tax-operated: an operated tri-axle dump truck on one hourly rate, 8 hr: $106.14 x 8 = $849.12, a service under
+  //   §3.294(c)(2): $0; no waiver or fee on it.
+  { id: "eq-tax-operated", kind: "rental", setting: {}, rule: "TX", extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "DT-OP-3AXLE", mode: "operated", period: "hr", hours: 8, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, travelHours: 0 }, expect: { equipment: 849.12, waiver: 0, envFee: 0, taxable: 0, tax: 0 } },
+  // eq-waiver-default: the 12 % default waiver on the 4-week: 954.00; taxable 7,950 + 954 = 8,904; tax 734.58; rent + waiver +
+  //   tax $9,638.58 (was $7,950). The fee off here (it has its own row).
+  { id: "eq-waiver-default", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { waiver: 954, taxable: 8904, tax: 734.58, rentWaiverTax: 9638.58 } },
+  // eq-waiver-own: "Own insurance (0 %)": 7,950 + 655.88 = $8,605.88.
+  { id: "eq-waiver-own", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { waiver: 0, rentWaiverTax: 8605.88 } },
+  // eq-env-fee: 1.3 % capped at $75 a line: the 4-week 7,950 x 0.013 = 103.35 -> $75 (capped); the 6 in self-priming
+  //   diesel trash pump PMP-SP-6D one week (5 days, 40 hr), $1,112 x 0.013 = 14.456 -> $14.46 (under the cap). Taxable
+  //   with the rental (the lessor's fee, read under §3.294(d), C): 7,950 + 75 = 8,025 -> 662.06; 1,126.456 -> 92.93.
+  { id: "eq-env-fee", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 1.3, cap: 75 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { envFee: 75, envCapped: true, taxable: 8025, tax: 662.06 } },
+  { id: "eq-env-fee-pump-week", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 1.3, cap: 75 }, input: { classKey: "PMP-SP-6D", mode: "rental", period: "auto", hours: 40, workDays: 5, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 1112, envFee: 14.46, envCapped: false, taxable: 1126.46, tax: 92.93 } },
+  // eq-ratio-derive (B8): a company machine rated by the day only, $500: week 500 x 2.90 = $1,450; 4-week 1,450 x 2.73 =
+  //   $3,958.50 (the library's medians, release 47's settings); priced by the week and by the 4-week (fixed periods).
+  { id: "eq-ratio-derive-week", kind: "rental", setting: {}, custom: { classes: [{ equip_key: "U-TEST-DAY", category: "Company equipment", type: "TEST Compactor", size_class: "TEST day only", rent_day: 500, fuel_type: "None", pricing_kind: "duration", default_mode: "rental", custom: true }], activities: [], production: [] }, input: { classKey: "U-TEST-DAY", mode: "rental", period: "wk", hours: 40, workDays: 5, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 1450, derived: ["wk", "4wk"] } },
+  { id: "eq-ratio-derive-4wk", kind: "rental", setting: {}, custom: { classes: [{ equip_key: "U-TEST-DAY", category: "Company equipment", type: "TEST Compactor", size_class: "TEST day only", rent_day: 500, fuel_type: "None", pricing_kind: "duration", default_mode: "rental", custom: true }], activities: [], production: [] }, input: { classKey: "U-TEST-DAY", mode: "rental", period: "4wk", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 3958.5, derived: ["wk", "4wk"] } },
+  // The ratios the library carries since migration d1287c6e2a91 (release 47): 2.90 and 2.73.
+  { id: "eq-ratio-settings", kind: "ratios", expect: { weekPerDay: 2.9, fourWeekPerWeek: 2.73 } },
+  // A monthly-only class (a 12 x 60 site office, $675 a 4-week) is never priced by a derived day: 5 days still bill the 4-week.
+  { id: "eq-ratio-no-shorter", kind: "rental", setting: {}, input: { classKey: "OFF-12x60", mode: "rental", period: "auto", hours: 40, workDays: 5, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 675, derived: [] } },
+  // eq-standby-owned (B8): the owned 20 t on Plan A's rain-june-ew lost days, (3.6 + 4.928) x 5/7 = 6.0914 (exact 42.64 / 7),
+  //   over June's 30/7 weeks: 97.76 x 0.22 = 21.5072/hr x 8 hr x 6.0914 = $1,048.08 (48.73 hr, under 40 a week).
+  { id: "eq-standby-owned", kind: "standby", rate: 97.76, lostDays: 42.64 / 7, hoursPerDay: 8, weeks: 30 / 7, expect: { rate: 21.5072, hours: 48.73, cost: 1048.08 } },
+  // The week's cap: 7 lost days in one week: 56 hr capped at 40: 21.5072 x 40 = $860.29.
+  { id: "eq-standby-owned-week-cap", kind: "standby", rate: 97.76, lostDays: 7, hoursPerDay: 8, weeks: 1, expect: { hours: 40, cost: 860.29 } },
+  // Wired, and $0 until lost days exist: the owned machine with no lost days prices exactly as eq-tax-owned (no standby).
+  { id: "eq-standby-owned-none-yet", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { equipment: 15641.6, standby: null } },
+  // B8 (c): the owned rate's source: the library's FEMA 2025 schedule is named a reimbursement rate; a company's own rate
+  //   (My equipment's page, the workspace layer) is read first and named so.
+  { id: "eq-owned-fema-label", kind: "owned-source", key: "EX-CRAWL-20T", expect: { source: "FEMA reimbursement rate", rate: 97.76 } },
+  { id: "eq-owned-company-first", kind: "owned-source", key: "EX-CRAWL-20T", company: 85, expect: { source: "Company rate", rate: 85 } },
+
+  // The independent check's additions (D-1287, Phase C).
+  // eq-tax-shared-adds-back: a shared 20 t excavator (rented, the defaults: waiver 12 %, fee 1.3 % capped $75, delivery by the
+  //   dealer) serving two lines, 96 + 64 = 160 machine-hours: one 4-week. Its taxable part 7,950 + 954 + 75 + its delivery
+  //   and pickup 1,100 (lowboy, 50 mi) = 10,079; waiver 954; fee 75. The lines' shares add back to the machine's own.
+  { id: "eq-tax-shared-adds-back", kind: "shared-parts", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 1.3, cap: 75, byDealer: 1 }, pooled: false, expect: { machineTaxable: 10079, hostsTaxable: 10079, hostsWaiver: 954, hostsEnv: 75 } },
+  // eq-tax-pooled-adds-back: the same 160 hours as a host (96 h) and a machine pooled onto it (64 h): the group's booking is
+  //   the host's extended to 160 h, so the group carries the same taxable part, 10,079, spread over its two machines' lines.
+  { id: "eq-tax-pooled-adds-back", kind: "shared-parts", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 1.3, cap: 75, byDealer: 1 }, pooled: true, expect: { hostsTaxable: 10079, hostsWaiver: 954, hostsEnv: 75 } },
+  // eq-tax-no-double: Equipment ticked on the general sales tax beside Material: $1,000 material, $10,000 equipment of which
+  //   $8,000 is the rentals' taxable part, taxed on its own line: general (1,000 + 2,000) x 0.0825 = 247.50; rentals
+  //   8,000 x 0.0825 = 660.00; never 1,072.50 + 660.
+  { id: "eq-tax-no-double", kind: "bid-ticks", totals: { directCost: 11000, materialCost: 1000, equipmentCost: 10000, rentalTax: { taxable: 8000, applies: true } }, ticks: ["material", "equipment"], expect: { tax: 247.5, rental: 660 } },
+  // eq-env-fee-six-pumps: six 6 in pumps on one line for a week: the fee is capped per machine's booking, 6 x 14.456 =
+  //   86.736 -> $86.74 (a cap per dealer contract line holding all six would give $75: the founder's question). Taxable
+  //   6 x 1,126.456 = 6,758.736; tax 557.60.
+  { id: "eq-env-fee-six-pumps", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 1.3, cap: 75 }, input: { classKey: "PMP-SP-6D", mode: "rental", period: "auto", hours: 40, workDays: 5, hoursPerDay: 8, fuelLoad: "med", units: 6, includeMob: false }, expect: { lineEnvFee: 86.74, taxable: 6758.74, tax: 557.6 } },
+
   // --- Small quantities on machines already on site (D-1040, release 38; the api's choice is `onsite` above) -----
   // A machine on site lends a small line its hours at its hourly rate (`period: "site"`): no period, no minimum, no
   // mob. The 20-25 t excavator, 0.4 hr: day $1,040 ÷ 8 = $130/hr × 0.4 = $52.00 + fuel 2.78 gal/hr × 0.4 × $6.276 =
@@ -210,7 +364,11 @@ export const EQUIPMENT_CASES = [
 
 /** The bundle the api would send, from the dumped national rows and a case's overrides. */
 export function bundleFor(eqlib, c = {}) {
-  const overrides = Object.entries(c.setting ?? {}).map(([key, value], i) => ({
+  const x = c.extras ?? {};
+  const extraSettings = Object.fromEntries(
+    [["damage_waiver_pct", x.waiver], ["env_fee_pct", x.env], ["env_fee_cap", x.cap], ["rental_delivery_by_dealer", x.byDealer]].filter(([, v]) => v !== undefined),
+  );
+  const overrides = Object.entries({ ...(c.setting ?? {}), ...extraSettings }).map(([key, value], i) => ({
     uuid: `qt-${i}`,
     scope: "project",
     entity: "setting",
@@ -230,7 +388,11 @@ export function bundleFor(eqlib, c = {}) {
   const app = ["fuel_price_diesel", "fuel_price_gasoline", "fuel_price_propane", "earthwork_production"].map((key) => ({ key, value: null, label: key, editable: true }));
   return {
     release: 1,
-    classes: eqlib.classes,
+    // D-1289 (Q26): each class's FEMA edition, as the api's national.py reads it from `owned_rate_year`.
+    classes: eqlib.classes.map((k) => {
+      const y = /^FEMA (\d{4})\b/.exec(String(k.owned_rate_year ?? ""));
+      return { ...k, owned_fema_edition: y ? Number(y[1]) : null };
+    }),
     production: eqlib.production,
     activities: eqlib.activities,
     transport: eqlib.transport,
@@ -241,6 +403,10 @@ export function bundleFor(eqlib, c = {}) {
     overrides,
     location: { factor_from_wage_set: c.location ?? null, equipment_amf: c.location == null ? null : c.location - 1, zip: c.location == null ? null : "00000", location_set: c.location != null },
     my_equipment: c.myEquipment ?? [],
+    // D-1287: the state's rental rule, the bench row's fields (TX) or a state not read (GA).
+    // D-1289 (Q18): "none", no state on the project or the company; `ruleFrom`, where TX came from.
+    ...(c.rule === "none" ? { rental_tax: { state: null, from: "none", listed: false, loaded: false, job_type: null } } : {}),
+    ...(c.rule && c.rule !== "none" ? { rental_tax: c.rule === "TX" ? { state: "TX", from: c.ruleFrom ?? "project", name: "Texas", listed: true, loaded: true, grade: "A", taxes_rentals: true, operated_single_charge_exempt: true, waiver_taxable: true, lessor_delivery_taxable: true, third_party_haul_taxable: false, lessor_fees_taxable: true, exempt_job_types: [], job_type: c.jobType ?? null, rule_cited: "34 TAC §3.294 (c)(1)-(3), (d)(1)-(3), (e)(1)-(2)" } : { state: c.rule, listed: true, loaded: false, grade: "F", job_type: c.jobType ?? null } } : {}),
     mine_only: Boolean(c.mineOnly),
   };
 }
@@ -260,6 +426,11 @@ export async function runEquipment(page, eqlib) {
       const se = await import("/src/lib/estimate/sharedEquipment.ts");
       const match = await import("/src/lib/estimate/equipment/match.ts");
       const sug = await import("/src/lib/estimate/equipment/suggest.ts");
+      const ot = await import("/src/lib/estimate/overtime.ts");
+      const age = await import("/src/lib/estimate/equipment/rateAge.ts");
+      const rx = await import("/src/lib/estimate/equipment/rentalExtras.ts");
+      const bid = await import("/src/lib/estimate/bidSummary.ts");
+      const costing = await import("/src/lib/estimate/costing.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -436,6 +607,90 @@ export async function runEquipment(page, eqlib) {
             rental,
             missing,
           };
+        }
+        // D-1285 Q19 (f): the premium by spread, and whether it equals the one-day premium on the whole labour.
+        if (c.kind === "overtime") {
+          const premium = ot.overtimeBySpread(c.rule, c.workDay, c.labor, c.own);
+          return { premium, same: Math.abs(premium - ot.overtimePremium(c.rule, c.workDay, c.labor)) < 0.005 };
+        }
+        // D-1286 (B7): a rate's age, a class's by its basis, and Needs attention's list once per class.
+        if (c.kind === "rate-age") {
+          const a = age.rateAge(c.asOf, c.today);
+          return a ? { level: a.level, days: a.days, months: a.months } : { none: true };
+        }
+        if (c.kind === "class-age" || c.kind === "stale-list" || c.kind === "stale-own-list") {
+          const b = bundleFor(eqlib, {});
+          // D-1289 (Q27): an override entered on `at` (else 2026-11-16); Q26: a newer FEMA edition loaded beside the class.
+          const at = c.classOverride?.at ?? "2026-11-16T00:00:00Z";
+          if (c.classOverride) b.overrides.push({ ...(b.overrides[0] ?? {}), uuid: "qt-class", scope: "project", entity: "class", entity_key: c.classOverride.key ?? c.key, field: c.classOverride.field, value_num: c.classOverride.value, value_text: null, confirmed_none: false, national_at_set: null, release_at_set: 1, note: null, set_by: "quantity table", set_at: at, updated_by: "quantity table", updated_at: at });
+          if (c.femaNewer) b.classes = [...b.classes, { equip_key: "QT-FEMA-NEWER", type: "QT", owned_fema_edition: c.femaNewer }];
+          const lib = resolve.library(b);
+          const row = (s) => `${s.key}|${s.basis}|${s.age.asOf}|${s.age.level}`;
+          if (c.kind === "stale-list") return { list: age.staleRates(lib, c.uses, c.today).map(row) };
+          if (c.kind === "stale-own-list") return { own: age.staleOwnRates(lib, c.uses, c.today).map(row), library: age.staleRates(lib, c.uses, c.today).map(row) };
+          const basis = age.machineBasis(lib, c.key, c.mode);
+          const a = age.classRateAge(lib, c.key, basis, c.today);
+          return a ? { basis, asOf: a.asOf, level: a.level, days: a.days, own: a.own ?? null, femaCurrent: a.femaCurrent ?? null } : { basis, none: true };
+        }
+        // D-1289 (Q12): the largest-remainder spread of the exported lines' tax, and its sum to the cent.
+        if (c.kind === "spread") {
+          const parts = bid.spreadCents(c.shares, c.total);
+          return { parts, sum: bid.toCents(parts.reduce((s, x) => s + x, 0)) };
+        }
+        // D-1287: one machine through the engine, its extras and taxable part, and the Bid summary's tax line on it.
+        if (c.kind === "rental") {
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const m = cost.machineCost(lib, { hoursPerDay: 8, ...c.input });
+          const rule = rx.ruleOf(lib);
+          const applies = rx.rentalTaxApplies(rule);
+          const totals = { directCost: m.total ?? 0, materialCost: 0, equipmentCost: m.total ?? 0, rentalTax: { taxable: m.parts.taxable, applies } };
+          const summary = bid.computeBid(totals, { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], taxExempt: Boolean(c.taxExempt) });
+          const line = (k) => summary.lines.find((l) => l.key === k);
+          const tax = line("tax_rental")?.amount ?? null;
+          // D-1289 (Q12): the export's fold, and the line's equipment with its tax (`costing.ts:withRentalTax`).
+          const bidRates = { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], taxExempt: Boolean(c.taxExempt) };
+          const folded = bid.computeBid(totals, bidRates, { foldRentalTax: true });
+          const lineTaxed = costing.withRentalTax({ equipmentCost: m.total ?? 0, itemCost: m.total ?? 0, equipmentParts: m.parts }, bid.rentalTaxRate(totals, bidRates));
+          return {
+            deliveredBy: m.deliveredBy,
+            companyState: rx.companyStateText(rule),
+            lineTaxDelta: bid.toCents(lineTaxed.equipmentCost - (m.total ?? 0)),
+            foldDirectDelta: bid.toCents(folded.lines[0].amount - summary.lines[0].amount),
+            foldHasLine: folded.lines.some((l) => l.key === "tax_rental"),
+            foldTotalSame: folded.total === summary.total,
+            equipment: m.equipment, waiver: m.extras?.waiver ?? 0, envFee: m.extras?.envFee ?? 0, envCapped: m.extras?.envCapped ?? false,
+            taxable: m.parts.taxable, delivery: m.tax.delivery, deliveryTax: bid.toCents(m.tax.delivery * 0.0825), tax, applies,
+            materialTaxPct: line("tax")?.pct ?? null, notLoaded: rx.notLoadedText(rule), derived: m.derived, standby: m.standby,
+            rentWaiverTax: bid.toCents((m.equipment ?? 0) + (m.extras?.waiver ?? 0) + (m.extras?.envFee ?? 0) + (tax ?? 0)), missing: m.missing.map((x) => x.field),
+            lineEnvFee: m.parts.envFee,
+          };
+        }
+        // D-1287: a shared machine's (or a pool group's) taxable parts, spread over the lines it serves, add back to its own.
+        if (c.kind === "shared-parts") {
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const base = { home_classification_id: "div", extra_classification_ids: [], subcontractor_id: null, rate: 0, basis: "day", hours_per_day: 8, days_per_week: 5, weeks_per_month: 4.33, rental_duration_override: null, mob_demob: 0, allocation_basis: "usage_hours", notes: null, eq_class_key: "EX-CRAWL-20T", eq_units: 1, eq_mode: "rental" };
+          const resources = c.pooled
+            ? [{ ...base, id: "r1", name: "TEST host" }, { ...base, id: "r2", name: "TEST pooled", eq_period: "pool", eq_pool_host_uuid: "r1" }]
+            : [{ ...base, id: "r1", name: "TEST shared" }];
+          const machineHours = new Map(c.pooled ? [["r1:h1", 96], ["r2:h2", 64]] : [["r1:h1", 96], ["r1:h2", 64]]);
+          const usage = c.pooled ? [{ resource_id: "r1", takeoff_item_id: "h2", usage_formula: null, usage_hours_override: null, manual_pct: null, excluded: true, last_share: null }, { resource_id: "r2", takeoff_item_id: "h1", usage_formula: null, usage_hours_override: null, manual_pct: null, excluded: true, last_share: null }] : [];
+          const hosts = ["h1", "h2"].map((id) => ({ id, name: id, effNode: "div", qty: 0, unit: "BCY", laborCrewHours: null, env: { qty: 0 }, hasSubcontract: false }));
+          const out = se.computeSharedEquipment({ resources, usage, hosts, ancestorPath: (n) => [n], subForNode: () => null, library: { lib, machineHours } });
+          const sum = (k) => [...out.partsByHost.values()].reduce((t, p) => t + p[k], 0) + out.views.reduce((t, v) => t + (v.partsPerDollar ? v.partsPerDollar[k] * v.result.unallocated : 0), 0);
+          return { machineTaxable: out.views[0].library?.machine.parts.taxable ?? null, hostsTaxable: sum("taxable"), hostsWaiver: sum("waiver"), hostsEnv: sum("envFee"), totals: out.views.map((v) => v.result.total) };
+        }
+        if (c.kind === "bid-ticks") {
+          const summary = bid.computeBid(c.totals, { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], taxTicks: c.ticks });
+          return { tax: summary.lines.find((l) => l.key === "tax")?.amount ?? null, rental: summary.lines.find((l) => l.key === "tax_rental")?.amount ?? null };
+        }
+        if (c.kind === "ratios") return rx.ratiosOf(resolve.library(bundleFor(eqlib, {})));
+        if (c.kind === "standby") return rx.ownedStandby(c.rate, c.lostDays, c.hoursPerDay, c.weeks);
+        if (c.kind === "owned-source") {
+          const b = bundleFor(eqlib, {});
+          if (c.company != null) b.overrides.push({ uuid: "qt-company", scope: "workspace", entity: "class", entity_key: c.key, field: "owned_rate_hr_excl_fuel", value_num: c.company, value_text: null, confirmed_none: false, national_at_set: null, release_at_set: 1, note: null, set_by: "quantity table", set_at: "2026-11-16T00:00:00Z", updated_by: "quantity table", updated_at: "2026-11-16T00:00:00Z" });
+          const lib = resolve.library(b);
+          const m = cost.machineCost(lib, { classKey: c.key, mode: "owned", period: "auto", hours: 1, workDays: 0.125, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false });
+          return { source: m.owned?.source ?? null, rate: m.owned?.rate ?? null };
         }
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {

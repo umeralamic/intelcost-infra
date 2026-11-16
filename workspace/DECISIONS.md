@@ -34177,3 +34177,34 @@ no React commit per pointer move while a contour is drawn, measured on the dev b
 **D-1289, founder follow-ups (2026-11-16, after the app part):** (1) Q14 corrected: the delivery default follows **ownership**, not transport class: rented machines → dealer delivery (taxed) for every class; owned machines → own or third-party haul (untaxed). The company/estimate override keeps by class / all dealer / all hauler as options. Quantity-table rows updated; $ effect on the recent tabs reported (expected small). (2) The export spreads the folded rental tax across lines by largest remainder, so the exported lines add exactly to the bid sheet's Direct cost. Built in the next app slot, after step 3's passes.
 
 **D-1289, founder UI fixes (2026-11-16 ~22:00 UTC, after the push):** (1) the run panel's "Switch to …" box (`RunSectionBlock.tsx`, `data-run-switch`) no longer sits 6.5rem in; it starts at the Section heading's left edge and fits the panel, so its table and text no longer run out past the right edge (smoke: box 920.8–1400 px in a 908.8–1412 px column, no horizontal scroll). (2) The profile's empty state ("Calculate this sheet first…", `ProfilePane.tsx`) has the profile header with its close × and a Close button under the message. Smoke on a throwaway copy, purged.
+
+**D-1292, closed (the founder, 2026-11-16 22:47 UTC, REPORT_2026-11-19 Q4):** extra excavation is dropped. On the boxed basis it is almost all haul of displaced spoil, which on a real project is already in the site balance. Nothing is built.
+
+**D-1291, founder (2026-11-16 22:47 UTC, Q1–Q3):** the harness basis is pass (a1), boxed and unpaved. A tab's separately paid trench-safety item is added to its median and low, and k is reported both ways. Boxes add rent only, with crew pace unchanged (accepted).
+
+## D-1296 — Night run from 2026-11-16 22:47 (morning-report-2026-11-20), step 1: the founder's REPORT_2026-11-19 §1 answers built (backfill under pavement as an explicit run/project choice defaulted by the jurisdiction preset; fittings allowances pressure 12 %, storm RCP 0 %, sanitary 2 %, A22 labour for counted fittings; fire water: own 30 % allowance, C900 DR 14 default, test and flush per system, backflow vault and 8 in+, PIV, FDC, riser spool, "Quote needed"), then one harness pass on (a1) with the trench-safety add and delivery by ownership
+
+## D-1297 — Night run from 2026-11-16 22:47, step 2: earthwork method check (pits, vertical cuts and undercuts to excavator, dozer grade factor, over-excavation option, dozer sizing), from the founder's 11166 files on a look-alike throwaway (docs/tasks/earthwork_method_check_tasks.md)
+
+## D-1298 — Night run from 2026-11-16 22:47, step 3: deduct-area holes honoured in quantities and drawing, selection by final shape and draw order, D-1294's drawing speed on every tool, from the founder's 11170 files on look-alike throwaways (docs/tasks/deduct_holes_selection_speed_tasks.md)
+
+## D-1299 — Night run from 2026-11-16 22:47, step 4: material quantity and scope check, report only, water first (restraint share, test and disinfection, CCTV, embedment, order tiers), $ and k for each
+
+## D-1300 — Night run from 2026-11-16 22:47, step 5: the fixture suite restored from fixtures-archive-2026-09-28, f5-s13 updated for the scale icon, and run against the umer-dev head on the bench by the founder's explicit instruction (lifts D-1057's pause for this run); pass/fail per fixture and the tester-release blockers
+
+**Stage 1 (restore and prepare, no run; 2026-11-16).** Report: `intelcost-infra/morning-report-2026-11-20/step5/RESTORE.md`.
+- **Restored** as `setup` does, without its database, bucket or service steps: the tag's `browser drives regress.sh`
+  (`git archive`), today's `browser/lib/*.mjs`, `fx-suite-updates/` over them, `fx-suite-patch.mjs` (host
+  192.168.65.254). Built in a scratch folder first: it equals the tracked `fx-suite/` (D-1057) but for nine helpers
+  the quantity table grew since 2026-11-07 (six updated, `overlay-`, `tip-`, `water-cases.mjs` new). Those nine are
+  now tracked in `fx-suite/browser/lib/`. 165 fixtures in the release list: 158 on the built apps, 7 on the dev
+  servers; f8-s5 and f4-s27 skipped.
+- **f5-s13** (`fx-suite-updates/` and `fx-suite/`): AC3 reads the scale from `[data-scale-chip]`'s value and from the
+  hover ruler's tip (`[data-scale-tip]`, `[data-tooltip]`, aria-label "Scale: …"), and checks an unscaled row has
+  neither (D-1293, app 09ff5ac). AC2 finds the search box by its name, "Search sheets": since D-1238 (app d22e4c1) its
+  placeholder reads "Search…", so the old `getByPlaceholder("Search sheets…")` would have failed first. Only the
+  selector changed, no expected value.
+- **The fx database cannot migrate as it is:** `intelcost_fx` is at `d993c2a6f4b1`, a revision folded into
+  `da16f7081920` by the 2026-11-12 squash (api 6881073), whose docstring says a database stopped inside the fold "has
+  no path here". `alembic upgrade head` (the release's step 0, and api-fx's own start) will fail on it. Stage 2
+  needs one of the two paths in RESTORE.md before the release.

@@ -11,6 +11,10 @@
 // Updated 2026-10-18 to today's screens (D-619): new projects have no seed "Plans" folder (D-309),
 // so Civil.pdf, in Plans, is uploaded first and Plans/Architectural has its parent.
 // A sheet out of every folder sits at the top level after the folders, with no "At root" heading.
+//
+// Updated 2026-11-16 for the scale icon (D-1293, D-1300): a scaled sheet's row shows a ruler in place of the scale's
+// words; AC3 reads the scale from [data-scale-chip]'s value and from the hover ruler's tip. AC2 finds the search box by
+// its name, "Search sheets": its placeholder is "Search…" since D-1238.
 
 import { APP, apiCall, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -133,7 +137,8 @@ await run("f5-s13", [
     title: "AC2: \"Search sheets…\" matches number, name and item names; no match reads No sheets match \"{q}\"",
     run: async ({ page }) => {
       await open(page, arch[3]);
-      const search = page.getByPlaceholder("Search sheets…");
+      // The panel's box reads "Search…" since D-1238 (app d22e4c1); its name is still "Search sheets".
+      const search = panel(page).getByRole("textbox", { name: "Search sheets" });
       const visible = () => page.locator("[data-sheet-row]").evaluateAll((rows) => rows.map((r) => r.dataset.sheetRow));
       const cases = [
         ["a-101", "number"],
@@ -157,7 +162,7 @@ await run("f5-s13", [
     },
   },
   {
-    title: "AC3: rows show their label (\"A-101  –  Foundation Plan\", else \"Page 3\"), the scale chip or none, the item count, the bookmark star",
+    title: "AC3: rows show their label (\"A-101  –  Foundation Plan\", else \"Page 3\"), the scale icon with its tip or none, the item count, the bookmark star",
     run: async ({ page }) => {
       await open(page, arch[3]);
       const a101 = row(page, arch[1]);
@@ -166,15 +171,27 @@ await run("f5-s13", [
       const label = (r) => r.locator("[data-sheet-label]").textContent();
       expect((await label(a101)) === "A-101  –  Foundation Plan", `A-101 reads "${await label(a101)}"`);
       expect((await label(row(page, arch[3]))) === "Page 3", `page 3 reads "${await label(row(page, arch[3]))}"`);
-      const chip = await a101.locator("[data-scale-chip]").innerText();
-      expect(chip === SCALE.replace(/\s+/g, ""), `scale chip "${chip}"`);
-      expect((await row(page, arch[3]).locator("[data-scale-chip]").count()) === 0, "an unscaled sheet has a chip");
+      // A scaled sheet shows a ruler since D-1293 (app 09ff5ac): the scale's words are [data-scale-chip]'s value, and the
+      // tip of the row's hover ruler ([data-scale-tip], components/ui/tooltip.tsx's [data-tooltip]) reads them.
+      const want = SCALE.replace(/\s+/g, "");
+      const chip = await a101.locator("[data-scale-chip]").getAttribute("data-scale-chip");
+      expect(chip?.replace(/\s+/g, "") === want, `scale icon's value "${chip}"`);
+      await a101.hover();
+      const ruler = a101.locator("[data-scale-tip]");
+      await ruler.hover();
+      const tip = await page.locator("[data-tooltip]").innerText({ timeout: 5000 });
+      expect(tip.replace(/\s+/g, "") === want, `scale tip "${tip}"`);
+      expect((await ruler.getAttribute("aria-label")) === `Scale: ${chip}`, `the ruler is named "${await ruler.getAttribute("aria-label")}"`);
+      await page.mouse.move(0, 0);
+      await page.locator("[data-tooltip]").waitFor({ state: "detached", timeout: 5000 });
+      expect((await row(page, arch[3]).locator("[data-scale-chip]").count()) === 0, "an unscaled sheet has a scale icon");
+      expect((await row(page, arch[3]).locator("[data-scale-tip]").count()) === 0, "an unscaled sheet has a scale tip");
       const count = await a101.locator("[data-item-count]").getAttribute("data-item-count");
       expect(count === "2", `item count ${count}`);
       expect((await row(page, arch[3]).locator("[data-item-count]").count()) === 0, "a sheet with no items shows a count");
       expect((await row(page, arch[2]).getByLabel("Bookmarked").count()) === 1, "page 2 has no star");
       expect((await a101.getByLabel("Bookmarked").count()) === 0, "A-101 has a star");
-      return `"A-101  –  Foundation Plan" · "Page 3" · chip ${chip} · 2 items · star on page 2 only`;
+      return `"A-101  –  Foundation Plan" · "Page 3" · scale icon ${chip}, tip "${tip}" · 2 items · star on page 2 only`;
     },
   },
   {
