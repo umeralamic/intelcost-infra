@@ -1,0 +1,12 @@
+{
+  "decision": "D-1296",
+  "note": "Step 1's harness pass of the night run from 2026-11-16 22:47 (R10): the basis (a1) of D-1291 (plan defaults, boxed, unpaved; the founder's Q1) with step 1's answers in the app: fittings allowances pressure 12 %, storm RCP 0 %, sanitary 2 % (Q5), A22 labour for counted fittings (none on the tabs: every item is a straight two-vertex run), and the backfill under pavement as the run's own choice (Q2, R5): a run takes CSS to the subgrade or select fill only where its tab item's text says that backfill is included (street-marking.mjs's `underPavementBackfill`, contracts-47-d1296-marked-2026-11-16.json), every other run compacted native exactly as in (a1). Rentals delivered by ownership (R8: 3, the api's default since D-1289), set on the project. The D-1284 rules kept: pool on, rental tax at Houston's 8.25 %, damage waiver 12 %, walls vertical only to 4.5 ft. The trench-safety add (R4) is the report's (trench-safety.mjs, d1296-report.mjs), not the runner's. No tab figure lives here.",
+  "section": "a",
+  "pool": 1,
+  "rentalTaxPct": 8.25,
+  "waiverPct": 12,
+  "limitedWidth": "items",
+  "paved": false,
+  "underPavement": "items",
+  "deliveryByDealer": 3
+}

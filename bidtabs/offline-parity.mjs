@@ -54,7 +54,7 @@ const out = [];
 const t0 = Date.now();
 for (const contract of list) {
   const inner = [];
-  const ctx = { __ct: { ...cfg, workspace: "offline", project: "offline", sheet: "offline-sheet", contract, list: undefined, parityOnly: true, ...(flag("noWait") ? { requireStep1: false } : {}) } };
+  const ctx = { __ct: { ...cfg, workspace: "offline", project: "offline", sheet: "offline-sheet", contract, list: undefined, parityOnly: true, ...(flag("noWait") ? { requireStep1: false, requireUnderPavement: false } : {}) } };
   const page = {
     context: () => ctx,
     goto: async () => {},
@@ -71,7 +71,7 @@ for (const contract of list) {
   const own = inner[0] ?? {};
   const items = contract.items.map((it, i) => {
     const t = own.crossing || own.notes ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null);
-    return { i, type: it.type, pipe: `${it.entry}:${it.nominal}`, depth: it.depth, qty: it.qty, limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, trench: t };
+    return { i, type: it.type, pipe: `${it.entry}:${it.nominal}`, depth: it.depth, qty: it.qty, limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, underPavementBackfill: it.underPavementBackfill ?? null, trench: t };
   });
   out.push({ key: contract.key, ms: Date.now() - c0, result: res, parity: own.parity ?? [], interaction: own.interaction ?? [], sectionFlags: own.sectionFlags ?? [], coverFlags: own.coverFlags ?? [], ran: own.ran ?? null, items });
 }
@@ -82,10 +82,11 @@ for (const c of out) {
   const err = c.result?.error ?? null;
   console.log(`${c.key}: ${c.ms} ms; parity ${c.parity.length}; interaction ${c.interaction.length}${err ? `; ${err}` : ""}`);
   if (c.ran?.step1) for (const k of c.ran.step1.checks) console.log(`  step 1 ${k.q}: ${k.ok ? "in" : "NOT YET"} (${k.found})`);
+  if (c.ran?.upbProbe) for (const k of c.ran.upbProbe.checks) console.log(`  under-pavement ${k.q}: ${k.ok ? "in" : "NOT YET"} (${k.found})`);
   for (const p of c.parity.slice(0, 3)) console.log(`  parity: ${p.pipe} ${p.type} ${p.depth ?? ""} ${p.qty} LF: harness ${p.harness.length} lines, app ${p.app.length}`);
   for (const it of c.items) {
     const t = it.trench;
-    console.log(`  #${it.i} ${it.type} ${it.pipe}${it.depth != null ? ` at ${it.depth} ft` : ""} ${it.qty} LF ${it.limitedWidth ? "LIMITED" : "open"}: walls ${walls(t?.walls)}; exc ${f4(t?.excCYLF)} emb ${f4(t?.impEmbCYLF)} bf ${f4(t?.backfillCYLF)} bought ${f4(t?.impBackfillCYLF)} (${t?.backfillBought ?? "none"}); ${t?.title ?? "–"}`);
+    console.log(`  #${it.i} ${it.type} ${it.pipe}${it.depth != null ? ` at ${it.depth} ft` : ""} ${it.qty} LF ${it.limitedWidth ? "LIMITED" : "open"}${it.underPavementBackfill && it.underPavementBackfill !== "native" ? ` ${it.underPavementBackfill}` : ""}: walls ${walls(t?.walls)}; exc ${f4(t?.excCYLF)} emb ${f4(t?.impEmbCYLF)} bf ${f4(t?.backfillCYLF)} bought ${f4(t?.impBackfillCYLF)} (${t?.backfillBought ?? "none"}); ${t?.title ?? "–"}`);
   }
 }
 console.log(`${out.length} contract(s), ${out.reduce((t, c) => t + c.parity.length, 0)} parity difference(s), ${out.reduce((t, c) => t + c.interaction.length, 0)} interaction(s), ${Date.now() - t0} ms`);

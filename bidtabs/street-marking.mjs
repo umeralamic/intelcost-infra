@@ -9,8 +9,9 @@
 //       is found on its tab (`tab-prices-2026-11-16.json` with `tab-rows-reread-2026-11-16.json`'s recovered rows, as
 //       basis-report.mjs finds it; a crossing contract's item through its crossing's tab item in
 //       `crossings-input-2026-11-16-d1277-rerun.json`), and gets `limitedWidth` (true / false) and `limitedWhy` (the
-//       rule that decided, with the words it matched). Writes the list so marked, and prints the counts per set (recent =
-//       bid in or after --recentFrom, D-1273) and every run left open with why.
+//       rule that decided, with the words it matched), and (D-1296, R5) `underPavementBackfill` ("css_subgrade",
+//       "select_fill" or "native") with `backfillWhy`. Writes the list so marked, and prints the counts per set (recent =
+//       bid in or after --recentFrom, D-1273), every run left open with why, and every run given a backfill under pavement.
 //
 // contract-runner.js with `limitedWidth: "items"` reads the marks and refuses a contract with an item unmarked.
 
@@ -31,6 +32,29 @@ const OPEN = [
   [/LOW\s+WATER\s+CROSSING/i, "the item text makes it a temporary low-water crossing pipe (a channel, removed after), not a street run"],
 ];
 const PAVED = [[/UNDER\s+(AND\s+WITHIN\s+\S+\s+OF\s+)?PAV(ING|EMENT)/i, "the item text puts it under (or next to) paving"]];
+
+// D-1296 (R5, the founder's Q2 of REPORT_2026-11-19): the backfill under pavement is the run's own choice (CSS to the
+// subgrade / select fill / compacted native), no longer picked by "limited width / in street". The harness gives a run
+// an under-pavement backfill only where its tab item's text says that backfill is included; every other run gets
+// compacted native (the plan's default, jurisdiction "other"). The first pattern that matches decides; the words it
+// matched are kept in `backfillWhy`. A backfill named outside pavement ("CSS backfill outside of pavement areas") is not
+// under pavement, so it stays native (and is listed).
+const PLACE = String.raw`[^,;]{0,40}?(UNDER|BENEATH)(\s+AND\s+WITHIN\s+\S+\s+OF)?\s+(THE\s+|ALL\s+|EXISTING\s+|PROPOSED\s+)?PAV(ING|EMENT|ED)`;
+const UNDER_PAVEMENT = [
+  [new RegExp(String.raw`(CEMENT[\s-]+STABILI[SZ]ED\s+(SAND\s+)?|\bC\.?\s?S\.?\s?S\.?\s+)BACKFILL${PLACE}`, "i"), "css_subgrade", "the item text includes cement-stabilized sand backfill under pavement"],
+  [new RegExp(String.raw`SELECT\s+(FILL|BACKFILL|MATERIAL)${PLACE}`, "i"), "select_fill", "the item text includes select backfill under pavement"],
+  [new RegExp(String.raw`BACKFILL${PLACE}`, "i"), "css_subgrade", "the item text includes backfill under pavement, its material unnamed: CSS to the subgrade (the Houston street standard)"],
+];
+const OUTSIDE_BACKFILL = /(CEMENT[\s-]+STABILI[SZ]ED|SELECT)[^,;]{0,40}?BACKFILL[^,;]{0,40}?OUTSIDE\s+(OF\s+)?(THE\s+)?PAVE/i;
+function backfillMark(text) {
+  for (const [re, choice, why] of UNDER_PAVEMENT) {
+    const m = text.match(re);
+    if (m) return { underPavementBackfill: choice, backfillWhy: `${choice}: ${why} ("${m[0].toLowerCase().replace(/\s+/g, " ")}")` };
+  }
+  const o = text.match(OUTSIDE_BACKFILL);
+  if (o) return { underPavementBackfill: "native", backfillWhy: `native: the item's bought backfill is outside pavement, not under it ("${o[0].toLowerCase().replace(/\s+/g, " ")}")` };
+  return { underPavementBackfill: "native", backfillWhy: text ? "native: the item text includes no backfill under pavement (compacted native, the plan's default)" : "native: no tab row text found (compacted native, the plan's default)" };
+}
 
 const tabPrices = new Map(J("tab-prices-2026-11-16.json").map((c) => [c.key, c]));
 for (const r of J("tab-rows-reread-2026-11-16.json")) {
@@ -64,6 +88,9 @@ function crossingRows(key, it) {
 function mark(key, it) {
   const rows = it.crossing ? crossingRows(key, it) : [tabRowOf(key, it)].filter(Boolean);
   const text = rows.map((r) => r.desc).join(" | ");
+  return { ...limitedMark(rows, text, it), ...backfillMark(text) };
+}
+function limitedMark(rows, text, it) {
   if (!text) return { limitedWidth: true, limitedWhy: `street or subdivision work by default (R11): no tab row text found${it.crossing ? " for the crossing" : ""}`, rowNo: null };
   for (const [re, why] of OPEN) {
     const m = text.match(re);
@@ -91,7 +118,7 @@ const out = list.map((c) => {
     items: c.items.map((it, i) => {
       const m = mark(key, it);
       rows.push({ contract: c.key, i, crossing: Boolean(it.crossing), recent, unpriceable: Boolean(it.unpriceable), type: it.type, pipe: `${it.entry}:${it.nominal}`, qty: it.qty, ...m });
-      return { ...it, limitedWidth: m.limitedWidth, limitedWhy: m.limitedWhy };
+      return { ...it, limitedWidth: m.limitedWidth, limitedWhy: m.limitedWhy, underPavementBackfill: m.underPavementBackfill, backfillWhy: m.backfillWhy };
     }),
   };
 });
@@ -114,3 +141,15 @@ console.log("By reason:");
 for (const [w, n] of byWhy) console.log(`  ${n}  ${w}`);
 console.log("Left open (not limited width):");
 for (const r of rows.filter((x) => !x.limitedWidth)) console.log(`  ${r.contract} #${r.i} (tab item ${r.rowNo}) ${r.type} ${r.pipe} ${r.qty} LF${r.recent ? " recent" : ""}: ${r.limitedWhy}`);
+// D-1296 (R5): the under-pavement backfill marks.
+const bf = (f) => {
+  const rs = rows.filter(f);
+  const on = rs.filter((r) => r.underPavementBackfill !== "native");
+  return `${on.length} of ${rs.length} items with a backfill under pavement (${Math.round(on.reduce((t, r) => t + r.qty, 0)).toLocaleString("en-US")} LF)`;
+};
+console.log(`Under-pavement backfill, tab contracts' priceable items: recent ${bf((r) => tab(r) && !r.unpriceable && r.recent)}; history ${bf((r) => tab(r) && !r.unpriceable && r.recent === false)}; crossing items ${bf((r) => !tab(r))}`);
+const byBf = new Map();
+for (const r of rows) byBf.set(r.backfillWhy.replace(/ \("[^"]*"\)$/, ""), (byBf.get(r.backfillWhy.replace(/ \("[^"]*"\)$/, "")) ?? 0) + 1);
+console.log("Backfill by reason:");
+for (const [w, n] of byBf) console.log(`  ${n}  ${w}`);
+for (const r of rows.filter((x) => x.underPavementBackfill !== "native" || /outside pavement/.test(x.backfillWhy))) console.log(`  ${r.contract} #${r.i} (tab item ${r.rowNo}) ${r.type} ${r.pipe} ${r.qty} LF${r.recent ? " recent" : ""}: ${r.backfillWhy}`);

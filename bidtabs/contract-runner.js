@@ -44,6 +44,17 @@ async (page) => {
   // own price for that key on the throwaway (a project price, never the library), national × the factor the library
   // price takes there; with no `cssPrice` a price the harness set is taken off again. Each contract reports its CSS
   // tonnage, price and order tier (`css`).
+  // D-1296 (R5, the founder's Q2 of REPORT_2026-11-19): the backfill under pavement is the run's own choice (CSS to the
+  // subgrade / select fill / compacted native, step 1's app part), no longer picked by "limited width". `underPavement`
+  // = "items": each item carries `underPavementBackfill` ("css_subgrade" | "select_fill" | "native", with `backfillWhy`;
+  // street-marking.mjs writes both from the tab's item text) and one without is refused. A run with "css_subgrade" or
+  // "select_fill" is paved (limited width, boxed by Auto) and takes that choice; a "native" run is built as `paved` says
+  // (in (a1) unpaved with the Box pick, so it is the 11-19 (a1) run byte for byte). The project's default is set to
+  // compacted native on the page's settings only (the plan's default, jurisdiction "other"). The field names are
+  // step 1's (`UPB` below); until they are, the runner checks that the app honours them (`upbProbe`: a paved 24 in RCP
+  // takes CSS, select fill and native as told) and prices nothing until it does (`requireUnderPavement`, default true).
+  // `deliveryByDealer` (R8: 3, by ownership) sets the project's `rental_delivery_by_dealer`, as `waiverPct` sets the
+  // waiver. Each item reports its marks and the fittings allowance % its pipe line took (`allowancePct`).
   const ct = page.context().__ct;
   const out = [];
   for (const contract of ct.list ?? [ct.contract]) out.push(await priceOne(contract));
@@ -55,7 +66,7 @@ async (page) => {
   await page.goto(`http://localhost:5173/project/${P}/takeoff/${S}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(localStorage.getItem("intelcost.session")), null, { timeout: 60000 });
   const own = await page.evaluate(
-    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, paved, jurisdiction, requireStep1, cssPrice }) => {
+    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, paved, jurisdiction, requireStep1, cssPrice, upbMode, requireUpb, deliveryByDealer }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
       const h = { authorization: `Bearer ${s.accessToken}`, "content-type": "application/json" };
       const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
@@ -78,6 +89,9 @@ async (page) => {
       await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "equipment_pool", field: "value", value_num: pool, value_text: null }) });
       // D-1287: the damage waiver for the pass (Q13: 12 %), as the project's own setting; 0 is "Own insurance".
       if (waiver != null) await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "damage_waiver_pct", field: "value", value_num: waiver, value_text: waiver === 0 ? "zero-ok" : null }) });
+      // D-1296 (R8): the rentals' delivery basis for the pass (3: by ownership, the api's default since D-1289), as the
+      // project's own setting, so the pass does not hang on the company's.
+      if (deliveryByDealer != null) await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "rental_delivery_by_dealer", field: "value", value_num: deliveryByDealer, value_text: deliveryByDealer === 0 ? "zero-ok" : null }) });
       // The project's utility settings, as Calculate reads them: the depth ranges a line is named and paced by come from
       // here (the app's default 0-6, 6-8 ... 14-16, 16+), never a list of the harness's own (D-1211).
       const ua = await import("/src/features/takeoff/earthwork/utilities/api.ts");
@@ -88,12 +102,57 @@ async (page) => {
       if (mode === "b") settings.sectionPresets = { water: "houston_css", force_main: "houston_css", sanitary: "houston_css", storm: "houston_css" };
       // D-1291: the jurisdiction the Houston preset follows (Q2), in the page only; what the api holds is recorded beside it.
       if (jurisdiction) settings.jurisdiction = jurisdiction;
-      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length };
+      // D-1296 (R5): step 1's under-pavement backfill choice, as the app stores it on a run and as the project's default
+      // in the utility settings. PLACEHOLDER NAMES until step 1's code is committed: set `runField`, `projectField`,
+      // `inSection` (the run's choice inside `run.section` rather than on the run) and the three `values` to step 1's
+      // committed names before the pass. `upbProbe` refuses to price while the app does not honour them.
+      const UPB = { runField: "STEP1_RUN_UNDER_PAVEMENT_BACKFILL", projectField: "STEP1_PROJECT_UNDER_PAVEMENT_BACKFILL", inSection: false, values: { css_subgrade: "STEP1_CSS_TO_SUBGRADE", select_fill: "STEP1_SELECT_FILL", native: "STEP1_COMPACTED_NATIVE" } };
+      const withChoice = (obj, choice) => {
+        if (!upbMode || choice == null) return obj;
+        const v = UPB.values[choice];
+        return UPB.inSection ? { ...obj, section: { ...(obj.section ?? {}), [UPB.runField]: v } } : { ...obj, [UPB.runField]: v };
+      };
+      if (upbMode) settings[UPB.projectField] = UPB.values.native;
+      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length, underPavement: upbMode ? { mode: upbMode, fields: UPB, projectDefault: settings[UPB.projectField], projectDefaultStored: util.settings?.[UPB.projectField] ?? null } : null, deliveryByDealer: deliveryByDealer ?? null };
       // D-1291 (R11): a run's limited-width mark. In "items" mode every item carries its own (street-marking.mjs); one
-      // without is refused, never guessed.
-      const unmarked = limitedMode === "items" ? contract.items.filter((it) => typeof it.limitedWidth !== "boolean").map((it) => `${it.entry}:${it.nominal} ${it.qty} LF`) : [];
+      // without is refused, never guessed. D-1296: the same for the under-pavement backfill mark.
+      const CHOICES = ["css_subgrade", "select_fill", "native"];
+      const unmarked = [
+        ...(limitedMode === "items" ? contract.items.filter((it) => typeof it.limitedWidth !== "boolean").map((it) => `${it.entry}:${it.nominal} ${it.qty} LF (limited width)`) : []),
+        ...(upbMode === "items" ? contract.items.filter((it) => !CHOICES.includes(it.underPavementBackfill)).map((it) => `${it.entry}:${it.nominal} ${it.qty} LF (under-pavement backfill)`) : []),
+      ];
       if (unmarked.length > 0) return { put: 0, putText: "", missing: [], unpriceable: [], ownLines: [], parity: [], ran, unmarked };
       const limitedOf = (it) => (limitedMode === "items" ? it.limitedWidth === true : limitedMode === true);
+      const upbOf = (it) => (upbMode === "items" ? it.underPavementBackfill : null);
+      // A run is paved where its mark is limited width and the pass is paved, or (D-1296) where it takes a backfill under
+      // pavement; a "native" run is built as the pass's `paved` says.
+      const pavedOf = (it) => (limitedOf(it) && paved) || (upbOf(it) != null && upbOf(it) !== "native");
+      // D-1296: the under-pavement choice read back from the app's own section code on a paved 24 in RCP storm run: CSS,
+      // select fill and native as told, in the run's materials and (where the section is layered) its final band.
+      const upbProbe = () => {
+        const key = "rcp_c76_wall_b:24";
+        const pp = cat.resolvePipe(key);
+        const at = (choice) => {
+          const stub = withChoice({ section: rd.defaultRun("storm").section, catalog_key: key, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: true, utility_type: "storm" }, choice);
+          const m = calc.runMaterials(stub, settings);
+          const L = pp?.od != null ? calc.runLayered(stub, "storm", { od: pp.od, id: pp.id ?? pp.od - 2 * (pp.wall ?? 0) }, settings, m).layered : null;
+          return { materials: m.backfill?.name ?? "", final: L?.normal.final.material.name ?? null };
+        };
+        const both = (x, re) => re.test(x.materials) && (x.final == null || re.test(x.final));
+        const css = at("css_subgrade");
+        const sel = at("select_fill");
+        const nat = at("native");
+        const checks = [
+          { q: "CSS to subgrade", ok: both(css, /cement/i), found: `materials ${css.materials}; final ${css.final ?? "–"}` },
+          { q: "select fill", ok: both(sel, /select/i), found: `materials ${sel.materials}; final ${sel.final ?? "–"}` },
+          { q: "compacted native", ok: !/cement|select|flowable|sand|stone/i.test(nat.materials) && (nat.final == null || !/cement|select|flowable|sand|stone/i.test(nat.final)), found: `materials ${nat.materials}; final ${nat.final ?? "–"}` },
+        ];
+        return { ok: checks.every((c) => c.ok), checks };
+      };
+      if (upbMode) {
+        ran.upbProbe = upbProbe();
+        if (requireUpb && !ran.upbProbe.ok) return { put: 0, putText: "", missing: [], unpriceable: [], ownLines: [], parity: [], ran, waiting: ran.upbProbe.checks.filter((c) => !c.ok) };
+      }
       // D-1291: step 1's app part (D-1289 Q2, Q4, Q5), read from the app's own section code on paved (limited-width) runs:
       // Q2, Harris County: CSS to the subgrade on a 24 in RCP, not on a 60 in one (54 in and up: select or native);
       // Q4, Houston water under pavement on bank sand, not CSS; Q5, Houston HDPE storm: flowable fill under pavement and
@@ -193,7 +252,7 @@ async (page) => {
           const x1 = x0 + it.qty / Fft;
           const itemUuid = `x-item-${i}`;
           const base = rd.defaultRun(it.type);
-          const run = { ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it) && paved, ...(limitedOf(it) && !paved ? { protection: "box" } : {}), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
+          const run = withChoice({ ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: pavedOf(it), ...(limitedOf(it) && !pavedOf(it) ? { protection: "box" } : {}), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S }, upbOf(it));
           const items = [{ uuid: itemUuid, name: `X${i + 1} ${it.nominal}" ${pick.entry.material}`, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[x0, y], [x1, y]], shape_meta: null }] }];
           const structures = [];
           if (it.crossing.kind === "jack_bore" && it.pits) {
@@ -219,7 +278,7 @@ async (page) => {
           ownX.push((one?.lines ?? []).map((l) => ({ type, name: l.name, regionId: l.regionId, role: l.role, variant: l.variant, qty: l.quantity, unit: l.unit })));
           const r0 = one?.stored?.runs?.[0];
           const sectionNote = (r0?.notes ?? []).find((n) => n.startsWith("Section: ")) ?? null;
-          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote, limitedOf(contract.items[i]), limitedOf(contract.items[i]) && paved, limitedOf(contract.items[i]) && !paved ? "box" : "auto"), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
+          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote, limitedOf(contract.items[i]), pavedOf(contract.items[i]), limitedOf(contract.items[i]) && !pavedOf(contract.items[i]) ? "box" : "auto"), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
         });
         const allX = calcOf(parts.filter(Boolean));
         const linesX = allX?.lines ?? [];
@@ -290,9 +349,10 @@ async (page) => {
         // D-1291: a limited-width run as Calculate builds it (`calculate.ts`): paved, so the final backfill is the preset's
         // paved material (or the project's paved CSS) to the cap, and the box the project's for the bottom width. An
         // unmarked run is built byte for byte as before.
+        // D-1296: paved where the item takes a backfill under pavement too, with the run's own choice on the stub.
         const lw = limitedOf(it);
-        const pv = lw && paved;
-        const stub = { section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: pv, utility_type: it.type };
+        const pv = pavedOf(it);
+        const stub = withChoice({ section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: pv, utility_type: it.type }, upbOf(it));
         const runMats = calc.runMaterials(stub, settings);
         const { layered } = calc.runLayered(stub, it.type, { od: p.od, id }, settings, runMats);
         const bf = pv ? { name: runMats.backfill.name, source: runMats.backfill.source } : { name: "Native", source: "native" };
@@ -303,7 +363,7 @@ async (page) => {
         })() : { box: null };
         const input = (protection, limitedWidth) => ({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", ...boxed, specMaxIn: null, protection, limitedWidth, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: bf.source }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: bf.name }, segments: [], restoration: null, ...(layered ? { layered } : {}) });
         // R43: boxed and unpaved, the run's own Box pick where Auto would box it limited width (its walls only are read).
-        const prot = lw && !paved && q.runQuantities(input("auto", true)).pieces.some((pc) => pc.method === "box") ? "box" : "auto";
+        const prot = lw && !pv && q.runQuantities(input("auto", true)).pieces.some((pc) => pc.method === "box") ? "box" : "auto";
         protOf[forLines.length] = prot;
         const r = q.runQuantities(input(prot, pv));
         trace[forLines.length] = perLf(r, L, layered ? layered.stack.title : "legacy", lw, pv, prot);
@@ -355,7 +415,7 @@ async (page) => {
         const pick = cat.catalogPick(f.pipeKey);
         const pressure = ["water", "fire_water", "force_main"].includes(it.type);
         const inv = inverts[i];
-        const run = { ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it) && paved, protection: protOf[i] ?? "auto", uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
+        const run = withChoice({ ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: pavedOf(it), protection: protOf[i] ?? "auto", uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S }, upbOf(it));
         const item = { uuid: `parity-item-${i}`, name: f.pipeLabel, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[0.25, 0.5], [0.75, 0.5]], shape_meta: null }] };
         const app = calc.calculateUtilities({ runs: [run], items: [item], sheetUuid: S, settings, geo, frame: { widthPt: 1000, heightPt: 1000, feetPerNorm: (2 * it.qty) / 1000 }, eg: null, fg: null, features: [], projectShrink: 1.1, projectSwell: 1.3 });
         const ours = sig(ln.utilityLines([f]).map((l) => ({ ...l, materials: mt.lineMaterials(l, () => null, "restraint", {}) })));
@@ -387,7 +447,7 @@ async (page) => {
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
       return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags, ran, trace, sectionFlags };
     },
-    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, paved: ct.paved ?? true, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null },
+    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, paved: ct.paved ?? true, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null, upbMode: ct.underPavement ?? null, requireUpb: ct.requireUnderPavement ?? Boolean(ct.underPavement), deliveryByDealer: ct.deliveryByDealer ?? null },
   );
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
   // D-1291: refused before any line was written: an item with no limited-width mark, or (pass b) step 1's app part not
@@ -583,7 +643,10 @@ async (page) => {
     const byRole = {};
     const matByKey = {};
     let cssTons = 0;
+    // D-1296 (R10): the fittings allowance % the item's pipe line took (its `pct_of` component's figure).
+    let allowancePct = null;
     for (const l of mine) {
+      if (l.role === "utility_pipe") for (const c of matByName?.[l.name] ?? []) if (c.key === "fittings_allowance" && c.pct && c.sf != null) allowancePct = c.sf;
       const u = unit.get(`${l.type}|${l.name}`) ?? (own.crossing ? unit.get(`?|${l.name}`) : undefined);
       if (!u || !(u.qty > 0)) {
         if (l.qty > 0) unmatched.push(l.name);
@@ -626,7 +689,7 @@ async (page) => {
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
       : undefined;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, matByKeyPerLF: matByKey, cssTonsPerLF: cssTons, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, matByKeyPerLF: matByKey, cssTonsPerLF: cssTons, allowancePct, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
   css.tons = items.reduce((t, it) => t + (it.cssTonsPerLF ?? 0) * it.qty, 0);
   css.total = items.reduce((t, it) => t + (it.matByKeyPerLF?.[cssKey] ?? 0) * it.qty, 0);
