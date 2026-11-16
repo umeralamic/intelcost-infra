@@ -34049,6 +34049,48 @@ leaving hide it. Screenshots: `morning-report-2026-11-19/step0/`.
 
 **Status:** queued (high priority), after D-1293's commit and before D-1289. Brief and readings R22–R25: `intelcost-infra/morning-report-2026-11-19/BRIEF.md`. P02 stays read-only (D-232); it is named only as P02.
 
+**Built (night run 2026-11-16, step 0, after D-1293; app 0cb6b49), awaiting the founder's check.** Spec and figures:
+[contour_drawing_lag_tasks.md](docs/tasks/contour_drawing_lag_tasks.md). The founder's 11:06 UTC addition (R39) is in:
+no React commit per pointer move while a contour is drawn, measured on the dev build and a production build, 1× and 4×.
+- **Reproduced on a copy of P01, not P02.** Adding P02 to the guard list's `copy_sources` for one copy was refused by
+  the session's permissions, so P02 was never copied; P01's copy is busier (V-100 97 existing contours, 1,683 vertices;
+  P02 has 50 and 15, counted read-only). The tag ran from a scratch git worktree on 5175, never in the bench app tree.
+- **The cause.** Every pointer move set the sheet canvas's `cursor` state (and `snapMark`), so React committed about once
+  per move (759 commits / 899 moves, 0.79), and each commit called the page's `markupLayer` render prop, rebuilding every
+  earthwork run's path and label (`EarthworkLayer`, 2.3 s inclusive over a 28 s path); each click re-rendered the whole
+  takeoff page (`onDraftCount`). Snapping cost 0.02 ms a move (D-656's index); no surface, TIN or earthwork recalculation
+  and no save happened mid-contour, so (a) and (b) needed nothing.
+- **The fix** (app, three files; nothing under `src/lib/takeoff/`): the pen and the snap point are refs painted by one
+  animation frame (`SheetCanvas.tsx` `cursorRef`, `snapAtRef`, `scheduleLive`, `paintLive`, `bandFor`; `handleMove` shares
+  the run through `shareDraft`); the band, the snap square and the run's points on their own layer
+  (`svg[data-live-layer]`, `will-change: transform`: inside the sheet's SVG the moving band had every contour under the
+  run's box painted again, frames p50 33 ms); `markupLayerShown` memoised on the view; `ProjectTakeoff.tsx:onDraftCount`
+  holds the count only as far as it is read (0, some, 3+, arc); `clearHover` sets nothing when nothing is hovered
+  (`hoveredSet`); `Reticle.tsx` draws once per frame from the move's box, writes its place only when it moved, own layer.
+- **Measured** (V-100, 900 moves 8 ms apart, 10 clicks, Snap on; existing / proposed contour):
+
+  | Build | CPU | frame p50 / p95 ms | dropped (> 25 ms) | move p50 / p95 / max ms | commits / move |
+  |---|---|---|---|---|---|
+  | tag (dev) | 1× | 16.7 / 49.9 · 16.7 / 49.9 | 345 / 973 · 346 / 993 | 1.87 / 4.64 / 11.4 · 1.88 / 4.84 / 12.8 | 0.79 · 0.80 |
+  | tag (dev) | 4× | 116.6 / 333.1 · 100 / 266.4 | 813 / 969 · 780 / 998 | 13.4 / 36.3 / 113 · 12.6 / 29.4 / 85 | 0.80 · 0.81 |
+  | umer-dev before (dev) | 1× | 16.7 / 49.9 · 16.7 / 50 | 319 / 959 · 310 / 938 | 1.93 / 4.30 / 10.3 · 1.86 / 4.89 / 42.1 | 0.79 · 0.79 |
+  | umer-dev before (dev) | 4× | 116.6 / 433.1 · 116.5 / 283 | 821 / 944 · 769 / 996 | 13.2 / 34.5 / 142 · 13.0 / 30.2 / 85 | 0.80 · 0.80 |
+  | umer-dev after (dev) | 1× | 16.7 / 16.8 · 16.7 / 16.8 | 9 / 956 · 6 / 1069 | 1.49 / 3.72 / 9.9 · 1.48 / 4.17 / 9.2 | 0 · 0.001 |
+  | umer-dev after (dev) | 4× | 49.9 / 133.2 · 49.9 / 116.7 | 875 / 926 · 902 / 946 | 11.6 / 28.5 / 90.5 · 12.4 / 27.1 / 109 | late click commits only |
+  | production before | 1× | 16.7 / 50 · 16.7 / 50 | 349 / 1569 · 390 / 1033 | 2.46 / 9.58 / 38.7 · 1.78 / 4.22 / 30.3 | 0.80 · 0.79 |
+  | production before | 4× | 50 / 116 · 50 / 133 | 789 / 1041 · 783 / 1042 | 11.3 / 22.8 / 75.3 · 10.8 / 29.0 / 182 | 0.78 · 0.79 |
+  | production after | 1× | 16.7 / 16.8 · 16.7 / 16.8 | 21 / 995 · 8 / 1018 | 1.14 / 3.04 / 7.33 · 1.24 / 3.07 / 7.65 | 0.002 · 0 |
+  | production after | 4× | 49.9 / 166.5 · 49.9 / 183.3 | 899 / 929 · 856 / 1024 | 9.2 / 26.0 / 100 · 8.9 / 20.9 / 67 | late click commits only |
+
+  Commits over the whole path after the fix: 24 for the 10 clicks at 1× and at 4× (production, existing); the few counted
+  as a move's at 4× are a click's own commits landing over 600 ms late. Control: a run in hand and no input for 60 s at
+  4×, 0 commits. At 4× nearly every frame is over 25 ms in both builds: the frame is bounded by Chrome painting a
+  document that holds every contour as SVG (~16 ms a frame before any code of ours), now with the band moving at every
+  frame rather than once per React commit; p50 halved (116.6 → 49.9 ms dev).
+- **Results unchanged:** the same two contours (existing 710.5 on V-100, proposed 702.875 on C-200, placed between their
+  neighbours, five clicks each) on two fresh copies of P01, one drawn before the fix, one after: identical vertices and
+  an identical C-200 result in all 5,117 values (cut 11,587.48 CY, fill 9,514.23 CY, net −2,073.25 CY, area 184,865.42 SF).
+
 **D-1290, founder correction (2026-11-16 08:14 UTC):** one value per independent source (contract or supplier) in every material pick, never two readings of the same contract. CSS: Jefferson counted once ($45.73 delivered, escalated) → pick = median {35.73, 38.55, 45.73, 48.08} = **$42.14/TON delivered, grade B, "1.5 sack per ton of dry sand", as of 2026-10**, mixing escalated, note "if renewed at 2023 prices, pick ≈ $40". It goes into D-1289's migration (+13.9 % on $37.00) and into step 3's pass (b) at the Houston factor ($41.61).
 
 **D-1290, founder rule (2026-11-16 09:37 UTC):** supersedes "median across bidders" in material picks from supply tabulations: **each contract contributes its low (or awarded) price per size; the pick is the median across contracts** (non-awarded bidders are not what buyers pay; separate awards, such as Montgomery's dual award, count separately). RCP picks: 24 in $45.49, 30 in $63.29, 36 in $91.49, 42 in $105.85, 48 in $145.68 (grade B), 54 in $171.82 (grade C); 60 in keeps $193.21 (+3.3 %, under 5 %). C900 DR 18 keeps 8 in $17.39 and 6 in $10.70, grade B, source Topeka Event 2950 (Feb 2024). Cameron's reading accepted. C900 DR 14, SDR-26, DI and HDPE picks as proposed. **No migration until the founder approves the final table**, reported first. Report-only checks: (a) labour, equipment and material shares per kind against public breakdowns; (b) the 1.20–1.35 band's basis and public markup evidence.
