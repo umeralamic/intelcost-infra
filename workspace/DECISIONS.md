@@ -33737,4 +33737,91 @@ b4c963cdf83e7d84 before (02:25) and after (02:36).
 
 ## D-1288 — Night run 2026-11-15 → 17, step 4: Plan A-lean AL4, the pure water and rain module (no wiring)
 
-**Status:** planned for the run's step 4, only if time remains before hour 27. Spec: `docs/tasks/dewatering_weather_tasks.md` (AL4).
+**Status:** built and committed locally (night run step 4, 2026-11-16 05:35 → ~06:30 UTC, unattended; founder to confirm;
+not Live). The pure module and its rows only: **no wiring and no visible change.** Spec: `docs/tasks/dewatering_weather_tasks.md`
+(§3, §4.1–§4.3, §5.a–§5.b, §6, §9.1 AL4).
+
+### What is built (app `src/lib/takeoff/earthwork/water/`, hard rule 2: data in, data out)
+
+- `defaults.ts`: every figure as a constant with its grade: `WATER_DEFAULTS` (target **2 ft**, ahead 2, behind 1, 7/5,
+  24 h, an 8 h crew day, watch **"attendant"** with patrols 2 visits × 1 h), `RULE` (15 ft lift, the bench + 1 ft, k edges
+  10⁻⁴ / 10⁻³ / 10⁻², spacings 3 / 5 / 8 ft, heave and double-row thresholds, the deep-well pond test), `WELLPOINT`
+  (§4.2's figures), `SUMP` (`libraryKey` `PMP-TRASH-3`, Q17), `RAIN`, `PAY`. The setting and the 2 ft default stay
+  constants until the wiring puts them in `utility_settings` (no `utility_settings` change, no migration).
+- `method.ts:selectMethod(site)`: §3.2 with its reason text (the spec's own example reads back exactly: "Wellpoints, single
+  row: sand (k 2 × 10⁻³ cm/s), lift 14.0 ft ≤ 15"); `permeability` (typed k, else the USCS table, else the survey's
+  ksat × 10⁻⁴; a dual symbol reads as its first); `kText`; `pointLengthFt`. Built (quantities in A-lean): a trench's sump
+  (rule 2), vacuum wellpoints (3), wellpoints (5), the bench (6). Rows 4, 7, 8 and **any pond** (its ring is AT5 / AT7)
+  return the method with ". Outside the built methods: price by hand". No water data and no permeability are said, never
+  a method.
+- `quantities.ts`: `systemDuration` (§4.1), `waterQuantities` → `sumpQuantities` (§4.3: a pump per heading over the crew's
+  days + 1 × 7/5 on 24 h, no standby, a bag per 3 days) or `wellpointQuantities` (§4.2: header staged min(LF, LF/day ×
+  (ahead + 1 + behind)) × rows, points installed and on rent, length, pumps ⌈header ÷ 500⌉ + 1 standby, fuel, jetting
+  ÷ 60, removal ÷ 120, hose, attendant or patrol hours, piezometers, bags, a settling tank for SM / ML or a fine sand,
+  the CGP report's hours, towed and flatbed loads, the contamination flag); each item carries a **price basis, never a
+  $**: wellpoint gear `quote` ("Quote needed"), the sump pump `library PMP-TRASH-3` (Q17, priced once wired), fuel at the
+  project's diesel or gasoline, the watch and the CGP report at the project's wage (§4.5's "our priced part"), mob from
+  the library's transport classes (`priceText`).
+- `rain.ts`: `dryingDays` (the overlap p = R ÷ the month's days), `lostDaysInMonth` (earthwork with the drying-day rule,
+  pipe R × 5/7, flatwork ≥ 0.10 in × 5/7), `lostDaysInWindow` (pro rata by the window's calendar days, a leap February
+  whole), `rainSumps` (§5.a), `parseDay`; normals come in as data (no station table yet: AL1).
+- `pay.ts:payRisk`: Covered ≤ 0.8 × with nothing unpriced, At risk > 1.0 ×, else Check.
+
+### Readings (founder away; each in the report)
+
+1. **Rule 8 before rule 7 for a pond.** Read literally, every deep pond in coarse soil met row 7 (second stage) first, so
+   §6's `dw-deepwell-pond` could not be reached. A trench never meets row 8 and a pond never meets row 6, so reading 8
+   before 7 changes nothing else. Noted in §3.2.
+2. **"Every price Quote needed" is read with the spec's §3 and §4.5:** equipment and material read "Quote needed"; fuel
+   and the watch's labour name the project's fuel price and wage (the pay badge's "our priced part"); the sump pump names
+   the library's trash pump (Q17). The module computes no dollar anywhere; the $ in `dw-sump-clay`, `dw-wp-single`'s fuel
+   and `dw-wp-single-pumps` stay in the rows' comments for the wiring.
+3. **§6's `dw-wp-bench`** named neither its rows nor its spacing: H 12 > 10 gives a **double row**, SP from the table 10⁻²
+   gives **8 ft**. Added to its row in the spec; every other §6 figure was right as written.
+4. **The sump takes no attendant, CGP report or standby** (§4.3 lists none); the full-time attendant is applied to
+   wellpoints only.
+5. **How an activity's window grows with its own lost days** (feedback or the dry window) is AL2's; the module gives the
+   window sum, and `rain-standby-ex20` uses June's figure as §6 does.
+
+### Rows: `intelcost-infra/browser/lib/water-cases.mjs` (33, each worked by hand in its comment), via `browser/quantity-table.mjs`
+
+`dw-none` (H −1.65, none), `dw-sump-clay` (sump, wd 2, open 3, 4.2 d, 100.8 h, 65.52 gal, 2 bags, the pump `PMP-TRASH-3`),
+`dw-sump-heave` (H 12, the heave flag; 2 headings: 7 d, 336 h, 218.4 gal, 6 bags), `dw-wp-single` (rule 5, 5 ft, single;
+4 / 7 / 9.8 d; 600 LF header, 121 points, 21 ft, 2 + 1 pumps, 470.4 h, 799.68 gal), `dw-wp-single-labour` (2.0167 / 1.0083
+crew-days, 179.2 attendant h, 4 piezometers, 12 hose lengths, 8 bags, 2.45 CGP h, 3 towed + 1 flatbed), `dw-wp-patrols`
+(19.6 h), `dw-wp-single-pumps` (3 pumps × 9.8 d, all "Quote needed"), `dw-wp-double` (1,200 LF, 242 points, 3 + 1, 705.6 h,
+1,199.52 gal, 4.0333 crew-days), `dw-wp-bench` (4.0 ft bench, 14 ft from it, double, 8 ft, 21 ft points, 152 points),
+`dw-vacuum-silt` (rule 3, 3 ft, 101 points, 18 ft, 342.72 gal, a settling tank, 153.6 h), `dw-k-survey` (ksat 10 µm/s =
+10⁻³ on rule 5's edge), `dw-eductor` (rule 4, by hand), `dw-box-sand-deep` (rule 7 eductors), `dw-deepwell-pond` (rule 8,
+1.38 ac, by hand), `dw-pond-second-stage` (rule 7), `dw-no-water`, `dw-no-production`, `dw-contamination`;
+`rain-june-ew` **42.64/7 = 6.0914286** (dry 5.6, p 0.12, counted 4.928; also through a 30-day window), `rain-june-pipe`
+2.5714, `rain-june-flatwork` 4.7143, `rain-overlap` 0.672, `rain-q1` 11.7165 / 5.00, `rain-year` **52.597** / 22.214 /
+46.00, `rain-window-prorata` 4.8966, `rain-leap-feb` 3.6753, `rain-no-normals` null, `rain-sump-q1` 15.4 days, 61.6
+pump-days, 492.8 h, 320.32 gal, `rain-standby-ex20` $12,957 against $7,950 (+$5,007, unchanged without the overlap rule;
+the app's own `periods.ts:solveRental`); `pay-risk` 1.1478 At risk, `pay-covered-edge` 0.8 Covered, `pay-check-unpriced`,
+`pay-check-at-one`. **`rain-june-ew` is checked equal to Plan B's `eq-standby-owned` lost days (42.64/7, D-1287).** Not
+answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
+
+### Proof
+
+- **Founder digest b4c963cdf83e7d84** at 05:35 (start) and at the end (below).
+- **App save:** one gated save, `founder-active.sh` quiet at 05:44:01, the five new files written at 05:44:10 (one `cp`
+  of new files nothing imports: no page reloads). No api save, no migration, no service touched.
+- **App gates:** lint 0 errors (the 4 known warnings), typecheck 0, build 0, and again chained with the commit.
+- **No visible change:** nothing outside `water/` imports it (`grep -rn -E "water/(method|quantities|rain|pay|defaults)|
+  earthwork/water" src` outside the module: no match); the production build after the save is **byte-identical** to
+  HEAD 8a2cff7's (sha256 of all 328 files in `dist/` equal; none of the module's strings in `dist/`): tree-shaken.
+- **Quantity table 05:54:47–06:07:06: exit 0, 0 FAIL**, "344 rows … 297 utility rows right … 137 equipment rows right …
+  passed", "rental tax, extras and ratios (D-1287): 24 rows, all right" and **"water and rain (D-1288): 33 rows, all
+  right"**. Infra `node --check` (both .mjs) and `sh -n quantity-table.sh` (unchanged).
+
+- **Chained with the commits:** the app gates again (lint, typecheck, build) before app **37597cf**; a second quantity
+  table 06:17:28–06:29:25 (exit 0, 0 FAIL, the same lines and "water and rain (D-1288): 33 rows, all right"), `node
+  --check` and `sh -n` before infra **f522407**; the workspace mirror after them. Local on umer-dev, not pushed.
+- **Bench windows (UTC):** the one app save at 05:44:10 (new files nothing imports: no reload); docker exec into api by
+  the two quantity-table runs 05:54:47–06:07:06 and 06:17:28–06:29:25; no api save, no migration, no restart. **Founder
+  digest b4c963cdf83e7d84** at 05:35 and 06:29 (held).
+- **Left for the wiring (AL4's rest, then AL1–AL3, AL5):** the attendant / patrol setting and the 2 ft target in
+  `utility_settings`; `calculateUtilities` calling `selectMethod` per dewatering stretch with its bore's k and the run's
+  production; the run panel's method, reason and quantities with "Quote needed"; the sump pump priced from `PMP-TRASH-3`
+  (Q17); AL1's station normals, AL2's durations and lost days into the rented spreads (and B8's standby), AL3's pay line.
