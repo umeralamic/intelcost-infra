@@ -166,6 +166,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py po
 # D-1286 (B7, B6): every rate-date text form through migration d1286b7c4f30's parse and the bench's stored dates equal to it;
 # the EIA catch-up (over 8 days) and amber (over 10) at their edges, the series by state, the off-road deduction, the fallback.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1286" </dev/null || { echo "FAIL  rate dates and diesel (above)"; exit 1; }
+# D-1287 (B2, B3, B8): the rental tax state table as migration d1287c6e2a91 loaded it, the bundle's rule for TX, GA, an
+# unlisted state and none, the extras' figures in code, the job type a state rule may name, the ratios at the medians.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1287" </dev/null || { echo "FAIL  rental tax and extras (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.

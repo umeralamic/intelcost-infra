@@ -2309,7 +2309,91 @@ def d1286() -> int:
     return 1 if wrong else 0
 
 
+# D-1287 (Plan B B2, B3, B8): the state table as migration d1287c6e2a91 loaded it on the bench, the api's rental-extras
+# figures in code, the job type a state rule may name, the bundle's rule for a loaded, an unread and an unlisted state,
+# and the ratios at the library's medians. Read only.
+D1287_TX = (True, True, True, True, False, True)  # rentals, operated exempt, waiver, lessor delivery, third-party, fees
+D1287_JOB_TYPES = (
+    ("residential", "new_construction", "residential"),
+    ("residential", "renovation", "residential"),
+    ("commercial", "new_construction", "nonresidential_new"),
+    ("public", None, "nonresidential_new"),  # a MUD's or a city's new line: new nonresidential (§3.294(e)(1))
+    ("commercial", "renovation", "nonresidential_repair"),
+    ("public", "tenant_improvement", "nonresidential_repair"),  # (e)(2)
+    ("commercial", "mixed", "mixed"),
+    (None, None, None),
+)
+
+
+async def d1287() -> int:
+    """D-1287 (step 3 of the 2026-11-15 night run): the rental tax state table, the extras' figures, the job type, the
+    bundle's rule, the ratios. Reads eqlib and the api's code; writes nothing."""
+    from sqlalchemy import text as sql
+
+    from app.database import SessionFactory
+    from app.features.equipment import service
+
+    wrong: list[str] = []
+    n = 0
+
+    def check(rid: str, got: object, want: object) -> None:
+        nonlocal n
+        n += 1
+        if got != want:
+            wrong.append(f"FAIL  {rid}: {got!r}, expected {want!r}")
+
+    async with SessionFactory() as session:
+        rows = (await session.execute(sql("SELECT * FROM eqlib.eq_rental_tax_state ORDER BY state"))).mappings().all()
+        by = {r["state"]: r for r in rows}
+        check("eq-tax-table-states", sorted(by), ["AZ", "GA", "IL", "PA", "TX"])
+        tx = by.get("TX") or {}
+        flags = tuple(tx.get(k) for k in ("taxes_rentals", "operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable", "third_party_haul_taxable", "lessor_fees_taxable"))
+        check("eq-tax-table-tx-rule", flags, D1287_TX)
+        check("eq-tax-table-tx-grade", (tx.get("grade"), list(tx.get("exempt_job_types") or []), "§3.294" in str(tx.get("rule_cited"))), ("A", [], True))
+        for st in ("GA", "IL", "AZ", "PA"):
+            r = by.get(st) or {}
+            check(f"eq-tax-table-{st.lower()}-not-read", (r.get("grade"), r.get("taxes_rentals"), r.get("waiver_taxable")), ("F", None, None))
+        # The bundle's rule: Texas loaded; Georgia listed, not loaded; California not listed; no state at all.
+        rule = await service.rental_tax(session, None, "TX")
+        check("eq-tax-bundle-tx", (rule["loaded"], rule["listed"], rule["taxes_rentals"], rule["exempt_job_types"], rule["read_on"]), (True, True, True, [], "2026-11-16"))
+        rule = await service.rental_tax(session, None, "GA")
+        check("eq-tax-bundle-ga", (rule["loaded"], rule["listed"], rule["grade"]), (False, True, "F"))
+        rule = await service.rental_tax(session, None, "CA")
+        check("eq-tax-bundle-unlisted", (rule["loaded"], rule["listed"]), (False, False))
+        rule = await service.rental_tax(session, None, None)
+        check("eq-tax-bundle-no-state", (rule["loaded"], rule["state"]), (False, None))
+        # The ratios: the settings at the medians of the classes rated for all three periods.
+        ratio = (
+            await session.execute(
+                sql(
+                    "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY rent_week / rent_day),"
+                    " percentile_cont(0.5) WITHIN GROUP (ORDER BY rent_4wk / rent_week), count(*)"
+                    " FROM eqlib.eq_class WHERE rent_day > 0 AND rent_week > 0 AND rent_4wk > 0 AND retired_in IS NULL"
+                )
+            )
+        ).one()
+        check("eq-ratio-medians", (round(float(ratio[0]), 2), round(float(ratio[1]), 2), ratio[2]), (2.9, 2.73, 276))
+        stored = dict((await session.execute(sql("SELECT key, value FROM eqlib.eq_setting WHERE key IN ('rent_week_per_day', 'rent_4wk_per_week')"))).all())
+        check("eq-ratio-stored", (float(stored["rent_week_per_day"]), float(stored["rent_4wk_per_week"])), (2.9, 2.73))
+    # The extras' figures in code (a company's stored rows untouched): waiver 12 %, fee 1.3 % capped $75, delivery by the
+    # dealer; cleaning and refill with no figure (off).
+    v = service.APP_SETTING_VALUES
+    check("eq-waiver-default-figure", (v.get("damage_waiver_pct"), v.get("env_fee_pct"), v.get("env_fee_cap"), v.get("rental_delivery_by_dealer")), (12, 1.3, 75, 1))
+    check("eq-extras-off-by-default", (v.get("cleaning_fee"), v.get("fuel_refill_per_gal")), (None, None))
+    check("eq-extras-settings-listed", all(k in service.APP_SETTINGS for k in ("damage_waiver_pct", "env_fee_pct", "env_fee_cap", "cleaning_fee", "fuel_refill_per_gal", "rental_delivery_by_dealer")), True)
+    for kind, work, want in D1287_JOB_TYPES:
+        check(f"eq-job-type-{kind}-{work}", service.job_type(kind, work), want)
+    for w in wrong:
+        print(w)
+    print(f"rental tax, extras and ratios (D-1287): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["d1287"]:
+        import asyncio
+
+        sys.exit(asyncio.run(d1287()))
     if sys.argv[1:] == ["d1286"]:
         sys.exit(d1286())
     if sys.argv[1:] == ["answers"]:
