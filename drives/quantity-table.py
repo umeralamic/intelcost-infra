@@ -2140,8 +2140,9 @@ def answers() -> int:
     return 1 if wrong else 0
 
 
-# D-1286 (B7): every rental and owned text form of release 1, read by migration d1286b7c4f30's parse, against the
-# date worked by hand from the spec's rules and the sources' editions (step2/B7-PARSE-LIST.md).
+# D-1286 (B7): every rental and owned text form of release 1, read by migration d1286b7c4f30's parse (folded into
+# d1287c6e2a91 at the close-out, D-851: `d1286_parse_rent`, `d1286_parse_owned`), against the date worked by hand from
+# the spec's rules and the sources' editions (step2/B7-PARSE-LIST.md).
 D1286_RENT = (
     ("2025", "W25", "2025-03-01"),  # a year: its source's edition, W25 "2025 (Mar 2025)"
     ("2025", "NTXC", "2025-01-01"),  # a year-only edition: Jan 1
@@ -2202,19 +2203,20 @@ def d1286() -> int:
 
     wrong: list[str] = []
     n = 0
-    path = next(Path("/srv/alembic/versions").glob("d1286b7c4f30_*.py"))
-    spec = importlib.util.spec_from_file_location("d1286_migration", path)
+    path = next(Path("/srv/alembic/versions").glob("d1287c6e2a91_*.py"))
+    spec = importlib.util.spec_from_file_location("d1287_folded_migration", path)
     assert spec and spec.loader
     mig = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mig)
+    parse_rent, parse_owned = mig.d1286_parse_rent, mig.d1286_parse_owned
     for txt, ids, want in D1286_RENT:
         n += 1
-        got, rule = mig.parse_rent(txt, ids)
+        got, rule = parse_rent(txt, ids)
         if (got.isoformat() if got else None) != want:
             wrong.append(f"FAIL  b7-parse-rent {txt!r} on {ids!r}: {got} ({rule}), expected {want}")
     for txt, want in D1286_OWNED:
         n += 1
-        got, rule = mig.parse_owned(txt)
+        got, rule = parse_owned(txt)
         if (got.isoformat() if got else None) != want:
             wrong.append(f"FAIL  b7-parse-owned {txt!r}: {got} ({rule}), expected {want}")
     # The bench's stored dates are the parse of its text, every class (read only).
@@ -2225,8 +2227,8 @@ def d1286() -> int:
     off = [
         r.equip_key
         for r in rows
-        if mig.parse_rent(r.rent_date, r.rent_source_ids)[0] != r.rent_as_of
-        or mig.parse_owned(r.owned_rate_year)[0] != r.owned_as_of
+        if parse_rent(r.rent_date, r.rent_source_ids)[0] != r.rent_as_of
+        or parse_owned(r.owned_rate_year)[0] != r.owned_as_of
     ]
     n += 1
     if len(rows) != 642 or off:

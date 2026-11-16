@@ -33825,3 +33825,39 @@ answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
   `utility_settings`; `calculateUtilities` calling `selectMethod` per dewatering stretch with its bore's k and the run's
   production; the run panel's method, reason and quantities with "Quote needed"; the sump pump priced from `PMP-TRASH-3`
   (Q17); AL1's station normals, AL2's durations and lost days into the rented spreads (and B8's standby), AL3's pay line.
+
+### Close-out before the push (2026-11-16, 06:32 → ~07:30 UTC, unattended)
+
+- **Staging:** `git fetch origin` in app, api, infra and market; `origin/staging` (app, api) has nothing that is not in
+  umer-dev, infra and market have none: nothing merged.
+- **The fold (D-851):** d1285c4a9e10 (D-1285), d1286b7c4f30 (D-1286) and d1287c6e2a91 (D-1287) are one revision,
+  `alembic/versions/d1287c6e2a91_d1285_to_d1287_in_one_revision.py`, which keeps the last file's id **d1287c6e2a91** (as
+  the folds d1269b4f2e80 and d1276b8e4f10 did) and revises the pushed head **d1279a3c5e71**. Each step's code is unchanged,
+  its names prefixed (`D1285_`, `_d1286_`, `D1287_`); `upgrade()` runs them in order, `downgrade()` in reverse. The two
+  B7 parsers stay public as `d1286_parse_rent` / `d1286_parse_owned`: `drives/quantity-table.py d1286` now loads them from
+  the folded file. The data marks are the steps' own (the actor `migration d1285c4a9e10 (D-1285)` on the audit rows,
+  release 47's title and sha), so the file undoes rows the three files wrote. Api commit **69e74a2**; one head.
+- **Proof (scratch foldproof12, postgres:18, removed after):** (a) from empty, `upgrade head` gives the bench's schema:
+  62 changed lines, all the 31 known CHECK print forms (the same 31 constraint names as foldproof11), no other line;
+  `alembic check` clean. (b) On a bench copy (199 tables, 256,739 rows): the unfolded files down to d1279a3c5e71 (17
+  activities back at 10 h fixed, 0 d1285 audit rows), then the folded file up: the touched tables (`eq_company_activity`,
+  the d1285 `audit_log` rows, `eqlib.eq_class`, `eq_rental_tax_state`, `eq_setting`, `release`, release 47's change rows)
+  row for row equal to the copy; every table's rows equal apart from the re-inserted rows' serial ids, uuids and times
+  (the 17 audit rows, the 2 change rows, release 47's `released_at`); the one schema line is
+  `ck_eq_rental_tax_state_grade` printed by the dump/restore round trip of the reference copy (the bench's own print
+  equals a fresh migration's, (a)). (c) The folded downgrade from there equals the unfolded downgrade in schema and every
+  row (only the sequences advanced); folded up again equals (b).
+- **The bench, the CLAUDE.md way:** the folded file saved over the three at 07:02:11 (alembic/ is not watched: no
+  reload), then down to d1279a3c5e71 on the folded file and up on it, each alembic call after its own quiet. **Window
+  07:02:17 → 07:03:06 UTC (49 s)**, in which the running api lacked `rent_as_of` / `owned_as_of`, `eq_rental_tax_state`
+  and release 47. The bench after equals the bench before and proof (b) in every touched table; the down state equalled
+  the proof's unfolded down. New serial ids on the bench: the 17 d1285 audit rows 12905–12921 → 13070–13086, release 47's
+  change rows 51–52 → 53–54. Api `/docs` 200. Founder digest **b4c963cdf83e7d84** at the start and after (held).
+- **Gates:** app lint (0 errors, the 4 known warnings), typecheck, build; api ruff check, ruff format --check, mypy (287
+  files), alembic check, one head d1287c6e2a91. **Quantity table 07:05:03–07:16:58, exit 0, 0 FAIL:** "344 rows …
+  passed" line, "rate dates and diesel (D-1286): 64 rows, all right" (the parsers from the folded file), "rental tax,
+  extras and ratios (D-1287): 24 rows, all right", "water and rain (D-1288): 33 rows, all right", competitor names none.
+- **Scans of what the push sends** (each repo's `origin/umer-dev..HEAD`, added lines, added file names, commit
+  messages): no client name, no env key value, no key-shaped string.
+- **Purge:** no fx.* throwaway from tonight left (steps 1–3 purged theirs; the dry run lists 0 to delete, its 58 refused
+  are older accounts in founder workspaces); 0 BENCH DUPs.
