@@ -163,6 +163,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py ty
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py onsite" </dev/null || { echo "FAIL  machines on site (above)"; exit 1; }
 # One equipment pool per job (D-1115): kind, size, the pipe cap, one sub, the cost guard, hosts only, rental periods, the leftover hour.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py pool" </dev/null || { echo "FAIL  equipment pool (above)"; exit 1; }
+# D-1286 (B7, B6): every rate-date text form through migration d1286b7c4f30's parse and the bench's stored dates equal to it;
+# the EIA catch-up (over 8 days) and amber (over 10) at their edges, the series by state, the off-road deduction, the fallback.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1286" </dev/null || { echo "FAIL  rate dates and diesel (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.

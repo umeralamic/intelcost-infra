@@ -46,6 +46,35 @@ export const EQUIPMENT_CASES = [
   { id: "ot-daily-spread-10h", kind: "overtime", rule: { overtime: true, daily: true, daysPerWeek: 5 }, workDay: 8, labor: 6000, own: [{ hoursPerDay: 10, labor: 5000 }], expect: { premium: 500, same: false } },
   // ot-5: overtime off: $0 whatever the spreads.
   { id: "ot-off", kind: "overtime", rule: { overtime: false, daily: false, daysPerWeek: 5 }, workDay: 8, labor: 10000, own: [{ hoursPerDay: 10, labor: 4000 }], expect: { premium: 0, same: true } },
+
+  // D-1286 (B7): a library rate's age (`rateAge.ts`), amber past 12 calendar months, red past 24, worked by hand. Exactly
+  // 12 (or 24) months is not yet over; one day more is. Days: 2025-11-16 → 2026-11-16 is 365 (2026 not a leap year).
+  { id: "b7-age-12-months-exact", kind: "rate-age", asOf: "2025-11-16", today: "2026-11-16", expect: { level: "fresh", days: 365, months: 12 } },
+  { id: "b7-age-12-months-one-day-over", kind: "rate-age", asOf: "2025-11-15", today: "2026-11-16", expect: { level: "amber", days: 366, months: 12 } },
+  // 2024-11-16 → 2026-11-16: 365 + 365 = 730 days (no Feb 29 between).
+  { id: "b7-age-24-months-exact", kind: "rate-age", asOf: "2024-11-16", today: "2026-11-16", expect: { level: "amber", days: 730, months: 24 } },
+  { id: "b7-age-24-months-one-day-over", kind: "rate-age", asOf: "2024-11-15", today: "2026-11-16", expect: { level: "red", days: 731, months: 24 } },
+  // The plan's eq-stale row (§9) on 2026-11-15: Mar 1 2025 is 624 days (amber), Oct 1 2026 45 (fresh), Mar 14 2024 976 (red).
+  { id: "b7-eq-stale-mar-2025", kind: "rate-age", asOf: "2025-03-01", today: "2026-11-15", expect: { level: "amber", days: 624, months: 20 } },
+  { id: "b7-eq-stale-oct-2026", kind: "rate-age", asOf: "2026-10-01", today: "2026-11-15", expect: { level: "fresh", days: 45, months: 1 } },
+  { id: "b7-eq-stale-mar-2024", kind: "rate-age", asOf: "2024-03-14", today: "2026-11-15", expect: { level: "red", days: 976, months: 32 } },
+  // A Feb 29 as-of: 12 months on is Feb 28 2025 (the month's last day), so that day is not over; Mar 1 is.
+  { id: "b7-age-feb-29-exact", kind: "rate-age", asOf: "2024-02-29", today: "2025-02-28", expect: { level: "fresh", days: 365, months: 12 } },
+  { id: "b7-age-feb-29-one-day-over", kind: "rate-age", asOf: "2024-02-29", today: "2025-03-01", expect: { level: "amber", days: 366, months: 12 } },
+  { id: "b7-age-no-date", kind: "rate-age", asOf: null, today: "2026-11-16", expect: { none: true } },
+  // A class's date by its basis, from the bench's release (migration d1286b7c4f30): WT-4000 rented, rent_as_of 2025-03-01
+  // (`2025` on W25, Mar 2025): amber; AW-AB-RT-125 has no rental rate, so a rental prices owned (D-811): FEMA 2025,
+  // owned_as_of 2025-07-01, 503 days, amber; AW-AB-EL-30 (`3/2023-3/2024` on COSTARS, to Mar 14 2024): red;
+  // EX-CRAWL-20T rented (A26, read Oct 2026, 2026-10-01): fresh.
+  { id: "b7-class-wt-4000-rental", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2025-03-01", level: "amber" } },
+  { id: "b7-class-owned-fallback", kind: "class-age", key: "AW-AB-RT-125", mode: "rental", today: "2026-11-16", expect: { basis: "owned", asOf: "2025-07-01", level: "amber", days: 503 } },
+  { id: "b7-class-costars-red", kind: "class-age", key: "AW-AB-EL-30", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2024-03-14", level: "red" } },
+  { id: "b7-class-ex20-fresh", kind: "class-age", key: "EX-CRAWL-20T", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2026-10-01", level: "fresh" } },
+  // A rate set by the company or the estimate is not the library's: no date, no badge (WT-4000 with a project 4-week rate).
+  { id: "b7-class-own-rate-no-badge", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", classOverride: { field: "rent_4wk", value: 8000 }, expect: { basis: "rent", none: true } },
+  // Needs attention lists each stale class once per basis, however many lines use it: WT-4000 rented on 24 lines, PV-STABILIZER
+  // owned (EP 2022, red) twice, EX-CRAWL-20T (fresh) on 5: two entries, red first.
+  { id: "b7-needs-attention-once", kind: "stale-list", today: "2026-11-16", uses: [...Array(24).fill({ key: "WT-4000", basis: "rent" }), { key: "PV-STABILIZER-WR2400", basis: "owned" }, { key: "PV-STABILIZER-WR2400", basis: "owned" }, ...Array(5).fill({ key: "EX-CRAWL-20T", basis: "rent" })], expect: { list: ["PV-STABILIZER-WR2400|owned|2022-12-01|red", "WT-4000|rent|2025-03-01|amber"] } },
   { id: "eq-solve-fixed-day", kind: "solve", rates: [1040, 2927, 7950], days: 7.6526, hours: 61.2205, fixed: "day", expect: { cost: 8320, label: "8 days" } },
 
   // One machine, the plan's worked examples (8-hr day, catalog path): plan §3.5, §3.6.
@@ -277,6 +306,7 @@ export async function runEquipment(page, eqlib) {
       const match = await import("/src/lib/estimate/equipment/match.ts");
       const sug = await import("/src/lib/estimate/equipment/suggest.ts");
       const ot = await import("/src/lib/estimate/overtime.ts");
+      const age = await import("/src/lib/estimate/equipment/rateAge.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -458,6 +488,20 @@ export async function runEquipment(page, eqlib) {
         if (c.kind === "overtime") {
           const premium = ot.overtimeBySpread(c.rule, c.workDay, c.labor, c.own);
           return { premium, same: Math.abs(premium - ot.overtimePremium(c.rule, c.workDay, c.labor)) < 0.005 };
+        }
+        // D-1286 (B7): a rate's age, a class's by its basis, and Needs attention's list once per class.
+        if (c.kind === "rate-age") {
+          const a = age.rateAge(c.asOf, c.today);
+          return a ? { level: a.level, days: a.days, months: a.months } : { none: true };
+        }
+        if (c.kind === "class-age" || c.kind === "stale-list") {
+          const b = bundleFor(eqlib, {});
+          if (c.classOverride) b.overrides.push({ ...(b.overrides[0] ?? {}), uuid: "qt-class", scope: "project", entity: "class", entity_key: c.key, field: c.classOverride.field, value_num: c.classOverride.value, value_text: null, confirmed_none: false, national_at_set: null, release_at_set: 1, note: null, set_by: "quantity table", set_at: "2026-11-16T00:00:00Z", updated_by: "quantity table", updated_at: "2026-11-16T00:00:00Z" });
+          const lib = resolve.library(b);
+          if (c.kind === "stale-list") return { list: age.staleRates(lib, c.uses, c.today).map((s) => `${s.key}|${s.basis}|${s.age.asOf}|${s.age.level}`) };
+          const basis = age.machineBasis(lib, c.key, c.mode);
+          const a = age.classRateAge(lib, c.key, basis, c.today);
+          return a ? { basis, asOf: a.asOf, level: a.level, days: a.days } : { basis, none: true };
         }
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {

@@ -290,6 +290,15 @@ A state at F charges nothing and says "Rental tax rule for GA not loaded: 0 %" i
 - Add: catch-up on worker start and daily when the newest week is > 8 days old; an amber flag past 10 days; the
   suggested price from the weekly table; the release snapshot as the last fallback. Key `EIA_API_KEY` already in
   `intelcost-infra/.env.ai`; no new key.
+- **Built 2026-11-16 (D-1286, night run step 2; founder to confirm).** `features/equipment/fuel.py`: `week_age`,
+  `needs_catch_up` (> 8 days or no week), `is_stale` (> 10), `fuel_status`, `snapshot_diesel` (eq_setting
+  `fuel_price_diesel_suggested`, its week from the note), `suggested_diesel` (the series for the state: state, else PADD,
+  else US; off-road by `off_road`; else the snapshot, always flagged); `project_fuel` adds each week's age and flag.
+  `worker/tasks/fuel.py:catch_up_fuel_prices`, sent on a worker's start by the worker serving the default queue only
+  (`catch_up_on_start`), and daily at 05:10 UTC from beat (`celery_app.py`). The bundle carries `fuel_status`,
+  `suggested_diesel`, `fuel_state`. Equipment Settings (off-road diesel) and Settings › Equipment library show the
+  suggestion with "Use $x" (by hand) and the amber "n days old"; Needs attention names a stale diesel week once. On the
+  bench the first catch-up (2026-11-16 01:36 UTC) took the table from the week of Nov 2 (14 days) to Nov 9.
 
 ## 7. Rate dates and staleness (kept, B7)
 
@@ -297,6 +306,15 @@ A state at F charges nothing and says "Rental tax rule for GA not loaded: 0 %" i
   source's edition date; "mixed" → the oldest; every parse listed for review before it runs).
 - Amber past 12 months, red past 24, on the class, the picker and the estimate line; Needs attention lists them once.
 - Quotes carry their date; a quote older than 12 months leaves the location factor's basket (§1.4).
+- **Built 2026-11-16 (D-1286, night run step 2; founder to confirm).** Migration `d1286b7c4f30` (revises d1285c4a9e10):
+  the two date columns, the parse in the migration (`parse_rent`, `parse_owned`, the sources' editions in `SOURCE_DATES`;
+  no text changed); 25 rental forms and 6 owned forms, every one read (list:
+  `intelcost-infra/morning-report-2026-11-18/step2/B7-PARSE-LIST.md`, D-1286). App: `lib/estimate/equipment/rateAge.ts`
+  (`rateAge`, `machineBasis`, `classRateAge`, `staleRates`), `RateAgeBadge` on the library grid, the class detail's
+  Rental / Owned / Operated, the picker's sizes and picked machine, and each equipment component row of the estimate;
+  Needs attention's "Equipment rates over 12 months old (n)", once per class and basis. A rate the company, the
+  estimate or the line set has no library date and no badge. **Not built (B1):** quotes carrying their date and leaving
+  the location factor's basket; no quote store exists yet.
 
 ## 8. Wear parts, standby and rain days, owned vs rented, ratios (kept, B8)
 
@@ -379,11 +397,11 @@ location factor, if Houston quotes come in under the national rows, moves us tow
 | B3 | Rental extras: waiver company setting 12 % default with "Own insurance (0 %)", env fee, cleaning, refill; in `machineCost`; shown on the machine | api, app | 4 |
 | B4 | Mob: × F on every transport figure, `local_radius_mi` 50, local flat vs line haul, dealer delivery taxable; no region table | app, api | 4 |
 | B5 | Shoring (kept) | app, api | 12 |
-| B6 | Diesel catch-up, flag, suggested price (kept) | api, app | 3 |
-| B7 | `rent_as_of` (migration with the parse), badges, Needs attention (kept) | api, app | 6 |
+| B6 | Diesel catch-up, flag, suggested price (kept). **Built 2026-11-16, D-1286** | api, app | 3 |
+| B7 | `rent_as_of` (migration with the parse), badges, Needs attention (kept). **Built 2026-11-16, D-1286** (quotes' dates wait for B1) | api, app | 6 |
 | B8 | Standby, GET field, ratios, owned mode reads My equipment first (kept) | api, app | 5 |
 | ~~B9~~ | ~~Spread sizing per line~~: dropped, Q22's cheaper-of-two replaces it | | 0 |
-| B10 | Gates, the §9 rows (25) as `equipment-cases.mjs`, one MCP smoke on a throwaway (a Houston utility job: tax row on an exempt job, 12 % waiver and own insurance, the factor's label, a 60 mi lowboy, stale badge, plates), docs and mirror (kept) | all | 6 |
+| B10 | Gates, the §9 rows (25) as `equipment-cases.mjs`, one MCP smoke on a throwaway (a Houston utility job: tax row on an exempt job, 12 % waiver and own insurance, the factor's label, a 60 mi lowboy, stale badge, plates), docs and mirror (kept). B6/B7's rows and smoke done in D-1286 (`eq-stale`, `eq-diesel-offroad`, `eq-diesel-age` as `b7-*` / `b6-*`) | all | 6 |
 | | **Total** | | **56 h** (±25 %; B1 waits on the quotes, B5's rules are the likeliest overrun) |
 
 **Plans: A-lean 26 h + A-later 61 h + B 56 h = 143 h (±30 %).** (Was 87 + 64 = 151 h.)

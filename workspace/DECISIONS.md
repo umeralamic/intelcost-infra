@@ -33497,6 +33497,110 @@ row for row).
 
 **Status:** in progress (night run). Spec: `docs/tasks/equipment_library_improvements.md` (B6, B7).
 
+### Migration d1286b7c4f30 (B7): the classes' rate dates as dates — every parse listed before it ran on the bench
+
+Revises d1285c4a9e10. Adds `eqlib.eq_class.rent_as_of date` and `owned_as_of date` and fills them from `rent_date` /
+`owned_rate_year` by the spec's §7 rules; **no text changes**, the downgrade drops the two columns. **National rows only
+(release 1, 642 classes): no workspace row is read or written** (0 company classes, no class override in any workspace),
+so no founder workspace is touched. The rules as read (founder away): a day is that day; a month is its 1st, unless one of
+the class's sources is dated a day in it; a year is its source's edition date (the oldest source dated in it, else Jan 1);
+a range is its end (a year's end: the newest source dated in it, else the class's newest source); a range ending after
+2026-11-16 is a contract still running and takes its start (`2024-2030`, WA DES 22823: 2024-08-01; question); `mixed:` is
+its oldest part; owned FEMA / 2025 is FEMA's 2025 schedule (Jul 1 2025), 2022 is EP 1110-1-8 (Dec 1 2022).
+
+| Rental text form | Rows | rent_as_of | | Rental text form | Rows | rent_as_of |
+|---|---:|---|---|---|---:|---|
+| `2025` (6 source sets) | 96 | 2025-01-01 (NTXC, 14), 2025-01-22 (1), 2025-03-01 (81) | | `Spring 2025` | 4 | 2025-03-01 |
+| `2025-2026` (39 sets) | 85 | 2025-03-01 / 2025-06-01 (no 2026 source, 48), 2026-03-01 (2), 2026-07-01 (2), 2026-10-01 (A26, 33) | | `mixed: 3/2023-3/2024, Sep 2026` | 4 | 2024-03-14 |
+| `3/2023-3/2024` | 29 | 2024-03-14 | | `Oct 1 2026` | 4 | 2026-10-01 |
+| `Jun 2025` | 14 | 2025-06-01 | | `May 1 2026` | 2 | 2026-05-01 |
+| `2026-10` | 13 | 2026-10-01 | | `Jul 2026` | 2 | 2026-07-01 |
+| `Jan 2025` | 12 | 2025-01-22 | | `Dec 2025-Sep 2026` | 1 | 2026-09-23 |
+| `2024-2030` | 9 | 2024-08-01 | | `mixed: Mar 2026, Sep 2026` | 1 | 2026-03-01 |
+| `mixed: 3/2023-3/2024, Mar 2026, Sep 2026` | 7 | 2024-03-14 | | `mixed: 3/2023-3/2024, Dec 2022, Mar 2026` | 1 | 2022-12-01 |
+| `read Oct 2026` | 6 | 2026-10-01 | | `Sep 2026` | 1 | 2026-09-26 |
+| `mixed: 3/2023-3/2024, Dec 2022, Mar 2026, Sep 2026` | 5 | 2022-12-01 | | `Jun 4 2026` | 1 | 2026-06-04 |
+| `mixed: 3/2023-3/2024, Mar 2026` | 5 | 2024-03-14 | | `Apr 27 2026` | 1 | 2026-04-27 |
+| `Mar 2025` | 4 | 2025-03-01 | | `Mar 27 2025` | 1 | 2025-03-27 |
+| | | | | `Jun 30 2026` | 1 | 2026-06-30 |
+
+Owned: `FEMA 2025` 163, `FEMA 2025 (interpolated)` 15, `FEMA 2025 - $ per MILE` 1, `2025` 1 → 2025-07-01; `2022` 5 →
+2022-12-01. Blank: 333 rental and 457 owned texts (no rate of that kind) stay NULL. Every text parses (0 NULL with text).
+On 2026-11-16: rental 70 fresh, 179 amber, 60 red; owned 180 amber, 5 red. The full list, by source set, with each
+row's rule and age: `intelcost-infra/morning-report-2026-11-18/step2/B7-PARSE-LIST.md`.
+
+**Proof (2026-11-16 UTC):** scratch container foldproof6 (removed after): from empty, `upgrade head` to d1286b7c4f30 and
+`alembic check` clean; a restored bench copy (at d1285c4a9e10) up: 642 rows changed by the two columns only, 309 rental
+and 185 owned dates set, no text left unread, the dates equal to the from-empty database's; down: every row and the whole
+schema equal to before (only the `\restrict` tokens differ); up again equal to the first up. The empty build's schema
+equals the copy at head but for the restrict tokens and 4 CHECK print forms, and the bench's after the migration but for
+the restrict tokens and the 31 known CHECK print forms. Bench: `alembic upgrade head` 00:40:35–00:40:45; its stored dates
+equal the scratch copy's (0 diff lines). Founder digest b4c963cdf83e7d84 at 00:20 and 00:41.
+
+### Step 2 built (2026-11-16 00:20 → ~02:20 UTC, unattended; founder to confirm)
+
+- **B7 api:** `national.py` `PRICING_COLUMNS` + `rent_as_of`, `owned_as_of` (ISO text in the bundle's classes and
+  `resolved_class`). **B7 app:** `lib/estimate/equipment/rateAge.ts` (pure: `rateAge` by calendar months, a Feb 29 held
+  to the month's last day; `machineBasis`: owned, or rented with no rental rate; `classRateAge`: only a rate whose every
+  used field is the library's, so a company, estimate or line (snapshot `own`) rate has no badge; `staleRates`: once per
+  class and basis, red first; `rateAgeText`), `RateAgeBadge.tsx` ("as of Mar 2025", amber / red, the full sentence on
+  hover); on `LibraryPage.tsx` (the grid, which is also My equipment's list), `ClassDetail.tsx` (Rental, Owned, Operated
+  headings, always shown), `Picker.tsx` (each size and the picked machine on its basis), `EstimatingView.tsx` (each
+  equipment component row, via `machineRate`; Needs attention's "Equipment rates over 12 months old (n)", not counted
+  as lines, the icon amber). **Not built (B1):** quotes carrying their date and leaving the location factor's basket.
+- **B6:** `features/equipment/fuel.py` (`CATCH_UP_DAYS` 8, `STALE_DAYS` 10, `week_age`, `needs_catch_up`, `is_stale`,
+  `fuel_status`, `snapshot_diesel`, `suggested_diesel`; `project_fuel(rows, state, today)` adds `age_days`, `stale`);
+  `service.py:bundle` adds `fuel_status`, `suggested_diesel` (project's state, else the workspace's), `fuel_state`.
+  `worker/tasks/fuel.py:catch_up_fuel_prices` (refreshes only past 8 days) and `catch_up_on_start` (`worker_ready`; only a
+  worker consuming the default queue sends it, so worker-pages, -previews and -ocr do not); `celery_app.py` beat entry
+  `catch-up-fuel-prices` daily 05:10 UTC (the bench's beat runs and reloaded with the save). App:
+  `EquipmentSettingsDialog.tsx` (`StaleWeek` amber "n days old" on each EIA series; `SuggestedDiesel` under off-road
+  diesel: "Suggested $5.468/gal for TX · EIA weekly, Gulf Coast (PADD 3), week of Nov 2 2026", its basis, "Use $5.468" by
+  hand, or "In use" when the field already reads it; "Use region price" no longer doubles it on diesel),
+  `LibrarySettings.tsx` (the same for the company default, by the workspace's state, else the US average), Needs
+  attention's "Diesel: EIA week of …: n days old" row. **Nothing writes a price by itself.** The catch-up refreshes the
+  weekly table, which an untyped project field reads (D-928) as the Tuesday job always did.
+- **The bench's first catch-up:** the worker's start after the save, 01:36:09 → 01:36:15 UTC, one task (worker only):
+  "newest diesel week 2026-11-02 (14 days old); refreshing", 76 rows, newest 2026-11-09 (PADD 3 diesel $5.912 → $5.741);
+  the second start (01:37:26) "skipped: fresh". No key in any log line. **So every untyped diesel field on the bench (a
+  founder project's too) reads the week of Nov 9 at its next open or Calculate, as D-928 intends; no stored row changed
+  and the digest held.**
+- **No price change:** throwaway fx.equip.20261116010622 (workspace "fx step2 smoke"), a copy of the 3D test project set
+  to 77002 Houston, Harris County, site & civil, open shop, burdened, TX20260031 mod 1 Heavy saved through the Wage
+  Calculator: C-200 Calculated on the build, then on HEAD's `fuel.py`, `national.py`, `service.py` and
+  `EstimatingView.tsx` (01:17–01:20), then on the build again (01:26): **direct $951,433.70, bid $1,169,159.09 all three
+  times** (labour $126,833.89, material $179,557.33, equipment $430,798.21), all on the week of Nov 2 (the catch-up ran
+  after). Step 1's copy read $951,427.23 (labour $6.47 less, material and equipment equal): a different copy's own labour
+  setup, not this step.
+- **Gates:** app lint 0 errors (the 4 known warnings), typecheck and build exit 0 (01:41–01:52, again chained with the
+  commit); api ruff, format (287 files), mypy (287), `alembic check`, one head d1286b7c4f30 (chained with the commit).
+  **Quantity table** 01:52:50–02:08:09: exit 0, 0 FAIL, "344 rows … 297 utility rows right … 113 equipment rows right …
+  passed" (97 + 16 `b7-*` rows: the 12/24-month edges, exactly and one day over, the plan's eq-stale ages 624 / 45 / 976
+  days, a Feb 29 as-of, no date, a class by its basis incl. the owned fallback, a company rate with no badge, Needs
+  attention once) and "rate dates and diesel (D-1286): 64 rows, all right" (`drives/quantity-table.py d1286`: the 30
+  rental and 7 owned parse forms, the bench's 642 stored dates equal to the parse, the 8-day and 10-day edges, the plan's
+  eq-diesel-age, the series by state for TX, Texas, LA, NY, IL, CO, WA, FL, CA, MA (parent PADD 1) and none, the
+  off-road deduction, the label, the snapshot read and the fallback, its absence, the table's status).
+- **Smoke** (Playwright MCP, throwaway above, purged 02:09 after a dry run): 11 stale classes listed once in Needs
+  attention from 138 equipment components (WT-4000 on 24, one entry; PV-STABILIZER owned red Dec 2022, TRK-PU-8808 red
+  Aug 2024 from WA DES 22823, the rest amber), the diesel row "EIA week of Nov 2, 2026: 14 days old"; the amber "as of Jun
+  2025" on the breaker's line; the library grid red "as of Mar 2024" (COSTARS) and amber FEMA "as of Jul 2025"; the
+  picker's sizes and picked machine; Equipment Settings "Suggested $5.468/gal for TX · EIA weekly, Gulf Coast (PADD 3),
+  week of Nov 2 2026 · 14 days old", "Use $5.468" set the estimate's typed $6.276 to $5.468 by hand; the company page
+  "Suggested $6.048/gal, no state set: the US average"; after the catch-up the week of Nov 9 with no flag, the typed
+  $5.468 unchanged. The fallback (no week stored) is proved by the rows, not on the bench (it has weeks). Screenshots
+  `morning-report-2026-11-18/step2/`: `b7-needs-attention-once.png`, `b7-estimate-line-badge.png`,
+  `b7-library-class-red.png`, `b7-picker-badges.png`, `b6-suggested-diesel-amber.png`,
+  `b6-company-suggested-diesel.png`, `b6-after-catch-up-fresh.png`.
+- **Bench windows (UTC), each save after its own quiet founder gate, no restart:** migration 00:40:35–00:40:45; api
+  `fuel.py` 00:49:13 → 200 00:49:53, `national.py` 00:50:25 → 00:51:03, `service.py` 00:51:22 → 00:52:00; app (Vite) 10
+  files 01:03:19–01:05:06; the HEAD swap: api 01:17:13 → 01:20:03 (three saves, each back at 200), app 01:20:25, back: app
+  01:23:16, api 01:23:31 → 01:26:18; app fixes 01:34:16, 01:34:31; worker task 01:35:38 → 200 01:36:23 (the catch-up
+  01:36:09–01:36:15), `celery_app.py` 01:36:56 → 01:37:40 (beat restarted by its watcher 01:37:24). docker exec into
+  api (each gated): ruff on stdin ~00:31, scratch lint 00:46–00:48, the proofs 00:36–00:40, the 3D copy 01:07, the drive
+  ~01:39, the gates, the purge 02:08–02:09. Founder digest b4c963cdf83e7d84 at 00:20, 00:41, 01:50 and 02:09.
+- **Commits (local, umer-dev, not pushed):** api 60ae8fe, app 6a937f5, infra (rows, the drive, the mirror) after this.
+
 ## D-1287 — Night run 2026-11-15 → 17, step 3: Plan B B2 sales tax on equipment rental, B3 rental extras, B8 owned standby and ratios; independent check; Rerun 2
 
 **Status:** in progress (night run). Spec: `docs/tasks/equipment_library_improvements.md` (B2, B3, B8, §9).

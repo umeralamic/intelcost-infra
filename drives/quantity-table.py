@@ -2140,7 +2140,178 @@ def answers() -> int:
     return 1 if wrong else 0
 
 
+# D-1286 (B7): every rental and owned text form of release 1, read by migration d1286b7c4f30's parse, against the
+# date worked by hand from the spec's rules and the sources' editions (step2/B7-PARSE-LIST.md).
+D1286_RENT = (
+    ("2025", "W25", "2025-03-01"),  # a year: its source's edition, W25 "2025 (Mar 2025)"
+    ("2025", "NTXC", "2025-01-01"),  # a year-only edition: Jan 1
+    ("2025", "NTXC;DEPC", "2025-01-01"),  # the oldest source dated in the year
+    ("2025", "W25;B25;N25", "2025-01-22"),  # N25 "eff. Jan 22 2025" is the oldest
+    ("2025-2026", "C25", "2025-06-01"),  # a range's end year with no source in it: the newest source (C25 Jun 2025)
+    ("2025-2026", "W25;C25;A26", "2026-10-01"),  # the end year's newest source: A26 read Oct 2026
+    ("2025-2026", "W25;B25;DOZR-TH", "2026-03-01"),  # DOZR-TH Mar 2026
+    ("3/2023-3/2024", "COSTARS", "2024-03-14"),  # a range's end month, its source's day (3/14/2024)
+    ("Jun 2025", "C25", "2025-06-01"),  # a month: the 1st
+    ("2026-10", "", "2026-10-01"),  # a YYYY-MM month, no source
+    ("Jan 2025", "N25", "2025-01-22"),  # a month a source dates to the day
+    ("2024-2030", "WA22823", "2024-08-01"),  # a contract running past 2026-11-16: its start
+    ("mixed: 3/2023-3/2024, Mar 2026, Sep 2026", "COSTARS;DOZR-BM;SCAFEX", "2024-03-14"),  # mixed: the oldest part
+    ("read Oct 2026", "CPO", "2026-10-01"),
+    ("mixed: 3/2023-3/2024, Dec 2022, Mar 2026, Sep 2026", "COSTARS;BIGR-SC;DOZR-SC;SCAFEX", "2022-12-01"),
+    ("mixed: 3/2023-3/2024, Mar 2026", "COSTARS;DOZR-BM", "2024-03-14"),
+    ("Mar 2025", "B25", "2025-03-01"),
+    ("Spring 2025", "R25", "2025-03-01"),  # a season: its first month
+    ("mixed: 3/2023-3/2024, Sep 2026", "COSTARS;SCAFEX", "2024-03-14"),
+    ("Oct 1 2026", "PRICER-OT", "2026-10-01"),  # a day
+    ("May 1 2026", "MNDLI", "2026-05-01"),
+    ("Jul 2026", "RENTD", "2026-07-01"),
+    ("Dec 2025-Sep 2026", "MNDLI;DTR", "2026-09-23"),  # a range's end month, DTR "Sep 23 2026"
+    ("mixed: Mar 2026, Sep 2026", "SCAFEX;DOZR-SC", "2026-03-01"),
+    ("mixed: 3/2023-3/2024, Dec 2022, Mar 2026", "COSTARS;BIGR-BM;DOZR-BM", "2022-12-01"),
+    ("Sep 2026", "SCAFEX", "2026-09-26"),
+    ("Jun 4 2026", "CFCS", "2026-06-04"),
+    ("Apr 27 2026", "BIGR-CR", "2026-04-27"),
+    ("Mar 27 2025", "BNB-CONT", "2025-03-27"),
+    ("Jun 30 2026", "PRICER-FN", "2026-06-30"),
+    ("", "", None),  # blank: no rental rate, NULL
+    ("circa the 2020s", "", None),  # not read: NULL (none on release 1)
+)
+D1286_OWNED = (
+    ("FEMA 2025", "2025-07-01"),
+    ("FEMA 2025 (interpolated)", "2025-07-01"),
+    ("FEMA 2025 - $ per MILE", "2025-07-01"),
+    ("2025", "2025-07-01"),  # FEMA's 2025 schedule
+    ("2022", "2022-12-01"),  # EP 1110-1-8, rates 01 Dec 2022
+    ("", None),
+    ("1998", None),
+)
+
+
+def d1286() -> int:
+    """D-1286 (step 2 of the 2026-11-15 night run): B7's parse of every text form and the bench's stored dates equal to
+    it; B6's catch-up (over 8 days) and amber (over 10) at their edges, the series by state, the off-road deduction and
+    the release-snapshot fallback, each worked by hand. Pure functions only; reads eqlib, writes nothing."""
+    import importlib.util
+    from datetime import date
+    from pathlib import Path
+
+    from sqlalchemy import text as sql
+
+    from app.database import sync_engine
+    from app.features.equipment import fuel
+
+    wrong: list[str] = []
+    n = 0
+    path = next(Path("/srv/alembic/versions").glob("d1286b7c4f30_*.py"))
+    spec = importlib.util.spec_from_file_location("d1286_migration", path)
+    assert spec and spec.loader
+    mig = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mig)
+    for txt, ids, want in D1286_RENT:
+        n += 1
+        got, rule = mig.parse_rent(txt, ids)
+        if (got.isoformat() if got else None) != want:
+            wrong.append(f"FAIL  b7-parse-rent {txt!r} on {ids!r}: {got} ({rule}), expected {want}")
+    for txt, want in D1286_OWNED:
+        n += 1
+        got, rule = mig.parse_owned(txt)
+        if (got.isoformat() if got else None) != want:
+            wrong.append(f"FAIL  b7-parse-owned {txt!r}: {got} ({rule}), expected {want}")
+    # The bench's stored dates are the parse of its text, every class (read only).
+    with sync_engine.connect() as conn:
+        rows = conn.execute(
+            sql("SELECT equip_key, rent_date, rent_source_ids, owned_rate_year, rent_as_of, owned_as_of FROM eqlib.eq_class")
+        ).all()
+    off = [
+        r.equip_key
+        for r in rows
+        if mig.parse_rent(r.rent_date, r.rent_source_ids)[0] != r.rent_as_of
+        or mig.parse_owned(r.owned_rate_year)[0] != r.owned_as_of
+    ]
+    n += 1
+    if len(rows) != 642 or off:
+        wrong.append(f"FAIL  b7-stored-equals-parse: {len(rows)} classes, {len(off)} differ ({off[:5]})")
+
+    # B6: the catch-up past 8 days and the amber flag past 10, at their edges (today 2026-11-16, EIA's Mondays).
+    today = date(2026, 11, 16)
+    for rid, got, want in (
+        ("b6-catch-up-8-days", fuel.needs_catch_up(date(2026, 11, 8), today), False),
+        ("b6-catch-up-9-days", fuel.needs_catch_up(date(2026, 11, 7), today), True),
+        ("b6-catch-up-no-week", fuel.needs_catch_up(None, today), True),
+        ("b6-amber-10-days", fuel.is_stale(date(2026, 11, 6), today), False),
+        ("b6-amber-11-days", fuel.is_stale(date(2026, 11, 5), today), True),
+        # The plan's eq-diesel-age: newest 2026-11-02 on 2026-11-15: 13 days, amber and caught up.
+        ("b6-eq-diesel-age-amber", fuel.is_stale(date(2026, 11, 2), date(2026, 11, 15)), True),
+        ("b6-eq-diesel-age-catch-up", fuel.needs_catch_up(date(2026, 11, 2), date(2026, 11, 15)), True),
+    ):
+        n += 1
+        if got != want:
+            wrong.append(f"FAIL  {rid}: {got}, expected {want}")
+
+    # The suggested diesel by state from a weekly table of made-up prices (week of 2026-11-02), off-road = on-highway
+    # less the federal 24.4 c and the state's excise (FHWA MF-121T): TX and LA PADD 3 5.912 - (24.4 + 20.0)/100 = 5.468;
+    # NY PADD 1B 6.450 - (24.4 + 24.4)/100 = 5.962; IL PADD 2 6.000 - 0.784 = 5.216; CO PADD 4 6.200 - 0.466 = 5.734;
+    # WA PADD 5 less CA 6.600 - 0.738 = 5.862; FL PADD 1C 6.100 - 0.651 = 5.449; CA its own series 7.400 - 0.685 = 6.715;
+    # MA with no PADD 1A row: its parent PADD 1 6.400 - 0.484 = 5.916; no state: the US 6.292 - 0.244 = 6.048.
+    week = date(2026, 11, 2)
+    prices = {"US": 6.292, "PADD 1": 6.4, "PADD 1B": 6.45, "PADD 1C": 6.1, "PADD 2": 6.0, "PADD 3": 5.912, "PADD 4": 6.2}
+    prices |= {"PADD 5": 6.9, "PADD 5 less CA": 6.6, "CA": 7.4}
+    table = [{"fuel": "diesel", "area": a, "price": p, "week_of": week, "series": "on-highway all types"} for a, p in prices.items()]
+    for state, area, want in (
+        ("TX", "PADD 3", 5.468),
+        ("Texas", "PADD 3", 5.468),
+        ("LA", "PADD 3", 5.468),
+        ("NY", "PADD 1B", 5.962),
+        ("IL", "PADD 2", 5.216),
+        ("CO", "PADD 4", 5.734),
+        ("WA", "PADD 5 less CA", 5.862),
+        ("FL", "PADD 1C", 5.449),
+        ("CA", "CA", 6.715),
+        ("MA", "PADD 1", 5.916),
+        (None, "US", 6.048),
+    ):
+        n += 1
+        s = fuel.suggested_diesel(table, state, today, None)
+        if not s or s["area"] != area or round(s["price"], 3) != want or s["from"] != "eia" or s["age_days"] != 14 or not s["stale"]:
+            wrong.append(f"FAIL  b6-suggested-{state}: {s and (s['area'], s['price'], s['from'], s['age_days'], s['stale'])}, expected {area} {want}")
+    # The label, as the field shows it.
+    n += 1
+    s = fuel.suggested_diesel(table, "TX", today, None)
+    if not s or s["label"] != "EIA weekly, Gulf Coast (PADD 3), week of Nov 2 2026":
+        wrong.append(f"FAIL  b6-suggested-label: {s and s['label']!r}")
+    # The fallback: no week stored, the release snapshot (EIA US average on-highway $6.276, week of Oct 19 2026, from
+    # eq_setting's note) less the Texas excise: 6.276 - 0.444 = 5.832, labelled; always flagged. No snapshot: nothing.
+    snap = fuel.snapshot_diesel({"fuel_price_diesel_suggested": {"value": 6.276, "note": "EIA US avg on-highway diesel, week of Oct 19 2026 (EIA-GDU). Replace with local/off-road price. [EIA-GDU]"}})
+    n += 3
+    if not snap or snap["week_of"] != "2026-10-19" or snap["price"] != 6.276:
+        wrong.append(f"FAIL  b6-snapshot-read: {snap}")
+    s = fuel.suggested_diesel([], "TX", today, snap)
+    want_label = "Release snapshot, no EIA week stored: US average, week of Oct 19 2026"
+    if not s or round(s["price"], 3) != 5.832 or s["from"] != "snapshot" or not s["stale"] or s["label"] != want_label or s["age_days"] != 28:
+        wrong.append(f"FAIL  b6-fallback-snapshot: {s}")
+    if fuel.suggested_diesel([], "TX", today, None) is not None:
+        wrong.append("FAIL  b6-fallback-none: a suggestion with no week and no snapshot")
+    # The bench's own snapshot row reads the same (read only).
+    n += 1
+    with sync_engine.connect() as conn:
+        row = conn.execute(sql("SELECT value, note FROM eqlib.eq_setting WHERE key = 'fuel_price_diesel_suggested'")).one()
+    bench = fuel.snapshot_diesel({"fuel_price_diesel_suggested": {"value": row.value, "note": row.note}})
+    if not bench or bench["price"] != 6.276 or bench["week_of"] != "2026-10-19":
+        wrong.append(f"FAIL  b6-bench-snapshot: {bench}")
+    # The table's status: newest 2026-11-02 on 2026-11-16, 14 days: caught up and amber.
+    n += 1
+    st = fuel.fuel_status(table, today)
+    if st != {"newest_week": "2026-11-02", "age_days": 14, "stale": True, "catch_up": True}:
+        wrong.append(f"FAIL  b6-status: {st}")
+    for w in wrong:
+        print(w)
+    print(f"rate dates and diesel (D-1286): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["d1286"]:
+        sys.exit(d1286())
     if sys.argv[1:] == ["answers"]:
         sys.exit(answers())
     if sys.argv[1:] == ["prices"]:
