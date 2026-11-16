@@ -15,6 +15,11 @@ async (page) => {
   //   subPerLF, byRole, unmatched] }. Each item's labour, equipment, material, disposal and subcontract are the Estimating
   //   table's own columns of its lines (D-1273: the bid overlay marks each up apart), never a split worked out here.
   // With `list` in place of `contract`, each in turn (one call; keep a call under the MCP's 30 minutes: ~2 min each).
+  // D-1287 (Rerun 2, Plan B B2, B3): `waiverPct` sets the project's damage waiver (absent: the company's, 12 % unless set);
+  // `rentalTaxPct` (the overlay config's `basis.equipmentRentalTaxPct`, 8.25 for Houston) taxes each line's rentals'
+  // taxable part, which the Estimating row carries (`data-eq-taxable`, with `data-eq-waiver` and `data-eq-env`): the tax
+  // is the contractor's cost (34 TAC §3.294(e)), so it joins the line's equipment and total; each item also reports its
+  // taxable part, tax, waiver and environmental fee per LF so a rerun can say what each added. Absent: no tax.
   // Part 6 rerun (D-1283, the founder's rerun decisions of 2026-11-15; part6/DEPARTURES-AND-PRESETS.md §3): `section`, one
   // mode for the pass: "legacy" (every run as drawn before the section layers: `layers` taken off the run's section on both
   // paths), "a" (each type's own default, `auto`), "b" (the Houston section for water, force main, sanitary and storm
@@ -31,7 +36,7 @@ async (page) => {
   await page.goto(`http://localhost:5173/project/${P}/takeoff/${S}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(localStorage.getItem("intelcost.session")), null, { timeout: 60000 });
   const own = await page.evaluate(
-    async ({ W, P, S, API, contract, pool, parityOnly, mode }) => {
+    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
       const h = { authorization: `Bearer ${s.accessToken}`, "content-type": "application/json" };
       const cat = await import("/src/lib/takeoff/earthwork/utilities/catalog.ts");
@@ -51,6 +56,8 @@ async (page) => {
       };
       const sectionOf = (it) => ({ ...noLayers(rd.defaultRun(it.type).section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}) });
       await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "equipment_pool", field: "value", value_num: pool, value_text: null }) });
+      // D-1287: the damage waiver for the pass (Q13: 12 %), as the project's own setting; 0 is "Own insurance".
+      if (waiver != null) await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "damage_waiver_pct", field: "value", value_num: waiver, value_text: waiver === 0 ? "zero-ok" : null }) });
       // The project's utility settings, as Calculate reads them: the depth ranges a line is named and paced by come from
       // here (the app's default 0-6, 6-8 ... 14-16, 16+), never a list of the harness's own (D-1211).
       const ua = await import("/src/features/takeoff/earthwork/utilities/api.ts");
@@ -276,7 +283,7 @@ async (page) => {
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
       return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags, ran, trace, sectionFlags };
     },
-    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy" },
+    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null },
   );
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
   if (own.interaction?.length > 0) return { key: contract.key, interaction: own.interaction.slice(0, 5), notes: own.notes };
@@ -338,7 +345,9 @@ async (page) => {
       const nameCell = cells[at.name] ?? "";
       const scoped = crossingRead && nameCell.includes("…");
       const name = scoped ? nameCell.split(/\r?\n/).pop().replace(/By others$/, "").trim() : nameCell;
-      rows.push({ type: type ?? "?", no: cells[at.no], name, qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]) });
+      // D-1287: the line's rentals' taxable part, waiver and environmental fee (absent before D-1287: 0).
+      const part = (k) => Number(tr.dataset[k] ?? 0) || 0;
+      rows.push({ type: type ?? "?", no: cells[at.no], name, qty: num(cells[at.qty]), lab: num(cells[at.lab]), eq: num(cells[at.eq]), mat: num(cells[at.mat]), disp: num(cells[at.disp]), sub: at.sub < 0 ? 0 : num(cells[at.sub]), total: num(cells[at.total]), tx: part("eqTaxable"), wv: part("eqWaiver"), ev: part("eqEnv") });
     }
     const b = document.body.innerText.split("\n");
     return { bid: b[b.indexOf("Bid total") + 1], at, rows, type };
@@ -400,11 +409,14 @@ async (page) => {
     );
   }
 
+  // D-1287: the tax on each line's rentals at the pass's rate joins its equipment and total (the contractor's cost).
+  const taxRate = (ct.rentalTaxPct ?? 0) / 100;
   const unit = new Map();
   for (const r of rows) {
     const k = `${r.type}|${r.name}`;
-    const u = unit.get(k) ?? { qty: 0, total: 0, lab: 0, eq: 0, mat: 0, disp: 0, sub: 0 };
-    unit.set(k, { qty: u.qty + r.qty, total: u.total + r.total, lab: u.lab + r.lab, eq: u.eq + r.eq, mat: u.mat + r.mat, disp: u.disp + r.disp, sub: u.sub + r.sub });
+    const u = unit.get(k) ?? { qty: 0, total: 0, lab: 0, eq: 0, mat: 0, disp: 0, sub: 0, tx: 0, tax: 0, wv: 0, ev: 0 };
+    const tax = (r.tx ?? 0) * taxRate;
+    unit.set(k, { qty: u.qty + r.qty, total: u.total + r.total + tax, lab: u.lab + r.lab, eq: u.eq + r.eq + tax, mat: u.mat + r.mat, disp: u.disp + r.disp, sub: u.sub + r.sub, tx: u.tx + (r.tx ?? 0), tax: u.tax + tax, wv: u.wv + (r.wv ?? 0), ev: u.ev + (r.ev ?? 0) });
   }
   let direct = 0;
   const items = contract.items.map((it, i) => {
@@ -416,6 +428,10 @@ async (page) => {
     let mat = 0;
     let disp = 0;
     let sub = 0;
+    let tx = 0;
+    let tax = 0;
+    let wv = 0;
+    let ev = 0;
     const unmatched = [];
     // Each of the item's own lines by its role (pipe, bedding and zone, backfill, trench support, ...), per LF.
     const byRole = {};
@@ -431,6 +447,10 @@ async (page) => {
       mat += (l.qty * u.mat) / u.qty;
       disp += (l.qty * u.disp) / u.qty;
       sub += (l.qty * u.sub) / u.qty;
+      tx += (l.qty * u.tx) / u.qty;
+      tax += (l.qty * u.tax) / u.qty;
+      wv += (l.qty * u.wv) / u.qty;
+      ev += (l.qty * u.ev) / u.qty;
       const r = (byRole[l.role] ??= { lab: 0, eq: 0, mat: 0, disp: 0, sub: 0, total: 0 });
       for (const k of ["lab", "eq", "mat", "disp", "sub", "total"]) r[k] += (l.qty * u[k]) / u.qty / it.qty;
     }
@@ -444,9 +464,9 @@ async (page) => {
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
       : undefined;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
-  const res = { key: contract.key, section: own.ran ?? null, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
+  const res = { key: contract.key, rentalTaxPct: ct.rentalTaxPct ?? 0, waiverPct: ct.waiverPct ?? null, section: own.ran ?? null, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }

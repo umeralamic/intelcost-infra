@@ -1,0 +1,8 @@
+{
+  "decision": "D-1287",
+  "note": "Rerun 2 (correctness, the night run of 2026-11-15 to 17): the context contract-runner.js takes for the pass, merged into page.context().__ct with the throwaway's workspace, project and sheet and the contract list. Section mode a (each type's own default), the pool on, the current defaults, plus the sales tax on equipment rental at Houston's 8.25 % (D-1139; 34 TAC §3.294(e): the contractor owes it, an exempt owner's job included) and the damage waiver at 12 % (Q13 of D-1284). The environmental fee runs at its default, 1.3 % capped at $75 a line. Score with docs/reference/bid-overlay-d1287.json (outside git; its basis carries the same two figures). No tab figure lives here.",
+  "section": "a",
+  "pool": 1,
+  "rentalTaxPct": 8.25,
+  "waiverPct": 12
+}
