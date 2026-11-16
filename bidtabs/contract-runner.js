@@ -504,19 +504,17 @@ async (page) => {
       const hh = { authorization: `Bearer ${s.accessToken}` };
       const r = await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/components`, { headers: hh });
       const list = r.ok ? await r.json() : [];
-      // R44: each line's material $ by key (its material components' totals), by the line's name.
+      // R44: each line's material components by the line's name (the api stores no component total: the app works it at
+      // read time), each with its quantity formula, unit price, waste and `pct_of`, for the item's material $ by key.
       const items = await (await fetch(`${API}/api/workspace/${W}/project/${P}/takeoff/item`, { headers: hh })).json();
       const nameOf = new Map((Array.isArray(items) ? items : []).map((i) => [i.uuid, i.name]));
       const byName = {};
       for (const c of Array.isArray(list) ? list : []) {
-        if (c.kind !== "material" || c.total == null) continue;
-        const m = (byName[nameOf.get(c.item_uuid) ?? c.item_uuid] ??= {});
-        m[c.mat_key ?? "(no key)"] = (m[c.mat_key ?? "(no key)"] ?? 0) + Number(c.total);
+        if (c.kind !== "material") continue;
+        (byName[nameOf.get(c.item_uuid) ?? c.item_uuid] ??= []).push({ key: c.mat_key ?? "(no key)", f: c.qty_formula ?? "QTY", up: c.unit_price == null ? null : Number(c.unit_price), w: Number(c.wastage_pct ?? 0), pct: c.pct_of ?? null, sf: c.sell_factor == null ? null : Number(c.sell_factor) });
       }
       const mine = (Array.isArray(list) ? list : []).filter((c) => c.kind === "material" && c.mat_key === key && c.unit_price != null && Number(c.unit_price) > 0);
-      const tons = mine.reduce((t, c) => t + (c.total == null ? 0 : Number(c.total) / Number(c.unit_price)), 0);
-      const total = mine.reduce((t, c) => t + (c.total == null ? 0 : Number(c.total)), 0);
-      return { matByName: byName, css: { key, components: mine.length, tons, total, unitPrices: [...new Set(mine.map((c) => Number(c.unit_price)))], bases: [...new Set(mine.map((c) => c.price_snapshot?.base_unit_price ?? null))], tiers: [...new Set(mine.map((c) => c.price_snapshot?.tier ?? null))], sources: [...new Set(mine.map((c) => c.price_source ?? null))] } };
+      return { matByName: byName, css: { key, components: mine.length, unitPrices: [...new Set(mine.map((c) => Number(c.unit_price)))], bases: [...new Set(mine.map((c) => c.price_snapshot?.base_unit_price ?? null))], tiers: [...new Set(mine.map((c) => c.price_snapshot?.tier ?? null))], sources: [...new Set(mine.map((c) => c.price_source ?? null))] } };
     },
     { W: ct.workspace, P: ct.project, API, key: ct.cssPrice?.matKey ?? "stone:cement_stabilized_sand" },
   );
@@ -550,6 +548,18 @@ async (page) => {
     const tax = (r.tx ?? 0) * taxRate;
     unit.set(k, { qty: u.qty + r.qty, total: u.total + r.total + tax, lab: u.lab + r.lab, eq: u.eq + r.eq + tax, mat: u.mat + r.mat, disp: u.disp + r.disp, sub: u.sub + r.sub, tx: u.tx + (r.tx ?? 0), tax: u.tax + tax, wv: u.wv + (r.wv ?? 0), ev: u.ev + (r.ev ?? 0) });
   }
+  // R44: a component's quantity formula at a quantity (QTY and the app's ceil / floor / round / min / max only).
+  const cssKey = ct.cssPrice?.matKey ?? "stone:cement_stabilized_sand";
+  const evalQty = (f, QTY) => {
+    const text = String(f ?? "QTY");
+    if (!/^[\sQTY0-9.+\-*/(),a-z]*$/.test(text) || /[a-z]+/.test(text.replace(/\b(ceil|floor|round|min|max)\b/g, ""))) return null;
+    try {
+      const v = new Function("QTY", "ceil", "floor", "round", "min", "max", `return (${text});`)(QTY, Math.ceil, Math.floor, Math.round, Math.min, Math.max);
+      return Number.isFinite(v) ? v : null;
+    } catch {
+      return null;
+    }
+  };
   let direct = 0;
   const items = contract.items.map((it, i) => {
     const mine = own.ownLines[i];
@@ -568,6 +578,7 @@ async (page) => {
     // Each of the item's own lines by its role (pipe, bedding and zone, backfill, trench support, ...), per LF.
     const byRole = {};
     const matByKey = {};
+    let cssTons = 0;
     for (const l of mine) {
       const u = unit.get(`${l.type}|${l.name}`) ?? (own.crossing ? unit.get(`?|${l.name}`) : undefined);
       if (!u || !(u.qty > 0)) {
@@ -578,10 +589,20 @@ async (page) => {
       lab += (l.qty * u.lab) / u.qty;
       eq += (l.qty * u.eq) / u.qty;
       mat += (l.qty * u.mat) / u.qty;
-      // R44: the line's material share split as its components split it by key.
-      const split = matByName?.[l.name];
-      const splitTotal = split ? Object.values(split).reduce((t, v) => t + v, 0) : 0;
-      if (splitTotal > 0) for (const [k, v] of Object.entries(split)) matByKey[k] = (matByKey[k] ?? 0) + (((l.qty * u.mat) / u.qty) * v) / splitTotal / it.qty;
+      // R44: the item's share of the line's material components, by key: each formula at the item's own quantity, x the
+      // unit price (its location factor and order tier as priced) x (1 + waste); a `pct_of` component (the fittings
+      // allowance) its percent of the key it follows. A rounding scope wider than the line (whole lengths per bid) is not
+      // applied: the split is for reverting a price, which it scales linearly. The CSS tons the same way.
+      const own$ = {};
+      for (const c of matByName?.[l.name] ?? []) {
+        if (c.pct || c.up == null) continue;
+        const qn = evalQty(c.f, l.qty);
+        if (qn == null) continue;
+        own$[c.key] = (own$[c.key] ?? 0) + qn * c.up * (1 + c.w / 100);
+        if (c.key === cssKey) cssTons += (qn * (1 + c.w / 100)) / it.qty;
+      }
+      for (const c of matByName?.[l.name] ?? []) if (c.pct && c.sf != null) own$[c.key] = (own$[c.key] ?? 0) + (c.sf / 100) * (own$[c.pct] ?? 0);
+      for (const [k, v] of Object.entries(own$)) matByKey[k] = (matByKey[k] ?? 0) + v / it.qty;
       disp += (l.qty * u.disp) / u.qty;
       sub += (l.qty * u.sub) / u.qty;
       tx += (l.qty * u.tx) / u.qty;
@@ -601,8 +622,10 @@ async (page) => {
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
       : undefined;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, matByKeyPerLF: matByKey, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, matByKeyPerLF: matByKey, cssTonsPerLF: cssTons, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
+  css.tons = items.reduce((t, it) => t + (it.cssTonsPerLF ?? 0) * it.qty, 0);
+  css.total = items.reduce((t, it) => t + (it.matByKeyPerLF?.[cssKey] ?? 0) * it.qty, 0);
   const res = { key: contract.key, rentalTaxPct: ct.rentalTaxPct ?? 0, waiverPct: ct.waiverPct ?? null, section: own.ran ?? null, css, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
