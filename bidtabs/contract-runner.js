@@ -508,10 +508,14 @@ async (page) => {
       // read time), each with its quantity formula, unit price, waste and `pct_of`, for the item's material $ by key.
       const items = await (await fetch(`${API}/api/workspace/${W}/project/${P}/takeoff/item`, { headers: hh })).json();
       const nameOf = new Map((Array.isArray(items) ? items : []).map((i) => [i.uuid, i.name]));
+      // Lines of one name (a line per depth range or region) carry the same components: one line's set is kept.
       const byName = {};
+      const firstOf = {};
       for (const c of Array.isArray(list) ? list : []) {
         if (c.kind !== "material") continue;
-        (byName[nameOf.get(c.item_uuid) ?? c.item_uuid] ??= []).push({ key: c.mat_key ?? "(no key)", f: c.qty_formula ?? "QTY", up: c.unit_price == null ? null : Number(c.unit_price), w: Number(c.wastage_pct ?? 0), pct: c.pct_of ?? null, sf: c.sell_factor == null ? null : Number(c.sell_factor) });
+        const nm = nameOf.get(c.item_uuid) ?? c.item_uuid;
+        if ((firstOf[nm] ??= c.item_uuid) !== c.item_uuid) continue;
+        (byName[nm] ??= []).push({ key: c.mat_key ?? "(no key)", f: c.qty_formula ?? "QTY", up: c.unit_price == null ? null : Number(c.unit_price), w: Number(c.wastage_pct ?? 0), pct: c.pct_of ?? null, sf: c.sell_factor == null ? null : Number(c.sell_factor) });
       }
       const mine = (Array.isArray(list) ? list : []).filter((c) => c.kind === "material" && c.mat_key === key && c.unit_price != null && Number(c.unit_price) > 0);
       return { matByName: byName, css: { key, components: mine.length, unitPrices: [...new Set(mine.map((c) => Number(c.unit_price)))], bases: [...new Set(mine.map((c) => c.price_snapshot?.base_unit_price ?? null))], tiers: [...new Set(mine.map((c) => c.price_snapshot?.tier ?? null))], sources: [...new Set(mine.map((c) => c.price_source ?? null))] } };
