@@ -47,3 +47,11 @@ Decision: [DECISIONS.md D-1289](../../DECISIONS.md). Brief and readings R1–R10
 - [x] Gates, quantity table, smoke on a throwaway (Harris County, open shop, Burdened, ZIP 77002, TX20260031 mod 1 Heavy).
 
 Smoke (throwaway copy of the QT project in its own workspace, purged): Q18 no-state and company-state flags, Q17's rule cited (b), Q14 the setting's three choices and a lowboy machine a third-party hauler (a drive-in none, the dealer when chosen: +$1,100 taxed), Q27 the own-rates block (browser clock at 2028-01-15), Q12 the export (Direct cost +$6,062.90, no line, Bid total equal), Q2/Q4/Q5 the run form's Auto section by jurisdiction and size. Screenshots: `intelcost-infra/morning-report-2026-11-19/step1/`.
+
+## Follow-ups (the founder, 2026-11-16 16:35)
+
+- [x] Q14 corrected: delivery by ownership (api default 3; the switch adds "by ownership"); rented the dealer, owned "own".
+- [x] Export rounding: the folded tax spread by largest remainder (`bidSummary.ts:spreadCents`); the lines add exactly to
+      the Bid Summary sheet's Direct cost.
+- [x] Quantity-table rows: `q14-ownership-rented`, `q14-ownership-owned`, `q12-spread-ties`, `q12-spread-lines`; the
+      api default rows read 3.

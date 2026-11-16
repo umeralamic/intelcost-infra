@@ -2378,9 +2378,9 @@ async def d1287() -> int:
         stored = dict((await session.execute(sql("SELECT key, value FROM eqlib.eq_setting WHERE key IN ('rent_week_per_day', 'rent_4wk_per_week')"))).all())
         check("eq-ratio-stored", (float(stored["rent_week_per_day"]), float(stored["rent_4wk_per_week"])), (2.9, 2.73))
     # The extras' figures in code (a company's stored rows untouched): waiver 12 %, fee 1.3 % capped $75, delivery by
-    # each machine's transport class since D-1289 (2; was 1, the dealer); cleaning and refill with no figure (off).
+    # ownership since the founder's D-1289 correction (3; was 2 by class, 1 the dealer); cleaning and refill off.
     v = service.APP_SETTING_VALUES
-    check("eq-waiver-default-figure", (v.get("damage_waiver_pct"), v.get("env_fee_pct"), v.get("env_fee_cap"), v.get("rental_delivery_by_dealer")), (12, 1.3, 75, 2))
+    check("eq-waiver-default-figure", (v.get("damage_waiver_pct"), v.get("env_fee_pct"), v.get("env_fee_cap"), v.get("rental_delivery_by_dealer")), (12, 1.3, 75, 3))
     check("eq-extras-off-by-default", (v.get("cleaning_fee"), v.get("fuel_refill_per_gal")), (None, None))
     check("eq-extras-settings-listed", all(k in service.APP_SETTINGS for k in ("damage_waiver_pct", "env_fee_pct", "env_fee_cap", "cleaning_fee", "fuel_refill_per_gal", "rental_delivery_by_dealer")), True)
     for kind, work, want in D1287_JOB_TYPES:
@@ -2494,8 +2494,8 @@ async def d1289() -> int:
         check("d1289-state-from-workspace", (rule["from"], rule["loaded"]), ("workspace", True))
         rule = await service.rental_tax(session, None, None, "none")
         check("d1289-state-from-none", (rule["from"], rule["loaded"]), ("none", False))
-    # Q14: the figure in code is "by transport class"; Q2: the jurisdiction setting, "other" unless set.
-    check("d1289-delivery-default", service.APP_SETTING_VALUES.get("rental_delivery_by_dealer"), 2)
+    # Q14: the figure in code is "by ownership" (3, the founder's correction; by class is 2); Q2: the jurisdiction, "other".
+    check("d1289-delivery-default", service.APP_SETTING_VALUES.get("rental_delivery_by_dealer"), 3)
     check("d1289-jurisdiction-default", (UtilitySettings().jurisdiction, UtilitySettings.model_validate({}).jurisdiction), ("other", "other"))
     check("d1289-jurisdiction-county", UtilitySettings.model_validate({"jurisdiction": "harris_county"}).jurisdiction, "harris_county")
     try:

@@ -274,6 +274,18 @@ export const EQUIPMENT_CASES = [
   //   4-week $466 (electric, no fuel), a typed $300 delivery taxed: 466 + 300 = 766 x 0.0825 = 63.195 -> $63.20.
   { id: "q14-class-lowboy-hauler", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 2 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, taxable: 7950, tax: 655.88, deliveredBy: "third_party" } },
   { id: "q14-class-supplier-dealer", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 2 }, input: { classKey: "AW-1MAN-12", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 300 }, expect: { equipment: 466, delivery: 300, deliveryTax: 24.75, taxable: 766, tax: 63.2, deliveredBy: "dealer" } },
+  // D-1289 (Q14, the founder's correction, 2026-11-16 16:35): IntelCost's 3, delivery by ownership. EX-CRAWL-20T rented
+  //   (a lowboy class): the dealer's $1,100 delivery taxed, as eq-tax-delivery (9,050 x 0.0825 = 746.625 -> $746.63);
+  //   owned, 160 hr at 97.76 with the same $1,100 move: the company's own trucks or a hauler, nothing taxed.
+  { id: "q14-ownership-rented", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 3 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, taxable: 9050, tax: 746.63, deliveredBy: "dealer" } },
+  { id: "q14-ownership-owned", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 3 }, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, taxable: 0, tax: 0, deliveredBy: "own" } },
+  // D-1289 (Q12, the founder 2026-11-16 16:35): the exported lines' tax spread by largest remainder. Three equal shares of
+  //   $0.10: 3.33 cents each, floors 3 + 3 + 3, the cent left to the earliest: 0.04, 0.03, 0.03. Four lines (the waiver
+  //   row's 8,904, a dealer delivery's 1,100, none, the shared excavator's 2,333.07) at 8.25 %: the sheet's fold
+  //   toCents(12,337.07 x 0.0825 = 1,017.808275) = 1,017.81; parts 734.58, 90.75, 0, 192.478275 -> floors 734.58, 90.75,
+  //   0, 192.47, the cent left to the largest remainder (the last): 192.48; they add to 1,017.81 exactly.
+  { id: "q12-spread-ties", kind: "spread", shares: [1, 1, 1], total: 0.1, expect: { parts: [0.04, 0.03, 0.03], sum: 0.1 } },
+  { id: "q12-spread-lines", kind: "spread", shares: [8904, 1100, 0, 2333.07], total: 1017.81, expect: { parts: [734.58, 90.75, 0, 192.48], sum: 1017.81 } },
   // D-1289 (Q14): the company's 1 (the dealer) over the class: the lowboy's $1,100 taxed again, as eq-tax-delivery.
   { id: "q14-company-dealer-over-class", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 1 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, taxable: 9050, tax: 746.63, deliveredBy: "dealer" } },
   // D-1289 (Q18): no project state, the company's (TX, the api's from: "workspace"): taxed as eq-tax-delivery-hauler, flagged;
@@ -619,6 +631,11 @@ export async function runEquipment(page, eqlib) {
           const basis = age.machineBasis(lib, c.key, c.mode);
           const a = age.classRateAge(lib, c.key, basis, c.today);
           return a ? { basis, asOf: a.asOf, level: a.level, days: a.days, own: a.own ?? null, femaCurrent: a.femaCurrent ?? null } : { basis, none: true };
+        }
+        // D-1289 (Q12): the largest-remainder spread of the exported lines' tax, and its sum to the cent.
+        if (c.kind === "spread") {
+          const parts = bid.spreadCents(c.shares, c.total);
+          return { parts, sum: bid.toCents(parts.reduce((s, x) => s + x, 0)) };
         }
         // D-1287: one machine through the engine, its extras and taxable part, and the Bid summary's tax line on it.
         if (c.kind === "rental") {
