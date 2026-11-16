@@ -33475,7 +33475,23 @@ row for row).
   `production.py` 22:40:55 → 200 at 22:41:41 (worker ready 22:41:34, worker-pages 22:41:38); api hook files (no reload)
   ~22:45; app (Vite) saves 22:49:48–22:52:59 (11 files + the hook); the before/after swap: app 23:14:13–23:14:30 and
   23:18:35–23:18:50, api 23:14:44 → 200 at 23:15:33 and 23:19:06 → 200 at 23:19:49. Each save after its own quiet
-  founder gate. No restart.
+  founder gate. No restart. docker exec into api (gated, each after a quiet gate): the scratch proofs 22:34–22:38, the 3D
+  test copy 23:04, the gates, the purge 00:13–00:14:21.
+- **Commits (local, umer-dev, not pushed):** app c31f3f2, api f3b1742, infra 1cd3662 (rows, hook, mirror) and the
+  Rerun 1 mirror commit after it.
+- **Rerun 1 (sections), harness infra d629cd6 (unchanged), mode (a), the current defaults** (no Q6 default moved):
+  23:38:40–00:10:23 UTC (31.7 min, worst contract 60 s) on the last full pass's 47 contracts. 47 of 47 priced, parity 0,
+  30 TAC on 58 of 58 Texas flexible sanitary items, no section flag. **Every multiplier equals part 6's (a)**, and so does
+  our direct ($9,975,603 on the 189 pipe items, $11,173,444 over the 47 contracts): all pipe 1.131 / 0.968 to the medians
+  / lows, water 1.018 / 0.899, force main 1.071 / 1.007, sanitary 1.128 / 0.861, storm RCP 18–42 in 1.173 / 1.032, 48 in+
+  1.269 / 1.157, crossings F 0.620 / 0.447. **Q7 moved CY, not $:** 8 items' trenches went from vertical to sloped (the 6
+  in C900 at 4 ft cover 0.364 → 1.256 CY/LF, a 4 in HDPE 0.262 → 1.083), but the engine prices a pipe trench's dig by
+  the LF (the crew's production) and native backfill at $0, so wider walls change no dollar unless spoil is hauled or
+  compaction is priced by the CY. Q20, the basis fix and geogrid: $0. Report:
+  `intelcost-infra/morning-report-2026-11-18/step1/RERUN1.md`; data `*-2026-11-16-rerun1-a*` in docs/reference (outside
+  git). Throwaway fx.equip.20261115230317 purged 00:14:21 (dry run first). Founder digest b4c963cdf83e7d84 at 22:15,
+  22:39 and 00:14 (eq_company_activity has no project, so the migration is outside the per-project digest; no founder
+  workspace held one of the 17 rows anyway).
 
 ## D-1286 — Night run 2026-11-15 → 17, step 2: Plan B B7 rate dates and B6 diesel catch-up (no price effect)
 
