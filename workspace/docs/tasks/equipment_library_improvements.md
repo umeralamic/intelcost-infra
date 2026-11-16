@@ -340,8 +340,8 @@ until graded). Rows marked "illustrative" use made-up inputs to show the arithme
 | `eq-tax-owned` | the same machine owned, 160 h | 160 × 97.76 = 15,641.60; no tax | tax **$0** |
 | `eq-tax-delivery` | dealer delivery and pickup $550 + $550 | 1,100 × 0.0825; third-party hauler 0 | **$90.75** / $0 |
 | `eq-tax-operated` | operated tri-axle on one hourly rate | §3.294(c)(2) | **$0** |
-| `eq-waiver-default` | 12 % default waiver, 4-week rental | waiver 954.00; tax on rent 655.88 + on waiver 78.71 | **$9,638.58** (was $7,950) |
-| `eq-waiver-own` | "Own insurance (0 %)" | 7,950 + 655.88 | **$8,605.88** |
+| `eq-waiver-default` | 12 % default waiver, 4-week rental (the environmental fee off) | waiver 954.00; the tax rounded once on the sum: (7,950 + 954) × 0.0825 = 8,904 × 0.0825 = 734.58 (per part, 655.88 + 78.71, would read 734.59) | **$9,638.58** (was $7,950) |
+| `eq-waiver-own` | "Own insurance (0 %)" (the environmental fee off) | 7,950 + 655.88 | **$8,605.88** |
 | `eq-env-fee` | 1.3 %, cap $75 | 4-week 103.35 → cap **$75**; a 6 in pump week 1,112 × 0.013 = **$14.46** | $75 / $14.46 |
 | `eq-locf-class` | illustrative: 20 t quoted at 7,400, 7,700, 8,100 | H = 7,700 (median of 3, A); r = 7,700 ÷ 7,950 | **0.9686** |
 | `eq-locf-median` | illustrative: r over 11 classes 0.88, 0.91, 0.93, 0.95, 0.96, 0.97, 0.99, 1.00, 1.02, 1.05, 1.12 | median (6th of 11) | F = **0.97**; 11 classes at A/B → grade **B** |
@@ -356,9 +356,16 @@ until graded). Rows marked "illustrative" use made-up inputs to show the arithme
 | `eq-fuel-cost` | 20 t, 160 h, medium load | 2.78 × 160 × 5.468 | **$2,432.17** |
 | `eq-diesel-age` | newest week 2026-11-02 on 2026-11-15 | 13 > 10 | amber; catch-up (> 8) |
 | `eq-ratio-derive` | day rate only, $500 | 500 × 2.90 = 1,450; × 2.73 = 3,958.50 | **$1,450** / **$3,958.50** |
-| `eq-standby-owned` | owned 20 t, 6.091 rain days (Plan A `rain-june-ew`, revised) | 97.76 × 0.22 = 21.5072/h × 8 × 6.0914 | **$1,048.08** |
+| `eq-standby-owned` | owned 20 t, 6.091 rain days (Plan A `rain-june-ew`, revised) | 97.76 × 0.22 = 21.5072/h × 8 × 42.64/7 (= 6.0914286 days, exact) | **$1,048.08** |
 | `eq-plates` | urban run, 40 ft open at night, top 3 ft | ⌈40/20⌉ = 2 × PLATE-8x20; 2 × 186 | **$372** a week |
 | `eq-stackers` | box to 17 ft (D-1144, check) | ⌈9/4⌉ = 3; 1 + 0.7312 × 3 | box days × **3.19** |
+
+**Notes on the rows (D-1287, the independent check):** the waiver rows isolate the waiver with the environmental fee off;
+with every default on (waiver 12 %, fee 1.3 % capped $75) the 4-week reads 7,950 + 954 + 75 = 8,979 taxable, tax 740.77,
+**$9,719.77**. Each machine's taxable part is kept unrounded and the Bid summary rounds the tax once on the sum. The fee's
+cap is per machine's booking: six pumps on one line pay 6 × 14.456 = **$86.74** (a cap per dealer contract line holding
+all six would be $75: a founder question). The 40 h a week standby cap only binds once calendar weeks are passed in with
+the rain days (`ownedStandby(..., weeks)`); with no weeks given, the lost days' own weeks (5 work days each) are used.
 
 ## 10. Ranking (both plans) and build order
 
@@ -393,13 +400,13 @@ location factor, if Houston quotes come in under the national rows, moves us tow
 | # | Task | Repo | Hours |
 |---|---|---|---|
 | B1 | Location factor: `quote-sheet-metros.csv` (done in draft), `eq_location_factor` and a ZIP-to-CBSA seed (one migration), the derivation script (per-class medians, the ratio, the median, the ratio-of-sums check, the grades), `cost.ts:locationFactor` reads it, the class row's label; national rows for unrated classes from the five metros' medians | infra, api, app | 8 (+ quotes) |
-| B2 | Sales tax: `eq_rental_tax_state` (Texas loaded, A; GA/IL/AZ/PA at F) (migration), project job type, `machineCost` taxable part, the Bid summary row on by state rule (not by the exempt checkbox), Needs attention for an unloaded state, harness config | api, app, infra | 8 |
-| B3 | Rental extras: waiver company setting 12 % default with "Own insurance (0 %)", env fee, cleaning, refill; in `machineCost`; shown on the machine | api, app | 4 |
+| B2 | Sales tax: `eq_rental_tax_state` (Texas loaded, A; GA/IL/AZ/PA at F) (migration), project job type, `machineCost` taxable part, the Bid summary row on by state rule (not by the exempt checkbox), Needs attention for an unloaded state, harness config. **Built 2026-11-16, D-1287** (migration `d1287c6e2a91`; the job type read from Project type and Construction type, no new field; independent check and Rerun 2 pending) | api, app, infra | 8 |
+| B3 | Rental extras: waiver company setting 12 % default with "Own insurance (0 %)", env fee, cleaning, refill; in `machineCost`; shown on the machine. **Built 2026-11-16, D-1287** (IntelCost's figures in code, `APP_SETTING_VALUES`; no stored row changed) | api, app | 4 |
 | B4 | Mob: × F on every transport figure, `local_radius_mi` 50, local flat vs line haul, dealer delivery taxable; no region table | app, api | 4 |
 | B5 | Shoring (kept) | app, api | 12 |
 | B6 | Diesel catch-up, flag, suggested price (kept). **Built 2026-11-16, D-1286** | api, app | 3 |
 | B7 | `rent_as_of` (migration with the parse), badges, Needs attention (kept). **Built 2026-11-16, D-1286** (quotes' dates wait for B1) | api, app | 6 |
-| B8 | Standby, GET field, ratios, owned mode reads My equipment first (kept) | api, app | 5 |
+| B8 | Standby, GET field, ratios, owned mode reads My equipment first (kept). **Built 2026-11-16, D-1287:** standby pure and wired at $0 until lost days exist; ratios 2.90 / 2.73 (release 47); owned rates named by source ("FEMA reimbursement rate"); GET not built | api, app | 5 |
 | ~~B9~~ | ~~Spread sizing per line~~: dropped, Q22's cheaper-of-two replaces it | | 0 |
 | B10 | Gates, the §9 rows (25) as `equipment-cases.mjs`, one MCP smoke on a throwaway (a Houston utility job: tax row on an exempt job, 12 % waiver and own insurance, the factor's label, a 60 mi lowboy, stale badge, plates), docs and mirror (kept). B6/B7's rows and smoke done in D-1286 (`eq-stale`, `eq-diesel-offroad`, `eq-diesel-age` as `b7-*` / `b6-*`) | all | 6 |
 | | **Total** | | **56 h** (±25 %; B1 waits on the quotes, B5's rules are the likeliest overrun) |

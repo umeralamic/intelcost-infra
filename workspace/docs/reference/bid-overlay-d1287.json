@@ -1,0 +1,84 @@
+{
+  "decision": "D-1273, with D-1287 (Rerun 2)",
+  "note": "The bid-tab basis and the bid overlay over our direct cost (D-1273, revising D-1103). Every percentage is an input: intelcost-infra/bidtabs/basis-report.mjs reads this file and nothing in the script repeats a figure. No tab figure lives here. D-1287 (Rerun 2, Q13): the basis adds the sales tax on equipment rental at 8.25 % (Houston, D-1139; Texas taxes the contractor on rentals even for an exempt owner, 34 TAC §3.294(e)) and the damage waiver at 12 % (the company default; Q13). contract-runner.js reads both from its context (rentalTaxPct, waiverPct), set from basis.equipmentRentalTaxPct and basis.damageWaiverPct here.",
+  "basis": {
+    "escalation": "none",
+    "escalationNote": "Tabs are compared as bid. No ECI escalation (D-1103's escalation is withdrawn).",
+    "recentMonths": 12,
+    "recentNote": "The tuning set: tabs bid within this many months of the newest tab's bid month (bid month >= newest month - recentMonths). Older tabs are reported as history only.",
+    "bidders": "all",
+    "biddersNote": "Every bidder on the tab, each priced on the same pay items as ours.",
+    "labour": "prevailing",
+    "labourNote": "Labour at the tab's bid-date prevailing rates: the run's open-shop labour x the contract's labour ratio (D-1103, unchanged).",
+    "salesTaxOnMaterialPct": 0,
+    "salesTaxNote": "MUD water, sewer and drainage tabs: no sales tax on material. The comparison carries none.",
+    "tabPrices": "tab-prices-2026-11-16.json",
+    "tabRowsReread": "tab-rows-reread-2026-11-16.json",
+    "tabNote": "Every bidder's unit price on each pay item: tab-prices.mjs (the text layer; a figure split after its decimal point read whole), with the rows tab-rows-reread.py re-read word by word put in place where it recovered every bidder, each unit price paired with its total.",
+    "equipmentRentalTaxPct": 8.25,
+    "equipmentRentalTaxNote": "Sales tax on equipment rental, Texas (34 TAC §3.294): on each line's rentals' taxable part (the rent, the damage waiver, the dealer's fees and delivery), never owned hours, fuel, an operated hire on one rate or a third-party haul; the MUD's material exemption does not reach it. The runner folds it into the line's equipment: the contractor's cost, marked up as equipment.",
+    "damageWaiverPct": 12,
+    "damageWaiverNote": "The damage waiver on rentals, the company default (12 %, Q13 of D-1284): the throwaway project's own setting for the pass. The environmental fee runs at its default (1.3 %, capped at $75 a line)."
+  },
+  "excludeFromTuning": [
+    {
+      "key": "2959-1402",
+      "match": {
+        "unit": "LF",
+        "qty": 160,
+        "descPattern": "LOW WATER CROSSING"
+      },
+      "pipe": "24 in RCP C76 Class III",
+      "why": "Temporary low-water-crossing culvert, removed at the end of construction: removal is not modelled (D-1272 item 11)."
+    },
+    {
+      "key": "2959-1402",
+      "match": {
+        "unit": "LF",
+        "qty": 200,
+        "descPattern": "LOW WATER CROSSING"
+      },
+      "pipe": "36 in RCP C76 Class III",
+      "why": "Temporary low-water-crossing culvert, removed at the end of construction: removal is not modelled (D-1272 item 11)."
+    }
+  ],
+  "overlay": {
+    "addNothingFor": [
+      "mobilization and demobilization",
+      "rental minimums",
+      "pickups",
+      "foremen",
+      "half-day minimums"
+    ],
+    "addNothingNote": "Already in our direct cost (the crews, the spreads and their minimums).",
+    "indirects": {
+      "supervisionPctOfLabourAndEquipment": 4,
+      "smallToolsPctOfLabour": 3,
+      "glInsurancePctOfBid": 1.5,
+      "bondPctOfBid": 1,
+      "bondOnlyWhenNoBondItem": true,
+      "bondItemPattern": "\\bBONDS?\\b",
+      "separatelyPaidItemsPct": 0,
+      "separatelyPaidNote": "Bonds, staking, SWPPP, silt fence, traffic control, dewatering and trench safety are paid as their own pay items where the tab lists them: no overlay is added for them on the pipe items."
+    },
+    "ohp": {
+      "labourPct": 25,
+      "equipmentPct": 20,
+      "materialPct": 8,
+      "subcontractPct": 8,
+      "disposalAs": "material",
+      "note": "One markup layer: Div 01 and OH&P inside the unit prices."
+    },
+    "formula": "L' = L x (1 + supervision + small tools); E' = E x (1 + supervision); bid = (L' x (1 + OH&P labour) + E' x (1 + OH&P equipment) + M x (1 + OH&P material) + S x (1 + OH&P subcontract)) / (1 - GL insurance - bond)"
+  },
+  "calibration": {
+    "method": "least squares on the log ratio, one point per contract: ln k = mean over contracts of ln(target / our direct); the $-weighted ratio (sum target / sum direct) beside it",
+    "healthyToMedian": [
+      1.2,
+      1.35
+    ],
+    "healthyNote": "Healthy is a multiplier on our direct of 1.20-1.35 to the medians (direct about 75-83 % of the median). The overlay's bid / direct is its own result, not a target. There is no band.",
+    "founderExpectation": "A market-level direct sits about 23-25 % below the median bid."
+  },
+  "sanitaryLongRunLf": 1000
+}

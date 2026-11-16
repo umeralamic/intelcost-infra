@@ -33603,7 +33603,137 @@ equal the scratch copy's (0 diff lines). Founder digest b4c963cdf83e7d84 at 00:2
 
 ## D-1287 — Night run 2026-11-15 → 17, step 3: Plan B B2 sales tax on equipment rental, B3 rental extras, B8 owned standby and ratios; independent check; Rerun 2
 
-**Status:** in progress (night run). Spec: `docs/tasks/equipment_library_improvements.md` (B2, B3, B8, §9).
+**Status:** built, independently checked and committed locally (night run; founder to confirm; not Live). Spec: `docs/tasks/equipment_library_improvements.md` (B2, B3, B8, §9).
+
+### Migration d1287c6e2a91 (B2, B8): the rental tax state table and the ratios at the medians — no workspace row
+
+Revises d1286b7c4f30. Creates `eqlib.eq_rental_tax_state` (state, name, `taxes_rentals`, `operated_single_charge_exempt`,
+`waiver_taxable`, `lessor_delivery_taxable`, `third_party_haul_taxable`, `lessor_fees_taxable`, `exempt_job_types`,
+`rule_cited`, `url`, `read_on`, `grade`, `note`): **TX at grade A** from 34 TAC §3.294 re-read 2026-11-16 (rentals t,
+operated single charge exempt t, waiver t, lessor delivery t, third-party haul f, lessor fees t, no exempt job type);
+**GA, IL, AZ, PA at F** with every rule NULL. Sets the national settings `rent_week_per_day` 3 → 2.90 and
+`rent_4wk_per_week` 2.9 → 2.73 (the medians 2.8999 / 2.7330 over the 276 live classes rated for all three periods) as
+**release 47** with its two `eq_change` rows, so the api's national cache (keyed by the newest release) reads them; the
+library page's release banner lists the two changes. **No project, workspace or founder row is read or written** (the
+two settings are not editable: no workspace holds one). Downgrade: the two values, notes and release 1 back, release 47
+and its changes deleted, the table dropped.
+**Proof (2026-11-16 UTC, scratch foldproof7, removed after):** from empty, `upgrade head` to d1287c6e2a91, `alembic check`
+clean, one head; 5 states, release 47, 2.90 / 2.73. A restored bench copy (at d1286b7c4f30) up: exactly the version, the 2
+settings, release 47, its 2 changes and the 5 state rows differ; the whole schema differs by the new table only (and the
+`\restrict` tokens); down: every touched row equal to before (0 diff lines) and the schema equal but the restrict tokens;
+up again equal to the first up but the two `eq_change` ids (serial, 51/52 → 53/54). The empty build's schema equals the
+copy at head but the restrict tokens and the 4 known CHECK print forms; its state rows equal the copy's. **Bench:**
+`alembic upgrade head` 02:36:10–02:36:22; its touched rows equal the scratch copy's (0 diff lines). Founder digest
+b4c963cdf83e7d84 before (02:25) and after (02:36).
+
+### Step 3 built (2026-11-16 02:12 → 04:00 UTC, unattended; founder to confirm; NOT committed until the independent check)
+
+- **B2, sales tax on equipment rental.** App `lib/estimate/equipment/rentalExtras.ts` (pure): `rentalTaxApplies` (rule
+  loaded, rentals taxed, job type not in the state's `exempt_job_types`; the project's Tax exempt is never read),
+  `taxParts` (one machine: rent + waiver where taxable + the lessor's fees (environmental, cleaning) + the dealer's delivery
+  and pickup where the lessor's transportation is taxable, a third-party haul only where the state taxes it; owned 0; an
+  operated single charge 0 where the rule says so), `notLoadedText`, `ruleNote`. `cost.ts:machineCost` returns `tax`
+  (one machine) and `parts` (all units: taxable, waiver, environmental fee); `sharedEquipment.ts:computeSharedEquipment`
+  carries each resource's parts per dollar to its hosts (`partsByHost`) and its unallocated rest (`partsPerDollar`); a pool
+  group's parts are the host's at its own hours + the extension's + each pooled machine's, spread over the group's cents;
+  `sharedMob` keeps the delivery's taxable part in step with the mob kept. `costing.ts` `CostResult.equipmentParts`
+  (summed like the costs; a typed equipment rate carries none). `bidSummary.ts:computeBid` adds **"Sales tax on equipment
+  rental"** after the material tax, at the project's tax rate, on whenever the state's rule applies, **whatever Tax exempt
+  says**; a ticked Equipment on the general tax leaves the taxable part out (`taxCostByTick`), so no dollar is taxed twice.
+  The row shows where anything is rented; at 0 % with "Rental tax rule for <ST> not loaded: 0 %" (or "No state on the
+  project") in Needs attention and under the row. Api `service.py:rental_tax` (the project's state else the workspace's;
+  `job_type` from Project type and Construction type: residential, nonresidential_new, nonresidential_repair, mixed; no
+  new project field) in the bundle as `rental_tax`.
+- **B3, rental extras (company settings, IntelCost's figures in code: no stored row changes).** `service.py`
+  `APP_SETTINGS` / `APP_SETTING_VALUES`: `damage_waiver_pct` 12, `env_fee_pct` 1.3, `env_fee_cap` 75,
+  `rental_delivery_by_dealer` 1; `cleaning_fee` and `fuel_refill_per_gal` with no figure (off). `rentalExtras.ts:rentalExtras`:
+  the waiver on the rent only (after the location factor; never fuel, mob, owned hours, an operated hire, a pooled machine
+  or a rental priced at the owned rate), the fee 1.3 % capped per machine's booking, cleaning per rented machine returned
+  (not a machine on site lending hours), the refill per gallon when set. In `perMachine`. Shown on the machine (Picker's
+  breakdown, the shared machine's line in `EquipmentDialog.tsx`), set on the company page and the estimate's Equipment
+  settings (`RentalExtras.tsx`: the waiver's "12 % of the rent" / "Own insurance (0 %)" / another %; a 0 saved as
+  "zero-ok"; who delivers rentals; the state's rule).
+- **B8.** (a) `rentalExtras.ts:ownedStandby` (owned rate without fuel × 0.22, ≤ 8 h a day, ≤ 40 h a week) wired into
+  `machineCost` through `MachineInput.lostDays`, which **nothing passes yet** (Plan A-lean's lost days are not built): $0.
+  (b) `derivePeriods` / `ratiosOf`: a missing week from the day × 2.90, a missing 4-week from the week × 2.73 (the national
+  settings), never a shorter period from a longer (a monthly office stays monthly); advisory and grade C on the machine.
+  **No library class is affected** (the 10 partial classes lack shorter periods only; no company class or rate override
+  exists on the bench). (c) `cost.ts:ownedRateSource`: a company rate (workspace layer, set from My equipment's page) is
+  read first and named "Company rate"; the library's FEMA 2025 schedule reads **"FEMA reimbursement rate"** (EP 1110-1-8
+  rates by name), on the machine, the class detail and the picker.
+- **Rounding:** each machine's taxable part is kept unrounded; the Bid summary sums them and rounds the tax once
+  (`toCents`, half away from zero), as every bid line. §9's waiver row reads 8,904 × 0.0825 = **734.58 → $9,638.58**
+  (per part, 655.88 + 78.71, would give 9,638.59): the plan's figure is kept.
+- **Proof (Phase A).** App lint 0 errors (the 4 known warnings), typecheck and build 0; api ruff, format, mypy (287),
+  `alembic check`, one head d1287c6e2a91. **Quantity table 03:47:10–03:59:06: exit 0, 0 FAIL, "344 rows … 297 utility rows
+  right … 133 equipment rows right … passed"** (113 + 20 D-1287 rows: `eq-tax-rental` 655.88, `eq-tax-exempt-job` 655.88,
+  `eq-tax-untabled` 0 and the words, `eq-tax-owned` 0, `eq-tax-delivery` 90.75 / hauler 0, `eq-tax-operated` 0,
+  `eq-waiver-default` 9,638.58, `eq-waiver-own` 8,605.88, `eq-env-fee` 75 / pump week 14.46, `eq-ratio-derive` 1,450 /
+  3,958.50, `eq-standby-owned` 1,048.08 and the 40 h cap 860.29, standby $0 unwired, the owned source) and "rental tax,
+  extras and ratios (D-1287): 24 rows, all right" (`drives/quantity-table.py d1287`).
+- **Smoke and $** (throwaway fx.equip.20261116030419, a 3D test copy set to Houston 77002, Public, Site & civil, open
+  shop, burdened, TX20260031 mod 1 Heavy; the same EIA week, Nov 9, both sides): C-200 on HEAD direct **$951,346.22**,
+  bid $1,186,856.08; on the build direct **$976,916.92** (+25,570.70, equipment only: waiver +24,513.93, fee +1,056.77),
+  "Sales tax on equipment rental" **$20,885.17** (rent 16,853.34, the dealer's delivery 1,922.25, waiver 2,022.40, fee
+  87.18), bid **$1,243,923.70** (+57,067.62). With the waiver and fee at 0 the direct equals HEAD's to the cent (the
+  ratios, owned source and standby move $0). Tax exempt: the material line to 0, the rental line stays. GA: 0 % and "Rental
+  tax rule for GA not loaded: 0 %" in Needs attention. Screenshots `morning-report-2026-11-18/step3/`. Notes:
+  `morning-report-2026-11-18/step3/BUILD-NOTES.md`.
+- **Founder projects (read only):** the machines are priced in the browser, so the change shows at the next open of
+  Estimating. P08, Real bid A and Real bid B (TX, library rentals) take waiver, fee and tax; P10 (no state anywhere) the
+  waiver and fee, tax 0 flagged; the rest have no library machine. By the throwaway's ratios ≈ +10.8 % of rented-equipment
+  direct before markups.
+- **Bench windows (UTC):** migration 02:36:10–02:36:22; api `service.py` 03:15:32 → 200 at 03:16:13 (workers ready
+  03:16:04 / 03:16:08); app 03:16:56–03:20:33 (14 files), 03:32:41, 03:33:00; each save after its own quiet gate; no
+  restart. Founder digest b4c963cdf83e7d84 at 02:25, 02:36 and 03:59.
+
+### The independent check (fresh agent: plan, rule text and code only) and Phase C
+
+- **Result: "can be committed as is"** (`morning-report-2026-11-18/step3/INDEPENDENT-CHECK.md`): every §9 row and its six
+  edge cases (operated vs bare, third-party haul, owned machine, exempt MUD job, a pump week at the fee cap, a derived
+  class) match by hand, in the code, in the plan and in the quantity table; no hard mismatch.
+- **Fixed after it (Phase C, each file one save after its own quiet gate, 04:23:41–04:24:41):** a derived rental period
+  is graded **E** (the plan's legend: derived from other library figures; `types.ts` `Grade` gains E, `GradeBadge.tsx`,
+  `LibraryPage.tsx` rank 0, `cost.ts` `GRADE_ORDER` and the push); the grade is shown on the machine and in the Equipment
+  basis export, never stored, and no row checks it. The Picker names the 5 USACE EP classes "USACE EP ownership rate (a
+  ceiling)", FEMA's keep "reimbursement schedule". §9's wording: the waiver row's tax rounded once on the sum (8,904 ×
+  0.0825 = 734.58), the standby row's exact 42.64/7 = 6.0914286 days, and the waiver rows assume the fee off (with every
+  default on: 8,979 taxable, $9,719.77). Rows added: `eq-tax-shared-adds-back` and `eq-tax-pooled-adds-back` (a shared
+  machine's, and a pool group's, taxable parts over its lines add back to 10,079), `eq-tax-no-double` (Equipment ticked on
+  the general tax: 247.50 and 660.00, not 1,072.50 + 660), `eq-env-fee-six-pumps` (the cap per machine's booking: 6 ×
+  14.456 = $86.74).
+- **The fee's taxability grade** would better be **B**, citing §3.294(b) ("Tax must be collected from the lessee on all
+  charges contained in the lease unless … separately stated and … nontaxable") and the opening of (d) ("All charges
+  related to a lease agreement are taxable unless excluded"), not C on (d)(1) alone. Migration d1287c6e2a91 has run on the
+  bench and is not rewritten; its row's note is left for a later migration.
+- **Standby's week cap** binds only once calendar weeks are passed in with the rain days (`ownedStandby(..., weeks)`);
+  with none given, the lost days' own weeks are used (5 work days each), so 8 h a day is then the binding cap.
+- **Founder questions (not built):** (1) Texas (e)(1): the tax "may not be collected from their customers on a separately
+  stated charge": should a bid export ever show the rental tax as its own line to the owner? (2) the fee's $75 cap per
+  machine (as built) or per estimate line / dealer contract line ($86.74 against $75 for six pumps); (3) a rental priced
+  at the owned rate (no rental rate in the library, D-811) carries no waiver, fee or tax; (4) a split operated bill
+  (§3.294(c)(3): the machine's part taxable) is not priced; (5) one "Rentals delivered by" switch per company or estimate,
+  not per machine.
+- **Phase C proof (2026-11-16 UTC):** app lint 0 errors (the 4 known warnings), typecheck and build 0 (twice: 04:25–04:35
+  and chained with the commit); api ruff, format, mypy (287), `alembic check`, one head d1287c6e2a91 (04:26 and chained
+  with the commit). **Quantity table 04:35:24–04:47:20: exit 0, 0 FAIL, "344 rows … 297 utility rows right … 137 equipment
+  rows right … passed"** (113 + 24 D-1287 rows) and "rental tax, extras and ratios (D-1287): 24 rows, all right".
+- **Commits (local, umer-dev, not pushed):** infra **deb46cd** (the harness: `contract-runner.js` waiver and rental tax,
+  `bidtabs/rerun2.json`; committed first), api **83ac614** (migration d1287c6e2a91, `service.py`), app **8a2cff7**, infra
+  **dea1d37** (the quantity-table rows, the d1287 drive) and the workspace mirror after them.
+- **Rerun 2 (correctness), harness infra deb46cd, mode (a), tax 8.25 %, waiver 12 %, the fee at its default:**
+  04:49:44–05:22:50 UTC (32.3 min, worst contract 62 s) on Rerun 1's 47 contracts; 47 of 47 priced, parity 0, the same
+  missing and unpriceable items. Multipliers to the medians / lows: **all pipe 1.131 / 0.968 → 1.107 / 0.947**; water
+  1.018 / 0.899 → 1.006 / 0.888; sanitary 1.128 / 0.861 → 1.093 / 0.834; storm RCP 18–42 in 1.173 / 1.032 → 1.149 /
+  1.011; 48 in+ 1.269 / 1.157 → 1.243 / 1.134; force main 1.071 / 1.007 → 1.051 / 0.988; crossings F 0.620 / 0.447 →
+  0.620 / 0.448. **$ on the 189 pipe items: +$214,510 (+2.15 %): rental tax +$100,497, waiver +$116,225, fee +$7,773,
+  ratios $0, standby $0, other −$9,985** (the EIA diesel week, Nov 2 in Rerun 1, Nov 9 after step 2's catch-up). Report
+  `intelcost-infra/morning-report-2026-11-18/step3/RERUN2.md`; data `*-2026-11-16-rerun2-a*` in docs/reference (outside
+  git). Throwaway fx.equip.20261116030419 purged 05:26:14 (dry run first).
+- **Bench windows, Phase C (UTC):** app saves 04:23:41, 04:23:56, 04:24:11, 04:24:27, 04:24:41 (each after its own quiet
+  gate); no api save; docker exec into api: the gates 04:26 and ~04:48, the quantity table 04:35–04:47, the purge
+  05:25–05:26. Founder digest **b4c963cdf83e7d84** at 05:26 (held throughout). The local sinks (PIDs 9960, 35340) stopped
+  by PID.
 
 ## D-1288 — Night run 2026-11-15 → 17, step 4: Plan A-lean AL4, the pure water and rain module (no wiring)
 
