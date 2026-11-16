@@ -2377,10 +2377,10 @@ async def d1287() -> int:
         check("eq-ratio-medians", (round(float(ratio[0]), 2), round(float(ratio[1]), 2), ratio[2]), (2.9, 2.73, 276))
         stored = dict((await session.execute(sql("SELECT key, value FROM eqlib.eq_setting WHERE key IN ('rent_week_per_day', 'rent_4wk_per_week')"))).all())
         check("eq-ratio-stored", (float(stored["rent_week_per_day"]), float(stored["rent_4wk_per_week"])), (2.9, 2.73))
-    # The extras' figures in code (a company's stored rows untouched): waiver 12 %, fee 1.3 % capped $75, delivery by the
-    # dealer; cleaning and refill with no figure (off).
+    # The extras' figures in code (a company's stored rows untouched): waiver 12 %, fee 1.3 % capped $75, delivery by
+    # each machine's transport class since D-1289 (2; was 1, the dealer); cleaning and refill with no figure (off).
     v = service.APP_SETTING_VALUES
-    check("eq-waiver-default-figure", (v.get("damage_waiver_pct"), v.get("env_fee_pct"), v.get("env_fee_cap"), v.get("rental_delivery_by_dealer")), (12, 1.3, 75, 1))
+    check("eq-waiver-default-figure", (v.get("damage_waiver_pct"), v.get("env_fee_pct"), v.get("env_fee_cap"), v.get("rental_delivery_by_dealer")), (12, 1.3, 75, 2))
     check("eq-extras-off-by-default", (v.get("cleaning_fee"), v.get("fuel_refill_per_gal")), (None, None))
     check("eq-extras-settings-listed", all(k in service.APP_SETTINGS for k in ("damage_waiver_pct", "env_fee_pct", "env_fee_cap", "cleaning_fee", "fuel_refill_per_gal", "rental_delivery_by_dealer")), True)
     for kind, work, want in D1287_JOB_TYPES:
@@ -2391,7 +2391,130 @@ async def d1287() -> int:
     return 1 if wrong else 0
 
 
+# D-1289 (night run from 2026-11-16, step 1): migration d1289e5b3c40's rows on the bench, each worked from the founder's
+# answers and step2/MATERIAL-PICKS-FINAL.md §5 (key, $/LF, grade), and the api's new fields. Read only.
+D1289_PIPES = (
+    ("pipe:rcp_c76_wall_b:24", "45.49", "B"),
+    ("pipe:rcp_c76_wall_b:30", "63.57", "B"),
+    ("pipe:rcp_c76_wall_b:36", "91.49", "B"),
+    ("pipe:rcp_c76_wall_b:42", "105.85", "B"),
+    ("pipe:rcp_c76_wall_b:48", "145.68", "B"),
+    ("pipe:rcp_c76_wall_b:54", "171.82", "C"),
+    ("pipe:pvc_c900_dr18:8", "17.39", "B"),
+    ("pipe:pvc_c900_dr18:6", "10.70", "B"),
+    ("pipe:pvc_c900_dr18:12", "39.50", "B"),
+    ("pipe:pvc_c900_dr14:12", "43.36", "C"),
+    ("pipe:pvc_c900_dr14:8", "20.24", "C"),
+    ("pipe:pvc_c900_dr14:6", "13.82", "C"),
+    ("pipe:pvc_d3034_sdr26:8", "10.87", "B"),
+    ("pipe:pvc_d3034_sdr26:10", "16.97", "B"),
+    ("pipe:pvc_d3034_sdr26:12", "24.33", "B"),
+    ("pipe:pvc_d3034_sdr26:15", "36.61", "B"),
+    ("pipe:di_c151_pc350:8", "41.59", "B"),
+    ("pipe:hdpe_f2648_dual_wall:24", "21.47", "A"),
+)
+# Q14: lowboy, flatbed and trailer classes a third-party hauler; rental-house delivery, the towed units' delivery and the
+# assembled crane the dealer; a machine that drives itself no lessor's charge.
+D1289_DELIVERY = {
+    "self-propelled": "third_party",
+    "pickup-towed": "dealer",
+    "tilt-trailer": "third_party",
+    "flatbed": "third_party",
+    "lowboy-legal": "third_party",
+    "lowboy-permitted": "third_party",
+    "multi-axle-heavy": "third_party",
+    "crane-assembled": "dealer",
+    "delivered-by-supplier": "dealer",
+}
+
+
+async def d1289() -> int:
+    """D-1289: the Texas fee grade, CSS, the 18 pipe rows, delivery by transport class (migration d1289e5b3c40), the FEMA
+    edition on each class (Q26), the state's origin in the bundle's rule (Q18) and the jurisdiction setting (Q2). Reads
+    the library and the api's code; writes nothing."""
+    from decimal import Decimal
+
+    from pydantic import ValidationError
+    from sqlalchemy import text as sql
+
+    from app.database import SessionFactory
+    from app.features.earthwork.utility_schemas import UtilitySettings
+    from app.features.equipment import national, service
+
+    wrong: list[str] = []
+    n = 0
+
+    def check(rid: str, got: object, want: object) -> None:
+        nonlocal n
+        n += 1
+        if got != want:
+            wrong.append(f"FAIL  {rid}: {got!r}, expected {want!r}")
+
+    async with SessionFactory() as session:
+        tx = (await session.execute(sql("SELECT * FROM eqlib.eq_rental_tax_state WHERE state = 'TX'"))).mappings().one()
+        check("d1289-tx-fee-grade", (", B (D-1289);" in tx["note"], ", C;" in tx["note"], tx["rule_cited"].startswith("34 TAC §3.294 (b), "), tx["lessor_fees_taxable"], tx["grade"]), (True, False, True, True, "A"))
+        css = (
+            await session.execute(
+                sql(
+                    "SELECT d.unit_price, d.grade, d.sell_unit, d.source_internal, i.name FROM matlib.mat_default d"
+                    " JOIN matlib.mat_item i ON i.mat_key = d.mat_key JOIN matlib.release r ON r.id = d.release_id"
+                    " WHERE r.title = 'Q4 2026' AND d.mat_key = 'stone:cement_stabilized_sand'"
+                )
+            )
+        ).one()
+        check("d1289-css-row", (css[0], css[1], css[2], css[4]), (Decimal("42.1400"), "B", "TON", "Cement-stabilized sand, 1.5 sack per ton of dry sand"))
+        check("d1289-css-source", (css[3].startswith("D-1290: 1.5 sack per ton of dry sand, delivered, as of 2026-10"), "pick about $40" in css[3]), (True, True))
+        got = dict(
+            (k, (str(p.quantize(Decimal("0.01"))), g, s.startswith("D-1290: ")))
+            for k, p, g, s in (
+                await session.execute(
+                    sql(
+                        "SELECT d.mat_key, d.unit_price, d.grade, d.source_internal FROM matlib.mat_default d"
+                        " JOIN matlib.release r ON r.id = d.release_id WHERE r.title = 'Q4 2026' AND d.mat_key = ANY(:k)"
+                    ),
+                    {"k": [k for k, _, _ in D1289_PIPES]},
+                )
+            ).all()
+        )
+        for key, price, grade in D1289_PIPES:
+            check(f"d1289-{key}", got.get(key), (price, grade, True))
+        audit = (await session.execute(sql("SELECT detail FROM matlib.release_audit WHERE actor = 'migration d1289e5b3c40 (D-1289)'"))).scalars().all()
+        check("d1289-audit", [(len(d["moves"]), d["css_name"], d["texas_fee_grade"]) for d in audit], [(19, True, True)])
+        delivery = dict((await session.execute(sql("SELECT transport_class, delivered_by FROM eqlib.eq_transport_class"))).all())
+        check("d1289-delivery-by-class", delivery, D1289_DELIVERY)
+        # Q26: each class's FEMA edition, from its owned rate's text.
+        years = dict((await session.execute(sql("SELECT equip_key, owned_rate_year FROM eqlib.eq_class"))).all())
+        editions = {k: national.fema_edition(y) for k, y in years.items()}
+        check("d1289-fema-classes", (sum(1 for e in editions.values() if e == 2025), sum(1 for e in editions.values() if e is None)),(179, len(years) - 179))
+        check("d1289-fema-text-forms", (national.fema_edition("FEMA 2025"), national.fema_edition("FEMA 2025 (interpolated)"), national.fema_edition("FEMA 2025 - $ per MILE"), national.fema_edition("2022"), national.fema_edition(None)), (2025, 2025, 2025, None, None))
+        nat = await national.load(session)
+        check("d1289-fema-bundle", (sum(1 for c in nat.classes.values() if c.get("owned_fema_edition") == 2025), any("owned_rate_year" in c for c in nat.classes.values())), (179, False))
+        # Q18: the rule says where the state came from.
+        rule = await service.rental_tax(session, None, "TX", "workspace")
+        check("d1289-state-from-workspace", (rule["from"], rule["loaded"]), ("workspace", True))
+        rule = await service.rental_tax(session, None, None, "none")
+        check("d1289-state-from-none", (rule["from"], rule["loaded"]), ("none", False))
+    # Q14: the figure in code is "by transport class"; Q2: the jurisdiction setting, "other" unless set.
+    check("d1289-delivery-default", service.APP_SETTING_VALUES.get("rental_delivery_by_dealer"), 2)
+    check("d1289-jurisdiction-default", (UtilitySettings().jurisdiction, UtilitySettings.model_validate({}).jurisdiction), ("other", "other"))
+    check("d1289-jurisdiction-county", UtilitySettings.model_validate({"jurisdiction": "harris_county"}).jurisdiction, "harris_county")
+    try:
+        UtilitySettings.model_validate({"jurisdiction": "houston"})
+        refused = False
+    except ValidationError:
+        refused = True
+    check("d1289-jurisdiction-refused", refused, True)
+    for w in wrong:
+        print(w)
+    print(f"D-1289 library rows and api fields: {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["d1289"]:
+        import asyncio
+
+        sys.exit(asyncio.run(d1289()))
     if sys.argv[1:] == ["d1287"]:
         import asyncio
 

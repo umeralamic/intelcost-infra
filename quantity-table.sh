@@ -72,8 +72,10 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # C2 D3: C594 - 7 + 7 + 9 + 8 + 2 = 613, D181 - 3 - 7 - 9 + 2 + 3 = 167.
 # D-1279: spacers and seals at list x 0.74, grade D (the 7 spacers and 9 seals at C go to D); 5 insert stiffeners (D);
 # C900 restraint 14 and 18 in (F): C613 - 16 = 597, D167 + 16 + 5 = 188, F32 + 2 = 34.
-if [ "$MAT_COUNTS" != "A171 B188 C597 D188 F34" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A171 B188 C597 D188 F34"
+# D-1289 (migration d1289e5b3c40, the D-1290 picks): CSS C to B; RCP 30 in A to B; C900 DR 18 6, 8, 12 in A to B;
+# SDR-26 8 and 12 in A to B, 10 and 15 in C to B: A171 - 6 = 165, B188 + 9 = 197, C597 - 3 = 594.
+if [ "$MAT_COUNTS" != "A165 B197 C594 D188 F34" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A165 B197 C594 D188 F34"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -169,6 +171,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1
 # D-1287 (B2, B3, B8): the rental tax state table as migration d1287c6e2a91 loaded it, the bundle's rule for TX, GA, an
 # unlisted state and none, the extras' figures in code, the job type a state rule may name, the ratios at the medians.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1287" </dev/null || { echo "FAIL  rental tax and extras (above)"; exit 1; }
+# D-1289 (migration d1289e5b3c40 and the api): the Texas fee grade B, CSS at $42.14 and its name, the 18 pipe rows as
+# MATERIAL-PICKS-FINAL §5 lists them, delivery by transport class, the FEMA edition on each class, the state's origin
+# in the bundle's rule, and the project jurisdiction setting.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1289" </dev/null || { echo "FAIL  D-1289 library rows (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.
