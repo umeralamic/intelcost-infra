@@ -33960,6 +33960,24 @@ answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
   line name, `matByKeyPerLF`); `boxed-report.mjs` reverts the 8 keys d1289e5b3c40 repriced (RCP 24–54 in, C900 DR 14
   12 and 8 in) to their old prices from it (linear; waste, tier and rounding as the pass ran) and gives k per kind again
   (K1b), and `--paved=a2,a1` gives the paved backfill's $ per kind (P1).
+- **Run (2026-11-16 16:48–20:30 UTC, harness infra da4fdab, app 135df2d, api 4d8e5a4; report
+  `intelcost-infra/morning-report-2026-11-19/step3/BOXED-PASSES.md`).** Two harness fixes after one-tab trials, both
+  committed before the passes: 37cb223 (the api stores no component total, so the material split by key is worked from
+  each component's formula, price and waste) and da4fdab (one line's components per line name). Timings: a1 47.6 min
+  (worst contract 145.6 s), a2 36.1 min (69.8 s), b 34.7 min (56.8 s), b′ 42.4 min (90.6 s). Pass (b) guard: Q2, Q4, Q5
+  in. 47 of 47 priced in every pass, parity 0, no interaction. **(b′) ran three times; the third counts:** in (b)'s
+  project the api kept the library price on lines carried over from (b) (`line_sync.py`: a written price moves only
+  when a person updates it), so it priced CSS partly at $41.61; a fresh project then lost the MCP browser after 2
+  contracts; the third, in a fresh project of a new throwaway, priced every CSS component at $19.75. Throwaways
+  fx.equip.20261116163204 and fx.equip.20261116194442 purged (dry runs first). Digest b4c963cdf83e7d84 start and end.
+- **Results, all pipe k to the medians / lows (healthy 1.15–1.30, centre 1.22):** Rerun 2 (a) 1.107 / 0.947; **a1
+  1.049 / 0.898** (1.070 without the 8 picks); **a2 0.718 / 0.614**; **b 0.643 / 0.551**; **b′ 0.821 / 0.702**. Recent:
+  1.075; 1.016; 0.682; 0.614; 0.791. Only a1 keeps any group in the band (storm RCP 48 in+ 1.188, history sanitary 1.183,
+  history storm RCP 18–42 in 1.163). **Paved backfill (a2 − a1): +$4,963,632 (+46 %) on the 189 items, all CSS
+  material** (sanitary +$3.01 M, storm RCP 18–42 in +$1.09 M, water +$0.62 M). **Boxing (a1 − Rerun 2 (a)): +$562,179**,
+  of it box rent +$312,642, PE design over 20 ft +$39,495, the picks +$212,362: the app prices no dig or native
+  backfill, so a box only adds its rent. **CSS at $19.75 local (b′ − b): −$3,784,512** on the 189 items (177,203 t in
+  both).
 - **Step 1 check (`step1Probe`, pass (b) only):** Q2 a paved 24 in RCP keeps CSS to the subgrade and a 60 in one does not
   (Harris County); Q4 paved 8 in water's final backfill is not CSS; Q5 paved 24 in HDPE storm has flowable fill, unpaved
   CSS. Until all three hold the runner prices nothing and says what it found (today: all three NOT YET).
@@ -33971,6 +33989,17 @@ answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
 ## D-1292 — Night run from 2026-11-16, step 4: extra excavation options (a) and (b) re-estimated on the boxed basis (report only; not built)
 
 **Status:** planned.
+
+**Re-estimated (2026-11-16, report only; nothing built; `intelcost-infra/morning-report-2026-11-19/step4/EXTRA-EXCAVATION-BOXED.md`).**
+The method of `morning-report-2026-11-18/step1/EXTRA-EXCAVATION.md` unchanged (B2 box section, Type B, A2 $1.62/BCY + A3
+$5.18/CCY for the wedge, displaced spoil hauled at A6 + fee only when the contract exports, capped at its surplus; haul
+$13.787/LCY, the every-contract-exporting rate of its §2.3), on step 3's own trenches (rebuilt by the app's engine,
+equal to each pass's trace on all 189 items). On the boxed basis the wedge is gone (186 of 189 boxed; only R42's three
+open RCP items, 1,735 BCY, +$11,799) and every contract exports, so the options are almost all haul:
+- **a1 (boxed, unpaved; base 1.049 / 0.898): (a) +$517,007 → 1.001 / 0.857; (b) +$486,501 → 1.004 / 0.859** (2026-11-18
+  sloped: +$2.97 M → 0.871 and +$1.52 M → 0.981);
+- a2 (boxed, paved; 0.718): (a) +$1,903,122 → 0.640; (b) +$1,876,178 → 0.641 (the CSS backfill displaces 137,178 LCY);
+- b (Houston, paved; 0.643): (a) +$2,366,531 → 0.567; (b) +$2,334,612 → 0.568.
 
 ## D-1293 — Cursor tips while measuring: Linear (segment · total), Segment (segment), Area (perimeter and area), Count (number placed); "Sheet not scaled" on an uncalibrated sheet; values at the snapped/ortho point; an overlay updated by requestAnimationFrame outside React; a "Show cursor tips" preference, default on
 
@@ -34140,3 +34169,5 @@ no React commit per pointer move while a contour is drawn, measured on the dev b
 **D-1293, founder (2026-11-16, after the follow-up):** cursor tips accepted as built (app cb3f481: drawn in the cursor canvas, +6–9 ms a frame at 4× CPU, 0 at 1×); no further work.
 
 **D-1294, founder (2026-11-16):** the MCP guard's old P06 refusal entry stays (clearing it was refused by the session's permissions). Reports treat a refusal count of 1 as the documented 2026-11-16 entry (`morning-report-2026-11-19/step0/P06-STALE-PATCH.md`) and flag only counts above 1.
+
+**D-1289, founder follow-ups (2026-11-16, after the app part):** (1) Q14 corrected: the delivery default follows **ownership**, not transport class: rented machines → dealer delivery (taxed) for every class; owned machines → own or third-party haul (untaxed). The company/estimate override keeps by class / all dealer / all hauler as options. Quantity-table rows updated; $ effect on the recent tabs reported (expected small). (2) The export spreads the folded rental tax across lines by largest remainder, so the exported lines add exactly to the bid sheet's Direct cost. Built in the next app slot, after step 3's passes.
