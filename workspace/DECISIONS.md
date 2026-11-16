@@ -33909,6 +33909,41 @@ answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
 
 **Status:** planned.
 
+**Harness prepared (2026-11-16, unattended; the three passes not run yet: they wait on step 1's app part).** Code in
+`intelcost-infra/bidtabs/` only; no app or api source. Founder's later calls: (b′) is a sensitivity at $19.75/TON (all
+15 tabs, R17); pass (b) runs with jurisdiction Harris County.
+- **How the harness reaches the app.** `contract-runner.js` runs in a signed-in browser on the bench app's dev server and
+  imports the app's modules as served (`/src/...`): the presets (`sectionPresets.ts`) reach it through
+  `calculate.ts:runMaterials`/`runLayered` and Calculate's `calculateUtilities` (the parity check), so step 1's Q2, Q4
+  and Q5 reach it the moment the bench app serves them. Lines go to the api (`PUT …/earthwork/result`) and prices are
+  read from the Estimating table, as before. `UtilitySettings.jurisdiction` (api 4d8e5a4) needs nothing written: the
+  runner sets `settings.jurisdiction` on the page's settings only (as D-1283 set `sectionPresets`) and records what the
+  api holds beside it.
+- **R11's marking (`street-marking.mjs`).** Every run is limited width (the app's "Limited width / in street") unless
+  its tab row's text says otherwise: open for "outside (of) pavement", "not under pavement", open field / unpaved /
+  cross-country, a temporary low-water crossing pipe; the words "under (and within N ft of) paving" are recorded as the
+  reason where present; no text found keeps the default. Each item carries `limitedWidth` and `limitedWhy`; the runner
+  (`limitedWidth: "items"`) refuses a contract with an unmarked item. On the 47 contracts: of the 189 priced pipe items
+  **recent 131 of 131, all 186 of 189** limited width (the 3 open: one tab's RCP 24/30/42 in "outside of pavement areas",
+  history, 1,345 LF); the 39 crossing items all limited. Marked list: `docs/reference/Bid tabs Houston 2026-11/contracts-47-d1291-marked-2026-11-16.json`.
+- **What limited width does in the app, read before the run:** Auto boxes the run over 4.5 ft (every marked tab run is
+  deeper: 186 of 186 boxed) **and the run is paved** (`runMaterials`: the preset's paved final backfill, CSS in every
+  preset, to 12 in below the surface; that 12 in is the restoration's, none on the tabs). So pass (a) buys CSS final
+  backfill too (e.g. 8 in water 0.148 CY/LF, 8 in sewer at 14 ft 1.000 CY/LF), and its excavation falls with the box
+  (8 in water 1.336 → 0.377 CY/LF). Founder to confirm that (a) should carry the paved backfill (the app's meaning of
+  "in street"), or whether only the walls should box.
+- **Passes:** `d1291-a.json` (mode a), `d1291-b.json` (mode b, Houston preset on water, force main, sanitary, storm,
+  jurisdiction `harris_county`, `requireStep1`), `d1291-b2.json` ((b) with `cssPrice` $19.75/TON national × the
+  library's location factor, set as the throwaway project's own price for `stone:cement_stabilized_sand`, never the
+  library; any later pass takes it off). All keep the D-1284 rules: pool on, rental tax 8.25 %, waiver 12 %, Q7's 4.5 ft.
+- **Step 1 check (`step1Probe`, pass (b) only):** Q2 a paved 24 in RCP keeps CSS to the subgrade and a 60 in one does not
+  (Harris County); Q4 paved 8 in water's final backfill is not CSS; Q5 paved 24 in HDPE storm has flowable fill, unpaved
+  CSS. Until all three hold the runner prices nothing and says what it found (today: all three NOT YET).
+- **Tools:** `offline-parity.mjs` (the runner's engine half in node, no browser, no api: parity and the trench trace;
+  on the 47 contracts parity 0 and no interaction under (a) and (b), about 2.5 s), `boxed-report.mjs` (k per kind to the
+  medians and lows per pass, recent / history / all, RERUN2.md's layout; our direct and its change; the trench per LF
+  for Part 6's T1 runs; sections, walls, marks, CSS bought, checks), `engine-hook.mjs` maps `/src/` too.
+
 ## D-1292 — Night run from 2026-11-16, step 4: extra excavation options (a) and (b) re-estimated on the boxed basis (report only; not built)
 
 **Status:** planned.
