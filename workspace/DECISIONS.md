@@ -34037,6 +34037,21 @@ Linear `152'-2 13/16" · total 380'-7 5/16"` after two segments; Ortho (the tip 
 sheets panel ruler on V-100, C-100, C-200, A101, P101 only, its tip `1" = 30'` on hover and on keyboard focus, Escape and
 leaving hide it. Screenshots: `morning-report-2026-11-19/step0/`.
 
+**Follow-up, the founder's answers of 2026-11-16 11:06 (R37), on top of D-1294 (app 0cb6b49)** (app cb3f481; infra rows in the commit after it):
+- (1) The tip moved by `translate3d` on its own layer, written only when it lands on another pixel: still +43 ms a frame
+  at 4× on A101 (mean 24.8 → 68.3, p50 16.7 → 50) and +51 on C-200 (30.9 → 81.7), so over the 4 ms bar. It now paints
+  into the reticle's canvas in the reticle's frame (`reticleLayer.ts:ReticleLayer`, `Reticle.tsx` `layer`): its look read
+  from an invisible template in the same Tailwind tokens (colours, borders, radii, padding, gaps, fonts; once per tool or
+  theme), the icon the app's glyph with its colours resolved, the card (shadow, fill, border) drawn once per size and
+  stamped. Measured: A101 4× on − off +5.6 ms (mean 26.6 → 32.2), C-200 +9.2 (31.3 → 40.5); after the stamped card, on a
+  busier machine, A101 +17.0 / +18.5 and C-200 +6.3 / +4.9 (interleaved pairs; the off figure itself moved 31.7 → 40.1
+  between two runs). 1×: p50 16.7, p95 16.8 in every run, tip on or off. Not under 4 ms at 4× on A101; a question.
+- (2) Area's perimeter includes the closing edge back to the first point (`cursorTip.ts` `closedFeet`), as its area does;
+  `tip-cases.mjs` rows now `Perimeter 86'-0 11/16"` (30 + 20 + √1300 ft) and `Perimeter 100'-0"`. Smoke: C-100 three
+  corners `Perimeter 655'-0 7/16"` = 228.354 + 152.236 + 274.448 ft, `Area 17,381.84 SF`; the tip follows the Ortho pen
+  (682.539 ft at the pen, 703.743 at the raw pointer).
+- (3), (4) as built.
+
 **D-1290, founder decision (2026-11-16 07:56 UTC):** the tabs' extra-CSS contingency prices are nominal, not cost evidence. Library CSS (`stone:cement_stabilized_sand`) **stays $37.00/TON delivered**; its **grade goes C → B** and its **label becomes "1.5 sack per ton"**, on public evidence: Jefferson County TX 2023 (1.5 sk/ton $40.00 delivered 1–10 mi, $35.00 FOB), Montgomery County TX 2021 #21-34 (1.5 sk/ton pickup $21.50 / $30.25), Fort Bend County B25-041 / B26-031 (per ton, 2-sack minimum, half-sack adder) and Deer Park Spec 433 ("not less than 1.5 sacks of Portland cement per ton of material mixture"). **Logged for the next run's migration; not changed tonight.** Step 3's pass (b′) at $19.75/TON stays a sensitivity only.
 
 **D-1290, founder (2026-11-16 07:57 UTC):** supersedes "next run's migration" above. The CSS row's grade (C → B) and label ("1.5 sack per ton") go into **tonight's step 1 migration (D-1289)**, price unchanged at $37.00/TON. Both it and Q17's fee grade are listed in the report's migration rows.
@@ -34108,3 +34123,5 @@ no React commit per pointer move while a contour is drawn, measured on the dev b
 **D-1293, founder answers (2026-11-16 11:06 UTC):** (1) the tip moves with `transform: translate3d(…)` plus `will-change: transform`, with no left/top writes; re-measured at 4× CPU, and only if it still costs more than 4 ms a frame is it drawn into the cursor canvas. (2) Area's perimeter includes the closing edge. (3) Count shows the item's total on the sheet (as built). (4) Count on an unscaled sheet keeps its number (as built). (5) Backlog: other hover tips move to the new tooltip component (FEATURES Planned row). (1) and (2) are a follow-up commit after D-1294's.
 
 **D-1294, founder (2026-11-16 11:06 UTC):** the profile shows a React commit per pointer move (763 commits over 899 moves). Pointer moves while a contour is drawn must cause no React commit. Before and after are measured on the dev build and on a production build (vite build + preview), at 1× and 4× CPU: frames dropped, p95 frame, p95 move. The stale context that keeps trying to PATCH P06 is found, cleared and reported (step0/P06-STALE-PATCH.md).
+
+**D-1294, founder answers (2026-11-16, after the fix):** (1) no P02 run; the P01 copy is the harder case. (2) FEATURES Planned row "Earthwork contours drawn on canvas/WebGL (like measured shapes)", spec first, medium priority (4× CPU: SVG paint ~16 ms a frame on V-100). (3) The MCP guard's old P06 refusal entry is cleared now that it is documented in `step0/P06-STALE-PATCH.md`; a future entry means a new event. (4) The cursor drawing change in app 0cb6b49 is accepted; the cursor-tip follow-up is measured on top of it.

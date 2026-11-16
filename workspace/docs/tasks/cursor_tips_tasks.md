@@ -13,7 +13,7 @@ what the next click does, and the run so far, read at the snapped or Ortho point
 | Linear, Point to Point | "Click to start the run", then "Click to add a point, double-click to finish"; with an A-arc "Click a point on the arc" / "Click the arc's end" | `segment · total`, e.g. `6'-3" · total 16'-3"` |
 | Linear, Rectangle / Ellipse / Arc | "Click the first corner" / "Click the opposite corner"; Arc: start, a point on the arc, end | the shape's length |
 | Segment | "Click the segment's start" / "Click the segment's end" | the segment's length |
-| Area, Point to Point | "Click the first corner", "Click the next corner", then "…, double-click to close" | `Perimeter …` (the run so far) and `Area … SF` (closed back to the first point) |
+| Area, Point to Point | "Click the first corner", "Click the next corner", then "…, double-click to close" | `Perimeter …` and `Area … SF`, both of the shape closed back to the first point (the founder, 11:06) |
 | Area, Rectangle / Ellipse | first / opposite corner | perimeter and area of the shape |
 | Count | "Click to place" | the marks the count in hand has on this sheet, none before this session's first |
 
@@ -22,8 +22,9 @@ what the next click does, and the run so far, read at the snapped or Ortho point
   Settings › General's places). Metric with a metric scale or a metric project, as the Dimension tool.
 - Hidden: no measure tool, a pick (link, coordinate, join, overlay), an earthwork tool, while the sheet pans, under a
   dialog or a menu, and off the sheet (over the panels).
-- Performance: one fixed node owned by a ref; the pointer handler hands over the pointer and the pen; one
-  requestAnimationFrame writes `transform` and `textContent`. No React state per move.
+- Performance: the pointer handler hands over the pointer and the pen, no React state per move. First one fixed node
+  moved by `transform`; since the founder's 11:06 answer, painted into the reticle's canvas in its frame
+  (`reticleLayer.ts`), its look read from a token-styled invisible template (D-1293 follow-up).
 - Preference: Settings › Cursor › "Show cursor tips", on by default, in the per-device takeoff settings
   (`takeoff.settings.v1`, `cursor.tipShow`). No api field, no migration.
 

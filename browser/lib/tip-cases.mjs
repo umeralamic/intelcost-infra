@@ -5,8 +5,10 @@
 // Square page, 1000 × 1000 pt at 0.1 ft per point: 0.1 of the page is 10 ft.
 //   Linear: (0.1, 0.1) → (0.2, 0.1) is 10 ft; the pen at (0.2, 0.1625) adds 6.25 ft: 6'-3" · total 16'-3".
 //   Segment: from (0.1, 0.1) to (0.175, 0.2) is 7.5 by 10 ft: 12.5 ft, 12'-6".
-//   Area: (0.1, 0.1), (0.4, 0.1), the pen at (0.4, 0.3): the run 30 + 20 = 50 ft; closed, a triangle ½ × 30 × 20 = 300 SF.
-//   Area: three corners of a 30 × 20 ft box and the pen at the fourth: the run 30 + 20 + 30 = 80 ft; closed 600 SF.
+//   The perimeter includes the closing edge back to the first point (the founder, 2026-11-16 11:06), as the area does:
+//   Area: (0.1, 0.1), (0.4, 0.1), the pen at (0.4, 0.3): 30 + 20 + √(30² + 20²) = 86.055513 ft = 86'-0 11/16" (to the
+//   sixteenth: 0.055513 ft = 0.666 in = 10.66/16); a triangle ½ × 30 × 20 = 300 SF.
+//   Area: three corners of a 30 × 20 ft box and the pen at the fourth: 30 + 20 + 30 + 20 = 100 ft; 600 SF.
 //   Area, Rectangle mode: one corner and the pen at the other: perimeter 2 × (30 + 20) = 100 ft, 600 SF.
 //   Linear with an A-arc (pen-cases' quarter circle, r 10 ft, 90°): a 10 ft lead, then the arc through its middle to
 //   the pen: the arc is π / 2 × 10 = 15.707963 ft = 15'-8 1/2" (to the sixteenth), the run 25.707963 ft = 25'-8 1/2".
@@ -52,12 +54,12 @@ export const TIP_CASES = [
   {
     id: "tip-area-triangle-so-far",
     input: { ...base, tool: "sf", mode: "polygon", points: [p(0.1, 0.1), p(0.4, 0.1)], pen: p(0.4, 0.3) },
-    expect: { prompt: "Click the next corner, double-click to close", values: [`Perimeter 50'-0"`, "Area 300 SF"], note: null },
+    expect: { prompt: "Click the next corner, double-click to close", values: [`Perimeter 86'-0 11/16"`, "Area 300 SF"], note: null },
   },
   {
     id: "tip-area-box-closing-edge",
     input: { ...base, tool: "sf", mode: "polygon", points: [p(0.1, 0.1), p(0.4, 0.1), p(0.4, 0.3)], pen: p(0.1, 0.3) },
-    expect: { prompt: "Click the next corner, double-click to close", values: [`Perimeter 80'-0"`, "Area 600 SF"], note: null },
+    expect: { prompt: "Click the next corner, double-click to close", values: [`Perimeter 100'-0"`, "Area 600 SF"], note: null },
   },
   {
     id: "tip-area-rectangle-mode",
