@@ -25,6 +25,18 @@ async (page) => {
   // paths), "a" (each type's own default, `auto`), "b" (the Houston section for water, force main, sanitary and storm
   // through the project's settings, in the page only: never stored on a run, never written to the api). Absent: "legacy".
   // The project's state is Texas in every mode (the throwaway is Harris County; 30 TAC on the Texas sanitary items).
+  // D-1291 (the boxed basis, option (c); R11): `limitedWidth` = "items" marks each item's run limited width as its input
+  // says (`it.limitedWidth`, a boolean every item must carry, with `it.limitedWhy`; street-marking.mjs writes both), true
+  // marks every run, absent none (as before). A limited-width run is the app's "Limited width / in street": Auto boxes it
+  // over 4.5 ft (D-1285 Q7) and the run is paved (`calculate.ts:runMaterials`: the preset's paved final backfill to 12 in
+  // below the surface, the cap the restoration's, none here), on both paths and on crossing runs; the box is the
+  // project's (`trench.ts:boxFor`), as Calculate picks it. `jurisdiction` (D-1289 Q2: "city_of_houston", "harris_county",
+  // "other") is set on the page's settings only, never written. In mode "b" the runner first checks that step 1's app
+  // part has landed (Q2's County rule, Q4, Q5: `step1Probe` below) and refuses to price until it has (`requireStep1`,
+  // default true in "b"). `cssPrice` = { matKey, unitPrice, basis: "national" | "local" } (pass (b′)) sets the project's
+  // own price for that key on the throwaway (a project price, never the library), national × the factor the library
+  // price takes there; with no `cssPrice` a price the harness set is taken off again. Each contract reports its CSS
+  // tonnage, price and order tier (`css`).
   const ct = page.context().__ct;
   const out = [];
   for (const contract of ct.list ?? [ct.contract]) out.push(await priceOne(contract));
@@ -36,9 +48,10 @@ async (page) => {
   await page.goto(`http://localhost:5173/project/${P}/takeoff/${S}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(localStorage.getItem("intelcost.session")), null, { timeout: 60000 });
   const own = await page.evaluate(
-    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver }) => {
+    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, jurisdiction, requireStep1, cssPrice }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
       const h = { authorization: `Bearer ${s.accessToken}`, "content-type": "application/json" };
+      const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
       const cat = await import("/src/lib/takeoff/earthwork/utilities/catalog.ts");
       const q = await import("/src/lib/takeoff/earthwork/utilities/quantities.ts");
       const ln = await import("/src/lib/takeoff/earthwork/utilities/lines.ts");
@@ -66,12 +79,79 @@ async (page) => {
       // Part 6 rerun: the state Calculate reads from the project (never saved with the settings), and (b)'s presets.
       settings.projectState = "TX";
       if (mode === "b") settings.sectionPresets = { water: "houston_css", force_main: "houston_css", sanitary: "houston_css", storm: "houston_css" };
-      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null };
+      // D-1291: the jurisdiction the Houston preset follows (Q2), in the page only; what the api holds is recorded beside it.
+      if (jurisdiction) settings.jurisdiction = jurisdiction;
+      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, boxes: (settings.boxes ?? []).length };
+      // D-1291 (R11): a run's limited-width mark. In "items" mode every item carries its own (street-marking.mjs); one
+      // without is refused, never guessed.
+      const unmarked = limitedMode === "items" ? contract.items.filter((it) => typeof it.limitedWidth !== "boolean").map((it) => `${it.entry}:${it.nominal} ${it.qty} LF`) : [];
+      if (unmarked.length > 0) return { put: 0, putText: "", missing: [], unpriceable: [], ownLines: [], parity: [], ran, unmarked };
+      const limitedOf = (it) => (limitedMode === "items" ? it.limitedWidth === true : limitedMode === true);
+      // D-1291: step 1's app part (D-1289 Q2, Q4, Q5), read from the app's own section code on paved (limited-width) runs:
+      // Q2, Harris County: CSS to the subgrade on a 24 in RCP, not on a 60 in one (54 in and up: select or native);
+      // Q4, Houston water under pavement on bank sand, not CSS; Q5, Houston HDPE storm: flowable fill under pavement and
+      // CSS outside it. Each check names what it found; the pass (b) waits until all three hold.
+      const step1Probe = () => {
+        const layeredOf = (type, key, lw) => {
+          const pp = cat.resolvePipe(key);
+          if (!pp || pp.od == null) return null;
+          const stub = { section: rd.defaultRun(type).section, catalog_key: key, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: lw, utility_type: type };
+          return calc.runLayered(stub, type, { od: pp.od, id: pp.id ?? pp.od - 2 * (pp.wall ?? 0) }, settings, calc.runMaterials(stub, settings)).layered;
+        };
+        const names = (L) => (L ? [...L.normal.bands.map((b) => `${b.key} ${b.material.name}`), `final ${L.normal.final.material.name}`] : ["no layered section"]);
+        const final = (L) => L?.normal.final.material.name ?? "";
+        const CSS = /cement/i;
+        const FLOW = /flowable|clsm/i;
+        const r24 = layeredOf("storm", "rcp_c76_wall_b:24", true);
+        const r60 = layeredOf("storm", "rcp_c76_wall_b:60", true);
+        const w8 = layeredOf("water", "pvc_c900_dr18:8", true);
+        const hPaved = layeredOf("storm", "hdpe_f2648_dual_wall:24", true);
+        const hOpen = layeredOf("storm", "hdpe_f2648_dual_wall:24", false);
+        const checks = [
+          { q: "Q2", ok: settings.jurisdiction === "harris_county" && CSS.test(final(r24)) && !CSS.test(final(r60)), found: `jurisdiction ${settings.jurisdiction ?? "none"}; 24 in RCP paved: ${names(r24).join(", ")}; 60 in RCP paved: ${names(r60).join(", ")}` },
+          { q: "Q4", ok: Boolean(w8) && !CSS.test(final(w8)), found: `8 in water paved: ${names(w8).join(", ")}` },
+          { q: "Q5", ok: names(hPaved).some((n) => FLOW.test(n)) && names(hOpen).some((n) => CSS.test(n)), found: `24 in HDPE storm paved: ${names(hPaved).join(", ")}; unpaved: ${names(hOpen).join(", ")}` },
+        ];
+        return { ok: checks.every((c) => c.ok), checks };
+      };
+      if (mode === "b") {
+        ran.step1 = step1Probe();
+        if (requireStep1 && !ran.step1.ok) return { put: 0, putText: "", missing: [], unpriceable: [], ownLines: [], parity: [], ran, waiting: ran.step1.checks.filter((c) => !c.ok) };
+      }
+      // D-1291 (b′): the project's own price for the CSS key, set (or taken off) before any line is written, so the lines
+      // price at it. A project price is used as it is (no location factor, no order tier: `materials/service.py:
+      // resolve_many`, `tiers.py:apply`), so a national figure takes the factor the library price takes here; the tier
+      // is reported per contract (`css`) for the report to read. Only a price this harness set is ever taken off, in every
+      // pass, so a pass after (b′) on the same throwaway prices at the library again.
+      const PRICE_NOTE = "bid-tab harness (D-1291 pass b′), a sensitivity on a throwaway; never the library";
+      const PRICES = `${API}/api/workspace/${W}/project/${P}/estimate/material-prices`;
+      // A dry parity check writes nothing.
+      if (!parityOnly) {
+        const key = cssPrice?.matKey ?? "stone:cement_stabilized_sand";
+        const listed = await (await fetch(PRICES, { headers: h })).json();
+        const had = (Array.isArray(listed) ? listed : []).filter((x) => x.mat_key === key);
+        const theirs = had.filter((x) => x.note !== PRICE_NOTE);
+        if (theirs.length > 0) return { put: 0, putText: "", missing: [], unpriceable: [], ownLines: [], parity: [], ran, waiting: [{ q: "price", ok: false, found: `the project has its own price on ${key} (${theirs[0].unit_price} / ${theirs[0].sell_unit}), not the harness's: take it off first` }] };
+        for (const x of had) await fetch(`${PRICES}/${x.uuid}`, { method: "DELETE", headers: h });
+        const lib = await (await fetch(`${PRICES}/resolve?mat_key=${encodeURIComponent(key)}`, { headers: h })).json();
+        ran.cssLibrary = { key, unitPrice: lib.unit_price ?? null, sellUnit: lib.sell_unit ?? null, source: lib.source ?? null, factor: lib.factor ?? null, location: lib.location ?? null, grade: lib.grade ?? null };
+        if (cssPrice) {
+          const factor = cssPrice.basis === "local" ? 1 : (lib.factor ?? 1);
+          const unitPrice = Math.round(cssPrice.unitPrice * factor * 10000) / 10000;
+          const saved = await fetch(PRICES, { method: "POST", headers: h, body: JSON.stringify({ mat_key: key, name: "Cement-stabilized sand (bid-tab sensitivity)", unit_price: unitPrice, sell_unit: cssPrice.sellUnit ?? lib.sell_unit ?? "TON", note: PRICE_NOTE }) });
+          if (!saved.ok) return { put: saved.status, putText: (await saved.text()).slice(0, 300), missing: [], unpriceable: [], ownLines: [], parity: [], ran };
+          ran.cssPrice = { key, given: cssPrice.unitPrice, basis: cssPrice.basis ?? "national", factor, unitPrice, sellUnit: cssPrice.sellUnit ?? lib.sell_unit ?? "TON" };
+        }
+      }
       // Part 6 rerun: a run's trench per LF (CY/LF): excavation, the bedding and pipe zone bought (imported), the backfill
       // (and the part of it bought), and the stack's title.
-      const perLf = (r, L, title) => {
+      // D-1291: and the walls the run took (each piece's method, by LF), its limited-width mark, the backfill bought by name.
+      const perLf = (r, L, title, limited = false) => {
         const imp = (zones) => (r.byMaterial ?? []).filter((m) => zones.includes(m.zone) && m.source === "imported").reduce((t, m) => t + m.cf, 0);
-        return { excCYLF: r.excavationCF / 27 / L, impEmbCYLF: imp(["bedding", "zone", "foundation"]) / 27 / L, backfillCYLF: r.backfillCF / 27 / L, impBackfillCYLF: imp(["backfill"]) / 27 / L, title };
+        const walls = {};
+        for (const pc of r.pieces ?? []) walls[pc.method] = (walls[pc.method] ?? 0) + (pc.s1 - pc.s0);
+        const bought = [...new Set((r.byMaterial ?? []).filter((m) => m.zone === "backfill" && m.source === "imported").map((m) => m.name))].join(", ");
+        return { excCYLF: r.excavationCF / 27 / L, impEmbCYLF: imp(["bedding", "zone", "foundation"]) / 27 / L, backfillCYLF: r.backfillCF / 27 / L, impBackfillCYLF: imp(["backfill"]) / 27 / L, title, limited, walls: Object.keys(walls).length > 0 ? walls : null, backfillBought: bought || null };
       };
       const CLAY_B = { layerId: null, name: "Clay", group: "clay", uscs: "CH", osha: "B", unsuitable: false, reuseBackfill: true, alwaysExported: false, shrink: 1.1, depth: null };
       // D-1277: a contract of crossings (each item a run with a `crossing`, D-1269's `section.crossing`) is built by the
@@ -106,7 +186,7 @@ async (page) => {
           const x1 = x0 + it.qty / Fft;
           const itemUuid = `x-item-${i}`;
           const base = rd.defaultRun(it.type);
-          const run = { ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
+          const run = { ...base, section: { ...noLayers(base.section), ...(it.restrainedPct ? { restrained_pct: it.restrainedPct } : {}), crossing: it.crossing }, catalog_key: pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: p.od, id_in: p.id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it), uuid: `x-run-${i}`, item_uuid: itemUuid, sheet_uuid: S };
           const items = [{ uuid: itemUuid, name: `X${i + 1} ${it.nominal}" ${pick.entry.material}`, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[x0, y], [x1, y]], shape_meta: null }] }];
           const structures = [];
           if (it.crossing.kind === "jack_bore" && it.pits) {
@@ -132,7 +212,7 @@ async (page) => {
           ownX.push((one?.lines ?? []).map((l) => ({ type, name: l.name, regionId: l.regionId, role: l.role, variant: l.variant, qty: l.quantity, unit: l.unit })));
           const r0 = one?.stored?.runs?.[0];
           const sectionNote = (r0?.notes ?? []).find((n) => n.startsWith("Section: ")) ?? null;
-          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
+          notes.push({ run: r0 ? { notes: r0.notes, flags: r0.flags } : null, skipped: one?.stored?.skipped ?? [], structures: (one?.stored?.structures ?? []).map((s) => ({ name: s.name, type: s.structureType, h: s.pit?.h ?? null, method: s.pit?.method ?? null, flags: s.flags })), trace: r0 ? { ...perLf(r0.q, contract.items[i].qty, sectionNote, limitedOf(contract.items[i])), gapCF: r0.q.sectionCheck?.gapCF ?? null } : null });
         });
         const allX = calcOf(parts.filter(Boolean));
         const linesX = allX?.lines ?? [];
@@ -199,10 +279,21 @@ async (page) => {
         // Part 6 rerun: the app's layered section for the run as a new run of its type stores it (`calculate.ts:runLayered`,
         // the project's settings and state); null in "legacy" mode (no `layers`), and the call is today's byte for byte. With
         // it the engine takes the width and the bottom from the stack, the materials from its bands; the invert stays.
-        const stub = { section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: false, utility_type: it.type };
-        const { layered } = calc.runLayered(stub, it.type, { od: p.od, id }, settings, calc.runMaterials(stub, settings));
-        const r = q.runQuantities({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", box: null, specMaxIn: null, protection: "auto", limitedWidth: false, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: "native" }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: "Native" }, segments: [], restoration: null, ...(layered ? { layered } : {}) });
-        trace[forLines.length] = perLf(r, L, layered ? layered.stack.title : "legacy");
+        // D-1291: a limited-width run as Calculate builds it (`calculate.ts`): paved, so the final backfill is the preset's
+        // paved material (or the project's paved CSS) to the cap, and the box the project's for the bottom width. An
+        // unmarked run is built byte for byte as before.
+        const lw = limitedOf(it);
+        const stub = { section: sectionOf(it), catalog_key: pipeKey, pipes: 1, pipe_gap_in: 0, restoration: null, limited_width: lw, utility_type: it.type };
+        const runMats = calc.runMaterials(stub, settings);
+        const { layered } = calc.runLayered(stub, it.type, { od: p.od, id }, settings, runMats);
+        const bf = lw ? { name: runMats.backfill.name, source: runMats.backfill.source } : { name: "Native", source: "native" };
+        const boxed = lw ? (() => {
+          const Pw = layered ? layered.pipeWidthFt : tr.pipeWidthFt(p.od, 1, 0, sec.sideClearanceIn, sec.minWidthIn);
+          const box = tr.boxFor(Pw, settings.boxes ?? [], { boxRef: null, boxOutsideFt: null });
+          return { box, boxNoFit: (settings.boxes ?? []).length > 0 && box === null, pavedCapIn: runMats.pavedCapIn };
+        })() : { box: null };
+        const r = q.runQuantities({ knots: [knot(0), knot(1)], layers: [CLAY_B], noBores: false, pipe: { odIn: p.od, idIn: id, pipes: 1, gapIn: 0 }, section: { ...sec, beddingIn: 6, zoneAboveCrownIn: 12 }, bucket: "auto", ...boxed, specMaxIn: null, protection: "auto", limitedWidth: lw, rule: null, depthRangesFt: settings.depthRangesFt, rangeUnit: "ft", materials: { bedding: "imported", zone: "imported", backfill: bf.source }, materialNames: { bedding: emb.bedding.name, zone: emb.zone.name, backfill: bf.name }, segments: [], restoration: null, ...(layered ? { layered } : {}) });
+        trace[forLines.length] = perLf(r, L, layered ? layered.stack.title : "legacy", lw);
         // The line's name as the app writes it ("8\" PVC C900 DR 18"), so the harness's lines are the app's (D-1211).
         const named = cat.catalogPick(pipeKey);
         const pipeLabel = `${it.nominal}" ${named?.entry.material || "Pipe"}${named?.entry.pipeClass ? ` ${named.entry.pipeClass}` : ""}`.replace(/ Pipe$/, "");
@@ -216,7 +307,7 @@ async (page) => {
           pipes: 1,
           q: r,
           swell: [1.3],
-          materials: { ...emb, backfill: { name: "Native", source: "native" } },
+          materials: { ...emb, backfill: bf },
           restoration: null,
           siteCondition: null,
           services: [],
@@ -251,7 +342,7 @@ async (page) => {
         const pick = cat.catalogPick(f.pipeKey);
         const pressure = ["water", "fire_water", "force_main"].includes(it.type);
         const inv = inverts[i];
-        const run = { ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
+        const run = { ...rd.defaultRun(it.type), section: sectionOf(it), catalog_key: f.pipeKey, material: pick.entry.material, pipe_class: pick.entry.pipeClass, nominal_in: pick.size.nominalIn, od_in: cat.resolvePipe(f.pipeKey).od, id_in: cat.resolvePipe(f.pipeKey).id, start_ground_ft: 100, end_ground_ft: 100, ...(pressure ? {} : { start_invert_ft: inv, end_invert_ft: inv }), limited_width: limitedOf(it), uuid: `parity-run-${i}`, item_uuid: `parity-item-${i}`, sheet_uuid: S };
         const item = { uuid: `parity-item-${i}`, name: f.pipeLabel, geometries: [{ sheet_uuid: S, role: "add", vertices_json: [[0.25, 0.5], [0.75, 0.5]], shape_meta: null }] };
         const app = calc.calculateUtilities({ runs: [run], items: [item], sheetUuid: S, settings, geo, frame: { widthPt: 1000, heightPt: 1000, feetPerNorm: (2 * it.qty) / 1000 }, eg: null, fg: null, features: [], projectShrink: 1.1, projectSwell: 1.3 });
         const ours = sig(ln.utilityLines([f]).map((l) => ({ ...l, materials: mt.lineMaterials(l, () => null, "restraint", {}) })));
@@ -283,9 +374,13 @@ async (page) => {
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
       return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags, ran, trace, sectionFlags };
     },
-    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null },
+    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null },
   );
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
+  // D-1291: refused before any line was written: an item with no limited-width mark, or (pass b) step 1's app part not
+  // in yet, or a CSS price on the project that is not the harness's. Each says what it found.
+  if (own.unmarked?.length > 0) return { key: contract.key, error: `${own.unmarked.length} item(s) without a limited-width mark (run street-marking.mjs): ${own.unmarked.slice(0, 3).join("; ")}` };
+  if (own.waiting?.length > 0) return { key: contract.key, error: `waiting: ${own.waiting.map((c) => `${c.q} (${c.found})`).join(" | ")}`, waiting: own.waiting, section: own.ran ?? null };
   if (own.interaction?.length > 0) return { key: contract.key, interaction: own.interaction.slice(0, 5), notes: own.notes };
   // A dry check of a crossing contract (`parityOnly`): its own lines and notes, nothing written.
   if (own.put === 0 && own.notes) return { key: contract.key, dry: true, missing: own.missing, notes: own.notes, ownLines: own.ownLines };
@@ -388,6 +483,20 @@ async (page) => {
     },
     { W: ct.workspace, P: ct.project, API },
   );
+  // D-1291: the contract's cement-stabilized sand as the api priced it: tons (each component's total ÷ its unit price),
+  // $, the unit prices and order tiers it took, and their source (the library, or the harness's project price in b′).
+  const css = await page.evaluate(
+    async ({ W, P, API, key }) => {
+      const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
+      const r = await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/components`, { headers: { authorization: `Bearer ${s.accessToken}` } });
+      const list = r.ok ? await r.json() : [];
+      const mine = (Array.isArray(list) ? list : []).filter((c) => c.kind === "material" && c.mat_key === key && c.unit_price != null && Number(c.unit_price) > 0);
+      const tons = mine.reduce((t, c) => t + (c.total == null ? 0 : Number(c.total) / Number(c.unit_price)), 0);
+      const total = mine.reduce((t, c) => t + (c.total == null ? 0 : Number(c.total)), 0);
+      return { key, components: mine.length, tons, total, unitPrices: [...new Set(mine.map((c) => Number(c.unit_price)))], bases: [...new Set(mine.map((c) => c.price_snapshot?.base_unit_price ?? null))], tiers: [...new Set(mine.map((c) => c.price_snapshot?.tier ?? null))], sources: [...new Set(mine.map((c) => c.price_source ?? null))] };
+    },
+    { W: ct.workspace, P: ct.project, API, key: ct.cssPrice?.matKey ?? "stone:cement_stabilized_sand" },
+  );
   // D-1277: a crossing contract's lines with their components (the pipe, the casing, the spacers, the seals, the bore
   // subcontract, the pits' parts, the crew), as the api holds them, by line name: the report takes the carrier pipe out
   // where the tab's item excludes it, and splits a crossing between a tab's casing and bore items.
@@ -464,9 +573,9 @@ async (page) => {
           return { name: l.name, role: l.role, variant: l.variant, unit: l.unit, qty: l.qty, lineQty: u?.qty ?? null, share: k, lab: (u?.lab ?? 0) * k, eq: (u?.eq ?? 0) * k, mat: (u?.mat ?? 0) * k, disp: (u?.disp ?? 0) * k, sub: (u?.sub ?? 0) * k, total: (u?.total ?? 0) * k, components: comps?.lines?.[l.name] ?? null };
         })
       : undefined;
-    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
+    return { ...it, ours: total / it.qty, labPerLF: lab / it.qty, eqPerLF: eq / it.qty, matPerLF: mat / it.qty, dispPerLF: disp / it.qty, subPerLF: sub / it.qty, eqTaxablePerLF: tx / it.qty, eqTaxPerLF: tax / it.qty, eqWaiverPerLF: wv / it.qty, eqEnvPerLF: ev / it.qty, byRole, unmatched, trench: own.crossing ? (own.notes?.[i]?.trace ?? null) : (own.trace?.[i] ?? null), limitedWidth: it.limitedWidth ?? null, limitedWhy: it.limitedWhy ?? null, ...(lines ? { lines, notes: own.notes?.[i] ?? null } : {}) };
   });
-  const res = { key: contract.key, rentalTaxPct: ct.rentalTaxPct ?? 0, waiverPct: ct.waiverPct ?? null, section: own.ran ?? null, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
+  const res = { key: contract.key, rentalTaxPct: ct.rentalTaxPct ?? 0, waiverPct: ct.waiverPct ?? null, section: own.ran ?? null, css, sectionFlags: own.sectionFlags ?? [], missing: own.missing, unpriceable: own.unpriceable, coverFlags: own.coverFlags ?? [], bid: est?.bid ?? null, columns: est?.at ?? null, rows: rows.length, direct, items, bandChoice, ...(comps ? { componentCounts: { items: comps.items, components: comps.components } } : {}) };
   (page.context().__res ??= []).push(res);
   return { key: res.key, rows: res.rows, missing: res.missing, unpriceable: res.unpriceable, unmatched: items.flatMap((i) => i.unmatched ?? []).slice(0, 5), direct: Math.round(direct) };
   }

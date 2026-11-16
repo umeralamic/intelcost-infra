@@ -1,0 +1,11 @@
+{
+  "decision": "D-1291",
+  "note": "Step 3 of the night run from 2026-11-16, pass (b): the boxed basis (option c, R11) on the City of Houston section for water, force main, sanitary and storm (the page's settings only, never written), with the project's jurisdiction Harris County (D-1289 Q2, the founder's call for this pass: CSS to the subgrade on pipe to 48 in, select or native with a 12 in select cap from 54 in), Q4 (water under pavement on bank sand) and Q5 (HDPE/PP storm: flowable fill under pavement, CSS outside). The runner checks that step 1's app part carries Q2, Q4 and Q5 before it prices anything and refuses until it does (requireStep1). CSS at the library's price (D-1289's migration: $42.14/TON national, grade B) times the project's location factor. Otherwise as pass (a): every run limited width as marked, the pool on, tax 8.25 %, waiver 12 %. No tab figure lives here.",
+  "section": "b",
+  "pool": 1,
+  "rentalTaxPct": 8.25,
+  "waiverPct": 12,
+  "limitedWidth": "items",
+  "jurisdiction": "harris_county",
+  "requireStep1": true
+}
