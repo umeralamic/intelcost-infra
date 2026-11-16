@@ -67,11 +67,19 @@ export const EQUIPMENT_CASES = [
   // owned_as_of 2025-07-01, 503 days, amber; AW-AB-EL-30 (`3/2023-3/2024` on COSTARS, to Mar 14 2024): red;
   // EX-CRAWL-20T rented (A26, read Oct 2026, 2026-10-01): fresh.
   { id: "b7-class-wt-4000-rental", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2025-03-01", level: "amber" } },
-  { id: "b7-class-owned-fallback", kind: "class-age", key: "AW-AB-RT-125", mode: "rental", today: "2026-11-16", expect: { basis: "owned", asOf: "2025-07-01", level: "amber", days: 503 } },
+  // D-1289 (Q26): FEMA 2025 is the newest FEMA edition the library holds, so its owned rate reads fresh (was amber).
+  { id: "b7-class-owned-fallback", kind: "class-age", key: "AW-AB-RT-125", mode: "rental", today: "2026-11-16", expect: { basis: "owned", asOf: "2025-07-01", level: "fresh", days: 503, femaCurrent: 2025 } },
+  // D-1289 (Q26): a newer FEMA edition (2026) loaded beside it: the 2025 rate is aged by its date again, 503 days, amber.
+  { id: "q26-fema-newer-edition", kind: "class-age", key: "AW-AB-RT-125", mode: "rental", today: "2026-11-16", femaNewer: 2026, expect: { basis: "owned", asOf: "2025-07-01", level: "amber", days: 503, femaCurrent: null } },
   { id: "b7-class-costars-red", kind: "class-age", key: "AW-AB-EL-30", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2024-03-14", level: "red" } },
   { id: "b7-class-ex20-fresh", kind: "class-age", key: "EX-CRAWL-20T", mode: "rental", today: "2026-11-16", expect: { basis: "rent", asOf: "2026-10-01", level: "fresh" } },
-  // A rate set by the company or the estimate is not the library's: no date, no badge (WT-4000 with a project 4-week rate).
-  { id: "b7-class-own-rate-no-badge", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", classOverride: { field: "rent_4wk", value: 8000 }, expect: { basis: "rent", none: true } },
+  // D-1289 (Q27): a rate the estimate entered is aged by its own entry date (WT-4000 with a project 4-week rate entered
+  //   today: fresh, the estimate's); entered 2025-06-01: 533 days, 17 months on 2026-11-16, amber. Was "no date, no badge".
+  { id: "b7-class-own-rate-no-badge", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", classOverride: { field: "rent_4wk", value: 8000 }, expect: { basis: "rent", asOf: "2026-11-16", level: "fresh", own: "project" } },
+  { id: "q27-own-rate-amber", kind: "class-age", key: "WT-4000", mode: "rental", today: "2026-11-16", classOverride: { field: "rent_4wk", value: 8000, at: "2025-06-01T00:00:00Z" }, expect: { basis: "rent", asOf: "2025-06-01", level: "amber", own: "project", days: 533 } },
+  // D-1289 (Q27): its own Needs attention block, not the library's: WT-4000's own rate (2025-06-01) in the own list and out
+  //   of the library list (which keeps PV-STABILIZER, EP 2022, red); EX-CRAWL-20T, fresh, in neither.
+  { id: "q27-own-block", kind: "stale-own-list", today: "2026-11-16", classOverride: { key: "WT-4000", field: "rent_4wk", value: 8000, at: "2025-06-01T00:00:00Z" }, uses: [{ key: "WT-4000", basis: "rent" }, { key: "PV-STABILIZER-WR2400", basis: "owned" }, { key: "EX-CRAWL-20T", basis: "rent" }], expect: { own: ["WT-4000|rent|2025-06-01|amber"], library: ["PV-STABILIZER-WR2400|owned|2022-12-01|red"] } },
   // Needs attention lists each stale class once per basis, however many lines use it: WT-4000 rented on 24 lines, PV-STABILIZER
   // owned (EP 2022, red) twice, EX-CRAWL-20T (fresh) on 5: two entries, red first.
   { id: "b7-needs-attention-once", kind: "stale-list", today: "2026-11-16", uses: [...Array(24).fill({ key: "WT-4000", basis: "rent" }), { key: "PV-STABILIZER-WR2400", basis: "owned" }, { key: "PV-STABILIZER-WR2400", basis: "owned" }, ...Array(5).fill({ key: "EX-CRAWL-20T", basis: "rent" })], expect: { list: ["PV-STABILIZER-WR2400|owned|2022-12-01|red", "WT-4000|rent|2025-03-01|amber"] } },
@@ -260,7 +268,21 @@ export const EQUIPMENT_CASES = [
   //   the rental's own taxable 7,950 beside it (all taxed 9,050 x 0.0825 = 746.625 -> $746.63).
   { id: "eq-tax-delivery", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 1 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, deliveryTax: 90.75, taxable: 9050, tax: 746.63 } },
   // eq-tax-delivery-hauler: the same haul billed by a third-party carrier: not taxable, $0; the rental's 655.88 alone.
-  { id: "eq-tax-delivery-hauler", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, deliveryTax: 0, taxable: 7950, tax: 655.88 } },
+  { id: "eq-tax-delivery-hauler", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, deliveryTax: 0, taxable: 7950, tax: 655.88, deliveredBy: "third_party" } },
+  // D-1289 (Q14): IntelCost's setting 2, delivery by the transport class. EX-CRAWL-20T is lowboy-legal (a hauler): its
+  //   $1,100 not taxed, as eq-tax-delivery-hauler. AW-1MAN-12 is delivered-by-supplier (the dealer): 20 work days on the
+  //   4-week $466 (electric, no fuel), a typed $300 delivery taxed: 466 + 300 = 766 x 0.0825 = 63.195 -> $63.20.
+  { id: "q14-class-lowboy-hauler", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 2 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 0, taxable: 7950, tax: 655.88, deliveredBy: "third_party" } },
+  { id: "q14-class-supplier-dealer", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 2 }, input: { classKey: "AW-1MAN-12", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 300 }, expect: { equipment: 466, delivery: 300, deliveryTax: 24.75, taxable: 766, tax: 63.2, deliveredBy: "dealer" } },
+  // D-1289 (Q14): the company's 1 (the dealer) over the class: the lowboy's $1,100 taxed again, as eq-tax-delivery.
+  { id: "q14-company-dealer-over-class", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 0, env: 0, byDealer: 1 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, mobQuote: 1100 }, expect: { delivery: 1100, taxable: 9050, tax: 746.63, deliveredBy: "dealer" } },
+  // D-1289 (Q18): no project state, the company's (TX, the api's from: "workspace"): taxed as eq-tax-delivery-hauler, flagged;
+  //   no state anywhere: 0, and the flag asks for a default state.
+  { id: "q18-company-state", kind: "rental", ...DIESEL, rule: "TX", ruleFrom: "workspace", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { taxable: 7950, tax: 655.88, applies: true, companyState: "No state on the project: the company's state (TX) is used for the sales tax on equipment rental", notLoaded: null } },
+  { id: "q18-no-state", kind: "rental", ...DIESEL, rule: "none", extras: { waiver: 0, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { tax: 0, applies: false, companyState: null, notLoaded: "No state on the project or the company: sales tax on equipment rental not charged. Set the company's default state (Settings › General), or the project's" } },
+  // D-1289 (Q12): the exported bid folds the tax into the line: the waiver row's taxable 8,904 x 0.0825 = 734.58 on the
+  //   line's equipment (withRentalTax), Direct cost up by the same 734.58, no line of its own, the Bid total unchanged.
+  { id: "q12-fold-into-unit-price", kind: "rental", ...DIESEL, rule: "TX", extras: { waiver: 12, env: 0 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 20, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false }, expect: { tax: 734.58, lineTaxDelta: 734.58, foldDirectDelta: 734.58, foldHasLine: false, foldTotalSame: true } },
   // eq-tax-operated: an operated tri-axle dump truck on one hourly rate, 8 hr: $106.14 x 8 = $849.12, a service under
   //   §3.294(c)(2): $0; no waiver or fee on it.
   { id: "eq-tax-operated", kind: "rental", setting: {}, rule: "TX", extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "DT-OP-3AXLE", mode: "operated", period: "hr", hours: 8, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: true, travelHours: 0 }, expect: { equipment: 849.12, waiver: 0, envFee: 0, taxable: 0, tax: 0 } },
@@ -354,7 +376,11 @@ export function bundleFor(eqlib, c = {}) {
   const app = ["fuel_price_diesel", "fuel_price_gasoline", "fuel_price_propane", "earthwork_production"].map((key) => ({ key, value: null, label: key, editable: true }));
   return {
     release: 1,
-    classes: eqlib.classes,
+    // D-1289 (Q26): each class's FEMA edition, as the api's national.py reads it from `owned_rate_year`.
+    classes: eqlib.classes.map((k) => {
+      const y = /^FEMA (\d{4})\b/.exec(String(k.owned_rate_year ?? ""));
+      return { ...k, owned_fema_edition: y ? Number(y[1]) : null };
+    }),
     production: eqlib.production,
     activities: eqlib.activities,
     transport: eqlib.transport,
@@ -366,7 +392,9 @@ export function bundleFor(eqlib, c = {}) {
     location: { factor_from_wage_set: c.location ?? null, equipment_amf: c.location == null ? null : c.location - 1, zip: c.location == null ? null : "00000", location_set: c.location != null },
     my_equipment: c.myEquipment ?? [],
     // D-1287: the state's rental rule, the bench row's fields (TX) or a state not read (GA).
-    ...(c.rule ? { rental_tax: c.rule === "TX" ? { state: "TX", name: "Texas", listed: true, loaded: true, grade: "A", taxes_rentals: true, operated_single_charge_exempt: true, waiver_taxable: true, lessor_delivery_taxable: true, third_party_haul_taxable: false, lessor_fees_taxable: true, exempt_job_types: [], job_type: c.jobType ?? null, rule_cited: "34 TAC §3.294 (c)(1)-(3), (d)(1)-(3), (e)(1)-(2)" } : { state: c.rule, listed: true, loaded: false, grade: "F", job_type: c.jobType ?? null } } : {}),
+    // D-1289 (Q18): "none", no state on the project or the company; `ruleFrom`, where TX came from.
+    ...(c.rule === "none" ? { rental_tax: { state: null, from: "none", listed: false, loaded: false, job_type: null } } : {}),
+    ...(c.rule && c.rule !== "none" ? { rental_tax: c.rule === "TX" ? { state: "TX", from: c.ruleFrom ?? "project", name: "Texas", listed: true, loaded: true, grade: "A", taxes_rentals: true, operated_single_charge_exempt: true, waiver_taxable: true, lessor_delivery_taxable: true, third_party_haul_taxable: false, lessor_fees_taxable: true, exempt_job_types: [], job_type: c.jobType ?? null, rule_cited: "34 TAC §3.294 (c)(1)-(3), (d)(1)-(3), (e)(1)-(2)" } : { state: c.rule, listed: true, loaded: false, grade: "F", job_type: c.jobType ?? null } } : {}),
     mine_only: Boolean(c.mineOnly),
   };
 }
@@ -390,6 +418,7 @@ export async function runEquipment(page, eqlib) {
       const age = await import("/src/lib/estimate/equipment/rateAge.ts");
       const rx = await import("/src/lib/estimate/equipment/rentalExtras.ts");
       const bid = await import("/src/lib/estimate/bidSummary.ts");
+      const costing = await import("/src/lib/estimate/costing.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -577,14 +606,19 @@ export async function runEquipment(page, eqlib) {
           const a = age.rateAge(c.asOf, c.today);
           return a ? { level: a.level, days: a.days, months: a.months } : { none: true };
         }
-        if (c.kind === "class-age" || c.kind === "stale-list") {
+        if (c.kind === "class-age" || c.kind === "stale-list" || c.kind === "stale-own-list") {
           const b = bundleFor(eqlib, {});
-          if (c.classOverride) b.overrides.push({ ...(b.overrides[0] ?? {}), uuid: "qt-class", scope: "project", entity: "class", entity_key: c.key, field: c.classOverride.field, value_num: c.classOverride.value, value_text: null, confirmed_none: false, national_at_set: null, release_at_set: 1, note: null, set_by: "quantity table", set_at: "2026-11-16T00:00:00Z", updated_by: "quantity table", updated_at: "2026-11-16T00:00:00Z" });
+          // D-1289 (Q27): an override entered on `at` (else 2026-11-16); Q26: a newer FEMA edition loaded beside the class.
+          const at = c.classOverride?.at ?? "2026-11-16T00:00:00Z";
+          if (c.classOverride) b.overrides.push({ ...(b.overrides[0] ?? {}), uuid: "qt-class", scope: "project", entity: "class", entity_key: c.classOverride.key ?? c.key, field: c.classOverride.field, value_num: c.classOverride.value, value_text: null, confirmed_none: false, national_at_set: null, release_at_set: 1, note: null, set_by: "quantity table", set_at: at, updated_by: "quantity table", updated_at: at });
+          if (c.femaNewer) b.classes = [...b.classes, { equip_key: "QT-FEMA-NEWER", type: "QT", owned_fema_edition: c.femaNewer }];
           const lib = resolve.library(b);
-          if (c.kind === "stale-list") return { list: age.staleRates(lib, c.uses, c.today).map((s) => `${s.key}|${s.basis}|${s.age.asOf}|${s.age.level}`) };
+          const row = (s) => `${s.key}|${s.basis}|${s.age.asOf}|${s.age.level}`;
+          if (c.kind === "stale-list") return { list: age.staleRates(lib, c.uses, c.today).map(row) };
+          if (c.kind === "stale-own-list") return { own: age.staleOwnRates(lib, c.uses, c.today).map(row), library: age.staleRates(lib, c.uses, c.today).map(row) };
           const basis = age.machineBasis(lib, c.key, c.mode);
           const a = age.classRateAge(lib, c.key, basis, c.today);
-          return a ? { basis, asOf: a.asOf, level: a.level, days: a.days } : { basis, none: true };
+          return a ? { basis, asOf: a.asOf, level: a.level, days: a.days, own: a.own ?? null, femaCurrent: a.femaCurrent ?? null } : { basis, none: true };
         }
         // D-1287: one machine through the engine, its extras and taxable part, and the Bid summary's tax line on it.
         if (c.kind === "rental") {
@@ -596,7 +630,17 @@ export async function runEquipment(page, eqlib) {
           const summary = bid.computeBid(totals, { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], taxExempt: Boolean(c.taxExempt) });
           const line = (k) => summary.lines.find((l) => l.key === k);
           const tax = line("tax_rental")?.amount ?? null;
+          // D-1289 (Q12): the export's fold, and the line's equipment with its tax (`costing.ts:withRentalTax`).
+          const bidRates = { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], taxExempt: Boolean(c.taxExempt) };
+          const folded = bid.computeBid(totals, bidRates, { foldRentalTax: true });
+          const lineTaxed = costing.withRentalTax({ equipmentCost: m.total ?? 0, itemCost: m.total ?? 0, equipmentParts: m.parts }, bid.rentalTaxRate(totals, bidRates));
           return {
+            deliveredBy: m.deliveredBy,
+            companyState: rx.companyStateText(rule),
+            lineTaxDelta: bid.toCents(lineTaxed.equipmentCost - (m.total ?? 0)),
+            foldDirectDelta: bid.toCents(folded.lines[0].amount - summary.lines[0].amount),
+            foldHasLine: folded.lines.some((l) => l.key === "tax_rental"),
+            foldTotalSame: folded.total === summary.total,
             equipment: m.equipment, waiver: m.extras?.waiver ?? 0, envFee: m.extras?.envFee ?? 0, envCapped: m.extras?.envCapped ?? false,
             taxable: m.parts.taxable, delivery: m.tax.delivery, deliveryTax: bid.toCents(m.tax.delivery * 0.0825), tax, applies,
             materialTaxPct: line("tax")?.pct ?? null, notLoaded: rx.notLoadedText(rule), derived: m.derived, standby: m.standby,

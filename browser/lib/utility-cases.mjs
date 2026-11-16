@@ -2884,9 +2884,9 @@ export const UTILITY_CASES = [
       sectionCheck: true,
     },
   },
-  // rerun-3 (N2 under pavement): the same water run in a street ("Limited width"): the final backfill is CSS from the
-  //   embedment's top to 12 in below the surface (the cap, D-1084): 2 x (5.2542 - 1 - 2.2542) = 4.0 -> 14.81; the rest as
-  //   rerun-2. (The sanitary paved case is sect-houston-css, unchanged: CSS 59.11 to the subgrade.)
+  // rerun-3 (N2 under pavement): the same water run in a street ("Limited width"): the final backfill is bank sand (D-1289,
+  //   the founder's Q4; it was CSS) from the embedment's top to 12 in below the surface (the cap, D-1084): 2 x (5.2542 - 1 -
+  //   2.2542) = 4.0 -> 14.81; the rest as rerun-2. (The sanitary paved case is sect-houston-css, unchanged: CSS 59.11.)
   {
     id: "rerun-houston-water-paved",
     kind: "section-lines",
@@ -2897,13 +2897,43 @@ export const UTILITY_CASES = [
     section: { addons: [], layers: { v: 1, preset: "houston_css" } },
     expect: {
       linesSorted: [
-        "utility_backfill|Cement-stabilized sand|imported|Trench backfill, Cement-stabilized sand|14.81",
+        "utility_backfill|Sand|imported|Trench backfill, Sand|14.81",
         "utility_bedding_pipe_zone|bedding:Sand|imported|Pipe bedding, Sand|3.7",
         "utility_bedding_pipe_zone|zone:Sand|imported|Pipe zone, Sand|11.32",
         "utility_trench_excavation|trench:Cemented, cut vertical|Trench excavation, Cemented, cut vertical|38.92",
       ],
     },
   },
+  // --- D-1289 (the founder's Q2, Q4, Q5): the Houston preset by the project's jurisdiction and the pipe, each a 100 LF run
+  // on houston_css, "Limited width" for a street (paved) where named. Only the preset, its title and the fills' materials
+  // are read here (the volumes are the rows above'; the materials are what moved):
+  // - Harris County: CSS to the subgrade on gravity pipe below 54 in (24 and 48 in), select backfill with a 12 in select cap
+  //   from 54 in (60 in); the City of Houston from 42 in (48 in takes select, 36 in CSS).
+  // - Water under pavement bank sand (Q4) at 8 in, any jurisdiction; with one, from 24 in select (02317 §3.09.B).
+  // - HDPE storm: flowable fill under pavement in every layer, CSS outside it (Q5).
+  ...[
+    ["q2-county-rcp24-paved", "storm", "rcp_c76_wall_b:24", { invertDepth: 8 }, "harris_county", true, "City of Houston, CSS bedding and embedment", ["utility_backfill|Cement-stabilized sand", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+    ["q2-county-rcp48-paved", "storm", "rcp_c76_wall_b:48", { invertDepth: 10 }, "harris_county", true, "City of Houston, CSS bedding and embedment", ["utility_backfill|Cement-stabilized sand", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+    ["q2-county-rcp60-paved", "storm", "rcp_c76_wall_b:60", { invertDepth: 12 }, "harris_county", true, "Harris County, CSS bedding and embedment; select under pavement from 54 in", ["utility_backfill|Select fill", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+    ["q2-city-rcp48-paved", "storm", "rcp_c76_wall_b:48", { invertDepth: 10 }, "city_of_houston", true, "City of Houston, CSS bedding and embedment; select under pavement from 42 in", ["utility_backfill|Select fill", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+    ["q2-city-rcp36-paved", "storm", "rcp_c76_wall_b:36", { invertDepth: 10 }, "city_of_houston", true, "City of Houston, CSS bedding and embedment", ["utility_backfill|Cement-stabilized sand", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+    ["q2-other-rcp60-paved", "storm", "rcp_c76_wall_b:60", { invertDepth: 12 }, null, true, "City of Houston, CSS bedding and embedment", ["utility_backfill|Cement-stabilized sand", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+    ["q4-county-water8-paved", "water", "pvc_c900_dr18:8", { cover: 4 }, "harris_county", true, "City of Houston, bank sand embedment (water, force main)", ["utility_backfill|Sand", "utility_bedding_pipe_zone|bedding:Sand", "utility_bedding_pipe_zone|zone:Sand"]],
+    ["q2-city-water24-paved", "water", "di_c151_pc350:24", { cover: 5 }, "city_of_houston", true, "City of Houston, bank sand embedment; select under pavement from 24 in", ["utility_backfill|Select fill", "utility_bedding_pipe_zone|bedding:Sand", "utility_bedding_pipe_zone|zone:Sand"]],
+    ["q5-county-hdpe24-paved", "storm", "hdpe_f2648_dual_wall:24", { invertDepth: 8 }, "harris_county", true, "City of Houston, flexible storm pipe: flowable fill under pavement, CSS outside", ["utility_backfill|CLSM (flowable fill)", "utility_bedding_pipe_zone|bedding:CLSM (flowable fill)", "utility_bedding_pipe_zone|zone:CLSM (flowable fill)"]],
+    ["q5-county-hdpe24-unpaved", "storm", "hdpe_f2648_dual_wall:24", { invertDepth: 8 }, "harris_county", false, "City of Houston, flexible storm pipe: flowable fill under pavement, CSS outside", ["utility_backfill|Cement-stabilized sand", "utility_bedding_pipe_zone|bedding:Cement-stabilized sand", "utility_bedding_pipe_zone|zone:Cement-stabilized sand"]],
+  ].map(([id, type, pipe, depth, jurisdiction, paved, title, fills]) => ({
+    id,
+    kind: "section-lines",
+    type,
+    pipe,
+    ...depth,
+    ...(paved ? { limitedWidth: true } : {}),
+    ...(jurisdiction ? { settings: { jurisdiction } } : {}),
+    section: { addons: [], layers: { v: 1, preset: "houston_css" } },
+    // A select backfill is dug and placed (native); every other material is bought (imported).
+    expect: { preset: "houston_css", title, fills: fills.map((x) => x + "|" + (x.endsWith("Select fill") ? "native" : "imported")) },
+  })),
   // rerun-4 ((b) through the setting): force main with the project's section { force_main: houston_css } on an Auto run in
   //   Texas: the pressure variant, the figures of rerun-2, no flag (force main is not 30 TAC's in the code).
   {

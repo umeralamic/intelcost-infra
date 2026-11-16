@@ -29,19 +29,21 @@ Decision: [DECISIONS.md D-1289](../../DECISIONS.md). Brief and readings R1–R10
 - [x] `utility_schemas.py:UtilitySettings.jurisdiction` (Q2).
 - [x] Quantity table: `drives/quantity-table.py d1289` (32 rows), the D-1287 delivery figure row → 2, Q4 2026 grade counts.
 
-## App part (waits for the app repo)
+## App part (built 2026-11-16 15:29–15:48 UTC, awaiting the founder's check)
 
-- [ ] Q14: `lib/estimate/equipment/rentalExtras.ts` (`extraSettings`, `taxParts` by the machine's `delivered_by` when the
+- [x] Q14: `lib/estimate/equipment/rentalExtras.ts` (`extraSettings`, `taxParts` by the machine's `delivered_by` when the
       setting is 2), `cost.ts:machineCost`, `types.ts` (transport `delivered_by`), `equipment-library/RentalExtras.tsx:DeliveryRow`
       (By transport class / The rental dealer / A third-party hauler), `sharedEquipment.ts` if the parts move.
-- [ ] Q18: `rentalExtras.ts:notLoadedText` and a note when `rule.from === "workspace"`; `EstimatingView.tsx` Needs attention.
-- [ ] Q26: `rateAge.ts` (a FEMA edition equal to the library's newest reads fresh), `cost.ts:ownedRateSource` wording.
-- [ ] Q27: `rateAge.ts` (an override's age from its `set_at` / `updated_at`), `EstimatingView.tsx` its own Needs attention block.
-- [ ] Q12: `lib/estimate/workbook.ts` (the bid workbook: rental tax spread into the unit prices, no line of its own);
+- [x] Q18: `rentalExtras.ts:notLoadedText` and a note when `rule.from === "workspace"`; `EstimatingView.tsx` Needs attention.
+- [x] Q26: `rateAge.ts` (a FEMA edition equal to the library's newest reads fresh), `cost.ts:ownedRateSource` wording.
+- [x] Q27: `rateAge.ts` (an override's age from its `set_at` / `updated_at`), `EstimatingView.tsx` its own Needs attention block.
+- [x] Q12: `lib/estimate/workbook.ts` (the bid workbook: rental tax spread into the unit prices, no line of its own);
       `bidSummary.ts` keeps the row.
-- [ ] Q30: `lib/takeoff/earthwork/water/quantities.ts:sumpQuantities` (+ `defaults.ts`): CGP report hours and patrols.
-- [ ] Q2, Q4, Q5: `lib/takeoff/earthwork/utilities/sectionPresets.ts` (`presetFor` by jurisdiction and pipe size; water bank
+- [x] Q30: `lib/takeoff/earthwork/water/quantities.ts:sumpQuantities` (+ `defaults.ts`): CGP report hours and patrols.
+- [x] Q2, Q4, Q5: `lib/takeoff/earthwork/utilities/sectionPresets.ts` (`presetFor` by jurisdiction and pipe size; water bank
       sand under pavement; HDPE / PP storm flowable fill under pavement, CSS outside), `features/takeoff/earthwork/utilities/
       UtilitySettingsSection.tsx` (the Jurisdiction control), `api.ts` (the field), `calculate.ts` (pass it).
-- [ ] Quantity-table rows: `equipment-cases.mjs`, `water-cases.mjs`, `utility-cases.mjs`, the workbook rows.
-- [ ] Gates, quantity table, smoke on a throwaway (Harris County, open shop, Burdened, ZIP 77002, TX20260031 mod 1 Heavy).
+- [x] Quantity-table rows: `equipment-cases.mjs`, `water-cases.mjs`, `utility-cases.mjs`, the workbook rows.
+- [x] Gates, quantity table, smoke on a throwaway (Harris County, open shop, Burdened, ZIP 77002, TX20260031 mod 1 Heavy).
+
+Smoke (throwaway copy of the QT project in its own workspace, purged): Q18 no-state and company-state flags, Q17's rule cited (b), Q14 the setting's three choices and a lowboy machine a third-party hauler (a drive-in none, the dealer when chosen: +$1,100 taxed), Q27 the own-rates block (browser clock at 2028-01-15), Q12 the export (Direct cost +$6,062.90, no line, Bid total equal), Q2/Q4/Q5 the run form's Auto section by jurisdiction and size. Screenshots: `intelcost-infra/morning-report-2026-11-19/step1/`.

@@ -2201,6 +2201,8 @@ try {
           geoFlags: layered ? layered.flags : [],
           attention: (layered ? layered.flags : []).filter(cv.attentionRunFlag).length,
           linesSorted: made.map((l) => `${l.role}|${l.variant}|${l.name}|${r2(l.quantity)}`).sort(),
+          // D-1289: the bedding, zone and backfill lines' materials only (role|variant), the excavation left out.
+          fills: made.filter((l) => l.role !== "utility_trench_excavation").map((l) => `${l.role}|${l.variant}`).sort(),
           // D-1285 Q7: the walls the run was cut with (each piece's method, and its slope where sloped), the excavation and
           // Auto's note.
           walls: [...new Set(r.pieces.map((p) => (p.method === "sloped" || p.method === "benched" ? `${p.method} ${p.slope}` : p.method)))].join(" "),

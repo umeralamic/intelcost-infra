@@ -29,25 +29,27 @@ export const WATER_CASES = [
   //   (H ≤ 10). 400 LF at 200 LF/day: wd 2; open 2 + 1 = 3; calendar 3 × 7/5 = 4.2; hours 4.2 × 24 = 100.8 (one heading,
   //   one pump); fuel 100.8 × 0.65 = 65.52 gal; bags 1 × ⌈4.2/3⌉ = 2. Priced once wired (Q17): rental 1 week $239
   //   (5 days × $65 = $325 is dearer), fuel 65.52 × $3.578 = $234.43.
+  //   D-1289 (Q30): patrols 4.2 × 2 visits × 1 h = 8.4 h; the CGP report 4.2 × 0.25 = 1.05 h; no attendant, no standby.
   {
     id: "dw-sump-clay", kind: "dw",
     site: { kind: "trench", bottomDepthFt: 10, waterDepthFt: 6, soil: { uscs: "CL" }, bottomWidthFt: 2.5 },
     run: { lf: 400, lfPerDay: 200, pumpGph: 0.65 },
     expect: {
       m: { method: "sump", rule: 2, heightFt: 4, kCmS: 1e-6, kSource: "uscs", built: true, priceByHand: false, flags: [], reason: "Sump pumping: clay (k 10⁻⁶ cm/s), water 4.0 ft above the bottom" },
-      q: { kind: "sump", workDays: 2, openDays: 3, calendarDays: 4.2, pumps: 1, pumpHoursEach: 100.8, pumpHours: 100.8, fuelGal: 65.52, filterBags: 2, permit: "none" },
-      prices: { "sump-pump": "From the library (PMP-TRASH-3) once wired", "sump-fuel": "At the project's gasoline", "filter-bags": "Quote needed" },
+      q: { kind: "sump", workDays: 2, openDays: 3, calendarDays: 4.2, pumps: 1, pumpHoursEach: 100.8, pumpHours: 100.8, fuelGal: 65.52, filterBags: 2, watch: "patrols", watchHours: 8.4, cgpReportHours: 1.05, permit: "none" },
+      prices: { "sump-pump": "From the library (PMP-TRASH-3) once wired", "sump-fuel": "At the project's gasoline", "filter-bags": "Quote needed", "sump-watch": "At the project's wage", "sump-cgp": "At the project's wage" },
     },
   },
   // dw-sump-heave: CH, bottom 14, water 2 → H 12 > 10: sump with the heave flag. 500 LF at 125 LF/day, two headings: wd 4;
   //   open 5; calendar 5 × 7/5 = 7; 7 × 24 = 168 h a pump, 2 pumps 336 h; fuel 336 × 0.65 = 218.4 gal; bags 2 × ⌈7/3⌉ = 6.
+  //   D-1289 (Q30): patrols 7 × 2 × 1 = 14 h (a site's, not a pump's); CGP 7 × 0.25 = 1.75 h.
   {
     id: "dw-sump-heave", kind: "dw",
     site: { kind: "trench", bottomDepthFt: 14, waterDepthFt: 2, soil: { uscs: "CH" }, bottomWidthFt: 3 },
     run: { lf: 500, lfPerDay: 125, pumpGph: 0.65, headings: 2 },
     expect: {
       m: { method: "sump", rule: 2, heightFt: 12, flags: ["Bottom heave check: water 12.0 ft above the bottom"] },
-      q: { kind: "sump", workDays: 4, openDays: 5, calendarDays: 7, pumps: 2, pumpHoursEach: 168, pumpHours: 336, fuelGal: 218.4, filterBags: 6 },
+      q: { kind: "sump", workDays: 4, openDays: 5, calendarDays: 7, pumps: 2, pumpHoursEach: 168, pumpHours: 336, fuelGal: 218.4, filterBags: 6, watch: "patrols", watchHours: 14, cgpReportHours: 1.75 },
     },
   },
   // dw-wp-single: SDR 35 8 in, bottom 12, water 5, SP (typed k 2 × 10⁻³), 30 in wide; 600 LF at 150 LF/day. H 7.0;
