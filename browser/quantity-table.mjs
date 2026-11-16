@@ -26,6 +26,7 @@ import { CLOSE_CASES, COMPONENT_SYSTEM_CASES, CONSTANT_CASES, DIMENSION_TOOL_CAS
 import { AUTOCOUNT_CASES, AUTOCOUNT_PIPELINE_CASES } from "./lib/autocount-cases.mjs";
 import { OVERLAY_CASES, OVERLAY_MASK_CASES, OVERLAY_NUMBER_CASES, OVERLAY_PAINT_CASES, checkOverlay, runOverlay } from "./lib/overlay-cases.mjs";
 import { PEN_CASES } from "./lib/pen-cases.mjs";
+import { TIP_CASES } from "./lib/tip-cases.mjs";
 import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 import { EQUIPMENT_CASES, checkEquipment, runEquipment } from "./lib/equipment-cases.mjs";
 import { WATER_CASES, checkWater, runWater } from "./lib/water-cases.mjs";
@@ -753,6 +754,11 @@ try {
       return { value, end: [landed[landed.length - 1].x, landed[landed.length - 1].y], landed: landed.map((p) => [p.x, p.y]) };
     });
   }, PEN_CASES);
+  // D-1293: the cursor tip's words and figures for a run in hand and a pen.
+  mt.tip = await page.evaluate(async (cases) => {
+    const t = await import("/src/lib/takeoff/engine/cursorTip.ts");
+    return cases.map((c) => t.cursorTipText(c.input));
+  }, TIP_CASES);
   // F13's rows: lib/takeoff/autoCount on synthetic sheets (D-189).
   ac = await page.evaluate(async ([cases, pipe]) => {
     const vm = await import("/src/lib/takeoff/autoCount/vectorMatch.ts");
@@ -3152,6 +3158,11 @@ for (const [i, c] of PEN_CASES.entries()) {
   }
 }
 
+for (const [i, c] of TIP_CASES.entries()) {
+  const got = mt.tip[i];
+  if (JSON.stringify(got) !== JSON.stringify(c.expect)) wrong.push(`${c.id}: ${JSON.stringify(got)}, expected ${JSON.stringify(c.expect)}`);
+}
+
 // Scale undo rows (D-642): undo gives the first figures bit for bit and redo the second, on both
 // engines; the engines agree; each against its hand-worked figure.
 for (const [i, c] of SCALE_UNDO_CASES.entries()) {
@@ -3190,6 +3201,6 @@ if (disagree.length || wrong.length) {
   process.exit(1);
 }
 console.log(
-  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${OVERLAY_CASES.length} overlay difference rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); ${EQUIPMENT_CASES.length} equipment rows right (628 classes' mob and demob and 965 production formula cells equal to the workbook's); passed`,
+  `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${OVERLAY_CASES.length} overlay difference rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${TIP_CASES.length} cursor tip rows right, ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); ${EQUIPMENT_CASES.length} equipment rows right (628 classes' mob and demob and 965 production formula cells equal to the workbook's); passed`,
 );
 console.log(`water and rain (D-1288): ${WATER_CASES.length} rows, all right`);

@@ -33861,3 +33861,121 @@ answerable by the module: `pay-as-directed` ($46,000 in the bid: AL3's line).
   messages): no client name, no env key value, no key-shaped string.
 - **Purge:** no fx.* throwaway from tonight left (steps 1–3 purged theirs; the dry run lists 0 to delete, its 58 refused
   are older accounts in founder workspaces); 0 BENCH DUPs.
+
+## D-1289 — Night run from 2026-11-16 (morning-report-2026-11-19), step 1: the founder's answers to REPORT_2026-11-18 §1 built (Q12 tax folded into exported unit prices, Q14 delivery by transport class, Q18 company state fallback, Q17 fee grade B, Q26 FEMA current schedule fresh, Q27 overrides aged by entry date, Q30 sump CGP hours and patrols, Q2 project jurisdiction, Q4 water under pavement bank sand, Q5 HDPE/PP storm Houston preset)
+
+**Status:** planned (night run). Brief and readings: `intelcost-infra/morning-report-2026-11-19/BRIEF.md`. Accepted as built: Q13, Q15, Q16, Q19, Q20, Q21, Q22, Q23, Q24, Q25, Q28, Q29, Q31, Q32. Held: Q1, Q3, Q6–Q11.
+
+## D-1290 — Night run from 2026-11-16, step 2: CSS price evidence from the tabs' extra-CSS items against our CSS $/CY (report only)
+
+**Status:** in progress (read-only). Output: `morning-report-2026-11-19/step2/CSS-PRICE.md`.
+
+## D-1291 — Night run from 2026-11-16, step 3: the boxed harness basis (street and subdivision runs limited width, so Auto boxes them); three passes (a) plan defaults, (b) Houston sections with the County rule, Q4, Q5, (b') (b) at the tabs' median CSS price if ours is high
+
+**Status:** planned.
+
+## D-1292 — Night run from 2026-11-16, step 4: extra excavation options (a) and (b) re-estimated on the boxed basis (report only; not built)
+
+**Status:** planned.
+
+## D-1293 — Cursor tips while measuring: Linear (segment · total), Segment (segment), Area (perimeter and area), Count (number placed); "Sheet not scaled" on an uncalibrated sheet; values at the snapped/ortho point; an overlay updated by requestAnimationFrame outside React; a "Show cursor tips" preference, default on
+
+**Status:** planned; built before D-1289 and committed on its own. Wording and look are our own (rule 9); colours from tokens (rule 4). Brief and readings R12–R16: `intelcost-infra/morning-report-2026-11-19/BRIEF.md`.
+
+**Built (night run 2026-11-16, step 0), awaiting the founder's check.** Part 1, the cursor tips (app 7f16ac9):
+- `src/lib/takeoff/engine/cursorTip.ts:cursorTipText` (pure, beside the draw tools): the prompt and value boxes for the armed
+  tool, the run in hand and the pen. Linear `segment · total` (the segment is what the pen adds to the run, an A-arc's own
+  length while one is placed), Segment its length, Area `Perimeter …` (the run so far, open) and `Area … SF` (closed back to
+  the first point), Rectangle / Ellipse / Arc modes the shape the next click places, Count the number placed. Every figure is
+  `quantityFor`'s (rule 3); lengths are `formatFeetInches` / `formatMeters` (the Dimension tool's), areas
+  `formatDisplayQuantity` at Settings › General's places; metric as the Dimension tool reads it (a metric scale or project).
+  No scale: "Sheet not scaled" in place of the figures; Count keeps its number (a count needs no scale).
+- Our own words: "Click to start the run", "Click to add a point, double-click to finish", "Click the next corner,
+  double-click to close", "Click the segment's start / end", "Click the first / opposite corner", "Click to place"; with an
+  A-arc, legacy's two steps in our words ("Click a point on the arc", "Click the arc's end").
+- `src/features/takeoff/components/CursorTip.tsx`: one fixed node owned by refs, memoised; `move(clientX, clientY, pen)` from
+  `SheetCanvas.tsx:handleMove` (after `penAt`, so the pen is the snapped or Ortho point), `leave()` from the sheet's
+  mouseleave, `refresh()` when the run or the count changes under a resting pointer. One requestAnimationFrame writes only the
+  lines that changed, reads its size only when its shape changes and the canvas's box at most 4 times a second, and sets
+  `transform`. No React state per move. Hidden: no measure tool, a pan, a modal dialog, the draw or point menu, Zoom window,
+  and off the sheet (over the panels). Right of and below the pointer clear of the reticle's ring, on the other side near the
+  canvas's edge. Tokens only (`bg-popover`, `border-border`, `bg-muted`, `status-amber` for the note).
+- `ProjectTakeoff.tsx:cursorTip`: shown for the four measure tools measuring an item, never while Count picks a link,
+  coordinate, join or overlay point, nor for an earthwork tool. Count's figure: the marks of the count in hand on this sheet,
+  saved and on their way, once this session has placed its first; the item is the session's, else the resumed one, else the
+  one the draft's first mark is tagged with (made on Create, D-1217), so the first click reads 1 at once.
+- Preference: Settings › Cursor › "Show cursor tips" (`settings.ts` `cursor.tipShow`, default on), the per-device takeoff
+  settings in this browser (`takeoff.settings.v1`) where the reticle's settings live. No api field, no migration.
+- Two faults found by the smoke before the commit: React's strict mount cancelled the first frame and left its id, so the tip
+  never painted (the cleanup now clears it); a new count read nothing until its first save landed (now the tagged mark).
+- Quantity table: `intelcost-infra/browser/lib/tip-cases.mjs`, 13 rows (segment · total, an A-arc, segment, metric, an area
+  so far, the closing edge, Rectangle mode, Count 2 and none, "Sheet not scaled" for Linear and Area, Count unscaled).
+- Legacy (`engine.ts` `drawCursorTip`) shows a tip only while an A-arc is placed, with no figures; kept beyond legacy (the
+  founder's request).
+
+**Frame time** (the bench's Chromium through the Playwright MCP, 1440 × 900 at DPR 1.25, brought to the front before each run;
+one 900-point pointer path, the same for every run, 8 ms apart; rAF intervals; a 3-point Linear run in hand). A101
+(2592 × 1728 pt, 1/8" = 1'-0", 2 shapes, the largest page in the 3D test copy) and C-200 (2448 × 1584 pt, 95 shapes, the
+densest):
+
+| Sheet | CPU | Tip | Frames | p50 ms | p95 ms | max ms | mean ms |
+|---|---|---|---|---|---|---|---|
+| A101 | 1× | off | 1973 / 1903 | 16.7 | 16.8 | 682.6 / 749.2 | 17.2 / 17.3 |
+| A101 | 1× | on | 1872 / 1879 | 16.7 | 16.8 | 799.2 / 133.2 | 17.8 / 17.1 |
+| A101 | 4× | off | 1009 / 967 | 50.0 | 149.8 / 133.2 | 416.4 / 466.3 | 64.7 / 64.6 |
+| A101 | 4× | on | 903 / 905 | 83.3 | 233.1 / 216.6 | 566.2 / 666.2 | 102.5 / 101.0 |
+| C-200 | 1× | off | 1953 | 16.7 | 16.8 | 133.2 | 17.3 |
+| C-200 | 1× | on | 1850 | 16.7 | 16.8 | 66.6 | 17.4 |
+| C-200 | 4× | off | 1082 | 66.6 | 149.8 | 1315.4 | 69.8 |
+| C-200 | 4× | on | 901 | 99.9 | 266.5 | 782.7 | 123.1 |
+
+At full speed the tip costs no frame (p50 and p95 equal; the half-second maxima come with the tip off too). Throttled 4× it
+adds about 35 ms a frame. Isolated under 4× with test styles: the tip's JavaScript and DOM writes cost nothing (hidden,
+67 ms against 65 ms off); a visible tip that does not move costs nothing (71 ms); moving it costs it all, with or without
+its shadow, its own layer, changing text, or under `<body>`. On this page an element moved every frame costs that; the
+reticle avoids it by painting into a fixed canvas. Built as the brief set it (one node, rAF, transform); painting the tip
+into the reticle's canvas is a morning question.
+
+**Part 2, the sheets-panel scale icon** (the coordinator's addition, the founder's words; app 09ff5ac): `SheetsPanel.tsx`
+shows a ruler (lucide `Ruler`, the app's icon set) in place of the scale's words on a scaled sheet; no icon on a sheet with
+no scale; a "Check scale" flag as it was. The row's hover buttons cover its end (as for the hidden-markups eye, D-1175) and
+carry the focusable ruler whose tip reads the scale as it read before (with the half-size note). `src/components/ui/tooltip.tsx`
+is new: the app had no tooltip component (titles only); a portalled one-line tip on hover and keyboard focus, Escape hides it,
+tokens only. Names keep the room; one still too long truncates with its full name in the label's title, as before. Legacy
+(`SheetTree.tsx` `SheetStatusChips`) shows the scale as a text chip, as we did; the change is the founder's. The archived
+fixture `f5-s13.mjs` reads the chip's text; `[data-scale-chip]` now carries the scale as its value.
+
+**Proof.** Gates (app lint, typecheck, build) 0 after each part; quantity table 0 FAIL after each ("13 cursor tip rows right
+… passed"). Smoke on the throwaway `fx.equip.20261116081553` (a copy of the 3D test project, purged after, dry run first):
+Linear `152'-2 13/16" · total 380'-7 5/16"` after two segments; Ortho (the tip 103'-3 5/16" at the pen, the raw pointer
+103'-6 3/8") and Snap (228'-4 1/2" to the snapped first point, raw 223.97 ft); Segment `97'-7 1/4"`; Area `Perimeter
+177'-4 3/4"` and `Area 3,776.25 SF`; Count none → 1 → 2; C-001 with no scale "Sheet not scaled"; hidden while panning
+(middle drag) and over the panels; Settings › Cursor › "Show cursor tips" off (no tip, Linear armed) and on again; the
+sheets panel ruler on V-100, C-100, C-200, A101, P101 only, its tip `1" = 30'` on hover and on keyboard focus, Escape and
+leaving hide it. Screenshots: `morning-report-2026-11-19/step0/`.
+
+**D-1290, founder decision (2026-11-16 ~09:05 UTC):** the tabs' extra-CSS contingency prices are nominal, not cost evidence. Library CSS (`stone:cement_stabilized_sand`) **stays $37.00/TON delivered**; its **grade goes C → B** and its **label becomes "1.5 sack per ton"**, on public evidence: Jefferson County TX 2023 (1.5 sk/ton $40.00 delivered 1–10 mi, $35.00 FOB), Montgomery County TX 2021 #21-34 (1.5 sk/ton pickup $21.50 / $30.25), Fort Bend County B25-041 / B26-031 (per ton, 2-sack minimum, half-sack adder) and Deer Park Spec 433 ("not less than 1.5 sacks of Portland cement per ton of material mixture"). **Logged for the next run's migration; not changed tonight.** Step 3's pass (b′) at $19.75/TON stays a sensitivity only.
+
+**D-1290, founder (2026-11-16 ~09:10 UTC):** supersedes "next run's migration" above. The CSS row's grade (C → B) and label ("1.5 sack per ton") go into **tonight's step 1 migration (D-1289)**, price unchanged at $37.00/TON. Both it and Q17's fee grade are listed in the report's migration rows.
+
+**D-1290, founder rule (2026-11-16 ~09:50 UTC):** material evidence (not bid tabs) older than 12 months is escalated to the latest index month with the matching BLS PPI (PVC pipe: the plastic pipe series; RCP: concrete pipe; DI: iron/steel pipe; aggregates WPU1321; cement WPU1322), showing per source the original, the series id, the factor and the escalated price. D-1273's no-escalation rule stays for bid tabs.
+
+**D-1290, CSS escalation (2026-11-16 ~10:15 UTC, `morning-report-2026-11-19/step2/CSS-ESCALATION.md`):** by the founder's rule (median of the escalated delivered prices and the bottom-up price; into tonight's migration if more than 5 % from $37.00) the CSS pick is **$45.73/TON delivered, grade B, "1.5 sack per ton of dry sand", as of 2026-10** (BLS PPI WPU1321 sand, WPU1322 cement, PCU484220484220 local specialized trucking; Jefferson 2023-11 ×1.1432, Montgomery 2021-07 assumed ×1.4121, bottom-up $38.55). +23.6 % → it goes into D-1289's migration. Open: Jefferson's renewal basis ($41.48 if based at 2025-11), mixing escalated or flat ($44.56), Montgomery's bid month.
+
+## D-1294 — Tester bug: drawing existing and proposed contours by hand lags and the cursor turns heavy; profiled on a throwaway copy of P02 and the hot paths fixed (no recalculation or save mid-contour, a spatial index for snapping, the in-progress line on an rAF overlay, no layer-list re-render per vertex); results unchanged to the cent
+
+**Status:** queued (high priority), after D-1293's commit and before D-1289. Brief and readings R22–R25: `intelcost-infra/morning-report-2026-11-19/BRIEF.md`. P02 stays read-only (D-232); it is named only as P02.
+
+**D-1290, founder correction (2026-11-16 ~10:35 UTC):** one value per independent source (contract or supplier) in every material pick, never two readings of the same contract. CSS: Jefferson counted once ($45.73 delivered, escalated) → pick = median {35.73, 38.55, 45.73, 48.08} = **$42.14/TON delivered, grade B, "1.5 sack per ton of dry sand", as of 2026-10**, mixing escalated, note "if renewed at 2023 prices, pick ≈ $40". It goes into D-1289's migration (+13.9 % on $37.00) and into step 3's pass (b) at the Houston factor ($41.61).
+
+**D-1290, founder rule (2026-11-16 ~11:00 UTC):** supersedes "median across bidders" in material picks from supply tabulations: **each contract contributes its low (or awarded) price per size; the pick is the median across contracts** (non-awarded bidders are not what buyers pay; separate awards, such as Montgomery's dual award, count separately). RCP picks: 24 in $45.49, 30 in $63.29, 36 in $91.49, 42 in $105.85, 48 in $145.68 (grade B), 54 in $171.82 (grade C); 60 in keeps $193.21 (+3.3 %, under 5 %). C900 DR 18 keeps 8 in $17.39 and 6 in $10.70, grade B, source Topeka Event 2950 (Feb 2024). Cameron's reading accepted. C900 DR 14, SDR-26, DI and HDPE picks as proposed. **No migration until the founder approves the final table**, reported first. Report-only checks: (a) labour, equipment and material shares per kind against public breakdowns; (b) the 1.20–1.35 band's basis and public markup evidence.
+
+**D-1290, founder fittings answers (2026-11-16 ~11:50 UTC), report only tonight, build after confirmation:** (1) gravity fittings allowance: storm RCP 0 % (joints priced separately, junctions at structures); sanitary 2 % (MH connectors/waterstops, plugs, couplings), grade D; gas/electric/telecom conduit keep 5 %. (2) counted fittings get installation labour via A22 (or a per-fitting MH): ≤ 8 in 0.5 crew-hour, 10–16 in 1.0, > 16 in 2.0, grade D, on the run's pipe crew; LF production unchanged. (3) pressure allowance holds at 20 % pending the founder's confirmation; the report gives 10 %, 12 % and 15 % effects on recent water k and all-pipe k. Basis: `morning-report-2026-11-19/step2/FITTINGS-CHECK.md`.
+
+## D-1295 — The healthy multiplier band to the bid-tab medians is 1.15–1.30, centre 1.22 (replaces D-1273's 1.20–1.35)
+
+**Founder (2026-11-16 ~12:20 UTC).** The bid-tab harness's healthy band (k = median ÷ our direct) is **1.15–1.30, centre 1.22**, replacing the 1.20–1.35 set by D-1273 (founder's answer 5) and restated in D-1274 and D-1275, which had no outside basis. Sources (`morning-report-2026-11-19/step2/CHECK-B-MARKUP-BAND.md`): FHWA Central Federal Lands Engineer's Estimate Manual (2011; overhead 10 % + profit 10 %), NBER working paper 12051 (2006; median bid markup over direct ≈ 1.22), TxDOT 9L.7 and LCRA 1987. Note: our direct excludes supervision, small tools, insurance and bond, so k carries those as well as overhead and profit. Every report and harness summary from now reads the band this way.
+
+**D-1290, founder decisions (2026-11-16 ~12:20 UTC):** Cameron's pick uses its **awarded** price (RCP 30 in → $63.57). The contract-low (or awarded) rule applies to **every** contract, including C900 DR 14, SDR-26, DI and HDPE (the −$43.7k sensitivity becomes the proposal). The final table and k are reported; **once reported, the picks are approved for the next migration**, which is tonight's step 1 migration (D-1289), every row listed before it runs. A material quantity/scope check (fittings allowance, bell-joint restraint share, test and disinfection $2.25/LF, CCTV $2.00/LF re-picked from bid evidence with the aggregator figure as a ceiling, embedment CY/LF against the bid section, order tiers) is next run's work, report only, water first.
+
+**D-1290, founder (2026-11-16 ~13:05 UTC):** the 5 % rule applies uniformly. The seven rows that move less than 5 % (SDR-26 8/10/12/15 in, C900 DR 14 6 in, DI 8 in, HDPE 24 in) **keep their prices** and change grade and `source_internal` only, as C900 DR 18 does. Rows over 5 % change price as listed in `step2/MATERIAL-PICKS-FINAL.md` §5: RCP 24/30/36/42/48/54 in, C900 DR 14 12 and 8 in. All 18 rows go into D-1289's migration.
