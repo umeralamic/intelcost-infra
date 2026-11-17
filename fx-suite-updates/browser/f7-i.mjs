@@ -19,7 +19,7 @@ import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } fro
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
 import { waitFor } from "./lib/realtime.mjs";
-import { sheetPoint } from "./lib/takeoff.mjs";
+import { sheetPoint, sheetShown } from "./lib/takeoff.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F7 copy paste");
 const project = await makeProject(token, base, { name: "Copy paste" });
@@ -129,6 +129,7 @@ await run("f7-i", [
       await page.waitForURL((url) => url.pathname.endsWith(sheets.s2.uuid), { timeout: 10000 });
       await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
       await page.locator("[data-ghost]").first().waitFor({ timeout: 10000 });
+      await sheetShown(page, sheets.s2.uuid); // RR7 transition, app 6499c1e, no D-number: S2's drawing laid out first
       await clickAt(page, 0.5, 0.5);
       const dialog = page.getByRole("dialog", { name: "Paste copy" });
       await dialog.waitFor({ timeout: 5000 });
@@ -159,6 +160,7 @@ await run("f7-i", [
       await page.getByRole("menu", { name: "Paste on another sheet" }).getByRole("menuitem").nth(1).click();
       await page.waitForURL((url) => url.pathname.endsWith(sheets.s3.uuid), { timeout: 10000 });
       await page.locator("[data-ghost]").first().waitFor({ timeout: 20000 });
+      await sheetShown(page, sheets.s3.uuid); // RR7 transition, app 6499c1e, no D-number: S3's drawing laid out first
       await clickAt(page, 0.5, 0.5);
       await page.getByText("Target sheet is not calibrated").first().waitFor({ timeout: 5000 });
       const still = await page.getByText("Calibrate this sheet, then click Paste again — the Copy session is still active.").count();

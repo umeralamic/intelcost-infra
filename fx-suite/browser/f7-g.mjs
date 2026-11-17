@@ -16,7 +16,7 @@ import { APP, apiCall, enterWorkspace, expect, fixtureOwner, quietFor, run, sign
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
 import { loadPages, makePdf, preparedSheets, uploadAll } from "./lib/drawings.mjs";
 import { waitFor } from "./lib/realtime.mjs";
-import { sheetPoint } from "./lib/takeoff.mjs";
+import { sheetPoint, sheetShown } from "./lib/takeoff.mjs";
 
 const { token, workspace, base } = await freshWorkspace("F7 move mode");
 const project = await makeProject(token, base, { name: "Move mode" });
@@ -124,6 +124,7 @@ await run("f7-g", [
       await page.locator(`[data-sheet-row="${ids.second.uuid}"] button`).first().click();
       await page.waitForURL((url) => url.pathname.endsWith(ids.second.uuid), { timeout: 10000 });
       await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
+      await sheetShown(page, ids.second.uuid); // RR7 transition, app 6499c1e, no D-number: M2's drawing laid out first
       await page.getByRole("group", { name: /^(Takeoff tools|Measure and annotation tools)$/ }).getByRole("button", { name: /^Count/ }).click();
       const spot = await sheetPoint(page, 0.3, 0.3);
       await page.mouse.click(spot.x, spot.y);

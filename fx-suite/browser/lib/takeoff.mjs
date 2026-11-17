@@ -89,8 +89,20 @@ export async function menuItem(page, name, label) {
 export async function sheetPoint(page, x, y) {
   const svg = page.locator('svg[role="presentation"]');
   await svg.waitFor();
+  // RR7 transition, app 6499c1e, no D-number: react-router 7 runs a navigation in startTransition, so just after a
+  // sheet switch the sheet's svg can be between mounts and `boundingBox()` reads null ("Cannot read 'x' of null" in
+  // f7-i, f7-g). Retry once after a short pause and the svg visible again, then fail naming it.
+  const boxOf = async () => {
+    const first = await svg.boundingBox();
+    if (first) return first;
+    await page.waitForTimeout(200);
+    await svg.waitFor({ state: "visible" });
+    const again = await svg.boundingBox();
+    if (!again) throw new Error(`the sheet's svg has no box at (${x}, ${y}), twice (${page.url()})`);
+    return again;
+  };
   const at = async () => {
-    const box = await svg.boundingBox();
+    const box = await boxOf();
     return { x: box.x + box.width * x, y: box.y + box.height * y };
   };
   const view = page.viewportSize();
@@ -113,6 +125,25 @@ export async function sheetPoint(page, x, y) {
     throw new Error(`sheet point (${x}, ${y}) is at ${Math.round(point.x)},${Math.round(point.y)}, outside the ${view.width}x${view.height} window`);
   }
   return point;
+}
+
+/**
+ * After a sheet switch: the address is the target sheet's and its drawing (`svg[role="presentation"]`) is laid out with
+ * a box. RR7 transition, app 6499c1e, no D-number: the URL changes before the new sheet renders, so a point read
+ * straight after `waitForURL` can find the svg between mounts.
+ */
+export async function sheetShown(page, sheetUuid, timeout = 20000) {
+  await page.waitForFunction(
+    (uuid) => {
+      if (!location.pathname.endsWith(uuid)) return false;
+      const svg = document.querySelector('svg[role="presentation"]');
+      const box = svg?.getBoundingClientRect();
+      return Boolean(box && box.width > 0 && box.height > 0);
+    },
+    sheetUuid,
+    { timeout },
+  );
+  await page.locator('svg[role="presentation"]').waitFor({ state: "visible", timeout });
 }
 
 /** Click on the sheet at normalised coordinates. */

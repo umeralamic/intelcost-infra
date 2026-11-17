@@ -34414,7 +34414,9 @@ and after tables are in [deduct_holes_selection_speed_tasks.md](docs/tasks/deduc
   - **Price hand checks (D-1054):** c35 $16,471.70 → $17,752.40 (D-1287 B3: waiver 12 % $1,205.70, fee capped $75);
     c45-materials 8" SDR-35 $10.80 (D-1091, Small order 204 LF × 1.20); c47 Q1 2027 #57 $49.1085 (46.77 × 1.05,
     D-1091).
-  - **Reclassified from §3a to expected change:** c12 s2, f6-a s3/s6, f5-d51, f7-c, p20a, f5-s19 (D-1217); f2-s6.
+  - **Reclassified from §3a to expected change:** c12 s2, f6-a s3/s6, f5-d51, f7-c, p20a, f5-s19 (D-1217); f2-s6; f7-i
+    s3/s4 and f7-g s4 (the svg read between mounts after a sheet switch: `sheetShown()` before the click, and
+    `sheetPoint` retries a null box once; RR7 transition, app 6499c1e, no D-number).
   - **Regression found:** c42-stitch-sheets step 4, the implied scale reads 0.90 % for a 1 % calibration on both
     heads (passed on 2026-11-07); not edited; suspects D-1294 (0cb6b49) and D-1162 (3044634).
   - **c17 step 8** no longer exercises the uncovered-boundary shading (D-1159 counts ground outside features as
@@ -34457,6 +34459,9 @@ The founder's report, in short: the server they call "staging" is to be confirme
     `EstimatingView:checkDepthRuns` names the run in Needs attention's Incomplete line ("Check depth: SS-1 past 40 ft
     deep or 150 ft wide, not drawn or priced"); a pit counts as a structure not priced, with the reason on its line.
   - QT: 13 rows, `d1301-*` in `browser/lib/utility-cases.mjs`.
+  - Commits (local): app ad99b5a, infra b8f48c3. Gates: lint 0 errors, typecheck 0, build 0. QT exit 0, 0 FAIL, 343
+    utility rows. Smoke passed: strokes 1.5–2 px with the sheets list held; "Check depth" in the panel and the
+    Incomplete line. Throwaway purged. Digest 51d01fd7cf7c2297 at start and end.
 - **Open:** a trenchless crossing (jack and bore) legitimately deeper than 40 ft is now skipped "Check depth". The founder
   is to say whether bores are exempt.
 
