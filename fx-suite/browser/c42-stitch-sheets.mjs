@@ -72,11 +72,14 @@ const sites = async () => (await apiCall(token, "GET", `${base}/${project.uuid}/
 // pdfSnap={picking}, SNAP_PX 12 + 2), the main pane does not. (0.2, 0.2) lay 0.7 px from makePdf's frame (its top edge
 // at 160/792 = 0.20202), so pair 1 snapped on one side only and skewed the fit (1.00 % read 0.90 %; step 5's fit
 // 0.57-0.61 ft). Pair 1 is now (0.25, 0.35): on the 1224 x 792 pt page at ~0.44 px/pt, 117 pt (~52 px) from the
-// top frame, 234 pt from the left one and 285 pt from the diagonal, far from the label. No expected value is worked
-// from the points (the fit bounds, the ~1 % flag and the chain read are not), so none changes.
+// top frame, 234 pt from the left one and 285 pt from the diagonal, far from the label. Pair 2, (0.8, 0.25), was only
+// ~17 px from the top frame, ~3 px outside the snap's reach, so a pane a little wider could snap it: it is now
+// (0.78, 0.55), 154 pt (~68 px) from the diagonal, 197 pt from the right frame, 276 pt from the top one and 284 pt
+// from the bottom one (D-188). Pair 3, (0.5, 0.8), is 86 pt from the bottom frame and 172 pt from the diagonal. No
+// expected value is worked from the points (the fit bounds, the ~1 % flag and the chain read are not), so none changes.
 const POINTS = [
   [0.25, 0.35],
-  [0.8, 0.25],
+  [0.78, 0.55],
   [0.5, 0.8],
 ];
 
