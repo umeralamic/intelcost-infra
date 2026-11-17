@@ -34288,6 +34288,53 @@ task file's "STAGE 1 spec"; what was built and the smoke are in its "STAGE 2".
 
 ## D-1298 — Night run from 2026-11-16 22:47, step 3: deduct-area holes honoured in quantities and drawing, selection by final shape and draw order, D-1294's drawing speed on every tool, from the founder's 11170 files on look-alike throwaways (docs/tasks/deduct_holes_selection_speed_tasks.md)
 
+**Decided (the main session's answers, BRIEF R18; logged before the code):**
+
+1. **Picking inside a hole.** A click inside a deducted hole goes to whatever lies beneath it. If nothing does, it
+   selects the hole (the deduct) itself, never the hole's owner. This narrows D-61, where a click in a hole reached the
+   area and the hole cycle stepped from the area to its holes.
+2. **Draw order is sheet-wide,** on the existing `z_index`, with the Takeoff list position as the tie-break.
+   - A shape that was never reordered (every bench shape today; counted read-only on 2026-11-17: 0 shapes with
+     `z_index` ≠ 0) draws and picks exactly as before.
+   - A deduct goes with its section.
+   - Bring to front and Send to back go past every shape on the sheet. Bring forward and Send backward go one step past
+     the next shape above or below that overlaps it, with one PATCH and no renumbering.
+   - The api, its schema and the database are unchanged.
+3. **Strips by features.** A "Selected Site Features" or "Remaining Site" strip whose set holds a feature with a hole
+   that another feature of the set fills is worked on the set's final shapes.
+   - Only such a strip's key carries a mark (`h1298`), so no other saved result turns stale.
+   - Counted read-only on 2026-11-17: the bench has one features or remaining strip on a sheet with a site-feature hole,
+     on Real bid A. It ticks one feature, which the case cannot reach, so no founder result changes.
+4. **What stays as built.** Quantities for grading, undercut and prep were already right in all three hole cases:
+   newer, older and empty (stage 1, `step3/INVESTIGATION.md`).
+
+**Built (2026-11-17, app e3a5c1c; the save at 04:29:57 UTC), awaiting the founder's check.** The spec, the figures and the before
+and after tables are in [deduct_holes_selection_speed_tasks.md](docs/tasks/deduct_holes_selection_speed_tasks.md).
+
+- **Takeoff-core.**
+  - `siteFeatures.ts:remainingSiteRings(boundary, features)` and `unionOfShapes`.
+  - `strips.ts:filledHoles`, `stripKeys`, `FILLED_MARK`, and `StripInput.shape` / `excludedShape`. These are read by
+    `stripPieces`, `ownPieces`, the engine's strip loop (`volume/index.ts`) and `site.ts:siteExtras`.
+  - `engine/hit.ts:hitTest` tests shape by shape from the top, a positive never inside its own item's deducts.
+  - `engine/hit.ts:cycleHit` gives the hole when nothing lies beneath. `drawOrder`, `sheetZ`, `orderStep` and `boxOf`
+    are new.
+- **App.**
+  - `SheetCanvas.tsx`: `drawnShapes` and `looks` follow `drawOrder`.
+  - `ProjectTakeoff.tsx:reorder`: four steps, not offered on a deduct.
+  - `printSheets.ts:drawTakeoff` and `report/reportPlans.ts:featuresPlan` / `featuresPlanBands`: final shapes, with
+    `anchorOf` taking the label point from `engine/interiorPoint.ts`.
+  - `report/reportDoc.ts`: the key maps.
+  - `useVolumes.tsx` and `site/siteKey.ts`: the strip keys.
+  - `ReadoutCard.tsx:Readout2D` is painted per animation frame.
+- **Look-alike, before and after.**
+  - The features strip went from 86,909 to 98,497 SF and the remaining strip from 49,364 to 37,777 SF.
+  - The remaining-site key map went from 49,364 to 37,777 SF; drawn equals reported (0.0 %).
+  - Cut and fill (215 BCY and 126 CCY), feature areas and prep are unchanged.
+  - Clicks in holes 1, 2 and 3 now give A, B and the hole (before: F, F, F).
+- **Drawing speed.** The commits per move with the 2D readout live fell from 0.96–0.99 to 0.007–0.010 (site feature
+  and utility run, 1× and 4×).
+- **11170.** No figure changes.
+
 ## D-1299 — Night run from 2026-11-16 22:47, step 4: material quantity and scope check, report only, water first (restraint share, test and disinfection, CCTV, embedment, order tiers), $ and k for each
 
 **Details (step 4, 2026-11-16, report only; nothing built, saved, migrated or committed).** Report:

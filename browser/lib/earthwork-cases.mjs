@@ -2356,6 +2356,7 @@ export const EARTHWORK_CASES = [
   // Δz = (FG − depth) − (EG − strip). Hand answers in cubic feet / 27.
   ...synthRows(),
   ...realShapeRows(),
+  ...holeRows(),
   ...tcSpotRows(),
   ...labelCheckRows(),
   ...spotPickRows(),
@@ -2764,3 +2765,128 @@ EARTHWORK_CASES.push(
   },
   { id: "pit-undercut-overex-type-b", kind: "pit", pad: PIT_PAD, fill: PIT_FILL, undercut: true, overex: "B", expect: { "over_excavation_onsite[pit]:pad": (13500 + 24685.86028636534 - 4000) / 27, "undercut_replace[pit]:pad": 11200 / 27, "trench_protection[pit_shoring]:pad": undefined } },
 );
+
+/**
+ * D-1298: a big Site Feature over the site with three deduct holes, worked by hand. The unit page at 100 ft a side; the
+ * boundary the whole page (10,000 SF); EG flat at 100, FG flat at 100.5 (four corner spots each), so a volume is an area
+ * times a height. F, 1.0 ft deep, x and y 0.1-0.9 (6,400 SF), holes of 400 SF each:
+ * (a) H1, x 0.2-0.4, y 0.2-0.4, filled by A, NEWER than F (0.5 ft); (b) H2, x 0.6-0.8, y 0.2-0.4, filled by B, OLDER
+ * than F (2.0 ft); (c) H3, x 0.4-0.6, y 0.6-0.8, empty. Every feature has surface compaction.
+ * F owns 6,400 - 1,200 = 5,200 SF, its subgrade 99.5: cut 0.5 x 5,200 = 2,600 CF. A: subgrade 100, nothing. B:
+ * subgrade 98.5, cut 1.5 x 400 = 600 CF. The remaining site 10,000 - 6,400 + 400 = 4,000 SF, 0.5 ft below FG: fill
+ * 2,000 CF. A strip 0.5 ft deep lowers existing ground by 0.5 where it lies.
+ */
+function holeRows() {
+  const geo = (vertices_json, role = "add") => ({ sheet_uuid: "s", vertices_json, shape_meta: { closed: true }, role });
+  const sq = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+  const spots = (surface, z) =>
+    [[0, 0], [1, 0], [1, 1], [0, 1]].map(([x, y], i) => ({ uuid: `${surface}${i}`, type: "spot_elevation", name: `${surface} spots`, geometries: [{ sheet_uuid: "s", vertices_json: [[x, y]], shape_meta: { kind: "spot", surface, elevation: z }, role: "add" }] }));
+  const boundary = { uuid: "b", type: "boundary", name: "Work Boundary", geometries: [{ sheet_uuid: "s", vertices_json: sq(0, 0, 1, 1), shape_meta: { kind: "boundary", closed: true }, role: "add" }] };
+  const H1 = sq(0.2, 0.2, 0.4, 0.4);
+  const H2 = sq(0.6, 0.2, 0.8, 0.4);
+  const H3 = sq(0.4, 0.6, 0.6, 0.8);
+  const feature = (uuid, depth, created_at, geometries) => ({ uuid, type: "sf", name: uuid, created_at, is_site_feature: true, role_depth_ft: depth, prep_method: "compact", prep_depth_ft: null, geometries });
+  const F = feature("F", 1, "2026-11-17T02:00:00Z", [geo(sq(0.1, 0.1, 0.9, 0.9)), geo(H1, "subtract"), geo(H2, "subtract"), geo(H3, "subtract")]);
+  const A = feature("A", 0.5, "2026-11-17T03:00:00Z", [geo(H1)]);
+  const B = feature("B", 2, "2026-11-17T01:00:00Z", [geo(H2)]);
+  const items = [...spots("EG", 100), ...spots("FG", 100.5), boundary, F, A, B];
+  const strip = (uuid, source, feature_uuids) => ({ uuid, sheet_uuid: "s", name: uuid, depth_ft: 0.5, source, feature_uuids, vertices_json: null, color: "#000000", disposition: "haul_off", reuse_kind: null, is_hidden: false, created_at: "2026-11-17T04:00:00Z" });
+  // Picking (B1, B2): the canvas's shapes in the Takeoff list's order, F listed last (on top).
+  const pickItems = (z = {}) => [
+    { uuid: "B", geometries: [{ uuid: "B-0", kind: "sf", points: H2, z_index: z["B-0"] ?? 0 }] },
+    { uuid: "A", geometries: [{ uuid: "A-0", kind: "sf", points: H1, z_index: z["A-0"] ?? 0 }] },
+    {
+      uuid: "F",
+      geometries: [
+        { uuid: "F-0", kind: "sf", points: sq(0.1, 0.1, 0.9, 0.9), z_index: z["F-0"] ?? 0 },
+        ...[H1, H2, H3].map((points, k) => ({ uuid: `F-h${k + 1}`, kind: "sf", role: "subtract", owner_uuid: "F-0", points, z_index: 0 })),
+      ],
+    },
+  ];
+  return [
+    // (a), (b), (c) without a strip: every region, the remaining site as the report draws it, the prep. The remaining
+    // site's drawing had been 4,800 SF (H1 and H2 painted as remaining site); now 4,000, its area computed.
+    {
+      id: "d1298-holes-grading",
+      kind: "realshape",
+      side: 100,
+      regions: true,
+      items,
+      expect: {
+        cutCF: 3200,
+        fillCF: 2000,
+        "feature:F:areaSF": 5200,
+        "feature:A:areaSF": 400,
+        "feature:B:areaSF": 400,
+        "region:F:areaSF": 5200,
+        "region:F:cutCF": 2600,
+        "region:A:areaSF": 400,
+        "region:A:cutCF": 0,
+        "region:A:fillCF": 0,
+        "region:B:areaSF": 400,
+        "region:B:cutCF": 600,
+        "region:rem:areaSF": 4000,
+        "region:rem:fillCF": 2000,
+        remainingDrawnSF: 4000,
+        "prep:F": 5200,
+        "prep:A": 400,
+        "prep:B": 400,
+      },
+    },
+    // "Remaining Site", every feature unticked: 4,000 SF stripped, 2,000 CF; the remaining site 1.0 ft below: fill 4,000.
+    // It had stripped H1 and H2 too (4,800 SF, 2,400 CF; A fill 200, B cut 400).
+    {
+      id: "d1298-holes-strip-remaining",
+      kind: "realshape",
+      side: 100,
+      regions: true,
+      items,
+      stripRows: [strip("S", "remaining", [])],
+      expect: { "strip:S:areaSF": 4000, "strip:S:volumeCF": 2000, "stripDrawn:S": 4000, cutCF: 3200, fillCF: 4000, "region:A:fillCF": 0, "region:B:cutCF": 600, "region:rem:fillCF": 4000 },
+    },
+    // "Selected Site Features" F, A, B: 6,000 SF stripped, 3,000 CF. F nets 0; A fill 200; B cut 1.0 x 400 = 400; the
+    // remaining site fill 2,000. It had left H1 and H2 unstripped (5,200 SF, 2,600 CF; A 0, B cut 600).
+    {
+      id: "d1298-holes-strip-features",
+      kind: "realshape",
+      side: 100,
+      regions: true,
+      items,
+      stripRows: [strip("S", "features", ["F", "A", "B"])],
+      expect: { "strip:S:areaSF": 6000, "strip:S:volumeCF": 3000, "stripDrawn:S": 6000, cutCF: 400, fillCF: 2200, "region:F:cutCF": 0, "region:A:fillCF": 200, "region:B:cutCF": 400 },
+    },
+    // Controls, unchanged: F alone (its holes are not stripped, 5,200 SF); "Remaining Site" with F ticked (A and B left
+    // out: 9,200 SF); within the boundary (10,000 SF; cut 400, fill 4,200).
+    { id: "d1298-holes-strip-f-alone", kind: "realshape", side: 100, items, stripRows: [strip("S", "features", ["F"])], expect: { "strip:S:areaSF": 5200, "stripDrawn:S": 5200, cutCF: 600, fillCF: 2000 } },
+    { id: "d1298-holes-strip-remaining-f-ticked", kind: "realshape", side: 100, items, stripRows: [strip("S", "remaining", ["F"])], expect: { "strip:S:areaSF": 9200, cutCF: 600, fillCF: 4000 } },
+    { id: "d1298-holes-strip-boundary", kind: "realshape", side: 100, items, stripRows: [strip("S", "boundary", [])], expect: { "strip:S:areaSF": 10000, cutCF: 400, fillCF: 4200 } },
+    // The key's mark (D-1298) only on a strip whose set fills one of its own holes: the two above, not F alone nor the
+    // boundary strip, so no other saved result turns stale.
+    { id: "d1298-holes-strip-keys", kind: "realshape", side: 100, items, stripRows: [strip("S1", "remaining", []), strip("S2", "features", ["F", "A", "B"]), strip("S3", "features", ["F"]), strip("S4", "boundary", [])], keysOnly: true, expect: { marks: "S1,S2" } },
+    // Picking (B1): a click in each hole's middle reaches what lies beneath, never F; in the empty hole, the hole itself.
+    // B2: Send to back on F (below every shape on the sheet), then a click on F's solid part still picks F; A brought
+    // forward past F; Order's steps worked out from the boxes.
+    {
+      id: "d1298-pick-holes",
+      kind: "pick",
+      items: pickItems(),
+      clicks: [
+        ["h1", [0.3, 0.3]],
+        ["h2", [0.7, 0.3]],
+        ["h3", [0.5, 0.7]],
+        ["h3Again", [0.5, 0.7], "F-h3"],
+        ["solid", [0.5, 0.5]],
+        ["h1Edge", [0.3, 0.195]],
+      ],
+      steps: [
+        ["fBack", "F-0", "back"],
+        ["fFront", "F-0", "front"],
+        ["aForward", "A-0", "forward"],
+        ["bBackward", "B-0", "backward"],
+      ],
+      expect: { order: "B-0,A-0,F-0,F-h1,F-h2,F-h3", h1: "A-0", h2: "B-0", h3: "F-h3", h3Again: "F-h3", solid: "F-0", h1Edge: "F-h1", fBack: -1, fFront: null, aForward: 1, bBackward: null },
+    },
+    // After Send to back on F (z -1): it and its holes draw first; the picks do not change (B and A were never under F).
+    { id: "d1298-pick-sent-back", kind: "pick", items: pickItems({ "F-0": -1 }), clicks: [["h1", [0.3, 0.3]], ["solid", [0.5, 0.5]]], expect: { order: "F-0,F-h1,F-h2,F-h3,B-0,A-0", h1: "A-0", solid: "F-0" } },
+  ];
+}

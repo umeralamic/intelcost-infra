@@ -1142,6 +1142,7 @@ try {
     const parts = await import("/src/lib/takeoff/earthwork/utilities/structureParts.ts");
     const fit = await import("/src/lib/takeoff/earthwork/utilities/fittings.ts");
     const st = await import("/src/lib/takeoff/earthwork/strips.ts");
+    const hitm = await import("/src/lib/takeoff/engine/hit.ts");
     const tr = await import("/src/lib/takeoff/earthwork/trace/index.ts");
     const inf = await import("/src/lib/takeoff/earthwork/trace/infer.ts");
     const ps = await import("/src/lib/takeoff/engine/pdfSnap.ts");
@@ -1367,7 +1368,8 @@ try {
       }
       if (c.kind === "offset") return { areaSF: sf.mpAreaSqFt(sf.offsetNormRingFt(xy(c.ring), c.offsetFt, c.scale), c.scale) };
       if (c.kind === "remaining") {
-        const rings = sf.remainingSiteRings(xy(c.boundary), c.excluded.map(xy));
+        // D-1298: the features as final shapes (each excluded outline a feature with no hole).
+        const rings = sf.remainingSiteRings(xy(c.boundary), c.excluded.map((r) => ({ polygons: [xy(r)] })));
         return { areaSF: sf.mpAreaSqFt([rings.map((r) => r.map((p) => [p.x, p.y]))], c.scale) };
       }
       if (c.kind === "features") {
@@ -1403,6 +1405,22 @@ try {
         for (const f of found) Object.assign(out, { [`${f.geometry}:label`]: f.label, [`${f.geometry}:elevation`]: f.elevation });
         return out;
       }
+      if (c.kind === "pick") {
+        // D-1298: the canvas's picking and Order through the app's own engine (`lib/takeoff/engine/hit.ts`).
+        const ordered = hitm.drawOrder(c.items);
+        const shapes = ordered.map(({ item, geometry }) => ({ itemUuid: item.uuid, geometryUuid: geometry.uuid, kind: geometry.kind, role: geometry.role ?? "add", points: xy(geometry.points) }));
+        const view = { pxPerNormX: 1000, pxPerNormY: 1000, countRadiusPx: { rx: 10, ry: 10 } };
+        const out = { order: ordered.map((d) => d.geometry.uuid).join(",") };
+        for (const [name, [x, y], selected] of c.clicks ?? []) {
+          const at = { x, y };
+          const got = hitm.cycleHit(shapes, hitm.hitTest(shapes, at, view), at, selected ?? null);
+          out[name] = got ? got.geometryUuid : "none";
+        }
+        const z = hitm.sheetZ(c.items);
+        const placed = ordered.filter((d) => d.geometry.role !== "subtract").map(({ geometry }) => ({ uuid: geometry.uuid, z: z?.get(geometry.uuid) ?? 0, box: hitm.boxOf(xy(geometry.points)) }));
+        for (const [name, uuid, step] of c.steps ?? []) out[name] = hitm.orderStep(uuid, placed, step);
+        return out;
+      }
       if (c.kind === "realshape") {
         // D-470: shapes as stored, through the app's own readers and Calculate.
         const items = c.items.map((it) => ({ created_at: "", is_site_feature: false, ...it, geometries: it.geometries.map((g, k) => ({ uuid: `${it.uuid}-${k}`, geometry_version: 1, ...g })) }));
@@ -1424,14 +1442,32 @@ try {
         const feats = sf.sheetFeatures(items, "s");
         const bnd = runs.find((r) => r.kind === "boundary");
         const boundary = bnd ? bnd.points : null;
+        // D-1298: the strip rows as Calculate reads them, and the key's mark on those read by their features' final shapes.
+        if (c.keysOnly) return { marks: st.stripKeys(c.stripRows, feats).flatMap((k, i) => (k.endsWith(`:${st.FILLED_MARK}`) ? [c.stripRows[i].uuid] : [])).join(",") };
+        const stripAreas = c.stripRows ? st.stripInputs(c.stripRows, "s", boundary, feats) : null;
         const r = vol.computeVolumes(
-          { eg: tin.runTinForSurface(runs, "EG", labels, scale), fg: tin.runTinForSurface(runs, "FG", labels, scale), boundary, calibration: scale, units: "CY", roleAreas: sf.roleAreasOf(feats) },
+          { eg: tin.runTinForSurface(runs, "EG", labels, scale), fg: tin.runTinForSurface(runs, "FG", labels, scale), boundary, calibration: scale, units: "CY", roleAreas: sf.roleAreasOf(feats), ...(stripAreas ? { stripAreas } : {}) },
           runs,
           labels,
         );
         if (r.ok !== true) return { ok: r.ok, message: r.error?.message };
         const out = { cutCF: r1(r.cutCY * 27), fillCF: r1(r.fillCY * 27), boundarySF: r1(sf.mpAreaSqFt([[boundary.map((p) => [p.x, p.y])]], scale)) };
         for (const [id, a] of sf.featureOwnAreas(feats, boundary, scale)) out[`feature:${id}:areaSF`] = r1(a);
+        // Net area of rings in polygon-clipping's order (outer rings one way, holes the other), SF.
+        const ringsSF = (rings) => r1(Math.abs(rings.reduce((t, g) => t + g.reduce((s, p, k) => s + p.x * g[(k + 1) % g.length].y - g[(k + 1) % g.length].x * p.y, 0) / 2, 0)) * c.side * c.side);
+        if (c.regions) {
+          for (const g of r.regions ?? []) {
+            const id = g.id ?? "rem";
+            Object.assign(out, { [`region:${id}:areaSF`]: r1(g.areaSF), [`region:${id}:cutCF`]: r1(g.cutCY * 27), [`region:${id}:fillCF`]: r1(g.fillCY * 27) });
+          }
+          // The remaining site as the report draws it (its key map): the boundary less every feature's final shape.
+          out.remainingDrawnSF = ringsSF(sf.remainingSiteRings(boundary, feats));
+          for (const x of sf.computeFeatureExtras(feats, boundary, scale)) if (x.prep) out[`prep:${x.itemId}`] = r1(x.prep.areaSF);
+        }
+        if (stripAreas) {
+          for (const s of r.stripAreas ?? []) Object.assign(out, { [`strip:${s.id}:areaSF`]: r1(s.areaSF), [`strip:${s.id}:volumeCF`]: r1(s.volumeCY * 27) });
+          for (const [id, rings] of st.stripPieces(stripAreas, boundary)) out[`stripDrawn:${id}`] = ringsSF(rings);
+        }
         return out;
       }
       if (c.kind === "strips") {
