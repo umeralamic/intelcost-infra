@@ -34223,6 +34223,44 @@ Q4 2026 keys by grade: A165 B197 C594 D188 F34 → A165 B197 C594 **D189** F34. 
 
 *Commits (umer-dev, local, no push):* api 4172bf8, app 10ba933, infra e3e97f2 (QT rows and the mirror) and the mirror refresh after it. Digest 51d01fd7cf7c2297 at the start (22:56 UTC) and the end (00:16 UTC).
 
+*The (a1) harness pass (R4, R5, R8, R10, R17; report `intelcost-infra/morning-report-2026-11-20/step1/A1-PASS.md`).*
+
+- **Harness.** infra e6aea9e (stage 1), then **26bf5db**. Every output comes from 26bf5db: step 1's names, plus the overpricing allowances at 12 / 30 / 2 / 0 / 5 %.
+  - `trench-safety.mjs` maps each tab's trench-safety pay items to the compared pipe they cover: by segment, else by its section's pipe rows, else spread over the tab. Each item adds its unit price × min(1, its LF ÷ the pipe LF it covers) per LF of pipe.
+  - `street-marking.mjs` marks `underPavementBackfill` from the item text.
+  - `contract-runner.js` gives a marked run `section.paved_backfill` and paves it; native runs stay as in (a1). The `upbProbe` gate is kept. It sets `deliveryByDealer` 3 on the project and reports each item's `allowancePct`.
+  - `d1296-report.mjs` reports k both ways and the $ of each change from the components.
+- **Run.** 2026-11-17 00:36:33–01:12:17 UTC on app 10ba933, api 4172bf8.
+  - 47 of 47 contracts priced; 0 parity, 0 interaction, 0 errors.
+  - Contract time 2,143 s; worst contract 63.6 s.
+  - Throwaway fx.equip.20261117003256 (TX20260031 mod 1 Heavy), purged 01:14:05 after a dry run.
+  - Guard refusals 0. Digest 51d01fd7cf7c2297 at the start and the end.
+- **Trench safety.** 58 items on all 16 tabs. They add $71,440 to the medians and $34,977 to the lows of the 189 priced items.
+- **k to the medians / lows, without → with trench safety.** Healthy band 1.15–1.30.
+  - All pipe: 1.074 / 0.919 → 1.080 / 0.922 (a1: 1.049 → 1.056).
+  - Recent: 1.041 → 1.048.
+  - History: 1.167 → 1.173.
+  - In the band: recent storm RCP 48 in+ 1.225; history sanitary 1.191, storm RCP 18–42 in 1.182, storm RCP 48 in+ 1.234; all storm RCP 48 in+ 1.227.
+- **$ of each change against the 11-19 (a1), all 189 items, measured.** Total our direct −$246,182.
+  - Pressure fittings 20 → 12 %: −$96,607.
+  - Sanitary 5 → 2 %: −$19,517.
+  - Storm RCP 5 → 0 %: −$153,489.
+  - Fire water: $0 (no fire-water item on any tab).
+  - Paved-backfill choice: +$12,801 (2 items, 442 LF, one history tab, CSS to the subgrade, the only items whose text includes CSS backfill under paving).
+  - Delivery by ownership: +$12,409 (recent +$8,648), the rental tax on the dealer's delivery. It replaces the +$2,854.50 lower bound.
+  - A22: $0 (no counted fittings on the tab runs).
+  - Labour: +$208 (the wage set's 1-cent drift).
+  - Other: −$1,987.
+- **R17 (sensitivity, an estimate).** The same tab's three "CSS backfill outside of pavement areas" items (24, 30 and 42 in; 1,345 LF; open, sloped) with their full final backfill as CSS at $74.15/CY would add +$201,155.
+  - That is against their direct of $133,249 and medians of $143,038.
+  - History storm RCP 18–42 in would fall from 1.182 to 0.987; all pipe from 1.074 to 1.053.
+  - The tab's prices do not carry a full-depth CSS backfill, so they stay native as Q2 says.
+- **Open.**
+  - The trench-safety rule: per LF of compared pipe, or the whole $ (all pipe 1.081).
+  - R17's partial CSS layer.
+  - One tab row is in the input twice (1104-6117 #5 and #17), inherited from Rerun 2.
+- **Bench.** Nothing was saved, restarted or migrated by this part.
+
 ## D-1297 — Night run from 2026-11-16 22:47, step 2: earthwork method check (pits, vertical cuts and undercuts to excavator, dozer grade factor, over-excavation option, dozer sizing), from the founder's 11166 files on a look-alike throwaway (docs/tasks/earthwork_method_check_tasks.md)
 
 **Status:** STAGE 1 spec written (2026-11-16), not built. The full spec, with sources and the hand-worked look-alike,
@@ -34292,3 +34330,5 @@ is in the task file's "STAGE 1 spec".
   fx stack down: d993c2a6f4b1 → d1289e5b3c40, `alembic check` clean, `pg_dump -s` identical to the bench's. Bench api
   200, digest 51d01fd7cf7c2297 unchanged, foldproof5 removed. A dump of the fx database before is kept in the
   session scratchpad.
+- **Stage 2 start (2026-11-17):** the release runs against app 10ba933 (clean tree) and api 80fa2ee. `intelcost_fx`
+  upgraded d1289e5b3c40 → d1297c4a8e15 (d1296, d1297) 01:18:19–01:18:45 UTC, `alembic check` clean.
