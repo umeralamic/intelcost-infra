@@ -13,8 +13,9 @@
 //   Area over the boundary, 6", hauled off. By hand: strip 1,000 SF × 0.5 ft = 18.52 CY; cut from
 //   the stripped EG 900 SF × 0.5 + 100 SF × 1.0 = 550 CF = 20.37 CY; without the strip
 //   900 × 1 + 100 × 1.5 = 1,050 CF = 38.89 CY; undercut 100 CF = 3.70 CY; no fill.
-// C-2: the same boundary and EG ring, FG spots only over the boundary's left 20 ft: coverage
-//   50.0 %, 500 SF of proposed grade missing, cut 500 CF = 18.52 CY.
+// C-2: the same boundary and EG ring, FG spots only over the boundary's left 20 ft, and "Lot", a Site Feature over
+//   the whole boundary (D-1303; under D-1159 only a feature's ground can be uncovered): coverage 50.0 %, 500 SF of
+//   proposed grade missing, cut 500 CF = 18.52 CY.
 //
 // Left for the founder's eye: drawing contours, spots, the boundary, a Site Feature and a Strip
 // Area by hand (the fixture writes them through the api, as the tools do); Auto Trace (needs a
@@ -62,6 +63,12 @@ await run("c17-earthwork", [
       await g.boundary(c2, rect(x0, y0, 40, 25));
       await g.spots(c2, "EG", [...rect(x0 - fx(20), y0 - fy(20), 80, 65), [x0 + fx(20), y0 + fy(12.5)]].map(([x, y]) => [x, y, 100]));
       await g.spots(c2, "FG", rect(x0 - fx(20), y0 - fy(20), 40, 65).map(([x, y]) => [x, y, 99]));
+      // D-1303 item 3 (the founder): C-2 gets a Site Feature over the whole boundary, so its right half, which the FG
+      // spots do not reach, is a feature's ground without a proposed surface: uncovered under D-1159 (only ground
+      // outside the features counts as covered). Depth 0, no undercut, no prep: it changes no volume.
+      const lot = await g.item(c2, { name: "Lot area", type: "sf", unit: "SF", color: "#64748b", geometry: { geom_type: "sf", vertices_json: rect(x0, y0, 40, 25), shape_meta: { closed: true }, client_uuid: crypto.randomUUID() } });
+      const lotFeature = await apiCall(g.token, "POST", `${g.takeoff}/item/${lot.uuid}/site-feature`, { name: "Lot", color: "#8B5E3C", role_depth_ft: 0 });
+      expect(lotFeature.status === 201, `C-2 site feature: ${lotFeature.status} ${JSON.stringify(lotFeature.body)}`); // D-1303
       await g.assume();
       void flatPad;
       return `C-1 ${c1.uuid}, C-2 ${c2.uuid}; Site Feature ${world.feature.name}, Strip ${world.strip.name} ${world.strip.depth_ft} ft`;
@@ -246,27 +253,35 @@ await run("c17-earthwork", [
     },
   },
   {
-    // D-1159 (app 66eb171, 2026-11-11): with "Grade only inside features" on (D-1151: unset, it is on when the proposed
-    // grade is spots only, as on C-2), the ground outside the features is proposed as existing and counts as covered;
-    // a gap is one on a feature's ground only. C-2 has no Site Feature, so its half without FG spots is no longer a
-    // gap: no Coverage row, no shading. Was: "Coverage 50.0 % of the boundary", "Proposed grade missing 500 SF", the
-    // shading on, off and on with its tick. With no feature the engine still counts the whole boundary as the
-    // Remainder (volume/index.ts, no role areas), so the cut is unchanged: the FG half, 500 SF × 1 ft = 500 CF = 18.52 CY.
-    title: "C-2, a spot grade with no Site Feature: no coverage gap (D-1159: outside the features counts as covered), no shading; cut 19 BCY",
+    // D-1303 item 3 and D-1159: C-2's Site Feature "Lot" covers the whole 40 × 25 ft boundary (1,000 SF), so no ground
+    // lies outside the features and nothing is counted covered for being outside them. The FG spots reach x0 - 20 ft to
+    // x0 + 20 ft: the boundary's left 20 × 25 ft = 500 SF has both surfaces, its right 500 SF has existing only, a
+    // feature's ground with no proposed surface: Coverage 500 / 1,000 = 50.0 %, Proposed grade missing 500 SF, shaded.
+    // Cut: EG flat at 100, FG flat at 99, the feature at depth 0: 500 SF × 1 ft = 500 CF = 18.52 CY, "19". The feature
+    // spans the boundary, so its edge slope (D-1152) has no ground inside the boundary to add. Between 2026-11-17's
+    // close-out commits and D-1303 this step asserted the opposite (no feature: no gap under D-1159).
+    title: "C-2, uncovered (D-1303: a Site Feature over the boundary): Calculate says Coverage 50.0 % of the boundary, proposed grade missing 500 SF, cut 19 BCY; the shading is on the sheet, off and on again with its tick",
     run: async ({ page }) => {
       const panel = await calculated(page, c2);
       const r = await storedResult(c2);
+      const cov = panel.locator("[data-volume-coverage]");
+      await cov.waitFor({ timeout: 10000 });
+      const said = await text(cov);
+      expect(/Coverage 50\.0 % of the boundary/.test(said), `coverage: "${said}" (stored ${r?.coverage})`); // D-1303: 500 / 1,000
+      const fg = await text(cov.locator('[data-coverage-row="fg"]'));
+      expect(/Proposed grade missing\s*500 SF/.test(fg), `the missing row: "${fg}"`); // D-1303: the right 20 × 25 ft
+      expect(near(r.uncovered?.areaSF?.fg ?? 0, 500, 1), `stored proposed-grade gap ${r.uncovered?.areaSF?.fg} SF`);
       const cut = await text(panel.locator('[data-volume="cut"]'));
       expect(cut === "19" && near(r.cutCY, CY(500)), `cut ${cut}, stored ${r?.cutCY}`);
-      // D-1159: no Coverage row and no partial-coverage warning (was "Coverage 50.0 %", "Proposed grade missing 500 SF").
-      const rows = await panel.locator("[data-volume-coverage]").count();
-      const partial = (r?.warnings ?? []).filter((w) => w.code === "partial_coverage").map((w) => w.message);
-      expect(rows === 0 && partial.length === 0, `a coverage gap shown: ${rows} row(s); warnings ${JSON.stringify(partial)} (stored coverage ${r?.coverage})`);
-      // D-1159: nothing to shade (was the FG shading, off and on again with its tick).
-      const shaded = await page.locator('[data-coverage-layer] [data-coverage="fg"]').count();
-      expect(shaded === 0, `the sheet shades ${shaded} proposed-grade gap(s)`);
       const chip = (await panel.locator("[data-coverage-chip]").count()) ? await text(panel.locator("[data-coverage-chip]")) : "none";
-      return `no coverage row, no partial_coverage warning, no shading (stored coverage ${r?.coverage}); warning chip ${chip}; cut ${cut}`;
+      const layer = page.locator('[data-coverage-layer] [data-coverage="fg"]');
+      await layer.waitFor({ state: "attached", timeout: 10000 });
+      const shade = cov.getByRole("checkbox");
+      await shade.uncheck();
+      await layer.waitFor({ state: "detached", timeout: 5000 });
+      await shade.check();
+      await layer.waitFor({ state: "attached", timeout: 5000 });
+      return `"${said.slice(0, 140)}"; warning chip ${chip}; cut ${cut}; shading on, off, on`;
     },
   },
 ]);

@@ -34421,8 +34421,10 @@ and after tables are in [deduct_holes_selection_speed_tasks.md](docs/tasks/deduc
     (`ReferencePane.tsx` `pdfSnap={picking}`, app c92426f) and pair 1 at (0.2, 0.2) lay 0.7 px from the PDF's frame,
     so the implied scale read 0.90 % for 1 %. Pair 1 moved to (0.25, 0.35), about 52 px from every printed line; no
     expected value changed. No regression found by the close-out.
-  - **c17 step 8** no longer exercises the uncovered-boundary shading (D-1159 counts ground outside features as
-    covered); a Site Feature in C-2's setup would bring it back: open.
+  - **c17 step 8:** under D-1159 (ground outside the features counts as covered) C-2, with no Site Feature, had no gap
+    left to shade. Per D-1303 item 3 C-2's setup now has a Site Feature "Lot" over the whole boundary (depth 0), so its
+    right half, without proposed grade, is a feature's ground uncovered again: step 8 is restored, Coverage 50.0 %
+    (500 / 1,000 SF), Proposed grade missing 500 SF, cut 500 CF = 18.52 CY ("19"), the shading off and on.
 
 ## D-1301 — Night run from 2026-11-16 22:47, founder bug report (about 10:04 UTC 2026-11-17): reopened utility runs draw the trench-protection overlay as huge circles/ellipses (ST-3 153.11 LF and the 8" PVC, 6" PVC, 12" HDPE and 2" copper runs on that sheet); read-only investigation now, fix in the next app slot, with a sanity guard (depth > 40 ft or top width > 150 ft → "Check depth" in Needs attention, never drawn or priced) and quantity-table rows for the cause
 
