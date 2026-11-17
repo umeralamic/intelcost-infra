@@ -34221,6 +34221,8 @@ Q4 2026 keys by grade: A165 B197 C594 D188 F34 → A165 B197 C594 **D189** F34. 
 
 *For the harness pass (not changed here: bidtabs/ is another builder's):* `bidtabs/overpricing.mjs` and `overpricing-report.mjs` still hold the 20 % / 5 % allowance in their own text; a tab run gets an under-pavement backfill by setting `section.paved_backfill` ("css" / "select" / "native"); a run without the field keeps the section's own rule.
 
+*Commits (umer-dev, local, no push):* api 4172bf8, app 10ba933, infra e3e97f2 (QT rows and the mirror) and the mirror refresh after it. Digest 51d01fd7cf7c2297 at the start (22:56 UTC) and the end (00:16 UTC).
+
 ## D-1297 — Night run from 2026-11-16 22:47, step 2: earthwork method check (pits, vertical cuts and undercuts to excavator, dozer grade factor, over-excavation option, dozer sizing), from the founder's 11166 files on a look-alike throwaway (docs/tasks/earthwork_method_check_tasks.md)
 
 **Status:** STAGE 1 spec written (2026-11-16), not built. The full spec, with sources and the hand-worked look-alike,
