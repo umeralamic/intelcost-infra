@@ -175,22 +175,24 @@ await run("f3-s1", [
     },
   },
   {
-    title: "AC6 — viewer grants nothing, and collaborator grants exactly three",
+    title: "AC6 — viewer grants nothing, and collaborator grants exactly two (no annotations without a seat)",
     run: async () => {
       const viewer = await apiMapFor("viewer");
       const held = Object.entries(viewer).filter(([, on]) => on).map(([cap]) => cap);
       expect(held.length === 0, `viewer holds ${held.join(", ")}`);
 
       // The role beside it, so the floor reads as a real floor rather than a map the
-      // resolver forgot to fill: collaborator reads, comments and uploads.
+      // resolver forgot to fill: collaborator reads, comments and uploads; annotation needs a seat.
+      // D-1306 (api 2486683, app 60239f2, 2026-11-04): collaborators lost canUseAnnotations on purpose. Was
+      // ["canComment", "canUploadDocuments", "canUseAnnotations"].
       const collaborator = await apiMapFor("collaborator");
       const on = Object.entries(collaborator).filter(([, v]) => v).map(([cap]) => cap).sort();
       expect(
         JSON.stringify(on) ===
-          JSON.stringify(["canComment", "canUploadDocuments", "canUseAnnotations"]),
+          JSON.stringify(["canComment", "canUploadDocuments"]), // D-1306
         `collaborator holds ${on.join(", ")}`,
       );
-      return "viewer: 0 of 25 · collaborator: comment, upload, annotate";
+      return "viewer: 0 of 25 · collaborator: comment, upload; no annotations (seat rule)";
     },
   },
   {
