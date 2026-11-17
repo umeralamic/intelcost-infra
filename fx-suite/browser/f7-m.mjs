@@ -7,8 +7,9 @@
 //   docker compose --profile browser run --rm browser node scripts/f7-m.mjs
 //
 // The world: a fresh workspace, one square page (1000 × 1000 pt) at 0.1 ft per point; "Wall", one 20 ft run from
-// (0.1, 0.2) to (0.3, 0.2); "Existing Ground", one contour at 100 ft down the page at x 0.5. The copy's anchor is the
-// run's first point, so a click at (0.5, 0.6) puts the copy from (0.5, 0.6) to (0.7, 0.6): over the contour.
+// (0.1, 0.2) to (0.3, 0.2); "Existing Ground", one contour at 100 ft down the page at x 0.5. The copy hangs from the
+// mean of its points (F7-S16, D-1303), so a click at (0.5, 0.6) puts the copy from (0.4, 0.6) to (0.6, 0.6): across
+// the contour.
 // Hand-worked: Wall reads 20 + 20 = 40 LF in two runs.
 
 import { APP, apiCall, enterWorkspace, expect, fixtureOwner, run, signInAs } from "./lib/bench.mjs";
@@ -95,8 +96,12 @@ await run("f7-m", [
         const d = await detail(ids.wall);
         return d.geometries.length === 2 ? d : null;
       }, "a second Wall run", 10000);
-      const fresh = wall.geometries.find((g) => Math.abs(g.vertices_json[0][1] - 0.6) < 0.005);
-      expect(fresh && Math.abs(fresh.vertices_json[0][0] - 0.5) < 0.005 && Math.abs(wall.effective_quantity - 40) < 1e-6, `Wall ${wall.effective_quantity} LF, runs ${JSON.stringify(wall.geometries.map((g) => g.vertices_json))}`);
+      // D-1303, F7-S16: the ghost hangs from the mean of the copied points (ProjectTakeoff.tsx `sourceOf`), so the copy is
+      // centred on the click: the placed run's midpoint (the mean of its points) is at (0.5, 0.6), its ends at x 0.4 and
+      // 0.6. Was: its first point at the click.
+      const mid = (g) => [g.vertices_json.reduce((t, p) => t + p[0], 0) / g.vertices_json.length, g.vertices_json.reduce((t, p) => t + p[1], 0) / g.vertices_json.length];
+      const fresh = wall.geometries.find((g) => Math.abs(mid(g)[1] - 0.6) < 0.005);
+      expect(fresh && Math.abs(mid(fresh)[0] - 0.5) < 0.005 && Math.abs(wall.effective_quantity - 40) < 1e-6, `Wall ${wall.effective_quantity} LF, runs ${JSON.stringify(wall.geometries.map((g) => g.vertices_json))}`); // D-1303, F7-S16
       const after = await page.locator(`[data-earthwork-run="${ids.contour}"][data-selected="1"]`).count();
       expect(after === 0, "the contour was selected after the paste");
       return `the click on the contour placed the copy at (${fresh.vertices_json[0].map((v) => v.toFixed(3)).join(", ")}); Wall 20 → 40 LF in two runs; the contour not selected`;

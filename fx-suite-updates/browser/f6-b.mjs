@@ -145,7 +145,10 @@ await run("f6-b", [
       await page.locator(`[data-quantity-panel] [data-sub-item="${mesh.uuid}"]`).click({ button: "right" });
       await page.getByRole("menuitem").first().waitFor();
       const offered = await page.getByRole("menuitem").allTextContents();
-      expect(!offered.some((t) => /sub-item/i.test(t)), `a sub-item's menu offers ${offered.join(", ")}`);
+      // D-1238 (app d22e4c1): a sub-item's right-click offers "Edit sub-items…" on purpose (its parent's Manage
+      // sub-items, the row's old pencil); what it must not offer is making sub-items under a sub-item. Was: no entry
+      // naming sub-items at all.
+      expect(!offered.some((t) => /^Create sub-item/i.test(t.trim())), `a sub-item's menu offers ${offered.join(", ")}`); // D-1238
       await page.keyboard.press("Escape");
       return `"${unnamed}" with Save disabled; "${broken}"; api 409 "A sub-item cannot have sub-items."; a sub-item's menu offers none`;
     },

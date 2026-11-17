@@ -11,8 +11,9 @@
 // engine tests), which lists LABORER: PIPELAYER $12.56 + 1.19 and LABORER: COMMON OR GENERAL
 // $12.50 + 1.18, and saves the rates. A labour component on a count item then takes the starter's
 // crew rows (Laborer, Pipelayer, Grade checker, Foreman), which the api prices on save.
-// D-753's figures ("higher of"): Laborer $37.26; Pipelayer floor $17.00, market $37.26 × 12.56 ÷
-// 12.50 = $37.44, priced $37.44; Grade checker = Equipment Operator (no line); Foreman = the crew's
+// W14's figures (D-1087 (f), replacing D-753's $37.26 and $37.44): Laborer $31.18 (open shop at the $22.00 minimum
+// × 1.14 = $25.08 payable, burdened); Pipelayer $31.33 (the same × 12.56 ÷ 12.50); Grade checker = Equipment
+// Operator (no line); Foreman = the crew's
 // highest-paid other craft × 1.10.
 //
 // Left for the founder's eye: the Wage Calculator's screens (c31 drives them), the crew table.
@@ -102,7 +103,7 @@ await run("c37-wage-roles", [
     },
   },
   {
-    title: "the crew's roles priced on save: Laborer $37.26; Pipelayer $37.44 (its own line, market × 12.56 ÷ 12.50); Grade checker at Equipment Operator; Foreman over the crew × 1.10",
+    title: "the crew's roles priced on save (W14, D-1087): Laborer $31.18; Pipelayer $31.33 (the Laborer's open shop × 12.56 ÷ 12.50, × 1.14); Grade checker at Equipment Operator; Foreman over the crew × 1.10",
     run: async () => {
       const cfg = (await apiCall(token, "GET", `/api/workspace/${workspace.uuid}/equipment-library/earthwork-production`)).body;
       const rows = cfg.activities.flatMap((a) => a.tiers).flatMap((t) => t.crew);
@@ -123,8 +124,20 @@ await run("c37-wage-roles", [
       const by = Object.fromEntries(priced.crew.map((r) => [r.role, r.hourly_wage]));
       const set = (await apiCall(token, "GET", `${wage}/wage-set/current/detail`)).body;
       const eo = JSON.stringify(set).match(/"Equipment Operator"[^}]*?"(?:rate|hourly|total)[a-z_]*":\s*([0-9.]+)/)?.[1];
-      expect(cents(by.Laborer) === 3726, `Laborer ${by.Laborer}`);
-      expect(cents(by.Pipelayer) === 3744, `Pipelayer ${by.Pipelayer}`);
+      // D-1087 (f), W14 (api w14.py:prevailing_pick): payable = max(WD base raised to the company minimum + fringe,
+      // open-shop payable × 1.14); replaces D-753's "higher of WD and national union scale" ($37.26). Hand check
+      // (D-1054; the fx reference data has no ECI or OEWS, so no escalation and no BLS figure): open shop local
+      // max(survey 12.50, none) under the minimum $22.00 → 22.00; national 25.94 × (1 − 0.272) = 18.88 is lower, no
+      // blend; × 1.14 = 25.08. WD 22.00 + 1.18 = 23.18. Payable 25.08, base 25.08 − 1.18 = 23.90; burdened (not direct):
+      // 23.90 + plan 1.18 + SS 6.2 % 1.4818 + Medicare 1.45 % 0.3466 + FUTA 0.021 + SUTA AR 0.07 + WC 14.50 % 3.4655 +
+      // insurance 3 % 0.717 = 31.1819 → $31.18.
+      expect(cents(by.Laborer) === 3118, `Laborer ${by.Laborer}`); // D-1087 (was 3726, D-753)
+      // D-1087 (f): the pipelayer is a ratio craft of the Laborer (the WD's LABORER: PIPELAYER group, W3) and keeps the
+      // WD ratio on top (rates.py `prev_subs`): open shop 22.00 × 12.56 / 12.50 = 22.1056, × 1.14 = 25.2004; WD
+      // max(12.56, 22.00) + 1.19 = 23.19; payable 25.2004, base 25.2004 − 1.19 = 24.0104; burdened 24.0104 + 1.19 +
+      // 1.4886 + 0.3482 + 0.021 + 0.07 + 3.4815 + 0.7203 = 31.3300 → $31.33. Worked by hand, not yet seen in a run
+      // (the 2026-11-17 rerun stopped at the Laborer). Was $37.44 (D-753: market $37.26 × 12.56 ÷ 12.50).
+      expect(cents(by.Pipelayer) === 3133, `Pipelayer ${by.Pipelayer}`); // D-1087
       if (eo) expect(cents(by["Grade checker"]) === cents(eo), `Grade checker ${by["Grade checker"]}, Equipment Operator ${eo}`);
       const top = Math.max(by.Laborer, by.Pipelayer, by["Grade checker"]);
       expect(Math.abs(by.Foreman - top * 1.1) <= 0.011, `Foreman ${by.Foreman}, top other ${top} × 1.10 = ${(top * 1.1).toFixed(2)}`);
