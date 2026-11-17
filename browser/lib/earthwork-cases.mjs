@@ -36,6 +36,9 @@ const pad = (eg, fg, withBoundary = true) => [...corners("EG", [eg, eg, eg, eg])
 // A's Cut to export carries both, 340 BCY.
 const JOB_A = { suitable: true, fillType: "Select Borrow", swell: 1.25, shrink: 1.1, choices: null };
 const jobSheet = (key, cut, fill, site) => ({ key, label: key, inputs: { units: "CY", regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], assumptions: JOB_A, ...(site ? { site } : {}) } });
+/** A job member whose fill all arrives by scraper over a 1,200 ft haul (D-1305). */
+const JOB_SCRAPER = { ...JOB_A, choices: { surplus: {}, method: "scraper", push_ft: 100, method_by_feature: {}, scraper_haul_ft: 1200, fill_shares: { push: 0, scraper: 100 } } };
+const jobScraper = (key, cut, fill) => ({ key, label: key, inputs: { units: "CY", regions: [{ id: `pad${key}`, label: `Pad ${key}`, cutCY: cut, fillCY: fill }], assumptions: JOB_SCRAPER } });
 const SQ = (x, y, s = 100) => [[x, y], [x + s, y], [x + s, y + s], [x, y + s]];
 export const JOB_CASES = [
   { id: "job-two-sheets", kind: "job", members: [jobSheet("A", 1000, 0), jobSheet("B", 0, 600)], expect: { "A:cut_export:padA": 340, "A:cut:padA": 660, "B:fill:padB": 600, "job:soil_export:": 425, "job:soil_import:": undefined } },
@@ -60,6 +63,13 @@ export const JOB_CASES = [
   { id: "job-native-yes-offsets", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: null}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut:padA": 8000, "A:cut_export:padA": 26000, "B:fill:padB": 8000, "job:soil_export:": 32500, "job:soil_import:": undefined } },
   { id: "job-specified-import", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: {specified_import: {padB: "Select Borrow"}}}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut_export:padA": 34000, "A:cut:padA": undefined, "B:fill:padB": 8000, "B:soil_import:padB": 10000, "job:soil_export:": 42500, "job:soil_import:": undefined } },
   { id: "job-native-no", kind: "job", assume: {native_suitable: "none",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1,site_choices: null}, members: [jobSheet("A", 34000, 0), jobSheet("B", 0, 8000)], expect: { "A:cut_export:padA": 34000, "job:soil_export:": 42500, "job:soil_import:": 10000 } },
+  // D-1305 (c44): the haul-road water of a scraper haul of 1,000 ft or more goes on the sheet whose scraper fill causes
+  // it, not the job's first member. All fill by scraper at 1,200 ft. A cuts 1,000 BCY and has no fill; B takes 600 CCY:
+  // the water, 600 CCY, is on B. With two sheets filling (A 200, B 500 CCY), the whole line, 700 CCY, goes on the sheet
+  // with the most scraper fill, B (founder to confirm against a split by each sheet's scraper fill). Its quantity is the
+  // job's scraper fill either way.
+  { id: "job-haul-road-water-on-scraper-sheet", kind: "job", members: [jobScraper("A", 1000, 0), jobScraper("B", 0, 600)], expect: { "B:fill_scraper:padB": 600, "B:haul_road_water:haul-road": 600, "A:haul_road_water:haul-road": undefined, "job:haul_road_water:": undefined } },
+  { id: "job-haul-road-water-most-scraper-fill", kind: "job", members: [jobScraper("A", 1000, 200), jobScraper("B", 0, 500)], expect: { "A:fill_scraper:padA": 200, "B:fill_scraper:padB": 500, "B:haul_road_water:haul-road": 700, "A:haul_road_water:haul-road": undefined, "job:haul_road_water:": undefined } },
   // One sheet, Select Borrow named as the import, native Yes: its cut fills its fill (1,000 BCY cut, 300 CCY fill at 1.1:
   // 670 BCY, 837.5 LCY out, no import).
   { id: "sheet-select-borrow-offsets", kind: "job", assume: {native_suitable: "layers",fill_type: "Select Borrow",swell_factor: 1.25,shrink_factor: 1.1,site_choices: null}, members: [jobSheet("A", 1000, 300)], expect: { "A:cut_export:padA": 670, "job:soil_export:": 837.5, "job:soil_import:": undefined } },
