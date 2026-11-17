@@ -1168,6 +1168,41 @@ try {
     const runsOf = (runs) => runs.map((r, i) => ({ item: r.item, geometry: `${r.item}-${i}`, version: 1, kind: r.kind, surface: r.surface, elevation: r.elevation, points: r.points.map(([x, y]) => ({ x, y })) }));
     const labelsOf = (runs) => new Map(runs.map((r) => [r.item, r.label]));
     return cases.map((c) => {
+      // D-1297: pits (vertical cuts) on the look-alike: the walls, the method and its words, the lines, the
+      // undercut in a pit and the over-excavation for its walls. Feet on a 200 ft page; existing z = 628 + 0.1 y,
+      // proposed the same outside the features.
+      if (c.kind === "pit") {
+        const P = (x, y) => ({ x: x / 200, y: y / 200 });
+        const rect = ([x0, y0, x1, y1]) => [P(x0, y0), P(x1, y0), P(x1, y1), P(x0, y1)];
+        const runs = [];
+        for (let k = 0; k <= 14; k++) for (const surface of ["EG", "FG"]) runs.push({ item: `${surface}${k}`, geometry: `${surface}${k}-g`, version: 1, kind: "contour", surface, elevation: 628 + k, points: [P(0, 10 * k), P(180, 10 * k)] });
+        const labels = new Map(runs.map((r) => [r.item, r.item]));
+        const boundary = rect([0, 0, 180, 140]);
+        const cal = { feetPerNorm: 200, widthPt: 1, heightPt: 1 };
+        const roleAreas = [
+          { itemId: "pad", label: "Building pad", depthFt: c.pad.depth, polygon: rect(c.pad.rect), fgFt: c.pad.ffe },
+          { itemId: "terrace", label: "Terrace", depthFt: 0, polygon: rect(c.fill.rect), fgFt: c.fill.ffe },
+        ];
+        const r = vol.computeVolumes({ eg: tin.runTinForSurface(runs, "EG", labels), fg: tin.runTinForSurface(runs, "FG", labels), boundary, calibration: cal, units: "CY", roleAreas }, runs, labels);
+        if (r.ok !== true) return { ok: r.ok };
+        const { figures } = siteFigures(r.prisms, cal);
+        const feat = { itemId: "pad", label: "Building pad", depthFt: c.pad.depth, ffeFt: c.pad.ffe, polygons: [rect(c.pad.rect)], undercutDepthFt: c.undercut ? 4 : null, undercutOffsetFt: c.undercut ? 5 : 0, undercutMaterial: "Select Fill", undercutDisposition: "haul_off", prepDepthFt: null, prepLifts: null };
+        const extras = sf.computeFeatureExtras([feat], boundary, cal, r.prisms);
+        const regions = r.regions.map((g) => ({ id: g.id, label: g.id ?? "Remaining site", cutCY: g.cutCY, fillCY: g.fillCY }));
+        const cut1 = figures.pockets.find((p) => p.kind === "cut");
+        const choices = { surplus: {}, method: "excavator", push_ft: 0, method_by_feature: {}, ...(c.dozer ? { pocket_methods: { [cut1.id]: { method: "dozer", cy: cut1.cy, cells: cut1.cells } } } : {}), ...(c.overex ? { pits: { pad: { overex: true, work_ft: 2, protection: c.overex } } } : {}) };
+        const lines = ln.earthworkLines({ figures, units: "CY", regions, features: extras, assumptions: { suitable: true, fillType: "Common fill", swell: 1.25, shrink: 1, choices } });
+        const pit = (figures.pits ?? []).find((p) => p.regionId === "pad");
+        const row = suggest.suggestMethods(figures).rows[0];
+        const out = { pit: pit ? pit.kind : "none", ramp: Boolean(pit?.ramp), method: row?.method, why: row?.why, padCutCY: r.regions.find((g) => g.id === "pad")?.cutCY };
+        if (pit) Object.assign(out, { wallMaxFt: pit.wallMaxFt, wallMinFt: pit.wallMinFt, wallLf: pit.wallLf, faceSF: pit.faceSF });
+        const x = extras.find((e) => e.itemId === "pad");
+        if (x?.pit) for (const k of ["A", "B", "C", "shoring"]) out[`overex:${k}:CY`] = x.pit.overex[k].digCF / 27;
+        if (x?.pit) Object.assign(out, { "dig:minFt": x.pit.digMinFt, "dig:maxFt": x.pit.digMaxFt, "dig:faceSF": x.pit.faceSF });
+        if (x?.undercut) out["undercut:CY"] = x.undercut.volumeCF / 27;
+        for (const l of lines) out[`${l.role}${l.variant ? `[${l.variant}]` : ""}:${l.regionId}`] = l.quantity;
+        return out;
+      }
       if (c.kind === "clearing-suggest") {
         // D-1039: the class the trees per acre suggest, over the one chosen.
         const section = { mode: "area", kind: "clearing", mix: { small: 60, medium: 30, large: 10 }, treesCounted: false, grubDepthIn: 12, disposal: "chip", ...c.section };

@@ -2686,3 +2686,81 @@ function curbLineRows() {
     { id: "curb-base-aggregate-140pcf", kind: "curbline", lengthLf: 100, section: section("aggregate_base", "soil:native"), expect: { "curb_base:qty": (2.5 * (4 / 12) * 100) / 27 * ((140 * 27) / 2000) } },
   ];
 }
+
+// D-1297: pits, vertical cuts and undercuts (docs/tasks/earthwork_method_check_tasks.md, STAGE 1 spec items 10 and 11).
+// The look-alike, worked by hand: a 180 x 140 ft site, existing z = 628 + 0.1 y, proposed the same outside the features;
+// a 60 x 30 ft Building pad (x 30-90, y 75-105, 1,800 SF), FFE 628.5, 1.0 ft deep (subgrade 627.5): existing 635.5 to
+// 638.5 over it, mean 637.0, cut 1,800 x 9.5 = 17,100 CF; a 50 x 20 ft terrace (x 120-170, y 105-125) at 641.0: fill
+// 13 - 0.1 y, 2.5 to 0.5, 1,500 CF. Walls: south 8.0 x 60, north 11.0 x 60, west and east 8.0 to 11.0 x 30: 180 LF at
+// 5 ft or more, face 480 + 660 + 2 x 285 = 1,710 SF. Over-excavation at 2 ft (bottom 627.5): the ring 376 SF x 9.5 =
+// 3,572 CF; the wedges, mitred, integrated exactly on the plane by an independent script (step2/repro/wedge.mjs):
+// Type A 7,691.310421877322, B 10,704.270720674751, C 17,551.61695697965 CF; shored, the ring alone, face 196 x 9.5 =
+// 1,862 SF. The undercut, 4 ft below, 5 ft past (x 25-95, y 70-110): under the pad 1,800 x 4 = 7,200 CF and the band
+// below the subgrade 1,000 x 4 = 4,000 CF (11,200 CF, the undercut); the band above it 1,000 x 9.5 = 9,500 CF (dug to
+// reach it, then backfilled); the dig at its edge 11.5 to 15.5 ft, face 2 x 70 x 13.5 + 2 x 40 x 13.5 = 2,970 SF; with
+// Type B over-excavation, ring 13,500 + wedges 24,685.86028636534 less the undercut's band 4,000.
+const PIT_PAD = { rect: [30, 75, 90, 105], ffe: 628.5, depth: 1 };
+const PIT_FILL = { rect: [120, 105, 170, 125], ffe: 641 };
+EARTHWORK_CASES.push(
+  {
+    id: "pit-walls-dozer-chosen",
+    kind: "pit",
+    pad: PIT_PAD,
+    fill: PIT_FILL,
+    dozer: true,
+    expect: {
+      pit: "edge",
+      ramp: false,
+      wallMaxFt: 11,
+      wallMinFt: 8,
+      wallLf: 180,
+      faceSF: 1710,
+      padCutCY: 17100 / 27,
+      method: "excavator",
+      why: "vertical edge 11.0 ft: excavator",
+      "cut_export:pad": (17100 - 1500) / 27,
+      "cut:pad": 1500 / 27,
+      "cut_push:pad": undefined,
+      "fill:terrace": 1500 / 27,
+      "fill_push:terrace": undefined,
+      "soil_export:__soil_export__": ((17100 - 1500) / 27) * 1.25,
+      "trench_protection[pit_shoring]:pad": 1710,
+      "dig:minFt": 8,
+      "dig:maxFt": 11,
+      "overex:A:CY": (3572 + 7691.310421877322) / 27,
+      "overex:B:CY": (3572 + 10704.270720674751) / 27,
+      "overex:C:CY": (3572 + 17551.61695697965) / 27,
+      "overex:shoring:CY": 3572 / 27,
+    },
+  },
+  { id: "pit-overex-type-b", kind: "pit", pad: PIT_PAD, fill: PIT_FILL, overex: "B", expect: { "over_excavation_onsite[pit]:pad": (3572 + 10704.270720674751) / 27, "undercut_native[wall]:pad": (3572 + 10704.270720674751) / 27, "trench_protection[pit_shoring]:pad": undefined } },
+  { id: "pit-overex-shored", kind: "pit", pad: PIT_PAD, fill: PIT_FILL, overex: "shoring", expect: { "over_excavation_onsite[pit]:pad": 3572 / 27, "undercut_native[wall]:pad": 3572 / 27, "trench_protection[pit_shoring]:pad": 1862 } },
+  // At 5.0 ft (subgrade 633.5, walls 2.0 to 5.0): a pit, but its haul leaves over the east wall at 4.4 ft (an open side)
+  // at 4.9 % uphill: worked out on a ramp, the dozer push stands. The north wall, 5.0 x 60 ft, is the only one at 5 ft.
+  { id: "pit-threshold-at-5", kind: "pit", pad: { ...PIT_PAD, ffe: 634.5 }, fill: PIT_FILL, dozer: true, expect: { pit: "edge", ramp: true, wallMaxFt: 5, wallMinFt: 2, wallLf: 60, padCutCY: 6300 / 27, method: "dozer", "cut_push:pad": 1500 / 27, "cut:pad": undefined } },
+  // Under 5 ft (subgrade 634.0, walls 1.5 to 4.5): no pit; the person's dozer push stands, and no protection line.
+  { id: "pit-shallow", kind: "pit", pad: { ...PIT_PAD, ffe: 635 }, fill: PIT_FILL, dozer: true, expect: { pit: "none", padCutCY: 200, "cut_push:pad": 1500 / 27, "fill_push:terrace": 1500 / 27, "trench_protection[pit_shoring]:pad": undefined } },
+  // The ramp (spec item 4): pad x 30-90, y 40-80, subgrade 630.5 (walls 1.5 south to 5.5 north); fill downhill at 630.5
+  // (x 30-90, y 5-25: 2.0 to 0.0 ft, 1,200 CF). The haul leaves over the south wall, 1.5 ft: dozer on a ramp.
+  { id: "pit-ramp-open-side", kind: "pit", pad: { rect: [30, 40, 90, 80], ffe: 631.5, depth: 1 }, fill: { rect: [30, 5, 90, 25], ffe: 630.5 }, dozer: true, expect: { pit: "edge", ramp: true, wallMaxFt: 5.5, wallMinFt: 1.5, method: "dozer", "cut_push:pad": 1200 / 27, "fill_push:terrace": 1200 / 27 } },
+  {
+    id: "pit-undercut",
+    kind: "pit",
+    pad: PIT_PAD,
+    fill: PIT_FILL,
+    undercut: true,
+    dozer: true,
+    expect: {
+      "undercut:CY": 11200 / 27,
+      "undercut:pad": 11200 / 27,
+      "undercut_replace[pit]:pad": 11200 / 27,
+      "over_excavation_onsite[pit]:pad": 9500 / 27,
+      "undercut_native[wall]:pad": 9500 / 27,
+      "dig:minFt": 11.5,
+      "dig:maxFt": 15.5,
+      "trench_protection[pit_shoring]:pad": 2970,
+      "cut:pad": 1500 / 27,
+    },
+  },
+  { id: "pit-undercut-overex-type-b", kind: "pit", pad: PIT_PAD, fill: PIT_FILL, undercut: true, overex: "B", expect: { "over_excavation_onsite[pit]:pad": (13500 + 24685.86028636534 - 4000) / 27, "undercut_replace[pit]:pad": 11200 / 27, "trench_protection[pit_shoring]:pad": undefined } },
+);

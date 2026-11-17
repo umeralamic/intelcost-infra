@@ -34263,8 +34263,10 @@ Q4 2026 keys by grade: A165 B197 C594 D188 F34 → A165 B197 C594 **D189** F34. 
 
 ## D-1297 — Night run from 2026-11-16 22:47, step 2: earthwork method check (pits, vertical cuts and undercuts to excavator, dozer grade factor, over-excavation option, dozer sizing), from the founder's 11166 files on a look-alike throwaway (docs/tasks/earthwork_method_check_tasks.md)
 
-**Status:** STAGE 1 spec written (2026-11-16), not built. The full spec, with sources and the hand-worked look-alike,
-is in the task file's "STAGE 1 spec".
+**Status:** Built 2026-11-17 (api 80fa2ee, migration d1297c4a8e15 = release 48, the app and infra commits of step 2),
+founder to confirm. The founder's answers (R19): 5.0 ft; the pit reading of an undercut's band; OSHA Type C 1½:1 by
+default; a +20 % ramp (grade D); the core first. The full spec, with sources and the hand-worked look-alike, is in the
+task file's "STAGE 1 spec"; what was built and the smoke are in its "STAGE 2".
 
 - **Found:**
   - 11166's pad cut went to dozer because a pocket's method is one site-wide share (`suggest.ts:pocketShares`,
