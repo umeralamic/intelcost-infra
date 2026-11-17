@@ -34417,8 +34417,10 @@ and after tables are in [deduct_holes_selection_speed_tasks.md](docs/tasks/deduc
   - **Reclassified from §3a to expected change:** c12 s2, f6-a s3/s6, f5-d51, f7-c, p20a, f5-s19 (D-1217); f2-s6; f7-i
     s3/s4 and f7-g s4 (the svg read between mounts after a sheet switch: `sheetShown()` before the click, and
     `sheetPoint` retries a null box once; RR7 transition, app 6499c1e, no D-number).
-  - **Regression found:** c42-stitch-sheets step 4, the implied scale reads 0.90 % for a 1 % calibration on both
-    heads (passed on 2026-11-07); not edited; suspects D-1294 (0cb6b49) and D-1162 (3044634).
+  - **c42-stitch-sheets** (first listed as a regression): D-188's reference pane snaps a stitch pick to printed lines
+    (`ReferencePane.tsx` `pdfSnap={picking}`, app c92426f) and pair 1 at (0.2, 0.2) lay 0.7 px from the PDF's frame,
+    so the implied scale read 0.90 % for 1 %. Pair 1 moved to (0.25, 0.35), about 52 px from every printed line; no
+    expected value changed. No regression found by the close-out.
   - **c17 step 8** no longer exercises the uncovered-boundary shading (D-1159 counts ground outside features as
     covered); a Site Feature in C-2's setup would bring it back: open.
 

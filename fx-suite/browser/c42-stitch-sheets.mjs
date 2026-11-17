@@ -68,8 +68,14 @@ async function stitchByPoints(page, other, here, there) {
 /** A sheet as the app names it: its title, or "Page n" while it has none (these pages have none). */
 const shown = (s) => s.sheet_name || `Page ${s.page_number}`;
 const sites = async () => (await apiCall(token, "GET", `${base}/${project.uuid}/site`)).body;
+// D-188 (app c92426f): the reference pane always snaps a stitch pick to printed lines (ReferencePane.tsx
+// pdfSnap={picking}, SNAP_PX 12 + 2), the main pane does not. (0.2, 0.2) lay 0.7 px from makePdf's frame (its top edge
+// at 160/792 = 0.20202), so pair 1 snapped on one side only and skewed the fit (1.00 % read 0.90 %; step 5's fit
+// 0.57-0.61 ft). Pair 1 is now (0.25, 0.35): on the 1224 x 792 pt page at ~0.44 px/pt, 117 pt (~52 px) from the
+// top frame, 234 pt from the left one and 285 pt from the diagonal, far from the label. No expected value is worked
+// from the points (the fit bounds, the ~1 % flag and the chain read are not), so none changes.
 const POINTS = [
-  [0.2, 0.2],
+  [0.25, 0.35],
   [0.8, 0.25],
   [0.5, 0.8],
 ];
