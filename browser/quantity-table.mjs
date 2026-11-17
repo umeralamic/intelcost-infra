@@ -2021,6 +2021,8 @@ try {
     const bo = await import("/src/lib/estimate/bidOrder.ts");
     // D-1279 (Q10): a share's quantity column.
     const cdisp = await import("/src/lib/estimate/componentDisplay.ts");
+    // D-1301: the plan's pipe width as a share of the page.
+    const msz = await import("/src/lib/takeoff/engine/markupSize.ts");
     const r2 = (v) => Math.round(v * 100) / 100;
     // D-615 rows: 8 in SDR-35 in Type B clay, in a 6 ft box (as lib/utility-cases.mjs).
     const SDR35 = "pvc_d3034_sdr35:8";
@@ -2849,6 +2851,37 @@ try {
       }
       if (c.kind === "treatment") return { tons: c.agents.map((a) => r2(stab.stabilizerTons(c.areaSF, c.depthFt, c.dryPcf, a))), sy: r2(c.areaSF / 9), geoSY: (c.overlaps ?? []).map((o) => r2(ox.geosyntheticSY(c.areaSF, o))) };
       // Block 3D: a pipe and a manhole placed in the 3D view's frame.
+      // D-1301: the pipe's share of the page (and D-826's formula before, the cause), and the depth guard on a run and on a
+      // stored band.
+      if (c.kind === "d1301-share") {
+        const r6 = (v) => Math.round(v * 1e6) / 1e6;
+        const share = msz.pipeShare(c.odIn / 12, c.widthPt, c.feetPerPt);
+        const before = c.feetPerPt > 0 ? c.odIn / 12 / Math.max(1e-9, (c.widthPt || 1) * c.feetPerPt) : null;
+        return { share: share === null ? "none" : r6(share), before: before === null ? "none" : r6(before) };
+      }
+      if (c.kind === "d1301-depth") {
+        const knots = [0, 1].map((i) => ({ s: i === 0 ? 0 : c.length, G: c.ground[i], invert: c.inverts[i], bottoms: c.layers.map(() => -1e6), water: null, caving: false, caveInFt: null }));
+        const r = q.runQuantities({
+          knots,
+          layers: c.layers.map((l) => ({ layerId: null, ...l })),
+          noBores: true,
+          pipe: { odIn: c.odIn, idIn: c.idIn, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+          bucket: "auto",
+          box: null,
+          specMaxIn: null,
+          protection: "auto",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          materials: { bedding: "imported", zone: "imported", backfill: "native" },
+          restoration: null,
+        });
+        const path = [[0, 0], [c.length, 0]];
+        const why = tp.depthCheck(r.shape);
+        return { flag: why === null ? "none" : why.split(":")[0], bands: tp.bandPolygons(path, tp.openStations(r.shape, path)).length };
+      }
+      if (c.kind === "d1301-bands") return { bands: tp.bandPolygons(c.path, c.stations).length };
       if (c.kind === "scene") {
         const s = sc.utilityScene(c.origin, { pipes: c.pipes, structures: c.structures });
         return { pipePoints: s.pipes.map((p) => p.points.map((pt) => pt.map(r2))), structureSpans: s.structures.map((t) => [r2(t.x), r2(t.z), r2(t.y0), r2(t.y1), t.r == null ? null : r2(t.r)]) };

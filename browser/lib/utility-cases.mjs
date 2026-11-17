@@ -3342,4 +3342,26 @@ export const UTILITY_CASES = [
     lf: 200,
     expect: { "fit:pipe:pvc_c900_dr18:8:pct": 12, "addon:test_disinfect:qty": "QTY" },
   },
+  // --- D-1301: the plan's pipe at its true width, and the depth guard -------------------------------------------------
+  // The cause: D-826 drew a run's pipe at its OD over the page's width in feet, (width_pt || 1) x feet per pt. On a reopen
+  // where the scale, the items and the runs arrive before the sheet list, the width is not yet known and was read as 1 pt:
+  // `before` is that share of the page's width (a 6 in pipe 1.88 pages wide, a disc round the run). `share` is the fix's:
+  // none without the page's width or a scale, none past 0.25 of the page.
+  { id: "d1301-pipe-share-no-page-width", kind: "d1301-share", odIn: 6.275, widthPt: 0, feetPerPt: 20 / 72, expect: { share: "none", before: 1.8825 } },
+  { id: "d1301-pipe-share-36in-sheet", kind: "d1301-share", odIn: 6.275, widthPt: 2592, feetPerPt: 20 / 72, expect: { share: 0.000726, before: 0.000726 } },
+  { id: "d1301-pipe-share-bench-ss1", kind: "d1301-share", odIn: 9.1, widthPt: 0, feetPerPt: 30 / 72, expect: { share: "none", before: 1.82 } },
+  { id: "d1301-pipe-share-bench-ss1-loaded", kind: "d1301-share", odIn: 9.1, widthPt: 2448, feetPerPt: 30 / 72, expect: { share: 0.000743, before: 0.000743 } },
+  { id: "d1301-pipe-share-past-max", kind: "d1301-share", odIn: 240, widthPt: 216, feetPerPt: 20 / 72, expect: { share: "none", before: 0.333333 } },
+  { id: "d1301-pipe-share-no-scale", kind: "d1301-share", odIn: 6.275, widthPt: 2592, feetPerPt: 0, expect: { share: "none", before: "none" } },
+  // The guard: ST-1's look-alike (6 in SDR-35, start invert 668.52 at 1 %, 49.9 LF, about 3.5 ft deep) is drawn; an invert
+  // read as 0 under 671 ft ground is past 40 ft: "Check depth", no band; a ground read as 0 under 668 ft inverts leaves no
+  // depth at all (the trench cannot widen from it); 41.5 ft is past the limit, 39 ft is not.
+  { id: "d1301-st1-lookalike", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 49.9, ground: [671.5, 671.0], inverts: [668.52, 668.021], layers: [ASSUMED_C], expect: { flag: "none", bands: 1 } },
+  { id: "d1301-invert-read-as-zero", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 49.9, ground: [671.5, 671.0], inverts: [0, 0], layers: [ASSUMED_C], expect: { flag: "Check depth", bands: 0 } },
+  { id: "d1301-ground-read-as-zero", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 49.9, ground: [0, 0], inverts: [668.52, 668.021], layers: [ASSUMED_C], expect: { flag: "none", bands: 1 } },
+  { id: "d1301-depth-41ft", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [659, 659], layers: [ASSUMED_C], expect: { flag: "Check depth" } },
+  { id: "d1301-depth-39ft", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [661.5, 661.5], layers: [ASSUMED_C], expect: { flag: "none" } },
+  // A result stored before the guard: a band 2,007 ft wide is never drawn; a 3 ft one is.
+  { id: "d1301-stored-band-absurd", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1003.5, "sloped", 1.5], [49.9, 1003.5, "sloped", 1.5]], expect: { bands: 0 } },
+  { id: "d1301-stored-band-sane", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1.5, "vertical", 0], [49.9, 1.5, "vertical", 0]], expect: { bands: 1 } },
 ];
