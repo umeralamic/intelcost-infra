@@ -34466,8 +34466,8 @@ The founder's report, in short: the server they call "staging" is to be confirme
   - Commits (local): app ad99b5a, infra b8f48c3. Gates: lint 0 errors, typecheck 0, build 0. QT exit 0, 0 FAIL, 343
     utility rows. Smoke passed: strokes 1.5–2 px with the sheets list held; "Check depth" in the panel and the
     Incomplete line. Throwaway purged. Digest 51d01fd7cf7c2297 at start and end.
-- **Open:** a trenchless crossing (jack and bore) legitimately deeper than 40 ft is now skipped "Check depth". The founder
-  is to say whether bores are exempt.
+- **Open, since answered:** a trenchless crossing (jack and bore) legitimately deeper than 40 ft was skipped "Check
+  depth". The founder answered per stretch: bored 100 ft and no width (D-1303 item 1, app f64521c, infra 7af3b15).
 
 ## D-1302 — Night run from 2026-11-16 22:47, close-out: the drawing regressions the fixture run found (D-1300), fixed before the push or listed as tester-release blockers
 
@@ -34546,6 +34546,36 @@ throwaway copy of the 3D test project (fx.d1302.20261117104504).
    - The thin-line fallback for a pipe wider than a quarter of the page is accepted.
    - "Check depth" is also its own Needs attention category, besides the Incomplete line.
    - Built this run, with QT rows.
+   - **Follow-up answer (the founder, after 12:00 UTC): per stretch.**
+     - Open-cut stretches: 40 ft deep, 150 ft top width.
+     - Bored stretches (jack and bore, HDD, sleeve): 100 ft deep, no width check.
+     - A run is "Check depth" if any stretch breaks its own limit. Needs attention names the stretch (stations) and its
+       kind.
+   - **Built (app f64521c, infra 7af3b15; saves 13:36:59–13:37:54 UTC, gate quiet before each):**
+     - `trenchPlan.ts`: `TRENCHLESS_DEPTH_LIMIT_FT`, `trenchStretches`, `deepestStretch`, `stretchCheck`,
+       `limitsCheck(…, trenchless)` and `depthCheck(shape, trenchless)`.
+     - `calculate.ts`: per-stretch check. Each "Check depth" skip keeps `depthFt`, `topFt` (null bored) and
+       `stretch {kind, fromFt, toFt}`.
+     - `EstimatingView.tsx:checkDepthList`: a "Check depth (n)" block in the Needs attention list. Each run (kind,
+       and stations on a mixed run) and pit shows with its depth and width. A run is still named in the Incomplete
+       line.
+   - **Where a part-bored run is bored:** between its bore and receiving pits (two or more placed on it), else over
+     its deepest LF (steps of at most 1 ft). **The deepest-LF placement is founder to confirm.**
+   - **Proof:**
+     - Gates: lint 0 errors, typecheck 0, build 0.
+     - QT exit 0, 0 FAIL, 350 utility rows, including 7 new `d1303-*`: bored 99 / 101 / 60 ft wide, open 60 ft wide,
+       mixed open 30 + bored 80 (no flag), mixed open 45 + bored 80 ("Check depth" on open 0–50), part-bored with no
+       pits (bored 50–100).
+     - Smoke (throwaway fx.equip.20261117133822, purged):
+       - ST-2 24" jack and bore at 59 ft cover (61.6 ft, a 190 ft section top ignored) worked and priced: the 310.26 LF
+         line and its pits.
+       - ST-1 open at 55 ft cover: "Check depth" in its panel, in the Incomplete line, and in the block ("ST-1 · open
+         cut · 56.4 ft deep · 172.1 ft wide").
+   - **Found on the way (not changed):**
+     - A bored run's notional trench still enters the overlap pass (D-616): ST-2 at 61 ft "counted here 46.32 BCY"
+       from SS-1. SS-1 loses that excavation to a run that digs none.
+     - The bore and receiving pits (D-1269) are not under the 40 ft pit limit; on ST-2 they were 64 ft deep.
+     - Both are for the founder.
 2. **Staging (NOTE_FOR_ABDULLAH.md).** Both options go in the note:
    - hotfix staging now with the two canvas files, plus the D-1302 Escape fix if it applies cleanly to 52ea0fc, if testers are active this week;
    - otherwise, ship them at the next umer-dev → staging promotion.
@@ -34601,3 +34631,79 @@ throwaway copy of the 3D test project (fx.d1302.20261117104504).
   - It and `canvas-hotfix-52ea0fc.patch` each pass `git apply --check` on a fresh export of 52ea0fc, and they apply together.
   - Not built on staging.
 - **The push** carries app 10ba933, 6f77243, e3a5c1c, ad99b5a, c667b2f (D-1302 passed its gates and quantity table); api 4172bf8, 80fa2ee, 7ab2f0d; infra e6aea9e … d0af0f6 and this mirror commit. The uncommitted c17 fixture edit is left out. NOTE_FOR_ABDULLAH.md is rewritten (outside git).
+
+## D-1305 — Founder decision 2026-11-17 ~18:35 UTC: Abdullah won't promote today, so c49 is fixed before the follow-up push; c44 and f3-s1 only if time allows
+
+1. **c49 (D-1231 overlay opacity slider).** A key press or drag never resets to the stored value while a save is in flight: the local value wins until the save returns, and the latest value is saved last. Checks, then the quantity table, then a c49 rerun, a smoke and a commit.
+2. **If time remains** before the close-out (which starts by 20:47 UTC at the latest); either is skipped rather than delay the close-out:
+   - (a) **c44:** a multi-sheet job's haul-road water line goes on the scraper's sheet, the sheet of the activity that causes it;
+   - (b) **f3-s1:** find whether the collaborator's missing annotations capability is real or fixture setup. Report it, and fix only if small and clear.
+3. **Then** the close-out and ONE push to umer-dev, with no migrations. The report and NOTE_FOR_ABDULLAH.md list what is included and what is left (the signup-throttle switch, the test-laptop runs).
+
+**Item 1, as built (app builder, 2026-11-17 18:37–19:0x UTC).**
+- **Cause:** `OverlayViewBar.tsx:commitOpacity` cleared the slider's own value on every key up, before the save came back, so
+  the next key press stepped from the stored value (50 %). Each key up also sent its own save, with no order between them.
+- **Fix:** `OverlayViewBar.tsx:OverlayViewBar` (`send`, `commitOpacity`): the slider's value stays while any save is in
+  flight; saves go one at a time; a release during a save waits, and only the latest waiting value is sent next (coalesced),
+  so an earlier save's answer never lands after a later one. The slider shows the stored value again only once the last save
+  has returned and the slider has not moved on since. A failed save shows its toast and the stored value. A release that
+  changes nothing (a Tab's key up) saves nothing. `ProjectTakeoff.tsx`: `onOpacity` now returns `saveOverlay`'s promise
+  (settled after the save and the read-back of the overlays), so the bar knows when a save has returned.
+- **Smoke:** six quick ArrowRight presses from 50 % show 55, 60, 65, 70, 80 with no return to 50; two saves (0.55, then 0.80);
+  80 % after a reload. The fixture's Home + 14 ArrowRight stores 0.80 with two saves (0.10, 0.80).
+- **Proof:** app ae0366b; gates green; quantity table exit 0, 0 FAIL; c49-overlay-match 1/1 on fx built apps from ae0366b
+  (images 19:11:45–19:21:37, fx stack 19:22:04–19:26:42 UTC).
+
+**Item 2 (a), as built: c44's haul-road water on the scraper's sheet.**
+- **Cause:** `lib/takeoff/earthwork/job.ts:jobLines` sends every line whose region no member owns to the job's lines, which
+  `jobBalance.ts:planJob` writes on the job's first member. The haul-road water line (`lines.ts`, region `haul-road`) is
+  such a line, so a multi-sheet job wrote it on Page 1, not on the sheet whose scraper haul causes it.
+- **Fix (engine, hard rule 2):** `job.ts:jobLines` moves the haul-road water line from the job's lines to the member with
+  the most scraper fill (`fill_scraper` lines), the first in page order on a tie. One sheet's job is unchanged. Total
+  quantities and dollars do not change: the same single line, the same quantity (the job's scraper fill), on another sheet.
+- **Founder to confirm:** when several sheets' scraper fill causes it, the whole line goes on the sheet with the most
+  scraper fill. The alternative is a split, one line per sheet with its own scraper fill (the same total).
+- **QT rows:** `job-haul-road-water-on-scraper-sheet`, `job-haul-road-water-most-scraper-fill` (infra
+  `browser/lib/earthwork-cases.mjs`).
+- **Founder data (read-only SELECT, 2026-11-17 18:5x UTC):** one founder project has a multi-sheet job (Real bid A, 4 grading
+  sheets) and it has no haul-road water line, so no founder line moves.
+- **Proof:** app e2050eb, infra 0697f60; gates green; quantity table exit 0, 0 FAIL, 391 earthwork rows (a first run failed
+  in its S3 "prepare retry" step on a connection error to the bench bucket, environment, before the engine rows; the rerun
+  passed). **The c44 fx rerun was not run** (it would have ended after the 20:15 close-out start): c44-fill-by-delivery
+  should be rerun on fx images built from e2050eb or later; step 4 reads the water line on Page 3's stored lines, where
+  this fix now writes it.
+
+**Close-out of the follow-up push (2026-11-17, 20:07–20:5x UTC, the close-out builder).**
+- **Remotes before the push:** `git fetch` in app, api, infra and market moved no origin/umer-dev (app c667b2f, api 7ab2f0d,
+  infra acc7458, market 1f0be38). **origin/staging moved:** Abdullah merged umer-dev at 13:21 UTC (app 52ea0fc..08966f8,
+  api e7b9149..5b20bb3); it holds the whole D-1304 push, and only its merge commit is not on umer-dev. So this item's "won't
+  promote today" no longer holds, and the two staging patches (D-1304) are obsolete. Staging's deploy has no migration
+  step: NOTE_FOR_ABDULLAH.md asks him to confirm `alembic current` = d1297f3b8a60 on staging.
+- **The push carries:** app c667b2f..e2050eb (0131edb D-1303 paste click, f64521c D-1303 depth guard per stretch, ae0366b
+  D-1305 c49 slider, e2050eb D-1305 c44 haul-road water); infra acc7458.. (c619e8b c17, 61eb2e3 f7-m, 7af3b15 QT rows,
+  350d643 f6-b / f7-m / c37, 3eec38d D-1306 f3-s1 AC6, 0697f60 c44 QT rows, and this mirror commit). Api nothing new
+  (7ab2f0d), market nothing. **No migration:** `alembic heads` exactly d1297f3b8a60.
+- **Gates (on e2050eb):** app lint 0 errors (the 4 known warnings), typecheck 0, build 0 (20:08–20:22). Api ruff, ruff format
+  --check, mypy (287 files), alembic check clean, one head d1297f3b8a60 (20:11–20:12, founder-active quiet just before).
+- **Quantity table:** run 1 (20:14:27–20:29:42) exit 1, its one FAIL "prepare retry": a NameResolutionError for the bench
+  bucket's S3 host, before the engine rows (environment, as the D-1305 builder's first run; the host resolved again at
+  20:30). Rerun once (20:30:15–20:46:09): **exit 0, 0 FAIL**. "344 rows, both engines equal to 1e-9 on 340; … 391 earthwork
+  rows right; 350 utility rows right; … passed".
+- **Client-name scan:** 0 hits in the 21 files changed since origin/umer-dev (app 7, infra 14) and in every unpushed commit
+  message, against the denylist plus the two names; the mirror's changed files likewise 0.
+- **Purge:** no fx.* account on the bench created since 2026-11-16 (the D-1305 smokes' accounts were already gone);
+  `purge-bench-dups.py` dry run "would purge: 0, refused: 0". Nothing to purge.
+- **Digest:** 51d01fd7cf7c2297 at 20:07 and 20:30, and at the end.
+- **Windows:** none. No app or api source saved, no migration, no service restarted or recreated; the only gated calls were
+  the api gate exec and the DUP dry run, each after a quiet founder-active.
+- **NOTE_FOR_ABDULLAH.md** (outside git): §8 "Follow-up push" added, with the staging status first; §4 marked superseded.
+
+## D-1306 — Recorded 2026-11-17 (found by the D-1305 f3-s1 check): annotation needs a seat; collaborators and QA roles do not annotate
+
+- **The rule, already live:** `canUseAnnotations` is held only with `canEditTakeoff` or `canEditPricing`, which means a paid seat.
+  - api `app/features/workspace/capabilities.py`: `ROLE_TO_CAPS[COLLABORATOR] = _grant(COMMENT, UPLOAD_DOCUMENTS)`; `_annotations_need_a_seat()` strips annotations from any map without takeoff or pricing edit; override and custom-role saves refuse it with 409 `ANNOTATIONS_NEED_A_SEAT`.
+  - app mirror `src/features/workspace/capabilities.ts`.
+- **Where it came from:** Abdullah's "payment gateway" commits of 2026-11-04 (api 2486683, app 60239f2), the client's go-live answers of 2026-10-21. The api's STATUS.md calls it "D-14" in its own go-live numbering. That is NOT the workspace's D-14 (pdf.js sheet rendering), so it is recorded here.
+- **Supersedes D-277 point 7** ("members limited to annotations and comments are free"). No role matches that description any more.
+- **Tester-visible:** a collaborator, qa_takeoff or qa_pricing member sees Dimension, Highlight, Note and Snapshot disabled, by design.
+- **Fixture f3-s1 AC6** is updated to the two-capability collaborator (D-1300 close-out).
