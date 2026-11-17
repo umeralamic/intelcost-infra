@@ -3361,6 +3361,18 @@ export const UTILITY_CASES = [
   { id: "d1301-ground-read-as-zero", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 49.9, ground: [0, 0], inverts: [668.52, 668.021], layers: [ASSUMED_C], expect: { flag: "none", bands: 1 } },
   { id: "d1301-depth-41ft", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [659, 659], layers: [ASSUMED_C], expect: { flag: "Check depth" } },
   { id: "d1301-depth-39ft", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [661.5, 661.5], layers: [ASSUMED_C], expect: { flag: "none" } },
+  // D-1303 (1): the guard per stretch. Open cut: 40 ft deep and 150 ft wide at the top; bored or drilled (jack and bore,
+  // HDD, a sleeve): 100 ft deep, no width. Bored over the whole run: 99 ft worked, 101 ft "Check depth", and at 60 ft its
+  // trench-section top past 150 ft is ignored where the same run open cut is "Check depth". A mixed run, open 0+00 to
+  // 0+50 then bored 0+50 to 1+00 at 80 ft: open at 30 ft is worked; open at 45 ft is "Check depth" on the open stretch.
+  // A part-bored run with no pits placed is bored over its deepest LF.
+  { id: "d1303-trenchless-99ft", kind: "d1301-depth", trenchless: true, protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [601.6, 601.6], layers: [ASSUMED_C], expect: { flag: "none", over100: false, over150: true } },
+  { id: "d1303-trenchless-101ft", kind: "d1301-depth", trenchless: true, protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [599, 599], layers: [ASSUMED_C], expect: { flag: "Check depth", over100: true, stretch: "bored 0-100" } },
+  { id: "d1303-trenchless-60ft-wide", kind: "d1301-depth", trenchless: true, protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [640.6, 640.6], layers: [ASSUMED_C], expect: { flag: "none", over150: true } },
+  { id: "d1303-open-60ft-wide", kind: "d1301-depth", protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [640.6, 640.6], layers: [ASSUMED_C], expect: { flag: "Check depth", over150: true, stretch: "open 0-100" } },
+  { id: "d1303-mixed-open30-bored80", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], bored: [[50, 100]], layers: [ASSUMED_C], expect: { flag: "none", stretch: "none" } },
+  { id: "d1303-mixed-open45-bored80", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 655.5], [50, 700, 655.5], [50, 700, 620.5], [100, 700, 620.5]], bored: [[50, 100]], layers: [ASSUMED_C], expect: { flag: "Check depth", stretch: "open 0-50" } },
+  { id: "d1303-part-bored-no-pits", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], partialLf: 50, layers: [ASSUMED_C], expect: { flag: "none", boredAt: "50-100" } },
   // A result stored before the guard: a band 2,007 ft wide is never drawn; a 3 ft one is.
   { id: "d1301-stored-band-absurd", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1003.5, "sloped", 1.5], [49.9, 1003.5, "sloped", 1.5]], expect: { bands: 0 } },
   { id: "d1301-stored-band-sane", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1.5, "vertical", 0], [49.9, 1.5, "vertical", 0]], expect: { bands: 1 } },

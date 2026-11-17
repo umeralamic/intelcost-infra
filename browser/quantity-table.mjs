@@ -2860,7 +2860,9 @@ try {
         return { share: share === null ? "none" : r6(share), before: before === null ? "none" : r6(before) };
       }
       if (c.kind === "d1301-depth") {
-        const knots = [0, 1].map((i) => ({ s: i === 0 ? 0 : c.length, G: c.ground[i], invert: c.inverts[i], bottoms: c.layers.map(() => -1e6), water: null, caving: false, caveInFt: null }));
+        // D-1303 (1): a profile of [s, G, invert] knots (two at one station: a step), else two ends.
+        const knotOf = (s, G, invert) => ({ s, G, invert, bottoms: c.layers.map(() => -1e6), water: null, caving: false, caveInFt: null });
+        const knots = c.profile ? c.profile.map(([s, G, invert]) => knotOf(s, G, invert)) : [0, 1].map((i) => knotOf(i === 0 ? 0 : c.length, c.ground[i], c.inverts[i]));
         const r = q.runQuantities({
           knots,
           layers: c.layers.map((l) => ({ layerId: null, ...l })),
@@ -2870,16 +2872,29 @@ try {
           bucket: "auto",
           box: null,
           specMaxIn: null,
-          protection: "auto",
+          protection: c.protection ?? "auto",
           limitedWidth: false,
           rule: null,
           depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
           materials: { bedding: "imported", zone: "imported", backfill: "native" },
           restoration: null,
         });
-        const path = [[0, 0], [c.length, 0]];
-        const why = tp.depthCheck(r.shape);
-        return { flag: why === null ? "none" : why.split(":")[0], bands: tp.bandPolygons(path, tp.openStations(r.shape, path)).length };
+        const length = c.profile ? c.profile[c.profile.length - 1][0] : c.length;
+        const path = [[0, 0], [length, 0]];
+        // D-1303 (1): per stretch. `trenchless`: bored over the whole run; `bored`: bored station ranges; `partialLf`: a
+        // part-bored run with no pits, bored over its deepest LF.
+        const bored = c.trenchless ? [[-Infinity, Infinity]] : c.partialLf ? tp.deepestStretch(r.shape, c.partialLf) : (c.bored ?? []);
+        const found = tp.stretchCheck(r.shape, bored);
+        const at = tp.trenchStretches(r.shape, c.trenchless ? [[-Infinity, Infinity]] : []).reduce((m, s) => ({ depth: Math.max(m.depth, s.depthFt), top: Math.max(m.top, s.topFt) }), { depth: 0, top: 0 });
+        const r2s = (v) => Math.round(v * 100) / 100;
+        return {
+          flag: found === null ? "none" : found.why.split(":")[0],
+          bands: tp.bandPolygons(path, tp.openStations(r.shape, path)).length,
+          over150: at.top > 150,
+          over100: at.depth > 100,
+          stretch: found === null ? "none" : `${found.stretch.kind} ${r2s(found.stretch.s0)}-${r2s(found.stretch.s1)}`,
+          boredAt: bored.length && Number.isFinite(bored[0][0]) ? bored.map(([a, b]) => `${r2s(a)}-${r2s(b)}`).join(",") : "none",
+        };
       }
       if (c.kind === "d1301-bands") return { bands: tp.bandPolygons(c.path, c.stations).length };
       if (c.kind === "scene") {
