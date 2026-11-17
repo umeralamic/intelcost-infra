@@ -935,7 +935,7 @@ export const UTILITY_CASES = [
       production: "main",
       variant: "pvc_c900_dr18:8|1|0–6 ft||a:tape+test_disinfect+tracer",
       keys: "pipe:pvc_c900_dr18:8 fit:pipe:pvc_c900_dr18:8 tracer_wire warning_tape addon:test_disinfect",
-      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %",
+      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 12 %",
       "addon:test_disinfect:qty": "QTY",
     },
   },
@@ -1266,20 +1266,20 @@ export const UTILITY_CASES = [
       workScope: "site_utilities.water",
       utility: "water",
       "restraint_joint:pvc_c900:8:sold": 10,
-      // D-1267 correction: restraint sets are never counted fittings: the allowance stays 20 %.
-      "fit:pipe:pvc_c900_dr18:8:pct": 20,
-      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %",
+      // D-1267 correction: restraint sets are never counted fittings: the allowance stays at the pressure base (12 %, D-1296; was 20 %).
+      "fit:pipe:pvc_c900_dr18:8:pct": 12,
+      "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 12 %",
     },
   },
   {
-    // A water main of 200 LF restrained at 35 % (through the lines): 4 sets (ceil(70 / 20)), the allowance kept at 20 %.
+    // A water main of 200 LF restrained at 35 % (through the lines): 4 sets (ceil(70 / 20)), the allowance kept at 12 % (D-1296; was 20 %).
     id: "util-1267-restrained-35-allowance-kept",
     kind: "type-lines",
     type: "water",
     label: '8" PVC C900 DR 18',
     lf: 200,
     section: { restrained_pct: 35 },
-    expect: { "restraint_joint:pvc_c900:8:qty": "4", "fit:pipe:pvc_c900_dr18:8:pct": 20, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" },
+    expect: { "restraint_joint:pvc_c900:8:qty": "4", "fit:pipe:pvc_c900_dr18:8:pct": 12, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 12 %" },
   },
   {
     // A water service's tap at the main is a connection, never a counted fitting: 1 in PE CTS, 60 LF. D-1276 (D-1272 9):
@@ -1292,13 +1292,13 @@ export const UTILITY_CASES = [
     expect: { "tap:water:1:qty": "1", "fit:pipe:pe_cts_sdr9:1:pct": 0, "fit:pipe:pe_cts_sdr9:1:name": "Fittings allowance, 0 % (PE CTS service: couplings, corporation stop and curb stop counted)" },
   },
   {
-    // A plain water main keeps its 20 %; a sanitary main its 5 % (nothing counted).
+    // A plain water main keeps its 12 %; a sanitary main its 2 % (nothing counted; D-1296, were 20 % and 5 %).
     id: "util-1267-water-main-allowance-kept",
     kind: "type-lines",
     type: "water",
     label: '8" PVC C900 DR 18',
     lf: 200,
-    expect: { "fit:pipe:pvc_c900_dr18:8:pct": 20, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 20 %" },
+    expect: { "fit:pipe:pvc_c900_dr18:8:pct": 12, "fit:pipe:pvc_c900_dr18:8:name": "Fittings allowance, 12 %" },
   },
   {
     id: "util-1267-sanitary-allowance-kept",
@@ -1306,7 +1306,8 @@ export const UTILITY_CASES = [
     type: "sanitary",
     label: '8" PVC SDR-35',
     lf: 100,
-    expect: { "fit:pipe:pvc_d3034_sdr35:8:pct": 5, "fit:pipe:pvc_d3034_sdr35:8:name": "Fittings allowance, 5 %", workScope: "site_utilities.sanitary" },
+    // D-1296 (Q5): sanitary 2 % (was 5 %).
+    expect: { "fit:pipe:pvc_d3034_sdr35:8:pct": 2, "fit:pipe:pvc_d3034_sdr35:8:name": "Fittings allowance, 2 %", workScope: "site_utilities.sanitary" },
   },
   {
     // A C909 main with a 45: the C900 (DI MJ) bend key; D-1276 (D-1272 8): its MJ restraint on C900's key too (the same
@@ -1373,7 +1374,8 @@ export const UTILITY_CASES = [
       "pipe:rcp_c76_wall_b:18:sold": 104,
       "gasket:rcp:18:qty": "ceil(QTY / 8)",
       "gasket:rcp:18:sold": 13,
-      "fit:pipe:rcp_c76_wall_b:18:pct": 5,
+      // D-1296 (Q5): storm RCP 0 % (its joints are the gaskets, its junctions structures; was 5 %).
+      "fit:pipe:rcp_c76_wall_b:18:pct": 0,
     },
   },
   {
@@ -3212,5 +3214,132 @@ export const UTILITY_CASES = [
       walls: "box",
       autoNote: "Protection: trench box for the whole run (Auto: deepest 4.6 ft, over 4.5 ft, limited width).",
     },
+  },
+  // --- D-1296 (the founder's REPORT_2026-11-19 §1 answers, Q2, Q5, Q6) ----------------------------------------------
+  // Q2: the backfill under pavement, an explicit choice (CSS to the subgrade / select fill / compacted native) on the run,
+  // with the project's default by its jurisdiction preset: the City and Harris County keep the Houston preset's built rules
+  // ("preset"), "other" takes compacted native. "Limited width / in street" only boxes the walls: under compacted native
+  // and no paved restoration the run is unpaved (no 12 in cap). A run drawn before D-1296 keeps the section's own rule
+  // (CSS on a legacy run, the preset's paved material on a layered one) unless the project sets a default.
+  // Each: pick, cap (in), the final backfill under pavement (name|source), what a new run stores, a run after an old one.
+  ...[
+    ["d1296-paved-other-default", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true }, ["native", 0, "Native|native"]],
+    ["d1296-paved-county-default", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true, jurisdiction: "harris_county", preset: "houston_css" }, ["preset", 12, "Cement-stabilized sand|imported"]],
+    ["d1296-paved-city-rcp48-default", { type: "storm", pipe: "rcp_c76_wall_b:48", limitedWidth: true, jurisdiction: "city_of_houston", preset: "houston_css" }, ["preset", 12, "Select fill|native"]],
+    ["d1296-paved-county-water8-default", { type: "water", pipe: "pvc_c900_dr18:8", limitedWidth: true, jurisdiction: "harris_county", preset: "houston_css" }, ["preset", 12, "Sand|imported"]],
+    ["d1296-paved-other-css-on-run", { type: "water", pipe: "pvc_c900_dr18:8", limitedWidth: true, pick: "css" }, ["css", 12, "Cement-stabilized sand|imported"]],
+    ["d1296-paved-other-select-on-run", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true, pick: "select" }, ["select", 12, "Select fill|native"]],
+    ["d1296-paved-county-native-on-run", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true, jurisdiction: "harris_county", preset: "houston_css", pick: "native" }, ["native", 0, "Native|native"]],
+    ["d1296-paved-project-css", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true, projectPaved: "css" }, ["css", 12, "Cement-stabilized sand|imported"]],
+    ["d1296-paved-other-asphalt-native", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", restoration: { kind: "asphalt", width_ft: null } }, ["native", 12, "Native|native"]],
+    ["d1296-paved-legacy-run-kept", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true, legacy: true }, ["preset", 12, "Cement-stabilized sand|imported"]],
+    ["d1296-paved-layered-before-kept", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", limitedWidth: true, pick: null }, ["preset", 12, "Cement-stabilized sand|imported"]],
+    ["d1296-paved-unpaved-css-pick", { type: "sanitary", pipe: "pvc_d3034_sdr35:8", pick: "css" }, ["css", 0, "Native|native"]],
+  ].map(([id, c, [pick, capIn, backfill]]) => ({ id, kind: "d1296-paved", ...c, expect: { pick, capIn, backfill, newRun: "project", fromLast: "project" } })),
+  // Q5 and Q6 (a): the fittings allowance by kind (water and force main 12 %, fire water 30 %, sanitary 2 %, storm RCP 0 %,
+  // flexible storm, gas and conduit 5 %; a water service as water); the counted fittings' crew-hours on the run's pipe crew
+  // (8 in and under 0.5, 10-16 in 1.0, over 16 in 2.0; A22's work, grade D); the fire line's default pipe C900 DR 14 (Q6 b).
+  // Q6 (d): a fire run's free (building) end, one a run: F1 comes off the main (its start on W) and ends free; F2 has
+  // both ends free (the main not drawn) and counts one; F3 ends at an assembly (a PIV's mark), none.
+  {
+    id: "d1296-fittings-allowance-hours",
+    kind: "d1296-fittings",
+    lines: [["water", "pvc_c900"], ["fire_water", "pvc_c900"], ["force_main", "ductile_iron"], ["sanitary", "pvc_sewer"], ["storm", "rcp_c76"], ["storm", "hdpe_dual_wall"], ["gas", "pe_gas"], ["electric", "conduit"], ["telecom", "conduit"], ["water_service", "pe_cts"]],
+    sizes: [4, 6, 8, 10, 12, 16, 18, 24],
+    runs: [
+      { id: "W", path: [[0, 0], [200, 0]] },
+      { id: "F1", fire: true, path: [[100, 0], [100, 80]] },
+      { id: "F2", fire: true, path: [[300, 0], [300, 50]] },
+      { id: "F3", fire: true, path: [[120, 0], [150, 80]] },
+    ],
+    marks: [{ x: 150, y: 80, r: 5 }],
+    expect: {
+      allowance: { "water:pvc_c900": 12, "fire_water:pvc_c900": 30, "force_main:ductile_iron": 12, "sanitary:pvc_sewer": 2, "storm:rcp_c76": 0, "storm:hdpe_dual_wall": 5, "gas:pe_gas": 5, "electric:conduit": 5, "telecom:conduit": 5, "water_service:pe_cts": 12 },
+      hours: { 4: 0.5, 6: 0.5, 8: 0.5, 10: 1, 12: 1, 16: 1, 18: 2, 24: 2 },
+      freeEnds: "F1x1 F2x1",
+      firePipe: "pvc_c900_dr14:8",
+    },
+  },
+  // Q6 (d): the PIV is its gate valve (priced) and its indicator post; the FDC its yard connection; backflow 8 in reads
+  // Quote needed, with its enclosure; 6 in keeps its public-bid installed price and buys a vault. Neither the PIV nor the
+  // FDC is a "no price" type now: what is unpriced says Quote needed on its own part.
+  { id: "d1296-piv-parts", kind: "d1296-fittings", structure: "piv", spec: { valveSizeIn: 8 }, expect: { parts: ['valve:gate:8|PIV valve, gate, 8"', "piv:post|Indicator post, adjustable, for the PIV: Quote needed"], noPrice: false } },
+  { id: "d1296-fdc-parts", kind: "d1296-fittings", structure: "fdc", spec: { valveSizeIn: 4 }, expect: { parts: ['fdc:yard:4|Fire department connection, yard, 2-1/2 x 2-1/2 x 4" with check valve and ball drip: Quote needed'], noPrice: false } },
+  { id: "d1296-backflow-8-enclosure", kind: "d1296-fittings", structure: "backflow", spec: { valveSizeIn: 8, housing: "enclosure" }, expect: { parts: ['struct:backflow:8:installed|Backflow preventer, 8", installed: Quote needed (no public price found, D-1296)', 'backflow:enclosure:8|Backflow enclosure, insulated, on its pad, 8": Quote needed'], noPrice: false } },
+  { id: "d1296-backflow-6-vault", kind: "d1296-fittings", structure: "backflow", spec: { valveSizeIn: 6, housing: "vault" }, expect: { parts: ['struct:backflow:6:installed|Backflow preventer, 6", installed (public bids)', 'backflow:vault:6|Backflow vault, precast, 6": Quote needed'], noPrice: false } },
+  // Q6 (a, c, d) through the lines: a new 150 LF fire line on its default C900 DR 14 8 in with its add-ons (tracer, tape,
+  // test): no bend, so 30 %; the test and flush one a system (1 EA, not $2.25/LF: no addon:test_disinfect line); its free
+  // building end a riser / lead-in spool, Quote needed.
+  {
+    id: "d1296-fire-line-plain",
+    kind: "type-lines",
+    type: "fire_water",
+    label: '8" PVC C900 DR 14',
+    lf: 150,
+    freeEnds: 1,
+    expect: {
+      pipe: "pvc_c900_dr14:8",
+      addons: "tracer tape test_disinfect",
+      keys: "pipe:pvc_c900_dr14:8 fit:pipe:pvc_c900_dr14:8 tracer_wire warning_tape test:fire_nfpa24 spool:fire_riser:8",
+      "fit:pipe:pvc_c900_dr14:8:pct": 30,
+      "fit:pipe:pvc_c900_dr14:8:name": "Fittings allowance, 30 %",
+      "test:fire_nfpa24:qty": "1",
+      "test:fire_nfpa24:unit": "EA",
+      "test:fire_nfpa24:name": "Hydrostatic test (NFPA 24, 200 psi for 2 h) and flush, a system",
+      "spool:fire_riser:8:qty": "1",
+      "spool:fire_riser:8:name": 'Riser / lead-in spool, 8" (flanged, at the building end): Quote needed',
+    },
+  },
+  // The same line with two drawn 45s: its fittings counted, so 0 %; the bends and their restraint sets bought.
+  {
+    id: "d1296-fire-line-counted",
+    kind: "type-lines",
+    type: "fire_water",
+    label: '8" PVC C900 DR 14',
+    lf: 150,
+    freeEnds: 1,
+    bends: [{ angle: 45, count: 2 }],
+    expect: {
+      keys: "pipe:pvc_c900_dr14:8 fit:pipe:pvc_c900_dr14:8 tracer_wire warning_tape test:fire_nfpa24 spool:fire_riser:8 bend:pvc_c900:45:8 restraint:pvc_c900:8",
+      "fit:pipe:pvc_c900_dr14:8:pct": 0,
+      "fit:pipe:pvc_c900_dr14:8:name": "Fittings allowance, 0 % (fittings counted on this line)",
+      "bend:pvc_c900:45:8:qty": "2",
+    },
+  },
+  // A ductile iron fire line (the option, Q6 b): its own key, 30 %, the same test.
+  {
+    id: "d1296-fire-line-di",
+    kind: "type-lines",
+    type: "fire_water",
+    label: '8" Ductile Iron PC 350',
+    lf: 150,
+    run: { catalog_key: "di_c151_pc350:8", nominal_in: 8 },
+    expect: { "fit:pipe:di_c151_pc350:8:pct": 30, "test:fire_nfpa24:qty": "1" },
+  },
+  // Q5: a new sanitary main at 2 %, a new storm RCP main at 0 % (its name says why), a water main at 12 % keeps its
+  // per-LF test and disinfection (only fire lines test once a system).
+  {
+    id: "d1296-sanitary-2",
+    kind: "type-lines",
+    type: "sanitary",
+    label: '8" PVC SDR-35',
+    lf: 100,
+    expect: { "fit:pipe:pvc_d3034_sdr35:8:pct": 2, "fit:pipe:pvc_d3034_sdr35:8:name": "Fittings allowance, 2 %" },
+  },
+  {
+    id: "d1296-storm-rcp-0",
+    kind: "type-lines",
+    type: "storm",
+    label: '18" RCP Wall B',
+    lf: 100,
+    expect: { "fit:pipe:rcp_c76_wall_b:18:pct": 0, "fit:pipe:rcp_c76_wall_b:18:name": "Fittings allowance, 0 % (storm RCP: joints priced as gaskets, junctions at structures)" },
+  },
+  {
+    id: "d1296-water-12-test-per-lf",
+    kind: "type-lines",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 200,
+    expect: { "fit:pipe:pvc_c900_dr18:8:pct": 12, "addon:test_disinfect:qty": "QTY" },
   },
 ];

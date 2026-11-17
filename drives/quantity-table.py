@@ -2510,7 +2510,81 @@ async def d1289() -> int:
     return 1 if wrong else 0
 
 
+# D-1296 (night run from 2026-11-16 22:47, step 1): migration d1296a7c4e21's row (the fire line's test and flush, one a
+# system), the counted fittings' crew-hours on the pipe crew (A22's work, the founder's 0.5 / 1.0 / 2.0), the PIV's and
+# the FDC's valve crew (A64, on a fire run its crew), and the project's backfill under pavement. Read only.
+async def d1296() -> int:
+    """D-1296: the library row, the fittings' crew-hours and their keys, the PIV / FDC crew, the paved-backfill field."""
+    from decimal import Decimal
+
+    from pydantic import ValidationError
+    from sqlalchemy import text as sql
+
+    from app.database import SessionFactory
+    from app.features.earthwork.utility_schemas import UtilitySettings
+    from app.features.equipment import production
+    from app.features.takeoff.models import TakeoffItem
+
+    wrong: list[str] = []
+    n = 0
+
+    def check(rid: str, got: object, want: object) -> None:
+        nonlocal n
+        n += 1
+        if got != want:
+            wrong.append(f"FAIL  {rid}: {got!r}, expected {want!r}")
+
+    async with SessionFactory() as session:
+        row = (
+            await session.execute(
+                sql(
+                    "SELECT d.unit_price, d.grade, d.sell_unit, d.source_internal, i.name FROM matlib.mat_default d"
+                    " JOIN matlib.mat_item i ON i.mat_key = d.mat_key JOIN matlib.release r ON r.id = d.release_id"
+                    " WHERE r.title = 'Q4 2026' AND d.mat_key = 'test:fire_nfpa24'"
+                )
+            )
+        ).one()
+        check("d1296-fire-test-row", (row[0], row[1], row[2], row[4]), (Decimal("1350.0000"), "D", "EA", "Fire line hydrostatic test (NFPA 24, 200 psi for 2 h) and flush, a system"))
+        check("d1296-fire-test-basis", (row[3].startswith("D-1296 (Q6 c): IntelCost's figure"), "taken as $1,350 a system" in row[3]), (True, True))
+        audit = (await session.execute(sql("SELECT detail FROM matlib.release_audit WHERE actor = 'migration d1296a7c4e21 (D-1296)'"))).scalars().all()
+        check("d1296-audit", [d["added"] for d in audit], [["test:fire_nfpa24"]])
+        unpriced = (await session.execute(sql("SELECT count(*) FROM matlib.mat_default WHERE mat_key LIKE 'piv:%' OR mat_key LIKE 'fdc:%' OR mat_key LIKE 'spool:%' OR mat_key LIKE 'backflow:%' OR mat_key LIKE 'struct:backflow:8%' OR mat_key LIKE 'struct:backflow:1%'"))).scalar()
+        check("d1296-quote-needed-unpriced", unpriced, 0)
+    # The counted fittings' crew-hours by nominal, and the nominal read from each key.
+    check("d1296-crew-hours", [production.fitting_crew_hours(x) for x in (4, 6, 8, 10, 12, 16, 18, 24, 36)], [0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0])
+    check("d1296-fitting-nominal", [production.fitting_nominal(k) for k in ("bend:pvc_c900:45:8", "tee:pvc_c900:12x12", "tee:ductile_iron:8x6", "spool:fire_riser:8", "bend:x:45:1-1/4")], [8.0, 12.0, 8.0, 8.0, None])
+    check("d1296-crew-time-keys", production.CREW_TIME_KEYS, ("restraint_joint:", "bend:", "tee:", "spool:fire_riser:"))
+    # A worked line: 2 x 45 at 8 in and 1 tee 12 x 12: 2 x 0.5 + 1 x 1.0 = 2.0 crew-hours.
+    check("d1296-line-hours", sum(c * production.fitting_crew_hours(production.fitting_nominal(k) or 0) for k, c in (("bend:pvc_c900:45:8", 2), ("tee:pvc_c900:12x12", 1))), 2.0)
+
+    def item(variant: str) -> TakeoffItem:
+        return TakeoffItem(earthwork_role="utility_structure", earthwork_variant=variant, earthwork_region_id="util:fire_water", earthwork_crew=None)
+
+    check("d1296-piv-off-run", production.line_role(item('piv|8" valve')), "utility_structure_valve")
+    check("d1296-fdc-off-run", production.line_role(item('fdc|4" inlet')), "utility_structure_valve")
+    check("d1296-piv-on-run", (production.run_assembly(item('piv_run|8" valve|pressure')), production.line_role(item('piv_run|8" valve|pressure'))), (("A64", 4.0, "valve"), "utility_pipe_pressure"))
+    check("d1296-fdc-on-run", production.run_assembly(item('fdc_run|4" inlet|pressure')), ("A64", 4.0, "valve"))
+    check("d1296-hydrant-kept", production.run_assembly(item('hydrant_run|6" valve, 20 LF lead|pressure')), ("A65", 2.5, "hydrant"))
+    # Q2: the project's backfill under pavement; null by the jurisdiction.
+    check("d1296-paved-default", (UtilitySettings().paved_backfill, UtilitySettings.model_validate({}).paved_backfill), (None, None))
+    check("d1296-paved-select", UtilitySettings.model_validate({"paved_backfill": "select"}).paved_backfill, "select")
+    try:
+        UtilitySettings.model_validate({"paved_backfill": "gravel"})
+        refused = False
+    except ValidationError:
+        refused = True
+    check("d1296-paved-refused", refused, True)
+    for w in wrong:
+        print(w)
+    print(f"D-1296 library row and api: {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    return 1 if wrong else 0
+
+
 def main() -> None:
+    if sys.argv[1:] == ["d1296"]:
+        import asyncio
+
+        sys.exit(asyncio.run(d1296()))
     if sys.argv[1:] == ["d1289"]:
         import asyncio
 

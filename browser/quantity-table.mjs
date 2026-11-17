@@ -1943,6 +1943,8 @@ try {
     const spr = await import("/src/lib/takeoff/earthwork/utilities/sectionPresets.ts");
     // D-1282: the layered section wired into Calculate (its stack, lines and kept sections) and new runs' layers.
     const calc = await import("/src/features/takeoff/earthwork/utilities/calculate.ts");
+    // D-1296: the PIV, FDC and backflow parts.
+    const stt = await import("/src/lib/takeoff/earthwork/utilities/structureTypes.ts");
     const ssm = await import("/src/lib/takeoff/earthwork/utilities/sectionSummary.ts");
     // D-1276: tracer and tape in whole rolls once over the project (Estimating's withBidOrder).
     const bo = await import("/src/lib/estimate/bidOrder.ts");
@@ -2135,6 +2137,34 @@ try {
       // state), its materials (`runMaterials`), the engine, the lines (`utilityLines`, as `lineWrites` sends them, the
       // note included) and the sections it keeps (`sectionSummary`). A run stored before (no `section.layers`) is worked
       // again on today's path alone and its lines compared field for field. `newRuns`: what a new run stores.
+      // D-1296 (Q2): the backfill under pavement, a run's own pick or the project's default by its jurisdiction, through
+      // `calculate.ts:runMaterials` (a run drawn before the layers) and `runLayered` (a layered run's final backfill under
+      // pavement), "Limited width / in street" only boxing the walls. (Q5, Q6) the allowance by kind and the counted
+      // fittings' crew-hours; a fire run's free ends (`fittings.ts:freeEnds`); PIV, FDC and backflow parts.
+      if (c.kind === "d1296-paved") {
+        const p = cat.resolvePipe(c.pipe);
+        const settings = { ...utr.utilitySettings(c.settings ?? null), ...(c.jurisdiction ? { jurisdiction: c.jurisdiction } : {}), ...(c.projectPaved ? { pavedBackfill: c.projectPaved } : {}) };
+        const def = rd.defaultRun(c.type);
+        const section = c.legacy ? { ...(c.pick ? { paved_backfill: c.pick } : {}) } : { ...def.section, layers: { v: 1, preset: c.preset ?? "auto" }, ...(c.pick !== undefined ? { paved_backfill: c.pick } : {}) };
+        if (!c.legacy && c.pick === null) delete section.paved_backfill;
+        const run = { ...def, catalog_key: c.pipe, section, limited_width: Boolean(c.limitedWidth), restoration: c.restoration ?? null };
+        const mats = calc.runMaterials(run, settings);
+        const { layered } = calc.runLayered(run, c.type, { od: p.od, id: p.id }, settings, mats);
+        return { pick: mats.pavedPick, capIn: mats.pavedCapIn, backfill: (layered ? layered.normal.final.material.name : mats.backfill.name) + "|" + (layered ? layered.normal.final.material.source : mats.backfill.source), newRun: rd.defaultRun(c.type).section.paved_backfill ?? null, fromLast: rd.newRunFrom({ ...def, section: { addons: [], layers: { v: 1, preset: "auto" } } }).section.paved_backfill ?? null };
+      }
+      if (c.kind === "d1296-fittings") {
+        const allowance = Object.fromEntries((c.lines ?? []).map(([kind, key]) => [`${kind}:${key}`, um.allowancePct(kind, key)]));
+        const hours = Object.fromEntries((c.sizes ?? []).map((n) => [String(n), um.fittingCrewHours(n)]));
+        const fe = c.runs ? [...fitg.freeEnds(c.runs.filter((r) => r.fire), c.runs, c.marks ?? [])].map(([id, n]) => `${id}x${n}`).join(" ") : null;
+        const out = { allowance, hours, ...(fe !== null ? { freeEnds: fe } : {}), firePipe: ty.TYPES.fire_water.pipe };
+        if (c.structure) {
+          const parts = stt.assemblyParts(c.structure, c.spec ?? null);
+          const inst = stt.installedPart(c.structure, c.spec ?? null, []);
+          out.parts = [...parts, ...(inst ? [inst.part, ...inst.extra] : [])].map((x) => `${x.key}|${x.name}`);
+          out.noPrice = stt.NO_PRICE_TYPES.has(c.structure);
+        }
+        return out;
+      }
       if (c.kind === "section-lines") {
         if (c.newRuns) {
           const legacyLast = { ...rd.defaultRun("sanitary"), section: { addons: ["cctv"] } };
@@ -2561,6 +2591,8 @@ try {
             services: c.services ?? [],
             bends: c.bends ?? [],
             tees: c.tees ?? 0,
+            // D-1296 (Q6 d): a fire run's free (building) ends.
+            freeEnds: c.freeEnds ?? 0,
             short: o.production === "short",
             install: o.install,
             encasement: o.encasement,

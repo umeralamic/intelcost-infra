@@ -74,8 +74,9 @@ MAT_COUNTS=$(docker compose exec -T postgres psql -U intelcost -d intelcost -At 
 # C900 restraint 14 and 18 in (F): C613 - 16 = 597, D167 + 16 + 5 = 188, F32 + 2 = 34.
 # D-1289 (migration d1289e5b3c40, the D-1290 picks): CSS C to B; RCP 30 in A to B; C900 DR 18 6, 8, 12 in A to B;
 # SDR-26 8 and 12 in A to B, 10 and 15 in C to B: A171 - 6 = 165, B188 + 9 = 197, C597 - 3 = 594.
-if [ "$MAT_COUNTS" != "A165 B197 C594 D188 F34" ]; then
-  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A165 B197 C594 D188 F34"
+# D-1296 (migration d1296a7c4e21): the fire line's test and flush, one a system (D): D188 + 1 = 189.
+if [ "$MAT_COUNTS" != "A165 B197 C594 D189 F34" ]; then
+  echo "FAIL  Q4 2026 keys by grade: $MAT_COUNTS, expected A165 B197 C594 D189 F34"
   exit 1
 fi
 # The earthwork production starter (release 2, D-751, and release 3, D-806: dozer push and scraper): its counts
@@ -175,6 +176,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1
 # MATERIAL-PICKS-FINAL §5 lists them, delivery by transport class, the FEMA edition on each class, the state's origin
 # in the bundle's rule, and the project jurisdiction setting.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1289" </dev/null || { echo "FAIL  D-1289 library rows (above)"; exit 1; }
+# D-1296 (migration d1296a7c4e21 and the api): the fire line's test and flush row ($1,350 a system, D), nothing priced for
+# the Quote needed items, the counted fittings' crew-hours (0.5 / 1.0 / 2.0 by size) and their keys, the PIV and FDC on
+# the valve crew (A64; on a fire run its crew), the project's backfill under pavement.
+docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py d1296" </dev/null || { echo "FAIL  D-1296 library row and api (above)"; exit 1; }
 # An earthwork activity hidden from suggestions (D-759): every starter role prices through the same activity, default and tier.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py hidden" </dev/null || { echo "FAIL  hidden activities (above)"; exit 1; }
 # A line Calculate turns into a parent (D-764 B0): its automatic components go, a person's stay, shown not counted.

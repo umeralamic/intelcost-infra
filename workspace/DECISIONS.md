@@ -34184,11 +34184,85 @@ no React commit per pointer move while a contour is drawn, measured on the dev b
 
 ## D-1296 — Night run from 2026-11-16 22:47 (morning-report-2026-11-20), step 1: the founder's REPORT_2026-11-19 §1 answers built (backfill under pavement as an explicit run/project choice defaulted by the jurisdiction preset; fittings allowances pressure 12 %, storm RCP 0 %, sanitary 2 %, A22 labour for counted fittings; fire water: own 30 % allowance, C900 DR 14 default, test and flush per system, backflow vault and 8 in+, PIV, FDC, riser spool, "Quote needed"), then one harness pass on (a1) with the trench-safety add and delivery by ownership
 
+**Status:** built (night run, step 1 builder, from 22:56 UTC); the founder confirms in the morning. Brief: `intelcost-infra/morning-report-2026-11-20/BRIEF.md` item 1, R4–R10. Spec: `docs/tasks/fittings_fire_paved_tasks.md`.
+
+*Migration d1296a7c4e21 (revises d1289e5b3c40), its rows listed before the bench run (23:5x UTC).* One new library row, Q4 2026, national, added only where the release has none (D-1279's guard); the downgrade deletes exactly what the audit row names (source carries the "D-1296 " mark). No project or workspace row is read or written.
+
+| `mat_key` | Name | Unit | $ | Grade | Basis |
+|---|---|---|---:|---|---|
+| `test:fire_nfpa24` | Fire line hydrostatic test (NFPA 24, 200 psi for 2 h) and flush, a system | EA | 1,350.00 | D | IntelCost's figure, no public price found (agencies carry it LS or inside the pipe item): NFPA 24 10.10.2.2.1 test + flush by size, witnessed; ~half a crew-day of the pressure pipe crew (5 h × ~$206/crew-h Harris open shop burdened ≈ $1,030), test pump, gauge and chart recorder for the day ≈ $170, hoses and diffuser ≈ $50, flush water (8 in ~10 min, ~15,600 gal) ≈ $95 → ≈ $1,345, taken as $1,350. |
+
+Q4 2026 keys by grade: A165 B197 C594 D188 F34 → A165 B197 C594 **D189** F34. The other Q6 (d) items (backflow 8, 10, 12 in installed; the backflow enclosure or vault; the PIV's indicator post; the FDC; the riser / lead-in spool) found no public price (one search: only a 2 in valve indicator in a city supply tab, not comparable), so they get **no row**: the app names each "Quote needed" on its material line and Estimating lists it under Missing price (never a silent $0).
+
+*Proof (foldproof3, never the bench database):* empty → head = the bench's schema but the 31 known CHECK prints (62 diff lines, 0 others) and the `\restrict` tokens; `alembic check` clean; a restored bench copy (at d1289e5b3c40) up → +1 mat_default, +1 mat_item, +1 release_audit; down → identical to before (0 diff lines on mat_default, mat_item, release_audit); up again → identical to the first up.
+
+*Founder projects that reprice at their next Calculate (read-only SELECT, 2026-11-16 ~23:10 UTC, the 18 guarded projects; runs by type and pipe, structures by type, cost components `fit:` / `bend:` / `tee:` / `addon:`, utility settings):*
+- **Real bid A:** 1 fire-water run (C900 DR 18 8 in, stored on the run, so it **keeps DR 18**: the run stores its catalog key and nothing records whether it was only the default; it was drawn before D-1260, no add-ons, so it had no per-LF test and gets no per-system test either) → allowance 20 → **30 %**; if its building end is free, a **riser / lead-in spool, Quote needed** line; 9 sanitary runs (HDPE 30 in ×2, SDR-26 4 in ×3, 6 in ×4) 5 → **2 %**; 1 water service (SDR-26 4 in) 20 → **12 %**; 3 storm HDPE runs keep 5 %. 5 `fit:` components now.
+- **Real bid B:** 1 storm RCP 24 in run 5 → **0 %** (1 `fit:` component).
+- **P08:** 6 sanitary runs (HDPE IPS 8 and 12 in) 5 → **2 %** (4 `fit:` components).
+- **P01, P10:** 1 sanitary SDR-35 run each 5 → **2 %** (no allowance component yet: they price it at their first Calculate with materials); their storm runs (HDPE, SDR-35) keep 5 %.
+- **Nothing else:** no founder run is "Limited width" or under a paved restoration (Q2 moves none), none has a stored backfill choice or a jurisdiction, no founder project has a PIV, FDC or backflow structure, and no founder line has a counted bend or tee (A22 hours move none; Real bid A's fire line gets 0.5 crew-hour if its spool is counted). P02–P07, P09, P19–P24 hold no utility run.
+
+*Bench:* migration run 23:27:43–23:27:59 UTC (digest 51d01fd7cf7c2297 before and after; Q4 2026 grades A165 B197 C594 D189 F34). Api saved in one batch 23:28:40–23:28:41 (`utility_schemas.py`, `production.py`, `lines.py`), api down while reloading 23:28:41–23:29:32 (/docs 200 at 23:29:32; worker and worker-pages ready 23:29:23–24). App saved in one batch 23:29:58–23:30:01 (15 files), and once more 23:42:14 (`structureTypes.ts`: the backflow reference text "no public price found, D-1296", no double brackets). The founder gate was quiet before every save.
+
+*Readings made (the founder to confirm):*
+1. **Q2 "preset"** is a fourth choice, "The section's own rule": the City and County default, and what a run drawn before D-1296 keeps. A run drawn from now on stores `paved_backfill: "project"`; one drawn before (no field) keeps its result unless the run or the project picks. Under compacted native with no paved restoration a "Limited width" run is worked unpaved (no 12 in cap): the box only. Under a paved restoration the cap stays (the restoration's line holds it).
+2. **Select fill** is priced as native (dug and placed), as the Houston preset's select already is (D-1289); `select_fill` ($21.91/TON, C) is not bought. On a layered run the choice moves the final backfill only; the preset's bedding and embedment keep their own paved material (flexible storm's CLSM).
+3. **A22**: the founder's hours are crew-hours (the whole crew's hour) on the run's pipe crew, added as the restraint sets' are (`production.py`, the crew's own production lowered, its machines unchanged; note "Fittings set: …"); A22's own crew (30 t excavator, 1 EA a day) is not used. Counted: drawn bends, tees (on the main a run ends on) and the fire riser spool. A Count named "bend" is not linked (no fitting Count type; no clean way).
+4. **Fire test**: one a fire run that carries a test add-on (a new fire run's default); a fire run drawn before D-1260 (no add-ons, Real bid A's) buys none, as it bought no per-LF test. Water mains keep $2.25/LF.
+5. **Riser / lead-in spool**: one at a fire run's free end (not at a structure, an assembly mark within 5 ft, or another pressure run), at most one a run (with both ends free, the main is not drawn). It is not a counted fitting for the allowance (bends, tees, valves, hydrants only), but it is for A22's hours.
+6. **PIV / FDC** (Q6 d, IntelCost's proposal, grade D): set at the valve rate (A64, 4 EA a day, ≈ 2.5 crew-hours), by the fire run's crew when within 5 ft of one (`piv_run|`, `fdc_run|`), else the valve crew's spread (`utility_structure_valve`); was A27, the storm structure crew, 2 crew-days for one. Parts: the PIV's gate valve (the library's `valve:gate:<n>`) and its indicator post (`piv:post`, Quote needed); the FDC `fdc:yard:<n>` (body, check valve, ball drip; Quote needed). Neither is a "no price" type now.
+7. **Backflow** 8, 10, 12 in offered, each "installed: Quote needed"; a housing choice on the structure (none, the default, so old ones keep; insulated enclosure on a pad; precast vault), each Quote needed.
+8. **Fire default pipe** C900 DR 14 8 in (`types.ts`); a run keeps the pipe it stores (Real bid A keeps DR 18).
+
+*Smoke (MCP, throwaway fx.equip.20261116233714, a copy of the 3D test project, Harris County 77002 open shop burdened, TX20260031 mod 1 Heavy; purged, dry run first; guard refusals 0):* a new fire run took C900 DR 14 8 in, its 45° bend counted (allowance 0 %), test and flush 1 EA at $1,390.49 (the $1,350 row × the location factor), the riser spool "Quote needed", A22 note "Fittings set: 2 counted fittings, 1 crew hr" (bend + spool, 8 in), the water main's tee 0.5 crew hr; a new sanitary run 2 % (and the copied SDR-35 10 in 2 %); PIV on the fire run at the valve rate on the pressure crew, FDC off the run on "Valve set (water crew)", backflow 8 in + enclosure Quote needed; Estimating "3 structures not priced · 6 materials without a price". Under pavement: a limited-width sanitary run on "Project default (Compacted native)" under Other → native, no cap; the project set to Harris County → "By jurisdiction (The section's own rule)" → "Trench backfill, Cement-stabilized sand" (1,559 → 1,169 CF with the cap). Screenshots `morning-report-2026-11-20/step1/d1296-*.png`.
+
+*Gates and quantity table:* app lint, typecheck, build 0; api ruff, ruff format --check, mypy, alembic check clean, one head d1296a7c4e21. Quantity table (2026-11-16 ~23:55–00:10 UTC) exit 0, 0 FAIL: "344 rows … 372 earthwork rows right; 330 utility rows right …", "D-1296 library row and api: 16 rows, all right". Rows moved to the answers: the pressure allowance rows 20 → 12 % (earthwork-cases `d1267-allowance-per-run` 19.0494 → 11.4296, `d1267-restraint-not-counted`, `q21-allowance-none`; utility-cases four water rows), sanitary 5 → 2 %, storm RCP 5 → 0 %. New rows: `d1296-paved-*` (12: the choice per jurisdiction, on the run, the project's, a run drawn before kept, the cap), `d1296-fittings-allowance-hours` (allowance per kind, crew-hours per size, free ends, the fire default pipe), `d1296-piv-parts`, `d1296-fdc-parts`, `d1296-backflow-8-enclosure`, `d1296-backflow-6-vault`, `d1296-fire-line-plain` / `-counted` / `-di`, `d1296-sanitary-2`, `d1296-storm-rcp-0`, `d1296-water-12-test-per-lf`; api `drives/quantity-table.py d1296`.
+
+*For the harness pass (not changed here: bidtabs/ is another builder's):* `bidtabs/overpricing.mjs` and `overpricing-report.mjs` still hold the 20 % / 5 % allowance in their own text; a tab run gets an under-pavement backfill by setting `section.paved_backfill` ("css" / "select" / "native"); a run without the field keeps the section's own rule.
+
 ## D-1297 — Night run from 2026-11-16 22:47, step 2: earthwork method check (pits, vertical cuts and undercuts to excavator, dozer grade factor, over-excavation option, dozer sizing), from the founder's 11166 files on a look-alike throwaway (docs/tasks/earthwork_method_check_tasks.md)
+
+**Status:** STAGE 1 spec written (2026-11-16), not built. The full spec, with sources and the hand-worked look-alike,
+is in the task file's "STAGE 1 spec".
+
+- **Found:**
+  - 11166's pad cut went to dozer because a pocket's method is one site-wide share (`suggest.ts:pocketShares`,
+    `lines.ts:methodsOf`).
+  - Depth never enters the rule (D-920).
+  - The push grade factor exists (`production.py:_grade_factor`, CPH 49 points, D-919), but it uses one blended site
+    grade: +10.09 % for 11166, where the pit's own pocket is 13.9 %.
+  - The D8 is D-958's clearing dozer, with the push pooled onto it (D-1115).
+- **Proposed rule (supersedes D-920's "depth never enters the rule" for pits only):**
+  - A region whose edge wall (min(0, Δz outside) − Δz inside, walked exactly) or a 1:1-or-steeper proposed face
+    reaches 5.0 ft is a pit (OSHA 1926.652(a)(1)).
+  - All of a pit's cut goes by excavator. Shares are kept per region.
+  - Dozer only on a ramp: an open side under 5 ft at no more than +20 %, or a person's tick.
+  - An undercut in a pit is dug by excavator and refilled in lifts on the confined spread (A3C).
+  - Needs attention flags a dig of 5 ft or more at the edges, or the over-excavation option is turned on (2 ft working
+    space, OSHA App. B slopes or shoring).
+  - Dozer sizing by clearing class, acreage and push volume is a proposal only.
+- **Open:** the founder's Q1–Q4 in `morning-report-2026-11-20/step2/INVESTIGATION.md` §8.
 
 ## D-1298 — Night run from 2026-11-16 22:47, step 3: deduct-area holes honoured in quantities and drawing, selection by final shape and draw order, D-1294's drawing speed on every tool, from the founder's 11170 files on look-alike throwaways (docs/tasks/deduct_holes_selection_speed_tasks.md)
 
 ## D-1299 — Night run from 2026-11-16 22:47, step 4: material quantity and scope check, report only, water first (restraint share, test and disinfection, CCTV, embedment, order tiers), $ and k for each
+
+**Details (step 4, 2026-11-16, report only; nothing built, saved, migrated or committed).** Report:
+`intelcost-infra/morning-report-2026-11-20/step4/MATERIAL-SCOPE-CHECK.md`, sources in `SOURCES.md` there. Basis: pass
+(a1)'s per-item output (harness da4fdab), an estimate from that output, not a rerun; recent all pipe 1.016 / 0.867.
+- b. Restraint: 33.5 % of recent water LF restrained (15.5 % without 1104-6117), $156,015 material; the tabs pay
+  restrained-joint pipe as its own items and our 8 in $7.20/LF matches their premium (median $7.55): **keep**, $0.
+- c. Test and disinfection: no Houston tab pays it apart; public contracts $0.70–16.42/LF, median $2.80: **keep $2.25/LF,
+  grade D → C** (alternative $2.80: +$23,419 recent).
+- d. CCTV: 9 of 16 tabs pay sanitary video inspection as its own item (median of their medians $2.00/LF): **price kept,
+  grade C → B; in the harness CCTV off on the share the tab pays**: −$50,284 recent, sanitary 0.958 → 0.981.
+- e. Embedment: no zone above 02317's requirement (water and RCP under it): **keep**, $0.
+- f. Order tiers: $120,734 recent (1.5 % of direct); **tier by the order's total of plastic and of rigid pipe, not per
+  key**: −$113,127 recent, all pipe 1.016 → 1.031. A half-truck order measured ≈ +2 % (Topeka, escalated).
+- d + f: −$163,410 recent, all pipe 1.016 / 0.867 → 1.037 / 0.885. Open: questions 1–4 of the report.
+- Found on the way: the runner's `matByKeyPerLF` repeats a shared line's restraint $ on each item of the line (k not
+  affected; a by-key reading is).
 
 ## D-1300 — Night run from 2026-11-16 22:47, step 5: the fixture suite restored from fixtures-archive-2026-09-28, f5-s13 updated for the scale icon, and run against the umer-dev head on the bench by the founder's explicit instruction (lifts D-1057's pause for this run); pass/fail per fixture and the tester-release blockers
 
@@ -34208,3 +34282,11 @@ no React commit per pointer move while a contour is drawn, measured on the dev b
   `da16f7081920` by the 2026-11-12 squash (api 6881073), whose docstring says a database stopped inside the fold "has
   no path here". `alembic upgrade head` (the release's step 0, and api-fx's own start) will fail on it. Stage 2
   needs one of the two paths in RESTORE.md before the release.
+- **Stage 1.5, path A (2026-11-16):** da16's 29 folded steps after d993 (d994 … da16) run in one transaction through
+  alembic's `Operations`, `alembic_version` set to da16 in the same transaction, then `upgrade head` (8 revisions).
+  Proved first on a restored copy in `foldproof5`: `alembic check` clean; its schema equals a from-empty `upgrade head`
+  and the bench's but for CHECK constraints printed differently (4 and 35, same names, equal once casts are dropped);
+  eqlib/matlib reference counts equal (642, 1178, 114, 104). Applied to `intelcost_fx` 23:25:22–23:25:59 UTC with the
+  fx stack down: d993c2a6f4b1 → d1289e5b3c40, `alembic check` clean, `pg_dump -s` identical to the bench's. Bench api
+  200, digest 51d01fd7cf7c2297 unchanged, foldproof5 removed. A dump of the fx database before is kept in the
+  session scratchpad.
