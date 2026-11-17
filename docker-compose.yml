@@ -601,6 +601,9 @@ services:
       - ./fx-suite/browser:/drive/scripts
       - ../intelcost-app-react/src:/src/app:ro
       - ../intelcost-app-fastapi/app:/src/api:ro
+      # The guard's protected list, as the browser service mounts it (lib/protected.mjs reads it on import, fail
+      # closed; D-1228). Without it every fixture stops at bench-code (D-1300, the release of 2026-11-17).
+      - ${INTELCOST_GUARD_LIST:-../.private/guard-list.json}:/run/intelcost/guard-list.json:ro
     environment:
       REGRESS: ${REGRESS:-}
       FX_APP: http://localhost:5176

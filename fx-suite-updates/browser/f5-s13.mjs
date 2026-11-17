@@ -114,7 +114,8 @@ await run("f5-s13", [
       expect((await row(page, arch[3]).getAttribute("data-active")) === "1", "the open sheet's row is not highlighted");
       expect((await page.locator('[data-sheet-row][data-active="1"]').count()) === 1, "more than one row highlighted");
 
-      await row(page, civil[1]).getByRole("button", { name: "Page 1" }).click();
+      // exact: the row's hover buttons are named after it too ("Hide markups on Page 1", D-1175).
+      await row(page, civil[1]).getByRole("button", { name: "Page 1", exact: true }).click();
       await page.waitForURL(new RegExp(`/takeoff/${civil[1].uuid}$`));
       await page.waitForFunction((u) => document.querySelector(`[data-sheet-row="${u}"]`)?.dataset.active === "1", civil[1].uuid);
       expect((await row(page, arch[3]).getAttribute("data-active")) === "0", "the old row stayed highlighted");
@@ -273,7 +274,7 @@ await run("f5-s13", [
       const fitsBefore = fits.length;
       const fivesBefore = splits.filter((s) => s.page === 5).length;
 
-      await row(page, arch[5]).getByRole("button", { name: "Page 5" }).click();
+      await row(page, arch[5]).getByRole("button", { name: "Page 5", exact: true }).click();
       await drawn(page, arch[5].uuid);
       const skipped = await page.locator("[data-fit-skipped]").getAttribute("data-fit-skipped");
       const firstPaint = await page.evaluate(() => window.__intelcostPerf.samples().filter((s) => s.label === "canvas:first-paint").at(-1)?.ms);
@@ -299,10 +300,10 @@ await run("f5-s13", [
       await page.waitForFunction(() => (window.__intelcostPdf?.().prerender.bySource.neighbour ?? 0) >= 1, null, { timeout: 30000 });
       const target = arch[7];
       expect(sevens.length === 0, "page 7 was fetched before it was hovered");
-      await row(page, target).getByRole("button", { name: "Page 7" }).hover();
+      await row(page, target).getByRole("button", { name: "Page 7", exact: true }).hover();
       await page.waitForFunction(() => (window.__intelcostPdf?.().prerender.bySource.hover ?? 0) >= 1, null, { timeout: 30000 });
       expect(sevens.length === 1, `hovering fetched page 7 ${sevens.length} times`);
-      await row(page, target).getByRole("button", { name: "Page 7" }).click();
+      await row(page, target).getByRole("button", { name: "Page 7", exact: true }).click();
       await drawn(page, target.uuid);
       const skipped = await page.locator("[data-fit-skipped]").getAttribute("data-fit-skipped");
       expect(skipped === "1", "page 7 showed the fit image after a hover");

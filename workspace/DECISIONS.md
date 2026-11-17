@@ -34381,3 +34381,28 @@ and after tables are in [deduct_holes_selection_speed_tasks.md](docs/tasks/deduc
   session scratchpad.
 - **Stage 2 start (2026-11-17):** the release runs against app 10ba933 (clean tree) and api 80fa2ee. `intelcost_fx`
   upgraded d1289e5b3c40 → d1297c4a8e15 (d1296, d1297) 01:18:19–01:18:45 UTC, `alembic check` clean.
+- **Stage 2 result (report: `morning-report-2026-11-20/step5/RUN.md`):** 116 of 165 pass at their latest run, 49 fail.
+  - Phases:
+    - built apps on 10ba933, 2 at a time: 76 of 158 failed (33 at sign-up on the throttle);
+    - alone on 10ba933: 28 of 55 pass;
+    - final rerun alone on the last head e3a5c1c (app images rebuilt): 22 of 44 failed;
+    - dev servers: 5 of 7 failed (30 s page loads);
+    - extra: 4 of 4 failed.
+  - **Regressions (tester-release blockers):** runs drawn through the screen with no pointer move between clicks are lost
+    or shortened, and Escape no longer keeps a run (c12, f5-d51, f6-a, f7-b, f7-c, f7-g, f7-k on both heads; suspect
+    D-1294's pen refs, app 0cb6b49). New on e3a5c1c: c28's second run lost, p20a's rotated-sheet run not stored, f7-i's
+    paste broken (suspect D-1298, app e3a5c1c). Bisect at close-out.
+  - **About 30 fixtures stale by accepted decisions:** D-1238, D-1125, D-1087, D-1233, D-1231, D-1220, D-1078, D-1146,
+    D-1122, D-1275, D-1151/D-1152, D-1159, D-1198..D-1204, D-1298. RUN.md lists the assertion for each. f2-s6, c45-materials,
+    c35, c47 and a few others need a look.
+  - **Harness:**
+    - browser-fx now mounts the guard list (D-1228). Without it, `lib/protected.mjs` failed closed and the first
+      release stopped at bench-code.
+    - The sign-up throttle (D-884) needed a fx-only clear of Redis database 1 (04:01:57–10:25:19); a test-only switch
+      is proposed.
+  - **Bench:** api down 07:18:19–07:22:00 and beat down 01:55:16–07:20:40 (watchfiles ENOMEM). Both were started again,
+    the same containers; digest unchanged.
+
+## D-1301 — Night run from 2026-11-16 22:47, founder bug report (about 10:04 UTC 2026-11-17): reopened utility runs draw the trench-protection overlay as huge circles/ellipses (ST-3 153.11 LF and the 8" PVC, 6" PVC, 12" HDPE and 2" copper runs on that sheet); read-only investigation now, fix in the next app slot, with a sanity guard (depth > 40 ft or top width > 150 ft → "Check depth" in Needs attention, never drawn or priced) and quantity-table rows for the cause
+
+The founder's report, in short: the server they call "staging" is to be confirmed first. Identify the project (label only), sheet and runs. Read each run's stored depth, invert and cover, the ground and proposed surfaces at each station, the protection and the computed top width; find the absurd value and why. Data (a stale or missing surface or earthwork result on reopen, a missing invert) or code (a commit since tester-candidate-2026-11-13 or the 2026-11-16 push: Q7 4.5 ft, boxed vs sloped, P-35 no mark-stale on load)? Name the commit. Give the effect on quantities and $ (excavation, backfill) per affected run. Never write to the founder's project; reproduce on a throwaway copy if the guard list allows it, otherwise on a look-alike.
