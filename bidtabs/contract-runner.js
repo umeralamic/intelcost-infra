@@ -102,18 +102,18 @@ async (page) => {
       if (mode === "b") settings.sectionPresets = { water: "houston_css", force_main: "houston_css", sanitary: "houston_css", storm: "houston_css" };
       // D-1291: the jurisdiction the Houston preset follows (Q2), in the page only; what the api holds is recorded beside it.
       if (jurisdiction) settings.jurisdiction = jurisdiction;
-      // D-1296 (R5): step 1's under-pavement backfill choice, as the app stores it on a run and as the project's default
-      // in the utility settings. PLACEHOLDER NAMES until step 1's code is committed: set `runField`, `projectField`,
-      // `inSection` (the run's choice inside `run.section` rather than on the run) and the three `values` to step 1's
-      // committed names before the pass. `upbProbe` refuses to price while the app does not honour them.
-      const UPB = { runField: "STEP1_RUN_UNDER_PAVEMENT_BACKFILL", projectField: "STEP1_PROJECT_UNDER_PAVEMENT_BACKFILL", inSection: false, values: { css_subgrade: "STEP1_CSS_TO_SUBGRADE", select_fill: "STEP1_SELECT_FILL", native: "STEP1_COMPACTED_NATIVE" } };
+      // D-1296 (R5): step 1's under-pavement backfill choice (app 10ba933, `sectionPresets.ts:pavedBackfillOf`): a run's own
+      // pick in `section.paved_backfill` ("css" / "select" / "native"; "project" and "preset" are not used here), the
+      // project's default in the utility settings (`pavedBackfill` on the page, `paved_backfill` as the api stores it).
+      // `upbProbe` still refuses to price while the app does not honour them.
+      const UPB = { runField: "paved_backfill", projectField: "pavedBackfill", projectFieldStored: "paved_backfill", inSection: true, values: { css_subgrade: "css", select_fill: "select", native: "native" } };
       const withChoice = (obj, choice) => {
         if (!upbMode || choice == null) return obj;
         const v = UPB.values[choice];
         return UPB.inSection ? { ...obj, section: { ...(obj.section ?? {}), [UPB.runField]: v } } : { ...obj, [UPB.runField]: v };
       };
       if (upbMode) settings[UPB.projectField] = UPB.values.native;
-      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length, underPavement: upbMode ? { mode: upbMode, fields: UPB, projectDefault: settings[UPB.projectField], projectDefaultStored: util.settings?.[UPB.projectField] ?? null } : null, deliveryByDealer: deliveryByDealer ?? null };
+      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length, underPavement: upbMode ? { mode: upbMode, fields: UPB, projectDefault: settings[UPB.projectField], projectDefaultStored: util.settings?.[UPB.projectFieldStored] ?? null } : null, deliveryByDealer: deliveryByDealer ?? null };
       // D-1291 (R11): a run's limited-width mark. In "items" mode every item carries its own (street-marking.mjs); one
       // without is refused, never guessed. D-1296: the same for the under-pavement backfill mark.
       const CHOICES = ["css_subgrade", "select_fill", "native"];

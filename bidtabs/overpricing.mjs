@@ -35,7 +35,10 @@ const materials = await import(`${U}materials.ts`);
 const LOC = 0.98737; // Houston 77002 material location factor (D-1267's note; gap-analysis.mjs)
 const HEALTHY = { low: 1.2, mid: 1.275, high: 1.35 }; // the founder: healthy median ÷ direct 1.20–1.35 (direct ≈ 75–83 %)
 const AGG_WASTE = 0.1; // materials.ts lineMaterials: a zone material's 10 % waste
-const ALLOWANCE = { pressure: 0.2, gravity: 0.05 }; // materials.ts ALLOWANCE_PCT
+// materials.ts ALLOWANCE_PCT / allowancePct (D-1296, the founder's Q5 and Q6): pressure (water, force main) 12 %, fire water
+// 30 %, sanitary 2 %, storm RCP 0 %, every other kind (HDPE / PP storm, conduit) 5 %.
+const ALLOWANCE = { pressure: 0.12, fire: 0.3, sanitary: 0.02, stormRcp: 0, gravity: 0.05 };
+const allowanceGroup = (it) => (it.type === "fire_water" ? "fire" : it.type === "water" || it.type === "force_main" ? "pressure" : it.type === "sanitary" ? "sanitary" : it.type === "storm" && /^rcp_c76/.test(it.entry) ? "stormRcp" : "gravity");
 const TIER = { // api materials/tiers.py TYPES (defaults; the workspace has no mat_tier_setting row)
   pipe_rigid: { bulk: 600, std: 160, fStd: 1.1, fSmall: 1.2 },
   pipe_plastic: { bulk: 2000, std: 400, fStd: 1.1, fSmall: 1.2 },
@@ -210,8 +213,7 @@ for (const c of results) {
     const tt = TIER[tierType];
     const tier = tot >= tt.bulk ? 1 : tot >= tt.std ? tt.fStd : tt.fSmall;
     const round = (Math.ceil(tot / spec.joint - 1e-9) * spec.joint) / tot;
-    const group = it.type === "water" ? "pressure" : "gravity";
-    const allow = it.allowance === false ? 0 : ALLOWANCE[group];
+    const allow = it.allowance === false ? 0 : ALLOWANCE[allowanceGroup(it)];
     const bulk = price * LOC;
     const atTier = bulk * tier;
     const withWaste = atTier * (1 + spec.waste) * round;
