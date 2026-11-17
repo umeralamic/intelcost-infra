@@ -34473,3 +34473,129 @@ Founder rule (given during the run, 2026-11-17 morning UTC): a regression is fix
 - On both heads (present before this run's app saves): a run drawn with no pointer move between clicks (a touch tap) is lost or shortened, and Escape no longer keeps a run (c12, f5-d51, f6-a, f7-b, f7-c, f7-g, f7-k). The suspect is D-1294's pen refs (app 0cb6b49) in SheetCanvas.tsx.
 - New on e3a5c1c: c28's second run is lost, p20a's run on a turned sheet is not stored, and f7-i's paste breaks. The suspect is D-1298 (app e3a5c1c).
 - f2-s6 (signup handoff to login) fails on both heads.
+
+**Findings and fix (2026-11-17, the close-out's D-1302 builder; app c667b2f).** Reproduced by hand in the MCP on a
+throwaway copy of the 3D test project (fx.d1302.20261117104504).
+- **D-1294's pen refs are not the cause.** A run tapped with no pointer move at all (synthetic click, click, dblclick)
+  kept its full length (407.99 LF). Click then double-click, twice (c28's case), joined both runs at full length
+  (408.0 → 712.5 LF). Nothing in `SheetCanvas.tsx` (`handleMove`, `finish`, `handleDoubleClick`, `escape`) changed.
+- **Stale expectations from D-1217 (app 079afc3, 2026-11-12, in tester-candidate-2026-11-13).** Create makes the item
+  at once, with no shape and at 0. Fixtures that wait for "the item by name" read it before the shape joins:
+  - c12 s2 (0 SF);
+  - f6-a s3/s6 (0 EA / 0 SF);
+  - f5-d51 s4/s5 (0);
+  - f7-c s3–s5 and p20a s5 (`geometries[0]` undefined);
+  - f5-s19 s3 ("1 → 2 items mid-shape": the item is made at Create).
+
+  These fixtures last ran on 2026-11-07, before D-1217. They go to the fixture update, which waits for the shape or the
+  quantity.
+- **The regression: the Enter that ends a new item's first run ended its session (f7-b s7).** It came in with D-1217.
+  - `ProjectTakeoff.tsx:handleComplete` set `firstRunRef` (D-80: the first run's Enter keeps the session) only when
+    `measuringItem` was empty.
+  - Create now always fills it, so the first run took the join branch. Enter then ended the session.
+  - The next run, ended with Escape, asked for a new item (the naming dialog) instead of joining.
+
+  **Fix:** `unmarkedDrafts` marks a draft whose item Create made, until its first shape. That shape's run sets
+  `firstRunRef` as before (`markFirstRun`). Staging (52ea0fc): these three hunks apply cleanly to its
+  `ProjectTakeoff.tsx` (`git apply --check` on a scratch copy).
+- **The gutter beside the paper (D-1303 item 4's sibling, the founder's answer on f7-k).**
+  - **The cause.** f7-k's click 12 px right of a fitted page, at mid-height, landed on the Takeoff panel's edge tab
+    (D-1075, app 58d7d1e/af19fba: 12 × 64 px, flush on the panel). The panel closed and the canvas refit (zoom 0.116 →
+    0.185), so the double-click landed on the zoomed page (stored x 0.718, wanted past 1.0).
+  - **The founder's rule.** While a tool works on the sheet (`canvasDrawing`: any tool but Select and Pan, or an
+    earthwork tool), the open panels' edge tabs take no pointer. The separators' 6 px grips over the canvas
+    (`after:-left-1.5`, under the tab's right half) then stay on the panel's side. With Select or Pan both work as
+    before. On staging the four className hunks apply; the `canvasDrawing` line is placed by hand (its context differs).
+- **c28: not reproduced.** The api recomputes in the same transaction as the insert (`service.add_geometry` →
+  `recompute_item`), so "2 runs, 30 LF" means the second stored run was about 0 long. Rerun once; the fixture prints both
+  runs' vertices on failure.
+- **f2-s6: a fixture race (stale expectation), not a regression.** Its end-of-step screenshot shows the notice, the
+  email prefilled and the password empty and focused. React Router 7 (app 6499c1e, 2026-11-12) runs a navigation as a
+  transition, so the URL becomes /login before the page renders. The fixture reads the old Signup form. Fixture fix:
+  wait for the Login page before reading.
+- **f7-i / f7-g: not reproduced.** The fixture's own `sheetPoint` got a null box right after an in-app sheet switch.
+  Sampled per frame by hand, the sheet SVG stayed mounted and sized. Likely the same React Router 7 race. Fixture fix:
+  wait for the new sheet's canvas. Rerun once.
+- **c42: the fixture's pick point against decided snap behaviour (D-188).**
+  - The reference pane always snaps a stitch pick to printed lines (`ReferencePane.tsx` `pdfSnap={picking}`, app
+    c92426f).
+  - Pair 1 at (0.2, 0.2) is 0.7 px from the fixture PDF's frame (y 0.20202), so it snaps on page 3 and not on page 2.
+  - By hand: 0.93 % implied (1.00 % exact), and 0.90 % with pixel rounding.
+  - Fixture fix: pick pair 1 off the printed lines. The two panes' rule is D-1303 item 5 (next run).
+- **Not changed, D-1303 item 4.** With a paste ghost in hand, a click on an earthwork run selected the run. The press
+  is `EarthworkLayer`'s own (`onPointerDown` → `press`, older than D-1298), above the sheet SVG. The fix is prepared:
+  the page's layers and the dimensions take no pointer while a copy waits, and there is no move handle then. Fixture
+  f7-m. It goes in the later push.
+- **Smoke (MCP, throwaway, after the saves at 11:31:28 and 11:37:06 UTC), all pass:**
+  - Escape keeps the next run (f7-b's case: 2 runs, the tool down, no naming dialog);
+  - a gutter double-click on the tab's spot ends the run at x 1.027 and the panel stays open;
+  - with no tool, the tab still collapses and reopens the panel;
+  - a tap with no pointer move keeps its full length, and a second one joins at once;
+  - a run on a 90° turned sheet is stored in unturned page space;
+  - Copy → Paste on this sheet → Same item adds the run.
+- **Gates and QT.** Gates: lint 0 errors (4 known warnings), typecheck 0, build 0. Quantity table: exit 0, 0 FAIL
+  (344 rows; 30 pen rows right).
+
+## D-1303 — Founder answers of 2026-11-17 ~11:52 UTC on D-1301, D-1302 and the fixture findings
+
+1. **D-1301 depth guard.**
+   - Trenchless runs (jack and bore, HDD) are exempt from the 150 ft width check, with a depth limit of 100 ft.
+   - An open trench keeps 40 ft / 150 ft.
+   - The thin-line fallback for a pipe wider than a quarter of the page is accepted.
+   - "Check depth" is also its own Needs attention category, besides the Incomplete line.
+   - Built this run, with QT rows.
+2. **Staging (NOTE_FOR_ABDULLAH.md).** Both options go in the note:
+   - hotfix staging now with the two canvas files, plus the D-1302 Escape fix if it applies cleanly to 52ea0fc, if testers are active this week;
+   - otherwise, ship them at the next umer-dev → staging promotion.
+3. **c17.** Its setup gets a Site Feature, so the uncovered-ground shading is tested again (D-1159 counts ground outside features as covered).
+4. **Paste-placing click.** While a copy is waiting to be placed, a click always places it, even on an earthwork run (today EarthworkLayer's onPointerDown takes the press first). Built this run, with a fixture.
+5. **Stitch snap, next run** (FEATURES Planned, task file docs/tasks/stitch_snap_rule_tasks.md):
+   - both panes follow the Snap PDF toggle;
+   - while snap data is loading, a "snap loading" mark shows;
+   - a pick never differs silently by load timing.
+
+## D-1304 — Founder decision 2026-11-17 ~12:00 UTC: an early push of what is complete and checked (overrides D-851's two-pushes-a-day for this push)
+
+- **In the push:** D-1296, D-1297, D-1298, D-1301, D-1302 (only if its gates and quantity table pass) and the infra commits so far.
+- **Close-out:**
+  - Fold the two migrations (d1296a7c4e21, d1297c4a8e15) into one on d1289e5b3c40 and prove it.
+  - Gates, then the quantity table at 0 FAIL, then the client-name scan.
+  - Digest, purge and mirror.
+  - ONE push to umer-dev.
+- **Not in the push, but in a smaller follow-up push later today:**
+  - the paste-click fix (D-1303 item 4);
+  - the trenchless depth limit and the Check depth Needs attention category (D-1303 item 1);
+  - c17's Site Feature (D-1303 item 3);
+  - the final fixture rerun.
+- **NOTE_FOR_ABDULLAH.md:**
+  - everything in umer-dev since his last staging promotion;
+  - the migration revisions to run by hand, in order (the alembic head upgrade; the staging deploy has no migration step, and adding one is recommended);
+  - the D-1301 and D-1302 fixes;
+  - what testers will notice;
+  - that a smaller follow-up push comes later today.
+
+**Close-out (2026-11-17, 11:59–12:5x UTC, the close-out builder).**
+- **Remotes before the push:** `git fetch` in app, api, infra and market moved nothing; origin/umer-dev was app cf0073b, api d1afbd3, infra bf8f54a. origin/staging (app 52ea0fc, api e7b9149) and origin/main hold no commit umer-dev lacks except Abdullah's two merge commits of 2026-11-13 (app 96971a7, api cfc483e; market main has 4 of 2026-10). Reported only, not merged.
+- **Fold:** d1296a7c4e21 and d1297c4a8e15 → **`d1297f3b8a60`** (`d1297f3b8a60_d1296_to_d1297_in_one_revision.py`, revises the pushed head d1289e5b3c40; api 7ab2f0d). Each step's code as it was, under `_upgrade_d1296` / `_upgrade_d1297` and the downgrades in reverse. The data marks are kept verbatim (the audit actor `migration d1296a7c4e21 (D-1296)`, which the quantity table reads; the source mark `D-1296 `; release 48's title and `d1297`). A new id, not the last file's, so the bench went down and up (D-851).
+- **Proof (foldproof1304, 12:07–12:15, removed):** empty → head gives d1297f3b8a60 and the bench's schema, with only the 31 known CHECK prints (31 lines each side) and the restrict tokens differing; `alembic check` clean. A restored bench copy at d1297c4a8e15, down to d1289e5b3c40 on the two files, took out exactly 7 rows: the fire test's mat_default, mat_item and audit rows, release 48 and its 3 line-map rows. Up on the merged file gave the five touched tables back row for row. Down and up on the merged file gave the same rows again (0 diff lines each). The copy's schema equals a plain restore of the same dump.
+- **Bench and fx windows (UTC):**
+  - 12:16:24–12:16:50: the bench went down to d1289e5b3c40 on the two files.
+  - 12:16:50–12:19:56: the bench had no fire test row and no pit roles. A Calculate in that window would have shown the test as a missing price and the pit lines unmapped; the founder was quiet at every gate.
+  - 12:17:23–12:17:55: intelcost_fx went down the same way (the coordinator's go-ahead: after the files were gone, api-fx's start-up would otherwise have failed on an unknown revision).
+  - 12:18:29 and 12:18:47: the two old files were deleted (`git rm`). 12:19:13: the merged file was saved. `alembic/versions` is not watched, so the api did not reload (/docs 200 throughout). At no point did the files' head differ from both databases except by being ahead.
+  - 12:19:34–12:19:56: the bench went up to d1297f3b8a60, identical to before row for row except the version.
+  - 12:20:26–12:20:49: intelcost_fx went up the same way.
+  - `alembic current` reads d1297f3b8a60 on both. No service was restarted or recreated.
+- **Gates:** app lint 0 errors (the 4 known warnings), typecheck 0, build 0 (12:21–12:34, on c667b2f). Api ruff, ruff format --check, mypy, alembic check clean; one head, d1297f3b8a60 (12:24 and in the commit chain at 12:48).
+- **Quantity table (12:32:45–12:46:44, on the final trees):** exit 0, 0 FAIL. "344 rows, both engines equal to 1e-9 on 340; … 389 earthwork rows right; 343 utility rows right; … passed"; "D-1296 library row and api: 16 rows, all right".
+- **Client-name scan:** 0 hits in the 166 files changed since origin/umer-dev (app 39, api 7, infra 120) and in every unpushed commit message, against the denylist plus the two names.
+- **Purge:**
+  - `fx.d1302.20261117104504` was the only fx.* account from 2026-11-16/17. It was deleted with its one workspace (dry run first; 0 refused). Older fx.* accounts are kept (stitch test project, sections, equip 2026-11-04).
+  - BENCH DUPs: 0 to purge.
+  - `purge_trashed_projects` by hand in the worker (12:28:46–12:29:24): `{'retried': 0, 'retry_failed': 0, 'purged': 0, 'purge_failed': 0, 'would_purge': 0, 'files_cleared': 0, 'files_failed': 0}`. The one trashed project was deleted 2026-10-28, so it is due about 2026-11-27 (30 days).
+- **Digest:** 51d01fd7cf7c2297 at 11:59, 12:21 (after the switch-over), 12:29 (after the purges) and 12:49.
+- **Staging patches** (morning-report-2026-11-20/D1301/, outside git):
+  - `escape-hotfix-52ea0fc.patch` (c667b2f at 1 line of context; the `canvasDrawing` hunk's trailing context set by hand to staging's `const groupItem = …`).
+  - It and `canvas-hotfix-52ea0fc.patch` each pass `git apply --check` on a fresh export of 52ea0fc, and they apply together.
+  - Not built on staging.
+- **The push** carries app 10ba933, 6f77243, e3a5c1c, ad99b5a, c667b2f (D-1302 passed its gates and quantity table); api 4172bf8, 80fa2ee, 7ab2f0d; infra e6aea9e … d0af0f6 and this mirror commit. The uncommitted c17 fixture edit is left out. NOTE_FOR_ABDULLAH.md is rewritten (outside git).
