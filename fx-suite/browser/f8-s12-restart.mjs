@@ -12,7 +12,7 @@
 
 import { APP, SEEDED, apiCall, apiLogin, expect, firstWorkspace, quietFor, run } from "./lib/bench.mjs";
 import { A_NAME, APP_B, B_NAME, WINDOW_B, appSockets, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
-import { clickSheet, countItem, itemDetail, menuItem, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
+import { clickSheet, countItem, itemDetail, menuItem, notes, openSheet, removeItem, riverside, row, setMode } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -21,7 +21,9 @@ const token = world.token;
 const workspace = world.workspace;
 const r = world.r;
 const resume = (page, name) => page.locator("[data-quantity-panel]").getByRole("button", { name: `Resume ${name}`, exact: true }).first();
-const tags = async (page, name) => (await row(page, name).locator("[data-people] span").allTextContents()).sort();
+// D-1064 (app d5a6e6b): the names sit on the item's notes line under its row, one `[data-people]` span a name; was
+// `[data-people] span` inside the row.
+const tags = async (page, name) => (await notes(page, name).locator("[data-people]").allTextContents()).map((t) => t.trim()).sort();
 
 await run("f8-s12-restart", [
   {

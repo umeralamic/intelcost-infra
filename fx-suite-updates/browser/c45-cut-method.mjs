@@ -112,10 +112,12 @@ await run("c45-cut-method", [
       await waitFor(async () => (await g.items()).some((i) => i.earthwork_role === "undercut_replace"), "the undercut's lines", 30000, 500);
       await rows.getByLabel("Proof roll, Building Pad").check();
       await rows.getByLabel("Geotextile, Building Pad").check();
-      await rows.locator("tr", { hasText: "Building Pad" }).getByRole("button", { name: "Confirm" }).click();
+      // D-1074 (2026-11-08): the Undercuts table is a block per undercut (`[data-undercut-row]`), no longer a `tr`.
+      const pad = rows.locator("[data-undercut-row]", { hasText: "Building Pad" });
+      await pad.getByRole("button", { name: "Confirm" }).click();
       await waitFor(async () => (await g.items()).some((i) => i.earthwork_role === "proof_roll" && !i.earthwork_retired), "the proof roll", 30000, 500);
       await rows.getByLabel("Goes, Building Pad").selectOption("in_place");
-      await rows.locator("tr", { hasText: "Building Pad" }).getByRole("button", { name: "Confirm" }).click();
+      await pad.getByRole("button", { name: "Confirm" }).click(); // D-1074: the undercut's block
       await waitFor(async () => (await g.items()).some((i) => i.earthwork_role === "treat_in_place" && !i.earthwork_retired), "treat in place", 30000, 500);
       const left = (await g.items()).filter((i) => !i.earthwork_retired).map((i) => i.earthwork_role);
       expect(!left.includes("undercut_replace") && !left.includes("undercut") && !left.includes("proof_roll"), left.join());

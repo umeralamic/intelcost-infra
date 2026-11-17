@@ -131,7 +131,7 @@ await run("c15-reports", [
       await open(page);
       await report(page, "all");
       const want = { labor: 15000, material: 3000, equipment: 1000, subcontract: 1400, all: 20400 };
-      const columns = { labor: "Total Labor Cost", material: "Total Material Cost", equipment: "Total Equipment", subcontract: "Subcontract", all: "Item Cost" };
+      const columns = { labor: "Total Labor Cost", material: "Total Material Cost", equipment: "Total Equipment", subcontract: "Subcontract", all: "Total Item Cost" }; // D-1125: "Item Cost" is "Total Item Cost"
       const full = {};
       for (const [id, header] of Object.entries(columns)) {
         await reads(() => total(page, header), want[id], `full estimate TOTAL ${header}`);
@@ -219,7 +219,8 @@ await run("c15-reports", [
       for (const name of PICKED) await reads(async () => num(await cell(page, name, "Total Equipment")), 300, `${name} Total Equipment`);
       const after = await snapshot(page);
       const h = await heads(page);
-      const allowed = new Set(["Unit Equipment", "Total Equipment", "Item Cost", ""].map((x) => h.indexOf(x)).filter((i) => i >= 0));
+      // D-1125: "Item Cost" is "Total Item Cost", and its "Unit Item Cost" (Total Item Cost ÷ Total Qty) moves with it.
+      const allowed = new Set(["Unit Equipment", "Total Equipment", "Unit Item Cost", "Total Item Cost", ""].map((x) => h.indexOf(x)).filter((i) => i >= 0));
       for (const name of LEFT) expect(JSON.stringify(after[name]) === JSON.stringify(before[name]), `${name} changed: ${JSON.stringify(before[name])} → ${JSON.stringify(after[name])}`);
       for (const name of PICKED) {
         const moved = after[name].map((v, i) => (v !== before[name][i] ? i : -1)).filter((i) => i >= 0 && !allowed.has(i) && i > 0);

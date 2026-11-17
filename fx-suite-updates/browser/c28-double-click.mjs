@@ -101,8 +101,11 @@ await run("c28-double-click", [
         throw new Error(`the second double-click did not add a run to "Run": items ${JSON.stringify((await items()).map((i) => [i.name, i.geometries.length]))}`);
       });
       const second = runs(both).map((g) => g.vertices_json.length);
-      expect(second.every((n) => n === 2), `point counts ${second.join(", ")}`);
-      expect(near(both.effective_quantity, 50), `Run reads ${both.effective_quantity} LF, wanted 50`);
+      // Diagnostic only (D-1300 close-out: environment, rerun once): both runs' points in the message, so a second
+      // failure shows whether a click was lost; the expectations are unchanged.
+      const shapes = JSON.stringify(runs(both).map((g) => g.vertices_json));
+      expect(second.every((n) => n === 2), `point counts ${second.join(", ")}; runs ${shapes}`);
+      expect(near(both.effective_quantity, 50), `Run reads ${both.effective_quantity} LF, wanted 50; runs ${shapes}`);
       expect((await items()).length === 1, `${(await items()).length} items, wanted 1`);
       return `${firstLine}; next run at once: Run ${both.effective_quantity.toFixed(2)} LF over ${runs(both).length} runs, one item, no new name asked`;
     },

@@ -36,6 +36,9 @@ const made = {};
 const row = (page, sheet) => page.locator(`[data-sheet-row="${sheet.uuid}"]`);
 const toggle = (page, sheet) => page.locator(`[data-sheet-items-toggle="${sheet.uuid}"]`);
 const list = (page, sheet) => page.locator(`[data-sheet-items="${sheet.uuid}"]`);
+// D-1238 (app d22e4c1): the Sheets panel's box reads "Search…" (the Takeoff panel's too), so it is found by its name,
+// "Search sheets"; was getByPlaceholder("Search sheets…"). A selector, not an expected value.
+const searchBox = (page) => page.getByRole("textbox", { name: "Search sheets", exact: true });
 const itemRow = (page, sheet, uuid) => list(page, sheet).locator(`li[data-item-row="${uuid}"]`);
 const options = async (page, label) => {
   await page.getByRole("button", { name: "Panel options" }).click();
@@ -158,9 +161,9 @@ await run("f5-sheet-items", [
       await toggle(page, p1).waitFor();
 
       await options(page, "Hide Search Box");
-      await page.getByPlaceholder("Search sheets…").waitFor({ state: "hidden" });
+      await searchBox(page).waitFor({ state: "hidden" }); // D-1238: by its name, as above
       await options(page, "Hide Search Box");
-      await page.getByPlaceholder("Search sheets…").waitFor();
+      await searchBox(page).waitFor();
       return "Page > Takeoff opens both sheets and survives a reload · None folds the folders · Page closes the sheets · Hide Takeoffs drops the chevrons · Hide Search Box hides the box";
     },
   },
@@ -168,9 +171,9 @@ await run("f5-sheet-items", [
     title: "AC4: searching an item's name opens the sheet that holds it; the rows follow an api change live, no reload",
     run: async ({ page }) => {
       await open(page, p1);
-      await page.getByPlaceholder("Search sheets…").fill("door");
+      await searchBox(page).fill("door"); // D-1238: by its name, as above
       await itemRow(page, p2, made["Door D1"]).waitFor({ timeout: 5000 });
-      await page.getByPlaceholder("Search sheets…").fill("");
+      await searchBox(page).fill("");
       // Page 1's items may be showing already (the open sheet shows its own, D-83): unfold only if not.
       if ((await list(page, p1).count()) === 0) await toggle(page, p1).click();
       await itemRow(page, p1, made["Wall A"]).waitFor();

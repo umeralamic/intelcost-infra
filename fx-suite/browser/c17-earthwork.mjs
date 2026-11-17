@@ -82,7 +82,9 @@ await run("c17-earthwork", [
       for (const [item, summary] of want) {
         const row = page.locator(`li[data-item-row="${item.uuid}"] > [role=row]`).first();
         await row.waitFor({ timeout: 20000 });
-        const s = await text(row.locator("[data-item-qty]"));
+        // D-1064 (app d5a6e6b): the summary's count is the quantity column and its word the unit column beside it
+        // ("1" | "contour"); was "1 contour" in the quantity column alone.
+        const s = `${await text(row.locator("[data-item-qty]"))} ${await text(row.locator("[data-item-qty] + span"))}`;
         expect(summary.test(s), `${item.name}: "${s}"`);
         seen.push(`${item.name} ${s}`);
       }
@@ -186,8 +188,12 @@ await run("c17-earthwork", [
       const strip = find(/^Strip topsoil \(/);
       // Since D-1037 the cut that leaves the site is its own line, "Cut to export"; only cut to fill stays "Cut".
       // With no fill here all 550 CF leaves: the two names together carry it once.
-      const cuts = lines.filter((l) => l.name === "Cut" || l.name === "Cut to export");
-      const exported = lines.filter((l) => l.name === "Cut to export").reduce((t, l) => t + q(l), 0);
+      // D-1068 d: two exporting regions name their source, "Cut to export, Remainder" and "Cut to export, Building Pad";
+      // D-1248: a line made per sheet carries its sheet, " – G1". Was exactly "Cut" / "Cut to export". By hand the two
+      // still add to 550 CF: Remainder 900 SF × 0.5 ft = 16.67 CY, Building Pad 100 SF × 1.0 ft = 3.70 CY, 20.37 CY.
+      const cutName = /^Cut( to export)?(, [^–]+?)?( – .+)?$/;
+      const cuts = lines.filter((l) => cutName.test(l.name));
+      const exported = lines.filter((l) => /^Cut to export(, [^–]+?)?( – .+)?$/.test(l.name)).reduce((t, l) => t + q(l), 0);
       const undercut = find(/^Undercut excavation/);
       const spoil = find(/^Undercut spoil, haul off/);
       const replacement = find(/^Undercut replacement/);
@@ -240,27 +246,27 @@ await run("c17-earthwork", [
     },
   },
   {
-    title: "C-2, uncovered: Calculate says Coverage 50.0 % of the boundary, proposed grade missing 500 SF, cut 19 BCY; the shading is on the sheet, off and on again with its tick",
+    // D-1159 (app 66eb171, 2026-11-11): with "Grade only inside features" on (D-1151: unset, it is on when the proposed
+    // grade is spots only, as on C-2), the ground outside the features is proposed as existing and counts as covered;
+    // a gap is one on a feature's ground only. C-2 has no Site Feature, so its half without FG spots is no longer a
+    // gap: no Coverage row, no shading. Was: "Coverage 50.0 % of the boundary", "Proposed grade missing 500 SF", the
+    // shading on, off and on with its tick. With no feature the engine still counts the whole boundary as the
+    // Remainder (volume/index.ts, no role areas), so the cut is unchanged: the FG half, 500 SF × 1 ft = 500 CF = 18.52 CY.
+    title: "C-2, a spot grade with no Site Feature: no coverage gap (D-1159: outside the features counts as covered), no shading; cut 19 BCY",
     run: async ({ page }) => {
       const panel = await calculated(page, c2);
       const r = await storedResult(c2);
-      const cov = panel.locator("[data-volume-coverage]");
-      await cov.waitFor({ timeout: 10000 });
-      const said = await text(cov);
-      expect(/Coverage 50\.0 % of the boundary/.test(said), `coverage: "${said}" (stored ${r?.coverage})`);
-      const fg = await text(cov.locator('[data-coverage-row="fg"]'));
-      expect(/Proposed grade missing\s*500 SF/.test(fg), `the missing row: "${fg}"`);
       const cut = await text(panel.locator('[data-volume="cut"]'));
       expect(cut === "19" && near(r.cutCY, CY(500)), `cut ${cut}, stored ${r?.cutCY}`);
+      // D-1159: no Coverage row and no partial-coverage warning (was "Coverage 50.0 %", "Proposed grade missing 500 SF").
+      const rows = await panel.locator("[data-volume-coverage]").count();
+      const partial = (r?.warnings ?? []).filter((w) => w.code === "partial_coverage").map((w) => w.message);
+      expect(rows === 0 && partial.length === 0, `a coverage gap shown: ${rows} row(s); warnings ${JSON.stringify(partial)} (stored coverage ${r?.coverage})`);
+      // D-1159: nothing to shade (was the FG shading, off and on again with its tick).
+      const shaded = await page.locator('[data-coverage-layer] [data-coverage="fg"]').count();
+      expect(shaded === 0, `the sheet shades ${shaded} proposed-grade gap(s)`);
       const chip = (await panel.locator("[data-coverage-chip]").count()) ? await text(panel.locator("[data-coverage-chip]")) : "none";
-      const layer = page.locator('[data-coverage-layer] [data-coverage="fg"]');
-      await layer.waitFor({ state: "attached", timeout: 10000 });
-      const shade = cov.getByRole("checkbox");
-      await shade.uncheck();
-      await layer.waitFor({ state: "detached", timeout: 5000 });
-      await shade.check();
-      await layer.waitFor({ state: "attached", timeout: 5000 });
-      return `"${said.slice(0, 140)}"; warning chip ${chip}; cut ${cut}; shading on, off, on`;
+      return `no coverage row, no partial_coverage warning, no shading (stored coverage ${r?.coverage}); warning chip ${chip}; cut ${cut}`;
     },
   },
 ]);

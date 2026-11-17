@@ -61,12 +61,18 @@ export function row(page, name) {
   return page.locator("[data-quantity-panel] li[data-item-row] > [role=row]", { hasText: name }).first();
 }
 
-/** Open the row's full menu from its ⋮ (a right-click opens the quick menu, D-149) and
- *  return its item by label. */
+/** The item's notes line (D-1064, app d5a6e6b): who is working on it (one `[data-people]` span a name), "Delete
+ *  requested by …" (`[data-delete-requested]`) and the like sit on their own line under the row, a sibling of its
+ *  `[role=row]` inside the item's `li`, not in the row. */
+export function notes(page, name) {
+  return row(page, name).locator("xpath=../*[@data-item-notes]");
+}
+
+/** Open the row's full menu from its right-click and return its item by label. D-1238 (app d22e4c1): a row has no ⋮
+ *  any more; its right-click is the item's whole menu (the quick menu's entries added before the deletes). */
 export async function menuItem(page, name, label) {
   const at = row(page, name);
-  await at.hover();
-  await at.locator("[data-row-menu]").click();
+  await at.click({ button: "right" }); // D-1238: was the row's ⋮, `[data-row-menu]`
   const item = page.getByRole("menuitem", { name: new RegExp(`^${label}`) });
   await item.waitFor();
   return item;

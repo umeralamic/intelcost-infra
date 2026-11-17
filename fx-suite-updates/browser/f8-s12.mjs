@@ -34,7 +34,7 @@
 
 import { APP, SEEDED, apiLogin, expect, firstWorkspace, run } from "./lib/bench.mjs";
 import { A_NAME, APP_B, B_NAME, WINDOW_B, call, ensureWindowB, recordSockets, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
-import { countItem, menuItem, openSheet, removeItem, riverside, row, setMode, sheetPoint } from "./lib/takeoff.mjs";
+import { countItem, menuItem, notes, openSheet, removeItem, riverside, row, setMode, sheetPoint } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 // This run's own Riverside, under its own account, with Sara W. seated (lib/world.mjs).
@@ -81,8 +81,9 @@ async function resumeState(page, name) {
   return { disabled: await button.isDisabled(), text: (await button.getAttribute("title")) ?? "" };
 }
 
-/** The names shown on the item's row, "Sara W." and so on. */
-const tags = async (page, name) => (await row(page, name).locator("[data-people] span").allTextContents()).sort();
+/** The names shown for the item, "Sara W." and so on. D-1064 (app d5a6e6b): on the item's notes line under its row,
+ *  one `[data-people]` span a name; was `[data-people] span` inside the row. */
+const tags = async (page, name) => (await notes(page, name).locator("[data-people]").allTextContents()).map((t) => t.trim()).sort();
 
 /** Close an open menu, by Escape, else a click on the sheet's header bar. */
 async function closeMenu(page) {

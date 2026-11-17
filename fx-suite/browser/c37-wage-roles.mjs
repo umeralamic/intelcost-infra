@@ -64,7 +64,9 @@ await run("c37-wage-roles", [
       await page.getByRole("button", { name: "Continue", exact: true }).click();
       // W10 (D-1041): a Davis-Bacon project's WD loads on the Wage determination card, its panel below.
       const basis = page.getByRole("region", { name: "Wage basis" });
-      await basis.locator('[data-wage-card="wd"]').getByRole("button", { name: "Look up or upload", exact: true }).click();
+      // W14 (D-1087, app 19ff2ba): the WD card lists the county's WDs (WdPicker); upload and paste fold under its
+      // "Can't find it? Upload or paste manually" link (was the card's "Look up or upload" button).
+      await basis.locator('[data-wage-card="wd"] [data-wd-manual]').click(); // D-1087
       const data = page.getByRole("region", { name: "Wage determination" });
       await data.waitFor();
       await data.getByRole("tab", { name: "Look up or upload" }).click();

@@ -21,7 +21,7 @@
 import { APP, MAILHOG, apiCall, expect, run, seatedMember, serviceUrl, signInAs } from "./lib/bench.mjs";
 import { hostSql } from "./lib/host-sql.mjs";
 import { APP_B, WINDOW_B, secondWindow, signInAt, waitFor } from "./lib/realtime.mjs";
-import { openSheet, row } from "./lib/takeoff.mjs";
+import { notes, openSheet, row } from "./lib/takeoff.mjs";
 import { riversideWorld } from "./lib/world.mjs";
 
 const world = await riversideWorld();
@@ -141,18 +141,19 @@ await run("c40-delete-protection", [
         await row(b.page, "C40 wall").locator('[data-protected="ask"]').waitFor({ timeout: 10000 });
         for (const name of ["C40 wall", "C40 keep"]) {
           const at = row(b.page, name);
-          await at.hover();
-          await at.locator("[data-row-menu]").click();
+          // D-1238 (app d22e4c1): the row's ⋮ (`[data-row-menu]`) is gone; its right-click is the whole menu.
+          await at.click({ button: "right" });
           await b.page.getByRole("menuitem", { name: /^Delete/ }).first().click();
           const ask = b.page.getByRole("alertdialog").or(b.page.getByRole("dialog")).last();
           await ask.waitFor();
           const words = await ask.innerText();
           expect(words.includes("Marked by") && words.includes("Delete?"), `confirm: ${words}`);
           await ask.getByRole("button", { name: /^Delete$/ }).click();
-          await row(b.page, name).locator("[data-delete-requested]").waitFor({ timeout: 10000 });
+          // D-1064 (app d5a6e6b): "Delete requested by" is on the item's notes line under its row, not in the row.
+          await notes(b.page, name).locator("[data-delete-requested]").waitFor({ timeout: 10000 });
         }
         await openSheet(page, r);
-        await row(page, "C40 wall").locator("[data-delete-requested]").waitFor({ timeout: 10000 });
+        await notes(page, "C40 wall").locator("[data-delete-requested]").waitFor({ timeout: 10000 }); // D-1064, as above
         await page.locator("[data-notification-bell] > button").click();
         const actions = page.locator("[data-delete-request-actions]");
         await actions.first().waitFor();

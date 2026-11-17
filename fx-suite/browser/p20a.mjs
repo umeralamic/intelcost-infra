@@ -168,7 +168,12 @@ await run("p20a", [
       }, "the drawn run saved", 10000);
       const drawn = items.find((it) => it.uuid !== runItem.uuid);
       expect(drawn, "no item was drawn");
-      const detail = (await apiCall(token, "GET", `${takeoff}/item/${drawn.uuid}`)).body;
+      // D-1217 (app 079afc3): Create makes the item at once with no shape and the run joins it after, so wait for the
+      // item's shape, not only for the item.
+      const detail = await waitFor(async () => {
+        const d = (await apiCall(token, "GET", `${takeoff}/item/${drawn.uuid}`)).body;
+        return (d.geometries?.length ?? 0) > 0 ? d : null;
+      }, "the drawn run's shape saved", 10000);
       const [[x1, y1], [x2, y2]] = detail.geometries[0].vertices_json;
       expect(Math.abs(y1 - 0.3) < 0.01 && Math.abs(y2 - 0.3) < 0.01, `stored y ${y1.toFixed(4)}, ${y2.toFixed(4)}: not across the unturned page`);
       expect(Math.abs(detail.effective_quantity - 60) / 60 < 0.01, `drawn ${detail.effective_quantity} LF, not 60`);

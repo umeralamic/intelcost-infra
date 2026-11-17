@@ -74,13 +74,15 @@ await run("f6-d", [
     },
   },
   {
-    title: "S13: a new workspace finds legacy's trees seeded on first read (CSI 1,837 with F12's two earthwork nodes and D-992's two headings, UniFormat 635, NRM 1 401, NRM 2 361, CESMM 254), and reading again never doubles them",
+    title: "S13: a new workspace finds legacy's trees seeded on first read (CSI 1,876 with F12's two earthwork nodes, D-992's two headings and D-1279's 39 MasterFormat utility nodes, UniFormat 635, NRM 1 401, NRM 2 361, CESMM 254), and reading again never doubles them",
     run: async () => {
       const counts = {};
       for (const system of ["csi", "uniformat", "nrm1", "nrm2", "cesmm"]) counts[system] = (await nodes(system)).length;
       const again = (await nodes("csi")).length;
-      expect(counts.csi === 1837 && counts.uniformat === 635 && counts.nrm1 === 401 && counts.nrm2 === 361 && counts.cesmm === 254, JSON.stringify(counts));
-      expect(again === 1837, `csi read twice: ${again}`);
+      // D-1279 (Q12, Q21; api f4cc35a, 3c71b3e, cd9de6c): a new CSI tree is seeded with masterformat.NODES, the 39
+      // MasterFormat 2018 utility nodes ("33 05 00" … "21 11 00"), on its first read: 1,837 + 39 = 1,876 (was 1,837).
+      expect(counts.csi === 1876 && counts.uniformat === 635 && counts.nrm1 === 401 && counts.nrm2 === 361 && counts.cesmm === 254, JSON.stringify(counts));
+      expect(again === 1876, `csi read twice: ${again}`);
       const earthwork = (await nodes("csi")).filter((n) => ["31.04.07", "31.04.08"].includes(n.code)).length;
       expect(earthwork === 2, `F12's earthwork nodes: ${earthwork}`);
       const concrete = await byCode("csi", "03");
@@ -235,9 +237,8 @@ await run("f6-d", [
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}`);
       await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
       const row = page.locator("[data-quantity-panel] li[data-item-row] > [role=row]").filter({ has: page.getByText("Second wall", { exact: true }) });
-      // Properties is on the row's ⋮ menu; a right-click opens the quick menu (D-149).
-      await row.hover();
-      await page.locator("[data-quantity-panel]").getByRole("button", { name: "More actions for Second wall", exact: true }).first().click();
+      // D-1238 (app d22e4c1): the row's ⋮ ("More actions for Second wall") is gone; its right-click is the whole menu.
+      await row.click({ button: "right" });
       await page.getByRole("menuitem", { name: /^Properties/ }).click();
       const dialog = page.locator("[data-measurement-dialog]");
       await dialog.waitFor();

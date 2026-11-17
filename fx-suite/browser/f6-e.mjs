@@ -63,9 +63,14 @@ await run("f6-e", [
         await armMeasure(page, "Count", { name });
         await clickSheet(page, 0.62, 0.62);
         const made = await followed(b, async () => (await rowOf(b.page, name).count()) > 0, "B to list the new item");
+        // D-1176 (app 7931c3b): a double-click on an item's name opens its Properties, and the item is renamed in its
+        // Name field; was an in-place rename box, "Rename <name>" (D-706).
         await rowOf(page, name).getByText(name, { exact: true }).dblclick();
-        await page.getByLabel(`Rename ${name}`).fill(`${name} renamed`);
-        await page.getByLabel(`Rename ${name}`).press("Enter");
+        const properties = page.locator("[data-measurement-dialog]");
+        await properties.waitFor();
+        await properties.getByLabel("Name", { exact: true }).fill(`${name} renamed`);
+        await properties.getByRole("button", { name: "Save" }).click();
+        await properties.waitFor({ state: "detached" });
         const renamed = await followed(b, async () => (await rowOf(b.page, `${name} renamed`).count()) > 0, "B to show the new name");
         const item = (await call(token, "GET", `${r.takeoff}/item`)).body.find((i) => i.name === `${name} renamed`);
         await rowOf(page, `${name} renamed`).waitFor({ timeout: 10000 });
@@ -100,9 +105,11 @@ await run("f6-e", [
         // Resume on a count keeps placing markers on it: this tab holds it (D-32).
         await rowOf(page, name).click();
         await page.getByRole("button", { name: "Resume", exact: true }).click();
-        await waitFor(async () => (await rowOf(b.page, name).locator("[data-people]").textContent().catch(() => ""))?.includes(A_NAME), "B to see A's hold", 8000);
-        await rowOf(b.page, name).hover();
-        await rowOf(b.page, name).locator("[data-row-menu]").click();
+        // D-1064 (app d5a6e6b): who holds it is on the item's notes line under its row, not in the row.
+        const people = rowOf(b.page, name).locator("xpath=../*[@data-item-notes]").locator("[data-people]");
+        await waitFor(async () => (await people.allTextContents()).some((t) => t.includes(A_NAME)), "B to see A's hold", 8000);
+        // D-1238 (app d22e4c1): the row's ⋮ (`[data-row-menu]`) is gone; its right-click is the whole menu.
+        await rowOf(b.page, name).click({ button: "right" });
         const states = {};
         for (const label of ["Properties", "Create sub-item", "Duplicate"]) {
           const entry = b.page.getByRole("menuitem", { name: new RegExp(`^${label}`) });

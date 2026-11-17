@@ -5,9 +5,10 @@
 // The world: two pages of one throwaway project. The second is treated as plotted turned 20 degrees and at 80 %: the
 // points clicked on it are the first page's put through that turn and scale, so the fit has a known answer. (The page's
 // own drawing is not redrawn: the fit reads only the points.)
-//   1. Overlay > Compare sheets > Match points opens the second page beside the first; one pair and Enter says so.
+//   1. Overlay: the other sheet, Match points, As drawn (one dialog, D-1231) opens the second page beside the first; one
+//      pair and Enter says so.
 //   2. Three pairs: the counter, then the fit: scale 1.25, turn about 20 degrees the other way; Enter saves it.
-//   3. The compare view: its bar, the opacity saved, and Swap changes which sheet is green.
+//   3. The view bar: As drawn, the opacity saved, and the switch to Highlight changes saved (no Swap since D-1231).
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
 import { freshWorkspace, makeProject } from "./lib/f4.mjs";
@@ -48,10 +49,13 @@ await run("c49-overlay-match", [
       await page.getByRole("button", { name: "Overlay" }).first().click();
       const dialog = page.locator("[data-overlay-dialog]");
       await dialog.waitFor({ timeout: 10000 });
-      await page.getByRole("button", { name: "Next", exact: true }).click();
-      await page.getByRole("option").first().click();
-      await page.getByRole("button", { name: "Next", exact: true }).click();
-      await page.getByRole("button", { name: "Match points" }).click();
+      // D-1231 (app 03b0294): one dialog, no Next steps: 1. the other sheet, 2. "Already lined up" or "Match points",
+      // 3. "As drawn" or "Highlight changes"; its button reads "Match points" when that is the choice. As drawn here, so
+      // the bar has the Opacity slider (Highlight changes has Fade instead). Was Compare sheets > Next > Next > Match points.
+      await dialog.locator(`[data-overlay-sheet="${sheets[1].uuid}"]`).click(); // D-1231
+      await dialog.locator('[data-overlay-align="match"]').check(); // D-1231
+      await dialog.locator('[data-overlay-view-choice="drawn"]').check(); // D-1231
+      await page.locator("[data-overlay-show]").click(); // D-1231
       await page.locator("[data-overlay-match]").waitFor({ timeout: 10000 });
       await page.waitForFunction(() => document.querySelectorAll('svg[role="presentation"]').length >= 2, null, { timeout: 20000 });
       await page.waitForTimeout(1500);
@@ -72,19 +76,31 @@ await run("c49-overlay-match", [
       expect(Math.abs(scale - 1.25) < 0.05, `scale ${scale}`);
       expect(Math.abs(Math.abs(turn) - 20) < 2, `turn ${turn}`);
       await page.keyboard.press("Enter");
-      await waitFor(async () => ((await overlayRow())?.matrix ? true : null), "the overlay saved", 15000, 300);
+      // D-1231: the dialog saves the overlay at once on the page-on-page placement, so wait for the fit's matrix, not any.
+      await waitFor(async () => {
+        const at = (await overlayRow())?.matrix;
+        return at && Math.abs(Math.hypot(at.a, at.b) - scale) < 0.01 ? true : null;
+      }, "the overlay saved", 15000, 300);
       const m = (await overlayRow()).matrix;
       expect(Math.abs(Math.hypot(m.a, m.b) - scale) < 0.01, `stored ${JSON.stringify(m)}`);
       await page.keyboard.press("Enter");
-      const bar = page.locator("[data-overlay-compare]");
+      // D-1231: the view bar (`[data-overlay-view-bar]`, was the compare bar `[data-overlay-compare]`) and the As drawn
+      // layer (was `[data-overlay-compare-layer]`).
+      const bar = page.locator('[data-overlay-view-bar="drawn"]');
       await bar.waitFor({ timeout: 15000 });
-      expect(await page.locator("[data-overlay-compare-layer]").count() === 1, "no compare layer");
-      const was = (await overlayRow()).color;
-      await bar.getByLabel("Overlay opacity").fill("80");
+      expect(await page.locator('[data-overlay-layer] [data-overlay-view="drawn"]').count() === 1, "no As drawn layer"); // D-1231
+      // D-1231: Opacity is a slider saved on release (pointer or key up), 10-100 in steps of 5: Home (10 %), then 14 steps
+      // right, 80 %. Was a field filled with 80.
+      await bar.getByLabel("Overlay opacity").focus();
+      await page.keyboard.press("Home");
+      for (let i = 0; i < 14; i += 1) await page.keyboard.press("ArrowRight");
       await waitFor(async () => (Math.abs((await overlayRow()).opacity - 0.8) < 0.01 ? true : null), "the opacity saved", 10000, 300);
-      await page.locator("[data-overlay-swap]").click();
-      await waitFor(async () => ((await overlayRow()).color !== was ? true : null), "the swap saved", 10000, 300);
-      return `scale x${scale}, turn ${turn} degrees, saved; bar, layer, opacity 80, swapped`;
+      // D-1231: no Swap ("The open sheet is the old one, the overlaid sheet the new one; no Swap"); the bar's view switch
+      // is checked in its place: Highlight changes is saved on the overlay (its `view`, api ff5c3f8).
+      await bar.locator('[data-overlay-view-switch="changes"]').click();
+      await waitFor(async () => ((await overlayRow()).view === "changes" ? true : null), "the view saved", 10000, 300);
+      await page.locator('[data-overlay-view-bar="changes"]').waitFor({ timeout: 10000 });
+      return `scale x${scale}, turn ${turn} degrees, saved; bar, layer, opacity 80, view switched to Highlight changes`;
     },
   },
 ]);

@@ -125,8 +125,9 @@ await run("f5-s19", [
     run: async ({ page, context }) => {
       const b = await twoWindows(context, page);
       try {
-        const before = (await items()).length;
-        const rowsBefore = await b.page.locator("[data-quantity-panel] li button").count();
+        const beforeList = await items();
+        const before = beforeList.length;
+        const beforeUuids = new Set(beforeList.map((i) => i.uuid));
         await armMeasure(page, "Linear");
         await clickSheet(page, 0.2, 0.7);
         await sweepSheet(page, [0.2, 0.7], [0.35, 0.72], 900);
@@ -134,17 +135,23 @@ await run("f5-s19", [
         await sweepSheet(page, [0.35, 0.72], [0.5, 0.8], 900);
         const tag = b.page.locator("[data-draft-tag]", { hasText: A_NAME });
         await tag.waitFor({ timeout: 3000 });
-        const midway = (await items()).length;
-        expect(midway === before, `saved mid-shape: ${before} → ${midway} items`);
+        // D-1217 (app 079afc3): Create makes the item at once, listed at 0 with no shape, so mid-shape there is one new
+        // item and it holds nothing yet; the run joins it when A finishes (POST …/item/{uuid}/geometry).
+        const midwayList = await items();
+        const midway = midwayList.length;
+        const fresh = midwayList.filter((i) => !beforeUuids.has(i.uuid));
+        expect(midway === before + 1 && fresh.length === 1 && Number(fresh[0].effective_quantity) === 0, `saved mid-shape: ${before} → ${midway} items, new ${JSON.stringify(fresh.map((i) => [i.name, i.effective_quantity]))}`);
         const last = await sheetPoint(page, 0.5, 0.8);
-        const posted = page.waitForResponse((r) => r.request().method() === "POST" && /\/takeoff\/item$/.test(new URL(r.url()).pathname), { timeout: 10000 })
+        const posted = page.waitForResponse((r) => r.request().method() === "POST" && /\/takeoff\/item(\/[^/]+\/geometry)?$/.test(new URL(r.url()).pathname), { timeout: 10000 })
           .then((r) => ({ at: Date.now(), status: r.status(), timing: r.request().timing() }));
         const finished = Date.now();
         await page.mouse.dblclick(last.x, last.y);
-        // Measured side by side: the tag going and the saved row arriving are two events.
+        // Measured side by side: the tag going and the saved row arriving are two events. Since D-1217 B's panel lists
+        // the item from Create, so "the saved run" in B is its row's quantity leaving 0.
+        const bQty = b.page.locator(`[data-quantity-panel] li[data-item-row="${fresh[0].uuid}"] [data-item-qty]`).first();
         const [tagAt, shownAt, save] = await Promise.all([
           waitFor(async () => (await tag.count()) === 0, "B's tag to go", 3000, 20).then(() => Date.now() - finished),
-          waitFor(async () => (await b.page.locator("[data-quantity-panel] li button").count()) > rowsBefore, "B's panel to list the saved run", 3000, 20).then(() => Date.now() - finished),
+          waitFor(async () => (await bQty.count()) > 0 && Number(((await bQty.textContent()) ?? "").replace(/[^0-9.]/g, "")) > 0, "B's panel to show the saved run", 3000, 20).then(() => Date.now() - finished),
           posted,
         ]);
         expect(save.status === 201, `A's save answered ${save.status}`);

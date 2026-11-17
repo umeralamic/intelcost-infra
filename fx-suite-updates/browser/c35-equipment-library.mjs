@@ -12,7 +12,8 @@
 // hours typed on the items:
 // - EX-CRAWL-30T, one machine on a 10-hour day, 100 hr on "TEST E": by hand (the D-751 check) 2
 //   weeks $8,038.00 + overtime 20 hr $2,009.50 + fuel 100 × 4.5 × 6.276 = $2,824.20 + mob
-//   $3,600.00 = $16,471.70;
+//   $3,600.00 = $16,471.70; since D-1287 (B3, rental extras) + damage waiver 12 % of the rent (2 weeks and
+//   overtime, $10,047.50) $1,205.70 + environmental fee 1.3 % = $130.62, capped at $75.00 = $17,752.40;
 // - DT-OP-3AXLE operated, 100 hr on "TEST E": 100 × $106.14 = $10,614.00, mob in the hourly rate;
 // - CR-HYD-165T-OP operated, 6 + 4 hr on "TEST A" and "TEST B": missing its mob quote (both lines
 //   flagged); with a TEST quote of $6,000, 10 × $520 + $6,000 = $11,200.00;
@@ -93,17 +94,19 @@ await run("c35-equipment-library", [
     },
   },
   {
-    title: "the engine through Shared equipment: EX-CRAWL-30T at 100 hr on a 10-hour day = $16,471.70 (2 weeks, overtime, fuel, mob); DT-OP-3AXLE 100 hr operated = $10,614.00, mob in the hourly rate",
+    title: "the engine through Shared equipment: EX-CRAWL-30T at 100 hr on a 10-hour day = $17,752.40 (2 weeks, overtime, fuel, mob, waiver, fee; D-1287); DT-OP-3AXLE 100 hr operated = $10,614.00, mob in the hourly rate",
     run: async ({ page }) => {
       await openEstimate(page);
       const { dialog, rows } = await sharedList(page);
       const ex = rows.find((r) => r.startsWith("TEST excavator 30T"));
       const dt = rows.find((r) => r.startsWith("TEST tri-axle operated"));
-      expect(ex?.includes("$16,471.70"), `excavator: "${ex}"`);
+      // D-1287 (B3): $16,471.70 + damage waiver 12 % × $10,047.50 rent = $1,205.70 + environmental fee 1.3 % capped at $75.00.
+      expect(ex?.includes("$17,752.40"), `excavator: "${ex}"`);
       expect(dt?.includes("$10,614.00"), `tri-axle: "${dt}"`);
       await dialog.getByRole("button").filter({ hasText: "TEST excavator 30T" }).first().click();
       const exLine = (await dialog.locator("[data-library-priced]").innerText()).replace(/\s+/g, " ");
-      expect(/Rental 2 weeks/.test(exLine) && exLine.includes("$16,471.70"), `excavator breakdown: "${exLine}"`);
+      // D-1287 (B3): the waiver and the capped fee are on the machine's breakdown.
+      expect(/Rental 2 weeks/.test(exLine) && exLine.includes("$17,752.40") && exLine.includes("damage waiver 12 % $1,205.70") && exLine.includes("environmental fee $75.00 (capped)"), `excavator breakdown: "${exLine}"`);
       await dialog.getByRole("button").filter({ hasText: "TEST tri-axle operated" }).first().click();
       const dtLine = (await dialog.locator("[data-library-priced]").innerText()).replace(/\s+/g, " ");
       expect(dtLine.includes("mob/demob in the hourly rate"), `tri-axle breakdown: "${dtLine}"`);

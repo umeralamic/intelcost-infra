@@ -134,8 +134,10 @@ await run("f9-estimating", [
       expect(got.Slab === "1000 SF" && got.Footing === "100 LF" && got.Paint === "200 SF", `rows ${JSON.stringify(got)}`);
       const total = (await grid(page).locator("tfoot tr").first().textContent()) ?? "";
       expect(/TOTAL/.test(total), `TOTAL row: "${total}"`);
-      for (const name of ["Slab", "Footing", "Paint"]) expect((await money(page, name, "Item Cost")) === 0, `${name} Item Cost "${await cell(page, name, "Item Cost")}"`);
-      return `Slab ${got.Slab}, Footing ${got.Footing}, Paint ${got.Paint}; Item Cost $0 each`;
+      // D-1125: "Item Cost" is "Total Item Cost"; its new "Unit Item Cost" beside it is blank on a zero line.
+      for (const name of ["Slab", "Footing", "Paint"]) expect((await money(page, name, "Total Item Cost")) === 0, `${name} Total Item Cost "${await cell(page, name, "Total Item Cost")}"`);
+      for (const name of ["Slab", "Footing", "Paint"]) expect((await cell(page, name, "Unit Item Cost")) === "", `${name} Unit Item Cost "${await cell(page, name, "Unit Item Cost")}" on a zero line (D-1125: blank)`);
+      return `Slab ${got.Slab}, Footing ${got.Footing}, Paint ${got.Paint}; Total Item Cost $0 each, Unit Item Cost blank`;
     },
   },
   {
@@ -175,8 +177,11 @@ await run("f9-estimating", [
       await settles(page, "Footing", "Total Man Hours", 600);
       await rate(page, "Per Hour Wage", "Footing", 100);
       await settles(page, "Footing", "Total Labor Cost", 60000);
-      await settles(page, "Slab", "Item Cost", 40000);
-      await settles(page, "Footing", "Item Cost", 60000);
+      // D-1125: "Total Item Cost" (was "Item Cost"), and "Unit Item Cost" = Total Item Cost ÷ Qty: 40,000 / 1,000 SF, 60,000 / 100 LF.
+      await settles(page, "Slab", "Total Item Cost", 40000);
+      await settles(page, "Footing", "Total Item Cost", 60000);
+      await settles(page, "Slab", "Unit Item Cost", 40);
+      await settles(page, "Footing", "Unit Item Cost", 600);
       const total = await grid(page).locator("tfoot tr").first().locator("td").allTextContents();
       expect(total.some((t) => num(t) === 100000), `TOTAL row: ${total.join(" | ")}`);
       // The grid shows a rate as typed; the api is read once its save has landed.

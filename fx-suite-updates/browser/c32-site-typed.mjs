@@ -14,8 +14,17 @@
 //     D-954, and D-960; updated 2026-11-05, Q145, D-1014) → tier 1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T × 3;
 //   - FG 55: 45 ft = 22,500 BCY → 1,600/day (2,000 on the 10-hour day) → the same tier: Apply tier offered, its
 //     machines the same (both classes stay);
-//   - FG 10: 90 ft = 45,000 BCY → 2,500/day → tier 2,200–3,199: EX-CRAWL-50T × 1 + ADT-30T × 3
+//   - FG 10: 90 ft = 45,000 BCY → 2,000/day (2,500 on the 10-hour day) → tier 2,200–3,199: EX-CRAWL-50T × 1 + ADT-30T × 3
 //     (the excavator's class leaves).
+// D-1146 (api 6ceb325, 2026-11-10): A1's articulated trucks follow their cycle at the job's on-site haul (1,000 ft
+// unless set; blank ADT speeds 8 mph loaded, 12 empty; 1 min dump, 0.5 min queue; ADT-30T heaped 23.3 LCY; loaded at
+// the spread's pace, BCY × 1.25 LCY), not the tier's count: trucks = ceil(cycle / load). Travel 1,000 ft: 1.420 min
+// loaded + 0.947 empty; 2.367 + 1 + 0.5 = 3.867 min besides the load.
+//   - 1,200/day on 8 h: 187.5 LCY/h, load 23.3 × 60 / 187.5 = 7.456 min, cycle 11.323, 1.52 → 2 trucks;
+//   - 1,600/day: 250 LCY/h, load 5.592, cycle 9.459, 1.69 → 2;
+//   - 2,000/day: 312.5 LCY/h, load 4.474, cycle 8.341, 1.86 → 2.
+// So the spread shows ADT-30T × 2 in every state below; the tier file still lists × 3, and the classes (what Apply
+// tier carries or names) are unchanged.
 // The typed values (TEST, never a rate anyone quoted): the excavator's week $7,000, the truck's day
 // $900, typed in Estimating › Shared equipment as a person does.
 //
@@ -110,7 +119,7 @@ async function openSettings(page) {
 
 await run("c32-site-typed", [
   {
-    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,200/day in tier 1,400–2,199 with EX-CRAWL-30T × 1 + ADT-30T × 3",
+    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,200/day in tier 1,400–2,199 with EX-CRAWL-30T × 1 + ADT-30T × 2 (the trucks by their cycle, D-1146)",
     run: async ({ page }) => {
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["C-1"]);
       await g.boundary(sheet, rect(X0, Y0, 150, 90));
@@ -132,7 +141,8 @@ await run("c32-site-typed", [
       });
       expect(Math.round(a1.total_qty) === 9000, `A1 total ${a1.total_qty}, expected 9,000`);
       expect(a1.prod_per_day === 1200, `production ${a1.prod_per_day}, expected 1,200`);
-      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a1)}`);
+      // D-1146: the trucks follow their cycle at 1,000 ft, 2 at 1,200/day (was the tier's 3).
+      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines ${machines(a1)}`);
       return `cut line "${cut.name}"; A1 ${a1.total_qty} BCY, ${a1.prod_per_day}/day, tier ${a1.tier_label}: ${machines(a1)}; edited ${a1.user_edited}`;
     },
   },
@@ -177,7 +187,8 @@ await run("c32-site-typed", [
         const s = await site();
         return Math.round(s.total_qty) === 22500 ? s : null;
       }, "A1 at 22,500 BCY", 60000, 1000);
-      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines moved: ${machines(a1)}`);
+      // D-1146: as step 1 left it, 2 trucks by their cycle (was the tier's 3).
+      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines moved: ${machines(a1)}`);
       // Q145 (D-1014): the default moves within the same tier here, so no note names it; Apply tier is still offered.
       const row = await openSettings(page);
       const seen = (await row.innerText()).replace(/\s+/g, " ");
@@ -189,13 +200,14 @@ await run("c32-site-typed", [
     },
   },
   {
-    title: "Apply tier with the same classes (1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T × 3): both typed values carry, no notice",
+    title: "Apply tier with the same classes (1,400–2,199: EX-CRAWL-30T × 1 + ADT-30T, 2 by their cycle at 1,600/day, D-1146): both typed values carry, no notice",
     run: async ({ page }) => {
       const row = await openSettings(page);
       await row.getByRole("button", { name: "Apply tier" }).first().click();
       await page.getByText("Tier applied").first().waitFor({ timeout: 30000 });
       const a1 = await site();
-      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a1)}`);
+      // D-1146: 1,600/day, 2 trucks by their cycle (was the tier's 3).
+      expect(machines(a1) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines ${machines(a1)}`);
       expect(a1.prod_per_day === 1600, `production ${a1.prod_per_day}`);
       expect(!/were not used/.test(a1.note ?? ""), `a notice: ${a1.note}`);
       const rs = await resources();
@@ -206,7 +218,7 @@ await run("c32-site-typed", [
     },
   },
   {
-    title: "recalculated at FG 10 (45,000 BCY) and Apply tier (2,200–3,199: EX-CRAWL-50T × 1 + ADT-30T × 3): the truck carries, the notice names the excavator",
+    title: "recalculated at FG 10 (45,000 BCY) and Apply tier (2,200–3,199: EX-CRAWL-50T × 1 + ADT-30T, 2 by their cycle at 2,000/day, D-1146): the truck carries, the notice names the excavator",
     run: async ({ page }) => {
       const exName = (await resources()).find((r) => r.eq_class_key === "EX-CRAWL-30T").name;
       await setFg(10);
@@ -219,7 +231,8 @@ await run("c32-site-typed", [
       await row.getByRole("button", { name: "Apply tier" }).first().click();
       await page.getByText("Tier applied").first().waitFor({ timeout: 30000 });
       const a1 = await site();
-      expect(machines(a1) === "EX-CRAWL-50T×1 + ADT-30T×3", `machines ${machines(a1)}`);
+      // D-1146: 2,000/day, 2 trucks by their cycle (was the tier's 3).
+      expect(machines(a1) === "EX-CRAWL-50T×1 + ADT-30T×2", `machines ${machines(a1)}`);
       const rs = await resources();
       const ex50 = rs.find((r) => r.eq_class_key === "EX-CRAWL-50T");
       const adt = rs.find((r) => r.eq_class_key === "ADT-30T");

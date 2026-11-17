@@ -41,7 +41,7 @@ const rect = (x0, y0, wFt, hFt) => {
   return [[x0, y0], [x0 + dx, y0], [x0 + dx, y0 + dy], [x0, y0 + dy]];
 };
 const num = (s) => Number(String(s).replace(/[^0-9.-]/g, ""));
-const MONEY = ["Unit Man Hours", "Total Man Hours", "Per Hour Wage", "Unit Labor Cost", "Total Labor Cost", "Unit Equipment", "Total Equipment", "Unit Material Cost", "Total Material Cost", "Subcontract", "Item Cost"];
+const MONEY = ["Unit Man Hours", "Total Man Hours", "Per Hour Wage", "Unit Labor Cost", "Total Labor Cost", "Unit Equipment", "Total Equipment", "Unit Material Cost", "Total Material Cost", "Subcontract", "Unit Item Cost", "Total Item Cost"]; // D-1125: "Item Cost" is "Total Item Cost", "Unit Item Cost" beside it
 
 async function item(body) {
   const made = await apiCall(token, "POST", `${takeoff}/item`, { sheet_uuid: sheet.uuid, ...body });
@@ -139,7 +139,8 @@ await run("f9-exports", [
       for (const h of ["Wastage", "Qty with Wastage", ...MONEY]) expect(head.includes(h), `no "${h}" in ${head.join(" | ")}`);
       const slab = rows.find((r) => r.Assembly === "Slab");
       const footing = rows.find((r) => r.Assembly === "Footing");
-      expect(slab && num(slab["Total Material Cost"]) === 40000 && num(slab["Item Cost"]) === 40000, `Slab ${JSON.stringify(slab)}`);
+      // D-1125: "Total Item Cost" (was "Item Cost"); "Unit Item Cost" = 40,000 / 1,000 SF = 40.
+      expect(slab && num(slab["Total Material Cost"]) === 40000 && num(slab["Total Item Cost"]) === 40000 && Math.abs(num(slab["Unit Item Cost"]) - 40) < 0.005, `Slab ${JSON.stringify(slab)}`);
       expect(footing && num(footing["Total Labor Cost"]) === 60000 && num(footing["Total Man Hours"]) === 600, `Footing ${JSON.stringify(footing)}`);
       const bid = book.sheets.find((s) => s.name === "Bid Summary");
       expect(bid, `no Bid Summary sheet in ${sheets.join(", ")}`);

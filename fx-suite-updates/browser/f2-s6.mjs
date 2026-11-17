@@ -20,6 +20,14 @@ const signUpWith = async (page, email, query = "") => {
   await page.click('button[type="submit"]');
 };
 
+// The Login page itself, not just its URL. Since react-router-dom 7 (app commit 6499c1e, 2026-11-12; no D-number) a
+// navigation runs in startTransition: the URL reads /login while the Signup form is still on screen, so a read right
+// after waitForURL sees the old form. Wait for Login's own heading before reading its fields or text.
+const onLogin = async (page) => {
+  await page.waitForURL(/\/login/, { timeout: 20000 });
+  await page.getByRole("heading", { name: "Welcome back" }).waitFor({ timeout: 20000 });
+};
+
 // Its own account and workspace, never the seeded one.
 const { owner, workspace } = await ownWorkspace(`F2-S6 ${Date.now()}`);
 
@@ -44,7 +52,7 @@ await run("f2-s6", [
     title: "AC2 — the email is prefilled, the password is empty and focused",
     run: async ({ page }) => {
       await signUpWith(page, owner.email);
-      await page.waitForURL(/\/login/, { timeout: 20000 });
+      await onLogin(page); // RR7 (6499c1e, no D-number): the Login page rendered, not only its URL.
       expect(
         (await page.inputValue("#email")) === owner.email,
         "the email field was not prefilled",
@@ -59,7 +67,7 @@ await run("f2-s6", [
     title: "AC3 — the page says the address is registered and offers both ways forward",
     run: async ({ page }) => {
       await signUpWith(page, owner.email);
-      await page.waitForURL(/\/login/, { timeout: 20000 });
+      await onLogin(page); // RR7 (6499c1e, no D-number): the Login page rendered, not only its URL.
       const body = await page.textContent("body");
       expect(body.includes(REGISTERED_COPY), "the page does not say the address is registered");
       expect(body.includes("Sign in with your existing password"), "it does not offer signing in");
@@ -67,6 +75,8 @@ await run("f2-s6", [
       // The reset path has to work, not merely be mentioned.
       await page.click('a:has-text("reset it")');
       await page.waitForURL(/\/forgot-password/, { timeout: 20000 });
+      // RR7 (6499c1e, no D-number): Login has an #email too, so wait for the reset page's own heading first.
+      await page.getByRole("heading", { name: "Reset your password" }).waitFor({ timeout: 20000 });
       expect(await page.$("#email"), "the forgot-password form did not render");
       return "message shown; the reset link reaches /forgot-password";
     },
@@ -75,7 +85,8 @@ await run("f2-s6", [
     title: "AC4 — typing the password there signs in and reaches Home",
     run: async ({ page }) => {
       await signUpWith(page, owner.email);
-      await page.waitForURL(/\/login/, { timeout: 20000 });
+      // RR7 (6499c1e, no D-number): Signup has a #password too; fill Login's, once Login is on screen.
+      await onLogin(page);
       await page.fill("#password", owner.password);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20000 });
@@ -88,7 +99,7 @@ await run("f2-s6", [
     title: "AC5 — ?next= is carried across the hop and still honoured after signing in",
     run: async ({ page }) => {
       await signUpWith(page, owner.email, "?next=%2Fsettings%2Faccount");
-      await page.waitForURL(/\/login/, { timeout: 20000 });
+      await onLogin(page); // RR7 (6499c1e, no D-number): Login on screen before its #password is filled.
       const url = new URL(page.url());
       expect(
         url.searchParams.get("next") === "/settings/account",

@@ -32,7 +32,11 @@ const openDialog = async (page, sheet = one) => {
   await dialog.waitFor();
   return dialog;
 };
-const fillNames = async (sheet) => (await storedLines(g, sheet, waitFor)).filter((l) => /^(Fill|Haul-road)/.test(l.name) && l.effective_quantity > 0).map((l) => l.name).sort();
+// D-1248 (api earthwork/lines.py `_with_place`): a line made per sheet carries its sheet, "Cut – Page 1", "Fill, scraper
+// – Page 3"; the haul-road water is the project's and keeps its name. The names below are compared without the place
+// (was the bare "Cut", "Fill, scraper"); step 1 checks each Cut line carries a place.
+const bare = (name) => name.replace(/ – [^–]+$/, "");
+const fillNames = async (sheet) => (await storedLines(g, sheet, waitFor)).filter((l) => /^(Fill|Haul-road)/.test(l.name) && l.effective_quantity > 0).map((l) => bare(l.name)).sort();
 const applyMethod = async (page, method, haul) => {
   const dialog = await openDialog(page, three);
   await dialog.locator(`[data-cut-method-choice="${method}"]`).check();
@@ -45,7 +49,8 @@ const applyMethod = async (page, method, haul) => {
   await dialog.getByRole("button", { name: "Apply", exact: true }).click();
   await dialog.waitFor({ state: "detached" });
 };
-const cutNames = async (sheet) => (await storedLines(g, sheet, waitFor)).filter((l) => /^Cut/.test(l.name) && l.effective_quantity > 0).map((l) => l.name);
+const cutLines = async (sheet) => (await storedLines(g, sheet, waitFor)).filter((l) => /^Cut/.test(l.name) && l.effective_quantity > 0);
+const cutNames = async (sheet) => (await cutLines(sheet)).map((l) => bare(l.name)); // D-1248: without the place
 
 await run("c44-fill-by-delivery", [
   {
@@ -63,7 +68,10 @@ await run("c44-fill-by-delivery", [
         await calculate(page);
         await storedLines(g, sheet, waitFor);
       }
-      expect((await cutNames(one)).join() === "Cut" && (await cutNames(two)).join() === "Cut", "a Cut line on each");
+      // D-1248: "Cut – <sheet>" (was "Cut"): the base name as before, and each carries its sheet.
+      const cuts = [...(await cutLines(one)), ...(await cutLines(two))];
+      expect((await cutNames(one)).join() === "Cut" && (await cutNames(two)).join() === "Cut", `a Cut line on each: ${cuts.map((l) => l.name).join(" | ")}`);
+      expect(cuts.every((l) => / – \S/.test(l.name)), `a Cut line without its sheet: ${cuts.map((l) => l.name).join(" | ")}`);
       before = await g.results();
       return `${before.length} results`;
     },
@@ -134,14 +142,14 @@ await run("c44-fill-by-delivery", [
       await dialog.waitFor({ state: "detached" });
       await waitFor(async () => (await all()).length === 2, "two fill lines", 20000, 500);
       const lines = await all();
-      const push = lines.find((l) => l.name === "Fill, dozer push");
+      const push = lines.find((l) => bare(l.name) === "Fill, dozer push"); // D-1248: "Fill, dozer push – <sheet>"
       expect(Math.abs(push.effective_quantity - whole * 0.4) < 1e-6, `push ${push.effective_quantity} of ${whole}`);
       expect(Math.abs(lines.reduce((t, l) => t + l.effective_quantity, 0) - whole) < 1e-6, "the lines do not add to the fill");
       dialog = await openDialog(page, three);
       await dialog.getByRole("button", { name: "From the cut lines" }).click();
       await dialog.getByRole("button", { name: "Apply", exact: true }).click();
       await dialog.waitFor({ state: "detached" });
-      await waitFor(async () => (await all()).map((l) => l.name).join() === "Fill", "the trucks' fill alone", 20000, 500);
+      await waitFor(async () => (await all()).map((l) => bare(l.name)).join() === "Fill", "the trucks' fill alone", 20000, 500); // D-1248
       return `${whole.toFixed(2)} CCY, 40 % pushed; back to the cut lines`;
     },
   },
@@ -169,7 +177,8 @@ await run("c44-fill-by-delivery", [
       const row = rows.locator("[data-method-row$=':soil']").first();
       await row.locator("select").selectOption("scraper");
       await row.getByRole("button", { name: "Confirm" }).click();
-      await waitFor(async () => (await storedLines(g, one, waitFor)).some((l) => l.name === "Cut, scraper" && l.effective_quantity > 0), "the scraper's cut line", 20000, 500);
+      // D-1248: "Cut, scraper – <sheet>" (was "Cut, scraper").
+      await waitFor(async () => (await storedLines(g, one, waitFor)).some((l) => bare(l.name) === "Cut, scraper" && l.effective_quantity > 0), "the scraper's cut line", 20000, 500);
       await rows.getByText("Your choices applied").waitFor({ timeout: 15000 });
       return "suggested, not applied; Confirm moved the cut to the scraper";
     },

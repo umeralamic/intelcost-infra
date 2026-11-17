@@ -75,11 +75,10 @@ async function open(page, project) {
   await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
 }
 
-/** An entry of a row's full menu, its ⋮ (a right-click opens the quick menu, D-149). */
+/** An entry of a row's full menu: its right-click since D-1238 (app d22e4c1), the row's ⋮ being gone. */
 async function menu(page, name, entry) {
   const row = page.locator("[data-quantity-panel] li[data-item-row] > [role=row]").filter({ has: page.getByText(name, { exact: true }) }).first();
-  await row.hover();
-  await page.locator("[data-quantity-panel]").getByRole("button", { name: `More actions for ${name}`, exact: true }).first().click();
+  await row.click({ button: "right" }); // D-1238: was the ⋮ "More actions for <name>"
   await page.getByRole("menuitem", { name: entry }).click();
 }
 

@@ -57,7 +57,8 @@ async function drawRun(page, sheet, from, to) {
   await page.mouse.click(a.x, a.y);
   const b = await sheetPoint(page, ...to);
   await page.mouse.dblclick(b.x, b.y);
-  const made = await waitFor(async () => (await itemsOn(sheet)).find((i) => !before.has(i.uuid)), "the drawn run to be saved", 10000);
+  // D-1217 (app 079afc3): Create makes the item at once at 0 LF and the run joins it after, so wait for its quantity.
+  const made = await waitFor(async () => (await itemsOn(sheet)).find((i) => !before.has(i.uuid) && Number(i.effective_quantity) > 0), "the drawn run to be saved", 10000);
   return Number(made.effective_quantity);
 }
 

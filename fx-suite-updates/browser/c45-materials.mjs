@@ -127,7 +127,13 @@ await run("c45-materials", [
       await save([line("a", [pipe(), tape]), line("b", [pipe()])]);
       const first = await auto();
       // Priced from Q4 2026 (M10), its basis and grade shown, never its source.
-      expect(first.length === 3 && first.every((c) => c.price_source === "intelcost" && /^IntelCost price · Q4 2026 · grade [A-F]$/.test(c.price_basis) && !JSON.stringify(c).includes("source_internal")), JSON.stringify(first[0]));
+      expect(first.length === 3 && first.every((c) => c.price_source === "intelcost" && !JSON.stringify(c).includes("source_internal")), JSON.stringify(first[0]));
+      // D-1091 (order-size tiers): plastic pipe is tiered by the project's total, 2 × 100 LF × 1.02 = 204 LF, under
+      // Standard's 400 LF: Small, the bulk base $9.00 × 1.20 = $10.80, the tier in its basis. The tape is not tiered.
+      const pipes = first.filter((c) => c.auto_key.startsWith("pipe:"));
+      const tapes = first.filter((c) => c.auto_key === "warning_tape");
+      expect(pipes.length === 2 && pipes.every((c) => /^IntelCost price · Q4 2026 · grade [A-F] · Small order \(204 LF\) x 1\.20$/.test(c.price_basis) && Math.abs(Number(c.unit_price) - 10.8) < 0.005), `pipes: ${pipes.map((c) => `${c.unit_price} "${c.price_basis}"`).join("; ")}`);
+      expect(tapes.length === 1 && /^IntelCost price · Q4 2026 · grade [A-F]$/.test(tapes[0].price_basis), `tape: ${tapes.map((c) => `"${c.price_basis}"`).join("; ")}`);
       // Two lines of 100 LF in one bid: 204 LF, 15 joints of 14 ft.
       await openSheet(page, project, sheet, "estimating");
       await page.waitForFunction(() => /of 210 LF ordered in .* \(15 JT\)/.test(document.body.innerText), null, { timeout: 30000 });
@@ -323,7 +329,8 @@ await run("c45-materials", [
       const line = (region_id, name) => ({ region_id, role: "cut", name, quantity: 500, unit: "BCY" });
       const put = (lines) => apiCall(token, "PUT", `${g.earthwork}/result/${sheet.uuid}`, { version_key: `fx-${Date.now()}`, result: empty, lines });
       await put([line("a", "Cut A"), line("b", "Cut B")]);
-      const named = async (n) => (await g.items()).find((i) => i.name === n);
+      // D-1248: a line made once per sheet carries its sheet in its name, "Cut B – <sheet>" (the api's `_with_place`).
+      const named = async (n) => (await g.items()).find((i) => i.name.startsWith(`${n} – `));
       const comps = `${base}/${project.uuid}/estimate/components`;
       const b = await named("Cut B");
       const made = await apiCall(token, "POST", `${comps}`, { item_uuid: b.uuid, kind: "material", name: "My own", pricing_mode: "unit", qty_formula: "1", unit: "EA", unit_price: 5 });

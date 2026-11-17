@@ -124,8 +124,8 @@ await run("c05-calculated-lines", [
       const out = [];
       for (const line of lines) {
         const row = await rowOf(page, line);
-        await row.hover();
-        await page.getByRole("button", { name: `More actions for ${line.name}`, exact: true }).first().click();
+        // D-1238 (app d22e4c1): the row's ⋮ ("More actions for …") is gone; its right-click is the whole menu.
+        await row.click({ button: "right" });
         const menu = page.getByRole("menu").last();
         await menu.waitFor({ timeout: 5000 });
         const labels = (await menu.getByRole("menuitem").evaluateAll((els) => els.map((el) => el.getAttribute("aria-label") || (el.textContent ?? "").trim()))).filter(Boolean);

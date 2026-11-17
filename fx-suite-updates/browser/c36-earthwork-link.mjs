@@ -14,9 +14,20 @@
 // day (1,500 on the tiers' 10-hour day, D-960), the 1,400–2,199 tier: EX-CRAWL-30T × 1 + ADT-30T × 3.
 // - production typed 800/day (1,000 on the 10-hour day) → tier 900–1,399's machines (ADT-30T × 2);
 // - the trucks back to 3 → the spread matches its default tier exactly → that tier's production for this
-//   quantity, 1,200/day ("Production set to 1,200 BCY/day: the spread matches the … tier.");
+//   quantity, 1,200/day ("Production set to 1,200.0 BCY/day: the spread matches the … tier.", D-1122);
 // - the pacing excavator to 2 → no tier matches → production scales, 1,200 × 2 = 2,400/day;
 // - Apply tier → the default 1,200/day and its tier's machines, not edited.
+// Updated 2026-11-17 (D-1300 close-out):
+// - D-1146 (api 6ceb325): A1's trucks follow their cycle at the 1,000 ft on-site haul, not the tier's count: at
+//   1,200/day on the 8-hour day, 187.5 LCY/h, one 23.3 LCY load 7.456 min, cycle 7.456 + 1.420 + 0.947 + 1 + 0.5 =
+//   11.323 min, ceil(1.52) = 2 trucks (was the tier's 3). A typed count stays (step 4 types 3).
+// - D-1122 (api e2993e5): the production notes show one decimal ("1,200.0 BCY/day").
+// - The starter (step 1): release 42 (D-1091) put the pipe crews A12, A18, A19, A28, A32 on kits and production by
+//   run length, releases 43/44 (D-1105, D-1112) the pressure crews A18, A19 on their own: A12 4 tiers → 3 (its 8
+//   optional machines gone), A32 4 → 3, defaults 3/3/3/3/4 → 6 each; release 45/46 (D-1275) added A96, the large
+//   storm RCP crew (1 tier, 6 defaults). So 105 → 106 activities, 216 − 2 + 1 = 215 tiers, 226 + 14 + 6 = 246
+//   defaults, 30 − 8 = 22 optional machines (counted on a release-40 workspace copy and a release-48 one in the fx
+//   database, read only).
 //
 // Left for the founder's eye: the Earthwork production page's layout.
 
@@ -86,7 +97,7 @@ async function commit(page, row, label, value, settled) {
 
 await run("c36-earthwork-link", [
   {
-    title: "the starter a new workspace takes up (D-751; release 39 since D-1043, A95 debris load and haul): 105 activities, 216 tiers, 226 defaults; A21, A58 and A59 priced on their own line (D-922, D-958); every activity on the project's work day (D-960); 30 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
+    title: "the starter a new workspace takes up (D-751; releases 42–46 since D-1091, D-1105, D-1112, D-1275, A96 the large storm RCP crew): 106 activities, 215 tiers, 246 defaults; A21, A58 and A59 priced on their own line (D-922, D-958); every activity on the project's work day (D-960); 22 optional machines; Foreman, Grade checker and Pipelayer rows as D-753",
     run: async ({ page }) => {
       const cfg = (await apiCall(token, "GET", `${wlib}/earthwork-production`)).body;
       const acts = cfg.activities.filter((a) => a.national_key);
@@ -96,14 +107,17 @@ await run("c36-earthwork-link", [
       const crew = tiers.flatMap((t) => t.crew);
       const foremen = crew.filter((c) => /^Foreman/i.test(c.role));
       const rated = crew.filter((c) => /^(Grade checker|Pipelayer)/i.test(c.role));
-      expect(acts.length === 105, `activities ${acts.length}`);
-      expect(tiers.length === 216, `tiers ${tiers.length}`);
-      expect(defaults === 226, `defaults ${defaults}`);
+      // D-1275 (release 45): A96 added, 105 → 106. D-1091/D-1105/D-1112 (releases 42–44) and D-1275: the pipe crews'
+      // tiers 216 → 215 and defaults 226 → 246 (see the header).
+      expect(acts.length === 106, `activities ${acts.length}`);
+      expect(tiers.length === 215, `tiers ${tiers.length}`);
+      expect(defaults === 246, `defaults ${defaults}`);
       // A21 (a reclaimer serves the one treated area, D-922) and the trees and stumps by diameter (D-958) are priced
       // on their own lines; no activity carries its own day: each follows the project's (D-960).
       const lines = ["A21", "A58", "A59"];
       expect(acts.every((a) => (a.price_as ?? "site") === (lines.includes(a.national_key) ? "line" : "site") && a.hours_per_day == null), `price_as / hours: ${acts.map((a) => `${a.national_key}:${a.price_as}/${a.hours_per_day}`).join(" ")}`);
-      expect(optional === 30, `optional machines ${optional}`);
+      // D-1091 (release 42): A12's 8 optional machines left with its old kit, 30 → 22.
+      expect(optional === 22, `optional machines ${optional}`);
       expect(foremen.length > 0 && foremen.every((c) => c.foreman), `foreman rows ${foremen.length}, all marked ${foremen.every((c) => c.foreman)}`);
       expect(rated.length > 0 && rated.every((c) => c.rate_as), `grade checker / pipelayer rows ${rated.length}, all rate_as ${rated.every((c) => c.rate_as)}`);
       await signIn(page);
@@ -111,12 +125,12 @@ await run("c36-earthwork-link", [
       await page.getByRole("tab", { name: "Earthwork production" }).click();
       await page.locator("[data-activity]").first().waitFor({ timeout: 30000 });
       const badges = await page.locator("[data-starter]").count();
-      expect(badges === 105, `Starter badges on screen ${badges}`);
-      return `105 activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); 105 Starter badges`;
+      expect(badges === 106, `Starter badges on screen ${badges}`); // D-1275: A96, 105 → 106
+      return `${acts.length} activities, ${tiers.length} tiers, ${defaults} defaults, ${optional} optional, ${foremen.length} foreman rows, ${rated.length} grade checker/pipelayer rows (rate_as ${[...new Set(rated.map((c) => c.rate_as))].join(", ")}); ${badges} Starter badges`;
     },
   },
   {
-    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,200/day in tier 1,400–2,199 (EX-CRAWL-30T × 1 + ADT-30T × 3)",
+    title: "setup: the pad at FG 82 calculates 9,000 BCY of cut; A1's site spread is 1,200/day in tier 1,400–2,199 (EX-CRAWL-30T × 1 + ADT-30T × 2, the trucks by their cycle, D-1146)",
     run: async ({ page }) => {
       [sheet] = await gradingSheets(page, token, base, workspace, project, ["C-1"]);
       await g.boundary(sheet, rect(X0, Y0, 150, 90));
@@ -133,7 +147,8 @@ await run("c36-earthwork-link", [
         const s = await site();
         return s?.machines.length ? s : null;
       }, "A1's site spread", 60000, 1000);
-      expect(a.prod_per_day === 1200 && machines(a) === "EX-CRAWL-30T×1 + ADT-30T×3", `A1 ${a.prod_per_day}/day: ${machines(a)}`);
+      // D-1146: 2 trucks by their cycle at 1,200/day (was the tier's 3).
+      expect(a.prod_per_day === 1200 && machines(a) === "EX-CRAWL-30T×1 + ADT-30T×2", `A1 ${a.prod_per_day}/day: ${machines(a)}`);
       return `A1 ${a.total_qty} BCY, ${a.prod_per_day}/day, tier ${a.tier_label}: ${machines(a)}`;
     },
   },
@@ -152,7 +167,8 @@ await run("c36-earthwork-link", [
       const row = await settingsRow(page);
       const truck = (await site()).machines.find((m) => m.eq_class_key === "ADT-30T");
       const a = await commit(page, row, `${truck.name} count`, 3, (s) => s.prod_per_day === 1200);
-      expect(/^Production set to 1,200 BCY\/day: the spread matches the .+ tier\.$/.test(a.note ?? ""), `note: ${a.note}`);
+      // D-1122: the note's production at one decimal (was "1,200 BCY/day").
+      expect(/^Production set to 1,200\.0 BCY\/day: the spread matches the .+ tier\.$/.test(a.note ?? ""), `note: ${a.note}`);
       return `${a.prod_per_day}/day; note "${a.note}"`;
     },
   },
@@ -163,7 +179,8 @@ await run("c36-earthwork-link", [
       const ex = (await site()).machines.find((m) => m.paces);
       expect(ex?.eq_class_key === "EX-CRAWL-30T", `pacing machine ${JSON.stringify(ex)}`);
       const a = await commit(page, row, `${ex.name} count`, 2, (s) => s.prod_per_day === 2400);
-      expect(/^Production updated to 2,400 BCY\/day \(2 .* instead of 1\)\.$/.test(a.note ?? ""), `note: ${a.note}`);
+      // D-1122: the note's production at one decimal (was "2,400 BCY/day").
+      expect(/^Production updated to 2,400\.0 BCY\/day \(2 .* instead of 1\)\.$/.test(a.note ?? ""), `note: ${a.note}`);
       return `${a.prod_per_day}/day; ${machines(a)}; note "${a.note}"`;
     },
   },
@@ -176,7 +193,9 @@ await run("c36-earthwork-link", [
         const s = await site();
         return s.prod_per_day === 1200 && !s.user_edited ? s : null;
       }, "Apply tier", 30000, 500);
-      expect(machines(a) === "EX-CRAWL-30T×1 + ADT-30T×3", `machines ${machines(a)}`);
+      // D-1146: Apply tier clears step 4's typed count; the trucks follow their cycle again, 2 at 1,200/day (was the
+      // tier's 3). Apply tier itself resets: the wait above (1,200/day, not edited) passed on 2026-11-17.
+      expect(machines(a) === "EX-CRAWL-30T×1 + ADT-30T×2", `machines ${machines(a)}`);
       return `${a.prod_per_day}/day, tier ${a.tier_label}: ${machines(a)}, edited ${a.user_edited}`;
     },
   },

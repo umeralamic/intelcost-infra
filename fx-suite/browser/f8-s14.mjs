@@ -43,7 +43,9 @@ const LABELS = {
   show_names: { hover: "On hover", always: "Always", off: "Off" },
   show_cursors: { false: "Off", true: "On" },
   others_work: { fade: "Fade others", all: "All", only_mine: "Only mine" },
-  colour_by: { item: "Item colour", person: "Each colleague's own colour" },
+  // D-1233 (app 1ee109d): "others", never "colleague": the option reads "Each person's own colour" (was "Each
+  // colleague's own colour"; the radio was not found, so step 1's PATCH wait timed out and the run crashed).
+  colour_by: { item: "Item colour", person: "Each person's own colour" },
   live_line: { solid: "Solid", dashed: "Dashed" },
 };
 

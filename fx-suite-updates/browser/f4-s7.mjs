@@ -92,10 +92,20 @@ await run("f4-s7", [
         .getByRole("dialog", { name: "New project" })
         .locator("label")
         .evaluateAll((els) => els.map((el) => el.textContent?.trim()).filter(Boolean));
+      // D-1220 (app 079afc3): New project no longer asks Trade Scope (Edit Project still sets it); it asks what Edit
+      // asks: Currency and Measurement system (each "Workspace default" until picked), then Scope of Work and Project
+      // Notes. Was the same list ending "Trade Scope".
       const want = ["Project name", "Client", "Bid due", "Plans Dated", "Assigned To", "Project type",
-        "Construction Type", "Wage Determination", "Labor Pricing Basis", "Trade Scope"];
+        "Construction Type", "Wage Determination", "Labor Pricing Basis"];
       const seen = labels.filter((l) => want.includes(l));
       expect(seen.join("|") === want.join("|"), `fields: ${seen.join(", ")}`);
+      const dialog = page.getByRole("dialog", { name: "New project" });
+      expect(!labels.includes("Trade Scope"), `Trade Scope is asked: ${labels.join(", ")}`); // D-1220
+      // D-1220: Currency, Measurement system, Scope of Work, Project Notes, after the fields above, in that order.
+      const extra = await dialog
+        .locator("[data-edit-locale] select, [data-edit-locale] [aria-label], [data-edit-text] h3")
+        .evaluateAll((els) => [...new Set(els.map((el) => el.getAttribute("aria-label") || el.textContent?.trim()))].filter(Boolean));
+      expect(extra.join("|") === "Currency|Measurement system|Scope of Work|Project Notes", `the fields D-1220 adds: ${extra.join(", ")}`);
       expect((await page.getByText("Show Map").count()) === 0, "Show Map is offered");
       const next = page.getByRole("button", { name: "Next" });
       expect(await next.isDisabled(), "Next enabled with no name");

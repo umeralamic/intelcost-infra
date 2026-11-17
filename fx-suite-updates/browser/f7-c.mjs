@@ -24,7 +24,12 @@ let sheet;
 
 const bar = (page) => page.locator("[data-draw-modifiers]");
 const byName = async (name) => (await apiCall(token, "GET", `${takeoff}/item/detail`)).body.find((i) => i.name === name);
-const made = (name) => waitFor(() => byName(name), name, 10000);
+// D-1217 (app 079afc3): Create makes the item at once with no shape and the first shape joins it after, so an item is
+// "made" once it has its shape, not once its name is listed.
+const made = (name) => waitFor(async () => {
+  const item = await byName(name);
+  return item && (item.geometries?.length ?? 0) > 0 ? item : null;
+}, `${name} with its shape`, 10000);
 
 async function open(page) {
   await signInAs(page, (await fixtureOwner()).email);

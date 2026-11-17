@@ -83,22 +83,29 @@ await run("f7-d", [
       await click(page, 0.2, 0.2);
       await waitFor(async () => (await selectedSections(page)).length === 1, "one section marked", 5000);
       const marked = await selectedSections(page);
-      const row = await page.evaluate(() => document.querySelector("[data-quantity-panel] li[data-item-row] > [role=row].bg-row-selected [data-item-name]")?.textContent);
+      // D-1247 (app 1897c36): a selected row is a pale blue tint (`bg-[hsl(var(--row-picked))]`), no longer the
+      // `bg-row-selected` class; it is read by the row's own `data-selected="1"`.
+      const row = await page.evaluate(() => document.querySelector('[data-quantity-panel] li[data-item-row] > [role=row][data-selected="1"] [data-item-name]')?.textContent);
       const count = await handles(page);
       expect(marked[0] === middle.uuid && row === "Walls" && count === 2, `marked ${marked}, row ${row}, handles ${count}`);
       return `the middle section alone, the Walls row, ${count} handles`;
     },
   },
   {
-    title: "S12 AC3: inside the deduct, the first click selects Slab's section, the second the deduct, the third the section again",
+    // D-1298 (app e3a5c1c, decision 1): a click inside a deducted hole goes to whatever lies beneath it, else selects the
+    // hole (the deduct) itself, never the hole's owner; this narrows D-61's section → deduct → section cycle. Nothing lies
+    // under Slab's hole here, so a click in it selects the deduct each time, and Slab's section is reached outside it.
+    // Was: in the hole, section → deduct → section.
+    title: "S12 AC3, D-1298: inside the deduct a click selects the deduct, never Slab's section; outside it the section; inside again the deduct",
     run: async ({ page }) => {
       await open(page);
       const slab = await detail(ids.slab);
       const [section, hole] = [slab.geometries.find((g) => g.role !== "subtract").uuid, slab.geometries.find((g) => g.role === "subtract").uuid];
       const steps = [];
+      const at = [[0.7, 0.7], [0.55, 0.55], [0.7, 0.7]]; // D-1298: in the hole, on the section outside it, in the hole
       for (let i = 0; i < 3; i++) {
         const before = (await selectedSections(page))[0] ?? null;
-        await click(page, 0.7, 0.7);
+        await click(page, ...at[i]);
         // Each click changes the marked section: wait for the change, not a clock.
         const now = await waitFor(async () => {
           const marked = await selectedSections(page);
@@ -106,8 +113,9 @@ await run("f7-d", [
         }, `click ${i + 1} to change the selection`, 5000);
         steps.push(now);
       }
-      expect(steps[0] === section && steps[1] === hole && steps[2] === section, `cycle ${steps.map((s) => (s === section ? "section" : s === hole ? "deduct" : s)).join(" → ")}`);
-      return "section → deduct → section";
+      // D-1298: deduct (in the hole) → section (outside it) → deduct (in the hole again).
+      expect(steps[0] === hole && steps[1] === section && steps[2] === hole, `clicks ${steps.map((s) => (s === section ? "section" : s === hole ? "deduct" : s)).join(" → ")}`);
+      return "in the hole: deduct → outside it: section → in the hole: deduct";
     },
   },
   {
@@ -123,12 +131,21 @@ await run("f7-d", [
       await waitFor(async () => (await selectedSections(page)).length === 1, "another section selected", 5000);
       await page.keyboard.press("Delete");
       const one = await waitFor(async () => { const w = await detail(ids.walls); return w.geometries.length === 1 ? w : null; }, "Walls down to one", 10000);
+      // D-1217 (app 079afc3, "a count's picked marks"): a click on a mark selects Doors with that mark picked, and Delete
+      // takes only the picked mark, never its siblings. Was: Delete took all three marks.
       await click(page, 0.25, 0.7);
+      await page.keyboard.press("Delete");
+      const marks = await waitFor(async () => { const d = await detail(ids.doors); return d.geometries?.length === 2 ? d : null; }, "Doors down to two marks", 10000); // D-1217
+      expect(marks.geometries.every((g) => g.vertices_json[0][0] !== 0.25), `the wrong mark went: ${JSON.stringify(marks.geometries.map((g) => g.vertices_json))}`); // D-1217
+      // D-1217: with no mark picked (Doors chosen from the panel), Delete takes every mark on this sheet, as F7-S17 did.
+      const doorsRow = page.locator("[data-quantity-panel] li[data-item-row] > [role=row]").filter({ has: page.getByText("Doors", { exact: true }) }).first();
+      await doorsRow.click();
+      await page.locator('[data-quantity-panel] li[data-item-row] > [role=row][data-selected="1"]').filter({ has: page.getByText("Doors", { exact: true }) }).waitFor({ timeout: 5000 });
       await page.keyboard.press("Delete");
       const gone = await waitFor(async () => (await apiCall(token, "GET", `${takeoff}/item/${ids.doors}`)).status === 404, "Doors gone", 10000);
       expect(dialogs === 0, "a confirm appeared");
       expect(two.geometries.every((g) => g.vertices_json[0][1] !== 0.2) && one.geometries[0].vertices_json[0][1] === 0.1, "the wrong section went");
-      return `Delete took the middle section (no confirm), Delete again the third, Delete on Doors its three marks (the item went with its last mark: ${gone})`;
+      return `Delete took the middle section (no confirm), Delete again the third; on a clicked Doors mark that mark alone (D-1217), and with Doors chosen from the panel its other marks (the item went with its last mark: ${gone})`;
     },
   },
 ]);

@@ -60,18 +60,18 @@ async function run2(page, x1, x2, y) {
   await page.mouse.dblclick(b.x, b.y);
 }
 
-/** The newest item named like `prefix`, once the api has it. */
-async function made(prefix, before) {
-  return waitFor(async () => (await items()).find((i) => !before.has(i.uuid) && i.name.startsWith(prefix)), `item "${prefix}"`, 10000);
+/** The newest item named like `prefix`, once the api has it. With `drawn`, once its shape has joined it too: since
+ *  D-1217 (app 079afc3) Create makes the item at once at 0, and the first shape joins it after. */
+async function made(prefix, before, { drawn = false } = {}) {
+  return waitFor(async () => (await items()).find((i) => !before.has(i.uuid) && i.name.startsWith(prefix) && (!drawn || i.effective_quantity > 0)), `item "${prefix}"${drawn ? " with its shape" : ""}`, 10000);
 }
 
 const known = async () => new Set((await items()).map((i) => i.uuid));
 
-/** Open an item's Properties from its row's ⋮ menu (a right-click opens the quick menu, D-149). */
+/** Open an item's Properties from its row's right-click, its whole menu since D-1238 (app d22e4c1). */
 async function properties(page, name) {
   const row = panelRow(page, name);
-  await row.hover();
-  await page.locator("[data-quantity-panel]").getByRole("button", { name: `More actions for ${name}`, exact: true }).first().click();
+  await row.click({ button: "right" }); // D-1238: was the row's ⋮ "More actions for <name>"
   await page.getByRole("menuitem", { name: /^Properties/ }).click();
   await form(page).waitFor();
 }
@@ -226,7 +226,8 @@ await run("f6-a", [
       await form(page).waitFor({ state: "detached" });
       const p = await sheetPoint(page, 0.5, 0.5);
       await page.mouse.click(p.x, p.y);
-      const item = await made("Doors", before);
+      // D-1217: the item exists from Create at 0 EA; wait for the mark to join it.
+      const item = await made("Doors", before, { drawn: true });
       const d = await detail(item.uuid);
       expect(d.color.toLowerCase() === picked, `colour ${d.color}, picked ${picked}`);
       expect(Math.abs(d.opacity - 0.5) < 1e-6, `opacity ${d.opacity}`);
@@ -304,7 +305,8 @@ await run("f6-a", [
       await form(page).getByRole("button", { name: "Create" }).click();
       await form(page).waitFor({ state: "detached" });
       await run2(page, 0.1, across(0.1, 40), 0.8);
-      const item = await made("Wall paint", before);
+      // D-1217: the item exists from Create at 0 SF; wait for the run to join it.
+      const item = await made("Wall paint", before, { drawn: true });
       expect(Math.abs(item.effective_quantity - 300) < 1.5 && item.unit === "SF", `${item.effective_quantity} ${item.unit}`);
       expect(/^Wall paint \(40\.0 LF, 7'-6"H\)$/.test(item.name) || /^Wall paint \(\d+\.\d LF, 7'-6"H\)$/.test(item.name), `name "${item.name}"`);
       return `"${item.name}", ${item.effective_quantity.toFixed(2)} ${item.unit}`;

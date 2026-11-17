@@ -51,10 +51,12 @@ await run("c46-proofs", [
       await page.goto(`${APP}/project/${project.uuid}/takeoff/${sheet.uuid}?tab=estimating&pane=wage`);
       await page.locator("[data-wage-calculator]").waitFor({ timeout: 30000 });
       await page.getByRole("button", { name: "Continue", exact: true }).click();
-      // W10 (D-1041): location-adjusted rates always on; with nothing loaded Calculate says so.
+      // W14 (D-1087, app 19ff2ba): the basis is two cards, "Wage Determination" and "Your pay rates"; the always-on
+      // note (`[data-always-on]`, W10 D-1041) is gone, and the button reads "Calculate" whether or not anything is loaded
+      // (was "Calculate with location-adjusted rates" with nothing loaded).
       const basis = page.getByRole("region", { name: "Wage basis" });
-      await basis.locator("[data-always-on]").waitFor();
-      await basis.getByRole("button", { name: "Calculate with location-adjusted rates", exact: true }).click();
+      await basis.locator('[data-wage-card="wd"]').waitFor(); // D-1087 (was [data-always-on])
+      await basis.getByRole("button", { name: "Calculate", exact: true }).click(); // D-1087
       await page.locator("[data-craft-table] tr[data-craft]").first().waitFor({ timeout: 30000 });
       await page.getByRole("button", { name: "Save rates to project", exact: true }).click();
       const confirm = page.getByRole("dialog").filter({ hasText: /labor rates\?/ });
@@ -81,7 +83,9 @@ await run("c46-proofs", [
       const kept = await crew();
       expect(kept?.uuid === first.uuid && kept.name === "Our own crew" && kept.tier_kept === true, JSON.stringify(kept).slice(0, 300));
       await openSheet(page, project, sheet, "estimating");
-      const row = page.locator('tr[data-estimate-row="Cut, tier swap"]').first();
+      // D-1248 (api earthwork/lines.py `_with_place`): a line saved for a sheet carries its sheet, "Cut, tier swap – <sheet>"
+      // (was "Cut, tier swap"); the api checks above passed on 2026-11-17, only this row's name moved.
+      const row = page.locator('tr[data-estimate-row^="Cut, tier swap – "]').first();
       await row.waitFor({ timeout: 30000 });
       const open = row.getByRole("button", { name: "Show cost components" });
       if (await open.count()) await open.click();

@@ -3,9 +3,10 @@
 //   ./fx-suite.sh run c50-equipment-scale
 //
 // The world: throwaway projects, no drawings.
-//   1. A new Residential project starts Compact; a new Commercial one Standard.
-//   2. Changing the type of an existing project moves nothing: wanted Compact, applied Standard, until Apply.
-//   3. A person's choice wins over the type, and Heavy prices as Standard.
+//   1. A new project starts on Normal site access ("standard"), Residential or Commercial (D-1078; was Residential
+//      Compact).
+//   2. Changing the type moves nothing; Tight ("compact") is a person's choice, held until Apply (D-1078).
+//   3. Heavy is gone: saved, it reads and applies as Normal (D-1078).
 //   4. The starter holds the Compact activities: none on a scraper or an articulated truck, every class with a rate.
 
 import { apiCall, expect, run } from "./lib/bench.mjs";
@@ -18,28 +19,41 @@ const lib = (p) => `${base}/${p.uuid}/estimate/equipment-library`;
 const scale = async (p) => (await apiCall(token, "GET", `${lib(p)}/scale`)).body;
 
 await run("c50-equipment-scale", [
+  // D-1078 (api da923fa, 2026-11-08): "Equipment scale" is "Site access: Normal / Tight (compact machines)", Normal
+  // ("standard") by default for every project whatever its type (Residential no longer starts Compact); Heavy is gone
+  // and a project saved on it reads and prices as Normal (`wanted_scale`). Was: Residential Compact, Commercial
+  // Standard; a change of type wanted Compact; Heavy applied as "heavy".
   {
-    title: "a new project takes its type's scale: Residential Compact, Commercial Standard",
+    title: "a new project starts on Normal site access whatever its type (D-1078): Residential and Commercial both Standard",
     run: async () => {
       const [a, b] = [await scale(home), await scale(shop)];
-      expect(a.wanted === "compact" && a.applied === "compact", JSON.stringify(a));
+      // D-1078: Residential is Normal too (was Compact).
+      expect(a.wanted === "standard" && a.applied === "standard", JSON.stringify(a));
       expect(b.wanted === "standard" && b.applied === "standard", JSON.stringify(b));
-      return "Compact, Standard";
+      return "Standard, Standard";
     },
   },
   {
-    title: "a change of type moves nothing until Apply; a person's choice wins; Heavy is not Compact",
+    title: "the type moves nothing (D-1078); Tight is the person's choice and waits for Apply; Heavy reads as Normal, not Compact",
     run: async () => {
       await apiCall(token, "PATCH", `${base}/${shop.uuid}`, { project_type: "residential" });
       let s = await scale(shop);
-      expect(s.wanted === "compact" && s.applied === "standard", JSON.stringify(s));
-      await apiCall(token, "PATCH", `${base}/${shop.uuid}`, { equipment_scale: "heavy" });
+      // D-1078: the type no longer picks the scale (was wanted "compact").
+      expect(s.wanted === "standard" && s.applied === "standard", JSON.stringify(s));
+      await apiCall(token, "PATCH", `${base}/${shop.uuid}`, { equipment_scale: "compact" });
       s = await scale(shop);
-      expect(s.wanted === "heavy" && s.applied === "standard", JSON.stringify(s));
+      expect(s.wanted === "compact" && s.applied === "standard", JSON.stringify(s));
       await apiCall(token, "POST", `${lib(shop)}/scale/apply`, {});
       s = await scale(shop);
-      expect(s.applied === "heavy", JSON.stringify(s));
-      return "held until Apply; Heavy applied";
+      expect(s.applied === "compact", JSON.stringify(s));
+      // D-1078: Heavy is gone; saved, it reads as Normal (was wanted "heavy", applied "heavy").
+      await apiCall(token, "PATCH", `${base}/${shop.uuid}`, { equipment_scale: "heavy" });
+      s = await scale(shop);
+      expect(s.wanted === "standard" && s.applied === "compact", JSON.stringify(s));
+      await apiCall(token, "POST", `${lib(shop)}/scale/apply`, {});
+      s = await scale(shop);
+      expect(s.applied === "standard", JSON.stringify(s));
+      return "type moves nothing; Tight held until Apply; Heavy read and applied as Normal";
     },
   },
   {

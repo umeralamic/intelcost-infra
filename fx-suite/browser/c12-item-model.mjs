@@ -61,10 +61,9 @@ async function open(page) {
   await page.locator("[data-canvas-scale]").first().waitFor({ timeout: 20000 });
   await row(page, "Slab").waitFor({ timeout: 15000 });
 }
-/** An entry of a row's full menu, its ⋮ (a right-click opens the quick menu, D-149). */
+/** An entry of a row's full menu: its right-click since D-1238 (app d22e4c1), the row's ⋮ being gone. */
 async function more(page, name, entry) {
-  await row(page, name).hover();
-  await panel(page).getByRole("button", { name: `More actions for ${name}`, exact: true }).first().click();
+  await row(page, name).click({ button: "right" }); // D-1238: was the ⋮ "More actions for <name>"
   await page.getByRole("menuitem", { name: entry }).first().click();
 }
 async function changeType(page, label) {
@@ -112,7 +111,11 @@ await run("c12-item-model", [
       const b = await sheetPoint(page, 0.1 + 40 / FT / W, 0.8);
       await page.mouse.click(a.x, a.y);
       await page.mouse.dblclick(b.x, b.y);
-      const item = await waitFor(() => startsWith("Wall paint"), "Wall paint saved", 10000);
+      // D-1217: Create makes the item at once at 0, the run joins it after; wait for the quantity, not the name.
+      const item = await waitFor(async () => {
+        const found = await startsWith("Wall paint");
+        return found && found.effective_quantity > 0 ? found : null;
+      }, "Wall paint's run saved", 10000);
       expect(Math.abs(item.effective_quantity - 300) < 3 && item.unit === "SF", `Wall paint reads ${item.effective_quantity} ${item.unit}, wanted about 300 SF`);
       return `"${item.name}", ${item.effective_quantity.toFixed(2)} ${item.unit}`;
     },
@@ -180,7 +183,7 @@ await run("c12-item-model", [
     },
   },
   {
-    title: "folder x2: Wall paint in Framing; Folder Properties multiplier 2 shows x2 on the folder and on the row; the api stores multiplier 2",
+    title: "folder x2: Wall paint in Framing; Folder Properties multiplier 2 shows x2 on the folder, not repeated on the row in Folders (D-1070); the api stores multiplier 2",
     run: async ({ page }) => {
       const framing = await apiCall(token, "POST", `${takeoff}/folder`, { name: "Framing" });
       expect(framing.status === 201, `folder: ${framing.status}`);
@@ -197,14 +200,16 @@ await run("c12-item-model", [
       await header(page, "Framing").locator("[data-folder-multiplier]").waitFor({ timeout: 10000 });
       const badge = (await header(page, "Framing").locator("[data-folder-multiplier]").textContent()).trim();
       if (!(await row(page, wp.name).isVisible())) await header(page, "Framing").locator("button").first().click();
-      await row(page, wp.name).locator("[data-item-multiplier]").waitFor({ timeout: 10000 });
-      const chip = (await row(page, wp.name).locator("[data-item-multiplier]").textContent()).trim();
+      await row(page, wp.name).waitFor({ timeout: 10000 });
+      // D-1070 (app 617b036), D-1173: in Folders the folder's own row carries its ×2, and the item's row no longer
+      // repeats the folder chain (QuantityPanel `multiplierOf`); was a "×2" chip on the row too.
+      const chips = await row(page, wp.name).locator("[data-item-multiplier]").allTextContents();
       const stored = await waitFor(async () => {
         const it = (await items()).find((i) => i.uuid === wp.uuid);
         return it.multiplier === 2 ? it : null;
       }, "multiplier 2", 10000);
-      expect(badge === "×2" && chip === "×2", `folder "${badge}", row "${chip}"`);
-      return `folder "${badge}", row "${chip}"; stored ${stored.effective_quantity.toFixed(2)} SF x ${stored.multiplier}`;
+      expect(badge === "×2" && chips.length === 0, `folder "${badge}", row chips "${chips.join(", ")}" (D-1070: none in Folders)`);
+      return `folder "${badge}", row without a chip (D-1070); stored ${stored.effective_quantity.toFixed(2)} SF x ${stored.multiplier}`;
     },
   },
   {

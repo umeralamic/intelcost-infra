@@ -93,7 +93,12 @@ await run("c47-material-release", [
       const cells = await row.locator("td").allInnerTexts();
       expect(cells[2] !== cells[3] && /\$/.test(cells[2]) && /\$/.test(cells[3]), cells.join(" | "));
       await row.getByRole("button", { name: "Update" }).click();
-      await waitFor(async () => Math.abs((await now())[STONE] - was[STONE] * 1.2) < 0.02, "the updated price", 15000, 300);
+      // D-1091 (order-size tiers): the release's price is the bulk base; the line's 100 t of #57 stone is a Standard
+      // order (100 to 999 t) x 1.05, so Update takes the published base x 1.05 (was[STONE] is already Q4's $37.12 x 1.05).
+      const published = Number((was[STONE] * 1.2).toFixed(2));
+      await waitFor(async () => Math.abs((await now())[STONE] - published * 1.05) < 0.02, "the updated price", 15000, 300).catch(async () => {
+        throw new Error(`#57 reads ${(await now())[STONE]}, wanted ${published} x 1.05 = ${(published * 1.05).toFixed(4)}`);
+      });
       expect((await now())[TAPE] === was[TAPE], "the other moved");
       return `line ${cells[2]} to ${cells[3]}; #57 took it, tape stayed`;
     },

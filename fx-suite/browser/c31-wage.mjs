@@ -100,13 +100,15 @@ await run("c31-wage", [
     run: async ({ page }) => {
       await openCalculator(page);
       await page.getByRole("button", { name: "Continue", exact: true }).click();
-      // W10 (D-1041): no basis to pick; location-adjusted rates are always on, and Calculate says so.
+      // W14 (D-1087, app 19ff2ba): no basis to pick; the basis is two cards, "Wage Determination" and "Your pay rates",
+      // on every wage type, and Calculate goes straight to review. Was W10's (D-1041) "Location-adjusted rates · Always
+      // on" note (`[data-always-on]`, gone) and a "Calculate with location-adjusted rates" button (now "Calculate").
       const basis = page.getByRole("region", { name: "Wage basis" });
-      const always = basis.locator("[data-always-on]");
-      await always.waitFor();
-      const note = ((await always.textContent()) ?? "").trim();
-      expect(/^Location-adjusted rates · Always on/.test(note), `always-on note: "${note}"`);
-      await basis.getByRole("button", { name: "Calculate with location-adjusted rates", exact: true }).click();
+      await basis.locator('[data-wage-card="wd"]').waitFor(); // D-1087
+      const cards = await basis.locator("[data-wage-card]").evaluateAll((els) => els.map((el) => el.getAttribute("data-wage-card")));
+      const note = cards.join(", ");
+      expect(cards.length === 2 && cards[0] === "wd" && cards[1] === "own", `wage cards: ${note}`); // D-1087: two cards
+      await basis.getByRole("button", { name: "Calculate", exact: true }).click(); // D-1087
       await page.locator("[data-craft-table] tr[data-craft]").first().waitFor({ timeout: 30000 });
       const crafts = await page.locator("[data-craft-table] tr[data-craft]").count();
       const header = ((await page.locator("[data-review-header]").textContent()) ?? "").trim();
@@ -150,7 +152,9 @@ await run("c31-wage", [
       await setInfo(page, "Wage determination", "Prevailing Wage, Federal (Davis-Bacon)");
       await page.getByRole("button", { name: "Continue", exact: true }).click();
       const basis = page.getByRole("region", { name: "Wage basis" });
-      await basis.locator('[data-wage-card="wd"]').getByRole("button", { name: "Look up or upload", exact: true }).click();
+      // W14 (D-1087, app 19ff2ba): the WD card lists the county's WDs (WdPicker); upload and paste fold under its
+      // "Can't find it? Upload or paste manually" link (was the card's "Look up or upload" button).
+      await basis.locator('[data-wage-card="wd"] [data-wd-manual]').click(); // D-1087
       const data = page.getByRole("region", { name: "Wage determination" });
       await data.waitFor();
       await data.getByRole("tab", { name: "Look up or upload" }).click();

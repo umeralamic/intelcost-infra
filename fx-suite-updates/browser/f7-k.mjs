@@ -49,6 +49,9 @@ await run("f7-k", [
       // Snap off: an exact point.
       const snap = page.locator("[data-draw-modifiers]").getByRole("button", { name: /^Snap:/ });
       if ((await snap.innerText()).trim() === "Snap: On") await snap.click();
+      // The gutter just past the paper at mid-height, where an estimator ends a run, and where the Takeoff panel's
+      // collapse tab sits (D-1075). D-1302 (the founder's answer on D-1075): while a drawing tool is active the tab
+      // ignores the pointer, so these clicks reach the canvas and the panel stays open.
       const a = await sheetPoint(page, 0.9, 0.5);
       const box = await pageBox(page);
       const margin = { x: box.x + box.width + 12, y: a.y };
@@ -60,6 +63,11 @@ await run("f7-k", [
         return list.find((i) => i.name === "Edge run" && i.geometries.length > 0) ?? null;
       }, "the run saved", 10000);
       const xs = item.geometries[0].vertices_json.map((v) => v[0]);
+      // D-1302: the double-click in the gutter finished the run and left the Takeoff panel open (its edge tab still
+      // offers "Hide Takeoff panel"; collapsed, it reads "Show Takeoff panel").
+      const handle = ((await page.locator("[data-panel-handle]").getAttribute("aria-label")) ?? "").trim();
+      const panelOpen = await page.locator("[data-quantity-panel]").isVisible();
+      expect(handle === "Hide Takeoff panel" && panelOpen, `the Takeoff panel after the gutter clicks: tab "${handle}", panel visible ${panelOpen}`);
       await page.reload();
       await page.locator("[data-canvas-scale]").waitFor({ timeout: 20000 });
       // A level line has no height, which Playwright counts as hidden: measure it.

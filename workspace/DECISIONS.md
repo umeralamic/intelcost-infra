@@ -34402,7 +34402,67 @@ and after tables are in [deduct_holes_selection_speed_tasks.md](docs/tasks/deduc
       is proposed.
   - **Bench:** api down 07:18:19–07:22:00 and beat down 01:55:16–07:20:40 (watchfiles ENOMEM). Both were started again,
     the same containers; digest unchanged.
+- **Fixture updates (close-out, 2026-11-17; RUN.md §6).** Nothing run. 39 fixtures updated and 1 added (f7-l), each in
+  `fx-suite-updates/` and `fx-suite/`, every changed assertion citing its decision; `browser/lib/takeoff.mjs` `menuItem`
+  right-clicks (D-1238) and gains `notes()` (D-1064).
+  - **Causes:** D-1238 (row menus, "Search…"), D-1064 (the holder and delete-requested notes line: f8-s12, c40, f6-e,
+    c17), D-1070/D-1173 (no folder ×N on the row in Folders), D-1176, D-1279 (CSI 1,876 with MasterFormat), D-1125,
+    D-1087, D-1233, D-1231 (no Swap), D-1220, D-1078, D-1146, D-1275 with D-1091/D-1105/D-1112, D-1122, D-1068 d,
+    D-1248 (lines carry their sheet), D-1159, D-1074, D-1202, D-1247, D-1298, D-1217 (Create makes the item at once,
+    at 0; a count's picked marks), D-1302 (f7-k's gutter click; f7-l the Enter-then-Escape case), and react-router 7
+    (app 6499c1e, no D-number: f2-s6).
+  - **Price hand checks (D-1054):** c35 $16,471.70 → $17,752.40 (D-1287 B3: waiver 12 % $1,205.70, fee capped $75);
+    c45-materials 8" SDR-35 $10.80 (D-1091, Small order 204 LF × 1.20); c47 Q1 2027 #57 $49.1085 (46.77 × 1.05,
+    D-1091).
+  - **Reclassified from §3a to expected change:** c12 s2, f6-a s3/s6, f5-d51, f7-c, p20a, f5-s19 (D-1217); f2-s6.
+  - **Regression found:** c42-stitch-sheets step 4, the implied scale reads 0.90 % for a 1 % calibration on both
+    heads (passed on 2026-11-07); not edited; suspects D-1294 (0cb6b49) and D-1162 (3044634).
+  - **c17 step 8** no longer exercises the uncovered-boundary shading (D-1159 counts ground outside features as
+    covered); a Site Feature in C-2's setup would bring it back: open.
 
 ## D-1301 — Night run from 2026-11-16 22:47, founder bug report (about 10:04 UTC 2026-11-17): reopened utility runs draw the trench-protection overlay as huge circles/ellipses (ST-3 153.11 LF and the 8" PVC, 6" PVC, 12" HDPE and 2" copper runs on that sheet); read-only investigation now, fix in the next app slot, with a sanity guard (depth > 40 ft or top width > 150 ft → "Check depth" in Needs attention, never drawn or priced) and quantity-table rows for the cause
 
 The founder's report, in short: the server they call "staging" is to be confirmed first. Identify the project (label only), sheet and runs. Read each run's stored depth, invert and cover, the ground and proposed surfaces at each station, the protection and the computed top width; find the absurd value and why. Data (a stale or missing surface or earthwork result on reopen, a missing invert) or code (a commit since tester-candidate-2026-11-13 or the 2026-11-16 push: Q7 4.5 ft, boxed vs sloped, P-35 no mark-stale on load)? Name the commit. Give the effect on quantities and $ (excavation, backfill) per affected run. Never write to the founder's project; reproduce on a throwaway copy if the guard list allows it, otherwise on a look-alike.
+
+**Findings (2026-11-17).** Report: `intelcost-infra/morning-report-2026-11-20/D1301/INVESTIGATION.md`; for Abdullah:
+`NOTE_FOR_ABDULLAH.md` there.
+- **Server.** "Staging" is AWS staging, `ictakeoff.com` (`deploy-staging.yml`: nginx root for ictakeoff.com, deployed from
+  the `staging` branch). It runs app 52ea0fc (tree = e76ea19, 2026-11-12) and api e7b9149, both before
+  tester-candidate-2026-11-13. The project is not on the bench (`intelcost` or `intelcost_fx`).
+- **Cause: code, not data, and not the trench outline.** The disc is the run's own pipe line drawn at its "true" width
+  (D-826, app b4bd955, 2026-10-27, `SheetCanvas.tsx:looks`):
+  - `pageFt = (countWidthPt || 1) × feetPerPt`. On a reopen where the scale, the items and the utility runs arrive before
+    the sheets list, the page width (0) is read as 1 pt, and the pipe is drawn `widthPt` times too wide: a 6 in pipe is
+    1.88 page widths at 1"=20'.
+  - Round caps make a disc around a short run and a stadium around a long one, in the item's colour (storm blue, sanitary
+    green).
+  - The per-item looks cache (D-693) keys a line on its OD, not on the page size or scale, so the stale width sticks until
+    the item changes.
+  - The Trench outline switch (one global state) cannot hide it.
+- **Ruled out.**
+  - The outline bands come from the same Calculate pieces as the quantities.
+  - The dewatering highlight is a fixed 5 px stroke.
+  - Blank ground is never read as 0: the run is skipped "No ground", and a 0 ground clamps depth to 0.
+  - No commit since the tester tag is on staging.
+  - Hit-testing, export, print and count marks do not share the fallback.
+- **Quantities and $:** none. Drawing only. ST-1 49.90 LF and ST-2 94.30 LF (30.40 BCY) are right as stored and priced.
+- **Reproduced on the bench (umer-dev e3a5c1c)** on throwaway fx.equip.20261117102435, a copy of the 3D test project:
+  the sheets list held until calibration, items and runs arrived. ST-2 was stroked 3125 px and SS-1 1147 px (page about
+  630 px). A green disc of radius about 0.9 page stayed after width_pt arrived.
+- **Fix (app slot, saves 10:44–10:46 UTC):**
+  - `markupSize.ts:pipeShare`: null without a page width or scale, and past 0.25 of the page. `SheetCanvas` keys the
+    cache on the share.
+  - The guard, depth > 40 ft or top > 150 ft: `trenchPlan.ts:depthCheck`/`limitsCheck`, and `bandPolygons` draws nothing
+    past the limit. `calculate.ts` skips the run or pit with "Check depth: …" before overlaps and lines.
+    `EstimatingView:checkDepthRuns` names the run in Needs attention's Incomplete line ("Check depth: SS-1 past 40 ft
+    deep or 150 ft wide, not drawn or priced"); a pit counts as a structure not priced, with the reason on its line.
+  - QT: 13 rows, `d1301-*` in `browser/lib/utility-cases.mjs`.
+- **Open:** a trenchless crossing (jack and bore) legitimately deeper than 40 ft is now skipped "Check depth". The founder
+  is to say whether bores are exempt.
+
+## D-1302 — Night run from 2026-11-16 22:47, close-out: the drawing regressions the fixture run found (D-1300), fixed before the push or listed as tester-release blockers
+
+Founder rule (given during the run, 2026-11-17 morning UTC): a regression is fixed or listed as a tester-release blocker; an expected change gets its fixture updated, citing its D-number; an environment failure is rerun once. From step5/RUN.md:
+- On both heads (present before this run's app saves): a run drawn with no pointer move between clicks (a touch tap) is lost or shortened, and Escape no longer keeps a run (c12, f5-d51, f6-a, f7-b, f7-c, f7-g, f7-k). The suspect is D-1294's pen refs (app 0cb6b49) in SheetCanvas.tsx.
+- New on e3a5c1c: c28's second run is lost, p20a's run on a turned sheet is not stored, and f7-i's paste breaks. The suspect is D-1298 (app e3a5c1c).
+- f2-s6 (signup handoff to login) fails on both heads.

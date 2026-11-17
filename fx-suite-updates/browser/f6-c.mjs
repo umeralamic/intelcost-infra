@@ -69,10 +69,10 @@ async function drag(page, from, to) {
   await page.mouse.up();
 }
 
-/** A row's full menu, from its ⋮ (D-149: a right-click opens the quick menu). */
+/** A row's full menu: its right-click since D-1238 (app d22e4c1), the row's ⋮ being gone. */
 async function more(page, name) {
-  await row(page, name).hover();
-  await panel(page).getByRole("button", { name: `More actions for ${name}`, exact: true }).first().click();
+  await row(page, name).click({ button: "right" }); // D-1238: was the ⋮ "More actions for <name>"
+  await page.getByRole("menu").last().waitFor();
 }
 
 async function menuOn(locator, page, entry) {
@@ -128,7 +128,7 @@ await run("f6-c", [
     },
   },
   {
-    title: "S7 AC1: Folder Properties with multiplier 2: \"×2\" on the folder and on Wall's row beside its measured 30 LF; 0 is refused",
+    title: "S7 AC1: Folder Properties with multiplier 2: \"×2\" on the folder, not repeated on Wall's row in Folders (D-1070), its measured 30 LF kept; 0 is refused",
     run: async ({ page }) => {
       await open(page, p1);
       await menuOn(header(page, "Framing"), page, "Folder Properties");
@@ -141,16 +141,17 @@ await run("f6-c", [
       await dialog.getByRole("button", { name: "Save" }).click();
       await header(page, "Framing").locator("[data-folder-multiplier]").waitFor({ timeout: 10000 });
       const badge = (await header(page, "Framing").locator("[data-folder-multiplier]").textContent()).trim();
-      // D-336: the row keeps its measured figure; the multiplier is its own chip, and extends
-      // the quantity in Estimating.
-      await row(page, "Wall").locator("[data-item-multiplier]").waitFor({ timeout: 10000 });
-      const chip = (await row(page, "Wall").locator("[data-item-multiplier]").textContent()).trim();
+      // D-336: the row keeps its measured figure; the multiplier extends the quantity in Estimating.
+      // D-1070 (app 617b036), D-1173: in Folders the folder's own row carries its ×2 and the item's row no longer
+      // repeats the folder chain (QuantityPanel `multiplierOf`); was a "×2" chip on Wall's row too.
+      await row(page, "Wall").waitFor({ timeout: 10000 });
+      const chips = await row(page, "Wall").locator("[data-item-multiplier]").allTextContents();
       const measured = (await row(page, "Wall").locator("[data-item-qty]").textContent()).trim();
-      const wall = await detail("Wall");
+      const wall = await waitFor(async () => { const w = await detail("Wall"); return w?.multiplier === 2 ? w : null; }, "Wall multiplier 2", 10000);
       expect(refusal === "Enter a number greater than 0." && off, `0: "${refusal}", Save disabled ${off}`);
-      expect(badge === "×2" && chip === "×2" && /^30(\.0+)?$/.test(measured), `badge "${badge}", chip "${chip}", row "${measured}"`);
+      expect(badge === "×2" && chips.length === 0 && /^30(\.0+)?$/.test(measured), `badge "${badge}", row chips "${chips.join(", ")}" (D-1070: none in Folders), row "${measured}"`);
       expect(Math.abs(wall.effective_quantity - 30) < 1e-6 && wall.multiplier === 2, `Wall ${wall.effective_quantity}, multiplier ${wall.multiplier}`);
-      return `0 → "${refusal}"; folder "${badge}"; Wall row ${measured} with "${chip}"; stored 30 LF with multiplier 2 (D-57, D-336)`;
+      return `0 → "${refusal}"; folder "${badge}"; Wall row ${measured}, no chip in Folders (D-1070); stored 30 LF with multiplier 2 (D-57, D-336)`;
     },
   },
   {

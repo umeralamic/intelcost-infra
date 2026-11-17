@@ -121,7 +121,8 @@ await run("c39-one-tag-while-drawing", [
       await page.getByRole("button", { name: /settings/i }).first().click();
       await page.getByRole("button", { name: /^Collaboration/ }).first().click();
       const order = await page.locator("[data-collaboration-prefs] [data-pref]").evaluateAll((e) => e.map((x) => x.getAttribute("data-pref")));
-      expect(order.join() === "others_work,colour_by,show_drawing,live_line,show_cursors,show_names", `order: ${order.join()}`);
+      // D-1233 (app 1ee109d): "Others' work in the panels" (others_in_panels) follows Others' work on the plans.
+      expect(order.join() === "others_work,others_in_panels,colour_by,show_drawing,live_line,show_cursors,show_names", `order: ${order.join()}`);
       const scopes = await page.locator("[data-collaboration-prefs] [data-setting-scope='Your account']").count();
       expect(scopes === 3, `"Your account" labels: ${scopes}`);
       const colour = await page.locator("[data-pref='colour_by'] [aria-checked='true']").getAttribute("data-value");
@@ -129,7 +130,8 @@ await run("c39-one-tag-while-drawing", [
         await page.locator("[data-pref='others_work'] [data-value='only_mine']").click();
         await page.locator("[data-pref='colour_by'][data-off]").waitFor({ timeout: 10000 });
         const off = await page.locator("[data-collaboration-prefs] [data-pref][data-off]").evaluateAll((e) => e.map((x) => x.getAttribute("data-pref")));
-        expect(off.length === 5 && !off.includes("others_work"), `greyed under Only mine: ${off.join()}`);
+        // D-1233: Only mine never turns the panels' choice off (collaborationChoices.ts NEVER_OFF); the plans' five still are.
+        expect(off.length === 5 && !off.includes("others_work") && !off.includes("others_in_panels"), `greyed under Only mine: ${off.join()}`);
         await page.locator("[data-pref='others_work'] [data-value='all']").click();
         await page.locator("[data-pref='colour_by']:not([data-off])").waitFor({ timeout: 10000 });
         const kept = await page.locator("[data-pref='colour_by'] [aria-checked='true']").getAttribute("data-value");
@@ -147,7 +149,7 @@ await run("c39-one-tag-while-drawing", [
     },
   },
   {
-    title: "D-802: Only mine shows 'Hiding 1 colleague's work' on the toolbar while B points on the sheet; one click turns All back on",
+    title: "D-802, D-1233: Only mine shows 'Only your work · 1 hidden' on the toolbar while B points on the sheet; one click turns All back on",
     run: async ({ page, context }) => {
       const b = await twoWindows(page, context);
       try {
@@ -155,12 +157,15 @@ await run("c39-one-tag-while-drawing", [
         await page.reload();
         await page.locator("[data-canvas-scale]").first().waitFor({ timeout: 20000 });
         await onProjectTopic(page, r);
-        const chip = page.locator("[data-hiding-colleagues]");
+        // D-1233 (app 1ee109d): the chip is "Only your work" (`[data-hiding-others]`, the count of others on the sheet),
+        // "Only your work · N hidden" while N others are here; "others", never "colleague". Was `[data-hiding-colleagues]`,
+        // "Hiding 1 colleague's work" (D-802).
+        const chip = page.locator("[data-hiding-others]");
         await chip.waitFor({ timeout: 10000 });
         await sweepSheet(b.page, [0.3, 0.3], [0.6, 0.6], 1500);
-        await waitFor(async () => ((await chip.getAttribute("data-hiding-colleagues")) === "1" ? true : null), "the chip counting B", 15000);
+        await waitFor(async () => ((await chip.getAttribute("data-hiding-others")) === "1" ? true : null), "the chip counting B", 15000);
         const text = (await chip.innerText()).trim();
-        expect(text === "Hiding 1 colleague's work", `chip: "${text}"`);
+        expect(text === "Only your work · 1 hidden", `chip: "${text}"`); // D-1233
         const back = page.waitForResponse((res) => res.url().endsWith("/api/auth/me") && res.request().method() === "PATCH");
         await chip.click();
         expect((await back).ok(), "the chip's switch back to All failed");

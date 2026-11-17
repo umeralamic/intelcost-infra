@@ -101,7 +101,7 @@ await run("r6-hidden-view", [
         const text = (await card.first().innerText()).replace(/\s+/g, " ").trim();
         await tab(page, "Estimating");
         await noneShows(page, card, "the hover card under Estimating");
-        await tab(page, "Earthwork");
+        await tab(page, "Sitework"); // D-1202 (app 1d6123d): the Earthwork tab reads "Sitework" (was "Earthwork")
         await noneShows(page, card, "the hover card back on the Earthwork tab (pointer not moved)");
         return `"${text}" shown, gone under Estimating, not back after`;
       } finally {
@@ -156,7 +156,7 @@ await run("r6-hidden-view", [
         const after = await snapshot();
         expect(after === stored, "a key under Estimating changed the takeoff");
 
-        await tab(page, "Earthwork");
+        await tab(page, "Sitework"); // D-1202: the tab's name (was "Earthwork")
         for (const panel of panels) await panel.waitFor({ state: "visible", timeout: 10000 });
         const again = await look();
         expect(JSON.stringify(again) === JSON.stringify(before), `the panels came back changed: ${JSON.stringify(before)} vs ${JSON.stringify(again)}`);
