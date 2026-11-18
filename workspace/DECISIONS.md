@@ -35140,3 +35140,266 @@ spec's $12,957; owned standby on lost days; per-line ceil rounding of small rent
   (`morning-report-2026-11-21/fixtures/LATE-RUN.md`). Bench only; no staging impact.
 - **NOTE_FOR_ABDULLAH.md** rewritten for this push (`morning-report-2026-11-21/`, outside git): staging status, the one
   migration d1312b6e4a70 to run by hand, what testers will notice, `SIGNUP_THROTTLE_OFF` never on staging or production.
+
+## D-1316 — Founder answers 2026-11-18 ~11:30 UTC to REPORT_2026-11-21 §1 (day run morning-report-2026-11-22)
+
+**Rental tax**
+- **Q1, IL delivery:** stays untaxed. Separately stated and avoidable means not inseparably linked.
+- **Q2, waiver where no ruling:** one policy. An inferred field at grade C is TAXED (conservative) and flagged. NY stays untaxed (ruling).
+  - **Founder correction (2026-11-18, 11:3x–11:4x UTC), replacing the main session's first reading R4:** "grade C = taxed" covers only the lessor's own charges: the damage waiver, the dealer's delivery and the dealer's fees.
+  - A **third-party haul stays UNTAXED in every state, GA included.** It is not part of the rental price.
+- **Measurement quiet (founder, 2026-11-18, 11:3x–11:4x UTC):**
+  - While D-1317 runs a measurement series, no other builder runs a build, typecheck, lint, QT or fixture; those wait until the series ends.
+  - Each series records its start and end and confirms the bench was otherwise quiet.
+  - A series that overlapped other heavy work is marked invalid.
+- **Q3, NY operated hire:** stays exempt, since our work is capital improvement. Noted; no split now.
+- **Q4, AZ:** the base rental loads at B on A.R.S. §42-5071. Waiver and delivery at C are taxed per Q2.
+- **Q5, P08:** the founder changes P08's state themself. The main session lists, read only, everything keyed off project state and the $ effect of TX→OH at 7.25 % on each.
+
+**Utilities**
+- **Q6:** yes, a PE-design line for pits over 20 ft, the same pattern as D-1144.
+- **Q7:** yes, bored-stretch quantities are worked at their own stations, with the $ change per fixture.
+- **Q13:** manholes over 20 ft go to Needs attention with the same OSHA note.
+
+**Bid summary**
+- **Q8:** keep it. The overtime premium is direct labour; the tooltip says so.
+  - **Founder addition (2026-11-18, 11:4x UTC), same commit as that tooltip:** hover tips on the Profit Markup / Margin buttons, in the dialog and the panel.
+    - **Markup:** "Profit as a % of cost. {rate}% markup on {subtotal} = {profit}. Same as {m}% margin."
+    - **Margin:** "Profit as a % of the selling price (before bond). {rate}% margin = {profit} profit. Same as {k}% markup."
+    - Live values come from the current rate and subtotal: dollars rounded to whole dollars, the conversions to 0.1 %.
+    - They use the existing tooltip component.
+    - No math change: the QT cost rows stay unchanged to the cent.
+  - **Founder addition (2026-11-18, 11:4x UTC), same commit: equipment rental tax, tooltip and override.**
+    - **A. Override.**
+      - (1) Report whether the rental tax rate can be typed per project today, in the dialog and the panel.
+      - (2) If not, make it editable like the sales tax rate: a project rate, the orange changed dot, and Reset to defaults restoring the state's rate. 0 % is allowed and gives $0.00.
+      - (3) When the typed rate differs from the state's (0 % included), Needs attention gets an informational note, never blocking: "Equipment rental tax set to {rate}%. {State} taxes equipment rentals ({citation})."
+    - **B. Tooltip (`rentalExtras.ts` `ruleNote`),** rewritten for every loaded state:
+      - bold line 1 "Equipment rental tax: {State} {rate}%";
+      - "on {taxable base} of taxable rentals";
+      - when overridden, "Your rate: {rate}% (state: {state rate}%)";
+      - "Taxed:" and "Not taxed:" in plain words, with grade-C items marked "(assumed, no ruling)";
+      - for TX and any state where it holds, "Charged even on tax-exempt projects: you are the renter, not the owner.";
+      - a small muted last line with the citation only (e.g. "34 TAC §3.294").
+    - No change to the default math; QT cost rows unchanged to the cent. Add QT rows for 0 % and an overridden rate.
+    - Screenshots for the report: the TX, OH, PA and NY tips, plus TX overridden to 0 %.
+  - **Founder addition (2026-11-18, 11:4x UTC): margin cap.**
+    - Report what the Bid summary does today with a margin of 100 % or more.
+    - The field must refuse it: Margin accepts 0–95 %, with the inline message "Margin must be under 100 %", and nothing is saved.
+    - Markup has no upper limit.
+    - QT rows for a margin of 95 % and a refused 100 %.
+    - Main-session reading: refused on save by the api too, since the api owns writes.
+    - **Founder (2026-11-18, 11:4x UTC):** the message reads **"Margin must be 95 % or less."**, the same text in the api's refusal. The api check on save is agreed.
+  - **Founder (2026-11-18, ~11:50 UTC):**
+    - **AZ operated hire:** taxed, flagged "(assumed, no ruling)". Confirmed. Revisit when azdor.gov is read in a normal browser.
+    - **Rental tax override:** carried by a project copy or duplicate like the other bid rates. When set, it is shown in the bid export's rate list.
+
+**Q9, Plan A-lean (recorded now, built next night)**
+- (a) yes.
+- (b) snow rules ON: earthwork a snow day plus a clearing day; pipe a snow day; flatwork a snow day. Frost-day lost days OFF. Flatwork freezing is a cold-weather protection COST (ACI 306), not lost days; propose a priced line.
+- (c) billed days are calendar days, and billing uses the cheapest mix of day, week and 4-week rates. Confirm.
+- (d) yes.
+- (e) round once per machine across the project, not per line.
+- (f) yes, plus a Needs attention flag "Start date not set: average year used". Existing projects must NOT reprice silently on open: they show "Weather days not applied · Apply". New projects apply by default.
+
+**Contours and overlays**
+- **Q-D1:** yes.
+- **Q-D2:** Alt-drag OK. On Windows Chrome, releasing Alt must not move focus to the browser menu (preventDefault on that keyup). Confirm Alt isn't already used (snap override etc.).
+- **Q-D3:** yes, the overlay bar lets the founder pick which overlay is on top.
+- **Q-D4:** yes, the target is what the overlays ADD.
+- **Q-D5:** yes, task 1, behind the bucket check.
+
+**Stitch picks**
+- **Q14:** OK, with a limit. If snap data hasn't loaded in 5 s, place the pick unsnapped and mark it "not snapped".
+- **Q15:** fix both: pits in the tree without a reload, and a stitch pick on a drawn path.
+
+**Operations**
+- **Q10–Q12:** OK.
+- **Q16:** agreed.
+- **Q17:** DNS stays as is today; keep the workarounds.
+- **Q18:** leave it to the purge; confirm 0 left, or list what's left if DNS blocks it.
+- **Q19:** the health watch stops the run and alerts when a bench service exits, and long fixtures run with fx-b stopped. Memory is NOT raised today.
+
+## D-1317 — Day run 2026-11-18 (morning-report-2026-11-22), task 1: D-1310 re-measured on the committed code, behind a bucket check
+
+Go only if a fit picture loads 3 times within 12 s. Covers dev and production, 1× and 4×, 0/1/2/3 overlays, with each row marked valid or invalid. Explain production 1× with 1 overlay at load, 548 → 872 MB. Visual check of the overlays and blends. Fix or revert any part that is worse.
+
+## D-1318 — Day run 2026-11-18, task 2: small fixes
+
+Q-D2 Alt checks, Q-D3 bring-to-top, Q14 5 s limit, Q15 both, Q13 manholes, Q8 tooltip.
+
+**Q13, Q14, Q15 as built (the utilities and stitch builder; app saves 11:53:25–11:56:37 UTC, a quiet founder gate before
+each).**
+- **Q13:** `calculate.ts` (structure branch). A manhole's or other structure's pit past 20 ft carries `PIT_PE_NOTE`, the
+  bore and receiving pits' OSHA note, in place of `protection.ts`'s own "Over 20 ft — protection must be designed by a
+  registered engineer". `EstimatingView.tsx` `structureFlags` names it in Needs attention on the structure's own line
+  (`<type>|<size>|<VF range>`), as it already did on a pit's line. No price change.
+- **Q14:** `SheetCanvas.tsx`. A pick waiting for Snap PDF's lines (D-1313) waits at most 5 s from its click
+  (`snap/unsnappedPicks.ts:SNAP_WAIT_MS`).
+  - Past that, the pick is placed where it was clicked (your own shapes still snap it) and marked (`markUnsnapped`).
+  - `JoinPicks.tsx` writes "not snapped" under its number and sets `data-join-unsnapped="1"`.
+  - The mark goes with the point's identity, so a point dragged afterwards is unmarked.
+  - Lines read within the 5 s: the pick lands snapped, as D-1313.
+  - **c52 updated** (`fx-suite/browser`, `fx-suite-updates/browser`, identical):
+    - step 4: PDFs held 25 s; the pick waits, is placed after about 5 s where it was clicked, marked "not snapped";
+    - step 5 (new): PDFs held 2 s; snapped on both panes, unmarked.
+- **Q15:**
+  - **The pits in the tree.** `useUtilities.tsx:makePits` now also refreshes `sheet-items` and `rollup`. The Sheets
+    panel's tree reads `sheet-items`, and this tab ignores its own echo, so the new pits showed only after a reload.
+  - **A pick on a drawn path.** `SheetCanvas` has a new `picking` prop, set by `ProjectTakeoff` and `ReferencePane`
+    while a click is a pick. The page's layers then let the pointer through, as while a copy waits (D-1303), except the
+    picks' own markers (`[data-join-picks]`), which stay draggable. Before, a pick on a contour or another drawn path was
+    taken by that layer (seen on C-200).
+  - **The pits' place.** `makePits` puts a jack and bore's pits at its length's own stations (`fromFt`, D-1311). A
+    length stored before them is still centred.
+
+## D-1319 — Day run 2026-11-18, task 3: pricing
+
+Q2 + Q4 (one migration, proved), Q6 PE line, Q7 stations. The $ effect on founder projects by label, read only. The Q5 report.
+
+**Q6, Q7 as built (the utilities and stitch builder; app saves 11:53:25–11:56:37 UTC, with D-1318's Q13–Q15).**
+- **Q6, D-1144's pattern:** `crossings.ts:pitLineParts`.
+  - A self-performed bore or receiving pit past 20 ft (and not past 40 ft, which is "Check depth", D-1311) gets one
+    line: "PE-designed protective system (OSHA 1926.652), bore pit (jacking) deeper than 20 ft".
+  - Role `trench_pe_design`, variant `pe_design|pit|<bore|receiving>`, the service `service:pe_shoring_design` (the
+    stated $5,000, grade D, D-1144).
+  - Filed as a trench's: `lines.ts` gives it the scope `earthwork.trench_protection` and no augering kind.
+  - Needs attention flags it as D-1144 does a trench's, worded for a pit (`EstimatingView.tsx` `PE_DESIGN_PIT`).
+  - By the bore sub, the pit (and so its design) is the sub's: no line.
+- **Q7:** `structures.ts:openParts` and `crossings.ts:withOpenParts`; `calculate.ts` (crossing block).
+  - A bored or drilled length (jack and bore, HDD) over part of a run is worked at its own stations (`from_ft`, D-1311).
+  - The open parts before and after it are each worked on their own knots (the profile cut at the length's ends, as
+    `runBetweenPits` cuts at a pit; a pit at a run end its part reaches cuts it as before), and their trench figures
+    summed.
+  - The pipe's bands, width, flags and notes stay the run's. The pieces are the open parts', so the trench drawn and
+    the profile leave the bore out.
+  - Replaces D-1269's average section (the whole run's trench × the open share) for bored kinds. Encasement, CLSM and
+    a casing open cut keep their blend; a bore over the whole run digs nothing, as before.
+  - An encasement's concrete is taken over the open length only.
+  - The overlap step still sees only the open stretches (D-1311), and a part-bored run's loss there is still taken
+    after.
+- **QT rows (infra):**
+  - `d1319-bored-*`: a 100 ft run in a 6 ft box, 6 to 16 ft deep, bored 40 LF. At the shallow end the open trench is
+    173.33 CY; at the deep end 120.00; in the middle 146.67. The average section was 146.67 for all three. On level
+    ground both agree at 106.67.
+  - `d1319-bore-pit-pe-design` (a 24.54 ft pit gets `pe_design|pit|bore=1` and buys `service:pe_shoring_design`) and
+    `d1319-bore-pit-pe-by-sub` (no line).
+  - The trenchless kind works a part-bored row at its stations, as Calculate does now.
+- **$ change:**
+  - **QT rows:** the existing part-bored rows (`util-1269-jack-bore-80-of-600`, `-pits-by-sub`,
+    `-receiving-pit-css`, D-1311's overlap rows) lie on level ground or at a constant depth, where the stations and the
+    average agree: $0.
+  - **Fixtures:** none holds a bored stretch: $0.
+  - **Founder projects:** none has a crossing (D-1311's read-only SELECT; reading R6): $0 on every label.
+
+**Q2, Q4, the rental tax override and the margin cap as built (the pricing builder, 2026-11-18):**
+
+- **Migration `d1319c4e8a21`** (revises `d1312b6e4a70`). It adds two columns:
+  - `eqlib.eq_rental_tax_state.inferred`: the rule fields read at grade C.
+  - `estimate_bid_rates.rental_tax_pct`: nullable. Null follows the sales tax rate.
+
+  It moves four state rows, each only while it holds D-1312's text:
+  - **OH:** the waiver marked as assumed. It was already taxed.
+  - **GA:** the waiver goes to TAXED, assumed. The third-party haul stays untaxed and is marked assumed.
+  - **IL:** the waiver goes to TAXED, assumed. The dealer's delivery stays untaxed (Q1, B).
+  - **AZ:** F → B on A.R.S. §42-5071. The waiver, the dealer's delivery and an operated hire are TAXED as assumed. The
+    third-party haul is untaxed (B) and the dealer's fees taxed (B).
+
+  NY, PA and TX are unchanged. Founder correction (D-1316): a third-party haul is never taxed, so no state has it true.
+  AZ's operated hire stays taxed by the founder's confirmation, **to be revisited once azdor.gov is read in a normal
+  browser**.
+- **Proof** on foldproof19, 11:49:55–11:55:24 UTC:
+  - from empty to head, the bench's schema apart from the 31 CHECK pairs and the two new columns;
+  - on a restored bench copy, down gives every table back, and up again equals up;
+  - all 13 bench bid-rates rows hold `rental_tax_pct` null, so no founder row gets a value.
+- **Runs:** bench 11:57:33–11:58:13, intelcost_fx 11:58:41–11:59:15. Digest 51d01fd7cf7c2297 before and after.
+- **Api** (commit e0a24e1; one save each, /docs 200 after each: 12:05–12:12 UTC):
+  - `EstimateBidRates.rental_tax_pct`. Project duplicate copies every column of the table (`project/duplicate.py`
+    `_insert_keeping_nulls`), so the column goes with a copy; no drive copies bid rates.
+  - `BidRates.rental_tax_pct`.
+  - `profit_pct`: a markup has no upper limit (the column's 999.9999). A margin over 95 % is refused on save with
+    "Margin must be 95 % or less." (422). A stored row reads back as it is (`BidRatesRead.margin_checked` False).
+  - The rental tax bundle carries `inferred`.
+- **Before today**, a margin of 100 % was accepted by the api (BidPct ≤ 100) and computeBid priced it as a 100 % markup,
+  profit equal to the subtotal: no division by zero. Over 100 % got the api's generic range error.
+- **QT** (infra aebd2e5):
+  - `drives/quantity-table.py d1287`: 43 rows, all right. They cover the policy, `inferred`, no haul taxed, the AZ
+    bundle, margin 95 % saved, 100 % refused and a 150 % markup saved.
+  - `cost-cases.mjs`: the rental tax at the project's own rate (null follows; 0 % gives 0.00; 7.25 % gives 3,625.00),
+    and a margin of 95 %.
+- **Founder projects:** $0. None is in GA, IL or AZ; P08 and Real bid A and B are TX, the rest have no state. No bid-rates
+  row was changed (`rental_tax_pct` null on all 13).
+- **Q5 report:** `morning-report-2026-11-22/d1319/P08-STATE.md`. P08's wage set is already OH (ZIP 45614). Set to OH and
+  typed at 7.25 %, these move:
+  - sales tax: −$307.11 Bid per $100,000 of taxed material;
+  - rental tax: −$146.92 tax and −$180.48 Bid (D-1309's base);
+  - off-road diesel: +$0.150 a gallon, +$184.26 Bid per 1,000 gallons.
+
+  Labour, location factors, EP region and the sanitary runs don't move.
+
+## D-1320 — Day run 2026-11-18, task 4: Q19 health watch
+
+During a fixture run, the health watch stops the run and alerts when a bench service exits. Long fixtures run with fx-b stopped.
+
+**Built (2026-11-18, the D-1320 builder; `intelcost-infra/morning-report-2026-11-22/d1320/`):**
+
+- **The watch, `intelcost-infra/fx-health-watch.sh`.**
+  - `--once`: every watched service runs, and api/docs gives 200 (given a minute for a save's reload).
+  - `<run pid> <state file>`: polls every 12 s with one `docker inspect` of the container ids recorded at the
+    start, so a recreate counts too. It watches api, app, worker, worker-pages and beat, plus api/docs.
+  - **A container not running** (exited, restarting, removed or recreated) is an alert at once.
+  - **api/docs not 200** is an alert only after 120 s (`FX_WATCH_API_GRACE`): a source save reloads the api for
+    40–50 s.
+- **What an alert does (`alert`, `stop_run`).**
+  - Writes `fx-suite/.regress/ALERT-<UTC>.txt`: the service, its state, exit code, exit time and OOM flag, and its
+    last 40 log lines. The file's path goes into the run's state file.
+  - Prints a loud `ALERT` block, with the log's memory or error line.
+  - Sends TERM to the run's shell, then to every process below it (regress.sh, the fixtures, their compose
+    clients), except the watch and the capture.
+  - Stops each running `browser-fx` container (an fx service).
+  - Never restarts anything: restarting a bench service is the main session's call, after founder-active.
+  - `FX_WATCH_CONTAINERS` (test only) watches a named container in place of the bench services.
+- **`fx-suite.sh` (`watch_start`, `bench_check`, `run`, `release`).**
+  - `run` and `release` refuse to start when `--once` fails.
+  - They start the watch after the capture and record its pid in `fx-suite/.regress/.health-watch.pid`.
+    A release's inner runs share its watch (`FX_WATCH_PID`).
+  - TERM and INT exit through the exit trap. The trap kills the watch by pid and waits for it.
+  - When the state file names an alert, every fx-suite shell of the run prints it, leaves fx-b stopped and exits 3.
+    Otherwise the D-1051 check runs as before; its message now says "restarted, recreated or stopped".
+- **Long fixtures with fx-b stopped (`LONG_FIXTURES`, `needs_b`, `b_off`, `b_restore`).**
+  - The list: m6-position (1,338–1,606 s in `.regress` timings) and f5-big (501 s, a 520 MB PDF). No other fixture
+    has a recorded time over 450 s.
+  - Neither uses window B. `needs_b` keeps fx-b up for any f8-* and any fixture naming APP_B, WS_URL_B, 5177 or 8030.
+  - In a named run, they run last. `api-fx-b`, `app-fx-b` and `app-fx-b-prod`, whichever runs, are stopped and
+    started again after: the same containers, fx services only.
+  - regress.sh runs with `FX_B_OFF=1`: it doesn't start the fx-b pair, and its serial `bench_ready` doesn't wait
+    on 8030. This comes from `fx-suite-patch.mjs`; the tracked `fx-suite/regress.sh` differs in those two lines only,
+    and a second patch run touches 0 files.
+  - Only app A is warmed when only long fixtures run. One summary line covers both parts.
+  - `run full` and `run quick` are unchanged.
+- **Docs:** `intelcost-infra/README.md`, "The fixture suite, archived"; the day run's RULES.md, "Fixtures".
+- **Proved 2026-11-18 (under heavy, fx stack only):**
+  - **Stand-in:** a throwaway `alpine` container, `d1320-dummy`, was watched in place of the bench services. No
+    bench service was stopped.
+    - `./fx-suite.sh run f7-l` ran with the stand-in watched. 19 s into f7-l, `docker stop d1320-dummy` ran at 12:20:24.
+    - The ALERT was written at 12:20:36 (`ALERT-20261118T122035Z.txt`): "exited, exit code 1, exited at 12:20:26",
+      with the stand-in's "Cannot allocate memory (os error 12)" line.
+    - f7-l's browser container was stopped, and fx-suite.sh exited 3 at 12:21:00.
+    - No watch, regress.sh or regress lock was left. The capture ended on its own.
+    - Two earlier tries never reached a fixture: bench-code refused them because D-1319's api saves outran an fx
+      api started with `FX_WATCH=0`.
+  - **Normal path:** `FX_LONG_FIXTURES=f7-l ./fx-suite.sh run f7-m f7-l`, with the real watch on the five bench
+    services and api/docs, 13:04 to 13:13:16.
+    - f7-m passed 2/2 with fx-b up.
+    - "fx-b stopped for the long fixtures (f7-l): api-fx-b app-fx-b-prod".
+    - f7-l passed 2/2.
+    - "fx-b started again", "all 2 passed", exit 0, no watch process after.
+  - **Bench services:** the same containers before and after; api/docs 200.
+  - **Digest:** 51d01fd7cf7c2297 at the start and the end.
+- **Q18 (D-1308's S3 leftovers):** 129 objects are left under workspace `4dab819e-932a-4000-a95f-1ef552267183`
+  (project-file 2, takeoff 127).
+  - No row and no log row names them.
+  - `purge-bench-accounts.py` writes no `storage_clear_log`, so no purge will clear them;
+    `report-storage-orphans` only lists them.
+  - See `d1320/Q18-S3-LEFTOVERS.md`. Nothing was deleted.
+- **Commit:** infra 8dbbf4d.
