@@ -549,6 +549,106 @@ full-time attendant with a patrol setting; no labour pay on lost days; the as-di
 7. Wellpoint quotes: which dewatering firms should the estimator ask (besides the rental dealer branches of the quote
    sheet)? (kept)
 
+## 12. D-1315 (night run from 2026-11-17 22:31, task 6): AL1–AL3 built in scratch, AL4's wiring designed
+
+The founder's brief (morning-report-2026-11-21 `BRIEF.md` task 6) widened A-lean: the **Census geocoder** (was AT2) with
+the ZIP centroid as fallback, **any station fetched once** (was AT4) with Houston-area and Gallia County, OH stations
+seeded, **snowfall and frost days**, a 50 mi flag, a per-project override, and **proposed winter rules**.
+
+**Status: AL1–AL3 built and proved in scratch, NOT in the repos** (NO-GO at 04:45 UTC 2026-11-18: AL4's wiring did not
+fit and the founder should see the price changes whole). **Handover:
+`intelcost-infra\morning-report-2026-11-21\d1315\HANDOVER.md`**: patches against app 330c4a3, api 1e367ff and infra
+0640f3d, the files whole, the migration d1315c7a2e94 (to be re-chained onto the head of the day), the seeds, the fetch
+scripts, the QT rows, the checker's brief and the Phase 2 runbook.
+
+### 12.1 Data (AL1), read on 2026-11-18
+
+- **Data types, NCEI's own names** (`Readme_By-Variable_By-Station_Normals_Files.txt`, normals-monthly 1991–2020 doc
+  folder: "AVGNDS = average number of days meeting criteria given"; "GEnnnuu … HI (hundredths of an inch), TI (tenths of
+  an inch)"; "LSTHnnn … less than or equal to the value nnn … whole degrees Fahrenheit"): `MLY-PRCP-AVGNDS-GE010HI`,
+  `-GE050HI`, `-GE100HI` (days ≥ 0.10 / 0.50 / 1.00 in), `MLY-SNOW-AVGNDS-GE010TI` (days with snowfall ≥ 1.0 in),
+  `MLY-TMIN-AVGNDS-LSTH032` (days with a minimum ≤ 32 °F), and `MLY-PRCP-NORMAL`. **A.**
+- **Fetch (no token):** `GET https://www.ncei.noaa.gov/access/services/data/v1?dataset=normals-monthly-1991-2020&stations=<id>&dataTypes=MLY-PRCP-NORMAL,MLY-PRCP-AVGNDS-GE010HI,MLY-PRCP-AVGNDS-GE050HI,MLY-PRCP-AVGNDS-GE100HI,MLY-SNOW-AVGNDS-GE010TI,MLY-TMIN-AVGNDS-LSTH032&format=json`.
+  Resolved directly tonight (no pinning needed).
+- **The station list** (`wx.station`, 9,248 rows): every station of NCEI's by-variable precipitation archive (v1.0.1,
+  c20230404) with all 12 months of the three rain counts, located by NCEI's `inventory_30yr.txt`; `has_snow` (5,709) and
+  `has_frost` (6,003) from the precipitation and temperature archives (c20230403). 4,290 have all five series.
+- **Seeds** (`wx.normals`, 34 stations × 12): the six airports of §2.c, every station within 40 mi of ZIP 77002's
+  centroid, every one within 30 mi of ZIP 45614's (P08's Gallia County address, read only). Fetched once from the ADS
+  and checked against the archives: **2,040 cells, 0 differences.**
+- **ZIP centroids** (`wx.zip_centroid`, 33,791): Census Bureau 2024 ZCTA gazetteer internal points.
+- **Geocoder:** `GET https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=<line>&benchmark=Public_AR_Current&format=json`
+  (no key; first match's `coordinates.y/x`).
+- **The pick:** the nearest station with the three rain counts (great circle, R 3,958.8 mi); a series the station lacks
+  (snow, frost) is taken from the nearest station that has it, named with its distance; > 50 mi flagged in Needs
+  attention; a person's override wins until cleared; a new location text places and picks again (on the next read).
+  Examples: ZIP 77002 → HOUSTON HTS (USC00414321) 4.3 mi, frost from HOUSTON-PORT 5.2 mi; ZIP 45614 → GALLIPOLIS
+  (USC00333029) 9.1 mi, snowfall from SALEM CTR 2 E 9.7 mi.
+
+### 12.2 Lost days into durations (AL2)
+
+`water/weather.ts` (pure): a month's lost share by rule, combined as independent days (`1 − Π(1 − share)`), so a day
+lost to two causes counts once; with the winter rules off it equals §5.b to the digit. **An activity's window grows with
+its own lost days** (D-1288 reading 5 answered): from the work start, L solves L = lost over (W + L) × 7/5 calendar days
+(fixed point); with no start, the year's share f: L = W f ÷ (1 − f). The rule per starter activity is
+`api weather/classes.py` (earthwork: A1–A11, A14–A17, A20, A21, A34–A39, A55–A60, A62, A63, A89, A90, A95; pipe and
+site crews, rain day only: A12, A13, A18, A19, A22–A33, A45, A61, A64–A85 but A77, A78, A96; flatwork and paving:
+A40–A44, A46–A54, A77, A78, A86–A88, A91, A92; none: A93, A94 and custom activities). **Rented machines** in a line's
+spread or a site spread bill W + L (`cost.ts` → `periods.ts:solveRental`); **owned** stand by on L (B8); operated hires,
+machines on site, pool riders and crew-carried classes take none; **crew hours never change** (no pay on lost days).
+Estimating shows the note on the machine ("Weather: +7.1 lost days (Jun–Jul, HOUSTON INTERCONT AP normals)") and a
+Setup line "Weather: <station>, <mi> mi"; Equipment Settings › Weather holds the station, override, work start and
+the winter switch.
+
+### 12.3 Winter rules, proposed (off until the founder adopts them; grade D for every threshold)
+
+| Work | Rule | Basis |
+|---|---|---|
+| Earthwork | a day with snowfall ≥ 1 in is lost, and one clearing day after it (overlap as the drying day); in a month with ≥ 15 frost days the ground is taken as frozen and every frost day is lost | ODOT CMS 203.06: "Do not construct frozen embankment material or place embankment material on frozen ground" (**A**, read 2026-11-18); INDOT 203 (revised 2025) and Baltimore County 201.03.05 say the same (**B**); the 15-day threshold is **D** |
+| Pipe crews | the snowfall day is lost; frost alone is not | **D** (crews in a box work cold mornings) |
+| Flatwork and paving | the snowfall day and every frost day are lost (no placement on a day at or below freezing without heat and blankets, which are not priced) | ACI 306R "cold weather" (air below 40 °F during protection) (**C**, from memory of the guide: not re-read tonight); TxDOT's 2024 Item 360/420 text could not be fetched (DNS), so no Texas figure is cited |
+
+Effect, 20 work days, year average: IAH earthwork 5.05 → 5.07, pipe 1.86 → 1.87, flatwork 4.28 → 4.98; Carpenter 2 S,
+OH (nearest complete station to 45614) earthwork 4.09 → 14.81, pipe 1.64 → 2.08, flatwork 5.80 → 19.36. January at
+Carpenter, earthwork: 19.16 of 22.14 weekdays lost with the rules on.
+
+### 12.4 Pay items (AL3)
+
+Table `estimate_pay_item` (owner's quantity and unit price, required; `link_role` "dewatering"); Estimating › Setup ›
+"Pay items (as directed)". **Reading:** "outside markup" is taken as after profit and before the bond (the bond is on the
+whole contract price, which includes the owner's items). The dewatering check: our trench dewatering lines' cost ÷ their
+LF against the owner's unit price (`pay.ts:payRisk`), an unpriced line counted "Quote needed" (badge Check).
+
+### 12.5 AL4's wiring: not built tonight (design and hours)
+
+What blocks it is the duration: §4.1's crew-days need the run's LF/day, which is the api's production (the pipe line's
+spread), not known at Calculate. Design: (1) `utilities/quantities.ts` keeps, per run, the dewatering stretch's worst
+station as a `WaterSite` (bottom depth, design water, the bottom band's USCS, bottom width); (2) `calculate.ts` calls
+`water/method.ts:selectMethod` and stores method, reason and flags on the run and the "Trench dewatering" line
+(variant `trench:sump` / `trench:wellpoint`, note "…; Quote needed"); (3) Estimating computes `waterQuantities` with the
+pipe line's spread LF/day and shows them on the dewatering line; (4) the api's starter for a `dewatering` line with method
+sump becomes a library machine `PMP-TRASH-3` on the 24 h clock (calendar days × 7/5 work-day equivalents for the
+solver: the spec's risk 4), fuel at gasoline, patrol and CGP hours at the wage; wellpoint gear stays "Quote needed";
+(5) `utility_settings` gains `dewater_target_ft` and `dewater_watch` (JSONB, no migration); (6) the `dw-*` rows' $ cells.
+**≈ 7 h** with its QT rows and smoke.
+
+### 12.6 Next run
+
+Build AL4's wiring first (§12.5), then the handover's `PHASE2.md` (≈ 3 h: bench migration, one api and one app copy
+batch, gates, quantity table, smoke, independent check, one (a1) harness pass, commits), so task 6 lands whole.
+
+### 12.7 Founder questions (readings taken)
+
+1. Pay items: outside overhead, markups and profit, **after profit and before the bond** (the bond is on the whole price)?
+2. Winter rules (§12.3), built and **off**: earthwork snow + clearing day and frost days in a ≥ 15-frost-day month (ODOT CMS
+   203.06, A); pipe the snow day; flatwork snow and every frost day (ACI 306R, C). Turn on, change, or keep off?
+3. An activity's lost days stretch its own window: 20 earthwork days from June 1 at IAH lose 7.07, a 20 t excavator bills
+   28 days, **$13,804** (the flat-June reading of §6 `rain-standby-ex20` gave $12,957). Adopt?
+4. Owned machines stand by on the lost days (B8); rented bill them; crews are not paid.
+5. Small rentals round up per line (a 1-day spread with 0.1 lost days bills 2 days). Keep, or no extra billed day for
+   under half a lost day?
+6. No work start = the year's average share. Keep as the default?
+
 ## Sources
 
 - [S1] UFC 3-220-05, Dewatering and Groundwater Control (WBDG): https://www.wbdg.org/ffc/dod/unified-facilities-criteria-ufc/ufc-3-220-05

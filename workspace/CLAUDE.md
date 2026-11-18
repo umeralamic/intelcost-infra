@@ -41,8 +41,9 @@ in flight, and move to [docs/archive/](docs/archive/) when it ships.
    the two that most often get re-argued by accident.
 4. Read the linked `docs/tasks/<name>_tasks.md` spec for the task you are on.
 5. Read the repo's own `STATUS.md` before touching it.
-6. Before building any new screen, compare it with live legacy:
-   [docs/legacy_comparison.md](docs/legacy_comparison.md).
+
+No comparison against the legacy app before building a screen (D-1307): legacy is far behind.
+`docs/legacy_comparison.md` stays as history only.
 
 ## Code style
 

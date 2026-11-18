@@ -34707,3 +34707,436 @@ throwaway copy of the 3D test project (fx.d1302.20261117104504).
 - **Supersedes D-277 point 7** ("members limited to annotations and comments are free"). No role matches that description any more.
 - **Tester-visible:** a collaborator, qa_takeoff or qa_pricing member sees Dimension, Highlight, Note and Snapshot disabled, by design.
 - **Fixture f3-s1 AC6** is updated to the two-capability collaborator (D-1300 close-out).
+
+## D-1307 — Founder decision 2026-11-17 ~22:10 UTC: no legacy comparison before building a screen
+
+Legacy is far behind, so building a screen no longer starts with a comparison against the live legacy app.
+- CLAUDE.md's session-start step 6 is removed. A note in its place cites this decision.
+- `docs/legacy_comparison.md` stays as history only.
+- The run rules (RULES.md) carried no such step.
+- Supersedes the session-start rule.
+
+## D-1308 — Founder decision 2026-11-17 ~22:10 UTC: Bid summary redesign, dialog and panel summary (day run; the plan approved as given)
+
+Math untouched: totals match today's dialog and panel to the cent, and the quantity table is unchanged.
+
+1. **The dialog is one aligned table in calculation order.**
+   - Rows: Direct cost → Sales tax → Equipment rental tax (read-only where the state rule applies, D-1287) → Overhead → extra markups → Profit → Bond → Bid total, with "% over direct".
+   - Columns: rate, applies to, $ amount, live as you type. An incomplete row shows "—"; the total never disappears.
+   - The dialog is wider, and rows stack on narrow screens.
+2. **"Applies to" is a compact picker** ("Material", "All costs", "4 of 6") that opens the six checkboxes in a popover.
+   - Tax exempt sits in the Sales tax popover, with its note as a tooltip.
+   - The tax source sits behind an ⓘ.
+3. **Defaults indicator.**
+   - One "Workspace defaults" chip in the header, which becomes "Project rates · Reset to defaults" once saved.
+   - A changed field gets a dot.
+   - The "saving gives it rates of its own" sentence sits next to Save.
+4. **Markup rows.**
+   - A drag handle, plus keyboard reorder (Alt+↑/↓); the handle and delete show on hover.
+   - A new row focuses the name, with a placeholder.
+   - An empty name errors only after Save.
+   - A disabled Save shows its reason.
+5. **Profit** has an inline Markup | Margin toggle. Defaults: new markups "All costs", sales tax "Material".
+6. **The panel summary (left sidebar)** uses the same order and labels.
+   - One line per row, with $.
+   - The tax source and rule text sit in an ⓘ tooltip.
+   - 0 % rows are compact and greyed, or behind "Show zero rows".
+   - A missing state rental-tax rule is a Needs attention item, not text in the summary.
+   - Bid total with "% over direct".
+7. **Checks.** Smoke on a throwaway with tax, overhead, two markups reordered, profit as margin, a bond, and a Texas project with rental tax. Tokens only, light and dark, with screenshots. Gate as usual. Commit locally; push at the next close-out (two pushes already today).
+
+**Built 2026-11-17 (night run 2026-11-21, task 0; app 3555b5b; founder to confirm; not Live).** Details:
+- **The founder's two answers (2026-11-17 ~22:40 UTC):** (1) Reset to defaults is built. It needed no api change: `DELETE /bid` (`routes.py:reset_bid`, `bid.py:clear_project`) already clears the project's own row, under the same `EstimateWriteWorkspace` + `_may_price` checks as saving, so the api is untouched and there is no migration. (2) Rows at 0 in the panel are shown compact and greyed (`data-bid-zero`), never hidden; no "Show zero rows".
+- **Math untouched:** `lib/estimate/bidSummary.ts` is not changed. Every $ on screen, a row's or the total, is read from `computeBid`'s lines. "% over direct" is (Bid total − direct cost) ÷ direct cost, direct cost being the Direct cost line plus the overtime premium line where there is one (`BidSummary.tsx:overDirect`). The lines' own labels stay as `computeBid` makes them for the exports; the screen's words are `ROW_LABEL` ("Sales tax", "Equipment rental tax").
+- **Dialog** (`BidSummary.tsx:BidDialog`, `BidRatesEditor`, `Row`): one grid in calculation order, columns rate, applies to, amount (from 768 px; narrower, each row stacks: the line, then its rate, applies to and $). Size `xl` (768 px, was 512). A figure out of range shows its row's $ as "—" and counts 0 until it is right, so the total never disappears, with a line under it saying so. The rental tax row (D-1287) is read only: its rate is the project's tax rate where the state's rule applies, 0 where not, the rule behind an (i).
+- **Applies to** (`AppliesPicker`): "All costs", one cost's name, two short names joined by "+" ("Labor + Equipment"), else "n of 6"; a button (`aria-haspopup="dialog"`, `aria-expanded`) opens the six checkboxes, "All costs" and, for the sales tax, Tax exempt with its note as a tooltip. The popover stays inside the dialog's focus trap, fixed to the window so the dialog's scroll never clips it; Escape closes it alone and gives focus back. Read only, it opens with the boxes disabled. The tax source (D-1139) sits behind the Sales tax row's (i); a figure that is IntelCost's starting figure has an (i) saying so.
+- **Defaults indicator** (`RatesChip`): "Workspace defaults", or "Project rates · Reset to defaults" ("Use workspace defaults" when the project's own rates are all zero, as before). Reset keeps the dialog open, the form starting again from the defaults (the editor is keyed on `inherited`), and is one Ctrl+Z step (`EstimatingView.tsx` `onReset` records `history`). A field that differs from the saved rates gets a dot (`ChangedDot`, with words for a screen reader); a moved or new markup gets one too. "Saving gives this project rates of its own…" sits beside Save while the project follows the defaults. The buttons are in the dialog's footer (`DialogFooter`); on Settings › Estimating they stay under the form.
+- **Markups:** a drag handle (pointer events, the drop line before the row under the pointer) and Alt+Up / Alt+Down from any field of the row, focus kept on that field, the move announced (`aria-live`); handle and remove show on the row's hover or focus. A new row focuses its name ("Name, e.g. Contingency"). A missing name is marked only once Save is pressed. Save is `aria-disabled` (not `disabled`) while something is missing, with the first reason beside it ("Name the third markup", "Enter the overhead from 0 to 100 %", "(and n more)"); pressed, it marks every field to fix and focuses the first. Defaults unchanged: a new markup All costs, the sales tax Material.
+- **Profit:** an inline Markup | Margin radio pair (`ProfitMode`, arrow keys), the other figure under Subtotal.
+- **Panel** (`BidSummaryPanel`): the dialog's order and words, one line a row with its $, a "Workspace defaults" / "Project rates" chip in its header (replacing "From the workspace defaults" under the total), the tax source and the rental rule each behind an (i) (`Tooltip` `wide`), "% over direct" beside the Bid total. A state with no rental tax rule shows no words in the summary: the row carries an amber (i) pointing to Needs attention, where "Rental tax rule for XX not loaded: 0 %" already is (D-1287 B2). `EstimatingView.tsx` passes the rule's note only when the rule is loaded, and `rentalTaxMissing`.
+- **Tooltip** (`components/ui/tooltip.tsx`): `wide` wraps at 20rem; every tip is kept inside the window's width.
+- **Selectors kept:** `[data-bid-summary]`, `[data-bid-line=<key>] dd`, `[data-bid-total] dd`, `[data-cost-ticks]`, the inputs' aria-labels ("Sales tax percent", "Markup 1 name", "Markup 1, Labor"); "Profit as" is now a radiogroup, not a select.
+- **Before and after, to the cent** (throwaway copy of P01, Harris County 77002, TX20260031; before recorded on e2050eb's UI, after on the new one): A (7.29 % Material, overhead 10 %, Contingency 5 % All costs, Insurance 2 % Labor + Equipment, profit 8 % margin, bond 1.5 %) $1,030,461.86 both, every line equal; B (Texas, workspace defaults, rental tax 8.25 %) $970,775.42 both; C (A's rates at Columbus, OH 43215, rule not loaded) $1,007,684.52 both. Quantity table: blocked twice by the S3 DNS "prepare retry" failure (23:21 and 23:39 UTC; the host resolver fails for the bucket name), before the cost rows run; `bidSummary.ts`, `costing.ts` and `rentalExtras.ts` are byte-identical to HEAD, so the QT's bid rows cannot move; the close-out reruns it.
+- **Deviation:** the incomplete-row mark is "—" as the founder wrote it, though the house style keeps em dashes out of prose.
+
+## D-1309 — Founder request 2026-11-17 ~22:10 UTC: Ohio equipment rental tax rule and the states of the founder's projects, report only
+
+- The Ohio rule, cited from the Ohio Department of Taxation.
+- The states of the founder's bench projects (read only), with a proposal of which states to load.
+- The effect on the Ohio project (equipment $105,924).
+- No library change until the founder approves.
+
+**Findings (2026-11-17, report only; `intelcost-infra/morning-report-2026-11-20/d1309/OHIO-RENTAL-TAX.md`):**
+
+- **The Ohio rule.** A bare equipment rental is a taxable sale: ORC 5739.01(B)(1) and (SS)(1), and ODT's taxability
+  page ("Rental/Leasing of Tangible Personal Property is subject to sales tax"). The rate is 5.75 % plus the county's
+  rate, sourced per 5739.033 (Gallia 7.25 %, Franklin 8.00 %, ODT Q4 2026 table). The base includes the dealer's
+  delivery ((H)(1)(a)(iv) "charges by the vendor"), but not a third-party haul. A rental with an operator necessary
+  to run the machine is not a lease ((SS)(1)(c)). The contractor is the consumer ((B)(5)). There is no exempt-owner
+  relief for rentals: (B)(13) covers incorporated materials only. The waiver is taxed at grade C (inferred from
+  (H)(1)(a); no ODT ruling found). These are the same flags as TX, so a single OH row at grade B would load it.
+  `codes.ohio.gov` refused the connection and `tax.ohio.gov` did not resolve, so the statute was read on FindLaw's
+  mirror (current to 2026-01-01) and in ODT's lease guide PDF. Re-read the official pages before loading.
+- **Loaded today.** TX at A; GA, IL, AZ and PA at F (0 %); OH and NY not listed.
+- **The founder's projects.** No bench project is OH with equipment. P08 has an Ohio address (Gallia, 45614) but state
+  TX and a typed 7.5 %, so it is priced under the Texas rule. P01, P05 and P10 have New York County addresses and no
+  state. Real bid A and B are TX. No machine is owned except one in Real bid A.
+- **The effect on $105,924 of equipment** (P08's mix: no owned machines, 3 operated trucks; the taxable share is
+  55.48 %, from the D-1287 smoke). The tax is $4,260.62 at 7.25 % (ceiling $7,679.49 if all of it is taxable). The bid
+  rises $5,233.86 (ceiling $9,433.69) at 10 / 10 / 1.5 markups (tax × 1.22843). "% over direct" rises by ΔBid ÷ Direct,
+  about +1.05 points at a $500 k direct.
+- **Proposed order:** OH, then NY, then PA, GA, AZ and IL (all four now at F; PA taxes operated rentals; IL taxes leases
+  from 2025, to confirm), then F rows for LA and OK. Four questions for the founder are in the report.
+
+## D-1310 — Night run from 2026-11-17 22:31 (morning-report-2026-11-21), task 1: contour and overlay performance
+
+- Overlays rendered tiled at the zoom's resolution, blended once and cached, with old images freed. Target: 3 overlays under ~500 MB and no frame drop at rest.
+- Ortho off at the start of the contour tool, and remembered per tool.
+- A drag moves a single vertex only; moving the whole contour takes a deliberate action.
+- Breaking a contour is a local edit; the surface recalculation is debounced and runs off the main thread.
+- Editing on the overlay layer via rAF, with the TIN recalculated in a web worker.
+- Display-only simplification at low zoom.
+- Contours on canvas: spec first.
+- Measured before and after on dev and production builds at 1× and 4×. Quantities to the cent.
+
+**Built (night run 2026-11-18, app 6127378 and 1d9c69d; infra c93996b), awaiting the founder's check.** Spec, findings
+and figures: [contour_overlay_performance_tasks.md](docs/tasks/contour_overlay_performance_tasks.md); the canvas spec:
+[contours_on_canvas_tasks.md](docs/tasks/contours_on_canvas_tasks.md); tables: `morning-report-2026-11-21/d1310/`.
+Measured on a throwaway copy of P01 made as D-1294 made it (`drives/copy-3d-test.py`), V-100 with C-200, C-100 and C-300
+in Highlight changes, from scratch trees (before e2050eb, after its files), never the bench's app.
+- **a. Why 2–3 overlays passed 1.2 GB:** every Highlight changes overlay was worked out and drawn although its picture is
+  opaque (only the top one could be seen); the view pass worked up to 8 MP even at Fit, the overlays' passes at once;
+  the pictures sent to the worker were copied and never freed, its surface kept; four full-resolution differences kept;
+  96 MB of old views kept. Fixes: only the topmost Highlight changes picture and what lies over it worked out and drawn
+  (`OverlayLayer.tsx`), the bar speaks for it (`ProjectTakeoff.tsx:barRow`); As drawn overlays blended once into one
+  canvas (`DrawnBlend`, `paperCleared`); the view at no more than 4 MP, one job at a time, pictures handed over and closed,
+  the surface dropped (`useSharpDifference.ts`, `difference.worker.ts`); differences kept at their painted size
+  (`lib/takeoff/overlay/difference.ts:compactDifference`, `paintCompact`, pure); old views within 32 MB; a stalled fit
+  picture asked again. Dev 1×, 3 overlays: Chrome total peak 2,652 → 1,137 MB, the tab's 1,856 → 689 MB (the bare sheet
+  alone 364–435 MB); at rest frame p95 16.8 ms before and after.
+- **b.** Ortho per tool (`orthoByTool`): Contour starts off, the other earthwork tools off (D-186), takeoff tools from
+  Settings › Snapping; toggled with no tool armed it sets the tab's start.
+- **c.** What was wrong: a press on the selected contour's line (its 10 px hit stroke) a few px from a point, outside the
+  7 px handle, dragged the whole contour; overlapping handles went to the one drawn last; a later run's line took presses
+  meant for the selected run's handles. Now the one vertex nearest the press within 10 screen px drags, the line away from
+  every vertex moves nothing, **Alt-drag** moves the whole contour or boundary (chosen over a handle), the selected run is
+  drawn last. Fixture `c53-contour-vertex-drag`.
+- **d.** A break puts both halves into the items at once (`breakRun`): 2,962 → 605 ms at 1×, 14,199 → 4,686 ms at 4×.
+- **e.** The drag on its own live layer by one animation frame per move (59 → 2 React commits for 60 moves, move p95
+  78 → 35 ms at 1×, 455 → 206 ms at 4×); the crossing and elevation checks and the TINs shown run in a worker 120 ms after
+  an edit ends (`useLiveChecks`), 289–725 ms each on V-100, off the main thread. Not incremental.
+- **f.** Contours drawn through fewer points while a page point is under a screen pixel (0.7 px; 951 of 1,683 at Fit);
+  display only.
+- **g.** Spec only, 13.5 h.
+- **Results unchanged:** C-200 of the copy identical in all 4,419 values before and after (cut 11,588.13 CY, fill
+  9,514.21 CY); quantity table 0 FAIL (prepare skipped, DNS).
+- **Left:** the bucket slowed from about 04:30 UTC until pictures no longer loaded in either build; the after series at
+  4× (dev), production after with 2–3 overlays and at 4×, and the view times of the committed code are left for a rerun
+  (about 1 h).
+
+## D-1311 — Night run from 2026-11-17 22:31, task 2: utilities fixes
+
+1. Q15: bored stretches leave the trench-overlap step.
+2. Q16: bore and receiving pits over 40 ft get Check depth; over 20 ft, an OSHA engineer-designed shoring note.
+3. Q17: a stretch counts as bored by its own segment setting; missing pits are flagged "Bore pits not placed".
+4. Q18: the collapse tab behaves normally with no tool active; kept.
+5. Q28: c44's whole line; kept.
+
+**As built (the D-1311 builder, 2026-11-17 22:4x – 2026-11-18; app saves 23:43:03–23:44:52 UTC, a quiet founder gate before
+each).**
+- **Q15, cause:** `calculate.ts` sent every worked run's pieces to `trenchOverlaps`, a bored stretch's notional trench
+  included, so a deeper bored run "kept" ground it never digs (D-1303's smoke: ST-2 took 46.32 BCY off SS-1).
+  - **Fix:** `crossings.ts:boredStretches(cross)` gives where a run digs no trench (the whole run, or a bored or drilled
+    length at its own stations; none for a dug crossing). `overlaps.ts:outsideStretches(pieces, ranges)` cuts the placed
+    pieces where a range starts or ends and drops the part inside. `calculate.ts` filters each run's pieces through both
+    before `trenchOverlaps`.
+  - A part-bored run's open stretches still overlap. The loss there is now taken after the crossing's blend (the run's
+    average section, D-1269), whole. Before it was taken first and then scaled down by the open share.
+- **Q16:** `crossings.ts:pitCheck(depth, pit)`.
+  - A bore or receiving pit past 40 ft is skipped "Check depth: the pit is … deep …", as other pits (D-1301). It is not
+    dug, drawn or priced, and it is named in Needs attention's Check depth block.
+  - Past 20 ft it carries `PIT_PE_NOTE`: "Over 20 ft deep: OSHA requires the shoring to be designed by a registered
+    professional engineer (29 CFR 1926.652(b)(4), (c)(4); Subpart P App. F)". The note shows on the pit's flags and on its
+    pit line in Needs attention (`EstimatingView.tsx` `structureFlags`).
+  - **The citation, read 2026-11-18 (osha.gov / eCFR texts through search; osha.gov refused direct fetches):**
+    - 29 CFR 1926 Subpart P, Appendix F: "Protective systems for use in excavations more than 20 feet in depth must be
+      designed by a registered professional engineer in accordance with § 1926.652(b) and (c)".
+    - Appendix B, Table B-1, note 3: "Sloping or benching for excavations greater than 20 feet deep shall be designed by a
+      registered professional engineer".
+    - 1926.652(b)(4) and (c)(4): Option (4), design by a registered professional engineer.
+- **Q17:** a stretch is bored by its own setting, at its own stations.
+  - **Data:** a new optional `section.crossing.from_ft` (the length runs `from_ft` to `from_ft + lf`). `section` is free
+    JSON in the api (`UtilityRunWrite.section: dict`), so there is no api, schema or migration change.
+  - **RunPanel:** a bored kind (jack and bore, HDD) over "A length" shows From and To (ft) and the stations (0+25 to 0+75).
+    A length picked now is centred on the run.
+  - **Placement:** the pits never place the stretch, and the deepest-LF placement is gone (`trenchPlan.ts:deepestStretch`
+    removed). A bored length stored before this, with no stations, reads from the run's start and is flagged "Bored length
+    has no stations: read from the run's start; set From in Encasement / casing" (in Needs attention).
+  - **The pits flag:** `crossings.ts:borePitsFlag` gives "Bore pits not placed: …" to a jack and bore (a sleeve too) short
+    of its bore pit, its receiving pit or both, by the pits linked to it. It replaces "Jack and bore with no pit". HDD gets
+    none: its entry and exit pits are its subcontract's lump sum.
+  - The run's crossing note says the stations.
+- **Q18, Q28: confirmed, no change.**
+  - `ProjectTakeoff.tsx`: the edge tabs take `pointer-events-none` only while `canvasDrawing`, so with no tool active the
+    tab collapses and reopens as before (D-1302).
+  - `job.ts:jobLines` (D-1305): the haul-road water line goes whole on the member with the most scraper fill.
+- **QT rows (infra):**
+  - `browser/lib/utility-cases.mjs`: 7 overlap rows `d1311-*`; two `-before` rows keep the old figures.
+  - Changed figures:
+    - a bored run crossing a deeper trench: A 167.11 → 177.78 CY;
+    - a part-bored run losing on its open stretch: B 75.20 → 72.00 CY.
+  - Also: 2 station rows, 6 pit rows and 6 pits-flag rows; `d1303-part-bored-no-pits` now gives its stations (0+50 to
+    1+00, the same answer).
+  - `quantity-table.mjs`: the overlap kind reads a run's crossing; `d1301-depth` reads `crossing` in place of `partialLf`;
+    new kinds `d1311-pit` and `d1311-pits-flag`.
+- **Founder data (read-only SELECT):** the bench has 0 runs with a crossing, 0 Casing / sleeve runs and 0 bore or receiving
+  pits in any project. **$ effect on founder projects: $0.**
+- **Proof:**
+  - Commits (local, umer-dev): app 3997c81, infra 8220cf8 (with D-1313's fixture).
+  - Gates, on both tasks' saves: lint 0 errors (the 4 known warnings), typecheck 0, build 0 (23:56–00:05 UTC).
+  - Quantity table: `QT_SKIP_PREPARE=1 ./quantity-table.sh`, prepare skipped (DNS: the bench bucket host did not resolve).
+    Exit 0, 0 FAIL, ended 01:10:27 UTC. "344 rows, both engines equal to 1e-9 on 340; … 391 earthwork rows right; 371
+    utility rows right; … passed". The utility rows went from 350 to 371: the 21 new `d1311-*` rows, and nothing else moved.
+  - The first run (00:31–00:38) stopped at D-1312's tax rows, which were not yet updated for its states. A scratch copy
+    with that step non-fatal found one wrong row of mine: the HDD no-stations row also carries "HDD carrier should be HDPE"
+    with no pipe. It was made a jack and bore.
+  - **Smoke (MCP, 01:40–02:00 UTC):** throwaway fx.equip.20261118011233, a copy of the 3D test project (the copy went
+    through on its third try, with S3 retries, DNS intermittent). Passed. On C-200, ST-2 is set to 10 ft cover, then by
+    inverts, as a jack and bore over "A length" (RunPanel From / To; its two pits made with it). ST-2 crosses SS-1 at its
+    station 1+62.8.
+    - **Bored 0+78 to 2+33 (over the crossing):** SS-1 keeps 47.10 CY with no overlap note. (The copy's stored result
+      from when ST-2 was open cut had SS-1 losing 2.42 BCY to ST-2.)
+    - **Bored 0+00 to 1+00:** the open stretch still crosses SS-1 and keeps 33.73 BCY. The run's note reads "Steel casing,
+      jack & bore 100.00 LF (0+00 to 1+00)".
+    - **Inverts 660.23 / 680.25:** BP-1 at 45.0 ft is skipped "Check depth"; it shows in Needs attention's Check depth block
+      as "BP-1 · pit · 45 ft deep · 32 ft wide". RP-1 at 25.0 ft carries the OSHA note on the pit and on its line ("Receiving
+      pit 10 × 10 ft, 25 ft deep") under Production warnings.
+    - **ST-1 a jack and bore with its two pits deleted:** "Bore pits not placed: add a bore pit and a receiving pit" on its
+      pipe line in Needs attention.
+    - **Q18:** with Select active the Takeoff panel's tab takes the pointer, collapses the panel, and it reopens.
+  - Screenshots: `morning-report-2026-11-21/d1311/` smoke-1-calc.png (From / To and the stations), smoke-2-estimating.png
+    (Check depth block), smoke-3-needs-attention.png.
+  - The throwaway was purged (dry run first; 1 account, 1 workspace, 0 refused; 02:01:59), and the guard refused 0
+    requests. Digest 51d01fd7cf7c2297 at start and end.
+  - **Seen, not changed:** the pits a jack and bore makes were missing from the takeoff tree until a reload.
+- **Questions:**
+  1. Q17: a crossing length stored before D-1311 has no stations. It reads from the run's start, flagged. OK?
+  2. Should a bore or receiving pit past 20 ft also get a priced PE-design line, as a trench does (D-1144), not only the
+     note?
+  3. Should manhole and other pits' existing "Over 20 ft" flag go to Needs attention too?
+  4. Now that a bored length has stations, should its quantities be worked at them rather than as D-1269's average section?
+
+## D-1312 — Night run from 2026-11-17 22:31, task 3: equipment rental tax by state (from D-1309)
+
+- Load OH and the proposed states whose rules are read from the state's own tax authority, at grade A/B. Grade F states stay flagged.
+- One migration, proved.
+- The $ effect on each founder project, by label, read only.
+
+**Built (2026-11-17/18, the D-1312 builder; `intelcost-infra/morning-report-2026-11-21/d1312/RENTAL-TAX-STATES.md`):**
+
+- **Rows loaded.**
+  - Loaded at B:
+    - **OH**, with the Texas flags. The damage waiver is taxed at C, per R8.
+    - **NY**: an operated hire is a service while the lessor keeps control. An optional, separately stated waiver is
+      not taxed.
+    - **PA**: an operated hire is presumed a taxable rental, and the whole charge is taxed.
+    - **GA**, from the Department's letter rulings. The waiver and a carrier's haul are read as not taxed, at C.
+    - **IL**: lease receipts are taxed from 1 Jan 2025. The dealer's delivery is not taxed while it is not
+      inseparably linked (separately stated, the contractor may haul). The waiver is not taxed, at C.
+  - **AZ stays F.** azdor.gov and the Secretary of State's rules answered 403, and no official operator rule was read.
+    Its note now says so.
+  - **LA and OK** are added at F.
+  - **TX** is not touched.
+- **Sources.** Every rule was read on 2026-11-17 from the state's own tax authority, at the URLs cited per field in
+  the report. Hosts that refused the connection are recorded: codes.ohio.gov, tax.ohio.gov, ilga.gov, nysenate.gov,
+  the Secretary of State rules sites in GA and AZ, and azdor.gov. The mirrors used are named: LII for OAC 5703-9-52 and
+  -63, and for 20 NYCRR.
+- **Migration `d1312b6e4a70`** (revises `d1297f3b8a60`).
+  - It moves GA, IL, AZ and PA only while each holds D-1287's text, and otherwise stops.
+  - It inserts OH, NY, LA and OK.
+  - The downgrade restores D-1287's rows exactly.
+  - Founder or workspace rows changed: none (global library rows; listed before the run).
+  - **Proved on foldproof12:** empty to head equals the bench's schema apart from the 31 CHECK pairs. On a restored
+    copy, down gives the table, and the whole database's data, back.
+  - **Run:** on the bench 00:30:14–00:30:50 UTC, and on intelcost_fx 00:31:34–00:32:15. Digest 51d01fd7cf7c2297 before
+    and after.
+- **App:** `rentalExtras.ts:ruleNote` builds its "on … ; not …" from the state's flags, so Pennsylvania's operated
+  hire and Illinois's untaxed delivery are said as charged. Texas's words are unchanged.
+- **The founder's projects: no change today.** No guard-list project is in a newly loaded state (P08 and Real bid A
+  and B are TX; the rest have no state), and no workspace has a default state.
+  - **P08 if set to OH:** the same base as TX, so $0 at the typed 7.5 %. At Gallia's 7.25 % it is −$146.92 tax and
+    −$180.48 Bid, by D-1309's method.
+  - **P10 if set to NY:** $4,279.23 of tax per $100,000 of equipment at 8.54 %, and its Bid moves by the tax alone (no
+    markups saved).
+- **The QT.** `drives/quantity-table.py d1287` expects the nine states (30 rows, all right). The full QT is 0 FAIL
+  (prepare skipped, DNS).
+- **Commits:** app 330c4a3, api 697aaf8, infra 0640f3d.
+
+## D-1313 — Night run from 2026-11-17 22:31, task 4: stitch snapping, one rule for both panes
+
+- Both panes follow the Snap PDF toggle.
+- A "snap loading" mark while snap data loads.
+- A pick never differs silently by load timing.
+- A fixture (docs/tasks/stitch_snap_rule_tasks.md).
+
+**As built (the D-1313 builder; app saves 23:50:17–23:51:14 UTC, a quiet founder gate before each).**
+- **Before:**
+  - The reference pane snapped every pick (`ReferencePane.tsx` `pdfSnap={picking}`, D-188).
+  - On the sheet, a Stitch sheets pick forced Snap PDF on (`pdfSnapWanted` included the site join), while Overlay by
+    matching points followed the toggle.
+  - Either pane's pick made before its lines were read landed unsnapped.
+- **One rule:**
+  - A stitch's picks (Stitch sheets, Overlay by matching points) follow the one Snap PDF toggle of the tab, on both panes.
+  - `ProjectTakeoff.tsx`: `pdfSnapWanted` no longer includes the site join. `ReferencePane` takes the page's `pdfSnap`.
+  - A link's control points and a GPS point still always snap (D-188, D-680).
+- **The mark:**
+  - In the bar: the main Snap PDF button and the reference pane's header, `data-snap-loading="toolbar"`.
+  - At the cursor: `SheetCanvas`, `data-snap-loading="cursor"`, with the picks waiting.
+  - A failed read ends the loading on both panes.
+- **Load timing: the pick waits** (chosen over re-snapping afterwards).
+  - `SheetCanvas` gets `pdfSnapWait`, set only while picking with Snap PDF on and the lines still being read.
+  - While it is set, a click is queued with the view it was clicked at, and nothing is placed.
+  - Once the lines land, each pick is placed in order, snapped as a click then would be.
+  - If the lines cannot be read, the pick lands where it was clicked. If picking ended first, it is dropped.
+- **For the fixture:** `JoinPicks` `data-join-at` gives where each pick landed.
+- **Fixture c52-stitch-snap**, in `fx-suite/browser` and `fx-suite-updates/browser`, identical:
+  - snap on: a pick 4 px from makePdf's frame snaps onto it on both panes, the same point;
+  - snap off: both land as clicked;
+  - snap on, the sheets' PDFs held back 25 s: the mark shows in both bars and at the cursor, nothing lands while
+    loading, and both picks land as after loading.
+- No stitch-fit computation changed, so there are no new QT rows.
+- **Proof:**
+  - Commits (local, umer-dev): app 97430cd, infra 8220cf8 (c52).
+  - Gates and quantity table: as D-1311's (one tree): QT exit 0, 0 FAIL, prepare skipped (DNS).
+  - **Smoke (MCP, same throwaway, about 01:55–02:00 UTC):** passed. Stitch sheets by points, C-200 with C-100 in the
+    reference pane, on the Earthwork tab.
+    - **Snap PDF on:** "snap loading" showed in both bars and at both cursors (the sheet's lines read in about 2.1 s, the
+      reference pane's in about 5.5 s). A reference-pane pick made while loading showed the cursor mark with 1 waiting
+      ("Left 1 · right 0"), then landed snapped at (0.0653, 0.9318), within the reach. Screenshot: d1313/smoke-1-waiting.png.
+    - **Snap PDF off:** no mark on either pane, and both picks landed within one pixel of the click (the reference pane no
+      longer snaps). Screenshot: d1313/smoke-2-snap-off.png.
+  - **Seen, not changed:** on a busy sheet a stitch pick that lands on a drawn path (C-200 at 0.4, 0.5) is not taken; a
+    pick on paper is.
+  - c42 and c52: queued under heavy.
+- **Question:** waiting, rather than re-snapping after the lines land: the behaviour wanted?
+
+## D-1314 — Night run from 2026-11-17 22:31, task 5: signup-throttle test-only switch
+
+- An environment flag that cannot be enabled in production.
+- The fixtures use it instead of the Redis workaround.
+
+**Built (2026-11-18, the D-1314 builder; `intelcost-infra/morning-report-2026-11-21/d1314/SIGNUP-THROTTLE-SWITCH.md`):**
+
+- **The setting:** `app/config.py:Settings.signup_throttle_off` (`SIGNUP_THROTTLE_OFF`, default off). It is honoured
+  only through `signup_throttle_skipped`, which is never true when `ENVIRONMENT=production` or `PRODUCTION=true`.
+- **Production refuses it.** D-882's guard refuses the settings, so no api, worker or alembic process starts:
+  - under `ENVIRONMENT=production`, the flag is a named problem ("SIGNUP_THROTTLE_OFF is fixtures only (D-1314)");
+  - with `PRODUCTION=true` under any environment, it raises the same.
+- **The throttle:** `auth/throttle.py` reads it once at import (`SIGNUP_OFF`), and only `SIGNUP_IP` stops counting and
+  refusing. The sign-in and reset throttles never switch off.
+- **The browser:** the flag never reaches it.
+- **The fx stack:**
+  - `docker-compose.yml` moves api-fx's environment to a top-level `x-fx-env` anchor, unchanged.
+  - api-fx merges it and adds `SIGNUP_THROTTLE_OFF: "1"`; api-fx-b inherits it.
+  - The fx workers and beat and every bench service are unchanged (`docker compose config` differs in those two
+    services only).
+- **The workaround:** the Redis throttle clear (`morning-report-2026-11-20/step5/scripts/fx-throttle-clear.sh`) is
+  kept, marked "RETIRED BY D-1314", and now exits at once. Its uses in the step-5 drivers and RUN.md are removed or
+  noted.
+- **Fixtures:** none expects a 429. (The DECISIONS entry numbered D-884 is "Item No."; the throttle came from api
+  dad9e4b.)
+- **Proved 2026-11-18:**
+  - production plus the flag refuses to start (`ENVIRONMENT=production`, and `PRODUCTION=true`);
+  - on the fx api with the flag, 35 signups from one IP get 35 × 201 and no 429;
+  - a one-off fx api with the flag at 0 refuses the 31st (429);
+  - QT 0 FAIL (prepare skipped, DNS).
+  - The 65 throwaways were purged from intelcost_fx.
+- **Commits:** api 1e367ff, infra 0640f3d.
+
+## D-1315 — Night run from 2026-11-17 22:31, task 6 (if time remains): Plan A-lean AL1–AL5
+
+Weather normals per project station, lost days into durations, "as directed" pay lines, and sump/wellpoint quantities (docs/tasks/dewatering_weather_tasks.md, D-1281). An independent check, then one (a1) harness pass. Left whole if there isn't time.
+
+### Phase 1 (2026-11-18 03:22 → 04:45 UTC, scratch only: no app or api save, no bench migration, no commit)
+
+Scratch tree `scratchpad\d1315\` (git archive of app 330c4a3, api 1e367ff, infra 0640f3d); patches `scratchpad\d1315\patches\{app,api,infra}.patch`
+against those commits; the spec's new §12 holds the data, the rules and the readings.
+
+- **AL1 (api):** migration **d1315c7a2e94** (revises d1312b6e4a70): schema `wx` (`station` 9,248, `normals` 34 seeded stations
+  × 12, `zip_centroid` 33,791; reference data, outside autogenerate as `eqlib`), `project_weather` (point, source, location text,
+  nearest station and miles, override, work start, winter switch) and `estimate_pay_item`. `app/features/weather/`
+  (`service.py:ensure`, `state`, `nearest`, `normals`, `fetch_ads`, `geocode`; `classes.py` the rule per starter activity;
+  `routes.py` GET/PUT `/project/{p}/weather`, GET `/weather/stations`); the equipment bundle carries `weather` (stored only,
+  never fetched there); `estimate/equipment.py` + `EquipmentRead.eq_site_activity_id`. No key anywhere.
+- **AL2 (app):** `lib/takeoff/earthwork/water/weather.ts` (pure: `lostShare`, `lostInMonth`, `activityLostDays`, `weatherNote`);
+  `lib/estimate/equipment/weather.ts:spreadWeather`; `cost.ts:machineCost` bills W + L on a rental, standby on L for owned,
+  none for operated, site, pool and crew-carried; `host.ts` (the line's spread activity) and `sharedEquipment.ts` (the site
+  spread's activity); `features/equipment-library/Weather.tsx` + `weatherApi.ts` (Equipment Settings › Weather; Setup line;
+  Needs-attention words), `useHostPricing` reads the weather once and refreshes the bundle; `EquipmentDialog` shows a shared
+  machine's note.
+- **AL3:** `features/estimate/PayItems.tsx` + `payItemsApi.ts`, `bidSummary.ts` "Pay items (as directed)" after profit, before
+  the bond (reading); api `app/features/payitem/`.
+- **Readings (founder away):** (1) an activity's window grows with its own lost days (fixed point), so 20 earthwork days from
+  June 1 at IAH lose 7.07 (the spec's `rain-standby-ex20` took June's 6.09 flat: 27 billed days; now 28, $13,804 not
+  $12,957); (2) no work start = the year's average share; (3) the station is the nearest with the three rain counts, a
+  missing snow or frost series borrowed from the nearest station that has it and named; (4) re-pick on the next read after
+  the location text changes; (5) pay items outside overhead, markups and profit but inside the bond; (6) winter rules built
+  and **off** (proposed, spec §12.3); (7) the activity map of §12.2 (custom activities take none, said in the note's absence).
+- **Proof in scratch:** NOAA ADS vs NCEI's archives 2,040 cells, 0 differences; api ruff, ruff format --check, mypy (295
+  files) clean; app `tsc` on the scratch tree 0 errors; eslint on every changed file through the repo config 0 errors (the
+  helpers split from the components so no new react-refresh warning); the new QT rows (`browser/lib/weather-cases.mjs`, 14)
+  all right and the 33 water rows unchanged, on the scratch modules. **Migration on foldproof15 (postgres:18, removed):** (a)
+  empty → head: the bench copy's schema but 5 known CHECK print pairs (`ck_eq_rental_tax_state_grade`,
+  `ck_wd_import_file_type`, `ck_ref_bls_load_kind`, `ck_ref_county_cbsa_kind`, `ck_ref_oews_area_type`), `alembic check`
+  clean; (b) a bench copy up then down = the bench copy, schema and every row (restrict tokens only); (c) up, down, up = up
+  (schema 0, the new tables' rows 0); every other table's rows untouched. Heavy held 04:17:28 → 04:26:56. Founder digest
+  51d01fd7cf7c2297 at 03:22.
+- **Not built: AL4's wiring** (method and quantities on the runs, the sump priced from `PMP-TRASH-3`): its duration needs the
+  run's LF/day, which is the api's production, not known at Calculate; design and ≈ 7 h in the spec §12.5.
+
+### Decision 04:45 UTC: NO-GO (the main session). Built and proved in scratch, NOT in the repos
+
+Reasons: the founder's "leave it whole rather than half-built" (AL4's wiring ≈ 7 h did not fit); AL1–AL3 change founder
+projects' prices on first open and move the fixture headline, which the founder should see whole; Phase 2's ≈ 2 h of heavy
+would collide with D-1310 and the close-out. **Handover: `intelcost-infra\morning-report-2026-11-21\d1315\HANDOVER.md`**
+(patches and whole files against app 330c4a3 / api 1e367ff / infra 0640f3d, migration d1315c7a2e94 to re-chain onto the
+head of the day, seeds, fetch scripts, QT rows, CHECKER-BRIEF.md, PHASE2.md, d1315-a1.json). Nothing in any repo, no
+bench migration, no service touched; the only bench contact was gated `docker cp`/`exec` into the api container's `/tmp`
+(the scratch tree for ruff, mypy and the foldproof alembic runs, removed 04:39) and read-only `pg_dump`/`psql` on postgres.
+Founder questions (readings taken): spec §12.7 (pay items after profit before the bond; the winter rules; $13,804 against the
+spec's $12,957; owned standby on lost days; per-line ceil rounding of small rentals; the year's average with no work start).
+
+### Close-out (night run 11-21; 2026-11-18, 09:10–09:5x UTC, the close-out builder)
+
+- **Remotes before the push:** `git fetch` in app, api, infra and market (no DNS workaround needed) moved no origin/umer-dev
+  (app e2050eb, api 7ab2f0d, infra b4fd919, market 1f0be38). origin/staging (app 08966f8, api 5b20bb3) holds only
+  Abdullah's merge commits of 2026-11-17 13:21; `git diff umer-dev...origin/staging` is empty in both. **Nothing came in;
+  not merged.** origin/main holds only his older merges (market main its 4 commits of 2026-10).
+- **The push carries:** app 3555b5b (D-1308), 3997c81 (D-1311), 97430cd (D-1313), 330c4a3 (D-1312), 6127378 and 1d9c69d
+  (D-1310); api 697aaf8 (D-1312, migration d1312b6e4a70), 1e367ff (D-1314); infra e6d6388 (QT_SKIP_PREPARE), 8220cf8,
+  0640f3d, c93996b, f812d62 and this mirror commit. Market nothing. **D-1315 is not in it** (handover only, outside git).
+- **Migrations:** nothing to fold. The one new revision since the last push is `d1312b6e4a70` (revises the pushed head
+  `d1297f3b8a60`; proved on foldproof12 by the D-1312 builder). `alembic heads` exactly `d1312b6e4a70 (head)`;
+  `alembic_version` reads d1312b6e4a70 on intelcost and intelcost_fx (read-only psql, 09:11).
+- **Gates (on app 1d9c69d, api 1e367ff):** app lint 0 errors (the 4 known warnings; 09:12–09:18), typecheck 0
+  (09:18–09:22), build 0 (09:22:48–09:27:53, under `heavy`). Api ruff, ruff format --check (287 files), mypy (287 files),
+  alembic check ("No new upgrade operations detected") clean, 09:15:21–09:16:03, founder-active quiet just before.
+- **Quantity table (09:28:16–09:44:11, under `heavy`; the full table, prepare NOT skipped):** exit 0, 0 FAIL. "prepare
+  retry: 60 rows …, all right"; "quantity table: 344 rows, both engines equal to 1e-9 on 340; 37 worked answers right; 86
+  cost rows right to the cent; 391 earthwork rows right; 371 utility rows right; … passed"; "rental tax, extras and ratios
+  (D-1287, D-1312): 30 rows, all right"; "water and rain (D-1288): 33 rows, all right". The bucket host resolved this time.
+- **Client-name scan:** 0 hits in the 39 files changed since origin/umer-dev (app 25, api 3, infra 11), their names and every
+  unpushed commit message, against the denylist plus the two names; the mirror's changed files likewise 0.
+- **Purge:** no fx.* (or fixture-seat) account on the bench created since 2026-11-17 22:31 (the D-1311/D-1313 smoke's
+  throwaway was purged at 02:01:59 by its builder; D-1314's 65 were on intelcost_fx and purged there). `purge-bench-dups.py`
+  dry run "would purge: 0, refused: 0" (09:17:46–09:18:05). Nothing to purge; no S3 prefix left.
+- **Digest:** 51d01fd7cf7c2297 at 09:11:01 and at the end.
+- **Windows (UTC):** none from the close-out (no app or api source save, no migration run, no service restarted or
+  recreated; the gated calls were the fingerprint, the api gate and the DUP dry run, each after a quiet founder-active).
+  **Bench outage before it, during the late fixture run:** worker and worker-pages exited at 08:47:49 (their watchfiles
+  "Cannot allocate memory", as on 2026-11-17) and were started again by the main session, the same containers, at 09:07:38
+  after the fx stack was stopped (09:06:44–09:07:16). Sheet preparation and other worker jobs would have queued for those
+  20 min; the api, app and beat stayed up. The late run itself passed 17/17
+  (`morning-report-2026-11-21/fixtures/LATE-RUN.md`). Bench only; no staging impact.
+- **NOTE_FOR_ABDULLAH.md** rewritten for this push (`morning-report-2026-11-21/`, outside git): staging status, the one
+  migration d1312b6e4a70 to run by hand, what testers will notice, `SIGNUP_THROTTLE_OFF` never on staging or production.
