@@ -35706,3 +35706,100 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
   product finding, the D-1310 line "functionally passed (fixtures, QT), memory not yet proven; promote at Umer's call"
   with the founder's two additions (D-1317 above: the re-measure next night, bucket check at the start and hourly; the
   Windows Alt-drag line under what testers will notice), and `SIGNUP_THROTTLE_OFF` never on staging or production.
+
+## D-1321 — Founder answers 2026-11-18 ~17:55 UTC to REPORT_2026-11-22 §1 (build next night unless noted)
+
+1. **Rental tax tip when overridden:** it reads "Your rate: 0% (default 7.29%, the project's sales tax)".
+2. **A zero rental-tax row** shows "—", consistent with the other rows. The changed dot and the Needs attention note show it was deliberate. No change.
+3. **Citations** move into `eq_rental_tax_state`, in the next migration.
+4. **No PE line** when the bore sub does the pit. Confirmed as built.
+5. **Manholes over 20 ft:** one PE-design line per run covers the trench AND its structures. A separate manhole PE line is added only when the run's trench itself has none (trench under 20 ft, manhole over). QT rows for both cases.
+6. **Part-bored runs' protection:** use the same rule a non-bored run uses for protection along its length; don't invent a different one. Report which rule that is.
+7. **P08:** the founder changes it to OH 7.25 % themself. PADD 2 diesel is correct for Ohio.
+8. **PRIORITY BUG:** a jack and bore's pits must sit at the bored stretch's From/To stations, with their depth from the ground and invert there. The Q7 table shows the bore pit left at 0+00 (35 ft) while 1+55–3+10 was bored. Re-prove Q7 with the pits moved: pit depths, pit BCY, the PE line, and $ per position.
+9. **The panel's single profit tip:** OK.
+10. **Purges:**
+    - (a) Alert after 3 nights of failed retries for the same file.
+    - (b) Workspace-level orphans are reported only; no automatic delete for now.
+    - (c) Noted.
+11. **Backlog, marked "required before paid customers":** account and workspace deletion with file clean-up (privacy laws require deletion on request).
+12. **The bench app dev server** is restarted at the start of the next run (quiet founder check). Login must load in under 5 s before any fixture or measurement.
+
+**Standing rule from now on:** any smoke used as proof records its setup (copy id, inputs, rates) so it can be repeated.
+
+## D-1322 — Night run from 2026-11-18 17:58 UTC (morning-report-2026-11-23), steps 1–2 and item 5: the bench app dev-server restart, the D-1317 re-measure behind the bucket check, Q-D2/Q-D3
+
+## D-1323 — Night run from 2026-11-18 17:58, step 3 and items 8–9: jack-and-bore pits at the bored stretch's From/To stations (PRIORITY), Q7 re-proved with the pits moved; one PE line per run covers trench and structures; part-bored protection by the non-bored rule
+
+## D-1324 — Night run from 2026-11-18 17:58, items 6–7: the override tip wording; the rental tax citations in eq_rental_tax_state (one migration)
+
+**Built (the D-1324 builder, 2026-11-18):**
+
+- **Migration `d1324a7c3e51`** (revises `d1319c4e8a21`).
+  - It adds `eqlib.eq_rental_tax_state.citation` and fills it for the seven loaded states, with the app's former table
+    (TX "34 TAC §3.294" … AZ "A.R.S. §42-5071"). LA and OK stay null.
+  - It writes no other field and no project or workspace row. The downgrade drops the column.
+  - **Proof** on foldproof24, 18:0x–18:08:13 UTC: from empty to head, the bench's schema apart from the 31 CHECK pairs
+    and the new column. On a restored bench copy, up changes only that table (its 9 rows and COPY header) and the
+    version; down gives every table back; up again equals up.
+  - **Runs:** bench 18:09:44–18:10:22 (rows equal to the proof's), intelcost_fx 18:10:46–18:11:21. Digest
+    51d01fd7cf7c2297 before and after.
+- **Api:** `equipment/service.py` `RENTAL_TAX_COLUMNS` adds `citation`. One save at 18:12:03; /docs answered 200 at
+  18:13:18.
+- **App:** `rentalExtras.ts:citationOf` reads `rule.citation`, falling back to `rule_cited` up to its first subsection;
+  the app's table is dropped. The override line reads "Your rate: 0% (default 7.29%, the project's sales tax)", both
+  values live (D-1321 1). `types.ts` gains `RentalTaxRule.citation`.
+- **QT:** `drives/quantity-table.py d1287` checks every state's citation (LA and OK none) and AZ's bundle citation: 45
+  rows, all right.
+
+## D-1325 — Night run from 2026-11-18 17:58, items 10–11: an alert after 3 nights of failed file-delete retries; fx-suite code_current poll timeout ≥ 20 s
+
+**Built (2026-11-18, the D-1325 builder):**
+- **Item 10, the alert (api c8801eb, infra 41479e7).**
+  - **How it is raised:** a `logger.error` line in the worker, plus one in-app notification per platform admin (kind
+    `storage.purge_stuck`, title "Storage clean-up", line "Files of <what> still not deleted after 3 nightly
+    retries", opening `/platform`). This is the AI tripwire's pattern (`ai_economics.check_tripwire`), without the
+    email (a new mail template was not worth it tonight).
+  - **When:** `app/worker/tasks/maintenance.py:note_retry`, after each nightly retry in `purge_trashed_projects`
+    pass 0 (`storage_clear_log`, file, folder and drawing deletes) and pass 1 (`trash_purge_log`, purged projects).
+    - A retry that still leaves files counts one on the row (`failed_retries`).
+    - At the third, the admins are told, once per row (`retry_alerted_at`). The worker's counts gain `alerted`.
+    - The request path's first clear and pass 2's first purge are not retries.
+    - "The same file" is the same log row: a row names one delete's keys and prefixes.
+  - **Migration `d1325a7f3c10`** (revises D-1324's `d1324a7c3e51`): `failed_retries INTEGER NOT NULL DEFAULT 0`
+    and `retry_alerted_at TIMESTAMPTZ` on `trash_purge_log` and `storage_clear_log`. Schema only.
+    - Proved on foldproof25: from empty, `upgrade head` and `alembic check` are clean.
+    - On a bench copy: up, check clean, 4 columns, 0 non-zero counts. Both log tables are identical row for row
+      before, after up and after down (368 and 155 rows); down leaves no column; up again is clean.
+    - The schema from empty and the bench copy's differ only in 5 CHECK-constraint prints (the known kind).
+    - Run on the bench at 18:23:20–18:23:39 and on intelcost_fx at 18:24:00–18:24:32, before the code.
+    - Digest 51d01fd7cf7c2297 after.
+  - **Api saves (one each, gated):** models.py at 18:24:59 (/docs 200 at 18:25:51); maintenance.py at 18:26:15
+    (/docs 200 at 18:27:02). The workers are up and `/health/code` is current.
+    Gates: ruff, format, mypy, `alembic check`, one head.
+  - **QT rows (`drives/qt-purge-alert.py`, run by `quantity-table.sh` after the prepare rows):**
+    - A purged project's log row and a file delete's log row on zz MyEq project's workspace are each retried five
+      times through the real `clear_purged`, `clear_logged` and `note_retry`. Retries 1–4 fail on an injected DNS
+      error, and retry 5 clears.
+    - Expected: `failed_retries` 1, 2, 3, 4, 4; told at retry 3 only (a log line per row, a notification per admin
+      per row); cleared at retry 5.
+    - Storage is never reached, and the run is rolled back, so no row and no notification is left (the bench's
+      admin inbox is untouched).
+    - Run alone at 18:29:27: "purge alert: 6 rows … 1 platform admins; rolled back, all right"; 0 left after.
+    - It is its own file because `drives/quantity-table.py` held another builder's uncommitted edits.
+- **Item 11 (infra 5b65c03):** `fx-suite.sh:code_current` reads `/health/code` with `curl -m 30` (it was 10, then
+  5 in the wait; the endpoint takes ~7–13 s). api-fx-b's `/health` gets `-m 10`, and the wait is a 300 s deadline.
+
+## D-1326 — Night run from 2026-11-18 17:58, item 12: fixtures c42 and c52 after the dev-server restart
+
+## D-1327 — Night run from 2026-11-18 17:58, item 13 (last; whole or not at all): Plan A-lean from the D-1315 handover with the D-1316 Q9 answers
+
+**D-1322 to D-1327, founder network instructions (2026-11-18 ~18:05 UTC).** Pakistan has a country-wide internet disruption: expect DNS failures and a slow bucket all night.
+- **Re-measure (D-1322):** don't depend on the live bucket.
+  - At the first window when the bucket answers, copy V-100's overlay pictures (fit plus every zoom level the harness uses) to a local folder on the bench, and serve them locally for the measurement.
+  - The same pictures are used for before and after. Record this in the setup.
+  - If no window ever opens, report it and move on.
+- **QT:** `QT_SKIP_PREPARE=1` if the S3 step can't resolve. Run it in full at the close-out only if the bucket answers then.
+- **Push:** if GitHub is unreachable at the close-out, keep everything committed locally and retry every 30 min until 08:00 the founder's time, never force. Report the exact state either way.
+  - Main-session reading: 08:00 Central, which is 14:00 UTC, since the laptop runs on Central. 08:00 Pakistan time (03:00 UTC) would end before the close-out starts.
+- **Purges and anything else touching S3:** retry, never work around refusals, and report what's left.
