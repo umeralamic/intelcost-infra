@@ -96,16 +96,18 @@ watch_start() {
 FX_CODE_SERVICES="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx"
 code_current() {
   local s
-  s=$(curl -s -m 10 localhost:8020/health/code)
+  # -m 30: /health/code hashes every api file and takes ~13 s under load (D-1325; it was -m 5/-m 10 and timed out).
+  s=$(curl -s -m 30 localhost:8020/health/code)
   case "$s" in *'"current":true'*) return 0 ;; esac
   echo "fx code: api-fx or worker-fx runs older code than the disk: restarting $FX_CODE_SERVICES (fx only)"
   docker compose --profile fx restart $FX_CODE_SERVICES >/dev/null 2>&1
-  for _ in $(seq 1 120); do
-    curl -s -m 5 localhost:8020/health/code | grep -q '"current":true' && curl -sf -m 5 localhost:8030/health >/dev/null \
+  local until=$(($(date +%s) + 300))
+  while [ "$(date +%s)" -lt "$until" ]; do
+    curl -s -m 30 localhost:8020/health/code | grep -q '"current":true' && curl -sf -m 10 localhost:8030/health >/dev/null \
       && { echo "fx code: current again"; return 0; }
     sleep 2
   done
-  echo "fx code: still not current after 240 s (an api save in progress?): bench-code will say"
+  echo "fx code: still not current after 300 s (an api save in progress?): bench-code will say"
 }
 
 # Fixtures over about 10 minutes, or one 520 MB set's memory (regress timings, fx-suite/.regress/times.tsv):
