@@ -2578,7 +2578,10 @@ try {
           const bottom = xr.casingBottom(invert, pipe.id, cross.casing, cross.kind === "sleeve") - xr.PIT_BELOW_CASING_FT;
           const size = xr.PIT_SIZE[c.pit.type];
           const dig = xr.pitDig(size.lengthFt, size.widthFt, 100 - bottom, [{ z0: -1e6, z1: 1e6 }]);
-          const parts = xr.pitLineParts({ pit: c.pit.type, casingIn: cross.casing.sizeIn, dig, layers: [{ name: "Clay", rock: false, unsuitable: false, swell: 1.2 }], pumpDays: c.pit.pumpDays ?? xr.pumpDaysFor(cross.lf), backfill: c.pit.backfill ?? "native", bySub: Boolean(c.pit.bySub), swell: 1.2 });
+          // D-1319 (Q6): its crossing's one PE-design line goes with it when it is the crossing's first self-performed pit
+          // past 20 ft (`pePitsOf`, as Calculate marks it).
+          const peDesign = xr.pePitsOf([{ key: "run", depthFt: dig.h, bySub: Boolean(c.pit.bySub) }]).has(0);
+          const parts = xr.pitLineParts({ pit: c.pit.type, casingIn: cross.casing.sizeIn, dig, layers: [{ name: "Clay", rock: false, unsuitable: false, swell: 1.2 }], pumpDays: c.pit.pumpDays ?? xr.pumpDaysFor(cross.lf), backfill: c.pit.backfill ?? "native", bySub: Boolean(c.pit.bySub), swell: 1.2, peDesign });
           Object.assign(out, {
             pitDepthFt: Math.round(dig.h * 1e4) / 1e4,
             pitShoring: dig.shoring,
@@ -2912,6 +2915,17 @@ try {
           boredAt: bored.length && Number.isFinite(bored[0][0]) ? bored.map(([a, b]) => `${r2s(a)}-${r2s(b)}`).join(",") : "none",
           crossingFlags: cross ? cross.flags.join(" | ") || "none" : "none",
         };
+      }
+      // D-1319 (Q6, the founder's correction): one PE-design line a crossing. Each pit as worked (its crossing, depth, by
+      // the sub or not); the lines its crossings get, and the pits that carry them.
+      if (c.kind === "d1319-pe-crossing") {
+        const marked = xr.pePitsOf(c.pits);
+        const lines = c.pits.flatMap((p, i) => {
+          const size = xr.PIT_SIZE[p.type ?? "bore_pit"];
+          const dig = xr.pitDig(size.lengthFt, size.widthFt, p.depthFt, [{ z0: -1e6, z1: 1e6 }]);
+          return xr.pitLineParts({ pit: p.type ?? "bore_pit", casingIn: 16, dig, layers: [{ name: "Clay", rock: false, unsuitable: false, swell: 1.2 }], pumpDays: 3, backfill: "native", bySub: p.bySub, swell: 1.2, peDesign: marked.has(i) }).filter((l) => l.role === "trench_pe_design");
+        });
+        return { peLines: lines.length, carriedBy: [...marked].join(","), variants: [...new Set(lines.map((l) => l.variant))].join(" ") || "none" };
       }
       // D-1319 (Q7): a run on level ground (G 100), 8 in SDR-35 in a 6 ft box, its trench depth straight between the
       // profile's [station, depth] points; its crossing's length worked at its own stations (the open parts on their own
