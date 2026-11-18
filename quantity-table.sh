@@ -194,12 +194,18 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py re
 # prepared; twice, failed; while fetching; a refusal failed at once; a timeout then DNS, 30 s as before).
 # D-1270: the page by its uuid (an old integer id with a warning); the message; a kill at the hard limit (the hook,
 # killed once and again, the sweep's send, a dead running row) and Choose pages' thumbnails killed or stopped, once and twice.
+# QT_SKIP_PREPARE=1 (night run 2026-11-21): skips only this step, when the bench bucket's host does not resolve (the
+# router's DNS failing, 2026-11-17). It says so; every other row still runs. A release or close-out runs it in full.
+if [ "${QT_SKIP_PREPARE:-0}" = "1" ]; then
+  echo "SKIPPED  prepare retry (QT_SKIP_PREPARE=1: the bench bucket host does not resolve)"
+else
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prepare" </dev/null >$QT/prepare.txt 2>&1
 PREPARE=$?
 # The task's own warnings on the injected errors are expected (the rows silence its log since D-1263; the filter
 # stays for an older drive); every other line is shown.
 grep -v "hit a passing error, again in" $QT/prepare.txt
 [ "$PREPARE" -eq 0 ] || { echo "FAIL  prepare retry (above)"; exit 1; }
+fi
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 STATUS="${PIPESTATUS[0]}"
 # Benchmark A (D-1028): the last check of its copy's export against the local expectations, outside
