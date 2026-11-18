@@ -2916,6 +2916,29 @@ try {
           crossingFlags: cross ? cross.flags.join(" | ") || "none" : "none",
         };
       }
+      // D-1323 (D-1321 8): a jack and bore's pits at its bored stretch's stations, the bore pit at From and the receiving
+      // pit at To (`crossings.ts:pitStation`), each dug to the casing's bottom + 1.5 ft from the ground and the invert there.
+      // A run of 8 in C900 DR 18 on ground at 100, its invert straight from `inverts[0]` to `inverts[1]` over `length`.
+      if (c.kind === "d1323-pit-station") {
+        const pipe = cat.resolvePipe("pvc_c900_dr18:8");
+        const cross = xr.resolveCrossing("water", { crossing: c.crossing }, c.length, { catalogKey: "pvc_c900_dr18:8", odIn: pipe.od, idIn: pipe.id, pipes: 1 });
+        const depth = (pit) => {
+          const at = xr.pitStation(cross, pit);
+          const invert = c.inverts[0] + ((c.inverts[1] - c.inverts[0]) * at) / c.length;
+          const bottom = xr.casingBottom(invert, pipe.id, cross.casing, false) - xr.PIT_BELOW_CASING_FT;
+          return { at: r2(at), h: r2(100 - bottom) };
+        };
+        const b = depth("bore_pit");
+        const rv = depth("receiving_pit");
+        return { boreAt: b.at, boreFt: b.h, receivingAt: rv.at, receivingFt: rv.h };
+      }
+      // D-1323 (D-1321 5): one PE-designed protective system a run covers its trench and its structures. Each run's trench
+      // (its protection bands: a box past 20 ft has the line, D-1144), each structure or crossing's pits with their runs;
+      // the structures that get a line of their own.
+      if (c.kind === "d1323-pe-plan") {
+        const withPe = new Set(c.runs.filter((r) => ln.trenchNeedsPe({ protectionLF: r.bands })).map((r) => r.id));
+        return { runsWithPe: [...withPe].sort().join(",") || "none", ownLines: [...xr.structurePeOf(c.items, withPe)].join(",") || "none" };
+      }
       // D-1319 (Q6, the founder's correction): one PE-design line a crossing. Each pit as worked (its crossing, depth, by
       // the sub or not); the lines its crossings get, and the pits that carry them.
       if (c.kind === "d1319-pe-crossing") {
@@ -2944,7 +2967,7 @@ try {
           bucket: "auto",
           box: tr.boxFor(P, [BOX], { boxRef: "b6", boxOutsideFt: null }),
           specMaxIn: null,
-          protection: "box",
+          protection: c.protection ?? "box",
           limitedWidth: false,
           rule: null,
           depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
@@ -2968,6 +2991,8 @@ try {
           pipeLf: r2(at.pipeLF.reduce((t, x) => t + x.lf, 0)),
           stations: `${r2(b0)}-${r2(b1)}`,
           // The open trench as spans (its pieces, cut at each depth range, joined where they meet).
+          // D-1323 (D-1321 6): the open pieces' protection methods (Auto: one for the run, by the deepest open point).
+          methods: [...new Set(at.pieces.map((x) => x.method))].join(","),
           openPieces: at.shape.reduce((acc, x) => { const last = acc[acc.length - 1]; if (last && Math.abs(last[1] - x.s0) < 1e-6) last[1] = x.s1; else acc.push([x.s0, x.s1]); return acc; }, []).map(([a, b]) => `${r2(a)}-${r2(b)}`).join(","),
         };
       }

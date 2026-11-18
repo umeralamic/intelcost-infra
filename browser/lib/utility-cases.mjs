@@ -3526,6 +3526,29 @@ export const UTILITY_CASES = [
   // rows above).
   { id: "d1319-reverse-bored-deep-start", kind: "d1319-stations", profile: [[0, 16], [100, 6]], crossing: { kind: "jack_bore", lf: 40, from_ft: 0 }, expect: { wholeCY: 244.44, averageCY: 146.67, stationsCY: 120, trenchLf: 60, stations: "0-40", openPieces: "40-100" } },
   { id: "d1319-reverse-bored-shallow-end", kind: "d1319-stations", profile: [[0, 16], [100, 6]], crossing: { kind: "jack_bore", lf: 40, from_ft: 60 }, expect: { averageCY: 146.67, stationsCY: 173.33, trenchLf: 60, stations: "60-100", openPieces: "0-60" } },
+  // D-1323 (D-1321 6): a part-bored run takes the protection rule a run not bored takes along its length: Auto, one
+  // method for the run by its deepest point (D-1080: vertical walls to 4.5 ft, deeper sloped on an open site, a box where
+  // the width is limited), the deepest of its dug length. Open 0+00 to 0+40 at 4 ft and 0+60 to 1+00 at 10 ft: sloped on
+  // both (each part on its own read 4 ft as vertical); all at 4 ft: vertical.
+  { id: "d1323-part-bored-auto-one-method", kind: "d1319-stations", protection: "auto", profile: [[0, 4], [40, 4], [60, 10], [100, 10]], crossing: { kind: "jack_bore", lf: 20, from_ft: 40 }, expect: { methods: "sloped", trenchLf: 80, openPieces: "0-40,60-100" } },
+  { id: "d1323-part-bored-auto-shallow", kind: "d1319-stations", protection: "auto", profile: [[0, 4], [100, 4]], crossing: { kind: "jack_bore", lf: 20, from_ft: 40 }, expect: { methods: "vertical", trenchLf: 80 } },
+  // D-1323 (D-1321 8, the founder's priority): the pits at the bored stretch's From and To, each dug to the casing's
+  // bottom + 1.5 ft there. 8 in C900 DR 18 (ID 8.0444 in) in a 16 in casing; ground 100, the invert 70 at 0+00 to 90 at
+  // 3+00. Depth = ground - invert - 8.0444 / 24 + 16 / 24 + 1.5 = ground - invert + 1.8315.
+  // - bored 1+50 to 2+50: the bore pit at 1+50 (invert 80) 21.83 ft, the receiving pit at 2+50 (invert 86.67) 15.16 ft;
+  // - bored 0+00 to 1+00: 31.83 ft at 0+00, 25.16 ft at 1+00 (invert 76.67);
+  // - bored over the whole run: 31.83 ft at 0+00, 11.83 ft at 3+00.
+  { id: "d1323-pits-at-stretch-150-250", kind: "d1323-pit-station", length: 300, inverts: [70, 90], crossing: { kind: "jack_bore", lf: 100, from_ft: 150 }, expect: { boreAt: 150, boreFt: 21.83, receivingAt: 250, receivingFt: 15.16 } },
+  { id: "d1323-pits-at-stretch-0-100", kind: "d1323-pit-station", length: 300, inverts: [70, 90], crossing: { kind: "jack_bore", lf: 100, from_ft: 0 }, expect: { boreAt: 0, boreFt: 31.83, receivingAt: 100, receivingFt: 25.16 } },
+  { id: "d1323-pits-at-run-ends", kind: "d1323-pit-station", length: 300, inverts: [70, 90], crossing: { kind: "jack_bore" }, expect: { boreAt: 0, boreFt: 31.83, receivingAt: 300, receivingFt: 11.83 } },
+  // D-1323 (D-1321 5): one PE-designed protective system a run covers its trench AND its structures; a structure past
+  // 20 ft gets its own only when none of its runs' trenches has one (D-1144's line: a box past 20 ft).
+  { id: "d1323-pe-trench-covers-manhole", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 22 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "R", ownLines: "none" } },
+  { id: "d1323-pe-manhole-own-line", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 15 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "none", ownLines: "0" } },
+  { id: "d1323-pe-manhole-shared-covered", kind: "d1323-pe-plan", runs: [{ id: "R1", bands: [{ method: "box", maxDepthFt: 22 }] }, { id: "R2", bands: [{ method: "box", maxDepthFt: 10 }] }], items: [{ key: "MH", runs: ["R1", "R2"], depthFt: 25, bySub: false }], expect: { runsWithPe: "R1", ownLines: "none" } },
+  { id: "d1323-pe-manhole-by-others", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 15 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: true }], expect: { ownLines: "none" } },
+  { id: "d1323-pe-crossing-covered-by-trench", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 22 }] }], items: [{ key: "R", runs: ["R"], depthFt: 35, bySub: false }, { key: "R", runs: ["R"], depthFt: 25, bySub: false }], expect: { ownLines: "none" } },
+  { id: "d1323-pe-crossing-own-line", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "sloped", maxDepthFt: 12 }] }], items: [{ key: "R", runs: ["R"], depthFt: 35, bySub: false }, { key: "R", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "none", ownLines: "0" } },
   // D-1319 (Q6, the founder's correction): one PE-designed protective system a crossing, covering its bore and receiving
   // pits together, when one of its self-performed pits is past 20 ft; it goes with the first such pit. A pit by the bore
   // sub is the sub's, its design too.
