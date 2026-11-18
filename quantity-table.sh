@@ -206,6 +206,10 @@ PREPARE=$?
 grep -v "hit a passing error, again in" $QT/prepare.txt
 [ "$PREPARE" -eq 0 ] || { echo "FAIL  prepare retry (above)"; exit 1; }
 fi
+# D-1325 (the founder's D-1321 10a): the nightly purge's retry of the same files fails on DNS (injected) four
+# times and then clears; the platform admins are told at the third failed retry only, once per log row. Storage is
+# never reached and the run is rolled back (no notification is left), so it runs under QT_SKIP_PREPARE too.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-purge-alert.py" </dev/null || { echo "FAIL  purge alert (above)"; exit 1; }
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 STATUS="${PIPESTATUS[0]}"
 # Benchmark A (D-1028): the last check of its copy's export against the local expectations, outside
