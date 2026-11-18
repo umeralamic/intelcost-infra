@@ -35403,3 +35403,41 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
     `report-storage-orphans` only lists them.
   - See `d1320/Q18-S3-LEFTOVERS.md`. Nothing was deleted.
 - **Commit:** infra 8dbbf4d.
+
+**D-1320, founder answers (2026-11-18, ~13:20 UTC) on Q18 and Q19:**
+1. **Q18:** yes to a one-off guarded delete of D-1308's throwaway prefix only.
+   - Confirm it is an fx throwaway and not on the guard list.
+   - List it (129 objects), delete, list again (0), and log it.
+   - The account purge records the file clean-up BEFORE deleting rows, and the nightly purge retries failed file deletes until done.
+   - It is the same code path as real account deletion, so it counts as a correctness fix. Proof: a QT or fixture run with a forced file-delete failure, then a retry that clears it.
+   - Note it for Abdullah.
+2. **f5-big** stays on the long list (memory, not time).
+3. **No file-watching on the fixture stack:** that watcher is what hit ENOMEM. After api saves, restart or rebuild the fixture api under the heavy lock before the run, so the code check passes.
+
+**D-1320 follow-ups (the D-1320 builder, 2026-11-18 13:28–13:40 UTC):**
+- **Item 3 (no file watcher), built in infra d45f4c6.**
+  - `FX_WATCH=0` is the compose default for api-fx, api-fx-b, worker-fx, worker-fx-ocr and worker-fx-previews.
+    `docker compose config` differs from HEAD only in those five commands.
+  - A release no longer turns the watchers back on at its end.
+  - `fx-suite.sh` `code_current`, called by every `run` after the watch starts: when api-fx's `/health/code` is not
+    current, it restarts api-fx, api-fx-b, the fx workers and beat-fx (the same containers, fx only, under the run's
+    heavy lock), and waits up to 240 s for the code to be current.
+  - README and the run's RULES.md say so.
+  - The stale-code case is unproved: it needs an api content change (`/health/code` hashes every `.py` under `app/`),
+    and the main session ruled out a comment-only save.
+- **Item 1 (Q18 delete): HELD.**
+  - Checks passed: the workspace and its one project `6ef3f279-80a4-4efc-81c2-920a9fe63ac2` are not on the guard list
+    and have no rows.
+  - Listed 13:29:41–13:30:19: 129 objects (project-file 2, takeoff 127).
+  - The delete exec was denied by the session's auto-mode classifier. The instruction came only through the main
+    session, so it was not worked around; it went back to the founder. See `d1320/Q18-S3-LEFTOVERS.md`.
+- **Item 2 (record the clean-up before deleting rows): HELD for a schema decision.**
+  - The api has no account or workspace deletion path; only `intelcost-infra/drives/purge-bench-accounts.py` and
+    `bench-workspaces.py purge-fx` delete those rows.
+  - `storage_clear_log.workspace_id` and `trash_purge_log.workspace_id` are NOT NULL with ON DELETE CASCADE
+    (`WorkspaceScopedMixin`). A log row written before the workspace is deleted would go with it.
+  - Options put to the founder:
+    - (A) a migration making `storage_clear_log.workspace_id` nullable with SET NULL, plus the drives writing the row
+      first; the nightly pass 0 (`clear_logged`) then retries it;
+    - (B) no schema change: the drive clears storage first and keeps an account's rows when a delete fails, so the
+      next purge retries it.
