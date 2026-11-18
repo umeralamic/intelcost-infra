@@ -244,6 +244,85 @@ export const UTILITY_CASES = [
   { id: "util-1106-storm-keeps", kind: "pressure-section", type: "storm", expect: { section: [12, 24], cover: null, vertical: "inverts" } },
   { id: "util-628-new-run-from-proposed", kind: "newrun", type: "storm", catalogKey: "pvc_d3034_sdr35:12", nominalIn: 12, coverFt: 3, beddingIn: 6, groundFt: { existing: 100, proposed: 98 },
     expect: { lastFrom: "existing", newFrom: "proposed", newGroundFt: 98, newTrenchBottomFt: 93.46, carried: "storm pvc_d3034_sdr35:12 12" } },
+  // D-1311 (Q15): a bored or drilled stretch digs no trench, so it never enters the overlap step. A (8 ft deep, 6 ft box,
+  // along x) is crossed square at its station 0+50 by B (6 ft box, along y from -50 to 50), deeper (12 ft) unless said.
+  // 1. B bored over its whole run takes nothing from A: A keeps 6 · 8 · 100 / 27 = 177.78 CY; B digs none. Before, B,
+  //    deeper, kept the shared 6 · 6 · 8 = 288 CF (10.67 CY) and A lost it: 167.11 (D-1303's smoke: ST-2 46.32 BCY off
+  //    SS-1).
+  // 2. B bored 0+00 to 0+40 (y -50 to -10): its open stretch still crosses A and keeps the 10.67 CY (bedding 6 · 6 · 0.5
+  //    = 18, zone 6 · 6 · 1.7 less A's pipe 0.3848 · 6 = 58.89, backfill 208.8). B's trench, 6 · 12 · 100 = 7200 CF, at
+  //    its open share 0.6: 160.00 CY.
+  // 3. B bored 0+30 to 0+70, over A's trench (B's stations 0+47 to 0+53): nothing taken.
+  // 4. B bored 0+00 to 0+48: its open part from 0+48 (y -2) shares 5 · 6 · 8 = 240 CF = 8.89 CY (bedding 15, zone 51 less
+  //    2.309 = 48.69, backfill 174); A 168.89; B 7200 · 0.52 = 138.67.
+  // 5. B 6 ft deep, shallower, bored 0+00 to 0+40: its open stretch loses 6 · 6 · 6 = 216 CF = 8.00 CY to A (bedding 18,
+  //    zone 61.2 less its pipe 2.309 = 58.89, backfill 136.8). Its loss is taken whole after the open share: 3600 · 0.6 −
+  //    216 = 1944 CF = 72.00 CY. Before: taken first, then scaled, (3600 − 216) · 0.6 = 2030.4 = 75.20.
+  {
+    id: "d1311-bored-takes-nothing",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 12, protection: "box", crossing: { kind: "jack_bore" } },
+    ],
+    expect: { overlaps: [], afterCY: [177.78, 0] },
+  },
+  {
+    id: "d1311-bored-takes-nothing-before",
+    kind: "overlap",
+    before: true,
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 12, protection: "box", crossing: { kind: "jack_bore" } },
+    ],
+    expect: { overlaps: [["A", "B", 10.67, 18, 58.89, 208.8]], afterCY: [167.11, 0] },
+  },
+  {
+    id: "d1311-part-bored-open-stretch-overlaps",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 12, protection: "box", crossing: { kind: "jack_bore", lf: 40, from_ft: 0 } },
+    ],
+    expect: { overlaps: [["A", "B", 10.67, 18, 58.89, 208.8]], afterCY: [167.11, 160] },
+  },
+  {
+    id: "d1311-part-bored-over-the-crossing",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 12, protection: "box", crossing: { kind: "jack_bore", lf: 40, from_ft: 30 } },
+    ],
+    expect: { overlaps: [], afterCY: [177.78, 160] },
+  },
+  {
+    id: "d1311-part-bored-cut-in-the-crossing",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 12, protection: "box", crossing: { kind: "hdd", lf: 48, from_ft: 0 } },
+    ],
+    expect: { overlaps: [["A", "B", 8.89, 15, 48.69, 174]], afterCY: [168.89, 138.67] },
+  },
+  {
+    id: "d1311-part-bored-loses-on-open-stretch",
+    kind: "overlap",
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 6, protection: "box", crossing: { kind: "jack_bore", lf: 40, from_ft: 0 } },
+    ],
+    expect: { overlaps: [["B", "A", 8, 18, 58.89, 136.8]], afterCY: [177.78, 72] },
+  },
+  {
+    id: "d1311-part-bored-loses-on-open-stretch-before",
+    kind: "overlap",
+    before: true,
+    runs: [
+      { name: "A", path: [[0, 0], [100, 0]], depth: 8, protection: "box" },
+      { name: "B", path: [[50, -50], [50, 50]], depth: 6, protection: "box", crossing: { kind: "jack_bore", lf: 40, from_ft: 0 } },
+    ],
+    expect: { overlaps: [["B", "A", 8, 18, 58.89, 136.8]], afterCY: [177.78, 75.2] },
+  },
   {
     id: "util-616-parallel",
     kind: "overlap",
@@ -3365,14 +3444,38 @@ export const UTILITY_CASES = [
   // HDD, a sleeve): 100 ft deep, no width. Bored over the whole run: 99 ft worked, 101 ft "Check depth", and at 60 ft its
   // trench-section top past 150 ft is ignored where the same run open cut is "Check depth". A mixed run, open 0+00 to
   // 0+50 then bored 0+50 to 1+00 at 80 ft: open at 30 ft is worked; open at 45 ft is "Check depth" on the open stretch.
-  // A part-bored run with no pits placed is bored over its deepest LF.
+  // D-1311 (Q17): a part-bored run is bored at its crossing's own stations (`section.crossing.from_ft`, then `lf` on), pits
+  // or none; it was bored over its deepest LF with no pits placed (D-1303). The part-bored row now gives its stations
+  // (0+50 to 1+00, the deepest LF too, so the same answer); bored 0+00 to 0+50 instead leaves the 80 ft stretch open cut
+  // ("Check depth" there, where the deepest LF read it as bored); a length stored with no stations reads from the start,
+  // flagged.
   { id: "d1303-trenchless-99ft", kind: "d1301-depth", trenchless: true, protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [601.6, 601.6], layers: [ASSUMED_C], expect: { flag: "none", over100: false, over150: true } },
   { id: "d1303-trenchless-101ft", kind: "d1301-depth", trenchless: true, protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [599, 599], layers: [ASSUMED_C], expect: { flag: "Check depth", over100: true, stretch: "bored 0-100" } },
   { id: "d1303-trenchless-60ft-wide", kind: "d1301-depth", trenchless: true, protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [640.6, 640.6], layers: [ASSUMED_C], expect: { flag: "none", over150: true } },
   { id: "d1303-open-60ft-wide", kind: "d1301-depth", protection: "sloped", odIn: 6.275, idIn: 5.915, length: 100, ground: [700, 700], inverts: [640.6, 640.6], layers: [ASSUMED_C], expect: { flag: "Check depth", over150: true, stretch: "open 0-100" } },
   { id: "d1303-mixed-open30-bored80", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], bored: [[50, 100]], layers: [ASSUMED_C], expect: { flag: "none", stretch: "none" } },
   { id: "d1303-mixed-open45-bored80", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 655.5], [50, 700, 655.5], [50, 700, 620.5], [100, 700, 620.5]], bored: [[50, 100]], layers: [ASSUMED_C], expect: { flag: "Check depth", stretch: "open 0-50" } },
-  { id: "d1303-part-bored-no-pits", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], partialLf: 50, layers: [ASSUMED_C], expect: { flag: "none", boredAt: "50-100" } },
+  { id: "d1303-part-bored-no-pits", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], crossing: { kind: "jack_bore", lf: 50, from_ft: 50 }, layers: [ASSUMED_C], expect: { flag: "none", boredAt: "50-100", crossingFlags: "none" } },
+  { id: "d1311-part-bored-own-stations", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], crossing: { kind: "jack_bore", lf: 50, from_ft: 0 }, layers: [ASSUMED_C], expect: { flag: "Check depth", stretch: "open 50-100", boredAt: "0-50", crossingFlags: "none" } },
+  { id: "d1311-part-bored-no-stations", kind: "d1301-depth", odIn: 6.275, idIn: 5.915, profile: [[0, 700, 670.5], [50, 700, 670.5], [50, 700, 620.5], [100, 700, 620.5]], crossing: { kind: "jack_bore", lf: 50 }, layers: [ASSUMED_C], expect: { flag: "Check depth", stretch: "open 50-100", boredAt: "0-50", crossingFlags: "Bored length has no stations: read from the run's start; set From in Encasement / casing" } },
+  // D-1311 (Q16): bore and receiving pits (12 x 32 and 10 x 10 ft, shored) against the pit limit: past 40 ft "Check depth"
+  // (not dug, drawn or priced), as other pits; past 20 ft the PE note (OSHA 1926.652(b)(4), (c)(4)). D-1303's smoke had
+  // them 64 ft deep under a 61 ft bore.
+  { id: "d1311-bore-pit-45ft", kind: "d1311-pit", pit: "bore_pit", depthFt: 45, expect: { flag: "Check depth", note: "none" } },
+  { id: "d1311-bore-pit-64ft", kind: "d1311-pit", pit: "bore_pit", depthFt: 64, expect: { flag: "Check depth", note: "none" } },
+  { id: "d1311-receiving-pit-40ft", kind: "d1311-pit", pit: "receiving_pit", depthFt: 40, expect: { flag: "none", note: "Over 20 ft deep", shoring: "sheet_pile" } },
+  { id: "d1311-receiving-pit-40.5ft", kind: "d1311-pit", pit: "receiving_pit", depthFt: 40.5, expect: { flag: "Check depth", note: "none" } },
+  { id: "d1311-receiving-pit-25ft", kind: "d1311-pit", pit: "receiving_pit", depthFt: 25, expect: { flag: "none", note: "Over 20 ft deep", shoring: "sheet_pile" } },
+  { id: "d1311-bore-pit-20ft", kind: "d1311-pit", pit: "bore_pit", depthFt: 20, expect: { flag: "none", note: "none", shoring: "slide_rail" } },
+  // D-1311 (Q17): "Bore pits not placed" on a jack and bore (a sleeve too) short of its bore pit, its receiving pit or
+  // both, by the pits linked to it; its stations never depend on them. HDD's entry and exit pits are its subcontract's
+  // lump sum: no flag. Needs attention names it on the run's pipe line.
+  { id: "d1311-pits-none", kind: "d1311-pits-flag", crossing: { kind: "jack_bore" }, linked: [], expect: { flag: "Bore pits not placed: add a bore pit and a receiving pit (Encasement / casing)", attention: true } },
+  { id: "d1311-pits-no-receiving", kind: "d1311-pits-flag", crossing: { kind: "jack_bore", lf: 40, from_ft: 30 }, linked: ["bore_pit"], expect: { flag: "Bore pits not placed: add a receiving pit (Structures)", attention: true } },
+  { id: "d1311-pits-no-bore", kind: "d1311-pits-flag", crossing: { kind: "jack_bore" }, linked: ["receiving_pit"], expect: { flag: "Bore pits not placed: add a bore pit (Structures)", attention: true } },
+  { id: "d1311-pits-both", kind: "d1311-pits-flag", crossing: { kind: "jack_bore", lf: 40, from_ft: 30 }, linked: ["bore_pit", "receiving_pit"], expect: { flag: "none", attention: false } },
+  { id: "d1311-pits-hdd", kind: "d1311-pits-flag", crossing: { kind: "hdd" }, linked: [], expect: { flag: "none", attention: false } },
+  { id: "d1311-pits-sleeve", kind: "d1311-pits-flag", type: "casing", catalogKey: "steel_casing_375:16", crossing: {}, linked: ["bore_pit"], expect: { flag: "Bore pits not placed: add a receiving pit (Structures)", attention: true } },
   // A result stored before the guard: a band 2,007 ft wide is never drawn; a 3 ft one is.
   { id: "d1301-stored-band-absurd", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1003.5, "sloped", 1.5], [49.9, 1003.5, "sloped", 1.5]], expect: { bands: 0 } },
   { id: "d1301-stored-band-sane", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1.5, "vertical", 0], [49.9, 1.5, "vertical", 0]], expect: { bands: 1 } },

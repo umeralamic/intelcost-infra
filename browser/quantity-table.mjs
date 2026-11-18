@@ -2080,15 +2080,27 @@ try {
             segments: [],
             restoration: null,
           });
-          return { run, q: qq };
+          // D-1311 (Q15): the run's crossing as it stores it (`section.crossing`), resolved as Calculate resolves it.
+          const cross = run.crossing ? xr.resolveCrossing("sanitary", { crossing: run.crossing }, L, { catalogKey: SDR35, odIn: p.od, idIn: p.id, pipes: 1 }) : null;
+          return { run, q: qq, cross };
         });
+        // D-1311 (Q15): a bored stretch never enters the overlap step (`crossings.ts:boredStretches`,
+        // `overlaps.ts:outsideStretches`); `c.before` works the step as it was, every piece in.
         const found = ov.trenchOverlaps(
-          worked.flatMap(({ run, q: qq }) => ov.placePieces(run.name, qq.shape, run.path)),
+          worked.flatMap(({ run, q: qq, cross }) => (c.before ? ov.placePieces(run.name, qq.shape, run.path) : ov.outsideStretches(ov.placePieces(run.name, qq.shape, run.path), xr.boredStretches(cross)))),
           new Map(worked.map(({ run }) => [run.name, { odFt: p.od / 12, count: 1 }])),
           c.pits ?? [],
           c.runs.map((r) => r.name),
         );
-        const after = worked.map(({ run, q: qq }) => r2(ov.afterOverlaps(qq, [{ layerId: null, ...CLAY }], found.filter((o) => o.loser === run.name)).excavationCF / 27));
+        // A bored run's trench figures blended by its open share (D-1269), its loss taken after the blend (D-1311; before:
+        // taken first, then scaled with the run).
+        const after = worked.map(({ run, q: qq, cross }) => {
+          const lost = found.filter((o) => o.loser === run.name);
+          const soil = [{ layerId: null, ...CLAY }];
+          if (!cross || cross.dug) return r2(ov.afterOverlaps(qq, soil, lost).excavationCF / 27);
+          if (c.before) { const cut = ov.afterOverlaps(qq, soil, lost); return r2(xr.blendQuantities(cut, xr.noTrench(cut), cross.f).excavationCF / 27); }
+          return r2(ov.afterOverlaps(xr.blendQuantities(qq, xr.noTrench(qq), cross.f), soil, lost).excavationCF / 27);
+        });
         return {
           overlaps: found.map((o) => [o.loser, o.keeper, r2(o.excavationCF / 27), r2(o.beddingCF), r2(o.zoneCF), r2(o.backfillCF)]),
           afterCY: after,
@@ -2881,9 +2893,10 @@ try {
         });
         const length = c.profile ? c.profile[c.profile.length - 1][0] : c.length;
         const path = [[0, 0], [length, 0]];
-        // D-1303 (1): per stretch. `trenchless`: bored over the whole run; `bored`: bored station ranges; `partialLf`: a
-        // part-bored run with no pits, bored over its deepest LF.
-        const bored = c.trenchless ? [[-Infinity, Infinity]] : c.partialLf ? tp.deepestStretch(r.shape, c.partialLf) : (c.bored ?? []);
+        // D-1303 (1): per stretch. `trenchless`: bored over the whole run; `bored`: bored station ranges; D-1311 (Q17):
+        // `crossing`, the run's `section.crossing`, bored at its own stations (`crossings.ts:boredStretches`).
+        const cross = c.crossing ? xr.resolveCrossing("sanitary", { crossing: c.crossing }, c.profile ? c.profile[c.profile.length - 1][0] : c.length, { catalogKey: null, odIn: c.odIn, idIn: c.idIn, pipes: 1 }) : null;
+        const bored = c.trenchless ? [[-Infinity, Infinity]] : cross ? xr.boredStretches(cross) : (c.bored ?? []);
         const found = tp.stretchCheck(r.shape, bored);
         const at = tp.trenchStretches(r.shape, c.trenchless ? [[-Infinity, Infinity]] : []).reduce((m, s) => ({ depth: Math.max(m.depth, s.depthFt), top: Math.max(m.top, s.topFt) }), { depth: 0, top: 0 });
         const r2s = (v) => Math.round(v * 100) / 100;
@@ -2894,7 +2907,19 @@ try {
           over100: at.depth > 100,
           stretch: found === null ? "none" : `${found.stretch.kind} ${r2s(found.stretch.s0)}-${r2s(found.stretch.s1)}`,
           boredAt: bored.length && Number.isFinite(bored[0][0]) ? bored.map(([a, b]) => `${r2s(a)}-${r2s(b)}`).join(",") : "none",
+          crossingFlags: cross ? cross.flags.join(" | ") || "none" : "none",
         };
+      }
+      // D-1311 (Q16): a bore or receiving pit at a depth: "Check depth" past 40 ft (not dug, drawn or priced), the PE note
+      // past 20 ft (OSHA 1926.652), its shoring by depth (D-1269).
+      if (c.kind === "d1311-pit") {
+        const k = xr.pitCheck(c.depthFt, c.pit);
+        return { flag: k.why === null ? "none" : k.why.split(":")[0], note: k.note === null ? "none" : k.note.split(":")[0], shoring: xr.pitShoring(c.depthFt) };
+      }
+      // D-1311 (Q17): "Bore pits not placed" by the pit types linked to a run with its crossing, whatever its stations.
+      if (c.kind === "d1311-pits-flag") {
+        const cross = xr.resolveCrossing(c.type ?? "sanitary", { crossing: c.crossing }, 100, { catalogKey: c.catalogKey ?? null, odIn: 9.1, idIn: 8.4, pipes: 1 });
+        return { flag: xr.borePitsFlag(cross, c.linked) ?? "none", attention: cv.attentionRunFlag(xr.borePitsFlag(cross, c.linked) ?? "") };
       }
       if (c.kind === "d1301-bands") return { bands: tp.bandPolygons(c.path, c.stations).length };
       if (c.kind === "scene") {
