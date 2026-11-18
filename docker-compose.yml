@@ -457,8 +457,9 @@ services:
   #   - mail goes to MailHog only: no allowlist and no relay;
   #   - no AI keys, so the fake provider; Stripe stays the fake.
   # ./fx-suite.sh sets it up, runs the suite and stops it; see the README.
-  # A release runs the fx apis' uvicorn without watchfiles too (FX_WATCH=0, Q142, D-1011): the watcher's own ENOMEM
-  # killed api-fx twice on 2026-11-03. Any other time they reload on a save as before.
+  # The fx apis' uvicorn runs without watchfiles (FX_WATCH=0, Q142, D-1011; the default since D-1320): the watcher's own
+  # ENOMEM killed api-fx twice on 2026-11-03 and the bench workers on 2026-11-18. `fx-suite.sh run` restarts the fx apis
+  # and workers when the api code on disk is newer than theirs. FX_WATCH=1 brings the watcher back by hand.
   # A worker's health check waits 30 s, not uvicorn's 5 (Q208): under the release's load a worker whose loop was held
   # a few seconds was killed with its requests in flight (7 times in the run of 2026-11-05).
   api-fx:
@@ -467,7 +468,7 @@ services:
     command: >
       sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5 --timeout-worker-healthcheck 30";
       (python -m app.core.at_head || alembic upgrade head) || exit 1;
-      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
+      if [ "${FX_WATCH:-0}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     env_file: !override
       - path: ../intelcost-app-fastapi/.env
     # D-1314: the fx apis switch the signup throttle off (30 an hour per IP, D-884's throttle), so a fixture suite that
@@ -495,15 +496,15 @@ services:
     profiles: ["fx"]
     command: >
       sh -c 'c="uvicorn main:app --host 0.0.0.0 --port 8000 --workers ${API_PROCESSES:-3} --proxy-headers --timeout-graceful-shutdown 5 --timeout-worker-healthcheck 30";
-      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
+      if [ "${FX_WATCH:-0}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     ports: !override
       - "8030:8000"
 
   # The fx stack's workers, on the fx database, Redis and bucket: every queue but Choose pages'
   # thumbnails here, and those on worker-fx-previews, as the bench splits them (D-43, D-849: on one
   # worker a Load's first page waited 13 s behind a 545 MB set's thumbnails and its measuring).
-  # A release runs the fx workers' celery without watchfiles (FX_WATCH=0, Q122, D-967): they need no reload there, and
-  # a watcher that died of ENOMEM mid-release took its worker with it. Any other time they reload on a save as before.
+  # The fx workers' celery runs without watchfiles (FX_WATCH=0, Q122, D-967; the default since D-1320): a watcher that
+  # died of ENOMEM took its worker with it. `fx-suite.sh run` restarts them when the api code on disk is newer.
   worker-fx:
     extends: worker
     profiles: ["fx"]
@@ -516,7 +517,7 @@ services:
         condition: service_started
     command: >
       sh -c 'c="celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=3 -Q celery,prepare,reads -n fx@%h";
-      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
+      if [ "${FX_WATCH:-0}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
 
   worker-fx-previews:
     extends: worker
@@ -529,7 +530,7 @@ services:
         condition: service_started
     command: >
       sh -c 'c="nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q previews -n fx-previews@%h";
-      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
+      if [ "${FX_WATCH:-0}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
 
   worker-fx-ocr:
     extends: worker
@@ -542,7 +543,7 @@ services:
         condition: service_started
     command: >
       sh -c 'c="nice -n 19 celery -A app.worker.celery_app.celery_app worker --loglevel=info --concurrency=1 -Q ocr -n fx-ocr@%h";
-      if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
+      if [ "${FX_WATCH:-0}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app'
 
   # The beat scheduler on the fx stack (D-770): its sweeps run on the fx database, Redis and bucket
   # only, so d27-uploads and f5-s2 read its schedule; the bench's own beat stays the founder's call.

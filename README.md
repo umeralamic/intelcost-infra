@@ -326,6 +326,13 @@ After that it checks every 12 s, for as long as the run's own pid lives:
 
 `run full` and `run quick` are regress.sh's own lists and run as before.
 
+**No file watcher on the fx stack (D-1320).** The watcher (watchfiles) is what ran out of memory, so the fx apis and
+workers run without it: `FX_WATCH=0` is the compose default for every fx service, and a release no longer turns it back
+on at the end. An api save therefore leaves them on older code. Each `run` asks api-fx's `/health/code` first. If the
+code on disk is newer, it restarts api-fx, api-fx-b, the fx workers and beat-fx (the same containers, fx only, under the
+heavy lock the run holds) and waits until the code is current; then bench-code passes. `FX_WATCH=1` brings the watcher
+back by hand.
+
 **The runnable suite is tracked too (D-1057):** `fx-suite/` as the 2026-11-07 release ran it (the tag, the updates
 and the retargeting laid over it), without its run output (`.regress/`), screenshots, `node_modules/`, the sheet key
 (real drawings) or any PDF. A fixture edited there is copied into `fx-suite-updates/` as well, or `setup`/`refresh`

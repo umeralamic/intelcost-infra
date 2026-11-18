@@ -90,6 +90,24 @@ watch_start() {
   echo "$WATCH_PID $$ $(date -u +%FT%TZ)" >fx-suite/.regress/.health-watch.pid
 }
 
+# The fx apis and workers run without a file watcher (FX_WATCH=0, D-1320), so an api save leaves them on older code and
+# bench-code refuses the run. When api-fx's /health/code says so, they are restarted (the same containers, fx services
+# only, under the heavy lock the run holds) and the run waits until the code is current.
+FX_CODE_SERVICES="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx"
+code_current() {
+  local s
+  s=$(curl -s -m 10 localhost:8020/health/code)
+  case "$s" in *'"current":true'*) return 0 ;; esac
+  echo "fx code: api-fx or worker-fx runs older code than the disk: restarting $FX_CODE_SERVICES (fx only)"
+  docker compose --profile fx restart $FX_CODE_SERVICES >/dev/null 2>&1
+  for _ in $(seq 1 120); do
+    curl -s -m 5 localhost:8020/health/code | grep -q '"current":true' && curl -sf -m 5 localhost:8030/health >/dev/null \
+      && { echo "fx code: current again"; return 0; }
+    sleep 2
+  done
+  echo "fx code: still not current after 240 s (an api save in progress?): bench-code will say"
+}
+
 # Fixtures over about 10 minutes, or one 520 MB set's memory (regress timings, fx-suite/.regress/times.tsv):
 # m6-position 1,338-1,606 s (the 2026-11-18 08:47 outage ran under it), f5-big 501 s with a 520 MB PDF in the api.
 # Neither uses window B. They run last in a `run`, with the fx-b services stopped, and fx-b comes back after.
@@ -237,7 +255,7 @@ await b.close();" 2>&1 | grep -E '^warm|Error'
 
 case "${1:-}" in
   up)
-    # The fx stack only, without its watchers when FX_WATCH=0 (D-1051): --no-deps, the bench's own
+    # The fx stack only, without its watchers (FX_WATCH=0, the default since D-1320; D-1051): --no-deps, the bench's own
     # services are never recreated; the exit trap fails the command if one was.
     # The apps already in use stay: the built ones (`prod`) hold the dev servers' ports.
     svc=$FX_SERVICES
@@ -290,6 +308,7 @@ case "${1:-}" in
     # The capture first: the watch is handed its pid, to leave it be.
     capture "fx-suite/.regress/capture-$(date +%Y%m%d-%H%M%S)"
     watch_start
+    code_current
     # Named fixtures: the long ones that don't use window B run last, with fx-b stopped (D-1320). `full`, `quick`
     # and no arguments are regress.sh's own lists, run as they are.
     normal=()
@@ -414,8 +433,7 @@ case "${1:-}" in
     done
     # The built apps stay up: the bench's usual mode for a run.
     [ "$(docker compose ps -q app-fx-prod 2>/dev/null)" ] || "$0" prod >>"$out/0-prod.log" 2>&1
-    # The fx workers and apis watch again once the run is over.
-    FX_WATCH=1 docker compose --profile fx up -d --no-build --pull never --no-deps api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr >>"$out/0-workers.log" 2>&1
+    # The fx workers and apis stay without their watchers (D-1320: the watcher is what ran out of memory).
     {
       echo "built apps:   $(tail_line "$out/1-built.log")"
       echo "dev servers:  $(tail_line "$out/2-dev.log")"
