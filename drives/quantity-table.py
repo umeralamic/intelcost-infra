@@ -2333,6 +2333,19 @@ D1312_LOADED = {
     "AZ": ((True, False, True, True, False, True), "2026-11-18", ["operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable"]),
 }
 D1312_NOT_READ = ("LA", "OK")
+# D-1324 (migration d1324a7c3e51): each loaded state's citation alone, the Bid summary tip's last line (was a table in
+# the app); LA and OK, not read, have none.
+D1324_CITATIONS = {
+    "TX": "34 TAC §3.294",
+    "OH": "ORC 5739.01, 5739.02; OAC 5703-9-52, 5703-9-63",
+    "NY": "Tax Law §1101, §1105; 20 NYCRR Part 541",
+    "PA": "72 P.S. §7201; 61 Pa. Code §31.4; SUT Bulletin 2021-05",
+    "GA": "O.C.G.A. §48-8-2, §48-8-63",
+    "IL": "35 ILCS 120; 86 Ill. Adm. Code 130.415",
+    "AZ": "A.R.S. §42-5071",
+    "LA": None,
+    "OK": None,
+}
 D1287_JOB_TYPES = (
     ("residential", "new_construction", "residential"),
     ("residential", "renovation", "residential"),
@@ -2376,6 +2389,7 @@ async def d1287() -> int:
             r = by.get(st) or {}
             check(f"d1312-eq-tax-table-{st.lower()}-rule", (r.get("grade"), tuple(r.get(k) for k in flag_keys), list(r.get("exempt_job_types") or []), str(r.get("read_on")), bool(r.get("url"))), ("B", want, [], read_on, True))
             check(f"d1319-eq-tax-table-{st.lower()}-inferred", list(r.get("inferred") or []), inferred)
+        check("d1324-eq-tax-citations", {st: r.get("citation") for st, r in by.items()}, D1324_CITATIONS)
         # D-1319: a third-party haul is not part of the rental price, untaxed in every state.
         check("d1319-eq-tax-no-haul-taxed", sorted(st for st, r in by.items() if r.get("third_party_haul_taxable")), [])
         for st in D1312_NOT_READ:
@@ -2392,6 +2406,7 @@ async def d1287() -> int:
         rule = await service.rental_tax(session, None, "OH")
         check("d1312-eq-tax-bundle-oh", (rule["loaded"], rule["waiver_taxable"], rule["read_on"]), (True, True, "2026-11-17"))
         rule = await service.rental_tax(session, None, "AZ")
+        check("d1324-eq-tax-bundle-az-citation", rule.get("citation"), "A.R.S. §42-5071")
         check("d1319-eq-tax-bundle-az", (rule["loaded"], rule["grade"], rule["inferred"]), (True, "B", ["operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable"]))
         # D-1319: a project's own rental tax rate, a column of the bid rates; null on every row the migration met.
         nulls = (await session.execute(sql("SELECT count(*) FILTER (WHERE rental_tax_pct IS NOT NULL) FROM estimate_bid_rates"))).scalar_one()
@@ -2440,7 +2455,7 @@ async def d1287() -> int:
     check("d1319-margin-read-back", BidRatesRead(profit_mode="margin", profit_pct="100").profit_pct == 100, True)
     for w in wrong:
         print(w)
-    print(f"rental tax, extras and ratios (D-1287, D-1312, D-1319): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"rental tax, extras and ratios (D-1287, D-1312, D-1319, D-1324): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 
