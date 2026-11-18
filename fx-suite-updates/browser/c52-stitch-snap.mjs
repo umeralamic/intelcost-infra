@@ -8,9 +8,11 @@
 // snap's reach (12 + 2 px).
 //   1. Snap PDF on (the Earthwork tab's toggle): the pick snaps onto the frame on both panes, the same point.
 //   2. Snap PDF off: the same pick lands where it was clicked on both panes, unsnapped.
-//   3. Snap PDF on, the sheets' PDFs held back so the lines are still being read: a "snap loading" mark in each pane's
-//      bar and at the cursor, the pick waits (no marker yet), and lands snapped on both panes once the lines are read:
-//      the same point as step 1.
+//   3. Snap PDF on, the sheets' PDFs held back 25 s: a "snap loading" mark in each pane's bar and at the cursor, the pick
+//      waits (no marker yet), and after 5 s (D-1318 Q14, the founder's limit) it is placed where it was clicked on both
+//      panes, marked "not snapped".
+//   4. Snap PDF on, the PDFs held back 2 s: the lines are read within the 5 s, so the pick lands snapped on both panes,
+//      the same point as step 1, unmarked.
 // The fixture drives the screens; only the world (pages and their scale) is made through the api.
 
 import { expect, run, apiCall } from "./lib/bench.mjs";
@@ -74,7 +76,7 @@ async function landed(page) {
     for (const g of document.querySelectorAll('[data-join-point="1"]')) {
       const at = (g.getAttribute("data-join-at") ?? "").split(",").map(Number);
       if (at.length !== 2) continue;
-      out[g.closest("[data-reference-pane]") ? "there" : "here"] = { x: at[0], y: at[1] };
+      out[g.closest("[data-reference-pane]") ? "there" : "here"] = { x: at[0], y: at[1], unsnapped: g.getAttribute("data-join-unsnapped") === "1" };
     }
     return out;
   });
@@ -126,6 +128,7 @@ await run("c52-stitch-snap", [
       expect(near(l.here.y, FRAME_TOP, 1e-5), `the sheet's pick did not snap: ${fmt(l.here)}, frame ${FRAME_TOP.toFixed(5)}`);
       expect(near(l.there.y, FRAME_TOP, 1e-5), `the reference pane's pick did not snap: ${fmt(l.there)}, frame ${FRAME_TOP.toFixed(5)}`);
       expect(near(l.here.x, l.there.x, 1 / a.widthPx), `the panes' picks differ across: ${fmt(l.here)} / ${fmt(l.there)}`);
+      expect(!l.here.unsnapped && !l.there.unsnapped, "a snapped pick marked not snapped");
       return `both on the frame: ${fmt(l.here)} / ${fmt(l.there)} (clicked ${(a.clickedY - FRAME_TOP) / px} px below)`;
     },
   },
@@ -154,9 +157,9 @@ await run("c52-stitch-snap", [
     },
   },
   {
-    title: "D-1313: Snap PDF on, the lines still being read: the mark in both bars and at the cursor; the pick waits, then lands as after loading on both panes",
+    title: "D-1318 (Q14): Snap PDF on, the lines held back 25 s: the mark in both bars and at the cursor; the pick waits, and after 5 s is placed as clicked on both panes, marked not snapped",
     run: async ({ page, context }) => {
-      // The sheets' PDFs (what Snap PDF reads) held back 25 s, so both panes are still reading when the picks are made.
+      // The sheets' PDFs (what Snap PDF reads) held back 25 s.
       const assets = (await apiCall(token, "GET", `${base}/${project.uuid}/drawing/asset`)).body;
       const paths = new Set(assets.filter((x) => x.source_url).map((x) => new URL(x.source_url).pathname));
       expect(paths.size > 0, "no source PDFs");
@@ -174,11 +177,12 @@ await run("c52-stitch-snap", [
       await stitchPoints(page);
       const before = await marks(page);
       expect(before.barHere && before.barThere, `no "snap loading" mark in a pane's bar while reading: ${JSON.stringify(before)}`);
-      await pick(page, 0);
+      const a = await pick(page, 0);
+      const clickedAt = Date.now();
       await pick(page, 1);
       const waiting = await marks(page);
       const l0 = await landed(page);
-      expect(!l0.here && !l0.there, `a pick landed before the lines were read: ${fmt(l0.here)} / ${fmt(l0.there)}`);
+      expect(!l0.here && !l0.there, `a pick landed before the lines were read or the 5 s passed: ${fmt(l0.here)} / ${fmt(l0.there)}`);
       const cursorHere = waiting.cursor.find((c) => !c.ref);
       const cursorThere = waiting.cursor.find((c) => c.ref);
       expect(cursorHere?.waiting === 1 && cursorThere?.waiting === 1, `the cursor marks: ${JSON.stringify(waiting.cursor)}`);
@@ -186,13 +190,51 @@ await run("c52-stitch-snap", [
       await waitFor(async () => {
         const l = await landed(page);
         return l.here && l.there ? true : null;
-      }, "the waiting picks placed once the lines were read", 90000, 250);
+      }, "the waiting picks placed after the 5 s limit", 20000, 100);
+      const waited = Date.now() - clickedAt;
       const l = await landed(page);
-      expect(near(l.here.y, FRAME_TOP, 1e-5) && near(l.there.y, FRAME_TOP, 1e-5), `a waiting pick did not land as after loading: ${fmt(l.here)} / ${fmt(l.there)}`);
-      const after = await marks(page);
-      expect(!after.barHere && !after.barThere && after.cursor.length === 0, `a mark stayed: ${JSON.stringify(after)}`);
+      const px = 1 / a.heightPx;
+      // Placed at the limit, long before the lines (25 s): where it was clicked, about 4 px below the frame, marked.
+      expect(waited >= 4000 && waited < 15000, `placed after ${waited} ms, not at the 5 s limit`);
+      for (const [name, p] of [["the sheet", l.here], ["the reference pane", l.there]]) {
+        expect(p.unsnapped, `${name}'s pick is not marked not snapped: ${JSON.stringify(p)}`);
+        expect(p.y - FRAME_TOP > 2 * px && p.y - FRAME_TOP < 6 * px, `${name}'s pick is not where it was clicked: ${fmt(p)}`);
+      }
+      const shown = await page.evaluate(() => [...document.querySelectorAll("[data-join-unsnapped]")].map((g) => g.textContent).join(" | "));
+      expect(/not snapped/.test(shown), `no "not snapped" words on the markers: ${shown}`);
       expect((await page.locator("[data-join-pairs]").innerText()) === "1 pair", "the pair counter");
-      return `held ${held} PDF request(s); marks in both bars and at the cursor (1 pick waiting each); landed ${fmt(l.here)} / ${fmt(l.there)}`;
+      return `held ${held} PDF request(s); 1 pick waiting each; placed after ${waited} ms, unsnapped and marked on both panes: ${fmt(l.here)} / ${fmt(l.there)}`;
+    },
+  },
+  {
+    title: "D-1318 (Q14): Snap PDF on, the lines held back 2 s: read within the 5 s, the pick lands snapped on both panes, unmarked",
+    run: async ({ page, context }) => {
+      // The sheets' PDFs (what Snap PDF reads) held back 2 s.
+      const assets = (await apiCall(token, "GET", `${base}/${project.uuid}/drawing/asset`)).body;
+      const paths = new Set(assets.filter((x) => x.source_url).map((x) => new URL(x.source_url).pathname));
+      expect(paths.size > 0, "no source PDFs");
+      let held = 0;
+      await context.route(
+        (url) => paths.has(url.pathname),
+        async (route) => {
+          held += 1;
+          await new Promise((r) => setTimeout(r, 2000));
+          await route.continue().catch(() => null);
+        },
+      );
+      await openSheet(page, project, sheets[0], "earthwork");
+      await snapPdf(page, true);
+      await stitchPoints(page);
+      await pick(page, 0);
+      await pick(page, 1);
+      await waitFor(async () => {
+        const l = await landed(page);
+        return l.here && l.there ? true : null;
+      }, "the picks placed once the lines were read", 30000, 100);
+      const l = await landed(page);
+      expect(near(l.here.y, FRAME_TOP, 1e-5) && near(l.there.y, FRAME_TOP, 1e-5), `a pick did not snap: ${fmt(l.here)} / ${fmt(l.there)}`);
+      expect(!l.here.unsnapped && !l.there.unsnapped, "a snapped pick marked not snapped");
+      return `held ${held} PDF request(s); both snapped: ${fmt(l.here)} / ${fmt(l.there)}`;
     },
   },
 ]);

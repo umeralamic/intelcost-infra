@@ -1582,6 +1582,40 @@ export const UTILITY_CASES = [
     },
   },
   {
+    // D-1319 (Q6), D-1144's pattern: the same run at 22 ft cover, its bore pit 22 + 9.05 / 24 + 16 / 24 + 1.5 =
+    // 24.54375 ft deep (sheet piling past 20 ft: 2 x (32 + 12) x 24.54375 = 2,159.85 SF): dug 384 x 24.54375 = 9,424.80 CF
+    // = 349.07 BCY; backfill 9,232.80 CF = 341.96 CCY. Past 20 ft one PE-designed protective system line, the service
+    // `service:pe_shoring_design` (the stated $5,000, flagged in Needs attention).
+    id: "d1319-bore-pit-pe-design",
+    kind: "trenchless",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 600,
+    coverFt: 22,
+    section: { crossing: { kind: "jack_bore", lf: 80 } },
+    pit: { type: "bore_pit" },
+    expect: {
+      pitShoring: "sheet_pile",
+      pitLines: "pit|bore|12x32|24.54|own=1 pit:bore:Clay=349.07 pit_shoring|sheet_pile|bore=2159.85 pe_design|pit|bore=1 pit_pad:bore|imported=7.11 pit_backstop|small=1 pit_pump|bore=3 pit:bore:native|native=341.96",
+      pitBuys: "pit_shoring:sheet_pile service:pe_shoring_design stone:_57_stone pit:backstop:small rent:pump_3in_day",
+    },
+  },
+  {
+    // The same deep pit by the bore sub: its design is the sub's too, no PE line.
+    id: "d1319-bore-pit-pe-by-sub",
+    kind: "trenchless",
+    type: "water",
+    label: '8" PVC C900 DR 18',
+    lf: 600,
+    coverFt: 22,
+    section: { crossing: { kind: "jack_bore", lf: 80 } },
+    pit: { type: "bore_pit", bySub: true },
+    expect: {
+      pitLines: "pit|bore|12x32|24.54|sub=1 pit:bore:Clay=349.07 pit_shoring|sheet_pile|bore=2159.85 pit_pad:bore|imported=7.11 pit_backstop|small=1 pit_pump|bore=3 pit:bore:native|native=341.96",
+      pitBuys: "",
+    },
+  },
+  {
     // The same pit by the bore sub: every line kept at its quantity, $0, nothing bought, each named "(by the bore sub)".
     id: "util-1269-pits-by-sub",
     kind: "trenchless",
@@ -3476,6 +3510,17 @@ export const UTILITY_CASES = [
   { id: "d1311-pits-both", kind: "d1311-pits-flag", crossing: { kind: "jack_bore", lf: 40, from_ft: 30 }, linked: ["bore_pit", "receiving_pit"], expect: { flag: "none", attention: false } },
   { id: "d1311-pits-hdd", kind: "d1311-pits-flag", crossing: { kind: "hdd" }, linked: [], expect: { flag: "none", attention: false } },
   { id: "d1311-pits-sleeve", kind: "d1311-pits-flag", type: "casing", catalogKey: "steel_casing_375:16", crossing: {}, linked: ["bore_pit"], expect: { flag: "Bore pits not placed: add a receiving pit (Structures)", attention: true } },
+  // D-1319 (Q7): a bored length worked at its own stations, not D-1269's average section. A 100 ft run in a 6 ft box,
+  // its trench 6 ft deep at 0+00 to 16 ft at 1+00 (6 x 11 x 100 = 6,600 CF = 244.44 CY). Bored 40 LF:
+  // - at 0+00 to 0+40 (the shallow end): the open 0+40 to 1+00, 10 to 16 ft: 6 x 13 x 60 = 4,680 CF = 173.33 CY;
+  // - at 0+60 to 1+00 (the deep end): the open 0+00 to 0+60, 6 to 12 ft: 6 x 9 x 60 = 3,240 CF = 120.00 CY;
+  // - at 0+30 to 0+70 (the middle): 6 x 7.5 x 30 + 6 x 14.5 x 30 = 1,350 + 2,610 = 3,960 CF = 146.67 CY, the average;
+  // the average section was 6,600 x 0.6 = 3,960 CF = 146.67 CY for all three. On level ground (8 ft) both agree,
+  // 6 x 8 x 60 = 2,880 CF = 106.67 CY. The pipe stays 100 LF; the trench (and its box) is the 60 open LF.
+  { id: "d1319-bored-shallow-end", kind: "d1319-stations", profile: [[0, 6], [100, 16]], crossing: { kind: "jack_bore", lf: 40, from_ft: 0 }, expect: { wholeCY: 244.44, averageCY: 146.67, stationsCY: 173.33, trenchLf: 60, pipeLf: 100, stations: "0-40", openPieces: "40-100" } },
+  { id: "d1319-bored-deep-end", kind: "d1319-stations", profile: [[0, 6], [100, 16]], crossing: { kind: "jack_bore", lf: 40, from_ft: 60 }, expect: { averageCY: 146.67, stationsCY: 120, trenchLf: 60, pipeLf: 100, stations: "60-100", openPieces: "0-60" } },
+  { id: "d1319-bored-middle", kind: "d1319-stations", profile: [[0, 6], [100, 16]], crossing: { kind: "hdd", lf: 40, from_ft: 30 }, expect: { averageCY: 146.67, stationsCY: 146.67, trenchLf: 60, pipeLf: 100, stations: "30-70", openPieces: "0-30,70-100" } },
+  { id: "d1319-bored-level", kind: "d1319-stations", profile: [[0, 8], [100, 8]], crossing: { kind: "jack_bore", lf: 40, from_ft: 0 }, expect: { averageCY: 106.67, stationsCY: 106.67, trenchLf: 60, pipeLf: 100 } },
   // A result stored before the guard: a band 2,007 ft wide is never drawn; a 3 ft one is.
   { id: "d1301-stored-band-absurd", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1003.5, "sloped", 1.5], [49.9, 1003.5, "sloped", 1.5]], expect: { bands: 0 } },
   { id: "d1301-stored-band-sane", kind: "d1301-bands", path: [[0, 0], [49.9, 0]], stations: [[0, 1.5, "vertical", 0], [49.9, 1.5, "vertical", 0]], expect: { bands: 1 } },

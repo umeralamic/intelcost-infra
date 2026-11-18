@@ -2479,7 +2479,10 @@ try {
         const plain = q.runQuantities(input(pipe.od, pipe.id));
         const cross = xr.resolveCrossing(c.type, run.section, L, { catalogKey: run.catalog_key, odIn: pipe.od, idIn: pipe.id, pipes: n });
         let qq = plain;
-        if (cross) {
+        // D-1319 (Q7): a bored or drilled length is worked at its own stations (its open parts on their own knots).
+        const at = cross && !cross.dug && !cross.whole ? xr.boredStretches(cross)[0] : null;
+        if (at) qq = xr.withOpenParts(plain, sx.openParts(input(pipe.od, pipe.id), at[0], at[1], null, null));
+        else if (cross) {
           let v;
           if (!cross.dug) v = xr.noTrench(plain);
           else if (cross.kind === "cased_open") {
@@ -2908,6 +2911,50 @@ try {
           stretch: found === null ? "none" : `${found.stretch.kind} ${r2s(found.stretch.s0)}-${r2s(found.stretch.s1)}`,
           boredAt: bored.length && Number.isFinite(bored[0][0]) ? bored.map(([a, b]) => `${r2s(a)}-${r2s(b)}`).join(",") : "none",
           crossingFlags: cross ? cross.flags.join(" | ") || "none" : "none",
+        };
+      }
+      // D-1319 (Q7): a run on level ground (G 100), 8 in SDR-35 in a 6 ft box, its trench depth straight between the
+      // profile's [station, depth] points; its crossing's length worked at its own stations (the open parts on their own
+      // knots) against D-1269's average section (the whole run's trench x the open share).
+      if (c.kind === "d1319-stations") {
+        const p = cat.resolvePipe(SDR35);
+        const drop = (p.od - p.id) / 2 / 12;
+        const knot = ([sAt, depth]) => ({ s: sAt, G: 100, invert: 100 - depth + drop + 0.5, bottoms: [-1e6], water: null, caving: false, caveInFt: null });
+        const P = tr.pipeWidthFt(p.od, 1, 0, 12, 24);
+        const input = {
+          knots: c.profile.map(knot),
+          layers: [{ layerId: null, ...CLAY }],
+          noBores: false,
+          pipe: { odIn: p.od, idIn: p.id, pipes: 1, gapIn: 0 },
+          section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+          bucket: "auto",
+          box: tr.boxFor(P, [BOX], { boxRef: "b6", boxOutsideFt: null }),
+          specMaxIn: null,
+          protection: "box",
+          limitedWidth: false,
+          rule: null,
+          depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+          materials: { bedding: "imported", zone: "imported", backfill: "native" },
+          materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
+          segments: [],
+          restoration: null,
+        };
+        const whole = q.runQuantities(input);
+        const L = c.profile[c.profile.length - 1][0];
+        const cross = xr.resolveCrossing("sanitary", { crossing: c.crossing }, L, { catalogKey: SDR35, odIn: p.od, idIn: p.id, pipes: 1 });
+        const average = xr.blendQuantities(whole, xr.noTrench(whole), cross.f);
+        const [b0, b1] = xr.boredStretches(cross)[0];
+        const at = xr.withOpenParts(whole, sx.openParts(input, b0, b1, null, null));
+        const lf = (qq) => r2(qq.protectionLF.reduce((t, x) => t + x.lf, 0));
+        return {
+          wholeCY: r2(whole.excavationCF / 27),
+          averageCY: r2(average.excavationCF / 27),
+          stationsCY: r2(at.excavationCF / 27),
+          trenchLf: lf(at),
+          pipeLf: r2(at.pipeLF.reduce((t, x) => t + x.lf, 0)),
+          stations: `${r2(b0)}-${r2(b1)}`,
+          // The open trench as spans (its pieces, cut at each depth range, joined where they meet).
+          openPieces: at.shape.reduce((acc, x) => { const last = acc[acc.length - 1]; if (last && Math.abs(last[1] - x.s0) < 1e-6) last[1] = x.s1; else acc.push([x.s0, x.s1]); return acc; }, []).map(([a, b]) => `${r2(a)}-${r2(b)}`).join(","),
         };
       }
       // D-1311 (Q16): a bore or receiving pit at a depth: "Check depth" past 40 ft (not dug, drawn or priced), the PE note
