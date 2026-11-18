@@ -663,3 +663,15 @@ batch, gates, quantity table, smoke, independent check, one (a1) harness pass, c
 - [S10] USGS SIR 2025-5028, water-level altitudes, Chicot and Evangeline aquifers, 2024: https://pubs.usgs.gov/publication/sir20255028
 - [S11] Community Impact, "Poor weather conditions affect TxDOT projects" (TxDOT spokesperson, 2017): https://communityimpact.com/news/2017/11/06/poor-weather-conditions-affect-txdot-projects
 - [S12] Auburn University / ALDOT, weather non-workday study: https://eng.auburn.edu/files/centers/hrc/aldot-930987-final1.pdf
+
+### 12.x Founder answers of 2026-11-18 (D-1316, Q9), to build next night
+
+- (a) **Pay items after profit, before the bond:** yes.
+- (b) **Snow rules on:** earthwork snow day plus clearing day; pipe snow day; flatwork snow day.
+  - Frost-day lost days are off.
+  - Flatwork freezing is a cold-weather protection cost (ACI 306), not lost days: propose a priced line.
+- (c) **Calendar days:** billed days are calendar days, and billing uses the cheapest mix of day, week and 4-week rates (confirm).
+- (d) **Machines:** owned stand by, rented bill, crews are unpaid. Yes.
+- (e) **Rounding:** once per machine across the project.
+- (f) **No start date:** use the year average, with a Needs attention flag "Start date not set: average year used".
+- **Existing projects never reprice silently:** they show "Weather days not applied · Apply". New projects apply by default.

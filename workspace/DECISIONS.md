@@ -35224,6 +35224,33 @@ spec's $12,957; owned standby on lost days; per-line ceil rounding of small rent
 
 Go only if a fit picture loads 3 times within 12 s. Covers dev and production, 1× and 4×, 0/1/2/3 overlays, with each row marked valid or invalid. Explain production 1× with 1 overlay at load, 548 → 872 MB. Visual check of the overlays and blends. Fix or revert any part that is worse.
 
+**Result: not measured: the bucket check failed at 11:45, 11:59, 12:01 and 15:00.** It fetched V-100's fit picture (about
+300 KB) of a fresh throwaway copy of P01 three times, each limited to 12 s (the app's own limit), from the bucket's
+address as 8.8.8.8 gives it (the router does not resolve the name). Times, `morning-report-2026-11-22/d1317/bucket-checks.txt`:
+- 11:45:24: 12.0, 12.0, 12.0 s, all failed. This check used Node's `fetch`, which does not take the pinned address, so it
+  counts as a harness failure, not a bucket reading.
+- 11:48:53: 4.3, 6.2, 7.5 s, a pass, the only one. The series that followed began with its own check.
+- 11:59:29: 12.1 s failed, 6.8 s, 12.0 s failed.
+- 12:01:00: 12.0 s failed, 12.0 s failed, 11.3 s.
+- 15:00:27: 12.0, 12.0, 12.0 s, all failed.
+
+No series ran on the committed code. The production builds of e2050eb and 1d9c69d were made at 11:57–11:58 and not
+served. **Memory on the committed code is not yet proven.**
+
+What stands from D-1310 (2026-11-18 night, `morning-report-2026-11-21/d1310/MEASUREMENTS.md`):
+- The dev 1× before/after tables (3 overlays: Chrome total peak 2,652 → 1,137 MB, tab 1,856 → 689 MB). Those "after" runs
+  still re-read the overlay PDF on every view (`page.cleanup()`, removed before 1d9c69d).
+- The editing figures.
+- C-200 identical in all 4,419 values.
+
+The production 1× 1-overlay rise at load (548 → 872 MB) is not a regression in those figures:
+- In the before run, the view pass at Fit had not landed within the 120 s the harness waits at load (`sharpMs` none), so
+  its "at load" holds no view picture.
+- The after run's pass landed at 72.8 s, so its "at load" does.
+- The peak over the run, which both reach, is lower after: 1,224 → 1,154 MB total, 667 → 529 MB tab.
+
+The throwaway was purged after the 15:00 check.
+
 ## D-1318 — Day run 2026-11-18, task 2: small fixes
 
 Q-D2 Alt checks, Q-D3 bring-to-top, Q14 5 s limit, Q15 both, Q13 manholes, Q8 tooltip.
@@ -35333,6 +35360,48 @@ Q2 + Q4 (one migration, proved), Q6 PE line, Q7 stations. The $ effect on founde
       system: pit deeper than 20 ft (OSHA 1926.652); the stated $5,000 waits for the engineer's quote".
     - RP-1 at 25 ft, by the bore sub, has no PE line.
 
+**The founder's two checks (2026-11-18 ~14:00 UTC), answered and built.**
+- **Q7, is the direction inverted? No. Checked from CALCULATE in the app, not the QT.**
+  - Fresh throwaway fx.equip.20261118140645, on HEAD 9ed023e. ST-2 is a jack and bore over "A length" of 155 LF; the
+    pits sit at the run's ends in both positions.
+  - The run's profile (the stations table, the ground from the surface Calculate reads):
+
+    | Station | Ground | Invert | Trench depth |
+    |---|---|---|---|
+    | 0+00 | 702.38 | 670.23 | 32.72 ft |
+    | 1+55 | 702.46 | 675.24 | 27.79 ft |
+    | 3+10 | 702.22 | 680.25 | 22.53 ft |
+
+    The deep end is 0+00.
+  - The two positions (BP-1 at 0+00, RP-1 at 3+10):
+
+    | Bored | Open-cut part | Open trench | BP-1 | RP-1 |
+    |---|---|---|---|---|
+    | 0+00 to 1+55, the deep end (Calculate 14:18:37) | 1+55 to 3+10 | **6,226.91 CY** | 35.0 ft, 497.77 BCY | 25.0 ft, 92.60 BCY |
+    | 1+55 to 3+10, the shallow end (Calculate 14:21:54) | 0+00 to 1+55 | **8,795.64 CY** | the same | the same |
+
+  - Boring the deep end leaves 2,568.73 CY less open trench, as it should.
+  - `from_ft` is measured from the run's own first vertex (its start invert's end), in Calculate (`openParts` cuts the
+    profile's knots, whose stations run from that vertex) and in the QT kind alike.
+  - New QT rows for a run drawn the other way (`d1319-reverse-*`): 120.00 and 173.33 CY, the mirror of the forward rows.
+  - Screenshots: `morning-report-2026-11-22/d1319/` q7-a-bored-0-155.png, q7-b-bored-155-310.png. Purged 14:25:08
+    (0 refused).
+- **Q6, one PE-design line a crossing, not a pit (the founder's correction).**
+  - Before: one line a pit. The $5,149.95 on the smoke was BP-1's line alone (RP-1 was by the sub).
+  - Its basis is D-1144's `service:pe_shoring_design`: $5,000 stated, grade D, "the middle of $2,500-$10,000 as quoted
+    for one run" (matlib release Q4 2026; migration da10e7f8091a, folded into da16f7081920).
+  - $5,149.95 is $5,000 × the project's material location factor 1.02999 (`materials/service.py:_factor`, 1 + the
+    wage set's ZIP material AMF), not another release price.
+  - Now `crossings.ts:pePitsOf` gives each crossing (the run its pits are linked to; a pit on its own its own) one line,
+    "PE-designed protective system (OSHA 1926.652), a crossing's bore and receiving pits deeper than 20 ft", variant
+    `pe_design|crossing`.
+  - It is carried by the crossing's first self-performed pit past 20 ft (`PitForLines.peDesign`, marked in
+    `calculate.ts`). None when every pit past 20 ft is by the bore sub.
+  - Needs attention words it "a crossing's pits deeper than 20 ft".
+  - QT rows `d1319-pe-*`: two deep pits give 1 line, one deep and one shallow 1, both shallow 0, a deep pit by the sub
+    with a shallow one of ours 0, two crossings 2. `d1319-bore-pit-pe-design` now reads `pe_design|crossing=1`.
+  - App saves 14:26:25–14:26:57 UTC (a quiet founder gate before each).
+
 **Q2, Q4, the rental tax override and the margin cap as built (the pricing builder, 2026-11-18):**
 
 - **Migration `d1319c4e8a21`** (revises `d1312b6e4a70`). It adds two columns:
@@ -35377,6 +35446,26 @@ Q2 + Q4 (one migration, proved), Q6 PE line, Q7 stations. The $ effect on founde
   - off-road diesel: +$0.150 a gallon, +$184.26 Bid per 1,000 gallons.
 
   Labour, location factors, EP region and the sanitary runs don't move.
+- **App (commit 59ce4b0; saves 14:02:30–14:05:12 and 14:14:42).** The commit holds the tips, the rental tax rate field,
+  the Needs attention note, the export row, `ruleTip` and the margin field. `costing.ts` is unchanged, and `bidSummary.ts`
+  changes only through `rentalTaxPctOf`.
+- **Gates:** lint 0 errors, at the 4 known warnings, after the fifth (mine) was removed; typecheck 0; build 0
+  (14:20–14:25). The full QT is left to the close-out (coordinator, option a).
+- **Smoke** (throwaway fx.equip.20261118124120, a calculated 3D-test copy at Houston TX 77002, 14:26–14:40 UTC; guard
+  refusals 0; purged, 0 left):
+  - **Default math:** before (9ed023e) and after (59ce4b0) are equal to the cent with `rental_tax_pct` null: A
+    $1,552,768.74, B $1,463,308.30, C (Columbus OH) $1,553,012.06. These replace D-1308's figures, which can't be
+    reproduced: no setup was recorded.
+  - **Profit tips:** "8% markup on $1,407,340 = $112,587. Same as 7.4% margin." and "8% margin = $122,377 profit. Same as
+    8.7% markup." Checked by hand: 1,407,340 × 0.08 = 112,587; 8/108 = 7.4 %; 8/92 = 8.7 %. Shown on hover and on
+    keyboard focus; the first Escape closes only the tip.
+  - **Margin 100:** the field says "Margin must be 95 % or less.", and the api answers 422 with the same text.
+  - **TX rental tax typed at 0 %:** saved as 0.0000. The tip reads "Your rate: 0% (state: 7.29%)"; Needs attention reads
+    "Equipment rental tax set to 0%. Texas taxes equipment rentals (34 TAC §3.294)."; the row shows "—", the app's zero.
+  - **Duplicate and export:** the duplicate carries 0.0000. The export lists "Equipment rental tax rate (the project's
+    own; in the equipment unit prices)" at 0 under a Bid total equal to the screen's ($1,528,716.66).
+  - **Screenshots** (`d1319/`): `d1319-tip-tx`, `-oh`, `-pa`, `-ny`, `-tx-own-0`, `d1319-panel-over-direct`,
+    `d1319-dialog-margin-tip`, `d1319-margin-100-refused`, `d1319-attention-own-rate`.
 
 ## D-1320 — Day run 2026-11-18, task 4: Q19 health watch
 
@@ -35535,3 +35624,85 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
 - Before the close-out, report for ST-2 from Calculate: which end is deep (inverts and ground at 0+00 and 3+10), and for each position the bored range and the open-trench, bore pit and receiving pit CY.
 - If Calculate measures stations from the wrong end, fix it and smoke ST-2 in the app, showing the deep-end bore gives LESS open trench.
 - If it isn't fixed and proved by the close-out, Q7 stays out of the push; Q6 can still go.
+
+**D-1319 Q7, proved from Calculate in the app (2026-11-18, 14:18–14:22 UTC):** fresh throwaway fx.equip.20261118140645, HEAD 9ed023e (with 30e1aee).
+- **ST-2:**
+  - 0+00: ground 702.38, invert 670.23, trench 32.72 ft;
+  - 1+55: 702.46 / 675.24 / 27.79 ft;
+  - 3+10: 702.22 / 680.25 / 22.53 ft.
+  - The deep end is 0+00.
+- **Bored at 0+00–1+55 (the deep end):** open trench 6,226.91 CY.
+- **Bored at 1+55–3+10 (the shallow end):** open trench 8,795.64 CY.
+- **Both positions:** BP-1 is 35.0 ft, 497.77 BCY; RP-1 is 25.0 ft, 92.60 BCY; 155.26 LF open; pipe 310.26 LF.
+- **Result:** boring the deep end gives 2,568.73 CY LESS open trench. The direction is right; no fix needed.
+- Screenshots: d1319/q7-a-bored-0-155.png and q7-b-bored-155-310.png. Q7 goes in the push.
+
+**D-1317, founder (2026-11-18 ~15:10 UTC):** the re-measure moves to the next night run.
+- Run the bucket check at the START of the run, and retry it hourly.
+- Measure in the first window that passes (about 1 h of heavy).
+- Q-D2 and Q-D3 also go to the next run, from `morning-report-2026-11-22/d1317/wip/`.
+- NOTE_FOR_ABDULLAH gets: "Windows: after an Alt-drag, focus may jump to Chrome's menu; press Esc. Fixed next push."
+
+**D-1320, founder pre-approval (2026-11-18 ~16:05 UTC):** if the close-out's QT rerun fails on the same dev-server timeout, restart the bench app dev server only, no other service, after a quiet founder check.
+- Confirm the login page loads in under 5 s, then rerun the full QT once.
+- If it fails a third time for any reason, stop and report. Don't change the QT timeouts.
+- Log the restart here, with CPU and page-load time before and after.
+
+### Close-out (day run 11-22; 2026-11-18, 15:03–17:3x UTC, the close-out builder)
+
+- **Remotes:** `git fetch` in app, api, infra and market (no DNS workaround needed) moved no origin/umer-dev (app 1d9c69d,
+  api 1e367ff, infra b31cdb5, market 1f0be38). origin/staging (app 08966f8, api 5b20bb3) holds only Abdullah's merge
+  commits of 2026-11-17; `git diff umer-dev...origin/staging` is empty in both. **Nothing came in; not merged.**
+  origin/main holds only his older merges (market main its 4 commits of 2026-10).
+- **The push carries:** app 30e1aee, 9ed023e (D-1319 Q6/Q7, D-1318 Q13–Q15), 59ce4b0 (D-1319, D-1318 Q8), 24e58eb (D-1319
+  Q6 corrected); api e0a24e1 (D-1319, migration d1319c4e8a21); infra aebd2e5, f615771, 8dbbf4d, 6ddfbef, d45f4c6, 490db5a,
+  1277ab7, 7432bbf, c88f4fd and this mirror commit. Market nothing. **D-1317 adds no commit**; its Q-D2 / Q-D3 WIP stays in
+  `morning-report-2026-11-22/d1317/wip/`, outside git, for the next night run.
+- **Migrations:** nothing to fold. The one new revision since the last push is `d1319c4e8a21` (revises the pushed head
+  `d1312b6e4a70`; proved on foldproof19 by the D-1319 builder). `alembic heads` exactly `d1319c4e8a21 (head)`;
+  `alembic_version` reads d1319c4e8a21 on intelcost and intelcost_fx (read-only psql, 15:04).
+- **Gates (on app 24e58eb, api e0a24e1), under `heavy` (held from 15:04:28):** api ruff, ruff format --check (287 files),
+  mypy (287 files), alembic check ("No new upgrade operations detected") clean, 15:05:02–15:05:36, founder-active quiet
+  just before. App lint 0 errors (the 4 known warnings; 15:05:46–15:11:52), typecheck 0 (15:12:47–15:16:54), build 0
+  (15:17:07–15:21:50).
+- **Quantity table, the full table (prepare NOT skipped; the bucket answered):**
+  - Run 1, 15:22:22–15:51:16: **exit 1, no row wrong.** Every api-side part was all right and "prepare retry: 60 rows …,
+    all right"; the browser engines part then died at its sign-in, `page.goto: Timeout 30000ms exceeded` on
+    http://localhost:5173/login (the bench app dev server), so the browser rows did not run.
+  - The look (no restart): no app log line in the last 40 min (the last were D-1319's HMR updates, 14:02–14:27; no
+    error, no dependency re-optimise); vite at 34–35 % CPU (46 h of CPU since 11-13), 777 MB. A warm-up load in the
+    browser container (15:58:26–15:59:44): /login 23.8 s, then again 23.0 s; the dev server is slow, not cold.
+  - Run 2, 15:59:52–16:17:37: **exit 0, 0 FAIL.** "quantity table: 344 rows, both engines equal to 1e-9 on 340; 37 worked
+    answers right; 90 cost rows right to the cent; 391 earthwork rows right; 384 utility rows right; … 150 equipment rows
+    right …; passed"; "prepare retry: 60 rows …, all right"; "rental tax, extras and ratios (D-1287, D-1312, D-1319): 43
+    rows, all right"; "water and rain (D-1288): 33 rows, all right"; Benchmark A right. This is the proof for D-1318,
+    D-1319 (Q6 per crossing, Q7 stations, the rental tax policy and override, the margin cap) on the committed code.
+  - **The founder's pre-approved app restart was not needed** (run 2 passed); no service was restarted.
+- **Fixtures c42-stitch-sheets and c52-stitch-snap (D-1313 / D-1318 Q14): failed, environment, not a regression; not
+  proved today, next night run.** `./fx-suite.sh up` 16:18:20–16:18:58, `run c42-stitch-sheets c52-stitch-snap`
+  16:19:07–16:58:46 (exit 1), `stop` 16:58:59–16:59:27 (fx only; 0 fx containers left). The health watch ran and raised
+  no ALERT; the bench's services stayed up. They ran against the fx **dev servers** (app-fx 5176, app-fx-b 5177: the code
+  on disk, 9ed023e's Q14 included), not the built fx-prod images. Bench-code passed (api = worker = disk). `warm_apps`
+  took 626 s and 658 s; then each fixture's first step timed out at 30 s on `page.goto` (c52 `/login?next=…`, c42
+  `/settings`) and every later step fell from it: c52 0/5, c42 0/6, no step reached the stitch screen. The fx dev
+  servers, like the bench's, took about 25 s a page load today. Heavy released 16:59:49.
+- **Seen, not changed:** `fx-suite.sh` `code_current` polls api-fx's `/health/code` with `curl -m 5`, but the endpoint
+  takes about 13 s (it hashes every `.py`). Every poll times out, so after the (correct) restart of the stale fx apis at
+  ~16:20, the first real proof of D-1320's restart ("fx code: … restarting"), the loop ran its full ~14 min and said
+  "still not current after 240 s" although `/health/code` read `current: true`. The poll's limit should be ≥ 20 s (next
+  run).
+- **Client-name scan:** 0 hits in the 42 files changed since origin/umer-dev (app 18, api 5, infra 19), their names and
+  every unpushed commit message, against the denylist plus the two names; the mirror's changed files likewise 0.
+- **Purge:** no fx.* account on the bench created since 2026-11-18 11:33 (every builder's throwaway was purged by its
+  builder; the 4 fx.* accounts left are the long-kept test accounts of 2026-10-28 and 11-04). `purge-bench-dups.py` dry
+  run "would purge: 0, refused: 0" (15:12:11–15:12:28, gated). Nothing to purge; nothing KEPT. The fixture-made accounts
+  of D-1320's runs are on intelcost_fx (3), not the bench.
+- **Digest:** 51d01fd7cf7c2297 at 15:04:08 and at the end.
+- **Windows (UTC):** none from the close-out for the founder's saves (no app or api source save, no migration run, no
+  bench service restarted or recreated). The fx services only were started (16:18:20–16:18:58) and restarted by the run's
+  code check (~16:20), and stopped after step 6.
+- **NOTE_FOR_ABDULLAH.md** rewritten for this push (`morning-report-2026-11-22/`, outside git): staging status, the
+  migrations in order (d1312b6e4a70, then d1319c4e8a21), what is new by D-number, D-1320's account-delete note and the
+  product finding, the D-1310 line "functionally passed (fixtures, QT), memory not yet proven; promote at Umer's call"
+  with the founder's two additions (D-1317 above: the re-measure next night, bucket check at the start and hourly; the
+  Windows Alt-drag line under what testers will notice), and `SIGNUP_THROTTLE_OFF` never on staging or production.
