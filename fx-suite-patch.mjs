@@ -98,6 +98,13 @@ patch(path.join(root, "regress.sh"), (t) => {
   // app is not on its port (it fails there, and was started into that failure on every built-app run).
   s = s.replace("docker compose --profile realtime up -d api-b app-b >/dev/null 2>&1", B_PAIR);
   s = s.replace("docker compose --profile fx up -d --no-deps api-fx-b app-fx-b >/dev/null 2>&1", B_PAIR);
+  // The long fixtures run with fx-b stopped (D-1320): under FX_B_OFF=1 the pair is not started and the serial group's
+  // health wait does not wait for window B's api. Once: a guarded line is not the bare pair any more.
+  s = s.split("\n").map((l) => (l === B_PAIR ? '[ "${FX_B_OFF:-0}" = 1 ] || { ' + B_PAIR + "; }" : l)).join("\n");
+  s = s.replace(
+    "curl -sf localhost:8020/health >/dev/null && curl -sf localhost:8030/health >/dev/null",
+    'curl -sf localhost:8020/health >/dev/null && { [ "${FX_B_OFF:-0}" = 1 ] || curl -sf localhost:8030/health >/dev/null; }',
+  );
   s = s.replace("docker compose up -d worker-previews >/dev/null 2>&1", "true  # worker-fx serves every queue, previews included (D-611)");
   // The seeded account is the founder's on the running bench, and absent from the fx database.
   s = s.replace(/seeded_before=\$\(drive_ws snapshot[^\n]*\n/, "seeded_before=  # D-611: no seeded-account snapshot on the fx database\n");

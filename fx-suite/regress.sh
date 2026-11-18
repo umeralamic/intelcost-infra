@@ -159,7 +159,7 @@ one() {
 # --- the run -----------------------------------------------------------------------
 
 # F8 from S5 on needs window B's app and api (the realtime profile). Idempotent.
-docker compose --profile fx up -d --no-build --pull never --no-deps api-fx-b >/dev/null 2>&1; [ "$(docker compose ps -q app-fx-b-prod 2>/dev/null)" ] || docker compose --profile fx up -d --no-build --pull never --no-deps app-fx-b >/dev/null 2>&1
+[ "${FX_B_OFF:-0}" = 1 ] || { docker compose --profile fx up -d --no-build --pull never --no-deps api-fx-b >/dev/null 2>&1; [ "$(docker compose ps -q app-fx-b-prod 2>/dev/null)" ] || docker compose --profile fx up -d --no-build --pull never --no-deps app-fx-b >/dev/null 2>&1; }
 # Choose pages' thumbnails run on their own worker (D-43). Idempotent.
 true  # worker-fx serves every queue, previews included (D-611)
 
@@ -206,7 +206,7 @@ parallel_took=$(($(date +%s) - run_started))
 # its migrations first), and the next fixture once began against a half-started api.
 bench_ready() {
   for _ in $(seq 1 120); do
-    if curl -sf localhost:8020/health >/dev/null && curl -sf localhost:8030/health >/dev/null \
+    if curl -sf localhost:8020/health >/dev/null && { [ "${FX_B_OFF:-0}" = 1 ] || curl -sf localhost:8030/health >/dev/null; } \
       && curl -sf localhost:8020/health/code | grep -q '"current":true'; then
       return 0
     fi

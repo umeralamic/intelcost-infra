@@ -301,6 +301,31 @@ container's `/proc/sys/fs/inotify`). They are not what runs out: the api's watch
 (it walks the bind-mounted tree), and a full limit is ENOSPC, not ENOMEM. They were left as they are; raising them is
 a `.wslconfig` `kernelCommandLine` (`sysctl.fs.inotify.max_user_watches=...`) and a restart of Docker Desktop.
 
+**The health watch (D-1320, Q19).** Every `run` and `release` starts `fx-health-watch.sh`. It first checks that the
+bench's api, app, worker, worker-pages and beat are running and that api/docs gives 200; if one is down, nothing is run.
+After that it checks every 12 s, for as long as the run's own pid lives:
+- **A bench service that is not running** (exited, restarting, removed or recreated) stops the run at once:
+  - it prints a loud `ALERT` block naming the service, its exit code, its exit time and the error from its log;
+  - it writes `fx-suite/.regress/ALERT-<UTC>.txt` (its state and its last 40 log lines), for a caller to watch for;
+  - it sends TERM to the run, its fixture driver and the fixtures, and stops each running `browser-fx` container;
+  - `fx-suite.sh` then exits 3.
+- **api/docs not giving 200** counts the same, but only after 120 s (`FX_WATCH_API_GRACE`): a source save reloads the
+  api for 40–50 s.
+- **It never restarts anything.** Restarting a bench service is the main session's call, after founder-active.
+- **It ends with the run.** Its pid is in `fx-suite/.regress/.health-watch.pid`; the exit trap kills it, and it also
+  stops itself once the run's pid is gone.
+- **Test only:** `FX_WATCH_CONTAINERS="<name>"` watches a throwaway container in place of the bench services.
+
+**Long fixtures run with fx-b stopped (D-1320).** In a named `run` (a release's runs included), the fixtures in
+`LONG_FIXTURES` that don't use window B run last, after the others:
+- the list: **m6-position** (1,338–1,606 s) and **f5-big** (501 s, a 520 MB PDF in the api);
+- fx-b stopped for them: `api-fx-b`, `app-fx-b` and `app-fx-b-prod`, whichever runs (`stop`, then `start` of the same
+  containers after);
+- regress.sh is run with `FX_B_OFF=1`, so it neither starts the fx-b pair nor waits for 8030;
+- a fixture that uses window B keeps fx-b up (any f8-*, or a fixture naming 5177, 8030 or `APP_B`).
+
+`run full` and `run quick` are regress.sh's own lists and run as before.
+
 **The runnable suite is tracked too (D-1057):** `fx-suite/` as the 2026-11-07 release ran it (the tag, the updates
 and the retargeting laid over it), without its run output (`.regress/`), screenshots, `node_modules/`, the sheet key
 (real drawings) or any PDF. A fixture edited there is copied into `fx-suite-updates/` as well, or `setup`/`refresh`

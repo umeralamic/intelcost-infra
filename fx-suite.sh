@@ -26,6 +26,11 @@
 #   ./fx-suite.sh prod       the built apps in place of the dev servers, on the same ports
 #   ./fx-suite.sh dev        the dev servers back
 #   ./fx-suite.sh stop       stop the fx services (the database and the bucket stay)
+#
+# Every `run` and `release` (D-1320): a health watch (fx-health-watch.sh) checks the bench's api, app, worker,
+# worker-pages and beat first and then every 12 s; one that exits stops the run, writes
+# fx-suite/.regress/ALERT-<UTC>.txt and exits 3, and is never restarted here. The long fixtures (LONG_FIXTURES) run
+# last, with the fx-b services stopped, unless the fixture uses window B.
 
 set -u
 cd "$(dirname "$0")"
@@ -38,15 +43,85 @@ FX_SERVICES="api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx 
 # which recreates bench services too.
 BENCH_BEFORE=$(docker compose ps --format '{{.Service}}={{.ID}}' 2>/dev/null | grep -v -- '-fx' | sort | tr '\n' ' ')
 bench_check() {
-  local status=$? after
+  local status=$? after alert
+  [ -n "${parts:-}" ] && rm -f "$parts"
+  # The health watch dies with the run (D-1320): by pid, waited for (it finishes stopping a run before it ends).
+  if [ -n "$WATCH_PID" ]; then
+    kill "$WATCH_PID" 2>/dev/null
+    wait "$WATCH_PID" 2>/dev/null
+    rm -f fx-suite/.regress/.health-watch.pid
+  fi
+  # The watch stopped the run: said, the fx-b services left stopped (memory), exit 3. Every fx-suite.sh shell of the
+  # run (a release's inner `run` too) reads it; the shell that started the watch removes it.
+  if [ -n "${FX_WATCH_STATE:-}" ] && [ -s "$FX_WATCH_STATE" ]; then
+    alert=$(cat "$FX_WATCH_STATE")
+    [ -n "$WATCH_PID" ] && rm -f "$FX_WATCH_STATE"
+    echo "ALERT  the health watch stopped this run: a bench service is down, see $alert (D-1320). It was not restarted."
+    [ -n "$B_STOPPED" ] && echo "ALERT  fx-b left stopped: $B_STOPPED"
+    exit 3
+  fi
+  [ -n "$WATCH_PID" ] && rm -f "$FX_WATCH_STATE"
+  b_restore
   after=$(docker compose ps --format '{{.Service}}={{.ID}}' 2>/dev/null | grep -v -- '-fx' | sort | tr '\n' ' ')
   if [ -n "$BENCH_BEFORE" ] && [ "$after" != "$BENCH_BEFORE" ]; then
-    echo "FAIL  a bench service was restarted or recreated during this run (D-1051): $(docker compose ps --format '{{.Service}} {{.Status}}' | tr '\n' ';')"
+    echo "FAIL  a bench service was restarted, recreated or stopped during this run (D-1051): $(docker compose ps --format '{{.Service}} {{.Status}}' | tr '\n' ';')"
     exit 1
   fi
   exit "$status"
 }
+WATCH_PID=
+B_STOPPED=
 trap bench_check EXIT
+# A TERM (the health watch's, or a caller's) or an interrupt ends the run through the exit trap above.
+trap 'exit 143' TERM
+trap 'exit 130' INT
+
+# --- the health watch and the long fixtures (D-1320) --------------------------------
+# One watch per run: a `run` inside a release finds the release's.
+watch_start() {
+  if [ -n "${FX_WATCH_PID:-}" ] && kill -0 "$FX_WATCH_PID" 2>/dev/null; then return 0; fi
+  ./fx-health-watch.sh --once || { echo "A bench service is down before the run (D-1320): nothing was run, nothing restarted."; exit 1; }
+  mkdir -p fx-suite/.regress
+  export FX_WATCH_STATE="$PWD/fx-suite/.regress/.health-watch-$$"
+  : >"$FX_WATCH_STATE"
+  ./fx-health-watch.sh "$$" "$FX_WATCH_STATE" &
+  WATCH_PID=$!
+  export FX_WATCH_PID=$WATCH_PID
+  echo "$WATCH_PID $$ $(date -u +%FT%TZ)" >fx-suite/.regress/.health-watch.pid
+}
+
+# Fixtures over about 10 minutes, or one 520 MB set's memory (regress timings, fx-suite/.regress/times.tsv):
+# m6-position 1,338-1,606 s (the 2026-11-18 08:47 outage ran under it), f5-big 501 s with a 520 MB PDF in the api.
+# Neither uses window B. They run last in a `run`, with the fx-b services stopped, and fx-b comes back after.
+LONG_FIXTURES=${FX_LONG_FIXTURES:-m6-position f5-big}
+B_SERVICES="api-fx-b app-fx-b app-fx-b-prod"
+is_long() { case " $LONG_FIXTURES " in *" $1 "*) return 0 ;; esac; return 1; }
+# A fixture that uses window B (its app on 5177, its api on 8030, the realtime pair) keeps fx-b up, long or not.
+needs_b() {
+  case "$1" in f8-*) return 0 ;; esac
+  local f
+  for f in "fx-suite/browser/$1.mjs" "fx-suite/browser/$1.sh"; do
+    [ -f "$f" ] && grep -qE "APP_B|WS_URL_B|API_B|FX_APP_B|FX_API_B|localhost:(5177|8030)" "$f" && return 0
+  done
+  return 1
+}
+# Stops the fx-b services that run (fx services only, D-1051), and remembers them for b_restore.
+b_off() {
+  local s
+  B_STOPPED=
+  for s in $B_SERVICES; do [ -n "$(docker compose ps -q --status running "$s" 2>/dev/null)" ] && B_STOPPED="$B_STOPPED $s"; done
+  B_STOPPED=${B_STOPPED# }
+  [ -n "$B_STOPPED" ] && docker compose --profile fx --profile fx-prod stop $B_STOPPED >/dev/null 2>&1
+  echo "fx-b stopped for the long fixtures ($*): ${B_STOPPED:-none was running}"
+}
+# The same containers started again (never recreated), once api-fx-b answers.
+b_restore() {
+  [ -n "$B_STOPPED" ] || return 0
+  docker compose --profile fx --profile fx-prod start $B_STOPPED >/dev/null 2>&1
+  case " $B_STOPPED " in *" api-fx-b "*) for _ in $(seq 1 60); do curl -sf localhost:8030/health >/dev/null && break; sleep 2; done ;; esac
+  echo "fx-b started again: $B_STOPPED"
+  B_STOPPED=
+}
 # The host gateway's address, which the api, the worker and the containerised browser all reach
 # MinIO at (Docker Desktop: host.docker.internal).
 host=$(docker compose exec -T api python -c "import socket; print(socket.gethostbyname('host.docker.internal'))" 2>/dev/null | tr -d '\r' | tail -1)
@@ -130,15 +205,20 @@ capture() {
   [ -n "${FX_CAPTURE_DIR:-}" ] && return 0
   export FX_CAPTURE_DIR=$1
   ./fx-capture.sh "$FX_CAPTURE_DIR" "$$" >/dev/null 2>&1 &
+  # The health watch leaves it to end by itself when it stops a run (D-1320).
+  export FX_CAPTURE_PID=$!
 }
 
 # Both fx apps' pages compiled once, so a fixture's first load meets a warm server (D-850, D-1013,
 # D-1034): called by `run` and when `dev` brings the dev servers back, before a release's dev phase.
+# `warm_apps a` warms app A only: fx-b stopped for the long fixtures (D-1320).
 warm_apps() {
+  local apps="'http://localhost:5176', 'http://localhost:5177'"
+  [ "${1:-}" = a ] && apps="'http://localhost:5176'"
   docker compose --profile fx run --rm ${FX_OFFLINE:+--pull never} browser-fx node --input-type=module -e "
 import { openBrowser } from '/drive/scripts/lib/bench.mjs';
 const b = await openBrowser();
-for (const app of ['http://localhost:5176', 'http://localhost:5177']) {
+for (const app of [$apps]) {
   const p = await b.newPage();
   const t = Date.now();
   await p.goto(app + '/login', { timeout: 300000 });
@@ -207,9 +287,40 @@ case "${1:-}" in
   run)
     shift
     check || { echo "The fx stack is not isolated: nothing was run."; exit 1; }
+    # The capture first: the watch is handed its pid, to leave it be.
     capture "fx-suite/.regress/capture-$(date +%Y%m%d-%H%M%S)"
-    warm_apps
-    (cd fx-suite && ./regress.sh "$@")
+    watch_start
+    # Named fixtures: the long ones that don't use window B run last, with fx-b stopped (D-1320). `full`, `quick`
+    # and no arguments are regress.sh's own lists, run as they are.
+    normal=()
+    long=()
+    case "${1:-full}" in
+      full | quick) normal=("$@") ;;
+      *) for n in "$@"; do if is_long "$n" && ! needs_b "$n"; then long+=("$n"); else normal+=("$n"); fi; done ;;
+    esac
+    parts="fx-suite/.regress/.parts-$$"
+    : >"$parts"
+    st=0
+    if [ $# -eq 0 ] || [ ${#normal[@]} -gt 0 ]; then
+      warm_apps
+      (cd fx-suite && ./regress.sh "${normal[@]}") | tee -a "$parts"
+      [ "${PIPESTATUS[0]}" -eq 0 ] || st=1
+    fi
+    if [ ${#long[@]} -gt 0 ]; then
+      b_off "${long[@]}"
+      [ ${#normal[@]} -eq 0 ] && warm_apps a
+      (cd fx-suite && FX_B_OFF=1 ./regress.sh "${long[@]}") | tee -a "$parts"
+      [ "${PIPESTATUS[0]}" -eq 0 ] || st=1
+      b_restore
+    fi
+    # Both parts ran: one summary line for the whole run, in regress.sh's form (release reads the last one).
+    if [ ${#normal[@]} -gt 0 ] && [ ${#long[@]} -gt 0 ]; then
+      total=$((${#normal[@]} + ${#long[@]}))
+      mapfile -t bad < <(failed_in "$parts")
+      if [ $st -eq 0 ]; then echo "all $total passed"; else echo "${#bad[@]} of $total failed: ${bad[*]}"; fi
+    fi
+    rm -f "$parts"
+    [ $st -eq 0 ]
     ;;
   prod)
     # The fx apps built (the "fx-prod" profile) in place of the dev servers, on the same ports.
@@ -251,6 +362,8 @@ case "${1:-}" in
     out="fx-suite/.regress/release-$(date +%Y%m%d-%H%M)"
     mkdir -p "$out"
     capture "$out/capture"
+    # One health watch for the whole release, its inner runs included (D-1320).
+    watch_start
     # 0. Everything built and pulled first (D-841); from here on no step builds, pulls or resolves an image.
     "$0" prepare 2>&1 | tee "$out/0-prepare.log" | tail -1
     [ "${PIPESTATUS[0]}" -eq 0 ] || { echo "release: prepare failed (see $out/0-prepare.log): nothing was run" | tee "$out/summary.txt"; exit 1; }
