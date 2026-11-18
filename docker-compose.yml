@@ -21,6 +21,34 @@ x-mail-guard: &mail-guard
   MAIL_CAPTURE_HOST: mailhog
   MAIL_CAPTURE_PORT: "1025"
 
+# The fx stack's environment (D-1300's fx services): api-fx merges it (D-1314 adds the signup switch there), and the
+# fx workers and beat take it as is.
+x-fx-env: &fx-env
+  DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost_fx
+  REDIS_URL: redis://redis:6379/1
+  AWS_ENDPOINT_URL_S3: "http://${FX_S3_HOST:-192.168.65.254}:9000"
+  AWS_ACCESS_KEY_ID: minioadmin
+  AWS_SECRET_ACCESS_KEY: minioadmin
+  S3_BUCKET: intelcost-fx
+  S3_REGION: us-east-1
+  MAIL_ALLOWLIST: ""
+  SMTP_HOST: mailhog
+  SMTP_PORT: "1025"
+  SMTP_USE_TLS: "false"
+  SMTP_USERNAME: ""
+  SMTP_PASSWORD: ""
+  GEMINI_API_KEY: ""
+  OPENAI_API_KEY: ""
+  APP_URL: http://localhost:5176
+  CORS_ORIGINS: '["http://localhost:5176","http://localhost:5177"]'
+  LOCKED_PROJECTS: "{}"
+  # Its own Stripe fake (N10, D-660): a fixture may pay, and the webhook lands on the fx api.
+  STRIPE_API_BASE: http://stripe-fake-fx:12111
+  # The event loop's watchdog (D-869): a loop held 500 ms logs where.
+  LOOP_WATCH_MS: "500"
+  # Q97 (D-952): `FX_TRACEMALLOC=1` traces allocations for /health/memory; empty, off.
+  PYTHONTRACEMALLOC: ${FX_TRACEMALLOC:-}
+
 name: intelcost-bench
 
 services:
@@ -442,31 +470,13 @@ services:
       if [ "${FX_WATCH:-1}" = 0 ]; then exec $$c; fi; exec watchfiles --filter python --sigint-timeout 10 "$$c" /srv/app /srv/main.py'
     env_file: !override
       - path: ../intelcost-app-fastapi/.env
-    environment: &fx-env
-      DATABASE_URL: postgresql+asyncpg://intelcost:intelcost@postgres:5432/intelcost_fx
-      REDIS_URL: redis://redis:6379/1
-      AWS_ENDPOINT_URL_S3: "http://${FX_S3_HOST:-192.168.65.254}:9000"
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin
-      S3_BUCKET: intelcost-fx
-      S3_REGION: us-east-1
-      MAIL_ALLOWLIST: ""
-      SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
-      SMTP_USE_TLS: "false"
-      SMTP_USERNAME: ""
-      SMTP_PASSWORD: ""
-      GEMINI_API_KEY: ""
-      OPENAI_API_KEY: ""
-      APP_URL: http://localhost:5176
-      CORS_ORIGINS: '["http://localhost:5176","http://localhost:5177"]'
-      LOCKED_PROJECTS: "{}"
-      # Its own Stripe fake (N10, D-660): a fixture may pay, and the webhook lands on the fx api.
-      STRIPE_API_BASE: http://stripe-fake-fx:12111
-      # The event loop's watchdog (D-869): a loop held 500 ms logs where.
-      LOOP_WATCH_MS: "500"
-      # Q97 (D-952): `FX_TRACEMALLOC=1` traces allocations for /health/memory; empty, off.
-      PYTHONTRACEMALLOC: ${FX_TRACEMALLOC:-}
+    # D-1314: the fx apis switch the signup throttle off (30 an hour per IP, D-884's throttle), so a fixture suite that
+    # registers a throwaway account per fixture from one IP is never refused at the 31st. The api honours it only
+    # outside production and refuses to start with it in production. The fx workers share the rest of the map, never
+    # this flag; the bench api never sets it.
+    environment:
+      <<: *fx-env
+      SIGNUP_THROTTLE_OFF: "1"
     ports: !override
       - "8020:8000"
     # The archived suite's own drives, restored with it (./fx-suite.sh setup).

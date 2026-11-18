@@ -2314,7 +2314,21 @@ def d1286() -> int:
 # D-1287 (Plan B B2, B3, B8): the state table as migration d1287c6e2a91 loaded it on the bench, the api's rental-extras
 # figures in code, the job type a state rule may name, the bundle's rule for a loaded, an unread and an unlisted state,
 # and the ratios at the library's medians. Read only.
+# D-1312 (night run from 2026-11-17, task 3; migration d1312b6e4a70): the states read from each state's own tax
+# authority on 2026-11-17 and loaded at B, each flag from its source (morning-report-2026-11-21/d1312/
+# RENTAL-TAX-STATES.md): OH the Texas flags, the waiver C (OAC 5703-9-52, 5703-9-63); NY an optional waiver not taxed
+# (TSB-A-10(18)S); PA an operated hire taxed, the whole charge (SUT Bulletin 2021-05); GA an optional waiver and a
+# carrier's haul not taxed, C (LR SUT-2016-17); IL the dealer's delivery not taxed unless inseparably linked (Pub-113-L
+# Q15). AZ stays F; LA and OK are listed at F. TX untouched.
 D1287_TX = (True, True, True, True, False, True)  # rentals, operated exempt, waiver, lessor delivery, third-party, fees
+D1312_LOADED = {
+    "OH": (True, True, True, True, False, True),
+    "NY": (True, True, False, True, False, True),
+    "PA": (True, False, True, True, False, True),
+    "GA": (True, True, False, True, False, True),
+    "IL": (True, True, False, False, False, True),
+}
+D1312_NOT_READ = ("AZ", "LA", "OK")
 D1287_JOB_TYPES = (
     ("residential", "new_construction", "residential"),
     ("residential", "renovation", "residential"),
@@ -2347,19 +2361,29 @@ async def d1287() -> int:
     async with SessionFactory() as session:
         rows = (await session.execute(sql("SELECT * FROM eqlib.eq_rental_tax_state ORDER BY state"))).mappings().all()
         by = {r["state"]: r for r in rows}
-        check("eq-tax-table-states", sorted(by), ["AZ", "GA", "IL", "PA", "TX"])
+        # D-1312: OH, NY, LA and OK added; GA, IL and PA read and loaded at B.
+        check("eq-tax-table-states", sorted(by), ["AZ", "GA", "IL", "LA", "NY", "OH", "OK", "PA", "TX"])
+        flag_keys = ("taxes_rentals", "operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable", "third_party_haul_taxable", "lessor_fees_taxable")
         tx = by.get("TX") or {}
-        flags = tuple(tx.get(k) for k in ("taxes_rentals", "operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable", "third_party_haul_taxable", "lessor_fees_taxable"))
+        flags = tuple(tx.get(k) for k in flag_keys)
         check("eq-tax-table-tx-rule", flags, D1287_TX)
         check("eq-tax-table-tx-grade", (tx.get("grade"), list(tx.get("exempt_job_types") or []), "§3.294" in str(tx.get("rule_cited"))), ("A", [], True))
-        for st in ("GA", "IL", "AZ", "PA"):
+        for st, want in D1312_LOADED.items():
+            r = by.get(st) or {}
+            check(f"d1312-eq-tax-table-{st.lower()}-rule", (r.get("grade"), tuple(r.get(k) for k in flag_keys), list(r.get("exempt_job_types") or []), str(r.get("read_on")), bool(r.get("url"))), ("B", want, [], "2026-11-17", True))
+        for st in D1312_NOT_READ:
             r = by.get(st) or {}
             check(f"eq-tax-table-{st.lower()}-not-read", (r.get("grade"), r.get("taxes_rentals"), r.get("waiver_taxable")), ("F", None, None))
-        # The bundle's rule: Texas loaded; Georgia listed, not loaded; California not listed; no state at all.
+        # The bundle's rule: Texas loaded; Arizona listed, not loaded (Georgia until D-1312); Pennsylvania loaded with an
+        # operated hire taxed and Ohio loaded (D-1312); California not listed; no state at all.
         rule = await service.rental_tax(session, None, "TX")
         check("eq-tax-bundle-tx", (rule["loaded"], rule["listed"], rule["taxes_rentals"], rule["exempt_job_types"], rule["read_on"]), (True, True, True, [], "2026-11-16"))
-        rule = await service.rental_tax(session, None, "GA")
-        check("eq-tax-bundle-ga", (rule["loaded"], rule["listed"], rule["grade"]), (False, True, "F"))
+        rule = await service.rental_tax(session, None, "AZ")
+        check("eq-tax-bundle-az", (rule["loaded"], rule["listed"], rule["grade"]), (False, True, "F"))
+        rule = await service.rental_tax(session, None, "PA")
+        check("d1312-eq-tax-bundle-pa", (rule["loaded"], rule["operated_single_charge_exempt"], rule["grade"]), (True, False, "B"))
+        rule = await service.rental_tax(session, None, "OH")
+        check("d1312-eq-tax-bundle-oh", (rule["loaded"], rule["waiver_taxable"], rule["read_on"]), (True, True, "2026-11-17"))
         rule = await service.rental_tax(session, None, "CA")
         check("eq-tax-bundle-unlisted", (rule["loaded"], rule["listed"]), (False, False))
         rule = await service.rental_tax(session, None, None)
@@ -2387,7 +2411,7 @@ async def d1287() -> int:
         check(f"eq-job-type-{kind}-{work}", service.job_type(kind, work), want)
     for w in wrong:
         print(w)
-    print(f"rental tax, extras and ratios (D-1287): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"rental tax, extras and ratios (D-1287, D-1312): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 
