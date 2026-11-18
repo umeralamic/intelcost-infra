@@ -35252,6 +35252,31 @@ each).**
     taken by that layer (seen on C-200).
   - **The pits' place.** `makePits` puts a jack and bore's pits at its length's own stations (`fromFt`, D-1311). A
     length stored before them is still centred.
+- **Proof:**
+  - Commits (local, umer-dev): app 9ed023e, infra f615771 (with D-1319's rows and c52).
+  - Gates on the final tree: lint 0 errors (the 4 known warnings), typecheck 0, build 0 (12:23–12:40 UTC).
+  - **My commits went in before a clean quantity table.** My full QT (12:40–12:55) showed 7 wrong of 344. Four were
+    D-1319's rental rows, whose app code was waiting for my app lock. Three were my own `openPieces` expectation format
+    (the open trench is pieced at the depth-range edges); I fixed that in f615771 by joining contiguous pieces. Every
+    figure of mine passed. The clean proof is D-1319's QT after its app save.
+  - **Smoke (MCP, 13:15–13:37 UTC):** throwaway fx.equip.20261118131612, a copy of the 3D test project (the copy went
+    through first time, with S3 retries). Passed.
+    - **Q13:** MH-1 with a typed floor of 676.00 is 26.49 ft deep. It carries the OSHA note, and its line "Sanitary
+      Manhole 48", 24–26 ft" is listed in Needs attention.
+    - **Q15, the tree:** picking jack and bore on ST-2 made BP-1 and RP-1, which showed in the Sheets tree with no
+      reload.
+    - **Q14:** Stitch sheets C-200 with C-100, Snap PDF on, picked while both panes' lines were still read. Each pick
+      waited (1 waiting), then about 5 s later was placed where clicked (within a pixel) and marked "not snapped" on
+      both panes.
+    - **Q15, a pick on a drawn path:** a pick at (0.40, 0.50) on C-200, which yesterday's smoke saw not taken, was
+      taken (point 2 at 0.3999, 0.4989), and the markers kept their pointer (draggable).
+  - Screenshots: `morning-report-2026-11-22/d1318/` smoke-1-needs-attention.png, smoke-2-not-snapped.png,
+    smoke-3-pick-on-path.png.
+  - Purged 13:37:37 (dry run first; 1 account, 1 workspace, 0 refused), and the guard refused 0 requests. Digest
+    51d01fd7cf7c2297 at start (11:37) and end.
+  - **Seen, not changed:** a jack and bore's pits are made when the kind is picked, so with "A length" set afterwards
+    they stay at the run's ends. Moving them to the stretch's stations when the length is set is a question for the
+    founder.
 
 ## D-1319 — Day run 2026-11-18, task 3: pricing
 
@@ -35291,6 +35316,22 @@ Q2 + Q4 (one migration, proved), Q6 PE line, Q7 stations. The $ effect on founde
     average agree: $0.
   - **Fixtures:** none holds a bored stretch: $0.
   - **Founder projects:** none has a crossing (D-1311's read-only SELECT; reading R6): $0 on every label.
+  - Re-checked read-only on 2026-11-18 at 11:5x UTC: 0 runs with a crossing, 0 Casing / sleeve runs, 0 bore or
+    receiving pits on the bench.
+- **Proof:**
+  - Commits (local, umer-dev): app 30e1aee, infra f615771.
+  - The D-1319 commit's in-between versions of `calculate.ts` and `EstimatingView.tsx` were staged as blobs; the gates
+    ran on the final tree (with D-1318's commit), as in D-1318's proof. The same holds for the QT: my commits went in
+    before a clean QT, and the clean proof is D-1319's QT after its app save.
+  - **Smoke (MCP, same throwaway as D-1318):** passed.
+    - **Q7:** ST-2 by inverts 670.23 / 680.25 (deeper at its start), a jack and bore over "A length" of 155 LF.
+      - Bored 0+00 to 1+55: the open trench is 155.26 LF (the pipe 310.26 LF) and 6,226.91 CY.
+      - Bored 1+55 to 3+10: the deep end is open, 8,795.64 CY.
+      - Under D-1269's average section both would have been the same.
+    - **Q6:** BP-1 at 35.0 ft, self-performed, has its `trench_pe_design|pe_design|pit|bore` line. It is priced
+      $5,149.95 (`service:pe_shoring_design`, the Q4 2026 IntelCost price, grade D) and flagged "PE-designed protective
+      system: pit deeper than 20 ft (OSHA 1926.652); the stated $5,000 waits for the engineer's quote".
+    - RP-1 at 25 ft, by the bore sub, has no PE line.
 
 **Q2, Q4, the rental tax override and the margin cap as built (the pricing builder, 2026-11-18):**
 
@@ -35441,3 +35482,56 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
       first; the nightly pass 0 (`clear_logged`) then retries it;
     - (B) no schema change: the drive clears storage first and keeps an account's rows when a delete fails, so the
       next purge retries it.
+
+**D-1320, founder's second answers (~14:00 UTC), built:**
+- **Q18 delete:** done by the main session through the normal permission flow, 13:55:49–13:56:07. Before 129, after 0.
+- **Option B, built in infra.**
+  - `drives/purge-bench-accounts.py` `clear_files` and `purge`: each account's prefixes are deleted before its rows.
+    If any fails, the account's rows are KEPT, and "KEPT <email> files not deleted, rows kept for the next run:
+    <prefix>: <error>" is printed.
+  - `bench-workspaces.py` `delete_workspaces`, `clear_files` and `kept_note`: the same per workspace, said on the
+    purge's own result line. That covers `purge-fx`, `purge-owner` and `purge-fixture-made`, in `drives/`,
+    `fx-suite-updates/drives/` and `fx-suite/drives/`. Before, one failure there stopped the whole purge.
+  - Test only: `PURGE_FAIL_STORAGE=<workspace uuid>` fails that workspace's first prefix.
+  - No api save; the drives are mounted read only and nothing reloads.
+- **Proved on the bench** with this builder's own throwaways (gated execs, founder-active before each;
+  `d1320/purge-proof.log`):
+  - **purge-bench-accounts**, `fx.d1320.20261118140118`:
+    - set up with one object in project-file and one in takeoff;
+    - run 1 with the fault (14:02:34): KEPT with the injected error named, "deleted 0 accounts"; 1 user and
+      1 workspace row left; the project-file object left (takeoff cleared);
+    - run 2 without it (14:04:43): "deleted 1 accounts and 1 workspaces"; 0 objects, 0 rows.
+  - **bench-workspaces purge-owner**, `fx.d1320.20261118140553`:
+    - run 1 with the fault (14:06:19): "purged 0 … KEPT 1, files not deleted, rows kept for the next run: <ws>
+      (project-file/…: RuntimeError: injected failure …)"; 1 workspace row left;
+    - run 2 (14:08:01): "purged 1", then the account purged; 0 objects, 0 rows.
+- **The fx stale-code restart** was accepted without a stale-case proof; the next real api save proves it (README).
+- **Product check (read only, `d1320/PRODUCT-DELETE-FILES.md`):**
+  - A customer cannot delete a workspace or an account: there is no route or service for it. BACKLOG question:
+    "account and workspace deletion, with bucket file clean-up".
+  - Project purge: rows and a `trash_purge_log` row commit together, then the files are cleared. Failures stay on
+    the log row and are retried nightly with no limit and no alert.
+  - Three questions are listed there for the next run.
+
+**D-1320, the Q18 delete done (main session, 13:55:49–13:56:07 UTC):** D-1308's throwaway prefix 4dab819e-…, which is not on the guard list. Before 129 objects (project-file 2, takeoff 127), after 0. Founder-active was quiet before it. Founder answers (2026-11-18 ~13:50): **purge fix B** (no schema change: the drive deletes files first and keeps the account's rows if a delete fails, so the next purge run retries). **The fx code-current restart is accepted without proof,** to be proved on the next real api save. **Read-only check, report only:** how the PRODUCT's account and workspace deletion handles bucket files (the order of row and file deletes, retry on failure). If it can leave a customer's files behind on a failed delete, it becomes a question for the next run; no change today.
+
+**D-1319, founder questions on the D-1318-utils results (2026-11-18 ~14:00 UTC):**
+- **Q7 direction:** boring the deep end should REMOVE the deepest open-cut sections, so the open trench should be LOWER. The smoke showed 6,226.91 CY bored at 0+00–1+55 and 8,795.64 CY at 1+55–3+10.
+  - Report both positions: the station range bored, open-trench CY, bore pit CY, receiving pit CY, and which end is deep.
+  - If the stations are applied reversed, fix it before the close-out and re-prove it with QT rows.
+- **Q6:** one PE-design line PER CROSSING (covering both pits), added only if the crossing has a pit over 20 ft. State whether $5,149.95 was per pit, and its basis (D-1144's source).
+- **Product deletion:** if customers can't delete a workspace or account at all, it is a backlog question (account deletion + file clean-up). No change today.
+
+**D-1317, stopped at a safe point by the main session (2026-11-18 14:00 UTC):**
+- It held app (13:00:53) and heavy (13:14:39) while still writing Q-D3, past its 13:45 release, and did not answer at 13:56. No build, QT or measurement was running.
+- Its three uncommitted saves (EarthworkLayer.tsx, OverlayViewBar.tsx, ProjectTakeoff.tsx: Q-D2 plus a partial Q-D3; lint 0 errors after its 13:25:12 fix; typecheck, build and QT not run) are kept in `morning-report-2026-11-22/d1317/wip/` (the files plus `d1317-wip.patch`).
+- They were reverted to HEAD 9ed023e at 14:00:42, after a quiet founder-active. Locks released.
+- **What it measured:** NO series.
+  - The bucket checks were 11:45:24 FAIL (12.0/12.0/12.0 s); 11:48:53 PASS (4.3/6.2/7.5 s); 11:59:29 FAIL (12.1/6.8/12.0 s); 12:01:00 FAIL (12.0/12.0/11.3 s).
+  - Before the 11:59 check it made two production builds (e2050eb and 1d9c69d), 11:55:57–12:01:05. No measurement row exists for today.
+- **D-1317 (the re-measure) and Q-D2 / Q-D3 are not done today.**
+
+**D-1319, founder (2026-11-18 ~14:10 UTC):** Q7 is not closed by QT rows: they test the QT engine, not Calculate.
+- Before the close-out, report for ST-2 from Calculate: which end is deep (inverts and ground at 0+00 and 3+10), and for each position the bored range and the open-trench, bore pit and receiving pit CY.
+- If Calculate measures stations from the wrong end, fix it and smoke ST-2 in the app, showing the deep-end bore gives LESS open trench.
+- If it isn't fixed and proved by the close-out, Q7 stays out of the push; Q6 can still go.
