@@ -2321,14 +2321,18 @@ def d1286() -> int:
 # carrier's haul not taxed, C (LR SUT-2016-17); IL the dealer's delivery not taxed unless inseparably linked (Pub-113-L
 # Q15). AZ stays F; LA and OK are listed at F. TX untouched.
 D1287_TX = (True, True, True, True, False, True)  # rentals, operated exempt, waiver, lessor delivery, third-party, fees
+# D-1319 (migration d1319c4e8a21; D-1316 Q2, Q4): a lessor's charge read at grade C is taxed and marked in `inferred`; a
+# third-party haul is never taxed. GA's and IL's waiver taxed; AZ loaded at B on A.R.S. §42-5071, its waiver, dealer's
+# delivery and operated hire taxed as assumed. Each state: rules, read on, the fields marked.
 D1312_LOADED = {
-    "OH": (True, True, True, True, False, True),
-    "NY": (True, True, False, True, False, True),
-    "PA": (True, False, True, True, False, True),
-    "GA": (True, True, False, True, False, True),
-    "IL": (True, True, False, False, False, True),
+    "OH": ((True, True, True, True, False, True), "2026-11-17", ["waiver_taxable"]),
+    "NY": ((True, True, False, True, False, True), "2026-11-17", []),
+    "PA": ((True, False, True, True, False, True), "2026-11-17", []),
+    "GA": ((True, True, True, True, False, True), "2026-11-18", ["waiver_taxable", "third_party_haul_taxable"]),
+    "IL": ((True, True, True, False, False, True), "2026-11-18", ["waiver_taxable"]),
+    "AZ": ((True, False, True, True, False, True), "2026-11-18", ["operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable"]),
 }
-D1312_NOT_READ = ("AZ", "LA", "OK")
+D1312_NOT_READ = ("LA", "OK")
 D1287_JOB_TYPES = (
     ("residential", "new_construction", "residential"),
     ("residential", "renovation", "residential"),
@@ -2368,9 +2372,12 @@ async def d1287() -> int:
         flags = tuple(tx.get(k) for k in flag_keys)
         check("eq-tax-table-tx-rule", flags, D1287_TX)
         check("eq-tax-table-tx-grade", (tx.get("grade"), list(tx.get("exempt_job_types") or []), "§3.294" in str(tx.get("rule_cited"))), ("A", [], True))
-        for st, want in D1312_LOADED.items():
+        for st, (want, read_on, inferred) in D1312_LOADED.items():
             r = by.get(st) or {}
-            check(f"d1312-eq-tax-table-{st.lower()}-rule", (r.get("grade"), tuple(r.get(k) for k in flag_keys), list(r.get("exempt_job_types") or []), str(r.get("read_on")), bool(r.get("url"))), ("B", want, [], "2026-11-17", True))
+            check(f"d1312-eq-tax-table-{st.lower()}-rule", (r.get("grade"), tuple(r.get(k) for k in flag_keys), list(r.get("exempt_job_types") or []), str(r.get("read_on")), bool(r.get("url"))), ("B", want, [], read_on, True))
+            check(f"d1319-eq-tax-table-{st.lower()}-inferred", list(r.get("inferred") or []), inferred)
+        # D-1319: a third-party haul is not part of the rental price, untaxed in every state.
+        check("d1319-eq-tax-no-haul-taxed", sorted(st for st, r in by.items() if r.get("third_party_haul_taxable")), [])
         for st in D1312_NOT_READ:
             r = by.get(st) or {}
             check(f"eq-tax-table-{st.lower()}-not-read", (r.get("grade"), r.get("taxes_rentals"), r.get("waiver_taxable")), ("F", None, None))
@@ -2378,12 +2385,17 @@ async def d1287() -> int:
         # operated hire taxed and Ohio loaded (D-1312); California not listed; no state at all.
         rule = await service.rental_tax(session, None, "TX")
         check("eq-tax-bundle-tx", (rule["loaded"], rule["listed"], rule["taxes_rentals"], rule["exempt_job_types"], rule["read_on"]), (True, True, True, [], "2026-11-16"))
-        rule = await service.rental_tax(session, None, "AZ")
-        check("eq-tax-bundle-az", (rule["loaded"], rule["listed"], rule["grade"]), (False, True, "F"))
+        rule = await service.rental_tax(session, None, "LA")
+        check("eq-tax-bundle-la", (rule["loaded"], rule["listed"], rule["grade"]), (False, True, "F"))
         rule = await service.rental_tax(session, None, "PA")
         check("d1312-eq-tax-bundle-pa", (rule["loaded"], rule["operated_single_charge_exempt"], rule["grade"]), (True, False, "B"))
         rule = await service.rental_tax(session, None, "OH")
         check("d1312-eq-tax-bundle-oh", (rule["loaded"], rule["waiver_taxable"], rule["read_on"]), (True, True, "2026-11-17"))
+        rule = await service.rental_tax(session, None, "AZ")
+        check("d1319-eq-tax-bundle-az", (rule["loaded"], rule["grade"], rule["inferred"]), (True, "B", ["operated_single_charge_exempt", "waiver_taxable", "lessor_delivery_taxable"]))
+        # D-1319: a project's own rental tax rate, a column of the bid rates; null on every row the migration met.
+        nulls = (await session.execute(sql("SELECT count(*) FILTER (WHERE rental_tax_pct IS NOT NULL) FROM estimate_bid_rates"))).scalar_one()
+        check("d1319-rental-tax-pct-column", nulls is not None, True)
         rule = await service.rental_tax(session, None, "CA")
         check("eq-tax-bundle-unlisted", (rule["loaded"], rule["listed"]), (False, False))
         rule = await service.rental_tax(session, None, None)
@@ -2409,9 +2421,26 @@ async def d1287() -> int:
     check("eq-extras-settings-listed", all(k in service.APP_SETTINGS for k in ("damage_waiver_pct", "env_fee_pct", "env_fee_cap", "cleaning_fee", "fuel_refill_per_gal", "rental_delivery_by_dealer")), True)
     for kind, work, want in D1287_JOB_TYPES:
         check(f"eq-job-type-{kind}-{work}", service.job_type(kind, work), want)
+    # D-1316 Q8: the api refuses a margin over 95 % on save (422), in the founder's words; a markup has no upper limit; a
+    # stored row reads back as it is.
+    from pydantic import ValidationError
+
+    from app.features.estimate.schemas import MARGIN_REFUSED, BidRates, BidRatesRead
+
+    def refused(**kw: object) -> str | None:
+        try:
+            BidRates(**kw)
+        except ValidationError as e:
+            return str(e.errors()[0]["msg"])
+        return None
+
+    check("d1319-margin-95-saved", refused(profit_mode="margin", profit_pct="95"), None)
+    check("d1319-margin-100-refused", refused(profit_mode="margin", profit_pct="100"), MARGIN_REFUSED)
+    check("d1319-markup-150-saved", refused(profit_mode="markup", profit_pct="150"), None)
+    check("d1319-margin-read-back", BidRatesRead(profit_mode="margin", profit_pct="100").profit_pct == 100, True)
     for w in wrong:
         print(w)
-    print(f"rental tax, extras and ratios (D-1287, D-1312): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
+    print(f"rental tax, extras and ratios (D-1287, D-1312, D-1319): {n} rows, {'all right' if not wrong else f'{len(wrong)} wrong'}")
     return 1 if wrong else 0
 
 

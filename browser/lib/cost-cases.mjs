@@ -300,6 +300,14 @@ export const COST_CASES = [
   { id: "d933-bond", kind: "bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 0, bondPct: 1.5, extra: [] }, expect: { bond: 1522.84, total: 101522.84 } },
   // Margin 10 %: $100,000 × 10 ÷ 90 = $11,111.11; the price is $111,111.11, of which 10 % is profit.
   { id: "d933-margin", kind: "bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 10, profitMode: "margin", bondPct: 0, extra: [] }, expect: { profit: 11111.11, total: 111111.11 } },
+  // D-1319: the equipment rental tax at the project's own rate (estimate_bid_rates.rental_tax_pct). Null follows the sales
+  // tax rate, as before: 50,000 × 8.25 % = 4,125.00. Typed 0 %: the row is 0.00. Typed 7.25 %: 50,000 × 7.25 % = 3,625.00,
+  // the sales tax (on material, none here) untouched.
+  { id: "d1319-rental-follows", kind: "bid", totals: { directCost: 100000, materialCost: 0, rentalTax: { taxable: 50000, applies: true } }, rates: { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], rentalTaxPct: null }, expect: { tax_rental: 4125, total: 104125 } },
+  { id: "d1319-rental-own-zero", kind: "bid", totals: { directCost: 100000, materialCost: 0, rentalTax: { taxable: 50000, applies: true } }, rates: { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], rentalTaxPct: 0 }, expect: { tax_rental: 0, total: 100000 } },
+  { id: "d1319-rental-own-rate", kind: "bid", totals: { directCost: 100000, materialCost: 40000, rentalTax: { taxable: 50000, applies: true } }, rates: { taxPct: 8.25, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [], rentalTaxPct: 7.25 }, expect: { tax: 3300, tax_rental: 3625, total: 106925 } },
+  // D-1316 Q8: a margin of 95 %, the most the field and the api take: 100,000 × 95 ÷ 5 = 1,900,000 of profit.
+  { id: "d1319-margin-95", kind: "bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 95, profitMode: "margin", bondPct: 0, extra: [] }, expect: { profit: 1900000, total: 2000000 } },
   // Material only: 10 % of the $40,000 material; fixed $2,500; a discount of 5 % of labor $30,000.
   { id: "d933-ticks-fixed-discount", kind: "bid", totals: { directCost: 100000, materialCost: 40000, laborCost: 30000, equipmentCost: 20000, subcontractCost: 10000 }, rates: { taxPct: 0, overheadPct: 0, profitPct: 0, bondPct: 0, extra: [{ name: "Material handling", pct: 10, ticks: ["material"] }, { name: "Permit", pct: 0, amount: 2500 }, { name: "Discount", pct: -5, ticks: ["labor"] }] }, expect: { "extra:0": 4000, "extra:1": 2500, "extra:2": -1500, total: 105000 } },
   // Tax on material and equipment, 8 % of $60,000; exempt, none.
