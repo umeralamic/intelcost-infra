@@ -30,6 +30,7 @@ workspace a person named is never matched by accident.
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
 
 import asyncio
+import os
 import re
 import sys
 from typing import get_args
@@ -110,14 +111,46 @@ async def delete_workspaces(uuids: list[object]) -> int:
         ]
     if held:
         fail(f"refusing to purge workspaces that hold protected projects: {', '.join(held)}")
-    areas = get_args(storage.Area)
+    # The files first, one workspace at a time (D-1320). A workspace whose files do not all go keeps its row, and is
+    # named on the result line, so the next run tries again. Before, one failure stopped the whole purge.
+    cleared = []
     for uuid in uuids:
-        for area in areas:
-            storage.delete_prefix(f"{area}/{uuid}/", workspace_uuid=uuid)  # type: ignore[arg-type]
+        failed = clear_files(uuid)
+        if failed:
+            more = f" and {len(failed) - 1} more" if len(failed) > 1 else ""
+            KEPT.append(f"{uuid} ({failed[0]}{more})")
+        else:
+            cleared.append(uuid)
+    if not cleared:
+        return 0
     async with SessionFactory() as session:
-        result = await session.execute(delete(Workspace).where(Workspace.uuid.in_(uuids)))
+        result = await session.execute(delete(Workspace).where(Workspace.uuid.in_(cleared)))
         await session.commit()
     return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
+# Workspaces a purge kept because their files would not delete (D-1320), said on the purge's own result line.
+KEPT: list[str] = []
+
+
+def kept_note() -> str:
+    return f"; KEPT {len(KEPT)}, files not deleted, rows kept for the next run: {'; '.join(KEPT)}" if KEPT else ""
+
+
+def clear_files(uuid: object) -> list[str]:
+    """Every storage prefix of one workspace deleted; returns the ones that failed, with why. Test only:
+    `PURGE_FAIL_STORAGE=<workspace uuid>` makes that workspace's first prefix fail."""
+    failed: list[str] = []
+    inject = os.environ.get("PURGE_FAIL_STORAGE", "")
+    for i, area in enumerate(get_args(storage.Area)):
+        prefix = f"{area}/{uuid}/"
+        try:
+            if inject and inject == str(uuid) and i == 0:
+                raise RuntimeError("injected failure (PURGE_FAIL_STORAGE, test only)")
+            storage.delete_prefix(prefix, workspace_uuid=uuid)  # type: ignore[arg-type]
+        except Exception as e:  # any failure keeps the row: the next run retries
+            failed.append(f"{prefix}: {type(e).__name__}: {str(e).splitlines()[0][:120] if str(e) else ''}")
+    return failed
 
 
 async def report() -> None:
@@ -134,7 +167,7 @@ async def purge_fixture_made() -> None:
     if any(w.slug == KEEP_SLUG for w in doomed):
         fail("Bench Construction matched a fixture pattern")
     gone = await delete_workspaces([w.uuid for w in doomed])
-    print(f"purged {gone} fixture-made workspaces from {SEEDED}")
+    print(f"purged {gone} fixture-made workspaces from {SEEDED}{kept_note()}")
     await report()
 
 
@@ -149,7 +182,7 @@ async def purge_fx() -> None:
         )
     doomed = [uuid for uuid, email in owned if FX_OWNER.match(email) and email != SEEDED]
     gone = await delete_workspaces(doomed)
-    print(f"purged {gone} workspaces owned by fixture accounts")
+    print(f"purged {gone} workspaces owned by fixture accounts{kept_note()}")
     # For `list-storage` afterwards: the bench's storage is the real bucket (D-259).
     print(f"uuids {','.join(str(uuid) for uuid in doomed)}")
 
@@ -196,7 +229,8 @@ async def purge_owner(email: str) -> None:
                 .where(User.email == email, Workspace.slug != KEEP_SLUG)
             )
         )
-    print(f"purged {await delete_workspaces(uuids)} workspaces owned by {email}")
+    gone = await delete_workspaces(uuids)
+    print(f"purged {gone} workspaces owned by {email}{kept_note()}")
 
 
 async def snapshot() -> None:

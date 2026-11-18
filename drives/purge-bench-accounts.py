@@ -19,11 +19,20 @@ An account goes with the workspaces it owns: their objects in storage first, by 
 workspace rows, which cascade (as bench-workspaces.py purge-fx). Then its user row, each in its own
 savepoint: an account another workspace's rows still name (a project it made there) is KEPT and
 printed with the reason, never forced.
+
+**Files first, rows only once they are gone (D-1320, the founder's option B).** If any of an account's prefixes fails
+to delete (the bucket's name not resolving, 2026-11-17), the account's rows are KEPT, and the line says which
+prefix failed and why. The next run finds the account again and tries once more. Before this, the rows went first,
+and a failed file delete left objects that nothing named (D-1308's throwaway, 129 objects). No log row is written:
+`storage_clear_log` is deleted along with its workspace.
+
+Test only: `PURGE_FAIL_STORAGE=<workspace uuid>` makes that workspace's first prefix fail, to prove the order.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
 
 import asyncio
+import os
 import re
 import sys
 from collections import defaultdict
@@ -101,11 +110,32 @@ async def plan() -> tuple[list[tuple[User, list[Workspace]]], list[tuple[str, st
     return go, refused
 
 
+def clear_files(owned: list[Workspace]) -> list[str]:
+    """Every storage prefix of these workspaces deleted; returns the ones that failed, with why (D-1320)."""
+    failed: list[str] = []
+    inject = os.environ.get("PURGE_FAIL_STORAGE", "")
+    for w in owned:
+        for i, area in enumerate(get_args(storage.Area)):
+            prefix = f"{area}/{w.uuid}/"
+            try:
+                if inject and inject == str(w.uuid) and i == 0:
+                    raise RuntimeError("injected failure (PURGE_FAIL_STORAGE, test only)")
+                storage.delete_prefix(prefix, workspace_uuid=w.uuid)
+            except Exception as e:  # any failure keeps the rows: the next run retries
+                failed.append(f"{prefix}: {type(e).__name__}: {str(e).splitlines()[0][:120] if str(e) else ''}")
+    return failed
+
+
 async def purge(go: list[tuple[User, list[Workspace]]]) -> tuple[int, int, list[tuple[str, str]]]:
-    areas = get_args(storage.Area)
     users = workspaces = 0
     kept: list[tuple[str, str]] = []
     for u, owned in go:
+        # The files first (D-1320): a failure keeps every row of the account, named, for the next run.
+        failed = clear_files(owned)
+        if failed:
+            more = f" (and {len(failed) - 1} more)" if len(failed) > 1 else ""
+            kept.append((u.email, f"files not deleted, rows kept for the next run: {failed[0]}{more}"))
+            continue
         async with SessionFactory() as session:
             try:
                 async with session.begin():
@@ -116,12 +146,9 @@ async def purge(go: list[tuple[User, list[Workspace]]]) -> tuple[int, int, list[
                     await session.execute(delete(User).where(User.id == u.id))
                 users += 1
             except IntegrityError as e:
+                # Its files are already gone; only rows another workspace still names are kept.
                 kept.append((u.email, str(e.orig).splitlines()[0][:160]))
                 continue
-        # The rows are gone: their objects follow (a failed account keeps both).
-        for w in owned:
-            for area in areas:
-                storage.delete_prefix(f"{area}/{w.uuid}/", workspace_uuid=w.uuid)  # type: ignore[arg-type]
     return users, workspaces, kept
 
 

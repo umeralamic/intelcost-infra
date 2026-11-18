@@ -331,7 +331,15 @@ workers run without it: `FX_WATCH=0` is the compose default for every fx service
 on at the end. An api save therefore leaves them on older code. Each `run` asks api-fx's `/health/code` first. If the
 code on disk is newer, it restarts api-fx, api-fx-b, the fx workers and beat-fx (the same containers, fx only, under the
 heavy lock the run holds) and waits until the code is current; then bench-code passes. `FX_WATCH=1` brings the watcher
-back by hand.
+back by hand. **Not yet proved on a stale case:** the founder accepted it without one (2026-11-18). The first run after
+a real api save proves it: look for "fx code: … restarting" and then "fx code: current again" in the run's output.
+
+**The throwaway purges delete files first (D-1320, option B).** `drives/purge-bench-accounts.py` and
+`bench-workspaces.py` (`purge-fx`, `purge-owner`, `purge-fixture-made`) delete a workspace's bucket files before its
+rows. If any prefix fails (the bucket's name not resolving, say), that account's or workspace's rows are KEPT. The
+result line says which prefix failed and why, and the next run retries it. Before, the rows went first, and a failed
+file delete left objects that nothing named (D-1308's throwaway: 129 objects). `PURGE_FAIL_STORAGE=<workspace uuid>`
+(test only) makes that workspace's first prefix fail.
 
 **The runnable suite is tracked too (D-1057):** `fx-suite/` as the 2026-11-07 release ran it (the tag, the updates
 and the retargeting laid over it), without its run output (`.regress/`), screenshots, `node_modules/`, the sheet key
