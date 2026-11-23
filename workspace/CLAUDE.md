@@ -214,7 +214,8 @@ fixtures, test suites or test scripts. After each block, in this order:
 3. **One smoke test through the Playwright MCP:** sign in with a throwaway account (never
    the seeded account), open a throwaway copy of each screen the change touches and drive the new
    behaviour. Report it in one line, with a screenshot or two: what it drove, and whether it passed. A failure is
-   fixed before moving on. Wait on what the page shows, never on a clock.
+   fixed before moving on. Wait on what the page shows, never on a clock. **A smoke used as proof records its
+   setup** (the copy's source and id, every input and rate typed, the build) so it can be repeated (D-1321).
 
 **The fixture suite is paused (D-1057):** no `fx-suite.sh` run on this laptop (release or alone) until the founder
 says so; it moves to the test laptop, and release to testers or main stays blocked until it passes there. Only the

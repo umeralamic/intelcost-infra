@@ -35729,7 +35729,84 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
 
 ## D-1322 — Night run from 2026-11-18 17:58 UTC (morning-report-2026-11-23), steps 1–2 and item 5: the bench app dev-server restart, the D-1317 re-measure behind the bucket check, Q-D2/Q-D3
 
+- **Dev-server restart:** done 2026-11-18 18:02:46 UTC (D-1323's Q7 setup names it).
+- **Q-D2 / Q-D3: built, app 2353147.** Alt's release after an Alt-drag no longer opens the browser menu on Windows;
+  the overlay bar picks which overlay lies on top. Proved by the gates and the full QT at the 11-23 close-out (below,
+  under D-1327).
+- **The D-1310 re-measure: NOT done** (the founder, 2026-11-23: "Not today"; it goes to a later run). D-1310 stays
+  "functionally passed (fixtures, QT), memory not yet proven; promote at Umer's call".
+
 ## D-1323 — Night run from 2026-11-18 17:58, step 3 and items 8–9: jack-and-bore pits at the bored stretch's From/To stations (PRIORITY), Q7 re-proved with the pits moved; one PE line per run covers trench and structures; part-bored protection by the non-bored rule
+
+**As built (app 811fe80, infra 0159dce; app saves 2026-11-18 18:09:32–18:12:34 and 18:27:21 UTC, a quiet founder gate
+before each).**
+- **Pits at the stretch's stations (PRIORITY, D-1321 8).**
+  - `calculate.ts` works a pit linked to a jack and bore (a sleeve) at `crossings.ts:pitStation`: the bore pit at From,
+    the receiving pit at To, the run's ends for a bore over the whole run. Its ground, invert, depth and place come from
+    there, whatever its mark says.
+  - `useUtilities.tsx:placePits` (from RunPanel's crossing options) moves the pits' marks there when the kind, length
+    or From changes.
+- **One PE line a run (D-1321 5).**
+  - D-1144's trench line (`lines.ts:trenchNeedsPe`: a box stack past 20 ft) covers the run's structures.
+  - A structure past 20 ft (`pe_design|structure`) or a crossing's pits (`pe_design|crossing`, one a crossing) get
+    their own line only when none of their runs' trenches has one (`crossings.ts:structurePeOf`, decided after the
+    runs). Never by others.
+- **Part-bored protection (D-1321 6).** The rule a run not bored takes is D-1080's Auto: one method for the whole run,
+  by its deepest point (vertical walls to 4.5 ft; deeper, sloped on an open site, a box where the width is limited; a
+  segment or a chosen method overrides). A part-bored run's open parts now all take the method read at the deepest point
+  of its dug length (`quantities.ts:runDeepestFt`, `autoDeepestFt`; `structures.ts:openParts`). Before, each part read
+  its own depth.
+- **Proof:** gates lint 0 errors (4 known warnings), typecheck 0, build 0. Full QT (prepare included) exit 0, 0 FAIL,
+  19:22:26 UTC 11-18: "… 395 utility rows right …". New rows: `d1323-pits-at-*`, `d1323-pe-*`,
+  `d1323-part-bored-auto-*`.
+
+**Q7 re-proved from Calculate with the pits moved (2026-11-23 15:37–15:55 UTC, on HEAD 811fe80).**
+- **Setup (D-1321):**
+  - The build: the bench app dev server on 811fe80 (restarted 11-18 18:02:46; Docker restarted 11-23 15:08).
+  - The copy: `copy-3d-test.py` (with S3 retries) of the 3D test copy (P01) into throwaway
+    fx.equip.20261123153704, workspace 49ceef84-a16e-4f1f-99ca-7d4b2eb14d17, project 5b403825-0dba-486f-86fe-672937d6b33c;
+    sheet C-200, 1c377d38-c046-45d8-aa7f-de67fc400a6c.
+  - The rates: the copy's own wage set, unchanged: New York County, NY · Commercial · Open Shop / Market Wage ·
+    Burdened (fully loaded); the bid 21.0 % over direct.
+  - Inputs on ST-2 (24" PVC SDR-35, 310.26 LF):
+    - Vertical: Inverts, start 670.23, end 680.25;
+    - Encasement / casing: Steel casing, jack & bore (its two pits made with it, by the bore sub);
+    - Over: A length, 155 LF; From 0 and To 155, then From 155 and To 310.
+    - Nothing else changed.
+- **The ground (the profile's stations table, from Calculate's surface):**
+
+  | Station | Ground | Invert | Trench depth |
+  |---|---|---|---|
+  | 0+00 | 702.38 | 670.23 | 32.72 ft |
+  | 1+55 | 702.46 | 675.24 | 27.79 ft |
+  | 3+10 | 702.22 | 680.25 | 22.53 ft |
+
+- **The two positions:**
+
+  | | A: bored 0+00 to 1+55 (deep end) | B: bored 1+55 to 3+10 (shallow end) |
+  |---|---|---|
+  | Open-cut part | 1+55 to 3+10.26, 155.26 LF, sloped (Auto: deepest 32.7 ft) | 0+00 to 1+55 (and 3+10 to 3+10.26), 155.26 LF, sloped |
+  | Open trench | **6,226.91 CY** | **8,795.64 CY** |
+  | Bore pit BP-1 | at 0+00 (on the path), 35.00 ft, 497.77 BCY | at 1+55, 30.07 ft, 427.66 BCY |
+  | Receiving pit RP-1 | at 1+55, 30.07 ft, 111.37 BCY | at 3+10, 25.01 ft, 92.63 BCY |
+  | PE line | none | none |
+  | Direct cost | $1,928,898.76 | $1,985,334.18 |
+  | Bid total | $2,333,967.50 | $2,402,254.36 |
+
+  - Boring the deep end leaves 2,568.73 CY less open trench and costs $56,435.42 less direct ($68,286.86 in the bid).
+  - The pits sit at the bored stretch's From/To in both, each worked from the ground and invert there. Before D-1323 they
+    stayed at the run's ends: BP-1 at 0+00, 35 ft, and RP-1 at 3+10, 25 ft, in both positions.
+- **Why no PE line in either position:**
+  - Both pits are by the bore sub (D-1321 4).
+  - ST-2's trench is sloped (Auto, open site), and D-1144 prices the PE design on a box stack past 20 ft only. A run's
+    sloped trench past 20 ft carries the flag "Over 20 ft — protection must be designed by a registered engineer" but
+    no line.
+- **The PE line, shown:** with BP-1 then made self-performed (position B), the crossing gets exactly one line,
+  `pe_design|crossing=1` on BP-1 (Calculate 15:54:57); RP-1, by the sub, none.
+- **Screenshots:** `morning-report-2026-11-23/d1323/` q7-a-bored-0-155-profile.png, q7-a-bored-0-155-estimate.png,
+  q7-b-bored-155-310-profile.png, q7-b-bored-155-310-estimate.png.
+- **Purge:** the throwaway was purged at 15:57, and the 11-18 one (fx.equip.20261118192456, its workspace empty) too
+  (dry runs first; 0 refused); the guard refused 0 requests. Digest 9b1030bc5e0f1330 before and after.
 
 ## D-1324 — Night run from 2026-11-18 17:58, items 6–7: the override tip wording; the rental tax citations in eq_rental_tax_state (one migration)
 
@@ -35792,7 +35869,13 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
 
 ## D-1326 — Night run from 2026-11-18 17:58, item 12: fixtures c42 and c52 after the dev-server restart
 
+**Not run** (the run stopped on 11-18 at 19:25 UTC; the 11-23 resume was the Q7 re-prove and the close-out only).
+c42-stitch-sheets and c52-stitch-snap stay to prove in a later run.
+
 ## D-1327 — Night run from 2026-11-18 17:58, item 13 (last; whole or not at all): Plan A-lean from the D-1315 handover with the D-1316 Q9 answers
+
+**Not started.** Plan A-lean stays whole for a later run (the D-1315 handover, the D-1316 Q9 answers). The close-out
+of this run is noted below.
 
 **D-1322 to D-1327, founder network instructions (2026-11-18 ~18:05 UTC).** Pakistan has a country-wide internet disruption: expect DNS failures and a slow bucket all night.
 - **Re-measure (D-1322):** don't depend on the live bucket.
@@ -35803,3 +35886,64 @@ During a fixture run, the health watch stops the run and alerts when a bench ser
 - **Push:** if GitHub is unreachable at the close-out, keep everything committed locally and retry every 30 min until 08:00 the founder's time, never force. Report the exact state either way.
   - Main-session reading: 08:00 Central, which is 14:00 UTC, since the laptop runs on Central. 08:00 Pakistan time (03:00 UTC) would end before the close-out starts.
 - **Purges and anything else touching S3:** retry, never work around refusals, and report what's left.
+
+**D-1322 to D-1327 (run resumed 2026-11-23 ~15:30 UTC): fingerprint check and new baseline.**
+- **Why the run stopped:** every builder hit the weekly usage limit at about 19:25 UTC on 2026-11-18, and the run sat idle until today. Docker restarted at 15:08 UTC on 11-23; the fx stack came back with it and was stopped (fx only).
+- **The digest moved,** from 51d01fd7cf7c2297 to 9b1030bc5e0f1330.
+- **The read-only check** used `drives/project_fingerprint.py <uuid> --since 2026-11-18T17:01:00Z` on all 18 protected projects:
+  - only Real bid A changed (680 rows). The other 17 have no row created or updated since then;
+  - every row with an author column names the founder's own account, and none another;
+  - the times are 17:58 (the founder's work_session), 22:50–00:03 on 11-18/19 (the main edits, 23:20–23:59), 11-19 10:21–11:00 and 21:00–22:53, and 11-20 14:00–14:12;
+  - the tables are takeoff_cost_component 283, project_equipment_resource 41, estimate_item_spread 29, estimate_line_item 19, eq_project_activity 13, takeoff_folder 9, work_session, earthwork_result 2, sheet_registration 2, earthwork_assumptions 1 and project_visit 1;
+  - no time matches a builder window (18:02–19:25 on 11-18), the d1324a7c3e51 run (18:09:44–18:10:22) or the d1325a7f3c10 run (18:23:20–18:23:39), or the Docker restart (11-23 15:08); no row is dated 11-23.
+- **New baseline 9b1030bc5e0f1330,** per the founder's rule.
+
+**D-1327 close-out (run 11-23), main session, 2026-11-23 ~16:35 UTC:** origin/staging holds Abdullah's security commits of 2026-11-20, conflict-free:
+- api fefc25c: uploads open only as script-free types, SVG logos download instead of displaying, `rotate_tokens` locks its row, `/health/memory` is not mounted in production;
+- app 2751330: `safe-next.ts` refuses unsafe paths, the download tab's opener is cut, deploy workflows, and a lockfile with typescript-eslint 8.73.0.
+They are MERGED into umer-dev before the fold, per the brief's "merge origin/staging if anything came in". `npm install` runs on the host for the gates after a quiet founder-active (D-1276).
+
+### Close-out (run 11-23; 2026-11-23, 16:33–17:3x UTC, the close-out builder)
+
+- **Start:** digest 9b1030bc5e0f1330 (16:33:16, the baseline). `git fetch`: origin/umer-dev unmoved (app 24e58eb, api
+  e0a24e1, infra 3e34195, market 1f0be38); every repo on umer-dev and clean.
+- **Merge (above): done.** app **d047034** (16:34:09–16:34:14; the dev server took safe-next.ts and housekeeping.tsx),
+  api **5d3bf01** (16:36:06–16:36:12). Merge commits, `--no-ff`, conflict-free. The lockfile's changes are all dev:
+  eslint 10.15.0, typescript-eslint 8.73.0 and its parts, minimatch 11; ajv 6.15.0 (it was `devOptional`, eslint's)
+  now nests under eslint. No runtime dependency and no image rebuild. `npm install` on the host 16:35:04–16:35:42
+  left the lockfile unchanged. Founder-active quiet before each call.
+- **Fold (D-851):** d1324a7c3e51 + d1325a7f3c10 → **`d1325e8b4f61`** (revises the pushed head `d1319c4e8a21`; api
+  **f73a9eb**). The two steps in order, downgrades in reverse, the seven citations word for word, d1325's docstring
+  wrapped as comments (ruff clean).
+  - **Proof on foldproof26** (16:38:59–16:45:04; the bench read only through pg_dump):
+    - From empty, the unfolded and folded trees give the same schema (0 diff lines), and the folded schema differs
+      from the bench only in the 31 known CHECK pairs (0 other lines); `alembic check` clean.
+    - On a restored bench copy at d1325a7f3c10, down on the OLD files to d1319c4e8a21, then up on the folded file,
+      gives `eqlib.eq_rental_tax_state` (9), `trash_purge_log` (368) and `storage_clear_log` (155) back row for row,
+      the version line aside, with 0 schema diff. Down and up again on the folded file matches (0 and 0).
+  - **Switch-over** (founder-active quiet before each gated call): intelcost_fx down on the old files
+    16:46:22–16:46:36; the bench down 16:46:56–16:47:10; `git rm` of the two files 16:47:30; the folded file saved
+    16:47:59; the bench up 16:48:20–16:48:34; intelcost_fx up 16:49:00–16:49:13. Both now d1325e8b4f61, 7 citations,
+    the 4 retry columns. The bench's three tables equal the pre-switch copy, so nothing was written in the window.
+    Digest 9b1030bc5e0f1330 at 16:49:58. foldproof26 and the container's proof trees removed.
+- **Gates** (heavy held 16:50:22–17:19:02): api ruff check app and alembic, ruff format --check (302 files), mypy (287
+  files), `alembic check` clean, `alembic heads` exactly `d1325e8b4f61 (head)` (16:50:41–16:51:28). App on d047034:
+  lint 0 errors (the 4 known warnings; 16:51:38–16:56:10), typecheck 0 (–16:59:52), build 0 (–17:04:06).
+- **Full quantity table, prepare included (the bucket answered), 17:04:30–17:18:36: exit 0, 0 FAIL.** "quantity table:
+  344 rows, both engines equal to 1e-9 on 340; 37 worked answers right; 90 cost rows right to the cent; 391 earthwork
+  rows right; 395 utility rows right; … 150 equipment rows right …; passed"; "rental tax, extras and ratios (D-1287,
+  D-1312, D-1319, D-1324): 45 rows, all right"; "purge alert: 6 rows …, all right"; "prepare retry: 60 rows …, all
+  right"; water and rain 33; Benchmark A right. This is the proof for D-1322 Q-D2/Q-D3, D-1323, D-1324 and D-1325 on
+  the pushed code, with the staging merge in.
+- **Client-name scan:** 0 hits (the denylist plus the two names, 15 terms) in the 39 files changed since
+  origin/umer-dev (app 18, api 12, infra 9), their names, and every unpushed commit message, Abdullah's merged ones
+  included. The QT's own scan: none in 2,328 text files.
+- **Purge:** no fx.* account on the bench created since 2026-11-18 17:58 (D-1323's two throwaways were purged by their
+  builder); nothing to purge, nothing KEPT. `purge-bench-dups.py` dry run "would purge: 0, refused: 0"
+  (16:59:00–16:59:16, gated, S3 retries on).
+- **Windows (UTC) for the founder's saves:** the app dev server's reload on the merge, 16:34:14; the api's reload on
+  the merge, **16:36:12–16:37:11** (/docs 000 until 200 at 16:37:11; workers up); **the bench without the citation and
+  retry columns, 16:46:56–16:48:34** (the api did not reload; a request reading those columns in it, such as the
+  rental tax rules, would have failed; the nightly purge runs at 03:00). No bench service restarted or recreated.
+- **D-1322's re-measure, D-1326 and D-1327: not done** (above, under each). The workspace files say so.
+- **The push:** recorded in this run's report and `morning-report-2026-11-23/NOTE_FOR_ABDULLAH.md`.
