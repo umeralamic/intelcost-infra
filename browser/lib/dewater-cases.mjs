@@ -28,6 +28,11 @@ export const DEWATER_CASES = [
   { id: "dw-line-eductor", kind: "dw-line", site: { bottomDepthFt: 18, waterDepthFt: 6, heightFt: 12, uscs: "ML", bottomWidthFt: 2.5, walls: "box" }, expect: { variant: "trench", name: "Trench dewatering", byHand: true } },
   // dw-line-none: no stretch below the water: the line as before, "trench", no words.
   { id: "dw-line-none", kind: "dw-line", site: null, expect: { variant: "trench", name: "Trench dewatering", reason: "" } },
+  // dw-line-group-note (AL4b, the founder's answer 2): the dw-line-sump site with its USCS the soil group's stand-in
+  //   (GROUP_USCS clay → CL): the note names the mapping first, "Clay → low permeability → sump" (k 10⁻⁶ < 10⁻⁴).
+  { id: "dw-line-group-note", kind: "dw-line", site: { bottomDepthFt: 10, waterDepthFt: 6, heightFt: 4, uscs: "CL", bottomWidthFt: 2.5, walls: "box", fromGroup: "clay" }, expect: { variant: "trench:sump", reason: "Clay → low permeability → sump: Sump pumping: clay (k 10⁻⁶ cm/s), water 4.0 ft above the bottom" } },
+  // dw-line-group-sand: SP from the sand group (k 10⁻² ≥ 10⁻³): "Sand → high permeability → wellpoints: …".
+  { id: "dw-line-group-sand", kind: "dw-line", site: { bottomDepthFt: 12, waterDepthFt: 5, heightFt: 7, uscs: "SP", bottomWidthFt: 2.5, walls: "box", fromGroup: "sand" }, expect: { variant: "trench:wellpoint", startsWith: "Sand → high permeability → wellpoints: Wellpoints, single row" } },
 
   // --- The sump's 24 h clock and its calendar rental ----------------------------------------------------------------------
   // dw-clock-2: 400 LF at 200 LF a day = 2 crew days; open 2 + 1 = 3; calendar 3 × 7/5 = 4.2; pump 4.2 × 24 = 100.8 h;
@@ -62,6 +67,18 @@ export const DEWATER_CASES = [
   // dw-words-sump: 400 LF at 200 LF a day: calendar 4.2 → ⌈4.2 / 3⌉ = 2 filter bags, "Quote needed".
   { id: "dw-words-sump", kind: "dw-words", variant: "trench:sump", runs: [{ site: { bottomDepthFt: 10, waterDepthFt: 6, heightFt: 4, uscs: "CL", bottomWidthFt: 2.5, walls: "box" }, lf: 400 }], lfPerDay: 200, gph: null, expect: { equals: "Sump pumping: 2 filter bags, Quote needed" } },
   // dw-words-no-pace: a wellpoint line before its pipe lines are priced: says so, never a number.
+  // --- A hand-priced line (AL4b, the founder's answer 1) ------------------------------------------------------------------
+  // dw-hand-sump: a sump line a person priced with a $5,000 subcontract lump: handPriced true, its price $5,000 kept
+  //   (computeLineCost on the typed input, no component), and Calculate's figure beside it the dw-host-sump line priced
+  //   whole: the pump's week $239 + its fuel $234.43 + its mob $200 out and $200 back (no waiver or fee in the bundle) +
+  //   the crew $321.77 = $1,195.20, the same total as the
+  //   api's own pump and crew priced through the host engine, so the figure shown is what Calculate would put there.
+  //   Calculate's components alone (the pump and crew edited, the foundation stone edited) are not a hand price; a
+  //   component a person added (no Calculate key) is.
+  { id: "dw-hand-sump", kind: "dw-hand", setting: { fuel_price_gasoline: 3.578 }, qty: 400, pace: 200, wage: 34.05, typed: { subcontract_cost: 5000 }, expect: { handTyped: true, handAutos: false, handOwn: true, handStone: false, kept: 5000, matches: true, computed: 1195.20 } },
+  // dw-hand-wellpoint: a hand-priced wellpoint line: Calculate prices none of its gear, so the figure beside the kept
+  //   price says "wellpoint gear Quote needed".
+  { id: "dw-hand-wellpoint", kind: "dw-hand", variant: "trench:wellpoint", qty: 400, pace: 200, wage: 34.05, typed: { subcontract_cost: 5000 }, expect: { kept: 5000, words: "wellpoint gear Quote needed" } },
   { id: "dw-words-no-pace", kind: "dw-words", variant: "trench:wellpoint", runs: [{ site: { bottomDepthFt: 12, waterDepthFt: 5, heightFt: 7, uscs: "SP", bottomWidthFt: 2.5, walls: "box" }, lf: 600 }], lfPerDay: null, gph: 1.7, expect: { starts: "Wellpoints: No crew pace yet" } },
 ];
 
@@ -74,11 +91,12 @@ export async function runDewater(page, eqlib) {
       const resolve = await import("/src/lib/estimate/equipment/resolve.ts");
       const host = await import("/src/lib/estimate/equipment/host.ts");
       const dw = await import("/src/lib/estimate/dewatering.ts");
+      const costing = await import("/src/lib/estimate/costing.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "dw-line") {
           const l = lines.dewaterLine(c.site ? { dewaterSite: c.site } : {});
-          return { variant: l.variant, name: l.name, reason: l.reason, flagged: /heave/i.test(l.reason), quoteNeeded: l.reason.endsWith("Wellpoint gear: Quote needed"), byHand: /price by hand/i.test(l.reason) };
+          return { variant: l.variant, name: l.name, reason: l.reason, startsWith: c.expect.startsWith && l.reason.startsWith(c.expect.startsWith) ? c.expect.startsWith : l.reason, flagged: /heave/i.test(l.reason), quoteNeeded: l.reason.endsWith("Wellpoint gear: Quote needed"), byHand: /price by hand/i.test(l.reason) };
         }
         if (c.kind === "dw-clock") return qty.sumpClock(c.workDays);
         if (c.kind === "dw-solve") {
@@ -104,6 +122,26 @@ export async function runDewater(page, eqlib) {
             labor: crew?.total ?? null,
             label24: /24 h clock/.test(p?.library?.label ?? ""),
             errors: evals.map((e) => e.error).filter(Boolean),
+          };
+        }
+        if (c.kind === "dw-hand") {
+          const variant = c.variant ?? "trench:sump";
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const env = { qty: c.qty, parent: c.qty };
+          const laborer = { craft_code: "LAB", rate: c.wage };
+          const autos = dw.sumpRows("dw", laborer);
+          const input = { wastage_pct_override: null, unit_man_hours: null, hourly_wage: null, equipment_cost: null, unit_equipment_cost: null, unit_material_cost: null, subcontract_cost: null, ...c.typed };
+          const kept = costing.computeLineCost({ quantity: c.qty, unit: "LF", input, unitWastage: new Map(), netQty: c.qty, rules: 2 }).itemCost;
+          const r = dw.calculatePrice({ others: [], variant, itemId: "dw", qty: c.qty, unit: "LF", pace: c.pace, lib, env, laborer, unitWastage: new Map(), rules: 2 });
+          const spread = { prod_per_day: c.pace, prod_unit: "LF", note: `${host.SUMP_NOTE} at the run's pipe crew pace, ${c.pace.toFixed(1)} LF a day` };
+          const whole = costing.computeLineCost({ quantity: c.qty, unit: "LF", input: undefined, unitWastage: new Map(), components: host.evaluateHost(autos, env, { lib, spread, qtyUnit: "LF" }), netQty: c.qty, rules: 2 }).itemCost;
+          return {
+            handTyped: dw.handPriced(input, autos),
+            handAutos: dw.handPriced(undefined, autos.map((a) => ({ ...a, user_fields: ["eq_units"] }))),
+            handOwn: dw.handPriced(undefined, [...autos, { auto_key: null, eq_auto: null }]),
+            handStone: dw.handPriced(undefined, [...autos, { auto_key: "stone:foundation", eq_auto: null, user_fields: ["unit_price"] }]),
+            kept,
+            ...("total" in r ? { computed: r.total, matches: Math.abs(r.total - whole) < 1e-9 } : { words: r.words }),
           };
         }
         if (c.kind === "dw-words") {
@@ -138,7 +176,7 @@ export function checkDewater(answers, wrong) {
     for (const [field, want] of Object.entries(c.expect)) {
       const have = got?.[field];
       if (typeof want === "number") {
-        const ok = typeof have === "number" && (c.kind === "dw-host" ? cents(have) === cents(want) : close(have, want));
+        const ok = typeof have === "number" && (c.kind === "dw-host" || c.kind === "dw-hand" ? cents(have) === cents(want) : close(have, want));
         if (!ok) wrong.push(`${c.id}.${field}: ${have}, expected ${want}`);
       } else if (JSON.stringify(have ?? null) !== JSON.stringify(want)) wrong.push(`${c.id}.${field}: ${JSON.stringify(have)}, expected ${JSON.stringify(want)}`);
     }
