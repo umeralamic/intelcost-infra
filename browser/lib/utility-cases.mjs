@@ -373,7 +373,12 @@ export const UTILITY_CASES = [
     ...caseA({ layers: [{ ...SAND_C, depth: null }], water: [9, 7], boxes: [BOX_6x8] }),
     expect: { dewateringLF: 50, dewatering: [[50, 100]], hasFlag: "Box forced: the bottom is below the design water in granular soil.", boxLF: 50 },
   },
-  { id: "util-2e2-dewatering-full", ...caseA({ water: [7, 7] }), expect: { dewateringLF: 100 } },
+  // D-1331: its governing station: the bottom 8 ft down, the water 7 ft down, 1.0 ft above the bottom, in the clay (CH).
+  { id: "util-2e2-dewatering-full", ...caseA({ water: [7, 7] }), expect: { dewateringLF: 100, dewaterBottomFt: 8, dewaterWaterFt: 7, dewaterHeightFt: 1, dewaterUscs: "CH" } },
+  // D-1331: a clay layer with no USCS typed reads its group's CL (GROUP_USCS), so its method can be chosen.
+  { id: "util-2e4-group-uscs", ...caseA({ water: [7, 7], layers: [{ ...CLAY_B, uscs: null, depth: null }] }), expect: { dewateringLF: 100, dewaterHeightFt: 1, dewaterUscs: "CL" } },
+  // D-1331: no water above the bottom: no governing station.
+  { id: "util-2e3-no-dewater-site", ...caseA({ water: [9, 9] }), expect: { dewateringLF: 0, dewaterHeightFt: null } },
   { id: "util-2f-clay-over-sand", ...caseA({ layers: [{ ...CLAY_B, depth: 3 }, { ...SAND_C, depth: null }] }), expect: { excavationCY: 444.44, beddingCY: 6.94, zoneCY: 17.46, backfillCY: 418.61 } },
   {
     id: "util-2g-slope-template",

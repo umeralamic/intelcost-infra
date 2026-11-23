@@ -30,6 +30,7 @@ import { TIP_CASES } from "./lib/tip-cases.mjs";
 import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 import { EQUIPMENT_CASES, checkEquipment, runEquipment } from "./lib/equipment-cases.mjs";
 import { WATER_CASES, checkWater, runWater } from "./lib/water-cases.mjs";
+import { DEWATER_CASES, checkDewater, runDewater } from "./lib/dewater-cases.mjs";
 
 const HERE = "/drive/scripts";
 // This run's own folder (D-891), made by quantity-table.sh.
@@ -61,6 +62,7 @@ let web;
 let costs;
 let equipmentAnswers;
 let waterAnswers;
+let dewaterAnswers;
 let earth;
 let reg;
 let site;
@@ -115,6 +117,8 @@ try {
   equipmentAnswers = await runEquipment(page, JSON.parse(await readFile(`${QT}/eqlib.json`, "utf8")));
   // Plan A-lean AL4 (D-1288): the pure water module's method, quantities, rain and pay rows.
   waterAnswers = await runWater(page);
+  // Plan A-lean AL4 wired (D-1331): the dewatering line by method, the sump's clock and calendar rent, a sump line priced.
+  dewaterAnswers = await runDewater(page, JSON.parse(await readFile(`${QT}/eqlib.json`, "utf8")));
   // The cost rows: F9's money through the app's own lib/estimate.
   costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
@@ -3124,6 +3128,11 @@ try {
         dewateringLF: r2(r.dewateringLF),
         benchableLF: r2(r.benchableLF ?? 0),
         dewatering: r.dewatering.map(([a, b]) => [r2(a), r2(b)]),
+        // D-1331: the governing dewatering station, as the run's method reads it.
+        dewaterBottomFt: r.dewaterSite ? r2(r.dewaterSite.bottomDepthFt) : null,
+        dewaterWaterFt: r.dewaterSite ? r2(r.dewaterSite.waterDepthFt) : null,
+        dewaterHeightFt: r.dewaterSite ? r2(r.dewaterSite.heightFt) : null,
+        dewaterUscs: r.dewaterSite ? r.dewaterSite.uscs : null,
         layerCY: r.byLayer.map((l) => cy(l.cf)),
         rockCY: cy(r.rockCF),
         rockLF: r2(r.rockLF),
@@ -3457,6 +3466,7 @@ for (const c of CREDIT_CASES) {
 
 checkEquipment(equipmentAnswers, wrong);
 checkWater(waterAnswers, wrong);
+checkDewater(dewaterAnswers, wrong);
 
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
@@ -3468,3 +3478,4 @@ console.log(
   `quantity table: ${CASES.length} rows, both engines equal to 1e-9 on ${CASES.filter((c) => !c.crossing).length}; ${worked} worked answers right; ${COST_CASES.length} cost rows right to the cent; ${EARTHWORK_CASES.length} earthwork rows right; ${UTILITY_CASES.length} utility rows right; ${REGISTER_CASES.length} registration and ${GEOREF_CASES.length} coordinates rows equal on both engines and right; ${SITE_JOIN_CASES.length + SITE_SHAPE_CASES.length} site rows right (${SITE_JOIN_CASES.length} on both engines); ${AUTOCOUNT_CASES.length + AUTOCOUNT_PIPELINE_CASES.length} Auto Count rows right; ${OVERLAY_CASES.length} overlay difference rows right; ${CREDIT_CASES.length} credit rows right; ${SUBITEM_CASES.length} sub-item rows right on both engines; ${EXCEL_CASES.length} exported-formula rows equal to the app in Excel's reading; ${EXPLAIN_CASES.length} explanation rows right; ${ENTRY_CASES.length + DISPLAY_CASES.length + MANUAL_CASES.length + NAME_CASES.length + DIMENSION_TOOL_CASES.length + PINNED_CASES.length + PICK_CASES.length} metric rows right; ${FORMULA_SYSTEM_CASES.length + CONSTANT_CASES.length} metric formula rows right (${FORMULA_SYSTEM_CASES.length} on both engines); ${COMPONENT_SYSTEM_CASES.length} component-formula, ${EXPLAIN_METRIC_CASES.length} metric popover and ${EXCEL_METRIC_CASES.length} metric export rows right; ${CLOSE_CASES.length} closed-spot rows right; ${PEN_CASES.length} pen rows right (Ortho on and off); ${TIP_CASES.length} cursor tip rows right, ${SCALE_UNDO_CASES.length} scale undo rows exact (undo and redo bit for bit, both engines); ${EQUIPMENT_CASES.length} equipment rows right (628 classes' mob and demob and 965 production formula cells equal to the workbook's); passed`,
 );
 console.log(`water and rain (D-1288): ${WATER_CASES.length} rows, all right`);
+console.log(`dewatering wired (D-1331): ${DEWATER_CASES.length} rows, all right`);
