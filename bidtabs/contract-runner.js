@@ -55,6 +55,13 @@ async (page) => {
   // takes CSS, select fill and native as told) and prices nothing until it does (`requireUnderPavement`, default true).
   // `deliveryByDealer` (R8: 3, by ownership) sets the project's `rental_delivery_by_dealer`, as `waiverPct` sets the
   // waiver. Each item reports its marks and the fittings allowance % its pipe line took (`allowancePct`).
+  // D-1331 (Plan A-lean AL1, AL2): `weather` true reads the project's weather once before pricing (the api places the
+  // throwaway by its ZIP, picks the nearest NOAA normals station and stores its months), applies it (the throwaway is
+  // new, so it is applied already; set here so the pass never depends on that), and refuses to price when no station
+  // months come back, so a pass never prices "weather on" with no lost days. The station, its distance, the work start
+  // (none: the year's average) and "applied" go into `section.weather`. Rented machines then bill the lost days once per
+  // machine class for the contract (each item its share, D-1316 Q9 (e)); absent or false: today's pass, the weather not
+  // applied (Q9 (f)).
   const ct = page.context().__ct;
   const out = [];
   for (const contract of ct.list ?? [ct.contract]) out.push(await priceOne(contract));
@@ -66,7 +73,7 @@ async (page) => {
   await page.goto(`http://localhost:5173/project/${P}/takeoff/${S}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean(localStorage.getItem("intelcost.session")), null, { timeout: 60000 });
   const own = await page.evaluate(
-    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, paved, jurisdiction, requireStep1, cssPrice, upbMode, requireUpb, deliveryByDealer }) => {
+    async ({ W, P, S, API, contract, pool, parityOnly, mode, waiver, limitedMode, paved, jurisdiction, requireStep1, cssPrice, upbMode, requireUpb, deliveryByDealer, weather }) => {
       const s = JSON.parse(localStorage.getItem("intelcost.session") ?? "{}");
       const h = { authorization: `Bearer ${s.accessToken}`, "content-type": "application/json" };
       const tr = await import("/src/lib/takeoff/earthwork/utilities/trench.ts");
@@ -91,6 +98,20 @@ async (page) => {
       if (waiver != null) await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "damage_waiver_pct", field: "value", value_num: waiver, value_text: waiver === 0 ? "zero-ok" : null }) });
       // D-1296 (R8): the rentals' delivery basis for the pass (3: by ownership, the api's default since D-1289), as the
       // project's own setting, so the pass does not hang on the company's.
+      let wx = null;
+      if (weather) {
+        const r = await fetch(`${API}/api/workspace/${W}/project/${P}/weather`, { headers: h });
+        wx = r.ok ? await r.json() : null;
+        if (!wx?.months || !wx?.station) return { refused: `weather: no station months (${r.status} ${JSON.stringify(wx?.flags ?? null)})` };
+        if (!wx.applied) {
+          const p = await fetch(`${API}/api/workspace/${W}/project/${P}/weather`, { method: "PUT", headers: h, body: JSON.stringify({ applied: true }) });
+          wx = p.ok ? await p.json() : wx;
+          if (!wx.applied) return { refused: `weather: not applied (${p.status})` };
+        }
+      } else {
+        // Off: a pass without the weather never prices it, whatever the project's row says.
+        await fetch(`${API}/api/workspace/${W}/project/${P}/weather`, { method: "PUT", headers: h, body: JSON.stringify({ applied: false }) });
+      }
       if (deliveryByDealer != null) await fetch(`${API}/api/workspace/${W}/project/${P}/estimate/equipment-library/override`, { method: "PUT", headers: h, body: JSON.stringify({ entity: "setting", entity_key: "rental_delivery_by_dealer", field: "value", value_num: deliveryByDealer, value_text: deliveryByDealer === 0 ? "zero-ok" : null }) });
       // The project's utility settings, as Calculate reads them: the depth ranges a line is named and paced by come from
       // here (the app's default 0-6, 6-8 ... 14-16, 16+), never a list of the harness's own (D-1211).
@@ -113,7 +134,7 @@ async (page) => {
         return UPB.inSection ? { ...obj, section: { ...(obj.section ?? {}), [UPB.runField]: v } } : { ...obj, [UPB.runField]: v };
       };
       if (upbMode) settings[UPB.projectField] = UPB.values.native;
-      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length, underPavement: upbMode ? { mode: upbMode, fields: UPB, projectDefault: settings[UPB.projectField], projectDefaultStored: util.settings?.[UPB.projectFieldStored] ?? null } : null, deliveryByDealer: deliveryByDealer ?? null };
+      const ran = { mode, projectState: settings.projectState, sectionPresets: settings.sectionPresets ?? null, flexible: settings.flexibleEmbedment ?? settings.companyEmbedment?.flexible ?? null, pressure: settings.pressureEmbedment ?? settings.companyEmbedment?.pressure ?? null, backfill: settings.backfill?.name ?? null, jurisdiction: settings.jurisdiction ?? null, jurisdictionStored: util.settings?.jurisdiction ?? null, limitedWidth: limitedMode ?? null, paved: limitedMode ? paved : null, boxes: (settings.boxes ?? []).length, underPavement: upbMode ? { mode: upbMode, fields: UPB, projectDefault: settings[UPB.projectField], projectDefaultStored: util.settings?.[UPB.projectFieldStored] ?? null } : null, deliveryByDealer: deliveryByDealer ?? null, weather: wx ? { station: wx.station, borrowed: wx.borrowed, workStart: wx.work_start, applied: wx.applied, flags: wx.flags } : null };
       // D-1291 (R11): a run's limited-width mark. In "items" mode every item carries its own (street-marking.mjs); one
       // without is refused, never guessed. D-1296: the same for the under-pavement backfill mark.
       const CHOICES = ["css_subgrade", "select_fill", "native"];
@@ -447,8 +468,10 @@ async (page) => {
       const ownLines = forLines.map((f) => (f ? ln.utilityLines([f]).map((l) => ({ type: f.type, name: l.name, role: l.role, qty: l.quantity })) : null));
       return { put: put.status, putText: put.ok ? "" : (await put.text()).slice(0, 300), missing, unpriceable, ownLines, parity, coverFlags, ran, trace, sectionFlags };
     },
-    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, paved: ct.paved ?? true, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null, upbMode: ct.underPavement ?? null, requireUpb: ct.requireUnderPavement ?? Boolean(ct.underPavement), deliveryByDealer: ct.deliveryByDealer ?? null },
+    { W, P, S, API, contract, pool: ct.pool ?? 1, parityOnly: Boolean(ct.parityOnly || contract.parityOnly), mode: ct.section ?? "legacy", waiver: ct.waiverPct ?? null, limitedMode: ct.limitedWidth ?? null, paved: ct.paved ?? true, jurisdiction: ct.jurisdiction ?? null, requireStep1: ct.requireStep1 ?? ct.section === "b", cssPrice: ct.cssPrice ?? null, upbMode: ct.underPavement ?? null, requireUpb: ct.requireUnderPavement ?? Boolean(ct.underPavement), deliveryByDealer: ct.deliveryByDealer ?? null, weather: Boolean(ct.weather) },
   );
+  // D-1331: weather asked for and not read: nothing priced.
+  if (own.refused) return { key: contract.key, error: own.refused };
   if (own.put >= 300) return { key: contract.key, error: `PUT ${own.put}: ${own.putText}` };
   // D-1291: refused before any line was written: an item with no limited-width mark, or (pass b) step 1's app part not
   // in yet, or a CSS price on the project that is not the harness's. Each says what it found.

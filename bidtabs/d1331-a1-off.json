@@ -1,0 +1,13 @@
+{
+  "decision": "D-1331",
+  "note": "D-1331 check fix M3: the (a1) pass of d1331-a1.json with the weather off (weather: false; the runner PUTs applied false), on the same tree and setup, to split the change since D-1296 (a1) into the drift since 11-16 and the weather alone. Everything else as d1331-a1.json. No tab figure lives here.",
+  "section": "a",
+  "pool": 1,
+  "rentalTaxPct": 8.25,
+  "waiverPct": 12,
+  "limitedWidth": "items",
+  "paved": false,
+  "underPavement": "items",
+  "deliveryByDealer": 3,
+  "weather": false
+}

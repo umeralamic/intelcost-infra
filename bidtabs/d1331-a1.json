@@ -1,0 +1,13 @@
+{
+  "decision": "D-1331",
+  "note": "D-1331 (night run from 2026-11-23 17:34, step 3): the (a1) pass of D-1296 with the weather applied: the throwaway placed by its ZIP (77002), the nearest NOAA 1991-2020 normals station picked and its months read once (weather: true), no work start (the year average), the founder's Q9 rules (rain; snow on; frost never a lost day). Rented machines bill the lost days once per machine class for the contract, in calendar days at the cheapest day / week / 4-week mix, each item its share; crews are not paid on them; owned machines stand by. Everything else as d1296-a1.json. No tab figure lives here.",
+  "section": "a",
+  "pool": 1,
+  "rentalTaxPct": 8.25,
+  "waiverPct": 12,
+  "limitedWidth": "items",
+  "paved": false,
+  "underPavement": "items",
+  "deliveryByDealer": 3,
+  "weather": true
+}

@@ -31,6 +31,7 @@ import { SCALE_UNDO_CASES } from "./lib/scale-undo-cases.mjs";
 import { EQUIPMENT_CASES, checkEquipment, runEquipment } from "./lib/equipment-cases.mjs";
 import { WATER_CASES, checkWater, runWater } from "./lib/water-cases.mjs";
 import { DEWATER_CASES, checkDewater, runDewater } from "./lib/dewater-cases.mjs";
+import { WEATHER_CASES, checkWeather, runWeather } from "./lib/weather-cases.mjs";
 
 const HERE = "/drive/scripts";
 // This run's own folder (D-891), made by quantity-table.sh.
@@ -63,6 +64,7 @@ let costs;
 let equipmentAnswers;
 let waterAnswers;
 let dewaterAnswers;
+let weatherAnswers;
 let earth;
 let reg;
 let site;
@@ -119,6 +121,8 @@ try {
   waterAnswers = await runWater(page);
   // Plan A-lean AL4 wired (D-1331): the dewatering line by method, the sump's clock and calendar rent, a sump line priced.
   dewaterAnswers = await runDewater(page, JSON.parse(await readFile(`${QT}/eqlib.json`, "utf8")));
+  // Plan A-lean AL1–AL3 (D-1331): lost days by the founder's Q9 rules, each rented machine's time on rent priced once with them (Q4), the pay items in the bid.
+  weatherAnswers = await runWeather(page, JSON.parse(await readFile(`${QT}/eqlib.json`, "utf8")));
   // The cost rows: F9's money through the app's own lib/estimate.
   costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
@@ -3505,6 +3509,7 @@ for (const c of CREDIT_CASES) {
 checkEquipment(equipmentAnswers, wrong);
 checkWater(waterAnswers, wrong);
 checkDewater(dewaterAnswers, wrong);
+checkWeather(weatherAnswers, wrong);
 
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
@@ -3517,3 +3522,4 @@ console.log(
 );
 console.log(`water and rain (D-1288): ${WATER_CASES.length} rows, all right`);
 console.log(`dewatering wired (D-1331): ${DEWATER_CASES.length} rows, all right`);
+console.log(`weather and pay items (D-1331): ${WEATHER_CASES.length} rows, all right`);
