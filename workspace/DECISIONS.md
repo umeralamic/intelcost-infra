@@ -36313,3 +36313,30 @@ ruled out as the cause.
 - **Windows (UTC) for the founder's saves:** none. No app or api source save, no migration, no service restarted; the
   gated execs (api gates, the DUP dry run, the QT's own) were read-only.
 - **The push:** recorded in `morning-report-2026-11-24/REPORT_2026-11-24.md` §8 and `NOTE_FOR_ABDULLAH.md`.
+
+## D-1335 — Founder answers to REPORT_2026-11-24 (2026-11-24); build next run unless noted
+
+- **Q1, rental billing: calendar days on rent** at the cheapest day/week/4-week mix (replaces work-day billing). The
+  weather extension switches with it (D-1328 Q4: the rental and the extension use one basis).
+  - **Overtime allowance is per billing period** (8 h per day, 40 h per week, 160 h per 4-week) against the machine's
+    actual hours, never 8 h × calendar days. First report how overtime is computed today, then fix it, then re-run the
+    per-project $ effect read only (P10 should land near +$9,497, the periods alone, not −$29,547).
+  - QT rows: 10 h × 20 days on a 4-week (200 h against 160 h: 40 h overtime); a 7-work-day rental spanning a weekend.
+- **Q2, retired lines (quantity 0): excluded from totals** and flagged in Needs attention with the amount ("Retired
+  line 'X' had $Y typed, not counted"), so the estimator can move it. QT row.
+- **Q3:** noted (superseded by Q4, D-1328).
+- **Q5:** yes, a tabulated-depth field per trench box (backlog). 20 ft assumed stays the default, with the note.
+- **Q6:** "pumping priced" requires the PUMP priced, not just the crew (D-1331 M1).
+- **Q7:** drop email addresses from all shared mail log lines; log the user id instead.
+- **Q8, fixtures c42/c52: option (a).** A memory-limited `prepare` rebuild of fx-prod, then c42 and c52 on the built
+  apps. Add the port check (5176/5177 answer) to `fx-suite.sh up`/`check` and the one-sheet warm-up to `warm_apps`.
+  Do not raise the fixtures' 30 s waits.
+- **Client-name scan rule (effective now, replaces the D-1331 close-out's whole-number matching):** numeric terms
+  match as substrings again. One exemption only: `intelcost-app-fastapi/app/features/weather/seed/zip_centroid.csv`,
+  by exact path AND content (git blob 6acafc14dcc36ead05a58ef0f16e9f5090d8438b; sha256 of the checked-out file
+  0fd96beacad53cbcf952c3f3a037181ef6cf455182dbeed5f19e83f00887dfab). Any change to that file (a different blob)
+  re-enters the scan.
+- **Weather sanity check (report only):** our lost days per month (earthwork, pipe, flatwork) for one Houston and one
+  Ohio station against the nearest USACE district's published normal anticipated adverse weather days. Show the
+  table and the gap.
+- **Dewatering stays 🔨 Working** (not Live) until Q6 is fixed and the founder has used it on one real bid.
