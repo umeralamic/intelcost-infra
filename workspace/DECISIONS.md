@@ -36340,3 +36340,237 @@ ruled out as the cause.
   Ohio station against the nearest USACE district's published normal anticipated adverse weather days. Show the
   table and the gap.
 - **Dewatering stays 🔨 Working** (not Live) until Q6 is fixed and the founder has used it on one real bid.
+
+## D-1336 — Night run from 2026-11-24 13:03 UTC (morning-report-2026-11-25), item 1: Q1 rentals by calendar days on rent, overtime per billing period (D-1335 Q1); the overtime report before any code
+
+**The founder's brief (2026-11-24):** run morning-report-2026-11-24/NEXT-RUN.md in its order, its standing rules;
+at most 2 builders; checkpoint after every item (committed, proved, report section written); if usage runs low,
+stop at an item boundary and close out. Close-out when all items are done: merge origin/staging if anything came
+in, fold migrations, prove, gates, FULL QT 0 FAIL, client-name scan (D-1335 rule), mirror, purge, fingerprint, ONE
+push to umer-dev (infra c3be60b included). Report in morning-report-2026-11-25, pricing first, with
+NOTE_FOR_ABDULLAH.md (migration ids in order). Status to the founder at 08:00 Central.
+- **Fingerprint at the start: 197e46191b36e443** (13:03 UTC). It was 9b1030bc5e0f1330 at 06:53; the founder worked on
+  their projects by day in between. This is the run's baseline.
+
+### Item 1 (Q1), the builder's readings, logged before any code (2026-11-24 ~13:40 UTC)
+- **Overtime today (step A, `morning-report-2026-11-25/d1336/OT-TODAY.md`):** `periods.ts:solveRental` bills work days
+  (1 / 5 / 20) and takes overtime = hours − 8 h × billed work days (`periods.ts:112`), at the billed periods' hourly
+  equivalents weighted by days. A period bought because it is cheaper (a week for 3 days, a 4-week for 16) carried no
+  more allowance than 8 h × its work days. The 11-24 −$29,547 for P10 came from reusing the 24 h clock's calendar mode,
+  which sets overtime to 0: P10's $39,044 of 10 h-day overtime vanished against +$9,497 of periods (7/5 × the
+  fractional work days, rounded up: reproduced to the dollar from today's data).
+- **Calendar days on rent: the founder's answer (a), the real span (main session, ~13:40 UTC); the off-rent rule is a
+  reading for the founder to confirm.** `periods.ts:daysOnRent(workDays, startWeekday)`: whole work days (rounded up),
+  picked up on the weekday of the project's work start date (`bundle.weather.work_start`, Weather settings; a weekend
+  date picks up the Monday); with no start date, Monday, and the line says "start date not set: Monday assumed"
+  (`START_ASSUMED`, on the host label and the machine's advisories). On rent every calendar day through the last work
+  day **and the non-work days right after it; off rent at the start of the next work day** (the reading: it is what
+  gives the founder's 11 for a Thursday start, where a plain span to the Friday is 9; a Monday start ending on a
+  Tuesday stays 9). The project's calendar is the 5-day week Monday–Friday (`WORK_DAYS_PER_WEEK`, the same the weather
+  rule's "per 20 worked" uses; the labour overtime rule's days per week is a wage rule, not read here). From a Monday:
+  1–4 → 1–4, 5 → 7, 7 → 9, 10 → 14, 20 → 28, 21 → 29, 30 → 42; from a Thursday 7 → 11. Periods: day 1, week 7,
+  4-week 28 calendar days, the cheapest mix as before (ties to the longer).
+- **Overtime per billing period:** allowance = 8 h × days + 40 h × weeks + 160 h × 4-weeks of the cover the cheapest mix
+  (or the fixed period) bills; overtime = the machine's actual hours (its work days × its daily hours) − that allowance,
+  never 8 h × calendar days; its rate = the cover's period cost ÷ its allowance (day ÷ 8, week ÷ 40, 4-week ÷ 160 for one
+  kind, as before). 10 h × 20 work days: 28 days on rent, one 4-week, 200 − 160 = 40 h. 16 × 10 h: 0 h (32 before).
+- **The 24 h clock (D-1331 AL4) is unchanged:** its days are already calendar days, no overtime.
+- **A consequence the founder should see:** from a Monday on a 5-day week, a full work week is one 7-day week on rent and
+  a Friday finish's weekend only rounds up to the week the cover already bills, so period costs stay as before for
+  week and 4-week covers; the overtime allowance moves (down). A day-rate rental pays the weekend days on rent (a fixed
+  day pick of 8 work days: 10 days, $10,400 for $8,320; 5 work days: 7 days). The +$9,497 expected for P10 was the 7/5
+  average span on 11-24; with per-period overtime that span would also give 8 h of allowance per weekend day (the
+  "8 h × calendar days" the founder ruled out).
+- **The weather extension switches with it** (D-1328 Q4, D-1331): `weatherExtension.ts` calls the same solver with the
+  same start, so base and base + lost are both days on rent at 1/7/28. Q4 rows: 16 + 1.64 → 22 and 24 days, $0; 20 + 2 →
+  28 and 30 days, $2,080; fixed day 3 + 2 → 3 and 7 days (the 5th work day is a Friday): **$4,160 (was $2,080)**.
+- **When existing projects change (the D-1287 precedent for browser-priced machines, `periods.ts` being one):** at the
+  next open of Estimating (or an export), no Calculate needed; reported per project by label in the morning report. Not
+  the weather's "Apply" (D-1316 Q9 (f) asked that for weather alone) and not D-763's per-line rules switch (sub-items).
+  Founder projects' weather: none applied, so no extension moves.
+- **Built and proved (app dec2803, infra d4116ce; no migration):** `periods.ts` (`daysOnRent`, `weekdayOf`,
+  `START_ASSUMED`, `allowanceOf`, the solver), `cost.ts` (the start from `bundle.weather.work_start`, the advisory),
+  `host.ts` (the line note), `weatherExtension.ts` (same start). Saves 13:52–13:53:50 UTC, each after a quiet gate.
+  Gates pass (chained with the commit). Full QT 14:02:14–14:18:13 UTC: exit 0, 0 FAIL, 156 equipment rows, weather and
+  pay items 35 rows, dewatering 18 rows. Fingerprint 197e46191b36e443 at start and end.
+- **Founder projects, read only (rent before waiver, fee and tax; none has a start date, all Monday-assumed):** P08 $0,
+  P10 −$5,711 (periods $0; overtime $39,006 → $33,295, 446 → 399 h), P16 $0, P17 $0; the other 14 have no rented
+  library machine. They change at the next open of Estimating.
+- **Smoke (D-1321 setup):** throwaway fx.equip.20261124142408 (purged 14:37), workspace "fx d1336 rentals" fd6abba5,
+  project 2305c946 (copy-3d-test.py of the 3D test copy), sheet C-200 b1fdf10b, earthwork Calculate twice (no tiers in
+  the new workspace, so no machines priced by Calculate), build of 13:53 UTC. Equipment settings: hours per work day 10.
+  Line 66 (Rock Excavation, Layer 3, 921.77 BCY): Add cost component › Equipment › Hydraulic excavator 20-25 t
+  (EX-CRAWL-20T, $1,040 / $2,927 / $7,950), production on this item 57.611 BCY/day → 16 days × 10 h = 160 h: "Rental
+  one 4-week $7,950.00 (against 3 weeks + 1 day $9,821.00 …)", no overtime (32 h before), "Start date not set: Monday
+  assumed". Production 131.682 → 7 days × 10 h = 70 h: "1 week + 2 days $5,007.00 + 14 hr overtime $1,251.73", total
+  $9,476.18; added. Work starts 2027-01-07 (a Thursday) in Equipment settings › Weather: "Rental 2 weeks $5,854.00
+  (against 1 week + 4 days $7,087.00 …)", no overtime, no note, line $9,018.35. Pass. Screenshots
+  `morning-report-2026-11-25/d1336/smoke-*.png`.
+
+## D-1337 — Night run from 2026-11-24 13:03, item 2: "pumping priced" requires the pump priced (D-1335 Q6)
+
+**The reading (logged before code):** a trench dewatering line counts as pumping priced only when its PUMP component
+(Calculate's sump pump, `auto_key` `SUMP_PUMP_KEY`) is priced: no error and a total above 0. The patrol crew priced
+alone no longer counts (D-1331 M1 counted the pump OR the crew). A line priced by hand (`handPriced`: a typed rate or a
+component of the estimator's own) still counts, whatever its pump; a wellpoint line without a hand price stays "Quote
+needed"; stone and geotextile alone stay no pumping. The decision moves into takeoff-core as a pure function
+(`water/pay.ts:pumpingOf`, components and their evaluations in, `{ pump: "priced" | "unpriced" | "missing", pumpError,
+crew }` out; the keys passed in, no import from `lib/estimate`), so the canvas and the QT read one rule;
+`EstimatingView.tsx` only feeds it. **The badge says why**, in the pay check's existing wording, one note per reason:
+"pump not priced on N line(s) (<the pump's error, or $0>)" (", crew only" when every such line's crew is priced); "N
+line(s) has/have no pump (crew only)" for a line whose pump component is gone but whose crew is priced; the existing "N
+lines have no pumping priced (stone and geotextile only)" for the rest. Any of these keeps the badge at "Check" at most
+(never "Covered"), as today's no-pumping lines do. QT rows `pay-check-crew-only-pump-error` (Check), `pay-check-pump-
+priced` (Covered), `pay-check-hand-priced` (Covered, pump errors), `pay-check-no-pump-crew-only` (Check) and the pure
+`pumping-of-*` rows; the D-1331 rows move from `pumping: true|false` to the new state. No api change (the api's pay
+items carry no check). Existing projects: the check is display only, no price moves ($0 on every bid total).
+
+## D-1338 — Night run from 2026-11-24 13:03, item 3: retired lines (quantity 0) out of totals, flagged (D-1335 Q2)
+
+**The reading (logged before code, ~14:00 UTC):** a retired line is a Calculate line the api kept at quantity 0 because
+someone priced, noted or typed on it (`earthwork_retired`, set by `earthwork/lines.py:write_lines` and
+`materials/minimums.py` through `_worth_keeping`; the app shows it as "Not in the last Calculate"). From now on such a
+line **counts $0 in every total**: its whole figure (typed equipment or subcontract lumps, lump components, and any
+shared-machine or weather share allocated to it; per-unit rates × 0 were already $0) is left out at the one place the
+app prices a line for totals (`EstimatingView`'s `whole` and `costOf`, and a parent's own part), so the grid's TOTAL
+and group rows, the report figures, the bid summary (direct cost, rental tax base, overtime base), Group by › Cost
+components and the exported workbook (it writes the grid's figures and the bid's) all drop it together; its row reads
+$0. Its component rows still show what was typed, display only, as a parent's rules-1 components do. **Needs
+attention says it per line**, under "Not in the last Calculate", beside the existing reason: "Retired line 'X' had $Y
+typed, not counted" (X the line's name, Y its figure as priced before the exclusion, shown to the cent), only when Y is
+at least a cent. The rule is a pure function in `lib/estimate/retired.ts` (cost in, counted and excluded out; the
+note's words), which the QT reads. The guest view prices a retired line at $0 too. **No api change:** the api sums no
+line money (bid totals and the export are the app's; the api's own sums, tiers, production, disposal and dewatering,
+already skip retired rows). Nothing moves until a Calculate retires a line; when its key comes back it counts again.
+**Existing projects: 0 retired rows on the whole bench database (1,109 items) at 13:55 UTC, so $0 on every founder
+project.**
+- **Built (2026-11-24):**
+  - **Commits:** app ade5416, infra 486e8fa (local, umer-dev, not pushed).
+  - **QT:** rows `retired-lump-excluded` and `retired-line-back`. Full QT 15:07–15:24 UTC, 0 FAIL.
+  - **Smoke:** on a throwaway copy (fx.d1338.20261124151024, project b199745d), $5,000 was typed on "Rock Export,
+    Layer 3" and Layer 3 changed from hard_dig to clay. Calculate retired the row. Its money reads "–", the Subcontract
+    report reads "–", and the tooltip reads "Retired line 'Rock Export, Layer 3 (6,013 BCY)' had $5,000.00 typed, not
+    counted". The throwaway was purged. Report: `morning-report-2026-11-25/d1338/SECTION.md`.
+
+## D-1339 — Night run from 2026-11-24 13:03, item 4: shared mail log lines name the user id, no address (D-1335 Q7)
+
+**The reading (logged before code, ~14:20 UTC):** no log line of the api or its workers names an email address. The
+mail path carries a **log label** beside the address: `mail.queue(session, to, template, context, who=...)` takes it as a
+required keyword (mypy refuses a caller that forgets it), hands it to the worker's `send_mail` (an optional keyword, so a
+message already on the broker still runs) and on to `mail.send`; every mail line prints the label where it printed the
+address: `mail sent`, the guard's `mail captured (guard)`, `send_mail`'s render failure and retry warning, and outbox's
+`after-commit dispatch failed: mail … to …` (its `what`). **A recipient who is a user is `user <id>`** (`User.id`, the
+integer the rest of the api's logs already use, e.g. the ZIP limit's line): password reset, password changed, email
+verification, the community and takeoff notices, the AI tripwire and the purge alert. **A recipient who is not (yet) a
+user** (a workspace invitation, a project share invite: both go to a typed address, and the row may not have an id
+before the commit) is **`workspace invitee <h>` / `share invitee <h>`**, where `<h>` is the first 12 hex of an HMAC-SHA256
+of the lower-cased address keyed by the api's JWT secret under a "mail-log" prefix: the same address gives the same
+stand-in across lines (so a retry and its send can be matched), and it cannot be turned back into the address without
+the secret, nor matched against a guessed address by anyone reading only the log. A label that is missing (a message
+queued before this change) prints "a recipient". **SMTP errors are redacted:** an SMTP refusal's text can carry the
+address (a refused-recipients error is a dict keyed by it), so the retry warning prints the error's type and its text
+with any address-shaped run replaced by `<address>`, and the exception handed to Celery's retry (whose own "retry" and
+final-failure lines print it) is a plain `OSError` of that redacted text, raised outside the `except` so no chained
+original rides along in a traceback. The mail lines print the subject redacted the same way (a share invite's or a
+workspace invitation's subject carries the inviter's address when the inviter has no name). **Database errors:** both
+engines in `app/database.py` set `hide_parameters=True`, so a logged SQLAlchemy error names no bound value (the statement
+is still printed). Postgres itself echoes a refused value ("Key (email)=(...) already exists", "invalid input syntax ...:
+"..."") into the error's text, which a traceback then carries, so **a backstop filter** (`app/core/log_redact.py`,
+`RedactAddresses`) sits on every handler of the root, uvicorn's and Celery's loggers (installed in `app/main.py` after
+`basicConfig`, and in the workers through Celery's `after_setup_logger` / `after_setup_task_logger` signals): any
+address-shaped run (something@domain.tld; a dotted domain, so `celery@<host>` node names and database URLs are left
+alone) in a line's message, traceback or stack is written as `<address>`. The labels are the rule; the filter is for
+text the api does not write itself. Nothing sent changes: the same address, template and context reach the relay or MailHog.
+The rest of the api was scanned (every logger call's arguments, every `print`, every outbox `what=`): no other line
+names an address. Proof: QT rows in a new `drives/qt-mail-log.py` (the real `queue` → outbox → `send_mail` → `send`
+path, SMTP replaced by an in-process capture, rolled back) and one bench smoke (a throwaway's sign-up verification in
+MailHog, the api and worker logs grepped for its address).
+
+## D-1340 — Night run from 2026-11-24 13:03, item 5: fx-prod rebuilt memory-limited, c42/c52 on the built apps; port check and one-sheet warm-up (D-1335 Q8)
+
+**Harness (infra `fx-suite.sh` only; no fixture wait raised, no assertion touched):**
+- **The fx apps answer on their host ports** (D-1334 run 1: app-fx "Up", vite "ready", no host binding for 5176, and
+  `up`/`check` passed it). `apps_answer <wait>`: for each app in use (the built pair when `app-fx-prod` or
+  `app-fx-b-prod` runs, else the dev pair `app-fx`/`app-fx-b`), the container is running, `docker port` shows its
+  container port (80 or 5173) bound to host 5176/5177, and `localhost:<port>/` gives HTTP 200 within the wait.
+  Otherwise `FAIL <container name> (<service>): …`, nothing restarted.
+  - `up` ends with it (300 s, a cold dev server's first page) and exits 1 on a FAIL.
+  - `check` (the command) runs it after the isolation check (120 s); `run` runs it after `check` and runs nothing on a
+    FAIL. The `check()` function itself is unchanged, so `setup` behaves as before.
+  - The fx apis (8020/8030) are not in it: `run` already waits on them (`code_current`).
+- **`warm_apps` warms pdf.js and its workers** (D-1334 run 2: the first sheet made vite bundle
+  `pdfjs-dist/legacy/build/pdf.worker.mjs`, ~20 min after a recreate, past the 30 s canvas wait). Per app, after the
+  pages it already compiles: GET `/src/features/takeoff/pdf/pdfjs.ts` and `…/autoCount/symbolIndex.worker.ts` (their
+  transform is what makes vite discover the dependency), GET the pre-bundled `pdf.mjs` and `pdf.worker.mjs` deps, then
+  `loadPdfjs()` in the page and one `PDFWorker` started and destroyed (240 s cap). A bundling reload of the warm page
+  runs it once more. A built app (no `/src`) says "none". The warm line now ends "pdf.js and its worker: ready|none|Error …".
+  This is the "pdf worker module" form of the founder's "one sheet": opening a real sheet needs a signed-in account and
+  an uploaded set inside `warm_apps`, which the fixtures' own setup steps own.
+- Committed alone: infra a79e451.
+
+**Build and run (2026-11-24 UTC, heavy lock 15:42:52–16:07:34; `morning-report-2026-11-25/d1340/`):**
+- **Build:** the two fx-prod images, one at a time with nothing else heavy running (the D-1339 QT had ended):
+  `docker compose --profile fx-prod build --memory 4g app-fx-prod` 15:44:33–15:50:44 (6 m 10 s), then `app-fx-b-prod`
+  15:51:01–15:55:14 (4 m 13 s). Compose builds through bake/BuildKit, which does not enforce `--memory` on a build
+  (no warning either), so the limit actually relied on is "alone, one image at a time"; bench api/worker/worker-pages/beat
+  were Up and /docs 200 after each build. Built from app HEAD ade5416 (D-1338), working tree clean; both served bundles
+  carry that commit's "typed, not counted" text (`retired-*.js`). `prepare`'s other ten images were not rebuilt: the
+  fixtures run the fx apis/workers on mounted source.
+- **Stack:** `./fx-suite.sh prod` 15:56:04–15:56:58, then `./fx-suite.sh up` 15:58:15–15:59:12 (the new check: both
+  built apps "host port published, answers 200"); `check` passed. fx DB and the script head both d1331c8a4e57: no
+  migration.
+- **Run:** `./fx-suite.sh run c42-stitch-sheets c52-stitch-snap` 16:00:45–16:05:49, exit 0, health watch on (no ALERT,
+  no D-1051 FAIL, code current without a restart). **c42 6/6 (152 s), c52 5/5 (151 s): both proved on the built apps.**
+  The warm line said "none (no /src: a built app)" for each, as designed; the dev-server branch of the pdf warm-up is
+  syntax-checked but not yet exercised on a dev server.
+- **After:** `./fx-suite.sh stop` 16:06:18–16:06:52; 0 fx containers running, every fx container restart "no"; bench
+  container IDs identical before and after; fingerprint 197e46191b36e443 at start and end. No bench window.
+
+## D-1341 — Night run from 2026-11-24 13:03, item 6: USACE weather check, report only (D-1335)
+
+**D-1341 result (report only, no code, no pricing change):** our lost days per month were computed with the app's own
+pure functions (`weather.ts` `lostShare`/`lostInMonth`, D-1331 rules) and set against the published USACE "monthly
+anticipated adverse weather" tables, all in calendar days (the USACE basis; ours before the 5/7 weekday factor).
+- **Houston, ZIP 77002** (HOUSTON HTS, USC00414321): Galveston District, Addicks and Barker Dams Emergency Spillway
+  Repairs (W912HY20B0004, Dec 2019, 7-day work week) **106 a year**. Ours: earthwork **83.9**, pipe 34.8, flatwork
+  66.0. **Gap (earthwork) −22.1**, mostly September (13 against 7.8), January, December and August. Other Galveston
+  tables near Houston run from 74 (Clodine Ditch) to 109 (Wallisville).
+- **Columbus, ZIP 43215** (GRANDVIEW HEIGHTS US1OHFR0003 rain, snow borrowed from PORT COLUMBUS USW00014821):
+  Huntington District, Alum Creek, Paint Creek and Delaware Lakes (W9123722B0004, Mar 2022, calendar days) **100 a
+  year**. Ours: earthwork **80.1**, pipe 38.1, flatwork 92.6. **Gap (earthwork) −19.9**, mostly January (15 against 7.9).
+- **On the weekday basis** the gap is −15.8 (Houston) and −14.2 (Columbus) working days a year.
+- **Why they differ:** USACE counts any day that stops at least half of the critical work, so frozen ground, wet
+  ground and tropical saturation count; frost is never a lost day for us (D-1316 Q9 (b)); our drying allowance after
+  1 in of rain is at most two days; and USACE tables are written per project and carry judgement.
+- **Founder questions:** Q1 frozen-ground days for earthwork; Q2 a longer drying allowance on Gulf Coast clay; Q3 a
+  contract's own USACE table typed per project.
+- Report: `intelcost-infra/morning-report-2026-11-25/d1341/SECTION.md`.
+
+### Close-out (night run from 2026-11-24 13:03; 2026-11-24, 16:09–16:4x UTC, the close-out builder)
+
+- **Merge:** `git fetch` in app, api and infra: origin/umer-dev unmoved (app 23fc974, api dc23172, infra 5fed5b8) and
+  **origin/staging has nothing umer-dev lacks** (app and api; infra has no staging). No merge. Every repo on umer-dev.
+- **Migrations (D-851): none new, no fold.** Nothing under `alembic/versions/` changed since dc23172; the chain has one
+  head, `d1331c8a4e57`.
+- **Workspace files:** the three D-1335 Planned rows in FEATURES marked built (D-1336, D-1338, D-1339; commits named;
+  founder to confirm; not Live); the dewatering row (D-1331) stays 🔨 Working with D-1337 and D-1341 noted; MANAGER In
+  Progress rows D-1336 to D-1340 (spec: their DECISIONS entries); SINCE_ARCHIVE rows D-1337 to D-1340 (D-1336's was
+  written at its checkpoint; D-1341 changed no code); dewatering_weather_tasks.md §12.10.
+- **Gates:** app lint 0 errors (the 4 known warnings), typecheck, build (16:12–16:23:47); api ruff check, ruff format
+  --check (318 files), mypy (295 files) in the api container (16:15:49, gated, read only).
+- **Full quantity table 16:24:10–16:37:50 (heavy lock to 16:37:5x): exit 0, `grep FAIL` 0.** "344 rows, both engines
+  equal to 1e-9 on 340; 37 worked answers right; 92 cost rows right to the cent; 391 earthwork rows right; 413 utility
+  rows right; … 156 equipment rows right …; passed"; mail log (D-1339) 11 rows, dewatering wired 18, weather and pay
+  items 35, purge alert 10: all right; Benchmark A right; competitor names none in 2,354 text files.
+- **Client-name scan (the D-1335 rule: substring, every term, case-insensitive):** 0 hits. 15 terms over every file
+  changed since origin/umer-dev (app 8, api 12, infra 12 before the mirror), their names, the 10 unpushed commit
+  messages and the report folder's text files; rerun after the mirror commit. The one exempt file
+  (`zip_centroid.csv`) is unchanged: blob 6acafc14dcc36ead05a58ef0f16e9f5090d8438b, sha256 as logged in D-1335.
+- **Purge:** 0 fx.* accounts and 0 workspaces created since 13:03 remain (every builder purged its own);
+  `purge-bench-accounts.py` dry run "to delete 0" (the 58 refused are older, in the founder's workspaces);
+  `purge-bench-dups.py` dry run "would purge: 0, refused: 0"; 0 open `storage_clear_log` / `trash_purge_log` rows, so
+  nothing is left in the bucket.
+- **Digest 197e46191b36e443** at 16:38:49, the run's baseline. app-prod, app-b, api-b and the fx stack stopped.
+- **Windows (UTC) for the founder's saves:** none at the close-out. No source save, no migration, no restart; the gated
+  execs (api gates, the purge and DUP dry runs, the fingerprint) were read only.
+- **The push:** recorded in `morning-report-2026-11-25/REPORT_2026-11-25.md` §8 and `NOTE_FOR_ABDULLAH.md`.

@@ -725,4 +725,17 @@ The full record is DECISIONS.md D-1331 and `intelcost-infra/morning-report-2026-
   (a1) pass weather off/on (k all pipe 1.075 → 1.064 to the medians); independent check PASS after M1–M5 and Q4-R.
 - **Known gaps:** a borrowed snow or frost station's change gets no note; the extension does not show in Project takeoff
   or the component editor (N4); the weather row is written by its GET, so two tabs could race (N6); a priced crew counts
-  as pumping even when the pump errors (REPORT_2026-11-24 Q6).
+  as pumping even when the pump errors (REPORT_2026-11-24 Q6; closed by D-1337, §12.10).
+
+### 12.10 Night run from 2026-11-24 13:03 (morning-report-2026-11-25): D-1336, D-1337, D-1341 (founder to confirm)
+- **D-1337 (D-1335 Q6), app 61e789a, infra 94eb7aa:** `water/pay.ts:pumpingOf` (pure): a line counts as pumping only
+  with its sump pump priced (no error, total above 0) or a hand price; a priced crew alone no longer counts. The badge
+  says why ("pump not priced on N line(s) (…)", ", crew only"; "N line(s) has/have no pump (crew only)"). Display
+  only, $0 on every founder project.
+- **D-1336 (D-1335 Q1), app dec2803, infra d4116ce:** rentals bill calendar days on rent (1 / 7 / 28) from the work
+  start's weekday, Monday assumed and said; `weatherExtension.ts` prices base and base + lost on the same start. Q4
+  rows: 16 + 1.64 → 22 and 24 days, $0; 20 + 2 → 28 and 30 days, $2,080; fixed day 3 + 2 → 3 and 7 days, $4,160.
+- **D-1341, report only:** USACE adverse-weather tables against our lost days (Houston earthwork 83.9 against 106 a
+  year, Columbus 80.1 against 100); three founder questions (frozen ground, a longer drying allowance on Gulf Coast
+  clay, a contract's own table per project). `intelcost-infra/morning-report-2026-11-25/d1341/SECTION.md`.
+- **Still 🔨 Working** until the founder has used it on one real bid (D-1335).
