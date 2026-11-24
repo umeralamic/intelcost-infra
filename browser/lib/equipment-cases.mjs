@@ -21,7 +21,11 @@ export const EQUIPMENT_CASES = [
   // Every class's mob and demob at the catalog's 50 miles, as the workbook cached them (642 rows: the chainsaw class added in release 31, D-994).
   { id: "eq-mob-catalog-628", kind: "mob-catalog" },
 
-  // The work-day solver (D-724 rule 6, plan §3.4).
+  // The rental solver (D-724 rule 6, plan §3.4), by calendar days on rent since D-1336 (D-1335 Q1): picked up on the work
+  //   start's weekday (none given: Monday), on rent to the last work day and the days off right after it, off at the
+  //   next work day; periods 1 / 7 / 28 calendar days. From a Monday on a 5-day week the covers below are the work-day
+  //   solver's (a full work week is a week on rent), so these rows keep their values. Overtime per billed period (8 h a
+  //   day, 40 a week, 160 a 4-week) at the cover's period cost ÷ its allowance.
   { id: "eq-solve-8-days", kind: "solve", rates: [1040, 2927, 7950], days: 7.6526, hours: 61.2205, expect: { cost: 5854, label: "2 weeks", alt: "1 week + 3 days", altCost: 6047 } },
   { id: "eq-solve-7-days", kind: "solve", rates: [1040, 2927, 7950], days: 6.6667, hours: 53.3333, expect: { cost: 5007, label: "1 week + 2 days" } },
   { id: "eq-solve-20-days", kind: "solve", rates: [1040, 2927, 7950], days: 20, hours: 160, expect: { cost: 7950, label: "one 4-week" } },
@@ -30,6 +34,23 @@ export const EQUIPMENT_CASES = [
   { id: "eq-solve-lift-8-days", kind: "solve", rates: [563, 1370, 2766], days: 8, hours: 64, expect: { cost: 2740, label: "2 weeks", alt: "one 4-week", altCost: 2766 } },
   { id: "eq-solve-blank-week", kind: "solve", rates: [1040, null, 7950], days: 8, hours: 64, expect: { cost: 7950, label: "one 4-week", skipped: ["wk"] } },
   { id: "eq-solve-no-rates", kind: "solve", rates: [null, null, null], days: 8, hours: 64, expect: { none: true } },
+  // D-1336 (D-1335 Q1), the founder's rows. eq-solve-4wk-10h-ot: 10 h × 20 work days = 200 h; from a Monday (no start
+  //   date) to the 4th Friday and its weekend, 28 days on rent → one 4-week $7,950 carrying 160 h: 40 h overtime ×
+  //   7,950 ÷ 160 = $1,987.50 → $9,937.50.
+  { id: "eq-solve-4wk-10h-ot", kind: "solve", rates: [1040, 2927, 7950], days: 20, hours: 200, expect: { cost: 9937.5, periodCost: 7950, billedDays: 28, startAssumed: true, allowanceHours: 160, overtimeHours: 40, overtimeCost: 1987.5, label: "one 4-week" } },
+  // eq-solve-7-days-weekend: 7 work days from a Monday (start 2027-01-04) to the next Tuesday, the weekend inside: 9 days
+  //   on rent: week + 2 days $5,007 (two weeks $5,854); 7 × 8 = 56 h against 40 + 16 = 56 h: no overtime.
+  { id: "eq-solve-7-days-weekend", kind: "solve", rates: [1040, 2927, 7950], days: 7, hours: 56, start: "2027-01-04", expect: { startAssumed: false, cost: 5007, periodCost: 5007, billedDays: 9, allowanceHours: 56, overtimeHours: 0, label: "1 week + 2 days", alt: "2 weeks", altCost: 5854 } },
+  // eq-solve-7-days-thursday: the same 7 work days from a Thursday (start 2027-01-07): Thu, Fri, Mon–Fri, and the weekend
+  //   after that Friday: 11 days on rent: two weeks $5,854 (week + 4 days $7,087); 56 h against 80 h: no overtime.
+  { id: "eq-solve-7-days-thursday", kind: "solve", rates: [1040, 2927, 7950], days: 7, hours: 56, start: "2027-01-07", expect: { cost: 5854, periodCost: 5854, billedDays: 11, allowanceHours: 80, overtimeHours: 0, label: "2 weeks", startAssumed: false } },
+  // eq-solve-16-days-10h: 16 × 10 h = 160 h on the 4-week it already pays for (22 days on rent): 160 h allowance, no
+  //   overtime (the work-day rule charged 160 − 8 × 16 = 32 h, $1,590).
+  { id: "eq-solve-16-days-10h", kind: "solve", rates: [1040, 2927, 7950], days: 16, hours: 160, expect: { cost: 7950, billedDays: 22, allowanceHours: 160, overtimeHours: 0, label: "one 4-week" } },
+  // eq-solve-3-days-10h-week: 3 × 10 h = 30 h on a week ($2,927 < 3 × $1,040): 40 h allowance, no overtime (was 6 h, $439.05).
+  { id: "eq-solve-3-days-10h-week", kind: "solve", rates: [1040, 2927, 7950], days: 3, hours: 30, expect: { cost: 2927, billedDays: 3, allowanceHours: 40, overtimeHours: 0, label: "1 week" } },
+  // eq-solve-7-days-10h: 7 × 10 h = 70 h against week + 2 days' 56 h: 14 h × 5,007 ÷ 56 = $1,251.75 → $6,258.75 (as before).
+  { id: "eq-solve-7-days-10h", kind: "solve", rates: [1040, 2927, 7950], days: 7, hours: 70, expect: { cost: 6258.75, overtimeHours: 14, overtimeCost: 1251.75, label: "1 week + 2 days" } },
 
   // D-1285 Q19 (f): labour overtime at each spread's own work day (`overtime.ts:overtimeBySpread`), worked by hand. The
   // FLSA rule (D-961): over 40 h a week at time and a half, so the premium is labour x 0.5 x (overtime h / week h). 5 days.
@@ -83,7 +104,9 @@ export const EQUIPMENT_CASES = [
   // Needs attention lists each stale class once per basis, however many lines use it: WT-4000 rented on 24 lines, PV-STABILIZER
   // owned (EP 2022, red) twice, EX-CRAWL-20T (fresh) on 5: two entries, red first.
   { id: "b7-needs-attention-once", kind: "stale-list", today: "2026-11-16", uses: [...Array(24).fill({ key: "WT-4000", basis: "rent" }), { key: "PV-STABILIZER-WR2400", basis: "owned" }, { key: "PV-STABILIZER-WR2400", basis: "owned" }, ...Array(5).fill({ key: "EX-CRAWL-20T", basis: "rent" })], expect: { list: ["PV-STABILIZER-WR2400|owned|2022-12-01|red", "WT-4000|rent|2025-03-01|amber"] } },
-  { id: "eq-solve-fixed-day", kind: "solve", rates: [1040, 2927, 7950], days: 7.6526, hours: 61.2205, fixed: "day", expect: { cost: 8320, label: "8 days" } },
+  // eq-solve-fixed-day: picked by the day, 8 work days are 10 days on rent (D-1336: the weekend inside is on rent too):
+  //   10 × $1,040 = $10,400 (was 8 days, $8,320).
+  { id: "eq-solve-fixed-day", kind: "solve", rates: [1040, 2927, 7950], days: 7.6526, hours: 61.2205, fixed: "day", expect: { cost: 10400, billedDays: 10, label: "10 days" } },
 
   // One machine, the plan's worked examples (8-hr day, catalog path): plan §3.5, §3.6.
   { id: "eq-ex1-rental", kind: "machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 61.22049172298952, fuelLoad: "med", units: 1, includeMob: true }, expect: { total: 8022.13, equipment: 5854, fuel: 1068.13, mob: 1100 } },
@@ -695,9 +718,9 @@ export async function runEquipment(page, eqlib) {
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
         if (c.kind === "solve") {
           const [day, week, fourWeek] = c.rates;
-          const r = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed);
+          const r = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed, c.start ? { startWeekday: periods.weekdayOf(c.start) } : {});
           if (!r) return { none: true };
-          return { cost: r.cost, periodCost: r.periodCost, overtimeHours: r.overtimeHours, overtimeCost: r.overtimeCost, label: periods.coverLabel(r), alt: r.alternatives[0]?.label, altCost: r.alternatives[0]?.cost, skipped: r.skipped };
+          return { cost: r.cost, periodCost: r.periodCost, billedDays: r.billedDays, allowanceHours: r.allowanceHours, startAssumed: r.startAssumed, overtimeHours: r.overtimeHours, overtimeCost: r.overtimeCost, label: periods.coverLabel(r), alt: r.alternatives[0]?.label, altCost: r.alternatives[0]?.cost, skipped: r.skipped };
         }
         const lib = resolve.library(bundleFor(eqlib, c));
         const m = cost.machineCost(lib, { hoursPerDay: 8, ...c.input });

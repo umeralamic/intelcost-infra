@@ -82,19 +82,26 @@ export const WEATHER_CASES = [
   { id: "wx-no-normals", kind: "wx-activity", normals: "NONE", rule: "pipe", workDays: 20, start: null, expect: { none: true } },
 
   // --- Rented machines bill the lost days: each machine's time on rent priced once (weatherExtension.ts; the founder's
-  //     Q4, 2026-11-24): extension = cheapest mix(base + lost) − cheapest mix(base), on the machine's own work-day basis
-  //     (1 / 5 / 20) or its fixed period. EX-CRAWL-20T $1,040 / $2,927 / $7,950, location 1.00, no waiver in the bundle.
-  // wx-ext-absorbed: 16 work days on rent (one 4-week $7,950) + 1.64 lost = 17.64: still one 4-week $7,950 → $0.
+  //     Q4, 2026-11-24): extension = cheapest mix(base + lost) − cheapest mix(base), on the machine's own basis or its
+  //     fixed period. EX-CRAWL-20T $1,040 / $2,927 / $7,950, location 1.00, no waiver in the bundle.
+  //     D-1336 (D-1335 Q1): the basis is now calendar days on rent (1 / 7 / 28: from the work start's weekday, Monday
+  //     here with no start date, to the last work day and the days off after it), for the rental and the extension
+  //     together. From a Monday the period covers are the work-day ones, so the values stand (each row names its days
+  //     on rent) except wx-ext-fixed-day, where 5 work days by the day now pay the weekend after their Friday.
+  // wx-ext-absorbed: 16 work days (22 days on rent, one 4-week $7,950) + 1.64 lost = 17.64 → 18 (24 days): still one
+  //   4-week $7,950 → $0.
   { id: "wx-ext-absorbed", kind: "wx-ext", machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":16,"lost":1.64,"shares":[{"host":"a","k":1}]}], expect: { total: 0, a: null } },
-  // wx-ext-cross: 20 + 2 = 22 work days: one 4-week + 2 days $10,030 (against 4-week + week $10,877) − $7,950 = $2,080.
+  // wx-ext-cross: 20 work days (28 days on rent) + 2 = 22 (30 days): one 4-week + 2 days $10,030 (against 4-week + week
+  //   $10,877) − $7,950 = $2,080.
   { id: "wx-ext-cross", kind: "wx-ext", machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":20,"lost":2,"shares":[{"host":"a","k":1}]}], expect: { total: 2080, a: 2080 } },
   // wx-ext-no-pool: line A 16 days (no lost days), line B 3 days + 2 lost: B's 3 days are a week already ($2,927 < 3 ×
   //   $1,040), 5 days still a week → B's extension $0; nothing pooled with A's 4-week (the per-class reading gave $1,040).
   { id: "wx-ext-no-pool", kind: "wx-ext", machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":16,"lost":0,"shares":[{"host":"a","k":1}]}, {"id":"b","classKey":"EX-CRAWL-20T","units":1,"baseDays":3,"lost":2,"shares":[{"host":"b","k":1}]}], expect: { total: 0, a: null, b: null } },
   // wx-ext-two-units: 2 machines, 20 + 2 each: 2 × $2,080 = $4,160, all on the line.
   { id: "wx-ext-two-units", kind: "wx-ext", machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":2,"baseDays":20,"lost":2,"shares":[{"host":"a","k":1}]}], expect: { total: 4160, a: 4160 } },
-  // wx-ext-fixed-day: picked by the day, 3 + 2: 5 days $5,200 − 3 days $3,120 = $2,080 (no week on a fixed day period).
-  { id: "wx-ext-fixed-day", kind: "wx-ext", machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":3,"lost":2,"shares":[{"host":"a","k":1}],"fixed":"day"}], expect: { total: 2080, a: 2080 } },
+  // wx-ext-fixed-day: picked by the day, 3 + 2 (no week on a fixed day period): 3 days on rent $3,120; 5 work days from a
+  //   Monday end on Friday and keep the weekend: 7 days $7,280 → $4,160 (D-1336; on the work-day basis 5 − 3 days $2,080).
+  { id: "wx-ext-fixed-day", kind: "wx-ext", machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":3,"lost":2,"shares":[{"host":"a","k":1}],"fixed":"day"}], expect: { total: 4160, a: 4160 } },
   // wx-ext-site-share: a site spread's machine 20 + 2 → $2,080, to its lines 25 % / 75 %: $520 and $1,560.
   // wx-ext-typed-rates (Q4-R): the machine's own typed rates ($700 / $2,000 / $6,000), not the catalogue's: 20 + 2 = one
   //   4-week + 2 days $7,400 (4-week + week $8,000) − $6,000 = $1,400 (the catalogue would give $2,080).
