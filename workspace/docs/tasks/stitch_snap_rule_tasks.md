@@ -39,3 +39,11 @@
 - **QT:** no stitch-fit computation changed, so no QT rows.
 - **c42:** its picks are off the printed lines and its Earthwork tab starts with Snap PDF off, so its results should not
   move.
+
+## Fixtures c42 and c52 (D-1334, night run of 2026-11-23/24): not proved, environment
+- Three runs on the fx dev servers, health watch on, no ALERT. Run 1: app-fx had no host port published (5176), so every
+  step failed to connect; app-fx was recreated (fx only). Runs 2 and 3: c42 2/6 then 3/6, c52 1/5 each; every failure is
+  the 30 s wait for the canvas (or a 30 s page reload) on a dev server whose page load runs past it.
+- Every stitch assertion that got its page passed (A5's 0.99 % flag and Recalibrate, A7's 102 ft). No code or harness
+  change. To prove them: the built apps (`./fx-suite.sh prod` after a memory-limited `prepare`), or the WSL-filesystem move.
+  Full section: `intelcost-infra/morning-report-2026-11-24/d1334/SECTION.md`.

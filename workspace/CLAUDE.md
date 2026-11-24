@@ -136,6 +136,11 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
    - **Report the windows:** every report names each window in which the founder's saves could fail (a reload, a
      code-before-migration gap, a stopped service), with its start and end times in UTC.
 
+13. **Kill only your own PID (D-1328 addendum).** No script or command stops a process by port or by name
+   (`taskkill /IM`, `pkill`, "whoever listens on port N"). A script records the PID it started and stops that PID
+   only. It checks that its own server bound the port: a "port in use" means someone else is there, and it stops
+   nothing. On 2026-11-23 a port-lookup kill hit Docker Desktop's backend twice and took the bench down.
+
 ## Git
 
 **`umer-dev` is the only branch we push or pull.** In every repo in the workspace, with one

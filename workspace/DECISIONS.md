@@ -35947,3 +35947,369 @@ They are MERGED into umer-dev before the fold, per the brief's "merge origin/sta
   rental tax rules, would have failed; the nightly purge runs at 03:00). No bench service restarted or recreated.
 - **D-1322's re-measure, D-1326 and D-1327: not done** (above, under each). The workspace files say so.
 - **The push:** recorded in this run's report and `morning-report-2026-11-23/NOTE_FOR_ABDULLAH.md`.
+
+## D-1328 — Founder answers 2026-11-23 to REPORT_2026-11-23 §1 (build next night)
+
+1. **The PE-design line:** one per run when the trench is over 20 ft deep and its protection is sloping, benching, or a box used beyond its manufacturer's tabulated depth (OSHA 1926.652(b)(4), (c)).
+   - A rated box used within its tabulated depth gets no PE line, with the note "within manufacturer's tabulated data".
+   - First report how the current box rule (D-1144) works.
+   - QT rows for each case; the $ effect on the founder's projects, read only.
+2. **The purge alert** (D-1325) also emails the founder, once per stuck file (not nightly).
+3. **The Windows Alt check (Q-D2):** the founder does it by hand.
+4. **The bench app file watcher:** polling interval 1000 ms (it is 200 ms today, in `vite.config.ts`). Restart the dev server under a quiet founder check, and report the login time before and after. Backlog: move the source into the WSL filesystem.
+5. **The D-1310 re-measure:** next night, using a local copy of V-100's overlay pictures (the same pictures before and after), not the live bucket.
+
+## D-1329 — Night run from 2026-11-23 17:34 UTC (morning-report-2026-11-24), step 1: the bench app watcher polling 200 → 1000 ms (D-1328.4), the dev server restart under a quiet check, login time before and after
+
+## D-1330 — Night run from 2026-11-23 17:34, step 2: the D-1310 re-measure from a local copy of V-100's overlay pictures (D-1328.5)
+
+## D-1331 — Night run from 2026-11-23 17:34, step 3: Plan A-lean, AL4 dewatering wiring first, then AL1–AL3 with the D-1316 Q9 answers; existing projects never reprice silently; independent check; one (a1) harness pass. Whole or not at all.
+
+**AL4, dewatering wired (built in scratch, then saved; spec §12.5):**
+- **The line by method (app, Calculate):**
+  - `utilities/quantities.ts` keeps each run's governing station below the water (`dewaterSite`: the water highest above the bottom, with the bottom's depth, the design water, the bottom layer's USCS, the width and the walls); `crossings.ts:withOpenParts` keeps the open parts' worst.
+  - `utilities/lines.ts:dewaterLine` runs `water/method.ts:selectMethod` on it. A sump makes the line `trench:sump` ("Trench dewatering, sump pumping"); wellpoints (vacuum, one stage, on a bench) make `trench:wellpoint`; every other method keeps today's `trench`, priced by hand. The reason (and the heave check) goes on the line's note; `RunPanel` shows it.
+  - **Reading:** a run's existing "Trench dewatering" line becomes the method's line at its next Calculate (a new identity); the old line goes to "Not in the last Calculate" with its rates, as any retired line. Nothing changes before a person recalculates.
+- **The pace (api):** `equipment/dewatering.py` gives a sump or wellpoint line a spread at its run's pipe-crew pace (the sheet's and type's pipe lines, LF-weighted), after the pipe lines and site spreads are priced in `production.py:_attach_lines`; `estimate/spreads.py:save_spread` re-reads it when a person edits a pipe line's pace. No migration (the variant and the note carry it).
+- **The sump, priced (founder's Q17):** the api puts the library's `PMP-TRASH-3` and a one-laborer crew on a sump line; the browser prices them on the 24 h clock when the spread's note starts "Sump pumping, 24 h:" (`host.ts` `SUMP_NOTE`, `water/quantities.ts:sumpClock`): the pump over the crew's days + 1 through weekends, rented by calendar days (day, 7-day week, 28-day 4-week, no overtime: `periods.ts` calendar mode), its fuel on every hour; the crew on the patrols and the CGP report (D-1289, Q30). Its filter bags are "Quote needed" in Needs attention.
+- **Wellpoints:** the pace only, no component; Needs attention lists the §4.2 quantities, every part "Quote needed" (`lib/estimate/dewatering.ts`), never a $0 that looks priced.
+
+**Main-session readings for AL2 (2026-11-23 ~18:25 UTC, for the founder to confirm; D-1316 Q9):**
+- **(c)** Calendar days and the cheapest day / 7-day week / 28-day 4-week mix apply ONLY to the weather extension. Today's per-line rentals do not change, which keeps "never reprice silently" true.
+- **(e)** One weather extension per rented machine class across the project: the lost machine-days of every line and site spread summed, turned into calendar days (× 7/5), rounded up once, and priced at the cheapest calendar mix with the rental's waiver, fee and taxable part. Each line carries a pro-rata share, so line totals, exports and the (a1) per-item k add up. Owned machines stand by; crews are not paid.
+- **(b)** Snow rules on (earthwork a snow day and a clearing day; pipe and flatwork the snow day); frost days are never lost days. The flatwork cold-weather protection cost line (ACI 306) is proposed in the spec, not priced.
+- **(f)** A project whose row is made when it already has cost components keeps its prices until a person presses Apply ("Weather days not applied · Apply"); a new project applies from the start. "Start date not set: average year used" in Needs attention.
+
+**AL4b, the founder's answers on AL4 (D-1328 addendum), built:**
+- **1. Rename in place** (api `earthwork/lines.py:write_lines`): a run type's trench dewatering line is one line whatever its method. When Calculate's line for a region is `trench`, `trench:sump` or `trench:wellpoint` and no row has that key, the region's existing trench dewatering row that no incoming line names is adopted: same id, its variant and name updated (a name a person typed stays, D-768), its rates, notes and place kept. No new row, no "Not in the last Calculate" row. This replaces the AL4 reading above ("a new identity; the old line goes to Not in the last Calculate").
+- **A hand price is kept** (api `equipment/dewatering.py:hand_priced`, app `lib/estimate/dewatering.ts:handPriced`, the same rule): a rate typed on the line (labour, material, equipment or subcontract) or a component a person added (one with no Calculate key; Calculate's own pump, crew, foundation stone and geotextile, edited or not, are not a hand price). Such a line gets no spread and no automatic component from Calculate; its price stays as typed.
+- **The computed figure beside it:** Estimating shows an amber chip on the line, "Calculate prices it at $X: your price kept" (a wellpoint line: "Calculate: wellpoint gear Quote needed; your price kept"). $X is the line's own Calculate components (stone, geotextile) with the api's pump and crew, priced through the host engine at the run's pipe-crew pace, no typed rate (`calculatePrice`; the pace from the line's pipe lines, `runPace`, as the api's `run_pace`). The pattern is the component row's "Calculate now has …" chip (D-911), the same amber chip, without an Apply: removing the hand price and pressing Calculate takes Calculate's.
+- **Did the old orphan count in totals?** Yes, in part. AL4 code (commit 897464e/fc6350f) retired the old `trench` row only when a person had put something on it (`_worth_keeping`); it then stayed at quantity 0, and `computeLineCost` (no filter on retired rows in the grid or the bid) still carries its lump figures (a typed equipment or subcontract lump, a lump component); per-unit rates × 0 gave $0. An untouched row was deleted. So a hand-priced `trench` line with a lump would have been counted twice (its lump on the retired row plus the new priced line) after a Calculate; AL4b removes that path.
+- **Scope of the retired-row lump (coordinator's ask, sized read only):** any earthwork-computed line can be retired, not only dewatering: `earthwork/lines.py:write_lines` (a key that leaves a Calculate, line 729; a sheet's lines moved under a site, line 768) and `materials/minimums.py` (line 360), each through `_worth_keeping`. A retired row's lump figures count in the grid and bid totals (no retired filter in `EstimatingView` totals or `computeLineCost`). **Today: 0 retired rows in all 18 founder projects (so $0), and 0 on the whole bench database.** AL4b changes only the trench dewatering path (adoption instead of retire); every other retired row behaves as before. No founder project's total changes on load: the app change is a display chip and Needs attention words; the adoption and the hand-price rule run only in Calculate's write. Whether a retired row's lumps should count at all is a separate question for the founder.
+- **2. Soil group as a stand-in, named:** `DewaterSite.fromGroup` when the USCS is `GROUP_USCS`'s; the note starts "Clay → low permeability → sump: " (bands: below 10⁻⁴ low, to 10⁻³ moderate, above high). An empty typed USCS now falls back to the group as well.
+- **Nothing reprices without a Calculate:** the adoption and the hand-price rule run only in Calculate's write; the chip is display only.
+- **Commits (local, umer-dev, not pushed):** app c213a40, api 949e487, infra 6405548. Full QT 22:38:36–22:54:36 0 FAIL.
+- **Smoke (D-1321 setup):** throwaway fx.equip.20261123215300, workspace "fx d1331 al4b" 300f527e, project 62e44539 (copy-3d-test.py of the 3D test copy), sheet C-200 3ed8b8c7, build of 22:14 UTC. Before: two `trench` lines, Storm f2267edc and Sanitary 33d7c8cb. Typed $5,000 subcontract on Storm (the grid's PATCH costs), Layer 3 hard_dig → clay in Soil layers, Calculate twice. After: the same two ids, both "Trench dewatering, sump pumping", notes "Clay → low permeability → sump: Sump pumping: clay (k 10⁻⁶ cm/s), water 2.3 / 1.6 ft above the bottom"; 0 rows "Not in the last Calculate". Sanitary priced by Calculate (pump $658.74, crew 3.70 MH, line $1,811.45); Storm kept $5,000 + its stone and geotextile $326.21, no pump, chip "Calculate prices it at $1,263.93: your price kept". Purged (1 account, 1 workspace). Screenshot `intelcost-infra/morning-report-2026-11-24/d1331/al4b-hand-price-kept.png`.
+- **QT:** `dw-line-group-note`, `dw-line-group-sand`, `dw-hand-sump` (hand $5,000 kept; Calculate's $1,195.20 = week $239 + fuel $234.43 + mob $400 + crew $321.77, equal to the api's components priced whole), `dw-hand-wellpoint`.
+- **4. Billing today (report only):** `lib/estimate/equipment/periods.ts:solveRental` bills work days (day 1, week 5, 4-week 20 work days; overtime above 8 h a billed day), called from `cost.ts:machineCost`; only AL4's sump pump on the 24 h clock uses calendar days. Worked example, EX-CRAWL-20T (release rates day $1,040, week $2,927, 4-week $7,950), 20 work days at 8 h: today 20 days billed as one 4-week = $7,950; by calendar days 28 days = one 28-day 4-week = $7,950 (no change). The basis matters off the period edges: 7 work days today = week + 2 days = $5,007, by calendar 9.8 → 10 days = two 7-day weeks = $5,854 (+$847). Read-only effect of calendar billing (7/5 the work days on the 1/7/28-day mix, no overtime) on the four founder projects with rented library machines (the other fourteen have none): P08 +$6,675 (+4.2%), P10 −$29,547 (−13.0%; its $39,044 of overtime goes; the periods alone +$9,497), P16 +$6,095 (+5.1%), P17 +$297 (+1.3%). The founder decides.
+
+**AL1–AL3 on the bench (2026-11-23/24, saved, NOT committed: waits on the independent check, "whole" or not at all):**
+- **Re-chained and run:** migration d1331c8a4e57 (revises d1325e8b4f61, the head; proved on foldproof31 before) run 23:32:04–23:32:22 UTC; schema diff only the wx schema, project_weather, estimate_pay_item; seeds 9,248 / 408 (34 stations) / 33,791; fingerprint 9b1030bc5e0f1330 held. api saved 23:33:09 (200 at 23:33:53), app 23:34:55, infra after. AL4b synced into the build (EstimatingView patch, the 5 AL4b files).
+- **Gates:** app lint 0 errors, typecheck, build; api ruff, format, mypy (294), alembic check clean, one head. Full QT 23:49:14–00:01:23 0 FAIL ("weather and pay items (D-1331): 18 rows, all right").
+- **Smoke (D-1321):** throwaway fx.equip.20261124000148 (purged), project 07b45d13 (copy-3d-test, ZIP 10005, NEW YORK CNTRL PK TWR 5.4 mi), sheet C-200 357034f1. After Calculate: "Weather days not applied · Apply", bid $1,419,134.19 unchanged until Apply; Apply → direct $1,172,838.17 → $1,250,987.07, "Start date not set: average year used", "Weather days, rented machines" rows; Work starts 2027-01-04 → $1,279,029.36; station override LaGuardia and back; pay item 200 LF × $45 → "Pay items (as directed) $9,000.00" between Profit and Bond, bid +$9,000.00.
+- **(a1) pass (superseded by the M3 pair below: this delta mixes the drift since 11-16 with the pre-Q4 weather):** 2026-11-24 00:30–01:02 UTC, harness working tree on infra 6405548 (`d1331-a1.json`, `weather: true`), throwaway fx.equip.20261124001542 (Houston 77002, blank sheet, TX20260031 mod 1 Heavy; HOUSTON HTS 4.3 mi, frost from HOUSTON-PORT; purged 01:02:59). 47/47 priced, 0 errors, 0 parity, 1,779 s. Against D-1296 (a1): equipment before tax +$219,322, rental tax +$19,039, labour +$708 (23 Nov market drift), other −$12; our direct +$239,057. k to the medians / lows: all pipe 1.074 / 0.919 → 1.050 / 0.898; recent 1.041 → 1.019; history 1.167 → 1.139; water 1.027 → 1.015; sanitary 1.015 → 0.984; storm RCP 18–42 in 1.101 → 1.079; storm RCP 48 in+ 1.227 → 1.193. Report `docs/reference/Bid tabs Houston 2026-11/why-we-bid-low-2026-11-23-d1331-a1-report.md`.
+- **Founder projects:** 0 project_weather rows (read 01:03 UTC): nothing applied, nothing repriced.
+
+**The independent check (PASS WITH FIXES) and the founder's Q4 (2026-11-24), built:**
+- **Q4, the founder (supersedes the main session's Q9 (c) calendar reading and Q9 (e) per-class pooling):** "price each rented machine's total time on rent ONCE (base + lost days) at the cheapest day/week/4-week mix; the weather extension = that price − the price without weather. No separate spare-days logic." Built per machine (`weatherExtension.ts`): extension = cheapest mix(base + lost) − cheapest mix(base), on that machine's own rental basis (work days, 1 / 5 / 20, or its fixed period), period cost only (a lost day runs no hours), × units × location, with waiver, fee and taxable part; a line's machine on its line, a site spread's or shared machine's pro rata to its hosts. Per-line rentals unchanged. **If the founder chooses calendar billing (item 4, open), the rental and the extension switch together.** QT: 16 + 1.64 → $0; 20 + 2 → $2,080 (4-week + 2 days $10,030 against 4-week + week $10,877); A 16 days, B 3 + 2 → B $0 (no pooling); two units $4,160; fixed day 3 + 2 → $2,080; site share 25/75 → $520 / $1,560. This also settles the checker's N1 (period slack billed twice).
+- **M1 (pay item check):** a dewatering line counts as priced only with Calculate's pump or crew priced, or a hand price (`handPriced`); a wellpoint line without a hand price is Quote needed; stone and geotextile alone are no pumping (`water/pay.ts:ourDewatering`, `payCheck`). The smoke case now reads "Check · 0.53 × … — 2 lines have no pumping priced (stone and geotextile only)".
+- **M2:** the ratio only for a pay item in linear feet (LF, L.F., LF., FT, LIN FT, linear feet); else "Check: unit DAY, compare by hand".
+- **M3 (the (a1) attribution):** one weather-off pass and the weather-on pass (Q4) on the same tree and throwaway (fx.equip.20261124012412, Houston 77002, TX20260031 mod 1 Heavy; purged 02:43). (i) Drift D-1296 → weather off: equipment before tax −$11,456 (its taxable part, tax, waiver and fee unchanged: non-taxable equipment, fuel or haul), labour +$708 (the 23 Nov market rates, pipelayer +2¢, excavator +3¢), our direct −$10,748; all pipe k 1.074 / 0.919 → 1.075 / 0.920. (ii) Weather alone, off → on with Q4: equipment +$94,456, rental tax +$7,793 (8.25 %), labour $0, other −$5, our direct +$102,243; k all pipe 1.075 / 0.920 → 1.064 / 0.911, recent 1.042 → 1.032, history 1.169 → 1.159, water 1.028 → 1.023, sanitary 1.017 → 0.998, storm (all) 1.131 → 1.123, storm RCP 48 in+ 1.228 → 1.222. **The 8.68 %:** the first pass's D-1296 → on delta mixed the untaxed −$11,456 drift with the weather's +$230,778 taxed at 8.25 % ($19,039 ÷ $219,322 = 8.68 %); the weather alone is taxed at exactly 8.25 %. **N1's $ on (a1):** the pre-Q4 weather alone was +$230,778 equipment before tax; Q4 makes it +$94,456 (−$136,322 of period slack billed twice). Reports `why-we-bid-low-2026-11-24-d1331-drift-report.md` and `-weather-report.md`.
+- **M4:** a failed pay-items read says "Pay items couldn't be read: the bid excludes them", and a failed weather read "Weather couldn't be read: …", in Needs attention (the weather block's pattern), never a silent drop.
+- **M5:** on an applied project, a station that changes with the address or ZIP ("Weather station changed: A → B; weather days repriced"), or normals read for the first time under it ("Weather normals read for X: weather days repriced"), is kept in `project_weather.note` and shown in Needs attention and the Weather settings until a person presses Dismiss (`clear_change`). Not for a row made by the same read, nor for a person's own station pick. No migration.
+- **Smoke of the fixes (D-1321):** throwaway fx.equip.20261124032703 (purged 03:34), workspace "fx d1331 fixes" 6708178d, project b3f26fbf (copy-3d-test of the 3D test copy, ZIP 10005), sheet C-200 4da026cd, build of 01:35 UTC; Calculate. **The +$78k, before and after Q4:** NEW YORK CNTRL PK TWR, 5.4 mi, year average (no start: no month), lost working days per 20 worked: earthwork 6.2, pipe and site crews 2.4, flatwork 6.0. Equipment before Apply $462,046.25 (direct $1,172,838.17). Pre-Q4 Apply: +$78,148.90 (16.9 % of the equipment); with Q4: +$81,620.78 (17.7 %), equipment $543,667.03, direct $1,254,458.95. Q4 raises this project's extension where (a1) lowered it: its site spreads' long rentals extend on 5-day weeks, where the pre-Q4 reading pooled the lost days per class into 7-day calendar weeks and 28-day 4-weeks. **M1:** pay item 200 LF × $45 → "Check · 0.53 × … our cost $23.77/LF — 2 lines have no pumping priced (stone and geotextile only)". **M2:** unit DAY → "Check: unit DAY, compare by hand". **M4:** the pay-items and weather GETs failed (the browser's route) → Needs attention "Pay items couldn't be read: the bid excludes them" and "Weather couldn't be read: …"; bid $1,517,895.34 without the pay item. **M5:** ZIP 10005 → 11430 → Needs attention "Weather station changed: NEW YORK CNTRL PK TWR → NEW YORK JFK INTL AP; weather days repriced" (direct $1,244,122.81); Dismiss in Weather settings cleared it. Screenshots `intelcost-infra/morning-report-2026-11-24/d1331/m1-*.png`, `m2-*`, `m4-*`, `m5-*`.
+- **Re-verify (PASS WITH FIXES), Q4-R built:** the extension priced base and base + lost at the library's live class rates, missing a machine's own typed rates and rates frozen at pick. `MachineCost.rentalRates` now carries the derived period rates its rental was priced at (`cost.ts`, the `d` feeding `solveRental`), and `WeatherMachine.rates` / `.location` take them and its location factor into `weatherExtension.ts`. QT `wx-ext-typed-rates` ($700 / $2,000 / $6,000, 20 + 2 → $1,400; the catalogue would give $2,080) and `wx-ext-frozen-rates` ($1,000 / $2,800 / $7,600 × 1.10 → $2,200). M4 wording: a refetch that fails with the last read shown says "Pay items couldn't be read again: the bid uses the last ones read, which may be out of date". **Known, not tonight:** M1 counts a priced crew as pumping even when the pump errors; M5 gives no note when the borrowed snow or frost station changes; N4, N6, N5b as below.
+- **Q4-R confirmed PASS by the checker; AL1–AL3 committed whole (local, umer-dev, not pushed):** api **dc23172** (with migration d1331c8a4e57 as its own file; the fold is the close-out's), app **23fc974**, infra **d56e4aa**. Gates chained with each commit (api ruff, format, mypy, one head, alembic check; app lint and typecheck after the comment-only cost.ts save at 04:50:19 UTC; build and full QT 04:22:30–04:34:51 0 FAIL, 29 weather rows). Fingerprint 9b1030bc5e0f1330.
+- **N5a:** a parent line's own machines (counted under pricing rules 2) take their lost days. **N5c:** the hint says each machine's time on rent priced once. **N5b:** the weather row uses the same sheet share `k` as the shared-machine rows (not changed; if that is wrong, both are). **N4** (ProjectTakeoff and the component editor do not show the extension) and **N6** (the GET writes the row; a race is possible) stay known gaps.
+
+## D-1332 — Night run from 2026-11-23 17:34, step 4: the PE-design line rule (D-1328.1)
+
+## D-1333 — Night run from 2026-11-23 17:34, step 5: the purge alert email, once per stuck file (D-1328.2)
+
+## D-1334 — Night run from 2026-11-23 17:34, step 6: fixtures c42 and c52, with the health watch on
+
+**D-1329 to D-1334, founder follow-up (2026-11-23 ~17:45 UTC), overriding the close-out time:**
+- NO time limit: finish all six items, then close out. "Close-out at hour 14" no longer applies.
+- **Plan A-lean:** AL4 dewatering may ship on its own if proved; AL1–AL3 ship only whole.
+- **Usage:** at most 2 builders. Checkpoint after every item (committed locally, proved, report section written). If usage gets low, stop at the next item boundary and go straight to the close-out with what's done. Never leave an item half-saved.
+- **Status to the founder at 08:00 Central** (14:00 UTC 11-24): what's done and the expected push time.
+
+**D-1329, step 1 done (main session):**
+- **Before:** /login 10.5 / 9.6 / 9.5 s, 19 % CPU.
+- **The change:** `vite.config.ts` polling interval 200 → 1000 ms, saved after a quiet founder-active at 17:35.
+- **Restart:** `docker compose restart app` at 17:36:27–17:36:30, after a quiet founder-active (app only). First 200 at 17:36:44; settled at 17:42.
+- **After:** 4.9 / 5.3 / 8.0 / 4.9 / 7.0 s, 19–25 % CPU, 270 MB.
+- **Result:** about halved, but not reliably under 5 s. The WSL-filesystem move (backlog) is the real fix.
+
+**D-1330 / D-1331, Docker Desktop stopped (2026-11-23):**
+- **What happened:** the Docker Desktop backend exited at 18:07:26 UTC ("backend process exited", "services: exit status 1"), during D-1330's probe, which ran a Chromium and a dev server on 5175 under heavy. Cause unknown; memory pressure is possible.
+- **Effect:** the whole bench is down (api and app 000). Nothing was saved or migrated, and the builders wait.
+- **Restart:** the founder chose to start it, but the main session's attempt was blocked by the permission system. The founder starts it by hand.
+- **D-1331 readings (main session, founder to confirm):**
+  - Q9(c): calendar days and the cheapest day/week/4-week mix apply only to the weather extension. Per-line rentals are unchanged, so nothing reprices silently.
+  - Q9(e): one weather extension per rented machine class across the project, rounded up once and shared pro rata to its lines.
+- **Bench back (2026-11-23):**
+  - **Docker:** Docker Desktop was running again by 18:24:53 UTC; it was not started from this session.
+  - **Containers:** the bench containers have restart policy "no" and stayed at Exited (255). At 18:25:26–18:25:50 the main session ran `docker start` on exactly the containers that were up at the crash: postgres, redis, minio, mailhog, stripe-fake, api, app, worker, worker-pages, worker-ocr, worker-previews, beat, api-b, app-b, app-prod. Nothing was recreated, and the fx stack stayed stopped.
+  - **Answering again:** the api at 18:26:28, the app at about 18:28:45.
+  - **Fingerprint:** 9b1030bc5e0f1330, matching the baseline.
+  - **Outage window:** 18:07:26–18:26:28 for the api, to about 18:28:45 for the app.
+- **Docker stopped again (2026-11-23):**
+  - **When:** the Docker Desktop backend exited at 19:29:06 UTC; the engine's event streams had been dropping with EOF since 19:28:21. The docker-desktop WSL distro is stopped, and no exit code was logged.
+  - **Activity at the time:** D-1331 had just pressed an ordinary Calculate on its throwaway (fx.equip.20261123191926), and D-1330's measuring had resumed.
+  - **Host memory:** 8.9 GB free of 32 GB afterwards, with no .wslconfig limit. Not obviously memory; the cause is unknown.
+  - **AL4:** saved on the bench (api 18:33, app 18:35), all gates pass, full QT 0 FAIL at 18:47–19:18. Not yet committed; it waits on the smoke.
+- **Cause of both Docker stops, found and confirmed (2026-11-23):** D-1330's measuring harness killed Docker Desktop's backend.
+  - **How:** app-prod was up and publishes 5175, so on the host the listener on 5175 is Docker's backend. The harness's own vite failed with "Port 5175 is already in use", and its "server up" check was answered by app-prod.
+  - **The kill:** at the end of each series the harness looked up the port's listener and ran `taskkill /F` on it. Its log says "server stopped 18:07:27 (pid 2180)" and "server stopped 19:29:06 (pid 33500)", against backend exits at 18:07:26 and 19:29:06.
+  - **The rule this broke:** stop only processes you started, by the PID you started (memory: no kill by name). A port lookup is a kill by name.
+  - **Fix:** the harness now stops only the PID it started, reports any other listener, and must check its own server bound the port before measuring.
+  - **Void:** both D-1330 probe results (they measured app-prod).
+  - **Bench restart from now on:** start only the core bench containers. api-b, app-b and app-prod stay stopped, as CLAUDE.md says ("stopped, not deleted"). The main session's 18:25 start included them only because they were up at the crash.
+
+**D-1328 addendum: what stopped Docker on 2026-11-23, and the kill rule (founder, 2026-11-23):**
+- **What stopped it:** D-1330's measuring script, scratchpad `d1310/series.sh`. At the end of each run it stopped "the server on 5175" with:
+  `pid=$(netstat -ano | grep LISTENING | grep -E "[:.]5175[[:space:]]" | awk '{print $5}' | head -1)` then `taskkill //PID "$pid" //F`.
+- **Why that was Docker:** app-prod was up and publishes 5175, so the host's listener there is Docker Desktop's backend (com.docker.backend). The script's own vite had failed with "Port 5175 is already in use".
+- **Kills tonight (UTC):**
+  - 18:07:27 pid 2180: Docker's backend (exit logged 18:07:26). The bench was down 18:07:26–18:26:28.
+  - 18:10:26 empty pid: nothing killed.
+  - 19:29:06 pid 33500: Docker's backend (exit logged 19:29:06). The bench was down 19:28:21–19:46:54.
+- **Earlier kills by the same step (D-1310, 11-18 02:41–06:11 UTC, 8 kills):** pids 37060, 37720, 35388, 36556, 10176, 22440, 34716, 4220.
+  - None of those server logs reports a failed bind, so each was the script's own vite.
+  - Docker logged no backend exit from 11-11 to 11-20 (the 11-20 21:59 exit is a Windows shutdown code).
+  - Nothing else is known to have been killed.
+- **The same pattern in two other scratch scripts:** `d1310/edits.sh` and `d1310/jobB.sh`. Neither has run tonight. Both are fixed before D-1330 resumes.
+- **Fix:**
+  - The scripts stop only the PID they started.
+  - Before measuring, a script checks that its own server bound the port (no "in use"; the only listener is its child). Otherwise it aborts and stops nothing.
+  - app-prod, app-b and api-b stay stopped; the bench restart at 19:44:49 started the core containers only.
+  - Both probe results are void.
+- **Rule (founder, standing):** no script kills by port or by name. A script stops only the PID it started itself. CLAUDE.md hard rule 13.
+- **Post-crash checks (founder ask, 2026-11-23):**
+  - **Postgres:** both restarts recovered cleanly. At 18:25:29 the WAL redo ran 9/891567E8 → 9/89172608; at 19:44:52, 9/8C9F83C0 → 9/8CF63518. Each logged one "invalid record length … got 0" (the normal end-of-WAL marker), then an end-of-recovery checkpoint and "ready to accept connections". No corruption warning. Data checksums are on, with 0 failures in every database.
+  - **Other log lines:** the only ERRORs were hand-typed queries with wrong column names.
+  - **Redis:** loaded with bgsave ok. Queues celery, pages, ocr and previews all at 0; no render jobs or delete requests outstanding.
+  - **Workers:** worker, worker-pages, worker-ocr and worker-previews ready at 19:45:23–27; beat started. Their only warning is Celery's usual run-as-root notice.
+  - **Founder go at 19:5x:** dewatering smoke and commit, then the re-measure from its trial run. app-prod, app-b and api-b stay stopped for the rest of the run.
+
+**D-1328 addendum: the founder's answers on AL4 (2026-11-23), built by D-1331 as AL4b:**
+1. **Rename in place.** Calculate updates the existing "Trench dewatering" line: same line, new name, computed price. If the line had a hand price, the founder's price is kept and the computed figure is shown beside it. No orphan line is left behind. Report: whether the old orphan line ever counted in totals. QT row for a hand-priced line.
+2. **Soil group as stand-in:** accepted. The line's note shows the mapping (e.g. "Clay → low permeability → sump"). Backlog: a soil-class column in Soil layers.
+3. **One pump per line:** accepted.
+4. **Report only, no change tonight:** how rented machines are billed today, by workdays or by calendar days on rent (weekends included). One example: a 20-workday rental, with days billed, the rate mix and the $. If billing is by workdays, give the $ effect of calendar billing on each founder project, read only. The founder decides after.
+
+**D-1330, done (2026-11-24 00:04 UTC). Report: `intelcost-infra/morning-report-2026-11-24/d1330/MEASUREMENTS.md`:**
+- **Setup:**
+  - Copy and builds: a fresh throwaway copy of P01 (`fx.d1310.20261123174501`), V-100 with C-200/C-100/C-300 in Highlight changes. Before is e2050eb, after is d047034 (overlay and contour code as of 1d9c69d plus Q-D2/Q-D3). Each build was measured on a dev server and a production build, at CPU 1× and 4×, with 0–3 overlays.
+  - Local folder: every bucket object came from one local folder of 91 objects (49.0 MB): fit, thumb and PDF for the 29 sheets, plus the stored symbol index of V-100 and the three overlay sheets. 0 misses in all 32 runs.
+  - Series: four, one at a time under heavy (21:06–21:32, 21:40–22:06, 22:19–22:37, 23:06–23:25 UTC). Each passed the own-server bind check and had memory checked before each run (lowest host free 3.2 GB) and quiet checked. Every row is valid.
+- **Memory:** lower in after for every overlay row.
+  - 3 overlays, peak tab: dev 1,719 → 994 MB, production 1,402 → 711 MB.
+  - 3 overlays, peak Chrome total: dev 2,573 → 1,643 MB, production 2,188 → 1,352 MB.
+- **Overlay in after load, production:** 20–31 s → 15–17 s.
+- **Frames:** far fewer dropped while zooming and panning (production 4×, 3 overlays: zoom 314 → 83). The second picture after a pan or zoom is faster with 2–3 overlays (pan 10.1 → 4.8 s).
+- **Regression, fixed (app c2d20d7):** the first zoom from Fit never got a sharp overlay picture in after. The fit picture stayed, visibly blurred, until the next pan or zoom (screenshots in `d1330/visual`).
+  - Cause: D-1310 a's `VIEW_MAX_PX` (4 MP) pushed `planSharp` to factor 1, at computeScale 0.707. That is under the fit picture × `SHARPER_BY`, so the planner returned null.
+  - Fix, option (a) (coordinator, 2026-11-24 00:06): whether a view needs working is judged at the planner's own `MAX_COMPUTE_PX`. The 4 MP cap stays and only lowers the work. QT: none applies (view code).
+  - Saved 00:30:50 UTC after a quiet founder-active, under the app lock. Gates: lint 0 errors, typecheck 0, build 0 (01:02–01:14, heavy). Committed 01:26 on umer-dev, staged by name.
+  - Re-measured on the same copy and folder (00:11–00:29, `d1330/afterfix/`): the zoom picture now lands in 6.1–10.7 s, against before's 9.3–27.5 s. Every other row is below before; peak GPU is up to ~190 MB above unfixed after. The zoom1 screenshots are sharp.
+- **Not regressions:** the 0-overlay tab is +20–55 MB with Chrome's total lower (one run each, within spread). Production 1-overlay pan is +1.2 s, which followed from the regression above.
+- **Closed:** throwaway `fx.d1310.20261123174501` purged (`--only`, dry run first) at 01:22, and the harness daemon stopped. The local folder stays in the scratchpad.
+
+**D-1328 addendum: Q4, the weather extension as one pricing rule (founder, 2026-11-24):**
+- **The rule:** price each rented machine's whole time on rent ONCE (base days + lost days) at the cheapest day/week/4-week mix. The weather extension = that price − the price without weather.
+- **No separate "spare days" logic:** a lost day inside an already-paid period then costs nothing, as it does on site. Same principle as D-1316 Q9e (round once per machine).
+- **When:** applied before the checker's re-verify. The $ effect on (a1) and on the smoke is reported.
+- **The +$78,149 smoke figure:** the report shows the lost days used, the station, the month, and the change as a % of the project's equipment cost, before and after the Q4 fix, so plausibility can be judged.
+- **Founder's note on the check:** "Covered" on an unpumped line and a per-day price compared against a per-foot cost would have misled an estimator. The main session's two silent-change additions (M4, M5) are accepted.
+- **Q4 reading (main session, 2026-11-24), on the founder's words "each rented machine's total time on rent ONCE":**
+  - **The rule:** the extension is priced per rented machine, not per class: cheapest-mix(base + lost) − cheapest-mix(base), on that machine's own billing basis today (work days, 1/5/20-day mix, or its fixed period). The share stays on its line; a site-spread or shared machine's share goes pro rata to its hosts.
+  - **Why not per class:** pooling a class prices lost days against a summed rental no line pays. Example: A 16 days and B 3 days sum to 19, so 2 lost days on B would add $1,040, where B's own week already covers them ($0).
+  - **What it supersedes:** the main-session readings Q9(c) (calendar conversion for the extension) and Q9(e) (per-class pooling).
+  - **Open:** if the founder chooses calendar billing (the rental-billing question), the rental and the extension switch together.
+
+**D-1332, the PE-design line rule (D-1328.1), built (2026-11-24):**
+- **The rule before (D-1144, D-1323):** `lines.ts:trenchNeedsPe` gave a run its one "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft" line (`trench_pe_design|pe_design`, `service:pe_shoring_design`, $5,000 stated, grade D) only when a box piece's deepest h passed `SUPPORT_RATED_FT` = 20. A sloped or benched trench past 20 ft got the run flag "Over 20 ft — protection must be designed by a registered engineer." and no line. The api has no PE logic; `production.py`'s own 20 ft only stops the stackers.
+- **Where a box's tabulated depth comes from:** nowhere. The library's trench box rows say "Depth rating not sourced", and the project box list (`trench.ts:TrenchBox`) has inside, outside and height only. D-1144's stated 20 ft for the 8 ft box + stacker stack is the only rating.
+- **Main-session readings (2026-11-24, for the founder to confirm):**
+  - D-1144's 20 ft stands in for every box's tabulated depth. No migration and no new field.
+  - "Over 20 ft" means the deepest trench h of any piece with that protection is over 20 ft: the same h the protection is chosen from. 20.0 ft is not over.
+  - The note names its assumption: `WITHIN_TABULATED` = "within manufacturer's tabulated data (20 ft assumed: confirm against the box's tabulated data)", one constant.
+  - **Founder question:** "No box carries a tabulated depth; 20 ft (D-1144, grade D) stands in. Add a rated-depth field per box (project list and library)?" (FEATURES backlog row).
+- **Built (app cada2c3):**
+  - `trenchNeedsPe` takes sloped, benched or box over 20 ft. Vertical walls (stable rock) get none.
+  - A box protection line gets `WITHIN_TABULATED` on its note when no run on it uses its box past 20 ft. Otherwise the note is "" and the stale note is cleared: `calculate.ts:lineWrites` now sends "", and the api's `write_lines` stores it.
+  - One line a run, as before.
+  - The side effect, by D-1323: a structure or crossing pit past 20 ft on a sloped or benched run over 20 ft no longer gets its own PE line, because the run's covers it.
+- **QT (infra b6312eb):** 16 rows, 11 `d1332-pe-lines` and 5 `d1323-pe-plan`. Full QT 03:17:45–03:30:51 UTC: 0 FAIL, 413 utility rows right.
+- **Never silently:** the lines change only at a person's Calculate. Nothing reprices on load.
+- **Founder projects (read-only SQL, 2026-11-24 ~01:40 UTC):**
+  - Utilities exist in 5 of the 18 projects: 52 runs, 32 of them calculated, and 33 structures.
+  - The deepest sloped or benched piece is 10.2 ft. There are 0 box lines and 0 PE lines, and 0 runs are flagged over 20 ft.
+  - So 0 runs gain or lose a line and no structure loses one: $0 on every project.
+- **Smoke (D-1321 setup):**
+  - Throwaway fx.equip.20261124033440, workspace "fx d1332 pe" d0049781. Project f214dedf ("BENCH DUP 2026-11-24 03:36"), copied with `copy-3d-test.py` from the 3D test copy (P01). Sheet C-200 7895de59. App build: app cada2c3 on the bench dev server. Project as copied: New York County, Open Shop, Burdened, ZIP 10005; no wage changed.
+  - Inputs in the Utilities box: SS-1 (storm, 8 in HDPE) cover 2.50 → 22 ft, Protection Auto → Sloped. ST-2 (storm, 24 in PVC) cover 2 → 12 ft, Protection Auto → Box or shoring, its 0–40 ft segment Benched → Box. No box listed. Then Calculate (03:45:46 UTC).
+  - After Calculate:
+    - SS-1 is sloped 22–24 ft, deepest 23.26 ft, and gets "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft", 1 EA, $5,149.95. Under D-1144 it would have had none.
+    - ST-2 is boxed 14–16 ft, deepest 14.57 ft. "Trench protection, Box 14–16 ft, 8 ft box + 2 × 4 ft stackers", 310 LF, $2,253.30, carries the note "within manufacturer's tabulated data (20 ft assumed: confirm against the box's tabulated data)". The note is stored, and Estimating shows it as the line's cost hint. No PE line comes from ST-2.
+    - Passed. Screenshot `morning-report-2026-11-24/d1332/smoke-estimating-pe-and-box.png`.
+  - Purged at 03:51:24 (`--only`, dry run first): 1 account, 1 workspace. Digest 9b1030bc5e0f1330 at start and end.
+
+**D-1333 built (2026-11-24, the D-1333 builder; api 16f7e1a, infra 1919c06; founder to confirm):**
+- **What:** the D-1325 purge alert now also emails. At the third failed nightly retry of a log row (`note_retry`, the
+  moment the in-app `storage.purge_stuck` notification is written and `retry_alerted_at` is set), each recipient gets one
+  email for that row. The same `retry_alerted_at` guard covers both, so the email is never repeated and never nightly.
+- **Who "the founder" is in code:** every platform admin (`User.is_platform_admin`), the same people the in-app alert and
+  the AI tripwire's email (`ai_economics.check_tripwire`) already reach. No new setting, no address in code. On the bench
+  that is 1 account today.
+- **How it is sent:** the api's one mail path. New template `MailTemplate.PURGE_STUCK` ("purge_stuck") in
+  `app/core/mail.py`, in the house frame: the line "Files of <what> still not deleted after 3 nightly retries", then What,
+  Where (the workspace's name), Keys or prefixes left (count and the first one), Nightly retries, First failed (a purged
+  project's `purged_at`, a file delete's `created_at`, in UTC), Last error (first line, 160 characters), Log row (uuid),
+  and a button to `/platform`. Names are escaped. The subject is fixed and short ("Storage clean-up: files still not
+  deleted"): a long subject is folded, and MailHog misread the folded one in the first smoke.
+- **Queued after the commit (D-20):** `note_retry` calls `mail.queue` per admin; pass 0 and pass 1 of
+  `purge_trashed_projects` now end each row with `outbox.commit_and_drain` instead of `session.commit`, so the email goes
+  to the worker's `send_mail` only once the alert's rows are committed. Nothing else registers after-commit effects in
+  those passes, so nothing else changed.
+- **A failure never breaks the pass or the alert:** a `mail.queue` that raises is caught in `note_retry` and logged
+  ("purge: the stuck-files email for log <uuid> was not queued", no address); a dispatch that fails is logged by
+  `outbox.drain` and dropped; an SMTP failure is `send_mail`'s own retry (3, then logged). The notification, the count and
+  `retry_alerted_at` stand in every case.
+- **No migration.**
+- **Founder question:** the existing mail path logs the recipient's address (`mail.send` "mail sent: … to …", the guard's
+  "mail captured (guard) … to …", `send_mail`'s retry warning, and `outbox.drain`'s "after-commit dispatch failed: mail …
+  to …"). D-1333's own lines print none, and the QT row counts outbox's line instead of printing it. Strip addresses from
+  those shared lines too?
+- **QT rows (`drives/qt-purge-alert.py`, 10 rows, was 6):** the worker's `send_mail.delay` is replaced by a capture, so
+  nothing reaches a broker, MailHog or an inbox. Per retry 1 to 5 the emails are 0, 0, one per admin per row, 0, 0. The
+  recipients are exactly the platform admins (compared as a set, never printed); each email renders with the template,
+  `/platform`, what is stuck, retries 3, the log row and a first-failure time. A third row whose send fails (`delay`
+  raises OSError) and a fourth whose queue fails (`mail.queue` raises) each still get the notification per admin,
+  `failed_retries` 3, `retry_alerted_at`, told at retry 3 only, the failure logged once per admin, and nothing raised.
+  Rolled back; 0 rows, 0 notifications left (read-only SQL after).
+- **Full QT 04:35:49–04:48:11 UTC:** 0 FAIL, exit 0; "purge alert: 10 rows … all right"; 413 utility rows right.
+- **Smoke (D-1321 setup):** throwaway `fx.purgemail.20261124040627` registered through the api at 04:06:28 UTC, workspace
+  "fx d1333 purge mail" c9af23af (made through `POST /api/workspace`). A stdin drive in the api container (not saved in a
+  repo) added one `storage_clear_log` row in that workspace only (one key under a fresh uuid; storage replaced so only
+  that uuid could be touched, failing on DNS), made the throwaway a platform admin inside the transaction, and ran three
+  retries through the real `clear_logged`, `note_retry` and `outbox.drain`. Emails to the throwaway went through the real
+  `send_mail` task body and `mail.send` with the guard forced on and an empty allowlist (so: MailHog); any other admin's
+  email was dropped before the task and counted (1). Rolled back after.
+  - Result: told False, False, True; one email "Storage clean-up: files still not deleted" in MailHog at 04:10:54 UTC,
+    rendering every field and the button (screenshot `morning-report-2026-11-24/d1333/smoke-mailhog-purge-alert.png`).
+    Passed. The 04:07 first run (the folded-subject one), the 04:10 message and the account's verification email were
+    deleted from MailHog by id (3 messages, 200 each; 0 throwaway messages left).
+  - Purged at 04:12:48 with `--only`, dry run first: 1 account, 1 workspace. 0 rows, 0 notifications, 0 accounts left.
+- **Bench windows (api and the watchfiles workers reload on an api save):** mail.py 03:57:45 → /docs 200 03:58:31;
+  03:58:55 → 03:59:41; 03:59:55 → 04:00:37; 04:08:20 → 04:09:11. maintenance.py 04:01:56 → 04:02:43. No restart. Each
+  save gated (founder quiet). Between 03:57:45 and 04:00:37 mail.py carried the template function before its enum entry
+  and table row: unreachable code, nothing could call it.
+
+**D-1334 run (2026-11-24, the D-1334 builder): c42 and c52 not proved; environment, not a regression. No code or harness changed.**
+- **Setup:** heavy lock 05:02:48–05:39:45. Fingerprint 9b1030bc5e0f1330 and founder-active quiet at 05:03:15.
+  `./fx-suite.sh up` 05:03:23–05:03:42 (fx only). api-fx's start command migrated **intelcost_fx** d1325e8b4f61 →
+  d1331c8a4e57 (its own `alembic upgrade head`; the bench DB was already at d1331c8a4e57 and was not touched).
+- **Run 1** (`run c42-stitch-sheets c52-stitch-snap`, 05:05:04–05:08:10, exit 1): c42 0/6, c52 0/5, every step falling
+  from step 1's `page.goto: net::ERR_CONNECTION_REFUSED` on localhost:5176. **Finding for the founder:** app-fx was "Up"
+  (vite ready), but Docker had published no host port (`NetworkSettings.Ports {"5173/tcp":[]}` though `PortBindings` asks
+  5176). app-fx-b on 5177 was fine. Nothing else held 5176. The container dates from 2026-11-17 and outlived the 11-23
+  Docker Desktop stop. `fx-suite.sh up` reported success and `check` passed: neither looks at the app ports.
+- **The fix, fx only (founder-active quiet at 05:10:35):**
+  - 05:10:48 `docker compose --profile fx restart app-fx`: still no port.
+  - 05:14:00 `stop`, then `start app-fx`: still no port.
+  - **A probe the main session flagged:** `docker run -d --rm -p 5176:8080 alpine:3 …`, a throwaway container of an
+    outside image, which published 5176 at once. I stopped it immediately (it was --rm). Not to be repeated: no ad-hoc
+    `docker run` of outside images.
+  - 05:15:08 `docker compose --profile fx up -d --no-deps --force-recreate app-fx`: the port came back, and 5176 gave 200
+    at 05:15:48.
+  - Bench containers: the same IDs before and after.
+- **Run 2, the one retry** (05:16–05:37:51, exit 1; health watch on and no ALERT; no D-1051 FAIL):
+  - Warm-up took 265 s on 5176 and 283 s on 5177.
+  - c52 1/5: setup passed; steps 2–5 timed out at 30 s on `[data-canvas-scale]` after the reload.
+  - c42 2/6: setup and step 6 (A7 "measured 102 ft, 2 % off") passed; steps 2–5 had the same canvas timeout.
+  - Every failure is a wait for the canvas to mount, ~75–80 s per step. None reached a stitch assertion.
+  - The screenshot shows the Takeoff page rendered with the Sheets list still empty and no error.
+  - api-fx answered every request with 2xx (0 lines 4xx/5xx after 05:20).
+  - The recreated dev server had a cold dependency cache. It logged "optimizer bundling dependencies" at 05:15:48 and
+    only at 05:37:07–13 "dependency optimized: pdfjs-dist/legacy/build/pdf.worker.mjs". c42's step 6, the one canvas step
+    that passed, ran right after.
+  - Classified **environment** (a cold dev server; `warm_apps` doesn't load a sheet, so the pdf worker is never
+    pre-bundled), not a regression.
+- **Not changed (proposals for the founder):**
+  1. `fx-suite.sh up`/`check` should confirm 5176 and 5177 answer (a missing port publish passes today).
+  2. `warm_apps` could also import the pdf worker (or open one sheet) on the dev servers.
+  3. Or run these two on the built apps after a memory-limited `prepare` (the 11-18 fx-prod images predate later app
+     commits).
+  The next try should be on a warm app-fx (stopped, not recreated, so its `.vite` cache stays).
+- **End:** `./fx-suite.sh stop` 05:39:08–05:39:30. 0 fx containers running, every fx container's restart policy "no".
+  0 bench accounts created since 05:00. Fingerprint 9b1030bc5e0f1330 at 05:40:13. Report:
+  `intelcost-infra/morning-report-2026-11-24/d1334/SECTION.md`.
+
+**D-1334 run 3 (2026-11-24, ordered by the main session for the founder: the warm app-fx, the pdf worker warmed first; no harness or product edit):**
+c42 3/6, c52 1/5. **Not proved.** Environment again: the dev servers' page load is over 30 s. Proposal 3 (warm cache) is
+ruled out as the cause.
+- **Setup:**
+  - heavy lock 05:42:38–06:14:02. Fingerprint 9b1030bc5e0f1330 and founder-active quiet at 05:43:39.
+  - `./fx-suite.sh up` 05:43:47–05:44:17. All four fx ports published; 5176 and 5177 gave 200 at 05:44:44, the fx apis
+    at 05:45:05. No recreate, no `docker run`.
+- **The pdf worker warmed before the run.** Plain GETs of `/src/features/takeoff/autoCount/symbolIndex.worker.ts` and
+  `/src/features/takeoff/pdf/pdfjs.ts` on each app, then the pre-bundled
+  `/node_modules/.vite/deps/pdfjs-dist_legacy_build_pdf__worker__mjs.js` and `pdf__mjs.js` on each (all 200,
+  7.4 MB and 3.3 MB, 15–24 s each).
+  - app-fx already held the worker in its dependency cache.
+  - app-fx-b bundled it then ("dependency optimized: pdf.worker.mjs" at 05:46:03), before the run.
+- **Run 3** (`run c42-stitch-sheets c52-stitch-snap`, 05:48:21–06:12:20, exit 1; health watch on, no ALERT, no D-1051 FAIL):
+  - "fx code: … restarting api-fx api-fx-b worker-fx worker-fx-previews worker-fx-ocr beat-fx (fx only)", then "fx code:
+    current again". This is D-1320's restart path working.
+  - Warm-up: 279 s and 286 s.
+  - **c42 3/6.** PASS 1 setup. PASS 4 (D-804 A5: "flagged 0.99 % on S-3; recalibrated; the flag gone"). PASS 6 (A7:
+    "measured 102 ft, 2 % off").
+    - FAIL 2 and 3: the 30 s `[data-canvas-scale]` wait in `openSheet`.
+    - FAIL 5: "no chain fit: Page 3 / fit 0.00 ft". This follows from step 3: page 2 was never joined to page 1, so there
+      was no chain to show.
+  - **c52 1/5.** PASS 1. FAIL 2–4: the same canvas wait. FAIL 5: `page.reload: Timeout 30000ms … waiting until "load"`.
+- **Classification: environment (timing), not a regression.**
+  - Every c42 step opens the sheet the same way (`openSheet`). Which steps pass changes from run to run (step 4 failed in
+    run 2 and passed in run 3).
+  - A stitch assertion that got its page passed: A5's 0.99 % flag and Recalibrate.
+  - c52's step 5 never reached "load" in 30 s.
+  - Each failed step shows the Takeoff shell drawn with an empty Sheets list, and no error.
+  - api-fx answered 2xx throughout.
+  - So the dev servers' page load on this laptop is over the fixtures' 30 s waits, as on 11-18 (~25 s a page then).
+  - No stitch or snap assertion failed on a page that had loaded, except c42 5, which depends on step 3.
+- **What would prove them:** the built apps (`./fx-suite.sh prod`). c42 was 5/5 there before. The fx-prod images are from
+  11-18 and need a memory-limited rebuild (`prepare`) first: a heavy step, the founder's call. The other route is the
+  WSL-filesystem move for the dev servers. **No harness change was made.** Raising the fixtures' 30 s waits would
+  weaken nothing, but it is a harness edit the main session ruled out tonight.
+- **End:**
+  - `./fx-suite.sh stop` 06:12:35–06:13:15. 0 fx containers running; every fx container's restart policy "no".
+  - Bench containers unchanged (same IDs). 0 bench accounts created since 05:00.
+  - Fingerprint 9b1030bc5e0f1330 at 06:13:41.
+- **Bench windows:** none. The fx stack was up 05:43:47–06:13:15. No migration this time (intelcost_fx was already at
+  d1331c8a4e57). Nothing touched a bench service, the bench DB or the bucket.
+
+### Close-out (night run 11-23/24; 2026-11-24, 06:2x–07:xx UTC, the close-out builder)
+
+- **Start:** digest 9b1030bc5e0f1330. `git fetch` in app, api and infra: origin/umer-dev unmoved (app d047034, api
+  f73a9eb, infra e9a3656), and **origin/staging has nothing umer-dev lacks** (app and api; infra has no staging). No
+  merge. Every repo on umer-dev and clean.
+- **Migrations (D-851): no fold needed.** The run added one migration, `d1331c8a4e57` (D-1331 AL1–AL3: the `wx`
+  schema with its seeds 9,248 stations / 408 normals rows over 34 stations / 33,791 ZIPs, `project_weather`,
+  `estimate_pay_item`), its own file, revising the pushed head `d1325e8b4f61`. `alembic heads` is exactly
+  `d1331c8a4e57 (head)`; the bench and intelcost_fx both read `d1331c8a4e57`. Nothing to switch.
+- **Workspace files:** D-1329 to D-1334 in FEATURES, MANAGER and SINCE_ARCHIVE; the dewatering row moved from 🗓 Planned
+  to 🔨 Working as D-1331 (built, in the repos; not Live: the founder confirms); the MANAGER D-1315 handover row replaced
+  by the D-1331 In Progress row; spec §12.9 (dewatering_weather_tasks.md), the D-1330 re-measure in
+  contour_overlay_performance_tasks.md, the D-1334 result in stitch_snap_rule_tasks.md.
+- **Gates:** api ruff check app and alembic, ruff format --check (310 files), mypy (294 files), `alembic check` clean,
+  one head (06:25). App lint 0 errors (the 4 known warnings), typecheck 0, build 0 (06:24:26–06:38:01).
+- **Full quantity table 06:38:24–06:52:35 (heavy held 06:24–06:52): exit 0, 0 FAIL.** "344 rows, both engines equal
+  to 1e-9 on 340; 37 worked answers right; 90 cost rows right to the cent; 391 earthwork rows right; 413 utility rows
+  right; … 150 equipment rows right …; passed"; dewatering wired (D-1331) 18, weather and pay items (D-1331) 29, water
+  and rain 33, purge alert 10, prepare retry 60, rental tax 45: all right; Benchmark A right; competitor names none in
+  2,351 text files.
+- **Client-name scan:** 0 hits (the denylist plus the two names, 15 terms) in the 58 files changed since
+  origin/umer-dev (app 29, api 21, infra 8), their names, the 15 unpushed commit messages, the changed workspace files
+  and the mirror. Note: a plain substring scan flags 8 lines of the new public Census file
+  `app/features/weather/seed/zip_centroid.csv` (zip, lat, lon only), where three 5-digit numeric terms occur as digit
+  runs inside decimal coordinates, never as a field. Numeric terms are now matched only as whole numbers.
+- **Purge:** no fx.* account and no fx workspace created since 2026-11-23 17:34 (every builder purged its own);
+  `purge-bench-dups.py` dry run "would purge: 0, refused: 0" (06:29, gated); 0 open `storage_clear_log` or
+  `trash_purge_log` rows, so nothing left in the bucket.
+- **Digest 9b1030bc5e0f1330** at 06:53. app-prod, app-b, api-b and the fx stack stopped.
+- **Windows (UTC) for the founder's saves:** none. No app or api source save, no migration, no service restarted; the
+  gated execs (api gates, the DUP dry run, the QT's own) were read-only.
+- **The push:** recorded in `morning-report-2026-11-24/REPORT_2026-11-24.md` §8 and `NOTE_FOR_ABDULLAH.md`.

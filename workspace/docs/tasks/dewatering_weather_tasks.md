@@ -675,3 +675,54 @@ batch, gates, quantity table, smoke, independent check, one (a1) harness pass, c
 - (e) **Rounding:** once per machine across the project.
 - (f) **No start date:** use the year average, with a Needs attention flag "Start date not set: average year used".
 - **Existing projects never reprice silently:** they show "Weather days not applied · Apply". New projects apply by default.
+
+### 12.8 D-1331 (night run from 2026-11-23 17:34, step 3): AL4 wired first
+
+Built and committed on its own (the founder: "AL4 may ship on its own if proved"); AL1–AL3 follow, whole or not at all.
+The design is §12.5's with one change: no migration and no new column. The method travels in the line's variant and
+note, the pace in its spread.
+
+- **Calendar rental of a 24 h machine** (`periods.ts` calendar mode): a day is 24 h, a week 7 days, a 4-week 28 days, the
+  cheapest mix, no overtime. The work-day solver is unchanged for every other machine.
+- **The sump line** (`trench:sump`): the library's `PMP-TRASH-3` (Q17) over the crew's days on the wet stretch + 1,
+  through weekends (× 7/5), 24 h a calendar day, rented by calendar days; its fuel on every hour at the project's
+  gasoline; one laborer on the patrols (2 visits × 1 h a calendar day) and the CGP report (0.25 h a calendar day), never
+  an attendant (Q30); filter bags "Quote needed". `dw-sump-clay` now priced: one 7-day week $239, fuel $234.43, 9.45 h.
+- **The wellpoint line** (`trench:wellpoint`): the run's pace on its spread, no component; Needs attention lists §4.2's
+  quantities, every part "Quote needed".
+- **Other methods** (eductors, deep wells, a second stage, no water data): the line stays `trench`, priced by hand, its
+  note saying why.
+- **Rows:** `browser/lib/dewater-cases.mjs` (14) and two utility rows (`util-2e2-dewatering-full`'s governing station,
+  `util-2e3-no-dewater-site`).
+
+### 12.9 D-1331 continued: AL4b and AL1–AL3, built whole (night run 2026-11-23/24; founder to confirm)
+
+The full record is DECISIONS.md D-1331 and `intelcost-infra/morning-report-2026-11-24/REPORT_2026-11-24.md` §4.
+
+- **AL4b (the founder's D-1328 addendum answers):**
+  - **Rename in place** (api `earthwork/lines.py:write_lines`): a run type's trench dewatering line is one line whatever
+    its method; Calculate's `trench`, `trench:sump` or `trench:wellpoint` adopts the region's existing dewatering row.
+  - **A hand price is kept** (api `equipment/dewatering.py:hand_priced`, app `lib/estimate/dewatering.ts:handPriced`, one
+    rule): a typed rate or a component a person added. Estimating shows "Calculate prices it at $X: your price kept".
+  - **The soil group stands in for USCS**, named on the note ("Clay → low permeability → sump: …").
+  - **Billing today (report only):** work days (1 / 5 / 20); calendar billing per founder project is REPORT_2026-11-24 Q1.
+- **AL1, data:** migration `d1331c8a4e57` (revises `d1325e8b4f61`): the `wx` schema (NOAA 1991–2020 stations 9,248,
+  normals 408 rows over 34 stations, ZIP centroids 33,791), `project_weather` (station, override, applied, start date,
+  note), `estimate_pay_item`. The nearest station to the project's ZIP; a person may pick another.
+- **AL2, lost days:** rain, snow and frost lost days by work class (§12.3 snow rules on; frost never a lost day) over the
+  months worked, or the average year when no start date is set ("Start date not set: average year used").
+  - **The founder's Q4 (supersedes the Q9 (c) and (e) readings):** each rented machine's whole time on rent priced once:
+    extension = cheapest mix(base + lost) − cheapest mix(base), on that machine's own basis and rates (its typed or frozen
+    rates, `MachineCost.rentalRates`), × units × location, with waiver, fee and taxable part; a site-spread or shared
+    machine's share pro rata to its hosts (`lib/estimate/equipment/weatherExtension.ts`). Per-line rentals unchanged.
+  - **Never silently:** a project that already had prices shows "Weather days not applied · Apply"; a new project
+    applies from the start. On an applied project a station change, or normals read for the first time, is noted
+    ("Weather station changed: A → B; weather days repriced") until Dismiss.
+- **AL3, pay items:** "as directed" pay items typed per project, "Pay items (as directed)" between Profit and Bond; the
+  dewatering pay check (`water/pay.ts:payCheck`): a line counts as pumped only with its pump or crew priced or a hand
+  price; the ratio only for an LF pay item, else "compare by hand". A failed read says so in Needs attention.
+- **Proof:** QT 14 dewatering rows, the AL4b rows and 29 weather rows, full QT 0 FAIL; smokes on throwaway copies;
+  (a1) pass weather off/on (k all pipe 1.075 → 1.064 to the medians); independent check PASS after M1–M5 and Q4-R.
+- **Known gaps:** a borrowed snow or frost station's change gets no note; the extension does not show in Project takeoff
+  or the component editor (N4); the weather row is written by its GET, so two tabs could race (N6); a priced crew counts
+  as pumping even when the pump errors (REPORT_2026-11-24 Q6).

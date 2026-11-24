@@ -396,6 +396,20 @@ A box or shoring is forced where:
 
 Wherever a box or shoring is used, the box's outside width enters the trench-width rule (§9.2).
 
+**The PE-design line (D-1332, the founder's D-1328.1; OSHA 1926.652(b)(4), (c)).**
+- **When:** one "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft" line a run (`trench_pe_design|pe_design`,
+  `service:pe_shoring_design`, D-1144's stated $5,000) when the trench is over 20 ft deep and its protection there is sloping,
+  benching, or a box used beyond its manufacturer's tabulated depth. "Over 20 ft": the deepest trench height h of a piece with that
+  protection, the same h the protection is chosen from (`lines.ts:trenchNeedsPe`). Vertical walls (stable rock) get none.
+- **A box within its tabulated depth:** no PE line; its protection line's note is "within manufacturer's tabulated data (20 ft
+  assumed: confirm against the box's tabulated data)" (`lines.ts:WITHIN_TABULATED`). When a run on that box line uses its box
+  deeper, the note is cleared (sent as "").
+- **The tabulated depth:** no box carries one yet (library rows say "Depth rating not sourced"; the project box list has height
+  and widths only). D-1144's stated 20 ft (grade D) stands in for every box. Backlog: a rated-depth field per box (FEATURES).
+- **Structures and pits (D-1323):** the run's one line covers them, so a structure or crossing pit past 20 ft on a sloped or
+  benched run over 20 ft no longer gets a line of its own.
+- **Never silently:** the lines change only at the user's Calculate.
+
 **Sloped.**
 - **The slope.** The slope rule's ratio for the flattest layer the trench passes through at that station.
   Layers at or below the design water count as C.

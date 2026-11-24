@@ -158,6 +158,18 @@ Not measured, left for a rerun when the bucket answers again (it slowed from abo
 longer loaded in either build): the after series at 4× (dev), production after with 2 and 3 overlays and at 4×, and the
 time to the overlay's view picture with the committed code (the after runs still re-read the overlay PDF on each view).
 
+### The re-measure (D-1330, night run 2026-11-23/24; founder to confirm)
+
+From a local copy of V-100's overlay pictures (91 objects, 0 misses; 32 valid runs, dev and production, 1× and 4×, 0–3
+overlays). Full tables: `intelcost-infra/morning-report-2026-11-24/d1330/MEASUREMENTS.md`. Before e2050eb, after d047034.
+
+- Production, 3 overlays: peak tab 1,402 → 711 MB; peak Chrome total 2,188 → 1,352 MB; overlay sharp after load 20–31 s →
+  15–17 s; at 4× zoom frames dropped 314 → 83.
+- **Regression found and fixed (app c2d20d7):** the first zoom from Fit kept the blurred fit picture, because the 4 MP
+  cap pushed `planSharp` to factor 1, under the fit picture × `SHARPER_BY`. The need is now judged at the planner's own
+  `MAX_COMPUTE_PX`; the 4 MP cap only lowers the work. After the fix the zoom picture lands in 6.1–10.7 s against
+  9.3–27.5 s before, memory still below before.
+
 ## Files
 
 App: `src/features/takeoff/overlay/OverlayLayer.tsx`, `useOverlayDifference.ts`, `useSharpDifference.ts`,
