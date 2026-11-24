@@ -36574,3 +36574,28 @@ anticipated adverse weather" tables, all in calendar days (the USACE basis; ours
 - **Windows (UTC) for the founder's saves:** none at the close-out. No source save, no migration, no restart; the gated
   execs (api gates, the purge and DUP dry runs, the fingerprint) were read only.
 - **The push:** recorded in `morning-report-2026-11-25/REPORT_2026-11-25.md` §8 and `NOTE_FOR_ABDULLAH.md`.
+
+## D-1342 — Founder answers to REPORT_2026-11-25 (2026-11-24); Q1 first next run, before Abdullah promotes
+
+- **Q1, CORRECTION (supersedes D-1336's off-rent reading; the founder's example was wrong):** a rental goes off rent
+  at the END of its last work day. Non-work days BETWEEN work days count; non-work days AFTER the last work day do
+  not. 7 work days from a Thursday = 9 days (Thu → the next Fri), not 11; from a Monday = 9 (Mon → the next Tue). Fix
+  `periods.ts:daysOnRent`; fix the QT rows (Thursday 9 days at the cheapest mix; the weather 3 + 2 by-the-day row back
+  to its pre-D-1336 value ($2,080) unless the span itself crosses a weekend; the fixed by-the-day 8 work days row
+  likewise re-derived); re-run the $ per project read only. **Do not promote umer-dev to main before this lands.**
+- **Q2:** accepted (P10 −$5,711, not +$9,497).
+- **Q3, reprice on open, with a notice:** an engine change that moves a founder total reprices at the next open, and
+  Needs attention shows a one-time note per project: "Pricing rule changed (D-1336 rental billing): this estimate
+  changed by $X". Same pattern for every future engine change that moves founder totals. No old-engine hold.
+- **Q4:** days on rent, and the weekday share in weather, use the project's own work week (5, 6 or 7 days).
+- **Q5:** keep both (database engines hide bound parameters; the address log filter). Add a dev-only switch to show
+  bound parameters locally, refused under production and staging, like SIGNUP_THROTTLE_OFF.
+- **Q6, weather (earthwork only for a and b):**
+  - (a) Count days with MAXIMUM ≤ 32 °F (NOAA normals' days-with-max ≤ 32 °F) as lost for earthwork, combined with
+    the rain days without double counting. The frost-night rule stays off.
+  - (b) Clay soils (soil group clay, until the soil-class column exists) get one more drying day after ≥ 1.00 in.
+  - (c) Per project, the estimator can type a contract's USACE monthly table; it replaces the normals for that
+    project, noted on the weather line.
+  - Re-run the USACE comparison after (a) and (b). Do NOT tune to hit the USACE totals.
+- **Q7:** the pdf warm-up is accepted. Build memory: cap the node build step with
+  `NODE_OPTIONS=--max-old-space-size=3072` in the Dockerfile's build stage, and prove it holds.
