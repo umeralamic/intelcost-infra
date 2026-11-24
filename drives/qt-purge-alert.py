@@ -92,10 +92,13 @@ def purge_alert() -> int:
     sent: list[tuple[str, str, dict[str, object]]] = []
     deliver = ["ok"]
 
-    def fake_delay(to: str, template: str, context: dict[str, object]) -> None:
+    labels: list[str | None] = []
+
+    def fake_delay(to: str, template: str, context: dict[str, object], who: str | None = None) -> None:
         if deliver[0] == "fails":
             raise OSError("injected: the relay refused the message")
         sent.append((to, template, context))
+        labels.append(who)  # D-1339: how the log names the recipient (the admin's user id)
 
     dropped: list[str] = []
 
@@ -174,6 +177,10 @@ def purge_alert() -> int:
             # D-1333: one email per admin per row, to the platform admins only, naming what is stuck and /platform.
             if {to for to, _, _ in sent} != admin_emails or len(sent) != 2 * admins:
                 wrong.append(f"FAIL  purge alert email: {len(sent)} emails, not one per platform admin per row ({2 * admins})")
+            # D-1339: each queued email names its admin by user id for the log, never by address.
+            admin_labels = {f"user {i}" for i in session.scalars(select(User.id).where(User.is_platform_admin.is_(True)))}
+            if set(labels) != admin_labels:
+                wrong.append(f"FAIL  purge alert email: the log labels are not the admins' user ids ({len(set(labels))} distinct)")
             rows += 1
             seen = set()
             for _to, template, context in sent:
