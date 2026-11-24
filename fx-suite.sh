@@ -14,7 +14,9 @@
 #   ./fx-suite.sh refresh    lay today's helpers and ./fx-suite-updates over a set-up suite again,
 #                            and retarget them (after editing an updated fixture)
 #   ./fx-suite.sh check      fail closed: every fx service stores in MinIO, mails to MailHog only,
-#                            and runs on intelcost_fx
+#                            and runs on intelcost_fx; the fx apps in use answer 200 on their published host
+#                            ports, 5176 and 5177 (D-1340)
+#   ./fx-suite.sh up         start the fx services only (--no-deps), done when the apps answer on 5176/5177
 #   ./fx-suite.sh run [...]  check, then the suite's own regress.sh (its arguments: full, quick,
 #                            or fixture names); output in ./fx-suite/.regress
 #   ./fx-suite.sh release    every fixture, each in the mode it needs (D-814): the built apps 3 at a
@@ -168,6 +170,47 @@ print(_client().meta.endpoint_url, settings.s3_bucket, settings.database_url.rsp
   return $bad
 }
 
+# The fx apps answer on their host ports (D-1340): on 2026-11-24 app-fx was "Up" with vite "ready" but had no host
+# binding for 5176 after a Docker Desktop stop (D-1334), and every fixture failed on ERR_CONNECTION_REFUSED; `up` and
+# `check` passed it. For each app in use (the built pair when it runs, else the dev pair): running, its host port
+# published, and an HTTP 200 there within <wait> seconds. Otherwise FAIL, naming the container. Nothing is restarted.
+apps_answer() {
+  local wait=${1:-120} pairs bad=0 p svc port cport id name until code
+  if [ -n "$(docker compose ps -q --status running app-fx-prod 2>/dev/null)$(docker compose ps -q --status running app-fx-b-prod 2>/dev/null)" ]; then
+    pairs="app-fx-prod:5176:80 app-fx-b-prod:5177:80"
+  else
+    pairs="app-fx:5176:5173 app-fx-b:5177:5173"
+  fi
+  for p in $pairs; do
+    IFS=: read -r svc port cport <<<"$p"
+    id=$(docker compose ps -q --status running "$svc" 2>/dev/null)
+    if [ -z "$id" ]; then
+      echo "FAIL $svc: not running, nothing answers on localhost:$port"
+      bad=1
+      continue
+    fi
+    name=$(docker inspect --format '{{.Name}}' "$id" 2>/dev/null | tr -d '/')
+    if ! docker port "$id" "$cport/tcp" 2>/dev/null | grep -q ":$port\$"; then
+      echo "FAIL $name ($svc): running, but host port $port is not published (its $cport/tcp has no host binding; D-829/D-1334: a recreate of that container brought it back)"
+      bad=1
+      continue
+    fi
+    until=$(($(date +%s) + wait))
+    while :; do
+      code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "localhost:$port/")
+      [ "$code" = 200 ] || [ "$(date +%s)" -ge "$until" ] && break
+      sleep 2
+    done
+    if [ "$code" = 200 ]; then
+      echo "ok   $name: host port $port published, localhost:$port answers 200"
+    else
+      echo "FAIL $name ($svc): host port $port published, but localhost:$port gave HTTP $code after $wait s"
+      bad=1
+    fi
+  done
+  return $bad
+}
+
 # --- the release run (D-814) ---------------------------------------------------------
 # Fixtures that need the dev servers: they import the app's own modules (/src/...), drive the
 # component gallery at /dev/ui, or check the dev override. Any other fixture that imports from /src
@@ -249,7 +292,30 @@ for (const app of [$apps]) {
   // Home, the gallery and the takeoff page too (Q147, D-1013; Home Q215, D-1034): f4-s2's /dev/ui and f7-a's sheet timed out at 30 s on a cold
   // dev server, waiting for 'load' while their module graphs compiled.
   await p.evaluate(() => Promise.all(['/src/pages/Home.tsx', '/src/pages/DevUiGallery.tsx', '/src/pages/ProjectTakeoff.tsx'].map((u) => import(u).catch(() => null))));
-  console.log('warm ' + app + ' in ' + Math.round((Date.now() - t) / 1000) + ' s');
+  // pdf.js and its workers too, as a sheet's first open loads them (D-1340): on a cold dev server the first sheet made
+  // vite discover and pre-bundle pdfjs-dist's worker (~20 min after a recreate, D-1334), past the fixtures' 30 s canvas
+  // wait. The two modules that import them are transformed (the transform is what finds a new dependency), the
+  // pre-bundled files fetched (served once bundling is done), and pdf.js started in the page with its worker. A
+  // dependency bundled now can reload this page, so it runs again once after a reload. The built apps have no /src:
+  // nothing to warm there, said as such.
+  const pdfWarm = () => p.evaluate(async () => {
+    const get = (u) => fetch(u).then((r) => (r.ok && !/text\/html/.test(r.headers.get('content-type') || '') ? r.arrayBuffer().then(() => true) : false), () => false);
+    const src = await Promise.all(['/src/features/takeoff/pdf/pdfjs.ts', '/src/features/takeoff/autoCount/symbolIndex.worker.ts'].map(get));
+    if (!src.every(Boolean)) return 'none (no /src: a built app)';
+    await Promise.all(['pdf__mjs', 'pdf__worker__mjs'].map((d) => get('/node_modules/.vite/deps/pdfjs-dist_legacy_build_' + d + '.js')));
+    const m = await import('/src/features/takeoff/pdf/pdfjs.ts');
+    const lib = await m.loadPdfjs();
+    const w = new lib.PDFWorker();
+    await Promise.race([w.promise, new Promise((_, no) => setTimeout(() => no(new Error('pdf worker not ready in 240 s')), 240000))]);
+    w.destroy();
+    return 'ready';
+  });
+  let pdf;
+  try { pdf = await pdfWarm(); } catch (e) {
+    await p.waitForLoadState('load', { timeout: 300000 }).catch(() => null);
+    pdf = await pdfWarm().catch((e2) => 'Error ' + String(e2.message || e2).split('\n')[0]);
+  }
+  console.log('warm ' + app + ' in ' + Math.round((Date.now() - t) / 1000) + ' s, pdf.js and its worker: ' + pdf);
   await p.close();
 }
 await b.close();" 2>&1 | grep -E '^warm|Error'
@@ -262,7 +328,9 @@ case "${1:-}" in
     # The apps already in use stay: the built ones (`prod`) hold the dev servers' ports.
     svc=$FX_SERVICES
     [ "$(docker compose ps -q app-fx-prod 2>/dev/null)" ] && svc=$(echo "$FX_SERVICES" | tr ' ' '\n' | grep -v '^app-fx' | tr '\n' ' ')
-    docker compose --profile fx up -d --no-deps $svc
+    docker compose --profile fx up -d --no-deps $svc || exit 1
+    # Done only when the apps in use answer on their host ports (D-1340): 300 s for a cold dev server's first page.
+    apps_answer 300 || { echo "up: an fx app does not answer on its host port (above): fix it before a run"; exit 1; }
     ;;
   setup)
     rm -rf fx-suite && mkdir fx-suite
@@ -286,7 +354,13 @@ case "${1:-}" in
     # The built apps are the suite's default (D-935); `./fx-suite.sh dev` when a run needs the dev servers.
     "$0" prod
     ;;
-  check) check ;;
+  # The isolation, and the apps answering on their host ports (D-1340).
+  check)
+    st=0
+    check || st=1
+    apps_answer 120 || st=1
+    exit $st
+    ;;
   refresh)
     [ -d fx-suite ] || { echo "Run ./fx-suite.sh setup first."; exit 1; }
     cp browser/lib/*.mjs fx-suite/browser/lib/
@@ -307,6 +381,7 @@ case "${1:-}" in
   run)
     shift
     check || { echo "The fx stack is not isolated: nothing was run."; exit 1; }
+    apps_answer 120 || { echo "An fx app does not answer on its host port (D-1340): nothing was run."; exit 1; }
     # The capture first: the watch is handed its pid, to leave it be.
     capture "fx-suite/.regress/capture-$(date +%Y%m%d-%H%M%S)"
     watch_start
@@ -451,7 +526,7 @@ case "${1:-}" in
     ;;
   stop) docker compose --profile fx --profile fx-prod stop $FX_SERVICES app-fx-prod app-fx-b-prod ;;
   *)
-    sed -n '2,20p' "$0"
+    sed -n '2,30p' "$0"
     exit 2
     ;;
 esac
