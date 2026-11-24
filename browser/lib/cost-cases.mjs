@@ -624,4 +624,23 @@ export const COST_CASES = [
   { id: "dump-fallback-unsuitable", kind: "disposal", run: "fallback", args: { material: "unsuitable_soil" }, expect: { low: 0, high: 17.4, mid: 8.7 } },
   { id: "dump-fallback-vegetation", kind: "disposal", run: "fallback", args: { material: "vegetation" }, expect: { low: 30, high: 60, mid: 45 } },
   { id: "dump-fallback-contaminated", kind: "disposal", run: "fallback", args: { material: "contaminated_soil" }, expect: { low: 48.5, high: 100, mid: 74.25 } },
+  // D-1338 (D-1335 Q2): a line Calculate retired (quantity 0) with a typed $5,000 subcontract lump and a $500 lump
+  // material component had $5,500 that counted; now its row counts $0 and the total is the other line's 100 LF ×
+  // $12 = $1,200 (it was $6,700). Needs attention names the line and the $5,500.
+  {
+    id: "retired-lump-excluded",
+    kind: "retired",
+    lines: [
+      { name: "Trench dewatering, sump pumping", retired: true, quantity: 0, unit: "LF", input: rates({ subcontract_cost: 5000 }), components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })] },
+      { name: "Storm pipe", retired: false, quantity: 100, unit: "LF", input: rates({ unit_material_cost: 12 }) },
+    ],
+    expect: { before: 6700, total: 1200, retiredRow: 0, excluded: 5500, note: "Retired line 'Trench dewatering, sump pumping' had $5,500.00 typed, not counted", subcontract: 0 },
+  },
+  // The same line back in a Calculate (not retired): counted whole, no note.
+  {
+    id: "retired-line-back",
+    kind: "retired",
+    lines: [{ name: "Trench dewatering, sump pumping", retired: false, quantity: 0, unit: "LF", input: rates({ subcontract_cost: 5000 }), components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })] }],
+    expect: { before: 5500, total: 5500, retiredRow: 5500, excluded: 0, note: "", subcontract: 5000 },
+  },
 ];

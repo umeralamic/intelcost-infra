@@ -146,7 +146,16 @@ try {
     const dispo = await import("/src/lib/takeoff/earthwork/disposal.ts");
     const haulMod = await import("/src/lib/estimate/equipment/haul.ts");
     const siteMats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
+    const retiredLines = await import("/src/lib/estimate/retired.ts");
     return cases.map((c) => {
+      if (c.kind === "retired") {
+        // D-1338 (D-1335 Q2): a retired line counts $0 in the total; Needs attention names what it had.
+        const priced = c.lines.map((l) => costing.computeLineCost({ quantity: l.quantity, unit: l.unit, input: l.input, unitWastage: new Map(), components: (l.components ?? []).map((row) => comps.evaluateComponent(row, { parent: 0, qty: l.quantity })), netQty: l.quantity }));
+        const kept = priced.map((p, i) => retiredLines.countedCost(p, c.lines[i].retired));
+        const total = (rows) => costing.asShown(costing.sumCosts(rows.map(costing.asShown)));
+        const notes = kept.flatMap((k, i) => (Math.abs(k.excluded) >= 0.005 ? [retiredLines.retiredNote(c.lines[i].name, costing.fmtMoney(k.excluded))] : []));
+        return { before: total(priced).itemCost, total: total(kept.map((k) => k.counted)).itemCost, retiredRow: kept[0].counted.itemCost, excluded: kept[0].excluded, note: notes.join(" | "), subcontract: total(kept.map((k) => k.counted)).subcontractCost };
+      }
       if (c.kind === "seed") {
         // The template at the seeded quantity (its Costs preview: PARENT = QTY), then the
         // sub-item with the api's copies under its real parent.
