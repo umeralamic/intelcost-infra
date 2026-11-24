@@ -120,16 +120,33 @@ export const WEATHER_CASES = [
   // pay-check-materials-only (M1): the smoke's two trench lines, 50 LF, $23.77/LF of stone and geotextile, no pumping
   //   and no hand price, against 200 LF × $45: 23.77 / 45 = 0.528 ≤ 0.8 but 2 lines carry no pumping → "Check", never
   //   "Covered", and the text names them.
-  { id: "pay-check-materials-only", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 13.72, cost: 326.12, variant: "trench", hand: false, pumping: false }, { lf: 36.28, cost: 862.38, variant: "trench", hand: false, pumping: false }], expect: { badge: "Check", ratio: 0.528222, has: "2 lines have no pumping priced (stone and geotextile only)" } },
+  { id: "pay-check-materials-only", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 13.72, cost: 326.12, variant: "trench", hand: false, comps: [], evals: [] }, { lf: 36.28, cost: 862.38, variant: "trench", hand: false, comps: [], evals: [] }], expect: { badge: "Check", ratio: 0.528222, has: "2 lines have no pumping priced (stone and geotextile only)" } },
   // pay-check-pumping (M1): the same 50 LF, one sump line with its pump and crew priced and one hand-priced line: both
   //   priced → 0.528 ≤ 0.8 → "Covered".
-  { id: "pay-check-pumping", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 13.72, cost: 326.12, variant: "trench:sump", hand: false, pumping: true }, { lf: 36.28, cost: 862.38, variant: "trench", hand: true, pumping: false }], expect: { badge: "Covered", ratio: 0.528222, hasNot: "no pumping" } },
+  { id: "pay-check-pumping", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 13.72, cost: 326.12, variant: "trench:sump", hand: false, comps: ["pump", "crew"], evals: [{ total: 180 }, { total: 120 }] }, { lf: 36.28, cost: 862.38, variant: "trench", hand: true, comps: [], evals: [] }], expect: { badge: "Covered", ratio: 0.528222, hasNot: "no pumping" } },
   // pay-check-wellpoint (M1): a wellpoint line with no hand price is "Quote needed" → "Check".
-  { id: "pay-check-wellpoint", kind: "pay-check", unit: "L.F.", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:wellpoint", hand: false, pumping: false }], expect: { badge: "Check", has: "1 line has wellpoints, Quote needed" } },
+  { id: "pay-check-wellpoint", kind: "pay-check", unit: "L.F.", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:wellpoint", hand: false, comps: [], evals: [] }], expect: { badge: "Check", has: "1 line has wellpoints, Quote needed" } },
   // pay-check-unit-day (M2): a pay item per DAY: no ratio across units, compared by hand.
-  { id: "pay-check-unit-day", kind: "pay-check", unit: "DAY", qty: 30, price: 450, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, pumping: true }], expect: { badge: "Check", ratio: null, text: "Check: unit DAY, compare by hand" } },
+  { id: "pay-check-unit-day", kind: "pay-check", unit: "DAY", qty: 30, price: 450, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, comps: ["pump", "crew"], evals: [{ total: 700 }, { total: 488.5 }] }], expect: { badge: "Check", ratio: null, text: "Check: unit DAY, compare by hand" } },
   // pay-check-unit-ft (M2): "FT" reads as linear feet.
-  { id: "pay-check-unit-ft", kind: "pay-check", unit: "FT", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, pumping: true }], expect: { badge: "Covered", ratio: 0.528222 } },
+  { id: "pay-check-unit-ft", kind: "pay-check", unit: "FT", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, comps: ["pump", "crew"], evals: [{ total: 700 }, { total: 488.5 }] }], expect: { badge: "Covered", ratio: 0.528222 } },
+  // --- D-1337 (D-1335 Q6): pumping priced means the PUMP priced, never the crew alone --------------------------------
+  // Each line runs through `pumpingOf` with the line's components (Calculate's pump and crew by their real auto keys,
+  //   `lib/estimate/dewatering.ts`) and their evaluations, as EstimatingView feeds it. One 50 LF sump line, $1,188.50
+  //   ($23.77/LF) against 200 LF × $45: 0.528 ≤ 0.8.
+  // pay-check-crew-only-pump-error: the crew priced ($488.50), the pump errors ("Missing price", a last good $700 kept as
+  //   a lump): no error is part of priced, so the pump is not → "Check", never "Covered", and the text says why.
+  { id: "pay-check-crew-only-pump-error", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, comps: ["pump", "crew"], evals: [{ total: 700, error: "Missing price" }, { total: 488.5 }] }], expect: { badge: "Check", ratio: 0.528222, has: "pump not priced on 1 line (Missing price), crew only" } },
+  // pay-check-pump-zero: the pump at $0 with no error is not priced either ("$0" said); the crew errors too, so no "crew only".
+  { id: "pay-check-pump-zero", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, comps: ["pump", "crew"], evals: [{ total: 0 }, { total: 0, error: "Missing data: wage" }] }], expect: { badge: "Check", has: "pump not priced on 1 line ($0)", hasNot: "crew only" } },
+  // pay-check-pump-priced: the pump priced ($700), the crew erroring: the pump is the pumping → "Covered".
+  { id: "pay-check-pump-priced", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, comps: ["pump", "crew"], evals: [{ total: 700 }, { total: 0, error: "Missing data: wage" }] }], expect: { badge: "Covered", ratio: 0.528222, hasNot: "pump" } },
+  // pay-check-hand-priced: the pump erroring and the crew priced, but a person priced the line (`hand`) → "Covered".
+  { id: "pay-check-hand-priced", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: true, comps: ["pump", "crew"], evals: [{ total: 700, error: "Missing price" }, { total: 488.5 }] }], expect: { badge: "Covered", ratio: 0.528222, hasNot: "pump" } },
+  // pay-check-no-pump-crew-only: the pump removed from the line, the crew priced → "Check", "no pump (crew only)".
+  { id: "pay-check-no-pump-crew-only", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:sump", hand: false, comps: ["crew"], evals: [{ total: 488.5 }] }], expect: { badge: "Check", has: "1 line has no pump (crew only)" } },
+  // pay-check-wellpoint-crew: a wellpoint line with a priced crew and no hand price stays "Quote needed" → "Check".
+  { id: "pay-check-wellpoint-crew", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:wellpoint", hand: false, comps: ["crew"], evals: [{ total: 488.5 }] }], expect: { badge: "Check", has: "1 line has wellpoints, Quote needed" } },
   // wx-changed (M5): an applied project's station changed under it: Needs attention names it first.
   { id: "wx-changed", kind: "wx-attention", weather: { changed: "Weather station changed: HOUSTON HTS → HOUSTON INTERCONT AP; weather days repriced", applied: true, months: [1], work_start: "2027-06-01", flags: [], far: false, station: { name: "HOUSTON INTERCONT AP", miles: 17.3 }, point: { lat: 1, lon: 1 } }, expect: { lines: ["Weather station changed: HOUSTON HTS → HOUSTON INTERCONT AP; weather days repriced"] } },
   { id: "pay-none", kind: "pay-bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] }, expect: { pay: 0, bond: 1222.22, total: 122222.22, keys: ["direct", "tax", "overhead", "profit", "bond"] } },
@@ -145,6 +162,7 @@ export async function runWeather(page, eqlib) {
       const ext = await import("/src/lib/estimate/equipment/weatherExtension.ts");
       const bid = await import("/src/lib/estimate/bidSummary.ts");
       const pay = await import("/src/lib/takeoff/earthwork/water/pay.ts");
+      const dewater = await import("/src/lib/estimate/dewatering.ts");
       const wxApi = await import("/src/features/equipment-library/weatherApi.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       const of = (k) => normals[k] ?? [];
@@ -173,7 +191,10 @@ export async function runWeather(page, eqlib) {
           return { rent: m.rental?.cost ?? null, lost: m.weather?.lost ?? null };
         }
         if (c.kind === "pay-check") {
-          const r = pay.payCheck({ unit: c.unit, owner_quantity: c.qty, owner_unit_price: c.price }, pay.ourDewatering(c.lines));
+          // D-1337: each line's pumping read from its components and their evaluations, as EstimatingView does.
+          const keys = { pump: dewater.SUMP_PUMP_KEY, crew: dewater.SUMP_CREW_KEY };
+          const states = c.lines.map(({ comps, evals, ...l }) => ({ ...l, ...pay.pumpingOf(comps.map((k) => ({ auto_key: keys[k] })), evals, keys) }));
+          const r = pay.payCheck({ unit: c.unit, owner_quantity: c.qty, owner_unit_price: c.price }, pay.ourDewatering(states));
           return { badge: r.badge, ratio: r.ratio == null ? null : Math.round(r.ratio * 1e6) / 1e6, text: r.text, has: c.expect.has && r.text.includes(c.expect.has) ? c.expect.has : r.text, hasNot: c.expect.hasNot && !r.text.includes(c.expect.hasNot) ? c.expect.hasNot : r.text };
         }
         if (c.kind === "wx-attention") return { lines: wxApi.weatherAttention(c.weather) };
