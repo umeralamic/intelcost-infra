@@ -3554,6 +3554,33 @@ export const UTILITY_CASES = [
   { id: "d1323-pe-manhole-by-others", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 15 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: true }], expect: { ownLines: "none" } },
   { id: "d1323-pe-crossing-covered-by-trench", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 22 }] }], items: [{ key: "R", runs: ["R"], depthFt: 35, bySub: false }, { key: "R", runs: ["R"], depthFt: 25, bySub: false }], expect: { ownLines: "none" } },
   { id: "d1323-pe-crossing-own-line", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "sloped", maxDepthFt: 12 }] }], items: [{ key: "R", runs: ["R"], depthFt: 35, bySub: false }, { key: "R", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "none", ownLines: "0" } },
+  // D-1332 (D-1328.1, OSHA 1926.652(b)(4), (c)): one PE-designed protective system a run when the trench is over 20 ft
+  // deep (a piece's deepest h, the depth its protection is chosen from) and it is sloped, benched, or boxed past the
+  // box's tabulated depth (D-1144's stated 20 ft stands in for every box); a box within it gets no PE line and its line
+  // the note "within manufacturer's tabulated data (20 ft assumed: confirm against the box's tabulated data)". 8 in
+  // SDR-35 in Type B clay, the invert 22 ft down (the trench 22.52 ft), 15 ft (15.52 ft) or 19 ft (19.52 ft).
+  { id: "d1332-sloped-over-20", kind: "d1332-pe-lines", runs: [{ protection: "sloped", invertFt: [22, 22] }], expect: { pe: 1, peName: "PE-designed protective system (OSHA 1926.652), trench deeper than 20 ft", protection: "none", walls: "sloped", deepest: "22.52", over20: "true" } },
+  { id: "d1332-benched-over-20", kind: "d1332-pe-lines", runs: [{ protection: "benched", invertFt: [22, 22] }], expect: { pe: 1, protection: "none", walls: "benched", deepest: "22.52", over20: "true" } },
+  { id: "d1332-box-past-tabulated", kind: "d1332-pe-lines", runs: [{ protection: "box", invertFt: [22, 22] }], expect: { pe: 1, protection: "box|0|16+ ft=cleared", walls: "box", deepest: "22.52", over20: "true" } },
+  { id: "d1332-box-within-tabulated", kind: "d1332-pe-lines", runs: [{ protection: "box", invertFt: [15, 15] }], expect: { pe: 0, peName: "none", protection: "box|0|14–16 ft=within manufacturer's tabulated data (20 ft assumed: confirm against the box's tabulated data)", walls: "box", deepest: "15.52", over20: "false" } },
+  { id: "d1332-box-within-19.52", kind: "d1332-pe-lines", runs: [{ protection: "box", invertFt: [19, 19] }], expect: { pe: 0, protection: "box|0|16+ ft=within manufacturer's tabulated data (20 ft assumed: confirm against the box's tabulated data)", deepest: "19.52", over20: "false" } },
+  { id: "d1332-sloped-under-20", kind: "d1332-pe-lines", runs: [{ protection: "sloped", invertFt: [15, 15] }], expect: { pe: 0, protection: "none", walls: "sloped", deepest: "15.52", over20: "false" } },
+  { id: "d1332-benched-under-20", kind: "d1332-pe-lines", runs: [{ protection: "benched", invertFt: [15, 15] }], expect: { pe: 0, walls: "benched", deepest: "15.52", over20: "false" } },
+  // One a run: a box run from 12 to 26 ft has one PE line, and every band of its box line is cleared (the run's box goes
+  // past); a sloped run the same; two deep runs of a type, two; a 16+ ft box line shared by a run at 17.52 ft and one at
+  // 22.52 ft is cleared (one run uses it past), with one PE line.
+  { id: "d1332-box-12-to-26-one-line", kind: "d1332-pe-lines", runs: [{ protection: "box", invertFt: [12, 26] }], expect: { pe: 1, protection: "box|0|12–14 ft=cleared | box|0|14–16 ft=cleared | box|0|16+ ft=cleared", deepest: "26.52", over20: "true" } },
+  { id: "d1332-sloped-12-to-26-one-line", kind: "d1332-pe-lines", runs: [{ protection: "sloped", invertFt: [12, 26] }], expect: { pe: 1, protection: "none", deepest: "26.52" } },
+  { id: "d1332-two-deep-runs-two-lines", kind: "d1332-pe-lines", runs: [{ protection: "sloped", invertFt: [22, 22] }, { protection: "box", invertFt: [23, 23] }], expect: { pe: 2, protection: "box|0|16+ ft=cleared", walls: "sloped box", deepest: "22.52 23.52", over20: "true true" } },
+  { id: "d1332-box-band-shared", kind: "d1332-pe-lines", runs: [{ protection: "box", invertFt: [17, 17] }, { protection: "box", invertFt: [22, 22] }], expect: { pe: 1, protection: "box|0|16+ ft=cleared", deepest: "17.52 22.52", over20: "false true" } },
+  // D-1332 with D-1323 (D-1321 5): the run's one PE line covers its structures and its crossing's pits, so a structure
+  // past 20 ft on a sloped or benched run over 20 ft loses its own line; 20.0 ft is not over; vertical walls (stable rock)
+  // get none.
+  { id: "d1332-pe-sloped-covers-manhole", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "sloped", maxDepthFt: 22.52 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "R", ownLines: "none" } },
+  { id: "d1332-pe-benched-covers-pits", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "benched", maxDepthFt: 22.52 }] }], items: [{ key: "R", runs: ["R"], depthFt: 35, bySub: false }, { key: "R", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "R", ownLines: "none" } },
+  { id: "d1332-pe-sloped-at-20", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "sloped", maxDepthFt: 20 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "none", ownLines: "0" } },
+  { id: "d1332-pe-vertical-rock", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "vertical", maxDepthFt: 25 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "none", ownLines: "0" } },
+  { id: "d1332-pe-box-within-manhole-own", kind: "d1323-pe-plan", runs: [{ id: "R", bands: [{ method: "box", maxDepthFt: 19.52 }] }], items: [{ key: "MH", runs: ["R"], depthFt: 25, bySub: false }], expect: { runsWithPe: "none", ownLines: "0" } },
   // D-1319 (Q6, the founder's correction): one PE-designed protective system a crossing, covering its bore and receiving
   // pits together, when one of its self-performed pits is past 20 ft; it goes with the first such pit. A pit by the bore
   // sub is the sub's, its design too.

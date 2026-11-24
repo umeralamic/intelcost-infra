@@ -2943,6 +2943,44 @@ try {
         const withPe = new Set(c.runs.filter((r) => ln.trenchNeedsPe({ protectionLF: r.bands })).map((r) => r.id));
         return { runsWithPe: [...withPe].sort().join(",") || "none", ownLines: [...xr.structurePeOf(c.items, withPe)].join(",") || "none" };
       }
+      // D-1332 (D-1328.1): the PE-design line by the run's protection and depth. Level runs of 8 in SDR-35 in Type B clay
+      // (ground 100, the invert `invertFt` down at each end), the protection as chosen (a box: the 6 ft box), through the
+      // engine and the lines: the PE lines' quantity (one a run), each box line's note ("cleared": sent as "", none: no
+      // note), the walls, the deepest trench h and the run's "Over 20 ft" flag.
+      if (c.kind === "d1332-pe-lines") {
+        const pipe = cat.resolvePipe(SDR35);
+        const runs = c.runs.map((rr) => {
+          const L = rr.lf ?? 100;
+          const knot = (s, d) => ({ s, G: 100, invert: 100 - d, bottoms: [-1e6], water: null, caving: false, caveInFt: null });
+          return q.runQuantities({
+            knots: [knot(0, rr.invertFt[0]), knot(L, rr.invertFt[1])],
+            layers: [{ layerId: null, ...CLAY }],
+            noBores: false,
+            pipe: { odIn: pipe.od, idIn: pipe.id, pipes: 1, gapIn: 0 },
+            section: { sideClearanceIn: 12, minWidthIn: 24, beddingIn: 6, zoneAboveCrownIn: 12 },
+            bucket: "auto",
+            box: rr.protection === "box" ? tr.boxFor(tr.pipeWidthFt(pipe.od, 1, 0, 12, 24), [BOX], { boxRef: "b6", boxOutsideFt: null }) : null,
+            specMaxIn: null,
+            protection: rr.protection,
+            limitedWidth: false,
+            rule: null,
+            depthRangesFt: [0, 6, 8, 10, 12, 14, 16],
+            materials: { bedding: "imported", zone: "imported", backfill: "native" },
+            materialNames: { bedding: "#57 stone", zone: "Sand", backfill: "Native" },
+            segments: [],
+            restoration: null,
+          });
+        });
+        const made = ln.utilityLines(runs.map((qq) => ({ type: "sanitary", kind: "sanitary", pipeLabel: "Pipe", pipeKey: SDR35, pipes: 1, q: qq, swell: [1], materials: { bedding: { name: "#57 stone", source: "imported" }, zone: { name: "Sand", source: "imported" }, backfill: { name: "Native", source: "native" } }, restoration: null })));
+        return {
+          pe: r2(made.filter((l) => l.role === "trench_pe_design").reduce((a, l) => a + l.quantity, 0)),
+          peName: made.find((l) => l.role === "trench_pe_design")?.name ?? "none",
+          protection: made.filter((l) => l.role === "trench_protection").map((l) => `${l.variant}=${l.note === undefined ? "none" : l.note === "" ? "cleared" : l.note}`).join(" | ") || "none",
+          walls: runs.map((r) => [...new Set(r.protectionLF.map((p) => p.method))].join("+")).join(" "),
+          deepest: runs.map((r) => r2(Math.max(0, ...r.protectionLF.map((p) => p.maxDepthFt)))).join(" "),
+          over20: runs.map((r) => r.flags.some((f) => f.startsWith("Over 20 ft"))).join(" "),
+        };
+      }
       // D-1319 (Q6, the founder's correction): one PE-design line a crossing. Each pit as worked (its crossing, depth, by
       // the sub or not); the lines its crossings get, and the pits that carry them.
       if (c.kind === "d1319-pe-crossing") {
