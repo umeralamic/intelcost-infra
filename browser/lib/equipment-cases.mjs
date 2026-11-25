@@ -431,8 +431,14 @@ export const EQUIPMENT_CASES = [
   { id: "rule-note-no-arrival", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [], arrivals: {}, expect: { owed: [] } },
   //   The wages note keeps its own test (D-1350, the founder's Q18: P10 like P01 and P05): owed when the api answers the
   //   rates before and after Update rates moved the set to wage rules 7, whatever the arrival; a record ends it.
-  { id: "rule-note-wages-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: -6396.64, shown_at: "2026-11-26T09:00:00Z" }], arrivals: BENCH_ARRIVALS, wages: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-01": [81.62, 47.7] } }, expect: { owed: ["wages"] } },
-  { id: "rule-note-wages-not-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [], arrivals: BENCH_ARRIVALS, wages: null, expect: { owed: ["rental_billing"] } },
+  { id: "rule-note-wages-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: -6396.64, shown_at: "2026-11-26T09:00:00Z" }], arrivals: BENCH_ARRIVALS, wageMoves: { wages: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-01": [81.62, 47.7] } } }, expect: { owed: ["wages"] } },
+  { id: "rule-note-wages-not-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [], arrivals: BENCH_ARRIVALS, wageMoves: {}, expect: { owed: ["rental_billing"] } },
+  // D-1360 (the founder's Q3/Q6): wage rules 8 has its own note, "wage rules 8", owed when the api's `wage_moves` names it
+  //   (a set moved from rules 7 to 8 with the same inputs); a 6 -> 8 move is named "wages" alone (one note per move, the
+  //   whole amount: never counted twice; `drives/qt-rulenote-d1360.py` checks which key the api names); a record ends it.
+  { id: "rule-note-wages8-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z" }], arrivals: { ...BENCH_ARRIVALS, wages_8: "2026-11-25T11:43:21Z" }, wageMoves: { wages_8: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-10": [64.97, 65.04] } } }, expect: { owed: ["wages_8"] } },
+  { id: "rule-note-wages-6-to-8-one-note", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z" }], arrivals: { ...BENCH_ARRIVALS, wages_8: "2026-11-25T11:43:21Z" }, wageMoves: { wages: { movedAt: "2026-11-25T20:25:50Z", rates: { "CC-10": [64.97, 65.04] } } }, expect: { owed: ["wages"] } },
+  { id: "rule-note-wages8-recorded", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z" }, { key: "wages_8", delta: -1.25, shown_at: "2026-11-27T09:10:00Z" }], arrivals: { ...BENCH_ARRIVALS, wages_8: "2026-11-25T11:43:21Z" }, wageMoves: { wages_8: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-10": [64.97, 65.04] } } }, expect: { owed: [] } },
   // D-1353 (the founder's Q4): Needs attention lists a record until it is dismissed, at every open; $0 never shows.
   //   P10's expected rental note (D-1345: rent −$5,711.29 + its 12 % waiver), then dismissed, then a $0 record, then the
   //   P01-copy wages note of D-1350's smoke (−$8.47).
@@ -446,6 +452,18 @@ export const EQUIPMENT_CASES = [
       [{ key: "wages", delta: -8.47, shown_at: "2026-11-26T09:00:00Z" }],
     ],
     expect: { shown: [["Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by −$6,396.64"], [], [], ["Pricing rule changed (wages, Nov 25, 2026): this estimate changed by −$8.47"]] },
+  },
+  // D-1360 (the founder's Q5): Dismiss is per person. The api answers each record's `dismissed_at` for the member asking:
+  //   the member who dismissed the wages note sees only the rule 8 note; the other member, whose answer carries no
+  //   dismissal, sees both. The rule 8 note's words: no D-number.
+  {
+    id: "rule-note-dismissed-per-person",
+    kind: "rule-note",
+    shown: [
+      [{ key: "wages", delta: -8.47, shown_at: "2026-11-26T09:00:00Z", dismissed_at: "2026-11-26T09:05:00Z" }, { key: "wages_8", delta: 12.5, shown_at: "2026-11-27T09:00:00Z", dismissed_at: null }],
+      [{ key: "wages", delta: -8.47, shown_at: "2026-11-26T09:00:00Z", dismissed_at: null }, { key: "wages_8", delta: 12.5, shown_at: "2026-11-27T09:00:00Z", dismissed_at: null }],
+    ],
+    expect: { shown: [["Pricing rule changed (wage rules 8, Nov 25, 2026): this estimate changed by +$12.50"], ["Pricing rule changed (wages, Nov 25, 2026): this estimate changed by −$8.47", "Pricing rule changed (wage rules 8, Nov 25, 2026): this estimate changed by +$12.50"]] },
   },
   // D-1353 (the founder's Q2): the rental line's words, the days on rent then the cover (EX-CRAWL-20T $1,040 / $2,927 /
   //   $7,950). 7 work days from Thursday 2027-01-07 = Thu → the next Fri, 9 days: week + 2 days $5,007. 1 work day: 1 day.
@@ -812,7 +830,7 @@ export async function runEquipment(page, eqlib) {
           };
         }
         if (c.kind === "rule-note") {
-          if (c.owed) return { owed: rc.changesOwed(c.firstPricedAt, c.records, c.arrivals, rc.RULE_CHANGES, c.wages ?? null).map((x) => x.key) };
+          if (c.owed) return { owed: rc.changesOwed(c.firstPricedAt, c.records, c.arrivals, rc.RULE_CHANGES, c.wageMoves ?? {}).map((x) => x.key) };
           // D-1353: the notes Needs attention lists, and the rental line's words.
           if (c.shown) return { shown: c.shown.map((records) => rc.notesShown(records, "USD").map((n) => n.text)) };
           if (c.rentLabels) return { rentLabels: c.rentLabels.map(([d, start]) => periods.rentLabel(periods.solveRental({ day: 1040, week: 2927, fourWeek: 7950 }, d, d * 8, undefined, start ? { startWeekday: periods.weekdayOf(start) } : {}))) };
