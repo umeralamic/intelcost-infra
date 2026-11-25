@@ -7,7 +7,8 @@
 //
 // Normals: NOAA NCEI 1991–2020 monthly, as the Access Data Service returned them on 2026-11-18 (seeded in migration
 // d1331c8a4e57): IAH (USW00012960) and Carpenter 2 S, OH (USC00331288, nearest with snowfall and frost to ZIP 45614).
-// Weekday share 5/7; the normals' February has 28 days.
+// Weekday share 5/7 (D-1346: N/7 on a project week of N days, the rows marked -6day / -7day); the normals' February has
+// 28 days.
 
 import { bundleFor } from "./equipment-cases.mjs";
 import { IAH } from "./water-cases.mjs";
@@ -160,6 +161,60 @@ export const WEATHER_CASES = [
   { id: "pay-check-wellpoint-crew", kind: "pay-check", unit: "LF", qty: 200, price: 45, lines: [{ lf: 50, cost: 1188.5, variant: "trench:wellpoint", hand: false, comps: ["crew"], evals: [{ total: 488.5 }] }], expect: { badge: "Check", has: "1 line has wellpoints, Quote needed" } },
   // wx-changed (M5): an applied project's station changed under it: Needs attention names it first.
   { id: "wx-changed", kind: "wx-attention", weather: { changed: "Weather station changed: HOUSTON HTS → HOUSTON INTERCONT AP; weather days repriced", applied: true, months: [1], work_start: "2027-06-01", flags: [], far: false, station: { name: "HOUSTON INTERCONT AP", miles: 17.3 }, point: { lat: 1, lon: 1 } }, expect: { lines: ["Weather station changed: HOUSTON HTS → HOUSTON INTERCONT AP; weather days repriced"] } },
+  // --- D-1346 (the founder's D-1342 Q4): the project's own work week (the current rate set's days a week, 5 with none;
+  //     the bundle's weather `work_days_per_week`). A week of N days works the first N weekdays from Monday. Rates
+  //     EX-CRAWL-20T $1,040 / $2,927 / $7,950; overtime per billed period (8 / 40 / 160 h) at the cover's cost ÷ allowance.
+  // wk-solve-default-5: no week given prices as before: 7 work days from a Monday (no start) to the next Tuesday, 9 days
+  //   on rent, week + 2 days $5,007, 56 h against 56 h (eq-solve-7-days-weekend's figures).
+  { id: "wk-solve-default-5", kind: "wk-solve", rates: [1040, 2927, 7950], days: 7, hours: 56, expect: { cost: 5007, billedDays: 9, workWeek: 5, startAssumed: true, label: "1 week + 2 days" } },
+  // wk-solve-6day-7: 6-day week, 7 work days from a Monday (no start): Mon–Sat (6), the Sunday between, Mon (7th): 8
+  //   calendar days on rent. Week + 1 day $3,967 (2 weeks $5,854; 8 days $8,320; 4-week $7,950); 56 h against 40 + 8 = 48 h:
+  //   8 h overtime × 3,967 ÷ 48 = $661.17 → $4,628.17.
+  { id: "wk-solve-6day-7", kind: "wk-solve", rates: [1040, 2927, 7950], days: 7, hours: 56, week: 6, expect: { cost: 3967 + (8 * 3967) / 48, periodCost: 3967, billedDays: 8, allowanceHours: 48, overtimeHours: 8, workWeek: 6, startAssumed: true, label: "1 week + 1 day" } },
+  // wk-solve-7day-7: 7-day week, 7 work days = 7 days on rent: one week $2,927; 56 h against 40 h: 16 h × 2,927 ÷ 40 =
+  //   $1,170.80 → $4,097.80.
+  { id: "wk-solve-7day-7", kind: "wk-solve", rates: [1040, 2927, 7950], days: 7, hours: 56, week: 7, expect: { cost: 4097.8, periodCost: 2927, billedDays: 7, allowanceHours: 40, overtimeHours: 16, overtimeCost: 1170.8, workWeek: 7, label: "1 week" } },
+  // wk-solve-6day-sunday: 6-day week, work starts Sunday 2027-01-10 (a non-work day): picked up Monday Jan 11; 6 work days
+  //   Mon–Sat Jan 16: 6 days on rent: one week $2,927 (6 × $1,040 = $6,240); 48 h against 40 h: 8 h × 2,927 ÷ 40 = $585.40
+  //   → $3,512.40.
+  { id: "wk-solve-6day-sunday", kind: "wk-solve", rates: [1040, 2927, 7950], days: 6, hours: 48, week: 6, start: "2027-01-10", expect: { cost: 3512.4, periodCost: 2927, billedDays: 6, allowanceHours: 40, overtimeHours: 8, startAssumed: false, label: "1 week" } },
+  // wk-solve-5day-sunday: the same Sunday start on a 5-day week: Mon Jan 11 – Fri 15 and Mon 18, the weekend between:
+  //   8 days on rent: week + 1 day $3,967; 48 h against 48 h: no overtime.
+  { id: "wk-solve-5day-sunday", kind: "wk-solve", rates: [1040, 2927, 7950], days: 6, hours: 48, week: 5, start: "2027-01-10", expect: { cost: 3967, billedDays: 8, allowanceHours: 48, overtimeHours: 0, label: "1 week + 1 day" } },
+  // wk-solve-6day-saturday: 6-day week, work starts Saturday 2027-01-09, a work day: picked up the Saturday; 2 work days
+  //   Sat, (Sun between), Mon: 3 days on rent: one week $2,927 (3 × $1,040 = $3,120); 16 h against 40 h.
+  { id: "wk-solve-6day-saturday", kind: "wk-solve", rates: [1040, 2927, 7950], days: 2, hours: 16, week: 6, start: "2027-01-09", expect: { cost: 2927, billedDays: 3, overtimeHours: 0, label: "1 week" } },
+  // wk-solve-6day-20: 6-day week, 20 work days from a Monday: 3 weeks Mon–Sat (18, through day 20), Sun, Mon, Tue: 23
+  //   days on rent (26 on a 5-day week): one 4-week $7,950 (3 weeks + 2 days $10,861); 160 h against 160 h.
+  { id: "wk-solve-6day-20", kind: "wk-solve", rates: [1040, 2927, 7950], days: 20, hours: 160, week: 6, expect: { cost: 7950, billedDays: 23, allowanceHours: 160, overtimeHours: 0, label: "one 4-week" } },
+  // wx-june-ew-month-6day / -7day: IAH June earthwork, the month's lost share × 30 days × N/7: 42.64/7 × 6/5 = 7.3097 on a
+  //   6-day week; 42.64/5 = 8.528 on a 7-day week (5/7: 6.0914, wx-june-ew-month).
+  { id: "wx-june-ew-month-6day", kind: "wx-month", normals: "IAH_WX", month: 6, rule: "earthwork", week: 6, expect: { lost: (42.64 * 6) / 35 } },
+  { id: "wx-june-ew-month-7day", kind: "wx-month", normals: "IAH_WX", month: 6, rule: "earthwork", week: 7, expect: { lost: 42.64 / 5 } },
+  // wx-year-pipe-6day / -7day: no start, the year's share f = lost work days ÷ work days: both scale by N/7, so f and
+  //   the lost days are wx-year-pipe's for every week: f = 0.085205, 20 × f ÷ (1 − f) = 1.8628.
+  { id: "wx-year-pipe-6day", kind: "wx-activity", normals: "IAH_RAIN", rule: "pipe", workDays: 20, start: null, week: 6, expect: { lost: (20 * (PIPE_YEAR / WEEKDAYS)) / (1 - PIPE_YEAR / WEEKDAYS), basis: "year", share: PIPE_YEAR / WEEKDAYS } },
+  { id: "wx-year-pipe-7day", kind: "wx-activity", normals: "IAH_RAIN", rule: "pipe", workDays: 20, start: null, week: 7, expect: { lost: (20 * (PIPE_YEAR / WEEKDAYS)) / (1 - PIPE_YEAR / WEEKDAYS), basis: "year" } },
+  // wx-june-ew-20-6day: 20 earthwork days from 2027-06-01 on a 6-day week: June's lost 6.0914 × 6/5 in its 30 days, the
+  //   window (20 + L) × 7/6 into July (3.8251 × 6/5 in 31): L = 1.2 × 6.0914 + (1.2 × 3.8251/31)((20 + L) × 7/6 − 30) →
+  //   L (1 − 1.4 × 3.8251/31) = 1.2 × 6.0914 − 8 × 3.8251/31 → 7.6429 (window 32.25 days); "+7.6 lost days (Jun–Jul, …)".
+  //   More than the 5-day week's 7.0651: the shorter calendar span sits more in June, wetter than July.
+  { id: "wx-june-ew-20-6day", kind: "wx-activity", normals: "IAH_WX", rule: "earthwork", workDays: 20, start: "2027-06-01", week: 6, station: "HOUSTON INTERCONT AP", expect: { lost: (1.2 * ew(5) - (8 * ew(6)) / 31) / (1 - (1.4 * ew(6)) / 31), basis: "window", months: [6, 7], note: "Weather: +7.6 lost days (Jun–Jul, HOUSTON INTERCONT AP normals)" } },
+  // wx-june-ew-20-7day: the same on a 7-day week: June's 6.0914 × 7/5 = 8.528 in 30 days, the window 20 + L: L = 8.528 ×
+  //   (20 + L)/30 → L = (28 × 6.0914/30) ÷ (1 − 8.528/30) = 7.9434 (window 27.94 days, June only); "+7.9 lost days (June, …)".
+  { id: "wx-june-ew-20-7day", kind: "wx-activity", normals: "IAH_WX", rule: "earthwork", workDays: 20, start: "2027-06-01", week: 7, station: "HOUSTON INTERCONT AP", expect: { lost: ((28 * ew(5)) / 30) / (1 - (1.4 * ew(5)) / 30), basis: "window", months: [6], note: "Weather: +7.9 lost days (June, HOUSTON INTERCONT AP normals)" } },
+  // wx-ext-fixed-day-friday-6day: by the day from a Friday (2027-01-08) on a 6-day week, 1 + 2: base Fri $1,040; 3 work
+  //   days Fri, Sat, Mon: Fri → Mon, the Sunday between, 4 days $4,160 → $3,120 (the 5-day week: Fri → Tue 5 days, $4,160).
+  { id: "wx-ext-fixed-day-friday-6day", kind: "wx-ext", start: "2027-01-08", week: 6, machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":1,"lost":2,"shares":[{"host":"a","k":1}],"fixed":"day"}], expect: { total: 3120, a: 3120 } },
+  // wx-ext-cross-6day: 20 + 2 on a 6-day week from a Monday: 23 and 25 days on rent, both one 4-week $7,950 → $0 (the
+  //   5-day week's 26 → 30 days gave $2,080, wx-ext-cross).
+  { id: "wx-ext-cross-6day", kind: "wx-ext", week: 6, machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":20,"lost":2,"shares":[{"host":"a","k":1}]}], expect: { total: 0, a: null } },
+  // wx-ext-7day: 26 + 4 on a 7-day week: 26 days, one 4-week $7,950; 30 days, one 4-week + 2 days $10,030 (4-week + week
+  //   $10,877) → $2,080.
+  { id: "wx-ext-7day", kind: "wx-ext", week: 7, machines: [{"id":"a","classKey":"EX-CRAWL-20T","units":1,"baseDays":26,"lost":4,"shares":[{"host":"a","k":1}]}], expect: { total: 2080, a: 2080 } },
+  // wx-line-rental-6day: the line's own rental (20 work days, 160 h, pipe, applied) on a 6-day week: 23 days on rent, one
+  //   4-week $7,950; its lost days the year's average, wx-line-rental-unchanged's 1.8688 (the year's share does not move).
+  { id: "wx-line-rental-6day", kind: "wx-machine", mode: "rental", activity: 12, applied: true, week: 6, workDays: 20, hours: 160, expect: { rent: 7950, days: 23, lost: (20 * (PIPE_YEAR_SNOW / WEEKDAYS)) / (1 - PIPE_YEAR_SNOW / WEEKDAYS) } },
   { id: "pay-none", kind: "pay-bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] }, expect: { pay: 0, bond: 1222.22, total: 122222.22, keys: ["direct", "tax", "overhead", "profit", "bond"] } },
 ];
 
@@ -175,6 +230,7 @@ export async function runWeather(page, eqlib) {
       const pay = await import("/src/lib/takeoff/earthwork/water/pay.ts");
       const dewater = await import("/src/lib/estimate/dewatering.ts");
       const wxApi = await import("/src/features/equipment-library/weatherApi.ts");
+      const periods = await import("/src/lib/estimate/equipment/periods.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       const of = (k) => normals[k] ?? [];
       return cases.map((c) => {
@@ -184,23 +240,31 @@ export async function runWeather(page, eqlib) {
             for (let i = 0; i < 12; i++) maxDiff = Math.max(maxDiff, Math.abs(wx.lostInMonth(normals.IAH_RAIN[i], rain.NORMAL_MONTH_DAYS[i], rule) - rain.lostDaysInMonth(normals.IAH_RAIN[i], rain.NORMAL_MONTH_DAYS[i], rule)));
           return { maxDiff: maxDiff < 1e-12 ? 0 : maxDiff };
         }
-        if (c.kind === "wx-month") return { lost: wx.lostInMonth(of(c.normals)[c.month - 1], rain.NORMAL_MONTH_DAYS[c.month - 1], c.rule) };
+        if (c.kind === "wx-month") return { lost: wx.lostInMonth(of(c.normals)[c.month - 1], rain.NORMAL_MONTH_DAYS[c.month - 1], c.rule, c.week) };
         if (c.kind === "wx-frost") return { days: wx.frostDays(of(c.normals)[c.month - 1]) };
         if (c.kind === "wx-activity") {
-          const a = wx.activityLostDays(of(c.normals), c.rule, c.workDays, c.start ? rain.parseDay(c.start) : null);
+          const a = wx.activityLostDays(of(c.normals), c.rule, c.workDays, c.start ? rain.parseDay(c.start) : null, c.week);
           if (!a) return { none: true };
           return { ...a, ...(c.station ? { note: wx.weatherNote(a, c.station) } : {}) };
         }
         if (c.kind === "wx-ext") {
-          // D-1344: a row with a start date puts it in the bundle's weather (Weather settings' "Work starts").
-          const lib = resolve.library(c.start ? { ...bundleFor(eqlib, {}), weather: { ...weatherOff, work_start: c.start } } : bundleFor(eqlib, {}));
+          // D-1344: a row with a start date puts it in the bundle's weather (Weather settings' "Work starts"); D-1346: a
+          //   row's work week too (the rate set's days a week, `work_days_per_week`).
+          const lib = resolve.library(c.start || c.week ? { ...bundleFor(eqlib, {}), weather: { ...weatherOff, work_start: c.start ?? null, ...(c.week ? { work_days_per_week: c.week } : {}) } } : bundleFor(eqlib, {}));
           const e = ext.weatherExtension(lib, c.machines);
           return { total: e.total, a: e.allocByHost.get("a") ?? null, b: e.allocByHost.get("b") ?? null };
         }
         if (c.kind === "wx-machine") {
-          const lib = resolve.library({ ...bundleFor(eqlib, {}), weather: c.applied ? weatherOn : weatherOff });
+          const lib = resolve.library({ ...bundleFor(eqlib, {}), weather: { ...(c.applied ? weatherOn : weatherOff), ...(c.week ? { work_days_per_week: c.week } : {}) } });
           const m = cost.machineCost(lib, { classKey: "EX-CRAWL-20T", mode: c.mode, period: "auto", hours: c.hours, workDays: c.workDays, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false, weatherActivityId: c.activity });
-          return { rent: m.rental?.cost ?? null, lost: m.weather?.lost ?? null };
+          return { rent: m.rental?.cost ?? null, days: m.rental?.billedDays ?? null, lost: m.weather?.lost ?? null };
+        }
+        if (c.kind === "wk-solve") {
+          // D-1346: the rental solver on a row's work week (none: the default 5).
+          const [day, week, fourWeek] = c.rates;
+          const r = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed, { ...(c.start ? { startWeekday: periods.weekdayOf(c.start) } : {}), ...(c.week ? { workWeek: c.week } : {}) });
+          if (!r) return { none: true };
+          return { cost: r.cost, periodCost: r.periodCost, billedDays: r.billedDays, allowanceHours: r.allowanceHours, startAssumed: r.startAssumed, overtimeHours: r.overtimeHours, overtimeCost: r.overtimeCost, workWeek: r.workWeek, label: periods.coverLabel(r) };
         }
         if (c.kind === "pay-check") {
           // D-1337: each line's pumping read from its components and their evaluations, as EstimatingView does.
