@@ -413,7 +413,7 @@ def roles() -> int:
 # F = +17.771 %), open shop, private commercial, burdened, company defaults, bid date 2026-11-06, on the
 # bench's loaded BLS tables (ECI CIU2022300000000I to 2026 Q3, OEWS May 2025). By hand: ECI Dec 2025
 # 171.488 (2026-01-01 is 1/31 month into Q1: 171.4924), Sep 2026 175.430 carried 37 days at the 12-month
-# 3.0 % = 175.9635: the National Estimator table +2.61 %; May 2025 = Q1 + 2/3 (Q2 - Q1) = 168.0367:
+# 3.0 % = 175.9635: the national open-shop table +2.61 %; May 2025 = Q1 + 2/3 (Q2 - Q1) = 168.0367:
 # OEWS +4.72 %. Base = max(residential base x (1 + min(0, F)) x 1.0261, OEWS p75 Houston x 1.0472, TX
 # 7.25): laborer 25.94 -> 26.62, operator 37.21 -> 38.18, truck p75 30.97 -> 32.43 (residential 28.82),
 # carpenter 32.08 -> 32.92, plumber 37.64 -> 38.62, painter 33.09 -> 33.95. Burdened = the burden engine
