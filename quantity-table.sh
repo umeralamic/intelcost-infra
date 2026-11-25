@@ -160,6 +160,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py pr
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py answers" </dev/null || { echo "FAIL  Part 4a answers (above)"; exit 1; }
 # Prevailing wage by classification (D-1038): Mohave Highway WD, operators by machine, a licensed trade not covered, the foreman.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py prevailing" </dev/null || { echo "FAIL  prevailing (above)"; exit 1; }
+# D-1350 (wage rules 7): the county's own WD lines matched exactly (Athens on OH20260001), prevailing never under the
+# open-shop base, the local metro's BLS figures, the elevator mechanic's own code and line, the Building WD line for a
+# craft the governing WD lacks, a helper on its journeyman's line; each by hand, read only.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1350.py" </dev/null || { echo "FAIL  wage rules 7 (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
