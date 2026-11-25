@@ -167,6 +167,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1350.py" <
 # D-1352 (wage rules 8): each machine on its own WD line (the Athens dozer on Group 2), a helper on its own trade's
 # tender line (the journeyman's only where there is none); each by hand, read only.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1352.py" </dev/null || { echo "FAIL  wage rules 8 (above)"; exit 1; }
+# D-1359 (wage rules 9): a WD line names a machine by its whole name (the Athens loader and scraper on Group 2), open shop
+# reads each machine's own survey line (else BLS) and the pipelayer its own beside BLS, the wages_9 note key; by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1359.py" </dev/null || { echo "FAIL  wage rules 9 (above)"; exit 1; }
 # D-1354 (the founder's Q6): the project's own work week beside "Work starts" with no rate set: which week rules (the
 # rate set's, else the project's, else 5), what a save refuses (not 5, 6 or 7; any while a rate set rules) and the
 # first rate set's days a week; each by hand, pure (no database).

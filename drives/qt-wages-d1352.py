@@ -92,12 +92,13 @@ async def main() -> int:
     from app.features.wage_calculator.schemas import RateRequest
     from app.wagecalc.data import RefData
     from app.wagecalc.market import load_market
-    from app.wagecalc.rates import WAGE_RULES, Settings
+    from app.wagecalc.rates import OWN_LINE_RULES, Settings
 
     ref, market = RefData(), load_market()
     wrong: list[str] = []
     rows = 0
-    check(wrong, "d1352-rules", WAGE_RULES, 8)
+    # Rules 8's own number (D-1359 moved WAGE_RULES on to 9; every row below names its rules).
+    check(wrong, "d1352-rules", OWN_LINE_RULES, 8)
     rows += 1
     project = SimpleNamespace(id=-1, postal_code="45778", county=None, state=None, bid_due_date=BID, work_type="site_civil",
                               project_type="public")
