@@ -181,7 +181,8 @@ export const WATER_CASES = [
   //   15.4 × 2 × 2 = 61.6; hours × 8 = 492.8; fuel × 0.65 = 320.32 gal (once wired × $3.578 = $1,146.10 gasoline).
   { id: "rain-sump-q1", kind: "rain-sump", start: "2027-01-01", days: 90, open: 2, gph: 0.65, expect: { rainDays: 15.4, pumpDays: 61.6, runHours: 492.8, fuelGal: 320.32, pumpsOnRent: 2, libraryKey: "PMP-TRASH-3" } },
   // rain-standby-ex20: a rented 20 t excavator ($1,040 / $2,927 / $7,950), 20 work days in June at 8 h: + June's 6.0914
-  //   lost days = 26.0914 → 27 billed days (5-day basis): 4-week + 1 week + 2 days = 7,950 + 2,927 + 2,080 = $12,957
+  //   lost days = 26.0914 → 27 work days, from a Monday 37 days on rent (D-1336, D-1344: off at the end of the last
+  //   work day; dry, 20 work days are 26): 4-week + 1 week + 2 days = 7,950 + 2,927 + 2,080 = $12,957
   //   (4-week + 2 weeks 13,804; two 4-weeks 15,900) against $7,950 dry: +$5,007. Without the overlap rule 6.5714 → 26.57,
   //   also 27 days: unchanged. Through the app's own solver (`periods.ts:solveRental`); the lost days are this module's.
   { id: "rain-standby-ex20", kind: "rain-rental", month: 6, workDays: 20, hours: 160, rates: [1040, 2927, 7950], expect: { wet: 12957, dry: 7950, extra: 5007, noOverlap: 12957 } },

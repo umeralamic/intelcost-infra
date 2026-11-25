@@ -44,10 +44,11 @@ export const DEWATER_CASES = [
   // dw-rent-30-calendar: 30 calendar days: one 28-day 4-week + 2 days = 693 + 130 = $823 (4-week + week 932; 5 weeks
   //   1,195; 30 days 1,950).
   { id: "dw-rent-30-calendar", kind: "dw-solve", rates: [65, 239, 693], days: 30, hours: 720, expect: { cost: 823, billedDays: 30, overtimeHours: 0, fourWeeks: 1, weeks: 0, days: 2 } },
-  // dw-rent-work-days-unchanged: the same 30 days as WORK days (any machine off the 24 h clock): D-1336 puts them at 42
-  //   calendar days on rent (from a Monday, no start date, 6 work weeks to a Friday and its weekend), one 4-week + 2
-  //   weeks = 693 + 478 = $1,171 as before (was "30 billed work days"); 240 h against 160 + 80 = 240 h: no overtime.
-  { id: "dw-rent-work-days-unchanged", kind: "dw-solve", rates: [65, 239, 693], days: 30, hours: 240, workDayBasis: true, expect: { cost: 1171, billedDays: 42, overtimeHours: 0, fourWeeks: 1, weeks: 2, days: 0 } },
+  // dw-rent-work-days-unchanged: the same 30 days as WORK days (any machine off the 24 h clock): from a Monday (no start
+  //   date), 6 work weeks to the 6th Friday, off rent at its end (D-1344; D-1336 kept that weekend: 42): 40 calendar days
+  //   on rent, one 4-week + 2 weeks = 693 + 478 = $1,171 as before (4-week + week + 5 days $1,257; 2 × 4-week $1,386);
+  //   240 h against 160 + 80 = 240 h: no overtime.
+  { id: "dw-rent-work-days-unchanged", kind: "dw-solve", rates: [65, 239, 693], days: 30, hours: 240, workDayBasis: true, expect: { cost: 1171, billedDays: 40, overtimeHours: 0, fourWeeks: 1, weeks: 2, days: 0 } },
 
   // --- A sump line priced through the host engine -------------------------------------------------------------------------
   // dw-host-sump: 400 LF on a sump line at the run's 200 LF a day (the api's spread, SUMP_NOTE): 2 crew days → the clock
