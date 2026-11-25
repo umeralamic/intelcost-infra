@@ -25,6 +25,15 @@ const C = [
   [5.7, 2.3, 0.9, 0, 0.1], [5.5, 1.9, 1, 0, 7.9], [6.5, 2.1, 0.5, 0.4, 15.6], [5.6, 1.8, 0.3, 1.2, 23.5],
 ];
 export const CARPENTER = C.map(([ge010, ge050, ge100, snow1, frost]) => ({ ge010, ge050, ge100, snow1, frost }));
+// D-1347: Carpenter 2 S's days with a maximum ≤ 32 °F (MLY-TMAX-AVGNDS-LSTH032, the Access Data Service, 2026-11-25; seeded
+// in migration d1347a5c9e21).
+const ICEMAX_CARPENTER = [9.5, 5.2, 1.5, 0.1, 0, 0, 0, 0, 0, 0, 0.3, 6.2];
+export const CARPENTER_T = CARPENTER.map((m, i) => ({ ...m, icemax: ICEMAX_CARPENTER[i] }));
+// D-1347: a cold wet month made up to show the no-double-count rule: 31 days, 10 days ≥ 0.50 in, 5 ≥ 1.00 in, 10 snow
+// days, 20 days that stay at or below 32 °F. Their parts alone sum past the month (1.83 of it).
+const HARSH = [{ ge010: 14, ge050: 10, ge100: 5, snow1: 10, frost: 28, icemax: 20 }];
+// D-1347: the Galveston District's Addicks and Barker table (W912HY20B0004, 7-day week = calendar days), D-1341.
+const USACE_HOU = [11, 8, 6, 6, 7, 9, 7, 10, 13, 10, 9, 10];
 
 const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const WEEKDAYS = (365 * 5) / 7;
@@ -33,6 +42,13 @@ const EW_YEAR = DAYS.reduce((t, _d, m) => t + ew(m), 0); // 52.5969…
 const PIPE_YEAR = (IAH.reduce((t, m) => t + m.ge050, 0) * 5) / 7; // 22.2143
 // The same with December's 0.1 snowfall day: December 31 × (1 − (1 − 2.6/31)(1 − 0.1/31)) in place of its 2.6.
 const PIPE_YEAR_SNOW = ((IAH.reduce((t, m) => t + m.ge050, 0) - 2.6 + 31 * (1 - (1 - 2.6 / 31) * (1 - 0.1 / 31))) * 5) / 7;
+// D-1347: earthwork on clay, a month's rain share: (R + (R + 2 × D100)(1 − R/days)) ÷ days, IAH's months.
+const ewClay = (m) => (IAH[m].ge050 + (IAH[m].ge050 + 2 * IAH[m].ge100) * (1 - IAH[m].ge050 / DAYS[m])) / DAYS[m];
+const EW_CLAY_YEAR = DAYS.reduce((t, d, m) => t + ewClay(m) * d * 5 / 7, 0);
+// The same with December's 0.1 snowfall day and its clearing day: (0.1 + 0.1 × (1 − 0.1/31)) ÷ 31, independent of the rain.
+const EW_CLAY_YEAR_SNOW = EW_CLAY_YEAR - ewClay(11) * 31 * 5 / 7 + (1 - (1 - ewClay(11)) * (1 - (0.1 + 0.1 * (1 - 0.1 / 31)) / 31)) * 31 * 5 / 7;
+// D-1347: the contract table's year: f = 106 / 365 for every rule (USACE days × 5/7 over the year's days × 5/7).
+const USACE_F = 106 / 365;
 
 /** A project's weather as the bundle carries it (`weather/service.py:state`): IAH's months, applied or not. */
 const weatherOf = (applied, start = null) => ({
@@ -215,6 +231,63 @@ export const WEATHER_CASES = [
   // wx-line-rental-6day: the line's own rental (20 work days, 160 h, pipe, applied) on a 6-day week: 23 days on rent, one
   //   4-week $7,950; its lost days the year's average, wx-line-rental-unchanged's 1.8688 (the year's share does not move).
   { id: "wx-line-rental-6day", kind: "wx-machine", mode: "rental", activity: 12, applied: true, week: 6, workDays: 20, hours: 160, expect: { rent: 7950, days: 23, lost: (20 * (PIPE_YEAR_SNOW / WEEKDAYS)) / (1 - PIPE_YEAR_SNOW / WEEKDAYS) } },
+  // --- D-1347 (the founder's D-1342 Q6): earthwork's freezing days, a clay drying day, a contract's USACE table ---------
+  // wx-freeze-ew-jan: Carpenter, January, earthwork, with its 9.5 days at or below 32 °F all day: rain 0.172581 and snow
+  //   0.172487 (wx-snow-gallia-ew), freezing 9.5/31 = 0.306452; independent: 1 − 0.827419 × 0.827513 × 0.693548 = 0.525127
+  //   → × 31 × 5/7 = 11.6278 lost working days (6.9817 before the freezing days).
+  { id: "wx-freeze-ew-jan", kind: "wx-month", normals: "CARPENTER_T", month: 1, rule: "earthwork", expect: { lost: (1 - (1 - (2.5 + 3.1 * (1 - 2.5 / 31)) / 31) * (1 - (2.8 + 2.8 * (1 - 2.8 / 31)) / 31) * (1 - 9.5 / 31)) * 31 * 5 / 7 } },
+  // wx-freeze-pipe-jan / -flat-jan: the freezing days are earthwork's only: pipe and flatwork read as before (wx-snow-gallia-*).
+  { id: "wx-freeze-pipe-jan", kind: "wx-month", normals: "CARPENTER_T", month: 1, rule: "pipe", expect: { lost: (1 - (28.5 / 31) * (28.2 / 31)) * 31 * 5 / 7 } },
+  { id: "wx-freeze-flat-jan", kind: "wx-month", normals: "CARPENTER_T", month: 1, rule: "flatwork", expect: { lost: (1 - (23.5 / 31) * (28.2 / 31)) * 31 * 5 / 7 } },
+  // wx-freeze-no-double: the made-up harsh month. Rain (10 + 15 × (1 − 10/31)) / 31 = 0.650364, snow (10 + 10 × (1 −
+  //   10/31)) / 31 = 0.541103, freezing 20/31 = 0.645161: 1.836628 of the month added up, 1 − 0.349636 × 0.458897 × 0.354839
+  //   = 0.943067 combined (29.24 of its 31 days), never more than the month.
+  { id: "wx-freeze-no-double", kind: "wx-share", normals: "HARSH", month: 1, days: 31, rule: "earthwork", expect: { rain: (10 + 15 * (1 - 10 / 31)) / 31, snow: (10 + 10 * (1 - 10 / 31)) / 31, freeze: 20 / 31, share: 1 - (1 - (10 + 15 * (1 - 10 / 31)) / 31) * (1 - (10 + 10 * (1 - 10 / 31)) / 31) * (1 - 20 / 31), within: true } },
+  // wx-frost-night-off: the frost nights (minimum ≤ 32 °F, 28 in HARSH) add nothing: with the freezing days taken out the
+  //   share is the rain and snow alone, 1 − 0.349636 × 0.458897 = 0.839552.
+  { id: "wx-frost-night-off", kind: "wx-share", normals: "HARSH", noIce: true, month: 1, days: 31, rule: "earthwork", expect: { freeze: 0, share: 1 - (1 - (10 + 15 * (1 - 10 / 31)) / 31) * (1 - (10 + 10 * (1 - 10 / 31)) / 31) } },
+  // wx-clay-june-ew: IAH June earthwork on clay: Dry = 3.6 + 2 × 2.0 = 7.6, (3.6 + 7.6 × 0.88) × 5/7 = 10.288 × 5/7 =
+  //   7.348571 (6.091429 off clay, wx-june-ew-month).
+  { id: "wx-clay-june-ew", kind: "wx-month", normals: "IAH_WX", month: 6, rule: "earthwork", clay: true, expect: { lost: (10.288 * 5) / 7 } },
+  // wx-clay-june-pipe: clay changes earthwork only: June pipe 3.6 × 5/7 = 2.571429.
+  { id: "wx-clay-june-pipe", kind: "wx-month", normals: "IAH_WX", month: 6, rule: "pipe", clay: true, expect: { lost: (3.6 * 5) / 7 } },
+  // wx-clay-year-ew: no start, the year on clay: f = Σ ewClay × days × 5/7 ÷ 260.7143; 20 × f ÷ (1 − f).
+  { id: "wx-clay-year-ew", kind: "wx-activity", normals: "IAH_RAIN", rule: "earthwork", clay: true, workDays: 20, start: null, expect: { lost: (20 * (EW_CLAY_YEAR / WEEKDAYS)) / (1 - EW_CLAY_YEAR / WEEKDAYS), basis: "year", share: EW_CLAY_YEAR / WEEKDAYS } },
+  // wx-contract-year: the Addicks and Barker table typed in: f = 106/365 = 0.290411 for every rule; 20 × f ÷ (1 − f) =
+  //   20 × 106/259 = 8.185328 (the normals' earthwork gave 5.0546, pipe 1.8628).
+  { id: "wx-contract-year-ew", kind: "wx-activity", normals: "IAH_RAIN", rule: "earthwork", contract: USACE_HOU, workDays: 20, start: null, expect: { lost: (20 * USACE_F) / (1 - USACE_F), basis: "year", share: USACE_F } },
+  { id: "wx-contract-year-pipe", kind: "wx-activity", normals: "IAH_RAIN", rule: "pipe", contract: USACE_HOU, workDays: 20, start: null, expect: { lost: (20 * USACE_F) / (1 - USACE_F), basis: "year" } },
+  // wx-contract-no-clay: the table already counts wet ground: clay adds nothing on top (8.185328).
+  { id: "wx-contract-no-clay", kind: "wx-activity", normals: "IAH_RAIN", rule: "earthwork", clay: true, contract: USACE_HOU, workDays: 20, start: null, expect: { lost: (20 * USACE_F) / (1 - USACE_F) } },
+  // wx-contract-no-normals: a table prices with no station months at all (8.185328).
+  { id: "wx-contract-no-normals", kind: "wx-activity", normals: "NONE", rule: "pipe", contract: USACE_HOU, workDays: 20, start: null, expect: { lost: (20 * USACE_F) / (1 - USACE_F) } },
+  // wx-contract-june-20: 20 earthwork days from 2027-06-01: June 9 adverse days × 5/7 = 6.428571 lost work days in 30, July
+  //   7 × 5/7 = 5 in 31; the window (20 + L) × 7/5 passes June: L = 6.428571 + 5/31 × ((20 + L) × 1.4 − 30) → L × 24/31 =
+  //   6.428571 − 10/31 → 7.886905 (window 39.04 days). "Weather: +7.9 lost days (Jun–Jul, contract weather table (USACE))".
+  { id: "wx-contract-june-20", kind: "wx-activity", normals: "IAH_WX", rule: "earthwork", contract: USACE_HOU, workDays: 20, start: "2027-06-01", station: "HOUSTON INTERCONT AP", expect: { lost: (45 / 7 - 10 / 31) / (24 / 31), basis: "window", months: [6, 7], note: "Weather: +7.9 lost days (Jun–Jul, contract weather table (USACE))" } },
+  // wx-contract-cleared: the table cleared (null): the normals again, wx-year-ew's 5.0546.
+  { id: "wx-contract-cleared", kind: "wx-activity", normals: "IAH_RAIN", rule: "earthwork", contract: null, workDays: 20, start: null, expect: { lost: (20 * (EW_YEAR / WEEKDAYS)) / (1 - EW_YEAR / WEEKDAYS), basis: "year" } },
+  // wx-contract-machine: through the bundle (the api's `contract_days`), the line's rented excavator on a pipe crew,
+  //   applied, no start: 8.185328 lost days, the note names the table; the rental itself stays one 4-week $7,950.
+  { id: "wx-contract-machine", kind: "wx-machine", mode: "rental", activity: 12, applied: true, extra: { contract_days: USACE_HOU }, workDays: 20, hours: 160, expect: { rent: 7950, lost: (20 * USACE_F) / (1 - USACE_F), note: "Weather: +8.2 lost days (year average, contract weather table (USACE))" } },
+  // wx-clay-machine: the bundle's soil is clay (the top working layer): an earthwork activity (1) reads the clay year with
+  //   December's snow day: 20 × f ÷ (1 − f), f = EW_CLAY_YEAR_SNOW / 260.7143. The same machine on silt reads off clay.
+  { id: "wx-clay-machine", kind: "wx-machine", mode: "rental", activity: 1, applied: true, extra: { soil: { group: "clay", layer: "Layer 2" } }, workDays: 20, hours: 160, expect: { rent: 7950, lost: (20 * (EW_CLAY_YEAR_SNOW / WEEKDAYS)) / (1 - EW_CLAY_YEAR_SNOW / WEEKDAYS) } },
+  // wx-contract-attention: a contract table on a project with no station: Needs attention says only the missing start
+  //   date (the table prices the lost days; no "Lost days are not added").
+  { id: "wx-contract-attention", kind: "wx-attention", weather: { contract_days: USACE_HOU, applied: true, months: null, work_start: null, flags: ["no_station"], far: false, station: null, point: { lat: 1, lon: 1 } }, expect: { lines: ["Start date not set: average year used"] } },
+  // wx-contract-label: Setup's line names the table.
+  { id: "wx-contract-label", kind: "wx-label", weather: { contract_days: USACE_HOU, applied: true, months: null, station: null, flags: [] }, expect: { label: "Weather: contract weather table (USACE) used" } },
+  // The validation (the panel's and the api's `contract_error`, the same rule): 12 months, each 0 to the month's days
+  //   (February 28).
+  { id: "wx-contract-ok", kind: "wx-contract-check", days: USACE_HOU, expect: { message: null } },
+  { id: "wx-contract-11", kind: "wx-contract-check", days: USACE_HOU.slice(0, 11), expect: { message: "A contract weather table needs 12 months (January to December), not 11." } },
+  { id: "wx-contract-feb-29", kind: "wx-contract-check", days: [11, 29, 6, 6, 7, 9, 7, 10, 13, 10, 9, 10], expect: { message: "February: the adverse weather days must be 0 to 28." } },
+  { id: "wx-contract-negative", kind: "wx-contract-check", days: [-1, 8, 6, 6, 7, 9, 7, 10, 13, 10, 9, 10], expect: { message: "January: the adverse weather days must be 0 to 31." } },
+  { id: "wx-contract-sep-31", kind: "wx-contract-check", days: [11, 8, 6, 6, 7, 9, 7, 10, 31, 10, 9, 10], expect: { message: "September: the adverse weather days must be 0 to 30." } },
+  // wx-contract-paste: a row pasted with tabs, commas and spaces reads as the 12 numbers; a word reads as not a number.
+  { id: "wx-contract-paste", kind: "wx-contract-check", text: "11\t8 6,6 7  9 7 10 13 10 9 10\n", expect: { days: USACE_HOU, message: null } },
+  { id: "wx-contract-word", kind: "wx-contract-check", text: "11 8 six 6 7 9 7 10 13 10 9 10", expect: { message: "March: the adverse weather days must be 0 to 31." } },
   { id: "pay-none", kind: "pay-bid", totals: { directCost: 100000, materialCost: 0 }, rates: { taxPct: 0, overheadPct: 10, profitPct: 10, bondPct: 1, extra: [] }, expect: { pay: 0, bond: 1222.22, total: 122222.22, keys: ["direct", "tax", "overhead", "profit", "bond"] } },
 ];
 
@@ -240,12 +313,23 @@ export async function runWeather(page, eqlib) {
             for (let i = 0; i < 12; i++) maxDiff = Math.max(maxDiff, Math.abs(wx.lostInMonth(normals.IAH_RAIN[i], rain.NORMAL_MONTH_DAYS[i], rule) - rain.lostDaysInMonth(normals.IAH_RAIN[i], rain.NORMAL_MONTH_DAYS[i], rule)));
           return { maxDiff: maxDiff < 1e-12 ? 0 : maxDiff };
         }
-        if (c.kind === "wx-month") return { lost: wx.lostInMonth(of(c.normals)[c.month - 1], rain.NORMAL_MONTH_DAYS[c.month - 1], c.rule, c.week) };
+        if (c.kind === "wx-month") return { lost: wx.lostInMonth(of(c.normals)[c.month - 1], rain.NORMAL_MONTH_DAYS[c.month - 1], c.rule, c.week, { clay: Boolean(c.clay) }) };
+        if (c.kind === "wx-share") {
+          // D-1347: a month's parts and its combined share; `within`: the combined share never passes the month.
+          const m = of(c.normals)[c.month - 1];
+          const r = wx.lostShare(c.noIce ? { ...m, icemax: null } : m, c.days, c.rule, { clay: Boolean(c.clay) });
+          return { ...r, within: r.share <= 1 && r.share < r.rain + r.snow + r.freeze };
+        }
+        if (c.kind === "wx-contract-check") {
+          const days = c.text != null ? wx.parseContractTable(c.text) : c.days;
+          return { days, message: wx.contractTableError(days) };
+        }
+        if (c.kind === "wx-label") return { label: wxApi.weatherSetupLabel(c.weather) };
         if (c.kind === "wx-frost") return { days: wx.frostDays(of(c.normals)[c.month - 1]) };
         if (c.kind === "wx-activity") {
-          const a = wx.activityLostDays(of(c.normals), c.rule, c.workDays, c.start ? rain.parseDay(c.start) : null, c.week);
+          const a = wx.activityLostDays(of(c.normals), c.rule, c.workDays, c.start ? rain.parseDay(c.start) : null, c.week, { clay: Boolean(c.clay), contract: c.contract ?? null });
           if (!a) return { none: true };
-          return { ...a, ...(c.station ? { note: wx.weatherNote(a, c.station) } : {}) };
+          return { ...a, ...(c.station ? { note: wx.weatherNote(a, c.station, Boolean(wx.contractTable(c.contract ?? null))) } : {}) };
         }
         if (c.kind === "wx-ext") {
           // D-1344: a row with a start date puts it in the bundle's weather (Weather settings' "Work starts"); D-1346: a
@@ -255,9 +339,9 @@ export async function runWeather(page, eqlib) {
           return { total: e.total, a: e.allocByHost.get("a") ?? null, b: e.allocByHost.get("b") ?? null };
         }
         if (c.kind === "wx-machine") {
-          const lib = resolve.library({ ...bundleFor(eqlib, {}), weather: { ...(c.applied ? weatherOn : weatherOff), ...(c.week ? { work_days_per_week: c.week } : {}) } });
+          const lib = resolve.library({ ...bundleFor(eqlib, {}), weather: { ...(c.applied ? weatherOn : weatherOff), ...(c.week ? { work_days_per_week: c.week } : {}), ...(c.extra ?? {}) } });
           const m = cost.machineCost(lib, { classKey: "EX-CRAWL-20T", mode: c.mode, period: "auto", hours: c.hours, workDays: c.workDays, hoursPerDay: 8, fuelLoad: "med", units: 1, includeMob: false, weatherActivityId: c.activity });
-          return { rent: m.rental?.cost ?? null, days: m.rental?.billedDays ?? null, lost: m.weather?.lost ?? null };
+          return { rent: m.rental?.cost ?? null, days: m.rental?.billedDays ?? null, lost: m.weather?.lost ?? null, note: m.weather?.note ?? null };
         }
         if (c.kind === "wk-solve") {
           // D-1346: the rental solver on a row's work week (none: the default 5).
@@ -282,7 +366,7 @@ export async function runWeather(page, eqlib) {
         return { error: `unknown kind ${c.kind}` };
       });
     },
-    [WEATHER_CASES, { IAH_RAIN, IAH_WX, CARPENTER, NONE: [] }, eqlib, bundleFor.toString(), weatherOf(true), weatherOf(false)],
+    [WEATHER_CASES, { IAH_RAIN, IAH_WX, CARPENTER, CARPENTER_T, HARSH, NONE: [] }, eqlib, bundleFor.toString(), weatherOf(true), weatherOf(false)],
   );
 }
 
