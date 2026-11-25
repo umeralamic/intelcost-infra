@@ -37253,3 +37253,31 @@ unchanged; infra c77ef59: a QT comment; WAGE_PLAN.md twice; one line of this fil
 station, ZIP and county data and two incidental substrings (a domain, two integrity hashes). Client names 0. FEATURES
 (no Live moves), MANAGER (In Progress rows D-1352 to D-1356), SINCE_ARCHIVE updated; mirror refreshed. Throwaways:
 none left. Digest 3b39c51338ef1687 at start and end. One push per repo.
+
+## D-1357 — The founder's answers to REPORT_2026-11-27 (for the next run)
+
+**Status:** Accepted (2026-11-25, Umer). To be built in the next night run; nothing built yet.
+
+- **Q1 (wage rules 8 scope): yes.** The own WD line applies to machines, truck types and laborer groups (as D-1352
+  built it).
+- **Q2 (Athens loader and scraper):** the loader prices on Group 2 "endloader" and the scraper on Group 2 "power
+  scraper". Group 1's "prentice loader", "euclid/elevating loader" and "multiple scraper" are different machines. Fix
+  the matcher: a whole-classification match, never a substring inside another machine's name. QT rows on the real
+  Athens WD (OH20260001).
+- **Q3 / Q6: yes.** Wage rules 8 gets its own "Pricing rule changed" note key, like every rule change that moves
+  totals (D-1345, D-1353 pattern; arrival recorded per environment).
+- **Q4:** the expanded helper row reads "Fringe per WD +$14.45"; "Raised to minimum" only when the base was raised.
+- **Q5:** the rule note is dismissed per person (not for everyone on the project).
+- **Q7:** 4–7 days for both the field beside "Work starts" and the rate set's own "days a week" (replaces D-1354's
+  5–7 and the rate set's 1–7).
+- **Q8: yes.** The field beside "Work starts" is read only once a rate set exists, with a link to the rate set.
+- **Q9:** keep "the larger of snow and freezing" (D-1355). Do not tune to USACE.
+- **Q10: OK.** No station: no pipe or flatwork lost days, flagged in Needs attention; no fallback to the contract table.
+- **Q11: yes.** Fix the Wage calculator's Overtime row refresh after "Save rates to project".
+- **Q12:** noted (build memory host).
+- **Q13:** move the publisher and competitor patterns out of `intelcost-app-fastapi/scripts/equipment_catalog_convert.py`
+  into a private file outside git, loaded at runtime (like the denylists). No names in the repo in any form: remove the
+  `\xHH` strings. If the private file is missing, the converter refuses to run.
+- **Lock rule (standing, every run):** a running quantity table holds the app lock; no app or api save until it
+  finishes (D-1355's lock slip made D-1354's run fail).
+- **Report (read only, next run):** the wages-note amount P08, Real bid A and Real bid B would get on Update rates.
