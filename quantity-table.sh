@@ -167,6 +167,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1350.py" <
 # D-1352 (wage rules 8): each machine on its own WD line (the Athens dozer on Group 2), a helper on its own trade's
 # tender line (the journeyman's only where there is none); each by hand, read only.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1352.py" </dev/null || { echo "FAIL  wage rules 8 (above)"; exit 1; }
+# D-1354 (the founder's Q6): the project's own work week beside "Work starts" with no rate set: which week rules (the
+# rate set's, else the project's, else 5), what a save refuses (not 5, 6 or 7; any while a rate set rules) and the
+# first rate set's days a week; each by hand, pure (no database).
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-workweek-d1354.py" </dev/null || { echo "FAIL  work week (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
