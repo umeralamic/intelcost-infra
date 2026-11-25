@@ -7,6 +7,8 @@
 // factor) the way the api's bundle carries them. Money is compared to the cent.
 
 const DIESEL = { setting: { fuel_price_diesel: 6.276 } };
+/** D-1353: when each pricing-rule change reached the bench (`pricing_rule_arrival`, set by migration d1353e5a9b71). */
+const BENCH_ARRIVALS = { rental_billing: "2026-11-24T13:52:00Z", wages: "2026-11-25T05:41:42Z" };
 
 // A host's components as the api keeps them (the fields the engine reads).
 const comp = (id, kind, fields = {}) => ({
@@ -414,12 +416,41 @@ export const EQUIPMENT_CASES = [
   { id: "rule-machine-2-units-location", kind: "rule-machine", ...DIESEL, location: 1.01, extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 16, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { delta: -3597.22, fuelSame: true, mobSame: true } },
   // rule-machine-owned: an owned machine has no rental: $0 either way.
   { id: "rule-machine-owned", kind: "rule-machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "hr", hours: 160, workDays: 16, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { delta: 0 } },
-  // The one-time rule (`ruleChanges.ts`). Owed: the estimate priced something before the change reached the bench
-  //   (2026-11-24 13:52 UTC), and no record yet. A record, a project first priced after, or one never priced: none.
-  { id: "rule-note-owed", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [], expect: { owed: ["rental_billing"] } },
-  { id: "rule-note-recorded", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-25T04:00:00Z" }], expect: { owed: [] } },
-  { id: "rule-note-priced-after", kind: "rule-note", owed: true, firstPricedAt: "2026-11-24T13:52:01Z", records: [], expect: { owed: [] } },
-  { id: "rule-note-never-priced", kind: "rule-note", owed: true, firstPricedAt: null, records: [], expect: { owed: [] } },
+  // The one-time rule (`ruleChanges.ts`). Owed: the estimate priced something before the change reached this environment
+  //   (D-1353: its arrival as the api recorded it; on the bench rental billing 2026-11-24 13:52 UTC), and no record yet.
+  //   A record, a project first priced after, or one never priced: none.
+  { id: "rule-note-owed", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [], arrivals: BENCH_ARRIVALS, expect: { owed: ["rental_billing"] } },
+  { id: "rule-note-recorded", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-25T04:00:00Z" }], arrivals: BENCH_ARRIVALS, expect: { owed: [] } },
+  { id: "rule-note-priced-after", kind: "rule-note", owed: true, firstPricedAt: "2026-11-24T13:52:01Z", records: [], arrivals: BENCH_ARRIVALS, expect: { owed: [] } },
+  { id: "rule-note-never-priced", kind: "rule-note", owed: true, firstPricedAt: null, records: [], arrivals: BENCH_ARRIVALS, expect: { owed: [] } },
+  // D-1353 (the founder's Q5): the cut-off is the change's arrival in THAT environment. A project first priced
+  //   2026-11-30 09:00 UTC is after rental billing reached the bench (2026-11-24 13:52) but before it reached a staging
+  //   that deploys it 2026-12-01 15:00: owed there, not on the bench. A change with no arrival recorded: owed nowhere.
+  { id: "rule-note-arrival-later-env", kind: "rule-note", owed: true, firstPricedAt: "2026-11-30T09:00:00Z", records: [], arrivals: { rental_billing: "2026-12-01T15:00:00Z", wages: "2026-12-01T15:00:00Z" }, expect: { owed: ["rental_billing"] } },
+  { id: "rule-note-arrival-bench", kind: "rule-note", owed: true, firstPricedAt: "2026-11-30T09:00:00Z", records: [], arrivals: BENCH_ARRIVALS, expect: { owed: [] } },
+  { id: "rule-note-no-arrival", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [], arrivals: {}, expect: { owed: [] } },
+  //   The wages note keeps its own test (D-1350, the founder's Q18: P10 like P01 and P05): owed when the api answers the
+  //   rates before and after Update rates moved the set to wage rules 7, whatever the arrival; a record ends it.
+  { id: "rule-note-wages-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: -6396.64, shown_at: "2026-11-26T09:00:00Z" }], arrivals: BENCH_ARRIVALS, wages: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-01": [81.62, 47.7] } }, expect: { owed: ["wages"] } },
+  { id: "rule-note-wages-not-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [], arrivals: BENCH_ARRIVALS, wages: null, expect: { owed: ["rental_billing"] } },
+  // D-1353 (the founder's Q4): Needs attention lists a record until it is dismissed, at every open; $0 never shows.
+  //   P10's expected rental note (D-1345: rent −$5,711.29 + its 12 % waiver), then dismissed, then a $0 record, then the
+  //   P01-copy wages note of D-1350's smoke (−$8.47).
+  {
+    id: "rule-note-shown-until-dismissed",
+    kind: "rule-note",
+    shown: [
+      [{ key: "rental_billing", delta: -6396.64, shown_at: "2026-11-26T09:00:00Z", dismissed_at: null }],
+      [{ key: "rental_billing", delta: -6396.64, shown_at: "2026-11-26T09:00:00Z", dismissed_at: "2026-11-26T09:05:00Z" }],
+      [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z", dismissed_at: null }],
+      [{ key: "wages", delta: -8.47, shown_at: "2026-11-26T09:00:00Z" }],
+    ],
+    expect: { shown: [["Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by −$6,396.64"], [], [], ["Pricing rule changed (wages, Nov 25, 2026): this estimate changed by −$8.47"]] },
+  },
+  // D-1353 (the founder's Q2): the rental line's words, the days on rent then the cover (EX-CRAWL-20T $1,040 / $2,927 /
+  //   $7,950). 7 work days from Thursday 2027-01-07 = Thu → the next Fri, 9 days: week + 2 days $5,007. 1 work day: 1 day.
+  //   20 work days from a Monday = 26 days: one 4-week $7,950 (3 weeks + 5 days $13,981).
+  { id: "rule-rent-label", kind: "rule-note", rentLabels: [[7, "2027-01-07"], [1, null], [20, null]], expect: { rentLabels: ["9 days on rent: 1 week + 2 days", "1 day on rent: 1 day", "26 days on rent: one 4-week"] } },
   // The words (D-1343: no D-number on screen; the date as the app writes dates, the amount signed in its money format);
   //   nothing moved, or less than half a cent: no note.
   { id: "rule-note-words", kind: "rule-note", texts: [-1780.8, 2080, 0, 0.004, -5711], expect: { texts: ["Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by −$1,780.80", "Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by +$2,080.00", null, null, "Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by −$5,711.00"] } },
@@ -781,7 +812,10 @@ export async function runEquipment(page, eqlib) {
           };
         }
         if (c.kind === "rule-note") {
-          if (c.owed) return { owed: rc.changesOwed(c.firstPricedAt, c.records).map((x) => x.key) };
+          if (c.owed) return { owed: rc.changesOwed(c.firstPricedAt, c.records, c.arrivals, rc.RULE_CHANGES, c.wages ?? null).map((x) => x.key) };
+          // D-1353: the notes Needs attention lists, and the rental line's words.
+          if (c.shown) return { shown: c.shown.map((records) => rc.notesShown(records, "USD").map((n) => n.text)) };
+          if (c.rentLabels) return { rentLabels: c.rentLabels.map(([d, start]) => periods.rentLabel(periods.solveRental({ day: 1040, week: 2927, fourWeek: 7950 }, d, d * 8, undefined, start ? { startWeekday: periods.weekdayOf(start) } : {}))) };
           if (c.texts) return { texts: c.texts.map((d) => rc.ruleNoteText(rc.RULE_CHANGES[0], d, "USD")) };
           return { deltas: c.deltas.map(([a, b]) => rc.ruleDelta(a, b)) };
         }
