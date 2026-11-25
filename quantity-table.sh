@@ -170,6 +170,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1352.py" <
 # D-1359 (wage rules 9): a WD line names a machine by its whole name (the Athens loader and scraper on Group 2), open shop
 # reads each machine's own survey line (else BLS) and the pipelayer its own beside BLS, the wages_9 note key; by hand.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1359.py" </dev/null || { echo "FAIL  wage rules 9 (above)"; exit 1; }
+# D-1361 (the founder's Q4): the breakdown's words. A WD fringe reads "Fringe per WD" (the Athens carpenter helper's
+# 14.45, not "Raised to minimum"); "Raised to minimum" only when the base was raised; the parts add to every rate.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1361.py" </dev/null || { echo "FAIL  wage breakdown words (above)"; exit 1; }
 # D-1354 (the founder's Q6): the project's own work week beside "Work starts" with no rate set: which week rules (the
 # rate set's, else the project's, else 5), what a save refuses (not 5, 6 or 7; any while a rate set rules) and the
 # first rate set's days a week; each by hand, pure (no database).
