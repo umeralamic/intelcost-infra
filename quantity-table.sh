@@ -164,6 +164,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py pr
 # open-shop base, the local metro's BLS figures, the elevator mechanic's own code and line, the Building WD line for a
 # craft the governing WD lacks, a helper on its journeyman's line; each by hand, read only.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1350.py" </dev/null || { echo "FAIL  wage rules 7 (above)"; exit 1; }
+# D-1352 (wage rules 8): each machine on its own WD line (the Athens dozer on Group 2), a helper on its own trade's
+# tender line (the journeyman's only where there is none); each by hand, read only.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1352.py" </dev/null || { echo "FAIL  wage rules 8 (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
