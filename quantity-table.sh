@@ -214,6 +214,11 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-purge-alert.py" <
 # never an address: the real queue -> outbox -> send_mail -> send path with SMTP captured in-process, every log record
 # checked, a database error through the installed redaction filter; rolled back, nothing delivered, no address printed.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-mail-log.py" </dev/null || { echo "FAIL  mail log (above)"; exit 1; }
+# D-1348 (the founder's D-1342 Q5): SQL_LOG_PARAMS_DEV, the dev-only switch that shows bound SQL parameters. Separate
+# python processes in the api container, each with its own environment (the running api untouched): off by default
+# hidden on both engines; on under local and development shown, the address filter still on; on under production,
+# staging and PRODUCTION=true refused at settings load. One failing read per engine, nothing written, no value printed.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-sql-params.py" </dev/null || { echo "FAIL  sql params (above)"; exit 1; }
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
 STATUS="${PIPESTATUS[0]}"
 # Benchmark A (D-1028): the last check of its copy's export against the local expectations, outside
